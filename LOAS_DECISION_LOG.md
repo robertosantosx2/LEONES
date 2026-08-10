@@ -42,7 +42,7 @@ Se incorporó **Buddy**, de Juanje Ojeda, como pieza imprescindible de la pila c
 
 Repositorio: https://github.com/juanje/buddy
 
-La razón es que Buddy encaja con la orientación de LOAS hacia un agente local y, según el repositorio estudiado durante el proyecto, está bajo **GPL-3.0**. La licencia Copyleft tiene un peso especial dentro de la investigación.
+La razón es que Buddy encaja con la orientación de LOAS hacia un agente local que consigue mantener el conocimiento aunque cambien el resto de capas de la pila y, según el repositorio estudiado durante el proyecto, está bajo **GPL-3.0**. La licencia Copyleft tiene un peso especial dentro de la investigación.
 
 Buddy no se considera simplemente «otro agente» dentro de una lista: pasa a formar parte de la arquitectura candidata que debe probarse.
 
