@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LOAS · metaLOAS</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:1200px;margin:auto;padding:24px;line-height:1.4}header{margin-bottom:24px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}.card{border:1px solid #ddd;border-radius:10px;padding:16px}.metric{font-size:2rem;font-weight:700}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left}img{max-width:100%;height:auto}.muted{color:#666}.ok{font-weight:700}</style>
+</head>
+<body>
+<header><h1>LOAS · metaLOAS</h1><p class="muted">Resultados agregados de hardware de consumo y pruebas agentivas. Sin datos personales.</p></header>
+<section class="grid">
+<div class="card"><div class="muted">Informes</div><div id="reports" class="metric">—</div></div>
+<div class="card"><div class="muted">Media tok/s</div><div id="avg" class="metric">—</div></div>
+<div class="card"><div class="muted">≥ 10 tok/s</div><div id="min10" class="metric">—</div></div>
+<div class="card"><div class="muted">≥ 100 tok/s</div><div id="max100" class="metric">—</div></div>
+</section>
+<h2>Rendimiento</h2><img src="../results/metaLOAS/stats/tokens-per-second.png" alt="Rendimiento en tok/s">
+<h2>Hardware</h2><div class="grid"><div class="card"><h3>RAM</h3><img src="../results/metaLOAS/stats/ram.png" alt="RAM"></div><div class="card"><h3>Perfiles</h3><img src="../results/metaLOAS/stats/profiles.png" alt="Perfiles"></div><div class="card"><h3>CPU</h3><img src="../results/metaLOAS/stats/cpu.png" alt="CPU"></div><div class="card"><h3>Sistemas</h3><img src="../results/metaLOAS/stats/os.png" alt="Sistemas operativos"></div></div>
+<h2>LOTB agentivo</h2><img src="../results/metaLOAS/stats/lotb-pass.png" alt="PASS LOTB">
+<h2>Datos</h2><p><a href="../results/metaLOAS/stats/README.md">Ver resumen estadístico</a> · <a href="../results/metaLOAS/">Ver informes metaLOAS</a></p>
+<script>
+fetch('../results/metaLOAS/stats/README.md').then(r=>r.text()).then(t=>{let m=t.match(/Informes analizados: \*\*(\d+)\*\*/);if(m)reports.textContent=m[1];m=t.match(/Media tok\/s: \*\*([0-9.]+)\*\*/);if(m)avg.textContent=m[1];m=t.match(/>=10 tok\/s: \*\*(\d+)\*\*/);if(m)min10.textContent=m[1];m=t.match(/>=100 tok\/s: \*\*(\d+)\*\*/);if(m)max100.textContent=m[1]});
+</script>
+</body></html>
