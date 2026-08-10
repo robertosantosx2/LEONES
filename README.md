@@ -2,6 +2,8 @@
 
 > **IA agéntica Libre/Open para hardware de consumo.**
 
+[🌐 **Web de LOAS y dashboard metaLOAS**](https://robertosantosx2.github.io/LOAS/)
+
 LOAS investiga y construye una pila agentic que pueda ejecutarse en hardware real de consumo, con especial prioridad a software Libre/Open y, dentro de él, Copyleft.
 
 ## Objetivo
