@@ -1,0 +1,34 @@
+name: Daily Copyleft Discovery
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Discover recent GitHub Copyleft projects
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/discover_copyleft.py
+
+      - name: Commit discoveries
+        run: |
+          git config user.name 'LOAS Bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add research/copyleft-discoveries.md
+          if git diff --cached --quiet; then
+            echo 'No new discoveries.'
+          else
+            git commit -m 'research: update daily Copyleft discoveries'
+            git push
+          fi
