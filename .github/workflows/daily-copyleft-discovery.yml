@@ -1,4 +1,4 @@
-name: Daily Copyleft Discovery
+name: Daily Open/Copyleft Discovery
 
 on:
   schedule:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Discover recent GitHub Copyleft projects
+      - name: Discover recent OSI-Open and Copyleft projects
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -29,6 +29,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'No new discoveries.'
           else
-            git commit -m 'research: update daily Copyleft discoveries'
+            git commit -m 'research: update daily Open/Copyleft discoveries'
             git push
           fi
