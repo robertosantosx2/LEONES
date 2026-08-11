@@ -18,7 +18,7 @@ Se adoptó deliberadamente la palabra **Libre** en lugar de «Free».
 
 La razón es conceptual: el proyecto está interesado en la **libertad del software y la capacidad de estudiarlo, modificarlo, ejecutarlo y redistribuirlo**, no en que un servicio tenga precio cero.
 
-El criterio de evaluación se integra ahora en el marco LEONES, en lugar de conservar el antiguo nombre del proyecto como denominación principal.
+El criterio de evaluación se integra ahora en el marco LEONES como denominación principal.
 
 ## 3. Prioridad a Open y, dentro de Open, a Copyleft
 
@@ -368,9 +368,3 @@ Pretende responder experimentalmente a una pregunta mucho más concreta:
 Y la respuesta debe salir de mediciones reproducibles realizadas sobre máquinas reales, no de especificaciones comerciales ni de benchmarks aislados.
 
 Ese es el principio que debe guiar las siguientes decisiones del proyecto.
-
-## 23. Cambio de identidad
-
-El proyecto se denominaba anteriormente **LOAS — Libre-Open Agentic Stack**. La identidad se ha cambiado a **LEONES — Local Ecosystem of Open Neural Expert Systems** para reflejar que el objetivo ya no es únicamente una pila cerrada de componentes, sino un ecosistema local de sistemas expertos neuronales, herramientas, hardware, agentes, conocimiento y mediciones.
-
-Las referencias históricas a LOAS deben entenderse como la etapa anterior del mismo proyecto.
