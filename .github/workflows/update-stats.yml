@@ -1,0 +1,41 @@
+name: Update LEONES statistics
+
+on:
+  push:
+    paths:
+      - 'results/**/*.json'
+      - 'scripts/leones-stats.py'
+      - 'schemas/result.schema.json'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Generate statistics
+        run: python scripts/leones-stats.py --root results --output web/data/stats.json --exclude-demo
+
+      - name: Commit statistics when changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add web/data/stats.json
+          if git diff --cached --quiet; then
+            echo 'No statistics changes.'
+          else
+            git commit -m 'chore: update LEONES statistics'
+            git push
+          fi
