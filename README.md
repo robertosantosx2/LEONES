@@ -56,7 +56,3 @@ Los resultados se clasifican como `reported`, `reproducible`, `verified` o `reje
 ## Estado
 
 Proyecto experimental en desarrollo. La arquitectura inicial está congelada como referencia, pero la optimización del ecosistema LEONES y de sus métricas sigue abierta a la evidencia.
-
-## Nombre
-
-**LEONES** significa **Local Ecosystem of Open Neural Expert Systems**. El nombre sustituye a la denominación anterior LOAS; las referencias históricas a LOAS se conservan únicamente cuando son necesarias para entender la evolución del proyecto.
