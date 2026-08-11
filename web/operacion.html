@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LEONES · Guía completa de operación</title>
+<style>
+:root{--n:#12304a;--b:#1769aa;--p:#eaf4fb;--bg:#f3f6f9;--l:#d8e0e7;--t:#17212b;--m:#607d8b;--a:#fff4d6;--g:#e8f4ec}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--t);line-height:1.55}.wrap{max-width:1250px;margin:auto;padding:0 22px}.hero{background:linear-gradient(120deg,#102f49,#1d6798 55%,#5f8194);color:#fff;padding:38px 0}.hero h1{margin:0 0 8px;font-size:clamp(2.2rem,5vw,4rem)}.hero p{margin:0;color:#e7f2f9}.actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}.btn{padding:9px 14px;border-radius:8px;background:#fff;color:var(--n);text-decoration:none;font-weight:750}.btn.alt{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4)}nav{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--l);z-index:5}.nav{display:flex;gap:3px;overflow:auto;white-space:nowrap}.nav a{padding:12px 10px;color:var(--n);text-decoration:none;font-weight:750;font-size:.88rem}.nav a:hover{background:var(--p)}main{padding:34px 0 70px}section{scroll-margin-top:55px;margin-bottom:30px}.box{background:#fff;border:1px solid var(--l);border-radius:14px;padding:22px;box-shadow:0 3px 12px rgba(20,40,60,.05)}h2{margin:0 0 15px;color:var(--n);border-bottom:2px solid var(--l);padding-bottom:9px}h3{color:var(--n)}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:15px}.card{grid-column:span 4;background:#fff;border:1px solid var(--l);border-radius:11px;padding:17px}.wide{grid-column:span 6}.full{grid-column:1/-1}.note{background:var(--p);border-left:4px solid var(--b);padding:13px 16px;border-radius:0 8px 8px 0}.warn{background:var(--a);border-left:4px solid #bd921e}.ok{background:var(--g);border-left:4px solid #4b8f61}pre{background:#172b3d;color:#eaf4fb;padding:16px;border-radius:9px;overflow:auto;font-size:.84rem}.tag{display:inline-block;background:var(--p);color:var(--b);padding:4px 9px;border-radius:999px;font-size:.78rem;font-weight:800}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid var(--l);text-align:left}th{background:#edf3f7;color:var(--n)}footer{background:var(--n);color:#d9e6ef;padding:25px 0}footer a{color:#fff}@media(max-width:800px){.card,.wide{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap"><h1>LEONES · Guía completa</h1><p>Cómo está construido, cómo se mide, cómo evoluciona y cómo puede utilizarlo otra persona.</p><div class="actions"><a class="btn" href="index.html">← Inicio</a><a class="btn alt" href="arquitectura.html">Arquitectura</a><a class="btn alt" href="https://github.com/robertosantosx2/LEONES">GitHub</a></div></div></header>
+<nav><div class="wrap nav"><a href="#principios">Principios</a><a href="#pila">Pila</a><a href="#os">Ubuntu / RHEL</a><a href="#lotb">LOTB</a><a href="#scripts">Scripts</a><a href="#prospeccion">Prospección</a><a href="#ux">UX</a><a href="#meta">metaLEONES</a><a href="#evidencia">Evidencia</a></div></nav>
+<main class="wrap">
+<section id="principios" class="box"><h2>1. Qué es LEONES</h2><p><strong>LEONES — Local Ecosystem of Open Neural Expert Systems</strong> estudia qué combinación de hardware y software Libre/Open permite convertir una máquina de consumo en un sistema agentic realmente útil.</p><p class="note"><strong>Principio rector:</strong> LEONES mide sistemas, no solo modelos. Un agente existe para completar objetivos, no simplemente para producir tokens.</p><div class="grid"><div class="card"><h3>Libre</h3><p>La libertad del software importa más que el precio cero.</p></div><div class="card"><h3>Open</h3><p>Se descubren piezas abiertas según criterios compatibles con OSI.</p></div><div class="card"><h3>Copyleft</h3><p>Entre alternativas comparables, LEONES prioriza Copyleft.</p></div></div></section>
+<section id="pila" class="box"><h2>2. La pila completa</h2><pre>HARDWARE
+   ↓
+SISTEMA OPERATIVO
+   ↓
+RUNTIME / DRIVERS
+   ↓
+BACKEND DE INFERENCIA
+   ↓
+MODELO + CUANTIZACIÓN
+   ↓
+HARNESS / AGENTIC STACK
+   ↓
+HERRAMIENTAS / SKILLS
+   ↓
+BUDDY / KNOWLEDGE
+   ↓
+LOTB
+   ↓
+RESULTADO + UX</pre><p>La primera referencia incluye <strong>Buddy, Hermes, LangGraph, llama.cpp y GGUF</strong>. La pila se congela para poder medirla, no porque se considere óptima para siempre.</p><p class="note"><strong>CABE</strong> y <strong>RULA</strong> son términos operativos del proyecto: primero se determina si una configuración cabe en el hardware y después si realmente rula/funciona bajo las pruebas.</p></section>
+<section id="os" class="box"><h2>3. Pila por sistema operativo</h2><div class="grid"><div class="card wide"><h3>Ubuntu</h3><pre>Ubuntu
+ ├─ drivers
+ ├─ Python / entorno
+ ├─ runtime
+ ├─ backend
+ ├─ modelo GGUF
+ ├─ harness
+ ├─ Buddy
+ └─ LOTB</pre><p>Ubuntu es una referencia práctica para experimentar con CPU, GPU y runtimes locales.</p></div><div class="card wide"><h3>Red Hat / RHEL</h3><pre>RHEL / Red Hat
+ ├─ paquetes del sistema
+ ├─ drivers
+ ├─ Python / entorno
+ ├─ runtime
+ ├─ backend
+ ├─ modelo
+ ├─ harness + Buddy
+ └─ LOTB</pre><p>La arquitectura no cambia. Cambian la gestión de paquetes, drivers y detalles del entorno.</p></div></div></section>
+<section id="lotb" class="box"><h2>4. LOTB · Local Open Tool/Agent Benchmark</h2><p>LOTB separa la evaluación de <strong>inferencia</strong> de la evaluación <strong>agentic</strong>.</p><table><tr><th>Nivel</th><th>Qué mide</th></tr><tr><td>Inferencia</td><td>prompt evaluation, generation tok/s, memoria, estabilidad y tiempo total.</td></tr><tr><td>Agentic</td><td>éxito de tareas, tool calls, errores, tiempo de tarea y cumplimiento del objetivo.</td></tr></table><h3>Batería inicial</h3><div class="grid"><div class="card"><span class="tag">B01</span><h3>Memoria / localidad</h3><p>Contexto y recuperación local.</p></div><div class="card"><span class="tag">B02</span><h3>Archivos</h3><p>Operación sobre ficheros y herramientas.</p></div><div class="card"><span class="tag">B03</span><h3>Multietapa</h3><p>Planificación y ejecución de varios pasos.</p></div><div class="card"><span class="tag">B04</span><h3>Recuperación</h3><p>Comportamiento ante fallo.</p></div><div class="card"><span class="tag">B05</span><h3>Coding local</h3><p>Generar, modificar y ejecutar código local.</p></div></div><p class="note"><strong>Baseline LOTB-0:</strong> Qwen3-8B Q4_K_M GGUF. Se comparan también Qwen3-8B Q5_K_M, Q8_0 y Qwen3-14B Q4_K_M en perfiles con más memoria.</p></section>
+<section id="scripts" class="box"><h2>5. Reingeniería de scripts</h2><p>Cada script debe hacer pocas cosas, muy claras y bien documentadas. Puede llamar a otros scripts; no debe convertirse en un orquestador monolítico.</p><pre>hardware → model → infer → LOTB → report → publish → stats</pre><div class="grid"><div class="card"><h3>hardware</h3><p>Extrae CPU, RAM, GPU y software básico de la máquina.</p></div><div class="card"><h3>model</h3><p>Identifica modelo, formato, cuantización y hash cuando sea posible.</p></div><div class="card"><h3>infer</h3><p>Mide inferencia nativa contra el backend.</p></div><div class="card"><h3>lotb</h3><p>Ejecuta las tareas agentivas estandarizadas.</p></div><div class="card"><h3>report</h3><p>Genera el informe Markdown y el resultado estructurado.</p></div><div class="card"><h3>publish / stats</h3><p>Publica y agrega resultados para el dashboard.</p></div></div></section>
+<section id="prospeccion" class="box"><h2>6. Prospección continua</h2><div class="grid"><div class="card wide"><span class="tag">DIARIA</span><h3>Nuevas piezas Open</h3><p>Buscar nuevos proyectos que aparezcan en el futuro. Descubrir tanto piezas Open según criterios OSI como Copyleft.</p><p class="note"><strong>Regla congelada:</strong> se descubren las piezas Open; LEONES simplemente prioriza las Copyleft.</p></div><div class="card wide"><span class="tag">SEMANAL</span><h3>Harnesses y skills</h3><p>Investigar proyectos que mejoren las skills, funciones o características de los harnesses. Los compatibles con la pila se muestran en un menú de recomendaciones.</p></div></div><pre>descubrir → clasificar → comprobar licencia → comprobar compatibilidad → evaluar utilidad → recomendar</pre></section>
+<section id="ux" class="box"><h2>7. Recomendador de pila y mejora de UX</h2><pre>HARDWARE + OS + BACKEND + MODEL + HARNESS + BUDDY + LOTB
+                         ↓
+                 análisis de cuello de botella
+                         ↓
+        ┌────────────┬────────────┬────────────┐
+        ↓            ↓            ↓            ↓
+      modelo       backend      harness      tools
+        └────────────┴────────────┴────────────┘
+                         ↓
+                 recomendación al usuario
+                         ↓
+                     re-evaluar</pre><p>LEONES debe poder explicar <strong>qué pieza de la pila merece cambiarse</strong> para mejorar la UX: modelo, backend, harness, herramientas, etc. La recomendación debe distinguir entre medición, evidencia e hipótesis.</p><p class="note">No se optimiza tok/s aisladamente. La métrica principal es la capacidad de completar tareas útiles con una latencia razonable.</p></section>
+<section id="meta" class="box"><h2>8. metaLEONES</h2><p>metaLEONES convierte las ejecuciones locales en conocimiento público y acumulativo sin exigir telemetría personal.</p><pre>máquina
+  ↓
+diagnóstico automático
+  ↓
+result.json + report.md
+  ↓
+directorio de resultados
+  ↓
+GitHub
+  ↓
+estadísticas
+  ↓
+dashboard web</pre><p>Se almacenan informes técnicos en un directorio común para poder agregarlos, generar estadísticas y mostrar gráficas.</p><p class="warn"><strong>No publicar:</strong> nombres, emails, usuarios, hostnames identificables, números de serie, UUID, MAC/IP, ubicación exacta, rutas personales, credenciales o tokens.</p></section>
+<section id="evidencia" class="box"><h2>9. Evidencia y confianza</h2><pre>reported → reproducible → verified
+                    ↘ rejected</pre><div class="grid"><div class="card"><h3>Reported</h3><p>Existe un informe aportado.</p></div><div class="card"><h3>Reproducible</h3><p>Hay información suficiente para repetirlo.</p></div><div class="card"><h3>Verified</h3><p>La evidencia ha sido comprobada.</p></div><div class="card"><h3>Rejected</h3><p>No debe conservarse como evidencia válida.</p></div></div><p class="note">Los benchmarks de terceros sirven para investigar y formular hipótesis. Un resultado oficial LEONES debe proceder de una medición propia, reproducible y trazable.</p></section>
+<section class="box"><h2>10. Instalación y primera ejecución</h2><pre>git clone https://github.com/robertosantosx2/LEONES.git
+cd LEONES
+python3 --version
+python3 scripts/leones.py hardware
+python3 scripts/leones.py model modelo.gguf
+python3 scripts/leones.py infer --url http://127.0.0.1:8080/v1/chat/completions --model local-model
+python3 scripts/leones.py lotb --endpoint http://127.0.0.1:8080</pre><p>Después se genera el informe y, si el usuario lo decide, se publica. La publicación nunca debe incluir secretos ni datos personales.</p></section>
+<section class="box"><h2>11. Automatización</h2><div class="grid"><div class="card"><h3>Diaria</h3><p>Descubrimiento de piezas nuevas Open/Copyleft.</p></div><div class="card"><h3>Semanal</h3><p>Prospección de harnesses, skills y capacidades.</p></div><div class="card"><h3>Continua</h3><p>Agregación de resultados y generación del dashboard.</p></div><div class="card"><h3>GitHub Pages</h3><p>Publicación de documentación y resultados.</p></div></div><p class="ok note"><strong>Decisión:</strong> las recomendaciones se presentan al usuario. LEONES no instala automáticamente una pieza de la pila.</p></section>
+<section class="box"><h2>12. Conocimiento que sobrevive</h2><p>La razón de separar Buddy del resto de la pila es preservar el conocimiento controlado aunque mañana cambien CPU, GPU, sistema operativo, backend, modelo o harness.</p><pre>HOY:  máquina A + pila A + conocimiento
+                    ↓
+CAMBIO: hardware / OS / backend / modelo / harness
+                    ↓
+MAÑANA: máquina B + pila B + MISMO CONOCIMIENTO</pre></section>
+</main>
+<footer><div class="wrap">LEONES · Local Ecosystem of Open Neural Expert Systems · <a href="https://github.com/robertosantosx2/LEONES">GitHub</a> · <a href="https://x.com/metaleones">@metaleones</a></div></footer>
+</body>
+</html>
