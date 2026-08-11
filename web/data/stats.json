@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "source": "demo",
+  "result_count": 2,
+  "official_count": 2,
+  "verified_count": 0,
+  "status_counts": {"reported": 2, "reproducible": 0, "verified": 0, "rejected": 0},
+  "hardware_profiles": {"H1": 1, "H2": 1},
+  "ram_gb": {"16": 1, "32": 1},
+  "generation_tokens_per_second": {"count": 2, "min": 11.2, "max": 28.7, "average": 19.95},
+  "lotb": {
+    "B01": {"completed": 2},
+    "B02": {"completed": 2},
+    "B03": {"completed": 1, "failed": 1},
+    "B04": {"completed": 1, "failed": 1},
+    "B05": {"completed": 1, "failed": 1}
+  },
+  "demo_notice": "These values are illustrative and must not be presented as real measurements."
+}
