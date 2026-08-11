@@ -30,15 +30,27 @@ The Markdown report is intended for people. Statistics, charts and future automa
 - `software` — relevant software/version information.
 - `notes` — human observations.
 
+## Evidence lifecycle
+
+```text
+reported → reproducible → verified
+               │
+               └──────────→ rejected
+```
+
+`reported` means submitted. `reproducible` means the information is sufficient for reproduction. `verified` means it has passed the project's independent verification process. `rejected` means it must not contribute to official aggregates.
+
+A result being syntactically valid does not make it verified.
+
 ## Privacy boundary
 
 The schema intentionally has no fields for operator identity, email, hostname, serial number, UUID, MAC address, IP address, exact location, credentials or private filesystem paths.
 
 A local implementation may know such values internally, but they must not enter the public result document.
 
-## Evidence boundary
+## Demo data
 
-A result being syntactically valid does not make it verified. The publication state and verification state are explicit concepts and must not be inferred from the existence of a file.
+Development/demo results may include `"demo": true`. Production aggregation can explicitly exclude them. Demo data must never be presented as real community evidence.
 
 ## Compatibility
 
