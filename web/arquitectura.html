@@ -1,0 +1,129 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEONES · Arquitectura</title><style>:root{--n:#12304a;--b:#1769aa;--p:#eaf4fb;--bg:#f3f6f9;--l:#d8e0e7;--t:#17212b;--m:#607d8b}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--t);line-height:1.55}.wrap{max-width:1200px;margin:auto;padding:0 22px}.hero{background:linear-gradient(120deg,#102f49,#1d6798 55%,#5f8194);color:#fff;padding:34px 0}.hero h1{margin:0 0 8px;font-size:clamp(2.2rem,5vw,4rem)}.hero p{margin:0;color:#e7f2f9}.back{display:inline-block;margin-top:20px;color:#12304a;background:#fff;padding:9px 14px;border-radius:8px;text-decoration:none;font-weight:700}main{padding:35px 0 70px}.schema{background:#fff;border:1px solid var(--l);border-radius:14px;padding:22px;margin-bottom:25px;box-shadow:0 3px 12px rgba(20,40,60,.05)}h2{color:var(--n);margin-top:0;border-bottom:2px solid var(--l);padding-bottom:10px}pre{background:#172b3d;color:#eaf4fb;padding:18px;border-radius:10px;overflow:auto;font-size:.86rem;line-height:1.45}.explain{background:var(--p);border-left:4px solid var(--b);padding:13px 16px;border-radius:0 8px 8px 0}.footer{background:var(--n);color:#d9e6ef;padding:25px 0}.footer a{color:#fff}@media(max-width:700px){pre{font-size:.72rem}}</style></head><body><header class="hero"><div class="wrap"><h1>LEONES · Arquitectura</h1><p>Los esquemas que explican cómo encajan las piezas del ecosistema.</p><a class="back" href="index.html">← Volver a LEONES</a></div></header><main class="wrap"><section class="schema"><h2>1. Ecosistema completo</h2><pre>                         LEONES
+                            │
+       ┌────────────────────┼────────────────────┐
+       │                    │                    │
+       ▼                    ▼                    ▼
+   KNOWLEDGE             AGENTIC             INFERENCE
+       │                    │                    │
+     Buddy              harness/tools       model/backend
+       │                    │                    │
+       └────────────────────┼────────────────────┘
+                            ▼
+                           LOTB
+                     B01 B02 B03 B04 B05
+                            │
+                            ▼
+                       metaLEONES
+                            │
+                 ┌──────────┼──────────┐
+                 ▼          ▼          ▼
+               GitHub       Web        X</pre><p class="explain">LEONES separa conocimiento, capa agentic e inferencia. LOTB mide las capacidades agentic y metaLEONES permite aportar resultados técnicos sin publicar datos personales.</p></section><section class="schema"><h2>2. El conocimiento sobrevive al cambio de pila</h2><pre>Machine A ──┐
+Model A ────┤
+Backend A ──┤
+Harness A ──┤──► Buddy / conocimiento controlado
+             │                 │
+             └─────────────────┘
+                               │
+                               ▼
+Machine B + Model B + Backend B + Harness B</pre><p class="explain">La idea central de Buddy es separar el conocimiento y el contexto controlados de las piezas sustituibles de la pila. Cambiar hardware, modelo, backend o harness no debería obligar a perder el conocimiento acumulado.</p></section><section class="schema"><h2>3. Pipeline de medición</h2><pre>                 MACHINE
+                    │
+                    ▼
+             HARDWARE REPORT
+                    │
+                    ▼
+                 MODEL
+                    │
+                    ▼
+             INFERENCE TEST
+                    │
+                    ├── tok/s
+                    ├── memory
+                    ├── timing
+                    └── errors
+                    │
+                    ▼
+                  LOTB
+                    │
+             ┌──────┼──────┐
+             ▼      ▼      ▼
+            B01    B02    ... B05
+             │      │          │
+             └──────┼──────────┘
+                    ▼
+                 REPORT
+                    │
+                    ▼
+                VALIDATE
+                    │
+                    ▼
+                PUBLISH</pre></section><section class="schema"><h2>4. Estados de evidencia</h2><pre>             user report
+                  │
+                  ▼
+              REPORTED
+                  │
+          enough information?
+             ┌────┴────┐
+            no        yes
+             │          │
+             ▼          ▼
+          REJECTED  REPRODUCIBLE
+                         │
+                    verification
+                         │
+                         ▼
+                      VERIFIED</pre><p class="explain">Un resultado puede ser reproducible sin estar verificado. LEONES no debe confundir publicación, reproducibilidad y verificación.</p></section><section class="schema"><h2>5. Prospección y recomendaciones</h2><pre>daily discovery
+      │
+      ▼
+new project
+      │
+      ▼
+license / openness check
+      │
+      ▼
+technical relevance
+      │
+      ▼
+local evaluation
+      │
+      ▼
+recommendation
+      │
+      ▼
+possible incorporation</pre><p class="explain">LEONES descubre proyectos Open de forma amplia y prioriza los Copyleft. Descubrir un proyecto no significa recomendarlo: debe inspeccionarse, clasificarse y evaluarse.</p></section><section class="schema"><h2>6. Bucle de mejora de UX</h2><pre>                 RESULT
+                    │
+          ┌─────────┴─────────┐
+          ▼                   ▼
+       tok/s               task UX
+          │                   │
+          └─────────┬─────────┘
+                    ▼
+             STACK ANALYSIS
+                    │
+                    ▼
+       recommendation to user
+                    │
+          ┌─────────┼─────────┐
+          ▼         ▼         ▼
+       model     backend    harness
+          │         │         │
+          └─────────┼─────────┘
+                    ▼
+               re-evaluate</pre><p class="explain">El objetivo no es maximizar tok/s de forma aislada. LEONES debe indicar qué pieza de la pila merece cambiarse para mejorar la experiencia real.</p></section><section class="schema"><h2>7. Frontera de privacidad</h2><pre>LOCAL MACHINE
+     │
+     ├── technical facts ───────► metaLEONES
+     │
+     └── personal information ──X  NEVER PUBLISH</pre><p class="explain">Los informes describen el experimento y la configuración técnica, no identifican al operador.</p></section><section class="schema"><h2>8. Automatización</h2><pre>GitHub Actions
+      │
+      ├── daily ──► discovery
+      │
+      ├── weekly ─► LEONES Weekly
+      │
+      ├── monthly ► ecosystem report
+      │
+      └── event ──► result aggregation
+                         │
+                         ▼
+                     web / charts
+                         │
+                         ▼
+                    @metaleones</pre><p class="explain">La automatización conserva las mismas reglas de evidencia y privacidad que una ejecución manual.</p></section></main><footer class="footer"><div class="wrap">LEONES · Local Ecosystem of Open Neural Expert Systems</div></footer></body></html>
