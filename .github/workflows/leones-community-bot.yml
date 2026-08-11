@@ -1,0 +1,61 @@
+name: LEONES Community Bot
+
+on:
+  schedule:
+    - cron: '17 6 * * *'
+    - cron: '23 8 * * 1'
+    - cron: '31 9 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  community-radar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare automation directories
+        run: |
+          mkdir -p automation/reports automation/social automation/discovery
+
+      - name: Daily discovery placeholder
+        if: github.event.schedule == '17 6 * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from datetime import datetime, timezone
+          p = Path('automation/discovery/README.md')
+          p.write_text('''# LEONES Discovery\n\nThis directory is reserved for the daily discovery pipeline.\n\nThe production discovery engine must record candidates with source URL, project name, licence evidence, category, date discovered and evaluation status.\n\nGenerated: %s\n''' % datetime.now(timezone.utc).isoformat(), encoding='utf-8')
+          PY
+
+      - name: Generate weekly report skeleton
+        if: github.event.schedule == '23 8 * * 1' || github.event_name == 'workflow_dispatch'
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from datetime import date
+          p = Path('automation/reports') / f'leones-weekly-{date.today().isoformat()}.md'
+          p.write_text('''# LEONES Weekly\n\n> Automatically generated skeleton. Human/verified data must be added before social publication.\n\n## Discoveries\n- None recorded by the current automation layer.\n\n## metaLEONES results\n- See `results/`.\n\n## Stack changes\n- Pending verified evaluation.\n\n## @metaleones draft\nNo automatic social post is published by this workflow.\n''', encoding='utf-8')
+          PY
+
+      - name: Generate monthly report skeleton
+        if: github.event.schedule == '31 9 1 * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from datetime import date
+          p = Path('automation/reports') / f'leones-monthly-{date.today().isoformat()}.md'
+          p.write_text('''# LEONES Monthly Ecosystem Report\n\n> Automatically generated skeleton. Only verified project activity should be promoted publicly.\n\n## Ecosystem changes\n- Pending discovery and evaluation pipeline.\n\n## Hardware results\n- Pending aggregation from metaLEONES.\n\n## Recommended stack changes\n- Pending verified evaluation.\n\n## Social\n- No automatic publication.\n''', encoding='utf-8')
+          PY
+
+      - name: Commit generated reports
+        run: |
+          git config user.name 'LEONES Bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add automation/
+          git diff --cached --quiet || git commit -m 'automation: update LEONES community reports'
+          git push
