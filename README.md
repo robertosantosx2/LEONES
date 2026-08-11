@@ -1,16 +1,16 @@
-# LOAS — Libre-Open Agentic Stack
+# LEONES — Local Ecosystem of Open Neural Expert Systems
 
 > **IA agéntica Libre/Open para hardware de consumo.**
 
-[🌐 **Web de LOAS y dashboard metaLOAS**](https://robertosantosx2.github.io/LOAS/)
+[🌐 **Web de LEONES y dashboard metaLEONES**](https://robertosantosx2.github.io/LEONES/)
 
-LOAS investiga y construye una pila agentic que pueda ejecutarse en hardware real de consumo, con especial prioridad a software Libre/Open y, dentro de él, Copyleft.
+LEONES investiga y construye un ecosistema agentic que pueda ejecutarse en hardware real de consumo, con especial prioridad a software Libre/Open y, dentro de él, Copyleft.
 
 ## Objetivo
 
 No buscamos simplemente el agente más potente en un servidor. La pregunta central es:
 
-> **¿Qué pila de software Libre/Open, especialmente Copyleft, permite convertir hardware de consumo en una máquina agentic realmente útil?**
+> **¿Qué ecosistema de software Libre/Open, especialmente Copyleft, permite convertir hardware de consumo en una máquina agentic realmente útil?**
 
 Perfiles objetivo: **8, 16, 32 y 64 GB de RAM**, con CPU Intel i5/i7 o equivalentes, con o sin GPU.
 
@@ -20,11 +20,11 @@ Perfiles objetivo: **8, 16, 32 y 64 GB de RAM**, con CPU Intel i5/i7 o equivalen
 - Se descarta lo que no sea Open y se prioriza especialmente **Copyleft**.
 - **Buddy (GPL-3.0)** es una pieza central de la pila candidata.
 - La primera pila de referencia incluye Buddy, Hermes, LangGraph, llama.cpp y GGUF.
-- **10 tok/s** es el umbral mínimo de usabilidad LOAS.
+- **10 tok/s** es el umbral mínimo de usabilidad LEONES.
 - **100 tok/s** es el techo de comparación, no un requisito universal.
 - Medimos **tareas agentic**, no solo tokens por segundo.
 - Los resultados oficiales deben ser mediciones propias y reproducibles.
-- metaLOAS permite aportar resultados de hardware real mediante Markdown sin datos personales.
+- **metaLEONES** permite aportar resultados de hardware real mediante Markdown sin datos personales.
 
 ## LOTB
 
@@ -43,7 +43,7 @@ Tareas iniciales:
 
 Baseline inicial: **Qwen3-8B Q4_K_M GGUF**.
 
-## metaLOAS
+## metaLEONES
 
 La comunidad puede aportar resultados técnicos al repositorio. No se publican nombres, emails, usuarios, hostnames identificables, números de serie, UUID, MAC/IP, ubicación exacta, rutas personales, credenciales ni otros datos personales.
 
@@ -51,8 +51,12 @@ Los resultados se clasifican como `reported`, `reproducible`, `verified` o `reje
 
 ## Documento fundamental
 
-**[Historia, decisiones y fundamentos del proyecto](LOAS_DECISION_LOG.md)** contiene el contexto completo que llevó a estas decisiones y debe ser la primera lectura para entender LOAS.
+**[Historia, decisiones y fundamentos del proyecto](LEONES_DECISION_LOG.md)** contiene el contexto completo que llevó a estas decisiones y debe ser la primera lectura para entender LEONES.
 
 ## Estado
 
-Proyecto experimental en desarrollo. La arquitectura inicial está congelada como referencia, pero la optimización de la pila y del Libre-Open Agentic Stack Score sigue abierta a la evidencia.
+Proyecto experimental en desarrollo. La arquitectura inicial está congelada como referencia, pero la optimización del ecosistema LEONES y de sus métricas sigue abierta a la evidencia.
+
+## Nombre
+
+**LEONES** significa **Local Ecosystem of Open Neural Expert Systems**. El nombre sustituye a la denominación anterior LOAS; las referencias históricas a LOAS se conservan únicamente cuando son necesarias para entender la evolución del proyecto.
