@@ -36,10 +36,20 @@ jobs:
           from pathlib import Path
           p = Path('_site/index.html')
           s = p.read_text(encoding='utf-8')
-          s = s.replace('<title>LOAS · Libre-Open Agentic Stack</title>', '<title>LEONES · Local Ecosystem of Open Neural Expert Systems</title>')
-          s = s.replace('content:"LOAS"', 'content:"LEONES"')
-          s = s.replace('<h1>LOAS</h1>', '<img class="hero-logo" src="assets/graphics/leones-logo-horizontal.svg" alt="LEONES — Local Ecosystem of Open Neural Expert Systems">')
-          s = s.replace('.top h1{font-size:', '.hero-logo{display:block;width:min(720px,100%);height:auto;background:#fff;border-radius:18px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.16);margin:12px 0 20px}.top h1{font-size:')
+          replacements = {
+              'LOAS': 'LEONES',
+              'Libre-Open Agentic Stack': 'Local Ecosystem of Open Neural Expert Systems',
+              'metaLEONES': 'metaLEONES',
+              'metaLOAS': 'metaLEONES',
+              'robertosantosx2/LOAS': 'robertosantosx2/LEONES',
+              'robertosantosx2.github.io/LOAS': 'robertosantosx2.github.io/LEONES',
+              'results/metaLOAS': 'results/metaLEONES',
+              'scripts/metaloas-': 'scripts/metaleones-',
+              'LEONES/scripts/metaleones-': 'LEONES/scripts/metaleones-'
+          }
+          for old, new in replacements.items():
+              s = s.replace(old, new)
+          s = s.replace('assets/graphics/leones-logo-horizontal.svg', 'assets/graphics/leones-logo-horizontal.svg')
           p.write_text(s, encoding='utf-8')
           PY
 
