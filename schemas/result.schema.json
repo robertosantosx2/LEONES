@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robertosantosx2.github.io/LEONES/schemas/result.schema.json",
+  "title": "LEONES Experiment Result",
+  "type": "object",
+  "required": ["schema_version", "status", "hardware", "model", "inference", "lotb"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "status": {"enum": ["reported", "reproducible", "verified", "rejected"]},
+    "hardware": {"$ref": "#/$defs/hardware"},
+    "model": {"$ref": "#/$defs/model"},
+    "inference": {"$ref": "#/$defs/inference"},
+    "lotb": {"type": "object", "properties": {"B01": {"$ref": "#/$defs/task"}, "B02": {"$ref": "#/$defs/task"}, "B03": {"$ref": "#/$defs/task"}, "B04": {"$ref": "#/$defs/task"}, "B05": {"$ref": "#/$defs/task"}}, "additionalProperties": false},
+    "software": {"type": "object", "additionalProperties": {"type": "string"}},
+    "notes": {"type": "string"}
+  },
+  "$defs": {
+    "hardware": {
+      "type": "object",
+      "required": ["ram_gb", "os"],
+      "properties": {
+        "profile": {"enum": ["H0", "H1", "H2", "H3"]},
+        "cpu": {"type": "string"},
+        "architecture": {"type": "string"},
+        "cores": {"type": "integer", "minimum": 1},
+        "threads": {"type": "integer", "minimum": 1},
+        "ram_gb": {"type": "number", "exclusiveMinimum": 0},
+        "gpu": {"type": "string"},
+        "vram_gb": {"type": "number", "minimum": 0},
+        "os": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "model": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string"},
+        "format": {"type": "string"},
+        "quantization": {"type": "string"},
+        "size_bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "inference": {
+      "type": "object",
+      "properties": {
+        "elapsed_seconds": {"type": "number", "minimum": 0},
+        "prompt_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "completion_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "generation_tokens_per_second": {"type": ["number", "null"], "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "task": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"enum": ["completed", "failed", "error", "not_run"]},
+        "elapsed_seconds": {"type": "number", "minimum": 0},
+        "error": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  }
+}
