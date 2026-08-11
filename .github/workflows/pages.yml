@@ -3,6 +3,11 @@ name: Publish LEONES Web
 on:
   push:
     branches: [main]
+    paths:
+      - 'web/**'
+      - 'assets/**'
+      - 'results/**'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -21,6 +26,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
       - name: Prepare site
         run: |
           rm -rf _site
@@ -29,29 +37,6 @@ jobs:
           if [ -d results ]; then cp -a results _site/results; fi
           if [ -d assets ]; then cp -a assets _site/assets; fi
           touch _site/.nojekyll
-
-      - name: Apply LEONES branding
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('_site/index.html')
-          s = p.read_text(encoding='utf-8')
-          replacements = {
-              'Libre-Open Agentic Stack': 'Local Ecosystem of Open Neural Expert Systems',
-              'metaLOAS': 'metaLEONES',
-              'results/metaLOAS': 'results/metaLEONES',
-              'robertosantosx2/LOAS': 'robertosantosx2/LEONES',
-              'robertosantosx2.github.io/LOAS': 'robertosantosx2.github.io/LEONES',
-              '<title>LOAS · Local Ecosystem of Open Neural Expert Systems</title>': '<title>LEONES · Local Ecosystem of Open Neural Expert Systems</title>'
-          }
-          for old, new in replacements.items():
-              s = s.replace(old, new)
-          s = s.replace('<h1>LOAS</h1>', '<img class="hero-logo" src="assets/graphics/leones-logo-horizontal.svg" alt="LEONES — Local Ecosystem of Open Neural Expert Systems">')
-          p.write_text(s, encoding='utf-8')
-          PY
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
