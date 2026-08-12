@@ -5,7 +5,7 @@ const items=[
  ['9 pilares','pilares.html','project'],
  ['Arquitectura','arquitectura.html','project'],
  ['Pila','pila.html','project'],
- ['Ubuntu / RHEL','os.html','top'],
+ ['Debian / Ubuntu / RHEL','os.html','top'],
  ['Prospección','prospeccion.html','top'],
  ['Aplicación','app.html','top'],
  ['Scripts','scripts.html','application'],
