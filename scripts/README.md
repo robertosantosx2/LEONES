@@ -20,7 +20,7 @@ Otras distribuciones Linux pueden funcionar, pero se consideran compatibilidad e
 
 ## Flujo recomendado
 
-`necesidad → hardware → modelo → runtime → inferencia → LOTB → informe → privacidad → publicación → estadísticas`
+`necesidad → hardware → modelo → runtime → inferencia → evaluación → informe → privacidad → publicación → estadísticas`
 
 Puedes detenerte en cualquier punto. **No ejecutes un script porque existe: ejecútalo porque responde a tu siguiente pregunta.**
 
@@ -49,8 +49,8 @@ Nunca publicar nombres, emails, rutas personales, UUID, MAC/IP, números de seri
 | `leones-hardware.py` | ¿Qué máquina tengo? | no descarga ni ejecuta modelos |
 | `leones-model.py` | ¿Qué modelo tengo? | no ejecuta ni descarga |
 | `leones-runtime.py` | ¿Qué runtime local está disponible? | no instala nada |
-| `leones-infer.py` | ¿Cómo rinde una inferencia pequeña? | no LOTB |
-| `leones-lotb.py` | ¿Puede completar tareas agentivas? | no publica |
+| `leones-infer.py` | ¿Cómo rinde una inferencia pequeña? | no evaluación |
+| `leones-evaluacion.py` | ¿Puede completar tareas agentivas? | no publica |
 | `leones-report.py` | ¿Cómo documento el resultado? | no publica |
 | `leones-privacy.py` | ¿Qué puede salir de mi máquina? | no publica |
 | `leones-publish.py` | ¿Quiero publicar el informe? | no mide |
