@@ -10,6 +10,7 @@ const path=location.pathname.split('/').pop()||'index.html';
 const current=items.find(x=>x[1]===path);
 function render(){
  const old=document.querySelector('nav.site-nav'); if(old) old.remove();
+ if(!document.querySelector('link[data-leones-favicon]')){const icon=document.createElement('link');icon.rel='icon';icon.type='image/svg+xml';icon.href='assets/graphics/leones-mark.svg';icon.dataset.leonesFavicon='1';document.head.appendChild(icon)}
  const style=document.createElement('style');style.id='leones-navigation-force';style.textContent=`
  :root{--leones-side-space:210px!important}
  body{padding-left:var(--leones-side-space)!important;padding-right:0!important}
@@ -22,8 +23,9 @@ function render(){
  `;document.head.appendChild(style);
  const nav=document.createElement('nav'); nav.className='site-nav'; nav.setAttribute('aria-label','Navegación principal');
  const group=current?current[2]:null;
+ const groupHref=group==='Conocer'?'pilares.html':group==='Operar'?'operacion.html':group==='Aplicación'?'app.html':'manada.html';
  nav.innerHTML='<div class="site-top"><div class="site-top-inner">'+mains.map(x=>'<a href="'+x[1]+'">'+x[0]+'</a>').join('')+'</div></div>'+
- '<div class="site-crumb"><div class="site-crumb-inner"><a href="index.html">LEONES</a><span>›</span>'+(group?'<a href="'+(group==='Conocer'?'pilares.html':group==='Operar'?'operacion.html':group==='Aplicación'?'app.html':'manada.html')+'">'+group+'</a><span>›</span>':'')+'<strong>'+(current?current[0]:'Inicio')+'</strong></div></div>'+
+ '<div class="site-crumb"><div class="site-crumb-inner"><a href="index.html">LEONES</a><span>›</span>'+(group?'<a href="'+groupHref+'">'+group+'</a><span>›</span>':'')+'<strong>'+(current?current[0]:'Inicio')+'</strong></div></div>'+
  '<aside class="site-side"><div class="side-title">SECCIONES</div>'+items.map(x=>'<a class="'+(x[1]===path?'active':'')+'" href="'+x[1]+'">'+x[0]+'</a>').join('')+'</aside>';
  document.body.insertBefore(nav,document.body.firstChild);
 }
