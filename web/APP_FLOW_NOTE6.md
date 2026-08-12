@@ -1,0 +1,1 @@
+La aplicación conserva el progreso localmente y nunca ejecuta comandos del usuario desde GitHub Pages.
