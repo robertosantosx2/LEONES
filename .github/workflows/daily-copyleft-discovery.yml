@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: '17 3 * * *'
   workflow_dispatch:
+    inputs:
+      since:
+        description: 'Discover repositories updated since YYYY-MM-DD'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: write
@@ -18,14 +24,15 @@ jobs:
       - name: Discover recent OSI-Open and Copyleft projects
         env:
           GH_TOKEN: ${{ github.token }}
+          PROSPECTION_SINCE: ${{ inputs.since }}
         run: |
           python3 scripts/discover_copyleft.py
 
       - name: Commit discoveries
         run: |
-          git config user.name 'LOAS Bot'
+          git config user.name 'LEONES Bot'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add research/copyleft-discoveries.md
+          git add research/copyleft-discoveries.md web/data/prospeccion.json
           if git diff --cached --quiet; then
             echo 'No new discoveries.'
           else
