@@ -1,0 +1,9 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEONES · Ejecución local</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:auto;padding:30px;line-height:1.6;color:#17212b}h1,h2{color:#12304a}.box{border:1px solid #d8e0e7;border-radius:12px;padding:20px;margin:18px 0}pre{background:#eef3f7;padding:14px;overflow:auto}</style></head><body><h1>Ejecución local</h1><p>Primer punto en el que LEONES puede pasar de describir un modelo a ejecutarlo realmente.</p><div class="box"><h2>Herramienta mínima</h2><pre>python -m leones.run_model models/model.gguf "Explica qué es una red neuronal" --max-tokens 128</pre></div><div class="box"><h2>Flujo</h2><pre>Model Preparation
+       ↓
+Runtime Check
+       ↓
+Run Model
+       ↓
+llama-cli
+       ↓
+respuesta</pre></div><div class="box"><h2>Responsabilidad</h2><p><code>run_model</code> recibe explícitamente un archivo local y un prompt. No selecciona modelos, no descarga, no cuantiza, no hace fine-tuning y no ejecuta benchmarks.</p></div><div class="box"><h2>Por qué empezamos así</h2><p>Antes de automatizar la selección debemos demostrar una ruta de ejecución mínima y verificable. Después Leones Router podrá decidir qué modelo y runtime utilizar.</p></div><p><a href="index.html">Inicio</a> · <a href="runtime.html">Runtime</a> · <a href="preparacion.html">Preparación</a> · <a href="leones-0.2.html">LEONES 0.2</a></p></body></html>
