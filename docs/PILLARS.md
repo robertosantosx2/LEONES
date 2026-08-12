@@ -10,8 +10,8 @@ La arquitectura canónica de LEONES se organiza en nueve pilares. Esta lista es 
 | 4 | Leones Runtime | Ejecuta | Abstrae y ejecuta los backends locales. |
 | 5 | Leones Quant | Reduce coste | Gestiona cuantizaciones y su impacto en memoria, velocidad y calidad. |
 | 6 | Leones Fine-Tuning | Adapta | Asiste en adaptación local mediante herramientas Open. |
-| 7 | Benchmark & Evaluation | Mide | Produce evidencia reproducible sobre rendimiento y utilidad. |
-| 8 | Task Intelligence | Entiende | Convierte la petición en un contrato de capacidades y restricciones. |
+| 7 | Leones Benchmark & Evaluation | Mide | Produce evidencia reproducible sobre rendimiento y utilidad. |
+| 8 | Leones Task Intelligence | Entiende | Convierte la petición en un contrato de capacidades y restricciones. |
 | 9 | Leones Prospector | Descubre | Explora diariamente el ecosistema Open y detecta cambios relevantes. |
 
 ## Principio de separación
