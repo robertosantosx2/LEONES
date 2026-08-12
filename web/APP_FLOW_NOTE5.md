@@ -1,0 +1,1 @@
+Evidencia: distinguir siempre recomendación provisional de resultado medido o verificado.
