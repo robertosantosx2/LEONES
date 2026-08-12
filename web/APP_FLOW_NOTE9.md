@@ -1,0 +1,1 @@
+No ejecutar comandos desde el navegador: la web genera y acompaña la ejecución local.
