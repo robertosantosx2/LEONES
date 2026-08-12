@@ -1,92 +1,45 @@
 #!/usr/bin/env python3
-"""Measure a local inference endpoint without running the agentic battery.
+"""🦁 LEONES · Minimal inference measurement.
 
-Purpose
+ANTES
+-----
+Responde: «¿qué rendimiento ofrece este endpoint con una petición pequeña y
+repetible?». Requiere un servidor local OpenAI-compatible ya iniciado.
+No instala software, no descarga modelos y no ejecuta LOTB.
+
+DURANTE
 -------
-This script answers one question: how does the configured inference endpoint
-perform for a small, repeatable generation request?
+Envía exactamente una petición al endpoint indicado y mide el tiempo total.
+Si el servidor informa usage, calcula tokens/s. Los errores se devuelven en
+JSON para que la aplicación pueda explicar el siguiente paso.
 
-It deliberately does NOT discover hardware, run LOTB, create GitHub commits,
-or decide whether a result is verified.
-
-The script currently targets an OpenAI-compatible local HTTP endpoint. Keeping
-this boundary small makes it possible to adapt LEONES to llama.cpp, Ollama,
-vLLM or another local server without changing the rest of the pipeline.
-
-Example
+DESPUÉS
 -------
-    python3 scripts/leones-infer.py \
-        --url http://127.0.0.1:8080/v1/chat/completions \
-        --model local-model
-
-Output is JSON so a later report step can consume it without scraping terminal
-text.
+Tokens/s es una medida de inferencia, no una medida de capacidad agentiva.
+Un resultado bueno permite continuar a LOTB; uno malo puede indicar que hay
+que cambiar modelo, quantización, runtime o configuración.
 """
-
 from __future__ import annotations
+import argparse,json,time,urllib.error,urllib.request
 
-import argparse
-import json
-import time
-import urllib.error
-import urllib.request
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Measure a local OpenAI-compatible inference endpoint")
-    parser.add_argument("--url", required=True, help="Chat completions endpoint URL")
-    parser.add_argument("--model", required=True, help="Model identifier accepted by the endpoint")
-    parser.add_argument("--prompt", default="Explain in one short sentence what a local AI agent is.")
-    parser.add_argument("--max-tokens", type=int, default=64)
-    parser.add_argument("--timeout", type=float, default=120.0)
-    args = parser.parse_args()
-
-    payload = {
-        "model": args.model,
-        "messages": [{"role": "user", "content": args.prompt}],
-        "max_tokens": args.max_tokens,
-        "stream": False,
-    }
-    request = urllib.request.Request(
-        args.url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-
-    started = time.perf_counter()
-    try:
-        with urllib.request.urlopen(request, timeout=args.timeout) as response:
-            raw = response.read().decode("utf-8")
-    except (urllib.error.URLError, TimeoutError) as exc:
-        print(json.dumps({"status": "error", "error": str(exc)}, indent=2))
-        return 2
-    elapsed = time.perf_counter() - started
-
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        print(json.dumps({"status": "error", "error": f"invalid JSON response: {exc}"}, indent=2))
-        return 2
-
-    usage = data.get("usage", {}) if isinstance(data, dict) else {}
-    completion_tokens = usage.get("completion_tokens")
-    prompt_tokens = usage.get("prompt_tokens")
-    result = {
-        "status": "ok",
-        "model": args.model,
-        "elapsed_seconds": round(elapsed, 3),
-        "prompt_tokens": prompt_tokens,
-        "completion_tokens": completion_tokens,
-        "generation_tokens_per_second": (
-            round(completion_tokens / elapsed, 3)
-            if isinstance(completion_tokens, (int, float)) and elapsed > 0
-            else None
-        ),
-    }
-    print(json.dumps(result, indent=2))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+def main()->int:
+ p=argparse.ArgumentParser(description='Mide una petición local OpenAI-compatible')
+ p.add_argument('--url',required=True); p.add_argument('--model',required=True); p.add_argument('--prompt',default='Explain in one short sentence what a local AI agent is.')
+ p.add_argument('--max-tokens',type=int,default=64); p.add_argument('--timeout',type=float,default=120); p.add_argument('--explain',action='store_true')
+ a=p.parse_args()
+ if a.explain: print('🦁 LEONES · Medición de inferencia\nSe hará una sola generación pequeña. No es LOTB y no publica nada.\n')
+ payload={'model':a.model,'messages':[{'role':'user','content':a.prompt}],'max_tokens':a.max_tokens,'stream':False}
+ req=urllib.request.Request(a.url,data=json.dumps(payload).encode(),headers={'Content-Type':'application/json'},method='POST')
+ started=time.perf_counter()
+ try:
+  with urllib.request.urlopen(req,timeout=a.timeout) as response: raw=response.read().decode('utf-8')
+ except (urllib.error.URLError,TimeoutError) as exc:
+  print(json.dumps({'tool':'leones-infer','tool_version':'1.1','status':'error','error':str(exc),'next_step':'check-runtime'},indent=2)); return 2
+ elapsed=time.perf_counter()-started
+ try:data=json.loads(raw)
+ except json.JSONDecodeError as exc:
+  print(json.dumps({'tool':'leones-infer','tool_version':'1.1','status':'error','error':f'invalid JSON response: {exc}','next_step':'check-runtime'},indent=2)); return 2
+ usage=data.get('usage',{}) if isinstance(data,dict) else {}; completion=usage.get('completion_tokens'); prompt=usage.get('prompt_tokens'); speed=round(completion/elapsed,3) if isinstance(completion,(int,float)) and elapsed>0 else None
+ out={'tool':'leones-infer','tool_version':'1.1','status':'ok','model':a.model,'endpoint':a.url,'elapsed_seconds':round(elapsed,3),'prompt_tokens':prompt,'completion_tokens':completion,'generation_tokens_per_second':speed,'next_step':'lotb' if speed is not None else 'inspect-runtime-usage'}
+ print(json.dumps(out,indent=2,ensure_ascii=False)); return 0
+if __name__=='__main__': raise SystemExit(main())
