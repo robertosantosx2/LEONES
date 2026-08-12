@@ -1,54 +1,25 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEONES · Arquitectura y operación</title><style>:root{--n:#12304a;--b:#1769aa;--p:#eaf4fb;--bg:#f3f6f9;--l:#d8e0e7;--t:#17212b;--g:#e8f4ec;--a:#fff4d6}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--t);line-height:1.55}.wrap{max-width:1250px;margin:auto;padding:0 22px}.hero{background:linear-gradient(120deg,#102f49,#1d6798 55%,#5f8194);color:#fff;padding:34px 0}.hero h1{margin:0 0 8px;font-size:clamp(2.2rem,5vw,4rem)}.hero p{margin:0;color:#e7f2f9}main{padding:35px 0 70px}section{scroll-margin-top:30px;margin-bottom:28px}.schema{background:#fff;border:1px solid var(--l);border-radius:14px;padding:22px;margin-bottom:25px;box-shadow:0 3px 12px rgba(20,40,60,.05)}h2{color:var(--n);margin-top:0;border-bottom:2px solid var(--l);padding-bottom:10px}h3{color:var(--n)}pre{background:#172b3d;color:#eaf4fb;padding:18px;border-radius:10px;overflow:auto;font-size:.86rem;line-height:1.45}.explain{background:var(--p);border-left:4px solid var(--b);padding:13px 16px;border-radius:0 8px 8px 0}.warn{background:var(--a);border-left:4px solid #c69a21}.ok{background:var(--g);border-left:4px solid #4b8f61}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:15px}.card{grid-column:span 4;background:#fff;border:1px solid var(--l);border-radius:11px;padding:17px}.wide{grid-column:span 6}.full{grid-column:1/-1}.tag{display:inline-block;padding:4px 9px;border-radius:999px;background:var(--p);color:var(--b);font-size:.78rem;font-weight:800}table{width:100%;border-collapse:collapse;background:#fff}th,td{padding:9px;border-bottom:1px solid var(--l);text-align:left}th{background:#edf3f7;color:var(--n)}.footer{background:var(--n);color:#d9e6ef;padding:25px 0}.footer a{color:#fff}@media(max-width:800px){.card,.wide{grid-column:1/-1}pre{font-size:.72rem}}</style><link rel="stylesheet" href="assets/graphics/brand.css"><link rel="stylesheet" href="assets/graphics/brand.css">
-</head><body><header class="hero"><div class="wrap"><h1>LEONES · Arquitectura y operación</h1><p>Los esquemas, decisiones y reglas que explican cómo funciona el ecosistema.</p></div></header><!-- Navegación exclusivamente global: menú lateral + migas de pan. --><div class="wrap"><div class="leones-section-brand"><img src="assets/graphics/logos/leones-arquitectura.svg" alt="LEONES · Arquitectura"><div><strong>LEONES · Arquitectura</strong><br><span class="small">Identidad funcional del ecosistema</span></div></div></div><!-- LEONES-VISUAL-IDENTITY -->
-<div class="wrap">
-  <div class="leones-section-brand"><img src="assets/graphics/logos/leones-arquitectura.svg" alt="LEONES · Arquitectura"><div><strong>LEONES · Arquitectura</strong><br><span class="small">Identidad funcional del ecosistema</span></div></div>
-  <div class="leones-logo-rail">
-  <a class="leones-logo-link" href="pilares.html"><img src="assets/graphics/logos/leones-prospection.svg" alt="Prospección">Prospección</a>
-  <a class="leones-logo-link" href="pilares.html#atlas"><img src="assets/graphics/logos/leones-atlas.svg" alt="Atlas">Atlas</a>
-  <a class="leones-logo-link" href="pilares.html#router"><img src="assets/graphics/logos/leones-router.svg" alt="Router">Router</a>
-  <a class="leones-logo-link" href="pilares.html#runtime"><img src="assets/graphics/logos/leones-hardware.svg" alt="Hardware">Hardware</a>
-  <a class="leones-logo-link" href="arquitectura.html#lotb"><img src="assets/graphics/logos/leones-agents.svg" alt="Agents / LOTB">Agents / LOTB</a>
-  <a class="leones-logo-link" href="app.html#manada"><img src="assets/graphics/logos/leones-manada.svg" alt="Manada">Manada</a>
-</div>
-</div>
-<main class="wrap"><section id="arquitectura-canonica" class="schema"><h2>Arquitectura canónica · nueve pilares</h2><pre>CAPA 1 · LEONES PROSPECTOR
-        ↓
-CAPA 2 · LEONES ATLAS
-        ↓
-CAPA 3 · LEONES TASK INTELLIGENCE
-        ↓
-CAPA 4 · LEONES ROUTER
-        ↓
-┌────────────┼──────────────┐
-↓            ↓              ↓
-LEONES       LEONES         LEONES
-QUANT        FINE-TUNING    AGENTS
-└────────────┼──────────────┘
-             ↓
-      LEONES RUNTIME
-             ↓
-LEONES BENCHMARK &amp; EVALUATION
-             ↓
-evidencia → retroalimentación</pre><p class="explain"><strong>Esta página describe la arquitectura operativa.</strong> La numeración de sus secciones no corresponde a la numeración de los nueve pilares oficiales. En la arquitectura canónica, <strong>Leones Prospector es la Capa 1</strong>: descubre diariamente el ecosistema y alimenta el conocimiento que posteriormente puede pasar a Leones Atlas.</p><p class="explain ok"><strong>Flujo conceptual:</strong> Prospector descubre → Atlas conoce → Task Intelligence entiende → Router decide → Quant/Fine-Tuning/Agents preparan → Runtime ejecuta → Benchmark &amp; Evaluation mide.</p></section><section id="ecosistema" class="schema"><h2>1. Ecosistema completo</h2><pre>                         LEONES
-                            │
-       ┌────────────────────┼────────────────────┐
-       │                    │                    │
-       ▼                    ▼                    ▼
-   KNOWLEDGE             AGENTIC             INFERENCE
-       │                    │                    │
-     Buddy              harness/tools       model/backend
-       │                    │                    │
-       └────────────────────┼────────────────────┘
-                            ▼
-                           LOTB
-                     B01 B02 B03 B04 B05
-                            │
-                            ▼
-                       manada_leones
-                            │
-                 ┌──────────┼──────────┐
-                 ▼          ▼          ▼
-               GitHub       Web        X</pre><p class="explain">LEONES no es solamente un benchmark de modelos: estudia la combinación de hardware, sistema operativo, backend, modelo, harness, conocimiento y herramientas que permite completar objetivos agentic localmente.</p></section><section id="pila" class="schema"><h2>2. La pila completa</h2><pre>HARDWARE
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEONES · Arquitectura</title><link rel="stylesheet" href="assets/css/navigation.css"><style>body{margin:0;background:#f3f6f9;color:#17212b;font:16px/1.65 system-ui}main{max-width:1050px;margin:auto;padding:35px 22px 80px}.hero{background:linear-gradient(120deg,#102f49,#1769aa);color:#fff;padding:42px 22px}.hero div{max-width:1050px;margin:auto}.hero h1{color:#fff;font-size:3rem;margin:0}.card{background:#fff;border:1px solid #d8e0e7;border-radius:14px;padding:24px;margin-bottom:20px}h2,h3{color:#102f49}pre{background:#172b3d;color:#eaf4fb;padding:20px;border-radius:10px;overflow:auto}.note{background:#eaf4fb;border-left:5px solid #1769aa;padding:15px}.ok{background:#e8f4ec;border-left:5px solid #4b8f63;padding:15px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}@media(max-width:700px){.grid{grid-template-columns:1fr}.hero h1{font-size:2.3rem}}</style></head><body><header class="hero"><div><h1>LEONES · Arquitectura</h1><p>Los esquemas, decisiones y reglas que explican cómo funciona el ecosistema.</p></div></header><main><section class="card"><h2>Arquitectura canónica · nueve pilares</h2><pre>PROSPECTOR → ATLAS → TASK INTELLIGENCE → ROUTER
+                                           ↓
+                         ┌─────────────────┼─────────────────┐
+                         ↓                 ↓                 ↓
+                       QUANT          FINE-TUNING          AGENTS
+                         └─────────────────┼─────────────────┘
+                                           ↓
+                                        RUNTIME
+                                           ↓
+                                  BENCHMARK &amp; EVALUATION
+                                           ↓
+                                      EVIDENCIA</pre><p class="note"><strong>Flujo:</strong> Prospector descubre → Atlas conoce → Task Intelligence entiende → Router decide → Quant/Fine-Tuning/Agents preparan → Runtime ejecuta → Benchmark &amp; Evaluation mide.</p></section><section class="card"><h2>Ecosistema completo</h2><pre>LEONES
+  │
+  ├── KNOWLEDGE → Buddy / Atlas
+  ├── AGENTIC   → harness / tools
+  └── INFERENCE → model / backend
+           ↓
+          LOTB
+           ↓
+     manada_leones
+           ↓
+     evidencia real</pre><p>LEONES estudia la combinación de hardware, sistema operativo, backend, modelo, harness, conocimiento y herramientas necesaria para completar objetivos agentivos localmente.</p></section><section class="card"><h2>La pila completa</h2><pre>HARDWARE
    ↓
 SISTEMA OPERATIVO
    ↓
@@ -66,73 +37,22 @@ BUDDY / KNOWLEDGE
    ↓
 LOTB
    ↓
-RESULTADO + UX</pre><p class="explain">Cada capa es sustituible. LEONES debe poder identificar cuál es el cuello de botella y recomendar el cambio con mayor impacto, en lugar de recomendar cambiar el modelo por defecto.</p></section><section id="buddy" class="schema"><h2>3. Buddy: conocimiento controlado</h2><pre>Objetivo
+RESULTADO + UX</pre><p class="note">Cada capa es sustituible. La arquitectura debe permitir identificar el cuello de botella y cambiar la pieza que produzca mayor mejora.</p></section><div class="grid"><section class="card"><h2>Buddy</h2><p>Conocimiento, contexto y memoria controlada que acompañan a una tarea o agente.</p><pre>OBJETIVO
    ↓
-Buddy ──► conocimiento + contexto + memoria controlada
+BUDDY
    ↓
-Harness / agente
+HARNESS / AGENTE
    ↓
-Modelo / backend
+MODELO / BACKEND
    ↓
-Resultado</pre><div class="explain"><strong>Principio:</strong> separar lo que el sistema sabe de la pieza que genera los tokens. Si mañana cambia la CPU, la GPU, el modelo, el backend o el harness, el conocimiento puede permanecer.</div></section><section id="lotb" class="schema"><h2>4. LOTB · evaluación agentiva</h2><p>Las pruebas LOTB simplifican la evaluación de un sistema agentivo local. No miden solamente velocidad de generación.</p><table><tr><th>Prueba</th><th>Qué interesa observar</th><th>Resultado</th></tr><tr><td>B01</td><td>Memoria / localidad / contexto</td><td>éxito + tiempo</td></tr><tr><td>B02</td><td>Trabajo con archivos y herramientas</td><td>éxito + tiempo</td></tr><tr><td>B03</td><td>Tarea multietapa</td><td>éxito/error + tiempo</td></tr><tr><td>B04</td><td>Recuperación / conocimiento</td><td>éxito/error + tiempo</td></tr><tr><td>B05</td><td>Coding / ejecución local</td><td>éxito/error + tiempo</td></tr></table><pre>reported → reproducible → verified
-                    ↘ rejected</pre><p class="explain">Publicar un resultado no lo convierte automáticamente en verificado.</p></section><section id="ux" class="schema"><h2>5. Bucle de mejora de UX</h2><pre>RESULTADO
-   │
-   ├── tok/s
-   ├── tiempo de tarea
-   ├── errores
-   └── recursos
-          ↓
-     ANÁLISIS DE PILA
-          ↓
-   ¿qué pieza limita la UX?
-       ┌──┼──────┬──────┐
-       ▼  ▼      ▼      ▼
-    modelo backend harness tools
-       └──┼──────┴──────┘
-          ↓
-   RECOMENDACIÓN AL USUARIO
-          ↓
-       RE-EVALUAR</pre><p class="explain ok"><strong>Regla:</strong> no optimizar tok/s aisladamente. La recomendación debe buscar la mejora de la experiencia real al completar tareas.</p></section><section id="scripts" class="schema"><h2>6. Reingeniería: scripts pequeños</h2><p>Los scripts deben hacer pocas cosas, muy claras y bien documentadas. Un script puede llamar a otros, pero no debe convertirse en un orquestador monolítico.</p><div class="grid"><div class="card"><span class="tag">01</span><h3>hardware</h3><p>Extrae las características técnicas básicas de la máquina.</p></div><div class="card"><span class="tag">02</span><h3>model</h3><p>Identifica y documenta el modelo y su configuración.</p></div><div class="card"><span class="tag">03</span><h3>infer</h3><p>Ejecuta mediciones de inferencia contra el backend.</p></div><div class="card"><span class="tag">04</span><h3>lotb</h3><p>Ejecuta las pruebas agentivas estandarizadas.</p></div><div class="card"><span class="tag">05</span><h3>report</h3><p>Convierte los resultados en el formato público.</p></div><div class="card"><span class="tag">06</span><h3>publish / stats</h3><p>Publica informes y genera estadísticas para la web.</p></div></div><pre>hardware → model → infer → LOTB → report → publish → stats</pre></section><section id="instalacion" class="schema"><h2>7. Instalación y ejecución</h2><div class="grid"><div class="card wide"><h3>Ubuntu</h3><pre>git clone https://github.com/robertosantosx2/LEONES.git
-cd LEONES
-python3 --version
-python3 scripts/leones.py hardware</pre><p>La pila debe documentar drivers, runtime, backend, modelo, harness y LOTB. Las piezas concretas pueden cambiar según CPU/GPU.</p></div><div class="card wide"><h3>Red Hat / RHEL</h3><pre>git clone https://github.com/robertosantosx2/LEONES.git
-cd LEONES
-python3 --version
-python3 scripts/leones.py hardware</pre><p>La misma arquitectura se conserva; cambian paquetes del sistema, gestión de drivers y detalles del runtime.</p></div><div class="card full"><h3>Flujo de una ejecución</h3><pre>1. detectar hardware
-2. seleccionar/configurar modelo
-3. levantar backend
-4. ejecutar inferencia
-5. ejecutar LOTB
-6. generar result.json + report.md
-7. publicar opcionalmente
-8. actualizar estadísticas</pre></div></div></section><section id="prospeccion" class="schema"><h2>8. Prospección</h2><pre>                 TODOS LOS DÍAS
-                       │
-                       ▼
-              descubrir proyectos
-                       │
-                ┌──────┴──────┐
-                ▼             ▼
-             OPEN/OSI      COPYLEFT
-                │             │
-                └──────┬──────┘
-                       ▼
-                clasificar/evaluar
-                       │
-                       ▼
-                   recomendar</pre><p class="explain warn"><strong>Regla fijada:</strong> LEONES descubre las piezas Open según OSI, pero prioriza las Copyleft. Descubrimiento no equivale a recomendación.</p><h3>Prospección semanal</h3><p>Además de la búsqueda diaria de piezas, cada semana se investigan proyectos que puedan mejorar las <strong>skills, funciones o características de los harnesses</strong>. Los candidatos compatibles aparecen en un menú de recomendaciones para que el usuario decida si instalarlos.</p></section><section id="recomendaciones" class="schema"><h2>9. Recomendador de pila y UX</h2><pre>HARDWARE + OS + BACKEND + MODEL + HARNESS + BUDDY + LOTB
-                         │
-                         ▼
-                   análisis de cuello de botella
-                         │
-             ┌───────────┼───────────┐
-             ▼           ▼           ▼
-          cambiar      cambiar     cambiar
-           modelo      backend     harness
-             │           │           │
-             └───────────┴───────────┘
+RESULTADO</pre></section><section class="card"><h2>LOTB</h2><p>Evaluación agentiva: no mide solamente tokens por segundo, sino capacidad de completar tareas reales.</p><pre>B01 · memoria
+B02 · archivos
+B03 · multietapa
+B04 · recuperación
+B05 · coding</pre></section></div><section class="card"><h2>Bucle de mejora</h2><pre>RESULTADO → ANÁLISIS DE PILA → CUELLO DE BOTELLA
                          ↓
-                 RE-EVALUAR UX</pre><p class="explain">La recomendación debe indicar qué se cambia, por qué, qué evidencia lo justifica y qué incertidumbre permanece.</p></section><section id="meta" class="schema"><h2>10. manada_leones</h2><p>El usuario puede aportar resultados de su máquina. El objetivo es construir evidencia distribuida sobre hardware real y mejorar las recomendaciones futuras.</p><pre>USUARIO → result.json → validación → manada_leones
-                                      ↓
-                                    Atlas
-                                      ↓
-                                    Router</pre></section><section id="automatizacion" class="schema"><h2>11. Automatización</h2><p>La automatización debe coordinar piezas pequeñas y mantener trazabilidad. El sistema puede ejecutar prospección, pruebas, generación de informes y publicación, pero cada resultado debe conservar su origen y estado de validación.</p></section></main><footer class="footer"><div class="wrap">LEONES · Arquitectura y operación</div></footer><script src="assets/js/navigation.js"></script></body></html>
+               modelo / backend / harness / tools
+                         ↓
+                   RECOMENDACIÓN
+                         ↓
+                      RE-EVALUAR</pre><p class="ok"><strong>Regla:</strong> no optimizar tok/s aisladamente; optimizar la experiencia real al completar tareas.</p></section><section class="card"><h2>Prospección y evidencia</h2><p>La prospección descubre diariamente nuevos modelos, runtimes, harnesses, skills y herramientas. Los resultados medidos alimentan la evidencia que posteriormente puede mejorar Atlas y Router.</p><pre>DESCUBRIR → REVISAR → MEDIR → EVIDENCIA → APRENDER</pre></section></main><script src="assets/js/navigation.js"></script></body></html>
