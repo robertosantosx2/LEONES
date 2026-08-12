@@ -4,7 +4,7 @@ La aplicación web no ejecuta scripts en el navegador. Su función es conducir a
 
 ## Flujo
 
-Necesidad → Hardware → Modelo → Inferencia → LOTB → Informe → Privacidad/Publicación → Estadísticas → mejores recomendaciones.
+Necesidad → Hardware → Modelo → Inferencia → Evaluación → Informe → Privacidad/Publicación → Estadísticas → mejores recomendaciones.
 
 Cada usuario puede detenerse en cualquier punto. El estado del recorrido se conserva localmente en `localStorage`.
 
