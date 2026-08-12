@@ -1,0 +1,9 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEONES · External → Atlas</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:auto;padding:30px;line-height:1.6;color:#17212b}h1,h2{color:#12304a}.warning{border:2px solid #9a6b00;border-radius:12px;padding:20px;margin:18px 0}.box{border:1px solid #d8e0e7;border-radius:12px;padding:20px;margin:18px 0}pre{background:#eef3f7;padding:14px;overflow:auto}</style></head><body><h1>External Estimates → Atlas</h1><div class="warning"><strong>NO hay promoción automática.</strong><p>La información externa se conserva como <code>external-unvalidated</code> hasta que una revisión explícita la acepte como evidencia de Atlas.</p></div><div class="box"><h2>Flujo</h2><pre>Internet
+   ↓
+external-unvalidated
+   ↓
+review queue
+   ↓
+revisión explícita
+   ├── rejected
+   └── atlas-evidence</pre></div><div class="box"><h2>Qué hace el componente</h2><p>Conserva modelo, métrica, valor, fuente, tipo de evidencia y tipo de fuente, y prepara el registro para revisión.</p></div><div class="box"><h2>Qué no hace</h2><ul><li>No valida la afirmación.</li><li>No cambia el estado a <code>atlas-evidence</code>.</li><li>No modifica Router.</li><li>No altera automáticamente el catálogo operativo.</li></ul></div><div class="box"><h2>Transparencia</h2><p>La automatización semanal puede recopilar información sin convertirla silenciosamente en conocimiento operativo. La frontera de revisión permanece visible y auditable.</p></div><p><a href="index.html">Inicio</a> · <a href="estimaciones.html">Estimaciones externas</a> · <a href="evidencia.html">Política de evidencia</a> · <a href="modelos.html">Modelos</a></p></body></html>
