@@ -1,8 +1,8 @@
 """Runtime preparation and model resolution for LEONES 0.2.
 
 The manager deliberately separates *where a model comes from* from *how it runs*.
-A future Hugging Face/model registry adapter can implement ModelSource without
-making the Runtime depend on a specific desktop application.
+A future model-registry adapter can implement ModelSource without making the
+Runtime depend on a specific desktop application.
 """
 
 from dataclasses import dataclass
@@ -38,7 +38,7 @@ class LocalModelSource:
                 return path
         raise FileNotFoundError(
             f"Model {model.model_id!r} was not found under {self.root}. "
-            """Register a ModelSource capable of acquisition for automatic download."""
+            "Register a ModelSource capable of acquisition for automatic download."
         )
 
 
