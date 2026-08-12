@@ -1,1 +1,1 @@
-Flujo guiado de la aplicación: necesidad → hardware → modelo → inferencia → LOTB → informe → privacidad/publicación → estadísticas. Contribución voluntaria a la Manada para mejorar futuras recomendaciones.
+Flujo guiado de la aplicación: necesidad → hardware → modelo → inferencia → evaluación → informe → privacidad/publicación → estadísticas. Contribución voluntaria a la Manada para mejorar futuras recomendaciones.
