@@ -2,6 +2,22 @@
 
 Los scripts son la interfaz local mínima entre una persona y LEONES. Cada herramienta responde a una pregunta concreta y hace una sola cosa.
 
+## Plataformas de referencia
+
+LEONES está orientado prioritariamente a **Linux** y ofrece soporte explícito para estas tres plataformas:
+
+| Plataforma | Estado | Instalación base orientativa |
+|---|---|---|
+| **Debian** | 🟢 Soporte explícito | `sudo apt update && sudo apt install python3 python3-venv python3-pip` |
+| **Ubuntu** | 🟢 Soporte explícito | `sudo apt update && sudo apt install python3 python3-venv python3-pip` |
+| **Red Hat Enterprise Linux (RHEL)** | 🟢 Soporte explícito | `sudo dnf install python3 python3-pip` |
+
+Estas instrucciones son orientativas. Los scripts no deben asumir que `apt` o `dnf` están disponibles: deben funcionar, siempre que sea posible, con Python y la librería estándar, y detectar la distribución mediante `/etc/os-release` cuando necesiten adaptar instrucciones.
+
+**Debian no es una variante secundaria de Ubuntu:** es una plataforma de referencia propia de LEONES. Ubuntu y RHEL tienen el mismo nivel de consideración dentro de esta matriz inicial.
+
+Otras distribuciones Linux pueden funcionar, pero se consideran compatibilidad esperada hasta que existan pruebas reproducibles suficientes para incorporarlas como plataformas de referencia.
+
 ## Flujo recomendado
 
 `necesidad → hardware → modelo → runtime → inferencia → LOTB → informe → privacidad → publicación → estadísticas`
