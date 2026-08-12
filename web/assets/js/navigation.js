@@ -1,14 +1,51 @@
 (function(){
-const items=[['Inicio','index.html','Inicio'],['Proyecto','proyecto.html','Conocer'],['9 pilares','pilares.html','Conocer'],['Arquitectura','arquitectura.html','Conocer'],['Pila','pila.html','Operar'],['Buddy','buddy.html','Operar'],['Evaluación','evaluacion.html','Operar'],['Ubuntu / RHEL','os.html','Operar'],['Scripts','scripts.html','Operar'],['Prospección','prospeccion.html','Operar'],['Aplicación','app.html','Aplicación'],['Resultados','resultados.html','Comunidad'],['Manada','manada.html','Comunidad'],['Contacto','contacto.html','Comunidad']];
-const path=location.pathname.split('/').pop()||'index.html',current=items.find(x=>x[1]===path);
+const items=[
+ ['Inicio','index.html','top'],
+ ['Proyecto','proyecto.html','top'],
+ ['9 pilares','pilares.html','project'],
+ ['Arquitectura','arquitectura.html','project'],
+ ['Pila','pila.html','project'],
+ ['Ubuntu / RHEL','os.html','top'],
+ ['Prospección','prospeccion.html','top'],
+ ['Aplicación','app.html','top'],
+ ['Scripts','scripts.html','application'],
+ ['Resultados','resultados.html','application'],
+ ['Manada','manada.html','top'],
+ ['Contacto','contacto.html','top']
+];
+const path=location.pathname.split('/').pop()||'index.html';
+const current=items.find(x=>x[1]===path);
 function cleanupLegacyEvaluation(){
-  const legacy=['L','O','T','B'].join('');
-  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT); const nodes=[]; while(walker.nextNode())nodes.push(walker.currentNode);
-  const rx=new RegExp(legacy,'gi');
-  nodes.forEach(n=>{if(n.nodeValue&&rx.test(n.nodeValue)){rx.lastIndex=0;n.nodeValue=n.nodeValue.replace(new RegExp(legacy,'g'),'Evaluación')}});
-  document.querySelectorAll('[href],[src],[id],[data-goal]').forEach(el=>['href','src','id','data-goal'].forEach(a=>{if(el.hasAttribute(a)){let v=el.getAttribute(a);v=v.replace(new RegExp(legacy+'\\.html','gi'),'evaluacion.html').replace(new RegExp('#'+legacy+'\\b','gi'),'#evaluacion').replace(new RegExp(legacy,'gi'),'evaluacion');el.setAttribute(a,v)}}));
+ const legacy=['L','O','T','B'].join('');
+ const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const nodes=[];
+ while(walker.nextNode())nodes.push(walker.currentNode);
+ const rx=new RegExp(legacy,'gi');
+ nodes.forEach(n=>{if(n.nodeValue&&rx.test(n.nodeValue)){rx.lastIndex=0;n.nodeValue=n.nodeValue.replace(new RegExp(legacy,'g'),'Evaluación')}});
+ document.querySelectorAll('[href],[src],[id],[data-goal]').forEach(el=>['href','src','id','data-goal'].forEach(a=>{if(el.hasAttribute(a)){let v=el.getAttribute(a);v=v.replace(new RegExp(legacy+'\\.html','gi'),'evaluacion.html').replace(new RegExp('#'+legacy+'\\b','gi'),'#evaluacion').replace(new RegExp(legacy,'gi'),'evaluacion');el.setAttribute(a,v)}}));
 }
-function render(){const old=document.querySelector('nav.site-nav');if(old)old.remove();const style=document.createElement('style');style.id='leones-navigation-force';style.textContent=`
-:root{--leones-side-space:210px!important}body{margin:0!important;padding-left:var(--leones-side-space)!important;padding-right:0!important;background:#f3f6f9!important;color:#17212b!important;font:16px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}body>nav:not(.site-nav){display:none!important}.site-top{display:none!important}.site-side{position:fixed!important;left:0!important;right:auto!important;top:0!important;bottom:auto!important;width:210px!important;height:100vh!important;box-sizing:border-box!important;background:#102f49!important;border-right:1px solid #0b263a!important;box-shadow:5px 0 18px rgba(20,40,60,.12)!important;padding:28px 10px 18px!important;overflow-y:auto!important;z-index:10000!important}.site-side:before{content:'LEONES';display:block!important;color:#fff!important;font-weight:900!important;letter-spacing:.08em!important;font-size:1rem!important;padding:8px 10px 18px!important}.site-side .side-title{color:#8fa8b7!important;font-size:.66rem!important;letter-spacing:.14em!important;font-weight:900!important;padding:9px 10px 6px!important;text-transform:uppercase!important}.site-side a{display:block!important;padding:8px 10px!important;margin:3px 0!important;border-radius:8px!important;color:#a9bac4!important;text-decoration:none!important;font-size:.83rem!important;font-weight:800!important}.site-side a:hover{background:rgba(255,255,255,.08)!important;color:#fff!important}.site-side a.active{background:rgba(255,255,255,.1)!important;color:#fff!important;box-shadow:inset 3px 0 #19b77a!important}.site-crumb{margin:0!important;background:#fff!important;border-bottom:1px solid #d8e0e7!important}.site-crumb-inner{max-width:1050px!important;margin:auto!important;padding:10px 22px!important;display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important;font-size:.82rem!important;color:#526872!important}.site-crumb a{color:#1769aa!important;text-decoration:none!important;font-weight:850!important}.site-crumb strong{color:#17212b!important}body .hero{background:#1769aa!important;background-image:none!important;color:#fff!important;padding:42px 22px!important;min-height:0!important}body .hero>div{max-width:1050px!important;margin:auto!important}body .hero h1{color:#fff!important;font-size:3rem!important;line-height:1.05!important;margin:0!important}body .hero p{color:#e4eef4!important;max-width:780px!important}body main{max-width:1050px!important;margin:auto!important;padding:35px 22px 80px!important}body .card{background:#fff!important;border:1px solid #d8e0e7!important;border-radius:14px!important;box-shadow:0 3px 12px rgba(20,40,60,.05)!important}body h2,body h3{color:#102f49!important}.leones-section-brand,.leones-logo-rail,.leones-logo-link,body .wrap{display:none!important}body footer{background:#102f49!important;color:#dbe7ee!important}@media(max-width:800px){:root{--leones-side-space:165px!important}.site-side{width:165px!important}.site-side a{font-size:.75rem!important;padding:8px 7px!important}body .hero h1{font-size:2.4rem!important}}@media(max-width:560px){:root{--leones-side-space:0px!important}body{padding-left:0!important}.site-side{left:0!important;right:0!important;top:auto!important;bottom:0!important;width:100%!important;height:auto!important;max-height:46vh!important;border-right:0!important;border-top:1px solid #d8e0e7!important;padding:8px!important;display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:2px!important}.site-side:before{display:none!important}.site-side .side-title{grid-column:1/-1!important}}`;
-document.head.appendChild(style);const nav=document.createElement('nav');nav.className='site-nav';nav.setAttribute('aria-label','Navegación principal');const group=current?current[2]:null,groupHref=group==='Conocer'?'pilares.html':group==='Operar'?'pila.html':group==='Aplicación'?'app.html':group==='Comunidad'?'manada.html':'index.html';nav.innerHTML='<div class="site-top" aria-hidden="true"></div><div class="site-crumb"><div class="site-crumb-inner"><a href="index.html">LEONES</a><span>›</span>'+(group&&group!=='Inicio'?'<a href="'+groupHref+'">'+group+'</a><span>›</span>':'')+'<strong>'+(current?current[0]:'Inicio')+'</strong></div></div><aside class="site-side"><div class="side-title">SECCIONES</div>'+items.map(x=>'<a class="'+(x[1]===path?'active':'')+'" href="'+x[1]+'">'+x[0]+'</a>').join('')+'</aside>';document.body.insertBefore(nav,document.body.firstChild);cleanupLegacyEvaluation();setTimeout(cleanupLegacyEvaluation,0);setTimeout(cleanupLegacyEvaluation,100);}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render()})();
+function link(x,level){return '<a class="level-'+level+(x[1]===path?' active':'')+'" href="'+x[1]+'">'+x[0]+'</a>'}
+function render(){
+ const old=document.querySelector('nav.site-nav');if(old)old.remove();
+ const style=document.createElement('style');style.id='leones-navigation-force';style.textContent=`
+:root{--leones-side-space:230px!important}
+body{padding-left:var(--leones-side-space)!important}
+.site-side{width:230px!important;padding:76px 12px 18px!important}
+.site-side a{display:block!important}
+.site-side .level-top{margin-top:5px!important;font-size:.84rem!important;color:#a9bac4!important;padding:10px 11px!important}
+.site-side .level-top.active{color:#fff!important}
+.site-side .level-project,.site-side .level-application{margin-left:18px!important;padding:7px 10px!important;font-size:.78rem!important;color:#7f98a5!important;border-left:1px solid rgba(255,255,255,.12)!important;border-radius:0 7px 7px 0!important}
+.site-side .level-project:hover,.site-side .level-application:hover{color:#fff!important}
+.site-side .level-project.active,.site-side .level-application.active{color:#63e0ad!important;border-left:3px solid #19b77a!important;background:rgba(25,183,122,.12)!important}
+.site-side .level-top.active{background:rgba(255,255,255,.08)!important;box-shadow:inset 3px 0 #19b77a!important}
+@media(max-width:800px){:root{--leones-side-space:175px!important}.site-side{width:175px!important}.site-side .level-project,.site-side .level-application{margin-left:10px!important}}
+@media(max-width:560px){:root{--leones-side-space:0px!important}body{padding-left:0!important}.site-side{width:100%!important}}
+`;
+ document.head.appendChild(style);
+ const nav=document.createElement('nav');nav.className='site-nav';nav.setAttribute('aria-label','Navegación principal');
+ const group=current?current[2]:null;
+ const groupHref=group==='project'?'proyecto.html':group==='application'?'app.html':'index.html';
+ nav.innerHTML='<div class="site-top" aria-hidden="true"></div><div class="site-crumb"><div class="site-crumb-inner"><a href="index.html">LEONES</a><span>›</span>'+(group&&group!=='top'?'<a href="'+groupHref+'">'+(group==='project'?'Proyecto':'Aplicación')+'</a><span>›</span>':'')+'<strong>'+(current?current[0]:'Inicio')+'</strong></div></div><aside class="site-side"><div class="side-title">NAVEGACIÓN</div>'+items.map(x=>link(x,x[2])).join('')+'</aside>';
+ document.body.insertBefore(nav,document.body.firstChild);cleanupLegacyEvaluation();setTimeout(cleanupLegacyEvaluation,0);setTimeout(cleanupLegacyEvaluation,100);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();
+})();
