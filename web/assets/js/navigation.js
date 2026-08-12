@@ -6,11 +6,11 @@ const items=[
  ['Arquitectura','arquitectura.html','project'],
  ['Pila','pila.html','project'],
  ['Debian / Ubuntu / RHEL','os.html','top'],
- ['Prospección','prospeccion.html','top'],
  ['Aplicación','app.html','top'],
  ['Scripts','scripts.html','application'],
  ['Resultados','resultados.html','application'],
  ['Manada','manada.html','top'],
+ ['Prospección','prospeccion.html','top'],
  ['Contacto','contacto.html','top']
 ];
 const path=location.pathname.split('/').pop()||'index.html';
