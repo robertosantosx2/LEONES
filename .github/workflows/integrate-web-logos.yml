@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - '.github/workflows/integrate-web-logos.yml'
       - 'scripts/integrate_web_logos.py'
       - 'web/assets/graphics/logos/**'
       - 'web/assets/graphics/brand.css'
