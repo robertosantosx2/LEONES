@@ -1,0 +1,7 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEONES · Router + Atlas</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:auto;padding:30px;line-height:1.6;color:#17212b}h1,h2{color:#12304a}.box{border:1px solid #d8e0e7;border-radius:12px;padding:20px;margin:18px 0}pre{background:#eef3f7;padding:14px;overflow:auto}</style></head><body><h1>Router ↔ Leones Atlas</h1><p>El Router ya puede obtener candidatos del catálogo de modelos de Leones Atlas.</p><div class="box"><h2>Flujo</h2><pre>Leones Atlas
+     ↓
+Router candidates
+     ↓
+Leones Router
+     ↓
+Decision</pre></div><div class="box"><h2>Separación</h2><p><code>router_atlas</code> solo lee el catálogo y transforma registros en candidatos. <code>router_simple</code> sigue siendo responsable de decidir.</p></div><div class="box"><h2>Qué todavía no hace</h2><p>No selecciona por RAM, tamaño, benchmark, velocidad o coste. Esos criterios se incorporarán progresivamente y de forma documentada.</p></div><div class="box"><h2>Primer flujo autónomo</h2><pre>Tarea → Atlas → Router → Decision</pre><p>La siguiente conexión será llevar esa decisión hasta el modelo preparado y el Runtime.</p></div><p><a href="index.html">Inicio</a> · <a href="router.html">Router</a> · <a href="modelos.html">Modelos</a> · <a href="leones-0.2.html">LEONES 0.2</a></p></body></html>
