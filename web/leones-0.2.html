@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEONES 0.2 · Arquitectura autónoma</title><style>body{margin:0;font-family:system-ui,sans-serif;background:#f3f6f9;color:#17212b;line-height:1.6}.wrap{max-width:1000px;margin:auto;padding:32px 20px}.hero{background:#102f49;color:white;padding:42px 20px}.box{background:white;border:1px solid #d8e0e7;border-radius:12px;padding:20px;margin:18px 0}h1,h2,h3{color:#12304a}.hero h1{color:white}pre{background:#172b3d;color:#eaf4fb;padding:18px;border-radius:9px;overflow:auto}.note{background:#eaf4fb;border-left:4px solid #1769aa;padding:14px}code{background:#edf3f7;padding:2px 5px;border-radius:4px}</style></head>
+<body><header class="hero"><div class="wrap"><h1>LEONES 0.2</h1><p>Arquitectura autónoma congelada · 12 agosto 2026</p><p>Descubrir → preparar → ejecutar → evaluar → optimizar modelos locales.</p></div></header><main class="wrap">
+<div class="box"><h2>Qué es LEONES</h2><p>LEONES es una plataforma autónoma de IA local. Su objetivo no es ser una interfaz para un único runtime: debe seleccionar y ejecutar la combinación adecuada de modelo, cuantización, backend y hardware para cada tarea.</p><p class="note"><strong>Unsloth Desktop no es una dependencia principal.</strong> Unsloth, llama.cpp, KTransformers, Ollama y otros son adaptadores posibles.</p></div>
+<div class="box"><h2>Componentes congelados</h2><ul><li><strong>Leones Atlas:</strong> conocimiento estructurado.</li><li><strong>Leones Router:</strong> decisión de modelo + cuantización + backend + dispositivo.</li><li><strong>Leones Agents:</strong> planificación, herramientas, memoria y workflows.</li><li><strong>Leones Runtime:</strong> ejecución local y adaptadores.</li><li><strong>Leones Quant:</strong> cuantización y evaluación de compromisos.</li><li><strong>Leones Fine-Tuning:</strong> adaptación del modelo, incluyendo LoRA/QLoRA.</li><li><strong>Benchmark & Evaluation:</strong> evidencia reproducible que retroalimenta Atlas y Router.</li></ul></div>
+<div class="box"><h2>Flujo autónomo</h2><pre>TAREA
+  ↓
+TASK INTELLIGENCE
+  ↓
+HARDWARE INTELLIGENCE
+  ↓
+LEONES ATLAS
+  ↓
+LEONES ROUTER
+  ↓
+modelo + cuantización + backend + configuración
+  ↓
+LEONES RUNTIME
+  ↓
+EJECUCIÓN
+  ↓
+BENCHMARK / EVALUATION
+  ↓
+LEONES ATLAS</pre></div>
+<div class="box"><h2>Primera implementación</h2><p>La rama <code>architecture/leones-0.2</code> contiene ya contratos y primeras implementaciones para Atlas, Router, Runtime, Agents, Quant, Fine-Tuning, Evaluation, Hardware Intelligence y Task Intelligence.</p><p>El primer backend de referencia es <strong>llama.cpp</strong>, pero la arquitectura no depende de él.</p></div>
+<div class="box"><h2>Regla de ingeniería</h2><p><strong>Scripts sencillos que hagan las menores cosas posibles y estén muy documentados.</strong></p><pre>hardware → model → infer → LOTB → report → publish → stats</pre><p>Cada paso tendrá una responsabilidad clara. No se construirá un orquestador monolítico que mezcle descubrimiento, descarga, inferencia, benchmark y publicación.</p></div>
+<div class="box"><h2>Documentación viva</h2><p>Esta página acompaña a la implementación. Cada avance arquitectónico relevante debe reflejarse simultáneamente en la documentación técnica y en la web pública de LEONES.</p><p><a href="index.html">← Inicio</a> · <a href="arquitectura.html">Arquitectura</a> · <a href="operacion.html">Operación</a> · <a href="https://github.com/robertosantosx2/LEONES">GitHub</a></p></div>
+</main></body></html>
