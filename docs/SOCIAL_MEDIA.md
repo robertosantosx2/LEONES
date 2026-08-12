@@ -2,7 +2,8 @@
 
 ## Official social identity
 
-- X: @metaleones
+- X: @manadaleonesia
+- Contact email: manadaleones.ia@gmail.com
 - Project: LEONES — Local Ecosystem of Open Neural Expert Systems
 - Website: https://robertosantosx2.github.io/LEONES/
 - Repository: https://github.com/robertosantosx2/LEONES
@@ -23,13 +24,13 @@ LEONES should promote itself through real project activity rather than generic a
 
 ### Weekly
 
-Publish a LEONES Weekly summary containing new discoveries, evaluated stack components, notable metaLEONES hardware results and one useful technical finding.
+Publish a LEONES Weekly summary containing new discoveries, evaluated stack components, notable manada_leones hardware results and one useful technical finding.
 
 ### Monthly
 
 Publish a broader ecosystem report with trends, new recommendations, benchmark evolution and changes to the recommended stacks.
 
-## X / @metaleones
+## X / @manadaleonesia
 
 Posts should be evidence-led. Prefer:
 
@@ -48,7 +49,7 @@ Use Issues for actionable discovery and work items. Use Discussions for question
 
 ## Hardware Wall
 
-The long-term goal is a public comparison of anonymised real-world hardware and software configurations submitted through metaLEONES. Every report should exclude personal information, credentials, identifiers and private filesystem information.
+The long-term goal is a public comparison of anonymised real-world hardware and software configurations submitted through manada_leones. Every report should exclude personal information, credentials, identifiers and private filesystem information.
 
 ## Automation target
 
