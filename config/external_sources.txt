@@ -1,0 +1,3 @@
+# One URL per line. These sources are DISCOVERY INPUTS only.
+# Nothing discovered here becomes validated Atlas evidence automatically.
+# Add stable sources about local-LLM memory, performance, quantization and hardware.
