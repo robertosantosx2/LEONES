@@ -5,23 +5,10 @@ LEONES incorpora un primer **smoke test estándar** para simplificar la evaluaci
 Script:
 
 ```bash
-python3 scripts/lotb-agentic-test.py
+python3 scripts/leones-evaluacion.py --endpoint http://127.0.0.1:8080
 ```
 
-El script prueba un endpoint local compatible con la API OpenAI, por defecto:
-
-```text
-http://127.0.0.1:8080/v1
-```
-
-También acepta:
-
-```bash
-python3 scripts/evaluacion-agentic-test.py \
-  --base-url http://127.0.0.1:8080/v1 \
-  --model local-model \
-  --output results/evaluacion/latest.json
-```
+El script prueba un endpoint local compatible con la API OpenAI.
 
 ## Pruebas
 
@@ -35,13 +22,7 @@ python3 scripts/evaluacion-agentic-test.py \
 
 ## Qué mide
 
-Cada prueba registra:
-
-- PASS/FAIL;
-- tiempo total de respuesta;
-- tokens de prompt, completion y total cuando el servidor los proporciona;
-- respuesta obtenida;
-- errores.
+Cada prueba registra PASS/FAIL, tiempo total de respuesta, tokens cuando el servidor los proporciona, respuesta obtenida y errores.
 
 El resultado se guarda en JSON para facilitar su incorporación posterior a las estadísticas de LEONES.
 
