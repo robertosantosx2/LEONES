@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LEONES · 9 pilares oficiales</title>
+<style>
+:root{--n:#102f49;--b:#1769aa;--p:#eaf4fb;--bg:#f3f6f9;--l:#d8e0e7;--t:#17212b;--m:#607d8b;--a:#fff4d6;--g:#e8f4ec}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--t);line-height:1.65}.wrap{max-width:1180px;margin:auto;padding:0 22px}.hero{background:linear-gradient(120deg,#102f49,#1769aa 58%,#607d8b);color:white;padding:42px 0}.hero h1{font-size:clamp(2.1rem,5vw,3.8rem);margin:0 0 8px}.hero p{max-width:900px;margin:0;color:#e7f2f9;font-size:1.08rem}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}.btn{display:inline-block;padding:9px 14px;border-radius:8px;text-decoration:none;font-weight:800;background:white;color:var(--n)}.btn.alt{background:transparent;color:white;border:1px solid #ffffff66}nav{position:sticky;top:0;background:#fffffff5;border-bottom:1px solid var(--l);z-index:5}.nav{display:flex;gap:4px;overflow:auto;white-space:nowrap}.nav a{padding:11px 9px;text-decoration:none;color:var(--n);font-weight:750;font-size:.86rem}main{padding:35px 0 70px}.intro,.pillar,.arch{background:white;border:1px solid var(--l);border-radius:14px;padding:24px;margin-bottom:24px;box-shadow:0 3px 12px #14283c0d}.pillar{border-left:6px solid var(--b)}h2,h3{color:var(--n)}h2{margin-top:0;border-bottom:2px solid var(--l);padding-bottom:8px}.pill{display:inline-block;background:var(--p);color:var(--b);border-radius:999px;padding:4px 9px;font-size:.76rem;font-weight:850}.state{float:right;background:var(--g);padding:5px 10px;border-radius:999px;font-weight:800;font-size:.78rem}.warn{background:var(--a);border-left:4px solid #c69a21;padding:13px 16px;border-radius:0 8px 8px 0}.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}pre{background:#172b3d;color:#eaf4fb;padding:17px;border-radius:10px;overflow:auto;font-size:.84rem;line-height:1.45}.evo{background:var(--p);padding:14px 17px;border-radius:9px;border-left:4px solid var(--b)}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid var(--l);text-align:left;vertical-align:top}th{background:#edf3f7;color:var(--n)}footer{background:var(--n);color:#d9e6ef;padding:25px 0}footer a{color:white}@media(max-width:800px){.cols{grid-template-columns:1fr}.state{float:none;display:inline-block;margin-bottom:10px}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap"><h1>LEONES · 9 pilares oficiales</h1><p>Arquitectura canónica del proyecto. Esta página explica qué es cada pilar, por qué existe, qué debe hacer, cómo evolucionará y cuál es su estado actual. No sustituye la documentación técnica de cada componente: la organiza y proporciona el mapa común.</p><div class="actions"><a class="btn" href="index.html">← Inicio</a><a class="btn alt" href="arquitectura.html">Arquitectura operativa</a><a class="btn alt" href="operacion.html">Guía de operación</a><a class="btn alt" href="https://github.com/robertosantosx2/LEONES">GitHub</a></div></div></header>
+<nav><div class="wrap nav"><a href="#mapa">Mapa</a><a href="#atlas">1 Atlas</a><a href="#router">2 Router</a><a href="#agents">3 Agents</a><a href="#runtime">4 Runtime</a><a href="#quant">5 Quant</a><a href="#finetune">6 Fine-Tuning</a><a href="#benchmark">7 Benchmark</a><a href="#task">8 Task Intelligence</a><a href="#prospector">9 Prospector</a><a href="#evidencia">Evidencia</a><a href="#evolucion">Evolución</a></div></nav>
+<main class="wrap">
+<section id="mapa" class="intro"><h2>Mapa canónico</h2><pre>                              LEONES
+                                 │
+        ┌────────────────────────┼────────────────────────┐
+        │                        │                        │
+        ▼                        ▼                        ▼
+  TASK INTELLIGENCE          PROSPECTOR              LEONES ATLAS
+        │                        │                        │
+        │                 descubrimiento                │ conocimiento
+        │                        │                        │
+        └───────────────┬────────┴───────────────┬───────┘
+                        ▼                        ▼
+                  LEONES ROUTER           evidencia / estado
+                        │
+        ┌───────────────┼────────────────┐
+        ▼               ▼                ▼
+     RUNTIME           QUANT          FINE-TUNING
+        │               │                │
+        └───────────────┼────────────────┘
+                        ▼
+                    AGENTS
+                        │
+                     SKILLS
+                        │
+                        ▼
+                   ejecución
+                        │
+                        ▼
+             BENCHMARK & EVALUATION
+                        │
+                        └──────────► Atlas / Router / Prospector</pre><p>El mapa muestra responsabilidades, no una dependencia rígida. Por ejemplo, Prospector puede descubrir un runtime, una cuantización o una skill; Atlas conserva el conocimiento estructurado cuando corresponde; Router decide qué combinación es adecuada; Runtime ejecuta; Benchmark mide el resultado.</p><div class="warn"><strong>Regla arquitectónica:</strong> ningún pilar debe absorber responsabilidades que pertenecen a otro. LEONES prefiere componentes pequeños, sustituibles y auditables.</div></section>
+<section id="atlas" class="pillar"><span class="state">ACTIVO · EN CONSTRUCCIÓN</span><h2>1. Leones Atlas</h2><p><span class="pill">CONOCE</span></p><h3>Qué es</h3><p>Es la memoria estructurada del ecosistema LEONES. Su función es conservar modelos, familias, organizaciones, runtimes, hardware, cuantizaciones, capacidades, resultados y evidencia de manera que las decisiones posteriores puedan ser explicadas.</p><h3>Por qué existe</h3><p>Un sistema autónomo no puede depender de conocimiento disperso en scripts, páginas web o conversaciones. Atlas proporciona una fuente estructurada y versionable. También permite separar el conocimiento de la máquina concreta donde se ejecuta.</p><h3>Arquitectura</h3><pre>FUENTES / PROSPECTOR
+        ↓
+ información externa
+        ↓
+ revisión + evidencia
+        ↓
+     LEONES ATLAS
+        ├── modelos
+        ├── hardware
+        ├── runtimes
+        ├── cuantizaciones
+        ├── capacidades
+        ├── benchmarks
+        └── evidencia
+                ↓
+          Router / Agents</pre><h3>Evolución prevista</h3><p>Pasará de catálogo básico a una base de conocimiento con relaciones entre modelo, versión, cuantización, backend, hardware, contexto, benchmark y evidencia. Incorporará historial para detectar cambios y evitar que un dato antiguo se presente como actual.</p><h3>Estado ahora</h3><p>Existe la arquitectura de catálogo y la política de evidencia. La integración con Router está diseñada. La cobertura y profundidad de datos todavía deben crecer antes de que Atlas pueda justificar decisiones complejas de hardware.</p></section>
+<section id="router" class="pillar"><span class="state">ACTIVO · PRIMERA VERSIÓN</span><h2>2. Leones Router</h2><p><span class="pill">DECIDE</span></p><h3>Qué es</h3><p>Es el componente que transforma una petición y las restricciones del entorno en una decisión explícita sobre modelo, backend y configuración.</p><h3>Por qué existe</h3><p>LEONES no debe obligar al usuario a conocer qué modelo, cuantización o runtime conviene para cada tarea. Router debe utilizar el conocimiento de Atlas y las capacidades reales del equipo.</p><pre>TAREA
+  ↓
+Task Intelligence
+  ↓
+Atlas + Hardware
+  ↓
+Router
+  ↓
+modelo + cuantización + backend + configuración
+  ↓
+Preparation → Runtime</pre><h3>Evolución prevista</h3><p>La primera regla es deliberadamente simple y transparente. Después incorporará RAM, VRAM, contexto, backend, cuantización, benchmark, latencia, consumo y capacidad de tarea. Cuando falte evidencia, podrá devolver <strong>DESCONOCIDO</strong> en lugar de inventar una certeza.</p><h3>Estado ahora</h3><p>Existe una primera ruta de decisión y una frontera de integración con Atlas. La inteligencia de hardware todavía es una frontera explícita: no se inventan requisitos de memoria que Atlas no pueda respaldar.</p></section>
+<section id="agents" class="pillar"><span class="state">ARQUITECTURA DEFINIDA · EJECUCIÓN EN DESARROLLO</span><h2>3. Leones Agents</h2><p><span class="pill">ACTÚA</span></p><h3>Qué es</h3><p>Es la capa que convierte un modelo en un sistema capaz de perseguir objetivos: planificación, herramientas, memoria, skills, recuperación ante errores y verificación.</p><h3>Por qué existe</h3><p>Un LLM que genera una respuesta no es automáticamente un agente. La utilidad local depende de la capacidad de observar el entorno, usar herramientas y comprobar el resultado.</p><pre>OBJETIVO
+  ↓
+PLAN
+  ↓
+HARNESS
+  ├── SKILLS
+  ├── TOOLS
+  ├── MEMORY
+  └── POLICY
+  ↓
+MODELO
+  ↓
+ACCIÓN
+  ↓
+OBSERVACIÓN
+  ↓
+VERIFICACIÓN
+  ↺</pre><h3>Evolución prevista</h3><p>Se prevé una arquitectura modular de harnesses intercambiables. Prospector buscará nuevos harnesses y skills; Benchmark medirá cuánto cambia el resultado al sustituirlos. La optimización del harness será una línea de investigación propia.</p><h3>Estado ahora</h3><p>El papel arquitectónico está definido, pero la ejecución agentiva completa todavía no está al nivel del Runtime. LEONES debe evitar confundir una demo de agente con una capacidad reproducible.</p></section>
+<section id="runtime" class="pillar"><span class="state">EN DESARROLLO</span><h2>4. Leones Runtime</h2><p><span class="pill">EJECUTA</span></p><h3>Qué es</h3><p>Es la capa que realmente carga y ejecuta modelos locales. Debe abstraer los diferentes motores y permitir que Router seleccione el backend adecuado sin que el resto del sistema quede acoplado a uno solo.</p><h3>Por qué existe</h3><p>La ejecución local cambia rápidamente: CPU, GPU, NPU, diferentes drivers, formatos y runtimes. LEONES necesita una interfaz estable sobre implementaciones sustituibles.</p><pre>MODEL FILE / FORMAT
+        ↓
+MODEL PREPARATION
+        ↓
+RUNTIME ADAPTER
+   ┌────┼───────────┐
+   ▼    ▼           ▼
+CPU   GPU/NPU    otros backends
+   └────┼───────────┘
+        ↓
+     INFERENCIA
+        ↓
+      RESULTADO</pre><h3>Evolución prevista</h3><p>Adaptadores para los runtimes Open relevantes, preparación automática de modelos, selección de backend, control de contexto y métricas reproducibles. La prioridad será compatibilidad real antes que una lista enorme de backends.</p><h3>Estado ahora</h3><p>Existe una ruta de orquestación autónoma prevista, pero la cobertura de ejecución real y su validación en hardware debe ampliarse.</p></section>
+<section id="quant" class="pillar"><span class="state">ARQUITECTURA DEFINIDA · IMPLEMENTACIÓN PENDIENTE</span><h2>5. Leones Quant</h2><p><span class="pill">REDUCE COSTE DE EJECUCIÓN</span></p><h3>Qué es</h3><p>Es la capa dedicada a cuantización, comparación de formatos y asistencia para elegir una cuantización compatible con el objetivo de hardware, calidad y velocidad.</p><h3>Por qué existe</h3><p>La pregunta no es únicamente qué modelo ejecutar. Una cuantización diferente puede cambiar memoria, velocidad y calidad y puede convertir un modelo imposible de ejecutar en uno viable.</p><pre>MODELO BASE
+    ↓
+┌── Q8 ── Q6 ── Q5 ── Q4 ── Q3 ──┐
+│                                  │
+└──────► memoria / calidad / velocidad
+                     ↓
+                 Benchmark
+                     ↓
+              recomendación</pre><h3>Evolución prevista</h3><p>Catálogo de cuantizaciones, herramientas Open, perfiles por hardware, comparación de calidad y rendimiento, y asistencia a la creación de cuantizaciones cuando las herramientas lo permitan.</p><h3>Estado ahora</h3><p>El pilar está definido como parte esencial de LEONES, pero aún debe conectarse de forma completa con Atlas, Runtime y Benchmark.</p></section>
+<section id="finetune" class="pillar"><span class="state">ARQUITECTURA DEFINIDA · IMPLEMENTACIÓN PENDIENTE</span><h2>6. Leones Fine-Tuning</h2><p><span class="pill">ADAPTA</span></p><h3>Qué es</h3><p>Es la capa que ayuda a adaptar modelos mediante herramientas Open, con especial atención a LoRA, QLoRA y otras técnicas PEFT apropiadas para hardware local.</p><h3>Por qué existe</h3><p>La mejor solución local puede no ser el modelo general más grande. Un modelo pequeño especializado puede resultar mucho más útil para una tarea concreta y consumir menos recursos.</p><pre>MODELO BASE
+    +
+DATASET / TASK
+    ↓
+PREPARACIÓN
+    ↓
+LoRA / QLoRA / PEFT
+    ↓
+MODELO ADAPTADO
+    ↓
+Benchmark
+    ├── calidad
+    ├── memoria
+    └── velocidad
+    ↓
+Atlas + Router</pre><h3>Evolución prevista</h3><p>Descubrimiento de herramientas Open, preparación de datasets, configuración asistida, evaluación antes/después y recomendación de si el fine-tuning compensa frente a cambiar de modelo o harness.</p><h3>Estado ahora</h3><p>El pilar está reservado explícitamente en la arquitectura, pero no debe presentarse todavía como una capacidad terminada de LEONES.</p></section>
+<section id="benchmark" class="pillar"><span class="state">ACTIVO · LOTB EN DESARROLLO</span><h2>7. Benchmark &amp; Evaluation</h2><p><span class="pill">MIDE</span></p><h3>Qué es</h3><p>Es el sistema de medición que evita que LEONES convierta impresiones en hechos. Evalúa rendimiento de inferencia y, especialmente, capacidad de completar tareas reales con la pila completa.</p><h3>Por qué existe</h3><p>10 tok/s no significa que una tarea termine mejor. LEONES debe medir tiempo de tarea, éxito, errores, recursos y comportamiento agentivo además de tokens por segundo.</p><pre>CONFIGURACIÓN
+     ↓
+  INFERENCIA
+     ↓
+     LOTB
+ ┌───┼────┬────┬────┐
+ B01 B02  B03  B04  B05
+ └───┼────┴────┴────┘
+     ↓
+resultado + evidencia
+     ↓
+Atlas / Router</pre><h3>Evolución prevista</h3><p>Más tareas, repetición estadística, perfiles de hardware, comparación de harnesses, evaluación de cuantizaciones y fine-tunes y separación clara entre resultados reportados, reproducibles y verificados.</p><h3>Estado ahora</h3><p>LOTB y su modelo de estados de evidencia ya están documentados. La cobertura experimental real debe crecer hasta convertirse en la base empírica del Router.</p></section>
+<section id="task" class="pillar"><span class="state">ARQUITECTURA · EN DESARROLLO</span><h2>8. Task Intelligence</h2><p><span class="pill">ENTIENDE</span></p><h3>Qué es</h3><p>Es la capa que determina qué se está intentando conseguir y qué capacidades, herramientas, contexto y restricciones necesita la tarea antes de escoger un modelo.</p><h3>Por qué existe</h3><p>Elegir un modelo por nombre o tamaño antes de entender la tarea invierte el orden correcto. Router necesita un contrato de tarea.</p><pre>PETICIÓN
+   ↓
+INTENCIÓN
+   ↓
+CAPACIDADES REQUERIDAS
+   ├── coding
+   ├── reasoning
+   ├── retrieval
+   ├── vision
+   ├── tools
+   └── long-context
+   ↓
+RESTRICCIONES
+   ├── hardware
+   ├── tiempo
+   ├── privacidad
+   └── coste
+   ↓
+Router</pre><h3>Evolución prevista</h3><p>Contratos de tarea explícitos, detección de complejidad, necesidades de contexto y herramientas, y realimentación desde Benchmark para aprender qué configuración resuelve mejor cada clase de tarea.</p><h3>Estado ahora</h3><p>La responsabilidad está definida, pero todavía debe consolidarse como módulo independiente y no quedar mezclada con las reglas iniciales del Router.</p></section>
+<section id="prospector" class="pillar"><span class="state">ACTIVO · PROSPECCIÓN DIARIA</span><h2>9. Leones Prospector</h2><p><span class="pill">DESCUBRE</span></p><h3>Qué es</h3><p>Es el radar continuo del ecosistema Open. Busca noticias, modelos Open/Open-Weights, harnesses Open, skills, cuantizaciones, herramientas de fine-tuning, runtimes, proyectos de eficiencia, benchmarks, agentes y otros proyectos que puedan ayudar al objetivo de ejecutar IA abierta localmente.</p><h3>Por qué existe</h3><p>El ecosistema cambia demasiado deprisa para que Atlas sea una fotografía estática. Prospector mantiene vivo el conocimiento y detecta técnicas que pueden cambiar la frontera de lo que puede ejecutarse en hardware de consumo.</p><pre>                 PROSPECCIÓN DIARIA
+                         ↓
+      ┌──────────────────┼──────────────────┐
+      ▼                  ▼                  ▼
+    modelos           harnesses          skills
+      ▼                  ▼                  ▼
+ quantizaciones      runtimes          fine-tuning
+      └──────────────────┼──────────────────┘
+                         ▼
+             eficiencia / hardware / benchmarks
+                         ↓
+                  descubrimiento
+                         ↓
+              external-unvalidated
+                         ↓
+                  revisión humana
+                    ↙          ↘
+               rejected     Atlas evidence</pre><h3>Evolución prevista</h3><p>Detectará no solo proyectos nuevos, sino cambios de versión, cuantizaciones nuevas, backends, forks, cambios de licencia, abandono y mejoras. Mantendrá memoria histórica del ecosistema. La prospección diaria será automática; la validación continuará siendo explícita.</p><h3>Estado ahora</h3><p>La estructura de prospección, categorías y frontera <code>external-unvalidated</code> están definidas. El objetivo operativo es mantener una alimentación diaria sin contaminar Atlas ni Router con afirmaciones no verificadas.</p></section>
+<section id="evidencia" class="arch"><h2>La capa transversal: evidencia y transparencia</h2><p>Los nueve pilares comparten una regla que no pertenece a ninguno de ellos en exclusiva: <strong>LEONES debe decir qué sabe, de dónde procede, qué ha medido y qué no ha podido comprobar.</strong></p><pre>INTERNET / FUENTE EXTERNA
+          ↓
+ external-unvalidated
+          ↓
+       revisión
+      ↙         ↘
+ rejected     atlas-evidence
+                 ↓
+        usable by Router
+                 ↓
+       measured by LEONES?
+          ↙           ↘
+        sí             no
+     measured       reported / estimated / calculated / anecdotal</pre><p>“Validado en Atlas” no significa necesariamente “medido por LEONES”. Significa que la afirmación ha superado el proceso de revisión definido y conserva su procedencia y tipo de evidencia.</p><p>Esta separación también protege al usuario frente a estimaciones orientativas recopiladas de Internet: pueden ser útiles y aparecer públicamente, pero deben quedar claramente etiquetadas como no validadas por LEONES.</p></section>
+<section id="evolucion" class="arch"><h2>Cómo evolucionará la arquitectura</h2><table><tr><th>Fase</th><th>Objetivo</th><th>Condición de avance</th></tr><tr><td>Fundación</td><td>Separar responsabilidades y documentar esquemas.</td><td>Componentes pequeños, interfaces claras y tests.</td></tr><tr><td>Autonomía mínima</td><td>Petición → Atlas → Router → Preparation → Runtime.</td><td>Ejecución local reproducible.</td></tr><tr><td>Inteligencia de hardware</td><td>Elegir configuraciones que realmente caben.</td><td>Datos de hardware y modelos con evidencia.</td></tr><tr><td>Optimización</td><td>Quant, Runtime, harness y fine-tuning.</td><td>Benchmark comparativo.</td></tr><tr><td>Agente útil</td><td>Completar tareas reales localmente.</td><td>LOTB reproducible y resultados verificables.</td></tr><tr><td>Prospección continua</td><td>Detectar mejoras del ecosistema diariamente.</td><td>Descubrimiento automatizado sin promoción automática.</td></tr></table><div class="warn"><strong>Estado global:</strong> LEONES está en construcción activa. Algunas piezas ya tienen implementación mínima; otras son arquitectura congelada y aún no deben presentarse como capacidades terminadas.</div></section>
+<section class="arch"><h2>Relación con la arquitectura operativa</h2><p>Los nueve pilares son la arquitectura conceptual. La página de <a href="arquitectura.html">Arquitectura operativa</a> documenta cómo se materializan actualmente en pila, Buddy, LOTB, scripts, instalación, Prospección, recomendaciones, metaLEONES y automatización. La <a href="operacion.html">Guía de operación</a> explica cómo ejecutar y mantener esas piezas.</p><pre>PILARES OFICIALES
+       ↓
+ARQUITECTURA OPERATIVA
+       ↓
+IMPLEMENTACIÓN
+       ↓
+MEDICIÓN
+       ↓
+DOCUMENTACIÓN WEB
+       ↺</pre></section>
+</main>
+<footer><div class="wrap">LEONES · Arquitectura canónica · <a href="https://github.com/robertosantosx2/LEONES">GitHub</a></div></footer>
+</body></html>
