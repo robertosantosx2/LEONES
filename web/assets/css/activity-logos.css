@@ -1,0 +1,9 @@
+/* Logos de actividad LEONES: una única gramática visual para toda la web. */
+.activity-logo{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;flex:0 0 46px;border-radius:12px;background:#f7fafc;border:1px solid #d8e0e7;overflow:hidden;box-shadow:0 2px 8px rgba(16,47,73,.06)}
+.activity-logo img{width:100%;height:100%;padding:5px;object-fit:contain;display:block}
+.activity-logo--small{width:34px;height:34px;flex-basis:34px;border-radius:9px}.activity-logo--small img{padding:4px}
+.activity-logo--large{width:64px;height:64px;flex-basis:64px;border-radius:16px}.activity-logo--large img{padding:7px}
+.activity-title{display:flex;align-items:center;gap:11px}.activity-title h2,.activity-title h3{margin:0}
+.activity-card{display:flex;align-items:flex-start;gap:14px}.activity-card .activity-copy{min-width:0}
+.activity-card .activity-logo{margin-top:1px}
+.activity-strip{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.activity-strip .activity-logo{width:38px;height:38px;flex-basis:38px;border-radius:10px}
