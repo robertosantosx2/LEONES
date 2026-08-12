@@ -15,9 +15,9 @@ no asumimos que todo Linux es Ubuntu.
 
 DURANTE
 -------
-Recoge CPU, arquitectura, RAM, GPU y sistema operativo/distribución. Las
-operaciones son locales. Si una utilidad no está instalada, el campo queda
-sin detectar.
+Recoge CPU, arquitectura, núcleos, hilos, RAM, GPU, VRAM y sistema
+operativo/distribución. Las operaciones son locales. Si una utilidad no está
+instalada, el campo queda sin detectar.
 
 DESPUÉS
 -------
@@ -58,6 +58,28 @@ def cpu():
                 return line.split(":", 1)[1].strip()
     return platform.processor() or None
 
+def cpu_counts():
+    cores = threads = None
+    physical_ids = set()
+    core_ids = set()
+    p = Path("/proc/cpuinfo")
+    if p.exists():
+        blocks = p.read_text(errors="ignore").split("\n\n")
+        for block in blocks:
+            vals = {}
+            for line in block.splitlines():
+                if ":" in line:
+                    k, v = line.split(":", 1)
+                    vals[k.strip()] = v.strip()
+            if vals.get("processor") is not None:
+                physical_ids.add(vals.get("physical id", "0"))
+                core_ids.add((vals.get("physical id", "0"), vals.get("core id", vals.get("processor"))))
+        threads = len([b for b in blocks if "processor" in b]) or None
+        cores = len(core_ids) or None
+    if threads is None:
+        threads = os.cpu_count()
+    return cores, threads
+
 def distro():
     data = {}
     p = Path("/etc/os-release")
@@ -74,12 +96,19 @@ def distro():
 
 def gpu():
     found = []
+    vram_gb = None
     n = command("nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader")
-    found += [f"NVIDIA: {x}" for x in n.splitlines() if x]
+    for x in n.splitlines():
+        if not x:
+            continue
+        found.append(f"NVIDIA: {x}")
+        m = re.search(r"([0-9]+(?:\.[0-9]+)?)\s*MiB", x, re.I)
+        if m:
+            vram_gb = round(float(m.group(1)) / 1024, 2)
     for line in command("lspci").splitlines():
         if re.search(r"VGA compatible controller|3D controller|Display controller", line, re.I):
             found.append(line.split(": ", 1)[-1].strip())
-    return list(dict.fromkeys(found)) or []
+    return list(dict.fromkeys(found)), vram_gb
 
 def main():
     p = argparse.ArgumentParser(description="Perfil técnico local, sin benchmark ni publicación")
@@ -87,33 +116,44 @@ def main():
     p.add_argument("--explain", action="store_true")
     a = p.parse_args()
     d = distro()
+    cores, threads = cpu_counts()
+    gpus, vram_gb = gpu()
     if a.explain and not a.json:
         print("🦁 LEONES · Diagnóstico de hardware")
-        print("Voy a identificar CPU, RAM, GPU, arquitectura y distribución Linux.")
+        print("Voy a identificar CPU, arquitectura, núcleos, hilos, RAM, GPU, VRAM y distribución Linux.")
         print("No descargaré ni ejecutaré modelos, y no publicaré nada.\n")
         print("Plataformas Linux de referencia: Debian, Ubuntu y Red Hat Enterprise Linux (RHEL).\n")
+    gpu_text = "; ".join(gpus) if gpus else None
     data = {
         "tool": "leones-hardware",
-        "tool_version": "1.2",
+        "tool_version": "1.3",
         "status": "ok",
         "hardware": {
             "cpu": cpu(),
             "architecture": platform.machine(),
+            "cores": cores,
+            "threads": threads,
             "ram_gb": ram_gb(),
-            "gpu": gpu(),
+            "gpu": gpu_text,
+            "vram_gb": vram_gb,
             "os": f"{platform.system()} {platform.release()}",
             "distribution": d,
         },
         "next_step": "model",
     }
     if a.json:
+        # Public result documents must contain only technical facts. No hostname,
+        # serial number, MAC, IP, UUID, username or filesystem path is emitted.
         print(json.dumps(data, indent=2, ensure_ascii=False))
         return 0
     h = data["hardware"]
     print(f"CPU: {h['cpu'] or 'no detectada'}")
+    print(f"Núcleos: {h['cores'] or 'no detectados'}")
+    print(f"Hilos: {h['threads'] or 'no detectados'}")
     print(f"Arquitectura: {h['architecture']}")
     print(f"RAM: {h['ram_gb'] or 'no detectada'} GB")
-    print(f"GPU: {'; '.join(h['gpu']) if h['gpu'] else 'ninguna detectada'}")
+    print(f"GPU: {h['gpu'] or 'ninguna detectada'}")
+    print(f"VRAM: {h['vram_gb'] if h['vram_gb'] is not None else 'no detectada'} GB")
     print(f"OS/kernel: {h['os']}")
     print(f"Distribución: {d['name'] or 'no detectada'}")
     if d["supported_name"]:
