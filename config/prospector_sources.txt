@@ -1,0 +1,11 @@
+# LEONES Prospector — one source URL per line.
+# Keep this list explicit and auditable. Discovery does not validate content.
+# Models / ecosystem
+https://huggingface.co/models
+https://github.com/trending
+# Agent skills / harnesses
+https://github.com/Tencent/SkillHone
+https://github.com/The-AI-Alliance/cube-harness
+https://github.com/Darwin-Agent/HarnessX
+https://github.com/OpenLAIR/OpenSkill
+# Add project, quantization, fine-tuning, runtime and benchmark sources here.

@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "leones"
+version = "0.2.0.dev0"
+description = "Local Ecosystem of Open Neural Expert Systems"
+requires-python = ">=3.11"
+license = { text = "AGPL-3.0-only" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
