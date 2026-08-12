@@ -2,7 +2,7 @@
 const items=[
  ['Inicio','index.html','top'],
  ['Proyecto','proyecto.html','top'],
- ['9 pilares','pilares.html','project'],
+ ['Pilares','pilares.html','project'],
  ['Arquitectura','arquitectura.html','project'],
  ['Pila','pila.html','project'],
  ['Debian / Ubuntu / RHEL','os.html','top'],
