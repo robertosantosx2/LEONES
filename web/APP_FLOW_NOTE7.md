@@ -1,1 +1,1 @@
-Flujo: necesidad → hardware → modelo → inferencia → LOTB → informe → privacidad/publicación → estadísticas → mejores recomendaciones.
+Flujo: necesidad → hardware → modelo → inferencia → evaluación → informe → privacidad/publicación → estadísticas → mejores recomendaciones.
