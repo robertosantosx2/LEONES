@@ -2,10 +2,22 @@
 
 Estas reglas son deliberadamente simples.
 
+> **Regla principal: scripts sencillos que hagan las menores cosas posibles y estén muy documentados.**
+
 ## 1. Un script, una responsabilidad
 
 Cada script debe hacer una cosa principal. Evitamos módulos que descarguen,
 instalen, configuren, ejecuten y evalúen todo a la vez.
+
+Ejemplos:
+
+- `hardware`: detectar hardware.
+- `model`: describir o localizar un modelo.
+- `infer`: ejecutar inferencia.
+- `lotb`: ejecutar una prueba LOTB.
+- `report`: convertir resultados en informes.
+- `publish`: publicar resultados preparados.
+- `stats`: agregar resultados para la web.
 
 ## 2. Preferir composición a magia
 
@@ -16,11 +28,15 @@ Un componente no debe conocer detalles internos de otro si puede evitarlos.
 
 Todo script nuevo debe explicar al principio:
 
-- qué hace;
-- qué no hace;
-- qué entradas necesita;
-- qué salida produce;
-- qué dependencias externas utiliza.
+1. qué hace;
+2. qué no hace;
+3. qué entradas necesita;
+4. qué salida produce;
+5. qué dependencias externas utiliza;
+6. un ejemplo mínimo de uso;
+7. sus limitaciones conocidas.
+
+El código debe poder entenderse sin reconstruir una arquitectura oculta.
 
 ## 4. Dependencias mínimas
 
@@ -46,3 +62,14 @@ identificables y configuración explícita.
 
 LEONES debe crecer por incrementos pequeños y comprobables. Una abstracción
 solo se añade cuando existe una necesidad real.
+
+## 9. Documentación web sincronizada
+
+Cada avance relevante de arquitectura, operación o metodología debe reflejarse
+también en la web pública. La documentación no debe quedar retrasada respecto
+al código.
+
+## 10. Autonomía sin acoplamiento
+
+LEONES no debe depender de una aplicación de escritorio concreta. Los runtimes
+externos son adaptadores intercambiables.
