@@ -7,7 +7,7 @@ install or benchmark anything.
 
 import argparse
 
-from .atlas import InMemoryAtlas
+from .atlas import AtlasRecord, InMemoryAtlas
 from .core.contracts import HardwareProfile, ModelCandidate
 from .engine import LeonesEngine
 
@@ -19,7 +19,7 @@ def main() -> None:
     args = parser.parse_args()
 
     atlas = InMemoryAtlas([
-        # Initial development candidate. Real Atlas data will replace this list.
+        # Development candidate. Real Atlas data will replace this list.
         AtlasRecord(ModelCandidate(
             model_id="qwen3-8b",
             quantization="Q4_K_M",
