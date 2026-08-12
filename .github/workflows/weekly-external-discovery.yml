@@ -1,0 +1,27 @@
+name: Weekly external estimates discovery
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Discover sources
+        run: python scripts/discover_external_estimates.py
+      - name: Commit discovery metadata
+        run: |
+          git config user.name 'LEONES bot'
+          git config user.email 'leones-bot@users.noreply.github.com'
+          git add data/external_discovery.jsonl
+          git diff --cached --quiet || git commit -m 'data: weekly external estimate discovery'
+          git push
