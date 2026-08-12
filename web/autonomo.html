@@ -1,0 +1,14 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEONES · Flujo autónomo</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:auto;padding:30px;line-height:1.6;color:#17212b}h1,h2{color:#12304a}.box{border:1px solid #d8e0e7;border-radius:12px;padding:20px;margin:18px 0}pre{background:#eef3f7;padding:14px;overflow:auto}</style></head><body><h1>Primer flujo autónomo de LEONES</h1><p>LEONES ya dispone de un orquestador fino que conecta las piezas básicas sin convertirlas en un componente monolítico.</p><div class="box"><h2>Flujo</h2><pre>Petición
+   ↓
+Leones Atlas
+   ↓
+Leones Router
+   ↓
+Decision
+   ↓
+Model Preparation
+   ↓
+Runtime
+   ↓
+respuesta</pre></div><div class="box"><h2>Uso</h2><pre>python -m leones.auto_run --atlas leones_atlas.sqlite \
+  "Write a Python function that adds two numbers"</pre></div><div class="box"><h2>Límite intencionado</h2><p>Esta primera versión solo usa modelos ya registrados y accesibles localmente. No descarga ni modifica modelos. Primero demostramos una ruta autónoma pequeña y verificable.</p></div><div class="box"><h2>Próxima evolución</h2><p>La decisión del Router incorporará progresivamente hardware, RAM/VRAM, cuantización, contexto, latencia, benchmarks y capacidades. Cada criterio tendrá su propia documentación y evidencia.</p></div><p><a href="index.html">Inicio</a> · <a href="router.html">Router</a> · <a href="router-atlas.html">Router + Atlas</a> · <a href="ejecucion.html">Ejecución</a></p></body></html>
