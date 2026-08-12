@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robertosantosx2.github.io/LEONES/atlas/schema.json",
+  "title": "LEONES Atlas Record",
+  "type": "object",
+  "required": ["id", "kind", "name", "evidence"],
+  "properties": {
+    "id": {"type": "string"},
+    "kind": {"enum": ["model", "family", "organization", "runtime", "backend", "quantization", "tool", "benchmark"]},
+    "name": {"type": "string"},
+    "family": {"type": ["string", "null"]},
+    "organization": {"type": ["string", "null"]},
+    "version": {"type": ["string", "null"]},
+    "openness": {
+      "type": "object",
+      "properties": {
+        "classification": {"type": ["string", "null"]},
+        "evidence": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "architecture": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "evaluation": {
+      "type": "array",
+      "items": {"type": "object", "additionalProperties": true}
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["state"],
+      "properties": {
+        "state": {"enum": ["reported", "reproducible", "verified", "rejected"]},
+        "sources": {"type": "array", "items": {"type": "string"}},
+        "retrieved_at": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "lifecycle": {"enum": ["active", "changed", "deprecated", "unknown"]}
+  },
+  "additionalProperties": false
+}
