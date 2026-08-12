@@ -1,0 +1,1 @@
+La aplicación guía desde la necesidad hasta la evidencia y la Manada. Los comandos se ejecutan localmente por el usuario.

@@ -1,0 +1,1 @@
+La contribución a la Manada es voluntaria y permite mejorar recomendaciones futuras mediante evidencia agregada.
