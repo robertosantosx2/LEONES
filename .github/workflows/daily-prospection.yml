@@ -51,7 +51,21 @@ jobs:
       - name: Run Atlas ingest and license gate
         run: python scripts/prospection/daily_atlas_ingest.py
 
-      - name: Publish generated discovery data
+      - name: Generate daily report
+        run: python scripts/prospection/daily_report.py
+
+      - name: Upload daily report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-daily-report
+          path: |
+            data/prospection/daily_report.json
+            data/prospection/daily_report.md
+            data/prospection/daily_source_report.json
+            data/prospection/atlas_review_queue.ndjson
+          if-no-files-found: warn
+
+      - name: Publish generated discovery data and report
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -59,6 +73,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'No changes to publish.'
           else
-            git commit -m 'chore: update daily Atlas prospection'
+            git commit -m 'chore: update daily Atlas prospection report'
             git push
           fi
