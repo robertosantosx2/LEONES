@@ -50,7 +50,7 @@ jobs:
 
       - name: Enrich GitHub discoveries
         env:
-          GITHUB_TOKEN: ${{ secrets.ATLAS_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: python scripts/prospection/enrich_github.py
 
       - name: Classify discoveries
@@ -82,5 +82,6 @@ jobs:
             echo 'No changes to publish.'
           else
             git commit -m 'chore: update daily Atlas prospection report'
-            git push
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
