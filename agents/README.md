@@ -10,9 +10,9 @@ Salida mínima:
 - `status`: completed | failed | blocked | manual_review
 - `steps`: pasos ejecutados
 - `artifacts`: artefactos producidos, sin rutas privadas
-- `evidence`: referencia al resultado LOTB o revisión manual
+- `evidence`: referencia al resultado de Evaluación o revisión manual
 
 Un agente no puede declarar una capacidad por sí mismo: debe quedar respaldada por una ejecución reproducible.
 
 ## Próximo backend
-El primer agente operativo debe reutilizar LOTB y herramientas locales antes de añadir planificación compleja.
+El primer agente operativo debe reutilizar Evaluación y herramientas locales antes de añadir planificación compleja.
