@@ -1,0 +1,14 @@
+Qwen | Qwen3.5-9B | 9B | Dense | general, reasoning, coding
+Qwen | Qwen3.5-27B | 27B | Dense | general, reasoning, coding
+Qwen | Qwen3.5-35B-A3B | 35B / 3B active | MoE | general, reasoning, coding
+Qwen | Qwen3.6-27B | 27B | Dense | coding, agents, general
+Google | Gemma-4-12B-IT | 12B | | general, coding, tools
+Google | Gemma-4-26B-A4B | 26B / 4B active | MoE | general, coding, tools
+NVIDIA | Nemotron-3-Nano-30B-A3B | 30B / 3B active | MoE/hybrid | general, reasoning, agents
+DeepSeek | DeepSeek-V4-Flash | | | general, reasoning, coding
+Moonshot AI | Kimi-K2.7-Code | | | coding, agents
+GLM / Z.ai | GLM-5.2 | | | general, reasoning, coding, agents
+MiniMax | MiniMax-M3 | | | general, reasoning, coding
+Mistral | Devstral Small 2 | | | coding, agents
+Meta | Llama 3.3 70B | 70B | Dense | general, reasoning
+TII | Falcon H1R 7B | 7B | Hybrid | reasoning, maths
