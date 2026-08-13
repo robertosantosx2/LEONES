@@ -4,7 +4,7 @@
 >
 > **Linux primero · evidencia real · conocimiento colectivo.**
 
-[🌐 **Web de LEONES y dashboard metaLEONES**](https://robertosantosx2.github.io/LEONES/)
+[🌐 **Web de LEONES y dashboard de la Manada**](https://robertosantosx2.github.io/LEONES/)
 
 [⚙️ **Aplicación LEONES**](https://robertosantosx2.github.io/LEONES/app.html)
 
@@ -81,6 +81,8 @@ La separación canónica es:
 | `leones-privacy.py` | ¿Qué puede salir de mi máquina? | Revisar posibles datos sensibles. |
 | `leones-publish.py` | ¿Quiero compartirlo? | Publicar únicamente mediante acción explícita. |
 | `leones-stats.py` | ¿Qué aprende el conjunto? | Agregar resultados sin convertirlos artificialmente en evidencia verificada. |
+| `leones-manada-report.py` | ¿Quiero aportar un informe? | Preparar un informe técnico para la Manada. |
+| `leones-manada-stats.py` | ¿Qué aprende la Manada? | Agregar los informes compartidos voluntariamente. |
 
 El orquestador puede coordinar el recorrido, pero **no debe absorber la responsabilidad de todos los componentes**.
 
@@ -382,6 +384,8 @@ Documentación especialmente relevante:
 - [`docs/PROSPECTION.md`](docs/PROSPECTION.md) — prospección.
 - [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) — contrato de resultados.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura.
+- [`docs/MANADA_AUTO_REPORT.md`](docs/MANADA_AUTO_REPORT.md) — generación de informes de la Manada.
+- [`docs/MANADA_STATS.md`](docs/MANADA_STATS.md) — estadísticas de la Manada.
 
 ---
 
