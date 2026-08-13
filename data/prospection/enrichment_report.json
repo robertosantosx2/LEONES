@@ -1,0 +1,9 @@
+{
+  "input": "data/prospection/live_discoveries.ndjson",
+  "output": "data/prospection/enriched_discoveries.ndjson",
+  "repositories_processed": 87,
+  "enriched_ok": 0,
+  "errors": 87,
+  "github_token_used": true,
+  "note": "Enrichment is evidence collection only; it does not publish to Atlas or approve licenses."
+}
