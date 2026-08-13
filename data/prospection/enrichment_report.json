@@ -5,5 +5,77 @@
   "enriched_ok": 0,
   "errors": 87,
   "github_token_used": true,
+  "diagnostics": [
+    {
+      "repository": "sharksurfauto-byte/ARES-v2",
+      "status": 401,
+      "error_type": "HTTP 401",
+      "message": "Bad credentials",
+      "rate_limit_remaining": null
+    },
+    {
+      "repository": "JeremyMaille/rag-aero",
+      "status": 401,
+      "error_type": "HTTP 401",
+      "message": "Bad credentials",
+      "rate_limit_remaining": null
+    },
+    {
+      "repository": "Francis1998/nexus-llm-router",
+      "status": 401,
+      "error_type": "HTTP 401",
+      "message": "Bad credentials",
+      "rate_limit_remaining": null
+    },
+    {
+      "repository": "YogendraChukka01/AdaptiveAgent",
+      "status": 401,
+      "error_type": "HTTP 401",
+      "message": "Bad credentials",
+      "rate_limit_remaining": null
+    },
+    {
+      "repository": "FB208/OpenBidKit_Yibiao",
+      "status": 401,
+      "error_type": "HTTP 401",
+      "message": "Bad credentials",
+      "rate_limit_remaining": null
+    },
+    {
+      "repository": "GabrielCpp/stablemate",
+      "status": 401,
+      "error_type": "HTTP 401",
+      "message": "Bad credentials",
+      "rate_limit_remaining": null
+    },
+    {
+      "repository": "IntelliCoder-AI/multi-agent-travel-planner-using-langraph",
+      "status": 401,
+      "error_type": "HTTP 401",
+      "message": "Bad credentials",
+      "rate_limit_remaining": null
+    },
+    {
+      "repository": "fufellen/LLM-skills",
+      "status": 401,
+      "error_type": "HTTP 401",
+      "message": "Bad credentials",
+      "rate_limit_remaining": null
+    },
+    {
+      "repository": "nonnoob/claude-briefings",
+      "status": 401,
+      "error_type": "HTTP 401",
+      "message": "Bad credentials",
+      "rate_limit_remaining": null
+    },
+    {
+      "repository": "official-eswaran/DataWhisper",
+      "status": 401,
+      "error_type": "HTTP 401",
+      "message": "Bad credentials",
+      "rate_limit_remaining": null
+    }
+  ],
   "note": "Enrichment is evidence collection only; it does not publish to Atlas or approve licenses."
 }
