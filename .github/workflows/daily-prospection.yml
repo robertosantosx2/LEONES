@@ -88,6 +88,7 @@ jobs:
             echo 'No changes to publish.'
           else
             git commit -m 'chore: update daily Atlas prospection report'
-            git pull --rebase origin main
+            git fetch origin main
+            git rebase -X theirs origin/main
             git push origin HEAD:main
           fi
