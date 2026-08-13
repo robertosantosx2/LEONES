@@ -10,7 +10,7 @@ Fuente canónica de la lista de licencias aprobadas:
 
 https://opensource.org/Licenses
 
-La página de OSI identifica las licencias aprobadas y sus identificadores SPDX. OSI explica que una licencia open source debe cumplir la Open Source Definition y pasar por su proceso de revisión. citehttps://opensource.org/Licenses
+La página de OSI identifica las licencias aprobadas y sus identificadores SPDX. OSI explica que las licencias aprobadas deben cumplir la Open Source Definition y pasar por su proceso de revisión.
 
 ## Dos niveles dentro del criterio OSI
 
