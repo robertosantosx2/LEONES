@@ -1,6 +1,6 @@
 # Estadísticas de la Manada
 
-` scripts/leones-manada-stats.py` analiza los informes Markdown publicados voluntariamente en `results/manada/` y genera estadísticas y gráficas.
+`scripts/leones-manada-stats.py` analiza los informes Markdown publicados voluntariamente en `results/manada/` y genera estadísticas y gráficas.
 
 ## Uso
 
