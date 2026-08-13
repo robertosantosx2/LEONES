@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Enrich GitHub discoveries with repository metadata and README evidence.
-
-The original discovery file is never modified. This produces a separate NDJSON
-stream suitable for classification and later license review.
-"""
+"""Enrich GitHub discoveries with repository metadata and README evidence."""
 from __future__ import annotations
 
 import argparse
@@ -19,23 +15,35 @@ API = "https://api.github.com"
 
 
 def request_json(url: str):
-    req = urllib.request.Request(
-        url,
-        headers={
-            "Accept": "application/vnd.github+json",
-            "User-Agent": "LEONES-Atlas-Prospection/1.0",
-        },
-    )
     token = os.environ.get("GITHUB_TOKEN")
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "LEONES-Atlas-Prospection/1.1",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
     if token:
-        req.add_header("Authorization", f"Bearer {token}")
+        headers["Authorization"] = f"Bearer {token}"
+    req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
-            return json.loads(r.read().decode("utf-8"))
+            return json.loads(r.read().decode("utf-8")), {
+                "status": r.status,
+                "rate_limit_remaining": r.headers.get("X-RateLimit-Remaining"),
+            }
     except urllib.error.HTTPError as e:
-        return {"_error": f"HTTP {e.code}", "_status": e.code}
+        body = e.read().decode("utf-8", errors="replace")
+        try:
+            payload = json.loads(body)
+            message = payload.get("message", "")
+        except Exception:
+            message = body[:300]
+        return {"_error": f"HTTP {e.code}", "_status": e.code, "_message": message}, {
+            "status": e.code,
+            "rate_limit_remaining": e.headers.get("X-RateLimit-Remaining"),
+            "rate_limit_reset": e.headers.get("X-RateLimit-Reset"),
+        }
     except Exception as e:
-        return {"_error": str(e)}
+        return {"_error": type(e).__name__, "_message": str(e)[:300]}, {}
 
 
 def repo_name(url: str):
@@ -43,34 +51,40 @@ def repo_name(url: str):
     if len(parts) != 2:
         return None
     bits = parts[1].split("/")
-    if len(bits) < 2:
-        return None
-    return f"{bits[0]}/{bits[1]}"
+    return f"{bits[0]}/{bits[1]}" if len(bits) >= 2 else None
+
+
+def error_record(payload, meta):
+    return {
+        "status": "error",
+        "http_status": payload.get("_status") or meta.get("status"),
+        "error_type": payload.get("_error", "github_api"),
+        "message": payload.get("_message", "unknown error"),
+        "rate_limit_remaining": meta.get("rate_limit_remaining"),
+        "rate_limit_reset": meta.get("rate_limit_reset"),
+    }
 
 
 def enrich(item):
     full = repo_name(item.get("url", ""))
-    item["enrichment"] = {"status": "unavailable"}
     if not full:
+        item["enrichment"] = {"status": "error", "error_type": "invalid_repository_url"}
         return item
 
-    repo = request_json(f"{API}/repos/{full}")
+    repo, meta = request_json(f"{API}/repos/{full}")
     if repo.get("_error"):
-        item["enrichment"] = {"status": "error", **repo}
+        item["enrichment"] = error_record(repo, meta)
         return item
 
     license_obj = repo.get("license") or {}
-    topics = request_json(f"{API}/repos/{full}/topics")
-    readme = request_json(f"{API}/repos/{full}/readme")
-
+    topics, _ = request_json(f"{API}/repos/{full}/topics")
+    readme, _ = request_json(f"{API}/repos/{full}/readme")
     readme_text = ""
     if isinstance(readme, dict) and readme.get("content"):
         try:
-            readme_text = base64.b64decode(
-                readme["content"]
-            ).decode("utf-8", errors="replace")
+            readme_text = base64.b64decode(readme["content"]).decode("utf-8", errors="replace")
         except Exception:
-            readme_text = ""
+            pass
 
     item["description"] = repo.get("description") or item.get("description")
     item["enrichment"] = {
@@ -93,6 +107,7 @@ def enrich(item):
         "homepage": repo.get("homepage"),
         "readme_url": readme.get("html_url") if isinstance(readme, dict) else None,
         "readme_excerpt": readme_text[:12000],
+        "rate_limit_remaining": meta.get("rate_limit_remaining"),
     }
     return item
 
@@ -101,18 +116,14 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--input", default="data/prospection/live_discoveries.ndjson")
     p.add_argument("--output", default="data/prospection/enriched_discoveries.ndjson")
-    p.add_argument("--max", type=int, default=0, help="maximum unique repositories; 0 = all")
+    p.add_argument("--max", type=int, default=0)
     p.add_argument("--delay", type=float, default=0.15)
     args = p.parse_args()
 
-    source = Path(args.input)
-    destination = Path(args.output)
+    source, destination = Path(args.input), Path(args.output)
     destination.parent.mkdir(parents=True, exist_ok=True)
-
-    seen = set()
-    total = 0
-    ok = 0
-    errors = 0
+    seen, diagnostics = set(), []
+    total = ok = errors = 0
 
     with source.open(encoding="utf-8") as src, destination.open("w", encoding="utf-8") as dst:
         for line in src:
@@ -127,12 +138,20 @@ def main():
             seen.add(key)
             total += 1
             item = enrich(item)
-            if item.get("enrichment", {}).get("status") == "ok":
+            enrichment = item.get("enrichment", {})
+            if enrichment.get("status") == "ok":
                 ok += 1
             else:
                 errors += 1
+                if len(diagnostics) < 10:
+                    diagnostics.append({
+                        "repository": repo_name(item.get("url", "")),
+                        "status": enrichment.get("http_status"),
+                        "error_type": enrichment.get("error_type"),
+                        "message": enrichment.get("message"),
+                        "rate_limit_remaining": enrichment.get("rate_limit_remaining"),
+                    })
             dst.write(json.dumps(item, ensure_ascii=False) + "\n")
-            dst.flush()
             time.sleep(args.delay)
 
     report = {
@@ -142,12 +161,10 @@ def main():
         "enriched_ok": ok,
         "errors": errors,
         "github_token_used": bool(os.environ.get("GITHUB_TOKEN")),
+        "diagnostics": diagnostics,
         "note": "Enrichment is evidence collection only; it does not publish to Atlas or approve licenses.",
     }
-    Path("data/prospection/enrichment_report.json").write_text(
-        json.dumps(report, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    Path("data/prospection/enrichment_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
 
