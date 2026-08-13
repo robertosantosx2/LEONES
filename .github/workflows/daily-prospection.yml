@@ -48,6 +48,14 @@ jobs:
       - name: Run hardware discovery
         run: python scripts/prospection/bot_hardware.py --input data/prospection/hardware_sources.ndjson
 
+      - name: Enrich GitHub discoveries
+        env:
+          GITHUB_TOKEN: ${{ secrets.ATLAS_GITHUB_TOKEN }}
+        run: python scripts/prospection/enrich_github.py
+
+      - name: Classify discoveries
+        run: python scripts/prospection/classifier.py --input data/prospection/enriched_discoveries.ndjson --output data/prospection/classified_discoveries.ndjson
+
       - name: Run Atlas ingest and license gate
         run: python scripts/prospection/daily_atlas_ingest.py
 
