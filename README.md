@@ -49,7 +49,7 @@ RUNTIME
    ↓
 INFERENCIA
    ↓
-LOTB / AGENTIC
+EVALUACIÓN / AGENTIC
    ↓
 INFORME
    ↓
@@ -62,7 +62,7 @@ ESTADÍSTICAS
 MEJORES RECOMENDACIONES
 ```
 
-El usuario puede detenerse en cualquier punto. No todos necesitan llegar a LOTB, publicar resultados o formar parte de la Manada.
+El usuario puede detenerse en cualquier punto. No todos necesitan llegar a Evaluación, publicar resultados o formar parte de la Manada.
 
 ### 2. Herramientas pequeñas y responsabilidades claras
 
@@ -76,7 +76,7 @@ La separación canónica es:
 | `leones-model.py` | ¿Qué modelo tengo? | Identificar el modelo y sus metadatos básicos. |
 | `leones-runtime.py` | ¿Qué runtime local tengo? | Detectar endpoints/runtimes disponibles. |
 | `leones-infer.py` | ¿Cómo rinde una inferencia pequeña? | Medir inferencia básica reproducible. |
-| `leones-lotb.py` | ¿Puede completar tareas agentivas? | Medir tareas agentivas con criterios explícitos. |
+| `leones-evaluation.py` | ¿Puede completar tareas agentivas? | Medir tareas agentivas con criterios explícitos. |
 | `leones-report.py` | ¿Qué evidencia tengo? | Convertir resultados en un informe legible. |
 | `leones-privacy.py` | ¿Qué puede salir de mi máquina? | Revisar posibles datos sensibles. |
 | `leones-publish.py` | ¿Quiero compartirlo? | Publicar únicamente mediante acción explícita. |
@@ -159,7 +159,7 @@ Véase [`docs/PLATFORMS.md`](docs/PLATFORMS.md) para la matriz y las instruccion
 
 ## Inferencia y agentic: dos preguntas diferentes
 
-LOTB separa dos niveles:
+Evaluación separa dos niveles:
 
 1. **Inferencia:** modelo + backend + hardware.
 2. **Agentic:** agente + herramientas + tareas.
@@ -170,7 +170,7 @@ Por eso el pipeline distingue entre medir **tokens/segundo** y medir la capacida
 
 ---
 
-## LOTB — Local Operations & Tool Benchmark
+## Evaluación agentiva
 
 La batería inicial contiene cinco tareas:
 
@@ -180,7 +180,7 @@ La batería inicial contiene cinco tareas:
 - **B04 — recuperación ante fallo**
 - **B05 — coding local**
 
-LOTB no debe confundir «el endpoint respondió» con «la tarea fue realizada correctamente».
+Evaluación no debe confundir «el endpoint respondió» con «la tarea fue realizada correctamente».
 
 Las evaluaciones pueden producir estados como:
 
@@ -319,7 +319,7 @@ No es un simple panel de scripts. Su función es conducir al usuario por el proc
 3. **Modelo** — ¿qué quiero probar?
 4. **Runtime** — ¿con qué lo voy a ejecutar?
 5. **Inferencia** — ¿cómo rinde?
-6. **LOTB** — ¿puede realizar tareas agentivas?
+6. **Evaluación** — ¿puede realizar tareas agentivas?
 7. **Informe** — ¿qué evidencia tengo?
 8. **Privacidad** — ¿qué puedo compartir?
 9. **Manada** — ¿quiero contribuir?
