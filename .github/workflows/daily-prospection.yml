@@ -30,6 +30,11 @@ jobs:
       - name: Run daily source registry
         run: python scripts/prospection/run_daily_prospection.py
 
+      - name: Run live federated forge discovery
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/prospection/run_federated_discovery.py --queries 2
+
       - name: Run model discovery
         run: python scripts/prospection/bot_models.py --input data/prospection/model_sources.ndjson
 
@@ -70,6 +75,7 @@ jobs:
             data/prospection/daily_report.json
             data/prospection/daily_report.md
             data/prospection/daily_source_report.json
+            data/prospection/federated_discovery_report.json
             data/prospection/atlas_review_queue.ndjson
           if-no-files-found: warn
 
