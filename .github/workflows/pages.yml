@@ -8,6 +8,9 @@ on:
       - 'assets/**'
       - 'results/**'
       - '.github/workflows/pages.yml'
+  workflow_run:
+    workflows: ["Daily OSI Prospection"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -21,10 +24,13 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -38,12 +44,26 @@ jobs:
           if [ -d assets ]; then cp -a assets _site/assets; fi
           touch _site/.nojekyll
 
+      - name: Verify prospection data is included
+        run: |
+          test -s _site/data/prospeccion.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('_site/data/prospeccion.json')
+          d = json.loads(p.read_text(encoding='utf-8'))
+          assert isinstance(d.get('items'), list), 'prospeccion.json has no items list'
+          assert d.get('criterion') == 'OSI-approved SPDX license is the primary discovery gate', 'Unexpected prospection criterion'
+          print(f"Prospection data verified: {len(d['items'])} OSI-approved candidates; updated={d.get('updated')}; since={d.get('since')}")
+          PY
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
