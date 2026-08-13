@@ -83,7 +83,7 @@ Inicialmente se utilizó tok/s como referencia de rendimiento. Después se decid
 
 La razón es sencilla: un agente no existe para producir tokens; existe para completar objetivos.
 
-Por ello se definió LOTB como una batería de tareas reproducibles:
+Por ello se definió **LB** como una batería de tareas reproducibles:
 
 - **B01 — memoria/localidad**
 - **B02 — operación sobre archivos**
@@ -141,12 +141,12 @@ La arquitectura experimental quedó conceptualmente:
           Hardware de consumo
                      │
                      ▼
-                 LOTB B01-B05
+                  LB B01-B05
 ```
 
 La primera infraestructura de referencia utiliza **llama.cpp server** porque permite exponer una API compatible con OpenAI y conectar la capa agéntica con un motor de inferencia local.
 
-## 11. Baseline LOTB-0
+## 11. Baseline LB-0
 
 Para que las comparaciones sean reproducibles se seleccionó un primer modelo de referencia:
 
@@ -160,9 +160,9 @@ Se conservaron como comparaciones:
 - Qwen3-8B Q8_0;
 - Qwen3-14B Q4_K_M para perfiles de 32/64 GB.
 
-Importante: seleccionar LOTB-0 **no implica afirmar que alcance 10 tok/s en cualquier hardware**. Esa cifra debe medirse en la máquina real.
+Importante: seleccionar LB-0 **no implica afirmar que alcance 10 tok/s en cualquier hardware**. Esa cifra debe medirse en la máquina real.
 
-## 12. Separación entre benchmark de inferencia y benchmark agéntico
+## 12. Separación entre benchmark de inferencia y evaluación agentiva
 
 Se decidió no mezclar ambas cosas.
 
@@ -205,7 +205,7 @@ Un resultado oficial debe proceder de:
 - medición nativa;
 - resultado de tarea cuando corresponda.
 
-No se deben importar cifras de tok/s de terceros como si fueran medidas LOTB.
+No se deben importar cifras de tok/s de terceros como si fueran medidas LB.
 
 ## 14. Primer experimento: H1
 
@@ -330,7 +330,7 @@ Una persona que llegue al proyecto debe poder entender, sin leer esta conversaci
 4. por qué Buddy es una pieza central;
 5. qué significa hardware de consumo;
 6. qué son H0-H3;
-7. qué es LOTB;
+7. qué es LB;
 8. por qué 10 tok/s es el umbral;
 9. qué significa CABE y RULA;
 10. cómo se mide la inferencia;
@@ -349,7 +349,7 @@ Especialmente quedan abiertos:
 - nuevos agentes y runtimes;
 - nuevos backends de inferencia;
 - nuevas técnicas para ejecutar modelos grandes en hardware de consumo;
-- nuevas tareas LOTB;
+- nuevas tareas de evaluación;
 - ponderación de calidad frente a velocidad;
 - métricas de memoria/energía;
 - comparación sistemática entre CPU y GPU;
