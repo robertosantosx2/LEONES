@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "schedule": "daily",
+  "pipeline": [
+    {"id":"models","script":"bot_models.py","targets":["model","family","organization","weights","license","release"]},
+    {"id":"runtimes","script":"bot_runtimes.py","targets":["runtime","backend","format","platform","license"]},
+    {"id":"agents","script":"bot_agents.py","targets":["agent","framework","tools","memory","license"]},
+    {"id":"skills","script":"bot_skills.py","targets":["skill","capability","agent","runtime","license"]},
+    {"id":"harnesses","script":"bot_harnesses.py","targets":["harness","benchmark","task","hardware","license"]},
+    {"id":"hardware","script":"bot_hardware.py","targets":["cpu","gpu","ram","vram","npu","platform"]}
+  ],
+  "gate": {"software_license_required":true,"unknown_license_status":"unvalidated","never_auto_publish":true},
+  "publication_states":["discovered","normalized","license-checked","review","verified","published","rejected"]
+}
