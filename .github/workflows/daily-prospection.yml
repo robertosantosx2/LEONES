@@ -1,0 +1,64 @@
+name: Daily Atlas Prospection
+
+on:
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-daily-prospection
+  cancel-in-progress: false
+
+jobs:
+  prospection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run daily source registry
+        run: python scripts/prospection/run_daily_prospection.py
+
+      - name: Run model discovery
+        run: python scripts/prospection/bot_models.py --input data/prospection/model_sources.ndjson
+
+      - name: Run runtime discovery
+        run: python scripts/prospection/bot_runtimes.py --input data/prospection/runtime_sources.ndjson
+
+      - name: Run agent discovery
+        run: python scripts/prospection/bot_agents.py --input data/prospection/agent_sources.ndjson
+
+      - name: Run skill discovery
+        run: python scripts/prospection/bot_skills.py --input data/prospection/skill_sources.ndjson
+
+      - name: Run harness discovery
+        run: python scripts/prospection/bot_harnesses.py --input data/prospection/harness_sources.ndjson
+
+      - name: Run hardware discovery
+        run: python scripts/prospection/bot_hardware.py --input data/prospection/hardware_sources.ndjson
+
+      - name: Run Atlas ingest and license gate
+        run: python scripts/prospection/daily_atlas_ingest.py
+
+      - name: Publish generated discovery data
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/prospection/ scripts/prospection/
+          if git diff --cached --quiet; then
+            echo 'No changes to publish.'
+          else
+            git commit -m 'chore: update daily Atlas prospection'
+            git push
+          fi
