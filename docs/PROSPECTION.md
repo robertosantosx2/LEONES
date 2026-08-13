@@ -1,163 +1,155 @@
-# LOAS — Nivel de prospección
+# Prospección LEONES
 
 ## Objetivo
 
-Además del descubrimiento diario de proyectos Open/Copyleft, LOAS tendrá un nivel de **prospección semanal** dedicado a buscar piezas que mejoren las **skills, funciones o características de los harnesses** de la pila.
+La prospección de LEONES es un proceso **diario** para descubrir piezas, proyectos, software, modelos, runtimes, agentes, herramientas, benchmarks, técnicas de eficiencia y componentes relacionados con hardware que puedan mejorar la IA local en hardware de consumo.
 
-El objetivo no es sustituir automáticamente componentes. Es descubrir mejoras potenciales y convertirlas en recomendaciones que el usuario pueda instalar cuando sean compatibles con su configuración.
+El criterio principal no es una puntuación propia: **la licencia OSI es la puerta de entrada**.
 
-## Diferencia entre descubrimiento y prospección
+## Criterio principal: licencia OSI
 
-### Descubrimiento diario
+El bot busca primero un universo amplio de candidatos técnicos y después aplica el filtro de licencia.
 
-Pregunta:
+Un candidato entra en el conjunto principal de prospección únicamente cuando la licencia SPDX declarada por GitHub aparece en el catálogo actual de **licencias aprobadas por la Open Source Initiative (OSI)**:
 
-> ¿Qué proyectos Open nuevos han aparecido?
+https://opensource.org/Licenses
 
-Prioridad: identificar el universo Open y dar prioridad a Copyleft.
+Esto incluye todo el universo OSI, no solo Copyleft.
 
-### Prospección semanal
+### Copyleft prioritario
 
-Pregunta:
+Dentro de las licencias OSI aprobadas, LEONES destaca:
 
-> ¿Qué piezas nuevas pueden mejorar las capacidades del harness que ya utiliza el usuario?
+- `GPL-2.0`
+- `GPL-3.0`
+- `AGPL-3.0`
+- `LGPL-2.1`
+- `LGPL-3.0`
 
-Prioridad: **utilidad para una pila concreta**.
+En la web estos cinco identificadores se muestran con **fondo verde**.
 
-## Qué buscar
+> El fondo verde significa «Copyleft prioritario de LEONES». No significa aprobación técnica.
 
-La prospección debe buscar especialmente:
-
-- nuevas skills;
-- nuevos tool adapters;
-- herramientas de navegación y búsqueda;
-- integración con Git/GitHub;
-- ejecución de código;
-- manejo de archivos;
-- memoria y recuperación de contexto;
-- planificación y ejecución multietapa;
-- subagentes;
-- observabilidad;
-- evaluación;
-- recuperación ante errores;
-- seguridad y sandboxing;
-- automatización;
-- conectores;
-- nuevas capacidades de coding;
-- mejoras de UX del harness;
-- componentes que permitan hacer más con el mismo hardware.
-
-## Menú de recomendaciones
-
-Los candidatos relevantes deben aparecer en un menú de recomendaciones de LOAS.
-
-Una recomendación debe responder como mínimo:
-
-1. **Qué mejora.**
-2. **Qué harness afecta.**
-3. **Qué versiones son compatibles.**
-4. **Qué licencia tiene.**
-5. **Si es Copyleft.**
-6. **Qué requisitos de hardware añade.**
-7. **Qué dependencias introduce.**
-8. **Qué mejora de UX se espera.**
-9. **Cómo instalarlo.**
-10. **Cómo desinstalarlo/revertirlo.**
-11. **Qué evidencia existe.**
-
-## Recomendaciones condicionadas a la pila
-
-LOAS no debe mostrar una lista genérica de novedades como si todas fueran aplicables.
-
-Debe cruzar cada candidato con la configuración detectada por el usuario:
+## Flujo
 
 ```text
-hardware
-   +
-OS
-   +
-harness
-   +
-modelo
-   +
-backend
-   +
-versión
-   ↓
+DESCUBRIR MODELOS / PROYECTOS / SOFTWARE / PIEZAS
+                    ↓
+             LICENCIA SPDX
+                    ↓
+          ¿OSI APROBADA?
+             ↙           ↘
+           NO             SÍ
+           ↓              ↓
+       DESCARTAR       PROSPECCIÓN
+                          ↓
+              ¿COPyleft PRIORITARIO?
+                   ↓             ↓
+                 VERDE          NORMAL
+                          ↓
+                    REVISIÓN TÉCNICA
+                          ↓
+                       EVIDENCIA
+                          ↓
+                    ATLAS / ROUTER
+```
+
+La lista OSI se consulta en cada ejecución del bot para evitar depender de una lista estática que pueda quedar obsoleta.
+
+## Descubrimiento diario
+
+Preguntas que debe cubrir el bot:
+
+- ¿Qué modelos o repositorios de modelos han aparecido?
+- ¿Qué runtimes de inferencia local son relevantes?
+- ¿Qué agentes y harnesses nuevos existen?
+- ¿Qué herramientas permiten trabajar con archivos, Git, búsqueda, memoria o código?
+- ¿Qué técnicas o herramientas mejoran la eficiencia?
+- ¿Qué benchmarks permiten medir mejor el comportamiento real?
+- ¿Qué proyectos permiten aprovechar mejor hardware de consumo?
+- ¿Qué piezas pueden integrarse en la pila LEONES?
+
+La búsqueda técnica es amplia; el filtro OSI determina qué candidatos entran en el conjunto principal.
+
+## Prospección y recomendación
+
+El descubrimiento no implica recomendación automática.
+
+Cada candidato OSI aprobado debe pasar posteriormente por:
+
+1. actividad y mantenimiento;
+2. arquitectura;
+3. compatibilidad con hardware de consumo;
+4. compatibilidad con Debian, Ubuntu o RHEL cuando proceda;
+5. dependencias;
+6. reproducibilidad;
+7. seguridad;
+8. utilidad para una tarea concreta;
+9. evidencia disponible.
+
+La secuencia es:
+
+```text
+OSI aprobado
+    ↓
+relevancia técnica
+    ↓
 compatibilidad
-   ↓
+    ↓
+evidencia
+    ↓
 recomendación
 ```
 
-Ejemplo conceptual:
+## Licencia declarada frente a licencia verificada
+
+El filtro utiliza el SPDX declarado por GitHub. Es un criterio de descubrimiento y **no sustituye una revisión jurídica del repositorio completo**.
+
+Un proyecto sin licencia identificable, con licencia propietaria o con una licencia que no figure como aprobada por OSI no debe presentarse como hallazgo OSI aprobado.
+
+Los modelos requieren además una revisión específica de sus términos de uso, porque la licencia del repositorio o del código de inferencia no demuestra por sí sola las condiciones aplicables a los pesos del modelo.
+
+## Qué debe contener una recomendación
+
+Una recomendación debe indicar como mínimo:
+
+1. qué mejora;
+2. qué componente de la pila afecta;
+3. qué licencia SPDX tiene;
+4. si es OSI aprobado;
+5. si pertenece al grupo Copyleft prioritario;
+6. qué requisitos de hardware añade;
+7. qué dependencias introduce;
+8. qué versiones son compatibles;
+9. qué evidencia existe;
+10. cómo instalarlo;
+11. cómo revertirlo.
+
+## Regla de evidencia
+
+Prospector **descubre; no valida**.
+
+Un hallazgo debe poder evolucionar por estados:
 
 ```text
-✓ Recomendado
-   Esta skill es compatible con Buddy 1.x
-   y tu configuración actual.
-
-⚠ Compatible con cambios
-   Requiere Python >= X / Y GB adicionales.
-
-✗ No recomendado
-   No CABE en tu perfil H1.
+OSI-approved
+      ↓
+external-unvalidated
+      ↓
+revisión
+      ↓
+evidence
+      ↓
+Atlas
+      ↓
+Router
 ```
 
-## Prioridad de recomendaciones
+La licencia OSI es necesaria para entrar en el conjunto principal de prospección, pero no suficiente para recomendar un componente.
 
-Las recomendaciones deben ordenarse por:
+## Documentación relacionada
 
-1. mejora potencial de UX;
-2. compatibilidad con la pila actual;
-3. beneficio/coste;
-4. impacto sobre memoria y rendimiento;
-5. licencia, dando prioridad a Copyleft;
-6. madurez y mantenimiento;
-7. reproducibilidad/evidencia.
-
-## Regla CABE + RULA
-
-Una recomendación no debe presentarse como mejora garantizada.
-
-Debe distinguirse entre:
-
-- **CABE:** puede instalarse razonablemente en la configuración;
-- **RULA:** ha sido ejecutada y medida en una configuración comparable;
-- **RECOMENDADA:** LOAS tiene evidencia suficiente para recomendarla;
-- **EXPERIMENTAL:** prometedora pero todavía sin evidencia suficiente.
-
-## Instalación bajo control del usuario
-
-La prospección **no instala automáticamente** componentes.
-
-El usuario decide qué recomendación instalar.
-
-Antes de instalar, LOAS debe mostrar los cambios previstos y permitir conservar la configuración anterior o revertirlos cuando sea técnicamente posible.
-
-## Relación con el Score
-
-La prospección alimentará progresivamente el **Libre-Open Agentic Stack Score** y, cuando exista suficiente evidencia, permitirá descubrir combinaciones de componentes superiores a la pila de referencia.
-
-La métrica no debe premiar una herramienta únicamente por tener muchas funciones. Debe valorar si esas funciones producen una mejora real y reproducible de la experiencia agentic en hardware de consumo.
-
-## Resultado esperado
-
-LOAS evoluciona así:
-
-```text
-DESCUBRE
-   ↓
-PROSPECTA
-   ↓
-EVALÚA
-   ↓
-RECOMIENDA
-   ↓
-USUARIO DECIDE
-   ↓
-RULA
-   ↓
-APRENDE
-```
-
-El nivel de prospección es, por tanto, el puente entre el ecosistema que aparece cada semana y la evolución práctica de la pila de cada usuario.
+- `docs/PROSPECTION_LICENSE_POLICY.md` — política completa de licencias.
+- `scripts/discover_copyleft.py` — bot diario de descubrimiento.
+- `web/data/prospeccion.json` — datos consumidos por la web.
+- `web/prospeccion.html` — presentación pública de los hallazgos.
