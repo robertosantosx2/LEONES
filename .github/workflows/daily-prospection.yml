@@ -27,6 +27,10 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Save run base commit
+        id: base
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Run daily source registry
         run: python scripts/prospection/run_daily_prospection.py
 
@@ -80,15 +84,26 @@ jobs:
           if-no-files-found: warn
 
       - name: Publish generated discovery data and report
+        env:
+          BASE_SHA: ${{ steps.base.outputs.sha }}
         run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          mkdir -p /tmp/leones-generated
+          git diff --binary "$BASE_SHA" -- data/prospection/ scripts/prospection/ > /tmp/leones-generated/generated.patch || true
+          git fetch origin main
+          git reset --hard origin/main
+          if [ -s /tmp/leones-generated/generated.patch ]; then
+            git apply --3way /tmp/leones-generated/generated.patch || {
+              echo 'Generated outputs changed upstream; preferring this run for generated files.'
+              git apply --reject /tmp/leones-generated/generated.patch || true
+            }
+          fi
           git add data/prospection/ scripts/prospection/
           if git diff --cached --quiet; then
             echo 'No changes to publish.'
           else
             git commit -m 'chore: update daily Atlas prospection report'
-            git fetch origin main
-            git rebase -X theirs origin/main
             git push origin HEAD:main
           fi
