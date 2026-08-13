@@ -1,0 +1,15 @@
+{
+  "version":"1.0",
+  "purpose":"Plan de consultas para la prospección diaria. Los resultados deben conservar evidencia y pasar por el License Gate antes de Atlas.",
+  "families":[
+    {"id":"github","adapter":"github_gitlab","sources":["github"],"queries":["language:Python LLM","language:Python inference","agent framework","LLM runtime","model serving"],"sort":"updated"},
+    {"id":"gitlab","adapter":"github_gitlab","sources":["gitlab"],"queries":["LLM runtime","LLM inference","agent framework","AI agent"],"sort":"updated"},
+    {"id":"forgejo-gitea","adapter":"forge_api","sources":["codeberg","forgejo-network","forgejo","gitea","disroot-forge","notabug"],"queries":["LLM","inference","agent","runtime","machine learning"],"sort":"updated"},
+    {"id":"fedora-ecosystem","adapter":"forge_api","sources":["pagure"],"queries":["machine learning","LLM","inference","AI"],"sort":"updated"},
+    {"id":"desktop-forges","adapter":"forge_api","sources":["gnome-gitlab","kde-invent","freedesktop-gitlab","framagit"],"queries":["AI","machine learning","inference","LLM"],"sort":"updated"},
+    {"id":"sourcehut","adapter":"forge_api","sources":["sourcehut","srht"],"queries":["AI","LLM","machine learning","inference"],"sort":"updated"},
+    {"id":"savannah","adapter":"forge_api","sources":["gnu-savannah"],"queries":["machine learning","artificial intelligence","neural"],"sort":"updated"},
+    {"id":"huggingface","adapter":"huggingface_api","sources":["huggingface"],"queries":["text-generation","text2text-generation","code-generation","agents"],"sort":"createdAt"},
+    {"id":"research","adapter":"huggingface_api","sources":["huggingface-papers"],"queries":["LLM","local inference","efficient inference","agent"],"sort":"publishedAt"}
+  ]
+}
