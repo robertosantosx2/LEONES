@@ -27,8 +27,11 @@ def classify(row):
         matched=[p for p in patterns if re.search(p,t,re.I)]
         if matched:hits[category]=matched
     cats=list(hits)
-    if not cats: cats=['unclassified']
-    confidence='high' if len(cats)==1 and len(hits[cats[0]])>=2 else ('medium' if cats else 'low')
+    if not cats:
+        cats=['unclassified']
+        confidence='low'
+    else:
+        confidence='high' if len(cats)==1 and len(hits[cats[0]])>=2 else 'medium'
     row['categories']=cats
     row['category_confidence']=confidence
     row['classification_reason']='keyword evidence from name/description/discovery query'
