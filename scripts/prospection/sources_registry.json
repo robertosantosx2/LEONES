@@ -1,5 +1,5 @@
 {
-  "version":"1.0",
+  "version":"1.1",
   "purpose":"Registro central de sitios y forjas que la prospección diaria debe considerar para descubrir modelos, runtimes, agentes, skills, harnesses, hardware, datasets, papers y software relevante.",
   "rules":{"discover_only":true,"preserve_provenance":true,"license_gate_before_publication":true,"unknown_license":"unvalidated","never_auto_publish":true},
   "sources":[
@@ -9,7 +9,8 @@
     {"id":"sourcehut","name":"Sourcehut","domain":"sourcehut.org","url":"https://sourcehut.org/","kind":"forge","priority":"high"},
     {"id":"gnu-savannah","name":"GNU Savannah","domain":"savannah.gnu.org","url":"https://savannah.gnu.org/","kind":"forge","priority":"high"},
     {"id":"notabug","name":"NotABug","domain":"notabug.org","url":"https://notabug.org/","kind":"forge","priority":"medium"},
-    {"id":"forgejo-network","name":"Codeberg-test / Forgejo instances","domain":"federated","url":"https://forgejo.org/","kind":"federated-forge","priority":"high","notes":"Red federada de instancias Forgejo; las instancias concretas se incorporarán mediante discovery."},
+    {"id":"forgejo-network","name":"Forgejo instances","domain":"federated","url":"https://forgejo.org/","kind":"federated-forge","priority":"high","notes":"Las instancias concretas se incorporan mediante discovery o LEONES_FORGEJO_INSTANCES."},
+    {"id":"forgejo-next","name":"Forgejo Next","domain":"next.forgejo.org","url":"https://next.forgejo.org/","kind":"forge-instance","priority":"high","notes":"Instancia oficial de pruebas/demostración de Forgejo."},
     {"id":"forgejo","name":"Forgejo","domain":"forgejo.org","url":"https://forgejo.org/","kind":"forge-software","priority":"high"},
     {"id":"gitea","name":"Gitea","domain":"gitea.io","url":"https://gitea.io/","kind":"forge-software","priority":"high"},
     {"id":"gitlab-ce","name":"GitLab CE","domain":"about.gitlab.com","url":"https://about.gitlab.com/","kind":"forge-software","priority":"high"},
