@@ -1,10 +1,10 @@
 {
   "input": "data/prospection/enriched_discoveries.ndjson",
   "output": "data/prospection/enriched_discoveries_sources.ndjson",
-  "gitlab": 58,
+  "gitlab": 59,
   "forgejo": 61,
   "unchanged": 161,
-  "errors": 18,
-  "licenses_found": 46,
+  "errors": 17,
+  "licenses_found": 42,
   "note": "License values come only from source metadata or identifiable license files; unknown remains unvalidated."
 }

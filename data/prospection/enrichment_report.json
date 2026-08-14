@@ -1,9 +1,9 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 280,
+  "repositories_processed": 281,
   "enriched_ok": 85,
-  "non_github_preserved": 193,
+  "non_github_preserved": 194,
   "errors": 2,
   "github_token_used": true,
   "diagnostics": [
@@ -12,14 +12,14 @@
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4183"
+      "rate_limit_remaining": "4963"
     },
     {
       "repository": "benlmadan9-star/eco-mesh-sdk",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4077"
+      "rate_limit_remaining": "4857"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."
