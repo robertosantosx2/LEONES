@@ -87,6 +87,7 @@ jobs:
             data/prospection/discovery_merge_report.json
             data/prospection/enrichment_report.json
             data/prospection/atlas_review_queue.ndjson
+            data/prospection/atlas_candidates.ndjson
             web/data/prospeccion.json
           if-no-files-found: warn
 
