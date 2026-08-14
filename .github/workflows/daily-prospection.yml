@@ -12,6 +12,9 @@ concurrency:
   group: atlas-daily-prospection
   cancel-in-progress: false
 
+env:
+  LEONES_FORGEJO_INSTANCES: https://next.forgejo.org
+
 jobs:
   prospection:
     runs-on: ubuntu-latest
