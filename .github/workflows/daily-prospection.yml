@@ -69,6 +69,12 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: python scripts/prospection/enrich_github.py --input data/prospection/discovery_input.ndjson
 
+      - name: Enrich GitLab, Framagit, Forgejo and Gitea discoveries
+        env:
+          LEONES_GITLAB_TOKEN: ${{ secrets.LEONES_GITLAB_TOKEN }}
+          LEONES_FRAMAGIT_TOKEN: ${{ secrets.LEONES_FRAMAGIT_TOKEN }}
+        run: python scripts/prospection/enrich_sources.py
+
       - name: Classify discoveries
         run: python scripts/prospection/classifier.py --input data/prospection/enriched_discoveries.ndjson --output data/prospection/classified_discoveries.ndjson
 
@@ -92,6 +98,7 @@ jobs:
             data/prospection/federated_discovery_report.json
             data/prospection/discovery_merge_report.json
             data/prospection/enrichment_report.json
+            data/prospection/source_enrichment_report.json
             data/prospection/forge_instances.ndjson
             data/prospection/atlas_review_queue.ndjson
             data/prospection/atlas_candidates.ndjson
