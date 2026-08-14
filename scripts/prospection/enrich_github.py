@@ -18,7 +18,7 @@ def request_json(url: str):
     token = os.environ.get("GITHUB_TOKEN")
     headers = {
         "Accept": "application/vnd.github+json",
-        "User-Agent": "LEONES-Atlas-Prospection/1.2",
+        "User-Agent": "LEONES-Atlas-Prospection/1.3",
         "X-GitHub-Api-Version": "2022-11-28",
     }
     if token:
@@ -100,7 +100,11 @@ def enrich(item):
         except Exception:
             pass
 
+    license_id = license_obj.get("spdx_id") or license_obj.get("name")
     item["description"] = repo.get("description") or item.get("description")
+    if license_id and license_id != "NOASSERTION":
+        item["license"] = license_id
+        item["license_status"] = "declared_from_github"
     item["enrichment"] = {
         "status": "ok",
         "repository_id": repo.get("id"),
@@ -114,7 +118,7 @@ def enrich(item):
         "language": repo.get("language"),
         "languages_url": repo.get("languages_url"),
         "topics": topics.get("names", []) if isinstance(topics, dict) else [],
-        "license": license_obj.get("spdx_id") or license_obj.get("name"),
+        "license": license_id,
         "license_url": license_obj.get("url"),
         "license_key": license_obj.get("key"),
         "html_url": repo.get("html_url"),
