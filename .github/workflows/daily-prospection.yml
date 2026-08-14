@@ -34,6 +34,9 @@ jobs:
         id: base
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Inventory all registered sources
+        run: python scripts/prospection/source_coverage.py
+
       - name: Discover Forgejo and Gitea instances
         run: python scripts/prospection/discover_forge_instances.py
 
@@ -41,7 +44,12 @@ jobs:
         run: python scripts/prospection/run_daily_prospection.py
 
       - name: Run live federated forge discovery
-        run: python scripts/prospection/run_federated_discovery.py --queries 2
+        env:
+          LEONES_SOURCEHUT_TOKEN: ${{ secrets.LEONES_SOURCEHUT_TOKEN }}
+          LEONES_GITLAB_TOKEN: ${{ secrets.LEONES_GITLAB_TOKEN }}
+          LEONES_FRAMAGIT_TOKEN: ${{ secrets.LEONES_FRAMAGIT_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/prospection/run_federated_discovery.py --queries 6
 
       - name: Run model discovery
         run: python scripts/prospection/bot_models.py --input data/prospection/model_sources.ndjson
@@ -73,7 +81,10 @@ jobs:
         env:
           LEONES_GITLAB_TOKEN: ${{ secrets.LEONES_GITLAB_TOKEN }}
           LEONES_FRAMAGIT_TOKEN: ${{ secrets.LEONES_FRAMAGIT_TOKEN }}
-        run: python scripts/prospection/enrich_sources.py
+        run: python scripts/prospection/enrich_sources.py --input data/prospection/enriched_discoveries.ndjson --output data/prospection/enriched_discoveries_sources.ndjson
+
+      - name: Promote source enrichment to classifier input
+        run: cp data/prospection/enriched_discoveries_sources.ndjson data/prospection/enriched_discoveries.ndjson
 
       - name: Classify discoveries
         run: python scripts/prospection/classifier.py --input data/prospection/enriched_discoveries.ndjson --output data/prospection/classified_discoveries.ndjson
@@ -95,10 +106,10 @@ jobs:
             data/prospection/daily_report.json
             data/prospection/daily_report.md
             data/prospection/daily_source_report.json
+            data/prospection/source_coverage_report.json
             data/prospection/federated_discovery_report.json
             data/prospection/discovery_merge_report.json
             data/prospection/enrichment_report.json
-            data/prospection/source_enrichment_report.json
             data/prospection/forge_instances.ndjson
             data/prospection/atlas_review_queue.ndjson
             data/prospection/atlas_candidates.ndjson
