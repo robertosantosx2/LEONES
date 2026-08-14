@@ -1,0 +1,271 @@
+{
+  "generated_at": "2026-08-14T15:31:43.433709+00:00",
+  "registered_sources": 24,
+  "sources": [
+    {
+      "id": "codeberg",
+      "name": "Codeberg",
+      "url": "https://codeberg.org/",
+      "kind": "forge",
+      "priority": "high",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://codeberg.org/",
+      "authentication_configured": false
+    },
+    {
+      "id": "disroot-forge",
+      "name": "Disroot Forge",
+      "url": "https://forge.disroot.org/",
+      "kind": "forge",
+      "priority": "high",
+      "status": "error",
+      "error_type": "URLError",
+      "message": "<urlopen error [Errno -2] Name or service not known>",
+      "authentication_configured": false
+    },
+    {
+      "id": "framagit",
+      "name": "Framagit",
+      "url": "https://framagit.org/",
+      "kind": "forge",
+      "priority": "high",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://framagit.org/public/projects",
+      "authentication_configured": false
+    },
+    {
+      "id": "sourcehut",
+      "name": "Sourcehut",
+      "url": "https://sourcehut.org/",
+      "kind": "forge",
+      "priority": "high",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://sourcehut.org/",
+      "authentication_configured": false
+    },
+    {
+      "id": "gnu-savannah",
+      "name": "GNU Savannah",
+      "url": "https://savannah.gnu.org/",
+      "kind": "forge",
+      "priority": "high",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://savannah.gnu.org/",
+      "authentication_configured": false
+    },
+    {
+      "id": "notabug",
+      "name": "NotABug",
+      "url": "https://notabug.org/",
+      "kind": "forge",
+      "priority": "medium",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://notabug.org/",
+      "authentication_configured": false
+    },
+    {
+      "id": "forgejo-network",
+      "name": "Forgejo instances",
+      "url": "https://forgejo.org/",
+      "kind": "federated-forge",
+      "priority": "high",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://forgejo.org/",
+      "authentication_configured": false
+    },
+    {
+      "id": "forgejo",
+      "name": "Forgejo",
+      "url": "https://forgejo.org/",
+      "kind": "forge-software",
+      "priority": "high",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://forgejo.org/",
+      "authentication_configured": false
+    },
+    {
+      "id": "gitea",
+      "name": "Gitea",
+      "url": "https://gitea.io/",
+      "kind": "forge-software",
+      "priority": "high",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://about.gitea.com/",
+      "authentication_configured": false
+    },
+    {
+      "id": "gitlab-ce",
+      "name": "GitLab CE",
+      "url": "https://about.gitlab.com/",
+      "kind": "forge-software",
+      "priority": "high",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://about.gitlab.com/",
+      "authentication_configured": false
+    },
+    {
+      "id": "gogs",
+      "name": "Gogs",
+      "url": "https://gogs.io/",
+      "kind": "forge-software",
+      "priority": "medium",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://gogs.io/getting-started/introduction",
+      "authentication_configured": false
+    },
+    {
+      "id": "onedev",
+      "name": "OneDev",
+      "url": "https://onedev.io/",
+      "kind": "forge-software",
+      "priority": "medium",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://onedev.io/",
+      "authentication_configured": false
+    },
+    {
+      "id": "srht",
+      "name": "Sourcehut (sr.ht)",
+      "url": "https://sr.ht/",
+      "kind": "forge",
+      "priority": "high",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://sr.ht/",
+      "authentication_configured": false
+    },
+    {
+      "id": "pagure",
+      "name": "Pagure",
+      "url": "https://pagure.io/",
+      "kind": "forge",
+      "priority": "high",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://pagure.io/",
+      "authentication_configured": false
+    },
+    {
+      "id": "kallithea",
+      "name": "Kallithea",
+      "url": "https://kallithea-scm.org/",
+      "kind": "forge-software",
+      "priority": "medium",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://kallithea-scm.org/",
+      "authentication_configured": false
+    },
+    {
+      "id": "phorge",
+      "name": "Phabricator / Phorge",
+      "url": "https://phorge.it/",
+      "kind": "forge",
+      "priority": "medium",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://www.phorge.it/",
+      "authentication_configured": false
+    },
+    {
+      "id": "fossil",
+      "name": "Fossil SCM",
+      "url": "https://fossil-scm.org/",
+      "kind": "scm",
+      "priority": "medium",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://fossil-scm.org/home/doc/trunk/www/index.wiki",
+      "authentication_configured": false
+    },
+    {
+      "id": "rhodecode",
+      "name": "RhodeCode",
+      "url": "https://rhodecode.com/",
+      "kind": "forge",
+      "priority": "medium",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://rhodecode.com/",
+      "authentication_configured": false
+    },
+    {
+      "id": "cgit",
+      "name": "CGit",
+      "url": "https://git.zx2c4.com/cgit/",
+      "kind": "git-web",
+      "priority": "medium",
+      "status": "http_error",
+      "http_status": 502,
+      "final_url": "https://git.zx2c4.com/cgit/",
+      "authentication_configured": false
+    },
+    {
+      "id": "gitbucket",
+      "name": "GitBucket",
+      "url": "https://gitbucket.github.io/",
+      "kind": "forge-software",
+      "priority": "medium",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://gitbucket.github.io/",
+      "authentication_configured": false
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "url": "https://github.com/",
+      "kind": "forge",
+      "priority": "critical",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://github.com/",
+      "authentication_configured": false
+    },
+    {
+      "id": "gitlab",
+      "name": "GitLab.com",
+      "url": "https://gitlab.com/",
+      "kind": "forge",
+      "priority": "critical",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://about.gitlab.com/",
+      "authentication_configured": false
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face",
+      "url": "https://huggingface.co/",
+      "kind": "model-hub",
+      "priority": "critical",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://huggingface.co/",
+      "authentication_configured": false
+    },
+    {
+      "id": "huggingface-papers",
+      "name": "Hugging Face Papers",
+      "url": "https://huggingface.co/papers",
+      "kind": "research",
+      "priority": "high",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://huggingface.co/papers",
+      "authentication_configured": false
+    }
+  ],
+  "note": "Coverage inventory only. It does not approve licenses or publish to Atlas."
+}

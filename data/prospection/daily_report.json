@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-14T14:32:57.799035+00:00",
+  "generated_at": "2026-08-14T15:43:59.581107+00:00",
   "input": "data/prospection/classified_discoveries.ndjson",
   "total_discoveries": 280,
   "by_type": {
@@ -9,15 +9,15 @@
   },
   "by_source": {
     "github": 87,
-    "forgejo-instance:gitea.com": 22,
-    "codeberg": 39,
-    "framagit": 19,
-    "gitlab": 39,
     "huggingface": 40,
-    "huggingface-papers": 34
+    "framagit": 19,
+    "huggingface-papers": 34,
+    "gitlab": 39,
+    "forgejo-instance:gitea.com": 22,
+    "codeberg": 39
   },
   "by_publication_status": {
     "review": 280
   },
-  "license_unknown": 217
+  "license_unknown": 171
 }

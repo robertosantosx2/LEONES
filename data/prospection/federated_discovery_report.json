@@ -1,147 +1,42 @@
 {
-  "generated_at": "2026-08-14T14:30:37.518788+00:00",
-  "sources_in_registry": 24,
-  "sources_successfully_queried": [
-    "codeberg",
-    "forgejo-instance:gitea.com",
-    "framagit",
-    "gitlab",
-    "gnu-savannah",
-    "huggingface",
-    "huggingface-papers",
-    "pagure"
-  ],
+  "generated_at": "2026-08-14T15:31:56.576017+00:00",
+  "sources_total": 25,
+  "registered_sources": 24,
+  "discovered_instance_batch": 2,
+  "sources_completed": 25,
+  "sources_failed_or_timed_out": 0,
   "raw_results_by_source": {
-    "forgejo-instance:gitea.com": 22,
-    "codeberg": 40,
+    "cgit": 0,
+    "codeberg": 39,
+    "discovered-forges": 22,
+    "disroot-forge": 0,
+    "forgejo": 0,
+    "forgejo-network": 0,
+    "fossil": 0,
     "framagit": 19,
+    "gitbucket": 0,
+    "gitea": 0,
+    "github": 0,
+    "gitlab": 39,
+    "gitlab-ce": 0,
     "gnu-savannah": 0,
-    "pagure": 0,
-    "gitlab": 40,
+    "gogs": 0,
     "huggingface": 40,
-    "huggingface-papers": 40
+    "huggingface-papers": 34,
+    "kallithea": 0,
+    "notabug": 0,
+    "onedev": 0,
+    "pagure": 0,
+    "phorge": 0,
+    "rhodecode": 0,
+    "sourcehut": 0,
+    "srht": 0
   },
   "unique_discoveries": 193,
-  "errors_or_unsupported": [
-    {
-      "source_id": "forgejo-instance:next.forgejo.org",
-      "query": "LLM",
-      "status": "error",
-      "error_type": "JSONDecodeError",
-      "message": "Expecting value: line 1 column 1 (char 0)"
-    },
-    {
-      "source_id": "forgejo-instance:next.forgejo.org",
-      "query": "inference",
-      "status": "error",
-      "error_type": "JSONDecodeError",
-      "message": "Expecting value: line 1 column 1 (char 0)"
-    },
-    {
-      "source_id": "disroot-forge",
-      "query": "LLM",
-      "status": "error",
-      "error_type": "URLError",
-      "message": "<urlopen error [Errno -2] Name or service not known>"
-    },
-    {
-      "source_id": "disroot-forge",
-      "query": "inference",
-      "status": "error",
-      "error_type": "URLError",
-      "message": "<urlopen error [Errno -2] Name or service not known>"
-    },
-    {
-      "source_id": "sourcehut",
-      "status": "unsupported",
-      "reason": "search API needs authentication; no token supplied"
-    },
-    {
-      "source_id": "notabug",
-      "query": "LLM",
-      "status": "error",
-      "error_type": "HTTPError",
-      "message": "HTTP Error 404: Not Found"
-    },
-    {
-      "source_id": "notabug",
-      "query": "inference",
-      "status": "error",
-      "error_type": "HTTPError",
-      "message": "HTTP Error 404: Not Found"
-    },
-    {
-      "source_id": "forgejo",
-      "status": "unsupported",
-      "reason": "platform site, not a repository instance"
-    },
-    {
-      "source_id": "gitea",
-      "status": "unsupported",
-      "reason": "platform site; concrete instances require discovery"
-    },
-    {
-      "source_id": "gitlab-ce",
-      "status": "unsupported",
-      "reason": "platform site; concrete instances require discovery"
-    },
-    {
-      "source_id": "gogs",
-      "status": "unsupported",
-      "reason": "platform site; concrete instances require discovery"
-    },
-    {
-      "source_id": "onedev",
-      "status": "unsupported",
-      "reason": "platform site; concrete instances require discovery"
-    },
-    {
-      "source_id": "srht",
-      "status": "unsupported",
-      "reason": "search API needs authentication; no token supplied"
-    },
-    {
-      "source_id": "kallithea",
-      "status": "unsupported",
-      "reason": "platform site; concrete instances require discovery"
-    },
-    {
-      "source_id": "phorge",
-      "status": "unsupported",
-      "reason": "no public search adapter enabled"
-    },
-    {
-      "source_id": "fossil",
-      "status": "unsupported",
-      "reason": "no common public search API"
-    },
-    {
-      "source_id": "rhodecode",
-      "status": "unsupported",
-      "reason": "platform site; concrete instances require discovery"
-    },
-    {
-      "source_id": "cgit",
-      "status": "unsupported",
-      "reason": "instance-specific crawling required"
-    },
-    {
-      "source_id": "gitbucket",
-      "status": "unsupported",
-      "reason": "project site; concrete instances require discovery"
-    },
-    {
-      "source_id": "github",
-      "status": "no_adapter",
-      "reason": "No concrete public instance configured"
-    }
-  ],
-  "error_count": 20,
-  "discovered_instances": [
-    "https://codeberg.org",
-    "https://next.forgejo.org",
-    "https://gitea.com"
-  ],
+  "failures": [],
+  "workers": 8,
+  "per_worker_timeout_seconds": 90,
+  "queries": 2,
   "output": "data/prospection/federated_discoveries.ndjson",
-  "note": "Concrete Forgejo/Gitea instances discovered by the instance probe are queried automatically; License Gate remains independent."
+  "note": "Registered sources and discovered Forgejo/Gitea instances run in isolated workers. A source failure does not block the other workers. License Gate remains independent."
 }
