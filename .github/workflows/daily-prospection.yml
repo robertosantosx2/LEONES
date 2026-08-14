@@ -69,6 +69,9 @@ jobs:
       - name: Run Atlas ingest and license gate
         run: python scripts/prospection/daily_atlas_ingest.py
 
+      - name: Publish real prospection feed for web
+        run: python scripts/prospection/publish_web_prospection.py
+
       - name: Generate daily report
         run: python scripts/prospection/daily_report.py
 
@@ -84,6 +87,7 @@ jobs:
             data/prospection/discovery_merge_report.json
             data/prospection/enrichment_report.json
             data/prospection/atlas_review_queue.ndjson
+            web/data/prospeccion.json
           if-no-files-found: warn
 
       - name: Publish generated discovery data and report
@@ -94,7 +98,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           mkdir -p /tmp/leones-generated
-          git diff --binary "$BASE_SHA" -- data/prospection/ scripts/prospection/ > /tmp/leones-generated/generated.patch || true
+          git diff --binary "$BASE_SHA" -- data/prospection/ scripts/prospection/ web/data/ > /tmp/leones-generated/generated.patch || true
           git fetch origin main
           git reset --hard origin/main
           if [ -s /tmp/leones-generated/generated.patch ]; then
@@ -103,7 +107,7 @@ jobs:
               git apply --reject /tmp/leones-generated/generated.patch || true
             }
           fi
-          git add data/prospection/ scripts/prospection/
+          git add data/prospection/ scripts/prospection/ web/data/
           if git diff --cached --quiet; then
             echo 'No changes to publish.'
           else
