@@ -1,5 +1,9 @@
 {
+<<<<<<< ours
   "generated_at": "2026-08-14T07:08:41.987659+00:00",
+=======
+  "generated_at": "2026-08-14T08:30:02.975657+00:00",
+>>>>>>> theirs
   "total_discoveries": 0,
   "by_type": {},
   "by_source": {},

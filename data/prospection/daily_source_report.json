@@ -1,5 +1,9 @@
 {
+<<<<<<< ours
   "generated_at": "2026-08-14T07:07:22.970830+00:00",
+=======
+  "generated_at": "2026-08-14T08:28:01.176547+00:00",
+>>>>>>> theirs
   "status": "planned",
   "sources_in_registry": 27,
   "discovery_queries": 1024,

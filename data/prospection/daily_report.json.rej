@@ -1,0 +1,8 @@
+diff a/data/prospection/daily_report.json b/data/prospection/daily_report.json	(rejected hunks)
+@@ -1,5 +1,5 @@
+ {
+-  "generated_at": "2026-08-14T05:50:12.825576+00:00",
++  "generated_at": "2026-08-14T08:30:02.975657+00:00",
+   "total_discoveries": 0,
+   "by_type": {},
+   "by_source": {},

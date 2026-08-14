@@ -1,5 +1,9 @@
 {
+<<<<<<< ours
   "generated_at": "2026-08-14T07:07:36.205830+00:00",
+=======
+  "generated_at": "2026-08-14T08:28:17.421418+00:00",
+>>>>>>> theirs
   "sources_in_registry": 27,
   "sources_successfully_queried": [
     "codeberg",
