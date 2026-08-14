@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Run registry-driven discovery against queryable public sources."""
 from __future__ import annotations
-import argparse, json, os, re, urllib.parse, urllib.request
+import argparse, json, os, urllib.parse, urllib.request
 from collections import Counter
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
-UA = "LEONES-Atlas-Prospection/2.3"
+UA = "LEONES-Atlas-Prospection/2.4"
 QUERIES = ["LLM", "inference", "agent", "MCP", "model", "AI"]
 TARGETS = {"gitlab": ("gitlab", "https://gitlab.com"), "framagit": ("gitlab", "https://framagit.org"), "codeberg": ("forgejo", "https://codeberg.org"), "disroot-forge": ("forgejo", "https://forge.disroot.org"), "notabug": ("forgejo", "https://notabug.org"), "pagure": ("pagure", "https://pagure.io"), "huggingface": ("huggingface-models", "https://huggingface.co"), "huggingface-papers": ("huggingface-papers", "https://huggingface.co"), "gnu-savannah": ("savannah", "https://savannah.gnu.org")}
 UNSUPPORTED = {"sourcehut":"search API needs authentication; no token supplied","srht":"search API needs authentication; no token supplied","forgejo-network":"requires discovery of concrete Forgejo instances","forgejo":"platform site, not a repository instance","gitea":"platform site; concrete instances require discovery","gitlab-ce":"platform site; concrete instances require discovery","gogs":"platform site; concrete instances require discovery","onedev":"platform site; concrete instances require discovery","kallithea":"platform site; concrete instances require discovery","phorge":"no public search adapter enabled","fossil":"no common public search API","rhodecode":"platform site; concrete instances require discovery","cgit":"instance-specific crawling required","gitbucket":"project site; concrete instances require discovery"}
@@ -17,7 +17,7 @@ def get(url, source_id=None, adapter=None):
     token=os.getenv(token_env) if token_env else None
     if token and adapter=="gitlab": req.add_header("PRIVATE-TOKEN",token)
     elif token and adapter.startswith("huggingface"): req.add_header("Authorization",f"Bearer {token}")
-    with urllib.request.urlopen(req,timeout=30) as response: return response.read().decode("utf-8"),response.status
+    with urllib.request.urlopen(req,timeout=15) as response: return response.read().decode("utf-8"),response.status
 def normalize(source_id,adapter,base,item,query,now,kind="software"):
     url=item.get("web_url") or item.get("html_url") or item.get("url") or ""; name=item.get("path_with_namespace") or item.get("full_name") or item.get("id") or item.get("name") or ""
     return {"type":kind,"name":str(name),"url":url,"description":item.get("description") or item.get("summary") or "","source":source_id,"source_url":base,"evidence_url":url,"license":item.get("license") or "","license_status":"unvalidated","observed_at":now,"query":query,"publication_status":"discovered","provenance":{"adapter":adapter,"source_id":source_id}}
@@ -56,9 +56,7 @@ def search_savannah(s,b,q):
         seen.add(href); href=urllib.parse.urljoin(b,href); rows.append(normalize(s,"savannah",b,{"id":label,"url":href},q,now));
         if len(rows)>=20: break
     return rows,status
-def main():
-    p=argparse.ArgumentParser(); p.add_argument("--registry",default="scripts/prospection/sources_registry.json"); p.add_argument("--output",default="data/prospection/federated_discoveries.ndjson"); p.add_argument("--queries",type=int,default=2); args=p.parse_args()
-    registry=json.loads(Path(args.registry).read_text(encoding="utf-8")); ids=[x["id"] for x in registry.get("sources",[])]; out=Path(args.output); out.parent.mkdir(parents=True,exist_ok=True); unique={}; stats=Counter(); errors=[]
+def load_instances():
     instances_file=Path("data/prospection/forge_instances.ndjson"); instances=[]
     if instances_file.exists():
         for line in instances_file.read_text(encoding="utf-8").splitlines():
@@ -66,31 +64,37 @@ def main():
                 try: instances.append(json.loads(line)["url"].rstrip("/") )
                 except (ValueError,KeyError): pass
     env_instances=[x.strip().rstrip("/") for x in os.getenv("LEONES_FORGEJO_INSTANCES","").split(",") if x.strip()]
-    instances=list(dict.fromkeys(instances+env_instances))
-    for base in instances:
-        host=urllib.parse.urlparse(base).netloc; sid="forgejo-instance:"+host
-        if host in {"codeberg.org"}: continue
-        for q in QUERIES[:args.queries]:
-            try:
-                found,_=search_forgejo(sid,base,q)
-                for row in found: unique[row["url"] or f"{sid}:{row['name']}"]=row
-                stats[sid]+=len(found)
-            except Exception as exc: errors.append({"source_id":sid,"query":q,"status":"error","error_type":type(exc).__name__,"message":str(exc)[:300]})
+    return list(dict.fromkeys(instances+env_instances))
+def main():
+    p=argparse.ArgumentParser(); p.add_argument("--registry",default="scripts/prospection/sources_registry.json"); p.add_argument("--output",default="data/prospection/federated_discoveries.ndjson"); p.add_argument("--queries",type=int,default=2); p.add_argument("--only-discovered-instances",action="store_true"); p.add_argument("--skip-discovered-instances",action="store_true"); args=p.parse_args()
+    registry=json.loads(Path(args.registry).read_text(encoding="utf-8")); ids=[x["id"] for x in registry.get("sources",[])]; out=Path(args.output); out.parent.mkdir(parents=True,exist_ok=True); unique={}; stats=Counter(); errors=[]
+    instances=load_instances()
+    if not args.skip_discovered_instances:
+        for base in instances:
+            host=urllib.parse.urlparse(base).netloc; sid="forgejo-instance:"+host
+            if host in {"codeberg.org"}: continue
+            for q in QUERIES[:args.queries]:
+                try:
+                    found,_=search_forgejo(sid,base,q)
+                    for row in found: unique[row["url"] or f"{sid}:{row['name']}"]=row
+                    stats[sid]+=len(found)
+                except Exception as exc: errors.append({"source_id":sid,"query":q,"status":"error","error_type":type(exc).__name__,"message":str(exc)[:300]})
+    if args.only_discovered_instances: ids=[]
     fnmap={"gitlab":search_gitlab,"forgejo":search_forgejo,"pagure":search_pagure,"huggingface-models":search_huggingface_models,"huggingface-papers":search_huggingface_papers,"savannah":search_savannah}
-    for source_id in ids:
-        if source_id=="forgejo-network" and instances: continue
-        if source_id in UNSUPPORTED: errors.append({"source_id":source_id,"status":"unsupported","reason":UNSUPPORTED[source_id]}); continue
-        target=TARGETS.get(source_id)
-        if not target: errors.append({"source_id":source_id,"status":"no_adapter","reason":"No concrete public instance configured"}); continue
-        adapter,base=target; fn=fnmap[adapter]
-        for q in QUERIES[:args.queries]:
-            try:
-                found,_=fn(source_id,base,q)
-                for row in found: unique[row["url"] or f"{source_id}:{row['name']}"]=row
-                stats[source_id]+=len(found)
-            except Exception as exc: errors.append({"source_id":source_id,"query":q,"status":"error","error_type":type(exc).__name__,"message":str(exc)[:300]})
+    if not args.only_discovered_instances:
+        for source_id in ids:
+            if source_id in UNSUPPORTED: errors.append({"source_id":source_id,"status":"unsupported","reason":UNSUPPORTED[source_id]}); continue
+            target=TARGETS.get(source_id)
+            if not target: errors.append({"source_id":source_id,"status":"no_adapter","reason":"No concrete public instance configured"}); continue
+            adapter,base=target; fn=fnmap[adapter]
+            for q in QUERIES[:args.queries]:
+                try:
+                    found,_=fn(source_id,base,q)
+                    for row in found: unique[row["url"] or f"{source_id}:{row['name']}"]=row
+                    stats[source_id]+=len(found)
+                except Exception as exc: errors.append({"source_id":source_id,"query":q,"status":"error","error_type":type(exc).__name__,"message":str(exc)[:300]})
     with out.open("w",encoding="utf-8") as h:
         for row in unique.values(): h.write(json.dumps(row,ensure_ascii=False)+"\n")
-    report={"generated_at":datetime.now(timezone.utc).isoformat(),"sources_in_registry":len(ids),"sources_successfully_queried":sorted(stats),"raw_results_by_source":dict(stats),"unique_discoveries":len(unique),"errors_or_unsupported":errors,"error_count":len(errors),"discovered_instances":instances,"output":str(out),"note":"Concrete Forgejo/Gitea instances discovered by the instance probe are queried automatically; License Gate remains independent."}
+    report={"generated_at":datetime.now(timezone.utc).isoformat(),"sources_in_registry":len(ids),"sources_successfully_queried":sorted(stats),"raw_results_by_source":dict(stats),"unique_discoveries":len(unique),"errors_or_unsupported":errors,"error_count":len(errors),"discovered_instances":instances,"output":str(out),"note":"Concrete Forgejo/Gitea instances discovered by the instance probe are queried separately from registry sources; License Gate remains independent."}
     (out.parent/"federated_discovery_report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"); print(json.dumps(report,ensure_ascii=False,indent=2))
 if __name__=="__main__": main()
