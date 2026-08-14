@@ -15,7 +15,7 @@ permissions:
 
 concurrency:
   group: atlas-daily-prospection
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   LEONES_FORGEJO_INSTANCES: https://next.forgejo.org
