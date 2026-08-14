@@ -1,6 +1,6 @@
 # Daily Atlas Prospection
 
-Generated: 2026-08-14T14:12:19.175577+00:00
+Generated: 2026-08-14T14:32:57.799035+00:00
 Input: `data/prospection/classified_discoveries.ndjson`
 Discoveries: **280**
 Without declared license: **217**

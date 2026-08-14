@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-14T14:12:19.108138+00:00",
+  "generated_at": "2026-08-14T14:32:57.724477+00:00",
   "source": "data/prospection/classified_discoveries.ndjson",
   "publication_is_not_approval": true,
   "items": [
@@ -4121,6 +4121,69 @@
     },
     {
       "discovery_id": null,
+      "name": "bucosys/dragiter",
+      "repository": "bucosys/dragiter",
+      "url": "https://gitlab.com/bucosys/dragiter",
+      "description": "dragiter (Deterministic Context Iterator) is a focused command-line tool that integrates large language models into automated workflows. It treats LLM processing as a Unix-style pipeline: material is read, chunked, combined with prompt templates and optional iteration data, then sent to an OpenAI-compatible endpoint. Results are written according to explicit routing rules.",
+      "category": "software",
+      "type": "software",
+      "license": null,
+      "open_weight": false,
+      "source": "gitlab",
+      "updated": null,
+      "stars": null,
+      "status": "pending",
+      "publication_status": "review",
+      "license_gate": null,
+      "provenance": {
+        "adapter": "gitlab",
+        "source_id": "gitlab"
+      }
+    },
+    {
+      "discovery_id": null,
+      "name": "Ilyas_Hawazine/ground-up-implementation-of-an-9m-parameter-minigpt-on-the-tinystories-dataset",
+      "repository": "Ilyas_Hawazine/ground-up-implementation-of-an-9m-parameter-minigpt-on-the-tinystories-dataset",
+      "url": "https://gitlab.com/Ilyas_Hawazine/ground-up-implementation-of-an-9m-parameter-minigpt-on-the-tinystories-dataset",
+      "description": "",
+      "category": "software",
+      "type": "software",
+      "license": null,
+      "open_weight": false,
+      "source": "gitlab",
+      "updated": null,
+      "stars": null,
+      "status": "pending",
+      "publication_status": "review",
+      "license_gate": null,
+      "provenance": {
+        "adapter": "gitlab",
+        "source_id": "gitlab"
+      }
+    },
+    {
+      "discovery_id": null,
+      "name": "ebzovi/fintechadventures",
+      "repository": "ebzovi/fintechadventures",
+      "url": "https://gitlab.com/ebzovi/fintechadventures",
+      "description": "Operator-built fintech intelligence platform. Trends tracker, deal flow, LLM model comparisons, and AI-generated product blueprints. Static site — no frameworks, no CDNs. Daily pipeline pulls from SEC EDGAR, CFPB, Fed, and 8 RSS feeds.",
+      "category": "software",
+      "type": "software",
+      "license": null,
+      "open_weight": false,
+      "source": "gitlab",
+      "updated": null,
+      "stars": null,
+      "status": "pending",
+      "publication_status": "review",
+      "license_gate": null,
+      "provenance": {
+        "adapter": "gitlab",
+        "source_id": "gitlab"
+      }
+    },
+    {
+      "discovery_id": null,
       "name": "snopek-games/godai",
       "repository": "snopek-games/godai",
       "url": "https://gitlab.com/snopek-games/godai",
@@ -4436,27 +4499,6 @@
     },
     {
       "discovery_id": null,
-      "name": "bucosys/dragiter",
-      "repository": "bucosys/dragiter",
-      "url": "https://gitlab.com/bucosys/dragiter",
-      "description": "dragiter (Deterministic Context Iterator) is a focused command-line tool that integrates large language models into automated workflows. It treats LLM processing as a Unix-style pipeline: material is read, chunked, combined with prompt templates and optional iteration data, then sent to an OpenAI-compatible endpoint. Results are written according to explicit routing rules.",
-      "category": "software",
-      "type": "software",
-      "license": null,
-      "open_weight": false,
-      "source": "gitlab",
-      "updated": null,
-      "stars": null,
-      "status": "pending",
-      "publication_status": "review",
-      "license_gate": null,
-      "provenance": {
-        "adapter": "gitlab",
-        "source_id": "gitlab"
-      }
-    },
-    {
-      "discovery_id": null,
       "name": "hermit-bot/hermit",
       "repository": "hermit-bot/hermit",
       "url": "https://gitlab.com/hermit-bot/hermit",
@@ -4481,48 +4523,6 @@
       "name": "alayans-public/go-llm",
       "repository": "alayans-public/go-llm",
       "url": "https://gitlab.com/alayans-public/go-llm",
-      "description": "",
-      "category": "software",
-      "type": "software",
-      "license": null,
-      "open_weight": false,
-      "source": "gitlab",
-      "updated": null,
-      "stars": null,
-      "status": "pending",
-      "publication_status": "review",
-      "license_gate": null,
-      "provenance": {
-        "adapter": "gitlab",
-        "source_id": "gitlab"
-      }
-    },
-    {
-      "discovery_id": null,
-      "name": "dronelabourlm/dllmlib-python",
-      "repository": "dronelabourlm/dllmlib-python",
-      "url": "https://gitlab.com/dronelabourlm/dllmlib-python",
-      "description": "",
-      "category": "software",
-      "type": "software",
-      "license": null,
-      "open_weight": false,
-      "source": "gitlab",
-      "updated": null,
-      "stars": null,
-      "status": "pending",
-      "publication_status": "review",
-      "license_gate": null,
-      "provenance": {
-        "adapter": "gitlab",
-        "source_id": "gitlab"
-      }
-    },
-    {
-      "discovery_id": null,
-      "name": "vasic-digital/LLMsVerifier",
-      "repository": "vasic-digital/LLMsVerifier",
-      "url": "https://gitlab.com/vasic-digital/LLMsVerifier",
       "description": "",
       "category": "software",
       "type": "software",
