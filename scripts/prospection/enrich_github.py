@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Enrich GitHub discoveries with repository metadata and README evidence."""
+"""Enrich GitHub discoveries and preserve evidence from other public forges."""
 from __future__ import annotations
 
 import argparse
@@ -18,7 +18,7 @@ def request_json(url: str):
     token = os.environ.get("GITHUB_TOKEN")
     headers = {
         "Accept": "application/vnd.github+json",
-        "User-Agent": "LEONES-Atlas-Prospection/1.1",
+        "User-Agent": "LEONES-Atlas-Prospection/1.2",
         "X-GitHub-Api-Version": "2022-11-28",
     }
     if token:
@@ -54,6 +54,10 @@ def repo_name(url: str):
     return f"{bits[0]}/{bits[1]}" if len(bits) >= 2 else None
 
 
+def is_github(url: str) -> bool:
+    return "github.com/" in (url or "").lower()
+
+
 def error_record(payload, meta):
     return {
         "status": "error",
@@ -66,7 +70,17 @@ def error_record(payload, meta):
 
 
 def enrich(item):
-    full = repo_name(item.get("url", ""))
+    url = item.get("url", "")
+    if not is_github(url):
+        item["enrichment"] = {
+            "status": "skipped_non_github",
+            "reason": "Evidence preserved for source-specific enrichment; no GitHub API call made.",
+            "source": item.get("source"),
+            "evidence_url": item.get("evidence_url") or url,
+        }
+        return item
+
+    full = repo_name(url)
     if not full:
         item["enrichment"] = {"status": "error", "error_type": "invalid_repository_url"}
         return item
@@ -123,7 +137,7 @@ def main():
     source, destination = Path(args.input), Path(args.output)
     destination.parent.mkdir(parents=True, exist_ok=True)
     seen, diagnostics = set(), []
-    total = ok = errors = 0
+    total = ok = skipped = errors = 0
 
     with source.open(encoding="utf-8") as src, destination.open("w", encoding="utf-8") as dst:
         for line in src:
@@ -141,6 +155,8 @@ def main():
             enrichment = item.get("enrichment", {})
             if enrichment.get("status") == "ok":
                 ok += 1
+            elif enrichment.get("status") == "skipped_non_github":
+                skipped += 1
             else:
                 errors += 1
                 if len(diagnostics) < 10:
@@ -159,10 +175,11 @@ def main():
         "output": str(destination),
         "repositories_processed": total,
         "enriched_ok": ok,
+        "non_github_preserved": skipped,
         "errors": errors,
         "github_token_used": bool(os.environ.get("GITHUB_TOKEN")),
         "diagnostics": diagnostics,
-        "note": "Enrichment is evidence collection only; it does not publish to Atlas or approve licenses.",
+        "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error.",
     }
     Path("data/prospection/enrichment_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
