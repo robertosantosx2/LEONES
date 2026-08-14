@@ -35,8 +35,6 @@ jobs:
         run: python scripts/prospection/run_daily_prospection.py
 
       - name: Run live federated forge discovery
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         run: python scripts/prospection/run_federated_discovery.py --queries 2
 
       - name: Run model discovery
@@ -57,10 +55,13 @@ jobs:
       - name: Run hardware discovery
         run: python scripts/prospection/bot_hardware.py --input data/prospection/hardware_sources.ndjson
 
-      - name: Enrich GitHub discoveries
+      - name: Merge live and federated discoveries
+        run: python scripts/prospection/merge_discoveries.py
+
+      - name: Enrich GitHub discoveries and preserve federated evidence
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python scripts/prospection/enrich_github.py
+        run: python scripts/prospection/enrich_github.py --input data/prospection/discovery_input.ndjson
 
       - name: Classify discoveries
         run: python scripts/prospection/classifier.py --input data/prospection/enriched_discoveries.ndjson --output data/prospection/classified_discoveries.ndjson
@@ -80,6 +81,8 @@ jobs:
             data/prospection/daily_report.md
             data/prospection/daily_source_report.json
             data/prospection/federated_discovery_report.json
+            data/prospection/discovery_merge_report.json
+            data/prospection/enrichment_report.json
             data/prospection/atlas_review_queue.ndjson
           if-no-files-found: warn
 
