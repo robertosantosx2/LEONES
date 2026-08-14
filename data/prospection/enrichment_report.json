@@ -1,10 +1,11 @@
 {
-  "input": "data/prospection/live_discoveries.ndjson",
+  "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 87,
+  "repositories_processed": 184,
   "enriched_ok": 87,
+  "non_github_preserved": 97,
   "errors": 0,
   "github_token_used": true,
   "diagnostics": [],
-  "note": "Enrichment is evidence collection only; it does not publish to Atlas or approve licenses."
+  "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."
 }

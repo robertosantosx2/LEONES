@@ -1,12 +1,18 @@
 {
-<<<<<<< ours
-  "generated_at": "2026-08-14T07:08:41.987659+00:00",
-=======
-  "generated_at": "2026-08-14T08:30:02.975657+00:00",
->>>>>>> theirs
-  "total_discoveries": 0,
-  "by_type": {},
-  "by_source": {},
-  "by_publication_status": {},
-  "license_unknown": 0
+  "generated_at": "2026-08-14T12:08:46.461254+00:00",
+  "input": "data/prospection/classified_discoveries.ndjson",
+  "total_discoveries": 184,
+  "by_type": {
+    "software": 184
+  },
+  "by_source": {
+    "github": 87,
+    "codeberg": 39,
+    "framagit": 19,
+    "gitlab": 39
+  },
+  "by_publication_status": {
+    "review": 184
+  },
+  "license_unknown": 121
 }

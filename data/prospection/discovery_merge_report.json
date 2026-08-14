@@ -1,0 +1,14 @@
+{
+  "live_input": "data/prospection/live_discoveries.ndjson",
+  "federated_input": "data/prospection/federated_discoveries.ndjson",
+  "output": "data/prospection/discovery_input.ndjson",
+  "unique_discoveries": 184,
+  "unique_by_source": {
+    "codeberg": 39,
+    "framagit": 19,
+    "github": 87,
+    "gitlab": 39
+  },
+  "multi_source_records": 0,
+  "note": "Duplicate canonical URLs collapse to one record while all provenance records are preserved. License Gate remains independent."
+}
