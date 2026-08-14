@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-14T13:35:32.983904+00:00",
+  "generated_at": "2026-08-14T13:48:11.447467+00:00",
   "source": "data/prospection/classified_discoveries.ndjson",
   "publication_is_not_approval": true,
   "items": [
@@ -3659,6 +3659,27 @@
     },
     {
       "discovery_id": null,
+      "name": "KudoAI/amazongpt",
+      "repository": "KudoAI/amazongpt",
+      "url": "https://gitlab.com/KudoAI/amazongpt",
+      "description": "🛒 AI chat & product/category summaries in Amazon shopping, powered by the latest LLMs",
+      "category": "software",
+      "type": "software",
+      "license": null,
+      "open_weight": false,
+      "source": "gitlab",
+      "updated": null,
+      "stars": null,
+      "status": "pending",
+      "publication_status": "review",
+      "license_gate": null,
+      "provenance": {
+        "adapter": "gitlab",
+        "source_id": "gitlab"
+      }
+    },
+    {
+      "discovery_id": null,
       "name": "gar3th/context-engineering",
       "repository": "gar3th/context-engineering",
       "url": "https://gitlab.com/gar3th/context-engineering",
@@ -3747,27 +3768,6 @@
       "repository": "viu-carlosobeid/tfg_wpw_llm",
       "url": "https://gitlab.com/viu-carlosobeid/tfg_wpw_llm",
       "description": "",
-      "category": "software",
-      "type": "software",
-      "license": null,
-      "open_weight": false,
-      "source": "gitlab",
-      "updated": null,
-      "stars": null,
-      "status": "pending",
-      "publication_status": "review",
-      "license_gate": null,
-      "provenance": {
-        "adapter": "gitlab",
-        "source_id": "gitlab"
-      }
-    },
-    {
-      "discovery_id": null,
-      "name": "KudoAI/amazongpt",
-      "repository": "KudoAI/amazongpt",
-      "url": "https://gitlab.com/KudoAI/amazongpt",
-      "description": "🛒 AI chat & product/category summaries in Amazon shopping, powered by the latest LLMs",
       "category": "software",
       "type": "software",
       "license": null,
@@ -4898,6 +4898,27 @@
     },
     {
       "discovery_id": null,
+      "name": "super-inference/super-12B-it-ste",
+      "repository": "super-inference/super-12B-it-ste",
+      "url": "https://huggingface.co/super-inference/super-12B-it-ste",
+      "description": "",
+      "category": "model",
+      "type": "model",
+      "license": null,
+      "open_weight": false,
+      "source": "huggingface",
+      "updated": null,
+      "stars": null,
+      "status": "pending",
+      "publication_status": "review",
+      "license_gate": null,
+      "provenance": {
+        "adapter": "huggingface-models",
+        "source_id": "huggingface"
+      }
+    },
+    {
+      "discovery_id": null,
       "name": "lshar/ARM-TUNE-CPU-INFERENCE-OPT",
       "repository": "lshar/ARM-TUNE-CPU-INFERENCE-OPT",
       "url": "https://huggingface.co/lshar/ARM-TUNE-CPU-INFERENCE-OPT",
@@ -5279,27 +5300,6 @@
       "name": "inference-optimization/tinysmokeqwen3-fp8-kv-only",
       "repository": "inference-optimization/tinysmokeqwen3-fp8-kv-only",
       "url": "https://huggingface.co/inference-optimization/tinysmokeqwen3-fp8-kv-only",
-      "description": "",
-      "category": "model",
-      "type": "model",
-      "license": null,
-      "open_weight": false,
-      "source": "huggingface",
-      "updated": null,
-      "stars": null,
-      "status": "pending",
-      "publication_status": "review",
-      "license_gate": null,
-      "provenance": {
-        "adapter": "huggingface-models",
-        "source_id": "huggingface"
-      }
-    },
-    {
-      "discovery_id": null,
-      "name": "inference-snaps/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-5GB",
-      "repository": "inference-snaps/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-5GB",
-      "url": "https://huggingface.co/inference-snaps/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-5GB",
       "description": "",
       "category": "model",
       "type": "model",

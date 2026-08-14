@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-14T13:33:30.969360+00:00",
+  "generated_at": "2026-08-14T13:46:39.092519+00:00",
   "sources_in_registry": 24,
   "sources_successfully_queried": [
     "codeberg",
@@ -21,6 +21,20 @@
   },
   "unique_discoveries": 171,
   "errors_or_unsupported": [
+    {
+      "source_id": "forgejo-instance:next.forgejo.org",
+      "query": "LLM",
+      "status": "error",
+      "error_type": "JSONDecodeError",
+      "message": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "source_id": "forgejo-instance:next.forgejo.org",
+      "query": "inference",
+      "status": "error",
+      "error_type": "JSONDecodeError",
+      "message": "Expecting value: line 1 column 1 (char 0)"
+    },
     {
       "source_id": "disroot-forge",
       "query": "LLM",
@@ -53,11 +67,6 @@
       "status": "error",
       "error_type": "HTTPError",
       "message": "HTTP Error 404: Not Found"
-    },
-    {
-      "source_id": "forgejo-network",
-      "status": "unsupported",
-      "reason": "requires discovery of concrete Forgejo instances; set LEONES_FORGEJO_INSTANCES to a comma-separated list"
     },
     {
       "source_id": "forgejo",
@@ -125,7 +134,7 @@
       "reason": "No concrete public instance configured"
     }
   ],
-  "error_count": 19,
+  "error_count": 20,
   "output": "data/prospection/federated_discoveries.ndjson",
   "note": "Unsupported sources are explicit; License Gate remains independent."
 }
