@@ -1,17 +1,18 @@
 # Daily Atlas Prospection
 
-Generated: 2026-08-14T14:02:07.327402+00:00
+Generated: 2026-08-14T14:12:19.175577+00:00
 Input: `data/prospection/classified_discoveries.ndjson`
-Discoveries: **258**
-Without declared license: **195**
+Discoveries: **280**
+Without declared license: **217**
 
 ## By type
 - model: 40
 - paper: 34
-- software: 184
+- software: 206
 
 ## By source
 - codeberg: 39
+- forgejo-instance:gitea.com: 22
 - framagit: 19
 - github: 87
 - gitlab: 39
@@ -19,4 +20,4 @@ Without declared license: **195**
 - huggingface-papers: 34
 
 ## Publication status
-- review: 258
+- review: 280

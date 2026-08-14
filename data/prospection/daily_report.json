@@ -1,14 +1,15 @@
 {
-  "generated_at": "2026-08-14T14:02:07.327402+00:00",
+  "generated_at": "2026-08-14T14:12:19.175577+00:00",
   "input": "data/prospection/classified_discoveries.ndjson",
-  "total_discoveries": 258,
+  "total_discoveries": 280,
   "by_type": {
-    "software": 184,
+    "software": 206,
     "model": 40,
     "paper": 34
   },
   "by_source": {
     "github": 87,
+    "forgejo-instance:gitea.com": 22,
     "codeberg": 39,
     "framagit": 19,
     "gitlab": 39,
@@ -16,7 +17,7 @@
     "huggingface-papers": 34
   },
   "by_publication_status": {
-    "review": 258
+    "review": 280
   },
-  "license_unknown": 195
+  "license_unknown": 217
 }
