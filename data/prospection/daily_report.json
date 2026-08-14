@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-14T21:01:59.312071+00:00",
+  "generated_at": "2026-08-14T21:22:16.525424+00:00",
   "input": "data/prospection/classified_discoveries.ndjson",
   "total_discoveries": 281,
   "by_type": {
@@ -19,5 +19,5 @@
   "by_publication_status": {
     "review": 281
   },
-  "license_unknown": 176
+  "license_unknown": 175
 }
