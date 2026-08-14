@@ -3,8 +3,9 @@
 
 Discovery is deliberately separated from publication. This script consumes
 classified newline-delimited JSON discoveries, normalizes/deduplicates them,
-applies the software-license OSI gate, and writes a review queue. It never
-promotes an unverified discovery directly to the public Atlas.
+applies the software-license OSI gate, and separates Atlas candidates from
+records requiring review. It never promotes an unverified discovery directly
+to the public Atlas.
 """
 from __future__ import annotations
 import argparse, hashlib, json
@@ -38,10 +39,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", default="data/prospection/classified_discoveries.ndjson")
     ap.add_argument("--output", default="data/prospection/atlas_review_queue.ndjson")
+    ap.add_argument("--candidates", default="data/prospection/atlas_candidates.ndjson")
     args = ap.parse_args()
-    src, out = Path(args.input), Path(args.output)
+    src, out, candidates = Path(args.input), Path(args.output), Path(args.candidates)
     out.parent.mkdir(parents=True, exist_ok=True)
-    seen, rows = set(), []
+    seen, rows, candidate_rows = set(), [], []
     now = datetime.now(timezone.utc).isoformat()
     if src.exists():
         for line in src.read_text(encoding="utf-8").splitlines():
@@ -52,13 +54,19 @@ def main():
             x["discovery_id"] = x.get("discovery_id") or key(x)
             x["discovered_at"] = x.get("discovered_at") or now
             x["license_gate"] = license_gate(x)
-            x["publication_status"] = "review"
             x["source"] = x.get("source") or x.get("url")
-            if x["discovery_id"] not in seen:
-                seen.add(x["discovery_id"])
+            if x["discovery_id"] in seen:
+                continue
+            seen.add(x["discovery_id"])
+            if x["license_gate"] == "osi-compatible":
+                x["publication_status"] = "atlas_candidate"
+                candidate_rows.append(x)
+            else:
+                x["publication_status"] = "review"
                 rows.append(x)
     out.write_text("\n".join(json.dumps(x, ensure_ascii=False) for x in rows) + ("\n" if rows else ""), encoding="utf-8")
-    print(json.dumps({"discovered": len(rows), "review_queue": str(out), "generated_at": now}, ensure_ascii=False))
+    candidates.write_text("\n".join(json.dumps(x, ensure_ascii=False) for x in candidate_rows) + ("\n" if candidate_rows else ""), encoding="utf-8")
+    print(json.dumps({"discovered": len(rows) + len(candidate_rows), "atlas_candidates": len(candidate_rows), "review_queue": len(rows), "review_file": str(out), "candidate_file": str(candidates), "generated_at": now}, ensure_ascii=False))
 
 
 if __name__ == "__main__":
