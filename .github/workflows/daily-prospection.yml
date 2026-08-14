@@ -34,6 +34,9 @@ jobs:
         id: base
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Discover Forgejo and Gitea instances
+        run: python scripts/prospection/discover_forge_instances.py
+
       - name: Run daily source registry
         run: python scripts/prospection/run_daily_prospection.py
 
@@ -89,6 +92,7 @@ jobs:
             data/prospection/federated_discovery_report.json
             data/prospection/discovery_merge_report.json
             data/prospection/enrichment_report.json
+            data/prospection/forge_instances.ndjson
             data/prospection/atlas_review_queue.ndjson
             data/prospection/atlas_candidates.ndjson
             web/data/prospeccion.json
