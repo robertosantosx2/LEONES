@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '17 4 * * *'
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/prospection/sources_registry.json'
+      - 'scripts/prospection/**'
+      - '.github/workflows/daily-prospection.yml'
 
 permissions:
   contents: write
@@ -43,13 +48,13 @@ jobs:
       - name: Run daily source registry
         run: python scripts/prospection/run_daily_prospection.py
 
-      - name: Run live federated forge discovery
+      - name: Run federated discovery in isolated parallel workers
         env:
           LEONES_SOURCEHUT_TOKEN: ${{ secrets.LEONES_SOURCEHUT_TOKEN }}
           LEONES_GITLAB_TOKEN: ${{ secrets.LEONES_GITLAB_TOKEN }}
           LEONES_FRAMAGIT_TOKEN: ${{ secrets.LEONES_FRAMAGIT_TOKEN }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python scripts/prospection/run_federated_discovery.py --queries 6
+        run: python scripts/prospection/run_federated_parallel.py --queries 2 --workers 8 --timeout 90
 
       - name: Run model discovery
         run: python scripts/prospection/bot_models.py --input data/prospection/model_sources.ndjson
