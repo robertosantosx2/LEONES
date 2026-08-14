@@ -8,7 +8,6 @@
     {"id":"framagit","name":"Framagit","domain":"framagit.org","url":"https://framagit.org/","kind":"forge","priority":"high"},
     {"id":"sourcehut","name":"Sourcehut","domain":"sourcehut.org","url":"https://sourcehut.org/","kind":"forge","priority":"high"},
     {"id":"gnu-savannah","name":"GNU Savannah","domain":"savannah.gnu.org","url":"https://savannah.gnu.org/","kind":"forge","priority":"high"},
-    {"id":"kde-invent","name":"KDE Invent","domain":"invent.kde.org","url":"https://invent.kde.org/","kind":"forge","priority":"high"},
     {"id":"notabug","name":"NotABug","domain":"notabug.org","url":"https://notabug.org/","kind":"forge","priority":"medium"},
     {"id":"forgejo-network","name":"Codeberg-test / Forgejo instances","domain":"federated","url":"https://forgejo.org/","kind":"federated-forge","priority":"high","notes":"Red federada de instancias Forgejo; las instancias concretas se incorporarán mediante discovery."},
     {"id":"forgejo","name":"Forgejo","domain":"forgejo.org","url":"https://forgejo.org/","kind":"forge-software","priority":"high"},
