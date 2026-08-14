@@ -16,10 +16,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-UA = "LEONES-Atlas-Prospection/2.0"
+UA = "LEONES-Atlas-Prospection/2.1"
 QUERIES = ["LLM", "inference", "agent", "MCP", "model", "AI"]
 
-# Concrete public instances that expose compatible APIs today.
 TARGETS = {
     "gitlab": ("gitlab", "https://gitlab.com"),
     "framagit": ("gitlab", "https://framagit.org"),
@@ -51,11 +50,23 @@ UNSUPPORTED = {
 }
 
 
-def get(url: str):
+def get(url: str, source_id: str | None = None, adapter: str | None = None):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
-    token = os.getenv("GITHUB_TOKEN")
-    if token and ("gitlab" in url or "github" in url):
-        req.add_header("Authorization", "Bearer " + token)
+
+    # Never send the GitHub Actions token to another service. GitLab instances
+    # can optionally use their own source-specific token.
+    token_env = {
+        "gitlab": {
+            "gitlab": "LEONES_GITLAB_TOKEN",
+            "gnome-gitlab": "LEONES_GNOME_GITLAB_TOKEN",
+            "freedesktop-gitlab": "LEONES_FREEDESKTOP_GITLAB_TOKEN",
+            "framagit": "LEONES_FRAMAGIT_TOKEN",
+        }
+    }.get(adapter or "", {}).get(source_id or "")
+    token = os.getenv(token_env) if token_env else None
+    if token and adapter == "gitlab":
+        req.add_header("PRIVATE-TOKEN", token)
+
     with urllib.request.urlopen(req, timeout=30) as response:
         return json.loads(response.read().decode("utf-8")), response.status
 
@@ -82,14 +93,14 @@ def normalize(source_id: str, adapter: str, base: str, item: dict, query: str, n
 
 def search_gitlab(source_id: str, base: str, query: str):
     url = base.rstrip("/") + "/api/v4/projects?" + urllib.parse.urlencode({"search": query, "order_by": "last_activity_at", "sort": "desc", "per_page": 20})
-    data, status = get(url)
+    data, status = get(url, source_id, "gitlab")
     now = datetime.now(timezone.utc).isoformat()
     return [normalize(source_id, "gitlab", base, x, query, now) for x in data], status
 
 
 def search_forgejo(source_id: str, base: str, query: str):
     url = base.rstrip("/") + "/api/v1/repos/search?" + urllib.parse.urlencode({"q": query, "limit": 20})
-    data, status = get(url)
+    data, status = get(url, source_id, "forgejo")
     now = datetime.now(timezone.utc).isoformat()
     items = data.get("data", []) if isinstance(data, dict) else []
     return [normalize(source_id, "forgejo", base, x, query, now) for x in items], status
@@ -97,7 +108,7 @@ def search_forgejo(source_id: str, base: str, query: str):
 
 def search_pagure(source_id: str, base: str, query: str):
     url = base.rstrip("/") + "/api/0/projects?" + urllib.parse.urlencode({"pattern": query})
-    data, status = get(url)
+    data, status = get(url, source_id, "pagure")
     now = datetime.now(timezone.utc).isoformat()
     items = data if isinstance(data, list) else data.get("projects", [])
     return [normalize(source_id, "pagure", base, x, query, now) for x in items[:20]], status
