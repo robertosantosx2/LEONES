@@ -1,0 +1,4 @@
+priority,verification_status,reason,next_action
+high,needs_verification,Local-priority models require primary evidence for JGB classification,Verify provider documentation/license/weights/training-data/code claims
+high,needs_verification,Models with strong local relevance should be classified first,Collect evidence and record confidence
+medium,needs_verification,General Atlas models without sufficient primary evidence,Verify when evidence becomes available
