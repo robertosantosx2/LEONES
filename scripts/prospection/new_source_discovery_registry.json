@@ -1,0 +1,142 @@
+{
+  "version": "1.0",
+  "purpose": "Descubrir nuevas fuentes de proyectos y conocimiento IA que todavía no forman parte del registro principal de LEONES.",
+  "rules": {
+    "discover_only": true,
+    "never_auto_activate": true,
+    "preserve_provenance": true,
+    "deduplicate_by_canonical_url": true,
+    "require_evidence_before_onboarding": true
+  },
+  "source_channels": [
+    {
+      "id": "x-ai-community",
+      "name": "X.com / comunidad IA",
+      "priority": "critical",
+      "cadence": "daily",
+      "method": "search_engine_discovery",
+      "queries": [
+        "site:x.com (open source OR open-weight OR open weights) (LLM OR model OR AI)",
+        "site:x.com (GitHub OR Hugging Face) (LLM OR agent OR inference)",
+        "site:x.com (local LLM OR local AI OR coding agent)",
+        "site:x.com (released OR release OR launching) (model OR agent OR inference)"
+      ],
+      "note": "X no se trata como fuente primaria de licencia; sus enlaces sirven para descubrir la fuente primaria."
+    },
+    {
+      "id": "github-trending",
+      "name": "GitHub Trending / Search",
+      "priority": "critical",
+      "cadence": "daily",
+      "method": "github_api_or_public_pages",
+      "queries": ["LLM", "agent", "inference", "MCP", "local AI", "model"]
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face Hub",
+      "priority": "critical",
+      "cadence": "daily",
+      "method": "hub_api",
+      "queries": ["models", "datasets", "spaces", "papers"]
+    },
+    {
+      "id": "reddit-localllama",
+      "name": "Reddit r/LocalLLaMA",
+      "priority": "critical",
+      "cadence": "daily",
+      "method": "public_search",
+      "queries": ["new model", "release", "open source", "local inference", "quantization", "new project"]
+    },
+    {
+      "id": "reddit-machinelearning",
+      "name": "Reddit r/MachineLearning",
+      "priority": "high",
+      "cadence": "weekly",
+      "method": "public_search",
+      "queries": ["[R]", "[P]", "open source", "release", "LLM", "agent"]
+    },
+    {
+      "id": "hacker-news",
+      "name": "Hacker News",
+      "priority": "high",
+      "cadence": "daily",
+      "method": "hn_algolia_api",
+      "queries": ["LLM", "AI", "open source", "inference", "agent", "local AI"]
+    },
+    {
+      "id": "lobsters",
+      "name": "Lobsters",
+      "priority": "medium",
+      "cadence": "weekly",
+      "method": "public_search",
+      "queries": ["ai", "machine-learning", "open-source", "programming"]
+    },
+    {
+      "id": "arxiv",
+      "name": "arXiv",
+      "priority": "critical",
+      "cadence": "daily",
+      "method": "arxiv_api",
+      "queries": ["cs.CL", "cs.LG", "cs.AI", "cs.CV", "cs.RO"]
+    },
+    {
+      "id": "openreview",
+      "name": "OpenReview",
+      "priority": "high",
+      "cadence": "weekly",
+      "method": "public_api_or_search",
+      "queries": ["LLM", "agents", "efficient inference", "open models"]
+    },
+    {
+      "id": "paperswithcode",
+      "name": "Papers With Code / ML benchmarks",
+      "priority": "high",
+      "cadence": "weekly",
+      "method": "public_search",
+      "queries": ["language models", "efficient inference", "agents", "multimodal"]
+    },
+    {
+      "id": "ai-newsletters",
+      "name": "AI research/news newsletters",
+      "priority": "medium",
+      "cadence": "weekly",
+      "method": "public_search",
+      "queries": ["open source AI", "open weights", "local AI", "LLM release", "agent release"]
+    },
+    {
+      "id": "developer-blogs",
+      "name": "Blogs de laboratorios y desarrolladores",
+      "priority": "high",
+      "cadence": "weekly",
+      "method": "rss_or_public_search",
+      "queries": ["model release", "open weights", "open source", "inference", "agent"]
+    },
+    {
+      "id": "discord-slack-communities",
+      "name": "Comunidades Discord/Slack públicas",
+      "priority": "medium",
+      "cadence": "weekly",
+      "method": "manual_or_exported_feeds",
+      "queries": ["release", "new model", "new runtime", "new agent", "new benchmark"]
+    },
+    {
+      "id": "awesome-lists",
+      "name": "Awesome lists y directorios comunitarios",
+      "priority": "medium",
+      "cadence": "weekly",
+      "method": "github_search",
+      "queries": ["awesome-llm", "awesome-local-ai", "awesome-agents", "awesome-inference"]
+    }
+  ],
+  "candidate_scoring": {
+    "primary_source_link": 4,
+    "repository_or_model_hub_link": 3,
+    "recent_activity": 2,
+    "multiple_independent_mentions": 2,
+    "clear_project_identity": 2,
+    "license_or_terms_visible": 2,
+    "duplicate_penalty": -5,
+    "score_for_review": 6,
+    "score_for_priority_review": 10
+  }
+}
