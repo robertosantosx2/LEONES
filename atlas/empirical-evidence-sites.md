@@ -6,32 +6,67 @@ Registro de fuentes que aportan observaciones, mediciones, evaluaciones reproduc
 
 Una fuente empírica no convierte automáticamente sus datos en mediciones LEONES. Los resultados se conservan como `external_evidence` y se etiquetan según método, fecha, condiciones y reproducibilidad.
 
-## Fuentes prioritarias
+## 1. Evaluación y benchmarks principales
 
-| Fuente | Tipo | Qué extraer | Uso inicial |
+| Fuente | URL | Qué evalúa | Uso inicial |
 |---|---|---|---|
-| https://msa.millaguie.net/ | análisis/medición independiente | coding index, BCB-Hard, sesiones observadas, precisión, modelos locales, hardware y runtime cuando se publiquen | hipótesis de modelo/runtime/quant/hardware |
-| https://huggingface.co/open-llm-leaderboard | evaluación reproducible | resultados, benchmark, precisión, commit, configuración y detalles | hipótesis de capacidad/calidad; no inferencia local |
-| https://huggingface.co/docs/leaderboards/en/index | metafuente HF | leaderboards oficiales, evaluaciones publicadas y community leaderboards | descubrimiento de nuevas fuentes |
-| https://huggingface.co/datasets/open-llm-leaderboard/results | dataset de resultados | resultados por modelo y evaluación | external_evidence estructurada |
-| https://huggingface.co/datasets/open-llm-leaderboard/contents | dataset agregado | resultados agregados del leaderboard | contraste y descubrimiento |
-| Artificial Analysis | benchmark/serving | coding/reasoning indexes, latencia, velocidad, precio y contexto cuando estén disponibles | hipótesis comparativas |
-| LM Arena | evaluación comparativa | rankings y preferencias humanas por modelo | hipótesis de calidad; no rendimiento de hardware |
-| sitio/blog oficial del fabricante | evidencia primaria | especificaciones, arquitectura, contexto, cuantización, claims de rendimiento y disponibilidad | validación primaria/hipótesis |
+| LMSYS Chatbot Arena | https://chat.lmsys.org/ | Evaluación ciega cara a cara (humana y por votos ELO) de modelos en tiempo real | hipótesis de calidad/preferencia; no rendimiento de hardware |
+| Open LLM Leaderboard (Hugging Face) | https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard | Pruebas empíricas automatizadas sobre modelos open source, incluyendo razonamiento, matemáticas y seguimiento de instrucciones | hipótesis de capacidad/calidad; no inferencia local |
+| LLM Stats | https://llm-stats.com/benchmarks | Comparativas de métricas empíricas entre cientos de modelos en razonamiento (GPQA, SWE-bench, MMLU-Pro), visión y código | contraste y generación de hipótesis |
+| Model Spend Arena (MSA) | https://msa.millaguie.net/ | Análisis y observaciones de modelos, incluyendo mediciones de ejecución local cuando se publican | hipótesis de modelo/runtime/quant/hardware |
+
+## 2. Rendimiento, latencia y costes
+
+| Fuente | URL | Qué evalúa | Uso inicial |
+|---|---|---|---|
+| Artificial Analysis | https://artificialanalysis.ai/ | Datos empíricos sobre latencia (TTFT), velocidad de generación (tokens/segundo), coste por millón de tokens y precisión en pruebas de referencia | hipótesis comparativas de rendimiento/coste |
+| Vellum LLM Leaderboard | https://www.vellum.ai/llm-leaderboard | Métricas combinadas de rendimiento empírico en razonamiento, ventanas de contexto y costes de inferencia | hipótesis comparativas |
+| Lambda LLM Benchmarks | https://lambda.ai/llm-benchmarks-leaderboard | Rendimiento de modelos ejecutados en infraestructura estandarizada en tareas de programación y conocimiento general | hipótesis de capacidad bajo infraestructura controlada |
+
+## 3. Agentes, código y razonamiento complejo
+
+| Fuente | URL | Qué evalúa | Uso inicial |
+|---|---|---|---|
+| SWE-bench (Princeton / Yale) | https://www.swebench.com/ | Capacidad empírica para resolver issues y errores reales de código en repositorios de GitHub | hipótesis agentic/coding |
+| LiveCodeBench | https://livecodebench.github.io/ | Desempeño en problemas de programación actualizados continuamente para reducir la contaminación de datos de entrenamiento | hipótesis coding/reasoning |
+
+## Fuentes prioritarias de descubrimiento
+
+Además de las fuentes anteriores, Atlas debe consultar como primera capa de descubrimiento y evidencia externa:
+
+- https://huggingface.co/open-llm-leaderboard
+- https://huggingface.co/docs/leaderboards/en/index
+- https://huggingface.co/datasets/open-llm-leaderboard/results
+- https://huggingface.co/datasets/open-llm-leaderboard/contents
+- Artificial Analysis
+- LMSYS Chatbot Arena
+- sitio/blog oficial del fabricante
+
+El orden inicial de descubrimiento de modelos será preferentemente: **Hugging Face → LMSYS/Chatbot Arena → Artificial Analysis → fabricante**, complementado por las fuentes empíricas especializadas de este fichero.
 
 ## Hugging Face: qué cuenta como prueba
 
-Hugging Face sí dispone de una infraestructura formal de **Leaderboards and Evaluations**. La documentación distingue resultados de evaluaciones oficiales, community-managed leaderboards y el Open LLM Leaderboard. https://huggingface.co/docs/leaderboards/en/index
+Hugging Face sí dispone de una infraestructura formal de **Leaderboards and Evaluations**. La documentación distingue resultados de evaluaciones oficiales, community-managed leaderboards y el Open LLM Leaderboard.
 
-El Open LLM Leaderboard fue diseñado para evaluaciones comparables y reproducibles; su documentación conserva resultados y detalles por modelo. https://huggingface.co/docs/leaderboards/open_llm_leaderboard/archive
+https://huggingface.co/docs/leaderboards/en/index
 
-Importante: los resultados clásicos del Open LLM Leaderboard se ejecutaron en 8 H100 en una configuración controlada. Por tanto son evidencia de **capacidad comparativa bajo un protocolo concreto**, no evidencia de tok/s en hardware de consumo. https://huggingface.co/docs/leaderboards/open_llm_leaderboard/archive
+El Open LLM Leaderboard fue diseñado para evaluaciones comparables y reproducibles; su documentación conserva resultados y detalles por modelo.
 
-También debe conservarse la precisión/commit: HF documenta que el mismo modelo puede aparecer con distinta precisión (por ejemplo fp16 y 4bit), lo que es relevante para Atlas. https://huggingface.co/docs/leaderboards/open_llm_leaderboard/faq
+https://huggingface.co/docs/leaderboards/open_llm_leaderboard/archive
+
+Importante: los resultados clásicos del Open LLM Leaderboard se ejecutaron en 8 H100 en una configuración controlada. Por tanto son evidencia de **capacidad comparativa bajo un protocolo concreto**, no evidencia de tok/s en hardware de consumo.
+
+https://huggingface.co/docs/leaderboards/open_llm_leaderboard/archive
+
+También debe conservarse la precisión/commit: HF documenta que el mismo modelo puede aparecer con distinta precisión (por ejemplo fp16 y 4bit), lo que es relevante para Atlas.
+
+https://huggingface.co/docs/leaderboards/open_llm_leaderboard/faq
 
 ## Evidencia local/empírica destacada: Model Spend Arena
 
-MSA se incorpora como fuente prioritaria porque publica observaciones propias además de agregación de datos. En su página declara que los datos están fechados y que el sitio distingue datos agregados de mediciones propias. https://msa.millaguie.net/
+MSA se incorpora como fuente prioritaria porque publica observaciones propias además de agregación de datos. En su página declara que los datos están fechados y que el sitio distingue datos agregados de mediciones propias.
+
+https://msa.millaguie.net/
 
 Ejemplos observados el 2026-08-14:
 
