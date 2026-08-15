@@ -1,0 +1,20 @@
+name: Ingest Atlas Prospection NDJSON
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '37 5 * * *'
+permissions:
+  contents: write
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ingest discovery records
+        run: python3 scripts/atlas_ingest_ndjson.py
+      - name: Commit normalized feed and review queue
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/prospection/atlas_feed.csv data/prospection/atlas_review_queue.csv
+          if git diff --cached --quiet; then echo "Atlas unchanged"; else git commit -m "data: ingest prospection into Atlas"; git push; fi
