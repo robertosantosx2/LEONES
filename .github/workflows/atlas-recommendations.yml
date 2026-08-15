@@ -26,6 +26,8 @@ jobs:
           python-version: '3.x'
       - name: Test hardware price integration
         run: python3 scripts/test_atlas_price_integration.py
+      - name: Test economic ranking
+        run: python3 scripts/test_atlas_economic_rank.py
       - name: Generate recommendation report
         env:
           WORKLOAD: ${{ inputs.workload || 'chat' }}
@@ -40,9 +42,14 @@ jobs:
           if [ -n "$REQUIRED_JGB" ]; then args="$args --min-jgb $REQUIRED_JGB"; fi
           if [ "$PREFER_JGB" = "true" ]; then args="$args --prefer-jgb"; fi
           python3 scripts/atlas_recommend_from_feed.py $args
-      - name: Commit recommendation report if changed
+      - name: Generate economic ranking
+        env:
+          HARDWARE: ${{ inputs.hardware || 'cpu-i5-16gb' }}
+          RAM: ${{ inputs.ram || '16' }}
+        run: python3 scripts/atlas_economic_rank.py --hardware "$HARDWARE" --ram "$RAM"
+      - name: Commit recommendation and economic reports if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/prospection/atlas_recommendations.csv
-          if git diff --cached --quiet; then echo "Recommendation report unchanged"; else git commit -m "data: update Atlas recommendation report"; git push; fi
+          git add data/prospection/atlas_recommendations.csv data/prospection/atlas_economic_ranking.csv
+          if git diff --cached --quiet; then echo "Recommendation reports unchanged"; else git commit -m "data: update Atlas recommendation and economic ranking"; git push; fi
