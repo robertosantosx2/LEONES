@@ -1,4 +1,13 @@
 {
+  "ES-COOLMOD": {
+    "strategy": "direct_first",
+    "urls": {
+      "home": "https://www.coolmod.com/",
+      "verified_ddr4_8gb": "https://www.coolmod.com/goodram-8gb-1x8gb-3200mhz-cl22/",
+      "verified_ddr5_64gb_kingston": "https://www.coolmod.com/kingston-fury-beast-64gb-2x32gb-6000mhz-cl30-expo-xmp/",
+      "verified_ddr5_64gb_crucial": "https://www.coolmod.com/crucial-pro-64gb-2x32gb-6000mhz-cl36/"
+    }
+  },
   "ES-PCOMP": {
     "strategy": "category",
     "urls": {
@@ -10,31 +19,6 @@
       "ram_ddr4": "https://www.pccomponentes.com/categories/memorias-ram/ddr4",
       "ram_ddr5": "https://www.pccomponentes.com/categories/memorias-ram/ddr5",
       "gpu_nvidia": "https://www.pccomponentes.com/categories/tarjetas-graficas"
-    }
-  },
-  "ES-AMAZON": {
-    "strategy": "search",
-    "urls": {
-      "cpu_i3": "https://www.amazon.es/s?k=procesador+Intel+Core+i3",
-      "cpu_i5": "https://www.amazon.es/s?k=procesador+Intel+Core+i5",
-      "cpu_i7": "https://www.amazon.es/s?k=procesador+Intel+Core+i7",
-      "cpu_i9": "https://www.amazon.es/s?k=procesador+Intel+Core+i9",
-      "cpu_r3": "https://www.amazon.es/s?k=procesador+AMD+Ryzen+3",
-      "cpu_r5": "https://www.amazon.es/s?k=procesador+AMD+Ryzen+5",
-      "cpu_r7": "https://www.amazon.es/s?k=procesador+AMD+Ryzen+7",
-      "cpu_r9": "https://www.amazon.es/s?k=procesador+AMD+Ryzen+9",
-      "ram_ddr4": "https://www.amazon.es/s?k=memoria+RAM+DDR4",
-      "ram_ddr5": "https://www.amazon.es/s?k=memoria+RAM+DDR5",
-      "gpu_rtx": "https://www.amazon.es/s?k=NVIDIA+GeForce+RTX"
-    }
-  },
-  "ES-COOLMOD": {
-    "strategy": "category",
-    "urls": {
-      "home": "https://www.coolmod.com/",
-      "ram_ddr4_8gb_direct": "https://www.coolmod.com/goodram-1x8gb-3600mhz-cl18/",
-      "ram_ddr5_64gb_direct": "https://www.coolmod.com/kingston-fury-beast-64gb-2x32gb-6000mhz-cl30-expo-xmp/",
-      "ram_ddr5_64gb_direct_2": "https://www.coolmod.com/crucial-ct2k32g48c40s5-64gb-2x32gb-4800mhz-cl40-sodimm/"
     }
   },
   "ES-MEDIAMARKT": {
