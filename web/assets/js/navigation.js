@@ -14,7 +14,7 @@
 
     const navigation = [
         ["Inicio", "index.html", "top"],
-        ["Proyectos", "proyecto.html", "top"],
+        ["Proyectos", "proyectos.html", "top"],
         ["Atlas", "atlas.html", "project"],
         ["Pilares", "pilares.html", "project"],
         ["Arquitectura", "arquitectura.html", "project"],
@@ -85,7 +85,7 @@
         const group = currentPage?.[2];
         if (group && group !== "top") {
             const groupLink = document.createElement("a");
-            groupLink.href = group === "project" ? "proyecto.html" : "app.html";
+            groupLink.href = group === "project" ? "proyectos.html" : "app.html";
             groupLink.textContent = group === "project" ? "Proyectos" : "Aplicación";
             breadcrumbInner.appendChild(groupLink);
 
