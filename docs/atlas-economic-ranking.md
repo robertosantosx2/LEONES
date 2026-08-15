@@ -89,7 +89,7 @@ Los pesos son una **versión 1 del motor**, no una verdad universal. Deben perma
 
 El JGB se conserva como una dimensión independiente. No se sustituye por precio, benchmark ni rendimiento.
 
-La fuente documental del criterio distingue, entre otras categorías, modelos con pesos disponibles, open-weight, open-source y reproducibles, y describe dimensiones como acceso, control del modelo, control de datos, autonomía y confianza. fileciteturn231file1L1-L20
+La documentación de base utilizada para fijar el criterio JGB distingue modelos con pesos disponibles, open-weight, open-source y reproducibles, y utiliza dimensiones como acceso, control del modelo, control de datos, autonomía y confianza. La referencia de trabajo es la presentación de Jesús M. González-Barahona, «IA generativa abierta» (2026), incorporada al proyecto Atlas.
 
 Por tanto, el ranking económico puede favorecer un modelo con mejor JGB cuando su rendimiento y adecuación siguen siendo suficientes, pero no debe convertir «más abierto» en «más rápido» ni en «más barato».
 
@@ -152,7 +152,7 @@ Esta separación evita asociar accidentalmente el precio de una RTX o de un proc
 
 ## 9. Relación con la filosofía de ejecución local
 
-La documentación de la serie de LLM locales establece que la capacidad de memoria decide qué modelos caben y que el ancho de banda influye decisivamente en la velocidad de decodificación; también recomienda dejar margen de memoria y medir rendimiento con cargas reales. fileciteturn231file4L1-L18
+La serie de LLM locales utilizada como referencia en el proyecto establece que la capacidad de memoria decide qué modelos caben y que el ancho de banda influye decisivamente en la velocidad de decodificación; también recomienda dejar margen de memoria y medir rendimiento con cargas reales.
 
 El recomendador conserva esas ideas: primero capacidad/viabilidad, después rendimiento observado y finalmente coste.
 
