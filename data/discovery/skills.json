@@ -1,8 +1,62 @@
 {
-  "generated_at": "2026-08-15T18:53:22.775421+00:00",
+  "generated_at": "2026-08-15T19:06:05.895398+00:00",
   "kind": "skills",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
+    {
+      "name": "xu-jin-cs/dsh-skills",
+      "url": "https://github.com/xu-jin-cs/dsh-skills",
+      "description": "DeepSeek Harness (DSH) 生态技能包：parallel-dispatch 并行调度规则 + archmap 架构测绘 Agent（零LLM确定性diff影响面，节约tokens）。Reusable skills for the DeepSeek Harness ecosystem.",
+      "updated_at": "2026-08-15T19:05:21Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "congchuanling-dot/Cohort",
+      "url": "https://github.com/congchuanling-dot/Cohort",
+      "description": " Local-first Agent Runtime connecting LLMs to controlled tools, Chrome, desktop automation, MCP, context governance,   and verifiable memory.",
+      "updated_at": "2026-08-15T19:04:58Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Sumit884-byte/arka",
+      "url": "https://github.com/Sumit884-byte/arka",
+      "description": "Natural-language AI agent for your terminal — 70+ skills, voice, multi-provider LLM failover, and system automation.",
+      "updated_at": "2026-08-15T19:04:40Z",
+      "license": "GPL-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "kody-w/rappterbook",
+      "url": "https://github.com/kody-w/rappterbook",
+      "description": "Social network for AI agents. Feed SKILLS.md to your AI — it becomes a citizen. No servers, no API keys. GitHub IS the platform.",
+      "updated_at": "2026-08-15T19:04:38Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "PersonalClaw/PersonalClaw",
+      "url": "https://github.com/PersonalClaw/PersonalClaw",
+      "description": "Your self-hosted personal AI agent — an agentic OS for one person: chat, autonomous goal loops, memory, knowledge base, skills, automation, and a permission-gated app platform. Local-first, provider-agnostic, MIT.",
+      "updated_at": "2026-08-15T18:58:40Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "ykoh42/async-hermes-agent",
+      "url": "https://github.com/ykoh42/async-hermes-agent",
+      "description": "Async-first Hermes agent core for training, trajectories, tools, skills, MCP, and service integration",
+      "updated_at": "2026-08-15T18:56:07Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
     {
       "name": "rails-hyperdrive/rails-hyperdrive",
       "url": "https://github.com/rails-hyperdrive/rails-hyperdrive",
@@ -13,46 +67,10 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "xu-jin-cs/dsh-skills",
-      "url": "https://github.com/xu-jin-cs/dsh-skills",
-      "description": "DeepSeek Harness (DSH) 生态技能包：parallel-dispatch 并行调度规则 + archmap 架构测绘 Agent（零LLM确定性diff影响面，节约tokens）。Reusable skills for the DeepSeek Harness ecosystem.",
-      "updated_at": "2026-08-15T18:51:15Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "congchuanling-dot/Cohort",
-      "url": "https://github.com/congchuanling-dot/Cohort",
-      "description": " Local-first Agent Runtime connecting LLMs to controlled tools, Chrome, desktop automation, MCP, context governance,   and verifiable memory.",
-      "updated_at": "2026-08-15T18:49:54Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "manusco/resonance",
       "url": "https://github.com/manusco/resonance",
       "description": "Operator-grade AI agent skills for Claude Code, Cursor, Codex, and opencode.",
       "updated_at": "2026-08-15T18:49:53Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "kody-w/rappterbook",
-      "url": "https://github.com/kody-w/rappterbook",
-      "description": "Social network for AI agents. Feed SKILLS.md to your AI — it becomes a citizen. No servers, no API keys. GitHub IS the platform.",
-      "updated_at": "2026-08-15T18:49:52Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "ykoh42/async-hermes-agent",
-      "url": "https://github.com/ykoh42/async-hermes-agent",
-      "description": "Async-first Hermes agent core for training, trajectories, tools, skills, MCP, and service integration",
-      "updated_at": "2026-08-15T18:49:10Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -97,7 +115,7 @@
       "name": "affaan-m/ECC",
       "url": "https://github.com/affaan-m/ECC",
       "description": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
-      "updated_at": "2026-08-15T18:51:04Z",
+      "updated_at": "2026-08-15T19:01:35Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -261,15 +279,6 @@
       "description": "一款包含了 Prompt管理，Skill管理，Agent管理的一站式AI工具箱，助你高效管理提示词，一键分发skills ，一站式管理Agent资产，并实现云同步，备份，版本管理 | An all-in-one AI toolbox for prompt, agent, and skills management. Reuse prompts, distribute skills with one click, manage agent assets, and support cloud sync, backup, and version control",
       "updated_at": "2026-08-15T18:24:18Z",
       "license": "AGPL-3.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "PersonalClaw/PersonalClaw",
-      "url": "https://github.com/PersonalClaw/PersonalClaw",
-      "description": "Your self-hosted personal AI agent — an agentic OS for one person: chat, autonomous goal loops, memory, knowledge base, skills, automation, and a permission-gated app platform. Local-first, provider-agnostic, MIT.",
-      "updated_at": "2026-08-15T18:22:56Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -441,15 +450,6 @@
       "description": "Ecossistema completo de agentes para o Claude Code: 55 agentes, 10 squads, 60 skills, 5 hooks que rodam no harness, memória em 4 camadas, bancos de conhecimento e protocolo multi-LLM.",
       "updated_at": "2026-08-15T17:24:56Z",
       "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "aryaminus/controlkeel",
-      "url": "https://github.com/aryaminus/controlkeel",
-      "description": "Agent control plane for governed AI coding: validate changes, enforce policy gates, track findings, proofs, and evals based on your habits.",
-      "updated_at": "2026-08-15T17:23:45Z",
-      "license": "NOASSERTION",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     }

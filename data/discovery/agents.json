@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T18:53:21.551805+00:00",
+  "generated_at": "2026-08-15T19:06:04.946515+00:00",
   "kind": "agents",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
@@ -16,7 +16,7 @@
       "name": "open-multi-agent/open-multi-agent",
       "url": "https://github.com/open-multi-agent/open-multi-agent",
       "description": "TypeScript AI agent orchestration framework with dynamic workflows. Describe the goal, not the graph: a coordinator plans the task DAG at runtime and runs it on any LLM (Claude, ChatGPT, Gemini, DeepSeek, or local models).",
-      "updated_at": "2026-08-15T17:59:22Z",
+      "updated_at": "2026-08-15T19:01:39Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
