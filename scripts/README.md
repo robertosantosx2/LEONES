@@ -2,6 +2,16 @@
 
 Los scripts son la interfaz local mínima entre una persona y LEONES. Cada herramienta responde a una pregunta concreta y hace una sola cosa.
 
+## Documentación por fases
+
+Los scripts que formen parte de una fase importante deben quedar trazados en su paquete documental. El cierre de fase sigue:
+
+**implementar → validar → aceptar → documentar profusamente → enlazar → cerrar**.
+
+- [`../docs/DOCUMENTATION_PROTOCOL.md`](../docs/DOCUMENTATION_PROTOCOL.md) — norma general.
+- [`../docs/phases/README.md`](../docs/phases/README.md) — índice de fases.
+- [`../docs/phases/2026-08-atlas-recommendation-pipeline/`](../docs/phases/2026-08-atlas-recommendation-pipeline/) — fase actual que incluye `atlas_recommendation_enrich.py`, todavía en validación.
+
 ## Plataformas de referencia
 
 LEONES está orientado prioritariamente a **Linux** y ofrece soporte explícito para estas tres plataformas:
