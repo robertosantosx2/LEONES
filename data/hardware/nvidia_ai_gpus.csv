@@ -1,0 +1,34 @@
+gpu_id,model,series,architecture,vram_gb,ai_capable,source
+rtx2060,GeForce RTX 2060,RTX 20,Turing,6,yes,NVIDIA
+rtx2060_super,GeForce RTX 2060 SUPER,RTX 20,Turing,8,yes,NVIDIA
+rtx2070,GeForce RTX 2070,RTX 20,Turing,8,yes,NVIDIA
+rtx2070_super,GeForce RTX 2070 SUPER,RTX 20,Turing,8,yes,NVIDIA
+rtx2080,GeForce RTX 2080,RTX 20,Turing,8,yes,NVIDIA
+rtx2080_super,GeForce RTX 2080 SUPER,RTX 20,Turing,8,yes,NVIDIA
+rtx2080_ti,GeForce RTX 2080 Ti,RTX 20,Turing,11,yes,NVIDIA
+rtx3060,GeForce RTX 3060,RTX 30,Ampere,12,yes,NVIDIA
+rtx3060_ti,GeForce RTX 3060 Ti,RTX 30,Ampere,8,yes,NVIDIA
+rtx3070,GeForce RTX 3070,RTX 30,Ampere,8,yes,NVIDIA
+rtx3070_ti,GeForce RTX 3070 Ti,RTX 30,Ampere,8,yes,NVIDIA
+rtx3080,GeForce RTX 3080,RTX 30,Ampere,10,yes,NVIDIA
+rtx3080_ti,GeForce RTX 3080 Ti,RTX 30,Ampere,12,yes,NVIDIA
+rtx3090,GeForce RTX 3090,RTX 30,Ampere,24,yes,NVIDIA
+rtx3090_ti,GeForce RTX 3090 Ti,RTX 30,Ampere,24,yes,NVIDIA
+rtx4060,GeForce RTX 4060,RTX 40,Ada Lovelace,8,yes,NVIDIA
+rtx4060_ti_8,GeForce RTX 4060 Ti,RTX 40,Ada Lovelace,8,yes,NVIDIA
+rtx4060_ti_16,GeForce RTX 4060 Ti,RTX 40,Ada Lovelace,16,yes,NVIDIA
+rtx4070,GeForce RTX 4070,RTX 40,Ada Lovelace,12,yes,NVIDIA
+rtx4070_super,GeForce RTX 4070 SUPER,RTX 40,Ada Lovelace,12,yes,NVIDIA
+rtx4070_ti,GeForce RTX 4070 Ti,RTX 40,Ada Lovelace,12,yes,NVIDIA
+rtx4070_ti_super,GeForce RTX 4070 Ti SUPER,RTX 40,Ada Lovelace,16,yes,NVIDIA
+rtx4080,GeForce RTX 4080,RTX 40,Ada Lovelace,16,yes,NVIDIA
+rtx4080_super,GeForce RTX 4080 SUPER,RTX 40,Ada Lovelace,16,yes,NVIDIA
+rtx4090,GeForce RTX 4090,RTX 40,Ada Lovelace,24,yes,NVIDIA
+rtx5050,GeForce RTX 5050,RTX 50,Blackwell,8,yes,NVIDIA
+rtx5060,GeForce RTX 5060,RTX 50,Blackwell,8,yes,NVIDIA
+rtx5060_ti_8,GeForce RTX 5060 Ti,RTX 50,Blackwell,8,yes,NVIDIA
+rtx5060_ti_16,GeForce RTX 5060 Ti,RTX 50,Blackwell,16,yes,NVIDIA
+rtx5070,GeForce RTX 5070,RTX 50,Blackwell,12,yes,NVIDIA
+rtx5070_ti,GeForce RTX 5070 Ti,RTX 50,Blackwell,16,yes,NVIDIA
+rtx5080,GeForce RTX 5080,RTX 50,Blackwell,16,yes,NVIDIA
+rtx5090,GeForce RTX 5090,RTX 50,Blackwell,32,yes,NVIDIA
