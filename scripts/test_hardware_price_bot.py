@@ -15,11 +15,24 @@ def main():
     assert parse_price('372.77 €') == 372.77
     assert parse_price('372 ^{77} €') == 372.77
 
+    # Product cards represented as separate title/specification and price lines.
     html='''<html><body>
-    <article>Intel Core i5-14400F 187,00 €</article>
-    <article>AMD Ryzen 5 9600X 184,90 €</article>
-    <article>Corsair Vengeance DDR5 32 GB 431,95 €</article>
-    <article>ASUS GeForce RTX 5070 12GB 689,95 €</article>
+    <article>
+      Intel Core i5-14400F
+      187,00 €
+    </article>
+    <article>
+      AMD Ryzen 5 9600X
+      184,90 €
+    </article>
+    <article>
+      Corsair Vengeance DDR5 32 GB
+      431,95 €
+    </article>
+    <article>
+      ASUS GeForce RTX 5070 12GB
+      689,95 €
+    </article>
     </body></html>'''
     products=extract_products(html)
     names=[x[0] for x in products]
@@ -28,15 +41,6 @@ def main():
     assert any('ryzen 5' in n.lower() for n in names)
     assert any('ddr5' in n.lower() for n in names)
     assert any('rtx 5070' in n.lower() for n in names)
-
-    # GPU product cards are HTML blocks, just like the other marketplace cards.
-    gpu_html='''<html><body>
-    <article>ASUS GeForce RTX 5070 12GB 689,95 €</article>
-    </body></html>'''
-    gpu_products=extract_products(gpu_html)
-    gpu_names=[x[0] for x in gpu_products]
-    print('GPU EXTRACTION TEST PRODUCTS:', gpu_names)
-    assert any('rtx 5070' in n.lower() for n in gpu_names)
 
     # Marketplace-style card: title, specs and price are separated by lines.
     mediamarkt='''
