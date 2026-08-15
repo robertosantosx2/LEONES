@@ -10,18 +10,20 @@
         <meta name="theme-color" content="#f3f6f9" />
         <title>LEONES · Proyectos</title>
 
-        <!-- Estilos compartidos de navegación y componentes visuales. -->
-        <link rel="stylesheet" href="assets/css/navigation.css" />
-        <link rel="stylesheet" href="assets/graphics/brand.css" />
+        <!-- La navegación es el único sistema visual compartido que necesita esta página. -->
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-2" />
 
         <style>
-            /* Estilos propios de esta página; no modifican el layout global. */
             :root {
                 --page-max-width: 1050px;
                 --page-border: #d8e0e7;
                 --page-ink: #17212b;
                 --page-blue: #1769aa;
                 --page-blue-dark: #102f49;
+            }
+
+            * {
+                box-sizing: border-box;
             }
 
             body {
@@ -165,16 +167,12 @@
                     agentic localmente.
                 </p>
                 <p>
-                    <strong
-                        >Un agente no existe para producir tokens; existe para completar
-                        objetivos.</strong
-                    >
+                    <strong>Un agente no existe para producir tokens; existe para completar objetivos.</strong>
                 </p>
             </section>
 
             <section class="content-section" aria-labelledby="problem-title">
                 <h2 id="problem-title">Qué problema resuelve</h2>
-
                 <div class="grid">
                     <article class="card">
                         <h3>Demasiadas piezas</h3>
@@ -183,7 +181,6 @@
                             LEONES organiza esas decisiones.
                         </p>
                     </article>
-
                     <article class="card">
                         <h3>Hardware real</h3>
                         <p>
@@ -191,7 +188,6 @@
                             de configuraciones ideales.
                         </p>
                     </article>
-
                     <article class="card">
                         <h3>Decisiones explicables</h3>
                         <p>
@@ -199,7 +195,6 @@
                             recomendaciones.
                         </p>
                     </article>
-
                     <article class="card">
                         <h3>Aprendizaje colectivo</h3>
                         <p>
@@ -212,7 +207,6 @@
 
             <section class="content-section" aria-labelledby="map-title">
                 <h2 id="map-title">Mapa mental</h2>
-
                 <div class="map-flow" aria-label="Flujo conceptual de LEONES">
                     <span class="map-node map-node--primary">NECESIDAD</span>
                     <span class="map-arrow" aria-hidden="true">→</span>
@@ -228,12 +222,10 @@
                     <span class="map-arrow" aria-hidden="true">→</span>
                     <span class="map-node">MANADA</span>
                 </div>
-
                 <p>La evidencia vuelve al sistema para producir mejores recomendaciones.</p>
             </section>
         </main>
 
-        <!-- Navegación común: se carga una sola vez al final del documento. -->
-        <script src="assets/js/navigation.js" defer></script>
+        <script src="assets/js/navigation.js?v=2026-08-16-2" defer></script>
     </body>
 </html>
