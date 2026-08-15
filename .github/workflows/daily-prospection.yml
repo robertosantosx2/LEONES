@@ -56,6 +56,9 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python scripts/prospection/run_federated_parallel.py --queries 2 --workers 8 --timeout 90
 
+      - name: Run additional forge and SCM adapters
+        run: python scripts/prospection/discover_additional_forge_adapters.py
+
       - name: Run model discovery
         run: python scripts/prospection/bot_models.py --input data/prospection/model_sources.ndjson
 
@@ -113,9 +116,11 @@ jobs:
             data/prospection/daily_source_report.json
             data/prospection/source_coverage_report.json
             data/prospection/federated_discovery_report.json
+            data/prospection/additional_forge_report.json
             data/prospection/discovery_merge_report.json
             data/prospection/enrichment_report.json
             data/prospection/forge_instances.ndjson
+            data/prospection/additional_forge_discoveries.ndjson
             data/prospection/atlas_review_queue.ndjson
             data/prospection/atlas_candidates.ndjson
             web/data/prospeccion.json
