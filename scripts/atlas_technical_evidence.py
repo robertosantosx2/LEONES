@@ -84,12 +84,23 @@ def enrich(row):
             if value: out['num_key_value_heads']=str(int(value)); break
         out['technical_evidence_url']=base
         out['technical_evidence_state']='reported'
-        # T1: technical identity and execution context.
-        t1=bool(out.get('runtime') and out.get('context_tokens') and (out.get('architecture') or out.get('parameters_total_b')))
-        # T2: viability can be evaluated from observed weight size + context + runtime.
-        # Quantization is not mandatory when actual weight-file size is observed.
-        t2=bool(t1 and out.get('weight_memory_gb'))
-        # T3 requires an actual performance observation; this extractor does not manufacture it.
+
+        # T1 means that we have at least a useful technical identity/context
+        # signal. It must not require every field needed for recommendation.
+        technical_identity=bool(
+            out.get('architecture') or out.get('parameters_total_b') or
+            out.get('context_tokens') or out.get('runtime') or out.get('backend')
+        )
+        t1=technical_identity
+
+        # T2 means that execution viability can begin to be evaluated from an
+        # observed weight footprint and a known execution runtime. Context is
+        # deliberately NOT required here: it is a separate requirement for a
+        # specific recommendation request, and may remain unknown.
+        t2=bool(t1 and out.get('weight_memory_gb') and out.get('runtime'))
+
+        # T3 requires an actual performance observation; this extractor does
+        # not manufacture one from model metadata.
         t3=bool(out.get('tokens_per_second') and out.get('hardware_id') and out.get('runtime'))
         out['technical_profile_level']='T3' if t3 else 'T2' if t2 else 'T1' if t1 else 'T0'
         out['technical_evidence_checked_at']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())
