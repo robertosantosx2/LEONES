@@ -1,0 +1,6 @@
+hardware_id,name,cpu_vendor,cpu_model,ram_gb,vram_gb,gpu_vendor,gpu_model,os,architecture,notes
+cpu-i5-16gb,Intel i5 16GB sin GPU,Intel,Core i5,16,0,,,Debian,x86_64,Perfil base local económico
+cpu-i7-32gb,Intel i7 32GB sin GPU,Intel,Core i7,32,0,,,Debian,x86_64,Perfil local intermedio
+cpu-i7-64gb,Intel i7 64GB sin GPU,Intel,Core i7,64,0,,,Debian,x86_64,Perfil local alto en RAM
+cpu-128gb,CPU 128GB sin GPU,,,128,0,,,Debian,x86_64,Perfil de máxima memoria principal
+rtx4060-8gb,RTX 4060 8GB,Intel,Core i7,32,8,NVIDIA,RTX 4060,Debian,x86_64,Perfil GPU de consumo
