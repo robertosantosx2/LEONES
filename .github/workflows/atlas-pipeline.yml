@@ -17,7 +17,7 @@ env:
 
 jobs:
   atlas-pipeline:
-    name: Prospección → Ingesta → Matriz CPU × RAM × NVIDIA → Recomendaciones
+    name: Prospección → Evidencia externa → Ingesta → Hardware → Recomendaciones
     runs-on: ubuntu-latest
     steps:
       - name: Descargar repositorio
@@ -30,10 +30,24 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Ingerir solo descubrimientos de modelos
+      - name: Descubrir modelos y ecosistema
+        run: |
+          python3 scripts/prospectors/models.py
+          python3 scripts/prospectors/repos.py runtimes
+          python3 scripts/prospectors/repos.py agents
+          python3 scripts/prospectors/repos.py skills
+          python3 scripts/prospectors/repos.py harnesses
+
+      - name: Construir evidencia externa inicial
+        run: python3 scripts/atlas_external_evidence.py
+
+      - name: Ingerir descubrimientos de modelos
         run: python3 scripts/atlas_ingest_ndjson.py
 
-      - name: Generar matriz completa CPU × RAM × GPU NVIDIA
+      - name: Regenerar evidencia externa tras la ingesta
+        run: python3 scripts/atlas_external_evidence.py
+
+      - name: Generar matriz CPU × RAM × GPU NVIDIA
         run: python3 scripts/atlas_hardware_matrix.py
 
       - name: Generar perfiles CPU × RAM sin GPU
@@ -55,12 +69,12 @@ jobs:
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/prospection/atlas_feed.csv data/prospection/atlas_review_queue.csv data/prospection/recommendations_*.csv data/prospection/atlas_hardware_matrix.csv
+          git add data/discovery data/prospection/atlas_feed.csv data/prospection/atlas_external_evidence.csv data/prospection/atlas_review_queue.csv data/prospection/recommendations_*.csv data/prospection/atlas_hardware_matrix.csv
           if git diff --cached --quiet; then
             echo "Atlas sin cambios"
             exit 0
           fi
-          git commit -m "feat: actualizar matriz y recomendaciones del Atlas"
+          git commit -m "feat: actualizar prospección, evidencia y matriz del Atlas"
           for attempt in 1 2 3; do
             git fetch origin main
             if git rebase origin/main; then
