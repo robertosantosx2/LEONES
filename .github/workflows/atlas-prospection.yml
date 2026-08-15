@@ -1,8 +1,6 @@
-name: Atlas daily prospection sync
+name: Atlas prospection sync (manual)
 
 on:
-  schedule:
-    - cron: '17 5 * * *'
   workflow_dispatch:
 
 permissions:
@@ -14,15 +12,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-
       - name: Ingest verified prospection evidence
         run: python scripts/atlas_ingest_prospection.py
-
       - name: Commit Atlas changes
         run: |
           git config user.name "github-actions[bot]"
@@ -31,6 +26,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No Atlas changes to commit."
           else
-            git commit -m "chore: sync daily Atlas prospection"
+            git commit -m "chore: sync Atlas prospection"
             git push
           fi
