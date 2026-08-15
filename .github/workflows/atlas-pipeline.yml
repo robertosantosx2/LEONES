@@ -25,11 +25,8 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Ingerir descubrimientos NDJSON
+      - name: Ingerir solo descubrimientos de modelos
         run: python3 scripts/atlas_ingest_ndjson.py
-
-      - name: Normalizar feed de prospección
-        run: python3 scripts/atlas_build_feed.py
 
       - name: Generar recomendaciones por perfil de hardware
         run: |
