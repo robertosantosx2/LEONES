@@ -1,0 +1,68 @@
+name: Weekly Source Extraction
+
+on:
+  schedule:
+    - cron: '27 5 * * 1'
+    - cron: '27 5 * * 2'
+    - cron: '27 5 * * 3'
+    - cron: '27 5 * * 4'
+    - cron: '27 5 * * 5'
+    - cron: '27 5 * * 6'
+    - cron: '27 5 * * 0'
+  workflow_dispatch:
+    inputs:
+      day:
+        description: 'Day to extract (auto, monday, tuesday, wednesday, thursday, friday, saturday, sunday)'
+        required: false
+        default: auto
+
+permissions:
+  contents: write
+
+concurrency:
+  group: leones-weekly-source-extraction
+  cancel-in-progress: false
+
+env:
+  LEONES_FORGEJO_INSTANCES: https://next.forgejo.org
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Extract assigned weekly sources
+        env:
+          LEONES_SOURCEHUT_TOKEN: ${{ secrets.LEONES_SOURCEHUT_TOKEN }}
+          LEONES_GITLAB_TOKEN: ${{ secrets.LEONES_GITLAB_TOKEN }}
+          LEONES_FRAMAGIT_TOKEN: ${{ secrets.LEONES_FRAMAGIT_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python scripts/prospection/run_weekly_source_batch.py \
+            --day "${{ inputs.day || 'auto' }}" \
+            --queries 2 \
+            --workers 4 \
+            --timeout 75
+
+      - name: Publish weekly extraction outputs
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/prospection/weekly_sources/
+          if git diff --cached --quiet; then
+            echo 'No weekly extraction changes.'
+          else
+            git commit -m 'chore: update weekly source extraction'
+            git push origin HEAD:main
+          fi
