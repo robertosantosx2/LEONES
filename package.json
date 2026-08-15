@@ -1,0 +1,9 @@
+{
+    "name": "leones-web",
+    "private": true,
+    "version": "1.0.0",
+    "description": "Tooling for the LEONES static web",
+    "devDependencies": {
+        "prettier": "3.9.6"
+    }
+}
