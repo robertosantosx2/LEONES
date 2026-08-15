@@ -1,10 +1,13 @@
 {
-  "atlas_version": "0.1",
+  "atlas_version": "0.2",
   "generated_at": null,
   "records": [],
   "notes": [
-    "Este catálogo empieza vacío para no inventar datos.",
-    "Los registros deben proceder de fuentes o mediciones con evidencia.",
-    "La clasificación de apertura es independiente de cualquier puntuación."
+    "Este catálogo permanece vacío de conocimiento oficial hasta incorporar datos con procedencia.",
+    "La primera evidencia externa de modelos se prioriza desde Hugging Face, LM Arena, Artificial Analysis y fabricante.",
+    "MANADA aporta evidencia experimental de hardware y ejecución; no se considera verificada automáticamente.",
+    "CABE y RULA son dimensiones distintas: que una configuración quepa no implica que sea usable.",
+    "La clasificación de apertura es independiente de cualquier puntuación.",
+    "El hardware debe poder representar compute/FLOPS, memoria, storage, bandwidth e interconnect por separado."
   ]
 }
