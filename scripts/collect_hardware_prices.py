@@ -62,63 +62,82 @@ def parse_price(raw):
     if ',' in raw: return float(raw.replace('.','').replace(',','.'))
     return float(raw)
 
+def clean_name(name):
+    name=re.sub(r'!\[[^\]]*\]\([^)]*\)',' ',name)
+    name=re.sub(r'\[[^\]]*\]\([^)]*\)',' ',name)
+    name=re.sub(r'\([^)]*\)',' ',name)
+    name=re.sub(r'\s+',' ',name).strip(' #-|')
+    if len(name)>180: return ''
+    return name
+
 def text_products(text):
-    out=[]
+    """Extract product/price pairs from Jina markdown or plain text."""
+    out=[]; seen=set()
     price_re=re.compile(r'(?<!\d)(\d{1,4}(?:[.,]\d{2})?)\s*(?:€|EUR)',re.I)
-    heading_re=re.compile(r'(?:^|\s)###\s+(.+?)(?=\s+\d{1,4}(?:[.,]\d{2})?\s*(?:€|EUR))',re.I|re.S)
-    for m in heading_re.finditer(text):
-        raw_name=m.group(1)
-        price_match=price_re.search(text,m.start(1)+max(0,len(raw_name)-400),m.end()+200)
-        if not price_match: continue
-        try: price=parse_price(price_match.group(1))
+    product_re=re.compile(
+        r'(Intel\s+Core\s+i[3579]\b|Core\s+i[3579]\b|'
+        r'AMD\s+Ryzen\s+[3579]\b|Ryzen\s+[3579]\b|'
+        r'(?:GeForce\s+)?RTX\s*\d{3,4}(?:\s*(?:Ti|Super))?\b|DDR[45]\b)',re.I)
+
+    def add(name,price):
+        name=clean_name(name)
+        if not name or not product_re.search(name) or not 5<=price<=10000: return
+        key=(name.lower(),round(price,2))
+        if key not in seen:
+            seen.add(key); out.append((name,price,''))
+
+    lines=[re.sub(r'\s+',' ',x).strip() for x in text.splitlines() if x.strip()]
+    for i,line in enumerate(lines):
+        pm=price_re.search(line)
+        if not pm: continue
+        try: price=parse_price(pm.group(1))
         except ValueError: continue
-        if not 5<=price<=10000: continue
-        name=re.sub(r'!\[[^\]]*\]\([^)]*\)',' ',raw_name)
-        name=re.sub(r'\[[^\]]*\]\([^)]*\)',' ',name)
-        name=re.sub(r'\s+',' ',name).strip(' #-')
-        if name: out.append((name,price,''))
-    if not out:
-        lines=[re.sub(r'\s+',' ',x).strip() for x in text.splitlines() if x.strip()]
-        product_re=re.compile(r'(Intel\s+Core\s+i[3579]|Core\s+i[3579]|AMD\s+Ryzen\s+[3579]|Ryzen\s+[3579]|DDR[45]|RTX\s*\d{4})',re.I)
-        for i,line in enumerate(lines):
-            pm=price_re.search(line)
-            if not pm: continue
-            try: price=parse_price(pm.group(1))
-            except ValueError: continue
-            if not 5<=price<=10000: continue
-            candidates=[]
-            for j in range(max(0,i-3),min(len(lines),i+2)):
-                s=lines[j].lstrip('#*- ').strip()
-                if product_re.search(s): candidates.append(s)
-            if candidates: out.append((candidates[-1],price,''))
+        prefix=line[:pm.start()]
+        matches=list(product_re.finditer(prefix))
+        if matches:
+            candidate=prefix[matches[-1].start():]
+            candidate=re.split(r'\b(?:Vendido y enviado|Envío gratis|Comparar|PVPR|opiniones)\b',candidate,flags=re.I)[0]
+            add(candidate,price)
+            continue
+        for j in range(max(0,i-2),i):
+            candidate=lines[j]
+            if product_re.search(candidate):
+                matches=list(product_re.finditer(candidate))
+                add(candidate[matches[-1].start():],price)
+                break
     return out
 
 def products(html):
-    p=jsonld_products(html)
-    return p if p else text_products(html)
+    p=jsonld_products(html); t=text_products(html)
+    if not p: return t
+    merged=[]; seen=set()
+    for item in p+t:
+        key=(item[0].lower(),round(item[1],2))
+        if key not in seen:
+            seen.add(key); merged.append(item)
+    return merged
 
 def classify(name,kind,vendor):
     n=name.lower()
     if kind=='cpu':
         if vendor=='intel':
-            # Keep Core i3/i5/i7/i9 distinct; Core Ultra is not silently mapped.
             m=re.search(r'\bcore\s+i([3579])(?:[-\s]|$)',n)
             return (f'Core i{m.group(1)}','') if m else None
         m=re.search(r'\bryzen\s+([3579])\b',n)
         return (f'Ryzen {m.group(1)}','') if m else None
     if kind=='ram':
-        m=re.search(r'\b(ddr[45])\b.*?\b(\d{1,3})\s*gb\b',n)
-        return (f'Memory {m.group(1).upper()}',m.group(2)) if m else None
+        m=re.search(r'\b(ddr[45])\b',n); cap=re.search(r'\b(\d{1,3})\s*gb\b',n)
+        if not m or not cap: return None
+        return (f'Memory {m.group(1).upper()}',cap.group(1))
     if kind=='gpu':
-        m=re.search(r'\b(?:geforce\s+)?(rtx\s*\d{4}(?:\s*ti(?:\s*super)?|\s*super)?)\b',n)
+        m=re.search(r'\b(?:geforce\s+)?(rtx\s*\d{3,4}(?:\s*ti(?:\s*super)?|\s*super)?)\b',n)
         if not m: return None
         v=re.search(r'(\d{1,3})\s*gb\b',n)
         return (m.group(1).upper(),v.group(1) if v else '')
     return None
 
 def valid_observation(r):
-    model=(r.get('model') or '').strip()
-    price=(r.get('price_eur') or '').strip()
+    model=(r.get('model') or '').strip(); price=(r.get('price_eur') or '').strip()
     if not model or len(model)>180: return False
     if '[![' in model or '](http' in model or '###' in model: return False
     try: p=float(price.replace(',','.'))
@@ -171,10 +190,8 @@ def main():
             failures+=1; print(f'WARNING: {source} {url}: {e}')
     save_obs(rows); build_summary(rows)
     print(f'LEONES price collector: +{added} observations; extracted={extracted}; sources failed={failures}/{len(SOURCES)}; history={len(rows)}')
-    if not rows:
-        raise SystemExit('No price observations exist after collection: collector produced an empty dataset.')
-    if added==0 and failures==len(SOURCES):
-        raise SystemExit('No fresh price evidence collected: all configured sources failed.')
+    if not rows: raise SystemExit('No price observations exist after collection: collector produced an empty dataset.')
+    if added==0 and failures==len(SOURCES): raise SystemExit('No fresh price evidence collected: all configured sources failed.')
     if added==0: print('WARNING: no new observations; historical data preserved.')
 
 if __name__=='__main__': main()
