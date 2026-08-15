@@ -51,15 +51,15 @@ jobs:
         run: |
           set -e
           python3 scripts/atlas_technical_evidence.py
-          echo "Registros con evidencia técnica:"
+          echo "Perfiles técnicos:"
           python3 - <<'PY'
           import csv
           p='data/prospection/atlas_technical_evidence.csv'
           with open(p, encoding='utf-8-sig', newline='') as f:
               rows=list(csv.DictReader(f))
+          counts={k:sum(r.get('technical_profile_level')==k for r in rows) for k in ('T0','T1','T2','T3')}
           reported=sum(r.get('technical_evidence_state')=='reported' for r in rows)
-          usable=sum(bool(r.get('runtime')) and bool(r.get('quantization')) and bool(r.get('estimated_memory_gb')) and bool(r.get('context_tokens')) for r in rows)
-          print(f'reported={reported}/{len(rows)}; recommendation-ready technical profiles={usable}/{len(rows)}')
+          print(f"reported={reported}/{len(rows)}; T0={counts['T0']} T1={counts['T1']} T2={counts['T2']} T3={counts['T3']}")
           PY
 
       - name: Auditar calidad del feed
@@ -76,6 +76,7 @@ jobs:
           echo "Filas de matriz hardware: $rows"
           if [ "$rows" -eq 0 ]; then
             echo "ERROR: la matriz hardware no puede publicarse vacía"
+            echo "Los perfiles T2 deben alimentar la matriz; revise la evidencia técnica aguas arriba."
             exit 1
           fi
 
