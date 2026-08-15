@@ -1,0 +1,40 @@
+{
+  "ES-PCOMP": {
+    "strategy": "category",
+    "urls": {
+      "cpu_intel": "https://www.pccomponentes.com/procesadores/intel",
+      "cpu_amd": "https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-3",
+      "ram_ddr4": "https://www.pccomponentes.com/categories/memorias-ram/ddr4",
+      "ram_ddr5": "https://www.pccomponentes.com/categories/memorias-ram/ddr5",
+      "gpu_nvidia": "https://www.pccomponentes.com/categories/tarjetas-graficas"
+    }
+  },
+  "ES-AMAZON": {
+    "strategy": "search",
+    "urls": {
+      "cpu": "https://www.amazon.es/s?k=procesador+Intel+Core+i5",
+      "ram": "https://www.amazon.es/s?k=memoria+RAM+DDR5+32GB",
+      "gpu": "https://www.amazon.es/s?k=RTX+5070+12GB"
+    }
+  },
+  "ES-COOLMOD": {
+    "strategy": "discover",
+    "urls": {
+      "home": "https://www.coolmod.com/"
+    }
+  },
+  "ES-MEDIAMARKT": {
+    "strategy": "category",
+    "urls": {
+      "components": "https://www.mediamarkt.es/es/category/componentes-56.html"
+    }
+  },
+  "EU-LDLC": {
+    "strategy": "category",
+    "urls": {
+      "cpu": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/procesador/c4300/",
+      "ram": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/memoria-pc/c4703/",
+      "gpu": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/tarjeta-grafica/c4684/"
+    }
+  }
+}
