@@ -1,0 +1,7 @@
+jgb_class,access,model_control,data_control,autonomy,trust,minimum_evidence,source_page
+behind_app,app_defined,none,none,none,none,"model hidden behind application",12
+directly_accessible,api_restricted,limited,none,none,none,"direct API access; API restrictions",15
+available_weights,conditional,conditional,complete,conditional,none,"weights available; inference software usually available; conditions may restrict use/redistribution/modification",18
+open_weight,use_as_you_want,deep,complete,study_restricted,none,"use, redistribution and derived works allowed; no freedom of study",21
+open_source,use_as_you_want,deep,complete,study_detailed_restricted,partial,"open-source training/inference software and detailed training description; training dataset need not be available",25
+reproducible_libre,use_as_you_want,deep,complete,complete,complete,"all model information plus training dataset available",28
