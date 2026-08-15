@@ -1,38 +1,187 @@
-(function(){
-const items=[
- ['Inicio','index.html','top'],['Proyectos','proyecto.html','top'],['Atlas','atlas.html','project'],['Pilares','pilares.html','project'],['Arquitectura','arquitectura.html','project'],['Diagramas','diagramas.html','project'],['Pila','pila.html','project'],['Operación','operacion.html','project'],['Aplicación','app.html','top'],['Scripts','scripts.html','application'],['Resultados','resultados.html','application'],['Evaluación','evaluacion.html','application'],['Recomendaciones','recommendations.html','application'],['Manada','manada.html','top'],['Prospección','prospeccion.html','top'],['Horizonte','horizon.html','top'],['Contacto','contacto.html','top']
-];
-const path=location.pathname.split('/').pop()||'index.html';
-const current=items.find(x=>x[1]===path);
-function link(x,level){return '<a class="level-'+level+(x[1]===path?' active':'')+(x[1]==='atlas.html'?' atlas-link':'')+' href="'+x[1]+'">'+x[0]+'</a>'}
-function render(){
- const old=document.querySelector('.leones-nav-runtime');if(old)old.remove();
- const style=document.createElement('style');style.id='leones-navigation-force';style.textContent=`
-/* Runtime navigation: do not let the legacy navigation stylesheet cover page content. */
-.leones-nav-runtime{position:relative!important;z-index:100!important;display:block!important;width:100%!important;height:auto!important;pointer-events:none!important}
-.leones-nav-runtime .site-crumb{position:sticky!important;top:0!important;z-index:200!important;pointer-events:auto!important;width:100%!important;box-sizing:border-box!important}
-.leones-nav-runtime .site-side{position:fixed!important;left:0!important;top:0!important;bottom:0!important;width:230px!important;height:100vh!important;box-sizing:border-box!important;z-index:1000!important;overflow-y:auto!important;pointer-events:auto!important;padding:14px 12px 18px!important;background:#fff!important;box-shadow:2px 0 14px rgba(16,47,73,.06)!important}
-body{padding-left:230px!important;box-sizing:border-box!important}
-body>*:not(.leones-nav-runtime){position:relative;z-index:1}
-.leones-nav-runtime .site-brand{display:flex!important;justify-content:center!important;align-items:center!important;padding:4px 10px 14px!important}.leones-nav-runtime .site-brand img{display:block!important;width:100%!important;max-width:178px!important;height:auto!important;max-height:88px!important;object-fit:contain!important}
-.leones-nav-runtime .side-title{padding:0 11px 7px!important;font-size:.68rem!important;letter-spacing:.12em!important;color:#91a2ad!important;font-weight:900!important}
-.leones-nav-runtime .site-side a{display:block!important}.leones-nav-runtime .level-top{margin-top:3px!important;font-size:.84rem!important;color:#315d7d!important;padding:9px 11px!important;background:transparent!important;border-radius:8px!important}.leones-nav-runtime .level-top:hover{background:#f4f7fa!important;color:#16486a!important}.leones-nav-runtime .level-top.active{color:#c62828!important;background:#fff0f0!important;box-shadow:inset 4px 0 #c62828!important;font-weight:950!important}
-.leones-nav-runtime .level-project,.leones-nav-runtime .level-application{margin-left:18px!important;padding:6px 10px!important;font-size:.77rem!important;color:#7f98a5!important;border-left:1px solid #d8e0e7!important;border-radius:0 7px 7px 0!important}.leones-nav-runtime .level-project:hover,.leones-nav-runtime .level-application:hover{color:#16486a!important;background:#f4f7fa!important}.leones-nav-runtime .level-project.active,.leones-nav-runtime .level-application.active{color:#c62828!important;border-left:3px solid #c62828!important;background:#fff0f0!important;font-weight:950!important}.leones-nav-runtime .atlas-link{font-weight:950!important;color:#1769aa!important}
-.leones-nav-runtime .skip-link{position:fixed;left:10px;top:-60px;z-index:2000;background:#102f49;color:#fff;padding:10px 14px;border-radius:8px;font-weight:800;text-decoration:none}.leones-nav-runtime .skip-link:focus{top:10px}
-.leones-nav-runtime .leones-nav-toggle,.leones-nav-runtime .site-side-backdrop{display:none}
-@media(max-width:800px){body{padding-left:0!important}.leones-nav-runtime .leones-nav-toggle{display:flex;position:fixed;left:10px;top:10px;z-index:2001;border:1px solid #d8e0e7;background:#fff;color:#102f49;border-radius:10px;padding:9px 12px;font-weight:900;box-shadow:0 3px 12px rgba(16,47,73,.12);cursor:pointer;pointer-events:auto}.leones-nav-runtime .site-side{width:min(290px,88vw)!important;transform:translateX(-105%)!important;transition:transform .2s ease!important;padding-top:58px!important}.leones-nav-runtime .site-side.is-open{transform:translateX(0)!important}.leones-nav-runtime .site-side-backdrop{display:none;position:fixed;inset:0;background:rgba(16,47,73,.35);z-index:999;pointer-events:auto}.leones-nav-runtime .site-side-backdrop.is-open{display:block}.leones-nav-runtime .site-crumb{padding-left:62px!important}.leones-nav-runtime .site-brand img{max-width:150px!important}}
-@media(prefers-reduced-motion:reduce){.leones-nav-runtime .site-side{transition:none!important}}
-`;
- document.head.appendChild(style);
- const nav=document.createElement('nav');nav.className='site-nav leones-nav-runtime';nav.setAttribute('aria-label','Navegación principal');
- const group=current?current[2]:null;const groupHref=group==='project'?'proyecto.html':group==='application'?'app.html':'index.html';
- nav.innerHTML='<a class="skip-link" href="#main">Saltar al contenido</a><div class="site-crumb"><div class="site-crumb-inner"><a href="index.html">Inicio</a><span>›</span>'+(group&&group!=='top'?'<a href="'+groupHref+'">'+(group==='project'?'Proyectos':'Aplicación')+'</a><span>›</span>':'')+'<strong>'+(current?current[0]:'Inicio')+'</strong></div></div><button class="leones-nav-toggle" type="button" aria-controls="leones-side" aria-expanded="false">☰ Menú</button><div class="site-side-backdrop" aria-hidden="true"></div><aside id="leones-side" class="site-side"><div class="site-brand"><a href="index.html" aria-label="LEONES · Inicio"><img src="assets/graphics/leones-logo-principal.svg" alt="LEONES"></a></div><div class="side-title">NAVEGACIÓN</div>'+items.map(x=>link(x,x[2])).join('')+'</aside>';
- document.body.insertBefore(nav,document.body.firstChild);
- const toggle=nav.querySelector('.leones-nav-toggle'),side=nav.querySelector('.site-side'),backdrop=nav.querySelector('.site-side-backdrop');
- function close(){side.classList.remove('is-open');backdrop.classList.remove('is-open');toggle.setAttribute('aria-expanded','false')}
- toggle.addEventListener('click',function(){const open=!side.classList.contains('is-open');side.classList.toggle('is-open',open);backdrop.classList.toggle('is-open',open);toggle.setAttribute('aria-expanded',String(open))});
- backdrop.addEventListener('click',close);side.addEventListener('click',function(e){if(e.target.closest('a'))close()});document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
- const main=document.querySelector('main');if(main&&!main.id)main.id='main';
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();
+/*
+ * LEONES — shared navigation runtime
+ *
+ * Responsibilities:
+ *   1. Render one consistent navigation on every static page.
+ *   2. Reserve sidebar space through a body class.
+ *   3. Provide keyboard- and mobile-friendly navigation.
+ *
+ * The script deliberately does not style or reposition page content.
+ */
+
+(() => {
+    "use strict";
+
+    const navigation = [
+        ["Inicio", "index.html", "top"],
+        ["Proyectos", "proyecto.html", "top"],
+        ["Atlas", "atlas.html", "project"],
+        ["Pilares", "pilares.html", "project"],
+        ["Arquitectura", "arquitectura.html", "project"],
+        ["Diagramas", "diagramas.html", "project"],
+        ["Pila", "pila.html", "project"],
+        ["Operación", "operacion.html", "project"],
+        ["Aplicación", "app.html", "top"],
+        ["Scripts", "scripts.html", "application"],
+        ["Resultados", "resultados.html", "application"],
+        ["Evaluación", "evaluacion.html", "application"],
+        ["Recomendaciones", "recommendations.html", "application"],
+        ["Manada", "manada.html", "top"],
+        ["Prospección", "prospeccion.html", "top"],
+        ["Horizonte", "horizon.html", "top"],
+        ["Contacto", "contacto.html", "top"]
+    ];
+
+    const currentPath = window.location.pathname.split("/").pop() || "index.html";
+    const currentPage = navigation.find(([label, path]) => path === currentPath);
+
+    function createLink([label, path, level]) {
+        const link = document.createElement("a");
+        link.className = `level-${level}`;
+        link.href = path;
+        link.textContent = label;
+
+        if (path === currentPath) {
+            link.classList.add("active");
+            link.setAttribute("aria-current", "page");
+        }
+
+        return link;
+    }
+
+    function renderNavigation() {
+        if (document.querySelector(".leones-nav-runtime")) {
+            return;
+        }
+
+        document.body.classList.add("has-leones-navigation");
+
+        const navigationRoot = document.createElement("nav");
+        navigationRoot.className = "leones-nav-runtime";
+        navigationRoot.setAttribute("aria-label", "Navegación principal");
+
+        const skipLink = document.createElement("a");
+        skipLink.className = "skip-link";
+        skipLink.href = "#main";
+        skipLink.textContent = "Saltar al contenido";
+        navigationRoot.appendChild(skipLink);
+
+        const breadcrumb = document.createElement("div");
+        breadcrumb.className = "site-crumb";
+
+        const breadcrumbInner = document.createElement("div");
+        breadcrumbInner.className = "site-crumb-inner";
+
+        const home = document.createElement("a");
+        home.href = "index.html";
+        home.textContent = "Inicio";
+        breadcrumbInner.appendChild(home);
+
+        const separator = document.createElement("span");
+        separator.setAttribute("aria-hidden", "true");
+        separator.textContent = "›";
+        breadcrumbInner.appendChild(separator);
+
+        const group = currentPage?.[2];
+        if (group && group !== "top") {
+            const groupLink = document.createElement("a");
+            groupLink.href = group === "project" ? "proyecto.html" : "app.html";
+            groupLink.textContent = group === "project" ? "Proyectos" : "Aplicación";
+            breadcrumbInner.appendChild(groupLink);
+
+            const groupSeparator = document.createElement("span");
+            groupSeparator.setAttribute("aria-hidden", "true");
+            groupSeparator.textContent = "›";
+            breadcrumbInner.appendChild(groupSeparator);
+        }
+
+        const current = document.createElement("strong");
+        current.textContent = currentPage?.[0] || document.title;
+        current.setAttribute("aria-current", "page");
+        breadcrumbInner.appendChild(current);
+
+        breadcrumb.appendChild(breadcrumbInner);
+        navigationRoot.appendChild(breadcrumb);
+
+        const toggle = document.createElement("button");
+        toggle.className = "leones-nav-toggle";
+        toggle.type = "button";
+        toggle.setAttribute("aria-controls", "leones-side");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.textContent = "☰ Menú";
+        navigationRoot.appendChild(toggle);
+
+        const backdrop = document.createElement("div");
+        backdrop.className = "site-side-backdrop";
+        backdrop.setAttribute("aria-hidden", "true");
+        navigationRoot.appendChild(backdrop);
+
+        const sidebar = document.createElement("aside");
+        sidebar.className = "site-side";
+        sidebar.id = "leones-side";
+        sidebar.setAttribute("aria-label", "Secciones LEONES");
+
+        const brand = document.createElement("div");
+        brand.className = "site-brand";
+
+        const brandLink = document.createElement("a");
+        brandLink.href = "index.html";
+        brandLink.setAttribute("aria-label", "LEONES · Inicio");
+
+        const brandImage = document.createElement("img");
+        brandImage.src = "assets/graphics/leones-logo-principal.svg";
+        brandImage.alt = "LEONES";
+
+        brandLink.appendChild(brandImage);
+        brand.appendChild(brandLink);
+        sidebar.appendChild(brand);
+
+        const title = document.createElement("div");
+        title.className = "side-title";
+        title.textContent = "Navegación";
+        sidebar.appendChild(title);
+
+        navigation.forEach((item) => {
+            sidebar.appendChild(createLink(item));
+        });
+
+        navigationRoot.appendChild(sidebar);
+        document.body.prepend(navigationRoot);
+
+        const main = document.querySelector("main");
+        if (main && !main.id) {
+            main.id = "main";
+        }
+
+        const closeMenu = () => {
+            sidebar.classList.remove("is-open");
+            backdrop.classList.remove("is-open");
+            toggle.setAttribute("aria-expanded", "false");
+        };
+
+        toggle.addEventListener("click", () => {
+            const isOpen = !sidebar.classList.contains("is-open");
+            sidebar.classList.toggle("is-open", isOpen);
+            backdrop.classList.toggle("is-open", isOpen);
+            toggle.setAttribute("aria-expanded", String(isOpen));
+        });
+
+        backdrop.addEventListener("click", closeMenu);
+        sidebar.addEventListener("click", (event) => {
+            if (event.target.closest("a")) {
+                closeMenu();
+            }
+        });
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                closeMenu();
+            }
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", renderNavigation);
+    } else {
+        renderNavigation();
+    }
 })();
