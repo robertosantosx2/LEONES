@@ -25,6 +25,10 @@ ENLAZAR DESDE README
 CERRAR FASE
 ```
 
+## Auditoría
+
+[`PHASE_AUDIT_2026-08.md`](PHASE_AUDIT_2026-08.md) — revisión de todas las capacidades que el estado actual del proyecto identifica como terminadas/operativas.
+
 ## Fases documentadas
 
 ### 🟢 2026-08 — Prospección diaria automatizada
@@ -51,9 +55,11 @@ Primera versión validada del ranking que combina rendimiento, JGB, hardware fit
 
 Estado actual: **en validación**. El workflow diario ha sido conectado al enriquecedor de recomendaciones y existe una ejecución manual de GitHub Actions pendiente de completar. No se marca como aceptada hasta comprobar el run real.
 
-## Auditoría del estado anterior
+## Resultado de la auditoría
 
 La revisión del repositorio ha comparado las capacidades que el roadmap identifica como terminadas con los paquetes documentales. Las tres capacidades actualmente marcadas como operativas/validadas —**prospección automatizada, bot de precios e integración/ranking económico V1**— disponen ahora de paquete de fase con README, arquitectura, decisiones y validación.
+
+Durante la revisión se detectó y corrigió una discrepancia documental: el documento antiguo del bot de precios describía Amazon España como fuente activa, mientras la configuración efectiva del repositorio mantiene cuatro fuentes activas y Amazon fuera de cobertura. La documentación ahora refleja la configuración efectiva.
 
 Las áreas que el roadmap marca como **en evolución o en desarrollo** no se han falsificado como fases terminadas: Atlas, JGB, matriz hardware, CABE/RULA, benchmarks reales, agentic, router, web/app y Manada siguen fuera del estado ACEPTADA cuando la evidencia disponible no permite cerrarlas.
 
