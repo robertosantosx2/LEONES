@@ -37,7 +37,9 @@
   "ES-MEDIAMARKT": {
     "strategy": "category",
     "urls": {
-      "components": "https://www.mediamarkt.es/es/category/componentes-56.html"
+      "cpu": "https://www.mediamarkt.es/es/category/procesadores-58.html",
+      "ram": "https://www.mediamarkt.es/es/category/memorias-ram-59.html",
+      "gpu": "https://www.mediamarkt.es/es/category/tarjetas-gr%C3%A1ficas-63.html"
     }
   },
   "EU-LDLC": {
