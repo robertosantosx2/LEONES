@@ -16,7 +16,9 @@
 
 > **Actualizado tras la validación del bot de precios, la integración Atlas → recomendador y el ranking económico V1.**
 
-La siguiente clasificación distingue tres estados y evita llamar «terminado» a algo que solo tiene código pero no documentación o validación.
+Para poder referirnos a las etapas del proyecto sin ambigüedad, cada hito tiene un identificador estable **H01, H02, H03...**. El identificador se conserva aunque el hito evolucione, se amplíe o sea sustituido por una fase posterior.
+
+**Regla de referencia:** cuando digamos «H03» en una conversación, issue, commit o documento, nos referimos siempre al mismo hito del proyecto.
 
 | Estado | Significado |
 |---|---|
@@ -26,34 +28,79 @@ La siguiente clasificación distingue tres estados y evita llamar «terminado» 
 
 ## 🟢 TERMINADO / OPERATIVO
 
-- 🟢 **Bot mensual de precios de hardware**.
+### **H01 — Bot mensual de precios de hardware**
+
 - 🟢 Fuentes activas: **Coolmod, PcComponentes, MediaMarkt España y LDLC España**.
 - 🟢 **Amazon descartada** como fuente activa.
 - 🟢 Normalización y control de calidad de observaciones de precios.
 - 🟢 Conservación de observaciones rechazadas para auditoría.
-- 🟢 Integración **precios → perfiles hardware → Atlas/recomendador**.
+
+**Documentación:** [fase H01](docs/phases/2026-08-hardware-pricing/) · [precios](docs/hardware-price-sources.md) · [calidad](docs/hardware-price-quality.md).
+
+### **H02 — Integración precios → perfiles hardware → Atlas/recomendador**
+
 - 🟢 Test automatizado de integración de precios.
-- 🟢 **Ranking económico V1** integrado en GitHub Actions.
+- 🟢 Integración de observaciones válidas con perfiles hardware y recomendador.
+
+**Documentación:** [fase H02](docs/phases/2026-08-hardware-pricing/) · [integración](docs/atlas-hardware-price-integration.md).
+
+### **H03 — Ranking económico V1**
+
+- 🟢 Integrado en GitHub Actions.
 - 🟢 Test automatizado del ranking económico.
 - 🟢 Generación automática de recomendaciones técnicas.
 - 🟢 Generación automática del ranking económico.
 - 🟢 Publicación automática de las salidas del recomendador.
 - 🟢 Separación conceptual **JGB / rendimiento / hardware / precio**.
-- 🟢 Documentación del diseño de precios, calidad, integración y ranking económico.
-- 🟢 README y documentación principal enlazados con las piezas del subproyecto Atlas.
 
-**Documentación:** [precios](docs/hardware-price-sources.md) · [calidad](docs/hardware-price-quality.md) · [integración](docs/atlas-hardware-price-integration.md) · [ranking económico](docs/atlas-economic-ranking.md).
+**Documentación:** [fase H03](docs/phases/2026-08-economic-ranking-v1/) · [ranking económico](docs/atlas-economic-ranking.md).
+
+### **H04 — Prospección diaria automatizada**
+
+- 🟢 Descubrimiento diario del ecosistema.
+- 🟢 Filtro OSI y prioridad Copyleft.
+- 🟢 Enriquecimiento, informes e integración con Atlas/web.
+
+**Documentación:** [fase H04](docs/phases/2026-08-daily-prospection/) · [prospección](docs/PROSPECTION.md).
+
+### **H05 — Documentación formal de fases**
+
+- 🟢 Protocolo obligatorio de documentación.
+- 🟢 Paquetes de fase con arquitectura, decisiones y validación.
+- 🟢 Índice documental y auditoría de fases terminadas.
+
+**Documentación:** [protocolo](docs/DOCUMENTATION_PROTOCOL.md) · [índice de fases](docs/phases/README.md).
 
 ## 🟡 EN DESARROLLO
 
-- 🟡 **Open LLM Atlas**: ampliación y depuración continua de modelos, familias, organizaciones, benchmarks y procedencia.
-- 🟡 **Índice JGB**: consolidación de cobertura, evidencia y aplicación sistemática al conjunto de modelos.
-- 🟡 **Matriz completa de hardware**: 2/4/8/16/32/64/128 GB.
+### **H06 — Open LLM Atlas ampliado**
+
+- 🟡 Ampliación y depuración continua de modelos, familias, organizaciones, benchmarks y procedencia.
+
+### **H07 — Índice JGB sistemático**
+
+- 🟡 Consolidación de cobertura, evidencia y aplicación sistemática al conjunto de modelos.
+
+### **H08 — Matriz completa de hardware**
+
+- 🟡 2/4/8/16/32/64/128 GB.
 - 🟡 Emparejamiento sistemático **Intel i3/i5/i7/i9 ↔ AMD Ryzen 3/5/7/9**.
-- 🟡 Cobertura completa de GPU NVIDIA y VRAM para las distintas configuraciones.
-- 🟡 **CABE/RULA** como capa sistemática de viabilidad hardware-modelo.
+- 🟡 Cobertura completa de GPU NVIDIA y VRAM.
+
+### **H09 — CABE/RULA**
+
+- 🟡 Capa sistemática de viabilidad hardware-modelo.
+
+### **H10 — Pipeline Atlas completo: prospección → evidencia → ingesta → calidad → hipótesis → hardware → recomendador**
+
+- 🟡 Automatización diaria completa del pipeline Atlas.
+- 🟡 Actualmente en validación mediante GitHub Actions.
+
+**Documentación:** [fase H10](docs/phases/2026-08-atlas-recommendation-pipeline/).
+
+### Otros desarrollos en curso
+
 - 🟡 Escalado del ranking económico a toda la matriz de hardware.
-- 🟡 Prospección diaria y alimentación automática de las distintas secciones del ecosistema.
 - 🟡 Mejora continua de adaptadores y cobertura del bot de precios.
 - 🟡 Benchmarks reproducibles en hardware real.
 - 🟡 Evaluación agentiva y batería **LB B01–B05**.
@@ -61,7 +108,7 @@ La siguiente clasificación distingue tres estados y evita llamar «terminado» 
 - 🟡 Web/app como interfaz coherente de todo el ecosistema.
 - 🟡 **Manada**: agregación, confianza y aprendizaje colectivo.
 
-**Documentación:** [Atlas](atlas/README.md) · [prospección](docs/PROSPECTION.md) · [resultados](docs/RESULT_SCHEMA.md) · [arquitectura](docs/ARCHITECTURE.md).
+**Documentación:** [Atlas](atlas/README.md) · [resultados](docs/RESULT_SCHEMA.md) · [arquitectura](docs/ARCHITECTURE.md).
 
 ## ⚪ SIN EMPEZAR / FASES POSTERIORES
 
@@ -81,26 +128,26 @@ La siguiente clasificación distingue tres estados y evita llamar «terminado» 
 ### Orden de trabajo recomendado
 
 ```text
-ATLAS + JGB
-    ↓
-MATRIZ HARDWARE
-    ↓
-CABE / RULA
-    ↓
+H06 ATLAS + JGB
+      ↓
+H08 MATRIZ HARDWARE
+      ↓
+H09 CABE / RULA
+      ↓
 BENCHMARKS REALES
-    ↓
-RANKING ECONÓMICO COMPLETO
-    ↓
+      ↓
+H03 RANKING ECONÓMICO COMPLETO
+      ↓
 AGENTIC / LB
-    ↓
+      ↓
 ROUTER
-    ↓
+      ↓
 WEB / APP
-    ↓
+      ↓
 MANADA
-    ↓
+      ↓
 TCO
-    ↓
+      ↓
 OPTIMIZACIÓN MULTIOBJETIVO
 ```
 
@@ -164,7 +211,7 @@ LEONES está compuesto por varias capas que deben evolucionar juntas. El README 
 - [`LEONES_DECISION_LOG.md`](LEONES_DECISION_LOG.md) — historia, decisiones congeladas y fundamentos.
 - [`docs/README.md`](docs/README.md) — índice de documentación técnica.
 - [`docs/DOCUMENTATION_PROTOCOL.md`](docs/DOCUMENTATION_PROTOCOL.md) — **protocolo obligatorio de documentación por fases**.
-- [`docs/phases/README.md`](docs/phases/README.md) — índice de fases y estados de aceptación.
+- [`docs/phases/README.md`](docs/phases/README.md) — índice de fases, hitos y estados de aceptación.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — recopilación consolidada de todo lo que queda por hacer y orden recomendado.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura general.
 - [`docs/PILLARS.md`](docs/PILLARS.md) — pilares del proyecto.
