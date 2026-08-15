@@ -4,6 +4,11 @@
 Direct retailer access is tried first. When a retailer blocks automated
 requests, the same public page is retried through Jina Reader. Only observed
 prices are recorded; unavailable sources never create guessed prices.
+
+The collector is deliberately conservative: a successful HTTP request is not
+considered a successful collection unless at least one product/price pair is
+actually extracted. An empty dataset therefore fails the workflow instead of
+creating a misleading green run.
 """
 from __future__ import annotations
 import csv, json, re, time
@@ -63,9 +68,10 @@ def jsonld_products(html):
     return products
 
 def text_products(text):
-    out=[]; lines=[re.sub(r'\s+',' ',x).strip() for x in text.splitlines() if x.strip()]
-    price_re=re.compile(r'(?<!\d)(\d{1,4}(?:[.,]\d{2})?)\s*€')
-    product_re=re.compile(r'(Intel|Core i[3579]|Ryzen [3579]|DDR[45]|RTX\s*\d{4})',re.I)
+    out=[]
+    lines=[re.sub(r'\s+',' ',x).strip() for x in text.splitlines() if x.strip()]
+    price_re=re.compile(r'(?<!\d)(\d{1,4}(?:[.,]\d{2})?)\s*(?:€|EUR)',re.I)
+    product_re=re.compile(r'(Intel(?:\s+Core)?\s+i[3579]|Core\s+i[3579]|Ryzen\s+[3579]|DDR[45]|RTX\s*\d{4})',re.I)
     for i,line in enumerate(lines):
         m=price_re.search(line)
         if not m: continue
@@ -73,7 +79,8 @@ def text_products(text):
         price=float(raw.replace('.','').replace(',','.')) if ',' in raw else float(raw)
         if not 5<=price<=10000: continue
         candidates=[]
-        for j in range(max(0,i-8),i):
+        # Product and price frequently occur on the same markdown line after Jina.
+        for j in range(max(0,i-8),min(len(lines),i+3)):
             s=lines[j].lstrip('#*- ').strip()
             if product_re.search(s): candidates.append(s)
         if candidates: out.append((candidates[-1],price,''))
@@ -126,11 +133,12 @@ def build_summary(rows):
 
 def main():
     rows=load_obs(); existing={(r['observed_at'],r['component_type'],r['vendor'],r['model'],r['capacity_gb'],r['vram_gb']) for r in rows}
-    added=0; failures=0
+    added=0; failures=0; extracted=0
     for source,url,kind,vendor in SOURCES:
         try:
             html,canonical=fetch(url); found=0
-            for name,price,purl in products(html):
+            raw_products=products(html); extracted += len(raw_products)
+            for name,price,purl in raw_products:
                 c=classify(name,kind,vendor)
                 if not c: continue
                 category,cap_or_vram=c
@@ -140,12 +148,15 @@ def main():
                 if key in existing: continue
                 rows.append({'observed_at':TODAY,'component_type':kind,'vendor':vendor,'category':category,'model':name,'capacity_gb':str(capacity),'vram_gb':str(vram),'price_eur':f'{price:.2f}','price_type':'observed','market':'Spain','currency':'EUR','source':source,'source_url':purl or canonical,'notes':'monthly automated retail observation; direct page or Jina Reader fallback'})
                 existing.add(key); added+=1; found+=1
-            print(f'INFO: {source} {kind}/{vendor}: {found} new observations'); time.sleep(1)
+            print(f'INFO: {source} {kind}/{vendor}: extracted={len(raw_products)} classified_new={found}'); time.sleep(1)
         except Exception as e:
             failures+=1; print(f'WARNING: {source} {url}: {e}')
     save_obs(rows); build_summary(rows)
-    print(f'LEONES price collector: +{added} observations; sources failed={failures}/{len(SOURCES)}; history={len(rows)}')
-    if added==0 and failures==len(SOURCES): raise SystemExit('No fresh price evidence collected: all configured sources failed.')
+    print(f'LEONES price collector: +{added} observations; extracted={extracted}; sources failed={failures}/{len(SOURCES)}; history={len(rows)}')
+    if not rows:
+        raise SystemExit('No price observations exist after collection: collector produced an empty dataset.')
+    if added==0 and failures==len(SOURCES):
+        raise SystemExit('No fresh price evidence collected: all configured sources failed.')
     if added==0: print('WARNING: no new observations; historical data preserved.')
 
 if __name__=='__main__': main()
