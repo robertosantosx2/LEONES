@@ -20,7 +20,12 @@ jobs:
   recommend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+      - name: Test hardware price integration
+        run: python3 scripts/test_atlas_price_integration.py
       - name: Generate recommendation report
         env:
           WORKLOAD: ${{ inputs.workload || 'chat' }}
