@@ -1,207 +1,278 @@
-# Fase 2026-08 — Atlas → recomendador diario enriquecido
+# Fase H10 — Atlas → recomendador diario enriquecido
 
-**Estado: 🟡 PROVISIONAL / EN VALIDACIÓN**
+**Estado: 🟢 ACEPTADA**
 
-> Esta documentación se publica mientras se espera la validación real del workflow. La fase **no está aceptada todavía**.
+## 1. Objetivo
 
-## Objetivo
-
-Convertir la generación diaria de recomendaciones del Atlas en un proceso automático que conserve las columnas existentes y añada, de forma trazable, dimensiones técnicas y de evidencia necesarias para el recomendador:
-
-`JGB · CABE · RULA · rendimiento · memoria · KV cache · runtime/backend · incertidumbre · evidencia`
-
-## Alcance
-
-Incluye:
-
-- extensión del `atlas/schema.json`;
-- enriquecimiento de CSV de recomendaciones;
-- integración del enriquecedor en `.github/workflows/atlas-pipeline.yml`;
-- validación automática de columnas críticas;
-- publicación de las salidas generadas por el pipeline.
-
-No incluye todavía la demostración de que todos los valores estén medidos experimentalmente. El enriquecedor debe conservar `unknown`, `estimated`, `reported` y otros estados cuando no exista evidencia suficiente.
-
-## Arquitectura
+Convertir la generación diaria de recomendaciones del Atlas en un proceso automático, trazable y resistente a errores que conecte:
 
 ```text
-                 PROSPECCIÓN DIARIA
-                        │
-                        ▼
-                 EVIDENCIA EXTERNA
-                        │
-                        ▼
-                    INGESTA
-                        │
-                        ▼
-                 CONTROL CALIDAD
-                        │
-                        ▼
-                    HIPÓTESIS
-                        │
-                        ▼
-                MATRIZ DE HARDWARE
-                        │
-                        ▼
-                  RECOMENDACIONES
-                        │
-                        ▼
-              ENRIQUECIMIENTO MERGE
-                        │
-          ┌─────────────┼──────────────┐
-          ▼             ▼              ▼
-        JGB           CABE           RULA
-          │             │              │
-          └─────────────┼──────────────┘
-                        ▼
-            rendimiento / memoria /
-            runtime / evidencia /
-                incertidumbre
-                        │
-                        ▼
-                    VALIDACIÓN
-                        │
-                        ▼
-                    PUBLICACIÓN
+Prospección
+    ↓
+Evidencia externa
+    ↓
+Ingesta
+    ↓
+Evidencia técnica
+    ↓
+Calidad
+    ↓
+Hipótesis
+    ↓
+Matriz CPU × RAM × NVIDIA
+    ↓
+Recomendador
+    ↓
+Enriquecimiento
+    ↓
+Validación
+    ↓
+Publicación
 ```
 
-## Regla de merge
+La fase no pretende demostrar que todos los valores estén medidos experimentalmente. Conserva estados como `unknown`, `reported`, `reproducible` y `verified` y no convierte ausencia de evidencia en falsa precisión.
 
-El enriquecedor **no sustituye el CSV original por una estructura nueva**. Conserva todas las columnas existentes y añade las que falten.
+## 2. Qué queda aceptado
 
-Esto evita que una nueva capa documental o de recomendación destruya información producida por etapas anteriores.
+H10 queda aceptada porque el workflow diario ejecutó de extremo a extremo todos los pasos críticos y la salida superó los controles funcionales definidos:
 
-## Reglas e invariantes
+- prospección e ingesta completadas;
+- evidencia externa generada;
+- evidencia técnica generada;
+- clasificación T0/T1/T2/T3 funcionando;
+- auditoría de calidad ejecutada;
+- hipótesis ejecutadas, aun con 0 hipótesis estructuradas en esta ejecución;
+- matriz hardware no vacía;
+- recomendaciones CPU/RAM y GPU generadas;
+- enriquecimiento no destructivo ejecutado;
+- validación de columnas críticas superada;
+- publicación en `main` completada.
 
-### 1. JGB es independiente
+## 3. Evidencia de aceptación — Run #18
 
-`JGB` representa la dimensión de apertura/libertad definida por LEONES. No se calcula a partir de rendimiento, precio o ajuste hardware.
+**Workflow:** `Atlas — Pipeline diario completo`  
+**Run ID:** `31912695040`  
+**Commit ejecutado:** `a3c6631cb8588b7d11679358b61f2e553eed2a44`
 
-### 2. CABE no implica RULA
+urlRun #18 en GitHub Actionshttps://github.com/robertosantosx2/LEONES/actions/runs/31912695040
+
+El runner utilizó `actions/checkout@v7` y `actions/setup-python@v7`, eliminando la advertencia anterior asociada a Node.js 20 en las acciones usadas.
+
+### Resultados observados
 
 ```text
-CABE = ¿puede caber/ejecutarse con los recursos?
-RULA = ¿resulta útil bajo la carga relevante?
-
-CABE = sí  ─────► RULA puede ser sí o no
-CABE = no  ─────► configuración inviable
+209 modelos ingeridos
+172 repositorios canónicos
+209 registros requieren verificación
+67 registros en cola de evidencia externa
+39/209 con evidencia técnica reportada
+T0 = 187
+T1 = 5
+T2 = 17
+T3 = 0
+209 flags de calidad
+0 hipótesis estructuradas
+32.128 filas de matriz hardware
+59 ficheros de recomendaciones validados
+859 filas de recomendaciones validadas
 ```
 
-### 3. La ausencia de evidencia no se rellena con una estimación silenciosa
+El workflow publicó sus resultados correctamente en `main` mediante el mecanismo de `fetch + rebase + retry`.
 
-Cuando no existe un valor fiable, el pipeline conserva el desconocimiento y su estado.
+## 4. Criterios de aceptación
 
-### 4. El enriquecedor no inventa rendimiento
+| ID | Criterio | Resultado |
+|---|---|---|
+| V1 | Workflow arranca | 🟢 |
+| V2 | Prospección e ingesta completan | 🟢 |
+| V3 | Evidencia técnica se genera | 🟢 |
+| V4 | T0/T1/T2/T3 se calculan | 🟢 |
+| V5 | Matriz hardware no vacía | 🟢 32.128 filas |
+| V6 | Recomendaciones no vacías | 🟢 859 filas validadas |
+| V7 | Columnas críticas presentes | 🟢 |
+| V8 | Enriquecimiento no destructivo | 🟢 |
+| V9 | JGB/CABE/RULA no se sustituyen por un score único | 🟢 contrato documentado |
+| V10 | Rendimiento no se inventa | 🟢 |
+| V11 | Publicación resistente a concurrencia | 🟢 |
+| V12 | Actions actualizadas | 🟢 checkout/setup-python v7 |
 
-No se deriva `tokens_per_second` de JGB, tamaño de modelo, precio ni otra dimensión indirecta.
-
-### 5. Evidencia externa no equivale a medición LEONES
-
-Las fuentes externas ayudan a descubrir y contextualizar; no se convierten automáticamente en resultados propios verificados.
-
-## Campos incorporados
-
-El esquema Atlas incorpora, entre otros:
-
-- `parameters_total_b`
-- `parameters_active_b`
-- `quantization`
-- `weight_memory_gb`
-- `kv_cache_gb`
-- `runtime_overhead_gb`
-- `memory_margin_gb`
-- `runtime`
-- `runtime_version`
-- `backend`
-- `context_length`
-- `jgb`
-- `jgb_status`
-- `cabe`
-- `cabe_status`
-- `rula`
-- `rula_status`
-- `fit_score`
-- `performance_score`
-- `economic_score`
-- `uncertainty`
-- `evidence_state`
-- `evidence_type`
-- `last_verified_at`
-
-## Decisiones
-
-### D1 — El schema debe reflejar dimensiones separadas
-
-**Motivación:** una única puntuación ocultaría qué parte de la recomendación procede de apertura, viabilidad, rendimiento, economía o evidencia.
-
-### D2 — El enriquecedor debe ser no destructivo
-
-**Motivación:** las recomendaciones ya contienen información producida por otras etapas. La nueva fase debe añadir conocimiento, no borrarlo.
-
-### D3 — La incertidumbre forma parte del dato
-
-**Motivación:** el Atlas trabaja con información con distintos niveles de evidencia. El desconocimiento explícito es preferible a una falsa precisión.
-
-### D4 — La validación debe formar parte del workflow
-
-**Motivación:** una columna crítica que desaparezca durante la generación debe hacer fallar el pipeline inmediatamente, no producir una salida aparentemente válida.
-
-## Flujo operativo
-
-El workflow `.github/workflows/atlas-pipeline.yml` ejecuta la fase después de generar las recomendaciones:
+## 5. Arquitectura aceptada
 
 ```text
-atlas_recommend_from_feed.py
-            ↓
-atlas_recommendation_enrich.py
-            ↓
-validación de columnas críticas
-            ↓
-git add / commit / publicación
+                         LEONES / ATLAS
+                               │
+                         PROSPECCIÓN
+                               │
+                               ▼
+                      EVIDENCIA EXTERNA
+                               │
+                               ▼
+                            INGESTA
+                               │
+                               ▼
+                         CALIDAD / QA
+                               │
+                               ▼
+                         EVIDENCIA TÉCNICA
+                               │
+                       ┌───────┴────────┐
+                       │ T0/T1/T2/T3    │
+                       └───────┬────────┘
+                               │
+                               ▼
+                       MATRIZ HARDWARE
+                 CPU × RAM × NVIDIA / VRAM
+                               │
+                               ▼
+                         RECOMENDADOR
+                               │
+                   ┌───────────┼───────────┐
+                   ▼           ▼           ▼
+                  JGB        CABE        RULA
+                   │           │           │
+                   └───────────┼───────────┘
+                               ▼
+                  rendimiento / memoria /
+                  runtime / evidencia /
+                     incertidumbre
+                               │
+                               ▼
+                       ENRIQUECIMIENTO
+                         NO DESTRUCTIVO
+                               │
+                               ▼
+                          VALIDACIÓN
+                               │
+                               ▼
+                          PUBLICACIÓN
 ```
 
-La ejecución manual se puede lanzar mediante `workflow_dispatch`.
+## 6. Contrato T0/T1/T2/T3
 
-## Validación prevista
+### T0
+No existe evidencia técnica estructurada suficiente.
 
-La aceptación de esta fase exige comprobar:
+### T1
+Existe identidad técnica útil: arquitectura, parámetros, contexto, runtime, backend u otra señal equivalente. No implica viabilidad hardware.
 
-- el runner arranca correctamente;
-- prospección e ingesta completan sus pasos;
-- se generan recomendaciones;
-- el merge conserva las columnas originales;
-- aparecen las nuevas columnas críticas;
-- la validación del workflow pasa;
-- los resultados se publican sin conflictos;
-- no se generan inferencias prohibidas sobre JGB/RULA/rendimiento.
+### T2
+Existe evidencia suficiente para iniciar una evaluación de viabilidad, especialmente tamaño observado de pesos y runtime. El contexto no es requisito para alcanzar T2.
 
-## Estado de la evidencia
+### T3
+T2 más rendimiento observado con evidencia identificable.
 
-Existe una ejecución manual del workflow **Atlas — Pipeline diario completo #4**, identificada por el run `31878387802`, que en el momento de redactar este documento estaba esperando runner.
+```text
+T0 → T1 → T2 → T3
+```
 
-Por tanto:
+No se sustituye esta clasificación por un score.
 
-**implementación: realizada**  
-**integración: realizada**  
-**validación real: pendiente**  
-**aceptación: pendiente**
+## 7. Semántica de contexto
 
-## Limitaciones actuales
+El proyecto distingue:
 
-- La ejecución real todavía debe demostrar el comportamiento extremo a extremo.
-- El enriquecedor no convierte datos desconocidos en mediciones.
-- CABE/RULA seguirán necesitando mediciones reales para convertirse en evidencia fuerte.
-- El pipeline todavía representa una fase de evolución del Atlas, no un sistema final de recomendación multiobjetivo.
+```text
+context_supported
+    ↓
+capacidad demostrada del modelo
 
-## Siguiente paso
+context_target
+    ↓
+objetivo del perfil hardware/uso
 
-Completar el run manual y revisar sus pasos y logs. Si pasa los criterios de aceptación, esta documentación deberá actualizarse de **PROVISIONAL** a **ACEPTADA**, incorporar la evidencia concreta de la ejecución y enlazarse desde los README afectados como cierre formal de fase.
+context_recommended
+    ↓
+min(context_supported, context_target)
+```
+
+Por ello un modelo que demuestra 8K puede recomendarse en un equipo cuyo objetivo sea 16K a 8K. No se afirma que soporte 16K.
+
+Cuando el contexto no está demostrado, se conserva `unknown`; no se fabrica el valor.
+
+## 8. Invariantes
+
+1. **JGB es independiente** de rendimiento, precio y hardware.
+2. **CABE no implica RULA.**
+3. **No se inventa rendimiento.**
+4. **Evidencia externa no equivale a medición LEONES.**
+5. **La matriz vacía es un FAIL.**
+6. **Las recomendaciones vacías son un FAIL.**
+7. **El enriquecimiento no destruye columnas existentes.**
+8. **La incertidumbre forma parte del dato.**
+9. **Hardware y runtime son dimensiones explícitas.**
+10. **La publicación debe ser resistente a concurrencia.**
+
+## 9. Incidencias que dieron lugar al diseño final
+
+### I1 — Matriz vacía
+La primera ejecución E2E podía terminar con 0 filas de matriz. Se convirtió en condición explícita de fallo.
+
+### I2 — Compatibilidad de hardware compuesto
+Los perfiles compuestos podían no coincidir exactamente con identificadores específicos del feed. Se ajustó la compatibilidad sin perder la identidad del perfil completo.
+
+### I3 — Contexto confundido con capacidad del hardware
+Se exigía que el modelo soportara el máximo contexto objetivo del perfil. Se separaron capacidad demostrada y objetivo de configuración.
+
+### I4 — T2 sin contexto
+T2 no exige contexto. Se ajustó el recomendador para permitir recomendaciones preliminares con contexto `unknown`, manteniendo la incertidumbre.
+
+### I5 — Carrera de publicación
+La publicación directa podía fallar si `main` avanzaba. Se incorporó `fetch + rebase + retry`.
+
+### I6 — Advertencia de Node.js 20
+Se actualizaron `actions/checkout` y `actions/setup-python` a v7.
+
+## 10. Limitaciones que permanecen abiertas
+
+Aceptar H10 **no significa que todo el sistema de recomendación esté terminado**.
+
+Siguen abiertas:
+
+- cobertura y depuración continua del Atlas;
+- JGB sistemático completo;
+- CABE/RULA con mediciones reales;
+- benchmarks reproducibles en hardware real;
+- calidad y cobertura de hipótesis;
+- evaluación agentiva;
+- router dinámico;
+- optimización multiobjetivo;
+- TCO y coste por tarea.
+
+H10 demuestra la infraestructura diaria y el contrato entre capas. No demuestra que todas las recomendaciones sean equivalentes a benchmarks reales.
+
+## 11. Cierre formal
+
+```text
+IMPLEMENTAR   🟢
+     ↓
+VALIDAR       🟢
+     ↓
+ACEPTAR       🟢
+     ↓
+DOCUMENTAR    🟢
+     ↓
+ENLAZAR       🟢
+     ↓
+H10 CERRADA   🟢
+```
+
+**H10 queda oficialmente ACEPTADA.**
+
+## 12. Próximo hito
+
+La siguiente prioridad del roadmap es **H06 — Open LLM Atlas ampliado**, porque la calidad, cobertura, procedencia y estructura del conocimiento del Atlas son la base sobre la que se apoyan las siguientes capas de JGB, hardware y recomendación.
+
+H10 queda como infraestructura operativa diaria que alimentará esa evolución.
 
 ## Trazabilidad
 
 - Workflow: `.github/workflows/atlas-pipeline.yml`
+- Evidencia técnica: `scripts/atlas_technical_evidence.py`
+- Matriz: `scripts/atlas_hardware_matrix.py`
+- Recomendador: `scripts/atlas_recommend_from_feed.py`
 - Enriquecedor: `scripts/atlas_recommendation_enrich.py`
 - Esquema: `atlas/schema.json`
-- Metodología: `atlas/RECOMMENDER-METHODOLOGY.md`
-- Run de validación: `31878387802` — `Atlas — Pipeline diario completo #4`
-- Protocolo general: [`../../DOCUMENTATION_PROTOCOL.md`](../../DOCUMENTATION_PROTOCOL.md)
+- Protocolo: `docs/DOCUMENTATION_PROTOCOL.md`
+- Decisiones: [`DECISIONS.md`](DECISIONS.md)
+- Arquitectura: [`ARCHITECTURE.md`](ARCHITECTURE.md)
+- Validación: [`VALIDATION.md`](VALIDATION.md)
