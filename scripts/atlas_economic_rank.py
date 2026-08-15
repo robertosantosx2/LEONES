@@ -71,6 +71,8 @@ def economic_rank(rows, prices, hardware, ram):
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument('--input',default=str(IN)); ap.add_argument('--out',default=str(OUT)); ap.add_argument('--hardware',required=True); ap.add_argument('--ram',type=float,required=True); a=ap.parse_args()
     rows=load(Path(a.input)); prices=load(PRICES); ranked=economic_rank(rows,prices,a.hardware,a.ram)
+    # Keep the coverage status available even when there are zero recommendation rows.
+    _, cov, _ = hardware_cost(prices, a.hardware, a.ram)
     fields=['economic_rank','model_id','model_name','hardware_id','fit_score','jgb_level','jgb_score','tokens_per_second','performance_score','hardware_score','hardware_cost_eur','price_coverage','cpu_price_eur','ram_price_eur','economic_score','price_basis']
     with open(a.out,'w',encoding='utf-8',newline='') as f:
         w=csv.DictWriter(f,fieldnames=fields); w.writeheader()
