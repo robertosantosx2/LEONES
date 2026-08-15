@@ -1,8 +1,17 @@
 {
-  "generated_at": "2026-08-15T19:06:03.839532+00:00",
+  "generated_at": "2026-08-15T22:39:27.815762+00:00",
   "kind": "runtimes",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
+    {
+      "name": "Classevelabs/rai",
+      "url": "https://github.com/Classevelabs/rai",
+      "description": "CPU-only LLM inference engine in pure Rust — 4-bit quantized models, hand-written AVX2 kernels, speculative decoding, and a local HTTP/MCP server. No GPU, no Python runtime.",
+      "updated_at": "2026-08-15T19:11:55Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
     {
       "name": "cklxx/arle",
       "url": "https://github.com/cklxx/arle",
@@ -16,7 +25,7 @@
       "name": "weicj/vLLM-2080Ti-Definitive",
       "url": "https://github.com/weicj/vLLM-2080Ti-Definitive",
       "description": "The definitive vLLM runtime for dual RTX 2080 Ti 22GB + NVLink, delivering Qwen 27B local inference with 100+ tok/s single-request decode with support of FP8 weight ",
-      "updated_at": "2026-08-15T18:45:06Z",
+      "updated_at": "2026-08-15T22:12:44Z",
       "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -72,15 +81,6 @@
       "description": "A local-first AI inference control plane for heterogeneous intelligence resources.｜面向异构智能资源的本地优先 AI 推理控制平面。",
       "updated_at": "2026-08-15T02:18:25Z",
       "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Classevelabs/rai",
-      "url": "https://github.com/Classevelabs/rai",
-      "description": "CPU-only LLM inference engine in pure Rust — 4-bit quantized models, hand-written AVX2 kernels, speculative decoding, and a local HTTP/MCP server. No GPU, no Python runtime.",
-      "updated_at": "2026-08-14T23:09:00Z",
-      "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },

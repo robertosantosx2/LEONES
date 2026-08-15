@@ -1,14 +1,41 @@
 {
-  "generated_at": "2026-08-15T19:06:07.060319+00:00",
+  "generated_at": "2026-08-15T22:39:32.009876+00:00",
   "kind": "harnesses",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
     {
+      "name": "2001anshkaushik/parity-bench",
+      "url": "https://github.com/2001anshkaushik/parity-bench",
+      "description": "Benchmark harness and matched-layer evaluation for LLM orchestration engines (RocketRide and LlamaIndex)",
+      "updated_at": "2026-08-15T22:36:51Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "danaug23/harness-arena",
+      "url": "https://github.com/danaug23/harness-arena",
+      "description": "Your model, many harnesses, many benchmarks.",
+      "updated_at": "2026-08-15T22:03:06Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
       "name": "sixijsu77-hub/themis-judge-reliability",
       "url": "https://github.com/sixijsu77-hub/themis-judge-reliability",
       "description": "Do LLM judges and reward models still agree with themselves when the same question is asked with the predicate inverted? Pre-registered measurement on RewardBench 2, run on one 24 GB GPU with open weights only. Harness validated first: published leaderboard scores reproduced to within 0.0094, checked per item. Raw per-item logs committed.",
-      "updated_at": "2026-08-15T18:49:25Z",
+      "updated_at": "2026-08-15T22:00:54Z",
       "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "aaddii09/llm-eval-harness",
+      "url": "https://github.com/aaddii09/llm-eval-harness",
+      "description": "🔍 Run efficient evaluations for prompt and LLM regression testing with this lightweight, secret-free evaluation harness.",
+      "updated_at": "2026-08-15T21:11:01Z",
+      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -31,29 +58,11 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "danaug23/harness-arena",
-      "url": "https://github.com/danaug23/harness-arena",
-      "description": "Your model, many harnesses, many benchmarks.",
-      "updated_at": "2026-08-15T14:11:44Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "Jeneesh1014/safe-mcp-agent",
       "url": "https://github.com/Jeneesh1014/safe-mcp-agent",
       "description": "A local LLM agent (LangGraph + MCP) with a red-teamed guardrail layer and an automated evaluation harness that benchmarks security and task performance across models.",
       "updated_at": "2026-08-15T10:42:46Z",
       "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "2001anshkaushik/parity-bench",
-      "url": "https://github.com/2001anshkaushik/parity-bench",
-      "description": "Benchmark harness and matched-layer evaluation for LLM orchestration engines (RocketRide and LlamaIndex)",
-      "updated_at": "2026-08-15T09:56:32Z",
-      "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -115,7 +124,7 @@
       "name": "xiaobright/modeltest",
       "url": "https://github.com/xiaobright/modeltest",
       "description": "Personal LLM engineering-maintenance evaluation harness (V4.1b, frozen). Not a public benchmark.",
-      "updated_at": "2026-08-15T18:24:04Z",
+      "updated_at": "2026-08-15T21:58:58Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -180,15 +189,6 @@
       "description": "Provider-neutral, reproducible evaluation harness for coding agents and LLMs.",
       "updated_at": "2026-08-13T07:55:38Z",
       "license": "NOASSERTION",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "aaddii09/llm-eval-harness",
-      "url": "https://github.com/aaddii09/llm-eval-harness",
-      "description": "🔍 Run efficient evaluations for prompt and LLM regression testing with this lightweight, secret-free evaluation harness.",
-      "updated_at": "2026-08-13T05:26:37Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
