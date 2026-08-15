@@ -1,22 +1,85 @@
 {
-  "generated_at": "2026-08-15T22:52:39.756308+00:00",
+  "generated_at": "2026-08-15T23:04:40.628577+00:00",
   "kind": "skills",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
     {
-      "name": "bug-ops/zeph",
-      "url": "https://github.com/bug-ops/zeph",
-      "description": "A memory-first AI agent that remembers why decisions were made — not just the last message. Runs local (Ollama), cloud (Claude · OpenAI · Gemini), or decentralized TEE. Graph memory, self-learning skills, multi-model routing, sandboxed tools. MCP · ACP · A2A. One Rust binary.",
-      "updated_at": "2026-08-15T22:51:02Z",
+      "name": "Dxrk777/Dxrk",
+      "url": "https://github.com/Dxrk777/Dxrk",
+      "description": "Dxrk Ecosystem Configurator — supercharge AI coding agents",
+      "updated_at": "2026-08-15T23:03:00Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "Dxrk777/Dxrk",
-      "url": "https://github.com/Dxrk777/Dxrk",
-      "description": "Dxrk Ecosystem Configurator — supercharge AI coding agents",
-      "updated_at": "2026-08-15T22:48:06Z",
+      "name": "bygama/skills",
+      "url": "https://github.com/bygama/skills",
+      "description": "Personal Agent Skills library for Claude Code: eval-first methodology skills, junction-installed globally and built on the Context-Engineering standard.",
+      "updated_at": "2026-08-15T23:02:23Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "air-gapped/skills",
+      "url": "https://github.com/air-gapped/skills",
+      "description": "Claude Code plugin marketplace — 58 installable reference skills across vLLM/SGLang inference, Kubernetes & Harvester, GPU host bring-up, observability, security, and agent workflows.",
+      "updated_at": "2026-08-15T23:00:55Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "PersonalClaw/PersonalClaw",
+      "url": "https://github.com/PersonalClaw/PersonalClaw",
+      "description": "Your self-hosted personal AI agent — an agentic OS for one person: chat, autonomous goal loops, memory, knowledge base, skills, automation, and a permission-gated app platform. Local-first, provider-agnostic, MIT.",
+      "updated_at": "2026-08-15T23:00:46Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "kody-w/rappterbook",
+      "url": "https://github.com/kody-w/rappterbook",
+      "description": "Social network for AI agents. Feed SKILLS.md to your AI — it becomes a citizen. No servers, no API keys. GitHub IS the platform.",
+      "updated_at": "2026-08-15T23:00:29Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "shimo4228/contemplative-agent",
+      "url": "https://github.com/shimo4228/contemplative-agent",
+      "description": "Contemplative Agent (CA) — an autonomous agent that carries an explicit, human-editable constitution and amends it. Every change to its value layer (constitution, identity, skills, rules) passes a human approval gate. Runs entirely on a local LLM via Ollama — robust even on a small model. Security by absence.",
+      "updated_at": "2026-08-15T22:53:41Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "adamriofc/indonesian-business-agent-skills",
+      "url": "https://github.com/adamriofc/indonesian-business-agent-skills",
+      "description": "Production-oriented AI domain-intelligence infrastructure for Indonesian legal, tax, HR, finance, marketing, and strategic business reasoning.",
+      "updated_at": "2026-08-15T22:53:07Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "caliban-ai/caliban",
+      "url": "https://github.com/caliban-ai/caliban",
+      "description": "A from-scratch Rust agent harness that puts the operator in control of model routing, memory, skills, and prompt context.",
+      "updated_at": "2026-08-15T22:52:48Z",
+      "license": "AGPL-3.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "bug-ops/zeph",
+      "url": "https://github.com/bug-ops/zeph",
+      "description": "A memory-first AI agent that remembers why decisions were made — not just the last message. Runs local (Ollama), cloud (Claude · OpenAI · Gemini), or decentralized TEE. Graph memory, self-learning skills, multi-model routing, sandboxed tools. MCP · ACP · A2A. One Rust binary.",
+      "updated_at": "2026-08-15T22:51:02Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -112,15 +175,6 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "kody-w/rappterbook",
-      "url": "https://github.com/kody-w/rappterbook",
-      "description": "Social network for AI agents. Feed SKILLS.md to your AI — it becomes a citizen. No servers, no API keys. GitHub IS the platform.",
-      "updated_at": "2026-08-15T22:30:38Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "SeanHogg/Builderforce.ai",
       "url": "https://github.com/SeanHogg/Builderforce.ai",
       "description": "Agentic AI Coding Platform that enables everyone to train, design and embed custom LLMs into a custom agent. Deploy your agent into the builderforce (a workforce and hiring platform). Explore skills, personnas, content, governance and workforce agents in the marketplace. ",
@@ -135,15 +189,6 @@
       "description": "Ultimate Rulesync AI Agent CLI Tool 2026 – Streamline Coding Workflows Fast",
       "updated_at": "2026-08-15T22:23:00Z",
       "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "shimo4228/contemplative-agent",
-      "url": "https://github.com/shimo4228/contemplative-agent",
-      "description": "Contemplative Agent (CA) — an autonomous agent that carries an explicit, human-editable constitution and amends it. Every change to its value layer (constitution, identity, skills, rules) passes a human approval gate. Runs entirely on a local LLM via Ollama — robust even on a small model. Security by absence.",
-      "updated_at": "2026-08-15T22:21:16Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -175,29 +220,11 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "caliban-ai/caliban",
-      "url": "https://github.com/caliban-ai/caliban",
-      "description": "A from-scratch Rust agent harness that puts the operator in control of model routing, memory, skills, and prompt context.",
-      "updated_at": "2026-08-15T22:12:28Z",
-      "license": "AGPL-3.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "agent-sh/agnix",
       "url": "https://github.com/agent-sh/agnix",
       "description": "The missing linter and lsp for AI coding assistants. Validate CLAUDE.md, AGENTS.md, SKILL.md, hooks, MCP. Plugin for all major IDEs included, with autofixes.",
       "updated_at": "2026-08-15T22:11:54Z",
       "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "PersonalClaw/PersonalClaw",
-      "url": "https://github.com/PersonalClaw/PersonalClaw",
-      "description": "Your self-hosted personal AI agent — an agentic OS for one person: chat, autonomous goal loops, memory, knowledge base, skills, automation, and a permission-gated app platform. Local-first, provider-agnostic, MIT.",
-      "updated_at": "2026-08-15T22:08:46Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -422,33 +449,6 @@
       "url": "https://github.com/decided-indication109/AI-Engineer-in-90-Days",
       "description": "Build practical AI systems and agents in 90 days with a clear, project-based roadmap for developers seeking hands-on AI engineering skills.",
       "updated_at": "2026-08-15T21:24:53Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Dissectionfactorxii669/prompts",
-      "url": "https://github.com/Dissectionfactorxii669/prompts",
-      "description": "Organize and apply prompts, skills, and rules to streamline AI-driven coding workflows with clear agent roles and practical command guides.",
-      "updated_at": "2026-08-15T21:24:33Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Blaynelargish66/knx-skills",
-      "url": "https://github.com/Blaynelargish66/knx-skills",
-      "description": "Enhance LLM agents with practical skills for neurodivergent support, focus, and communication to improve AI coding assistance and interaction quality.",
-      "updated_at": "2026-08-15T21:23:58Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "athola/claude-night-market",
-      "url": "https://github.com/athola/claude-night-market",
-      "description": "23 Claude Code plugins: TDD enforcement hooks, git/PR workflows, spec-driven development, code review, project lifecycle, fix-from-error, maintenance automation, context optimization, research, and multi-LLM delegation. 186 skills, 128 commands, 54 agents.",
-      "updated_at": "2026-08-15T21:23:14Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"

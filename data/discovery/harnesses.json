@@ -1,8 +1,17 @@
 {
-  "generated_at": "2026-08-15T22:52:40.808304+00:00",
+  "generated_at": "2026-08-15T23:04:42.243342+00:00",
   "kind": "harnesses",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
+    {
+      "name": "sixijsu77-hub/themis-judge-reliability",
+      "url": "https://github.com/sixijsu77-hub/themis-judge-reliability",
+      "description": "Do LLM judges and reward models still agree with themselves when the same question is asked with the predicate inverted? Pre-registered measurement on RewardBench 2, run on one 24 GB GPU with open weights only. Harness validated first: published leaderboard scores reproduced to within 0.0094, checked per item. Raw per-item logs committed.",
+      "updated_at": "2026-08-15T23:03:41Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
     {
       "name": "2001anshkaushik/parity-bench",
       "url": "https://github.com/2001anshkaushik/parity-bench",
@@ -17,15 +26,6 @@
       "url": "https://github.com/danaug23/harness-arena",
       "description": "Your model, many harnesses, many benchmarks.",
       "updated_at": "2026-08-15T22:03:06Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "sixijsu77-hub/themis-judge-reliability",
-      "url": "https://github.com/sixijsu77-hub/themis-judge-reliability",
-      "description": "Do LLM judges and reward models still agree with themselves when the same question is asked with the predicate inverted? Pre-registered measurement on RewardBench 2, run on one 24 GB GPU with open weights only. Harness validated first: published leaderboard scores reproduced to within 0.0094, checked per item. Raw per-item logs committed.",
-      "updated_at": "2026-08-15T22:00:54Z",
       "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
