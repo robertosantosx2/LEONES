@@ -54,7 +54,15 @@ jobs:
         run: python3 scripts/atlas_hypotheses.py
 
       - name: Generar matriz CPU × RAM × GPU NVIDIA
-        run: python3 scripts/atlas_hardware_matrix.py
+        run: |
+          set -e
+          python3 scripts/atlas_hardware_matrix.py
+          rows=$(tail -n +2 data/prospection/atlas_hardware_matrix.csv | wc -l)
+          echo "Filas de matriz hardware: $rows"
+          if [ "$rows" -eq 0 ]; then
+            echo "ERROR: la matriz hardware no puede publicarse vacía"
+            exit 1
+          fi
 
       - name: Generar perfiles CPU × RAM sin GPU
         run: |
@@ -90,14 +98,21 @@ jobs:
           if not files:
               print('No se generaron recomendaciones')
               sys.exit(1)
+          total_rows = 0
           for path in files:
               with open(path, encoding='utf-8-sig', newline='') as f:
-                  fields = set(csv.DictReader(f).fieldnames or [])
+                  reader = csv.DictReader(f)
+                  fields = set(reader.fieldnames or [])
+                  rows = list(reader)
               missing = required - fields
               if missing:
                   print(f'{path}: faltan {sorted(missing)}')
                   sys.exit(1)
-          print(f'OK: {len(files)} ficheros de recomendaciones validados')
+              total_rows += len(rows)
+          print(f'OK: {len(files)} ficheros de recomendaciones validados; {total_rows} filas')
+          if total_rows == 0:
+              print('ERROR: todos los ficheros de recomendaciones están vacíos')
+              sys.exit(1)
           PY
 
       - name: Publicar resultados sin perder commits concurrentes
