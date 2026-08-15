@@ -1,8 +1,62 @@
 {
-  "generated_at": "2026-08-15T22:39:30.462100+00:00",
+  "generated_at": "2026-08-15T22:52:39.756308+00:00",
   "kind": "skills",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
+    {
+      "name": "bug-ops/zeph",
+      "url": "https://github.com/bug-ops/zeph",
+      "description": "A memory-first AI agent that remembers why decisions were made — not just the last message. Runs local (Ollama), cloud (Claude · OpenAI · Gemini), or decentralized TEE. Graph memory, self-learning skills, multi-model routing, sandboxed tools. MCP · ACP · A2A. One Rust binary.",
+      "updated_at": "2026-08-15T22:51:02Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Dxrk777/Dxrk",
+      "url": "https://github.com/Dxrk777/Dxrk",
+      "description": "Dxrk Ecosystem Configurator — supercharge AI coding agents",
+      "updated_at": "2026-08-15T22:48:06Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "HIDORAKAI002/ai-workspace-archive",
+      "url": "https://github.com/HIDORAKAI002/ai-workspace-archive",
+      "description": "A massive, self-updating local archive of AI tools — 11,000+ agent skills, 240+ MCP servers, 2,200+ IDE rules (Cursor/Cline), and 30+ system prompt collections. One repo to rule them all.",
+      "updated_at": "2026-08-15T22:46:57Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "me-cedric/agent-compass",
+      "url": "https://github.com/me-cedric/agent-compass",
+      "description": "Central agentic standards, guidelines, skills & bootstrap tooling for AI coding agents (Claude, Codex, Copilot).",
+      "updated_at": "2026-08-15T22:50:41Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "uchimata2/handoff-skill",
+      "url": "https://github.com/uchimata2/handoff-skill",
+      "description": "Portable, project- and agent-neutral skill for transferring working context between AI sessions, with a strict single source of truth.",
+      "updated_at": "2026-08-15T22:42:35Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "onewaymyway/mini_agent",
+      "url": "https://github.com/onewaymyway/mini_agent",
+      "description": "一个用 Python 实现的简化版 Claude Code，支持多 LLM 提供商、Skill 机制、并发 Sub-Agent 编排和完整的工具调用体系。",
+      "updated_at": "2026-08-15T22:39:58Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
     {
       "name": "AhmiDarrow/RemedyAI",
       "url": "https://github.com/AhmiDarrow/RemedyAI",
@@ -58,15 +112,6 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "onewaymyway/mini_agent",
-      "url": "https://github.com/onewaymyway/mini_agent",
-      "description": "一个用 Python 实现的简化版 Claude Code，支持多 LLM 提供商、Skill 机制、并发 Sub-Agent 编排和完整的工具调用体系。",
-      "updated_at": "2026-08-15T22:30:41Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "kody-w/rappterbook",
       "url": "https://github.com/kody-w/rappterbook",
       "description": "Social network for AI agents. Feed SKILLS.md to your AI — it becomes a citizen. No servers, no API keys. GitHub IS the platform.",
@@ -80,15 +125,6 @@
       "url": "https://github.com/SeanHogg/Builderforce.ai",
       "description": "Agentic AI Coding Platform that enables everyone to train, design and embed custom LLMs into a custom agent. Deploy your agent into the builderforce (a workforce and hiring platform). Explore skills, personnas, content, governance and workforce agents in the marketplace. ",
       "updated_at": "2026-08-15T22:29:59Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Dxrk777/Dxrk",
-      "url": "https://github.com/Dxrk777/Dxrk",
-      "description": "Dxrk Ecosystem Configurator — supercharge AI coding agents",
-      "updated_at": "2026-08-15T22:26:44Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -161,15 +197,6 @@
       "url": "https://github.com/PersonalClaw/PersonalClaw",
       "description": "Your self-hosted personal AI agent — an agentic OS for one person: chat, autonomous goal loops, memory, knowledge base, skills, automation, and a permission-gated app platform. Local-first, provider-agnostic, MIT.",
       "updated_at": "2026-08-15T22:08:46Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "uchimata2/handoff-skill",
-      "url": "https://github.com/uchimata2/handoff-skill",
-      "description": "Portable, project- and agent-neutral skill for transferring working context between AI sessions, with a strict single source of truth.",
-      "updated_at": "2026-08-15T22:08:47Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -422,33 +449,6 @@
       "url": "https://github.com/athola/claude-night-market",
       "description": "23 Claude Code plugins: TDD enforcement hooks, git/PR workflows, spec-driven development, code review, project lifecycle, fix-from-error, maintenance automation, context optimization, research, and multi-LLM delegation. 186 skills, 128 commands, 54 agents.",
       "updated_at": "2026-08-15T21:23:14Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "ScarXparth/claude-doctor-skill",
-      "url": "https://github.com/ScarXparth/claude-doctor-skill",
-      "description": "Audit projects for security, broken hooks, tests, and CI issues across 20+ languages with adaptive scoring and actionable fixes.",
-      "updated_at": "2026-08-15T21:21:36Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Walllmat/verdict",
-      "url": "https://github.com/Walllmat/verdict",
-      "description": "🧑⚖️ Evaluate AI skill and agent performance with configurable scores and dual-mode operation on Claude Code and Cowork platforms.",
-      "updated_at": "2026-08-15T21:19:24Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "kenzoprime/claude-pipeline",
-      "url": "https://github.com/kenzoprime/claude-pipeline",
-      "description": "🤖 Enable seamless multi-agent development with Claude Code using skills, agents, hooks, and orchestration scripts in one ready-to-use pipeline.",
-      "updated_at": "2026-08-15T21:18:07Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"

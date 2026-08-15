@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T22:39:27.815762+00:00",
+  "generated_at": "2026-08-15T22:52:37.612089+00:00",
   "kind": "runtimes",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
@@ -223,7 +223,7 @@
       "name": "Pangu-Immortal/MagicWX",
       "url": "https://github.com/Pangu-Immortal/MagicWX",
       "description": "Android 17 local LLM prototype with Jetpack Compose and ONNX Runtime for offline AI inference experiments.",
-      "updated_at": "2026-08-15T09:52:24Z",
+      "updated_at": "2026-08-15T22:48:34Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
