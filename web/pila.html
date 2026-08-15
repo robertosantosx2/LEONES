@@ -10,18 +10,20 @@
         <meta name="theme-color" content="#f3f6f9" />
         <title>LEONES · Pila</title>
 
-        <!-- Sistema compartido: navegación y componentes visuales. -->
-        <link rel="stylesheet" href="assets/css/navigation.css" />
-        <link rel="stylesheet" href="assets/graphics/brand.css" />
+        <!-- La navegación es el único sistema visual compartido que necesita esta página. -->
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-2" />
 
         <style>
-            /* Estilos propios de la página de la pila. */
             :root {
                 --page-max-width: 1050px;
                 --page-border: #d8e0e7;
                 --page-ink: #17212b;
                 --page-blue: #1769aa;
                 --page-blue-dark: #102f49;
+            }
+
+            * {
+                box-sizing: border-box;
             }
 
             body {
@@ -135,7 +137,6 @@
             <section class="content-card" aria-labelledby="stack-title">
                 <span class="tag">ARQUITECTURA</span>
                 <h2 id="stack-title">La pila no es solo el modelo</h2>
-
                 <pre class="stack-diagram">
 HARDWARE
    ↓
@@ -155,7 +156,8 @@ BUDDY / KNOWLEDGE
    ↓
 LOTB
    ↓
-RESULTADO + UX</pre>
+RESULTADO + UX</pre
+                >
             </section>
 
             <section class="content-card" aria-labelledby="layers-title">
@@ -164,7 +166,6 @@ RESULTADO + UX</pre>
                     Cada capa puede ser sustituida. Cuando una experiencia es mala, LEONES debe
                     localizar el cuello de botella antes de recomendar cambiar el modelo.
                 </p>
-
                 <div class="layer-list">
                     <div class="layer">
                         <strong>Hardware:</strong> RAM, VRAM, CPU, GPU y almacenamiento.
@@ -193,7 +194,6 @@ RESULTADO + UX</pre>
             </section>
         </main>
 
-        <!-- Navegación común. -->
-        <script src="assets/js/navigation.js" defer></script>
+        <script src="assets/js/navigation.js?v=2026-08-16-2" defer></script>
     </body>
 </html>
