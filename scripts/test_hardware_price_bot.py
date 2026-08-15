@@ -27,8 +27,13 @@ def main():
     assert any('i5' in n.lower() for n in names)
     assert any('ryzen 5' in n.lower() for n in names)
     assert any('ddr5' in n.lower() for n in names)
+    assert any('rtx 5070' in n.lower() for n in names)
 
-    gpu_products=extract_products('ASUS GeForce RTX 5070 12GB 689,95 €')
+    # GPU product cards are HTML blocks, just like the other marketplace cards.
+    gpu_html='''<html><body>
+    <article>ASUS GeForce RTX 5070 12GB 689,95 €</article>
+    </body></html>'''
+    gpu_products=extract_products(gpu_html)
     gpu_names=[x[0] for x in gpu_products]
     print('GPU EXTRACTION TEST PRODUCTS:', gpu_names)
     assert any('rtx 5070' in n.lower() for n in gpu_names)
