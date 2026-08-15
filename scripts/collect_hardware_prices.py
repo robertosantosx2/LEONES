@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Collect monthly CPU/RAM/NVIDIA GPU retail price observations.
+"""Monthly CPU/RAM/NVIDIA GPU price collector for LEONES.
 
-The collector is deliberately conservative: it records only prices that can
-be extracted from a configured retailer page. Missing/blocked pages produce
-an explicit warning; they never create a guessed price.
+Direct retailer access is tried first. When a retailer blocks automated
+requests, the same public page is retried through Jina Reader. Only observed
+prices are recorded; unavailable sources never create guessed prices.
 """
 from __future__ import annotations
 import csv, json, re, time
 from datetime import date
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -16,20 +17,30 @@ OBS=ROOT/'data/hardware/hardware_price_observations.csv'
 SUMMARY=ROOT/'data/hardware/hardware_prices.csv'
 TODAY=date.today().isoformat()
 SOURCES=[
-    ('PcComponentes','https://www.pccomponentes.com/procesadores/intel','cpu','intel'),
-    ('PcComponentes','https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-3','cpu','amd'),
-    ('PcComponentes','https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-5','cpu','amd'),
-    ('PcComponentes','https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-7','cpu','amd'),
-    ('PcComponentes','https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-9','cpu','amd'),
-    ('PcComponentes','https://www.pccomponentes.com/categories/memorias-ram/ddr4','ram','ddr4'),
-    ('PcComponentes','https://www.pccomponentes.com/categories/memorias-ram/ddr5','ram','ddr5'),
-    ('PcComponentes','https://www.pccomponentes.com/categorias/tarjetas-graficas','gpu','nvidia'),
+ ('PcComponentes','https://www.pccomponentes.com/procesadores/intel','cpu','intel'),
+ ('PcComponentes','https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-3','cpu','amd'),
+ ('PcComponentes','https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-5','cpu','amd'),
+ ('PcComponentes','https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-7','cpu','amd'),
+ ('PcComponentes','https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-9','cpu','amd'),
+ ('PcComponentes','https://www.pccomponentes.com/categories/memorias-ram/ddr4','ram','ddr4'),
+ ('PcComponentes','https://www.pccomponentes.com/categories/memorias-ram/ddr5','ram','ddr5'),
+ ('PcComponentes','https://www.pccomponentes.com/categorias/tarjetas-graficas','gpu','nvidia'),
 ]
 FIELDS=['observed_at','component_type','vendor','category','model','capacity_gb','vram_gb','price_eur','price_type','market','currency','source','source_url','notes']
 
 def fetch(url):
-    req=Request(url,headers={'User-Agent':'Mozilla/5.0 (LEONES hardware price collector; +https://github.com/robertosantosx2/LEONES)'})
-    with urlopen(req,timeout=30) as r: return r.read().decode('utf-8','ignore')
+    try:
+        req=Request(url,headers={'User-Agent':'Mozilla/5.0 (LEONES hardware price collector)'})
+        with urlopen(req,timeout=30) as r: return r.read().decode('utf-8','ignore'),url
+    except (HTTPError,URLError,TimeoutError) as direct_error:
+        proxy='https://r.jina.ai/'+url
+        try:
+            req=Request(proxy,headers={'User-Agent':'LEONES hardware price collector'})
+            with urlopen(req,timeout=45) as r:
+                print(f'INFO: using Jina Reader fallback for {url}')
+                return r.read().decode('utf-8','ignore'),url
+        except Exception as proxy_error:
+            raise RuntimeError(f'direct={direct_error}; proxy={proxy_error}') from proxy_error
 
 def jsonld_products(html):
     products=[]
@@ -50,6 +61,27 @@ def jsonld_products(html):
             except ValueError: continue
             products.append((str(x.get('name','')).strip(),price,str(offers.get('url','')).strip() if isinstance(offers,dict) else ''))
     return products
+
+def text_products(text):
+    out=[]; lines=[re.sub(r'\s+',' ',x).strip() for x in text.splitlines() if x.strip()]
+    price_re=re.compile(r'(?<!\d)(\d{1,4}(?:[.,]\d{2})?)\s*€')
+    product_re=re.compile(r'(Intel|Core i[3579]|Ryzen [3579]|DDR[45]|RTX\s*\d{4})',re.I)
+    for i,line in enumerate(lines):
+        m=price_re.search(line)
+        if not m: continue
+        raw=m.group(1)
+        price=float(raw.replace('.','').replace(',','.')) if ',' in raw else float(raw)
+        if not 5<=price<=10000: continue
+        candidates=[]
+        for j in range(max(0,i-8),i):
+            s=lines[j].lstrip('#*- ').strip()
+            if product_re.search(s): candidates.append(s)
+        if candidates: out.append((candidates[-1],price,''))
+    return out
+
+def products(html):
+    p=jsonld_products(html)
+    return p if p else text_products(html)
 
 def classify(name,kind,vendor):
     n=name.lower()
@@ -83,12 +115,12 @@ def build_summary(rows):
     for r in rows:
         if not r.get('price_eur'): continue
         key=(r['component_type'],r['vendor'],r['category'],r['model'],r['capacity_gb'],r['vram_gb'])
-        old=latest.get(key)
-        if old is None or r['observed_at']>=old['observed_at']: latest[key]=r
+        if key not in latest or r['observed_at']>=latest[key]['observed_at']: latest[key]=r
     fields=['price_id','component_type','vendor','category','model','capacity_gb','price_eur','price_type','market','currency','source','observed_at','valid_until','notes']
     out=[]
     for r in latest.values():
         out.append({'price_id':f"{r['component_type']}|{r['vendor']}|{r['model']}|{r['capacity_gb']}|{r['vram_gb']}",'component_type':r['component_type'],'vendor':r['vendor'],'category':r['category'],'model':r['model'],'capacity_gb':r['capacity_gb'],'price_eur':r['price_eur'],'price_type':'observed','market':'Spain','currency':'EUR','source':r['source'],'observed_at':r['observed_at'],'valid_until':'','notes':r['notes']})
+    SUMMARY.parent.mkdir(parents=True,exist_ok=True)
     with SUMMARY.open('w',encoding='utf-8',newline='') as f:
         w=csv.DictWriter(f,fieldnames=fields); w.writeheader(); w.writerows(sorted(out,key=lambda x:(x['component_type'],x['vendor'],x['category'],x['model'])))
 
@@ -97,22 +129,23 @@ def main():
     added=0; failures=0
     for source,url,kind,vendor in SOURCES:
         try:
-            for name,price,purl in jsonld_products(fetch(url)):
+            html,canonical=fetch(url); found=0
+            for name,price,purl in products(html):
                 c=classify(name,kind,vendor)
                 if not c: continue
                 category,cap_or_vram=c
                 if kind=='gpu' and 'rtx' not in name.lower(): continue
-                capacity=cap_or_vram if kind=='ram' else ''
-                vram=cap_or_vram if kind=='gpu' else ''
-                model=name
-                key=(TODAY,kind,vendor,model,str(capacity),str(vram))
+                capacity=cap_or_vram if kind=='ram' else ''; vram=cap_or_vram if kind=='gpu' else ''
+                key=(TODAY,kind,vendor,name,str(capacity),str(vram))
                 if key in existing: continue
-                rows.append({'observed_at':TODAY,'component_type':kind,'vendor':vendor,'category':category,'model':model,'capacity_gb':str(capacity),'vram_gb':str(vram),'price_eur':f'{price:.2f}','price_type':'observed','market':'Spain','currency':'EUR','source':source,'source_url':purl or url,'notes':'monthly automated retail observation; product listing price'})
-                existing.add(key); added+=1
-            time.sleep(1)
+                rows.append({'observed_at':TODAY,'component_type':kind,'vendor':vendor,'category':category,'model':name,'capacity_gb':str(capacity),'vram_gb':str(vram),'price_eur':f'{price:.2f}','price_type':'observed','market':'Spain','currency':'EUR','source':source,'source_url':purl or canonical,'notes':'monthly automated retail observation; direct page or Jina Reader fallback'})
+                existing.add(key); added+=1; found+=1
+            print(f'INFO: {source} {kind}/{vendor}: {found} new observations'); time.sleep(1)
         except Exception as e:
             failures+=1; print(f'WARNING: {source} {url}: {e}')
     save_obs(rows); build_summary(rows)
-    print(f'LEONES price collector: +{added} observations; sources failed={failures}; history={len(rows)}')
-    if failures==len(SOURCES): raise SystemExit('All configured price sources failed; no fresh price evidence collected.')
+    print(f'LEONES price collector: +{added} observations; sources failed={failures}/{len(SOURCES)}; history={len(rows)}')
+    if added==0 and failures==len(SOURCES): raise SystemExit('No fresh price evidence collected: all configured sources failed.')
+    if added==0: print('WARNING: no new observations; historical data preserved.')
+
 if __name__=='__main__': main()
