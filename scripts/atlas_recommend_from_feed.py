@@ -57,14 +57,18 @@ def recommend(rows,prices,workload,hardware,ram,vram,context,min_jgb=None,prefer
   if not r.get('model_id') and not r.get('model_name'):continue
   if r.get('workload') and r['workload']!=workload:continue
   if not hardware_compatible(r.get('hardware_id',''),hardware):continue
-  mem=num(r.get('estimated_memory_gb'));ctx=num(r.get('context_tokens'));runtime=(r.get('runtime') or '').strip();quant=(r.get('quantization') or '').strip()
-  if mem is None or ctx is None or not runtime or not quant or mem>limit or ctx<context:continue
+  mem=num(r.get('estimated_memory_gb')) or num(r.get('weight_memory_gb'));ctx=num(r.get('context_tokens'));runtime=(r.get('runtime') or '').strip();quant=(r.get('quantization') or '').strip();level=(r.get('technical_profile_level') or '').strip()
+  # T2/T3 profiles may be evaluated without a declared quantization when the
+  # actual weight-file size is observed. We never invent a quantization value.
+  weight_observed=num(r.get('weight_memory_gb')) is not None
+  if mem is None or ctx is None or not runtime or (not quant and not weight_observed) or level not in ('T2','T3') or mem>limit or ctx<context:continue
   jgb=num(r.get('jgb_level'));tps=num(r.get('tokens_per_second'));quality=num(r.get('quality_score'))
   if min_jgb is not None and (jgb is None or jgb<min_jgb):continue
   q=(quality/100) if quality is not None else 0;s=min((tps or 0)/50,1);m=max(0,1-mem/max(limit,1));o=(jgb/5) if jgb is not None else 0;score=.35*q+.25*s+.15*m+.15+(.10*o if prefer_jgb else 0)
   cpu,cs,rp,rs,gpu,gs,total,cov=hardware_price_evidence(hardware,ram,vram,prices);value=score/(total/100) if total else None
   ec=sum(x is not None for x in (mem,ctx,tps,quality,jgb));confidence='high' if ec==5 else 'medium' if ec>=3 else 'low'
-  reason=["technical viability supported by deployment evidence","quality evidence="+('available' if quality is not None else 'unknown'),"performance evidence="+('available' if tps is not None else 'unknown'),"JGB="+(str(int(jgb)) if jgb is not None else 'unknown'),f'hardware price coverage={cov}']
+  basis='observed weight size' if weight_observed else 'estimated memory'
+  reason=[f'technical viability T2/T3 supported by {basis}',"quality evidence="+('available' if quality is not None else 'unknown'),"performance evidence="+('available' if tps is not None else 'unknown'),"JGB="+(str(int(jgb)) if jgb is not None else 'unknown'),f'hardware price coverage={cov}']
   out.append((score,r,confidence,'; '.join(reason),cpu,cs,rp,rs,gpu,gs,total,cov,value))
  out.sort(key=lambda x:x[0],reverse=True);return out
 
