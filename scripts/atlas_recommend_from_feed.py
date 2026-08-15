@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Atlas recommendations with transparent hardware-price evidence.
-
-Prices are attached to the HARDWARE PROFILE, never to an LLM model. Only
-accepted observations from data/hardware/hardware_prices.csv are used. Missing
-component prices remain unknown; the recommender never invents a price.
-"""
+"""Generate Atlas recommendations with transparent hardware-price evidence."""
 from __future__ import annotations
 import argparse, csv, re
 from pathlib import Path
@@ -43,19 +38,25 @@ def hardware_price_evidence(hardware_id,ram_gb,vram_gb,prices):
    fam=m.group(1);cpu_rows=[r for r in prices if r.get('component_type')=='cpu' and r.get('vendor')=='amd' and norm(r.get('category',''))==f'ryzen {fam}']
  m=re.search(r'\b(\d+)\s*gb\b',hid)
  cap=int(m.group(1)) if m else int(ram_gb) if ram_gb else None; ddr=re.search(r'\bddr([45])\b',hid)
- if cap and ddr:ram_rows=[r for r in prices if r.get('component_type')=='ram' and r.get('capacity_gb')==str(cap) and norm(r.get('category',''))==f'ddr{ddr.group(1)}']
+ if cap:
+  ram_rows=[r for r in prices if r.get('component_type')=='ram' and r.get('capacity_gb')==str(cap) and (not ddr or norm(r.get('category',''))==f'ddr{ddr.group(1)}')]
  m=re.search(r'\brtx\s*(\d{3,4}(?:\s*(?:ti|super))?)\b',hid)
  if m:
   model='rtx '+m.group(1).lower();gpu_rows=[r for r in prices if r.get('component_type')=='gpu' and r.get('vendor')=='nvidia' and norm(r.get('category',''))==model]
  cpu,cs=representative(cpu_rows);ram,rs=representative(ram_rows);gpu,gs=representative(gpu_rows);known=[x for x in (cpu,ram,gpu) if x is not None]
  return cpu,cs,ram,rs,gpu,gs,sum(known) if known else None,f'{len(known)}/3'
 
+def hardware_compatible(row_hardware, requested):
+ rh=norm(row_hardware); req=norm(requested)
+ if not rh:return True
+ return rh == req or rh in req
+
 def recommend(rows,prices,workload,hardware,ram,vram,context,min_jgb=None,prefer_jgb=False):
  limit=ram+vram;out=[]
  for r in rows:
   if not r.get('model_id') and not r.get('model_name'):continue
   if r.get('workload') and r['workload']!=workload:continue
-  if r.get('hardware_id') and r['hardware_id']!=hardware:continue
+  if not hardware_compatible(r.get('hardware_id',''),hardware):continue
   mem=num(r.get('estimated_memory_gb'));ctx=num(r.get('context_tokens'));runtime=(r.get('runtime') or '').strip();quant=(r.get('quantization') or '').strip()
   if mem is None or ctx is None or not runtime or not quant or mem>limit or ctx<context:continue
   jgb=num(r.get('jgb_level'));tps=num(r.get('tokens_per_second'));quality=num(r.get('quality_score'))
