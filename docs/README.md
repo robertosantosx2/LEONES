@@ -1,6 +1,6 @@
 # LEONES — Documentación
 
-Esta carpeta contiene la documentación técnica, arquitectónica, operativa y de decisiones de LEONES.
+Esta carpeta contiene la documentación técnica, arquitectónica, operativa, de decisiones y de diseño web de LEONES.
 
 ## Regla de documentación por fases
 
@@ -25,6 +25,12 @@ fase → implementación → validación → aceptación
 - [`PLATFORMS.md`](PLATFORMS.md)
 - [`FROZEN_DECISIONS.md`](FROZEN_DECISIONS.md)
 - [`ROADMAP.md`](ROADMAP.md)
+
+### Diseño y desarrollo web
+
+- [`WEB_DESIGN_SYSTEM.md`](WEB_DESIGN_SYSTEM.md) — **marco obligatorio de diseño y desarrollo de la web**.
+
+> Antes de crear o modificar cualquier HTML, CSS, JavaScript, menú, componente visual o recurso de la web, este documento debe consultarse.
 
 ### Atlas y prospección
 
