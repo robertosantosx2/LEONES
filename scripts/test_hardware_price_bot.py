@@ -28,11 +28,33 @@ def main():
     assert any('ryzen 5' in n.lower() for n in names)
     assert any('ddr5' in n.lower() for n in names)
 
-    # Test GPU extraction independently so a failure identifies the parser.
     gpu_products=extract_products('ASUS GeForce RTX 5070 12GB 689,95 €')
     gpu_names=[x[0] for x in gpu_products]
     print('GPU EXTRACTION TEST PRODUCTS:', gpu_names)
     assert any('rtx 5070' in n.lower() for n in gpu_names)
+
+    # Marketplace-style card: title, specs and price are separated by lines.
+    mediamarkt='''
+    Memoria RAM - CORSAIR Vengeance LPX CMK16GX4M2E3200C16 módulo de memoria
+    Tipo de dispositivo
+    Memoria RAM
+    Tipo de RAM
+    DDR4
+    Tamaño de la memoria RAM
+    16 GB
+    Compatibilidad
+    PC/servidor
+    187,18 €
+    '''
+    mm=extract_products(mediamarkt)
+    assert mm, 'MediaMarkt-style product card was not extracted'
+    mm_context=' | '.join(x[3] for x in mm)
+    assert classify(mm[0][0] + ' | ' + mm_context)[0]=='ram'
+    assert classify(mm[0][0] + ' | ' + mm_context)[3]=='16'
+
+    # DDR capacity may precede the DDR generation.
+    assert classify('Kingston 32 GB DDR5 6000')[0]=='ram'
+    assert classify('Corsair 16 GB DDR4 3200')[3]=='16'
 
     assert classify('Intel Core i5-14400F')[0]=='cpu'
     assert classify('AMD Ryzen 7 9800X3D')[1]=='amd'
