@@ -1,0 +1,10 @@
+deployment_id,model_id,variant,quantization,runtime,hardware_id,workload,estimated_memory_gb,context_tokens,quality_score,tokens_per_second,jgb_level,jgb_confidence,evidence_status
+qwen3-8b-q4-cpu16,qwen3-8b,Qwen3-8B,Q4_K_M,llama.cpp,cpu-i5-16gb,chat,6,32768,,,,unknown,needs_verification
+qwen3-8b-q4-cpu16-code,qwen3-8b,Qwen3-8B,Q4_K_M,llama.cpp,cpu-i5-16gb,coding,6,32768,,,,unknown,needs_verification
+qwen3-14b-q4-cpu32,qwen3-14b,Qwen3-14B,Q4_K_M,llama.cpp,cpu-i7-32gb,chat,10,32768,,,,unknown,needs_verification
+qwen3-14b-q4-cpu32-code,qwen3-14b,Qwen3-14B,Q4_K_M,llama.cpp,cpu-i7-32gb,coding,10,32768,,,,unknown,needs_verification
+qwen3-30b-q4-cpu64,qwen3-30b,Qwen3-30B,Q4_K_M,llama.cpp,cpu-i7-64gb,chat,20,32768,,,,unknown,needs_verification
+qwen3-30b-q4-cpu64-code,qwen3-30b,Qwen3-30B,Q4_K_M,llama.cpp,cpu-i7-64gb,coding,20,32768,,,,unknown,needs_verification
+qwen3-30b-q4-128,qwen3-30b,Qwen3-30B,Q4_K_M,llama.cpp,cpu-128gb,reasoning,20,32768,,,,unknown,needs_verification
+qwen3-8b-q4-4060,qwen3-8b,Qwen3-8B,Q4_K_M,llama.cpp,rtx4060-8gb,chat,6,32768,,,,unknown,needs_verification
+qwen3-14b-q4-4060,qwen3-14b,Qwen3-14B,Q4_K_M,llama.cpp,rtx4060-8gb,coding,10,32768,,,,unknown,needs_verification
