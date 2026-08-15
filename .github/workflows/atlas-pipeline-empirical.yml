@@ -24,6 +24,8 @@ jobs:
           python-version: '3.x'
       - name: Hugging Face — Open LLM Leaderboard API
         run: python3 scripts/atlas_hf_leaderboard_adapter.py
+      - name: MSA — evidencia empírica local publicada
+        run: python3 scripts/atlas_msa_adapter.py
       - name: Recoger evidencia empírica pública
         run: python3 scripts/atlas_empirical_collectors.py
       - name: Generar hipótesis
