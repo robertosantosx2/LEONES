@@ -1,6 +1,6 @@
 # LEONES — Índice de fases e hitos
 
-Los paquetes de fase son la unidad documental de cierre de las grandes etapas del proyecto. Cada fase aceptada o en validación se identifica además con un **hito estable Hxx**, que es la referencia común para conversaciones, issues, documentación, commits y decisiones.
+Los paquetes de fase son la unidad documental de cierre de las grandes etapas del proyecto. Cada fase aceptada o en desarrollo se identifica además con un **hito estable Hxx**, referencia común para conversaciones, issues, documentación, commits y decisiones.
 
 ## Convención de hitos
 
@@ -13,6 +13,7 @@ Los paquetes de fase son la unidad documental de cierre de las grandes etapas de
 
 - 🟡 **PROVISIONAL / EN VALIDACIÓN** — implementación existente, pero todavía no aceptada.
 - 🟢 **ACEPTADA** — implementación validada, documentada y aceptada explícitamente.
+- 🔵 **SIGUIENTE** — siguiente unidad prioritaria de trabajo.
 - ⚪ **PLANIFICADA** — todavía no implementada.
 - 🔵 **SUSTITUIDA** — reemplazada por una fase posterior, conservando trazabilidad.
 
@@ -34,7 +35,7 @@ CERRAR FASE
 
 ## Auditoría
 
-[`PHASE_AUDIT_2026-08.md`](PHASE_AUDIT_2026-08.md) — revisión de todas las capacidades que el estado actual del proyecto identifica como terminadas/operativas.
+[`PHASE_AUDIT_2026-08.md`](PHASE_AUDIT_2026-08.md) — revisión de capacidades y paquetes documentales.
 
 ## Fases documentadas
 
@@ -42,19 +43,19 @@ CERRAR FASE
 
 [`2026-08-hardware-pricing/`](2026-08-hardware-pricing/)
 
-Infraestructura operativa de observación mensual de precios, normalización, calidad, histórico, resumen y publicación. La cobertura de mercado y la inteligencia avanzada siguen en desarrollo.
+Infraestructura operativa de observación mensual de precios, normalización, calidad, histórico, resumen y publicación.
 
 ### 🟢 H02 — 2026-08 — Integración precios → perfiles hardware → Atlas/recomendador
 
 [`2026-08-hardware-pricing/`](2026-08-hardware-pricing/)
 
-Integración validada de las observaciones de precios con perfiles de hardware y el recomendador.
+Integración validada de observaciones de precios con perfiles hardware y recomendador.
 
 ### 🟢 H03 — 2026-08 — Ranking económico V1
 
 [`2026-08-economic-ranking-v1/`](2026-08-economic-ranking-v1/)
 
-Primera versión validada del ranking que combina rendimiento, JGB, hardware fit y coste observado, con viabilidad antes de economía y cobertura explícita.
+Primera versión validada del ranking económico.
 
 ### 🟢 H04 — 2026-08 — Prospección diaria automatizada
 
@@ -68,11 +69,13 @@ Automatización diaria de descubrimiento, filtro OSI, prioridad Copyleft, enriqu
 
 Establece la documentación como condición de cierre y define arquitectura, decisiones, validación, trazabilidad, estados y enlaces obligatorios.
 
-### 🟡 H06 — 2026-08 — Open LLM Atlas ampliado
+### 🔵 H06 — 2026-08 — Open LLM Atlas ampliado — SIGUIENTE
 
 [`atlas/README.md`](../../atlas/README.md)
 
-Ampliación y depuración continua de modelos, familias, organizaciones, benchmarks y procedencia. Sigue en evolución y no se considera una fase aceptada globalmente.
+**Siguiente unidad prioritaria de trabajo.** Objetivo: ampliar y depurar el conocimiento estructurado de modelos, familias, organizaciones, benchmarks y procedencia; consolidar contratos de evidencia; y preparar una base sólida para la evolución sistemática de JGB, hardware y recomendación.
+
+H06 no está aceptado todavía. Su estado se mantiene explícitamente separado del verde de H10.
 
 ### 🟡 H07 — 2026-08 — Índice JGB sistemático
 
@@ -86,23 +89,45 @@ Matriz 2/4/8/16/32/64/128 GB, emparejamiento Intel/AMD y cobertura NVIDIA/VRAM.
 
 Capa sistemática de viabilidad hardware-modelo y utilidad bajo carga.
 
-### 🟡 H10 — 2026-08 — Atlas → recomendador diario enriquecido
+### 🟢 H10 — 2026-08 — Atlas → recomendador diario enriquecido
 
 [`2026-08-atlas-recommendation-pipeline/`](2026-08-atlas-recommendation-pipeline/)
 
-Estado actual: **en validación**. El workflow diario ha sido conectado al enriquecedor de recomendaciones y existe una ejecución manual de GitHub Actions en curso. No se marca como aceptada hasta comprobar el run real y sus resultados.
+**ACEPTADA mediante Run #18.** La infraestructura diaria ejecuta prospección → evidencia → ingesta → evidencia técnica → calidad → hipótesis → matriz → recomendador → enriquecimiento → validación → publicación.
+
+**Evidencia:** Run ID `31912695040`, con 32.128 filas de matriz, 59 ficheros de recomendaciones y 859 filas validadas.
 
 ## Resultado de la auditoría
 
-La revisión del repositorio ha comparado las capacidades que el roadmap identifica como terminadas con los paquetes documentales. Las capacidades actualmente marcadas como operativas/validadas disponen ahora de una referencia Hxx y de paquete documental cuando corresponde.
+Las capacidades aceptadas disponen de referencia Hxx y paquete documental. Las áreas en evolución no se presentan como terminadas.
 
-Durante la revisión se detectó y corrigió una discrepancia documental: el documento antiguo del bot de precios describía Amazon España como fuente activa, mientras la configuración efectiva del repositorio mantiene cuatro fuentes activas y Amazon fuera de cobertura. La documentación ahora refleja la configuración efectiva.
+## Orden de trabajo vigente
 
-Las áreas que el roadmap marca como **en evolución o en desarrollo** no se han falsificado como fases terminadas: Atlas, JGB, matriz hardware, CABE/RULA, benchmarks reales, agentic, router, web/app y Manada siguen fuera del estado ACEPTADA cuando la evidencia disponible no permite cerrarlas.
-
-## Próximas fases
-
-Los siguientes hitos se numerarán cuando exista una unidad de trabajo suficientemente definida. **No se reutilizan Hxx ya asignados.**
+```text
+H10 CERRADA 🟢
+      ↓
+H06 ATLAS AMPLIADO 🔵  ← SIGUIENTE
+      ↓
+H07 JGB SISTEMÁTICO 🟡
+      ↓
+H08 MATRIZ HARDWARE 🟡
+      ↓
+H09 CABE / RULA 🟡
+      ↓
+BENCHMARKS REALES
+      ↓
+AGENTIC / LB
+      ↓
+ROUTER
+      ↓
+WEB / APP
+      ↓
+MANADA
+      ↓
+TCO
+      ↓
+OPTIMIZACIÓN MULTIOBJETIVO
+```
 
 ## Plantilla conceptual de un paquete
 
