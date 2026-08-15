@@ -1,0 +1,1 @@
+rank,model_id,model_name,variant,quantization,runtime,hardware_id,workload,estimated_memory_gb,context_tokens,tokens_per_second,quality_score,jgb_level,jgb_confidence,fit_score,confidence,cpu_price_eur,cpu_price_source,ram_price_eur,ram_price_source,gpu_price_eur,gpu_price_source,hardware_price_eur,price_coverage,value_score,reason
