@@ -1,0 +1,29 @@
+{
+  "engine": "Open LLM Atlas Recommendation Engine",
+  "version": "0.1",
+  "decision_order": [
+    "hard_constraints",
+    "workload_fit",
+    "quality",
+    "performance",
+    "memory_headroom",
+    "compatibility",
+    "optional_openness_preference"
+  ],
+  "hard_constraints": {
+    "memory": "estimated_memory_gb <= available_memory_gb",
+    "context": "deployment_context_tokens >= required_context_tokens",
+    "workload": "requested workload must be supported",
+    "jgb": "only enforced when explicitly requested",
+    "performance": "only enforced when minimum tokens_per_second is explicitly requested"
+  },
+  "default_weights": {
+    "quality": 0.35,
+    "speed": 0.25,
+    "memory": 0.15,
+    "compatibility": 0.15,
+    "openness": 0.10
+  },
+  "jgb_rule": "JGB measures openness/freedom, never model quality. Unknown JGB remains unknown.",
+  "explainability": "Every viable result must expose the constraints satisfied, evidence-dependent contributions and remaining uncertainty."
+}
