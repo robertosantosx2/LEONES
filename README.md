@@ -162,12 +162,23 @@ LEONES está compuesto por varias capas que deben evolucionar juntas. El README 
 ### Documentación fundamental
 
 - [`LEONES_DECISION_LOG.md`](LEONES_DECISION_LOG.md) — historia, decisiones congeladas y fundamentos.
+- [`docs/README.md`](docs/README.md) — índice de documentación técnica.
+- [`docs/DOCUMENTATION_PROTOCOL.md`](docs/DOCUMENTATION_PROTOCOL.md) — **protocolo obligatorio de documentación por fases**.
+- [`docs/phases/README.md`](docs/phases/README.md) — índice de fases y estados de aceptación.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — recopilación consolidada de todo lo que queda por hacer y orden recomendado.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura general.
 - [`docs/PILLARS.md`](docs/PILLARS.md) — pilares del proyecto.
 - [`docs/PLATFORMS.md`](docs/PLATFORMS.md) — plataformas Linux de referencia.
 - [`PIPELINE_E2E.md`](PIPELINE_E2E.md) — pipeline extremo a extremo.
 - [`scripts/README.md`](scripts/README.md) — filosofía y contrato de los scripts.
+
+### Regla de cierre de fases
+
+```text
+IMPLEMENTAR → VALIDAR → ACEPTAR → DOCUMENTAR PROFUSAMENTE → ENLAZAR → CERRAR
+```
+
+Una fase no se considera completamente cerrada si falta su documentación, sus evidencias de aceptación o su trazabilidad.
 
 ---
 
@@ -285,6 +296,7 @@ La integración precios → Atlas → recomendador está validada mediante GitHu
 - [`docs/hardware-price-quality.md`](docs/hardware-price-quality.md) — control de calidad.
 - [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md) — integración precios ↔ Atlas.
 - [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md) — ranking económico y evolución.
+- [`docs/phases/README.md`](docs/phases/README.md) — fases documentadas.
 - [`data/prospection/atlas_recommendations.csv`](data/prospection/atlas_recommendations.csv) — recomendaciones técnicas.
 - [`data/prospection/atlas_economic_ranking.csv`](data/prospection/atlas_economic_ranking.csv) — ranking económico.
 
