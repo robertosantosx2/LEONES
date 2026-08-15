@@ -1,34 +1,34 @@
-gpu_id,model,series,architecture,vram_gb,ai_capable,source
-rtx2060,GeForce RTX 2060,RTX 20,Turing,6,yes,NVIDIA
-rtx2060_super,GeForce RTX 2060 SUPER,RTX 20,Turing,8,yes,NVIDIA
-rtx2070,GeForce RTX 2070,RTX 20,Turing,8,yes,NVIDIA
-rtx2070_super,GeForce RTX 2070 SUPER,RTX 20,Turing,8,yes,NVIDIA
-rtx2080,GeForce RTX 2080,RTX 20,Turing,8,yes,NVIDIA
-rtx2080_super,GeForce RTX 2080 SUPER,RTX 20,Turing,8,yes,NVIDIA
-rtx2080_ti,GeForce RTX 2080 Ti,RTX 20,Turing,11,yes,NVIDIA
-rtx3060,GeForce RTX 3060,RTX 30,Ampere,12,yes,NVIDIA
-rtx3060_ti,GeForce RTX 3060 Ti,RTX 30,Ampere,8,yes,NVIDIA
-rtx3070,GeForce RTX 3070,RTX 30,Ampere,8,yes,NVIDIA
-rtx3070_ti,GeForce RTX 3070 Ti,RTX 30,Ampere,8,yes,NVIDIA
-rtx3080,GeForce RTX 3080,RTX 30,Ampere,10,yes,NVIDIA
-rtx3080_ti,GeForce RTX 3080 Ti,RTX 30,Ampere,12,yes,NVIDIA
-rtx3090,GeForce RTX 3090,RTX 30,Ampere,24,yes,NVIDIA
-rtx3090_ti,GeForce RTX 3090 Ti,RTX 30,Ampere,24,yes,NVIDIA
-rtx4060,GeForce RTX 4060,RTX 40,Ada Lovelace,8,yes,NVIDIA
-rtx4060_ti_8,GeForce RTX 4060 Ti,RTX 40,Ada Lovelace,8,yes,NVIDIA
-rtx4060_ti_16,GeForce RTX 4060 Ti,RTX 40,Ada Lovelace,16,yes,NVIDIA
-rtx4070,GeForce RTX 4070,RTX 40,Ada Lovelace,12,yes,NVIDIA
-rtx4070_super,GeForce RTX 4070 SUPER,RTX 40,Ada Lovelace,12,yes,NVIDIA
-rtx4070_ti,GeForce RTX 4070 Ti,RTX 40,Ada Lovelace,12,yes,NVIDIA
-rtx4070_ti_super,GeForce RTX 4070 Ti SUPER,RTX 40,Ada Lovelace,16,yes,NVIDIA
-rtx4080,GeForce RTX 4080,RTX 40,Ada Lovelace,16,yes,NVIDIA
-rtx4080_super,GeForce RTX 4080 SUPER,RTX 40,Ada Lovelace,16,yes,NVIDIA
-rtx4090,GeForce RTX 4090,RTX 40,Ada Lovelace,24,yes,NVIDIA
-rtx5050,GeForce RTX 5050,RTX 50,Blackwell,8,yes,NVIDIA
-rtx5060,GeForce RTX 5060,RTX 50,Blackwell,8,yes,NVIDIA
-rtx5060_ti_8,GeForce RTX 5060 Ti,RTX 50,Blackwell,8,yes,NVIDIA
-rtx5060_ti_16,GeForce RTX 5060 Ti,RTX 50,Blackwell,16,yes,NVIDIA
-rtx5070,GeForce RTX 5070,RTX 50,Blackwell,12,yes,NVIDIA
-rtx5070_ti,GeForce RTX 5070 Ti,RTX 50,Blackwell,16,yes,NVIDIA
-rtx5080,GeForce RTX 5080,RTX 50,Blackwell,16,yes,NVIDIA
-rtx5090,GeForce RTX 5090,RTX 50,Blackwell,32,yes,NVIDIA
+gpu_id,model,series,architecture,vram_gb,price_eur,ai_capable,source,price_note
+rtx2060,GeForce RTX 2060 (≈150 €),RTX 20,Turing,6,150,yes,NVIDIA,orientativo
+rtx2060_super,GeForce RTX 2060 SUPER (≈180 €),RTX 20,Turing,8,180,yes,NVIDIA,orientativo
+rtx2070,GeForce RTX 2070 (≈180 €),RTX 20,Turing,8,180,yes,NVIDIA,orientativo
+rtx2070_super,GeForce RTX 2070 SUPER (≈220 €),RTX 20,Turing,8,220,yes,NVIDIA,orientativo
+rtx2080,GeForce RTX 2080 (≈230 €),RTX 20,Turing,8,230,yes,NVIDIA,orientativo
+rtx2080_super,GeForce RTX 2080 SUPER (≈270 €),RTX 20,Turing,8,270,yes,NVIDIA,orientativo
+rtx2080_ti,GeForce RTX 2080 Ti (≈350 €),RTX 20,Turing,11,350,yes,NVIDIA,orientativo
+rtx3060,GeForce RTX 3060 (≈250 €),RTX 30,Ampere,12,250,yes,NVIDIA,orientativo
+rtx3060_ti,GeForce RTX 3060 Ti (≈300 €),RTX 30,Ampere,8,300,yes,NVIDIA,orientativo
+rtx3070,GeForce RTX 3070 (≈300 €),RTX 30,Ampere,8,300,yes,NVIDIA,orientativo
+rtx3070_ti,GeForce RTX 3070 Ti (≈350 €),RTX 30,Ampere,8,350,yes,NVIDIA,orientativo
+rtx3080,GeForce RTX 3080 (≈450 €),RTX 30,Ampere,10,450,yes,NVIDIA,orientativo
+rtx3080_ti,GeForce RTX 3080 Ti (≈550 €),RTX 30,Ampere,12,550,yes,NVIDIA,orientativo
+rtx3090,GeForce RTX 3090 (≈1.000 €),RTX 30,Ampere,24,1000,yes,NVIDIA,orientativo; precios observados varían mucho
+rtx3090_ti,GeForce RTX 3090 Ti (≈1.100 €),RTX 30,Ampere,24,1100,yes,NVIDIA,orientativo
+rtx4060,GeForce RTX 4060 (≈350 €),RTX 40,Ada Lovelace,8,350,yes,NVIDIA,orientativo
+rtx4060_ti_8,GeForce RTX 4060 Ti 8GB (≈400 €),RTX 40,Ada Lovelace,8,400,yes,NVIDIA,orientativo
+rtx4060_ti_16,GeForce RTX 4060 Ti 16GB (≈520 €),RTX 40,Ada Lovelace,16,520,yes,NVIDIA,observado en marketplace NVIDIA España ≈492–530 €
+rtx4070,GeForce RTX 4070 (≈550 €),RTX 40,Ada Lovelace,12,550,yes,NVIDIA,orientativo
+rtx4070_super,GeForce RTX 4070 SUPER (≈710 €),RTX 40,Ada Lovelace,12,710,yes,NVIDIA,observado en marketplace NVIDIA España ≈711 €
+rtx4070_ti,GeForce RTX 4070 Ti (≈700 €),RTX 40,Ada Lovelace,12,700,yes,NVIDIA,orientativo
+rtx4070_ti_super,GeForce RTX 4070 Ti SUPER (≈800 €),RTX 40,Ada Lovelace,16,800,yes,NVIDIA,observado desde ≈800 €
+rtx4080,GeForce RTX 4080 (≈1.000 €),RTX 40,Ada Lovelace,16,1000,yes,NVIDIA,orientativo
+rtx4080_super,GeForce RTX 4080 SUPER (≈1.100 €),RTX 40,Ada Lovelace,16,1100,yes,NVIDIA,orientativo
+rtx4090,GeForce RTX 4090 (≈2.100 €),RTX 40,Ada Lovelace,24,2100,yes,NVIDIA,observado en marketplace NVIDIA España ≈2.092 €
+rtx5050,GeForce RTX 5050 (≈300 €),RTX 50,Blackwell,8,300,yes,NVIDIA,orientativo; MSRP internacional 249 USD
+rtx5060,GeForce RTX 5060 (≈350 €),RTX 50,Blackwell,8,350,yes,NVIDIA,observado en marketplace NVIDIA España ≈336–349 €
+rtx5060_ti_8,GeForce RTX 5060 Ti 8GB (≈450 €),RTX 50,Blackwell,8,450,yes,NVIDIA,orientativo
+rtx5060_ti_16,GeForce RTX 5060 Ti 16GB (≈500 €),RTX 50,Blackwell,16,500,yes,NVIDIA,observado en marketplace NVIDIA España ≈459–630 € según ensamblador
+rtx5070,GeForce RTX 5070 (≈650 €),RTX 50,Blackwell,12,650,yes,NVIDIA,observado en marketplace NVIDIA España ≈647 €
+rtx5070_ti,GeForce RTX 5070 Ti (≈800 €),RTX 50,Blackwell,16,800,yes,NVIDIA,orientativo
+rtx5080,GeForce RTX 5080 (≈1.400 €),RTX 50,Blackwell,16,1400,yes,NVIDIA,observado en marketplace NVIDIA España ≈1.399–1.500 €
+rtx5090,GeForce RTX 5090 (≈3.000 €),RTX 50,Blackwell,32,3000,yes,NVIDIA,observado en marketplace NVIDIA España ≈3.000–3.900 €
