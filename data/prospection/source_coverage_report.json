@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T04:49:47.025896+00:00",
+  "generated_at": "2026-08-15T05:57:38.929601+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -30,9 +30,9 @@
       "url": "https://framagit.org/",
       "kind": "forge",
       "priority": "high",
-      "status": "reachable",
-      "http_status": 200,
-      "final_url": "https://framagit.org/public/projects",
+      "status": "error",
+      "error_type": "TimeoutError",
+      "message": "The read operation timed out",
       "authentication_configured": false
     },
     {
@@ -52,9 +52,9 @@
       "url": "https://savannah.gnu.org/",
       "kind": "forge",
       "priority": "high",
-      "status": "reachable",
-      "http_status": 200,
-      "final_url": "https://savannah.gnu.org/",
+      "status": "error",
+      "error_type": "URLError",
+      "message": "<urlopen error [Errno 101] Network is unreachable>",
       "authentication_configured": false
     },
     {
@@ -173,8 +173,8 @@
       "url": "https://phorge.it/",
       "kind": "forge",
       "priority": "medium",
-      "status": "http_error",
-      "http_status": 500,
+      "status": "reachable",
+      "http_status": 200,
       "final_url": "https://www.phorge.it/",
       "authentication_configured": false
     },
