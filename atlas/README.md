@@ -7,14 +7,46 @@ Atlas is the structured knowledge layer used by LEONES to explain recommendation
 Atlas follows the project-wide phased documentation rule: when a phase is completed and accepted, its architecture, rules, decisions, validation and traceability must be documented and linked from the relevant READMEs.
 
 - [`../docs/DOCUMENTATION_PROTOCOL.md`](../docs/DOCUMENTATION_PROTOCOL.md) — project-wide rule.
-- [`../docs/phases/README.md`](../docs/phases/README.md) — phase index.
-- [`../docs/phases/2026-08-atlas-recommendation-pipeline/`](../docs/phases/2026-08-atlas-recommendation-pipeline/) — current Atlas → recommender phase, currently in validation.
+- [`../docs/phases/README.md`](../docs/phases/README.md) — phase index and stable Hxx identifiers.
+- [`../docs/phases/2026-08-atlas-recommendation-pipeline/`](../docs/phases/2026-08-atlas-recommendation-pipeline/) — **H10 accepted**: daily Atlas → recommender pipeline.
 
 ## Status
 
-**v0.2 — schema expanded; migration and validation in progress.**
+**H10 🟢 ACEPTADA. H06 🔵 SIGUIENTE.**
 
-Atlas is not a static model catalogue. It connects models, software, hardware, knowledge and reproducible experiments while keeping provenance explicit.
+Atlas v0.2 has an expanded schema and an operational daily pipeline, but the Atlas knowledge layer itself remains under active expansion and validation. H06 is the next work unit: improve model/family/organization/benchmark/provenance coverage and strengthen the evidence contracts that feed JGB, hardware and recommendation layers.
+
+## H06 — Open LLM Atlas ampliado
+
+### Objective
+
+Turn the current Atlas into a more complete and auditable knowledge base for local/open LLM research without confusing catalogue coverage with empirical validation.
+
+### Scope
+
+```text
+MODELOS
+  ↓
+FAMILIAS / ORGANIZACIONES
+  ↓
+VARIANTES / PESOS / FORMATOS
+  ↓
+RUNTIMES / BACKENDS
+  ↓
+BENCHMARKS
+  ↓
+PROCEDENCIA / EVIDENCIA
+  ↓
+JGB
+  ↓
+HARDWARE / RECOMENDACIÓN
+```
+
+H06 will focus first on the quality and completeness of the knowledge layer. It does **not** mean that every model becomes benchmarked or verified automatically.
+
+### Acceptance direction
+
+H06 should be considered complete only after its own implementation, validation, documentation and evidence are accepted according to the project-wide phase protocol. Its acceptance must be independent of the already-accepted H10 pipeline.
 
 ## Knowledge layers
 
@@ -93,6 +125,8 @@ MANADA ──────────────────┤
                     evidence
                          ↓
                        Atlas
+                         ↓
+              H10 daily pipeline 🟢
                          ↓
                        Router
                          ↓
