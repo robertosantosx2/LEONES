@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-14T21:10:48.402482+00:00",
+  "generated_at": "2026-08-15T04:49:47.025896+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -173,8 +173,8 @@
       "url": "https://phorge.it/",
       "kind": "forge",
       "priority": "medium",
-      "status": "reachable",
-      "http_status": 200,
+      "status": "http_error",
+      "http_status": 500,
       "final_url": "https://www.phorge.it/",
       "authentication_configured": false
     },
@@ -263,7 +263,7 @@
       "priority": "high",
       "status": "reachable",
       "http_status": 200,
-      "final_url": "https://huggingface.co/papers",
+      "final_url": "https://huggingface.co/papers/date/2026-08-14",
       "authentication_configured": false
     }
   ],

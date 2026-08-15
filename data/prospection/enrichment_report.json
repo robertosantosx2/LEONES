@@ -1,25 +1,18 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 281,
-  "enriched_ok": 85,
-  "non_github_preserved": 194,
-  "errors": 2,
+  "repositories_processed": 280,
+  "enriched_ok": 86,
+  "non_github_preserved": 193,
+  "errors": 1,
   "github_token_used": true,
   "diagnostics": [
-    {
-      "repository": "xiaoze-hub/Stock-Intelligent-Data-Analytics",
-      "status": 404,
-      "error_type": "HTTP 404",
-      "message": "Not Found",
-      "rate_limit_remaining": "4443"
-    },
     {
       "repository": "benlmadan9-star/eco-mesh-sdk",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4337"
+      "rate_limit_remaining": "4855"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."
