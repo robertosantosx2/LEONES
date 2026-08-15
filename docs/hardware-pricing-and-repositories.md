@@ -61,7 +61,126 @@ Esta es la **historia de observaciones**. Cada fila conserva:
 
 `data/hardware/hardware_prices.csv` es el **resumen vigente** derivado de las observaciones más recientes.
 
-## 6. Regla de integridad económica
+## 6. Red de fuentes de precios
+
+La fuente de precios deja de ser un único comercio. El registro maestro está en:
+
+`data/hardware/price_sources.csv`
+
+La política establecida para el recomendador es la siguiente.
+
+### 6.1 PcComponentes — prioridad 1 / fuente principal en España
+
+Es el referente principal del mercado español para esta base. Se utilizará como primera fuente para CPU, RAM y GPU cuando exista producto comparable.
+
+Web oficial: https://www.pccomponentes.com/
+
+### 6.2 Amazon España — prioridad 2 / fuente secundaria
+
+Se incorpora como segunda fuente por su volumen y disponibilidad de componentes.
+
+**Regla especial:** Amazon es un marketplace. El precio debe conservar siempre información del vendedor cuando esté disponible. No se deben mezclar automáticamente precio de vendedor externo, precio de Amazon, reacondicionado y ofertas temporales como si fueran la misma observación.
+
+Web oficial: https://www.amazon.es/
+
+### 6.3 Coolmod — prioridad 3 / fuente especialista
+
+Se incorpora como fuente especializada de hardware, especialmente útil para componentes de PC, gaming, modding, refrigeración y configuraciones de alto rendimiento.
+
+Web oficial: https://www.coolmod.com/
+
+### 6.4 MediaMarkt España — prioridad 4 / fuente secundaria
+
+Se incorpora para ampliar la cobertura del mercado español. Su catálogo incluye una categoría específica de componentes, con procesadores, RAM y tarjetas gráficas.
+
+**Regla especial:** distinguir venta directa de MediaMarkt, marketplace y reacondicionado. No deben agregarse en la misma distribución de precios sin etiquetar su naturaleza.
+
+Web oficial: https://www.mediamarkt.es/
+
+### 6.5 LDLC España — prioridad 5 / especialista europeo
+
+Se incorpora como fuente europea especializada. La versión española dispone de categorías de tarjeta gráfica, memoria, procesador y otros componentes, además de configurador de PC.
+
+Web oficial: https://www.ldlc.com/es-es/
+
+### 6.6 Caseking — prioridad 5 / especialista europeo
+
+Se incorpora junto a LDLC como referencia europea especializada, especialmente para componentes de gama alta o difíciles de encontrar. El mercado europeo se conservará separado del mercado español cuando no exista una oferta española equivalente.
+
+Web oficial: https://www.caseking.de/
+
+## 7. Jerarquía de confianza
+
+Las prioridades anteriores **no significan que el precio más bajo gane automáticamente**.
+
+El motor debe conservar todas las observaciones válidas y posteriormente calcular estadísticas comparables.
+
+Una observación debe conservar:
+
+```text
+fuente
+vendedor
+fecha
+modelo
+SKU/EAN si está disponible
+precio
+moneda
+IVA incluido/excluido
+stock/disponibilidad
+nuevo/reacondicionado
+URL
+```
+
+Cuando sea posible, la identificación del producto debe apoyarse en SKU, EAN/GTIN o una combinación normalizada de fabricante + modelo.
+
+## 8. Comparabilidad de precios
+
+Antes de comparar precios entre fuentes, el bot debe normalizar:
+
+1. **Moneda** → EUR.
+2. **IVA** → preferentemente precio final con IVA para España.
+3. **Estado** → nuevo separado de reacondicionado/segunda mano.
+4. **Vendedor** → venta directa separada de marketplace.
+5. **Disponibilidad** → en stock, bajo pedido y agotado separados.
+6. **Producto** → mismo modelo o equivalencia explícitamente identificada.
+7. **Oferta** → precio promocional conservado como observación, pero no tratado automáticamente como precio estructural.
+
+Esto evita que el recomendador elija artificialmente una configuración por mezclar condiciones comerciales diferentes.
+
+## 9. Estrategia de recopilación
+
+El bot mensual seguirá este esquema:
+
+```text
+                  RED DE FUENTES
+                        │
+       ┌────────────────┼────────────────┐
+       ▼                ▼                ▼
+   España            España            Europa
+       │                │                │
+ PcComponentes      Amazon          LDLC / Caseking
+       │             Coolmod              │
+       │           MediaMarkt             │
+       └────────────────┼────────────────┘
+                        ▼
+                NORMALIZACIÓN
+                        ▼
+                  IDENTIFICACIÓN
+                        ▼
+                    VALIDACIÓN
+                        ▼
+              OBSERVACIONES MENSUALES
+                        ▼
+                  SERIE HISTÓRICA
+                        ▼
+                PRECIO REPRESENTATIVO
+                        ▼
+                   RECOMENDADOR
+```
+
+La primera implementación automatizada dispone de PcComponentes. Las demás fuentes quedan **establecidas en el registro maestro como fuentes planificadas**, y se incorporarán mediante adaptadores independientes, evitando convertir una única tienda en punto único de fallo.
+
+## 10. Regla de integridad económica
 
 Una ausencia de precio no se rellena con una estimación silenciosa. Si una fuente no responde, cambia su HTML o no ofrece un producto, el registro permanece sin precio o se conserva la última observación histórica claramente fechada.
 
@@ -71,7 +190,7 @@ El recomendador debe poder distinguir:
 - `reference`: valor de referencia previamente documentado;
 - `unknown`: no existe evidencia suficiente.
 
-## 7. Bot mensual
+## 11. Bot mensual
 
 Workflow:
 
@@ -103,21 +222,9 @@ hardware_prices.csv
 Git commit si existen cambios
 ```
 
-## 8. Fuentes iniciales
+El workflow está preparado para tolerar actualizaciones concurrentes de `main`, haciendo `fetch + rebase + reintento` antes de publicar.
 
-La primera implementación utiliza páginas de catálogo de PcComponentes para:
-
-- Intel;
-- AMD Ryzen 3/5/7/9;
-- DDR4;
-- DDR5;
-- tarjetas gráficas, filtrando NVIDIA RTX.
-
-El recolector utiliza datos estructurados `Product`/`offers` cuando están disponibles. Si una página bloquea la consulta o cambia de estructura, el workflow registra el fallo y no inventa precios.
-
-La cobertura de una fuente se debe considerar una muestra de mercado, no una representación universal de todos los vendedores españoles.
-
-## 9. Relación con JGB
+## 12. Relación con JGB
 
 El precio **no sustituye al Índice JGB**.
 
@@ -144,6 +251,6 @@ El precio podrá utilizarse después para métricas como:
 
 Estas métricas económicas no deben modificar retrospectivamente la clasificación JGB.
 
-## 10. Estado
+## 13. Estado
 
-La arquitectura está preparada para pasar de un catálogo de precios mantenido manualmente a una **serie temporal mensual automatizada**. La calidad de cada dato depende de la fuente y debe conservarse junto a su fecha y URL.
+La arquitectura queda preparada para evolucionar desde una primera fuente automatizada hacia una **red mensual multi-fuente**. La calidad de cada dato depende de la fuente y debe conservarse junto a su fecha, vendedor, condiciones comerciales y URL.
