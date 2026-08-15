@@ -1,0 +1,47 @@
+name: Atlas — Pipeline diario completo
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-daily-pipeline
+  cancel-in-progress: false
+
+jobs:
+  atlas-pipeline:
+    name: Prospección → Ingesta → Feed → Recomendaciones
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Ingerir descubrimientos NDJSON
+        run: python3 scripts/atlas_ingest_ndjson.py
+
+      - name: Normalizar feed de prospección
+        run: python3 scripts/atlas_build_feed.py
+
+      - name: Generar recomendaciones
+        run: python3 scripts/atlas_recommend_from_feed.py
+
+      - name: Publicar resultados si han cambiado
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/prospection/atlas_feed.csv data/prospection/atlas_review_queue.csv data/prospection/atlas_recommendations.csv
+          if git diff --cached --quiet; then
+            echo "Atlas sin cambios"
+          else
+            git commit -m "data: actualizar pipeline diario del Atlas"
+            git push
+          fi
