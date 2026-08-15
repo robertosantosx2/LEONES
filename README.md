@@ -28,43 +28,169 @@ Por eso LEONES combina **prospección, conocimiento estructurado, experimentaci�
 
 ---
 
-## Índice de documentación del ecosistema Atlas/recomendador
+# 🗺️ Mapa del proyecto y documentación
 
-Esta sección es la puerta de entrada a la documentación específica del subproyecto Atlas y del motor que convierte el conocimiento del Atlas en recomendaciones técnicas y económicas.
+LEONES está compuesto por varias capas que deben evolucionar juntas. El README es la puerta de entrada y la documentación especializada explica cada pieza.
 
-### Fundamentos y arquitectura
+```text
+                         LEONES
+                           │
+       ┌───────────────────┼───────────────────┐
+       │                   │                   │
+       ▼                   ▼                   ▼
+ PROSPECCIÓN             ATLAS              EJECUCIÓN
+       │                   │                   │
+       │              ┌────┼────┐              │
+       │              │    │    │              │
+       │             JGB rendimiento hardware  │
+       │              │    │    │              │
+       └──────────────┴────┼────┴──────────────┘
+                           ▼
+                     RECOMENDADOR
+                           │
+                    ┌──────┴──────┐
+                    ▼             ▼
+                 TÉCNICO      ECONÓMICO
+                    │             │
+                    └──────┬──────┘
+                           ▼
+                     EJECUCIÓN LOCAL
+                           │
+                       MEDICIÓN
+                           │
+                         MANADA
+                           │
+                           ↺
+```
 
-- [`LEONES_DECISION_LOG.md`](LEONES_DECISION_LOG.md) — historia, decisiones congeladas y fundamentos del proyecto.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura general de LEONES.
+### Documentación fundamental
+
+- [`LEONES_DECISION_LOG.md`](LEONES_DECISION_LOG.md) — historia, decisiones congeladas y fundamentos.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — **recopilación consolidada de todo lo que queda por hacer** y orden recomendado.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura general.
 - [`docs/PILLARS.md`](docs/PILLARS.md) — pilares del proyecto.
 - [`docs/PLATFORMS.md`](docs/PLATFORMS.md) — plataformas Linux de referencia.
+- [`PIPELINE_E2E.md`](PIPELINE_E2E.md) — pipeline extremo a extremo.
 - [`scripts/README.md`](scripts/README.md) — filosofía y contrato de los scripts.
 
-### Prospección y Atlas
+---
 
-- [`docs/PROSPECTION.md`](docs/PROSPECTION.md) — prospección continua del ecosistema.
-- [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) — contrato estructurado de resultados.
-- **Atlas** — memoria estructurada de modelos, familias, organizaciones, benchmarks, hardware y procedencia.
-- **Índice JGB** — criterio independiente para representar apertura/libertad; no se sustituye por rendimiento, precio ni una puntuación económica.
+# 📚 Subproyecto Open LLM Atlas → recomendador
 
-### Precios de hardware
+El **Open LLM Atlas** es la memoria estructurada de LEONES. Su función no es ser simplemente una lista de modelos, sino mantener conocimiento trazable sobre **modelos, familias, organizaciones, benchmarks, hardware, procedencia y criterios de apertura** para que otras capas puedan utilizarlo.
 
-- [`docs/hardware-price-sources.md`](docs/hardware-price-sources.md) — fuentes activas y decisiones sobre fuentes descartadas.
-- [`docs/hardware-price-quality.md`](docs/hardware-price-quality.md) — control de calidad y exclusiones.
-- [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md) — integración entre precios observados, perfiles de hardware y recomendador.
+El subproyecto Atlas conecta esa memoria con el motor de recomendación:
 
-**Fuentes activas:** Coolmod, PcComponentes, MediaMarkt España y LDLC España. **Amazon está descartada** y no forma parte de la cobertura activa.
+```text
+FUENTES / PROSPECCIÓN
+        │
+        ▼
+   INGESTA ATLAS
+        │
+        ▼
+   OPEN LLM ATLAS
+        │
+   ┌────┼───────────────┐
+   ▼    ▼               ▼
+  JGB rendimiento    hardware
+   │    │               │
+   └────┼───────────────┘
+        ▼
+      CABE
+        │
+        ▼
+  ¿es viable?
+    │       │
+   NO      SÍ
+    │       │
+ excluir   ▼
+       PRECIOS REALES
+           │
+       control calidad
+           │
+           ▼
+     COSTE HARDWARE
+           │
+           ▼
+    RANKING ECONÓMICO
+           │
+           ▼
+      RECOMENDADOR
+```
 
-### Recomendador y ranking económico
+### Qué aporta el Atlas
 
-- [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md) — diseño completo del ranking económico, fórmula V1, cobertura, evolución y salidas.
-- [`data/prospection/atlas_recommendations.csv`](data/prospection/atlas_recommendations.csv) — recomendaciones técnicas generadas.
-- [`data/prospection/atlas_economic_ranking.csv`](data/prospection/atlas_economic_ranking.csv) — ranking económico generado.
+- Una **fuente estructurada de conocimiento** en lugar de información dispersa.
+- Procedencia para saber de dónde procede cada dato.
+- Separación entre datos observados, reproducibles y verificados.
+- Clasificación de apertura mediante el **Índice JGB**.
+- Relación entre modelo, rendimiento y requisitos de hardware.
+- Base para generar recomendaciones reproducibles y actualizables.
 
-### Manada y conocimiento colectivo
+### El Índice JGB
 
-- [`docs/MANADA_AUTO_REPORT.md`](docs/MANADA_AUTO_REPORT.md) — generación de informes.
-- [`docs/MANADA_STATS.md`](docs/MANADA_STATS.md) — estadísticas agregadas.
+El **Índice JGB** es una dimensión independiente. Representa el criterio de apertura/libertad adoptado para los modelos y **no se sustituye por rendimiento, precio ni ranking económico**.
+
+```text
+JGB          → apertura / libertad
+Rendimiento  → capacidad observada
+Hardware     → viabilidad
+Precio       → coste observado
+
+                    ↓
+             combinación auditable
+                    ↓
+              recomendación
+```
+
+### El bot de precios
+
+El coste que utiliza el recomendador procede de un bot mensual de precios de hardware.
+
+Fuentes activas:
+
+1. **Coolmod** — prioritaria.
+2. **PcComponentes** — secundaria.
+3. **MediaMarkt España** — secundaria.
+4. **LDLC España** — apoyo europeo.
+
+**Amazon está descartada** y no forma parte de la cobertura activa.
+
+El bot extrae, normaliza y somete los productos a control de calidad. Las observaciones rechazadas se conservan para auditoría, pero no alimentan el recomendador.
+
+### Ranking económico
+
+La V1 combina:
+
+```text
+calidad_técnica =
+    0,35 × rendimiento_normalizado
+  + 0,25 × JGB_normalizado
+  + 0,40 × hardware_fit
+
+ranking_económico =
+    calidad_técnica / (coste_hardware / 100)
+```
+
+La fórmula es parametrizable y experimental. Primero se determina si el modelo **CABE** en el hardware; después se estudia su economía. Un precio bajo nunca rescata una configuración técnicamente inviable.
+
+### Validación
+
+La integración precios → Atlas → recomendador está validada mediante GitHub Actions. La ejecución validada pasó los tests de integración de precios y ranking económico, generó las recomendaciones, generó el ranking económico y publicó las salidas.
+
+### Índice completo de documentación del subproyecto
+
+- [`atlas/README.md`](atlas/README.md) — entrada específica al Atlas.
+- [`atlas/INGEST.md`](atlas/INGEST.md) — ingesta.
+- [`atlas/schema.json`](atlas/schema.json) — esquema de datos.
+- [`docs/PROSPECTION.md`](docs/PROSPECTION.md) — prospección.
+- [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) — contrato de resultados.
+- [`docs/hardware-price-sources.md`](docs/hardware-price-sources.md) — fuentes de precios y decisiones.
+- [`docs/hardware-price-quality.md`](docs/hardware-price-quality.md) — control de calidad.
+- [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md) — integración precios ↔ Atlas.
+- [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md) — ranking económico y evolución.
+- [`data/prospection/atlas_recommendations.csv`](data/prospection/atlas_recommendations.csv) — recomendaciones técnicas.
+- [`data/prospection/atlas_economic_ranking.csv`](data/prospection/atlas_economic_ranking.csv) — ranking económico.
 
 ---
 
@@ -115,22 +241,6 @@ La documentación del ranking económico mantiene expresamente esta separación:
 
 La documentación detallada del criterio y su utilización en el motor se encuentra en [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md), sección **Índice JGB**.
 
-Principio:
-
-```text
-JGB ───────────────→ apertura / libertad
-Rendimiento ───────→ capacidad observada
-Hardware ──────────→ viabilidad
-Precio ────────────→ coste observado
-
-                 ↓
-        combinación auditable
-                 ↓
-        recomendación económica
-```
-
-Esta separación es fundamental para que una mejora económica no destruya el significado conceptual del índice JGB.
-
 ---
 
 # Bot de precios de hardware
@@ -138,87 +248,26 @@ Esta separación es fundamental para que una mejora económica no destruya el si
 El precio utilizado por el recomendador no se introduce manualmente en cada modelo. Se alimenta mediante un bot mensual que recoge precios de componentes y genera observaciones normalizadas.
 
 ```text
-             FUENTES DE MERCADO
-                     │
-       ┌─────────────┼─────────────┐
-       │             │             │
-    Coolmod    PcComponentes   MediaMarkt
-       │             │             │
-       └─────────────┼─────────────┘
-                     │
-                  LDLC
-                     │
-                     ▼
-                 extracción
-                     │
-                     ▼
-               normalización
-                     │
-                     ▼
-              CONTROL DE CALIDAD
-                 │           │
-              aceptar      rechazar
-                 │           │
-                 ▼           ▼
-       hardware_prices.csv  auditoría
-                 │
-                 ▼
-             RECOMENDADOR
+FUENTES → extracción → normalización → CONTROL DE CALIDAD
+                                      │             │
+                                  aceptar       rechazar
+                                      │             │
+                                      ▼             ▼
+                            hardware_prices.csv  auditoría
+                                      │
+                                      ▼
+                                 recomendador
 ```
 
 El bot no debe rellenar huecos con precios inventados. Una ausencia de precio sigue siendo una ausencia de precio.
 
-## Fuentes activas
-
-1. **Coolmod** — fuente prioritaria en España.
-2. **PcComponentes** — fuente secundaria.
-3. **MediaMarkt España** — fuente secundaria.
-4. **LDLC España** — fuente europea de apoyo.
-
-### Amazon queda descartada
-
-Amazon se eliminó deliberadamente del registro de fuentes activas. No se consulta, no participa en las métricas de cobertura y no debe alimentar nuevos resúmenes del recomendador.
-
-La regla de diseño es:
-
-> **Una fuente solo es activa si existe un adaptador operativo que realmente la consulta y produce observaciones normalizadas.**
-
 Véanse [`docs/hardware-price-sources.md`](docs/hardware-price-sources.md) y [`docs/hardware-price-quality.md`](docs/hardware-price-quality.md).
-
----
-
-# Control de calidad de los precios
-
-El bot separa **productos encontrados** de **observaciones aceptadas**. Esto evita que una página de tienda que contiene muchos elementos produzca falsos precios de CPU, RAM o GPU.
-
-```text
-productos extraídos
-        │
-        ▼
-validación categoría ↔ producto ↔ precio
-        │
-   ┌────┴────┐
-   ▼         ▼
-ACEPTAR    RECHAZAR
-   │         │
-   ▼         ▼
-ledger     auditoría
-   │
-   ▼
-hardware_prices.csv
-```
-
-Entre las reglas se incluyen la exclusión de PCs completos, portátiles y productos mal clasificados cuando no representan el componente buscado, además de controles sobre precios truncados o inconsistentes.
-
-Las observaciones rechazadas no se convierten silenciosamente en datos válidos. La documentación completa está en [`docs/hardware-price-quality.md`](docs/hardware-price-quality.md).
 
 ---
 
 # Integración Atlas ↔ hardware ↔ precios
 
 Una decisión de diseño fundamental es que **el precio pertenece al perfil de hardware, no al modelo LLM**.
-
-El flujo correcto es:
 
 ```text
 LLM
@@ -242,21 +291,13 @@ LLM
  COSTE HARDWARE OBSERVADO
 ```
 
-Por ello el recomendador no asocia arbitrariamente el precio de una RTX o de una CPU al nombre de un modelo LLM. El precio se obtiene al resolver el perfil de hardware.
+Si falta un precio, no se estima automáticamente. La cobertura puede ser `partial` o `unknown`, y el ranking no debe presentar un `economic_score` ficticio.
 
-La integración produce campos como `cpu_price_eur`, `ram_price_eur`, `gpu_price_eur`, `hardware_price_eur`, `price_coverage` y `value_score`. Véase [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md).
-
-### Regla de ausencia
-
-Si falta un precio, no se estima automáticamente. El resultado puede quedar con cobertura `partial` o `unknown`, y el ranking económico no debe presentar un `economic_score` ficticio cuando la cobertura requerida no está completa.
+Véase [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md).
 
 ---
 
-# Ranking económico: JGB + rendimiento + hardware + precio
-
-El ranking económico responde a una pregunta diferente de «¿qué modelo tiene la mayor puntuación técnica?»:
-
-> **¿Qué candidato ofrece la mejor combinación de apertura/libertad, rendimiento, adecuación al hardware y coste real observado?**
+# Ranking económico
 
 La V1 utiliza una ponderación explícita y auditable:
 
@@ -274,8 +315,6 @@ Los pesos son una **V1 experimental y parametrizable**. No son una verdad univer
 
 ## Primero viabilidad, después economía
 
-El precio nunca debe rescatar un modelo que no sea viable:
-
 ```text
 ¿CABE / es viable?
    ├── NO → excluir
@@ -290,41 +329,7 @@ El precio nunca debe rescatar un modelo que no sea viable:
  ranking económico
 ```
 
-La lógica protege contra el caso en el que un hardware barato haga parecer atractivo un modelo que realmente no puede ejecutarse con los recursos disponibles.
-
-## Qué significa el coste
-
-En la V1 el coste se denomina **coste de componentes observado**. No significa todavía «precio de un PC completo». Se construye únicamente con los componentes para los que existe una correspondencia explícita y una observación válida.
-
-No se inventan precios de placa base, almacenamiento, PSU, caja, refrigeración o GPU si el perfil no permite una correspondencia suficiente.
-
-La documentación completa, incluidos campos de salida y evolución prevista, está en [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md).
-
----
-
-# Automatización y validación
-
-La integración no se considera válida porque el código exista: debe pasar por GitHub Actions.
-
-```text
-bot mensual de precios
-        ↓
-hardware_prices.csv
-        ↓
-test integración precios
-        ↓
-test ranking económico
-        ↓
-generar recomendaciones técnicas
-        ↓
-generar ranking económico
-        ↓
-publicar CSV
-```
-
-La ejecución validada de `Generate Atlas Recommendations` ha pasado las etapas de integración de precios, test económico, generación de recomendaciones, generación del ranking y publicación.
-
-Por tanto, la **integración de desarrollo precios → Atlas → recomendador queda validada**, sin afirmar por ello que todos los perfiles posibles tengan cobertura de precio completa.
+La documentación completa está en [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md).
 
 ---
 
@@ -361,8 +366,6 @@ ESTADÍSTICAS
    ↓
 MEJORES RECOMENDACIONES
 ```
-
-El usuario puede detenerse en cualquier punto. No todos necesitan llegar a Evaluación, publicar resultados o formar parte de la Manada.
 
 ### 2. Herramientas pequeñas y responsabilidades claras
 
@@ -676,14 +679,19 @@ El valor del proyecto no está únicamente en saber qué modelo es mejor hoy. Es
 
 **[Historia, decisiones y fundamentos del proyecto](LEONES_DECISION_LOG.md)** contiene el contexto completo que llevó a estas decisiones y debe ser una de las primeras lecturas para entender LEONES.
 
-Documentación especialmente relevante:
+### Navegación completa
 
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — **todo lo que queda por hacer, prioridades y orden recomendado**.
 - [`scripts/README.md`](scripts/README.md) — filosofía y contrato de los scripts.
 - [`docs/PLATFORMS.md`](docs/PLATFORMS.md) — plataformas Linux de referencia.
 - [`docs/PILLARS.md`](docs/PILLARS.md) — pilares del proyecto.
 - [`docs/PROSPECTION.md`](docs/PROSPECTION.md) — prospección.
 - [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) — contrato de resultados.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura.
+- [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md) — ranking económico.
+- [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md) — integración de precios.
+- [`docs/hardware-price-quality.md`](docs/hardware-price-quality.md) — calidad de precios.
+- [`docs/hardware-price-sources.md`](docs/hardware-price-sources.md) — fuentes de precios.
 - [`docs/MANADA_AUTO_REPORT.md`](docs/MANADA_AUTO_REPORT.md) — generación de informes de la Manada.
 - [`docs/MANADA_STATS.md`](docs/MANADA_STATS.md) — estadísticas de la Manada.
 
@@ -696,3 +704,49 @@ Documentación especialmente relevante:
 La regla general continúa siendo:
 
 > **medir antes de afirmar, documentar antes de automatizar y compartir voluntariamente para que el conocimiento colectivo mejore las recomendaciones.**
+
+---
+
+# 📋 Mapa consolidado de trabajo pendiente
+
+La lista completa y mantenida de tareas pendientes está en [`docs/ROADMAP.md`](docs/ROADMAP.md). Esta sección resume las líneas principales para que el estado del proyecto sea visible desde la portada.
+
+### P0 — Núcleo
+
+- Consolidar el Atlas como fuente única de verdad.
+- Completar y documentar la clasificación **JGB** con evidencia.
+- Completar la matriz de hardware **2/4/8/16/32/64/128 GB**.
+- Completar Intel **i3/i5/i7/i9** y AMD **Ryzen 3/5/7/9**.
+- Incorporar sistemáticamente GPU NVIDIA y VRAM.
+- Formalizar **CABE** y **RULA**.
+- Escalar el ranking económico V1 a toda la matriz.
+- Ejecutar benchmarks reproducibles en hardware real.
+- Validar la batería agentiva **LB B01–B05**.
+
+### P1 — Integración y calidad
+
+- Mejorar la prospección diaria y la revisión de candidatos.
+- Completar cobertura y robustez del bot de precios.
+- Consolidar y simplificar los workflows.
+- Convertir el recomendador en un sistema basado en evidencia acumulada.
+- Integrar de verdad Atlas → Router → hardware → ejecución.
+- Completar web y aplicación como interfaz coherente del sistema.
+- Ampliar la Manada y su sistema de confianza.
+
+### P2 — Madurez
+
+- Auditoría completa de privacidad y seguridad.
+- Comparación reproducible de runtimes y técnicas de eficiencia.
+- Coste total de propiedad (**TCO**).
+- Coste por tarea útil, no solo coste de componentes.
+- Evaluación continua y detección de regresiones.
+- Snapshots versionados y changelog automático del conocimiento.
+
+### P3 — Evolución avanzada
+
+- Ranking multiobjetivo configurable.
+- Optimización simultánea de libertad, rendimiento, coste, privacidad y eficiencia.
+- Aprendizaje continuo a partir de las mediciones de la Manada.
+- Recomendaciones que evolucionen automáticamente con la evidencia.
+
+**Orden recomendado:** Atlas/JGB → matriz hardware → precios → CABE/RULA → benchmarks → ranking económico V1.1 → agentic → Router → web/app → Manada → TCO.
