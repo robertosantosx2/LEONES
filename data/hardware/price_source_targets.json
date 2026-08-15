@@ -3,7 +3,10 @@
     "strategy": "category",
     "urls": {
       "cpu_intel": "https://www.pccomponentes.com/procesadores/intel",
-      "cpu_amd": "https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-3",
+      "cpu_amd_3": "https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-3",
+      "cpu_amd_5": "https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-5",
+      "cpu_amd_7": "https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-7",
+      "cpu_amd_9": "https://www.pccomponentes.com/categorias/procesadores/amd-ryzen-9",
       "ram_ddr4": "https://www.pccomponentes.com/categories/memorias-ram/ddr4",
       "ram_ddr5": "https://www.pccomponentes.com/categories/memorias-ram/ddr5",
       "gpu_nvidia": "https://www.pccomponentes.com/categories/tarjetas-graficas"
@@ -12,9 +15,17 @@
   "ES-AMAZON": {
     "strategy": "search",
     "urls": {
-      "cpu": "https://www.amazon.es/s?k=procesador+Intel+Core+i5",
-      "ram": "https://www.amazon.es/s?k=memoria+RAM+DDR5+32GB",
-      "gpu": "https://www.amazon.es/s?k=RTX+5070+12GB"
+      "cpu_i3": "https://www.amazon.es/s?k=procesador+Intel+Core+i3",
+      "cpu_i5": "https://www.amazon.es/s?k=procesador+Intel+Core+i5",
+      "cpu_i7": "https://www.amazon.es/s?k=procesador+Intel+Core+i7",
+      "cpu_i9": "https://www.amazon.es/s?k=procesador+Intel+Core+i9",
+      "cpu_r3": "https://www.amazon.es/s?k=procesador+AMD+Ryzen+3",
+      "cpu_r5": "https://www.amazon.es/s?k=procesador+AMD+Ryzen+5",
+      "cpu_r7": "https://www.amazon.es/s?k=procesador+AMD+Ryzen+7",
+      "cpu_r9": "https://www.amazon.es/s?k=procesador+AMD+Ryzen+9",
+      "ram_ddr4": "https://www.amazon.es/s?k=memoria+RAM+DDR4",
+      "ram_ddr5": "https://www.amazon.es/s?k=memoria+RAM+DDR5",
+      "gpu_rtx": "https://www.amazon.es/s?k=NVIDIA+GeForce+RTX"
     }
   },
   "ES-COOLMOD": {
