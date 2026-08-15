@@ -1,10 +1,12 @@
 {
-  "atlas_version": "0.1",
+  "atlas_version": "0.2",
   "generated_at": null,
   "records": [],
   "notes": [
     "Seed inicial deliberadamente vacío: no se incorporan modelos sin evidencia.",
-    "Usar scripts de prospección y fuentes verificables para crear registros.",
+    "La primera capa de evidencia externa prioriza Hugging Face, LM Arena, Artificial Analysis y fabricante.",
+    "MANADA aporta perfiles y experimentos locales con estado de evidencia explícito.",
+    "El descubrimiento de hardware debe conservar mediciones o estimaciones identificadas de FLOPS, memoria, storage, bandwidth e interconnect.",
     "La clasificación de apertura es independiente de cualquier puntuación."
   ]
 }
