@@ -17,7 +17,7 @@ env:
 
 jobs:
   atlas-pipeline:
-    name: Prospección → Evidencia → Ingesta → Calidad → Hipótesis → Hardware → Recomendaciones
+    name: Prospección → Evidencia → Ingesta → Calidad → Hipótesis → Hardware → Recomendaciones → Enriquecimiento
     runs-on: ubuntu-latest
     steps:
       - name: Descargar repositorio
@@ -70,6 +70,36 @@ jobs:
             done
           done
 
+      - name: Enriquecer recomendaciones sin sobrescribir datos existentes
+        run: |
+          set -e
+          for file in data/prospection/recommendations_*_chat.csv; do
+            [ -f "$file" ] || continue
+            tmp="${file}.tmp"
+            python3 scripts/atlas_recommendation_enrich.py --input "$file" --out "$tmp"
+            mv "$tmp" "$file"
+          done
+
+      - name: Validar columnas críticas de recomendación
+        run: |
+          set -e
+          python3 - <<'PY'
+          import csv, glob, sys
+          required = {'cabe','cabe_status','rula','rula_status','jgb_status','evidence_state','evidence_type','uncertainty'}
+          files = glob.glob('data/prospection/recommendations_*_chat.csv')
+          if not files:
+              print('No se generaron recomendaciones')
+              sys.exit(1)
+          for path in files:
+              with open(path, encoding='utf-8-sig', newline='') as f:
+                  fields = set(csv.DictReader(f).fieldnames or [])
+              missing = required - fields
+              if missing:
+                  print(f'{path}: faltan {sorted(missing)}')
+                  sys.exit(1)
+          print(f'OK: {len(files)} ficheros de recomendaciones validados')
+          PY
+
       - name: Publicar resultados sin perder commits concurrentes
         run: |
           set -e
@@ -80,7 +110,7 @@ jobs:
             echo "Atlas sin cambios"
             exit 0
           fi
-          git commit -m "feat: actualizar prospección, evidencia, hipótesis, calidad y matriz del Atlas"
+          git commit -m "feat: actualizar prospección, evidencia, hipótesis, calidad, hardware y recomendaciones"
           for attempt in 1 2 3; do
             git fetch origin main
             if git rebase origin/main; then
