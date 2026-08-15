@@ -31,9 +31,10 @@ jobs:
       - name: Generar recomendaciones por perfil de hardware
         run: |
           set -e
-          # Sistemas básicos: 2 GB y 4 GB de RAM. Contexto conservador.
+          # Sistemas básicos: 2, 4 y 8 GB de RAM. Contexto conservador.
           python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-2gb --ram 2 --context 2048 --out data/prospection/recommendations_cpu-2gb_chat.csv
           python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-4gb --ram 4 --context 2048 --out data/prospection/recommendations_cpu-4gb_chat.csv
+          python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-8gb --ram 8 --context 4096 --out data/prospection/recommendations_cpu-8gb_chat.csv
           python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-i5-16gb --ram 16 --context 4096 --out data/prospection/recommendations_cpu-i5-16gb_chat.csv
           python3 scripts/atlas_recommend_from_feed.py --workload coding --hardware cpu-i7-32gb --ram 32 --context 8192 --out data/prospection/recommendations_cpu-i7-32gb_coding.csv
           python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-i7-64gb --ram 64 --context 8192 --out data/prospection/recommendations_cpu-i7-64gb_chat.csv
@@ -49,6 +50,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Atlas sin cambios"
           else
-            git commit -m "data: actualizar pipeline diario del Atlas"
+            git commit -m "data: añadir perfil de hardware de 8 GB al Atlas"
             git push
           fi
