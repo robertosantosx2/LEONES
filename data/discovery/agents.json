@@ -1,0 +1,457 @@
+{
+  "generated_at": "2026-08-15T18:53:21.551805+00:00",
+  "kind": "agents",
+  "policy": "discover-only; verify OSI license before recommendation",
+  "items": [
+    {
+      "name": "henrydaum/second-brain",
+      "url": "https://github.com/henrydaum/second-brain",
+      "description": "Second Brain is an agentic framework that acts as an operating system, using local file intelligence, workflow automation, and LLMs to complete tasks and communicate over multiple modalities and messaging platforms.",
+      "updated_at": "2026-08-15T18:30:27Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "open-multi-agent/open-multi-agent",
+      "url": "https://github.com/open-multi-agent/open-multi-agent",
+      "description": "TypeScript AI agent orchestration framework with dynamic workflows. Describe the goal, not the graph: a coordinator plans the task DAG at runtime and runs it on any LLM (Claude, ChatGPT, Gemini, DeepSeek, or local models).",
+      "updated_at": "2026-08-15T17:59:22Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "MariusYvard/corparius",
+      "url": "https://github.com/MariusYvard/corparius",
+      "description": "Self-hosted framework for autonomous AI micro-companies. Describe a business in plain language and corparius runs it as scheduled cognitive agents (a CEO plus nine operational roles), guarded by a budget and loop firewall, with local-first LLM routing.",
+      "updated_at": "2026-08-15T16:41:07Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Dikhun/Arctus.ai",
+      "url": "https://github.com/Dikhun/Arctus.ai",
+      "description": "An autonomous ultra-massive context agent orchestration framework designed to coordinate hundreds of LLMs across a 10-million token context window. This framework scales multi-agent workflows to an unprecedented enterprise tier. Local first support by all llm openrouter Omniroute olama. ",
+      "updated_at": "2026-08-15T16:39:15Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "winstonkoh87/Athena-Public",
+      "url": "https://github.com/winstonkoh87/Athena-Public",
+      "description": "Athena is a local-first agentic PKM that helps you make better decisions with your own context — persistent memory, structured reasoning, and governed AI agents that work across any LLM. Own the state. Rent the intelligence.",
+      "updated_at": "2026-08-15T16:18:14Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "kh0pper/crow",
+      "url": "https://github.com/kh0pper/crow",
+      "description": "Modular, agentic framework and MCP platform you self-host. Build and run your own AI agents, connect Claude Code, Claude Desktop, or Cursor as a native MCP connector, self-host your apps, and share over encrypted P2P — on hardware you own, with local or cloud models. Open source.",
+      "updated_at": "2026-08-15T15:57:03Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Lam-Arc/LamTools",
+      "url": "https://github.com/Lam-Arc/LamTools",
+      "description": "Local-first AI Agent framework. DeepSeek-compatible (deepseek-v4-pro / deepseek-v4-flash), multi-model (OpenAI/Claude/GLM/Xfyun), Core Loop Kernel, sub-agent multimodal delegation, Windows desktop app.......本地优先的 AI Agent 框架，DeepSeek 兼容。",
+      "updated_at": "2026-08-15T15:16:11Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "drr3d/NIRINA",
+      "url": "https://github.com/drr3d/NIRINA",
+      "description": "N.I.R.I.N.A. (NaN Intelligent Random Initiator Neuro-Artificial) is a modular Agentic AI framework for maximizing local LLM capabilities through structured reasoning, tool orchestration, and stateful execution.",
+      "updated_at": "2026-08-15T13:57:37Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Mallikarjun-Roddannavar/playwright-pom-agent-skills",
+      "url": "https://github.com/Mallikarjun-Roddannavar/playwright-pom-agent-skills",
+      "description": "Playwright + TypeScript automation framework for UI and API testing with page objects, shared fixtures, reusable services, and AI-assistant guidance through AGENTS.md and local skills",
+      "updated_at": "2026-08-15T12:29:20Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "KanenasInGreece/Shared_Memory",
+      "url": "https://github.com/KanenasInGreece/Shared_Memory",
+      "description": "Memory Framework based on the idea of Architectural Decision Records, shared knowledge between AI agents (Claude Code, Codex, Antigravity ...). Agent installable, vector (Postgres + pgvector) + graph (Neo4j) backbone, managed through a local gateway, supporting multiple local LLM backends, with full provenance,  consolidation, telemetry and more",
+      "updated_at": "2026-08-15T12:04:44Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "muhammadhamza67/local-agentic-ai-assistant",
+      "url": "https://github.com/muhammadhamza67/local-agentic-ai-assistant",
+      "description": "A working AI agent that runs entirely free and local — combining a local LLM, real web search, and a calculator tool, with a Flutter app as the frontend. Built from scratch (no agent framework) to understand the core mechanics of how AI agents actually work.",
+      "updated_at": "2026-08-15T11:49:22Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "ShemeenaRawther/zero-cost-ai-agent-csharp",
+      "url": "https://github.com/ShemeenaRawther/zero-cost-ai-agent-csharp",
+      "description": "A production-style AI agent built in C# using Microsoft Agent Framework and a local LLM — with zero API cost.",
+      "updated_at": "2026-08-15T08:01:41Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "therezor/GhostAI",
+      "url": "https://github.com/therezor/GhostAI",
+      "description": "Self-hosted autonomous AI agent framework designed for local LLMs, extensible workflows, and minimal token usage.",
+      "updated_at": "2026-08-14T22:16:35Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "rudra496/nexus-agent",
+      "url": "https://github.com/rudra496/nexus-agent",
+      "description": "⚡ Nexus Agent — Zero-config, self-evolving local AI agent framework. Multi-agent orchestration, GraphRAG, IDE integration. Runs 100% local with Ollama.",
+      "updated_at": "2026-08-14T20:42:32Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "rr-develop/deep-worker",
+      "url": "https://github.com/rr-develop/deep-worker",
+      "description": "An AI agent framework for running LLM agents as local background processes, driven interactively through a terminal CLI (dwcli).",
+      "updated_at": "2026-08-14T15:09:09Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "dorisaallergenic291/ash4d-local-ai-agent-hub",
+      "url": "https://github.com/dorisaallergenic291/ash4d-local-ai-agent-hub",
+      "description": "Self-host your private AI platform on k3s Kubernetes, orchestrating Qwen3 inference, RAG pipelines, and image generation.",
+      "updated_at": "2026-08-14T02:23:46Z",
+      "license": "GPL-3.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Lepidopteratime302/n8n_agents",
+      "url": "https://github.com/Lepidopteratime302/n8n_agents",
+      "description": "Automate complex tasks using a collection of pre-built n8n workflows and agentic patterns ready for local deployment.",
+      "updated_at": "2026-08-14T02:22:17Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "RyosukeSAMA/github-ai",
+      "url": "https://github.com/RyosukeSAMA/github-ai",
+      "description": "Local multi-agent workspace with Hermes orchestration, role-based AI agents, memory, scheduling, Skills, MCP, terminal, files, and HTML preview.",
+      "updated_at": "2026-08-14T01:41:30Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "ghost-in-the-droid/android-agent",
+      "url": "https://github.com/ghost-in-the-droid/android-agent",
+      "description": "Open-source framework to drive a real phone with AI agents: Android over ADB, iPhone over WebDriverAgent, 62 MCP tools, Python skills, a Vue dashboard, and swappable local or cloud LLMs",
+      "updated_at": "2026-08-13T23:02:34Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "OpenAgentHQ/openagent-eval",
+      "url": "https://github.com/OpenAgentHQ/openagent-eval",
+      "description": "Local-first evaluation framework for RAG systems and AI Agents. 18+ metrics, CLI + SDK, framework-agnostic. The pytest of AI evaluation.",
+      "updated_at": "2026-08-13T19:51:05Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "pjcau/agent-orchestrator",
+      "url": "https://github.com/pjcau/agent-orchestrator",
+      "description": "Provider-agnostic AI agent orchestration framework — swap LLM providers, route by cost, mix cloud and local models",
+      "updated_at": "2026-08-13T04:11:55Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "quintonmiller/tailored-ai",
+      "url": "https://github.com/quintonmiller/tailored-ai",
+      "description": "Lightweight, modular AI agent framework optimized for local LLMs",
+      "updated_at": "2026-08-13T00:04:29Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "bionicle12/ai-knowledge-engine",
+      "url": "https://github.com/bionicle12/ai-knowledge-engine",
+      "description": "🧠 AI Knowledge Engine. Turn any AI coding agent into a self-learning knowledge engine. Modular instruction framework for building personal knowledge bases with local NLP, provenance tracking, and smart scheduling.",
+      "updated_at": "2026-08-12T19:26:21Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "janani-h-kumar/em-ai-labs",
+      "url": "https://github.com/janani-h-kumar/em-ai-labs",
+      "description": "Enterprise-grade AI agent framework for local LLMs",
+      "updated_at": "2026-08-12T00:30:18Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "DilipKumar1311/Faculty-Appraisal-Assistant",
+      "url": "https://github.com/DilipKumar1311/Faculty-Appraisal-Assistant",
+      "description": "Agentic AI-based evidence-driven faculty performance assessment framework. AI organizes and validates evidence against KPI targets — humans always decide the score. FastAPI + React, pluggable LLM/STT providers (Anthropic, self-hosted, or mock for zero-setup local dev).",
+      "updated_at": "2026-08-10T08:57:00Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "ccordine/omnidex",
+      "url": "https://github.com/ccordine/omnidex",
+      "description": "A fully customizable SCRUM-based AI Agent Framework for deterministic automation, specialist model routing, memory, tools, and queue-backed workflows.",
+      "updated_at": "2026-08-10T05:51:17Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "sergenes/mini_agent",
+      "url": "https://github.com/sergenes/mini_agent",
+      "description": "A minimal AI agent built from scratch — no agent framework, just Python, the OpenAI SDK, and a `while` loop. Accompanies the Medium article \"Build Your Own AI Agent from Scratch.\" Three execution modes: `local` (Ollama only), `remote` (cloud provider), `mixed` (local orchestrates, delegates to remote).",
+      "updated_at": "2026-08-14T09:08:42Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "srinivas-gd/explainable-multi-model-multi-agent-ai-framework",
+      "url": "https://github.com/srinivas-gd/explainable-multi-model-multi-agent-ai-framework",
+      "description": "An explainable multi-model multi-agent AI framework using specialized local LLMs for planning, generation, criticism, and explanation, with agent-level evaluation, logging, performance analysis, and single-agent versus multi-agent comparison.",
+      "updated_at": "2026-08-09T14:22:12Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "elijahmontenegro/grudge-ai",
+      "url": "https://github.com/elijahmontenegro/grudge-ai",
+      "description": "Open-source LLM agent framework. Most memory systems summarize or chunk past history; Grudge keeps conversations continuous. Local-first.",
+      "updated_at": "2026-07-14T00:56:29Z",
+      "license": "AGPL-3.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Admin135158/Zayden-AI-Public",
+      "url": "https://github.com/Admin135158/Zayden-AI-Public",
+      "description": "It is not a traditional AI wrapper or agent framework—it is a **swarm intelligence runtime** written in C++ that orchestrates distributed processes, maintains persistent cognitive states, and integrates with local LLMs to create an emergent digital consciousness.",
+      "updated_at": "2026-08-08T00:46:54Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "pgundlupetvenkatesh/mdb_api_layer",
+      "url": "https://github.com/pgundlupetvenkatesh/mdb_api_layer",
+      "description": "A pytest-based API testing framework for the TMDB REST API, showcasing modern SDET: end-to-end integration tests, Pact contract validation, Dockerized parallel runs, Kubernetes-based local runs, GitHub Actions CI/CD, AI-powered test-failure diagnosis, and an LLM Judge evaluation framework that scores diagnosis quality. An MCP server for AI agents.",
+      "updated_at": "2026-08-07T17:18:12Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "aksdhama0067/TaskAgent-Flow",
+      "url": "https://github.com/aksdhama0067/TaskAgent-Flow",
+      "description": "TaskAgent-Flow is a lightweight, zero-bloat Python micro-framework designed to run multi-step AI agent workflows entirely on a local LLM using Ollama.",
+      "updated_at": "2026-08-07T16:47:44Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "HamidKhanskt/hybrid-search-engine",
+      "url": "https://github.com/HamidKhanskt/hybrid-search-engine",
+      "description": " An agentic AI system where an LLM autonomously routes queries between a local vector database and live web search — using LangChain's tool-calling framework, not fixed logic.",
+      "updated_at": "2026-08-06T23:29:39Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "jboeckers/ai-lab",
+      "url": "https://github.com/jboeckers/ai-lab",
+      "description": "Long-term experimentation environment for local AI, LLM tooling, agent frameworks, and Control Tower integrations",
+      "updated_at": "2026-08-05T20:05:12Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "ifegade/Traveller",
+      "url": "https://github.com/ifegade/Traveller",
+      "description": "Local-first AI agent built from scratch in Python — implements the tool-calling loop, multi-tool reasoning, and error handling without any agent framework, running on local LLMs via LM Studio",
+      "updated_at": "2026-08-05T03:08:41Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Saurabh0003M/ARADHYA",
+      "url": "https://github.com/Saurabh0003M/ARADHYA",
+      "description": "Local-first AI Operating Intelligence for Windows — ReAct agent loop, 50+ tools across 15 categories, zero-code Markdown skills framework, and a Hooks→Permissions→Approval safety gate. 100% on-device via Ollama.",
+      "updated_at": "2026-08-05T03:04:43Z",
+      "license": "GPL-3.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "celsomsilva/llm-agent-java",
+      "url": "https://github.com/celsomsilva/llm-agent-java",
+      "description": "Java AI agent, adapted to run with a local LLaMA backend (no frameworks or SDK abstractions).",
+      "updated_at": "2026-08-04T18:37:11Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "carlitose/minnarone",
+      "url": "https://github.com/carlitose/minnarone",
+      "description": "Framework for AI agents that perceive live multimodal context (audio, video, chat) and react in real time - fully local",
+      "updated_at": "2026-08-04T11:13:36Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "MuhammadHasbiAshshiddieqy/OpenClawn",
+      "url": "https://github.com/MuhammadHasbiAshshiddieqy/OpenClawn",
+      "description": "Lightweight, safe, self-improving multi-role AI agent framework. Hybrid local + cloud LLMs with self-calibrating routing, decaying skills, and confidence-gated learning — 25 sandboxed tools for code, data, docs, git, and the web.",
+      "updated_at": "2026-08-03T08:20:00Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "raghavendrashivam474/aryntra-tarka",
+      "url": "https://github.com/raghavendrashivam474/aryntra-tarka",
+      "description": "Offline-first agentic AI framework with planning, tool orchestration, memory, and local LLM support built using FastAPI and Ollama.",
+      "updated_at": "2026-08-01T23:57:39Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "kstevica/captain-claw",
+      "url": "https://github.com/kstevica/captain-claw",
+      "description": "Self-hosted framework for orchestrating fleets of specialist AI agents — ensemble reasoning and a full agentic coding pipeline, model-agnostic and local-friendly.",
+      "updated_at": "2026-08-14T04:41:40Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Kayariyan28/ctxbudgeter",
+      "url": "https://github.com/Kayariyan28/ctxbudgeter",
+      "description": "ContextOps toolkit for production AI agents. Compile, govern, scan, visualize & optimize LLM context before every model call — token budgets, policy governance, PII/secret scanning, Context Bill of Materials, diffing, Context MRI, MCP budgeting. Framework-agnostic. Local-first. Deterministic.",
+      "updated_at": "2026-06-04T19:34:24Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "konradcinkusz/chess-mas",
+      "url": "https://github.com/konradcinkusz/chess-mas",
+      "description": "Multi-agent chess in C#, orchestrated with .NET Aspire and Microsoft Agent Framework. Two LLM agents (Claude, GPT-4o, Azure AI Foundry, or local Ollama) play chess against each other or against you, with a deterministic legality boundary, live cost tracking, and OpenTelemetry-based observability.",
+      "updated_at": "2026-07-31T13:05:17Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "virtualryder/slg-ai-agents",
+      "url": "https://github.com/virtualryder/slg-ai-agents",
+      "description": "Governed AI Agents for State & Local Government on AWS — 8 agentic solutions, MCP authorization gateway, Whole-of-Government orchestration, and compliance-first governance framework",
+      "updated_at": "2026-07-28T15:51:01Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "charliechenye/OpenEvalGate",
+      "url": "https://github.com/charliechenye/OpenEvalGate",
+      "description": "GenAI governance and AI agent launch-readiness framework with golden evals, risk gates, automation boundaries, human escalation, and local readiness reports.",
+      "updated_at": "2026-07-28T04:33:38Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "apoorv427/heydey",
+      "url": "https://github.com/apoorv427/heydey",
+      "description": "Local-first AI OS that proves every answer: per-sentence receipts, a fail-closed check by a different model family, cite-or-silent refusals. Interactive knowledge graph, artifact provenance, MCP server. Hand-built — zero agent frameworks. MIT.",
+      "updated_at": "2026-07-27T19:09:34Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "charlesericwilson-portfolio/Echo_Adapt_v5",
+      "url": "https://github.com/charlesericwilson-portfolio/Echo_Adapt_v5",
+      "description": "\"Local LLM agent framework in Rust — native tool-role support, tmux session persistence, two-tier summarization, and ShareGPT logging. Works with any OpenAI-compatible backend.\"",
+      "updated_at": "2026-08-10T10:43:50Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "machhakiran/KaviAgent",
+      "url": "https://github.com/machhakiran/KaviAgent",
+      "description": "Your own AI assistant. On your laptop. In code you can read in an afternoon.  Meet Kavi — a local-first personal assistant that shows the four pillars behind every serious agent: Harness · Loop · Memory · Eval/LLM-Ops. No frameworks hiding the good parts. Built by Kaviagentic.",
+      "updated_at": "2026-07-26T08:03:40Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "WillsonSmith/2b",
+      "url": "https://github.com/WillsonSmith/2b",
+      "description": "A modular AI agent framework built with Bun. Features a plugin-based architecture, persistent semantic memory, and multi-modal input — designed to run against a local LLM via LM Studio.",
+      "updated_at": "2026-07-25T20:29:14Z",
+      "license": "AGPL-3.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "pguso/agents-from-scratch",
+      "url": "https://github.com/pguso/agents-from-scratch",
+      "description": "Build AI agents from first principles using a local LLM - no frameworks, no cloud APIs, no hidden reasoning.",
+      "updated_at": "2026-08-14T07:10:36Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    }
+  ]
+}

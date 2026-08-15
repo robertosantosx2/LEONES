@@ -1,0 +1,1 @@
+cpu_family,cpu_name,ram_gb,gpu_id,gpu_name,vram_gb,workload,rank,model_id,model_name,variant,quantization,runtime,estimated_memory_gb,context_tokens,tokens_per_second,quality_score,jgb_level,jgb_confidence,fit_score,confidence,reason

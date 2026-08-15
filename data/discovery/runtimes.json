@@ -1,0 +1,457 @@
+{
+  "generated_at": "2026-08-15T18:53:20.285673+00:00",
+  "kind": "runtimes",
+  "policy": "discover-only; verify OSI license before recommendation",
+  "items": [
+    {
+      "name": "cklxx/arle",
+      "url": "https://github.com/cklxx/arle",
+      "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
+      "updated_at": "2026-08-15T18:35:13Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "weicj/vLLM-2080Ti-Definitive",
+      "url": "https://github.com/weicj/vLLM-2080Ti-Definitive",
+      "description": "The definitive vLLM runtime for dual RTX 2080 Ti 22GB + NVLink, delivering Qwen 27B local inference with 100+ tok/s single-request decode with support of FP8 weight ",
+      "updated_at": "2026-08-15T18:45:06Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "lm-webui/lm-webui",
+      "url": "https://github.com/lm-webui/lm-webui",
+      "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
+      "updated_at": "2026-08-15T16:25:54Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "nathanael-thms/ovi",
+      "url": "https://github.com/nathanael-thms/ovi",
+      "description": "A  lightweight local model server that delivers an ollama‑style developer experience, built natively on Intel’s OpenVINO runtime for efficient CPU and GPU inference.",
+      "updated_at": "2026-08-15T15:23:38Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "mmogr/gglib",
+      "url": "https://github.com/mmogr/gglib",
+      "description": "The local model runtime that makes llama.cpp behave like an API provider.",
+      "updated_at": "2026-08-15T13:48:13Z",
+      "license": "AGPL-3.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "OmniBioAI/omnibioai-studio",
+      "url": "https://github.com/OmniBioAI/omnibioai-studio",
+      "description": "Electron + React + Vite desktop app for OmniBioAI — provides a visual workflow builder, plugin launcher, and unified control plane for local, HPC, and cloud bioinformatics execution. Connects to the Django backend via IPC and REST, integrates Docker runtime and local LLM inference via Ollama.",
+      "updated_at": "2026-08-15T08:01:09Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "abhinav00anand/zephyr",
+      "url": "https://github.com/abhinav00anand/zephyr",
+      "description": "Viento: Distributed AI inference runtime SDK (connect local LLMs to cloud mesh)",
+      "updated_at": "2026-08-15T06:13:03Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "glenzli/infer-runtime",
+      "url": "https://github.com/glenzli/infer-runtime",
+      "description": "A local-first AI inference control plane for heterogeneous intelligence resources.｜面向异构智能资源的本地优先 AI 推理控制平面。",
+      "updated_at": "2026-08-15T02:18:25Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Classevelabs/rai",
+      "url": "https://github.com/Classevelabs/rai",
+      "description": "CPU-only LLM inference engine in pure Rust — 4-bit quantized models, hand-written AVX2 kernels, speculative decoding, and a local HTTP/MCP server. No GPU, no Python runtime.",
+      "updated_at": "2026-08-14T23:09:00Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "rl337/mechaharness",
+      "url": "https://github.com/rl337/mechaharness",
+      "description": "Mechaharness is an agentic harness for raw LLM inference. It wraps local or remote model calls with context engineering, tool use, rules, skills, AGENTS.md instructions, and agentic execution loops, turning a model endpoint into a capable, extensible agent runtime.",
+      "updated_at": "2026-08-14T22:53:54Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "roabraham/ashley",
+      "url": "https://github.com/roabraham/ashley",
+      "description": "Ashley is an all-in-one, single-click local AI assistant. It bundles an llama.cpp LLM inference engine, a Symfony/PHP web chatbot interface, a CEF-based web client (PHP Desktop), and a service manager (written in Free Pascal) into one package - no Internet connection or cloud API key required at runtime.",
+      "updated_at": "2026-08-14T17:19:34Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "andrestubbe/FastAIModel",
+      "url": "https://github.com/andrestubbe/FastAIModel",
+      "description": "🤖 Zero-dependency, high-performance local inference runtime (GGUF/ONNX) engine for Java via native llama.cpp bindings.",
+      "updated_at": "2026-08-14T15:18:22Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "guelfoweb/orbit",
+      "url": "https://github.com/guelfoweb/orbit",
+      "description": "Local agentic AI runtime for Gemma4, Qwen3-Coder and Qwen3.6, optimized for CPU-only consumer hardware, tool use and efficient local inference.",
+      "updated_at": "2026-08-14T09:49:18Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Cosmin-B/astral-runtime",
+      "url": "https://github.com/Cosmin-B/astral-runtime",
+      "description": "Local-first LLM inference runtime with a stable C ABI, compact memory search, and Unity and Unreal integrations",
+      "updated_at": "2026-08-13T13:23:55Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "NimoTech/NimoOS-AI",
+      "url": "https://github.com/NimoTech/NimoOS-AI",
+      "description": "LLM inference gateway and local agent runtime for NimoOS",
+      "updated_at": "2026-08-13T07:18:44Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "nshkrdotcom/inference",
+      "url": "https://github.com/nshkrdotcom/inference",
+      "description": "Reusable Elixir semantic inference contracts, adapters, trace metadata, and conformance tests for local CLI agents, hosted model SDKs, and governed nshkr runtime integration.",
+      "updated_at": "2026-08-11T22:27:14Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Veloresearch/velocity-mta-proof",
+      "url": "https://github.com/Veloresearch/velocity-mta-proof",
+      "description": "Local AI execution stack for .mfy artifacts — MTA Exact / Adapt proof build, CUDA-first, no Python, no PyTorch.",
+      "updated_at": "2026-08-11T16:39:56Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "nshkrdotcom/self_hosted_inference_core",
+      "url": "https://github.com/nshkrdotcom/self_hosted_inference_core",
+      "description": "Core Elixir primitives for building reliable self-hosted inference clients, provider adapters, transport boundaries, and operational controls for private AI runtimes across local, edge, and dedicated infrastructure.",
+      "updated_at": "2026-08-11T14:06:31Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Mog9/Octane",
+      "url": "https://github.com/Mog9/Octane",
+      "description": "End-to-end speculative decoding runtime that makes local LLM inference faster with zero configuration. One command, automatic drafter selection, dynamic adaptation, and an OpenAI-compatible API.",
+      "updated_at": "2026-08-10T22:50:38Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "noumena-labs/Sipp",
+      "url": "https://github.com/noumena-labs/Sipp",
+      "description": "AI inference, packed simply. A blazing-fast, zero-dependency WebGPU runtime to run GGUF models directly in the browser. Features a symmetric API for seamless local execution and cloud provider routing. Built with Rust & C++.",
+      "updated_at": "2026-08-15T13:07:06Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "caicoders/getares",
+      "url": "https://github.com/caicoders/getares",
+      "description": "Ultra-lightweight distributed AI runtime for local networks",
+      "updated_at": "2026-08-09T11:07:55Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Nsjminecraft/decoupled-ai",
+      "url": "https://github.com/Nsjminecraft/decoupled-ai",
+      "description": "A high-performance, concurrent Rust engine implementing N-gram Speculative Decoding. Features thread-local index capabilities, target verification, SSE streaming, and a live Chart.js dashboard to maximize LLM inference throughput while minimizing runtime overhead.",
+      "updated_at": "2026-08-09T02:59:59Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "shakfu/infer-app",
+      "url": "https://github.com/shakfu/infer-app",
+      "description": "A native macOS chat app for running local LLMs (llama.cpp + MLX) with on-device speech, RAG-backed retrieval, an agent runtime with MCP tool support.",
+      "updated_at": "2026-08-08T12:07:14Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "XENO-CORPORATION/xeno-rt",
+      "url": "https://github.com/XENO-CORPORATION/xeno-rt",
+      "description": "High-performance local LLM inference runtime in pure Rust with GGUF CPU/CUDA backends and an OpenAI-compatible API.",
+      "updated_at": "2026-08-08T02:40:35Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Pangu-Immortal/MagicWX",
+      "url": "https://github.com/Pangu-Immortal/MagicWX",
+      "description": "Android 17 local LLM prototype with Jetpack Compose and ONNX Runtime for offline AI inference experiments.",
+      "updated_at": "2026-08-15T09:52:24Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "gerbear1990/llama-control-center",
+      "url": "https://github.com/gerbear1990/llama-control-center",
+      "description": "A lightweight local dashboard for discovering GGUF models, detecting local LLM runtimes, preparing llama.cpp launch commands, running fit tests, and managing tracked local inference servers.",
+      "updated_at": "2026-07-14T22:09:48Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "wesleysimplicio/simplicio-local",
+      "url": "https://github.com/wesleysimplicio/simplicio-local",
+      "description": "Ultra-fast 100% on-device Universal State Runtime for LLMs on Apple Silicon (M1–M5). DeepSeekV4/others on Mac M3 48gb RAM. Powered by MLX + Metal + ANE — extreme local inference, zero cloud, built for AI agents.",
+      "updated_at": "2026-08-04T19:46:25Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "homel-dev/llm-runtime",
+      "url": "https://github.com/homel-dev/llm-runtime",
+      "description": "Production-oriented Kubernetes platform for shared local LLM inference, featuring vLLM, OpenAI-compatible APIs, GPU-backed model-serving tiers, observability, network policies, deployment automation, and reusable runtime contracts for multiple AI systems.",
+      "updated_at": "2026-08-04T19:21:31Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "nazuna-research-labs/margpa-runtime-llm",
+      "url": "https://github.com/nazuna-research-labs/margpa-runtime-llm",
+      "description": "An experimental LLM platform for local and cloud inference, chat, RAG, agents and tools, guardrails, security, monitoring, evaluation, LLM-as-a-Judge, and research into original features.",
+      "updated_at": "2026-08-04T13:21:42Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
+      "url": "https://github.com/alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
+      "description": "Privacy-first zero-cloud offline LLM inference & local memory runtime (LumiChats style)",
+      "updated_at": "2026-08-15T16:06:45Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "mechramc/Orion",
+      "url": "https://github.com/mechramc/Orion",
+      "description": "Local AI runtime for training & running small LLMs directly on Apple Neural Engine (ANE). No CoreML. No Metal. Offline, on-device fine-tuning & inference on M-series silicon.",
+      "updated_at": "2026-08-03T15:37:23Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "mrtnrocks/awesome-ai-coding-on-a-budget",
+      "url": "https://github.com/mrtnrocks/awesome-ai-coding-on-a-budget",
+      "description": "Coding on a budget. Free. Cheap.Curated list of open-source tools, free-tier strategies, and local runtimes for cost-efficient AI- assisted coding. Covers LLM model selection, API gateway routing, token compression (up to 90% reduction), MCP context servers, agent quality guardrails, self-hosted inference, and pricing intelligence with grants.",
+      "updated_at": "2026-08-03T12:23:41Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "EitanWong/Aster",
+      "url": "https://github.com/EitanWong/Aster",
+      "description": "Production-oriented Apple Silicon local LLM inference runtime",
+      "updated_at": "2026-08-01T05:18:31Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "VitaliyVV/calm",
+      "url": "https://github.com/VitaliyVV/calm",
+      "description": "Zero-dependency local LLM runtime in pure C. GGUF → tokenization → inference → tool calling → HTTP API. Runs on ARM/x86. ~111 KB binary.",
+      "updated_at": "2026-07-31T23:32:08Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "CognitiveOS-Project/inference",
+      "url": "https://github.com/CognitiveOS-Project/inference",
+      "description": "CognitiveOS inference engine — local LLM runtime for Raw Model and Wide Model execution. Wraps llama.cpp for Alpine Linux with optimized CPU/NPU support",
+      "updated_at": "2026-07-30T13:02:31Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "GiacomoSaccaggi/mithril",
+      "url": "https://github.com/GiacomoSaccaggi/mithril",
+      "description": "Lightweight local LLM inference engine. Serves GGUF models via Ollama-compatible HTTP API, OpenAI-compatible API, and MCP stdio — single binary, no runtime dependencies.",
+      "updated_at": "2026-08-06T11:46:34Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "MinsungMJ/Local-Inference-System",
+      "url": "https://github.com/MinsungMJ/Local-Inference-System",
+      "description": "CPU-only local inference runtime focused on correctness, inspectability, reproducible artifacts, and transparent diagnostics.",
+      "updated_at": "2026-08-11T08:50:48Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "maziyarpanahi/localarena",
+      "url": "https://github.com/maziyarpanahi/localarena",
+      "description": "Benchmark local and hosted LLMs on your own tasks with real, live inference — Ollama, llama.cpp, LM Studio, OpenAI, OpenRouter. Deterministic + judge scoring, Bradley–Terry ratings with confidence intervals, and a standalone offline HTML report. Python CLI and JS/TS SDK, zero runtime dependencies.",
+      "updated_at": "2026-07-31T15:15:02Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "konstantinos193/tensorgrid",
+      "url": "https://github.com/konstantinos193/tensorgrid",
+      "description": "Distributed Unified AI Compute Runtime - Pool CPU, RAM, GPU, and VRAM across multiple computers on your local network",
+      "updated_at": "2026-07-26T09:37:19Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "avinashmyerolkar/open-infer",
+      "url": "https://github.com/avinashmyerolkar/open-infer",
+      "description": "A developer-friendly, extensible open-source runtime for local LLM inference",
+      "updated_at": "2026-07-25T16:50:19Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "gandazgul/mnemosyne",
+      "url": "https://github.com/gandazgul/mnemosyne",
+      "description": "Local-first memory and document retrieval CLI built in Go. Store short notes, messages, and documents in SQLite, then retrieve them with local embeddings, vector-first BM25 hybrid search, and optional local reranking. All ML inference runs on-device via ONNX Runtime. No cloud APIs required.",
+      "updated_at": "2026-08-15T08:02:44Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "ryanking3/nullcontext-runner",
+      "url": "https://github.com/ryanking3/nullcontext-runner",
+      "description": "Local-first secure inference runtime with audit visibility, artifact tracking, and explicit lifecycle controls for llama.cpp-based LLM sessions.",
+      "updated_at": "2026-07-29T09:24:00Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "sotaSF/local-research-paper-citation-QA-model",
+      "url": "https://github.com/sotaSF/local-research-paper-citation-QA-model",
+      "description": "A full-stack RAG app for citation-grounded chat and semantic search over uploaded research papers. Models are run locally via ONNX Runtime, no cloud LLM API involved at inference time.",
+      "updated_at": "2026-07-23T15:02:07Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "anthony-mqdt-labs/spark",
+      "url": "https://github.com/anthony-mqdt-labs/spark",
+      "description": "spark — orchestrates local LLM inference runtime CLIs",
+      "updated_at": "2026-07-23T04:57:23Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Parth04Dalvi/Local-First-Multimodal-Edge-Assistant",
+      "url": "https://github.com/Parth04Dalvi/Local-First-Multimodal-Edge-Assistant",
+      "description": "A high-performance, privacy-focused C++ and ONNX Runtime application for on-device speech recognition and LLM inference. Quantizes 3B+ models to INT4 precision with PortAudio and SQLite-VSS vector search, delivering sub-80ms responses without cloud dependencies",
+      "updated_at": "2026-07-21T21:52:07Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "bitfent/onpremo",
+      "url": "https://github.com/bitfent/onpremo",
+      "description": "Memory-budget-aware local LLM runtime — it fits before it loads. From 500 MB boards to workstations.",
+      "updated_at": "2026-07-19T18:17:26Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "keturk/llm_on_rtx_3090",
+      "url": "https://github.com/keturk/llm_on_rtx_3090",
+      "description": "Battle-tested guide for local LLM inference on Ubuntu 24.04 with NVIDIA GPUs. From fresh install to 32B models at 97% GPU utilization. Covers Docker GPU runtime fixes, NVMe storage setup, and Ollama deployment. Tested on Dell T5820 + RTX 3090 (24GB), adaptable to any NVIDIA setup.",
+      "updated_at": "2026-08-03T05:30:24Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "hilum-labs/local-llm",
+      "url": "https://github.com/hilum-labs/local-llm",
+      "description": "Open source Node.js runtime for local LLM inference, on-device AI, and private model execution.",
+      "updated_at": "2026-07-14T22:23:30Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "hilum-labs/local-llm-js-core",
+      "url": "https://github.com/hilum-labs/local-llm-js-core",
+      "description": "Shared JavaScript runtime core for local LLM inference across Node.js, browser, and React Native.",
+      "updated_at": "2026-07-14T21:33:58Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "akluth/LispLoom",
+      "url": "https://github.com/akluth/LispLoom",
+      "description": "A compact, fast Common Lisp runtime for local GGUF language models, with AVX2 inference, chat, RAG, and web grounding.",
+      "updated_at": "2026-07-13T20:48:09Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    }
+  ]
+}
