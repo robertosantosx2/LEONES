@@ -26,6 +26,10 @@ jobs:
         run: python3 scripts/atlas_hf_leaderboard_adapter.py
       - name: MSA — evidencia empírica local publicada
         run: python3 scripts/atlas_msa_adapter.py
+      - name: Artificial Analysis — observaciones estructuradas
+        run: python3 scripts/atlas_artificial_analysis_adapter.py
+      - name: LM Arena — observaciones estructuradas
+        run: python3 scripts/atlas_lm_arena_adapter.py
       - name: Recoger evidencia empírica pública
         run: python3 scripts/atlas_empirical_collectors.py
       - name: Generar hipótesis
