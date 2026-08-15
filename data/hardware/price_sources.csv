@@ -1,5 +1,5 @@
 source_id,name,priority,market,components,role,official_url,collection_status,notes
-ES-COOLMOD,Coolmod,1,ES,"CPU;RAM;GPU",primary,https://www.coolmod.com/,implemented,"Fuente prioritaria; usar primero fichas directas verificadas. El precio es un orden de magnitud, no se busca precisión al último euro."
+ES-COOLMOD,Coolmod,1,ES,"CPU;RAM;GPU",primary,https://www.coolmod.com/,implemented,"Fuente prioritaria; usar primero fichas directas verificadas."
 ES-PCOMP,PCComponentes,2,ES,"CPU;RAM;GPU",secondary,https://www.pccomponentes.com/,implemented,"Fuente de apoyo; consultar para completar huecos."
 ES-MEDIAMARKT,MediaMarkt España,3,ES,"CPU;RAM;GPU",secondary,https://www.mediamarkt.es/,implemented,"Fuente de apoyo; consultar para completar huecos."
 EU-LDLC,LDLC España,4,ES/EU,"CPU;RAM;GPU",secondary,https://www.ldlc.com/es-es/,implemented,"Fuente europea de apoyo; consultar para completar huecos."
