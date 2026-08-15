@@ -1,0 +1,6 @@
+runtime_id,name,backend,supported_formats,supported_quantizations,hardware_scope,maturity,notes
+llama-cpp,llama.cpp,CPU/GPU,GGUF,Q2-Q8;IQ;K-quants,CPU;NVIDIA;AMD;Apple,stable,Primary local inference reference
+ollama,Ollama,CPU/GPU,GGUF;native formats,backend-dependent,CPU;NVIDIA;AMD;Apple,stable,User-friendly local serving layer
+vllm,vLLM,CUDA/ROCm,model-native formats,backend-dependent,NVIDIA;AMD,stable,High-throughput serving reference
+transformers,Hugging Face Transformers,CPU/CUDA/ROCm,model-native formats,model-dependent,CPU;NVIDIA;AMD,stable,Reference implementation for broad model coverage
+koboldcpp,KoboldCpp,CPU/GPU,GGUF,Q2-Q8;K-quants,CPU;NVIDIA;AMD,stable,Local consumer inference option
