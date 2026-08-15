@@ -47,7 +47,14 @@
     "urls": {
       "cpu": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/procesador/c4300/",
       "cpu_amd_3": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/procesador/c4300/%2Bfv579-16016.html",
+      "cpu_amd_3_direct": "https://www.ldlc.com/es-es/ficha/PB00497776.html",
       "ram": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/memoria-pc/c4703/",
+      "ram_8gb": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/memoria-pc/c4703/%2Bfi62-l8h8.html",
+      "ram_ddr5_8gb_direct": "https://www.ldlc.com/es-es/ficha/PB00703225.html",
+      "ram_ddr4_8gb_direct": "https://www.ldlc.com/es-es/ficha/PB00446892.html",
+      "ram_ddr4_64gb_direct": "https://www.ldlc.com/es-es/ficha/PB00555042.html",
+      "ram_ddr5_128gb_direct": "https://www.ldlc.com/es-es/ficha/PB00568737.html",
+      "ram_ddr5_128gb_direct_2": "https://www.ldlc.com/es-es/ficha/PB00712978.html",
       "gpu": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/tarjeta-grafica/c4684/"
     }
   }
