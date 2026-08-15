@@ -12,6 +12,11 @@ concurrency:
   group: atlas-daily-pipeline
   cancel-in-progress: false
 
+env:
+  # Matriz de hardware: categorías Intel/AMD emparejadas y todas las capacidades de RAM.
+  # El emparejamiento es por categoría de producto, no una equivalencia exacta de CPU.
+  RAM_PROFILES: '2 4 8 16 32 64 128'
+
 jobs:
   atlas-pipeline:
     name: Prospección → Ingesta → Feed → Recomendaciones
@@ -28,17 +33,40 @@ jobs:
       - name: Ingerir solo descubrimientos de modelos
         run: python3 scripts/atlas_ingest_ndjson.py
 
-      - name: Generar recomendaciones por perfil de hardware
+      - name: Generar recomendaciones por matriz CPU × RAM
         run: |
           set -e
-          # Sistemas básicos: 2, 4 y 8 GB de RAM. Contexto conservador.
-          python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-2gb --ram 2 --context 2048 --out data/prospection/recommendations_cpu-2gb_chat.csv
-          python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-4gb --ram 4 --context 2048 --out data/prospection/recommendations_cpu-4gb_chat.csv
-          python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-8gb --ram 8 --context 4096 --out data/prospection/recommendations_cpu-8gb_chat.csv
-          python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-i5-16gb --ram 16 --context 4096 --out data/prospection/recommendations_cpu-i5-16gb_chat.csv
-          python3 scripts/atlas_recommend_from_feed.py --workload coding --hardware cpu-i7-32gb --ram 32 --context 8192 --out data/prospection/recommendations_cpu-i7-32gb_coding.csv
-          python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-i7-64gb --ram 64 --context 8192 --out data/prospection/recommendations_cpu-i7-64gb_chat.csv
-          python3 scripts/atlas_recommend_from_feed.py --workload reasoning --hardware cpu-128gb --ram 128 --context 16384 --out data/prospection/recommendations_cpu-128gb_reasoning.csv
+          # Categorías emparejadas: Intel Core i3/i5/i7/i9 ↔ AMD Ryzen 3/5/7/9.
+          # Se evalúan todas las capacidades de RAM: 2, 4, 8, 16, 32, 64 y 128 GB.
+          # Cada combinación se conserva como perfil independiente.
+          for cpu in i3 i5 i7 i9; do
+            for ram in 2 4 8 16 32 64 128; do
+              case "$cpu" in
+                i3) amd="ryzen3" ;;
+                i5) amd="ryzen5" ;;
+                i7) amd="ryzen7" ;;
+                i9) amd="ryzen9" ;;
+              esac
+              for family in "intel-$cpu" "amd-$amd"; do
+                case "$ram" in
+                  2|4) context=2048 ;;
+                  8|16) context=4096 ;;
+                  32|64) context=8192 ;;
+                  128) context=16384 ;;
+                esac
+                profile="cpu-${family}-${ram}gb"
+                out="data/prospection/recommendations_${profile}_chat.csv"
+                python3 scripts/atlas_recommend_from_feed.py \
+                  --workload chat \
+                  --hardware "$profile" \
+                  --ram "$ram" \
+                  --context "$context" \
+                  --out "$out"
+              done
+            done
+          done
+
+          # Perfil GPU existente: se mantiene separado porque VRAM no equivale a RAM.
           python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware rtx4060-8gb --ram 32 --vram 8 --context 8192 --out data/prospection/recommendations_rtx4060-8gb_chat.csv
 
       - name: Publicar resultados si han cambiado
@@ -50,6 +78,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Atlas sin cambios"
           else
-            git commit -m "data: añadir perfil de hardware de 8 GB al Atlas"
+            git commit -m "feat: ampliar matriz Intel AMD por categoria y memoria"
             git push
           fi
