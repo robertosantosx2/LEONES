@@ -32,6 +32,8 @@ jobs:
         run: python3 scripts/atlas_lm_arena_adapter.py
       - name: SWE-bench + LiveCodeBench — observaciones estructuradas
         run: python3 scripts/atlas_benchmark_adapters.py
+      - name: LLM Stats — observaciones estructuradas
+        run: python3 scripts/atlas_llm_stats_adapter.py
       - name: Recoger evidencia empírica pública
         run: python3 scripts/atlas_empirical_collectors.py
       - name: Generar hipótesis
