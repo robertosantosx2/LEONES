@@ -1,0 +1,2 @@
+/* Compatibility entry point for legacy pages. Canonical navigation lives in ../css/navigation.css. */
+@import url('../css/navigation.css');
