@@ -1,9 +1,7 @@
-name: Build Atlas Feed
+name: Build Atlas Feed (manual)
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '27 5 * * *'
 
 permissions:
   contents: write
@@ -14,10 +12,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
       - name: Build normalized Atlas feed
         run: python3 scripts/atlas_build_feed.py
-
       - name: Commit feed if changed
         run: |
           git config user.name "github-actions[bot]"
