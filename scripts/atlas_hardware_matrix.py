@@ -11,20 +11,52 @@ A GPU row is emitted only when the feed contains that exact combined hardware
 profile; we do not silently relabel a GPU-only measurement as a CPU+GPU one.
 """
 from __future__ import annotations
-import csv, subprocess, tempfile
+import csv, re, subprocess, tempfile
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 GPU_FILE=ROOT/'data/hardware/nvidia_ai_gpus.csv'
 OUT=ROOT/'data/prospection/atlas_hardware_matrix.csv'
 RECOMMENDER=ROOT/'scripts/atlas_recommend_from_feed.py'
+FEED=ROOT/'data/prospection/atlas_feed.csv'
 CPUS=[('intel-i3','Intel Core i3'),('intel-i5','Intel Core i5'),('intel-i7','Intel Core i7'),('intel-i9','Intel Core i9'),('amd-ryzen3','AMD Ryzen 3'),('amd-ryzen5','AMD Ryzen 5'),('amd-ryzen7','AMD Ryzen 7'),('amd-ryzen9','AMD Ryzen 9')]
 RAMS=[2,4,8,16,32,64,128]
 FIELDS=['cpu_family','cpu_name','ram_gb','gpu_id','gpu_name','vram_gb','workload','rank','model_id','model_name','variant','quantization','runtime','estimated_memory_gb','context_tokens','tokens_per_second','quality_score','jgb_level','jgb_confidence','fit_score','confidence','reason']
 
+def diagnose(rows, hardware, ram, vram, context):
+    """Explain why T2/T3 rows did not become recommendations.
+
+    This deliberately mirrors the recommender's gate instead of relaxing it.
+    The output is diagnostic evidence for the next correction, not a fallback
+    recommendation mechanism.
+    """
+    limit=ram+vram
+    counts={k:0 for k in ('not_profile','memory','context','runtime','quantization_or_weights','hardware','workload','fits')}
+    t23=0
+    for r in rows:
+        if (r.get('technical_profile_level') or '') not in ('T2','T3'):
+            counts['not_profile']+=1; continue
+        t23+=1
+        if r.get('workload') and r['workload']!='chat': counts['workload']+=1; continue
+        rh=(r.get('hardware_id') or '').strip().lower(); req=hardware.lower()
+        if rh and rh not in req and rh != req: counts['hardware']+=1; continue
+        try: mem=float(r.get('estimated_memory_gb') or r.get('weight_memory_gb') or '')
+        except ValueError: mem=None
+        try: ctx=float(r.get('context_tokens') or '')
+        except ValueError: ctx=None
+        if mem is None or mem>limit: counts['memory']+=1; continue
+        if ctx is None or ctx<context: counts['context']+=1; continue
+        if not (r.get('runtime') or '').strip(): counts['runtime']+=1; continue
+        if not ((r.get('quantization') or '').strip() or (r.get('weight_memory_gb') or '').strip()): counts['quantization_or_weights']+=1; continue
+        counts['fits']+=1
+    print(f'Diagnostic {hardware}: T2/T3={t23}; exclusions=' + ', '.join(f'{k}={v}' for k,v in counts.items() if v))
+    return counts
+
 def run():
     gpus=list(csv.DictReader(GPU_FILE.open(encoding='utf-8')))
     rows=[]
+    with FEED.open(encoding='utf-8-sig',newline='') as f:
+        feed_rows=list(csv.DictReader(f))
     with tempfile.TemporaryDirectory() as td:
       for cpu,cpu_name in CPUS:
        for ram in RAMS:
@@ -41,5 +73,13 @@ def run():
     with OUT.open('w',encoding='utf-8',newline='') as f:
       w=csv.DictWriter(f,fieldnames=FIELDS); w.writeheader(); w.writerows(rows)
     print(f'Matrix: {len(rows)} recommendation rows -> {OUT}')
+    if not rows:
+        # Diagnose a representative high-memory CPU-only profile and one
+        # representative NVIDIA profile. Do not alter the recommendation gate.
+        diagnose(feed_rows,'cpu-intel-i5-128gb',128,0,16384)
+        if gpus:
+            gid=gpus[0]['gpu_id']; v=float(gpus[0]['vram_gb'])
+            diagnose(feed_rows,f'cpu-intel-i5-128gb-{gid}',128,v,16384)
+        raise SystemExit('ERROR: la matriz hardware no puede publicarse vacía')
 
 if __name__=='__main__': run()
