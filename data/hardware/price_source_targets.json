@@ -46,6 +46,7 @@
     "strategy": "category",
     "urls": {
       "cpu": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/procesador/c4300/",
+      "cpu_amd_3": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/procesador/c4300/%2Bfv579-16016.html",
       "ram": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/memoria-pc/c4703/",
       "gpu": "https://www.ldlc.com/es-es/informatica/piezas-de-informatica/tarjeta-grafica/c4684/"
     }
