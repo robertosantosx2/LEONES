@@ -1,0 +1,25 @@
+field,group,type,required,description
+parameters_total,model,float,yes,Total model parameters in billions
+parameters_active,model,float,no,Active parameters in billions for MoE models
+quantization,model,string,no,Exact quantization such as Q4_K_M or Q8_0
+weight_memory_gb,cabe,float,no,Estimated memory occupied by weights
+kv_memory_gb,cabe,float,no,Estimated KV cache memory for stated context
+memory_overhead_gb,cabe,float,no,Runtime and activation overhead estimate
+memory_margin_gb,cabe,float,no,Available memory minus estimated total requirement
+cabe_status,cabe,enum,yes,CABE/NO_CABE/CABE_INCIERTO
+runtime,rula,string,no,Runtime/backend used or recommended
+runtime_version,rula,string,no,Version or commit when known
+format,rula,string,no,Model format such as GGUF
+rula_status,rula,enum,yes,RULA/NO_RULA/RULA_INCIERTO
+tokens_per_second,performance,float,no,Observed generation speed
+ttft_ms,performance,float,no,Time to first token
+tpot_ms,performance,float,no,Time per output token
+evidence_level,evidence,enum,yes,LEONES measured/External reproducible/External reported/Estimated
+performance_source,evidence,string,no,Source for performance evidence
+hardware_source,evidence,string,no,Source for hardware information
+price_source,economics,string,no,Source for observed price
+hardware_cost_eur,economics,float,no,Observed or explicitly mapped hardware cost
+jgb_level,jgb,float,yes,JGB openness level; independent from performance
+jgb_source,jgb,string,no,Source for JGB assessment
+uncertainty,meta,string,no,Known uncertainty or missing evidence
+last_verified,meta,date,no,Date of last verification
