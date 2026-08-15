@@ -22,14 +22,20 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Preparar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+
       - name: Ingerir solo descubrimientos de modelos
         run: python3 scripts/atlas_ingest_ndjson.py
+
       - name: Generar matriz completa CPU × RAM × GPU NVIDIA
         run: python3 scripts/atlas_hardware_matrix.py
+
       - name: Generar perfiles CPU × RAM sin GPU
         run: |
           set -e
@@ -43,10 +49,29 @@ jobs:
               done
             done
           done
-      - name: Publicar resultados si han cambiado
+
+      - name: Publicar resultados sin perder commits concurrentes
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/prospection/atlas_feed.csv data/prospection/atlas_review_queue.csv data/prospection/recommendations_*.csv data/prospection/atlas_hardware_matrix.csv
-          if git diff --cached --quiet; then echo "Atlas sin cambios"; else git commit -m "feat: ampliar matriz CPU RAM NVIDIA para IA"; git push; fi
+          if git diff --cached --quiet; then
+            echo "Atlas sin cambios"
+            exit 0
+          fi
+          git commit -m "feat: actualizar matriz y recomendaciones del Atlas"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main; then
+              if git push origin HEAD:main; then
+                echo "Atlas publicado correctamente"
+                exit 0
+              fi
+            fi
+            echo "Reintento de publicación $attempt/3"
+            git rebase --abort || true
+            sleep $((attempt * 5))
+          done
+          echo "No se pudo publicar tras 3 intentos"
+          exit 1
