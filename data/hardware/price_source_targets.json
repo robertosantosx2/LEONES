@@ -29,9 +29,12 @@
     }
   },
   "ES-COOLMOD": {
-    "strategy": "discover",
+    "strategy": "category",
     "urls": {
-      "home": "https://www.coolmod.com/"
+      "home": "https://www.coolmod.com/",
+      "ram_ddr4_8gb_direct": "https://www.coolmod.com/goodram-1x8gb-3600mhz-cl18/",
+      "ram_ddr5_64gb_direct": "https://www.coolmod.com/kingston-fury-beast-64gb-2x32gb-6000mhz-cl30-expo-xmp/",
+      "ram_ddr5_64gb_direct_2": "https://www.coolmod.com/crucial-ct2k32g48c40s5-64gb-2x32gb-4800mhz-cl40-sodimm/"
     }
   },
   "ES-MEDIAMARKT": {
