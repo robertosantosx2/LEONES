@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   update-prices:
-    name: Actualizar base de precios de CPU, RAM y GPU
+    name: Recoger y publicar precios de CPU, RAM y GPU
     runs-on: ubuntu-latest
     steps:
       - name: Descargar repositorio
@@ -19,13 +19,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - name: Revisar cobertura y coherencia de precios
+      - name: Recoger observaciones de mercado
+        run: python3 scripts/collect_hardware_prices.py
+      - name: Revisar cobertura y coherencia
         run: python3 scripts/update_hardware_prices.py
-      - name: Publicar cambios si los hay
+      - name: Publicar histórico y resumen si hay cambios
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/hardware/hardware_prices.csv data/hardware/nvidia_ai_gpus.csv
+          git add data/hardware/hardware_price_observations.csv data/hardware/hardware_prices.csv data/hardware/nvidia_ai_gpus.csv
           if git diff --cached --quiet; then
             echo "Sin cambios de precios"
           else
