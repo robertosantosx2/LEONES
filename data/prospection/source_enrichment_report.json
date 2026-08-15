@@ -1,10 +1,14 @@
 {
   "input": "data/prospection/enriched_discoveries.ndjson",
   "output": "data/prospection/enriched_discoveries_sources.ndjson",
-  "gitlab": 55,
+  "repositories_processed": 312,
+  "gitlab": 58,
   "forgejo": 66,
-  "unchanged": 181,
-  "errors": 6,
-  "licenses_found": 55,
-  "note": "License values come only from source metadata or identifiable license files; unknown remains unvalidated."
+  "unchanged": 188,
+  "errors": 0,
+  "licenses_found": 61,
+  "workers": 12,
+  "request_timeout_seconds": 10,
+  "max_items": 500,
+  "note": "Parallel bounded enrichment; license values come only from source metadata or identifiable license files."
 }

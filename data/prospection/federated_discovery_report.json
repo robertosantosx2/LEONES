@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T05:58:41.167694+00:00",
+  "generated_at": "2026-08-15T07:13:28.206787+00:00",
   "sources_total": 25,
   "registered_sources": 24,
   "discovered_instance_batch": 2,
@@ -13,7 +13,7 @@
     "forgejo": 0,
     "forgejo-network": 0,
     "fossil": 0,
-    "framagit": 16,
+    "framagit": 19,
     "gitbucket": 0,
     "gitea": 0,
     "github": 0,
@@ -32,7 +32,7 @@
     "sourcehut": 0,
     "srht": 0
   },
-  "unique_discoveries": 215,
+  "unique_discoveries": 218,
   "failures": [],
   "workers": 8,
   "per_worker_timeout_seconds": 90,
