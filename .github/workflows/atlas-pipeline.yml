@@ -13,71 +13,40 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # Matriz de hardware: categorías Intel/AMD emparejadas y todas las capacidades de RAM.
-  # El emparejamiento es por categoría de producto, no una equivalencia exacta de CPU.
   RAM_PROFILES: '2 4 8 16 32 64 128'
 
 jobs:
   atlas-pipeline:
-    name: Prospección → Ingesta → Feed → Recomendaciones
+    name: Prospección → Ingesta → Matriz CPU × RAM × NVIDIA → Recomendaciones
     runs-on: ubuntu-latest
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
-
       - name: Preparar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-
       - name: Ingerir solo descubrimientos de modelos
         run: python3 scripts/atlas_ingest_ndjson.py
-
-      - name: Generar recomendaciones por matriz CPU × RAM
+      - name: Generar matriz completa CPU × RAM × GPU NVIDIA
+        run: python3 scripts/atlas_hardware_matrix.py
+      - name: Generar perfiles CPU × RAM sin GPU
         run: |
           set -e
-          # Categorías emparejadas: Intel Core i3/i5/i7/i9 ↔ AMD Ryzen 3/5/7/9.
-          # Se evalúan todas las capacidades de RAM: 2, 4, 8, 16, 32, 64 y 128 GB.
-          # Cada combinación se conserva como perfil independiente.
           for cpu in i3 i5 i7 i9; do
             for ram in 2 4 8 16 32 64 128; do
-              case "$cpu" in
-                i3) amd="ryzen3" ;;
-                i5) amd="ryzen5" ;;
-                i7) amd="ryzen7" ;;
-                i9) amd="ryzen9" ;;
-              esac
+              case "$cpu" in i3) amd="ryzen3";; i5) amd="ryzen5";; i7) amd="ryzen7";; i9) amd="ryzen9";; esac
               for family in "intel-$cpu" "amd-$amd"; do
-                case "$ram" in
-                  2|4) context=2048 ;;
-                  8|16) context=4096 ;;
-                  32|64) context=8192 ;;
-                  128) context=16384 ;;
-                esac
+                case "$ram" in 2|4) context=2048;; 8|16) context=4096;; 32|64) context=8192;; 128) context=16384;; esac
                 profile="cpu-${family}-${ram}gb"
-                out="data/prospection/recommendations_${profile}_chat.csv"
-                python3 scripts/atlas_recommend_from_feed.py \
-                  --workload chat \
-                  --hardware "$profile" \
-                  --ram "$ram" \
-                  --context "$context" \
-                  --out "$out"
+                python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware "$profile" --ram "$ram" --context "$context" --out "data/prospection/recommendations_${profile}_chat.csv"
               done
             done
           done
-
-          # Perfil GPU existente: se mantiene separado porque VRAM no equivale a RAM.
-          python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware rtx4060-8gb --ram 32 --vram 8 --context 8192 --out data/prospection/recommendations_rtx4060-8gb_chat.csv
-
       - name: Publicar resultados si han cambiado
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/prospection/atlas_feed.csv data/prospection/atlas_review_queue.csv data/prospection/recommendations_*.csv
-          if git diff --cached --quiet; then
-            echo "Atlas sin cambios"
-          else
-            git commit -m "feat: ampliar matriz Intel AMD por categoria y memoria"
-            git push
-          fi
+          git add data/prospection/atlas_feed.csv data/prospection/atlas_review_queue.csv data/prospection/recommendations_*.csv data/prospection/atlas_hardware_matrix.csv
+          if git diff --cached --quiet; then echo "Atlas sin cambios"; else git commit -m "feat: ampliar matriz CPU RAM NVIDIA para IA"; git push; fi
