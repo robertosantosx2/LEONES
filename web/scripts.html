@@ -1,1 +1,148 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEONES · Scripts</title><link rel="stylesheet" href="assets/css/navigation.css"><style>body{margin:0;background:#f3f6f9;color:#17212b;font:16px/1.65 system-ui}main{max-width:1050px;margin:auto;padding:35px 22px 80px}.hero{background:linear-gradient(120deg,#102f49,#1769aa);color:#fff;padding:42px 22px}.hero div{max-width:1050px;margin:auto}.hero h1{color:#fff;font-size:3rem;margin:0}.card{background:#fff;border:1px solid #d8e0e7;border-radius:14px;padding:22px;margin-bottom:18px}h2,h3{color:#102f49}table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #d8e0e7;text-align:left}th{background:#edf3f7;color:#102f49}code{background:#edf3f7;padding:2px 5px;border-radius:4px}</style></head><body><header class="hero"><div><h1>LEONES · Scripts</h1><p>Herramientas pequeñas, cada una con una responsabilidad clara.</p></div></header><main><section class="card"><h2>La regla</h2><p>No se entra en LEONES preguntando qué script ejecutar. Se empieza por una necesidad y el sistema propone la herramienta.</p></section><section class="card"><table><tr><th>Necesidad</th><th>Script / herramienta</th><th>Salida</th></tr><tr><td>Perfil de máquina</td><td><code>hardware</code></td><td>CPU, RAM, GPU, SO</td></tr><tr><td>Identidad de modelo</td><td><code>model</code></td><td>Modelo y formato</td></tr><tr><td>Runtime</td><td><code>runtime</code></td><td>Backends disponibles</td></tr><tr><td>Inferencia</td><td><code>infer</code></td><td>Rendimiento</td></tr><tr><td>Tareas agentivas</td><td><code>lotb</code></td><td>B01–B05</td></tr><tr><td>Informe</td><td><code>report</code></td><td>result.json / report.md</td></tr><tr><td>Privacidad</td><td><code>privacy</code></td><td>Revisión antes de compartir</td></tr><tr><td>Publicación</td><td><code>publish</code></td><td>Paquete voluntario</td></tr><tr><td>Estadísticas</td><td><code>stats</code></td><td>Datos agregados</td></tr></table></section><section class="card"><h2>Cadena típica</h2><p><strong>hardware → model → runtime → infer → LOTB → report → privacy → publish → stats</strong></p><p>Cada paso debe poder ejecutarse y auditarse por separado.</p></section></main><script src="assets/js/navigation.js"></script></body></html>
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>LEONES · Scripts</title>
+        <link rel="stylesheet" href="assets/css/navigation.css" />
+        <style>
+            body {
+                margin: 0;
+                background: #f3f6f9;
+                color: #17212b;
+                font: 16px/1.65 system-ui;
+            }
+            main {
+                max-width: 1050px;
+                margin: auto;
+                padding: 35px 22px 80px;
+            }
+            .hero {
+                background: linear-gradient(120deg, #102f49, #1769aa);
+                color: #fff;
+                padding: 42px 22px;
+            }
+            .hero div {
+                max-width: 1050px;
+                margin: auto;
+            }
+            .hero h1 {
+                color: #fff;
+                font-size: 3rem;
+                margin: 0;
+            }
+            .card {
+                background: #fff;
+                border: 1px solid #d8e0e7;
+                border-radius: 14px;
+                padding: 22px;
+                margin-bottom: 18px;
+            }
+            h2,
+            h3 {
+                color: #102f49;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th,
+            td {
+                padding: 10px;
+                border-bottom: 1px solid #d8e0e7;
+                text-align: left;
+            }
+            th {
+                background: #edf3f7;
+                color: #102f49;
+            }
+            code {
+                background: #edf3f7;
+                padding: 2px 5px;
+                border-radius: 4px;
+            }
+        </style>
+    </head>
+    <body>
+        <header class="hero">
+            <div>
+                <h1>LEONES · Scripts</h1>
+                <p>Herramientas pequeñas, cada una con una responsabilidad clara.</p>
+            </div>
+        </header>
+        <main>
+            <section class="card">
+                <h2>La regla</h2>
+                <p>
+                    No se entra en LEONES preguntando qué script ejecutar. Se empieza por una
+                    necesidad y el sistema propone la herramienta.
+                </p>
+            </section>
+            <section class="card">
+                <table>
+                    <tr>
+                        <th>Necesidad</th>
+                        <th>Script / herramienta</th>
+                        <th>Salida</th>
+                    </tr>
+                    <tr>
+                        <td>Perfil de máquina</td>
+                        <td><code>hardware</code></td>
+                        <td>CPU, RAM, GPU, SO</td>
+                    </tr>
+                    <tr>
+                        <td>Identidad de modelo</td>
+                        <td><code>model</code></td>
+                        <td>Modelo y formato</td>
+                    </tr>
+                    <tr>
+                        <td>Runtime</td>
+                        <td><code>runtime</code></td>
+                        <td>Backends disponibles</td>
+                    </tr>
+                    <tr>
+                        <td>Inferencia</td>
+                        <td><code>infer</code></td>
+                        <td>Rendimiento</td>
+                    </tr>
+                    <tr>
+                        <td>Tareas agentivas</td>
+                        <td><code>lotb</code></td>
+                        <td>B01–B05</td>
+                    </tr>
+                    <tr>
+                        <td>Informe</td>
+                        <td><code>report</code></td>
+                        <td>result.json / report.md</td>
+                    </tr>
+                    <tr>
+                        <td>Privacidad</td>
+                        <td><code>privacy</code></td>
+                        <td>Revisión antes de compartir</td>
+                    </tr>
+                    <tr>
+                        <td>Publicación</td>
+                        <td><code>publish</code></td>
+                        <td>Paquete voluntario</td>
+                    </tr>
+                    <tr>
+                        <td>Estadísticas</td>
+                        <td><code>stats</code></td>
+                        <td>Datos agregados</td>
+                    </tr>
+                </table>
+            </section>
+            <section class="card">
+                <h2>Cadena típica</h2>
+                <p>
+                    <strong
+                        >hardware → model → runtime → infer → LOTB → report → privacy → publish →
+                        stats</strong
+                    >
+                </p>
+                <p>Cada paso debe poder ejecutarse y auditarse por separado.</p>
+            </section>
+        </main>
+        <script src="assets/js/navigation.js"></script>
+    </body>
+</html>

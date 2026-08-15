@@ -1,146 +1,177 @@
 <!doctype html>
 <html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Los nueve pilares canónicos del ecosistema LEONES." />
+        <title>LEONES · 9 pilares</title>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Los nueve pilares canónicos del ecosistema LEONES.">
-    <title>LEONES · 9 pilares</title>
+        <!-- Sistema visual común. -->
+        <link rel="stylesheet" href="assets/css/navigation.css" />
+        <link rel="stylesheet" href="assets/graphics/brand.css" />
 
-    <!-- Sistema visual común. -->
-    <link rel="stylesheet" href="assets/css/navigation.css">
-    <link rel="stylesheet" href="assets/graphics/brand.css">
-
-    <style>
-        body {
-            margin: 0;
-            color: #17212b;
-            background: #f3f6f9;
-            font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-
-        .page-hero {
-            padding: 2.75rem 1.5rem;
-            color: #ffffff;
-            background: #1769aa;
-        }
-
-        .page-hero__inner,
-        main {
-            width: min(1050px, calc(100% - 2rem));
-            margin-inline: auto;
-        }
-
-        .page-hero h1 {
-            margin: 0;
-            color: #ffffff;
-            font-size: clamp(2.3rem, 6vw, 3.5rem);
-        }
-
-        .page-hero p {
-            max-width: 850px;
-            margin-bottom: 0;
-            color: #e4eef4;
-        }
-
-        main {
-            padding-block: 2rem 5rem;
-        }
-
-        .card {
-            margin-bottom: 1.25rem;
-            padding: 1.5rem;
-            border: 1px solid #d8e0e7;
-            border-radius: 0.9rem;
-            background: #ffffff;
-        }
-
-        .card h2,
-        .card h3 {
-            color: #102f49;
-        }
-
-        .card h2 {
-            margin-top: 0;
-        }
-
-        .pillar {
-            border-left: 5px solid #1769aa;
-        }
-
-        .pill,
-        .state {
-            display: inline-block;
-            padding: 0.25rem 0.6rem;
-            border-radius: 999px;
-            font-size: 0.76rem;
-            font-weight: 850;
-        }
-
-        .pill {
-            color: #1769aa;
-            background: #eaf4fb;
-        }
-
-        .state {
-            float: right;
-            color: #315d7d;
-            background: #e8f4ec;
-        }
-
-        .evo {
-            padding: 0.8rem 1rem;
-            border-left: 4px solid #1769aa;
-            border-radius: 0 0.5rem 0.5rem 0;
-            background: #eaf4fb;
-        }
-
-        pre {
-            overflow-x: auto;
-            padding: 1.1rem;
-            border-radius: 0.6rem;
-            color: #eaf4fb;
-            background: #172b3d;
-        }
-
-        @media (max-width: 700px) {
-            .state {
-                float: none;
-                margin-bottom: 0.6rem;
+        <style>
+            body {
+                margin: 0;
+                color: #17212b;
+                background: #f3f6f9;
+                font:
+                    16px/1.65 system-ui,
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
             }
-        }
-    </style>
-<link rel="stylesheet" href="assets/graphics/brand.css">
-</head>
 
-<body>
-    <header class="page-hero">
-        <div class="page-hero__inner">
-            <h1>LEONES · 9 pilares</h1>
-            <p>
-                El mapa canónico del ecosistema: cada pilar tiene una responsabilidad diferenciada,
-                una razón de existir, una evolución prevista y un estado.
-            </p>
+            .page-hero {
+                padding: 2.75rem 1.5rem;
+                color: #ffffff;
+                background: #1769aa;
+            }
+
+            .page-hero__inner,
+            main {
+                width: min(1050px, calc(100% - 2rem));
+                margin-inline: auto;
+            }
+
+            .page-hero h1 {
+                margin: 0;
+                color: #ffffff;
+                font-size: clamp(2.3rem, 6vw, 3.5rem);
+            }
+
+            .page-hero p {
+                max-width: 850px;
+                margin-bottom: 0;
+                color: #e4eef4;
+            }
+
+            main {
+                padding-block: 2rem 5rem;
+            }
+
+            .card {
+                margin-bottom: 1.25rem;
+                padding: 1.5rem;
+                border: 1px solid #d8e0e7;
+                border-radius: 0.9rem;
+                background: #ffffff;
+            }
+
+            .card h2,
+            .card h3 {
+                color: #102f49;
+            }
+
+            .card h2 {
+                margin-top: 0;
+            }
+
+            .pillar {
+                border-left: 5px solid #1769aa;
+            }
+
+            .pill,
+            .state {
+                display: inline-block;
+                padding: 0.25rem 0.6rem;
+                border-radius: 999px;
+                font-size: 0.76rem;
+                font-weight: 850;
+            }
+
+            .pill {
+                color: #1769aa;
+                background: #eaf4fb;
+            }
+
+            .state {
+                float: right;
+                color: #315d7d;
+                background: #e8f4ec;
+            }
+
+            .evo {
+                padding: 0.8rem 1rem;
+                border-left: 4px solid #1769aa;
+                border-radius: 0 0.5rem 0.5rem 0;
+                background: #eaf4fb;
+            }
+
+            pre {
+                overflow-x: auto;
+                padding: 1.1rem;
+                border-radius: 0.6rem;
+                color: #eaf4fb;
+                background: #172b3d;
+            }
+
+            @media (max-width: 700px) {
+                .state {
+                    float: none;
+                    margin-bottom: 0.6rem;
+                }
+            }
+        </style>
+        <link rel="stylesheet" href="assets/graphics/brand.css" />
+    </head>
+
+    <body>
+        <header class="page-hero">
+            <div class="page-hero__inner">
+                <h1>LEONES · 9 pilares</h1>
+                <p>
+                    El mapa canónico del ecosistema: cada pilar tiene una responsabilidad
+                    diferenciada, una razón de existir, una evolución prevista y un estado.
+                </p>
+            </div>
+        </header>
+
+        <!-- LEONES-VISUAL-IDENTITY -->
+        <div class="wrap">
+            <div class="leones-section-brand">
+                <img src="assets/graphics/logos/leones-prospection.svg" alt="LEONES · Pilares" />
+                <div>
+                    <strong>LEONES · Pilares</strong><br /><span class="small"
+                        >Identidad funcional del ecosistema</span
+                    >
+                </div>
+            </div>
+            <div class="leones-logo-rail">
+                <a class="leones-logo-link" href="pilares.html"
+                    ><img
+                        src="assets/graphics/logos/leones-prospection.svg"
+                        alt="Prospección"
+                    />Prospección</a
+                >
+                <a class="leones-logo-link" href="pilares.html#atlas"
+                    ><img src="assets/graphics/logos/leones-atlas.svg" alt="Atlas" />Atlas</a
+                >
+                <a class="leones-logo-link" href="pilares.html#router"
+                    ><img src="assets/graphics/logos/leones-router.svg" alt="Router" />Router</a
+                >
+                <a class="leones-logo-link" href="pilares.html#runtime"
+                    ><img
+                        src="assets/graphics/logos/leones-hardware.svg"
+                        alt="Hardware"
+                    />Hardware</a
+                >
+                <a class="leones-logo-link" href="arquitectura.html#lotb"
+                    ><img src="assets/graphics/logos/leones-agents.svg" alt="Agents / LOTB" />Agents
+                    / LOTB</a
+                >
+                <a class="leones-logo-link" href="app.html#manada"
+                    ><img src="assets/graphics/logos/leones-manada.svg" alt="Manada" />Manada</a
+                >
+            </div>
         </div>
-    </header>
-
-    <!-- LEONES-VISUAL-IDENTITY -->
-<div class="wrap">
-  <div class="leones-section-brand"><img src="assets/graphics/logos/leones-prospection.svg" alt="LEONES · Pilares"><div><strong>LEONES · Pilares</strong><br><span class="small">Identidad funcional del ecosistema</span></div></div>
-  <div class="leones-logo-rail">
-  <a class="leones-logo-link" href="pilares.html"><img src="assets/graphics/logos/leones-prospection.svg" alt="Prospección">Prospección</a>
-  <a class="leones-logo-link" href="pilares.html#atlas"><img src="assets/graphics/logos/leones-atlas.svg" alt="Atlas">Atlas</a>
-  <a class="leones-logo-link" href="pilares.html#router"><img src="assets/graphics/logos/leones-router.svg" alt="Router">Router</a>
-  <a class="leones-logo-link" href="pilares.html#runtime"><img src="assets/graphics/logos/leones-hardware.svg" alt="Hardware">Hardware</a>
-  <a class="leones-logo-link" href="arquitectura.html#lotb"><img src="assets/graphics/logos/leones-agents.svg" alt="Agents / LOTB">Agents / LOTB</a>
-  <a class="leones-logo-link" href="app.html#manada"><img src="assets/graphics/logos/leones-manada.svg" alt="Manada">Manada</a>
-</div>
-</div>
-<main id="main">
-        <section id="mapa" class="card">
-            <span class="pill">ARQUITECTURA CANÓNICA</span>
-            <h2>Mapa de los nueve pilares</h2>
-            <pre>PROSPECTOR → ATLAS → TASK INTELLIGENCE → ROUTER
+        <main id="main">
+            <section id="mapa" class="card">
+                <span class="pill">ARQUITECTURA CANÓNICA</span>
+                <h2>Mapa de los nueve pilares</h2>
+                <pre>
+PROSPECTOR → ATLAS → TASK INTELLIGENCE → ROUTER
                                            ↓
                          ┌─────────────────┼─────────────────┐
                          ↓                 ↓                 ↓
@@ -150,117 +181,130 @@
                                         RUNTIME
                                            ↓
                                   BENCHMARK &amp; EVALUATION</pre>
-            <p>
-                Prospector descubre. Atlas conserva conocimiento. Task Intelligence interpreta la necesidad.
-                Router decide. Quant y Fine-Tuning adaptan. Agents actúa. Runtime ejecuta.
-                Benchmark &amp; Evaluation mide y devuelve evidencia al sistema.
-            </p>
-        </section>
+                <p>
+                    Prospector descubre. Atlas conserva conocimiento. Task Intelligence interpreta
+                    la necesidad. Router decide. Quant y Fine-Tuning adaptan. Agents actúa. Runtime
+                    ejecuta. Benchmark &amp; Evaluation mide y devuelve evidencia al sistema.
+                </p>
+            </section>
 
-        <section id="prospector" class="card pillar">
-            <span class="state">ACTIVO · diario</span>
-            <span class="pill">PILAR 1</span>
-            <h2>Prospector</h2>
-            <p>
-                <strong>Descubre qué está cambiando.</strong>
-                Rastrea modelos, runtimes, harnesses, skills, cuantizaciones, eficiencia, hardware y benchmarks.
-            </p>
-            <div class="evo">Evolución: más fuentes → clasificación → detección de cambios → priorización para revisión.</div>
-        </section>
+            <section id="prospector" class="card pillar">
+                <span class="state">ACTIVO · diario</span>
+                <span class="pill">PILAR 1</span>
+                <h2>Prospector</h2>
+                <p>
+                    <strong>Descubre qué está cambiando.</strong>
+                    Rastrea modelos, runtimes, harnesses, skills, cuantizaciones, eficiencia,
+                    hardware y benchmarks.
+                </p>
+                <div class="evo">
+                    Evolución: más fuentes → clasificación → detección de cambios → priorización
+                    para revisión.
+                </div>
+            </section>
 
-        <section id="atlas" class="card pillar">
-            <span class="state">ACTIVO · en evolución</span>
-            <span class="pill">PILAR 2</span>
-            <h2>Atlas</h2>
-            <p>
-                <strong>Conserva el conocimiento estructurado.</strong>
-                Modelos, familias, organizaciones, licencias, formatos, hardware, runtimes, benchmarks y evidencia con procedencia.
-            </p>
-            <div class="evo">external-unvalidated → revisión → evidencia Atlas.</div>
-        </section>
+            <section id="atlas" class="card pillar">
+                <span class="state">ACTIVO · en evolución</span>
+                <span class="pill">PILAR 2</span>
+                <h2>Atlas</h2>
+                <p>
+                    <strong>Conserva el conocimiento estructurado.</strong>
+                    Modelos, familias, organizaciones, licencias, formatos, hardware, runtimes,
+                    benchmarks y evidencia con procedencia.
+                </p>
+                <div class="evo">external-unvalidated → revisión → evidencia Atlas.</div>
+            </section>
 
-        <section id="task" class="card pillar">
-            <span class="state">INICIAL</span>
-            <span class="pill">PILAR 3</span>
-            <h2>Task Intelligence</h2>
-            <p>
-                <strong>Entiende qué se quiere conseguir.</strong>
-                Convierte una petición humana en requisitos operativos: contexto, herramientas, memoria,
-                RAG, shell, filesystem, latencia o verificación.
-            </p>
-        </section>
+            <section id="task" class="card pillar">
+                <span class="state">INICIAL</span>
+                <span class="pill">PILAR 3</span>
+                <h2>Task Intelligence</h2>
+                <p>
+                    <strong>Entiende qué se quiere conseguir.</strong>
+                    Convierte una petición humana en requisitos operativos: contexto, herramientas,
+                    memoria, RAG, shell, filesystem, latencia o verificación.
+                </p>
+            </section>
 
-        <section id="router" class="card pillar">
-            <span class="state">INICIAL · transparente</span>
-            <span class="pill">PILAR 4</span>
-            <h2>Router</h2>
-            <p>
-                <strong>Decide qué pila utilizar.</strong>
-                Combina tarea, hardware, modelo, cuantización, backend y evidencia.
-            </p>
-            <div class="evo">Evolución: reglas → restricciones reales → evidencia de Atlas → optimización multiobjetivo.</div>
-        </section>
+            <section id="router" class="card pillar">
+                <span class="state">INICIAL · transparente</span>
+                <span class="pill">PILAR 4</span>
+                <h2>Router</h2>
+                <p>
+                    <strong>Decide qué pila utilizar.</strong>
+                    Combina tarea, hardware, modelo, cuantización, backend y evidencia.
+                </p>
+                <div class="evo">
+                    Evolución: reglas → restricciones reales → evidencia de Atlas → optimización
+                    multiobjetivo.
+                </div>
+            </section>
 
-        <section id="quant" class="card pillar">
-            <span class="state">INICIAL</span>
-            <span class="pill">PILAR 5</span>
-            <h2>Quant</h2>
-            <p>
-                <strong>Adapta la representación del modelo.</strong>
-                Evalúa calidad ↔ memoria ↔ velocidad y conserva trazabilidad.
-            </p>
-        </section>
+            <section id="quant" class="card pillar">
+                <span class="state">INICIAL</span>
+                <span class="pill">PILAR 5</span>
+                <h2>Quant</h2>
+                <p>
+                    <strong>Adapta la representación del modelo.</strong>
+                    Evalúa calidad ↔ memoria ↔ velocidad y conserva trazabilidad.
+                </p>
+            </section>
 
-        <section id="finetune" class="card pillar">
-            <span class="state">INICIAL</span>
-            <span class="pill">PILAR 6</span>
-            <h2>Fine-Tuning</h2>
-            <p>
-                <strong>Adapta modelos a necesidades concretas.</strong>
-                Incluye PEFT, LoRA y QLoRA cuando proceda.
-            </p>
-        </section>
+            <section id="finetune" class="card pillar">
+                <span class="state">INICIAL</span>
+                <span class="pill">PILAR 6</span>
+                <h2>Fine-Tuning</h2>
+                <p>
+                    <strong>Adapta modelos a necesidades concretas.</strong>
+                    Incluye PEFT, LoRA y QLoRA cuando proceda.
+                </p>
+            </section>
 
-        <section id="agents" class="card pillar">
-            <span class="state">INICIAL</span>
-            <span class="pill">PILAR 7</span>
-            <h2>Agents</h2>
-            <p>
-                <strong>Convierte el modelo en capacidad de acción.</strong>
-                Planificación, herramientas, memoria, RAG, workflows, tool-calling y recuperación ante errores.
-            </p>
-        </section>
+            <section id="agents" class="card pillar">
+                <span class="state">INICIAL</span>
+                <span class="pill">PILAR 7</span>
+                <h2>Agents</h2>
+                <p>
+                    <strong>Convierte el modelo en capacidad de acción.</strong>
+                    Planificación, herramientas, memoria, RAG, workflows, tool-calling y
+                    recuperación ante errores.
+                </p>
+            </section>
 
-        <section id="runtime" class="card pillar">
-            <span class="state">INICIAL · backend independiente</span>
-            <span class="pill">PILAR 8</span>
-            <h2>Runtime</h2>
-            <p>
-                <strong>Ejecuta localmente.</strong>
-                Abstrae los motores de inferencia para que LEONES no dependa de una aplicación concreta.
-            </p>
-        </section>
+            <section id="runtime" class="card pillar">
+                <span class="state">INICIAL · backend independiente</span>
+                <span class="pill">PILAR 8</span>
+                <h2>Runtime</h2>
+                <p>
+                    <strong>Ejecuta localmente.</strong>
+                    Abstrae los motores de inferencia para que LEONES no dependa de una aplicación
+                    concreta.
+                </p>
+            </section>
 
-        <section id="benchmark" class="card pillar">
-            <span class="state">ACTIVO · Evaluación en evolución</span>
-            <span class="pill">PILAR 9</span>
-            <h2>Benchmark &amp; Evaluation</h2>
-            <p>
-                <strong>Mide y produce evidencia.</strong>
-                Incluye inferencia, memoria, latencia, estabilidad y Evaluación para tareas agentivas.
-            </p>
-            <div class="evo">El resultado vuelve a Atlas y, con suficiente evidencia, mejora Router.</div>
-        </section>
+            <section id="benchmark" class="card pillar">
+                <span class="state">ACTIVO · Evaluación en evolución</span>
+                <span class="pill">PILAR 9</span>
+                <h2>Benchmark &amp; Evaluation</h2>
+                <p>
+                    <strong>Mide y produce evidencia.</strong>
+                    Incluye inferencia, memoria, latencia, estabilidad y Evaluación para tareas
+                    agentivas.
+                </p>
+                <div class="evo">
+                    El resultado vuelve a Atlas y, con suficiente evidencia, mejora Router.
+                </div>
+            </section>
 
-        <section class="card">
-            <h2>Cómo se relacionan</h2>
-            <pre>DESCUBRIR → CONOCER → ENTENDER → DECIDIR → ADAPTAR → ACTUAR → EJECUTAR → MEDIR
+            <section class="card">
+                <h2>Cómo se relacionan</h2>
+                <pre>
+DESCUBRIR → CONOCER → ENTENDER → DECIDIR → ADAPTAR → ACTUAR → EJECUTAR → MEDIR
     ↑                                                                  ↓
     └──────────────────────────── APRENDER ← EVIDENCIA ─────────────────┘</pre>
-        </section>
-    </main>
+            </section>
+        </main>
 
-    <script src="assets/js/navigation.js" defer></script>
-</body>
-
+        <script src="assets/js/navigation.js" defer></script>
+    </body>
 </html>

@@ -29,7 +29,7 @@
         ["Manada", "manada.html", "top"],
         ["Prospección", "prospeccion.html", "top"],
         ["Horizonte", "horizon.html", "top"],
-        ["Contacto", "contacto.html", "top"]
+        ["Contacto", "contacto.html", "top"],
     ];
 
     const currentPath = window.location.pathname.split("/").pop() || "index.html";

@@ -1,135 +1,143 @@
 <!doctype html>
 <html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+            name="description"
+            content="Pila tecnológica de LEONES para ejecutar IA local de extremo a extremo."
+        />
+        <meta name="theme-color" content="#f3f6f9" />
+        <title>LEONES · Pila</title>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Pila tecnológica de LEONES para ejecutar IA local de extremo a extremo.">
-    <meta name="theme-color" content="#f3f6f9">
-    <title>LEONES · Pila</title>
+        <!-- Sistema compartido: navegación y componentes visuales. -->
+        <link rel="stylesheet" href="assets/css/navigation.css" />
+        <link rel="stylesheet" href="assets/graphics/brand.css" />
 
-    <!-- Sistema compartido: navegación y componentes visuales. -->
-    <link rel="stylesheet" href="assets/css/navigation.css">
-    <link rel="stylesheet" href="assets/graphics/brand.css">
+        <style>
+            /* Estilos propios de la página de la pila. */
+            :root {
+                --page-max-width: 1050px;
+                --page-border: #d8e0e7;
+                --page-ink: #17212b;
+                --page-blue: #1769aa;
+                --page-blue-dark: #102f49;
+            }
 
-    <style>
-        /* Estilos propios de la página de la pila. */
-        :root {
-            --page-max-width: 1050px;
-            --page-border: #d8e0e7;
-            --page-ink: #17212b;
-            --page-blue: #1769aa;
-            --page-blue-dark: #102f49;
-        }
+            body {
+                margin: 0;
+                color: var(--page-ink);
+                background: #f3f6f9;
+                font-family:
+                    system-ui,
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
+                line-height: 1.65;
+            }
 
-        body {
-            margin: 0;
-            color: var(--page-ink);
-            background: #f3f6f9;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            line-height: 1.65;
-        }
+            .page-hero {
+                padding: 3.5rem 1.5rem;
+                color: #ffffff;
+                background: linear-gradient(120deg, var(--page-blue-dark), var(--page-blue));
+            }
 
-        .page-hero {
-            padding: 3.5rem 1.5rem;
-            color: #ffffff;
-            background: linear-gradient(120deg, var(--page-blue-dark), var(--page-blue));
-        }
+            .page-hero__inner,
+            .page-content {
+                width: min(var(--page-max-width), calc(100% - 2rem));
+                margin-inline: auto;
+            }
 
-        .page-hero__inner,
-        .page-content {
-            width: min(var(--page-max-width), calc(100% - 2rem));
-            margin-inline: auto;
-        }
+            .page-hero h1 {
+                margin: 0;
+                color: #ffffff;
+                font-size: clamp(2.4rem, 6vw, 4rem);
+                line-height: 1.05;
+            }
 
-        .page-hero h1 {
-            margin: 0;
-            color: #ffffff;
-            font-size: clamp(2.4rem, 6vw, 4rem);
-            line-height: 1.05;
-        }
+            .page-hero p {
+                max-width: 760px;
+                margin-bottom: 0;
+                color: #e4eef4;
+            }
 
-        .page-hero p {
-            max-width: 760px;
-            margin-bottom: 0;
-            color: #e4eef4;
-        }
+            .page-content {
+                padding-block: 2rem 5rem;
+            }
 
-        .page-content {
-            padding-block: 2rem 5rem;
-        }
+            .content-card {
+                margin-bottom: 1.5rem;
+                padding: 1.5rem;
+                border: 1px solid var(--page-border);
+                border-radius: 0.9rem;
+                background: #ffffff;
+            }
 
-        .content-card {
-            margin-bottom: 1.5rem;
-            padding: 1.5rem;
-            border: 1px solid var(--page-border);
-            border-radius: 0.9rem;
-            background: #ffffff;
-        }
+            .content-card h2,
+            .content-card h3 {
+                color: var(--page-blue-dark);
+            }
 
-        .content-card h2,
-        .content-card h3 {
-            color: var(--page-blue-dark);
-        }
+            .content-card h2 {
+                margin-top: 0;
+            }
 
-        .content-card h2 {
-            margin-top: 0;
-        }
+            .tag {
+                display: inline-block;
+                padding: 0.25rem 0.6rem;
+                border-radius: 999px;
+                color: var(--page-blue);
+                background: #eaf4fb;
+                font-size: 0.75rem;
+                font-weight: 900;
+                letter-spacing: 0.04em;
+            }
 
-        .tag {
-            display: inline-block;
-            padding: 0.25rem 0.6rem;
-            border-radius: 999px;
-            color: var(--page-blue);
-            background: #eaf4fb;
-            font-size: 0.75rem;
-            font-weight: 900;
-            letter-spacing: 0.04em;
-        }
+            .stack-diagram {
+                overflow-x: auto;
+                margin: 1rem 0 0;
+                padding: 1.25rem;
+                border-radius: 0.7rem;
+                color: #eaf4fb;
+                background: #172b3d;
+                font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+                line-height: 1.55;
+            }
 
-        .stack-diagram {
-            overflow-x: auto;
-            margin: 1rem 0 0;
-            padding: 1.25rem;
-            border-radius: 0.7rem;
-            color: #eaf4fb;
-            background: #172b3d;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-            line-height: 1.55;
-        }
+            .layer-list {
+                display: grid;
+                gap: 0.75rem;
+            }
 
-        .layer-list {
-            display: grid;
-            gap: 0.75rem;
-        }
+            .layer {
+                padding: 0.9rem 1rem;
+                border-left: 4px solid var(--page-blue);
+                border-radius: 0 0.6rem 0.6rem 0;
+                background: #eaf4fb;
+            }
 
-        .layer {
-            padding: 0.9rem 1rem;
-            border-left: 4px solid var(--page-blue);
-            border-radius: 0 0.6rem 0.6rem 0;
-            background: #eaf4fb;
-        }
+            .layer strong {
+                color: var(--page-blue-dark);
+            }
+        </style>
+    </head>
 
-        .layer strong {
-            color: var(--page-blue-dark);
-        }
-    </style>
-</head>
+    <body>
+        <header class="page-hero">
+            <div class="page-hero__inner">
+                <h1>LEONES · Pila</h1>
+                <p>La cadena completa necesaria para ejecutar una tarea local.</p>
+            </div>
+        </header>
 
-<body>
-    <header class="page-hero">
-        <div class="page-hero__inner">
-            <h1>LEONES · Pila</h1>
-            <p>La cadena completa necesaria para ejecutar una tarea local.</p>
-        </div>
-    </header>
+        <main class="page-content" id="main">
+            <section class="content-card" aria-labelledby="stack-title">
+                <span class="tag">ARQUITECTURA</span>
+                <h2 id="stack-title">La pila no es solo el modelo</h2>
 
-    <main class="page-content" id="main">
-        <section class="content-card" aria-labelledby="stack-title">
-            <span class="tag">ARQUITECTURA</span>
-            <h2 id="stack-title">La pila no es solo el modelo</h2>
-
-            <pre class="stack-diagram">HARDWARE
+                <pre class="stack-diagram">
+HARDWARE
    ↓
 SISTEMA OPERATIVO
    ↓
@@ -148,37 +156,44 @@ BUDDY / KNOWLEDGE
 LOTB
    ↓
 RESULTADO + UX</pre>
-        </section>
+            </section>
 
-        <section class="content-card" aria-labelledby="layers-title">
-            <h2 id="layers-title">Por qué está separada</h2>
-            <p>
-                Cada capa puede ser sustituida. Cuando una experiencia es mala,
-                LEONES debe localizar el cuello de botella antes de recomendar
-                cambiar el modelo.
-            </p>
+            <section class="content-card" aria-labelledby="layers-title">
+                <h2 id="layers-title">Por qué está separada</h2>
+                <p>
+                    Cada capa puede ser sustituida. Cuando una experiencia es mala, LEONES debe
+                    localizar el cuello de botella antes de recomendar cambiar el modelo.
+                </p>
 
-            <div class="layer-list">
-                <div class="layer"><strong>Hardware:</strong> RAM, VRAM, CPU, GPU y almacenamiento.</div>
-                <div class="layer"><strong>Runtime:</strong> drivers, ejecución y gestión de recursos.</div>
-                <div class="layer"><strong>Inferencia:</strong> backend, modelo y cuantización.</div>
-                <div class="layer"><strong>Agentic:</strong> harness, herramientas, skills y Buddy.</div>
-                <div class="layer"><strong>Evaluación:</strong> LOTB y evidencia reproducible.</div>
-            </div>
-        </section>
+                <div class="layer-list">
+                    <div class="layer">
+                        <strong>Hardware:</strong> RAM, VRAM, CPU, GPU y almacenamiento.
+                    </div>
+                    <div class="layer">
+                        <strong>Runtime:</strong> drivers, ejecución y gestión de recursos.
+                    </div>
+                    <div class="layer">
+                        <strong>Inferencia:</strong> backend, modelo y cuantización.
+                    </div>
+                    <div class="layer">
+                        <strong>Agentic:</strong> harness, herramientas, skills y Buddy.
+                    </div>
+                    <div class="layer">
+                        <strong>Evaluación:</strong> LOTB y evidencia reproducible.
+                    </div>
+                </div>
+            </section>
 
-        <section class="content-card" aria-labelledby="router-title">
-            <h2 id="router-title">Objetivo de Router</h2>
-            <p>
-                Encontrar la combinación que satisfaga la tarea con el hardware
-                disponible, priorizando evidencia real y declarando incertidumbre
-                cuando falte información.
-            </p>
-        </section>
-    </main>
+            <section class="content-card" aria-labelledby="router-title">
+                <h2 id="router-title">Objetivo de Router</h2>
+                <p>
+                    Encontrar la combinación que satisfaga la tarea con el hardware disponible,
+                    priorizando evidencia real y declarando incertidumbre cuando falte información.
+                </p>
+            </section>
+        </main>
 
-    <!-- Navegación común. -->
-    <script src="assets/js/navigation.js" defer></script>
-</body>
-
+        <!-- Navegación común. -->
+        <script src="assets/js/navigation.js" defer></script>
+    </body>
 </html>
