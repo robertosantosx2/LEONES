@@ -1,5 +1,8 @@
 component_type,vendor,category,model,capacity_gb,vram_gb,source_count,sources,min_price_eur,median_price_eur,max_price_eur,latest_observed_at
+cpu,amd,Ryzen 5,* - [x],,,1,LDLC España,498.00,498.00,498.00,2026-08-15
+cpu,amd,Ryzen 5,* Los más vendidos- [x],,,1,LDLC España,91.00,91.00,91.00,2026-08-15
 cpu,amd,Ryzen 5,"AMD AMD Ryzen 5 5500 (3,6 GHz / 4,2 GHz)",,,1,LDLC España,91.00,91.00,91.00,2026-08-15
+cpu,amd,Ryzen 3,"AMD Ryzen 3 4100 Wraith Stealth (3,8 GHz / 4,0 GHz)",,,1,LDLC España,62.00,62.00,62.00,2026-08-15
 cpu,amd,Ryzen 5,"AMD Ryzen 5 3400G (3,7 GHz / 4,2 GHz) - Versión tray",,,1,LDLC España,62.00,62.00,62.00,2026-08-15
 cpu,amd,Ryzen 5,"AMD Ryzen 5 5500 Wraith Stealth (3,6 GHz / 4,2 GHz)",,,1,LDLC España,106.00,106.00,106.00,2026-08-15
 cpu,amd,Ryzen 5,"AMD Ryzen 5 7500F (3,7 GHz / 5,0 GHz)",,,1,LDLC España,152.00,152.00,152.00,2026-08-15
@@ -15,15 +18,41 @@ cpu,amd,Ryzen 7,AMD Ryzen 7 9700X (3.8 GHz / 5.5 GHz),,,1,LDLC España,374.00,37
 cpu,amd,Ryzen 7,"AMD Ryzen 7 9800X3D (4,7 GHz / 5,2 GHz)",,,1,LDLC España,498.00,498.00,498.00,2026-08-15
 cpu,amd,Ryzen 7,"AMD Ryzen 7 9850X3D (4,7 GHz / 5,6 GHz)",,,1,LDLC España,519.00,519.00,519.00,2026-08-15
 cpu,amd,Ryzen 9,"AMD Ryzen 9 9950X3D (4,3 GHz / 5,7 GHz)",,,1,LDLC España,758.00,758.00,758.00,2026-08-15
+cpu,amd,Ryzen 3,"El **procesador** es uno de los elementos más importantes de cualquier equipo informático, especialmente si necesitas rendimiento para realizar trabajos audiovisuales o quieres ded",,,1,LDLC España,193.00,193.00,193.00,2026-08-15
 cpu,amd,Ryzen 7,Procesador - AMD Ryzen 7 5700X,,,1,MediaMarkt España,168.60,168.60,168.60,2026-08-15
 cpu,amd,Ryzen 7,Procesador - AMD Ryzen 7 5800X3D,,,1,MediaMarkt España,440.47,440.47,440.47,2026-08-15
 cpu,amd,Ryzen 7,[ COOLPC - Gamer Extreme COOLPC Gamer XIII Core - Ryzen 7 5700X / Radeon RX 9070 GRE 12Gb / 32Gb DDR4 / NVMe 1Tb / W11 1.,,,1,Coolmod,849.50,849.50,849.50,2026-08-15
 cpu,amd,Ryzen 7,"[ COOLPC - Gamer Extreme COOLPC Gamer XIII Core - Ryzen 7 5700X / Radeon RX 9070 GRE 12Gb / 32Gb DDR4 / NVMe 1Tb / W11 1.849,50 € 1.499",,,1,Coolmod,95.00,95.00,95.00,2026-08-15
 cpu,amd,Ryzen 7,[ Procesadores Procesador AMD Ryzen 7 5800X3D 4.5GHz Socket AM4 Boxed 10th Aniversary 358,,,1,Coolmod,95.00,95.00,95.00,2026-08-15
+cpu,intel,Core i5,"1-48 of 453 results for""procesador Intel Core i5""",,,1,Amazon España,165.79,165.79,165.79,2026-08-15
+cpu,intel,Core i5,"Amazon's Choice for ""procesador Intel Core i5""",,,1,Amazon España,207.95,207.95,207.95,2026-08-15
+cpu,intel,Core i9,CPU INTEL Core I9-9900KF 3.60GHZ 16M LGA1151 NO Graphics BX80684I99900KF 999DL9,,,1,Amazon España,433.18,433.18,433.18,2026-08-15
+cpu,intel,Core i3,INTEL Core i3-10105F 3.7GHz LGA1200 - Caja,,,1,Amazon España,91.37,91.37,91.37,2026-08-15
+cpu,intel,Core i3,"Intel BX80662I36100 - Procesador Intel Core i3-6100 (Dual-Core, LGA1151)",,,1,Amazon España,19.99,19.99,19.99,2026-08-15
+cpu,intel,Core i9,"Intel BX80684I99900K - CPU INTEL Core I9-9900K 3.60GHZ 16M LGA1151 BX80684I99900K 985966, Gris",,,1,Amazon España,462.24,462.24,462.24,2026-08-15
+cpu,intel,Core i3,Intel Bandeja CPU/Core i3-12100F 4.30GHZ LGA1700,,,1,Amazon España,97.00,97.00,97.00,2026-08-15
+cpu,intel,Core i3,Intel CPU BX8070110100F Core i3-10100F / 3.6GHz / 6MB LGA1200 4C / 8T,,,1,Amazon España,101.88,101.88,101.88,2026-08-15
+cpu,intel,Core i3,"Intel Core I3 12100 - 3,3 Ghz - 4 Core - 8 Thread",,,1,Amazon España,150.41,150.41,150.41,2026-08-15
+cpu,intel,Core i3,Intel Core I3-12100F,,,1,Amazon España,109.48,109.48,109.48,2026-08-15
+cpu,intel,Core i9,Intel Core I9-12900KF 3.20GHZ Chip,,,1,Amazon España,370.95,370.95,370.95,2026-08-15
+cpu,intel,Core i9,"Intel Core I9-9900X - Procesador CPU (3.50 GHz, 19.25M, LGA2066) Color Gris",,,1,Amazon España,217.70,217.70,217.70,2026-08-15
+cpu,intel,Core i3,Intel Core i3 - Procesador,,,1,Amazon España,62.99,62.99,62.99,2026-08-15
+cpu,intel,Core i3,"Intel Core i3 3240 - Procesador Dual-Core (3,4 GHz, SK 1155, caché 3 MB, 55 W)",,,1,Amazon España,261.99,261.99,261.99,2026-08-15
+cpu,intel,Core i3,Intel Core i3 540 - Procesador,,,1,Amazon España,27.41,27.41,27.41,2026-08-15
+cpu,intel,Core i3,"Intel Core i3 i3-14100 - 3,5 GHz - 4 core - 8 subprocesos",,,1,Amazon España,170.59,170.59,170.59,2026-08-15
+cpu,intel,Core i3,Intel Core i3-10105,,,1,Amazon España,119.90,119.90,119.90,2026-08-15
 cpu,intel,Core i3,Intel Core i3-12100 3.3 GHz,,,1,PcComponentes,173.27,173.27,173.27,2026-08-15
+cpu,intel,Core i3,"Intel Core i3-12100, procesador para Equipos de sobremesa, 12 MB de caché, hasta 4,30 GHz",,,1,Amazon España,169.39,169.39,169.39,2026-08-15
 cpu,intel,Core i3,"Intel Core i3-12100F (3,3 GHz / 4,3 GHz)",,,1,LDLC España,87.00,87.00,87.00,2026-08-15
 cpu,intel,Core i3,Intel Core i3-12100F 3.3 GHz,,,1,PcComponentes,119.75,119.75,119.75,2026-08-15
+cpu,intel,Core i3,"Intel Core i3-13100 - Procesador de Escritorio de 4 núcleos (4 núcleos P + 0 núcleos E) caché de 12 MB, hasta 4,5 GHz",,,1,Amazon España,258.29,258.29,258.29,2026-08-15
+cpu,intel,Core i3,"Intel Core i3-13100F - Procesador de Escritorio (4 núcleos P + 0 núcleos electrónicos), caché de 12 MB, hasta 4,5 GHz",,,1,Amazon España,140.78,140.78,140.78,2026-08-15
+cpu,intel,Core i3,Intel Core i3-14100 3.5/4.7GHz Box,,,1,Amazon España,171.46,171.46,171.46,2026-08-15
 cpu,intel,Core i3,Intel Core i3-14100F 3.5/4.7GHz Box,,,1,PcComponentes,108.00,108.00,108.00,2026-08-15
+cpu,intel,Core i3,"Intel Core i3-2100 - Procesador (Socket 1155, 3100 MHz, Intel Core i3, i3-2100, 5 GT/s, 64-bit)",,,1,Amazon España,206.77,206.77,206.77,2026-08-15
+cpu,intel,Core i3,"Intel Core i3-8100T - Procesador (8ª generación de procesadores Intel® Core™ i3, 3,10 GHz, LGA 1151 (Zócalo H4), PC, 14 nm, i3-8100T)",,,1,Amazon España,146.95,146.95,146.95,2026-08-15
+cpu,intel,Core i3,"Intel Core i3-9100 - Procesador (Intel Core i3-9xxx, 3,6 GHz, LGA 1151 (Zócalo H4), PC, 14 NM, 8 GT/s)",,,1,Amazon España,214.88,214.88,214.88,2026-08-15
+cpu,intel,Core i3,"Intel Core i3-9100F - Procesador de sobremesa (4 núcleos, hasta 4,2 GHz, sin gráficos de procesador, LGA1151 300 Series 65W)",,,1,Amazon España,123.19,123.19,123.19,2026-08-15
 cpu,intel,Core i5,Intel Core i5-10400 2.90 GHz,,,1,PcComponentes,171.99,171.99,171.99,2026-08-15
 cpu,intel,Core i5,Intel Core i5-12400 2.5 GHz,,,1,PcComponentes,227.96,227.96,227.96,2026-08-15
 cpu,intel,Core i5,Intel Core i5-12400F 2.5 GHz,,,1,PcComponentes,155.99,155.99,155.99,2026-08-15
@@ -46,13 +75,38 @@ cpu,intel,Core i7,Intel Core i7-14700 2.1/5.4GHz Box,,,1,PcComponentes,387.99,38
 cpu,intel,Core i7,Intel Core i7-14700F 2.1/5.4GHz Box,,,1,PcComponentes,333.80,333.80,333.80,2026-08-15
 cpu,intel,Core i7,Intel Core i7-14700K 3.4/5.6GHz Box,,,1,PcComponentes,420.04,420.04,420.04,2026-08-15
 cpu,intel,Core i7,Intel Core i7-14700KF 3.4/5.6GHz Box,,,1,PcComponentes,393.99,393.99,393.99,2026-08-15
+cpu,intel,Core i9,Intel Core i9 11900K,,,1,Amazon España,536.46,536.46,536.46,2026-08-15
+cpu,intel,Core i9,"Intel Core i9 9900X, S 2066, Skylake-X Refresh, 10 Core, 20 Hilos, 3,5 GHz, 4,4 GHz Turbo, 19,25 MB, 44 Lane, 165 W, CPU, OEM",,,1,Amazon España,249.95,249.95,249.95,2026-08-15
+cpu,intel,Core i9,Intel Core i9 i9-14900K - 3.2 GHz - 24 Kerne - 32 Threads - 36 MB Cache-Speicher - FCLGA1700 Socket - OEM,,,1,Amazon España,596.54,596.54,596.54,2026-08-15
 cpu,intel,Core i9,Intel Core i9-12900KF 3.2 GHz,,,1,PcComponentes,335.94,335.94,335.94,2026-08-15
 cpu,intel,Core i9,Intel Core i9-14900 2.1/5.8 GHz Box,,,1,PcComponentes,613.86,613.86,613.86,2026-08-15
+cpu,intel,Core i9,"Intel Core i9-14900K 3.2/6GHz Box, El embalaje puede variar",,,1,Amazon España,432.43,432.43,432.43,2026-08-15
 cpu,intel,Core i9,Intel Core i9-14900KF,,,1,MediaMarkt España,510.10,510.10,510.10,2026-08-15
+cpu,intel,Core i9,Intel Core i9-14900KF 3.2/6GHz Box,,,1,Amazon España,440.48,440.48,440.48,2026-08-15
+cpu,intel,Core i9,"Intel Core i9-7900X - Procesador (Intel® Core™ Serie X, 3,3 GHz, LGA 2066, PC, 14 NM, i9-7900X)",,,1,Amazon España,467.00,467.00,467.00,2026-08-15
+cpu,intel,Core i9,"Intel Core i9-9820X - Procesador (9th gen Intel® Core™ i9, 3,3 GHz, LGA 2066, PC, 14 nm, i9-9820X)",,,1,Amazon España,337.95,337.95,337.95,2026-08-15
+cpu,intel,Core i9,"Intel Core i9-9900K 8x3,6 (Boost 5,0) GHz R0 16MB-L3 Cache UHD 630 Socket 1151",,,1,Amazon España,39.99,39.99,39.99,2026-08-15
+cpu,intel,Core i3,"Intel Cpu Core i3-12100, tray",,,1,Amazon España,161.99,161.99,161.99,2026-08-15
+cpu,intel,Core i3,"Intel Procesador CPU Core I3-4160T 3,10Ghz SR1PH LGA1150 3MB 5GT/s",,,1,Amazon España,59.00,59.00,59.00,2026-08-15
+cpu,intel,Core i3,"Intel Procesador Core i3-2120 Dual-Core 3,3 GHz 3 MB de caché LGA 1155 - BX80623I32120 (reacondicionado certificado)",,,1,Amazon España,25.00,25.00,25.00,2026-08-15
+cpu,intel,Core i3,Intel Procesador Core i3-6100 de doble núcleo de 3.70 GHz con caché 3M (BX80662I36100) (reacondicionado certificado),,,1,Amazon España,99.99,99.99,99.99,2026-08-15
+cpu,intel,Core i3,"Intel Procesador de Escritorio Core i3-10100 4 núcleos de hasta 4,3 GHz LGA1200 (chipset Intel 400) 65W, número de Modelo: BX8070110100",,,1,Amazon España,177.00,177.00,177.00,2026-08-15
+cpu,intel,Core i9,Intel S1700 Core i9 13900KF TRAY GEN13,,,1,Amazon España,452.82,452.82,452.82,2026-08-15
 cpu,intel,Core i5,Procesador - INTEL Intel - Core i5-14400 procesador 20 MB Smart Cache Caja,,,1,MediaMarkt España,215.84,215.84,215.84,2026-08-15
+cpu,intel,Core i9,"Procesador Intel Core I9-7940X X-Series (19,25 M Cache, Up to 4,30 GHz) 3,1 GHz 19,25 MB Smart Cache Procesador - Procesadores (Up to 4,30 GHz), Intel Core I9-7Xxx, 3,1 GHz, Lga 20",,,1,Amazon España,596.46,596.46,596.46,2026-08-15
+cpu,intel,Core i3,Procesador Intel Core generación 8 Intel Core i3-8300,,,1,Amazon España,183.01,183.01,183.01,2026-08-15
 cpu,intel,Core i3,Procesador Intel Core i3-14100 4 Núcleos 3.5 GHz Frecuencia Base 4.7 GHz Turbo Gráficos UHD 730,,,1,PcComponentes,144.93,144.93,144.93,2026-08-15
+cpu,intel,Core i3,"Procesador Intel Core i3-9100 3, 6 GHz (Coffee Lake) Sockel 1151, Boxed",,,1,Amazon España,108.00,108.00,108.00,2026-08-15
 cpu,intel,Core i7,Procesador Intel Core i7-14700F 20 Núcleos 2.1 GHz Frecuencia Base 5.4 GHz Frecuencia Turbo Sin Gráficos Integrados,,,1,PcComponentes,435.65,435.65,435.65,2026-08-15
 cpu,intel,Core i9,Procesador Intel Core i9-14900KF 24 Núcleos 3.2 GHz Frecuencia Base 6 GHz Turbo Sin Gráficos Integrados,,,1,PcComponentes,452.55,452.55,452.55,2026-08-15
+cpu,intel,Core i9,Procesador Intel Core i9-7900X X-series,,,1,Amazon España,377.00,377.00,377.00,2026-08-15
+gpu,nvidia,RTX 3050,* - [x],,,1,LDLC España,234.00,234.00,234.00,2026-08-15
+gpu,nvidia,RTX 3050,* Los más vendidos- [x],,,1,LDLC España,806.00,806.00,806.00,2026-08-15
+gpu,nvidia,RTX 5070,12GB GDDR7 - HDMI/Tri DisplayPort - DLSS 4 - PCI Express (NVIDIA GeForce RTX 5070),,,1,LDLC España,604.00,604.00,604.00,2026-08-15
+gpu,nvidia,RTX 5080,16 GB GDDR7 - Doble HDMI/Tri DisplayPort - DLSS 4 - PCI Express (NVIDIA GeForce RTX 5080),,,1,LDLC España,911.00,911.00,911.00,2026-08-15
+gpu,nvidia,RTX 5060 TI,16 GB GDDR7 - HDMI/Tri DisplayPort - DLSS 4 - PCI Express (NVIDIA GeForce RTX 5060 Ti),,,1,LDLC España,679.00,679.00,679.00,2026-08-15
+gpu,nvidia,RTX 5080,16 GB GDDR7 - HDMI/Tri DisplayPort - DLSS 4 - PCI Express (NVIDIA GeForce RTX 5080),,,1,LDLC España,623.00,623.00,623.00,2026-08-15
+gpu,nvidia,RTX 5060,8GB GDDR7 - Dual HDMI/DisplayPort - DLSS 4 - PCI Express (NVIDIA GeForce RTX 5060),,,1,LDLC España,88.00,88.00,88.00,2026-08-15
 gpu,nvidia,RTX 3050,ASUS DUAL GeForce RTX 3050 OC O6G,,,1,LDLC España,234.00,234.00,234.00,2026-08-15
 gpu,nvidia,RTX 5050,ASUS Dual GeForce RTX 5050 8GB,,,1,LDLC España,326.00,326.00,326.00,2026-08-15
 gpu,nvidia,RTX 5060,ASUS Dual GeForce RTX 5060 OC Edition 8GB,,,1,LDLC España,470.00,470.00,470.00,2026-08-15
@@ -76,19 +130,43 @@ gpu,nvidia,RTX 3050,"Tarjeta gráfica - MSI GeForce RTX 3050 LP E 6G OC, GDDR6, 
 gpu,nvidia,RTX 5060TI,"Tarjeta gráfica - ZOTAC TARJETA GRÁFICA ZOTAC RTX 5060TI 16GB TWIN EDGE OC GDDR7, GDDR7, PCI Express x8 5.0",,,1,MediaMarkt España,849.00,849.00,849.00,2026-08-15
 gpu,nvidia,RTX 5080,"[ Portátiles Portátil Gigabyte AORUS Master 16 BYHC5ESE64SP U9-275HX RTX 5080 32GB 1TB 16"" W11P 3.",,,1,Coolmod,499.95,499.95,499.95,2026-08-15
 gpu,nvidia,RTX 5080,"[ Portátiles Portátil Gigabyte AORUS Master 16 BYHC5ESE64SP U9-275HX RTX 5080 32GB 1TB 16"" W11P 3.499,95 € 2.479",,,1,Coolmod,95.00,95.00,95.00,2026-08-15
+ram,memory,DDR4,* - [x],32,,1,LDLC España,287.00,287.00,287.00,2026-08-15
+ram,memory,DDR4,* - [x],16,,1,LDLC España,326.00,326.00,326.00,2026-08-15
+ram,memory,DDR4,* - [x],64,,1,LDLC España,239.00,239.00,239.00,2026-08-15
+ram,memory,DDR4,* - [x],8,,1,LDLC España,81.00,81.00,81.00,2026-08-15
+ram,memory,DDR4,* Los más vendidos- [x],32,,1,LDLC España,162.00,162.00,162.00,2026-08-15
+ram,memory,DDR5,* Los más vendidos- [x],16,,1,LDLC España,249.00,249.00,249.00,2026-08-15
+ram,memory,DDR5,* Nuevo- [x],8,,1,LDLC España,210.00,210.00,210.00,2026-08-15
+ram,memory,DDR4,* Nuevo- [x],32,,1,LDLC España,36.00,36.00,36.00,2026-08-15
+ram,memory,DDR4,* Nuevo- [x],16,,1,LDLC España,159.00,159.00,159.00,2026-08-15
+ram,memory,DDR5,1. Median:€60.99,32,,1,Amazon España,56.99,56.99,56.99,2026-08-15
+ram,memory,DDR5,2. Median:€59.99,32,,1,Amazon España,56.99,56.99,56.99,2026-08-15
+ram,memory,DDR5,3. Median:€60.99,32,,1,Amazon España,56.99,56.99,56.99,2026-08-15
+ram,memory,DDR4,4. Median:€59.99,8,,1,Amazon España,64.99,64.99,64.99,2026-08-15
+ram,memory,DDR4,5. Median:€68.99,8,,1,Amazon España,106.99,106.99,106.99,2026-08-15
+ram,memory,DDR4,6. Median:€112.99,8,,1,Amazon España,210.12,210.12,210.12,2026-08-15
+ram,memory,DDR4,7. €219.99,8,,1,Amazon España,94.99,94.99,94.99,2026-08-15
+ram,memory,DDR4,8. Median:€102.99,8,,1,Amazon España,96.99,96.99,96.99,2026-08-15
+ram,memory,DDR4,9. Median:€102.99,8,,1,Amazon España,54.99,54.99,54.99,2026-08-15
+ram,memory,DDR5,Corsair Vengeance DDR5 128 GB (2 x 64 GB) 6000 MHz CL40 - Negro,128,,1,LDLC España,502.00,502.00,502.00,2026-08-15
+ram,memory,DDR5,Corsair Vengeance DDR5 128 GB (4 x 32 GB) 5600 MHz CL40 - Negro,128,,1,LDLC España,95.00,95.00,95.00,2026-08-15
 ram,memory,DDR5,Corsair Vengeance DDR5 16 GB (2 x 8 GB) 5200 MHz CL40 - Negro,16,,1,LDLC España,249.00,249.00,249.00,2026-08-15
 ram,memory,DDR4,Corsair Vengeance RGB RS 32 GB (2 x 16 GB) DDR4 3200 MHz CL16,32,,1,LDLC España,305.00,305.00,305.00,2026-08-15
+ram,memory,DDR4,Crucial Pro DDR4 64 GB (2 x 32 GB) 3200 MHz CL22,64,,1,LDLC España,161.00,161.00,161.00,2026-08-15
 ram,memory,DDR4,Fox Spirit Akura RGB 32 GB (2x 16 GB) DDR4 3200 MHz CL16,32,,1,LDLC España,287.00,287.00,287.00,2026-08-15
 ram,memory,DDR5,G.Skill Flare X5 Series 32 GB (2x 16 GB) DDR5 6000 MHz CL36,32,,1,LDLC España,568.00,568.00,568.00,2026-08-15
 ram,memory,DDR5,G.Skill Flare X5 Series Low Profile 16 GB DDR5 6000 MHz CL30 (Bulk),16,,1,LDLC España,287.00,287.00,287.00,2026-08-15
 ram,memory,DDR4,G.Skill RipJaws Serie 5 Negro 16GB (1 x 16GB) DDR4 3200 MHz CL16,16,,1,LDLC España,104.00,104.00,104.00,2026-08-15
 ram,memory,DDR4,G.Skill RipJaws Series SO-DIMM 16 GB (2 x 8 GB) DDR4 3200 MHz CL22,16,,1,LDLC España,100.00,100.00,100.00,2026-08-15
 ram,memory,DDR5,G.Skill Trident Z5 48GB (2 x 24GB) DDR5 7200 MHz CL36 - Negro,48,,1,LDLC España,980.00,980.00,980.00,2026-08-15
+ram,memory,DDR4,"Intel® Core™ i5-12400F, procesador para Equipos de sobremesa de 12a generación; Frecuencia Base 2.5 GHz, 6 núcleos, LGA1700, RAM DDR4 y hasta 128 GB DDR5",128,,1,Amazon España,155.99,155.99,155.99,2026-08-15
 ram,memory,DDR4,Kingston FURY Beast 16 GB (2 x 8 GB) DDR4 3200 MHz CL16,16,,1,LDLC España,172.00,172.00,172.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast 16 GB (2 x 8 GB) DDR5 5600 MHz CL36,16,,1,LDLC España,287.00,287.00,287.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast 16GB (2 x 8GB) DDR5 6000 MHz CL30,16,,1,LDLC España,287.00,287.00,287.00,2026-08-15
 ram,memory,DDR4,Kingston FURY Beast 32GB (2 x 16GB) DDR4 3200 MHz CL16,32,,1,LDLC España,412.00,412.00,412.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast 32GB (2 x 16GB) DDR5 6000 MHz CL30,32,,1,LDLC España,604.00,604.00,604.00,2026-08-15
+ram,memory,DDR4,Kingston FURY Beast 8GB DDR4 3200 MHz CL16,8,,1,LDLC España,95.00,95.00,95.00,2026-08-15
+ram,memory,DDR5,Kingston FURY Beast 8GB DDR5 5600 MHz CL36,8,,1,LDLC España,153.00,153.00,153.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast RGB 16GB (2 x 8GB) DDR5 6000 MHz CL30,16,,1,LDLC España,316.00,316.00,316.00,2026-08-15
 ram,memory,DDR4,Kingston FURY Beast RGB 32 GB (2 x 16 GB) DDR4 3600 MHz CL18,32,,1,LDLC España,575.00,575.00,575.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast RGB 32GB (2 x 16GB) DDR5 6000 MHz CL30,32,,1,LDLC España,566.00,566.00,566.00,2026-08-15
@@ -104,6 +182,7 @@ ram,memory,DDR4,Memoria RAM - SILICON POWER DDR4 8GB PC 3200 CL16 Silicon-Power 
 ram,memory,DDR5,Memoria RAM - XPG CASTER DDR5,16,,1,MediaMarkt España,263.13,263.13,263.13,2026-08-15
 ram,memory,DDR4,Memorias RAM - SILICON POWER ddr4 32gb 2x 16gb silicon power udimm 3200mhz,32,,1,MediaMarkt España,313.80,313.80,313.80,2026-08-15
 ram,memory,DDR5,Memorias ram - CRUCIAL SODIMM DDR5 CT16G56C46S5,16,,1,MediaMarkt España,255.44,255.44,255.44,2026-08-15
+ram,memory,DDR5,Modelo: Corsair Vengeance DDR5 48 GB (2 x 24 GB) 6000 MHz CL36 - Negro Opinión traducida automáticamente +,48,,1,LDLC España,340.00,340.00,340.00,2026-08-15
 ram,memory,DDR4,Textorm 16 GB (2x 8 GB) DDR4 3200 MHz CL16,16,,1,LDLC España,162.00,162.00,162.00,2026-08-15
 ram,memory,DDR5,Textorm 16 GB (2x 8 GB) DDR5 5600 MHz CL46,16,,1,LDLC España,268.00,268.00,268.00,2026-08-15
 ram,memory,DDR4,Textorm 8 GB DDR4 3200 MHz CL16,8,,1,LDLC España,76.00,76.00,76.00,2026-08-15
