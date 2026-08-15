@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """LEONES multi-source hardware price collector.
 
-Collects CPU, RAM and NVIDIA GPU prices from the configured Spanish/EU
-retail sources. Direct HTTP is attempted first; Jina Reader is used only as a
-fallback. Each observation keeps source, URL and date. Unknown prices are
-never estimated.
+Collects CPU, RAM and NVIDIA GPU prices from configured Spanish/EU retailers.
+The parser supports JSON-LD plus the product-card text layouts used by
+marketplaces/category pages. Unknown prices are never estimated.
 """
 from __future__ import annotations
 import csv, json, re, time
@@ -13,7 +12,7 @@ from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import urljoin, quote_plus, urlparse
+from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +25,7 @@ FIELDS = ['observed_at','component_type','vendor','category','model','capacity_g
 
 CPU_PAT = re.compile(r'\b(?:Intel\s+)?Core\s+i([3579])\b|\b(?:AMD\s+)?Ryzen\s+([3579])\b', re.I)
 GPU_PAT = re.compile(r'\b(?:NVIDIA\s+)?(?:GeForce\s+)?(RTX\s*\d{3,4}(?:\s*(?:Ti|SUPER))?)\b', re.I)
-RAM_PAT = re.compile(r'\bDDR([45])\b[^\n]{0,100}?\b(\d{1,3})\s*GB\b', re.I)
+RAM_PAT = re.compile(r'\bDDR([45])\b[^\n]{0,120}?\b(\d{1,3})\s*GB\b|\b(\d{1,3})\s*GB\b[^\n]{0,120}?\bDDR([45])\b', re.I)
 PRICE_PAT = re.compile(r'(?<!\d)(\d{1,5}(?:[.,]\d{2})?|\d{1,5}\s*\^\{\d{2}\})\s*(?:€|EUR)', re.I)
 
 class LinkParser(HTMLParser):
@@ -91,33 +90,45 @@ def jsonld_products(text: str):
             if p is None: continue
             try: p=float(str(p).replace(',','.'))
             except ValueError: continue
-            out.append((clean(str(x.get('name',''))),p,str(offers.get('url',''))))
+            name=clean(str(x.get('name','')))
+            out.append((name,p,str(offers.get('url','')),name))
     return out
 
 
 def text_products(text: str):
-    # Works on ordinary HTML/text and Jina output, including PcComponentes 372 ^{77} €.
+    """Extract product cards whose specs and price are separated by many lines.
+
+    MediaMarkt, LDLC and Amazon result pages commonly put the product title,
+    technical attributes and price in separate DOM/text lines. We therefore
+    associate a price with a bounded preceding context window instead of only
+    the immediately preceding three lines.
+    """
     lines=[re.sub(r'\s+',' ',unescape(x)).strip() for x in re.sub(r'<[^>]+>','\n',text).splitlines() if x.strip()]
     out=[]; seen=set()
     for i,line in enumerate(lines):
         for pm in PRICE_PAT.finditer(line):
             p=parse_price(pm.group(0))
             if p is None: continue
-            prefix=line[:pm.start()]
-            candidates=[prefix]
-            candidates += lines[max(0,i-3):i]
-            for cand in reversed(candidates):
-                if not (CPU_PAT.search(cand) or GPU_PAT.search(cand) or RAM_PAT.search(cand)): continue
-                name=clean(cand)
-                if len(name)<4: continue
-                key=(name.lower(),round(p,2))
-                if key not in seen:
-                    seen.add(key); out.append((name,p,''))
-                break
+            window=lines[max(0,i-16):i+1]
+            context=' | '.join(window)
+            # Prefer a likely product-title line, nearest to the price.
+            candidates=[]
+            for cand in reversed(window[:-1]):
+                low=cand.lower()
+                if (CPU_PAT.search(cand) or GPU_PAT.search(cand) or RAM_PAT.search(cand)
+                    or 'procesador -' in low or 'cpu -' in low or 'memoria ram -' in low
+                    or 'memorias ram -' in low or 'tarjeta gráfica -' in low or 'tarjeta grafica -' in low):
+                    candidates.append(cand)
+            if not candidates: continue
+            name=clean(candidates[0])
+            # Keep the title as the model field; use the surrounding card for classification.
+            key=(name.lower(),round(p,2))
+            if key not in seen and len(name)>=4:
+                seen.add(key); out.append((name,p,'',context))
     return out
 
 
-def discover_links(seed: str, html: str, limit: int=6):
+def discover_links(seed: str, html: str, limit: int=12):
     parser=LinkParser();
     try: parser.feed(html)
     except Exception: return []
@@ -139,11 +150,13 @@ def classify(name: str):
         vendor='intel' if m.group(1) else 'amd'
         return 'cpu',vendor,f'Core i{fam}' if vendor=='intel' else f'Ryzen {fam}','',''
     m=RAM_PAT.search(n)
-    if m: return 'ram', 'memory', f'DDR{m.group(1)}',m.group(2),''
+    if m:
+        ddr=m.group(1) or m.group(4); cap=m.group(2) or m.group(3)
+        return 'ram','memory',f'DDR{ddr}',cap,''
     m=GPU_PAT.search(n)
     if m:
         v=re.search(r'\b(\d{1,3})\s*GB\b',n)
-        return 'gpu','nvidia',m.group(1).upper(),' ',v.group(1) if v else ''
+        return 'gpu','nvidia',m.group(1).upper(),'',v.group(1) if v else ''
     return None
 
 
@@ -156,8 +169,7 @@ def extract_products(text: str):
     return merged
 
 
-def load_targets():
-    return json.loads(TARGETS.read_text(encoding='utf-8'))
+def load_targets(): return json.loads(TARGETS.read_text(encoding='utf-8'))
 
 
 def load_obs():
@@ -191,17 +203,13 @@ def build_outputs(rows):
         summary.append({'price_id':f"{r['component_type']}|{r['vendor']}|{r['model']}|{r['capacity_gb']}|{r['vram_gb']}",'component_type':r['component_type'],'vendor':r['vendor'],'category':r['category'],'model':r['model'],'capacity_gb':r['capacity_gb'],'price_eur':r['price_eur'],'price_type':'observed','market':'Spain','currency':'EUR','source':r['source'],'observed_at':r['observed_at'],'valid_until':'','notes':r['notes']})
     with SUMMARY.open('w',encoding='utf-8',newline='') as f:
         w=csv.DictWriter(f,fieldnames=sf); w.writeheader(); w.writerows(sorted(summary,key=lambda x:(x['component_type'],x['vendor'],x['category'],x['model'])))
-
     groups={}
     for r in rows:
-        key=(r['component_type'],r['vendor'],r['category'],r['model'],r['capacity_gb'],r['vram_gb'])
-        groups.setdefault(key,[]).append(r)
-    mf=['component_type','vendor','category','model','capacity_gb','vram_gb','source_count','sources','min_price_eur','median_price_eur','max_price_eur','latest_observed_at']
-    market=[]
+        key=(r['component_type'],r['vendor'],r['category'],r['model'],r['capacity_gb'],r['vram_gb']); groups.setdefault(key,[]).append(r)
+    mf=['component_type','vendor','category','model','capacity_gb','vram_gb','source_count','sources','min_price_eur','median_price_eur','max_price_eur','latest_observed_at']; market=[]
     for key,vals in groups.items():
-        prices=sorted(float(x['price_eur']) for x in vals)
-        mid=prices[len(prices)//2] if len(prices)%2 else (prices[len(prices)//2-1]+prices[len(prices)//2])/2
-        market.append(dict(zip(mf,[*key,len(set(x['source'] for x in vals)), ';'.join(sorted(set(x['source'] for x in vals))),f'{min(prices):.2f}',f'{mid:.2f}',f'{max(prices):.2f}',max(x['observed_at'] for x in vals)])))
+        prices=sorted(float(x['price_eur']) for x in vals); mid=prices[len(prices)//2] if len(prices)%2 else (prices[len(prices)//2-1]+prices[len(prices)//2])/2
+        market.append(dict(zip(mf,[*key,len(set(x['source'] for x in vals)),';'.join(sorted(set(x['source'] for x in vals))),f'{min(prices):.2f}',f'{mid:.2f}',f'{max(prices):.2f}',max(x['observed_at'] for x in vals)])))
     with MARKET.open('w',encoding='utf-8',newline='') as f:
         w=csv.DictWriter(f,fieldnames=mf); w.writeheader(); w.writerows(sorted(market,key=lambda x:(x['component_type'],x['vendor'],x['model'])))
 
@@ -211,13 +219,7 @@ def main():
     added=extracted=failures=0; successful_sources=set()
     for sid,conf in targets.items():
         source_name={'ES-PCOMP':'PcComponentes','ES-AMAZON':'Amazon España','ES-COOLMOD':'Coolmod','ES-MEDIAMARKT':'MediaMarkt España','EU-LDLC':'LDLC España'}.get(sid,sid)
-        urls=[]
-        strategy=conf.get('strategy')
-        if strategy=='search':
-            urls=list(conf.get('urls',{}).values())
-        elif strategy in {'category','discover'}:
-            urls=list(conf.get('urls',{}).values())
-        source_extracted=source_added=0
+        urls=list(conf.get('urls',{}).values()); strategy=conf.get('strategy'); source_extracted=source_added=0
         for seed in urls:
             try:
                 html,canonical=fetch(seed); pages=[(canonical,html)]
@@ -227,8 +229,9 @@ def main():
                         except Exception: continue
                 for page_url,page in pages:
                     products=extract_products(page); extracted+=len(products); source_extracted+=len(products)
-                    for name,price,purl in products:
-                        c=classify(name)
+                    for item in products:
+                        name,price,purl,context=item
+                        c=classify(f'{name} | {context}')
                         if not c: continue
                         kind,vendor,category,capacity,vram=c
                         if kind=='gpu' and vendor!='nvidia': continue
