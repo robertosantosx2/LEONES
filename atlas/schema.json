@@ -6,7 +6,7 @@
   "required": ["id", "kind", "name", "evidence"],
   "properties": {
     "id": {"type": "string"},
-    "kind": {"enum": ["model", "family", "organization", "runtime", "backend", "quantization", "tool", "benchmark"]},
+    "kind": {"enum": ["model", "family", "organization", "runtime", "backend", "quantization", "tool", "benchmark", "hardware", "knowledge", "experiment"]},
     "name": {"type": "string"},
     "family": {"type": ["string", "null"]},
     "organization": {"type": ["string", "null"]},
@@ -19,29 +19,45 @@
       },
       "additionalProperties": false
     },
-    "architecture": {
+    "architecture": {"type": "object", "additionalProperties": true},
+    "artifacts": {"type": "object", "additionalProperties": true},
+    "execution": {"type": "object", "additionalProperties": true},
+    "hardware": {
       "type": "object",
-      "additionalProperties": true
+      "properties": {
+        "cpu": {"type": "object", "additionalProperties": true},
+        "gpu": {"type": "object", "additionalProperties": true},
+        "memory": {"type": "object", "additionalProperties": true},
+        "storage": {"type": "object", "additionalProperties": true},
+        "bandwidth": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+        "compute": {"type": "object", "additionalProperties": true}
+      },
+      "additionalProperties": false
     },
-    "artifacts": {
-      "type": "object",
-      "additionalProperties": true
-    },
-    "execution": {
-      "type": "object",
-      "additionalProperties": true
-    },
-    "evaluation": {
+    "external_evidence": {
       "type": "array",
-      "items": {"type": "object", "additionalProperties": true}
+      "items": {
+        "type": "object",
+        "required": ["source_type", "url", "retrieved_at"],
+        "properties": {
+          "source_type": {"enum": ["hugging_face", "lm_arena", "artificial_analysis", "manufacturer", "other"]},
+          "url": {"type": "string"},
+          "retrieved_at": {"type": "string"},
+          "claim": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
     },
+    "experiments": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+    "evaluation": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
     "evidence": {
       "type": "object",
       "required": ["state"],
       "properties": {
         "state": {"enum": ["reported", "reproducible", "verified", "rejected"]},
         "sources": {"type": "array", "items": {"type": "string"}},
-        "retrieved_at": {"type": ["string", "null"]}
+        "retrieved_at": {"type": ["string", "null"]},
+        "evidence_type": {"enum": ["external", "manada", "leones_measurement", "documentary", "unknown"]}
       },
       "additionalProperties": false
     },
