@@ -2,6 +2,14 @@
 
 Atlas is the structured knowledge layer used by LEONES to explain recommendations.
 
+## Documentation protocol
+
+Atlas follows the project-wide phased documentation rule: when a phase is completed and accepted, its architecture, rules, decisions, validation and traceability must be documented and linked from the relevant READMEs.
+
+- [`../docs/DOCUMENTATION_PROTOCOL.md`](../docs/DOCUMENTATION_PROTOCOL.md) — project-wide rule.
+- [`../docs/phases/README.md`](../docs/phases/README.md) — phase index.
+- [`../docs/phases/2026-08-atlas-recommendation-pipeline/`](../docs/phases/2026-08-atlas-recommendation-pipeline/) — current Atlas → recommender phase, currently in validation.
+
 ## Status
 
 **v0.2 — schema expanded; migration and validation in progress.**
