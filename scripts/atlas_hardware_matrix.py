@@ -3,6 +3,12 @@
 
 GPU VRAM is treated separately from system RAM. The matrix is deliberately
 materialized as one CSV instead of thousands of small files.
+
+Hardware IDs must match the canonical IDs used by the recommender:
+  CPU-only: cpu-{i3|i5|i7|i9|ryzen3|ryzen5|ryzen7|ryzen9}-{ram}gb
+  CPU+GPU:  cpu-{family}-{ram}gb-{gpu_id}
+A GPU row is emitted only when the feed contains that exact combined hardware
+profile; we do not silently relabel a GPU-only measurement as a CPU+GPU one.
 """
 from __future__ import annotations
 import csv, subprocess, tempfile
@@ -22,11 +28,12 @@ def run():
     with tempfile.TemporaryDirectory() as td:
       for cpu,cpu_name in CPUS:
        for ram in RAMS:
-        # CPU-only baseline
+        context=2048 if ram<=4 else 4096 if ram<=16 else 8192 if ram<=64 else 16384
         targets=[('', 'Sin GPU', 0)] + [(g['gpu_id'],g['model'],float(g['vram_gb'])) for g in gpus]
         for gid,gname,vram in targets:
+         hardware=f'cpu-{cpu}-{ram}gb' + (f'-{gid}' if gid else '')
          out=Path(td)/'r.csv'
-         cmd=['python3',str(RECOMMENDER),'--workload','chat','--hardware',f'{cpu}-{ram}gb'+(f'-{gid}' if gid else ''),'--ram',str(ram),'--vram',str(vram),'--context',str(2048 if ram<=4 else 4096 if ram<=16 else 8192 if ram<=64 else 16384),'--out',str(out)]
+         cmd=['python3',str(RECOMMENDER),'--workload','chat','--hardware',hardware,'--ram',str(ram),'--vram',str(vram),'--context',str(context),'--out',str(out)]
          subprocess.run(cmd,check=True,stdout=subprocess.DEVNULL)
          if not out.exists(): continue
          for r in csv.DictReader(out.open(encoding='utf-8')):
