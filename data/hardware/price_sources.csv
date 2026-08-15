@@ -1,6 +1,5 @@
 source_id,name,priority,market,components,role,official_url,collection_status,notes
-ES-PCOMP,PCComponentes,1,ES,"CPU;RAM;GPU",primary,https://www.pccomponentes.com/,implemented,"Adaptador category + JSON-LD/text + Jina fallback; referente principal en España."
-ES-AMAZON,Amazon España,2,ES,"CPU;RAM;GPU",secondary,https://www.amazon.es/,implemented,"Adaptador search; tratar vendedor/marketplace y ofertas con especial cuidado."
-ES-COOLMOD,Coolmod,3,ES,"CPU;RAM;GPU",specialist,https://www.coolmod.com/,implemented,"Adaptador discovery desde portada; especialista español."
-ES-MEDIAMARKT,MediaMarkt España,4,ES,"CPU;RAM;GPU",secondary,https://www.mediamarkt.es/,implemented,"Adaptador category; distinguir venta directa, marketplace y reacondicionado."
-EU-LDLC,LDLC España,5,ES/EU,"CPU;RAM;GPU",specialist,https://www.ldlc.com/es-es/,implemented,"Adaptador category; especialista europeo con presencia española."
+ES-COOLMOD,Coolmod,1,ES,"CPU;RAM;GPU",primary,https://www.coolmod.com/,implemented,"Fuente prioritaria; usar primero fichas directas verificadas. El precio es un orden de magnitud, no se busca precisión al último euro."
+ES-PCOMP,PCComponentes,2,ES,"CPU;RAM;GPU",secondary,https://www.pccomponentes.com/,implemented,"Fuente de apoyo; consultar para completar huecos."
+ES-MEDIAMARKT,MediaMarkt España,3,ES,"CPU;RAM;GPU",secondary,https://www.mediamarkt.es/,implemented,"Fuente de apoyo; consultar para completar huecos."
+EU-LDLC,LDLC España,4,ES/EU,"CPU;RAM;GPU",secondary,https://www.ldlc.com/es-es/,implemented,"Fuente europea de apoyo; consultar para completar huecos."
