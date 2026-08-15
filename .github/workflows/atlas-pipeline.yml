@@ -17,7 +17,7 @@ env:
 
 jobs:
   atlas-pipeline:
-    name: Prospección → Evidencia → Ingesta → Calidad → Hipótesis → Hardware → Recomendaciones → Enriquecimiento
+    name: Prospección → Evidencia → Ingesta → Evidencia técnica → Calidad → Hipótesis → Hardware → Recomendaciones → Enriquecimiento
     runs-on: ubuntu-latest
     steps:
       - name: Descargar repositorio
@@ -46,6 +46,21 @@ jobs:
 
       - name: Regenerar evidencia externa tras la ingesta
         run: python3 scripts/atlas_external_evidence.py
+
+      - name: Construir evidencia técnica de modelos
+        run: |
+          set -e
+          python3 scripts/atlas_technical_evidence.py
+          echo "Registros con evidencia técnica:"
+          python3 - <<'PY'
+          import csv
+          p='data/prospection/atlas_technical_evidence.csv'
+          with open(p, encoding='utf-8-sig', newline='') as f:
+              rows=list(csv.DictReader(f))
+          reported=sum(r.get('technical_evidence_state')=='reported' for r in rows)
+          usable=sum(bool(r.get('runtime')) and bool(r.get('quantization')) and bool(r.get('estimated_memory_gb')) and bool(r.get('context_tokens')) for r in rows)
+          print(f'reported={reported}/{len(rows)}; recommendation-ready technical profiles={usable}/{len(rows)}')
+          PY
 
       - name: Auditar calidad del feed
         run: python3 scripts/atlas_quality_audit.py
@@ -120,12 +135,12 @@ jobs:
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/discovery data/prospection/atlas_feed.csv data/prospection/atlas_external_evidence.csv data/prospection/atlas_hypotheses.csv data/prospection/atlas_quality_flags.csv data/prospection/atlas_review_queue.csv data/prospection/recommendations_*.csv data/prospection/atlas_hardware_matrix.csv
+          git add data/discovery data/prospection/atlas_feed.csv data/prospection/atlas_external_evidence.csv data/prospection/atlas_technical_evidence.csv data/prospection/atlas_hypotheses.csv data/prospection/atlas_quality_flags.csv data/prospection/atlas_review_queue.csv data/prospection/recommendations_*.csv data/prospection/atlas_hardware_matrix.csv
           if git diff --cached --quiet; then
             echo "Atlas sin cambios"
             exit 0
           fi
-          git commit -m "feat: actualizar prospección, evidencia, hipótesis, calidad, hardware y recomendaciones"
+          git commit -m "feat: actualizar prospección, evidencia técnica, hipótesis, calidad, hardware y recomendaciones"
           for attempt in 1 2 3; do
             git fetch origin main
             if git rebase origin/main; then
