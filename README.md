@@ -12,6 +12,102 @@
 
 ---
 
+# 📊 Estado global del proyecto
+
+> **Actualizado tras la validación del bot de precios, la integración Atlas → recomendador y el ranking económico V1.**
+
+La siguiente clasificación distingue tres estados y evita llamar «terminado» a algo que solo tiene código pero no documentación o validación.
+
+| Estado | Significado |
+|---|---|
+| 🟢 **TERMINADO** | Implementado, documentado y validado cuando corresponde. No significa que nunca vaya a evolucionar. |
+| 🟡 **EN DESARROLLO** | Existe implementación o una base funcional, pero todavía faltan cobertura, robustez, validación, integración o evolución prevista. |
+| ⚪ **SIN EMPEZAR** | Está identificado en el roadmap, pero todavía no existe una implementación funcional suficiente. |
+
+## 🟢 TERMINADO / OPERATIVO
+
+- 🟢 **Bot mensual de precios de hardware**.
+- 🟢 Fuentes activas: **Coolmod, PcComponentes, MediaMarkt España y LDLC España**.
+- 🟢 **Amazon descartada** como fuente activa.
+- 🟢 Normalización y control de calidad de observaciones de precios.
+- 🟢 Conservación de observaciones rechazadas para auditoría.
+- 🟢 Integración **precios → perfiles hardware → Atlas/recomendador**.
+- 🟢 Test automatizado de integración de precios.
+- 🟢 **Ranking económico V1** integrado en GitHub Actions.
+- 🟢 Test automatizado del ranking económico.
+- 🟢 Generación automática de recomendaciones técnicas.
+- 🟢 Generación automática del ranking económico.
+- 🟢 Publicación automática de las salidas del recomendador.
+- 🟢 Separación conceptual **JGB / rendimiento / hardware / precio**.
+- 🟢 Documentación del diseño de precios, calidad, integración y ranking económico.
+- 🟢 README y documentación principal enlazados con las piezas del subproyecto Atlas.
+
+**Documentación:** [precios](docs/hardware-price-sources.md) · [calidad](docs/hardware-price-quality.md) · [integración](docs/atlas-hardware-price-integration.md) · [ranking económico](docs/atlas-economic-ranking.md).
+
+## 🟡 EN DESARROLLO
+
+- 🟡 **Open LLM Atlas**: ampliación y depuración continua de modelos, familias, organizaciones, benchmarks y procedencia.
+- 🟡 **Índice JGB**: consolidación de cobertura, evidencia y aplicación sistemática al conjunto de modelos.
+- 🟡 **Matriz completa de hardware**: 2/4/8/16/32/64/128 GB.
+- 🟡 Emparejamiento sistemático **Intel i3/i5/i7/i9 ↔ AMD Ryzen 3/5/7/9**.
+- 🟡 Cobertura completa de GPU NVIDIA y VRAM para las distintas configuraciones.
+- 🟡 **CABE/RULA** como capa sistemática de viabilidad hardware-modelo.
+- 🟡 Escalado del ranking económico a toda la matriz de hardware.
+- 🟡 Prospección diaria y alimentación automática de las distintas secciones del ecosistema.
+- 🟡 Mejora continua de adaptadores y cobertura del bot de precios.
+- 🟡 Benchmarks reproducibles en hardware real.
+- 🟡 Evaluación agentiva y batería **LB B01–B05**.
+- 🟡 Integración progresiva de runtimes, eficiencia, offloading y ejecución local.
+- 🟡 Web/app como interfaz coherente de todo el ecosistema.
+- 🟡 **Manada**: agregación, confianza y aprendizaje colectivo.
+
+**Documentación:** [Atlas](atlas/README.md) · [prospección](docs/PROSPECTION.md) · [resultados](docs/RESULT_SCHEMA.md) · [arquitectura](docs/ARCHITECTURE.md).
+
+## ⚪ SIN EMPEZAR / FASES POSTERIORES
+
+- ⚪ Coste de **PC completo**: placa base + almacenamiento + PSU + caja + refrigeración, además de CPU/RAM/GPU.
+- ⚪ **TCO** incluyendo consumo eléctrico y coste de uso sostenido.
+- ⚪ Coste por tarea útil / coste por ejecución agentiva.
+- ⚪ Ranking económico multiobjetivo configurable por usuario.
+- ⚪ Optimización conjunta de **libertad + rendimiento + coste + privacidad + eficiencia**.
+- ⚪ Sistema completo de evaluación continua y detección de regresiones.
+- ⚪ Snapshots versionados del Atlas y changelog automático del conocimiento.
+- ⚪ Aprendizaje continuo de la Manada incorporado al motor de recomendación.
+- ⚪ Optimización avanzada de rutas de ejecución y selección dinámica de runtime/modelo/hardware.
+- ⚪ Auditoría integral de privacidad y seguridad del ecosistema.
+
+> Estos elementos están identificados en el roadmap, pero **no deben interpretarse como funcionalidades ya disponibles**.
+
+### Orden de trabajo recomendado
+
+```text
+ATLAS + JGB
+    ↓
+MATRIZ HARDWARE
+    ↓
+CABE / RULA
+    ↓
+BENCHMARKS REALES
+    ↓
+RANKING ECONÓMICO COMPLETO
+    ↓
+AGENTIC / LB
+    ↓
+ROUTER
+    ↓
+WEB / APP
+    ↓
+MANADA
+    ↓
+TCO
+    ↓
+OPTIMIZACIÓN MULTIOBJETIVO
+```
+
+**Roadmap consolidado:** [`docs/ROADMAP.md`](docs/ROADMAP.md).
+
+---
+
 ## ¿Qué es LEONES?
 
 LEONES investiga, mide y construye un ecosistema de IA agéntica Libre/Open que pueda ejecutarse en **hardware real de consumo**, con especial prioridad al software **Copyleft**.
@@ -66,7 +162,7 @@ LEONES está compuesto por varias capas que deben evolucionar juntas. El README 
 ### Documentación fundamental
 
 - [`LEONES_DECISION_LOG.md`](LEONES_DECISION_LOG.md) — historia, decisiones congeladas y fundamentos.
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — **recopilación consolidada de todo lo que queda por hacer** y orden recomendado.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — recopilación consolidada de todo lo que queda por hacer y orden recomendado.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura general.
 - [`docs/PILLARS.md`](docs/PILLARS.md) — pilares del proyecto.
 - [`docs/PLATFORMS.md`](docs/PLATFORMS.md) — plataformas Linux de referencia.
@@ -393,360 +489,18 @@ Los scripts antiguos o especializados se conservan durante la migración hasta q
 
 ### 3. Cada herramienta debe hablar con el usuario
 
-La ejecución no debe ser una caja negra. Cada script debe explicar:
-
-**Antes**
-- qué pregunta responde;
-- qué va a hacer;
-- qué no va a hacer;
-- requisitos;
-- qué datos producirá;
-- qué información no debería salir del equipo.
-
-**Durante**
-- qué etapa está ejecutando;
-- progreso visible;
-- errores accionables;
-- ninguna operación oculta.
-
-**Después**
-- qué significa el resultado;
-- cuáles son sus límites;
-- qué no demuestra;
-- cuál es el siguiente paso recomendado;
-- cómo puede contribuir voluntariamente a la Manada.
-
-Cuando exista información reutilizable, se produce **JSON estructurado** para que los siguientes componentes no tengan que interpretar texto humano.
+La ejecución no debe ser una caja negra. Cada script debe explicar qué hace, qué ha detectado, qué no puede saber y qué debería hacer el usuario a continuación.
 
 ---
 
-## Libre/Open, no simplemente «gratis»
+# Estado del proyecto
 
-**Libre** se utiliza deliberadamente frente a «free»: interesa la libertad del software, no su precio.
+Para el estado actualizado por áreas, consulta la [matriz de estado al principio de este README](#-estado-global-del-proyecto) y el [roadmap consolidado](docs/ROADMAP.md).
 
-LEONES prioriza software Open y, dentro de él, especialmente **Copyleft**. La apertura del ecosistema importa porque el objetivo no es depender de una caja negra que solo funcione en un proveedor concreto.
+El estado debe distinguir siempre entre:
 
-La pila de referencia inicial contempla **Buddy (GPL-3.0), Hermes, LangGraph, llama.cpp y GGUF**, sin considerar esa combinación una arquitectura inmutable: la evidencia puede hacer evolucionar las recomendaciones.
+- **terminado y validado**;
+- **en desarrollo**;
+- **sin empezar**.
 
----
-
-## Hardware de consumo como punto de partida
-
-Los perfiles objetivo incluyen **8, 16, 32 y 64 GB de RAM**, con CPU Intel i5/i7 o equivalentes, con o sin GPU.
-
-LEONES presta especial atención a configuraciones que una persona pueda tener realmente en casa o en un portátil/PC convencional. El objetivo no es demostrar que un modelo funciona en un servidor gigantesco, sino saber **qué puede hacerse localmente con recursos razonables**.
-
-**10 tok/s** se utiliza como umbral orientativo de usabilidad LEONES. **100 tok/s** es un techo de comparación, no un requisito universal.
-
-Pero los tokens por segundo nunca son suficientes por sí solos.
-
----
-
-## Linux primero: Debian, Ubuntu y RHEL
-
-LEONES tiene tres plataformas Linux de referencia explícita:
-
-| Plataforma | Estado |
-|---|---|
-| **Debian** | 🟢 Referencia |
-| **Ubuntu** | 🟢 Referencia |
-| **Red Hat Enterprise Linux (RHEL)** | 🟢 Referencia |
-
-**Debian no es una variante secundaria de Ubuntu.** Las tres plataformas tienen el mismo nivel conceptual dentro de la matriz inicial.
-
-Los scripts deben detectar la distribución mediante `/etc/os-release` cuando sea relevante y **no asumir que todo Linux es Ubuntu ni que existe `apt` o `dnf`**. Siempre que sea posible, la lógica de los scripts debe depender únicamente de Python y de la librería estándar; los gestores de paquetes quedan para las instrucciones de preparación.
-
-La compatibilidad se considera demostrada cuando existen **pruebas reproducibles**, no solamente porque la documentación declare soporte.
-
-Véase [`docs/PLATFORMS.md`](docs/PLATFORMS.md) para la matriz y las instrucciones de preparación.
-
----
-
-## Inferencia y agentic: dos preguntas diferentes
-
-Evaluación separa dos niveles:
-
-1. **Inferencia:** modelo + backend + hardware.
-2. **Agentic:** agente + herramientas + tareas.
-
-Que un modelo alcance una determinada velocidad no demuestra que pueda utilizarse como agente útil.
-
-Por eso el pipeline distingue entre medir **tokens/segundo** y medir la capacidad de completar tareas reales.
-
----
-
-## Evaluación agentiva
-
-La batería inicial contiene cinco tareas:
-
-- **B01 — memoria/localidad**
-- **B02 — operación sobre archivos**
-- **B03 — tarea multietapa**
-- **B04 — recuperación ante fallo**
-- **B05 — coding local**
-
-Evaluación no debe confundir «el endpoint respondió» con «la tarea fue realizada correctamente».
-
-Las evaluaciones pueden producir estados como:
-
-- `pass`
-- `fail`
-- `manual_review`
-- `tool_unavailable`
-- `not_evaluable`
-
-Esto permite distinguir entre una respuesta textual y una demostración verificable.
-
-El baseline inicial es **Qwen3-8B Q4_K_M GGUF**.
-
----
-
-## Evidencia y estados de confianza
-
-LEONES distingue explícitamente entre:
-
-- **`reported`** — alguien ha aportado un resultado;
-- **`reproducible`** — existe información suficiente para repetirlo;
-- **`verified`** — el resultado ha superado los controles correspondientes;
-- **`rejected`** — no debe formar parte del conocimiento operativo.
-
-Un resultado medido **no se convierte automáticamente en evidencia verificada**.
-
-Esta distinción es fundamental para evitar que el conocimiento colectivo termine mezclando estimaciones, declaraciones de usuarios y resultados realmente comprobados.
-
----
-
-## Prospección → Atlas → Router
-
-LEONES mantiene un bucle de conocimiento separado del bucle de ejecución local:
-
-```text
-PROSPECTOR
-    ↓
-external-unvalidated
-    ↓
-revisión
-    ↓
-ATLAS
-    ↓
-ROUTER
-```
-
-### Prospector
-
-Busca continuamente modelos, runtimes, benchmarks, harnesses, skills, técnicas de eficiencia y otros elementos relevantes del ecosistema.
-
-**Descubre; no valida.**
-
-### Atlas
-
-Conserva el conocimiento estructurado y su procedencia. Es la memoria del ecosistema.
-
-### Router
-
-Utiliza ese conocimiento para responder a la pregunta práctica:
-
-> **«Con esta máquina y esta necesidad, ¿qué debería probar?»**
-
-El objetivo final es que Router deje de depender de reglas genéricas y pueda utilizar evidencia real acumulada.
-
----
-
-## 🦁 Manada LEONES: el conocimiento colectivo
-
-La Manada es una parte esencial del proyecto, pero **la participación es voluntaria**.
-
-La idea es sencilla:
-
-```text
-TU PC
-  ↓
-MEDICIÓN LOCAL
-  ↓
-RESULTADO
-  ↓
-REVISIÓN DE PRIVACIDAD
-  ↓
-MANADA
-  ↓
-DATOS AGREGADOS
-  ↓
-MEJORES RECOMENDACIONES
-```
-
-Una medición aislada puede parecer pequeña. Miles de mediciones sobre hardware real permiten descubrir qué modelos, runtimes y combinaciones funcionan realmente en cada segmento de hardware.
-
-### Qué no se debe publicar
-
-LEONES no debe publicar:
-
-- nombres o identidad personal;
-- emails;
-- usuarios identificables;
-- hostnames identificables;
-- números de serie;
-- UUID;
-- MAC/IP;
-- ubicación exacta;
-- rutas personales;
-- credenciales;
-- tokens o secretos;
-- contenido privado.
-
-`leones-privacy.py` realiza comprobaciones preventivas, pero **un resultado `clear` no significa que el contenido sea matemáticamente anónimo**.
-
-Ningún script publica por defecto. La publicación siempre requiere una acción explícita.
-
----
-
-## 📣 Difusión social voluntaria
-
-La aplicación LEONES incorpora una opción específica para quienes quieran ayudar a difundir sus mediciones.
-
-El usuario puede autorizar que LEONES **prepare un tweet con el resultado técnico**, siempre sin datos personales. La aplicación no publica silenciosamente en su nombre: abre un borrador en X para que el usuario lo revise y decida.
-
-Después puede guardar el enlace del tweet publicado y abrirlo nuevamente para **retuitearlo**.
-
-La invitación es deliberada: compartir el resultado ayuda a dar visibilidad a LEONES y puede atraer nuevas contribuciones a la Manada.
-
-El objetivo no es hacer publicidad por sí misma, sino aumentar el número de mediciones reales que alimentan el conocimiento colectivo.
-
----
-
-## Aplicación web
-
-`web/app.html` es el **centro de operaciones** de LEONES.
-
-No es un simple panel de scripts. Su función es conducir al usuario por el proceso:
-
-1. **Necesidad** — ¿qué quiero conseguir?
-2. **Hardware** — ¿qué máquina tengo?
-3. **Modelo** — ¿qué quiero probar?
-4. **Runtime** — ¿con qué lo voy a ejecutar?
-5. **Inferencia** — ¿cómo rinde?
-6. **Evaluación** — ¿puede realizar tareas agentivas?
-7. **Informe** — ¿qué evidencia tengo?
-8. **Privacidad** — ¿qué puedo compartir?
-9. **Manada** — ¿quiero contribuir?
-10. **Estadísticas** — ¿qué aprende LEONES?
-
-La aplicación genera comandos para la ejecución **local** y explica el siguiente paso. GitHub Pages no ejecuta comandos en el ordenador del usuario.
-
-El progreso del recorrido puede mantenerse localmente en el navegador para que la experiencia funcione como una guía y no como una colección de páginas aisladas.
-
----
-
-## Privacidad y control del usuario
-
-LEONES sigue una regla sencilla:
-
-> **Local → revisar → publicar → agregar → aprender.**
-
-La persona mantiene el control sobre lo que sale de su máquina. La aplicación puede ayudar a detectar datos sensibles, pero no sustituye la revisión humana.
-
-La publicación social requiere igualmente autorización explícita.
-
----
-
-## Objetivo final
-
-LEONES quiere cerrar un bucle que hoy todavía está en construcción:
-
-```text
-PROSPECCIÓN DIARIA
-       ↓
-CONOCIMIENTO ESTRUCTURADO
-       ↓
-RECOMENDACIÓN
-       ↓
-EJECUCIÓN LOCAL
-       ↓
-MEDICIÓN
-       ↓
-EVIDENCIA
-       ↓
-MANADA
-       ↓
-NUEVO CONOCIMIENTO
-       ↺
-```
-
-El valor del proyecto no está únicamente en saber qué modelo es mejor hoy. Está en construir un sistema capaz de **aprender continuamente qué funciona en hardware real y utilizar ese conocimiento para recomendar mejor mañana**.
-
----
-
-## Documento fundamental
-
-**[Historia, decisiones y fundamentos del proyecto](LEONES_DECISION_LOG.md)** contiene el contexto completo que llevó a estas decisiones y debe ser una de las primeras lecturas para entender LEONES.
-
-### Navegación completa
-
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — **todo lo que queda por hacer, prioridades y orden recomendado**.
-- [`scripts/README.md`](scripts/README.md) — filosofía y contrato de los scripts.
-- [`docs/PLATFORMS.md`](docs/PLATFORMS.md) — plataformas Linux de referencia.
-- [`docs/PILLARS.md`](docs/PILLARS.md) — pilares del proyecto.
-- [`docs/PROSPECTION.md`](docs/PROSPECTION.md) — prospección.
-- [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) — contrato de resultados.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura.
-- [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md) — ranking económico.
-- [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md) — integración de precios.
-- [`docs/hardware-price-quality.md`](docs/hardware-price-quality.md) — calidad de precios.
-- [`docs/hardware-price-sources.md`](docs/hardware-price-sources.md) — fuentes de precios.
-- [`docs/MANADA_AUTO_REPORT.md`](docs/MANADA_AUTO_REPORT.md) — generación de informes de la Manada.
-- [`docs/MANADA_STATS.md`](docs/MANADA_STATS.md) — estadísticas de la Manada.
-
----
-
-## Estado
-
-**Proyecto experimental en desarrollo.** La arquitectura inicial está congelada como referencia, pero la optimización del ecosistema, los benchmarks, los runtimes, los modelos, la prospección y las métricas siguen abiertas a la evidencia.
-
-La regla general continúa siendo:
-
-> **medir antes de afirmar, documentar antes de automatizar y compartir voluntariamente para que el conocimiento colectivo mejore las recomendaciones.**
-
----
-
-# 📋 Mapa consolidado de trabajo pendiente
-
-La lista completa y mantenida de tareas pendientes está en [`docs/ROADMAP.md`](docs/ROADMAP.md). Esta sección resume las líneas principales para que el estado del proyecto sea visible desde la portada.
-
-### P0 — Núcleo
-
-- Consolidar el Atlas como fuente única de verdad.
-- Completar y documentar la clasificación **JGB** con evidencia.
-- Completar la matriz de hardware **2/4/8/16/32/64/128 GB**.
-- Completar Intel **i3/i5/i7/i9** y AMD **Ryzen 3/5/7/9**.
-- Incorporar sistemáticamente GPU NVIDIA y VRAM.
-- Formalizar **CABE** y **RULA**.
-- Escalar el ranking económico V1 a toda la matriz.
-- Ejecutar benchmarks reproducibles en hardware real.
-- Validar la batería agentiva **LB B01–B05**.
-
-### P1 — Integración y calidad
-
-- Mejorar la prospección diaria y la revisión de candidatos.
-- Completar cobertura y robustez del bot de precios.
-- Consolidar y simplificar los workflows.
-- Convertir el recomendador en un sistema basado en evidencia acumulada.
-- Integrar de verdad Atlas → Router → hardware → ejecución.
-- Completar web y aplicación como interfaz coherente del sistema.
-- Ampliar la Manada y su sistema de confianza.
-
-### P2 — Madurez
-
-- Auditoría completa de privacidad y seguridad.
-- Comparación reproducible de runtimes y técnicas de eficiencia.
-- Coste total de propiedad (**TCO**).
-- Coste por tarea útil, no solo coste de componentes.
-- Evaluación continua y detección de regresiones.
-- Snapshots versionados y changelog automático del conocimiento.
-
-### P3 — Evolución avanzada
-
-- Ranking multiobjetivo configurable.
-- Optimización simultánea de libertad, rendimiento, coste, privacidad y eficiencia.
-- Aprendizaje continuo a partir de las mediciones de la Manada.
-- Recomendaciones que evolucionen automáticamente con la evidencia.
-
-**Orden recomendado:** Atlas/JGB → matriz hardware → precios → CABE/RULA → benchmarks → ranking económico V1.1 → agentic → Router → web/app → Manada → TCO.
+No se debe considerar terminada una pieza simplemente porque existe un script: debe existir documentación suficiente, pruebas cuando sean aplicables y una validación real de su salida.
