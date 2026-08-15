@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""Enrich Atlas recommendation candidates without inventing measurements.
+"""Merge deterministic recommendation dimensions into an existing CSV.
 
-The script derives only deterministic fields from already observed/source data.
-Unknown values remain unknown. JGB is never inferred from performance.
+Existing recommendation columns are preserved. Missing enrichment fields are
+added. Unknown values remain unknown; no performance/JGB/RULA inference is made.
 """
 from __future__ import annotations
 import argparse, csv
-from pathlib import Path
 
-FIELDS = [
+ENRICH_FIELDS = [
     'model_id','model_name','hardware_id','fit_score','cabe','cabe_status',
     'rula','rula_status','jgb_level','jgb_status','tokens_per_second',
     'performance_score','economic_score','uncertainty','parameters_total_b',
@@ -18,6 +17,8 @@ FIELDS = [
     'last_verified_at'
 ]
 
+KEYS = ('model_id', 'model_name', 'hardware_id')
+
 def num(v):
     try:
         return float(v) if v not in ('', None) else None
@@ -25,22 +26,17 @@ def num(v):
         return None
 
 def enrich(row):
-    out = {k: row.get(k, '') for k in FIELDS}
-    fit = num(row.get('fit_score'))
+    out = dict(row)
+    for field in ENRICH_FIELDS:
+        out.setdefault(field, '')
+    fit = num(out.get('fit_score'))
     if out['cabe'] == '' and fit is not None:
         out['cabe'] = 'true' if fit >= 1 else 'false'
         out['cabe_status'] = 'estimated'
-    if out['rula'] == '':
-        out['rula_status'] = out['rula_status'] or 'unknown'
-    if out['jgb_level'] != '':
-        out['jgb_status'] = out['jgb_status'] or 'provisional'
-    else:
-        out['jgb_status'] = out['jgb_status'] or 'unknown'
-    if out['evidence_state'] == '':
-        out['evidence_state'] = 'reported'
-    if out['evidence_type'] == '':
-        out['evidence_type'] = 'unknown'
-    # Never derive performance from JGB, and never derive RULA from CABE.
+    out['rula_status'] = out['rula_status'] or 'unknown'
+    out['jgb_status'] = out['jgb_status'] or ('provisional' if out['jgb_level'] else 'unknown')
+    out['evidence_state'] = out['evidence_state'] or 'reported'
+    out['evidence_type'] = out['evidence_type'] or 'unknown'
     return out
 
 def main():
@@ -49,11 +45,14 @@ def main():
     ap.add_argument('--out', required=True)
     args = ap.parse_args()
     with open(args.input, encoding='utf-8-sig', newline='') as f:
-        rows = list(csv.DictReader(f))
+        reader = csv.DictReader(f)
+        rows = [enrich(r) for r in reader]
+        existing = list(reader.fieldnames or [])
+    fields = existing + [f for f in ENRICH_FIELDS if f not in existing]
     with open(args.out, 'w', encoding='utf-8', newline='') as f:
-        w = csv.DictWriter(f, fieldnames=FIELDS)
+        w = csv.DictWriter(f, fieldnames=fields, extrasaction='ignore')
         w.writeheader()
-        w.writerows(enrich(r) for r in rows)
+        w.writerows(rows)
     print(f'{len(rows)} candidates enriched -> {args.out}')
 
 if __name__ == '__main__':
