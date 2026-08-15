@@ -15,6 +15,41 @@
     "architecture": {"type": "object", "additionalProperties": true},
     "artifacts": {"type": "object", "additionalProperties": true},
     "execution": {"type": "object", "additionalProperties": true},
+    "recommendation": {
+      "type": "object",
+      "properties": {
+        "jgb": {"type": ["number", "null"]},
+        "jgb_status": {"enum": ["verified", "provisional", "unknown", "not_applicable"]},
+        "cabe": {"type": ["boolean", "null"]},
+        "cabe_status": {"enum": ["verified", "estimated", "unknown"]},
+        "rula": {"type": ["boolean", "null"]},
+        "rula_status": {"enum": ["verified", "estimated", "unknown"]},
+        "fit_score": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "performance_score": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "economic_score": {"type": ["number", "null"]},
+        "uncertainty": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "ranking_basis": {"type": "array", "items": {"enum": ["jgb", "cabe", "rula", "performance", "price", "evidence", "uncertainty"]}},
+        "last_verified_at": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "model_system": {
+      "type": "object",
+      "properties": {
+        "parameters_total_b": {"type": ["number", "null"]},
+        "parameters_active_b": {"type": ["number", "null"]},
+        "quantization": {"type": ["string", "null"]},
+        "weight_memory_gb": {"type": ["number", "null"]},
+        "kv_cache_gb": {"type": ["number", "null"]},
+        "runtime_overhead_gb": {"type": ["number", "null"]},
+        "memory_margin_gb": {"type": ["number", "null"]},
+        "runtime": {"type": ["string", "null"]},
+        "runtime_version": {"type": ["string", "null"]},
+        "backend": {"type": ["string", "null"]},
+        "context_length": {"type": ["integer", "null"], "minimum": 0}
+      },
+      "additionalProperties": false
+    },
     "hardware": {"type": "object", "properties": {"cpu": {"type": "object", "additionalProperties": true}, "gpu": {"type": "object", "additionalProperties": true}, "memory": {"type": "object", "additionalProperties": true}, "storage": {"type": "object", "additionalProperties": true}, "bandwidth": {"type": "array", "items": {"type": "object", "additionalProperties": true}}, "compute": {"type": "object", "additionalProperties": true}, "interconnect": {"type": "array", "items": {"type": "object", "additionalProperties": true}}}, "additionalProperties": false},
     "external_evidence": {"type": "array", "items": {"type": "object", "required": ["source_type", "url"], "properties": {"source_type": {"enum": ["hugging_face", "lm_arena", "artificial_analysis", "manufacturer", "msa", "llm_stats", "vellum", "lambda_benchmarks", "swe_bench", "livecodebench", "other"]}, "url": {"type": "string", "format": "uri"}, "retrieved_at": {"type": ["string", "null"]}, "claim": {"type": ["string", "null"]}, "source_record_id": {"type": ["string", "null"]}}, "additionalProperties": false}},
     "experiments": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
