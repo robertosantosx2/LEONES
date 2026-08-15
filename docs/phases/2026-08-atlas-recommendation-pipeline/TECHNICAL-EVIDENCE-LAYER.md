@@ -17,7 +17,7 @@ No hay evidencia estructurada suficiente para describir o evaluar el modelo.
 Existe al menos una señal técnica estructurada útil para identificar o describir la ruta de ejecución del modelo, por ejemplo arquitectura, parámetros, contexto, runtime o backend. T1 no implica viabilidad hardware.
 
 ### T2 — Viabilidad calculable
-Añade un tamaño observado de los pesos y un runtime conocido, de forma que puede iniciarse una evaluación de viabilidad hardware. El contexto no es obligatorio para alcanzar T2 porque es una propiedad del modelo que puede estar ausente en la fuente y, en cambio, es requisito para evaluar una solicitud concreta de contexto.
+Añade un tamaño observado de los pesos y un runtime conocido, de forma que puede iniciarse una evaluación de viabilidad hardware. El contexto no es obligatorio para alcanzar T2 porque puede faltar en la fuente y es una propiedad distinta de la viabilidad básica de memoria/runtime.
 
 La cuantización declarada no es obligatoria si el tamaño real del fichero de pesos ha sido observado; nunca se inventa una cuantización.
 
@@ -35,7 +35,9 @@ T0 → T1 → T2 → T3
 
 ## 3. Regla de recomendación
 
-La matriz puede consumir perfiles **T2 o T3**, pero una recomendación concreta debe comprobar además los requisitos de esa configuración: memoria disponible, contexto solicitado, runtime y compatibilidad hardware.
+La matriz puede consumir perfiles **T2 o T3**. Una recomendación concreta debe comprobar memoria disponible, runtime, compatibilidad hardware y, cuando exista, el contexto soportado.
+
+Un T2 sin contexto conocido puede producir una **recomendación preliminar de hardware**, pero el resultado debe marcar explícitamente que el contexto está `unknown` y no debe fabricar un valor de contexto.
 
 No se exige que exista previamente un campo `estimated_memory_gb` artificialmente calculado ni una etiqueta de cuantización si existe tamaño observado de pesos.
 
@@ -73,7 +75,20 @@ resultado:
   NO se afirma soporte de 16K
 ```
 
-La ausencia de contexto demostrado sigue siendo una limitación: no se inventa el valor y la recomendación debe reflejar la incertidumbre o quedar fuera cuando el contexto sea indispensable para la decisión.
+Cuando el contexto no está demostrado:
+
+```text
+modelo: T2
+contexto: unknown
+hardware: compatible por memoria/runtime
+
+resultado:
+  recomendación preliminar = SÍ
+  contexto recomendado = unknown
+  confianza = reducida
+```
+
+La ausencia de contexto no se convierte en un número inventado. Si una decisión concreta exige necesariamente un límite de contexto demostrado, esa decisión puede excluir el modelo, pero esa exclusión debe ser explícita y trazable.
 
 ## 5. Límites
 
@@ -93,7 +108,10 @@ El hecho de que un modelo sea T2 no implica que pueda recomendarse para cualquie
 - La matriz vacía debe provocar fallo explícito.
 - T1 no debe bloquear por sí mismo el enriquecimiento posterior hacia T2.
 - La capacidad de contexto del modelo no se confunde con el objetivo de contexto del hardware.
+- Un T2 sin contexto puede ser preliminarmente recomendable, pero nunca con contexto inventado.
 
-## 7. Próxima validación
+## 7. Validación H10
 
-El siguiente run debe mostrar la distribución T0/T1/T2/T3 y demostrar que los perfiles T2/T3 pueden llegar al filtro de recomendación cuando cumplen los requisitos de la configuración. Si la matriz sigue vacía, el log debe permitir identificar si el bloqueo está en evidencia, compatibilidad de hardware o filtros de recomendación.
+El siguiente run debe mostrar la distribución T0/T1/T2/T3 y demostrar que los perfiles T2/T3 llegan al filtro de recomendación cuando cumplen memoria/runtime/hardware. Los T2 sin contexto deberán aparecer, si caben, como recomendaciones preliminares con contexto `unknown`, no como falsos soportes de contexto.
+
+Si la matriz sigue vacía, el log debe permitir identificar si el bloqueo está en evidencia, memoria, compatibilidad de hardware, runtime o filtros de recomendación.
