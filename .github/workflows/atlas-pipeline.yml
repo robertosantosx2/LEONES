@@ -31,14 +31,20 @@ jobs:
       - name: Normalizar feed de prospección
         run: python3 scripts/atlas_build_feed.py
 
-      - name: Generar recomendaciones
-        run: python3 scripts/atlas_recommend_from_feed.py
+      - name: Generar recomendaciones por perfil de hardware
+        run: |
+          set -e
+          python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-i5-16gb --ram 16 --context 4096 --out data/prospection/recommendations_cpu-i5-16gb_chat.csv
+          python3 scripts/atlas_recommend_from_feed.py --workload coding --hardware cpu-i7-32gb --ram 32 --context 8192 --out data/prospection/recommendations_cpu-i7-32gb_coding.csv
+          python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware cpu-i7-64gb --ram 64 --context 8192 --out data/prospection/recommendations_cpu-i7-64gb_chat.csv
+          python3 scripts/atlas_recommend_from_feed.py --workload reasoning --hardware cpu-128gb --ram 128 --context 16384 --out data/prospection/recommendations_cpu-128gb_reasoning.csv
+          python3 scripts/atlas_recommend_from_feed.py --workload chat --hardware rtx4060-8gb --ram 32 --vram 8 --context 8192 --out data/prospection/recommendations_rtx4060-8gb_chat.csv
 
       - name: Publicar resultados si han cambiado
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/prospection/atlas_feed.csv data/prospection/atlas_review_queue.csv data/prospection/atlas_recommendations.csv
+          git add data/prospection/atlas_feed.csv data/prospection/atlas_review_queue.csv data/prospection/atlas_recommendations.csv data/prospection/recommendations_*.csv
           if git diff --cached --quiet; then
             echo "Atlas sin cambios"
           else
