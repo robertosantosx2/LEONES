@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 """Offline tests for Atlas <- hardware-price integration."""
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from scripts.atlas_recommend_from_feed import hardware_price_evidence, norm
 
 
