@@ -1,0 +1,72 @@
+component_type,vendor,category,model,capacity_gb,vram_gb,source_count,sources,min_price_eur,median_price_eur,max_price_eur,latest_observed_at
+cpu,amd,Ryzen 5,"AMD AMD Ryzen 5 5500 (3,6 GHz / 4,2 GHz)",,,1,LDLC España,91.00,91.00,91.00,2026-08-15
+cpu,amd,Ryzen 5,"AMD Ryzen 5 3400G (3,7 GHz / 4,2 GHz) - Versión tray",,,1,LDLC España,62.00,62.00,62.00,2026-08-15
+cpu,amd,Ryzen 5,"AMD Ryzen 5 5500 Wraith Stealth (3,6 GHz / 4,2 GHz)",,,1,LDLC España,106.00,106.00,106.00,2026-08-15
+cpu,amd,Ryzen 5,"AMD Ryzen 5 7500F (3,7 GHz / 5,0 GHz)",,,1,LDLC España,152.00,152.00,152.00,2026-08-15
+cpu,amd,Ryzen 5,"AMD Ryzen 5 7500X3D (4,0 GHz / 4,5 GHz)",,,1,LDLC España,275.00,275.00,275.00,2026-08-15
+cpu,amd,Ryzen 5,AMD Ryzen 5 9600X (3.9 GHz / 5.4 GHz),,,1,LDLC España,290.00,290.00,290.00,2026-08-15
+cpu,amd,Ryzen 7,"AMD Ryzen 7 5700 Wraith Stealth (3,7 GHz / 4,6 GHz)",,,1,LDLC España,162.00,162.00,162.00,2026-08-15
+cpu,amd,Ryzen 7,"AMD Ryzen 7 5700G Wraith Stealth (3,8 GHz / 4,6 GHz)",,,1,LDLC España,224.00,224.00,224.00,2026-08-15
+cpu,amd,Ryzen 7,"AMD Ryzen 7 5700X (3,4 GHz / 4,6 GHz)",,,1,LDLC España,186.00,186.00,186.00,2026-08-15
+cpu,amd,Ryzen 7,"AMD Ryzen 7 5700X (3,4 GHz / 4,6 GHz) - Versión a granel",,,1,LDLC España,193.00,193.00,193.00,2026-08-15
+cpu,amd,Ryzen 7,AMD Ryzen 7 5800X3D (3.4 GHz / 4.5 GHz) - Edición aniversario 10 años,,,1,LDLC España,436.00,436.00,436.00,2026-08-15
+cpu,amd,Ryzen 7,AMD Ryzen 7 7800X3D (4.2 GHz / 5.0 GHz) - Versión tray,,,1,LDLC España,436.00,436.00,436.00,2026-08-15
+cpu,amd,Ryzen 7,AMD Ryzen 7 9700X (3.8 GHz / 5.5 GHz),,,1,LDLC España,374.00,374.00,374.00,2026-08-15
+cpu,amd,Ryzen 7,"AMD Ryzen 7 9800X3D (4,7 GHz / 5,2 GHz)",,,1,LDLC España,498.00,498.00,498.00,2026-08-15
+cpu,amd,Ryzen 7,"AMD Ryzen 7 9850X3D (4,7 GHz / 5,6 GHz)",,,1,LDLC España,519.00,519.00,519.00,2026-08-15
+cpu,amd,Ryzen 9,"AMD Ryzen 9 9950X3D (4,3 GHz / 5,7 GHz)",,,1,LDLC España,758.00,758.00,758.00,2026-08-15
+cpu,amd,Ryzen 7,[ COOLPC - Gamer Extreme COOLPC Gamer XIII Core - Ryzen 7 5700X / Radeon RX 9070 GRE 12Gb / 32Gb DDR4 / NVMe 1Tb / W11 1.,,,1,Coolmod,849.50,849.50,849.50,2026-08-15
+cpu,amd,Ryzen 7,"[ COOLPC - Gamer Extreme COOLPC Gamer XIII Core - Ryzen 7 5700X / Radeon RX 9070 GRE 12Gb / 32Gb DDR4 / NVMe 1Tb / W11 1.849,50 € 1.499",,,1,Coolmod,95.00,95.00,95.00,2026-08-15
+cpu,amd,Ryzen 7,[ Procesadores Procesador AMD Ryzen 7 5800X3D 4.5GHz Socket AM4 Boxed 10th Aniversary 358,,,1,Coolmod,95.00,95.00,95.00,2026-08-15
+cpu,intel,Core i3,Intel Core i3-12100 3.3 GHz,,,1,PcComponentes,173.27,173.27,173.27,2026-08-15
+cpu,intel,Core i3,"Intel Core i3-12100F (3,3 GHz / 4,3 GHz)",,,1,LDLC España,87.00,87.00,87.00,2026-08-15
+cpu,intel,Core i3,Intel Core i3-12100F 3.3 GHz,,,1,PcComponentes,119.75,119.75,119.75,2026-08-15
+cpu,intel,Core i3,Intel Core i3-14100F 3.5/4.7GHz Box,,,1,PcComponentes,108.00,108.00,108.00,2026-08-15
+cpu,intel,Core i5,Intel Core i5-10400 2.90 GHz,,,1,PcComponentes,171.99,171.99,171.99,2026-08-15
+cpu,intel,Core i5,Intel Core i5-12400 2.5 GHz,,,1,PcComponentes,227.96,227.96,227.96,2026-08-15
+cpu,intel,Core i5,Intel Core i5-12400F 2.5 GHz,,,1,PcComponentes,155.99,155.99,155.99,2026-08-15
+cpu,intel,Core i5,Intel Core i5-12600K 3.7 GHz,,,1,PcComponentes,244.52,244.52,244.52,2026-08-15
+cpu,intel,Core i5,Intel Core i5-12600KF 3.7 GHz,,,1,PcComponentes,202.74,202.74,202.74,2026-08-15
+cpu,intel,Core i5,Intel Core i5-13600KF 3.5 GHz Box,,,1,PcComponentes,376.52,376.52,376.52,2026-08-15
+cpu,intel,Core i5,Intel Core i5-14400 2.5/4.7GHz Box,,,1,PcComponentes,207.95,207.95,207.95,2026-08-15
+cpu,intel,Core i5,Intel Core i5-14400F 2.5/4.7GHz Box,,,1,PcComponentes,186.99,186.99,186.99,2026-08-15
+cpu,intel,Core i5,"Intel Core i5-14600K (3,5 GHz / 5,3 GHz)",,,1,LDLC España,281.00,281.00,281.00,2026-08-15
+cpu,intel,Core i5,Intel Core i5-14600K 3.5/5.4GHz Box,,,1,PcComponentes,287.90,287.90,287.90,2026-08-15
+cpu,intel,Core i5,Intel Core i5-14600KF (3.5 GHz / 5.3 GHz) - Versión tray,,,1,LDLC España,261.00,261.00,261.00,2026-08-15
+cpu,intel,Core i5,Intel Core i5-14600KF 3.5/5.4GHz Box,,,1,PcComponentes,250.99,250.99,250.99,2026-08-15
+cpu,intel,Core i7,Intel Core i7-12700 2.1 GHz,,,1,PcComponentes,332.96,332.96,332.96,2026-08-15
+cpu,intel,Core i7,Intel Core i7-12700F 2.1 GHz,,,1,PcComponentes,230.91,230.91,230.91,2026-08-15
+cpu,intel,Core i7,Intel Core i7-12700K 3.6 GHz,,,1,PcComponentes,372.77,372.77,372.77,2026-08-15
+cpu,intel,Core i7,Intel Core i7-12700KF 3.6 GHz,,,1,PcComponentes,321.51,321.51,321.51,2026-08-15
+cpu,intel,Core i7,Intel Core i7-13700K 3.4 GHz Box,,,1,PcComponentes,384.25,384.25,384.25,2026-08-15
+cpu,intel,Core i7,Intel Core i7-13700KF 3.4 GHz Box,,,1,PcComponentes,346.04,346.04,346.04,2026-08-15
+cpu,intel,Core i7,Intel Core i7-14700 2.1/5.4GHz Box,,,1,PcComponentes,387.99,387.99,387.99,2026-08-15
+cpu,intel,Core i7,Intel Core i7-14700F 2.1/5.4GHz Box,,,1,PcComponentes,333.80,333.80,333.80,2026-08-15
+cpu,intel,Core i7,Intel Core i7-14700K 3.4/5.6GHz Box,,,1,PcComponentes,420.04,420.04,420.04,2026-08-15
+cpu,intel,Core i7,Intel Core i7-14700KF 3.4/5.6GHz Box,,,1,PcComponentes,393.99,393.99,393.99,2026-08-15
+cpu,intel,Core i9,Intel Core i9-12900KF 3.2 GHz,,,1,PcComponentes,335.94,335.94,335.94,2026-08-15
+cpu,intel,Core i9,Intel Core i9-14900 2.1/5.8 GHz Box,,,1,PcComponentes,613.86,613.86,613.86,2026-08-15
+cpu,intel,Core i3,Procesador Intel Core i3-14100 4 Núcleos 3.5 GHz Frecuencia Base 4.7 GHz Turbo Gráficos UHD 730,,,1,PcComponentes,144.93,144.93,144.93,2026-08-15
+cpu,intel,Core i7,Procesador Intel Core i7-14700F 20 Núcleos 2.1 GHz Frecuencia Base 5.4 GHz Frecuencia Turbo Sin Gráficos Integrados,,,1,PcComponentes,435.65,435.65,435.65,2026-08-15
+cpu,intel,Core i9,Procesador Intel Core i9-14900KF 24 Núcleos 3.2 GHz Frecuencia Base 6 GHz Turbo Sin Gráficos Integrados,,,1,PcComponentes,452.55,452.55,452.55,2026-08-15
+gpu,nvidia,RTX 3050,ASUS DUAL GeForce RTX 3050 OC O6G,,,1,LDLC España,234.00,234.00,234.00,2026-08-15
+gpu,nvidia,RTX 5050,ASUS Dual GeForce RTX 5050 8GB,,,1,LDLC España,326.00,326.00,326.00,2026-08-15
+gpu,nvidia,RTX 5060,ASUS Dual GeForce RTX 5060 OC Edition 8GB,,,1,LDLC España,470.00,470.00,470.00,2026-08-15
+gpu,nvidia,RTX 5060 TI,ASUS Dual GeForce RTX 5060 Ti OC Edition 16GB,,,1,LDLC España,786.00,786.00,786.00,2026-08-15
+gpu,nvidia,RTX 5060 TI,ASUS Dual GeForce RTX 5060 Ti OC Edition 8GB,,,1,LDLC España,546.00,546.00,546.00,2026-08-15
+gpu,nvidia,RTX 5070,ASUS Dual GeForce RTX 5070 12GB GDDR7 OC Edition,,,1,LDLC España,806.00,806.00,806.00,2026-08-15
+gpu,nvidia,RTX 5060,ASUS PRIME GeForce RTX 5060 OC Edition 8GB,,,1,LDLC España,498.00,498.00,498.00,2026-08-15
+gpu,nvidia,RTX 5070,ASUS PRIME GeForce RTX 5070 12GB GDDR7 OC Edition,,,1,LDLC España,815.00,815.00,815.00,2026-08-15
+gpu,nvidia,RTX 5070 TI,ASUS PRIME GeForce RTX 5070 Ti 16GB GDDR7 OC Edition,,,1,LDLC España,286.00,286.00,286.00,2026-08-15
+gpu,nvidia,RTX 3060,Gainward GeForce RTX 3060 Python II OC,,,1,LDLC España,431.00,431.00,431.00,2026-08-15
+gpu,nvidia,RTX 5070 TI,GeForce RTX 5070 Ti VENTUS 3X OC 16GB GDDR7 Reflex 2 RTX AI DLSS4 1.,,16,1,PcComponentes,269.99,269.99,269.99,2026-08-15
+gpu,nvidia,RTX 5050,Gigabyte GeForce RTX 5050 WINDFORCE OC 8G,,,1,LDLC España,306.00,306.00,306.00,2026-08-15
+gpu,nvidia,RTX 5070,Gigabyte GeForce RTX 5070 EAGLE OC SFF 12G,,,1,LDLC España,671.00,671.00,671.00,2026-08-15
+gpu,nvidia,RTX 5070,Gigabyte GeForce RTX 5070 GAMING OC 12G,,,1,LDLC España,690.00,690.00,690.00,2026-08-15
+gpu,nvidia,RTX 5070 TI,Gigabyte GeForce RTX 5070 Ti WINDFORCE OC SFF 16G,,,1,LDLC España,276.00,276.00,276.00,2026-08-15
+gpu,nvidia,RTX 5060,MSI GeForce RTX 5060 8G VENTUS 2X OC,,,1,LDLC España,470.00,470.00,470.00,2026-08-15
+gpu,nvidia,RTX 5070 TI,[ ### MSI GeForce RTX 5070 Ti VENTUS 3X OC 16GB GDDR7 Reflex 2 RTX AI DLSS4 1.,,,1,PcComponentes,269.99,269.99,269.99,2026-08-15
+gpu,nvidia,RTX 5070 TI,"[ ### MSI GeForce RTX 5070 Ti VENTUS 3X OC 16GB GDDR7 Reflex 2 RTX AI DLSS4 1.269,99€ 4,7/5 453",,,1,PcComponentes,762.27,762.27,762.27,2026-08-15
+gpu,nvidia,RTX 5080,"[ Portátiles Portátil Gigabyte AORUS Master 16 BYHC5ESE64SP U9-275HX RTX 5080 32GB 1TB 16"" W11P 3.",,,1,Coolmod,499.95,499.95,499.95,2026-08-15
+gpu,nvidia,RTX 5080,"[ Portátiles Portátil Gigabyte AORUS Master 16 BYHC5ESE64SP U9-275HX RTX 5080 32GB 1TB 16"" W11P 3.499,95 € 2.479",,,1,Coolmod,95.00,95.00,95.00,2026-08-15
+ram,memory,DDR5,Corsair Vengeance DDR5 16 GB (2 x 8 GB) 5200 MHz CL40 - Negro,16,,1,LDLC España,249.00,249.00,249.00,2026-08-15
