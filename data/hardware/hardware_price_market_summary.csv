@@ -19,6 +19,7 @@ cpu,amd,Ryzen 7,"AMD Ryzen 7 9800X3D (4,7 GHz / 5,2 GHz)",,,1,LDLC España,498.0
 cpu,amd,Ryzen 7,"AMD Ryzen 7 9850X3D (4,7 GHz / 5,6 GHz)",,,1,LDLC España,519.00,519.00,519.00,2026-08-15
 cpu,amd,Ryzen 9,"AMD Ryzen 9 9950X3D (4,3 GHz / 5,7 GHz)",,,1,LDLC España,758.00,758.00,758.00,2026-08-15
 cpu,amd,Ryzen 3,"El **procesador** es uno de los elementos más importantes de cualquier equipo informático, especialmente si necesitas rendimiento para realizar trabajos audiovisuales o quieres ded",,,1,LDLC España,193.00,193.00,193.00,2026-08-15
+cpu,amd,Ryzen 5,Procesador - AMD Ryzen 5 5600GT,,,1,MediaMarkt España,166.96,166.96,166.96,2026-08-15
 cpu,amd,Ryzen 7,Procesador - AMD Ryzen 7 5700X,,,1,MediaMarkt España,168.60,168.60,168.60,2026-08-15
 cpu,amd,Ryzen 7,Procesador - AMD Ryzen 7 5800X3D,,,1,MediaMarkt España,440.47,440.47,440.47,2026-08-15
 cpu,amd,Ryzen 7,[ COOLPC - Gamer Extreme COOLPC Gamer XIII Core - Ryzen 7 5700X / Radeon RX 9070 GRE 12Gb / 32Gb DDR4 / NVMe 1Tb / W11 1.,,,1,Coolmod,849.50,849.50,849.50,2026-08-15
@@ -151,26 +152,56 @@ ram,memory,DDR4,9. Median:€102.99,8,,1,Amazon España,54.99,54.99,54.99,2026-0
 ram,memory,DDR5,Corsair Vengeance DDR5 128 GB (2 x 64 GB) 6000 MHz CL40 - Negro,128,,1,LDLC España,502.00,502.00,502.00,2026-08-15
 ram,memory,DDR5,Corsair Vengeance DDR5 128 GB (4 x 32 GB) 5600 MHz CL40 - Negro,128,,1,LDLC España,95.00,95.00,95.00,2026-08-15
 ram,memory,DDR5,Corsair Vengeance DDR5 16 GB (2 x 8 GB) 5200 MHz CL40 - Negro,16,,1,LDLC España,249.00,249.00,249.00,2026-08-15
+ram,memory,DDR5,Corsair Vengeance DDR5 8 GB (1 x 8 GB) 5200 MHz CL40 - Negro,8,,1,LDLC España,138.00,138.00,138.00,2026-08-15
+ram,memory,DDR5,Corsair Vengeance RGB DDR5 8 GB (1 x 8 GB) 5200 MHz CL40 - Negro,8,,1,LDLC España,153.00,153.00,153.00,2026-08-15
 ram,memory,DDR4,Corsair Vengeance RGB RS 32 GB (2 x 16 GB) DDR4 3200 MHz CL16,32,,1,LDLC España,305.00,305.00,305.00,2026-08-15
+ram,memory,DDR4,Corsair Vengeance SO-DIMM DDR4 16 GB 3200 MHz CL22,16,,1,LDLC España,153.00,153.00,153.00,2026-08-15
 ram,memory,DDR4,Crucial Pro DDR4 64 GB (2 x 32 GB) 3200 MHz CL22,64,,1,LDLC España,161.00,161.00,161.00,2026-08-15
 ram,memory,DDR4,Fox Spirit Akura RGB 32 GB (2x 16 GB) DDR4 3200 MHz CL16,32,,1,LDLC España,287.00,287.00,287.00,2026-08-15
+ram,memory,DDR4,G.Skill Aegis 16 GB (1 x 16 GB) DDR4 3200 MHz CL16,16,,1,LDLC España,130.00,130.00,130.00,2026-08-15
+ram,memory,DDR4,G.Skill Aegis 8 GB (1 x 8 GB) DDR4 2666 MHz CL19,8,,1,LDLC España,71.00,71.00,71.00,2026-08-15
+ram,memory,DDR4,G.Skill Aegis 8 GB (1 x 8 GB) DDR4 3200 MHz CL16,8,,1,LDLC España,65.00,65.00,65.00,2026-08-15
 ram,memory,DDR5,G.Skill Flare X5 Series 32 GB (2x 16 GB) DDR5 6000 MHz CL36,32,,1,LDLC España,568.00,568.00,568.00,2026-08-15
 ram,memory,DDR5,G.Skill Flare X5 Series Low Profile 16 GB DDR5 6000 MHz CL30 (Bulk),16,,1,LDLC España,287.00,287.00,287.00,2026-08-15
+ram,memory,DDR4,G.Skill RipJaws 4 Series 8 GB DDR4 2400 MHz CL17,8,,1,LDLC España,70.00,70.00,70.00,2026-08-15
 ram,memory,DDR4,G.Skill RipJaws Serie 5 Negro 16GB (1 x 16GB) DDR4 3200 MHz CL16,16,,1,LDLC España,104.00,104.00,104.00,2026-08-15
 ram,memory,DDR4,G.Skill RipJaws Series SO-DIMM 16 GB (2 x 8 GB) DDR4 3200 MHz CL22,16,,1,LDLC España,100.00,100.00,100.00,2026-08-15
+ram,memory,DDR4,G.Skill RipJaws Series SO-DIMM 8 GB DDR4 3200 MHz CL22,8,,1,LDLC España,72.00,72.00,72.00,2026-08-15
+ram,memory,DDR5,G.Skill Ripjaws M5 RGB 48 GB (2 x 24 GB) DDR5 6000 MHz CL30 - Blanco,48,,1,LDLC España,230.00,230.00,230.00,2026-08-15
+ram,memory,DDR5,G.Skill Ripjaws M5 RGB 64 GB (2 x 32 GB) DDR5 6800 MHz CL34 - Blanco,64,,1,LDLC España,199.00,199.00,199.00,2026-08-15
+ram,memory,DDR5,G.Skill Ripjaws M5 RGB 64 GB (2 x 32 GB) DDR5 6800 MHz CL34 - Negro,64,,1,LDLC España,199.00,199.00,199.00,2026-08-15
 ram,memory,DDR5,G.Skill Trident Z5 48GB (2 x 24GB) DDR5 7200 MHz CL36 - Negro,48,,1,LDLC España,980.00,980.00,980.00,2026-08-15
+ram,memory,DDR5,G.Skill Trident Z5 CK 48 GB (2 x 24 GB) DDR5 8800 MHz CL42 - Negro,48,,1,LDLC España,504.00,504.00,504.00,2026-08-15
+ram,memory,DDR5,G.Skill Trident Z5 CK RGB 48 GB (2 x 24 GB) DDR5 8800 MHz CL42 - Negro,48,,1,LDLC España,574.00,574.00,574.00,2026-08-15
+ram,memory,DDR5,G.Skill Trident Z5 RGB 48GB (2 x 24GB) DDR5 6400 MHz CL30 - Negro,48,,1,LDLC España,231.00,231.00,231.00,2026-08-15
+ram,memory,DDR5,G.Skill Trident Z5 RGB 48GB (2 x 24GB) DDR5 6800 MHz CL32 - Negro,48,,1,LDLC España,180.00,180.00,180.00,2026-08-15
+ram,memory,DDR5,G.Skill Trident Z5 RGB 48GB (2 x 24GB) DDR5 8000 MHz CL38 - Blanco,48,,1,LDLC España,289.00,289.00,289.00,2026-08-15
+ram,memory,DDR5,G.Skill Trident Z5 Royal 48 GB (2 x 24 GB) DDR5 8000 MHz CL38 - Plata,48,,1,LDLC España,343.00,343.00,343.00,2026-08-15
+ram,memory,DDR5,G.Skill Trident Z5 Royal 48 GB (2 x 24 GB) DDR5 8400 MHz CL40 - Plata,48,,1,LDLC España,426.00,426.00,426.00,2026-08-15
+ram,memory,DDR5,G.Skill Trident Z5 Royal 64 GB (2 x 32 GB) DDR5 6800 MHz CL34 - Plata,64,,1,LDLC España,199.00,199.00,199.00,2026-08-15
+ram,memory,DDR5,G.Skill Trident Z5 Royal Neo 48 GB (2 x 24 GB) DDR5 8000 MHz CL40 - Plata,48,,1,LDLC España,261.00,261.00,261.00,2026-08-15
 ram,memory,DDR4,"Intel® Core™ i5-12400F, procesador para Equipos de sobremesa de 12a generación; Frecuencia Base 2.5 GHz, 6 núcleos, LGA1700, RAM DDR4 y hasta 128 GB DDR5",128,,1,Amazon España,155.99,155.99,155.99,2026-08-15
+ram,memory,DDR4,Kingsman Gaming DDR4 Innovator 16 GB 3200 MHz CL22 - Negro,16,,1,LDLC España,148.00,148.00,148.00,2026-08-15
+ram,memory,DDR4,Kingston FURY Beast 128GB (4 x 32GB) DDR4 3200 MHz CL16,128,,1,LDLC España,257.00,257.00,257.00,2026-08-15
 ram,memory,DDR4,Kingston FURY Beast 16 GB (2 x 8 GB) DDR4 3200 MHz CL16,16,,1,LDLC España,172.00,172.00,172.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast 16 GB (2 x 8 GB) DDR5 5600 MHz CL36,16,,1,LDLC España,287.00,287.00,287.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast 16GB (2 x 8GB) DDR5 6000 MHz CL30,16,,1,LDLC España,287.00,287.00,287.00,2026-08-15
 ram,memory,DDR4,Kingston FURY Beast 32GB (2 x 16GB) DDR4 3200 MHz CL16,32,,1,LDLC España,412.00,412.00,412.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast 32GB (2 x 16GB) DDR5 6000 MHz CL30,32,,1,LDLC España,604.00,604.00,604.00,2026-08-15
 ram,memory,DDR4,Kingston FURY Beast 8GB DDR4 3200 MHz CL16,8,,1,LDLC España,95.00,95.00,95.00,2026-08-15
+ram,memory,DDR5,Kingston FURY Beast 8GB DDR5 5200 MHz CL40,8,,1,LDLC España,119.00,119.00,119.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast 8GB DDR5 5600 MHz CL36,8,,1,LDLC España,153.00,153.00,153.00,2026-08-15
+ram,memory,DDR5,Kingston FURY Beast 8GB DDR5 5600 MHz CL40,8,,1,LDLC España,127.00,127.00,127.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast RGB 16GB (2 x 8GB) DDR5 6000 MHz CL30,16,,1,LDLC España,316.00,316.00,316.00,2026-08-15
 ram,memory,DDR4,Kingston FURY Beast RGB 32 GB (2 x 16 GB) DDR4 3600 MHz CL18,32,,1,LDLC España,575.00,575.00,575.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast RGB 32GB (2 x 16GB) DDR5 6000 MHz CL30,32,,1,LDLC España,566.00,566.00,566.00,2026-08-15
 ram,memory,DDR5,Kingston FURY Beast RGB 32GB (2 x 16GB) DDR5 6000 MHz CL30 - Blanco,32,,1,LDLC España,614.00,614.00,614.00,2026-08-15
+ram,memory,DDR4,Kingston FURY Impact SO-DIMM 16 GB DDR4 3200 MHz CL20,16,,1,LDLC España,172.00,172.00,172.00,2026-08-15
+ram,memory,DDR4,Kingston SO-DIMM 8GB DDR4 3200 MHz CL22 1RX8,8,,1,LDLC España,95.00,95.00,95.00,2026-08-15
+ram,memory,DDR5,Kingston ValueRAM 8GB DDR5 5600MHz CL46 1Rx16,8,,1,LDLC España,124.00,124.00,124.00,2026-08-15
+ram,memory,DDR4,Kingston ValueRAM SO-DIMM 16GB DDR4 3200 MHz CL22 2Rx8,16,,1,LDLC España,172.00,172.00,172.00,2026-08-15
+ram,memory,DDR4,Kingston ValueRAM SO-DIMM 8GB DDR4 3200 MHz CL22 1Rx8,8,,1,LDLC España,134.00,134.00,134.00,2026-08-15
+ram,memory,DDR5,Memoria DDR5 Kingston Fury Beast 64GB 2x32GB 6000MHz CL30 EXPO-XMP,64,,1,Coolmod,95.00,95.00,95.00,2026-08-15
 ram,memory,DDR4,Memoria RAM - AFOX DDR4 1 x 4GB 3200MHz UDIMM PC AFLD44PK1P,4,,1,MediaMarkt España,34.29,34.29,34.29,2026-08-15
 ram,memory,DDR4,Memoria RAM - CORSAIR CMK8GX5M1B5200C40,16,,1,MediaMarkt España,173.89,173.89,173.89,2026-08-15
 ram,memory,DDR4,Memoria RAM - DELL SNPTN78YC/32G,32,,1,MediaMarkt España,249.00,249.00,249.00,2026-08-15
@@ -182,8 +213,12 @@ ram,memory,DDR4,Memoria RAM - SILICON POWER DDR4 8GB PC 3200 CL16 Silicon-Power 
 ram,memory,DDR5,Memoria RAM - XPG CASTER DDR5,16,,1,MediaMarkt España,263.13,263.13,263.13,2026-08-15
 ram,memory,DDR4,Memorias RAM - SILICON POWER ddr4 32gb 2x 16gb silicon power udimm 3200mhz,32,,1,MediaMarkt España,313.80,313.80,313.80,2026-08-15
 ram,memory,DDR5,Memorias ram - CRUCIAL SODIMM DDR5 CT16G56C46S5,16,,1,MediaMarkt España,255.44,255.44,255.44,2026-08-15
+ram,memory,DDR5,Modelo: Corsair Vengeance DDR5 48 GB (2 x 24 GB) 6000 MHz CL36 - Negro,48,,1,LDLC España,340.00,340.00,340.00,2026-08-15
 ram,memory,DDR5,Modelo: Corsair Vengeance DDR5 48 GB (2 x 24 GB) 6000 MHz CL36 - Negro Opinión traducida automáticamente +,48,,1,LDLC España,340.00,340.00,340.00,2026-08-15
 ram,memory,DDR4,Textorm 16 GB (2x 8 GB) DDR4 3200 MHz CL16,16,,1,LDLC España,162.00,162.00,162.00,2026-08-15
 ram,memory,DDR5,Textorm 16 GB (2x 8 GB) DDR5 5600 MHz CL46,16,,1,LDLC España,268.00,268.00,268.00,2026-08-15
+ram,memory,DDR4,Textorm 16 GB DDR4 3200 MHz CL16,16,,1,LDLC España,143.00,143.00,143.00,2026-08-15
 ram,memory,DDR4,Textorm 8 GB DDR4 3200 MHz CL16,8,,1,LDLC España,76.00,76.00,76.00,2026-08-15
 ram,memory,DDR4,Textorm SO-DIMM 16 GB DDR4 3200 MHz CL22,16,,1,LDLC España,124.00,124.00,124.00,2026-08-15
+ram,memory,DDR4,Textorm SO-DIMM 8 GB DDR4 2666 MHz CL19,8,,1,LDLC España,81.00,81.00,81.00,2026-08-15
+ram,memory,DDR4,Textorm SO-DIMM 8 GB DDR4 3200 MHz CL22,8,,1,LDLC España,76.00,76.00,76.00,2026-08-15
