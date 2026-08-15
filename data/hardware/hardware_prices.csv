@@ -1,0 +1,21 @@
+price_id,component_type,vendor,category,model,capacity_gb,price_eur,price_type,market,currency,source,observed_at,valid_until,notes
+cpu,intel,Intel,Core i3,Core i3-14100F,,,,Spain,EUR,PcComponentes,2026-08-15,,reference market price; monthly refresh
+cpu,intel,Intel,Core i5,Core i5-12400F,,153.97,observed,Spain,EUR,PcComponentes,2026-08-15,,representative current listing
+cpu,intel,Intel,Core i7,Core i7-14700KF,,389.00,observed,Spain,EUR,PcComponentes,2026-08-15,,representative current listing
+cpu,intel,Intel,Core i9,Core i9-14900K,,487.99,observed,Spain,EUR,PcComponentes,2026-08-15,,representative current listing
+cpu,amd,AMD,Ryzen 3,Ryzen 3 4100,,61.77,observed,Spain,EUR,PcComponentes,2026-08-15,,representative current listing
+cpu,amd,AMD,Ryzen 5,Ryzen 5 9600X,,184.90,observed,Spain,EUR,PcComponentes,2026-08-15,,representative current listing
+cpu,amd,AMD,Ryzen 7,,,,,Spain,EUR,,2026-08-15,,pending source observation
+cpu,amd,AMD,Ryzen 9,,,,,Spain,EUR,,2026-08-15,,pending source observation
+ram,system,DDR4,Memory,DDR4 2GB,2,,reference,Spain,EUR,,2026-08-15,,very small capacity; verify availability
+ram,system,DDR4,Memory,DDR4 4GB,4,,reference,Spain,EUR,,2026-08-15,,very small capacity; verify availability
+ram,system,DDR4,Memory,DDR4 8GB,8,,reference,Spain,EUR,,2026-08-15,,monthly refresh
+ram,system,DDR4,Memory,DDR4 16GB,16,,reference,Spain,EUR,,2026-08-15,,monthly refresh
+ram,system,DDR4,Memory,DDR4 32GB,32,,reference,Spain,EUR,,2026-08-15,,monthly refresh
+ram,system,DDR4,Memory,DDR4 64GB,64,,reference,Spain,EUR,,2026-08-15,,monthly refresh
+ram,system,DDR4,Memory,DDR4 128GB,128,,reference,Spain,EUR,,2026-08-15,,monthly refresh
+ram,system,DDR5,Memory,DDR5 8GB,8,,reference,Spain,EUR,,2026-08-15,,monthly refresh
+ram,system,DDR5,Memory,DDR5 16GB,16,,reference,Spain,EUR,,2026-08-15,,monthly refresh
+ram,system,DDR5,Memory,DDR5 32GB,32,,reference,Spain,EUR,,2026-08-15,,monthly refresh
+ram,system,DDR5,Memory,DDR5 64GB,64,,reference,Spain,EUR,,2026-08-15,,monthly refresh
+ram,system,DDR5,Memory,DDR5 128GB,128,,reference,Spain,EUR,,2026-08-15,,monthly refresh
