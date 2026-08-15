@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: monthly-hardware-prices
+  cancel-in-progress: false
+
 jobs:
   update-prices:
     name: Recoger y publicar precios de CPU, RAM y GPU
@@ -15,6 +19,8 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Preparar Python
         uses: actions/setup-python@v5
         with:
@@ -23,14 +29,28 @@ jobs:
         run: python3 scripts/collect_hardware_prices.py
       - name: Revisar cobertura y coherencia
         run: python3 scripts/update_hardware_prices.py
-      - name: Publicar histórico y resumen si hay cambios
+      - name: Publicar histórico y resumen sin perder commits concurrentes
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/hardware/hardware_price_observations.csv data/hardware/hardware_prices.csv data/hardware/nvidia_ai_gpus.csv
           if git diff --cached --quiet; then
             echo "Sin cambios de precios"
-          else
-            git commit -m "data: actualización mensual de precios hardware"
-            git push
+            exit 0
           fi
+          git commit -m "data: actualización mensual de precios hardware"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main; then
+              if git push origin HEAD:main; then
+                echo "Precios publicados correctamente"
+                exit 0
+              fi
+            fi
+            echo "Reintento de publicación $attempt/3"
+            git rebase --abort || true
+            sleep $((attempt * 5))
+          done
+          echo "No se pudo publicar tras 3 intentos"
+          exit 1
