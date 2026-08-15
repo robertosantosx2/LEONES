@@ -11,74 +11,16 @@
     "family": {"type": ["string", "null"]},
     "organization": {"type": ["string", "null"]},
     "version": {"type": ["string", "null"]},
-    "openness": {
-      "type": "object",
-      "properties": {
-        "classification": {"type": ["string", "null"]},
-        "evidence": {"type": "array", "items": {"type": "string"}}
-      },
-      "additionalProperties": false
-    },
+    "openness": {"type": "object", "properties": {"classification": {"type": ["string", "null"]}, "evidence": {"type": "array", "items": {"type": "string"}}}, "additionalProperties": false},
     "architecture": {"type": "object", "additionalProperties": true},
     "artifacts": {"type": "object", "additionalProperties": true},
     "execution": {"type": "object", "additionalProperties": true},
-    "hardware": {
-      "type": "object",
-      "properties": {
-        "cpu": {"type": "object", "additionalProperties": true},
-        "gpu": {"type": "object", "additionalProperties": true},
-        "memory": {"type": "object", "additionalProperties": true},
-        "storage": {"type": "object", "additionalProperties": true},
-        "bandwidth": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
-        "compute": {"type": "object", "additionalProperties": true},
-        "interconnect": {"type": "array", "items": {"type": "object", "additionalProperties": true}}
-      },
-      "additionalProperties": false
-    },
-    "external_evidence": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["source_type", "url", "retrieved_at"],
-        "properties": {
-          "source_type": {"enum": ["hugging_face", "lm_arena", "artificial_analysis", "manufacturer", "other"]},
-          "url": {"type": "string"},
-          "retrieved_at": {"type": ["string", "null"]},
-          "claim": {"type": ["string", "null"]},
-          "source_record_id": {"type": ["string", "null"]}
-        },
-        "additionalProperties": false
-      }
-    },
+    "hardware": {"type": "object", "properties": {"cpu": {"type": "object", "additionalProperties": true}, "gpu": {"type": "object", "additionalProperties": true}, "memory": {"type": "object", "additionalProperties": true}, "storage": {"type": "object", "additionalProperties": true}, "bandwidth": {"type": "array", "items": {"type": "object", "additionalProperties": true}}, "compute": {"type": "object", "additionalProperties": true}, "interconnect": {"type": "array", "items": {"type": "object", "additionalProperties": true}}}, "additionalProperties": false},
+    "external_evidence": {"type": "array", "items": {"type": "object", "required": ["source_type", "url"], "properties": {"source_type": {"enum": ["hugging_face", "lm_arena", "artificial_analysis", "manufacturer", "msa", "llm_stats", "vellum", "lambda_benchmarks", "swe_bench", "livecodebench", "other"]}, "url": {"type": "string", "format": "uri"}, "retrieved_at": {"type": ["string", "null"]}, "claim": {"type": ["string", "null"]}, "source_record_id": {"type": ["string", "null"]}}, "additionalProperties": false}},
     "experiments": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
     "evaluation": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
-    "quality_flags": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["flag_type", "severity", "message"],
-        "properties": {
-          "flag_type": {"enum": ["missing", "unverified", "stale", "contradictory", "duplicate", "invalid_value", "unsupported_claim", "source_missing", "identity_collision", "inconsistent_units"]},
-          "severity": {"enum": ["low", "medium", "high", "critical"]},
-          "field_name": {"type": ["string", "null"]},
-          "message": {"type": "string"},
-          "detected_at": {"type": "string"},
-          "resolved_at": {"type": ["string", "null"]}
-        },
-        "additionalProperties": false
-      }
-    },
-    "evidence": {
-      "type": "object",
-      "required": ["state"],
-      "properties": {
-        "state": {"enum": ["reported", "reproducible", "verified", "rejected"]},
-        "sources": {"type": "array", "items": {"type": "string"}},
-        "retrieved_at": {"type": ["string", "null"]},
-        "evidence_type": {"enum": ["external", "manada", "leones_measurement", "documentary", "unknown"]}
-      },
-      "additionalProperties": false
-    },
+    "quality_flags": {"type": "array", "items": {"type": "object", "required": ["flag_type", "severity", "message"], "properties": {"flag_type": {"enum": ["missing", "unverified", "stale", "contradictory", "duplicate", "invalid_value", "unsupported_claim", "source_missing", "identity_collision", "inconsistent_units"]}, "severity": {"enum": ["low", "medium", "high", "critical"]}, "field_name": {"type": ["string", "null"]}, "message": {"type": "string"}, "detected_at": {"type": "string"}, "resolved_at": {"type": ["string", "null"]}}, "additionalProperties": false}},
+    "evidence": {"type": "object", "required": ["state"], "properties": {"state": {"enum": ["reported", "reproducible", "verified", "rejected"]}, "sources": {"type": "array", "items": {"type": "string"}}, "retrieved_at": {"type": ["string", "null"]}, "evidence_type": {"enum": ["external", "manada", "leones_measurement", "documentary", "unknown"]}}, "additionalProperties": false},
     "lifecycle": {"enum": ["active", "changed", "deprecated", "unknown"]}
   },
   "additionalProperties": false
