@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 """Offline tests for the Atlas economic ranking."""
 from pathlib import Path
+import sys
 import tempfile, csv
+
+# Make direct execution from the repository root work consistently in CI.
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from scripts.atlas_economic_rank import economic_rank
 
 def main():
