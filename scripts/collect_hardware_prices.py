@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
-"""Monthly CPU/RAM/NVIDIA GPU price collector for LEONES.
-
-Direct retailer access is tried first. When a retailer blocks automated
-requests, the same public page is retried through Jina Reader. Only observed
-prices are recorded; unavailable sources never create guessed prices.
-
-The collector is deliberately conservative: a successful HTTP request is not
-considered a successful collection unless at least one product/price pair is
-actually extracted. An empty dataset therefore fails the workflow instead of
-creating a misleading green run.
-"""
+"""Monthly CPU/RAM/NVIDIA GPU price collector for LEONES."""
 from __future__ import annotations
 import csv, json, re, time
 from datetime import date
@@ -69,45 +59,27 @@ def jsonld_products(html):
 
 def parse_price(raw):
     raw=raw.strip().replace('€','').replace('EUR','').strip()
-    if ',' in raw:
-        return float(raw.replace('.','').replace(',','.'))
+    if ',' in raw: return float(raw.replace('.','').replace(',','.'))
     return float(raw)
 
 def text_products(text):
-    """Extract individual Product+price pairs from Jina markdown.
-
-    Jina often returns a complete product listing as one very long line. The
-    old parser treated that entire line as one product, which could associate
-    the first price with the wrong CPU family. We therefore split explicitly
-    on markdown product headings (###) and only keep the text immediately
-    preceding the first price of each product card.
-    """
     out=[]
     price_re=re.compile(r'(?<!\d)(\d{1,4}(?:[.,]\d{2})?)\s*(?:€|EUR)',re.I)
     heading_re=re.compile(r'(?:^|\s)###\s+(.+?)(?=\s+\d{1,4}(?:[.,]\d{2})?\s*(?:€|EUR))',re.I|re.S)
-    chunks=list(heading_re.finditer(text))
-    for m in chunks:
-        name=re.sub(r'\s+',' ',m.group(1)).strip(' #-')
-        price_match=price_re.search(text,m.start(1)+len(name),m.end()+200)
-        if not price_match:
-            continue
-        try:
-            price=parse_price(price_match.group(1))
-        except ValueError:
-            continue
-        if not 5<=price<=10000:
-            continue
-        # Remove markdown/image/link noise from the product name.
-        name=re.sub(r'!\[[^\]]*\]\([^)]*\)',' ',name)
+    for m in heading_re.finditer(text):
+        raw_name=m.group(1)
+        price_match=price_re.search(text,m.start(1)+max(0,len(raw_name)-400),m.end()+200)
+        if not price_match: continue
+        try: price=parse_price(price_match.group(1))
+        except ValueError: continue
+        if not 5<=price<=10000: continue
+        name=re.sub(r'!\[[^\]]*\]\([^)]*\)',' ',raw_name)
         name=re.sub(r'\[[^\]]*\]\([^)]*\)',' ',name)
         name=re.sub(r'\s+',' ',name).strip(' #-')
-        if name:
-            out.append((name,price,''))
-
-    # Fallback for plain text where product cards are not marked with ###.
+        if name: out.append((name,price,''))
     if not out:
         lines=[re.sub(r'\s+',' ',x).strip() for x in text.splitlines() if x.strip()]
-        product_re=re.compile(r'(Intel(?:\s+Core)?\s+i[3579]|Core\s+i[3579]|Ryzen\s+[3579]|DDR[45]|RTX\s*\d{4})',re.I)
+        product_re=re.compile(r'(Intel\s+Core\s+i[3579]|Core\s+i[3579]|AMD\s+Ryzen\s+[3579]|Ryzen\s+[3579]|DDR[45]|RTX\s*\d{4})',re.I)
         for i,line in enumerate(lines):
             pm=price_re.search(line)
             if not pm: continue
@@ -129,7 +101,8 @@ def classify(name,kind,vendor):
     n=name.lower()
     if kind=='cpu':
         if vendor=='intel':
-            m=re.search(r'\bcore\s+(?:ultra\s+)?i?([3579])\b',n)
+            # Keep Core i3/i5/i7/i9 distinct; Core Ultra is not silently mapped.
+            m=re.search(r'\bcore\s+i([3579])(?:[-\s]|$)',n)
             return (f'Core i{m.group(1)}','') if m else None
         m=re.search(r'\bryzen\s+([3579])\b',n)
         return (f'Ryzen {m.group(1)}','') if m else None
@@ -143,9 +116,19 @@ def classify(name,kind,vendor):
         return (m.group(1).upper(),v.group(1) if v else '')
     return None
 
+def valid_observation(r):
+    model=(r.get('model') or '').strip()
+    price=(r.get('price_eur') or '').strip()
+    if not model or len(model)>180: return False
+    if '[![' in model or '](http' in model or '###' in model: return False
+    try: p=float(price.replace(',','.'))
+    except ValueError: return False
+    return 5 <= p <= 10000
+
 def load_obs():
     if not OBS.exists(): return []
-    with OBS.open(encoding='utf-8',newline='') as f: return list(csv.DictReader(f))
+    with OBS.open(encoding='utf-8',newline='') as f:
+        return [r for r in csv.DictReader(f) if valid_observation(r)]
 
 def save_obs(rows):
     OBS.parent.mkdir(parents=True,exist_ok=True)
