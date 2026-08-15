@@ -60,7 +60,8 @@ def jsonld_products(html):
 def parse_price_match(m):
     euros=m.group('euros').replace('.','').replace(',','.')
     cents=m.group('cents')
-    if cents and ',' not in euros and '.' not in euros: return float(f'{int(euros)}.{int(cents):02d}')
+    if cents and ',' not in euros and '.' not in euros:
+        return float(f'{int(euros)}.{int(cents):02d}')
     return float(euros)
 
 def clean_name(name):
@@ -135,7 +136,8 @@ def load_obs():
 
 def save_obs(rows):
     OBS.parent.mkdir(parents=True,exist_ok=True)
-    with OBS.open('w',encoding='utf-8',newline='') as f: csv.DictWriter(f,fieldnames=FIELDS).writerows([dict(zip(FIELDS,FIELDS))]) if False else None; w=csv.DictWriter(f,fieldnames=FIELDS); w.writeheader(); w.writerows(rows)
+    with OBS.open('w',encoding='utf-8',newline='') as f:
+        w=csv.DictWriter(f,fieldnames=FIELDS); w.writeheader(); w.writerows(rows)
 
 def build_summary(rows):
     latest={}
@@ -144,8 +146,11 @@ def build_summary(rows):
         if key not in latest or r['observed_at']>=latest[key]['observed_at']: latest[key]=r
     fields=['price_id','component_type','vendor','category','model','capacity_gb','price_eur','price_type','market','currency','source','observed_at','valid_until','notes']
     out=[]
-    for r in latest.values(): out.append({'price_id':f"{r['component_type']}|{r['vendor']}|{r['model']}|{r['capacity_gb']}|{r['vram_gb']}",'component_type':r['component_type'],'vendor':r['vendor'],'category':r['category'],'model':r['model'],'capacity_gb':r['capacity_gb'],'price_eur':r['price_eur'],'price_type':'observed','market':'Spain','currency':'EUR','source':r['source'],'observed_at':r['observed_at'],'valid_until':'','notes':r['notes']})
-    with SUMMARY.open('w',encoding='utf-8',newline='') as f: w=csv.DictWriter(f,fieldnames=fields); w.writeheader(); w.writerows(sorted(out,key=lambda x:(x['component_type'],x['vendor'],x['category'],x['model'])))
+    for r in latest.values():
+        out.append({'price_id':f"{r['component_type']}|{r['vendor']}|{r['model']}|{r['capacity_gb']}|{r['vram_gb']}",'component_type':r['component_type'],'vendor':r['vendor'],'category':r['category'],'model':r['model'],'capacity_gb':r['capacity_gb'],'price_eur':r['price_eur'],'price_type':'observed','market':'Spain','currency':'EUR','source':r['source'],'observed_at':r['observed_at'],'valid_until':'','notes':r['notes']})
+    SUMMARY.parent.mkdir(parents=True,exist_ok=True)
+    with SUMMARY.open('w',encoding='utf-8',newline='') as f:
+        w=csv.DictWriter(f,fieldnames=fields); w.writeheader(); w.writerows(sorted(out,key=lambda x:(x['component_type'],x['vendor'],x['category'],x['model'])))
 
 def main():
     rows=load_obs(); existing={(r['observed_at'],r['component_type'],r['vendor'],r['model'],r['capacity_gb'],r['vram_gb']) for r in rows}; added=extracted=failures=0
