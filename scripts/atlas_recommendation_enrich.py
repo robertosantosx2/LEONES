@@ -2,7 +2,8 @@
 """Merge deterministic recommendation dimensions into an existing CSV.
 
 Existing recommendation columns are preserved. Missing enrichment fields are
-added. Unknown values remain unknown; no performance/JGB/RULA inference is made.
+added. Unknown values remain unknown; this layer does not infer CABE, RULA,
+JGB, performance, or evidence state from unrelated scores.
 """
 from __future__ import annotations
 import argparse, csv
@@ -17,27 +18,24 @@ ENRICH_FIELDS = [
     'last_verified_at'
 ]
 
-KEYS = ('model_id', 'model_name', 'hardware_id')
-
-def num(v):
-    try:
-        return float(v) if v not in ('', None) else None
-    except (ValueError, TypeError):
-        return None
 
 def enrich(row):
     out = dict(row)
     for field in ENRICH_FIELDS:
         out.setdefault(field, '')
-    fit = num(out.get('fit_score'))
-    if out['cabe'] == '' and fit is not None:
-        out['cabe'] = 'true' if fit >= 1 else 'false'
-        out['cabe_status'] = 'estimated'
-    out['rula_status'] = out['rula_status'] or 'unknown'
-    out['jgb_status'] = out['jgb_status'] or ('provisional' if out['jgb_level'] else 'unknown')
-    out['evidence_state'] = out['evidence_state'] or 'reported'
+
+    # Never turn a derived score into a viability claim. CABE must come from
+    # explicit viability evidence or remain unknown.
+    out['cabe_status'] = out['cabe_status'] or ('reported' if out['cabe'] else 'unknown')
+    out['rula_status'] = out['rula_status'] or ('reported' if out['rula'] else 'unknown')
+    out['jgb_status'] = out['jgb_status'] or ('reported' if out['jgb_level'] else 'unknown')
+
+    # A discovered record is not automatically a reported/verified result.
+    # Preserve an existing evidence state; otherwise leave it explicitly unknown.
+    out['evidence_state'] = out['evidence_state'] or 'unknown'
     out['evidence_type'] = out['evidence_type'] or 'unknown'
     return out
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -54,6 +52,7 @@ def main():
         w.writeheader()
         w.writerows(rows)
     print(f'{len(rows)} candidates enriched -> {args.out}')
+
 
 if __name__ == '__main__':
     main()
