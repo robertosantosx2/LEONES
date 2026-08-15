@@ -1,9 +1,7 @@
-name: Atlas — Ingesta de prospección NDJSON
+name: Atlas — Ingesta de prospección NDJSON (manual)
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '37 5 * * *'
 
 permissions:
   contents: write
@@ -15,6 +13,9 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
       - name: Ingerir descubrimientos
         run: python3 scripts/atlas_ingest_ndjson.py
       - name: Guardar feed y cola de revisión
