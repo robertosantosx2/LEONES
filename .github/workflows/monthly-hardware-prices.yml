@@ -1,0 +1,34 @@
+name: Precios hardware — actualización mensual
+
+on:
+  schedule:
+    - cron: '23 4 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-prices:
+    name: Actualizar base de precios de CPU y RAM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Validar base de precios
+        run: python3 scripts/update_hardware_prices.py
+      - name: Publicar cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/hardware/hardware_prices.csv
+          if git diff --cached --quiet; then
+            echo "Sin cambios de precios"
+          else
+            git commit -m "data: actualización mensual de precios hardware"
+            git push
+          fi
