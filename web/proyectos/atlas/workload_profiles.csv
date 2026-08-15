@@ -1,0 +1,7 @@
+workload_id,name,category,min_context_tokens,typical_input_tokens,typical_output_tokens,concurrency,latency_priority,throughput_priority,quality_priority,memory_priority,description
+chat,Chat general,chat,4096,1000,500,1,0.8,0.2,0.7,0.6,Conversación interactiva
+coding,Coding,coding,8192,2000,1000,1,0.7,0.3,0.9,0.5,Generación y análisis de código
+reasoning,Reasoning,reasoning,16384,3000,2000,1,0.5,0.2,1.0,0.4,Razonamiento con contexto amplio
+rag,RAG,rag,16384,4000,800,1,0.7,0.3,0.9,0.6,Consulta con contexto recuperado
+agent,Agentes,agents,32768,5000,1500,1,0.8,0.4,0.9,0.5,Bucle de herramientas y decisiones
+batch,Batch,batch,8192,2000,1000,8,0.2,1.0,0.7,0.4,Procesamiento concurrente
