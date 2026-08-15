@@ -67,23 +67,58 @@ def jsonld_products(html):
             products.append((str(x.get('name','')).strip(),price,str(offers.get('url','')).strip() if isinstance(offers,dict) else ''))
     return products
 
+def parse_price(raw):
+    raw=raw.strip().replace('€','').replace('EUR','').strip()
+    if ',' in raw:
+        return float(raw.replace('.','').replace(',','.'))
+    return float(raw)
+
 def text_products(text):
+    """Extract individual Product+price pairs from Jina markdown.
+
+    Jina often returns a complete product listing as one very long line. The
+    old parser treated that entire line as one product, which could associate
+    the first price with the wrong CPU family. We therefore split explicitly
+    on markdown product headings (###) and only keep the text immediately
+    preceding the first price of each product card.
+    """
     out=[]
-    lines=[re.sub(r'\s+',' ',x).strip() for x in text.splitlines() if x.strip()]
     price_re=re.compile(r'(?<!\d)(\d{1,4}(?:[.,]\d{2})?)\s*(?:€|EUR)',re.I)
-    product_re=re.compile(r'(Intel(?:\s+Core)?\s+i[3579]|Core\s+i[3579]|Ryzen\s+[3579]|DDR[45]|RTX\s*\d{4})',re.I)
-    for i,line in enumerate(lines):
-        m=price_re.search(line)
-        if not m: continue
-        raw=m.group(1)
-        price=float(raw.replace('.','').replace(',','.')) if ',' in raw else float(raw)
-        if not 5<=price<=10000: continue
-        candidates=[]
-        # Product and price frequently occur on the same markdown line after Jina.
-        for j in range(max(0,i-8),min(len(lines),i+3)):
-            s=lines[j].lstrip('#*- ').strip()
-            if product_re.search(s): candidates.append(s)
-        if candidates: out.append((candidates[-1],price,''))
+    heading_re=re.compile(r'(?:^|\s)###\s+(.+?)(?=\s+\d{1,4}(?:[.,]\d{2})?\s*(?:€|EUR))',re.I|re.S)
+    chunks=list(heading_re.finditer(text))
+    for m in chunks:
+        name=re.sub(r'\s+',' ',m.group(1)).strip(' #-')
+        price_match=price_re.search(text,m.start(1)+len(name),m.end()+200)
+        if not price_match:
+            continue
+        try:
+            price=parse_price(price_match.group(1))
+        except ValueError:
+            continue
+        if not 5<=price<=10000:
+            continue
+        # Remove markdown/image/link noise from the product name.
+        name=re.sub(r'!\[[^\]]*\]\([^)]*\)',' ',name)
+        name=re.sub(r'\[[^\]]*\]\([^)]*\)',' ',name)
+        name=re.sub(r'\s+',' ',name).strip(' #-')
+        if name:
+            out.append((name,price,''))
+
+    # Fallback for plain text where product cards are not marked with ###.
+    if not out:
+        lines=[re.sub(r'\s+',' ',x).strip() for x in text.splitlines() if x.strip()]
+        product_re=re.compile(r'(Intel(?:\s+Core)?\s+i[3579]|Core\s+i[3579]|Ryzen\s+[3579]|DDR[45]|RTX\s*\d{4})',re.I)
+        for i,line in enumerate(lines):
+            pm=price_re.search(line)
+            if not pm: continue
+            try: price=parse_price(pm.group(1))
+            except ValueError: continue
+            if not 5<=price<=10000: continue
+            candidates=[]
+            for j in range(max(0,i-3),min(len(lines),i+2)):
+                s=lines[j].lstrip('#*- ').strip()
+                if product_re.search(s): candidates.append(s)
+            if candidates: out.append((candidates[-1],price,''))
     return out
 
 def products(html):
@@ -94,13 +129,13 @@ def classify(name,kind,vendor):
     n=name.lower()
     if kind=='cpu':
         if vendor=='intel':
-            m=re.search(r'\bcore\s+i([3579])\b',n)
+            m=re.search(r'\bcore\s+(?:ultra\s+)?i?([3579])\b',n)
             return (f'Core i{m.group(1)}','') if m else None
-        m=re.search(r'ryzen\s+([3579])\b',n)
+        m=re.search(r'\bryzen\s+([3579])\b',n)
         return (f'Ryzen {m.group(1)}','') if m else None
     if kind=='ram':
-        m=re.search(r'(ddr[45]).{0,100}?(\d{1,3})\s*gb',n)
-        return ('Memory',m.group(2)) if m else None
+        m=re.search(r'\b(ddr[45])\b.*?\b(\d{1,3})\s*gb\b',n)
+        return (f'Memory {m.group(1).upper()}',m.group(2)) if m else None
     if kind=='gpu':
         m=re.search(r'\b(?:geforce\s+)?(rtx\s*\d{4}(?:\s*ti(?:\s*super)?|\s*super)?)\b',n)
         if not m: return None
