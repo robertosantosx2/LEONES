@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/atlas_identity_audit.py'
+      - 'scripts/atlas_evidence_audit.py'
       - 'scripts/atlas_technical_evidence.py'
       - 'scripts/atlas_recommend_from_feed.py'
       - 'scripts/atlas_hardware_matrix.py'
@@ -26,7 +27,7 @@ env:
 
 jobs:
   atlas-pipeline:
-    name: Prospección → Evidencia → Ingesta → Evidencia técnica → Identidad → Calidad → Hipótesis → Hardware → Recomendaciones → Enriquecimiento
+    name: Prospección → Evidencia → Ingesta → Evidencia técnica → Identidad → Evidencia canónica → Calidad → Hipótesis → Hardware → Recomendaciones → Enriquecimiento
     runs-on: ubuntu-latest
     steps:
       - name: Descargar repositorio
@@ -90,6 +91,28 @@ jobs:
           risks=collections.Counter(r['risk'] for r in rows)
           print(f"Identity audit: rows={len(rows)} statuses={dict(statuses)} risks={dict(risks)}")
           print('P0 identity audit generated successfully; no automatic merges are performed.')
+          PY
+
+      - name: Auditar evidencia canónica H06 P1
+        run: |
+          set -e
+          python3 scripts/atlas_evidence_audit.py
+          test -s data/prospection/atlas_evidence_audit.csv
+          python3 - <<'PY'
+          import csv, collections, sys
+          p='data/prospection/atlas_evidence_audit.csv'
+          with open(p, encoding='utf-8-sig', newline='') as f:
+              rows=list(csv.DictReader(f))
+          required={'model_id','model_name','evidence_state','evidence_type','source_url','source_present','retrieved_at','claim_present','action','risk'}
+          missing=required-set(rows[0]) if rows else required
+          if missing:
+              print(f'ERROR: auditoria de evidencia sin columnas {sorted(missing)}')
+              sys.exit(1)
+          states=collections.Counter(r['evidence_state'] for r in rows)
+          risks=collections.Counter(r['risk'] for r in rows)
+          no_source=sum(r['source_present']!='yes' for r in rows)
+          print(f"Evidence audit: rows={len(rows)} states={dict(states)} risks={dict(risks)} no_source={no_source}")
+          print('P1 evidence audit generated successfully; no automatic evidence promotion is performed.')
           PY
 
       - name: Auditar calidad del feed
@@ -166,12 +189,12 @@ jobs:
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/discovery data/prospection/atlas_feed.csv data/prospection/atlas_external_evidence.csv data/prospection/atlas_technical_evidence.csv data/prospection/atlas_identity_audit.csv data/prospection/atlas_hypotheses.csv data/prospection/atlas_quality_flags.csv data/prospection/atlas_review_queue.csv data/prospection/recommendations_*.csv data/prospection/atlas_hardware_matrix.csv
+          git add data/discovery data/prospection/atlas_feed.csv data/prospection/atlas_external_evidence.csv data/prospection/atlas_technical_evidence.csv data/prospection/atlas_identity_audit.csv data/prospection/atlas_evidence_audit.csv data/prospection/atlas_hypotheses.csv data/prospection/atlas_quality_flags.csv data/prospection/atlas_review_queue.csv data/prospection/recommendations_*.csv data/prospection/atlas_hardware_matrix.csv
           if git diff --cached --quiet; then
             echo "Atlas sin cambios"
             exit 0
           fi
-          git commit -m "feat: actualizar prospección, identidad, evidencia técnica, hipótesis, calidad, hardware y recomendaciones"
+          git commit -m "feat: actualizar prospección, identidad, evidencia, hipótesis, calidad, hardware y recomendaciones"
           for attempt in 1 2 3; do
             git fetch origin main
             if git rebase origin/main; then
