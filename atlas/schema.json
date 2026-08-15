@@ -30,7 +30,8 @@
         "memory": {"type": "object", "additionalProperties": true},
         "storage": {"type": "object", "additionalProperties": true},
         "bandwidth": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
-        "compute": {"type": "object", "additionalProperties": true}
+        "compute": {"type": "object", "additionalProperties": true},
+        "interconnect": {"type": "array", "items": {"type": "object", "additionalProperties": true}}
       },
       "additionalProperties": false
     },
@@ -42,14 +43,31 @@
         "properties": {
           "source_type": {"enum": ["hugging_face", "lm_arena", "artificial_analysis", "manufacturer", "other"]},
           "url": {"type": "string"},
-          "retrieved_at": {"type": "string"},
-          "claim": {"type": ["string", "null"]}
+          "retrieved_at": {"type": ["string", "null"]},
+          "claim": {"type": ["string", "null"]},
+          "source_record_id": {"type": ["string", "null"]}
         },
         "additionalProperties": false
       }
     },
     "experiments": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
     "evaluation": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+    "quality_flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["flag_type", "severity", "message"],
+        "properties": {
+          "flag_type": {"enum": ["missing", "unverified", "stale", "contradictory", "duplicate", "invalid_value", "unsupported_claim", "source_missing", "identity_collision", "inconsistent_units"]},
+          "severity": {"enum": ["low", "medium", "high", "critical"]},
+          "field_name": {"type": ["string", "null"]},
+          "message": {"type": "string"},
+          "detected_at": {"type": "string"},
+          "resolved_at": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
     "evidence": {
       "type": "object",
       "required": ["state"],
