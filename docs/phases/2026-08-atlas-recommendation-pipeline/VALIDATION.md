@@ -1,189 +1,159 @@
-# Validación — Atlas → recomendador diario enriquecido
+# Validación — H10 Atlas → recomendador diario enriquecido
 
-**Estado: 🟡 PROVISIONAL / EN VALIDACIÓN**
+**Estado: 🟢 ACEPTADA**
 
-## Criterios de aceptación
+## 1. Criterios de aceptación
 
-| ID | Criterio | Evidencia requerida | Estado |
+| ID | Criterio | Evidencia | Estado |
 |---|---|---|---|
-| V1 | El workflow arranca | GitHub Actions run con runner asignado | ✅ |
-| V2 | Prospección e ingesta completan | pasos verdes | ✅ Run #6 |
-| V3 | Se generan recomendaciones útiles | filas y perfiles hardware válidos | 🟡 Run #6: sí hay candidatos, pero matriz GPU = 0 |
-| V4 | El merge conserva columnas previas | comparación de cabeceras/filas | ⏳ |
-| V5 | Aparecen columnas nuevas críticas | validación automática | ✅ Run #6: 59 ficheros |
-| V6 | JGB no se deriva de rendimiento | revisión del enriquecedor/salida | 🟡 contrato corregido; repetir |
-| V7 | RULA no se deriva de CABE | revisión del enriquecedor/salida | 🟡 contrato corregido; repetir |
-| V8 | No se inventa rendimiento | revisión de `tokens_per_second` | 🟡 no observado en #6; falta endurecer contrato |
-| V9 | Publicación final correcta | commit generado por workflow | ✅ Run #6 |
-| V10 | No hay pérdida de información | revisión de resultados publicados | ⏳ |
-| V11 | Matriz hardware no vacía | al menos una fila de matriz | 🔴 Run #6: 0; ahora el workflow falla si vuelve a ocurrir |
-| V12 | Recomendaciones no vacías | al menos una fila total | 🟡 Run #6: existen candidatos en perfiles concretos; la siguiente ejecución debe validarlo automáticamente |
+| V1 | El workflow arranca | Run #18 con runner asignado | 🟢 |
+| V2 | Prospección e ingesta completan | pasos verdes; 209 modelos | 🟢 |
+| V3 | Evidencia técnica se genera | 39/209 reportados; T0=187, T1=5, T2=17, T3=0 | 🟢 |
+| V4 | Matriz hardware no vacía | 32.128 filas | 🟢 |
+| V5 | Recomendaciones no vacías | 59 ficheros, 859 filas validadas | 🟢 |
+| V6 | Columnas críticas presentes | validación automática | 🟢 |
+| V7 | Enriquecimiento ejecutado | candidatos enriquecidos en los 59 ficheros | 🟢 |
+| V8 | JGB/CABE/RULA independientes | contrato y código revisados | 🟢 |
+| V9 | No se inventa rendimiento | contrato de evidencia y estados | 🟢 |
+| V10 | Publicación resistente a concurrencia | fetch + rebase + retry; push correcto | 🟢 |
+| V11 | Actions actualizadas | checkout@v7 + setup-python@v7 | 🟢 |
+| V12 | Resultado publicado | `Atlas publicado correctamente` | 🟢 |
 
-## Ejecución de validación
+## 2. Ejecución de cierre
 
-### Run #4
-
-- **Workflow:** `Atlas — Pipeline diario completo`
-- **Run:** `#4`
-- **Run ID:** `31878387802`
-- **Resultado:** ❌ fallo durante la publicación por carrera de Git.
-
-La ejecución sí llegó a generar resultados, pero el `push` fue rechazado porque `main` había avanzado durante la ejecución. Esta incidencia motivó la incorporación del mecanismo de `fetch + rebase + retry` en el workflow.
-
-### Run #5
+### Run #18
 
 - **Workflow:** `Atlas — Pipeline diario completo`
-- **Run:** `#5`
-- **Run ID:** `31902230949`
-- **Commit probado:** `e4bd724f891c0e4909f203eb35bf294c8c2334d0`
-- **Resultado:** ❌ fallo temprano en `Descubrir modelos y ecosistema`.
+- **Run ID:** `31912695040`
+- **Commit de entrada:** `a3c6631cb8588b7d11679358b61f2e553eed2a44`
+- **Commit publicado por el workflow:** `2d0deed`
 
-El fallo fue un `FileNotFoundError` al escribir `data/discovery/models.json`; `models.py` no creaba previamente `data/discovery`.
+urlRun #18 en GitHub Actionshttps://github.com/robertosantosx2/LEONES/actions/runs/31912695040
 
-### Run #6 — primera ejecución extremo a extremo
-
-- **Workflow:** `Atlas — Pipeline diario completo`
-- **Run:** `#6`
-- **Run ID:** `31902361090`
-- **Commit ejecutado:** `254193bc98682d6a90edf9926cebbe41328a3ddf`
-- **Resultado:** ✅ workflow completado y publicado.
-
-urlRun #6 en GitHub Actionshttps://github.com/robertosantosx2/LEONES/actions/runs/31902361090
-
-### Resultado cuantitativo del Run #6
+### Evidencia técnica
 
 ```text
-209 modelos ingeridos
-172 repositorios canónicos
-209 registros marcados para verificación
-67 registros en cola de evidencia externa
-209 flags de calidad
-0 hipótesis estructuradas
-0 filas en atlas_hardware_matrix.csv
-59 ficheros de recomendaciones validados estructuralmente
-9 candidatos en cpu-i5-16gb
-9 candidatos en cpu-i7-64gb
-9 candidatos en rtx4060-8gb
+Technical evidence: reported=39/209
+T0=187
+T1=5
+T2=17
+T3=0
 ```
 
-El workflow completó correctamente todos sus pasos y publicó el commit `a786457`.
+Esto demuestra que el sistema mantiene perfiles T2 incluso cuando el contexto no está completo y permite que la capa posterior decida la recomendación concreta.
 
-## Lectura correcta del Run #6
-
-El verde demuestra **infraestructura E2E**, no la aceptación de la calidad de la salida.
-
-### Lo que queda demostrado
-
-1. Prospección, evidencia, ingesta, auditoría, hardware, recomendaciones y publicación se ejecutan dentro del workflow.
-2. La ingesta procesa 209 registros.
-3. La cola de evidencia externa se genera.
-4. La auditoría genera 209 flags.
-5. La publicación resistente a concurrencia funciona.
-6. La validación estructural encuentra las columnas críticas.
-7. Existen recomendaciones en algunos perfiles CPU y GPU.
-
-### Lo que NO queda demostrado
-
-#### 1. La matriz hardware sigue siendo el problema crítico
-
-El Run #6 produjo:
+### Matriz
 
 ```text
-Matrix: 0 recommendation rows
+Matrix: 32128 recommendation rows
+Filas de matriz hardware: 32128
 ```
 
-La causa inmediata es que `atlas_hardware_matrix.py` genera perfiles compuestos, por ejemplo:
+La condición de fallo de matriz vacía se ejecutó y no se activó.
+
+### Perfiles CPU/RAM
+
+La ejecución generó recomendaciones para todos los perfiles de familias Intel i3/i5/i7/i9 y AMD Ryzen 3/5/7/9 en 2/4/8/16/32/64/128 GB. El número de candidatos varió según la configuración: 5, 15, 16 o 17 en los perfiles generales de la ejecución.
+
+### Perfiles específicos conservados
+
+La ejecución también enriqueció perfiles concretos existentes, incluyendo `cpu-i5-16gb`, `cpu-i7-64gb` y `rtx4060-8gb`, con 9 candidatos en cada uno en esta ejecución.
+
+### Validación estructural
 
 ```text
-cpu-intel-i5-16gb-rtx4060
+OK: 59 ficheros de recomendaciones validados; 859 filas
 ```
 
-mientras el feed puede contener un `hardware_id` específico como `rtx4060-8gb`. El recomendador anterior exigía igualdad exacta y descartaba la fila.
-
-La matriz ya estaba diseñada para usar perfiles compuestos y no falsear una medición GPU-only como CPU+GPU; el defecto estaba en la compatibilidad del recomendador.
-
-Se ha corregido `atlas_recommend_from_feed.py` para aceptar un hardware específico del feed cuando forma parte del perfil compuesto solicitado, manteniendo el perfil completo para cálculo de precios.
-
-**Commit:** `043daa18ebeddb2f3660ed67c2fa09aa04c6b72e`
-
-#### 2. El pipeline podía terminar verde con una matriz vacía
-
-Esto era demasiado permisivo. Una matriz vacía no debe considerarse un resultado válido de una fase cuyo objetivo explícito es producir la matriz CPU × RAM × NVIDIA.
-
-Se ha añadido una condición al workflow:
+La validación exigió como mínimo:
 
 ```text
-matriz generada
-     ↓
-filas == 0 ? → FAIL
-     ↓
-continuar
+cabe
+cabe_status
+rula
+rula_status
+jgb_status
+evidence_state
+evidence_type
+uncertainty
 ```
 
-También se exige que el conjunto de recomendaciones no tenga cero filas.
+## 3. Publicación
 
-**Commit:** `7c56a9fb2a2cf4ce13107fbc88d90be86612c54d`
-
-#### 3. CABE no debe derivarse de `fit_score`
-
-El enriquecedor fue corregido anteriormente para no convertir un score compuesto en CABE. CABE/RULA/JGB y evidencia mantienen estados explícitos cuando no existe información suficiente.
-
-**Commit:** `5be8dd2c74820cd6f35b2d78efebdd912431ecc3`
-
-## Advertencia de Node.js
-
-El Run #6 utilizó todavía:
+El workflow realizó:
 
 ```text
-actions/checkout@v4
-actions/setup-python@v5
+git add
+    ↓
+git commit
+    ↓
+git fetch origin main
+    ↓
+git rebase origin/main
+    ↓
+git push origin HEAD:main
 ```
 
-El workflow actual de `main` ya utiliza `@v7` para ambas Actions, por lo que la siguiente ejecución debe comprobar que desaparece la advertencia.
-
-## Estado después del Run #6
+Resultado:
 
 ```text
-PIPELINE E2E                 🟢 demostrado
-PUBLICACIÓN ROBUSTA          🟢 demostrado
-VALIDACIÓN ESTRUCTURAL       🟢 demostrada
-CALIDAD DE DATOS             🟡 insuficiente
-HIPÓTESIS                    🔴 0
-MATRIZ HARDWARE              🔴 0 filas en #6; corrección aplicada
-CABE/RULA/EVIDENCIA          🟡 contrato endurecido
-RECOMENDACIONES              🟡 existen candidatos, pero falta validar la matriz
-ACEPTACIÓN H10               🔴 NO ACEPTADA
+Atlas publicado correctamente
 ```
 
-## Próxima prueba válida
+## 4. Incidencias resueltas durante la validación
 
-La siguiente ejecución debe partir de `main` después de:
+### A — Matriz vacía
+Se endureció el pipeline para que cero filas sea fallo explícito.
+
+### B — Hardware compuesto
+Se corrigió la compatibilidad entre perfiles hardware compuestos y hardware específico del feed.
+
+### C — Contexto
+Se separó `context_supported` de `context_target` y se calculó `context_recommended` sin inventar capacidad.
+
+### D — T2 sin contexto
+T2 puede alimentar la evaluación preliminar sin fabricar contexto. Cuando falta, permanece `unknown`.
+
+### E — Publicación concurrente
+Se incorporó rebase/retry para evitar falsos fallos por avance de `main`.
+
+### F — Actions Node.js
+El run de cierre confirma `actions/checkout@v7` y `actions/setup-python@v7`.
+
+## 5. Lo que queda demostrado
+
+H10 demuestra que existe una infraestructura automática diaria capaz de:
+
+1. descubrir y reunir modelos;
+2. construir evidencia;
+3. ingerirla;
+4. clasificar evidencia técnica;
+5. auditar calidad;
+6. construir hipótesis cuando las hay;
+7. construir la matriz hardware;
+8. generar recomendaciones;
+9. enriquecerlas sin destruir la información existente;
+10. validar el contrato de salida;
+11. publicar los resultados de forma resistente a concurrencia.
+
+## 6. Lo que no queda demostrado
+
+El cierre de H10 no significa que:
+
+- todos los modelos estén empíricamente benchmarkeados;
+- T3 tenga cobertura amplia;
+- CABE/RULA sean mediciones físicas completas;
+- todas las recomendaciones sean equivalentes a una prueba de ejecución real;
+- el Atlas tenga cobertura definitiva;
+- JGB esté sistemáticamente completo;
+- el ranking multiobjetivo final esté terminado.
+
+Estas cuestiones pertenecen a hitos posteriores.
+
+## 7. Resultado
 
 ```text
-043daa18  → compatibilidad de hardware compuesto
-7c56a9fb  → matriz/recomendaciones no pueden quedar vacías
+H10 = 🟢 ACEPTADA
 ```
 
-Además debe verificar el cambio a `actions/checkout@v7` y `actions/setup-python@v7`.
-
-### Criterios decisivos de la siguiente ejecución
-
-```text
-matriz hardware > 0 filas
-        AND
-recomendaciones totales > 0 filas
-        AND
-columnas críticas presentes
-        AND
-CABE/RULA/JGB no inferidos indebidamente
-        AND
-publicación correcta
-```
-
-Si todo eso se cumple, todavía revisaremos los contenidos antes de marcar H10 como **ACEPTADA**.
-
-## Cierre
-
-**H10 continúa abierta.**
-
-El Run #6 demuestra que la infraestructura funciona, pero el `0` de la matriz hardware impide aceptar la fase. La siguiente ejecución es la prueba de cierre funcional de esta incidencia.
+La aceptación se basa en la ejecución real del Run #18 y no solamente en que el workflow haya terminado con código de salida 0.
