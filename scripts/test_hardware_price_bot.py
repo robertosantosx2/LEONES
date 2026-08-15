@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 """Offline regression tests for the LEONES price collector."""
+import sys
+from pathlib import Path
+
+# Allow execution both as `python scripts/test_hardware_price_bot.py`
+# and as an imported module from the repository root.
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from scripts.collect_hardware_prices import extract_products, classify, parse_price
 
 
