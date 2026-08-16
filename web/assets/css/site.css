@@ -48,6 +48,12 @@ a {
     color: var(--site-accent);
 }
 
+button,
+input,
+select {
+    font: inherit;
+}
+
 .site-hero {
     padding: 3rem 1.25rem;
     color: #ffffff;
@@ -221,9 +227,167 @@ a {
     font-size: 0.9em;
 }
 
+/* Application controls: functional extension of the shared system. */
+.app-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 390px) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.app-panel {
+    padding: 1.25rem;
+    border: 1px solid var(--site-border);
+    border-radius: var(--site-radius);
+    background: var(--site-surface);
+}
+
+.app-panel--sticky {
+    position: sticky;
+    top: 1rem;
+}
+
+.app-actions {
+    display: grid;
+    gap: 0.55rem;
+    margin-top: 1rem;
+}
+
+.app-action {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem;
+    color: var(--site-ink);
+    border: 1px solid var(--site-border);
+    border-radius: 0.6rem;
+    background: var(--site-surface);
+    text-align: left;
+    cursor: pointer;
+}
+
+.app-action:hover,
+.app-action:focus-visible,
+.app-action.is-selected {
+    border-color: var(--site-accent);
+    background: var(--site-soft);
+}
+
+.app-action img {
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: contain;
+}
+
+.app-action strong,
+.app-action span {
+    display: block;
+}
+
+.app-action span {
+    color: var(--site-muted);
+    font-size: 0.88rem;
+}
+
+.app-step {
+    color: var(--site-accent);
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.app-progress {
+    height: 0.5rem;
+    margin: 1rem 0;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--site-soft);
+}
+
+.app-progress span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--site-accent);
+    transition: width 160ms ease;
+}
+
+.app-command {
+    min-height: 4.5rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    overflow: auto;
+    border-radius: 0.6rem;
+    color: #eaf4fb;
+    background: #172b3d;
+    font: 0.9rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: pre-wrap;
+}
+
+.app-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.app-button {
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--site-accent);
+    border-radius: 0.5rem;
+    color: #ffffff;
+    background: var(--site-accent);
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.app-button--secondary {
+    color: var(--site-accent);
+    background: var(--site-surface);
+}
+
+.app-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.app-message {
+    min-height: 1.6rem;
+    margin-top: 0.75rem;
+    color: var(--site-muted);
+}
+
+.app-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.app-field label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 750;
+}
+
+.app-field input,
+.app-field select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid var(--site-border);
+    border-radius: 0.5rem;
+    background: var(--site-surface);
+}
+
 @media (max-width: 700px) {
-    .site-grid {
+    .site-grid,
+    .app-layout,
+    .app-form {
         grid-template-columns: 1fr;
+    }
+
+    .app-panel--sticky {
+        position: static;
     }
 
     .site-main {
@@ -238,5 +402,9 @@ a {
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
+    }
+
+    .app-progress span {
+        transition: none;
     }
 }
