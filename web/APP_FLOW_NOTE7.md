@@ -1,1 +1,0 @@
-Flujo: necesidad → hardware → modelo → inferencia → evaluación → informe → privacidad/publicación → estadísticas → mejores recomendaciones.
