@@ -1,175 +1,21 @@
-/* LEONES — navigation system */
-:root {
-    --leones-nav-width: 232px;
-    --leones-nav-bg: #fff;
-    --leones-nav-border: #d8e0e7;
-    --leones-nav-text: #315d7d;
-    --leones-nav-strong: #102f49;
-    --leones-nav-active: #c62828;
-    --leones-nav-active-bg: #fff0f0;
-    --leones-nav-hover-bg: #f4f7fa;
-}
-body.has-leones-navigation {
-    padding-left: var(--leones-nav-width);
-}
-.leones-nav-runtime {
-    position: relative;
-    z-index: 1000;
-}
-.leones-nav-runtime .site-crumb {
-    position: sticky;
-    top: 0;
-    z-index: 900;
-    width: 100%;
-    box-sizing: border-box;
-    background: rgb(243 246 249 / 98%);
-    border-bottom: 1px solid var(--leones-nav-border);
-}
-.leones-nav-runtime .site-crumb-inner {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 40px;
-    padding: 0.45rem 1rem;
-}
-.leones-nav-runtime .site-crumb a {
-    color: var(--leones-nav-text);
-    text-decoration: none;
-    font-weight: 700;
-}
-.leones-nav-runtime .site-crumb strong {
-    color: var(--leones-nav-strong);
-}
-.leones-nav-runtime .site-side {
-    position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 1100;
-    width: var(--leones-nav-width);
-    box-sizing: border-box;
-    overflow-y: auto;
-    padding: 1rem 0.75rem;
-    background: var(--leones-nav-bg);
-    border-right: 1px solid var(--leones-nav-border);
-    box-shadow: 8px 0 28px rgb(7 21 31 / 8%);
-}
-.leones-nav-runtime .site-brand {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0.25rem 0.5rem 1rem;
-}
-.leones-nav-runtime .site-brand img {
-    display: block;
-    width: 132px;
-    height: 74px;
-    max-width: 132px;
-    object-fit: contain;
-    border-radius: 0.35rem;
-}
-.leones-nav-runtime .side-title {
-    padding: 0.5rem 0.7rem;
-    color: #78909c;
-    font-size: 0.68rem;
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-.leones-nav-runtime .site-side a {
-    display: block;
-    margin: 0.15rem 0;
-    padding: 0.5rem 0.7rem;
-    border-radius: 0.55rem;
-    color: var(--leones-nav-text);
-    text-decoration: none;
-    font-size: 0.82rem;
-    font-weight: 750;
-}
-.leones-nav-runtime .site-side a:hover {
-    background: var(--leones-nav-hover-bg);
-    color: var(--leones-nav-strong);
-}
-.leones-nav-runtime .site-side a.active {
-    color: var(--leones-nav-active);
-    background: var(--leones-nav-active-bg);
-    box-shadow: inset 4px 0 var(--leones-nav-active);
-    font-weight: 900;
-}
-.leones-nav-runtime .site-side .level-project,
-.leones-nav-runtime .site-side .level-application {
-    margin-left: 0.85rem;
-    border-left: 1px solid var(--leones-nav-border);
-    border-radius: 0 0.45rem 0.45rem 0;
-    font-size: 0.76rem;
-}
-.leones-nav-runtime .leones-nav-toggle,
-.leones-nav-runtime .site-side-backdrop {
-    display: none;
-}
-.leones-nav-runtime .skip-link {
-    position: fixed;
-    top: -4rem;
-    left: 0.75rem;
-    z-index: 2000;
-    padding: 0.65rem 0.9rem;
-    border-radius: 0.5rem;
-    background: var(--leones-nav-strong);
-    color: #fff;
-    font-weight: 800;
-    text-decoration: none;
-}
-.leones-nav-runtime .skip-link:focus {
-    top: 0.75rem;
-}
-@media (max-width: 800px) {
-    body.has-leones-navigation {
-        padding-left: 0;
-    }
-    .leones-nav-runtime .leones-nav-toggle {
-        position: fixed;
-        top: 0.75rem;
-        left: 0.75rem;
-        z-index: 2001;
-        display: inline-flex;
-        align-items: center;
-        padding: 0.55rem 0.75rem;
-        border: 1px solid var(--leones-nav-border);
-        border-radius: 0.55rem;
-        background: #fff;
-        color: var(--leones-nav-strong);
-        font: inherit;
-        font-weight: 800;
-        cursor: pointer;
-        box-shadow: 0 3px 12px rgb(16 47 73 / 12%);
-    }
-    .leones-nav-runtime .site-side {
-        width: min(290px, 88vw);
-        transform: translateX(-105%);
-        transition: transform 180ms ease;
-        padding-top: 3.75rem;
-    }
-    .leones-nav-runtime .site-side.is-open {
-        transform: translateX(0);
-    }
-    .leones-nav-runtime .site-side-backdrop {
-        position: fixed;
-        inset: 0;
-        z-index: 1090;
-        display: none;
-        background: rgb(16 47 73 / 35%);
-    }
-    .leones-nav-runtime .site-side-backdrop.is-open {
-        display: block;
-    }
-    .leones-nav-runtime .site-crumb {
-        padding-left: 4.5rem;
-    }
-    .leones-nav-runtime .site-brand img {
-        width: 132px;
-        height: 74px;
-    }
-}
-@media (prefers-reduced-motion: reduce) {
-    .leones-nav-runtime .site-side {
-        transition: none;
-    }
-}
+/* LEONES — navegación limpia y consistente */
+:root { --leones-nav-width:224px; --leones-nav-bg:#fff; --leones-nav-border:#d8e0e7; --leones-nav-text:#315d7d; --leones-nav-strong:#102f49; --leones-nav-active:#1769aa; --leones-nav-active-bg:#edf5fb; --leones-nav-hover-bg:#f4f7fa; }
+body.has-leones-navigation { padding-left:var(--leones-nav-width); }
+.leones-nav-runtime { position:relative; z-index:1000; }
+.leones-nav-runtime .site-crumb { position:sticky; top:0; z-index:900; width:100%; box-sizing:border-box; background:rgb(243 246 249 / 96%); backdrop-filter:blur(8px); border-bottom:1px solid var(--leones-nav-border); }
+.leones-nav-runtime .site-crumb-inner { display:flex; align-items:center; gap:.5rem; min-height:38px; padding:.4rem 1rem; font-size:.8rem; }
+.leones-nav-runtime .site-crumb a { color:var(--leones-nav-text); text-decoration:none; font-weight:700; }
+.leones-nav-runtime .site-crumb strong { color:var(--leones-nav-strong); }
+.leones-nav-runtime .site-side { position:fixed; inset:0 auto 0 0; z-index:1100; width:var(--leones-nav-width); box-sizing:border-box; overflow-y:auto; padding:.8rem .65rem; background:var(--leones-nav-bg); border-right:1px solid var(--leones-nav-border); box-shadow:6px 0 24px rgb(7 21 31 / 6%); }
+.leones-nav-runtime .site-brand { display:flex; justify-content:center; align-items:center; padding:.15rem .4rem .7rem; }
+.leones-nav-runtime .site-brand img { display:block; width:112px; height:62px; max-width:112px; object-fit:contain; border-radius:.35rem; }
+.leones-nav-runtime .side-title { padding:.45rem .65rem; color:#78909c; font-size:.65rem; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
+.leones-nav-runtime .site-side a { display:block; margin:.1rem 0; padding:.43rem .65rem; border-radius:.5rem; color:var(--leones-nav-text); text-decoration:none; font-size:.78rem; font-weight:700; transition:background 120ms ease,color 120ms ease; }
+.leones-nav-runtime .site-side a:hover { background:var(--leones-nav-hover-bg); color:var(--leones-nav-strong); }
+.leones-nav-runtime .site-side a.active { color:var(--leones-nav-active); background:var(--leones-nav-active-bg); box-shadow:inset 3px 0 var(--leones-nav-active); font-weight:900; }
+.leones-nav-runtime .site-side .level-project,.leones-nav-runtime .site-side .level-application { margin-left:.75rem; border-left:1px solid var(--leones-nav-border); border-radius:0 .4rem .4rem 0; font-size:.73rem; }
+.leones-nav-runtime .leones-nav-toggle,.leones-nav-runtime .site-side-backdrop { display:none; }
+.leones-nav-runtime .skip-link { position:fixed; top:-4rem; left:.75rem; z-index:2000; padding:.6rem .85rem; border-radius:.5rem; background:var(--leones-nav-strong); color:#fff; font-weight:800; text-decoration:none; }
+.leones-nav-runtime .skip-link:focus { top:.75rem; }
+@media (max-width:800px) { body.has-leones-navigation{padding-left:0;} .leones-nav-runtime .leones-nav-toggle{position:fixed;top:.65rem;left:.65rem;z-index:2001;display:inline-flex;align-items:center;padding:.5rem .7rem;border:1px solid var(--leones-nav-border);border-radius:.5rem;background:#fff;color:var(--leones-nav-strong);font:inherit;font-weight:800;cursor:pointer;box-shadow:0 3px 12px rgb(16 47 73 / 12%);} .leones-nav-runtime .site-side{width:min(280px,88vw);transform:translateX(-105%);transition:transform 160ms ease;padding-top:3.5rem;} .leones-nav-runtime .site-side.is-open{transform:translateX(0);} .leones-nav-runtime .site-side-backdrop{position:fixed;inset:0;z-index:1090;display:none;background:rgb(16 47 73 / 32%);} .leones-nav-runtime .site-side-backdrop.is-open{display:block;} .leones-nav-runtime .site-crumb{padding-left:4.2rem;} }
+@media (prefers-reduced-motion:reduce){.leones-nav-runtime .site-side{transition:none;}}
