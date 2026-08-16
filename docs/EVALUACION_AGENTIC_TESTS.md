@@ -1,6 +1,12 @@
-# Evaluación — Pruebas agentivas estándar
+# Evaluación agentiva — protocolo LEONES
 
-LEONES incorpora un primer **smoke test estándar** para simplificar la evaluación inicial de una pila agentic.
+## Estado
+
+**🟢 SMOKE TEST CERRADO / EVALUACIÓN AGENTIVA REAL PENDIENTE**
+
+LEONES dispone de un primer smoke test reproducible para comprobar capacidades agentic básicas. Este documento cierra y limpia el protocolo existente; **no certifica una evaluación agentiva completa**.
+
+## Smoke test
 
 Script:
 
@@ -8,46 +14,78 @@ Script:
 python3 scripts/leones-evaluacion.py --endpoint http://127.0.0.1:8080
 ```
 
-El script prueba un endpoint local compatible con la API OpenAI.
+El endpoint debe ser local y compatible con la API OpenAI.
 
-## Pruebas
-
-| ID | Prueba | Qué comprueba |
+| ID | Prueba | Comprueba |
 |---|---|---|
 | B01 | memoria/localidad | Conservación de un dato exacto dentro de la interacción |
 | B02 | archivos | Comprensión de una operación básica sobre un archivo |
 | B03 | multietapa | Encadenamiento correcto de varios pasos |
-| B04 | recuperación | Capacidad de razonar sobre un fallo y su recuperación |
+| B04 | recuperación | Razonamiento sobre un fallo y recuperación |
 | B05 | coding | Generación de una pequeña pieza de código correcta |
 
-## Qué mide
+El runner registra PASS/FAIL, tiempo total, tokens cuando el servidor los proporciona, respuesta y errores, y guarda el resultado en JSON.
 
-Cada prueba registra PASS/FAIL, tiempo total de respuesta, tokens cuando el servidor los proporciona, respuesta obtenida y errores.
+## Qué queda cerrado
 
-El resultado se guarda en JSON para facilitar su incorporación posterior a las estadísticas de LEONES.
-
-## Qué significa este smoke test
-
-Estas pruebas están diseñadas para responder rápidamente a una primera pregunta:
-
-> **¿Esta configuración local puede ejecutar de forma mínimamente coherente las capacidades agentic básicas de Evaluación?**
-
-No sustituyen la evaluación completa con Buddy/Hermes/LangGraph ni las pruebas instrumentadas de herramientas reales.
-
-Especialmente B02 y B04 son actualmente **pruebas de capacidad conversacional**, no una demostración de ejecución real de herramientas. La ejecución real sobre archivos, recuperación de errores y otras herramientas deberá añadirse a la siguiente versión del protocolo.
-
-## Criterio inicial
-
-El resultado debe interpretarse junto con la medición de inferencia:
+El smoke test queda definido como **prueba rápida de coherencia inicial** de una pila local. Sirve como filtro previo y como señal comparable entre configuraciones.
 
 ```text
 inferencia
     +
-B01-B05
-    +
-uso real del harness
+B01–B05
     ↓
-valor agentic
+señal inicial agentic
 ```
 
-No se debe declarar que una pila es adecuada únicamente porque el smoke test sea positivo: también debe cumplir las condiciones CABE y los criterios de Evaluación correspondientes.
+## Qué NO queda certificado
+
+El smoke test no sustituye una evaluación agentiva completa con herramientas reales ni pruebas instrumentadas de un harness como Buddy/Hermes/LangGraph.
+
+En particular:
+
+- **B02** demuestra actualmente capacidad conversacional relacionada con archivos, no ejecución real de una herramienta de archivos.
+- **B04** demuestra actualmente razonamiento conversacional sobre recuperación, no recuperación instrumentada ante un fallo real de herramienta.
+
+Por tanto, un resultado `PASS` no debe interpretarse como prueba de uso real de herramientas.
+
+## Criterio de interpretación
+
+El resultado debe combinarse con la medición de inferencia y, cuando corresponda, con CABE/RULA:
+
+```text
+inferencia
+    +
+smoke test
+    +
+herramientas reales
+    +
+medición reproducible
+    ↓
+valor agentic verificable
+```
+
+No se declara que una pila sea adecuada únicamente por obtener PASS en B01–B05.
+
+## Datos y evidencia
+
+Cada ejecución debe conservar su resultado original y permitir identificar endpoint, configuración, fecha y condiciones relevantes. Los resultados derivados no sustituyen al registro primario.
+
+Las pruebas futuras con herramientas reales deberán distinguir explícitamente entre:
+
+- capacidad conversacional;
+- llamada de herramienta;
+- ejecución efectiva;
+- resultado de la herramienta;
+- recuperación ante error;
+- tiempo y coste de la operación.
+
+## No concurrencia
+
+Todo workflow futuro que escriba resultados canónicos debe respetar la regla global de LEONES: un único grupo escritor `leones-main-writers` y `cancel-in-progress: false`.
+
+## Próxima frontera
+
+No se añade infraestructura ficticia para declarar el bloque terminado. La siguiente ampliación real será la **instrumentación de herramientas y recuperación**, cuando se decida ejecutar esa campaña.
+
+Mientras tanto, el smoke test permanece cerrado como mecanismo de cribado y la evaluación agentiva completa permanece abierta.
