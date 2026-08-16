@@ -2,74 +2,44 @@
 
 ## Estado
 
-**🟢 CONTRATO CERRADO / APLICACIÓN A CANDIDATOS PENDIENTE**
+**🟢 Contrato cerrado · 🟡 aplicación candidato a candidato pendiente**
 
-Este gate es obligatorio para cualquier agente, harness, framework, protocolo, runtime, sandbox o evaluador que pretenda incorporarse al Atlas.
+El Gate OSI es obligatorio para todo `agent`, `harness`, `framework`, `protocol`, `tool_runtime`, `sandbox` o `evaluator` que pretenda llegar al Atlas.
 
 ## Flujo
 
 ```text
-INVENTARIO AGENTIC
-       ↓
-IDENTIDAD + FUENTE PRIMARIA
-       ↓
-LICENCIA / COPYRIGHT / NOTICE
-       ↓
-GATE OSI
-   ┌───┼────┐
- PASS UNKNOWN FAIL
-   ↓     ↓     ↓
- EVID.  FUERA  FUERA
-   ↓
-QUALITY GATE
-   ↓
-ATLAS
+INVENTARIO → IDENTIDAD → FUENTE PRIMARIA → LICENCIA → GATE OSI
+                                                   ↓
+                                      PASS / UNKNOWN / FAIL
+                                                   ↓
+                                      EVIDENCIA + QUALITY GATE
+                                                   ↓
+                                                 ATLAS
 ```
 
 ## Regla de promoción
 
-Solo `OSI_PASS` permite continuar hacia el quality gate de Atlas. `OSI_UNKNOWN` y `OSI_FAIL` permanecen en el catálogo Agentic, pero no pueden entrar en el Atlas canónico.
+Solo `OSI_PASS` puede continuar al quality gate. `OSI_UNKNOWN` y `OSI_FAIL` permanecen en el catálogo Agentic y no entran en el Atlas canónico.
 
-El gate **no evalúa calidad técnica** ni preferencia. Solo determina elegibilidad según el criterio OSI definido por LEONES y la evidencia disponible.
+El gate determina elegibilidad OSI; **no puntúa calidad, rendimiento ni preferencia**.
 
-## Evidencia requerida
+## Evidencia mínima para PASS
 
-Para `OSI_PASS` se debe conservar, como mínimo:
-
-- identidad inequívoca del proyecto;
+- identidad inequívoca;
 - fuente primaria;
-- licencia exacta y versión cuando sea relevante;
+- licencia exacta y versión cuando corresponda;
 - ubicación del texto de licencia;
-- alcance de la licencia (software, documentación, modelos, assets u otros componentes);
-- evidencia de que el componente que LEONES quiere catalogar está cubierto;
+- alcance de la licencia;
+- evidencia de cobertura del componente catalogado;
 - fecha de comprobación;
-- observaciones sobre componentes de terceros cuando puedan cambiar la conclusión.
+- componentes de terceros relevantes.
 
-## Casos que NO son PASS automático
+## No es PASS automático
 
-- `open weights`;
-- código público sin licencia identificada;
-- repositorio público con componentes incompatibles;
-- "source available";
-- gratuidad;
-- licencia comercial propietaria;
-- licencia de datos/modelos distinta de la del software;
-- documentación abierta con runtime cerrado;
-- forks cuyo estado de licencia no esté comprobado.
+`open weights`, código público sin licencia, `source available`, gratuidad, licencia propietaria, licencias distintas entre software/modelo/datos, documentación abierta con runtime cerrado y forks sin licencia comprobada.
 
-## Tipos de candidato
-
-El gate se aplica independientemente a:
-
-- `agent`;
-- `harness`;
-- `framework`;
-- `protocol`;
-- `tool_runtime`;
-- `sandbox`;
-- `evaluator`.
-
-Un protocolo puede tener especificación abierta y, aun así, sus implementaciones concretas deben evaluarse por separado.
+Un protocolo puede tener especificación abierta y, aun así, sus implementaciones se evalúan por separado.
 
 ## Estados
 
@@ -80,28 +50,21 @@ OSI_FAIL
 OSI_UNKNOWN
 ```
 
-Nunca se infiere `OSI_PASS` desde la reputación del proyecto.
+Nunca se infiere `OSI_PASS` por reputación o popularidad.
 
 ## Relación con Atlas
 
 ```text
-CATÁLOGO AGENTIC
-   ├── OSI_FAIL    → permanece fuera
-   ├── OSI_UNKNOWN → permanece fuera
-   ├── OSI_PENDING → permanece fuera
-   └── OSI_PASS
-          ↓
-      EVIDENCIA
-          ↓
-        ATLAS
+OSI_FAIL / UNKNOWN / PENDING → FUERA
+OSI_PASS → EVIDENCIA → QUALITY GATE → ATLAS
 ```
 
-La promoción a Atlas exige además superar los quality gates de identidad/evidencia correspondientes. Pasar OSI **no equivale** a quedar verificado en Atlas.
+Pasar OSI **no equivale** a estar verificado en Atlas.
 
 ## No concurrencia
 
-La aplicación automática del gate deberá escribir mediante el único grupo escritor permitido por LEONES: `leones-main-writers`, con `cancel-in-progress: false`.
+La aplicación automática utilizará exclusivamente `leones-main-writers` y `cancel-in-progress: false`. No habrá escritores paralelos por categoría.
 
-## Criterio de cierre
+## Cierre
 
-El contrato del gate queda cerrado. La aplicación candidato por candidato se realizará como trabajo de evidencia, sin inventar resultados y sin saltarse el gate para ningún elemento del inventario.
+El contrato queda cerrado. La aplicación candidato por candidato será trabajo de evidencia y no se declarará completada sin fuentes verificables.
