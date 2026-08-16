@@ -1,1 +1,162 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="description" content="Resultados públicos de mediciones de IA local de LEONES."/><title>LEONES · Resultados</title><link rel="stylesheet" href="assets/css/navigation.css"/><link rel="stylesheet" href="assets/css/site.css"/></head><body><header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Evidence</span><h1>LEONES · Resultados</h1><p>Panel público de evidencia y mediciones de la Manada.</p></div></header><main class="site-main" id="main"><section class="site-section"><h2>Estado de los datos</h2><div class="site-note"><strong>Transparencia:</strong> las estadísticas solo muestran datos realmente disponibles. Si no existe evidencia, LEONES muestra «sin datos» y no inventa cifras.</div></section><section class="site-grid"><div class="site-card"><div>Informes</div><div class="site-metric" id="count">—</div></div><div class="site-card"><div>Media tok/s</div><div class="site-metric" id="avg">—</div></div><div class="site-card"><div>≥ 10 tok/s</div><div class="site-metric" id="above10">—</div></div><div class="site-card"><div>Verificados</div><div class="site-metric" id="verified">—</div></div></section><section class="site-section"><h2>Qué significa un resultado</h2><p>Un resultado debe estar ligado a hardware, sistema operativo, runtime, backend, modelo, configuración y prueba realizada. LOTB añade evidencia de capacidad agentiva.</p><div class="site-grid"><article class="site-card"><h3>Medición</h3><p>Describe qué se ejecutó y bajo qué condiciones.</p></article><article class="site-card"><h3>Reproducibilidad</h3><p>Una cifra útil debe poder interpretarse conociendo el entorno y protocolo.</p></article><article class="site-card"><h3>Verificación</h3><p>Verificado no significa «mejor»: significa que la evidencia ha pasado el proceso de comprobación correspondiente.</p></article><article class="site-card"><h3>Agentic</h3><p>La velocidad de generación no demuestra por sí sola capacidad para completar una tarea multietapa.</p></article></div></section><section class="site-section"><h2>Cómo interpretar las métricas</h2><div class="site-table-wrap"><table class="site-table"><thead><tr><th>Métrica</th><th>Qué indica</th><th>Precaución</th></tr></thead><tbody><tr><td>TTFT</td><td>Tiempo hasta el primer token</td><td>Depende mucho del prompt y del prefill.</td></tr><tr><td>TPOT</td><td>Tiempo por token generado</td><td>No equivale directamente a calidad.</td></tr><tr><td>tok/s</td><td>Velocidad de generación</td><td>Comparar solo con condiciones equivalentes.</td></tr><tr><td>Memoria</td><td>Huella del proceso</td><td>Incluye más que los pesos.</td></tr><tr><td>LOTB</td><td>Capacidad de completar tareas</td><td>Depende de la tarea y del entorno.</td></tr></tbody></table></div></section><section class="site-section"><h2>Flujo de publicación</h2><div class="site-flow"><span class="site-flow__node">Medir</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Informe</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Privacidad</span><span class="site-flow__arrow">→</span><span class="site-flow__node site-flow__node--primary">Publicación voluntaria</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Estadísticas</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Router</span></div></section><section class="site-section"><h2>Cuando todavía no hay datos</h2><p>Un «—» es un resultado válido cuando la fuente todavía no aporta una medición fiable. No se convierte en cero, estimación ni ranking.</p></section></main><script>fetch("data/stats.json").then(r=>r.ok?r.json():Promise.reject()).then(d=>{document.getElementById("count").textContent=d.count??d.reports??"—";document.getElementById("avg").textContent=d.avg_toks??d.avg_tok_s??"—";document.getElementById("above10").textContent=d.above10??"—";document.getElementById("verified").textContent=d.verified??"—"}).catch(()=>{});</script><script src="assets/js/navigation.js"></script></body></html>
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta
+            name="description"
+            content="Resultados públicos de mediciones de IA local de LEONES."
+        />
+        <title>LEONES · Resultados</title>
+        <link rel="stylesheet" href="assets/css/navigation.css" />
+        <link rel="stylesheet" href="assets/css/site.css" />
+    </head>
+    <body>
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <span class="site-tag">Evidence</span>
+                <h1>LEONES · Resultados</h1>
+                <p>Panel público de evidencia y mediciones de la Manada.</p>
+            </div>
+        </header>
+        <main class="site-main" id="main">
+            <section class="site-section">
+                <h2>Estado de los datos</h2>
+                <div class="site-note">
+                    <strong>Transparencia:</strong> las estadísticas solo muestran datos realmente
+                    disponibles. Si no existe evidencia, LEONES muestra «sin datos» y no inventa
+                    cifras.
+                </div>
+            </section>
+            <section class="site-grid">
+                <div class="site-card">
+                    <div>Informes</div>
+                    <div class="site-metric" id="count">—</div>
+                </div>
+                <div class="site-card">
+                    <div>Media tok/s</div>
+                    <div class="site-metric" id="avg">—</div>
+                </div>
+                <div class="site-card">
+                    <div>≥ 10 tok/s</div>
+                    <div class="site-metric" id="above10">—</div>
+                </div>
+                <div class="site-card">
+                    <div>Verificados</div>
+                    <div class="site-metric" id="verified">—</div>
+                </div>
+            </section>
+            <section class="site-section">
+                <h2>Qué significa un resultado</h2>
+                <p>
+                    Un resultado debe estar ligado a hardware, sistema operativo, runtime, backend,
+                    modelo, configuración y prueba realizada. LOTB añade evidencia de capacidad
+                    agentiva.
+                </p>
+                <div class="site-grid">
+                    <article class="site-card">
+                        <h3>Medición</h3>
+                        <p>Describe qué se ejecutó y bajo qué condiciones.</p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Reproducibilidad</h3>
+                        <p>
+                            Una cifra útil debe poder interpretarse conociendo el entorno y
+                            protocolo.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Verificación</h3>
+                        <p>
+                            Verificado no significa «mejor»: significa que la evidencia ha pasado el
+                            proceso de comprobación correspondiente.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Agentic</h3>
+                        <p>
+                            La velocidad de generación no demuestra por sí sola capacidad para
+                            completar una tarea multietapa.
+                        </p>
+                    </article>
+                </div>
+            </section>
+            <section class="site-section">
+                <h2>Cómo interpretar las métricas</h2>
+                <div class="site-table-wrap">
+                    <table class="site-table">
+                        <thead>
+                            <tr>
+                                <th>Métrica</th>
+                                <th>Qué indica</th>
+                                <th>Precaución</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>TTFT</td>
+                                <td>Tiempo hasta el primer token</td>
+                                <td>Depende mucho del prompt y del prefill.</td>
+                            </tr>
+                            <tr>
+                                <td>TPOT</td>
+                                <td>Tiempo por token generado</td>
+                                <td>No equivale directamente a calidad.</td>
+                            </tr>
+                            <tr>
+                                <td>tok/s</td>
+                                <td>Velocidad de generación</td>
+                                <td>Comparar solo con condiciones equivalentes.</td>
+                            </tr>
+                            <tr>
+                                <td>Memoria</td>
+                                <td>Huella del proceso</td>
+                                <td>Incluye más que los pesos.</td>
+                            </tr>
+                            <tr>
+                                <td>LOTB</td>
+                                <td>Capacidad de completar tareas</td>
+                                <td>Depende de la tarea y del entorno.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <section class="site-section">
+                <h2>Flujo de publicación</h2>
+                <div class="site-flow">
+                    <span class="site-flow__node">Medir</span><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Informe</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Privacidad</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node site-flow__node--primary"
+                        >Publicación voluntaria</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Estadísticas</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Router</span>
+                </div>
+            </section>
+            <section class="site-section">
+                <h2>Cuando todavía no hay datos</h2>
+                <p>
+                    Un «—» es un resultado válido cuando la fuente todavía no aporta una medición
+                    fiable. No se convierte en cero, estimación ni ranking.
+                </p>
+            </section>
+        </main>
+        <script>
+            fetch("data/stats.json")
+                .then((r) => (r.ok ? r.json() : Promise.reject()))
+                .then((d) => {
+                    document.getElementById("count").textContent = d.count ?? d.reports ?? "—";
+                    document.getElementById("avg").textContent = d.avg_toks ?? d.avg_tok_s ?? "—";
+                    document.getElementById("above10").textContent = d.above10 ?? "—";
+                    document.getElementById("verified").textContent = d.verified ?? "—";
+                })
+                .catch(() => {});
+        </script>
+        <script src="assets/js/navigation.js"></script>
+    </body>
+</html>
