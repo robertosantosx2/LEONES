@@ -1,0 +1,101 @@
+/* Homepage identity strip: keep logos compact and prevent intrinsic SVG sizes from affecting layout. */
+.wrap {
+    width: min(var(--site-max), calc(100% - 2rem));
+    margin: 0 auto;
+    padding: 1rem 0;
+}
+
+.leones-section-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 58px;
+    margin-bottom: 0.75rem;
+}
+
+.leones-section-brand img {
+    display: block;
+    width: 58px;
+    height: 58px;
+    max-width: 58px;
+    object-fit: contain;
+    flex: 0 0 58px;
+}
+
+.leones-section-brand strong {
+    color: var(--site-heading);
+}
+
+.leones-section-brand .small {
+    color: var(--site-muted);
+    font-size: 0.82rem;
+}
+
+.leones-logo-rail {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.5rem;
+    align-items: stretch;
+}
+
+.leones-logo-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0.45rem 0.55rem;
+    border: 1px solid var(--site-border);
+    border-radius: 0.55rem;
+    background: var(--site-surface);
+    color: var(--site-heading);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 750;
+}
+
+.leones-logo-link:hover {
+    background: var(--site-soft);
+    border-color: var(--site-accent);
+}
+
+.leones-logo-link img,
+.leones-logo-link svg {
+    display: block;
+    width: 30px;
+    height: 30px;
+    max-width: 30px;
+    max-height: 30px;
+    flex: 0 0 30px;
+    object-fit: contain;
+}
+
+.leones-logo-link span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+    .leones-logo-rail {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .wrap {
+        width: min(100% - 1rem, var(--site-max));
+    }
+
+    .leones-section-brand img {
+        width: 48px;
+        height: 48px;
+        max-width: 48px;
+        flex-basis: 48px;
+    }
+
+    .leones-logo-rail {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
