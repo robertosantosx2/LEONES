@@ -45,6 +45,9 @@ Las guías de [`docs/completed/`](../completed/) explican las fases aceptadas de
 - [H03 — ranking económico](../completed/H03-ECONOMIC-RANKING.md)
 - [H04 — prospección diaria](../completed/H04-DAILY-PROSPECTION.md)
 - [H05 — sistema documental](../completed/H05-DOCUMENTATION-SYSTEM.md)
+- [H08 — matriz de hardware](../completed/H08-HARDWARE-MATRIX.md)
+- [H09 — CABE/RULA](../completed/H09-CABE-RULA.md)
+- [Benchmarks medidos — evidencia empírica](../completed/BENCHMARK-MEASURED-EVIDENCE.md)
 - [H10 — pipeline Atlas → recomendador](../completed/H10-ATLAS-RECOMMENDER-PIPELINE.md)
 
 ## Fases documentadas
@@ -93,11 +96,11 @@ Consolidación de cobertura, evidencia y aplicación sistemática del criterio d
 
 ### 🟡 H08 — 2026-08 — Matriz completa de hardware
 
-Matriz 2/4/8/16/32/64/128 GB, emparejamiento Intel/AMD y cobertura NVIDIA/VRAM.
+**Infraestructura de matriz documentada.** La guía pedagógica [`H08-HARDWARE-MATRIX.md`](../completed/H08-HARDWARE-MATRIX.md) describe el generador, sus límites y la separación entre compatibilidad y benchmark. La validación empírica sobre hardware físico permanece abierta.
 
 ### 🟡 H09 — 2026-08 — CABE/RULA
 
-Capa sistemática de viabilidad hardware-modelo y utilidad bajo carga.
+**Infraestructura del contrato documentada.** La guía pedagógica [`H09-CABE-RULA.md`](../completed/H09-CABE-RULA.md) describe la normalización, las fronteras, las pruebas y la integración con mediciones reales. La cobertura empírica física permanece abierta.
 
 ### 🟢 H10 — 2026-08 — Atlas → recomendador diario enriquecido
 
@@ -109,7 +112,7 @@ Capa sistemática de viabilidad hardware-modelo y utilidad bajo carga.
 
 ## Resultado de la auditoría
 
-Las capacidades aceptadas disponen de referencia Hxx y paquete documental. Las áreas en evolución no se presentan como terminadas.
+Las capacidades aceptadas disponen de referencia Hxx y paquete documental. Las áreas en evolución no se presentan como terminadas. H08 y H09 disponen ya de infraestructura documentada, pero permanecen en 🟡 porque la cobertura empírica física aún no está cerrada.
 
 ## Orden de trabajo vigente
 
@@ -120,9 +123,9 @@ H06 ATLAS AMPLIADO 🔵  ← SIGUIENTE
       ↓
 H07 JGB SISTEMÁTICO 🟡
       ↓
-H08 MATRIZ HARDWARE 🟡
+H08 MATRIZ HARDWARE 🟡  ← infraestructura documentada
       ↓
-H09 CABE / RULA 🟡
+H09 CABE / RULA 🟡      ← infraestructura documentada
       ↓
 BENCHMARKS REALES
       ↓
