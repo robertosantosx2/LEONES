@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.ia/schemas/promotion-quality-gate-v1.json",
+  "title": "LEONES Promotion Quality Gate Contract v1",
+  "type": "object",
+  "required": ["contract_version", "promotion", "quality_gate"],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "promotion": {
+      "type": "object",
+      "required": ["promotion_id", "entity_id", "state"],
+      "properties": {
+        "promotion_id": {"type": "string", "minLength": 1},
+        "entity_id": {"type": "string", "minLength": 1},
+        "state": {"enum": ["PROPOSED", "ELIGIBLE", "PROMOTING", "PROMOTED", "BLOCKED", "REJECTED"]},
+        "requested_at": {"type": ["string", "null"], "format": "date-time"},
+        "completed_at": {"type": ["string", "null"], "format": "date-time"},
+        "reason": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "quality_gate": {
+      "type": "object",
+      "required": ["evaluation_id", "state", "checks"],
+      "properties": {
+        "evaluation_id": {"type": "string", "minLength": 1},
+        "state": {"enum": ["PENDING", "PASS", "REVIEW", "FAIL", "DISPUTED", "SUPERSEDED"]},
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["check_id", "result"],
+            "properties": {
+              "check_id": {"type": "string", "minLength": 1},
+              "result": {"enum": ["PASS", "FAIL", "REVIEW", "NOT_APPLICABLE"]},
+              "evidence_refs": {"type": "array", "items": {"type": "string"}},
+              "reason": {"type": ["string", "null"]}
+            },
+            "additionalProperties": false
+          }
+        },
+        "osi_state": {"enum": ["NOT_REQUIRED", "PENDING", "PASS", "BLOCKED", "REVIEW"]},
+        "evidence_refs": {"type": "array", "items": {"type": "string"}},
+        "trace_id": {"type": ["string", "null"]},
+        "run_id": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {"properties": {"promotion": {"properties": {"state": {"const": "PROMOTED"}}}}},
+      "then": {"properties": {"quality_gate": {"properties": {"state": {"const": "PASS"}, "osi_state": {"enum": ["NOT_REQUIRED", "PASS"]}}}}}
+    }
+  ]
+}
