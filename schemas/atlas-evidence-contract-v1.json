@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.ia/schemas/atlas-evidence-contract-v1.json",
+  "title": "LEONES Atlas Evidence Contract v1",
+  "type": "object",
+  "required": ["contract_version", "entity", "evidence"],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "entity": {
+      "type": "object",
+      "required": ["entity_id", "entity_type", "state"],
+      "properties": {
+        "entity_id": {"type": "string", "minLength": 1},
+        "entity_type": {"type": "string", "minLength": 1},
+        "state": {"enum": ["DISCOVERED", "IDENTITY_PENDING", "OSI_PENDING", "EVIDENCE_PENDING", "QUALITY_PENDING", "REVIEW", "ACCEPTED", "REJECTED", "SUPERSEDED"]},
+        "version": {"type": ["string", "null"]},
+        "attributes": {"type": "object"},
+        "evidence_refs": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["evidence_id", "type", "verification_state"],
+        "properties": {
+          "evidence_id": {"type": "string", "minLength": 1},
+          "type": {"type": "string", "minLength": 1},
+          "source": {"type": ["string", "null"]},
+          "observed_at": {"type": ["string", "null"], "format": "date-time"},
+          "collected_at": {"type": ["string", "null"], "format": "date-time"},
+          "verification_state": {"enum": ["VERIFIED", "ESTIMATED", "UNVERIFIED", "DISPUTED", "STALE"]},
+          "methodology": {"type": ["string", "null"]},
+          "artifact_ref": {"type": ["string", "null"]}
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
