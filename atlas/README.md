@@ -8,19 +8,47 @@ Atlas follows the project-wide phased documentation rule: when a phase is comple
 
 - [`../docs/DOCUMENTATION_PROTOCOL.md`](../docs/DOCUMENTATION_PROTOCOL.md) — project-wide rule.
 - [`../docs/phases/README.md`](../docs/phases/README.md) — phase index and stable Hxx identifiers.
+- [`../docs/phases/2026-08-atlas-expanded/`](../docs/phases/2026-08-atlas-expanded/) — **H06: Open LLM Atlas ampliado**.
 - [`../docs/phases/2026-08-atlas-recommendation-pipeline/`](../docs/phases/2026-08-atlas-recommendation-pipeline/) — **H10 accepted**: daily Atlas → recommender pipeline.
 
 ## Status
 
-**H10 🟢 ACEPTADA. H06 🔵 SIGUIENTE.**
+**H10 🟢 ACEPTADA. H06 🟡 IMPLEMENTACIÓN COMPLETA / VALIDACIÓN CI.**
 
-Atlas v0.2 has an expanded schema and an operational daily pipeline, but the Atlas knowledge layer itself remains under active expansion and validation. H06 is the next work unit: improve model/family/organization/benchmark/provenance coverage and strengthen the evidence contracts that feed JGB, hardware and recommendation layers.
+Atlas v0.2 has an expanded schema and an operational daily pipeline. H06 adds the missing knowledge-governance boundary between the operational feed and the canonical Atlas: identity, evidence, quality, normalization and verified-only promotion.
+
+### H06 documentation
+
+- [`../docs/phases/2026-08-atlas-expanded/README.md`](../docs/phases/2026-08-atlas-expanded/README.md) — scope and acceptance criteria.
+- [`../docs/phases/2026-08-atlas-expanded/COVERAGE-AUDIT.md`](../docs/phases/2026-08-atlas-expanded/COVERAGE-AUDIT.md) — coverage audit.
+- [`../docs/phases/2026-08-atlas-expanded/IDENTITY-RULES.md`](../docs/phases/2026-08-atlas-expanded/IDENTITY-RULES.md) — canonical identity rules.
+- [`../docs/phases/2026-08-atlas-expanded/EVIDENCE-RULES.md`](../docs/phases/2026-08-atlas-expanded/EVIDENCE-RULES.md) — evidence boundary.
+- [`../docs/phases/2026-08-atlas-expanded/DECISIONS.md`](../docs/phases/2026-08-atlas-expanded/DECISIONS.md) — architecture decisions.
+- [`../docs/phases/2026-08-atlas-expanded/H06_FINAL.md`](../docs/phases/2026-08-atlas-expanded/H06_FINAL.md) — technical closure report.
 
 ## H06 — Open LLM Atlas ampliado
 
 ### Objective
 
 Turn the current Atlas into a more complete and auditable knowledge base for local/open LLM research without confusing catalogue coverage with empirical validation.
+
+### The canonical boundary
+
+```text
+PROSPECCIÓN / FEED OPERATIVO
+            ↓
+       IDENTIDAD
+            ↓
+        EVIDENCIA
+            ↓
+        QUALITY GATE
+            ↓
+   VERIFIED-ONLY PROMOTION
+            ↓
+      ATLAS CANÓNICO
+```
+
+The operational feed is not the canonical Atlas. A record becomes canonical only through the documented promotion boundary. `atlas/catalog.json` is therefore allowed to remain empty when no feed record has sufficient verified evidence.
 
 ### Scope
 
@@ -42,11 +70,11 @@ JGB
 HARDWARE / RECOMENDACIÓN
 ```
 
-H06 will focus first on the quality and completeness of the knowledge layer. It does **not** mean that every model becomes benchmarked or verified automatically.
+H06 focuses first on quality and completeness of the knowledge layer. It does **not** mean that every model becomes benchmarked or verified automatically.
 
-### Acceptance direction
+### Automated H06 gate
 
-H06 should be considered complete only after its own implementation, validation, documentation and evidence are accepted according to the project-wide phase protocol. Its acceptance must be independent of the already-accepted H10 pipeline.
+The workflow [`../.github/workflows/atlas-h06.yml`](../.github/workflows/atlas-h06.yml) executes identity and quality audits, promotes only verified feed records, validates every canonical record against `schema.json`, and publishes machine-readable audit reports.
 
 ## Knowledge layers
 
@@ -85,18 +113,6 @@ Atlas distinguishes:
 CABE considers weights, quantization, KV cache, context, runtime overhead and offloading. RULA additionally considers compute, memory bandwidth, storage behaviour, interconnect and software stack.
 
 A configuration can therefore `CABE = yes` and still `RULA = no`.
-
-## Hardware discovery
-
-A hardware profile must go beyond RAM/VRAM capacity. Where possible it records or measures:
-
-- CPU/GPU compute capability, including FLOPS/MFLOPS/GFLOPS measurement or a clearly identified estimate;
-- memory type, capacity, channels, theoretical and measured bandwidth and latency;
-- storage type, protocol/interface, bus/link, sequential/random throughput and latency;
-- bandwidth for relevant data paths rather than one generic bandwidth number;
-- interconnects and offloading paths.
-
-Storage performance therefore depends not only on whether a device is SSD/NVMe/SATA, but also on its protocol, bus, link and connection to the motherboard.
 
 ## Evidence boundary
 
