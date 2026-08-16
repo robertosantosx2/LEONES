@@ -1,17 +1,64 @@
-/*
- * LEONES — reusable visual components
- *
- * This file intentionally contains no global page-layout rules.
- * Do not hide `.wrap`, `main`, sections or other content containers here.
- */
+/* LEONES — reusable visual components */
+
+/* Shared identity blocks: never allow SVG intrinsic dimensions to control layout. */
+.leones-section-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 12px;
+}
+
+.leones-section-brand > img {
+    display: block;
+    flex: 0 0 44px;
+    width: 44px !important;
+    height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    object-fit: contain;
+}
+
+.leones-logo-rail {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 22px;
+}
+
+.leones-logo-link {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    width: auto !important;
+    max-width: max-content;
+    min-height: 32px;
+    padding: 4px 8px;
+    box-sizing: border-box;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.leones-logo-link > img {
+    display: block !important;
+    flex: 0 0 26px !important;
+    width: 26px !important;
+    height: 26px !important;
+    max-width: 26px !important;
+    max-height: 26px !important;
+    min-width: 26px !important;
+    min-height: 26px !important;
+    object-fit: contain !important;
+}
 
 .leones-photo-hero {
     position: relative;
     isolation: isolate;
     color: #ffffff;
-    background-image:
-        linear-gradient(90deg, rgb(4 12 17 / 78%), rgb(4 12 17 / 35%)),
-        url("https://images.unsplash.com/photo-1575550959106-5a7defe28b56?auto=format&fit=crop&w=2200&q=82");
+    background-image: linear-gradient(90deg, rgb(4 12 17 / 78%), rgb(4 12 17 / 35%)), url("https://images.unsplash.com/photo-1575550959106-5a7defe28b56?auto=format&fit=crop&w=2200&q=82");
     background-position: center 42%;
     background-size: cover;
 }
@@ -20,9 +67,7 @@
     height: 210px;
     overflow: hidden;
     border-radius: 22px;
-    background-image:
-        linear-gradient(90deg, rgb(7 16 23 / 18%), rgb(7 16 23 / 68%)),
-        url("https://images.unsplash.com/photo-1600356004486-0a556de81e28?auto=format&fit=crop&w=1800&q=80");
+    background-image: linear-gradient(90deg, rgb(7 16 23 / 18%), rgb(7 16 23 / 68%)), url("https://images.unsplash.com/photo-1600356004486-0a556de81e28?auto=format&fit=crop&w=1800&q=80");
     background-position: center 48%;
     background-size: cover;
     box-shadow: 0 18px 45px rgb(0 0 0 / 18%);
@@ -50,9 +95,7 @@
     background: #eaf4fb;
 }
 
-.leones-architecture-note strong {
-    color: #102f49;
-}
+.leones-architecture-note strong { color: #102f49; }
 
 .leones-diagram-legend {
     display: flex;
@@ -74,11 +117,7 @@
     font-weight: 750;
 }
 
-.leones-diagram-legend img {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
-}
+.leones-diagram-legend img { width: 26px; height: 26px; border-radius: 6px; }
 
 .leones-diagram-link {
     display: inline-block;
@@ -88,9 +127,7 @@
     text-decoration: none;
 }
 
-.leones-diagram-link:hover {
-    text-decoration: underline;
-}
+.leones-diagram-link:hover { text-decoration: underline; }
 
 #arquitectura-canonica::before,
 #pila::before {
@@ -107,18 +144,7 @@
     content: "";
 }
 
-#arquitectura-canonica::before {
-    aspect-ratio: 1200 / 560;
-    background-image: url("architecture-canonical.svg");
-}
+#arquitectura-canonica::before { aspect-ratio: 1200 / 560; background-image: url("architecture-canonical.svg"); }
+#pila::before { aspect-ratio: 1200 / 520; background-image: url("architecture-stack.svg"); }
 
-#pila::before {
-    aspect-ratio: 1200 / 520;
-    background-image: url("architecture-stack.svg");
-}
-
-@media (max-width: 560px) {
-    .leones-photo-strip {
-        height: 150px;
-    }
-}
+@media (max-width: 560px) { .leones-photo-strip { height: 150px; } }
