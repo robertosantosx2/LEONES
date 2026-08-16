@@ -1,9 +1,9 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 312,
+  "repositories_processed": 296,
   "enriched_ok": 86,
-  "non_github_preserved": 225,
+  "non_github_preserved": 209,
   "errors": 1,
   "github_token_used": true,
   "diagnostics": [
