@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.ia/schemas/atlas-router-contract-v1.json",
+  "title": "LEONES Atlas Router Contract v1",
+  "type": "object",
+  "required": ["contract_version", "request", "knowledge_context", "recommendation"],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "request": {
+      "type": "object",
+      "required": ["request_id"],
+      "properties": {
+        "request_id": {"type": "string", "minLength": 1},
+        "task": {"type": ["string", "null"]},
+        "constraints": {"type": "object"},
+        "preferences": {"type": "object"},
+        "osi_mode": {"enum": ["OPEN_ALL", "FORCE_COPYLEFT_CHECK"]}
+      },
+      "additionalProperties": false
+    },
+    "knowledge_context": {
+      "type": "object",
+      "required": ["atlas_version", "entities"],
+      "properties": {
+        "atlas_version": {"type": "string", "minLength": 1},
+        "read_at": {"type": ["string", "null"], "format": "date-time"},
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["entity_id", "evidence_state"],
+            "properties": {
+              "entity_id": {"type": "string", "minLength": 1},
+              "evidence_state": {"enum": ["VERIFIED", "ESTIMATED", "UNVERIFIED", "DISPUTED", "STALE"]},
+              "evidence_refs": {"type": "array", "items": {"type": "string"}},
+              "osi_state": {"enum": ["NOT_REQUIRED", "PENDING", "PASS", "BLOCKED", "REVIEW"]},
+              "attributes": {"type": "object"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "recommendation": {
+      "type": "object",
+      "required": ["recommendation_id", "selected_entities", "constraints_applied", "evidence_refs", "uncertainty"],
+      "properties": {
+        "recommendation_id": {"type": "string", "minLength": 1},
+        "selected_entities": {"type": "array", "items": {"type": "string"}},
+        "constraints_applied": {"type": "array", "items": {"type": "string"}},
+        "preferences_applied": {"type": "array", "items": {"type": "string"}},
+        "evidence_refs": {"type": "array", "items": {"type": "string"}},
+        "uncertainty": {"type": "array", "items": {"type": "string"}},
+        "explanation": {"type": ["string", "null"]},
+        "trace_id": {"type": ["string", "null"]},
+        "run_id": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
