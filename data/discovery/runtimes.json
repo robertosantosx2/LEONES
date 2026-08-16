@@ -1,8 +1,17 @@
 {
-  "generated_at": "2026-08-16T14:19:36.614793+00:00",
+  "generated_at": "2026-08-16T15:08:58.438435+00:00",
   "kind": "runtimes",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
+    {
+      "name": "lm-webui/lm-webui",
+      "url": "https://github.com/lm-webui/lm-webui",
+      "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
+      "updated_at": "2026-08-16T14:31:33Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
     {
       "name": "Classevelabs/rai",
       "url": "https://github.com/Classevelabs/rai",
@@ -26,15 +35,6 @@
       "url": "https://github.com/cklxx/arle",
       "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
       "updated_at": "2026-08-16T10:00:24Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "lm-webui/lm-webui",
-      "url": "https://github.com/lm-webui/lm-webui",
-      "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
-      "updated_at": "2026-08-16T06:36:07Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
