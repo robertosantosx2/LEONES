@@ -1,4 +1,41 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="description" content="Guía pública de operación de LEONES."/><title>LEONES · Guía de operación</title><link rel="stylesheet" href="assets/css/navigation.css"/><link rel="stylesheet" href="assets/css/site.css"/></head><body><header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Documentación</span><h1>LEONES · Guía completa de operación</h1><p>Cómo está construido, cómo se mide, cómo evoluciona y cómo puede utilizarlo otra persona.</p></div></header><main class="site-main" id="main"><section class="site-section"><h2>1 · Principios</h2><p><strong>LEONES — Local Ecosystem of Open Neural Expert Systems</strong> estudia qué combinación de hardware y software Libre/Open permite convertir una máquina de consumo en un sistema agentic útil.</p><div class="site-note"><strong>Principio rector:</strong> LEONES mide sistemas, no solo modelos. Un agente existe para completar objetivos, no simplemente para producir tokens.</div></section><section class="site-section"><h2>2 · Pila completa</h2><pre class="site-stack">HARDWARE
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="description" content="Guía pública de operación de LEONES." />
+        <title>LEONES · Guía de operación</title>
+        <link rel="stylesheet" href="assets/css/navigation.css" />
+        <link rel="stylesheet" href="assets/css/site.css" />
+    </head>
+    <body>
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <span class="site-tag">Documentación</span>
+                <h1>LEONES · Guía completa de operación</h1>
+                <p>
+                    Cómo está construido, cómo se mide, cómo evoluciona y cómo puede utilizarlo otra
+                    persona.
+                </p>
+            </div>
+        </header>
+        <main class="site-main" id="main">
+            <section class="site-section">
+                <h2>1 · Principios</h2>
+                <p>
+                    <strong>LEONES — Local Ecosystem of Open Neural Expert Systems</strong> estudia
+                    qué combinación de hardware y software Libre/Open permite convertir una máquina
+                    de consumo en un sistema agentic útil.
+                </p>
+                <div class="site-note">
+                    <strong>Principio rector:</strong> LEONES mide sistemas, no solo modelos. Un
+                    agente existe para completar objetivos, no simplemente para producir tokens.
+                </div>
+            </section>
+            <section class="site-section">
+                <h2>2 · Pila completa</h2>
+                <pre class="site-stack">
+HARDWARE
    ↓
 SISTEMA OPERATIVO
    ↓
@@ -16,4 +53,168 @@ BUDDY / KNOWLEDGE
    ↓
 LOTB
    ↓
-RESULTADO + UX</pre><p>La pila se congela para poder medirla, no porque se considere óptima para siempre.</p></section><section class="site-section"><h2>3 · CABE → RULA</h2><div class="site-grid"><article class="site-card"><h3>CABE</h3><p>Determinar si una combinación puede alojar el modelo y sus costes de ejecución en el hardware disponible.</p></article><article class="site-card"><h3>RULA</h3><p>Comprobar si esa combinación realmente funciona bajo el runtime, configuración y carga de trabajo seleccionados.</p></article><article class="site-card"><h3>Medir</h3><p>Registrar latencia, velocidad, memoria y resultado de tarea.</p></article></div></section><section class="site-section"><h2>4 · LOTB</h2><p>LOTB separa la evaluación de inferencia de la evaluación agentiva.</p><div class="site-table-wrap"><table class="site-table"><thead><tr><th>Nivel</th><th>Qué mide</th></tr></thead><tbody><tr><td>Inferencia</td><td>Generación, tok/s, memoria, estabilidad y tiempos.</td></tr><tr><td>Agentic</td><td>Éxito de tareas, llamadas a herramientas, errores y tiempo de tarea.</td></tr></tbody></table></div><div class="site-grid"><article class="site-card"><h3>B01</h3><p>Memoria / localidad.</p></article><article class="site-card"><h3>B02</h3><p>Archivos y herramientas.</p></article><article class="site-card"><h3>B03</h3><p>Tareas multietapa.</p></article><article class="site-card"><h3>B04</h3><p>Recuperación y fallo.</p></article><article class="site-card"><h3>B05</h3><p>Coding local.</p></article></div></section><section class="site-section"><h2>5 · Scripts locales</h2><p>La documentación define una cadena de herramientas pequeñas y separadas:</p><pre class="site-stack">hardware → model → infer → LOTB → report → publish → stats</pre><p>El objetivo es que cada herramienta tenga una función clara y que el usuario pueda ejecutarla sin instalar toda la infraestructura web.</p></section><section class="site-section"><h2>6 · Prospección</h2><div class="site-flow"><span class="site-flow__node">Descubrimiento</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Normalización</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Deduplicación</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Evidencia</span><span class="site-flow__arrow">→</span><span class="site-flow__node">License Gate</span><span class="site-flow__arrow">→</span><span class="site-flow__node site-flow__node--primary">Atlas</span></div><p>Prospección descubre candidatos; no convierte automáticamente un hallazgo en recomendación.</p></section><section class="site-section"><h2>7 · Evidencia</h2><div class="site-flow"><span class="site-flow__node">Reported</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Reproducible</span><span class="site-flow__arrow">→</span><span class="site-flow__node site-flow__node--primary">Verified</span></div><p>Lo desconocido permanece desconocido. Una métrica ausente no debe transformarse en cero.</p></section><section class="site-section"><h2>8 · Manada</h2><p>La participación es voluntaria. Antes de publicar una medición deben eliminarse datos personales, identificadores de máquina, rutas privadas, credenciales, tokens y secretos.</p></section><section class="site-section"><h2>9 · Ruta de usuario</h2><div class="site-flow"><span class="site-flow__node site-flow__node--primary">Necesidad</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Hardware</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Modelo</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Runtime</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Agente</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Evaluación</span><span class="site-flow__arrow">→</span><span class="site-flow__node site-flow__node--primary">Resultado</span></div></section><section class="site-section"><h2>10 · Estado del proyecto</h2><p>Las páginas públicas pueden explicar componentes en desarrollo, pero deben distinguir claramente entre <strong>operativo</strong>, <strong>candidato</strong>, <strong>experimental</strong> y <strong>pendiente de validación</strong>.</p><div class="site-note"><strong>Regla pública:</strong> la documentación debe explicar qué puede hacer el usuario hoy y qué parte del ecosistema todavía está evolucionando.</div></section></main><script src="assets/js/navigation.js"></script></body></html>
+RESULTADO + UX</pre>
+                <p>
+                    La pila se congela para poder medirla, no porque se considere óptima para
+                    siempre.
+                </p>
+            </section>
+            <section class="site-section">
+                <h2>3 · CABE → RULA</h2>
+                <div class="site-grid">
+                    <article class="site-card">
+                        <h3>CABE</h3>
+                        <p>
+                            Determinar si una combinación puede alojar el modelo y sus costes de
+                            ejecución en el hardware disponible.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>RULA</h3>
+                        <p>
+                            Comprobar si esa combinación realmente funciona bajo el runtime,
+                            configuración y carga de trabajo seleccionados.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Medir</h3>
+                        <p>Registrar latencia, velocidad, memoria y resultado de tarea.</p>
+                    </article>
+                </div>
+            </section>
+            <section class="site-section">
+                <h2>4 · LOTB</h2>
+                <p>LOTB separa la evaluación de inferencia de la evaluación agentiva.</p>
+                <div class="site-table-wrap">
+                    <table class="site-table">
+                        <thead>
+                            <tr>
+                                <th>Nivel</th>
+                                <th>Qué mide</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Inferencia</td>
+                                <td>Generación, tok/s, memoria, estabilidad y tiempos.</td>
+                            </tr>
+                            <tr>
+                                <td>Agentic</td>
+                                <td>
+                                    Éxito de tareas, llamadas a herramientas, errores y tiempo de
+                                    tarea.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="site-grid">
+                    <article class="site-card">
+                        <h3>B01</h3>
+                        <p>Memoria / localidad.</p>
+                    </article>
+                    <article class="site-card">
+                        <h3>B02</h3>
+                        <p>Archivos y herramientas.</p>
+                    </article>
+                    <article class="site-card">
+                        <h3>B03</h3>
+                        <p>Tareas multietapa.</p>
+                    </article>
+                    <article class="site-card">
+                        <h3>B04</h3>
+                        <p>Recuperación y fallo.</p>
+                    </article>
+                    <article class="site-card">
+                        <h3>B05</h3>
+                        <p>Coding local.</p>
+                    </article>
+                </div>
+            </section>
+            <section class="site-section">
+                <h2>5 · Scripts locales</h2>
+                <p>La documentación define una cadena de herramientas pequeñas y separadas:</p>
+                <pre class="site-stack">
+hardware → model → infer → LOTB → report → publish → stats</pre>
+                <p>
+                    El objetivo es que cada herramienta tenga una función clara y que el usuario
+                    pueda ejecutarla sin instalar toda la infraestructura web.
+                </p>
+            </section>
+            <section class="site-section">
+                <h2>6 · Prospección</h2>
+                <div class="site-flow">
+                    <span class="site-flow__node">Descubrimiento</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Normalización</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Deduplicación</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Evidencia</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">License Gate</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node site-flow__node--primary">Atlas</span>
+                </div>
+                <p>
+                    Prospección descubre candidatos; no convierte automáticamente un hallazgo en
+                    recomendación.
+                </p>
+            </section>
+            <section class="site-section">
+                <h2>7 · Evidencia</h2>
+                <div class="site-flow">
+                    <span class="site-flow__node">Reported</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Reproducible</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node site-flow__node--primary">Verified</span>
+                </div>
+                <p>
+                    Lo desconocido permanece desconocido. Una métrica ausente no debe transformarse
+                    en cero.
+                </p>
+            </section>
+            <section class="site-section">
+                <h2>8 · Manada</h2>
+                <p>
+                    La participación es voluntaria. Antes de publicar una medición deben eliminarse
+                    datos personales, identificadores de máquina, rutas privadas, credenciales,
+                    tokens y secretos.
+                </p>
+            </section>
+            <section class="site-section">
+                <h2>9 · Ruta de usuario</h2>
+                <div class="site-flow">
+                    <span class="site-flow__node site-flow__node--primary">Necesidad</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Hardware</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Modelo</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Runtime</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Agente</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node">Evaluación</span
+                    ><span class="site-flow__arrow">→</span
+                    ><span class="site-flow__node site-flow__node--primary">Resultado</span>
+                </div>
+            </section>
+            <section class="site-section">
+                <h2>10 · Estado del proyecto</h2>
+                <p>
+                    Las páginas públicas pueden explicar componentes en desarrollo, pero deben
+                    distinguir claramente entre <strong>operativo</strong>,
+                    <strong>candidato</strong>, <strong>experimental</strong> y
+                    <strong>pendiente de validación</strong>.
+                </p>
+                <div class="site-note">
+                    <strong>Regla pública:</strong> la documentación debe explicar qué puede hacer
+                    el usuario hoy y qué parte del ecosistema todavía está evolucionando.
+                </div>
+            </section>
+        </main>
+        <script src="assets/js/navigation.js"></script>
+    </body>
+</html>
