@@ -2,244 +2,18 @@
 <html lang="es">
     <head>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Atlas de modelos y ecosistema de IA local de LEONES." />
         <title>LEONES · Atlas</title>
-        <link rel="stylesheet" href="assets/css/navigation.css" />
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3" />
+        <link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-1" />
         <link rel="stylesheet" href="assets/graphics/brand.css" />
-        <style>
-            body {
-                background: #f7f9fb;
-                color: #172b3d;
-                font-family: system-ui, sans-serif;
-            }
-            .atlas-hero {
-                background: linear-gradient(120deg, #102f49, #1769aa);
-                color: #fff;
-                padding: 48px 22px;
-            }
-            .atlas-hero > div,
-            main {
-                max-width: 1180px;
-                margin: auto;
-            }
-            .atlas-hero h1 {
-                font-size: clamp(2.4rem, 5vw, 4.5rem);
-                margin: 0;
-                color: #fff;
-            }
-            .atlas-hero p {
-                max-width: 900px;
-                color: #e4eef4;
-            }
-            .tabs {
-                display: flex;
-                gap: 8px;
-                flex-wrap: wrap;
-                margin: 22px 0;
-            }
-            .tabs a {
-                padding: 9px 13px;
-                border: 1px solid #d8e0e7;
-                border-radius: 999px;
-                background: #fff;
-                text-decoration: none;
-                color: #1769aa;
-                font-weight: 900;
-            }
-            .cards {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 15px;
-            }
-            .atlas-card,
-            .card {
-                background: #fff;
-                border: 1px solid #d8e0e7;
-                border-radius: 14px;
-                padding: 21px;
-                box-shadow: 0 3px 12px rgba(20, 40, 60, 0.05);
-                margin: 18px 0;
-            }
-            .atlas-card p {
-                color: #607582;
-            }
-            .badge {
-                display: inline-block;
-                background: #eaf4fb;
-                color: #1769aa;
-                border-radius: 999px;
-                padding: 4px 9px;
-                font-size: 0.72rem;
-                font-weight: 900;
-            }
-            .policy {
-                border-left: 5px solid #c62828;
-                background: #fff4f4;
-                padding: 18px;
-            }
-            .ok {
-                border-left-color: #4b8f63;
-                background: #e8f4ec;
-            }
-            .flow {
-                background: #172b3d;
-                color: #eaf4fb;
-                padding: 18px;
-                border-radius: 10px;
-                overflow: auto;
-            }
-            .metric {
-                font-size: 2rem;
-                font-weight: 950;
-                color: #1769aa;
-            }
-            .filters {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 12px;
-                background: #f4f7fa;
-                padding: 16px;
-                border-radius: 12px;
-                margin: 18px 0;
-            }
-            .filters label {
-                font-size: 0.75rem;
-                font-weight: 900;
-                color: #49616f;
-            }
-            .filters input,
-            .filters select {
-                width: 100%;
-                box-sizing: border-box;
-                margin-top: 5px;
-                padding: 9px;
-                border: 1px solid #cbd7df;
-                border-radius: 8px;
-                background: #fff;
-            }
-            .filter-actions {
-                display: flex;
-                gap: 8px;
-                align-items: end;
-            }
-            .filter-actions button,
-            .stack-button {
-                padding: 9px 13px;
-                border: 0;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: 900;
-            }
-            .primary {
-                background: #1769aa;
-                color: #fff;
-            }
-            .secondary {
-                background: #dfe7ec;
-                color: #234;
-            }
-            .atlas-count {
-                font-weight: 900;
-                color: #1769aa;
-                margin: 10px 0;
-            }
-            .model-table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 0.84rem;
-            }
-            .model-table th,
-            .model-table td {
-                padding: 9px;
-                border-bottom: 1px solid #e2e8ed;
-                text-align: left;
-                vertical-align: top;
-            }
-            .model-table th {
-                background: #f4f7fa;
-                position: sticky;
-                top: 0;
-            }
-            .tag {
-                display: inline-block;
-                padding: 3px 7px;
-                border-radius: 999px;
-                background: #edf4f8;
-                margin: 2px;
-                font-size: 0.7rem;
-            }
-            .link {
-                color: #1769aa;
-                text-decoration: none;
-                font-weight: 900;
-            }
-            .stack {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            .stack-item {
-                border: 1px solid #d8e0e7;
-                border-radius: 12px;
-                padding: 15px;
-                background: #fbfcfd;
-            }
-            .rel {
-                font-size: 0.78rem;
-                color: #607582;
-            }
-            .empty {
-                text-align: center;
-                padding: 30px;
-                color: #607582;
-            }
-            .stack-path {
-                display: flex;
-                gap: 7px;
-                flex-wrap: wrap;
-                align-items: center;
-                margin: 14px 0;
-            }
-            .node {
-                background: #eaf4fb;
-                border: 1px solid #cbdfea;
-                padding: 9px 12px;
-                border-radius: 9px;
-                font-weight: 800;
-            }
-            .arrow {
-                color: #1769aa;
-                font-weight: 900;
-            }
-            @media (max-width: 800px) {
-                .cards,
-                .stack {
-                    grid-template-columns: 1fr 1fr;
-                }
-                .filters {
-                    grid-template-columns: 1fr 1fr;
-                }
-            }
-            @media (max-width: 560px) {
-                .cards,
-                .stack {
-                    grid-template-columns: 1fr;
-                }
-                .filters {
-                    grid-template-columns: 1fr;
-                }
-                .model-table {
-                    display: block;
-                    overflow-x: auto;
-                    white-space: nowrap;
-                }
-            }
-        </style>
     </head>
+
     <body>
-        <header class="atlas-hero">
-            <div>
-                <span class="badge">ATLAS · KNOWLEDGE LAYER</span>
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <span class="site-tag">Atlas · Knowledge layer</span>
                 <h1>El mapa vivo de la IA local</h1>
                 <p>
                     Modelos, runtimes, agentes, skills, harnesses, hardware, licencias y evidencia.
@@ -248,37 +22,37 @@
                 </p>
             </div>
         </header>
-        <main>
-            <nav class="tabs">
-                <a href="#modelos">Modelos</a><a href="#pila">Explorador de pila</a
-                ><a href="#runtimes">Runtimes</a><a href="#agents">Agentes</a
-                ><a href="#skills">Skills</a><a href="#harnesses">Harnesses</a
-                ><a href="#hardware">Hardware</a><a href="#licencias">Licencias</a
-                ><a href="#prospeccion">Prospección</a>
-            </nav>
-            <section id="modelos" class="card">
-                <span class="badge">CATÁLOGO INTERACTIVO</span>
-                <h2>Modelos y familias</h2>
-                <p>
-                    Los filtros se combinan. «Ver pila» abre el modelo en el explorador de
-                    relaciones.
-                </p>
-                <div class="filters">
-                    <label
-                        >Buscar<input id="q" placeholder="modelo, familia, organización…" /></label
-                    ><label>Familia<select id="family"></select></label
-                    ><label>Arquitectura<select id="arch"></select></label
-                    ><label>Estado<select id="status"></select></label
-                    ><label>Parámetros<input id="params" placeholder="7B, 27B, 70B…" /></label
-                    ><label>Capacidad<select id="cap"></select></label>
-                    <div class="filter-actions">
-                        <button class="primary" id="apply">Aplicar</button
-                        ><button class="secondary" id="reset">Limpiar</button>
-                    </div>
+
+        <main class="site-main" id="main">
+            <nav class="site-section" aria-label="Secciones del Atlas">
+                <div class="site-flow">
+                    <a class="site-flow__node" href="#modelos">Modelos</a>
+                    <a class="site-flow__node" href="#pila">Explorador de pila</a>
+                    <a class="site-flow__node" href="#runtimes">Runtimes</a>
+                    <a class="site-flow__node" href="#agents">Agentes</a>
+                    <a class="site-flow__node" href="#skills">Skills</a>
+                    <a class="site-flow__node" href="#harnesses">Harnesses</a>
+                    <a class="site-flow__node" href="#hardware">Hardware</a>
+                    <a class="site-flow__node" href="#licencias">Licencias</a>
+                    <a class="site-flow__node" href="#prospeccion">Prospección</a>
                 </div>
-                <div id="count" class="atlas-count"></div>
-                <div style="overflow: auto">
-                    <table class="model-table">
+            </nav>
+
+            <section id="modelos" class="site-section">
+                <span class="site-tag">Catálogo interactivo</span>
+                <h2>Modelos y familias</h2>
+                <p>Los filtros se combinan. «Ver pila» abre el modelo en el explorador de relaciones.</p>
+                <div class="site-grid">
+                    <label class="site-card">Buscar<input id="q" type="search" placeholder="modelo, familia, organización…" /></label>
+                    <label class="site-card">Familia<select id="family"></select></label>
+                    <label class="site-card">Arquitectura<select id="arch"></select></label>
+                    <label class="site-card">Estado<select id="status"></select></label>
+                    <label class="site-card">Parámetros<input id="params" placeholder="7B, 27B, 70B…" /></label>
+                    <label class="site-card">Capacidad<select id="cap"></select></label>
+                </div>
+                <p id="count" class="site-lead"></p>
+                <div class="site-table-wrap">
+                    <table class="site-table">
                         <thead>
                             <tr>
                                 <th>Familia</th>
@@ -288,321 +62,55 @@
                                 <th>Arquitectura</th>
                                 <th>Capacidades</th>
                                 <th>Estado</th>
-                                <th></th>
+                                <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody id="modelsBody"></tbody>
                     </table>
                 </div>
             </section>
-            <section id="pila" class="card">
-                <span class="badge">STACK EXPLORER</span>
+
+            <section id="pila" class="site-section">
+                <span class="site-tag">Stack explorer</span>
                 <h2>De un modelo a una pila ejecutable</h2>
-                <p>
-                    El explorador usa las relaciones registradas en Atlas. Una relación de catálogo
-                    no implica que el rendimiento haya sido validado.
-                </p>
-                <div class="filters">
-                    <label>Modelo<select id="modelPick"></select></label
-                    ><label>Hardware<select id="hwPick"></select></label
-                    ><label>Skill<select id="skillPick"></select></label>
+                <p>El explorador usa las relaciones registradas en Atlas. Una relación de catálogo no implica que el rendimiento haya sido validado.</p>
+                <div class="site-grid">
+                    <label class="site-card">Modelo<select id="modelPick"></select></label>
+                    <label class="site-card">Hardware<select id="hwPick"></select></label>
+                    <label class="site-card">Skill<select id="skillPick"></select></label>
                 </div>
-                <div id="path" class="stack-path"></div>
-                <div id="stackResult" class="stack"></div>
+                <div id="path" class="site-flow"></div>
+                <div id="stackResult" class="site-grid"></div>
             </section>
-            <section id="runtimes">
-                <h2>Runtimes / inference engines</h2>
-                <div id="runtimeCards" class="cards"></div>
-            </section>
-            <section id="agents">
-                <h2>Agentes</h2>
-                <div id="agentCards" class="cards"></div>
-            </section>
-            <section id="skills">
-                <h2>Skills</h2>
-                <div id="skillCards" class="cards"></div>
-            </section>
-            <section id="harnesses">
-                <h2>Harnesses</h2>
-                <div id="harnessCards" class="cards"></div>
-            </section>
-            <section id="hardware">
-                <h2>Hardware</h2>
-                <div id="hardwareCards" class="cards"></div>
-            </section>
-            <section id="licencias">
+
+            <section id="runtimes" class="site-section"><h2>Runtimes / inference engines</h2><div id="runtimeCards" class="site-grid"></div></section>
+            <section id="agents" class="site-section"><h2>Agentes</h2><div id="agentCards" class="site-grid"></div></section>
+            <section id="skills" class="site-section"><h2>Skills</h2><div id="skillCards" class="site-grid"></div></section>
+            <section id="harnesses" class="site-section"><h2>Harnesses</h2><div id="harnessCards" class="site-grid"></div></section>
+            <section id="hardware" class="site-section"><h2>Hardware</h2><div id="hardwareCards" class="site-grid"></div></section>
+
+            <section id="licencias" class="site-section">
                 <h2>Regla LEONES de licencias</h2>
-                <div class="policy">
-                    <strong
-                        >La prospección descubre; el gate de licencias determina qué software puede
-                        recomendarse como Libre/Open.</strong
-                    >
-                    <p>
-                        Para software y herramientas se registra el estado OSI de la licencia. Los
-                        hallazgos no verificados permanecen external-unvalidated.
-                    </p>
+                <div class="site-note">
+                    <strong>La prospección descubre; el gate de licencias determina qué software puede recomendarse como Libre/Open.</strong>
+                    <p>Para software y herramientas se registra el estado OSI de la licencia. Los hallazgos no verificados permanecen external-unvalidated.</p>
                 </div>
-                <div class="policy ok">
+                <div class="site-note">
                     <strong>Modelos ≠ software.</strong>
-                    <p>
-                        La licencia de los pesos se conserva por separado. «Open weights» no se
-                        transforma automáticamente en «OSI approved».
-                    </p>
+                    <p>La licencia de los pesos se conserva por separado. «Open weights» no se transforma automáticamente en «OSI approved».</p>
                 </div>
             </section>
-            <section id="prospeccion">
-                <div class="card">
-                    <span class="badge">AUTOMATIZACIÓN DIARIA</span>
-                    <h2>Prospección → revisión → Atlas</h2>
-                    <div class="flow">
-                        FUENTES → BOTS → discovery/ → LICENSE GATE → revisión → RELACIONES → ATLAS →
-                        WEB
-                    </div>
-                    <p>
-                        El Atlas se alimenta de descubrimientos, pero conserva procedencia y estado
-                        de verificación.
-                    </p>
-                    <a class="link" href="prospeccion.html">Ver prospección →</a>
-                </div>
+
+            <section id="prospeccion" class="site-section">
+                <span class="site-tag">Automatización diaria</span>
+                <h2>Prospección → revisión → Atlas</h2>
+                <pre class="site-stack">FUENTES → BOTS → DISCOVERY → LICENSE GATE → REVISIÓN → RELACIONES → ATLAS → WEB</pre>
+                <p>El Atlas se alimenta de descubrimientos, pero conserva procedencia y estado de verificación.</p>
+                <a href="prospeccion.html">Ver prospección →</a>
             </section>
         </main>
-        <script>
-            const esc = (s) =>
-                String(s ?? "").replace(
-                    /[&<>\"']/g,
-                    (m) =>
-                        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '\"': "&quot;", "'": "&#39;" })[
-                            m
-                        ],
-                );
-            let all = [],
-                eco = {};
-            const v = (id) => document.getElementById(id).value.trim().toLowerCase();
-            function add(id, vals, first) {
-                const e = document.getElementById(id);
-                e.innerHTML = '<option value="">' + first + "</option>";
-                [...new Set(vals.filter(Boolean))].sort().forEach((x) => {
-                    const o = document.createElement("option");
-                    o.value = x.toLowerCase();
-                    o.textContent = x;
-                    e.appendChild(o);
-                });
-            }
-            function render() {
-                const q = v("q"),
-                    f = v("family"),
-                    a = v("arch"),
-                    s = v("status"),
-                    p = v("params"),
-                    c = v("cap");
-                const data = all.filter((x) => {
-                    const z = String(x.capabilities || "")
-                        .toLowerCase()
-                        .split(";");
-                    return (
-                        (!q || JSON.stringify(x).toLowerCase().includes(q)) &&
-                        (!f || String(x.family).toLowerCase() === f) &&
-                        (!a || String(x.architecture).toLowerCase() === a) &&
-                        (!s || String(x.status).toLowerCase() === s) &&
-                        (!p ||
-                            String(x.parameters_total).toLowerCase().includes(p) ||
-                            String(x.parameters_active).toLowerCase().includes(p)) &&
-                        (!c || z.includes(c))
-                    );
-                });
-                document.getElementById("count").textContent =
-                    data.length + " de " + all.length + " modelos";
-                document.getElementById("modelsBody").innerHTML =
-                    data
-                        .map(
-                            (x) =>
-                                "<tr><td>" +
-                                esc(x.family) +
-                                "</td><td><strong>" +
-                                esc(x.model_name) +
-                                "</strong></td><td>" +
-                                esc(x.parameters_total || "—") +
-                                "</td><td>" +
-                                esc(x.parameters_active || "—") +
-                                "</td><td>" +
-                                esc(x.architecture || "—") +
-                                "</td><td>" +
-                                String(x.capabilities || "")
-                                    .split(";")
-                                    .filter(Boolean)
-                                    .map((y) => '<span class="tag">' + esc(y) + "</span>")
-                                    .join("") +
-                                "</td><td>" +
-                                esc(x.status || "—") +
-                                '</td><td><button class="stack-button primary" data-model="' +
-                                esc(x.model_name) +
-                                '">Ver pila</button></td></tr>',
-                        )
-                        .join("") ||
-                    '<tr><td colspan="8" class="empty">No hay coincidencias.</td></tr>';
-                document.querySelectorAll("[data-model]").forEach(
-                    (b) =>
-                        (b.onclick = () => {
-                            document.getElementById("modelPick").value =
-                                b.dataset.model.toLowerCase();
-                            showStack();
-                            document.getElementById("pila").scrollIntoView({ behavior: "smooth" });
-                        }),
-                );
-            }
-            function showStack() {
-                const name = v("modelPick"),
-                    hw = v("hwPick"),
-                    skill = v("skillPick");
-                const rel = (eco.relations || []).filter(
-                    (r) =>
-                        String(r.from).toLowerCase() === name ||
-                        String(r.to).toLowerCase() === name,
-                );
-                const ids = {
-                    runtime: rel.filter((r) => r.type === "runs-on").map((r) => r.to),
-                    hardware: rel.filter((r) => r.type === "target").map((r) => r.to),
-                    skills: rel.filter((r) => r.type === "supports").map((r) => r.to),
-                    harness: rel.filter((r) => r.type === "evaluated-by").map((r) => r.to),
-                };
-                const hardware = hw
-                    ? ids.hardware.filter((x) => x.toLowerCase() === hw)
-                    : ids.hardware;
-                const skills = skill
-                    ? ids.skills.filter((x) => x.toLowerCase() === skill)
-                    : ids.skills;
-                const agentIds = (eco.agents || [])
-                    .filter((a) =>
-                        skills.some((s) =>
-                            String(a.skills || "")
-                                .toLowerCase()
-                                .split(";")
-                                .includes(s.toLowerCase()),
-                        ),
-                    )
-                    .map((a) => a.id);
-                const runtime = ids.runtime[0] || "";
-                const agent = agentIds[0] || "";
-                const skillOut = skills[0] || "";
-                const harness = ids.harness[0] || "";
-                const nodes = [name, runtime, agent, skillOut, harness, hardware[0] || ""];
-                document.getElementById("path").innerHTML =
-                    nodes
-                        .filter(Boolean)
-                        .map(
-                            (n, i) =>
-                                (i ? '<span class="arrow">→</span>' : "") +
-                                '<span class="node">' +
-                                esc(n) +
-                                "</span>",
-                        )
-                        .join("") || '<span class="rel">Selecciona un modelo.</span>';
-                document.getElementById("stackResult").innerHTML = [
-                    ["Modelo", name],
-                    ["Runtime", ids.runtime.join(", ") || "Sin relación registrada"],
-                    ["Agente", agentIds.join(", ") || "Sin agente relacionado"],
-                    ["Skills", skills.join(", ") || "Sin skill relacionada"],
-                    ["Harness", ids.harness.join(", ") || "Sin harness relacionado"],
-                    ["Hardware", hardware.join(", ") || "Sin hardware relacionado"],
-                ]
-                    .map(
-                        (x) =>
-                            '<div class="stack-item"><strong>' +
-                            esc(x[0]) +
-                            "</strong><div>" +
-                            esc(x[1]) +
-                            '</div><div class="rel">Relación registrada en Atlas</div></div>',
-                    )
-                    .join("");
-            }
-            function cards(id, data) {
-                document.getElementById(id).innerHTML = data
-                    .map(
-                        (x) =>
-                            '<article class="atlas-card"><span class="badge">' +
-                            esc(x.license || x.category || x.type || "ATLAS") +
-                            "</span><h3>" +
-                            esc(x.id) +
-                            "</h3><p>" +
-                            esc(
-                                x.platforms ||
-                                    x.skills ||
-                                    x.measures ||
-                                    x.compatible ||
-                                    x.note ||
-                                    "Elemento del ecosistema.",
-                            ) +
-                            "</p></article>",
-                    )
-                    .join("");
-            }
-            document.getElementById("apply").onclick = render;
-            document.getElementById("reset").onclick = () => {
-                ["q", "family", "arch", "status", "params", "cap"].forEach(
-                    (id) => (document.getElementById(id).value = ""),
-                );
-                render();
-            };
-            ["q", "params"].forEach((id) =>
-                document.getElementById(id).addEventListener("input", render),
-            );
-            document.getElementById("modelPick").onchange = showStack;
-            document.getElementById("hwPick").onchange = showStack;
-            document.getElementById("skillPick").onchange = showStack;
-            Promise.all([
-                fetch("assets/data/models_atlas_2026.json").then((r) => r.json()),
-                fetch("assets/data/atlas_ecosystem_2026.json").then((r) => r.json()),
-            ])
-                .then(([m, e]) => {
-                    all = m;
-                    eco = e;
-                    add(
-                        "family",
-                        all.map((x) => x.family),
-                        "Todas",
-                    );
-                    add(
-                        "arch",
-                        all.map((x) => x.architecture),
-                        "Todas",
-                    );
-                    add(
-                        "status",
-                        all.map((x) => x.status),
-                        "Todos",
-                    );
-                    add(
-                        "cap",
-                        all.flatMap((x) => String(x.capabilities || "").split(";")),
-                        "Todas",
-                    );
-                    add(
-                        "modelPick",
-                        all.map((x) => x.model_name),
-                        "Selecciona un modelo",
-                    );
-                    add(
-                        "hwPick",
-                        eco.hardware.map((x) => x.id),
-                        "Cualquier hardware",
-                    );
-                    add(
-                        "skillPick",
-                        eco.skills.map((x) => x.id),
-                        "Cualquier skill",
-                    );
-                    cards("runtimeCards", eco.runtimes);
-                    cards("agentCards", eco.agents);
-                    cards("skillCards", eco.skills);
-                    cards("harnessCards", eco.harnesses);
-                    cards("hardwareCards", eco.hardware);
-                    render();
-                    showStack();
-                })
-                .catch((e) => {
-                    document.getElementById("count").textContent = "Error cargando Atlas: " + e;
-                });
-        </script>
-        <script src="assets/js/navigation.js"></script>
+
+        <script src="assets/js/atlas.js?v=2026-08-16-1" defer></script>
+        <script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
     </body>
 </html>
