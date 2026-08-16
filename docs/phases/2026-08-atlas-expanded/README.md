@@ -43,6 +43,8 @@ La ejecución final auditó:
 
 Este resultado es correcto: el Atlas no se rellena artificialmente cuando la evidencia no alcanza el estado exigido. El informe completo queda en [`H06_FINAL.md`](H06_FINAL.md).
 
+La publicación automática se ha endurecido frente a ejecuciones concurrentes: el snapshot generado se confirma y después se rebasea sobre `main` antes del `push`.
+
 ## Documentación
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — arquitectura canónica.
