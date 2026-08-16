@@ -47,6 +47,9 @@ fase → implementación → validación → aceptación
 ### Fases aceptadas y en curso
 
 - [`phases/README.md`](phases/README.md)
+- [`completed/README.md`](completed/README.md) — **guías pedagógicas de mantenimiento de los componentes terminados**.
+
+Estas guías complementan, no sustituyen, los paquetes normativos de cada fase.
 
 ## Regla de estado
 
