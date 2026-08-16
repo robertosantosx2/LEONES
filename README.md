@@ -57,43 +57,39 @@ Documentación: [`docs/DOCUMENTATION_PROTOCOL.md`](docs/DOCUMENTATION_PROTOCOL.m
 H06 establece la frontera canónica entre el feed de prospección y el Atlas:
 
 ```text
-FEED OPERATIVO
-      ↓
-IDENTIDAD
-      ↓
-EVIDENCIA
-      ↓
-QUALITY GATE
-      ↓
-VERIFIED-ONLY
-      ↓
-ATLAS CANÓNICO
+FEED OPERATIVO → IDENTIDAD → EVIDENCIA → QUALITY GATE → VERIFIED-ONLY → ATLAS CANÓNICO
 ```
 
-Validación final:
-
-- 193 filas auditadas.
-- 193 identidades.
-- 193 identidades únicas según el auditor actual.
-- 0 grupos duplicados detectados.
-- 193 flags, todos `unverified`.
-- 0 filas `verified`.
-- 0 registros promovidos.
-- 0 registros en `atlas/catalog.json`.
-
-**Esto es correcto:** no se introducen modelos en el Atlas oficial sin evidencia suficiente.
+Validación final: 193 filas auditadas, 193 identidades únicas, 0 duplicados detectados, 193 flags `unverified`, 0 filas `verified`, 0 registros promovidos y 0 registros en el catálogo canónico. Esto es correcto: no se introducen modelos sin evidencia suficiente.
 
 Documentación: [`docs/phases/2026-08-atlas-expanded/`](docs/phases/2026-08-atlas-expanded/) · [`atlas/README.md`](atlas/README.md) · [`data/prospection/h06_audit_report.json`](data/prospection/h06_audit_report.json).
 
 ### H10 — Pipeline Atlas → recomendador diario enriquecido
 
-**🟢 ACEPTADO.** El Run #18 cerró el pipeline completo: prospección → ingesta → evidencia → calidad → hipótesis → matriz → recomendador → enriquecimiento → validación → publicación.
+**🟢 ACEPTADO.** El pipeline completo está operativo: prospección → ingesta → evidencia → calidad → hipótesis → matriz → recomendador → enriquecimiento → validación → publicación.
 
-Evidencia de cierre: 209 modelos procesados, 39/209 con evidencia técnica reportada en aquella ejecución, 32.128 filas de matriz hardware, 59 ficheros de recomendaciones y 859 filas validadas.
+La integración de CABE/RULA mantiene `tokens_per_second` como dato continuo y añade `performance_class` sin introducir esa clasificación en `fit_score`.
 
 Documentación: [`docs/phases/2026-08-atlas-recommendation-pipeline/`](docs/phases/2026-08-atlas-recommendation-pipeline/).
 
-> H10 demuestra que el pipeline funciona; no significa que todos los modelos estén benchmarkeados físicamente ni que JGB/CABE/RULA estén completos.
+---
+
+# 🧹 Estándar de «limpia y da esplendor»
+
+Cuando una fase pasa a terminada, se aplica este cierre antes de considerarla limpia:
+
+1. eliminar trazas, pruebas y borradores que no formen parte del producto;
+2. retirar código muerto y artefactos temporales;
+3. revisar nombres y contratos públicos;
+4. documentar los scripts con comentarios pedagógicos, pensados para lectores con conocimientos básicos de programación;
+5. mantener documentación externa pormenorizada;
+6. enlazar esa documentación desde los README correspondientes;
+7. conservar evidencia de validación y criterios de cierre;
+8. comprobar que CI es reproducible;
+9. comprobar que ningún workflow escritor puede concurrir con otro;
+10. actualizar el estado del proyecto.
+
+Este estándar se aplica también retrospectivamente a las fases ya aceptadas.
 
 ---
 
@@ -111,7 +107,9 @@ Documentación: [`web/proyectos/atlas/openness/JGB-INDEX.md`](web/proyectos/atla
 
 ### H09 — CABE / RULA
 
-**🟡 EN DESARROLLO.** Contratos y lógica ya existen. Falta cobertura y validación sistemática, especialmente mediante mediciones reales.
+**🟡 EN DESARROLLO.** Contratos, normalización, clasificación, pruebas e integración con el recomendador están implementados. Falta ampliar la cobertura con mediciones reales y cerrar la validación sistemática.
+
+Regla oficial: `<1 = No CABE`, `1–<10 = CABE`, `10–100 = RULA`, `>100 = RULA+` tok/s. El valor `tokens_per_second` siempre se conserva y la clasificación no sustituye al dato.
 
 ### Benchmarks reales y evaluación agentiva
 
@@ -122,6 +120,12 @@ Documentación: [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) · [`docs/EVALU
 ### Adaptadores y fuentes empíricas
 
 **🟡 EN DESARROLLO.** La arquitectura permite trazabilidad de observaciones externas; la cobertura y robustez de adaptadores continúan evolucionando.
+
+### 🔮 ADIVINO — descubrimiento futuro
+
+**🟡 APARCADO.** Arquitectura documentada para descubrir nuevas webs, repositorios, datasets, benchmarks, runtimes, software y skills. Su activación de correo y validación humana `OK LEONES` quedan pendientes por decisión explícita del proyecto.
+
+Documentación: [`docs/SOURCE-DISCOVERY.md`](docs/SOURCE-DISCOVERY.md).
 
 ### Web / aplicación
 
@@ -161,6 +165,8 @@ Documentación: [`docs/PILLARS.md`](docs/PILLARS.md) · [`docs/ARCHITECTURE.md`]
 
 El repositorio dispone de workflows para prospección, Atlas, evidencia, recomendaciones, precios, ranking económico, web, recomendaciones de usuarios y MANADA.
 
+**Regla obligatoria de no concurrencia:** todo workflow futuro que escriba en `main` debe usar el grupo global `leones-main-writers` con `cancel-in-progress: false`. Ningún nuevo workflow escritor puede saltarse esta regla.
+
 Regla de cierre:
 
 ```text
@@ -176,17 +182,7 @@ Una pieza no se declara terminada solo porque exista código.
 LEONES separa deliberadamente:
 
 ```text
-DESCUBRIMIENTO
-     ↓
-EVIDENCIA EXTERNA
-     ↓
-NORMALIZACIÓN
-     ↓
-VERIFICACIÓN / MEDICIÓN
-     ↓
-ATLAS
-     ↓
-RECOMENDACIÓN
+DESCUBRIMIENTO → EVIDENCIA EXTERNA → NORMALIZACIÓN → VERIFICACIÓN / MEDICIÓN → ATLAS → RECOMENDACIÓN
 ```
 
 No se inventan valores. La ausencia permanece `unknown`. Las estimaciones se marcan como `estimated`. Una fuente externa no se presenta automáticamente como medición LEONES.
@@ -204,31 +200,20 @@ Además:
 # 🗺️ Flujo general
 
 ```text
-PROSPECCIÓN
-    ↓
-IDENTIDAD
-    ↓
-EVIDENCIA
-    ↓
-ATLAS
-    ↓
-JGB ───────────────┐
-HARDWARE ──────────┤
-RENDIMIENTO ───────┤
-PRECIO ────────────┤
-                    ↓
-                  CABE
-                    ↓
-                 RULA
-                    ↓
-              RECOMENDADOR
-                    ↓
-             RUNTIME / AGENT
-                    ↓
-               MEDICIÓN
-                    ↓
-                 MANADA
-                    ↺
+PROSPECCIÓN → IDENTIDAD → EVIDENCIA → ATLAS
+                              ↓
+                 JGB / HARDWARE / RENDIMIENTO / PRECIO
+                              ↓
+                         CABE / RULA
+                              ↓
+                        RECOMENDADOR
+                              ↓
+                         RUNTIME / AGENT
+                              ↓
+                           MEDICIÓN
+                              ↓
+                           MANADA
+                              ↺
 ```
 
 Principio central:
@@ -241,40 +226,18 @@ Principio central:
 
 ```text
 H01–H06 🟢
-     ↓
 H07 JGB 🟡
-     ↓
 H08 HARDWARE 🟡
-     ↓
 H09 CABE / RULA 🟡
-     ↓
 BENCHMARKS REALES 🟡
-     ↓
 AGENTIC / B01–B05 🟡
-     ↓
 ROUTER / SELECCIÓN DINÁMICA 🟡
-     ↓
 WEB / APP 🟡
-     ↓
 MANADA 🟡
-     ↓
 TCO ⚪
-     ↓
 OPTIMIZACIÓN MULTIOBJETIVO ⚪
+AUDITORÍA FINAL ⚪
 ```
-
-## Fases posteriores
-
-- Coste completo del PC.
-- TCO y consumo eléctrico.
-- Coste por tarea útil y ejecución agentiva.
-- Ranking económico multiobjetivo configurable.
-- Optimización conjunta de libertad, rendimiento, coste, privacidad y eficiencia.
-- Evaluación continua y regresiones.
-- Snapshots versionados del Atlas.
-- Aprendizaje continuo de MANADA.
-- Selección dinámica modelo/runtime/hardware.
-- Auditoría integral de privacidad y seguridad.
 
 ---
 
@@ -288,6 +251,7 @@ OPTIMIZACIÓN MULTIOBJETIVO ⚪
 - [`PIPELINE_E2E.md`](PIPELINE_E2E.md)
 - [`atlas/README.md`](atlas/README.md)
 - [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md)
+- [`docs/SOURCE-DISCOVERY.md`](docs/SOURCE-DISCOVERY.md)
 
 ## ¿Qué es LEONES?
 
