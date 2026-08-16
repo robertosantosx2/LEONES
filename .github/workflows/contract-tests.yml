@@ -1,0 +1,71 @@
+name: LEONES Contract Tests
+
+on:
+  push:
+    paths:
+      - 'schemas/**'
+      - 'tests/contracts/**'
+      - '.github/workflows/contract-tests.yml'
+  pull_request:
+    paths:
+      - 'schemas/**'
+      - 'tests/contracts/**'
+      - '.github/workflows/contract-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate JSON schemas
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          files = sorted(Path('schemas').glob('*.json'))
+          assert files, 'No JSON schemas found'
+          for path in files:
+              with path.open(encoding='utf-8') as f:
+                  json.load(f)
+              print(f'OK {path}')
+          PY
+
+      - name: Check contract invariants
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          schemas = {p.name: json.loads(p.read_text(encoding='utf-8')) for p in Path('schemas').glob('*.json')}
+
+          evidence = schemas['atlas-evidence-contract-v1.json']
+          promotion = schemas['promotion-quality-gate-v1.json']
+          router = schemas['atlas-router-contract-v1.json']
+
+          assert evidence['properties']['contract_version']['const'] == '1.0'
+          assert promotion['properties']['contract_version']['const'] == '1.0'
+          assert router['properties']['contract_version']['const'] == '1.0'
+
+          states = evidence['properties']['evidence']['items']['properties']['verification_state']['enum']
+          assert set(['VERIFIED', 'ESTIMATED', 'UNVERIFIED', 'DISPUTED', 'STALE']).issubset(states)
+
+          osi_modes = router['properties']['request']['properties']['osi_mode']['enum']
+          assert osi_modes == ['OPEN_ALL', 'FORCE_COPYLEFT_CHECK']
+
+          promotion_state = promotion['properties']['promotion']['properties']['state']['enum']
+          assert 'PROMOTED' in promotion_state
+
+          print('All contract invariants passed')
+          PY
+
+      - name: Verify contract test matrix exists
+        shell: bash
+        run: test -s tests/contracts/contract-tests.md
