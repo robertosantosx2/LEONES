@@ -5,139 +5,33 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta
             name="description"
-            content="Pila tecnológica de LEONES para ejecutar IA local de extremo a extremo."
+            content="Pila tecnológica de LEONES para ejecutar y evaluar IA local de extremo a extremo."
         />
-        <meta name="theme-color" content="#f3f6f9" />
         <title>LEONES · Pila</title>
-
-        <!-- La navegación es el único sistema visual compartido que necesita esta página. -->
-        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-2" />
-
-        <style>
-            :root {
-                --page-max-width: 1050px;
-                --page-border: #d8e0e7;
-                --page-ink: #17212b;
-                --page-blue: #1769aa;
-                --page-blue-dark: #102f49;
-            }
-
-            * {
-                box-sizing: border-box;
-            }
-
-            body {
-                margin: 0;
-                color: var(--page-ink);
-                background: #f3f6f9;
-                font-family:
-                    system-ui,
-                    -apple-system,
-                    BlinkMacSystemFont,
-                    "Segoe UI",
-                    sans-serif;
-                line-height: 1.65;
-            }
-
-            .page-hero {
-                padding: 3.5rem 1.5rem;
-                color: #ffffff;
-                background: linear-gradient(120deg, var(--page-blue-dark), var(--page-blue));
-            }
-
-            .page-hero__inner,
-            .page-content {
-                width: min(var(--page-max-width), calc(100% - 2rem));
-                margin-inline: auto;
-            }
-
-            .page-hero h1 {
-                margin: 0;
-                color: #ffffff;
-                font-size: clamp(2.4rem, 6vw, 4rem);
-                line-height: 1.05;
-            }
-
-            .page-hero p {
-                max-width: 760px;
-                margin-bottom: 0;
-                color: #e4eef4;
-            }
-
-            .page-content {
-                padding-block: 2rem 5rem;
-            }
-
-            .content-card {
-                margin-bottom: 1.5rem;
-                padding: 1.5rem;
-                border: 1px solid var(--page-border);
-                border-radius: 0.9rem;
-                background: #ffffff;
-            }
-
-            .content-card h2,
-            .content-card h3 {
-                color: var(--page-blue-dark);
-            }
-
-            .content-card h2 {
-                margin-top: 0;
-            }
-
-            .tag {
-                display: inline-block;
-                padding: 0.25rem 0.6rem;
-                border-radius: 999px;
-                color: var(--page-blue);
-                background: #eaf4fb;
-                font-size: 0.75rem;
-                font-weight: 900;
-                letter-spacing: 0.04em;
-            }
-
-            .stack-diagram {
-                overflow-x: auto;
-                margin: 1rem 0 0;
-                padding: 1.25rem;
-                border-radius: 0.7rem;
-                color: #eaf4fb;
-                background: #172b3d;
-                font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-                line-height: 1.55;
-            }
-
-            .layer-list {
-                display: grid;
-                gap: 0.75rem;
-            }
-
-            .layer {
-                padding: 0.9rem 1rem;
-                border-left: 4px solid var(--page-blue);
-                border-radius: 0 0.6rem 0.6rem 0;
-                background: #eaf4fb;
-            }
-
-            .layer strong {
-                color: var(--page-blue-dark);
-            }
-        </style>
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3" />
+        <link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-1" />
     </head>
 
     <body>
-        <header class="page-hero">
-            <div class="page-hero__inner">
-                <h1>LEONES · Pila</h1>
-                <p>La cadena completa necesaria para ejecutar una tarea local.</p>
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <h1>LEONES · Pila tecnológica</h1>
+                <p>
+                    La cadena completa necesaria para ejecutar una tarea local y evaluar qué parte
+                    de esa cadena limita el resultado.
+                </p>
             </div>
         </header>
 
-        <main class="page-content" id="main">
-            <section class="content-card" aria-labelledby="stack-title">
-                <span class="tag">ARQUITECTURA</span>
+        <main class="site-main" id="main">
+            <section class="site-section" aria-labelledby="stack-title">
+                <span class="site-tag">Arquitectura</span>
                 <h2 id="stack-title">La pila no es solo el modelo</h2>
-                <pre class="stack-diagram">
+                <p>
+                    LEONES trata la ejecución local como una cadena de capas. Cada una puede cambiar
+                    sin obligar a sustituir todo el sistema.
+                </p>
+                <pre class="site-stack">
 HARDWARE
    ↓
 SISTEMA OPERATIVO
@@ -159,40 +53,91 @@ LOTB
 RESULTADO + UX</pre>
             </section>
 
-            <section class="content-card" aria-labelledby="layers-title">
-                <h2 id="layers-title">Por qué está separada</h2>
-                <p>
-                    Cada capa puede ser sustituida. Cuando una experiencia es mala, LEONES debe
-                    localizar el cuello de botella antes de recomendar cambiar el modelo.
-                </p>
-                <div class="layer-list">
-                    <div class="layer">
-                        <strong>Hardware:</strong> RAM, VRAM, CPU, GPU y almacenamiento.
-                    </div>
-                    <div class="layer">
-                        <strong>Runtime:</strong> drivers, ejecución y gestión de recursos.
-                    </div>
-                    <div class="layer">
-                        <strong>Inferencia:</strong> backend, modelo y cuantización.
-                    </div>
-                    <div class="layer">
-                        <strong>Agentic:</strong> harness, herramientas, skills y Buddy.
-                    </div>
-                    <div class="layer">
-                        <strong>Evaluación:</strong> LOTB y evidencia reproducible.
-                    </div>
+            <section class="site-section" aria-labelledby="layers-title">
+                <h2 id="layers-title">Qué aporta cada capa</h2>
+                <div class="site-grid">
+                    <article class="site-card">
+                        <h3>Hardware</h3>
+                        <p>
+                            CPU, GPU, RAM, VRAM y almacenamiento determinan qué modelos y runtimes
+                            son realmente viables.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Sistema y runtime</h3>
+                        <p>
+                            El sistema operativo, drivers y runtime gestionan la ejecución y el acceso
+                            efectivo a los recursos disponibles.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Inferencia</h3>
+                        <p>
+                            Backend, formato, modelo y cuantización determinan cómo se convierten los
+                            recursos del equipo en tokens y latencia.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Capa agentic</h3>
+                        <p>
+                            Harness, herramientas, skills y conocimiento convierten la inferencia en
+                            capacidad para completar objetivos.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Evaluación</h3>
+                        <p>
+                            LOTB y las pruebas reproducibles permiten separar percepción, afirmaciones
+                            y evidencia medible.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Resultado y UX</h3>
+                        <p>
+                            El resultado final importa por lo que permite hacer al usuario, no por el
+                            número de tokens producido por segundo de forma aislada.
+                        </p>
+                    </article>
                 </div>
             </section>
 
-            <section class="content-card" aria-labelledby="router-title">
+            <section class="site-section" aria-labelledby="boundary-title">
+                <h2 id="boundary-title">Web e infraestructura no son la misma capa</h2>
+                <p>
+                    La web de LEONES documenta, explica y presenta el ecosistema. La infraestructura
+                    mantiene datos, procesos y automatización. Los scripts locales son una frontera
+                    distinta: deben poder copiarse y ejecutarse sin instalar toda esa infraestructura.
+                </p>
+                <div class="site-note">
+                    <strong>Decisión:</strong> la web no se diseña como un paquete que el usuario tenga
+                    que descargar. Lo descargable son las herramientas locales necesarias para realizar
+                    pruebas en su propio equipo.
+                </div>
+            </section>
+
+            <section class="site-section" aria-labelledby="router-title">
                 <h2 id="router-title">Objetivo de Router</h2>
                 <p>
-                    Encontrar la combinación que satisfaga la tarea con el hardware disponible,
-                    priorizando evidencia real y declarando incertidumbre cuando falte información.
+                    Router debe encontrar la combinación que satisfaga una necesidad con el hardware
+                    disponible, utilizando evidencia real y declarando incertidumbre cuando falte
+                    información.
                 </p>
+                <div class="site-flow" aria-label="Cadena de decisión de Router">
+                    <span class="site-flow__node site-flow__node--primary">Necesidad</span>
+                    <span class="site-flow__arrow" aria-hidden="true">→</span>
+                    <span class="site-flow__node">Hardware</span>
+                    <span class="site-flow__arrow" aria-hidden="true">→</span>
+                    <span class="site-flow__node">Modelo</span>
+                    <span class="site-flow__arrow" aria-hidden="true">→</span>
+                    <span class="site-flow__node">Runtime</span>
+                    <span class="site-flow__arrow" aria-hidden="true">→</span>
+                    <span class="site-flow__node">Agentic stack</span>
+                    <span class="site-flow__arrow" aria-hidden="true">→</span>
+                    <span class="site-flow__node site-flow__node--primary">Evaluación</span>
+                </div>
             </section>
         </main>
 
-        <script src="assets/js/navigation.js?v=2026-08-16-2" defer></script>
+        <script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
     </body>
 </html>
