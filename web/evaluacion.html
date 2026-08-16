@@ -1,80 +1,11 @@
 <!doctype html>
-<html lang="es">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Evaluación de sistemas locales de IA en LEONES." />
-        <title>LEONES · Evaluación</title>
-        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3" />
-        <link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-2" />
-    </head>
-    <body>
-        <header class="site-hero">
-            <div class="site-hero__inner">
-                <span class="site-tag">Evidence</span>
-                <h1>LEONES · Evaluación</h1>
-                <p>Evaluar sistemas, no solo modelos.</p>
-            </div>
-        </header>
-        <main class="site-main" id="main">
-            <section class="site-section" aria-labelledby="measure-title">
-                <h2 id="measure-title">Qué mide</h2>
-                <p>
-                    Evaluación mide la capacidad de una combinación local de modelo, backend,
-                    harness y herramientas para completar objetivos.
-                </p>
-                <div class="site-table-wrap">
-                    <table class="site-table">
-                        <thead>
-                            <tr>
-                                <th>Prueba</th>
-                                <th>Interés</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>B01</td>
-                                <td>Memoria, localidad y contexto</td>
-                            </tr>
-                            <tr>
-                                <td>B02</td>
-                                <td>Archivos y herramientas</td>
-                            </tr>
-                            <tr>
-                                <td>B03</td>
-                                <td>Tareas multietapa</td>
-                            </tr>
-                            <tr>
-                                <td>B04</td>
-                                <td>Recuperación y conocimiento</td>
-                            </tr>
-                            <tr>
-                                <td>B05</td>
-                                <td>Coding y ejecución local</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-            <section class="site-section" aria-labelledby="evidence-title">
-                <h2 id="evidence-title">Evidencia</h2>
-                <pre class="site-stack">
-reported → reproducible → verified
-                    ↘ rejected</pre>
-                <p class="site-note">
-                    <strong>Regla:</strong> publicar un resultado no lo convierte automáticamente en
-                    verificado.
-                </p>
-            </section>
-            <section class="site-section" aria-labelledby="router-title">
-                <h2 id="router-title">Por qué importa para Router</h2>
-                <p>
-                    Dos modelos con una velocidad similar pueden tener una utilidad completamente
-                    distinta para una tarea agentiva. Evaluación aporta la evidencia que falta a una
-                    simple medición de tok/s.
-                </p>
-            </section>
-        </main>
-        <script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
-    </body>
-</html>
+<html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="description" content="Evaluación de sistemas locales de IA en LEONES."/><title>LEONES · Evaluación</title><link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3"/><link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-2"/></head>
+<body><header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Evidence</span><h1>LEONES · Evaluación</h1><p>Evaluar sistemas, no solo modelos.</p></div></header>
+<main class="site-main" id="main">
+<section class="site-section" aria-labelledby="measure-title"><h2 id="measure-title">Qué mide</h2><p>Evaluación mide la capacidad de una combinación local de modelo, backend, harness y herramientas para completar objetivos.</p><div class="site-table-wrap"><table class="site-table"><thead><tr><th>Prueba</th><th>Interés</th></tr></thead><tbody><tr><td>B01</td><td>Memoria, localidad y contexto</td></tr><tr><td>B02</td><td>Archivos y herramientas</td></tr><tr><td>B03</td><td>Tareas multietapa</td></tr><tr><td>B04</td><td>Recuperación y conocimiento</td></tr><tr><td>B05</td><td>Coding y ejecución local</td></tr></tbody></table></div></section>
+<section class="site-section" aria-labelledby="evidence-title"><h2 id="evidence-title">Evidencia</h2><pre class="site-stack">reported → reproducible → verified
+                    ↘ rejected</pre><p class="site-note"><strong>Regla:</strong> publicar un resultado no lo convierte automáticamente en verificado.</p></section>
+<section class="site-section" aria-labelledby="protocol-title"><span class="site-tag">Cómo evaluar</span><h2 id="protocol-title">Un protocolo que se pueda repetir</h2><div class="site-grid"><article class="site-card"><h3>Define la carga</h3><p>Fija modelo y cuantización, versión del runtime, flags, hardware, longitudes de entrada/salida, concurrencia y si existen prefijos compartidos o salidas estructuradas.</p></article><article class="site-card"><h3>Mide varias dimensiones</h3><p>No uses solo tok/s. Registra TTFT, TPOT, p50/p95/p99, tokens/s, solicitudes/s y memoria cuando sea posible.</p></article><article class="site-card"><h3>Usa tareas representativas</h3><p>La documentación recomienda un conjunto pequeño de 30–100 prompts que representen las tareas reales del usuario.</p></article><article class="site-card"><h3>Separa desarrollo y prueba</h3><p>El conjunto de prueba no debe convertirse en objetivo de optimización. Una vez que se ajusta el sistema contra él, deja de ser una prueba limpia.</p></article></div></section>
+<section class="site-section" aria-labelledby="integrity-title"><h2 id="integrity-title">Integridad de la evaluación</h2><div class="site-note"><strong>Regla de oro:</strong> entrenamiento → validación → prueba. La prueba debe permanecer reservada para medir generalización.</div><p>Hay riesgos específicos de LLM: contaminación del preentrenamiento, datos sintéticos, recuperación que contiene respuestas, sobreajuste de prompts/scaffolds y contaminación de benchmarks de código. Para afirmaciones serias, conviene usar pruebas frescas, privadas o en vivo y documentar protocolo, incertidumbre y limitaciones.</p></section>
+<section class="site-section" aria-labelledby="router-title"><h2 id="router-title">Por qué importa para Router</h2><p>Dos modelos con una velocidad similar pueden tener una utilidad completamente distinta para una tarea agentiva. Evaluación aporta la evidencia que falta a una simple medición de tok/s.</p></section>
+</main><script src="assets/js/navigation.js?v=2026-08-16-3" defer></script></body></html>
