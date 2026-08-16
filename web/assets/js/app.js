@@ -72,14 +72,16 @@ async function copyCommand() {
         await navigator.clipboard.writeText(command);
         byId("message").textContent = "Comando copiado.";
     } catch {
-        byId("message").textContent = "No se pudo copiar automáticamente. Selecciónalo y cópialo manualmente.";
+        byId("message").textContent =
+            "No se pudo copiar automáticamente. Selecciónalo y cópialo manualmente.";
     }
 }
 
 function markDone() {
     if (!state.selectedGoal) return;
     byId("progress").style.width = "100%";
-    byId("message").textContent = "Paso marcado como terminado. Continúa con la siguiente medición cuando estés preparado.";
+    byId("message").textContent =
+        "Paso marcado como terminado. Continúa con la siguiente medición cuando estés preparado.";
 }
 
 function calculateRoute() {
@@ -89,8 +91,10 @@ function calculateRoute() {
     const runtime = byId("backend").value;
 
     let recommendation = "Ruta de exploración";
-    if (vram >= 8) recommendation = "Prioriza candidatos con aceleración GPU y valida memoria real.";
-    else if (ram >= 32) recommendation = "Prioriza modelos cuantizados de tamaño medio y valida latencia.";
+    if (vram >= 8)
+        recommendation = "Prioriza candidatos con aceleración GPU y valida memoria real.";
+    else if (ram >= 32)
+        recommendation = "Prioriza modelos cuantizados de tamaño medio y valida latencia.";
     else recommendation = "Prioriza modelos pequeños/cuántizados y ejecución CPU conservadora.";
 
     byId("route-result").innerHTML = `

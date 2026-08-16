@@ -322,7 +322,12 @@ select {
     border-radius: 0.6rem;
     color: #eaf4fb;
     background: #172b3d;
-    font: 0.9rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font:
+        0.9rem/1.6 ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Consolas,
+        monospace;
     white-space: pre-wrap;
 }
 
