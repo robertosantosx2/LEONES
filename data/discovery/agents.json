@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T23:04:39.223796+00:00",
+  "generated_at": "2026-08-16T05:44:35.951442+00:00",
   "kind": "agents",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
@@ -7,16 +7,7 @@
       "name": "kh0pper/crow",
       "url": "https://github.com/kh0pper/crow",
       "description": "Modular, agentic framework and MCP platform you self-host. Build and run your own AI agents, connect Claude Code, Claude Desktop, or Cursor as a native MCP connector, self-host your apps, and share over encrypted P2P — on hardware you own, with local or cloud models. Open source.",
-      "updated_at": "2026-08-15T21:15:36Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "henrydaum/second-brain",
-      "url": "https://github.com/henrydaum/second-brain",
-      "description": "Second Brain is an agentic framework that acts as an operating system, using local file intelligence, workflow automation, and LLMs to complete tasks and communicate over multiple modalities and messaging platforms.",
-      "updated_at": "2026-08-15T20:14:14Z",
+      "updated_at": "2026-08-16T05:41:50Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -25,7 +16,25 @@
       "name": "open-multi-agent/open-multi-agent",
       "url": "https://github.com/open-multi-agent/open-multi-agent",
       "description": "TypeScript AI agent orchestration framework with dynamic workflows. Describe the goal, not the graph: a coordinator plans the task DAG at runtime and runs it on any LLM (Claude, ChatGPT, Gemini, DeepSeek, or local models).",
-      "updated_at": "2026-08-15T20:49:14Z",
+      "updated_at": "2026-08-16T05:22:18Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "henrydaum/second-brain",
+      "url": "https://github.com/henrydaum/second-brain",
+      "description": "Second Brain is an agentic framework that acts as an operating system, using local file intelligence, workflow automation, and LLMs to complete tasks and communicate over multiple modalities and messaging platforms.",
+      "updated_at": "2026-08-16T03:31:33Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "winstonkoh87/Athena-Public",
+      "url": "https://github.com/winstonkoh87/Athena-Public",
+      "description": "Athena is a local-first agentic PKM that helps you make better decisions with your own context — persistent memory, structured reasoning, and governed AI agents that work across any LLM. Own the state. Rent the intelligence.",
+      "updated_at": "2026-08-16T04:44:01Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -45,15 +54,6 @@
       "description": "An autonomous ultra-massive context agent orchestration framework designed to coordinate hundreds of LLMs across a 10-million token context window. This framework scales multi-agent workflows to an unprecedented enterprise tier. Local first support by all llm openrouter Omniroute olama. ",
       "updated_at": "2026-08-15T16:39:15Z",
       "license": "NOASSERTION",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "winstonkoh87/Athena-Public",
-      "url": "https://github.com/winstonkoh87/Athena-Public",
-      "description": "Athena is a local-first agentic PKM that helps you make better decisions with your own context — persistent memory, structured reasoning, and governed AI agents that work across any LLM. Own the state. Rent the intelligence.",
-      "updated_at": "2026-08-15T20:56:11Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -453,5 +453,6 @@
       "osi_status": "unknown",
       "status": "external-unvalidated"
     }
-  ]
+  ],
+  "error": null
 }

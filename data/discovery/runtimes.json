@@ -1,8 +1,26 @@
 {
-  "generated_at": "2026-08-15T23:04:37.659102+00:00",
+  "generated_at": "2026-08-16T05:44:34.775708+00:00",
   "kind": "runtimes",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
+    {
+      "name": "cklxx/arle",
+      "url": "https://github.com/cklxx/arle",
+      "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
+      "updated_at": "2026-08-16T05:42:16Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "lm-webui/lm-webui",
+      "url": "https://github.com/lm-webui/lm-webui",
+      "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
+      "updated_at": "2026-08-16T02:29:09Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
     {
       "name": "Classevelabs/rai",
       "url": "https://github.com/Classevelabs/rai",
@@ -13,29 +31,11 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "cklxx/arle",
-      "url": "https://github.com/cklxx/arle",
-      "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
-      "updated_at": "2026-08-15T18:35:13Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "weicj/vLLM-2080Ti-Definitive",
       "url": "https://github.com/weicj/vLLM-2080Ti-Definitive",
       "description": "The definitive vLLM runtime for dual RTX 2080 Ti 22GB + NVLink, delivering Qwen 27B local inference with 100+ tok/s single-request decode with support of FP8 weight ",
-      "updated_at": "2026-08-15T22:12:44Z",
+      "updated_at": "2026-08-16T01:56:58Z",
       "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "lm-webui/lm-webui",
-      "url": "https://github.com/lm-webui/lm-webui",
-      "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
-      "updated_at": "2026-08-15T16:25:54Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -268,7 +268,7 @@
       "name": "alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
       "url": "https://github.com/alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
       "description": "Privacy-first zero-cloud offline LLM inference & local memory runtime (LumiChats style)",
-      "updated_at": "2026-08-15T16:06:45Z",
+      "updated_at": "2026-08-16T04:52:29Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -453,5 +453,6 @@
       "osi_status": "unknown",
       "status": "external-unvalidated"
     }
-  ]
+  ],
+  "error": null
 }

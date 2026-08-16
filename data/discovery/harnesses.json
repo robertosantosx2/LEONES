@@ -1,23 +1,59 @@
 {
-  "generated_at": "2026-08-15T23:04:42.243342+00:00",
+  "generated_at": "2026-08-16T05:44:37.991684+00:00",
   "kind": "harnesses",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
     {
-      "name": "sixijsu77-hub/themis-judge-reliability",
-      "url": "https://github.com/sixijsu77-hub/themis-judge-reliability",
-      "description": "Do LLM judges and reward models still agree with themselves when the same question is asked with the predicate inverted? Pre-registered measurement on RewardBench 2, run on one 24 GB GPU with open weights only. Harness validated first: published leaderboard scores reproduced to within 0.0094, checked per item. Raw per-item logs committed.",
-      "updated_at": "2026-08-15T23:03:41Z",
+      "name": "2001anshkaushik/parity-bench",
+      "url": "https://github.com/2001anshkaushik/parity-bench",
+      "description": "Benchmark harness and matched-layer evaluation for LLM orchestration engines (RocketRide and LlamaIndex)",
+      "updated_at": "2026-08-16T05:32:12Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "kreftamarcio/eval-harness",
+      "url": "https://github.com/kreftamarcio/eval-harness",
+      "description": "LLM evaluation framework: automated benchmarks, human-in-the-loop scoring, regression detection, model comparison matrices, and Pareto cost-quality analysis. TypeScript.",
+      "updated_at": "2026-08-16T05:14:38Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "OpenRouterTeam/benchmark-harness",
+      "url": "https://github.com/OpenRouterTeam/benchmark-harness",
+      "description": "OpenRouter TypeScript harness for reproducible LLM benchmarks and evaluations.",
+      "updated_at": "2026-08-16T05:06:26Z",
       "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "2001anshkaushik/parity-bench",
-      "url": "https://github.com/2001anshkaushik/parity-bench",
-      "description": "Benchmark harness and matched-layer evaluation for LLM orchestration engines (RocketRide and LlamaIndex)",
-      "updated_at": "2026-08-15T22:36:51Z",
-      "license": "",
+      "name": "aaddii09/llm-eval-harness",
+      "url": "https://github.com/aaddii09/llm-eval-harness",
+      "description": "🔍 Run efficient evaluations for prompt and LLM regression testing with this lightweight, secret-free evaluation harness.",
+      "updated_at": "2026-08-16T04:00:06Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "sixijsu77-hub/themis-judge-reliability",
+      "url": "https://github.com/sixijsu77-hub/themis-judge-reliability",
+      "description": "Do LLM judges and reward models still agree with themselves when the same question is asked with the predicate inverted? Pre-registered measurement on RewardBench 2, run on one 24 GB GPU with open weights only. Harness validated first: published leaderboard scores reproduced to within 0.0094, checked per item. Raw per-item logs committed.",
+      "updated_at": "2026-08-16T00:15:41Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "muend/benchfck",
+      "url": "https://github.com/muend/benchfck",
+      "description": "Brainfuck-based generator and exact Rust harness for controlled machine-state tasks; v0.4.0-alpha engineering candidate.",
+      "updated_at": "2026-08-15T23:18:32Z",
+      "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -31,29 +67,11 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "aaddii09/llm-eval-harness",
-      "url": "https://github.com/aaddii09/llm-eval-harness",
-      "description": "🔍 Run efficient evaluations for prompt and LLM regression testing with this lightweight, secret-free evaluation harness.",
-      "updated_at": "2026-08-15T21:11:01Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "Umarfarook1/rag-document-qa",
       "url": "https://github.com/Umarfarook1/rag-document-qa",
       "description": "In-development retrieval-augmented document Q&A. Protocol seams for vector store, embedder and answer generator, plus a retrieval eval harness (Recall@K, MRR, nDCG) with no benchmark results yet.",
       "updated_at": "2026-08-15T18:39:30Z",
       "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "OpenRouterTeam/benchmark-harness",
-      "url": "https://github.com/OpenRouterTeam/benchmark-harness",
-      "description": "OpenRouter TypeScript harness for reproducible LLM benchmarks and evaluations.",
-      "updated_at": "2026-08-15T16:03:39Z",
-      "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -103,15 +121,6 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "muend/benchfck",
-      "url": "https://github.com/muend/benchfck",
-      "description": "Brainfuck-based generator and exact Rust harness for controlled machine-state tasks; v0.4.0-alpha engineering candidate.",
-      "updated_at": "2026-08-14T19:06:48Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "FreakyAdy/week33-llm-eval-harness",
       "url": "https://github.com/FreakyAdy/week33-llm-eval-harness",
       "description": "Lightweight LLM evaluation framework for custom benchmarks",
@@ -124,7 +133,7 @@
       "name": "xiaobright/modeltest",
       "url": "https://github.com/xiaobright/modeltest",
       "description": "Personal LLM engineering-maintenance evaluation harness (V4.1b, frozen). Not a public benchmark.",
-      "updated_at": "2026-08-15T21:58:58Z",
+      "updated_at": "2026-08-16T05:20:43Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -292,15 +301,6 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "jameswniu/self-hosted-llm-evals-lab",
-      "url": "https://github.com/jameswniu/self-hosted-llm-evals-lab",
-      "description": "Evaluation framework for self-hosted LLMs. Systematic prompt ablation (baseline, CoT, few-shot, self-consistency voting) on Llama 3.1 8B via lm-evaluation-harness, with Wilson CI statistical analysis, determinism validation, and load testing under concurrency. Found chain-of-thought degrades accuracy 25pp at small scale.",
-      "updated_at": "2026-08-10T03:57:30Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "Brilhante29/llm-eval-harness",
       "url": "https://github.com/Brilhante29/llm-eval-harness",
       "description": "Deterministic LLM and RAG evaluation harness with EM, F1, and latency benchmarks",
@@ -453,5 +453,6 @@
       "osi_status": "unknown",
       "status": "external-unvalidated"
     }
-  ]
+  ],
+  "error": null
 }
