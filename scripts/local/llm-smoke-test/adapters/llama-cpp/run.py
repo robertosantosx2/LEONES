@@ -13,6 +13,7 @@ import platform
 import re
 import shutil
 import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -29,6 +30,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--llama-cli", default="llama-cli", help="llama.cpp CLI executable")
     parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument(
+        "--skip-validation",
+        action="store_true",
+        help="Do not validate the generated result before returning",
+    )
     return parser.parse_args()
 
 
@@ -43,19 +49,13 @@ def first_int(pattern: str, text: str) -> int | None:
 
 
 def parse_timing(stdout: str, stderr: str) -> dict[str, float | int | None]:
-    """Extract only explicit llama.cpp timing counters when present.
-
-    Output formats can change between llama.cpp releases, so unknown values
-    remain null rather than being inferred from unrelated timings.
-    """
-
+    """Extract only explicit llama.cpp timing counters when present."""
     text = f"{stdout}\n{stderr}"
     prompt_tokens = first_int(r"prompt\s+(?:eval|tokens?)\s*[:=]\s*(\d+)", text)
     generated_tokens = first_int(r"(?:generated|predicted|sampled)\s+(?:tokens?)\s*[:=]\s*(\d+)", text)
     generation_ms = first_float(r"(?:eval|generation)\s+time\s*[:=]\s*([0-9.]+)\s*ms", text)
     tokens_per_second = first_float(r"(?:tokens?/s|t/s|tokens per second)\s*[:=]\s*([0-9.]+)", text)
     ttft_ms = first_float(r"(?:ttft|time to first token)\s*[:=]\s*([0-9.]+)\s*ms", text)
-
     return {
         "prompt_tokens": prompt_tokens,
         "generated_tokens": generated_tokens,
@@ -63,6 +63,39 @@ def parse_timing(stdout: str, stderr: str) -> dict[str, float | int | None]:
         "tokens_per_second": tokens_per_second,
         "ttft_ms": ttft_ms,
     }
+
+
+def validate_result(payload: dict) -> list[str]:
+    """Minimal inline validation matching validate_result.py v0.1."""
+    required = {
+        "schema_version", "test", "timestamp", "model", "runtime", "hardware",
+        "configuration", "warmup", "repetitions", "metrics", "result",
+    }
+    metric_fields = {
+        "ttft_ms", "generation_ms", "total_ms", "prompt_tokens",
+        "generated_tokens", "tokens_per_second", "peak_ram_bytes", "peak_vram_bytes",
+    }
+    errors: list[str] = []
+    missing = required - payload.keys()
+    if missing:
+        errors.append("missing top-level fields: " + ", ".join(sorted(missing)))
+    if payload.get("schema_version") != SCHEMA_VERSION:
+        errors.append(f"schema_version must be {SCHEMA_VERSION!r}")
+    for name in ("test", "model", "runtime", "hardware", "configuration", "warmup", "metrics", "result"):
+        if not isinstance(payload.get(name), dict):
+            errors.append(f"{name} must be an object")
+    metrics = payload.get("metrics")
+    if isinstance(metrics, dict):
+        missing_metrics = metric_fields - metrics.keys()
+        if missing_metrics:
+            errors.append("missing metrics: " + ", ".join(sorted(missing_metrics)))
+    result = payload.get("result")
+    if isinstance(result, dict) and result.get("status") not in {"ok", "error", "partial"}:
+        errors.append("result.status must be ok, error or partial")
+    repetitions = payload.get("repetitions")
+    if not isinstance(repetitions, int) or repetitions < 1:
+        errors.append("repetitions must be an integer >= 1")
+    return errors
 
 
 def main() -> int:
@@ -82,11 +115,7 @@ def main() -> int:
             "quantization": "GGUF" if model.suffix.lower() == ".gguf" else None,
             "context_length": args.context,
         },
-        "runtime": {
-            "name": "llama.cpp",
-            "version": None,
-            "adapter": "llama-cpp",
-        },
+        "runtime": {"name": "llama.cpp", "version": None, "adapter": "llama-cpp"},
         "hardware": {
             "os": platform.platform(),
             "architecture": platform.machine(),
@@ -123,45 +152,27 @@ def main() -> int:
     elif not model.is_file():
         result["result"]["error"] = f"Model file not found: {model}"
     else:
-        command = [
-            executable,
-            "-m",
-            str(model),
-            "-p",
-            args.prompt,
-            "-n",
-            str(args.new_tokens),
-            "-c",
-            str(args.context),
-        ]
+        command = [executable, "-m", str(model), "-p", args.prompt, "-n", str(args.new_tokens), "-c", str(args.context)]
         if args.seed is not None:
             command.extend(["-s", str(args.seed)])
-
         try:
-            completed = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
+            completed = subprocess.run(command, capture_output=True, text=True, check=False)
             elapsed_ms = (time.perf_counter() - started) * 1000
             timing = parse_timing(completed.stdout, completed.stderr)
             result["metrics"]["total_ms"] = round(elapsed_ms, 3)
-            for key in (
-                "ttft_ms",
-                "generation_ms",
-                "prompt_tokens",
-                "generated_tokens",
-                "tokens_per_second",
-            ):
+            for key in ("ttft_ms", "generation_ms", "prompt_tokens", "generated_tokens", "tokens_per_second"):
                 result["metrics"][key] = timing[key]
-
             result["configuration"]["prompt_tokens"] = timing["prompt_tokens"]
             result["result"]["status"] = "ok" if completed.returncode == 0 else "error"
             if completed.returncode != 0:
                 result["result"]["error"] = completed.stderr.strip() or f"llama.cpp exited with {completed.returncode}"
         except OSError as exc:
             result["result"]["error"] = str(exc)
+
+    errors = [] if args.skip_validation else validate_result(result)
+    if errors:
+        result["result"]["status"] = "error"
+        result["result"]["error"] = "Invalid result schema: " + "; ".join(errors)
 
     payload = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
     if args.output:
