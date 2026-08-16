@@ -2,165 +2,98 @@
 
 ## Estado
 
-**🟢 Arquitectura funcional cerrada · implementación pendiente**
+**🟢 Contrato cerrado · implementación pendiente**
 
-QUALITY GATE es la capa que determina si una entidad o afirmación dispone de evidencia suficiente para pasar de conocimiento recopilado a conocimiento aceptado por LEONES.
-
-No sustituye al Gate OSI ni a EVIDENCIA: consume sus resultados.
+QUALITY GATE determina si una entidad o afirmación tiene evidencia suficiente para pasar de conocimiento recopilado a conocimiento aceptado por LEONES. Consume los resultados de OSI y EVIDENCIA; no los sustituye.
 
 ## Flujo canónico
 
 ```text
 CANDIDATO / AFIRMACIÓN
         ↓
-IDENTIDAD
+IDENTIDAD → EVIDENCIA → POLÍTICAS
         ↓
-EVIDENCIA
-        ↓
-POLÍTICAS OBLIGATORIAS
-        ↓
-QUALITY GATE
-   ┌────┼─────┐
- PASS REVIEW FAIL
-   ↓      ↓     ↓
-ATLAS   PEND.  FUERA
+   QUALITY GATE
+   ↙    ↓     ↘
+PASS  REVIEW   FAIL
+ ↓       ↓       ↓
+ATLAS  PEND.   FUERA
 ```
 
-## Regla fundamental
+**Regla:** el gate no inventa, completa ni infiere datos faltantes. La incertidumbre se conserva explícitamente.
 
-El Quality Gate **no inventa ni completa datos faltantes**. Si la evidencia no permite sostener una afirmación, el estado debe reflejar esa incertidumbre.
+## Controles
 
-## Dimensiones
-
-### 1. Identidad
-
-- entidad inequívoca;
-- versión identificada cuando sea relevante;
-- organización/proyecto identificado;
-- ausencia de duplicado no resuelto.
-
-### 2. Procedencia
-
-- fuente primaria identificable;
-- URL/artefacto conservado;
-- fecha de consulta;
-- procedencia de cada dato relevante.
-
-### 3. Licencia y apertura
-
-- licencia identificada;
-- alcance comprobado;
-- Gate OSI superado cuando aplique;
-- componentes de terceros considerados.
-
-### 4. Evidencia técnica
-
-- metodología suficiente;
-- versión del modelo/software;
-- configuración relevante;
-- hardware para mediciones físicas;
-- separación entre medido, documentado y estimado.
-
-### 5. Reproducibilidad
-
-- procedimiento disponible;
-- artefacto o resultado conservado cuando sea posible;
-- parámetros suficientes para repetir la prueba;
-- limitaciones documentadas.
-
-### 6. Frescura
-
-- fecha de verificación;
-- vigencia apropiada al dato;
-- detección de evidencia obsoleta;
-- revisión necesaria cuando cambien versión, precio, licencia o rendimiento.
-
-### 7. Consistencia
-
-- ausencia de contradicción crítica;
-- discrepancias registradas;
-- no sobrescritura silenciosa;
-- resolución o estado `DISPUTED` cuando proceda.
+1. **Identidad:** entidad inequívoca, versión relevante, organización/proyecto y duplicados resueltos.
+2. **Procedencia:** fuente primaria, URL/artefacto, fecha de consulta y origen de cada dato.
+3. **Licencia/apertura:** licencia y alcance comprobados, OSI cuando corresponda y terceros relevantes.
+4. **Evidencia técnica:** metodología, versión, configuración, hardware y distinción entre medido/documentado/estimado.
+5. **Reproducibilidad:** procedimiento, parámetros, artefactos y limitaciones.
+6. **Frescura:** fecha de verificación, vigencia y revisión cuando cambien versión, precio, licencia o rendimiento.
+7. **Consistencia:** contradicciones registradas y sin sobrescritura silenciosa.
 
 ## Estados
 
 ```text
-PENDING
-PASS
-REVIEW
-FAIL
-DISPUTED
-SUPERSEDED
+PENDING · PASS · REVIEW · FAIL · DISPUTED · SUPERSEDED
 ```
 
-`PASS` significa que se cumplen los requisitos definidos para esa clase de dato. No significa que el elemento sea universalmente correcto ni que tenga máxima calidad técnica.
+`PASS` significa que se cumplen los requisitos definidos para esa clase de dato; no significa calidad máxima ni certeza universal.
 
-## Clases de evidencia
-
-El gate aplica requisitos diferentes según la afirmación:
+## Evidencia según afirmación
 
 | Afirmación | Evidencia preferida |
 |---|---|
-| licencia | fuente primaria + texto de licencia |
-| benchmark | benchmark reproducible + versión/configuración |
-| tok/s | medición física reproducible |
-| compatibilidad hardware | prueba o evidencia específica |
-| capacidad Agentic | integración/versiones verificables |
-| precio/TCO | fuente actual y fecha |
-| recomendación | conjunto de evidencias + restricciones |
+| Licencia | fuente primaria + texto de licencia |
+| Benchmark | benchmark reproducible + versión/configuración |
+| Tok/s | medición física reproducible |
+| Compatibilidad | prueba o evidencia específica |
+| Agentic | integración/versiones verificables |
+| Precio/TCO | fuente actual + fecha |
+| Recomendación | evidencias + restricciones aplicables |
 
 ## Evidencia física por modelo
 
-Una estimación no puede superar el gate como medición.
-
 ```text
-estimación → ESTIMATED
-medición reproducible → MEASURED
+estimación              → ESTIMATED
+medición reproducible   → MEASURED
 ```
 
-Para afirmaciones de rendimiento por modelo/hardware, si no existe evidencia física suficiente, el dato permanece marcado y no se presenta como medición real.
+Una estimación de hardware o arquitectura nunca se presenta como medición del modelo concreto. Si falta evidencia física suficiente, el dato permanece marcado como estimado/no verificado.
 
-## Gate por niveles
+## Niveles de cobertura
 
 ```text
-LEVEL 0 — descubierto
-LEVEL 1 — identificado
-LEVEL 2 — evidencia básica
-LEVEL 3 — verificado
-LEVEL 4 — físicamente validado
+L0  descubierto
+L1  identificado
+L2  evidencia básica
+L3  verificado
+L4  físicamente validado
 ```
 
-Los niveles describen cobertura de evidencia, no una puntuación de calidad del modelo.
+Son niveles de cobertura de evidencia, **no puntuaciones de calidad**.
 
-## Promoción a Atlas
+## Promoción
 
 ```text
 Agentic → Gate OSI → Quality Gate → Atlas
 LLM     → Evidencia → Quality Gate → Atlas
 ```
 
-El Quality Gate no puede saltarse el Gate OSI cuando este sea obligatorio.
+Cuando OSI sea obligatorio, Quality Gate no puede saltárselo.
 
-## Router
+## Router y MANADA
 
-El Router solo trata como verificadas las entidades/datos que cumplan el estado requerido. Los estados de incertidumbre deben permanecer visibles en la explicación cuando afecten a la recomendación.
+El Router solo usa como verificadas las entidades/datos que cumplan el estado requerido y mantiene visibles las incertidumbres relevantes. Las salidas de MANADA no superan automáticamente el gate: el consenso entre agentes no sustituye la evidencia requerida.
 
-## MANADA
+## Observabilidad y revisión
 
-Los resultados generados por una MANADA no pasan automáticamente el gate. La coincidencia de varios participantes no sustituye la evidencia externa o la prueba requerida.
-
-## Observabilidad
-
-Cada evaluación debe conservar, cuando proceda, `trace_id`, `run_id` y referencias a las evidencias usadas.
-
-## Revisión humana
-
-Cuando una afirmación crítica no pueda resolverse automáticamente, el estado será `REVIEW` y se conservará el motivo. La revisión humana no debe borrar la evidencia anterior ni ocultar la incertidumbre.
+Cada evaluación conserva, cuando proceda, `trace_id`, `run_id` y referencias a las evidencias utilizadas. Una afirmación crítica irresuelta queda en `REVIEW`, conservando la evidencia previa y el motivo.
 
 ## No concurrencia
 
-Los evaluadores pueden ejecutar comprobaciones en paralelo, pero la promoción o modificación de registros canónicos utiliza exclusivamente `leones-main-writers` con `cancel-in-progress: false`.
+Las comprobaciones pueden ejecutarse en paralelo. La promoción o modificación de registros canónicos utiliza exclusivamente `leones-main-writers` con `cancel-in-progress: false`.
 
-## Criterio de cierre
+## Cierre
 
-El Quality Gate queda definido como mecanismo de aceptación de evidencia. La implementación posterior debe parametrizar los requisitos por tipo de entidad/afirmación sin convertir el gate en un score opaco.
+El Quality Gate queda definido como mecanismo de aceptación de evidencia. La implementación deberá parametrizar los requisitos por tipo de entidad/afirmación sin convertir el gate en un score opaco.
