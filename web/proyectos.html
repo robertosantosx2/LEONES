@@ -3,20 +3,201 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Proyectos de LEONES, arquitectura, objetivos y herramientas locales." />
+        <meta
+            name="description"
+            content="Proyectos de LEONES, arquitectura, objetivos y herramientas locales."
+        />
         <title>LEONES · Proyectos</title>
         <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3" />
         <link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-1" />
     </head>
     <body>
-        <header class="site-hero"><div class="site-hero__inner"><h1>LEONES · Proyectos</h1><p>Un ecosistema para estudiar, probar y recomendar IA local con hardware real, evidencia reproducible y una separación clara entre web e infraestructura.</p></div></header>
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <h1>LEONES · Proyectos</h1>
+                <p>
+                    Un ecosistema para estudiar, probar y recomendar IA local con hardware real,
+                    evidencia reproducible y una separación clara entre web e infraestructura.
+                </p>
+            </div>
+        </header>
         <main class="site-main" id="main">
-            <section class="site-section" aria-labelledby="vision-title"><span class="site-tag">Visión</span><h2 id="vision-title">IA local útil, no solo modelos ejecutándose</h2><p class="site-lead">LEONES estudia la combinación de hardware, sistema operativo, runtime, backend, modelo, harness, skills y conocimiento necesaria para completar objetivos agentic localmente.</p><p><strong>Un agente no existe para producir tokens; existe para completar objetivos.</strong></p></section>
-            <section class="site-section" aria-labelledby="projects-title"><h2 id="projects-title">Cómo se organiza el proyecto</h2><div class="site-grid"><article class="site-card"><h3>Atlas</h3><p>Base estructurada de modelos, familias, organizaciones, benchmarks, hardware y evidencia. Su función es conservar conocimiento consultable.</p></article><article class="site-card"><h3>Router</h3><p>Capa de decisión que relaciona necesidad, hardware, modelo y runtime para encontrar una combinación viable y explicar sus límites.</p></article><article class="site-card"><h3>Evaluación</h3><p>Metodologías y pruebas que permiten distinguir una afirmación de una medición reproducible.</p></article><article class="site-card"><h3>Manada</h3><p>Capa para agregar mediciones voluntarias y convertir experiencia real en nueva evidencia para el ecosistema.</p></article></div></section>
-            <section class="site-section" aria-labelledby="local-title"><span class="site-tag">Scripts locales</span><h2 id="local-title">La herramienta se separa de la infraestructura</h2><p>Los scripts locales no son una versión descargable de toda la infraestructura de LEONES. Son herramientas pequeñas y autónomas que el usuario puede ejecutar en su propio equipo para probar su LLM con su hardware y su runtime.</p><div class="site-note"><strong>Principio arquitectónico:</strong> la web es el escaparate; los scripts son herramientas locales autónomas.</div><div class="site-flow" aria-label="Separación entre web y scripts locales"><span class="site-flow__node">Web LEONES</span><span class="site-flow__arrow" aria-hidden="true">→</span><span class="site-flow__node">Documentación</span><span class="site-flow__arrow" aria-hidden="true">≠</span><span class="site-flow__node site-flow__node--primary">Scripts locales</span><span class="site-flow__arrow" aria-hidden="true">→</span><span class="site-flow__node">LLM + runtime del usuario</span></div></section>
-            <section class="site-section" aria-labelledby="smoke-title"><h2 id="smoke-title">LLM Smoke Test</h2><p>El primer producto local es <span class="site-code">scripts/local/llm-smoke-test</span>. Su misión es comprobar que un runtime local puede ejecutar un modelo y producir un resultado estructurado sin depender de Atlas, de la web ni de la infraestructura de LEONES.</p><div class="site-grid"><article class="site-card"><h3>Contrato común</h3><p><span class="site-code">RESULT_SCHEMA v0.1</span> define la estructura de los resultados para que los adaptadores puedan compararse sin cambiar el significado de las métricas.</p></article><article class="site-card"><h3>Runtimes</h3><p>La primera ola prioriza llama.cpp y Ollama. Después se contemplan Transformers, vLLM y MLX.</p></article><article class="site-card"><h3>Medición honesta</h3><p>TTFT, tiempo de generación, tokens y memoria solo se publican cuando pueden medirse de forma fiable. Lo desconocido permanece como <span class="site-code">null</span>.</p></article><article class="site-card"><h3>Aislamiento</h3><p>No se descargan modelos silenciosamente, no se requieren credenciales y no se envían resultados a LEONES por defecto.</p></article></div></section>
-            <section class="site-section" aria-labelledby="user-title"><span class="site-tag">Para empezar</span><h2 id="user-title">Qué debe decidir primero un usuario</h2><div class="site-grid"><article class="site-card"><h3>1 · Hardware real</h3><p>No basta con mirar el nombre de la GPU. Importan memoria disponible, ancho de banda, interconexión y si el modelo cabe con caché KV, runtime y margen.</p></article><article class="site-card"><h3>2 · Carga real</h3><p>Define contexto, longitud de respuesta, concurrencia y si necesitas chat, coding, RAG, herramientas o agentes.</p></article><article class="site-card"><h3>3 · Modelo + formato</h3><p>La cuantización, el tokenizador y la plantilla de chat forman parte del paquete del modelo. Un formato no es automáticamente portable entre runtimes.</p></article><article class="site-card"><h3>4 · Medir antes de decidir</h3><p>Compara con tareas representativas. La documentación recomienda un conjunto pequeño de 30–100 prompts reales y medir calidad, latencia, memoria y fallos.</p></article></div><div class="site-note"><strong>Regla LEONES:</strong> elegir el modelo más pequeño que gane tu carga de trabajo real en tu hardware, no el modelo con la cifra de parámetros más grande.</div></section>
-            <section class="site-section" aria-labelledby="flow-title"><h2 id="flow-title">Mapa del ecosistema</h2><div class="site-flow" aria-label="Flujo conceptual de LEONES"><span class="site-flow__node site-flow__node--primary">Necesidad</span><span class="site-flow__arrow" aria-hidden="true">→</span><span class="site-flow__node">Task Intelligence</span><span class="site-flow__arrow" aria-hidden="true">→</span><span class="site-flow__node">Atlas + Hardware</span><span class="site-flow__arrow" aria-hidden="true">→</span><span class="site-flow__node site-flow__node--primary">Router</span><span class="site-flow__arrow" aria-hidden="true">→</span><span class="site-flow__node">Modelo + Runtime + Agente</span><span class="site-flow__arrow" aria-hidden="true">→</span><span class="site-flow__node site-flow__node--primary">Evaluación</span><span class="site-flow__arrow" aria-hidden="true">→</span><span class="site-flow__node">Manada</span></div><p>La evidencia vuelve al sistema para mejorar las recomendaciones. La herramienta local puede funcionar aunque el resto del ecosistema no esté instalado en el equipo del usuario.</p></section>
+            <section class="site-section" aria-labelledby="vision-title">
+                <span class="site-tag">Visión</span>
+                <h2 id="vision-title">IA local útil, no solo modelos ejecutándose</h2>
+                <p class="site-lead">
+                    LEONES estudia la combinación de hardware, sistema operativo, runtime, backend,
+                    modelo, harness, skills y conocimiento necesaria para completar objetivos
+                    agentic localmente.
+                </p>
+                <p>
+                    <strong
+                        >Un agente no existe para producir tokens; existe para completar
+                        objetivos.</strong
+                    >
+                </p>
+            </section>
+            <section class="site-section" aria-labelledby="projects-title">
+                <h2 id="projects-title">Cómo se organiza el proyecto</h2>
+                <div class="site-grid">
+                    <article class="site-card">
+                        <h3>Atlas</h3>
+                        <p>
+                            Base estructurada de modelos, familias, organizaciones, benchmarks,
+                            hardware y evidencia. Su función es conservar conocimiento consultable.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Router</h3>
+                        <p>
+                            Capa de decisión que relaciona necesidad, hardware, modelo y runtime
+                            para encontrar una combinación viable y explicar sus límites.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Evaluación</h3>
+                        <p>
+                            Metodologías y pruebas que permiten distinguir una afirmación de una
+                            medición reproducible.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Manada</h3>
+                        <p>
+                            Capa para agregar mediciones voluntarias y convertir experiencia real en
+                            nueva evidencia para el ecosistema.
+                        </p>
+                    </article>
+                </div>
+            </section>
+            <section class="site-section" aria-labelledby="local-title">
+                <span class="site-tag">Scripts locales</span>
+                <h2 id="local-title">La herramienta se separa de la infraestructura</h2>
+                <p>
+                    Los scripts locales no son una versión descargable de toda la infraestructura de
+                    LEONES. Son herramientas pequeñas y autónomas que el usuario puede ejecutar en
+                    su propio equipo para probar su LLM con su hardware y su runtime.
+                </p>
+                <div class="site-note">
+                    <strong>Principio arquitectónico:</strong> la web es el escaparate; los scripts
+                    son herramientas locales autónomas.
+                </div>
+                <div class="site-flow" aria-label="Separación entre web y scripts locales">
+                    <span class="site-flow__node">Web LEONES</span
+                    ><span class="site-flow__arrow" aria-hidden="true">→</span
+                    ><span class="site-flow__node">Documentación</span
+                    ><span class="site-flow__arrow" aria-hidden="true">≠</span
+                    ><span class="site-flow__node site-flow__node--primary">Scripts locales</span
+                    ><span class="site-flow__arrow" aria-hidden="true">→</span
+                    ><span class="site-flow__node">LLM + runtime del usuario</span>
+                </div>
+            </section>
+            <section class="site-section" aria-labelledby="smoke-title">
+                <h2 id="smoke-title">LLM Smoke Test</h2>
+                <p>
+                    El primer producto local es
+                    <span class="site-code">scripts/local/llm-smoke-test</span>. Su misión es
+                    comprobar que un runtime local puede ejecutar un modelo y producir un resultado
+                    estructurado sin depender de Atlas, de la web ni de la infraestructura de
+                    LEONES.
+                </p>
+                <div class="site-grid">
+                    <article class="site-card">
+                        <h3>Contrato común</h3>
+                        <p>
+                            <span class="site-code">RESULT_SCHEMA v0.1</span> define la estructura
+                            de los resultados para que los adaptadores puedan compararse sin cambiar
+                            el significado de las métricas.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Runtimes</h3>
+                        <p>
+                            La primera ola prioriza llama.cpp y Ollama. Después se contemplan
+                            Transformers, vLLM y MLX.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Medición honesta</h3>
+                        <p>
+                            TTFT, tiempo de generación, tokens y memoria solo se publican cuando
+                            pueden medirse de forma fiable. Lo desconocido permanece como
+                            <span class="site-code">null</span>.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Aislamiento</h3>
+                        <p>
+                            No se descargan modelos silenciosamente, no se requieren credenciales y
+                            no se envían resultados a LEONES por defecto.
+                        </p>
+                    </article>
+                </div>
+            </section>
+            <section class="site-section" aria-labelledby="user-title">
+                <span class="site-tag">Para empezar</span>
+                <h2 id="user-title">Qué debe decidir primero un usuario</h2>
+                <div class="site-grid">
+                    <article class="site-card">
+                        <h3>1 · Hardware real</h3>
+                        <p>
+                            No basta con mirar el nombre de la GPU. Importan memoria disponible,
+                            ancho de banda, interconexión y si el modelo cabe con caché KV, runtime
+                            y margen.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>2 · Carga real</h3>
+                        <p>
+                            Define contexto, longitud de respuesta, concurrencia y si necesitas
+                            chat, coding, RAG, herramientas o agentes.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>3 · Modelo + formato</h3>
+                        <p>
+                            La cuantización, el tokenizador y la plantilla de chat forman parte del
+                            paquete del modelo. Un formato no es automáticamente portable entre
+                            runtimes.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>4 · Medir antes de decidir</h3>
+                        <p>
+                            Compara con tareas representativas. La documentación recomienda un
+                            conjunto pequeño de 30–100 prompts reales y medir calidad, latencia,
+                            memoria y fallos.
+                        </p>
+                    </article>
+                </div>
+                <div class="site-note">
+                    <strong>Regla LEONES:</strong> elegir el modelo más pequeño que gane tu carga de
+                    trabajo real en tu hardware, no el modelo con la cifra de parámetros más grande.
+                </div>
+            </section>
+            <section class="site-section" aria-labelledby="flow-title">
+                <h2 id="flow-title">Mapa del ecosistema</h2>
+                <div class="site-flow" aria-label="Flujo conceptual de LEONES">
+                    <span class="site-flow__node site-flow__node--primary">Necesidad</span
+                    ><span class="site-flow__arrow" aria-hidden="true">→</span
+                    ><span class="site-flow__node">Task Intelligence</span
+                    ><span class="site-flow__arrow" aria-hidden="true">→</span
+                    ><span class="site-flow__node">Atlas + Hardware</span
+                    ><span class="site-flow__arrow" aria-hidden="true">→</span
+                    ><span class="site-flow__node site-flow__node--primary">Router</span
+                    ><span class="site-flow__arrow" aria-hidden="true">→</span
+                    ><span class="site-flow__node">Modelo + Runtime + Agente</span
+                    ><span class="site-flow__arrow" aria-hidden="true">→</span
+                    ><span class="site-flow__node site-flow__node--primary">Evaluación</span
+                    ><span class="site-flow__arrow" aria-hidden="true">→</span
+                    ><span class="site-flow__node">Manada</span>
+                </div>
+                <p>
+                    La evidencia vuelve al sistema para mejorar las recomendaciones. La herramienta
+                    local puede funcionar aunque el resto del ecosistema no esté instalado en el
+                    equipo del usuario.
+                </p>
+            </section>
         </main>
         <script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
     </body>
