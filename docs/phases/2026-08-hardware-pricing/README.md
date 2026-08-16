@@ -83,3 +83,4 @@ Aumentar cobertura por tienda, resolver variantes y marketplaces, anomalías, pr
 - [`../../hardware-price-sources.md`](../../hardware-price-sources.md)
 - [`../../hardware-price-quality.md`](../../hardware-price-quality.md)
 - [`../../atlas-hardware-price-integration.md`](../../atlas-hardware-price-integration.md)
+- **Guía pedagógica de mantenimiento:** [`../../completed/H01-H02-HARDWARE-PRICES.md`](../../completed/H01-H02-HARDWARE-PRICES.md)
