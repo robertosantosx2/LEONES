@@ -51,13 +51,17 @@ jobs:
           evidence = schemas['atlas-evidence-contract-v1.json']
           promotion = schemas['promotion-quality-gate-v1.json']
           router = schemas['atlas-router-contract-v1.json']
-          assert evidence['properties']['contract_version']['const'] == '1.0'
-          assert promotion['properties']['contract_version']['const'] == '1.0'
-          assert router['properties']['contract_version']['const'] == '1.0'
+          atlas = schemas['atlas-storage-v1.json']
+          evidence_storage = schemas['evidence-storage-v1.json']
+          for schema in (evidence, promotion, router, atlas, evidence_storage):
+              assert schema['properties']['contract_version']['const'] == '1.0'
           states = evidence['properties']['evidence']['items']['properties']['verification_state']['enum']
           assert set(['VERIFIED', 'ESTIMATED', 'UNVERIFIED', 'DISPUTED', 'STALE']).issubset(states)
           assert router['properties']['request']['properties']['osi_mode']['enum'] == ['OPEN_ALL', 'FORCE_COPYLEFT_CHECK']
           assert 'PROMOTED' in promotion['properties']['promotion']['properties']['state']['enum']
+          assert atlas['properties']['entity']['properties']['state']['const'] == 'ACCEPTED'
+          assert 'lineage' in atlas['required']
+          assert 'provenance' in evidence_storage['required']
           print('All contract invariants passed')
           PY
 
