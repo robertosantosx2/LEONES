@@ -83,3 +83,4 @@ V4 → optimización multiobjetivo
 - [`../../atlas-economic-ranking.md`](../../atlas-economic-ranking.md)
 - [`../../atlas-hardware-price-integration.md`](../../atlas-hardware-price-integration.md)
 - [`../../ROADMAP.md`](../../ROADMAP.md)
+- **Guía pedagógica de mantenimiento:** [`../../completed/H03-ECONOMIC-RANKING.md`](../../completed/H03-ECONOMIC-RANKING.md)
