@@ -88,11 +88,11 @@ Establece la documentación como condición de cierre y define arquitectura, dec
 
 **ACEPTADA / OPERATIVA.** Establece la frontera de conocimiento canónico: identidad → evidencia → quality gate → promoción `verified-only`. La auditoría actual mantiene `unknown`/`unverified` cuando falta evidencia y no rellena artificialmente el catálogo.
 
-### 🟡 H07 — 2026-08 — Índice JGB sistemático — SIGUIENTE
+### 🟢 H07 — 2026-08 — Índice JGB sistemático — CERRADA
 
 [`2026-08-jgb-systematic/`](2026-08-jgb-systematic/)
 
-**Siguiente unidad prioritaria.** Consolidación de cobertura, evidencia primaria y aplicación reproducible del criterio JGB al conjunto de candidatos, manteniendo separadas apertura, rendimiento, precio y viabilidad.
+**Infraestructura, procedimiento, integración y validación cerrados.** Falta únicamente obtener y registrar evidencia primaria real por modelo para publicar clasificaciones JGB factuales como `verified`; la ausencia de evidencia permanece `unknown`/`provisional` y no se infiere.
 
 ### 🟡 H08 — 2026-08 — Matriz completa de hardware
 
@@ -112,7 +112,7 @@ Establece la documentación como condición de cierre y define arquitectura, dec
 
 ## Resultado de la auditoría
 
-Las capacidades aceptadas disponen de referencia Hxx y paquete documental. Las áreas en evolución no se presentan como terminadas. H08 y H09 disponen ya de infraestructura documentada, pero permanecen en 🟡 porque la cobertura empírica física aún no está cerrada.
+Las capacidades aceptadas disponen de referencia Hxx y paquete documental. Las áreas en evolución no se presentan como terminadas. H07 queda cerrado a nivel de infraestructura y proceso, pero conserva explícitamente como trabajo pendiente la evidencia primaria real por modelo. H08 y H09 disponen de infraestructura documentada, pero permanecen en 🟡 porque la cobertura empírica física aún no está cerrada.
 
 ## Orden de trabajo vigente
 
@@ -121,11 +121,11 @@ H10 CERRADA 🟢
       ↓
 H06 ATLAS AMPLIADO CERRADA 🟢
       ↓
-H07 JGB SISTEMÁTICO 🟡  ← SIGUIENTE
+H07 JGB SISTEMÁTICO CERRADA 🟢
       ↓
-H08 MATRIZ HARDWARE 🟡  ← infraestructura documentada
+H08 MATRIZ HARDWARE 🟡  ← SIGUIENTE
       ↓
-H09 CABE / RULA 🟡      ← infraestructura documentada
+H09 CABE / RULA 🟡
       ↓
 BENCHMARKS REALES
       ↓
