@@ -1,33 +1,8 @@
 <!doctype html>
-<html lang="es">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-            name="description"
-            content="Buddy: conocimiento y contexto controlado dentro de LEONES."
-        />
-        <title>LEONES · Buddy</title>
-        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3" />
-        <link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-2" />
-    </head>
-    <body>
-        <header class="site-hero">
-            <div class="site-hero__inner">
-                <span class="site-tag">Knowledge</span>
-                <h1>LEONES · Buddy</h1>
-                <p>Conocimiento controlado que sobrevive al cambio de pila.</p>
-            </div>
-        </header>
-        <main class="site-main" id="main">
-            <section class="site-section" aria-labelledby="what-title">
-                <h2 id="what-title">Qué es</h2>
-                <p>
-                    Buddy separa el conocimiento, contexto y memoria controlada de la pieza que
-                    genera tokens.
-                </p>
-                <pre class="site-stack">
-OBJETIVO
+<html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="description" content="Buddy: conocimiento y contexto controlado dentro de LEONES."/><title>LEONES · Buddy</title><link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3"/><link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-2"/></head>
+<body><header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Knowledge</span><h1>LEONES · Buddy</h1><p>Conocimiento controlado que sobrevive al cambio de pila.</p></div></header>
+<main class="site-main" id="main">
+<section class="site-section" aria-labelledby="what-title"><h2 id="what-title">Qué es</h2><p>Buddy separa el conocimiento, contexto y memoria controlada de la pieza que genera tokens.</p><pre class="site-stack">OBJETIVO
    ↓
 BUDDY
    ↓
@@ -35,28 +10,8 @@ HARNESS / AGENTE
    ↓
 MODELO / BACKEND
    ↓
-RESULTADO</pre>
-            </section>
-            <section class="site-section" aria-labelledby="why-title">
-                <h2 id="why-title">Por qué importa</h2>
-                <p>
-                    Podemos cambiar CPU, GPU, sistema operativo, backend, modelo o harness sin
-                    reconstruir el conocimiento acumulado.
-                </p>
-                <p class="site-note">
-                    <strong>Principio:</strong> el conocimiento debe ser portable, auditable y
-                    controlado.
-                </p>
-            </section>
-            <section class="site-section" aria-labelledby="atlas-title">
-                <h2 id="atlas-title">Relación con Atlas</h2>
-                <p>
-                    Atlas mantiene el conocimiento estructurado del ecosistema. Buddy representa el
-                    conocimiento y contexto operativo que necesita una tarea o agente concreto. No
-                    son el mismo componente.
-                </p>
-            </section>
-        </main>
-        <script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
-    </body>
-</html>
+RESULTADO</pre></section>
+<section class="site-section" aria-labelledby="why-title"><h2 id="why-title">Por qué importa</h2><p>Podemos cambiar CPU, GPU, sistema operativo, backend, modelo o harness sin reconstruir el conocimiento acumulado.</p><p class="site-note"><strong>Principio:</strong> el conocimiento debe ser portable, auditable y controlado.</p></section>
+<section class="site-section" aria-labelledby="use-title"><span class="site-tag">Para el usuario</span><h2 id="use-title">Contexto no significa memoria infinita</h2><div class="site-grid"><article class="site-card"><h3>RAG</h3><p>Recuperar solo la información relevante puede ser preferible a introducir todo el corpus en una ventana de contexto enorme.</p></article><article class="site-card"><h3>Contexto largo</h3><p>Más contexto tiene coste: aumenta el trabajo de prefill y la caché KV. Debe probarse con la carga real.</p></article><article class="site-card"><h3>Portabilidad</h3><p>El conocimiento debe poder sobrevivir al cambio de modelo, runtime o hardware.</p></article><article class="site-card"><h3>Auditoría</h3><p>Una fuente de conocimiento debe poder identificarse y revisarse; no todo contenido recuperado es evidencia verificada.</p></article></div></section>
+<section class="site-section" aria-labelledby="atlas-title"><h2 id="atlas-title">Relación con Atlas</h2><p>Atlas mantiene el conocimiento estructurado del ecosistema. Buddy representa el conocimiento y contexto operativo que necesita una tarea o agente concreto. No son el mismo componente.</p><div class="site-flow"><span class="site-flow__node">Atlas</span><span class="site-flow__arrow">→</span><span class="site-flow__node">conocimiento estructurado</span><span class="site-flow__arrow">→</span><span class="site-flow__node site-flow__node--primary">Buddy</span><span class="site-flow__arrow">→</span><span class="site-flow__node">agente / tarea</span></div></section>
+</main><script src="assets/js/navigation.js?v=2026-08-16-3" defer></script></body></html>
