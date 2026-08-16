@@ -13,9 +13,11 @@ Atlas follows the project-wide phased documentation rule: when a phase is comple
 
 ## Status
 
-**H10 🟢 ACEPTADA. H06 🟡 IMPLEMENTACIÓN COMPLETA / VALIDACIÓN CI.**
+**H10 🟢 ACEPTADA. H06 🟢 ACEPTADA / OPERATIVA.**
 
-Atlas v0.2 has an expanded schema and an operational daily pipeline. H06 adds the missing knowledge-governance boundary between the operational feed and the canonical Atlas: identity, evidence, quality, normalization and verified-only promotion.
+Atlas v0.2 has an expanded schema and an operational daily pipeline. H06 establishes the knowledge-governance boundary between the operational feed and the canonical Atlas: identity, evidence, quality, normalization and verified-only promotion.
+
+The latest H06 closure audit recorded 193 feed rows and 193 unique identities according to the current auditor, all 193 with `unverified` quality flags, and therefore 0 canonical records promoted. This is intentional: the canonical catalogue is not populated without sufficient verified evidence.
 
 ### H06 documentation
 
@@ -75,6 +77,8 @@ H06 focuses first on quality and completeness of the knowledge layer. It does **
 ### Automated H06 gate
 
 The workflow [`../.github/workflows/atlas-h06.yml`](../.github/workflows/atlas-h06.yml) executes identity and quality audits, promotes only verified feed records, validates every canonical record against `schema.json`, and publishes machine-readable audit reports.
+
+The publication path is protected against concurrent writers. Future workflows that write to `main` must also follow the project-wide `leones-main-writers` concurrency rule with `cancel-in-progress: false`.
 
 ## Knowledge layers
 
