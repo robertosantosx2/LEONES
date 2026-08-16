@@ -74,7 +74,35 @@ La frase «el código está» no es un criterio de aceptación.
 
 Evidencia posible: workflow exitoso, test automatizado, salida generada y revisada, comparación antes/después, validación de esquema o prueba reproducible documentada.
 
-## 6. Diagramas como artefactos mantenidos
+## 6. Documentación pedagógica de componentes terminados
+
+Además del paquete normativo de fase, los componentes aceptados disponen de una guía en [`docs/completed/`](completed/).
+
+Estas guías responden a una pregunta diferente: **«¿cómo puede una persona con conocimientos básicos de programación entender y mantener esta parte del sistema?»**
+
+Cada guía debe explicar:
+
+- propósito del componente;
+- flujo de datos;
+- entradas y salidas;
+- función de los scripts principales;
+- significado de las decisiones importantes;
+- invariantes que no deben romperse;
+- relación con los workflows;
+- procedimiento de mantenimiento;
+- límites que siguen abiertos.
+
+Cuando un script sea central para una fase terminada, su código debe contener comentarios y docstrings pedagógicos que expliquen el porqué de las operaciones, no simplemente repetir qué hace una línea.
+
+## 7. Limpieza de componentes terminados
+
+Una fase terminada no debe conservar trazas de depuración, borradores obsoletos, archivos temporales ni experimentos abandonados.
+
+Pero **fixture, ejemplo, dato sintético o artefacto histórico útil para reproducibilidad no es basura**. Debe conservarse y explicarse.
+
+Antes de borrar algo hay que comprobar si participa en tests, workflows, documentación o reproducibilidad.
+
+## 8. Diagramas como artefactos mantenidos
 
 Los diagramas deben explicar arquitectura, flujo o reglas y mantenerse sincronizados con el sistema. Una fase compleja debe incluir, como mínimo:
 
@@ -84,7 +112,7 @@ Los diagramas deben explicar arquitectura, flujo o reglas y mantenerse sincroniz
 
 Mermaid en Markdown es válido cuando resulte suficiente.
 
-## 7. Decisiones e invariantes
+## 9. Decisiones e invariantes
 
 Toda decisión estructural relevante debe conservar:
 
@@ -101,7 +129,7 @@ DECISIÓN
 
 Las reglas que no deben romperse se documentan como **invariantes**.
 
-## 8. Descubribilidad
+## 10. Descubribilidad
 
 ```text
 README raíz
@@ -112,12 +140,14 @@ docs/phases/README.md
    ↓
 docs/phases/<phase-id>/README.md
    ↓
+docs/completed/<component>.md
+   ↓
 artefactos técnicos / tests / commits
 ```
 
-Los README de los componentes afectados también deben enlazar el paquete de fase correspondiente.
+Los README de los componentes afectados también deben enlazar el paquete de fase correspondiente y, cuando proceda, la guía pedagógica.
 
-## 9. Convención
+## 11. Convención
 
 - Fase: `docs/phases/YYYY-MM-<slug>/`
 - Entrada: `README.md`
@@ -125,18 +155,20 @@ Los README de los componentes afectados también deben enlazar el paquete de fas
 - Decisiones: `DECISIONS.md`
 - Validación: `VALIDATION.md`
 - Diagramas: `DIAGRAMS.md`
+- Guía pedagógica de componente terminado: `docs/completed/<component>.md`
 
-## 10. Regla permanente
+## 12. Regla permanente
 
 A partir de ahora, cada cierre de fase debe seguir obligatoriamente:
 
-**implementar → validar → aceptar → documentar profusamente → enlazar → cerrar**.
+**implementar → validar → aceptar → documentar profusamente → enlazar → limpiar → cerrar**.
 
 El incumplimiento de la documentación impide considerar la fase completamente cerrada.
 
-## 11. Relación
+## 13. Relación
 
 - [`docs/phases/README.md`](phases/README.md) — índice de fases.
+- [`docs/completed/README.md`](completed/README.md) — índice de guías de mantenimiento.
 - [`LEONES_DECISION_LOG.md`](../LEONES_DECISION_LOG.md) — decisiones históricas.
 - [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) — arquitectura global.
 - [`docs/ROADMAP.md`](ROADMAP.md) — evolución prevista.
