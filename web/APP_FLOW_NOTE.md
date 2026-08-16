@@ -1,1 +1,0 @@
-La aplicación guía desde la necesidad hasta la medición y la contribución voluntaria a la Manada. No ejecuta comandos en el navegador: genera el comando local, permite copiarlo y conserva el progreso local. Los resultados agregados sirven para mejorar futuras recomendaciones.
