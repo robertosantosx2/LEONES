@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import platform
+import re
 import shutil
 import subprocess
 import time
@@ -29,6 +30,39 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--llama-cli", default="llama-cli", help="llama.cpp CLI executable")
     parser.add_argument("--output", type=Path, default=None)
     return parser.parse_args()
+
+
+def first_float(pattern: str, text: str) -> float | None:
+    match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
+    return float(match.group(1)) if match else None
+
+
+def first_int(pattern: str, text: str) -> int | None:
+    match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
+    return int(match.group(1)) if match else None
+
+
+def parse_timing(stdout: str, stderr: str) -> dict[str, float | int | None]:
+    """Extract only explicit llama.cpp timing counters when present.
+
+    Output formats can change between llama.cpp releases, so unknown values
+    remain null rather than being inferred from unrelated timings.
+    """
+
+    text = f"{stdout}\n{stderr}"
+    prompt_tokens = first_int(r"prompt\s+(?:eval|tokens?)\s*[:=]\s*(\d+)", text)
+    generated_tokens = first_int(r"(?:generated|predicted|sampled)\s+(?:tokens?)\s*[:=]\s*(\d+)", text)
+    generation_ms = first_float(r"(?:eval|generation)\s+time\s*[:=]\s*([0-9.]+)\s*ms", text)
+    tokens_per_second = first_float(r"(?:tokens?/s|t/s|tokens per second)\s*[:=]\s*([0-9.]+)", text)
+    ttft_ms = first_float(r"(?:ttft|time to first token)\s*[:=]\s*([0-9.]+)\s*ms", text)
+
+    return {
+        "prompt_tokens": prompt_tokens,
+        "generated_tokens": generated_tokens,
+        "generation_ms": generation_ms,
+        "tokens_per_second": tokens_per_second,
+        "ttft_ms": ttft_ms,
+    }
 
 
 def main() -> int:
@@ -111,7 +145,18 @@ def main() -> int:
                 check=False,
             )
             elapsed_ms = (time.perf_counter() - started) * 1000
+            timing = parse_timing(completed.stdout, completed.stderr)
             result["metrics"]["total_ms"] = round(elapsed_ms, 3)
+            for key in (
+                "ttft_ms",
+                "generation_ms",
+                "prompt_tokens",
+                "generated_tokens",
+                "tokens_per_second",
+            ):
+                result["metrics"][key] = timing[key]
+
+            result["configuration"]["prompt_tokens"] = timing["prompt_tokens"]
             result["result"]["status"] = "ok" if completed.returncode == 0 else "error"
             if completed.returncode != 0:
                 result["result"]["error"] = completed.stderr.strip() or f"llama.cpp exited with {completed.returncode}"
