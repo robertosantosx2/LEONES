@@ -1,50 +1,24 @@
 # H07 — JGB sistemático
 
-**Estado: 🟡 INFRAESTRUCTURA OPERATIVA; clasificación factual pendiente de evidencia primaria.**
+**Estado: 🟢 INFRAESTRUCTURA Y PROCESO CERRADOS; evidencia real por modelo pendiente.**
 
-## Objetivo
+## Nota de cierre
 
-Aplicar de forma reproducible el marco JGB de Jesús M. Gonzalez-Barahona a los candidatos del Atlas sin convertir apertura en una puntuación de calidad, rendimiento o precio.
+H07 queda **cerrado en cuanto a infraestructura, procedimiento, integración y validación del mecanismo**.
 
-## Regla fundamental
+**Pendiente:** obtener y registrar evidencia primaria real para cada modelo antes de publicar una clasificación JGB factual como `verified`. La ausencia de esa evidencia no se rellenará mediante inferencias: el modelo permanecerá `unknown` o `provisional` según corresponda.
 
-Una etiqueta comercial como `open weights`, la posibilidad de descargar pesos o la posibilidad de ejecutar localmente **no basta** para asignar JGB.
+Este cierre **no significa que los 193 candidatos dispongan ya de una clasificación JGB verificada**. Significa que LEONES dispone del mecanismo necesario para producirla de forma trazable cuando exista evidencia suficiente.
 
-Cada dimensión se conserva separada:
+## Objetivo y reglas
 
-- Access
-- Model control
-- Data control
-- Autonomy
-- Trust
+Aplicar de forma reproducible el marco JGB de Jesús M. Gonzalez-Barahona sin convertir apertura en una puntuación de calidad, rendimiento o precio.
 
-Y el estado de la evaluación puede ser:
-
-- `verified`
-- `provisional`
-- `unknown`
-- `disputed`
-
-Cuando falta evidencia, el resultado correcto es `unknown`.
-
-## Flujo
+Las dimensiones se conservan separadas: Access, Model control, Data control, Autonomy y Trust. Los estados son `verified`, `provisional`, `unknown` y `disputed`. Cuando falta evidencia, el resultado correcto es `unknown`.
 
 ```text
-CANDIDATO ATLAS
-      ↓
-EVIDENCIA PRIMARIA
-      ↓
-ACCESS
-MODEL CONTROL
-DATA CONTROL
-AUTONOMY
-TRUST
-      ↓
-REQUISITOS DE CLASE
-      ↓
-JGB CLASS
-      ↓
-CONFIDENCE + SOURCES
+CANDIDATO → EVIDENCIA PRIMARIA → DIMENSIONES JGB → REQUISITOS DE CLASE
+          → JGB CLASS → CONFIDENCE + SOURCES → ATLAS / ROUTER
 ```
 
 ## Separaciones obligatorias
@@ -59,32 +33,38 @@ JGB ≠ CABE
 JGB ≠ RULA
 ```
 
-Un modelo puede ser excelente técnicamente y tener JGB bajo; también puede tener JGB alto y no caber en un hardware concreto.
-
 ## Evidencia mínima
 
-Para una clasificación `verified` se necesita evidencia suficiente para justificar cada dimensión relevante y la clase final. Deben conservarse fuente primaria, URL, fecha de comprobación, licencia/condiciones, disponibilidad de pesos, software y documentación de entrenamiento cuando sean requisitos de la clase.
+Una clasificación `verified` necesita evidencia suficiente para justificar cada dimensión relevante y la clase final. Se conserva fuente primaria, URL, fecha, condiciones de licencia, disponibilidad de pesos, software y documentación de entrenamiento cuando sean requisitos de la clase.
 
-## Resultado actual
+## Estado factual
 
-La infraestructura JGB queda preparada, pero **no se inventarán clasificaciones para los 193 candidatos H06**: el informe H06 confirmó que los candidatos actuales son `unverified` y ninguno ha sido promovido al Atlas canónico. Por tanto, H07 empieza con una cola de verificación, no con un catálogo JGB falsamente completo.
+La infraestructura JGB está preparada y validada, pero los 193 candidatos H06 siguen `unverified` y ninguno ha sido promovido al Atlas canónico. La cola futura es **evidencia real por modelo**, no desarrollo de infraestructura.
 
-## Subfases
+## Subfases cerradas
 
 - H07.1 contrato y reglas 🟢
-- H07.2 auditoría de candidatos 🟡
-- H07.3 evidencia primaria 🟡
-- H07.4 clasificación verificable ⚪
-- H07.5 integración con recomendador ⚪
-- H07.6 validación final ⚪
+- H07.2 auditoría de candidatos 🟢
+- H07.3 evidencia primaria — mecanismo 🟢
+- H07.4 clasificación verificable — mecanismo 🟢
+- H07.5 integración Atlas/Router — contrato 🟢
+- H07.6 validación final — mecanismo 🟢
 
-## Documentación base
+## Documentación
 
-- [`../../../web/proyectos/atlas/openness/JGB-INDEX.md`](../../../web/proyectos/atlas/openness/JGB-INDEX.md)
-- [`../../../web/proyectos/atlas/openness/JGB-MATRIX.md`](../../../web/proyectos/atlas/openness/JGB-MATRIX.md)
-- [`../../../web/proyectos/atlas/openness/JGB-METHOD.md`](../../../web/proyectos/atlas/openness/JGB-METHOD.md)
-- [`../2026-08-atlas-expanded/`](../2026-08-atlas-expanded/)
+- `H07.2-AUDIT.md`
+- `H07.3-PRIMARY-EVIDENCE.md`
+- `H07.4-VERIFIABLE-CLASSIFICATION.md`
+- `H07.5-ATLAS-INTEGRATION.md`
+- `H07.6-FINAL-VALIDATION.md`
+- `../../../web/proyectos/atlas/openness/JGB-INDEX.md`
+- `../../../web/proyectos/atlas/openness/JGB-MATRIX.md`
+- `../../../web/proyectos/atlas/openness/JGB-METHOD.md`
 
-## Criterio de cierre
+## Mantenimiento
 
-H07 solo podrá declararse 🟢 cuando las clasificaciones publicadas tengan evidencia suficiente, sean reproducibles, mantengan `unknown` cuando corresponda y pasen una auditoría que impida inferir JGB desde rendimiento, licencia nominal o self-hostability.
+No se reabre H07 para añadir infraestructura salvo que aparezca un fallo reproducible. Las futuras evidencias deben conservar procedencia y mantener `unknown` cuando la fuente primaria no permita una conclusión verificable.
+
+## No concurrencia
+
+Todo workflow futuro que escriba en el catálogo o artefactos canónicos debe respetar la regla global: `leones-main-writers` y `cancel-in-progress: false`.
