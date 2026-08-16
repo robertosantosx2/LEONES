@@ -41,13 +41,23 @@
             <section id="modelos" class="site-section">
                 <span class="site-tag">Catálogo interactivo</span>
                 <h2>Modelos y familias</h2>
-                <p>Los filtros se combinan. «Ver pila» abre el modelo en el explorador de relaciones.</p>
+                <p>
+                    Los filtros se combinan. «Ver pila» abre el modelo en el explorador de
+                    relaciones.
+                </p>
                 <div class="site-grid">
-                    <label class="site-card">Buscar<input id="q" type="search" placeholder="modelo, familia, organización…" /></label>
+                    <label class="site-card"
+                        >Buscar<input
+                            id="q"
+                            type="search"
+                            placeholder="modelo, familia, organización…"
+                    /></label>
                     <label class="site-card">Familia<select id="family"></select></label>
                     <label class="site-card">Arquitectura<select id="arch"></select></label>
                     <label class="site-card">Estado<select id="status"></select></label>
-                    <label class="site-card">Parámetros<input id="params" placeholder="7B, 27B, 70B…" /></label>
+                    <label class="site-card"
+                        >Parámetros<input id="params" placeholder="7B, 27B, 70B…"
+                    /></label>
                     <label class="site-card">Capacidad<select id="cap"></select></label>
                 </div>
                 <p id="count" class="site-lead"></p>
@@ -73,7 +83,10 @@
             <section id="pila" class="site-section">
                 <span class="site-tag">Stack explorer</span>
                 <h2>De un modelo a una pila ejecutable</h2>
-                <p>El explorador usa las relaciones registradas en Atlas. Una relación de catálogo no implica que el rendimiento haya sido validado.</p>
+                <p>
+                    El explorador usa las relaciones registradas en Atlas. Una relación de catálogo
+                    no implica que el rendimiento haya sido validado.
+                </p>
                 <div class="site-grid">
                     <label class="site-card">Modelo<select id="modelPick"></select></label>
                     <label class="site-card">Hardware<select id="hwPick"></select></label>
@@ -83,29 +96,57 @@
                 <div id="stackResult" class="site-grid"></div>
             </section>
 
-            <section id="runtimes" class="site-section"><h2>Runtimes / inference engines</h2><div id="runtimeCards" class="site-grid"></div></section>
-            <section id="agents" class="site-section"><h2>Agentes</h2><div id="agentCards" class="site-grid"></div></section>
-            <section id="skills" class="site-section"><h2>Skills</h2><div id="skillCards" class="site-grid"></div></section>
-            <section id="harnesses" class="site-section"><h2>Harnesses</h2><div id="harnessCards" class="site-grid"></div></section>
-            <section id="hardware" class="site-section"><h2>Hardware</h2><div id="hardwareCards" class="site-grid"></div></section>
+            <section id="runtimes" class="site-section">
+                <h2>Runtimes / inference engines</h2>
+                <div id="runtimeCards" class="site-grid"></div>
+            </section>
+            <section id="agents" class="site-section">
+                <h2>Agentes</h2>
+                <div id="agentCards" class="site-grid"></div>
+            </section>
+            <section id="skills" class="site-section">
+                <h2>Skills</h2>
+                <div id="skillCards" class="site-grid"></div>
+            </section>
+            <section id="harnesses" class="site-section">
+                <h2>Harnesses</h2>
+                <div id="harnessCards" class="site-grid"></div>
+            </section>
+            <section id="hardware" class="site-section">
+                <h2>Hardware</h2>
+                <div id="hardwareCards" class="site-grid"></div>
+            </section>
 
             <section id="licencias" class="site-section">
                 <h2>Regla LEONES de licencias</h2>
                 <div class="site-note">
-                    <strong>La prospección descubre; el gate de licencias determina qué software puede recomendarse como Libre/Open.</strong>
-                    <p>Para software y herramientas se registra el estado OSI de la licencia. Los hallazgos no verificados permanecen external-unvalidated.</p>
+                    <strong
+                        >La prospección descubre; el gate de licencias determina qué software puede
+                        recomendarse como Libre/Open.</strong
+                    >
+                    <p>
+                        Para software y herramientas se registra el estado OSI de la licencia. Los
+                        hallazgos no verificados permanecen external-unvalidated.
+                    </p>
                 </div>
                 <div class="site-note">
                     <strong>Modelos ≠ software.</strong>
-                    <p>La licencia de los pesos se conserva por separado. «Open weights» no se transforma automáticamente en «OSI approved».</p>
+                    <p>
+                        La licencia de los pesos se conserva por separado. «Open weights» no se
+                        transforma automáticamente en «OSI approved».
+                    </p>
                 </div>
             </section>
 
             <section id="prospeccion" class="site-section">
                 <span class="site-tag">Automatización diaria</span>
                 <h2>Prospección → revisión → Atlas</h2>
-                <pre class="site-stack">FUENTES → BOTS → DISCOVERY → LICENSE GATE → REVISIÓN → RELACIONES → ATLAS → WEB</pre>
-                <p>El Atlas se alimenta de descubrimientos, pero conserva procedencia y estado de verificación.</p>
+                <pre class="site-stack">
+FUENTES → BOTS → DISCOVERY → LICENSE GATE → REVISIÓN → RELACIONES → ATLAS → WEB</pre>
+                <p>
+                    El Atlas se alimenta de descubrimientos, pero conserva procedencia y estado de
+                    verificación.
+                </p>
                 <a href="prospeccion.html">Ver prospección →</a>
             </section>
         </main>

@@ -19,12 +19,17 @@
         <main class="site-main" id="main">
             <section class="site-section" aria-labelledby="principle-title">
                 <h2 id="principle-title">Principio</h2>
-                <p>LEONES no ata la arquitectura a un sistema operativo. Debian/Ubuntu y RHEL pueden ofrecer caminos distintos para drivers, runtimes y paquetes, manteniendo el mismo modelo conceptual.</p>
+                <p>
+                    LEONES no ata la arquitectura a un sistema operativo. Debian/Ubuntu y RHEL
+                    pueden ofrecer caminos distintos para drivers, runtimes y paquetes, manteniendo
+                    el mismo modelo conceptual.
+                </p>
             </section>
             <section class="site-grid" aria-label="Sistemas operativos">
                 <article class="site-card">
                     <h2>Debian/Ubuntu</h2>
-                    <pre class="site-stack">git clone https://github.com/robertosantosx2/LEONES.git
+                    <pre class="site-stack">
+git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES
 python3 --version
 python3 scripts/leones.py hardware</pre>
@@ -32,16 +37,23 @@ python3 scripts/leones.py hardware</pre>
                 </article>
                 <article class="site-card">
                     <h2>RHEL</h2>
-                    <pre class="site-stack">git clone https://github.com/robertosantosx2/LEONES.git
+                    <pre class="site-stack">
+git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES
 python3 --version
 python3 scripts/leones.py hardware</pre>
-                    <p>La arquitectura se conserva; cambian paquetes, drivers y detalles de integración.</p>
+                    <p>
+                        La arquitectura se conserva; cambian paquetes, drivers y detalles de
+                        integración.
+                    </p>
                 </article>
             </section>
             <section class="site-section" aria-labelledby="document-title">
                 <h2 id="document-title">Qué debe documentarse</h2>
-                <p>Hardware → drivers → runtime → backend → modelo → harness → LOTB. El objetivo es poder reproducir la configuración y explicar qué pieza condiciona el resultado.</p>
+                <p>
+                    Hardware → drivers → runtime → backend → modelo → harness → LOTB. El objetivo es
+                    poder reproducir la configuración y explicar qué pieza condiciona el resultado.
+                </p>
             </section>
         </main>
         <script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
