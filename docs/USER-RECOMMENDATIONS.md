@@ -1,22 +1,30 @@
 # LEONES — Recomendaciones de usuarios
 
-**Estado:** operativo como flujo de descubrimiento y triage  
+**Estado:** operativo como flujo de descubrimiento, triage y validación por responsable  
 **Fecha:** 2026-08-16
 
 ## Objetivo
 
 Permitir que cualquier usuario aporte un recurso que pueda mejorar el conocimiento o las capacidades de LEONES: modelos, runtimes, backends, agentes, herramientas, benchmarks, datasets, hardware, proyectos, investigaciones o ideas.
 
-La participación de usuarios se considera una **fuente de prospección**, no una fuente de verdad. Una recomendación nunca entra directamente en Atlas.
+La participación de usuarios es una **fuente de prospección**, no una fuente de verdad. Una recomendación nunca entra directamente en Atlas.
 
 ## Flujo canónico
 
 ```text
 USUARIO
   ↓
-FORMULARIO
+FORMULARIO WEB
   ↓
-DESCUBRIMIENTO EXTERNO
+ISSUE DE GITHUB
+  ↓
+ASIGNACIÓN AL RESPONSABLE
+  ↓
+NOTIFICACIÓN POR GITHUB / EMAIL
+  ↓
+"OK LEONES"
+  ↓
+DESCUBRIMIENTO AUTORIZADO
   ↓
 IDENTIDAD + PROCEDENCIA
   ↓
@@ -34,7 +42,17 @@ DECISIÓN
   └── descartar con motivo
 ```
 
-Este flujo complementa la capa de evidencia definida en la fase H10. No se utiliza una puntuación de ajuste como sustituto de la evidencia.
+## Validación por email
+
+La web es estática y no necesita un servidor de correo propio. Al crear la incidencia, GitHub Actions la asigna a `robertosantosx2`. GitHub puede enviar al responsable la notificación correspondiente según sus preferencias de notificación.
+
+La respuesta de autorización es deliberadamente mínima: **`OK LEONES`**.
+
+El workflow `.github/workflows/validate-user-recommendation.yml` reconoce esa respuesta cuando procede del responsable `robertosantosx2`, elimina `needs-review`, añade `validated-by-owner` y deja constancia de que la investigación ha sido autorizada.
+
+La autorización **no significa integración**. Solo permite que LEONES dedique trabajo de investigación a esa recomendación.
+
+> Importante: el envío real del correo depende de la configuración de notificaciones de GitHub de la cuenta responsable. No se almacenan contraseñas, SMTP ni claves API en LEONES.
 
 ## Qué recoge el formulario
 
@@ -55,11 +73,13 @@ El navegador calcula una **señal inicial 0–10** únicamente para ordenar la c
 
 La señal no determina la aceptación. Una recomendación con 10/10 puede ser descartada y una recomendación con una señal baja puede resultar valiosa después de una investigación.
 
-### Estados
+## Estados
 
 | Estado | Significado |
 |---|---|
 | `received` | Recibida como descubrimiento externo |
+| `needs-review` | Pendiente de validación del responsable |
+| `validated-by-owner` | El responsable autorizó investigar |
 | `triage` | Se comprueba relevancia e identidad |
 | `evidence` | Se busca evidencia técnica independiente |
 | `verification` | Se reproduce, ejecuta o contrasta |
@@ -100,14 +120,11 @@ La recomendación puede generar aprendizaje en cuatro niveles:
 
 También puede provocar una modificación de documentación, una nueva prueba automatizada, un adaptador o una futura tarea de desarrollo.
 
-## Limitación actual del formulario web
+## Arquitectura y seguridad
 
-La web de LEONES se publica como sitio estático. Por ello, el formulario no escribe directamente en una base de datos ni publica automáticamente una incidencia. Tras el triage local ofrece:
+La página no recibe directamente credenciales ni publica contenido con permisos propios. El usuario prepara una incidencia de GitHub y el workflow del repositorio aplica el ciclo de revisión. El token de GitHub Actions se limita a `issues: write`.
 
-- **Preparar recomendación en GitHub**, que abre una incidencia pre-rellenada para revisión;
-- **Guardar JSON**, para conservar el registro estructurado localmente.
-
-Esto evita introducir un backend externo, secretos o un canal de recepción opaco. En una fase posterior puede sustituirse por un endpoint propio manteniendo exactamente el mismo esquema `leones-user-recommendation/v1`.
+La respuesta `OK LEONES` se acepta solo del usuario de GitHub `robertosantosx2`, evitando que una recomendación pueda autoautorizarse desde otra cuenta.
 
 ## Privacidad
 
@@ -116,3 +133,7 @@ No se deben enviar contraseñas, tokens, claves API, datos personales sensibles 
 ## Relación con la arquitectura
 
 El sistema encaja especialmente con **Prospector → Atlas → Benchmark & Evaluation → Router**. Las recomendaciones son una fuente adicional de descubrimiento humano que complementa la prospección automática y permite detectar recursos que los rastreadores todavía no conocen.
+
+## Criterio de cierre
+
+Una recomendación se considera realmente aprovechada cuando existe una decisión documentada: **integrada, observada o rechazada**, junto con la evidencia y el motivo. De esta forma LEONES aprende tanto de lo que incorpora como de lo que decide no incorporar.
