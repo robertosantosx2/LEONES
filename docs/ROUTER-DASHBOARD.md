@@ -4,48 +4,61 @@
 
 **🟢 Contrato funcional cerrado · implementación UI pendiente**
 
-El Router de LEONES debe disponer de un **cuadro de mandos para el usuario**. LEONES proporciona valores predefinidos razonables, pero el usuario puede afinarlos cuando quiera.
+El Router de LEONES dispone de un cuadro de mandos pensado desde el principio para poder publicarse como WebApp. LEONES proporciona valores predefinidos; el usuario puede afinarlos sin modificar las reglas del sistema.
 
 ## Principio
 
 ```text
-PERFIL DEL USUARIO
-       ↓
-PRESETS LEONES
-       ↓
+LEONES DEFAULTS
+      ↓
+PRESET
+      ↓
 CUADRO DE MANDOS
-       ↓
-PREFERENCIAS AFINADAS
-       ↓
-EVIDENCIA + RESTRICCIONES
-       ↓
+      ↓
+PREFERENCIAS DEL USUARIO
+      ↓
+PERFIL EFECTIVO
+      ↓
+RESTRICCIONES + EVIDENCIA
+      ↓
 ROUTER
-       ↓
+      ↓
 RECOMENDACIÓN EXPLICABLE
 ```
 
-Los valores del usuario son preferencias/objetivos, no una licencia para saltarse gates de evidencia, OSI, compatibilidad o seguridad.
+## Apertura: única decisión del usuario
+
+**OSI no es un parámetro configurable.** El usuario no puede modificar el Gate OSI, sus estados ni sus requisitos.
+
+La interfaz solo ofrece:
+
+- **Open (todos)** — utilizar todos los candidatos que sean elegibles según las reglas de LEONES.
+- **Forzar Copyleft** — exigir el filtro Copyleft definido por LEONES.
+
+No existe slider, peso ni checkbox de OSI. El usuario tampoco puede convertir `OSI_UNKNOWN` o `OSI_FAIL` en candidatos válidos.
 
 ## Parámetros configurables
 
-El cuadro de mandos debe permitir ajustar, como mínimo:
+### Objetivo
+
+- Equilibrado LEONES
+- Máxima velocidad
+- Máxima calidad
+- Mínimo coste
+- Local / privado
+- Coding
+- Razonamiento
+- Agentic
 
 ### Rendimiento
 
-- prioridad de latencia;
-- prioridad de tokens/s;
-- umbral mínimo de velocidad;
+- prioridad latencia ↔ calidad;
+- prioridad tokens/s;
 - objetivo de tiempo de respuesta;
-- modo `CABE` (1–<10 tok/s);
-- modo `RULA` (10–100 tok/s);
-- tolerancia a velocidades superiores.
+- preferencia CABE (1–<10 tok/s);
+- preferencia RULA (10–100 tok/s).
 
-### Calidad
-
-- calidad/resolución de la tarea;
-- prioridad de benchmarks relevantes;
-- prioridad de razonamiento/coding/visión/uso general;
-- tolerancia a modelos sin evidencia empírica propia.
+Los valores medidos de tok/s son evidencia; el usuario no puede alterar una medición.
 
 ### Hardware
 
@@ -53,113 +66,142 @@ El cuadro de mandos debe permitir ajustar, como mínimo:
 - RAM disponible;
 - GPU disponible;
 - VRAM disponible;
-- uso CPU-only permitido;
-- consumo/temperatura cuando exista evidencia.
-
-### Agentic
-
-- agente/harness preferido;
-- herramientas permitidas;
-- MCP permitido;
-- memoria requerida;
-- autonomía requerida;
-- sandbox requerido;
-- recuperación ante errores requerida.
-
-### Apertura y política
-
-- requisito de OSI;
-- prioridad de Copyleft/permisividad según la política de LEONES;
-- exclusión de componentes no verificados;
-- restricciones de privacidad/ejecución local.
+- CPU-only permitido;
+- restricciones de recursos.
 
 ### Economía
 
 - presupuesto máximo;
 - coste por ejecución/token cuando exista evidencia;
-- prioridad rendimiento/precio;
-- prioridad TCO.
+- rendimiento/precio;
+- TCO.
+
+### Agentic
+
+- permitir uso agentic;
+- agente/harness preferido;
+- herramientas permitidas;
+- MCP;
+- memoria;
+- autonomía;
+- sandbox;
+- recuperación ante errores.
+
+Solo se consideran componentes Agentic que hayan superado los controles de LEONES aplicables.
 
 ## Presets LEONES
 
-El usuario no tiene que configurar nada para empezar. El Router debe ofrecer presets como punto de partida:
-
 | Preset | Objetivo |
 |---|---|
-| **Equilibrado LEONES** | equilibrio entre calidad, velocidad, apertura y coste |
-| **Máxima velocidad** | minimizar latencia y maximizar tok/s |
-| **CABE** | priorizar configuraciones entre 1 y <10 tok/s |
-| **RULA** | priorizar configuraciones entre 10 y 100 tok/s |
-| **Calidad** | priorizar capacidad aunque aumente latencia |
-| **Local / privado** | ejecución local y restricciones de privacidad |
-| **Open Source** | máxima prioridad a elegibilidad OSI y trazabilidad |
-| **Económico** | maximizar valor por coste |
-| **Agentic** | priorizar capacidad de herramientas y autonomía |
+| **Equilibrado LEONES** | equilibrio general |
+| **Máxima velocidad** | minimizar latencia / maximizar tok/s |
+| **CABE** | priorizar 1–<10 tok/s |
+| **RULA** | priorizar 10–100 tok/s |
+| **Calidad** | priorizar capacidad |
+| **Local / privado** | priorizar ejecución local |
+| **Económico** | priorizar valor/TCO |
+| **Agentic** | priorizar herramientas y autonomía |
 
-Los presets son **valores iniciales**, no restricciones permanentes.
+Los presets son puntos de partida y nunca modifican los defaults globales.
 
-## Interacción recomendada
+## Restricciones no editables
 
-El usuario debe poder:
+El usuario nunca puede modificar:
 
-1. elegir un preset;
-2. ver sus valores;
-3. modificar sliders/selectores;
-4. guardar preferencias;
-5. restaurar valores LEONES;
-6. comparar la configuración personalizada con el preset;
-7. ejecutar una recomendación;
-8. ver por qué un candidato ganó o quedó excluido.
+- Gate OSI;
+- identidad y trazabilidad;
+- requisitos mínimos de evidencia;
+- estados `verified`, `unknown` o `unverified`;
+- seguridad/integridad;
+- datos históricos;
+- reglas de no concurrencia.
+
+## UX preparada para WebApp
+
+La UI debe ser responsive y estar desacoplada del motor:
+
+```text
+WebApp UI
+   ↓
+Preference Schema versionado
+   ↓
+Router API / service
+   ↓
+Policy + evidence filters
+   ↓
+Atlas + catálogo Agentic
+   ↓
+Recommendation result
+```
+
+Boceto funcional:
+
+```text
+┌──────────────────────────────────────┐
+│ ¿Qué necesitas?                      │
+│ [ Equilibrado LEONES ▼ ]             │
+├──────────────────────────────────────┤
+│ Velocidad       ─────●────           │
+│ Calidad         ─────────●─           │
+│ Coste           ───●──────           │
+│ Privacidad      ─────────●─           │
+├──────────────────────────────────────┤
+│ Hardware                             │
+│ RAM             [ 32 GB ▼ ]          │
+│ GPU             [ RTX 4060 ▼ ]       │
+│ VRAM            [ 8 GB ▼ ]           │
+├──────────────────────────────────────┤
+│ Apertura                             │
+│ (●) Open (todos)                     │
+│ ( ) Forzar Copyleft                  │
+├──────────────────────────────────────┤
+│ Agentic                               │
+│ [✓] Permitir                         │
+│ Autonomía       ─────●────           │
+│ Herramientas    ─────●────           │
+├──────────────────────────────────────┤
+│          [ RECOMENDAR ]              │
+└──────────────────────────────────────┘
+```
+
+Los valores del boceto son ilustrativos; los defaults oficiales los define LEONES.
 
 ## Explicabilidad
 
-Cada resultado debe mostrar al menos:
+El resultado debe incluir **Por qué**:
 
-```text
-RECOMENDADO
-¿Por qué?
-¿Qué preferencias pesaron?
-¿Qué restricciones se aplicaron?
-¿Qué candidatos fueron excluidos y por qué?
-¿Qué evidencia respalda la decisión?
-¿Qué parte procede de preferencia del usuario?
-```
+1. preferencias aplicadas;
+2. restricciones de hardware;
+3. política de apertura elegida;
+4. candidatos considerados;
+5. candidatos excluidos y motivo;
+6. evidencia utilizada;
+7. datos medidos frente a estimados;
+8. compatibilidad Agentic;
+9. nivel de confianza.
 
-El Router no debe ocultar una exclusión detrás de una puntuación única.
+El Router no debe reducir la decisión a un score opaco.
 
-## Pesos y restricciones
+## Restricciones, preferencias y políticas
 
-La interfaz debe distinguir:
+La UI debe distinguir visualmente:
 
-- **restricciones duras**: si no se cumplen, el candidato queda fuera;
-- **preferencias blandas**: afectan al ranking;
-- **evidencia**: determina qué afirmaciones pueden utilizarse;
-- **políticas**: OSI, privacidad, seguridad y otras reglas del sistema.
+- **restricciones duras** — eliminan candidatos;
+- **preferencias** — influyen en el ranking;
+- **políticas LEONES** — no editables;
+- **evidencia** — determina qué afirmaciones pueden sostenerse.
 
 Ejemplo:
 
 ```text
-VRAM < requisito mínimo → EXCLUIR
-OSI_UNKNOWN              → EXCLUIR del Atlas verificable
-latencia preferida       → penalizar
+VRAM insuficiente        → EXCLUIR
+OSI / evidencia inválida → EXCLUIR
+latencia preferida       → ponderar
 precio preferido         → ponderar
-coding benchmark         → ponderar si la tarea es coding
-```
-
-## Regla de seguridad del Router
-
-El usuario puede afinar preferencias, pero **no puede usar el cuadro de mandos para saltarse una restricción obligatoria de LEONES**.
-
-```text
-usuario puede cambiar preferencias
-             ↓
-usuario NO puede cambiar
-OSI / evidencia / seguridad / identidad
+benchmark relevante      → ponderar
 ```
 
 ## Persistencia
-
-Las preferencias de usuario deben mantenerse separadas de los valores oficiales de LEONES:
 
 ```text
 LEONES_DEFAULTS
@@ -169,12 +211,12 @@ USER_PREFERENCES
 EFFECTIVE_PROFILE
 ```
 
-Nunca se sobrescriben los defaults globales cuando un usuario personaliza su perfil.
+Personalizar un perfil nunca modifica los valores oficiales de LEONES.
 
 ## No concurrencia
 
-Los workflows que escriban perfiles, presets o resultados canónicos deben utilizar exclusivamente `leones-main-writers` y `cancel-in-progress: false`.
+Los workflows que escriban perfiles, presets o resultados canónicos utilizarán exclusivamente `leones-main-writers` y `cancel-in-progress: false`.
 
 ## Criterio de cierre
 
-El contrato funcional del Router y su cuadro de mandos queda cerrado. La implementación visual y la integración con el motor de recomendación quedan como trabajo posterior.
+La especificación del cuadro de mandos queda cerrada y preparada para WebApp. La implementación visual debe conservar la separación entre preferencias editables y políticas no editables, especialmente el Gate OSI.
