@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.ia/schemas/atlas-storage-v1.json",
+  "title": "LEONES Atlas Storage Contract v1",
+  "type": "object",
+  "required": ["contract_version", "entity", "evidence_refs", "lineage"],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "entity": {
+      "type": "object",
+      "required": ["entity_id", "entity_type", "state"],
+      "properties": {
+        "entity_id": {"type": "string", "minLength": 1},
+        "entity_type": {"type": "string", "minLength": 1},
+        "state": {"const": "ACCEPTED"},
+        "version": {"type": ["string", "null"]},
+        "attributes": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "lineage": {
+      "type": "object",
+      "required": ["source_type"],
+      "properties": {
+        "source_type": {"type": "string", "minLength": 1},
+        "parent_entity_ids": {"type": "array", "items": {"type": "string"}},
+        "promotion_id": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
