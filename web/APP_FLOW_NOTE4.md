@@ -1,1 +1,0 @@
-Manada: resultados técnicos agregados pueden mejorar las recomendaciones futuras.
