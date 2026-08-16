@@ -29,11 +29,14 @@
                 <h2 id="vision-title">IA local útil, no solo modelos ejecutándose</h2>
                 <p class="site-lead">
                     LEONES estudia la combinación de hardware, sistema operativo, runtime, backend,
-                    modelo, harness, skills y conocimiento necesaria para completar objetivos agentic
-                    localmente.
+                    modelo, harness, skills y conocimiento necesaria para completar objetivos
+                    agentic localmente.
                 </p>
                 <p>
-                    <strong>Un agente no existe para producir tokens; existe para completar objetivos.</strong>
+                    <strong
+                        >Un agente no existe para producir tokens; existe para completar
+                        objetivos.</strong
+                    >
                 </p>
             </section>
 
@@ -50,8 +53,8 @@
                     <article class="site-card">
                         <h3>Router</h3>
                         <p>
-                            Capa de decisión que relaciona necesidad, hardware, modelo y runtime para
-                            encontrar una combinación viable y explicar sus límites.
+                            Capa de decisión que relaciona necesidad, hardware, modelo y runtime
+                            para encontrar una combinación viable y explicar sus límites.
                         </p>
                     </article>
                     <article class="site-card">
@@ -76,8 +79,8 @@
                 <h2 id="local-title">La herramienta se separa de la infraestructura</h2>
                 <p>
                     Los scripts locales no son una versión descargable de toda la infraestructura de
-                    LEONES. Son herramientas pequeñas y autónomas que el usuario puede ejecutar en su
-                    propio equipo para probar su LLM con su hardware y su runtime.
+                    LEONES. Son herramientas pequeñas y autónomas que el usuario puede ejecutar en
+                    su propio equipo para probar su LLM con su hardware y su runtime.
                 </p>
                 <div class="site-note">
                     <strong>Principio arquitectónico:</strong> la web es el escaparate; los scripts
@@ -97,18 +100,19 @@
             <section class="site-section" aria-labelledby="smoke-title">
                 <h2 id="smoke-title">LLM Smoke Test</h2>
                 <p>
-                    El primer producto local es <span class="site-code">scripts/local/llm-smoke-test</span>.
-                    Su misión es comprobar que un runtime local puede ejecutar un modelo y producir un
-                    resultado estructurado sin depender de Atlas, de la web ni de la infraestructura de
+                    El primer producto local es
+                    <span class="site-code">scripts/local/llm-smoke-test</span>. Su misión es
+                    comprobar que un runtime local puede ejecutar un modelo y producir un resultado
+                    estructurado sin depender de Atlas, de la web ni de la infraestructura de
                     LEONES.
                 </p>
                 <div class="site-grid">
                     <article class="site-card">
                         <h3>Contrato común</h3>
                         <p>
-                            <span class="site-code">RESULT_SCHEMA v0.1</span> define la estructura de
-                            los resultados para que los adaptadores puedan compararse sin cambiar el
-                            significado de las métricas.
+                            <span class="site-code">RESULT_SCHEMA v0.1</span> define la estructura
+                            de los resultados para que los adaptadores puedan compararse sin cambiar
+                            el significado de las métricas.
                         </p>
                     </article>
                     <article class="site-card">
@@ -121,15 +125,16 @@
                     <article class="site-card">
                         <h3>Medición honesta</h3>
                         <p>
-                            TTFT, tiempo de generación, tokens y memoria solo se publican cuando pueden
-                            medirse de forma fiable. Lo desconocido permanece como <span class="site-code">null</span>.
+                            TTFT, tiempo de generación, tokens y memoria solo se publican cuando
+                            pueden medirse de forma fiable. Lo desconocido permanece como
+                            <span class="site-code">null</span>.
                         </p>
                     </article>
                     <article class="site-card">
                         <h3>Aislamiento</h3>
                         <p>
-                            No se descargan modelos silenciosamente, no se requieren credenciales y no
-                            se envían resultados a LEONES por defecto.
+                            No se descargan modelos silenciosamente, no se requieren credenciales y
+                            no se envían resultados a LEONES por defecto.
                         </p>
                     </article>
                 </div>
