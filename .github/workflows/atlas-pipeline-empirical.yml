@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: atlas-empirical-evidence
+  group: leones-main-writers
   cancel-in-progress: false
 
 jobs:
