@@ -60,6 +60,16 @@ wisent-ai/brama,wisent-ai/brama,reported,external,https://github.com/wisent-ai/b
 okuvshynov/llama-sandbox,okuvshynov/llama-sandbox,reported,external,https://github.com/okuvshynov/llama-sandbox,yes,,yes,retain-and-trace,low
 rafaeljung71/ash4d-local-ai-agent-hub,rafaeljung71/ash4d-local-ai-agent-hub,reported,external,https://github.com/rafaeljung71/ash4d-local-ai-agent-hub,yes,,yes,retain-and-trace,low
 nirholas/three.ws,nirholas/three.ws,reported,external,https://github.com/nirholas/three.ws,yes,,yes,retain-and-trace,low
+pinkelephantlimited/pinkelephant-llm-48b-s-4bit,pinkelephantlimited/pinkelephant-llm-48b-s-4bit,reported,external,https://huggingface.co/pinkelephantlimited/pinkelephant-llm-48b-s-4bit,yes,,yes,retain-and-trace,low
+atjsh/llmlingua-2-js-xlm-roberta-large-meetingbank-onnx-v4,atjsh/llmlingua-2-js-xlm-roberta-large-meetingbank-onnx-v4,reported,external,https://huggingface.co/atjsh/llmlingua-2-js-xlm-roberta-large-meetingbank-onnx-v4,yes,,yes,retain-and-trace,low
+atjsh/llmlingua-2-js-bert-base-multilingual-cased-meetingbank-onnx-v4,atjsh/llmlingua-2-js-bert-base-multilingual-cased-meetingbank-onnx-v4,reported,external,https://huggingface.co/atjsh/llmlingua-2-js-bert-base-multilingual-cased-meetingbank-onnx-v4,yes,,yes,retain-and-trace,low
+atjsh/llmlingua-2-js-mobilebert-meetingbank-onnx-v4,atjsh/llmlingua-2-js-mobilebert-meetingbank-onnx-v4,reported,external,https://huggingface.co/atjsh/llmlingua-2-js-mobilebert-meetingbank-onnx-v4,yes,,yes,retain-and-trace,low
+atjsh/llmlingua-2-js-tinybert-meetingbank-onnx-v4,atjsh/llmlingua-2-js-tinybert-meetingbank-onnx-v4,reported,external,https://huggingface.co/atjsh/llmlingua-2-js-tinybert-meetingbank-onnx-v4,yes,,yes,retain-and-trace,low
+mradermacher/dots.llm1.inst-GGUF,mradermacher/dots.llm1.inst-GGUF,reported,external,https://huggingface.co/mradermacher/dots.llm1.inst-GGUF,yes,,yes,retain-and-trace,low
+BonTori/phobert-llm-vietnamese-hsd,BonTori/phobert-llm-vietnamese-hsd,reported,external,https://huggingface.co/BonTori/phobert-llm-vietnamese-hsd,yes,,yes,retain-and-trace,low
+BonTori/phobert_llm_results,BonTori/phobert_llm_results,reported,external,https://huggingface.co/BonTori/phobert_llm_results,yes,,yes,retain-and-trace,low
+DraSlayer/personal-llm-phase14-9b,DraSlayer/personal-llm-phase14-9b,reported,external,https://huggingface.co/DraSlayer/personal-llm-phase14-9b,yes,,yes,retain-and-trace,low
+mradermacher/Marco-LLM-GLO-GGUF,mradermacher/Marco-LLM-GLO-GGUF,reported,external,https://huggingface.co/mradermacher/Marco-LLM-GLO-GGUF,yes,,yes,retain-and-trace,low
 pinkelephantlimited/pinkelephant-llm-48b-s,pinkelephantlimited/pinkelephant-llm-48b-s,reported,external,https://huggingface.co/pinkelephantlimited/pinkelephant-llm-48b-s,yes,,yes,retain-and-trace,low
 mradermacher/Marco-LLM-AR-GGUF,mradermacher/Marco-LLM-AR-GGUF,reported,external,https://huggingface.co/mradermacher/Marco-LLM-AR-GGUF,yes,,yes,retain-and-trace,low
 seoan1024/korean-llm-v2,seoan1024/korean-llm-v2,reported,external,https://huggingface.co/seoan1024/korean-llm-v2,yes,,yes,retain-and-trace,low
@@ -70,16 +80,7 @@ Osaydbakur/law-llm,Osaydbakur/law-llm,reported,external,https://huggingface.co/O
 MonikaDvorackova/llm-response-quality-classifier,MonikaDvorackova/llm-response-quality-classifier,reported,external,https://huggingface.co/MonikaDvorackova/llm-response-quality-classifier,yes,,yes,retain-and-trace,low
 Ironwood-LLM-Team/Firehouse-Cactus-1.0,Ironwood-LLM-Team/Firehouse-Cactus-1.0,reported,external,https://huggingface.co/Ironwood-LLM-Team/Firehouse-Cactus-1.0,yes,,yes,retain-and-trace,low
 Kutches/LLM,Kutches/LLM,reported,external,https://huggingface.co/Kutches/LLM,yes,,yes,retain-and-trace,low
-mangocloud/gr00t-n1.7-libero-90-k4-llm-10k,mangocloud/gr00t-n1.7-libero-90-k4-llm-10k,reported,external,https://huggingface.co/mangocloud/gr00t-n1.7-libero-90-k4-llm-10k,yes,,yes,retain-and-trace,low
-DraSlayer/personal-llm-phase13-9b-v2,DraSlayer/personal-llm-phase13-9b-v2,reported,external,https://huggingface.co/DraSlayer/personal-llm-phase13-9b-v2,yes,,yes,retain-and-trace,low
-MaxDGUPTA/uma-cognitive-llm-checkpoints,MaxDGUPTA/uma-cognitive-llm-checkpoints,reported,external,https://huggingface.co/MaxDGUPTA/uma-cognitive-llm-checkpoints,yes,,yes,retain-and-trace,low
-zhuq41/huggingface_10304_vkyu5dow_cand_code_gen_llm,zhuq41/huggingface_10304_vkyu5dow_cand_code_gen_llm,reported,external,https://huggingface.co/zhuq41/huggingface_10304_vkyu5dow_cand_code_gen_llm,yes,,yes,retain-and-trace,low
-clarenceorg/llmlingua-2-onnx,clarenceorg/llmlingua-2-onnx,reported,external,https://huggingface.co/clarenceorg/llmlingua-2-onnx,yes,,yes,retain-and-trace,low
-sagnikdas-ml/bengali-llmprompt-router,sagnikdas-ml/bengali-llmprompt-router,reported,external,https://huggingface.co/sagnikdas-ml/bengali-llmprompt-router,yes,,yes,retain-and-trace,low
-bijonguha/llm-sft-tiny-finetuned,bijonguha/llm-sft-tiny-finetuned,reported,external,https://huggingface.co/bijonguha/llm-sft-tiny-finetuned,yes,,yes,retain-and-trace,low
-DraSlayer/personal-llm-phase13-9b,DraSlayer/personal-llm-phase13-9b,reported,external,https://huggingface.co/DraSlayer/personal-llm-phase13-9b,yes,,yes,retain-and-trace,low
-mlboydaisuke/Youtu-LLM-2B-CoreAI,mlboydaisuke/Youtu-LLM-2B-CoreAI,reported,external,https://huggingface.co/mlboydaisuke/Youtu-LLM-2B-CoreAI,yes,,yes,retain-and-trace,low
-mradermacher/Marco-LLM-AR-V2-i1-GGUF,mradermacher/Marco-LLM-AR-V2-i1-GGUF,reported,external,https://huggingface.co/mradermacher/Marco-LLM-AR-V2-i1-GGUF,yes,,yes,retain-and-trace,low
+inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt17,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt17,reported,external,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt17,yes,,yes,retain-and-trace,low
 inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt16,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt16,reported,external,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt16,yes,,yes,retain-and-trace,low
 inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt15,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt15,reported,external,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt15,yes,,yes,retain-and-trace,low
 huggingaccounttest/ICRA2027_ROBOT_Spline_Server_Inference_Weights,huggingaccounttest/ICRA2027_ROBOT_Spline_Server_Inference_Weights,reported,external,https://huggingface.co/huggingaccounttest/ICRA2027_ROBOT_Spline_Server_Inference_Weights,yes,,yes,retain-and-trace,low
@@ -99,7 +100,6 @@ inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048a
 inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt7,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt7,reported,external,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt7,yes,,yes,retain-and-trace,low
 inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt6,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt6,reported,external,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt6,yes,,yes,retain-and-trace,low
 inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt5,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt5,reported,external,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt5,yes,,yes,retain-and-trace,low
-inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8,inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8,reported,external,https://huggingface.co/inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8,yes,,yes,retain-and-trace,low
 Mitigating Gender Bias in English to Romanian Machine Translation,Mitigating Gender Bias in English to Romanian Machine Translation,reported,external,https://huggingface.co/papers/2608.08606,yes,,no,retain-and-trace,low
 Hybrid-Policy Self-Editing for Composable Unstructured Knowledge Editing,Hybrid-Policy Self-Editing for Composable Unstructured Knowledge Editing,reported,external,https://huggingface.co/papers/2608.11660,yes,,no,retain-and-trace,low
 Knowing When to Quit: Diagnosing and Training LLMs to Abort Futile Reasoning,Knowing When to Quit: Diagnosing and Training LLMs to Abort Futile Reasoning,reported,external,https://huggingface.co/papers/2607.29211,yes,,no,retain-and-trace,low
@@ -127,26 +127,26 @@ From Synthesis to Removal: Physics-Grounded Reflection Simulation and Diffusion-
 InSight-doc: Agentic Visual Perception for Long-Document Understanding,InSight-doc: Agentic Visual Perception for Long-Document Understanding,reported,external,https://huggingface.co/papers/2608.10628,yes,,no,retain-and-trace,low
 "Power law graph attention: exact generalization of scaled dot-product attention, empirical collapse at inference","Power law graph attention: exact generalization of scaled dot-product attention, empirical collapse at inference",reported,external,https://huggingface.co/papers/2608.10288,yes,,no,retain-and-trace,low
 UniMoMo: Expert Merging-Based MoE Acceleration for Large Recommendation Models,UniMoMo: Expert Merging-Based MoE Acceleration for Large Recommendation Models,reported,external,https://huggingface.co/papers/2608.08627,yes,,no,retain-and-trace,low
+em-age/emage.code.cwso,em-age/emage.code.cwso,reported,external,https://gitlab.com/em-age/emage.code.cwso,yes,,yes,retain-and-trace,low
+practicum8260824/llm2,practicum8260824/llm2,reported,external,https://gitlab.com/practicum8260824/llm2,yes,,yes,retain-and-trace,low
+taras_fedorenko/footballmanagerbot_by_tf,taras_fedorenko/footballmanagerbot_by_tf,reported,external,https://gitlab.com/taras_fedorenko/footballmanagerbot_by_tf,yes,,yes,retain-and-trace,low
+gitlab-oss-package-research/source/pypi/lo/lollms-b82a4727,gitlab-oss-package-research/source/pypi/lo/lollms-b82a4727,reported,external,https://gitlab.com/gitlab-oss-package-research/source/pypi/lo/lollms-b82a4727,yes,,no,retain-and-trace,low
+snopek-games/godai,snopek-games/godai,reported,external,https://gitlab.com/snopek-games/godai,yes,,yes,retain-and-trace,low
+gitlab-oss-package-research/source/pypi/li/litellm-40d5597d,gitlab-oss-package-research/source/pypi/li/litellm-40d5597d,reported,external,https://gitlab.com/gitlab-oss-package-research/source/pypi/li/litellm-40d5597d,yes,,no,retain-and-trace,low
+gitlab-oss-package-research/source/pypi/vl/vllm-76d8023b,gitlab-oss-package-research/source/pypi/vl/vllm-76d8023b,reported,external,https://gitlab.com/gitlab-oss-package-research/source/pypi/vl/vllm-76d8023b,yes,,no,retain-and-trace,low
+qu13t0ne/straylight,qu13t0ne/straylight,reported,external,https://gitlab.com/qu13t0ne/straylight,yes,,yes,retain-and-trace,low
+bdpd/bdpd,bdpd/bdpd,reported,external,https://gitlab.com/bdpd/bdpd,yes,,yes,retain-and-trace,low
+rachel.green.r/ecoscan-76925665-deletion_scheduled-85447451,rachel.green.r/ecoscan-76925665-deletion_scheduled-85447451,reported,external,https://gitlab.com/rachel.green.r/ecoscan-76925665-deletion_scheduled-85447451,yes,,yes,retain-and-trace,low
+llm-kbs/metadata/litellm,llm-kbs/metadata/litellm,reported,external,https://gitlab.com/llm-kbs/metadata/litellm,yes,,no,retain-and-trace,low
+ameobius-ai/captcha-hub,ameobius-ai/captcha-hub,reported,external,https://gitlab.com/ameobius-ai/captcha-hub,yes,,yes,retain-and-trace,low
+psyb0t/elelem,psyb0t/elelem,reported,external,https://gitlab.com/psyb0t/elelem,yes,,yes,retain-and-trace,low
 joadyimel/hermes-voice-ai,joadyimel/hermes-voice-ai,reported,external,https://gitlab.com/joadyimel/hermes-voice-ai,yes,,yes,retain-and-trace,low
 am_shork/llm-wiki,am_shork/llm-wiki,reported,external,https://gitlab.com/am_shork/llm-wiki,yes,,yes,retain-and-trace,low
 thejollydev/bezaforge-infrastructure,thejollydev/bezaforge-infrastructure,reported,external,https://gitlab.com/thejollydev/bezaforge-infrastructure,yes,,yes,retain-and-trace,low
-ameobius-ai/captcha-hub,ameobius-ai/captcha-hub,reported,external,https://gitlab.com/ameobius-ai/captcha-hub,yes,,yes,retain-and-trace,low
 dk-raas/dkai/agents/slashbay,dk-raas/dkai/agents/slashbay,reported,external,https://gitlab.com/dk-raas/dkai/agents/slashbay,yes,,no,retain-and-trace,low
 KudoAI/duckduckgpt,KudoAI/duckduckgpt,reported,external,https://gitlab.com/KudoAI/duckduckgpt,yes,,yes,retain-and-trace,low
 KudoAI/bravegpt,KudoAI/bravegpt,reported,external,https://gitlab.com/KudoAI/bravegpt,yes,,yes,retain-and-trace,low
 KudoAI/amazongpt,KudoAI/amazongpt,reported,external,https://gitlab.com/KudoAI/amazongpt,yes,,yes,retain-and-trace,low
-schaefer-services/ssh-proxy-api,schaefer-services/ssh-proxy-api,reported,external,https://gitlab.com/schaefer-services/ssh-proxy-api,yes,,yes,retain-and-trace,low
-snopek-games/godai,snopek-games/godai,reported,external,https://gitlab.com/snopek-games/godai,yes,,yes,retain-and-trace,low
-em-age/emage.code.cwso,em-age/emage.code.cwso,reported,external,https://gitlab.com/em-age/emage.code.cwso,yes,,yes,retain-and-trace,low
-doering-ai/apps/model,doering-ai/apps/model,reported,external,https://gitlab.com/doering-ai/apps/model,yes,,no,retain-and-trace,low
-Anahkas/TellMeWhen_Presets,Anahkas/TellMeWhen_Presets,reported,external,https://gitlab.com/Anahkas/TellMeWhen_Presets,yes,,yes,retain-and-trace,low
-taras_fedorenko/footballmanagerbot_by_tf,taras_fedorenko/footballmanagerbot_by_tf,reported,external,https://gitlab.com/taras_fedorenko/footballmanagerbot_by_tf,yes,,yes,retain-and-trace,low
-lzieniew/localllm_demos,lzieniew/localllm_demos,reported,external,https://gitlab.com/lzieniew/localllm_demos,yes,,yes,retain-and-trace,low
-fabio3rs/bibliothecapatristica,fabio3rs/bibliothecapatristica,reported,external,https://gitlab.com/fabio3rs/bibliothecapatristica,yes,,yes,retain-and-trace,low
-schaefer-services/chat-history,schaefer-services/chat-history,reported,external,https://gitlab.com/schaefer-services/chat-history,yes,,yes,retain-and-trace,low
-hongch6661/mix-web-demo,hongch6661/mix-web-demo,reported,external,https://gitlab.com/hongch6661/mix-web-demo,yes,,yes,retain-and-trace,low
-bdpd/bdpd,bdpd/bdpd,reported,external,https://gitlab.com/bdpd/bdpd,yes,,yes,retain-and-trace,low
-ycheol76/hands-on-llm-serving-and-optimization-study,ycheol76/hands-on-llm-serving-and-optimization-study,reported,external,https://gitlab.com/ycheol76/hands-on-llm-serving-and-optimization-study,yes,,yes,retain-and-trace,low
 uralstech-gitlab/UAI-LiteRTLM,uralstech-gitlab/UAI-LiteRTLM,reported,external,https://gitlab.com/uralstech-gitlab/UAI-LiteRTLM,yes,,yes,retain-and-trace,low
 hermit-bot/hermit,hermit-bot/hermit,reported,external,https://gitlab.com/hermit-bot/hermit,yes,,yes,retain-and-trace,low
 rgv-cyber/public-projects/ai-inference-platform,rgv-cyber/public-projects/ai-inference-platform,reported,external,https://gitlab.com/rgv-cyber/public-projects/ai-inference-platform,yes,,no,retain-and-trace,low
@@ -171,22 +171,6 @@ loongarch/kubesphere,loongarch/kubesphere,reported,external,https://gitea.com/lo
 Lehoang/langalpha,Lehoang/langalpha,reported,external,https://gitea.com/Lehoang/langalpha,yes,,yes,retain-and-trace,low
 xzhen/llama.cpp,xzhen/llama.cpp,reported,external,https://gitea.com/xzhen/llama.cpp,yes,,yes,retain-and-trace,low
 Yaushin808/Concrete-Project,Yaushin808/Concrete-Project,reported,external,https://gitea.com/Yaushin808/Concrete-Project,yes,,yes,retain-and-trace,low
-chaowenguo/llm,chaowenguo/llm,reported,external,https://framagit.org/chaowenguo/llm,yes,,yes,retain-and-trace,low
-dapa/oc-mlops-projet-3-docker,dapa/oc-mlops-projet-3-docker,reported,external,https://framagit.org/dapa/oc-mlops-projet-3-docker,yes,,yes,retain-and-trace,low
-dapa/oc_mlops_projet_3,dapa/oc_mlops_projet_3,reported,external,https://framagit.org/dapa/oc_mlops_projet_3,yes,,yes,retain-and-trace,low
-thomas.jardinet/lightweight-llm-stack,thomas.jardinet/lightweight-llm-stack,reported,external,https://framagit.org/thomas.jardinet/lightweight-llm-stack,yes,,yes,retain-and-trace,low
-nils/reinstallme,nils/reinstallme,reported,external,https://framagit.org/nils/reinstallme,yes,,yes,retain-and-trace,low
-dajbelshaw/plex-playlist,dajbelshaw/plex-playlist,reported,external,https://framagit.org/dajbelshaw/plex-playlist,yes,,yes,retain-and-trace,low
-gdevops/ia/llms,gdevops/ia/llms,reported,external,https://framagit.org/gdevops/ia/llms,yes,,no,retain-and-trace,low
-gdevops/ia/openllm-france,gdevops/ia/openllm-france,reported,external,https://framagit.org/gdevops/ia/openllm-france,yes,,no,retain-and-trace,low
-Isilin/lm-webui,Isilin/lm-webui,reported,external,https://framagit.org/Isilin/lm-webui,yes,,yes,retain-and-trace,low
-HappyPony/llm-experiences-blog,HappyPony/llm-experiences-blog,reported,external,https://framagit.org/HappyPony/llm-experiences-blog,yes,,yes,retain-and-trace,low
-almereyda/ep_allmende,almereyda/ep_allmende,reported,external,https://framagit.org/almereyda/ep_allmende,yes,,yes,retain-and-trace,low
-kellmins/kellminsreview,kellmins/kellminsreview,reported,external,https://framagit.org/kellmins/kellminsreview,yes,,yes,retain-and-trace,low
-SondagePro-LimeSurvey-plugin/logAllMail,SondagePro-LimeSurvey-plugin/logAllMail,reported,external,https://framagit.org/SondagePro-LimeSurvey-plugin/logAllMail,yes,,yes,retain-and-trace,low
-alexandcote/logAllMail,alexandcote/logAllMail,reported,external,https://framagit.org/alexandcote/logAllMail,yes,,yes,retain-and-trace,low
-SxncR0OR/tellme,SxncR0OR/tellme,reported,external,https://framagit.org/SxncR0OR/tellme,yes,,yes,retain-and-trace,low
-klafyvel/SmallMusicPlayer,klafyvel/SmallMusicPlayer,reported,external,https://framagit.org/klafyvel/SmallMusicPlayer,yes,,yes,retain-and-trace,low
 fireside25-a-brep/-deterministic-lead-processor,fireside25-a-brep/-deterministic-lead-processor,reported,external,https://codeberg.org/fireside25-a-brep/-deterministic-lead-processor,yes,,yes,retain-and-trace,low
 aarghrai/1.58bitLLM,aarghrai/1.58bitLLM,reported,external,https://codeberg.org/aarghrai/1.58bitLLM,yes,,yes,retain-and-trace,low
 CarbonC/156-revolutions,CarbonC/156-revolutions,reported,external,https://codeberg.org/CarbonC/156-revolutions,yes,,yes,retain-and-trace,low

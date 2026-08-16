@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-16T11:47:45.629553+00:00",
+  "generated_at": "2026-08-16T11:54:05.881687+00:00",
   "kind": "agents",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [

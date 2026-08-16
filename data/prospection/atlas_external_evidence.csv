@@ -1,4 +1,14 @@
 model_id,model_name,source_type,url,retrieved_at,claim,source_record_id,evidence_status
+pinkelephantlimited/pinkelephant-llm-48b-s-4bit,pinkelephantlimited/pinkelephant-llm-48b-s-4bit,hugging_face,https://huggingface.co/pinkelephantlimited/pinkelephant-llm-48b-s-4bit,,,,reported
+atjsh/llmlingua-2-js-xlm-roberta-large-meetingbank-onnx-v4,atjsh/llmlingua-2-js-xlm-roberta-large-meetingbank-onnx-v4,hugging_face,https://huggingface.co/atjsh/llmlingua-2-js-xlm-roberta-large-meetingbank-onnx-v4,,,,reported
+atjsh/llmlingua-2-js-bert-base-multilingual-cased-meetingbank-onnx-v4,atjsh/llmlingua-2-js-bert-base-multilingual-cased-meetingbank-onnx-v4,hugging_face,https://huggingface.co/atjsh/llmlingua-2-js-bert-base-multilingual-cased-meetingbank-onnx-v4,,,,reported
+atjsh/llmlingua-2-js-mobilebert-meetingbank-onnx-v4,atjsh/llmlingua-2-js-mobilebert-meetingbank-onnx-v4,hugging_face,https://huggingface.co/atjsh/llmlingua-2-js-mobilebert-meetingbank-onnx-v4,,,,reported
+atjsh/llmlingua-2-js-tinybert-meetingbank-onnx-v4,atjsh/llmlingua-2-js-tinybert-meetingbank-onnx-v4,hugging_face,https://huggingface.co/atjsh/llmlingua-2-js-tinybert-meetingbank-onnx-v4,,,,reported
+mradermacher/dots.llm1.inst-GGUF,mradermacher/dots.llm1.inst-GGUF,hugging_face,https://huggingface.co/mradermacher/dots.llm1.inst-GGUF,,,,reported
+BonTori/phobert-llm-vietnamese-hsd,BonTori/phobert-llm-vietnamese-hsd,hugging_face,https://huggingface.co/BonTori/phobert-llm-vietnamese-hsd,,,,reported
+BonTori/phobert_llm_results,BonTori/phobert_llm_results,hugging_face,https://huggingface.co/BonTori/phobert_llm_results,,,,reported
+DraSlayer/personal-llm-phase14-9b,DraSlayer/personal-llm-phase14-9b,hugging_face,https://huggingface.co/DraSlayer/personal-llm-phase14-9b,,,,reported
+mradermacher/Marco-LLM-GLO-GGUF,mradermacher/Marco-LLM-GLO-GGUF,hugging_face,https://huggingface.co/mradermacher/Marco-LLM-GLO-GGUF,,,,reported
 pinkelephantlimited/pinkelephant-llm-48b-s,pinkelephantlimited/pinkelephant-llm-48b-s,hugging_face,https://huggingface.co/pinkelephantlimited/pinkelephant-llm-48b-s,,,,reported
 mradermacher/Marco-LLM-AR-GGUF,mradermacher/Marco-LLM-AR-GGUF,hugging_face,https://huggingface.co/mradermacher/Marco-LLM-AR-GGUF,,,,reported
 seoan1024/korean-llm-v2,seoan1024/korean-llm-v2,hugging_face,https://huggingface.co/seoan1024/korean-llm-v2,,,,reported
@@ -9,16 +19,7 @@ Osaydbakur/law-llm,Osaydbakur/law-llm,hugging_face,https://huggingface.co/Osaydb
 MonikaDvorackova/llm-response-quality-classifier,MonikaDvorackova/llm-response-quality-classifier,hugging_face,https://huggingface.co/MonikaDvorackova/llm-response-quality-classifier,,,,reported
 Ironwood-LLM-Team/Firehouse-Cactus-1.0,Ironwood-LLM-Team/Firehouse-Cactus-1.0,hugging_face,https://huggingface.co/Ironwood-LLM-Team/Firehouse-Cactus-1.0,,,,reported
 Kutches/LLM,Kutches/LLM,hugging_face,https://huggingface.co/Kutches/LLM,,,,reported
-mangocloud/gr00t-n1.7-libero-90-k4-llm-10k,mangocloud/gr00t-n1.7-libero-90-k4-llm-10k,hugging_face,https://huggingface.co/mangocloud/gr00t-n1.7-libero-90-k4-llm-10k,,,,reported
-DraSlayer/personal-llm-phase13-9b-v2,DraSlayer/personal-llm-phase13-9b-v2,hugging_face,https://huggingface.co/DraSlayer/personal-llm-phase13-9b-v2,,,,reported
-MaxDGUPTA/uma-cognitive-llm-checkpoints,MaxDGUPTA/uma-cognitive-llm-checkpoints,hugging_face,https://huggingface.co/MaxDGUPTA/uma-cognitive-llm-checkpoints,,,,reported
-zhuq41/huggingface_10304_vkyu5dow_cand_code_gen_llm,zhuq41/huggingface_10304_vkyu5dow_cand_code_gen_llm,hugging_face,https://huggingface.co/zhuq41/huggingface_10304_vkyu5dow_cand_code_gen_llm,,,,reported
-clarenceorg/llmlingua-2-onnx,clarenceorg/llmlingua-2-onnx,hugging_face,https://huggingface.co/clarenceorg/llmlingua-2-onnx,,,,reported
-sagnikdas-ml/bengali-llmprompt-router,sagnikdas-ml/bengali-llmprompt-router,hugging_face,https://huggingface.co/sagnikdas-ml/bengali-llmprompt-router,,,,reported
-bijonguha/llm-sft-tiny-finetuned,bijonguha/llm-sft-tiny-finetuned,hugging_face,https://huggingface.co/bijonguha/llm-sft-tiny-finetuned,,,,reported
-DraSlayer/personal-llm-phase13-9b,DraSlayer/personal-llm-phase13-9b,hugging_face,https://huggingface.co/DraSlayer/personal-llm-phase13-9b,,,,reported
-mlboydaisuke/Youtu-LLM-2B-CoreAI,mlboydaisuke/Youtu-LLM-2B-CoreAI,hugging_face,https://huggingface.co/mlboydaisuke/Youtu-LLM-2B-CoreAI,,,,reported
-mradermacher/Marco-LLM-AR-V2-i1-GGUF,mradermacher/Marco-LLM-AR-V2-i1-GGUF,hugging_face,https://huggingface.co/mradermacher/Marco-LLM-AR-V2-i1-GGUF,,,,reported
+inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt17,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt17,hugging_face,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt17,,,,reported
 inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt16,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt16,hugging_face,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt16,,,,reported
 inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt15,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt15,hugging_face,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v9-ckpt15,,,,reported
 huggingaccounttest/ICRA2027_ROBOT_Spline_Server_Inference_Weights,huggingaccounttest/ICRA2027_ROBOT_Spline_Server_Inference_Weights,hugging_face,https://huggingface.co/huggingaccounttest/ICRA2027_ROBOT_Spline_Server_Inference_Weights,,,,reported
@@ -38,7 +39,6 @@ inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048a
 inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt7,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt7,hugging_face,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt7,,,,reported
 inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt6,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt6,hugging_face,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt6,,,,reported
 inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt5,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt5,hugging_face,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.2048anc.combdatav3-q235b-instr-v8-ckpt5,,,,reported
-inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8,inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8,hugging_face,https://huggingface.co/inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8,,,,reported
 Mitigating Gender Bias in English to Romanian Machine Translation,Mitigating Gender Bias in English to Romanian Machine Translation,hugging_face,https://huggingface.co/papers/2608.08606,,,,reported
 Hybrid-Policy Self-Editing for Composable Unstructured Knowledge Editing,Hybrid-Policy Self-Editing for Composable Unstructured Knowledge Editing,hugging_face,https://huggingface.co/papers/2608.11660,,,,reported
 Knowing When to Quit: Diagnosing and Training LLMs to Abort Futile Reasoning,Knowing When to Quit: Diagnosing and Training LLMs to Abort Futile Reasoning,hugging_face,https://huggingface.co/papers/2607.29211,,,,reported
