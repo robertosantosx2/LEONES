@@ -1,0 +1,37 @@
+name: Validar puerta de recomendaciones
+
+on:
+  push:
+    paths:
+      - 'schemas/recommendation-gate.schema.json'
+      - 'scripts/validate_recommendation_gate.py'
+      - 'data/recommendations/**/*.json'
+      - 'data/recommendations/*.json'
+  pull_request:
+    paths:
+      - 'schemas/recommendation-gate.schema.json'
+      - 'scripts/validate_recommendation_gate.py'
+      - 'data/recommendations/**/*.json'
+      - 'data/recommendations/*.json'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar perfiles de recomendación
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(data/recommendations/*.json data/recommendations/**/*.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No hay recomendaciones estructuradas todavía; la puerta queda preparada."
+            exit 0
+          fi
+          for file in "${files[@]}"; do
+            python3 scripts/validate_recommendation_gate.py "$file"
+          done
