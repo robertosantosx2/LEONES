@@ -20,7 +20,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
-          ISSUE_NUMBER: ${{ github.event.issue.number || github.event.issue.number }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
           COMMENT_BODY: ${{ github.event.comment.body }}
           COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
           OWNER: ${{ github.repository_owner }}
@@ -32,8 +32,8 @@ jobs:
           author="$COMMENT_AUTHOR"
 
           if [[ "$EVENT_NAME" == "issues" ]]; then
-            gh issue edit "$issue" --repo "$OWNER/$REPO" --add-label "user-recommendation,needs-review" || true
-            gh issue comment "$issue" --repo "$OWNER/$REPO" --body "🦁 **LEONES:** recomendación recibida. Queda en cola de revisión como descubrimiento externo.\n\nCuando el responsable valide la entrada, responderá exactamente **OK LEONES**." || true
+            gh issue edit "$issue" --repo "$OWNER/$REPO" --add-assignee "robertosantosx2" --add-label "user-recommendation,needs-review" || true
+            gh issue comment "$issue" --repo "$OWNER/$REPO" --body "🦁 **LEONES:** recomendación recibida. Queda en cola de revisión como descubrimiento externo. Se ha asignado al responsable del proyecto para que reciba la notificación.\n\nCuando el responsable valide la entrada, responderá exactamente **OK LEONES**. Puede hacerlo desde GitHub o respondiendo al correo de notificación de la incidencia." || true
             exit 0
           fi
 
