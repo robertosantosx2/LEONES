@@ -1,0 +1,147 @@
+{
+  "generated_at": "2026-08-16T05:49:28.659033+00:00",
+  "day": 6,
+  "day_name": "sunday",
+  "sources_assigned": [
+    "forgejo-network",
+    "pagure",
+    "github"
+  ],
+  "sources_total": 24,
+  "sources_completed": 3,
+  "sources_failed": 0,
+  "raw_results_by_source": {
+    "forgejo-network": 0,
+    "github": 0,
+    "pagure": 20
+  },
+  "unique_discoveries": 20,
+  "failures": [],
+  "queries": 2,
+  "workers": 4,
+  "per_source_timeout_seconds": 75,
+  "weekly_assignment": [
+    {
+      "id": "codeberg",
+      "name": "Codeberg",
+      "day": 0
+    },
+    {
+      "id": "disroot-forge",
+      "name": "Disroot Forge",
+      "day": 1
+    },
+    {
+      "id": "framagit",
+      "name": "Framagit",
+      "day": 2
+    },
+    {
+      "id": "sourcehut",
+      "name": "Sourcehut",
+      "day": 3
+    },
+    {
+      "id": "gnu-savannah",
+      "name": "GNU Savannah",
+      "day": 4
+    },
+    {
+      "id": "notabug",
+      "name": "NotABug",
+      "day": 5
+    },
+    {
+      "id": "forgejo-network",
+      "name": "Forgejo instances",
+      "day": 6
+    },
+    {
+      "id": "forgejo",
+      "name": "Forgejo",
+      "day": 0
+    },
+    {
+      "id": "gitea",
+      "name": "Gitea",
+      "day": 1
+    },
+    {
+      "id": "gitlab-ce",
+      "name": "GitLab CE",
+      "day": 2
+    },
+    {
+      "id": "gogs",
+      "name": "Gogs",
+      "day": 3
+    },
+    {
+      "id": "onedev",
+      "name": "OneDev",
+      "day": 4
+    },
+    {
+      "id": "srht",
+      "name": "Sourcehut (sr.ht)",
+      "day": 5
+    },
+    {
+      "id": "pagure",
+      "name": "Pagure",
+      "day": 6
+    },
+    {
+      "id": "kallithea",
+      "name": "Kallithea",
+      "day": 0
+    },
+    {
+      "id": "phorge",
+      "name": "Phabricator / Phorge",
+      "day": 1
+    },
+    {
+      "id": "fossil",
+      "name": "Fossil SCM",
+      "day": 2
+    },
+    {
+      "id": "rhodecode",
+      "name": "RhodeCode",
+      "day": 3
+    },
+    {
+      "id": "cgit",
+      "name": "CGit",
+      "day": 4
+    },
+    {
+      "id": "gitbucket",
+      "name": "GitBucket",
+      "day": 5
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "day": 6
+    },
+    {
+      "id": "gitlab",
+      "name": "GitLab.com",
+      "day": 0
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face",
+      "day": 1
+    },
+    {
+      "id": "huggingface-papers",
+      "name": "Hugging Face Papers",
+      "day": 2
+    }
+  ],
+  "output": "/home/runner/work/LEONES/LEONES/data/prospection/weekly_sources/sources-2026-08-16.ndjson",
+  "cadence": "weekly-per-source"
+}
