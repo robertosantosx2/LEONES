@@ -1,0 +1,103 @@
+name: H06 Atlas knowledge gate
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'atlas/schema.json'
+      - 'data/prospection/atlas_feed.csv'
+      - 'scripts/atlas_identity_audit.py'
+      - 'scripts/atlas_quality_audit.py'
+      - 'scripts/atlas_promote_verified.py'
+      - 'scripts/test_atlas_promotion.py'
+      - 'docs/phases/2026-08-atlas-expanded/**'
+
+permissions:
+  contents: write
+
+jobs:
+  h06:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+
+      - name: Test promotion boundary
+        run: python3 scripts/test_atlas_promotion.py
+
+      - name: Audit identity
+        run: python3 scripts/atlas_identity_audit.py
+
+      - name: Audit quality
+        run: python3 scripts/atlas_quality_audit.py
+
+      - name: Promote verified records
+        run: python3 scripts/atlas_promote_verified.py
+
+      - name: Validate canonical Atlas JSON
+        run: |
+          python3 -m pip install --disable-pip-version-check jsonschema
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+
+          schema = json.loads(Path('atlas/schema.json').read_text(encoding='utf-8'))
+          catalog = json.loads(Path('atlas/catalog.json').read_text(encoding='utf-8'))
+          validator = Draft202012Validator(schema)
+          errors = []
+          for index, record in enumerate(catalog.get('records', [])):
+              errors.extend(f'record {index}: {error.message}' for error in validator.iter_errors(record))
+          if errors:
+              raise SystemExit('\n'.join(errors))
+          print(f'Canonical Atlas records validated: {len(catalog.get("records", []))}')
+          PY
+
+      - name: Generate H06 audit report
+        run: |
+          python3 - <<'PY'
+          import csv, json
+          from collections import Counter
+          from pathlib import Path
+          root = Path('.')
+          feed = root / 'data/prospection/atlas_feed.csv'
+          identity = root / 'data/prospection/atlas_identity_audit.csv'
+          quality = root / 'data/prospection/atlas_quality_flags.csv'
+          catalog = json.loads((root / 'atlas/catalog.json').read_text(encoding='utf-8'))
+
+          def rows(path):
+              with path.open(encoding='utf-8-sig', newline='') as fh:
+                  return list(csv.DictReader(fh))
+
+          feed_rows = rows(feed)
+          identity_rows = rows(identity)
+          quality_rows = rows(quality)
+          report = {
+              'feed_rows': len(feed_rows),
+              'identity_rows': len(identity_rows),
+              'identity_status': dict(Counter(r.get('status','') for r in identity_rows)),
+              'quality_flags': len(quality_rows),
+              'quality_by_type': dict(Counter(r.get('flag_type','') for r in quality_rows)),
+              'canonical_records': len(catalog.get('records', [])),
+          }
+          out = root / 'data/prospection/h06_audit_report.json'
+          out.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(json.dumps(report, ensure_ascii=False))
+          PY
+
+      - name: Commit H06 generated outputs
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add atlas/catalog.json data/prospection/atlas_identity_audit.csv data/prospection/atlas_quality_flags.csv data/prospection/atlas_promotion_report.json data/prospection/h06_audit_report.json
+          if git diff --cached --quiet; then
+            echo 'H06 outputs unchanged'
+          else
+            git commit -m 'data(atlas): refresh H06 knowledge gate outputs'
+            git push
+          fi
