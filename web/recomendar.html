@@ -1,39 +1,411 @@
 <!doctype html>
 <html lang="es">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Formulario de recomendaciones de usuarios para alimentar la prospección y el aprendizaje de LEONES.">
-<title>LEONES · Recomendar algo</title>
-<link rel="stylesheet" href="assets/css/navigation.css"><link rel="stylesheet" href="assets/graphics/brand.css">
-<style>
-body{margin:0;background:#f3f6f9;color:#17212b;font:16px/1.65 system-ui,sans-serif}.hero{padding:42px 22px;color:#fff;background:linear-gradient(120deg,#102f49,#1769aa)}.hero-inner,main{width:min(1050px,calc(100% - 2rem));margin:auto}.hero h1{margin:0;font-size:clamp(2.2rem,6vw,3.4rem)}.hero p{max-width:850px;color:#e4eef4}.card{background:#fff;border:1px solid #d8e0e7;border-radius:14px;padding:24px;margin:20px 0}.tag{display:inline-block;padding:4px 9px;border-radius:999px;background:#eaf4fb;color:#1769aa;font-size:.76rem;font-weight:900}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}label{font-weight:800;color:#102f49}input,select,textarea{font:inherit;padding:11px 12px;border:1px solid #cbd7df;border-radius:9px;background:#fff;color:#17212b}textarea{min-height:130px;resize:vertical}.hint{font-size:.86rem;color:#607582}.checks{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.checks label{font-weight:600;color:#315d7d}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{cursor:pointer;border:1px solid #1769aa;border-radius:9px;padding:11px 16px;background:#1769aa;color:#fff;font-weight:850}.btn.secondary{background:#fff;color:#102f49;border-color:#d8e0e7}.result{display:none;padding:15px;border-left:5px solid #1769aa;background:#eaf4fb;border-radius:0 9px 9px 0}.score{font-size:1.3rem;font-weight:900;color:#102f49}.stage{font-weight:900}.privacy{font-size:.86rem;color:#607582}.privacy strong{color:#315d7d}@media(max-width:700px){.grid,.checks{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<header class="hero"><div class="hero-inner"><span class="tag">LEONES · INTELIGENCIA COLECTIVA</span><h1>Recomienda algo a LEONES</h1><p>¿Has encontrado un modelo, runtime, herramienta, benchmark, proyecto, artículo, dataset o idea que crees que deberíamos conocer? Cuéntanoslo. LEONES lo tratará como <strong>descubrimiento externo</strong>, no como conocimiento validado.</p></div></header>
-<main id="main">
-<section class="card"><span class="tag">OBJETIVO</span><h2>Tu recomendación puede convertirse en conocimiento</h2><p>La propuesta entra en una cola de revisión. Primero comprobamos identidad y procedencia; después buscamos evidencia independiente; si merece la pena, la probamos o contrastamos; finalmente decidimos si debe alimentar Prospector, Atlas, Router, Runtime, Agents, Quant, Fine-Tuning o Benchmark &amp; Evaluation.</p><p><strong>No prometemos integrar una recomendación.</strong> Precisamente por eso el sistema conserva también los descartes y explica por qué una propuesta no encaja.</p></section>
-<section class="card"><form id="recommendation-form">
-<div class="grid">
-<div class="field"><label for="name">Nombre del recurso *</label><input id="name" required placeholder="Ej. nombre del proyecto o modelo"></div>
-<div class="field"><label for="url">URL principal *</label><input id="url" type="url" required placeholder="https://..."></div>
-<div class="field"><label for="type">Tipo *</label><select id="type" required><option value="">Selecciona…</option><option>Modelo</option><option>Runtime / backend</option><option>Agente / framework</option><option>Herramienta</option><option>Benchmark / evaluación</option><option>Dataset</option><option>Hardware</option><option>Proyecto / plataforma</option><option>Artículo / investigación</option><option>Otro</option></select></div>
-<div class="field"><label for="area">Pilar LEONES relacionado</label><select id="area"><option>Prospector</option><option>Atlas</option><option>Task Intelligence</option><option>Router</option><option>Quant</option><option>Fine-Tuning</option><option>Agents</option><option>Runtime</option><option>Benchmark &amp; Evaluation</option><option>No lo sé</option></select></div>
-<div class="field full"><label for="why">¿Por qué crees que debemos conocerlo? *</label><textarea id="why" required placeholder="Qué hace, qué has visto, qué problema resuelve y por qué podría aportar algo a LEONES…"></textarea></div>
-<div class="field full"><label>¿Qué aporta especialmente?</label><div class="checks"><label><input type="checkbox" value="open"> abierto / open source</label><label><input type="checkbox" value="local"> ejecución local</label><label><input type="checkbox" value="agentic"> agentes / tool use</label><label><input type="checkbox" value="performance"> rendimiento</label><label><input type="checkbox" value="hardware"> hardware</label><label><input type="checkbox" value="evaluation"> evaluación / benchmark</label></div></div>
-<div class="field"><label for="evidence">Evidencia que has visto</label><select id="evidence"><option>Lo he probado personalmente</option><option>Hay benchmark o medición pública</option><option>Hay documentación técnica</option><option>Lo he visto recomendado por terceros</option><option>Es una hipótesis / idea</option></select></div>
-<div class="field"><label for="contact">Contacto (opcional)</label><input id="contact" placeholder="No necesario para participar"></div>
-</div>
-<p class="privacy"><strong>Privacidad:</strong> no introduzcas contraseñas, claves API, datos personales sensibles ni información privada. El contacto es opcional y no se necesita para evaluar la propuesta.</p>
-<div class="actions"><button class="btn" type="submit">Evaluar recomendación</button><button class="btn secondary" type="reset">Limpiar</button></div>
-</form></section>
-<section class="card result" id="result" aria-live="polite"><div class="score" id="score"></div><p class="stage" id="stage"></p><p id="explain"></p><div class="actions"><button class="btn" id="github">Preparar recomendación en GitHub</button><button class="btn secondary" id="download">Guardar JSON</button></div></section>
-<section class="card"><span class="tag">CRITERIO LEONES</span><h2>Qué ocurre después</h2><ol><li><strong>Recibido:</strong> la propuesta se conserva como descubrimiento externo.</li><li><strong>Triage:</strong> comprobamos relevancia, identidad, disponibilidad y procedencia.</li><li><strong>Verificación:</strong> contrastamos las afirmaciones y separamos reported, measured, estimated, calculated y anecdotal.</li><li><strong>Prueba:</strong> cuando procede, ejecutamos o reproducimos la evidencia.</li><li><strong>Decisión:</strong> candidato para Atlas/LEONES, mantener en observación o descartar.</li><li><strong>Aprendizaje:</strong> una integración válida puede modificar datos, reglas, adaptadores, benchmarks o recomendaciones.</li></ol><p>Este flujo sigue la regla del proyecto: <strong>descubrimiento → evidencia → verificación → perfil → recomendación</strong>. No se introduce una pieza en Atlas solo porque alguien la haya recomendado.</p></section>
-</main>
-<script>
-const form=document.getElementById('recommendation-form'), result=document.getElementById('result');let payload=null;
-form.addEventListener('submit',e=>{e.preventDefault();const checks=[...form.querySelectorAll('input[type=checkbox]:checked')].map(x=>x.value);const evidence=document.getElementById('evidence').value;let score=0;if(document.getElementById('url').value)score+=2;if(document.getElementById('why').value.length>=80)score+=2;if(evidence==='Lo he probado personalmente')score+=3;else if(evidence==='Hay benchmark o medición pública')score+=3;else if(evidence==='Hay documentación técnica')score+=2;if(checks.length)score+=Math.min(2,checks.length);let stage=score>=8?'Alta prioridad de verificación':score>=5?'Candidato para triage':'Descubrimiento para observación';let explain=score>=8?'Tiene suficiente señal inicial para pasar rápidamente a comprobación de evidencia.':score>=5?'La propuesta parece útil, pero necesita contraste antes de incorporarse al conocimiento de LEONES.':'La propuesta queda registrada como pista; necesitamos más evidencia para justificar trabajo de integración.';payload={schema:'leones-user-recommendation/v1',received_at:new Date().toISOString(),name:document.getElementById('name').value,url:document.getElementById('url').value,type:document.getElementById('type').value,pillar:document.getElementById('area').value,why:document.getElementById('why').value,signals:checks,evidence,contact:document.getElementById('contact').value||null,triage:{score,stage}};document.getElementById('score').textContent='Señal inicial: '+score+'/10';document.getElementById('stage').textContent=stage;document.getElementById('explain').textContent=explain+' La puntuación no decide la integración: solo ordena la revisión.';result.style.display='block';result.scrollIntoView({behavior:'smooth',block:'start'});});
-document.getElementById('github').addEventListener('click',()=>{if(!payload)return;const title=encodeURIComponent('Recomendación de usuario · '+payload.name);const body=encodeURIComponent('## Recomendación de usuario\n\n'+JSON.stringify({...payload,contact:payload.contact?'[contacto proporcionado]':null},null,2)+'\n\n### Proceso LEONES\nTratar como descubrimiento externo. Verificar antes de Atlas.');window.open('https://github.com/robertosantosx2/LEONES/issues/new?title='+title+'&body='+body,'_blank','noopener');});
-document.getElementById('download').addEventListener('click',()=>{if(!payload)return;const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='leones-user-recommendation.json';a.click();URL.revokeObjectURL(a.href);});
-</script><script src="assets/js/navigation.js" defer></script>
-</body></html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta
+            name="description"
+            content="Formulario de recomendaciones de usuarios para alimentar la prospección y el aprendizaje de LEONES."
+        />
+        <title>LEONES · Recomendar algo</title>
+        <link rel="stylesheet" href="assets/css/navigation.css" />
+        <link rel="stylesheet" href="assets/graphics/brand.css" />
+        <style>
+            body {
+                margin: 0;
+                background: #f3f6f9;
+                color: #17212b;
+                font:
+                    16px/1.65 system-ui,
+                    sans-serif;
+            }
+            .hero {
+                padding: 42px 22px;
+                color: #fff;
+                background: linear-gradient(120deg, #102f49, #1769aa);
+            }
+            .hero-inner,
+            main {
+                width: min(1050px, calc(100% - 2rem));
+                margin: auto;
+            }
+            .hero h1 {
+                margin: 0;
+                font-size: clamp(2.2rem, 6vw, 3.4rem);
+            }
+            .hero p {
+                max-width: 850px;
+                color: #e4eef4;
+            }
+            .card {
+                background: #fff;
+                border: 1px solid #d8e0e7;
+                border-radius: 14px;
+                padding: 24px;
+                margin: 20px 0;
+            }
+            .tag {
+                display: inline-block;
+                padding: 4px 9px;
+                border-radius: 999px;
+                background: #eaf4fb;
+                color: #1769aa;
+                font-size: 0.76rem;
+                font-weight: 900;
+            }
+            .grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+            .field {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .field.full {
+                grid-column: 1/-1;
+            }
+            label {
+                font-weight: 800;
+                color: #102f49;
+            }
+            input,
+            select,
+            textarea {
+                font: inherit;
+                padding: 11px 12px;
+                border: 1px solid #cbd7df;
+                border-radius: 9px;
+                background: #fff;
+                color: #17212b;
+            }
+            textarea {
+                min-height: 130px;
+                resize: vertical;
+            }
+            .hint {
+                font-size: 0.86rem;
+                color: #607582;
+            }
+            .checks {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            .checks label {
+                font-weight: 600;
+                color: #315d7d;
+            }
+            .actions {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .btn {
+                cursor: pointer;
+                border: 1px solid #1769aa;
+                border-radius: 9px;
+                padding: 11px 16px;
+                background: #1769aa;
+                color: #fff;
+                font-weight: 850;
+            }
+            .btn.secondary {
+                background: #fff;
+                color: #102f49;
+                border-color: #d8e0e7;
+            }
+            .result {
+                display: none;
+                padding: 15px;
+                border-left: 5px solid #1769aa;
+                background: #eaf4fb;
+                border-radius: 0 9px 9px 0;
+            }
+            .score {
+                font-size: 1.3rem;
+                font-weight: 900;
+                color: #102f49;
+            }
+            .stage {
+                font-weight: 900;
+            }
+            .privacy {
+                font-size: 0.86rem;
+                color: #607582;
+            }
+            .privacy strong {
+                color: #315d7d;
+            }
+            @media (max-width: 700px) {
+                .grid,
+                .checks {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header class="hero">
+            <div class="hero-inner">
+                <span class="tag">LEONES · INTELIGENCIA COLECTIVA</span>
+                <h1>Recomienda algo a LEONES</h1>
+                <p>
+                    ¿Has encontrado un modelo, runtime, herramienta, benchmark, proyecto, artículo,
+                    dataset o idea que crees que deberíamos conocer? Cuéntanoslo. LEONES lo tratará
+                    como <strong>descubrimiento externo</strong>, no como conocimiento validado.
+                </p>
+            </div>
+        </header>
+        <main id="main">
+            <section class="card">
+                <span class="tag">OBJETIVO</span>
+                <h2>Tu recomendación puede convertirse en conocimiento</h2>
+                <p>
+                    La propuesta entra en una cola de revisión. Primero comprobamos identidad y
+                    procedencia; después buscamos evidencia independiente; si merece la pena, la
+                    probamos o contrastamos; finalmente decidimos si debe alimentar Prospector,
+                    Atlas, Router, Runtime, Agents, Quant, Fine-Tuning o Benchmark &amp; Evaluation.
+                </p>
+                <p>
+                    <strong>No prometemos integrar una recomendación.</strong> Precisamente por eso
+                    el sistema conserva también los descartes y explica por qué una propuesta no
+                    encaja.
+                </p>
+            </section>
+            <section class="card">
+                <form id="recommendation-form">
+                    <div class="grid">
+                        <div class="field">
+                            <label for="name">Nombre del recurso *</label
+                            ><input
+                                id="name"
+                                required
+                                placeholder="Ej. nombre del proyecto o modelo"
+                            />
+                        </div>
+                        <div class="field">
+                            <label for="url">URL principal *</label
+                            ><input id="url" type="url" required placeholder="https://..." />
+                        </div>
+                        <div class="field">
+                            <label for="type">Tipo *</label
+                            ><select id="type" required>
+                                <option value="">Selecciona…</option>
+                                <option>Modelo</option>
+                                <option>Runtime / backend</option>
+                                <option>Agente / framework</option>
+                                <option>Herramienta</option>
+                                <option>Benchmark / evaluación</option>
+                                <option>Dataset</option>
+                                <option>Hardware</option>
+                                <option>Proyecto / plataforma</option>
+                                <option>Artículo / investigación</option>
+                                <option>Otro</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="area">Pilar LEONES relacionado</label
+                            ><select id="area">
+                                <option>Prospector</option>
+                                <option>Atlas</option>
+                                <option>Task Intelligence</option>
+                                <option>Router</option>
+                                <option>Quant</option>
+                                <option>Fine-Tuning</option>
+                                <option>Agents</option>
+                                <option>Runtime</option>
+                                <option>Benchmark &amp; Evaluation</option>
+                                <option>No lo sé</option>
+                            </select>
+                        </div>
+                        <div class="field full">
+                            <label for="why">¿Por qué crees que debemos conocerlo? *</label
+                            ><textarea
+                                id="why"
+                                required
+                                placeholder="Qué hace, qué has visto, qué problema resuelve y por qué podría aportar algo a LEONES…"
+                            ></textarea>
+                        </div>
+                        <div class="field full">
+                            <label>¿Qué aporta especialmente?</label>
+                            <div class="checks">
+                                <label
+                                    ><input type="checkbox" value="open" /> abierto / open
+                                    source</label
+                                ><label
+                                    ><input type="checkbox" value="local" /> ejecución local</label
+                                ><label
+                                    ><input type="checkbox" value="agentic" /> agentes / tool
+                                    use</label
+                                ><label
+                                    ><input type="checkbox" value="performance" />
+                                    rendimiento</label
+                                ><label><input type="checkbox" value="hardware" /> hardware</label
+                                ><label
+                                    ><input type="checkbox" value="evaluation" /> evaluación /
+                                    benchmark</label
+                                >
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="evidence">Evidencia que has visto</label
+                            ><select id="evidence">
+                                <option>Lo he probado personalmente</option>
+                                <option>Hay benchmark o medición pública</option>
+                                <option>Hay documentación técnica</option>
+                                <option>Lo he visto recomendado por terceros</option>
+                                <option>Es una hipótesis / idea</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="contact">Contacto (opcional)</label
+                            ><input id="contact" placeholder="No necesario para participar" />
+                        </div>
+                    </div>
+                    <p class="privacy">
+                        <strong>Privacidad:</strong> no introduzcas contraseñas, claves API, datos
+                        personales sensibles ni información privada. El contacto es opcional y no se
+                        necesita para evaluar la propuesta.
+                    </p>
+                    <div class="actions">
+                        <button class="btn" type="submit">Evaluar recomendación</button
+                        ><button class="btn secondary" type="reset">Limpiar</button>
+                    </div>
+                </form>
+            </section>
+            <section class="card result" id="result" aria-live="polite">
+                <div class="score" id="score"></div>
+                <p class="stage" id="stage"></p>
+                <p id="explain"></p>
+                <div class="actions">
+                    <button class="btn" id="github">Preparar recomendación en GitHub</button
+                    ><button class="btn secondary" id="download">Guardar JSON</button>
+                </div>
+            </section>
+            <section class="card">
+                <span class="tag">CRITERIO LEONES</span>
+                <h2>Qué ocurre después</h2>
+                <ol>
+                    <li>
+                        <strong>Recibido:</strong> la propuesta se conserva como descubrimiento
+                        externo.
+                    </li>
+                    <li>
+                        <strong>Triage:</strong> comprobamos relevancia, identidad, disponibilidad y
+                        procedencia.
+                    </li>
+                    <li>
+                        <strong>Verificación:</strong> contrastamos las afirmaciones y separamos
+                        reported, measured, estimated, calculated y anecdotal.
+                    </li>
+                    <li>
+                        <strong>Prueba:</strong> cuando procede, ejecutamos o reproducimos la
+                        evidencia.
+                    </li>
+                    <li>
+                        <strong>Decisión:</strong> candidato para Atlas/LEONES, mantener en
+                        observación o descartar.
+                    </li>
+                    <li>
+                        <strong>Aprendizaje:</strong> una integración válida puede modificar datos,
+                        reglas, adaptadores, benchmarks o recomendaciones.
+                    </li>
+                </ol>
+                <p>
+                    Este flujo sigue la regla del proyecto:
+                    <strong
+                        >descubrimiento → evidencia → verificación → perfil → recomendación</strong
+                    >. No se introduce una pieza en Atlas solo porque alguien la haya recomendado.
+                </p>
+            </section>
+        </main>
+        <script>
+            const form = document.getElementById("recommendation-form"),
+                result = document.getElementById("result");
+            let payload = null;
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const checks = [...form.querySelectorAll("input[type=checkbox]:checked")].map(
+                    (x) => x.value,
+                );
+                const evidence = document.getElementById("evidence").value;
+                let score = 0;
+                if (document.getElementById("url").value) score += 2;
+                if (document.getElementById("why").value.length >= 80) score += 2;
+                if (evidence === "Lo he probado personalmente") score += 3;
+                else if (evidence === "Hay benchmark o medición pública") score += 3;
+                else if (evidence === "Hay documentación técnica") score += 2;
+                if (checks.length) score += Math.min(2, checks.length);
+                let stage =
+                    score >= 8
+                        ? "Alta prioridad de verificación"
+                        : score >= 5
+                          ? "Candidato para triage"
+                          : "Descubrimiento para observación";
+                let explain =
+                    score >= 8
+                        ? "Tiene suficiente señal inicial para pasar rápidamente a comprobación de evidencia."
+                        : score >= 5
+                          ? "La propuesta parece útil, pero necesita contraste antes de incorporarse al conocimiento de LEONES."
+                          : "La propuesta queda registrada como pista; necesitamos más evidencia para justificar trabajo de integración.";
+                payload = {
+                    schema: "leones-user-recommendation/v1",
+                    received_at: new Date().toISOString(),
+                    name: document.getElementById("name").value,
+                    url: document.getElementById("url").value,
+                    type: document.getElementById("type").value,
+                    pillar: document.getElementById("area").value,
+                    why: document.getElementById("why").value,
+                    signals: checks,
+                    evidence,
+                    contact: document.getElementById("contact").value || null,
+                    triage: { score, stage },
+                };
+                document.getElementById("score").textContent = "Señal inicial: " + score + "/10";
+                document.getElementById("stage").textContent = stage;
+                document.getElementById("explain").textContent =
+                    explain + " La puntuación no decide la integración: solo ordena la revisión.";
+                result.style.display = "block";
+                result.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
+            document.getElementById("github").addEventListener("click", () => {
+                if (!payload) return;
+                const title = encodeURIComponent("Recomendación de usuario · " + payload.name);
+                const body = encodeURIComponent(
+                    "## Recomendación de usuario\n\n" +
+                        JSON.stringify(
+                            {
+                                ...payload,
+                                contact: payload.contact ? "[contacto proporcionado]" : null,
+                            },
+                            null,
+                            2,
+                        ) +
+                        "\n\n### Proceso LEONES\nTratar como descubrimiento externo. Verificar antes de Atlas.",
+                );
+                window.open(
+                    "https://github.com/robertosantosx2/LEONES/issues/new?title=" +
+                        title +
+                        "&body=" +
+                        body,
+                    "_blank",
+                    "noopener",
+                );
+            });
+            document.getElementById("download").addEventListener("click", () => {
+                if (!payload) return;
+                const blob = new Blob([JSON.stringify(payload, null, 2)], {
+                    type: "application/json",
+                });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "leones-user-recommendation.json";
+                a.click();
+                URL.revokeObjectURL(a.href);
+            });
+        </script>
+        <script src="assets/js/navigation.js" defer></script>
+    </body>
+</html>
