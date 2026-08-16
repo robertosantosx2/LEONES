@@ -1,0 +1,44 @@
+name: Validar recomendaciones de usuarios
+
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  validate:
+    if: >-
+      (github.event_name == 'issues' && github.event.action == 'opened') ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request == null)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Procesar recomendación
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || github.event.issue.number }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+          issue="$ISSUE_NUMBER"
+          body="$COMMENT_BODY"
+          author="$COMMENT_AUTHOR"
+
+          if [[ "$EVENT_NAME" == "issues" ]]; then
+            gh issue edit "$issue" --repo "$OWNER/$REPO" --add-label "user-recommendation,needs-review" || true
+            gh issue comment "$issue" --repo "$OWNER/$REPO" --body "🦁 **LEONES:** recomendación recibida. Queda en cola de revisión como descubrimiento externo.\n\nCuando el responsable valide la entrada, responderá exactamente **OK LEONES**." || true
+            exit 0
+          fi
+
+          normalized="$(printf '%s' "$body" | tr '[:lower:]' '[:upper:]' | tr -d '[:space:]')"
+          if [[ "$normalized" == "OKLEONES" && "$author" == "robertosantosx2" ]]; then
+            gh issue edit "$issue" --repo "$OWNER/$REPO" --remove-label "needs-review" --add-label "validated-by-owner" || true
+            gh issue comment "$issue" --repo "$OWNER/$REPO" --body "✅ **OK LEONES recibido.** La recomendación queda validada por el responsable y pasa a la siguiente fase: evidencia → verificación → perfil → decisión de integración.\n\nLa validación autoriza a investigar la propuesta; **no convierte automáticamente sus afirmaciones en evidencia ni la incorpora directamente al Atlas**." || true
+          fi
