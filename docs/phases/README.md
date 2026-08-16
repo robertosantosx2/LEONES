@@ -82,17 +82,17 @@ Automatización diaria de descubrimiento, filtro OSI, prioridad Copyleft, enriqu
 
 Establece la documentación como condición de cierre y define arquitectura, decisiones, validación, trazabilidad, estados y enlaces obligatorios.
 
-### 🔵 H06 — 2026-08 — Open LLM Atlas ampliado — SIGUIENTE
+### 🟢 H06 — 2026-08 — Open LLM Atlas ampliado — ACEPTADA
 
-[`atlas/README.md`](../../atlas/README.md)
+[`2026-08-atlas-expanded/`](2026-08-atlas-expanded/)
 
-**Siguiente unidad prioritaria de trabajo.** Objetivo: ampliar y depurar el conocimiento estructurado de modelos, familias, organizaciones, benchmarks y procedencia; consolidar contratos de evidencia; y preparar una base sólida para la evolución sistemática de JGB, hardware y recomendación.
+**ACEPTADA / OPERATIVA.** Establece la frontera de conocimiento canónico: identidad → evidencia → quality gate → promoción `verified-only`. La auditoría actual mantiene `unknown`/`unverified` cuando falta evidencia y no rellena artificialmente el catálogo.
 
-H06 no está aceptado todavía. Su estado se mantiene explícitamente separado del verde de H10.
+### 🟡 H07 — 2026-08 — Índice JGB sistemático — SIGUIENTE
 
-### 🟡 H07 — 2026-08 — Índice JGB sistemático
+[`2026-08-jgb-systematic/`](2026-08-jgb-systematic/)
 
-Consolidación de cobertura, evidencia y aplicación sistemática del criterio de apertura/libertad al conjunto de modelos.
+**Siguiente unidad prioritaria.** Consolidación de cobertura, evidencia primaria y aplicación reproducible del criterio JGB al conjunto de candidatos, manteniendo separadas apertura, rendimiento, precio y viabilidad.
 
 ### 🟡 H08 — 2026-08 — Matriz completa de hardware
 
@@ -119,9 +119,9 @@ Las capacidades aceptadas disponen de referencia Hxx y paquete documental. Las �
 ```text
 H10 CERRADA 🟢
       ↓
-H06 ATLAS AMPLIADO 🔵  ← SIGUIENTE
+H06 ATLAS AMPLIADO CERRADA 🟢
       ↓
-H07 JGB SISTEMÁTICO 🟡
+H07 JGB SISTEMÁTICO 🟡  ← SIGUIENTE
       ↓
 H08 MATRIZ HARDWARE 🟡  ← infraestructura documentada
       ↓
