@@ -15,7 +15,7 @@ Los paquetes de fase son la unidad documental de cierre de las grandes etapas de
 IMPLEMENTAR → VALIDAR → ACEPTAR → DOCUMENTAR PROFUSAMENTE → ENLAZAR → CERRAR
 ```
 
-## Guías pedagógicas de mantenimiento
+## Guías de mantenimiento
 
 - [H01/H02 — precios e integración](../completed/H01-H02-HARDWARE-PRICES.md)
 - [H03 — ranking económico](../completed/H03-ECONOMIC-RANKING.md)
@@ -23,7 +23,8 @@ IMPLEMENTAR → VALIDAR → ACEPTAR → DOCUMENTAR PROFUSAMENTE → ENLAZAR → 
 - [H05 — sistema documental](../completed/H05-DOCUMENTATION-SYSTEM.md)
 - [H08 — matriz de hardware](../completed/H08-HARDWARE-MATRIX.md)
 - [H09 — CABE/RULA](../completed/H09-CABE-RULA.md)
-- [Benchmarks medidos — evidencia empírica](../completed/BENCHMARK-MEASURED-EVIDENCE.md)
+- [Benchmarks medidos](../completed/BENCHMARK-MEASURED-EVIDENCE.md)
+- [Validación física](../completed/PHYSICAL-BENCHMARK-VALIDATION.md)
 - [H10 — pipeline Atlas → recomendador](../completed/H10-ATLAS-RECOMMENDER-PIPELINE.md)
 
 ## Fases
@@ -88,9 +89,11 @@ Infraestructura del contrato documentada. La cobertura empírica física permane
 
 **ACEPTADA mediante Run #18.** Prospección → evidencia → ingesta → evidencia técnica → calidad → hipótesis → matriz → recomendador → enriquecimiento → validación → publicación.
 
-## Resultado de la auditoría
+## Auditoría actual
 
-Las capacidades aceptadas disponen de referencia Hxx y documentación. Las áreas en evolución no se presentan como terminadas. H08 y H09 mantienen abierto únicamente el trabajo empírico físico; H07 mantiene abierta la evidencia primaria real por modelo.
+Las capacidades aceptadas disponen de referencia Hxx y documentación. H07 mantiene abierta únicamente la evidencia primaria real por modelo. H08/H09 y el circuito de benchmarks mantienen abierta únicamente la cobertura empírica física.
+
+El **protocolo de validación física está cerrado**; no se abre una nueva tarea de infraestructura para ello. Las futuras ejecuciones reales se incorporarán cuando corresponda.
 
 ## Orden de trabajo vigente
 
@@ -101,11 +104,11 @@ H06 CERRADA 🟢
       ↓
 H07 CERRADA 🟢
       ↓
-H08 MATRIZ HARDWARE 🟡 ← SIGUIENTE
+H08 MATRIZ HARDWARE 🟡
       ↓
 H09 CABE / RULA 🟡
       ↓
-BENCHMARKS REALES
+BENCHMARKS REALES 🟡
       ↓
 AGENTIC / LB
       ↓
