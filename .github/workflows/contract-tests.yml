@@ -37,32 +37,27 @@ jobs:
               print(f'OK {path}')
           PY
 
+      - name: Run semantic contract tests
+        shell: bash
+        run: python -m unittest discover -s tests/contracts -p 'test_*.py' -v
+
       - name: Check contract invariants
         shell: bash
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-
           schemas = {p.name: json.loads(p.read_text(encoding='utf-8')) for p in Path('schemas').glob('*.json')}
-
           evidence = schemas['atlas-evidence-contract-v1.json']
           promotion = schemas['promotion-quality-gate-v1.json']
           router = schemas['atlas-router-contract-v1.json']
-
           assert evidence['properties']['contract_version']['const'] == '1.0'
           assert promotion['properties']['contract_version']['const'] == '1.0'
           assert router['properties']['contract_version']['const'] == '1.0'
-
           states = evidence['properties']['evidence']['items']['properties']['verification_state']['enum']
           assert set(['VERIFIED', 'ESTIMATED', 'UNVERIFIED', 'DISPUTED', 'STALE']).issubset(states)
-
-          osi_modes = router['properties']['request']['properties']['osi_mode']['enum']
-          assert osi_modes == ['OPEN_ALL', 'FORCE_COPYLEFT_CHECK']
-
-          promotion_state = promotion['properties']['promotion']['properties']['state']['enum']
-          assert 'PROMOTED' in promotion_state
-
+          assert router['properties']['request']['properties']['osi_mode']['enum'] == ['OPEN_ALL', 'FORCE_COPYLEFT_CHECK']
+          assert 'PROMOTED' in promotion['properties']['promotion']['properties']['state']['enum']
           print('All contract invariants passed')
           PY
 
