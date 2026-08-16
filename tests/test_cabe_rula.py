@@ -1,11 +1,16 @@
-"""Pruebas de las fronteras oficiales CABE/RULA.
+"""Pruebas del contrato oficial CABE/RULA.
 
 Las fronteras son especialmente importantes: un cambio accidental de < a <=
 puede clasificar de forma distinta todos los modelos que estén justo en el
 límite. Por eso probamos explícitamente 1, 10 y 100 tok/s.
+
+También probamos valores imposibles. Una medición infinita no significa que el
+modelo sea extraordinariamente rápido: significa que el dato está roto y debe
+rechazarse antes de llegar al recomendador o al Atlas.
 """
 
 import importlib.util
+import math
 from pathlib import Path
 
 
@@ -49,3 +54,19 @@ def test_negative_is_invalid():
     except ValueError:
         return
     raise AssertionError("Una velocidad negativa debe rechazarse")
+
+
+def test_nan_is_invalid():
+    try:
+        classify(math.nan)
+    except ValueError:
+        return
+    raise AssertionError("NaN debe rechazarse")
+
+
+def test_infinity_is_invalid():
+    try:
+        classify(math.inf)
+    except ValueError:
+        return
+    raise AssertionError("infinito debe rechazarse")
