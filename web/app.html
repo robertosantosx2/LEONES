@@ -1,10 +1,101 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="description" content="Aplicación de LEONES para orientar pruebas locales de hardware, modelos, runtimes y evaluación."/><title>LEONES · Aplicación</title><link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3"/><link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-2"/></head>
-<body><header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Aplicación</span><h1>LEONES · Aplicación</h1><p>Elige una necesidad y recibe el siguiente paso. La aplicación orienta; las pruebas reales se ejecutan en tu equipo.</p></div></header>
-<main class="site-main" id="main">
-<section class="app-layout" aria-labelledby="actions-title"><aside class="app-panel"><span class="site-tag">Acciones</span><h2 id="actions-title">¿Qué quieres hacer?</h2><p>Selecciona una acción. El recorrido se construirá sin ocultar qué herramienta debes ejecutar.</p><div class="app-actions"><button class="app-action" type="button" data-goal="hardware"><img src="assets/graphics/leones-logo-principal.jpg" alt=""/><span><strong>Saber qué puede hacer mi PC</strong><span>Diagnóstico → candidatos → medición.</span></span></button><button class="app-action" type="button" data-goal="model"><img src="assets/graphics/leones-logo-principal.jpg" alt=""/><span><strong>Probar un modelo</strong><span>Identidad → inferencia → evidencia.</span></span></button><button class="app-action" type="button" data-goal="agent"><img src="assets/graphics/leones-logo-principal.jpg" alt=""/><span><strong>Evaluar un agente</strong><span>Runtime → evaluación → tareas reales.</span></span></button><button class="app-action" type="button" data-goal="recommend"><img src="assets/graphics/leones-logo-principal.jpg" alt=""/><span><strong>Obtener una recomendación</strong><span>Tarea + hardware → ruta provisional.</span></span></button><button class="app-action" type="button" data-goal="research"><img src="assets/graphics/leones-logo-principal.jpg" alt=""/><span><strong>Investigar cambios</strong><span>Prospección → revisión → Atlas.</span></span></button><button class="app-action" type="button" data-goal="share"><img src="assets/graphics/leones-logo-principal.jpg" alt=""/><span><strong>Formar parte de la Manada</strong><span>Medir → privacidad → compartir.</span></span></button></div></aside>
-<section class="app-panel app-panel--sticky" aria-labelledby="next-title"><span class="app-step">Siguiente paso</span><h2 id="next-title">Selecciona una acción</h2><p id="next-text">Aquí aparecerá qué debes hacer y el comando correspondiente.</p><div class="app-progress" aria-label="Progreso"><span id="progress"></span></div><div id="command" class="app-command">Selecciona una acción en la columna izquierda.</div><div class="app-controls"><button class="app-button" id="copy" type="button" disabled>Copiar comando</button><button class="app-button app-button--secondary" id="done" type="button" disabled>He terminado</button></div><p class="app-message" id="message" role="status"></p></section></section>
-<section class="site-section" aria-labelledby="map-title"><h2 id="map-title">Mapa del recorrido</h2><pre class="site-stack">NECESIDAD
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+            name="description"
+            content="Aplicación de LEONES para orientar pruebas locales de hardware, modelos, runtimes y evaluación."
+        />
+        <title>LEONES · Aplicación</title>
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3" />
+        <link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-2" />
+    </head>
+    <body>
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <span class="site-tag">Aplicación</span>
+                <h1>LEONES · Aplicación</h1>
+                <p>
+                    Elige una necesidad y recibe el siguiente paso. La aplicación orienta; las
+                    pruebas reales se ejecutan en tu equipo.
+                </p>
+            </div>
+        </header>
+        <main class="site-main" id="main">
+            <section class="app-layout" aria-labelledby="actions-title">
+                <aside class="app-panel">
+                    <span class="site-tag">Acciones</span>
+                    <h2 id="actions-title">¿Qué quieres hacer?</h2>
+                    <p>
+                        Selecciona una acción. El recorrido se construirá sin ocultar qué
+                        herramienta debes ejecutar.
+                    </p>
+                    <div class="app-actions">
+                        <button class="app-action" type="button" data-goal="hardware">
+                            <img src="assets/graphics/leones-logo-principal.jpg" alt="" /><span
+                                ><strong>Saber qué puede hacer mi PC</strong
+                                ><span>Diagnóstico → candidatos → medición.</span></span
+                            ></button
+                        ><button class="app-action" type="button" data-goal="model">
+                            <img src="assets/graphics/leones-logo-principal.jpg" alt="" /><span
+                                ><strong>Probar un modelo</strong
+                                ><span>Identidad → inferencia → evidencia.</span></span
+                            ></button
+                        ><button class="app-action" type="button" data-goal="agent">
+                            <img src="assets/graphics/leones-logo-principal.jpg" alt="" /><span
+                                ><strong>Evaluar un agente</strong
+                                ><span>Runtime → evaluación → tareas reales.</span></span
+                            ></button
+                        ><button class="app-action" type="button" data-goal="recommend">
+                            <img src="assets/graphics/leones-logo-principal.jpg" alt="" /><span
+                                ><strong>Obtener una recomendación</strong
+                                ><span>Tarea + hardware → ruta provisional.</span></span
+                            ></button
+                        ><button class="app-action" type="button" data-goal="research">
+                            <img src="assets/graphics/leones-logo-principal.jpg" alt="" /><span
+                                ><strong>Investigar cambios</strong
+                                ><span>Prospección → revisión → Atlas.</span></span
+                            ></button
+                        ><button class="app-action" type="button" data-goal="share">
+                            <img src="assets/graphics/leones-logo-principal.jpg" alt="" /><span
+                                ><strong>Formar parte de la Manada</strong
+                                ><span>Medir → privacidad → compartir.</span></span
+                            >
+                        </button>
+                    </div>
+                </aside>
+                <section class="app-panel app-panel--sticky" aria-labelledby="next-title">
+                    <span class="app-step">Siguiente paso</span>
+                    <h2 id="next-title">Selecciona una acción</h2>
+                    <p id="next-text">
+                        Aquí aparecerá qué debes hacer y el comando correspondiente.
+                    </p>
+                    <div class="app-progress" aria-label="Progreso">
+                        <span id="progress"></span>
+                    </div>
+                    <div id="command" class="app-command">
+                        Selecciona una acción en la columna izquierda.
+                    </div>
+                    <div class="app-controls">
+                        <button class="app-button" id="copy" type="button" disabled>
+                            Copiar comando</button
+                        ><button
+                            class="app-button app-button--secondary"
+                            id="done"
+                            type="button"
+                            disabled
+                        >
+                            He terminado
+                        </button>
+                    </div>
+                    <p class="app-message" id="message" role="status"></p>
+                </section>
+            </section>
+            <section class="site-section" aria-labelledby="map-title">
+                <h2 id="map-title">Mapa del recorrido</h2>
+                <pre class="site-stack">
+NECESIDAD
    ↓
 HARDWARE → MODELO → RUNTIME → INFERENCIA
                          ↓
@@ -16,8 +107,133 @@ HARDWARE → MODELO → RUNTIME → INFERENCIA
                          ↓
                  MANADA (voluntario)
                          ↓
-              ESTADÍSTICAS → ROUTER</pre><p class="site-note">El mapa explica el proceso. No sustituye las mediciones reales.</p></section>
-<section class="site-section" aria-labelledby="tools-title"><h2 id="tools-title">Herramientas por necesidad</h2><div class="site-table-wrap"><table class="site-table"><thead><tr><th>Pregunta</th><th>Herramienta</th><th>Momento</th></tr></thead><tbody><tr><td>¿Qué máquina tengo?</td><td><code>leones-hardware.py</code></td><td>Inicio</td></tr><tr><td>¿Qué modelo?</td><td><code>leones-model.py</code></td><td>Antes de medir</td></tr><tr><td>¿Cómo rinde?</td><td><code>leones-infer.py</code></td><td>Comparación</td></tr><tr><td>¿Puede hacer tareas?</td><td><code>leones-evaluacion.py</code></td><td>Capacidad agentiva</td></tr><tr><td>¿Qué evidencia tengo?</td><td><code>leones-report.py</code></td><td>Antes de compartir</td></tr><tr><td>¿Puedo publicarlo?</td><td><code>leones-publish.py</code></td><td>Después de privacidad</td></tr></tbody></table></div></section>
-<section class="site-section" aria-labelledby="guide-title"><span class="site-tag">Antes de ejecutar</span><h2 id="guide-title">Cómo interpretar una orientación</h2><div class="site-grid"><article class="site-card"><h3>Es una ruta, no una promesa</h3><p>La herramienta orienta la siguiente prueba. La recomendación definitiva debe apoyarse en evidencia del hardware y carga de trabajo reales.</p></article><article class="site-card"><h3>Contexto importa</h3><p>La memoria necesaria no son solo los pesos. Contexto, caché KV, runtime y concurrencia cambian la viabilidad.</p></article><article class="site-card"><h3>Mide la tarea que importa</h3><p>Un tok/s alto no garantiza mejor experiencia. Coding, RAG, herramientas y agentes requieren pruebas específicas.</p></article><article class="site-card"><h3>Lo desconocido se conserva</h3><p>Si una métrica no puede medirse de forma fiable, debe permanecer desconocida y no convertirse artificialmente en cero.</p></article></div></section>
-<section class="site-section" aria-labelledby="router-title"><h2 id="router-title">Ruta provisional</h2><p>Esta pequeña herramienta sirve para orientar la siguiente prueba. No es el motor definitivo de Router ni una garantía de rendimiento.</p><div class="app-form"><div class="app-field"><label for="task">Tarea</label><select id="task"><option>Coding</option><option>Chat</option><option>RAG</option><option>Agente</option></select></div><div class="app-field"><label for="ram">RAM (GB)</label><input id="ram" type="number" min="0" value="16"/></div><div class="app-field"><label for="vram">VRAM (GB)</label><input id="vram" type="number" min="0" value="0"/></div><div class="app-field"><label for="backend">Runtime</label><select id="backend"><option>llama.cpp</option><option>Ollama</option><option>vLLM</option><option>Transformers</option><option>MLX</option></select></div></div><p><button class="app-button" id="route" type="button">Calcular ruta</button></p><div class="site-note" id="route-result">Introduce las condiciones y calcula una orientación inicial.</div></section>
-</main><script src="assets/js/navigation.js?v=2026-08-16-3" defer></script><script src="assets/js/app.js?v=2026-08-16-1" defer></script></body></html>
+              ESTADÍSTICAS → ROUTER</pre>
+                <p class="site-note">
+                    El mapa explica el proceso. No sustituye las mediciones reales.
+                </p>
+            </section>
+            <section class="site-section" aria-labelledby="tools-title">
+                <h2 id="tools-title">Herramientas por necesidad</h2>
+                <div class="site-table-wrap">
+                    <table class="site-table">
+                        <thead>
+                            <tr>
+                                <th>Pregunta</th>
+                                <th>Herramienta</th>
+                                <th>Momento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>¿Qué máquina tengo?</td>
+                                <td><code>leones-hardware.py</code></td>
+                                <td>Inicio</td>
+                            </tr>
+                            <tr>
+                                <td>¿Qué modelo?</td>
+                                <td><code>leones-model.py</code></td>
+                                <td>Antes de medir</td>
+                            </tr>
+                            <tr>
+                                <td>¿Cómo rinde?</td>
+                                <td><code>leones-infer.py</code></td>
+                                <td>Comparación</td>
+                            </tr>
+                            <tr>
+                                <td>¿Puede hacer tareas?</td>
+                                <td><code>leones-evaluacion.py</code></td>
+                                <td>Capacidad agentiva</td>
+                            </tr>
+                            <tr>
+                                <td>¿Qué evidencia tengo?</td>
+                                <td><code>leones-report.py</code></td>
+                                <td>Antes de compartir</td>
+                            </tr>
+                            <tr>
+                                <td>¿Puedo publicarlo?</td>
+                                <td><code>leones-publish.py</code></td>
+                                <td>Después de privacidad</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <section class="site-section" aria-labelledby="guide-title">
+                <span class="site-tag">Antes de ejecutar</span>
+                <h2 id="guide-title">Cómo interpretar una orientación</h2>
+                <div class="site-grid">
+                    <article class="site-card">
+                        <h3>Es una ruta, no una promesa</h3>
+                        <p>
+                            La herramienta orienta la siguiente prueba. La recomendación definitiva
+                            debe apoyarse en evidencia del hardware y carga de trabajo reales.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Contexto importa</h3>
+                        <p>
+                            La memoria necesaria no son solo los pesos. Contexto, caché KV, runtime
+                            y concurrencia cambian la viabilidad.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Mide la tarea que importa</h3>
+                        <p>
+                            Un tok/s alto no garantiza mejor experiencia. Coding, RAG, herramientas
+                            y agentes requieren pruebas específicas.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>Lo desconocido se conserva</h3>
+                        <p>
+                            Si una métrica no puede medirse de forma fiable, debe permanecer
+                            desconocida y no convertirse artificialmente en cero.
+                        </p>
+                    </article>
+                </div>
+            </section>
+            <section class="site-section" aria-labelledby="router-title">
+                <h2 id="router-title">Ruta provisional</h2>
+                <p>
+                    Esta pequeña herramienta sirve para orientar la siguiente prueba. No es el motor
+                    definitivo de Router ni una garantía de rendimiento.
+                </p>
+                <div class="app-form">
+                    <div class="app-field">
+                        <label for="task">Tarea</label
+                        ><select id="task">
+                            <option>Coding</option>
+                            <option>Chat</option>
+                            <option>RAG</option>
+                            <option>Agente</option>
+                        </select>
+                    </div>
+                    <div class="app-field">
+                        <label for="ram">RAM (GB)</label
+                        ><input id="ram" type="number" min="0" value="16" />
+                    </div>
+                    <div class="app-field">
+                        <label for="vram">VRAM (GB)</label
+                        ><input id="vram" type="number" min="0" value="0" />
+                    </div>
+                    <div class="app-field">
+                        <label for="backend">Runtime</label
+                        ><select id="backend">
+                            <option>llama.cpp</option>
+                            <option>Ollama</option>
+                            <option>vLLM</option>
+                            <option>Transformers</option>
+                            <option>MLX</option>
+                        </select>
+                    </div>
+                </div>
+                <p><button class="app-button" id="route" type="button">Calcular ruta</button></p>
+                <div class="site-note" id="route-result">
+                    Introduce las condiciones y calcula una orientación inicial.
+                </div>
+            </section>
+        </main>
+        <script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
+        <script src="assets/js/app.js?v=2026-08-16-1" defer></script>
+    </body>
+</html>
