@@ -1,148 +1,147 @@
 # H06.1 — Auditoría inicial del Open LLM Atlas
 
 **Fecha:** 16/08/2026  
-**Estado:** 🟡 auditoría inicial completada; correcciones pendientes.
+**Estado:** 🟡 auditoría inicial completada; inventario oficial todavía vacío.
 
 ## 1. Resultado ejecutivo
 
-La auditoría documental confirma que LEONES ya tiene una **base de contrato sólida** para H06:
+La revisión directa del repositorio confirma un hecho importante: **el catálogo oficial del Atlas todavía no contiene registros**.
 
-- `atlas/schema.json` define un registro estructurado y exige `id`, `kind`, `name` y `evidence`.
-- El catálogo de tipos distingue modelo, familia, organización, runtime, backend, cuantización, herramienta, benchmark, hardware, conocimiento y experimento.
-- Existe separación explícita entre apertura/JGB, recomendación, sistema del modelo, hardware, evidencia externa, experimentos, evaluación y flags de calidad.
-- `atlas/INGEST.md` establece procedencia, estados de evidencia, compatibilidad de ejecución, requisitos de medición y reglas de privacidad.
-- `atlas/README.md` establece la relación del Atlas con H10, Router, MANADA, CABE y RULA.
+`atlas/catalog.json` declara `atlas_version: 0.2` y `records: []`. fileciteturn126file0L2-L2
 
-Por tanto, **el problema principal de H06 no es la ausencia de arquitectura**, sino demostrar y automatizar la cobertura y calidad del conocimiento que entra en esa arquitectura.
+`atlas/seed.json` también está deliberadamente vacío y explica que no se incorporan modelos sin evidencia. fileciteturn127file0L2-L2
 
-## 2. Contrato estructural observado
+Por tanto, H06.1 no debe tratarse como una auditoría de "calidad de 209 modelos dentro del Atlas oficial". Los **209 modelos observados en H10 pertenecen al pipeline de recomendación/ingesta de esa ejecución**, y no deben presentarse como 209 registros ya aceptados dentro de `atlas/catalog.json`.
 
-El esquema actual obliga a que cada registro tenga:
+Esta distinción es crítica para mantener la trazabilidad.
 
-```text
-id
-kind
-name
-evidence
-```
+## 2. Base estructural
 
-`kind` está restringido a diez categorías funcionales principales: model, family, organization, runtime, backend, quantization, tool, benchmark, hardware, knowledge y experiment. fileciteturn116file0L2-L2
+El Atlas sí dispone de una base de contrato sólida:
 
-El esquema dispone además de estructuras para:
+- `atlas/schema.json` define registros estructurados.
+- La ingesta exige `id`, `kind`, `name` y estado de evidencia.
+- Existen categorías para modelo, familia, organización, runtime, backend, cuantización, herramienta, benchmark, hardware, conocimiento y experimento.
+- El contrato contempla evidencia externa, experimentos, evaluación y flags de calidad.
+- `atlas/INGEST.md` establece procedencia, privacidad y compatibilidad de ejecución.
 
-- arquitectura y artefactos;
-- ejecución;
-- recomendación;
-- parámetros y memoria del sistema de modelo;
-- hardware;
-- evidencia externa;
-- experimentos y evaluación;
-- quality flags;
-- evidencia y ciclo de vida.
+El sistema está preparado para recibir conocimiento, pero **todavía no tiene conocimiento oficial cargado**.
 
-Esto es suficiente para iniciar la auditoría de datos sin cambiar todavía el contrato principal.
+## 3. Inventario comprobado
 
-## 3. Evidencia
+| Elemento | Estado actual | Conclusión H06.1 |
+|---|---|---|
+| `atlas/catalog.json` | `records: []` | 🟡 Vacío |
+| `atlas/seed.json` | `records: []` | 🟡 Vacío deliberadamente |
+| `atlas/schema.json` | Existe | 🟢 Contrato disponible |
+| `atlas/INGEST.md` | Existe | 🟢 Reglas disponibles |
+| Fuentes empíricas | Catalogadas | 🟢 Base de investigación |
+| Pipeline H10 | Operativo/aceptado | 🟢 Genera conocimiento intermedio |
+| Atlas oficial poblado | No | 🔴 Pendiente H06 |
 
-El contrato reconoce cuatro estados:
+## 4. Consecuencia arquitectónica
 
-```text
-reported
-   ↓
-reproducible
-   ↓
-verified
+No vamos a copiar automáticamente el output de H10 dentro del Atlas oficial.
 
-rejected = fuera de agregados oficiales
-```
-
-También distingue `external`, `manada`, `leones_measurement`, `documentary` y `unknown` como tipos de evidencia. fileciteturn116file0L2-L2
-
-La documentación de ingesta confirma que las fuentes externas sirven para descubrimiento/contraste y no convierten automáticamente un dato en medición LEONES ni en `verified`. fileciteturn119file0L2-L2
-
-## 4. Calidad
-
-El esquema ya prevé estos flags:
-
-- `missing`
-- `unverified`
-- `stale`
-- `contradictory`
-- `duplicate`
-- `invalid_value`
-- `unsupported_claim`
-- `source_missing`
-- `identity_collision`
-- `inconsistent_units`
-
-Esto permite que H06.4 construya una auditoría automática sin tener que inventar un nuevo sistema de incidencias. fileciteturn116file0L2-L2
-
-## 5. Riesgos identificados
-
-### R1 — Cobertura cuantitativa
-
-El contrato está definido, pero esta auditoría documental no demuestra por sí sola cuántos registros reales existen ni qué porcentaje de campos está cubierto.
-
-**Acción:** localizar y auditar los datasets/feed reales utilizados por los workflows Atlas.
-
-### R2 — Identidad
-
-El esquema separa `family`, `organization`, `name` y `version`, pero la auditoría documental no demuestra todavía que no existan colisiones entre nombres, variantes, cuantizaciones o artefactos.
-
-**Acción:** H06.2 debe generar claves canónicas y detección de duplicados/colisiones.
-
-### R3 — Procedencia
-
-El contrato permite `external_evidence` con `source_type`, `url`, `retrieved_at`, `claim` y `source_record_id`, además del bloque general `evidence`. fileciteturn116file0L2-L2
-
-**Acción:** medir cuántos registros relevantes tienen realmente procedencia suficiente.
-
-### R4 — Datos externos frente a mediciones
-
-La separación conceptual está documentada correctamente, pero debe comprobarse automáticamente en los feeds y recomendaciones para evitar promociones indebidas.
-
-**Acción:** auditoría de consistencia H06.4/H06.5.
-
-### R5 — Recomendación
-
-El esquema permite `jgb`, `cabe`, `rula`, `fit_score`, `performance_score`, `economic_score` y `uncertainty` por separado. Esto es correcto y debe mantenerse.
-
-**Acción:** impedir que un score agregado sustituya a JGB, CABE, RULA o evidencia.
-
-## 6. Qué NO se cambia ahora
-
-No se cambia todavía:
-
-- el contrato de JGB;
-- la clasificación de apertura;
-- CABE/RULA;
-- el modelo de hardware;
-- el ranking económico;
-- el pipeline H10 ya aceptado.
-
-H06 debe mejorar primero la capa de conocimiento y su calidad.
-
-## 7. Próxima auditoría técnica
-
-La siguiente tarea debe ejecutarse sobre los archivos de datos reales:
+El flujo correcto debe ser:
 
 ```text
-1. localizar feeds Atlas
-2. contar registros por kind
-3. detectar IDs repetidos
-4. detectar nombres/identidades potencialmente duplicados
-5. medir campos vacíos
-6. medir procedencia
-7. medir estados de evidencia
-8. medir quality_flags
-9. detectar valores inválidos
-10. generar H06.1 coverage report
+PROSPECCIÓN / H10
+       ↓
+DATOS INTERMEDIOS
+       ↓
+IDENTIDAD
+       ↓
+NORMALIZACIÓN
+       ↓
+EVIDENCIA
+       ↓
+QUALITY GATE
+       ↓
+REVISIÓN / ACEPTACIÓN
+       ↓
+ATLAS OFICIAL
 ```
 
-## 8. Conclusión
+Esto evita que "aparece en el pipeline" se convierta accidentalmente en "conocimiento aceptado".
 
-**H06.1 no está cerrada como fase completa.** La auditoría documental sí queda cerrada como primera revisión del contrato: el esquema actual es suficientemente expresivo para continuar sin rediseño mayor.
+## 5. Auditoría de identidad
 
-La prioridad pasa ahora de **diseño** a **medición del inventario real**.
+No existen todavía registros oficiales suficientes para ejecutar una deduplicación sobre el catálogo: con `records: []`, el número de duplicados oficiales es **0 por ausencia de registros**, no porque se haya demostrado que 209 modelos sean únicos.
 
-> **No añadimos datos hasta saber exactamente qué tenemos, qué falta y qué calidad tiene lo que ya tenemos.**
+**Resultado:** H06.2 debe diseñar y ejecutar la deduplicación sobre el feed intermedio real antes de su promoción al Atlas.
+
+## 6. Auditoría de procedencia
+
+El contrato y la documentación de ingesta exigen procedencia y estados de evidencia. Las fuentes externas sirven para descubrimiento y contraste y no convierten automáticamente una afirmación en medición LEONES ni en `verified`. fileciteturn119file0L2-L2
+
+**Resultado:** 🟢 regla definida; 🟡 cobertura de procedencia del feed intermedio pendiente de medir.
+
+## 7. Auditoría de calidad
+
+El esquema contempla flags para `missing`, `unverified`, `stale`, `contradictory`, `duplicate`, `invalid_value`, `unsupported_claim`, `source_missing`, `identity_collision` e `inconsistent_units`.
+
+**Resultado:** 🟢 contrato preparado; 🟡 auditoría automática pendiente.
+
+## 8. Riesgos principales
+
+### R1 — Confundir pipeline con Atlas oficial
+
+Es el riesgo más importante detectado.
+
+**Solución:** mantener explícita la frontera entre feed/intermedio y catálogo oficial.
+
+### R2 — Promocionar datos sin evidencia suficiente
+
+**Solución:** quality gate obligatorio antes de escribir en `catalog.json`.
+
+### R3 — Duplicar modelos por variantes, cuantizaciones o artefactos
+
+**Solución:** identidad canónica antes de promoción.
+
+### R4 — Confundir puntuaciones con dimensiones independientes
+
+La apertura/JGB debe permanecer separada de rendimiento, precio, hardware, CABE y RULA.
+
+### R5 — Incorporar datos de hardware sin semántica suficiente
+
+El Atlas exige distinguir compute/FLOPS, memoria, almacenamiento, bandwidth e interconnect cuando estén disponibles.
+
+## 9. Próxima tarea: H06.2
+
+La siguiente unidad debe ser **identidad y deduplicación del feed intermedio real**, no rellenar manualmente `catalog.json`.
+
+Debe producir como mínimo:
+
+```text
+canonical_id
+organization
+family
+model
+variant
+artifact
+quantization
+runtime
+source
+source_record_id
+identity_confidence
+identity_collision
+```
+
+Y debe separar:
+
+```text
+modelo ≠ variante ≠ checkpoint ≠ cuantización ≠ runtime
+```
+
+## 10. Criterio de cierre H06.1
+
+H06.1 queda **cerrada como auditoría inicial documental y de inventario del catálogo oficial**, pero no como cierre de H06.
+
+### Resultado
+
+**Atlas oficial: 0 registros aceptados.**
+
+Esto no es un fallo: es el comportamiento deliberado del diseño actual, que evita incorporar conocimiento sin evidencia. fileciteturn126file0L2-L2
+
+> El siguiente objetivo no es "llenar el Atlas". Es construir un proceso seguro que permita llenarlo sin perder identidad, procedencia ni calidad.
