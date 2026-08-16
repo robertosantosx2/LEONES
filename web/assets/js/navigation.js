@@ -26,6 +26,7 @@
         ["Resultados", "resultados.html", "application"],
         ["Evaluación", "evaluacion.html", "application"],
         ["Recomendaciones", "recommendations.html", "application"],
+        ["Recomendaciones de visita", "recomendaciones-visita.html", "application"],
         ["Manada", "manada.html", "top"],
         ["Prospección", "prospeccion.html", "top"],
         ["Horizonte", "horizon.html", "top"],
@@ -50,9 +51,7 @@
     }
 
     function renderNavigation() {
-        if (document.querySelector(".leones-nav-runtime")) {
-            return;
-        }
+        if (document.querySelector(".leones-nav-runtime")) return;
 
         document.body.classList.add("has-leones-navigation");
 
@@ -68,7 +67,6 @@
 
         const breadcrumb = document.createElement("div");
         breadcrumb.className = "site-crumb";
-
         const breadcrumbInner = document.createElement("div");
         breadcrumbInner.className = "site-crumb-inner";
 
@@ -123,15 +121,12 @@
 
         const brand = document.createElement("div");
         brand.className = "site-brand";
-
         const brandLink = document.createElement("a");
         brandLink.href = "index.html";
         brandLink.setAttribute("aria-label", "LEONES · Inicio");
-
         const brandImage = document.createElement("img");
         brandImage.src = "assets/graphics/leones-logo-principal.svg";
         brandImage.alt = "LEONES";
-
         brandLink.appendChild(brandImage);
         brand.appendChild(brandLink);
         sidebar.appendChild(brand);
@@ -141,17 +136,12 @@
         title.textContent = "Navegación";
         sidebar.appendChild(title);
 
-        navigation.forEach((item) => {
-            sidebar.appendChild(createLink(item));
-        });
-
+        navigation.forEach((item) => sidebar.appendChild(createLink(item)));
         navigationRoot.appendChild(sidebar);
         document.body.prepend(navigationRoot);
 
         const main = document.querySelector("main");
-        if (main && !main.id) {
-            main.id = "main";
-        }
+        if (main && !main.id) main.id = "main";
 
         const closeMenu = () => {
             sidebar.classList.remove("is-open");
@@ -165,17 +155,12 @@
             backdrop.classList.toggle("is-open", isOpen);
             toggle.setAttribute("aria-expanded", String(isOpen));
         });
-
         backdrop.addEventListener("click", closeMenu);
         sidebar.addEventListener("click", (event) => {
-            if (event.target.closest("a")) {
-                closeMenu();
-            }
+            if (event.target.closest("a")) closeMenu();
         });
         document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") {
-                closeMenu();
-            }
+            if (event.key === "Escape") closeMenu();
         });
     }
 
