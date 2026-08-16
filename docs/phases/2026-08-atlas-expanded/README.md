@@ -1,12 +1,12 @@
 # H06 — Open LLM Atlas ampliado
 
-**Estado: 🔵 SIGUIENTE / EN INICIO**
+**Estado: 🟡 IMPLEMENTACIÓN COMPLETA / ACEPTACIÓN CI PENDIENTE.**
 
 ## Objetivo
 
 Ampliar y depurar el Open LLM Atlas como capa estructurada de conocimiento de LEONES, aumentando cobertura, procedencia, calidad y trazabilidad de modelos, familias, organizaciones, variantes, runtimes, benchmarks y evidencia.
 
-H06 se apoya en la infraestructura diaria H10, que ya está aceptada, pero su aceptación será independiente.
+H06 se apoya en la infraestructura diaria H10, que ya está aceptada, pero su aceptación es independiente.
 
 ## Principio rector
 
@@ -28,9 +28,35 @@ VALIDAR
 PUBLICAR
 ```
 
-El Atlas no será simplemente un catálogo de nombres: cada dato relevante debe poder distinguir entre información reportada, reproducible, verificada o desconocida.
+## Resultado de la fase
 
-## Alcance inicial
+H06 ya dispone de la capa que faltaba entre el feed operativo y el Atlas canónico:
+
+```text
+atlas_feed.csv
+      ↓
+atlas_identity_audit.py
+      ↓
+atlas_quality_audit.py
+      ↓
+atlas_promote_verified.py
+      ↓
+atlas/catalog.json
+```
+
+La promoción es **verified-only**, no destructiva y no inventa valores. El workflow `.github/workflows/atlas-h06.yml` automatiza pruebas, auditorías, promoción y validación contra JSON Schema.
+
+## Documentación
+
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — arquitectura canónica.
+- [`COVERAGE-AUDIT.md`](COVERAGE-AUDIT.md) — auditoría de cobertura.
+- [`IDENTITY-RULES.md`](IDENTITY-RULES.md) — identidad y deduplicación.
+- [`EVIDENCE-RULES.md`](EVIDENCE-RULES.md) — reglas de evidencia.
+- [`DECISIONS.md`](DECISIONS.md) — decisiones de arquitectura.
+- [`VALIDATION.md`](VALIDATION.md) — validación automatizada.
+- [`H06_FINAL.md`](H06_FINAL.md) — informe de cierre técnico.
+
+## Alcance
 
 1. Modelos y variantes.
 2. Familias y organizaciones.
@@ -49,33 +75,6 @@ El Atlas no será simplemente un catálogo de nombres: cada dato relevante debe 
 - Sustituir la clasificación de apertura por una puntuación económica o de rendimiento.
 - Cerrar CABE/RULA empíricamente: eso pertenece a H09 y a benchmarks posteriores.
 
-## Arquitectura prevista
-
-```text
-                 FUENTES
-                    │
-       ┌────────────┼────────────┐
-       ▼            ▼            ▼
-     MODELOS      SOFTWARE     BENCHMARKS
-       │            │            │
-       └────────────┼────────────┘
-                    ▼
-             NORMALIZACIÓN
-                    │
-                    ▼
-               OPEN LLM ATLAS
-          ┌─────────┼─────────┐
-          ▼         ▼         ▼
-      entidades  evidencia  relaciones
-          │         │         │
-          └─────────┼─────────┘
-                    ▼
-              VALIDACIÓN QA
-                    │
-                    ▼
-              H10 / JGB / HW
-```
-
 ## Reglas de datos
 
 - No inventar valores.
@@ -88,56 +87,25 @@ El Atlas no será simplemente un catálogo de nombres: cada dato relevante debe 
 - No confundir contexto máximo declarado con contexto efectivamente probado.
 - No convertir una ausencia de dato en cero.
 
-## Primera tarea de H06
-
-Auditar el esquema y el inventario actual contra el contrato documental del Atlas y producir una matriz de cobertura:
-
-```text
-campo / entidad
-      ↓
-¿existe?
-      ↓
-¿está normalizado?
-      ↓
-¿tiene procedencia?
-      ↓
-¿tiene estado de evidencia?
-      ↓
-¿puede alimentar JGB/hardware/recomendador?
-```
-
-La auditoría será la base para priorizar las siguientes incorporaciones y no se cerrará H06 hasta que las mejoras estén validadas.
-
 ## Relación con H10
 
-H10 proporciona la automatización diaria que consume y publica el conocimiento. H06 mejora el conocimiento que esa infraestructura transporta.
+H10 proporciona la automatización diaria. H06 establece la calidad y frontera de conocimiento que puede convertirse en Atlas canónico.
 
 ```text
-H06 Atlas ampliado
-        │
-        ▼
-conocimiento estructurado
-        │
-        ▼
+H06 Atlas
+   ↓
+conocimiento canónico
+   ↓
 H10 pipeline diario 🟢
-        │
-        ├── hardware
-        ├── recomendador
-        └── publicación
+   ├── hardware
+   ├── recomendador
+   └── publicación
 ```
 
-## Documentación obligatoria de cierre
+## Criterio de aceptación
 
-Al aceptar H06 deberán existir, como mínimo:
+La fase queda preparada para aceptación cuando el workflow H06 termina en verde y deja publicados los outputs definidos en [`VALIDATION.md`](VALIDATION.md). Si no existen filas verificadas, el catálogo puede permanecer vacío: eso es un resultado válido y preferible a introducir datos ficticios.
 
-- `README.md`
-- `ARCHITECTURE.md`
-- `DECISIONS.md`
-- `VALIDATION.md`
-- diagramas cuando sean útiles
-- enlaces desde `docs/phases/README.md`, `atlas/README.md` y el README raíz
-- evidencia concreta de la validación final
+## Próximo paso después de H06
 
-## Estado
-
-**H06 está activado como siguiente hito.** La primera actividad es la auditoría de cobertura y contrato del Atlas; no se considera todavía aceptado.
+Una vez aceptado H06, la siguiente fase es **H07 — JGB sistemático**, consumiendo la identidad y procedencia ya normalizadas sin mezclar apertura con rendimiento, precio o viabilidad.
