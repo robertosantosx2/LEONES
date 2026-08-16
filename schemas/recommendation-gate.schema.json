@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robertosantosx2.github.io/LEONES/schemas/recommendation-gate.schema.json",
+  "title": "LEONES Recommendation Gate",
+  "description": "Contract that a candidate must satisfy before a recommendation can be generated.",
+  "type": "object",
+  "required": ["entity", "evidence_profile", "decision", "rationale", "unknowns", "next_action"],
+  "properties": {
+    "entity": {"type": "string", "minLength": 1},
+    "evidence_profile": {"type": "string", "minLength": 1},
+    "decision": {"enum": ["recommend", "watch", "reject", "verify_first"]},
+    "rationale": {"type": "string", "minLength": 1},
+    "unknowns": {"type": "array", "items": {"type": "string"}},
+    "next_action": {"enum": ["recommend", "verify", "measure", "profile", "watch", "reject"]},
+    "minimum_evidence_met": {"type": "boolean"},
+    "external_scores_used": {"type": "boolean"},
+    "cabe_source": {"type": ["string", "null"]},
+    "jgb_source": {"type": ["string", "null"]}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "recommend"}}},
+      "then": {
+        "properties": {
+          "minimum_evidence_met": {"const": true},
+          "next_action": {"const": "recommend"}
+        }
+      }
+    }
+  ]
+}
