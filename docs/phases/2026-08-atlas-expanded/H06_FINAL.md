@@ -1,7 +1,23 @@
 # H06 — Informe de cierre técnico
 
 **Corte:** 16/08/2026  
-**Estado técnico:** 🟡 implementación completa; aceptación CI pendiente de la primera ejecución del gate H06.
+**Estado: 🟢 ACEPTADA / OPERATIVA.**
+
+## Resultado de la validación final
+
+El gate H06 terminó correctamente en GitHub Actions. La ejecución validó las pruebas de promoción, identidad, calidad, promoción verified-only, JSON Schema e informe final. Los outputs de auditoría quedaron publicados.
+
+### Inventario auditado
+
+- **193** filas en el feed operativo.
+- **193** identidades auditadas.
+- **193/193** identidades clasificadas como únicas por el auditor actual.
+- **0** grupos de duplicación detectados por esa clave.
+- **193** flags de calidad, todos de tipo `unverified`.
+- **0** registros promovidos al Atlas canónico.
+- **0** registros canónicos en `atlas/catalog.json`.
+
+El resultado de cero registros canónicos es **correcto**: ninguna de las 193 filas tenía `evidence_status=verified`. No se ha falsificado el catálogo para hacerlo parecer completo.
 
 ## Qué queda terminado
 
@@ -62,17 +78,31 @@ publicación de outputs
 
 La validación del catálogo usa JSON Schema Draft 2020-12 y el esquema canónico de `atlas/schema.json`.
 
+Además, el paso de publicación se hizo resistente a concurrencia mediante `git fetch` + `git rebase` antes de publicar resultados.
+
 ### H06.7 — Documentación
 
 La fase queda documentada en:
 
 - `README.md`
+- `ARCHITECTURE.md`
 - `H06_SCOPE.md`
 - `COVERAGE-AUDIT.md`
 - `IDENTITY-RULES.md`
 - `EVIDENCE-RULES.md`
 - `DECISIONS.md`
+- `VALIDATION.md`
 - `H06_FINAL.md`
+
+## Outputs publicados
+
+- `atlas/catalog.json`
+- `data/prospection/atlas_identity_audit.csv`
+- `data/prospection/atlas_quality_flags.csv`
+- `data/prospection/atlas_promotion_report.json`
+- `data/prospection/h06_audit_report.json`
+
+El informe cuantitativo confirma el estado actual: 193 filas, 193 identidades únicas, 193 flags `unverified` y 0 registros canónicos. fileciteturn169file0L2-L2
 
 ## Qué NO se considera terminado
 
@@ -88,14 +118,8 @@ Tampoco se cierran aquí:
 
 Esas capacidades son fases posteriores y consumen conocimiento del Atlas cuando existe evidencia adecuada.
 
-## Criterio final
+## Decisión de cierre
 
-La fase se considera **operativamente cerrada** cuando el workflow H06 termina en verde y deja publicados:
+**H06 queda aceptada como infraestructura de conocimiento y gobernanza del Atlas.**
 
-- `atlas/catalog.json` válido;
-- `atlas_identity_audit.csv`;
-- `atlas_quality_flags.csv`;
-- `atlas_promotion_report.json`;
-- `h06_audit_report.json`.
-
-Si el feed contiene cero registros verificados, el resultado correcto es un Atlas canónico vacío; nunca se introducen datos ficticios para conseguir un estado verde.
+El siguiente trabajo no es rellenar el catálogo artificialmente: es mejorar la **evidencia de los candidatos**, para que el gate pueda promoverlos legítimamente.
