@@ -94,14 +94,15 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          # Another workflow can update main while this audit is running.
-          # Rebase the generated commit onto the newest main before pushing.
-          git fetch origin main
-          git rebase origin/main
           git add atlas/catalog.json data/prospection/atlas_identity_audit.csv data/prospection/atlas_quality_flags.csv data/prospection/atlas_promotion_report.json data/prospection/h06_audit_report.json
           if git diff --cached --quiet; then
             echo 'H06 outputs unchanged'
           else
+            # Commit the generated snapshot first, then rebase that commit onto
+            # the newest main. This avoids the "unstaged changes" failure that
+            # occurs when another workflow publishes while this job is running.
             git commit -m 'data(atlas): refresh H06 knowledge gate outputs'
+            git fetch origin main
+            git rebase origin/main
             git push origin HEAD:main
           fi
