@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Recursos externos recomendados para visitar y contrastar dentro del ecosistema LEONES." />
+        <title>LEONES · Recomendaciones de visita</title>
+        <link rel="stylesheet" href="assets/css/navigation.css" />
+        <link rel="stylesheet" href="assets/graphics/brand.css" />
+        <style>
+            body { margin: 0; background: #f3f6f9; color: #17212b; font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+            .hero { padding: 2.75rem 1.5rem; color: #fff; background: linear-gradient(120deg, #102f49, #1769aa); }
+            .hero-inner, main { width: min(1050px, calc(100% - 2rem)); margin-inline: auto; }
+            .hero h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 3.4rem); }
+            .hero p { max-width: 850px; margin-bottom: 0; color: #e4eef4; }
+            main { padding-block: 2rem 5rem; }
+            .card { margin-bottom: 1.25rem; padding: 1.5rem; border: 1px solid #d8e0e7; border-radius: .9rem; background: #fff; }
+            .card h2 { margin-top: 0; color: #102f49; }
+            .tag { display: inline-block; padding: .25rem .6rem; border-radius: 999px; color: #1769aa; background: #eaf4fb; font-size: .76rem; font-weight: 850; }
+            .visit { border-left: 5px solid #1769aa; }
+            .visit a { color: #1769aa; font-weight: 800; }
+            .why { padding: .85rem 1rem; border-left: 4px solid #1769aa; border-radius: 0 .5rem .5rem 0; background: #eaf4fb; }
+        </style>
+    </head>
+    <body>
+        <header class="hero">
+            <div class="hero-inner">
+                <span class="tag">LEONES · RECURSOS EXTERNOS</span>
+                <h1>Recomendaciones de visita</h1>
+                <p>Dos recursos especialmente útiles para seguir el ecosistema: uno para montar y probar IA local y otro para contrastar la calidad de los modelos mediante evaluación comparativa.</p>
+            </div>
+        </header>
+        <main id="main">
+            <section class="card visit">
+                <span class="tag">IA LOCAL · PRIORIDAD DE SEGUIMIENTO</span>
+                <h2>Osmantic · ODS</h2>
+                <p><strong>Qué visitar:</strong> Osmantic Deployment System (ODS), una pila orientada a convertir un PC, Mac o Linux en un servidor de IA local con inferencia, interfaz web, agentes, workflows, RAG y generación de imágenes.</p>
+                <p><strong>Por qué interesa a LEONES:</strong> encaja directamente con Runtime, Agents, hardware y la capa de recomendación. Además, permite observar cómo evoluciona una pila integrada frente a la estrategia modular de LEONES.</p>
+                <div class="why"><strong>Qué mirar:</strong> compatibilidad de hardware, runtimes utilizados, modelos seleccionados, rendimiento real, instalación, agentes, workflows y cambios entre versiones.</div>
+                <p><a href="https://osmantic.com/" rel="noopener noreferrer">Visitar Osmantic</a> · <a href="https://github.com/Osmantic/ODS" rel="noopener noreferrer">Repositorio ODS</a></p>
+            </section>
+
+            <section class="card visit">
+                <span class="tag">EVALUACIÓN · REFERENCIA PRIORITARIA</span>
+                <h2>Chatbot Arena · Arena</h2>
+                <p><strong>Qué es:</strong> la plataforma de evaluación comparativa de modelos de Arena, antes conocida como LMSYS Chatbot Arena, basada en comparaciones entre respuestas y preferencias de usuarios.</p>
+                <p><strong>Por qué es prioritaria para LEONES:</strong> es una referencia externa para contrastar la capacidad general y la preferencia humana de los modelos. No sustituye los benchmarks técnicos ni las pruebas locales de LEONES, pero aporta una señal independiente muy útil.</p>
+                <div class="why"><strong>Regla LEONES:</strong> Arena sirve como evidencia externa de comparación; las mediciones de hardware, latencia, memoria, estabilidad y comportamiento agentivo deben seguir registrándose por separado.</div>
+                <p><a href="https://arena.ai/" rel="noopener noreferrer">Visitar Arena</a> · <a href="https://github.com/lmarena" rel="noopener noreferrer">GitHub de Arena</a></p>
+            </section>
+
+            <section class="card">
+                <h2>Cómo usar esta página</h2>
+                <p>Estas visitas no son una lista genérica de enlaces. Son puntos de observación del ecosistema que pueden alimentar Prospector, Atlas y Benchmark &amp; Evaluation. Cuando una visita produzca información verificable, debe entrar en el circuito de evidencia de LEONES antes de convertirse en conocimiento del Atlas.</p>
+            </section>
+        </main>
+        <script src="assets/js/navigation.js" defer></script>
+    </body>
+</html>
