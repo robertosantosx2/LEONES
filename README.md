@@ -1,565 +1,420 @@
 # LEONES — Local Ecosystem of Open Neural Expert Systems
 
-> **IA agéntica Libre/Open para hardware de consumo.**
->
+> **IA agéntica Libre/Open para hardware de consumo.**  
 > **Linux primero · evidencia real · conocimiento colectivo.**
 
-[🌐 **Web de LEONES y dashboard de la Manada**](https://robertosantosx2.github.io/LEONES/)
-
-[⚙️ **Aplicación LEONES**](https://robertosantosx2.github.io/LEONES/app.html)
-
-[🦁 **Repositorio GitHub**](https://github.com/robertosantosx2/LEONES)
+[🌐 Web de LEONES y dashboard de la Manada](https://robertosantosx2.github.io/LEONES/) · [⚙️ Aplicación](https://robertosantosx2.github.io/LEONES/app.html) · [🦁 GitHub](https://github.com/robertosantosx2/LEONES)
 
 ---
 
 # 📊 Estado global del proyecto
 
-> **Actualizado tras la validación del bot de precios, la integración Atlas → recomendador y el ranking económico V1.**
+**Corte de estado: 16 de agosto de 2026.** Este apartado es la referencia rápida para saber qué existe realmente, qué ha sido validado y qué sigue pendiente. El detalle técnico permanece en la documentación especializada.
 
-Para poder referirnos a las etapas del proyecto sin ambigüedad, cada hito tiene un identificador estable **H01, H02, H03...**. El identificador se conserva aunque el hito evolucione, se amplíe o sea sustituido por una fase posterior.
-
-**Regla de referencia:** cuando digamos «H03» en una conversación, issue, commit o documento, nos referimos siempre al mismo hito del proyecto.
+### Convención
 
 | Estado | Significado |
 |---|---|
-| 🟢 **TERMINADO** | Implementado, documentado y validado cuando corresponde. No significa que nunca vaya a evolucionar. |
-| 🟡 **EN DESARROLLO** | Existe implementación o una base funcional, pero todavía faltan cobertura, robustez, validación, integración o evolución prevista. |
-| ⚪ **SIN EMPEZAR** | Está identificado en el roadmap, pero todavía no existe una implementación funcional suficiente. |
+| 🟢 **ACEPTADO / OPERATIVO** | Implementado, documentado y validado con la evidencia disponible. |
+| 🟡 **EN DESARROLLO** | Existe implementación o una base funcional, pero falta cobertura, validación, robustez o integración completa. |
+| 🔵 **SIGUIENTE** | Siguiente unidad prioritaria de trabajo. |
+| ⚪ **PLANIFICADO** | Identificado en roadmap, sin implementación funcional suficiente. |
 
-## 🟢 TERMINADO / OPERATIVO
+## 🟢 Hitos aceptados
 
-### **H01 — Bot mensual de precios de hardware**
+### H01 — Bot mensual de precios de hardware
 
-- 🟢 Fuentes activas: **Coolmod, PcComponentes, MediaMarkt España y LDLC España**.
-- 🟢 **Amazon descartada** como fuente activa.
-- 🟢 Normalización y control de calidad de observaciones de precios.
-- 🟢 Conservación de observaciones rechazadas para auditoría.
+**Estado: 🟢 ACEPTADO.**
 
-**Documentación:** [fase H01](docs/phases/2026-08-hardware-pricing/) · [precios](docs/hardware-price-sources.md) · [calidad](docs/hardware-price-quality.md).
+- Coolmod, PcComponentes, MediaMarkt España y LDLC España como fuentes activas.
+- Amazon fuera de la cobertura activa.
+- Extracción, normalización y control de calidad.
+- Conservación de observaciones rechazadas para auditoría.
 
-### **H02 — Integración precios → perfiles hardware → Atlas/recomendador**
+Documentación: [`docs/phases/2026-08-hardware-pricing/`](docs/phases/2026-08-hardware-pricing/) · [`docs/hardware-price-sources.md`](docs/hardware-price-sources.md) · [`docs/hardware-price-quality.md`](docs/hardware-price-quality.md).
 
-- 🟢 Test automatizado de integración de precios.
-- 🟢 Integración de observaciones válidas con perfiles hardware y recomendador.
+### H02 — Precios → hardware → Atlas/recomendador
 
-**Documentación:** [fase H02](docs/phases/2026-08-hardware-pricing/) · [integración](docs/atlas-hardware-price-integration.md).
+**Estado: 🟢 ACEPTADO.**
 
-### **H03 — Ranking económico V1**
+La integración de observaciones válidas de precios con perfiles de hardware y recomendación dispone de tests automatizados y paquete de fase.
 
-- 🟢 Integrado en GitHub Actions.
-- 🟢 Test automatizado del ranking económico.
-- 🟢 Generación automática de recomendaciones técnicas.
-- 🟢 Generación automática del ranking económico.
-- 🟢 Publicación automática de las salidas del recomendador.
-- 🟢 Separación conceptual **JGB / rendimiento / hardware / precio**.
+Documentación: [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md).
 
-**Documentación:** [fase H03](docs/phases/2026-08-economic-ranking-v1/) · [ranking económico](docs/atlas-economic-ranking.md).
+### H03 — Ranking económico V1
 
-### **H04 — Prospección diaria automatizada**
+**Estado: 🟢 ACEPTADO.**
 
-- 🟢 Descubrimiento diario del ecosistema.
-- 🟢 Filtro OSI y prioridad Copyleft.
-- 🟢 Enriquecimiento, informes e integración con Atlas/web.
+- Integrado en GitHub Actions.
+- Tests automatizados.
+- Generación de recomendaciones técnicas y ranking económico.
+- Publicación automática.
+- Separación explícita entre JGB, rendimiento, hardware y precio.
 
-**Documentación:** [fase H04](docs/phases/2026-08-daily-prospection/) · [prospección](docs/PROSPECTION.md).
+Documentación: [`docs/phases/2026-08-economic-ranking-v1/`](docs/phases/2026-08-economic-ranking-v1/) · [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md).
 
-### **H05 — Documentación formal de fases**
+### H04 — Prospección diaria
 
-- 🟢 Protocolo obligatorio de documentación.
-- 🟢 Paquetes de fase con arquitectura, decisiones y validación.
-- 🟢 Índice documental y auditoría de fases terminadas.
+**Estado: 🟢 ACEPTADO.**
 
-**Documentación:** [protocolo](docs/DOCUMENTATION_PROTOCOL.md) · [índice de fases](docs/phases/README.md).
+Descubrimiento diario, filtro OSI, prioridad Copyleft, enriquecimiento, informes e integración con Atlas/web.
 
-## 🟡 EN DESARROLLO
+Documentación: [`docs/phases/2026-08-daily-prospection/`](docs/phases/2026-08-daily-prospection/) · [`docs/PROSPECTION.md`](docs/PROSPECTION.md).
 
-### **H06 — Open LLM Atlas ampliado**
+### H05 — Sistema formal de documentación
 
-- 🟡 Ampliación y depuración continua de modelos, familias, organizaciones, benchmarks y procedencia.
+**Estado: 🟢 ACEPTADO.**
 
-### **H07 — Índice JGB sistemático**
+El proyecto dispone de protocolo de fases, arquitectura, decisiones, validación, trazabilidad e índice documental.
 
-- 🟡 Consolidación de cobertura, evidencia y aplicación sistemática al conjunto de modelos.
+Documentación: [`docs/DOCUMENTATION_PROTOCOL.md`](docs/DOCUMENTATION_PROTOCOL.md) · [`docs/phases/README.md`](docs/phases/README.md).
 
-### **H08 — Matriz completa de hardware**
+### H10 — Pipeline Atlas → recomendador diario enriquecido
 
-- 🟡 2/4/8/16/32/64/128 GB.
-- 🟡 Emparejamiento sistemático **Intel i3/i5/i7/i9 ↔ AMD Ryzen 3/5/7/9**.
-- 🟡 Cobertura completa de GPU NVIDIA y VRAM.
+**Estado: 🟢 ACEPTADO.**
 
-### **H09 — CABE/RULA**
+El cierre de H10 está respaldado por el Run #18 de GitHub Actions: prospección → ingesta → evidencia técnica → calidad → hipótesis → matriz → recomendador → enriquecimiento → validación → publicación.
 
-- 🟡 Capa sistemática de viabilidad hardware-modelo.
+Evidencia de cierre:
 
-### **H10 — Pipeline Atlas completo: prospección → evidencia → ingesta → calidad → hipótesis → hardware → recomendador**
+- 209 modelos procesados.
+- 39/209 con evidencia técnica reportada en esa ejecución.
+- T0=187, T1=5, T2=17, T3=0.
+- 32.128 filas de matriz hardware.
+- 59 ficheros de recomendaciones.
+- 859 filas validadas.
+- Contrato de salida con `cabe`, `rula`, `jgb_status`, `evidence_state`, `evidence_type` y `uncertainty`.
+- Publicación resistente a concurrencia.
+- Actions actualizadas a `checkout@v7` y `setup-python@v7`.
 
-- 🟡 Automatización diaria completa del pipeline Atlas.
-- 🟡 Actualmente en validación mediante GitHub Actions.
+Documentación: [`docs/phases/2026-08-atlas-recommendation-pipeline/`](docs/phases/2026-08-atlas-recommendation-pipeline/) · [`VALIDATION.md`](docs/phases/2026-08-atlas-recommendation-pipeline/VALIDATION.md).
 
-**Documentación:** [fase H10](docs/phases/2026-08-atlas-recommendation-pipeline/).
-
-### Otros desarrollos en curso
-
-- 🟡 Escalado del ranking económico a toda la matriz de hardware.
-- 🟡 Mejora continua de adaptadores y cobertura del bot de precios.
-- 🟡 Benchmarks reproducibles en hardware real.
-- 🟡 Evaluación agentiva y batería **LB B01–B05**.
-- 🟡 Integración progresiva de runtimes, eficiencia, offloading y ejecución local.
-- 🟡 Web/app como interfaz coherente de todo el ecosistema.
-- 🟡 **Manada**: agregación, confianza y aprendizaje colectivo.
-
-**Documentación:** [Atlas](atlas/README.md) · [resultados](docs/RESULT_SCHEMA.md) · [arquitectura](docs/ARCHITECTURE.md).
-
-## ⚪ SIN EMPEZAR / FASES POSTERIORES
-
-- ⚪ Coste de **PC completo**: placa base + almacenamiento + PSU + caja + refrigeración, además de CPU/RAM/GPU.
-- ⚪ **TCO** incluyendo consumo eléctrico y coste de uso sostenido.
-- ⚪ Coste por tarea útil / coste por ejecución agentiva.
-- ⚪ Ranking económico multiobjetivo configurable por usuario.
-- ⚪ Optimización conjunta de **libertad + rendimiento + coste + privacidad + eficiencia**.
-- ⚪ Sistema completo de evaluación continua y detección de regresiones.
-- ⚪ Snapshots versionados del Atlas y changelog automático del conocimiento.
-- ⚪ Aprendizaje continuo de la Manada incorporado al motor de recomendación.
-- ⚪ Optimización avanzada de rutas de ejecución y selección dinámica de runtime/modelo/hardware.
-- ⚪ Auditoría integral de privacidad y seguridad del ecosistema.
-
-> Estos elementos están identificados en el roadmap, pero **no deben interpretarse como funcionalidades ya disponibles**.
-
-### Orden de trabajo recomendado
-
-```text
-H06 ATLAS + JGB
-      ↓
-H08 MATRIZ HARDWARE
-      ↓
-H09 CABE / RULA
-      ↓
-BENCHMARKS REALES
-      ↓
-H03 RANKING ECONÓMICO COMPLETO
-      ↓
-AGENTIC / LB
-      ↓
-ROUTER
-      ↓
-WEB / APP
-      ↓
-MANADA
-      ↓
-TCO
-      ↓
-OPTIMIZACIÓN MULTIOBJETIVO
-```
-
-**Roadmap consolidado:** [`docs/ROADMAP.md`](docs/ROADMAP.md).
+> **Importante:** H10 demuestra que el pipeline funciona; no significa que todos los modelos estén benchmarkeados físicamente, que CABE/RULA sean mediciones físicas completas, que JGB esté completo ni que el ranking multiobjetivo final exista.
 
 ---
 
-## ¿Qué es LEONES?
+# 🟡 Partes en desarrollo
+
+### H06 — Open LLM Atlas ampliado
+
+**Estado: 🔵 SIGUIENTE.**
+
+Atlas v0.2 ya tiene esquema ampliado y pipeline operativo, pero la **capa de conocimiento del Atlas sigue en expansión**. El siguiente trabajo es mejorar cobertura y calidad de modelos, familias, organizaciones, variantes, benchmarks, runtimes y procedencia, y reforzar los contratos de evidencia.
+
+Documentación: [`atlas/README.md`](atlas/README.md) · [`atlas/schema.json`](atlas/schema.json) · [`atlas/INGEST.md`](atlas/INGEST.md).
+
+### H07 — Índice JGB sistemático
+
+**Estado: 🟡 EN DESARROLLO.**
+
+El criterio JGB ya está documentado con seis clases (0–5) y cinco dimensiones de libertad/control: Access, Model control, Data control, Autonomy y Trust. Se mantiene **independiente de rendimiento, calidad, precio y self-hostability**.
+
+Pendiente: aplicación sistemática y verificación de evidencia sobre el conjunto de modelos.
+
+Documentación: [`web/proyectos/atlas/openness/JGB-INDEX.md`](web/proyectos/atlas/openness/JGB-INDEX.md) · [`JGB-MATRIX.md`](web/proyectos/atlas/openness/JGB-MATRIX.md) · [`JGB-METHOD.md`](web/proyectos/atlas/openness/JGB-METHOD.md).
+
+### H08 — Matriz completa de hardware
+
+**Estado: 🟡 EN DESARROLLO.**
+
+Ya existe una matriz grande y generación automática de perfiles, incluyendo Intel i3/i5/i7/i9, AMD Ryzen 3/5/7/9, 2/4/8/16/32/64/128 GB y perfiles específicos como RTX 4060 8 GB. El pipeline H10 generó 32.128 filas.
+
+Pendiente: convertir esa cobertura generada en una matriz completa, auditada y aceptada como capacidad independiente.
+
+### H09 — CABE / RULA
+
+**Estado: 🟡 EN DESARROLLO.**
+
+Los conceptos y contratos ya existen en Atlas y en el recomendador:
+
+- **CABE:** si una configuración puede caber/ejecutarse con los recursos disponibles.
+- **RULA:** si puede funcionar de forma útil bajo la carga relevante.
+
+La lógica evita confundir `fit_score` con CABE y mantiene `unknown` cuando falta evidencia.
+
+Pendiente: cobertura y validación sistemática, especialmente con mediciones reales.
+
+### Benchmarks reales y evaluación agentiva
+
+**Estado: 🟡 EN DESARROLLO.**
+
+Existe contrato de resultados, batería B01–B05, scripts de inferencia/evaluación y estructura para resultados reproducibles. Falta ampliar la ejecución sobre hardware real y convertirla en evidencia suficiente para el Atlas y el recomendador.
+
+Documentación: [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) · [`docs/EVALUACION_AGENTIC_TESTS.md`](docs/EVALUACION_AGENTIC_TESTS.md) · [`scripts/local/llm-smoke-test/`](scripts/local/llm-smoke-test/).
+
+### Evidencia técnica
+
+**Estado: 🟢 INFRAESTRUCTURA ACEPTADA DENTRO DE H10; 🟡 COBERTURA EN EVOLUCIÓN.**
+
+El pipeline ya clasifica evidencia y conserva estados T0–T3, procedencia, incertidumbre y diferencias entre datos externos y mediciones LEONES. La cobertura no es todavía uniforme para todos los modelos.
+
+### Adaptadores y fuentes empíricas
+
+**Estado: 🟡 EN DESARROLLO.**
+
+El repositorio contiene adaptadores para MSA, LM Arena, Artificial Analysis, Hugging Face y otras fuentes/benchmarks. La arquitectura ya permite que las observaciones sean trazables; la cobertura y robustez de cada adaptador siguen siendo objeto de mejora.
+
+El principio es: **un dato externo es evidencia de descubrimiento/observación, no una medición LEONES por defecto**.
+
+### Ranking económico completo
+
+**Estado: 🟢 V1 ACEPTADA / 🟡 EVOLUCIÓN.**
+
+La V1 está automatizada y validada. Quedan la ampliación a toda la matriz, PC completo, TCO, coste por tarea y optimización multiobjetivo.
+
+### Web y aplicación
+
+**Estado: 🟡 EN DESARROLLO.**
+
+La web funcional está publicada y contiene páginas de inicio, arquitectura, pilares, Atlas, modelos, hardware, inferencia, prospección, evaluación, Manada, proyectos y recomendaciones. La aplicación y el sistema visual están implementados.
+
+En las últimas iteraciones se han añadido la página de recomendaciones de visita, formulario de recomendaciones de usuarios y mejoras de formato/UX.
+
+Pendiente: cerrar la coherencia de navegación, validar todos los flujos de usuario y mantener la web como interfaz sencilla sobre la infraestructura real.
+
+Documentación: [`web/README.md`](web/README.md) · [`docs/UX_OPTIMIZATION.md`](docs/UX_OPTIMIZATION.md) · [`docs/WEB_DESIGN_SYSTEM.md`](docs/WEB_DESIGN_SYSTEM.md).
+
+### Recomendaciones de usuarios
+
+**Estado: 🟡 IMPLEMENTADO, PENDIENTE DE PRIMER CICLO REAL.**
+
+Existe formulario público, plantilla de issue, flujo de validación y mecanismo de confirmación por **OK LEONES**. El workflow de validación está instalado, pero al corte actual todavía registra **0 ejecuciones**, porque aún no hay un ciclo real de entrada → validación → integración que demostrar.
+
+Documentación: [`docs/USER-RECOMMENDATIONS.md`](docs/USER-RECOMMENDATIONS.md) · [`web/recomendar.html`](web/recomendar.html).
+
+### MANADA
+
+**Estado: 🟡 BASE OPERATIVA / EN EVOLUCIÓN.**
+
+Existe generación de informes, contrato de resultados, controles de privacidad, agregación y estadísticas. La aportación es voluntaria y debe pasar revisión humana antes de compartir.
+
+El último run observado de `Manada statistics` (#154, 16-08-2026) terminó en **failure**; por tanto, esta parte no se declara completamente cerrada hasta revisar y volver a validar ese workflow.
+
+Documentación: [`docs/MANADA_AUTO_REPORT.md`](docs/MANADA_AUTO_REPORT.md) · [`docs/MANADA_STATS.md`](docs/MANADA_STATS.md).
+
+---
+
+# 🧭 Estado de los 9 pilares oficiales
+
+La arquitectura canónica de LEONES tiene nueve pilares. No todos están en el mismo nivel de madurez.
+
+| Pilar | Estado actual | Qué está realmente disponible |
+|---|---|---|
+| **1. Prospector** | 🟢 **Activo/aceptado** | Prospección diaria, fuentes, filtros, enriquecimiento y publicación. |
+| **2. Atlas** | 🟡 **En expansión** | Esquema, ingesta, evidencia y pipeline operativo; cobertura del conocimiento aún incompleta. |
+| **3. Task Intelligence** | 🟡 **Arquitectura definida** | Contratos y arquitectura conceptual; implementación integral pendiente. |
+| **4. Router** | 🟡 **Primera implementación** | Scripts/capa de recomendación existentes; falta convertirlo en router dinámico validado de extremo a extremo. |
+| **5. Quant** | 🟡 **Base / desarrollo** | Espacio y documentación para cuantización; falta integración completa con selección dinámica y evidencia. |
+| **6. Fine-Tuning** | 🟡 **Base / desarrollo** | Directorio y documentación inicial; no es todavía un sistema completo de adaptación validado. |
+| **7. Agents** | 🟡 **Base / desarrollo** | Arquitectura y evaluación agentiva presentes; falta cerrar el ciclo de agentes reproducibles y validación amplia. |
+| **8. Runtime** | 🟡 **Base funcional** | Scripts de detección/ejecución y smoke tests; cobertura de backends y mediciones reales en expansión. |
+| **9. Benchmark & Evaluation** | 🟡 **Base funcional** | Contratos, B01–B05, inferencia y validación; falta ampliar evidencia real y continua. |
+
+Documentación de arquitectura: [`docs/PILLARS.md`](docs/PILLARS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+---
+
+# ⚙️ Automatización y CI
+
+El repositorio dispone de workflows para:
+
+- pipeline diario Atlas;
+- prospección diaria;
+- ingesta NDJSON;
+- evidencia empírica;
+- recomendaciones;
+- precios mensuales;
+- ranking económico;
+- publicación web;
+- integración de logos;
+- validación de recomendaciones de usuarios;
+- estadísticas de Manada;
+- extracción periódica de fuentes;
+- validaciones de formato y contratos.
+
+**Estado:** 🟢 infraestructura ampliamente operativa / 🟡 algunos workflows requieren validación continua.
+
+La última ejecución diaria completa del pipeline Atlas observada antes de este corte terminó correctamente y publicó sus resultados. El workflow de Manada tiene un fallo observado que queda explícitamente registrado arriba.
+
+---
+
+# 📦 Datos y contratos
+
+### Discovery
+
+**🟢 Activo.** Existen catálogos de modelos, runtimes, skills, harnesses y agentes, además de datos de prospección enriquecidos.
+
+### Atlas feed
+
+**🟢 Activo dentro del pipeline H10.** Se generan feed, auditorías de identidad/calidad/evidencia, hipótesis y colas de revisión.
+
+### Hardware
+
+**🟡 En expansión.** Hay perfiles, precios, observaciones de mercado, calidad y matriz de compatibilidad. La cobertura completa y su aceptación como producto independiente siguen pendientes.
+
+### Resultados experimentales
+
+**🟡 Base funcional.** El formato canónico es JSON primero y permite estados `reported → reproducible → verified` o `rejected`. La validez sintáctica no equivale a verificación.
+
+Documentación: [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) · [`schemas/`](schemas/).
+
+---
+
+# 🔬 Principios de evidencia
+
+LEONES separa deliberadamente:
+
+```text
+DESCUBRIMIENTO
+     ↓
+EVIDENCIA EXTERNA
+     ↓
+NORMALIZACIÓN
+     ↓
+VERIFICACIÓN / MEDICIÓN
+     ↓
+ATLAS
+     ↓
+RECOMENDACIÓN
+```
+
+No se inventan valores para rellenar huecos. Cuando no hay evidencia suficiente se conserva `unknown`. Las estimaciones documentadas se marcan como `estimated` y las observaciones externas no se presentan automáticamente como mediciones propias.
+
+El criterio de evaluación debe evitar contaminar conjuntos de prueba: entrenamiento, validación y test deben mantenerse separados, y las evaluaciones finales no deben convertirse en objetivos de optimización continua.
+
+---
+
+# 🧠 Fuentes de conocimiento en seguimiento
+
+El proyecto mantiene investigación sobre LLM locales, hardware, memoria, ancho de banda, motores de inferencia, evaluación y construcción de sistemas. Entre las fuentes de seguimiento incorporadas se encuentran:
+
+- Serie **LLM de Cero a Héroe — Edición 2026**, compilada en el material de investigación del proyecto.
+- **Kilo — The Best Local Coding Models for Any Setup**, como fuente recurrente de seguimiento de modelos locales de coding, hardware, contexto y uso agentic.
+- Fuentes empíricas y benchmarks definidos en [`atlas/empirical-evidence-sites.md`](atlas/empirical-evidence-sites.md).
+
+Estas fuentes alimentan investigación y descubrimiento; su información debe pasar por las reglas de evidencia del proyecto antes de convertirse en dato aceptado del Atlas.
+
+---
+
+# 🗺️ Flujo completo del proyecto
+
+```text
+PROSPECCIÓN
+    ↓
+IDENTIDAD
+    ↓
+EVIDENCIA
+    ↓
+ATLAS
+    ↓
+JGB ───────────────┐
+HARDWARE ──────────┤
+RENDIMIENTO ───────┤
+PRECIO ────────────┤
+                    ↓
+                  CABE
+                    ↓
+                 RULA
+                    ↓
+              RECOMENDADOR
+                    ↓
+             RUNTIME / AGENT
+                    ↓
+               MEDICIÓN
+                    ↓
+                 MANADA
+                    ↺
+```
+
+El principio central sigue siendo:
+
+> **modelo × variante × runtime × hardware × workload × restricciones**
+
+Y la regla de recomendación es: **primero viabilidad técnica; después evidencia de carga; después rendimiento/calidad; después coste y preferencias; siempre con explicación y procedencia.**
+
+---
+
+# 📚 Documentación principal
+
+- [`LEONES_DECISION_LOG.md`](LEONES_DECISION_LOG.md) — decisiones y trazabilidad.
+- [`docs/README.md`](docs/README.md) — índice técnico.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — roadmap consolidado.
+- [`docs/phases/README.md`](docs/phases/README.md) — hitos Hxx y estados de aceptación.
+- [`docs/phases/PHASE_AUDIT_2026-08.md`](docs/phases/PHASE_AUDIT_2026-08.md) — auditoría documental.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura general.
+- [`docs/PILLARS.md`](docs/PILLARS.md) — nueve pilares oficiales.
+- [`PIPELINE_E2E.md`](PIPELINE_E2E.md) — flujo extremo a extremo.
+- [`scripts/README.md`](scripts/README.md) — contrato de scripts.
+- [`atlas/README.md`](atlas/README.md) — Open LLM Atlas.
+- [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) — formato canónico de resultados.
+
+## Regla de cierre
+
+```text
+IMPLEMENTAR → VALIDAR → ACEPTAR → DOCUMENTAR → ENLAZAR → CERRAR
+```
+
+Una pieza no se declara terminada solamente porque exista código. Debe existir una evidencia proporcional a lo que se afirma.
+
+---
+
+# 🚧 Próximo orden de trabajo
+
+```text
+H10 CERRADA 🟢
+      ↓
+H06 ATLAS AMPLIADO 🔵
+      ↓
+H07 JGB SISTEMÁTICO 🟡
+      ↓
+H08 MATRIZ HARDWARE 🟡
+      ↓
+H09 CABE / RULA 🟡
+      ↓
+BENCHMARKS REALES 🟡
+      ↓
+AGENTIC / B01–B05 🟡
+      ↓
+ROUTER / SELECCIÓN DINÁMICA 🟡
+      ↓
+WEB / APP 🟡
+      ↓
+MANADA 🟡
+      ↓
+TCO ⚪
+      ↓
+OPTIMIZACIÓN MULTIOBJETIVO ⚪
+```
+
+### Fases posteriores todavía no disponibles como capacidad completa
+
+- Coste de PC completo: placa base, almacenamiento, PSU, caja y refrigeración.
+- TCO y consumo eléctrico.
+- Coste por tarea útil y por ejecución agentiva.
+- Ranking económico multiobjetivo configurable por usuario.
+- Optimización conjunta de libertad, rendimiento, coste, privacidad y eficiencia.
+- Evaluación continua y detección de regresiones.
+- Snapshots versionados del Atlas y changelog automático del conocimiento.
+- Aprendizaje continuo de la Manada incorporado al motor.
+- Selección dinámica de modelo/runtime/hardware.
+- Auditoría integral de privacidad y seguridad.
+
+---
+
+# ¿Qué es LEONES?
 
 LEONES investiga, mide y construye un ecosistema de IA agéntica Libre/Open que pueda ejecutarse en **hardware real de consumo**, con especial prioridad al software **Copyleft**.
 
-No pretende ser simplemente otro catálogo de modelos. El proyecto intenta responder una pregunta práctica:
+No pretende ser simplemente otro catálogo de modelos. La pregunta central es:
 
 > **¿Qué combinación de hardware, modelo, runtime, herramientas y arquitectura permite convertir un PC de consumo en una máquina agentic realmente útil?**
 
 Y una segunda pregunta es igual de importante:
 
-> **¿Cómo podemos transformar las mediciones de muchos equipos reales en mejores recomendaciones para todos?**
+> **¿Cómo transformamos las mediciones de muchos equipos reales en mejores recomendaciones para todos?**
 
 Por eso LEONES combina **prospección, conocimiento estructurado, experimentación local, benchmarks agentivos, evidencia reproducible y conocimiento colectivo**.
 
----
+## Licencia
 
-# 🗺️ Mapa del proyecto y documentación
-
-LEONES está compuesto por varias capas que deben evolucionar juntas. El README es la puerta de entrada y la documentación especializada explica cada pieza.
-
-```text
-                         LEONES
-                           │
-       ┌───────────────────┼───────────────────┐
-       │                   │                   │
-       ▼                   ▼                   ▼
- PROSPECCIÓN             ATLAS              EJECUCIÓN
-       │                   │                   │
-       │              ┌────┼────┐              │
-       │              │    │    │              │
-       │             JGB rendimiento hardware  │
-       │              │    │    │              │
-       └──────────────┴────┼────┴──────────────┘
-                           ▼
-                     RECOMENDADOR
-                           │
-                    ┌──────┴──────┐
-                    ▼             ▼
-                 TÉCNICO      ECONÓMICO
-                    │             │
-                    └──────┬──────┘
-                           ▼
-                     EJECUCIÓN LOCAL
-                           │
-                       MEDICIÓN
-                           │
-                         MANADA
-                           │
-                           ↺
-```
-
-### Documentación fundamental
-
-- [`LEONES_DECISION_LOG.md`](LEONES_DECISION_LOG.md) — historia, decisiones congeladas y fundamentos.
-- [`docs/README.md`](docs/README.md) — índice de documentación técnica.
-- [`docs/DOCUMENTATION_PROTOCOL.md`](docs/DOCUMENTATION_PROTOCOL.md) — **protocolo obligatorio de documentación por fases**.
-- [`docs/phases/README.md`](docs/phases/README.md) — índice de fases, hitos y estados de aceptación.
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — recopilación consolidada de todo lo que queda por hacer y orden recomendado.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura general.
-- [`docs/PILLARS.md`](docs/PILLARS.md) — pilares del proyecto.
-- [`docs/PLATFORMS.md`](docs/PLATFORMS.md) — plataformas Linux de referencia.
-- [`PIPELINE_E2E.md`](PIPELINE_E2E.md) — pipeline extremo a extremo.
-- [`scripts/README.md`](scripts/README.md) — filosofía y contrato de los scripts.
-
-### Regla de cierre de fases
-
-```text
-IMPLEMENTAR → VALIDAR → ACEPTAR → DOCUMENTAR PROFUSAMENTE → ENLAZAR → CERRAR
-```
-
-Una fase no se considera completamente cerrada si falta su documentación, sus evidencias de aceptación o su trazabilidad.
-
----
-
-# 📚 Subproyecto Open LLM Atlas → recomendador
-
-El **Open LLM Atlas** es la memoria estructurada de LEONES. Su función no es ser simplemente una lista de modelos, sino mantener conocimiento trazable sobre **modelos, familias, organizaciones, benchmarks, hardware, procedencia y criterios de apertura** para que otras capas puedan utilizarlo.
-
-El subproyecto Atlas conecta esa memoria con el motor de recomendación:
-
-```text
-FUENTES / PROSPECCIÓN
-        │
-        ▼
-   INGESTA ATLAS
-        │
-        ▼
-   OPEN LLM ATLAS
-        │
-   ┌────┼───────────────┐
-   ▼    ▼               ▼
-  JGB rendimiento    hardware
-   │    │               │
-   └────┼───────────────┘
-        ▼
-      CABE
-        │
-        ▼
-  ¿es viable?
-    │       │
-   NO      SÍ
-    │       │
- excluir   ▼
-       PRECIOS REALES
-           │
-       control calidad
-           │
-           ▼
-     COSTE HARDWARE
-           │
-           ▼
-    RANKING ECONÓMICO
-           │
-           ▼
-      RECOMENDADOR
-```
-
-### Qué aporta el Atlas
-
-- Una **fuente estructurada de conocimiento** en lugar de información dispersa.
-- Procedencia para saber de dónde procede cada dato.
-- Separación entre datos observados, reproducibles y verificados.
-- Clasificación de apertura mediante el **Índice JGB**.
-- Relación entre modelo, rendimiento y requisitos de hardware.
-- Base para generar recomendaciones reproducibles y actualizables.
-
-### El Índice JGB
-
-El **Índice JGB** es una dimensión independiente. Representa el criterio de apertura/libertad adoptado para los modelos y **no se sustituye por rendimiento, precio ni ranking económico**.
-
-```text
-JGB          → apertura / libertad
-Rendimiento  → capacidad observada
-Hardware     → viabilidad
-Precio       → coste observado
-
-                    ↓
-             combinación auditable
-                    ↓
-              recomendación
-```
-
-### El bot de precios
-
-El coste que utiliza el recomendador procede de un bot mensual de precios de hardware.
-
-Fuentes activas:
-
-1. **Coolmod** — prioritaria.
-2. **PcComponentes** — secundaria.
-3. **MediaMarkt España** — secundaria.
-4. **LDLC España** — apoyo europeo.
-
-**Amazon está descartada** y no forma parte de la cobertura activa.
-
-El bot extrae, normaliza y somete los productos a control de calidad. Las observaciones rechazadas se conservan para auditoría, pero no alimentan el recomendador.
-
-### Ranking económico
-
-La V1 combina:
-
-```text
-calidad_técnica =
-    0,35 × rendimiento_normalizado
-  + 0,25 × JGB_normalizado
-  + 0,40 × hardware_fit
-
-ranking_económico =
-    calidad_técnica / (coste_hardware / 100)
-```
-
-La fórmula es parametrizable y experimental. Primero se determina si el modelo **CABE** en el hardware; después se estudia su economía. Un precio bajo nunca rescata una configuración técnicamente inviable.
-
-### Validación
-
-La integración precios → Atlas → recomendador está validada mediante GitHub Actions. La ejecución validada pasó los tests de integración de precios y ranking económico, generó las recomendaciones, generó el ranking económico y publicó las salidas.
-
-### Índice completo de documentación del subproyecto
-
-- [`atlas/README.md`](atlas/README.md) — entrada específica al Atlas.
-- [`atlas/INGEST.md`](atlas/INGEST.md) — ingesta.
-- [`atlas/schema.json`](atlas/schema.json) — esquema de datos.
-- [`docs/PROSPECTION.md`](docs/PROSPECTION.md) — prospección.
-- [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) — contrato de resultados.
-- [`docs/hardware-price-sources.md`](docs/hardware-price-sources.md) — fuentes de precios y decisiones.
-- [`docs/hardware-price-quality.md`](docs/hardware-price-quality.md) — control de calidad.
-- [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md) — integración precios ↔ Atlas.
-- [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md) — ranking económico y evolución.
-- [`docs/phases/README.md`](docs/phases/README.md) — fases documentadas.
-- [`data/prospection/atlas_recommendations.csv`](data/prospection/atlas_recommendations.csv) — recomendaciones técnicas.
-- [`data/prospection/atlas_economic_ranking.csv`](data/prospection/atlas_economic_ranking.csv) — ranking económico.
-
----
-
-# La arquitectura Atlas → recomendador
-
-El Atlas es la memoria estructurada del ecosistema. El recomendador utiliza esa memoria para contestar una pregunta práctica: **qué candidato tiene sentido para una necesidad y un hardware concretos**.
-
-```text
-                    OPEN LLM ATLAS
-                           │
-          ┌────────────────┼────────────────┐
-          │                │                │
-          ▼                ▼                ▼
-      ÍNDICE JGB      RENDIMIENTO       HARDWARE
-          │            tokens/s       CPU / RAM / GPU
-          │                │                │
-          └────────────────┼────────────────┘
-                           ▼
-                    FIT / CABE TÉCNICO
-                           │
-                     ¿es viable?
-                      │         │
-                     NO        SÍ
-                      │         │
-                   excluir     ▼
-                         PRECIO REAL OBSERVADO
-                                │
-                         bot mensual de precios
-                                │
-                         control de calidad
-                                │
-                                ▼
-                     COSTE HARDWARE OBSERVADO
-                                │
-                                ▼
-                        RANKING ECONÓMICO
-```
-
-La separación de responsabilidades es deliberada: el Atlas conserva conocimiento; el bot de precios observa el mercado; el recomendador combina las dimensiones sin convertir una de ellas en sustituto de las demás.
-
----
-
-# Índice JGB: una dimensión independiente
-
-El **Índice JGB** se conserva como una dimensión propia del Atlas. Representa el criterio de apertura/libertad adoptado para evaluar el carácter abierto de los modelos y no debe convertirse en una simple traducción de rendimiento o precio.
-
-La documentación del ranking económico mantiene expresamente esta separación: el JGB puede influir en la calidad técnica del candidato, pero **JGB no significa velocidad, JGB no significa precio y JGB no sustituye a la evidencia de ejecución**.
-
-La documentación detallada del criterio y su utilización en el motor se encuentra en [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md), sección **Índice JGB**.
-
----
-
-# Bot de precios de hardware
-
-El precio utilizado por el recomendador no se introduce manualmente en cada modelo. Se alimenta mediante un bot mensual que recoge precios de componentes y genera observaciones normalizadas.
-
-```text
-FUENTES → extracción → normalización → CONTROL DE CALIDAD
-                                      │             │
-                                  aceptar       rechazar
-                                      │             │
-                                      ▼             ▼
-                            hardware_prices.csv  auditoría
-                                      │
-                                      ▼
-                                 recomendador
-```
-
-El bot no debe rellenar huecos con precios inventados. Una ausencia de precio sigue siendo una ausencia de precio.
-
-Véanse [`docs/hardware-price-sources.md`](docs/hardware-price-sources.md) y [`docs/hardware-price-quality.md`](docs/hardware-price-quality.md).
-
----
-
-# Integración Atlas ↔ hardware ↔ precios
-
-Una decisión de diseño fundamental es que **el precio pertenece al perfil de hardware, no al modelo LLM**.
-
-```text
-LLM
- │
- ├── JGB
- ├── rendimiento
- └── requisitos de memoria
-          │
-          ▼
-     PERFIL HARDWARE
-          │
-      ┌───┼───┐
-      ▼   ▼   ▼
-     CPU RAM GPU
-      │   │   │
-      └───┼───┘
-          ▼
-  PRECIOS OBSERVADOS
-          │
-          ▼
- COSTE HARDWARE OBSERVADO
-```
-
-Si falta un precio, no se estima automáticamente. La cobertura puede ser `partial` o `unknown`, y el ranking no debe presentar un `economic_score` ficticio.
-
-Véase [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md).
-
----
-
-# Ranking económico
-
-La V1 utiliza una ponderación explícita y auditable:
-
-```text
-calidad_técnica =
-    0,35 × rendimiento_normalizado
-  + 0,25 × JGB_normalizado
-  + 0,40 × hardware_fit
-
-ranking_económico =
-    calidad_técnica / (coste_hardware / 100)
-```
-
-Los pesos son una **V1 experimental y parametrizable**. No son una verdad universal ni deben confundirse con el propio Índice JGB.
-
-## Primero viabilidad, después economía
-
-```text
-¿CABE / es viable?
-   ├── NO → excluir
-   └── SÍ
-        ↓
- evidencia suficiente
-        ↓
- JGB + rendimiento + hardware
-        ↓
- precio observado
-        ↓
- ranking económico
-```
-
-La documentación completa está en [`docs/atlas-economic-ranking.md`](docs/atlas-economic-ranking.md).
-
----
-
-## La filosofía LEONES
-
-### 1. Empieza por la necesidad, no por el script
-
-LEONES no pretende que el usuario ejecute una colección de herramientas porque existen. La aplicación pregunta primero qué quiere conseguir y conduce al **siguiente paso mínimo** que responde a esa necesidad.
-
-> **No ejecutes un script porque existe: ejecútalo porque responde a tu siguiente pregunta.**
-
-El flujo general es:
-
-```text
-NECESIDAD
-   ↓
-HARDWARE
-   ↓
-MODELO
-   ↓
-RUNTIME
-   ↓
-INFERENCIA
-   ↓
-EVALUACIÓN / AGENTIC
-   ↓
-INFORME
-   ↓
-PRIVACIDAD
-   ↓
-PUBLICACIÓN
-   ↓
-ESTADÍSTICAS
-   ↓
-MEJORES RECOMENDACIONES
-```
-
-### 2. Herramientas pequeñas y responsabilidades claras
-
-Los scripts son la interfaz local mínima entre una persona y LEONES. Cada herramienta debe responder a **una pregunta concreta** y hacer las menores cosas posibles.
-
-La separación canónica es:
-
-| Herramienta | Pregunta | Responsabilidad |
-|---|---|---|
-| `leones-hardware.py` | ¿Qué máquina tengo? | Descubrir y explicar el hardware relevante. |
-| `leones-model.py` | ¿Qué modelo tengo? | Identificar el modelo y sus metadatos básicos. |
-| `leones-runtime.py` | ¿Qué runtime local tengo? | Detectar endpoints/runtimes disponibles. |
-| `leones-infer.py` | ¿Cómo rinde una inferencia pequeña? | Medir inferencia básica reproducible. |
-| `leones-evaluation.py` | ¿Puede completar tareas agentivas? | Medir tareas agentivas con criterios explícitos. |
-| `leones-report.py` | ¿Qué evidencia tengo? | Convertir resultados en un informe legible. |
-| `leones-privacy.py` | ¿Qué puede salir de mi máquina? | Revisar posibles datos sensibles. |
-| `leones-publish.py` | ¿Quiero compartirlo? | Publicar únicamente mediante acción explícita. |
-| `leones-stats.py` | ¿Qué aprende el conjunto? | Agregar resultados sin convertirlos artificialmente en evidencia verificada. |
-| `leones-manada-report.py` | ¿Quiero aportar un informe? | Preparar un informe técnico para la Manada. |
-| `leones-manada-stats.py` | ¿Qué aprende la Manada? | Agregar los informes compartidos voluntariamente. |
-
-El orquestador puede coordinar el recorrido, pero **no debe absorber la responsabilidad de todos los componentes**.
-
-Los scripts antiguos o especializados se conservan durante la migración hasta que exista una decisión explícita de sustitución, evitando duplicar funciones sin motivo.
-
-### 3. Cada herramienta debe hablar con el usuario
-
-La ejecución no debe ser una caja negra. Cada script debe explicar qué hace, qué ha detectado, qué no puede saber y qué debería hacer el usuario a continuación.
-
----
-
-# Estado del proyecto
-
-Para el estado actualizado por áreas, consulta la [matriz de estado al principio de este README](#-estado-global-del-proyecto) y el [roadmap consolidado](docs/ROADMAP.md).
-
-El estado debe distinguir siempre entre:
-
-- **terminado y validado**;
-- **en desarrollo**;
-- **sin empezar**.
-
-No se debe considerar terminada una pieza simplemente porque existe un script: debe existir documentación suficiente, pruebas cuando sean aplicables y una validación real de su salida.
+El repositorio se distribuye bajo **GNU Affero General Public License v3.0 (AGPL-3.0)**. Consulta [`LICENSE`](LICENSE).
