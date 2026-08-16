@@ -1,0 +1,12 @@
+{
+  "feed_rows": 193,
+  "identity_rows": 193,
+  "identity_status": {
+    "unique": 193
+  },
+  "quality_flags": 193,
+  "quality_by_type": {
+    "unverified": 193
+  },
+  "canonical_records": 0
+}

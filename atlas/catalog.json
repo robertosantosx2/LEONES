@@ -1,13 +1,11 @@
 {
   "atlas_version": "0.2",
-  "generated_at": null,
+  "generated_at": "2026-08-16T12:04:52.198517+00:00",
   "records": [],
   "notes": [
-    "Este catálogo permanece vacío de conocimiento oficial hasta incorporar datos con procedencia.",
-    "La primera evidencia externa de modelos se prioriza desde Hugging Face, LM Arena, Artificial Analysis y fabricante.",
-    "MANADA aporta evidencia experimental de hardware y ejecución; no se considera verificada automáticamente.",
-    "CABE y RULA son dimensiones distintas: que una configuración quepa no implica que sea usable.",
-    "La clasificación de apertura es independiente de cualquier puntuación.",
-    "El hardware debe poder representar compute/FLOPS, memoria, storage, bandwidth e interconnect por separado."
+    "Only feed rows with evidence_status=verified are promoted by this process.",
+    "Unknown values remain unknown; empty fields are never interpreted as zero.",
+    "External evidence is not automatically a LEONES measurement.",
+    "Identity collisions are reviewed separately and are never destructively merged here."
   ]
 }

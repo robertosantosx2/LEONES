@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-08-16T12:04:52.198517+00:00",
+  "feed_rows": 193,
+  "verified_rows": 0,
+  "promoted_rows": 0,
+  "rejected_not_verified": 193,
+  "rows_without_identity": 0,
+  "canonical_records": 0,
+  "policy": "verified-only, non-destructive, no invented values"
+}
