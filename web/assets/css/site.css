@@ -1,0 +1,232 @@
+/*
+ * LEONES — site content system
+ *
+ * Shared visual language for static pages.
+ * Navigation remains isolated in navigation.css.
+ */
+
+:root {
+    --site-max: 1100px;
+    --site-ink: #17212b;
+    --site-muted: #526675;
+    --site-heading: #102f49;
+    --site-accent: #1769aa;
+    --site-border: #d8e0e7;
+    --site-surface: #ffffff;
+    --site-background: #f3f6f9;
+    --site-soft: #edf3f7;
+    --site-radius: 0.75rem;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    color: var(--site-ink);
+    background: var(--site-background);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.65;
+}
+
+img,
+svg {
+    max-width: 100%;
+}
+
+a {
+    color: var(--site-accent);
+}
+
+.site-hero {
+    padding: 3rem 1.25rem;
+    color: #ffffff;
+    background: linear-gradient(120deg, var(--site-heading), var(--site-accent));
+}
+
+.site-hero__inner,
+.site-main {
+    width: min(var(--site-max), calc(100% - 2rem));
+    margin-inline: auto;
+}
+
+.site-hero h1 {
+    max-width: 900px;
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.08;
+}
+
+.site-hero p {
+    max-width: 780px;
+    margin: 0.75rem 0 0;
+    color: #e4eef4;
+    font-size: 1.05rem;
+}
+
+.site-main {
+    padding-block: 2rem 5rem;
+}
+
+.site-section {
+    margin-bottom: 1.25rem;
+    padding: 1.4rem;
+    border: 1px solid var(--site-border);
+    border-radius: var(--site-radius);
+    background: var(--site-surface);
+}
+
+.site-section > :first-child {
+    margin-top: 0;
+}
+
+.site-section > :last-child {
+    margin-bottom: 0;
+}
+
+.site-section h2,
+.site-section h3 {
+    color: var(--site-heading);
+}
+
+.site-section h2 {
+    margin-bottom: 0.65rem;
+}
+
+.site-lead {
+    max-width: 800px;
+    color: var(--site-muted);
+    font-size: 1.05rem;
+}
+
+.site-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.site-card {
+    padding: 1rem;
+    border: 1px solid var(--site-border);
+    border-radius: 0.6rem;
+    background: #fbfcfd;
+}
+
+.site-card > :first-child {
+    margin-top: 0;
+}
+
+.site-card > :last-child {
+    margin-bottom: 0;
+}
+
+.site-tag {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    color: var(--site-accent);
+    background: var(--site-soft);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.site-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.site-flow__node {
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--site-border);
+    border-radius: 0.55rem;
+    background: var(--site-soft);
+    white-space: nowrap;
+}
+
+.site-flow__node--primary {
+    color: #ffffff;
+    border-color: var(--site-heading);
+    background: var(--site-heading);
+}
+
+.site-flow__arrow {
+    color: var(--site-accent);
+    font-weight: 900;
+}
+
+.site-stack {
+    margin: 1rem 0 0;
+    padding: 1rem;
+    overflow-x: auto;
+    border-radius: 0.6rem;
+    color: #eaf4fb;
+    background: #172b3d;
+    font: 0.9rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.site-table-wrap {
+    overflow-x: auto;
+}
+
+.site-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.site-table th,
+.site-table td {
+    padding: 0.7rem;
+    border-bottom: 1px solid var(--site-border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.site-table th {
+    color: var(--site-heading);
+    background: var(--site-soft);
+}
+
+.site-note {
+    padding: 0.9rem 1rem;
+    border-left: 4px solid var(--site-accent);
+    background: var(--site-soft);
+}
+
+.site-code {
+    padding: 0.12rem 0.3rem;
+    border-radius: 0.25rem;
+    background: var(--site-soft);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+}
+
+@media (max-width: 700px) {
+    .site-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .site-main {
+        width: min(100% - 1rem, var(--site-max));
+    }
+
+    .site-hero {
+        padding: 2.5rem 0.75rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
