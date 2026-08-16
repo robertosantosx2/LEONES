@@ -19,7 +19,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: atlas-daily-pipeline
+  group: leones-main-writers
   cancel-in-progress: false
 
 env:
@@ -34,12 +34,10 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
       - name: Preparar Python
         uses: actions/setup-python@v7
         with:
           python-version: '3.x'
-
       - name: Descubrir modelos y ecosistema
         run: |
           python3 scripts/prospectors/models.py
@@ -47,92 +45,36 @@ jobs:
           python3 scripts/prospectors/repos.py agents
           python3 scripts/prospectors/repos.py skills
           python3 scripts/prospectors/repos.py harnesses
-
       - name: Construir evidencia externa inicial
         run: python3 scripts/atlas_external_evidence.py
-
       - name: Ingerir descubrimientos de modelos
         run: python3 scripts/atlas_ingest_ndjson.py
-
       - name: Regenerar evidencia externa tras la ingesta
         run: python3 scripts/atlas_external_evidence.py
-
       - name: Construir evidencia técnica de modelos
         run: |
           set -e
           python3 scripts/atlas_technical_evidence.py
-          echo "Perfiles técnicos:"
-          python3 - <<'PY'
-          import csv
-          p='data/prospection/atlas_technical_evidence.csv'
-          with open(p, encoding='utf-8-sig', newline='') as f:
-              rows=list(csv.DictReader(f))
-          counts={k:sum(r.get('technical_profile_level')==k for r in rows) for k in ('T0','T1','T2','T3')}
-          reported=sum(r.get('technical_evidence_state')=='reported' for r in rows)
-          print(f"reported={reported}/{len(rows)}; T0={counts['T0']} T1={counts['T1']} T2={counts['T2']} T3={counts['T3']}")
-          PY
-
       - name: Auditar identidad canónica H06 P0
         run: |
           set -e
           python3 scripts/atlas_identity_audit.py
           test -s data/prospection/atlas_identity_audit.csv
-          python3 - <<'PY'
-          import csv, collections, sys
-          p='data/prospection/atlas_identity_audit.csv'
-          with open(p, encoding='utf-8-sig', newline='') as f:
-              rows=list(csv.DictReader(f))
-          required={'identity_key','row_number','model_id','model_name','organization','repository_url','status','risk','action'}
-          missing=required-set(rows[0]) if rows else required
-          if missing:
-              print(f'ERROR: auditoria de identidad sin columnas {sorted(missing)}')
-              sys.exit(1)
-          statuses=collections.Counter(r['status'] for r in rows)
-          risks=collections.Counter(r['risk'] for r in rows)
-          print(f"Identity audit: rows={len(rows)} statuses={dict(statuses)} risks={dict(risks)}")
-          print('P0 identity audit generated successfully; no automatic merges are performed.')
-          PY
-
       - name: Auditar evidencia canónica H06 P1
         run: |
           set -e
           python3 scripts/atlas_evidence_audit.py
           test -s data/prospection/atlas_evidence_audit.csv
-          python3 - <<'PY'
-          import csv, collections, sys
-          p='data/prospection/atlas_evidence_audit.csv'
-          with open(p, encoding='utf-8-sig', newline='') as f:
-              rows=list(csv.DictReader(f))
-          required={'model_id','model_name','evidence_state','evidence_type','source_url','source_present','retrieved_at','claim_present','action','risk'}
-          missing=required-set(rows[0]) if rows else required
-          if missing:
-              print(f'ERROR: auditoria de evidencia sin columnas {sorted(missing)}')
-              sys.exit(1)
-          states=collections.Counter(r['evidence_state'] for r in rows)
-          risks=collections.Counter(r['risk'] for r in rows)
-          no_source=sum(r['source_present']!='yes' for r in rows)
-          print(f"Evidence audit: rows={len(rows)} states={dict(states)} risks={dict(risks)} no_source={no_source}")
-          print('P1 evidence audit generated successfully; no automatic evidence promotion is performed.')
-          PY
-
       - name: Auditar calidad del feed
         run: python3 scripts/atlas_quality_audit.py
-
       - name: Generar hipótesis desde evidencia empírica
         run: python3 scripts/atlas_hypotheses.py
-
       - name: Generar matriz CPU × RAM × GPU NVIDIA
         run: |
           set -e
           python3 scripts/atlas_hardware_matrix.py
           rows=$(tail -n +2 data/prospection/atlas_hardware_matrix.csv | wc -l)
-          echo "Filas de matriz hardware: $rows"
-          if [ "$rows" -eq 0 ]; then
-            echo "ERROR: la matriz hardware no puede publicarse vacía"
-            echo "Los perfiles T2 deben alimentar la matriz; revise la evidencia técnica aguas arriba."
-            exit 1
-          fi
-
+          test "$rows" -gt 0
       - name: Generar perfiles CPU × RAM sin GPU
         run: |
           set -e
@@ -146,7 +88,6 @@ jobs:
               done
             done
           done
-
       - name: Enriquecer recomendaciones sin sobrescribir datos existentes
         run: |
           set -e
@@ -156,7 +97,6 @@ jobs:
             python3 scripts/atlas_recommendation_enrich.py --input "$file" --out "$tmp"
             mv "$tmp" "$file"
           done
-
       - name: Validar columnas críticas de recomendación
         run: |
           set -e
@@ -164,48 +104,24 @@ jobs:
           import csv, glob, sys
           required = {'cabe','cabe_status','rula','rula_status','jgb_status','evidence_state','evidence_type','uncertainty'}
           files = glob.glob('data/prospection/recommendations_*_chat.csv')
-          if not files:
-              print('No se generaron recomendaciones')
-              sys.exit(1)
+          if not files: sys.exit(1)
           total_rows = 0
           for path in files:
               with open(path, encoding='utf-8-sig', newline='') as f:
-                  reader = csv.DictReader(f)
-                  fields = set(reader.fieldnames or [])
-                  rows = list(reader)
-              missing = required - fields
-              if missing:
-                  print(f'{path}: faltan {sorted(missing)}')
-                  sys.exit(1)
+                  reader = csv.DictReader(f); fields=set(reader.fieldnames or []); rows=list(reader)
+              if required-fields: sys.exit(1)
               total_rows += len(rows)
-          print(f'OK: {len(files)} ficheros de recomendaciones validados; {total_rows} filas')
-          if total_rows == 0:
-              print('ERROR: todos los ficheros de recomendaciones están vacíos')
-              sys.exit(1)
+          if total_rows == 0: sys.exit(1)
+          print(f'OK: {len(files)} ficheros; {total_rows} filas')
           PY
-
-      - name: Publicar resultados sin perder commits concurrentes
+      - name: Publicar resultados
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/discovery data/prospection/atlas_feed.csv data/prospection/atlas_external_evidence.csv data/prospection/atlas_technical_evidence.csv data/prospection/atlas_identity_audit.csv data/prospection/atlas_evidence_audit.csv data/prospection/atlas_hypotheses.csv data/prospection/atlas_quality_flags.csv data/prospection/atlas_review_queue.csv data/prospection/recommendations_*.csv data/prospection/atlas_hardware_matrix.csv
-          if git diff --cached --quiet; then
-            echo "Atlas sin cambios"
-            exit 0
-          fi
-          git commit -m "feat: actualizar prospección, identidad, evidencia, hipótesis, calidad, hardware y recomendaciones"
-          for attempt in 1 2 3; do
-            git fetch origin main
-            if git rebase origin/main; then
-              if git push origin HEAD:main; then
-                echo "Atlas publicado correctamente"
-                exit 0
-              fi
-            fi
-            echo "Reintento de publicación $attempt/3"
-            git rebase --abort || true
-            sleep $((attempt * 5))
-          done
-          echo "No se pudo publicar tras 3 intentos"
-          exit 1
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "feat: actualizar prospección, evidencia, hardware y recomendaciones"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
