@@ -37,6 +37,16 @@ CERRAR FASE
 
 [`PHASE_AUDIT_2026-08.md`](PHASE_AUDIT_2026-08.md) — revisión de capacidades y paquetes documentales.
 
+## Guías pedagógicas de mantenimiento
+
+Las guías de [`docs/completed/`](../completed/) explican las fases aceptadas desde el punto de vista de una persona que necesita mantener el código con conocimientos básicos de programación.
+
+- [H01/H02 — precios e integración](../completed/H01-H02-HARDWARE-PRICES.md)
+- [H03 — ranking económico](../completed/H03-ECONOMIC-RANKING.md)
+- [H04 — prospección diaria](../completed/H04-DAILY-PROSPECTION.md)
+- [H05 — sistema documental](../completed/H05-DOCUMENTATION-SYSTEM.md)
+- [H10 — pipeline Atlas → recomendador](../completed/H10-ATLAS-RECOMMENDER-PIPELINE.md)
+
 ## Fases documentadas
 
 ### 🟢 H01 — 2026-08 — Bot mensual de precios de hardware
