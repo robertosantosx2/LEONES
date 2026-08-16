@@ -1,8 +1,17 @@
 {
-  "generated_at": "2026-08-16T11:59:35.538941+00:00",
+  "generated_at": "2026-08-16T14:19:36.614793+00:00",
   "kind": "runtimes",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
+    {
+      "name": "Classevelabs/rai",
+      "url": "https://github.com/Classevelabs/rai",
+      "description": "CPU-only LLM inference engine in pure Rust — 4-bit quantized models, hand-written AVX2 kernels, speculative decoding, and a local HTTP/MCP server. No GPU, no Python runtime.",
+      "updated_at": "2026-08-16T12:58:00Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
     {
       "name": "andrestubbe/FastAIModel",
       "url": "https://github.com/andrestubbe/FastAIModel",
@@ -49,19 +58,10 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "Classevelabs/rai",
-      "url": "https://github.com/Classevelabs/rai",
-      "description": "CPU-only LLM inference engine in pure Rust — 4-bit quantized models, hand-written AVX2 kernels, speculative decoding, and a local HTTP/MCP server. No GPU, no Python runtime.",
-      "updated_at": "2026-08-15T19:11:55Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "weicj/vLLM-2080Ti-Definitive",
       "url": "https://github.com/weicj/vLLM-2080Ti-Definitive",
       "description": "The definitive vLLM runtime for dual RTX 2080 Ti 22GB + NVLink, delivering Qwen 27B local inference with 100+ tok/s single-request decode with support of FP8 weight ",
-      "updated_at": "2026-08-16T11:01:32Z",
+      "updated_at": "2026-08-16T13:45:17Z",
       "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -115,7 +115,7 @@
       "name": "guelfoweb/orbit",
       "url": "https://github.com/guelfoweb/orbit",
       "description": "Local agentic AI runtime for Gemma4, Qwen3-Coder and Qwen3.6, optimized for CPU-only consumer hardware, tool use and efficient local inference.",
-      "updated_at": "2026-08-14T09:49:18Z",
+      "updated_at": "2026-08-16T13:33:35Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"

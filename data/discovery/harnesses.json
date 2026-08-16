@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-16T11:59:43.599580+00:00",
+  "generated_at": "2026-08-16T14:19:40.245845+00:00",
   "kind": "harnesses",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
@@ -133,7 +133,7 @@
       "name": "xiaobright/modeltest",
       "url": "https://github.com/xiaobright/modeltest",
       "description": "Personal LLM engineering-maintenance evaluation harness (V4.1b, frozen). Not a public benchmark.",
-      "updated_at": "2026-08-16T10:47:09Z",
+      "updated_at": "2026-08-16T14:05:34Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"

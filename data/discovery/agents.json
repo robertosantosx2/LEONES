@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-16T11:59:38.527049+00:00",
+  "generated_at": "2026-08-16T14:19:37.915434+00:00",
   "kind": "agents",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
@@ -7,7 +7,34 @@
       "name": "MariusYvard/corparius",
       "url": "https://github.com/MariusYvard/corparius",
       "description": "Self-hosted framework for autonomous AI micro-companies. Describe a business in plain language and corparius runs it as scheduled cognitive agents (a CEO plus nine operational roles), guarded by a budget and loop firewall, with local-first LLM routing.",
-      "updated_at": "2026-08-16T11:38:51Z",
+      "updated_at": "2026-08-16T14:10:53Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "OpenAgentHQ/openagent-eval",
+      "url": "https://github.com/OpenAgentHQ/openagent-eval",
+      "description": "Local-first evaluation framework for RAG systems and AI Agents. 18+ metrics, CLI + SDK, framework-agnostic. The pytest of AI evaluation.",
+      "updated_at": "2026-08-16T13:17:51Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "open-multi-agent/open-multi-agent",
+      "url": "https://github.com/open-multi-agent/open-multi-agent",
+      "description": "TypeScript AI agent orchestration framework with dynamic workflows. Describe the goal, not the graph: a coordinator plans the task DAG at runtime and runs it on any LLM (Claude, ChatGPT, Gemini, DeepSeek, or local models).",
+      "updated_at": "2026-08-16T14:06:11Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "jenolaszlo-sketch/penghou-cangjie",
+      "url": "https://github.com/jenolaszlo-sketch/penghou-cangjie",
+      "description": "Penghou.Cangjie is a lightweight, local-first, provenance-aware context store for .NET AI applications. It provides explicit persistent context, SQLite FTS5 retrieval, scopes, tags, relationships, logical history, and evidence tracking without requiring an agent framework, vector database, or LLM.",
+      "updated_at": "2026-08-16T12:55:28Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -17,15 +44,6 @@
       "url": "https://github.com/Mallikarjun-Roddannavar/playwright-agentic-automation",
       "description": "Playwright + TypeScript automation framework for UI/API testing with Page Object Model, shared fixtures, reusable services, local agent skills, and an AI-ready codebase second brain",
       "updated_at": "2026-08-16T10:41:50Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "open-multi-agent/open-multi-agent",
-      "url": "https://github.com/open-multi-agent/open-multi-agent",
-      "description": "TypeScript AI agent orchestration framework with dynamic workflows. Describe the goal, not the graph: a coordinator plans the task DAG at runtime and runs it on any LLM (Claude, ChatGPT, Gemini, DeepSeek, or local models).",
-      "updated_at": "2026-08-16T09:48:33Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -169,17 +187,8 @@
       "name": "ghost-in-the-droid/android-agent",
       "url": "https://github.com/ghost-in-the-droid/android-agent",
       "description": "Open-source framework to drive a real phone with AI agents: Android over ADB, iPhone over WebDriverAgent, 62 MCP tools, Python skills, a Vue dashboard, and swappable local or cloud LLMs",
-      "updated_at": "2026-08-13T23:02:34Z",
+      "updated_at": "2026-08-16T13:07:03Z",
       "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "OpenAgentHQ/openagent-eval",
-      "url": "https://github.com/OpenAgentHQ/openagent-eval",
-      "description": "Local-first evaluation framework for RAG systems and AI Agents. 18+ metrics, CLI + SDK, framework-agnostic. The pytest of AI evaluation.",
-      "updated_at": "2026-08-13T19:51:05Z",
-      "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -441,15 +450,6 @@
       "description": "A modular AI agent framework built with Bun. Features a plugin-based architecture, persistent semantic memory, and multi-modal input — designed to run against a local LLM via LM Studio.",
       "updated_at": "2026-07-25T20:29:14Z",
       "license": "AGPL-3.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "pguso/agents-from-scratch",
-      "url": "https://github.com/pguso/agents-from-scratch",
-      "description": "Build AI agents from first principles using a local LLM - no frameworks, no cloud APIs, no hidden reasoning.",
-      "updated_at": "2026-08-14T07:10:36Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     }
