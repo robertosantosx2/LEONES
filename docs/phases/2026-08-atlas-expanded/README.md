@@ -1,6 +1,6 @@
 # H06 — Open LLM Atlas ampliado
 
-**Estado: 🟡 IMPLEMENTACIÓN COMPLETA / ACEPTACIÓN CI PENDIENTE.**
+**Estado: 🟢 ACEPTADA / OPERATIVA.**
 
 ## Objetivo
 
@@ -8,43 +8,40 @@ Ampliar y depurar el Open LLM Atlas como capa estructurada de conocimiento de LE
 
 H06 se apoya en la infraestructura diaria H10, que ya está aceptada, pero su aceptación es independiente.
 
-## Principio rector
-
-```text
-DESCUBRIR
-   ↓
-IDENTIFICAR
-   ↓
-NORMALIZAR
-   ↓
-RELACIONAR
-   ↓
-DOCUMENTAR PROCEDENCIA
-   ↓
-CLASIFICAR EVIDENCIA
-   ↓
-VALIDAR
-   ↓
-PUBLICAR
-```
-
 ## Resultado de la fase
 
-H06 ya dispone de la capa que faltaba entre el feed operativo y el Atlas canónico:
+H06 establece la frontera que faltaba entre el feed operativo y el Atlas canónico:
 
 ```text
 atlas_feed.csv
       ↓
-atlas_identity_audit.py
+identidad canónica
       ↓
-atlas_quality_audit.py
+evidencia
       ↓
-atlas_promote_verified.py
+quality gate
+      ↓
+verified-only
       ↓
 atlas/catalog.json
 ```
 
 La promoción es **verified-only**, no destructiva y no inventa valores. El workflow `.github/workflows/atlas-h06.yml` automatiza pruebas, auditorías, promoción y validación contra JSON Schema.
+
+## Validación final
+
+La ejecución final auditó:
+
+- **193** filas del feed;
+- **193** identidades;
+- **193** identidades únicas según el auditor actual;
+- **0** grupos duplicados detectados;
+- **193** flags de calidad, todos `unverified`;
+- **0** filas `verified`;
+- **0** registros promovidos al Atlas canónico;
+- **0** registros en `atlas/catalog.json`.
+
+Este resultado es correcto: el Atlas no se rellena artificialmente cuando la evidencia no alcanza el estado exigido. El informe completo queda en [`H06_FINAL.md`](H06_FINAL.md).
 
 ## Documentación
 
@@ -54,26 +51,7 @@ La promoción es **verified-only**, no destructiva y no inventa valores. El work
 - [`EVIDENCE-RULES.md`](EVIDENCE-RULES.md) — reglas de evidencia.
 - [`DECISIONS.md`](DECISIONS.md) — decisiones de arquitectura.
 - [`VALIDATION.md`](VALIDATION.md) — validación automatizada.
-- [`H06_FINAL.md`](H06_FINAL.md) — informe de cierre técnico.
-
-## Alcance
-
-1. Modelos y variantes.
-2. Familias y organizaciones.
-3. Repositorios y procedencia.
-4. Arquitectura, parámetros, contexto, pesos y formatos cuando exista evidencia.
-5. Runtimes, backends y formatos de ejecución.
-6. Benchmarks y resultados con fuente y fecha.
-7. Estados de evidencia.
-8. Integración con JGB sin sustituir la clasificación de apertura por un score de rendimiento.
-9. Contratos de datos para alimentar hardware y recomendación.
-
-## Fuera de alcance de H06
-
-- Declarar que un modelo está benchmarkeado si solo existe información externa.
-- Convertir automáticamente datos externos en `verified`.
-- Sustituir la clasificación de apertura por una puntuación económica o de rendimiento.
-- Cerrar CABE/RULA empíricamente: eso pertenece a H09 y a benchmarks posteriores.
+- [`H06_FINAL.md`](H06_FINAL.md) — informe de cierre.
 
 ## Reglas de datos
 
@@ -102,10 +80,18 @@ H10 pipeline diario 🟢
    └── publicación
 ```
 
-## Criterio de aceptación
+## Qué NO queda cerrado por H06
 
-La fase queda preparada para aceptación cuando el workflow H06 termina en verde y deja publicados los outputs definidos en [`VALIDATION.md`](VALIDATION.md). Si no existen filas verificadas, el catálogo puede permanecer vacío: eso es un resultado válido y preferible a introducir datos ficticios.
+H06 no significa que todos los modelos estén verificados, benchmarkeados o medidos físicamente. Tampoco cierra:
 
-## Próximo paso después de H06
+- JGB sistemático completo;
+- CABE/RULA completo;
+- matriz hardware completa;
+- benchmarks físicos;
+- optimización multiobjetivo.
 
-Una vez aceptado H06, la siguiente fase es **H07 — JGB sistemático**, consumiendo la identidad y procedencia ya normalizadas sin mezclar apertura con rendimiento, precio o viabilidad.
+## Siguiente fase
+
+**H07 — JGB sistemático.**
+
+H07 podrá consumir la identidad y procedencia normalizadas por H06 sin mezclar apertura con rendimiento, precio o viabilidad.
