@@ -10,7 +10,7 @@ La documentación para mantenimiento está en:
 
 Principios importantes:
 - T2/T3 son niveles de evidencia, no una nota de calidad.
-- CABE (cabe técnicamente) no significa RULA (resulta útil bajo carga).
+- CABE/RULA es una clasificación de velocidad y no sustituye al fit_score.
 - El contexto desconocido se conserva como desconocido.
 - El precio es evidencia económica independiente.
 """
@@ -21,20 +21,18 @@ import csv
 import re
 from pathlib import Path
 
-# Todos los caminos se calculan desde la raíz del repositorio para que el
-# script funcione igual desde un terminal y desde GitHub Actions.
+from classify_performance import classify_measurement
+
 ROOT = Path(__file__).resolve().parents[1]
 FEED = ROOT / 'data/prospection/atlas_feed.csv'
 PRICES = ROOT / 'data/hardware/hardware_prices.csv'
 OUT = ROOT / 'data/prospection/atlas_recommendations.csv'
 
-# Este es el contrato de columnas de salida. Si se cambia una columna, hay que
-# revisar los scripts que consumen este CSV antes de aceptar el cambio.
 FIELDS = [
     'rank', 'model_id', 'model_name', 'variant', 'quantization', 'runtime',
     'hardware_id', 'workload', 'estimated_memory_gb', 'weight_memory_gb',
     'context_tokens', 'context_target_tokens', 'tokens_per_second',
-    'quality_score', 'jgb_level', 'jgb_confidence', 'fit_score', 'confidence',
+    'performance_class', 'quality_score', 'jgb_level', 'jgb_confidence', 'fit_score', 'confidence',
     'cpu_price_eur', 'cpu_price_source', 'ram_price_eur', 'ram_price_source',
     'gpu_price_eur', 'gpu_price_source', 'hardware_price_eur',
     'price_coverage', 'value_score', 'reason'
@@ -81,51 +79,25 @@ def hardware_price_evidence(hardware_id, ram_gb, vram_gb, prices):
     total de PC.
     """
     hid = norm(hardware_id)
-    cpu_rows = []
-    ram_rows = []
-    gpu_rows = []
+    cpu_rows, ram_rows, gpu_rows = [], [], []
 
-    # Primero intentamos CPU Intel. Si no coincide, probamos AMD Ryzen.
     m = re.search(r'\bi([3579])\b', hid)
     if m:
-        cpu_rows = [
-            r for r in prices
-            if r.get('component_type') == 'cpu'
-            and r.get('vendor') == 'intel'
-            and norm(r.get('category', '')) == f'core i{m.group(1)}'
-        ]
+        cpu_rows = [r for r in prices if r.get('component_type') == 'cpu' and r.get('vendor') == 'intel' and norm(r.get('category', '')) == f'core i{m.group(1)}']
     else:
         m = re.search(r'\bryzen ([3579])\b', hid)
         if m:
-            cpu_rows = [
-                r for r in prices
-                if r.get('component_type') == 'cpu'
-                and r.get('vendor') == 'amd'
-                and norm(r.get('category', '')) == f'ryzen {m.group(1)}'
-            ]
+            cpu_rows = [r for r in prices if r.get('component_type') == 'cpu' and r.get('vendor') == 'amd' and norm(r.get('category', '')) == f'ryzen {m.group(1)}']
 
-    # La RAM se identifica por capacidad y, si está presente en el perfil,
-    # también por generación DDR.
     m = re.search(r'\b(\d+)\s*gb\b', hid)
     cap = int(m.group(1)) if m else int(ram_gb) if ram_gb else None
     ddr = re.search(r'\bddr([45])\b', hid)
     if cap:
-        ram_rows = [
-            r for r in prices
-            if r.get('component_type') == 'ram'
-            and r.get('capacity_gb') == str(cap)
-            and (not ddr or norm(r.get('category', '')) == f'ddr{ddr.group(1)}')
-        ]
+        ram_rows = [r for r in prices if r.get('component_type') == 'ram' and r.get('capacity_gb') == str(cap) and (not ddr or norm(r.get('category', '')) == f'ddr{ddr.group(1)}')]
 
-    # La GPU se busca por familia RTX y solo dentro de las observaciones NVIDIA.
     m = re.search(r'\brtx\s*(\d{3,4}(?:\s*(?:ti|super))?)\b', hid)
     if m:
-        gpu_rows = [
-            r for r in prices
-            if r.get('component_type') == 'gpu'
-            and r.get('vendor') == 'nvidia'
-            and norm(r.get('category', '')) == 'rtx ' + m.group(1).lower()
-        ]
+        gpu_rows = [r for r in prices if r.get('component_type') == 'gpu' and r.get('vendor') == 'nvidia' and norm(r.get('category', '')) == 'rtx ' + m.group(1).lower()]
 
     cpu, cs = representative(cpu_rows)
     ram, rs = representative(ram_rows)
@@ -137,8 +109,7 @@ def hardware_price_evidence(hardware_id, ram_gb, vram_gb, prices):
 
 def hardware_compatible(row_hardware, requested):
     """Comprueba compatibilidad declarada sin exigir hardware_id cuando está vacío."""
-    rh = norm(row_hardware)
-    req = norm(requested)
+    rh, req = norm(row_hardware), norm(requested)
     return not rh or rh == req or rh in req
 
 
@@ -147,11 +118,10 @@ def recommend(rows, prices, workload, hardware, ram, vram, context, min_jgb=None
 
     El orden lógico es importante: primero se descartan modelos sin evidencia
     técnica suficiente o que no caben en memoria; después se calcula la
-    puntuación. Esto evita que un score alto compense una imposibilidad técnica.
+    puntuación. CABE/RULA se deriva por separado y nunca se mezcla con fit_score.
     """
     limit = ram + vram
     out = []
-
     for r in rows:
         if not r.get('model_id') and not r.get('model_name'):
             continue
@@ -160,64 +130,51 @@ def recommend(rows, prices, workload, hardware, ram, vram, context, min_jgb=None
         if not hardware_compatible(r.get('hardware_id', ''), hardware):
             continue
 
-        # Estas variables son la evidencia mínima que necesitamos para decidir.
         mem = num(r.get('estimated_memory_gb')) or num(r.get('weight_memory_gb'))
         ctx = num(r.get('context_tokens'))
         runtime = (r.get('runtime') or '').strip()
         quant = (r.get('quantization') or '').strip()
         level = (r.get('technical_profile_level') or '').strip()
         weight_observed = num(r.get('weight_memory_gb')) is not None
-
-        # Un modelo sin memoria, runtime o nivel técnico suficiente no entra.
         if mem is None or not runtime or (not quant and not weight_observed):
             continue
         if level not in ('T2', 'T3') or mem > limit:
             continue
 
-        # T2 no exige contexto. Si no existe evidencia, mantenemos None y la
-        # razón de la recomendación explicará que todavía es preliminar.
         context_recommended = min(ctx, context) if ctx is not None else None
-
         jgb = num(r.get('jgb_level'))
         tps = num(r.get('tokens_per_second'))
         quality = num(r.get('quality_score'))
         if min_jgb is not None and (jgb is None or jgb < min_jgb):
             continue
 
-        # La fórmula produce una señal de adecuación, no un benchmark.
+        performance = classify_measurement(tps) if tps is not None else {
+            'tokens_per_second': None,
+            'performance_class': 'UNKNOWN',
+        }
+
         q = (quality / 100) if quality is not None else 0
         s = min((tps or 0) / 50, 1)
         m = max(0, 1 - mem / max(limit, 1))
         o = (jgb / 5) if jgb is not None else 0
         score = .35 * q + .25 * s + .15 * m + .15 + (.10 * o if prefer_jgb else 0)
 
-        cpu, cs, rp, rs, gpu, gs, total, cov = hardware_price_evidence(
-            hardware, ram, vram, prices
-        )
+        cpu, cs, rp, rs, gpu, gs, total, cov = hardware_price_evidence(hardware, ram, vram, prices)
         value = score / (total / 100) if total else None
-
-        # La confianza indica cuántas dimensiones de evidencia están presentes;
-        # no es una probabilidad estadística.
         ec = sum(x is not None for x in (mem, ctx, tps, quality, jgb))
         confidence = 'high' if ec == 5 else 'medium' if ec >= 3 else 'low'
         basis = 'observed weight size' if weight_observed else 'estimated memory'
-        context_text = (
-            f'context supported={int(ctx)}, recommended={int(context_recommended)}'
-            if context_recommended is not None
-            else 'context supported=unknown, recommendation is preliminary'
-        )
+        context_text = f'context supported={int(ctx)}, recommended={int(context_recommended)}' if context_recommended is not None else 'context supported=unknown, recommendation is preliminary'
         reason = [
             f'technical viability {level} supported by {basis}',
             context_text,
             'quality evidence=' + ('available' if quality is not None else 'unknown'),
             'performance evidence=' + ('available' if tps is not None else 'unknown'),
+            'performance class=' + performance['performance_class'],
             'JGB=' + (str(int(jgb)) if jgb is not None else 'unknown'),
             f'hardware price coverage={cov}',
         ]
-        out.append((
-            score, r, confidence, '; '.join(reason), cpu, cs, rp, rs,
-            gpu, gs, total, cov, value, context_recommended
-        ))
+        out.append((score, r, confidence, '; '.join(reason), cpu, cs, rp, rs, gpu, gs, total, cov, value, context_recommended, performance['performance_class']))
 
     out.sort(key=lambda x: x[0], reverse=True)
     return out
@@ -245,10 +202,11 @@ def main():
         w = csv.DictWriter(f, fieldnames=FIELDS)
         w.writeheader()
         for i, x in enumerate(ranked, 1):
-            score, r, conf, reason, cpu, cs, rp, rs, gpu, gs, total, cov, value, ctxrec = x
+            score, r, conf, reason, cpu, cs, rp, rs, gpu, gs, total, cov, value, ctxrec, performance_class = x
             w.writerow({
                 'rank': i,
                 **{k: r.get(k, '') for k in FIELDS if k in r},
+                'performance_class': performance_class,
                 'context_target_tokens': int(ctxrec) if ctxrec is not None else '',
                 'fit_score': f'{score:.4f}',
                 'confidence': conf,
