@@ -16,16 +16,18 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: leones-main-writers
+  cancel-in-progress: false
+
 jobs:
   integrate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Integrate visual identity
         run: python3 scripts/integrate_web_logos.py
-
       - name: Commit generated integration
         run: |
           if git diff --quiet; then
