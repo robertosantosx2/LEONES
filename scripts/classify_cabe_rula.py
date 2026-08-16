@@ -1,19 +1,25 @@
 #!/usr/bin/env python3
 """Clasifica una velocidad de inferencia según el contrato CABE/RULA de LEONES.
 
-Este pequeño script convierte un dato continuo (tokens por segundo) en una
-etiqueta fácil de usar por el resto del proyecto. Conservamos siempre el
-número original: la etiqueta es una ayuda para razonar, no sustituye a la
-medición.
+Este pequeño módulo convierte un dato continuo (tokens por segundo) en una
+etiqueta que el resto del proyecto puede entender fácilmente. Conservamos
+siempre el número original: la etiqueta ayuda a razonar, pero nunca sustituye
+la medición.
 
 Reglas oficiales:
-    < 1 tok/s       -> NO_CABE
-    1 <= tok/s < 10 -> CABE
-    10 <= tok/s <= 100 -> RULA
-    > 100 tok/s     -> RULA+
+    < 1 tok/s          -> NO_CABE
+    1 <= tok/s < 10    -> CABE
+    10 <= tok/s <= 100  -> RULA
+    > 100 tok/s        -> RULA+
+
+El clasificador es deliberadamente pequeño. La normalización de entradas
+externas se realiza antes, en ``normalize_cabe_rula_measurement.py``; aun así,
+este punto de entrada también protege el contrato frente a NaN e infinito.
 """
 
 from __future__ import annotations
+
+import math
 
 
 def classify_tokens_per_second(tokens_per_second: float) -> str:
@@ -32,10 +38,12 @@ def classify_tokens_per_second(tokens_per_second: float) -> str:
     Raises
     ------
     ValueError
-        Si la medición no es un número finito o es negativa.
+        Si la medición no es un número finito o es negativa. Una velocidad
+        infinita no representa una observación física válida y no debe acabar
+        convertida accidentalmente en ``RULA+``.
     """
-    if tokens_per_second != tokens_per_second:  # NaN
-        raise ValueError("tokens_per_second no puede ser NaN")
+    if not math.isfinite(tokens_per_second):
+        raise ValueError("tokens_per_second debe ser finito")
     if tokens_per_second < 0:
         raise ValueError("tokens_per_second no puede ser negativo")
 
@@ -49,7 +57,10 @@ def classify_tokens_per_second(tokens_per_second: float) -> str:
 
 
 def main() -> None:
-    """Ejemplo sencillo para comprobar el contrato desde la terminal."""
+    """Permite probar el contrato desde la terminal.
+
+    Ejemplo: ``python scripts/classify_cabe_rula.py 7.5`` imprime ``CABE``.
+    """
     import argparse
 
     parser = argparse.ArgumentParser(description="Clasifica tok/s como CABE/RULA")
