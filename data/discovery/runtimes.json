@@ -1,13 +1,22 @@
 {
-  "generated_at": "2026-08-16T05:44:34.775708+00:00",
+  "generated_at": "2026-08-16T11:47:44.245546+00:00",
   "kind": "runtimes",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
     {
+      "name": "andrestubbe/FastAIModel",
+      "url": "https://github.com/andrestubbe/FastAIModel",
+      "description": "🤖 Zero-dependency, high-performance local inference runtime (GGUF/ONNX) engine for Java via native llama.cpp bindings.",
+      "updated_at": "2026-08-16T11:16:40Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
       "name": "cklxx/arle",
       "url": "https://github.com/cklxx/arle",
       "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
-      "updated_at": "2026-08-16T05:42:16Z",
+      "updated_at": "2026-08-16T10:00:24Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -16,8 +25,26 @@
       "name": "lm-webui/lm-webui",
       "url": "https://github.com/lm-webui/lm-webui",
       "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
-      "updated_at": "2026-08-16T02:29:09Z",
+      "updated_at": "2026-08-16T06:36:07Z",
       "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "mmogr/gglib",
+      "url": "https://github.com/mmogr/gglib",
+      "description": "The local model runtime that makes llama.cpp behave like an API provider.",
+      "updated_at": "2026-08-16T06:32:01Z",
+      "license": "AGPL-3.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "nathanael-thms/ovi",
+      "url": "https://github.com/nathanael-thms/ovi",
+      "description": "A  lightweight local model server that delivers an ollama‑style developer experience, built natively on Intel’s OpenVINO runtime for efficient CPU and GPU inference.",
+      "updated_at": "2026-08-16T06:17:00Z",
+      "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -34,26 +61,8 @@
       "name": "weicj/vLLM-2080Ti-Definitive",
       "url": "https://github.com/weicj/vLLM-2080Ti-Definitive",
       "description": "The definitive vLLM runtime for dual RTX 2080 Ti 22GB + NVLink, delivering Qwen 27B local inference with 100+ tok/s single-request decode with support of FP8 weight ",
-      "updated_at": "2026-08-16T01:56:58Z",
+      "updated_at": "2026-08-16T11:01:32Z",
       "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "nathanael-thms/ovi",
-      "url": "https://github.com/nathanael-thms/ovi",
-      "description": "A  lightweight local model server that delivers an ollama‑style developer experience, built natively on Intel’s OpenVINO runtime for efficient CPU and GPU inference.",
-      "updated_at": "2026-08-15T15:23:38Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "mmogr/gglib",
-      "url": "https://github.com/mmogr/gglib",
-      "description": "The local model runtime that makes llama.cpp behave like an API provider.",
-      "updated_at": "2026-08-15T13:48:13Z",
-      "license": "AGPL-3.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -99,15 +108,6 @@
       "description": "Ashley is an all-in-one, single-click local AI assistant. It bundles an llama.cpp LLM inference engine, a Symfony/PHP web chatbot interface, a CEF-based web client (PHP Desktop), and a service manager (written in Free Pascal) into one package - no Internet connection or cloud API key required at runtime.",
       "updated_at": "2026-08-14T17:19:34Z",
       "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "andrestubbe/FastAIModel",
-      "url": "https://github.com/andrestubbe/FastAIModel",
-      "description": "🤖 Zero-dependency, high-performance local inference runtime (GGUF/ONNX) engine for Java via native llama.cpp bindings.",
-      "updated_at": "2026-08-14T15:18:22Z",
-      "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
