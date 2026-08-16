@@ -86,3 +86,4 @@ La fase está aceptada como **prospección automatizada**, no como validación a
 - [`../../PROSPECTION.md`](../../PROSPECTION.md)
 - [`../../PROSPECTION_LICENSE_POLICY.md`](../../PROSPECTION_LICENSE_POLICY.md)
 - [`../../../scripts/prospection/PROCEDIMIENTO_DESCUBRIMIENTO_NUEVAS_FUENTES.md`](../../../scripts/prospection/PROCEDIMIENTO_DESCUBRIMIENTO_NUEVAS_FUENTES.md)
+- **Guía pedagógica de mantenimiento:** [`../../completed/H04-DAILY-PROSPECTION.md`](../../completed/H04-DAILY-PROSPECTION.md)
