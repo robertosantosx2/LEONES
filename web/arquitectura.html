@@ -8,183 +8,27 @@
             content="Arquitectura canónica de LEONES y relación entre sus pilares y capas de ejecución."
         />
         <title>LEONES · Arquitectura</title>
-
-        <!-- Sistema visual común. -->
-        <link rel="stylesheet" href="assets/css/navigation.css" />
-        <link rel="stylesheet" href="assets/graphics/brand.css" />
-
-        <style>
-            /* La página controla exclusivamente su contenido. */
-            body {
-                margin: 0;
-                color: #17212b;
-                background: #f3f6f9;
-                font:
-                    16px/1.65 system-ui,
-                    -apple-system,
-                    BlinkMacSystemFont,
-                    "Segoe UI",
-                    sans-serif;
-            }
-
-            .page-hero {
-                padding: 2.75rem 1.5rem;
-                color: #ffffff;
-                background: #1769aa;
-            }
-
-            .page-hero__inner,
-            main {
-                width: min(1050px, calc(100% - 2rem));
-                margin-inline: auto;
-            }
-
-            .page-hero h1 {
-                margin: 0;
-                color: #ffffff;
-                font-size: clamp(2.3rem, 6vw, 3.5rem);
-            }
-
-            .page-hero p {
-                margin-bottom: 0;
-                color: #e4eef4;
-            }
-
-            main {
-                padding-block: 2rem 5rem;
-            }
-
-            .card {
-                margin-bottom: 1.25rem;
-                padding: 1.5rem;
-                border: 1px solid #d8e0e7;
-                border-radius: 0.9rem;
-                background: #ffffff;
-            }
-
-            .card h2,
-            .card h3 {
-                color: #102f49;
-            }
-
-            .card h2 {
-                margin-top: 0;
-            }
-
-            pre {
-                overflow-x: auto;
-                padding: 1.1rem;
-                border-radius: 0.6rem;
-                color: #eaf4fb;
-                background: #172b3d;
-            }
-
-            .note,
-            .ok {
-                padding: 0.9rem 1rem;
-                border-left: 4px solid #1769aa;
-                border-radius: 0 0.5rem 0.5rem 0;
-                background: #eaf4fb;
-            }
-
-            .ok {
-                border-left-color: #4b8f63;
-                background: #e8f4ec;
-            }
-
-            .grid {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 1.25rem;
-            }
-
-            .section-identity {
-                display: flex;
-                gap: 1rem;
-                align-items: center;
-                margin-bottom: 1.25rem;
-            }
-
-            .section-identity img {
-                width: 64px;
-                height: 64px;
-                padding: 0.3rem;
-                border: 1px solid #d8e0e7;
-                border-radius: 0.8rem;
-                background: #f7fafc;
-                object-fit: contain;
-            }
-
-            @media (max-width: 700px) {
-                .grid {
-                    grid-template-columns: 1fr;
-                }
-            }
-        </style>
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3" />
+        <link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-1" />
         <link rel="stylesheet" href="assets/graphics/brand.css" />
     </head>
 
     <body>
-        <header class="page-hero">
-            <div class="page-hero__inner">
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <span class="site-tag">Arquitectura</span>
                 <h1>LEONES · Arquitectura</h1>
-                <p>Los esquemas, decisiones y reglas que explican cómo funciona el ecosistema.</p>
+                <p>
+                    Los esquemas, decisiones y reglas que explican cómo funciona el ecosistema.
+                </p>
             </div>
         </header>
 
-        <!-- LEONES-VISUAL-IDENTITY -->
-        <div class="wrap">
-            <div class="leones-section-brand">
-                <img
-                    src="assets/graphics/logos/leones-arquitectura.svg"
-                    alt="LEONES · Arquitectura"
-                />
-                <div>
-                    <strong>LEONES · Arquitectura</strong><br /><span class="small"
-                        >Identidad funcional del ecosistema</span
-                    >
-                </div>
-            </div>
-            <div class="leones-logo-rail">
-                <a class="leones-logo-link" href="pilares.html"
-                    ><img
-                        src="assets/graphics/logos/leones-prospection.svg"
-                        alt="Prospección"
-                    />Prospección</a
-                >
-                <a class="leones-logo-link" href="pilares.html#atlas"
-                    ><img src="assets/graphics/logos/leones-atlas.svg" alt="Atlas" />Atlas</a
-                >
-                <a class="leones-logo-link" href="pilares.html#router"
-                    ><img src="assets/graphics/logos/leones-router.svg" alt="Router" />Router</a
-                >
-                <a class="leones-logo-link" href="pilares.html#runtime"
-                    ><img
-                        src="assets/graphics/logos/leones-hardware.svg"
-                        alt="Hardware"
-                    />Hardware</a
-                >
-                <a class="leones-logo-link" href="arquitectura.html#lotb"
-                    ><img src="assets/graphics/logos/leones-agents.svg" alt="Agents / LOTB" />Agents
-                    / LOTB</a
-                >
-                <a class="leones-logo-link" href="app.html#manada"
-                    ><img src="assets/graphics/logos/leones-manada.svg" alt="Manada" />Manada</a
-                >
-            </div>
-        </div>
-        <main id="main">
-            <section class="card">
-                <div class="section-identity">
-                    <img src="assets/graphics/logos/leones-arquitectura.svg" alt="" />
-                    <div>
-                        <strong>Arquitectura canónica</strong><br />
-                        <span>Relación entre los nueve pilares y la pila de ejecución.</span>
-                    </div>
-                </div>
-
-                <h2>Arquitectura canónica · nueve pilares</h2>
-                <pre>
+        <main class="site-main" id="main">
+            <section class="site-section" aria-labelledby="canonical-title">
+                <span class="site-tag">Canónica</span>
+                <h2 id="canonical-title">Nueve pilares</h2>
+                <pre class="site-stack">
 PROSPECTOR → ATLAS → TASK INTELLIGENCE → ROUTER
                                            ↓
                          ┌─────────────────┼─────────────────┐
@@ -195,18 +39,16 @@ PROSPECTOR → ATLAS → TASK INTELLIGENCE → ROUTER
                                         RUNTIME
                                            ↓
                                   BENCHMARK &amp; EVALUATION</pre>
-
-                <p class="note">
-                    <strong>Flujo:</strong>
-                    Prospector descubre → Atlas conoce → Task Intelligence entiende → Router decide
-                    → Quant/Fine-Tuning/Agents preparan → Runtime ejecuta → Benchmark &amp;
-                    Evaluation mide.
+                <p class="site-note">
+                    <strong>Flujo:</strong> Prospector descubre → Atlas conoce → Task Intelligence
+                    entiende → Router decide → Quant/Fine-Tuning/Agents preparan → Runtime ejecuta →
+                    Benchmark &amp; Evaluation mide.
                 </p>
             </section>
 
-            <section class="card">
-                <h2>Ecosistema completo</h2>
-                <pre>
+            <section class="site-section" aria-labelledby="ecosystem-title">
+                <h2 id="ecosystem-title">Ecosistema completo</h2>
+                <pre class="site-stack">
 LEONES
   │
   ├── KNOWLEDGE → Buddy / Atlas
@@ -220,14 +62,14 @@ LEONES
      evidencia real</pre>
                 <p>
                     LEONES estudia la combinación de hardware, sistema operativo, backend, modelo,
-                    harness, conocimiento y herramientas necesaria para completar objetivos
-                    agentivos localmente.
+                    harness, conocimiento y herramientas necesaria para completar objetivos agentivos
+                    localmente.
                 </p>
             </section>
 
-            <section class="card">
-                <h2>La pila completa</h2>
-                <pre>
+            <section class="site-section" aria-labelledby="stack-title">
+                <h2 id="stack-title">La pila completa</h2>
+                <pre class="site-stack">
 HARDWARE
    ↓
 SISTEMA OPERATIVO
@@ -247,21 +89,19 @@ BUDDY / KNOWLEDGE
 Evaluación
    ↓
 RESULTADO + UX</pre>
-                <p class="note">
+                <p class="site-note">
                     Cada capa es sustituible. La arquitectura debe permitir identificar el cuello de
                     botella y cambiar la pieza que produzca mayor mejora.
                 </p>
             </section>
 
-            <div class="grid">
-                <section class="card">
-                    <h2>Buddy</h2>
+            <section class="site-grid" aria-label="Capas transversales">
+                <article class="site-card">
+                    <h3>Buddy</h3>
                     <p>
-                        Conocimiento, contexto y memoria controlada que acompañan a una tarea o
-                        agente.
+                        Conocimiento, contexto y memoria controlada que acompañan a una tarea o agente.
                     </p>
-                    <pre>
-OBJETIVO
+                    <pre class="site-stack">OBJETIVO
    ↓
 BUDDY
    ↓
@@ -270,26 +110,25 @@ HARNESS / AGENTE
 MODELO / BACKEND
    ↓
 RESULTADO</pre>
-                </section>
+                </article>
 
-                <section class="card">
-                    <h2>Evaluación</h2>
+                <article class="site-card">
+                    <h3>Evaluación</h3>
                     <p>
                         Evaluación agentiva: no mide solamente tokens por segundo, sino capacidad de
                         completar tareas reales.
                     </p>
-                    <pre>
-B01 · memoria
+                    <pre class="site-stack">B01 · memoria
 B02 · archivos
 B03 · multietapa
 B04 · recuperación
 B05 · coding</pre>
-                </section>
-            </div>
+                </article>
+            </section>
 
-            <section class="card">
-                <h2>Bucle de mejora</h2>
-                <pre>
+            <section class="site-section" aria-labelledby="loop-title">
+                <h2 id="loop-title">Bucle de mejora</h2>
+                <pre class="site-stack">
 RESULTADO → ANÁLISIS DE PILA → CUELLO DE BOTELLA
                          ↓
                modelo / backend / harness / tools
@@ -297,24 +136,23 @@ RESULTADO → ANÁLISIS DE PILA → CUELLO DE BOTELLA
                    RECOMENDACIÓN
                          ↓
                       RE-EVALUAR</pre>
-                <p class="ok">
-                    <strong>Regla:</strong>
-                    no optimizar tok/s aisladamente; optimizar la experiencia real al completar
-                    tareas.
+                <p class="site-note">
+                    <strong>Regla:</strong> no optimizar tok/s aisladamente; optimizar la experiencia
+                    real al completar tareas.
                 </p>
             </section>
 
-            <section class="card">
-                <h2>Prospección y evidencia</h2>
+            <section class="site-section" aria-labelledby="evidence-title">
+                <h2 id="evidence-title">Prospección y evidencia</h2>
                 <p>
-                    La prospección descubre diariamente nuevos modelos, runtimes, harnesses, skills
-                    y herramientas. Los resultados medidos alimentan la evidencia que posteriormente
-                    puede mejorar Atlas y Router.
+                    La prospección descubre diariamente nuevos modelos, runtimes, harnesses, skills y
+                    herramientas. Los resultados medidos alimentan la evidencia que posteriormente puede
+                    mejorar Atlas y Router.
                 </p>
-                <pre>DESCUBRIR → REVISAR → MEDIR → EVIDENCIA → APRENDER</pre>
+                <pre class="site-stack">DESCUBRIR → REVISAR → MEDIR → EVIDENCIA → APRENDER</pre>
             </section>
         </main>
 
-        <script src="assets/js/navigation.js" defer></script>
+        <script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
     </body>
 </html>
