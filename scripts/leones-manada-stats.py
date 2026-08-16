@@ -1,39 +1,29 @@
 #!/usr/bin/env python3
 """Genera estadísticas de los informes reales de la Manada LEONES.
 
-Este script tiene una característica importante: una Manada recién instalada
-puede tener **cero informes reales**. Eso es un estado válido, no un fallo.
+Una Manada recién instalada puede tener cero informes reales. Eso es un estado
+válido, no un fallo. Los ejemplos ficticios nunca entran en las estadísticas.
 
-Por tanto:
-- los ejemplos ficticios nunca entran en las estadísticas;
-- cero informes produce un README de estadísticas válido;
-- las gráficas solo se crean cuando existen datos reales;
-- no se inventan valores para conseguir una gráfica o una media.
-
-La guía humana está en docs/MANADA_STATS.md y la documentación general de
-componentes terminados en docs/completed/.
+La guía humana está en docs/MANADA_STATS.md y en docs/completed/.
 """
 from __future__ import annotations
-
 import argparse
 import re
 from collections import Counter
 from pathlib import Path
 
-# Matplotlib solo es necesario cuando existen datos. Importarlo dentro de main
-# hace que la ruta «cero informes» sea independiente de la librería gráfica.
+
 def load_matplotlib():
+    """Carga matplotlib solo cuando realmente existen datos que representar."""
     try:
         import matplotlib.pyplot as plt
         return plt
     except ImportError as exc:
-        raise SystemExit(
-            'Falta matplotlib. Instala con: python3 -m pip install matplotlib'
-        ) from exc
+        raise SystemExit('Falta matplotlib. Instala con: python3 -m pip install matplotlib') from exc
 
 
 def rx(name):
-    """Crea una expresión regular para una línea «- Nombre: valor»."""
+    """Crea la expresión regular usada para localizar un campo del informe."""
     return re.compile(rf'^- {name}:\s*(.+)$', re.M)
 
 
@@ -43,6 +33,7 @@ OS = rx('Sistema')
 GPU = rx('GPU')
 PROFILE = rx('Perfil LEONES')
 TOK = rx('Inferencia')
+RESULT = rx('Resultado')
 B = re.compile(r'^- B0([1-5]):\s*(.+)$', re.M)
 
 
@@ -59,7 +50,7 @@ def num(text):
 
 
 def parse(path):
-    """Convierte un informe Markdown en un pequeño registro estadístico."""
+    """Convierte un informe Markdown en el registro usado por las estadísticas."""
     text = path.read_text(encoding='utf-8', errors='ignore')
     return {
         'file': path.name,
@@ -69,13 +60,13 @@ def parse(path):
         'gpu': val(GPU, text),
         'profile': val(PROFILE, text),
         'tok': num(val(TOK, text)),
-        'result': val(RESULT, text) if 'RESULT' in globals() else 'No indicado',
+        'result': val(RESULT, text),
         'b': dict(B.findall(text)),
     }
 
 
 def bar(plt, counts, title, path, xlabel=''):
-    """Guarda una gráfica de barras cuando existe al menos una categoría."""
+    """Guarda una gráfica de barras si hay categorías que representar."""
     if not counts:
         return
     labels, values = zip(*counts.most_common())
@@ -101,22 +92,17 @@ def main():
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
 
-    # Solo buscamos Markdown directamente dentro de results/manada. Los
-    # ejemplos viven en results/manada/examples y quedan fuera deliberadamente.
-    # README.md tampoco es un informe de participante.
-    if root.exists():
-        files = [p for p in sorted(root.glob('*.md')) if p.name.lower() != 'readme.md']
-    else:
-        files = []
+    # Solo Markdown directamente dentro de results/manada. Los ejemplos están
+    # en results/manada/examples y se excluyen deliberadamente.
+    files = [p for p in sorted(root.glob('*.md')) if p.name.lower() != 'readme.md'] if root.exists() else []
     rs = [parse(p) for p in files]
 
     profiles = Counter(r['profile'] for r in rs)
     oses = Counter(r['os'] for r in rs)
     rams = Counter(r['ram'] for r in rs)
     cpus = Counter(r['cpu'] for r in rs)
-
-    # Las estadísticas numéricas solo se calculan cuando hay informes reales.
     valid = [r for r in rs if r['tok'] is not None]
+
     passes = {}
     for i in range(1, 6):
         counter = Counter(r['b'].get(str(i), 'Pendiente') for r in rs)
@@ -125,8 +111,8 @@ def main():
             if status.lower().startswith(('pass', 'ok', 'éxito', 'exito'))
         )
 
+    # Cero informes es válido. Solo necesitamos matplotlib si hay algo real que dibujar.
     if rs:
-        # Importamos matplotlib solo cuando realmente necesitamos dibujar.
         plt = load_matplotlib()
         bar(plt, profiles, 'Manada — perfiles', out / 'profiles.png', 'Perfil')
         bar(plt, oses, 'Manada — sistemas operativos', out / 'os.png', 'Sistema')
@@ -152,27 +138,18 @@ def main():
         fig.savefig(out / 'evaluacion-pass.png', dpi=150)
         plt.close(fig)
 
-    # El README se genera incluso con cero informes. Así el workflow siempre
-    # deja un artefacto explicativo y no necesita falsificar datos.
     md = [
-        '# Estadísticas de la Manada',
-        '',
-        f'Informes analizados: **{len(rs)}**',
-        '',
-        '## Estado de datos',
-        '',
+        '# Estadísticas de la Manada', '',
+        f'Informes analizados: **{len(rs)}**', '',
+        '## Estado de datos', '',
         '- Los datos ficticios de `results/manada/examples/` no se incluyen en las estadísticas.',
         '- Un total de **0 informes** es un estado válido mientras no existan contribuciones reales.',
-        '',
-        '## Rendimiento',
-        '',
+        '', '## Rendimiento', '',
         f'- Informes con tok/s: **{len(valid)}**',
         f'- Media tok/s: **{sum(r["tok"] for r in valid) / len(valid):.2f}**' if valid else '- Media tok/s: no disponible',
         f'- >=10 tok/s: **{sum(r["tok"] >= 10 for r in valid)}**' if valid else '- >=10 tok/s: no disponible',
         f'- >=100 tok/s: **{sum(r["tok"] >= 100 for r in valid)}**' if valid else '- >=100 tok/s: no disponible',
-        '',
-        '## Distribución',
-        '',
+        '', '## Distribución', ''
     ]
 
     for title, counter in [('Perfiles', profiles), ('RAM', rams), ('Sistemas operativos', oses)]:
@@ -195,10 +172,7 @@ def main():
 
     md += ['', '## Gráficas', '']
     if rs:
-        md += [
-            '- `profiles.png`', '- `os.png`', '- `ram.png`', '- `cpu.png`',
-            '- `tokens-per-second.png`', '- `evaluacion-pass.png`'
-        ]
+        md += ['- `profiles.png`', '- `os.png`', '- `ram.png`', '- `cpu.png`', '- `tokens-per-second.png`', '- `evaluacion-pass.png`']
     else:
         md.append('- No se generan gráficas hasta disponer de informes reales.')
 
