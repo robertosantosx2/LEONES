@@ -1,13 +1,31 @@
 {
-  "generated_at": "2026-08-16T11:54:06.972881+00:00",
+  "generated_at": "2026-08-16T11:59:41.348388+00:00",
   "kind": "skills",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
     {
+      "name": "jifeng15/obsidian-session-export",
+      "url": "https://github.com/jifeng15/obsidian-session-export",
+      "description": "跨 Agent 会话逐字导出到 Obsidian（Codex / Claude Code / pi / Hanako / OpenCode / Hermes / Z Code）；本地提取、不经过 LLM",
+      "updated_at": "2026-08-16T11:56:05Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "abhilash333naidu/skills-catalog-governance",
+      "url": "https://github.com/abhilash333naidu/skills-catalog-governance",
+      "description": "Governance pipeline for AI-agent skills: discover, consolidate, verify, benchmark, and safely promote canonical skills across coding harnesses",
+      "updated_at": "2026-08-16T11:56:02Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
       "name": "AnastasiyaW/codex-claude-code-config",
       "url": "https://github.com/AnastasiyaW/codex-claude-code-config",
       "description": "Claude Code, Codex, and multi-agent configuration system: principles, hooks, skills, and workflow patterns for AI-assisted development",
-      "updated_at": "2026-08-16T11:50:26Z",
+      "updated_at": "2026-08-16T11:54:19Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -431,24 +449,6 @@
       "url": "https://github.com/Miiiuser/dsh-browser-agent",
       "description": "Browser automation + vision for text-only LLMs — standalone CLI + DeepSeek Harness skill + Cordis plugin. Drive a real browser with Playwright and give text-only models \"eyes\" via GLM / OpenAI-compatible vision.",
       "updated_at": "2026-08-16T10:00:19Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Chiakai-Chang/CKs_PI_Code_Agent_Harness",
-      "url": "https://github.com/Chiakai-Chang/CKs_PI_Code_Agent_Harness",
-      "description": "Pi coding-agent 的一鍵環境配置，內建 Skills、Rules 與本地 LLM 自動偵測，換電腦直接還原。",
-      "updated_at": "2026-08-16T09:57:21Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "ligaoc/dsh-plugin-dev",
-      "url": "https://github.com/ligaoc/dsh-plugin-dev",
-      "description": "Agent skill: guide LLMs to develop DeepSeek Harness (dsh) plugins and install them via the official bundle mechanism (dsh plugin add). Verified end-to-end.",
-      "updated_at": "2026-08-16T09:53:02Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"

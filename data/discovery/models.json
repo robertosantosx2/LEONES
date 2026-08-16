@@ -1,8 +1,35 @@
 {
-  "generated_at": "2026-08-16T11:54:03.558333+00:00",
+  "generated_at": "2026-08-16T11:59:31.827997+00:00",
   "kind": "models",
   "status": "external-unvalidated",
   "items": [
+    {
+      "_id": "6a81a46e9203a345081b1afe",
+      "id": "AmberYifan/capsd-convfinqa-fullscore-marin-8b-base-finance_cap_b8000_s0",
+      "likes": 0,
+      "private": false,
+      "downloads": 0,
+      "tags": [
+        "transformers",
+        "safetensors",
+        "llama",
+        "text-generation",
+        "llama-factory",
+        "full",
+        "generated_from_trainer",
+        "conversational",
+        "base_model:marin-community/marin-8b-base",
+        "base_model:finetune:marin-community/marin-8b-base",
+        "license:other",
+        "text-generation-inference",
+        "endpoints_compatible",
+        "region:us"
+      ],
+      "pipeline_tag": "text-generation",
+      "library_name": "transformers",
+      "createdAt": "2026-08-16T11:52:14.000Z",
+      "modelId": "AmberYifan/capsd-convfinqa-fullscore-marin-8b-base-finance_cap_b8000_s0"
+    },
     {
       "_id": "6a81a3f118069c6f9643986b",
       "id": "AMAImedia/NOESIS-Llama-1B-MiniCPM5-BF16",
@@ -194,7 +221,7 @@
     },
     {
       "_id": "6a81a05d9a10ec9cac838ae7",
-      "id": "ozaa77/Cogito-0.9.1-14B",
+      "id": "ozaa77/Cogito-0.9.1-15B",
       "likes": 0,
       "private": false,
       "downloads": 0,
@@ -203,13 +230,12 @@
         "safetensors",
         "qwen3",
         "text-generation",
-        "cogito",
         "reasoning",
         "agentic",
         "uncensored",
         "abliterated",
         "freewill",
-        "14b",
+        "15b",
         "conversational",
         "en",
         "id",
@@ -217,12 +243,13 @@
         "base_model:finetune:Qwen/Qwen3-14B",
         "license:apache-2.0",
         "text-generation-inference",
+        "endpoints_compatible",
         "region:us"
       ],
       "pipeline_tag": "text-generation",
       "library_name": "transformers",
       "createdAt": "2026-08-16T11:34:53.000Z",
-      "modelId": "ozaa77/Cogito-0.9.1-14B"
+      "modelId": "ozaa77/Cogito-0.9.1-15B"
     },
     {
       "_id": "6a81a01aa514d4eed961043f",
@@ -1355,27 +1382,6 @@
       "library_name": "peft",
       "createdAt": "2026-08-16T09:33:44.000Z",
       "modelId": "SoulInPsyAbstract/vuln-gate-01_secrets_credentials-lora"
-    },
-    {
-      "_id": "6a81807ee4c74fa6bc324a47",
-      "id": "tihon-nth/gpt-2-4096t-scratch-10ep_",
-      "likes": 0,
-      "private": false,
-      "downloads": 0,
-      "tags": [
-        "transformers",
-        "safetensors",
-        "gpt2",
-        "text-generation",
-        "generated_from_trainer",
-        "text-generation-inference",
-        "endpoints_compatible",
-        "region:us"
-      ],
-      "pipeline_tag": "text-generation",
-      "library_name": "transformers",
-      "createdAt": "2026-08-16T09:18:54.000Z",
-      "modelId": "tihon-nth/gpt-2-4096t-scratch-10ep_"
     }
   ]
 }
