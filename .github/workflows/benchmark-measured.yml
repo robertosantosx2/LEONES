@@ -1,0 +1,72 @@
+name: Benchmark measured
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Model identifier
+        required: true
+      variant:
+        description: Model variant/quantization
+        required: true
+      runtime:
+        description: Runtime adapter name
+        required: true
+      hardware:
+        description: Hardware profile identifier
+        required: true
+      workload:
+        description: Workload name
+        required: true
+      quantization:
+        description: Quantization
+        required: true
+      context_tokens:
+        description: Context length
+        required: true
+        default: "4096"
+      command:
+        description: Runtime command arguments, supplied by the trusted operator
+        required: true
+      pattern:
+        description: Regex whose first capture group is tokens/s
+        required: true
+        default: '([0-9]+(?:\.[0-9]+)?)\s*tok/s'
+
+concurrency:
+  group: leones-main-writers
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run measured benchmark
+        env:
+          MODEL: ${{ inputs.model }}
+          VARIANT: ${{ inputs.variant }}
+          RUNTIME: ${{ inputs.runtime }}
+          HARDWARE: ${{ inputs.hardware }}
+          WORKLOAD: ${{ inputs.workload }}
+          QUANTIZATION: ${{ inputs.quantization }}
+          CONTEXT_TOKENS: ${{ inputs.context_tokens }}
+          COMMAND: ${{ inputs.command }}
+          PATTERN: ${{ inputs.pattern }}
+        run: |
+          python scripts/run_and_record_benchmark.py \
+            --model "$MODEL" \
+            --variant "$VARIANT" \
+            --runtime "$RUNTIME" \
+            --hardware "$HARDWARE" \
+            --workload "$WORKLOAD" \
+            --quantization "$QUANTIZATION" \
+            --context-tokens "$CONTEXT_TOKENS" \
+            --pattern "$PATTERN" \
+            sh -c "$COMMAND"
