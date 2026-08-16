@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robertosantosx2.github.io/LEONES/schemas/evidence-profile.schema.json",
+  "title": "LEONES Evidence Profile",
+  "type": "object",
+  "required": ["entity", "claims", "evidence", "unknowns", "verification_status", "sources", "observed_at", "next_action"],
+  "properties": {
+    "entity": {"type": "string", "minLength": 1},
+    "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}},
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "unknowns": {"type": "array", "items": {"type": "string"}},
+    "verification_status": {"enum": ["unverified", "partial", "verified", "measured", "rejected"]},
+    "sources": {"type": "array", "items": {"type": "string", "format": "uri"}},
+    "observed_at": {"type": "string", "format": "date"},
+    "next_action": {"enum": ["verify", "measure", "profile", "watch", "reject"]}
+  },
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "required": ["claim", "evidence_level"],
+      "properties": {
+        "claim": {"type": "string"},
+        "value": {},
+        "evidence_level": {"$ref": "#/$defs/evidenceLevel"},
+        "source_url": {"type": "string", "format": "uri"},
+        "observed_at": {"type": "string", "format": "date"},
+        "method": {"type": "string"},
+        "notes": {"type": "string"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["evidence_level"],
+      "properties": {
+        "evidence_level": {"$ref": "#/$defs/evidenceLevel"},
+        "source_url": {"type": "string", "format": "uri"},
+        "source_type": {"enum": ["primary", "secondary", "execution"]},
+        "method": {"type": "string"},
+        "observed_at": {"type": "string", "format": "date"},
+        "notes": {"type": "string"}
+      }
+    },
+    "evidenceLevel": {"enum": ["measured", "verified", "reported", "calculated", "estimated", "anecdotal", "unknown"]}
+  }
+}
