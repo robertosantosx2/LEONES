@@ -14,6 +14,12 @@ La arquitectura canónica de LEONES se organiza en nueve pilares. El orden impor
 | 8 | **Leones Runtime** | Ejecuta | Abstrae y ejecuta los backends locales. |
 | 9 | **Leones Benchmark & Evaluation** | Mide | Produce evidencia reproducible sobre rendimiento y utilidad. |
 
+## Identidad visual de los pilares
+
+La identidad de cada pilar debe conservar siempre la marca común de **los dos leones**. Las variantes funcionales son recursos físicos del repositorio, no nombres de archivo hipotéticos.
+
+El catálogo canónico está en [`web/assets/graphics/logos/manifest.json`](../web/assets/graphics/logos/manifest.json) y las reglas de integración en [`web/assets/graphics/logos/INTEGRATION.md`](../web/assets/graphics/logos/INTEGRATION.md). Toda variante declarada en ese catálogo debe existir físicamente. El control automático `scripts/validate_web_assets.py` comprueba esta correspondencia y también las referencias locales de la web y de la documentación.
+
 ## Flujo conceptual
 
 ```text
@@ -75,3 +81,4 @@ La evidencia no es un décimo pilar. Es una regla transversal. Una fuente extern
 - Política de descubrimiento: `docs/DISCOVERY_POLICY.md`
 - Prospección: `docs/PROSPECTION.md`
 - Evidencia: `docs/EVIDENCE.md`
+- Identidad visual: `web/assets/graphics/logos/README.md`
