@@ -1,14 +1,14 @@
 # H07 — JGB sistemático
 
-**Estado: 🟢 INFRAESTRUCTURA Y PROCESO CERRADOS; evidencia real por modelo pendiente.**
+**Estado: 🟡 INFRAESTRUCTURA Y PROCESO CERRADOS; captura de evidencia real iniciada.**
 
-## Nota de cierre
+## Nota de estado
 
-H07 queda **cerrado en cuanto a infraestructura, procedimiento, integración y validación del mecanismo**.
+H07 está cerrado en cuanto a infraestructura, procedimiento, integración y validación del mecanismo. La siguiente etapa ya no es diseñar más infraestructura: es **obtener, registrar y auditar evidencia primaria real por modelo**.
 
-**Pendiente:** obtener y registrar evidencia primaria real para cada modelo antes de publicar una clasificación JGB factual como `verified`. La ausencia de esa evidencia no se rellenará mediante inferencias: el modelo permanecerá `unknown` o `provisional` según corresponda.
+La ausencia de evidencia no se rellenará mediante inferencias: el modelo permanecerá `unknown` o `provisional` según corresponda.
 
-Este cierre **no significa que los 193 candidatos dispongan ya de una clasificación JGB verificada**. Significa que LEONES dispone del mecanismo necesario para producirla de forma trazable cuando exista evidencia suficiente.
+Se ha iniciado la primera comprobación real con **Qwen3.5-9B**. El registro de evidencia se encuentra en `web/proyectos/atlas/openness/jgb_primary_evidence.csv`. Esta primera tanda todavía no permite una clase JGB verificada porque `data_control`, `autonomy` y, especialmente, `trust` no están suficientemente demostrados con las fuentes recogidas.
 
 ## Objetivo y reglas
 
@@ -37,15 +37,23 @@ JGB ≠ RULA
 
 Una clasificación `verified` necesita evidencia suficiente para justificar cada dimensión relevante y la clase final. Se conserva fuente primaria, URL, fecha, condiciones de licencia, disponibilidad de pesos, software y documentación de entrenamiento cuando sean requisitos de la clase.
 
+El evaluador exige ahora, además, **nivel válido + estado de evidencia + al menos una fuente por dimensión** antes de derivar una clase. Una evidencia `provisional`, `unknown` o `disputed` no puede producir por sí sola una clase global respaldada.
+
 ## Estado factual
 
-La infraestructura JGB está preparada y validada, pero los 193 candidatos H06 siguen `unverified` y ninguno ha sido promovido al Atlas canónico. La cola futura es **evidencia real por modelo**, no desarrollo de infraestructura.
+Los 193 candidatos H06 siguen `unverified` y ninguno ha sido promovido al Atlas canónico. La nueva cola de trabajo es evidencia real por modelo.
+
+### Primer registro real: Qwen3.5-9B
+
+Las fuentes primarias consultadas documentan pesos públicos, licencia Apache 2.0 y rutas de ejecución local. Eso permite registrar evidencia positiva para `access` y `model_control`; no basta por sí solo para cerrar las cinco dimensiones JGB. La licencia Apache 2.0 concede reproducción, obras derivadas y distribución bajo sus condiciones, y el repositorio documenta ejecución local con Transformers, vLLM y SGLang. 
+
+**Resultado H07 actual:** evidencia parcial, clasificación global aún `unknown`.
 
 ## Subfases cerradas
 
 - H07.1 contrato y reglas 🟢
 - H07.2 auditoría de candidatos 🟢
-- H07.3 evidencia primaria — mecanismo 🟢
+- H07.3 evidencia primaria — mecanismo 🟢 / captura real 🟡
 - H07.4 clasificación verificable — mecanismo 🟢
 - H07.5 integración Atlas/Router — contrato 🟢
 - H07.6 validación final — mecanismo 🟢
@@ -60,10 +68,11 @@ La infraestructura JGB está preparada y validada, pero los 193 candidatos H06 s
 - `../../../web/proyectos/atlas/openness/JGB-INDEX.md`
 - `../../../web/proyectos/atlas/openness/JGB-MATRIX.md`
 - `../../../web/proyectos/atlas/openness/JGB-METHOD.md`
+- `../../../web/proyectos/atlas/openness/jgb_primary_evidence.csv`
 
 ## Mantenimiento
 
-No se reabre H07 para añadir infraestructura salvo que aparezca un fallo reproducible. Las futuras evidencias deben conservar procedencia y mantener `unknown` cuando la fuente primaria no permita una conclusión verificable.
+No se reabre H07 para añadir infraestructura salvo que aparezca un fallo reproducible. La actividad normal de H07 pasa a ser la captura, revisión y auditoría progresiva de evidencia primaria. Las futuras evidencias deben conservar procedencia y mantener `unknown` cuando la fuente primaria no permita una conclusión verificable.
 
 ## No concurrencia
 
