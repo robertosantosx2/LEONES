@@ -1,36 +1,8 @@
 <!doctype html>
-<html lang="es">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-            name="description"
-            content="Pila tecnológica de LEONES para ejecutar y evaluar IA local de extremo a extremo."
-        />
-        <title>LEONES · Pila</title>
-        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3" />
-        <link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-1" />
-    </head>
-    <body>
-        <header class="site-hero">
-            <div class="site-hero__inner">
-                <h1>LEONES · Pila tecnológica</h1>
-                <p>
-                    La cadena completa necesaria para ejecutar una tarea local y evaluar qué parte
-                    de esa cadena limita el resultado.
-                </p>
-            </div>
-        </header>
-        <main class="site-main" id="main">
-            <section class="site-section" aria-labelledby="stack-title">
-                <span class="site-tag">Arquitectura</span>
-                <h2 id="stack-title">La pila no es solo el modelo</h2>
-                <p>
-                    LEONES trata la ejecución local como una cadena de capas. Cada una puede cambiar
-                    sin obligar a sustituir todo el sistema.
-                </p>
-                <pre class="site-stack">
-HARDWARE
+<html lang="es"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="description" content="Pila tecnológica de LEONES para ejecutar y evaluar IA local de extremo a extremo." /><title>LEONES · Pila</title><link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-17-9" /><link rel="stylesheet" href="assets/css/site.css?v=2026-08-17-9" /></head>
+<body><header class="site-hero"><div class="site-hero__inner"><h1>LEONES · Pila tecnológica</h1><p>La cadena completa necesaria para ejecutar una tarea local y evaluar qué parte de esa cadena limita el resultado.</p></div></header>
+<main class="site-main" id="main">
+<section class="site-section" aria-labelledby="stack-title"><span class="site-tag">Arquitectura</span><h2 id="stack-title">La pila no es solo el modelo</h2><p>LEONES trata la ejecución local como una cadena de capas. Cada una puede cambiar sin obligar a sustituir todo el sistema.</p><pre class="site-stack">HARDWARE
    ↓
 SISTEMA OPERATIVO
    ↓
@@ -48,186 +20,27 @@ BUDDY / KNOWLEDGE
    ↓
 LOTB
    ↓
-RESULTADO + UX</pre>
-            </section>
-            <section class="site-section" aria-labelledby="layers-title">
-                <h2 id="layers-title">Qué aporta cada capa</h2>
-                <div class="site-grid">
-                    <article class="site-card">
-                        <h3>Hardware</h3>
-                        <p>
-                            CPU, GPU, RAM, VRAM y almacenamiento determinan qué modelos y runtimes
-                            son realmente viables.
-                        </p>
-                    </article>
-                    <article class="site-card">
-                        <h3>Sistema y runtime</h3>
-                        <p>
-                            El sistema operativo, drivers y runtime gestionan la ejecución y el
-                            acceso efectivo a los recursos disponibles.
-                        </p>
-                    </article>
-                    <article class="site-card">
-                        <h3>Inferencia</h3>
-                        <p>
-                            Backend, formato, modelo y cuantización determinan cómo se convierten
-                            los recursos del equipo en tokens y latencia.
-                        </p>
-                    </article>
-                    <article class="site-card">
-                        <h3>Capa agentic</h3>
-                        <p>
-                            Harness, herramientas, skills y conocimiento convierten la inferencia en
-                            capacidad para completar objetivos.
-                        </p>
-                    </article>
-                    <article class="site-card">
-                        <h3>Evaluación</h3>
-                        <p>
-                            LOTB y las pruebas reproducibles permiten separar percepción,
-                            afirmaciones y evidencia medible.
-                        </p>
-                    </article>
-                    <article class="site-card">
-                        <h3>Resultado y UX</h3>
-                        <p>
-                            El resultado final importa por lo que permite hacer al usuario, no por
-                            el número de tokens producido por segundo de forma aislada.
-                        </p>
-                    </article>
-                </div>
-            </section>
-            <section class="site-section" aria-labelledby="memory-title">
-                <span class="site-tag">Guía práctica</span>
-                <h2 id="memory-title">¿Cabe el modelo?</h2>
-                <p>
-                    Una primera aproximación para los pesos es
-                    <strong>memoria ≈ parámetros × bits efectivos / 8</strong>. Pero la memoria
-                    total también incluye caché KV, activaciones, batching/concurrencia, sobrecarga
-                    del runtime y margen de seguridad.
-                </p>
-                <div class="site-grid">
-                    <article class="site-card">
-                        <h3>FP16 / BF16</h3>
-                        <p>≈ 2 GB por cada 1B de parámetros.</p>
-                    </article>
-                    <article class="site-card">
-                        <h3>FP8 / INT8</h3>
-                        <p>≈ 1 GB por cada 1B de parámetros.</p>
-                    </article>
-                    <article class="site-card">
-                        <h3>4-bit</h3>
-                        <p>≈ 0,5 GB por cada 1B de parámetros, antes de los demás costes.</p>
-                    </article>
-                    <article class="site-card">
-                        <h3>Margen</h3>
-                        <p>
-                            La documentación recomienda no llenar la memoria al límite; una
-                            ejecución que desborda hacia CPU puede perder mucha velocidad.
-                        </p>
-                    </article>
-                </div>
-                <div class="site-note">
-                    <strong>Importante:</strong> cuantización de pesos y cuantización de caché KV
-                    son cosas distintas. Un modelo menor con más precisión puede superar a uno mayor
-                    excesivamente comprimido.
-                </div>
-            </section>
-            <section class="site-section" aria-labelledby="performance-title">
-                <h2 id="performance-title">Prefill, decode y ancho de banda</h2>
-                <div class="site-flow">
-                    <span class="site-flow__node">Prompt</span
-                    ><span class="site-flow__arrow">→</span
-                    ><span class="site-flow__node site-flow__node--primary">Prefill · TTFT</span
-                    ><span class="site-flow__arrow">→</span
-                    ><span class="site-flow__node site-flow__node--primary"
-                        >Decode · TPOT / tok/s</span
-                    ><span class="site-flow__arrow">→</span
-                    ><span class="site-flow__node">Respuesta</span>
-                </div>
-                <p>
-                    <strong>Prefill</strong> procesa el prompt y es más intensivo en cómputo.
-                    <strong>Decode</strong> genera token a token y suele estar limitado por el ancho
-                    de banda de memoria. Prompts largos penalizan prefill; respuestas largas
-                    penalizan decode; conversaciones largas penalizan ambos porque crece la caché
-                    KV.
-                </p>
-            </section>
-            <section class="site-section" aria-labelledby="engine-title">
-                <h2 id="engine-title">Elegir runtime después de entender la carga</h2>
-                <div class="site-grid">
-                    <article class="site-card">
-                        <h3>Portabilidad / hardware atípico</h3>
-                        <p>
-                            llama.cpp es la referencia descrita para equipos locales variados,
-                            offline, edge y descarga híbrida CPU+GPU.
-                        </p>
-                    </article>
-                    <article class="site-card">
-                        <h3>Apple Silicon</h3>
-                        <p>
-                            MLX / MLX-LM aprovechan la memoria unificada; llama.cpp sigue siendo
-                            relevante para GGUF.
-                        </p>
-                    </article>
-                    <article class="site-card">
-                        <h3>Servicio</h3>
-                        <p>
-                            vLLM y SGLang aparecen como opciones para cargas de servicio; SGLang
-                            destaca en contexto largo, MoE y routing.
-                        </p>
-                    </article>
-                    <article class="site-card">
-                        <h3>NVIDIA máximo rendimiento</h3>
-                        <p>
-                            TensorRT-LLM está orientado al rendimiento máximo en infraestructura
-                            NVIDIA, sacrificando portabilidad.
-                        </p>
-                    </article>
-                </div>
-                <div class="site-note">
-                    <strong>No elijas por nombre:</strong> considera hardware, memoria rápida,
-                    cuello de botella prefill/decode, contexto, concurrencia, arquitectura
-                    densa/MoE, formato de cuantización y objetivo de latencia, throughput, coste o
-                    privacidad.
-                </div>
-            </section>
-            <section class="site-section" aria-labelledby="boundary-title">
-                <h2 id="boundary-title">Web e infraestructura no son la misma capa</h2>
-                <p>
-                    La web de LEONES documenta, explica y presenta el ecosistema. La infraestructura
-                    mantiene datos, procesos y automatización. Los scripts locales son una frontera
-                    distinta: deben poder copiarse y ejecutarse sin instalar toda esa
-                    infraestructura.
-                </p>
-                <div class="site-note">
-                    <strong>Decisión:</strong> la web no se diseña como un paquete que el usuario
-                    tenga que descargar. Lo descargable son las herramientas locales necesarias para
-                    realizar pruebas en su propio equipo.
-                </div>
-            </section>
-            <section class="site-section" aria-labelledby="router-title">
-                <h2 id="router-title">Objetivo de Router</h2>
-                <p>
-                    Router debe encontrar la combinación que satisfaga una necesidad con el hardware
-                    disponible, utilizando evidencia real y declarando incertidumbre cuando falte
-                    información.
-                </p>
-                <div class="site-flow" aria-label="Cadena de decisión de Router">
-                    <span class="site-flow__node site-flow__node--primary">Necesidad</span
-                    ><span class="site-flow__arrow">→</span
-                    ><span class="site-flow__node">Hardware</span
-                    ><span class="site-flow__arrow">→</span
-                    ><span class="site-flow__node">Modelo</span
-                    ><span class="site-flow__arrow">→</span
-                    ><span class="site-flow__node">Runtime</span
-                    ><span class="site-flow__arrow">→</span
-                    ><span class="site-flow__node">Agentic stack</span
-                    ><span class="site-flow__arrow">→</span
-                    ><span class="site-flow__node site-flow__node--primary">Evaluación</span>
-                </div>
-            </section>
-        </main>
-        <script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
-    </body>
-</html>
+RESULTADO + UX</pre></section>
+<section class="site-section" aria-labelledby="layers-title"><h2 id="layers-title">Qué aporta cada capa</h2><div class="site-grid"><article class="site-card"><h3>Hardware</h3><p>CPU, GPU, RAM, VRAM y almacenamiento determinan qué modelos y runtimes son realmente viables.</p></article><article class="site-card"><h3>Sistema y runtime</h3><p>El sistema operativo, drivers y runtime gestionan la ejecución y el acceso efectivo a los recursos disponibles.</p></article><article class="site-card"><h3>Inferencia</h3><p>Backend, formato, modelo y cuantización determinan cómo se convierten los recursos del equipo en tokens y latencia.</p></article><article class="site-card"><h3>Capa agentic</h3><p>Harness, herramientas, skills y conocimiento convierten la inferencia en capacidad para completar objetivos.</p></article><article class="site-card"><h3>Evaluación</h3><p>LOTB y las pruebas reproducibles permiten separar percepción, afirmaciones y evidencia medible.</p></article><article class="site-card"><h3>Resultado y UX</h3><p>El resultado final importa por lo que permite hacer al usuario, no por el número de tokens producido por segundo de forma aislada.</p></article></div></section>
+<section class="site-section" aria-labelledby="memory-title"><span class="site-tag">Guía práctica</span><h2 id="memory-title">¿Cabe el modelo?</h2><p>Una primera aproximación para los pesos es <strong>memoria ≈ parámetros × bits efectivos / 8</strong>. Pero la memoria total también incluye caché KV, activaciones, batching/concurrencia, sobrecarga del runtime y margen de seguridad.</p><div class="site-grid"><article class="site-card"><h3>FP16 / BF16</h3><p>≈ 2 GB por cada 1B de parámetros.</p></article><article class="site-card"><h3>FP8 / INT8</h3><p>≈ 1 GB por cada 1B de parámetros.</p></article><article class="site-card"><h3>4-bit</h3><p>≈ 0,5 GB por cada 1B de parámetros, antes de los demás costes.</p></article><article class="site-card"><h3>Margen</h3><p>La documentación recomienda no llenar la memoria al límite; una ejecución que desborda hacia CPU puede perder mucha velocidad.</p></article></div><div class="site-note"><strong>Importante:</strong> cuantización de pesos y cuantización de caché KV son cosas distintas. Un modelo menor con más precisión puede superar a uno mayor excesivamente comprimido.</div></section>
+<section class="site-section" aria-labelledby="performance-title"><h2 id="performance-title">Prefill, decode y ancho de banda</h2><pre class="site-stack">Prompt
+  ↓
+Prefill · TTFT
+  ↓
+Decode · TPOT / tok/s
+  ↓
+Respuesta</pre><p><strong>Prefill</strong> procesa el prompt y es más intensivo en cómputo. <strong>Decode</strong> genera token a token y suele estar limitado por el ancho de banda de memoria. Prompts largos penalizan prefill; respuestas largas penalizan decode; conversaciones largas penalizan ambos porque crece la caché KV.</p></section>
+<section class="site-section" aria-labelledby="engine-title"><h2 id="engine-title">Elegir runtime después de entender la carga</h2><div class="site-grid"><article class="site-card"><h3>Portabilidad / hardware atípico</h3><p>llama.cpp es la referencia descrita para equipos locales variados, offline, edge y descarga híbrida CPU+GPU.</p></article><article class="site-card"><h3>Apple Silicon</h3><p>MLX / MLX-LM aprovechan la memoria unificada; llama.cpp sigue siendo relevante para GGUF.</p></article><article class="site-card"><h3>Servicio</h3><p>vLLM y SGLang aparecen como opciones para cargas de servicio; SGLang destaca en contexto largo, MoE y routing.</p></article><article class="site-card"><h3>NVIDIA máximo rendimiento</h3><p>TensorRT-LLM está orientado al rendimiento máximo en infraestructura NVIDIA, sacrificando portabilidad.</p></article></div><div class="site-note"><strong>No elijas por nombre:</strong> considera hardware, memoria rápida, cuello de botella prefill/decode, contexto, concurrencia, arquitectura densa/MoE, formato de cuantización y objetivo de latencia, throughput, coste o privacidad.</div></section>
+<section class="site-section" aria-labelledby="boundary-title"><h2 id="boundary-title">Web e infraestructura no son la misma capa</h2><p>La web de LEONES documenta, explica y presenta el ecosistema. La infraestructura mantiene datos, procesos y automatización. Los scripts locales son una frontera distinta: deben poder copiarse y ejecutarse sin instalar toda esa infraestructura.</p><div class="site-note"><strong>Decisión:</strong> la web no se diseña como un paquete que el usuario tenga que descargar. Lo descargable son las herramientas locales necesarias para realizar pruebas en su propio equipo.</div></section>
+<section class="site-section" aria-labelledby="router-title"><h2 id="router-title">Objetivo de Router</h2><p>Router debe encontrar la combinación que satisfaga una necesidad con el hardware disponible, utilizando evidencia real y declarando incertidumbre cuando falte información.</p><pre class="site-stack">Necesidad
+   ↓
+Hardware
+   ↓
+Modelo
+   ↓
+Runtime
+   ↓
+Agentic stack
+   ↓
+Evaluación</pre></section>
+</main><script src="assets/js/navigation.js?v=2026-08-17-9" defer></script></body></html>
