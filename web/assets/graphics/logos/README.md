@@ -1,12 +1,18 @@
 # Sistema de logos funcionales LEONES
 
-Esta carpeta contiene variantes del logo principal de LEONES para representar visualmente las distintas funciones del ecosistema.
+Esta carpeta contiene las variantes funcionales del logo principal de LEONES para representar visualmente distintas funciones del ecosistema.
 
 ## Principio
 
-Todas las variantes reutilizan `../leones-logo-principal.jpg` como identidad común y añaden un símbolo funcional secundario, deliberadamente grande para que siga siendo reconocible en tarjetas y navegación.
+Todas las variantes reutilizan `../leones-logo-principal.svg` como identidad común y añaden un distintivo funcional. El objetivo es conservar siempre reconocible la identidad de los dos leones.
 
-## Logos
+## Fuente canónica
+
+`manifest.json` es el catálogo canónico. Existe una regla estricta:
+
+> **Si un logo aparece en el manifiesto o en esta documentación, su fichero debe existir físicamente en `web/assets/graphics/logos/`.**
+
+Los logos funcionales actuales son:
 
 - `leones-prospeccion.svg` — descubrimiento y vigilancia del ecosistema.
 - `leones-router.svg` — recomendación de la mejor pila.
@@ -26,4 +32,6 @@ Todas las variantes reutilizan `../leones-logo-principal.jpg` como identidad com
 
 ## Uso
 
-Los SVG son individuales y reutilizables. No duplican la imagen raster del león: la referencian desde el recurso gráfico principal para mantener una única fuente de identidad.
+Las variantes son SVG individuales y reutilizables. Cada una referencia el logo principal SVG y añade su distintivo funcional. No se deben introducir rutas a SVG funcionales que no estén creados en este directorio.
+
+La comprobación automática de referencias locales de web y documentación se realiza con `scripts/validate_web_assets.py`.
