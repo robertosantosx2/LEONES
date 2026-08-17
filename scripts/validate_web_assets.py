@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Validate local web/documentation references before they reach GitHub Pages.
 
-This check is intentionally small and boring: a documented or referenced local
-asset must exist at the path used by the source file. It also checks the logo
-manifest, because the functional-logo directory is a common source of silent
-404s.
+A documented or referenced local asset must exist at the path used by the
+source file. The logo manifest is checked separately because it is a common
+source of silent 404s.
 """
 from __future__ import annotations
 
@@ -18,7 +17,6 @@ ROOT = Path(__file__).resolve().parents[1]
 WEB = ROOT / "web"
 LOGO_DIR = WEB / "assets" / "graphics" / "logos"
 MANIFEST = LOGO_DIR / "manifest.json"
-
 TEXT_EXTENSIONS = {".html", ".htm", ".css", ".js", ".mjs", ".md"}
 SKIP_DIRS = {".git", "node_modules"}
 
@@ -39,15 +37,14 @@ def check_file_references(path: Path) -> list[str]:
     candidates: list[str] = []
 
     if path.suffix in {".html", ".htm"}:
-        candidates += re.findall(r"(?:src|href)\\s*=\\s*[\"']([^\"']+)[\"']", text, flags=re.I)
+        candidates += re.findall(r"(?:src|href)\s*=\s*[\"']([^\"']+)[\"']", text, flags=re.I)
     elif path.suffix == ".css":
-        candidates += re.findall(r"url\\(\\s*[\"']?([^\"')]+)[\"']?\\s*\\)", text, flags=re.I)
+        candidates += re.findall(r"url\(\s*[\"']?([^\"')]+)[\"']?\s*\)", text, flags=re.I)
     elif path.suffix == ".md":
-        candidates += re.findall(r"!?\\[[^]]*\\]\\(([^)]+)\\)", text)
+        candidates += re.findall(r"!?\[[^]]*\]\(([^)]+)\)", text)
 
-    # Always check explicit references to the functional-logo directory,
-    # including references embedded in JavaScript or JSON-like strings.
-    candidates += re.findall(r"(?:assets/graphics/logos/|web/assets/graphics/logos/)([^\\s'\"<>?#)]+)", text)
+    # Also inspect explicit functional-logo references in JS and JSON-like text.
+    candidates += re.findall(r"(?:assets/graphics/logos/|web/assets/graphics/logos/)([^\s'\"<>?#)]+)", text)
 
     for candidate in candidates:
         target = local_target(candidate)
@@ -56,8 +53,6 @@ def check_file_references(path: Path) -> list[str]:
         if "assets/graphics/logos/" in target:
             target = target[target.index("assets/graphics/logos/") :]
             resolved = WEB / target
-        elif path.suffix == ".md":
-            resolved = (path.parent / target).resolve()
         else:
             resolved = (path.parent / target).resolve()
         try:
