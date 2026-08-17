@@ -5,7 +5,7 @@
 - **Estado:** vigente
 - **Ámbito:** `web/` y todos sus recursos, scripts y procesos de publicación
 - **Principio rector:** **minimalista para el humano, estructurada para la máquina**
-- **Última revisión:** 2026-08-16
+- **Última revisión:** 2026-08-17
 
 > Este documento no es una guía de estilo opcional. Es el contrato que debe seguir cualquier nueva página, modificación o refactor de la web de LEONES.
 
@@ -39,10 +39,12 @@ Estas decisiones forman parte del sistema y no deben modificarse casualmente.
 HTML       → contenido y estructura semántica
 CSS        → presentación y layout
 JavaScript → comportamiento e interacción
-SVG        → identidad gráfica, iconografía y diagramas
+SVG        → identidad gráfica e iconografía
 GitHub     → versión, revisión y publicación
 Prettier   → formato automático del código
 ```
+
+**Los SVG no son el formato de los esquemas técnicos de LEONES.** Logos e iconografía pueden utilizar SVG; mapas, esquemas, flujos y diagramas técnicos deben mantenerse en ASCII.
 
 Nunca se debe resolver un problema de contenido mediante JavaScript ni un problema de navegación modificando indiscriminadamente el CSS del contenido.
 
@@ -513,9 +515,9 @@ La web no debe convertirse en un escaparate gráfico que dificulte la lectura t�
 
 ---
 
-## 8.2. Logos y SVG
+## 8.2. Logos e iconografía
 
-Los logos de LEONES deben reutilizar los recursos existentes en:
+Los logos e iconos de LEONES deben reutilizar los recursos existentes en:
 
 ```text
 web/assets/graphics/
@@ -524,7 +526,9 @@ web/assets/graphics/logos/
 
 No se deben crear variantes visualmente incompatibles para cada página.
 
-Los SVG son preferibles para logos, iconos y diagramas cuando exista el recurso vectorial.
+Los SVG son válidos y preferibles para **logos e iconografía** cuando exista el recurso vectorial correspondiente.
+
+Los mapas, esquemas, flujos y diagramas técnicos quedan fuera de esta regla: **se mantienen en ASCII**.
 
 ---
 
@@ -536,19 +540,35 @@ La imagen debe aportar información o identidad; nunca ser decoración por defec
 
 ---
 
-# 9. Diagramas y arquitectura
+# 9. Esquemas y arquitectura
 
-Los diagramas son parte del contenido técnico, no simple decoración.
+Los esquemas son parte del contenido técnico, no simple decoración.
 
-Deben:
+## 9.1. Norma congelada: ASCII
+
+Todos los mapas, esquemas, diagramas de arquitectura, flujos técnicos y representaciones de proceso de LEONES deben publicarse en **ASCII**.
+
+No se deben sustituir por:
+
+- SVG;
+- Mermaid;
+- imágenes rasterizadas;
+- diagramas externos;
+- librerías de diagramación.
+
+Esta decisión existe para que el esquema sea legible directamente en el repositorio, accesible, versionable, estable y revisable mediante diff.
+
+El ASCII es la **fuente canónica**. Una página web puede aplicar CSS al bloque de texto para mejorar su lectura, pero no debe convertirlo en otra representación gráfica.
+
+Cada esquema debe:
 
 - tener un propósito identificable;
-- estar acompañados por explicación textual;
-- utilizar recursos vectoriales cuando sea apropiado;
-- poder entenderse aunque la imagen no cargue;
-- indicar, cuando proceda, su estado: propuesta, actual, experimental o validada.
+- estar acompañado por explicación textual cuando sea necesario;
+- poder entenderse sin recursos gráficos externos;
+- indicar, cuando proceda, su estado: propuesta, actual, experimental o validada;
+- mantenerse sincronizado con la arquitectura y la implementación.
 
-Un diagrama no sustituye a la explicación de la arquitectura.
+Un esquema no sustituye a la explicación de la arquitectura.
 
 ---
 
@@ -618,6 +638,7 @@ Queda prohibido introducir en la web nueva:
 - Redirecciones encadenadas.
 - JavaScript necesario para leer el contenido principal.
 - Fondos o animaciones que dificulten la revisión humana.
+- Diagramas técnicos en formatos distintos de ASCII.
 
 ---
 
@@ -752,6 +773,13 @@ Nunca solucionar un problema local modificando el CSS global si puede resolverse
 - [ ] Se indica estado.
 - [ ] Se indica evolución prevista.
 - [ ] Se enlazan evidencias relevantes.
+
+## Esquemas
+
+- [ ] Cada mapa/esquema/flujo técnico está en ASCII.
+- [ ] No existe una representación gráfica paralela del mismo esquema.
+- [ ] El esquema coincide con la documentación canónica.
+- [ ] El esquema coincide con la implementación cuando describe el sistema actual.
 
 ## Publicación
 
