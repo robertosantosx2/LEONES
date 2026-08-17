@@ -1,126 +1,69 @@
 <!doctype html>
 <html lang="es">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <meta name="theme-color" content="#f3f6f9" />
-        <title>LEONES · Diagramas</title>
-        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-17-2" />
-        <link rel="stylesheet" href="assets/graphics/brand.css" />
-        <style>
-            body {
-                margin: 0;
-                background: #f5f5f5;
-                color: #2d3142;
-                font-family: Arial, sans-serif;
-            }
-            .wrap {
-                max-width: 1240px;
-                margin: auto;
-                padding: 32px 24px;
-            }
-            .eyebrow {
-                font-size: 11px;
-                letter-spacing: 0.12em;
-                color: #4f5d75;
-            }
-            .hero {
-                padding: 24px 0;
-            }
-            .hero h1 {
-                font-size: 40px;
-                margin: 8px 0;
-            }
-            .hero p {
-                max-width: 760px;
-                color: #4f5d75;
-                font-style: italic;
-            }
-            .diagram {
-                margin: 28px 0;
-                padding: 20px 0;
-                border-top: 1px solid rgba(45, 49, 66, 0.12);
-            }
-            .diagram img {
-                display: block;
-                width: 100%;
-                max-width: 100%;
-                height: auto;
-            }
-            .links {
-                display: flex;
-                gap: 10px;
-                flex-wrap: wrap;
-            }
-            .links a {
-                color: #2e5aa8;
-                text-decoration: none;
-                font-weight: 600;
-            }
-            .note {
-                border-left: 3px solid #eb6c36;
-                padding: 12px 16px;
-                background: rgba(235, 108, 54, 0.08);
-                margin: 24px 0;
-            }
-        </style>
-    </head>
-    <body>
-        <main class="wrap">
-            <header class="hero">
-                <div class="eyebrow">LEONES · SISTEMA VISUAL</div>
-                <h1>Diagramas que explican, no decoran</h1>
-                <p>
-                    Los esquemas de esta página siguen una gramática editorial: pocos nodos,
-                    jerarquía clara, conectores ortogonales, una sola señal de énfasis y el mismo
-                    lenguaje visual que la identidad LEONES.
-                </p>
-            </header>
-            <div class="note">
-                <strong>Referencia de diseño:</strong> LEONES adapta los principios de
-                <a href="https://github.com/cathrynlavery/diagram-design">diagram-design</a>: cada
-                nodo debe ganarse su lugar, cada conexión debe comunicar algo y el diagrama debe
-                poder entenderse sin una leyenda innecesaria.
-            </div>
-            <section class="diagram">
-                <img
-                    src="assets/graphics/architecture-canonical.svg"
-                    alt="Arquitectura canónica de LEONES"
-                />
-                <h2>Arquitectura canónica</h2>
-                <p>
-                    El recorrido de descubrimiento a evidencia: Prospector → Atlas → Router → Agents
-                    → Runtime → Benchmark → Manada → Stats.
-                </p>
-            </section>
-            <section class="diagram">
-                <img
-                    src="assets/graphics/architecture-stack.svg"
-                    alt="Pila de ejecución de LEONES"
-                />
-                <h2>Pila de ejecución</h2>
-                <p>
-                    Hardware → sistema operativo → runtime/drivers → backend → modelo/quant →
-                    harness/skills → LOTB.
-                </p>
-            </section>
-            <section class="diagram">
-                <img
-                    src="assets/graphics/architecture-loop.svg"
-                    alt="Bucle de aprendizaje colectivo de LEONES"
-                />
-                <h2>Bucle de aprendizaje</h2>
-                <p>
-                    La evidencia local puede volver al conocimiento colectivo cuando el usuario
-                    decide contribuir a la Manada.
-                </p>
-            </section>
-            <div class="links">
-                <a href="arquitectura.html">← Arquitectura</a><a href="app.html">Aplicación</a
-                ><a href="index.html">Inicio</a
-                ><a href="https://github.com/cathrynlavery/diagram-design">Recurso original</a>
-            </div>
-        </main>
-        <script src="assets/js/navigation.js?v=2026-08-17-2" defer></script>
-    </body>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#f5f6f8" />
+<title>LEONES · Diagramas</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-17-9" />
+<link rel="stylesheet" href="assets/css/site.css?v=2026-08-17-9" />
+<style>
+.diagram-wrap{margin:1.5rem 0}.diagram-wrap h2{margin-bottom:.45rem}.diagram-wrap p{max-width:850px;color:#536673}.diagram-source{overflow-x:auto;margin:1rem 0;padding:1.1rem 1.25rem;border:1px solid #d8e0e7;border-radius:.7rem;background:#fff;color:#102f49;font:700 .82rem/1.55 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;white-space:pre;tab-size:4}.diagram-note{padding:.8rem 1rem;border-left:3px solid #9b7b2f;background:#faf8f1;color:#536673}.links{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:2rem}.links a{color:#315d7d;font-weight:800;text-decoration:none}.links a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<header class="site-hero"><div class="site-hero__inner"><span class="site-tag">LEONES · SISTEMA VISUAL</span><h1>Diagramas que explican, no decoran</h1><p>Los mapas y esquemas se conservan en ASCII para que la arquitectura sea legible, versionable, accesible y verificable directamente desde el repositorio.</p></div></header>
+<main class="site-main" id="main">
+<section class="site-section"><div class="diagram-note"><strong>Fuente canónica:</strong> estos esquemas recuperan la representación textual de la documentación de arquitectura de LEONES. No se sustituyen por imágenes decorativas ni por una interpretación gráfica diferente.</div></section>
+<section class="site-section diagram-wrap" aria-labelledby="pipeline-title"><span class="site-tag">01 · Pipeline</span><h2 id="pipeline-title">Pipeline completo</h2><pre class="diagram-source">USER / MACHINE
+      │
+      ▼
+┌───────────────┐
+│ leones-hardware│  identify machine
+└───────┬───────┘
+        ▼
+┌───────────────┐
+│ leones-model   │  identify model
+└───────┬───────┘
+        ▼
+┌───────────────┐
+│ leones-infer   │  measure inference
+└───────┬───────┘
+        ▼
+┌───────────────┐
+│ leones-lotb    │  measure agentic tasks
+└───────┬───────┘
+        ▼
+┌───────────────┐
+│ leones-report  │  create Markdown result
+└───────┬───────┘
+        ▼
+┌───────────────┐
+│ leones-publish │  validate and publish
+└───────┬───────┘
+        ▼
+ GitHub / metaLEONES / web</pre><p>Este es el recorrido operativo documentado: identificar máquina y modelo, medir inferencia, evaluar tareas agentivas, generar el resultado y validarlo antes de publicar.</p></section>
+<section class="site-section diagram-wrap" aria-labelledby="knowledge-title"><span class="site-tag">02 · Knowledge</span><h2 id="knowledge-title">Capa de conocimiento y ejecución</h2><pre class="diagram-source">Knowledge / context
+        │
+      Buddy
+        │
+        ▼
+Agent / harness
+        │
+        ▼
+Local inference API
+        │
+        ▼
+Model + backend
+        │
+        ▼
+Hardware</pre><p>La documentación define estas capas como sustituibles donde sea práctico: el conocimiento y contexto no deben quedar acoplados a un modelo, backend o hardware concreto.</p></section>
+<section class="site-section diagram-wrap" aria-labelledby="discovery-title"><span class="site-tag">03 · Discovery</span><h2 id="discovery-title">De descubrimiento a recomendación</h2><pre class="diagram-source">discover → inspect → classify → test → recommend → incorporate</pre><p>La prospección descubre proyectos; la inspección, clasificación y prueba aportan evidencia antes de recomendar o incorporar. Encontrar un proyecto no significa que LEONES lo respalde.</p></section>
+<section class="site-section diagram-wrap" aria-labelledby="evidence-title"><span class="site-tag">04 · Evidencia</span><h2 id="evidence-title">Estados de un resultado</h2><pre class="diagram-source">reported → reproducible → verified
+                 │
+                 └── rejected</pre><p>Un resultado reportado no se presenta como verificado. La documentación conserva explícitamente la diferencia entre estados.</p></section>
+<section class="site-section"><h2>Relación con el resto de la web</h2><p>Las páginas <strong>Arquitectura</strong>, <strong>Pilares</strong>, <strong>Aplicación</strong>, <strong>Pila</strong> y <strong>Evaluación</strong> ya muestran sus esquemas en texto. Esta página reúne ahora los esquemas canónicos sin depender de SVG generados aparte.</p><div class="links"><a href="arquitectura.html">Arquitectura →</a><a href="pilares.html">Pilares →</a><a href="app.html">Aplicación →</a><a href="pila.html">Pila →</a><a href="evaluacion.html">Evaluación →</a><a href="index.html">Inicio →</a></div></section>
+</main>
+<script src="assets/js/navigation.js?v=2026-08-17-9" defer></script>
+</body>
 </html>
