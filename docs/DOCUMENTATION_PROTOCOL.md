@@ -147,7 +147,19 @@ artefactos técnicos / tests / commits
 
 Los README de los componentes afectados también deben enlazar el paquete de fase correspondiente y, cuando proceda, la guía pedagógica.
 
-## 11. Convención
+## 11. Referencias locales y artefactos físicos
+
+Toda referencia a un archivo local —imagen, SVG, script, CSS, dato, diagrama o documento— debe apuntar a un artefacto que exista físicamente en el repositorio en el momento del cierre.
+
+Esto incluye especialmente catálogos y manifiestos: **no basta con documentar un nombre de archivo; el archivo debe estar presente y ser resoluble desde la ruta usada por la aplicación o la documentación.**
+
+La comprobación automática se realiza con:
+
+`scripts/validate_web_assets.py`
+
+El control valida las referencias locales de la web y la documentación y comprueba que todos los logos declarados en `web/assets/graphics/logos/manifest.json` existen físicamente.
+
+## 12. Convención
 
 - Fase: `docs/phases/YYYY-MM-<slug>/`
 - Entrada: `README.md`
@@ -157,7 +169,7 @@ Los README de los componentes afectados también deben enlazar el paquete de fas
 - Diagramas: `DIAGRAMS.md`
 - Guía pedagógica de componente terminado: `docs/completed/<component>.md`
 
-## 12. Regla permanente
+## 13. Regla permanente
 
 A partir de ahora, cada cierre de fase debe seguir obligatoriamente:
 
@@ -165,10 +177,11 @@ A partir de ahora, cada cierre de fase debe seguir obligatoriamente:
 
 El incumplimiento de la documentación impide considerar la fase completamente cerrada.
 
-## 13. Relación
+## 14. Relación
 
 - [`docs/phases/README.md`](phases/README.md) — índice de fases.
 - [`docs/completed/README.md`](completed/README.md) — índice de guías de mantenimiento.
 - [`LEONES_DECISION_LOG.md`](../LEONES_DECISION_LOG.md) — decisiones históricas.
 - [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) — arquitectura global.
 - [`docs/ROADMAP.md`](ROADMAP.md) — evolución prevista.
+- [`web/assets/graphics/logos/README.md`](../web/assets/graphics/logos/README.md) — contrato documental de logos funcionales.
