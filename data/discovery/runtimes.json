@@ -1,13 +1,67 @@
 {
-  "generated_at": "2026-08-16T15:08:58.438435+00:00",
+  "generated_at": "2026-08-17T05:52:15.673485+00:00",
   "kind": "runtimes",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
     {
+      "name": "cklxx/arle",
+      "url": "https://github.com/cklxx/arle",
+      "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
+      "updated_at": "2026-08-17T05:11:13Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "MinsungMJ/Local-Inference-System",
+      "url": "https://github.com/MinsungMJ/Local-Inference-System",
+      "description": "CPU-only local inference runtime focused on correctness, inspectability, reproducible artifacts, and transparent diagnostics.",
+      "updated_at": "2026-08-17T05:07:51Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "brunocasado/LlamaDeck",
+      "url": "https://github.com/brunocasado/LlamaDeck",
+      "description": "Desktop control center for llama.cpp and llama-swap. Configure GGUF models, manage runtimes, and monitor local inference without editing YAML.",
+      "updated_at": "2026-08-16T21:08:17Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "weicj/vLLM-2080Ti-Definitive",
+      "url": "https://github.com/weicj/vLLM-2080Ti-Definitive",
+      "description": "The definitive vLLM runtime for dual RTX 2080 Ti 22GB + NVLink, delivering Qwen 27B local inference with maximum 100+ tok/s single-request decode with support of FP8 weight ",
+      "updated_at": "2026-08-17T05:32:20Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "OmniBioAI/omnibioai-studio",
+      "url": "https://github.com/OmniBioAI/omnibioai-studio",
+      "description": "Electron + React + Vite desktop app for OmniBioAI — provides a visual workflow builder, plugin launcher, and unified control plane for local, HPC, and cloud bioinformatics execution. Connects to the Django backend via IPC and REST, integrates Docker runtime and local LLM inference via Ollama.",
+      "updated_at": "2026-08-16T19:31:40Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
       "name": "lm-webui/lm-webui",
       "url": "https://github.com/lm-webui/lm-webui",
       "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
-      "updated_at": "2026-08-16T14:31:33Z",
+      "updated_at": "2026-08-16T18:42:58Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Sparky4567/bun-ollama",
+      "url": "https://github.com/Sparky4567/bun-ollama",
+      "description": "A lightweight local LLM manager written in TypeScript and running on the Bun runtime with llama.cpp (llama-server) as the native inference backend.",
+      "updated_at": "2026-08-16T17:04:44Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -31,15 +85,6 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "cklxx/arle",
-      "url": "https://github.com/cklxx/arle",
-      "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
-      "updated_at": "2026-08-16T10:00:24Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "mmogr/gglib",
       "url": "https://github.com/mmogr/gglib",
       "description": "The local model runtime that makes llama.cpp behave like an API provider.",
@@ -54,24 +99,6 @@
       "description": "A  lightweight local model server that delivers an ollama‑style developer experience, built natively on Intel’s OpenVINO runtime for efficient CPU and GPU inference.",
       "updated_at": "2026-08-16T06:17:00Z",
       "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "weicj/vLLM-2080Ti-Definitive",
-      "url": "https://github.com/weicj/vLLM-2080Ti-Definitive",
-      "description": "The definitive vLLM runtime for dual RTX 2080 Ti 22GB + NVLink, delivering Qwen 27B local inference with 100+ tok/s single-request decode with support of FP8 weight ",
-      "updated_at": "2026-08-16T13:45:17Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "OmniBioAI/omnibioai-studio",
-      "url": "https://github.com/OmniBioAI/omnibioai-studio",
-      "description": "Electron + React + Vite desktop app for OmniBioAI — provides a visual workflow builder, plugin launcher, and unified control plane for local, HPC, and cloud bioinformatics execution. Connects to the Django backend via IPC and REST, integrates Docker runtime and local LLM inference via Ollama.",
-      "updated_at": "2026-08-15T08:01:09Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -223,7 +250,7 @@
       "name": "Pangu-Immortal/MagicWX",
       "url": "https://github.com/Pangu-Immortal/MagicWX",
       "description": "Android 17 local LLM prototype with Jetpack Compose and ONNX Runtime for offline AI inference experiments.",
-      "updated_at": "2026-08-15T22:48:34Z",
+      "updated_at": "2026-08-16T15:26:52Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -268,7 +295,7 @@
       "name": "alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
       "url": "https://github.com/alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
       "description": "Privacy-first zero-cloud offline LLM inference & local memory runtime (LumiChats style)",
-      "updated_at": "2026-08-16T04:52:29Z",
+      "updated_at": "2026-08-17T01:25:40Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -324,15 +351,6 @@
       "description": "Lightweight local LLM inference engine. Serves GGUF models via Ollama-compatible HTTP API, OpenAI-compatible API, and MCP stdio — single binary, no runtime dependencies.",
       "updated_at": "2026-08-06T11:46:34Z",
       "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "MinsungMJ/Local-Inference-System",
-      "url": "https://github.com/MinsungMJ/Local-Inference-System",
-      "description": "CPU-only local inference runtime focused on correctness, inspectability, reproducible artifacts, and transparent diagnostics.",
-      "updated_at": "2026-08-11T08:50:48Z",
-      "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -403,7 +421,7 @@
       "name": "Parth04Dalvi/Local-First-Multimodal-Edge-Assistant",
       "url": "https://github.com/Parth04Dalvi/Local-First-Multimodal-Edge-Assistant",
       "description": "A high-performance, privacy-focused C++ and ONNX Runtime application for on-device speech recognition and LLM inference. Quantizes 3B+ models to INT4 precision with PortAudio and SQLite-VSS vector search, delivering sub-80ms responses without cloud dependencies",
-      "updated_at": "2026-07-21T21:52:07Z",
+      "updated_at": "2026-08-17T00:08:11Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -431,24 +449,6 @@
       "url": "https://github.com/hilum-labs/local-llm",
       "description": "Open source Node.js runtime for local LLM inference, on-device AI, and private model execution.",
       "updated_at": "2026-07-14T22:23:30Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "hilum-labs/local-llm-js-core",
-      "url": "https://github.com/hilum-labs/local-llm-js-core",
-      "description": "Shared JavaScript runtime core for local LLM inference across Node.js, browser, and React Native.",
-      "updated_at": "2026-07-14T21:33:58Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "akluth/LispLoom",
-      "url": "https://github.com/akluth/LispLoom",
-      "description": "A compact, fast Common Lisp runtime for local GGUF language models, with AVX2 inference, chat, RAG, and web grounding.",
-      "updated_at": "2026-07-13T20:48:09Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"

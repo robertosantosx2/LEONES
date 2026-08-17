@@ -1,103 +1,13 @@
 {
-  "generated_at": "2026-08-16T15:09:01.184195+00:00",
+  "generated_at": "2026-08-17T05:52:19.998571+00:00",
   "kind": "skills",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
     {
-      "name": "Akhtar-tech786/ai-engineer-portfolio",
-      "url": "https://github.com/Akhtar-tech786/ai-engineer-portfolio",
-      "description": "# ai-engineer-portfolio  AI Engineering portfolio featuring my skills, projects, resume, and experience. Explore my work in Python, Machine Learning, Generative AI, LLMs, RAG, AI Agents, APIs, and software engineering—focused on building practical, scalable AI solutions.",
-      "updated_at": "2026-08-16T15:06:48Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Mechres/Yagent",
-      "url": "https://github.com/Mechres/Yagent",
-      "description": "Local-first AI agent for code, audit, review, web search and research — in Go. Own agent loop, memory, skills, codebase index and TUI. Ollama/llama.cpp by default; opt-in cloud APIs.",
-      "updated_at": "2026-08-16T15:07:08Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "hesreallyhim/awesome-claude-code",
-      "url": "https://github.com/hesreallyhim/awesome-claude-code",
-      "description": "A hand-picked collection of the finest of resources for the most awesome of agents, Claude Code, the undisputed champion of coding companions, from the unstoppable team at Anthropic PBC. A delectable showcase of top tier skills, ambidextrous agents, scintillating status lines, top notch developer tooling, and also we have plugins",
-      "updated_at": "2026-08-16T15:06:04Z",
-      "license": "NOASSERTION",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "shibing624/agentica",
-      "url": "https://github.com/shibing624/agentica",
-      "description": "Build AI agents that run for hours, not seconds. Async-first Python harness: auto context-compaction, cost budgets & death-spiral guards, persistent cross-session memory, self-evolving SKILL.md, /goal long-task loop, 40+ tools, 20+ models, MCP/ACP. Ships a CLI + Web Gateway out of the box.",
-      "updated_at": "2026-08-16T15:05:24Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "jeremylongshore/claude-code-plugins-plus-skills",
-      "url": "https://github.com/jeremylongshore/claude-code-plugins-plus-skills",
-      "description": "471 plugins, 3,069 skills, 347 agents for Claude Code. Open-source marketplace at tonsofskills.com with the ccpi CLI package manager.",
-      "updated_at": "2026-08-16T15:04:59Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Th0rgal/sandboxed.sh",
-      "url": "https://github.com/Th0rgal/sandboxed.sh",
-      "description": "Safe runtime for autonomous on-chain AI agents: isolated sandboxes, Library skills, encrypted secrets.",
-      "updated_at": "2026-08-16T15:04:22Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "OpenPeach-ai/dgc",
-      "url": "https://github.com/OpenPeach-ai/dgc",
-      "description": "A coding-agent CLI for the models you run — local (Ollama, llama.cpp, LM Studio, vLLM) or any OpenAI-compatible cloud. Permission modes, plan mode, thinking levels, memory, skills. Pure Python, 3 deps, MIT.",
-      "updated_at": "2026-08-16T15:02:16Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "kody-w/rappterbook",
-      "url": "https://github.com/kody-w/rappterbook",
-      "description": "Social network for AI agents. Feed SKILLS.md to your AI — it becomes a citizen. No servers, no API keys. GitHub IS the platform.",
-      "updated_at": "2026-08-16T15:00:14Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "serggiu/ruby-llm-trainer",
-      "url": "https://github.com/serggiu/ruby-llm-trainer",
-      "description": "A set of Ruby scripts to create agents skills and a Ruby dataset from your own selection of Ruby libraries",
-      "updated_at": "2026-08-16T14:59:31Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "HyperVon/agent-guidance-kit",
-      "url": "https://github.com/HyperVon/agent-guidance-kit",
-      "description": "Approval-gated, project-local guidance and reusable skills for AI coding agents.",
-      "updated_at": "2026-08-16T14:57:59Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "lfnfromchina-bot/skilldoctor",
-      "url": "https://github.com/lfnfromchina-bot/skilldoctor",
-      "description": "Scaffold, validate, lint and test agent skills (SKILL.md) — measure trigger rate with an LLM router, like unit tests for your skill descriptions.",
-      "updated_at": "2026-08-16T14:54:51Z",
+      "name": "shalintripathi/saas-marketing-agents",
+      "url": "https://github.com/shalintripathi/saas-marketing-agents",
+      "description": "Your AI marketing team for B2B SaaS: 70 specialist marketing agents and 19 installable Claude Code skills — SEO/AEO/GEO, content, paid media, email, PLG, pricing, ABM target-account lists, product marketing, sales enablement, analytics — run by the CATALYST multi-agent orchestrator. Open source (MIT); also works in Cursor, Copilot and Windsurf.",
+      "updated_at": "2026-08-17T05:50:39Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -106,187 +16,43 @@
       "name": "CherryHQ/cherry-studio",
       "url": "https://github.com/CherryHQ/cherry-studio",
       "description": "AI productivity studio with smart chat, autonomous agents, and 300+ assistants. Unified access to frontier LLMs",
-      "updated_at": "2026-08-16T14:52:18Z",
+      "updated_at": "2026-08-17T05:49:54Z",
       "license": "AGPL-3.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "SeanHogg/Builderforce.ai",
-      "url": "https://github.com/SeanHogg/Builderforce.ai",
-      "description": "Agentic AI Coding Platform that enables everyone to train, design and embed custom LLMs into a custom agent. Deploy your agent into the builderforce (a workforce and hiring platform). Explore skills, personnas, content, governance and workforce agents in the marketplace. ",
-      "updated_at": "2026-08-16T14:48:03Z",
+      "name": "XAIHT/Tlamatini",
+      "url": "https://github.com/XAIHT/Tlamatini",
+      "description": "Tlamatini is a self-hosted AI developer assistant for local or cloud LLMs: hybrid RAG (FAISS+BM25) over your codebase, a 100+ tool Multi-Turn engine, an 86-agent visual workflow designer, 28 SKILL.md skills, a universal MCP client, and ACPX, a runtime for external coding agents like Claude Code, Codex, Cursor and Gemini CLI.",
+      "updated_at": "2026-08-17T05:48:39Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "richhabits/sam",
-      "url": "https://github.com/richhabits/sam",
-      "description": "A free, private, local-first AI assistant that actually does the work — 167 tools, a team of 78 AI agents, 40 rotating free AI brains, 25 skills. Not a chatbot, a doer. It doesn't just answer — it handles it.",
-      "updated_at": "2026-08-16T14:47:16Z",
-      "license": "NOASSERTION",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "u00dxk2/agent-ops-patterns",
-      "url": "https://github.com/u00dxk2/agent-ops-patterns",
-      "description": "Operational patterns for running LLM agents in production: output-boundary secret redaction, agent-memory integrity linting, fail-soft detector discipline, skill regression testing.",
-      "updated_at": "2026-08-16T14:43:09Z",
+      "name": "oneworks-ai/app",
+      "url": "https://github.com/oneworks-ai/app",
+      "description": "One Works application monorepo for AI agents, plugins, desktop, web, CLI, and Relay.",
+      "updated_at": "2026-08-17T05:44:55Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "SuperdeMan/cockpit-agent",
-      "url": "https://github.com/SuperdeMan/cockpit-agent",
-      "description": "面向智能座舱的云边协同 AI Agent：端侧毫秒级车控，云端声明式 Multi-Agent 与 Skill/DAG 编排，支持 S2S 实时语音、声纹多用户、视觉与 HMI；LLM 只负责理解与规划，VAL 负责确定性安全执行。",
-      "updated_at": "2026-08-16T14:40:09Z",
+      "name": "iOfficeAI/AionUi",
+      "url": "https://github.com/iOfficeAI/AionUi",
+      "description": "Open-source 24/7 Cowork app for OpenClaw, Hermes, Claude Code, Codex, OpenCode and 20+ more CLI Agent | Customize your assistants | Team them up｜Star if you like it!",
+      "updated_at": "2026-08-17T05:44:37Z",
       "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "martinholovsky/SOTA-skills",
-      "url": "https://github.com/martinholovsky/SOTA-skills",
-      "description": "Engineering best practices that AI coding agents actually apply — 40+ skills, from secure coding and cloud to compliance and UX writing. BUILD + AUDIT modes. Measured: best-practice coverage 59% → 98% vs. the same model unguided.",
-      "updated_at": "2026-08-16T14:38:58Z",
-      "license": "CC-BY-4.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "caliban-ai/caliban",
-      "url": "https://github.com/caliban-ai/caliban",
-      "description": "A from-scratch Rust agent harness that puts the operator in control of model routing, memory, skills, and prompt context.",
-      "updated_at": "2026-08-16T14:36:30Z",
-      "license": "AGPL-3.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "eirik-rune/runemap",
-      "url": "https://github.com/eirik-rune/runemap",
-      "description": "Text radar map for agents — live weather and a character radar map for any place on earth, in one HTTP request. Installable as an Agent Skill.",
-      "updated_at": "2026-08-16T14:37:14Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "echoVic/blade-code",
-      "url": "https://github.com/echoVic/blade-code",
-      "description": "AI-powered CLI coding agent with 20+ built-in tools, MCP support, and multi-model providers",
-      "updated_at": "2026-08-16T14:35:26Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "trapstreet/trapstreet-tasks",
-      "url": "https://github.com/trapstreet/trapstreet-tasks",
-      "description": "Open evaluation tasks for AI agents, skills and tools — inputs, expected outputs and a judge, so any solution can be measured and ranked on trapstreet.run",
-      "updated_at": "2026-08-16T14:34:29Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "bug-ops/zeph",
-      "url": "https://github.com/bug-ops/zeph",
-      "description": "A memory-first AI agent that remembers why decisions were made — not just the last message. Runs local (Ollama), cloud (Claude · OpenAI · Gemini), or decentralized TEE. Graph memory, self-learning skills, multi-model routing, sandboxed tools. MCP · ACP · A2A. One Rust binary.",
-      "updated_at": "2026-08-16T14:33:39Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "YangKangSung/kampff-skills",
-      "url": "https://github.com/YangKangSung/kampff-skills",
-      "description": "Agent skill + spectrograph 7-layer human analysis for Grok · Claude · Hermes. Independent OSS toward Physical AI.",
-      "updated_at": "2026-08-16T14:34:21Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "justForever17/v8-agent-os",
-      "url": "https://github.com/justForever17/v8-agent-os",
-      "description": "The epoch-making Agent Runtime OS. Features Zero-Trust firewalls, Omni-Memory Graph, dynamic MCP/Skills pre-filtering.",
-      "updated_at": "2026-08-16T14:30:12Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Dogwind221/dsh-vision-skill",
-      "url": "https://github.com/Dogwind221/dsh-vision-skill",
-      "description": "识图 Agent Skill：为纯文本模型补视觉能力（多模型自动降级、DeepSeek Harness web 拖图即识别），基于 claude-vision-skill 改造",
-      "updated_at": "2026-08-16T14:25:58Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "nerdai/llm-agents-from-scratch",
-      "url": "https://github.com/nerdai/llm-agents-from-scratch",
-      "description": "Build LLM agents and multi-agent systems from scratch, with MCP, Skills, and A2A",
-      "updated_at": "2026-08-16T14:24:28Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "adityatomar-neurabit/rulesync-aicmd",
-      "url": "https://github.com/adityatomar-neurabit/rulesync-aicmd",
-      "description": "Ultimate Rulesync AI Agent CLI Tool 2026 – Streamline Coding Workflows Fast",
-      "updated_at": "2026-08-16T14:23:50Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Sakshxm1/hermes-agency-orchestrator",
-      "url": "https://github.com/Sakshxm1/hermes-agency-orchestrator",
-      "description": "Claude Code Agent Workflows Guide 2026: Skills vs Teams vs Cost Analysis",
-      "updated_at": "2026-08-16T14:18:14Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Ahoo-Wang/skills",
-      "url": "https://github.com/Ahoo-Wang/skills",
-      "description": "A central aggregation repository for Agent Skills from Ahoo-Wang's open source projects.",
-      "updated_at": "2026-08-16T14:17:45Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "fmanimashaun/claude-skills",
-      "url": "https://github.com/fmanimashaun/claude-skills",
-      "description": "Agent Skills that teach Claude to build Rails 8.1 apps — vanilla-first stack, pure RSpec, Hotwire (Turbo/Stimulus/Native), OpenAPI via rswag, ruby_llm AI, Kamal 2 deploys",
-      "updated_at": "2026-08-16T15:09:00Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Notryag/north-agent",
-      "url": "https://github.com/Notryag/north-agent",
-      "description": "可嵌入 Python 产品的 Agent Runtime，提供工具执行、Skills、运行事件、上下文压缩与持久化 Checkpointer。",
-      "updated_at": "2026-08-16T14:09:00Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "vanducng/skills",
-      "url": "https://github.com/vanducng/skills",
-      "description": "A daily-driver collection of skills for agentic coding - a portable, agent-agnostic catalog managed with the vd CLI.",
-      "updated_at": "2026-08-16T14:07:15Z",
+      "name": "kody-w/rappterbook",
+      "url": "https://github.com/kody-w/rappterbook",
+      "description": "Social network for AI agents. Feed SKILLS.md to your AI — it becomes a citizen. No servers, no API keys. GitHub IS the platform.",
+      "updated_at": "2026-08-17T05:44:44Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -295,106 +61,169 @@
       "name": "Dominic789654/awesome-deepseek-harness",
       "url": "https://github.com/Dominic789654/awesome-deepseek-harness",
       "description": "A curated list of plugins, skills, MCP servers, patch/profile layers, orchestrators & UIs for DeepSeek Harness (DSH). Visualization · PPT · Coding · Agents · Loops (auto-research) and more. #dsh",
-      "updated_at": "2026-08-16T14:06:39Z",
+      "updated_at": "2026-08-17T05:43:01Z",
       "license": "NOASSERTION",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "xhqing/DayTradingAgent",
-      "url": "https://github.com/xhqing/DayTradingAgent",
-      "description": "AI day-trading Agent that watches markets, emits structured trade signals, and auto-executes trades across HK / US / A-share equities | AI 日内交易智能体：覆盖港股 / 美股 / A 股，盯盘分析、输出结构化交易信号、自动执行交易等。",
-      "updated_at": "2026-08-16T15:03:52Z",
+      "name": "eiway112/agent-wiki",
+      "url": "https://github.com/eiway112/agent-wiki",
+      "description": "基于 Karpathy LLM Wiki 模式的智能体知识库运营 Skill：Ingest 摄入 / Query 回填 / Lint 六维体检，把外部知识蒸馏为智能体可调用的行为规则。",
+      "updated_at": "2026-08-17T05:42:43Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "FlorianBruniaux/claude-code-ultimate-guide",
-      "url": "https://github.com/FlorianBruniaux/claude-code-ultimate-guide",
-      "description": "The most comprehensive Claude Code guide: agentic workflows, hooks, skills, MCP servers, quizzes, and production-ready templates. 430K+ lines.",
-      "updated_at": "2026-08-16T14:03:22Z",
-      "license": "CC-BY-SA-4.0",
+      "name": "muthuishere/toolnexus",
+      "url": "https://github.com/muthuishere/toolnexus",
+      "description": "Your LLM, with MCP tools + agent skills built in — MCP · skills · native · HTTP · built-in · A2A tools behind one interface, byte-identical across JavaScript, Python, Go, Java, C# and Elixir. Docs: https://muthuishere.github.io/toolnexus/",
+      "updated_at": "2026-08-17T05:40:36Z",
+      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "sanyalad/llmin",
-      "url": "https://github.com/sanyalad/llmin",
-      "description": "Autonomous agent system that crystallizes verified LLM reasoning into reusable skills",
-      "updated_at": "2026-08-16T14:02:02Z",
+      "name": "Mallikarjun-Roddannavar/playwright-agentic-automation",
+      "url": "https://github.com/Mallikarjun-Roddannavar/playwright-agentic-automation",
+      "description": "Playwright + TypeScript automation framework for UI/API testing with Page Object Model, shared fixtures, reusable services, local agent skills, and an AI-ready codebase second brain",
+      "updated_at": "2026-08-17T05:39:30Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "ellmos-ai/skills",
+      "url": "https://github.com/ellmos-ai/skills",
+      "description": "Portable SKILL.md library for Claude Code, Codex-compatible agents, BACH, and local-first LLM workflows",
+      "updated_at": "2026-08-17T05:39:56Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "onewaymyway/mini_agent",
+      "url": "https://github.com/onewaymyway/mini_agent",
+      "description": "一个用 Python 实现的简化版 Claude Code，支持多 LLM 提供商、Skill 机制、并发 Sub-Agent 编排和完整的工具调用体系。",
+      "updated_at": "2026-08-17T05:38:19Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "majiayu000/harness",
-      "url": "https://github.com/majiayu000/harness",
-      "description": "Run fleets of parallel coding agents with governance — Rust control plane for Claude Code & Codex: orchestration, policy, cross-agent review, observability.",
-      "updated_at": "2026-08-16T13:48:22Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "AnastasiyaW/codex-claude-code-config",
-      "url": "https://github.com/AnastasiyaW/codex-claude-code-config",
-      "description": "Claude Code, Codex, and multi-agent configuration system: principles, hooks, skills, and workflow patterns for AI-assisted development",
-      "updated_at": "2026-08-16T13:46:14Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "woai3c/x-code-cli",
-      "url": "https://github.com/woai3c/x-code-cli",
-      "description": "Open-source, model-agnostic coding agent CLI with subagents, skills, MCP, and plugins.",
-      "updated_at": "2026-08-16T13:43:27Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "ayman3000/SwiftAgentKit",
-      "url": "https://github.com/ayman3000/SwiftAgentKit",
-      "description": "Protocol-oriented Swift package for building tool-using AI agents on top of LLMProviderKit.",
-      "updated_at": "2026-08-16T13:36:59Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "GoodLuck-123/autoNews",
-      "url": "https://github.com/GoodLuck-123/autoNews",
-      "description": "Automated daily AI & Tech intelligence agent. Tracks Embodied AI, World Models, LLMs, Infra, 3D Vision, and trending GitHub skills via GitHub Actions.",
-      "updated_at": "2026-08-16T13:36:39Z",
+      "name": "adityatomar-neurabit/rulesync-aicmd",
+      "url": "https://github.com/adityatomar-neurabit/rulesync-aicmd",
+      "description": "Ultimate Rulesync AI Agent CLI Tool 2026 – Streamline Coding Workflows Fast",
+      "updated_at": "2026-08-17T05:35:40Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "ykoh42/async-hermes-agent",
-      "url": "https://github.com/ykoh42/async-hermes-agent",
-      "description": "Async-first Hermes agent core for training, trajectories, tools, skills, MCP, and service integration",
-      "updated_at": "2026-08-16T13:35:58Z",
+      "name": "pandazki/pneuma-skills",
+      "url": "https://github.com/pandazki/pneuma-skills",
+      "description": "Co-creation infrastructure for humans and code agents — visual environment, skills, continuous learning, and distribution.",
+      "updated_at": "2026-08-17T05:36:06Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "UnboundCompute/security-agent-skills",
-      "url": "https://github.com/UnboundCompute/security-agent-skills",
-      "description": "Security-testing methodology as portable, tool-agnostic agent skills for Claude Code and any agent runtime: white-box bug hunting, AI-agent and LLM red-teaming, supply-chain risk, and appsec depth.",
-      "updated_at": "2026-08-16T13:35:47Z",
+      "name": "pratikxpanda/agentskills-sdk",
+      "url": "https://github.com/pratikxpanda/agentskills-sdk",
+      "description": "A Python SDK for discovering, retrieving, and serving Agent Skills to LLM agents - with providers for filesystem and HTTP, and integrations for LangChain, Microsoft Agent Framework, and MCP.",
+      "updated_at": "2026-08-17T05:33:26Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "dayfinggg/openai-codex-agent-skills",
-      "url": "https://github.com/dayfinggg/openai-codex-agent-skills",
-      "description": "Production-ready OpenAI Codex agent skills, specialist agents, instructions, and configuration with safe merge or full-install scripts.",
-      "updated_at": "2026-08-16T13:33:34Z",
+      "name": "seed-forge/harness-ai-kit",
+      "url": "https://github.com/seed-forge/harness-ai-kit",
+      "description": "Package manager for AI agent assets — 42 skills, 5 CLIs, 1 plugin. Skills for AI/LLM agent engineering, eval-driven dev, spec-driven dev, database (MySQL/PG/Redis/Kafka/Mongo/Oracle/NL2SQL), K8s/Docker diagnostics, infra ops (Dify/Nexus/Harbor/SonarQube) & docs/patent. Runtimes: Codex, Claude Code, Cursor, Kiro, DSH.",
+      "updated_at": "2026-08-17T05:32:37Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "zernie/vigiles",
+      "url": "https://github.com/zernie/vigiles",
+      "description": "Like Lighthouse for your agent harness - verify your CLAUDE.md/AGENTS.md, skills & hooks are real, then test and measure they actually work. Claude Code + Codex.",
+      "updated_at": "2026-08-17T05:32:41Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Sakshxm1/hermes-agency-orchestrator",
+      "url": "https://github.com/Sakshxm1/hermes-agency-orchestrator",
+      "description": "Claude Code Agent Workflows Guide 2026: Skills vs Teams vs Cost Analysis",
+      "updated_at": "2026-08-17T05:31:28Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "dev-core-busy/jarvis",
+      "url": "https://github.com/dev-core-busy/jarvis",
+      "description": "Self-hosted autonomous AI agent for Linux — multi-LLM, real desktop control (VNC), WhatsApp, RAG knowledge base, sandboxed security layer, OpenClaw skills",
+      "updated_at": "2026-08-17T05:30:07Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "go-steer/core-agent",
+      "url": "https://github.com/go-steer/core-agent",
+      "description": "Reusable Go base agent on the Google ADK — multi-provider (Gemini, Vertex, Claude on Anthropic + Vertex), MCP-native, with AGENTS.md, skills, and permissions wired up.",
+      "updated_at": "2026-08-17T05:27:52Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "jeremylongshore/claude-code-plugins-plus-skills",
+      "url": "https://github.com/jeremylongshore/claude-code-plugins-plus-skills",
+      "description": "471 plugins, 3,069 skills, 347 agents for Claude Code. Open-source marketplace at tonsofskills.com with the ccpi CLI package manager.",
+      "updated_at": "2026-08-17T05:27:39Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "eirik-rune/runemap",
+      "url": "https://github.com/eirik-rune/runemap",
+      "description": "Text radar map for agents — live weather and a character radar map for any place on earth, in one HTTP request. Installable as an Agent Skill.",
+      "updated_at": "2026-08-17T05:28:29Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "GuillaumeLessard/qector-claude-plugin",
+      "url": "https://github.com/GuillaumeLessard/qector-claude-plugin",
+      "description": "Official Claude Code plugin and claude.ai skill bundle for QECTOR: local quantum error correction decoding with qector-decoder-v3 via MCP. 24 skills, 5 agents, local stdio MCP server.",
+      "updated_at": "2026-08-17T05:25:46Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "GuillaumeLessard/qector-claude-skills",
+      "url": "https://github.com/GuillaumeLessard/qector-claude-skills",
+      "description": "Source of truth for the QECTOR Claude integration: verified qector-decoder-v3 quantum error correction skills, agents, commands, and a local stdio MCP server for Claude Code and claude.ai.",
+      "updated_at": "2026-08-17T05:24:49Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "simota/agent-skills",
+      "url": "https://github.com/simota/agent-skills",
+      "description": "124 specialist AI agents for Claude Code / Codex CLI / Antigravity CLI (agy). Anthropic Agent Skills spec-aligned, gerund-form descriptions, hub-spoke orchestration via Nexus. Covers development, security, design, testing, FinOps, compliance, observability, AI/ML, and more.",
+      "updated_at": "2026-08-17T05:22:35Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -403,35 +232,26 @@
       "name": "xu-jin-cs/dsh-skills",
       "url": "https://github.com/xu-jin-cs/dsh-skills",
       "description": "DeepSeek Harness (DSH) 生态技能包：parallel-dispatch 并行调度规则 + archmap 架构测绘 Agent（零LLM确定性diff影响面，节约tokens）。Reusable skills for the DeepSeek Harness ecosystem.",
-      "updated_at": "2026-08-16T13:26:24Z",
+      "updated_at": "2026-08-17T05:13:13Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "JustineDevs/meta-architect",
-      "url": "https://github.com/JustineDevs/meta-architect",
-      "description": "Meta-Architect (MA) is a workflow layer that adds architecture, evidence, and release-gate discipline on top of Codex, MCP, and other 70+ AI coding agents — without replacing them.",
-      "updated_at": "2026-08-16T13:23:28Z",
+      "name": "Yuuqq/research-grade-skills",
+      "url": "https://github.com/Yuuqq/research-grade-skills",
+      "description": "CI-validated Agent Skills for science - 69 research-grade skills for scientific writing, ML, data analysis, quantum computing, and research databases. No dead links, no phantom skills, no vendor ads. Claude Code / Cursor / Codex compatible.",
+      "updated_at": "2026-08-17T05:08:56Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "event4u-app/agent-config",
-      "url": "https://github.com/event4u-app/agent-config",
-      "description": "Every claim machine-checked, including \"zero runtime daemon\" — governed skills, rules and replayable state. One contract, every host agent.",
-      "updated_at": "2026-08-16T13:21:18Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "bytedance/deer-flow",
-      "url": "https://github.com/bytedance/deer-flow",
-      "description": "An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of tasks that could take minutes to hours.",
-      "updated_at": "2026-08-16T14:55:07Z",
-      "license": "MIT",
+      "name": "agents-flex/agents-flex",
+      "url": "https://github.com/agents-flex/agents-flex",
+      "description": "Agents-flex is A lightweight Java AI agent development framework (positioned as a counterpart to Spring AI). It supports features such as RAG, MCP, Skills, Text2SQL , LLM Wiki, Sub-agents, Web Search, TTS (synchronous and streaming), and STT.",
+      "updated_at": "2026-08-17T05:09:36Z",
+      "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -439,16 +259,196 @@
       "name": "langgenius/dify",
       "url": "https://github.com/langgenius/dify",
       "description": "Build Agentic workflows, RAG pipelines, with rich AI model and tool support on one collaborative workspace. Deploy on cloud, VPC, or self-hosted, so teams move from prototype to production without rebuilding the stack.",
-      "updated_at": "2026-08-16T14:53:20Z",
+      "updated_at": "2026-08-17T05:12:10Z",
       "license": "NOASSERTION",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
     {
-      "name": "shipiit/shipit_agent",
-      "url": "https://github.com/shipiit/shipit_agent",
-      "description": "Powerful Python agent runtime with tools, MCP, Hooks, Skills, Rag, memory, sessions, reasoning, and streaming packets.",
-      "updated_at": "2026-08-16T13:05:50Z",
+      "name": "PersonalClaw/PersonalClaw",
+      "url": "https://github.com/PersonalClaw/PersonalClaw",
+      "description": "Your self-hosted personal AI agent — an agentic OS for one person: chat, autonomous goal loops, memory, knowledge base, skills, automation, and a permission-gated app platform. Local-first, provider-agnostic, MIT.",
+      "updated_at": "2026-08-17T05:02:33Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "KerberosClaw/kc_ai_skills",
+      "url": "https://github.com/KerberosClaw/kc_ai_skills",
+      "description": "AI Skills That Actually Do Things — 中文優先的 Claude Code / Codex agent skills 合集 · Reusable bilingual skills for any LLM workflow",
+      "updated_at": "2026-08-17T05:03:33Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "ntholm86/work-skill",
+      "url": "https://github.com/ntholm86/work-skill",
+      "description": "Real work, fully auditable, in one file: a standalone, target-agnostic improvement-reasoning skill for LLM agents - examines and improves anything the model can reason about (code, documents, plans, letters) while recording every reasoning step in an auditable trail. Single markdown file, no installer, built on the Principles of Earned Autonomy.",
+      "updated_at": "2026-08-17T05:02:11Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "vnbochkarev-netizen/ViBo-memory",
+      "url": "https://github.com/vnbochkarev-netizen/ViBo-memory",
+      "description": "🧠 ViBo — save 50-150× tokens: persistent memory for AI agents (L1/L2/L3) + web search compression (96.2%). One skill, two products. $5/mo.",
+      "updated_at": "2026-08-17T05:02:59Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "O0000-code/awesome-academic-skills",
+      "url": "https://github.com/O0000-code/awesome-academic-skills",
+      "description": "An index of Claude and agent skills for academic work, from literature search to peer review. Organized by where each skill fits in the research lifecycle; each entry notes its license and what it runs. CC0.",
+      "updated_at": "2026-08-17T05:01:41Z",
+      "license": "CC0-1.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "opensolon/solon-ai",
+      "url": "https://github.com/opensolon/solon-ai",
+      "description": "Java AI application development framework (supports LLM-tool,skill; RAG; MCP; Agent-ReAct,Team-Agent). Compatible with java8 ~ java25. It can also be embedded in SpringBoot, jFinal, Vert.x, Quarkus, and other frameworks.",
+      "updated_at": "2026-08-17T04:58:49Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "AMD-AGI/Hyperloom",
+      "url": "https://github.com/AMD-AGI/Hyperloom",
+      "description": "An agentic system that auto-optimizes LLM workloads on AMD GPUs.",
+      "updated_at": "2026-08-17T04:56:55Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "affaan-m/ECC",
+      "url": "https://github.com/affaan-m/ECC",
+      "description": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
+      "updated_at": "2026-08-17T05:45:52Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "weiruocan/triage",
+      "url": "https://github.com/weiruocan/triage",
+      "description": "TRIAGE: Three-level Routing and Intelligent Agent Guidance for Efficient Execution — Reduce LLM agent token consumption by reusing historical experience trajectories. Trajectory-as-a-Skill (TaaS).",
+      "updated_at": "2026-08-17T04:55:55Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Green-PT/honey-for-devs",
+      "url": "https://github.com/Green-PT/honey-for-devs",
+      "description": "Honey (I Shrunk the AI) by GreenPT: a cross-tool coding skill that cuts AI coding-agent token usage and LLM API costs — write less code, less prose, and denser agent-to-agent handoffs (−53%, lossless in benchmarks) with no loss of quality. Works with Claude Code, Cursor, GitHub Copilot, Codex, Gemini CLI, Windsurf, Cline & Kiro.",
+      "updated_at": "2026-08-17T04:53:28Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "vszal/skills",
+      "url": "https://github.com/vszal/skills",
+      "description": "LLM agent skills",
+      "updated_at": "2026-08-17T04:53:20Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "brycewang-stanford/lit-review-agent-tools",
+      "url": "https://github.com/brycewang-stanford/lit-review-agent-tools",
+      "description": "🤖 The strongest curated list of open-source AI-agent tools for literature review — 70+ tools across 11 categories (Claude Code skills, deep research, MCP servers, PDF parsing, systematic review). 面向智能体文献综述的最强工具大全。",
+      "updated_at": "2026-08-17T04:52:30Z",
+      "license": "CC0-1.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Ahoo-Wang/skills",
+      "url": "https://github.com/Ahoo-Wang/skills",
+      "description": "A central aggregation repository for Agent Skills from Ahoo-Wang's open source projects.",
+      "updated_at": "2026-08-17T04:47:52Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "minipuft/claude-prompts-mcp",
+      "url": "https://github.com/minipuft/claude-prompts-mcp",
+      "description": "Model Context Protocol (MCP) server for reusable prompt templates, multi-step workflow chains, and quality gates. Compose agentic workflows with an operator syntax; export as native skills to Claude Code, Cursor, OpenCode, and Gemini CLI.",
+      "updated_at": "2026-08-17T04:47:49Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "tony-adamson/groundwork",
+      "url": "https://github.com/tony-adamson/groundwork",
+      "description": "Evidence-first process skills for coding agents: codebase analysis, solution design, minimal implementation plans",
+      "updated_at": "2026-08-17T04:47:33Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "asta-nguyen/agent-devkit",
+      "url": "https://github.com/asta-nguyen/agent-devkit",
+      "description": "Minimal prompt-driven workflow for giving coding agents a stable repository contract and a refreshable LLM-facing codebase wiki.",
+      "updated_at": "2026-08-17T05:02:15Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "event4u-app/agent-config",
+      "url": "https://github.com/event4u-app/agent-config",
+      "description": "Every claim machine-checked, including \"zero runtime daemon\" — governed skills, rules and replayable state. One contract, every host agent.",
+      "updated_at": "2026-08-17T04:40:52Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "yonatangross/orchestkit",
+      "url": "https://github.com/yonatangross/orchestkit",
+      "description": "The Complete AI Development Toolkit for Claude Code — 105 skills, 36 agents, 217 hooks. Production-ready patterns for full-stack development.",
+      "updated_at": "2026-08-17T04:38:06Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "tbdavid2019/openclaw-docs-skill",
+      "url": "https://github.com/tbdavid2019/openclaw-docs-skill",
+      "description": "自動每日更新, 讓你的LLM有面對openclaw疑難雜症處理的能力。This is an Agent Skill designed for AI coding assistants (like Claude with Antigravity). Once installed, the AI assistant gains deep knowledge of OpenClaw and can help you ",
+      "updated_at": "2026-08-17T04:33:48Z",
+      "license": "AGPL-3.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "tbdavid2019/hermes-agent-docs-skill",
+      "url": "https://github.com/tbdavid2019/hermes-agent-docs-skill",
+      "description": "skill系列 - 讓你的LLM 有 hermes agent 的維護知識(自動更新)",
+      "updated_at": "2026-08-17T04:32:50Z",
+      "license": "AGPL-3.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "justForever17/v8-agent-os",
+      "url": "https://github.com/justForever17/v8-agent-os",
+      "description": "The epoch-making Agent Runtime OS. Features Zero-Trust firewalls, Omni-Memory Graph, dynamic MCP/Skills pre-filtering.",
+      "updated_at": "2026-08-17T04:33:00Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
