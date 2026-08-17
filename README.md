@@ -74,9 +74,9 @@ Documentación: [`docs/phases/2026-08-atlas-recommendation-pipeline/`](docs/phas
 
 ---
 
-# 🧹 Estándar de «limpia y da esplendor»
+# 🧹 Estándar de «limpia, fija y da esplendor»
 
-Cuando una fase pasa a terminada, se aplica este cierre antes de considerarla limpia:
+Cuando una fase pasa a terminada, se aplica este cierre antes de considerarla limpia, fijada y con esplendor:
 
 1. eliminar trazas, pruebas y borradores que no formen parte del producto;
 2. retirar código muerto y artefactos temporales;
