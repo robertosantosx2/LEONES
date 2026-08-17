@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-16T11:48:44.483998+00:00",
+  "generated_at": "2026-08-17T05:00:47.498859+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -30,9 +30,9 @@
       "url": "https://framagit.org/",
       "kind": "forge",
       "priority": "high",
-      "status": "error",
-      "error_type": "TimeoutError",
-      "message": "The read operation timed out",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://framagit.org/public/projects",
       "authentication_configured": false
     },
     {
@@ -263,7 +263,7 @@
       "priority": "high",
       "status": "reachable",
       "http_status": 200,
-      "final_url": "https://huggingface.co/papers/date/2026-08-14",
+      "final_url": "https://huggingface.co/papers",
       "authentication_configured": false
     }
   ],
