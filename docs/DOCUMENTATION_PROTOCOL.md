@@ -35,7 +35,7 @@ El paquete debe contener:
 1. **Objetivos y alcance** — qué problema resuelve y qué queda fuera.
 2. **Estado** — propuesta, desarrollo, validación, aceptada, sustituida o archivada.
 3. **Arquitectura** — componentes, límites y responsabilidades.
-4. **Esquemas y diagramas** — flujos de datos, dependencias, decisiones y secuencias.
+4. **Esquemas** — flujos de datos, dependencias, decisiones y secuencias en ASCII.
 5. **Reglas e invariantes** — aquello que el sistema debe respetar siempre.
 6. **Decisiones y motivación** — qué se decidió, cuándo y por qué.
 7. **Alternativas consideradas** — opciones descartadas y motivo.
@@ -102,15 +102,19 @@ Pero **fixture, ejemplo, dato sintético o artefacto histórico útil para repro
 
 Antes de borrar algo hay que comprobar si participa en tests, workflows, documentación o reproducibilidad.
 
-## 8. Diagramas como artefactos mantenidos
+## 8. Esquemas ASCII como artefactos canónicos
 
-Los diagramas deben explicar arquitectura, flujo o reglas y mantenerse sincronizados con el sistema. Una fase compleja debe incluir, como mínimo:
+Los mapas, esquemas, diagramas de arquitectura y flujos técnicos de LEONES son **artefactos de texto en ASCII**.
 
-- diagrama de arquitectura;
-- diagrama de flujo de datos/proceso;
-- esquema de decisiones/invariantes cuando exista lógica de decisión.
+Esta es una decisión congelada del proyecto:
 
-Mermaid en Markdown es válido cuando resulte suficiente.
+> **Los esquemas de LEONES se escriben, mantienen y publican en ASCII. No deben sustituirse por SVG, Mermaid ni otros formatos gráficos de diagramación.**
+
+El ASCII es la representación canónica porque es legible directamente en el repositorio, versionable, accesible, independiente de recursos gráficos y fácil de revisar mediante diff.
+
+Cuando un esquema necesite actualización, se modifica su bloque ASCII y se revisa su correspondencia con el sistema. No se crea una segunda representación gráfica que pueda divergir.
+
+Los SVG siguen siendo válidos para **identidad gráfica, logos e iconografía** cuando corresponda. Esta norma afecta a mapas, esquemas y diagramas técnicos, no a los recursos de identidad visual.
 
 ## 9. Decisiones e invariantes
 
@@ -166,14 +170,14 @@ El control valida las referencias locales de la web y la documentación y compru
 - Arquitectura: `ARCHITECTURE.md`
 - Decisiones: `DECISIONS.md`
 - Validación: `VALIDATION.md`
-- Diagramas: `DIAGRAMS.md`
+- Esquemas: `DIAGRAMS.md` usando ASCII
 - Guía pedagógica de componente terminado: `docs/completed/<component>.md`
 
 ## 13. Regla permanente
 
 A partir de ahora, cada cierre de fase debe seguir obligatoriamente:
 
-**implementar → validar → aceptar → documentar profusamente → enlazar → limpiar → cerrar**.
+**implementar → validar → aceptar → documentar profusamente → enlazar → limpiar, fijar y dar esplendor → cerrar**.
 
 El incumplimiento de la documentación impide considerar la fase completamente cerrada.
 
