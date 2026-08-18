@@ -9,7 +9,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from classify_performance import classify_measurement
+try:
+    from scripts.classify_performance import classify_measurement
+except ModuleNotFoundError:  # ejecución directa
+    from classify_performance import classify_measurement
 
 
 def enrich_measured_performance(measurement: dict[str, Any]) -> dict[str, Any]:
