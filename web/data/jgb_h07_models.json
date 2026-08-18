@@ -1,0 +1,25 @@
+{
+  "phase": "H07",
+  "status": "evidence_pending",
+  "models": [
+    {"name":"Kimi K3 (máx.)","identity_status":"pending","jgb_class":"unknown"},
+    {"name":"Qwen3.8 2.4T A95B","identity_status":"pending","jgb_class":"unknown"},
+    {"name":"DeepSeek V4 Pro 0813 (máx.)","identity_status":"pending","jgb_class":"unknown"},
+    {"name":"MiniMax M3","identity_status":"pending","jgb_class":"unknown"},
+    {"name":"GLM-5.2 (máx.)","identity_status":"pending","jgb_class":"unknown"},
+    {"name":"Nemotron 3 Ultra 550B A55B","identity_status":"pending","jgb_class":"unknown"},
+    {"name":"Muse glimmer (high)","identity_status":"pending","jgb_class":"unknown"}
+  ],
+  "human_activation": {
+    "restricted": true,
+    "recipient": "manadaleones.ia@gmail.com",
+    "accepted_responses": [
+      "OK LEONES CLASE0",
+      "OK LEONES CLASE1",
+      "OK LEONES CLASE2",
+      "OK LEONES CLASE3",
+      "OK LEONES CLASE4",
+      "OK LEONES CLASE5"
+    ]
+  }
+}
