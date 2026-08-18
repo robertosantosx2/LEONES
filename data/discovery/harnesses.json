@@ -1,14 +1,104 @@
 {
-  "generated_at": "2026-08-17T05:52:21.404859+00:00",
+  "generated_at": "2026-08-18T05:46:09.394745+00:00",
   "kind": "harnesses",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
     {
+      "name": "2001anshkaushik/parity-bench",
+      "url": "https://github.com/2001anshkaushik/parity-bench",
+      "description": "Benchmark harness and matched-layer evaluation for LLM orchestration engines (RocketRide and LlamaIndex)",
+      "updated_at": "2026-08-18T04:59:44Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "HN-Tran/n0ding-bench",
+      "url": "https://github.com/HN-Tran/n0ding-bench",
+      "description": "Local-first benchmark and evaluation harness with reproducible evidence.",
+      "updated_at": "2026-08-18T04:30:58Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "OpenRouterTeam/benchmark-harness",
+      "url": "https://github.com/OpenRouterTeam/benchmark-harness",
+      "description": "OpenRouter TypeScript harness for reproducible LLM benchmarks and evaluations.",
+      "updated_at": "2026-08-18T00:13:18Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "8b-is/deepsiper-enthea",
+      "url": "https://github.com/8b-is/deepsiper-enthea",
+      "description": "Sovereign, agent-driven LLM evaluation harness forked from deepseek-harness (dsh) — Cordis plugin architecture, EntheAI backends, and multi-model benchmarking",
+      "updated_at": "2026-08-17T20:26:08Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Umarfarook1/rag-document-qa",
+      "url": "https://github.com/Umarfarook1/rag-document-qa",
+      "description": "In-development retrieval-augmented document Q&A. Protocol seams for vector store, embedder and answer generator, plus a retrieval eval harness (Recall@K, MRR, nDCG) with no benchmark results yet.",
+      "updated_at": "2026-08-17T18:40:22Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "noureen207/HPC_Assistant",
+      "url": "https://github.com/noureen207/HPC_Assistant",
+      "description": "HPC support assistant on Qwen2.5-Coder-7B — hybrid RAG with citations, QLoRA fine-tuning, and vLLM serving at 24.2x single-stream throughput. Includes a 1,000-question judge-free evaluation harness.",
+      "updated_at": "2026-08-17T17:15:20Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
       "name": "danaug23/harness-arena",
       "url": "https://github.com/danaug23/harness-arena",
       "description": "Your model, many harnesses, many benchmarks.",
-      "updated_at": "2026-08-17T04:52:48Z",
+      "updated_at": "2026-08-17T16:24:46Z",
       "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "nilaymastaadmi/market-query-agent",
+      "url": "https://github.com/nilaymastaadmi/market-query-agent",
+      "description": "A tool-using LLM agent that answers analytical questions about Indian equity data via SQL — plus the evaluation harness, benchmark, and failure taxonomy that measure how well it actually works.",
+      "updated_at": "2026-08-17T07:52:55Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Jeneesh1014/safe-mcp-agent",
+      "url": "https://github.com/Jeneesh1014/safe-mcp-agent",
+      "description": "A local LLM agent (LangGraph + MCP) with a red-teamed guardrail layer and an automated evaluation harness that benchmarks security and task performance across models.",
+      "updated_at": "2026-08-17T07:23:47Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "ittakestwo123/Harnesslab",
+      "url": "https://github.com/ittakestwo123/Harnesslab",
+      "description": "Build, trace, replay and benchmark AI agent harnesses in Go.",
+      "updated_at": "2026-08-17T14:06:36Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "TarunSinghChauhan/llm-eval-harness",
+      "url": "https://github.com/TarunSinghChauhan/llm-eval-harness",
+      "description": "Production-grade LLM evaluation framework benchmarking GPT-4o and Claude Sonnet with ROUGE-L, BERTScore, and LLM-as-judge red-teaming for regression and safety detection.",
+      "updated_at": "2026-08-17T07:09:31Z",
+      "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -18,24 +108,6 @@
       "description": "A fixed agent harness for Pokémon Red where the model is the only variable: same tools, memory, prompt and observation format across 5 models from 4 vendors, turn-matched and eval-integrity gated. Live leaderboard with per-seed spreads and every exclusion. ",
       "updated_at": "2026-08-17T03:46:30Z",
       "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "OpenRouterTeam/benchmark-harness",
-      "url": "https://github.com/OpenRouterTeam/benchmark-harness",
-      "description": "OpenRouter TypeScript harness for reproducible LLM benchmarks and evaluations.",
-      "updated_at": "2026-08-17T03:04:27Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "2001anshkaushik/parity-bench",
-      "url": "https://github.com/2001anshkaushik/parity-bench",
-      "description": "Benchmark harness and matched-layer evaluation for LLM orchestration engines (RocketRide and LlamaIndex)",
-      "updated_at": "2026-08-17T00:47:26Z",
-      "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -76,29 +148,11 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "Umarfarook1/rag-document-qa",
-      "url": "https://github.com/Umarfarook1/rag-document-qa",
-      "description": "In-development retrieval-augmented document Q&A. Protocol seams for vector store, embedder and answer generator, plus a retrieval eval harness (Recall@K, MRR, nDCG) with no benchmark results yet.",
-      "updated_at": "2026-08-16T19:39:22Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "AEON-7/Aeon-Bench-Pod",
       "url": "https://github.com/AEON-7/Aeon-Bench-Pod",
       "description": "Run the AEON Bench suite on your own hardware: verified HuggingFace pull → serve → benchmark (text · agentic ×3 harnesses · vision · audio · arena · perf) → ed25519-signed attested submit.",
       "updated_at": "2026-08-16T19:33:12Z",
       "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "ittakestwo123/Harnesslab",
-      "url": "https://github.com/ittakestwo123/Harnesslab",
-      "description": "Build, trace, replay and benchmark AI agent harnesses in Go.",
-      "updated_at": "2026-08-17T05:19:42Z",
-      "license": "NOASSERTION",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -121,29 +175,11 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "Jeneesh1014/safe-mcp-agent",
-      "url": "https://github.com/Jeneesh1014/safe-mcp-agent",
-      "description": "A local LLM agent (LangGraph + MCP) with a red-teamed guardrail layer and an automated evaluation harness that benchmarks security and task performance across models.",
-      "updated_at": "2026-08-16T06:05:46Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "aaddii09/llm-eval-harness",
       "url": "https://github.com/aaddii09/llm-eval-harness",
       "description": "🔍 Run efficient evaluations for prompt and LLM regression testing with this lightweight, secret-free evaluation harness.",
       "updated_at": "2026-08-16T04:00:06Z",
       "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "TarunSinghChauhan/llm-eval-harness",
-      "url": "https://github.com/TarunSinghChauhan/llm-eval-harness",
-      "description": "Production-grade LLM evaluation framework benchmarking GPT-4o and Claude Sonnet with ROUGE-L, BERTScore, and LLM-as-judge red-teaming for regression and safety detection.",
-      "updated_at": "2026-08-15T06:58:52Z",
-      "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -187,7 +223,7 @@
       "name": "xiaobright/modeltest",
       "url": "https://github.com/xiaobright/modeltest",
       "description": "Personal LLM engineering-maintenance evaluation harness (V4.1b, frozen). Not a public benchmark.",
-      "updated_at": "2026-08-17T05:45:56Z",
+      "updated_at": "2026-08-18T03:35:22Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -319,15 +355,6 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "nilaymastaadmi/market-query-agent",
-      "url": "https://github.com/nilaymastaadmi/market-query-agent",
-      "description": "A tool-using LLM agent that answers analytical questions about Indian equity data via SQL — plus the evaluation harness, benchmark, and failure taxonomy that measure how well it actually works.",
-      "updated_at": "2026-08-11T16:15:40Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "AllenLi441/mental-health-llm-eval",
       "url": "https://github.com/AllenLi441/mental-health-llm-eval",
       "description": "Zero-shot LLM evaluation harness for 8 public mental-health benchmarks (CPsyExam, EmoBench, IMHI, PsySUICIDE, MentalManip, CBT-Bench, MDD-5k, EATD). Code + aggregate metrics only.",
@@ -422,33 +449,6 @@
       "url": "https://github.com/samusafe/rag-eval-harness",
       "description": "RAG evaluation harness — hit-rate, recall and refusal gates with per-question regression diffs. LangChain · pgvector · MLflow",
       "updated_at": "2026-08-07T23:41:33Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "rosscyking1115/redteam-foundry",
-      "url": "https://github.com/rosscyking1115/redteam-foundry",
-      "description": "LLM red-team evaluation harness — prompt injection, refusal, leakage and staleness, with cross-judge validation and attack-corpus audits.",
-      "updated_at": "2026-08-07T18:58:04Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "omikrom/llm-harness",
-      "url": "https://github.com/omikrom/llm-harness",
-      "description": "A local LLM evaluation/benchmarking harness with memory, knowledge, and agent orchestration test suites.",
-      "updated_at": "2026-08-07T19:19:25Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "eusoro-stack/model-gauntlet",
-      "url": "https://github.com/eusoro-stack/model-gauntlet",
-      "description": "Seeded, machine-graded eval harness for local Ollama models — single runs are noise.",
-      "updated_at": "2026-08-06T22:33:17Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
