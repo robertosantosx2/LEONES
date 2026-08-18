@@ -21,7 +21,10 @@ import csv
 import re
 from pathlib import Path
 
-from classify_performance import classify_measurement
+try:
+    from scripts.classify_performance import classify_measurement
+except ModuleNotFoundError:  # ejecución directa
+    from classify_performance import classify_measurement
 
 ROOT = Path(__file__).resolve().parents[1]
 FEED = ROOT / 'data/prospection/atlas_feed.csv'
