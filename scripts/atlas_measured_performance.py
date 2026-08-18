@@ -14,7 +14,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from enrich_measured_performance import enrich_measured_performance
+try:
+    from scripts.enrich_measured_performance import enrich_measured_performance
+except ModuleNotFoundError:  # ejecución directa: python scripts/atlas_measured_performance.py
+    from enrich_measured_performance import enrich_measured_performance
 
 
 def integrate_measurements(rows: list[dict[str, Any]], measurements: list[dict[str, Any]]) -> list[dict[str, Any]]:
