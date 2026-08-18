@@ -1,0 +1,4 @@
+model_id,variant,proposed_class,access_level,access_status,model_control_level,model_control_status,data_control_level,data_control_status,autonomy_level,autonomy_status,trust_level,trust_status,overall_status,notes
+Qwen3.5-9B,main,2,2,verified,2,verified,2,provisional,2,provisional,2,unknown,pending_human_validation,"Primary evidence collected; class 2 is a proposal only. Trust remains unresolved, so automated evaluator must not activate a class."
+Mistral-7B-v0.3,main,2,2,verified,2,verified,2,provisional,2,provisional,2,unknown,pending_human_validation,"Apache-2.0 weights are public and local inference is documented. Higher JGB dimensions require additional primary evidence."
+Llama-3.1-8B,main,2,2,verified,2,verified,2,provisional,2,provisional,2,unknown,pending_human_validation,"Community license imposes conditions; local weights/inference are available subject to gated access and license terms. Higher JGB dimensions require additional primary evidence."
