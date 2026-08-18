@@ -1,26 +1,14 @@
-"""Pruebas del contrato oficial CABE/RULA.
-
-Las fronteras son especialmente importantes: un cambio accidental de < a <=
-puede clasificar de forma distinta todos los modelos que estén justo en el
-límite. Por eso probamos explícitamente 1, 10 y 100 tok/s.
-
-También probamos valores imposibles. Una medición infinita no significa que el
-modelo sea extraordinariamente rápido: significa que el dato está roto y debe
-rechazarse antes de llegar al recomendador o al Atlas.
-"""
+"""Pruebas del contrato oficial CABE/RULA."""
 
 import importlib.util
 import math
 from pathlib import Path
-
 
 MODULE_PATH = Path(__file__).parents[1] / "scripts" / "classify_cabe_rula.py"
 spec = importlib.util.spec_from_file_location("classify_cabe_rula", MODULE_PATH)
 assert spec and spec.loader
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
-
-
 classify = module.classify_tokens_per_second
 
 
