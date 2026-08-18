@@ -10,8 +10,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from classify_cabe_rula import classify_tokens_per_second
-from normalize_cabe_rula_measurement import normalize_measurement
+try:
+    from scripts.classify_cabe_rula import classify_tokens_per_second
+    from scripts.normalize_cabe_rula_measurement import normalize_measurement
+except ModuleNotFoundError:  # ejecución directa
+    from classify_cabe_rula import classify_tokens_per_second
+    from normalize_cabe_rula_measurement import normalize_measurement
 
 
 def classify_measurement(value: Any) -> dict[str, float | str]:
