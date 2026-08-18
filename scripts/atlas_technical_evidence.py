@@ -31,10 +31,10 @@ def number(value):
     return None
 
 def infer_quant(config,model_id):
-    text=' '.join(str(config.get(k,'')) for k in ('quantization_config','quantization','torch_dtype') if config.get(k) is not None).lower()+' '+model_id.lower()
-    for q in ('gptq','awq','gguf','int4','4bit','int8','8bit','fp8','bf16','bfloat16','fp16','float16'):
+    text=' '.join(str(config.get(k,'')) for k in ('quantization_config','quantization') if config.get(k) is not None).lower()+' '+model_id.lower()
+    for q in ('gptq','awq','gguf','int4','4bit','int8','8bit','fp8'):
         if q in text:
-            return {'4bit':'int4','8bit':'int8','bfloat16':'bf16','float16':'fp16'}.get(q,q)
+            return {'4bit':'int4','8bit':'int8'}.get(q,q)
     return ''
 
 def enrich(row):
@@ -68,8 +68,6 @@ def enrich(row):
         total=safe.get('total')
         if isinstance(total,(int,float)) and total>0:
             out['weight_memory_gb']=str(round(total/1e9,2))
-            if not out.get('estimated_memory_gb'):
-                out['estimated_memory_gb']=str(round(total/1e9,2))
         for key in ('hidden_size','n_embd','d_model'):
             value=number(config.get(key))
             if value: out['hidden_size']=str(int(value)); break
@@ -84,23 +82,9 @@ def enrich(row):
             if value: out['num_key_value_heads']=str(int(value)); break
         out['technical_evidence_url']=base
         out['technical_evidence_state']='reported'
-
-        # T1 means that we have at least a useful technical identity/context
-        # signal. It must not require every field needed for recommendation.
-        technical_identity=bool(
-            out.get('architecture') or out.get('parameters_total_b') or
-            out.get('context_tokens') or out.get('runtime') or out.get('backend')
-        )
+        technical_identity=bool(out.get('architecture') or out.get('parameters_total_b') or out.get('context_tokens') or out.get('runtime') or out.get('backend'))
         t1=technical_identity
-
-        # T2 means that execution viability can begin to be evaluated from an
-        # observed weight footprint and a known execution runtime. Context is
-        # deliberately NOT required here: it is a separate requirement for a
-        # specific recommendation request, and may remain unknown.
         t2=bool(t1 and out.get('weight_memory_gb') and out.get('runtime'))
-
-        # T3 requires an actual performance observation; this extractor does
-        # not manufacture one from model metadata.
         t3=bool(out.get('tokens_per_second') and out.get('hardware_id') and out.get('runtime'))
         out['technical_profile_level']='T3' if t3 else 'T2' if t2 else 'T1' if t1 else 'T0'
         out['technical_evidence_checked_at']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())
