@@ -1,18 +1,25 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 297,
-  "enriched_ok": 86,
-  "non_github_preserved": 210,
-  "errors": 1,
+  "repositories_processed": 315,
+  "enriched_ok": 85,
+  "non_github_preserved": 228,
+  "errors": 2,
   "github_token_used": true,
   "diagnostics": [
+    {
+      "repository": "cklxx/arle",
+      "status": null,
+      "error_type": "RemoteDisconnected",
+      "message": "Remote end closed connection without response",
+      "rate_limit_remaining": null
+    },
     {
       "repository": "benlmadan9-star/eco-mesh-sdk",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4855"
+      "rate_limit_remaining": "4858"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."

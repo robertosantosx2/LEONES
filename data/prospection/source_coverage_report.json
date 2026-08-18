@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-17T05:00:47.498859+00:00",
+  "generated_at": "2026-08-18T04:55:00.516042+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -52,9 +52,9 @@
       "url": "https://savannah.gnu.org/",
       "kind": "forge",
       "priority": "high",
-      "status": "error",
-      "error_type": "TimeoutError",
-      "message": "The read operation timed out",
+      "status": "http_error",
+      "http_status": 502,
+      "final_url": "https://savannah.gnu.org/",
       "authentication_configured": false
     },
     {
