@@ -5,11 +5,15 @@ on:
     paths:
       - 'schemas/**'
       - 'tests/contracts/**'
+      - 'tests/**'
+      - 'scripts/**'
       - '.github/workflows/contract-tests.yml'
   pull_request:
     paths:
       - 'schemas/**'
       - 'tests/contracts/**'
+      - 'tests/**'
+      - 'scripts/**'
       - '.github/workflows/contract-tests.yml'
   workflow_dispatch:
 
@@ -40,6 +44,10 @@ jobs:
       - name: Run semantic contract tests
         shell: bash
         run: python -m unittest discover -s tests/contracts -p 'test_*.py' -v
+
+      - name: Run Python regression tests
+        shell: bash
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
 
       - name: Check contract invariants
         shell: bash
