@@ -1,14 +1,23 @@
 {
-  "generated_at": "2026-08-18T05:46:05.397351+00:00",
+  "generated_at": "2026-08-18T18:12:54.757661+00:00",
   "kind": "runtimes",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
     {
-      "name": "wesleysimplicio/simplicio-local",
-      "url": "https://github.com/wesleysimplicio/simplicio-local",
-      "description": "Ultra-fast 100% on-device Universal State Runtime for LLMs on Apple Silicon (M1–M5). DeepSeekV4/others on Mac M3 48gb RAM. Powered by MLX + Metal + ANE — extreme local inference, zero cloud, built for AI agents.",
-      "updated_at": "2026-08-18T03:50:37Z",
-      "license": "",
+      "name": "cklxx/arle",
+      "url": "https://github.com/cklxx/arle",
+      "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
+      "updated_at": "2026-08-18T17:17:36Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Sparky4567/bun-ollama",
+      "url": "https://github.com/Sparky4567/bun-ollama",
+      "description": "A lightweight local LLM manager written in TypeScript and running on the Bun runtime with llama.cpp (llama-server) as the native inference backend.",
+      "updated_at": "2026-08-18T13:57:17Z",
+      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -16,8 +25,35 @@
       "name": "lm-webui/lm-webui",
       "url": "https://github.com/lm-webui/lm-webui",
       "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
-      "updated_at": "2026-08-18T02:31:26Z",
+      "updated_at": "2026-08-18T13:19:55Z",
       "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "wesleysimplicio/simplicio-local",
+      "url": "https://github.com/wesleysimplicio/simplicio-local",
+      "description": "Ultra-fast 100% on-device Universal State Runtime for LLMs on Apple Silicon (M1–M5). DeepSeekV4/others on Mac M3 48gb RAM. Powered by MLX + Metal + ANE — extreme local inference, zero cloud, built for AI agents.",
+      "updated_at": "2026-08-18T11:56:33Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "guelfoweb/orbit",
+      "url": "https://github.com/guelfoweb/orbit",
+      "description": "Local agentic AI runtime for Gemma4, Qwen3-Coder and Qwen3.6, optimized for CPU-only consumer hardware, tool use and efficient local inference.",
+      "updated_at": "2026-08-18T09:15:17Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "vantradesign/vantra-local-inference",
+      "url": "https://github.com/vantradesign/vantra-local-inference",
+      "description": "Browser-side inference runtime: WebGPU detection, WebLLM engine wrapper, Kokoro TTS wrapper",
+      "updated_at": "2026-08-18T06:34:01Z",
+      "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -40,38 +76,11 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "vantradesign/vantra-local-inference",
-      "url": "https://github.com/vantradesign/vantra-local-inference",
-      "description": "Browser-side inference runtime: WebGPU detection, WebLLM engine wrapper, Kokoro TTS wrapper",
-      "updated_at": "2026-08-17T21:54:52Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "cklxx/arle",
-      "url": "https://github.com/cklxx/arle",
-      "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
-      "updated_at": "2026-08-17T20:58:01Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "weicj/vLLM-2080Ti-Definitive",
       "url": "https://github.com/weicj/vLLM-2080Ti-Definitive",
       "description": "The definitive vLLM runtime for dual RTX 2080 Ti 22GB + NVLink, delivering Qwen 27B local inference with maximum 100+ tok/s single-request decode with support of FP8 weight ",
-      "updated_at": "2026-08-18T05:06:26Z",
+      "updated_at": "2026-08-18T17:06:52Z",
       "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "guelfoweb/orbit",
-      "url": "https://github.com/guelfoweb/orbit",
-      "description": "Local agentic AI runtime for Gemma4, Qwen3-Coder and Qwen3.6, optimized for CPU-only consumer hardware, tool use and efficient local inference.",
-      "updated_at": "2026-08-17T17:37:00Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -107,15 +116,6 @@
       "url": "https://github.com/brunocasado/LlamaDeck",
       "description": "Desktop control center for llama.cpp and llama-swap. Configure GGUF models, manage runtimes, and monitor local inference without editing YAML.",
       "updated_at": "2026-08-18T02:45:41Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Sparky4567/bun-ollama",
-      "url": "https://github.com/Sparky4567/bun-ollama",
-      "description": "A lightweight local LLM manager written in TypeScript and running on the Bun runtime with llama.cpp (llama-server) as the native inference backend.",
-      "updated_at": "2026-08-16T17:04:44Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -304,7 +304,7 @@
       "name": "alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
       "url": "https://github.com/alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
       "description": "Privacy-first zero-cloud offline LLM inference & local memory runtime (LumiChats style)",
-      "updated_at": "2026-08-18T01:44:31Z",
+      "updated_at": "2026-08-18T09:27:49Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
