@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-18T18:12:54.757661+00:00",
+  "generated_at": "2026-08-18T18:37:05.846067+00:00",
   "kind": "runtimes",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
@@ -7,7 +7,16 @@
       "name": "cklxx/arle",
       "url": "https://github.com/cklxx/arle",
       "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
-      "updated_at": "2026-08-18T17:17:36Z",
+      "updated_at": "2026-08-18T18:33:50Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "lm-webui/lm-webui",
+      "url": "https://github.com/lm-webui/lm-webui",
+      "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
+      "updated_at": "2026-08-18T18:15:36Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -17,15 +26,6 @@
       "url": "https://github.com/Sparky4567/bun-ollama",
       "description": "A lightweight local LLM manager written in TypeScript and running on the Bun runtime with llama.cpp (llama-server) as the native inference backend.",
       "updated_at": "2026-08-18T13:57:17Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "lm-webui/lm-webui",
-      "url": "https://github.com/lm-webui/lm-webui",
-      "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
-      "updated_at": "2026-08-18T13:19:55Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"

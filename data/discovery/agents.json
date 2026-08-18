@@ -1,8 +1,17 @@
 {
-  "generated_at": "2026-08-18T18:12:56.163052+00:00",
+  "generated_at": "2026-08-18T18:37:07.125984+00:00",
   "kind": "agents",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
+    {
+      "name": "kb-111/AI-Powered_Virtual-Pod",
+      "url": "https://github.com/kb-111/AI-Powered_Virtual-Pod",
+      "description": "This project simulates a real-world IT development team using a multi-agent AI system. It automates key stages of the software development lifecycle — from requirement analysis to code generation and testing.  The system is built using agent orchestration frameworks like CrewAI and LangChain, with local LLM integration via Ollama.",
+      "updated_at": "2026-08-18T18:34:02Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
     {
       "name": "pgundlupetvenkatesh/mdb_api_layer",
       "url": "https://github.com/pgundlupetvenkatesh/mdb_api_layer",
@@ -440,15 +449,6 @@
       "url": "https://github.com/apoorv427/heydey",
       "description": "Local-first AI OS that proves every answer: per-sentence receipts, a fail-closed check by a different model family, cite-or-silent refusals. Interactive knowledge graph, artifact provenance, MCP server. Hand-built — zero agent frameworks. MIT.",
       "updated_at": "2026-07-27T19:09:34Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "charlesericwilson-portfolio/Echo_Adapt_v5",
-      "url": "https://github.com/charlesericwilson-portfolio/Echo_Adapt_v5",
-      "description": "\"Local LLM agent framework in Rust — native tool-role support, tmux session persistence, two-tier summarization, and ShareGPT logging. Works with any OpenAI-compatible backend.\"",
-      "updated_at": "2026-08-10T10:43:50Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
