@@ -18,7 +18,10 @@ import re
 import subprocess
 from typing import Any
 
-from record_benchmark import record_measurement
+try:
+    from scripts.record_benchmark import record_measurement
+except ModuleNotFoundError:  # ejecución directa
+    from record_benchmark import record_measurement
 
 
 def run_and_record(command: list[str], metadata: dict[str, Any], pattern: str) -> dict[str, Any]:
