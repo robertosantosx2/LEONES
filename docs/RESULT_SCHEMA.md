@@ -30,6 +30,42 @@ The Markdown report is intended for people. Statistics, charts and future automa
 - `software` — relevant software/version information.
 - `notes` — human observations.
 
+## Agentic extension
+
+Agentic evaluations extend the same canonical result rather than creating a parallel result format. The extension must preserve the existing inference and B01–B05 fields while adding task, environment, tool and trajectory evidence.
+
+Recommended concepts:
+
+- `agentic` — metadata for the agentic benchmark execution.
+- `benchmark_id` / `benchmark_version` — benchmark identity and frozen version.
+- `task_id` / `task_version` — exact task identity.
+- `model_version` — exact evaluated model revision where available.
+- `runtime` — inference/runtime identity and version.
+- `scaffold` — agent harness/scaffold identity and version.
+- `environment` — controlled execution environment.
+- `tools` — tools exposed to the agent and their versions/capabilities.
+- `execution_id` — unique run identifier.
+- `outcome` — objective task result and grader output.
+- `trajectory` — primary event trace, including tool calls, results, errors and recovery.
+- `metrics` — elapsed time, tokens, tool calls, errors, recovery count and cost when observable.
+- `safety` — policy/permission violations and safety outcomes.
+- `artifacts` — generated or modified artefacts and their verification state.
+- `grader` — grader identity/version and method.
+
+Unknown values remain `unknown`/`null` as appropriate. They must not be guessed.
+
+## Outcome versus trajectory
+
+These are intentionally separate. A successful outcome does not imply an efficient, safe or correct trajectory, and a failed outcome does not erase useful evidence about tool use or recovery.
+
+```text
+OUTCOME       → did the task succeed?
+TRAJECTORY    → how did the agent attempt it?
+METRICS       → how much time/tokens/cost/tools?
+SAFETY        → did it respect constraints?
+ARTIFACTS     → what did it actually produce/change?
+```
+
 ## Evidence lifecycle
 
 ```text
