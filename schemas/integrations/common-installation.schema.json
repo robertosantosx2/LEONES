@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LEONES integration installation observation",
+  "type": "object",
+  "required": ["installation_id", "integration", "timestamp", "source", "consent"],
+  "properties": {
+    "installation_id": {"type": "string"},
+    "integration": {"enum": ["ods", "magnitude"]},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "source": {"enum": ["observed", "reported", "estimated", "measured"]},
+    "consent": {"type": "boolean"},
+    "hardware": {"type": "object"},
+    "software": {"type": "object"},
+    "model": {"type": "object"},
+    "performance": {"type": "object"}
+  }
+}
