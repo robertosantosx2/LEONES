@@ -1,23 +1,77 @@
 {
-  "generated_at": "2026-08-19T05:47:46.542969+00:00",
+  "generated_at": "2026-08-19T22:08:21.730625+00:00",
   "kind": "harnesses",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
+    {
+      "name": "8b-is/deepsiper-enthea",
+      "url": "https://github.com/8b-is/deepsiper-enthea",
+      "description": "Sovereign, agent-driven LLM evaluation harness forked from deepseek-harness (dsh) — Cordis plugin architecture, EntheAI backends, and multi-model benchmarking",
+      "updated_at": "2026-08-19T21:57:41Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "sujit6666/custom-eval-harness",
+      "url": "https://github.com/sujit6666/custom-eval-harness",
+      "description": "Automated LLM quality evaluation framework for deterministic regression testing, keyword precision scoring, and PDF context retrieval.",
+      "updated_at": "2026-08-19T21:55:00Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "samusafe/rag-eval-harness",
+      "url": "https://github.com/samusafe/rag-eval-harness",
+      "description": "RAG evaluation harness — hit-rate, recall and refusal gates with per-question regression diffs. LangChain · pgvector · MLflow",
+      "updated_at": "2026-08-19T19:25:31Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "danaug23/harness-arena",
+      "url": "https://github.com/danaug23/harness-arena",
+      "description": "Your model, many harnesses, many benchmarks.",
+      "updated_at": "2026-08-19T16:53:18Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Umarfarook1/rag-document-qa",
+      "url": "https://github.com/Umarfarook1/rag-document-qa",
+      "description": "In-development retrieval-augmented document Q&A. Protocol seams for vector store, embedder and answer generator, plus a retrieval eval harness (Recall@K, MRR, nDCG) with no benchmark results yet.",
+      "updated_at": "2026-08-19T09:41:03Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "TarunSinghChauhan/llm-eval-harness",
+      "url": "https://github.com/TarunSinghChauhan/llm-eval-harness",
+      "description": "Production-grade LLM evaluation framework benchmarking GPT-4o and Claude Sonnet with ROUGE-L, BERTScore, and LLM-as-judge red-teaming for regression and safety detection.",
+      "updated_at": "2026-08-19T07:28:30Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "aaddii09/llm-eval-harness",
+      "url": "https://github.com/aaddii09/llm-eval-harness",
+      "description": "🔍 Run efficient evaluations for prompt and LLM regression testing with this lightweight, secret-free evaluation harness.",
+      "updated_at": "2026-08-19T06:58:22Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
     {
       "name": "wlsalswo14/ai-engineer-portfolio",
       "url": "https://github.com/wlsalswo14/ai-engineer-portfolio",
       "description": "AI Engineer portfolio — evaluation harnesses and agent-loop systems: chess_bench (LLM code-generation benchmark), loop-evolution (self-evolving loop with a promotion contract), primus (harness/domain separation framework).",
       "updated_at": "2026-08-19T02:49:02Z",
       "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "8b-is/deepsiper-enthea",
-      "url": "https://github.com/8b-is/deepsiper-enthea",
-      "description": "Sovereign, agent-driven LLM evaluation harness forked from deepseek-harness (dsh) — Cordis plugin architecture, EntheAI backends, and multi-model benchmarking",
-      "updated_at": "2026-08-19T02:46:33Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -45,15 +99,6 @@
       "description": "Benchmark harness and matched-layer evaluation for LLM orchestration engines (RocketRide and LlamaIndex)",
       "updated_at": "2026-08-19T00:30:34Z",
       "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "aaddii09/llm-eval-harness",
-      "url": "https://github.com/aaddii09/llm-eval-harness",
-      "description": "🔍 Run efficient evaluations for prompt and LLM regression testing with this lightweight, secret-free evaluation harness.",
-      "updated_at": "2026-08-19T00:07:24Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -94,29 +139,11 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "Umarfarook1/rag-document-qa",
-      "url": "https://github.com/Umarfarook1/rag-document-qa",
-      "description": "In-development retrieval-augmented document Q&A. Protocol seams for vector store, embedder and answer generator, plus a retrieval eval harness (Recall@K, MRR, nDCG) with no benchmark results yet.",
-      "updated_at": "2026-08-17T18:40:22Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "noureen207/HPC_Assistant",
       "url": "https://github.com/noureen207/HPC_Assistant",
       "description": "HPC support assistant on Qwen2.5-Coder-7B — hybrid RAG with citations, QLoRA fine-tuning, and vLLM serving at 24.2x single-stream throughput. Includes a 1,000-question judge-free evaluation harness.",
       "updated_at": "2026-08-17T17:15:20Z",
       "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "danaug23/harness-arena",
-      "url": "https://github.com/danaug23/harness-arena",
-      "description": "Your model, many harnesses, many benchmarks.",
-      "updated_at": "2026-08-19T02:04:42Z",
-      "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -144,15 +171,6 @@
       "description": "Build, trace, replay and benchmark AI agent harnesses in Go.",
       "updated_at": "2026-08-17T14:06:36Z",
       "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "TarunSinghChauhan/llm-eval-harness",
-      "url": "https://github.com/TarunSinghChauhan/llm-eval-harness",
-      "description": "Production-grade LLM evaluation framework benchmarking GPT-4o and Claude Sonnet with ROUGE-L, BERTScore, and LLM-as-judge red-teaming for regression and safety detection.",
-      "updated_at": "2026-08-17T07:09:31Z",
-      "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -431,24 +449,6 @@
       "url": "https://github.com/lokeshyarlagadda473/eval-core",
       "description": "A model-agnostic, pluggable evaluation framework for language models",
       "updated_at": "2026-08-09T19:47:08Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "seek-far/DevHarness",
-      "url": "https://github.com/seek-far/DevHarness",
-      "description": "An LLM-powered agent that autonomously diagnoses and fixes bugs, with an evaluation harness comparing approaches on curated benchmarks",
-      "updated_at": "2026-08-09T13:49:01Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "dong7313/cad_pruning",
-      "url": "https://github.com/dong7313/cad_pruning",
-      "description": "MUSE Text-to-CAD benchmark — Stage 1+2 (execution + geometry) evaluation harness; run scripts/eval_stage12_hf.py to evaluate an LLM (OpenRouter or local Qwen-Coder) straight from the HuggingFace dataset.",
-      "updated_at": "2026-08-09T07:39:40Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"

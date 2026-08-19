@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-19T05:47:42.936308+00:00",
+  "generated_at": "2026-08-19T22:08:13.511660+00:00",
   "kind": "runtimes",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
@@ -7,8 +7,53 @@
       "name": "cklxx/arle",
       "url": "https://github.com/cklxx/arle",
       "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
-      "updated_at": "2026-08-19T05:27:18Z",
+      "updated_at": "2026-08-19T18:31:22Z",
       "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "guelfoweb/orbit",
+      "url": "https://github.com/guelfoweb/orbit",
+      "description": "Local agentic AI runtime for Gemma4, Qwen3-Coder and Qwen3.6, optimized for CPU-only consumer hardware, tool use and efficient local inference.",
+      "updated_at": "2026-08-19T17:33:06Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "weicj/vLLM-2080Ti-Definitive",
+      "url": "https://github.com/weicj/vLLM-2080Ti-Definitive",
+      "description": "The definitive vLLM runtime for dual RTX 2080 Ti 22GB + NVLink, delivering Qwen 27B local inference with maximum 100+ tok/s single-request decode with support of FP8 weight ",
+      "updated_at": "2026-08-19T18:46:59Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "lm-webui/lm-webui",
+      "url": "https://github.com/lm-webui/lm-webui",
+      "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
+      "updated_at": "2026-08-19T11:33:39Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "andrestubbe/FastAIModel",
+      "url": "https://github.com/andrestubbe/FastAIModel",
+      "description": "🤖 Zero-dependency, high-performance local inference runtime (GGUF/ONNX) engine for Java via native llama.cpp bindings.",
+      "updated_at": "2026-08-19T09:54:30Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "mmogr/gglib",
+      "url": "https://github.com/mmogr/gglib",
+      "description": "The local model runtime that makes llama.cpp behave like an API provider.",
+      "updated_at": "2026-08-19T07:39:56Z",
+      "license": "AGPL-3.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -18,15 +63,6 @@
       "description": "LLM inference gateway and local agent runtime for NimoOS",
       "updated_at": "2026-08-19T04:06:00Z",
       "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "mmogr/gglib",
-      "url": "https://github.com/mmogr/gglib",
-      "description": "The local model runtime that makes llama.cpp behave like an API provider.",
-      "updated_at": "2026-08-19T02:18:04Z",
-      "license": "AGPL-3.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -49,15 +85,6 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "lm-webui/lm-webui",
-      "url": "https://github.com/lm-webui/lm-webui",
-      "description": "Sovereign Local AI Workspace & LLM Runtime Manager. Easily Run GGUF, MLX, OpenAI, Gemini, etc. Under One Unified Interface ✨",
-      "updated_at": "2026-08-18T18:15:36Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "Sparky4567/bun-ollama",
       "url": "https://github.com/Sparky4567/bun-ollama",
       "description": "A lightweight local LLM manager written in TypeScript and running on the Bun runtime with llama.cpp (llama-server) as the native inference backend.",
@@ -76,15 +103,6 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "guelfoweb/orbit",
-      "url": "https://github.com/guelfoweb/orbit",
-      "description": "Local agentic AI runtime for Gemma4, Qwen3-Coder and Qwen3.6, optimized for CPU-only consumer hardware, tool use and efficient local inference.",
-      "updated_at": "2026-08-18T09:15:17Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "vantradesign/vantra-local-inference",
       "url": "https://github.com/vantradesign/vantra-local-inference",
       "description": "Browser-side inference runtime: WebGPU detection, WebLLM engine wrapper, Kokoro TTS wrapper",
@@ -98,15 +116,6 @@
       "url": "https://github.com/Classevelabs/rai",
       "description": "CPU-only LLM inference engine in pure Rust — 4-bit quantized models, hand-written AVX2 kernels, speculative decoding, and a local HTTP/MCP server. No GPU, no Python runtime.",
       "updated_at": "2026-08-18T00:48:15Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "weicj/vLLM-2080Ti-Definitive",
-      "url": "https://github.com/weicj/vLLM-2080Ti-Definitive",
-      "description": "The definitive vLLM runtime for dual RTX 2080 Ti 22GB + NVLink, delivering Qwen 27B local inference with maximum 100+ tok/s single-request decode with support of FP8 weight ",
-      "updated_at": "2026-08-19T04:54:54Z",
       "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -135,15 +144,6 @@
       "description": "Desktop control center for llama.cpp and llama-swap. Configure GGUF models, manage runtimes, and monitor local inference without editing YAML.",
       "updated_at": "2026-08-18T02:45:41Z",
       "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "andrestubbe/FastAIModel",
-      "url": "https://github.com/andrestubbe/FastAIModel",
-      "description": "🤖 Zero-dependency, high-performance local inference runtime (GGUF/ONNX) engine for Java via native llama.cpp bindings.",
-      "updated_at": "2026-08-16T11:16:40Z",
-      "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -223,7 +223,7 @@
       "name": "noumena-labs/Sipp",
       "url": "https://github.com/noumena-labs/Sipp",
       "description": "AI inference, packed simply. A blazing-fast, zero-dependency WebGPU runtime to run GGUF models directly in the browser. Features a symmetric API for seamless local execution and cloud provider routing. Built with Rust & C++.",
-      "updated_at": "2026-08-15T13:07:06Z",
+      "updated_at": "2026-08-19T18:07:29Z",
       "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -304,7 +304,7 @@
       "name": "alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
       "url": "https://github.com/alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
       "description": "Privacy-first zero-cloud offline LLM inference & local memory runtime (LumiChats style)",
-      "updated_at": "2026-08-19T03:01:35Z",
+      "updated_at": "2026-08-19T10:06:25Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -358,7 +358,7 @@
       "name": "GiacomoSaccaggi/mithril",
       "url": "https://github.com/GiacomoSaccaggi/mithril",
       "description": "Lightweight local LLM inference engine. Serves GGUF models via Ollama-compatible HTTP API, OpenAI-compatible API, and MCP stdio — single binary, no runtime dependencies.",
-      "updated_at": "2026-08-06T11:46:34Z",
+      "updated_at": "2026-08-19T21:22:13Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
