@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robertosantosx2.github.io/LEONES/benchmarks/adapters/manifest.schema.json",
+  "title": "LEONES Adapter Environment Manifest",
+  "type": "object",
+  "required": ["schema_version", "adapter", "target", "version", "platform"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "adapter": {"enum": ["ods", "magnitude"]},
+    "target": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "minLength": 1},
+    "platform": {
+      "type": "object",
+      "required": ["os", "architecture"],
+      "properties": {
+        "os": {"type": "string"},
+        "architecture": {"type": "string"},
+        "kernel": {"type": ["string", "null"]},
+        "python": {"type": ["string", "null"]},
+        "node": {"type": ["string", "null"]},
+        "docker": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "model": {"type": ["object", "null"], "additionalProperties": true},
+    "runtime": {"type": ["object", "null"], "additionalProperties": true},
+    "hardware": {"type": ["object", "null"], "additionalProperties": true},
+    "config_digest": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}
