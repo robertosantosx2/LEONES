@@ -37,7 +37,7 @@ def evaluate_jgb(evidence: dict[str, Any]) -> dict[str, Any]:
         valid_level = isinstance(level, int) and 0 <= level <= 5
         valid_sources = isinstance(sources, list) and len(sources) > 0
         valid_status = status in VALID_STATUSES
-        resolved = valid_level and valid_sources and valid_status and status not in {"unknown", "disputed"}
+        resolved = valid_level and valid_sources and valid_status and status in {"verified", "supported"}
 
         dimensions[dimension] = {
             "level": level if valid_level else None,
