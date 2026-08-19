@@ -26,6 +26,12 @@ fase → implementación → validación → aceptación
 - [`FROZEN_DECISIONS.md`](FROZEN_DECISIONS.md)
 - [`ROADMAP.md`](ROADMAP.md)
 
+### Fuentes de conocimiento
+
+- [`sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) — ecosistema de IA abierta identificado por Mozilla, convertido en fuente independiente para LEONES.
+
+Regla: las fuentes externas conservan su procedencia y edición. Sus conclusiones no sustituyen las clasificaciones, contratos ni mediciones propias de LEONES.
+
 ### Diseño y desarrollo web
 
 - [`WEB_DESIGN_SYSTEM.md`](WEB_DESIGN_SYSTEM.md) — **marco obligatorio de diseño y desarrollo de la web**.
