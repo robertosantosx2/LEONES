@@ -1,35 +1,47 @@
 # Subproyecto Magnitude
 
-## Objetivo
+## 1. Misión
 
-Integrar Magnitude como **runtime/agente local de referencia** para tareas de coding y evaluación agentiva.
+Integrar Magnitude como **runtime/agente local opcional**, con prioridad para coding y evaluación agentiva.
 
-Magnitude es un agente de coding open source con motor de inferencia local propio sobre llama.cpp; perfila hardware, recomienda modelos, calcula requisitos de memoria y ajusta aceleración, placement y batching.
+Magnitude se documenta como agente de coding open source con inferencia local basada en llama.cpp, profiling de hardware, recomendación de modelos y ajuste de memoria/aceleración/placement/batching.
 
-Fuente: https://github.com/magnitudedev/magnitude
+Fuente primaria del proyecto: `https://github.com/magnitudedev/magnitude`
 
-## Papel dentro de LEONES
+## 2. Frontera de responsabilidad
 
 ```text
-Atlas → recomendación de modelo/hardware
-                 ↓
-          Magnitude adapter
-                 ↓
-       runtime + coding agent
-                 ↓
-       Agentic Benchmark V1
-                 ↓
-       result.schema.json
+Atlas → identidad/evidencia
+   ↓
+Recommender → modelo/hardware
+   ↓
+Magnitude adapter
+   ↓
+runtime + coding agent
+   ↓
+Agentic Benchmark
+   ↓
+result.schema.json
 ```
 
-Magnitude es especialmente interesante para LEONES porque su dominio coincide directamente con A07 (coding) y con la medición de herramientas, latencia y sesiones largas.
+**Magnitude ejecuta. LEONES mide y valida.**
 
-## Qué debe capturar LEONES
+## 3. Prioridad benchmark
+
+| Prioridad | Tarea | Motivo |
+|---|---|---|
+| 1 | A07 | coding agent y repositorios |
+| 2 | A02 | operaciones dependientes |
+| 3 | A03 | generación/verificación de artefactos |
+| 4 | A04 | recuperación ante errores |
+| 5 | A05 | sesiones largas |
+
+## 4. Datos que debe conservar el adaptador
 
 - versión del CLI;
-- versión/revisión del motor;
+- versión/revisión del runtime;
 - modelo y cuantización;
-- configuración de contexto;
+- contexto;
 - hardware detectado;
 - aceleración/placement;
 - batching;
@@ -37,11 +49,14 @@ Magnitude es especialmente interesante para LEONES porque su dominio coincide di
 - llamadas a herramientas;
 - duración;
 - tokens cuando estén disponibles;
-- errores y recuperaciones.
+- errores;
+- recuperaciones.
 
-No se deben convertir las capacidades declaradas por Magnitude en resultados benchmark.
+Los valores no observables permanecen ausentes/`unknown`; nunca se rellenan con estimaciones sin marcar.
 
-## Instalación de referencia
+## 5. Instalación de referencia
+
+La documentación revisada contempla:
 
 ```text
 npm install -g @magnitudedev/cli
@@ -49,33 +64,71 @@ cd <proyecto>
 magnitude
 ```
 
-Magnitude soporta macOS/Linux y Windows mediante WSL. Para LEONES, la instalación de benchmark debe fijar versión y conservar el manifiesto del entorno.
+Para benchmarks LEONES la instalación debe fijar una versión y conservar el manifiesto del entorno. La instalación de producción no debe seguir automáticamente `main`.
 
-## Integración con Agentic Benchmark
+## 6. Contrato de traza
 
-Primera prioridad:
+Magnitude no crea un formato de benchmark paralelo. Su información debe transformarse al contrato canónico LEONES:
 
-- A07 — coding;
-- A02 — tareas multietapa;
-- A03 — artefactos;
-- A04 — recuperación;
-- A05 — long horizon.
+```text
+model
+  tool_call
+  tool_result
+  error
+  recovery
+  artifact
+  grader
+```
 
-La traza de Magnitude debe adaptarse al evento canónico LEONES, sin crear un segundo formato.
+La traza es evidencia de ejecución; el `outcome` se calcula mediante un grader versionado.
 
-## Comparación con ODS
+## 7. Reproducibilidad
 
-| Función | ODS | Magnitude |
-|---|---|---|
-| Instalador/stack | principal | secundaria |
-| Runtime local | sí | sí |
-| Agentes | sí | sí |
-| Coding agent | parcial/servicios | central |
-| Hardware profiling | sí | central |
-| Model setup | sí | central |
-| Benchmark agentivo | integración | objetivo directo |
-| Papel LEONES | despliegue | ejecución/medición |
+Registrar como mínimo:
 
-## Estado
+- CLI/runtime;
+- modelo/revisión/cuántización;
+- hardware;
+- configuración de contexto;
+- placement/aceleración;
+- herramientas;
+- benchmark/task version;
+- grader version;
+- fecha de ejecución.
 
-🟡 Diseño de integración. La siguiente fase es construir el adapter y ejecutar A07/A02/A03 en un entorno controlado.
+## 8. Validación mínima
+
+- [ ] versión fijada;
+- [ ] entorno reproducible;
+- [ ] modelo identificado;
+- [ ] runtime identificado;
+- [ ] herramientas registradas;
+- [ ] trazas completas;
+- [ ] grader determinista cuando sea posible;
+- [ ] resultado compatible con `schemas/result.schema.json`;
+- [ ] repetición suficiente para estudiar variabilidad.
+
+## 9. Relación con ODS
+
+ODS y Magnitude no compiten dentro de LEONES:
+
+```text
+ODS       = despliegue / stack
+Magnitude = ejecución / agente
+LEONES    = conocimiento / selección / medición / evidencia
+```
+
+Una instalación puede utilizar ODS, Magnitude, ambos o ninguno. La arquitectura del núcleo no debe depender de ninguno.
+
+## 10. Estado
+
+🟡 **DISEÑO LIMPIO Y CONGELADO.**
+
+Siguiente fase: construir el adaptador ejecutable y realizar la primera campaña controlada sobre A07/A02/A03.
+
+## Referencias
+
+- Magnitude: `https://github.com/magnitudedev/magnitude`
+- Índice de subproyectos: `docs/subprojects/README.md`
+- Agentic Benchmark: `benchmarks/agentic/README.md`
+- Contrato de resultados: `schemas/result.schema.json`
