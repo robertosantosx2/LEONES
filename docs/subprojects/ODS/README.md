@@ -1,67 +1,114 @@
 # Subproyecto ODS — Osmantic Deployment System
 
-## Objetivo
+## 1. Misión
 
-Integrar ODS en LEONES como **instalador/stack de referencia**, no como dependencia obligatoria del núcleo.
+Integrar ODS en LEONES como **stack de despliegue local opcional**, sin convertirlo en dependencia del núcleo.
 
-ODS proporciona una pila local de IA que integra inferencia, UI, agentes, workflows, RAG, voz, generación de imagen y operación del stack. En la revisión del 20-08-2026 se identificó `v2.6.0` como release estable.
+En la revisión del 20-08-2026 se identificó `v2.6.0` como release estable según la documentación revisada. Esta referencia debe volver a verificarse antes de congelar una instalación de producción o benchmark.
 
-Fuente: https://github.com/Osmantic/ODS
+Fuente primaria del proyecto: `https://github.com/Osmantic/ODS`
 
-## Papel dentro de LEONES
+## 2. Frontera de responsabilidad
 
 ```text
 LEONES
- ├── Atlas              identidad/evidencia
- ├── Benchmark          medición
+ ├── Atlas              identidad + evidencia
  ├── Recommender        selección
- └── ODS adapter        instalación + despliegue
-                         ↓
-                 servicios locales
+ ├── Benchmark          medición
+ └── ODS adapter        despliegue
+                          ↓
+                     ODS / servicios
 ```
 
-ODS debe consumir recomendaciones de LEONES y exponer al sistema de medición información suficiente para reproducir:
+ODS instala y opera servicios. **LEONES decide qué medir y qué evidencia aceptar.**
 
-- hardware;
-- modelo seleccionado;
-- runtime/backend;
-- versión ODS;
+## 3. Contrato de integración
+
+### Entrada
+
+- recomendación de modelo/hardware;
+- versión ODS fijada;
+- configuración del entorno;
+- política de permisos;
+- destino de instalación.
+
+### Salida
+
+- versión exacta instalada;
+- servicios activos;
+- modelo/runtime configurados;
 - configuración relevante;
-- servicios activos.
+- hardware no identificativo;
+- estado de verificación;
+- referencia al benchmark ejecutado.
 
-## Reglas
+Los secretos nunca forman parte de la salida.
 
-1. ODS es una integración opcional.
-2. LEONES no depende de APIs internas no versionadas de ODS.
-3. La instalación debe fijar versión/tag o commit auditado cuando se use en producción o benchmarking.
-4. Nunca se convierte una afirmación de ODS en medición LEONES sin ejecución y evidencia primaria.
-5. Las credenciales y secretos de ODS nunca entran en resultados públicos.
+## 4. Ciclo operativo
 
-## Instalación de referencia
+```text
+DETECT
+  ↓
+SELECT
+  ↓
+PIN
+  ↓
+INSTALL
+  ↓
+VERIFY
+  ↓
+MEASURE
+  ↓
+REPORT
+  ↓
+CLEANUP / RECOVER
+```
 
-ODS documenta instalación manual mediante clon del repositorio y `./install.sh`; también dispone de instalador para Linux/macOS y Windows.
+Cada etapa debe ser idempotente o declarar claramente por qué no lo es.
 
-Para LEONES se recomienda inicialmente la ruta de **clon + ref fijada**, porque es más reproducible para benchmarks que seguir `main`.
+## 5. Reproducibilidad
 
-## Adaptador LEONES
+Para benchmarking se debe conservar un manifiesto con:
 
-Fases previstas:
+- ref/versión ODS;
+- sistema operativo;
+- arquitectura;
+- CPU/RAM/GPU cuando proceda;
+- versión de Docker/Compose si intervienen;
+- modelos y revisiones;
+- configuración relevante;
+- fecha de ejecución;
+- benchmark y versión del grader.
 
-1. `detect` — leer hardware sin exponer PII.
-2. `select` — consultar recomendación LEONES.
-3. `pin` — fijar versión ODS/modelo.
-4. `install` — instalar en entorno dedicado.
-5. `verify` — comprobar servicios.
-6. `measure` — ejecutar benchmarks LEONES.
-7. `report` — producir resultado canónico.
-8. `uninstall/recover` — limpiar o restaurar.
+No se recomienda seguir `main` para una campaña reproducible.
 
-## Validación
+## 6. Evidencia frente a medición
 
-ODS mantiene documentación específica de soporte, instalación, arquitectura y validación de releases. Su arquitectura se basa en manifiestos de servicios, Docker Compose y capas específicas de hardware.
+La documentación y las capacidades declaradas por ODS son **evidencia externa**. No se convierten automáticamente en resultados LEONES.
 
-LEONES reutilizará esa evidencia como **evidencia externa** y añadirá medición propia cuando ejecute el stack.
+Solo una ejecución instrumentada puede alimentar `schemas/result.schema.json`.
 
-## Estado
+## 7. Validación mínima
 
-🟡 Diseño de integración. La implementación del adaptador y la primera instalación reproducible son la siguiente fase.
+Antes de declarar una instalación utilizable:
+
+- [ ] versión fijada;
+- [ ] instalación reproducible;
+- [ ] servicios esperados activos;
+- [ ] health checks correctos;
+- [ ] modelo/runtime identificados;
+- [ ] secretos fuera de logs/resultados;
+- [ ] benchmark smoke ejecutable;
+- [ ] cleanup/recovery probado.
+
+## 8. Estado
+
+🟡 **DISEÑO LIMPIO Y CONGELADO.**
+
+Siguiente fase: adaptador ejecutable `detect → pin → install → verify → measure → report`, empezando por una instalación reproducible controlada.
+
+## Referencias
+
+- ODS: `https://github.com/Osmantic/ODS`
+- Índice de subproyectos: `docs/subprojects/README.md`
+- Contrato de resultados: `schemas/result.schema.json`
