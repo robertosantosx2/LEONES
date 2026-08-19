@@ -1,4 +1,3 @@
-import json
 import sqlite3
 import unittest
 from pathlib import Path
@@ -24,7 +23,7 @@ class AtlasEvidenceFlowTests(unittest.TestCase):
 
     def add_accepted_entity(self, entity_id="model-1", evidence_id="ev-1", promotion_id="promo-1"):
         self.db.execute(
-            "INSERT INTO atlas_entities(entity_id,entity_type,state,promotion_id) VALUES (?,?,?,?,?)",
+            "INSERT INTO atlas_entities(entity_id,entity_type,state,promotion_id) VALUES (?,?,?,?)",
             (entity_id, "model", "ACCEPTED", promotion_id),
         )
         self.db.execute(
