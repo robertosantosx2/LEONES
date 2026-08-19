@@ -22,7 +22,7 @@ def test_runner_extracts_measurement_from_runtime_output():
     result = run_and_record(
         ["python", "-c", "print('generation: 7.5 tok/s')"],
         metadata(),
-        r"([0-9]+(?:\\.[0-9]+)?)\\s*tok/s",
+        r"([0-9]+(?:\.[0-9]+)?)\s*tok/s",
     )
     assert result["tokens_per_second"] == 7.5
     assert result["measurement_type"] == "measured"
@@ -33,7 +33,7 @@ def test_runner_rejects_missing_measurement():
         run_and_record(
             ["python", "-c", "print('generation complete')"],
             metadata(),
-            r"([0-9]+(?:\\.[0-9]+)?)\\s*tok/s",
+            r"([0-9]+(?:\.[0-9]+)?)\s*tok/s",
         )
 
 
@@ -42,5 +42,5 @@ def test_runner_rejects_failed_command():
         run_and_record(
             ["python", "-c", "raise SystemExit(3)"],
             metadata(),
-            r"([0-9]+(?:\\.[0-9]+)?)\\s*tok/s",
+            r"([0-9]+(?:\.[0-9]+)?)\s*tok/s",
         )
