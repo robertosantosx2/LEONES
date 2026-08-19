@@ -4,7 +4,9 @@
 
 Integrar Magnitude como **runtime/agente local de referencia** para tareas de coding y evaluación agentiva.
 
-Magnitude se presenta como agente de coding open source con motor de inferencia local propio sobre llama.cpp; perfila el hardware, recomienda modelos, calcula requisitos de memoria y ajusta aceleración, placement y batching. citeturn0search1turn0search3
+Magnitude es un agente de coding open source con motor de inferencia local propio sobre llama.cpp; perfila hardware, recomienda modelos, calcula requisitos de memoria y ajusta aceleración, placement y batching.
+
+Fuente: https://github.com/magnitudedev/magnitude
 
 ## Papel dentro de LEONES
 
@@ -41,17 +43,13 @@ No se deben convertir las capacidades declaradas por Magnitude en resultados ben
 
 ## Instalación de referencia
 
-El proyecto documenta:
-
 ```text
 npm install -g @magnitudedev/cli
 cd <proyecto>
 magnitude
 ```
 
-y soporta macOS/Linux, con Windows mediante WSL. citeturn0search1turn0search3
-
-Para LEONES, la instalación de benchmark debe fijar versión y conservar el manifiesto del entorno.
+Magnitude soporta macOS/Linux y Windows mediante WSL. Para LEONES, la instalación de benchmark debe fijar versión y conservar el manifiesto del entorno.
 
 ## Integración con Agentic Benchmark
 
