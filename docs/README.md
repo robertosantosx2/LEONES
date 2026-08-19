@@ -28,6 +28,7 @@ fase → implementación → validación → aceptación
 
 ### Fuentes de conocimiento
 
+- [`sources/README.md`](sources/README.md) — registro de fuentes externas integradas.
 - [`sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) — ecosistema de IA abierta identificado por Mozilla, convertido en fuente independiente para LEONES.
 
 Regla: las fuentes externas conservan su procedencia y edición. Sus conclusiones no sustituyen las clasificaciones, contratos ni mediciones propias de LEONES.
