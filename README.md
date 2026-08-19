@@ -9,7 +9,7 @@
 
 # 📊 Estado global del proyecto
 
-**Corte: 16 de agosto de 2026.** Este README es la fotografía operativa del proyecto. El detalle técnico y la evidencia de cada fase viven en `docs/`.
+**Corte: 19 de agosto de 2026.** Este README es la fotografía operativa del proyecto. El detalle técnico y la evidencia de cada fase viven en `docs/`.
 
 | Estado | Significado |
 |---|---|
@@ -141,6 +141,12 @@ Documentación: [`web/README.md`](web/README.md) · [`docs/UX_OPTIMIZATION.md`](
 
 **🟡 BASE OPERATIVA / EN EVOLUCIÓN.** Existe generación de informes, privacidad, agregación y estadísticas. La aportación es voluntaria y pasa revisión humana. El estado se seguirá validando mediante CI.
 
+### Fuente estratégica — Mozilla State of Open Source AI
+
+**🟢 INTEGRADA COMO FUENTE DE CONOCIMIENTO.** El ecosistema identificado por Mozilla se conserva en un documento independiente, con procedencia, análisis LEONES, entidades de seguimiento y reglas de separación entre evidencia externa y medición propia.
+
+Documentación: [`docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md).
+
 ---
 
 # 🧭 Los 9 pilares oficiales
@@ -252,6 +258,7 @@ AUDITORÍA FINAL ⚪
 - [`atlas/README.md`](atlas/README.md)
 - [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md)
 - [`docs/SOURCE-DISCOVERY.md`](docs/SOURCE-DISCOVERY.md)
+- [`docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) — ecosistema de IA abierta identificado por Mozilla y análisis independiente LEONES.
 
 ## ¿Qué es LEONES?
 
