@@ -1,22 +1,26 @@
-# Ecosistema de IA abierta identificado por Mozilla — análisis independiente
+# Mozilla State of Open Source AI — ecosistema y análisis LEONES
 
-> **Fuente primaria:** Mozilla, *The State of Open Source AI*, v1.0.1, julio de 2026.
-> **Informe:** https://stateofopensource.ai/
-> **Artículo de lanzamiento:** https://blog.mozilla.org/en/mozilla/mozilla-state-of-open-source-ai-report/
-> **Estado en LEONES:** fuente de conocimiento estratégica, independiente y versionada.
+> **Tipo:** fuente de conocimiento estratégica e independiente  
+> **Fuente primaria:** Mozilla, *The State of Open Source AI*, v1.0.1, julio de 2026  
+> **Estado:** 🟢 Integrada · versionada · separada de las mediciones LEONES
+
+- [Informe oficial](https://stateofopensource.ai/)
+- [Artículo de lanzamiento de Mozilla](https://blog.mozilla.org/en/mozilla/mozilla-state-of-open-source-ai-report/)
+
+---
 
 ## 1. Propósito
 
-Este documento convierte el ecosistema de IA abierta identificado por Mozilla en una **fuente de conocimiento estructurada para LEONES**.
+Este documento convierte el ecosistema identificado por Mozilla en **conocimiento reutilizable para LEONES**.
 
-No reproduce el informe ni convierte sus conclusiones en decisiones automáticas. Su función es:
+No sustituye al informe original ni convierte automáticamente sus conclusiones en datos del Atlas. Su función es:
 
-1. registrar qué capas y proyectos identifica Mozilla;
-2. conservar la procedencia de cada observación;
-3. traducir el mapa a entidades útiles para LEONES;
-4. analizar independientemente qué partes son relevantes para hardware de consumo, IA local y agentes;
-5. identificar huecos que LEONES puede medir por sí mismo;
-6. mantener separadas **fuente externa, interpretación y medición LEONES**.
+1. conservar procedencia, edición y fecha;
+2. registrar las capas y componentes identificados por Mozilla;
+3. traducirlos a entidades útiles para LEONES;
+4. separar hechos externos, análisis propio e hipótesis;
+5. identificar qué puede medir LEONES directamente;
+6. servir como base para futuras revisiones comparativas.
 
 ### Regla de evidencia
 
@@ -27,86 +31,85 @@ OBSERVACIÓN EXTERNA
         ↓
 ANÁLISIS LEONES
         ↓
-HIPÓTESIS / CANDIDATO
+CANDIDATO / HIPÓTESIS
         ↓
-MEDICIÓN O VERIFICACIÓN
+VERIFICACIÓN O MEDICIÓN
         ↓
 CONOCIMIENTO LEONES
 ```
 
-Una afirmación de Mozilla no se convierte automáticamente en una medición de LEONES.
+Una afirmación de Mozilla **no es una medición LEONES** hasta que LEONES la haya verificado o medido con su propio protocolo.
 
 ---
 
-## 2. Qué aporta Mozilla
+## 2. Qué aporta la fuente
 
-La edición v1.0.1 presenta un mapa del stack abierto con **9 capas y 48 componentes**, evaluados mediante diez criterios de madurez. Mozilla utiliza como dimensiones, entre otras, comunidad, adopción, preparación para producción, interoperabilidad, sostenibilidad, rendimiento frente a cerrado, documentación, estandarización y preparación empresarial.
+La edición v1.0.1 presenta un mapa del stack de IA abierta con **9 capas y 48 componentes**, evaluados mediante criterios de madurez.
 
-El informe plantea una tesis central: el problema de la IA abierta se desplaza desde disponer de pesos hacia **poder operar un sistema completo**. El modelo es intercambiable; la capa que lo rodea —runtime, herramientas, memoria, ejecución, permisos, evaluación y gobernanza— concentra cada vez más valor y dificultad.
+La lectura que interesa a LEONES es estructural: la disponibilidad de pesos es solo una parte del problema. Para convertir un modelo abierto en un sistema realmente utilizable hacen falta también infraestructura, runtime, datos, evaluación, serving, documentación, aplicaciones, gobernanza y capa agéntica.
 
-Para LEONES esto es especialmente relevante porque el objetivo del proyecto no es catalogar modelos aislados, sino encontrar combinaciones reproducibles de:
+Por eso LEONES conserva como unidad de recomendación:
 
 ```text
 modelo × variante × runtime × hardware × workload × herramientas × restricciones
 ```
 
----
+Y, cuando se trate de agentes:
 
-## 3. Mapa independiente del ecosistema
-
-Mozilla organiza el stack en nueve grandes capas. LEONES conserva la taxonomía de Mozilla como **fuente externa**, pero añade una clasificación propia de utilidad para IA local.
-
-| Capa Mozilla | Función | Prioridad LEONES |
-|---|---|---:|
-| 01 Infrastructure | cómputo, distribución e infraestructura | Alta |
-| 02 Model Components: Datasets | datos, evaluación y alineamiento | Alta |
-| 03 Model Components: Code | entrenamiento, evaluación e inferencia | Muy alta |
-| 04 Training | entrenamiento y adaptación | Alta |
-| 05 Serving | entrega del modelo | Muy alta |
-| 06 Documentation | documentación y resultados | Muy alta |
-| 07 Applications | interfaces y aplicaciones | Media |
-| 08 Governance / Trust | control, seguridad y responsabilidad | Muy alta |
-| 09 Agent Layer | agentes, herramientas, memoria y permisos | Crítica |
-
-> **Nota:** la nomenclatura y el número de capas/componentes corresponden al mapa de Mozilla; la tabla de prioridad es una valoración independiente de LEONES.
+```text
+modelo
+× runtime
+× harness
+× tools
+× memory
+× sandbox
+× policy
+× workload
+```
 
 ---
 
-# 4. Capa 01 — Infrastructure
+## 3. Mapa de nueve capas
 
-Mozilla identifica aquí infraestructura de cómputo y comunicación. Entre los proyectos destacados aparecen:
+La siguiente tabla conserva la estructura de Mozilla y añade **solo como valoración propia** la prioridad para LEONES.
 
-- Ubicloud
-- SkyPilot
-- GPUStack
-- dstack
-- Beam
-- PyTorch Distributed
-- Ray
-- DeepSpeed
-- gRPC
-- Apache Spark
+| Capa | Función | Prioridad LEONES |
+|---|---|---|
+| 01 · Infrastructure | cómputo, distribución e infraestructura | Alta |
+| 02 · Model Components: Datasets | datos, evaluación y alineamiento | Alta |
+| 03 · Model Components: Code | entrenamiento, evaluación e inferencia | Muy alta |
+| 04 · Training | entrenamiento y adaptación | Alta |
+| 05 · Serving | entrega e inferencia servida | Muy alta |
+| 06 · Documentation | documentación y resultados | Muy alta |
+| 07 · Applications | interfaces y aplicaciones | Media |
+| 08 · Governance / Trust | control, seguridad y responsabilidad | Muy alta |
+| 09 · Agent Layer | agentes, herramientas, memoria y permisos | Crítica |
 
-### Lectura LEONES
+**Importante:** la prioridad de la última columna es análisis LEONES; no es una puntuación de Mozilla.
 
-Esta capa determina si la IA abierta puede pasar de «modelo descargable» a **modelo ejecutable y servible**.
+---
 
-Para LEONES interesan especialmente:
+## 4. Infrastructure
 
-- soporte para hardware heterogéneo;
-- ejecución CPU/GPU;
-- memoria distribuida o unificada;
+Mozilla sitúa aquí infraestructura de cómputo, distribución y comunicación. Entre los componentes/proyectos identificados aparecen Ubicloud, SkyPilot, GPUStack, dstack, Beam, PyTorch Distributed, Ray, DeepSpeed, gRPC y Apache Spark.
+
+### Análisis LEONES
+
+Para hardware de consumo importan especialmente:
+
+- CPU y GPU heterogéneas;
+- memoria disponible y compartida;
 - multi-GPU;
-- utilización de hardware de consumo;
-- reproducibilidad;
 - despliegue local/offline;
-- coste energético y económico.
+- reproducibilidad;
+- portabilidad;
+- coste económico y energético.
 
-### Señal que debemos medir
+### Dimensión propuesta
 
 `infrastructure_portability`
 
-Debe distinguir al menos:
+Valores mínimos a conservar como capacidades independientes:
 
 ```text
 CPU
@@ -120,57 +123,19 @@ DISTRIBUTED
 OFFLINE
 ```
 
+No se debe convertir esta lista en un score sin definir previamente un protocolo de medición.
+
 ---
 
-# 5. Capa 02 — Model Components: Datasets
+## 5. Model Components — Datasets
 
-Mozilla destaca cinco familias:
+Mozilla agrupa aquí datos de evaluación, preprocesado, preferencia/alineamiento, preentrenamiento y datos sintéticos. Entre los ejemplos identificados aparecen MT-Bench, MBPP, Chatbot Arena, lm-evaluation-harness, SWE-bench, MinerU, Marker, Presidio, RedPajama, Dolma, DataComp-LM, Self-Instruct, distilabel y Synthea.
 
-### Benchmark / Evaluation Data
+### Análisis LEONES
 
-Ejemplos destacados:
+El dataset, el benchmark y el modelo deben permanecer separados. Usar el mismo benchmark no garantiza comparabilidad si cambian protocolo, versión, hardware, runtime o contexto.
 
-- MT-Bench
-- MBPP
-- Chatbot Arena
-- lm-evaluation-harness
-- SWE-bench
-
-### Data Preprocessing
-
-- MinerU
-- fastText
-- Marker
-- Great Expectations
-- Microsoft Presidio
-
-### Preference Alignment Data
-
-- awesome-RLHF
-- HH-RLHF Red Teaming Attempts
-- PKU-SafeRLHF
-- ImageReward
-
-### Pretraining Data
-
-- RedPajama-Data-1T
-- RedPajama-v2
-- Dolma Toolkit
-- DCLM / DataComp-LM
-
-### Synthetic Data
-
-- Faker
-- nlpaug
-- Self-Instruct
-- distilabel
-- Synthea
-
-### Lectura LEONES
-
-Los datos deben mantenerse separados de los modelos y de las evaluaciones. En particular, el uso de un benchmark no implica que el modelo sea comparable en cualquier workload.
-
-LEONES debe conservar:
+Registro mínimo recomendado:
 
 ```text
 benchmark_id
@@ -186,231 +151,220 @@ result
 source
 ```
 
-Esto enlaza directamente con la regla existente de separar entrenamiento, validación y test.
+Esto mantiene la separación existente entre entrenamiento, validación y test.
 
 ---
 
-# 6. Capa 03 — Model Components: Code
+## 6. Model Components — Code
 
-Esta es una de las capas más importantes para LEONES.
+Mozilla identifica código para evaluación, fine-tuning, inferencia, telemetría/observabilidad y UI/API. Entre los proyectos destacados aparecen FastChat, MT-Bench, IFEval, Promptfoo, DeepEval, Unsloth, DeepSpeed, LLaMA-Factory, PEFT, Alpaca-LoRA, Ollama, vLLM, llama.cpp, Ray Serve, bitnet.cpp, Langfuse, MLflow, SigNoz, Langflow, Dify y GPT4All.
 
-## Evaluation Code
+### Análisis LEONES
 
-Mozilla destaca:
+La inferencia es una dimensión de primera clase. Un modelo no debe describirse simplemente como «funciona».
 
-- FastChat / LMSYS Chatbot Arena
-- MT-Bench
-- IFEval
-- Promptfoo
-- DeepEval
-
-## Finetuning Code
-
-- Unsloth
-- DeepSpeed
-- LLaMA-Factory
-- PEFT
-- Alpaca-LoRA
-
-## Inference Code
-
-- Ollama
-- vLLM
-- llama.cpp
-- Ray Serve
-- bitnet.cpp
-
-## Telemetry / Observability
-
-- PostHog LLM Observability
-- Langfuse
-- SigNoz
-- MLflow
-- promptfoo
-
-## UI / API
-
-- Ollama
-- Langflow
-- Dify
-- ChatGPT-Next-Web / NextChat
-- GPT4All
-
-### Lectura LEONES
-
-La inferencia es una dimensión de primera clase del Atlas. Un modelo sin runtime compatible no es equivalente a un modelo que puede ejecutarse en el hardware objetivo.
-
-Por eso LEONES debe conservar separadamente:
+Debe poder describirse como:
 
 ```text
-model
-weights_format
-runtime
-runtime_version
-backend
-hardware
-quantization
-context
-workload
-latency
-throughput
-memory
+modelo
++ formato de pesos
++ runtime
++ versión del runtime
++ backend
++ hardware
++ cuantización
++ contexto
++ workload
++ latencia
++ throughput
++ memoria
 ```
 
-La recomendación nunca debe decir simplemente «este modelo funciona». Debe poder decir **en qué combinación funciona y con qué evidencia**.
+Esto enlaza directamente con CABE/RULA y con la regla de conservar siempre `tokens_per_second` como dato continuo.
 
 ---
 
-# 7. Documentación y resultados
+## 7. Training
 
-Mozilla identifica como áreas diferenciadas:
+La capa de entrenamiento y adaptación debe permanecer diferenciada de serving e inferencia local.
 
-- documentación de datos;
-- resultados de evaluación;
-- model cards.
+### Análisis LEONES
 
-Entre los proyectos destacados aparecen OpenMetadata, DataHub, Pachyderm, lakeFS, CKAN, EleutherAI LM Evaluation Harness, BFCL, MTEB y OpenCompass.
+Para cada modelo o familia debe evitarse inferir capacidad de entrenamiento a partir de la capacidad de inferencia. Las necesidades de:
 
-### Lectura LEONES
+- pretraining;
+- fine-tuning;
+- LoRA/PEFT;
+- cuantización;
+- evaluación;
+- serving
 
-Esta capa valida una decisión arquitectónica ya fijada en el proyecto:
-
-> **La evidencia es parte del producto, no un anexo.**
-
-Cada observación debe poder reconstruirse hasta su fuente y protocolo.
+son distintas y deben registrar sus propios requisitos de hardware y software.
 
 ---
 
-# 8. Capa 09 — Agent Layer
+## 8. Serving
 
-Esta es la parte de mayor interés estratégico.
+Serving es una capa crítica porque convierte un artefacto de modelo en un servicio ejecutable.
 
-Mozilla descompone el agente en varias superficies.
+### Análisis LEONES
 
-## 8.1 Runtime Plane
-
-Proyectos destacados:
-
-- MCP servers
-- Daytona
-- AutoGen
-- mem0
-- CrewAI
-
-Función: conectar el agente con herramientas, ejecución y contexto.
-
-## 8.2 Control Plane
-
-Proyectos destacados:
-
-- LiteLLM
-- Langfuse
-- MLflow
-- Casbin
-- Portkey
-
-Función: gobernar modelos, observabilidad, políticas, rutas y operaciones.
-
-## 8.3 Frameworks
-
-- AutoGPT
-- Langflow
-- Dify
-- LangChain
-- Microsoft AutoGen
-
-Función: construir bucles de razonamiento/acción y aplicaciones agentivas.
-
-## 8.4 Open Harnesses
-
-Mozilla destaca:
-
-- Hermes Agent
-- AutoGPT
-- Gemini CLI
-- Codex CLI
-- MetaGPT
-
-El **harness** es la capa que convierte un modelo en un sistema capaz de actuar.
-
-## 8.5 Standards Stack
-
-Mozilla identifica como especialmente relevantes:
-
-- Model Context Protocol (MCP)
-- OpenAPI Specification
-- Agent2Agent Protocol (A2A)
-- Open Policy Agent (OPA)
-- MCP Official Registry
-
-## 8.6 Permission Model
-
-Mozilla identifica aquí una debilidad importante del ecosistema abierto. Entre los proyectos destacados aparecen:
-
-- Composio Tool Router
-- A2A Protocol
-- Open Policy Agent
-- Microsoft Agent Governance Toolkit
-- SPIFFE / SPIRE
-
-### Lectura LEONES
-
-El agente no debe modelarse como:
+La compatibilidad debe quedar explícita:
 
 ```text
-modelo + prompt
+model → format → runtime → backend → hardware → serving mode
 ```
 
-sino como:
+No se debe inferir compatibilidad por similitud de nombres de proyectos.
+
+---
+
+## 9. Documentation y resultados
+
+Mozilla identifica documentación de datos, resultados de evaluación y model cards como piezas diferenciadas, junto a proyectos como OpenMetadata, DataHub, Pachyderm, lakeFS, CKAN, EleutherAI LM Evaluation Harness, BFCL, MTEB y OpenCompass.
+
+### Análisis LEONES
+
+Esto confirma una decisión estructural del proyecto:
+
+> **La evidencia es parte del producto.**
+
+Cada observación debe poder reconstruirse hasta su fuente, versión y protocolo. Una tabla sin procedencia no es evidencia suficiente para promover un registro al Atlas canónico.
+
+---
+
+# 10. Agent Layer — la pieza estratégica
+
+Esta es la capa de mayor interés para LEONES.
+
+Mozilla identifica varias superficies complementarias: runtime plane, control plane, frameworks, open harnesses, estándares, permisos y componentes de memoria/ejecución.
+
+La traducción arquitectónica que interesa a LEONES es:
 
 ```text
 MODELO
   ↓
-ORQUESTACIÓN
+ORQUESTACIÓN / HARNESS
   ↓
 MEMORIA
   ↓
 HERRAMIENTAS
   ↓
-EJECUCIÓN / SANDBOX
+SANDBOX / EJECUCIÓN
   ↓
-PERMISOS
+PERMISOS / POLICY
   ↓
 OBSERVABILIDAD
   ↓
 EVALUACIÓN
 ```
 
+Un agente, por tanto, **no debe modelarse como modelo + prompt**.
+
 ---
 
-# 9. El problema de los permisos
+## 10.1 Runtime plane
 
-Esta es probablemente la observación del informe con mayor valor arquitectónico para LEONES.
+Mozilla identifica componentes/proyectos relacionados con servidores MCP, Daytona, AutoGen, Mem0 y CrewAI.
 
-Mozilla separa dos clases de operaciones:
+### Análisis LEONES
 
-### Reads
+Esta capa conecta razonamiento, herramientas, ejecución y contexto. Para LEONES interesa especialmente su coste y comportamiento sobre hardware local.
 
-Operaciones reversibles o de bajo impacto:
+---
 
-- leer documentos;
-- consultar bases de datos;
-- listar información.
+## 10.2 Control plane
 
-### Writes
+Mozilla identifica LiteLLM, Langfuse, MLflow, Casbin y Portkey, entre otros.
 
-Operaciones con efectos secundarios:
+### Análisis LEONES
 
-- enviar mensajes;
-- gastar dinero;
-- modificar registros;
-- ejecutar transacciones;
-- modificar código;
-- publicar cambios.
+El control plane debe poder registrar y gobernar:
 
-El problema abierto no es principalmente identificar al agente. Es determinar **qué puede hacer sin supervisión**, qué necesita aprobación y qué está prohibido.
+```text
+modelo
+ruta
+herramienta
+política
+usuario/agente
+coste
+telemetría
+resultado
+```
 
-### Modelo que LEONES debe adoptar
+No debe confundirse con el runtime de inferencia.
+
+---
+
+## 10.3 Frameworks
+
+Mozilla identifica proyectos como AutoGPT, Langflow, Dify, LangChain y Microsoft AutoGen.
+
+### Análisis LEONES
+
+Los frameworks son una capa de construcción. No deben considerarse automáticamente equivalentes en seguridad, consumo de recursos, portabilidad o reproducibilidad.
+
+---
+
+## 10.4 Open harnesses
+
+Mozilla destaca, entre otros, Hermes Agent, AutoGPT, Gemini CLI, Codex CLI y MetaGPT.
+
+### Análisis LEONES
+
+El **harness** es una abstracción central para el futuro recomendador. El modelo puede cambiar sin que cambie necesariamente el conjunto de herramientas, memoria, permisos o sandbox.
+
+Esto conduce a una futura entidad:
+
+`agent_harness`
+
+con versión y compatibilidad explícitas.
+
+---
+
+## 10.5 Standards stack
+
+Mozilla identifica como especialmente relevantes:
+
+- Model Context Protocol (MCP);
+- OpenAPI Specification;
+- Agent2Agent Protocol (A2A);
+- Open Policy Agent (OPA);
+- MCP Official Registry.
+
+### Análisis LEONES
+
+Los estándares deben registrarse como **protocolos y contratos**, no como modelos. Su valor para LEONES está en la interoperabilidad y portabilidad del stack.
+
+---
+
+## 10.6 Permission model
+
+Mozilla identifica una debilidad importante en la gobernanza de agentes: conocer la identidad de un agente no resuelve por sí mismo qué acciones puede realizar.
+
+La distinción operativa fundamental es:
+
+### READ
+
+```text
+leer documentos
+consultar datos
+listar recursos
+```
+
+### WRITE
+
+```text
+enviar mensajes
+modificar registros
+ejecutar transacciones
+modificar código
+publicar cambios
+```
+
+### Modelo LEONES
+
+La futura política de permisos debe conservar como mínimo:
 
 ```text
 READ
@@ -420,7 +374,7 @@ DENY
 REVOCATION
 ```
 
-Y cada acción debería poder llevar:
+Y, para cada acción:
 
 ```text
 actor
@@ -435,15 +389,13 @@ reason
 result
 ```
 
-Esto debe permanecer independiente de la clasificación de apertura de los modelos.
+Esto es una **propuesta arquitectónica LEONES**, no una clasificación de Mozilla.
 
 ---
 
-# 10. El meta-harness
+# 11. Meta-harness
 
-Mozilla apunta hacia una evolución desde frameworks individuales hacia una capa superior capaz de gobernar varios harnesses.
-
-La idea puede representarse como:
+Mozilla apunta hacia una evolución desde frameworks/harnesses individuales hacia una capa superior capaz de gobernar varios sistemas.
 
 ```text
                   META-HARNESS
@@ -457,59 +409,47 @@ La idea puede representarse como:
                  MODELOS / TOOLS
 ```
 
-Esta arquitectura resulta especialmente compatible con LEONES porque el proyecto ya pretende separar selección de modelo, runtime, hardware y agente.
-
 ### Hipótesis LEONES
 
-El futuro recomendador no debería seleccionar solamente un modelo.
-
-Debería poder seleccionar un **stack ejecutable**:
+El recomendador final debería poder seleccionar un **stack ejecutable**, no solamente un modelo:
 
 ```text
 MODELO + QUANT + RUNTIME + HARNESS + TOOLS + MEMORY + POLICY
 ```
 
+Esta hipótesis deberá demostrarse mediante implementación y medición antes de considerarse una capacidad aceptada.
+
 ---
 
-# 11. Memoria como activo
+# 12. Memory
 
-Mozilla plantea la memoria como una capa estratégica cuando el modelo se vuelve intercambiable.
-
-Proyectos/líneas relevantes:
-
-- Mem0
-- Letta
-- Zep
-- LangMem
+Mozilla identifica la memoria como una superficie estratégica cuando el modelo se vuelve intercambiable. Entre los proyectos/líneas relevantes aparecen Mem0, Letta, Zep y LangMem.
 
 ### Análisis LEONES
 
-La memoria tiene características distintas de los pesos:
+La memoria debe tratarse como componente independiente porque:
 
 - es acumulativa;
-- pertenece al sistema desplegado;
 - puede ser privada;
 - puede migrarse entre modelos;
-- puede convertirse en ventaja por continuidad;
-- necesita políticas de retención y borrado.
+- condiciona continuidad y contexto;
+- requiere políticas de retención y borrado.
 
-Por tanto, LEONES debe tratar `memory_backend` como una dimensión independiente.
+Dimensión propuesta:
+
+`memory_backend`
+
+No debe confundirse memoria persistente con ventana de contexto del modelo.
 
 ---
 
-# 12. Sandboxes y ejecución
+# 13. Sandboxes y ejecución
 
-Mozilla destaca el ecosistema de:
+Mozilla identifica soluciones como E2B, Daytona y Modal.
 
-- E2B
-- Daytona
-- Modal
+### Análisis LEONES
 
-Estas herramientas permiten separar la capacidad de razonar de la capacidad de ejecutar.
-
-### Relevancia para hardware de consumo
-
-Un agente local necesita saber:
+Para hardware local interesa conocer:
 
 ```text
 ¿dónde ejecuta código?
@@ -521,11 +461,11 @@ Un agente local necesita saber:
 ¿cómo se detiene?
 ```
 
-Esto introduce una futura dimensión de LEONES:
+Dimensión propuesta:
 
 `execution_sandbox`
 
-con perfiles como:
+Perfiles iniciales:
 
 ```text
 NONE
@@ -537,22 +477,17 @@ HOST_RESTRICTED
 HOST_FULL
 ```
 
+La disponibilidad de un perfil no implica que sea seguro para cualquier workload.
+
 ---
 
-# 13. Observabilidad
+# 14. Observabilidad
 
-El ecosistema identificado por Mozilla incluye:
+Mozilla identifica proyectos como Langfuse, Phoenix, LangSmith, MLflow, SigNoz y Promptfoo.
 
-- Langfuse
-- Phoenix
-- LangSmith
-- MLflow
-- SigNoz
-- promptfoo
+### Análisis LEONES
 
-### Lectura LEONES
-
-La observabilidad debe cubrir como mínimo:
+Una evaluación agentiva reproducible debería conservar, cuando estén disponibles:
 
 ```text
 prompt
@@ -569,21 +504,17 @@ permissions
 agent_trace
 ```
 
-Sin esto no puede existir una evaluación agentiva reproducible.
+La observabilidad debe servir tanto para depuración como para producir evidencia.
 
 ---
 
-# 14. Interfaces y superficie de usuario
+# 15. Interfaces
 
-Mozilla identifica una segunda frontera alrededor de:
+Mozilla identifica una superficie adicional alrededor de interfaces agentivas, APIs, AG-UI, A2UI, metering y pagos.
 
-- AG-UI
-- A2UI
-- APIs
-- metering
-- pagos
+### Análisis LEONES
 
-El principio importante para LEONES es que una interfaz de agente no debe confundirse con el agente mismo.
+La interfaz no debe confundirse con el agente:
 
 ```text
 UI
@@ -599,11 +530,9 @@ MODEL / TOOLS
 
 ---
 
-# 15. Economía del ecosistema
+# 16. Economía
 
-Mozilla observa una fuerte diferencia entre adopción de modelos abiertos y captura económica.
-
-La consecuencia para LEONES no es crear un único indicador económico, sino conservar dimensiones separadas:
+Mozilla observa una diferencia entre adopción de modelos abiertos y captura económica. Para LEONES esto se conserva como conjunto de variables, no como un único índice.
 
 ```text
 adoption
@@ -617,434 +546,300 @@ switching_cost
 lock_in
 ```
 
-Esto conecta directamente con los futuros pilares TCO y optimización multiobjetivo.
+Estas variables deben mantenerse separadas de openness y rendimiento.
 
 ---
 
-# 16. Soberanía
+# 17. Soberanía
 
-Mozilla interpreta la apertura también como una cuestión de control tecnológico.
+Mozilla interpreta la apertura también como cuestión de control tecnológico.
 
-Para LEONES conviene separar:
+LEONES debe conservar por separado:
 
 - origen del modelo;
 - control de pesos;
-- posibilidad de ejecución local;
-- dependencia de API externa;
+- ejecución local posible;
+- dependencia de APIs externas;
 - dependencia de proveedor;
 - licencia;
-- capacidad de auditoría;
+- auditoría;
 - portabilidad;
 - revocabilidad.
 
-### No crear un «score soberano» prematuro
+### Regla
 
-Primero se deben almacenar las evidencias individuales. Cualquier agregación posterior deberá ser explícita y auditable.
+**No crear todavía un score soberano.** Primero se almacenan evidencias individuales. Cualquier agregación futura debe tener definición, fórmula, fuente y validación propias.
 
 ---
 
-# 17. Geografía y concentración
+# 18. Geografía y concentración
 
-Mozilla señala una fuerte actividad de Asia y China en IA abierta y utiliza adopción, descargas y tokens como indicadores del desplazamiento del centro de gravedad.
+Mozilla señala una fuerte actividad de Asia y China en IA abierta y utiliza indicadores como adopción, descargas y tokens para estudiar el desplazamiento del centro de gravedad.
 
-LEONES debe registrar:
+### Análisis LEONES
+
+Conviene registrar como metadatos:
 
 ```text
-organization_country
-model_origin
-primary_development_region
-community_region
-infrastructure_region
+organization
+country
+region
+model_family
+license
+weights_availability
+hosting_dependency
+local_run_capability
 ```
 
-Esto permite estudiar soberanía sin convertir nacionalidad en un criterio de calidad técnica.
+La procedencia geográfica es contexto estratégico; **no es por sí misma una valoración de calidad o apertura**.
 
 ---
 
-# 18. Qué NO debemos hacer
+# 19. Watchlist LEONES
 
-Este documento fija varias prohibiciones metodológicas.
+Esta fuente debe alimentar una vigilancia periódica de:
 
-### No mezclar apertura con rendimiento
+### Capacidad y adopción
 
-Un modelo más abierto no es necesariamente mejor.
-
-### No mezclar pesos abiertos con Open Source AI
-
-`open_weights` y `OSI_open_source` son campos distintos.
-
-### No convertir el mapa Mozilla en ranking LEONES
-
-Las puntuaciones de Mozilla sirven como evidencia externa y contexto.
-
-### No confundir GitHub stars con calidad
-
-Las estrellas son una señal de popularidad, no una medición de rendimiento.
-
-### No confundir adopción con producción
-
-Un proyecto puede tener enorme adopción y baja preparación operacional.
-
-### No confundir agente con modelo
-
-El modelo es un componente del sistema agentivo.
-
----
-
-# 19. Integración con el Atlas
-
-La integración recomendada es por relaciones, no copiando todo el informe dentro de la tabla de modelos.
-
-```text
-SOURCE
-  │
-  ├── ORGANIZATION
-  ├── PROJECT
-  ├── MODEL
-  ├── RUNTIME
-  ├── DATASET
-  ├── BENCHMARK
-  ├── HARNESS
-  ├── PROTOCOL
-  ├── MEMORY
-  ├── SANDBOX
-  └── GOVERNANCE
-```
-
-Cada entidad puede tener:
-
-```text
-source_id
-source_version
-source_date
-source_url
-observed_at
-confidence
-```
-
-La fuente Mozilla queda así como **provenance**, no como autoridad única.
-
----
-
-# 20. Nuevas entidades prioritarias para seguimiento
-
-## Muy alta prioridad
-
-- MCP
-- A2A
-- OPA
-- LangGraph
-- CrewAI
-- AutoGen
-- LlamaIndex
-- LangChain
-- LiteLLM
-- Mem0
-- Letta
-- Zep
-- E2B
-- Daytona
-- Langfuse
-- Phoenix
-- vLLM
-- llama.cpp
-- Ollama
-- Unsloth
-- LLaMA-Factory
-- PEFT
-
-## Alta prioridad
-
-- SkyPilot
-- GPUStack
-- dstack
-- Ray
-- DeepSpeed
-- OpenVINO / ecosistema Intel
-- MLX / ecosistema Apple
-- TensorRT-LLM / ecosistema NVIDIA
-- OpenMetadata
-- DataHub
-- OpenCompass
-- MTEB
-- SWE-bench
-- IFEval
-- BFCL
-
----
-
-# 21. Ficha canónica de un componente
-
-Para futuras ingestas, LEONES debería normalizar como mínimo:
-
-```yaml
-component_id:
-name:
-organization:
-category:
-mozilla_layer:
-mozilla_component:
-project_type:
-repository_url:
-official_url:
-license:
-open_source_status:
-open_weights_status:
-protocols: []
-runtimes: []
-hardware: []
-agent_capability:
-memory_capability:
-sandbox_capability:
-permission_capability:
-observability_capability:
-production_readiness:
-interoperability:
-standardization:
-enterprise_readiness:
-source:
-source_version:
-source_date:
-last_checked:
-confidence:
-notes:
-```
-
-Los campos desconocidos permanecen `unknown`; no se rellenan por inferencia silenciosa.
-
----
-
-# 22. Cruce con los nueve pilares LEONES
-
-| Pilar LEONES | Ecosistema Mozilla relacionado |
-|---|---|
-| Prospector | descubrimiento de proyectos y fuentes |
-| Atlas | modelos, proyectos, runtimes y evidencia |
-| Task Intelligence | benchmarks, datasets, harnesses |
-| Router | LiteLLM, serving, runtimes |
-| Quant | inference code, formatos y hardware |
-| Fine-Tuning | Unsloth, DeepSpeed, PEFT, LLaMA-Factory |
-| Agents | harness, MCP, A2A, memoria, sandbox |
-| Runtime | llama.cpp, vLLM, Ollama y otros runtimes |
-| Benchmark & Evaluation | lm-eval, SWE-bench, IFEval, BFCL, observabilidad |
-
-La relación más importante es **Agents ↔ Runtime ↔ Benchmark & Evaluation**.
-
----
-
-# 23. Qué puede aportar LEONES que Mozilla no mide
-
-El informe de Mozilla es estratégico. LEONES puede aportar una capa empírica diferente.
-
-### Hardware real
-
-- CPU
-- RAM
-- VRAM
-- ancho de banda
-- consumo
-- temperatura
-- disponibilidad
-
-### Inferencia real
-
-- TTFT
-- TPOT
-- tokens/s
-- p50/p95/p99
-- memoria
-- errores
-
-### Ajuste a hardware de consumo
-
-- CABE
-- RULA
-- RULA+
-- perfiles 16/32/64/128 GB
-
-### Combinaciones
-
-- modelo + quant + runtime + hardware
-- modelo + runtime + harness
-- modelo + harness + tools
-- agente + sandbox + permisos
-
-Esto convierte a LEONES en una capa **empírica y operacional** encima del mapa estratégico.
-
----
-
-# 24. Watchlist LEONES derivada de Mozilla
-
-La fuente queda incorporada al seguimiento periódico mediante estas señales:
-
-### Capability
-
-- distancia open/closed;
+- evolución de capacidades abiertas frente a cerradas;
+- adopción;
+- producción;
 - coding;
 - reasoning;
-- multimodalidad;
-- agentic coding.
-
-### Adoption
-
-- uso;
-- tokens;
-- descargas;
-- producción;
-- región.
+- tareas agentivas.
 
 ### Harness
 
 - evolución de frameworks;
-- adopción MCP;
-- adopción A2A;
+- estándares MCP/A2A/OpenAPI;
 - interoperabilidad;
-- governance;
-- permisos portables.
+- permisos;
+- portabilidad de memoria;
+- sandboxing.
 
-### Market
+### Economía
 
-- costes de inferencia;
+- coste de inferencia;
+- hardware;
+- hosting;
 - financiación;
-- ingresos;
-- infraestructura soberana;
-- dependencia de proveedores.
+- sostenibilidad.
 
 ### Trust & Safety
 
-- misuse;
-- eliminación de safety tuning;
-- consentimiento;
-- permisos de escritura;
-- auditoría;
-- revocación.
+- seguridad agentiva;
+- abuso;
+- gobernanza;
+- políticas de permisos;
+- auditabilidad.
 
 ---
 
-# 25. Indicadores internos derivados
+# 20. Entidades candidatas para conocimiento estructurado
 
-Estos indicadores son **propuestas de LEONES**, no métricas de Mozilla.
-
-## Open Deployment Gap
+El documento **no crea todavía registros canónicos en Atlas**. Define candidatos que deberán pasar el mismo pipeline de identidad y evidencia que cualquier otra fuente.
 
 ```text
-open_production_rate - closed_production_rate
-```
-
-## Runtime Portability
-
-Número de backends/hardware soportados con evidencia real.
-
-## Agent Portability
-
-Número de harnesses/protocolos en los que el mismo agente puede operar sin rediseño sustancial.
-
-## Permission Maturity
-
-Cobertura de:
-
-```text
-identity + scope + approval + budget + revocation + audit
-```
-
-## Sovereignty Dependency
-
-Dependencia cuantificada de:
-
-```text
-external_API
-external_compute
-external_identity
-external_memory
-external_tools
-```
-
-Estos indicadores no sustituyen JGB, CABE, RULA ni la clasificación de apertura.
-
----
-
-# 26. Decisión arquitectónica resultante
-
-La incorporación de Mozilla refuerza una decisión importante:
-
-> **LEONES debe recomendar sistemas ejecutables, no solamente modelos.**
-
-La unidad de recomendación futura será progresivamente:
-
-```text
-SYSTEM =
-MODEL
-+ QUANT
-+ RUNTIME
-+ HARDWARE
-+ HARNESS
-+ MEMORY
-+ TOOLS
-+ SANDBOX
-+ POLICY
-+ EVALUATION
-```
-
-La recomendación seguirá siendo trazable a evidencia.
-
----
-
-# 27. Estado de esta fuente
-
-**Estado:** ACTIVA
-
-**Prioridad:** ESTRATÉGICA
-
-**Tipo:** fuente externa de conocimiento
-
-**No sustituye:**
-
-- clasificación Barahona;
-- JGB;
-- CABE/RULA;
-- benchmarks LEONES;
-- mediciones de hardware;
-- evidencia primaria de cada proyecto.
-
-**Actualización:** revisar nuevas ediciones de Mozilla y cambios relevantes del ecosistema.
-
-**Última revisión:** agosto de 2026.
-
----
-
-# 28. Fuentes
-
-1. Mozilla — *The State of Open Source AI*, v1.0.1, julio de 2026: https://stateofopensource.ai/
-2. Mozilla Blog — anuncio del informe, 14 de julio de 2026: https://blog.mozilla.org/en/mozilla/mozilla-state-of-open-source-ai-report/
-
-Las cifras, nombres de proyectos y categorías procedentes del informe deben conservar siempre la referencia a su edición. Las interpretaciones y campos derivados de este documento son de LEONES y deben identificarse como tales.
-
----
-
-## Principio final
-
-Mozilla identifica el desplazamiento del valor desde el modelo hacia el sistema que lo rodea.
-
-LEONES adopta esa observación como **hipótesis de arquitectura**, pero la somete a medición.
-
-```text
-MODELO
-   ↓
+INFRASTRUCTURE
 RUNTIME
-   ↓
+SERVING
+TRAINING
+DATASET
+BENCHMARK
+EVALUATION
 HARNESS
-   ↓
-MEMORIA + TOOLS + SANDBOX
-   ↓
-PERMISOS + OBSERVABILIDAD
-   ↓
-EVALUACIÓN
-   ↓
-HARDWARE REAL
-   ↓
-EVIDENCIA
-   ↓
-RECOMENDACIÓN LEONES
+FRAMEWORK
+TOOL
+PROTOCOL
+MEMORY_BACKEND
+SANDBOX
+POLICY_ENGINE
+OBSERVABILITY
+UI/API
+GOVERNANCE
 ```
 
-**El objetivo no es saber qué modelo gana. Es saber qué sistema abierto funciona realmente, dónde, cómo y bajo qué condiciones.**
+Para cada entidad candidata:
+
+```text
+source
+source_version
+observed_at
+identity
+category
+license
+repository
+documentation
+runtime_support
+hardware_support
+evidence_status
+```
+
+---
+
+# 21. Campos que esta fuente puede aportar al Atlas
+
+La fuente puede alimentar **observaciones externas** para campos como:
+
+| Campo | Tratamiento |
+|---|---|
+| `runtime` | observación externa; verificar compatibilidad |
+| `harness` | candidato; verificar versión y licencia |
+| `memory_backend` | candidato; verificar integración |
+| `execution_sandbox` | candidato; verificar capacidades |
+| `permission_model` | observación/análisis; no score automático |
+| `observability` | candidato; verificar integración |
+| `sovereignty` | dimensiones separadas, sin score prematuro |
+| `infrastructure_portability` | capacidades, no score automático |
+| `benchmark` | registrar versión/protocolo |
+| `license` | verificar en fuente primaria |
+
+La clasificación de apertura de Barahona, JGB, CABE/RULA y las mediciones de rendimiento **no se sustituyen** por esta fuente.
+
+---
+
+# 22. Qué debe medir LEONES por sí mismo
+
+Mozilla aporta contexto de ecosistema. LEONES debe generar evidencia propia para:
+
+1. rendimiento real en hardware de consumo;
+2. memoria consumida;
+3. latencia;
+4. tokens/s;
+5. comportamiento por runtime;
+6. comportamiento por cuantización;
+7. estabilidad de serving;
+8. coste energético cuando sea medible;
+9. coste total de propiedad;
+10. rendimiento agentivo reproducible;
+11. impacto de tools, memoria y sandbox;
+12. comportamiento de permisos y aprobaciones.
+
+Principio:
+
+```text
+Mozilla = fuente externa
+LEONES = medición propia
+```
+
+---
+
+# 23. Integración con los pilares de LEONES
+
+| Pilar | Aportación Mozilla |
+|---|---|
+| Prospector | nuevas entidades y proyectos |
+| Atlas | metadatos y relaciones de ecosistema |
+| Task Intelligence | contexto para workloads |
+| Router | selección de runtime/harness/modelo |
+| Quant | relación modelo ↔ runtime ↔ hardware |
+| Fine-Tuning | herramientas y datos |
+| Agents | harness, tools, memory, sandbox, policy |
+| Runtime | compatibilidad y serving |
+| Benchmark & Evaluation | benchmarks, observabilidad y trazabilidad |
+
+La fuente **amplía** los pilares; no redefine sus contratos congelados.
+
+---
+
+# 24. Pipeline de incorporación
+
+```text
+FUENTE MOZILLA
+      ↓
+CAMBIO DE EDICIÓN
+      ↓
+EXTRACCIÓN DE ENTIDADES
+      ↓
+NORMALIZACIÓN
+      ↓
+IDENTIDAD
+      ↓
+EVIDENCIA PRIMARIA
+      ↓
+QUALITY GATE
+      ↓
+OBSERVACIÓN EXTERNA
+      ↓
+ATLAS / RECOMENDADOR
+```
+
+No se promueve directamente una entidad al catálogo canónico solo porque aparezca en el informe.
+
+---
+
+# 25. Revisión y versionado
+
+### Cadencia
+
+- **mensual:** revisar señales relevantes;
+- **nueva edición Mozilla:** comparación completa;
+- **cambio crítico:** revisión inmediata si afecta a una decisión del proyecto.
+
+### Procedimiento
+
+```text
+comparar edición anterior
+        ↓
+identificar entidades nuevas/eliminadas
+        ↓
+revisar licencias y repositorios
+        ↓
+revisar claims cuantitativos
+        ↓
+revisar hipótesis LEONES
+        ↓
+conservar histórico
+        ↓
+actualizar documento
+        ↓
+validar enlaces y formato
+```
+
+---
+
+# 26. Criterio de cierre de esta fuente
+
+Esta fuente se considera **integrada documentalmente** cuando:
+
+- existe documento independiente;
+- la procedencia está identificada;
+- el documento está enlazado desde `docs/README.md`;
+- figura en `docs/sources/README.md`;
+- se separan fuente externa, análisis y medición;
+- no se alteran clasificaciones congeladas;
+- existe procedimiento de actualización.
+
+El cierre documental **no implica** que todas las entidades identificadas por Mozilla hayan sido verificadas o incorporadas al Atlas.
+
+---
+
+## 27. Regla de limpieza y mantenimiento
+
+Este documento es la representación canónica de la fuente Mozilla dentro de LEONES.
+
+No deben crearse copias paralelas con el mismo propósito. Las ampliaciones deben hacerse aquí o, si generan un subproyecto con contrato propio, en un documento claramente enlazado.
+
+No deben mezclarse en este documento:
+
+- resultados de benchmarks propios;
+- precios actuales;
+- mediciones de hardware;
+- puntuaciones internas;
+- conclusiones no trazables a una fuente.
+
+Esos datos pertenecen a sus respectivos sistemas de evidencia.
+
+---
+
+## 28. Referencia primaria
+
+**Mozilla — The State of Open Source AI, v1.0.1 (julio de 2026).**
+
+Esta página debe considerarse la referencia primaria para las afirmaciones atribuidas a Mozilla. LEONES conserva aquí una **síntesis estructurada y análisis independiente**, no una reproducción del informe.
+
+---
+
+### Estado LEONES
+
+**🟢 FUENTE INTEGRADA · DOCUMENTACIÓN CANÓNICA · SIN PROMOCIÓN AUTOMÁTICA AL ATLAS**
