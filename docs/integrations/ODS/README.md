@@ -2,7 +2,7 @@
 
 **Perfil:** Servidor de Stacks IA.
 
-ODS (Osmantic Deployment System) es una plataforma local que despliega y conecta inferencia, Open WebUI, dashboard, agentes, workflows, RAG/search, voz, imagen y herramientas operativas. Su documentación actual describe Linux con NVIDIA/AMD/Intel Arc, macOS Apple Silicon y Windows/WSL; para LEONES interesa especialmente Linux. citeturn0search0turn0search3
+ODS (Osmantic Deployment System) es una plataforma local que despliega y conecta inferencia, Open WebUI, dashboard, agentes, workflows, RAG/search, voz, imagen y herramientas operativas. Su documentación actual describe Linux con NVIDIA/AMD/Intel Arc, macOS Apple Silicon y Windows/WSL; para LEONES interesa especialmente Linux.
 
 ## Qué aporta ODS
 
@@ -17,7 +17,7 @@ ODS (Osmantic Deployment System) es una plataforma local que despliega y conecta
 - ComfyUI;
 - extensiones mediante manifests y Compose.
 
-La arquitectura usa una capa base de Compose, overlays por acelerador y extensiones. El instalador se divide en fases y la detección de hardware gobierna decisiones posteriores. citeturn0search3
+La arquitectura usa una capa base de Compose, overlays por acelerador y extensiones. El instalador se divide en fases y la detección de hardware gobierna decisiones posteriores.
 
 ## Qué NO hace LEONES
 
@@ -55,7 +55,7 @@ cd ODS/ods
 ./install.sh
 ```
 
-LEONES debe preferir una release/ref fijada en instalaciones reproducibles, no depender silenciosamente de `main`. ODS requiere Docker con Compose v2 en Linux y documenta `curl`/`git` y los runtimes de GPU cuando corresponda. citeturn0search0turn0search2
+LEONES debe preferir una release/ref fijada en instalaciones reproducibles, no depender silenciosamente de `main`. ODS requiere Docker con Compose v2 en Linux y documenta `curl`/`git` y los runtimes de GPU cuando corresponda.
 
 ## Preflight LEONES
 
@@ -87,11 +87,11 @@ LEONES debe registrar, cuando esté disponible:
 - resultado `ods status`/`ods doctor`;
 - benchmark LEONES.
 
-En Linux, la documentación actual de ODS indica que llama-server suele exponerse en `localhost:11434` para instalaciones Docker y en `8080` dentro del contenedor; el valor real debe leerse de `.env`, no suponerse. citeturn0search2turn0search8
+En Linux, la documentación actual de ODS indica que llama-server suele exponerse en `localhost:11434` para instalaciones Docker y en `8080` dentro del contenedor; el valor real debe leerse de `.env`, no suponerse.
 
 ## Seguridad y privacidad
 
-El modo local es la opción por defecto documentada. ODS también contempla modos cloud/hybrid, por lo que LEONES debe registrar el modo efectivo. La documentación de ODS afirma que no requiere cloud para el funcionamiento local. citeturn0search0
+El modo local es la opción por defecto documentada. ODS también contempla modos cloud/hybrid, por lo que LEONES debe registrar el modo efectivo. El modo local no necesita cloud para funcionar.
 
 LEONES no recopila prompts, conversaciones, secretos ni rutas personales. La publicación de un resultado en Atlas requiere consentimiento explícito.
 
@@ -104,7 +104,7 @@ cd ~/ods
 ./ods-uninstall.sh --force
 ```
 
-El procedimiento LEONES debe mostrar antes qué datos/modelos se conservarán o eliminarán y exigir confirmación antes de una acción destructiva. citeturn0search6
+El procedimiento LEONES debe mostrar antes qué datos/modelos se conservarán o eliminarán y exigir confirmación antes de una acción destructiva.
 
 ## Encaje con Atlas
 
@@ -120,4 +120,6 @@ CABE, JGB, fit y recomendaciones posteriores siguen sus reglas propias y no se d
 
 ## Fuentes primarias
 
-- ODS repository y documentación oficial. citeturn0search0turn0search2turn0search3
+- ODS: https://github.com/Osmantic/ODS
+- ODS Quick Start: https://github.com/Osmantic/ODS/blob/main/ods/QUICKSTART.md
+- ODS Architecture: https://github.com/Osmantic/ODS/blob/main/ARCHITECTURE.md
