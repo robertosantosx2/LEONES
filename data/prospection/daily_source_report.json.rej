@@ -1,8 +1,0 @@
-diff a/data/prospection/daily_source_report.json b/data/prospection/daily_source_report.json	(rejected hunks)
-@@ -1,5 +1,5 @@
- {
--  "generated_at": "2026-08-14T05:48:37.152758+00:00",
-+  "generated_at": "2026-08-14T08:28:01.176547+00:00",
-   "status": "planned",
-   "sources_in_registry": 27,
-   "discovery_queries": 1024,
