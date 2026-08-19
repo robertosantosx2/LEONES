@@ -4,7 +4,9 @@
 
 Integrar ODS en LEONES como **instalador/stack de referencia**, no como dependencia obligatoria del núcleo.
 
-ODS proporciona una pila local de IA que integra inferencia, UI, agentes, workflows, RAG, voz, generación de imagen y operación del stack. La versión estable identificada en la revisión es `v2.6.0`. citeturn0search0turn0search4
+ODS proporciona una pila local de IA que integra inferencia, UI, agentes, workflows, RAG, voz, generación de imagen y operación del stack. En la revisión del 20-08-2026 se identificó `v2.6.0` como release estable.
+
+Fuente: https://github.com/Osmantic/ODS
 
 ## Papel dentro de LEONES
 
@@ -37,7 +39,7 @@ ODS debe consumir recomendaciones de LEONES y exponer al sistema de medición in
 
 ## Instalación de referencia
 
-ODS documenta instalación manual mediante clon del repositorio y `./install.sh`; también dispone de instalador para Linux/macOS y Windows. citeturn0search6turn0search9
+ODS documenta instalación manual mediante clon del repositorio y `./install.sh`; también dispone de instalador para Linux/macOS y Windows.
 
 Para LEONES se recomienda inicialmente la ruta de **clon + ref fijada**, porque es más reproducible para benchmarks que seguir `main`.
 
@@ -56,7 +58,7 @@ Fases previstas:
 
 ## Validación
 
-ODS mantiene documentación específica de soporte, instalación, arquitectura y validación de releases. Su arquitectura se basa en manifiestos de servicios, Docker Compose y capas específicas de hardware. citeturn0search5turn0search10
+ODS mantiene documentación específica de soporte, instalación, arquitectura y validación de releases. Su arquitectura se basa en manifiestos de servicios, Docker Compose y capas específicas de hardware.
 
 LEONES reutilizará esa evidencia como **evidencia externa** y añadirá medición propia cuando ejecute el stack.
 
