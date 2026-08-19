@@ -113,9 +113,9 @@ Regla oficial: `<1 = No CABE`, `1–<10 = CABE`, `10–100 = RULA`, `>100 = RULA
 
 ### Benchmarks reales y evaluación agentiva
 
-**🟡 EN DESARROLLO.** Contrato de resultados, B01–B05, inferencia y evaluación ya existen; falta ampliar la ejecución sobre hardware real.
+**🟡 EN DESARROLLO.** Contrato de resultados, B01–B05, inferencia y evaluación ya existen; la nueva fuente de Artificial Analysis / Optima amplía el diseño hacia tareas reales, herramientas, trazas, outcome/trajectory, grading multidimensional y métricas de coste/tiempo/seguridad. Falta ejecutar la campaña amplia sobre hardware y entornos reales.
 
-Documentación: [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) · [`docs/EVALUACION_AGENTIC_TESTS.md`](docs/EVALUACION_AGENTIC_TESTS.md).
+Documentación: [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) · [`docs/EVALUACION_AGENTIC_TESTS.md`](docs/EVALUACION_AGENTIC_TESTS.md) · [`docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md`](docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md).
 
 ### Adaptadores y fuentes empíricas
 
@@ -161,7 +161,7 @@ Documentación: [`docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](docs/source
 | **6. Fine-Tuning** | 🟡 | Base documental; falta sistema completo validado. |
 | **7. Agents** | 🟡 | Arquitectura y evaluación presentes; falta cerrar ciclo reproducible amplio. |
 | **8. Runtime** | 🟡 | Base funcional; backends y mediciones en expansión. |
-| **9. Benchmark & Evaluation** | 🟡 | Contratos y batería existentes; falta ampliar evidencia real continua. |
+| **9. Benchmark & Evaluation** | 🟡 | Contratos y batería existentes; la metodología agentiva se ha ampliado con tareas reales, trazas, graders y métricas multidimensionales; falta evidencia de ejecución continua. |
 
 Documentación: [`docs/PILLARS.md`](docs/PILLARS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
@@ -199,7 +199,8 @@ Además:
 - JGB, CABE y RULA permanecen separados;
 - el tamaño de pesos no equivale a memoria total de ejecución;
 - el contexto declarado no equivale a rendimiento medido;
-- entrenamiento, validación y test deben mantenerse separados.
+- entrenamiento, validación y test deben mantenerse separados;
+- en evaluación agentiva se separan **outcome**, **trajectory**, **coste/tiempo**, **seguridad** y **artefactos**.
 
 ---
 
@@ -216,62 +217,11 @@ PROSPECCIÓN → IDENTIDAD → EVIDENCIA → ATLAS
                               ↓
                          RUNTIME / AGENT
                               ↓
+                 TAREA → HERRAMIENTAS → TRAZA
+                              ↓
+                  OUTCOME / COSTE / SEGURIDAD
+                              ↓
                            MEDICIÓN
                               ↓
-                           MANADA
-                              ↺
+                         PUBLICACIÓN
 ```
-
-Principio central:
-
-> **modelo × variante × runtime × hardware × workload × restricciones**
-
----
-
-# 🚧 Próximo orden de trabajo
-
-```text
-H01–H06 🟢
-H07 JGB 🟡
-H08 HARDWARE 🟡
-H09 CABE / RULA 🟡
-BENCHMARKS REALES 🟡
-AGENTIC / B01–B05 🟡
-ROUTER / SELECCIÓN DINÁMICA 🟡
-WEB / APP 🟡
-MANADA 🟡
-TCO ⚪
-OPTIMIZACIÓN MULTIOBJETIVO ⚪
-AUDITORÍA FINAL ⚪
-```
-
----
-
-# 📚 Documentación principal
-
-- [`docs/README.md`](docs/README.md)
-- [`docs/ROADMAP.md`](docs/ROADMAP.md)
-- [`docs/phases/README.md`](docs/phases/README.md)
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-- [`docs/PILLARS.md`](docs/PILLARS.md)
-- [`PIPELINE_E2E.md`](PIPELINE_E2E.md)
-- [`atlas/README.md`](atlas/README.md)
-- [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md)
-- [`docs/SOURCE-DISCOVERY.md`](docs/SOURCE-DISCOVERY.md)
-- [`docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) — ecosistema de IA abierta identificado por Mozilla y análisis independiente LEONES.
-
-## ¿Qué es LEONES?
-
-LEONES investiga y construye un ecosistema de IA agéntica Libre/Open capaz de ejecutarse sobre **hardware real de consumo**, con especial prioridad al software Copyleft.
-
-La pregunta central es:
-
-> **¿Qué combinación de hardware, modelo, runtime, herramientas y arquitectura convierte un PC de consumo en una máquina agentic realmente útil?**
-
-Y la segunda:
-
-> **¿Cómo convertimos las mediciones de muchos equipos reales en mejores recomendaciones para todos?**
-
-## Licencia
-
-GNU Affero General Public License v3.0 (AGPL-3.0). Consulta [`LICENSE`](LICENSE).
