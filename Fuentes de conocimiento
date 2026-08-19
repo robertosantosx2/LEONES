@@ -6,7 +6,7 @@ https://x.com/TheAhmadOsman/status/2057183854444843202
 
 "Memory Bandwidth for Local AI Hardware (2026 Edition)" (Ancho de banda de memoria para hardware de IA local, edición 2026): https://x.com/TheAhmadOsman/status/...
 
-"So You Want to Learn LLMs? Here's the Roadmap" (¿Quieres aprender sobre LLM? Aquí tienes una hoja de ruta): https://x.com/TheAhmadOsman/status/... (También disponible en su blog: ahmadosman.com/blog/learn-llms-roadmap/)
+"So You Want to Learn LLMs? Here's the Roadmap" (¿Quieres saber sobre LLM? Aquí tienes una hoja de ruta): https://x.com/TheAhmadOsman/status/... (También disponible en su blog: ahmadosman.com/blog/learn-llms-roadmap/)
 
 "wanna know the cs fundamentals you need to actually understand LLMs?" (¿Quieres saber los fundamentos de informática que necesitas para entender realmente los LLM?): https://x.com/TheAhmadOsman/status/...
 
@@ -15,3 +15,14 @@ https://x.com/TheAhmadOsman/status/2057183854444843202
 "We're gonna make Local AI The Default..." (Vamos a hacer que la IA local sea la opción predeterminada...): https://x.com/TheAhmadOsman/status/...
 
 "calling it now, bookmark this for later..." (Lo digo ahora, guarda esto para después...): https://x.com/TheAhmadOsman/status/...
+
+## Artificial Analysis — Optima
+
+"Build your own AI evals with Optima (end-to-end walkthrough)": https://www.youtube.com/watch?v=H-TTBsquXjw
+
+Análisis incorporado en `docs/knowledge/artificial-analysis-optima-agentic-benchmarks.md`: metodología de benchmarks agénticos a partir de datasets, trazas reales y casos de uso; grading determinista, rúbricas y pairwise/Elo; evaluación de outcome y trayectoria; métricas de calidad, coste, tiempo, seguridad y eficiencia; y propuesta de integración con Open LLM Atlas.
+
+Fuentes complementarias:
+- Artificial Analysis Intelligence Benchmarking: https://artificialanalysis.ai/methodology/intelligence-benchmarking
+- GDPval-AA v2: https://artificialanalysis.ai/evaluations/gdpval-aa
+- Artificial Analysis MicroEvals: https://artificialanalysis.ai/microevals
