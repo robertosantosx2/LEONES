@@ -12,7 +12,8 @@
     "inference": {"$ref": "#/$defs/inference"},
     "lotb": {"type": "object", "properties": {"B01": {"$ref": "#/$defs/task"}, "B02": {"$ref": "#/$defs/task"}, "B03": {"$ref": "#/$defs/task"}, "B04": {"$ref": "#/$defs/task"}, "B05": {"$ref": "#/$defs/task"}}, "additionalProperties": false},
     "software": {"type": "object", "additionalProperties": {"type": "string"}},
-    "notes": {"type": "string"}
+    "notes": {"type": "string"},
+    "agentic": {"$ref": "#/$defs/agentic"}
   },
   "$defs": {
     "hardware": {
@@ -27,7 +28,8 @@
         "ram_gb": {"type": "number", "exclusiveMinimum": 0},
         "gpu": {"type": "string"},
         "vram_gb": {"type": "number", "minimum": 0},
-        "os": {"type": "string"}
+        "os": {"type": "string"},
+        "memory_bandwidth_gbps": {"type": ["number", "null"], "minimum": 0}
       },
       "additionalProperties": false
     },
@@ -39,7 +41,8 @@
         "format": {"type": "string"},
         "quantization": {"type": "string"},
         "size_bytes": {"type": "integer", "minimum": 0},
-        "sha256": {"type": "string"}
+        "sha256": {"type": "string"},
+        "revision": {"type": ["string", "null"]}
       },
       "additionalProperties": false
     },
@@ -60,6 +63,64 @@
         "status": {"enum": ["completed", "failed", "error", "not_run"]},
         "elapsed_seconds": {"type": "number", "minimum": 0},
         "error": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "agentic": {
+      "type": "object",
+      "properties": {
+        "benchmark_id": {"type": "string"},
+        "benchmark_version": {"type": "string"},
+        "task_id": {"type": "string"},
+        "task_version": {"type": "string"},
+        "execution_id": {"type": "string"},
+        "model_version": {"type": ["string", "null"]},
+        "runtime": {"type": "object", "additionalProperties": {"type": "string"}},
+        "scaffold": {"type": "object", "additionalProperties": {"type": "string"}},
+        "environment": {"type": "object", "additionalProperties": {"type": "string"}},
+        "tools": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+        "outcome": {"$ref": "#/$defs/outcome"},
+        "trajectory": {"type": "array", "items": {"$ref": "#/$defs/event"}},
+        "metrics": {"$ref": "#/$defs/agentic_metrics"},
+        "safety": {"type": "object", "additionalProperties": true},
+        "artifacts": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+        "grader": {"type": "object", "additionalProperties": true}
+      },
+      "additionalProperties": false
+    },
+    "outcome": {
+      "type": "object",
+      "properties": {
+        "status": {"enum": ["success", "partial", "failed", "error", "unknown"]},
+        "score": {"type": ["number", "null"]},
+        "details": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["model", "tool_call", "tool_result", "error", "recovery", "artifact", "grader", "other"]},
+        "timestamp": {"type": ["string", "null"]},
+        "name": {"type": ["string", "null"]},
+        "duration_seconds": {"type": ["number", "null"], "minimum": 0},
+        "status": {"type": ["string", "null"]},
+        "details": {"type": ["object", "null"], "additionalProperties": true}
+      },
+      "additionalProperties": false
+    },
+    "agentic_metrics": {
+      "type": "object",
+      "properties": {
+        "elapsed_seconds": {"type": ["number", "null"], "minimum": 0},
+        "input_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "output_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "total_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "tool_calls": {"type": ["integer", "null"], "minimum": 0},
+        "tool_errors": {"type": ["integer", "null"], "minimum": 0},
+        "recovery_count": {"type": ["integer", "null"], "minimum": 0},
+        "cost": {"type": ["number", "null"], "minimum": 0}
       },
       "additionalProperties": false
     }
