@@ -10,8 +10,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from enrich_measured_performance import enrich_measured_performance
-from validate_measured_benchmark import validate_measured_benchmark
+try:
+    from scripts.enrich_measured_performance import enrich_measured_performance
+    from scripts.validate_measured_benchmark import validate_measured_benchmark
+except ModuleNotFoundError:  # ejecución directa
+    from enrich_measured_performance import enrich_measured_performance
+    from validate_measured_benchmark import validate_measured_benchmark
 
 
 def promote(measurement: dict[str, Any]) -> dict[str, Any]:
