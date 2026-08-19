@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-18T18:37:05.846067+00:00",
+  "generated_at": "2026-08-19T05:47:42.936308+00:00",
   "kind": "runtimes",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
@@ -7,8 +7,44 @@
       "name": "cklxx/arle",
       "url": "https://github.com/cklxx/arle",
       "description": "Pure-Rust LLM runtime: one binary serves (OpenAI-compatible), runs local agents, and distills models on their own rollouts — on Apple Silicon and NVIDIA. No Python on the hot path.",
-      "updated_at": "2026-08-18T18:33:50Z",
+      "updated_at": "2026-08-19T05:27:18Z",
       "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "NimoTech/NimoOS-AI",
+      "url": "https://github.com/NimoTech/NimoOS-AI",
+      "description": "LLM inference gateway and local agent runtime for NimoOS",
+      "updated_at": "2026-08-19T04:06:00Z",
+      "license": "Apache-2.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "mmogr/gglib",
+      "url": "https://github.com/mmogr/gglib",
+      "description": "The local model runtime that makes llama.cpp behave like an API provider.",
+      "updated_at": "2026-08-19T02:18:04Z",
+      "license": "AGPL-3.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "OmniBioAI/omnibioai-studio",
+      "url": "https://github.com/OmniBioAI/omnibioai-studio",
+      "description": "Electron + React + Vite desktop app for OmniBioAI — provides a visual workflow builder, plugin launcher, and unified control plane for local, HPC, and cloud bioinformatics execution. Connects to the Django backend via IPC and REST, integrates Docker runtime and local LLM inference via Ollama.",
+      "updated_at": "2026-08-19T00:57:37Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Cosmin-B/astral-runtime",
+      "url": "https://github.com/Cosmin-B/astral-runtime",
+      "description": "Local-first LLM inference runtime with a stable C ABI, compact memory search, and Unity and Unreal integrations",
+      "updated_at": "2026-08-18T18:52:22Z",
+      "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -58,15 +94,6 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "OmniBioAI/omnibioai-studio",
-      "url": "https://github.com/OmniBioAI/omnibioai-studio",
-      "description": "Electron + React + Vite desktop app for OmniBioAI — provides a visual workflow builder, plugin launcher, and unified control plane for local, HPC, and cloud bioinformatics execution. Connects to the Django backend via IPC and REST, integrates Docker runtime and local LLM inference via Ollama.",
-      "updated_at": "2026-08-18T02:02:28Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "Classevelabs/rai",
       "url": "https://github.com/Classevelabs/rai",
       "description": "CPU-only LLM inference engine in pure Rust — 4-bit quantized models, hand-written AVX2 kernels, speculative decoding, and a local HTTP/MCP server. No GPU, no Python runtime.",
@@ -79,7 +106,7 @@
       "name": "weicj/vLLM-2080Ti-Definitive",
       "url": "https://github.com/weicj/vLLM-2080Ti-Definitive",
       "description": "The definitive vLLM runtime for dual RTX 2080 Ti 22GB + NVLink, delivering Qwen 27B local inference with maximum 100+ tok/s single-request decode with support of FP8 weight ",
-      "updated_at": "2026-08-18T17:06:52Z",
+      "updated_at": "2026-08-19T04:54:54Z",
       "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -90,15 +117,6 @@
       "description": "Ashley is an all-in-one, single-click local AI assistant. It bundles an llama.cpp LLM inference engine, a Symfony/PHP web chatbot interface, a CEF-based web client (PHP Desktop), and a service manager (written in Free Pascal) into one package - no Internet connection or cloud API key required at runtime.",
       "updated_at": "2026-08-17T15:38:43Z",
       "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "mmogr/gglib",
-      "url": "https://github.com/mmogr/gglib",
-      "description": "The local model runtime that makes llama.cpp behave like an API provider.",
-      "updated_at": "2026-08-17T10:54:30Z",
-      "license": "AGPL-3.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -162,24 +180,6 @@
       "description": "Mechaharness is an agentic harness for raw LLM inference. It wraps local or remote model calls with context engineering, tool use, rules, skills, AGENTS.md instructions, and agentic execution loops, turning a model endpoint into a capable, extensible agent runtime.",
       "updated_at": "2026-08-14T22:53:54Z",
       "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Cosmin-B/astral-runtime",
-      "url": "https://github.com/Cosmin-B/astral-runtime",
-      "description": "Local-first LLM inference runtime with a stable C ABI, compact memory search, and Unity and Unreal integrations",
-      "updated_at": "2026-08-13T13:23:55Z",
-      "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "NimoTech/NimoOS-AI",
-      "url": "https://github.com/NimoTech/NimoOS-AI",
-      "description": "LLM inference gateway and local agent runtime for NimoOS",
-      "updated_at": "2026-08-13T07:18:44Z",
-      "license": "Apache-2.0",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -304,7 +304,7 @@
       "name": "alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
       "url": "https://github.com/alphaparkinc/genpark-privacy-first-offline-llm-runtime-skill",
       "description": "Privacy-first zero-cloud offline LLM inference & local memory runtime (LumiChats style)",
-      "updated_at": "2026-08-18T09:27:49Z",
+      "updated_at": "2026-08-19T03:01:35Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"

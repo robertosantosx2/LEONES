@@ -1,8 +1,62 @@
 {
-  "generated_at": "2026-08-18T18:37:07.125984+00:00",
+  "generated_at": "2026-08-19T05:47:44.113445+00:00",
   "kind": "agents",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
+    {
+      "name": "rudra496/nexus-agent",
+      "url": "https://github.com/rudra496/nexus-agent",
+      "description": "⚡ Nexus Agent — Zero-config, self-evolving local AI agent framework. Multi-agent orchestration, GraphRAG, IDE integration. Runs 100% local with Ollama.",
+      "updated_at": "2026-08-19T05:37:07Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Dikhun/Arctus.ai",
+      "url": "https://github.com/Dikhun/Arctus.ai",
+      "description": "An autonomous ultra-massive context agent orchestration framework designed to coordinate hundreds of LLMs across a 10-million token context window. This framework scales multi-agent workflows to an unprecedented enterprise tier. Local first support by all llm openrouter Omniroute olama. ",
+      "updated_at": "2026-08-19T02:24:24Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "KanenasInGreece/Shared_Memory",
+      "url": "https://github.com/KanenasInGreece/Shared_Memory",
+      "description": "Memory Framework based on the idea of Architectural Decision Records, shared knowledge between AI agents (Claude Code, Codex, Antigravity ...). Agent installable, vector (Postgres + pgvector) + graph (Neo4j) backbone, managed through a local gateway, supporting multiple local LLM backends, with full provenance,  consolidation, telemetry and more",
+      "updated_at": "2026-08-18T21:52:41Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "pjcau/agent-orchestrator",
+      "url": "https://github.com/pjcau/agent-orchestrator",
+      "description": "Provider-agnostic AI agent orchestration framework — swap LLM providers, route by cost, mix cloud and local models",
+      "updated_at": "2026-08-18T21:48:01Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "zzir/agents-go",
+      "url": "https://github.com/zzir/agents-go",
+      "description": "A local workbench for building, running and debugging AI agents.",
+      "updated_at": "2026-08-18T19:30:45Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "henrydaum/second-brain",
+      "url": "https://github.com/henrydaum/second-brain",
+      "description": "Second Brain is an agentic framework that acts as an operating system, using local file intelligence, workflow automation, and LLMs to complete tasks and communicate over multiple modalities and messaging platforms.",
+      "updated_at": "2026-08-18T19:13:46Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
     {
       "name": "kb-111/AI-Powered_Virtual-Pod",
       "url": "https://github.com/kb-111/AI-Powered_Virtual-Pod",
@@ -18,24 +72,6 @@
       "description": "A pytest-based API testing framework for the TMDB REST API, showcasing modern SDET: end-to-end integration tests, Pact contract validation, Dockerized parallel runs, Kubernetes-based local runs, GitHub Actions CI/CD, AI-powered test-failure diagnosis, and an LLM Judge evaluation framework that scores diagnosis quality. An MCP server for AI agents.",
       "updated_at": "2026-08-18T18:05:06Z",
       "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "KanenasInGreece/Shared_Memory",
-      "url": "https://github.com/KanenasInGreece/Shared_Memory",
-      "description": "Memory Framework based on the idea of Architectural Decision Records, shared knowledge between AI agents (Claude Code, Codex, Antigravity ...). Agent installable, vector (Postgres + pgvector) + graph (Neo4j) backbone, managed through a local gateway, supporting multiple local LLM backends, with full provenance,  consolidation, telemetry and more",
-      "updated_at": "2026-08-18T16:57:07Z",
-      "license": "NOASSERTION",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Dikhun/Arctus.ai",
-      "url": "https://github.com/Dikhun/Arctus.ai",
-      "description": "An autonomous ultra-massive context agent orchestration framework designed to coordinate hundreds of LLMs across a 10-million token context window. This framework scales multi-agent workflows to an unprecedented enterprise tier. Local first support by all llm openrouter Omniroute olama. ",
-      "updated_at": "2026-08-18T16:23:44Z",
-      "license": "NOASSERTION",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -61,43 +97,7 @@
       "name": "open-multi-agent/open-multi-agent",
       "url": "https://github.com/open-multi-agent/open-multi-agent",
       "description": "TypeScript AI agent orchestration framework with dynamic workflows. Describe the goal, not the graph: a coordinator plans the task DAG at runtime and runs it on any LLM (Claude, ChatGPT, Gemini, DeepSeek, or local models).",
-      "updated_at": "2026-08-18T17:42:10Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "rudra496/nexus-agent",
-      "url": "https://github.com/rudra496/nexus-agent",
-      "description": "⚡ Nexus Agent — Zero-config, self-evolving local AI agent framework. Multi-agent orchestration, GraphRAG, IDE integration. Runs 100% local with Ollama.",
-      "updated_at": "2026-08-18T05:36:18Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "henrydaum/second-brain",
-      "url": "https://github.com/henrydaum/second-brain",
-      "description": "Second Brain is an agentic framework that acts as an operating system, using local file intelligence, workflow automation, and LLMs to complete tasks and communicate over multiple modalities and messaging platforms.",
-      "updated_at": "2026-08-18T06:18:29Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "pjcau/agent-orchestrator",
-      "url": "https://github.com/pjcau/agent-orchestrator",
-      "description": "Provider-agnostic AI agent orchestration framework — swap LLM providers, route by cost, mix cloud and local models",
-      "updated_at": "2026-08-18T02:54:19Z",
-      "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "zzir/agents-go",
-      "url": "https://github.com/zzir/agents-go",
-      "description": "A local workbench for building, running and debugging AI agents.",
-      "updated_at": "2026-08-18T01:29:49Z",
+      "updated_at": "2026-08-19T03:22:59Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
