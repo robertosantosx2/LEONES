@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "policy": {
+    "benchmark_runs": "pinned-only",
+    "floating_refs": false,
+    "unknown_versions": "reported_not_verified"
+  },
+  "ods": {
+    "selected_version": "2.6.0",
+    "status": "reference_only",
+    "source": "https://github.com/Osmantic/ODS",
+    "note": "Verify the release/tag before production or benchmark freeze."
+  },
+  "magnitude": {
+    "selected_version": null,
+    "status": "to_pin",
+    "source": "https://github.com/magnitudedev/magnitude"
+  }
+}
