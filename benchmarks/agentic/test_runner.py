@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from runner import RunConfig, Trace, build_result, execute_tool, write_result
+from benchmarks.agentic.runner import RunConfig, Trace, build_result, execute_tool, write_result
 
 
 class RunnerContractTests(unittest.TestCase):
