@@ -17,7 +17,10 @@ import json
 from pathlib import Path
 from typing import Any
 
-from promote_measured_benchmark import promote
+try:
+    from scripts.promote_measured_benchmark import promote
+except ModuleNotFoundError:  # ejecución directa
+    from promote_measured_benchmark import promote
 
 
 def publish(path: str | Path, measurement: dict[str, Any]) -> dict[str, Any]:
