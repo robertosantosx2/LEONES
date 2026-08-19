@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-"""Minimal deterministic Agentic Benchmark V1 runner skeleton.
+"""Small, deterministic execution contract for Agentic Benchmark V1.
 
-This runner intentionally does not execute arbitrary model-generated commands.
-It provides the execution contract and trace format that real adapters can use.
-
-The first implementation is deliberately conservative: tool adapters are
-explicitly supplied by the caller and every event is recorded.
+The runner only executes explicitly registered tools. Model output must be
+translated into an approved tool call by an adapter; arbitrary commands are
+never executed by this module.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Any, Callable
 import json
 import time
 import uuid
+
+EVENT_TYPES = {"model", "tool_call", "tool_result", "error", "recovery", "artifact", "grader", "other"}
 
 
 @dataclass
@@ -29,22 +29,18 @@ class Event:
 
 
 class Trace:
-    """Append-only execution trace."""
+    """Append-only execution trace with a small, schema-aligned vocabulary."""
 
     def __init__(self) -> None:
         self.events: list[Event] = []
 
     def add(self, event_type: str, **kwargs: Any) -> None:
-        self.events.append(
-            Event(
-                type=event_type,
-                timestamp=datetime.now(timezone.utc).isoformat(),
-                **kwargs,
-            )
-        )
+        if event_type not in EVENT_TYPES:
+            raise ValueError(f"unsupported event type: {event_type}")
+        self.events.append(Event(type=event_type, timestamp=datetime.now(timezone.utc).isoformat(), **kwargs))
 
 
-@dataclass
+@dataclass(frozen=True)
 class RunConfig:
     benchmark_id: str
     benchmark_version: str
@@ -52,28 +48,44 @@ class RunConfig:
     task_version: str
     max_tool_calls: int = 10
 
+    def __post_init__(self) -> None:
+        if self.max_tool_calls < 1:
+            raise ValueError("max_tool_calls must be >= 1")
+
 
 def execute_tool(
     trace: Trace,
     name: str,
     fn: Callable[..., Any],
+    *,
+    tool_calls_so_far: int = 0,
+    max_tool_calls: int = 10,
     **kwargs: Any,
 ) -> Any:
-    """Execute one explicitly registered tool and record success/failure."""
+    """Run one approved tool and record both invocation and result.
+
+    The caller supplies the adapter function; this function never interprets
+    model text as executable code.
+    """
+    if tool_calls_so_far >= max_tool_calls:
+        trace.add("error", name=name, status="budget_exceeded", details={"max_tool_calls": max_tool_calls})
+        raise RuntimeError("tool-call budget exceeded")
+
     started = time.monotonic()
-    trace.add("tool_call", name=name, details={"arguments": kwargs})
+    trace.add("tool_call", name=name, status="started", details={"argument_keys": sorted(kwargs)})
     try:
         result = fn(**kwargs)
-    except Exception as exc:  # pragma: no cover - adapter-specific failures
+    except Exception as exc:
         elapsed = time.monotonic() - started
         trace.add(
             "error",
             name=name,
             duration_seconds=elapsed,
             status="error",
-            details={"error_type": type(exc).__name__, "message": str(exc)},
+            details={"error_type": type(exc).__name__},
         )
         raise
+
     elapsed = time.monotonic() - started
     trace.add(
         "tool_result",
@@ -100,7 +112,7 @@ def build_result(
     tools: list[dict[str, Any]] | None = None,
     grader: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build the canonical LEONES result without inventing missing values."""
+    """Build the canonical result without inventing missing measurements."""
     return {
         "schema_version": "1.1",
         "status": "reported",
@@ -130,11 +142,11 @@ def build_result(
 
 
 def write_result(result: dict[str, Any], path: str) -> None:
-    """Write UTF-8 JSON suitable for validation by the repository schema."""
+    """Write UTF-8 JSON suitable for schema validation."""
     with open(path, "w", encoding="utf-8") as handle:
         json.dump(result, handle, ensure_ascii=False, indent=2)
         handle.write("\n")
 
 
 if __name__ == "__main__":
-    print("Agentic Benchmark V1 runner library: use task adapters to execute runs.")
+    print("Agentic Benchmark V1 runner library: use an explicit task adapter to execute runs.")
