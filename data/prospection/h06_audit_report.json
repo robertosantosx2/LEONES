@@ -1,12 +1,14 @@
 {
-  "feed_rows": 193,
-  "identity_rows": 193,
+  "feed_rows": 639,
+  "identity_rows": 639,
   "identity_status": {
-    "unique": 193
+    "duplicate-candidate": 630,
+    "same-model-multiple-artifacts-or-configs": 9
   },
-  "quality_flags": 193,
+  "quality_flags": 852,
   "quality_by_type": {
-    "unverified": 193
+    "unverified": 639,
+    "missing": 213
   },
   "canonical_records": 0
 }
