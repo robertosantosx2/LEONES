@@ -1,0 +1,32 @@
+{
+  "id": "A01",
+  "version": "1.0",
+  "family": "tool_use",
+  "title": "Seleccionar y usar la herramienta correcta",
+  "objective": "Dado un objetivo y un catálogo pequeño de herramientas, elegir la herramienta autorizada, usarla con argumentos válidos y producir el artefacto esperado.",
+  "initial_state": {
+    "request": "Busca el modelo cuyo id sea demo-2 y escribe un informe con su nombre.",
+    "catalog": [
+      {"id": "demo-1", "name": "Alpha"},
+      {"id": "demo-2", "name": "Beta"}
+    ]
+  },
+  "tools": [
+    {"name": "lookup_model", "permissions": ["read"]},
+    {"name": "write_report", "permissions": ["write"]}
+  ],
+  "constraints": {
+    "max_tool_calls": 2,
+    "no_shell": true,
+    "must_use_authorized_tools": true
+  },
+  "success": {
+    "outcome_status": "success",
+    "required_tool_calls": ["lookup_model", "write_report"],
+    "artifact": {"path": "report.txt", "contains": "Beta"}
+  },
+  "grader": {
+    "id": "A01-grader",
+    "version": "1.0"
+  }
+}
