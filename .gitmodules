@@ -1,0 +1,12 @@
+[submodule "subprojects/ODS"]
+	path = subprojects/ODS
+	url = https://github.com/Osmantic/ODS.git
+[submodule "subprojects/Magnitude"]
+	path = subprojects/Magnitude
+	url = https://github.com/magnitudedev/magnitude.git
+[submodule "subprojects/Buddy"]
+	path = subprojects/Buddy
+	url = https://github.com/juanje/buddy.git
+[submodule "subprojects/DeepSeek-Harness"]
+	path = subprojects/DeepSeek-Harness
+	url = https://github.com/deepseek-ai/deepseek-harness.git
