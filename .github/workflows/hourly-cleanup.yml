@@ -2,7 +2,6 @@ name: Hourly cleanup and polish
 
 on:
   schedule:
-    # Run once per hour at minute 17.
     - cron: '17 * * * *'
   workflow_dispatch:
 
@@ -18,18 +17,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: main
           fetch-depth: 0
 
       - name: Remove known redundant router notes
+        id: cleanup
         shell: bash
         run: |
           set -euo pipefail
           removed=0
           for path in \
-            docs/REFERENCE-HARNESS-ROUTER-STATUS-2.md \
             docs/REFERENCE-HARNESS-ROUTER-STATUS-2.md \
             docs/REFERENCE-HARNESS-ROUTER-PR.md \
             docs/REFERENCE-HARNESS-ROUTER-PR-2.md \
@@ -41,7 +40,6 @@ jobs:
             fi
           done
           echo "removed=$removed" >> "$GITHUB_OUTPUT"
-        id: cleanup
 
       - name: Run focused router tests when present
         shell: bash
