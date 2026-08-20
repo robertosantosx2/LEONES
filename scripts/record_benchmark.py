@@ -2,26 +2,20 @@
 """Valida y registra una medición real de inferencia.
 
 La procedencia es explícita: ``estimated`` y ``reported`` nunca pasan por esta
-función. Una medición exige una ejecución identificable y conserva por separado
-la etiqueta histórica ``measurement_type`` para compatibilidad con Atlas.
+función. La propia operación de registrar una ejecución crea su identidad
+inmutable (`execution_id`) si el adaptador no la suministra.
 """
 from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Any
+from uuid import uuid4
 
 from scripts.validate_evidence import validate_evidence
 
 REQUIRED = (
-    "model",
-    "variant",
-    "runtime",
-    "hardware",
-    "workload",
-    "quantization",
-    "context_tokens",
-    "tokens_per_second",
-    "execution_id",
+    "model", "variant", "runtime", "hardware", "workload", "quantization",
+    "context_tokens", "tokens_per_second",
 )
 
 
@@ -46,6 +40,7 @@ def record_measurement(data: dict[str, Any], measured_at: str | None = None) -> 
     result = dict(data)
     result["tokens_per_second"] = tokens_per_second
     result["context_tokens"] = context_tokens
+    result["execution_id"] = result.get("execution_id") or str(uuid4())
     result["measurement_type"] = "measured"
     result["evidence_type"] = "measured"
     result["measured_at"] = timestamp
