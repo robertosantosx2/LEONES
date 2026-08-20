@@ -1,34 +1,37 @@
 #!/usr/bin/env python3
-"""Integra mediciones reales de rendimiento en un feed de Atlas.
-
-La matriz de hardware puede contener estimaciones y el benchmark puede
-contener mediciones. Este adaptador conserva esa diferencia: solo incorpora
-registros cuyo ``measurement_type`` sea ``measured`` y une la medición por
-``model_id`` + hardware + runtime cuando esos datos están disponibles.
-
-Para un lector con conocimientos básicos: el script no recalcula tok/s ni
-convierte una predicción en un hecho. Simplemente añade al registro Atlas la
-última evidencia medida que coincide con el mismo modelo, máquina y runtime.
-"""
+"""Feed measured runtime evidence back into Atlas without changing provenance."""
 from __future__ import annotations
 
 from typing import Any
 
 try:
     from scripts.enrich_measured_performance import enrich_measured_performance
-except ModuleNotFoundError:  # ejecución directa: python scripts/atlas_measured_performance.py
+    from scripts.validate_evidence import validate_evidence
+except ModuleNotFoundError:  # ejecución directa
     from enrich_measured_performance import enrich_measured_performance
+    from validate_evidence import validate_evidence
 
 
 def integrate_measurements(rows: list[dict[str, Any]], measurements: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Añade la última medición compatible a cada fila Atlas.
+    """Add the latest compatible measured result to each Atlas row.
 
-    La coincidencia prioriza ``model_id`` cuando existe y exige que hardware y
-    runtime coincidan. Si no hay una medición compatible, la fila queda intacta.
+    Estimated/reported rows remain untouched. A measurement must retain its
+    execution identity and timestamp when it enters Atlas; no value is promoted
+    merely because it was copied into the catalog.
     """
-    valid = [m for m in measurements if m.get("measurement_type") == "measured"]
-    result: list[dict[str, Any]] = []
+    valid = []
+    for measurement in measurements:
+        if measurement.get("measurement_type") != "measured":
+            continue
+        evidence = {
+            "evidence_type": measurement.get("evidence_type", "measured"),
+            "execution_id": measurement.get("execution_id"),
+            "measured_at": measurement.get("measured_at"),
+        }
+        validate_evidence(evidence)
+        valid.append(measurement)
 
+    result: list[dict[str, Any]] = []
     for row in rows:
         matches = [
             m for m in valid
@@ -42,6 +45,8 @@ def integrate_measurements(rows: list[dict[str, Any]], measurements: list[dict[s
             output["measured_tokens_per_second"] = measured["tokens_per_second"]
             output["measured_performance_class"] = measured["performance_class"]
             output["measurement_type"] = "measured"
+            output["evidence_type"] = "measured"
+            output["execution_id"] = measured["execution_id"]
             output["measured_at"] = measured["measured_at"]
         result.append(output)
 
