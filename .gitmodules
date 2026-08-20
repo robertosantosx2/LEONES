@@ -10,3 +10,6 @@
 [submodule "subprojects/DeepSeek-Harness"]
 	path = subprojects/DeepSeek-Harness
 	url = https://github.com/deepseek-ai/deepseek-harness.git
+[submodule "subprojects/LLMFit"]
+	path = subprojects/LLMFit
+	url = https://github.com/AlexsJones/llmfit.git

@@ -292,10 +292,11 @@ Esto permitirá estudiar posteriormente cuánto acierta la primera estimación f
 
 ### F1 — Adaptador
 
-- [ ] Crear `llmfit_adapter`.
-- [ ] Consultar CLI/JSON o REST local.
-- [ ] Normalizar la salida al contrato LEONES.
-- [ ] Versionar la procedencia.
+- [x] Crear `llmfit_adapter`.
+- [x] Normalizar la salida JSON al contrato LEONES.
+- [x] Separar `estimated_tps` de `measured_tps`.
+- [x] Añadir tests de contrato.
+- [ ] Versionar automáticamente la procedencia desde el binario/API.
 
 ### F2 — Preselector
 
@@ -338,6 +339,12 @@ La arquitectura recomendada es:
 > **llmfit = preselector hardware-aware; LEONES = sistema de decisión final.**
 
 Esto encaja especialmente bien con el estado actual del proyecto: H08 aporta la matriz de hardware, H09 aporta CABE/RULA y mediciones, H10 aporta el pipeline Atlas → recomendador y el pilar Router necesita precisamente una fase inicial de reducción del espacio de candidatos.
+
+## 18. Subproyecto reproducible
+
+El upstream se integra como **Git submodule real** en `subprojects/LLMFit`, fijado inicialmente al commit `70fea7d2eb42d887700cb5d146879f463f37fc98`.
+
+LEONES no modifica ni copia el código upstream dentro del repositorio padre. Los adaptadores, tests y reglas de decisión permanecen fuera del submódulo. Las actualizaciones del pin se aceptan solo después de pasar los contratos y pruebas relevantes.
 
 ---
 
