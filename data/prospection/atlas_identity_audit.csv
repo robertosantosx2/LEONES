@@ -1,640 +1,213 @@
 identity_key,row_number,model_id,model_name,organization,repository_url,quantization,hardware_id,status,risk,action
-sharksurfauto byte ares v2,1,sharksurfauto-byte/ARES-v2,sharksurfauto-byte/ARES-v2,,,,,duplicate-candidate,high,review-before-merge
-sharksurfauto byte ares v2,243,sharksurfauto-byte/ARES-v2,sharksurfauto-byte/ARES-v2,,,,,duplicate-candidate,high,review-before-merge
-sharksurfauto byte ares v2,427,sharksurfauto-byte/ARES-v2,sharksurfauto-byte/ARES-v2,,,,,duplicate-candidate,high,review-before-merge
-jeremymaille rag aero,2,JeremyMaille/rag-aero,JeremyMaille/rag-aero,,,,,duplicate-candidate,high,review-before-merge
-jeremymaille rag aero,244,JeremyMaille/rag-aero,JeremyMaille/rag-aero,,,,,duplicate-candidate,high,review-before-merge
-jeremymaille rag aero,428,JeremyMaille/rag-aero,JeremyMaille/rag-aero,,,,,duplicate-candidate,high,review-before-merge
-francis1998 nexus llm router,3,Francis1998/nexus-llm-router,Francis1998/nexus-llm-router,,,,,duplicate-candidate,high,review-before-merge
-francis1998 nexus llm router,245,Francis1998/nexus-llm-router,Francis1998/nexus-llm-router,,,,,duplicate-candidate,high,review-before-merge
-francis1998 nexus llm router,429,Francis1998/nexus-llm-router,Francis1998/nexus-llm-router,,,,,duplicate-candidate,high,review-before-merge
-yogendrachukka01 adaptiveagent,4,YogendraChukka01/AdaptiveAgent,YogendraChukka01/AdaptiveAgent,,,,,duplicate-candidate,high,review-before-merge
-yogendrachukka01 adaptiveagent,246,YogendraChukka01/AdaptiveAgent,YogendraChukka01/AdaptiveAgent,,,,,duplicate-candidate,high,review-before-merge
-yogendrachukka01 adaptiveagent,430,YogendraChukka01/AdaptiveAgent,YogendraChukka01/AdaptiveAgent,,,,,duplicate-candidate,high,review-before-merge
-fb208 openbidkit yibiao,5,FB208/OpenBidKit_Yibiao,FB208/OpenBidKit_Yibiao,,,,,duplicate-candidate,high,review-before-merge
-fb208 openbidkit yibiao,247,FB208/OpenBidKit_Yibiao,FB208/OpenBidKit_Yibiao,,,,,duplicate-candidate,high,review-before-merge
-fb208 openbidkit yibiao,431,FB208/OpenBidKit_Yibiao,FB208/OpenBidKit_Yibiao,,,,,duplicate-candidate,high,review-before-merge
-gabrielcpp stablemate,6,GabrielCpp/stablemate,GabrielCpp/stablemate,,,,,duplicate-candidate,high,review-before-merge
-gabrielcpp stablemate,248,GabrielCpp/stablemate,GabrielCpp/stablemate,,,,,duplicate-candidate,high,review-before-merge
-gabrielcpp stablemate,432,GabrielCpp/stablemate,GabrielCpp/stablemate,,,,,duplicate-candidate,high,review-before-merge
-intellicoder ai multi agent travel planner using langraph,7,IntelliCoder-AI/multi-agent-travel-planner-using-langraph,IntelliCoder-AI/multi-agent-travel-planner-using-langraph,,,,,duplicate-candidate,high,review-before-merge
-intellicoder ai multi agent travel planner using langraph,249,IntelliCoder-AI/multi-agent-travel-planner-using-langraph,IntelliCoder-AI/multi-agent-travel-planner-using-langraph,,,,,duplicate-candidate,high,review-before-merge
-intellicoder ai multi agent travel planner using langraph,433,IntelliCoder-AI/multi-agent-travel-planner-using-langraph,IntelliCoder-AI/multi-agent-travel-planner-using-langraph,,,,,duplicate-candidate,high,review-before-merge
-fufellen llm skills,8,fufellen/LLM-skills,fufellen/LLM-skills,,,,,duplicate-candidate,high,review-before-merge
-fufellen llm skills,250,fufellen/LLM-skills,fufellen/LLM-skills,,,,,duplicate-candidate,high,review-before-merge
-fufellen llm skills,434,fufellen/LLM-skills,fufellen/LLM-skills,,,,,duplicate-candidate,high,review-before-merge
-nonnoob claude briefings,9,nonnoob/claude-briefings,nonnoob/claude-briefings,,,,,duplicate-candidate,high,review-before-merge
-nonnoob claude briefings,251,nonnoob/claude-briefings,nonnoob/claude-briefings,,,,,duplicate-candidate,high,review-before-merge
-nonnoob claude briefings,435,nonnoob/claude-briefings,nonnoob/claude-briefings,,,,,duplicate-candidate,high,review-before-merge
-official eswaran datawhisper,10,official-eswaran/DataWhisper,official-eswaran/DataWhisper,,,,,duplicate-candidate,high,review-before-merge
-official eswaran datawhisper,252,official-eswaran/DataWhisper,official-eswaran/DataWhisper,,,,,duplicate-candidate,high,review-before-merge
-official eswaran datawhisper,436,official-eswaran/DataWhisper,official-eswaran/DataWhisper,,,,,duplicate-candidate,high,review-before-merge
-gemisis leviath,11,GEMISIS/leviath,GEMISIS/leviath,,,,,duplicate-candidate,high,review-before-merge
-gemisis leviath,253,GEMISIS/leviath,GEMISIS/leviath,,,,,duplicate-candidate,high,review-before-merge
-gemisis leviath,437,GEMISIS/leviath,GEMISIS/leviath,,,,,duplicate-candidate,high,review-before-merge
-android poweruser screenoperator,12,Android-PowerUser/ScreenOperator,Android-PowerUser/ScreenOperator,,,,,duplicate-candidate,high,review-before-merge
-android poweruser screenoperator,254,Android-PowerUser/ScreenOperator,Android-PowerUser/ScreenOperator,,,,,duplicate-candidate,high,review-before-merge
-android poweruser screenoperator,438,Android-PowerUser/ScreenOperator,Android-PowerUser/ScreenOperator,,,,,duplicate-candidate,high,review-before-merge
-xiaoze hub stock intelligent data analytics,13,xiaoze-hub/Stock-Intelligent-Data-Analytics,xiaoze-hub/Stock-Intelligent-Data-Analytics,,,,,duplicate-candidate,high,review-before-merge
-xiaoze hub stock intelligent data analytics,255,xiaoze-hub/Stock-Intelligent-Data-Analytics,xiaoze-hub/Stock-Intelligent-Data-Analytics,,,,,duplicate-candidate,high,review-before-merge
-xiaoze hub stock intelligent data analytics,439,xiaoze-hub/Stock-Intelligent-Data-Analytics,xiaoze-hub/Stock-Intelligent-Data-Analytics,,,,,duplicate-candidate,high,review-before-merge
-elaina real dsh tiered approval,14,Elaina-real/dsh-tiered-approval,Elaina-real/dsh-tiered-approval,,,,,duplicate-candidate,high,review-before-merge
-elaina real dsh tiered approval,256,Elaina-real/dsh-tiered-approval,Elaina-real/dsh-tiered-approval,,,,,duplicate-candidate,high,review-before-merge
-elaina real dsh tiered approval,440,Elaina-real/dsh-tiered-approval,Elaina-real/dsh-tiered-approval,,,,,duplicate-candidate,high,review-before-merge
-cool japan kizzasi,15,cool-japan/kizzasi,cool-japan/kizzasi,,,,,duplicate-candidate,high,review-before-merge
-cool japan kizzasi,257,cool-japan/kizzasi,cool-japan/kizzasi,,,,,duplicate-candidate,high,review-before-merge
-cool japan kizzasi,441,cool-japan/kizzasi,cool-japan/kizzasi,,,,,duplicate-candidate,high,review-before-merge
-guruprasath annadurai whitepact,16,Guruprasath-Annadurai/Whitepact,Guruprasath-Annadurai/Whitepact,,,,,duplicate-candidate,high,review-before-merge
-guruprasath annadurai whitepact,258,Guruprasath-Annadurai/Whitepact,Guruprasath-Annadurai/Whitepact,,,,,duplicate-candidate,high,review-before-merge
-guruprasath annadurai whitepact,442,Guruprasath-Annadurai/Whitepact,Guruprasath-Annadurai/Whitepact,,,,,duplicate-candidate,high,review-before-merge
-linny006 llmops radar,17,linny006/llmops-radar,linny006/llmops-radar,,,,,duplicate-candidate,high,review-before-merge
-linny006 llmops radar,259,linny006/llmops-radar,linny006/llmops-radar,,,,,duplicate-candidate,high,review-before-merge
-linny006 llmops radar,443,linny006/llmops-radar,linny006/llmops-radar,,,,,duplicate-candidate,high,review-before-merge
-jetbrains junie,18,JetBrains/junie,JetBrains/junie,,,,,duplicate-candidate,high,review-before-merge
-jetbrains junie,260,JetBrains/junie,JetBrains/junie,,,,,duplicate-candidate,high,review-before-merge
-jetbrains junie,444,JetBrains/junie,JetBrains/junie,,,,,duplicate-candidate,high,review-before-merge
-henry nkomo llm based tutor for grade 12 english comp,19,henry-nkomo/LLM-based-tutor-for-grade-12-English-comp,henry-nkomo/LLM-based-tutor-for-grade-12-English-comp,,,,,duplicate-candidate,high,review-before-merge
-henry nkomo llm based tutor for grade 12 english comp,261,henry-nkomo/LLM-based-tutor-for-grade-12-English-comp,henry-nkomo/LLM-based-tutor-for-grade-12-English-comp,,,,,duplicate-candidate,high,review-before-merge
-henry nkomo llm based tutor for grade 12 english comp,445,henry-nkomo/LLM-based-tutor-for-grade-12-English-comp,henry-nkomo/LLM-based-tutor-for-grade-12-English-comp,,,,,duplicate-candidate,high,review-before-merge
-linny006 llm eval tracker,20,linny006/llm-eval-tracker,linny006/llm-eval-tracker,,,,,duplicate-candidate,high,review-before-merge
-linny006 llm eval tracker,262,linny006/llm-eval-tracker,linny006/llm-eval-tracker,,,,,duplicate-candidate,high,review-before-merge
-linny006 llm eval tracker,446,linny006/llm-eval-tracker,linny006/llm-eval-tracker,,,,,duplicate-candidate,high,review-before-merge
-linny006 llm agents radar,21,linny006/llm-agents-radar,linny006/llm-agents-radar,,,,,duplicate-candidate,high,review-before-merge
-linny006 llm agents radar,263,linny006/llm-agents-radar,linny006/llm-agents-radar,,,,,duplicate-candidate,high,review-before-merge
-linny006 llm agents radar,447,linny006/llm-agents-radar,linny006/llm-agents-radar,,,,,duplicate-candidate,high,review-before-merge
-14all agency shopify llms txt directory,22,14all-agency/shopify-llms-txt-directory,14all-agency/shopify-llms-txt-directory,,,,,duplicate-candidate,high,review-before-merge
-14all agency shopify llms txt directory,264,14all-agency/shopify-llms-txt-directory,14all-agency/shopify-llms-txt-directory,,,,,duplicate-candidate,high,review-before-merge
-14all agency shopify llms txt directory,448,14all-agency/shopify-llms-txt-directory,14all-agency/shopify-llms-txt-directory,,,,,duplicate-candidate,high,review-before-merge
-cloud itonami cloud itonami isic 8411 electoral,23,cloud-itonami/cloud-itonami-isic-8411-electoral,cloud-itonami/cloud-itonami-isic-8411-electoral,,,,,duplicate-candidate,high,review-before-merge
-cloud itonami cloud itonami isic 8411 electoral,265,cloud-itonami/cloud-itonami-isic-8411-electoral,cloud-itonami/cloud-itonami-isic-8411-electoral,,,,,duplicate-candidate,high,review-before-merge
-cloud itonami cloud itonami isic 8411 electoral,449,cloud-itonami/cloud-itonami-isic-8411-electoral,cloud-itonami/cloud-itonami-isic-8411-electoral,,,,,duplicate-candidate,high,review-before-merge
-keirancpflynn llmnesia site njs,24,KeiranCPFlynn/llmnesia-site-njs,KeiranCPFlynn/llmnesia-site-njs,,,,,duplicate-candidate,high,review-before-merge
-keirancpflynn llmnesia site njs,266,KeiranCPFlynn/llmnesia-site-njs,KeiranCPFlynn/llmnesia-site-njs,,,,,duplicate-candidate,high,review-before-merge
-keirancpflynn llmnesia site njs,450,KeiranCPFlynn/llmnesia-site-njs,KeiranCPFlynn/llmnesia-site-njs,,,,,duplicate-candidate,high,review-before-merge
-zhaixiaowai codingplantimerefresh,25,zhaixiaowai/CodingPlanTimeRefresh,zhaixiaowai/CodingPlanTimeRefresh,,,,,duplicate-candidate,high,review-before-merge
-zhaixiaowai codingplantimerefresh,267,zhaixiaowai/CodingPlanTimeRefresh,zhaixiaowai/CodingPlanTimeRefresh,,,,,duplicate-candidate,high,review-before-merge
-zhaixiaowai codingplantimerefresh,451,zhaixiaowai/CodingPlanTimeRefresh,zhaixiaowai/CodingPlanTimeRefresh,,,,,duplicate-candidate,high,review-before-merge
-astrbotdevs astrbot,26,AstrBotDevs/AstrBot,AstrBotDevs/AstrBot,,,,,duplicate-candidate,high,review-before-merge
-astrbotdevs astrbot,268,AstrBotDevs/AstrBot,AstrBotDevs/AstrBot,,,,,duplicate-candidate,high,review-before-merge
-astrbotdevs astrbot,452,AstrBotDevs/AstrBot,AstrBotDevs/AstrBot,,,,,duplicate-candidate,high,review-before-merge
-ivcained surp router,27,ivcained/surp-router,ivcained/surp-router,,,,,duplicate-candidate,high,review-before-merge
-ivcained surp router,269,ivcained/surp-router,ivcained/surp-router,,,,,duplicate-candidate,high,review-before-merge
-ivcained surp router,453,ivcained/surp-router,ivcained/surp-router,,,,,duplicate-candidate,high,review-before-merge
-14h034160212 alphatrader,28,14H034160212/AlphaTrader,14H034160212/AlphaTrader,,,,,duplicate-candidate,high,review-before-merge
-14h034160212 alphatrader,270,14H034160212/AlphaTrader,14H034160212/AlphaTrader,,,,,duplicate-candidate,high,review-before-merge
-14h034160212 alphatrader,454,14H034160212/AlphaTrader,14H034160212/AlphaTrader,,,,,duplicate-candidate,high,review-before-merge
-hentrax instaflow,29,Hentrax/instaflow,Hentrax/instaflow,,,,,duplicate-candidate,high,review-before-merge
-hentrax instaflow,271,Hentrax/instaflow,Hentrax/instaflow,,,,,duplicate-candidate,high,review-before-merge
-hentrax instaflow,455,Hentrax/instaflow,Hentrax/instaflow,,,,,duplicate-candidate,high,review-before-merge
-btspoony dsh llm fallbacks,30,btspoony/dsh-llm-fallbacks,btspoony/dsh-llm-fallbacks,,,,,duplicate-candidate,high,review-before-merge
-btspoony dsh llm fallbacks,272,btspoony/dsh-llm-fallbacks,btspoony/dsh-llm-fallbacks,,,,,duplicate-candidate,high,review-before-merge
-btspoony dsh llm fallbacks,456,btspoony/dsh-llm-fallbacks,btspoony/dsh-llm-fallbacks,,,,,duplicate-candidate,high,review-before-merge
-raullenchai rapid mlx,31,raullenchai/Rapid-MLX,raullenchai/Rapid-MLX,,,,,duplicate-candidate,high,review-before-merge
-raullenchai rapid mlx,273,raullenchai/Rapid-MLX,raullenchai/Rapid-MLX,,,,,duplicate-candidate,high,review-before-merge
-raullenchai rapid mlx,457,raullenchai/Rapid-MLX,raullenchai/Rapid-MLX,,,,,duplicate-candidate,high,review-before-merge
-guelfoweb orbit,32,guelfoweb/orbit,guelfoweb/orbit,,,,,duplicate-candidate,high,review-before-merge
-guelfoweb orbit,274,guelfoweb/orbit,guelfoweb/orbit,,,,,duplicate-candidate,high,review-before-merge
-guelfoweb orbit,458,guelfoweb/orbit,guelfoweb/orbit,,,,,duplicate-candidate,high,review-before-merge
-wish maker minder,33,wish-maker/minder,wish-maker/minder,,,,,duplicate-candidate,high,review-before-merge
-wish maker minder,275,wish-maker/minder,wish-maker/minder,,,,,duplicate-candidate,high,review-before-merge
-wish maker minder,459,wish-maker/minder,wish-maker/minder,,,,,duplicate-candidate,high,review-before-merge
-vllm project vllm,34,vllm-project/vllm,vllm-project/vllm,,,,,duplicate-candidate,high,review-before-merge
-vllm project vllm,276,vllm-project/vllm,vllm-project/vllm,,,,,duplicate-candidate,high,review-before-merge
-vllm project vllm,460,vllm-project/vllm,vllm-project/vllm,,,,,duplicate-candidate,high,review-before-merge
-francium619 llmscope,35,francium619/llmscope,francium619/llmscope,,,,,duplicate-candidate,high,review-before-merge
-francium619 llmscope,277,francium619/llmscope,francium619/llmscope,,,,,duplicate-candidate,high,review-before-merge
-francium619 llmscope,461,francium619/llmscope,francium619/llmscope,,,,,duplicate-candidate,high,review-before-merge
-cklxx arle,36,cklxx/arle,cklxx/arle,,,,,duplicate-candidate,high,review-before-merge
-cklxx arle,278,cklxx/arle,cklxx/arle,,,,,duplicate-candidate,high,review-before-merge
-cklxx arle,462,cklxx/arle,cklxx/arle,,,,,duplicate-candidate,high,review-before-merge
-classevelabs rai,37,Classevelabs/rai,Classevelabs/rai,,,,,duplicate-candidate,high,review-before-merge
-classevelabs rai,279,Classevelabs/rai,Classevelabs/rai,,,,,duplicate-candidate,high,review-before-merge
-classevelabs rai,463,Classevelabs/rai,Classevelabs/rai,,,,,duplicate-candidate,high,review-before-merge
-huggingface transformers,38,huggingface/transformers,huggingface/transformers,,,,,duplicate-candidate,high,review-before-merge
-huggingface transformers,280,huggingface/transformers,huggingface/transformers,,,,,duplicate-candidate,high,review-before-merge
-huggingface transformers,464,huggingface/transformers,huggingface/transformers,,,,,duplicate-candidate,high,review-before-merge
-ggml org llama cpp,39,ggml-org/llama.cpp,ggml-org/llama.cpp,,,,,duplicate-candidate,high,review-before-merge
-ggml org llama cpp,281,ggml-org/llama.cpp,ggml-org/llama.cpp,,,,,duplicate-candidate,high,review-before-merge
-ggml org llama cpp,465,ggml-org/llama.cpp,ggml-org/llama.cpp,,,,,duplicate-candidate,high,review-before-merge
-rammsguns llm rig,40,rammsguns/llm-rig,rammsguns/llm-rig,,,,,duplicate-candidate,high,review-before-merge
-rammsguns llm rig,282,rammsguns/llm-rig,rammsguns/llm-rig,,,,,duplicate-candidate,high,review-before-merge
-rammsguns llm rig,466,rammsguns/llm-rig,rammsguns/llm-rig,,,,,duplicate-candidate,high,review-before-merge
-townsendmerino goinfer,41,townsendmerino/goinfer,townsendmerino/goinfer,,,,,duplicate-candidate,high,review-before-merge
-townsendmerino goinfer,283,townsendmerino/goinfer,townsendmerino/goinfer,,,,,duplicate-candidate,high,review-before-merge
-townsendmerino goinfer,467,townsendmerino/goinfer,townsendmerino/goinfer,,,,,duplicate-candidate,high,review-before-merge
-local inference lab blackwell llm docker,42,local-inference-lab/blackwell-llm-docker,local-inference-lab/blackwell-llm-docker,,,,,duplicate-candidate,high,review-before-merge
-local inference lab blackwell llm docker,284,local-inference-lab/blackwell-llm-docker,local-inference-lab/blackwell-llm-docker,,,,,duplicate-candidate,high,review-before-merge
-local inference lab blackwell llm docker,468,local-inference-lab/blackwell-llm-docker,local-inference-lab/blackwell-llm-docker,,,,,duplicate-candidate,high,review-before-merge
-arshad1416 ha automation pi,43,arshad1416/HA_Automation_Pi,arshad1416/HA_Automation_Pi,,,,,duplicate-candidate,high,review-before-merge
-arshad1416 ha automation pi,285,arshad1416/HA_Automation_Pi,arshad1416/HA_Automation_Pi,,,,,duplicate-candidate,high,review-before-merge
-arshad1416 ha automation pi,469,arshad1416/HA_Automation_Pi,arshad1416/HA_Automation_Pi,,,,,duplicate-candidate,high,review-before-merge
-ishpatel llm bench lab,44,ishpatel/llm-bench-lab,ishpatel/llm-bench-lab,,,,,duplicate-candidate,high,review-before-merge
-ishpatel llm bench lab,286,ishpatel/llm-bench-lab,ishpatel/llm-bench-lab,,,,,duplicate-candidate,high,review-before-merge
-ishpatel llm bench lab,470,ishpatel/llm-bench-lab,ishpatel/llm-bench-lab,,,,,duplicate-candidate,high,review-before-merge
-vllm project semantic router,45,vllm-project/semantic-router,vllm-project/semantic-router,,,,,duplicate-candidate,high,review-before-merge
-vllm project semantic router,287,vllm-project/semantic-router,vllm-project/semantic-router,,,,,duplicate-candidate,high,review-before-merge
-vllm project semantic router,471,vllm-project/semantic-router,vllm-project/semantic-router,,,,,duplicate-candidate,high,review-before-merge
-lablup mlxcel,46,lablup/mlxcel,lablup/mlxcel,,,,,duplicate-candidate,high,review-before-merge
-lablup mlxcel,288,lablup/mlxcel,lablup/mlxcel,,,,,duplicate-candidate,high,review-before-merge
-lablup mlxcel,472,lablup/mlxcel,lablup/mlxcel,,,,,duplicate-candidate,high,review-before-merge
-priceisaacuwjh3036 ai server rust llm api,47,priceisaacuwjh3036/ai-server-rust-llm-api,priceisaacuwjh3036/ai-server-rust-llm-api,,,,,duplicate-candidate,high,review-before-merge
-priceisaacuwjh3036 ai server rust llm api,289,priceisaacuwjh3036/ai-server-rust-llm-api,priceisaacuwjh3036/ai-server-rust-llm-api,,,,,duplicate-candidate,high,review-before-merge
-priceisaacuwjh3036 ai server rust llm api,473,priceisaacuwjh3036/ai-server-rust-llm-api,priceisaacuwjh3036/ai-server-rust-llm-api,,,,,duplicate-candidate,high,review-before-merge
-benlmadan9 star eco mesh sdk,48,benlmadan9-star/eco-mesh-sdk,benlmadan9-star/eco-mesh-sdk,,,,,duplicate-candidate,high,review-before-merge
-benlmadan9 star eco mesh sdk,290,benlmadan9-star/eco-mesh-sdk,benlmadan9-star/eco-mesh-sdk,,,,,duplicate-candidate,high,review-before-merge
-benlmadan9 star eco mesh sdk,474,benlmadan9-star/eco-mesh-sdk,benlmadan9-star/eco-mesh-sdk,,,,,duplicate-candidate,high,review-before-merge
-bahaa labs llama pure compute,49,Bahaa-Labs/Llama_Pure_Compute,Bahaa-Labs/Llama_Pure_Compute,,,,,duplicate-candidate,high,review-before-merge
-bahaa labs llama pure compute,291,Bahaa-Labs/Llama_Pure_Compute,Bahaa-Labs/Llama_Pure_Compute,,,,,duplicate-candidate,high,review-before-merge
-bahaa labs llama pure compute,475,Bahaa-Labs/Llama_Pure_Compute,Bahaa-Labs/Llama_Pure_Compute,,,,,duplicate-candidate,high,review-before-merge
-scottcjn ram coffers,50,Scottcjn/ram-coffers,Scottcjn/ram-coffers,,,,,duplicate-candidate,high,review-before-merge
-scottcjn ram coffers,292,Scottcjn/ram-coffers,Scottcjn/ram-coffers,,,,,duplicate-candidate,high,review-before-merge
-scottcjn ram coffers,476,Scottcjn/ram-coffers,Scottcjn/ram-coffers,,,,,duplicate-candidate,high,review-before-merge
-daaboulex lmstudio nix,51,Daaboulex/lmstudio-nix,Daaboulex/lmstudio-nix,,,,,duplicate-candidate,high,review-before-merge
-daaboulex lmstudio nix,293,Daaboulex/lmstudio-nix,Daaboulex/lmstudio-nix,,,,,duplicate-candidate,high,review-before-merge
-daaboulex lmstudio nix,477,Daaboulex/lmstudio-nix,Daaboulex/lmstudio-nix,,,,,duplicate-candidate,high,review-before-merge
-prabodh1194 learn inference,52,prabodh1194/learn-inference,prabodh1194/learn-inference,,,,,duplicate-candidate,high,review-before-merge
-prabodh1194 learn inference,294,prabodh1194/learn-inference,prabodh1194/learn-inference,,,,,duplicate-candidate,high,review-before-merge
-prabodh1194 learn inference,478,prabodh1194/learn-inference,prabodh1194/learn-inference,,,,,duplicate-candidate,high,review-before-merge
-nvidia tensorrt llm,53,NVIDIA/TensorRT-LLM,NVIDIA/TensorRT-LLM,,,,,duplicate-candidate,high,review-before-merge
-nvidia tensorrt llm,295,NVIDIA/TensorRT-LLM,NVIDIA/TensorRT-LLM,,,,,duplicate-candidate,high,review-before-merge
-nvidia tensorrt llm,479,NVIDIA/TensorRT-LLM,NVIDIA/TensorRT-LLM,,,,,duplicate-candidate,high,review-before-merge
-llm d llm d,54,llm-d/llm-d,llm-d/llm-d,,,,,duplicate-candidate,high,review-before-merge
-llm d llm d,296,llm-d/llm-d,llm-d/llm-d,,,,,duplicate-candidate,high,review-before-merge
-llm d llm d,480,llm-d/llm-d,llm-d/llm-d,,,,,duplicate-candidate,high,review-before-merge
-gittensor ai lab sparkinfer,55,gittensor-ai-lab/sparkinfer,gittensor-ai-lab/sparkinfer,,,,,duplicate-candidate,high,review-before-merge
-gittensor ai lab sparkinfer,297,gittensor-ai-lab/sparkinfer,gittensor-ai-lab/sparkinfer,,,,,duplicate-candidate,high,review-before-merge
-gittensor ai lab sparkinfer,481,gittensor-ai-lab/sparkinfer,gittensor-ai-lab/sparkinfer,,,,,duplicate-candidate,high,review-before-merge
-tryagi huggingface,56,tryAGI/HuggingFace,tryAGI/HuggingFace,,,,,duplicate-candidate,high,review-before-merge
-tryagi huggingface,298,tryAGI/HuggingFace,tryAGI/HuggingFace,,,,,duplicate-candidate,high,review-before-merge
-tryagi huggingface,482,tryAGI/HuggingFace,tryAGI/HuggingFace,,,,,duplicate-candidate,high,review-before-merge
-nvidia model optimizer,57,NVIDIA/Model-Optimizer,NVIDIA/Model-Optimizer,,,,,duplicate-candidate,high,review-before-merge
-nvidia model optimizer,299,NVIDIA/Model-Optimizer,NVIDIA/Model-Optimizer,,,,,duplicate-candidate,high,review-before-merge
-nvidia model optimizer,483,NVIDIA/Model-Optimizer,NVIDIA/Model-Optimizer,,,,,duplicate-candidate,high,review-before-merge
-wisent ai brama,58,wisent-ai/brama,wisent-ai/brama,,,,,duplicate-candidate,high,review-before-merge
-wisent ai brama,300,wisent-ai/brama,wisent-ai/brama,,,,,duplicate-candidate,high,review-before-merge
-wisent ai brama,484,wisent-ai/brama,wisent-ai/brama,,,,,duplicate-candidate,high,review-before-merge
-okuvshynov llama sandbox,59,okuvshynov/llama-sandbox,okuvshynov/llama-sandbox,,,,,duplicate-candidate,high,review-before-merge
-okuvshynov llama sandbox,301,okuvshynov/llama-sandbox,okuvshynov/llama-sandbox,,,,,duplicate-candidate,high,review-before-merge
-okuvshynov llama sandbox,485,okuvshynov/llama-sandbox,okuvshynov/llama-sandbox,,,,,duplicate-candidate,high,review-before-merge
-rafaeljung71 ash4d local ai agent hub,60,rafaeljung71/ash4d-local-ai-agent-hub,rafaeljung71/ash4d-local-ai-agent-hub,,,,,duplicate-candidate,high,review-before-merge
-rafaeljung71 ash4d local ai agent hub,302,rafaeljung71/ash4d-local-ai-agent-hub,rafaeljung71/ash4d-local-ai-agent-hub,,,,,duplicate-candidate,high,review-before-merge
-rafaeljung71 ash4d local ai agent hub,486,rafaeljung71/ash4d-local-ai-agent-hub,rafaeljung71/ash4d-local-ai-agent-hub,,,,,duplicate-candidate,high,review-before-merge
-nirholas three ws,61,nirholas/three.ws,nirholas/three.ws,,,,,duplicate-candidate,high,review-before-merge
-nirholas three ws,303,nirholas/three.ws,nirholas/three.ws,,,,,duplicate-candidate,high,review-before-merge
-nirholas three ws,487,nirholas/three.ws,nirholas/three.ws,,,,,duplicate-candidate,high,review-before-merge
-draslayer personal llm phase18 9b,62,DraSlayer/personal-llm-phase18-9b,DraSlayer/personal-llm-phase18-9b,,,,,duplicate-candidate,high,review-before-merge
-draslayer personal llm phase18 9b,304,DraSlayer/personal-llm-phase18-9b,DraSlayer/personal-llm-phase18-9b,,,,,duplicate-candidate,high,review-before-merge
-draslayer personal llm phase18 9b,488,DraSlayer/personal-llm-phase18-9b,DraSlayer/personal-llm-phase18-9b,,,,,duplicate-candidate,high,review-before-merge
-pinkelephantlimited pinkelephant llm 48b s dpo,63,pinkelephantlimited/pinkelephant-llm-48b-s-dpo,pinkelephantlimited/pinkelephant-llm-48b-s-dpo,,,,,duplicate-candidate,high,review-before-merge
-pinkelephantlimited pinkelephant llm 48b s dpo,305,pinkelephantlimited/pinkelephant-llm-48b-s-dpo,pinkelephantlimited/pinkelephant-llm-48b-s-dpo,,,,,duplicate-candidate,high,review-before-merge
-pinkelephantlimited pinkelephant llm 48b s dpo,489,pinkelephantlimited/pinkelephant-llm-48b-s-dpo,pinkelephantlimited/pinkelephant-llm-48b-s-dpo,,,,,duplicate-candidate,high,review-before-merge
-ironwood llm team firehouse cactus 1 01,64,Ironwood-LLM-Team/Firehouse-Cactus-1.01,Ironwood-LLM-Team/Firehouse-Cactus-1.01,,,,,duplicate-candidate,high,review-before-merge
-ironwood llm team firehouse cactus 1 01,241,Ironwood-LLM-Team/Firehouse-Cactus-1.01,Ironwood-LLM-Team/Firehouse-Cactus-1.01,,,,,duplicate-candidate,high,review-before-merge
-ironwood llm team firehouse cactus 1 01,490,Ironwood-LLM-Team/Firehouse-Cactus-1.01,Ironwood-LLM-Team/Firehouse-Cactus-1.01,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 01 c0 999 r0 25 s42,65,Cisco1963/llmplasticity-en_never_8-d0.01-c0.999-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.01-c0.999-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 01 c0 999 r0 25 s42,216,Cisco1963/llmplasticity-en_never_8-d0.01-c0.999-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.01-c0.999-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 01 c0 999 r0 25 s42,491,Cisco1963/llmplasticity-en_never_8-d0.01-c0.999-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.01-c0.999-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-farbodtavakkoli otel 2 0 llm 31b it,66,farbodtavakkoli/OTel-2.0-LLM-31B-IT,farbodtavakkoli/OTel-2.0-LLM-31B-IT,,,,,duplicate-candidate,high,review-before-merge
-farbodtavakkoli otel 2 0 llm 31b it,242,farbodtavakkoli/OTel-2.0-LLM-31B-IT,farbodtavakkoli/OTel-2.0-LLM-31B-IT,,,,,duplicate-candidate,high,review-before-merge
-farbodtavakkoli otel 2 0 llm 31b it,492,farbodtavakkoli/OTel-2.0-LLM-31B-IT,farbodtavakkoli/OTel-2.0-LLM-31B-IT,,,,,duplicate-candidate,high,review-before-merge
-mangocloud gr00t n1 7 libero 90 k4 llm qfeatures,67,mangocloud/gr00t-n1.7-libero-90-k4-llm-qfeatures,mangocloud/gr00t-n1.7-libero-90-k4-llm-qfeatures,,,,,duplicate-candidate,high,review-before-merge
-mangocloud gr00t n1 7 libero 90 k4 llm qfeatures,240,mangocloud/gr00t-n1.7-libero-90-k4-llm-qfeatures,mangocloud/gr00t-n1.7-libero-90-k4-llm-qfeatures,,,,,duplicate-candidate,high,review-before-merge
-mangocloud gr00t n1 7 libero 90 k4 llm qfeatures,493,mangocloud/gr00t-n1.7-libero-90-k4-llm-qfeatures,mangocloud/gr00t-n1.7-libero-90-k4-llm-qfeatures,,,,,duplicate-candidate,high,review-before-merge
-cnuland llm d sc sensitivity,68,cnuland/llm-d-sc-sensitivity,cnuland/llm-d-sc-sensitivity,,,,,duplicate-candidate,high,review-before-merge
-cnuland llm d sc sensitivity,214,cnuland/llm-d-sc-sensitivity,cnuland/llm-d-sc-sensitivity,,,,,duplicate-candidate,high,review-before-merge
-cnuland llm d sc sensitivity,494,cnuland/llm-d-sc-sensitivity,cnuland/llm-d-sc-sensitivity,,,,,duplicate-candidate,high,review-before-merge
-cnuland llm d sc complexity,69,cnuland/llm-d-sc-complexity,cnuland/llm-d-sc-complexity,,,,,duplicate-candidate,high,review-before-merge
-cnuland llm d sc complexity,215,cnuland/llm-d-sc-complexity,cnuland/llm-d-sc-complexity,,,,,duplicate-candidate,high,review-before-merge
-cnuland llm d sc complexity,495,cnuland/llm-d-sc-complexity,cnuland/llm-d-sc-complexity,,,,,duplicate-candidate,high,review-before-merge
-cnuland llm d sc cost,70,cnuland/llm-d-sc-cost,cnuland/llm-d-sc-cost,,,,,duplicate-candidate,high,review-before-merge
-cnuland llm d sc cost,306,cnuland/llm-d-sc-cost,cnuland/llm-d-sc-cost,,,,,duplicate-candidate,high,review-before-merge
-cnuland llm d sc cost,496,cnuland/llm-d-sc-cost,cnuland/llm-d-sc-cost,,,,,duplicate-candidate,high,review-before-merge
-ouzoouz edu mobile llm,71,ouzoouz/edu-mobile-llm,ouzoouz/edu-mobile-llm,,,,,duplicate-candidate,high,review-before-merge
-ouzoouz edu mobile llm,307,ouzoouz/edu-mobile-llm,ouzoouz/edu-mobile-llm,,,,,duplicate-candidate,high,review-before-merge
-ouzoouz edu mobile llm,497,ouzoouz/edu-mobile-llm,ouzoouz/edu-mobile-llm,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity baseline zh never 8 s42,72,Cisco1963/llmplasticity-baseline-zh_never_8-s42,Cisco1963/llmplasticity-baseline-zh_never_8-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity baseline zh never 8 s42,217,Cisco1963/llmplasticity-baseline-zh_never_8-s42,Cisco1963/llmplasticity-baseline-zh_never_8-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity baseline zh never 8 s42,498,Cisco1963/llmplasticity-baseline-zh_never_8-s42,Cisco1963/llmplasticity-baseline-zh_never_8-s42,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal sna omniasr llm 3b,73,DariusTheGeek/waxal-sna-omniasr-llm-3b,DariusTheGeek/waxal-sna-omniasr-llm-3b,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal sna omniasr llm 3b,308,DariusTheGeek/waxal-sna-omniasr-llm-3b,DariusTheGeek/waxal-sna-omniasr-llm-3b,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal sna omniasr llm 3b,499,DariusTheGeek/waxal-sna-omniasr-llm-3b,DariusTheGeek/waxal-sna-omniasr-llm-3b,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal lin omniasr llm 3b,74,DariusTheGeek/waxal-lin-omniasr-llm-3b,DariusTheGeek/waxal-lin-omniasr-llm-3b,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal lin omniasr llm 3b,309,DariusTheGeek/waxal-lin-omniasr-llm-3b,DariusTheGeek/waxal-lin-omniasr-llm-3b,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal lin omniasr llm 3b,500,DariusTheGeek/waxal-lin-omniasr-llm-3b,DariusTheGeek/waxal-lin-omniasr-llm-3b,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal sna omniasr llm 1b,75,DariusTheGeek/waxal-sna-omniasr-llm-1b,DariusTheGeek/waxal-sna-omniasr-llm-1b,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal sna omniasr llm 1b,310,DariusTheGeek/waxal-sna-omniasr-llm-1b,DariusTheGeek/waxal-sna-omniasr-llm-1b,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal sna omniasr llm 1b,501,DariusTheGeek/waxal-sna-omniasr-llm-1b,DariusTheGeek/waxal-sna-omniasr-llm-1b,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal lin omniasr llm 1b,76,DariusTheGeek/waxal-lin-omniasr-llm-1b,DariusTheGeek/waxal-lin-omniasr-llm-1b,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal lin omniasr llm 1b,311,DariusTheGeek/waxal-lin-omniasr-llm-1b,DariusTheGeek/waxal-lin-omniasr-llm-1b,,,,,duplicate-candidate,high,review-before-merge
-dariusthegeek waxal lin omniasr llm 1b,502,DariusTheGeek/waxal-lin-omniasr-llm-1b,DariusTheGeek/waxal-lin-omniasr-llm-1b,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 1 c0 99 r0 25 s42,77,Cisco1963/llmplasticity-en_never_8-d0.1-c0.99-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.1-c0.99-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 1 c0 99 r0 25 s42,218,Cisco1963/llmplasticity-en_never_8-d0.1-c0.99-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.1-c0.99-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 1 c0 99 r0 25 s42,503,Cisco1963/llmplasticity-en_never_8-d0.1-c0.99-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.1-c0.99-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 1 c0 999 r0 25 s42,78,Cisco1963/llmplasticity-en_never_8-d0.1-c0.999-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.1-c0.999-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 1 c0 999 r0 25 s42,219,Cisco1963/llmplasticity-en_never_8-d0.1-c0.999-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.1-c0.999-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 1 c0 999 r0 25 s42,504,Cisco1963/llmplasticity-en_never_8-d0.1-c0.999-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.1-c0.999-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 5 c0 999 r0 25 s42,79,Cisco1963/llmplasticity-en_never_8-d0.5-c0.999-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.5-c0.999-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 5 c0 999 r0 25 s42,220,Cisco1963/llmplasticity-en_never_8-d0.5-c0.999-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.5-c0.999-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-cisco1963 llmplasticity en never 8 d0 5 c0 999 r0 25 s42,505,Cisco1963/llmplasticity-en_never_8-d0.5-c0.999-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.5-c0.999-r0.25-s42,,,,,duplicate-candidate,high,review-before-merge
-euclidstellar tinystories 1bit llm,80,euclidstellar/tinystories-1bit-llm,euclidstellar/tinystories-1bit-llm,,,,,duplicate-candidate,high,review-before-merge
-euclidstellar tinystories 1bit llm,312,euclidstellar/tinystories-1bit-llm,euclidstellar/tinystories-1bit-llm,,,,,duplicate-candidate,high,review-before-merge
-euclidstellar tinystories 1bit llm,506,euclidstellar/tinystories-1bit-llm,euclidstellar/tinystories-1bit-llm,,,,,duplicate-candidate,high,review-before-merge
-pinkelephantlimited pinkelephant llm 48b s sft,81,pinkelephantlimited/pinkelephant-llm-48b-s-sft,pinkelephantlimited/pinkelephant-llm-48b-s-sft,,,,,duplicate-candidate,high,review-before-merge
-pinkelephantlimited pinkelephant llm 48b s sft,313,pinkelephantlimited/pinkelephant-llm-48b-s-sft,pinkelephantlimited/pinkelephant-llm-48b-s-sft,,,,,duplicate-candidate,high,review-before-merge
-pinkelephantlimited pinkelephant llm 48b s sft,507,pinkelephantlimited/pinkelephant-llm-48b-s-sft,pinkelephantlimited/pinkelephant-llm-48b-s-sft,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8 1 0b a0 6b nvfp4 fp8 reap 25,82,inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8-REAP-25,inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8-REAP-25,,,,,same-model-multiple-artifacts-or-configs,review,review-before-merge
-inference optimization qwen3 8 1 0b a0 6b nvfp4 fp8 reap 25,223,inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8-REAP-25,inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8-REAP-25,,,fp8,,same-model-multiple-artifacts-or-configs,review,review-before-merge
-inference optimization qwen3 8 1 0b a0 6b nvfp4 fp8 reap 25,508,inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8-REAP-25,inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8-REAP-25,,,,,same-model-multiple-artifacts-or-configs,review,review-before-merge
-inference optimization glm 5 2 0 8b a0 8b mxfp4xfp8 block,83,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xFP8_BLOCK,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xFP8_BLOCK,,,,,same-model-multiple-artifacts-or-configs,review,review-before-merge
-inference optimization glm 5 2 0 8b a0 8b mxfp4xfp8 block,221,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xFP8_BLOCK,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xFP8_BLOCK,,,fp8,,same-model-multiple-artifacts-or-configs,review,review-before-merge
-inference optimization glm 5 2 0 8b a0 8b mxfp4xfp8 block,509,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xFP8_BLOCK,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xFP8_BLOCK,,,,,same-model-multiple-artifacts-or-configs,review,review-before-merge
-inference optimization qwen3 8b speculator dspark swa dpace fullvocab muon 2048anc combdatav4 q235b instr v1 ckpt0,84,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt0,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt0,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dspark swa dpace fullvocab muon 2048anc combdatav4 q235b instr v1 ckpt0,239,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt0,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt0,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dspark swa dpace fullvocab muon 2048anc combdatav4 q235b instr v1 ckpt0,510,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt0,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt0,,,,,duplicate-candidate,high,review-before-merge
-inference optimization glm 5 2 0 8b a0 8b mxfp4xmxfp8,85,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xMXFP8,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xMXFP8,,,,,same-model-multiple-artifacts-or-configs,review,review-before-merge
-inference optimization glm 5 2 0 8b a0 8b mxfp4xmxfp8,222,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xMXFP8,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xMXFP8,,,fp8,,same-model-multiple-artifacts-or-configs,review,review-before-merge
-inference optimization glm 5 2 0 8b a0 8b mxfp4xmxfp8,511,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xMXFP8,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xMXFP8,,,,,same-model-multiple-artifacts-or-configs,review,review-before-merge
-inference optimization qwen3 8 1 0b a0 6b reap 25,86,inference-optimization/Qwen3.8-1.0B-A0.6B-REAP-25,inference-optimization/Qwen3.8-1.0B-A0.6B-REAP-25,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8 1 0b a0 6b reap 25,224,inference-optimization/Qwen3.8-1.0B-A0.6B-REAP-25,inference-optimization/Qwen3.8-1.0B-A0.6B-REAP-25,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8 1 0b a0 6b reap 25,512,inference-optimization/Qwen3.8-1.0B-A0.6B-REAP-25,inference-optimization/Qwen3.8-1.0B-A0.6B-REAP-25,,,,,duplicate-candidate,high,review-before-merge
-projectlean semantic inference accelerator,87,ProjectLEAN/semantic-inference-accelerator,ProjectLEAN/semantic-inference-accelerator,,,,,duplicate-candidate,high,review-before-merge
-projectlean semantic inference accelerator,314,ProjectLEAN/semantic-inference-accelerator,ProjectLEAN/semantic-inference-accelerator,,,,,duplicate-candidate,high,review-before-merge
-projectlean semantic inference accelerator,513,ProjectLEAN/semantic-inference-accelerator,ProjectLEAN/semantic-inference-accelerator,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt0,88,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt0,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt0,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt0,225,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt0,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt0,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt0,514,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt0,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt0,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt1,89,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt1,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt1,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt1,226,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt1,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt1,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt1,515,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt1,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt1,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt2,90,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt2,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt2,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt2,227,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt2,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt2,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt2,516,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt2,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt2,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt3,91,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt3,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt3,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt3,228,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt3,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt3,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt3,517,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt3,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt3,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt4,92,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt4,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt4,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt4,229,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt4,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt4,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt4,518,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt4,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt4,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt5,93,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt5,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt5,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt5,230,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt5,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt5,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt5,519,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt5,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt5,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt6,94,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt6,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt6,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt6,231,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt6,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt6,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt6,520,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt6,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt6,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt7,95,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt7,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt7,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt7,232,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt7,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt7,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt7,521,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt7,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt7,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt8,96,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt8,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt8,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt8,233,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt8,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt8,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt8,522,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt8,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt8,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt9,97,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt9,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt9,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt9,234,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt9,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt9,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt9,523,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt9,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt9,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt10,98,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt10,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt10,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt10,235,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt10,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt10,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt10,524,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt10,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt10,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt11,99,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt11,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt11,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt11,236,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt11,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt11,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt11,525,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt11,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt11,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt12,100,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt12,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt12,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt12,237,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt12,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt12,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt12,526,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt12,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt12,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt13,101,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt13,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt13,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt13,238,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt13,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt13,,,,,duplicate-candidate,high,review-before-merge
-inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt13,527,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt13,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt13,,,,,duplicate-candidate,high,review-before-merge
-agent lightning v1 0 towards harnessed agentic rl,102,Agent Lightning v1.0: Towards Harnessed Agentic RL,Agent Lightning v1.0: Towards Harnessed Agentic RL,,,,,duplicate-candidate,high,review-before-merge
-agent lightning v1 0 towards harnessed agentic rl,315,Agent Lightning v1.0: Towards Harnessed Agentic RL,Agent Lightning v1.0: Towards Harnessed Agentic RL,,,,,duplicate-candidate,high,review-before-merge
-agent lightning v1 0 towards harnessed agentic rl,528,Agent Lightning v1.0: Towards Harnessed Agentic RL,Agent Lightning v1.0: Towards Harnessed Agentic RL,,,,,duplicate-candidate,high,review-before-merge
-harness the memory a holistic evaluation of memory substrates in memory agents,103,Harness the Memory: A Holistic Evaluation of Memory Substrates in Memory Agents,Harness the Memory: A Holistic Evaluation of Memory Substrates in Memory Agents,,,,,duplicate-candidate,high,review-before-merge
-harness the memory a holistic evaluation of memory substrates in memory agents,316,Harness the Memory: A Holistic Evaluation of Memory Substrates in Memory Agents,Harness the Memory: A Holistic Evaluation of Memory Substrates in Memory Agents,,,,,duplicate-candidate,high,review-before-merge
-harness the memory a holistic evaluation of memory substrates in memory agents,529,Harness the Memory: A Holistic Evaluation of Memory Substrates in Memory Agents,Harness the Memory: A Holistic Evaluation of Memory Substrates in Memory Agents,,,,,duplicate-candidate,high,review-before-merge
-security assessment of deepseek harness with a i g evaluating resistance to indirect prompt injection,104,Security Assessment of DeepSeek Harness with A.I.G: Evaluating Resistance to Indirect Prompt Injection,Security Assessment of DeepSeek Harness with A.I.G: Evaluating Resistance to Indirect Prompt Injection,,,,,duplicate-candidate,high,review-before-merge
-security assessment of deepseek harness with a i g evaluating resistance to indirect prompt injection,317,Security Assessment of DeepSeek Harness with A.I.G: Evaluating Resistance to Indirect Prompt Injection,Security Assessment of DeepSeek Harness with A.I.G: Evaluating Resistance to Indirect Prompt Injection,,,,,duplicate-candidate,high,review-before-merge
-security assessment of deepseek harness with a i g evaluating resistance to indirect prompt injection,530,Security Assessment of DeepSeek Harness with A.I.G: Evaluating Resistance to Indirect Prompt Injection,Security Assessment of DeepSeek Harness with A.I.G: Evaluating Resistance to Indirect Prompt Injection,,,,,duplicate-candidate,high,review-before-merge
-abra scaling diffusion image training,105,Abra: Scaling Diffusion Image Training,Abra: Scaling Diffusion Image Training,,,,,duplicate-candidate,high,review-before-merge
-abra scaling diffusion image training,318,Abra: Scaling Diffusion Image Training,Abra: Scaling Diffusion Image Training,,,,,duplicate-candidate,high,review-before-merge
-abra scaling diffusion image training,531,Abra: Scaling Diffusion Image Training,Abra: Scaling Diffusion Image Training,,,,,duplicate-candidate,high,review-before-merge
-startupbench benchmarking general purpose agents on market validated end to end workflows,106,StartupBench: Benchmarking General-Purpose Agents on Market-Validated End-to-End Workflows,StartupBench: Benchmarking General-Purpose Agents on Market-Validated End-to-End Workflows,,,,,duplicate-candidate,high,review-before-merge
-startupbench benchmarking general purpose agents on market validated end to end workflows,319,StartupBench: Benchmarking General-Purpose Agents on Market-Validated End-to-End Workflows,StartupBench: Benchmarking General-Purpose Agents on Market-Validated End-to-End Workflows,,,,,duplicate-candidate,high,review-before-merge
-startupbench benchmarking general purpose agents on market validated end to end workflows,532,StartupBench: Benchmarking General-Purpose Agents on Market-Validated End-to-End Workflows,StartupBench: Benchmarking General-Purpose Agents on Market-Validated End-to-End Workflows,,,,,duplicate-candidate,high,review-before-merge
-adsl agentic 3d creation via joint agent program design,107,aDSL: Agentic 3D Creation via Joint Agent-Program Design,aDSL: Agentic 3D Creation via Joint Agent-Program Design,,,,,duplicate-candidate,high,review-before-merge
-adsl agentic 3d creation via joint agent program design,320,aDSL: Agentic 3D Creation via Joint Agent-Program Design,aDSL: Agentic 3D Creation via Joint Agent-Program Design,,,,,duplicate-candidate,high,review-before-merge
-adsl agentic 3d creation via joint agent program design,533,aDSL: Agentic 3D Creation via Joint Agent-Program Design,aDSL: Agentic 3D Creation via Joint Agent-Program Design,,,,,duplicate-candidate,high,review-before-merge
-from sequence to structure relational uncertainty propagation for llm agents,108,From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents,From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents,,,,,duplicate-candidate,high,review-before-merge
-from sequence to structure relational uncertainty propagation for llm agents,321,From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents,From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents,,,,,duplicate-candidate,high,review-before-merge
-from sequence to structure relational uncertainty propagation for llm agents,534,From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents,From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents,,,,,duplicate-candidate,high,review-before-merge
-agentic esopt fine tuning long horizon llm agents with minimal gpu requirements,109,Agentic ESOpt: Fine-Tuning Long-Horizon LLM Agents with Minimal GPU Requirements,Agentic ESOpt: Fine-Tuning Long-Horizon LLM Agents with Minimal GPU Requirements,,,,,duplicate-candidate,high,review-before-merge
-agentic esopt fine tuning long horizon llm agents with minimal gpu requirements,322,Agentic ESOpt: Fine-Tuning Long-Horizon LLM Agents with Minimal GPU Requirements,Agentic ESOpt: Fine-Tuning Long-Horizon LLM Agents with Minimal GPU Requirements,,,,,duplicate-candidate,high,review-before-merge
-agentic esopt fine tuning long horizon llm agents with minimal gpu requirements,535,Agentic ESOpt: Fine-Tuning Long-Horizon LLM Agents with Minimal GPU Requirements,Agentic ESOpt: Fine-Tuning Long-Horizon LLM Agents with Minimal GPU Requirements,,,,,duplicate-candidate,high,review-before-merge
-harmprofile characterizing harmful distributions in frontier llms,110,HarmProfile: Characterizing Harmful Distributions in Frontier LLMs,HarmProfile: Characterizing Harmful Distributions in Frontier LLMs,,,,,duplicate-candidate,high,review-before-merge
-harmprofile characterizing harmful distributions in frontier llms,323,HarmProfile: Characterizing Harmful Distributions in Frontier LLMs,HarmProfile: Characterizing Harmful Distributions in Frontier LLMs,,,,,duplicate-candidate,high,review-before-merge
-harmprofile characterizing harmful distributions in frontier llms,536,HarmProfile: Characterizing Harmful Distributions in Frontier LLMs,HarmProfile: Characterizing Harmful Distributions in Frontier LLMs,,,,,duplicate-candidate,high,review-before-merge
-accuracy and order sensitivity diverge under label free strategies,111,Accuracy and Order Sensitivity Diverge Under Label-Free Strategies,Accuracy and Order Sensitivity Diverge Under Label-Free Strategies,,,,,duplicate-candidate,high,review-before-merge
-accuracy and order sensitivity diverge under label free strategies,324,Accuracy and Order Sensitivity Diverge Under Label-Free Strategies,Accuracy and Order Sensitivity Diverge Under Label-Free Strategies,,,,,duplicate-candidate,high,review-before-merge
-accuracy and order sensitivity diverge under label free strategies,537,Accuracy and Order Sensitivity Diverge Under Label-Free Strategies,Accuracy and Order Sensitivity Diverge Under Label-Free Strategies,,,,,duplicate-candidate,high,review-before-merge
-plausible but not valid a psychometric audit of llms as synthetic survey respondents,112,Plausible but Not Valid: A Psychometric Audit of LLMs as Synthetic Survey Respondents,Plausible but Not Valid: A Psychometric Audit of LLMs as Synthetic Survey Respondents,,,,,duplicate-candidate,high,review-before-merge
-plausible but not valid a psychometric audit of llms as synthetic survey respondents,325,Plausible but Not Valid: A Psychometric Audit of LLMs as Synthetic Survey Respondents,Plausible but Not Valid: A Psychometric Audit of LLMs as Synthetic Survey Respondents,,,,,duplicate-candidate,high,review-before-merge
-plausible but not valid a psychometric audit of llms as synthetic survey respondents,538,Plausible but Not Valid: A Psychometric Audit of LLMs as Synthetic Survey Respondents,Plausible but Not Valid: A Psychometric Audit of LLMs as Synthetic Survey Respondents,,,,,duplicate-candidate,high,review-before-merge
-advancing open and reproducible relational learning relarena tabpfn rel and rpi,113,"Advancing Open and Reproducible Relational Learning: RelArena-α, TabPFN-Rel and RPI","Advancing Open and Reproducible Relational Learning: RelArena-α, TabPFN-Rel and RPI",,,,,duplicate-candidate,high,review-before-merge
-advancing open and reproducible relational learning relarena tabpfn rel and rpi,326,"Advancing Open and Reproducible Relational Learning: RelArena-α, TabPFN-Rel and RPI","Advancing Open and Reproducible Relational Learning: RelArena-α, TabPFN-Rel and RPI",,,,,duplicate-candidate,high,review-before-merge
-advancing open and reproducible relational learning relarena tabpfn rel and rpi,539,"Advancing Open and Reproducible Relational Learning: RelArena-α, TabPFN-Rel and RPI","Advancing Open and Reproducible Relational Learning: RelArena-α, TabPFN-Rel and RPI",,,,,duplicate-candidate,high,review-before-merge
-how do agents fail on autoresearch end to end diagnostic evaluation on 100 real world frontier research tasks,114,How Do Agents Fail on AutoResearch: End-to-End Diagnostic Evaluation on 100 Real-World Frontier Research Tasks,How Do Agents Fail on AutoResearch: End-to-End Diagnostic Evaluation on 100 Real-World Frontier Research Tasks,,,,,duplicate-candidate,high,review-before-merge
-how do agents fail on autoresearch end to end diagnostic evaluation on 100 real world frontier research tasks,327,How Do Agents Fail on AutoResearch: End-to-End Diagnostic Evaluation on 100 Real-World Frontier Research Tasks,How Do Agents Fail on AutoResearch: End-to-End Diagnostic Evaluation on 100 Real-World Frontier Research Tasks,,,,,duplicate-candidate,high,review-before-merge
-how do agents fail on autoresearch end to end diagnostic evaluation on 100 real world frontier research tasks,540,How Do Agents Fail on AutoResearch: End-to-End Diagnostic Evaluation on 100 Real-World Frontier Research Tasks,How Do Agents Fail on AutoResearch: End-to-End Diagnostic Evaluation on 100 Real-World Frontier Research Tasks,,,,,duplicate-candidate,high,review-before-merge
-large discovery models empirically grounded model based open ended search,115,Large Discovery Models: Empirically-grounded Model-Based Open-Ended Search,Large Discovery Models: Empirically-grounded Model-Based Open-Ended Search,,,,,duplicate-candidate,high,review-before-merge
-large discovery models empirically grounded model based open ended search,328,Large Discovery Models: Empirically-grounded Model-Based Open-Ended Search,Large Discovery Models: Empirically-grounded Model-Based Open-Ended Search,,,,,duplicate-candidate,high,review-before-merge
-large discovery models empirically grounded model based open ended search,541,Large Discovery Models: Empirically-grounded Model-Based Open-Ended Search,Large Discovery Models: Empirically-grounded Model-Based Open-Ended Search,,,,,duplicate-candidate,high,review-before-merge
-dumpstercluster from dumpster diving to serving llama 70b on 60 gpus,116,DumpsterCluster: From Dumpster Diving to Serving LLaMA-70B on $60 GPUs,DumpsterCluster: From Dumpster Diving to Serving LLaMA-70B on $60 GPUs,,,,,duplicate-candidate,high,review-before-merge
-dumpstercluster from dumpster diving to serving llama 70b on 60 gpus,329,DumpsterCluster: From Dumpster Diving to Serving LLaMA-70B on $60 GPUs,DumpsterCluster: From Dumpster Diving to Serving LLaMA-70B on $60 GPUs,,,,,duplicate-candidate,high,review-before-merge
-dumpstercluster from dumpster diving to serving llama 70b on 60 gpus,542,DumpsterCluster: From Dumpster Diving to Serving LLaMA-70B on $60 GPUs,DumpsterCluster: From Dumpster Diving to Serving LLaMA-70B on $60 GPUs,,,,,duplicate-candidate,high,review-before-merge
-prior audit repair context shifts llm verifier thresholds toward leniency,117,Prior Audit-Repair Context Shifts LLM Verifier Thresholds Toward Leniency,Prior Audit-Repair Context Shifts LLM Verifier Thresholds Toward Leniency,,,,,duplicate-candidate,high,review-before-merge
-prior audit repair context shifts llm verifier thresholds toward leniency,330,Prior Audit-Repair Context Shifts LLM Verifier Thresholds Toward Leniency,Prior Audit-Repair Context Shifts LLM Verifier Thresholds Toward Leniency,,,,,duplicate-candidate,high,review-before-merge
-prior audit repair context shifts llm verifier thresholds toward leniency,543,Prior Audit-Repair Context Shifts LLM Verifier Thresholds Toward Leniency,Prior Audit-Repair Context Shifts LLM Verifier Thresholds Toward Leniency,,,,,duplicate-candidate,high,review-before-merge
-harnesseval w agentifying the evaluation of visual worlds,118,HarnessEval-W: Agentifying the Evaluation of Visual Worlds,HarnessEval-W: Agentifying the Evaluation of Visual Worlds,,,,,duplicate-candidate,high,review-before-merge
-harnesseval w agentifying the evaluation of visual worlds,331,HarnessEval-W: Agentifying the Evaluation of Visual Worlds,HarnessEval-W: Agentifying the Evaluation of Visual Worlds,,,,,duplicate-candidate,high,review-before-merge
-harnesseval w agentifying the evaluation of visual worlds,544,HarnessEval-W: Agentifying the Evaluation of Visual Worlds,HarnessEval-W: Agentifying the Evaluation of Visual Worlds,,,,,duplicate-candidate,high,review-before-merge
-videogaia a benchmark for general ai assistants on agentic video understanding,119,VideoGAIA: A Benchmark for General AI Assistants on Agentic Video Understanding,VideoGAIA: A Benchmark for General AI Assistants on Agentic Video Understanding,,,,,duplicate-candidate,high,review-before-merge
-videogaia a benchmark for general ai assistants on agentic video understanding,332,VideoGAIA: A Benchmark for General AI Assistants on Agentic Video Understanding,VideoGAIA: A Benchmark for General AI Assistants on Agentic Video Understanding,,,,,duplicate-candidate,high,review-before-merge
-videogaia a benchmark for general ai assistants on agentic video understanding,545,VideoGAIA: A Benchmark for General AI Assistants on Agentic Video Understanding,VideoGAIA: A Benchmark for General AI Assistants on Agentic Video Understanding,,,,,duplicate-candidate,high,review-before-merge
-ventor qtest threat model driven verification of vendor hosted llm apis,120,Ventor-QTest: Threat-Model-Driven Verification of Vendor-Hosted LLM APIs,Ventor-QTest: Threat-Model-Driven Verification of Vendor-Hosted LLM APIs,,,,,duplicate-candidate,high,review-before-merge
-ventor qtest threat model driven verification of vendor hosted llm apis,333,Ventor-QTest: Threat-Model-Driven Verification of Vendor-Hosted LLM APIs,Ventor-QTest: Threat-Model-Driven Verification of Vendor-Hosted LLM APIs,,,,,duplicate-candidate,high,review-before-merge
-ventor qtest threat model driven verification of vendor hosted llm apis,546,Ventor-QTest: Threat-Model-Driven Verification of Vendor-Hosted LLM APIs,Ventor-QTest: Threat-Model-Driven Verification of Vendor-Hosted LLM APIs,,,,,duplicate-candidate,high,review-before-merge
-r 3 bench llms struggle with resource rational reasoning under shared budgets,121,R^3-Bench: LLMs Struggle with Resource-Rational Reasoning under Shared Budgets,R^3-Bench: LLMs Struggle with Resource-Rational Reasoning under Shared Budgets,,,,,duplicate-candidate,high,review-before-merge
-r 3 bench llms struggle with resource rational reasoning under shared budgets,334,R^3-Bench: LLMs Struggle with Resource-Rational Reasoning under Shared Budgets,R^3-Bench: LLMs Struggle with Resource-Rational Reasoning under Shared Budgets,,,,,duplicate-candidate,high,review-before-merge
-r 3 bench llms struggle with resource rational reasoning under shared budgets,547,R^3-Bench: LLMs Struggle with Resource-Rational Reasoning under Shared Budgets,R^3-Bench: LLMs Struggle with Resource-Rational Reasoning under Shared Budgets,,,,,duplicate-candidate,high,review-before-merge
-freetoken efficient edge native moe serving with bandwidth adaptive execution,122,FreeToken: Efficient Edge-Native MoE Serving with Bandwidth-Adaptive Execution,FreeToken: Efficient Edge-Native MoE Serving with Bandwidth-Adaptive Execution,,,,,duplicate-candidate,high,review-before-merge
-freetoken efficient edge native moe serving with bandwidth adaptive execution,335,FreeToken: Efficient Edge-Native MoE Serving with Bandwidth-Adaptive Execution,FreeToken: Efficient Edge-Native MoE Serving with Bandwidth-Adaptive Execution,,,,,duplicate-candidate,high,review-before-merge
-freetoken efficient edge native moe serving with bandwidth adaptive execution,548,FreeToken: Efficient Edge-Native MoE Serving with Bandwidth-Adaptive Execution,FreeToken: Efficient Edge-Native MoE Serving with Bandwidth-Adaptive Execution,,,,,duplicate-candidate,high,review-before-merge
-beyond visual cot internalized visual thinking for proactive video reasoning,123,Beyond Visual CoT: Internalized Visual Thinking for Proactive Video Reasoning,Beyond Visual CoT: Internalized Visual Thinking for Proactive Video Reasoning,,,,,duplicate-candidate,high,review-before-merge
-beyond visual cot internalized visual thinking for proactive video reasoning,336,Beyond Visual CoT: Internalized Visual Thinking for Proactive Video Reasoning,Beyond Visual CoT: Internalized Visual Thinking for Proactive Video Reasoning,,,,,duplicate-candidate,high,review-before-merge
-beyond visual cot internalized visual thinking for proactive video reasoning,549,Beyond Visual CoT: Internalized Visual Thinking for Proactive Video Reasoning,Beyond Visual CoT: Internalized Visual Thinking for Proactive Video Reasoning,,,,,duplicate-candidate,high,review-before-merge
-streamopd a post training recipe with spatio temporal cue gating for streaming video understanding,124,StreamOPD: A Post-Training Recipe with Spatio-Temporal Cue Gating for Streaming Video Understanding,StreamOPD: A Post-Training Recipe with Spatio-Temporal Cue Gating for Streaming Video Understanding,,,,,duplicate-candidate,high,review-before-merge
-streamopd a post training recipe with spatio temporal cue gating for streaming video understanding,337,StreamOPD: A Post-Training Recipe with Spatio-Temporal Cue Gating for Streaming Video Understanding,StreamOPD: A Post-Training Recipe with Spatio-Temporal Cue Gating for Streaming Video Understanding,,,,,duplicate-candidate,high,review-before-merge
-streamopd a post training recipe with spatio temporal cue gating for streaming video understanding,550,StreamOPD: A Post-Training Recipe with Spatio-Temporal Cue Gating for Streaming Video Understanding,StreamOPD: A Post-Training Recipe with Spatio-Temporal Cue Gating for Streaming Video Understanding,,,,,duplicate-candidate,high,review-before-merge
-moss vl technical report,125,MOSS-VL Technical Report,MOSS-VL Technical Report,,,,,duplicate-candidate,high,review-before-merge
-moss vl technical report,338,MOSS-VL Technical Report,MOSS-VL Technical Report,,,,,duplicate-candidate,high,review-before-merge
-moss vl technical report,551,MOSS-VL Technical Report,MOSS-VL Technical Report,,,,,duplicate-candidate,high,review-before-merge
-hifi brep high fidelity latent representation for robust b rep generation,126,HiFi-BRep: High-Fidelity Latent Representation for Robust B-Rep Generation,HiFi-BRep: High-Fidelity Latent Representation for Robust B-Rep Generation,,,,,duplicate-candidate,high,review-before-merge
-hifi brep high fidelity latent representation for robust b rep generation,339,HiFi-BRep: High-Fidelity Latent Representation for Robust B-Rep Generation,HiFi-BRep: High-Fidelity Latent Representation for Robust B-Rep Generation,,,,,duplicate-candidate,high,review-before-merge
-hifi brep high fidelity latent representation for robust b rep generation,552,HiFi-BRep: High-Fidelity Latent Representation for Robust B-Rep Generation,HiFi-BRep: High-Fidelity Latent Representation for Robust B-Rep Generation,,,,,duplicate-candidate,high,review-before-merge
-clawgym ii exploring black box rl on agent harness,127,ClawGym II: Exploring Black-Box RL on Agent Harness,ClawGym II: Exploring Black-Box RL on Agent Harness,,,,,duplicate-candidate,high,review-before-merge
-clawgym ii exploring black box rl on agent harness,340,ClawGym II: Exploring Black-Box RL on Agent Harness,ClawGym II: Exploring Black-Box RL on Agent Harness,,,,,duplicate-candidate,high,review-before-merge
-clawgym ii exploring black box rl on agent harness,553,ClawGym II: Exploring Black-Box RL on Agent Harness,ClawGym II: Exploring Black-Box RL on Agent Harness,,,,,duplicate-candidate,high,review-before-merge
-second thought reasoning in parallel as llm agents act and observe,128,Second Thought: Reasoning in Parallel as LLM Agents Act and Observe,Second Thought: Reasoning in Parallel as LLM Agents Act and Observe,,,,,duplicate-candidate,high,review-before-merge
-second thought reasoning in parallel as llm agents act and observe,341,Second Thought: Reasoning in Parallel as LLM Agents Act and Observe,Second Thought: Reasoning in Parallel as LLM Agents Act and Observe,,,,,duplicate-candidate,high,review-before-merge
-second thought reasoning in parallel as llm agents act and observe,554,Second Thought: Reasoning in Parallel as LLM Agents Act and Observe,Second Thought: Reasoning in Parallel as LLM Agents Act and Observe,,,,,duplicate-candidate,high,review-before-merge
-generation as auxiliary supervision enhancing visual understanding at zero inference overhead via decoupled embedding prediction,129,Generation as Auxiliary Supervision: Enhancing Visual Understanding at Zero Inference Overhead via Decoupled Embedding Prediction,Generation as Auxiliary Supervision: Enhancing Visual Understanding at Zero Inference Overhead via Decoupled Embedding Prediction,,,,,duplicate-candidate,high,review-before-merge
-generation as auxiliary supervision enhancing visual understanding at zero inference overhead via decoupled embedding prediction,342,Generation as Auxiliary Supervision: Enhancing Visual Understanding at Zero Inference Overhead via Decoupled Embedding Prediction,Generation as Auxiliary Supervision: Enhancing Visual Understanding at Zero Inference Overhead via Decoupled Embedding Prediction,,,,,duplicate-candidate,high,review-before-merge
-generation as auxiliary supervision enhancing visual understanding at zero inference overhead via decoupled embedding prediction,555,Generation as Auxiliary Supervision: Enhancing Visual Understanding at Zero Inference Overhead via Decoupled Embedding Prediction,Generation as Auxiliary Supervision: Enhancing Visual Understanding at Zero Inference Overhead via Decoupled Embedding Prediction,,,,,duplicate-candidate,high,review-before-merge
-beyond final scores a systematic evaluation of agents for long horizon ai research and development,130,Beyond Final Scores: A Systematic Evaluation of Agents for Long-Horizon AI Research and Development,Beyond Final Scores: A Systematic Evaluation of Agents for Long-Horizon AI Research and Development,,,,,duplicate-candidate,high,review-before-merge
-beyond final scores a systematic evaluation of agents for long horizon ai research and development,343,Beyond Final Scores: A Systematic Evaluation of Agents for Long-Horizon AI Research and Development,Beyond Final Scores: A Systematic Evaluation of Agents for Long-Horizon AI Research and Development,,,,,duplicate-candidate,high,review-before-merge
-beyond final scores a systematic evaluation of agents for long horizon ai research and development,556,Beyond Final Scores: A Systematic Evaluation of Agents for Long-Horizon AI Research and Development,Beyond Final Scores: A Systematic Evaluation of Agents for Long-Horizon AI Research and Development,,,,,duplicate-candidate,high,review-before-merge
-tagashy mtg compiler,131,Tagashy/mtg-compiler,Tagashy/mtg-compiler,,,,,duplicate-candidate,high,review-before-merge
-tagashy mtg compiler,344,Tagashy/mtg-compiler,Tagashy/mtg-compiler,,,,,duplicate-candidate,high,review-before-merge
-tagashy mtg compiler,557,Tagashy/mtg-compiler,Tagashy/mtg-compiler,,,,,duplicate-candidate,high,review-before-merge
-1235467 llm gateway,132,1235467/llm-gateway,1235467/llm-gateway,,,,,duplicate-candidate,high,review-before-merge
-1235467 llm gateway,345,1235467/llm-gateway,1235467/llm-gateway,,,,,duplicate-candidate,high,review-before-merge
-1235467 llm gateway,558,1235467/llm-gateway,1235467/llm-gateway,,,,,duplicate-candidate,high,review-before-merge
-hongch6661 mix web demo,133,hongch6661/mix-web-demo,hongch6661/mix-web-demo,,,,,duplicate-candidate,high,review-before-merge
-hongch6661 mix web demo,346,hongch6661/mix-web-demo,hongch6661/mix-web-demo,,,,,duplicate-candidate,high,review-before-merge
-hongch6661 mix web demo,559,hongch6661/mix-web-demo,hongch6661/mix-web-demo,,,,,duplicate-candidate,high,review-before-merge
-hakutaku llm gateway,134,hakutaku/llm-gateway,hakutaku/llm-gateway,,,,,duplicate-candidate,high,review-before-merge
-hakutaku llm gateway,347,hakutaku/llm-gateway,hakutaku/llm-gateway,,,,,duplicate-candidate,high,review-before-merge
-hakutaku llm gateway,560,hakutaku/llm-gateway,hakutaku/llm-gateway,,,,,duplicate-candidate,high,review-before-merge
-ameobius ai captcha hub,135,ameobius-ai/captcha-hub,ameobius-ai/captcha-hub,,,,,duplicate-candidate,high,review-before-merge
-ameobius ai captcha hub,348,ameobius-ai/captcha-hub,ameobius-ai/captcha-hub,,,,,duplicate-candidate,high,review-before-merge
-ameobius ai captcha hub,561,ameobius-ai/captcha-hub,ameobius-ai/captcha-hub,,,,,duplicate-candidate,high,review-before-merge
-schaefer services git proxy api,136,schaefer-services/git-proxy-api,schaefer-services/git-proxy-api,,,,,duplicate-candidate,high,review-before-merge
-schaefer services git proxy api,349,schaefer-services/git-proxy-api,schaefer-services/git-proxy-api,,,,,duplicate-candidate,high,review-before-merge
-schaefer services git proxy api,562,schaefer-services/git-proxy-api,schaefer-services/git-proxy-api,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi ll llama index llms rungpt 164aeef6,137,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/ll/llama-index-llms-rungpt-164aeef6,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/ll/llama-index-llms-rungpt-164aeef6,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi ll llama index llms rungpt 164aeef6,350,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/ll/llama-index-llms-rungpt-164aeef6,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/ll/llama-index-llms-rungpt-164aeef6,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi ll llama index llms rungpt 164aeef6,563,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/ll/llama-index-llms-rungpt-164aeef6,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/ll/llama-index-llms-rungpt-164aeef6,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi lo lollms b82a4727,138,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/lo/lollms-b82a4727,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/lo/lollms-b82a4727,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi lo lollms b82a4727,351,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/lo/lollms-b82a4727,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/lo/lollms-b82a4727,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi lo lollms b82a4727,564,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/lo/lollms-b82a4727,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/lo/lollms-b82a4727,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi li litellm 40d5597d,139,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/li/litellm-40d5597d,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/li/litellm-40d5597d,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi li litellm 40d5597d,352,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/li/litellm-40d5597d,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/li/litellm-40d5597d,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi li litellm 40d5597d,565,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/li/litellm-40d5597d,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/li/litellm-40d5597d,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research source pypi sp spacy llm d54f8ac6,140,gitlab-oss-package-research/source/pypi/sp/spacy-llm-d54f8ac6,gitlab-oss-package-research/source/pypi/sp/spacy-llm-d54f8ac6,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research source pypi sp spacy llm d54f8ac6,353,gitlab-oss-package-research/source/pypi/sp/spacy-llm-d54f8ac6,gitlab-oss-package-research/source/pypi/sp/spacy-llm-d54f8ac6,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research source pypi sp spacy llm d54f8ac6,566,gitlab-oss-package-research/source/pypi/sp/spacy-llm-d54f8ac6,gitlab-oss-package-research/source/pypi/sp/spacy-llm-d54f8ac6,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi vl vllm 76d8023b,141,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/vl/vllm-76d8023b,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/vl/vllm-76d8023b,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi vl vllm 76d8023b,354,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/vl/vllm-76d8023b,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/vl/vllm-76d8023b,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi vl vllm 76d8023b,567,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/vl/vllm-76d8023b,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/vl/vllm-76d8023b,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi sp spacy llm d54f8ac6,142,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/sp/spacy-llm-d54f8ac6,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/sp/spacy-llm-d54f8ac6,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi sp spacy llm d54f8ac6,355,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/sp/spacy-llm-d54f8ac6,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/sp/spacy-llm-d54f8ac6,,,,,duplicate-candidate,high,review-before-merge
-gitlab oss package research tools libbehave 3 2 0 pypi sp spacy llm d54f8ac6,568,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/sp/spacy-llm-d54f8ac6,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/sp/spacy-llm-d54f8ac6,,,,,duplicate-candidate,high,review-before-merge
-ai village agents village llm psychoactive prompts,143,ai-village-agents/village/llm-psychoactive-prompts,ai-village-agents/village/llm-psychoactive-prompts,,,,,duplicate-candidate,high,review-before-merge
-ai village agents village llm psychoactive prompts,356,ai-village-agents/village/llm-psychoactive-prompts,ai-village-agents/village/llm-psychoactive-prompts,,,,,duplicate-candidate,high,review-before-merge
-ai village agents village llm psychoactive prompts,569,ai-village-agents/village/llm-psychoactive-prompts,ai-village-agents/village/llm-psychoactive-prompts,,,,,duplicate-candidate,high,review-before-merge
-ztmesh asterisk usecallmanager,144,ztmesh/asterisk-usecallmanager,ztmesh/asterisk-usecallmanager,,,,,duplicate-candidate,high,review-before-merge
-ztmesh asterisk usecallmanager,357,ztmesh/asterisk-usecallmanager,ztmesh/asterisk-usecallmanager,,,,,duplicate-candidate,high,review-before-merge
-ztmesh asterisk usecallmanager,570,ztmesh/asterisk-usecallmanager,ztmesh/asterisk-usecallmanager,,,,,duplicate-candidate,high,review-before-merge
-antoine kb llm tool calling,145,antoine-kb/llm-tool-calling,antoine-kb/llm-tool-calling,,,,,duplicate-candidate,high,review-before-merge
-antoine kb llm tool calling,358,antoine-kb/llm-tool-calling,antoine-kb/llm-tool-calling,,,,,duplicate-candidate,high,review-before-merge
-antoine kb llm tool calling,571,antoine-kb/llm-tool-calling,antoine-kb/llm-tool-calling,,,,,duplicate-candidate,high,review-before-merge
-ecr lime hello llm chat app template,146,ecr.lime.hello/llm-chat-app-template,ecr.lime.hello/llm-chat-app-template,,,,,duplicate-candidate,high,review-before-merge
-ecr lime hello llm chat app template,359,ecr.lime.hello/llm-chat-app-template,ecr.lime.hello/llm-chat-app-template,,,,,duplicate-candidate,high,review-before-merge
-ecr lime hello llm chat app template,572,ecr.lime.hello/llm-chat-app-template,ecr.lime.hello/llm-chat-app-template,,,,,duplicate-candidate,high,review-before-merge
-snopek games godai,147,snopek-games/godai,snopek-games/godai,,,,,duplicate-candidate,high,review-before-merge
-snopek games godai,360,snopek-games/godai,snopek-games/godai,,,,,duplicate-candidate,high,review-before-merge
-snopek games godai,573,snopek-games/godai,snopek-games/godai,,,,,duplicate-candidate,high,review-before-merge
-sebastian lutter affine selfhosted,148,sebastian-lutter/affine-selfhosted,sebastian-lutter/affine-selfhosted,,,,,duplicate-candidate,high,review-before-merge
-sebastian lutter affine selfhosted,361,sebastian-lutter/affine-selfhosted,sebastian-lutter/affine-selfhosted,,,,,duplicate-candidate,high,review-before-merge
-sebastian lutter affine selfhosted,574,sebastian-lutter/affine-selfhosted,sebastian-lutter/affine-selfhosted,,,,,duplicate-candidate,high,review-before-merge
-ne sachirou llm wiki,149,ne_sachirou/llm-wiki,ne_sachirou/llm-wiki,,,,,duplicate-candidate,high,review-before-merge
-ne sachirou llm wiki,362,ne_sachirou/llm-wiki,ne_sachirou/llm-wiki,,,,,duplicate-candidate,high,review-before-merge
-ne sachirou llm wiki,575,ne_sachirou/llm-wiki,ne_sachirou/llm-wiki,,,,,duplicate-candidate,high,review-before-merge
-adelayoub llama cpp deletion scheduled 84820513,150,adelayoub/llama-cpp-deletion_scheduled-84820513,adelayoub/llama-cpp-deletion_scheduled-84820513,,,,,duplicate-candidate,high,review-before-merge
-adelayoub llama cpp deletion scheduled 84820513,363,adelayoub/llama-cpp-deletion_scheduled-84820513,adelayoub/llama-cpp-deletion_scheduled-84820513,,,,,duplicate-candidate,high,review-before-merge
-adelayoub llama cpp deletion scheduled 84820513,576,adelayoub/llama-cpp-deletion_scheduled-84820513,adelayoub/llama-cpp-deletion_scheduled-84820513,,,,,duplicate-candidate,high,review-before-merge
-uralstech gitlab uai litertlm,151,uralstech-gitlab/UAI-LiteRTLM,uralstech-gitlab/UAI-LiteRTLM,,,,,duplicate-candidate,high,review-before-merge
-uralstech gitlab uai litertlm,364,uralstech-gitlab/UAI-LiteRTLM,uralstech-gitlab/UAI-LiteRTLM,,,,,duplicate-candidate,high,review-before-merge
-uralstech gitlab uai litertlm,577,uralstech-gitlab/UAI-LiteRTLM,uralstech-gitlab/UAI-LiteRTLM,,,,,duplicate-candidate,high,review-before-merge
-gratech1 casper engine,152,gratech1/casper-engine,gratech1/casper-engine,,,,,duplicate-candidate,high,review-before-merge
-gratech1 casper engine,365,gratech1/casper-engine,gratech1/casper-engine,,,,,duplicate-candidate,high,review-before-merge
-gratech1 casper engine,578,gratech1/casper-engine,gratech1/casper-engine,,,,,duplicate-candidate,high,review-before-merge
-cip playground cip llm gateway,153,cip-playground/cip-llm-gateway,cip-playground/cip-llm-gateway,,,,,duplicate-candidate,high,review-before-merge
-cip playground cip llm gateway,366,cip-playground/cip-llm-gateway,cip-playground/cip-llm-gateway,,,,,duplicate-candidate,high,review-before-merge
-cip playground cip llm gateway,579,cip-playground/cip-llm-gateway,cip-playground/cip-llm-gateway,,,,,duplicate-candidate,high,review-before-merge
-jave ai explainer,154,jave/ai-explainer,jave/ai-explainer,,,,,duplicate-candidate,high,review-before-merge
-jave ai explainer,367,jave/ai-explainer,jave/ai-explainer,,,,,duplicate-candidate,high,review-before-merge
-jave ai explainer,580,jave/ai-explainer,jave/ai-explainer,,,,,duplicate-candidate,high,review-before-merge
-hermit bot hermit,155,hermit-bot/hermit,hermit-bot/hermit,,,,,duplicate-candidate,high,review-before-merge
-hermit bot hermit,368,hermit-bot/hermit,hermit-bot/hermit,,,,,duplicate-candidate,high,review-before-merge
-hermit bot hermit,581,hermit-bot/hermit,hermit-bot/hermit,,,,,duplicate-candidate,high,review-before-merge
-thejollydev bezaforge infrastructure,156,thejollydev/bezaforge-infrastructure,thejollydev/bezaforge-infrastructure,,,,,duplicate-candidate,high,review-before-merge
-thejollydev bezaforge infrastructure,369,thejollydev/bezaforge-infrastructure,thejollydev/bezaforge-infrastructure,,,,,duplicate-candidate,high,review-before-merge
-thejollydev bezaforge infrastructure,582,thejollydev/bezaforge-infrastructure,thejollydev/bezaforge-infrastructure,,,,,duplicate-candidate,high,review-before-merge
-chaowenguo llm,157,chaowenguo/llm,chaowenguo/llm,,,,,duplicate-candidate,high,review-before-merge
-chaowenguo llm,370,chaowenguo/llm,chaowenguo/llm,,,,,duplicate-candidate,high,review-before-merge
-chaowenguo llm,583,chaowenguo/llm,chaowenguo/llm,,,,,duplicate-candidate,high,review-before-merge
-dapa oc mlops projet 3 docker,158,dapa/oc-mlops-projet-3-docker,dapa/oc-mlops-projet-3-docker,,,,,duplicate-candidate,high,review-before-merge
-dapa oc mlops projet 3 docker,371,dapa/oc-mlops-projet-3-docker,dapa/oc-mlops-projet-3-docker,,,,,duplicate-candidate,high,review-before-merge
-dapa oc mlops projet 3 docker,584,dapa/oc-mlops-projet-3-docker,dapa/oc-mlops-projet-3-docker,,,,,duplicate-candidate,high,review-before-merge
-dapa oc mlops projet 3,159,dapa/oc_mlops_projet_3,dapa/oc_mlops_projet_3,,,,,duplicate-candidate,high,review-before-merge
-dapa oc mlops projet 3,372,dapa/oc_mlops_projet_3,dapa/oc_mlops_projet_3,,,,,duplicate-candidate,high,review-before-merge
-dapa oc mlops projet 3,585,dapa/oc_mlops_projet_3,dapa/oc_mlops_projet_3,,,,,duplicate-candidate,high,review-before-merge
-thomas jardinet lightweight llm stack,160,thomas.jardinet/lightweight-llm-stack,thomas.jardinet/lightweight-llm-stack,,,,,duplicate-candidate,high,review-before-merge
-thomas jardinet lightweight llm stack,373,thomas.jardinet/lightweight-llm-stack,thomas.jardinet/lightweight-llm-stack,,,,,duplicate-candidate,high,review-before-merge
-thomas jardinet lightweight llm stack,586,thomas.jardinet/lightweight-llm-stack,thomas.jardinet/lightweight-llm-stack,,,,,duplicate-candidate,high,review-before-merge
-nils reinstallme,161,nils/reinstallme,nils/reinstallme,,,,,duplicate-candidate,high,review-before-merge
-nils reinstallme,374,nils/reinstallme,nils/reinstallme,,,,,duplicate-candidate,high,review-before-merge
-nils reinstallme,587,nils/reinstallme,nils/reinstallme,,,,,duplicate-candidate,high,review-before-merge
-dajbelshaw plex playlist,162,dajbelshaw/plex-playlist,dajbelshaw/plex-playlist,,,,,duplicate-candidate,high,review-before-merge
-dajbelshaw plex playlist,375,dajbelshaw/plex-playlist,dajbelshaw/plex-playlist,,,,,duplicate-candidate,high,review-before-merge
-dajbelshaw plex playlist,588,dajbelshaw/plex-playlist,dajbelshaw/plex-playlist,,,,,duplicate-candidate,high,review-before-merge
-gdevops ia llms,163,gdevops/ia/llms,gdevops/ia/llms,,,,,duplicate-candidate,high,review-before-merge
-gdevops ia llms,376,gdevops/ia/llms,gdevops/ia/llms,,,,,duplicate-candidate,high,review-before-merge
-gdevops ia llms,589,gdevops/ia/llms,gdevops/ia/llms,,,,,duplicate-candidate,high,review-before-merge
-gdevops ia openllm france,164,gdevops/ia/openllm-france,gdevops/ia/openllm-france,,,,,duplicate-candidate,high,review-before-merge
-gdevops ia openllm france,377,gdevops/ia/openllm-france,gdevops/ia/openllm-france,,,,,duplicate-candidate,high,review-before-merge
-gdevops ia openllm france,590,gdevops/ia/openllm-france,gdevops/ia/openllm-france,,,,,duplicate-candidate,high,review-before-merge
-isilin lm webui,165,Isilin/lm-webui,Isilin/lm-webui,,,,,duplicate-candidate,high,review-before-merge
-isilin lm webui,378,Isilin/lm-webui,Isilin/lm-webui,,,,,duplicate-candidate,high,review-before-merge
-isilin lm webui,591,Isilin/lm-webui,Isilin/lm-webui,,,,,duplicate-candidate,high,review-before-merge
-happypony llm experiences blog,166,HappyPony/llm-experiences-blog,HappyPony/llm-experiences-blog,,,,,duplicate-candidate,high,review-before-merge
-happypony llm experiences blog,379,HappyPony/llm-experiences-blog,HappyPony/llm-experiences-blog,,,,,duplicate-candidate,high,review-before-merge
-happypony llm experiences blog,592,HappyPony/llm-experiences-blog,HappyPony/llm-experiences-blog,,,,,duplicate-candidate,high,review-before-merge
-almereyda ep allmende,167,almereyda/ep_allmende,almereyda/ep_allmende,,,,,duplicate-candidate,high,review-before-merge
-almereyda ep allmende,380,almereyda/ep_allmende,almereyda/ep_allmende,,,,,duplicate-candidate,high,review-before-merge
-almereyda ep allmende,593,almereyda/ep_allmende,almereyda/ep_allmende,,,,,duplicate-candidate,high,review-before-merge
-kellmins kellminsreview,168,kellmins/kellminsreview,kellmins/kellminsreview,,,,,duplicate-candidate,high,review-before-merge
-kellmins kellminsreview,381,kellmins/kellminsreview,kellmins/kellminsreview,,,,,duplicate-candidate,high,review-before-merge
-kellmins kellminsreview,594,kellmins/kellminsreview,kellmins/kellminsreview,,,,,duplicate-candidate,high,review-before-merge
-sondagepro limesurvey plugin logallmail,169,SondagePro-LimeSurvey-plugin/logAllMail,SondagePro-LimeSurvey-plugin/logAllMail,,,,,duplicate-candidate,high,review-before-merge
-sondagepro limesurvey plugin logallmail,382,SondagePro-LimeSurvey-plugin/logAllMail,SondagePro-LimeSurvey-plugin/logAllMail,,,,,duplicate-candidate,high,review-before-merge
-sondagepro limesurvey plugin logallmail,595,SondagePro-LimeSurvey-plugin/logAllMail,SondagePro-LimeSurvey-plugin/logAllMail,,,,,duplicate-candidate,high,review-before-merge
-alexandcote logallmail,170,alexandcote/logAllMail,alexandcote/logAllMail,,,,,duplicate-candidate,high,review-before-merge
-alexandcote logallmail,383,alexandcote/logAllMail,alexandcote/logAllMail,,,,,duplicate-candidate,high,review-before-merge
-alexandcote logallmail,596,alexandcote/logAllMail,alexandcote/logAllMail,,,,,duplicate-candidate,high,review-before-merge
-sxncr0or tellme,171,SxncR0OR/tellme,SxncR0OR/tellme,,,,,duplicate-candidate,high,review-before-merge
-sxncr0or tellme,384,SxncR0OR/tellme,SxncR0OR/tellme,,,,,duplicate-candidate,high,review-before-merge
-sxncr0or tellme,597,SxncR0OR/tellme,SxncR0OR/tellme,,,,,duplicate-candidate,high,review-before-merge
-klafyvel smallmusicplayer,172,klafyvel/SmallMusicPlayer,klafyvel/SmallMusicPlayer,,,,,duplicate-candidate,high,review-before-merge
-klafyvel smallmusicplayer,385,klafyvel/SmallMusicPlayer,klafyvel/SmallMusicPlayer,,,,,duplicate-candidate,high,review-before-merge
-klafyvel smallmusicplayer,598,klafyvel/SmallMusicPlayer,klafyvel/SmallMusicPlayer,,,,,duplicate-candidate,high,review-before-merge
-aelian ai brain,173,Aelian/AI-Brain,Aelian/AI-Brain,,,,,duplicate-candidate,high,review-before-merge
-aelian ai brain,386,Aelian/AI-Brain,Aelian/AI-Brain,,,,,duplicate-candidate,high,review-before-merge
-aelian ai brain,599,Aelian/AI-Brain,Aelian/AI-Brain,,,,,duplicate-candidate,high,review-before-merge
-elvizakos assistant el,174,elvizakos/assistant.el,elvizakos/assistant.el,,,,,duplicate-candidate,high,review-before-merge
-elvizakos assistant el,387,elvizakos/assistant.el,elvizakos/assistant.el,,,,,duplicate-candidate,high,review-before-merge
-elvizakos assistant el,600,elvizakos/assistant.el,elvizakos/assistant.el,,,,,duplicate-candidate,high,review-before-merge
-eldesan azerothcore llm nvidia amd linux universal,175,Eldesan/Azerothcore-llm-nvidia-amd-linux-Universal,Eldesan/Azerothcore-llm-nvidia-amd-linux-Universal,,,,,duplicate-candidate,high,review-before-merge
-eldesan azerothcore llm nvidia amd linux universal,388,Eldesan/Azerothcore-llm-nvidia-amd-linux-Universal,Eldesan/Azerothcore-llm-nvidia-amd-linux-Universal,,,,,duplicate-candidate,high,review-before-merge
-eldesan azerothcore llm nvidia amd linux universal,601,Eldesan/Azerothcore-llm-nvidia-amd-linux-Universal,Eldesan/Azerothcore-llm-nvidia-amd-linux-Universal,,,,,duplicate-candidate,high,review-before-merge
-bctecocomm1 bctecocomm1,176,bctecocomm1/bctecocomm1,bctecocomm1/bctecocomm1,,,,,duplicate-candidate,high,review-before-merge
-bctecocomm1 bctecocomm1,389,bctecocomm1/bctecocomm1,bctecocomm1/bctecocomm1,,,,,duplicate-candidate,high,review-before-merge
-bctecocomm1 bctecocomm1,602,bctecocomm1/bctecocomm1,bctecocomm1/bctecocomm1,,,,,duplicate-candidate,high,review-before-merge
-04071012aa bellman ford,177,04071012Aa/bellman-ford,04071012Aa/bellman-ford,,,,,duplicate-candidate,high,review-before-merge
-04071012aa bellman ford,390,04071012Aa/bellman-ford,04071012Aa/bellman-ford,,,,,duplicate-candidate,high,review-before-merge
-04071012aa bellman ford,603,04071012Aa/bellman-ford,04071012Aa/bellman-ford,,,,,duplicate-candidate,high,review-before-merge
-peptidex canada s trusted source for premium research peptides,178,PeptideX/Canada-s-Trusted-Source-for-Premium-Research-Peptides,PeptideX/Canada-s-Trusted-Source-for-Premium-Research-Peptides,,,,,duplicate-candidate,high,review-before-merge
-peptidex canada s trusted source for premium research peptides,391,PeptideX/Canada-s-Trusted-Source-for-Premium-Research-Peptides,PeptideX/Canada-s-Trusted-Source-for-Premium-Research-Peptides,,,,,duplicate-candidate,high,review-before-merge
-peptidex canada s trusted source for premium research peptides,604,PeptideX/Canada-s-Trusted-Source-for-Premium-Research-Peptides,PeptideX/Canada-s-Trusted-Source-for-Premium-Research-Peptides,,,,,duplicate-candidate,high,review-before-merge
-serpdotai chat llama 8bit lora,179,serpdotai/Chat-LLaMA-8bit-LoRA,serpdotai/Chat-LLaMA-8bit-LoRA,,,,,duplicate-candidate,high,review-before-merge
-serpdotai chat llama 8bit lora,392,serpdotai/Chat-LLaMA-8bit-LoRA,serpdotai/Chat-LLaMA-8bit-LoRA,,,,,duplicate-candidate,high,review-before-merge
-serpdotai chat llama 8bit lora,605,serpdotai/Chat-LLaMA-8bit-LoRA,serpdotai/Chat-LLaMA-8bit-LoRA,,,,,duplicate-candidate,high,review-before-merge
-all kind of stuff chunk bunch,180,all-kind-of-stuff/chunk-bunch,all-kind-of-stuff/chunk-bunch,,,,,duplicate-candidate,high,review-before-merge
-all kind of stuff chunk bunch,393,all-kind-of-stuff/chunk-bunch,all-kind-of-stuff/chunk-bunch,,,,,duplicate-candidate,high,review-before-merge
-all kind of stuff chunk bunch,606,all-kind-of-stuff/chunk-bunch,all-kind-of-stuff/chunk-bunch,,,,,duplicate-candidate,high,review-before-merge
-lakshitsinghbishttm coreai protocol suite,181,LakshitSinghBishtTM/CoreAI-Protocol-Suite,LakshitSinghBishtTM/CoreAI-Protocol-Suite,,,,,duplicate-candidate,high,review-before-merge
-lakshitsinghbishttm coreai protocol suite,394,LakshitSinghBishtTM/CoreAI-Protocol-Suite,LakshitSinghBishtTM/CoreAI-Protocol-Suite,,,,,duplicate-candidate,high,review-before-merge
-lakshitsinghbishttm coreai protocol suite,607,LakshitSinghBishtTM/CoreAI-Protocol-Suite,LakshitSinghBishtTM/CoreAI-Protocol-Suite,,,,,duplicate-candidate,high,review-before-merge
-helloworld1 coze loop,182,helloworld1/coze-loop,helloworld1/coze-loop,,,,,duplicate-candidate,high,review-before-merge
-helloworld1 coze loop,395,helloworld1/coze-loop,helloworld1/coze-loop,,,,,duplicate-candidate,high,review-before-merge
-helloworld1 coze loop,608,helloworld1/coze-loop,helloworld1/coze-loop,,,,,duplicate-candidate,high,review-before-merge
-yno demelt,183,yno/demelt,yno/demelt,,,,,duplicate-candidate,high,review-before-merge
-yno demelt,396,yno/demelt,yno/demelt,,,,,duplicate-candidate,high,review-before-merge
-yno demelt,609,yno/demelt,yno/demelt,,,,,duplicate-candidate,high,review-before-merge
-gcyujujhv fggvujhfllm,184,gcyujujhv/fggvujhfllm,gcyujujhv/fggvujhfllm,,,,,duplicate-candidate,high,review-before-merge
-gcyujujhv fggvujhfllm,397,gcyujujhv/fggvujhfllm,gcyujujhv/fggvujhfllm,,,,,duplicate-candidate,high,review-before-merge
-gcyujujhv fggvujhfllm,610,gcyujujhv/fggvujhfllm,gcyujujhv/fggvujhfllm,,,,,duplicate-candidate,high,review-before-merge
-five88greenn five88greenn,185,five88greenn/five88greenn,five88greenn/five88greenn,,,,,duplicate-candidate,high,review-before-merge
-five88greenn five88greenn,398,five88greenn/five88greenn,five88greenn/five88greenn,,,,,duplicate-candidate,high,review-before-merge
-five88greenn five88greenn,611,five88greenn/five88greenn,five88greenn/five88greenn,,,,,duplicate-candidate,high,review-before-merge
-invu free as in freedom v2 ru,186,Invu/free-as-in-freedom-v2-ru,Invu/free-as-in-freedom-v2-ru,,,,,duplicate-candidate,high,review-before-merge
-invu free as in freedom v2 ru,399,Invu/free-as-in-freedom-v2-ru,Invu/free-as-in-freedom-v2-ru,,,,,duplicate-candidate,high,review-before-merge
-invu free as in freedom v2 ru,612,Invu/free-as-in-freedom-v2-ru,Invu/free-as-in-freedom-v2-ru,,,,,duplicate-candidate,high,review-before-merge
-xzhen hermes agent,187,xzhen/hermes-agent,xzhen/hermes-agent,,,,,duplicate-candidate,high,review-before-merge
-xzhen hermes agent,400,xzhen/hermes-agent,xzhen/hermes-agent,,,,,duplicate-candidate,high,review-before-merge
-xzhen hermes agent,613,xzhen/hermes-agent,xzhen/hermes-agent,,,,,duplicate-candidate,high,review-before-merge
-xzhen hermes web ui,188,xzhen/hermes-web-ui,xzhen/hermes-web-ui,,,,,duplicate-candidate,high,review-before-merge
-xzhen hermes web ui,401,xzhen/hermes-web-ui,xzhen/hermes-web-ui,,,,,duplicate-candidate,high,review-before-merge
-xzhen hermes web ui,614,xzhen/hermes-web-ui,xzhen/hermes-web-ui,,,,,duplicate-candidate,high,review-before-merge
-containerk8s kubesphere,189,containerK8s/kubesphere,containerK8s/kubesphere,,,,,duplicate-candidate,high,review-before-merge
-containerk8s kubesphere,402,containerK8s/kubesphere,containerK8s/kubesphere,,,,,duplicate-candidate,high,review-before-merge
-containerk8s kubesphere,615,containerK8s/kubesphere,containerK8s/kubesphere,,,,,duplicate-candidate,high,review-before-merge
-loongarch kubesphere,190,loongarch/kubesphere,loongarch/kubesphere,,,,,duplicate-candidate,high,review-before-merge
-loongarch kubesphere,403,loongarch/kubesphere,loongarch/kubesphere,,,,,duplicate-candidate,high,review-before-merge
-loongarch kubesphere,616,loongarch/kubesphere,loongarch/kubesphere,,,,,duplicate-candidate,high,review-before-merge
-lehoang langalpha,191,Lehoang/langalpha,Lehoang/langalpha,,,,,duplicate-candidate,high,review-before-merge
-lehoang langalpha,404,Lehoang/langalpha,Lehoang/langalpha,,,,,duplicate-candidate,high,review-before-merge
-lehoang langalpha,617,Lehoang/langalpha,Lehoang/langalpha,,,,,duplicate-candidate,high,review-before-merge
-xzhen llama cpp,192,xzhen/llama.cpp,xzhen/llama.cpp,,,,,duplicate-candidate,high,review-before-merge
-xzhen llama cpp,405,xzhen/llama.cpp,xzhen/llama.cpp,,,,,duplicate-candidate,high,review-before-merge
-xzhen llama cpp,618,xzhen/llama.cpp,xzhen/llama.cpp,,,,,duplicate-candidate,high,review-before-merge
-yaushin808 concrete project,193,Yaushin808/Concrete-Project,Yaushin808/Concrete-Project,,,,,duplicate-candidate,high,review-before-merge
-yaushin808 concrete project,406,Yaushin808/Concrete-Project,Yaushin808/Concrete-Project,,,,,duplicate-candidate,high,review-before-merge
-yaushin808 concrete project,619,Yaushin808/Concrete-Project,Yaushin808/Concrete-Project,,,,,duplicate-candidate,high,review-before-merge
-fireside25 a brep deterministic lead processor,194,fireside25-a-brep/-deterministic-lead-processor,fireside25-a-brep/-deterministic-lead-processor,,,,,duplicate-candidate,high,review-before-merge
-fireside25 a brep deterministic lead processor,407,fireside25-a-brep/-deterministic-lead-processor,fireside25-a-brep/-deterministic-lead-processor,,,,,duplicate-candidate,high,review-before-merge
-fireside25 a brep deterministic lead processor,620,fireside25-a-brep/-deterministic-lead-processor,fireside25-a-brep/-deterministic-lead-processor,,,,,duplicate-candidate,high,review-before-merge
-aarghrai 1 58bitllm,195,aarghrai/1.58bitLLM,aarghrai/1.58bitLLM,,,,,duplicate-candidate,high,review-before-merge
-aarghrai 1 58bitllm,408,aarghrai/1.58bitLLM,aarghrai/1.58bitLLM,,,,,duplicate-candidate,high,review-before-merge
-aarghrai 1 58bitllm,621,aarghrai/1.58bitLLM,aarghrai/1.58bitLLM,,,,,duplicate-candidate,high,review-before-merge
-carbonc 156 revolutions,196,CarbonC/156-revolutions,CarbonC/156-revolutions,,,,,duplicate-candidate,high,review-before-merge
-carbonc 156 revolutions,409,CarbonC/156-revolutions,CarbonC/156-revolutions,,,,,duplicate-candidate,high,review-before-merge
-carbonc 156 revolutions,622,CarbonC/156-revolutions,CarbonC/156-revolutions,,,,,duplicate-candidate,high,review-before-merge
-somobu demos 2025 03 smallmc,197,somobu_demos/2025_03_smallmc,somobu_demos/2025_03_smallmc,,,,,duplicate-candidate,high,review-before-merge
-somobu demos 2025 03 smallmc,410,somobu_demos/2025_03_smallmc,somobu_demos/2025_03_smallmc,,,,,duplicate-candidate,high,review-before-merge
-somobu demos 2025 03 smallmc,623,somobu_demos/2025_03_smallmc,somobu_demos/2025_03_smallmc,,,,,duplicate-candidate,high,review-before-merge
-rockwell l 221,198,Rockwell_L/221,Rockwell_L/221,,,,,duplicate-candidate,high,review-before-merge
-rockwell l 221,411,Rockwell_L/221,Rockwell_L/221,,,,,duplicate-candidate,high,review-before-merge
-rockwell l 221,624,Rockwell_L/221,Rockwell_L/221,,,,,duplicate-candidate,high,review-before-merge
-psyb0t 2xbrainz,199,psyb0t/2xbrainz,psyb0t/2xbrainz,,,,,duplicate-candidate,high,review-before-merge
-psyb0t 2xbrainz,412,psyb0t/2xbrainz,psyb0t/2xbrainz,,,,,duplicate-candidate,high,review-before-merge
-psyb0t 2xbrainz,625,psyb0t/2xbrainz,psyb0t/2xbrainz,,,,,duplicate-candidate,high,review-before-merge
-davecb 87 days,200,davecb/87_Days,davecb/87_Days,,,,,duplicate-candidate,high,review-before-merge
-davecb 87 days,413,davecb/87_Days,davecb/87_Days,,,,,duplicate-candidate,high,review-before-merge
-davecb 87 days,626,davecb/87_Days,davecb/87_Days,,,,,duplicate-candidate,high,review-before-merge
-noname1625347 a decontextualized llm based safeguard technique for automated jailbreak mitigation,201,noname1625347/A-Decontextualized-LLM-based-Safeguard-Technique-for-Automated-Jailbreak-Mitigation,noname1625347/A-Decontextualized-LLM-based-Safeguard-Technique-for-Automated-Jailbreak-Mitigation,,,,,duplicate-candidate,high,review-before-merge
-noname1625347 a decontextualized llm based safeguard technique for automated jailbreak mitigation,414,noname1625347/A-Decontextualized-LLM-based-Safeguard-Technique-for-Automated-Jailbreak-Mitigation,noname1625347/A-Decontextualized-LLM-based-Safeguard-Technique-for-Automated-Jailbreak-Mitigation,,,,,duplicate-candidate,high,review-before-merge
-noname1625347 a decontextualized llm based safeguard technique for automated jailbreak mitigation,627,noname1625347/A-Decontextualized-LLM-based-Safeguard-Technique-for-Automated-Jailbreak-Mitigation,noname1625347/A-Decontextualized-LLM-based-Safeguard-Technique-for-Automated-Jailbreak-Mitigation,,,,,duplicate-candidate,high,review-before-merge
-thomasjuri a01 quranic citation transformer,202,ThomasJuri/a01-quranic-citation-transformer,ThomasJuri/a01-quranic-citation-transformer,,,,,duplicate-candidate,high,review-before-merge
-thomasjuri a01 quranic citation transformer,415,ThomasJuri/a01-quranic-citation-transformer,ThomasJuri/a01-quranic-citation-transformer,,,,,duplicate-candidate,high,review-before-merge
-thomasjuri a01 quranic citation transformer,628,ThomasJuri/a01-quranic-citation-transformer,ThomasJuri/a01-quranic-citation-transformer,,,,,duplicate-candidate,high,review-before-merge
-awful systems aaa no slop md,203,awful-systems/AAA-NO-SLOP.md,awful-systems/AAA-NO-SLOP.md,,,,,duplicate-candidate,high,review-before-merge
-awful systems aaa no slop md,416,awful-systems/AAA-NO-SLOP.md,awful-systems/AAA-NO-SLOP.md,,,,,duplicate-candidate,high,review-before-merge
-awful systems aaa no slop md,629,awful-systems/AAA-NO-SLOP.md,awful-systems/AAA-NO-SLOP.md,,,,,duplicate-candidate,high,review-before-merge
-tyzbit acars processor,204,tyzbit/acars-processor,tyzbit/acars-processor,,,,,duplicate-candidate,high,review-before-merge
-tyzbit acars processor,417,tyzbit/acars-processor,tyzbit/acars-processor,,,,,duplicate-candidate,high,review-before-merge
-tyzbit acars processor,630,tyzbit/acars-processor,tyzbit/acars-processor,,,,,duplicate-candidate,high,review-before-merge
-plaintextaccounting acceptarium,205,plaintextaccounting/acceptarium,plaintextaccounting/acceptarium,,,,,duplicate-candidate,high,review-before-merge
-plaintextaccounting acceptarium,418,plaintextaccounting/acceptarium,plaintextaccounting/acceptarium,,,,,duplicate-candidate,high,review-before-merge
-plaintextaccounting acceptarium,631,plaintextaccounting/acceptarium,plaintextaccounting/acceptarium,,,,,duplicate-candidate,high,review-before-merge
-tuxracer activity pub llm agent,206,tuxracer/activity-pub-llm-agent,tuxracer/activity-pub-llm-agent,,,,,duplicate-candidate,high,review-before-merge
-tuxracer activity pub llm agent,419,tuxracer/activity-pub-llm-agent,tuxracer/activity-pub-llm-agent,,,,,duplicate-candidate,high,review-before-merge
-tuxracer activity pub llm agent,632,tuxracer/activity-pub-llm-agent,tuxracer/activity-pub-llm-agent,,,,,duplicate-candidate,high,review-before-merge
-jenr8ed code activitypubextension4agenticdelegation and hitl verification,207,jenr8ed_code/ActivityPubExtension4AgenticDelegation.and.HITL.Verification,jenr8ed_code/ActivityPubExtension4AgenticDelegation.and.HITL.Verification,,,,,duplicate-candidate,high,review-before-merge
-jenr8ed code activitypubextension4agenticdelegation and hitl verification,420,jenr8ed_code/ActivityPubExtension4AgenticDelegation.and.HITL.Verification,jenr8ed_code/ActivityPubExtension4AgenticDelegation.and.HITL.Verification,,,,,duplicate-candidate,high,review-before-merge
-jenr8ed code activitypubextension4agenticdelegation and hitl verification,633,jenr8ed_code/ActivityPubExtension4AgenticDelegation.and.HITL.Verification,jenr8ed_code/ActivityPubExtension4AgenticDelegation.and.HITL.Verification,,,,,duplicate-candidate,high,review-before-merge
-bossm0n5t3r acw,208,bossm0n5t3r/acw,bossm0n5t3r/acw,,,,,duplicate-candidate,high,review-before-merge
-bossm0n5t3r acw,421,bossm0n5t3r/acw,bossm0n5t3r/acw,,,,,duplicate-candidate,high,review-before-merge
-bossm0n5t3r acw,634,bossm0n5t3r/acw,bossm0n5t3r/acw,,,,,duplicate-candidate,high,review-before-merge
-2na3k aeri chan,209,2na3k/aeri-chan,2na3k/aeri-chan,,,,,duplicate-candidate,high,review-before-merge
-2na3k aeri chan,422,2na3k/aeri-chan,2na3k/aeri-chan,,,,,duplicate-candidate,high,review-before-merge
-2na3k aeri chan,635,2na3k/aeri-chan,2na3k/aeri-chan,,,,,duplicate-candidate,high,review-before-merge
-digital codes agent,210,digital-codes/agent,digital-codes/agent,,,,,duplicate-candidate,high,review-before-merge
-digital codes agent,423,digital-codes/agent,digital-codes/agent,,,,,duplicate-candidate,high,review-before-merge
-digital codes agent,636,digital-codes/agent,digital-codes/agent,,,,,duplicate-candidate,high,review-before-merge
-graemeconradie agent lightning,211,graemeconradie/agent-lightning,graemeconradie/agent-lightning,,,,,duplicate-candidate,high,review-before-merge
-graemeconradie agent lightning,424,graemeconradie/agent-lightning,graemeconradie/agent-lightning,,,,,duplicate-candidate,high,review-before-merge
-graemeconradie agent lightning,637,graemeconradie/agent-lightning,graemeconradie/agent-lightning,,,,,duplicate-candidate,high,review-before-merge
-ctietze agent mail,212,ctietze/agent-mail,ctietze/agent-mail,,,,,duplicate-candidate,high,review-before-merge
-ctietze agent mail,425,ctietze/agent-mail,ctietze/agent-mail,,,,,duplicate-candidate,high,review-before-merge
-ctietze agent mail,638,ctietze/agent-mail,ctietze/agent-mail,,,,,duplicate-candidate,high,review-before-merge
-ngphloc ava,213,ngphloc/ava,ngphloc/ava,,,,,duplicate-candidate,high,review-before-merge
-ngphloc ava,426,ngphloc/ava,ngphloc/ava,,,,,duplicate-candidate,high,review-before-merge
-ngphloc ava,639,ngphloc/ava,ngphloc/ava,,,,,duplicate-candidate,high,review-before-merge
+sharksurfauto byte ares v2,1,sharksurfauto-byte/ARES-v2,sharksurfauto-byte/ARES-v2,,https://github.com/sharksurfauto-byte/ARES-v2,,,unique,low,retain
+jeremymaille rag aero,2,JeremyMaille/rag-aero,JeremyMaille/rag-aero,,https://github.com/JeremyMaille/rag-aero,,,unique,low,retain
+francis1998 nexus llm router,3,Francis1998/nexus-llm-router,Francis1998/nexus-llm-router,,https://github.com/Francis1998/nexus-llm-router,,,unique,low,retain
+yogendrachukka01 adaptiveagent,4,YogendraChukka01/AdaptiveAgent,YogendraChukka01/AdaptiveAgent,,https://github.com/YogendraChukka01/AdaptiveAgent,,,unique,low,retain
+fb208 openbidkit yibiao,5,FB208/OpenBidKit_Yibiao,FB208/OpenBidKit_Yibiao,,https://github.com/FB208/OpenBidKit_Yibiao,,,unique,low,retain
+gabrielcpp stablemate,6,GabrielCpp/stablemate,GabrielCpp/stablemate,,https://github.com/GabrielCpp/stablemate,,,unique,low,retain
+intellicoder ai multi agent travel planner using langraph,7,IntelliCoder-AI/multi-agent-travel-planner-using-langraph,IntelliCoder-AI/multi-agent-travel-planner-using-langraph,,https://github.com/IntelliCoder-AI/multi-agent-travel-planner-using-langraph,,,unique,low,retain
+fufellen llm skills,8,fufellen/LLM-skills,fufellen/LLM-skills,,https://github.com/fufellen/LLM-skills,,,unique,low,retain
+nonnoob claude briefings,9,nonnoob/claude-briefings,nonnoob/claude-briefings,,https://github.com/nonnoob/claude-briefings,,,unique,low,retain
+official eswaran datawhisper,10,official-eswaran/DataWhisper,official-eswaran/DataWhisper,,https://github.com/official-eswaran/DataWhisper,,,unique,low,retain
+gemisis leviath,11,GEMISIS/leviath,GEMISIS/leviath,,https://github.com/GEMISIS/leviath,,,unique,low,retain
+android poweruser screenoperator,12,Android-PowerUser/ScreenOperator,Android-PowerUser/ScreenOperator,,https://github.com/Android-PowerUser/ScreenOperator,,,unique,low,retain
+xiaoze hub stock intelligent data analytics,13,xiaoze-hub/Stock-Intelligent-Data-Analytics,xiaoze-hub/Stock-Intelligent-Data-Analytics,,https://github.com/xiaoze-hub/Stock-Intelligent-Data-Analytics,,,unique,low,retain
+elaina real dsh tiered approval,14,Elaina-real/dsh-tiered-approval,Elaina-real/dsh-tiered-approval,,https://github.com/Elaina-real/dsh-tiered-approval,,,unique,low,retain
+cool japan kizzasi,15,cool-japan/kizzasi,cool-japan/kizzasi,,https://github.com/cool-japan/kizzasi,,,unique,low,retain
+guruprasath annadurai whitepact,16,Guruprasath-Annadurai/Whitepact,Guruprasath-Annadurai/Whitepact,,https://github.com/Guruprasath-Annadurai/Whitepact,,,unique,low,retain
+linny006 llmops radar,17,linny006/llmops-radar,linny006/llmops-radar,,https://github.com/linny006/llmops-radar,,,unique,low,retain
+jetbrains junie,18,JetBrains/junie,JetBrains/junie,,https://github.com/JetBrains/junie,,,unique,low,retain
+henry nkomo llm based tutor for grade 12 english comp,19,henry-nkomo/LLM-based-tutor-for-grade-12-English-comp,henry-nkomo/LLM-based-tutor-for-grade-12-English-comp,,https://github.com/henry-nkomo/LLM-based-tutor-for-grade-12-English-comp,,,unique,low,retain
+linny006 llm eval tracker,20,linny006/llm-eval-tracker,linny006/llm-eval-tracker,,https://github.com/linny006/llm-eval-tracker,,,unique,low,retain
+linny006 llm agents radar,21,linny006/llm-agents-radar,linny006/llm-agents-radar,,https://github.com/linny006/llm-agents-radar,,,unique,low,retain
+14all agency shopify llms txt directory,22,14all-agency/shopify-llms-txt-directory,14all-agency/shopify-llms-txt-directory,,https://github.com/14all-agency/shopify-llms-txt-directory,,,unique,low,retain
+cloud itonami cloud itonami isic 8411 electoral,23,cloud-itonami/cloud-itonami-isic-8411-electoral,cloud-itonami/cloud-itonami-isic-8411-electoral,,https://github.com/cloud-itonami/cloud-itonami-isic-8411-electoral,,,unique,low,retain
+keirancpflynn llmnesia site njs,24,KeiranCPFlynn/llmnesia-site-njs,KeiranCPFlynn/llmnesia-site-njs,,https://github.com/KeiranCPFlynn/llmnesia-site-njs,,,unique,low,retain
+zhaixiaowai codingplantimerefresh,25,zhaixiaowai/CodingPlanTimeRefresh,zhaixiaowai/CodingPlanTimeRefresh,,https://github.com/zhaixiaowai/CodingPlanTimeRefresh,,,unique,low,retain
+astrbotdevs astrbot,26,AstrBotDevs/AstrBot,AstrBotDevs/AstrBot,,https://github.com/AstrBotDevs/AstrBot,,,unique,low,retain
+ivcained surp router,27,ivcained/surp-router,ivcained/surp-router,,https://github.com/ivcained/surp-router,,,unique,low,retain
+14h034160212 alphatrader,28,14H034160212/AlphaTrader,14H034160212/AlphaTrader,,https://github.com/14H034160212/AlphaTrader,,,unique,low,retain
+hentrax instaflow,29,Hentrax/instaflow,Hentrax/instaflow,,https://github.com/Hentrax/instaflow,,,unique,low,retain
+btspoony dsh llm fallbacks,30,btspoony/dsh-llm-fallbacks,btspoony/dsh-llm-fallbacks,,https://github.com/btspoony/dsh-llm-fallbacks,,,unique,low,retain
+raullenchai rapid mlx,31,raullenchai/Rapid-MLX,raullenchai/Rapid-MLX,,https://github.com/raullenchai/Rapid-MLX,,,unique,low,retain
+guelfoweb orbit,32,guelfoweb/orbit,guelfoweb/orbit,,https://github.com/guelfoweb/orbit,,,unique,low,retain
+wish maker minder,33,wish-maker/minder,wish-maker/minder,,https://github.com/wish-maker/minder,,,unique,low,retain
+vllm project vllm,34,vllm-project/vllm,vllm-project/vllm,,https://github.com/vllm-project/vllm,,,unique,low,retain
+francium619 llmscope,35,francium619/llmscope,francium619/llmscope,,https://github.com/francium619/llmscope,,,unique,low,retain
+cklxx arle,36,cklxx/arle,cklxx/arle,,https://github.com/cklxx/arle,,,unique,low,retain
+classevelabs rai,37,Classevelabs/rai,Classevelabs/rai,,https://github.com/Classevelabs/rai,,,unique,low,retain
+huggingface transformers,38,huggingface/transformers,huggingface/transformers,,https://github.com/huggingface/transformers,,,unique,low,retain
+ggml org llama cpp,39,ggml-org/llama.cpp,ggml-org/llama.cpp,,https://github.com/ggml-org/llama.cpp,,,unique,low,retain
+rammsguns llm rig,40,rammsguns/llm-rig,rammsguns/llm-rig,,https://github.com/rammsguns/llm-rig,,,unique,low,retain
+townsendmerino goinfer,41,townsendmerino/goinfer,townsendmerino/goinfer,,https://github.com/townsendmerino/goinfer,,,unique,low,retain
+local inference lab blackwell llm docker,42,local-inference-lab/blackwell-llm-docker,local-inference-lab/blackwell-llm-docker,,https://github.com/local-inference-lab/blackwell-llm-docker,,,unique,low,retain
+arshad1416 ha automation pi,43,arshad1416/HA_Automation_Pi,arshad1416/HA_Automation_Pi,,https://github.com/arshad1416/HA_Automation_Pi,,,unique,low,retain
+ishpatel llm bench lab,44,ishpatel/llm-bench-lab,ishpatel/llm-bench-lab,,https://github.com/ishpatel/llm-bench-lab,,,unique,low,retain
+vllm project semantic router,45,vllm-project/semantic-router,vllm-project/semantic-router,,https://github.com/vllm-project/semantic-router,,,unique,low,retain
+lablup mlxcel,46,lablup/mlxcel,lablup/mlxcel,,https://github.com/lablup/mlxcel,,,unique,low,retain
+priceisaacuwjh3036 ai server rust llm api,47,priceisaacuwjh3036/ai-server-rust-llm-api,priceisaacuwjh3036/ai-server-rust-llm-api,,https://github.com/priceisaacuwjh3036/ai-server-rust-llm-api,,,unique,low,retain
+benlmadan9 star eco mesh sdk,48,benlmadan9-star/eco-mesh-sdk,benlmadan9-star/eco-mesh-sdk,,https://github.com/benlmadan9-star/eco-mesh-sdk,,,unique,low,retain
+bahaa labs llama pure compute,49,Bahaa-Labs/Llama_Pure_Compute,Bahaa-Labs/Llama_Pure_Compute,,https://github.com/Bahaa-Labs/Llama_Pure_Compute,,,unique,low,retain
+scottcjn ram coffers,50,Scottcjn/ram-coffers,Scottcjn/ram-coffers,,https://github.com/Scottcjn/ram-coffers,,,unique,low,retain
+daaboulex lmstudio nix,51,Daaboulex/lmstudio-nix,Daaboulex/lmstudio-nix,,https://github.com/Daaboulex/lmstudio-nix,,,unique,low,retain
+prabodh1194 learn inference,52,prabodh1194/learn-inference,prabodh1194/learn-inference,,https://github.com/prabodh1194/learn-inference,,,unique,low,retain
+nvidia tensorrt llm,53,NVIDIA/TensorRT-LLM,NVIDIA/TensorRT-LLM,,https://github.com/NVIDIA/TensorRT-LLM,,,unique,low,retain
+llm d llm d,54,llm-d/llm-d,llm-d/llm-d,,https://github.com/llm-d/llm-d,,,unique,low,retain
+gittensor ai lab sparkinfer,55,gittensor-ai-lab/sparkinfer,gittensor-ai-lab/sparkinfer,,https://github.com/gittensor-ai-lab/sparkinfer,,,unique,low,retain
+tryagi huggingface,56,tryAGI/HuggingFace,tryAGI/HuggingFace,,https://github.com/tryAGI/HuggingFace,,,unique,low,retain
+nvidia model optimizer,57,NVIDIA/Model-Optimizer,NVIDIA/Model-Optimizer,,https://github.com/NVIDIA/Model-Optimizer,,,unique,low,retain
+wisent ai brama,58,wisent-ai/brama,wisent-ai/brama,,https://github.com/wisent-ai/brama,,,unique,low,retain
+okuvshynov llama sandbox,59,okuvshynov/llama-sandbox,okuvshynov/llama-sandbox,,https://github.com/okuvshynov/llama-sandbox,,,unique,low,retain
+rafaeljung71 ash4d local ai agent hub,60,rafaeljung71/ash4d-local-ai-agent-hub,rafaeljung71/ash4d-local-ai-agent-hub,,https://github.com/rafaeljung71/ash4d-local-ai-agent-hub,,,unique,low,retain
+nirholas three ws,61,nirholas/three.ws,nirholas/three.ws,,https://github.com/nirholas/three.ws,,,unique,low,retain
+llmtestsaurav npl mwi with khm tcd cmr eth jor ner pak tur zmb,62,LLMTestSaurav/NPL-MWI-With-KHM-TCD-CMR-ETH-JOR-NER-PAK-TUR-ZMB,LLMTestSaurav/NPL-MWI-With-KHM-TCD-CMR-ETH-JOR-NER-PAK-TUR-ZMB,,https://huggingface.co/LLMTestSaurav/NPL-MWI-With-KHM-TCD-CMR-ETH-JOR-NER-PAK-TUR-ZMB,,,unique,low,retain
+carota233 llm style terrain ablation,63,Carota233/llm-style-terrain-ablation,Carota233/llm-style-terrain-ablation,,https://huggingface.co/Carota233/llm-style-terrain-ablation,,,unique,low,retain
+cisco1963 llmplasticity nl never 8 d0 5 c0 999 r0 25 s42,64,Cisco1963/llmplasticity-nl_never_8-d0.5-c0.999-r0.25-s42,Cisco1963/llmplasticity-nl_never_8-d0.5-c0.999-r0.25-s42,,https://huggingface.co/Cisco1963/llmplasticity-nl_never_8-d0.5-c0.999-r0.25-s42,,,unique,low,retain
+cisco1963 llmplasticity en never 8 d0 5 c0 99 r0 25 s42,65,Cisco1963/llmplasticity-en_never_8-d0.5-c0.99-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.5-c0.99-r0.25-s42,,https://huggingface.co/Cisco1963/llmplasticity-en_never_8-d0.5-c0.99-r0.25-s42,,,unique,low,retain
+llm jp llm jp 4 8b thinking gguf,66,llm-jp/llm-jp-4-8b-thinking-gguf,llm-jp/llm-jp-4-8b-thinking-gguf,,https://huggingface.co/llm-jp/llm-jp-4-8b-thinking-gguf,gguf,,unique,low,retain
+llm jp llm jp 4 32b a3b thinking gguf,67,llm-jp/llm-jp-4-32b-a3b-thinking-gguf,llm-jp/llm-jp-4-32b-a3b-thinking-gguf,,https://huggingface.co/llm-jp/llm-jp-4-32b-a3b-thinking-gguf,gguf,,unique,low,retain
+llm jp llm jp 4 33b thinking gguf,68,llm-jp/llm-jp-4-33b-thinking-gguf,llm-jp/llm-jp-4-33b-thinking-gguf,,https://huggingface.co/llm-jp/llm-jp-4-33b-thinking-gguf,gguf,,unique,low,retain
+xhd521 llmcpner,69,xhd521/LLMCPNER,xhd521/LLMCPNER,,https://huggingface.co/xhd521/LLMCPNER,,,unique,low,retain
+ouzoouz edu mobile llm,70,ouzoouz/edu-mobile-llm,ouzoouz/edu-mobile-llm,,https://huggingface.co/ouzoouz/edu-mobile-llm,,,unique,low,retain
+izlley2 llm0to1 10b step20000 nanotron,71,izlley2/LLM0to1-10b-step20000-nanotron,izlley2/LLM0to1-10b-step20000-nanotron,,https://huggingface.co/izlley2/LLM0to1-10b-step20000-nanotron,,,unique,low,retain
+izlley2 llm0to1 10b step83000,72,izlley2/LLM0to1-10b-step83000,izlley2/LLM0to1-10b-step83000,,https://huggingface.co/izlley2/LLM0to1-10b-step83000,,,unique,low,retain
+izlley2 llm0to1 10b step20000,73,izlley2/LLM0to1-10b-step20000,izlley2/LLM0to1-10b-step20000,,https://huggingface.co/izlley2/LLM0to1-10b-step20000,,,unique,low,retain
+izlley2 llm0to1 10b step83000 nanotron,74,izlley2/LLM0to1-10b-step83000-nanotron,izlley2/LLM0to1-10b-step83000-nanotron,,https://huggingface.co/izlley2/LLM0to1-10b-step83000-nanotron,,,unique,low,retain
+pocharlies gb10 dgx spark llm optimizations,75,pocharlies/gb10-dgx-spark-llm-optimizations,pocharlies/gb10-dgx-spark-llm-optimizations,,https://huggingface.co/pocharlies/gb10-dgx-spark-llm-optimizations,,,unique,low,retain
+mradermacher marco llm ar v3 i1 gguf,76,mradermacher/Marco-LLM-AR-V3-i1-GGUF,mradermacher/Marco-LLM-AR-V3-i1-GGUF,,https://huggingface.co/mradermacher/Marco-LLM-AR-V3-i1-GGUF,gguf,,unique,low,retain
+euclidstellar tinystories 1bit llm,77,euclidstellar/tinystories-1bit-llm,euclidstellar/tinystories-1bit-llm,,https://huggingface.co/euclidstellar/tinystories-1bit-llm,,,unique,low,retain
+llmfan46 ornith 1 0 35b uncensored heretic,78,llmfan46/Ornith-1.0-35B-uncensored-heretic,llmfan46/Ornith-1.0-35B-uncensored-heretic,,https://huggingface.co/llmfan46/Ornith-1.0-35B-uncensored-heretic,,,unique,low,retain
+cisco1963 llmplasticity en never 8 d0 1 c0 9 r0 25 s42,79,Cisco1963/llmplasticity-en_never_8-d0.1-c0.9-r0.25-s42,Cisco1963/llmplasticity-en_never_8-d0.1-c0.9-r0.25-s42,,https://huggingface.co/Cisco1963/llmplasticity-en_never_8-d0.1-c0.9-r0.25-s42,,,unique,low,retain
+dariusthegeek waxal sna omniasr llm 3b,80,DariusTheGeek/waxal-sna-omniasr-llm-3b,DariusTheGeek/waxal-sna-omniasr-llm-3b,,https://huggingface.co/DariusTheGeek/waxal-sna-omniasr-llm-3b,,,unique,low,retain
+dariusthegeek waxal lin omniasr llm 3b,81,DariusTheGeek/waxal-lin-omniasr-llm-3b,DariusTheGeek/waxal-lin-omniasr-llm-3b,,https://huggingface.co/DariusTheGeek/waxal-lin-omniasr-llm-3b,,,unique,low,retain
+inferencerlabs ornith 1 5 397b mlx q9,82,inferencerlabs/Ornith-1.5-397B-MLX-Q9,inferencerlabs/Ornith-1.5-397B-MLX-Q9,,https://huggingface.co/inferencerlabs/Ornith-1.5-397B-MLX-Q9,,,unique,low,retain
+inferencerlabs ornith 1 0 397b mlx q9,83,inferencerlabs/Ornith-1.0-397B-MLX-Q9,inferencerlabs/Ornith-1.0-397B-MLX-Q9,,https://huggingface.co/inferencerlabs/Ornith-1.0-397B-MLX-Q9,,,unique,low,retain
+inference snaps qwen3 5 35b a3b q4 k m 5gb,84,inference-snaps/Qwen3.5-35B-A3B-Q4_K_M-5GB,inference-snaps/Qwen3.5-35B-A3B-Q4_K_M-5GB,,https://huggingface.co/inference-snaps/Qwen3.5-35B-A3B-Q4_K_M-5GB,,,unique,low,retain
+inference optimization qwen3 8b speculator dspark swa gammatv 2048anc muon combdatav4 q235b instr v2 ckpt0,85,inference-optimization/Qwen3-8B-speculator.dspark.swa.gammatv.2048anc.muon.combdatav4-q235b-instr-v2-ckpt0,inference-optimization/Qwen3-8B-speculator.dspark.swa.gammatv.2048anc.muon.combdatav4-q235b-instr-v2-ckpt0,,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dspark.swa.gammatv.2048anc.muon.combdatav4-q235b-instr-v2-ckpt0,,,unique,low,retain
+inference optimization qwen3 8b speculator dspark swa dpace fullvocab muon 2048anc combdatav4 q235b instr v1 ckpt2,86,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt2,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt2,,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt2,,,unique,low,retain
+inference optimization qwen3 8b speculator dspark swa 2048anc muon combdatav4 qwen235b instr v1 ckpt1,87,inference-optimization/Qwen3-8B-speculator.dspark.swa.2048anc.muon.combdatav4-qwen235b-instr-v1-ckpt1,inference-optimization/Qwen3-8B-speculator.dspark.swa.2048anc.muon.combdatav4-qwen235b-instr-v1-ckpt1,,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dspark.swa.2048anc.muon.combdatav4-qwen235b-instr-v1-ckpt1,,,unique,low,retain
+inference optimization qwen3 8b speculator dspark swa 2048anc muon combdatav4 qwen235b instr v1 ckpt2,88,inference-optimization/Qwen3-8B-speculator.dspark.swa.2048anc.muon.combdatav4-qwen235b-instr-v1-ckpt2,inference-optimization/Qwen3-8B-speculator.dspark.swa.2048anc.muon.combdatav4-qwen235b-instr-v1-ckpt2,,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dspark.swa.2048anc.muon.combdatav4-qwen235b-instr-v1-ckpt2,,,unique,low,retain
+inference snaps qwen3 5 27b q4 k m 5gb,89,inference-snaps/Qwen3.5-27B-Q4_K_M-5GB,inference-snaps/Qwen3.5-27B-Q4_K_M-5GB,,https://huggingface.co/inference-snaps/Qwen3.5-27B-Q4_K_M-5GB,,,unique,low,retain
+inference optimization qwen3 8b speculator dspark swa dpace fullvocab muon 2048anc combdatav4 q235b instr v1 ckpt1,90,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt1,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt1,,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt1,,,unique,low,retain
+inference optimization qwen3 8 1 0b a0 6b nvfp4 fp8 reap 25,91,inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8-REAP-25,inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8-REAP-25,,https://huggingface.co/inference-optimization/Qwen3.8-1.0B-A0.6B-NVFP4-FP8-REAP-25,fp8,,unique,low,retain
+inference optimization glm 5 2 0 8b a0 8b mxfp4xfp8 block,92,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xFP8_BLOCK,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xFP8_BLOCK,,https://huggingface.co/inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xFP8_BLOCK,fp8,,unique,low,retain
+inference optimization qwen3 8b speculator dspark swa dpace fullvocab muon 2048anc combdatav4 q235b instr v1 ckpt0,93,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt0,inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt0,,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dspark.swa.dpace.fullvocab.muon.2048anc.combdatav4-q235b-instr-v1-ckpt0,,,unique,low,retain
+inference optimization glm 5 2 0 8b a0 8b mxfp4xmxfp8,94,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xMXFP8,inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xMXFP8,,https://huggingface.co/inference-optimization/GLM-5.2-0.8B-A0.8B-MXFP4xMXFP8,fp8,,unique,low,retain
+inference optimization qwen3 8 1 0b a0 6b reap 25,95,inference-optimization/Qwen3.8-1.0B-A0.6B-REAP-25,inference-optimization/Qwen3.8-1.0B-A0.6B-REAP-25,,https://huggingface.co/inference-optimization/Qwen3.8-1.0B-A0.6B-REAP-25,,,unique,low,retain
+projectlean semantic inference accelerator,96,ProjectLEAN/semantic-inference-accelerator,ProjectLEAN/semantic-inference-accelerator,,https://huggingface.co/ProjectLEAN/semantic-inference-accelerator,,,unique,low,retain
+inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt0,97,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt0,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt0,,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt0,,,unique,low,retain
+inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt1,98,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt1,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt1,,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt1,,,unique,low,retain
+inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt2,99,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt2,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt2,,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt2,,,unique,low,retain
+inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt3,100,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt3,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt3,,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt3,,,unique,low,retain
+inference optimization qwen3 8b speculator dflash swa dpace fullvocab muon 1536anc codemultilang v3 v7 ckpt4,101,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt4,inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt4,,https://huggingface.co/inference-optimization/Qwen3-8B-speculator.dflash.swa.dpace.fullvocab.muon.1536anc.codemultilang.v3-v7-ckpt4,,,unique,low,retain
+co rl unsupervised reasoning emerges from diverse cohort in multi agent rl,102,Co-RL: Unsupervised Reasoning Emerges from Diverse Cohort in Multi-agent RL,Co-RL: Unsupervised Reasoning Emerges from Diverse Cohort in Multi-agent RL,,,,,unique,low,retain
+scaling creative writing beyond story centric data with attribute guided genre expansion,103,Scaling Creative Writing Beyond Story-Centric Data with Attribute-Guided Genre Expansion,Scaling Creative Writing Beyond Story-Centric Data with Attribute-Guided Genre Expansion,,,,,unique,low,retain
+training chemical plausibility aware large language models for single step retrosynthesis,104,Training Chemical Plausibility-Aware Large Language Models for Single-Step Retrosynthesis,Training Chemical Plausibility-Aware Large Language Models for Single-Step Retrosynthesis,,,,,unique,low,retain
+spade self play in adaptive synthetic executable environments,105,SPADE: Self-Play in Adaptive Synthetic Executable Environments,SPADE: Self-Play in Adaptive Synthetic Executable Environments,,,,,unique,low,retain
+fm bench a benchmark for long horizon management with competing agents,106,FM-Bench: A Benchmark for Long-Horizon Management with Competing Agents,FM-Bench: A Benchmark for Long-Horizon Management with Competing Agents,,,,,unique,low,retain
+skillforge self distilling agents for project specific issue resolution,107,SkillForge: Self-Distilling Agents for Project-Specific Issue Resolution,SkillForge: Self-Distilling Agents for Project-Specific Issue Resolution,,,,,unique,low,retain
+lego rl harness native reinforcement learning for coding agents,108,LEGO-RL: Harness-Native Reinforcement Learning for Coding Agents,LEGO-RL: Harness-Native Reinforcement Learning for Coding Agents,,,,,unique,low,retain
+ptxbench benchmark and adapt llms for gpu kernel optimization with architecture specific ptx,109,PTXBench: Benchmark and Adapt LLMs for GPU Kernel Optimization with Architecture-specific PTX,PTXBench: Benchmark and Adapt LLMs for GPU Kernel Optimization with Architecture-specific PTX,,,,,unique,low,retain
+disco defending text to image generation through distribution guided contrastive prompt optimization,110,DiSCO: Defending text-to-image generation through distribution-guided contrastive prompt optimization,DiSCO: Defending text-to-image generation through distribution-guided contrastive prompt optimization,,,,,unique,low,retain
+moe vie mixture of experts vision encoder for efficient image and video understanding,111,MoE-ViE: Mixture of Experts Vision Encoder for Efficient Image and Video Understanding,MoE-ViE: Mixture of Experts Vision Encoder for Efficient Image and Video Understanding,,,,,unique,low,retain
+demystifying agent skills why they work until they don t,112,Demystifying Agent Skills: Why They Work-Until They Don't,Demystifying Agent Skills: Why They Work-Until They Don't,,,,,unique,low,retain
+agent lightning v1 0 towards harnessed agentic rl,113,Agent Lightning v1.0: Towards Harnessed Agentic RL,Agent Lightning v1.0: Towards Harnessed Agentic RL,,,,,unique,low,retain
+harness the memory a holistic evaluation of memory substrates in memory agents,114,Harness the Memory: A Holistic Evaluation of Memory Substrates in Memory Agents,Harness the Memory: A Holistic Evaluation of Memory Substrates in Memory Agents,,,,,unique,low,retain
+security assessment of deepseek harness with a i g evaluating resistance to indirect prompt injection,115,Security Assessment of DeepSeek Harness with A.I.G: Evaluating Resistance to Indirect Prompt Injection,Security Assessment of DeepSeek Harness with A.I.G: Evaluating Resistance to Indirect Prompt Injection,,,,,unique,low,retain
+abra scaling diffusion image training,116,Abra: Scaling Diffusion Image Training,Abra: Scaling Diffusion Image Training,,,,,unique,low,retain
+startupbench benchmarking general purpose agents on market validated end to end workflows,117,StartupBench: Benchmarking General-Purpose Agents on Market-Validated End-to-End Workflows,StartupBench: Benchmarking General-Purpose Agents on Market-Validated End-to-End Workflows,,,,,unique,low,retain
+adsl agentic 3d creation via joint agent program design,118,aDSL: Agentic 3D Creation via Joint Agent-Program Design,aDSL: Agentic 3D Creation via Joint Agent-Program Design,,,,,unique,low,retain
+from sequence to structure relational uncertainty propagation for llm agents,119,From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents,From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents,,,,,unique,low,retain
+agentic esopt fine tuning long horizon llm agents with minimal gpu requirements,120,Agentic ESOpt: Fine-Tuning Long-Horizon LLM Agents with Minimal GPU Requirements,Agentic ESOpt: Fine-Tuning Long-Horizon LLM Agents with Minimal GPU Requirements,,,,,unique,low,retain
+harmprofile characterizing harmful distributions in frontier llms,121,HarmProfile: Characterizing Harmful Distributions in Frontier LLMs,HarmProfile: Characterizing Harmful Distributions in Frontier LLMs,,,,,unique,low,retain
+looped language models improve compositional tool calling,122,Looped Language Models Improve Compositional Tool Calling,Looped Language Models Improve Compositional Tool Calling,,,,,unique,low,retain
+pixrestore unified image restoration via pixel diffusion transformer,123,PixRestore: Unified Image Restoration via Pixel Diffusion Transformer,PixRestore: Unified Image Restoration via Pixel Diffusion Transformer,,,,,unique,low,retain
+cross model memory transfer via target side reader adaptation,124,Cross-Model Memory Transfer via Target-Side Reader Adaptation,Cross-Model Memory Transfer via Target-Side Reader Adaptation,,,,,unique,low,retain
+freetoken efficient edge native moe serving with bandwidth adaptive execution,125,FreeToken: Efficient Edge-Native MoE Serving with Bandwidth-Adaptive Execution,FreeToken: Efficient Edge-Native MoE Serving with Bandwidth-Adaptive Execution,,,,,unique,low,retain
+beyond visual cot internalized visual thinking for proactive video reasoning,126,Beyond Visual CoT: Internalized Visual Thinking for Proactive Video Reasoning,Beyond Visual CoT: Internalized Visual Thinking for Proactive Video Reasoning,,,,,unique,low,retain
+streamopd a post training recipe with spatio temporal cue gating for streaming video understanding,127,StreamOPD: A Post-Training Recipe with Spatio-Temporal Cue Gating for Streaming Video Understanding,StreamOPD: A Post-Training Recipe with Spatio-Temporal Cue Gating for Streaming Video Understanding,,,,,unique,low,retain
+moss vl technical report,128,MOSS-VL Technical Report,MOSS-VL Technical Report,,,,,unique,low,retain
+dumpstercluster from dumpster diving to serving llama 70b on 60 gpus,129,DumpsterCluster: From Dumpster Diving to Serving LLaMA-70B on $60 GPUs,DumpsterCluster: From Dumpster Diving to Serving LLaMA-70B on $60 GPUs,,,,,unique,low,retain
+hifi brep high fidelity latent representation for robust b rep generation,130,HiFi-BRep: High-Fidelity Latent Representation for Robust B-Rep Generation,HiFi-BRep: High-Fidelity Latent Representation for Robust B-Rep Generation,,,,,unique,low,retain
+chaowenguo llm,131,chaowenguo/llm,chaowenguo/llm,,https://framagit.org/chaowenguo/llm,,,unique,low,retain
+dapa oc mlops projet 3 docker,132,dapa/oc-mlops-projet-3-docker,dapa/oc-mlops-projet-3-docker,,https://framagit.org/dapa/oc-mlops-projet-3-docker,,,unique,low,retain
+dapa oc mlops projet 3,133,dapa/oc_mlops_projet_3,dapa/oc_mlops_projet_3,,https://framagit.org/dapa/oc_mlops_projet_3,,,unique,low,retain
+thomas jardinet lightweight llm stack,134,thomas.jardinet/lightweight-llm-stack,thomas.jardinet/lightweight-llm-stack,,https://framagit.org/thomas.jardinet/lightweight-llm-stack,,,unique,low,retain
+nils reinstallme,135,nils/reinstallme,nils/reinstallme,,https://framagit.org/nils/reinstallme,,,unique,low,retain
+dajbelshaw plex playlist,136,dajbelshaw/plex-playlist,dajbelshaw/plex-playlist,,https://framagit.org/dajbelshaw/plex-playlist,,,unique,low,retain
+gdevops ia llms,137,gdevops/ia/llms,gdevops/ia/llms,,,,,unique,low,retain
+gdevops ia openllm france,138,gdevops/ia/openllm-france,gdevops/ia/openllm-france,,,,,unique,low,retain
+isilin lm webui,139,Isilin/lm-webui,Isilin/lm-webui,,https://framagit.org/Isilin/lm-webui,,,unique,low,retain
+happypony llm experiences blog,140,HappyPony/llm-experiences-blog,HappyPony/llm-experiences-blog,,https://framagit.org/HappyPony/llm-experiences-blog,,,unique,low,retain
+almereyda ep allmende,141,almereyda/ep_allmende,almereyda/ep_allmende,,https://framagit.org/almereyda/ep_allmende,,,unique,low,retain
+kellmins kellminsreview,142,kellmins/kellminsreview,kellmins/kellminsreview,,https://framagit.org/kellmins/kellminsreview,,,unique,low,retain
+sondagepro limesurvey plugin logallmail,143,SondagePro-LimeSurvey-plugin/logAllMail,SondagePro-LimeSurvey-plugin/logAllMail,,https://framagit.org/SondagePro-LimeSurvey-plugin/logAllMail,,,unique,low,retain
+alexandcote logallmail,144,alexandcote/logAllMail,alexandcote/logAllMail,,https://framagit.org/alexandcote/logAllMail,,,unique,low,retain
+sxncr0or tellme,145,SxncR0OR/tellme,SxncR0OR/tellme,,https://framagit.org/SxncR0OR/tellme,,,unique,low,retain
+klafyvel smallmusicplayer,146,klafyvel/SmallMusicPlayer,klafyvel/SmallMusicPlayer,,https://framagit.org/klafyvel/SmallMusicPlayer,,,unique,low,retain
+expert5425941 ela system enrollment,147,expert5425941/ela_system_enrollment,expert5425941/ela_system_enrollment,,https://gitlab.com/expert5425941/ela_system_enrollment,,,unique,low,retain
+tagashy mtg compiler,148,Tagashy/mtg-compiler,Tagashy/mtg-compiler,,https://gitlab.com/Tagashy/mtg-compiler,,,unique,low,retain
+hongch6661 mix web demo,149,hongch6661/mix-web-demo,hongch6661/mix-web-demo,,https://gitlab.com/hongch6661/mix-web-demo,,,unique,low,retain
+bucosys dragiter,150,bucosys/dragiter,bucosys/dragiter,,https://gitlab.com/bucosys/dragiter,,,unique,low,retain
+em age emage code cwso,151,em-age/emage.code.cwso,em-age/emage.code.cwso,,https://gitlab.com/em-age/emage.code.cwso,,,unique,low,retain
+doering ai apps model,152,doering-ai/apps/model,doering-ai/apps/model,,,,,unique,low,retain
+ameobius ai captcha hub,153,ameobius-ai/captcha-hub,ameobius-ai/captcha-hub,,https://gitlab.com/ameobius-ai/captcha-hub,,,unique,low,retain
+whitebox aero whitebox llm support,154,whitebox-aero/whitebox-llm-support,whitebox-aero/whitebox-llm-support,,https://gitlab.com/whitebox-aero/whitebox-llm-support,,,unique,low,retain
+wattocyber gradient untangler,155,WattoCyber/gradient-untangler,WattoCyber/gradient-untangler,,https://gitlab.com/WattoCyber/gradient-untangler,,,unique,low,retain
+fabio3rs bibliothecapatristica,156,fabio3rs/bibliothecapatristica,fabio3rs/bibliothecapatristica,,https://gitlab.com/fabio3rs/bibliothecapatristica,,,unique,low,retain
+edgarortegaramirez llm sla monitor,157,EdgarOrtegaRamirez/llm-sla-monitor,EdgarOrtegaRamirez/llm-sla-monitor,,https://gitlab.com/EdgarOrtegaRamirez/llm-sla-monitor,,,unique,low,retain
+edgarortegaramirez agent call cache,158,EdgarOrtegaRamirez/agent-call-cache,EdgarOrtegaRamirez/agent-call-cache,,https://gitlab.com/EdgarOrtegaRamirez/agent-call-cache,,,unique,low,retain
+ai village agents village llm psychoactive prompts,159,ai-village-agents/village/llm-psychoactive-prompts,ai-village-agents/village/llm-psychoactive-prompts,,,,,unique,low,retain
+manisha kaushal llm x ctf,160,Manisha_Kaushal/llm-x-ctf,Manisha_Kaushal/llm-x-ctf,,https://gitlab.com/Manisha_Kaushal/llm-x-ctf,,,unique,low,retain
+edgarortegaramirez agent load balancer,161,EdgarOrtegaRamirez/agent-load-balancer,EdgarOrtegaRamirez/agent-load-balancer,,https://gitlab.com/EdgarOrtegaRamirez/agent-load-balancer,,,unique,low,retain
+edgarortegaramirez agent abtest framework,162,EdgarOrtegaRamirez/agent-abtest-framework,EdgarOrtegaRamirez/agent-abtest-framework,,https://gitlab.com/EdgarOrtegaRamirez/agent-abtest-framework,,,unique,low,retain
+qu13t0ne straylight,163,qu13t0ne/straylight,qu13t0ne/straylight,,https://gitlab.com/qu13t0ne/straylight,,,unique,low,retain
+gitjoethomas llm portfolio,164,gitjoethomas/llm-portfolio,gitjoethomas/llm-portfolio,,https://gitlab.com/gitjoethomas/llm-portfolio,,,unique,low,retain
+gitlab oss package research tools libbehave 3 2 0 pypi ll llama index llms rungpt 164aeef6,165,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/ll/llama-index-llms-rungpt-164aeef6,gitlab-oss-package-research/tools/libbehave/3.2.0/pypi/ll/llama-index-llms-rungpt-164aeef6,,,,,unique,low,retain
+uralstech gitlab uai litertlm,166,uralstech-gitlab/UAI-LiteRTLM,uralstech-gitlab/UAI-LiteRTLM,,https://gitlab.com/uralstech-gitlab/UAI-LiteRTLM,,,unique,low,retain
+gratech1 casper engine,167,gratech1/casper-engine,gratech1/casper-engine,,https://gitlab.com/gratech1/casper-engine,,,unique,low,retain
+adelayoub llama cpp deletion scheduled 84820513,168,adelayoub/llama-cpp-deletion_scheduled-84820513,adelayoub/llama-cpp-deletion_scheduled-84820513,,https://gitlab.com/adelayoub/llama-cpp-deletion_scheduled-84820513,,,unique,low,retain
+cip playground cip llm gateway,169,cip-playground/cip-llm-gateway,cip-playground/cip-llm-gateway,,https://gitlab.com/cip-playground/cip-llm-gateway,,,unique,low,retain
+jave ai explainer,170,jave/ai-explainer,jave/ai-explainer,,https://gitlab.com/jave/ai-explainer,,,unique,low,retain
+hermit bot hermit,171,hermit-bot/hermit,hermit-bot/hermit,,https://gitlab.com/hermit-bot/hermit,,,unique,low,retain
+aelian ai brain,172,Aelian/AI-Brain,Aelian/AI-Brain,,https://gitea.com/Aelian/AI-Brain,,,unique,low,retain
+elvizakos assistant el,173,elvizakos/assistant.el,elvizakos/assistant.el,,https://gitea.com/elvizakos/assistant.el,,,unique,low,retain
+eldesan azerothcore llm nvidia amd linux universal,174,Eldesan/Azerothcore-llm-nvidia-amd-linux-Universal,Eldesan/Azerothcore-llm-nvidia-amd-linux-Universal,,https://gitea.com/Eldesan/Azerothcore-llm-nvidia-amd-linux-Universal,,,unique,low,retain
+bctecocomm1 bctecocomm1,175,bctecocomm1/bctecocomm1,bctecocomm1/bctecocomm1,,https://gitea.com/bctecocomm1/bctecocomm1,,,unique,low,retain
+04071012aa bellman ford,176,04071012Aa/bellman-ford,04071012Aa/bellman-ford,,https://gitea.com/04071012Aa/bellman-ford,,,unique,low,retain
+peptidex canada s trusted source for premium research peptides,177,PeptideX/Canada-s-Trusted-Source-for-Premium-Research-Peptides,PeptideX/Canada-s-Trusted-Source-for-Premium-Research-Peptides,,https://gitea.com/PeptideX/Canada-s-Trusted-Source-for-Premium-Research-Peptides,,,unique,low,retain
+serpdotai chat llama 8bit lora,178,serpdotai/Chat-LLaMA-8bit-LoRA,serpdotai/Chat-LLaMA-8bit-LoRA,,https://gitea.com/serpdotai/Chat-LLaMA-8bit-LoRA,,,unique,low,retain
+all kind of stuff chunk bunch,179,all-kind-of-stuff/chunk-bunch,all-kind-of-stuff/chunk-bunch,,https://gitea.com/all-kind-of-stuff/chunk-bunch,,,unique,low,retain
+lakshitsinghbishttm coreai protocol suite,180,LakshitSinghBishtTM/CoreAI-Protocol-Suite,LakshitSinghBishtTM/CoreAI-Protocol-Suite,,https://gitea.com/LakshitSinghBishtTM/CoreAI-Protocol-Suite,,,unique,low,retain
+helloworld1 coze loop,181,helloworld1/coze-loop,helloworld1/coze-loop,,https://gitea.com/helloworld1/coze-loop,,,unique,low,retain
+yno demelt,182,yno/demelt,yno/demelt,,https://gitea.com/yno/demelt,,,unique,low,retain
+gcyujujhv fggvujhfllm,183,gcyujujhv/fggvujhfllm,gcyujujhv/fggvujhfllm,,https://gitea.com/gcyujujhv/fggvujhfllm,,,unique,low,retain
+five88greenn five88greenn,184,five88greenn/five88greenn,five88greenn/five88greenn,,https://gitea.com/five88greenn/five88greenn,,,unique,low,retain
+invu free as in freedom v2 ru,185,Invu/free-as-in-freedom-v2-ru,Invu/free-as-in-freedom-v2-ru,,https://gitea.com/Invu/free-as-in-freedom-v2-ru,,,unique,low,retain
+xzhen hermes agent,186,xzhen/hermes-agent,xzhen/hermes-agent,,https://gitea.com/xzhen/hermes-agent,,,unique,low,retain
+xzhen hermes web ui,187,xzhen/hermes-web-ui,xzhen/hermes-web-ui,,https://gitea.com/xzhen/hermes-web-ui,,,unique,low,retain
+containerk8s kubesphere,188,containerK8s/kubesphere,containerK8s/kubesphere,,https://gitea.com/containerK8s/kubesphere,,,unique,low,retain
+loongarch kubesphere,189,loongarch/kubesphere,loongarch/kubesphere,,https://gitea.com/loongarch/kubesphere,,,unique,low,retain
+lehoang langalpha,190,Lehoang/langalpha,Lehoang/langalpha,,https://gitea.com/Lehoang/langalpha,,,unique,low,retain
+xzhen llama cpp,191,xzhen/llama.cpp,xzhen/llama.cpp,,https://gitea.com/xzhen/llama.cpp,,,unique,low,retain
+yaushin808 concrete project,192,Yaushin808/Concrete-Project,Yaushin808/Concrete-Project,,https://gitea.com/Yaushin808/Concrete-Project,,,unique,low,retain
+fireside25 a brep deterministic lead processor,193,fireside25-a-brep/-deterministic-lead-processor,fireside25-a-brep/-deterministic-lead-processor,,https://codeberg.org/fireside25-a-brep/-deterministic-lead-processor,,,unique,low,retain
+aarghrai 1 58bitllm,194,aarghrai/1.58bitLLM,aarghrai/1.58bitLLM,,https://codeberg.org/aarghrai/1.58bitLLM,,,unique,low,retain
+carbonc 156 revolutions,195,CarbonC/156-revolutions,CarbonC/156-revolutions,,https://codeberg.org/CarbonC/156-revolutions,,,unique,low,retain
+somobu demos 2025 03 smallmc,196,somobu_demos/2025_03_smallmc,somobu_demos/2025_03_smallmc,,https://codeberg.org/somobu_demos/2025_03_smallmc,,,unique,low,retain
+rockwell l 221,197,Rockwell_L/221,Rockwell_L/221,,https://codeberg.org/Rockwell_L/221,,,unique,low,retain
+psyb0t 2xbrainz,198,psyb0t/2xbrainz,psyb0t/2xbrainz,,https://codeberg.org/psyb0t/2xbrainz,,,unique,low,retain
+davecb 87 days,199,davecb/87_Days,davecb/87_Days,,https://codeberg.org/davecb/87_Days,,,unique,low,retain
+noname1625347 a decontextualized llm based safeguard technique for automated jailbreak mitigation,200,noname1625347/A-Decontextualized-LLM-based-Safeguard-Technique-for-Automated-Jailbreak-Mitigation,noname1625347/A-Decontextualized-LLM-based-Safeguard-Technique-for-Automated-Jailbreak-Mitigation,,https://codeberg.org/noname1625347/A-Decontextualized-LLM-based-Safeguard-Technique-for-Automated-Jailbreak-Mitigation,,,unique,low,retain
+thomasjuri a01 quranic citation transformer,201,ThomasJuri/a01-quranic-citation-transformer,ThomasJuri/a01-quranic-citation-transformer,,https://codeberg.org/ThomasJuri/a01-quranic-citation-transformer,,,unique,low,retain
+awful systems aaa no slop md,202,awful-systems/AAA-NO-SLOP.md,awful-systems/AAA-NO-SLOP.md,,https://codeberg.org/awful-systems/AAA-NO-SLOP.md,,,unique,low,retain
+tyzbit acars processor,203,tyzbit/acars-processor,tyzbit/acars-processor,,https://codeberg.org/tyzbit/acars-processor,,,unique,low,retain
+plaintextaccounting acceptarium,204,plaintextaccounting/acceptarium,plaintextaccounting/acceptarium,,https://codeberg.org/plaintextaccounting/acceptarium,,,unique,low,retain
+tuxracer activity pub llm agent,205,tuxracer/activity-pub-llm-agent,tuxracer/activity-pub-llm-agent,,https://codeberg.org/tuxracer/activity-pub-llm-agent,,,unique,low,retain
+jenr8ed code activitypubextension4agenticdelegation and hitl verification,206,jenr8ed_code/ActivityPubExtension4AgenticDelegation.and.HITL.Verification,jenr8ed_code/ActivityPubExtension4AgenticDelegation.and.HITL.Verification,,https://codeberg.org/jenr8ed_code/ActivityPubExtension4AgenticDelegation.and.HITL.Verification,,,unique,low,retain
+bossm0n5t3r acw,207,bossm0n5t3r/acw,bossm0n5t3r/acw,,https://codeberg.org/bossm0n5t3r/acw,,,unique,low,retain
+2na3k aeri chan,208,2na3k/aeri-chan,2na3k/aeri-chan,,https://codeberg.org/2na3k/aeri-chan,,,unique,low,retain
+digital codes agent,209,digital-codes/agent,digital-codes/agent,,https://codeberg.org/digital-codes/agent,,,unique,low,retain
+graemeconradie agent lightning,210,graemeconradie/agent-lightning,graemeconradie/agent-lightning,,https://codeberg.org/graemeconradie/agent-lightning,,,unique,low,retain
+ctietze agent mail,211,ctietze/agent-mail,ctietze/agent-mail,,https://codeberg.org/ctietze/agent-mail,,,unique,low,retain
+ngphloc ava,212,ngphloc/ava,ngphloc/ava,,https://codeberg.org/ngphloc/ava,,,unique,low,retain

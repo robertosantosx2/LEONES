@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-19T22:08:17.398805+00:00",
+  "generated_at": "2026-08-20T05:48:10.175780+00:00",
   "kind": "agents",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
@@ -7,7 +7,7 @@
       "name": "YannDavidson/cervel",
       "url": "https://github.com/YannDavidson/cervel",
       "description": "CERVEL is the sovereign knowledge infrastructure for humans, AI and machines; the KI powering the Local AI Framework, context aware retrieval, RAG, agents, LLMs, SLMs... and embedded intelligence.",
-      "updated_at": "2026-08-19T22:05:50Z",
+      "updated_at": "2026-08-20T05:40:24Z",
       "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -16,7 +16,43 @@
       "name": "henrydaum/second-brain",
       "url": "https://github.com/henrydaum/second-brain",
       "description": "Second Brain is an agentic framework that acts as an operating system, using local file intelligence, workflow automation, and LLMs to complete tasks and communicate over multiple modalities and messaging platforms.",
-      "updated_at": "2026-08-19T21:46:53Z",
+      "updated_at": "2026-08-20T05:05:20Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "dorisaallergenic291/ash4d-local-ai-agent-hub",
+      "url": "https://github.com/dorisaallergenic291/ash4d-local-ai-agent-hub",
+      "description": "Self-host your private AI platform on k3s Kubernetes, orchestrating Qwen3 inference, RAG pipelines, and image generation.",
+      "updated_at": "2026-08-20T03:50:10Z",
+      "license": "GPL-3.0",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Lepidopteratime302/n8n_agents",
+      "url": "https://github.com/Lepidopteratime302/n8n_agents",
+      "description": "Automate complex tasks using a collection of pre-built n8n workflows and agentic patterns ready for local deployment.",
+      "updated_at": "2026-08-20T03:49:06Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "open-multi-agent/open-multi-agent",
+      "url": "https://github.com/open-multi-agent/open-multi-agent",
+      "description": "TypeScript AI agent orchestration framework with dynamic workflows. Describe the goal, not the graph: a coordinator plans the task DAG at runtime and runs it on any LLM (Claude, ChatGPT, Gemini, DeepSeek, or local models).",
+      "updated_at": "2026-08-20T04:17:29Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "winstonkoh87/Athena-Public",
+      "url": "https://github.com/winstonkoh87/Athena-Public",
+      "description": "Athena is a local-first agentic PKM that helps you make better decisions with your own context — persistent memory, structured reasoning, and governed AI agents that work across any LLM. Own the state. Rent the intelligence.",
+      "updated_at": "2026-08-20T03:29:21Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -27,15 +63,6 @@
       "description": "AI Agent: Resume Analysis based on JD (Job Description) using Local LLM. Built using LangChain Framework",
       "updated_at": "2026-08-19T17:44:06Z",
       "license": "",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "winstonkoh87/Athena-Public",
-      "url": "https://github.com/winstonkoh87/Athena-Public",
-      "description": "Athena is a local-first agentic PKM that helps you make better decisions with your own context — persistent memory, structured reasoning, and governed AI agents that work across any LLM. Own the state. Rent the intelligence.",
-      "updated_at": "2026-08-19T16:22:56Z",
-      "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -71,15 +98,6 @@
       "url": "https://github.com/rudra496/nexus-agent",
       "description": "⚡ Nexus Agent — Zero-config, self-evolving local AI agent framework. Multi-agent orchestration, GraphRAG, IDE integration. Runs 100% local with Ollama.",
       "updated_at": "2026-08-19T05:37:07Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "open-multi-agent/open-multi-agent",
-      "url": "https://github.com/open-multi-agent/open-multi-agent",
-      "description": "TypeScript AI agent orchestration framework with dynamic workflows. Describe the goal, not the graph: a coordinator plans the task DAG at runtime and runs it on any LLM (Claude, ChatGPT, Gemini, DeepSeek, or local models).",
-      "updated_at": "2026-08-19T18:51:04Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
@@ -144,24 +162,6 @@
       "description": "Local-first evaluation framework for RAG systems and AI Agents. 18+ metrics, CLI + SDK, framework-agnostic. The pytest of AI evaluation.",
       "updated_at": "2026-08-17T10:35:53Z",
       "license": "Apache-2.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "dorisaallergenic291/ash4d-local-ai-agent-hub",
-      "url": "https://github.com/dorisaallergenic291/ash4d-local-ai-agent-hub",
-      "description": "Self-host your private AI platform on k3s Kubernetes, orchestrating Qwen3 inference, RAG pipelines, and image generation.",
-      "updated_at": "2026-08-17T06:51:27Z",
-      "license": "GPL-3.0",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Lepidopteratime302/n8n_agents",
-      "url": "https://github.com/Lepidopteratime302/n8n_agents",
-      "description": "Automate complex tasks using a collection of pre-built n8n workflows and agentic patterns ready for local deployment.",
-      "updated_at": "2026-08-17T06:49:50Z",
-      "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },

@@ -1,8 +1,35 @@
 {
-  "generated_at": "2026-08-19T22:08:21.730625+00:00",
+  "generated_at": "2026-08-20T05:48:12.696780+00:00",
   "kind": "harnesses",
   "policy": "discover-only; verify OSI license before recommendation",
   "items": [
+    {
+      "name": "connectwithub/gharbench",
+      "url": "https://github.com/connectwithub/gharbench",
+      "description": "Benchmark harness for evaluating LLM sales agents in WhatsApp-style Indian real-estate lead conversations",
+      "updated_at": "2026-08-20T05:43:29Z",
+      "license": "NOASSERTION",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "Umarfarook1/rag-document-qa",
+      "url": "https://github.com/Umarfarook1/rag-document-qa",
+      "description": "In-development retrieval-augmented document Q&A. Protocol seams for vector store, embedder and answer generator, plus a retrieval eval harness (Recall@K, MRR, nDCG) with no benchmark results yet.",
+      "updated_at": "2026-08-20T01:39:23Z",
+      "license": "MIT",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
+    {
+      "name": "wlsalswo14/ai-engineer-portfolio",
+      "url": "https://github.com/wlsalswo14/ai-engineer-portfolio",
+      "description": "AI Engineer portfolio — evaluation harnesses and agent-loop systems: chess_bench (LLM code-generation benchmark), loop-evolution (self-evolving loop with a promotion contract), primus (harness/domain separation framework).",
+      "updated_at": "2026-08-20T00:07:54Z",
+      "license": "",
+      "osi_status": "unknown",
+      "status": "external-unvalidated"
+    },
     {
       "name": "8b-is/deepsiper-enthea",
       "url": "https://github.com/8b-is/deepsiper-enthea",
@@ -40,15 +67,6 @@
       "status": "external-unvalidated"
     },
     {
-      "name": "Umarfarook1/rag-document-qa",
-      "url": "https://github.com/Umarfarook1/rag-document-qa",
-      "description": "In-development retrieval-augmented document Q&A. Protocol seams for vector store, embedder and answer generator, plus a retrieval eval harness (Recall@K, MRR, nDCG) with no benchmark results yet.",
-      "updated_at": "2026-08-19T09:41:03Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
       "name": "TarunSinghChauhan/llm-eval-harness",
       "url": "https://github.com/TarunSinghChauhan/llm-eval-harness",
       "description": "Production-grade LLM evaluation framework benchmarking GPT-4o and Claude Sonnet with ROUGE-L, BERTScore, and LLM-as-judge red-teaming for regression and safety detection.",
@@ -63,15 +81,6 @@
       "description": "🔍 Run efficient evaluations for prompt and LLM regression testing with this lightweight, secret-free evaluation harness.",
       "updated_at": "2026-08-19T06:58:22Z",
       "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "wlsalswo14/ai-engineer-portfolio",
-      "url": "https://github.com/wlsalswo14/ai-engineer-portfolio",
-      "description": "AI Engineer portfolio — evaluation harnesses and agent-loop systems: chess_bench (LLM code-generation benchmark), loop-evolution (self-evolving loop with a promotion contract), primus (harness/domain separation framework).",
-      "updated_at": "2026-08-19T02:49:02Z",
-      "license": "",
       "osi_status": "unknown",
       "status": "external-unvalidated"
     },
@@ -350,15 +359,6 @@
       "url": "https://github.com/erwinmsmith/YGO-Bench",
       "description": "A reproducible Yu-Gi-Oh! benchmark harness for dual-LLM duels, ocgcore rules, visual replay, and agent evaluation.",
       "updated_at": "2026-08-17T00:07:34Z",
-      "license": "MIT",
-      "osi_status": "unknown",
-      "status": "external-unvalidated"
-    },
-    {
-      "name": "Coinupbtc/zwell-bench",
-      "url": "https://github.com/Coinupbtc/zwell-bench",
-      "description": "What: local LLM bakeoff harness (coding/vision/tools/agentic). For: objective model comparisons. How: ./setup.sh then ZWELL_BASE=… python bench_zwell.py --tag …",
-      "updated_at": "2026-08-13T00:43:48Z",
       "license": "MIT",
       "osi_status": "unknown",
       "status": "external-unvalidated"
