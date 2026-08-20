@@ -40,7 +40,7 @@ Estos proyectos fueron incorporados al radar de prospección de LEONES a partir 
 |---|---|---:|---|
 | DirectKV | 🔴 unresolved | P0 | Mantener hipótesis; no promover hasta localizar fuente primaria inequívoca |
 | Colibrì | 🟢 verified-primary | P0 | Pasa a investigación/benchmark; claims aún externos |
-| AutoGPTQ | 🟡 archived | P2 | Mantener histórico; considerar GPTQModel como línea sustituta, no AutoGPTQ nuevo |
+| AutoGPTQ | 🟡 archived | P2 | Mantener histórico; no nueva integración |
 
 ## Modelos que pasan al radar de verificación
 
@@ -61,9 +61,9 @@ Estos proyectos fueron incorporados al radar de prospección de LEONES a partir 
 
 ```text
 23 proyectos de infraestructura revisados
-├── 20 verified-primary
+├── 18 verified-primary
 ├── 3 archived
-└── 2 unresolved dentro de los 23 (Fox, DirectKV)
+└── 2 unresolved (Fox, DirectKV)
 
 10 familias/modelos revisados
 ├── 7 verified-primary
