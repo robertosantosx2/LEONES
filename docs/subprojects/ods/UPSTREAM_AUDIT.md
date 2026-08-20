@@ -2,82 +2,95 @@
 
 ## Scope
 
-Audited the public `sentient-agi/OpenDeepSearch` `main` tree as the upstream for the LEONES ODS subproject. The upstream repository is MIT licensed and currently declares Python >=3.10. The current upstream package metadata contains a single undifferentiated runtime dependency list and a second, slightly divergent `requirements.txt`.
+This audit covers the **official `Osmantic/ODS` repository** used by LEONES. The canonical upstream snapshot is the immutable commit:
 
-## Baseline findings
+`5a4450765976e2ad2792b9ac8927f4873dac60f6`
 
-### Packaging
+This is **Osmantic Deployment System**, not the historical `sentient-agi/OpenDeepSearch` Python project that was previously inspected in a local Debian checkout. The latter must not be mixed into the ODS subproject.
 
-- `pyproject.toml` declares the core stack but omits runtime imports used by the source, notably `python-dotenv`, `loguru`, `nest-asyncio`, `langchain-text-splitters`, `requests`, and `torch`.
-- `requirements.txt` duplicates the dependency list and is not identical to `pyproject.toml`.
-- `crawl4ai` is pinned directly to the `main` branch of a Git repository, which makes reproducible builds harder.
-- The current metadata does not separate CPU/base dependencies from optional ranking, evaluation, demo, or GPU dependencies.
+## Identity and provenance
 
-### Context building
+- Repository: `Osmantic/ODS`
+- Branch at audit time: `main`
+- LEONES snapshot: `5a4450765976e2ad2792b9ac8927f4873dac60f6`
+- License advertised by the upstream README: Apache 2.0
+- Stable release advertised upstream: `v2.6.0`
+- Runtime/product directory: `ods/`
 
-`src/opendeepsearch/context_building/build_context.py` imports `RecursiveCharacterTextSplitter` from the obsolete `langchain.text_splitter` path. The actual `Chunker` already uses the modern `langchain_text_splitters` package. The import in `build_context.py` is unused and should be removed rather than replaced.
+The upstream README explicitly distinguishes the fast-moving `main` branch from stable releases and recommends pinning a tagged release or audited commit for stable consumption.
 
-### Ranking API
+## Architecture observed
 
-The actual public classes in `ranking_models` are:
+ODS is a local/private AI server stack rather than a Python package exposing `opendeepsearch` modules. The repository root contains project coordination, installers, CI and documentation; the product runtime lives below `ods/`.
 
+The installer entrypoint is `ods/install.sh`. It dispatches to the platform-specific installer and supports flags including `--dry-run`, `--skip-docker`, `--non-interactive` and model/runtime options.
+
+## Important correction to the previous audit
+
+The previous local Debian audit imported:
+
+- `opendeepsearch`
 - `BaseSemanticSearcher`
 - `InfinitySemanticSearcher`
 - `JinaReranker`
+- Python dependencies such as `transformers`, `torch`, `langchain`, etc.
 
-There is no `BaseReranker` or `InfinityReranker`. Any test referring to those names is invalid and must be corrected to the real API.
+Those findings belong to a **different/historical OpenDeepSearch Python tree**. They are not defects in `Osmantic/ODS` and must not be presented to the ODS maintainers as defects in this repository.
 
-### Ranking contract bug
+LEONES therefore keeps that local tree out of the ODS submodule and does not patch it.
 
-`BaseSemanticSearcher.get_reranked_documents()` advertises `List[str] | List[List[str]]` but currently returns a single newline-joined `str` for the single-query case. This is a contract mismatch and must be fixed with a regression test before changing the behavior.
+## Current ODS audit findings
 
-### Infinity ranking bug candidate
+### 1. Reproducibility
 
-`InfinitySemanticSearcher._get_embeddings()` supports an `embedding_type` parameter and prefixes queries, but `BaseSemanticSearcher.calculate_scores()` calls `_get_embeddings()` identically for queries and documents. This means the base implementation does not actually request document embeddings separately. The behavior needs an isolated contract test and then a targeted fix.
+The upstream documentation correctly acknowledges that `main` moves quickly and recommends pinning an audited commit or tagged release for stable consumption. LEONES therefore pins the submodule to an immutable SHA.
 
-### Source processor defects
+**Proposal to upstream:** keep making every externally consumed installer/runtime reference explicit and auditable, especially when bootstrap paths resolve `main` dynamically.
 
-`context_building/process_sources_pro.py` annotates `sources` as `List[dict]` but accesses `sources.data` repeatedly. It also returns `sources.data` in some branches and `sources` in others. This is a strong type/behavior inconsistency and should be fixed before considering ODS integration stable.
+### 2. Installer validation
 
-The default reranker path initializes `InfinitySemanticSearcher`, which implies an external Infinity service is required for normal processing. LEONES should treat this as an optional external service, not as a mandatory local dependency.
+`ods/install.sh` is a small dispatcher that resolves the platform-specific installer and delegates to it. This makes the entrypoint suitable for a lightweight syntax/smoke gate before any Docker or hardware-dependent validation.
 
-### Jina ranking
+**Proposal to upstream:** retain a zero-prerequisite syntax/dry-run gate for the dispatcher and platform dispatch paths, independent of GPU, Docker and model availability.
 
-`JinaReranker` imports `python-dotenv` and requires `JINA_API_KEY` unless an API key is passed explicitly. This dependency belongs to the ranking/remote-provider layer rather than the minimal ODS core.
+### 3. Platform matrix
 
-### Import strategy
+The README documents Linux, Windows/WSL2 and macOS Apple Silicon support and lists tested distributions/hardware paths.
 
-`opendeepsearch.__init__` imports the full agent/tool stack eagerly. This makes a package-level import transitively depend on search, scraping, LiteLLM, environment helpers, and other optional runtime components. LEONES should add an import contract and decide whether optional providers should be lazy-loaded.
+**Proposal to upstream:** continue maintaining the support and validation matrices as executable/reproducible evidence rather than relying only on prose claims.
 
-## LEONES policy resulting from the audit
+### 4. Stable versus development consumption
 
-1. Do not repair ODS by adding arbitrary packages until their source usage is classified.
-2. Do not make CUDA/GPU packages part of the CPU baseline.
-3. Keep external ranking providers optional.
-4. Test the actual ODS API names, not names inferred from filenames.
-5. Separate package/import contracts from network/service integration tests.
-6. Make CI perform static/import/unit validation; reserve Debian for hardware-specific validation only.
-7. Keep the upstream snapshot identifiable by commit SHA so LEONES can reproduce and audit provenance.
+The README states that `main` moves quickly while `v2.6.0` is the current stable release at the audited snapshot.
 
-## Current upstream reference
+**LEONES policy:** development auditing may track an audited SHA; production-oriented integrations should prefer a release/tag once the corresponding compatibility gate is green.
 
-Upstream default branch: `main`
+### 5. Local hardware boundary
 
-The Git tree audited for this document was commit:
+ODS explicitly targets heterogeneous local hardware and performs hardware/model selection during installation. LEONES will therefore not treat a single Debian laptop as the source of truth for ODS software correctness.
 
-`ec7aa06dc5ead71821a3d92ea56e54a8a9d16ece`
+Debian is reserved for measured hardware validation after the upstream software contract passes in reproducible CI.
 
-## Next implementation pass
+## Candidate upstream improvements to report
 
-- vendor/snapshot the upstream ODS source under `docs/subprojects/ods/upstream` in the LEONES branch;
-- repair the unused LangChain import;
-- add missing runtime dependency declarations according to actual usage;
-- add contract tests for the ranking API;
-- resolve the `get_reranked_documents()` return-type mismatch;
-- resolve the `sources.data` inconsistency in `SourceProcessor`;
-- isolate Infinity/Jina network tests from the CPU package tests;
-- add a dedicated ODS CI job.
+These are **proposals**, not claims that the upstream project is broken:
 
-## Local Debian finding
+1. Add a documented minimal CI smoke command covering installer syntax, dispatcher resolution and `--dry-run` without Docker/GPU requirements.
+2. Keep bootstrap/install provenance explicit when a command consumes `main`; provide a stable/audited-ref path in all supported installation instructions.
+3. Continue separating release validation from machine-specific hardware validation.
+4. Keep the support matrix and model-selection claims tied to machine-readable/versioned validation evidence.
+5. Document the intended integration surface for downstream projects such as LEONES: supported install entrypoints, stable configuration interfaces and supported extension points.
 
-The local Debian validation has already established that a CPU-only PyTorch installation works (`torch 2.13.0+cpu`, CUDA unavailable). A CUDA-enabled installation attempted to pull a large NVIDIA dependency stack and hit the user's filesystem quota. This is precisely why the LEONES baseline must keep CPU and GPU environments separate.
+## LEONES integration policy
+
+1. The ODS submodule remains byte-for-byte upstream at its pinned commit.
+2. LEONES-specific adapters, tests and documentation live outside the submodule.
+3. Any genuine ODS defect discovered by LEONES is first reproduced against the pinned upstream tree.
+4. If it is confirmed, LEONES reports it upstream rather than silently modifying the submodule.
+5. A local workaround is permitted only in a clearly separated LEONES integration layer and must not be represented as an upstream fix.
+
+## Debian finding
+
+The local Debian experiment installed CPU-only PyTorch successfully after an attempted CUDA-enabled installation exhausted a temporary filesystem quota. That Python environment was useful for discovering that the local tree was not the same project as the official ODS snapshot.
+
+It is **not** part of the ODS baseline and should now be removed from the Debian machine.
