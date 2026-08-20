@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Canonical gate between model selection and runtime execution.
 
-Only candidates produced by the LEONES model selector may enter a runtime.
-The gate resolves a runtime/quantization pair and refuses execution when the
-selection is incomplete, rejected, or requires a benchmark before claims can
-be made. It does not execute models and does not turn estimates into measures.
+`TOP_N` candidates may execute normally. `BENCHMARK_REQUIRED` candidates may
+also execute, but only as measurement probes: their output must be treated as
+unverified until a real benchmark is recorded. Rejected/ineligible/ordinary
+candidates remain blocked.
 """
 from __future__ import annotations
 
 from typing import Any
 
-ALLOWED_FOR_EXECUTION = {"TOP_N"}
+ALLOWED_FOR_EXECUTION = {"TOP_N", "BENCHMARK_REQUIRED"}
 
 
 def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] | None = None) -> dict[str, Any]:
@@ -42,6 +42,7 @@ def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] |
         "evidence_level": candidate.get("evidence_level"),
         "execution_authorized": True,
         "measurement_required": True,
+        "benchmark_probe": status == "BENCHMARK_REQUIRED",
         "estimated_tps": (candidate.get("llmfit") or {}).get("estimated_tps"),
         "measured_tps": None,
     }
