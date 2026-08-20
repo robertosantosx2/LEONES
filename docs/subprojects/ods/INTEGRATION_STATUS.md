@@ -1,24 +1,25 @@
 # ODS integration status
 
-**Status:** audit/cleanup in progress; not yet production-ready.
+**Status:** upstream provenance corrected; integration boundary under validation.
 
 ## Done
 
-- Identified the upstream repository and audited the `main` tree at commit `ec7aa06dc5ead71821a3d92ea56e54a8a9d16ece`.
-- Recorded packaging, import, ranking, context-building, and source-processor defects.
-- Correctly identified the ranking API (`BaseSemanticSearcher`, `InfinitySemanticSearcher`, `JinaReranker`).
-- Established CPU/GPU dependency separation as an integration requirement.
-- Established the CI-versus-Debian validation split.
+- Identified the canonical upstream as `Osmantic/ODS`.
+- Pinned the LEONES submodule to `5a4450765976e2ad2792b9ac8927f4873dac60f6`.
+- Confirmed that the official ODS tree is the Osmantic local-AI server stack, with its runtime under `ods/`.
+- Corrected the earlier audit that had accidentally inspected a different/historical `sentient-agi/OpenDeepSearch` Python tree.
+- Established the rule that the ODS submodule remains identical to upstream.
+- Established the GitHub-CI-before-Debian validation boundary.
+- Defined an upstream-reporting path for genuine ODS defects.
 
 ## Remaining
 
-- Bring the upstream snapshot into the LEONES repository as an identifiable subproject revision.
-- Apply source fixes on top of the snapshot rather than modifying an untracked local clone.
-- Add deterministic contract tests.
-- Add ODS-specific CI.
-- Re-run CI and review the resulting failures.
-- Only then run hardware-specific validation on Debian.
+- Validate the pinned ODS snapshot with a lightweight upstream smoke gate.
+- Keep CI independent of Docker, GPU and local model availability for the baseline contract.
+- Review ODS release/support evidence and record any reproducible findings.
+- Prepare a concise upstream improvement report rather than modifying the ODS submodule.
+- After software CI is green, run hardware-specific validation on Debian.
 
-## Important provenance rule
+## Provenance rule
 
-Do not claim an ODS fix is integrated into LEONES merely because it exists in a developer's local clone. The fix is integrated only after it is represented by a Git commit in the LEONES repository and covered by the appropriate CI gate.
+The local Debian `opendeepsearch` checkout is not the ODS reference and must not be copied into LEONES. A finding is an ODS finding only when it is reproduced against the pinned `Osmantic/ODS` tree.
