@@ -1,21 +1,47 @@
 # ODS upstream snapshot
 
-## Source
+## Canonical source
 
-- Repository: `sentient-agi/OpenDeepSearch`
-- Branch: `main`
-- Audited commit: `ec7aa06dc5ead71821a3d92ea56e54a8a9d16ece`
-- License: MIT
-- Minimum Python: 3.10
+- Repository: `Osmantic/ODS`
+- Upstream branch at audit time: `main`
+- LEONES pinned commit: `5a4450765976e2ad2792b9ac8927f4873dac60f6`
+- Advertised license: Apache 2.0
+- Stable release advertised at the snapshot: `v2.6.0`
+- Product/runtime directory: `ods/`
 
 ## Snapshot rule
 
-The ODS source used by LEONES must be traceable to an immutable upstream commit. A future update must change the recorded commit explicitly and re-run the ODS audit/CI gates.
+The ODS source used by LEONES is a Git submodule pinned to an immutable upstream commit. Updating ODS requires an explicit SHA change, an upstream diff audit and a fresh CI run.
 
-## Current integration boundary
+## Integrity rule
 
-The LEONES GitHub branch contains the audit and integration policy, while the complete upstream source snapshot is still pending publication in the LEONES repository. Until that happens, local files under a developer checkout must be treated as a working copy, not as the canonical LEONES integration.
+The submodule is kept identical to upstream. LEONES must not edit files inside `subprojects/ODS` to repair upstream behavior.
 
-## Required next commit
+If LEONES discovers a reproducible upstream problem, the normal path is:
 
-Publish the upstream tree under the established ODS subproject path and then apply LEONES-specific fixes as separate commits. Do not silently mix an upstream refresh with unrelated LEONES changes.
+```text
+pinned ODS
+   |
+   v
+reproduce + document
+   |
+   v
+report upstream
+   |
+   +--> upstream fix/merge
+   |
+   v
+update LEONES SHA
+```
+
+A temporary LEONES-side adapter/workaround, when unavoidable, must remain outside the submodule and be clearly identified as such.
+
+## Historical local tree
+
+A separate Debian checkout previously inspected under `docs/subprojects/ods/upstream` contained a Python package named `opendeepsearch`. That tree is not the canonical `Osmantic/ODS` source and is not included in this snapshot.
+
+It must not be used to infer ODS APIs, dependencies or defects.
+
+## Validation boundary
+
+GitHub CI validates the reproducible upstream snapshot and integration boundary first. Debian is subsequently used for hardware-specific measurements such as CPU, RAM, disk, GPU and local model performance.
