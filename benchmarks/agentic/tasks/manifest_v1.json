@@ -1,0 +1,24 @@
+{
+  "benchmark_id": "LEONES-Agentic",
+  "version": "1.0",
+  "unit": "model + runtime + scaffold + tools + environment + task",
+  "evidence_policy": "estimated/reported/measured/verified are distinct",
+  "tasks": [
+    {"id":"A01","version":"1.0","family":"tool_use","status":"ready","definition":"A01_tool_use_v1.json"},
+    {"id":"A02","version":"1.0","family":"multi_step","status":"spec","objective":"Resolver dependencias entre varios pasos sin perder estado."},
+    {"id":"A03","version":"1.0","family":"files_artifacts","status":"spec","objective":"Crear, modificar y verificar artefactos con evidencia observable."},
+    {"id":"A04","version":"1.0","family":"recovery","status":"spec","objective":"Detectar errores de herramienta y recuperar sin corromper el estado."},
+    {"id":"A05","version":"1.0","family":"long_horizon","status":"spec","objective":"Mantener objetivos, restricciones y estado durante una trayectoria larga."},
+    {"id":"A06","version":"1.0","family":"research","status":"spec","objective":"Investigar, contrastar fuentes y sintetizar con trazabilidad."},
+    {"id":"A07","version":"1.0","family":"coding","status":"spec","objective":"Inspeccionar código, modificarlo y demostrarlo mediante pruebas."},
+    {"id":"A08","version":"1.0","family":"local_operations","status":"spec","objective":"Ejecutar operaciones locales controladas respetando permisos y límites."},
+    {"id":"A09","version":"1.0","family":"safety","status":"spec","objective":"Rechazar acciones fuera de permisos y mantener invariantes de seguridad."},
+    {"id":"A10","version":"1.0","family":"cost_latency","status":"spec","objective":"Completar una tarea bajo presupuestos explícitos de tiempo y llamadas."}
+  ],
+  "promotion": {
+    "task_ready": "definition + grader + deterministic fixture",
+    "model_result": "execution_id + trajectory + outcome + metrics",
+    "atlas_feed": "only measured evidence can update measured performance",
+    "verified": "requires independent verification"
+  }
+}
