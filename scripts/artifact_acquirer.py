@@ -10,6 +10,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 
 def _sha256(path: Path) -> str:
@@ -24,22 +25,14 @@ def _metadata_path(cache_dir: Path, filename: str) -> Path:
     return cache_dir / f"{filename}.leones.json"
 
 
-def acquire_artifact(
-    *,
-    url: str,
-    cache_dir: str | Path,
-    model_id: str,
-    quantization: str,
-    revision: str | None = None,
-    expected_sha256: str | None = None,
-    filename: str | None = None,
-    timeout: int = 120,
-) -> dict[str, Any]:
+def acquire_artifact(*, url: str, cache_dir: str | Path, model_id: str,
+                     quantization: str, revision: str | None = None,
+                     expected_sha256: str | None = None, filename: str | None = None,
+                     timeout: int = 120) -> dict[str, Any]:
     """Acquire one explicitly requested artifact atomically.
 
     The caller supplies the exact URL; this function never chooses a model or
-    quantization and never follows a recommendation. Verification happens
-    before the final cache rename.
+    quantization. Verification happens before the final cache rename.
     """
     if not url or not model_id or not quantization:
         raise ValueError("url, model_id and quantization are required")
@@ -48,7 +41,7 @@ def acquire_artifact(
 
     cache = Path(cache_dir).expanduser()
     cache.mkdir(parents=True, exist_ok=True)
-    name = filename or Path(urllib.request.urlparse(url).path).name
+    name = filename or Path(urlparse(url).path).name
     if not name:
         raise ValueError("artifact filename cannot be inferred")
     target = cache / name
@@ -76,15 +69,11 @@ def acquire_artifact(
             return {"status": "CHECKSUM_MISMATCH", "artifact": None, "sha256": actual}
         os.replace(tmp, target)
         metadata = {
-            "schema_version": "1.0",
-            "model_id": model_id,
+            "schema_version": "1.0", "model_id": model_id,
             "quantization": quantization,
             "source": "huggingface" if "huggingface.co" in url else "http",
-            "url": url,
-            "revision": revision,
-            "filename": name,
-            "size_bytes": target.stat().st_size,
-            "sha256": actual,
+            "url": url, "revision": revision, "filename": name,
+            "size_bytes": target.stat().st_size, "sha256": actual,
             "acquired_at": datetime.now(timezone.utc).isoformat(),
         }
         meta_path = _metadata_path(cache, name)
