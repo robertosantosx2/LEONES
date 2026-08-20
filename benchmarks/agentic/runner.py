@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""Small, deterministic execution contract for Agentic Benchmark V1.
-
-The runner only executes explicitly registered tools. Model output must be
-translated into an approved tool call by an adapter; arbitrary commands are
-never executed by this module.
-"""
-
+"""Deterministic execution contract for Agentic Benchmark V1."""
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -16,6 +10,7 @@ import time
 import uuid
 
 EVENT_TYPES = {"model", "tool_call", "tool_result", "error", "recovery", "artifact", "grader", "other"}
+EVIDENCE_TYPES = {"estimated", "reported", "measured", "verified"}
 
 
 @dataclass
@@ -29,7 +24,7 @@ class Event:
 
 
 class Trace:
-    """Append-only execution trace with a small, schema-aligned vocabulary."""
+    """Append-only execution trace with a schema-aligned vocabulary."""
 
     def __init__(self) -> None:
         self.events: list[Event] = []
@@ -62,11 +57,7 @@ def execute_tool(
     max_tool_calls: int = 10,
     **kwargs: Any,
 ) -> Any:
-    """Run one approved tool and record both invocation and result.
-
-    The caller supplies the adapter function; this function never interprets
-    model text as executable code.
-    """
+    """Run one approved tool and record invocation plus result."""
     if tool_calls_so_far >= max_tool_calls:
         trace.add("error", name=name, status="budget_exceeded", details={"max_tool_calls": max_tool_calls})
         raise RuntimeError("tool-call budget exceeded")
@@ -77,23 +68,11 @@ def execute_tool(
         result = fn(**kwargs)
     except Exception as exc:
         elapsed = time.monotonic() - started
-        trace.add(
-            "error",
-            name=name,
-            duration_seconds=elapsed,
-            status="error",
-            details={"error_type": type(exc).__name__},
-        )
+        trace.add("error", name=name, duration_seconds=elapsed, status="error", details={"error_type": type(exc).__name__})
         raise
 
     elapsed = time.monotonic() - started
-    trace.add(
-        "tool_result",
-        name=name,
-        duration_seconds=elapsed,
-        status="ok",
-        details={"result_type": type(result).__name__},
-    )
+    trace.add("tool_result", name=name, duration_seconds=elapsed, status="ok", details={"result_type": type(result).__name__})
     return result
 
 
@@ -111,11 +90,33 @@ def build_result(
     environment: dict[str, str] | None = None,
     tools: list[dict[str, Any]] | None = None,
     grader: dict[str, Any] | None = None,
+    evidence_type: str = "reported",
+    evidence_source: str = "agentic-runner",
 ) -> dict[str, Any]:
-    """Build the canonical result without inventing missing measurements."""
+    """Build the canonical result while keeping status and evidence separate.
+
+    ``status`` describes the result lifecycle; ``evidence_type`` describes
+    provenance. A runner may emit ``measured`` only when its caller has actual
+    execution evidence. Nothing is promoted to ``verified`` automatically.
+    """
+    if evidence_type not in EVIDENCE_TYPES:
+        raise ValueError(f"unsupported evidence_type: {evidence_type}")
+    if evidence_type == "verified":
+        raise ValueError("verified evidence requires an explicit independent verifier")
+
+    execution_id = str(uuid.uuid4())
+    evidence: dict[str, Any] = {
+        "evidence_type": evidence_type,
+        "source": evidence_source,
+    }
+    if evidence_type == "measured":
+        evidence["execution_id"] = execution_id
+        evidence["measured_at"] = datetime.now(timezone.utc).isoformat()
+
     return {
         "schema_version": "1.1",
         "status": "reported",
+        "evidence": evidence,
         "hardware": hardware,
         "model": model,
         "inference": inference,
@@ -125,7 +126,7 @@ def build_result(
             "benchmark_version": config.benchmark_version,
             "task_id": config.task_id,
             "task_version": config.task_version,
-            "execution_id": str(uuid.uuid4()),
+            "execution_id": execution_id,
             "model_version": model.get("revision"),
             "runtime": runtime or {},
             "scaffold": scaffold or {},
