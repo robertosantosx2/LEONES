@@ -18,6 +18,10 @@ Este directorio contiene fuentes externas convertidas en conocimiento documental
 | Mozilla / SlashData | [`MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) | 🟢 Activa | Mensual / nueva edición |
 | llmfit | [`LLMFIT.md`](LLMFIT.md) | 🟢 Activa / 🟡 integración funcional | Revisar versiones, catálogo y metodología |
 
+## Evidencia local de referencia
+
+- [`LLMFIT-REAL-HARDWARE-2026-08-20.md`](LLMFIT-REAL-HARDWARE-2026-08-20.md) — primera observación real de LLMFit sobre un Intel i5-1035G1 con 8 núcleos, 7 GB de RAM y GPU Intel Iris Plus integrada. Se conserva separada de los benchmarks propios.
+
 ## Pipeline de incorporación
 
 ```text
