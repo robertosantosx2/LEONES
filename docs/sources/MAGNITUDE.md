@@ -1,32 +1,32 @@
 # Magnitude — agente e inference engine local
 
 - **Proyecto:** Magnitude
-- **Repositorio:** https://github.com/magnitudedev/magnitude
+- **Repositorio primario:** https://github.com/magnitudedev/magnitude
 - **Tipo:** agente de coding + motor de inferencia para modelos locales.
 - **Estado LEONES:** 🟢 fuente activa · 🟡 subproyecto de integración.
 - **Revisión:** 2026-08-20
 
 ## Qué aporta
 
-Magnitude combina un agente de coding con un motor de inferencia local. Funciona en macOS y Linux y Windows mediante WSL. La instalación del CLI se realiza con `npm install -g @magnitudedev/cli`. citeturn0search1turn0search7
+Magnitude combina un agente de coding con un motor de inferencia local. Funciona en macOS y Linux y Windows mediante WSL. La instalación del CLI se realiza con `npm install -g @magnitudedev/cli`.
 
 ## Selección automática de modelos
 
-Magnitude perfila el hardware y recomienda modelos que la máquina puede ejecutar. Ofrece perfiles como Balanced, Best Quality, Fastest y Lightweight y gestiona descarga y configuración del modelo. citeturn0search1
+Magnitude perfila el hardware y recomienda modelos que la máquina puede ejecutar. Ofrece perfiles como Balanced, Best Quality, Fastest y Lightweight y gestiona descarga y configuración del modelo.
 
 Para LEONES esto lo convierte en una fuente relevante de **selección y configuración hardware-aware**, complementaria a LLMFit. La recomendación de Magnitude sigue siendo una señal externa hasta reproducirla.
 
 ## Motor de inferencia
 
-El motor está escrito en Rust sobre llama.cpp. Incluye configuraciones de modelos verificadas, calcula requisitos de memoria antes de cargar, y ajusta aceleración, placement y batching al hardware. También mantiene contexto en agentes paralelos y permite cambiar de modelo conservando un comportamiento coherente de herramientas. citeturn0search1turn0search7
+El motor está escrito en Rust sobre llama.cpp. Incluye configuraciones de modelos verificadas, calcula requisitos de memoria antes de cargar, y ajusta aceleración, placement y batching al hardware. También mantiene contexto en agentes paralelos y permite cambiar de modelo conservando un comportamiento coherente de herramientas.
 
 ## Capacidades agentivas
 
-El agente puede inspeccionar y editar archivos, ejecutar comandos, trabajar con imágenes y mantener tareas largas. El runtime local también expone rendimiento de prefill, reutilización de caché y generación dentro de la interfaz del agente. citeturn0search7
+El agente puede inspeccionar y editar archivos, ejecutar comandos, trabajar con imágenes y mantener tareas largas. El runtime local también expone rendimiento de prefill, reutilización de caché y generación dentro de la interfaz del agente.
 
 ## Skills y extensibilidad
 
-Magnitude permite añadir skills reutilizables. Su README identifica usos como navegador, Excel, PowerPoint, PDF y documentos, mediante paquetes de skills externos. Esto resulta relevante para los benchmarks agentivos de LEONES porque permite evaluar tareas completas, no solo generación de texto. citeturn0search7
+Magnitude permite añadir skills reutilizables. Su README identifica usos como navegador, Excel, PowerPoint, PDF y documentos, mediante paquetes de skills externos. Esto resulta relevante para los benchmarks agentivos de LEONES porque permite evaluar tareas completas, no solo generación de texto.
 
 ## Encaje en LEONES
 
@@ -62,4 +62,4 @@ La capacidad de perfilar hardware y recomendar modelos no equivale a una medici�
 
 ## Fuente primaria
 
-urlMagnitude en GitHubhttps://github.com/magnitudedev/magnitude
+https://github.com/magnitudedev/magnitude
