@@ -43,7 +43,6 @@ def _performance_class(value: str | None) -> str:
 
 
 def _legacy_class(value: str | None) -> str:
-    """Preserve the historical CABE/RULA labels for old positional callers."""
     try:
         tps = float(value) if value not in (None, "") else None
     except (TypeError, ValueError):
@@ -57,11 +56,16 @@ def recommend(rows: list[dict[str, str]], *legacy_args, workload: str | None = N
               hardware: str | None = None, ram: float | None = None, vram: float = 0,
               context: int = 4096, top_n: int = 10, llmfit: dict | None = None,
               require_llmfit_fit: bool = False):
-    """Use the canonical selector; positional mode is read-only compatibility."""
+    """Use the canonical selector; legacy positional mode is read-only."""
     if legacy_args:
-        if len(legacy_args) != 6:
-            raise TypeError("legacy recommend signature requires 6 positional arguments")
-        workload, hardware, ram, vram, context, top_n = legacy_args
+        # Historical callers: (economic_rows, workload, hardware, ram, vram, context[, top_n]).
+        if len(legacy_args) == 6:
+            _, workload, hardware, ram, vram, context = legacy_args
+            top_n = 10
+        elif len(legacy_args) == 7:
+            _, workload, hardware, ram, vram, context, top_n = legacy_args
+        else:
+            raise TypeError("legacy recommend signature requires 6 or 7 positional arguments")
         result = select(rows, workload=workload, hardware=hardware, ram_gb=ram,
                         vram_gb=vram, context_tokens=context, top_n=top_n,
                         llmfit=llmfit, require_llmfit_fit=require_llmfit_fit)
