@@ -1,6 +1,6 @@
 # Informe de Infraestructura de IA Local: herramientas y modelos para hardware de consumo (edición 2026)
 
-> Fuente aportada por el usuario para el conocimiento de LEONES. Este documento es una **fuente de prospección y análisis**, no una lista de hechos verificados.
+> Fuente aportada para el conocimiento de LEONES. Este documento es una **fuente de prospección y análisis**, no una lista de hechos verificados.
 
 ## 1. Propósito dentro de LEONES
 
@@ -36,32 +36,34 @@ Para LEONES, estas tesis deben contrastarse separadamente. Coste, privacidad, ap
 
 ## 3. Proyectos y tecnologías a incorporar al radar
 
-| Proyecto / tecnología | Papel potencial en LEONES | Prioridad de verificación |
+La lista original del informe se conserva como punto de partida. El estado resultante de la comprobación individual está en [`LOCAL-INFERENCE-2026-VERIFICATION.md`](LOCAL-INFERENCE-2026-VERIFICATION.md) y la decisión de promoción en [`LOCAL-INFERENCE-2026-CANDIDATES.md`](LOCAL-INFERENCE-2026-CANDIDATES.md).
+
+| Proyecto / tecnología | Papel potencial en LEONES | Estado tras verificación |
 |---|---|---|
-| Rabbit | Inferencia de MoE muy grandes mediante streaming desde SSD | Alta |
-| Lemonade | Inferencia multimodal/NPU, especialmente AMD Ryzen AI | Alta |
-| llama.cpp | Runtime fundamental; GGUF y CPU/edge | Crítica |
-| ODS | Despliegue de stack local completo | Crítica; ya integrado |
-| Ollama | Runtime/UX multiplataforma | Alta |
-| KoboldCpp | Runtime CPU/GPU doméstico y contexto | Media |
-| MLX / MLX-LM | Apple Silicon / memoria unificada | Alta |
-| vLLM | Servidor de alto throughput | Alta |
-| Fox | Servidor local asociado a Rabbit | Media; verificar estado independiente |
-| Colibrì | Runtime especializado para GLM | Alta; verificar proyecto y claims |
-| GPT4All | UX local multiplataforma | Media |
-| ExLlamaV2 | Inferencia cuantizada NVIDIA / EXL2 | Alta |
-| llamafile | Distribución portable de modelos/runtime | Alta |
-| LocalAI | API compatible con OpenAI y multimodalidad local | Alta |
-| Jan | Desktop local-first | Media |
-| AutoGPTQ | Cuantización GPTQ / legado y evolución | Media; verificar estado actual |
-| AnythingLLM | RAG local / productividad | Alta |
-| Aphrodite Engine | Serving para GPUs de consumo | Media/Alta |
-| Tabby | Coding assistant local | Alta |
-| text-generation-webui | Banco de pruebas/experimentación de LLM locales | Alta |
-| SGLang | Serving y optimización de atención/caché | Alta |
-| TGI | Serving de Hugging Face | Alta |
-| TensorRT-LLM | Optimización NVIDIA | Alta |
-| DirectKV | KV-cache / zero-copy | Alta; verificar madurez y hardware objetivo |
+| Rabbit | Inferencia MoE con streaming desde SSD | `verified-primary` |
+| Lemonade | Inferencia local GPU/NPU | `verified-primary` |
+| llama.cpp | Runtime fundamental; GGUF y CPU/edge | `verified-primary` |
+| ODS | Despliegue de stack local completo | `verified-primary` / integración propia |
+| Ollama | Runtime/UX multiplataforma | `verified-primary` |
+| KoboldCpp | Runtime CPU/GPU doméstico | `verified-primary` |
+| MLX / MLX-LM | Apple Silicon / memoria unificada | `verified-primary` |
+| vLLM | Servidor de alto throughput | `verified-primary` |
+| Fox | Servidor asociado a Rabbit | `unresolved` |
+| Colibrì | Runtime especializado | `verified-primary` |
+| GPT4All | UX local multiplataforma | `verified-primary` |
+| ExLlamaV2 | Inferencia cuantizada NVIDIA / EXL2 | `archived` |
+| llamafile | Distribución portable | `verified-primary` |
+| LocalAI | API compatible con OpenAI y multimodalidad local | `verified-primary` |
+| Jan | Desktop local-first | `verified-primary` |
+| AutoGPTQ | Cuantización GPTQ / legado | `archived` |
+| AnythingLLM | RAG local / productividad | `verified-primary` |
+| Aphrodite Engine | Serving para GPUs de consumo | `verified-primary` |
+| Tabby | Coding assistant local | `verified-primary` |
+| text-generation-webui | Banco de pruebas/experimentación | `verified-primary` |
+| SGLang | Serving y optimización | `verified-primary` |
+| TGI | Serving de Hugging Face | `archived` |
+| TensorRT-LLM | Optimización NVIDIA | `verified-primary` |
+| DirectKV | KV-cache / zero-copy | `unresolved` |
 
 ## 4. Formatos y técnicas que interesan especialmente
 
@@ -79,11 +81,11 @@ La cuantización debe registrarse como una propiedad de la ejecución, no solo d
 
 ### Streaming de expertos
 
-Rabbit se identifica como una línea de investigación particularmente interesante para LEONES: desacoplar capacidad total del modelo de la RAM disponible mediante streaming de expertos desde NVMe. La afirmación de que puede ejecutar modelos MoE de escala extrema debe tratarse como hipótesis hasta reproducirse o verificarse con fuente primaria.
+Rabbit se identifica como una línea de investigación particularmente interesante para LEONES: desacoplar capacidad total del modelo de la RAM disponible mediante streaming de expertos desde NVMe. Las cifras de rendimiento y capacidad se conservan como claims/evidencia del proyecto hasta que exista reproducción independiente.
 
 ### Zero-copy KV / offload
 
-DirectKV representa otra línea de investigación: reducir el coste de mover KV cache entre memoria de CPU y GPU. Deben medirse TTFT, throughput, consumo de VRAM, ancho de banda y coste de transferencia.
+DirectKV representa una línea de investigación potencial para reducir el coste de mover KV cache entre memoria de CPU y GPU. Como la entidad no ha quedado resuelta documentalmente en esta pasada, no se promociona ni se usa para recomendaciones.
 
 ## 5. Hardware de consumo frente a enterprise
 
@@ -111,7 +113,7 @@ El informe clasifica aproximadamente el ecosistema en tres grupos:
 - vLLM
 - SGLang
 - TensorRT-LLM
-- TGI
+- TGI *(histórico: archivado)*
 - Aphrodite Engine
 
 ### Hardware restringido / consumer / CPU
@@ -122,7 +124,7 @@ El informe clasifica aproximadamente el ecosistema en tres grupos:
 - LocalAI
 - GPT4All
 - llamafile
-- ExLlamaV2
+- ExLlamaV2 *(histórico: archivado)*
 
 ### Orquestación / experiencia / aplicaciones
 
@@ -132,21 +134,13 @@ El informe clasifica aproximadamente el ecosistema en tres grupos:
 - Tabby
 - text-generation-webui
 
-LEONES debe conservar esta taxonomía como hipótesis de trabajo y revisarla mediante evidencia actual.
+Esta taxonomía es orientativa y no constituye un ranking.
 
 ## 7. Modelos mencionados
 
-El informe señala familias como Qwen, Llama, Gemma, Phi, Mistral, Devstral, gpt-oss, DeepSeek y Kimi/GLM. No se debe importar directamente al Atlas ninguna cifra de parámetros, licencia, contexto o benchmark contenida en el informe sin contrastarla con una fuente primaria.
+El informe señala familias como Qwen, Llama, Gemma, Phi, Mistral, Devstral, gpt-oss, DeepSeek y Kimi/GLM. No se importa directamente al Atlas ninguna cifra de parámetros, licencia, contexto o benchmark contenida en el informe sin contrastarla con una fuente primaria.
 
-Especial atención a:
-
-- **gpt-oss** — verificar licencia, tamaños, requisitos y rendimiento real;
-- **DeepSeek** — verificar denominaciones y disponibilidad reales de las variantes citadas;
-- **Devstral** — relevante para agentes de coding;
-- **Llama 4 Scout** — verificar contexto y condiciones de licencia;
-- **Phi** — especialmente interesante para CPU/edge;
-- **Qwen** — relevante para diferentes escalas y agentes;
-- **Kimi / GLM** — candidatos para investigación de MoE y runtimes especializados.
+Los resultados de la primera verificación documental están en [`LOCAL-INFERENCE-2026-VERIFICATION.md`](LOCAL-INFERENCE-2026-VERIFICATION.md).
 
 ## 8. Matriz de selección de hardware
 
@@ -173,7 +167,7 @@ Un servicio privado de terceros no equivale a soberanía física del hardware. L
 
 ### Cuantización como variable experimental
 
-Q4/FP8 pueden ser excelentes opciones, pero no deben declararse universalmente como "óptimas". El benchmark debe comparar calidad, velocidad, memoria y estabilidad.
+Q4/FP8 pueden ser buenas opciones, pero no deben declararse universalmente como óptimas. El benchmark debe comparar calidad, velocidad, memoria y estabilidad.
 
 ### LLMFit como filtro inicial
 
@@ -183,37 +177,18 @@ Este informe refuerza el papel ya establecido de LLMFit:
 hardware → LLMFit → candidatos → Atlas → runtime/quant → benchmark → medición
 ```
 
-## 10. Fuentes primarias que deben verificarse
+## 10. Fuentes primarias
 
-- Rabbit: https://github.com/ferrumox/rabbit
-- Lemonade: https://github.com/lemonade-sdk/lemonade
-- llama.cpp: https://github.com/ggml-org/llama.cpp
-- ODS: https://github.com/Osmantic/ODS
-- Ollama: https://ollama.com/
-- KoboldCpp: https://github.com/LostRuins/koboldcpp
-- MLX: https://github.com/ml-explore/mlx
-- vLLM: https://github.com/vllm-project/vllm
-- ExLlamaV2: https://github.com/turboderp/exllamav2
-- llamafile: https://github.com/Mozilla-Ocho/llamafile
-- LocalAI: https://github.com/mudler/LocalAI
-- Jan: https://github.com/janhq/jan
-- AnythingLLM: https://github.com/Mintplex-Labs/anything-llm
-- Aphrodite Engine: https://github.com/aphrodite-engine/aphrodite-engine
-- Tabby: https://github.com/TabbyML/tabby
-- text-generation-webui: https://github.com/oobabooga/text-generation-webui
-- SGLang: https://github.com/sgl-project/sglang
-- TGI: https://github.com/huggingface/text-generation-inference
-- TensorRT-LLM: https://github.com/NVIDIA/TensorRT-LLM
+Las URLs originales del informe son referencias de descubrimiento. La verificación uno a uno y el estado actual de cada entidad quedan centralizados en [`LOCAL-INFERENCE-2026-VERIFICATION.md`](LOCAL-INFERENCE-2026-VERIFICATION.md), evitando duplicar afirmaciones que puedan quedar obsoletas.
 
-## 11. Siguiente trabajo derivado
+## 11. Trabajo derivado
 
-1. Crear/actualizar fichas de cada runtime en Atlas.
-2. Verificar repositorios, licencias y estado de mantenimiento.
-3. Extraer hardware soportado y formatos de cuantización.
-4. Identificar benchmarks reproducibles.
-5. Incorporar candidatos al Prospector.
-6. Cruzarlos con LLMFit.
-7. Ejecutar benchmarks LEONES sobre hardware representativo.
-8. Promover únicamente evidencia que supere el quality gate.
+1. Mantener fichas de runtimes y modelos que hayan superado identidad primaria.
+2. Cruzarlos con LLMFit.
+3. Identificar hardware, cuantización y runtime concretos.
+4. Ejecutar benchmarks LEONES reproducibles.
+5. Promover a `measured` únicamente resultados obtenidos físicamente.
+6. Retirar o marcar como archivadas las tecnologías que pierdan mantenimiento.
+7. Mantener `unresolved` fuera de recomendaciones y registros canónicos.
 
-**Conclusión:** este informe queda incorporado como **fuente de conocimiento estratégico y de prospección**. No se trata como dataset factual verificado. Su principal valor para LEONES es ampliar el radar de runtimes, técnicas de eficiencia de memoria, modelos y estrategias de despliegue local que después pueden ser verificadas y medidas.
+**Conclusión:** este informe queda incorporado como **fuente de conocimiento estratégico y de prospección**. Su valor para LEONES es ampliar el radar de runtimes, técnicas de eficiencia de memoria, modelos y estrategias de despliegue local; la verdad operativa se obtiene después mediante fuentes primarias, quality gate y medición.
