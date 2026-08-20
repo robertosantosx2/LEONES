@@ -9,6 +9,7 @@
         ["Arquitectura", "arquitectura.html", "project"],
         ["Pila", "pila.html", "project"],
         ["Operación", "operacion.html", "project"],
+        ["Conocimiento de IA en Local", "conocimiento.html", "top"],
         ["Aplicación", "app.html", "top"],
         ["Evaluación", "evaluacion.html", "application"],
         ["Recomendaciones", "recommendations.html", "application"],
