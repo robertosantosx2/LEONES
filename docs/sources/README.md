@@ -17,6 +17,7 @@ Este directorio contiene fuentes externas convertidas en conocimiento documental
 |---|---|---|---|
 | Mozilla / SlashData | [`MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) | 🟢 Activa | Mensual / nueva edición |
 | llmfit | [`LLMFIT.md`](LLMFIT.md) | 🟢 Activa / 🟡 integración funcional | Revisar versiones, catálogo y metodología |
+| Infraestructura de IA local 2026 | [`LOCAL-INFERENCE-2026.md`](LOCAL-INFERENCE-2026.md) | 🟢 Activa / 🟡 verificación pendiente | Revisar proyectos, licencias, claims y benchmarks |
 
 ## Evidencia local de referencia
 
@@ -33,6 +34,8 @@ FUENTE EXTERNA → ANÁLISIS INDEPENDIENTE → CANDIDATOS → IDENTIDAD + EVIDEN
 Una fuente estratégica puede aportar taxonomías, entidades, proyectos, hipótesis y señales de mercado. No puede alterar por sí sola las clasificaciones congeladas de LEONES ni convertir una estimación externa en medición propia.
 
 En el caso de llmfit, su papel es el de **preselector hardware-aware**: reduce el espacio de candidatos antes de que el Router de LEONES aplique evidencia, tarea, licencia/JGB, CABE/RULA, rendimiento medido, runtime y demás criterios propios.
+
+El informe de infraestructura local 2026 se utiliza como **radar de prospección**. Los proyectos y claims incluidos deben verificarse individualmente contra sus repositorios o documentación primaria antes de entrar en Atlas como hechos verificados.
 
 ## Mantenimiento
 
