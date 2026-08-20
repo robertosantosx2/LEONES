@@ -29,18 +29,21 @@ jobs:
           python -m pip install pytest
           python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
           python -m pip install loguru nest-asyncio python-dotenv requests langchain-text-splitters
-          python -m pip install -e . --no-deps
       - name: Import contract
         working-directory: subprojects/ODS
+        env:
+          PYTHONPATH: src
         run: |
           python - <<'PY'
           import opendeepsearch
           from opendeepsearch.ranking_models.base_reranker import BaseSemanticSearcher
           from opendeepsearch.ranking_models.infinity_rerank import InfinitySemanticSearcher
-          from opendeepsearch.ranking_models.jina_reranker import JinaReranker
+          from opendeepsearch.ranking_models.jina_rerank import JinaReranker
           print('ODS imports: OK')
           print(BaseSemanticSearcher, InfinitySemanticSearcher, JinaReranker)
           PY
       - name: Run upstream tests
         working-directory: subprojects/ODS
+        env:
+          PYTHONPATH: src
         run: pytest -q tests
