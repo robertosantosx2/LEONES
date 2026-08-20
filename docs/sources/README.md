@@ -9,12 +9,14 @@ Este directorio contiene fuentes externas convertidas en conocimiento documental
 3. Una fuente no publica automáticamente datos en el Atlas canónico.
 4. Las mediciones propias permanecen separadas de las observaciones externas.
 5. Cada actualización importante debe dejar trazabilidad.
+6. Las herramientas externas de estimación no sustituyen los contratos ni las métricas canónicas de LEONES.
 
 ## Fuentes activas
 
 | Fuente | Documento | Estado | Revisión |
 |---|---|---|---|
 | Mozilla / SlashData | [`MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) | 🟢 Activa | Mensual / nueva edición |
+| llmfit | [`LLMFIT.md`](LLMFIT.md) | 🟢 Activa / 🟡 integración funcional | Revisar versiones, catálogo y metodología |
 
 ## Pipeline de incorporación
 
@@ -25,6 +27,8 @@ FUENTE EXTERNA → ANÁLISIS INDEPENDIENTE → CANDIDATOS → IDENTIDAD + EVIDEN
 ## Regla de independencia
 
 Una fuente estratégica puede aportar taxonomías, entidades, proyectos, hipótesis y señales de mercado. No puede alterar por sí sola las clasificaciones congeladas de LEONES ni convertir una estimación externa en medición propia.
+
+En el caso de llmfit, su papel es el de **preselector hardware-aware**: reduce el espacio de candidatos antes de que el Router de LEONES aplique evidencia, tarea, licencia/JGB, CABE/RULA, rendimiento medido, runtime y demás criterios propios.
 
 ## Mantenimiento
 
