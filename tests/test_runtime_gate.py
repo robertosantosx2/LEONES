@@ -16,14 +16,22 @@ def candidate(status="TOP_N", **extra):
     return value
 
 
-def test_only_top_n_can_execute():
+def test_top_n_can_execute():
     plan = resolve_runtime(candidate())
     assert plan["execution_authorized"] is True
+    assert plan["benchmark_probe"] is False
     assert plan["measured_tps"] is None
 
 
-def test_benchmark_required_is_blocked():
-    result = gate_selection({"candidates": [candidate("BENCHMARK_REQUIRED")]})
+def test_benchmark_required_is_executable_as_probe():
+    plan = resolve_runtime(candidate("BENCHMARK_REQUIRED"))
+    assert plan["execution_authorized"] is True
+    assert plan["benchmark_probe"] is True
+    assert plan["measurement_required"] is True
+
+
+def test_rejected_candidate_is_blocked():
+    result = gate_selection({"candidates": [candidate("REJECTED")]})
     assert result["counts"] == {"plans": 0, "blocked": 1}
 
 
