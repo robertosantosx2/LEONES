@@ -1,44 +1,59 @@
-# LEONES — Estado de los harnesses
+# LEONES — Harnesses agénticos
 
-**Decisión vigente: 20 de agosto de 2026**
+**Estado de la decisión:** CONGELADA  
+**Fecha:** 2026-08-20  
+**Decisión:** Hermes Agent es el Harness de referencia de LEONES.
 
-## Harness de referencia
+## Estado actual
 
-### Hermes Agent — FIJADO
-
-Hermes Agent, de Nous Research, queda fijado como **Harness de referencia de LEONES** para la ejecución y evaluación agéntica.
-
-Repositorio oficial: https://github.com/NousResearch/hermes-agent
-
-Documentación: https://hermes-agent.nousresearch.com/docs/
-
-Esta decisión significa que, a partir de ahora, las integraciones, benchmarks agentivos, protocolos de ejecución y pruebas de referencia de LEONES deben tomar Hermes como baseline salvo que una decisión posterior lo cambie explícitamente.
-
-Hermes no sustituye a Atlas, LLMFit, los runtimes ni la infraestructura de inferencia: ocupa la posición de harness de referencia en la capa agéntica.
-
-## Harnesses en desarrollo — PAUSADOS
-
-Los siguientes harnesses permanecen reconocidos por LEONES, pero quedan **en desarrollo y pausados hasta nueva orden**:
-
-- **DeepSeek Harness** — https://github.com/deepseek-ai/deepseek-harness
-- **Buddy** — https://github.com/juanje/buddy
-
-No se continuará, por ahora, con nuevas integraciones, optimizaciones, benchmarks específicos ni ampliaciones de estos dos harnesses como líneas prioritarias de LEONES.
-
-Su código, documentación y conocimiento acumulado se conservan. Pausar no significa descartar.
-
-## Separación de responsabilidades
-
-| Componente | Estado | Papel |
+| Componente | Rol | Estado |
 |---|---|---|
-| **Hermes Agent** | **Referencia fijada** | Harness agéntico de referencia |
-| **DeepSeek Harness** | **En desarrollo / pausado** | Harness candidato |
-| **Buddy** | **En desarrollo / pausado** | Harness candidato |
-| **ODS** | Activo en su línea | Servidor de stacks IA |
-| **Magnitude** | Activo en su línea | Asistente / infraestructura de coding y estimación |
+| **Hermes Agent** | Harness agéntico de referencia | **Referencia fijada** |
+| DeepSeek Harness | Harness candidato | **En desarrollo — pausado** |
+| Buddy | Harness/agente candidato | **En desarrollo — pausado** |
+| ODS | Servidor de stacks IA | Activo en su rol propio |
+| Magnitude | Asistente/instrumentación de coding | Activo en su rol propio |
 
-ODS y Magnitude **no forman parte de la lista de harnesses de referencia**. Mantienen sus funciones propias dentro de la arquitectura LEONES.
+## Regla fijada
 
-## Regla de cambio
+Hermes es, hasta nueva decisión explícita, el único **Harness de referencia** de LEONES.
 
-Esta decisión queda congelada como decisión de arquitectura. Para cambiar el harness de referencia, reactivar DeepSeek Harness o Buddy, o sustituir Hermes, será necesaria una nueva decisión explícita y documentada en `LEONES_DECISION_LOG.md`.
+DeepSeek Harness y Buddy no se eliminan ni se descartan. Quedan conservados como líneas de desarrollo, pero su integración y evolución como harnesses de referencia queda **pausada hasta nueva orden**.
+
+ODS y Magnitude no forman parte de la competencia entre harnesses: mantienen sus funciones arquitectónicas específicas.
+
+## Criterio de cambio
+
+Esta decisión solo se modifica mediante una nueva decisión documentada. Una nueva tecnología puede estudiarse sin convertirse por ello en nuevo harness de referencia.
+
+## Arquitectura de referencia
+
+```text
+                 LEONES
+                    │
+                    ▼
+          HERMES — HARNESS
+              DE REFERENCIA
+                    │
+        ┌───────────┴───────────┐
+        ▼                       ▼
+   tareas reales             tools
+        │                       │
+        └───────────┬───────────┘
+                    ▼
+          benchmark agentic
+                    │
+                    ▼
+          evidencia LEONES
+
+  DeepSeek Harness ──► en desarrollo / pausado
+  Buddy             ──► en desarrollo / pausado
+  ODS               ──► servidor de stacks IA
+  Magnitude         ──► asistente de coding
+```
+
+## Consecuencia operativa
+
+Las nuevas pruebas, adaptadores, documentación de evaluación y benchmarks agentivos de LEONES deben tomar **Hermes** como baseline de harness, salvo que una tarea concreta requiera explícitamente otro componente.
+
+La existencia de un baseline no convierte sus resultados en hechos universales: cada resultado conserva modelo, runtime, hardware, configuración, versión/commit y procedencia.
