@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility CLI for the legacy Atlas recommendation feed.
-
-The canonical model-selection policy lives in :mod:`scripts.model_selector`.
-This command intentionally contains no independent eligibility/scoring policy.
-"""
+"""Compatibility CLI for the legacy Atlas recommendation feed."""
 from __future__ import annotations
 
 import argparse
@@ -46,17 +42,22 @@ def _performance_class(value: str | None) -> str:
     return "RAPIDA"
 
 
+def _legacy_class(value: str | None) -> str:
+    """Preserve the historical CABE/RULA labels for old positional callers."""
+    try:
+        tps = float(value) if value not in (None, "") else None
+    except (TypeError, ValueError):
+        tps = None
+    if tps is None:
+        return "UNKNOWN"
+    return "CABE" if tps < 10 else "RULA"
+
+
 def recommend(rows: list[dict[str, str]], *legacy_args, workload: str | None = None,
               hardware: str | None = None, ram: float | None = None, vram: float = 0,
               context: int = 4096, top_n: int = 10, llmfit: dict | None = None,
               require_llmfit_fit: bool = False):
-    """Canonical selector with a temporary read-only compatibility shim.
-
-    New callers receive the structured selector result. The historical
-    positional signature is accepted only to avoid breaking older callers; it
-    is translated into the same canonical selector and returns the historical
-    tuple shape. No legacy scoring is retained.
-    """
+    """Use the canonical selector; positional mode is read-only compatibility."""
     if legacy_args:
         if len(legacy_args) != 6:
             raise TypeError("legacy recommend signature requires 6 positional arguments")
@@ -64,12 +65,11 @@ def recommend(rows: list[dict[str, str]], *legacy_args, workload: str | None = N
         result = select(rows, workload=workload, hardware=hardware, ram_gb=ram,
                         vram_gb=vram, context_tokens=context, top_n=top_n,
                         llmfit=llmfit, require_llmfit_fit=require_llmfit_fit)
+        source_by_id = {(r.get("model_id") or r.get("model_name")): r for r in rows}
         return [
             (item.get("rank"), item.get("model_id"), item.get("model_name"),
              item.get("fit_score"), item.get("selection_status"),
-             _performance_class(next((r.get("tokens_per_second") for r in rows
-                                      if (r.get("model_id") or r.get("model_name")) == item.get("model_id")), None))
-             )
+             _legacy_class(source_by_id.get(item.get("model_id"), {}).get("tokens_per_second")))
             for item in result["candidates"][:top_n]
         ]
     if None in (workload, hardware, ram):
