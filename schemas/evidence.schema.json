@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robertosantosx2.github.io/LEONES/schemas/evidence.schema.json",
+  "title": "LEONES Evidence Provenance",
+  "type": "object",
+  "required": ["evidence_type"],
+  "properties": {
+    "evidence_type": {
+      "enum": ["estimated", "reported", "measured", "verified"]
+    },
+    "source": {"type": "string", "minLength": 1},
+    "source_url": {"type": "string", "format": "uri"},
+    "execution_id": {"type": "string", "minLength": 1},
+    "measured_at": {"type": "string", "format": "date-time"},
+    "verified_at": {"type": "string", "format": "date-time"},
+    "verifier": {"type": "string", "minLength": 1},
+    "verification_method": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"evidence_type": {"const": "measured"}}},
+      "then": {"required": ["execution_id", "measured_at"]}
+    },
+    {
+      "if": {"properties": {"evidence_type": {"const": "verified"}}},
+      "then": {"required": ["execution_id", "measured_at", "verified_at", "verifier", "verification_method"]}
+    }
+  ],
+  "additionalProperties": false
+}
