@@ -26,3 +26,9 @@ Fuentes complementarias:
 - Artificial Analysis Intelligence Benchmarking: https://artificialanalysis.ai/methodology/intelligence-benchmarking
 - GDPval-AA v2: https://artificialanalysis.ai/evaluations/gdpval-aa
 - Artificial Analysis MicroEvals: https://artificialanalysis.ai/microevals
+
+## AirLLM
+
+Repositorio: https://github.com/lyogavin/airllm
+
+Análisis incorporado en `docs/sources/AIRLLM.md`: inferencia layer-wise con baja ocupación de VRAM, streaming de capas/expertos, prefetching, compresión opcional 4/8-bit, soporte CPU y amplio catálogo de arquitecturas. Para LEONES queda clasificado como **runtime candidato memory-constrained**. Sus cifras publicadas de memoria y rendimiento se conservan como evidencia externa hasta reproducirlas mediante benchmarks LEONES.
