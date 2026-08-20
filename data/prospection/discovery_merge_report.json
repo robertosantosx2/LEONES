@@ -2,7 +2,7 @@
   "live_input": "data/prospection/live_discoveries.ndjson",
   "federated_input": "data/prospection/federated_discoveries.ndjson",
   "output": "data/prospection/discovery_input.ndjson",
-  "unique_discoveries": 315,
+  "unique_discoveries": 312,
   "unique_by_source": {
     "cgit-instance:git.zx2c4.com": 1,
     "codeberg": 39,
@@ -12,7 +12,7 @@
     "github": 87,
     "gitlab": 39,
     "huggingface": 40,
-    "huggingface-papers": 37,
+    "huggingface-papers": 34,
     "pagure": 20
   },
   "multi_source_records": 0,

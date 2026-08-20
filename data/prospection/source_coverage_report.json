@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-19T04:54:56.302632+00:00",
+  "generated_at": "2026-08-20T04:56:07.979910+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -52,8 +52,8 @@
       "url": "https://savannah.gnu.org/",
       "kind": "forge",
       "priority": "high",
-      "status": "http_error",
-      "http_status": 502,
+      "status": "reachable",
+      "http_status": 200,
       "final_url": "https://savannah.gnu.org/",
       "authentication_configured": false
     },
