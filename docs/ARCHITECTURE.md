@@ -14,34 +14,40 @@ The key engineering rule is **small, composable scripts**. Each script does one 
 USER / MACHINE
       │
       ▼
-┌───────────────┐
-│ leones-hardware│  identify machine
-└───────┬───────┘
-        ▼
-┌───────────────┐
-│ leones-model   │  identify model
-└───────┬───────┘
-        ▼
-┌───────────────┐
-│ leones-infer   │  measure inference
-└───────┬───────┘
-        ▼
-┌───────────────┐
-│ leones-lotb    │  measure agentic tasks
-└───────┬───────┘
-        ▼
-┌───────────────┐
-│ leones-report  │  create Markdown result
-└───────┬───────┘
-        ▼
-┌───────────────┐
-│ leones-publish │  validate and publish
-└───────┬───────┘
-        ▼
+┌──────────────────────┐
+│ leones-hardware      │  identify machine
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
+│ llmfit preselector   │  first hardware/model estimate
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
+│ leones-model         │  identify + verify model
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
+│ leones-infer         │  measure inference
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
+│ leones-lotb          │  measure agentic tasks
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
+│ leones-report        │  create Markdown result
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
+│ leones-publish       │  validate and publish
+└──────────┬───────────┘
+           ▼
  GitHub / metaLEONES / web
 ```
 
 `leones.py` may orchestrate this sequence, but it should contain as little domain logic as possible.
+
+`llmfit` is deliberately a **preselector**, not a source of truth. Its estimates reduce the candidate space before LEONES applies identity/evidence, openness, task suitability and measured performance.
 
 ## Architecture layers
 
@@ -69,7 +75,46 @@ Hardware
 
 The layers must remain replaceable where practical.
 
-### 2. Inference
+### 2. Hardware-aware model preselection
+
+`llmfit` occupies the first decision layer after hardware identification:
+
+```text
+hardware + user intent
+          │
+          ▼
+        llmfit
+          │
+          ├── fit estimate
+          ├── quality estimate
+          ├── speed estimate
+          ├── context fit
+          ├── quantisation
+          ├── run mode
+          └── runtime
+          │
+          ▼
+      TOP-N candidates
+          │
+          ▼
+ LEONES evidence + Router
+```
+
+The output is explicitly an **estimate**. It must never be recorded as a LEONES measurement merely because it was produced locally.
+
+The adapter should preserve the external values independently, for example:
+
+- `llmfit_quality_estimate`;
+- `llmfit_speed_estimate`;
+- `llmfit_fit`;
+- `llmfit_context_fit`;
+- `llmfit_quantization`;
+- `llmfit_run_mode`;
+- `llmfit_memory_estimate`;
+- `llmfit_runtime`;
+- `llmfit_source_version`.
+
+### 3. Inference
 
 Inference measures the model/backend/hardware combination. It must not be confused with agentic performance.
 
@@ -85,7 +130,7 @@ Minimum concepts:
 - total time;
 - stability/errors.
 
-### 3. Agentic evaluation
+### 4. Agentic evaluation
 
 LOTB measures whether an agent can complete defined tasks:
 
@@ -97,7 +142,7 @@ LOTB measures whether an agent can complete defined tasks:
 
 A fast model is not automatically a good agent.
 
-### 4. Evidence
+### 5. Evidence
 
 A result must preserve enough technical information to be understood and reproduced. Third-party benchmark numbers are useful for research but are not official LEONES measurements.
 
@@ -186,6 +231,7 @@ Prefer composition over duplication. If a script needs another capability, call 
 
 - **LEONES** — Local Ecosystem of Open Neural Expert Systems.
 - **Buddy** — central candidate knowledge/context layer.
+- **llmfit** — hardware-aware external preselector for the first model estimate.
 - **LOTB** — agentic task battery.
 - **metaLEONES** — protocol for anonymised real-machine reports.
 - **CABE** — project vocabulary for whether a configuration fits.
