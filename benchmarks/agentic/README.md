@@ -10,7 +10,20 @@ La unidad evaluada es:
 modelo + runtime + scaffold + herramientas + entorno + tarea
 ```
 
-El resultado separa `outcome`, `trajectory`, eficiencia, seguridad y artefactos.
+El resultado separa `outcome`, `trajectory`, eficiencia, seguridad, artefactos y procedencia de la evidencia.
+
+## Regla de evidencia
+
+LEONES mantiene cuatro conceptos que no deben mezclarse:
+
+| Tipo | Significado | Puede alimentar evidencia empírica |
+|---|---|---|
+| `estimated` | cálculo o predicción previa a la ejecución | No |
+| `reported` | dato declarado por una fuente o ejecución aún no verificada como medición | No |
+| `measured` | dato obtenido de una ejecución identificable y fechada | Sí |
+| `verified` | medición que además ha pasado una verificación independiente explícita | Sí, como evidencia verificada |
+
+La etiqueta no se cambia por conveniencia: `measured` exige `execution_id` y `measured_at`; `verified` exige además verificador, fecha y método.
 
 ## Familias V1
 
@@ -42,17 +55,19 @@ Cada tarea debe declarar al menos:
 - grader y versión;
 - estado dorado cuando exista.
 
+A01 ya tiene una tarea canónica en `benchmarks/agentic/tasks/A01_tool_use_v1.json` y un smoke harness determinista en `benchmarks/agentic/smoke_a01.py`.
+
 ## Runner
 
-El runner V1 debe ejecutar una tarea en un entorno controlado y producir un resultado compatible con `schemas/result.schema.json`.
+El runner V1 ejecuta únicamente herramientas registradas por un adaptador: nunca interpreta texto del modelo como código ejecutable.
 
-Contrato conceptual:
+Contrato:
 
 ```text
 prepare → execute → capture trace → grade → measure → emit result
 ```
 
-No se aceptan puntuaciones inventadas ni métricas estimadas como si fueran medidas.
+`schemas/result.schema.json` separa el `status` del resultado de la procedencia `evidence.evidence_type`.
 
 ## Trazas
 
@@ -67,19 +82,16 @@ Los eventos mínimos son:
 - `grader`
 - `other`
 
-## Smoke inicial
-
-Antes de ampliar la batería, se deben instrumentar B01–B05 existentes y transformar especialmente B02/B04 en pruebas con herramientas reales donde el entorno lo permita.
-
 ## Estado
 
-🟡 **DISEÑO V1 ACEPTADO — RUNNER PENDIENTE DE EJECUCIÓN REAL.**
+🟠 **V1 EN IMPLEMENTACIÓN — runner instrumentado + A01 smoke preparado.**
 
-No se publica un score global hasta tener ejecuciones reproducibles, graders versionados y evidencia primaria.
+El smoke es deliberadamente determinista: valida el arnés, no constituye un benchmark de un modelo. El siguiente salto es conectar un adaptador real de modelo/runtime y ejecutar A01 con evidencia primaria. No se publica un score global hasta disponer de ejecuciones reproducibles y graders versionados.
 
 ## Referencias
 
 - `docs/EVALUACION_AGENTIC_TESTS.md`
 - `docs/RESULT_SCHEMA.md`
-- `docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md`
 - `schemas/result.schema.json`
+- `schemas/evidence.schema.json`
+- `scripts/validate_evidence.py`
