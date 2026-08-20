@@ -13,62 +13,66 @@ on:
       - '.github/workflows/ods-ci.yml'
 
 jobs:
-  contract:
+  upstream-contract:
+    name: Verify pinned ODS upstream
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout LEONES with submodules
+        uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - name: Install CPU contract stack
-        working-directory: subprojects/ODS
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install pytest
-          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install loguru nest-asyncio python-dotenv requests langchain-text-splitters
-      - name: Import contract
-        working-directory: subprojects/ODS
-        env:
-          PYTHONPATH: src
-        run: |
-          python - <<'PY'
-          import opendeepsearch
-          from opendeepsearch.ranking_models.base_reranker import BaseSemanticSearcher
-          from opendeepsearch.ranking_models.infinity_rerank import InfinitySemanticSearcher
-          from opendeepsearch.ranking_models.jina_reranker import JinaReranker
-          print('ODS imports: OK')
-          print(BaseSemanticSearcher, InfinitySemanticSearcher, JinaReranker)
-          PY
-      - name: Run deterministic upstream tests
-        working-directory: subprojects/ODS
-        env:
-          PYTHONPATH: src
-        run: pytest -q tests
+          fetch-depth: 1
 
-  upstream-suite:
-    needs: contract
+      - name: Verify canonical upstream and pinned SHA
+        working-directory: subprojects/ODS
+        run: |
+          set -euo pipefail
+          expected='5a4450765976e2ad2792b9ac8927f4873dac60f6'
+          actual="$(git rev-parse HEAD)"
+          remote="$(git remote get-url origin)"
+          test "$actual" = "$expected"
+          case "$remote" in
+            https://github.com/Osmantic/ODS.git|git@github.com:Osmantic/ODS.git) ;;
+            *) echo "Unexpected ODS remote: $remote"; exit 1 ;;
+          esac
+          test -f README.md
+          test -f ods/install.sh
+          echo "ODS upstream: $remote"
+          echo "ODS pinned SHA: $actual"
+
+      - name: Syntax-check upstream installer entrypoint
+        run: bash -n subprojects/ODS/ods/install.sh
+
+      - name: Confirm no historical Python OpenDeepSearch tree is being used
+        working-directory: subprojects/ODS
+        run: |
+          set -euo pipefail
+          test ! -d src/opendeepsearch
+          test ! -d opendeepsearch
+          echo "No historical opendeepsearch tree present; ODS remains the official Osmantic stack."
+
+  upstream-diagnostics:
+    name: Upstream diagnostics
+    needs: upstream-contract
     if: ${{ always() }}
     runs-on: ubuntu-22.04
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout LEONES with submodules
+        uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - name: Install upstream test dependencies
+
+      - name: Inspect upstream structure
         working-directory: subprojects/ODS
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install pytest
-          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install loguru nest-asyncio python-dotenv requests langchain-text-splitters
-      - name: Run upstream suite (diagnostic only)
-        working-directory: subprojects/ODS
-        env:
-          PYTHONPATH: src
-        run: pytest -q tests
+          set -u
+          echo '=== ODS root ==='
+          find . -maxdepth 2 -type f | sort | head -200
+          echo
+          echo '=== Installer entrypoint ==='
+          sed -n '1,180p' ods/install.sh
+          echo
+          echo '=== Git provenance ==='
+          git remote -v
+          git rev-parse HEAD
