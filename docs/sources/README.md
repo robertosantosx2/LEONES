@@ -18,6 +18,8 @@ Este directorio contiene fuentes externas convertidas en conocimiento documental
 | Mozilla / SlashData | [`MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) | 🟢 Activa | Mensual / nueva edición |
 | LLMFit | [`LLMFIT.md`](LLMFIT.md) | 🟢 Activa / 🟡 integración funcional | Revisar versiones, catálogo y metodología |
 | AirLLM | [`AIRLLM.md`](AIRLLM.md) | 🟢 Activa / 🟡 integración funcional | Revisar compatibilidad, runtimes y benchmarks |
+| ODS | [`ODS.md`](ODS.md) | 🟢 Activa / 🟡 subproyecto de integración | Revisar instalador, arquitectura, catálogo y soporte de plataformas |
+| Magnitude | [`MAGNITUDE.md`](MAGNITUDE.md) | 🟢 Activa / 🟡 subproyecto de integración | Revisar CLI, motor de inferencia, modelos y benchmarks |
 | Infraestructura de IA local 2026 | [`LOCAL-INFERENCE-2026.md`](LOCAL-INFERENCE-2026.md) | 🟢 Activa / 🟢 verificación documental completada | Revisar nuevas ediciones, proyectos y claims |
 
 ## Derivados de la fuente de infraestructura local
@@ -70,6 +72,10 @@ Una fuente estratégica puede aportar taxonomías, entidades, proyectos, hipóte
 LLMFit actúa como **preselector hardware-aware**: reduce el espacio de candidatos antes de que el Router de LEONES aplique evidencia, tarea, licencia/JGB, CABE/RULA, rendimiento medido, runtime y demás criterios propios.
 
 AirLLM actúa como **runtime candidato memory-constrained**: puede ampliar el conjunto de modelos ejecutables cuando la VRAM es el cuello de botella, pero sus claims de memoria/rendimiento deben reproducirse con benchmarks LEONES antes de alimentar recomendaciones como evidencia medida.
+
+ODS actúa como **capa de despliegue e instalación**: automatiza la puesta en marcha de un stack local, detecta hardware, selecciona modelos y expone servicios locales. LEONES conserva la decisión y la medición.
+
+Magnitude actúa como **agente + inference engine local**: perfila hardware, recomienda modelos y configura su motor basado en llama.cpp, además de ejecutar tareas agentivas. LEONES debe registrar sus configuraciones y medirlas antes de convertir sus estimaciones en evidencia propia.
 
 El informe de infraestructura local 2026 actúa como **radar de prospección**. Sus claims se contrastan individualmente y el resultado de esa comprobación queda en los documentos derivados indicados arriba.
 
