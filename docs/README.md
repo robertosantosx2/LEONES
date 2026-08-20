@@ -30,6 +30,8 @@ fase → implementación → validación → aceptación
 
 - [`sources/README.md`](sources/README.md) — registro de fuentes externas integradas.
 - [`sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) — ecosistema de IA abierta identificado por Mozilla, convertido en fuente independiente para LEONES.
+- [`sources/LLMFIT.md`](sources/LLMFIT.md) — LLMFit como preselector hardware-aware.
+- [`sources/AIRLLM.md`](sources/AIRLLM.md) — AirLLM como runtime candidato para escenarios memory-constrained.
 
 Regla: las fuentes externas conservan su procedencia y edición. Sus conclusiones no sustituyen las clasificaciones, contratos ni mediciones propias de LEONES.
 
