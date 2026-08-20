@@ -1,30 +1,38 @@
 #!/usr/bin/env python3
-"""Adaptador mínimo para llama.cpp.
-
-El adaptador no instala ni descarga nada y tampoco inventa una medición. Su
-responsabilidad es construir el comando de inferencia que después ejecutará
-``run_and_record_benchmark.py``. La expresión regular acepta las formas más
-habituales de salida que contienen una cifra seguida de ``tok/s``.
-
-Así cada runtime puede tener su propio adaptador, mientras que la validación y
-el almacenamiento de la medición siguen siendo comunes para todo LEONES.
-"""
+"""Adapter for llama.cpp behind the LEONES runtime selection gate."""
 from __future__ import annotations
 
 import re
+from typing import Any
 
 TOKENS_PER_SECOND_PATTERN = re.compile(r"([0-9]+(?:\.[0-9]+)?)\s*tok/s", re.IGNORECASE)
 
 
-def build_command(executable: str, model_path: str, prompt: str) -> list[str]:
-    """Construye un comando seguro para una ejecución de llama.cpp.
+def build_command(executable: str, model_path: str, prompt: str, *, context_tokens: int | None = None) -> list[str]:
+    """Build a shell-free llama.cpp command."""
+    command = [executable, "-m", model_path, "-p", prompt]
+    if context_tokens is not None:
+        if context_tokens < 1:
+            raise ValueError("context_tokens must be positive")
+        command.extend(["-c", str(context_tokens)])
+    return command
 
-    Se devuelven argumentos separados en una lista; el runner los ejecuta sin
-    shell. El adaptador no afirma que el comando se haya ejecutado con éxito.
+
+def build_command_from_plan(plan: dict[str, Any], model_path: str, prompt: str, *, executable: str = "llama-cli", context_tokens: int | None = None) -> list[str]:
+    """Build llama.cpp command only from a runtime-gate execution plan.
+
+    Quantization is a property of the selected model artifact (normally the
+    GGUF file), so the adapter deliberately does not invent a llama.cpp flag
+    from its label. The plan must have been authorized by runtime_gate.py.
     """
-    return [executable, "-m", model_path, "-p", prompt]
+    if plan.get("execution_authorized") is not True:
+        raise ValueError("runtime plan is not authorized")
+    if plan.get("runtime") != "llama.cpp":
+        raise ValueError(f"unsupported runtime for llama.cpp adapter: {plan.get('runtime')!r}")
+    if not plan.get("quantization"):
+        raise ValueError("runtime plan has no quantization")
+    return build_command(executable, model_path, prompt, context_tokens=context_tokens)
 
 
 def tokens_per_second_pattern() -> str:
-    """Devuelve el patrón que el runner usará para extraer tok/s."""
     return TOKENS_PER_SECOND_PATTERN.pattern
