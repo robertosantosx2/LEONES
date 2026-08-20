@@ -35,10 +35,6 @@ Este directorio contiene fuentes externas convertidas en conocimiento documental
 
 Los `verified-primary` quedan pendientes únicamente de benchmark LEONES para obtener estado `measured`. Los archivados se conservan por trazabilidad histórica y los `unresolved` no generan recomendaciones ni registros canónicos verificados.
 
-## Evidencia local de referencia
-
-- [`LLMFIT-REAL-HARDWARE-2026-08-20.md`](LLMFIT-REAL-HARDWARE-2026-08-20.md) — observación de LLMFit sobre un Intel i5-1035G1 con 8 núcleos, 7 GB de RAM y GPU Intel Iris Plus integrada. Se conserva separada de los benchmarks propios.
-
 ## Pipeline de incorporación
 
 ```text
