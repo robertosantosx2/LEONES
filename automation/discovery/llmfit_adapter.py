@@ -26,8 +26,7 @@ def normalize_candidate(raw: dict[str, Any], *, observed_at: str | None = None) 
     """Normalize one LLMFit candidate without inventing measurements."""
     observed_at = observed_at or datetime.now(timezone.utc).isoformat()
     return {
-        "source": "llmfit",
-        "observed_at": observed_at,
+        "source": "llmfit", "observed_at": observed_at,
         "model_id": _first(raw, "model", "model_id", "name", "id"),
         "provider": raw.get("provider"),
         "params": _first(raw, "params", "parameters", "parameter_count"),
@@ -46,21 +45,37 @@ def normalize_candidate(raw: dict[str, Any], *, observed_at: str | None = None) 
 
 
 def normalize(payload: Any, *, observed_at: str | None = None) -> dict[str, Any]:
-    """Normalize common JSON shapes returned by LLMFit commands."""
+    """Normalize common JSON shapes returned by LLMFit commands.
+
+    A mapping in a recognized collection slot must actually contain a model
+    list. Silently converting malformed dictionaries into an empty candidate
+    set would turn bad discovery data into false absence of evidence.
+    """
     if isinstance(payload, list):
         candidates = payload
         system = None
     elif isinstance(payload, dict):
         system = payload.get("system") or payload.get("hardware")
-        candidates = (
-            payload.get("models")
-            or payload.get("recommendations")
-            or payload.get("results")
-            or payload.get("data")
-            or []
-        )
-        if isinstance(candidates, dict):
-            candidates = candidates.get("models") or candidates.get("results") or []
+        collection_keys = ("models", "recommendations", "results", "data")
+        candidates = []
+        found_collection = False
+        for key in collection_keys:
+            if key not in payload:
+                continue
+            found_collection = True
+            value = payload[key]
+            if isinstance(value, list):
+                candidates = value
+                break
+            if isinstance(value, dict):
+                nested = value.get("models") or value.get("results")
+                if isinstance(nested, list):
+                    candidates = nested
+                    break
+                raise ValueError(f"LLMFit collection '{key}' is not a model list")
+            raise ValueError(f"LLMFit collection '{key}' is not a list")
+        if not found_collection:
+            raise ValueError("Could not locate a model list in LLMFit JSON")
     else:
         raise TypeError("LLMFit JSON must be an object or list")
 
@@ -68,8 +83,7 @@ def normalize(payload: Any, *, observed_at: str | None = None) -> dict[str, Any]
         raise ValueError("Could not locate a model list in LLMFit JSON")
 
     return {
-        "source": "llmfit",
-        "source_version": None,
+        "source": "llmfit", "source_version": None,
         "observed_at": observed_at or datetime.now(timezone.utc).isoformat(),
         "hardware": system,
         "candidates": [normalize_candidate(item) for item in candidates if isinstance(item, dict)],
@@ -93,14 +107,12 @@ def main() -> int:
     parser.add_argument("--input", help="Read previously captured LLMFit JSON instead of executing llmfit")
     parser.add_argument("llmfit_args", nargs=argparse.REMAINDER)
     ns = parser.parse_args()
-
     if ns.input:
         with open(ns.input, encoding="utf-8") as fh:
             payload = json.load(fh)
         result = normalize(payload)
     else:
-        args = ns.llmfit_args or ["recommend"]
-        result = run_llmfit(args)
+        result = run_llmfit(ns.llmfit_args or ["recommend"])
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 

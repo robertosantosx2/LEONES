@@ -1,21 +1,11 @@
 #!/usr/bin/env python3
-"""Ejecuta un comando de inferencia y registra sus tokens por segundo.
-
-El runner es deliberadamente genérico: LEONES no debe imponer un runtime
-concreto a todos los modelos. Recibe un comando ya preparado por el adaptador
-del runtime, ejecuta el proceso, recoge su salida y extrae una métrica explícita
-mediante una expresión regular.
-
-Para lectores con conocimientos básicos: el script hace tres cosas. Primero
-lanza el programa que realmente ejecuta el modelo. Después busca en su salida
-una cifra de tokens por segundo. Finalmente pasa esa cifra al contrato común
-de ``record_measurement`` para evitar registros incompletos o mal etiquetados.
-"""
+"""Execute an inference adapter and record its measured throughput."""
 from __future__ import annotations
 
 import argparse
 import re
 import subprocess
+import uuid
 from typing import Any
 
 try:
@@ -25,12 +15,7 @@ except ModuleNotFoundError:  # ejecución directa
 
 
 def run_and_record(command: list[str], metadata: dict[str, Any], pattern: str) -> dict[str, Any]:
-    """Ejecuta ``command`` y registra la primera métrica que coincida con ``pattern``.
-
-    El comando debe ser proporcionado por un adaptador de runtime y no se
-    ejecuta mediante un shell. Esto evita que una cadena recibida como dato
-    pueda convertirse accidentalmente en varios comandos del sistema.
-    """
+    """Run an adapter command and persist only an actually observed tok/s value."""
     completed = subprocess.run(command, capture_output=True, text=True, check=False)
     output = f"{completed.stdout}\n{completed.stderr}"
     match = re.search(pattern, output)
@@ -40,12 +25,13 @@ def run_and_record(command: list[str], metadata: dict[str, Any], pattern: str) -
         raise ValueError("benchmark output does not contain a tokens-per-second measurement")
 
     data = dict(metadata)
+    data["execution_id"] = str(uuid.uuid4())
     data["tokens_per_second"] = float(match.group(1))
     return record_measurement(data)
 
 
 def main() -> None:
-    """Expone el runner como una herramienta de línea de comandos."""
+    """Expose the runner as a command-line tool."""
     parser = argparse.ArgumentParser(description="Ejecuta una inferencia y registra tok/s medidos")
     parser.add_argument("--pattern", required=True, help="Regex cuyo primer grupo contiene tok/s")
     parser.add_argument("--model", required=True)
