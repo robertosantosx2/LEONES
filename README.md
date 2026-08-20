@@ -45,6 +45,9 @@ Los subproyectos de LEONES se organizan en **capas complementarias**. Cada uno r
                        │                  │
                        └────────┬─────────┘
                                 ↓
+                     LLMFIT / MODEL FIT
+                                │
+                                ↓
                          RECOMENDADOR
                                 │
                 ┌───────────────┼───────────────┐
@@ -130,7 +133,51 @@ Documentación: [`docs/phases/2026-08-hardware-pricing/`](docs/phases/2026-08-ha
 
 Documentación: [`docs/phases/2026-08-economic-ranking-v1/`](docs/phases/2026-08-economic-ranking-v1/).
 
-## 7. CABE / RULA
+## 7. LLMFit — primera estimación de encaje modelo ↔ máquina
+
+**Motivación.** Antes de ejecutar un benchmark físico o descargar varios gigabytes de pesos, LEONES necesita una **primera estimación rápida y barata** de qué modelos son candidatos razonables para el hardware disponible. Esto evita gastar tiempo y almacenamiento en modelos que claramente no encajan y mejora la primera recomendación al usuario.
+
+**Objetivo.** Incorporar [llmfit](https://www.llmfit.org/) como **capa de estimación inicial de model fit**, aprovechando su análisis de hardware y su capacidad de valorar qué modelos pueden ejecutarse en una máquina concreta. El proyecto de referencia es [`AlexsJones/llmfit`](https://github.com/AlexsJones/llmfit).
+
+LLMFit **no sustituye Atlas, el recomendador ni los benchmarks de LEONES**. Es una señal previa de encaje. Su resultado debe conservarse como `estimated`/`reported` según el origen del dato y nunca promocionarse automáticamente a `measured`.
+
+**Metodología.**
+
+```text
+HARDWARE DEL USUARIO
+        ↓
+   LLMFit / FIT
+        ↓
+ candidatos iniciales
+        ↓
+Atlas + apertura + evidencia
+        ↓
+ requisitos / cuantización / runtime
+        ↓
+ benchmark LEONES
+        ↓
+  MEDICIÓN REAL
+        ↓
+ recomendación final
+```
+
+El flujo previsto es:
+
+1. detectar CPU, RAM, GPU/VRAM y otras capacidades relevantes;
+2. ejecutar LLMFit como filtro/estimador inicial;
+3. conservar sus supuestos y fuente;
+4. cruzar candidatos con Atlas y evidencia técnica;
+5. incorporar cuantización, contexto y runtime reales;
+6. descartar candidatos incompatibles antes de descargar cuando la evidencia lo justifique;
+7. ejecutar benchmark LEONES sobre los candidatos restantes;
+8. sustituir la hipótesis por medición cuando exista evidencia física;
+9. retroalimentar la matriz y el recomendador sin sobrescribir el histórico de estimaciones.
+
+**Regla de arquitectura:** LLMFit es **front-end de estimación**, no fuente de verdad. LEONES mantiene la procedencia y conserva la diferencia entre `fit estimado` y `rendimiento medido`.
+
+Documentación prevista: [`docs/integrations/LLMFIT/`](docs/integrations/LLMFIT/) · [`docs/phases/2026-08-atlas-recommendation-pipeline/`](docs/phases/2026-08-atlas-recommendation-pipeline/).
+
+## 8. CABE / RULA
 
 **Motivación.** Saber si un modelo "cabe" en una máquina no es suficiente; también importa si la velocidad resultante hace viable una tarea.
 
@@ -149,17 +196,17 @@ La clasificación nunca sustituye a la medición.
 
 Documentación: [`docs/phases/2026-08-cabe-rula/`](docs/phases/2026-08-cabe-rula/) · [`docs/completed/H09-CABE-RULA.md`](docs/completed/H09-CABE-RULA.md).
 
-## 8. Atlas → recomendador
+## 9. Atlas → recomendador
 
 **Motivación.** Un catálogo no responde a la pregunta del usuario: "¿qué modelo debería utilizar yo para esta tarea y este hardware?".
 
 **Objetivo.** Convertir evidencia de modelos + hardware + rendimiento + apertura + precio en recomendaciones trazables.
 
-**Metodología.** Prospección → ingesta → evidencia → calidad → hipótesis → matriz hardware → recomendación → enriquecimiento → validación → publicación. CABE/RULA, JGB y los datos económicos permanecen como dimensiones independientes.
+**Metodología.** Prospección → ingesta → evidencia → calidad → hipótesis → matriz hardware → **LLMFit como estimación inicial cuando esté disponible** → recomendación → enriquecimiento → validación → publicación. CABE/RULA, JGB y los datos económicos permanecen como dimensiones independientes.
 
 Documentación: [`docs/phases/2026-08-atlas-recommendation-pipeline/`](docs/phases/2026-08-atlas-recommendation-pipeline/) · [`docs/completed/H10-ATLAS-RECOMMENDER-PIPELINE.md`](docs/completed/H10-ATLAS-RECOMMENDER-PIPELINE.md).
 
-## 9. Benchmarks reales
+## 10. Benchmarks reales
 
 **Motivación.** Los benchmarks publicados por terceros son imprescindibles, pero no sustituyen la medición en el hardware y runtime que realmente utiliza el usuario.
 
@@ -169,7 +216,7 @@ Documentación: [`docs/phases/2026-08-atlas-recommendation-pipeline/`](docs/phas
 
 Documentación: [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) · [`docs/completed/BENCHMARK-MEASURED-EVIDENCE.md`](docs/completed/BENCHMARK-MEASURED-EVIDENCE.md) · [`docs/completed/PHYSICAL-BENCHMARK-VALIDATION.md`](docs/completed/PHYSICAL-BENCHMARK-VALIDATION.md).
 
-## 10. Evaluación agentiva
+## 11. Evaluación agentiva
 
 **Motivación.** Un agente no se puede evaluar solo por tokens/segundo ni por una respuesta final. Importan herramientas, trayectoria, recuperación ante errores, coste, tiempo, seguridad y artefactos producidos.
 
@@ -179,7 +226,7 @@ Documentación: [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) · [`docs/compl
 
 Documentación: [`docs/EVALUACION_AGENTIC_TESTS.md`](docs/EVALUACION_AGENTIC_TESTS.md) · [`docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md`](docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md).
 
-## 11. Runtime / Router / Quant
+## 12. Runtime / Router / Quant
 
 **Motivación.** El modelo no ejecuta solo: el resultado depende del motor, cuantización, placement, contexto, batching, aceleración y estrategia de routing.
 
@@ -187,11 +234,9 @@ Documentación: [`docs/EVALUACION_AGENTIC_TESTS.md`](docs/EVALUACION_AGENTIC_TES
 
 **Metodología.** Registrar cada ejecución como una combinación explícita `modelo + cuantización + runtime + hardware + configuración`; medir; comparar; alimentar Router sin ocultar las condiciones de la medición.
 
-Estos subproyectos evolucionan sobre los contratos establecidos por Atlas, la matriz hardware y Benchmark.
-
 Documentación general: [`docs/PILLARS.md`](docs/PILLARS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## 12. Agentes y harnesses
+## 13. Agentes y harnesses
 
 **Motivación.** LEONES necesita una capa de ejecución agéntica capaz de probar tareas reales de manera reproducible y comparable.
 
@@ -201,7 +246,7 @@ Documentación general: [`docs/PILLARS.md`](docs/PILLARS.md) · [`docs/ARCHITECT
 
 Los harnesses de referencia del proyecto son **Hermes, DeepSeek Harness y Buddy**, junto con la integración de **Magnitude** como asistente de coding y **ODS** como servidor de stacks IA.
 
-## 13. ODS — servidor de stacks IA
+## 14. ODS — servidor de stacks IA
 
 **Motivación.** Muchos usuarios necesitan algo más que un modelo: necesitan inferencia, UI, RAG, agentes, voz, imagen, workflows y servicios coordinados.
 
@@ -211,7 +256,7 @@ Los harnesses de referencia del proyecto son **Hermes, DeepSeek Harness y Buddy*
 
 Documentación: [`docs/integrations/ODS/README.md`](docs/integrations/ODS/README.md) · [`docs/integrations/DATA-CONTRACT.md`](docs/integrations/DATA-CONTRACT.md).
 
-## 14. Magnitude — asistente personal IA
+## 15. Magnitude — asistente personal IA
 
 **Motivación.** El coding agent necesita seleccionar modelo/runtime en función del hardware y ejecutar tareas reales sobre un proyecto, no únicamente producir texto.
 
@@ -223,7 +268,7 @@ Las skills se consideran superficie de permisos y se registran con origen, versi
 
 Documentación: [`docs/integrations/Magnitude/README.md`](docs/integrations/Magnitude/README.md).
 
-## 15. Web / App
+## 16. Web / App
 
 **Motivación.** El conocimiento solo es útil si una persona puede consultarlo y utilizarlo para tomar una decisión.
 
@@ -233,7 +278,7 @@ Documentación: [`docs/integrations/Magnitude/README.md`](docs/integrations/Magn
 
 Documentación: [`web/README.md`](web/README.md) · [`docs/UX_OPTIMIZATION.md`](docs/UX_OPTIMIZATION.md).
 
-## 16. Recomendaciones de usuarios
+## 17. Recomendaciones de usuarios
 
 **Motivación.** La comunidad puede descubrir hardware, software, modelos y fuentes que un crawler no encuentra.
 
@@ -241,259 +286,105 @@ Documentación: [`web/README.md`](web/README.md) · [`docs/UX_OPTIMIZATION.md`](
 
 **Metodología.** Usuario → propuesta → validación `OK LEONES` → revisión → enriquecimiento → evidencia → integración si supera el quality gate.
 
-## 17. MANADA / conocimiento colectivo
+## 18. MANADA / conocimiento colectivo
 
 **Motivación.** La experiencia distribuida de usuarios sobre hardware y tareas reales complementa los datos automáticos.
 
-**Objetivo.** Agregar observaciones voluntarias y anónimas/seudonimizadas de forma que puedan mejorar las recomendaciones sin comprometer privacidad.
+**Objetivo.** Construir una capa colectiva de conocimiento práctico, manteniendo trazabilidad y evitando que una opinión se convierta automáticamente en evidencia técnica.
 
-**Metodología.** Aportación voluntaria → minimización de datos → revisión → agregación → estadísticas → evidencia colectiva. Nunca se incorpora automáticamente una observación individual como hecho universal.
+**Metodología.** Observación de usuario → anonimización/minimización → validación → agregación → contraste con benchmark → publicación con nivel de confianza.
 
-## 18. ADIVINO / descubrimiento futuro
+## 19. Fuentes de conocimiento
 
-**Motivación.** El ecosistema cambia y LEONES debe poder descubrir nuevas fuentes, benchmarks, repositorios, runtimes, datasets y skills.
+**Motivación.** La calidad del sistema depende de la calidad y diversidad de sus fuentes.
 
-**Objetivo.** Automatizar el descubrimiento de nuevas fuentes sin automatizar ciegamente su incorporación al conocimiento canónico.
+**Objetivo.** Mantener un inventario de fuentes primarias, empíricas, comunitarias y metodológicas y asignarles un papel explícito.
 
-**Metodología.** Descubrir → clasificar → registrar procedencia → proponer → revisión humana → quality gate → integrar.
+**Metodología.** Descubrir → clasificar → evaluar autoridad → extraer evidencia → conservar URL/fecha/procedencia → contrastar → incorporar al conocimiento solo cuando corresponda.
 
-ADIVINO permanece separado del catálogo canónico hasta superar los controles definidos.
-
-Documentación: [`docs/SOURCE-DISCOVERY.md`](docs/SOURCE-DISCOVERY.md).
-
-## 19. Fuentes empíricas externas
-
-**Motivación.** LEONES necesita contrastar sus mediciones y recomendaciones con el ecosistema externo.
-
-**Objetivo.** Mantener un mapa de fuentes de evidencia independientes —benchmarks, arenas, fabricantes, Hugging Face, Artificial Analysis, Mozilla y otras— sin mezclarlas con las mediciones propias.
-
-**Metodología.** Registrar fuente → identificar qué mide realmente → capturar fecha/procedencia → normalizar → etiquetar como evidencia externa → contrastar con LEONES → conservar diferencias.
-
-Documentación: [`docs/sources/`](docs/sources/) y [`docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md).
+Entre las fuentes empíricas se incluyen LMSYS Chatbot Arena, Open LLM Leaderboard, LLM Stats y otras fuentes de medición real; entre las fuentes de infraestructura se incluyen ODS, Magnitude y LLMFit.
 
 ---
 
-# 📊 Estado global del proyecto
+# 🔬 Principio metodológico común
 
-**Corte: 20 de agosto de 2026.** Este README es la fotografía operativa del proyecto. El detalle técnico y la evidencia de cada fase viven en `docs/`.
-
-| Estado | Significado |
-|---|---|
-| 🟢 **ACEPTADO / OPERATIVO** | Implementado, documentado y validado. |
-| 🟡 **EN DESARROLLO** | Existe base funcional, pero falta cobertura, validación o integración. |
-| 🔵 **SIGUIENTE** | Próxima prioridad. |
-| ⚪ **PLANIFICADO** | Aún no es una capacidad funcional completa. |
-
-## 🟢 Hitos aceptados
-
-### H01 — Bot mensual de precios de hardware
-
-**🟢 ACEPTADO.** Fuentes activas, extracción, normalización, control de calidad e histórico de observaciones.
-
-Documentación: [`docs/phases/2026-08-hardware-pricing/`](docs/phases/2026-08-hardware-pricing/).
-
-### H02 — Precios → hardware → Atlas/recomendador
-
-**🟢 ACEPTADO.** Integración de observaciones válidas de precios con hardware y recomendación, con tests.
-
-Documentación: [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md).
-
-### H03 — Ranking económico V1
-
-**🟢 ACEPTADO.** Automatizado en GitHub Actions, con tests y separación explícita entre JGB, rendimiento, hardware y precio.
-
-Documentación: [`docs/phases/2026-08-economic-ranking-v1/`](docs/phases/2026-08-economic-ranking-v1/).
-
-### H04 — Prospección diaria
-
-**🟢 ACEPTADO.** Descubrimiento diario, filtro OSI, prioridad Copyleft, enriquecimiento e integración con Atlas/web.
-
-Documentación: [`docs/phases/2026-08-daily-prospection/`](docs/phases/2026-08-daily-prospection/).
-
-### H05 — Sistema formal de documentación
-
-**🟢 ACEPTADO.** Fases, arquitectura, decisiones, validación, trazabilidad e índices documentales.
-
-Documentación: [`docs/DOCUMENTATION_PROTOCOL.md`](docs/DOCUMENTATION_PROTOCOL.md) · [`docs/phases/README.md`](docs/phases/README.md).
-
-### H06 — Open LLM Atlas ampliado
-
-**🟢 ACEPTADO / OPERATIVO.**
-
-H06 establece la frontera canónica entre el feed de prospección y el Atlas:
+Todos los subproyectos siguen el mismo ciclo:
 
 ```text
-FEED OPERATIVO → IDENTIDAD → EVIDENCIA → QUALITY GATE → VERIFIED-ONLY → ATLAS CANÓNICO
+HIPÓTESIS
+   ↓
+FUENTE
+   ↓
+EXTRACCIÓN
+   ↓
+NORMALIZACIÓN
+   ↓
+EVIDENCIA
+   ↓
+QUALITY GATE
+   ↓
+MEDICIÓN / VALIDACIÓN
+   ↓
+PUBLICACIÓN
+   ↓
+RETROALIMENTACIÓN
 ```
 
-Validación final: 193 filas auditadas, 193 identidades únicas, 0 duplicados detectados, 193 flags `unverified`, 0 filas `verified`, 0 registros promovidos y 0 registros en el catálogo canónico. Esto es correcto: no se introducen modelos sin evidencia suficiente.
+Una recomendación no puede mejorar la evidencia retrospectivamente: primero se conserva la procedencia y después se calcula la recomendación.
 
-Documentación: [`docs/phases/2026-08-atlas-expanded/`](docs/phases/2026-08-atlas-expanded/) · [`atlas/README.md`](atlas/README.md) · [`data/prospection/h06_audit_report.json`](data/prospection/h06_audit_report.json).
-
-### H10 — Pipeline Atlas → recomendador diario enriquecido
-
-**🟢 ACEPTADO.** El pipeline completo está operativo: prospección → ingesta → evidencia → calidad → hipótesis → matriz → recomendador → enriquecimiento → validación → publicación.
-
-La integración de CABE/RULA mantiene `tokens_per_second` como dato continuo y añade `performance_class` sin introducir esa clasificación en `fit_score`.
-
-Documentación: [`docs/phases/2026-08-atlas-recommendation-pipeline/`](docs/phases/2026-08-atlas-recommendation-pipeline/).
-
-### Integraciones ODS + Magnitude
-
-**🟢 INTEGRADAS.** ODS y Magnitude están documentados como perfiles externos instalables y medibles, con preflight, consentimiento, contrato de evidencia, validación E2E y tests. No se convierten en dependencias estructurales de LEONES.
-
-Documentación: [`docs/integrations/`](docs/integrations/) · [`docs/integrations/E2E.md`](docs/integrations/E2E.md).
-
----
-
-# 🧹 Estándar de «limpia, fija y da esplendor»
-
-Cuando una fase pasa a terminada, se aplica este cierre antes de considerarla terminada:
-
-1. eliminar trazas, pruebas y borradores que no formen parte del producto;
-2. retirar código muerto y artefactos temporales;
-3. revisar nombres y contratos públicos;
-4. documentar los scripts con comentarios pedagógicos, pensados para lectores con conocimientos básicos de programación;
-5. mantener documentación externa pormenorizada;
-6. enlazar esa documentación desde los README correspondientes;
-7. conservar evidencia de validación y criterios de cierre;
-8. comprobar que CI es reproducible;
-9. comprobar que ningún workflow escritor puede concurrir con otro;
-10. actualizar el estado del proyecto.
-
-Este estándar se aplica también retrospectivamente a las fases ya aceptadas.
-
----
-
-# 🟡 Partes en desarrollo
-
-### H07 — Índice JGB sistemático
-
-**🟡 EN DESARROLLO.** El criterio JGB ya está documentado y se mantiene independiente de rendimiento, calidad, precio y self-hostability. Falta aplicarlo sistemáticamente y verificar su evidencia.
-
-Documentación: [`web/proyectos/atlas/openness/JGB-INDEX.md`](web/proyectos/atlas/openness/JGB-INDEX.md).
-
-### H08 — Matriz completa de hardware
-
-**🟡 EN DESARROLLO.** Existe una matriz grande y generación automática de perfiles, incluyendo CPU, RAM y GPU. Falta convertir toda esa cobertura en capacidad independiente auditada y aceptada.
-
-### H09 — CABE / RULA
-
-**🟡 EN DESARROLLO.** Contratos, normalización, clasificación, pruebas e integración con el recomendador están implementados. Falta ampliar la cobertura con mediciones reales y cerrar la validación sistemática.
-
-Regla oficial: `<1 = No CABE`, `1–<10 = CABE`, `10–100 = RULA`, `>100 = RULA+` tok/s. El valor `tokens_per_second` siempre se conserva y la clasificación no sustituye al dato.
-
-### Benchmarks reales y evaluación agentiva
-
-**🟡 EN DESARROLLO.** Contrato de resultados, B01–B05, inferencia y evaluación ya existen; la metodología agentiva se ha ampliado hacia tareas reales, herramientas, trazas, outcome/trajectory, grading multidimensional y métricas de coste/tiempo/seguridad. Falta ejecutar la campaña amplia sobre hardware y entornos reales.
-
-Documentación: [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) · [`docs/EVALUACION_AGENTIC_TESTS.md`](docs/EVALUACION_AGENTIC_TESTS.md) · [`docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md`](docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md).
-
-### Adaptadores y fuentes empíricas
-
-**🟡 EN DESARROLLO.** La arquitectura permite trazabilidad de observaciones externas; la cobertura y robustez de adaptadores continúan evolucionando.
-
-### 🔮 ADIVINO — descubrimiento futuro
-
-**🟡 APARCADO.** Arquitectura documentada para descubrir nuevas webs, repositorios, datasets, benchmarks, runtimes, software y skills. Su activación de correo y validación humana `OK LEONES` quedan pendientes por decisión explícita del proyecto.
-
-Documentación: [`docs/SOURCE-DISCOVERY.md`](docs/SOURCE-DISCOVERY.md).
-
-### Web / aplicación
-
-**🟡 EN DESARROLLO.** La web funcional y la aplicación están publicadas. Quedan coherencia completa de navegación, validación de todos los flujos y evolución de UX.
-
-Documentación: [`web/README.md`](web/README.md) · [`docs/UX_OPTIMIZATION.md`](docs/UX_OPTIMIZATION.md).
-
-### Recomendaciones de usuarios
-
-**🟡 IMPLEMENTADO / PENDIENTE DE PRIMER CICLO REAL.** Existe formulario, plantilla, workflow y validación mediante OK LEONES; falta demostrar el ciclo completo con una entrada real.
-
-### MANADA
-
-**🟡 BASE OPERATIVA / EN EVOLUCIÓN.** Existe generación de informes, privacidad, agregación y estadísticas. La aportación es voluntaria y pasa revisión humana. El estado se seguirá validando mediante CI.
-
-### Fuente estratégica — Mozilla State of Open Source AI
-
-**🟢 INTEGRADA COMO FUENTE DE CONOCIMIENTO.** El ecosistema identificado por Mozilla se conserva en un documento independiente, con procedencia, análisis LEONES, entidades de seguimiento y reglas de separación entre evidencia externa y medición propia.
-
-Documentación: [`docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md).
-
----
-
-# 🧭 Los 9 pilares oficiales
-
-| Pilar | Estado | Situación |
-|---|---|---|
-| **1. Prospector** | 🟢 | Prospección diaria operativa. |
-| **2. Atlas** | 🟢 H06 | Frontera canónica de identidad/evidencia operativa; cobertura depende de evidencia. |
-| **3. Task Intelligence** | 🟡 | Arquitectura definida; implementación integral pendiente. |
-| **4. Router** | 🟡 | Primera implementación; falta selección dinámica E2E validada. |
-| **5. Quant** | 🟡 | Base documental; falta integración completa. |
-| **6. Fine-Tuning** | 🟡 | Base documental; falta sistema completo validado. |
-| **7. Agents** | 🟡 | Arquitectura y evaluación presentes; falta cerrar ciclo reproducible amplio. |
-| **8. Runtime** | 🟡 | Base funcional; backends y mediciones en expansión. |
-| **9. Benchmark & Evaluation** | 🟡 | Contratos y batería existentes; la metodología agentiva se ha ampliado con tareas reales, trazas, graders y métricas multidimensionales; falta evidencia de ejecución continua. |
-
-Documentación: [`docs/PILLARS.md`](docs/PILLARS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
-
----
-
-# ⚙️ Automatización y CI
-
-El repositorio dispone de workflows para prospección, Atlas, evidencia, recomendaciones, precios, ranking económico, web, recomendaciones de usuarios y MANADA.
-
-**Regla obligatoria de no concurrencia:** todo workflow futuro que escriba en `main` debe usar el grupo global `leones-main-writers` con `cancel-in-progress: false`. Ningún nuevo workflow escritor puede saltarse esta regla.
-
-Regla de cierre:
-
-```text
-IMPLEMENTAR → VALIDAR → ACEPTAR → DOCUMENTAR → ENLAZAR → CERRAR
-```
-
-Una pieza no se declara terminada solo porque exista código.
-
----
-
-# 🔬 Principios de evidencia
+# 🧱 Regla de arquitectura
 
 LEONES separa deliberadamente:
 
 ```text
-DESCUBRIMIENTO → EVIDENCIA EXTERNA → NORMALIZACIÓN → VERIFICACIÓN / MEDICIÓN → ATLAS → RECOMENDACIÓN
+IDENTIDAD       → Atlas
+APERTURA        → JGB
+HARDWARE        → Hardware Matrix
+FIT INICIAL     → LLMFit
+PRECIO          → Hardware Pricing
+ECONOMÍA        → TCO
+RENDIMIENTO     → Benchmarks
+AGENTICIDAD     → Agentic Evaluation
+EJECUCIÓN       → Runtime / Harnesses
+DESPLIEGUE      → ODS / Magnitude
+DECISIÓN        → Recommender / Router
+EXPERIENCIA     → Web / App / MANADA
 ```
 
-No se inventan valores. La ausencia permanece `unknown`. Las estimaciones se marcan como `estimated`. Una fuente externa no se presenta automáticamente como medición LEONES.
+Esta separación permite sustituir una fuente o herramienta sin destruir el conocimiento acumulado de LEONES.
 
-Además:
+# 🧪 Regla de evidencia
 
-- la clasificación de apertura no se sustituye por un score;
-- JGB, CABE y RULA permanecen separados;
-- el tamaño de pesos no equivale a memoria total de ejecución;
-- el contexto declarado no equivale a rendimiento medido;
-- entrenamiento, validación y test deben mantenerse separados;
-- en evaluación agentiva se separan **outcome**, **trajectory**, **coste/tiempo**, **seguridad** y **artefactos**.
-
----
-
-# 🗺️ Flujo general
+Nunca se debe escribir:
 
 ```text
-PROSPECCIÓN → IDENTIDAD → EVIDENCIA → ATLAS
-                              ↓
-                 JGB / HARDWARE / RENDIMIENTO / PRECIO
-                              ↓
-                         CABE / RULA
-                              ↓
-                        RECOMENDADOR
-                              ↓
-                         RUNTIME / AGENT
-                              ↓
-                 TAREA → HERRAMIENTAS → TRAZA
-                              ↓
-                  OUTCOME / COSTE / SEGURIDAD
-                              ↓
-                           MEDICIÓN
-                              ↓
-                         PUBLICACIÓN
+LLMFit dice que cabe → LEONES ha demostrado que funciona
 ```
+
+La cadena correcta es:
+
+```text
+LLMFit estima que puede caber
+            ↓
+LEONES contrasta requisitos y configuración
+            ↓
+LEONES ejecuta benchmark
+            ↓
+LEONES mide
+            ↓
+Atlas conserva ambas evidencias
+```
+
+# 📚 Documentación
+
+- [`docs/phases/README.md`](docs/phases/README.md) — fases e hitos.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura.
+- [`docs/DOCUMENTATION_PROTOCOL.md`](docs/DOCUMENTATION_PROTOCOL.md) — protocolo documental.
+- [`docs/integrations/README.md`](docs/integrations/README.md) — integraciones.
+- [`docs/integrations/DATA-CONTRACT.md`](docs/integrations/DATA-CONTRACT.md) — contrato de datos.
+- [`docs/integrations/E2E.md`](docs/integrations/E2E.md) — validación E2E.
+- [`docs/completed/`](docs/completed/) — documentación de hitos cerrados.
+
+# 🟢 Estado del proyecto
+
+El estado operativo de cada hito se mantiene en [`docs/phases/README.md`](docs/phases/README.md). El README principal describe el **qué, por qué y cómo**; los documentos de fase contienen el detalle de implementación, decisiones y validación.
