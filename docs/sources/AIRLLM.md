@@ -1,80 +1,72 @@
 # AirLLM — fuente de conocimiento para LEONES
 
 - **Proyecto:** AirLLM
-- **Repositorio:** https://github.com/lyogavin/airllm
-- **Licencia del código:** Apache-2.0 (según el repositorio)
+- **Repositorio primario:** https://github.com/lyogavin/airllm
 - **Tipo:** runtime/biblioteca de inferencia orientada a reducir el uso de memoria durante la inferencia de LLM grandes.
-- **Revisión:** 2026-08-20
-- **Estado LEONES:** 🟢 fuente activa; 🟡 candidato de integración funcional, pendiente de benchmark propio.
+- **Estado LEONES:** 🟢 fuente activa · 🟡 candidato de integración funcional · ⏳ pendiente de benchmark propio.
+- **Fecha de revisión documental:** 2026-08-20
+
+> **Regla de evidencia:** las cifras, compatibilidades y afirmaciones de rendimiento procedentes de AirLLM son evidencia externa hasta que LEONES las reproduzca. AirLLM no convierte por sí mismo un resultado en `measured`.
 
 ## 1. Qué aporta
 
-AirLLM aborda el principal cuello de botella de ejecutar modelos grandes en hardware con poca VRAM: evita mantener el modelo completo en memoria aceleradora. Su estrategia divide el modelo por capas y mantiene en GPU la capa necesaria durante el cálculo, trasladando el resto al almacenamiento/CPU según el flujo de ejecución.
+AirLLM aborda escenarios en los que el modelo completo no resulta cómodo de mantener en la memoria aceleradora. Su estrategia de carga por capas permite mantener en memoria de ejecución la parte necesaria para el cálculo y mover el resto según el flujo de inferencia.
 
-El README actual del proyecto afirma que esta estrategia permite ejecutar modelos que exceden ampliamente la VRAM disponible. Los valores anunciados por el proyecto deben tratarse como **claims externos**, no como mediciones LEONES.
+El valor para LEONES es ampliar el conjunto de modelos **ejecutables**, especialmente cuando la memoria es el cuello de botella. Ejecutable no significa automáticamente rápido, interactivo ni recomendable.
 
-## 2. Arquitectura relevante
+## 2. Mecanismos relevantes
 
-### Layer-wise loading
+### Carga por capas
 
-El modelo se transforma en fragmentos por capa y durante la inferencia se carga el material necesario para la capa activa. Esto cambia el requisito dominante desde **VRAM ≈ tamaño total del modelo** hacia **VRAM ≈ tamaño de la capa activa + estados auxiliares**.
-
-Consecuencia: AirLLM es especialmente interesante cuando existe suficiente almacenamiento y el objetivo prioritario es **hacer ejecutable** un modelo que no cabe convencionalmente en GPU.
+La estrategia layer-wise reduce la necesidad de mantener simultáneamente todo el modelo en la memoria aceleradora. El coste se desplaza parcialmente hacia transferencias entre almacenamiento/CPU y el dispositivo de cálculo.
 
 ### Prefetching
 
-El proyecto incorpora prefetching para solapar carga y cálculo. Esto es importante para LEONES porque el rendimiento real puede quedar limitado por la latencia y ancho de banda del almacenamiento, no por la capacidad de cómputo de la GPU.
+El prefetching intenta solapar transferencia y cálculo. Para LEONES esto hace que el rendimiento dependa también de la latencia, ancho de banda y comportamiento sostenido del almacenamiento.
 
-### Compresión
+### Compresión / cuantización
 
-AirLLM incluye compresión opcional de pesos de 4 u 8 bits basada en cuantización por bloques. El proyecto la presenta principalmente como una forma de reducir el volumen de datos que debe moverse durante la inferencia. Los claims de aceleración deben validarse en el hardware objetivo.
+El proyecto documenta opciones de reducción de precisión. La combinación exacta debe registrarse junto con el modelo y la versión del runtime; cualquier mejora de velocidad o memoria anunciada externamente requiere reproducción en el hardware objetivo.
 
-### CPU inference
+### CPU
 
-El proyecto documenta soporte para inferencia CPU desde versiones anteriores. Esto convierte AirLLM en candidato para perfiles sin GPU, pero no debe confundirse **posibilidad de ejecución** con **rendimiento útil**.
+AirLLM contempla escenarios de inferencia CPU. LEONES debe distinguir siempre entre **compatibilidad de ejecución** y **rendimiento útil**.
 
-## 3. Modelos y alcance
+## 3. Modelos y compatibilidad
 
-El proyecto declara compatibilidad con numerosas familias populares, entre ellas Llama, Qwen, DeepSeek, Mistral/Mixtral, Phi, Gemma, ChatGLM, Baichuan, InternLM, Yi y Kimi K3, además de modelos recientes.
+La documentación del proyecto contempla numerosas familias de modelos. La compatibilidad efectiva debe comprobarse para la versión concreta de AirLLM, `torch`, `transformers`, arquitectura, formato de pesos, atención, precisión y hardware.
 
-La compatibilidad efectiva debe verificarse por versión de `airllm`, `transformers`, arquitectura del modelo, formato de pesos, dependencias de atención y hardware.
+Los modelos MoE merecen una medición específica: el ahorro potencial de memoria puede venir acompañado de costes de transferencia, routing y sincronización.
 
-Especial atención a modelos MoE: la estrategia de streaming puede ser particularmente atractiva porque permite cargar sólo los expertos necesarios para cada token, pero el coste de transferencia, routing y sincronización debe medirse.
+## 4. Encaje arquitectónico en LEONES
 
-## 4. Relación con LEONES
-
-AirLLM no debe sustituir a LLMFit ni al benchmark LEONES.
-
-**Papel propuesto:** runtime candidato dentro de la capa de ejecución y como mecanismo de recuperación para modelos que no caben en la ruta convencional.
-
-Pipeline recomendado:
+AirLLM es un **runtime**, no una propiedad del modelo y no sustituye al preselector hardware-aware ni al benchmark canónico.
 
 ```text
 Perfil hardware
-    ↓
-LLMFit — preselección de modelos
-    ↓
+      ↓
+LLMFit — preselección hardware-aware
+      ↓
 Router LEONES — tarea + restricciones + evidencia
-    ↓
-Runtime selector
-    ├── llama.cpp / otros runtimes convencionales
-    └── AirLLM — cuando la memoria sea el cuello de botella
-    ↓
+      ↓
+Runtime Selector
+      ├── runtimes convencionales
+      └── AirLLM — cuando la memoria sea el cuello de botella
+      ↓
 Benchmark LEONES
-    ↓
-Medición real: latencia, tok/s, RAM, VRAM, I/O, estabilidad
+      ↓
+Atlas / recomendador
 ```
 
-## 5. Encaje con el recomendador
+### Contrato conceptual del recomendador
 
-AirLLM debe aparecer como **runtime**, no como una propiedad del modelo.
-
-El recomendador debe conservar separados:
+Mantener separados, como mínimo:
 
 - `model_id`
 - `runtime_id = airllm`
 - `hardware_profile`
-- `precision/compression`
+- `precision`
+- `compression`
 - `context_length`
 - `storage_profile`
 - `measured_prefill_tps`
@@ -86,49 +78,59 @@ El recomendador debe conservar separados:
 - `disk_read_latency`
 - `result_quality`
 
-Esto permite comparar AirLLM contra otros runtimes sin atribuir al modelo el comportamiento específico del motor.
+Así se evita atribuir al modelo el comportamiento específico del runtime.
 
-## 6. Criterios de benchmark LEONES
+## 5. Benchmark mínimo LEONES
 
-Antes de recomendar AirLLM para un equipo concreto, medir como mínimo:
+Antes de promocionar AirLLM a una recomendación basada en evidencia medida, registrar:
 
 1. instalación reproducible en Debian;
-2. descarga y transformación inicial del modelo;
-3. espacio de almacenamiento utilizado;
-4. tiempo de carga inicial;
-5. TTFT;
-6. tok/s de generación;
-7. RAM pico;
-8. VRAM pico, si existe GPU;
-9. lectura sostenida y latencia del almacenamiento;
-10. comportamiento con contextos crecientes;
-11. estabilidad durante sesiones largas;
-12. calidad frente al mismo modelo en otro runtime.
+2. versiones exactas de AirLLM, PyTorch y Transformers;
+3. modelo, commit/revisión y formato de pesos;
+4. precisión/compresión;
+5. espacio de almacenamiento;
+6. tiempo de carga inicial;
+7. TTFT;
+8. tok/s de prefill y decode;
+9. RAM pico;
+10. VRAM pico, si existe GPU;
+11. lectura y latencia del almacenamiento;
+12. comportamiento con contextos crecientes;
+13. estabilidad en sesiones largas;
+14. calidad frente al mismo modelo en otro runtime comparable.
 
-Para perfiles de bajo consumo, el almacenamiento debe considerarse una variable de primer orden. Una solución puede ser técnicamente ejecutable y, aun así, quedar fuera del objetivo LEONES de respuesta práctica.
+Para perfiles de bajo consumo, almacenamiento e I/O son variables de primer orden. Una configuración puede ser técnicamente ejecutable y quedar fuera del objetivo práctico de LEONES por latencia.
 
-## 7. Compatibilidad y mantenimiento
+## 6. Reproducibilidad
 
-AirLLM depende de un ecosistema que cambia rápidamente (`torch`, `transformers`, `bitsandbytes`, `flash-attn`, arquitecturas de modelos y formatos). Algunas arquitecturas pueden requerir versiones concretas.
+LEONES debe registrar la combinación completa:
 
-Por tanto, LEONES debe registrar la combinación completa:
+`airllm + torch + transformers + modelo + revisión + precisión + hardware + SO`
 
-`airllm + torch + transformers + modelo + precisión + hardware + SO`
+No basta con almacenar la versión de AirLLM: el ecosistema de inferencia cambia rápidamente y puede alterar compatibilidad y rendimiento.
 
-y no sólo la versión de AirLLM.
+## 7. Clasificación de evidencia
+
+| Estado | Significado |
+|---|---|
+| `external` | Afirmación procedente de la documentación de AirLLM. |
+| `verified-primary` | La identidad/procedencia del proyecto ha sido comprobada por LEONES. |
+| `measured` | Resultado reproducido mediante benchmark LEONES en un perfil hardware concreto. |
+
+La ficha actual queda en **fuente activa + candidato funcional**; no aporta todavía mediciones `measured`.
 
 ## 8. Valor estratégico
 
-AirLLM amplía el espacio de modelos **ejecutables** en hardware de consumo. Su mayor valor para LEONES no es prometer que un equipo modesto pueda ejecutar cualquier modelo a velocidad interactiva, sino permitir separar tres preguntas:
+AirLLM permite separar tres preguntas que el recomendador de LEONES no debe confundir:
 
-- **¿Cabe?** — capacidad/memoria.
+- **¿Cabe?** — capacidad y memoria.
 - **¿Funciona?** — compatibilidad y estabilidad.
 - **¿Sirve?** — rendimiento y calidad medidos para la tarea.
 
-Esta separación encaja directamente con la filosofía de LEONES de no convertir una estimación externa en una medición propia.
+LLMFit ayuda con la primera preselección. AirLLM puede ampliar las opciones de ejecución. LEONES decide mediante evidencia y medición propia cuáles merecen una recomendación.
 
-## 9. Fuente primaria
+## 9. Fuente primaria y trazabilidad
 
 Repositorio oficial: https://github.com/lyogavin/airllm
 
-La información de esta ficha se basa en la documentación/README del repositorio consultado el 2026-08-20. Las cifras de memoria y rendimiento publicadas por AirLLM quedan clasificadas como **evidencia externa del proveedor/proyecto** hasta su reproducción mediante benchmarks LEONES.
+Esta ficha fue revisada el **2026-08-20**. Las afirmaciones externas se mantienen separadas de las mediciones LEONES y deben revisarse cuando cambien el repositorio, las arquitecturas soportadas o el stack de inferencia.
