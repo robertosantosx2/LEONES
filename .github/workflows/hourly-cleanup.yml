@@ -1,0 +1,68 @@
+name: Hourly cleanup and polish
+
+on:
+  schedule:
+    # Run once per hour at minute 17.
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hourly-cleanup-main
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Remove known redundant router notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          removed=0
+          for path in \
+            docs/REFERENCE-HARNESS-ROUTER-STATUS-2.md \
+            docs/REFERENCE-HARNESS-ROUTER-STATUS-2.md \
+            docs/REFERENCE-HARNESS-ROUTER-PR.md \
+            docs/REFERENCE-HARNESS-ROUTER-PR-2.md \
+            docs/REFERENCE-HARNESS-ROUTER-PR-3.md \
+            docs/REFERENCE-HARNESS-ROUTER-NOTE.md; do
+            if [[ -f "$path" ]]; then
+              git rm "$path"
+              removed=1
+            fi
+          done
+          echo "removed=$removed" >> "$GITHUB_OUTPUT"
+        id: cleanup
+
+      - name: Run focused router tests when present
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f tests/test_leones_router.py || -f tests/test_reference_adapters.py ]]; then
+            python -m unittest discover -s tests -p 'test_*.py' -v
+          else
+            echo 'No router tests present; nothing to run.'
+          fi
+
+      - name: Commit cleanup if needed
+        if: steps.cleanup.outputs.removed == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore: clean redundant router documentation'
+          git push origin HEAD:main
+
+      - name: Report clean state
+        if: steps.cleanup.outputs.removed != '1'
+        run: echo 'LEONES cleanup target already clean; no commit required.'
