@@ -18,7 +18,7 @@ aún no hayan migrado.
 | Hardware profile | capacidades reales/observadas del equipo |
 | `model_selector.py` | elegibilidad, scoring y TOP-N |
 | LLMFit | estimación previa de fit/velocidad |
-| Runtime gate | autorización de ejecución |
+| Runtime gate | autorización de ejecución/benchmark |
 | GGUF resolver | localizar artefacto compatible |
 | Acquisition | obtener y verificar artefacto |
 | llama.cpp | ejecutar |
@@ -37,5 +37,6 @@ no entran en `fit_score`.
 
 `REJECTED` → `CANDIDATE` → `SELECTED` → `TOP_N` → `BENCHMARK_REQUIRED`
 
-El runtime gate solo autoriza candidatos `TOP_N` que no hayan quedado marcados
-como `BENCHMARK_REQUIRED`.
+`TOP_N` autoriza ejecución normal. `BENCHMARK_REQUIRED` autoriza únicamente una
+sonda de ejecución cuyo objetivo es obtener medición real; hasta entonces no
+se debe presentar el candidato como rendimiento validado.
