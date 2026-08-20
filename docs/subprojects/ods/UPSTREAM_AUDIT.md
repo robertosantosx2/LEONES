@@ -77,3 +77,7 @@ The Git tree audited for this document was commit:
 - resolve the `sources.data` inconsistency in `SourceProcessor`;
 - isolate Infinity/Jina network tests from the CPU package tests;
 - add a dedicated ODS CI job.
+
+## Local Debian finding
+
+The local Debian validation has already established that a CPU-only PyTorch installation works (`torch 2.13.0+cpu`, CUDA unavailable). A CUDA-enabled installation attempted to pull a large NVIDIA dependency stack and hit the user's filesystem quota. This is precisely why the LEONES baseline must keep CPU and GPU environments separate.
