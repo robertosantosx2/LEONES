@@ -4,13 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       selection_json:
-        description: 'runtime-selection.v1 JSON produced by the model selector'
+        description: 'Selector output JSON (candidates[])'
         required: true
         type: string
-      executor:
-        description: 'A01 executor entry point'
-        required: false
-        default: 'benchmarks/agentic/adapters/llmserve_a01.py'
+      runtime_commands_json:
+        description: 'Trusted runtime argv map JSON'
+        required: true
         type: string
 
 jobs:
@@ -22,18 +21,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Materialize runtime-selection.v1
+      - name: Materialize selector and trusted runtime inputs
         env:
           SELECTION_JSON: ${{ inputs.selection_json }}
+          RUNTIME_COMMANDS_JSON: ${{ inputs.runtime_commands_json }}
         run: |
           mkdir -p artifacts
-          printf '%s\n' "$SELECTION_JSON" > artifacts/runtime-selection.v1.json
-          python -m json.tool artifacts/runtime-selection.v1.json >/dev/null
-      - name: Execute A01 -> grade -> runtime benchmark -> evidence -> Router
+          printf '%s\n' "$SELECTION_JSON" > artifacts/selector-output.json
+          printf '%s\n' "$RUNTIME_COMMANDS_JSON" > artifacts/runtime-commands.json
+          python -m json.tool artifacts/selector-output.json >/dev/null
+          python -m json.tool artifacts/runtime-commands.json >/dev/null
+      - name: Execute selector -> runtime-selection.v1 -> A01 -> grader -> benchmark -> evidence -> Router
         run: |
           python scripts/a01_runtime_benchmark.py \
-            --selection artifacts/runtime-selection.v1.json \
-            --executor "${{ inputs.executor }}" \
+            --selection artifacts/selector-output.json \
+            --runtime-commands artifacts/runtime-commands.json \
+            --workspace .leones/a01-workspace \
             --out artifacts/a01-runtime-benchmark.v1.json
       - name: Upload canonical evidence
         if: always()
@@ -41,5 +44,7 @@ jobs:
         with:
           name: a01-runtime-benchmark
           path: |
-            artifacts/runtime-selection.v1.json
+            artifacts/selector-output.json
+            artifacts/runtime-commands.json
+            artifacts/a01-executor-result.json
             artifacts/a01-runtime-benchmark.v1.json
