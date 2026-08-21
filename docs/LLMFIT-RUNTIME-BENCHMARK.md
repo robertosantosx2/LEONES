@@ -17,7 +17,9 @@ select candidate
    ↓
 installed + available runtime
    ↓
-llmfit bench --json --provider …
+provider-specific benchmark
+   ├─ llmfit bench --json
+   └─ AirLLM local runner
    ↓
 leones.runtime-benchmark.v1
    ↓
@@ -35,9 +37,8 @@ evidence, task suitability and measured performance.
 Current LLMFit exposes machine-readable recommendation JSON with fields such as
 `score`, score components, fit level, run mode, best quantization, estimated TPS,
 memory requirements, runtime, installed state, usable context and an estimate
-basis. Its REST/CLI documentation also defines `fit_level`, `run_mode` and
-`runtime` as stable machine codes. The adapter accepts both those current fields
-and the older shapes already present in LEONES.
+basis. The adapter accepts both those current fields and older shapes already
+present in LEONES.
 
 The canonical normalized object is:
 
@@ -71,6 +72,21 @@ The executable selector defaults to:
 This is deliberately conservative. A high score does not override an inability
 to execute the model.
 
+## Runtime boundary
+
+The adapter recognizes `llamacpp`, `mlx`, `vllm` and the optional `airllm`
+runtime. AirLLM is capability-gated by actual imports of both `airllm` and
+`torch`; merely having a model that Transformers can describe does not make
+AirLLM available.
+
+AirLLM is intentionally a runtime fallback/experimental path rather than a
+new source of model recommendations. Its benchmark uses
+`AutoModel.from_pretrained(...)`, tokenization and generation, and records a
+physical local generation. The first run may download and create layer-wise
+shards, so disk and I/O are part of the measured runtime cost.
+
+See `docs/RUNTIME-AIRLLM.md` for the runtime-specific boundary and limitations.
+
 ## First automatic benchmark
 
 Run locally on the target machine:
@@ -81,21 +97,23 @@ python3 automation/discovery/llmfit_adapter.py --use-case coding --select
 python3 scripts/leones_runtime_benchmark.py --use-case coding --output artifacts/runtime-benchmark.json
 ```
 
-The benchmark runner only selects a candidate that is both installed and backed
-by an available runtime. It then delegates to LLMFit's provider-aware benchmark
-command. If no matching measured result is returned, the output remains
-`unknown`; it is never promoted to `measured`.
+For a direct AirLLM physical smoke benchmark:
 
-## Runtime boundary
+```bash
+python3 scripts/leones_airllm_benchmark.py <huggingface-model-id>
+```
 
-The adapter currently recognizes the runtime identifiers used by LLMFit for
-local inference (`llamacpp`, `mlx`, and the API's `vllm` override). Availability
-is checked locally before selection. This is intentionally a capability check,
-not an assertion that the runtime has successfully loaded the model.
+The normal benchmark runner only selects a candidate that is both installed
+and backed by an available runtime. A successful AirLLM run is marked `measured`
+only after the selected model actually generates tokens. A failed load or
+missing dependency remains an execution failure and is never promoted.
 
-The successful benchmark is the next evidence boundary. The runtime/model/
-quantization/hardware tuple must be preserved with the benchmark result before
-it can feed the Router or LOTB.
+## Evidence boundary
+
+The successful benchmark must preserve the runtime/model/quantization/hardware
+tuple before it can feed the Router or LOTB. A single-generation AirLLM run is
+**performance evidence**, not a model-quality benchmark; quality promotion
+still requires the normal LEONES evidence gates.
 
 ## Reproducibility
 
