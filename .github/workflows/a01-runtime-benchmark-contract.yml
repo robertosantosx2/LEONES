@@ -1,0 +1,36 @@
+name: A01 runtime benchmark contract
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/a01_runtime_benchmark.py'
+      - 'scripts/leones-router.py'
+      - 'schemas/runtime-benchmark.v1.schema.json'
+      - 'schemas/router-decision.v1.schema.json'
+      - '.github/workflows/a01-runtime-benchmark-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/a01_runtime_benchmark.py'
+      - 'scripts/leones-router.py'
+      - 'schemas/runtime-benchmark.v1.schema.json'
+      - 'schemas/router-decision.v1.schema.json'
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile canonical path
+        run: python -m py_compile scripts/a01_runtime_benchmark.py scripts/leones-router.py scripts/run_a01_selected.py scripts/runtime_gate.py benchmarks/agentic/adapters/llmserve_a01.py benchmarks/agentic/graders/a01_grader.py
+      - name: Validate JSON schemas
+        run: python - <<'PY'
+import json
+from pathlib import Path
+for p in [Path('schemas/runtime-benchmark.v1.schema.json'), Path('schemas/router-decision.v1.schema.json')]:
+    json.loads(p.read_text())
+print('schemas: OK')
+PY
