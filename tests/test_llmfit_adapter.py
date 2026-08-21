@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch
 
-from automation.discovery.llmfit_adapter import normalize, normalize_candidate, select_candidate
+from automation.discovery.llmfit_adapter import normalize, normalize_candidate, runtime_command, select_candidate
 
 
 class TestLLMFitAdapter(unittest.TestCase):
@@ -30,6 +30,12 @@ class TestLLMFitAdapter(unittest.TestCase):
         self.assertEqual(result["evidence_status"], "estimated")
         self.assertTrue(result["runtime_available"])
 
+    def test_airllm_capability_requires_both_imports(self):
+        with patch("automation.discovery.llmfit_adapter._python_import", side_effect=lambda module: module in {"airllm", "torch"}):
+            self.assertEqual(runtime_command("airllm"), "python:airllm")
+        with patch("automation.discovery.llmfit_adapter._python_import", return_value=False):
+            self.assertIsNone(runtime_command("airllm"))
+
     def test_normalize_models_shape(self):
         payload = {
             "system": {"cpu": "Intel i5-1035G1", "ram_gb": 7},
@@ -38,7 +44,8 @@ class TestLLMFitAdapter(unittest.TestCase):
                 {"id": "example/two", "tps": 10},
             ],
         }
-        result = normalize(payload, observed_at="2026-08-20T00:00:00+00:00")
+        with patch("automation.discovery.llmfit_adapter.runtime_command", return_value=None):
+            result = normalize(payload, observed_at="2026-08-20T00:00:00+00:00")
         self.assertEqual(result["source"], "llmfit")
         self.assertEqual(result["hardware"]["cpu"], "Intel i5-1035G1")
         self.assertEqual(len(result["candidates"]), 2)
@@ -73,7 +80,8 @@ class TestLLMFitAdapter(unittest.TestCase):
             normalize({"models": {"unexpected": True}})
 
     def test_normalized_output_is_json_serializable(self):
-        result = normalize({"results": [{"name": "x", "score": 81}]})
+        with patch("automation.discovery.llmfit_adapter.runtime_command", return_value=None):
+            result = normalize({"results": [{"name": "x", "score": 81}]})
         encoded = json.dumps(result)
         self.assertIn("llmfit", encoded)
 
