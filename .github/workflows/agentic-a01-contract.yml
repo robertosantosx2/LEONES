@@ -23,4 +23,4 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install --upgrade pip pytest
-      - run: python -m pytest -q
+      - run: PYTHONPATH=. python -m pytest -q
