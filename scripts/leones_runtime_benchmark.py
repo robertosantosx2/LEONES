@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Connect the selected LLMFit candidate to a real local runtime benchmark.
 
-The benchmark is delegated to LLMFit's provider-aware bench command. A result
-is marked measured only when a benchmark result matches the selected model.
+LLMFit remains the provider-aware preselector. Runtime-specific runners are
+responsible for physical measurements; a result is marked measured only when
+that runner actually generated tokens for the selected model.
 """
 from __future__ import annotations
 
@@ -16,12 +17,23 @@ from automation.discovery.llmfit_adapter import recommend, select_candidate
 
 
 def run_bench(runtime: str, model: str | None = None) -> dict:
+    if runtime == "airllm":
+        if not model:
+            raise RuntimeError("AirLLM requires a Hugging Face model identifier")
+        proc = subprocess.run(
+            ["python3", "scripts/leones_airllm_benchmark.py", model],
+            check=False, capture_output=True, text=True,
+        )
+        if proc.returncode:
+            raise RuntimeError(proc.stderr.strip() or f"AirLLM benchmark exited {proc.returncode}")
+        try:
+            return json.loads(proc.stdout)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError("AirLLM benchmark did not return valid JSON") from exc
+
     if not shutil.which("llmfit"):
         raise RuntimeError("llmfit executable not found")
     args = ["llmfit", "bench", "--json", "--provider", runtime]
-    # Ollama/vLLM accept a model identifier. llama.cpp/MLX are discovered from
-    # their running provider and are therefore benchmarked without forcing an
-    # HF model ID into a provider-specific CLI argument.
     if model and runtime in {"ollama", "vllm"}:
         args.append(model)
     proc = subprocess.run(args, check=False, capture_output=True, text=True)
@@ -47,6 +59,8 @@ def _rows(payload: object) -> list[dict]:
 def match_result(payload: dict, selected: dict) -> dict | None:
     names = {selected.get("model_id"), selected.get("ollama_name")}
     names.discard(None)
+    if payload.get("status") == "measured" and payload.get("model") in names:
+        return payload
     for row in _rows(payload):
         row_names = {row.get("name"), row.get("model"), row.get("model_id"),
                      row.get("ollama_name"), row.get("model_name")}
@@ -90,11 +104,13 @@ def main() -> int:
                     "raw": payload,
                 })
             else:
+                measured_tps = matched.get("tokens_per_second", matched.get("tok_s"))
                 result["benchmark"].update({
                     "status": "measured",
                     "evidence_status": "measured",
                     "runtime": runtime,
                     "model": model,
+                    "measured_tps": measured_tps,
                     "result": matched,
                 })
         except RuntimeError as exc:
