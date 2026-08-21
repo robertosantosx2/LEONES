@@ -1,0 +1,26 @@
+name: Agentic A01 contract
+
+on:
+  pull_request:
+    paths:
+      - 'benchmarks/agentic/**'
+      - '.github/workflows/agentic-a01-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'benchmarks/agentic/**'
+      - '.github/workflows/agentic-a01-contract.yml'
+
+jobs:
+  a01-contract:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: benchmarks/agentic/adapters
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --upgrade pip pytest
+      - run: python -m pytest -q
