@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 FIT_ORDER = {"perfect": 3, "good": 2, "marginal": 1, "too_tight": 0}
+RUNTIMES = ["mlx", "llamacpp", "vllm", "airllm"]
 
 
 @dataclass
@@ -64,6 +65,18 @@ def _run(args: list[str]) -> str:
     return proc.stdout
 
 
+def _python_import(module: str) -> bool:
+    python = shutil.which("python") or shutil.which("python3")
+    if not python:
+        return False
+    try:
+        subprocess.run([python, "-c", f"import {module}"], check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
 def runtime_command(runtime: str | None) -> str | None:
     if runtime == "llamacpp":
         for name in ("llama-server", "llama-cli", "llama-bench"):
@@ -73,23 +86,16 @@ def runtime_command(runtime: str | None) -> str | None:
         for name in ("mlx_lm.server", "mlx_lm.generate"):
             if shutil.which(name):
                 return name
-        if shutil.which("python"):
-            try:
-                subprocess.run(["python", "-c", "import mlx_lm"], check=True,
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return "python:mlx_lm"
-            except (OSError, subprocess.SubprocessError):
-                pass
+        if _python_import("mlx_lm"):
+            return "python:mlx_lm"
     elif runtime == "vllm":
         if shutil.which("vllm"):
             return "vllm"
-        if shutil.which("python"):
-            try:
-                subprocess.run(["python", "-c", "import vllm"], check=True,
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return "python:vllm"
-            except (OSError, subprocess.SubprocessError):
-                pass
+        if _python_import("vllm"):
+            return "python:vllm"
+    elif runtime == "airllm":
+        if _python_import("airllm") and _python_import("torch"):
+            return "python:airllm"
     return None
 
 
@@ -226,7 +232,7 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=5)
     parser.add_argument("--min-fit", choices=["perfect", "good", "marginal"], default="good")
     parser.add_argument("--max-context", type=int)
-    parser.add_argument("--force-runtime", choices=["mlx", "llamacpp", "vllm"])
+    parser.add_argument("--force-runtime", choices=RUNTIMES)
     parser.add_argument("--select", action="store_true")
     parser.add_argument("--target-tps", type=float, default=10.0)
     parser.add_argument("--require-installed", action="store_true")
