@@ -2,15 +2,13 @@
 """Canonical A01 path.
 
 selector -> runtime-selection.v1 gate -> A01 executor -> grader
-         -> runtime benchmark -> evidence -> Router hand-off.
-
-The existing ``run_a01_selected.py`` remains the concrete executor bridge;
-this entry point adds the missing measured-runtime/evidence/Router boundary.
+         -> runtime benchmark -> evidence -> LEONES Router.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import re
 import subprocess
@@ -50,26 +48,19 @@ def extract_tps(raw: str, result: dict[str, Any], elapsed: float) -> float | Non
 
 def execute(selection_file: Path, runtime_commands: Path, workspace: Path, output_file: Path,
             prompt: str, timeout: float) -> tuple[dict[str, Any], str, float]:
-    cmd = [
-        sys.executable, "scripts/run_a01_selected.py",
-        "--selection", str(selection_file),
-        "--runtime-commands", str(runtime_commands),
-        "--workspace", str(workspace),
-        "--prompt", prompt,
-        "--out", str(output_file),
-    ]
+    cmd = [sys.executable, "scripts/run_a01_selected.py", "--selection", str(selection_file),
+           "--runtime-commands", str(runtime_commands), "--workspace", str(workspace),
+           "--prompt", prompt, "--out", str(output_file)]
     started = time.perf_counter()
     proc = subprocess.run(cmd, text=True, capture_output=True, timeout=timeout + 10)
     elapsed = time.perf_counter() - started
     if proc.returncode not in (0, 1):
         raise RuntimeError(f"A01 executor failed: {proc.stdout[-4000:]}\n{proc.stderr[-4000:]}")
-    result = load_json(output_file)
-    return result, proc.stdout + "\n" + proc.stderr, elapsed
+    return load_json(output_file), proc.stdout + "\n" + proc.stderr, elapsed
 
 
 def build_benchmark(selection: dict[str, Any], result: dict[str, Any], raw: str, elapsed: float) -> dict[str, Any]:
-    gate = result.get("runtime_selection", {})
-    plans = gate.get("execution_plans", [])
+    plans = result.get("runtime_selection", {}).get("execution_plans", [])
     plan = plans[0] if plans else {}
     agentic = result.get("agentic", {})
     outcome = agentic.get("outcome", {})
@@ -78,42 +69,46 @@ def build_benchmark(selection: dict[str, Any], result: dict[str, Any], raw: str,
     tps = extract_tps(raw, result, elapsed)
     wall = agentic.get("metrics", {}).get("runtime_wall_seconds", elapsed)
     return {
-        "schema": "runtime-benchmark.v1",
-        "status": "measured",
-        "task": "A01",
-        "runtime": runtime.get("name"),
-        "model": model.get("id") or plan.get("model_id"),
-        "quantization": plan.get("quantization"),
-        "wall_seconds": float(wall),
-        "tokens_per_second": tps,
-        "grader_pass": outcome.get("status") == "success",
-        "selection_status": selection.get("candidates", [{}])[0].get("selection_status"),
-        "estimated_tps": plan.get("estimated_tps"),
-        "measured_tps": tps,
+        "schema": "runtime-benchmark.v1", "status": "measured", "task": "A01",
+        "runtime": runtime.get("name"), "model": model.get("id") or plan.get("model_id"),
+        "quantization": plan.get("quantization"), "wall_seconds": float(wall),
+        "tokens_per_second": tps, "grader_pass": outcome.get("status") == "success",
+        "estimated_tps": plan.get("estimated_tps"), "measured_tps": tps,
         "executor_result_sha256": hashlib.sha256(json.dumps(result, sort_keys=True).encode()).hexdigest(),
     }
 
 
-def route(evidence: dict[str, Any]) -> dict[str, Any]:
+def run_router(evidence: dict[str, Any], out: Path) -> dict[str, Any]:
+    """Call the repository's canonical Router, not a parallel routing policy."""
+    router_path = Path("scripts/leones-router.py")
+    spec = importlib.util.spec_from_file_location("leones_router", router_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load canonical Router: {router_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
     benchmark = evidence["runtime_benchmark"]
-    passed = bool(benchmark["grader_pass"])
-    return {
-        "schema": "router-decision.v1",
-        "decision": "accept" if passed else "reject",
-        "candidate": {
-            "model": benchmark.get("model"),
-            "runtime": benchmark.get("runtime"),
-            "quantization": benchmark.get("quantization"),
-        },
-        "reason": "A01 passed; runtime is now backed by measured evidence" if passed else "A01 failed",
-        "evidence_ref": evidence["evidence_id"],
+    model_name = benchmark.get("model")
+    model = {"model": {"name": model_name, "format": None, "size_bytes": None}}
+    plan = evidence.get("runtime_selection", {}).get("execution_plans", [{}])[0]
+    model["model"]["format"] = (plan.get("runtime") or {}).get("format") or (plan.get("variant") or "")
+    hardware = {"hardware": plan.get("hardware", {})}
+    task = {"task": "A01", "capabilities": ["tool_use"]}
+    router_input = {
+        "evidence": {"evidence_type": "measured", "source": evidence["source"]},
+        "model": {"name": model_name},
+        "agentic": {"outcome": {"status": "success" if benchmark["grader_pass"] else "failed"},
+                    "runtime": {"name": benchmark.get("runtime")}},
+        "runtime_benchmark": benchmark,
     }
+    decision = module.route(hardware, model, task, {}, router_input)
+    out.write_text(json.dumps(decision, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return decision
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--selection", required=True, type=Path, help="selector output")
-    ap.add_argument("--runtime-commands", required=True, type=Path, help="trusted runtime argv map")
+    ap.add_argument("--selection", required=True, type=Path)
+    ap.add_argument("--runtime-commands", required=True, type=Path)
     ap.add_argument("--workspace", type=Path, default=Path(".leones/a01-workspace"))
     ap.add_argument("--prompt", default="Execute A01. Return only JSONL tool calls.")
     ap.add_argument("--timeout", type=float, default=60.0)
@@ -128,20 +123,17 @@ def main() -> int:
     result, raw, elapsed = execute(args.selection, args.runtime_commands, args.workspace, executor_out, args.prompt, args.timeout)
     benchmark = build_benchmark(selection, result, raw, elapsed)
     evidence = {
-        "schema": "evidence.v1",
-        "evidence_id": f"A01:{benchmark.get('model')}:{benchmark.get('runtime')}",
-        "source": "LEONES-A01-runtime-benchmark",
-        "selection": selection,
-        "runtime_selection": result.get("runtime_selection"),
-        "grader": result.get("grader") or result.get("agentic", {}).get("grader"),
-        "runtime_benchmark": benchmark,
-        "executor_result": result,
+        "schema": "evidence.v1", "evidence_id": f"A01:{benchmark.get('model')}:{benchmark.get('runtime')}",
+        "source": "LEONES-A01-runtime-benchmark", "selection": selection,
+        "runtime_selection": result.get("runtime_selection"), "grader": result.get("grader") or result.get("agentic", {}).get("grader"),
+        "runtime_benchmark": benchmark, "executor_result": result,
     }
-    decision = route(evidence)
+    router_out = args.out.with_name("router-decision.v1.json")
+    decision = run_router(evidence, router_out)
     payload = {"evidence": evidence, "router": decision}
     args.out.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(payload, ensure_ascii=False))
-    return 0 if decision["decision"] == "accept" else 2
+    return 0 if benchmark["grader_pass"] else 2
 
 
 if __name__ == "__main__":
