@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robertosantosx2.github.io/LEONES/schemas/router-decision.v1.schema.json",
+  "title": "LEONES router decision v1",
+  "type": "object",
+  "required": ["schema", "decision", "candidate", "reason", "evidence_ref"],
+  "properties": {
+    "schema": { "const": "router-decision.v1" },
+    "decision": { "enum": ["accept", "reject"] },
+    "candidate": {
+      "type": "object",
+      "required": ["model", "runtime"],
+      "properties": {
+        "model": { "type": ["string", "null"] },
+        "runtime": { "type": ["string", "null"] },
+        "quantization": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "reason": { "type": "string" },
+    "evidence_ref": { "type": "string" }
+  },
+  "additionalProperties": true
+}
