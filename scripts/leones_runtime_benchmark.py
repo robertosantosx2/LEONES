@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+"""Select a real local runtime for an llmfit candidate and run the first benchmark.
+
+This intentionally delegates inference benchmarking to llmfit's provider-aware
+bench command. No result is labelled measured unless the provider benchmark
+actually returns a result for the selected model.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+from llmfit_adapter import recommend, select_candidate
+
+
+def run_bench(runtime: str, model: str | None = None) -> dict:
+    if not shutil.which("llmfit"):
+        raise RuntimeError("llmfit executable not found")
+    args = ["llmfit", "bench", "--json", "--provider", runtime]
+    if model:
+        args.append(model)
+    proc = subprocess.run(args, check=False, capture_output=True, text=True)
+    if proc.returncode:
+        raise RuntimeError(proc.stderr.strip() or f"llmfit bench exited {proc.returncode}")
+    try:
+        return json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("llmfit bench did not return valid JSON") from exc
+
+
+def _rows(payload: dict) -> list[dict]:
+    for key in ("models", "results", "benchmarks"):
+        value = payload.get(key)
+        if isinstance(value, list):
+            return value
+    if isinstance(payload, list):
+        return payload
+    return []
+
+
+def match_result(payload: dict, selected: dict) -> dict | None:
+    names = {selected.get("model"), selected.get("ollama_name")}
+    names.discard(None)
+    for row in _rows(payload):
+        row_names = {row.get("name"), row.get("model"), row.get("ollama_name"), row.get("model_name")}
+        if names & row_names:
+            return row
+    return None
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--use-case", default="general")
+    parser.add_argument("--limit", type=int, default=5)
+    parser.add_argument("--target-tps", type=float, default=10.0)
+    parser.add_argument("--max-context", type=int)
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+
+    envelope = recommend(use_case=args.use_case, limit=args.limit, max_context=args.max_context)
+    selected = select_candidate(envelope, target_tps=args.target_tps,
+                                require_installed=True, require_runtime=True)
+    result = {
+        "schema_version": "leones.runtime-benchmark.v1",
+        "recommendation": envelope,
+        "selected": selected,
+        "benchmark": {"status": "not_run", "evidence_status": "unknown"},
+    }
+    if selected is None:
+        result["benchmark"]["reason"] = "No candidate is simultaneously runnable, installed and backed by an available runtime."
+    else:
+        runtime = selected.get("runtime")
+        model = selected.get("ollama_name") if runtime == "ollama" else selected.get("model")
+        try:
+            payload = run_bench(runtime, model)
+            matched = match_result(payload, selected)
+            if matched is None:
+                result["benchmark"].update({
+                    "status": "no_matching_result",
+                    "evidence_status": "unknown",
+                    "raw": payload,
+                })
+            else:
+                result["benchmark"].update({
+                    "status": "measured",
+                    "evidence_status": "measured",
+                    "runtime": runtime,
+                    "model": model,
+                    "result": matched,
+                })
+        except RuntimeError as exc:
+            result["benchmark"].update({
+                "status": "failed",
+                "evidence_status": "unknown",
+                "error": str(exc),
+            })
+
+    text = json.dumps(result, indent=2, ensure_ascii=False)
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(text + "\n", encoding="utf-8")
+    print(text)
+    return 0 if result["benchmark"]["status"] in {"measured", "not_run", "no_matching_result"} else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
