@@ -14,13 +14,11 @@ on:
 jobs:
   a01-contract:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: benchmarks/agentic/adapters
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: python -m pip install --upgrade pip pytest
-      - run: PYTHONPATH=. python -m pytest -q
+      - name: Run A01 adapter and selector integration tests
+        run: PYTHONPATH=benchmarks/agentic/adapters:benchmarks/agentic:. python -m pytest -q benchmarks/agentic/adapters benchmarks/agentic/test_selection_to_a01.py
