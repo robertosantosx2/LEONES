@@ -23,6 +23,15 @@ USER / MACHINE
 └──────────┬───────────┘
            ▼
 ┌──────────────────────┐
+│ evidence + identity  │  validate candidate
+│ gate                 │
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
+│ runtime router       │  conventional / AirLLM
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
 │ leones-model         │  identify + verify model
 └──────────┬───────────┘
            ▼
@@ -32,6 +41,10 @@ USER / MACHINE
            ▼
 ┌──────────────────────┐
 │ leones-lotb          │  measure agentic tasks
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
+│ recommendation       │  explain + rank + caveat
 └──────────┬───────────┘
            ▼
 ┌──────────────────────┐
@@ -97,7 +110,7 @@ hardware + user intent
       TOP-N candidates
           │
           ▼
- LEONES evidence + Router
+ identity + evidence gate
 ```
 
 The output is explicitly an **estimate**. It must never be recorded as a LEONES measurement merely because it was produced locally.
@@ -112,25 +125,57 @@ The adapter should preserve the external values independently, for example:
 - `llmfit_run_mode`;
 - `llmfit_memory_estimate`;
 - `llmfit_runtime`;
-- `llmfit_source_version`.
+- `llmfit_source_version`;
+- `llmfit_raw_json`.
 
-### 3. Inference
+### 3. Evidence and identity gate
+
+The candidate must be resolved to an exact model/revision and enriched with technical evidence before the router can produce a strong recommendation.
+
+Evidence is claim-level and distinguishes `PRIMARY`, `LOCAL_MEASURED`, `INDEPENDENT_MEASURED`, `COMMUNITY_MEASURED`, `VENDOR_CLAIM` and `INFERENCE`. States progress from `UNKNOWN`/`CLAIM_ONLY` through `DOCUMENTED` and `REPORTED` to `REPRODUCIBLE`/`VERIFIED`.
+
+A high LLMFit score cannot override a blocking identity, support, licensing/eligibility or execution problem.
+
+### 4. Runtime routing
+
+The router chooses the execution route after model fit and evidence are known:
+
+```text
+candidate
+   │
+   ├── fits conventional memory/runtime → conventional route
+   │
+   ├── needs RAM/CPU/GPU offload       → offload route
+   │
+   └── memory-limited but AirLLM viable  → AirLLM route
+```
+
+AirLLM is a **backend/route**, not a model-quality signal. Its use must be visible in the recommendation.
+
+AirLLM's layer-streaming design can reduce GPU-memory pressure by moving checkpoint layers between storage and GPU around execution. Consequently LEONES must record RAM, disk I/O, loading time, TTFT and decode performance in addition to GPU memory.
+
+The AirLLM route is not automatically preferred merely because it makes a model fit. If it violates the user's latency, throughput or stability target, the candidate must be downgraded or rejected.
+
+### 5. Inference
 
 Inference measures the model/backend/hardware combination. It must not be confused with agentic performance.
 
 Minimum concepts:
 
 - model identifier;
+- exact model revision where available;
 - quantisation;
 - model SHA-256 where available;
 - backend and version/commit;
 - prompt evaluation speed;
 - generation speed;
-- memory;
+- TTFT/TPOT where available;
+- GPU and RAM peak;
 - total time;
+- disk I/O for streaming/offload routes;
 - stability/errors.
 
-### 4. Agentic evaluation
+### 6. Agentic evaluation
 
 LOTB measures whether an agent can complete defined tasks:
 
@@ -142,7 +187,39 @@ LOTB measures whether an agent can complete defined tasks:
 
 A fast model is not automatically a good agent.
 
-### 5. Evidence
+### 7. Recommendation
+
+The recommendation layer consumes the machine-readable contract in `docs/MODEL-RECOMMENDATION-CONTRACT.json`.
+
+It must return, at minimum:
+
+- exact model and revision;
+- quantisation/format;
+- runtime and execution route;
+- fit state;
+- evidence state;
+- estimated and measured components separately;
+- confidence;
+- reasons and limitations;
+- verification commands.
+
+Recommendation precedence is:
+
+```text
+hard constraints
+    ↓
+evidence / identity
+    ↓
+workload suitability
+    ↓
+measured performance
+    ↓
+LLMFit estimates as prior
+```
+
+Recommended states are `MEASURED_RECOMMENDED`, `EVIDENCE_SUPPORTED`, `ESTIMATE_ONLY` and `BLOCKED`.
+
+### 8. Evidence
 
 A result must preserve enough technical information to be understood and reproduced. Third-party benchmark numbers are useful for research but are not official LEONES measurements.
 
@@ -232,6 +309,7 @@ Prefer composition over duplication. If a script needs another capability, call 
 - **LEONES** — Local Ecosystem of Open Neural Expert Systems.
 - **Buddy** — central candidate knowledge/context layer.
 - **llmfit** — hardware-aware external preselector for the first model estimate.
+- **AirLLM** — memory-frugal inference route used when layer streaming/offload is advantageous.
 - **LOTB** — agentic task battery.
 - **metaLEONES** — protocol for anonymised real-machine reports.
 - **CABE** — project vocabulary for whether a configuration fits.
