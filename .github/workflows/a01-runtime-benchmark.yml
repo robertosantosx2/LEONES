@@ -1,0 +1,45 @@
+name: A01 runtime benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      selection_json:
+        description: 'runtime-selection.v1 JSON produced by the model selector'
+        required: true
+        type: string
+      executor:
+        description: 'A01 executor entry point'
+        required: false
+        default: 'benchmarks/agentic/adapters/llmserve_a01.py'
+        type: string
+
+jobs:
+  a01-runtime-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize runtime-selection.v1
+        env:
+          SELECTION_JSON: ${{ inputs.selection_json }}
+        run: |
+          mkdir -p artifacts
+          printf '%s\n' "$SELECTION_JSON" > artifacts/runtime-selection.v1.json
+          python -m json.tool artifacts/runtime-selection.v1.json >/dev/null
+      - name: Execute A01 -> grade -> runtime benchmark -> evidence -> Router
+        run: |
+          python scripts/a01_runtime_benchmark.py \
+            --selection artifacts/runtime-selection.v1.json \
+            --executor "${{ inputs.executor }}" \
+            --out artifacts/a01-runtime-benchmark.v1.json
+      - name: Upload canonical evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a01-runtime-benchmark
+          path: |
+            artifacts/runtime-selection.v1.json
+            artifacts/a01-runtime-benchmark.v1.json
