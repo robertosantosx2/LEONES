@@ -19,7 +19,10 @@ def run_bench(runtime: str, model: str | None = None) -> dict:
     if not shutil.which("llmfit"):
         raise RuntimeError("llmfit executable not found")
     args = ["llmfit", "bench", "--json", "--provider", runtime]
-    if model:
+    # Ollama/vLLM accept a model identifier. llama.cpp/MLX are discovered from
+    # their running provider and are therefore benchmarked without forcing an
+    # HF model ID into a provider-specific CLI argument.
+    if model and runtime in {"ollama", "vllm"}:
         args.append(model)
     proc = subprocess.run(args, check=False, capture_output=True, text=True)
     if proc.returncode:
