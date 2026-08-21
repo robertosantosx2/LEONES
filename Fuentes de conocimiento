@@ -32,3 +32,15 @@ Fuentes complementarias:
 Repositorio: https://github.com/lyogavin/airllm
 
 Análisis incorporado en `docs/sources/AIRLLM.md`: inferencia layer-wise con baja ocupación de VRAM, streaming de capas/expertos, prefetching, compresión opcional 4/8-bit, soporte CPU y amplio catálogo de arquitecturas. Para LEONES queda clasificado como **runtime candidato memory-constrained**. Sus cifras publicadas de memoria y rendimiento se conservan como evidencia externa hasta reproducirlas mediante benchmarks LEONES.
+
+## FreeToken — UC Berkeley / MIT
+
+Paper: https://arxiv.org/abs/2608.16157
+
+Código oficial indicado por el paper: https://github.com/FlashML-org/FreeToken
+
+Proyecto: https://flashml.ai
+
+Análisis incorporado en `docs/sources/FREETOKEN.md`: runtime edge-native especializado en MoE que combina caché LRU de expertos, double-buffering de prefill, reutilización semántica de estado para agentes, ejecución adaptativa CPU/GPU basada en bandwidth medido y gestión elástica de VRAM/KV. La evidencia primaria reporta 39.3 tok/s para Qwen3.6-35B-A3B en una RTX 4060 Laptop de 8 GB y 14.9 tok/s para GLM-5.2 753B en una RTX PRO 6000 de 96 GB, frente a 7.3 tok/s de llama.cpp en esta última configuración. Estas cifras son evidencia externa condicionada al hardware, modelo, cuantización y workload del estudio; LEONES debe reproducirlas antes de tratarlas como benchmarks propios.
+
+Para LEONES, FreeToken queda clasificado como **runtime candidato de primera clase `edge-moe-bandwidth-adaptive`**, especialmente para MoE grandes que exceden VRAM y cargas agenticas con tool calling/multi-turn. El selector debe considerar, además de VRAM, el ancho de banda host→GPU/PCIe medido, bandwidth efectivo de CPU, localidad de expertos, KV cache y patrón de workload.
