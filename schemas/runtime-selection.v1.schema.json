@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robertosantosx2.github.io/LEONES/schemas/runtime-selection.v1.schema.json",
+  "title": "LEONES Runtime Selection V1",
+  "type": "object",
+  "required": ["schema_version", "gate", "execution_plans", "blocked", "counts"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "gate": {"const": "LEONES-runtime-selection-gate"},
+    "execution_plans": {"type": "array", "items": {"$ref": "#/$defs/plan"}},
+    "blocked": {"type": "array", "items": {"type": "object", "required": ["model_id", "reason"]}},
+    "counts": {"type": "object", "required": ["plans", "blocked"], "properties": {"plans": {"type": "integer", "minimum": 0}, "blocked": {"type": "integer", "minimum": 0}}, "additionalProperties": false}
+  },
+  "$defs": {
+    "plan": {
+      "type": "object",
+      "required": ["schema_version", "model", "runtime", "hardware", "selection_status", "execution_authorized", "measurement_required"],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "model_id": {"type": ["string", "null"]},
+        "model": {"type": "object", "required": ["id", "name"], "properties": {"id": {"type": "string"}, "name": {"type": "string"}, "revision": {"type": ["string", "null"]}}, "additionalProperties": true},
+        "variant": {"type": ["string", "null"]},
+        "runtime": {"type": "object", "required": ["name", "command"], "properties": {"name": {"type": "string"}, "command": {"type": ["array", "null"], "items": {"type": "string"}}, "version": {"type": ["string", "null"]}}, "additionalProperties": true},
+        "quantization": {"type": ["string", "null"]},
+        "hardware": {"type": "object", "required": ["ram_gb", "os"], "properties": {"ram_gb": {"type": "number"}, "os": {"type": "string"}, "cpu": {"type": ["string", "null"]}, "gpu": {"type": ["string", "null"]}, "vram_gb": {"type": ["number", "null"]}}, "additionalProperties": true},
+        "selection_status": {"enum": ["TOP_N", "BENCHMARK_REQUIRED"]},
+        "selection_rank": {"type": ["integer", "null"]},
+        "fit_score": {"type": ["number", "null"]},
+        "evidence_level": {"type": ["string", "null"]},
+        "execution_authorized": {"type": "boolean"},
+        "measurement_required": {"type": "boolean"},
+        "benchmark_probe": {"type": "boolean"},
+        "estimated_tps": {"type": ["number", "null"]},
+        "measured_tps": {"type": ["number", "null"]}
+      },
+      "additionalProperties": true
+    }
+  }
+}
