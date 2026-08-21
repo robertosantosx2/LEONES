@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LEONES · Fuentes de conocimiento</title>
+<link rel="stylesheet" href="assets/css/navigation.css"><link rel="stylesheet" href="assets/graphics/brand.css">
+<style>
+body{margin:0;background:#f4f7f9;color:#14202b;font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}.hero{background:linear-gradient(135deg,#12344f,#1b5b70);color:#fff;padding:48px 22px}.hero>div,main{max-width:1200px;margin:auto}.hero h1{font-size:clamp(2.2rem,5vw,4rem);margin:0}.hero p{max-width:900px;opacity:.92}main{padding:30px 22px 80px}.card{background:#fff;border:1px solid #dbe3e9;border-radius:16px;padding:25px;margin-bottom:22px;box-shadow:0 4px 18px #1020300b}.source{border:1px solid #dbe3e9;border-radius:12px;padding:18px;margin:14px 0}.source h2{margin:0 0 5px;color:#12344f}.source a{color:#155f99}.tag{display:inline-block;background:#eaf4ff;border:1px solid #cbddea;border-radius:999px;padding:2px 8px;margin:3px;font-size:.78rem;font-weight:800}.note{background:#eef8ff;border-left:5px solid #1769aa;padding:15px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header class="hero"><div><h1>LEONES · Fuentes de conocimiento</h1><p>Catálogo público de las fuentes externas que alimentan el conocimiento, la prospección, la selección de modelos, los runtimes y la evaluación de LEONES.</p></div></header>
+<main>
+<section class="card"><div class="note"><strong>Regla de evidencia.</strong> Una fuente externa no se convierte automáticamente en una medición LEONES. Conservamos procedencia y distinguimos <code>reported</code>, <code>estimated</code>, <code>observed</code>, <code>measured</code> y <code>verified</code>.</div></section>
+<section class="card"><h2>Fuentes técnicas y runtimes</h2><div class="grid">
+<div class="source"><h2>FreeToken</h2><span class="tag">Runtime</span><span class="tag">MoE</span><span class="tag">Edge</span><p>Runtime bandwidth-adaptive para MoE grandes. Incluye la evidencia de RTX 4060 + Qwen3.6-35B-A3B y RTX PRO 6000 + GLM-5.2.</p><a href="https://arxiv.org/abs/2608.16157">Paper</a> · <a href="https://github.com/FlashML-org/FreeToken">Código</a> · <a href="https://flashml.ai">FlashML</a> · <a href="sources/FREETOKEN.md">Análisis LEONES</a></div>
+<div class="source"><h2>LLMFit</h2><span class="tag">Model fit</span><span class="tag">Hardware</span><p>Primera estimación del encaje modelo ↔ hardware antes de descargar y medir.</p><a href="https://www.llmfit.org">Web</a> · <a href="https://github.com/AlexsJones/llmfit">GitHub</a></div>
+<div class="source"><h2>AirLLM</h2><span class="tag">Runtime</span><span class="tag">Memory constrained</span><p>Inferencia layer-wise y streaming para reducir la ocupación de VRAM.</p><a href="https://github.com/lyogavin/airllm">GitHub</a> · <a href="sources/AIRLLM.md">Análisis LEONES</a></div>
+<div class="source"><h2>ODS · Osmantic</h2><span class="tag">IA local</span><span class="tag">Stacks</span><p>Servidor/ecosistema de stacks de IA local integrado como fuente técnica para LEONES.</p><a href="https://github.com/Osmantic/ODS">GitHub</a> · <a href="https://osmantic.com">Osmantic</a></div>
+<div class="source"><h2>Magnitude</h2><span class="tag">Hardware</span><span class="tag">Runtime</span><span class="tag">Coding</span><p>Perfilado de hardware, estimación de tok/s, selección de modelos, cuantización y configuración del motor.</p><a href="https://github.com/magnitudedev/magnitude">GitHub</a></div>
+<div class="source"><h2>DeepSeek Harness</h2><span class="tag">Harness</span><span class="tag">Agents</span><p>Harness de referencia para ejecución y evaluación agéntica.</p><a href="https://github.com/deepseek-ai/deepseek-harness">GitHub</a></div>
+<div class="source"><h2>Buddy</h2><span class="tag">Harness</span><span class="tag">Agents</span><p>Harness incorporado como referencia de ejecución agéntica y previsto también para ODS/Magnitude.</p><a href="https://github.com/juanje/buddy">GitHub</a></div>
+</div></section>
+<section class="card"><h2>Evidencia empírica y benchmarks</h2><div class="grid">
+<div class="source"><h2>LMSYS Chatbot Arena</h2><span class="tag">Empirical</span><span class="tag">Human evaluation</span><p>Comparación cara a cara mediante preferencias humanas y ELO.</p><a href="https://chat.lmsys.org">Chatbot Arena</a></div>
+<div class="source"><h2>Hugging Face Open LLM Leaderboard</h2><span class="tag">Benchmark</span><span class="tag">Open models</span><p>Evaluación automatizada de modelos abiertos.</p><a href="https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard">Leaderboard</a></div>
+<div class="source"><h2>LLM Stats</h2><span class="tag">Benchmark</span><p>Métricas comparativas de razonamiento, visión y código.</p><a href="https://llm-stats.com/benchmarks">Benchmarks</a></div>
+<div class="source"><h2>Artificial Analysis · Optima</h2><span class="tag">Agentic evaluation</span><span class="tag">Benchmark</span><p>Metodología basada en tareas, trazas, outcome/trajectory, grading, coste, tiempo, herramientas, recuperación y seguridad.</p><a href="https://www.youtube.com/watch?v=H-TTBsquXjw">Optima walkthrough</a> · <a href="https://artificialanalysis.ai/methodology/intelligence-benchmarking">Methodology</a> · <a href="https://artificialanalysis.ai/evaluations/gdpval-aa">GDPval-AA</a> · <a href="https://artificialanalysis.ai/microevals">MicroEvals</a></div>
+</div></section>
+<section class="card"><h2>Conocimiento y aprendizaje</h2><div class="grid">
+<div class="source"><h2>Ahmad Osman · Local AI / LLMs from Zero to Hero</h2><p>Serie de referencia sobre IA local, ingeniería LLM, fundamentos y hardware.</p><a href="https://x.com/TheAhmadOsman/status/2057183854444843202">Fuente</a></div>
+<div class="source"><h2>Mozilla Open Source AI Ecosystem</h2><p>Fuente de contexto del ecosistema open-source AI incorporada al conocimiento de LEONES.</p><a href="https://github.com/robertosantosx2/LEONES">Registro LEONES</a></div>
+</div></section>
+<section class="card"><h2>Cómo entra una fuente en LEONES</h2><p>Descubrimiento → identificación → evidencia primaria → clasificación → deduplicación → quality gate → Atlas/Prospección → estimación → benchmark → medición física → recomendación. Las cifras de terceros permanecen etiquetadas como evidencia externa hasta que LEONES las reproduce.</p><p><a href="index.html">← Volver a LEONES</a> · <a href="prospeccion.html">Prospección</a> · <a href="pilares.html">Pilares</a></p></section>
+</main></body></html>
