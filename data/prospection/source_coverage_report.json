@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-20T04:56:07.979910+00:00",
+  "generated_at": "2026-08-21T04:57:12.610167+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -151,8 +151,8 @@
       "url": "https://pagure.io/",
       "kind": "forge",
       "priority": "high",
-      "status": "reachable",
-      "http_status": 200,
+      "status": "http_error",
+      "http_status": 503,
       "final_url": "https://pagure.io/",
       "authentication_configured": false
     },
