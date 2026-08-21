@@ -42,21 +42,24 @@ def route(hw, model, task=None, atlas=None, evidence=None):
     candidates.sort(key=lambda x: x[0], reverse=True)
     evidence_matches = [r for _, r in candidates if r.get('name') == m.get('name')]
 
-    runtime = 'llama.cpp' if fmt == 'gguf' else None
-    decision = 'candidate' if fits is not False else 'reject_memory'
-    if task_name == 'vision' and 'vision' not in capabilities:
-        decision = 'insufficient_task_capability'
-
     primary = evidence.get('evidence', {})
     agentic = evidence.get('agentic', {})
     outcome = agentic.get('outcome', {})
     measured = primary.get('evidence_type') in ('measured', 'verified')
     evidence_model = (evidence.get('model') or {}).get('name')
     evidence_runtime = (agentic.get('runtime') or {}).get('name')
-    evidence_matches_model = measured and evidence_model and evidence_model == m.get('name')
     runtime_benchmark = evidence.get('runtime_benchmark') or {}
     benchmark_measured = runtime_benchmark.get('status') == 'measured'
 
+    # A measured runtime is authoritative for the concrete execution path;
+    # otherwise retain the old format-based fallback.
+    runtime = evidence_runtime if measured and evidence_runtime else ('llama.cpp' if fmt == 'gguf' else None)
+    evidence_matches_model = measured and evidence_model and evidence_model == m.get('name')
+    evidence_runtime_match = bool(evidence_matches_model and evidence_runtime and evidence_runtime == runtime)
+
+    decision = 'candidate' if fits is not False else 'reject_memory'
+    if task_name == 'vision' and 'vision' not in capabilities:
+        decision = 'insufficient_task_capability'
     if evidence_matches_model and outcome.get('status') == 'success':
         decision = 'evidence_supported' if decision == 'candidate' else decision
     elif evidence_matches_model and outcome.get('status') in ('failed', 'error'):
@@ -67,9 +70,7 @@ def route(hw, model, task=None, atlas=None, evidence=None):
         reason += f" A01 {primary.get('evidence_type')} para este modelo; outcome={outcome.get('status', 'unknown')}"
         if evidence_runtime: reason += f" runtime={evidence_runtime}."
         if benchmark_measured:
-            tps = runtime_benchmark.get('tokens_per_second')
-            wall = runtime_benchmark.get('wall_seconds')
-            reason += f" Benchmark runtime medido: wall={wall}s, tok/s={tps}."
+            reason += f" Benchmark runtime medido: wall={runtime_benchmark.get('wall_seconds')}s, tok/s={runtime_benchmark.get('tokens_per_second')}."
     elif primary:
         reason += ' La evidencia suministrada no corresponde al modelo actual.'
     else:
@@ -87,8 +88,7 @@ def route(hw, model, task=None, atlas=None, evidence=None):
         'runtime': runtime,
         'primary_evidence': {
             'present': bool(primary), 'type': primary.get('evidence_type'),
-            'model_match': bool(evidence_matches_model),
-            'runtime_match': bool(evidence_matches_model and (not evidence_runtime or evidence_runtime == runtime)),
+            'model_match': bool(evidence_matches_model), 'runtime_match': evidence_runtime_match,
             'runtime_benchmark_measured': benchmark_measured,
             'tokens_per_second': runtime_benchmark.get('tokens_per_second'),
             'wall_seconds': runtime_benchmark.get('wall_seconds'),
