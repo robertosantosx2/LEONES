@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-21T04:57:12.610167+00:00",
+  "generated_at": "2026-08-22T04:52:47.883317+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -151,8 +151,8 @@
       "url": "https://pagure.io/",
       "kind": "forge",
       "priority": "high",
-      "status": "http_error",
-      "http_status": 503,
+      "status": "reachable",
+      "http_status": 200,
       "final_url": "https://pagure.io/",
       "authentication_configured": false
     },
@@ -263,7 +263,7 @@
       "priority": "high",
       "status": "reachable",
       "http_status": 200,
-      "final_url": "https://huggingface.co/papers",
+      "final_url": "https://huggingface.co/papers/date/2026-08-21",
       "authentication_configured": false
     }
   ],
