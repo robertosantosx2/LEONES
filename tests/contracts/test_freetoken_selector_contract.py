@@ -1,5 +1,7 @@
+import pytest
+
 from scripts.freetoken_runtime import evaluate_freetoken_candidate
-from scripts.runtime_gate import resolve_runtime
+from scripts.runtime_gate import resolve_runtime, gate_selection
 
 
 HARDWARE = {
@@ -40,17 +42,12 @@ def test_freetoken_accepts_only_measured_moe_agentic_case():
     assert decision["missing_signals"] == []
 
 
-def test_freetoken_is_blocked_when_bandwidth_evidence_is_missing():
-    candidate = freetoken_candidate()
-    result = resolve_runtime(candidate, hardware={"ram_gb": 32, "vram_gb": 8})
-    # resolve_runtime itself is intentionally fail-closed; this path is asserted
-    # through gate_selection in the next contract test.
-    assert result["runtime"]["name"] == "FreeToken"
+def test_freetoken_resolver_fails_closed_when_bandwidth_evidence_is_missing():
+    with pytest.raises(ValueError, match="required measured bandwidth signals are missing"):
+        resolve_runtime(freetoken_candidate(), hardware={"ram_gb": 32, "vram_gb": 8})
 
 
 def test_freetoken_gate_blocks_missing_signals():
-    from scripts.runtime_gate import gate_selection
-
     result = gate_selection({"candidates": [freetoken_candidate()]}, hardware={"ram_gb": 32, "vram_gb": 8})
     assert result["counts"] == {"plans": 0, "blocked": 1}
     assert "required measured bandwidth signals are missing" in result["blocked"][0]["reason"]
