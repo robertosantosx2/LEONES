@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LEONES Model Recommendation Contract",
+  "type": "object",
+  "required": ["recommendation_id", "hardware", "workload", "candidate", "decision"],
+  "properties": {
+    "recommendation_id": {"type": "string"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "hardware": {
+      "type": "object",
+      "required": ["ram_gb", "cpu", "gpu"],
+      "properties": {
+        "ram_gb": {"type": "number", "minimum": 0},
+        "cpu": {"type": "string"},
+        "cpu_cores": {"type": "integer", "minimum": 1},
+        "gpu": {"type": ["string", "null"]},
+        "vram_gb": {"type": ["number", "null"], "minimum": 0},
+        "memory_bandwidth_gbps": {"type": ["number", "null"], "minimum": 0},
+        "backend": {"type": ["string", "null"]}
+      }
+    },
+    "workload": {
+      "type": "object",
+      "required": ["use_case"],
+      "properties": {
+        "use_case": {"type": "string"},
+        "context_tokens": {"type": "integer", "minimum": 1},
+        "expected_output_tokens": {"type": "integer", "minimum": 1},
+        "concurrency": {"type": "integer", "minimum": 1},
+        "latency_target_seconds": {"type": ["number", "null"], "minimum": 0},
+        "min_tok_s": {"type": ["number", "null"], "minimum": 0}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "required": ["model_id", "model_revision"],
+      "properties": {
+        "model_id": {"type": "string"},
+        "model_revision": {"type": ["string", "null"]},
+        "family": {"type": ["string", "null"]},
+        "architecture": {"type": ["string", "null"]},
+        "parameters_b": {"type": ["number", "null"], "minimum": 0},
+        "active_parameters_b": {"type": ["number", "null"], "minimum": 0},
+        "quantization": {"type": ["string", "null"]},
+        "format": {"type": ["string", "null"]},
+        "runtime": {"type": ["string", "null"]},
+        "execution_route": {"enum": ["conventional", "airllm", "cpu_offload", "gpu_offload", "unknown"]}
+      }
+    },
+    "llmfit": {
+      "type": "object",
+      "properties": {
+        "source_version": {"type": ["string", "null"]},
+        "fit": {"type": ["string", "number", "null"]},
+        "quality_estimate": {"type": ["number", "null"]},
+        "speed_estimate": {"type": ["number", "null"]},
+        "context_fit": {"type": ["string", "number", "null"]},
+        "memory_estimate_gb": {"type": ["number", "null"]},
+        "raw_json": {"type": ["object", "null"]}
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["claim_id", "source_type", "state"],
+        "properties": {
+          "claim_id": {"type": "string"},
+          "source_type": {"enum": ["PRIMARY", "LOCAL_MEASURED", "INDEPENDENT_MEASURED", "COMMUNITY_MEASURED", "VENDOR_CLAIM", "INFERENCE"]},
+          "source_url": {"type": ["string", "null"], "format": "uri"},
+          "state": {"enum": ["UNKNOWN", "CLAIM_ONLY", "DOCUMENTED", "REPORTED", "REPRODUCIBLE", "VERIFIED"]},
+          "metric": {"type": ["string", "null"]},
+          "value": {"type": ["number", "string", "null"]},
+          "unit": {"type": ["string", "null"]},
+          "observed_at": {"type": ["string", "null"], "format": "date-time"}
+        }
+      }
+    },
+    "measurements": {
+      "type": "object",
+      "properties": {
+        "ttft_ms": {"type": ["number", "null"], "minimum": 0},
+        "tpot_ms": {"type": ["number", "null"], "minimum": 0},
+        "decode_tok_s": {"type": ["number", "null"], "minimum": 0},
+        "prefill_tok_s": {"type": ["number", "null"], "minimum": 0},
+        "gpu_peak_gb": {"type": ["number", "null"], "minimum": 0},
+        "ram_peak_gb": {"type": ["number", "null"], "minimum": 0},
+        "disk_read_mb_s": {"type": ["number", "null"], "minimum": 0},
+        "errors": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "scores": {
+      "type": "object",
+      "properties": {
+        "quality": {"type": ["number", "null"]},
+        "fit": {"type": ["number", "null"]},
+        "speed": {"type": ["number", "null"]},
+        "context": {"type": ["number", "null"]},
+        "evidence": {"type": ["number", "null"]},
+        "measured": {"type": ["number", "null"]},
+        "agentic": {"type": ["number", "null"]},
+        "recommendation": {"type": ["number", "null"]}
+      }
+    },
+    "decision": {
+      "type": "object",
+      "required": ["fit_state", "status", "confidence", "reasons", "limitations"],
+      "properties": {
+        "fit_state": {"enum": ["FIT_COMFORTABLE", "FIT_TIGHT", "FIT_OFFLOAD", "FIT_AIRLLM", "FIT_UNKNOWN", "DO_NOT_RUN"]},
+        "status": {"enum": ["MEASURED_RECOMMENDED", "EVIDENCE_SUPPORTED", "ESTIMATE_ONLY", "BLOCKED"]},
+        "confidence": {"enum": ["HIGH", "MEDIUM", "LOW", "UNKNOWN"]},
+        "reasons": {"type": "array", "items": {"type": "string"}},
+        "limitations": {"type": "array", "items": {"type": "string"}},
+        "verification_commands": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}
