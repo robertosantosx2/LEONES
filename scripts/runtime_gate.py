@@ -35,6 +35,7 @@ def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] |
         raise ValueError(f"runtime is unavailable: {runtime_name}")
 
     hw = dict(hardware or {})
+    runtime_eligibility: dict[str, Any] | None = None
     # FreeToken is not selected from fit/VRAM alone. Its eligibility depends on
     # measured host/GPU/interconnect signals and an MoE + agentic workload.
     if runtime_name == "FreeToken":
@@ -48,6 +49,7 @@ def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] |
             "workload": candidate.get("workload") or {},
         }
         decision = evaluate_freetoken_candidate(decision_input)
+        runtime_eligibility = decision
         if not decision["eligible"]:
             raise ValueError("FreeToken eligibility gate: " + "; ".join(decision["reasons"]))
 
@@ -61,6 +63,7 @@ def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] |
         "model": {"id": model_id, "name": model_name, "revision": candidate.get("revision")},
         "variant": candidate.get("variant"),
         "runtime": {"name": runtime_name, "command": command, "version": candidate.get("runtime_version")},
+        "runtime_eligibility": runtime_eligibility,
         "quantization": quantization,
         "hardware": {
             "ram_gb": hw.get("ram_gb", candidate.get("memory_available_gb") or 0),
