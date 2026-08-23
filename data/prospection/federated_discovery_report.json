@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-22T04:53:00.787508+00:00",
+  "generated_at": "2026-08-23T04:54:24.906703+00:00",
   "sources_total": 25,
   "registered_sources": 24,
   "discovered_instance_batch": 2,
@@ -17,7 +17,7 @@
     "gitbucket": 0,
     "gitea": 0,
     "github": 0,
-    "gitlab": 39,
+    "gitlab": 40,
     "gitlab-ce": 0,
     "gnu-savannah": 0,
     "gogs": 0,
@@ -32,7 +32,7 @@
     "sourcehut": 0,
     "srht": 0
   },
-  "unique_discoveries": 198,
+  "unique_discoveries": 199,
   "failures": [],
   "workers": 8,
   "per_worker_timeout_seconds": 90,
