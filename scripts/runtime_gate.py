@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from scripts.freetoken_runtime import evaluate_freetoken_candidate
+
 ALLOWED_FOR_EXECUTION = {"TOP_N", "BENCHMARK_REQUIRED"}
 SCHEMA_VERSION = "1.0"
 
@@ -23,15 +25,35 @@ def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] |
     model_name = candidate.get("model_name") or model_id
     runtime_name = candidate.get("runtime")
     quantization = candidate.get("quantization")
-    if not model_id: raise ValueError("selected candidate has no model identity")
-    if not runtime_name: raise ValueError("selected candidate has no runtime")
-    if not quantization: raise ValueError("selected candidate has no quantization")
+    if not model_id:
+        raise ValueError("selected candidate has no model identity")
+    if not runtime_name:
+        raise ValueError("selected candidate has no runtime")
+    if not quantization:
+        raise ValueError("selected candidate has no quantization")
     if available_runtimes is not None and runtime_name not in available_runtimes:
         raise ValueError(f"runtime is unavailable: {runtime_name}")
+
+    hw = dict(hardware or {})
+    # FreeToken is not selected from fit/VRAM alone. Its eligibility depends on
+    # measured host/GPU/interconnect signals and an MoE + agentic workload.
+    if runtime_name == "FreeToken":
+        decision_input = {
+            "model": candidate.get("model") or {
+                "total_params_b": candidate.get("total_params_b"),
+                "quantized_weight_gb": candidate.get("quantized_weight_gb"),
+            },
+            "hardware": {**hw, **(candidate.get("hardware") or {})},
+            "moe": candidate.get("moe") or {},
+            "workload": candidate.get("workload") or {},
+        }
+        decision = evaluate_freetoken_candidate(decision_input)
+        if not decision["eligible"]:
+            raise ValueError("FreeToken eligibility gate: " + "; ".join(decision["reasons"]))
+
     command = (runtime_commands or {}).get(runtime_name)
     if command is not None and (not command or not all(isinstance(x, str) for x in command)):
         raise ValueError(f"invalid trusted command for runtime: {runtime_name}")
-    hw = hardware or {}
     llmfit = candidate.get("llmfit") or {}
     return {
         "schema_version": SCHEMA_VERSION,
@@ -40,7 +62,16 @@ def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] |
         "variant": candidate.get("variant"),
         "runtime": {"name": runtime_name, "command": command, "version": candidate.get("runtime_version")},
         "quantization": quantization,
-        "hardware": {"ram_gb": hw.get("ram_gb", candidate.get("memory_available_gb") or 0), "os": hw.get("os", "unknown"), "cpu": hw.get("cpu"), "gpu": hw.get("gpu"), "vram_gb": hw.get("vram_gb")},
+        "hardware": {
+            "ram_gb": hw.get("ram_gb", candidate.get("memory_available_gb") or 0),
+            "os": hw.get("os", "unknown"),
+            "cpu": hw.get("cpu"),
+            "gpu": hw.get("gpu"),
+            "vram_gb": hw.get("vram_gb"),
+            "host_memory_bandwidth_gbps": hw.get("host_memory_bandwidth_gbps"),
+            "pcie_h2d_bandwidth_gbps": hw.get("pcie_h2d_bandwidth_gbps"),
+            "cpu_moe_bandwidth_gbps": hw.get("cpu_moe_bandwidth_gbps"),
+        },
         "selection_status": status,
         "selection_rank": candidate.get("rank"),
         "fit_score": candidate.get("fit_score"),
@@ -64,5 +95,15 @@ def gate_selection(selection: dict[str, Any], *, available_runtimes: set[str] | 
             plans.append(resolve_runtime(candidate, available_runtimes=available_runtimes,
                                          runtime_commands=runtime_commands, hardware=hardware))
         except ValueError as exc:
-            blocked.append({"model_id": candidate.get("model_id") or candidate.get("model_name"), "selection_status": candidate.get("selection_status"), "reason": str(exc)})
-    return {"schema_version": SCHEMA_VERSION, "gate": "LEONES-runtime-selection-gate", "execution_plans": plans, "blocked": blocked, "counts": {"plans": len(plans), "blocked": len(blocked)}}
+            blocked.append({
+                "model_id": candidate.get("model_id") or candidate.get("model_name"),
+                "selection_status": candidate.get("selection_status"),
+                "reason": str(exc),
+            })
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "gate": "LEONES-runtime-selection-gate",
+        "execution_plans": plans,
+        "blocked": blocked,
+        "counts": {"plans": len(plans), "blocked": len(blocked)},
+    }
