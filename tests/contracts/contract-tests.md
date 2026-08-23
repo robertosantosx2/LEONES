@@ -21,6 +21,8 @@ Comprobar automáticamente que las fronteras canónicas no se rompen al implemen
 | Router | OSI arbitrario creado por usuario | FAIL |
 | Router | recomendación sin `evidence_refs` | FAIL |
 | Router | `ATLAS_WRITE` | FAIL por diseño |
+| Selector → runtime-selection.v1 | candidato FreeToken con evidencia MoE/agentic y hardware medido | PASS, plan de benchmark |
+| Selector → runtime-selection.v1 | candidato FreeToken sin evidencia MoE | FAIL, runtime bloqueado |
 
 ## Reglas de integración
 
@@ -29,6 +31,7 @@ Comprobar automáticamente que las fronteras canónicas no se rompen al implemen
 3. Las pruebas de integración verifican que ningún adaptador pueda saltarse el flujo canónico.
 4. Un fallo de contrato bloquea promoción.
 5. Los tests deben ejecutarse en CI antes de cualquier writer canónico.
+6. La regresión selector → `runtime-selection.v1` debe ejecutarse sin runtimes instalados ni hardware real; solo valida el contrato y sus gates deterministas.
 
 ## Invariantes
 
@@ -39,6 +42,8 @@ RECOMMENDATION → evidencia trazable
 ROUTER → solo lectura del conocimiento canónico
 ESTIMATED ≠ VERIFIED
 MEASURED ≠ ESTIMATED
+SELECTOR → runtime-selection.v1 sin pérdida de evidencia runtime-específica
+FreeToken → MoE + agentic + señales de hardware medidas
 ```
 
 ## Fixtures futuras
@@ -54,4 +59,5 @@ Evidence → Quality Gate
 Quality Gate → Promotion
 Promotion → Atlas
 Atlas → Router
+Selector → runtime-selection.v1
 ```
