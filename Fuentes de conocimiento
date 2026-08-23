@@ -8,7 +8,7 @@ https://x.com/TheAhmadOsman/status/2057183854444843202
 
 "So You Want to Learn LLMs? Here's the Roadmap" (¿Quieres aprender sobre LLM? Aquí tienes una hoja de ruta): https://x.com/TheAhmadOsman/status/... (También disponible en su blog: ahmadosman.com/blog/learn-llms-roadmap/)
 
-"wanna know the cs fundamentals you need to actually understand LLMs?" (¿Quieres saber los fundamentos de informática que necesitas para entender realmente los LLM?): https://x.com/TheAhmadOsman/status/...
+"wanna know the cs fundamentals you need to actually understand LLMs?" (¿Quieres conocer los fundamentos de informática que necesitas para entender realmente los LLM?): https://x.com/TheAhmadOsman/status/...
 
 "This shouldn't be highlighted or celebrated..." (Esto no debería ser destacado ni celebrado...): https://x.com/TheAhmadOsman/status/...
 
@@ -44,3 +44,13 @@ Proyecto: https://flashml.ai
 Análisis incorporado en `docs/sources/FREETOKEN.md`: runtime edge-native especializado en MoE que combina caché LRU de expertos, double-buffering de prefill, reutilización semántica de estado para agentes, ejecución adaptativa CPU/GPU basada en bandwidth medido y gestión elástica de VRAM/KV. La evidencia primaria reporta 39.3 tok/s para Qwen3.6-35B-A3B en una RTX 4060 Laptop de 8 GB y 14.9 tok/s para GLM-5.2 753B en una RTX PRO 6000 de 96 GB, frente a 7.3 tok/s de llama.cpp en esta última configuración. Estas cifras son evidencia externa condicionada al hardware, modelo, cuantización y workload del estudio; LEONES debe reproducirlas antes de tratarlas como benchmarks propios.
 
 Para LEONES, FreeToken queda clasificado como **runtime candidato de primera clase `edge-moe-bandwidth-adaptive`**, especialmente para MoE grandes que exceden VRAM y cargas agenticas con tool calling/multi-turn. El selector debe considerar, además de VRAM, el ancho de banda host→GPU/PCIe medido, bandwidth efectivo de CPU, localidad de expertos, KV cache y patrón de workload.
+
+## Runtimes y stacks de IA local — 2026
+
+Estudio incorporado en `docs/sources/LOCAL-RUNTIMES-2026.md` y publicado en `web/runtimes-locales.html`.
+
+Fuentes aportadas y analizadas: **Rabbit, Lemonade, llama.cpp, ODS (Osmantic), Ollama, KoboldCpp, MLX-LM, vLLM (ROCm), Fox, Colibrì, GPT4All, ExLlamaV2, llamafile, LocalAI, Jan, AutoGPTQ, AnythingLLM, Aphrodite Engine, Tabby, text-generation-webui y MSA/sc-local**.
+
+El estudio separa runtimes de inferencia, servidores, stacks de despliegue, aplicaciones y workloads. Rabbit/Colibrì se incorporan como línea de investigación para MoE disk-resident; Lemonade como servidor/SDK y adaptador de backends; llama.cpp como baseline portable; ODS como capa de despliegue; MLX-LM como runtime Apple Silicon; vLLM ROCm como serving AMD; ExLlamaV2 como baseline NVIDIA cuantizado; y AnythingLLM/Tabby/GPT4All/Jan como referencias de aplicación y workload. Las fuentes externas no se convierten automáticamente en benchmarks LEONES.
+
+Correcciones de procedencia: el enlace proporcionado para GPT4All apuntaba a un listado de awesome-open-source-ai y se sustituye como fuente primaria por `https://github.com/nomic-ai/gpt4all`; el enlace alternativo proporcionado para AutoGPTQ apuntaba a `llm-compressor`, que es un proyecto distinto. `msa.millaguie.net/#sc-local` queda en estado **unresolved** porque no pudo recuperarse durante la revisión y no se inventa su contenido.
