@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LEONES runtime selection v1",
+  "type": "object",
+  "required": ["schema_version", "selection_status", "task_id", "model_id", "runtime", "selection_reason"],
+  "properties": {
+    "schema_version": {"const": "leones.runtime-selection.v1"},
+    "selection_status": {"const": "selected"},
+    "task_id": {"type": "string", "minLength": 1},
+    "use_case": {"type": ["string", "null"]},
+    "selected_at": {"type": "string", "format": "date-time"},
+    "model_id": {"type": "string", "minLength": 1},
+    "runtime": {"type": "string", "minLength": 1},
+    "runtime_command": {"type": ["string", "null"]},
+    "best_quant": {"type": ["string", "null"]},
+    "estimated_tps": {"type": ["number", "null"], "minimum": 0},
+    "measured_tps": {"type": ["number", "null"], "minimum": 0},
+    "evidence_status": {"enum": ["measured", "ignored", "invalid", "failed", "unknown"]},
+    "candidate_id": {"type": ["string", "null"]},
+    "selection_reason": {"enum": ["measured-runtime-evidence", "llmfit-estimate-fallback"]}
+  },
+  "additionalProperties": true
+}

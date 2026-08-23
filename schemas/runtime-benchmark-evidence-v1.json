@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LEONES runtime benchmark evidence v1",
+  "type": "object",
+  "required": ["schema_version", "evidence_status", "runtime", "model", "observed_at", "measurement_scope"],
+  "properties": {
+    "schema_version": {"const": "leones.runtime-benchmark.v1"},
+    "evidence_status": {"enum": ["measured", "unknown", "failed"]},
+    "runtime": {"type": "string", "minLength": 1},
+    "model": {"type": "string", "minLength": 1},
+    "quantization": {"type": ["string", "null"]},
+    "hardware_fingerprint": {"type": ["string", "null"]},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "tokens_per_second": {"type": ["number", "null"], "minimum": 0},
+    "prompt_tokens": {"type": ["integer", "null"], "minimum": 0},
+    "generated_tokens": {"type": ["integer", "null"], "minimum": 0},
+    "generation_seconds": {"type": ["number", "null"], "minimum": 0},
+    "load_seconds": {"type": ["number", "null"], "minimum": 0},
+    "measurement_scope": {"type": "string", "minLength": 1},
+    "source": {"const": "LEONES"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"evidence_status": {"const": "measured"}}},
+      "then": {"required": ["tokens_per_second", "generated_tokens", "generation_seconds"]}
+    }
+  ],
+  "additionalProperties": true
+}
