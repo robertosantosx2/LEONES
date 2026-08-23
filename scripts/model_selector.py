@@ -29,6 +29,19 @@ def _num(value: Any) -> float | None:
         return None
 
 
+def _bool(value: Any) -> bool | None:
+    if isinstance(value, bool):
+        return value
+    if value in (None, ""):
+        return None
+    normalized = str(value).strip().lower()
+    if normalized in {"1", "true", "yes", "y", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "n", "off"}:
+        return False
+    return None
+
+
 def _norm(value: Any) -> str:
     return re.sub(r"[^a-z0-9]+", " ", str(value or "").lower()).strip()
 
@@ -57,6 +70,29 @@ def _llmfit_match(row: dict[str, Any], index: dict[str, dict[str, Any]]) -> dict
         if key and _norm(key) in index:
             return index[_norm(key)]
     return None
+
+
+def _runtime_evidence(row: dict[str, Any]) -> dict[str, Any]:
+    """Preserve optional runtime-specific evidence without inventing measurements.
+
+    FreeToken needs model, MoE and workload context at the runtime gate. The Atlas
+    feed already carries parameter/weight fields, while specialised sources may
+    additionally provide explicit ``is_moe`` and ``agentic`` flags. Keeping those
+    fields on the selector candidate makes the selector -> runtime-selection.v1
+    boundary lossless and auditable.
+    """
+    total_params = _num(row.get("total_params_b") or row.get("parameters_total_b"))
+    quantized_weight = _num(row.get("quantized_weight_gb") or row.get("weight_memory_gb"))
+    is_moe = _bool(row.get("is_moe"))
+    agentic = _bool(row.get("agentic"))
+    return {
+        "model": {
+            "total_params_b": total_params,
+            "quantized_weight_gb": quantized_weight,
+        },
+        "moe": {"is_moe": is_moe} if is_moe is not None else {},
+        "workload": {"agentic": agentic} if agentic is not None else {},
+    }
 
 
 def eligibility(row: dict[str, Any], *, workload: str, hardware: str, ram_gb: float,
@@ -163,6 +199,7 @@ def select(rows: Iterable[dict[str, Any]], *, workload: str, hardware: str, ram_
                              "selection_status": "REJECTED", "reasons": reasons})
             continue
         fit_score, score_reasons = score(row, evidence)
+        runtime_evidence = _runtime_evidence(row)
         selected.append({"model_id": row.get("model_id") or row.get("model_name"),
             "model_name": row.get("model_name") or row.get("model_id"),
             "variant": row.get("variant"), "quantization": row.get("quantization"),
@@ -172,6 +209,8 @@ def select(rows: Iterable[dict[str, Any]], *, workload: str, hardware: str, ram_
             "runtime_fit": "declared", "evidence_level": evidence.get("evidence_level"),
             "llmfit": evidence.get("llmfit"), "fit_score": fit_score,
             "confidence": "high" if row.get("quality_score") and row.get("tokens_per_second") else "medium",
+            "model": runtime_evidence["model"], "moe": runtime_evidence["moe"],
+            "workload": runtime_evidence["workload"],
             "reasons": reasons + score_reasons})
 
     selected.sort(key=lambda x: (-x["fit_score"], _norm(x["model_id"])))
