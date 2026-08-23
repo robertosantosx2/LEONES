@@ -54,6 +54,10 @@ jobs:
         shell: bash
         run: python -m unittest discover -s tests/contracts -p 'test_*.py' -v
 
+      - name: Run FreeToken selector-to-runtime contract regression
+        shell: bash
+        run: python -m pytest tests/contracts/test_freetoken_selector_contract.py -q
+
       - name: Run Python regression tests
         shell: bash
         run: python -m pytest tests -q
