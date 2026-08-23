@@ -29,8 +29,19 @@ def build_pipeline(*, workload: str, feed: Path, context: int, top_n: int,
     selection = select(load_rows(feed), workload=workload, hardware=hardware_label,
                        ram_gb=ram_gb, vram_gb=0, context_tokens=context, top_n=top_n, llmfit=llmfit)
     gpus = host.get("gpu") or []
-    hardware_v1 = {"ram_gb": ram_gb, "os": host.get("platform", {}).get("system", "unknown"),
-                   "cpu": hardware_label, "gpu": gpus[0].get("description") if gpus else None, "vram_gb": None}
+    measurements = host.get("measurements") or host.get("measurement") or {}
+    hardware_v1 = {
+        "ram_gb": ram_gb,
+        "os": host.get("platform", {}).get("system", "unknown"),
+        "cpu": hardware_label,
+        "gpu": gpus[0].get("description") if gpus else None,
+        "vram_gb": host.get("vram_gb"),
+        # Optional measured signals are propagated losslessly. Missing values stay
+        # missing; the FreeToken gate never converts them into estimates.
+        "host_memory_bandwidth_gbps": host.get("host_memory_bandwidth_gbps") or measurements.get("memory_bandwidth_gbps"),
+        "pcie_h2d_bandwidth_gbps": host.get("pcie_h2d_bandwidth_gbps") or measurements.get("pcie_h2d_bandwidth_gbps"),
+        "cpu_moe_bandwidth_gbps": host.get("cpu_moe_bandwidth_gbps") or measurements.get("cpu_moe_bandwidth_gbps"),
+    }
     gate = gate_selection(selection, runtime_commands=runtime_commands, hardware=hardware_v1)
     return {"schema_version": "1.0", "pipeline": "LEONES-selection-pipeline",
             "hardware": {"cpu_model": hardware_label, "available_ram_gb": ram_gb},
