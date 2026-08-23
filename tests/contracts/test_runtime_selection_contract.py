@@ -1,3 +1,5 @@
+import unittest
+
 from scripts.model_selector import select
 from scripts.runtime_gate import gate_selection
 
@@ -35,29 +37,32 @@ def measured_hardware():
     }
 
 
-def test_selector_preserves_freetoken_runtime_evidence():
-    result = select([freetoken_row()], workload="agentic", hardware="contract-cpu", ram_gb=32, top_n=1)
-    candidate = result["candidates"][0]
-    assert candidate["runtime"] == "FreeToken"
-    assert candidate["model"]["total_params_b"] == 120.0
-    assert candidate["model"]["quantized_weight_gb"] == 10.0
-    assert candidate["moe"]["is_moe"] is True
-    assert candidate["workload"]["agentic"] is True
+class RuntimeSelectionContractTests(unittest.TestCase):
+    def test_selector_preserves_freetoken_runtime_evidence(self):
+        result = select([freetoken_row()], workload="agentic", hardware="contract-cpu", ram_gb=32, top_n=1)
+        candidate = result["candidates"][0]
+        self.assertEqual(candidate["runtime"], "FreeToken")
+        self.assertEqual(candidate["model"]["total_params_b"], 120.0)
+        self.assertEqual(candidate["model"]["quantized_weight_gb"], 10.0)
+        self.assertIs(candidate["moe"]["is_moe"], True)
+        self.assertIs(candidate["workload"]["agentic"], True)
+
+    def test_selector_to_runtime_selection_accepts_valid_freetoken_candidate(self):
+        selection = select([freetoken_row()], workload="agentic", hardware="contract-cpu", ram_gb=32, top_n=1)
+        result = gate_selection(selection, available_runtimes={"FreeToken"}, hardware=measured_hardware())
+        self.assertEqual(result["counts"], {"plans": 1, "blocked": 0})
+        plan = result["execution_plans"][0]
+        self.assertEqual(plan["runtime"]["name"], "FreeToken")
+        self.assertFalse(plan["execution_authorized"])
+        self.assertTrue(plan["measurement_required"])
+        self.assertTrue(plan["benchmark_probe"])
+
+    def test_selector_to_runtime_selection_blocks_missing_moe_evidence(self):
+        selection = select([freetoken_row(is_moe="false")], workload="agentic", hardware="contract-cpu", ram_gb=32, top_n=1)
+        result = gate_selection(selection, available_runtimes={"FreeToken"}, hardware=measured_hardware())
+        self.assertEqual(result["counts"], {"plans": 0, "blocked": 1})
+        self.assertIn("specialized for MoE", result["blocked"][0]["reason"])
 
 
-def test_selector_to_runtime_selection_accepts_valid_freetoken_candidate():
-    selection = select([freetoken_row()], workload="agentic", hardware="contract-cpu", ram_gb=32, top_n=1)
-    result = gate_selection(selection, available_runtimes={"FreeToken"}, hardware=measured_hardware())
-    assert result["counts"] == {"plans": 1, "blocked": 0}
-    plan = result["execution_plans"][0]
-    assert plan["runtime"]["name"] == "FreeToken"
-    assert plan["execution_authorized"] is False
-    assert plan["measurement_required"] is True
-    assert plan["benchmark_probe"] is True
-
-
-def test_selector_to_runtime_selection_blocks_missing_moe_evidence():
-    selection = select([freetoken_row(is_moe="false")], workload="agentic", hardware="contract-cpu", ram_gb=32, top_n=1)
-    result = gate_selection(selection, available_runtimes={"FreeToken"}, hardware=measured_hardware())
-    assert result["counts"] == {"plans": 0, "blocked": 1}
-    assert "specialized for MoE" in result["blocked"][0]["reason"]
+if __name__ == "__main__":
+    unittest.main()
