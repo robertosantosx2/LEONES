@@ -1,80 +1,121 @@
 # Fuentes de conocimiento — LEONES
 
-Este directorio contiene fuentes externas convertidas en conocimiento documental independiente para LEONES.
+Este directorio contiene fuentes externas y conocimiento derivado convertido en documentación trazable para LEONES. No es un directorio de enlaces: cada ficha debe explicar **qué es**, **qué demuestra**, **qué estima** y **qué ha medido LEONES**.
 
-## Principios
+## Contrato editorial
 
-1. La fuente externa conserva su procedencia, versión y fecha.
-2. El análisis LEONES no sustituye la evidencia original.
-3. Una fuente no publica automáticamente datos en el Atlas canónico.
-4. Las mediciones propias permanecen separadas de las observaciones externas.
-5. Cada actualización importante debe dejar trazabilidad.
-6. Las herramientas externas de estimación no sustituyen los contratos ni las métricas canónicas de LEONES.
+La norma única del bloque es [`KNOWLEDGE-FICHA-CONTRACT.md`](KNOWLEDGE-FICHA-CONTRACT.md).
 
-## Fuentes activas
+El inventario semántico y el estado de homogeneización están en [`KNOWLEDGE-REGISTRY.md`](KNOWLEDGE-REGISTRY.md).
 
-| Fuente | Documento | Estado | Revisión |
-|---|---|---|---|
-| Mozilla / SlashData | [`MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) | 🟢 Activa | Mensual / nueva edición |
-| LLMFit | [`LLMFIT.md`](LLMFIT.md) | 🟢 Activa / 🟡 integración funcional | Revisar versiones, catálogo y metodología |
-| AirLLM | [`AIRLLM.md`](AIRLLM.md) | 🟢 Activa / 🟡 integración funcional | Revisar compatibilidad, runtimes y benchmarks |
-| ODS | [`ODS.md`](ODS.md) | 🟢 Activa / 🟡 subproyecto de integración | Revisar instalador, arquitectura, catálogo y soporte de plataformas |
-| Magnitude | [`MAGNITUDE.md`](MAGNITUDE.md) | 🟢 Activa / 🟡 subproyecto de integración | Revisar CLI, motor de inferencia, modelos y benchmarks |
-| Infraestructura de IA local 2026 | [`LOCAL-INFERENCE-2026.md`](LOCAL-INFERENCE-2026.md) | 🟢 Activa / 🟢 verificación documental completada | Revisar nuevas ediciones, proyectos y claims |
+### Las cuatro capas nunca se mezclan
 
-## Derivados de la fuente de infraestructura local
+| Capa | Pregunta | Puede alimentar directamente una medición LEONES? |
+|---|---|---|
+| **Fuente / descubrimiento** | ¿De dónde procede? | No |
+| **Evidencia** | ¿Qué está respaldado? | Solo como contexto/hipótesis hasta pasar los gates |
+| **Estimación** | ¿Qué predice o recomienda una herramienta externa? | No; requiere validación |
+| **Medición LEONES** | ¿Qué ha ejecutado y observado LEONES? | Sí, como evidencia propia reproducible |
 
-- [`LOCAL-INFERENCE-2026-CANDIDATES.md`](LOCAL-INFERENCE-2026-CANDIDATES.md) — radar de candidatos y decisión de promoción.
-- [`LOCAL-INFERENCE-2026-VERIFICATION.md`](LOCAL-INFERENCE-2026-VERIFICATION.md) — verificación uno a uno contra fuentes primarias.
+Regla permanente:
 
-### Resultado actual
+> **Descubrir no es verificar. Verificar no es estimar. Estimar no es medir. Medir no es aprobar.**
 
-**23 proyectos de infraestructura:** 18 `verified-primary`, 3 archivados y 2 `unresolved`.
-
-**10 modelos/familias:** 7 `verified-primary`, 2 con licencia diferenciada/no-OSI y 1 `unresolved`.
-
-Los `verified-primary` quedan pendientes únicamente de benchmark LEONES para obtener estado `measured`. Los archivados se conservan por trazabilidad histórica y los `unresolved` no generan recomendaciones ni registros canónicos verificados.
-
-## Pipeline de incorporación
+## Pipeline canónico
 
 ```text
-FUENTE EXTERNA
+FUENTE / DESCUBRIMIENTO
       ↓
-ANÁLISIS INDEPENDIENTE
-      ↓
-CANDIDATOS
-      ↓
-IDENTIDAD + EVIDENCIA PRIMARIA
-      ↓
-QUALITY GATE
-      ↓
-verified-primary
-      ↓
-LLMFIT / FIT
-      ↓
-RUNTIME SELECTOR
-      ↓
-BENCHMARK LEONES
-      ↓
-measured
-      ↓
-ATLAS / RECOMENDADOR
+ANÁLISIS LEONES
+      ├──────────────→ EVIDENCIA
+      └──────────────→ ESTIMACIÓN / HIPÓTESIS
+                              ↓
+                     CANDIDATO EJECUTABLE
+                              ↓
+                    runtime-selection.v1
+                              ↓
+                         EXECUTOR
+                              ↓
+                          GRADER
+                              ↓
+                    BENCHMARK LEONES
+                              ↓
+                    MEDICIÓN LEONES
+                              ↓
+                         EVIDENCE
+                              ↓
+                       ROUTER / ATLAS
 ```
 
-## Regla de independencia
+## Fuentes activas y fichas estratégicas
 
-Una fuente estratégica puede aportar taxonomías, entidades, proyectos, hipótesis y señales de mercado. No puede alterar por sí sola las clasificaciones congeladas de LEONES ni convertir una estimación externa en medición propia.
+| Fuente | Documento | Función LEONES | Estado |
+|---|---|---|---|
+| FreeToken | [`FREETOKEN.md`](FREETOKEN.md) | exploración de selección/runtime | 🟡 `research-candidate` |
+| «El otro FreeToken» / Odysseus | [`FREETOKEN-EL-OTRO-FREETOKEN.md`](FREETOKEN-EL-OTRO-FREETOKEN.md) | referencia independiente de workspace/servicio | 🟡 `research-candidate` |
+| LLMFit | [`LLMFIT.md`](LLMFIT.md) | preselector hardware-aware | 🟢 `preselector` |
+| LLMFit + hardware real | [`LLMFIT-REAL-HARDWARE-2026-08-20.md`](LLMFIT-REAL-HARDWARE-2026-08-20.md) | verificación técnica | 🟢 `verification-leones` |
+| AirLLM | [`AIRLLM.md`](AIRLLM.md) | runtime candidato memory-constrained | 🟡 `runtime-candidate` |
+| ODS | [`ODS.md`](ODS.md) | despliegue/instalación local | 🟡 `research-candidate` |
+| Magnitude | [`MAGNITUDE.md`](MAGNITUDE.md) | agente + inference engine local | 🟡 `research-candidate` |
+| Runtimes locales | [`LOCAL-RUNTIMES-2026.md`](LOCAL-RUNTIMES-2026.md) | radar de runtimes | 🟡 `source-inspiration` |
+| Infraestructura de inferencia | [`LOCAL-INFERENCE-2026.md`](LOCAL-INFERENCE-2026.md) | prospección | 🟡 `source-inspiration` |
+| Candidatos de infraestructura | [`LOCAL-INFERENCE-2026-CANDIDATES.md`](LOCAL-INFERENCE-2026-CANDIDATES.md) | promoción documental | 🟡 `research-candidate` |
+| Verificación de infraestructura | [`LOCAL-INFERENCE-2026-VERIFICATION.md`](LOCAL-INFERENCE-2026-VERIFICATION.md) | evidencia primaria por candidato | 🟢 `verified-primary` |
+| Artificial Analysis / Optima / benchmarks agentivos | [`ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md`](ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md) | metodología y fuentes de evaluación | 🟡 `research-candidate` |
+| Buddy Harness | [`BUDDY_HARNESS.md`](BUDDY_HARNESS.md) | referencia de harness/evaluación | 🟡 `harness-reference` |
+| Mozilla / ecosistema Open Source AI | [`MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) | radar y contexto de descubrimiento | 🟡 `source-inspiration` |
 
-LLMFit actúa como **preselector hardware-aware**: reduce el espacio de candidatos antes de que el Router de LEONES aplique evidencia, tarea, licencia/JGB, CABE/RULA, rendimiento medido, runtime y demás criterios propios.
+El detalle completo está en `KNOWLEDGE-REGISTRY.md`.
 
-AirLLM actúa como **runtime candidato memory-constrained**: puede ampliar el conjunto de modelos ejecutables cuando la VRAM es el cuello de botella, pero sus claims de memoria/rendimiento deben reproducirse con benchmarks LEONES antes de alimentar recomendaciones como evidencia medida.
+## Qué significa cada estado
 
-ODS actúa como **capa de despliegue e instalación**: automatiza la puesta en marcha de un stack local, detecta hardware, selecciona modelos y expone servicios locales. LEONES conserva la decisión y la medición.
+- `source-inspiration`: fuente útil para descubrir o contextualizar.
+- `research-candidate`: merece estudio/integración, pero no está validado como componente ejecutable.
+- `preselector`: herramienta que puede reducir el espacio de candidatos; sus predicciones siguen siendo estimaciones.
+- `runtime-candidate`: runtime candidato pendiente de benchmark LEONES.
+- `workspace-reference`: referencia de workspace/servicio.
+- `harness-reference`: referencia de harness/evaluación.
+- `verified-primary`: claims contrastados con fuentes primarias; no equivale a `measured`.
+- `measured`: existe medición reproducible LEONES.
+- `rejected`: evaluado y descartado para el uso considerado.
+- `unresolved`: no existe evidencia suficiente para promocionarlo.
 
-Magnitude actúa como **agente + inference engine local**: perfila hardware, recomienda modelos y configura su motor basado en llama.cpp, además de ejecutar tareas agentivas. LEONES debe registrar sus configuraciones y medirlas antes de convertir sus estimaciones en evidencia propia.
+## Independencia de las fuentes
 
-El informe de infraestructura local 2026 actúa como **radar de prospección**. Sus claims se contrastan individualmente y el resultado de esa comprobación queda en los documentos derivados indicados arriba.
+Una fuente puede aportar taxonomías, entidades, proyectos, hipótesis, mecanismos y señales de mercado. No puede alterar por sí sola las clasificaciones congeladas de LEONES ni convertir una estimación externa en medición propia.
+
+### LLMFit
+
+LLMFit actúa como **preselector hardware-aware**. Puede reducir el espacio de modelos candidatos según el hardware disponible. Sus predicciones se almacenan como estimaciones hasta que LEONES las contraste mediante ejecución y benchmark.
+
+### AirLLM
+
+AirLLM actúa como **runtime candidato para escenarios memory-constrained**. Sus claims de memoria y rendimiento se conservan con sus condiciones originales y no pasan a `measured` sin ejecución LEONES.
+
+### ODS
+
+ODS actúa como **capa de despliegue e instalación**. Puede detectar hardware, facilitar la puesta en marcha y seleccionar componentes. LEONES conserva la decisión canónica y la medición.
+
+### Magnitude
+
+Magnitude actúa como **agente + inference engine local**, con perfilado y recomendaciones propias. Es una fuente de hipótesis e integración, no una sustitución del benchmark LEONES.
+
+### FreeToken y «El otro FreeToken» / Odysseus
+
+Se mantienen como fichas independientes. La eventual integración entre ambos es una hipótesis que debe recorrer el pipeline ejecutable y producir evidencia propia.
 
 ## Mantenimiento
 
-Ante una nueva edición: comparar con la anterior, identificar cambios, revisar entidades/proyectos/hipótesis, conservar histórico, actualizar documentación y ejecutar validaciones. Un proyecto archivado no se elimina del conocimiento: se marca como histórico. Una referencia no resoluble no se promociona por inferencia.
+Ante una nueva fuente o edición:
+
+1. registrar procedencia y versión;
+2. ampliar la ficha siguiendo el contrato;
+3. clasificar cada claim como fuente, evidencia o estimación;
+4. conservar las condiciones experimentales;
+5. registrar por separado cualquier medición LEONES;
+6. actualizar `KNOWLEDGE-REGISTRY.md`;
+7. actualizar la vista web sin alterar la semántica;
+8. ejecutar contract-tests/regresiones si afecta al selector, runtime o benchmark.
+
+Una referencia histórica no se elimina por quedar obsoleta: se conserva con estado explícito. Una referencia no resoluble no se promociona por inferencia.
