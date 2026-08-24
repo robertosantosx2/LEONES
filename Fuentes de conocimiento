@@ -10,7 +10,7 @@ https://x.com/TheAhmadOsman/status/2057183854444843202
 
 "wanna know the cs fundamentals you need to actually understand LLMs?" (¿Quieres conocer los fundamentos de informática que necesitas para entender realmente los LLM?): https://x.com/TheAhmadOsman/status/...
 
-"This shouldn't be highlighted or celebrated..." (Esto no debería ser destacado ni celebrado...): https://x.com/TheAhmadOsman/status/...
+"This shouldn't be highlighted or celebrated..." (Esto no debería ser destacado o celebrado...): https://x.com/TheAhmadOsman/status/...
 
 "We're gonna make Local AI The Default..." (Vamos a hacer que la IA local sea la opción predeterminada...): https://x.com/TheAhmadOsman/status/...
 
@@ -44,6 +44,24 @@ Proyecto: https://flashml.ai
 Análisis incorporado en `docs/sources/FREETOKEN.md`: runtime edge-native especializado en MoE que combina caché LRU de expertos, double-buffering de prefill, reutilización semántica de estado para agentes, ejecución adaptativa CPU/GPU basada en bandwidth medido y gestión elástica de VRAM/KV. La evidencia primaria reporta 39.3 tok/s para Qwen3.6-35B-A3B en una RTX 4060 Laptop de 8 GB y 14.9 tok/s para GLM-5.2 753B en una RTX PRO 6000 de 96 GB, frente a 7.3 tok/s de llama.cpp en esta última configuración. Estas cifras son evidencia externa condicionada al hardware, modelo, cuantización y workload del estudio; LEONES debe reproducirlas antes de tratarlas como benchmarks propios.
 
 Para LEONES, FreeToken queda clasificado como **runtime candidato de primera clase `edge-moe-bandwidth-adaptive`**, especialmente para MoE grandes que exceden VRAM y cargas agenticas con tool calling/multi-turn. El selector debe considerar, además de VRAM, el ancho de banda host→GPU/PCIe medido, bandwidth efectivo de CPU, localidad de expertos, KV cache y patrón de workload.
+
+### El otro FreeToken
+
+Ficha ampliada: `docs/sources/FREETOKEN-EL-OTRO-FREETOKEN.md`.
+
+Se usa esta denominación editorial para evitar confundir este proyecto de FlashML con otros repositorios que comparten el nombre FreeToken. La identidad canónica para LEONES es el repositorio `FlashML-org/FreeToken` y su paper de 2026.
+
+## Odysseus
+
+Repositorio: https://github.com/odysseus-dev/odysseus
+
+Sitio: https://odysseus-dev.github.io/odysseus/
+
+Ficha ampliada: `docs/sources/ODYSSEUS.md`.
+
+Odysseus se incorpora como **workspace de IA self-hosted / referencia de aplicación agentiva**, no como runtime de inferencia. Integra chat, agentes, tools, MCP, memoria, investigación, documentos, correo, tareas y serving/recomendación de modelos. Su valor para LEONES está en representar la capa superior que consume un endpoint de inferencia y permite evaluar workloads reales.
+
+La relación arquitectónica que se estudia es `selector → runtime → endpoint → Odysseus/workload → benchmark/grader`. Sus recomendaciones hardware-aware se tratan como señal externa y no sustituyen LLMFit, runtime-selection.v1 ni las mediciones propias.
 
 ## Runtimes y stacks de IA local — 2026
 
