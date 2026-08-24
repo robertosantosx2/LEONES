@@ -7,6 +7,8 @@ on:
       - 'tests/contracts/**'
       - 'tests/**'
       - 'scripts/**'
+      - 'benchmarks/agentic/**'
+      - 'benchmarks/evidence/**'
       - '.github/workflows/contract-tests.yml'
   pull_request:
     paths:
@@ -14,6 +16,8 @@ on:
       - 'tests/contracts/**'
       - 'tests/**'
       - 'scripts/**'
+      - 'benchmarks/agentic/**'
+      - 'benchmarks/evidence/**'
       - '.github/workflows/contract-tests.yml'
   workflow_dispatch:
 
@@ -50,7 +54,7 @@ jobs:
               print(f'OK {path}')
           PY
 
-      - name: Run semantic contract tests
+      - name: Run canonical contract suite
         shell: bash
         run: python -m unittest discover -s tests/contracts -p 'test_*.py' -v
 
