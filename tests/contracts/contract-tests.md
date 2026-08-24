@@ -21,8 +21,15 @@ Comprobar automáticamente que las fronteras canónicas no se rompen al implemen
 | Router | OSI arbitrario creado por usuario | FAIL |
 | Router | recomendación sin `evidence_refs` | FAIL |
 | Router | `ATLAS_WRITE` | FAIL por diseño |
+| Router | Router no muta la recomendación de entrada | PASS |
 | Selector → runtime-selection.v1 | candidato FreeToken con evidencia MoE/agentic y hardware medido | PASS, plan de benchmark |
 | Selector → runtime-selection.v1 | candidato FreeToken sin evidencia MoE | FAIL, runtime bloqueado |
+| Runtime evidence → Atlas | `measured` con execution_id y provenance | actualiza feedback |
+| Runtime evidence → Atlas | `reported` | no sustituye medición |
+| Runtime evidence → Atlas | `verified` sin verificador independiente | FAIL |
+| Atlas → Router | recomendación con `evidence_refs` | PASS, read-only |
+| Atlas → Router | recomendación sin trazabilidad | FAIL |
+| Atlas → Router | intento de escritura | FAIL |
 
 ## Reglas de integración
 
@@ -32,6 +39,8 @@ Comprobar automáticamente que las fronteras canónicas no se rompen al implemen
 4. Un fallo de contrato bloquea promoción.
 5. Los tests deben ejecutarse en CI antes de cualquier writer canónico.
 6. La regresión selector → `runtime-selection.v1` debe ejecutarse sin runtimes instalados ni hardware real; solo valida el contrato y sus gates deterministas.
+7. El Router es estrictamente de lectura: consume conocimiento y evidencia, pero nunca escribe sobre el Atlas canónico.
+8. Toda recomendación que llegue al Router debe mantener referencias de evidencia trazables.
 
 ## Invariantes
 
@@ -40,15 +49,14 @@ PROMOTED → Quality Gate PASS
 PROMOTED → OSI PASS o NOT_REQUIRED
 RECOMMENDATION → evidencia trazable
 ROUTER → solo lectura del conocimiento canónico
+ROUTER → no ATLAS_WRITE
 ESTIMATED ≠ VERIFIED
 MEASURED ≠ ESTIMATED
 SELECTOR → runtime-selection.v1 sin pérdida de evidencia runtime-específica
 FreeToken → MoE + agentic + señales de hardware medidas
+MEASURED → puede alimentar comparación futura
+REPORTED → no sustituye MEASURED
 ```
-
-## Fixtures futuras
-
-Los fixtures deberán incluir casos válidos, inválidos, fronterizos y contradictorios. Deben evitar datos reales o secretos.
 
 ## Criterio de aceptación
 
@@ -60,4 +68,6 @@ Quality Gate → Promotion
 Promotion → Atlas
 Atlas → Router
 Selector → runtime-selection.v1
+Runtime benchmark → Evidence
+Evidence → Atlas feedback
 ```
