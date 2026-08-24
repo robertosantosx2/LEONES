@@ -8,7 +8,20 @@ Magnitude se documenta como agente de coding open source con inferencia local ba
 
 Fuente primaria del proyecto: `https://github.com/magnitudedev/magnitude`
 
-## 2. Frontera de responsabilidad
+## 2. Mapa documental
+
+- [`../../integrations/Magnitude/README.md`](../../integrations/Magnitude/README.md) — contrato de integración LEONES.
+- [`../../sources/MAGNITUDE.md`](../../sources/MAGNITUDE.md) — ficha de conocimiento.
+- [`../ODS-Magnitude-INTEGRATION.md`](../ODS-Magnitude-INTEGRATION.md) — relación ODS ↔ Magnitude.
+- [`../ODS-Magnitude-AUDIT.md`](../ODS-Magnitude-AUDIT.md) — auditoría conjunta.
+- [`../buddy/MAGNITUDE-INTEGRATION.md`](../buddy/MAGNITUDE-INTEGRATION.md) — relación Buddy ↔ Magnitude.
+- [`../../AGENT_HARNESSES.md`](../../AGENT_HARNESSES.md) — harnesses de referencia.
+- [`../../EVALUACION_AGENTIC_TESTS.md`](../../EVALUACION_AGENTIC_TESTS.md) — evaluación agentiva.
+- [`../../../benchmarks/agentic/README.md`](../../../benchmarks/agentic/README.md) — batería de benchmarks.
+- [`../../../schemas/result.schema.json`](../../../schemas/result.schema.json) — contrato de resultados.
+- [`../../../atlas/README.md`](../../../atlas/README.md) — conocimiento/evidencia canónica.
+
+## 3. Frontera de responsabilidad
 
 ```text
 Atlas → identidad/evidencia
@@ -26,7 +39,7 @@ result.schema.json
 
 **Magnitude ejecuta. LEONES mide y valida.**
 
-## 3. Prioridad benchmark
+## 4. Prioridad benchmark
 
 | Prioridad | Tarea | Motivo |
 |---|---|---|
@@ -36,7 +49,7 @@ result.schema.json
 | 4 | A04 | recuperación ante errores |
 | 5 | A05 | sesiones largas |
 
-## 4. Datos que debe conservar el adaptador
+## 5. Datos que debe conservar el adaptador
 
 - versión del CLI;
 - versión/revisión del runtime;
@@ -54,7 +67,7 @@ result.schema.json
 
 Los valores no observables permanecen ausentes/`unknown`; nunca se rellenan con estimaciones sin marcar.
 
-## 5. Instalación de referencia
+## 6. Instalación de referencia
 
 La documentación revisada contempla:
 
@@ -66,7 +79,7 @@ magnitude
 
 Para benchmarks LEONES la instalación debe fijar una versión y conservar el manifiesto del entorno. La instalación de producción no debe seguir automáticamente `main`.
 
-## 6. Contrato de traza
+## 7. Contrato de traza
 
 Magnitude no crea un formato de benchmark paralelo. Su información debe transformarse al contrato canónico LEONES:
 
@@ -82,7 +95,7 @@ model
 
 La traza es evidencia de ejecución; el `outcome` se calcula mediante un grader versionado.
 
-## 7. Reproducibilidad
+## 8. Reproducibilidad
 
 Registrar como mínimo:
 
@@ -96,7 +109,7 @@ Registrar como mínimo:
 - grader version;
 - fecha de ejecución.
 
-## 8. Validación mínima
+## 9. Validación mínima
 
 - [ ] versión fijada;
 - [ ] entorno reproducible;
@@ -108,27 +121,30 @@ Registrar como mínimo:
 - [ ] resultado compatible con `schemas/result.schema.json`;
 - [ ] repetición suficiente para estudiar variabilidad.
 
-## 9. Relación con ODS
+## 10. Relación con ODS y Buddy
 
 ODS y Magnitude no compiten dentro de LEONES:
 
 ```text
 ODS       = despliegue / stack
 Magnitude = ejecución / agente
+Buddy     = harness / memoria file-first
 LEONES    = conocimiento / selección / medición / evidencia
 ```
 
-Una instalación puede utilizar ODS, Magnitude, ambos o ninguno. La arquitectura del núcleo no debe depender de ninguno.
+Una instalación puede utilizar ODS, Magnitude, Buddy, varios de ellos o ninguno. La arquitectura del núcleo no debe depender de ninguno.
 
-## 10. Estado
+## 11. Estado
 
 🟡 **DISEÑO LIMPIO Y CONGELADO.**
 
 Siguiente fase: construir el adaptador ejecutable y realizar la primera campaña controlada sobre A07/A02/A03.
 
-## Referencias
+## 12. Referencias
 
 - Magnitude: `https://github.com/magnitudedev/magnitude`
-- Índice de subproyectos: `docs/subprojects/README.md`
-- Agentic Benchmark: `benchmarks/agentic/README.md`
-- Contrato de resultados: `schemas/result.schema.json`
+- Índice de subproyectos: [`../README.md`](../README.md)
+- Agentic Benchmark: [`../../../benchmarks/agentic/README.md`](../../../benchmarks/agentic/README.md)
+- Integración LEONES: [`../../integrations/Magnitude/README.md`](../../integrations/Magnitude/README.md)
+- Ficha de conocimiento: [`../../sources/MAGNITUDE.md`](../../sources/MAGNITUDE.md)
+- Contrato de resultados: [`../../../schemas/result.schema.json`](../../../schemas/result.schema.json)
