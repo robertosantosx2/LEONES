@@ -8,7 +8,18 @@ En la revisión del 20-08-2026 se identificó `v2.6.0` como release estable seg�
 
 Fuente primaria del proyecto: `https://github.com/Osmantic/ODS`
 
-## 2. Frontera de responsabilidad
+## 2. Mapa documental
+
+- [`../../integrations/ODS/README.md`](../../integrations/ODS/README.md) — contrato de integración LEONES.
+- [`../../sources/ODS.md`](../../sources/ODS.md) — ficha de conocimiento y separación fuente/evidencia/estimación/medición.
+- [`../ODS-Magnitude-INTEGRATION.md`](../ODS-Magnitude-INTEGRATION.md) — relación ODS ↔ Magnitude.
+- [`../ODS-Magnitude-AUDIT.md`](../ODS-Magnitude-AUDIT.md) — auditoría conjunta.
+- [`../../AGENT_HARNESSES.md`](../../AGENT_HARNESSES.md) — Hermes/ODS y otros harnesses.
+- [`../../E2E.md`](../../E2E.md) — validación de integraciones.
+- [`../../../schemas/result.schema.json`](../../../schemas/result.schema.json) — resultado canónico.
+- [`../../../atlas/README.md`](../../../atlas/README.md) — destino de evidencia apta.
+
+## 3. Frontera de responsabilidad
 
 ```text
 LEONES
@@ -22,7 +33,7 @@ LEONES
 
 ODS instala y opera servicios. **LEONES decide qué medir y qué evidencia aceptar.**
 
-## 3. Contrato de integración
+## 4. Contrato de integración
 
 ### Entrada
 
@@ -44,7 +55,7 @@ ODS instala y opera servicios. **LEONES decide qué medir y qué evidencia acept
 
 Los secretos nunca forman parte de la salida.
 
-## 4. Ciclo operativo
+## 5. Ciclo operativo
 
 ```text
 DETECT
@@ -66,7 +77,7 @@ CLEANUP / RECOVER
 
 Cada etapa debe ser idempotente o declarar claramente por qué no lo es.
 
-## 5. Reproducibilidad
+## 6. Reproducibilidad
 
 Para benchmarking se debe conservar un manifiesto con:
 
@@ -82,13 +93,19 @@ Para benchmarking se debe conservar un manifiesto con:
 
 No se recomienda seguir `main` para una campaña reproducible.
 
-## 6. Evidencia frente a medición
+## 7. Evidencia frente a medición
 
 La documentación y las capacidades declaradas por ODS son **evidencia externa**. No se convierten automáticamente en resultados LEONES.
 
 Solo una ejecución instrumentada puede alimentar `schemas/result.schema.json`.
 
-## 7. Validación mínima
+```text
+ODS recommendation → reported / estimated
+ODS configuration  → observed
+LEONES benchmark   → measured
+```
+
+## 8. Validación mínima
 
 Antes de declarar una instalación utilizable:
 
@@ -99,16 +116,20 @@ Antes de declarar una instalación utilizable:
 - [ ] modelo/runtime identificados;
 - [ ] secretos fuera de logs/resultados;
 - [ ] benchmark smoke ejecutable;
-- [ ] cleanup/recovery probado.
+- [ ] cleanup/recovery probado;
+- [ ] resultado conforme al contrato canónico cuando exista medición.
 
-## 8. Estado
+## 9. Estado
 
 🟡 **DISEÑO LIMPIO Y CONGELADO.**
 
 Siguiente fase: adaptador ejecutable `detect → pin → install → verify → measure → report`, empezando por una instalación reproducible controlada.
 
-## Referencias
+## 10. Referencias
 
 - ODS: `https://github.com/Osmantic/ODS`
-- Índice de subproyectos: `docs/subprojects/README.md`
-- Contrato de resultados: `schemas/result.schema.json`
+- ODS Quick Start: `https://github.com/Osmantic/ODS/blob/main/ods/QUICKSTART.md`
+- ODS Architecture: `https://github.com/Osmantic/ODS/blob/main/ARCHITECTURE.md`
+- Índice de subproyectos: [`../README.md`](../README.md)
+- Integración LEONES: [`../../integrations/ODS/README.md`](../../integrations/ODS/README.md)
+- Ficha de conocimiento: [`../../sources/ODS.md`](../../sources/ODS.md)
