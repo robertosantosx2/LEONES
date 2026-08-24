@@ -6,10 +6,12 @@ Atlas is the structured knowledge layer used by LEONES to explain recommendation
 
 Atlas follows the project-wide phased documentation rule: when a phase is completed and accepted, its architecture, rules, decisions, validation and traceability must be documented and linked from the relevant READMEs.
 
+- [`../docs/README.md`](../docs/README.md) — canonical documentation index.
 - [`../docs/DOCUMENTATION_PROTOCOL.md`](../docs/DOCUMENTATION_PROTOCOL.md) — project-wide rule.
 - [`../docs/phases/README.md`](../docs/phases/README.md) — phase index and stable Hxx identifiers.
 - [`../docs/phases/2026-08-atlas-expanded/`](../docs/phases/2026-08-atlas-expanded/) — **H06: Open LLM Atlas ampliado**.
 - [`../docs/phases/2026-08-atlas-recommendation-pipeline/`](../docs/phases/2026-08-atlas-recommendation-pipeline/) — **H10 accepted**: daily Atlas → recommender pipeline.
+- [`../docs/sources/README.md`](../docs/sources/README.md) — external knowledge-source registry.
 
 ## Status
 
@@ -101,6 +103,8 @@ The first discovery evidence for a model should be collected from:
 
 External evidence is discovery/research evidence. It is not automatically official LEONES measurement or verified Atlas knowledge.
 
+The broader source registry is [`../docs/sources/README.md`](../docs/sources/README.md). It currently documents, among others, FreeToken, Odysseus («El otro FreeToken»), LLMFit, AirLLM, ODS, Magnitude and local runtimes. Their claims remain separated from LEONES measurements.
+
 ## MANADA
 
 **MANADA** is the LEONES community/experiment contribution layer. It replaces the former `metaLEONES` terminology throughout the project.
@@ -152,5 +156,7 @@ MANADA ──────────────────┤
                          ↓
                       Runtime
 ```
+
+For hardware/model fit, LLMFit is an external preselection layer documented in [`../docs/integrations/LLMFIT/README.md`](../docs/integrations/LLMFIT/README.md). ODS and Magnitude are deployment/agent integrations documented in [`../docs/integrations/README.md`](../docs/integrations/README.md). None of them bypasses Atlas evidence rules.
 
 The Router may use Atlas only when the relevant fact is present and its evidence state is suitable. Otherwise it must return `unknown` rather than inventing a recommendation.
