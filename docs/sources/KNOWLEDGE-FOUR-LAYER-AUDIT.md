@@ -34,7 +34,7 @@ Cada ficha debe poder responder independientemente:
 | ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md | metodología benchmark | primaria + externa | resultados/metodología publicados | no es estimador principal | pendiente de reproducción | usar para diseño |
 | BUDDY_HARNESS.md | harness | primaria | código/docs | hipótesis de workload | pendiente | comparar workloads |
 | MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md | ecosistema/metodología | publicación primaria | claims de la fuente | derivaciones conceptuales | no aplica directamente | mantener como fuente |
-| LLMMS-DE-CERO-A-HEROE-2026.md | fundamentos | fuente compilada | contenido documental | hipótesis conceptuales | no aplica directamente | usar como marco |
+| LLMS-DE-CERO-A-HEROE-2026.md | fundamentos | fuente compilada | contenido documental | hipótesis conceptuales | no aplica directamente | usar como marco |
 | KNOWLEDGE-FICHA-CONTRACT.md | contrato LEONES | interna | contrato | n/a | n/a | autoridad editorial |
 | KNOWLEDGE-REGISTRY.md | registro LEONES | interna | semántica de registro | n/a | n/a | sincronizar con fichas |
 
