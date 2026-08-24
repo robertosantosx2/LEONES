@@ -191,51 +191,6 @@
     aspect-ratio: 1200/520;
     background-image: url("architecture-stack.svg");
 }
-/* Prospección: compactar las tres primeras columnas para que descripción y actualización ganen espacio. */
-.data-table {
-    table-layout: fixed;
-}
-.data-table th:nth-child(1),
-.data-table td:nth-child(1) {
-    width: 8%;
-}
-.data-table th:nth-child(2),
-.data-table td:nth-child(2) {
-    width: 11%;
-}
-.data-table th:nth-child(3),
-.data-table td:nth-child(3) {
-    width: 18%;
-}
-.data-table th:nth-child(4),
-.data-table td:nth-child(4) {
-    width: 38%;
-}
-.data-table th:nth-child(5),
-.data-table td:nth-child(5) {
-    width: 25%;
-}
-.data-table th,
-.data-table td {
-    overflow-wrap: anywhere;
-}
-@media (max-width: 900px) {
-    .data-table {
-        table-layout: auto;
-    }
-    .data-table th:nth-child(1),
-    .data-table td:nth-child(1),
-    .data-table th:nth-child(2),
-    .data-table td:nth-child(2),
-    .data-table th:nth-child(3),
-    .data-table td:nth-child(3),
-    .data-table th:nth-child(4),
-    .data-table td:nth-child(4),
-    .data-table th:nth-child(5),
-    .data-table td:nth-child(5) {
-        width: auto;
-    }
-}
 @media (max-width: 560px) {
     .leones-photo-strip {
         height: 150px;
