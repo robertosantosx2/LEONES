@@ -9,6 +9,9 @@ on:
       - 'scripts/**'
       - 'benchmarks/agentic/**'
       - 'benchmarks/evidence/**'
+      - 'docs/sources/**'
+      - 'web/data/knowledge.json'
+      - 'web/conocimiento.html'
       - '.github/workflows/contract-tests.yml'
   pull_request:
     paths:
@@ -18,6 +21,9 @@ on:
       - 'scripts/**'
       - 'benchmarks/agentic/**'
       - 'benchmarks/evidence/**'
+      - 'docs/sources/**'
+      - 'web/data/knowledge.json'
+      - 'web/conocimiento.html'
       - '.github/workflows/contract-tests.yml'
   workflow_dispatch:
 
@@ -61,6 +67,10 @@ jobs:
       - name: Run FreeToken selector-to-runtime contract regression
         shell: bash
         run: python -m pytest tests/contracts/test_freetoken_selector_contract.py -q
+
+      - name: Run knowledge four-layer contract regression
+        shell: bash
+        run: python -m pytest tests/contracts/test_knowledge_four_layers.py -q
 
       - name: Run Python regression tests
         shell: bash
