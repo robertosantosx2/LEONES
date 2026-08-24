@@ -97,19 +97,27 @@
         if (!head || [...head.cells].some((c) => c.dataset.esFunctionality === "1")) return;
         const descIndex = [...head.cells].findIndex((c) => c.textContent.trim() === "Descripción");
         if (descIndex < 0) return;
+
+        // Orden contractual de la tabla: Estado → Categoría → Nombre del proyecto → Descripción ES.
+        // La descripción original y el resto de columnas no se eliminan ni se mezclan.
+        const nameIndex = 2;
+        const insertIndex = nameIndex + 1;
+
         const th = document.createElement("th");
         th.dataset.esFunctionality = "1";
         th.textContent = "Qué es / para qué sirve (ES)";
-        head.insertBefore(th, head.cells[descIndex]);
+        head.insertBefore(th, head.cells[insertIndex]);
+
         [...table.tBodies[0].rows].forEach((row) => {
             const link = row.querySelector("td:nth-child(3) a");
             const name = link?.textContent.trim() || "";
-            const original = row.cells[descIndex + 1]?.textContent.trim() || "";
+            const shiftedDescIndex = descIndex >= insertIndex ? descIndex + 1 : descIndex;
+            const original = row.cells[shiftedDescIndex]?.textContent.trim() || "";
             const sourceItem = { name, repository: name, description: original, category: row.cells[1]?.textContent || "software" };
             const td = document.createElement("td");
             td.className = "desc functionality-es";
             td.innerHTML = `<strong>${escapeHtml(known[name] || generic(sourceItem))}</strong><details><summary>Descripción original de la fuente</summary><span>${escapeHtml(original || "No disponible")}</span></details>`;
-            row.insertBefore(td, row.cells[descIndex]);
+            row.insertBefore(td, row.cells[insertIndex]);
         });
     }
     function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (m) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
