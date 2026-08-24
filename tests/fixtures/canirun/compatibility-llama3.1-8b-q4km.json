@@ -1,0 +1,17 @@
+{
+  "compatible": true,
+  "status": "comfortable",
+  "grade": "A",
+  "score": 84,
+  "modelId": "llama3.1-8b",
+  "modelName": "Llama 3.1 8B",
+  "quantization": "Q4_K_M",
+  "recommendedQuantization": "Q4_K_M",
+  "estimated": {
+    "tokensPerSecond": 22.5,
+    "modelSizeGb": 4.9,
+    "vramRequiredGb": 5.2,
+    "ramRequiredGb": 8,
+    "memoryHeadroomGb": 6.8
+  }
+}
