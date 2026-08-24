@@ -8,139 +8,21 @@
     {"id":"measurement","label":"MEDICIÓN LEONES","question":"¿Qué ha ejecutado y observado LEONES?"}
   ],
   "records": [
-    {
-      "id":"freetoken",
-      "name":"FreeToken",
-      "leones_name":"FreeToken",
-      "class":"runtime-candidate",
-      "source_url":"https://github.com/FlashML-org/FreeToken",
-      "sheet":"../docs/sources/FREETOKEN.md",
-      "source":{"title":"Proyecto/runtime FreeToken registrado por LEONES","text":"Ficha independiente del registro FreeToken. Su contenido debe conservar la identidad del proyecto y su procedencia primaria."},
-      "evidence":{"title":"Evidencia externa/documental","text":"La ficha conserva claims del proyecto y su código/documentación como evidencia externa; no se presentan como mediciones LEONES."},
-      "estimate":{"title":"Pendiente / separada","text":"Cualquier estimación de memoria, velocidad, compatibilidad o recomendación externa permanece marcada como estimación."},
-      "measurement":{"title":"Pendiente","text":"No hay medición canónica LEONES publicada en esta ficha."}
-    },
-    {
-      "id":"freetoken-otro",
-      "name":"El otro FreeToken",
-      "leones_name":"El otro FreeToken · FlashML",
-      "class":"runtime-candidate",
-      "source_url":"https://github.com/FlashML-org/FreeToken",
-      "sheet":"../docs/sources/FREETOKEN-EL-OTRO-FREETOKEN.md",
-      "source":{"title":"Runtime edge-native MoE","text":"FreeToken se presenta como runtime de serving edge-native para MoE, tratando GPU, CPU, memoria de host e interconexión como recursos de inferencia."},
-      "evidence":{"title":"Claims primarios del proyecto","text":"La documentación actual describe ejecución CPU–GPU adaptativa, caché de expertos, prefill con double buffering, formato FTW y APIs de serving. Los resultados publicados por el proyecto son evidencia externa condicionada."},
-      "estimate":{"title":"Hipótesis de selección","text":"LEONES estima que es especialmente relevante cuando el MoE excede la VRAM y existe memoria heterogénea utilizable. Deben conservarse VRAM, RAM, ancho de banda, transferencia, KV y localidad como variables."},
-      "measurement":{"title":"Pendiente","text":"Las cifras publicadas por FreeToken no son benchmark LEONES. Falta reproducirlas con executor, grader, workload y evidencia canónicos."}
-    },
-    {
-      "id":"odysseus",
-      "name":"Odysseus",
-      "class":"workspace-reference",
-      "source_url":"https://github.com/odysseus-dev/odysseus",
-      "sheet":"../docs/sources/ODYSSEUS.md",
-      "source":{"title":"Workspace AI self-hosted","text":"Workspace para chat, agentes, herramientas, MCP, memoria, investigación, documentos, email, notas, calendario y workflows de modelos locales/API."},
-      "evidence":{"title":"Evidencia primaria + verificación documental LEONES","text":"El repositorio y sus guías confirman la posición de workspace/harness. No es un runtime de inferencia canónico."},
-      "estimate":{"title":"Señales del Cookbook","text":"Sus recomendaciones hardware-aware se conservan como señales externas y no se combinan como si fueran mediciones o scores soberanos de LEONES."},
-      "measurement":{"title":"No disponible","text":"Falta ejecutar workloads agentivos reproducibles y medir modelo + runtime + endpoint + workspace + workload."}
-    },
-    {
-      "id":"llmfit",
-      "name":"LLMFit",
-      "class":"preselector",
-      "source_url":"https://github.com/AlexsJones/llmfit",
-      "sheet":"../docs/sources/LLMFIT.md",
-      "source":{"title":"Preselector hardware-aware","text":"Detecta hardware y puntúa modelos por quality, speed, fit y context; soporta multi-GPU, MoE, cuantización dinámica y proveedores/runtimes locales."},
-      "evidence":{"title":"Fuente primaria verificable","text":"La documentación actual explica detección de RAM/CPU/GPU, base de modelos, modos GPU/MoE offload/CPU+GPU/CPU y composición de scores."},
-      "estimate":{"title":"Capa central de estimación","text":"estimated_tps, memory_required, best_quant, run_mode y score son estimaciones o clasificación de llmfit y deben permanecer separadas de measured_tps."},
-      "measurement":{"title":"Mediciones externas de llmfit, no LEONES","text":"La versión actual incorpora bench y leaderboard comunitario con tok/s/TTFT/VRAM; LEONES los tratará como evidencia externa hasta incorporarlos mediante su propio pipeline."}
-    },
-    {
-      "id":"airllm",
-      "name":"AirLLM",
-      "class":"runtime-candidate",
-      "source_url":"https://github.com/lyogavin/airllm",
-      "sheet":"../docs/sources/AIRLLM.md",
-      "source":{"title":"Runtime orientado a memoria restringida","text":"Tecnología de inferencia que explora ejecución de modelos grandes mediante estrategias de carga por capas, prefetch y uso combinado de recursos."},
-      "evidence":{"title":"Documentación y código del proyecto","text":"La ficha LEONES conserva compatibilidades y mecanismos como evidencia externa, condicionados a versión, modelo, precisión y hardware."},
-      "estimate":{"title":"Capacidad ampliada como hipótesis","text":"LEONES lo considera candidato cuando la memoria es el cuello de botella; esa clasificación no implica velocidad útil ni recomendación."},
-      "measurement":{"title":"Pendiente","text":"Debe medirse en Debian y registrar carga inicial, TTFT, prefill/decode, RAM, VRAM, I/O, contexto, estabilidad y calidad."}
-    },
-    {
-      "id":"ods",
-      "name":"ODS",
-      "class":"research-candidate",
-      "source_url":"https://github.com/Osmantic/ODS",
-      "sheet":"../docs/sources/ODS.md",
-      "source":{"title":"Osmantic Deployment System","text":"Stack/appliance de despliegue de IA local que instala y conecta inferencia, UI, dashboard, voz, agentes, workflows, RAG, imagen y herramientas operativas."},
-      "evidence":{"title":"Instalador y arquitectura primaria","text":"El proyecto documenta autodetección de hardware, selección de modelo, servicios Compose y operación mediante CLI."},
-      "estimate":{"title":"Selección de despliegue externa","text":"La elección de modelo/backend realizada por ODS es una señal externa de despliegue; LEONES no la convierte en su selector soberano."},
-      "measurement":{"title":"Pendiente","text":"Debe medirse instalación, modelo/backend efectivo, configuración, estabilidad y rendimiento posterior al despliegue."}
-    },
-    {
-      "id":"magnitude",
-      "name":"Magnitude",
-      "class":"research-candidate",
-      "source_url":"https://github.com/magnitudedev/magnitude",
-      "sheet":"../docs/sources/MAGNITUDE.md",
-      "source":{"title":"Agente + inference engine local","text":"Proyecto que combina agente de coding con inferencia local, perfilado de hardware, recomendación de modelos y configuración del motor."},
-      "evidence":{"title":"Fuente primaria de producto y código","text":"La ficha registra capacidades de perfilado, descarga/configuración y workloads agentivos como evidencia externa."},
-      "estimate":{"title":"Perfilado y recomendación","text":"Las recomendaciones de hardware/modelo y cualquier throughput estimado se conservan como estimaciones externas."},
-      "measurement":{"title":"Pendiente","text":"El pin de CLI señalado en la ficha no se considera VERIFIED hasta instalación y ejecución reproducibles; falta benchmark agentivo canónico."}
-    },
-    {
-      "id":"local-runtimes",
-      "name":"Runtimes locales 2026",
-      "class":"source-inspiration",
-      "source_url":"../docs/sources/LOCAL-RUNTIMES-2026.md",
-      "sheet":"../docs/sources/LOCAL-RUNTIMES-2026.md",
-      "source":{"title":"Radar de runtimes y stacks","text":"Consolida llama.cpp, vLLM, SGLang, MLX-LM, ExLlamaV2, Lemonade, Rabbit, ODS y otras familias estudiadas."},
-      "evidence":{"title":"Procedencia primaria por proyecto","text":"Cada runtime debe conservar su propia fuente primaria; el radar no sustituye esas fuentes."},
-      "estimate":{"title":"Mapa de candidatos","text":"El radar reduce el espacio de búsqueda y formula hipótesis de encaje, pero no produce estimaciones homogéneas de rendimiento."},
-      "measurement":{"title":"Por runtime y workload","text":"Pendiente salvo registros explícitos del pipeline LEONES; el radar no convierte automáticamente ningún runtime en measured."}
-    },
-    {
-      "id":"agentic-evals",
-      "name":"Artificial Analysis / Optima",
-      "class":"research-candidate",
-      "source_url":"../docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md",
-      "sheet":"../docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md",
-      "source":{"title":"Metodología de evaluación agentiva","text":"Fuente incorporada para estudiar tareas completas, herramientas, trazas y graders."},
-      "evidence":{"title":"Metodología externa","text":"Aporta criterios y resultados publicados por terceros cuando están disponibles; no son mediciones LEONES."},
-      "estimate":{"title":"No es estimador principal","text":"Puede orientar diseño de evaluación, pero LEONES no debe convertir un score externo en predicción propia."},
-      "measurement":{"title":"Pendiente de reproducción","text":"Las mediciones canónicas deben salir del executor + grader + benchmark LEONES."}
-    },
-    {
-      "id":"buddy",
-      "name":"Buddy",
-      "class":"harness-reference",
-      "source_url":"../docs/sources/BUDDY_HARNESS.md",
-      "sheet":"../docs/sources/BUDDY_HARNESS.md",
-      "source":{"title":"Harness/workspace de referencia","text":"Se estudia como referencia para memoria persistente, operaciones con ficheros y trazas de agentes."},
-      "evidence":{"title":"Código/documentación primaria","text":"La ficha conserva capacidades del harness como evidencia externa."},
-      "estimate":{"title":"Hipótesis de workload","text":"Su valor es principalmente metodológico; no aporta un score que deba entrar directamente en el selector."},
-      "measurement":{"title":"Pendiente","text":"Debe ejecutarse como workload/harness homogéneo sobre distintos runtimes si se incorpora al benchmark agentivo."}
-    },
-    {
-      "id":"mozilla",
-      "name":"Mozilla · State of Open Source AI",
-      "class":"source-inspiration",
-      "source_url":"../docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md",
-      "sheet":"../docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md",
-      "source":{"title":"Fuente de ecosistema","text":"Aporta contexto estructural sobre actores, capas y relaciones del ecosistema de IA abierta."},
-      "evidence":{"title":"Informe publicado","text":"Sus afirmaciones se mantienen como claims de la fuente y no como mediciones del sistema LEONES."},
-      "estimate":{"title":"Marco conceptual","text":"Puede inspirar taxonomías y relaciones; no debe producir scores automáticos sin reglas LEONES explícitas."},
-      "measurement":{"title":"No aplica directamente","text":"No es un runtime ni benchmark ejecutable; cualquier hipótesis derivada debe verificarse en artefactos LEONES."}
-    },
-    {
-      "id":"llm-zero-hero",
-      "name":"LLMs de Cero a Héroe",
-      "class":"source-inspiration",
-      "source_url":"https://x.com/i/article/2040093502202171392",
-      "sheet":"../docs/sources/LLMS-DE-CERO-A-HEROE-2026.md",
-      "source":{"title":"Serie técnica compilada en agosto de 2026","text":"Cubre memoria GPU, ancho de banda, runtimes, mecánica de LLMs, proyectos de ingeniería y disciplina de evaluación."},
-      "evidence":{"title":"Contenido de la fuente compilada","text":"La serie aporta principios sobre VRAM, bandwidth, prefill/decode, KV cache, runtimes y evaluación limpia; no constituye evidencia experimental de LEONES."},
-      "estimate":{"title":"Marco para hipótesis","text":"Las reglas de memoria y rendimiento sirven para formular estimaciones y criterios de selección, siempre marcados como derivados y no medidos."},
-      "measurement":{"title":"No disponible","text":"Las mediciones de hardware/runtimes deben producirse independientemente mediante el pipeline LEONES."}
-    }
+    {"id":"freetoken","name":"FreeToken","leones_name":"FreeToken","class":"runtime-candidate","source_url":"https://github.com/FlashML-org/FreeToken","sheet":"../docs/sources/FREETOKEN.md","source":{"title":"Runtime edge-native MoE","text":"FreeToken trata GPU, CPU, RAM y PCIe como una plataforma elástica para servir MoE y adapta residencia y ejecución de expertos."},"evidence":{"title":"Evidencia primaria externa","text":"El paper y el repositorio publican mecanismos y resultados condicionados por hardware, modelo, cuantización y workload."},"estimate":{"title":"Hipótesis de selección","text":"Especialmente interesante cuando el MoE excede VRAM y existe ancho de banda host/PCIe suficiente."},"measurement":{"title":"Pendiente","text":"Las cifras externas no son medición LEONES; falta executor + grader + benchmark reproducible."}},
+    {"id":"freetoken-otro","name":"El otro FreeToken","leones_name":"El otro FreeToken · FlashML","class":"runtime-candidate","source_url":"https://github.com/FlashML-org/FreeToken","sheet":"../docs/sources/FREETOKEN-EL-OTRO-FREETOKEN.md","source":{"title":"Ficha nominal independiente","text":"Mantiene separada la referencia solicitada a FreeToken de FlashML y su papel como runtime/serving MoE."},"evidence":{"title":"Código, documentación y claims publicados","text":"Se conservan como evidencia externa y condicionada; no se heredan como mediciones propias."},"estimate":{"title":"Edge-MoE bandwidth-adaptive","text":"Las variables de selección incluyen VRAM, RAM, PCIe, KV, localidad de expertos y workload agentivo."},"measurement":{"title":"Pendiente","text":"Debe reproducirse mediante el pipeline canónico de LEONES."}},
+    {"id":"odysseus","name":"Odysseus","class":"workspace-reference","source_url":"https://github.com/odysseus-dev/odysseus","sheet":"../docs/sources/ODYSSEUS.md","source":{"title":"Workspace AI self-hosted","text":"Chat, agentes, tools, MCP, memoria, investigación, documentos, email, notas, calendario y workflows locales/API."},"evidence":{"title":"Evidencia primaria","text":"La documentación sitúa Odysseus por encima del runtime como workspace/harness y confirma integración con endpoints locales."},"estimate":{"title":"Cookbook como señal externa","text":"Sus recomendaciones hardware-aware son contexto, no autoridad del selector LEONES."},"measurement":{"title":"Pendiente","text":"Debe medirse modelo + runtime + endpoint + workspace + workload agentivo."}},
+    {"id":"llmfit","name":"LLMFit","class":"preselector","source_url":"https://github.com/AlexsJones/llmfit","sheet":"../docs/sources/LLMFIT.md","source":{"title":"Preselector hardware-aware","text":"Detecta hardware y puntúa modelos por quality, speed, fit y context, con cuantización y modos de ejecución."},"evidence":{"title":"Código y documentación primaria","text":"La fuente documenta detección de RAM/CPU/GPU, MoE, multi-GPU y selección de runtimes."},"estimate":{"title":"Estimador central","text":"estimated_tps, memoria requerida, cuantización, run mode y score son estimaciones de LLMFit."},"measurement":{"title":"Observación externa separada","text":"Los bench/leaderboards de LLMFit son evidencia externa. LEONES debe conservar measured_tps independiente."}},
+    {"id":"llmfit-hardware","name":"LLMFit — hardware real","class":"verification-leones","source_url":"../docs/sources/LLMFIT-REAL-HARDWARE-2026-08-20.md","sheet":"../docs/sources/LLMFIT-REAL-HARDWARE-2026-08-20.md","source":{"title":"Ejecución real de LLMFit","text":"Observación sobre Intel i5-1035G1, 8 GB, Iris Plus y Debian, con hardware/backend y candidatos registrados."},"evidence":{"title":"Verificación/observación LEONES","text":"Se registran 0,7 GB libres, backend SYCL y las estimaciones mostradas por LLMFit."},"estimate":{"title":"Estimaciones observadas","text":"tok/s y etiquetas Perfect pertenecen a LLMFit y no garantizan estabilidad con la memoria disponible."},"measurement":{"title":"No es benchmark de inferencia","text":"Falta ejecutar un runtime compatible y comparar estimated_tps con measured_tps bajo protocolo reproducible."}},
+    {"id":"airllm","name":"AirLLM","class":"runtime-candidate","source_url":"https://github.com/lyogavin/airllm","sheet":"../docs/sources/AIRLLM.md","source":{"title":"Runtime memory-constrained","text":"Estrategias de carga por capas, prefetch y uso combinado de memoria para ampliar el conjunto de modelos ejecutables."},"evidence":{"title":"Código y documentación primaria","text":"Mecanismos y compatibilidades quedan condicionados a versión, modelo, precisión y hardware."},"estimate":{"title":"Hipótesis de capacidad","text":"Puede ser útil cuando la memoria es el cuello de botella; capacidad no equivale a rendimiento útil."},"measurement":{"title":"Pendiente","text":"Benchmark Debian pendiente con TTFT, prefill/decode, RAM, VRAM, I/O, contexto, estabilidad y calidad."}},
+    {"id":"ods","name":"ODS","class":"research-candidate","source_url":"https://github.com/Osmantic/ODS","sheet":"../docs/sources/ODS.md","source":{"title":"Osmantic Deployment System","text":"Plataforma de despliegue que instala y conecta inferencia, UI, voz, agentes, workflows, RAG y servicios operativos."},"evidence":{"title":"Instalador y arquitectura primaria","text":"Documenta autodetección de hardware, selección de modelo, Compose y CLI."},"estimate":{"title":"Señal de despliegue","text":"La selección automática de modelo/backend de ODS es externa y no sustituye al selector LEONES."},"measurement":{"title":"Pendiente","text":"Debe medirse instalación, backend efectivo, configuración, estabilidad y rendimiento posterior."}},
+    {"id":"magnitude","name":"Magnitude","class":"research-candidate","source_url":"https://github.com/magnitudedev/magnitude","sheet":"../docs/sources/MAGNITUDE.md","source":{"title":"Agente + inference engine local","text":"Combina agente de coding, inferencia local, perfilado hardware y recomendación/configuración de modelos."},"evidence":{"title":"Fuente primaria","text":"Código/documentación describen perfilado, configuración, skills y workloads agentivos."},"estimate":{"title":"Perfilado/recomendación","text":"Recomendaciones hardware/modelo y throughput estimado permanecen como estimaciones externas."},"measurement":{"title":"Pendiente","text":"Falta instalación reproducible y benchmark agentivo con trayectoria, outcome y coste/latencia."}},
+    {"id":"local-runtimes","name":"Runtimes locales 2026","class":"source-inspiration","source_url":"../docs/sources/LOCAL-RUNTIMES-2026.md","sheet":"../docs/sources/LOCAL-RUNTIMES-2026.md","source":{"title":"Radar de runtimes","text":"Consolida llama.cpp, Lemonade, Rabbit, ODS, Ollama, KoboldCpp, MLX-LM, vLLM, SGLang, TensorRT-LLM y otros."},"evidence":{"title":"Procedencia por proyecto","text":"Cada runtime conserva su propia fuente primaria y estado de verificación."},"estimate":{"title":"Mapa de candidatos","text":"El radar reduce búsqueda y formula hipótesis; no es ranking ni estimador homogéneo."},"measurement":{"title":"Por runtime y workload","text":"Pendiente salvo resultados explícitos del pipeline LEONES."}},
+    {"id":"local-inference","name":"Infraestructura IA local 2026","class":"source-inspiration","source_url":"../docs/sources/LOCAL-INFERENCE-2026.md","sheet":"../docs/sources/LOCAL-INFERENCE-2026.md","source":{"title":"Informe de prospección","text":"Mapa de herramientas, runtimes, técnicas de memoria, cuantización, modelos y despliegue local."},"evidence":{"title":"Verificación derivada","text":"Los claims pasan después por fuentes primarias y por el quality gate de verificación."},"estimate":{"title":"Hipótesis orientativas","text":"Recomendaciones de hardware/modelo del informe no se incorporan directamente al selector."},"measurement":{"title":"No aplica directamente","text":"Las mediciones se producen sobre candidatos ejecutables, no sobre el informe."}},
+    {"id":"local-candidates","name":"Candidatos de infraestructura 2026","class":"research-candidate","source_url":"../docs/sources/LOCAL-INFERENCE-2026-CANDIDATES.md","sheet":"../docs/sources/LOCAL-INFERENCE-2026-CANDIDATES.md","source":{"title":"Registro de promoción documental","text":"Lista de 23 proyectos y 10 familias/modelos revisados y clasificados."},"evidence":{"title":"Quality gate documental","text":"verified-primary demuestra identidad/estado/licencia/capacidad básica; archived y unresolved quedan diferenciados."},"estimate":{"title":"Paso hacia selección","text":"LLMFit y runtime+cuantización son fases posteriores de estimación y selección."},"measurement":{"title":"Pendiente por candidato","text":"Ningún estado documental equivale a measured."}},
+    {"id":"local-verification","name":"Verificación de infraestructura 2026","class":"verified-primary","source_url":"../docs/sources/LOCAL-INFERENCE-2026-VERIFICATION.md","sheet":"../docs/sources/LOCAL-INFERENCE-2026-VERIFICATION.md","source":{"title":"Verificación uno a uno","text":"Revisión frente a repositorios/fichas primarias actuales."},"evidence":{"title":"23 proyectos verificados","text":"18 verified-primary, 3 archived y 2 unresolved; además 10 familias/modelos con estados diferenciados."},"estimate":{"title":"No estima rendimiento","text":"La verificación establece identidad y estado; LLMFit y selección vienen después."},"measurement":{"title":"Pendiente","text":"verified-primary no significa rendimiento medido por LEONES."}},
+    {"id":"agentic-evals","name":"Artificial Analysis / Optima","class":"research-candidate","source_url":"../docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md","sheet":"../docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md","source":{"title":"Metodología agentiva","text":"Fuente para evaluar tareas completas, herramientas, trayectorias, outcomes y graders."},"evidence":{"title":"Metodología externa","text":"Aporta principios y resultados publicados cuando existen; no son mediciones LEONES."},"estimate":{"title":"Diseño de evaluación","text":"Orienta hipótesis de benchmark, no un estimador de runtime/modelo."},"measurement":{"title":"Pendiente de reproducción","text":"Agentic Benchmark V1 debe ejecutar tareas versionadas con entorno, herramientas y graders reproducibles."}},
+    {"id":"buddy","name":"Buddy","class":"harness-reference","source_url":"https://github.com/juanje/buddy","sheet":"../docs/sources/BUDDY_HARNESS.md","source":{"title":"Harness personal local","text":"Asistente con memoria persistente Markdown/Git y herramientas file-first."},"evidence":{"title":"Código/documentación primaria","text":"La arquitectura documenta memoria, permisos y herramientas centradas en ficheros."},"estimate":{"title":"Hipótesis de workload","text":"Su valor es metodológico como harness alternativo, no un score de selección."},"measurement":{"title":"Pendiente","text":"Debe compararse con otros harnesses sobre el mismo endpoint y tareas."}},
+    {"id":"mozilla","name":"Mozilla · State of Open Source AI","class":"source-inspiration","source_url":"../docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md","sheet":"../docs/sources/MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md","source":{"title":"Fuente de ecosistema","text":"Aporta contexto sobre actores, capas y relaciones del ecosistema de IA abierta."},"evidence":{"title":"Informe publicado","text":"Sus afirmaciones permanecen como claims de la fuente."},"estimate":{"title":"Marco conceptual","text":"Puede inspirar taxonomías y relaciones, no scores automáticos."},"measurement":{"title":"No aplica directamente","text":"Cualquier hipótesis derivada debe transformarse en prueba ejecutable independiente."}},
+    {"id":"llm-zero-hero","name":"LLMs de Cero a Héroe","class":"source-inspiration","source_url":"https://x.com/i/article/2040093502202171392","sheet":"../docs/sources/LLMS-DE-CERO-A-HEROE-2026.md","source":{"title":"Serie técnica 2026","text":"Marco sobre memoria, bandwidth, runtimes, mecánica de LLMs y disciplina de evaluación."},"evidence":{"title":"Contenido documental","text":"Aporta principios y marco conceptual, no mediciones experimentales LEONES."},"estimate":{"title":"Marco para hipótesis","text":"Sus reglas pueden apoyar estimaciones derivadas, siempre marcadas como tales."},"measurement":{"title":"No disponible","text":"Las mediciones físicas deben producirse mediante el pipeline LEONES."}}
   ]
 }
