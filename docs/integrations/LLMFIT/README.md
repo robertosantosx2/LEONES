@@ -109,7 +109,7 @@ Un candidato puede ser recomendado por LLMFit y posteriormente quedar descartado
 
 La ficha de conocimiento [`../../sources/LLMFIT-REAL-HARDWARE-2026-08-20.md`](../../sources/LLMFIT-REAL-HARDWARE-2026-08-20.md) recoge la verificación técnica disponible y debe leerse junto con [`../../sources/LLMFIT.md`](../../sources/LLMFIT.md).
 
-El benchmark físico se documenta en [`../..//completed/BENCHMARK-MEASURED-EVIDENCE.md`](../../completed/BENCHMARK-MEASURED-EVIDENCE.md) y el resultado canónico en [`../../RESULT_SCHEMA.md`](../../RESULT_SCHEMA.md).
+El benchmark físico se documenta en [`../../completed/BENCHMARK-MEASURED-EVIDENCE.md`](../../completed/BENCHMARK-MEASURED-EVIDENCE.md) y el resultado canónico en [`../../RESULT_SCHEMA.md`](../../RESULT_SCHEMA.md).
 
 ## Documentación relacionada
 
@@ -119,8 +119,8 @@ El benchmark físico se documenta en [`../..//completed/BENCHMARK-MEASURED-EVIDE
 - [`../../completed/H08-HARDWARE-MATRIX.md`](../../completed/H08-HARDWARE-MATRIX.md) — guía de la matriz.
 - [`../../completed/H09-CABE-RULA.md`](../../completed/H09-CABE-RULA.md) — contrato CABE/RULA.
 - [`../../RESULT_SCHEMA.md`](../../RESULT_SCHEMA.md) — resultado canónico.
-- [`../../integrations/DATA-CONTRACT.md`](../DATA-CONTRACT.md) — contrato de datos de integraciones.
-- [`../../integrations/E2E.md`](../E2E.md) — validación E2E.
+- [`../DATA-CONTRACT.md`](../DATA-CONTRACT.md) — contrato de datos de integraciones.
+- [`../E2E.md`](../E2E.md) — validación E2E.
 
 ## Fuente primaria
 
