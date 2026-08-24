@@ -119,7 +119,7 @@ Para convertir FreeToken en evidencia canónica se deben registrar, como mínimo
 
 El repositorio evoluciona rápidamente. A fecha de esta ficha existen solicitudes abiertas relacionadas con GPU dual, soporte de hardware antiguo, Docker y Apple Silicon. Por tanto, **no debe asumirse portabilidad universal**.
 
-La documentación actual indica Linux x86_64, GPU NVIDIA y driver r580+ / CUDA 13 para la instalación acelerada publicada. La instalación oficial contempla `uv`/pip y compilación de kernels JIT. citeturn0search3
+La documentación oficial publicada actualmente indica Linux x86_64, GPU NVIDIA y driver r580+ / CUDA 13 para la instalación acelerada, con `uv`/pip y compilación JIT de kernels en el primer uso.
 
 ## Relación con otros runtimes
 
