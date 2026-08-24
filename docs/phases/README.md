@@ -2,6 +2,8 @@
 
 Los paquetes de fase son la unidad documental de cierre de las grandes etapas del proyecto. Cada fase aceptada o en desarrollo se identifica con un hito estable Hxx.
 
+**Entrada documental general:** [`../README.md`](../README.md) · **Protocolo:** [`../DOCUMENTATION_PROTOCOL.md`](../DOCUMENTATION_PROTOCOL.md).
+
 ## Estados
 
 - 🟡 **PROVISIONAL / EN VALIDACIÓN** — implementación existente, todavía no aceptada.
@@ -65,6 +67,8 @@ Establece la documentación como condición de cierre y define arquitectura, dec
 
 **ACEPTADA / OPERATIVA.** Identidad → evidencia → quality gate → promoción `verified-only`. La auditoría mantiene `unknown`/`unverified` cuando falta evidencia.
 
+Relacionado: [`../../atlas/README.md`](../../atlas/README.md) · [`../sources/README.md`](../sources/README.md).
+
 ### 🟢 H07 — 2026-08 — Índice JGB sistemático
 
 [`2026-08-jgb-systematic/`](2026-08-jgb-systematic/)
@@ -77,6 +81,8 @@ Establece la documentación como condición de cierre y define arquitectura, dec
 
 Infraestructura de matriz cerrada y documentada. Genera perfiles CPU × RAM × GPU y reutiliza el recomendador oficial. La matriz representa compatibilidad/recomendación, no benchmark físico. La validación empírica sobre hardware real permanece abierta.
 
+Relacionado: [`../integrations/LLMFIT/README.md`](../integrations/LLMFIT/README.md).
+
 ### 🟡 H09 — 2026-08 — CABE/RULA
 
 [`../completed/H09-CABE-RULA.md`](../completed/H09-CABE-RULA.md)
@@ -88,6 +94,15 @@ Infraestructura del contrato documentada. La cobertura empírica física permane
 [`2026-08-atlas-recommendation-pipeline/`](2026-08-atlas-recommendation-pipeline/)
 
 **ACEPTADA mediante Run #18.** Prospección → evidencia → ingesta → evidencia técnica → calidad → hipótesis → matriz → recomendador → enriquecimiento → validación → publicación.
+
+## Integraciones relacionadas
+
+Las integraciones externas no son fases Atlas y no se convierten en verdad canónica por aparecer aquí. Se documentan en:
+
+- [`../integrations/README.md`](../integrations/README.md) — índice de integraciones.
+- [`../integrations/LLMFIT/README.md`](../integrations/LLMFIT/README.md) — fit inicial.
+- [`../integrations/ODS/README.md`](../integrations/ODS/README.md) — despliegue local.
+- [`../integrations/Magnitude/README.md`](../integrations/Magnitude/README.md) — agente y runtime local.
 
 ## Auditoría actual
 
