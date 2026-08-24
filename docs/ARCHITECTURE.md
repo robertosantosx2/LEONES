@@ -42,12 +42,12 @@ USER / MACHINE
 │ leones-publish       │  validate and publish
 └──────────┬───────────┘
            ▼
- GitHub / metaLEONES / web
+ GitHub / MANADA / web
 ```
 
 `leones.py` may orchestrate this sequence, but it should contain as little domain logic as possible.
 
-`llmfit` is deliberately a **preselector**, not a source of truth. Its estimates reduce the candidate space before LEONES applies identity/evidence, openness, task suitability and measured performance.
+`llmfit` is deliberately a **preselector**, not a source of truth. Its estimates reduce the candidate space before LEONES applies identity/evidence, openness, task suitability and measured performance. See [`integrations/LLMFIT/README.md`](integrations/LLMFIT/README.md).
 
 ## Architecture layers
 
@@ -114,6 +114,8 @@ The adapter should preserve the external values independently, for example:
 - `llmfit_runtime`;
 - `llmfit_source_version`.
 
+See [`integrations/LLMFIT/README.md`](integrations/LLMFIT/README.md) and [`sources/LLMFIT.md`](sources/LLMFIT.md).
+
 ### 3. Inference
 
 Inference measures the model/backend/hardware combination. It must not be confused with agentic performance.
@@ -130,6 +132,8 @@ Minimum concepts:
 - total time;
 - stability/errors.
 
+The canonical result contract is [`RESULT_SCHEMA.md`](RESULT_SCHEMA.md).
+
 ### 4. Agentic evaluation
 
 LOTB measures whether an agent can complete defined tasks:
@@ -140,7 +144,7 @@ LOTB measures whether an agent can complete defined tasks:
 - B04 — recovery from failure;
 - B05 — local coding.
 
-A fast model is not automatically a good agent.
+A fast model is not automatically a good agent. The agentic evaluation contract is documented in [`EVALUACION_AGENTIC_TESTS.md`](EVALUACION_AGENTIC_TESTS.md), with harness references in [`AGENT_HARNESSES.md`](AGENT_HARNESSES.md).
 
 ### 5. Evidence
 
@@ -155,7 +159,7 @@ The project uses memory as a central classification variable:
 - H2 — 32 GB;
 - H3 — 64 GB.
 
-CPU and GPU are recorded separately. A profile describes a class of hardware; a result describes an actual experiment.
+CPU and GPU are recorded separately. A profile describes a class of hardware; a result describes an actual experiment. The hardware matrix is documented in [`phases/2026-08-hardware-matrix/`](phases/2026-08-hardware-matrix/) and [`completed/H08-HARDWARE-MATRIX.md`](completed/H08-HARDWARE-MATRIX.md).
 
 ## Performance thresholds
 
@@ -166,9 +170,9 @@ The current usability reference is:
 
 Task completion time and success are equally important. LEONES therefore avoids reducing agentic UX to tok/s.
 
-## metaLEONES
+## MANADA
 
-metaLEONES is the contribution protocol for real-world measurements.
+**MANADA** is the contribution protocol for real-world measurements and community observations.
 
 ```text
 hardware → model → inference → LOTB → report.md → validation → GitHub
@@ -188,6 +192,8 @@ reported → reproducible → verified
 
 A `reported` result must never be presented as `verified`.
 
+The historical `metaLEONES` terminology is no longer used as the current project name; current documentation uses **MANADA** consistently.
+
 ## Discovery and recommendations
 
 LEONES also has a prospecting layer. It looks for new Open projects and prioritises Copyleft candidates, especially projects that can improve models, inference, harnesses, tools, skills or agentic UX.
@@ -198,7 +204,30 @@ Discovery is deliberately separate from acceptance:
 discover → inspect → classify → test → recommend → incorporate
 ```
 
-Finding a project does not mean that LEONES endorses it.
+Finding a project does not mean that LEONES endorses it. The discovery index is [`phases/2026-08-daily-prospection/`](phases/2026-08-daily-prospection/), while the knowledge-source registry is [`sources/README.md`](sources/README.md).
+
+## External knowledge sources
+
+The principal documented sources include:
+
+- FreeToken and «El otro FreeToken» / Odysseus — [`sources/FREETOKEN.md`](sources/FREETOKEN.md), [`sources/FREETOKEN-EL-OTRO-FREETOKEN.md`](sources/FREETOKEN-EL-OTRO-FREETOKEN.md);
+- LLMFit — [`sources/LLMFIT.md`](sources/LLMFIT.md);
+- AirLLM — [`sources/AIRLLM.md`](sources/AIRLLM.md);
+- ODS — [`sources/ODS.md`](sources/ODS.md);
+- Magnitude — [`sources/MAGNITUDE.md`](sources/MAGNITUDE.md);
+- local runtimes — [`sources/LOCAL-RUNTIMES-2026.md`](sources/LOCAL-RUNTIMES-2026.md).
+
+These sources are knowledge/discovery inputs. Their claims remain separated from LEONES measurements under the four-layer knowledge contract: **source → evidence → estimate → LEONES measurement**.
+
+## Integrations and deployment profiles
+
+ODS and Magnitude are external deployment/agent profiles, not internal truth sources:
+
+- [`integrations/ODS/README.md`](integrations/ODS/README.md) — ODS installation, preflight, configuration and independent benchmark.
+- [`integrations/Magnitude/README.md`](integrations/Magnitude/README.md) — Magnitude agent, skills, configuration and benchmark.
+- [`integrations/LLMFIT/README.md`](integrations/LLMFIT/README.md) — LLMFit preselection contract.
+- [`integrations/DATA-CONTRACT.md`](integrations/DATA-CONTRACT.md) — integration data contract.
+- [`integrations/E2E.md`](integrations/E2E.md) — end-to-end validation.
 
 ## Automation
 
@@ -210,7 +239,7 @@ GitHub Actions may call the small scripts to:
 - produce weekly/monthly reports;
 - prepare community/social content.
 
-Automation must not bypass privacy checks or turn unverified information into official results.
+Automation must not bypass privacy checks or turn unverified information into official results. Workflow rules are documented in [`CI-WORKFLOW-RULES.md`](CI-WORKFLOW-RULES.md).
 
 ## Design rules for scripts
 
@@ -227,14 +256,34 @@ Every script should answer one question. Its documentation must state:
 
 Prefer composition over duplication. If a script needs another capability, call the existing script or shared module rather than copying its implementation.
 
+## Documentation navigation
+
+The canonical navigation chain is:
+
+```text
+README.md
+   ↓
+docs/README.md
+   ↓
+subsystem README
+   ↓
+phase / integration / source contract
+   ↓
+validation
+   ↓
+completed guide / code / workflow
+```
+
+See [`DOCUMENTATION_PROTOCOL.md`](DOCUMENTATION_PROTOCOL.md) for the mandatory closure rule.
+
 ## Vocabulary
 
 - **LEONES** — Local Ecosystem of Open Neural Expert Systems.
 - **Buddy** — central candidate knowledge/context layer.
 - **llmfit** — hardware-aware external preselector for the first model estimate.
 - **LOTB** — agentic task battery.
-- **metaLEONES** — protocol for anonymised real-machine reports.
+- **MANADA** — protocol for anonymised real-machine reports and community observations.
 - **CABE** — project vocabulary for whether a configuration fits.
-- **RULA** — project vocabulary for whether a configuration runs.
+- **RULA** — project vocabulary for whether a configuration runs usefully.
 
 The historical conversation is not required to understand these concepts; this repository documentation is the canonical explanation.
