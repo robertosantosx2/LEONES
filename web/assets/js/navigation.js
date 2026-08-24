@@ -129,3 +129,21 @@
         document.addEventListener("DOMContentLoaded", renderNavigation);
     else renderNavigation();
 })();
+
+/* LEONES — Prospección: publicar explicación funcional en español */
+(() => {
+    "use strict";
+    const page = window.location.pathname.split("/").pop() || "index.html";
+    if (page !== "prospeccion.html") return;
+
+    const load = () => {
+        if (document.querySelector('script[data-leones-prospeccion-explanations="1"]')) return;
+        const script = document.createElement("script");
+        script.src = "assets/js/prospeccion-explanations.js?v=2026-08-24-1";
+        script.dataset.leonesProspeccionExplanations = "1";
+        script.defer = true;
+        document.head.appendChild(script);
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load);
+    else load();
+})();
