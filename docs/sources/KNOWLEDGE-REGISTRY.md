@@ -18,7 +18,8 @@ Este registro es el índice semántico del bloque `docs/sources/`. Su función e
 | Ficha | Capa principal | Papel en LEONES | Fuente | Evidencia | Estimación | Medición LEONES | Estado principal |
 |---|---|---|---|---|---|---|---|
 | [FREETOKEN.md](FREETOKEN.md) | selección/runtime | candidato para exploración de selección/runtime | primaria | documental + código | pendiente de separar por claim | pendiente | `research-candidate` |
-| [FREETOKEN-EL-OTRO-FREETOKEN.md](FREETOKEN-EL-OTRO-FREETOKEN.md) | workspace/servicio | referencia independiente que debe evaluarse junto a Odysseus sin fusionar capas | primaria | documental + código | según claims de la ficha | pendiente | `research-candidate` |
+| [FREETOKEN-EL-OTRO-FREETOKEN.md](FREETOKEN-EL-OTRO-FREETOKEN.md) | runtime/serving | runtime MoE edge-native | primaria | documental + código + claims de rendimiento publicados | sí, separada | pendiente de reproducción | `runtime-candidate` |
+| [ODYSSEUS.md](ODYSSEUS.md) | workspace/harness | referencia para workloads agentivos y capa superior al runtime | primaria | documental + verificación LEONES | señales Cookbook separadas | pendiente | `workspace-reference` |
 | [LLMFIT.md](LLMFIT.md) | preselector | reducir espacio de candidatos según hardware | primaria | documental + código | **sí, función central** | pendiente/casos existentes separados | `preselector` |
 | [LLMFIT-REAL-HARDWARE-2026-08-20.md](LLMFIT-REAL-HARDWARE-2026-08-20.md) | evidencia técnica | contrastar claims de LLMFit con hardware real | primaria + observación | verificación documental | sí, como referencia | solo si existe ejecución LEONES registrada | `verification-leones` |
 | [AIRLLM.md](AIRLLM.md) | runtime/inferencia | candidato memory-constrained | primaria | documental + código | claims de memoria/rendimiento separados | pendiente de benchmark canónico | `runtime-candidate` |
@@ -32,6 +33,7 @@ Este registro es el índice semántico del bloque `docs/sources/`. Su función e
 | [BUDDY_HARNESS.md](BUDDY_HARNESS.md) | harness | referencia para ejecución/evaluación | primaria | documental + código | según claims | pendiente | `harness-reference` |
 | [MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md](MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) | radar/metodología | fuente de descubrimiento y contexto del ecosistema | primaria/edición publicada | claims de la fuente | no convertir rankings/estimaciones en medición | pendiente | `source-inspiration` |
 | [KNOWLEDGE-FICHA-CONTRACT.md](KNOWLEDGE-FICHA-CONTRACT.md) | contrato | norma editorial y de trazabilidad | LEONES | contrato | n/a | n/a | `verified-primary` |
+| [LLMS-DE-CERO-A-HEROE-2026.md](LLMS-DE-CERO-A-HEROE-2026.md) | fundamentos/metodología | marco para hardware, runtimes y evaluación | fuente externa compilada | contenido de la fuente | derivaciones LEONES separadas | no aplica directamente | `source-inspiration` |
 
 > Si aparece una ficha adicional en `docs/sources/`, debe incorporarse a este registro antes de considerarla parte del conocimiento consolidado.
 
@@ -79,11 +81,11 @@ La promoción no es automática. Un resultado `measured` es una observación rep
 
 ## Regla para la web
 
-La web debe presentar las fichas como **conocimiento navegable**, no como un listado plano. La tarjeta y la página ampliada deben conservar las mismas cuatro etiquetas semánticas:
+La web consume `web/data/knowledge.json` y presenta **exactamente cuatro capas**, sin fusionarlas:
 
-- **Fuente**
-- **Evidencia**
-- **Estimación**
-- **Medición LEONES**
+1. **Fuente / Descubrimiento** — procedencia.
+2. **Evidencia** — respaldo verificable.
+3. **Estimación** — predicción/recomendación externa.
+4. **Medición LEONES** — resultado producido por el pipeline propio.
 
-Cuando una de las cuatro no exista, se debe decir explícitamente `no disponible` o `pendiente`, nunca rellenarla por inferencia.
+La tarjeta web no debe inventar una quinta categoría ni convertir `estado`, `clasificación` o `próximo gate` en una de las cuatro capas. Esos metadatos pueden servir para navegar, pero no deben contaminar el contenido semántico de las cuatro capas.
