@@ -4,6 +4,18 @@
 **Tipo:** harness / asistente personal local con memoria persistente  
 **Estado LEONES:** referencia de harness; integración diseñada para ODS y Magnitude.
 
+## Mapa documental
+
+- [`../../AGENT_HARNESSES.md`](../../AGENT_HARNESSES.md) — posición de Buddy junto a DSH y Hermes.
+- [`../../EVALUACION_AGENTIC_TESTS.md`](../../EVALUACION_AGENTIC_TESTS.md) — metodología común de evaluación.
+- [`../../../benchmarks/agentic/README.md`](../../../benchmarks/agentic/README.md) — batería agentiva.
+- [`../../../schemas/result.schema.json`](../../../schemas/result.schema.json) — contrato de resultados.
+- [`HARNESS-CONTRACT.md`](HARNESS-CONTRACT.md) — contrato específico de Buddy.
+- [`ODS-INTEGRATION.md`](ODS-INTEGRATION.md) — adaptación para ODS.
+- [`MAGNITUDE-INTEGRATION.md`](MAGNITUDE-INTEGRATION.md) — adaptación para Magnitude.
+- [`LICENSING-INTEGRATION.md`](LICENSING-INTEGRATION.md) — licencia y frontera de integración.
+- [`../../sources/BUDDY_HARNESS.md`](../../sources/BUDDY_HARNESS.md) — ficha de conocimiento.
+
 ## Objetivo
 
 Incorporar Buddy al laboratorio de harnesses de LEONES junto con **DeepSeek Harness (DSH)** y **Hermes**, de forma que una misma tarea, modelo, hardware y política puedan ejecutarse bajo distintos harnesses y compararse mediante el contrato común de evaluación agentiva.
@@ -55,8 +67,12 @@ El upstream declara como gate `tsc --noEmit`, `vite build` y `npm test`, con tes
 - equivalencia de tarea entre harnesses;
 - captura de outcome, trajectory, coste/tiempo y seguridad.
 
-## Integraciones
+El resultado de Buddy no se promociona automáticamente a medición: la tarea, la traza y el grader deben pasar por el contrato común de LEONES.
+
+## Integraciones relacionadas
 
 - [Diseño ODS](./ODS-INTEGRATION.md)
 - [Diseño Magnitude](./MAGNITUDE-INTEGRATION.md)
 - [Contrato común de harnesses](./HARNESS-CONTRACT.md)
+- [Licensing](./LICENSING-INTEGRATION.md)
+- [Ficha de conocimiento](../../sources/BUDDY_HARNESS.md)
