@@ -1,159 +1,117 @@
-# Odysseus
+# Odysseus — workspace local-first para LEONES
 
-## Identidad
+**Nombre de referencia LEONES:** Odysseus  
+**Fuente primaria:** https://github.com/odysseus-dev/odysseus  
+**Sitio:** https://odysseus-dev.github.io/odysseus/  
+**Licencia declarada:** AGPL-3.0-or-later  
+**Revisión LEONES:** 2026-08-24  
+**Clasificación principal:** `workspace-reference`
 
-**Proyecto:** Odysseus
+## 1. FUENTE / DESCUBRIMIENTO
 
-**Repositorio:** https://github.com/odysseus-dev/odysseus
+Odysseus es un **self-hosted AI workspace** para chat, agentes, herramientas, MCP, ficheros, shell, memoria, investigación, documentos, correo, notas, tareas, calendario y workflows de modelos locales/API. El repositorio separa core, companion, integraciones, rutas, servidores MCP, Docker y documentación. La rama `dev` es la de desarrollo más reciente y `main` la rama curada que el proyecto presenta como más estable.
 
-**Sitio:** https://odysseus-dev.github.io/odysseus/
+El proyecto incluye un Cookbook de recomendaciones hardware-aware, descarga y serving de modelos, investigación profunda y comparación de modelos. También documenta despliegue Docker y configuración de hosts LLM, Ollama, LM Studio y endpoints compatibles.
 
-**Licencia:** AGPL-3.0-or-later.
+## 2. EVIDENCIA
 
-## Qué es
+### `evidence-primary`
 
-Odysseus es un **workspace de IA self-hosted** que reúne en una sola aplicación chat, agentes, herramientas, MCP, archivos, shell, memoria, investigación, documentos, correo, notas, tareas, calendario y flujos de modelos locales.
+- El propio repositorio define Odysseus como workspace self-hosted y enumera chat/agents, tools/MCP, memoria, investigación, documentos y otras funciones de aplicación.
+- El Cookbook forma parte del producto y ofrece recomendaciones hardware-aware.
+- La configuración permite conectar servicios LLM locales o remotos mediante hosts/endpoints.
+- La documentación de seguridad exige autenticación en despliegues accesibles por red y desaconseja exponer directamente puertos de modelos/servicios.
 
-No es principalmente un runtime de inferencia. Su papel está por encima de la capa de ejecución: proporciona una interfaz y un entorno operativo para trabajar con modelos y servicios LLM locales o remotos.
+### `verification-leones`
 
-## Por qué entra en el conocimiento de LEONES
+LEONES ha verificado documentalmente la existencia, estructura y procedencia del proyecto. Esto **no** equivale a una medición funcional de Odysseus.
 
-Odysseus es relevante porque muestra otra capa que el recomendador de LEONES debe distinguir de los runtimes: **la experiencia de uso y el workload agentivo**.
+### No demostrado
 
-El proyecto incorpora un Cookbook con recomendaciones de modelos conscientes del hardware, descarga y serving de modelos, y declara un catálogo de más de 270 modelos. También integra agentes, herramientas y MCP, por lo que puede servir como referencia para estudiar cómo un runtime recomendado termina formando parte de un stack de usuario real.
+La fuente no demuestra que Odysseus sea el mejor workspace, que sus recomendaciones sean superiores a LLMFit/Magnitude/ODS, ni que un runtime concreto conectado a Odysseus tenga un rendimiento determinado. Tampoco convierte sus comparaciones o workloads en benchmarks canónicos de LEONES.
 
-La fuente oficial describe explícitamente el objetivo de ser local-first, privacy-first y sin telemetría, aunque esas propiedades deben comprobarse siempre en la configuración concreta de despliegue.
+## 3. ESTIMACIÓN
 
-## Funcionalidades relevantes
-
-### Chat y agentes
-
-Permite conversaciones multi-turn y agentes autónomos capaces de planificar, llamar herramientas y ejecutar tareas.
-
-### Tools y MCP
-
-Integra herramientas locales para bash, archivos, web y memoria, además de servidores MCP conectables.
-
-### Cookbook hardware-aware
-
-Incluye recomendaciones de modelos, descargas y serving orientados al hardware. Para LEONES esto es interesante como **referencia de capa de recomendación/aplicación**, no como autoridad para sustituir LLMFit o los benchmarks propios.
-
-### Investigación profunda
-
-Incluye workflows de investigación web multi-paso, lectura de fuentes y generación de informes. Esto conecta directamente con la dimensión de workload que LEONES necesita describir antes de comparar runtimes.
-
-### Documentos, correo y productividad
-
-La aplicación integra editor documental, operaciones de correo IMAP/SMTP, notas, tareas y calendario. Estas funciones convierten al modelo en parte de un sistema completo y permiten estudiar cargas de trabajo reales en lugar de medir solamente generación de texto.
-
-## Arquitectura conceptual para LEONES
-
-Odysseus debe situarse **por encima** del runtime:
+Odysseus no es principalmente un estimador, pero su Cookbook puede producir **señales externas de recomendación**. LEONES las conservará como:
 
 ```text
-modelo / pesos
-      ↓
-runtime de inferencia
-      ↓
-API / endpoint local
-      ↓
-Odysseus
-      ↓
-chat · agents · tools · MCP · research · documents · memory
-      ↓
-workload real
-      ↓
-evaluación LEONES
+estimator_source = odysseus
+estimation_type = hardware-aware workspace recommendation
+status = unverified
 ```
 
-Esto permite separar tres preguntas:
+No se sumarán estas recomendaciones a scores LEONES ni se convertirán en `measured`. Tampoco se mezclarán con las estimaciones de LLMFit o Magnitude como si procedieran del mismo modelo de estimación.
 
-1. **¿Qué modelo conviene?** → Atlas / selector.
-2. **¿Con qué runtime debe ejecutarse?** → `runtime-selection.v1`.
-3. **¿Cómo se convierte en una herramienta útil para el usuario?** → harness/workspace como Odysseus.
+## 4. MEDICIÓN LEONES
 
-## Relación con FreeToken
+**Estado:** `no disponible`.
 
-Odysseus y FreeToken no compiten en la misma capa.
+Cuando Odysseus entre en un benchmark reproducible, la unidad medida será **modelo + runtime + endpoint + workspace + workload**, no el workspace aislado.
 
-- **FreeToken:** motor de serving edge-native especializado en MoE.
-- **Odysseus:** workspace de usuario y agentes que puede consumir endpoints de modelos locales.
+Mínimos: commit/version de Odysseus; runtime y versión; modelo/cuanti; hardware/SO; configuración; workload; TTFT; TPOT/tok/s cuando proceda; latencia extremo a extremo; memoria; tool calls; éxito funcional; grader/score; evidence ID y artefactos.
 
-Por tanto, LEONES puede estudiar una combinación del tipo:
+## 5. VALOR PARA LEONES
+
+Odysseus permite estudiar si una recomendación que funciona en generación aislada sigue siendo adecuada cuando aparecen memoria conversacional, herramientas, MCP, recuperación, múltiples turnos, investigación y tareas largas.
+
+Arquitectura correcta:
 
 ```text
-LEONES selector
-    ↓
-FreeToken
-    ↓
-OpenAI/Anthropic-compatible endpoint
-    ↓
+modelo
+   ↓
+runtime
+   ↓
+endpoint
+   ↓
 Odysseus
-    ↓
-agent workload
-    ↓
-LEONES benchmark + grader
+   ↓
+workload / tools / MCP / memory
+   ↓
+grader
+   ↓
+benchmark LEONES
+   ↓
+medición LEONES
 ```
 
-Esta combinación es especialmente interesante para comprobar si las ventajas de un runtime especializado sobreviven cuando el modelo se utiliza en una carga agentiva real.
+Hipótesis FreeToken + Odysseus:
 
-## Evidencia primaria revisada
+```text
+FreeToken → endpoint → Odysseus → workload → grader → evidencia/medición
+```
 
-El repositorio oficial declara chat + agents, tools/MCP, Cookbook, Deep Research, documentos, correo, notas/tareas/calendario y otros componentes. También publica instrucciones de despliegue mediante Docker Compose y advierte de mantener la autenticación activada y no exponer directamente los puertos de servicios de modelos.
+Esta combinación es una **hipótesis de integración** que debe medirse.
 
-El archivo `.env.example` muestra además que Odysseus puede trabajar con hosts LLM locales y endpoints adicionales, incluyendo Ollama, LM Studio y endpoints compatibles con OpenAI.
+## 6. VARIABLES DE SELECCIÓN Y MEDICIÓN
 
-## Qué puede aprender LEONES de Odysseus
+Además de las variables de inferencia: número de turnos, herramientas disponibles, tool calls, tamaño de contexto, memoria persistente, RAG, MCP, duración total, éxito de tarea, fallos/reintentos, coste de tokens y controles de seguridad.
 
-### 1. El workload importa
+## 7. LIMITACIONES
 
-Medir únicamente tokens/s no representa una aplicación agentiva completa. Odysseus proporciona ejemplos de workloads con herramientas, memoria, investigación y edición de documentos.
+El proyecto evoluciona rápidamente y `dev` puede ser inestable. Sus propias guías de seguridad consideran que dispone de capacidades locales privilegiadas. La compatibilidad y estabilidad en LEONES deben comprobarse mediante ejecución reproducible.
 
-### 2. El endpoint es una frontera útil
+## 8. INTEGRACIÓN LEONES
 
-LEONES puede mantener el runtime debajo de una interfaz estándar y evaluar diferentes motores con el mismo workload superior.
+Odysseus **no entra en `runtime-selection.v1` como runtime**. Entra como workspace/harness superior después de seleccionar runtime y endpoint.
 
-### 3. La recomendación debe ser de stack
+```text
+selector
+   ↓
+runtime-selection.v1
+   ↓
+executor/runtime
+   ↓
+endpoint
+   ↓
+Odysseus workload
+   ↓
+grader
+   ↓
+benchmark
+   ↓
+evidence
+   ↓
+Router / Atlas
+```
 
-Una recomendación útil puede ser:
-
-`modelo + cuantización + runtime + configuración + interfaz/harness + workload`
-
-no solamente `modelo`.
-
-### 4. MCP y tools deben formar parte del benchmark
-
-Cuando el usuario utiliza herramientas, la latencia del modelo no es la única variable. También importan llamadas a herramientas, recuperación, errores, reintentos y finalización correcta de la tarea.
-
-## Papel en la web de conocimiento
-
-**Clasificación:** `workspace-reference`
-
-**Capa:** aplicación / harness / workspace agentivo.
-
-**No es:** benchmark LEONES ni runtime canónico.
-
-**Valor:** referencia arquitectónica para conectar inferencia local con workloads reales.
-
-**Prioridad:** alta como fuente de inspiración y comparación de experiencia agentiva.
-
-## Siguiente integración prevista
-
-Odysseus debe permanecer inicialmente en la **fuente de conocimiento y descubrimiento**, sin convertir sus recomendaciones de modelos en verdad del selector.
-
-Cuando el pipeline agentivo de LEONES esté preparado, puede incorporarse como uno de los harness/workspaces de prueba para evaluar:
-
-- tool calling;
-- multi-turn;
-- memoria;
-- investigación;
-- edición de documentos;
-- recuperación ante errores;
-- latencia extremo a extremo;
-- coste de tokens;
-- estabilidad del runtime;
-- calidad final de la tarea.
-
-## Conclusión
-
-Odysseus aporta a LEONES una pieza que faltaba separar con claridad: **la capa de aplicación agentiva que consume el runtime**. Su principal utilidad no es decir qué modelo o runtime es mejor, sino proporcionar un entorno realista para comprobar si una combinación recomendada por LEONES funciona cuando deja de ser una demo de generación y se convierte en una herramienta de trabajo.
+**Próximo gate:** ejecutar un workload agentivo reproducible con un runtime local canónico y después repetirlo con FreeToken cuando exista un endpoint compatible.
