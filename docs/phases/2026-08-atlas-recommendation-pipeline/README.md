@@ -26,8 +26,6 @@ H10 queda aceptada porque el workflow diario ejecutó de extremo a extremo todos
 **Run ID:** `31912695040`  
 **Commit ejecutado:** `a3c6631cb8588b7d11679358b61f2e553eed2a44`
 
-urlRun #18 en GitHub Actionshttps://github.com/robertosantosx2/LEONES/actions/runs/31912695040
-
 ### Resultados observados
 
 ```text
@@ -93,11 +91,37 @@ PROSPECCIÓN → EVIDENCIA → INGESTA → QA → EVIDENCIA TÉCNICA
 
 No se sustituye esta clasificación por un score.
 
-## 7. Contexto
+## 7. LLMFit → recommendation candidates
+
+El puente ejecutable queda ahora explícito y separado del selector:
+
+```text
+LLMFit JSON
+   ↓
+automation/discovery/llmfit_adapter.py
+   ↓
+normalización externa
+   ↓
+scripts/llmfit_to_recommendation_candidates.py
+   ↓
+scripts/model_selector.py
+   ↓
+recommendation candidates
+   ↓
+scripts/runtime_gate.py
+   ↓
+runtime-selection.v1
+```
+
+`llmfit_adapter.py` conserva `estimated_tps` como estimación externa y fija `measured_tps = null`. El nuevo bridge añade la procedencia LLMFit al resultado del selector y nunca promociona una estimación a medición.
+
+El selector continúa siendo la autoridad para elegibilidad/ranking. LLMFit no es un segundo selector.
+
+## 8. Contexto
 
 El proyecto distingue `context_supported`, `context_target` y `context_recommended`. Si el contexto no está demostrado, se conserva `unknown`.
 
-## 8. Invariantes
+## 9. Invariantes
 
 1. JGB es independiente de rendimiento, precio y hardware.
 2. CABE no implica RULA.
@@ -109,12 +133,14 @@ El proyecto distingue `context_supported`, `context_target` y `context_recommend
 8. La incertidumbre forma parte del dato.
 9. Hardware y runtime son dimensiones explícitas.
 10. La publicación debe resistir concurrencia.
+11. LLMFit `estimated_tps` nunca se convierte en `measured_tps`.
+12. `runtime_gate.py` no inventa comandos ejecutables.
 
-## 9. Limitaciones que permanecen abiertas
+## 10. Limitaciones que permanecen abiertas
 
 Aceptar H10 **no significa que todo el sistema de recomendación esté terminado**. Siguen abiertas la cobertura completa del Atlas, JGB sistemático, CABE/RULA con mediciones reales, benchmarks reproducibles, evaluación agentiva, router dinámico, TCO y optimización multiobjetivo.
 
-## 10. Documentación relacionada
+## 11. Documentación relacionada
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md)
 - [`DECISIONS.md`](DECISIONS.md)
@@ -122,9 +148,14 @@ Aceptar H10 **no significa que todo el sistema de recomendación esté terminado
 - **Guía pedagógica de mantenimiento:** [`../../completed/H10-ATLAS-RECOMMENDER-PIPELINE.md`](../../completed/H10-ATLAS-RECOMMENDER-PIPELINE.md)
 - [`../../RESULT_SCHEMA.md`](../../RESULT_SCHEMA.md)
 
-## 11. Trazabilidad de código
+## 12. Trazabilidad de código
 
 - Workflow: `.github/workflows/atlas-pipeline.yml`
 - Matriz: `scripts/atlas_hardware_matrix.py`
 - Recomendador: `scripts/atlas_recommend_from_feed.py`
-- Ranking económico: `scripts/atlas_economic_rank.py`
+- Selector canónico: `scripts/model_selector.py`
+- Adaptador LLMFit: `automation/discovery/llmfit_adapter.py`
+- Bridge LLMFit → candidates: `scripts/llmfit_to_recommendation_candidates.py`
+- Runtime gate: `scripts/runtime_gate.py`
+- Gate específico FreeToken: `scripts/freetoken_runtime.py`
+- Tests LLMFit → candidates: `tests/test_llmfit_to_recommendation_candidates.py`
