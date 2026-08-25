@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""One-command selector -> runtime-selection.v1 pipeline.
-
-Without trusted runtime commands this remains a dry-run and produces plans that
-are explicitly not execution-authorized. No command is inferred from model data.
-"""
+"""One-command selector -> runtime-selection.v1 pipeline."""
 from __future__ import annotations
 import argparse, json
 from pathlib import Path
@@ -11,11 +7,9 @@ from scripts.hardware_profile import profile as probe_hardware
 from scripts.model_selector import DEFAULT_FEED, select
 from scripts.runtime_gate import gate_selection
 
-
 def load_rows(path: Path) -> list[dict[str, str]]:
     import csv
     with path.open(encoding="utf-8-sig", newline="") as fh: return list(csv.DictReader(fh))
-
 
 def build_pipeline(*, workload: str, feed: Path, context: int, top_n: int,
                    llmfit: dict | None = None, hardware: dict | None = None,
@@ -31,13 +25,8 @@ def build_pipeline(*, workload: str, feed: Path, context: int, top_n: int,
     gpus = host.get("gpu") or []
     measurements = host.get("measurements") or host.get("measurement") or {}
     hardware_v1 = {
-        "ram_gb": ram_gb,
-        "os": host.get("platform", {}).get("system", "unknown"),
-        "cpu": hardware_label,
-        "gpu": gpus[0].get("description") if gpus else None,
-        "vram_gb": host.get("vram_gb"),
-        # Optional measured signals are propagated losslessly. Missing values stay
-        # missing; the FreeToken gate never converts them into estimates.
+        "ram_gb": ram_gb, "os": host.get("platform", {}).get("system", "unknown"), "cpu": hardware_label,
+        "gpu": gpus[0].get("description") if gpus else None, "vram_gb": host.get("vram_gb"),
         "host_memory_bandwidth_gbps": host.get("host_memory_bandwidth_gbps") or measurements.get("memory_bandwidth_gbps"),
         "pcie_h2d_bandwidth_gbps": host.get("pcie_h2d_bandwidth_gbps") or measurements.get("pcie_h2d_bandwidth_gbps"),
         "cpu_moe_bandwidth_gbps": host.get("cpu_moe_bandwidth_gbps") or measurements.get("cpu_moe_bandwidth_gbps"),
@@ -45,8 +34,7 @@ def build_pipeline(*, workload: str, feed: Path, context: int, top_n: int,
     gate = gate_selection(selection, runtime_commands=runtime_commands, hardware=hardware_v1)
     return {"schema_version": "1.0", "pipeline": "LEONES-selection-pipeline",
             "hardware": {"cpu_model": hardware_label, "available_ram_gb": ram_gb},
-            "selection": selection, "runtime_selection": gate}
-
+            "selection": selection, "runtime_gate": gate, "runtime_selection": gate}
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -56,11 +44,8 @@ def main() -> int:
     parser.add_argument("--out", type=Path, required=True); args = parser.parse_args()
     llmfit = json.loads(args.llmfit.read_text(encoding="utf-8")) if args.llmfit else None
     commands = json.loads(args.runtime_commands.read_text(encoding="utf-8")) if args.runtime_commands else None
-    result = build_pipeline(workload=args.workload, feed=args.feed, context=args.context, top_n=args.top_n,
-                            llmfit=llmfit, runtime_commands=commands)
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"selection={result['selection']['counts']} runtime_plans={result['runtime_selection']['counts']['plans']} -> {args.out}")
+    result = build_pipeline(workload=args.workload, feed=args.feed, context=args.context, top_n=args.top_n, llmfit=llmfit, runtime_commands=commands)
+    args.out.parent.mkdir(parents=True, exist_ok=True); args.out.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"selection={result['selection']['counts']} runtime_plans={result['runtime_gate']['counts']['plans']} -> {args.out}")
     return 0
-
 if __name__ == "__main__": raise SystemExit(main())
