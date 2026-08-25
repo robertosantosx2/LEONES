@@ -1,0 +1,16 @@
+{
+  "model_id": "example/model",
+  "quantization": "Q4_K_M",
+  "runtime": "llama.cpp",
+  "hardware_profile_id": "fixture-i5-16gb",
+  "context_tokens": 4096,
+  "llmfit": {"estimated_tps": 12.0},
+  "canirun": {"estimated_tps": 10.0},
+  "measured_tps": 11.0,
+  "errors": {
+    "llmfit_abs": 1.0,
+    "llmfit_pct": 9.0909090909,
+    "canirun_abs": 1.0,
+    "canirun_pct": 9.0909090909
+  }
+}
