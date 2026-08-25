@@ -18,7 +18,7 @@ def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] |
     if not model_id: raise ValueError("selected candidate has no model identity")
     if not runtime_name: raise ValueError("selected candidate has no runtime")
     if not quantization: raise ValueError("selected candidate has no quantization")
-    if not candidate.get("optimization_families") is not None: raise ValueError("optimization plan is missing")
+    if candidate.get("optimization_families") is None: raise ValueError("optimization plan is missing")
     if available_runtimes is not None and runtime_name not in available_runtimes: raise ValueError(f"runtime is unavailable: {runtime_name}")
     hw=dict(hardware or {}); runtime_eligibility=None
     if runtime_name=="FreeToken":
