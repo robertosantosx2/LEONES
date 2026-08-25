@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robertosantosx2.github.io/LEONES/atlas/runtimes/runtime_probe.v1.json",
+  "title": "LEONES Runtime Probe v1",
+  "type": "object",
+  "required": ["schema", "runtime", "model", "hardware", "result", "evidence"],
+  "properties": {
+    "schema": {"const": "runtime-probe.v1"},
+    "runtime": {"type": "object", "required": ["name", "version", "identity_verified"], "properties": {"name": {"type": "string"}, "version": {"type": "string"}, "commit": {"type": ["string", "null"]}, "identity_verified": {"type": "boolean"}}, "additionalProperties": false},
+    "model": {"type": "object", "required": ["id", "revision", "format"], "properties": {"id": {"type": "string"}, "revision": {"type": "string"}, "format": {"type": "string"}}, "additionalProperties": false},
+    "hardware": {"type": "object", "required": ["device", "ram_gb", "vram_gb", "storage"], "properties": {"device": {"type": "string"}, "ram_gb": {"type": "number"}, "vram_gb": {"type": "number"}, "storage": {"type": "object", "additionalProperties": true}}, "additionalProperties": false},
+    "configuration": {"type": "object", "additionalProperties": true},
+    "result": {"type": "object", "required": ["status"], "properties": {"status": {"enum": ["passed", "failed"]}, "ttft_ms": {"type": ["number", "null"]}, "tokens_per_second": {"type": ["number", "null"]}, "tool_errors": {"type": "integer", "minimum": 0}, "recovery_count": {"type": "integer", "minimum": 0}}, "additionalProperties": false},
+    "evidence": {"type": "object", "required": ["evidence_type", "measured_at"], "properties": {"evidence_type": {"const": "leones_measurement"}, "measured_at": {"type": "string"}, "execution_id": {"type": "string"}}, "additionalProperties": false}
+  },
+  "additionalProperties": false
+}
