@@ -1,0 +1,27 @@
+{
+  "title":"Optimización de inferencia para hardware modesto",
+  "contract":"KNOWLEDGE-FICHA-CONTRACT.v1",
+  "families":[
+    {"id":"quantization","name":"QUANTIZATION","description":"Reducir memoria y ancho de banda mediante menor precisión.","projects":["GGUF / llama.cpp","GPTQ","AWQ","BitNet"]},
+    {"id":"offload-streaming","name":"OFFLOAD / STREAMING","description":"No exigir que todo el modelo resida simultáneamente en VRAM; mover capas entre GPU, RAM y almacenamiento.","projects":["AirLLM","FlexGen","CPU/GPU layer offload","mmap","layer streaming","prefetch"]},
+    {"id":"sparse-moe","name":"SPARSE / MoE","description":"Aprovechar sparsity y routing para reducir trabajo efectivo y tratar los expertos según actividad y localidad.","projects":["PowerInfer","expert-aware execution","expert offload"]},
+    {"id":"cache-decoding","name":"CACHE / DECODING","description":"Reducir memoria de contexto o aumentar throughput sin cambiar necesariamente el modelo objetivo.","projects":["KV-cache quantization/compression","speculative decoding"]},
+    {"id":"compiled-hardware","name":"COMPILED / HARDWARE-SPECIFIC","description":"Adaptar kernels y compilación al dispositivo y backend disponible.","projects":["llama.cpp backends","MLC-LLM","AVX2/AVX512/AMX","CUDA","Vulkan","SYCL","Metal"]},
+    {"id":"distributed","name":"DISTRIBUTED","description":"Repartir el modelo o la inferencia entre varios dispositivos modestos.","projects":["Petals","Exo"]},
+    {"id":"experimental","name":"EXPERIMENTAL","description":"Técnicas o proyectos prometedores que todavía requieren validación específica de LEONES.","projects":["LowMemoryLLM"]}
+  ],
+  "records":[
+    {"id":"airllm","name":"AirLLM","family":"OFFLOAD / STREAMING","source_url":"https://github.com/lyogavin/airllm","description":"Inferencia por capas con carga/offload y prefetch para reducir la memoria necesaria en GPU. Especialmente relevante cuando el modelo supera la VRAM disponible.","leones_use":"Runtime candidato antes de la selección final; debe evaluarse conjuntamente con hardware, modelo, cuantización y workload."},
+    {"id":"llama-cpp","name":"llama.cpp","family":"QUANTIZATION + OFFLOAD / HARDWARE","source_url":"https://github.com/ggml-org/llama.cpp","description":"Runtime local con cuantización, CPU/GPU híbrida, offload de capas y múltiples backends de hardware.","leones_use":"Baseline de runtime para comparar capacidad, memoria y rendimiento en hardware modesto."},
+    {"id":"powerinfer","name":"PowerInfer","family":"SPARSE / MoE","source_url":"https://github.com/SJTU-IPADS/PowerInfer","description":"Explota patrones de activación y sparsity para mantener partes calientes en GPU y reducir trabajo/memoria efectiva.","leones_use":"Candidato para modelos grandes en GPU pequeña + CPU, especialmente cuando la localidad de activaciones puede aprovecharse."},
+    {"id":"flexgen","name":"FlexGen","family":"OFFLOAD / STREAMING","source_url":"https://github.com/FMInference/FlexGen","description":"Planificación de inferencia y offload entre GPU, CPU y almacenamiento para escenarios de memoria limitada.","leones_use":"Fuente de técnicas de planificación/offload y candidato experimental de comparación."},
+    {"id":"petals","name":"Petals","family":"DISTRIBUTED","source_url":"https://github.com/bigscience-workshop/petals","description":"Permite ejecutar modelos grandes repartiendo sus capas entre varios dispositivos conectados.","leones_use":"Útil cuando un único equipo modesto no puede alojar el modelo; la red pasa a formar parte del benchmark."},
+    {"id":"bitnet","name":"BitNet","family":"QUANTIZATION","source_url":"https://github.com/microsoft/BitNet","description":"Enfoque de modelos de muy baja precisión orientado a reducir memoria y coste de cómputo.","leones_use":"Familia experimental que debe evaluarse como combinación modelo/runtime, no como simple cuantización intercambiable."},
+    {"id":"mlc-llm","name":"MLC-LLM","family":"COMPILED / HARDWARE-SPECIFIC","source_url":"https://github.com/mlc-ai/mlc-llm","description":"Compila y adapta la inferencia al dispositivo mediante TVM y backends específicos.","leones_use":"Candidato cuando la compilación específica del hardware puede cambiar radicalmente la viabilidad o el rendimiento."},
+    {"id":"exo","name":"Exo","family":"DISTRIBUTED","source_url":"https://github.com/exo-explore/exo","description":"Distribuye modelos entre dispositivos locales y coordina la inferencia.","leones_use":"Candidato para agregar varios equipos modestos; medir red, sincronización y throughput extremo a extremo."},
+    {"id":"lowmemoryllm","name":"LowMemoryLLM","family":"EXPERIMENTAL","source_url":"https://github.com/2404589803/LowMemoryLLM","description":"Proyecto experimental centrado en inferencia de baja memoria mediante técnicas de baja precisión, KV cache y streaming.","leones_use":"Fuente de descubrimiento; no promocionar a evidencia fuerte hasta reproducir sus claims."}
+  ],
+  "selector_order":["use_case","hardware","runtime","optimization","dense_or_moe","estimators","candidate_models","selection","runtime-selection.v1","benchmark","measurement"],
+  "moe_rule":"Dense usa total_parameters_m para tamaño; MoE usa active_parameters_m para escala computacional y conserva total_parameters_m para memoria/almacenamiento.",
+  "evidence_rule":"Claims externos permanecen como fuente/evidencia/estimación. Solo el benchmark controlado LEONES produce mediciones propias."
+}
