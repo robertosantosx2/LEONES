@@ -1,9 +1,9 @@
-"""Normalize independent fit estimators and reduce their candidates by category.
+"""Normalize six fit estimators and reduce candidates by category.
 
-Each estimator must return exactly six usable models PER category (text, image,
-video). The Selector de LLM keeps three representatives per category: smallest,
-lower-middle and largest by total parameter count, normalized to millions (M).
-External estimates remain estimates and are never measurements.
+Contract: 6 estimators x 6 models x 3 categories = 108 external candidates.
+The selector keeps 3 representatives per category: smallest, lower-middle,
+and largest. Dense uses total parameters; MoE uses active parameters.
+All parameter counts are normalized to millions. External values are not measurements.
 """
 from __future__ import annotations
 from typing import Any
@@ -13,6 +13,7 @@ SOURCES = ("llmfit", "canirun_ai", "localmodel_run", "vrambudget", "llm_checker"
 CATEGORIES = ("text", "image", "video")
 ESTIMATOR_CANDIDATE_COUNT = 6
 SELECTED_REPRESENTATIVE_COUNT = 3
+EXPECTED_EXTERNAL_CANDIDATES = len(SOURCES) * len(CATEGORIES) * ESTIMATOR_CANDIDATE_COUNT
 
 
 def _norm(value: Any) -> str:
@@ -25,118 +26,101 @@ def _items(payload: Any) -> list[dict[str, Any]]:
 
 
 def _category(item: dict[str, Any]) -> str | None:
-    value = item.get("category") or item.get("modality") or item.get("type")
-    text = _norm(value)
-    aliases = {"text": "text", "llm": "text", "language": "text",
-               "image": "image", "vision": "image", "multimodal image": "image",
-               "video": "video", "video generation": "video", "video model": "video"}
+    text = _norm(item.get("category") or item.get("modality") or item.get("type"))
+    aliases = {"text":"text","llm":"text","language":"text","image":"image","vision":"image","multimodal image":"image","video":"video","video generation":"video","video model":"video"}
     return aliases.get(text)
 
 
-def _params_m(item: dict[str, Any]) -> float | None:
-    for key in ("parameters_m", "total_params_m", "parameter_count_m", "params_m"):
-        value = item.get(key)
-        if value not in (None, ""):
-            try: return float(value)
-            except (TypeError, ValueError): pass
-    for key in ("parameters_b", "total_params_b", "parameter_count_b", "params_b"):
-        value = item.get(key)
-        if value not in (None, ""):
-            try: return float(value) * 1000.0
-            except (TypeError, ValueError): pass
-    for key in ("parameters", "total_params", "parameter_count", "params"):
-        value = item.get(key)
-        if value in (None, ""): continue
-        try: number = float(value)
-        except (TypeError, ValueError): continue
-        text = str(value).lower()
+def _number(value: Any) -> float | None:
+    if value in (None, ""): return None
+    try: return float(value)
+    except (TypeError, ValueError): return None
+
+
+def _params_m(item: dict[str, Any], active: bool = False) -> float | None:
+    if active:
+        keys = ["active_parameters_m","active_params_m","active_parameter_count_m","active_parameters_b","active_params_b","active_parameter_count_b","active_parameters","active_params","active_parameter_count"]
+    else:
+        keys = ["total_parameters_m","parameters_m","parameter_count_m","params_m","total_params_m","total_parameters_b","parameters_b","parameter_count_b","params_b","total_params_b","total_parameters","parameters","parameter_count","params"]
+    for key in keys:
+        number = _number(item.get(key))
+        if number is None: continue
+        if key.endswith("_b") or "billions" in key: return number * 1000.0
+        if key.endswith("_m") or "millions" in key: return number
+        text = str(item.get(key)).lower()
         if "b" in text: return number * 1000.0
         if "m" in text: return number
         return number / 1_000_000.0 if number >= 1_000_000 else number * 1000.0
     return None
 
 
+def _is_moe(item: dict[str, Any]) -> bool:
+    value = item.get("is_moe")
+    if isinstance(value, bool): return value
+    text = _norm(value or item.get("architecture") or item.get("model_type"))
+    return text in {"moe","mixture of experts","mixture experts"} or "moe" in text
+
+
+def normalize_candidate(item: dict[str, Any], estimator: str) -> dict[str, Any] | None:
+    model_id = item.get("model_id") or item.get("model") or item.get("id") or item.get("name")
+    category = _category(item)
+    total_m = _params_m(item, False)
+    if not model_id or category is None or total_m is None or total_m <= 0: return None
+    moe = _is_moe(item)
+    active_m = _params_m(item, True) if moe else None
+    if moe and active_m is None: return None
+    return {**item,"model_id":model_id,"category":category,"is_moe":moe,"total_parameters_m":total_m,"active_parameters_m":active_m,"selection_parameters_m":active_m if moe else total_m,"parameter_selection_basis":"active_parameters_m" if moe else "total_parameters_m","estimator":estimator,"measurement":"not_measured"}
+
+
 def validate_estimator_output(source: str, payload: Any) -> dict[str, Any]:
-    """Require exactly six usable candidates in EACH category."""
-    items = _items(payload)
-    by_category = {category: [] for category in CATEGORIES}
-    invalid = []
-    for item in items:
-        model_id = item.get("model_id") or item.get("model") or item.get("id") or item.get("name")
-        category = _category(item)
-        params_m = _params_m(item)
-        if not model_id or category is None or params_m is None:
-            invalid.append({"model_id": model_id, "category": category,
-                            "reason": "missing model identity, category or parameter count"})
+    by_category = {category: [] for category in CATEGORIES}; invalid = []
+    for item in _items(payload):
+        normalized = normalize_candidate(item, source)
+        if normalized is None:
+            invalid.append({"model_id":item.get("model_id") or item.get("model") or item.get("id") or item.get("name"),"category":_category(item),"reason":"missing/invalid parameters/category; MoE requires active_parameters"})
             continue
-        by_category[category].append({**item, "model_id": model_id,
-                                      "category": category, "parameters_m": params_m})
-    counts = {category: len(items) for category, items in by_category.items()}
+        by_category[normalized["category"]].append(normalized)
+    counts = {category:len(items) for category,items in by_category.items()}
     valid = all(count == ESTIMATOR_CANDIDATE_COUNT for count in counts.values())
-    return {"source": source, "required_candidates_per_category": ESTIMATOR_CANDIDATE_COUNT,
-            "categories": counts, "returned_candidates": len(items), "valid": valid,
-            "candidates": by_category, "invalid": invalid}
+    return {"source":source,"required_candidates_per_category":ESTIMATOR_CANDIDATE_COUNT,"categories":counts,"returned_candidates":sum(counts.values()),"valid":valid,"candidates":by_category,"invalid":invalid}
 
 
 def select_three_by_parameters(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Return smallest, lower-middle and largest by total parameters (millions)."""
-    usable, seen = [], set()
+    usable=[]; seen=set()
     for item in candidates:
-        model_id = item.get("model_id") or item.get("model") or item.get("id") or item.get("name")
-        params_m = _params_m(item); key = _norm(model_id)
-        if not key or params_m is None or key in seen: continue
-        seen.add(key); usable.append({**item, "model_id": model_id, "parameters_m": params_m})
-    usable.sort(key=lambda x: (x["parameters_m"], _norm(x["model_id"])))
-    if not usable: return []
-    if len(usable) <= 3: return usable
-    middle = (len(usable) - 1) // 2
-    return [usable[0], usable[middle], usable[-1]]
+        normalized=normalize_candidate(item,item.get("estimator","unknown"))
+        if normalized is None: continue
+        key=(_norm(normalized["model_id"]),normalized["category"])
+        if key in seen: continue
+        seen.add(key); usable.append(normalized)
+    usable.sort(key=lambda x:(x["selection_parameters_m"],_norm(x["model_id"]),x["estimator"]))
+    if len(usable)<3: return usable
+    middle=(len(usable)-1)//2
+    return [usable[0],usable[middle],usable[-1]]
 
 
 def reduce_estimator_outputs(sources: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Validate 6 models/category/estimator and select 3/category.
-
-    Selection is made from the union of all valid estimator candidates within each
-    category. Incomplete estimator/category output is reported and never filled.
-    """
-    sources = sources or {}
-    validation = {source: validate_estimator_output(source, sources.get(source, {})) for source in SOURCES}
-    selected_by_category = {}
+    sources=sources or {}
+    validation={source:validate_estimator_output(source,sources.get(source,{})) for source in SOURCES}
+    selected_by_category={}
     for category in CATEGORIES:
-        candidates = []
-        for source, result in validation.items():
-            if result["valid"]:
-                candidates.extend({**item, "estimator": source}
-                                  for item in result["candidates"][category])
-        selected_by_category[category] = select_three_by_parameters(candidates)
-    return {
-        "required_estimators": len(SOURCES),
-        "categories": list(CATEGORIES),
-        "required_per_estimator_per_category": ESTIMATOR_CANDIDATE_COUNT,
-        "expected_external_candidates": len(SOURCES) * len(CATEGORIES) * ESTIMATOR_CANDIDATE_COUNT,
-        "selected_per_category": SELECTED_REPRESENTATIVE_COUNT,
-        "selected_total": len(CATEGORIES) * SELECTED_REPRESENTATIVE_COUNT,
-        "selection_policy": "per category: smallest + lower-middle + largest by parameters_m",
-        "validation": validation,
-        "selected": selected_by_category,
-        "measurement": "not_measured",
-    }
+        candidates=[]
+        for result in validation.values():
+            if result["valid"]: candidates.extend(result["candidates"][category])
+        selected_by_category[category]=select_three_by_parameters(candidates)
+    return {"required_estimators":len(SOURCES),"categories":list(CATEGORIES),"required_per_estimator_per_category":6,"expected_external_candidates":EXPECTED_EXTERNAL_CANDIDATES,"selected_per_category":3,"selected_total":9,"selection_policy":"per category: smallest + lower-middle + largest; Dense=total_parameters_m, MoE=active_parameters_m","validation":validation,"selected":selected_by_category,"measurement":"not_measured"}
 
 
 def build_consensus(model_id: str, sources: dict[str, Any] | None = None) -> dict[str, Any]:
-    sources = sources or {}; observations = {}; values = []
+    sources=sources or {}; observations={}; values=[]
     for source in SOURCES:
-        item = next((x for x in _items(sources.get(source))
-                     if _norm(x.get("model_id") or x.get("model") or x.get("id") or x.get("name")) == _norm(model_id)), None)
-        observations[source] = item
-        value = item.get("fit") if item else None
-        text = _norm(value)
-        if isinstance(value, bool): values.append("fit" if value else "no_fit")
-        elif text in {"fit", "good", "yes", "compatible", "can run", "runs"}: values.append("fit")
-        elif text in {"no fit", "impossible", "cannot", "incompatible", "no"}: values.append("no_fit")
-    if not values: consensus, status = "unknown", "METHODOLOGY_GAP"
-    elif all(v == "fit" for v in values): consensus, status = "fit", "AGREE_FIT"
-    elif all(v == "no_fit" for v in values): consensus, status = "no_fit", "AGREE_NO_FIT"
-    else: consensus, status = "disagreement", "FIT_DISAGREEMENT"
-    return {"sources": observations, "fit_external": consensus, "fit_consensus": consensus,
-            "disagreement": status, "measurement": "not_measured"}
+        item=next((x for x in _items(sources.get(source)) if _norm(x.get("model_id") or x.get("model") or x.get("id") or x.get("name"))==_norm(model_id)),None)
+        observations[source]=item; value=item.get("fit") if item else None; text=_norm(value)
+        if isinstance(value,bool): values.append("fit" if value else "no_fit")
+        elif text in {"fit","good","yes","compatible","can run","runs"}: values.append("fit")
+        elif text in {"no fit","impossible","cannot","incompatible","no"}: values.append("no_fit")
+    if not values: consensus,status="unknown","METHODOLOGY_GAP"
+    elif all(v=="fit" for v in values): consensus,status="fit","AGREE_FIT"
+    elif all(v=="no_fit" for v in values): consensus,status="no_fit","AGREE_NO_FIT"
+    else: consensus,status="disagreement","FIT_DISAGREEMENT"
+    return {"sources":observations,"fit_external":consensus,"fit_consensus":consensus,"disagreement":status,"measurement":"not_measured"}
