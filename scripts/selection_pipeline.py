@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """One-command Selector de LLM -> runtime-selection.v1 pipeline.
 
-External fit sources are preserved as evidence/estimates only. They never become
-measurements and never authorize execution by themselves.
+Each external estimator must return exactly six usable models with total
+parameter count. The Selector reduces the union to three representatives:
+smallest, lower-middle and largest, measured in millions of parameters.
+External estimates remain evidence/estimates only; they never become measurements.
 """
 from __future__ import annotations
 import argparse, json
 from pathlib import Path
 from scripts.hardware_profile import profile as probe_hardware
 from scripts.model_selector import DEFAULT_FEED, select
-from scripts.fit_consensus import build_consensus
+from scripts.fit_consensus import build_consensus, reduce_estimator_outputs
 from scripts.runtime_gate import gate_selection
 
 
@@ -19,13 +21,25 @@ def load_rows(path: Path) -> list[dict[str, str]]:
 
 
 def enrich_external_fit(selection: dict, fit_sources: dict | None) -> dict:
-    """Attach cross-validation evidence without changing the selector score."""
+    """Attach six-per-estimator validation and three-model parameter reduction."""
     if not fit_sources:
         return selection
+    reduction = reduce_estimator_outputs(fit_sources)
+    selection["fit_cross_validation"] = reduction
+    selected_ids = {_norm_model(x.get("model_id")) for x in reduction.get("selected", [])}
     for candidate in selection.get("candidates", []):
         model_id = candidate.get("model_id") or candidate.get("model_name")
         candidate["fit_cross_validation"] = build_consensus(model_id, fit_sources)
+    # The Selector is now explicitly responsible for the three-model reduction.
+    # Keep candidates for auditability, but mark the three representatives.
+    for candidate in selection.get("candidates", []):
+        candidate["parameter_representative"] = _norm_model(candidate.get("model_id")) in selected_ids
     return selection
+
+
+def _norm_model(value: object) -> str:
+    import re
+    return re.sub(r"[^a-z0-9]+", " ", str(value or "").lower()).strip()
 
 
 def build_pipeline(*, workload: str, feed: Path, context: int, top_n: int,
