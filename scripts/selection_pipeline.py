@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""One-command selector -> runtime-selection.v1 pipeline.
+"""One-command Selector de LLM -> runtime-selection.v1 pipeline.
 
-Without trusted runtime commands this remains a dry-run and produces plans that
-are explicitly not execution-authorized. No command is inferred from model data.
+External fit sources are preserved as evidence/estimates only. They never become
+measurements and never authorize execution by themselves.
 """
 from __future__ import annotations
 import argparse, json
 from pathlib import Path
 from scripts.hardware_profile import profile as probe_hardware
 from scripts.model_selector import DEFAULT_FEED, select
+from scripts.fit_consensus import build_consensus
 from scripts.runtime_gate import gate_selection
 
 
@@ -17,8 +18,19 @@ def load_rows(path: Path) -> list[dict[str, str]]:
     with path.open(encoding="utf-8-sig", newline="") as fh: return list(csv.DictReader(fh))
 
 
+def enrich_external_fit(selection: dict, fit_sources: dict | None) -> dict:
+    """Attach cross-validation evidence without changing the selector score."""
+    if not fit_sources:
+        return selection
+    for candidate in selection.get("candidates", []):
+        model_id = candidate.get("model_id") or candidate.get("model_name")
+        candidate["fit_cross_validation"] = build_consensus(model_id, fit_sources)
+    return selection
+
+
 def build_pipeline(*, workload: str, feed: Path, context: int, top_n: int,
-                   llmfit: dict | None = None, hardware: dict | None = None,
+                   llmfit: dict | None = None, fit_sources: dict | None = None,
+                   hardware: dict | None = None,
                    runtime_commands: dict[str, list[str]] | None = None) -> dict:
     host = hardware or probe_hardware()
     memory = host.get("memory", {})
@@ -28,6 +40,7 @@ def build_pipeline(*, workload: str, feed: Path, context: int, top_n: int,
     hardware_label = host.get("cpu", {}).get("model") or "unknown-cpu"
     selection = select(load_rows(feed), workload=workload, hardware=hardware_label,
                        ram_gb=ram_gb, vram_gb=0, context_tokens=context, top_n=top_n, llmfit=llmfit)
+    selection = enrich_external_fit(selection, fit_sources)
     gpus = host.get("gpu") or []
     measurements = host.get("measurements") or host.get("measurement") or {}
     hardware_v1 = {
@@ -36,8 +49,6 @@ def build_pipeline(*, workload: str, feed: Path, context: int, top_n: int,
         "cpu": hardware_label,
         "gpu": gpus[0].get("description") if gpus else None,
         "vram_gb": host.get("vram_gb"),
-        # Optional measured signals are propagated losslessly. Missing values stay
-        # missing; the FreeToken gate never converts them into estimates.
         "host_memory_bandwidth_gbps": host.get("host_memory_bandwidth_gbps") or measurements.get("memory_bandwidth_gbps"),
         "pcie_h2d_bandwidth_gbps": host.get("pcie_h2d_bandwidth_gbps") or measurements.get("pcie_h2d_bandwidth_gbps"),
         "cpu_moe_bandwidth_gbps": host.get("cpu_moe_bandwidth_gbps") or measurements.get("cpu_moe_bandwidth_gbps"),
@@ -51,13 +62,15 @@ def build_pipeline(*, workload: str, feed: Path, context: int, top_n: int,
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workload", required=True); parser.add_argument("--feed", type=Path, default=DEFAULT_FEED)
-    parser.add_argument("--llmfit", type=Path); parser.add_argument("--context", type=int, default=4096)
-    parser.add_argument("--top-n", type=int, default=5); parser.add_argument("--runtime-commands", type=Path)
-    parser.add_argument("--out", type=Path, required=True); args = parser.parse_args()
+    parser.add_argument("--llmfit", type=Path); parser.add_argument("--fit-sources", type=Path)
+    parser.add_argument("--context", type=int, default=4096); parser.add_argument("--top-n", type=int, default=5)
+    parser.add_argument("--runtime-commands", type=Path); parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
     llmfit = json.loads(args.llmfit.read_text(encoding="utf-8")) if args.llmfit else None
+    fit_sources = json.loads(args.fit_sources.read_text(encoding="utf-8")) if args.fit_sources else None
     commands = json.loads(args.runtime_commands.read_text(encoding="utf-8")) if args.runtime_commands else None
     result = build_pipeline(workload=args.workload, feed=args.feed, context=args.context, top_n=args.top_n,
-                            llmfit=llmfit, runtime_commands=commands)
+                            llmfit=llmfit, fit_sources=fit_sources, runtime_commands=commands)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"selection={result['selection']['counts']} runtime_plans={result['runtime_selection']['counts']['plans']} -> {args.out}")
