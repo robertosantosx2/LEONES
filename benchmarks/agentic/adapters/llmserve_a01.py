@@ -8,9 +8,9 @@ import time
 from pathlib import Path
 from typing import Any, Callable
 
-from runner import RunConfig, Trace, build_result
-from a01_contract import ALLOWED_TOOLS, safe_workspace_path, validate_runtime_plan
-from graders.a01_grader import grade_a01
+from benchmarks.agentic.runner import RunConfig, Trace, build_result
+from benchmarks.agentic.adapters.a01_contract import ALLOWED_TOOLS, safe_workspace_path, validate_runtime_plan
+from benchmarks.agentic.graders.a01_grader import grade_a01
 
 
 def run_runtime(plan: dict[str, Any], prompt: str, *, timeout_seconds: float = 60.0) -> tuple[str, float]:
@@ -59,7 +59,8 @@ def build_a01_result(plan: dict[str, Any], *, workspace: Path, model_output: str
     trace.add("artifact", name="report.txt", status="verified" if passed else "failed", details={"path": str(artifact_path)})
     trace.add("grader", name=grader["id"], status=grader["status"], details=grader["checks"])
     metrics: dict[str, Any] = {"tool_calls": 2, "tool_errors": 0, "recovery_count": 0}
-    if runtime_seconds is not None: metrics["runtime_wall_seconds"] = runtime_seconds
+    if runtime_seconds is not None:
+        metrics["runtime_wall_seconds"] = runtime_seconds
     return build_result(config, trace, model=plan["model"], hardware=plan["hardware"],
                         inference=plan.get("inference", {}),
                         outcome={"status": "success" if passed else "failed", "score": grader["score"]},
