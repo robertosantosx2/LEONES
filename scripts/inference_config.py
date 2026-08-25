@@ -15,24 +15,25 @@ def resolve_inference_configuration(*, workload: str, hardware: dict[str, Any],
                                     context_tokens: int = 4096) -> dict[str, Any]:
     """Produce a configuration envelope before candidate model ranking.
 
-    This does not claim that a runtime is executable. Runtime availability and
-    trusted commands are checked later by runtime-selection.v1.
+    Runtime availability and trusted commands are deliberately checked later by
+    runtime-selection.v1; this function records the preselection decision only.
     """
-    if not workload or not workload.strip():
+    if not isinstance(workload, str) or not workload.strip():
         raise ValueError("use case/workload is required before model evaluation")
-    if not hardware:
+    if not isinstance(hardware, dict) or not hardware:
         raise ValueError("hardware profile is required before model evaluation")
     if context_tokens < 1:
         raise ValueError("context_tokens must be positive")
     selected = list(dict.fromkeys(optimizations or []))
-    unknown = [x for x in selected if x not in OPTIMIZATION_FAMILIES and not isinstance(x, str)]
-    if unknown:
-        raise ValueError(f"invalid optimization entries: {unknown}")
+    invalid = [x for x in selected if not isinstance(x, str) or not x.strip()]
+    if invalid:
+        raise ValueError(f"invalid optimization entries: {invalid}")
     return {
-        "use_case": workload,
+        "use_case": workload.strip(),
         "hardware": hardware,
         "runtime": runtime,
         "optimizations": selected,
+        "optimization_families": [x for x in selected if x in OPTIMIZATION_FAMILIES],
         "is_moe": is_moe,
         "context_tokens": context_tokens,
         "decision_status": "configuration_preselected",
