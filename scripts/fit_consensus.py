@@ -31,10 +31,24 @@ def _category(item: dict[str, Any]) -> str | None:
     return aliases.get(text)
 
 
-def _number(value: Any) -> float | None:
+def _parse_parameter_value(value: Any) -> tuple[float, str] | None:
     if value in (None, ""): return None
-    try: return float(value)
-    except (TypeError, ValueError): return None
+    if isinstance(value, (int, float)):
+        return float(value), "raw"
+    text = str(value).strip().lower().replace(",", "")
+    match = re.fullmatch(r"([0-9]+(?:\.[0-9]+)?)\s*([kmbt])?", text)
+    if not match: return None
+    number = float(match.group(1)); suffix = match.group(2) or "raw"
+    return number, suffix
+
+
+def _to_millions(parsed: tuple[float, str]) -> float:
+    number, suffix = parsed
+    if suffix == "b": return number * 1000.0
+    if suffix == "m": return number
+    if suffix == "k": return number / 1000.0
+    if suffix == "t": return number * 1_000_000.0
+    return number / 1_000_000.0 if number >= 1_000_000 else number * 1000.0
 
 
 def _params_m(item: dict[str, Any], active: bool = False) -> float | None:
@@ -43,14 +57,9 @@ def _params_m(item: dict[str, Any], active: bool = False) -> float | None:
     else:
         keys = ["total_parameters_m","parameters_m","parameter_count_m","params_m","total_params_m","total_parameters_b","parameters_b","parameter_count_b","params_b","total_params_b","total_parameters","parameters","parameter_count","params"]
     for key in keys:
-        number = _number(item.get(key))
-        if number is None: continue
-        if key.endswith("_b") or "billions" in key: return number * 1000.0
-        if key.endswith("_m") or "millions" in key: return number
-        text = str(item.get(key)).lower()
-        if "b" in text: return number * 1000.0
-        if "m" in text: return number
-        return number / 1_000_000.0 if number >= 1_000_000 else number * 1000.0
+        parsed = _parse_parameter_value(item.get(key))
+        if parsed is None: continue
+        return _to_millions(parsed)
     return None
 
 
@@ -68,7 +77,7 @@ def normalize_candidate(item: dict[str, Any], estimator: str) -> dict[str, Any] 
     if not model_id or category is None or total_m is None or total_m <= 0: return None
     moe = _is_moe(item)
     active_m = _params_m(item, True) if moe else None
-    if moe and active_m is None: return None
+    if moe and (active_m is None or active_m <= 0 or active_m > total_m): return None
     return {**item,"model_id":model_id,"category":category,"is_moe":moe,"total_parameters_m":total_m,"active_parameters_m":active_m,"selection_parameters_m":active_m if moe else total_m,"parameter_selection_basis":"active_parameters_m" if moe else "total_parameters_m","estimator":estimator,"measurement":"not_measured"}
 
 
@@ -77,7 +86,7 @@ def validate_estimator_output(source: str, payload: Any) -> dict[str, Any]:
     for item in _items(payload):
         normalized = normalize_candidate(item, source)
         if normalized is None:
-            invalid.append({"model_id":item.get("model_id") or item.get("model") or item.get("id") or item.get("name"),"category":_category(item),"reason":"missing/invalid parameters/category; MoE requires active_parameters"})
+            invalid.append({"model_id":item.get("model_id") or item.get("model") or item.get("id") or item.get("name"),"category":_category(item),"reason":"missing/invalid parameters/category; MoE requires valid active_parameters"})
             continue
         by_category[normalized["category"]].append(normalized)
     counts = {category:len(items) for category,items in by_category.items()}
