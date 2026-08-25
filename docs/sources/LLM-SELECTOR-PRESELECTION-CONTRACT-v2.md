@@ -1,7 +1,7 @@
 # Selector de LLM — contrato de preselección v2
 
 ## Principio
-El Selector de LLM **no empieza por comparar modelos**. Primero debe conocer el caso de uso del usuario y el perfil real de hardware. Después decide una combinación viable de runtime de inferencia y técnicas de optimización. Solo entonces consulta los estimadores y valora candidatos.
+El Selector de LLM no empieza por comparar modelos. Primero debe conocer el caso de uso del usuario y el perfil real de hardware. Después decide una combinación viable de runtime de inferencia y técnicas de optimización. Solo entonces consulta los estimadores y valora candidatos.
 
 ## Orden obligatorio
 
@@ -12,7 +12,7 @@ Requisitos funcionales
         ↓
 Perfil HW real
         ↓
-Runtime de inferencia candidato
+Runtime de inferencia
         ↓
 Técnicas de optimización
         ↓
@@ -35,14 +35,14 @@ No se permite invertir este orden y seleccionar primero un modelo para decidir d
 El selector debe capturar, como mínimo:
 - categoría: `text`, `image`, `video`;
 - tarea concreta;
-- necesidad de razonamiento/coding/RAG/visión/generación de vídeo, etc.;
+- necesidad de razonamiento/coding/RAG/visión/generación de vídeo;
 - interacción o batch;
 - latencia objetivo;
 - contexto objetivo;
 - calidad mínima;
 - concurrencia;
-- restricciones de privacidad/offline;
-- límites de almacenamiento/energía/tiempo.
+- privacidad/offline;
+- límites de almacenamiento, energía y tiempo.
 
 El caso de uso condiciona qué modelos son candidatos y qué benchmark será válido.
 
@@ -56,9 +56,7 @@ Debe utilizarse el hardware real o un perfil declarado:
 - SO/driver cuando afecten al runtime.
 
 ## Runtime antes del modelo
-El selector debe determinar primero uno o varios `runtime_plan` compatibles con HW + workload. Ejemplos de familias: llama.cpp, vLLM, SGLang, MLX-LM, TensorRT-LLM, AirLLM, Lemonade u otros runtimes verificados por LEONES.
-
-El runtime no es un atributo decorativo del modelo: cambia memoria, offload, throughput, latencia, compatibilidad y técnicas disponibles.
+El selector debe determinar primero un `runtime_plan` compatible con HW + workload. El runtime no es un atributo decorativo del modelo: cambia memoria, offload, throughput, latencia, compatibilidad y técnicas disponibles.
 
 ## Técnicas de optimización
 El plan puede incluir, según HW/runtime/modelo:
@@ -80,40 +78,25 @@ Cada técnica debe registrarse como `candidate_optimization`, con compatibilidad
 No se puede ordenar Dense y MoE únicamente por parámetros totales.
 
 ### Dense
-Para un Dense se conserva:
-- `total_parameters_m` como magnitud principal;
-- memoria de pesos;
-- memoria KV/activaciones;
-- requisitos del runtime;
-- rendimiento estimado/medido.
+Se conserva `total_parameters_m` como magnitud principal, además de memoria, KV/activaciones, requisitos del runtime y rendimiento estimado/medido.
 
 ### MoE
-Para un MoE se deben conservar **dos magnitudes distintas**:
-- `total_parameters_m` — tamaño total del modelo;
-- `active_parameters_m` — parámetros activados por token/forward según la arquitectura y configuración.
+Se conservan dos magnitudes:
+- `total_parameters_m`: tamaño total del modelo, memoria y almacenamiento;
+- `active_parameters_m`: parámetros activados por token/forward según arquitectura y configuración.
 
-Para la **selección por tamaño representativo del Selector**, los MoE se ordenan por `active_parameters_m`, no por `total_parameters_m`, siempre que el dato sea verificable.
-
-`total_parameters_m` permanece visible porque determina almacenamiento, pesos y otros costes, pero no sustituye a `active_parameters_m` para comparar capacidad computacional por token.
-
-Si `active_parameters_m` no está disponible o no es verificable, el candidato MoE queda como `MISSING_ACTIVE_PARAMS` y no debe mezclarse silenciosamente con Dense en la ordenación principal.
+Para la selección por tamaño representativo, los MoE se ordenan por `active_parameters_m`, siempre que el dato sea verificable. Si falta, el candidato queda como `MISSING_ACTIVE_PARAMS` y no se sustituye silenciosamente por el total.
 
 ## AirLLM y MoE
-AirLLM debe considerarse una opción de runtime/optimización **antes de valorar el candidato**, especialmente cuando el hardware tiene memoria limitada y el modelo exige offload/layer-wise execution. La ficha de AirLLM ya establece que es runtime y que los MoE requieren medición específica por los costes de transferencia/routing. fileciteturn59file0
-
-Esto no significa que AirLLM sea automáticamente mejor para todos los MoE. Significa que el selector debe poder evaluar el par:
-
-`modelo + runtime + técnicas`
-
-y no únicamente `modelo`.
+AirLLM debe poder aparecer como runtime/optimización antes de valorar el candidato, especialmente cuando la memoria es limitada y se necesita ejecución por capas/offload. No se presupone que sea mejor para todos los MoE: LEONES debe comparar la configuración completa y medir transferencia, routing, memoria y rendimiento.
 
 ## Salida de los estimadores
-Cada estimador debe devolver exactamente **6 modelos por cada categoría**:
-- 6 texto;
-- 6 imagen;
-- 6 vídeo.
+Cada uno de los seis estimadores debe devolver exactamente:
+- 6 modelos de texto;
+- 6 modelos de imagen;
+- 6 modelos de vídeo.
 
-Con 6 estimadores: `6 × 3 × 6 = 108` candidatos externos.
+Con seis estimadores: `6 × 3 × 6 = 108` observaciones externas.
 
 Cada candidato debe incluir, cuando aplique:
 - `category`;
@@ -122,38 +105,38 @@ Cada candidato debe incluir, cuando aplique:
 - `total_parameters_m`;
 - `active_parameters_m` para MoE;
 - cuantización;
-- runtime recomendado/compatible;
+- runtime compatible;
 - optimizaciones;
 - fit;
 - memoria estimada;
 - throughput estimado;
 - fuente y versión/fecha.
 
+Una salida incompleta de un estimador no se rellena artificialmente.
+
 ## Reducción
-Después de fijar **caso de uso + HW + runtime + optimizaciones**, el Selector conserva 3 por categoría:
+Después de fijar caso de uso + HW + runtime + optimizaciones, el Selector toma la unión de los candidatos válidos de cada categoría, elimina duplicados por identidad y conserva:
 
 - menor;
-- medio;
+- medio: elemento central inferior si el conjunto es par;
 - mayor.
 
-La magnitud de ordenación es:
+Resultado normal: **3 texto + 3 imagen + 3 vídeo = 9 candidatos**.
+
+Magnitud de ordenación:
 - Dense → `total_parameters_m`;
 - MoE → `active_parameters_m`.
 
-No se mezclan ambas métricas en un mismo eje sin marcar la arquitectura.
-
 ## Medición
-Los 3 representantes por categoría son candidatos. No son recomendaciones finales.
-
-La promoción requiere:
+Los nueve representantes son candidatos, no recomendaciones finales. La promoción requiere:
 
 `runtime_plan + optimization_plan + candidate + benchmark válido → measured evidence`
 
-y debe conservar `measured_*` separado de `estimated_*`.
+Los `estimated_*` externos permanecen separados de `measured_*` de LEONES.
 
 ## Resultado
-El Selector deja de ser un simple filtro de modelos y pasa a ser un **selector de configuración de inferencia**:
+El Selector pasa de ser un simple filtro de modelos a un **selector de configuración de inferencia**:
 
 `use case + HW + runtime + optimization + model`.
 
-Este es el objeto que posteriormente debe entregar `runtime-selection.v1` al executor.
+Este objeto es el que debe entregar `runtime-selection.v1` al executor.
