@@ -21,4 +21,5 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install --upgrade pip pytest
       - name: Run A01 adapter and selector integration tests
+        # The fixture runtime is a local Python subprocess: no GPU/model download is involved.
         run: PYTHONPATH=benchmarks/agentic/adapters:benchmarks/agentic:. python -m pytest -q benchmarks/agentic/adapters benchmarks/agentic/test_selection_to_a01.py
