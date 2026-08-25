@@ -1,8 +1,19 @@
-# Atlas — metodología de recomendación v0.2
+# Atlas — metodología de recomendación v0.3
 
 ## Objetivo
 
 Transformar la información del Atlas en recomendaciones reproducibles sin colapsar todas las dimensiones en una única puntuación opaca.
+
+## Capas de conocimiento y evidencia
+
+LEONES mantiene cuatro capas que no deben mezclarse:
+
+1. **Fuente** — el proyecto, documentación o servicio que aporta información.
+2. **Evidencia** — lo que esa fuente afirma o demuestra, con su procedencia y fecha.
+3. **Estimación** — cálculo derivado de datos disponibles; no es una medición.
+4. **Medición LEONES** — resultado obtenido por LEONES ejecutando una prueba reproducible sobre hardware/runtime concretos.
+
+LLMFit entra en las capas de **Fuente/Evidencia** y puede producir **Estimaciones** de ajuste. Nunca convierte por sí mismo una estimación de rendimiento o compatibilidad en `LEONES measured`.
 
 ## Principio
 
@@ -15,6 +26,30 @@ Una recomendación Atlas debe responder separadamente a cinco preguntas:
 5. **¿Qué coste tiene?** → precios observados, nunca precios inventados.
 
 La decisión final puede ordenar candidatos, pero debe conservar todas las dimensiones originales.
+
+## LLMFit → runtime-selection.v1
+
+El adaptador `atlas/llmfit_adapter.py` normaliza candidatos LLMFit al contrato del Atlas y puede producir un candidato `runtime-selection.v1`.
+
+La regla de seguridad es deliberada:
+
+```text
+LLMFit
+  │
+  ▼
+Fuente / Evidencia externa
+  │
+  ▼
+Estimación CABE / ajuste
+  │
+  ▼
+runtime-selection.v1
+  │
+  ├── sin RULA verificado → NO autorizar ejecución
+  └── RULA verificado + comando confiable → autorizar
+```
+
+Por tanto, que LLMFit estime que un modelo cabe en memoria **no autoriza** su ejecución. La autorización necesita una ruta de runtime confiable y `RULA` verificado. La posterior ejecución A01 es la que puede generar medición LEONES.
 
 ## Pipeline
 
@@ -46,33 +81,11 @@ MODELO
 - `CABE`: el modelo entra en memoria con margen suficiente según la estimación disponible.
 - `NO_CABE`: la estimación supera la memoria disponible o deja un margen inseguro.
 - `CABE_INCIERTO`: faltan datos relevantes (por ejemplo KV/contexto/runtime).
-- `RULA`: existe una ruta de ejecución compatible.
+- `RULA`: existe una ruta de ejecución compatible y verificada.
 - `RULA_INCIERTO`: la compatibilidad no ha sido verificada en la configuración exacta.
 - `NO_RULA`: no existe actualmente una ruta compatible documentada.
 
-**CABE no implica RULA. RULA no implica buen rendimiento.**
-
-## Memoria
-
-Para una primera aproximación:
-
-`memoria_pesos_GB ≈ parámetros_B × bits_efectivos / 8`
-
-Después deben añadirse KV cache, activaciones, overhead del runtime y margen de seguridad. Para cuantizaciones GGUF se pueden usar los factores documentados en `LLM-SYSTEMS-2026.md` como aproximación inicial, pero la medición real prevalece.
-
-Para MoE se deben conservar por separado `parameters_total` y `parameters_active`.
-
-## Runtime
-
-El formato del modelo no determina por sí solo el runtime óptimo. La recomendación debe registrar al menos:
-
-- formato;
-- backend/runtime;
-- versión o commit cuando esté disponible;
-- acelerador;
-- offloading;
-- contexto;
-- parámetros relevantes de ejecución.
+**CABE no implica RULA. RULA no implica buen rendimiento. Una estimación tampoco implica medición.**
 
 ## Evidencia
 
@@ -87,17 +100,9 @@ Los datos externos no se convierten en `tokens_per_second` oficiales LEONES.
 
 ## Ranking
 
-El ranking económico/performance puede utilizar una función auxiliar para ordenar candidatos, pero no reemplaza los campos originales. En particular, **JGB nunca se reduce a una consecuencia del rendimiento**.
+El ranking puede ordenar candidatos, pero no reemplaza los campos originales. En particular, **JGB nunca se reduce a una consecuencia del rendimiento**.
 
-La visualización debe mostrar, como mínimo:
-
-- JGB;
-- CABE;
-- RULA;
-- rendimiento;
-- coste/precio;
-- nivel de evidencia;
-- advertencias de incertidumbre.
+La visualización debe mostrar, como mínimo: JGB, CABE, RULA, rendimiento, coste/precio, nivel de evidencia y advertencias de incertidumbre.
 
 ## Recomendación por hardware
 
@@ -118,17 +123,4 @@ Cuando dos candidatos son equivalentes, debe preferirse el que tenga menor incer
 
 ## Próxima implementación
 
-El siguiente paso del Atlas es incorporar campos explícitos de:
-
-- memoria estimada de pesos;
-- memoria KV estimada;
-- margen de memoria;
-- CABE;
-- RULA;
-- runtime recomendado;
-- nivel de evidencia;
-- fuente de rendimiento;
-- fuente de precio;
-- incertidumbre.
-
-Esto permite que el recomendador sea explicable y evita que una única puntuación o benchmark sustituya la clasificación de apertura JGB.
+El siguiente paso es alimentar el selector con candidatos de LLMFit y, tras `runtime-selection.v1`, ejecutar el mismo camino A01 que ya está preparado para producir evidencia `measured`. Los valores de LLMFit deben conservarse como estimaciones hasta que una prueba LEONES los sustituya o complemente.
