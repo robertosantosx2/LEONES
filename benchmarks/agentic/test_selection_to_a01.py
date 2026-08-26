@@ -1,26 +1,17 @@
 #!/usr/bin/env python3
-"""Deterministic integration test for selector -> runtime-selection.v1 -> A01.
-
-This is intentionally not a model benchmark. The trusted runtime command is a
-small deterministic fixture that emits the canonical A01 tool calls. The test
-proves the wiring and evidence contract without requiring local model software
-or hardware.
-"""
+"""Deterministic integration tests for the canonical V1 execution path."""
 from __future__ import annotations
 
+import json
+import subprocess
 import sys
 from pathlib import Path
 
 from scripts.run_a01_selected import run_selected
 
 
-def test_selector_to_a01_measured_evidence(tmp_path: Path) -> None:
-    runtime_code = (
-        "import sys; "
-        "print('{\"tool\":\"lookup_model\",\"arguments\":{\"model_id\":\"demo-2\"}}'); "
-        "print('{\"tool\":\"write_report\",\"arguments\":{\"path\":\"report.txt\"}}')"
-    )
-    selection = {
+def _selection() -> dict:
+    return {
         "schema_version": "1.0",
         "candidates": [
             {
@@ -39,9 +30,19 @@ def test_selector_to_a01_measured_evidence(tmp_path: Path) -> None:
         ],
     }
 
+
+def _runtime_code() -> str:
+    return (
+        "import sys; "
+        "print('{\"tool\":\"lookup_model\",\"arguments\":{\"model_id\":\"demo-2\"}}'); "
+        "print('{\"tool\":\"write_report\",\"arguments\":{\"path\":\"report.txt\"}}')"
+    )
+
+
+def test_selector_to_a01_measured_evidence(tmp_path: Path) -> None:
     result = run_selected(
-        selection,
-        runtime_commands={"fixture-runtime": [sys.executable, "-c", runtime_code]},
+        _selection(),
+        runtime_commands={"fixture-runtime": [sys.executable, "-c", _runtime_code()]},
         workspace=tmp_path,
         prompt="Execute A01",
     )
@@ -79,3 +80,55 @@ def test_runtime_gate_blocks_untrusted_selection() -> None:
     assert result["counts"] == {"plans": 1, "blocked": 0}
     assert result["execution_plans"][0]["execution_authorized"] is False
     assert result["execution_plans"][0]["runtime"]["command"] is None
+
+
+def test_canonical_a01_benchmark_reaches_router(tmp_path: Path) -> None:
+    """Prove the complete V1 path, without GPU/model downloads, through Router."""
+    root = Path(__file__).resolve().parents[2]
+    selection_file = tmp_path / "selection.json"
+    commands_file = tmp_path / "runtime-commands.json"
+    output_file = tmp_path / "runtime-benchmark.json"
+    selection_file.write_text(json.dumps(_selection()), encoding="utf-8")
+    commands_file.write_text(
+        json.dumps({"fixture-runtime": [sys.executable, "-c", _runtime_code()]}),
+        encoding="utf-8",
+    )
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "scripts/a01_runtime_benchmark.py",
+            "--selection",
+            str(selection_file),
+            "--runtime-commands",
+            str(commands_file),
+            "--workspace",
+            str(tmp_path / "workspace"),
+            "--out",
+            str(output_file),
+        ],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+
+    payload = json.loads(output_file.read_text(encoding="utf-8"))
+    benchmark = payload["evidence"]["runtime_benchmark"]
+    router = payload["router"]
+
+    assert payload["evidence"]["schema"] == "evidence.v1"
+    assert benchmark["schema"] == "runtime-benchmark.v1"
+    assert benchmark["status"] == "measured"
+    assert benchmark["task"] == "A01"
+    assert benchmark["grader_pass"] is True
+    assert benchmark["runtime"] == "fixture-runtime"
+    assert benchmark["model"] == "demo-2"
+    assert benchmark["executor_result_sha256"]
+    assert router["decision_type"] == "heuristic_with_primary_evidence"
+    assert router["decision"] == "evidence_supported"
+    assert router["primary_evidence"]["type"] == "measured"
+    assert router["primary_evidence"]["runtime_benchmark_measured"] is True
+    assert router["primary_evidence"]["model_match"] is True
+    assert router["primary_evidence"]["runtime_match"] is True
