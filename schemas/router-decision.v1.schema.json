@@ -3,22 +3,20 @@
   "$id": "https://robertosantosx2.github.io/LEONES/schemas/router-decision.v1.schema.json",
   "title": "LEONES router decision v1",
   "type": "object",
-  "required": ["schema", "decision", "candidate", "reason", "evidence_ref"],
+  "required": ["router_version", "decision_type", "decision", "model", "runtime", "primary_evidence", "reason", "next_step"],
   "properties": {
-    "schema": { "const": "router-decision.v1" },
-    "decision": { "enum": ["accept", "reject"] },
-    "candidate": {
-      "type": "object",
-      "required": ["model", "runtime"],
-      "properties": {
-        "model": { "type": ["string", "null"] },
-        "runtime": { "type": ["string", "null"] },
-        "quantization": { "type": ["string", "null"] }
-      },
-      "additionalProperties": true
-    },
+    "router_version": { "type": "string" },
+    "decision_type": { "const": "heuristic_with_primary_evidence" },
+    "decision": { "enum": ["candidate", "evidence_supported", "evidence_failed", "reject_memory", "insufficient_task_capability"] },
+    "task": { "type": "object" },
+    "hardware": { "type": "object" },
+    "model": { "type": "object", "required": ["name", "format", "size_bytes"], "properties": { "name": { "type": ["string", "null"] }, "format": { "type": ["string", "null"] }, "size_bytes": { "type": ["number", "integer", "null"] } }, "additionalProperties": true },
+    "runtime": { "type": ["string", "null"] },
+    "atlas": { "type": "object" },
+    "primary_evidence": { "type": "object", "required": ["present", "type", "model_match", "runtime_match", "runtime_benchmark_measured"], "properties": { "present": { "type": "boolean" }, "type": { "type": ["string", "null"] }, "model_match": { "type": "boolean" }, "runtime_match": { "type": "boolean" }, "runtime_benchmark_measured": { "type": "boolean" }, "tokens_per_second": { "type": ["number", "null"], "minimum": 0 }, "wall_seconds": { "type": ["number", "null"], "minimum": 0 } }, "additionalProperties": true },
+    "memory_check": { "type": "object" },
     "reason": { "type": "string" },
-    "evidence_ref": { "type": "string" }
+    "next_step": { "type": "string" }
   },
   "additionalProperties": true
 }
