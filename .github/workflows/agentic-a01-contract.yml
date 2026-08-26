@@ -5,12 +5,14 @@ on:
     paths:
       - 'benchmarks/agentic/**'
       - 'benchmarks/evidence/**'
+      - 'scripts/**'
       - '.github/workflows/agentic-a01-contract.yml'
   push:
     branches: [main]
     paths:
       - 'benchmarks/agentic/**'
       - 'benchmarks/evidence/**'
+      - 'scripts/**'
       - '.github/workflows/agentic-a01-contract.yml'
 
 jobs:
@@ -26,3 +28,5 @@ jobs:
         working-directory: benchmarks/agentic/adapters
       - run: PYTHONPATH=. python -m pytest -q
         working-directory: benchmarks/evidence
+      - name: Selector -> runtime-selection.v1 -> A01
+        run: PYTHONPATH=. python -m pytest -q benchmarks/agentic/test_selection_to_a01.py
