@@ -1,0 +1,50 @@
+name: LEONES V1 Complete Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  v1-complete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pytest
+
+      - name: Validate JSON documents
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for path in sorted(Path('schemas').glob('*.json')):
+              json.loads(path.read_text(encoding='utf-8'))
+              print(f'OK {path}')
+          PY
+
+      - name: Run complete Python regression suite
+        run: python -m pytest tests -q
+
+      - name: Run synthetic controlled benchmark
+        run: |
+          python benchmarks/synthetic_benchmark.py
+
+      - name: Run canonical selector to A01 integration
+        run: python -m pytest -q benchmarks/agentic/test_selection_to_a01.py
+
+      - name: Assert no real-model dependency in CI path
+        run: |
+          ! grep -R "huggingface.co\|ollama pull\|llama-cli.*http" -n benchmarks/agentic/test_selection_to_a01.py benchmarks/synthetic_benchmark.py
