@@ -1,33 +1,36 @@
 # Selector Harness V1.2
 
 ## Estado
-**PREPARADO PARA V1.2**
+**PREPARADO Y CONGELADO COMO DISEÑO PARA V1.2**
+
+No implica que ningún harness haya sido instalado en la máquina del usuario.
 
 ## Objetivo
-Seleccionar los mejores harnesses OSS para instalar/activar en el ordenador del usuario, teniendo en cuenta caso de uso, hardware, runtime, optimizaciones, plataforma y compatibilidad real.
+Seleccionar hasta seis candidatos OSS de harness según caso de uso, capacidades, hardware/OS, runtime, optimizaciones y compatibilidad de despliegue. La decisión final de instalación exige preflight y prueba de arranque.
 
-## Filtro OSI
-Solo candidatos con núcleo bajo licencia OSI aprobada entran en la lista instalable OSS. Componentes con licencias diferentes se registran como excepciones y no se confunden con el núcleo.
+## Gate OSI
+Solo el núcleo de un candidato con licencia aprobada por OSI entra en el conjunto OSS. Las excepciones de licencia de componentes se conservan explícitamente.
 
-## Los 6 candidatos V1.2
-| Prioridad | Harness | Familia principal | Licencia | ODS/Osmantic | Magnitude | Estado |
+## Seis candidatos de referencia
+| # | Harness | Familia | OSI | ODS | Magnitude | Papel |
 |---|---|---|---|---|---|---|
-| 1 | Hermes Agent | general/local | MIT | DIRECT_INSTALL | CONSUMER_COMPATIBLE | candidato principal |
-| 2 | OpenCode | coding/local | OSS/OSI | DIRECT_INSTALL | CONSUMER_COMPATIBLE | candidato principal |
-| 3 | OpenHands | coding/general | MIT núcleo | INTEGRATION_REQUIRED | CONSUMER_COMPATIBLE vía endpoint | candidato |
-| 4 | DeepSeek Harness | plugin/general | MIT | INTEGRATION_REQUIRED | CONSUMER_COMPATIBLE vía endpoint/adaptador | developer preview |
-| 5 | HarnessRouter / UHP | interoperability | Apache-2.0 CE | INTEGRATION_REQUIRED | CONSUMER_COMPATIBLE como gateway | meta-harness |
-| 6 | lm-evaluation-harness | evaluation | MIT | INTEGRATION_REQUIRED | CONSUMER_COMPATIBLE | evaluación, no agente |
+| 1 | Hermes Agent | agente general/local | Sí | DIRECT_INSTALL* | CONSUMER_COMPATIBLE* | agente local principal |
+| 2 | OpenCode | coding/local | Sí | DIRECT_INSTALL* | CONSUMER_COMPATIBLE* | coding principal |
+| 3 | OpenHands | coding/general | Sí, núcleo MIT | INTEGRATION_REQUIRED | CONSUMER_COMPATIBLE | agente/coding alternativo |
+| 4 | DeepSeek Harness | agente/plugin | Sí, MIT | INTEGRATION_REQUIRED | CONSUMER_COMPATIBLE | investigación / preview |
+| 5 | HarnessRouter / UHP | interoperabilidad | Sí, Apache-2.0 CE | INTEGRATION_REQUIRED | CONSUMER_COMPATIBLE | meta-harness/gateway |
+| 6 | lm-evaluation-harness | evaluación | Sí, MIT | INTEGRATION_REQUIRED | CONSUMER_COMPATIBLE | evaluación; no agente |
 
-## Importante: Magnitude y ODS no son equivalentes
-Magnitude incluye su propio harness e inference engine y perfila hardware/modelos. Puede consumir endpoints OpenAI-compatible, pero no debe declararse instalador universal de otros harnesses.
+`*` DIRECT_INSTALL en ODS significa integración/receta de ODS; no significa que ODS sea un instalador universal de harnesses. La instalación concreta debe verificarse sobre la versión/plataforma objetivo.
 
-ODS es un stack de despliegue que actualmente integra Hermes como agente por defecto y OpenCode como IDE/agente. Otros candidatos necesitan una extensión o receta propia antes de poder declararse `DIRECT_INSTALL`.
+## Compatibilidad no es instalación
+- `DIRECT_INSTALL`: receta reproducible para instalar/activar en el sistema objetivo.
+- `CONSUMER_COMPATIBLE`: puede consumir el endpoint/runtime/API, pero no existe una ruta de instalación por ese sistema.
+- `INTEGRATION_REQUIRED`: falta una receta, extensión, adaptador o empaquetado verificado.
 
-## Estados de compatibilidad
-- `DIRECT_INSTALL`: receta de instalación comprobada en el sistema.
-- `CONSUMER_COMPATIBLE`: el harness puede consumir el runtime/API del sistema, pero no es instalado por él.
-- `INTEGRATION_REQUIRED`: requiere adaptación, extensión o empaquetado.
+Magnitude incluye su propio harness/inference engine y puede consumir modelos/endpoints compatibles; no debe tratarse como gestor universal de harnesses externos.
+
+ODS es un stack de despliegue local y actualmente incluye Hermes Agent y OpenCode en su stack; otros candidatos requieren integración específica.
 
 ## Orden de decisión
 ```text
@@ -39,7 +42,7 @@ runtime de inferencia
   ↓
 optimización
   ↓
-capacidad de harness necesaria
+capacidades necesarias del harness
   ↓
 OSI gate
   ↓
@@ -47,12 +50,14 @@ compatibilidad ODS / Magnitude
   ↓
 preflight de instalación
   ↓
-6 candidatos
+selección
   ↓
-selección final
+instalación / activación
+  ↓
+arranque + smoke test
 ```
 
-## Capacidades a puntuar
+## Capacidades
 - coding/repository
 - shell/tools
 - browser/computer use
@@ -68,11 +73,11 @@ selección final
 - installation footprint
 - platform compatibility
 
-## Regla de instalación
-Un candidato solo puede aparecer como **instalable** si existe una ruta de instalación reproducible para la plataforma del usuario. `CONSUMER_COMPATIBLE` no equivale a instalable.
+## Regla de selección
+El selector no debe afirmar que los seis candidatos son igualmente instalables. Devuelve candidatos ordenados y su estado de compatibilidad; la instalación se realiza solo cuando el preflight confirme plataforma, dependencias, puertos, runtime y recursos.
 
 ## Hardware modesto
-Priorizar local-first, bajo footprint, endpoints locales y compatibilidad con llama.cpp/GGUF cuando el hardware lo requiera. Evitar instalar varios harnesses que compitan por los mismos procesos/puertos sin necesidad.
+Priorizar local-first, footprint razonable, endpoints locales y compatibilidad con llama.cpp/GGUF cuando corresponda. Evitar instalar varios agentes que compitan por puertos, procesos o modelos sin una razón funcional.
 
-## Relación con V1.1
-V1.1 sigue congelado. V1.2 añade la dimensión harness después del camino de selección de modelo/runtime/optimización.
+## Relación con versiones
+V1 permanece operativo. `Selector múltiple evolucionado V1.1` permanece congelado. `Selector Harness V1.2` añade la dimensión harness sin modificar V1.1.
