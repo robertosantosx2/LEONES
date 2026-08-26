@@ -4,7 +4,15 @@
 
 Gracias por contribuir a **LEONES — Local Ecosystem of Open Neural Expert Systems**.
 
-LEONES es un ecosistema abierto para construir conocimiento reproducible sobre modelos, hardware, runtimes, benchmarks, agentes, mediciones y recomendaciones. Esta guía toma como referencia las buenas prácticas de [contributing.md](https://contributing.md/), adaptándolas a la arquitectura, los contratos y el sistema de evidencia de LEONES.
+LEONES es un ecosistema abierto para construir conocimiento reproducible sobre modelos, hardware, runtimes, benchmarks, agentes, mediciones y recomendaciones. Esta guía toma como referencia las buenas prácticas de contributing.md, adaptándolas a la arquitectura, los contratos y el sistema de evidencia de LEONES.
+
+---
+
+## 🚀 Primeras contribuciones: Easy First Issues
+
+Si es tu primera contribución, empieza por **[las 10 Easy First Issues](docs/EASY-FIRST-ISSUES.md)**. Están clasificadas por dificultad e impacto y cada una explica exactamente qué hay que cambiar, qué se aprende y cuáles son los criterios de aceptación.
+
+**No necesitas conocer todo LEONES para empezar.** Puedes comenzar con documentación, conocimiento, tests o pequeñas mejoras de CI y avanzar hacia selector, runtime y benchmarks.
 
 ---
 
@@ -371,4 +379,4 @@ La contribución más valiosa no tiene por qué ser la más grande. Una pequeña
 
 Esta frase resume la cultura técnica que queremos preservar en LEONES.
 
-Para la guía general de contribución de código abierto, consulta [contributing.md](https://contributing.md/).
+Para la guía general de contribución de código abierto, consulta contributing.md.
