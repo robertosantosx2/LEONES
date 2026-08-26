@@ -3,7 +3,7 @@
   "$id": "https://robertosantosx2.github.io/LEONES/schemas/runtime-benchmark.v1.schema.json",
   "title": "LEONES runtime benchmark v1",
   "type": "object",
-  "required": ["schema", "status", "runtime", "model", "task", "wall_seconds", "grader_pass"],
+  "required": ["schema", "status", "runtime", "model", "task", "wall_seconds", "grader_pass", "executor_result_sha256"],
   "properties": {
     "schema": { "const": "runtime-benchmark.v1" },
     "status": { "enum": ["measured", "failed"] },
@@ -13,9 +13,10 @@
     "task": { "const": "A01" },
     "wall_seconds": { "type": "number", "minimum": 0 },
     "tokens_per_second": { "type": ["number", "null"], "minimum": 0 },
+    "estimated_tps": { "type": ["number", "null"], "minimum": 0 },
+    "measured_tps": { "type": ["number", "null"], "minimum": 0 },
     "grader_pass": { "type": "boolean" },
-    "executor_result_ref": { "type": "string" },
-    "raw_executor_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+    "executor_result_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
   },
   "additionalProperties": true
 }
