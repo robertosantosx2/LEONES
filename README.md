@@ -3,7 +3,7 @@
 > **IA agéntica Libre/Open para hardware de consumo.**  
 > **Linux primero · evidencia real · conocimiento colectivo.**
 
-[🌐 Web de LEONES](https://robertosantosx2.github.io/LEONES/) · [⚙️ Aplicación](https://robertosantosx2.github.io/LEONES/app.html) · [🦁 GitHub](https://github.com/robertosantosx2/LEONES)
+[🌐 Web de LEONES](https://robertosantosx2.github.io/LEONES/) · [⚙️ Aplicación](https://robertosantosx2.github.io/LEONES/app.html) · [🦁 GitHub](https://github.com/robertosantosx2/LEONES) · [🤝 Contribuir](CONTRIBUTING.md)
 
 ---
 
@@ -25,6 +25,14 @@ Por eso LEONES distingue siempre entre:
 - `measured`: medición ejecutada por LEONES;
 - `verified`: dato que ha superado el quality gate definido por el proyecto;
 - `unknown`: información que todavía no está demostrada.
+
+---
+
+# 🤝 Contribuir
+
+LEONES es un proyecto abierto y las contribuciones son bienvenidas. Antes de abrir un issue, pull request o aportar una nueva fuente de conocimiento, consulta **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+
+Las contribuciones deben respetar especialmente la procedencia de los datos, la separación entre fuente, evidencia, estimación y medición, y los contratos de CI y pruebas del proyecto.
 
 ---
 
@@ -248,143 +256,70 @@ Los harnesses de referencia del proyecto son **Hermes, DeepSeek Harness y Buddy*
 
 ## 14. ODS — servidor de stacks IA
 
-**Motivación.** Muchos usuarios necesitan algo más que un modelo: necesitan inferencia, UI, RAG, agentes, voz, imagen, workflows y servicios coordinados.
+**Motivación.** Muchos usuarios necesitan algo más que un modelo: necesitan inferencia, UI, RAG, agentes, voz, imagen, workflows y otras piezas del stack.
 
-**Objetivo.** Integrar ODS como perfil instalable de servidor local, sin convertir ODS en una dependencia interna de LEONES.
+**Objetivo.** Investigar ODS como referencia para la composición y despliegue de stacks locales, manteniendo separada su función de la evidencia propia de LEONES.
 
-**Metodología.** Preflight → consentimiento → instalación reproducible → captura de configuración → health check → benchmark LEONES → separación `reported/estimated/measured` → publicación solo con consentimiento.
+**Metodología.** Estudiar capacidades → identificar componentes reutilizables → documentar evidencia → integrar mediante adaptadores → medir cuando proceda.
 
-Documentación: [`docs/integrations/ODS/README.md`](docs/integrations/ODS/README.md) · [`docs/integrations/DATA-CONTRACT.md`](docs/integrations/DATA-CONTRACT.md).
+Documentación: [`docs/subprojects/ods/`](docs/subprojects/ods/).
 
-## 15. Magnitude — asistente personal IA
+## 15. Magnitude
 
-**Motivación.** El coding agent necesita seleccionar modelo/runtime en función del hardware y ejecutar tareas reales sobre un proyecto, no únicamente producir texto.
+**Motivación.** La selección de modelo y runtime necesita considerar el hardware disponible y las condiciones reales de ejecución.
 
-**Objetivo.** Integrar Magnitude como perfil de asistente personal local, conservando su recomendación separada de la medición independiente de LEONES.
+**Objetivo.** Estudiar Magnitude como fuente de conocimiento y posible componente auxiliar para perfilado, estimación y ejecución.
 
-**Metodología.** Preflight Node/npm/hardware → consentimiento → instalación → identificación de modelo/runtime → tarea controlada → benchmark → captura de resultado → limpieza del entorno de prueba.
+**Metodología.** Analizar hardware → modelos → cuantización → runtime → configuración → rendimiento → conservar la procedencia y separar las cifras externas de las mediciones LEONES.
 
-Las skills se consideran superficie de permisos y se registran con origen, versión, permisos y alcance.
+Documentación: [`docs/subprojects/magnitude/`](docs/subprojects/magnitude/).
 
-Documentación: [`docs/integrations/Magnitude/README.md`](docs/integrations/Magnitude/README.md).
+## 16. FreeToken y otras fuentes de conocimiento
 
-## 16. Web / App
+LEONES incorpora proyectos externos como **fuentes de conocimiento, evidencia e inspiración**, no como hechos propios. Cada ficha debe explicar qué es el proyecto, para qué sirve, qué aporta a LEONES, qué evidencia existe y qué parte está pendiente de verificación o medición.
 
-**Motivación.** El conocimiento solo es útil si una persona puede consultarlo y utilizarlo para tomar una decisión.
-
-**Objetivo.** Convertir los datos y recomendaciones en una interfaz accesible, comprensible y navegable.
-
-**Metodología.** Datos canónicos → vistas explicativas → recomendación trazable → enlaces a evidencia → formularios/feedback → validación → mejora continua. La interfaz nunca debe ocultar el nivel de certeza de un dato.
-
-Documentación: [`web/README.md`](web/README.md) · [`docs/UX_OPTIMIZATION.md`](docs/UX_OPTIMIZATION.md).
-
-## 17. Recomendaciones de usuarios
-
-**Motivación.** La comunidad puede descubrir hardware, software, modelos y fuentes que un crawler no encuentra.
-
-**Objetivo.** Crear un canal de entrada humano que transforme recomendaciones en candidatos evaluables sin convertirlas automáticamente en verdad.
-
-**Metodología.** Usuario → propuesta → validación `OK LEONES` → revisión → enriquecimiento → evidencia → integración si supera el quality gate.
-
-## 18. MANADA / conocimiento colectivo
-
-**Motivación.** La experiencia distribuida de usuarios sobre hardware y tareas reales complementa los datos automáticos.
-
-**Objetivo.** Construir una capa colectiva de conocimiento práctico, manteniendo trazabilidad y evitando que una opinión se convierta automáticamente en evidencia técnica.
-
-**Metodología.** Observación de usuario → anonimización/minimización → validación → agregación → contraste con benchmark → publicación con nivel de confianza.
-
-## 19. Fuentes de conocimiento
-
-**Motivación.** La calidad del sistema depende de la calidad y diversidad de sus fuentes.
-
-**Objetivo.** Mantener un inventario de fuentes primarias, empíricas, comunitarias y metodológicas y asignarles un papel explícito.
-
-**Metodología.** Descubrir → clasificar → evaluar autoridad → extraer evidencia → conservar URL/fecha/procedencia → contrastar → incorporar al conocimiento solo cuando corresponda.
-
-Entre las fuentes empíricas se incluyen LMSYS Chatbot Arena, Open LLM Leaderboard, LLM Stats y otras fuentes de medición real; entre las fuentes de infraestructura se incluyen ODS, Magnitude y LLMFit.
+La incorporación de una fuente externa **no promociona automáticamente sus resultados a mediciones LEONES**.
 
 ---
 
-# 🔬 Principio metodológico común
+# 🔬 Principio de evidencia
 
-Todos los subproyectos siguen el mismo ciclo:
+Toda afirmación relevante debe conservar su procedencia. LEONES distingue entre:
 
 ```text
-HIPÓTESIS
-   ↓
 FUENTE
-   ↓
-EXTRACCIÓN
-   ↓
-NORMALIZACIÓN
-   ↓
+  ↓
 EVIDENCIA
-   ↓
-QUALITY GATE
-   ↓
-MEDICIÓN / VALIDACIÓN
-   ↓
-PUBLICACIÓN
-   ↓
-RETROALIMENTACIÓN
+  ↓
+ESTIMACIÓN / OBSERVACIÓN / REPORTE
+  ↓
+MEDICIÓN LEONES
+  ↓
+VERIFICACIÓN
+  ↓
+CONOCIMIENTO PUBLICABLE
 ```
 
-Una recomendación no puede mejorar la evidencia retrospectivamente: primero se conserva la procedencia y después se calcula la recomendación.
+No se deben mezclar estas capas para producir una cifra aparentemente más precisa de lo que realmente está demostrado.
 
-# 🧱 Regla de arquitectura
+---
 
-LEONES separa deliberadamente:
+# 🧪 Calidad y reproducibilidad
 
-```text
-IDENTIDAD       → Atlas
-APERTURA        → JGB
-HARDWARE        → Hardware Matrix
-FIT INICIAL     → LLMFit
-PRECIO          → Hardware Pricing
-ECONOMÍA        → TCO
-RENDIMIENTO     → Benchmarks
-AGENTICIDAD     → Agentic Evaluation
-EJECUCIÓN       → Runtime / Harnesses
-DESPLIEGUE      → ODS / Magnitude
-DECISIÓN        → Recommender / Router
-EXPERIENCIA     → Web / App / MANADA
-```
+Los cambios que afectan a código, contratos, esquemas, selección de runtimes, ejecución, benchmarks o datos deben acompañarse de las pruebas y evidencias correspondientes.
 
-Esta separación permite sustituir una fuente o herramienta sin destruir el conocimiento acumulado de LEONES.
+La CI es parte del contrato del proyecto. Un cambio no se considera terminado únicamente porque funcione en el entorno del desarrollador: debe mantener los consumidores, contratos y rutas de integración relevantes.
 
-# 🧪 Regla de evidencia
+Para contribuir, consulta **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
-Nunca se debe escribir:
-
-```text
-LLMFit dice que cabe → LEONES ha demostrado que funciona
-```
-
-La cadena correcta es:
-
-```text
-LLMFit estima que puede caber
-            ↓
-LEONES contrasta requisitos y configuración
-            ↓
-LEONES ejecuta benchmark
-            ↓
-LEONES mide
-            ↓
-Atlas conserva ambas evidencias
-```
+---
 
 # 📚 Documentación
 
-- [`docs/phases/README.md`](docs/phases/README.md) — fases e hitos.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura.
-- [`docs/DOCUMENTATION_PROTOCOL.md`](docs/DOCUMENTATION_PROTOCOL.md) — protocolo documental.
-- [`docs/integrations/README.md`](docs/integrations/README.md) — integraciones.
-- [`docs/integrations/DATA-CONTRACT.md`](docs/integrations/DATA-CONTRACT.md) — contrato de datos.
-- [`docs/integrations/E2E.md`](docs/integrations/E2E.md) — validación E2E.
-- [`docs/completed/`](docs/completed/) — documentación de hitos cerrados.
+La documentación técnica se encuentra principalmente bajo [`docs/`](docs/), mientras que el conocimiento publicable se integra en la web de LEONES. Las fuentes externas deben conservar su identidad y procedencia y no deben confundirse con evidencia generada por LEONES.
 
-# 🟢 Estado del proyecto
+---
 
-El estado operativo de cada hito se mantiene en [`docs/phases/README.md`](docs/phases/README.md). El README principal describe el **qué, por qué y cómo**; los documentos de fase contienen el detalle de implementación, decisiones y validación.
+# 📜 Licencia
+
+Consulta los ficheros de licencia del repositorio y la documentación específica de cada subproyecto o fuente externa. Las licencias de terceros no deben interpretarse como licencia de LEONES.
