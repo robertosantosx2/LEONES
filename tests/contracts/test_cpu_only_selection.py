@@ -52,4 +52,4 @@ def test_cpu_only_cannot_invent_gpu_capability():
         required_runtime="llama.cpp",
     )
     assert result["selection_policy"]["vram_gb"] == 0
-    assert all(candidate.get("vram_gb") is None for candidate in result["candidates"])
+    assert all("vram_gb" not in candidate for candidate in result["candidates"])
