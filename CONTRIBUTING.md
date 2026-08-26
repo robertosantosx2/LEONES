@@ -1,33 +1,41 @@
-# Contributing to LEONES
+# Contribuir a LEONES
 
-Thank you for contributing to **LEONES — Local Ecosystem of Open Neural Expert Systems**.
+> **Constrúyelo. Mídelo. Explícalo. Conserva la evidencia.**
 
-LEONES is an open ecosystem for reproducible evidence around models, hardware, runtimes, benchmarks, agents, measurements and recommendations. This guide follows the general principles of [contributing.md](https://contributing.md/), adapted to the actual architecture and CI of LEONES.
+Gracias por contribuir a **LEONES — Local Ecosystem of Open Neural Expert Systems**.
 
-## 1. What we value
+LEONES es un ecosistema abierto para construir conocimiento reproducible sobre modelos, hardware, runtimes, benchmarks, agentes, mediciones y recomendaciones. Esta guía toma como referencia las buenas prácticas de [contributing.md](https://contributing.md/), adaptándolas a la arquitectura, los contratos y el sistema de evidencia de LEONES.
 
-> **Discover, document, verify, measure and preserve provenance. Do not turn a claim into a fact merely by repetition.**
+---
 
-Prefer:
+## 1. Qué valoramos
 
-- reproducibility over anecdote;
-- primary sources over copied claims;
-- evidence over assumptions;
-- explicit provenance over undocumented enrichment;
-- measurements over estimates when measurements exist;
-- focused, reviewable changes over opaque rewrites;
-- automation when it improves consistency;
-- strict separation between source, evidence, estimation and LEONES measurement.
+> **Descubrir, documentar, verificar, medir y conservar la procedencia. No convertir una afirmación en un hecho simplemente por repetición.**
 
-## 2. Before contributing
+Preferimos:
 
-1. Search existing documentation, issues, tests and implementations.
-2. Check whether the work is already being discussed or implemented.
-3. For substantial changes, open an issue describing the problem and proposed solution.
-4. Read the relevant architecture, schema and contract documentation before changing data flows.
-5. Keep unrelated fixes separate unless they are required for correctness.
+- reproducibilidad frente a anécdota;
+- fuentes primarias frente a afirmaciones copiadas;
+- evidencia frente a suposiciones;
+- procedencia explícita frente a enriquecimiento no documentado;
+- mediciones frente a estimaciones cuando existen mediciones;
+- cambios pequeños y revisables frente a reescrituras opacas;
+- automatización cuando mejora la consistencia;
+- separación estricta entre fuente, evidencia, estimación y medición de LEONES.
 
-Start with:
+**La evidencia es parte del producto, no un comentario añadido después.**
+
+---
+
+## 2. Antes de contribuir
+
+1. Busca primero en la documentación, issues, pruebas e implementaciones existentes.
+2. Comprueba si el trabajo ya está siendo discutido o desarrollado.
+3. Para cambios importantes, abre un issue explicando el problema y la solución propuesta.
+4. Lee la arquitectura, el esquema y los contratos relacionados antes de modificar un flujo de datos.
+5. Mantén separados los cambios no relacionados salvo que sean necesarios para la corrección.
+
+Empieza por:
 
 - `README.md`
 - `docs/ARCHITECTURE.md`
@@ -40,104 +48,137 @@ Start with:
 - `tests/`
 - `.github/workflows/`
 
-## 3. Ways to contribute
+**Primero entiende la cadena de conocimiento; después modifica el código.**
 
-### Code
+---
 
-Features, bug fixes, adapters, runtimes, benchmarks, ingestion, validation, web, CI and automation.
+## 3. Formas de contribuir
 
-### Knowledge and research
+### Código
 
-Projects, models, runtimes, benchmarks, datasets and sources; technical findings; primary evidence; contradictory or obsolete information.
+Nuevas funcionalidades, correcciones, adaptadores, runtimes, benchmarks, ingesta, validación, web, CI y automatización.
 
-### Measurements
+### Conocimiento e investigación
 
-Reproducible benchmark runs, scenarios, harnesses, graders and precise hardware/model/quantization/runtime configurations.
+Proyectos, modelos, runtimes, benchmarks, datasets y fuentes; hallazgos técnicos; evidencia primaria; información contradictoria u obsoleta.
 
-### Documentation
+### Mediciones
 
-Architecture, workflows, onboarding, limitations, knowledge web, navigation and terminology.
+Ejecuciones reproducibles de benchmarks, escenarios, harnesses, graders y configuraciones precisas de hardware, modelo, cuantización y runtime.
 
-### Issues and reviews
+### Documentación
 
-Reproducible bugs, proposals, pull-request reviews and challenges to unsupported claims.
+Arquitectura, flujos, incorporación de colaboradores, limitaciones, web de conocimiento, navegación y terminología.
 
-## 4. Source, evidence, estimation and measurement
+### Issues y revisiones
 
-LEONES deliberately keeps these states separate:
+Errores reproducibles, propuestas, revisiones de pull requests y cuestionamiento de afirmaciones sin respaldo.
 
-- `estimated`: calculation or estimate;
-- `reported`: value declared by an external source;
-- `observed`: configuration or behaviour observed in an environment;
-- `measured`: measurement executed by LEONES;
-- `verified`: information that passed the project's quality gate;
-- `unknown`: information not sufficiently demonstrated.
+**Una contribución pequeña pero verificable puede ser más valiosa que una gran contribución imposible de reproducir.**
 
-Never silently promote one state into another. If a value is inferred, identify it as an inference or estimate. A third-party benchmark remains third-party evidence and is not a LEONES physical measurement unless LEONES actually executed it.
+---
 
-## 5. Knowledge contributions
+## 4. Fuente, evidencia, estimación y medición
 
-A knowledge fiche should provide, where applicable:
+LEONES mantiene deliberadamente separados estos estados:
 
-1. project/source name;
-2. canonical URL;
-3. category;
-4. what it is;
-5. problem solved;
-6. useful technical description;
-7. model/hardware/runtime relationships;
-8. licence and openness;
-9. evidence and primary sources;
-10. limitations;
-11. relationship with LEONES;
-12. role: inspiration, evidence, implementation reference, discovery source, etc.;
-13. version/date when freshness matters.
+- `estimated`: cálculo o estimación;
+- `reported`: valor declarado por una fuente externa;
+- `observed`: configuración o comportamiento observado en un entorno;
+- `measured`: medición ejecutada por LEONES;
+- `verified`: información que ha superado el quality gate del proyecto;
+- `unknown`: información que todavía no está suficientemente demostrada.
 
-Discovery does not automatically make a source canonical knowledge. Apply the repository's evidence and quality rules first.
+**Nunca promociones silenciosamente un estado a otro.** Si un valor se infiere, indícalo como inferencia o estimación. Un benchmark de terceros sigue siendo evidencia de terceros y no se convierte en medición física de LEONES salvo que LEONES lo haya ejecutado realmente.
 
-## 6. Benchmarks and measurements
+---
 
-Record whenever applicable:
+## 5. Contribuciones a la base de conocimiento
 
-- exact model and revision;
-- format and quantization;
-- hardware SKU, RAM/VRAM and relevant capabilities;
-- OS and driver/runtime versions;
-- inference runtime and version;
-- runtime flags/configuration;
-- context/input and output length;
-- concurrency/batch configuration;
-- workload/prompts;
-- warm-up and repetitions;
-- collected metrics;
-- raw/structured evidence;
-- limitations.
+Una ficha de conocimiento debe incluir, cuando corresponda:
 
-Do not compare tokens/s without documenting execution conditions.
+1. nombre del proyecto o fuente;
+2. URL canónica;
+3. categoría;
+4. qué es;
+5. qué problema resuelve;
+6. descripción técnica útil;
+7. relación con modelos, hardware y runtimes;
+8. licencia y grado de apertura;
+9. evidencia y fuentes primarias;
+10. limitaciones;
+11. relación con LEONES;
+12. papel que desempeña: inspiración, evidencia, referencia de implementación, fuente de descubrimiento, etc.;
+13. versión o fecha cuando la actualidad del dato sea relevante.
 
-## 7. Model, runtime, selector and router integrations
+El descubrimiento no convierte automáticamente una fuente en conocimiento canónico. Primero deben aplicarse las reglas de evidencia y quality gate del repositorio.
 
-Keep the execution tuple explicit:
+**No atribuyas a una fuente una conclusión que realmente pertenece a LEONES.**
 
-`model + quantization + runtime + hardware + configuration`
+---
 
-Do not hide runtime assumptions inside model records. A runtime supporting a model does not prove equivalent performance across models or configurations.
+## 6. Benchmarks y mediciones
 
-For selector/router work preserve the chain:
+Registra, cuando corresponda:
 
-`candidate selection → runtime selection → execution → grading → benchmark → evidence`
+- modelo y revisión exactos;
+- formato y cuantización;
+- modelo de hardware, RAM/VRAM y capacidades relevantes;
+- sistema operativo y versiones de drivers/runtime;
+- runtime de inferencia y versión;
+- flags y configuración del runtime;
+- contexto, entrada y longitud de salida;
+- concurrencia/batching;
+- carga de trabajo y prompts;
+- calentamiento y repeticiones;
+- métricas recogidas;
+- evidencia estructurada o bruta;
+- limitaciones.
 
-## 8. Code changes
+**No compares tokens/s sin documentar las condiciones de ejecución.**
 
-Prefer minimal, readable, deterministic changes covered by tests where practical and compatible with existing contracts. Document public behaviour changes.
+Una clasificación derivada —por ejemplo CABE/RULA— no debe sustituir al dato primario (`tokens_per_second` u otra métrica medida).
 
-Avoid unrelated formatting churn, deletion of historical evidence, hard-coded measured values in selectors, silent schema/semantic changes, unnecessary dependencies and quality-gate bypasses.
+---
 
-## 9. Tests and CI validation
+## 7. Integraciones de modelo, runtime, selector y router
 
-**GitHub Actions are part of the contribution contract.** The workflow set can evolve; inspect `.github/workflows/` and run the checks relevant to the affected area.
+Mantén explícito el conjunto de ejecución:
 
-The current `contract-tests.yml` workflow performs the following core checks:
+`modelo + cuantización + runtime + hardware + configuración`
+
+No escondas los supuestos del runtime dentro de los registros de modelos. Que un runtime sea compatible con un modelo no demuestra un rendimiento equivalente en todos los modelos o configuraciones.
+
+Para trabajos sobre selector/router conserva la cadena:
+
+`selección de candidatos → selección de runtime → ejecución → evaluación → benchmark → evidencia`
+
+**La selección es una hipótesis hasta que la ejecución y la evidencia permitan validarla.**
+
+---
+
+## 8. Cambios de código
+
+Prioriza cambios mínimos, legibles, deterministas y cubiertos por pruebas cuando sea razonable, manteniendo los contratos existentes. Documenta los cambios de comportamiento público.
+
+Evita:
+
+- ruido de formato no relacionado;
+- borrar evidencia histórica;
+- introducir valores medidos codificados a mano en selectores;
+- cambios silenciosos de esquema o semántica;
+- dependencias innecesarias;
+- saltarse quality gates.
+
+**El código debe hacer explícitos los supuestos que puedan afectar al resultado.**
+
+---
+
+## 9. Pruebas y CI
+
+**GitHub Actions forma parte del contrato de contribución.** El conjunto de workflows puede evolucionar; consulta `.github/workflows/` y ejecuta las comprobaciones correspondientes al área afectada.
+
+El workflow `contract-tests.yml` realiza, entre otras, estas comprobaciones principales:
 
 ```bash
 python -m unittest discover -s tests/contracts -p 'test_*.py' -v
@@ -146,106 +187,188 @@ python -m pytest tests/contracts/test_knowledge_four_layers.py -q
 python -m pytest tests -q
 ```
 
-It also:
+También comprueba aspectos como:
 
-- parses every JSON schema in `schemas/`;
-- checks contract-version invariants;
-- validates evidence verification states;
-- validates router OSI modes;
-- validates promotion and Atlas storage invariants;
-- requires provenance in evidence storage;
-- verifies `tests/contracts/contract-tests.md` exists and is non-empty.
+- todos los JSON Schema de `schemas/`;
+- invariantes de versiones de contratos;
+- estados de verificación de evidencia;
+- modos OSI del router;
+- invariantes de promoción y almacenamiento de Atlas;
+- procedencia obligatoria en almacenamiento de evidencia;
+- existencia y contenido de `tests/contracts/contract-tests.md`.
 
-Other current workflows cover areas including Atlas feed/ingestion/prospection/recommendations, agentic A01 contracts, measured benchmarks and daily discovery. Changes affecting those areas must be validated with their corresponding workflows/tests.
+Otros workflows cubren áreas como ingesta/prospección/recomendaciones de Atlas, contratos de agentes A01, benchmarks medidos y descubrimiento diario. Los cambios que afecten a esas áreas deben validarse con sus workflows o pruebas correspondientes.
 
-For web changes, validate affected pages, navigation and generated/public artefacts.
+Para cambios de la web, valida las páginas afectadas, la navegación y los artefactos públicos generados.
 
-If a check cannot be run locally, state exactly what was and was not validated. Never claim a test passed unless it was executed.
+Si una comprobación no puede ejecutarse localmente, indica exactamente qué se validó y qué no. **Nunca afirmes que una prueba ha pasado si no se ha ejecutado.**
 
-## 10. Pull requests
+---
 
-A useful pull request states:
+## 10. Issues: errores y propuestas
 
-### Problem
-What problem is being solved?
+### Informar de un error
 
-### Solution
-What changed and why this layer is the correct place?
+Un buen informe debe incluir:
 
-### Evidence
-What sources, tests, measurements or observations support it?
+- comportamiento esperado;
+- comportamiento observado;
+- pasos para reproducirlo;
+- entorno relevante;
+- versiones relevantes;
+- mensajes de error o trazas;
+- resultado de las pruebas pertinentes;
+- si el problema es reproducible y bajo qué condiciones.
 
-### Validation
-Which checks actually ran and with what result?
+**Un error reproducible es mucho más fácil de corregir que una descripción genérica del fallo.**
 
-### Risks and limitations
-What remains unknown or could regress?
+No publiques contraseñas, tokens, secretos, datos personales innecesarios ni detalles de vulnerabilidades privadas en un issue público.
 
-Call out explicitly when contracts, schemas, public data or the recommendation pipeline are affected.
+### Proponer una mejora
 
-## 11. Data and provenance
+Explica:
 
-When modifying structured knowledge/evidence:
+- qué problema resuelve;
+- qué comportamiento existe actualmente;
+- qué comportamiento propones;
+- por qué es útil para LEONES;
+- qué alternativas has considerado;
+- cómo podría probarse.
 
-- preserve source URLs and provenance;
-- preserve timestamps/versions when relevant;
-- retain historical measurements when the distinction matters;
-- do not collapse contradictory observations into unexplained values;
-- keep estimates, reports, observations and measurements distinguishable;
-- prefer explicit `unknown` to invented completeness.
+**Describe primero el problema; después propone la solución.**
 
-The objective is **trustworthy, traceable data**, not simply more data.
+---
 
-## 12. Web and knowledge publication
+## 11. Pull requests
 
-The public knowledge web must preserve the project's knowledge layers. A fiche should explain what the source is, what it contributes, what evidence supports the claims and what remains uncertain.
+Un pull request debe ser revisable y trazable.
 
-Do not publish a discovery item as established LEONES evidence without the appropriate validation. Prefer canonical external URLs.
+Incluye:
 
-## 13. Security and sensitive information
+### Problema
+Qué problema se resuelve.
 
-Never commit passwords, API keys, access tokens, private credentials, unnecessary personal data, private benchmark data without permission or proprietary material that cannot legally be redistributed.
+### Solución
+Qué ha cambiado y por qué esta es la capa adecuada.
 
-For security vulnerabilities, do not publish exploitable details in a public issue; use the project's available private security channel.
+### Evidencia
+Qué fuentes, pruebas, mediciones u observaciones lo respaldan.
 
-## 14. Collaboration and review
+### Validación
+Qué comprobaciones se ejecutaron realmente y con qué resultado.
 
-Challenge claims, implementation and methodology rather than people. Ask for evidence and prefer reproducible demonstrations over authority or popularity.
+### Riesgos y limitaciones
+Qué sigue siendo desconocido o podría producir una regresión.
 
-Review may consider provenance, methodology, reproducibility, contracts, security, licensing, maintenance cost, knowledge-model impact and recommendation correctness—not merely whether code runs.
+Indica expresamente si el cambio afecta a contratos, esquemas, datos públicos o al pipeline de recomendaciones.
 
-## 15. Licensing
+### Checklist
 
-By contributing, confirm that you have the right to submit the contribution under the repository's applicable licence. For external code, datasets, documentation or copied material, record licence and provenance before inclusion.
+- [ ] El cambio tiene un propósito claramente explicado.
+- [ ] He comprobado que no existe ya una solución equivalente.
+- [ ] He mantenido separadas fuente, evidencia, estimación y medición.
+- [ ] He añadido o actualizado pruebas cuando corresponde.
+- [ ] He actualizado la documentación afectada.
+- [ ] He conservado la procedencia de los datos externos.
+- [ ] He documentado las condiciones de las mediciones.
+- [ ] No he introducido credenciales, secretos ni información sensible.
+- [ ] He comprobado los contratos y regresiones relevantes.
 
-## 16. Contribution workflow
+**El pull request debe permitir a otra persona entender qué cambió, por qué y con qué evidencia.**
+
+---
+
+## 12. Datos y procedencia
+
+Al modificar conocimiento o evidencia estructurada:
+
+- conserva URLs de origen y procedencia;
+- conserva timestamps/versiones cuando sean relevantes;
+- conserva mediciones históricas cuando la diferencia tenga significado;
+- no conviertas observaciones contradictorias en un valor único sin explicarlo;
+- mantén distinguibles informes, estimaciones, observaciones y mediciones;
+- prefiere `unknown` antes que inventar una completitud que no existe.
+
+El objetivo es **datos confiables y trazables**, no simplemente más datos.
+
+---
+
+## 13. Web y publicación del conocimiento
+
+La web pública de conocimiento debe conservar las capas del proyecto. Una ficha debe explicar qué es la fuente, qué aporta, qué evidencia respalda las afirmaciones y qué permanece incierto.
+
+No publiques un elemento descubierto como evidencia establecida de LEONES sin la validación correspondiente. Prioriza URLs canónicas.
+
+**La web publica conocimiento; no debe borrar la incertidumbre que existe en la evidencia original.**
+
+---
+
+## 14. Seguridad e información sensible
+
+Nunca hagas commit de:
+
+- contraseñas;
+- API keys;
+- access tokens;
+- credenciales privadas;
+- datos personales innecesarios;
+- datos privados de benchmarks sin permiso;
+- material propietario que legalmente no pueda redistribuirse.
+
+Para vulnerabilidades de seguridad, no publiques detalles explotables en un issue público; utiliza el canal privado disponible para seguridad.
+
+---
+
+## 15. Colaboración y revisión
+
+Cuestiona afirmaciones, implementaciones y metodologías, no a las personas. Pide evidencia y prefiere demostraciones reproducibles frente a autoridad o popularidad.
+
+La revisión puede considerar procedencia, metodología, reproducibilidad, contratos, seguridad, licencias, coste de mantenimiento, impacto sobre el modelo de conocimiento y corrección de las recomendaciones, no solamente si el código funciona.
+
+**La revisión protege la evidencia tanto como protege el código.**
+
+---
+
+## 16. Licencias
+
+Al contribuir, confirma que tienes derecho a entregar la contribución bajo la licencia aplicable al repositorio. Para código, datasets, documentación o material externo, registra licencia y procedencia antes de incorporarlo.
+
+**No confundas disponibilidad pública con permiso para redistribuir.**
+
+---
+
+## 17. Flujo de contribución
 
 ```text
-IDEA / PROBLEM
+IDEA / PROBLEMA
       ↓
-SEARCH EXISTING WORK
+BUSCAR TRABAJO EXISTENTE
       ↓
-ISSUE / DISCUSSION (when useful)
+ISSUE / DISCUSIÓN (cuando sea útil)
       ↓
-FOCUSED CHANGE
+CAMBIO CENTRADO
       ↓
-SOURCE + PROVENANCE
+FUENTE + PROCEDENCIA
       ↓
-TEST / MEASURE / VALIDATE
+PRUEBA / MEDICIÓN / VALIDACIÓN
       ↓
 PULL REQUEST
       ↓
-REVIEW
+REVISIÓN
       ↓
 MERGE
       ↓
-DOCUMENT / PUBLISH / PRESERVE EVIDENCE
+DOCUMENTAR / PUBLICAR / CONSERVAR LA EVIDENCIA
 ```
 
-## 17. Final principle
+---
 
-The most valuable contribution is not necessarily the largest one. A small change that preserves provenance, adds a missing test, reproduces a measurement, documents a runtime limitation or prevents an unsupported claim can be more valuable than a large feature.
+## 18. Principio final
 
-**Build it. Measure it. Explain it. Preserve the evidence.**
+La contribución más valiosa no tiene por qué ser la más grande. Una pequeña modificación que conserva la procedencia, añade una prueba que faltaba, reproduce una medición, documenta una limitación de runtime o evita una afirmación sin respaldo puede valer más que una gran funcionalidad.
 
-For general open-source contribution guidance, see [contributing.md](https://contributing.md/).
+> **Constrúyelo. Mídelo. Explícalo. Conserva la evidencia.**
+
+Esta frase resume la cultura técnica que queremos preservar en LEONES.
+
+Para la guía general de contribución de código abierto, consulta [contributing.md](https://contributing.md/).
