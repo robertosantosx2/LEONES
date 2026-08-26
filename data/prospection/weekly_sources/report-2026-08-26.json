@@ -1,6 +1,28 @@
 {
   "generated_at": "2026-08-26T05:56:55.426069+00:00",
-  "sources": [
+  "day": 2,
+  "day_name": "wednesday",
+  "sources_assigned": [
+    "framagit",
+    "gitlab-ce",
+    "fossil",
+    "huggingface-papers"
+  ],
+  "sources_total": 24,
+  "sources_completed": 4,
+  "sources_failed": 0,
+  "raw_results_by_source": {
+    "fossil": 0,
+    "framagit": 19,
+    "gitlab-ce": 0,
+    "huggingface-papers": 36
+  },
+  "unique_discoveries": 55,
+  "failures": [],
+  "queries": 2,
+  "workers": 4,
+  "per_source_timeout_seconds": 75,
+  "weekly_assignment": [
     {
       "id": "codeberg",
       "name": "Codeberg",
@@ -121,5 +143,7 @@
       "name": "Hugging Face Papers",
       "day": 2
     }
-  ]
+  ],
+  "output": "/home/runner/work/LEONES/LEONES/data/prospection/weekly_sources/sources-2026-08-26.ndjson",
+  "cadence": "weekly-per-source"
 }
