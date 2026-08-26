@@ -1,7 +1,12 @@
 # LEONES — Roadmap de versiones
 
 ## Propósito
-Convertir LEONES en un compendio abierto, navegable, reproducible y ejecutable del estado del arte de la IA agéntica abierta funcionando en local, manteniendo separadas fuente, evidencia, estimación y medición LEONES.
+Convertir LEONES en un compendio abierto, navegable, reproducible y ejecutable del estado del arte de la IA agéntica abierta funcionando en local, manteniendo separadas **Fuente, Evidencia, Estimación y Medición LEONES**.
+
+## Estado del roadmap
+**FIJADO PARA DESARROLLO.** Este documento es la referencia canónica de evolución. Las versiones anteriores se preservan; las nuevas se añaden incrementalmente.
+
+---
 
 ## Versiones congeladas
 
@@ -19,167 +24,72 @@ Selector actual basado en `model_selector.py`, feed de modelos y restricciones d
 # V1.3 — Compendio de conocimiento agentic local
 **Objetivo:** convertir el conocimiento acumulado en un mapa coherente y navegable.
 
-- Auditar y enlazar todos los README y fichas.
-- Crear el mapa canónico del stack local.
-- Unificar Modelos → Runtime → Optimización → Harness → Tools → Protocolos → Evaluación.
-- Mantener las cuatro capas: Fuente / Evidencia / Estimación / Medición.
-- Crear matrices de compatibilidad.
-- Incorporar MCP como familia propia.
-- Incorporar herramientas de agentes como familia propia.
-- Incorporar memoria y RAG como familias propias.
+**Trabajo:**
+- auditar y enlazar todos los README, fichas y fuentes;
+- crear el mapa canónico del stack local;
+- unificar Modelo → Runtime → Optimización → Harness → Tools → Protocolos → Evaluación;
+- mantener las cuatro capas epistemológicas;
+- crear matrices de compatibilidad;
+- incorporar MCP, herramientas de agentes, memoria y RAG como familias propias.
 
-**Definition of Done:** desde cualquier ficha se puede navegar hacia arriba y abajo del stack sin callejones documentales.
+**Definition of Done:** cualquier ficha puede recorrerse hacia arriba y abajo del stack mediante enlaces canónicos, sin duplicidades ni callejones documentales.
 
 # V1.4 — Stack Explorer
-**Objetivo:** representación visual del stack completo.
+**Objetivo:** representar visualmente el stack completo.
 
-- Hardware.
-- Runtime.
-- Optimización.
-- Modelo.
-- Harness.
-- Tools.
-- MCP.
-- Memoria/RAG.
-- Benchmark.
-- Compatibilidades.
-- Vista de configuración completa.
+Hardware → Runtime → Optimización → Modelo → Harness → Tools → MCP → Memoria/RAG → Benchmark → Compatibilidades → Medición.
 
-**Definition of Done:** una configuración LEONES puede recorrerse visualmente de hardware a medición.
+**Definition of Done:** una configuración LEONES puede recorrerse visualmente desde hardware hasta evidencia/medición.
 
 # V1.5 — ¿Puede mi PC hacerlo?
 **Objetivo:** calculadora de viabilidad local.
 
-Entrada:
-- CPU.
-- RAM.
-- GPU.
-- VRAM.
-- almacenamiento.
-- sistema operativo.
-- caso de uso.
+**Entrada:** CPU, RAM, GPU, VRAM, almacenamiento, OS y caso de uso.
 
-Salida:
-- modelos viables;
-- runtime recomendado;
-- optimizaciones;
-- harness;
-- memoria requerida;
-- estimación de rendimiento;
-- mediciones existentes;
-- advertencias.
+**Salida:** modelos viables, runtime recomendado, optimizaciones, harness, memoria, rendimiento estimado, mediciones existentes y advertencias.
 
 Estados: `VIABLE`, `VIABLE_WITH_OPTIMIZATION`, `NOT_RECOMMENDED`, `UNKNOWN`.
 
 # V1.6 — MCP Registry
 **Objetivo:** catálogo de servidores y herramientas MCP locales.
 
-Cada entrada debe incluir:
-- licencia;
-- fuente;
-- instalación;
-- capacidades;
-- permisos;
-- red requerida;
-- funcionamiento offline;
-- consumo de recursos;
-- harnesses compatibles;
-- riesgos de seguridad.
+Cada entrada: licencia, fuente, instalación, capacidades, permisos, red requerida, offline, recursos, harnesses compatibles y riesgos.
 
 # V1.7 — Agent Tools & Memory
 **Objetivo:** cubrir la capa funcional del agente.
 
-Familias:
-- browser;
-- code;
-- shell;
-- filesystem;
-- git;
-- database;
-- web search;
-- vision/OCR;
-- computer use;
-- Docker/SSH;
-- short-term memory;
-- long-term memory;
-- episodic/semantic/procedural memory;
-- vector/graph memory;
-- RAG y agentic RAG.
+Familias: browser, code, shell, filesystem, git, database, web search, vision/OCR, computer use, Docker/SSH, memoria de corto y largo plazo, episódica/semántica/procedimental, memoria vectorial/grafo, RAG y agentic RAG.
 
 # V1.8 — Local Agent Security
-**Objetivo:** seguridad como propiedad medible del stack.
+**Objetivo:** hacer de la seguridad una propiedad medible del stack.
 
-Dimensiones:
-- licencia;
-- red;
-- filesystem;
-- shell;
-- secretos;
-- MCP;
-- browser;
-- Docker;
-- privilegios;
-- sandbox;
-- prompt injection;
-- exfiltración de datos.
+Dimensiones: licencia, red, filesystem, shell, secretos, MCP, browser, Docker, privilegios, sandbox, prompt injection y exfiltración.
 
-Crear `Local Agent Security Score` explicable, nunca un número opaco.
+Crear `Local Agent Security Score` **explicable y multidimensional**, nunca un número opaco.
 
 # V1.9 — LEONES Passport
 **Objetivo:** identidad reproducible para cada ejecución.
 
-Cada ejecución registra:
-- hardware;
-- OS;
-- modelo/arquitectura;
-- parámetros totales/activos;
-- cuantización;
-- runtime;
-- optimizaciones;
-- harness;
-- herramientas;
-- workload;
-- benchmark;
-- resultados;
-- procedencia de cada dato.
+Registrar hardware, OS, modelo/arquitectura, parámetros totales/activos, cuantización, runtime, optimizaciones, harness, herramientas, workload, benchmark, resultados y procedencia.
 
 Crear identificador único de ejecución.
 
 # V2.0 — LEONES Arena
-**Objetivo:** comparar configuraciones agénticas completas, no únicamente modelos.
+**Objetivo:** comparar configuraciones agénticas completas.
 
-Pipeline:
-`task → harness → model → runtime → tools → grader → evidence → measurement`.
+Pipeline: `task → harness → model → runtime → tools → grader → evidence → measurement`.
 
-Medir:
-- éxito;
-- tiempo;
-- tokens;
-- tok/s;
-- RAM/VRAM;
-- llamadas a herramientas;
-- pasos;
-- errores;
-- energía cuando sea medible.
-
-Separar claramente resultados estimados de mediciones propias.
+Medir éxito, tiempo, tokens, tok/s, RAM/VRAM, llamadas a herramientas, pasos, errores y energía cuando sea medible.
 
 # V2.1 — Local Agent Score
 **Objetivo:** perfil multidimensional de una configuración.
 
-Dimensiones propuestas:
-- capacidad;
-- velocidad;
-- memoria;
-- privacidad;
-- autonomía;
-- compatibilidad;
-- seguridad.
+Dimensiones: capacidad, velocidad, memoria, privacidad, autonomía, compatibilidad y seguridad.
 
-No crear un ranking único que oculte las dimensiones.
+No ocultar las dimensiones detrás de un ranking único.
 
 # V2.2 — Selector de configuración completa
-**Objetivo:** evolucionar el Selector para recomendar el stack completo.
+**Objetivo:** recomendar el stack completo.
 
 `caso de uso → hardware → runtime → optimización → modelo → harness → tools → benchmark`.
 
@@ -187,25 +97,20 @@ La unidad de selección será una configuración reproducible, no un modelo aisl
 
 # V2.3 — Evidence Graph
 **Objetivo:** grafo de procedencia que conecte:
+
 `fuente → evidencia → estimación → configuración → benchmark → medición → recomendación`.
 
 Toda cifra pública deberá poder rastrearse a su origen y estado epistemológico.
 
-# V2.4 — Knowledge/Discovery Automation
+# V2.4 — Knowledge / Discovery Automation
 **Objetivo:** mantener actualizado el compendio.
 
-- descubrimiento de nuevos proyectos;
-- detección de cambios de licencia;
-- cambios de runtime;
-- cambios de compatibilidad;
-- nuevos benchmarks;
-- nuevas técnicas de optimización;
-- regresiones.
+Descubrimiento de proyectos, cambios de licencia, runtime y compatibilidad, nuevos benchmarks, técnicas de optimización y regresiones.
 
 # V3.0 — Open Local Agent Atlas
-**Objetivo final del roadmap:** LEONES como atlas operativo del ecosistema de IA agéntica abierta/local.
+**Objetivo final:** LEONES como atlas operativo del ecosistema de IA agéntica abierta/local.
 
-Debe permitir responder de forma reproducible:
+Debe responder de forma reproducible:
 
 > ¿Qué puedo ejecutar, en mi hardware, para mi caso de uso, con qué modelo, runtime, optimización, harness y herramientas, y qué evidencia demuestra que funciona?
 
@@ -225,8 +130,12 @@ Debe permitir responder de forma reproducible:
 10. Los contratos existentes de V1, V1.1 y V1.2 no se rompen para desarrollar versiones posteriores.
 11. Las versiones se añaden incrementalmente; no se reescribe la historia.
 12. Toda recomendación debe poder explicar por qué fue seleccionada.
+13. Las dependencias entre versiones deben declararse explícitamente; una versión posterior no puede asumir una capacidad que no esté entregada por una versión anterior.
+14. Toda nueva funcionalidad debe tener contrato, pruebas y documentación antes de considerarse parte de una versión.
+15. Los estados no verificados deben permanecer explícitamente como `UNKNOWN` o equivalentes; nunca se rellenan por inferencia.
 
 ## Orden de desarrollo
 `V1.3 → V1.4 → V1.5 → V1.6 → V1.7 → V1.8 → V1.9 → V2.0 → V2.1 → V2.2 → V2.3 → V2.4 → V3.0`
 
-Este roadmap queda **FIJADO PARA DESARROLLO**. Cualquier cambio posterior debe registrarse como modificación explícita del roadmap, no introducirse implícitamente durante una tarea.
+## Control de cambios
+Este roadmap queda **FIJADO PARA DESARROLLO**. Cualquier cambio de alcance, orden o Definition of Done debe registrarse como modificación explícita del roadmap, con justificación y nueva versión del documento. No se introducirán cambios de roadmap de forma implícita durante tareas de implementación.
