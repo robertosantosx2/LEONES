@@ -1,0 +1,24 @@
+{
+  "contract":"HARNESS-KNOWLEDGE-CONTRACT.v1",
+  "selector":"Selector Harness V1.2",
+  "osi_gate":true,
+  "families":[
+    {"id":"agent-general","name":"Agente general","description":"Herramientas, sesiones, memoria, skills y ejecución."},
+    {"id":"coding","name":"Coding","description":"Repositorios, terminal, edición y pruebas."},
+    {"id":"local","name":"Local / hardware modesto","description":"Modelos locales, endpoints OpenAI-compatible y operación privada."},
+    {"id":"evaluation","name":"Evaluación","description":"Benchmarks reproducibles y evaluación de modelos/agentes."},
+    {"id":"security","name":"Seguridad / regresión","description":"Políticas, regresiones y seguridad de agentes."},
+    {"id":"control","name":"Observabilidad / control","description":"Budgets, permisos, tracing y recuperación."},
+    {"id":"interop","name":"Interoperabilidad / meta-harness","description":"Unificación de distintos harnesses mediante protocolos comunes."}
+  ],
+  "candidates":[
+    {"rank":1,"id":"hermes-agent","name":"Hermes Agent","family":"agent-general","license":"MIT","osi":true,"ods":"DIRECT_INSTALL","magnitude":"CONSUMER_COMPATIBLE","status":"primary","why":"Local-first, tools, memory, skills y soporte de endpoints/modelos locales."},
+    {"rank":2,"id":"opencode","name":"OpenCode","family":"coding","license":"OSI-compatible OSS","osi":true,"ods":"DIRECT_INSTALL","magnitude":"CONSUMER_COMPATIBLE","status":"primary","why":"Coding agent proveedor-agnóstico y adecuado para modelos locales/endpoints compatibles."},
+    {"rank":3,"id":"openhands","name":"OpenHands","family":"coding","license":"MIT core","osi":true,"ods":"INTEGRATION_REQUIRED","magnitude":"CONSUMER_COMPATIBLE","status":"candidate","why":"Agente generalista/coding con SDK y ejecución local; enterprise separado."},
+    {"rank":4,"id":"deepseek-harness","name":"DeepSeek Harness","family":"agent-general","license":"MIT","osi":true,"ods":"INTEGRATION_REQUIRED","magnitude":"CONSUMER_COMPATIBLE","status":"developer-preview","why":"Arquitectura plugin-first y adaptadores; potente para investigación de harness."},
+    {"rank":5,"id":"harnessrouter","name":"HarnessRouter / UHP","family":"interop","license":"Apache-2.0 Community Edition","osi":true,"ods":"INTEGRATION_REQUIRED","magnitude":"CONSUMER_COMPATIBLE","status":"meta-harness","why":"Contrato unificado para ejecutar múltiples harnesses y suite de conformidad."},
+    {"rank":6,"id":"lm-evaluation-harness","name":"lm-evaluation-harness","family":"evaluation","license":"MIT","osi":true,"ods":"INTEGRATION_REQUIRED","magnitude":"CONSUMER_COMPATIBLE","status":"evaluation","why":"Más de 60 benchmarks y backends locales; complementa al harness agente, no lo sustituye."}
+  ],
+  "compatibility_note":"Magnitude incluye su propio harness/inference engine y puede consumir endpoints OpenAI-compatible; no es instalador universal de otros harnesses. ODS instala directamente Hermes y OpenCode en su stack actual; otros requieren extensión o receta propia. DIRECT_INSTALL no debe inferirse de CONSUMER_COMPATIBLE.",
+  "measurement":"not_measured"
+}
