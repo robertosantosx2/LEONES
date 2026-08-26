@@ -2,38 +2,32 @@
 
 Thank you for contributing to **LEONES — Local Ecosystem of Open Neural Expert Systems**.
 
-LEONES is an open ecosystem focused on reproducible evidence for local and open AI: models, hardware, runtimes, benchmarks, agents, measurements and recommendations. Contributions are welcome when they improve the quality, traceability, reproducibility or usefulness of that ecosystem.
-
-This document follows the general contribution principles described by [contributing.md](https://contributing.md/), adapted to the architecture and working practices of LEONES.
+LEONES is an open ecosystem for reproducible evidence around models, hardware, runtimes, benchmarks, agents, measurements and recommendations. This guide follows the general principles of [contributing.md](https://contributing.md/), adapted to the actual architecture and CI of LEONES.
 
 ## 1. What we value
 
-LEONES is built around a simple rule:
-
 > **Discover, document, verify, measure and preserve provenance. Do not turn a claim into a fact merely by repetition.**
 
-Contributions should therefore favour:
+Prefer:
 
 - reproducibility over anecdote;
 - primary sources over copied claims;
 - evidence over assumptions;
 - explicit provenance over undocumented enrichment;
-- measured results over estimates when measurements exist;
-- small, reviewable changes over opaque rewrites;
-- automation where it improves consistency;
-- clear separation between source, evidence, estimation and LEONES measurement.
+- measurements over estimates when measurements exist;
+- focused, reviewable changes over opaque rewrites;
+- automation when it improves consistency;
+- strict separation between source, evidence, estimation and LEONES measurement.
 
 ## 2. Before contributing
 
-Please first:
+1. Search existing documentation, issues, tests and implementations.
+2. Check whether the work is already being discussed or implemented.
+3. For substantial changes, open an issue describing the problem and proposed solution.
+4. Read the relevant architecture, schema and contract documentation before changing data flows.
+5. Keep unrelated fixes separate unless they are required for correctness.
 
-1. Search the repository for existing documentation, issues, tests and implementations.
-2. Check whether the proposed work is already being discussed or implemented.
-3. For substantial changes, open an issue describing the problem and proposed solution before investing in a large implementation.
-4. Read the relevant architecture and contract documentation before modifying data flows or public schemas.
-5. Keep the scope of a change focused. If you discover an unrelated problem, report it separately unless it is required to make the contribution correct.
-
-Useful starting points include:
+Start with:
 
 - `README.md`
 - `docs/ARCHITECTURE.md`
@@ -42,260 +36,189 @@ Useful starting points include:
 - `docs/SOURCE-DISCOVERY.md`
 - `docs/PIPELINE_E2E.md`
 - `docs/EVALUACION_AGENTIC_TESTS.md`
-- `docs/` phase and integration documentation
+- `docs/`
 - `tests/`
+- `.github/workflows/`
 
 ## 3. Ways to contribute
 
-You can contribute in several ways:
-
 ### Code
 
-- implement or improve a feature;
-- fix a bug;
-- improve an adapter, runtime integration or benchmark;
-- improve data ingestion or validation;
-- improve the web application;
-- improve CI, testing or automation.
+Features, bug fixes, adapters, runtimes, benchmarks, ingestion, validation, web, CI and automation.
 
 ### Knowledge and research
 
-- add a relevant project, model, runtime, benchmark, dataset or source;
-- improve an existing knowledge fiche;
-- document technical findings;
-- add primary evidence and provenance;
-- identify contradictory or obsolete information.
+Projects, models, runtimes, benchmarks, datasets and sources; technical findings; primary evidence; contradictory or obsolete information.
 
-### Measurements and benchmarks
+### Measurements
 
-- contribute reproducible measurements;
-- add benchmark scenarios;
-- improve benchmark harnesses and graders;
-- report hardware, model, quantization, runtime and configuration precisely;
-- identify contamination, leakage or methodological weaknesses.
+Reproducible benchmark runs, scenarios, harnesses, graders and precise hardware/model/quantization/runtime configurations.
 
 ### Documentation
 
-- clarify architecture or workflows;
-- improve onboarding;
-- document known limitations;
-- improve the knowledge web and navigation;
-- correct terminology, links or examples.
+Architecture, workflows, onboarding, limitations, knowledge web, navigation and terminology.
 
 ### Issues and reviews
 
-- report reproducible bugs;
-- propose improvements;
-- review pull requests;
-- challenge unsupported claims constructively;
-- identify missing evidence or provenance.
+Reproducible bugs, proposals, pull-request reviews and challenges to unsupported claims.
 
 ## 4. Source, evidence, estimation and measurement
 
-LEONES deliberately keeps different kinds of information separate.
+LEONES deliberately keeps these states separate:
 
-Do not silently promote one kind of information into another.
+- `estimated`: calculation or estimate;
+- `reported`: value declared by an external source;
+- `observed`: configuration or behaviour observed in an environment;
+- `measured`: measurement executed by LEONES;
+- `verified`: information that passed the project's quality gate;
+- `unknown`: information not sufficiently demonstrated.
 
-Use the project's established terminology where applicable:
-
-- `estimated`: a calculation or estimate;
-- `reported`: a value declared by an external source;
-- `observed`: a configuration or behaviour observed in an environment;
-- `measured`: a measurement executed by LEONES;
-- `verified`: information that has passed the project's defined quality gate;
-- `unknown`: information that has not been demonstrated sufficiently.
-
-When adding factual information, preserve its origin and status. If a value is inferred, label it as an inference or estimate rather than presenting it as a measured fact.
+Never silently promote one state into another. If a value is inferred, identify it as an inference or estimate. A third-party benchmark remains third-party evidence and is not a LEONES physical measurement unless LEONES actually executed it.
 
 ## 5. Knowledge contributions
 
-When adding a project or source to LEONES knowledge, provide enough information for another contributor to understand why it matters.
-
-Where applicable, a knowledge fiche should cover:
+A knowledge fiche should provide, where applicable:
 
 1. project/source name;
 2. canonical URL;
 3. category;
 4. what it is;
-5. what problem it solves;
-6. how it works at a useful technical level;
-7. relevant hardware/runtime/model relationships;
-8. licence and openness information when relevant;
+5. problem solved;
+6. useful technical description;
+7. model/hardware/runtime relationships;
+8. licence and openness;
 9. evidence and primary sources;
-10. limitations and caveats;
+10. limitations;
 11. relationship with LEONES;
-12. whether it is inspiration, evidence, implementation reference, discovery source or another clearly identified role;
-13. date or version when freshness matters.
+12. role: inspiration, evidence, implementation reference, discovery source, etc.;
+13. version/date when freshness matters.
 
-Do not turn a discovery candidate into canonical knowledge merely because it was discovered. Apply the repository's evidence and quality rules first.
+Discovery does not automatically make a source canonical knowledge. Apply the repository's evidence and quality rules first.
 
 ## 6. Benchmarks and measurements
 
-A benchmark contribution should be reproducible by another person.
-
-Record, whenever applicable:
+Record whenever applicable:
 
 - exact model and revision;
-- model format and quantization;
-- hardware SKU and relevant memory;
-- operating system and relevant driver/runtime versions;
+- format and quantization;
+- hardware SKU, RAM/VRAM and relevant capabilities;
+- OS and driver/runtime versions;
 - inference runtime and version;
-- runtime configuration and flags;
-- context/input length;
-- output length;
+- runtime flags/configuration;
+- context/input and output length;
 - concurrency/batch configuration;
-- workload or prompts;
-- warm-up procedure;
-- number of repetitions;
-- metrics collected;
-- raw or structured evidence;
-- known limitations.
+- workload/prompts;
+- warm-up and repetitions;
+- collected metrics;
+- raw/structured evidence;
+- limitations.
 
-Do not compare token/s figures without documenting the workload and execution conditions.
+Do not compare tokens/s without documenting execution conditions.
 
-A third-party benchmark remains third-party evidence. It must not be represented as a LEONES physical measurement unless LEONES actually executed the measurement.
+## 7. Model, runtime, selector and router integrations
 
-## 7. Model and runtime integrations
-
-Keep these concepts separate:
+Keep the execution tuple explicit:
 
 `model + quantization + runtime + hardware + configuration`
 
-An integration should not hide runtime assumptions inside a model record, nor should a runtime claim be treated as proof that every model supported by its API performs equally well.
+Do not hide runtime assumptions inside model records. A runtime supporting a model does not prove equivalent performance across models or configurations.
 
-For selector/router work, preserve the complete chain of evidence and the distinction between candidate selection, runtime selection, execution, grading, benchmark and evidence.
+For selector/router work preserve the chain:
+
+`candidate selection → runtime selection → execution → grading → benchmark → evidence`
 
 ## 8. Code changes
 
-Prefer changes that are:
+Prefer minimal, readable, deterministic changes covered by tests where practical and compatible with existing contracts. Document public behaviour changes.
 
-- minimal and focused;
-- readable;
-- covered by tests where practical;
-- compatible with existing contracts unless the contract itself is intentionally changed;
-- documented when they alter public behaviour;
-- deterministic where reproducibility matters.
+Avoid unrelated formatting churn, deletion of historical evidence, hard-coded measured values in selectors, silent schema/semantic changes, unnecessary dependencies and quality-gate bypasses.
 
-Avoid:
+## 9. Tests and CI validation
 
-- unrelated formatting churn;
-- deleting historical evidence merely to make a result look cleaner;
-- hard-coding measured values into selectors;
-- silently changing schemas or semantics;
-- introducing dependencies without a clear reason;
-- bypassing quality gates.
+**GitHub Actions are part of the contribution contract.** The workflow set can evolve; inspect `.github/workflows/` and run the checks relevant to the affected area.
 
-## 9. Tests and validation
-
-Run the most relevant checks before submitting a change.
-
-For Python changes, normally run the repository's documented test suite, for example:
+The current `contract-tests.yml` workflow performs the following core checks:
 
 ```bash
+python -m unittest discover -s tests/contracts -p 'test_*.py' -v
+python -m pytest tests/contracts/test_freetoken_selector_contract.py -q
+python -m pytest tests/contracts/test_knowledge_four_layers.py -q
 python -m pytest tests -q
 ```
 
-For contract or integration changes, run the corresponding contract and integration tests as documented in the repository.
+It also:
 
-For web changes, validate the affected pages, navigation and generated/public artefacts when applicable.
+- parses every JSON schema in `schemas/`;
+- checks contract-version invariants;
+- validates evidence verification states;
+- validates router OSI modes;
+- validates promotion and Atlas storage invariants;
+- requires provenance in evidence storage;
+- verifies `tests/contracts/contract-tests.md` exists and is non-empty.
 
-If you cannot run a required check locally, state that clearly in the pull request and explain what was or was not validated.
+Other current workflows cover areas including Atlas feed/ingestion/prospection/recommendations, agentic A01 contracts, measured benchmarks and daily discovery. Changes affecting those areas must be validated with their corresponding workflows/tests.
 
-Never report a test as passing unless it was actually executed.
+For web changes, validate affected pages, navigation and generated/public artefacts.
+
+If a check cannot be run locally, state exactly what was and was not validated. Never claim a test passed unless it was executed.
 
 ## 10. Pull requests
 
-A good pull request should make the following clear:
+A useful pull request states:
 
 ### Problem
-
-What problem does this change solve?
+What problem is being solved?
 
 ### Solution
-
-What did you change and why is this the appropriate layer for the change?
+What changed and why this layer is the correct place?
 
 ### Evidence
-
-What sources, tests, measurements or observations support the change?
+What sources, tests, measurements or observations support it?
 
 ### Validation
-
-Which tests or checks were executed, with relevant results?
+Which checks actually ran and with what result?
 
 ### Risks and limitations
+What remains unknown or could regress?
 
-What remains unknown, what could regress, and what was deliberately left out?
+Call out explicitly when contracts, schemas, public data or the recommendation pipeline are affected.
 
-Keep pull requests focused. If a change affects contracts, schemas, public data or the recommendation pipeline, call this out explicitly.
+## 11. Data and provenance
 
-## 11. Data and provenance rules
-
-When modifying structured knowledge or evidence:
+When modifying structured knowledge/evidence:
 
 - preserve source URLs and provenance;
-- preserve timestamps/version information when relevant;
-- do not overwrite a previous measurement with a new one when the historical distinction matters;
-- do not merge contradictory observations into a single unexplained value;
+- preserve timestamps/versions when relevant;
+- retain historical measurements when the distinction matters;
+- do not collapse contradictory observations into unexplained values;
 - keep estimates, reports, observations and measurements distinguishable;
 - prefer explicit `unknown` to invented completeness.
 
-The goal is not merely to have more data. The goal is to have **trustworthy, traceable data**.
+The objective is **trustworthy, traceable data**, not simply more data.
 
 ## 12. Web and knowledge publication
 
-Changes to the knowledge web should preserve the separation between the project's knowledge layers.
+The public knowledge web must preserve the project's knowledge layers. A fiche should explain what the source is, what it contributes, what evidence supports the claims and what remains uncertain.
 
-A public fiche should explain what the source is, what it contributes to LEONES, what evidence supports the claims, and what remains uncertain.
-
-Do not publish a discovery item as established LEONES evidence without passing the appropriate validation process.
-
-When adding an external project, link to its canonical source whenever possible.
+Do not publish a discovery item as established LEONES evidence without the appropriate validation. Prefer canonical external URLs.
 
 ## 13. Security and sensitive information
 
-Do not commit:
+Never commit passwords, API keys, access tokens, private credentials, unnecessary personal data, private benchmark data without permission or proprietary material that cannot legally be redistributed.
 
-- passwords;
-- API keys or access tokens;
-- private credentials;
-- personal data that is not required;
-- private benchmark data without permission;
-- proprietary material that cannot legally be redistributed.
+For security vulnerabilities, do not publish exploitable details in a public issue; use the project's available private security channel.
 
-If you discover a security vulnerability, avoid publishing exploitable details in a public issue. Contact the maintainers through the project's available private security channel.
+## 14. Collaboration and review
 
-## 14. Respectful collaboration
+Challenge claims, implementation and methodology rather than people. Ask for evidence and prefer reproducible demonstrations over authority or popularity.
 
-LEONES welcomes contributors with different backgrounds and levels of expertise.
-
-Be precise without being hostile. Challenge claims, implementations and methodology rather than people. Assume good faith, ask for evidence, explain disagreements and prefer reproducible demonstrations over authority or popularity.
-
-Contributions may be rejected because of technical, methodological, licensing, security or maintenance concerns. That is part of maintaining a trustworthy open project and is not a judgement on the contributor.
+Review may consider provenance, methodology, reproducibility, contracts, security, licensing, maintenance cost, knowledge-model impact and recommendation correctness—not merely whether code runs.
 
 ## 15. Licensing
 
-By contributing, you confirm that you have the right to submit the contribution under the repository's applicable licence and that your contribution does not knowingly introduce incompatible third-party material.
+By contributing, confirm that you have the right to submit the contribution under the repository's applicable licence. For external code, datasets, documentation or copied material, record licence and provenance before inclusion.
 
-When adding external code, datasets, documentation or copied material, document its licence and provenance before inclusion.
-
-## 16. Maintainers and review
-
-Maintainers are responsible for protecting the architecture, evidence quality, reproducibility and long-term maintainability of LEONES.
-
-Review may therefore consider more than whether code works. A contribution can also be evaluated for:
-
-- provenance;
-- methodological soundness;
-- reproducibility;
-- contract compatibility;
-- security;
-- licensing;
-- maintenance cost;
-- impact on the knowledge model;
-- impact on recommendation correctness.
-
-## 17. A simple contribution workflow
+## 16. Contribution workflow
 
 ```text
 IDEA / PROBLEM
@@ -304,7 +227,7 @@ SEARCH EXISTING WORK
       ↓
 ISSUE / DISCUSSION (when useful)
       ↓
-SMALL, FOCUSED CHANGE
+FOCUSED CHANGE
       ↓
 SOURCE + PROVENANCE
       ↓
@@ -319,11 +242,9 @@ MERGE
 DOCUMENT / PUBLISH / PRESERVE EVIDENCE
 ```
 
-## 18. Final principle
+## 17. Final principle
 
-The most valuable contribution to LEONES is not necessarily the largest one.
-
-A small change that makes an assumption explicit, preserves provenance, adds a missing test, reproduces a measurement, documents a runtime limitation or prevents an unsupported claim can be more valuable than a large feature.
+The most valuable contribution is not necessarily the largest one. A small change that preserves provenance, adds a missing test, reproduces a measurement, documents a runtime limitation or prevents an unsupported claim can be more valuable than a large feature.
 
 **Build it. Measure it. Explain it. Preserve the evidence.**
 
