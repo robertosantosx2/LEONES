@@ -5,6 +5,7 @@ La entrada es un candidato en staging y el texto de una respuesta de correo.
 Solo ``OK LEONES`` cambia el estado a ``approved``. El script no extrae ni
 publica conocimiento: únicamente registra la decisión humana.
 """
+
 from __future__ import annotations
 
 import json
@@ -20,7 +21,10 @@ def approve_staged(input_path: Path, reply_text: str, output_path: Path) -> int:
 
     approved = 0
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with input_path.open(encoding="utf-8") as source, output_path.open("w", encoding="utf-8") as target:
+    with (
+        input_path.open(encoding="utf-8") as source,
+        output_path.open("w", encoding="utf-8") as target,
+    ):
         for line in source:
             item = json.loads(line)
             if item.get("status") == "pending_human":

@@ -14,6 +14,7 @@ La ausencia de una evidencia no se transforma en una suposición: se conserva
 como ``unknown``. Esto es importante porque Atlas debe distinguir "no sabemos"
 de "hemos comprobado que no cumple".
 """
+
 from __future__ import annotations
 
 import argparse
@@ -24,7 +25,9 @@ from typing import Any
 from evaluate_jgb import evaluate_jgb
 
 
-def enrich(rows: list[dict[str, Any]], evidence_by_model: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+def enrich(
+    rows: list[dict[str, Any]], evidence_by_model: dict[str, dict[str, Any]]
+) -> list[dict[str, Any]]:
     """Añade el resultado JGB a cada fila sin alterar sus demás métricas.
 
     ``model_id`` es la llave que une la fila del Atlas con sus evidencias.
@@ -56,7 +59,9 @@ def main() -> None:
     """
     parser = argparse.ArgumentParser(description="Enriquece Atlas con JGB verificable")
     parser.add_argument("--input", required=True, help="CSV del feed Atlas")
-    parser.add_argument("--evidence", required=True, help="JSON de evidencias por model_id")
+    parser.add_argument(
+        "--evidence", required=True, help="JSON de evidencias por model_id"
+    )
     parser.add_argument("--output", required=True, help="CSV de salida enriquecido")
     args = parser.parse_args()
 
@@ -67,7 +72,11 @@ def main() -> None:
         evidence = json.load(handle)
 
     enriched = enrich(rows, evidence)
-    fields = list(enriched[0].keys()) if enriched else ["model_id", "jgb_level", "jgb_status", "jgb_unresolved"]
+    fields = (
+        list(enriched[0].keys())
+        if enriched
+        else ["model_id", "jgb_level", "jgb_status", "jgb_unresolved"]
+    )
 
     with open(args.output, "w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)

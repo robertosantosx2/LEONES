@@ -53,9 +53,14 @@ def main() -> int:
     if args.command == "model":
         return run("leones-model.py", [args.path])
     if args.command == "infer":
-        return run("leones-infer.py", ["--url", args.url, "--model", args.model, *remainder])
+        return run(
+            "leones-infer.py", ["--url", args.url, "--model", args.model, *remainder]
+        )
     if args.command == "lotb":
-        return run("leones-lotb.py", ["--endpoint", args.endpoint, "--task", args.task, *remainder])
+        return run(
+            "leones-lotb.py",
+            ["--endpoint", args.endpoint, "--task", args.task, *remainder],
+        )
     return 2
 
 

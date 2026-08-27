@@ -12,6 +12,7 @@ same model to return the two canonical calls as JSON. This keeps the execution
 on the real local runtime while making the bridge deterministic enough for the
 strict A01 contract.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -92,24 +93,16 @@ def validate_canonical_calls(calls: list[dict[str, Any]], model: str) -> None:
     report = calls[1].get("arguments") or {}
 
     if set(lookup) != {"model_id"}:
-        raise RuntimeError(
-            "A01 lookup_model arguments must contain exactly model_id"
-        )
+        raise RuntimeError("A01 lookup_model arguments must contain exactly model_id")
 
     if lookup.get("model_id") != model:
-        raise RuntimeError(
-            "A01 lookup_model model_id does not match selected model"
-        )
+        raise RuntimeError("A01 lookup_model model_id does not match selected model")
 
     if set(report) != {"path"}:
-        raise RuntimeError(
-            "A01 write_report arguments must contain exactly path"
-        )
+        raise RuntimeError("A01 write_report arguments must contain exactly path")
 
     if report.get("path") != "report.txt":
-        raise RuntimeError(
-            "A01 write_report path must be report.txt"
-        )
+        raise RuntimeError("A01 write_report path must be report.txt")
 
 
 def structured_calls(message: dict[str, Any], model: str) -> list[dict[str, Any]]:
@@ -120,7 +113,9 @@ def structured_calls(message: dict[str, Any], model: str) -> list[dict[str, Any]
     try:
         value = json.loads(content)
     except json.JSONDecodeError as exc:
-        raise RuntimeError(f"Ollama structured-output was not JSON: {content!r}") from exc
+        raise RuntimeError(
+            f"Ollama structured-output was not JSON: {content!r}"
+        ) from exc
     calls = value.get("tool_calls") if isinstance(value, dict) else None
     if not isinstance(calls, list):
         raise RuntimeError("Ollama structured-output did not contain tool_calls")
@@ -130,9 +125,13 @@ def structured_calls(message: dict[str, Any], model: str) -> list[dict[str, Any]
         if isinstance(item, dict)
     ]
     if [item.get("tool") for item in canonical] != ["lookup_model", "write_report"]:
-        raise RuntimeError("structured A01 requires lookup_model followed by write_report")
+        raise RuntimeError(
+            "structured A01 requires lookup_model followed by write_report"
+        )
     if canonical[0]["arguments"].get("model_id") != model:
-        raise RuntimeError("structured A01 lookup_model model_id does not match selected model")
+        raise RuntimeError(
+            "structured A01 lookup_model model_id does not match selected model"
+        )
     if canonical[1]["arguments"].get("path") != "report.txt":
         raise RuntimeError("structured A01 write_report path must be report.txt")
     return canonical
@@ -143,7 +142,9 @@ def main() -> int:
     parser.add_argument("--model", default="qwen2.5:0.5b-instruct-q4_K_M")
     parser.add_argument("--url", default="http://127.0.0.1:11434/api/chat")
     parser.add_argument("--timeout", type=float, default=120.0)
-    parser.add_argument("prompt", nargs="?", default="Execute A01. Return only JSONL tool calls.")
+    parser.add_argument(
+        "prompt", nargs="?", default="Execute A01. Return only JSONL tool calls."
+    )
     args = parser.parse_args()
 
     system = (
@@ -159,13 +160,17 @@ def main() -> int:
     ]
     total_eval_tokens = 0
     total_eval_seconds = 0
-    first = post_json(args.url, {
-        "model": args.model,
-        "messages": messages,
-        "tools": tools,
-        "stream": False,
-        "options": {"temperature": 0},
-    }, args.timeout)
+    first = post_json(
+        args.url,
+        {
+            "model": args.model,
+            "messages": messages,
+            "tools": tools,
+            "stream": False,
+            "options": {"temperature": 0},
+        },
+        args.timeout,
+    )
     total_eval_tokens += int(first.get("eval_count") or 0)
     total_eval_seconds += int(first.get("eval_duration") or 0)
     message = first.get("message") or {}
@@ -179,23 +184,33 @@ def main() -> int:
             if first_call["tool"] != "lookup_model":
                 raise RuntimeError("A01 first tool call must be lookup_model")
             messages.append(message)
-            messages.append({
-                "role": "tool",
-                "tool_name": "lookup_model",
-                "content": json.dumps({"id": args.model, "name": args.model}, ensure_ascii=False),
-            })
-            second = post_json(args.url, {
-                "model": args.model,
-                "messages": messages,
-                "tools": tools,
-                "stream": False,
-                "options": {"temperature": 0},
-            }, args.timeout)
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_name": "lookup_model",
+                    "content": json.dumps(
+                        {"id": args.model, "name": args.model}, ensure_ascii=False
+                    ),
+                }
+            )
+            second = post_json(
+                args.url,
+                {
+                    "model": args.model,
+                    "messages": messages,
+                    "tools": tools,
+                    "stream": False,
+                    "options": {"temperature": 0},
+                },
+                args.timeout,
+            )
             total_eval_tokens += int(second.get("eval_count") or 0)
             total_eval_seconds += int(second.get("eval_duration") or 0)
             second_calls = get_tool_calls(second.get("message") or {})
             if not second_calls:
-                raise RuntimeError("Ollama model did not produce write_report after lookup_model")
+                raise RuntimeError(
+                    "Ollama model did not produce write_report after lookup_model"
+                )
             canonical = [first_call, canonical_call(second_calls[0])]
     else:
         # Qwen-class tiny models can understand the task but fail to populate
@@ -264,16 +279,20 @@ def main() -> int:
             "additionalProperties": False,
         }
 
-        fallback = post_json(args.url, {
-            "model": args.model,
-            "messages": [
-                {"role": "system", "content": structured_system},
-                {"role": "user", "content": args.prompt},
-            ],
-            "format": schema,
-            "stream": False,
-            "options": {"temperature": 0},
-        }, args.timeout)
+        fallback = post_json(
+            args.url,
+            {
+                "model": args.model,
+                "messages": [
+                    {"role": "system", "content": structured_system},
+                    {"role": "user", "content": args.prompt},
+                ],
+                "format": schema,
+                "stream": False,
+                "options": {"temperature": 0},
+            },
+            args.timeout,
+        )
         total_eval_tokens += int(fallback.get("eval_count") or 0)
         total_eval_seconds += int(fallback.get("eval_duration") or 0)
         canonical = structured_calls(fallback.get("message") or {}, args.model)

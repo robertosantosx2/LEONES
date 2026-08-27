@@ -3,10 +3,12 @@
 The adapter never installs ODS implicitly. Installation/lifecycle remain ODS
 responsibilities; LEONES only invokes explicitly supplied, fixed commands.
 """
+
 from __future__ import annotations
 from dataclasses import dataclass
 import platform
 from .external_stack import PreflightResult
+
 
 @dataclass(frozen=True)
 class ODSAdapter:

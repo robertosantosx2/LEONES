@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Apply measured runtime evidence to the recommendation feed without fabricating data."""
+
 from __future__ import annotations
 
 import argparse
@@ -29,7 +30,9 @@ def load_feedback(path: Path) -> dict[str, dict[str, Any]]:
     return latest
 
 
-def apply_feedback(rows: list[dict[str, str]], feedback: dict[str, dict[str, Any]]) -> list[dict[str, str]]:
+def apply_feedback(
+    rows: list[dict[str, str]], feedback: dict[str, dict[str, Any]]
+) -> list[dict[str, str]]:
     result = []
     for row in rows:
         out = dict(row)
@@ -42,8 +45,12 @@ def apply_feedback(rows: list[dict[str, str]], feedback: dict[str, dict[str, Any
                 out["tokens_per_second"] = str(tps)
                 out["performance_evidence_type"] = "measured"
                 out["performance_evidence_id"] = item.get("execution_id", "")
-                out["performance_evidence_source"] = (item.get("provenance") or {}).get("source", "")
-                out["performance_evidence_at"] = (item.get("provenance") or {}).get("measured_at", "")
+                out["performance_evidence_source"] = (item.get("provenance") or {}).get(
+                    "source", ""
+                )
+                out["performance_evidence_at"] = (item.get("provenance") or {}).get(
+                    "measured_at", ""
+                )
         result.append(out)
     return result
 
@@ -58,13 +65,19 @@ def main() -> int:
         rows = list(csv.DictReader(fh))
         fields = list(fh.fieldnames or [])
     rows = apply_feedback(rows, load_feedback(args.feedback))
-    for field in ("performance_evidence_type", "performance_evidence_id", "performance_evidence_source", "performance_evidence_at"):
+    for field in (
+        "performance_evidence_type",
+        "performance_evidence_id",
+        "performance_evidence_source",
+        "performance_evidence_at",
+    ):
         if field not in fields:
             fields.append(field)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore")
-        writer.writeheader(); writer.writerows(rows)
+        writer.writeheader()
+        writer.writerows(rows)
     return 0
 
 

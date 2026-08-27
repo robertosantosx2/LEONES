@@ -6,6 +6,7 @@ resuelta cuando trae un nivel válido, un estado de evidencia aceptable y al
 menos una fuente. Si falta cualquiera de esos elementos, la dimensión queda
 ``unknown`` y la clase global no se deriva.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -37,7 +38,12 @@ def evaluate_jgb(evidence: dict[str, Any]) -> dict[str, Any]:
         valid_level = isinstance(level, int) and 0 <= level <= 5
         valid_sources = isinstance(sources, list) and len(sources) > 0
         valid_status = status in VALID_STATUSES
-        resolved = valid_level and valid_sources and valid_status and status in {"verified", "supported"}
+        resolved = (
+            valid_level
+            and valid_sources
+            and valid_status
+            and status in {"verified", "supported"}
+        )
 
         dimensions[dimension] = {
             "level": level if valid_level else None,

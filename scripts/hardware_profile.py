@@ -5,6 +5,7 @@ The probe reports observed host facts only. It does not infer model fit and it
 does not benchmark a model. Expensive measurements are opt-in; the default
 profile is safe to run on a Debian/Ubuntu workstation.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -20,7 +21,9 @@ from typing import Any
 
 def _run(*args: str) -> str:
     try:
-        return subprocess.check_output(args, text=True, stderr=subprocess.DEVNULL).strip()
+        return subprocess.check_output(
+            args, text=True, stderr=subprocess.DEVNULL
+        ).strip()
     except (FileNotFoundError, subprocess.CalledProcessError):
         return ""
 
@@ -41,7 +44,9 @@ def cpu() -> dict[str, Any]:
             info[key.strip()] = value.strip()
     return {
         "model": info.get("Model name", platform.processor()),
-        "cores": int(info["CPU(s)"]) if info.get("CPU(s)", "").isdigit() else os.cpu_count(),
+        "cores": int(info["CPU(s)"])
+        if info.get("CPU(s)", "").isdigit()
+        else os.cpu_count(),
         "architecture": info.get("Architecture", platform.machine()),
         "mhz": _num(info.get("CPU MHz", "")),
         "cache_l3": info.get("L3 cache"),
@@ -63,7 +68,11 @@ def gpu() -> list[dict[str, str]]:
     raw = _run("lspci", "-mm")
     result = []
     for line in raw.splitlines():
-        if "VGA compatible controller" in line or "3D controller" in line or "Display controller" in line:
+        if (
+            "VGA compatible controller" in line
+            or "3D controller" in line
+            or "Display controller" in line
+        ):
             result.append({"description": line})
     return result
 
@@ -74,7 +83,14 @@ def disks() -> list[dict[str, Any]]:
     for line in raw.splitlines()[1:]:
         fields = line.split(None, 4)
         if len(fields) >= 4 and fields[1] == "disk":
-            result.append({"name": fields[0], "size": fields[2], "rotational": fields[3] == "1", "model": fields[4] if len(fields) > 4 else ""})
+            result.append(
+                {
+                    "name": fields[0],
+                    "size": fields[2],
+                    "rotational": fields[3] == "1",
+                    "model": fields[4] if len(fields) > 4 else "",
+                }
+            )
     return result
 
 
@@ -96,14 +112,25 @@ def profile() -> dict[str, Any]:
     return {
         "schema_version": "1.0",
         "probe": "LEONES-hardware-profile",
-        "platform": {"system": platform.system(), "release": platform.release(), "machine": platform.machine()},
+        "platform": {
+            "system": platform.system(),
+            "release": platform.release(),
+            "machine": platform.machine(),
+        },
         "cpu": cpu(),
         "memory": memory(),
         "gpu": gpu(),
         "disks": disks(),
         "network": network_bandwidth(),
-        "tools": {name: bool(shutil.which(name)) for name in ("lscpu", "free", "lspci", "lsblk")},
-        "measurement": {"cpu_benchmark": False, "memory_bandwidth": False, "disk_benchmark": False},
+        "tools": {
+            name: bool(shutil.which(name))
+            for name in ("lscpu", "free", "lspci", "lsblk")
+        },
+        "measurement": {
+            "cpu_benchmark": False,
+            "memory_bandwidth": False,
+            "disk_benchmark": False,
+        },
     }
 
 

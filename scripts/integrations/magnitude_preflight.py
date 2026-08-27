@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Read-only Magnitude preflight for LEONES."""
+
 from __future__ import annotations
 
 import json
@@ -22,7 +23,9 @@ def run(command: list[str]) -> str | None:
 
 def ram_gb() -> float | None:
     try:
-        return round(os.sysconf("SC_PHYS_PAGES") * os.sysconf("SC_PAGE_SIZE") / (1024**3), 2)
+        return round(
+            os.sysconf("SC_PHYS_PAGES") * os.sysconf("SC_PAGE_SIZE") / (1024**3), 2
+        )
     except (AttributeError, OSError, ValueError):
         return None
 

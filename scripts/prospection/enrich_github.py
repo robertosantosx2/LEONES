@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Enrich GitHub discoveries and preserve evidence from other public forges."""
+
 from __future__ import annotations
 
 import argparse
@@ -96,7 +97,9 @@ def enrich(item):
     readme_text = ""
     if isinstance(readme, dict) and readme.get("content"):
         try:
-            readme_text = base64.b64decode(readme["content"]).decode("utf-8", errors="replace")
+            readme_text = base64.b64decode(readme["content"]).decode(
+                "utf-8", errors="replace"
+            )
         except Exception:
             pass
 
@@ -143,7 +146,10 @@ def main():
     seen, diagnostics = set(), []
     total = ok = skipped = errors = 0
 
-    with source.open(encoding="utf-8") as src, destination.open("w", encoding="utf-8") as dst:
+    with (
+        source.open(encoding="utf-8") as src,
+        destination.open("w", encoding="utf-8") as dst,
+    ):
         for line in src:
             if not line.strip():
                 continue
@@ -164,13 +170,17 @@ def main():
             else:
                 errors += 1
                 if len(diagnostics) < 10:
-                    diagnostics.append({
-                        "repository": repo_name(item.get("url", "")),
-                        "status": enrichment.get("http_status"),
-                        "error_type": enrichment.get("error_type"),
-                        "message": enrichment.get("message"),
-                        "rate_limit_remaining": enrichment.get("rate_limit_remaining"),
-                    })
+                    diagnostics.append(
+                        {
+                            "repository": repo_name(item.get("url", "")),
+                            "status": enrichment.get("http_status"),
+                            "error_type": enrichment.get("error_type"),
+                            "message": enrichment.get("message"),
+                            "rate_limit_remaining": enrichment.get(
+                                "rate_limit_remaining"
+                            ),
+                        }
+                    )
             dst.write(json.dumps(item, ensure_ascii=False) + "\n")
             time.sleep(args.delay)
 
@@ -185,7 +195,9 @@ def main():
         "diagnostics": diagnostics,
         "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error.",
     }
-    Path("data/prospection/enrichment_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    Path("data/prospection/enrichment_report.json").write_text(
+        json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
 

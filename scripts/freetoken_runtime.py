@@ -7,6 +7,7 @@ requires an MoE workload plus the measured host/GPU/interconnect signals that
 FreeToken's design depends on. Actual execution remains behind the trusted
 runtime command resolver and the benchmark harness.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -56,7 +57,9 @@ def evaluate_freetoken_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
     if vram is None:
         reasons.append("hardware.vram_gb is missing")
     if model_weight_gb is not None and vram is not None and model_weight_gb <= vram:
-        reasons.append("model already fits in GPU memory; FreeToken is not justified by capacity alone")
+        reasons.append(
+            "model already fits in GPU memory; FreeToken is not justified by capacity alone"
+        )
 
     eligible = not reasons
     return {
@@ -69,4 +72,9 @@ def evaluate_freetoken_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-__all__ = ["RUNTIME_NAME", "RUNTIME_CLASS", "REQUIRED_HARDWARE_SIGNALS", "evaluate_freetoken_candidate"]
+__all__ = [
+    "RUNTIME_NAME",
+    "RUNTIME_CLASS",
+    "REQUIRED_HARDWARE_SIGNALS",
+    "evaluate_freetoken_candidate",
+]

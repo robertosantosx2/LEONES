@@ -18,6 +18,7 @@ steps are therefore kept explicit:
 4. classify each group;
 5. write a CSV that a human can inspect.
 """
+
 from __future__ import annotations
 
 import collections

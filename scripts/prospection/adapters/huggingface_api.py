@@ -1,10 +1,20 @@
 #!/usr/bin/env python3
 """Evidence-preserving Hugging Face discovery adapter contract."""
+
 from __future__ import annotations
 from typing import Any, Dict, Iterable
 
 
-def discovery(*, source_id: str, name: str, url: str, kind: str = "model", license: str | None = None, observed_at: str | None = None, **extra: Any) -> Dict[str, Any]:
+def discovery(
+    *,
+    source_id: str,
+    name: str,
+    url: str,
+    kind: str = "model",
+    license: str | None = None,
+    observed_at: str | None = None,
+    **extra: Any,
+) -> Dict[str, Any]:
     return {
         "type": kind,
         "name": name,

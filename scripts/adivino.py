@@ -8,6 +8,7 @@ agentes, etc.), eliminar duplicados y producir candidatos para revisión humana.
 La aprobación humana es explícita: solo una respuesta "OK LEONES" puede pasar
 un candidato aprobado a la siguiente etapa del pipeline.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
@@ -34,7 +35,9 @@ class Discovery:
 def canonical_url(url: str) -> str:
     """Normaliza una URL para poder detectar la misma fuente con variantes."""
     parts = urlsplit(url.strip())
-    return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path.rstrip("/"), "", ""))
+    return urlunsplit(
+        (parts.scheme.lower(), parts.netloc.lower(), parts.path.rstrip("/"), "", "")
+    )
 
 
 def make_id(url: str) -> str:
@@ -68,4 +71,6 @@ def approved_by_reply(text: str) -> bool:
 
 
 if __name__ == "__main__":
-    raise SystemExit("ADIVINO es una librería/pipeline: úsalo desde el adaptador de descubrimiento.")
+    raise SystemExit(
+        "ADIVINO es una librería/pipeline: úsalo desde el adaptador de descubrimiento."
+    )

@@ -5,6 +5,7 @@ Runs the local evidence pipeline without inventing measurements:
 hardware -> model -> task -> router -> runtime -> inference -> LOTB.
 Each step is optional and consumes existing JSON artifacts when available.
 """
+
 from __future__ import annotations
 import argparse, json, subprocess
 from pathlib import Path
@@ -17,10 +18,17 @@ OUT.mkdir(parents=True, exist_ok=True)
 def run(cmd: list[str], output: Path) -> dict:
     try:
         p = subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True, timeout=120)
-        result = {"command": cmd, "returncode": p.returncode, "stdout": p.stdout[-12000:], "stderr": p.stderr[-4000:]}
+        result = {
+            "command": cmd,
+            "returncode": p.returncode,
+            "stdout": p.stdout[-12000:],
+            "stderr": p.stderr[-4000:],
+        }
     except Exception as exc:
         result = {"command": cmd, "error": str(exc)}
-    output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    output.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     return result
 
 
@@ -37,7 +45,9 @@ def main() -> int:
             path = scripts / name
             if path.exists():
                 r = run(["python3", str(path)], OUT / f"{path.stem}.json")
-                manifest["steps"].append({"name": path.stem, "returncode": r.get("returncode")})
+                manifest["steps"].append(
+                    {"name": path.stem, "returncode": r.get("returncode")}
+                )
 
     task = scripts / "leones-task.py"
     if task.exists():
@@ -45,8 +55,12 @@ def main() -> int:
         manifest["steps"].append({"name": "task", "returncode": r.get("returncode")})
 
     manifest["status"] = "prepared"
-    manifest["note"] = "No performance or capability claim is made until a real local runtime/model and LOTB execution produce evidence."
-    (OUT / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    manifest["note"] = (
+        "No performance or capability claim is made until a real local runtime/model and LOTB execution produce evidence."
+    )
+    (OUT / "manifest.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     print(json.dumps(manifest, ensure_ascii=False, indent=2))
     return 0
 

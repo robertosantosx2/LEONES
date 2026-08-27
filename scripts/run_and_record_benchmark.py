@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Execute an inference adapter and record its measured throughput."""
+
 from __future__ import annotations
 
 import argparse
@@ -14,15 +15,21 @@ except ModuleNotFoundError:  # ejecución directa
     from record_benchmark import record_measurement
 
 
-def run_and_record(command: list[str], metadata: dict[str, Any], pattern: str) -> dict[str, Any]:
+def run_and_record(
+    command: list[str], metadata: dict[str, Any], pattern: str
+) -> dict[str, Any]:
     """Run an adapter command and persist only an actually observed tok/s value."""
     completed = subprocess.run(command, capture_output=True, text=True, check=False)
     output = f"{completed.stdout}\n{completed.stderr}"
     match = re.search(pattern, output)
     if completed.returncode != 0:
-        raise RuntimeError(f"benchmark command failed with exit code {completed.returncode}")
+        raise RuntimeError(
+            f"benchmark command failed with exit code {completed.returncode}"
+        )
     if not match:
-        raise ValueError("benchmark output does not contain a tokens-per-second measurement")
+        raise ValueError(
+            "benchmark output does not contain a tokens-per-second measurement"
+        )
 
     data = dict(metadata)
     data["execution_id"] = str(uuid.uuid4())
@@ -32,8 +39,12 @@ def run_and_record(command: list[str], metadata: dict[str, Any], pattern: str) -
 
 def main() -> None:
     """Expose the runner as a command-line tool."""
-    parser = argparse.ArgumentParser(description="Ejecuta una inferencia y registra tok/s medidos")
-    parser.add_argument("--pattern", required=True, help="Regex cuyo primer grupo contiene tok/s")
+    parser = argparse.ArgumentParser(
+        description="Ejecuta una inferencia y registra tok/s medidos"
+    )
+    parser.add_argument(
+        "--pattern", required=True, help="Regex cuyo primer grupo contiene tok/s"
+    )
     parser.add_argument("--model", required=True)
     parser.add_argument("--variant", required=True)
     parser.add_argument("--runtime", required=True)
@@ -41,7 +52,9 @@ def main() -> None:
     parser.add_argument("--workload", required=True)
     parser.add_argument("--quantization", required=True)
     parser.add_argument("--context-tokens", required=True, type=int)
-    parser.add_argument("command", nargs=argparse.REMAINDER, help="Comando del adaptador de runtime")
+    parser.add_argument(
+        "command", nargs=argparse.REMAINDER, help="Comando del adaptador de runtime"
+    )
     args = parser.parse_args()
 
     if not args.command:

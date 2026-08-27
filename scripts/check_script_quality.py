@@ -6,10 +6,13 @@ comando completo. La función ``check_file`` también puede probar archivos
 pequeños sin punto de entrada, lo que facilita las pruebas automáticas.
 No modifica archivos ni toca código de terceros.
 """
+
 from __future__ import annotations
 
 import argparse
 import ast
+import io
+import tokenize
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,8 +59,20 @@ def check_file(path: Path) -> list[str]:
     for number, line in enumerate(lines, start=1):
         if len(line) > MAX_LINE_LENGTH:
             problems.append(f"línea {number}: supera {MAX_LINE_LENGTH} caracteres")
-        if ";" in line and not line.lstrip().startswith("#"):
-            problems.append(f"línea {number}: varias instrucciones en una línea")
+
+    # Detecta únicamente ';' que sean realmente tokens Python.
+    # No cuenta ';' dentro de strings, docstrings o comentarios.
+    try:
+        tokens = tokenize.generate_tokens(
+            io.StringIO(path.read_text(encoding="utf-8")).readline
+        )
+        for token in tokens:
+            if token.type == tokenize.OP and token.string == ";":
+                problems.append(
+                    f"línea {token.start[0]}: varias instrucciones en una línea"
+                )
+    except (tokenize.TokenError, IndentationError):
+        pass
 
     return problems
 

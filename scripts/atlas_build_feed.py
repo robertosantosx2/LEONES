@@ -4,6 +4,7 @@
 This is deliberately conservative: discovery records are copied into the feed,
 but verification state is preserved and no JGB/performance values are invented.
 """
+
 from __future__ import annotations
 
 import csv
@@ -14,17 +15,40 @@ PROSPECTION = ROOT / "data" / "prospection"
 OUT = PROSPECTION / "atlas_feed.csv"
 
 FIELDS = [
-    "source_file", "source_id", "model_id", "model_name", "organization",
-    "release_date", "source_url", "license", "weights_url", "code_url",
-    "runtime", "format", "quantization", "hardware_id", "workload",
-    "jgb_level", "jgb_confidence", "quality_score", "tokens_per_second",
-    "estimated_memory_gb", "context_tokens", "evidence_status", "notes",
+    "source_file",
+    "source_id",
+    "model_id",
+    "model_name",
+    "organization",
+    "release_date",
+    "source_url",
+    "license",
+    "weights_url",
+    "code_url",
+    "runtime",
+    "format",
+    "quantization",
+    "hardware_id",
+    "workload",
+    "jgb_level",
+    "jgb_confidence",
+    "quality_score",
+    "tokens_per_second",
+    "estimated_memory_gb",
+    "context_tokens",
+    "evidence_status",
+    "notes",
 ]
 
 ALIASES = {
-    "id": "source_id", "model": "model_id", "name": "model_name",
-    "url": "source_url", "date": "release_date", "license_name": "license",
-    "weights": "weights_url", "code": "code_url",
+    "id": "source_id",
+    "model": "model_id",
+    "name": "model_name",
+    "url": "source_url",
+    "date": "release_date",
+    "license_name": "license",
+    "weights": "weights_url",
+    "code": "code_url",
 }
 
 
@@ -55,7 +79,7 @@ def main() -> None:
     # Stable de-duplication: prefer source_id, otherwise model+source URL.
     unique: dict[str, dict[str, str]] = {}
     for record in records:
-        key = record["source_id"] or f'{record["model_id"]}|{record["source_url"]}'
+        key = record["source_id"] or f"{record['model_id']}|{record['source_url']}"
         if key == "|":
             continue
         unique.setdefault(key, record)

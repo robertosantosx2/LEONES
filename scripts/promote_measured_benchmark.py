@@ -6,6 +6,7 @@ produce un registro listo para el publicador. No escribe en Atlas directamente
 ni sustituye datos existentes. Esto permite que el workflow de publicación
 sea el único responsable de modificar el catálogo.
 """
+
 from __future__ import annotations
 
 from typing import Any

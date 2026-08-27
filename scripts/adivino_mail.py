@@ -9,6 +9,7 @@ El envío informa al responsable de que existe una fuente pendiente. La
 respuesta humana debe contener exactamente ``OK LEONES`` para aprobarla.
 Cualquier otra respuesta se conserva como no aprobada.
 """
+
 from __future__ import annotations
 
 import os
@@ -43,7 +44,15 @@ def send_discovery_email(discoveries: Iterable[Discovery]) -> None:
         "",
     ]
     for item in items:
-        lines.extend((f"• {item.name}", f"  {item.url}", f"  Tipo: {item.source_type}", f"  Motivo: {item.reason}", ""))
+        lines.extend(
+            (
+                f"• {item.name}",
+                f"  {item.url}",
+                f"  Tipo: {item.source_type}",
+                f"  Motivo: {item.reason}",
+                "",
+            )
+        )
     message.set_content("\n".join(lines))
 
     with smtplib.SMTP(host, port, timeout=30) as smtp:

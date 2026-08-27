@@ -5,6 +5,7 @@ This is intentionally the final local execution bridge: it accepts a runtime
 plan produced by ``runtime_gate.py``, refuses unauthorized plans, builds a
 shell-free llama.cpp command, executes it, and records only observed tok/s.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -12,12 +13,23 @@ import json
 from pathlib import Path
 from typing import Any
 
-from scripts.runtimes.llama_cpp_adapter import build_command_from_plan, tokens_per_second_pattern
+from scripts.runtimes.llama_cpp_adapter import (
+    build_command_from_plan,
+    tokens_per_second_pattern,
+)
 from scripts.run_and_record_benchmark import run_and_record
 
 
-def run_plan(plan: dict[str, Any], *, model_path: str, prompt: str, hardware: str,
-             workload: str, context_tokens: int, executable: str = "llama-cli") -> dict[str, Any]:
+def run_plan(
+    plan: dict[str, Any],
+    *,
+    model_path: str,
+    prompt: str,
+    hardware: str,
+    workload: str,
+    context_tokens: int,
+    executable: str = "llama-cli",
+) -> dict[str, Any]:
     command = build_command_from_plan(
         plan, model_path, prompt, executable=executable, context_tokens=context_tokens
     )

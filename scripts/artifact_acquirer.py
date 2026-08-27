@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Safe GGUF artifact acquisition with cache, provenance and checksum checks."""
+
 from __future__ import annotations
 
 import hashlib
@@ -25,10 +26,17 @@ def _metadata_path(cache_dir: Path, filename: str) -> Path:
     return cache_dir / f"{filename}.leones.json"
 
 
-def acquire_artifact(*, url: str, cache_dir: str | Path, model_id: str,
-                     quantization: str, revision: str | None = None,
-                     expected_sha256: str | None = None, filename: str | None = None,
-                     timeout: int = 120) -> dict[str, Any]:
+def acquire_artifact(
+    *,
+    url: str,
+    cache_dir: str | Path,
+    model_id: str,
+    quantization: str,
+    revision: str | None = None,
+    expected_sha256: str | None = None,
+    filename: str | None = None,
+    timeout: int = 120,
+) -> dict[str, Any]:
     """Acquire one explicitly requested artifact atomically.
 
     The caller supplies the exact URL; this function never chooses a model or
@@ -50,15 +58,26 @@ def acquire_artifact(*, url: str, cache_dir: str | Path, model_id: str,
     if target.is_file():
         actual = _sha256(target)
         if expected and actual != expected:
-            return {"status": "CHECKSUM_MISMATCH", "artifact": str(target), "sha256": actual}
-        return {"status": "CACHE_HIT", "artifact": str(target), "sha256": actual,
-                "provenance": str(_metadata_path(cache, name))}
+            return {
+                "status": "CHECKSUM_MISMATCH",
+                "artifact": str(target),
+                "sha256": actual,
+            }
+        return {
+            "status": "CACHE_HIT",
+            "artifact": str(target),
+            "sha256": actual,
+            "provenance": str(_metadata_path(cache, name)),
+        }
 
     fd, tmp_name = tempfile.mkstemp(prefix=f".{name}.", dir=cache)
     os.close(fd)
     tmp = Path(tmp_name)
     try:
-        with urllib.request.urlopen(url, timeout=timeout) as response, tmp.open("wb") as out:
+        with (
+            urllib.request.urlopen(url, timeout=timeout) as response,
+            tmp.open("wb") as out,
+        ):
             while True:
                 block = response.read(1024 * 1024)
                 if not block:
@@ -69,17 +88,27 @@ def acquire_artifact(*, url: str, cache_dir: str | Path, model_id: str,
             return {"status": "CHECKSUM_MISMATCH", "artifact": None, "sha256": actual}
         os.replace(tmp, target)
         metadata = {
-            "schema_version": "1.0", "model_id": model_id,
+            "schema_version": "1.0",
+            "model_id": model_id,
             "quantization": quantization,
             "source": "huggingface" if "huggingface.co" in url else "http",
-            "url": url, "revision": revision, "filename": name,
-            "size_bytes": target.stat().st_size, "sha256": actual,
+            "url": url,
+            "revision": revision,
+            "filename": name,
+            "size_bytes": target.stat().st_size,
+            "sha256": actual,
             "acquired_at": datetime.now(timezone.utc).isoformat(),
         }
         meta_path = _metadata_path(cache, name)
-        meta_path.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        return {"status": "ACQUIRED", "artifact": str(target), "sha256": actual,
-                "provenance": str(meta_path)}
+        meta_path.write_text(
+            json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        return {
+            "status": "ACQUIRED",
+            "artifact": str(target),
+            "sha256": actual,
+            "provenance": str(meta_path),
+        }
     finally:
         if tmp.exists():
             tmp.unlink()

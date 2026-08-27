@@ -20,6 +20,7 @@ For a beginner, the workflow is:
 Missing information stays missing.  In particular, an empty value is never
 converted to zero.
 """
+
 from __future__ import annotations
 
 import csv
@@ -103,7 +104,11 @@ def main() -> None:
     seen: dict[tuple[str, str], list[str]] = {}
 
     for row in rows:
-        entity_id = row.get("model_id", "") or row.get("source_id", "") or row.get("model_name", "")
+        entity_id = (
+            row.get("model_id", "")
+            or row.get("source_id", "")
+            or row.get("model_name", "")
+        )
 
         # Check the minimum discovery contract.  We assign higher severity to
         # missing identity fields because the row cannot be safely identified.
@@ -113,7 +118,9 @@ def main() -> None:
                     flags,
                     entity_id=entity_id,
                     flag_type="missing",
-                    severity="high" if field in {"model_id", "model_name"} else "medium",
+                    severity="high"
+                    if field in {"model_id", "model_name"}
+                    else "medium",
                     field_name=field,
                     message=f"Missing required discovery field: {field}",
                     detected_at=now,

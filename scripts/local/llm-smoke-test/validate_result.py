@@ -59,9 +59,7 @@ def validate(payload: object) -> list[str]:
     else:
         missing_metrics = METRICS - payload["metrics"].keys()
         if missing_metrics:
-            errors.append(
-                "missing metrics: " + ", ".join(sorted(missing_metrics))
-            )
+            errors.append("missing metrics: " + ", ".join(sorted(missing_metrics)))
     if not isinstance(payload.get("result"), dict):
         errors.append("result must be an object")
     elif payload["result"].get("status") not in {"ok", "error", "partial"}:

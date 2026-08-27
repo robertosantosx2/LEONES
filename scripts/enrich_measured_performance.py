@@ -5,6 +5,7 @@ El proyecto mantiene una distinción importante: ``tokens_per_second`` es la
 medición y ``performance_class`` es una interpretación derivada. Este módulo
 solo hace esa unión y rechaza datos que no estén marcados como medidos.
 """
+
 from __future__ import annotations
 
 from typing import Any

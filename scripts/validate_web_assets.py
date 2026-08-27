@@ -5,6 +5,7 @@ A documented or referenced local asset must exist at the path used by the
 source file. The logo manifest is checked separately because it is a common
 source of silent 404s.
 """
+
 from __future__ import annotations
 
 import json
@@ -23,7 +24,9 @@ SKIP_DIRS = {".git", "node_modules"}
 
 def local_target(value: str) -> str | None:
     value = value.strip().strip("'\"")
-    if not value or value.startswith(("#", "/", "//", "data:", "mailto:", "javascript:")):
+    if not value or value.startswith(
+        ("#", "/", "//", "data:", "mailto:", "javascript:")
+    ):
         return None
     parsed = urlsplit(value)
     if parsed.scheme or parsed.netloc:
@@ -37,14 +40,20 @@ def check_file_references(path: Path) -> list[str]:
     candidates: list[str] = []
 
     if path.suffix in {".html", ".htm"}:
-        candidates += re.findall(r"(?:src|href)\s*=\s*[\"']([^\"']+)[\"']", text, flags=re.I)
+        candidates += re.findall(
+            r"(?:src|href)\s*=\s*[\"']([^\"']+)[\"']", text, flags=re.I
+        )
     elif path.suffix == ".css":
-        candidates += re.findall(r"url\(\s*[\"']?([^\"')]+)[\"']?\s*\)", text, flags=re.I)
+        candidates += re.findall(
+            r"url\(\s*[\"']?([^\"')]+)[\"']?\s*\)", text, flags=re.I
+        )
     elif path.suffix == ".md":
         candidates += re.findall(r"!?\[[^]]*\]\(([^)]+)\)", text)
 
     # Also inspect explicit functional-logo references in JS and JSON-like text.
-    candidates += re.findall(r"(?:assets/graphics/logos/|web/assets/graphics/logos/)([^\s'\"<>?#)]+)", text)
+    candidates += re.findall(
+        r"(?:assets/graphics/logos/|web/assets/graphics/logos/)([^\s'\"<>?#)]+)", text
+    )
 
     for candidate in candidates:
         target = local_target(candidate)
@@ -60,7 +69,9 @@ def check_file_references(path: Path) -> list[str]:
         except ValueError:
             continue
         if not resolved.exists():
-            errors.append(f"{path.relative_to(ROOT)} -> {candidate} (missing: {resolved.relative_to(ROOT)})")
+            errors.append(
+                f"{path.relative_to(ROOT)} -> {candidate} (missing: {resolved.relative_to(ROOT)})"
+            )
     return errors
 
 

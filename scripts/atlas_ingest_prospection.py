@@ -10,6 +10,7 @@ The script is deliberately conservative:
 Usage:
     python scripts/atlas_ingest_prospection.py
 """
+
 from __future__ import annotations
 
 import csv
@@ -34,7 +35,13 @@ def write_rows(path: Path, fieldnames, data):
 
 
 def deployment_id(r):
-    parts = [r.get("model_id", ""), r.get("quantization", ""), r.get("runtime", ""), r.get("hardware_id", ""), r.get("workload", "")]
+    parts = [
+        r.get("model_id", ""),
+        r.get("quantization", ""),
+        r.get("runtime", ""),
+        r.get("hardware_id", ""),
+        r.get("workload", ""),
+    ]
     return "-".join(x.strip().lower().replace(" ", "_") for x in parts if x.strip())
 
 
@@ -78,18 +85,31 @@ def main():
             deployments.append(existing)
             changed += 1
         # Only evidence supplied by the feed may fill a field.
-        for field in ("estimated_memory_gb", "context_tokens", "tokens_per_second", "quality_score", "jgb_level", "jgb_confidence"):
+        for field in (
+            "estimated_memory_gb",
+            "context_tokens",
+            "tokens_per_second",
+            "quality_score",
+            "jgb_level",
+            "jgb_confidence",
+        ):
             value = (r.get(field) or "").strip()
             if value:
                 existing[field] = value
         existing["evidence_status"] = "verified"
         verified += 1
 
-    write_rows(DEPLOYMENTS, list(deployments[0].keys()) if deployments else [], deployments)
+    write_rows(
+        DEPLOYMENTS, list(deployments[0].keys()) if deployments else [], deployments
+    )
 
-    print(f"feed_records={len(feed)} verified={verified} pending={pending} changed_or_added={changed}")
+    print(
+        f"feed_records={len(feed)} verified={verified} pending={pending} changed_or_added={changed}"
+    )
     if pending:
-        print("Pending records were not promoted: they require evidence verification first.")
+        print(
+            "Pending records were not promoted: they require evidence verification first."
+        )
 
 
 if __name__ == "__main__":
