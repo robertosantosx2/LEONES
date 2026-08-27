@@ -72,13 +72,19 @@ def build_a01_result(plan: dict[str, Any], *, workspace: Path, model_output: str
             "measured_tps": measurement["measured_tps"],
             "measurement_status": measurement["measurement_status"],
         })
-    return build_result(config, trace, model=plan["model"], hardware=plan["hardware"],
-                        inference=plan.get("inference", {}),
-                        outcome={"status": "success" if passed else "failed", "score": grader["score"]},
-                        metrics=metrics, runtime=plan["runtime"], scaffold={"name": "runtime-A01"},
-                        environment={"mode": "real-runtime"},
-                        tools=[{"name": "lookup_model"}, {"name": "write_report"}],
-                        grader=grader, evidence_type="measured", evidence_source="LEONES-A01-runtime")
+    result = build_result(config, trace, model=plan["model"], hardware=plan["hardware"],
+                          inference=plan.get("inference", {}),
+                          outcome={"status": "success" if passed else "failed", "score": grader["score"]},
+                          metrics=metrics, runtime=plan["runtime"], scaffold={"name": "runtime-A01"},
+                          environment={"mode": "real-runtime"},
+                          tools=[{"name": "lookup_model"}, {"name": "write_report"}],
+                          grader=grader, evidence_type="measured", evidence_source="LEONES-A01-runtime")
+    # A measured result from this adapter is backed by an actual subprocess
+    # execution and runtime wall time. Make that provenance explicit so the
+    # hardened evidence contract cannot mistake it for synthetic/controlled data.
+    if measurement is not None:
+        result["evidence"]["measurement_kind"] = "real"
+    return result
 
 
 def execute_a01(plan: dict[str, Any], *, prompt: str, workspace: Path,
