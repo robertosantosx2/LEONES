@@ -1,0 +1,43 @@
+{
+  "schema_version": "runtime-execution.v1",
+  "execution_id": "00000000-0000-4000-8000-000000000001",
+  "status": "planned",
+  "created_at": "2026-08-27T00:00:00Z",
+  "runtime": {
+    "name": "llama.cpp",
+    "adapter": "llama_cpp",
+    "version": "TO-BE-OBSERVED",
+    "backend": "TO-BE-OBSERVED",
+    "executable": "llama-server"
+  },
+  "model": {
+    "id": "TO-BE-SELECTED",
+    "revision": "TO-BE-OBSERVED",
+    "artifact": "TO-BE-LOCATED",
+    "quantization": "TO-BE-SELECTED"
+  },
+  "hardware": {
+    "os": "Debian TO-BE-OBSERVED",
+    "cpu": "TO-BE-OBSERVED",
+    "ram_mb": 1
+  },
+  "workload": {
+    "context_tokens": 1,
+    "target_output_tokens": 1,
+    "concurrency": 1
+  },
+  "protocol": {
+    "name": "LEONES-real-benchmark",
+    "version": "TO-BE-FROZEN",
+    "warmup_iterations": 0,
+    "measured_iterations": 1,
+    "prompt_ref": "TO-BE-FROZEN"
+  },
+  "command": {
+    "argv": ["TO-BE-OBSERVED"],
+    "cwd": "TO-BE-OBSERVED"
+  },
+  "environment": {
+    "leones_revision": "TO-BE-OBSERVED"
+  }
+}
