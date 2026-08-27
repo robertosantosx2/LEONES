@@ -53,11 +53,16 @@ def _to_millions(parsed: tuple[float, str]) -> float:
 
 def _params_m(item: dict[str, Any], active: bool = False) -> float | None:
     if active:
-        keys = ["active_parameters_m","active_params_m","active_parameter_count_m","active_parameters_b","active_params_b","active_parameter_count_b","active_parameters","active_params","active_parameter_count"]
+        keys = ["active_parameters_m","active_params_m","active_parameter_count_m","active_parameters_b","active_params_b","active_parameter_count_b","parameters_active_b","active_parameters","active_params","active_parameter_count"]
     else:
-        keys = ["total_parameters_m","parameters_m","parameter_count_m","params_m","total_params_m","total_parameters_b","parameters_b","parameter_count_b","params_b","total_params_b","total_parameters","parameters","parameter_count","params"]
+        keys = ["total_parameters_m","parameters_m","parameter_count_m","params_m","total_params_m","total_parameters_b","parameters_total_b","parameters_b","parameter_count_b","params_b","total_params_b","total_parameters","parameters","parameter_count","params"]
     for key in keys:
-        parsed = _parse_parameter_value(item.get(key))
+        value = item.get(key)
+        if value in (None, ""): continue
+        if key.endswith("_m"):
+            try: return float(value)
+            except (TypeError, ValueError): continue
+        parsed = _parse_parameter_value(value)
         if parsed is None: continue
         return _to_millions(parsed)
     return None
