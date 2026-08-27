@@ -1,50 +1,82 @@
 name: A01 runtime benchmark
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/a01_runtime_benchmark.py'
+      - 'scripts/run_a01_selected.py'
+      - 'runtime_selection/**'
+      - 'benchmarks/agentic/**'
+      - 'tests/fixtures/a01/**'
+      - '.github/workflows/a01-runtime-benchmark.yml'
   workflow_dispatch:
-    inputs:
-      selection_json:
-        description: 'Selector output JSON (candidates[])'
-        required: true
-        type: string
-      runtime_commands_json:
-        description: 'Trusted runtime argv map JSON'
-        required: true
-        type: string
 
 jobs:
   a01-runtime-benchmark:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Materialize selector and trusted runtime inputs
-        env:
-          SELECTION_JSON: ${{ inputs.selection_json }}
-          RUNTIME_COMMANDS_JSON: ${{ inputs.runtime_commands_json }}
+
+      - name: Install test/runtime dependencies
+        run: python -m pip install --disable-pip-version-check pytest
+
+      - name: Validate canonical A01 fixtures
         run: |
-          mkdir -p artifacts
-          printf '%s\n' "$SELECTION_JSON" > artifacts/selector-output.json
-          printf '%s\n' "$RUNTIME_COMMANDS_JSON" > artifacts/runtime-commands.json
-          python -m json.tool artifacts/selector-output.json >/dev/null
-          python -m json.tool artifacts/runtime-commands.json >/dev/null
+          python -m json.tool tests/fixtures/a01/selector-output.json >/dev/null
+          python -m json.tool tests/fixtures/a01/runtime-commands.json >/dev/null
+
+      - name: Compile canonical A01 path
+        run: |
+          python -m py_compile \
+            scripts/a01_runtime_benchmark.py \
+            scripts/run_a01_selected.py \
+            benchmarks/agentic/a01_grader.py
+
       - name: Execute selector -> runtime-selection.v1 -> A01 -> grader -> benchmark -> evidence -> Router
         run: |
+          rm -rf .leones/a01-workspace artifacts/a01-runtime-benchmark
+          mkdir -p artifacts/a01-runtime-benchmark
           python scripts/a01_runtime_benchmark.py \
-            --selection artifacts/selector-output.json \
-            --runtime-commands artifacts/runtime-commands.json \
+            --selection tests/fixtures/a01/selector-output.json \
+            --runtime-commands tests/fixtures/a01/runtime-commands.json \
             --workspace .leones/a01-workspace \
-            --out artifacts/a01-runtime-benchmark.v1.json
+            --out artifacts/a01-runtime-benchmark/a01-runtime-benchmark.v1.json
+
+      - name: Assert canonical A01 output
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('artifacts/a01-runtime-benchmark')
+          payload = json.loads((root / 'a01-runtime-benchmark.v1.json').read_text())
+          benchmark = payload['evidence']['runtime_benchmark']
+
+          assert benchmark['task'] == 'A01'
+          assert benchmark['status'] == 'measured'
+          assert benchmark['grader_pass'] is True
+          assert benchmark['measured_tps'] is not None
+          assert benchmark['measured_tps'] > 0
+          assert payload['router']
+          assert (root.parent / 'a01-runtime-benchmark' / 'a01-runtime-benchmark.v1.json').exists()
+          print('A01 canonical gate: PASS')
+          print('runtime:', benchmark['runtime'])
+          print('model:', benchmark['model'])
+          print('measured_tps:', benchmark['measured_tps'])
+          PY
+
       - name: Upload canonical evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: a01-runtime-benchmark
           path: |
-            artifacts/selector-output.json
-            artifacts/runtime-commands.json
-            artifacts/a01-executor-result.json
-            artifacts/a01-runtime-benchmark.v1.json
+            artifacts/a01-runtime-benchmark/a01-runtime-benchmark.v1.json
+            artifacts/a01-runtime-benchmark/a01-executor-result.json
+            artifacts/router-decision.v1.json
