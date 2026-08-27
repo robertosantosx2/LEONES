@@ -188,11 +188,11 @@ Captura la ejecución física del plan autorizado y su observabilidad. Es la fro
 
 ### `runtime-benchmark.v1`
 
-Consume la ejecución completada y organiza las mediciones para el benchmark. El contrato existente ya rechaza convertir `estimated_tps` en medición. fileciteturn5file0L2-L2
+Consume la ejecución completada y organiza las mediciones para el benchmark. El contrato existente rechaza convertir `estimated_tps` en medición.
 
 ### Evidence bridge
 
-Solo transforma un benchmark completado y medido en evidencia con procedencia. El bridge existente exige `measurement_status == measured`, `execution_id`, `finished_at`, identidad de runtime/adapter/modelo y una medición numérica. fileciteturn6file0L2-L2
+Solo transforma un benchmark completado y medido en evidencia con procedencia. El bridge existente exige `measurement_status == measured`, `execution_id`, `finished_at`, identidad de runtime/adapter/modelo y una medición numérica.
 
 ## Primera ejecución: Debian + llama.cpp
 
