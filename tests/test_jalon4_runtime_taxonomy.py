@@ -9,9 +9,10 @@ def test_registry_has_complete_deployment_taxonomy():
     allowed = set(data["taxonomy"]["deployment_class"])
     profiles = set(data["taxonomy"]["serving_profile"])
     entries = registry_entries()
-    assert len(entries) == 6
-    assert [entry.id for entry in entries.values()] == [
-        "llama.cpp", "FreeToken", "AirLLM", "ollama", "vLLM", "SGLang"
+    assert len(entries) == 12
+    assert list(entries) == [
+        "llama.cpp", "FreeToken", "AirLLM", "ollama", "vLLM", "SGLang",
+        "MLX/MLX-LM", "ExLlama", "OpenVINO", "ONNX Runtime GenAI", "TensorRT-LLM",
     ]
     for entry in entries.values():
         assert entry.deployment_class
@@ -25,13 +26,21 @@ def test_cpudatacenter_profile_filters_out_local_runtimes():
     ok, reasons = capability_match(entries["ollama"], deployment_class="datacenter")
     assert not ok
     assert any("deployment class" in reason for reason in reasons)
-    ok, reasons = capability_match(entries["vLLM"], deployment_class="datacenter", serving_profile="multi_user")
+    ok, reasons = capability_match(
+        entries["vLLM"],
+        deployment_class="datacenter",
+        serving_profile="multi_user",
+    )
     assert ok
     assert reasons == []
 
 
 def test_local_profile_keeps_workstation_runtimes():
     entries = registry_entries()
-    ok, reasons = capability_match(entries["FreeToken"], deployment_class="workstation", serving_profile="single_user")
+    ok, reasons = capability_match(
+        entries["FreeToken"],
+        deployment_class="workstation",
+        serving_profile="single_user",
+    )
     assert ok
     assert reasons == []
