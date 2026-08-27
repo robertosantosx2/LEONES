@@ -1,25 +1,25 @@
 {
-  "generated_at": "2026-08-26T05:00:37.433795+00:00",
+  "generated_at": "2026-08-27T15:21:43.522688+00:00",
   "input": "data/prospection/classified_discoveries.ndjson",
-  "total_discoveries": 295,
+  "total_discoveries": 288,
   "by_type": {
     "software": 219,
     "model": 40,
-    "paper": 36
+    "paper": 29
   },
   "by_source": {
     "github": 87,
     "huggingface": 40,
-    "huggingface-papers": 36,
-    "gitlab": 40,
+    "huggingface-papers": 29,
     "framagit": 19,
+    "gitlab": 40,
     "forgejo-instance:gitea.com": 27,
     "codeberg": 39,
     "fossil-instance:fossil-scm.org": 6,
     "cgit-instance:git.zx2c4.com": 1
   },
   "by_publication_status": {
-    "review": 295
+    "review": 288
   },
-  "license_unknown": 172
+  "license_unknown": 167
 }
