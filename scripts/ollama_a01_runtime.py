@@ -5,13 +5,17 @@ The process receives the A01 prompt as its final argv argument, calls the
 local Ollama API, and emits exactly two canonical tool-request JSON lines.
 Runtime-reported throughput is emitted as a separate JSON line so LEONES can
 record measured_tps without inventing it.
+
+Some small local models expose the Ollama API but do not reliably emit native
+``tool_calls``. In that case we retry with Ollama structured output and ask the
+same model to return the two canonical calls as JSON. This keeps the execution
+on the real local runtime while making the bridge deterministic enough for the
+strict A01 contract.
 """
 from __future__ import annotations
 
 import argparse
 import json
-import sys
-import time
 import urllib.error
 import urllib.request
 from typing import Any
@@ -77,6 +81,32 @@ def canonical_call(call: dict[str, Any]) -> dict[str, Any]:
     return {"tool": name, "arguments": arguments}
 
 
+def structured_calls(message: dict[str, Any], model: str) -> list[dict[str, Any]]:
+    """Convert Ollama structured JSON into canonical A01 calls."""
+    content = message.get("content")
+    if not isinstance(content, str):
+        raise RuntimeError("Ollama structured-output response had no content")
+    try:
+        value = json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"Ollama structured-output was not JSON: {content!r}") from exc
+    calls = value.get("tool_calls") if isinstance(value, dict) else None
+    if not isinstance(calls, list):
+        raise RuntimeError("Ollama structured-output did not contain tool_calls")
+    canonical = [
+        {"tool": item.get("tool"), "arguments": item.get("arguments") or {}}
+        for item in calls[:2]
+        if isinstance(item, dict)
+    ]
+    if [item.get("tool") for item in canonical] != ["lookup_model", "write_report"]:
+        raise RuntimeError("structured A01 requires lookup_model followed by write_report")
+    if canonical[0]["arguments"].get("model_id") != model:
+        raise RuntimeError("structured A01 lookup_model model_id does not match selected model")
+    if canonical[1]["arguments"].get("path") != "report.txt":
+        raise RuntimeError("structured A01 write_report path must be report.txt")
+    return canonical
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", default="qwen2.5:0.5b-instruct-q4_K_M")
@@ -109,40 +139,82 @@ def main() -> int:
     total_eval_seconds += int(first.get("eval_duration") or 0)
     message = first.get("message") or {}
     calls = get_tool_calls(message)
-    if not calls:
-        raise RuntimeError("Ollama model did not produce a tool call")
 
-    # Some runtimes may emit both calls in one response. If so, preserve order.
-    if len(calls) >= 2:
-        canonical = [canonical_call(call) for call in calls[:2]]
+    if calls:
+        if len(calls) >= 2:
+            canonical = [canonical_call(call) for call in calls[:2]]
+        else:
+            first_call = canonical_call(calls[0])
+            if first_call["tool"] != "lookup_model":
+                raise RuntimeError("A01 first tool call must be lookup_model")
+            messages.append(message)
+            messages.append({
+                "role": "tool",
+                "tool_name": "lookup_model",
+                "content": json.dumps({"id": args.model, "name": args.model}, ensure_ascii=False),
+            })
+            second = post_json(args.url, {
+                "model": args.model,
+                "messages": messages,
+                "tools": tools,
+                "stream": False,
+                "options": {"temperature": 0},
+            }, args.timeout)
+            total_eval_tokens += int(second.get("eval_count") or 0)
+            total_eval_seconds += int(second.get("eval_duration") or 0)
+            second_calls = get_tool_calls(second.get("message") or {})
+            if not second_calls:
+                raise RuntimeError("Ollama model did not produce write_report after lookup_model")
+            canonical = [first_call, canonical_call(second_calls[0])]
     else:
-        first_call = canonical_call(calls[0])
-        if first_call["tool"] != "lookup_model":
-            raise RuntimeError("A01 first tool call must be lookup_model")
-        messages.append(message)
-        messages.append({
-            "role": "tool",
-            "tool_name": "lookup_model",
-            "content": json.dumps({"id": args.model, "name": args.model}, ensure_ascii=False),
-        })
-        second = post_json(args.url, {
+        # Qwen-class tiny models can understand the task but fail to populate
+        # Ollama's native tool_calls field. Structured output asks the same
+        # runtime/model for exactly the contract shape instead of fabricating
+        # an A01 trajectory outside the model.
+        structured_system = (
+            "Execute LEONES A01. Return exactly two tool calls in the JSON schema: "
+            "lookup_model first with model_id exactly " + args.model + ", then "
+            "write_report with path exactly report.txt. No prose."
+        )
+        schema = {
+            "type": "object",
+            "properties": {
+                "tool_calls": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "tool": {"type": "string", "enum": ["lookup_model", "write_report"]},
+                            "arguments": {"type": "object"},
+                        },
+                        "required": ["tool", "arguments"],
+                    },
+                }
+            },
+            "required": ["tool_calls"],
+        }
+        fallback = post_json(args.url, {
             "model": args.model,
-            "messages": messages,
-            "tools": tools,
+            "messages": [
+                {"role": "system", "content": structured_system},
+                {"role": "user", "content": args.prompt},
+            ],
+            "format": schema,
             "stream": False,
             "options": {"temperature": 0},
         }, args.timeout)
-        total_eval_tokens += int(second.get("eval_count") or 0)
-        total_eval_seconds += int(second.get("eval_duration") or 0)
-        second_calls = get_tool_calls(second.get("message") or {})
-        if not second_calls:
-            raise RuntimeError("Ollama model did not produce write_report after lookup_model")
-        canonical = [first_call, canonical_call(second_calls[0])]
+        total_eval_tokens += int(fallback.get("eval_count") or 0)
+        total_eval_seconds += int(fallback.get("eval_duration") or 0)
+        canonical = structured_calls(fallback.get("message") or {}, args.model)
 
     if [item.get("tool") for item in canonical] != ["lookup_model", "write_report"]:
         raise RuntimeError("A01 requires lookup_model followed by write_report")
     if canonical[0].get("arguments", {}).get("model_id") != args.model:
         raise RuntimeError("A01 lookup_model model_id does not match selected model")
+    if canonical[1].get("arguments", {}).get("path") != "report.txt":
+        raise RuntimeError("A01 write_report path must be report.txt")
 
     print(json.dumps(canonical[0], ensure_ascii=False))
     print(json.dumps(canonical[1], ensure_ascii=False))
