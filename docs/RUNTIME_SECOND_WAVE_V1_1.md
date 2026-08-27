@@ -89,4 +89,4 @@ El siguiente salto ya no es de diseño: es **validación física en el host adec
 
 ## Base metodológica
 
-La serie LLM de referencia insiste en que el motor debe elegirse después de considerar hardware, carga, memoria, formato y objetivo de servicio, y que los benchmarks deben registrar modelo, cuantización, versión del motor, hardware, workload y métricas como TTFT/TPOT/tokens por segundo. También establece que la evaluación seria debe congelar el protocolo antes de la medición final y separar desarrollo de prueba. fileciteturn0file0L117-L156 fileciteturn0file0L240-L291
+La serie LLM de referencia establece que el motor debe elegirse después de considerar hardware, carga, memoria, formato y objetivo de servicio. Para benchmarking serio recomienda registrar modelo, cuantización, versión del motor, hardware, workload y métricas como TTFT, TPOT y tokens por segundo. También separa evaluación de desarrollo y prueba final, y exige congelar el protocolo antes de la medición final.
