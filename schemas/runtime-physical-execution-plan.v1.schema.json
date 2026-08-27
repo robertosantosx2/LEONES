@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.local/schemas/runtime-physical-execution-plan.v1.schema.json",
+  "title": "LEONES runtime physical execution plan v1",
+  "type": "object",
+  "required": ["schema_version", "profile_order", "executions"],
+  "properties": {
+    "schema_version": {"const": "runtime-physical-execution-plan.v1"},
+    "profile_order": {
+      "type": "array",
+      "items": {"enum": ["soho", "cpd"]},
+      "minItems": 1
+    },
+    "executions": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["runtime", "profile", "measurement_contract", "requires_physical_host"],
+        "properties": {
+          "runtime": {"type": "string"},
+          "profile": {"enum": ["soho", "cpd"]},
+          "measurement_contract": {"const": "runtime-benchmark-evidence.v1.1"},
+          "requires_physical_host": {"const": true},
+          "model_selection": {"type": "string"},
+          "notes": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
