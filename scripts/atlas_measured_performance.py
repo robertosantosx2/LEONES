@@ -16,8 +16,9 @@ def integrate_measurements(rows: list[dict[str, Any]], measurements: list[dict[s
     """Add the latest compatible measured result to each Atlas row.
 
     Estimated/reported rows remain untouched. A measurement must retain its
-    execution identity and timestamp when it enters Atlas; no value is promoted
-    merely because it was copied into the catalog.
+    execution identity, timestamp and explicit real measurement kind when it
+    enters Atlas; no value is promoted merely because it was copied into the
+    catalog.
     """
     valid = []
     for measurement in measurements:
@@ -27,6 +28,7 @@ def integrate_measurements(rows: list[dict[str, Any]], measurements: list[dict[s
             "evidence_type": measurement.get("evidence_type", "measured"),
             "execution_id": measurement.get("execution_id"),
             "measured_at": measurement.get("measured_at"),
+            "measurement_kind": measurement.get("measurement_kind"),
         }
         validate_evidence(evidence)
         valid.append(measurement)
@@ -46,6 +48,7 @@ def integrate_measurements(rows: list[dict[str, Any]], measurements: list[dict[s
             output["measured_performance_class"] = measured["performance_class"]
             output["measurement_type"] = "measured"
             output["evidence_type"] = "measured"
+            output["measurement_kind"] = "real"
             output["execution_id"] = measured["execution_id"]
             output["measured_at"] = measured["measured_at"]
         result.append(output)
