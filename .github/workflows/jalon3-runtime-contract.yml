@@ -1,0 +1,29 @@
+name: JALON 3 runtime evidence contract
+
+on:
+  push:
+    branches: [jalon3-runtime-execution-contract-v2]
+  pull_request:
+    branches: [main]
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate JSON schemas
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for p in [Path('schemas/runtime-execution.v1.schema.json'), Path('schemas/runtime-benchmark-evidence.v1.1.json')]:
+              json.loads(p.read_text(encoding='utf-8'))
+              print('VALID', p)
+          PY
+      - name: Run JALON 3 tests
+        run: python -m pytest tests/test_runtime_benchmark_evidence_v1_1.py -q
+      - name: Check whitespace
+        run: git diff --check
