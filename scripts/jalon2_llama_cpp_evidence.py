@@ -67,14 +67,12 @@ def _command_and_prompt(text: str) -> tuple[list[str], str | None]:
     except ValueError:
         command = match.group("cmd").split()
     prompt = None
-    if "-p" in command:
-        index = command.index("-p")
-        if index + 1 < len(command):
-            prompt = command[index + 1]
-    elif "--prompt" in command:
-        index = command.index("--prompt")
-        if index + 1 < len(command):
-            prompt = command[index + 1]
+    for option in ("-p", "--prompt"):
+        if option in command:
+            index = command.index(option)
+            if index + 1 < len(command):
+                prompt = command[index + 1]
+            break
     return command, prompt
 
 
@@ -123,6 +121,8 @@ def parse_log(text: str) -> dict[str, Any]:
     model_sha256 = metadata.get("model_sha256")
     binary_sha256 = metadata.get("runtime_binary_sha256")
     runtime_version = metadata.get("runtime_version") or metadata.get("runtime_package") or "unknown"
+    quantization_match = re.search(r"(Q[0-9]+(?:_[A-Z0-9]+)+)(?:\.gguf)?(?:$|\s)", model, re.I)
+    quantization = quantization_match.group(1).upper() if quantization_match else "unknown"
     measurement: dict[str, Any] = {
         "iteration": 1,
         "ttft_ms": prompt_ms,
@@ -150,7 +150,7 @@ def parse_log(text: str) -> dict[str, Any]:
             "revision": "unknown",
             "source": None,
             "artifact": f"artifacts/models/{model}" if model else "",
-            "quantization": _first(text, r"(?:^|\s)(Q[0-9A-Z_]+)(?:\.gguf)?(?:\s|$)") or "unknown",
+            "quantization": quantization,
             "context_length": int(metadata.get("ctx_size", "1")),
         },
         "protocol": {
