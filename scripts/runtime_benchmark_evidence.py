@@ -16,7 +16,15 @@ import uuid
 from pathlib import Path
 from statistics import mean, median, stdev
 
-TOKENS_PER_SECOND = re.compile(r"([0-9]+(?:\.[0-9]+)?)\s*tok(?:ens)?/s", re.I)
+TOKENS_PER_SECOND = re.compile(
+    r"(?:Generation:\s*)?([0-9]+(?:[.,][0-9]+)?)\s*(?:tok(?:ens)?|t)/s",
+    re.I,
+)
+
+LLAMA_CPP_GENERATION_TPS = re.compile(
+    r"Generation:\s*([0-9]+(?:[.,][0-9]+)?)\s*t/s",
+    re.I,
+)
 
 
 def now() -> str:
@@ -100,8 +108,12 @@ def run_once(command: list[str]) -> dict:
     code = proc.wait()
     total = (time.perf_counter() - started) * 1000
     text = "".join(stdout_chunks) + "\n" + "".join(stderr_chunks)
-    matches = [float(x) for x in TOKENS_PER_SECOND.findall(text)]
-    tps = matches[-1] if matches else None
+    llama_matches = LLAMA_CPP_GENERATION_TPS.findall(text)
+    if llama_matches:
+        tps = float(llama_matches[-1].replace(",", "."))
+    else:
+        matches = TOKENS_PER_SECOND.findall(text)
+        tps = float(matches[-1].replace(",", ".")) if matches else None
     gen_ms = None if first_output is None else max(0.0, total - first_output)
     out_tokens = round(tps * gen_ms / 1000) if tps is not None and gen_ms is not None else None
     vram, power = gpu_snapshot()
