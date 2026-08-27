@@ -10,6 +10,7 @@ from .adapters import ExecutionSpec
 from .contract import RuntimeSelectionPlan, validate_plan
 
 ADAPTERS = {
+    "Ollama": "ollama.v1",
     "vllm": "vllm.v1",
     "sglang": "sglang.v1",
     "mlx": "mlx.v1",
