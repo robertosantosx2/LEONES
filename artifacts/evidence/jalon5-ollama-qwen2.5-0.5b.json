@@ -1,0 +1,151 @@
+{
+  "schema": "runtime-benchmark-evidence.v1.1",
+  "execution_id": "rt-f08167b6bfc44e43972e87ef85da70af",
+  "timestamp_start": "2026-08-27T20:05:02.828Z",
+  "timestamp_end": "2026-08-27T20:05:06.533Z",
+  "model": {
+    "id": "qwen2.5-0.5b",
+    "name": "Qwen2.5-0.5B",
+    "revision": "local",
+    "source": "ollama-local",
+    "artifact": "ollama://qwen2.5:0.5b-instruct-q4_K_M",
+    "quantization": "Q4_K_M",
+    "context_length": 2048
+  },
+  "protocol": {
+    "prompt_protocol_id": "concise-paragraph-v1",
+    "prompt_sha256": "8a73291aed1faa6662a9258639afbafec0c531dcda26bc403ef37e1a00547bb9",
+    "input_tokens": 7,
+    "output_token_limit": 128,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "seed": 42,
+    "context": 2048,
+    "warmup_iterations": 1,
+    "measurement_iterations": 3
+  },
+  "runtime": {
+    "name": "ollama",
+    "version": "ollama version is 0.33.1",
+    "revision": null,
+    "backend": "cpu",
+    "binary": "/usr/local/bin/ollama",
+    "binary_sha256": "9f595107f966433f93f20ee19043f8e0cdea88e7403672f4dba2cadcb45ee085",
+    "command": [
+      "ollama",
+      "api",
+      "/api/generate",
+      "--model",
+      "qwen2.5:0.5b-instruct-q4_K_M"
+    ]
+  },
+  "hardware": {
+    "host": "Aspire-A515-55",
+    "os": "Linux-7.0.0-30-generic-x86_64-desconocido-with-glibc2.43",
+    "kernel": "7.0.0-30-generic",
+    "architecture": "x86_64",
+    "cpu": "desconocido",
+    "cpu_threads": 8,
+    "physical_cores": 4,
+    "ram_total_mb": 7199.8,
+    "gpu": null,
+    "vram_total_mb": null
+  },
+  "measurements": [
+    {
+      "ttft_ms": 23.383291998470668,
+      "first_output_ms": 23.383291998470668,
+      "generation_time_ms": 1065.088,
+      "output_tokens": 54,
+      "tokens_per_second": 50.70003605335897,
+      "total_time_ms": 1087.444546,
+      "peak_memory_mb": null,
+      "peak_vram_mb": null,
+      "power_w": null,
+      "exit_code": 0,
+      "stdout": "{\"response\": \"I am Qwen, a large language model created by Alibaba Cloud. I am designed to assist with various tasks, including generating text, answering questions, and providing information. My primary function is to help users with their inquiries and provide them with useful and accurate information.\", \"eval_count\": 54, \"eval_duration\": 1065088000, \"prompt_eval_count\": 36, \"prompt_eval_duration\": 17707000, \"total_duration\": 1087444546}",
+      "stderr": "",
+      "iteration": 1
+    },
+    {
+      "ttft_ms": 28.421527000318747,
+      "first_output_ms": 28.421527000318747,
+      "generation_time_ms": 1303.674,
+      "output_tokens": 54,
+      "tokens_per_second": 41.421398294358866,
+      "total_time_ms": 1331.441578,
+      "peak_memory_mb": null,
+      "peak_vram_mb": null,
+      "power_w": null,
+      "exit_code": 0,
+      "stdout": "{\"response\": \"I am Qwen, a large language model created by Alibaba Cloud. I am designed to assist with various tasks, including generating text, answering questions, and providing information. My primary function is to help users with their inquiries and provide them with useful and accurate information.\", \"eval_count\": 54, \"eval_duration\": 1303674000, \"prompt_eval_count\": 36, \"prompt_eval_duration\": 24487000, \"total_duration\": 1331441578}",
+      "stderr": "",
+      "iteration": 2
+    },
+    {
+      "ttft_ms": 28.068163002899382,
+      "first_output_ms": 28.068163002899382,
+      "generation_time_ms": 1252.464,
+      "output_tokens": 54,
+      "tokens_per_second": 43.115011688958724,
+      "total_time_ms": 1279.734382,
+      "peak_memory_mb": null,
+      "peak_vram_mb": null,
+      "power_w": null,
+      "exit_code": 0,
+      "stdout": "{\"response\": \"I am Qwen, a large language model created by Alibaba Cloud. I am designed to assist with various tasks, including generating text, answering questions, and providing information. My primary function is to help users with their inquiries and provide them with useful and accurate information.\", \"eval_count\": 54, \"eval_duration\": 1252464000, \"prompt_eval_count\": 36, \"prompt_eval_duration\": 24478000, \"total_duration\": 1279734382}",
+      "stderr": "",
+      "iteration": 3
+    }
+  ],
+  "summary": {
+    "measurement_count": 3,
+    "metrics": {
+      "ttft_ms": {
+        "mean": 26.624327333896264,
+        "median": 28.068163002899382,
+        "min": 23.383291998470668,
+        "max": 28.421527000318747,
+        "stdev": 2.8123742750167584
+      },
+      "generation_time_ms": {
+        "mean": 1207.0753333333332,
+        "median": 1252.464,
+        "min": 1065.088,
+        "max": 1303.674,
+        "stdev": 125.60222189648292
+      },
+      "output_tokens": {
+        "mean": 54.0,
+        "median": 54.0,
+        "min": 54.0,
+        "max": 54.0,
+        "stdev": 0.0
+      },
+      "tokens_per_second": {
+        "mean": 45.07881534555885,
+        "median": 43.115011688958724,
+        "min": 41.421398294358866,
+        "max": 50.70003605335897,
+        "stdev": 4.941221839478841
+      },
+      "total_time_ms": {
+        "mean": 1232.873502,
+        "median": 1279.734382,
+        "min": 1087.444546,
+        "max": 1331.441578,
+        "stdev": 128.57135941562981
+      }
+    }
+  },
+  "process": {
+    "exit_code": 0,
+    "stdout": "{\"response\": \"I am Qwen, a large language model created by Alibaba Cloud. I am designed to assist with various tasks, including generating text, answering questions, and providing information. My primary function is to help users with their inquiries and provide them with useful and accurate information.\", \"eval_count\": 54, \"eval_duration\": 1065088000, \"prompt_eval_count\": 36, \"prompt_eval_duration\": 17707000, \"total_duration\": 1087444546}\n{\"response\": \"I am Qwen, a large language model created by Alibaba Cloud. I am designed to assist with various tasks, including generating text, answering questions, and providing information. My primary function is to help users with their inquiries and provide them with useful and accurate information.\", \"eval_count\": 54, \"eval_duration\": 1303674000, \"prompt_eval_count\": 36, \"prompt_eval_duration\": 24487000, \"total_duration\": 1331441578}\n{\"response\": \"I am Qwen, a large language model created by Alibaba Cloud. I am designed to assist with various tasks, including generating text, answering questions, and providing information. My primary function is to help users with their inquiries and provide them with useful and accurate information.\", \"eval_count\": 54, \"eval_duration\": 1252464000, \"prompt_eval_count\": 36, \"prompt_eval_duration\": 24478000, \"total_duration\": 1279734382}",
+    "stderr": ""
+  },
+  "artifact": {
+    "path": "artifacts/evidence/jalon5-ollama-qwen2.5-0.5b-artifact.json",
+    "sha256": "e7c1c184bb571cc28e53ce726df8df971bdc60a56aa21ff616f1de3d1f6ead16",
+    "size": 62616
+  }
+}
