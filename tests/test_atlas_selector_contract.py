@@ -21,13 +21,13 @@ def row(**extra):
 
 
 def test_atlas_delegates_to_canonical_selector():
-    result = recommend([row()], workload="chat", hardware="i5-1035G1", ram=8, vram=0, context=4096, top_n=1)
+    result = recommend([row()], workload="chat", hardware="i5-1035G1", ram=8, vram=0, context=4096, top_n=1, required_runtime="llama.cpp")
     assert result["selector"] == "LEONES-model-selection"
     assert result["selection_policy"]["price_in_score"] is False
     assert result["candidates"][0]["fit_score"] >= 0
 
 
 def test_incompatible_model_is_rejected_by_selector():
-    result = recommend([row(estimated_memory_gb="16")], workload="chat", hardware="i5-1035G1", ram=8, vram=0, context=4096, top_n=1)
+    result = recommend([row(estimated_memory_gb="16")], workload="chat", hardware="i5-1035G1", ram=8, vram=0, context=4096, top_n=1, required_runtime="llama.cpp")
     assert result["counts"]["rejected"] == 1
     assert result["candidates"] == []
