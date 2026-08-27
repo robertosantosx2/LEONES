@@ -1,0 +1,52 @@
+name: JALON 3 runtime execution contract
+
+on:
+  pull_request:
+    paths:
+      - 'schemas/runtime-benchmark-evidence.v1.1.json'
+      - 'scripts/runtime_benchmark_evidence.py'
+      - 'tests/test_runtime_benchmark_evidence_v1_1_contract.py'
+      - 'docs/jalones/jalon3.md'
+      - '.github/workflows/jalon3-runtime-execution-contract.yml'
+  push:
+    branches:
+      - 'jalon3-runtime-execution-contract-v1'
+      - main
+    paths:
+      - 'schemas/runtime-benchmark-evidence.v1.1.json'
+      - 'scripts/runtime_benchmark_evidence.py'
+      - 'tests/test_runtime_benchmark_evidence_v1_1_contract.py'
+      - 'docs/jalones/jalon3.md'
+      - '.github/workflows/jalon3-runtime-execution-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pytest jsonschema
+      - name: Compile runner
+        run: python -m py_compile scripts/runtime_benchmark_evidence.py
+      - name: Validate schema with Draft 2020-12
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+          p = Path('schemas/runtime-benchmark-evidence.v1.1.json')
+          schema = json.loads(p.read_text(encoding='utf-8'))
+          Draft202012Validator.check_schema(schema)
+          print(f'schema: OK {p}')
+          PY
+      - name: Run JALON 3 contract tests
+        run: python -m pytest -q tests/test_runtime_benchmark_evidence_v1_1_contract.py
