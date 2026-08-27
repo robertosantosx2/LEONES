@@ -1,0 +1,162 @@
+{
+  "schema": "runtime-benchmark-evidence.v1.1",
+  "execution_id": "rt-4dec1240188b4299ba5ff32e8d4bf197",
+  "timestamp_start": "2026-08-27T19:55:41.211Z",
+  "timestamp_end": "2026-08-27T19:55:55.322Z",
+  "model": {
+    "id": "qwen3-0.6b",
+    "name": "Qwen3-0.6B",
+    "revision": "unknown",
+    "source": "local",
+    "artifact": "/home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf",
+    "quantization": "Q4_K_M",
+    "context_length": 2048
+  },
+  "protocol": {
+    "prompt_protocol_id": "concise-paragraph-v1",
+    "prompt_sha256": "8a73291aed1faa6662a9258639afbafec0c531dcda26bc403ef37e1a00547bb9",
+    "input_tokens": 7,
+    "output_token_limit": 128,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "seed": 42,
+    "context": 2048,
+    "warmup_iterations": 1,
+    "measurement_iterations": 3
+  },
+  "runtime": {
+    "name": "llama.cpp",
+    "version": "load_backend: loaded CPU backend from /usr/lib/x86_64-linux-gnu/ggml/backends0/libggml-cpu-icelake.so",
+    "revision": null,
+    "backend": "cpu",
+    "binary": "/home/roberto/leones-work/LEONES/llama-cli",
+    "binary_sha256": null,
+    "command": [
+      "llama-cli",
+      "-m",
+      "artifacts/models/Qwen3-0.6B-Q4_K_M.gguf",
+      "-t",
+      "4",
+      "-tb",
+      "4",
+      "-c",
+      "2048",
+      "-n",
+      "128",
+      "--warmup",
+      "--perf",
+      "--single-turn",
+      "-p",
+      "Explain in one concise paragraph."
+    ]
+  },
+  "hardware": {
+    "host": "Aspire-A515-55",
+    "os": "Linux-7.0.0-30-generic-x86_64-desconocido-with-glibc2.43",
+    "kernel": "7.0.0-30-generic",
+    "architecture": "x86_64",
+    "cpu": "desconocido",
+    "cpu_threads": 8,
+    "physical_cores": 4,
+    "ram_total_mb": 7199.8,
+    "gpu": null,
+    "vram_total_mb": null
+  },
+  "measurements": [
+    {
+      "ttft_ms": 1134.624596001231,
+      "first_output_ms": 1134.624596001231,
+      "generation_time_ms": 3540.723302998231,
+      "output_tokens": null,
+      "tokens_per_second": 39.3,
+      "total_time_ms": 4675.348,
+      "peak_memory_mb": 866.7,
+      "peak_vram_mb": null,
+      "power_w": null,
+      "exit_code": 0,
+      "stdout": "\nLoading model... |\b-\b\\\b|\b/\b-\b\\\b|\b/\b-\b\\\b \b\n\n\n▄▄ ▄▄\n██ ██\n██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄\n██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██\n██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀\n                                    ██    ██\n                                    ▀▀    ▀▀\n\nbuild      : b8681-Debian\nmodel      : Qwen3-0.6B-Q4_K_M.gguf\nmodalities : text\n\navailable commands:\n  /exit or Ctrl+C     stop or exit\n  /regen              regenerate the last response\n  /clear              clear the chat history\n  /read <file>        add a text file\n  /glob <pattern>     add text files using globbing pattern\n\n\n> Explain in one concise paragraph.\n\n|\b-\b\\\b \b[Start thinking]\nOkay, the user wants me to explain in a concise paragraph. Let me start by understanding the request. They probably need a brief definition or explanation. Since there's no specific context given, I should make it general. I'll focus on what a concise paragraph is, maybe starting with \"A concise paragraph is a well-structured sentence or a paragraph that is succinct and focused.\" Then include an example if possible. But wait, the example might not be necessary here. Just make sure the explanation is clear and concise. Let me check the structure: start with the definition, then maybe a brief example if allowed. Since the user\n\n[ Prompt: 70,2 t/s | Generation: 39,3 t/s ]\n\nExiting...\n",
+      "stderr": "load_backend: loaded CPU backend from /usr/lib/x86_64-linux-gnu/ggml/backends0/libggml-cpu-icelake.so\nllama_memory_breakdown_print: | memory breakdown [MiB] | total   free    self   model   context   compute    unaccounted |\nllama_memory_breakdown_print: |   - Host               |                  897 =   370 +     224 +     302                |\nllama_memory_breakdown_print: |   - CPU_REPACK         |                  204 =   204 +       0 +       0                |\n",
+      "iteration": 1
+    },
+    {
+      "ttft_ms": 1087.2670449971338,
+      "first_output_ms": 1087.2670449971338,
+      "generation_time_ms": 3671.7514640004083,
+      "output_tokens": null,
+      "tokens_per_second": 36.6,
+      "total_time_ms": 4759.019,
+      "peak_memory_mb": 866.7,
+      "peak_vram_mb": null,
+      "power_w": null,
+      "exit_code": 0,
+      "stdout": "\nLoading model... |\b-\b\\\b|\b/\b-\b\\\b|\b/\b-\b\\\b \b\n\n\n▄▄ ▄▄\n██ ██\n██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄\n██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██\n██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀\n                                    ██    ██\n                                    ▀▀    ▀▀\n\nbuild      : b8681-Debian\nmodel      : Qwen3-0.6B-Q4_K_M.gguf\nmodalities : text\n\navailable commands:\n  /exit or Ctrl+C     stop or exit\n  /regen              regenerate the last response\n  /clear              clear the chat history\n  /read <file>        add a text file\n  /glob <pattern>     add text files using globbing pattern\n\n\n> Explain in one concise paragraph.\n\n|\b \b[Start thinking]\nOkay, the user wants me to explain in one concise paragraph. Let me start by understanding the query. The user is likely a language learner or someone needing a brief guide on how to explain something. They might be writing a report or preparing a presentation, and need a clear and concise summary.\n\nFirst, I need to identify the key elements of a concise explanation. It should include the topic, the main points, and the purpose. Maybe start with the subject, then the main ideas, and end with the purpose. Make sure to use simple language and avoid unnecessary details. Check for any potential issues, like if the user needs\n\n[ Prompt: 160,9 t/s | Generation: 36,6 t/s ]\n\nExiting...\n",
+      "stderr": "load_backend: loaded CPU backend from /usr/lib/x86_64-linux-gnu/ggml/backends0/libggml-cpu-icelake.so\nllama_memory_breakdown_print: | memory breakdown [MiB] | total   free    self   model   context   compute    unaccounted |\nllama_memory_breakdown_print: |   - Host               |                  897 =   370 +     224 +     302                |\nllama_memory_breakdown_print: |   - CPU_REPACK         |                  204 =   204 +       0 +       0                |\n",
+      "iteration": 2
+    },
+    {
+      "ttft_ms": 1334.834495002724,
+      "first_output_ms": 1334.834495002724,
+      "generation_time_ms": 3340.822604997811,
+      "output_tokens": null,
+      "tokens_per_second": 41.5,
+      "total_time_ms": 4675.657,
+      "peak_memory_mb": 866.7,
+      "peak_vram_mb": null,
+      "power_w": null,
+      "exit_code": 0,
+      "stdout": "\nLoading model... |\b-\b\\\b|\b/\b-\b\\\b|\b/\b-\b\\\b|\b/\b \b\n\n\n▄▄ ▄▄\n██ ██\n██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄\n██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██\n██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀\n                                    ██    ██\n                                    ▀▀    ▀▀\n\nbuild      : b8681-Debian\nmodel      : Qwen3-0.6B-Q4_K_M.gguf\nmodalities : text\n\navailable commands:\n  /exit or Ctrl+C     stop or exit\n  /regen              regenerate the last response\n  /clear              clear the chat history\n  /read <file>        add a text file\n  /glob <pattern>     add text files using globbing pattern\n\n\n> Explain in one concise paragraph.\n\n|\b-\b \b[Start thinking]\nOkay, the user wants me to explain in one concise paragraph. Let me start by understanding the query. The user is probably a student or a student working on a project, looking to explain something clearly. The example response uses a single paragraph, so they need a clear and concise summary.\n\nFirst, I need to identify the key components of the explanation. The user is likely expecting a straightforward answer. I should focus on the main points without getting too detailed. Maybe start with defining the concept, then outline its purpose, and briefly mention an example. \n\nWait, the example response is in English, so I should make sure the\n\n[ Prompt: 86,8 t/s | Generation: 41,5 t/s ]\n\nExiting...\n",
+      "stderr": "load_backend: loaded CPU backend from /usr/lib/x86_64-linux-gnu/ggml/backends0/libggml-cpu-icelake.so\nllama_memory_breakdown_print: | memory breakdown [MiB] | total   free    self   model   context   compute    unaccounted |\nllama_memory_breakdown_print: |   - Host               |                  897 =   370 +     224 +     302                |\nllama_memory_breakdown_print: |   - CPU_REPACK         |                  204 =   204 +       0 +       0                |\n",
+      "iteration": 3
+    }
+  ],
+  "summary": {
+    "measurement_count": 3,
+    "metrics": {
+      "ttft_ms": {
+        "mean": 1185.5753786670296,
+        "median": 1134.624596001231,
+        "min": 1087.2670449971338,
+        "max": 1334.834495002724,
+        "stdev": 131.4130787488851
+      },
+      "generation_time_ms": {
+        "mean": 3517.7657906654836,
+        "median": 3540.723302998231,
+        "min": 3340.822604997811,
+        "max": 3671.7514640004083,
+        "stdev": 166.6546217768094
+      },
+      "tokens_per_second": {
+        "mean": 39.13333333333333,
+        "median": 39.3,
+        "min": 36.6,
+        "max": 41.5,
+        "stdev": 2.454248017893328
+      },
+      "total_time_ms": {
+        "mean": 4703.341333333334,
+        "median": 4675.657,
+        "min": 4675.348,
+        "max": 4759.019,
+        "stdev": 48.21852127899966
+      },
+      "peak_memory_mb": {
+        "mean": 866.7,
+        "median": 866.7,
+        "min": 866.7,
+        "max": 866.7,
+        "stdev": 0.0
+      }
+    }
+  },
+  "process": {
+    "exit_code": 0,
+    "stdout": "\nLoading model... |\b-\b\\\b|\b/\b-\b\\\b|\b/\b-\b\\\b \b\n\n\n▄▄ ▄▄\n██ ██\n██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄\n██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██\n██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀\n                                    ██    ██\n                                    ▀▀    ▀▀\n\nbuild      : b8681-Debian\nmodel      : Qwen3-0.6B-Q4_K_M.gguf\nmodalities : text\n\navailable commands:\n  /exit or Ctrl+C     stop or exit\n  /regen              regenerate the last response\n  /clear              clear the chat history\n  /read <file>        add a text file\n  /glob <pattern>     add text files using globbing pattern\n\n\n> Explain in one concise paragraph.\n\n|\b-\b\\\b \b[Start thinking]\nOkay, the user wants me to explain in a concise paragraph. Let me start by understanding the request. They probably need a brief definition or explanation. Since there's no specific context given, I should make it general. I'll focus on what a concise paragraph is, maybe starting with \"A concise paragraph is a well-structured sentence or a paragraph that is succinct and focused.\" Then include an example if possible. But wait, the example might not be necessary here. Just make sure the explanation is clear and concise. Let me check the structure: start with the definition, then maybe a brief example if allowed. Since the user\n\n[ Prompt: 70,2 t/s | Generation: 39,3 t/s ]\n\nExiting...\n\n\nLoading model... |\b-\b\\\b|\b/\b-\b\\\b|\b/\b-\b\\\b \b\n\n\n▄▄ ▄▄\n██ ██\n██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄\n██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██\n██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀\n                                    ██    ██\n                                    ▀▀    ▀▀\n\nbuild      : b8681-Debian\nmodel      : Qwen3-0.6B-Q4_K_M.gguf\nmodalities : text\n\navailable commands:\n  /exit or Ctrl+C     stop or exit\n  /regen              regenerate the last response\n  /clear              clear the chat history\n  /read <file>        add a text file\n  /glob <pattern>     add text files using globbing pattern\n\n\n> Explain in one concise paragraph.\n\n|\b \b[Start thinking]\nOkay, the user wants me to explain in one concise paragraph. Let me start by understanding the query. The user is likely a language learner or someone needing a brief guide on how to explain something. They might be writing a report or preparing a presentation, and need a clear and concise summary.\n\nFirst, I need to identify the key elements of a concise explanation. It should include the topic, the main points, and the purpose. Maybe start with the subject, then the main ideas, and end with the purpose. Make sure to use simple language and avoid unnecessary details. Check for any potential issues, like if the user needs\n\n[ Prompt: 160,9 t/s | Generation: 36,6 t/s ]\n\nExiting...\n\n\nLoading model... |\b-\b\\\b|\b/\b-\b\\\b|\b/\b-\b\\\b|\b/\b \b\n\n\n▄▄ ▄▄\n██ ██\n██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄\n██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██\n██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀\n                                    ██    ██\n                                    ▀▀    ▀▀\n\nbuild      : b8681-Debian\nmodel      : Qwen3-0.6B-Q4_K_M.gguf\nmodalities : text\n\navailable commands:\n  /exit or Ctrl+C     stop or exit\n  /regen              regenerate the last response\n  /clear              clear the chat history\n  /read <file>        add a text file\n  /glob <pattern>     add text files using globbing pattern\n\n\n> Explain in one concise paragraph.\n\n|\b-\b \b[Start thinking]\nOkay, the user wants me to explain in one concise paragraph. Let me start by understanding the query. The user is probably a student or a student working on a project, looking to explain something clearly. The example response uses a single paragraph, so they need a clear and concise summary.\n\nFirst, I need to identify the key components of the explanation. The user is likely expecting a straightforward answer. I should focus on the main points without getting too detailed. Maybe start with defining the concept, then outline its purpose, and briefly mention an example. \n\nWait, the example response is in English, so I should make sure the\n\n[ Prompt: 86,8 t/s | Generation: 41,5 t/s ]\n\nExiting...\n",
+    "stderr": "load_backend: loaded CPU backend from /usr/lib/x86_64-linux-gnu/ggml/backends0/libggml-cpu-icelake.so\nllama_memory_breakdown_print: | memory breakdown [MiB] | total   free    self   model   context   compute    unaccounted |\nllama_memory_breakdown_print: |   - Host               |                  897 =   370 +     224 +     302                |\nllama_memory_breakdown_print: |   - CPU_REPACK         |                  204 =   204 +       0 +       0                |\n\nload_backend: loaded CPU backend from /usr/lib/x86_64-linux-gnu/ggml/backends0/libggml-cpu-icelake.so\nllama_memory_breakdown_print: | memory breakdown [MiB] | total   free    self   model   context   compute    unaccounted |\nllama_memory_breakdown_print: |   - Host               |                  897 =   370 +     224 +     302                |\nllama_memory_breakdown_print: |   - CPU_REPACK         |                  204 =   204 +       0 +       0                |\n\nload_backend: loaded CPU backend from /usr/lib/x86_64-linux-gnu/ggml/backends0/libggml-cpu-icelake.so\nllama_memory_breakdown_print: | memory breakdown [MiB] | total   free    self   model   context   compute    unaccounted |\nllama_memory_breakdown_print: |   - Host               |                  897 =   370 +     224 +     302                |\nllama_memory_breakdown_print: |   - CPU_REPACK         |                  204 =   204 +       0 +       0                |\n"
+  },
+  "artifact": {
+    "path": "/home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf",
+    "sha256": "b0638f08417a2d3c8652760462eb5407c6e30173cf9608ad0820757a281eea0e",
+    "size": 396704416
+  }
+}
