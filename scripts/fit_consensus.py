@@ -120,14 +120,24 @@ def reduce_estimator_outputs(sources: dict[str, Any] | None = None) -> dict[str,
     return {"required_estimators":len(SOURCES),"categories":list(CATEGORIES),"required_per_estimator_per_category":6,"expected_external_candidates":EXPECTED_EXTERNAL_CANDIDATES,"selected_per_category":3,"selected_total":9,"selection_policy":"per category: smallest + lower-middle + largest; Dense=total_parameters_m, MoE=active_parameters_m","validation":validation,"selected":selected_by_category,"measurement":"not_measured"}
 
 
+def _fit_value(item: dict[str, Any]) -> Any:
+    """Read the estimator's real fit field, with explicit legacy aliases."""
+    for key in ("fit", "fit_level", "verdict"):
+        if key in item and item[key] not in (None, ""):
+            return item[key]
+    return None
+
+
 def build_consensus(model_id: str, sources: dict[str, Any] | None = None) -> dict[str, Any]:
     sources=sources or {}; observations={}; values=[]
     for source in SOURCES:
         item=next((x for x in _items(sources.get(source)) if _norm(x.get("model_id") or x.get("model") or x.get("id") or x.get("name"))==_norm(model_id)),None)
-        observations[source]=item; value=item.get("fit") if item else None; text=_norm(value)
+        observations[source]=item
+        value=_fit_value(item) if item else None
+        text=_norm(value)
         if isinstance(value,bool): values.append("fit" if value else "no_fit")
         elif text in {"fit","good","yes","compatible","can run","runs"}: values.append("fit")
-        elif text in {"no fit","impossible","cannot","incompatible","no"}: values.append("no_fit")
+        elif text in {"no fit","impossible","cannot","incompatible","no","not compatible","cannot run"}: values.append("no_fit")
     if not values: consensus,status="unknown","METHODOLOGY_GAP"
     elif all(v=="fit" for v in values): consensus,status="fit","AGREE_FIT"
     elif all(v=="no_fit" for v in values): consensus,status="no_fit","AGREE_NO_FIT"
