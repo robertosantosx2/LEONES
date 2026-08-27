@@ -27,13 +27,16 @@ def _load_feed(path: Path) -> list[dict[str, Any]]:
 
 def build_candidates(*, feed: list[dict[str, Any]], llmfit_payload: Any,
                      workload: str, hardware: str, ram_gb: float,
-                     vram_gb: float = 0, context_tokens: int = 4096,
+                     required_runtime: str, vram_gb: float = 0, context_tokens: int = 4096,
                      top_n: int = 10, require_llmfit_fit: bool = False) -> dict[str, Any]:
     """Return canonical selector output plus explicit LLMFit provenance."""
+    if not required_runtime:
+        raise ValueError("inference runtime must be decided before model evaluation")
     external = normalize(llmfit_payload)
     result = select(feed, workload=workload, hardware=hardware, ram_gb=ram_gb,
                     vram_gb=vram_gb, context_tokens=context_tokens, top_n=top_n,
-                    llmfit=external, require_llmfit_fit=require_llmfit_fit)
+                    llmfit=external, require_llmfit_fit=require_llmfit_fit,
+                    required_runtime=required_runtime)
     result["llmfit_provenance"] = {
         "source": external["source"],
         "source_version": external.get("source_version"),
@@ -58,6 +61,7 @@ def main() -> int:
     parser.add_argument("--feed", type=Path, default=DEFAULT_FEED)
     parser.add_argument("--workload", required=True)
     parser.add_argument("--hardware", required=True)
+    parser.add_argument("--runtime", required=True)
     parser.add_argument("--ram", type=float, required=True)
     parser.add_argument("--vram", type=float, default=0)
     parser.add_argument("--context", type=int, default=4096)
@@ -70,7 +74,7 @@ def main() -> int:
     result = build_candidates(
         feed=_load_feed(args.feed), llmfit_payload=payload,
         workload=args.workload, hardware=args.hardware, ram_gb=args.ram,
-        vram_gb=args.vram, context_tokens=args.context, top_n=args.top_n,
+        required_runtime=args.runtime, vram_gb=args.vram, context_tokens=args.context, top_n=args.top_n,
         require_llmfit_fit=args.require_llmfit_fit,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
