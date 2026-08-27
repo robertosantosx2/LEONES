@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Revisa la legibilidad básica de los scripts propios de LEONES.
 
-Solo analiza Python que se comporta como script ejecutable. No modifica
-archivos ni toca código de terceros.
+Solo analiza Python que se comporta como script ejecutable cuando se usa el
+comando completo. La función ``check_file`` también puede probar archivos
+pequeños sin punto de entrada, lo que facilita las pruebas automáticas.
+No modifica archivos ni toca código de terceros.
 """
 from __future__ import annotations
 
@@ -41,12 +43,10 @@ def has_initial_docstring(lines: list[str]) -> bool:
 
 
 def check_file(path: Path) -> list[str]:
-    """Devuelve avisos sencillos para un script ejecutable."""
+    """Devuelve avisos sencillos para un archivo Python candidato a script."""
     lines = path.read_text(encoding="utf-8").splitlines()
-    if not is_executable_script(lines):
-        return []
-
     problems: list[str] = []
+
     if not lines or not lines[0].startswith("#!"):
         problems.append("falta el encabezado ejecutable (shebang)")
 
@@ -75,6 +75,9 @@ def main() -> int:
 
     failures = 0
     for path in python_files(args.directory):
+        lines = path.read_text(encoding="utf-8").splitlines()
+        if not is_executable_script(lines):
+            continue
         problems = check_file(path)
         if not problems:
             continue
