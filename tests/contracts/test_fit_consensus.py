@@ -25,6 +25,16 @@ class FitConsensusTests(unittest.TestCase):
         self.assertEqual(result["disagreement"], "FIT_DISAGREEMENT")
         self.assertEqual(result["measurement"], "not_measured")
 
+    def test_supported_external_fit_fields_are_not_mixed_with_measurement(self):
+        sources = {
+            "llmfit": {"candidates": [{"model_id": "m", "fit_level": "Good"}]},
+            "canirun_ai": {"candidates": [{"model_id": "m", "fit": "yes"}]},
+            "localmodel_run": {"candidates": [{"model_id": "m", "verdict": "runs"}]},
+        }
+        result = build_consensus("m", sources)
+        self.assertEqual(result["fit_external"], "fit")
+        self.assertEqual(result["measurement"], "not_measured")
+
 
 if __name__ == "__main__":
     unittest.main()
