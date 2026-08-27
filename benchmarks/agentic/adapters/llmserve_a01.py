@@ -8,9 +8,9 @@ import time
 from pathlib import Path
 from typing import Any, Callable
 
-from runner import RunConfig, Trace, build_result
-from a01_contract import ALLOWED_TOOLS, safe_workspace_path, validate_runtime_plan
-from graders.a01_grader import grade_a01
+from benchmarks.agentic.runner import RunConfig, Trace, build_result
+from benchmarks.agentic.adapters.a01_contract import ALLOWED_TOOLS, safe_workspace_path, validate_runtime_plan
+from benchmarks.agentic.graders.a01_grader import grade_a01
 from benchmarks.evidence.runtime_measurement import build_measurement
 
 
