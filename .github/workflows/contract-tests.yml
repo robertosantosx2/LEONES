@@ -50,6 +50,10 @@ jobs:
         shell: bash
         run: python -m pip install --upgrade pytest
 
+      - name: Check script quality
+        shell: bash
+        run: python scripts/check_script_quality.py --strict
+
       - name: Validate JSON schemas
         shell: bash
         run: |
