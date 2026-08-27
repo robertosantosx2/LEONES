@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.dev/schemas/runtime-registry.v1.1.schema.json",
+  "title": "LEONES Runtime Registry V1.1",
+  "description": "Registry contract for trusted runtime adapters. Selection data contains capabilities and opaque trusted entrypoint references; concrete commands are resolved only by the trusted adapter.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "runtimes"],
+  "properties": {
+    "contract": {
+      "const": "runtime-registry.v1.1"
+    },
+    "runtimes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/runtime"
+      }
+    }
+  },
+  "$defs": {
+    "stringArray": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_id",
+        "display_name",
+        "version_policy",
+        "adapter_id",
+        "entrypoint_ref",
+        "availability",
+        "execution_modes",
+        "architectures",
+        "formats",
+        "hardware",
+        "capabilities",
+        "metrics",
+        "measurement_policy"
+      ],
+      "properties": {
+        "runtime_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "display_name": { "type": "string", "minLength": 1 },
+        "version_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode"],
+          "properties": {
+            "mode": {
+              "enum": ["exact", "minimum", "compatible", "host_discovered"]
+            },
+            "version": { "type": "string", "minLength": 1 }
+          }
+        },
+        "adapter_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "entrypoint_ref": {
+          "type": "string",
+          "description": "Opaque reference resolved by the trusted adapter. It is not a shell command and must never be inferred from model metadata."
+        },
+        "availability": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "probe"],
+          "properties": {
+            "status": {
+              "enum": ["available", "unavailable", "unknown", "blocked"]
+            },
+            "probe": { "type": "string", "minLength": 1 },
+            "checked_at": { "type": "string", "format": "date-time" }
+          }
+        },
+        "execution_modes": {
+          "type": "array",
+          "items": { "enum": ["cpu", "gpu", "hybrid", "serving"] },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "architectures": { "$ref": "#/$defs/stringArray" },
+        "formats": { "$ref": "#/$defs/stringArray" },
+        "hardware": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["accelerators", "memory", "bandwidth"],
+          "properties": {
+            "accelerators": { "$ref": "#/$defs/stringArray" },
+            "memory": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["unit", "minimum_gb"],
+              "properties": {
+                "unit": { "const": "GB" },
+                "minimum_gb": { "type": "number", "minimum": 0 }
+              }
+            },
+            "bandwidth": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["required"],
+              "properties": {
+                "required": { "type": "boolean" },
+                "minimum_gbps": { "type": "number", "minimum": 0 }
+              }
+            },
+            "backends": { "$ref": "#/$defs/stringArray" }
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["batching", "kv_cache", "speculative_decoding", "multimodal"],
+          "properties": {
+            "batching": { "type": "boolean" },
+            "kv_cache": { "type": "boolean" },
+            "speculative_decoding": { "type": "boolean" },
+            "multimodal": { "type": "boolean" },
+            "concurrency": { "type": "boolean" },
+            "streaming": { "type": "boolean" }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source", "required_fields"],
+          "properties": {
+            "source": { "enum": ["adapter", "runtime_api", "stdout", "serving_api", "unsupported"] },
+            "required_fields": { "$ref": "#/$defs/stringArray" }
+          }
+        },
+        "measurement_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["estimated_tps_allowed", "measured_tps_requires_benchmark"],
+          "properties": {
+            "estimated_tps_allowed": { "type": "boolean" },
+            "measured_tps_requires_benchmark": { "const": true }
+          }
+        },
+        "eligibility_gate": {
+          "type": "string",
+          "description": "Optional runtime-specific eligibility gate evaluated by the adapter, not by the selector."
+        }
+      }
+    }
+  }
+}
