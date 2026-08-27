@@ -65,8 +65,12 @@ def measure(execution: dict[str, Any]) -> BenchmarkMeasurement:
         raise ValueError("runtime_id and model_ref are required")
     if isinstance(tokens_generated, bool) or not isinstance(tokens_generated, int):
         raise ValueError("tokens_generated must be an integer")
+    if tokens_generated <= 0:
+        raise ValueError("tokens_generated must be positive")
     if isinstance(elapsed_seconds, bool) or not isinstance(elapsed_seconds, (int, float)):
         raise ValueError("elapsed_seconds must be numeric")
+    if elapsed_seconds <= 0:
+        raise ValueError("elapsed_seconds must be positive")
 
     return BenchmarkMeasurement(
         execution_id=execution_id,
