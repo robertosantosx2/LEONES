@@ -23,9 +23,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install test/runtime dependencies
-        run: python -m pip install --disable-pip-version-check pytest
-
       - name: Validate canonical A01 fixtures
         run: |
           python -m json.tool tests/fixtures/a01/selector-output.json >/dev/null
@@ -64,7 +61,8 @@ jobs:
           assert benchmark['measured_tps'] is not None
           assert benchmark['measured_tps'] > 0
           assert payload['router']
-          assert (root.parent / 'a01-runtime-benchmark' / 'a01-runtime-benchmark.v1.json').exists()
+          assert (root / 'a01-executor-result.json').exists()
+          assert (root / 'router-decision.v1.json').exists()
           print('A01 canonical gate: PASS')
           print('runtime:', benchmark['runtime'])
           print('model:', benchmark['model'])
@@ -79,4 +77,4 @@ jobs:
           path: |
             artifacts/a01-runtime-benchmark/a01-runtime-benchmark.v1.json
             artifacts/a01-runtime-benchmark/a01-executor-result.json
-            artifacts/router-decision.v1.json
+            artifacts/a01-runtime-benchmark/router-decision.v1.json
