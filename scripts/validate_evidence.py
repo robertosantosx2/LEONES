@@ -3,14 +3,33 @@
 
 The four labels describe provenance, not quality or model performance. In
 particular, a reported number cannot become measured merely by renaming it.
-Measured evidence needs a concrete execution id and timestamp; verified
- evidence additionally records an independent verification method.
+Measured evidence needs a concrete execution id, timestamp and explicit
+real-world measurement kind; synthetic runs can never be promoted to measured
+or verified performance evidence.
 """
 from __future__ import annotations
 
 from typing import Any
 
 EVIDENCE_TYPES = ("estimated", "reported", "measured", "verified")
+REAL_MEASUREMENT_KIND = "real"
+SYNTHETIC_MARKERS = {
+    "synthetic",
+    "simulated",
+    "simulation",
+    "fixture",
+    "fake",
+    "controlled",
+}
+
+
+def _is_synthetic(evidence: dict[str, Any]) -> bool:
+    """Return True when any explicit run/measurement provenance says synthetic."""
+    for field in ("measurement_kind", "measurement_type", "run_type", "execution_kind", "provenance"):
+        value = evidence.get(field)
+        if isinstance(value, str) and value.strip().lower() in SYNTHETIC_MARKERS:
+            return True
+    return False
 
 
 def validate_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
@@ -24,6 +43,10 @@ def validate_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("measured/verified evidence requires execution_id")
         if not evidence.get("measured_at"):
             raise ValueError("measured/verified evidence requires measured_at")
+        if evidence.get("measurement_kind") != REAL_MEASUREMENT_KIND:
+            raise ValueError("measured/verified evidence requires measurement_kind=real")
+        if _is_synthetic(evidence):
+            raise ValueError("synthetic evidence cannot be measured or verified")
 
     if evidence_type == "verified":
         for field in ("verified_at", "verifier", "verification_method"):
