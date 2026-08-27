@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Feed measured runtime evidence back into Atlas without changing provenance."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -12,7 +13,9 @@ except ModuleNotFoundError:  # ejecución directa
     from validate_evidence import validate_evidence
 
 
-def integrate_measurements(rows: list[dict[str, Any]], measurements: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def integrate_measurements(
+    rows: list[dict[str, Any]], measurements: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
     """Add the latest compatible measured result to each Atlas row.
 
     Estimated/reported rows remain untouched. A measurement must retain its
@@ -36,7 +39,8 @@ def integrate_measurements(rows: list[dict[str, Any]], measurements: list[dict[s
     result: list[dict[str, Any]] = []
     for row in rows:
         matches = [
-            m for m in valid
+            m
+            for m in valid
             if (not row.get("model_id") or m.get("model_id") == row.get("model_id"))
             and m.get("hardware") == row.get("hardware")
             and m.get("runtime") == row.get("runtime")

@@ -1,4 +1,5 @@
 """Factory for declarative runtime adapters."""
+
 from __future__ import annotations
 from scripts.runtimes.base import RuntimeAdapter
 

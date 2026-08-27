@@ -28,7 +28,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--new-tokens", type=int, default=32)
     parser.add_argument("--context", type=int, default=2048)
     parser.add_argument("--seed", type=int, default=None)
-    parser.add_argument("--llama-cli", default="llama-cli", help="llama.cpp CLI executable")
+    parser.add_argument(
+        "--llama-cli", default="llama-cli", help="llama.cpp CLI executable"
+    )
     parser.add_argument("--output", type=Path, default=None)
     parser.add_argument(
         "--skip-validation",
@@ -52,9 +54,15 @@ def parse_timing(stdout: str, stderr: str) -> dict[str, float | int | None]:
     """Extract only explicit llama.cpp timing counters when present."""
     text = f"{stdout}\n{stderr}"
     prompt_tokens = first_int(r"prompt\s+(?:eval|tokens?)\s*[:=]\s*(\d+)", text)
-    generated_tokens = first_int(r"(?:generated|predicted|sampled)\s+(?:tokens?)\s*[:=]\s*(\d+)", text)
-    generation_ms = first_float(r"(?:eval|generation)\s+time\s*[:=]\s*([0-9.]+)\s*ms", text)
-    tokens_per_second = first_float(r"(?:tokens?/s|t/s|tokens per second)\s*[:=]\s*([0-9.]+)", text)
+    generated_tokens = first_int(
+        r"(?:generated|predicted|sampled)\s+(?:tokens?)\s*[:=]\s*(\d+)", text
+    )
+    generation_ms = first_float(
+        r"(?:eval|generation)\s+time\s*[:=]\s*([0-9.]+)\s*ms", text
+    )
+    tokens_per_second = first_float(
+        r"(?:tokens?/s|t/s|tokens per second)\s*[:=]\s*([0-9.]+)", text
+    )
     ttft_ms = first_float(r"(?:ttft|time to first token)\s*[:=]\s*([0-9.]+)\s*ms", text)
     return {
         "prompt_tokens": prompt_tokens,
@@ -68,12 +76,27 @@ def parse_timing(stdout: str, stderr: str) -> dict[str, float | int | None]:
 def validate_result(payload: dict) -> list[str]:
     """Minimal inline validation matching validate_result.py v0.1."""
     required = {
-        "schema_version", "test", "timestamp", "model", "runtime", "hardware",
-        "configuration", "warmup", "repetitions", "metrics", "result",
+        "schema_version",
+        "test",
+        "timestamp",
+        "model",
+        "runtime",
+        "hardware",
+        "configuration",
+        "warmup",
+        "repetitions",
+        "metrics",
+        "result",
     }
     metric_fields = {
-        "ttft_ms", "generation_ms", "total_ms", "prompt_tokens",
-        "generated_tokens", "tokens_per_second", "peak_ram_bytes", "peak_vram_bytes",
+        "ttft_ms",
+        "generation_ms",
+        "total_ms",
+        "prompt_tokens",
+        "generated_tokens",
+        "tokens_per_second",
+        "peak_ram_bytes",
+        "peak_vram_bytes",
     }
     errors: list[str] = []
     missing = required - payload.keys()
@@ -81,7 +104,16 @@ def validate_result(payload: dict) -> list[str]:
         errors.append("missing top-level fields: " + ", ".join(sorted(missing)))
     if payload.get("schema_version") != SCHEMA_VERSION:
         errors.append(f"schema_version must be {SCHEMA_VERSION!r}")
-    for name in ("test", "model", "runtime", "hardware", "configuration", "warmup", "metrics", "result"):
+    for name in (
+        "test",
+        "model",
+        "runtime",
+        "hardware",
+        "configuration",
+        "warmup",
+        "metrics",
+        "result",
+    ):
         if not isinstance(payload.get(name), dict):
             errors.append(f"{name} must be an object")
     metrics = payload.get("metrics")
@@ -90,7 +122,11 @@ def validate_result(payload: dict) -> list[str]:
         if missing_metrics:
             errors.append("missing metrics: " + ", ".join(sorted(missing_metrics)))
     result = payload.get("result")
-    if isinstance(result, dict) and result.get("status") not in {"ok", "error", "partial"}:
+    if isinstance(result, dict) and result.get("status") not in {
+        "ok",
+        "error",
+        "partial",
+    }:
         errors.append("result.status must be ok, error or partial")
     repetitions = payload.get("repetitions")
     if not isinstance(repetitions, int) or repetitions < 1:
@@ -152,20 +188,41 @@ def main() -> int:
     elif not model.is_file():
         result["result"]["error"] = f"Model file not found: {model}"
     else:
-        command = [executable, "-m", str(model), "-p", args.prompt, "-n", str(args.new_tokens), "-c", str(args.context)]
+        command = [
+            executable,
+            "-m",
+            str(model),
+            "-p",
+            args.prompt,
+            "-n",
+            str(args.new_tokens),
+            "-c",
+            str(args.context),
+        ]
         if args.seed is not None:
             command.extend(["-s", str(args.seed)])
         try:
-            completed = subprocess.run(command, capture_output=True, text=True, check=False)
+            completed = subprocess.run(
+                command, capture_output=True, text=True, check=False
+            )
             elapsed_ms = (time.perf_counter() - started) * 1000
             timing = parse_timing(completed.stdout, completed.stderr)
             result["metrics"]["total_ms"] = round(elapsed_ms, 3)
-            for key in ("ttft_ms", "generation_ms", "prompt_tokens", "generated_tokens", "tokens_per_second"):
+            for key in (
+                "ttft_ms",
+                "generation_ms",
+                "prompt_tokens",
+                "generated_tokens",
+                "tokens_per_second",
+            ):
                 result["metrics"][key] = timing[key]
             result["configuration"]["prompt_tokens"] = timing["prompt_tokens"]
             result["result"]["status"] = "ok" if completed.returncode == 0 else "error"
             if completed.returncode != 0:
-                result["result"]["error"] = completed.stderr.strip() or f"llama.cpp exited with {completed.returncode}"
+                result["result"]["error"] = (
+                    completed.stderr.strip()
+                    or f"llama.cpp exited with {completed.returncode}"
+                )
         except OSError as exc:
             result["result"]["error"] = str(exc)
 

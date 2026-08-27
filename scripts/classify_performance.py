@@ -6,6 +6,7 @@ que los pipelines de LEONES no tengan que copiar las reglas en varios sitios.
 Si mañana cambia una frontera, se cambia aquí y en el contrato, no en cada
 pipeline.
 """
+
 from __future__ import annotations
 
 from typing import Any

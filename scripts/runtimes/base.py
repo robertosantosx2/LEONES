@@ -1,8 +1,10 @@
 """Generic trusted adapter contract for runtime-selection.v1."""
+
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 from scripts.runtime_registry import RuntimeEntry, capability_match, validate_entrypoint
+
 
 @dataclass(frozen=True)
 class RuntimeExecutionSpec:
@@ -16,19 +18,27 @@ class RuntimeExecutionSpec:
     def execution_metadata(self) -> dict[str, Any]:
         return self.metadata
 
+
 class RuntimeAdapter:
     """Adapter contract shared by every V1.1 runtime.
 
     Adapters are deliberately declarative. They may validate and prepare an
     execution specification, but they never execute a runtime themselves.
     """
+
     runtime_id: str
     adapter_id: str
 
     def validate(self, plan: dict[str, Any], entry: RuntimeEntry) -> None:
         runtime_value = plan.get("runtime")
-        selected_runtime = runtime_value.get("name") if isinstance(runtime_value, dict) else runtime_value
-        selected_adapter = runtime_value.get("adapter") if isinstance(runtime_value, dict) else None
+        selected_runtime = (
+            runtime_value.get("name")
+            if isinstance(runtime_value, dict)
+            else runtime_value
+        )
+        selected_adapter = (
+            runtime_value.get("adapter") if isinstance(runtime_value, dict) else None
+        )
         if selected_runtime != self.runtime_id:
             raise ValueError(f"runtime mismatch for {self.adapter_id}")
         if selected_adapter is not None and selected_adapter != self.adapter_id:
@@ -53,7 +63,9 @@ class RuntimeAdapter:
         if not ok:
             raise ValueError("; ".join(reasons))
 
-    def prepare(self, plan: dict[str, Any], entry: RuntimeEntry) -> RuntimeExecutionSpec:
+    def prepare(
+        self, plan: dict[str, Any], entry: RuntimeEntry
+    ) -> RuntimeExecutionSpec:
         self.validate(plan, entry)
         return RuntimeExecutionSpec(
             self.runtime_id,

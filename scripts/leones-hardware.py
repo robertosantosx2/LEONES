@@ -28,6 +28,7 @@ Para compartirlo, revisa siempre privacidad antes de publicar.
 Ejemplo:
     python3 scripts/leones-hardware.py --explain --json
 """
+
 from __future__ import annotations
 from pathlib import Path
 import argparse, json, os, platform, re, subprocess
@@ -38,17 +39,24 @@ SUPPORTED_DISTROS = {
     "rhel": "Red Hat Enterprise Linux (RHEL)",
 }
 
+
 def command(*args):
     try:
-        return subprocess.check_output(args, text=True, stderr=subprocess.DEVNULL, timeout=5).strip()
+        return subprocess.check_output(
+            args, text=True, stderr=subprocess.DEVNULL, timeout=5
+        ).strip()
     except Exception:
         return ""
 
+
 def ram_gb():
     try:
-        return round(os.sysconf("SC_PHYS_PAGES") * os.sysconf("SC_PAGE_SIZE") / 1024**3, 1)
+        return round(
+            os.sysconf("SC_PHYS_PAGES") * os.sysconf("SC_PAGE_SIZE") / 1024**3, 1
+        )
     except Exception:
         return None
+
 
 def cpu():
     p = Path("/proc/cpuinfo")
@@ -57,6 +65,7 @@ def cpu():
             if line.lower().startswith("model name:"):
                 return line.split(":", 1)[1].strip()
     return platform.processor() or None
+
 
 def cpu_counts():
     cores = threads = None
@@ -73,12 +82,18 @@ def cpu_counts():
                     vals[k.strip()] = v.strip()
             if vals.get("processor") is not None:
                 physical_ids.add(vals.get("physical id", "0"))
-                core_ids.add((vals.get("physical id", "0"), vals.get("core id", vals.get("processor"))))
+                core_ids.add(
+                    (
+                        vals.get("physical id", "0"),
+                        vals.get("core id", vals.get("processor")),
+                    )
+                )
         threads = len([b for b in blocks if "processor" in b]) or None
         cores = len(core_ids) or None
     if threads is None:
         threads = os.cpu_count()
     return cores, threads
+
 
 def distro():
     data = {}
@@ -91,8 +106,13 @@ def distro():
     ident = data.get("ID", "").lower()
     pretty = data.get("PRETTY_NAME") or data.get("NAME") or None
     support = "explicit" if ident in SUPPORTED_DISTROS else "other"
-    return {"id": ident or None, "name": pretty, "support": support,
-            "supported_name": SUPPORTED_DISTROS.get(ident)}
+    return {
+        "id": ident or None,
+        "name": pretty,
+        "support": support,
+        "supported_name": SUPPORTED_DISTROS.get(ident),
+    }
+
 
 def gpu():
     found = []
@@ -106,12 +126,17 @@ def gpu():
         if m:
             vram_gb = round(float(m.group(1)) / 1024, 2)
     for line in command("lspci").splitlines():
-        if re.search(r"VGA compatible controller|3D controller|Display controller", line, re.I):
+        if re.search(
+            r"VGA compatible controller|3D controller|Display controller", line, re.I
+        ):
             found.append(line.split(": ", 1)[-1].strip())
     return list(dict.fromkeys(found)), vram_gb
 
+
 def main():
-    p = argparse.ArgumentParser(description="Perfil técnico local, sin benchmark ni publicación")
+    p = argparse.ArgumentParser(
+        description="Perfil técnico local, sin benchmark ni publicación"
+    )
     p.add_argument("--json", action="store_true")
     p.add_argument("--explain", action="store_true")
     a = p.parse_args()
@@ -120,9 +145,13 @@ def main():
     gpus, vram_gb = gpu()
     if a.explain and not a.json:
         print("🦁 LEONES · Diagnóstico de hardware")
-        print("Voy a identificar CPU, arquitectura, núcleos, hilos, RAM, GPU, VRAM y distribución Linux.")
+        print(
+            "Voy a identificar CPU, arquitectura, núcleos, hilos, RAM, GPU, VRAM y distribución Linux."
+        )
         print("No descargaré ni ejecutaré modelos, y no publicaré nada.\n")
-        print("Plataformas Linux de referencia: Debian, Ubuntu y Red Hat Enterprise Linux (RHEL).\n")
+        print(
+            "Plataformas Linux de referencia: Debian, Ubuntu y Red Hat Enterprise Linux (RHEL).\n"
+        )
     gpu_text = "; ".join(gpus) if gpus else None
     data = {
         "tool": "leones-hardware",
@@ -159,8 +188,11 @@ def main():
     if d["supported_name"]:
         print(f"Soporte LEONES: explícito ({d['supported_name']})")
     elif d["id"]:
-        print("Soporte LEONES: distribución Linux no incluida entre las tres plataformas de referencia")
+        print(
+            "Soporte LEONES: distribución Linux no incluida entre las tres plataformas de referencia"
+        )
     print("\nSiguiente paso recomendado: identificar un modelo y luego medirlo.")
+
 
 if __name__ == "__main__":
     main()

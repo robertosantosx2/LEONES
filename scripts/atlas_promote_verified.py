@@ -22,6 +22,7 @@ The operation is deliberately additive. Existing canonical records are kept
 unless a record with the same canonical id is regenerated from a newer verified
 feed observation. No destructive deduplication is performed here.
 """
+
 from __future__ import annotations
 
 import csv
@@ -98,17 +99,25 @@ def evidence_objects(row: dict[str, str]) -> list[dict]:
     """Build one evidence object per useful external URL, without guessing claims."""
     objects = []
     retrieved = text(row.get("technical_evidence_checked_at")) or None
-    for field in ("technical_evidence_url", "source_url", "repository_url", "weights_url", "code_url"):
+    for field in (
+        "technical_evidence_url",
+        "source_url",
+        "repository_url",
+        "weights_url",
+        "code_url",
+    ):
         url = text(row.get(field))
         if not url or any(item["url"] == url for item in objects):
             continue
-        objects.append({
-            "source_type": source_type(url),
-            "url": url,
-            "retrieved_at": retrieved,
-            "claim": None,
-            "source_record_id": text(row.get("source_id")) or None,
-        })
+        objects.append(
+            {
+                "source_type": source_type(url),
+                "url": url,
+                "retrieved_at": retrieved,
+                "claim": None,
+                "source_record_id": text(row.get("source_id")) or None,
+            }
+        )
     return objects
 
 
@@ -145,7 +154,15 @@ def build_record(row: dict[str, str]) -> dict:
     if architecture:
         record["architecture"]["name"] = architecture
 
-    for key in ("runtime", "runtime_version", "backend", "format", "quantization", "hardware_id", "workload"):
+    for key in (
+        "runtime",
+        "runtime_version",
+        "backend",
+        "format",
+        "quantization",
+        "hardware_id",
+        "workload",
+    ):
         value = text(row.get(key))
         if value:
             record["execution"][key] = value
@@ -200,7 +217,11 @@ def main() -> int:
     if CATALOG.exists():
         catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
 
-    existing = {record.get("id"): record for record in catalog.get("records", []) if record.get("id")}
+    existing = {
+        record.get("id"): record
+        for record in catalog.get("records", [])
+        if record.get("id")
+    }
     verified = 0
     promoted = 0
     rejected = 0
@@ -227,7 +248,9 @@ def main() -> int:
         "Identity collisions are reviewed separately and are never destructively merged here.",
     ]
 
-    CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    CATALOG.write_text(
+        json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     report = {
         "generated_at": catalog["generated_at"],
         "feed_rows": len(rows),
@@ -238,7 +261,9 @@ def main() -> int:
         "canonical_records": len(catalog["records"]),
         "policy": "verified-only, non-destructive, no invented values",
     }
-    REPORT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    REPORT.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     print(json.dumps(report, ensure_ascii=False))
     return 0
 

@@ -5,6 +5,7 @@ The router is registry-driven: adding a Forgejo/Gitea instance to the source
 registry does not require a new bot. It emits executable targets while keeping
 source provenance intact.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -18,7 +19,13 @@ REGISTRY = ROOT / "scripts/prospection/sources_registry.json"
 FORGE_FAMILIES = {
     "forgejo": {"forgejo.org", "codeberg.org", "forge.disroot.org", "notabug.org"},
     "gitea": {"gitea.io"},
-    "gitlab": {"about.gitlab.com", "framagit.org", "gitlab.gnome.org", "gitlab.freedesktop.org", "invent.kde.org"},
+    "gitlab": {
+        "about.gitlab.com",
+        "framagit.org",
+        "gitlab.gnome.org",
+        "gitlab.freedesktop.org",
+        "invent.kde.org",
+    },
     "pagure": {"pagure.io"},
     "sourcehut": {"sourcehut.org", "sr.ht"},
     "savannah": {"savannah.gnu.org"},
@@ -61,16 +68,24 @@ def main() -> None:
     rows = []
     for source in registry.get("sources", []):
         url = source.get("url", "")
-        rows.append({
-            "source_id": source.get("id", ""),
-            "source_url": url,
-            "adapter": adapter_for(url, source.get("kind", "")),
-            "priority": source.get("priority", "medium"),
-            "provenance": {"registry_id": source.get("id", ""), "registry_url": url},
-            "status": "planned",
-        })
+        rows.append(
+            {
+                "source_id": source.get("id", ""),
+                "source_url": url,
+                "adapter": adapter_for(url, source.get("kind", "")),
+                "priority": source.get("priority", "medium"),
+                "provenance": {
+                    "registry_id": source.get("id", ""),
+                    "registry_url": url,
+                },
+                "status": "planned",
+            }
+        )
 
-    out.write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in rows), encoding="utf-8")
+    out.write_text(
+        "".join(json.dumps(x, ensure_ascii=False) + "\n" for x in rows),
+        encoding="utf-8",
+    )
     print(json.dumps({"sources": len(rows), "output": str(out)}, ensure_ascii=False))
 
 

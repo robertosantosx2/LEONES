@@ -11,6 +11,7 @@ La función no ejecuta modelos ni recalcula resultados. Tampoco borra
 mediciones anteriores: una medición nueva es nueva evidencia y conserva su
 marca temporal.
 """
+
 from __future__ import annotations
 
 import json

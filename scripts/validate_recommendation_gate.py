@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Validate the LEONES recommendation gate without inventing evidence."""
+
 import json
 import sys
 from pathlib import Path
@@ -15,7 +16,14 @@ def fail(message):
 
 def main(path):
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    for key in ("entity", "evidence_profile", "decision", "rationale", "unknowns", "next_action"):
+    for key in (
+        "entity",
+        "evidence_profile",
+        "decision",
+        "rationale",
+        "unknowns",
+        "next_action",
+    ):
         if key not in data:
             fail(f"missing required field: {key}")
     if not data["entity"].strip():

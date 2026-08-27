@@ -1,18 +1,28 @@
 """Deterministic preselection of inference configuration before model scoring."""
+
 from __future__ import annotations
 from typing import Any
 
 OPTIMIZATION_FAMILIES = {
-    "QUANTIZATION", "OFFLOAD / STREAMING", "SPARSE / MoE", "CACHE / DECODING",
-    "COMPILED / HARDWARE-SPECIFIC", "DISTRIBUTED", "EXPERIMENTAL"
+    "QUANTIZATION",
+    "OFFLOAD / STREAMING",
+    "SPARSE / MoE",
+    "CACHE / DECODING",
+    "COMPILED / HARDWARE-SPECIFIC",
+    "DISTRIBUTED",
+    "EXPERIMENTAL",
 }
 
 
-def resolve_inference_configuration(*, workload: str, hardware: dict[str, Any],
-                                    runtime: str | None = None,
-                                    optimizations: list[str] | None = None,
-                                    is_moe: bool | None = None,
-                                    context_tokens: int = 4096) -> dict[str, Any]:
+def resolve_inference_configuration(
+    *,
+    workload: str,
+    hardware: dict[str, Any],
+    runtime: str | None = None,
+    optimizations: list[str] | None = None,
+    is_moe: bool | None = None,
+    context_tokens: int = 4096,
+) -> dict[str, Any]:
     """Produce a configuration envelope before candidate model ranking.
 
     Runtime availability and trusted commands are deliberately checked later by

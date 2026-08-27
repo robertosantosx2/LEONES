@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 """Revisa la legibilidad básica de los scripts propios de LEONES.
 
-Solo analiza Python que se comporta como script ejecutable: tiene un bloque
-``if __name__ == '__main__'``. No modifica archivos ni toca código de terceros.
+Solo analiza Python que se comporta como script ejecutable cuando se usa el
+comando completo. La función ``check_file`` también puede probar archivos
+pequeños sin punto de entrada, lo que facilita las pruebas automáticas.
+No modifica archivos ni toca código de terceros.
 """
+
 from __future__ import annotations
 
 import argparse
+import ast
+import io
+import tokenize
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,24 +36,43 @@ def is_executable_script(lines: list[str]) -> bool:
     return any("if __name__ ==" in line and "__main__" in line for line in lines)
 
 
-def check_file(path: Path) -> list[str]:
-    """Devuelve avisos sencillos para un script ejecutable."""
-    lines = path.read_text(encoding="utf-8").splitlines()
-    if not is_executable_script(lines):
-        return []
+def has_initial_docstring(lines: list[str]) -> bool:
+    """Comprueba el docstring del módulo sin confundir comentarios con código."""
+    try:
+        tree = ast.parse("\n".join(lines))
+    except SyntaxError:
+        return False
+    return bool(ast.get_docstring(tree))
 
+
+def check_file(path: Path) -> list[str]:
+    """Devuelve avisos sencillos para un archivo Python candidato a script."""
+    lines = path.read_text(encoding="utf-8").splitlines()
     problems: list[str] = []
+
     if not lines or not lines[0].startswith("#!"):
         problems.append("falta el encabezado ejecutable (shebang)")
 
-    if not any(line.strip().startswith('"""') for line in lines[:12]):
+    if not has_initial_docstring(lines):
         problems.append("falta un docstring inicial que explique el propósito")
 
     for number, line in enumerate(lines, start=1):
         if len(line) > MAX_LINE_LENGTH:
             problems.append(f"línea {number}: supera {MAX_LINE_LENGTH} caracteres")
-        if ";" in line and not line.lstrip().startswith("#"):
-            problems.append(f"línea {number}: varias instrucciones en una línea")
+
+    # Detecta únicamente ';' que sean realmente tokens Python.
+    # No cuenta ';' dentro de strings, docstrings o comentarios.
+    try:
+        tokens = tokenize.generate_tokens(
+            io.StringIO(path.read_text(encoding="utf-8")).readline
+        )
+        for token in tokens:
+            if token.type == tokenize.OP and token.string == ";":
+                problems.append(
+                    f"línea {token.start[0]}: varias instrucciones en una línea"
+                )
+    except (tokenize.TokenError, IndentationError):
+        pass
 
     return problems
 
@@ -65,6 +90,9 @@ def main() -> int:
 
     failures = 0
     for path in python_files(args.directory):
+        lines = path.read_text(encoding="utf-8").splitlines()
+        if not is_executable_script(lines):
+            continue
         problems = check_file(path)
         if not problems:
             continue

@@ -9,6 +9,7 @@ permisos de escritura del contenido.
 La intención es que una futura incorporación no pueda olvidar la regla por
 simple descuido.
 """
+
 from pathlib import Path
 import sys
 

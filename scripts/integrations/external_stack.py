@@ -1,4 +1,5 @@
 """Common, dependency-free contracts for external stack adapters."""
+
 from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from typing import Any, Literal
@@ -8,6 +9,7 @@ Health = Literal["HEALTHY", "DEGRADED", "FAILED", "UNKNOWN"]
 EvidenceState = Literal["REPORTED", "UNKNOWN"]
 BenchmarkState = Literal["MEASURED", "UNAVAILABLE"]
 
+
 @dataclass(frozen=True)
 class PreflightResult:
     status: Status
@@ -16,11 +18,13 @@ class PreflightResult:
     checks: dict[str, Any] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
 
+
 @dataclass(frozen=True)
 class HealthResult:
     status: Health
     version: str | None = None
     details: dict[str, Any] = field(default_factory=dict)
+
 
 @dataclass(frozen=True)
 class EvidenceResult:
@@ -33,6 +37,7 @@ class EvidenceResult:
     quantization: str | None = None
     source: str | None = None
     observed_at: str | None = None
+
 
 @dataclass(frozen=True)
 class BenchmarkResult:

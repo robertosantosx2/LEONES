@@ -3,10 +3,12 @@
 No CLI is executed implicitly. Runtime discovery and execution are explicit
 integration steps so CI can exercise the adapter without Magnitude installed.
 """
+
 from __future__ import annotations
 from dataclasses import dataclass
 import platform
 from .external_stack import PreflightResult
+
 
 @dataclass(frozen=True)
 class MagnitudeAdapter:

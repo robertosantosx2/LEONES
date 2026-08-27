@@ -29,11 +29,17 @@ def parse_args() -> argparse.Namespace:
 
 
 def ns_to_ms(value: object) -> float | None:
-    return round(float(value) / 1_000_000, 3) if isinstance(value, (int, float)) else None
+    return (
+        round(float(value) / 1_000_000, 3) if isinstance(value, (int, float)) else None
+    )
 
 
 def tokens_per_second(tokens: object, duration_ns: object) -> float | None:
-    if not isinstance(tokens, (int, float)) or not isinstance(duration_ns, (int, float)) or duration_ns <= 0:
+    if (
+        not isinstance(tokens, (int, float))
+        or not isinstance(duration_ns, (int, float))
+        or duration_ns <= 0
+    ):
         return None
     return round(float(tokens) / (float(duration_ns) / 1_000_000_000), 3)
 
@@ -46,13 +52,42 @@ def main() -> int:
         "schema_version": SCHEMA_VERSION,
         "test": {"name": "llm-smoke-test", "mode": "experimental"},
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "model": {"id": args.model, "revision": None, "parameter_count": None, "quantization": None, "context_length": args.context},
+        "model": {
+            "id": args.model,
+            "revision": None,
+            "parameter_count": None,
+            "quantization": None,
+            "context_length": args.context,
+        },
         "runtime": {"name": "Ollama", "version": None, "adapter": "ollama"},
-        "hardware": {"os": platform.platform(), "architecture": platform.machine(), "cpu": platform.processor() or None, "ram_bytes": None, "gpu": None, "vram_bytes": None},
-        "configuration": {"prompt_tokens": None, "requested_new_tokens": args.new_tokens, "temperature": None, "seed": args.seed, "batch_size": None, "context_tokens": args.context},
+        "hardware": {
+            "os": platform.platform(),
+            "architecture": platform.machine(),
+            "cpu": platform.processor() or None,
+            "ram_bytes": None,
+            "gpu": None,
+            "vram_bytes": None,
+        },
+        "configuration": {
+            "prompt_tokens": None,
+            "requested_new_tokens": args.new_tokens,
+            "temperature": None,
+            "seed": args.seed,
+            "batch_size": None,
+            "context_tokens": args.context,
+        },
         "warmup": {"enabled": False, "runs": 0},
         "repetitions": 1,
-        "metrics": {"ttft_ms": None, "generation_ms": None, "total_ms": None, "prompt_tokens": None, "generated_tokens": None, "tokens_per_second": None, "peak_ram_bytes": None, "peak_vram_bytes": None},
+        "metrics": {
+            "ttft_ms": None,
+            "generation_ms": None,
+            "total_ms": None,
+            "prompt_tokens": None,
+            "generated_tokens": None,
+            "tokens_per_second": None,
+            "peak_ram_bytes": None,
+            "peak_vram_bytes": None,
+        },
         "result": {"status": "error", "error": None},
     }
 
@@ -79,7 +114,9 @@ def main() -> int:
         result["metrics"]["prompt_tokens"] = data.get("prompt_eval_count")
         result["metrics"]["generated_tokens"] = data.get("eval_count")
         result["metrics"]["generation_ms"] = ns_to_ms(data.get("eval_duration"))
-        result["metrics"]["tokens_per_second"] = tokens_per_second(data.get("eval_count"), data.get("eval_duration"))
+        result["metrics"]["tokens_per_second"] = tokens_per_second(
+            data.get("eval_count"), data.get("eval_duration")
+        )
         result["metrics"]["ttft_ms"] = ns_to_ms(data.get("prompt_eval_duration"))
         result["configuration"]["prompt_tokens"] = data.get("prompt_eval_count")
         result["result"]["status"] = "ok"

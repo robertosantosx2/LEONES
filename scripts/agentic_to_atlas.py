@@ -5,6 +5,7 @@ This bridge deliberately accepts only evidence produced by a concrete
 execution. It does not turn benchmark scores into throughput measurements and
 never promotes evidence to ``verified``.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -17,7 +18,9 @@ def agentic_to_atlas(result: dict[str, Any]) -> dict[str, Any]:
     evidence = result.get("evidence") or {}
     validate_evidence(evidence)
     if evidence.get("evidence_type") != "measured":
-        raise ValueError("only measured Agentic Benchmark results may enter the measured Atlas feed")
+        raise ValueError(
+            "only measured Agentic Benchmark results may enter the measured Atlas feed"
+        )
 
     agentic = result.get("agentic") or {}
     model = result.get("model") or {}
@@ -42,7 +45,8 @@ def agentic_to_atlas(result: dict[str, Any]) -> dict[str, Any]:
         "task_version": agentic.get("task_version"),
         "agentic_outcome": outcome.get("status"),
         "agentic_score": outcome.get("score"),
-        "elapsed_seconds": metrics.get("elapsed_seconds") or inference.get("elapsed_seconds"),
+        "elapsed_seconds": metrics.get("elapsed_seconds")
+        or inference.get("elapsed_seconds"),
         "tool_calls": metrics.get("tool_calls"),
         "tool_errors": metrics.get("tool_errors"),
         "recovery_count": metrics.get("recovery_count"),

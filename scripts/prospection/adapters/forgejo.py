@@ -5,6 +5,7 @@ Works with public Forgejo APIs, including federated instances such as
 Codeberg and other registry entries. Authentication is optional; public
 search is intentionally rate-aware and keeps raw evidence URLs.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -19,7 +20,9 @@ UA = "LEONES-Atlas-Prospection/1.0"
 
 
 def request_json(url: str):
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
+    req = urllib.request.Request(
+        url, headers={"User-Agent": UA, "Accept": "application/json"}
+    )
     token = os.getenv("FORGE_TOKEN")
     if token:
         req.add_header("Authorization", "token " + token)
@@ -29,26 +32,32 @@ def request_json(url: str):
 
 def discover(base_url: str, query: str, limit: int = 20):
     base = base_url.rstrip("/")
-    url = base + "/api/v1/repos/search?" + urllib.parse.urlencode({"q": query, "limit": limit})
+    url = (
+        base
+        + "/api/v1/repos/search?"
+        + urllib.parse.urlencode({"q": query, "limit": limit})
+    )
     data, status = request_json(url)
     now = datetime.now(timezone.utc).isoformat()
     rows = []
     for item in data.get("data", []):
         html = item.get("html_url") or item.get("clone_url") or ""
-        rows.append({
-            "type": "software",
-            "name": item.get("full_name") or item.get("name", ""),
-            "url": html,
-            "description": item.get("description") or "",
-            "source": "forgejo",
-            "source_url": base,
-            "evidence_url": html,
-            "license": "",
-            "license_status": "unvalidated",
-            "observed_at": now,
-            "query": query,
-            "publication_status": "discovered",
-        })
+        rows.append(
+            {
+                "type": "software",
+                "name": item.get("full_name") or item.get("name", ""),
+                "url": html,
+                "description": item.get("description") or "",
+                "source": "forgejo",
+                "source_url": base,
+                "evidence_url": html,
+                "license": "",
+                "license_status": "unvalidated",
+                "observed_at": now,
+                "query": query,
+                "publication_status": "discovered",
+            }
+        )
     return rows, status
 
 
@@ -66,7 +75,18 @@ def main():
     with out.open("a", encoding="utf-8") as f:
         for row in rows:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
-    print(json.dumps({"source": "forgejo", "base_url": args.base_url, "query": args.query, "status": status, "count": len(rows)}, ensure_ascii=False))
+    print(
+        json.dumps(
+            {
+                "source": "forgejo",
+                "base_url": args.base_url,
+                "query": args.query,
+                "status": status,
+                "count": len(rows),
+            },
+            ensure_ascii=False,
+        )
+    )
 
 
 if __name__ == "__main__":

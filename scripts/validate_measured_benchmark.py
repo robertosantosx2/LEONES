@@ -6,11 +6,18 @@ la identidad mínima del modelo, hardware y runtime. El objetivo es impedir
 que una estimación, un registro incompleto o una medición de otra máquina
 contamine la evidencia empírica.
 """
+
 from __future__ import annotations
 
 from typing import Any
 
-REQUIRED_IDENTITY = ("model", "hardware", "runtime", "tokens_per_second", "measurement_type")
+REQUIRED_IDENTITY = (
+    "model",
+    "hardware",
+    "runtime",
+    "tokens_per_second",
+    "measurement_type",
+)
 
 
 def validate_measured_benchmark(measurement: dict[str, Any]) -> dict[str, Any]:
@@ -24,7 +31,11 @@ def validate_measured_benchmark(measurement: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"missing benchmark identity fields: {', '.join(missing)}")
     if measurement["measurement_type"] != "measured":
         raise ValueError("only measured benchmarks can be promoted")
-    if not measurement["model"] or not measurement["hardware"] or not measurement["runtime"]:
+    if (
+        not measurement["model"]
+        or not measurement["hardware"]
+        or not measurement["runtime"]
+    ):
         raise ValueError("model, hardware and runtime must be non-empty")
     try:
         value = float(measurement["tokens_per_second"])

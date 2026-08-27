@@ -4,6 +4,7 @@
 The script deliberately does not install anything and does not contact ODS.
 It reports facts that are useful before an ODS installation.
 """
+
 from __future__ import annotations
 
 import json
@@ -44,7 +45,9 @@ def main() -> None:
         "ram_gb": ram_gb(),
         "docker": docker,
         "docker_compose": compose,
-        "nvidia_smi": command_version(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"]),
+        "nvidia_smi": command_version(
+            ["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"]
+        ),
         "git": shutil.which("git") is not None,
         "curl": shutil.which("curl") is not None,
         "ready": bool(docker and compose),

@@ -5,6 +5,7 @@ La clasificación CABE/RULA solo tiene sentido si conservamos el dato que la
 origina y el contexto en el que fue medido. Este módulo no intenta estimar
 velocidad: recibe una observación ya obtenida y comprueba que sea utilizable.
 """
+
 from __future__ import annotations
 
 import math

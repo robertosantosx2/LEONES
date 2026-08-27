@@ -18,9 +18,7 @@ from datetime import datetime, timezone
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the command-line interface."""
-    parser = argparse.ArgumentParser(
-        description="LEONES local LLM smoke-test harness."
-    )
+    parser = argparse.ArgumentParser(description="LEONES local LLM smoke-test harness.")
     parser.add_argument(
         "--prompt",
         default="Hello from a local LLM test.",
