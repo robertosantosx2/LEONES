@@ -19,7 +19,8 @@ from pathlib import Path
 from statistics import mean, median, stdev
 
 TPS_RE = re.compile(r"(?:Generation:\s*)?([0-9]+(?:[.,][0-9]+)?)\s*(?:tok(?:ens)?|t)/s", re.I)
-TOKENS_RE = re.compile(r"([0-9]+)\s+tokens?", re.I)
+# Only accept an explicit llama.cpp eval counter as output-token evidence.
+TOKENS_RE = re.compile(r"eval\s+time\s*=.*?/\s*([0-9]+)\s+runs\b", re.I)
 TIMEOUT_EXIT_CODE = 124
 
 

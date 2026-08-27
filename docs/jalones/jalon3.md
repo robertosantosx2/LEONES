@@ -1,85 +1,100 @@
 # JALON3 — Protocolo de medición real y evidencia V1.1
 
-**Estado:** EN DESARROLLO — contrato congelado, ejecución física pendiente  
-**Base:** `jalon2-closed` (`73b741bc3a53f6a5ea9d5c08eec5c5da6c4ee384`), cuya genealogía contiene el cierre físico `947f61e4a65e9a34151999c8f94fd606295009f5`  
-**Rama actual:** `jalon3-runtime-execution-contract-v3`
+**Estado:** CONTRATO FIJADO / PRUEBA FÍSICA PENDIENTE  
+**Base de trabajo:** `jalon3-runtime-execution-contract-v3`  
+**Objetivo físico:** primera ejecución reproducible de `llama.cpp` en Debian
 
 ## 1. Objetivo
 
-Convertir la medición física de un runtime en una evidencia LEONES reproducible, auditable y machine-readable. La primera ejecución objetivo es `llama.cpp`.
+Convertir la medición física de un runtime en una evidencia LEONES reproducible, auditable y machine-readable.
 
-**JALON3 no declara una cifra real hasta que exista ejecución física.** Todo lo que se hace en GitHub es contrato, harness, validación y preparación.
+**JALON3 no declara una cifra real hasta que exista ejecución física.** GitHub fija contrato, harness, validación y protocolo; Debian aporta la ejecución y las mediciones reales.
 
-## 2. Contrato congelado
+## 2. Contrato canónico
 
-El artefacto canónico es `schemas/runtime-benchmark-evidence.v1.1.json`. Cada evidencia contiene obligatoriamente identidad, modelo, protocolo, runtime, hardware, mediciones individuales, agregados, proceso y artefacto hasheado. Los campos físicamente no observables son `null`; **no se inventan valores**. fileciteturn18file0L1-L6
+El artefacto canónico es `schemas/runtime-benchmark-evidence.v1.1.json`.
 
-El runtime conserva el `argv` exacto y la identidad criptográfica del binario cuando el ejecutable es un archivo local. La evidencia queda separada de la capa de selección y de cualquier estimación previa.
+Cada evidencia registra, como mínimo:
 
-## 3. Regla de latencia local
+- identidad y timestamps;
+- modelo, revisión, artefacto y cuantización;
+- protocolo, prompt identificado y parámetros;
+- runtime, versión, binario, SHA-256 y `argv` exacto;
+- hardware disponible;
+- mediciones individuales;
+- agregados estadísticos;
+- stdout/stderr;
+- proceso y código de salida;
+- artefacto de modelo, tamaño y SHA-256.
 
-`first_output_ms` es la latencia hasta la primera salida no vacía observada en **stdout**. El harness no utiliza stderr para marcar el comienzo porque los runtimes suelen escribir allí logs de arranque y rendimiento.
+Los valores físicamente no observables son `null`. **No se estiman ni se inventan.**
 
-`ttft_ms` puede conservar ese mismo valor como observación local, pero LEONES no lo presenta como TTFT de una API alojada salvo que se demuestre que stdout corresponde al primer token generado. Esta distinción sigue la definición de TTFT de Artificial Analysis: tiempo desde el envío hasta recibir el primer token; su benchmark de rendimiento separa además output speed y end-to-end response time. citeturn0search0turn0search1
+## 3. Semántica de las mediciones
+
+### First output / TTFT local
+
+`first_output_ms` mide el tiempo hasta la primera salida no vacía observada en **stdout**.
+
+`ttft_ms` conserva esa observación como métrica local. No debe presentarse como TTFT de una API remota salvo que el protocolo demuestre equivalencia.
+
+La referencia metodológica de Artificial Analysis se utiliza para mantener separadas latencia inicial, velocidad de salida y tiempo end-to-end.
+
+### Tokens y velocidad
+
+`tokens_per_second` solo se registra cuando aparece una señal explícita del runtime.
+
+`output_tokens` no se deduce de tokens/s ni de tiempo transcurrido. Para la primera ejecución con `llama.cpp`, el harness reconoce el contador explícito de tokens de la línea `eval time ... / N runs`.
+
+### Memoria, VRAM y potencia
+
+Solo se registran cuando existe una fuente de observación disponible. La memoria del proceso se trata como pico observado por el lifetime de los procesos hijos del harness, no como una muestra instantánea por iteración.
 
 ## 4. Reproducibilidad
 
-Una combinación diferente de:
+Una combinación distinta de:
 
 `modelo + revisión + cuantización + runtime + versión/revisión + hardware + workload + protocolo`
 
 es una ejecución distinta y recibe un nuevo `execution_id`.
 
-El prompt se identifica mediante `prompt_sha256` cuando se proporciona. Los timestamps del harness conservan precisión de milisegundos para no colapsar ejecuciones cortas al mismo segundo.
+El prompt se identifica mediante `prompt_sha256` cuando se proporciona. Los timestamps conservan precisión de milisegundos.
 
 ## 5. Harness
 
 `scripts/runtime_benchmark_evidence.py`:
 
 1. acepta únicamente un `argv` JSON, sin shell;
-2. ejecuta warm-up separado de las mediciones;
-3. conserva stdout/stderr por iteración;
-4. mide first-output latency únicamente desde stdout;
-5. extrae tokens/s únicamente cuando aparece una señal explícita del runtime;
-6. no estima `output_tokens` desde tokens/s ni desde tiempo transcurrido;
-7. identifica binario y SHA-256 cuando el ejecutable es un archivo local;
+2. ejecuta warm-up separado;
+3. captura stdout y stderr por separado;
+4. mide first-output únicamente desde stdout;
+5. extrae métricas solo desde señales explícitas;
+6. no inventa `output_tokens`;
+7. identifica el binario y su SHA-256 cuando es un archivo local;
 8. captura hardware disponible;
-9. genera `runtime-benchmark-evidence.v1.1`;
-10. devuelve código no cero si alguna medición falla.
-
-La memoria de proceso se conserva como observación de `ru_maxrss` del proceso hijo; por tanto, se trata como pico observado del lifetime del harness y no como muestra instantánea por iteración. GPU/VRAM/potencia solo se registran cuando el host ofrece una fuente de medición.
+9. aplica timeout duro y termina el grupo de procesos;
+10. genera `runtime-benchmark-evidence.v1.1`;
+11. devuelve código no cero si falla alguna medición.
 
 ## 6. Validación automática
 
-`tests/test_runtime_benchmark_evidence_v1_1.py` fija las invariantes del contrato:
+`tests/test_runtime_benchmark_evidence_v1_1.py` cubre:
 
-- captura separada de stdout/stderr;
-- stderr de arranque no contamina first-output latency;
+- stdout/stderr separados;
+- stderr de arranque sin contaminar first-output;
 - extracción de tokens/s;
-- no invención de `output_tokens`;
+- tokens producidos solo con evidencia explícita;
+- timeout y terminación del grupo de procesos;
 - determinismo de agregados;
 - SHA-256;
-- precisión subsegundo de timestamps;
+- timestamps con precisión de milisegundos;
 - estructura estricta del schema;
 - representación `null` de métricas no observables.
 
-La ejecución física queda fuera de CI: requiere hardware/runtime/modelo reales.
+CI valida además el JSON Schema Draft 2020-12 y ejecuta la suite contractual.
 
-## 7. Gate físico Ubuntu — resultado
+La ejecución física queda deliberadamente fuera de CI.
 
-El gate físico se ha ejecutado sobre el host Ubuntu real con intervención mínima. El entorno verificó:
-
-- `llama-cli` disponible y ejecutable;
-- llama.cpp `0.3.0-dev`, build `10655`, commit `cb300598d`;
-- SHA-256 del binario: `5c8abc6bd1604fabf743e5863e837fbcb2a01a4f8fdfbd66287a6ea213457aa8`;
-- Intel Core i5-1035G1, 8 hilos;
-- sin `nvidia-smi`/GPU NVIDIA;
-- **ningún GGUF/GGML localizado en `$HOME`**;
-- el test específico solicitado en Ubuntu falló porque `tests/test_runtime_benchmark_evidence_v1_1.py` aún no existía en la copia local anterior al desarrollo V3.
-
-Conclusión: **no se ejecuta todavía el benchmark físico**. El único bloqueo físico restante es disponer de un artefacto de modelo real y ejecutar la suite contractual ya preparada. No se seguirá diseñando el contrato en Ubuntu.
-
-## 8. Flujo canónico
+## 7. Flujo canónico
 
 ```text
 modelo candidato
@@ -111,44 +126,55 @@ SHA-256 + conservación
 evidence LEONES
 ```
 
-## 9. Criterios de validez física
+## 8. Criterios de validez física
 
 Una ejecución real solo será válida si:
 
-- el runtime es el que declara el registro;
-- el comando ejecutado coincide con el `argv` conservado;
+- el runtime coincide con el registro;
+- el `argv` conservado coincide con el comando ejecutado;
 - el modelo/artefacto está identificado y hasheado;
-- el protocolo queda congelado durante la serie;
+- el protocolo permanece constante durante la serie;
 - warm-up y mediciones están separados;
 - existen mediciones individuales;
-- stdout/stderr se conservan íntegros;
-- el exit code de las mediciones es verificable;
+- stdout/stderr se conservan;
+- el exit code es verificable;
 - el JSON valida contra el schema;
-- el hardware y versión del runtime quedan registrados;
-- la evidencia no se modifica después de la ejecución.
+- hardware y versión exacta del runtime quedan registrados;
+- la evidencia no se modifica después de ejecutarse.
 
-## 10. Qué queda para Ubuntu/Debian
+## 9. Qué queda para Debian
 
-Solo lo que no puede demostrarse de forma honesta desde GitHub:
+Solo trabajo físico, no rediseño:
 
-1. disponer del modelo GGUF real;
-2. ejecutar el `llama-cli` real con el `argv` congelado;
-3. obtener las mediciones reales;
-4. capturar recursos disponibles;
-5. validar y conservar la evidencia producida.
+1. actualizar `main`;
+2. ejecutar la suite de tests;
+3. verificar árbol limpio y `git diff --check`;
+4. identificar hardware y runtime;
+5. comprobar `llama-cli` y versión exacta;
+6. seleccionar un GGUF concreto;
+7. registrar revisión y SHA-256 del modelo;
+8. ejecutar warm-up;
+9. ejecutar las iteraciones reales;
+10. generar la evidencia V1.1;
+11. validar el JSON contra el schema;
+12. revisar stdout/stderr y métricas;
+13. conservar evidencia y hashes;
+14. incorporar la evidencia al pipeline LEONES.
 
-**No se utilizará Ubuntu/Debian para seguir diseñando el contrato.** Cuando llegue ese punto será ejecutar → medir → validar → conservar.
+**La fase de diseño termina aquí. En Debian: ejecutar → medir → validar → conservar.**
 
-## 11. Criterio de cierre de JALON3
+## 10. Criterio de cierre
 
-JALON3 se cerrará cuando exista al menos una ejecución real de `llama.cpp` en el host objetivo que cumpla todos los criterios de validez física y cuya evidencia `runtime-benchmark-evidence.v1.1` sea reutilizable por el pipeline de evidencia/recomendación.
+JALON3 quedará completamente cerrado cuando exista al menos una ejecución real de `llama.cpp` en Debian que cumpla todos los criterios de validez física y cuya evidencia V1.1 sea reutilizable por el pipeline de evidencia/recomendación.
 
-Hasta entonces, el estado correcto es **contrato congelado / ejecución pendiente**.
+Hasta entonces: **contrato fijado / prueba física pendiente**.
 
-## 12. Referencia metodológica
+## 11. Referencia metodológica
 
-Artificial Analysis se utiliza como referencia metodológica para separar condiciones de prueba, TTFT, output speed y rendimiento end-to-end. Su metodología de rendimiento usa cargas de trabajo explícitas, repeticiones y representación estadística de resultados; LEONES adapta esos principios al runtime local y conserva la distinción entre medición local y benchmark de API. citeturn0search1
+Artificial Analysis — metodología de benchmarking de rendimiento: `https://artificialanalysis.ai/methodology/performance-benchmarking`
 
-## 13. Frase de recuperación
+LEONES adopta sus principios de condiciones explícitas, workload reproducible, repetición y separación entre latencia inicial, velocidad de salida y rendimiento end-to-end, adaptándolos a ejecución local.
 
-> **JALON3 = contrato congelado; GitHub cerrado; Ubuntu solo para ejecutar → medir → validar → conservar.**
+## 12. Frase de recuperación
+
+> **JALON3 = contrato fijado; GitHub limpio; Debian solo para ejecutar → medir → validar → conservar.**

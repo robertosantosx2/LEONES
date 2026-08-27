@@ -27,10 +27,16 @@ def test_stderr_startup_does_not_define_first_output():
     assert result["stdout"].strip() == "model output"
 
 
-def test_output_tokens_are_not_invented_from_stderr_or_tps():
-    code = "import sys; print('Generation: 20 t/s', file=sys.stderr)"
+def test_output_tokens_require_explicit_llama_cpp_eval_counter():
+    code = "import sys; print('Generation: 20 t/s', file=sys.stderr); print('eval time = 250 ms / 42 runs (5.95 ms per token, 168.0 tokens per second)')"
     result = run_once([sys.executable, "-c", code])
     assert result["tokens_per_second"] == 20
+    assert result["output_tokens"] == 42
+
+
+def test_output_tokens_are_not_invented_from_generic_text():
+    code = "print('the prompt contains 42 tokens')"
+    result = run_once([sys.executable, "-c", code])
     assert result["output_tokens"] is None
 
 
@@ -69,7 +75,7 @@ def test_hash_helpers(tmp_path: Path):
 
 def test_timestamps_keep_subsecond_precision():
     first = now()
-    time.sleep(0.002)
+    time.sleep(0.01)
     second = now()
     assert first.endswith("Z") and second.endswith("Z")
     assert "." in first and first.split(".", 1)[1].endswith("Z")
