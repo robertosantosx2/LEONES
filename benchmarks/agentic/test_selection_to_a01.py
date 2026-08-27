@@ -58,7 +58,7 @@ def test_selector_to_a01_measured_evidence(tmp_path: Path) -> None:
     assert result["agentic"]["outcome"]["status"] == "success"
     assert result["agentic"]["outcome"]["score"] == 1.0
     assert result["agentic"]["grader"]["id"] == "A01-grader"
-    assert result["agentic"]["grader"]["version"] == "1.0"
+    assert result["agentic"]["grader"]["version"] == "1.1"
     assert result["agentic"]["metrics"]["tool_calls"] == 2
     assert result["agentic"]["metrics"]["runtime_wall_seconds"] >= 0
     assert result["evidence"]["evidence_type"] == "measured"
