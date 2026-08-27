@@ -19,6 +19,12 @@ def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _write_report(path: str, name: str) -> str:
+    target = Path(path)
+    target.write_text(f"Model: {name}\n", encoding="utf-8")
+    return str(target)
+
+
 def run_selected(selection: dict, *, runtime_commands: dict[str, list[str]], workspace: Path,
                  prompt: str, output_path: str = "report.txt", timeout_seconds: float = 60.0) -> dict:
     gate = gate_selection(selection, runtime_commands=runtime_commands)
@@ -29,7 +35,7 @@ def run_selected(selection: dict, *, runtime_commands: dict[str, list[str]], wor
     workspace.mkdir(parents=True, exist_ok=True)
     result = execute_a01(plan, prompt=prompt, workspace=workspace,
                          lookup_model=lambda model_id: {"id": model_id, "name": "Beta"} if model_id == "demo-2" else {},
-                         write_report=lambda path, name: (Path(path).write_text(f"Model: {name}\n", encoding="utf-8") or path),
+                         write_report=_write_report,
                          output_path=output_path, timeout_seconds=timeout_seconds)
     result["runtime_selection"] = gate
     return result
