@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Revisa la legibilidad básica de los scripts de LEONES.
+"""Revisa la legibilidad básica de los scripts propios de LEONES.
 
-No modifica archivos. Por defecto informa de problemas para poder limpiar el
-proyecto poco a poco. Con ``--strict`` devuelve error si encuentra alguno.
+Solo analiza Python que se comporta como script ejecutable: tiene un bloque
+``if __name__ == '__main__'``. No modifica archivos ni toca código de terceros.
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ MAX_LINE_LENGTH = 100
 
 
 def python_files(directory: Path) -> list[Path]:
-    """Devuelve scripts propios, ignorando cachés y código de terceros."""
+    """Devuelve scripts propios y omite cachés y código importado."""
     return sorted(
         path
         for path in directory.rglob("*.py")
@@ -25,11 +25,18 @@ def python_files(directory: Path) -> list[Path]:
     )
 
 
-def check_file(path: Path) -> list[str]:
-    """Devuelve avisos sencillos para un script."""
-    lines = path.read_text(encoding="utf-8").splitlines()
-    problems: list[str] = []
+def is_executable_script(lines: list[str]) -> bool:
+    """Indica si el archivo contiene el punto de entrada de un script."""
+    return any("if __name__ ==" in line and "__main__" in line for line in lines)
 
+
+def check_file(path: Path) -> list[str]:
+    """Devuelve avisos sencillos para un script ejecutable."""
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not is_executable_script(lines):
+        return []
+
+    problems: list[str] = []
     if not lines or not lines[0].startswith("#!"):
         problems.append("falta el encabezado ejecutable (shebang)")
 
@@ -46,7 +53,7 @@ def check_file(path: Path) -> list[str]:
 
 
 def main() -> int:
-    """Audita scripts y aplica el resultado solo si se solicita ``--strict``."""
+    """Audita scripts y devuelve error solo con ``--strict`` si hay avisos."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", nargs="?", type=Path, default=DEFAULT_DIR)
     parser.add_argument(
