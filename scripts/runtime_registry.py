@@ -25,6 +25,7 @@ class RuntimeEntry:
     availability: str
     metrics: str
     physical_test_required: bool
+    host_requirements: tuple[str, ...] = ()
 
 
 def load_registry(path: Path = REGISTRY_PATH) -> dict[str, Any]:
@@ -66,6 +67,7 @@ def registry_entries(path: Path = REGISTRY_PATH) -> dict[str, RuntimeEntry]:
             raise ValueError(f"runtime {runtime_id} has an invalid entrypoint argv")
         if not isinstance(raw["physical_test_required"], bool):
             raise ValueError(f"runtime {runtime_id} has invalid physical_test_required")
+        host_requirements = _as_strings(raw.get("host_requirements", []), "host_requirements", runtime_id)
         entry = RuntimeEntry(
             id=runtime_id,
             adapter=raw["adapter"],
@@ -80,6 +82,7 @@ def registry_entries(path: Path = REGISTRY_PATH) -> dict[str, RuntimeEntry]:
             availability=raw["availability"],
             metrics=raw["metrics"],
             physical_test_required=raw["physical_test_required"],
+            host_requirements=host_requirements,
         )
         entries[entry.id] = entry
         identities[entry.id] = entry.id
