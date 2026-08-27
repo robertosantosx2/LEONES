@@ -40,9 +40,17 @@ def run_selected(selection: dict, *, runtime_commands: dict[str, list[str]], wor
     if not executable:
         raise RuntimeError("runtime-selection.v1 produced no executable plan; trusted runtime command is required")
     plan = executable[0]
+    selected_name = str(plan.get("model", {}).get("name") or plan.get("model_id") or "selected-model")
+
+    def lookup_model(model_id: str) -> dict[str, str]:
+        # The selector is authoritative for model identity at this boundary.
+        if model_id != plan.get("model_id"):
+            return {}
+        return {"id": model_id, "name": selected_name}
+
     workspace.mkdir(parents=True, exist_ok=True)
     result = execute_a01(plan, prompt=prompt, workspace=workspace,
-                         lookup_model=lambda model_id: {"id": model_id, "name": "Beta"} if model_id == "demo-2" else {},
+                         lookup_model=lookup_model,
                          write_report=_write_report,
                          output_path=output_path, timeout_seconds=timeout_seconds)
     result["runtime_selection"] = gate
