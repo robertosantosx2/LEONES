@@ -1,0 +1,26 @@
+{
+  "evidence_type": "real_runtime_execution",
+  "runtime_id": "ollama",
+  "adapter_id": "ollama.v1",
+  "model_id": "qwen2.5:0.5b-instruct-q4_K_M",
+  "task": "A01",
+  "contract": {
+    "tool_sequence": [
+      "lookup_model",
+      "write_report"
+    ],
+    "lookup_model_arguments": {
+      "model_id": "qwen2.5:0.5b-instruct-q4_K_M"
+    },
+    "write_report_arguments": {
+      "path": "report.txt"
+    }
+  },
+  "measurement": {
+    "measured_tps": 43.5952,
+    "source": "ollama runtime eval_count/eval_duration"
+  },
+  "result": "passed",
+  "git_commit": "c5025fc0360e86334fb95a1d26c18ffea5ea3eee",
+  "captured_at": "2026-08-27T08:56:59.023530+00:00"
+}
