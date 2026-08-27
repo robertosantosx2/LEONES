@@ -1,0 +1,12 @@
+{
+  "schema_version": "runtime-physical-execution-plan.v1",
+  "profile_order": ["soho", "cpd"],
+  "executions": [
+    {"runtime":"llama.cpp","profile":"soho","measurement_contract":"runtime-benchmark-evidence.v1.1","requires_physical_host":true,"model_selection":"existing local GGUF fixture where compatible"},
+    {"runtime":"ollama","profile":"soho","measurement_contract":"runtime-benchmark-evidence.v1.1","requires_physical_host":true,"model_selection":"same model family where runtime format permits"},
+    {"runtime":"AirLLM","profile":"soho","measurement_contract":"runtime-benchmark-evidence.v1.1","requires_physical_host":true,"model_selection":"transformers-compatible model artifact"},
+    {"runtime":"FreeToken","profile":"soho","measurement_contract":"runtime-benchmark-evidence.v1.1","requires_physical_host":true,"model_selection":"runtime-compatible GPU model artifact"},
+    {"runtime":"vLLM","profile":"cpd","measurement_contract":"runtime-benchmark-evidence.v1.1","requires_physical_host":true,"model_selection":"server-compatible model artifact"},
+    {"runtime":"SGLang","profile":"cpd","measurement_contract":"runtime-benchmark-evidence.v1.1","requires_physical_host":true,"model_selection":"server-compatible model artifact"}
+  ]
+}
