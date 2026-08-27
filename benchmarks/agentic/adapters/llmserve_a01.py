@@ -36,7 +36,10 @@ def build_a01_result(plan: dict[str, Any], *, workspace: Path, model_output: str
     """Grade one real model response under A01's strict tool contract."""
     trace = Trace()
     config = RunConfig("LEONES-Agentic", "1.0", "A01", "1.0", max_tool_calls=2)
-    trace.add("model", name=plan["model"].get("id"), status="completed")
+    selected_model = plan["model"]
+    expected_model_id = str(selected_model.get("id") or plan.get("model_id") or "")
+    expected_model_name = str(selected_model.get("name") or expected_model_id)
+    trace.add("model", name=expected_model_id, status="completed")
     requests: list[dict[str, Any]] = []
     for line in (line.strip() for line in model_output.splitlines() if line.strip()):
         try:
@@ -48,14 +51,15 @@ def build_a01_result(plan: dict[str, Any], *, workspace: Path, model_output: str
     if len(requests) != 2 or [r.get("tool") for r in requests] != ["lookup_model", "write_report"]:
         raise ValueError("A01 requires exactly lookup_model followed by write_report")
     model_id = requests[0].get("arguments", {}).get("model_id")
-    if model_id != "demo-2":
-        raise ValueError("A01 requires lookup_model(model_id=demo-2)")
+    if model_id != expected_model_id:
+        raise ValueError(f"A01 requires lookup_model(model_id={expected_model_id})")
     model = lookup_model(model_id)
     requested_path = requests[1].get("arguments", {}).get("path", output_path)
     safe_path = safe_workspace_path(workspace, requested_path)
     artifact = write_report(str(safe_path), model["name"])
     artifact_path = Path(artifact)
-    grader = grade_a01(tool_requests=requests, model=model, artifact_path=artifact_path)
+    grader = grade_a01(tool_requests=requests, model=model, artifact_path=artifact_path,
+                       expected_model_id=expected_model_id, expected_model_name=expected_model_name)
     passed = grader["status"] == "passed"
     trace.add("artifact", name="report.txt", status="verified" if passed else "failed", details={"path": str(artifact_path)})
     trace.add("grader", name=grader["id"], status=grader["status"], details=grader["checks"])
@@ -71,7 +75,7 @@ def build_a01_result(plan: dict[str, Any], *, workspace: Path, model_output: str
             "measured_tps": measurement["measured_tps"],
             "measurement_status": measurement["measurement_status"],
         })
-    return build_result(config, trace, model=plan["model"], hardware=plan["hardware"],
+    return build_result(config, trace, model=selected_model, hardware=plan["hardware"],
                         inference=plan.get("inference", {}),
                         outcome={"status": "success" if passed else "failed", "score": grader["score"]},
                         metrics=metrics, runtime=plan["runtime"], scaffold={"name": "runtime-A01"},
