@@ -1,0 +1,91 @@
+{
+  "schema": "runtime-measurement-protocol.v1",
+  "protocol_id": "llama-cpp-single-user-cpu-v1",
+  "protocol_version": "1.0",
+  "state": "frozen",
+  "objective": {
+    "benchmark_kind": "single_runtime",
+    "comparison_scope": "llama.cpp CPU single-user baseline"
+  },
+  "workload": {
+    "model": {
+      "id": "Qwen3-0.6B-Instruct",
+      "revision": "PIN_BEFORE_RUN",
+      "artifact": "PIN_BEFORE_RUN",
+      "quantization": "Q4_K_M"
+    },
+    "input": {
+      "prompt_protocol_id": "leones-single-prompt-v1",
+      "prompt": "PIN_BEFORE_RUN",
+      "context_length": 2048
+    },
+    "generation": {
+      "max_output_tokens": 128,
+      "stop_policy": "eos_or_fixed_tokens",
+      "stop_sequences": []
+    },
+    "decoding": {
+      "temperature": 0,
+      "top_p": 1,
+      "top_k": 0,
+      "seed": 42
+    }
+  },
+  "execution": {
+    "warmup_runs": 1,
+    "measurement_runs": 5,
+    "discard_failed_runs": false,
+    "run_order": "fixed",
+    "cooldown_seconds": 5,
+    "isolation": {
+      "background_workloads": "none_verified",
+      "power_profile": "PIN_BEFORE_RUN",
+      "network_policy": "offline"
+    }
+  },
+  "metrics": {
+    "primary": "decode_tokens_per_second",
+    "required": [
+      "ttft_ms",
+      "generation_time_ms",
+      "output_tokens",
+      "decode_tokens_per_second",
+      "total_time_ms"
+    ],
+    "optional": [
+      "input_tokens",
+      "peak_memory_mb",
+      "peak_vram_mb",
+      "power_w"
+    ]
+  },
+  "environment": {
+    "runtime": {
+      "name": "llama.cpp",
+      "version": "PIN_BEFORE_RUN",
+      "revision": null,
+      "backend": "CPU"
+    },
+    "hardware": {
+      "cpu": "PIN_BEFORE_RUN",
+      "ram_mb": 0,
+      "gpu": null,
+      "vram_mb": null,
+      "memory_bandwidth_gbps": null
+    },
+    "os": "PIN_BEFORE_RUN",
+    "command": ["PIN_BEFORE_RUN"]
+  },
+  "provenance": {
+    "created_at": "2026-08-27T00:00:00Z",
+    "owner": "LEONES",
+    "evidence_policy": "preserve_raw_and_normalized"
+  },
+  "acceptance": {
+    "minimum_successful_runs": 5,
+    "require_exit_code_zero": true,
+    "require_raw_stdout_stderr": true,
+    "require_artifact_hash": true,
+    "allow_partial_results": false
+  }
+}
