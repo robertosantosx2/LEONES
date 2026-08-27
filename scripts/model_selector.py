@@ -27,7 +27,7 @@ def _bool(value:Any)->bool|None:
 def _norm(value:Any)->str:return re.sub(r"[^a-z0-9]+"," ",str(value or "").lower()).strip()
 
 def _params_m(row:dict[str,Any],active:bool=False)->float|None:
-    keys=(['active_parameters_m','active_params_m','active_parameters_b','active_params_b','active_parameters'] if active else ['total_parameters_m','parameters_m','total_params_m','total_parameters_b','parameters_b','total_params_b','total_parameters','parameters'])
+    keys=(['active_parameters_m','active_params_m','active_parameters_b','active_params_b','active_parameter_count_b','parameters_active_b','active_parameters'] if active else ['total_parameters_m','parameters_m','total_params_m','total_parameters_b','parameters_total_b','parameter_count_b','parameters_b','total_params_b','total_parameters','parameters'])
     for key in keys:
         value=_num(row.get(key))
         if value is None:continue
