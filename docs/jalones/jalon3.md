@@ -1,145 +1,78 @@
 # JALON3 — Protocolo de medición real y evidencia V1.1
 
-**Estado:** FIJADO
-**Fecha:** 2026-08-27
-**Base:** `main`
-**Commit de implementación asociado:** `21d23496cb6ff727002bbdeb35f804c7b850722b`
-**PR asociado:** #63 — runtime benchmark evidence v1.1 and llama.cpp protocol
+**Estado:** EN DESARROLLO — contrato congelado, ejecución física pendiente  
+**Base:** `jalon2-evidence-bridge` (`947f61e4a65e9a34151999c8f94fd606295009f5`)  
+**Rama de trabajo:** `jalon3-runtime-execution-contract-v2`
 
-## 1. Propósito
+## 1. Objetivo
 
-JALON3 fija el punto de continuación para la primera prueba real de un runtime en Debian. La prueba no debe producir solamente una cifra de rendimiento: debe producir una evidencia LEONES estructurada, reproducible, auditable y reutilizable.
+Convertir la medición física de un runtime en una evidencia LEONES reproducible, auditable y machine-readable. La primera ejecución objetivo es `llama.cpp`.
 
-La primera ejecución objetivo es `llama.cpp`.
+**JALON3 no declara una cifra real hasta que exista ejecución física.** Todo lo que se hace en GitHub es contrato, harness, validación y preparación.
 
-## 2. Referencia metodológica
+## 2. Contrato congelado
 
-La metodología de Artificial Analysis se toma como referencia conceptual, no como copia del protocolo. AA define sus benchmarks de rendimiento como mediciones de rendimiento end-to-end experimentado por el usuario/sistema y separa explícitamente TTFT, velocidad de salida y tiempo end-to-end. También fija workloads, parámetros y métodos de conteo de tokens para hacer comparaciones reproducibles.
+El artefacto canónico es `schemas/runtime-benchmark-evidence.v1.1.json`.
 
-Para LEONES se adopta especialmente:
+Cada evidencia contiene obligatoriamente:
 
-- condiciones de prueba explícitas;
-- workload/prompt identificado;
-- separación de TTFT y velocidad posterior al primer token;
-- medición end-to-end;
-- repetición de mediciones;
-- conservación de datos y condiciones;
-- identificación estable del modelo/runtime;
-- resultados estructurados y machine-readable;
-- distinción entre medición local y medición de API.
+- identidad: `schema`, `execution_id`, timestamps;
+- modelo: id, nombre, revisión, fuente, artefacto, cuantización y contexto;
+- protocolo: identificador, hash del prompt cuando exista, tokens de entrada, límite de salida, sampling, seed, contexto, warm-up e iteraciones;
+- runtime: nombre, versión, revisión, backend, binario, SHA-256 del binario y `argv` exacto;
+- hardware: host, OS, kernel, arquitectura, CPU, hilos/núcleos, RAM, GPU y VRAM;
+- mediciones individuales: first-output latency/TTFT local, generación, tokens producidos cuando estén explícitamente disponibles, tokens/s, tiempo total, memoria, VRAM, potencia, exit code, stdout y stderr;
+- agregados: media, mediana, mínimo, máximo y desviación estándar cuando proceda;
+- proceso completo y hash/tamaño del artefacto de modelo.
 
-## 3. Contrato de medición
+Los campos opcionales físicamente no observables se representan como `null`; **no se inventan valores**.
 
-Cada ejecución debe registrar:
+## 3. Regla de TTFT
 
-### Modelo
+En runtime local, `ttft_ms`/`first_output_ms` significa **latencia hasta la primera salida observada por el harness**. No se presenta como equivalente al TTFT de una API alojada.
 
-- `model_id`
-- `model_name`
-- `model_revision`
-- `model_source`
-- `model_artifact`
-- `quantization`
-- parámetros
-- contexto
+## 4. Reproducibilidad
 
-### Protocolo
+Una combinación diferente de:
 
-- `prompt_protocol_id`
-- prompt/workload
-- tokens de entrada
-- límite de salida
-- parámetros de sampling
-- seed cuando proceda
-- warm-up
-- número de iteraciones
-- contexto
+`modelo + revisión + cuantización + runtime + versión/revisión + hardware + workload + protocolo`
 
-### Métricas
+es una ejecución distinta y recibe un nuevo `execution_id`.
 
-Por iteración:
+El prompt se identifica además mediante `prompt_sha256` cuando se proporciona.
 
-- TTFT / first-output latency, claramente etiquetado para ejecución local;
-- output tokens/s;
-- tiempo de generación;
-- tiempo total;
-- tokens producidos.
+## 5. Harness
 
-Cuando sea posible:
+`scripts/runtime_benchmark_evidence.py`:
 
-- memoria RAM máxima;
-- VRAM máxima;
-- consumo/potencia;
-- energía.
+1. acepta únicamente un `argv` JSON, sin shell;
+2. ejecuta warm-up separado de las mediciones;
+3. conserva stdout/stderr por iteración;
+4. mide first-output latency y tiempo total;
+5. extrae tokens/s únicamente cuando el runtime lo declara explícitamente;
+6. no estima `output_tokens` a partir de tokens/s;
+7. identifica binario y SHA-256 cuando el ejecutable es un archivo local;
+8. captura hardware disponible;
+9. genera `runtime-benchmark-evidence.v1.1`;
+10. devuelve código no cero si alguna medición falla.
 
-Agregados:
+## 6. Validación automática
 
-- media;
-- mediana;
-- mínimo;
-- máximo;
-- desviación estándar.
+`tests/test_runtime_benchmark_evidence_v1_1.py` fija las invariantes del contrato:
 
-### Entorno
-
-- CPU;
-- núcleos/hilos;
-- RAM;
-- GPU;
-- VRAM;
-- almacenamiento;
-- sistema operativo;
-- kernel;
-- arquitectura;
-- driver cuando proceda.
-
-### Runtime
-
-- nombre;
-- versión exacta;
-- revisión/commit cuando sea posible;
-- backend;
-- build/configuración;
-- dependencias relevantes;
-- comando ejecutado.
-
-### Ejecución
-
-- `execution_id` único;
-- timestamp de inicio;
-- timestamp de finalización;
-- duración;
-- exit code;
-- `stdout` completo;
-- `stderr` completo.
-
-### Artefactos
-
-- ruta/identificador;
-- tamaño;
+- captura simultánea de stdout/stderr;
+- extracción de tokens/s;
+- determinismo de agregados;
 - SHA-256;
-- revisión del artefacto cuando exista.
+- estructura estricta del schema;
+- campos obligatorios de ejecución, modelo, protocolo, runtime, hardware, mediciones, proceso y artefacto.
 
-## 4. Regla fundamental de TTFT
+La ejecución física todavía queda fuera de CI: requiere hardware/runtime/modelo reales.
 
-En una ejecución local con `llama-cli`, LEONES no debe presentar automáticamente la primera salida como equivalente al TTFT de una API remota.
-
-Se conservará el concepto como **first-output latency / TTFT local**, indicando su ámbito experimental.
-
-Las comparaciones con datos de Artificial Analysis deben respetar esta diferencia metodológica.
-
-## 5. Principio de reproducibilidad
-
-Una combinación distinta de cualquiera de estos elementos constituye una nueva ejecución:
-
-`modelo + revisión + cuantización + runtime + versión + hardware + workload + protocolo`
-
-Por tanto debe recibir un nuevo `execution_id`.
-
-## 6. Flujo de ejecución
+## 7. Flujo canónico
 
 ```text
-LLM selector
+modelo candidato
     ↓
 runtime-selection.v1
     ↓
@@ -147,90 +80,68 @@ runtime gate
     ↓
 execution plan autorizado
     ↓
-llama.cpp adapter
+adapter llama.cpp
+    ↓
+harness runtime_benchmark_evidence.py
     ↓
 warm-up
     ↓
 N mediciones
     ↓
-captura de recursos + stdout/stderr
+stdout/stderr + recursos
     ↓
 normalización
     ↓
 runtime-benchmark-evidence.v1.1
     ↓
-validación
+schema validation
     ↓
-artifact de evidencia LEONES
+SHA-256 + conservación
+    ↓
+evidence LEONES
 ```
 
-## 7. Implementación ya integrada
+## 8. Criterios de validez física
 
-JALON3 se apoya en la implementación fusionada en `main` mediante PR #63:
+Una ejecución real solo será válida si:
 
-- `schemas/runtime-benchmark-evidence.v1.1.json`
-- `scripts/runtime_benchmark_evidence.py`
-- `tests/test_runtime_benchmark_evidence.py`
-- `docs/runtime-benchmark-evidence-v1.1.md`
+- el runtime es el que declara el registro;
+- el comando ejecutado coincide con el `argv` conservado;
+- el modelo/artefacto está identificado y hasheado;
+- el protocolo queda congelado durante la serie;
+- warm-up y mediciones están separados;
+- existen mediciones individuales;
+- stdout/stderr se conservan íntegros;
+- el exit code de las mediciones es verificable;
+- el JSON valida contra el schema;
+- el hardware y versión del runtime quedan registrados;
+- la evidencia no se modifica después de la ejecución.
 
-El adaptador de `llama.cpp` ya está conectado al runtime-selection gate y construye comandos sin shell, rechazando planes no autorizados o de otro runtime.
+## 9. Qué queda para Ubuntu/Debian
 
-## 8. Qué NO se debe hacer al continuar
+Solo lo que no puede demostrarse de forma honesta desde GitHub:
 
-- No copiar manualmente una cifra del terminal.
-- No convertir una estimación de LLMFit/Magnitude en una medición real.
-- No mezclar una medición de API con una medición local.
-- No eliminar stdout/stderr.
-- No sustituir las iteraciones por una única media.
-- No cambiar el prompt, cuantización o contexto sin crear una nueva ejecución.
-- No declarar un benchmark válido si faltan los campos obligatorios del contrato.
+1. hardware físico;
+2. runtime/binario realmente instalado;
+3. modelo GGUF realmente disponible;
+4. ejecución real;
+5. métricas reales;
+6. consumo/VRAM/potencia si el host permite medirlos;
+7. stdout/stderr reales;
+8. validación final de la evidencia producida.
 
-## 9. Punto exacto de continuación en Debian
-
-Cuando se retome JALON3 delante del equipo Debian:
-
-1. actualizar `main`;
-2. ejecutar tests completos;
-3. comprobar `git diff --check` y estado limpio;
-4. identificar hardware y runtime instalados;
-5. comprobar disponibilidad/versionado de `llama.cpp`;
-6. seleccionar modelo y artefacto GGUF concretos;
-7. obtener y registrar su revisión/hash;
-8. ejecutar warm-up;
-9. ejecutar las iteraciones reales;
-10. generar `runtime-benchmark-evidence.v1.1`;
-11. validar el JSON contra el schema;
-12. revisar stdout/stderr y métricas;
-13. conservar el artefacto y SHA-256;
-14. incorporar la evidencia al flujo LEONES;
-15. documentar el resultado sin modificar retroactivamente las condiciones.
+**No se utilizará Ubuntu/Debian para seguir diseñando el contrato.** Cuando llegue ese punto será ejecutar → medir → validar → conservar.
 
 ## 10. Criterio de cierre de JALON3
 
-JALON3 queda completamente cerrado cuando exista al menos una ejecución real de `llama.cpp` en Debian que:
+JALON3 se cerrará cuando exista al menos una ejecución real de `llama.cpp` en el host objetivo que cumpla todos los criterios de validez física y cuya evidencia `runtime-benchmark-evidence.v1.1` sea reutilizable por el pipeline de evidencia/recomendación.
 
-- haya pasado por `runtime-selection.v1`/runtime gate;
-- utilice un artefacto de modelo identificado;
-- ejecute el runtime real;
-- produzca evidencia `runtime-benchmark-evidence.v1.1` válida;
-- conserve las mediciones individuales;
-- conserve stdout/stderr;
-- tenga `execution_id`, timestamps y hash;
-- registre hardware y versión exacta del runtime;
-- y pueda ser reutilizada por el sistema de evidencia/recomendación de LEONES.
+Hasta entonces, el estado correcto es **contrato congelado / ejecución pendiente**.
 
-**JALON3 no se considera cerrado por haber implementado el harness. El cierre requiere la primera medición real en Debian.**
+## 11. Referencia metodológica
 
-## 11. Referencias externas
-
-Artificial Analysis — Benchmarking Methodology: https://artificialanalysis.ai/methodology
-
-Artificial Analysis — Language Model API Performance Benchmarking: https://artificialanalysis.ai/methodology/performance-benchmarking
-
-Artificial Analysis — Data API: https://artificialanalysis.ai/data-api
+Artificial Analysis se utiliza como referencia metodológica para separar condiciones de prueba, latencia inicial, velocidad de salida, rendimiento end-to-end y reproducibilidad. LEONES conserva explícitamente la distinción entre medición local y benchmark de API.
 
 ## 12. Frase de recuperación
 
-> **JALON3 = primera medición real reproducible de runtime → evidencia LEONES V1.1.**
-
-Al continuar, no hay que rediseñar el protocolo: hay que ejecutar la prueba real y cerrar la evidencia.
+> **JALON3 = contrato congelado; primera medición real reproducible → evidencia LEONES V1.1.**
