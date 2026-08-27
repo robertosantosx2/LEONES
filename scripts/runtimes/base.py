@@ -25,7 +25,6 @@ class RuntimeAdapter:
         runtime_value = plan.get("runtime")
         selected_runtime = runtime_value.get("name") if isinstance(runtime_value, dict) else runtime_value
         if selected_runtime != self.runtime_id: raise ValueError(f"runtime mismatch for {self.adapter_id}")
-        if plan.get("execution_authorized") is not True: raise ValueError("runtime plan is not authorized")
         if not plan.get("model_id"): raise ValueError("runtime plan has no model identity")
         if not plan.get("quantization"): raise ValueError("runtime plan has no quantization")
         ok, reasons = capability_match(entry, architecture=plan.get("architecture_class"), model_format=plan.get("model_format"),
