@@ -1,37 +1,32 @@
-"""V1.1 concrete adapter registry.
-
-Each adapter is intentionally thin: capability decisions stay declarative in
-the runtime registry and execution evidence stays in the common benchmark
-bridge.
-"""
+"""Canonical V1.1 trusted adapter registry."""
 from __future__ import annotations
+from scripts.runtimes.llama_cpp_adapter import ADAPTER as LLAMA_CPP
+from scripts.runtimes.ollama_adapter import ADAPTER as OLLAMA
+from scripts.runtimes.freetoken_adapter import ADAPTER as FREETOKEN
+from scripts.runtimes.airllm_adapter import ADAPTER as AIRLLM
+from scripts.runtimes.vllm_adapter import ADAPTER as VLLM
+from scripts.runtimes.sglang_adapter import ADAPTER as SGLANG
+from scripts.runtimes.mlx_adapter import ADAPTER as MLX
+from scripts.runtimes.exllama_adapter import ADAPTER as EXLLAMA
+from scripts.runtimes.openvino_adapter import ADAPTER as OPENVINO
+from scripts.runtimes.onnxruntime_genai_adapter import ADAPTER as ONNXRT_GENAI
+from scripts.runtimes.tensorrt_llm_adapter import ADAPTER as TRTLLM
 
-from scripts.runtimes.base import RuntimeAdapter
-from scripts.runtimes.freetoken_adapter import FreeTokenAdapter
-
-
-class NamedAdapter(RuntimeAdapter):
-    def __init__(self, runtime_id: str, adapter_id: str):
-        self.runtime_id = runtime_id
-        self.adapter_id = adapter_id
-
-
-ADAPTERS: dict[str, RuntimeAdapter] = {
-    "llama.cpp": NamedAdapter("llama.cpp", "llama_cpp.v1.1"),
-    "FreeToken": FreeTokenAdapter(),
-    "AirLLM": NamedAdapter("AirLLM", "airllm.v1.1"),
-    "Ollama": NamedAdapter("Ollama", "ollama.v1.1"),
-    "vLLM": NamedAdapter("vLLM", "vllm.v1.1"),
-    "SGLang": NamedAdapter("SGLang", "sglang.v1.1"),
-    "MLX/MLX-LM": NamedAdapter("MLX/MLX-LM", "mlx.v1.1"),
-    "ExLlama": NamedAdapter("ExLlama", "exllama.v1.1"),
-    "OpenVINO": NamedAdapter("OpenVINO", "openvino.v1.1"),
-    "ONNX Runtime GenAI": NamedAdapter("ONNX Runtime GenAI", "onnxruntime_genai.v1.1"),
-    "TensorRT-LLM": NamedAdapter("TensorRT-LLM", "tensorrt_llm.v1.1"),
+ADAPTERS = {
+    "llama.cpp": LLAMA_CPP,
+    "FreeToken": FREETOKEN,
+    "AirLLM": AIRLLM,
+    "Ollama": OLLAMA,
+    "vLLM": VLLM,
+    "SGLang": SGLANG,
+    "MLX/MLX-LM": MLX,
+    "ExLlama": EXLLAMA,
+    "OpenVINO": OPENVINO,
+    "ONNX Runtime GenAI": ONNXRT_GENAI,
+    "TensorRT-LLM": TRTLLM,
 }
 
-
-def get_adapter(runtime_id: str) -> RuntimeAdapter:
+def get_adapter(runtime_id: str):
     try:
         return ADAPTERS[runtime_id]
     except KeyError as exc:
