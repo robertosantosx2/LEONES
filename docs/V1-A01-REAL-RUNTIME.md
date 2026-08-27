@@ -32,27 +32,26 @@ evidencia medida
 
 ## Qué se ha demostrado
 
-La ejecución real realizada en Debian utilizó:
+La ejecución de cierre realizada en Debian utilizó:
 
 | Campo | Valor |
 |---|---|
 | Modelo | `qwen2.5:0.5b-instruct-q4_K_M` |
 | Cuantización | `Q4_K_M` |
 | Runtime | Ollama |
-| Versión runtime | `0.33.1` |
+| Versión runtime instalada | `0.33.1` |
 | Endpoint | `127.0.0.1:11434` |
-| Hardware de inferencia | CPU |
 | Tarea | `A01` |
 | Tool calls | `2` |
+| Tool errors | `0` |
 | Resultado | `success` |
 | Grader | `passed` |
 | Score | `1.0` |
-| Tiempo de pared, ejecución 1 | `2.147932 s` |
-| Rendimiento, ejecución 1 | `52.7164 tok/s` |
-| Tiempo de pared, ejecución 2 | `2.345202 s` |
-| Rendimiento, ejecución 2 | `47.9803 tok/s` |
+| Tiempo de pared, cierre | `5.744973 s` |
+| **Throughput medido, cierre** | **40.7666 tok/s** |
+| Evidencia | `measured` |
 
-La segunda ejecución es la evidencia final que debe citarse para esta sesión: **47.9803 tok/s**. La primera queda conservada como observación histórica y no debe sobrescribirse.
+**40.7666 tok/s es la medición de cierre de esta ejecución.** No es una cifra universal del modelo, de Ollama ni del equipo.
 
 ## Evidencia frente a afirmaciones
 
@@ -64,13 +63,25 @@ LEONES distingue deliberadamente:
 - **Measured:** resultado obtenido ejecutando el procedimiento de LEONES.
 - **Verified:** evidencia que ha pasado el quality gate correspondiente.
 
-Por tanto, `47.9803 tok/s` no es una cifra universal de Qwen2.5 0.5B. Es una **medición de esta ejecución concreta**, bajo las condiciones que quedaron registradas.
+Por tanto, `40.7666 tok/s` es una **medición de esta ejecución concreta**. No debe presentarse como una propiedad intrínseca de Qwen2.5 0.5B.
 
 Tampoco debe utilizarse esta medición para atribuir rendimiento a otros equipos, otras versiones de Ollama, otros contextos, otras cuantizaciones o GPU.
 
+## Identidad y procedencia
+
+La ejecución de cierre quedó identificada por:
+
+- `execution_id`: `378854c5-8147-47a3-8e1b-33b078424d00`;
+- `executor_result_sha256`: `ae11c085b986ef1c7a88983c4deaeb82cd714e72de36c3bff81e8eff7fa3f02b`;
+- runtime: `ollama`;
+- versión del runtime en el plan: `local`;
+- versión instalada en Debian: `0.33.1`.
+
+La selección declaró explícitamente modelo, runtime y cuantización. El benchmark consume esa selección y no sustituye el plan por una decisión textual independiente.
+
 ## El papel de `runtime-selection.v1`
 
-La selección no ejecuta directamente el modelo. Produce un plan que identifica, entre otras cosas:
+La selección produce un plan que identifica, entre otras cosas:
 
 - `model_id`;
 - runtime;
@@ -80,7 +91,7 @@ La selección no ejecuta directamente el modelo. Produce un plan que identifica,
 - autorización de ejecución;
 - necesidad de medición.
 
-El benchmark consume ese plan. Esto es importante porque impide que el benchmark se convierta en un script paralelo al selector: **la medición física debe recorrer el mismo contrato que utilizaría una recomendación real**.
+El benchmark consume ese plan. Esto evita que la medición física se convierta en un camino paralelo al selector: **la medición debe recorrer el mismo contrato que utilizaría una recomendación real**.
 
 ## El adaptador de Ollama
 
@@ -98,7 +109,7 @@ Sus responsabilidades son deliberadamente pequeñas:
 8. calcular `measured_tps` únicamente a partir de esos valores;
 9. no inventar throughput cuando el runtime no lo reporta.
 
-Esta última regla es fundamental. En las primeras ejecuciones con el runtime fixture el benchmark podía tener tiempo de pared, pero no tokens por segundo. Eso no autorizaba a rellenar el campo con una estimación.
+Esta última regla es fundamental: si el runtime no proporciona los datos necesarios, LEONES conserva `null` y no convierte una estimación en medición.
 
 ## El grader A01
 
@@ -110,29 +121,46 @@ El grader comprueba cinco propiedades esenciales:
 4. **artifact exists** — se produce `report.txt`;
 5. **artifact contains model** — el artefacto conserva la identidad del modelo.
 
+En la ejecución de cierre las cinco comprobaciones fueron `true` y el grader obtuvo `score: 1.0`.
+
 Una ejecución rápida no basta: **debe producir el comportamiento correcto**.
 
-## Qué significa `47.9803 tok/s`
+## Medición de cierre
 
 La cifra pertenece a `runtime-benchmark.v1` y a la ejecución cuyo identificador fue:
 
-`a757ce94-0a2c-4042-95a2-39c89d8ba67c`
+`378854c5-8147-47a3-8e1b-33b078424d00`
 
-El benchmark también conserva el hash SHA-256 del resultado del ejecutor:
+El benchmark conserva el hash SHA-256 del resultado del ejecutor:
 
-`8b9e14a4f9e6041ce8fed47d4f816df0f500646aa6de4f0297e63e2b02a75f7a`
+`ae11c085b986ef1c7a88983c4deaeb82cd714e72de36c3bff81e8eff7fa3f02b`
 
-La existencia del hash permite detectar cambios posteriores en el resultado sin confundir una nueva ejecución con la antigua.
+El hash permite detectar cambios posteriores en el resultado sin confundir una nueva ejecución con la antigua.
+
+## Variabilidad y criterio de referencia
+
+Durante la integración se obtuvieron varias ejecuciones válidas:
+
+| Ejecución | Wall time | Throughput | Estado |
+|---|---:|---:|---|
+| histórica 1 | `2.147932 s` | `52.7164 tok/s` | conservada como histórica |
+| histórica 2 | `2.345202 s` | `47.9803 tok/s` | conservada como histórica |
+| **cierre V1** | **`5.744973 s`** | **`40.7666 tok/s`** | **referencia de cierre** |
+
+Las cifras no son contradictorias: son ejecuciones distintas. **La última ejecución válida es la referencia de cierre de esta validación.** No se debe escoger la mayor cifra para representar el sistema.
+
+Para un benchmark comparativo posterior habrá que fijar una metodología específica: repeticiones, calentamiento, contexto, prompt, generación, versión del runtime y condiciones del hardware. Esta prueba A01 no pretende resolver por sí sola esa metodología.
 
 ## Reproducibilidad
 
-La ejecución local se realizó con:
+La ejecución de cierre se realizó con:
 
 ```bash
 python3 scripts/a01_runtime_benchmark.py \
   --selection artifacts/real-a01-selection.json \
   --runtime-commands artifacts/real-a01-runtime-commands.json \
   --workspace .leones/a01-real-workspace \
+  --prompt 'Execute A01. Return only JSONL tool calls.' \
   --out artifacts/a01-real-runtime-benchmark.v1.json
 ```
 
@@ -144,7 +172,35 @@ La preparación del modelo fue:
 ollama pull qwen2.5:0.5b-instruct-q4_K_M
 ```
 
-La verificación del endpoint confirmó que el runtime era alcanzable y que el modelo estaba disponible.
+La disponibilidad del servicio y del modelo se verificó con la API local y `ollama list`.
+
+La evidencia generada se valida con:
+
+```bash
+python3 -m json.tool artifacts/a01-real-runtime-benchmark.v1.json >/dev/null
+cat .leones/a01-real-workspace/report.txt
+```
+
+El cierre adicional se validó mediante aserciones estructurales, la suite completa de tests y la validación de todos los esquemas JSON.
+
+## Resultado del cierre técnico
+
+La ejecución de cierre alcanzó simultáneamente:
+
+- A01 `success`;
+- grader `passed` con score `1.0`;
+- dos tool calls;
+- cero errores de herramienta;
+- `report.txt` verificado;
+- `runtime-benchmark.v1` con estado `measured`;
+- `measured_tps` informado por el runtime;
+- router `evidence_supported`;
+- coincidencia entre modelo y runtime seleccionados y ejecutados.
+
+En la misma revisión local:
+
+- **174 tests pasaron** (`174 passed`);
+- **12 esquemas JSON** fueron parseados correctamente.
 
 ## Qué NO demuestra esta prueba
 
@@ -152,12 +208,13 @@ Esta prueba no demuestra:
 
 - que Ollama sea el runtime óptimo para todos los modelos;
 - que Qwen2.5 0.5B sea el mejor modelo para todas las tareas;
-- que `47.9803 tok/s` sea un benchmark general del equipo;
+- que `40.7666 tok/s` sea un benchmark general del equipo;
 - que una ejecución agentiva larga tenga el mismo rendimiento;
 - que el modelo mantenga esa velocidad con otro contexto o configuración;
-- que la cifra sea comparable sin normalizar metodología con cifras de terceros.
+- que la cifra sea comparable sin normalizar metodología con cifras de terceros;
+- que los campos de hardware `unknown` de la evidencia deban rellenarse retrospectivamente con suposiciones.
 
-Su alcance es mucho más preciso: **A01 funciona de extremo a extremo con el modelo y runtime seleccionados, y el runtime real devuelve una medición de throughput utilizable como evidencia LEONES.**
+Su alcance es preciso: **A01 funciona de extremo a extremo con el modelo y runtime seleccionados, el grader valida el comportamiento requerido y el runtime real devuelve una medición de throughput utilizable como evidencia LEONES.**
 
 ## Fixture frente a runtime real
 
@@ -165,29 +222,12 @@ El fixture sigue siendo necesario para CI porque GitHub Actions no debe depender
 
 El runtime real tiene otra función: demostrar que el mismo camino puede llegar hasta una inferencia física y regresar con medición.
 
-Por tanto:
-
 ```text
 fixture CI  → contrato reproducible y barato
 runtime real → evidencia física
 ```
 
 No deben mezclarse ni presentarse como si fueran la misma evidencia.
-
-## Estado V1
-
-A01 ya tiene las dos capas necesarias:
-
-- **CI:** contrato determinista y sin dependencia de hardware específico.
-- **Debian:** ejecución real con Ollama y medición física.
-
-Los gates de CI asociados al commit de corrección quedaron verdes:
-
-- `Agentic A01 contract` — success;
-- `LEONES Contract Tests` — success;
-- `LEONES V1 Complete Gate` — success.
-
-Esto convierte A01 en una integración funcional, no solamente en una prueba aislada del adaptador.
 
 ## Próximo criterio de calidad
 
