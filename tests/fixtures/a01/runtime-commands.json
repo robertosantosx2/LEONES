@@ -1,0 +1,7 @@
+{
+  "fixture-runtime": [
+    "python3",
+    "-c",
+    "import sys; print('{\"tool\":\"lookup_model\",\"arguments\":{\"model_id\":\"demo-2\"}}'); print('{\"tool\":\"write_report\",\"arguments\":{\"path\":\"report.txt\"}}')"
+  ]
+}
