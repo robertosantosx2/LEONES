@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Revisa la legibilidad básica de los scripts propios de LEONES.
 
-Solo analiza Python que se comporta como script ejecutable: tiene un bloque
-``if __name__ == '__main__'``. No modifica archivos ni toca código de terceros.
+Solo analiza Python que se comporta como script ejecutable. No modifica
+archivos ni toca código de terceros.
 """
 from __future__ import annotations
 
 import argparse
+import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +31,15 @@ def is_executable_script(lines: list[str]) -> bool:
     return any("if __name__ ==" in line and "__main__" in line for line in lines)
 
 
+def has_initial_docstring(lines: list[str]) -> bool:
+    """Comprueba el docstring del módulo sin confundir comentarios con código."""
+    try:
+        tree = ast.parse("\n".join(lines))
+    except SyntaxError:
+        return False
+    return bool(ast.get_docstring(tree))
+
+
 def check_file(path: Path) -> list[str]:
     """Devuelve avisos sencillos para un script ejecutable."""
     lines = path.read_text(encoding="utf-8").splitlines()
@@ -40,7 +50,7 @@ def check_file(path: Path) -> list[str]:
     if not lines or not lines[0].startswith("#!"):
         problems.append("falta el encabezado ejecutable (shebang)")
 
-    if not any(line.strip().startswith('"""') for line in lines[:12]):
+    if not has_initial_docstring(lines):
         problems.append("falta un docstring inicial que explique el propósito")
 
     for number, line in enumerate(lines, start=1):
