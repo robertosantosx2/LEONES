@@ -14,12 +14,7 @@ from typing import Any
 EVIDENCE_TYPES = ("estimated", "reported", "measured", "verified")
 REAL_MEASUREMENT_KIND = "real"
 SYNTHETIC_MARKERS = {
-    "synthetic",
-    "simulated",
-    "simulation",
-    "fixture",
-    "fake",
-    "controlled",
+    "synthetic", "simulated", "simulation", "fixture", "fake", "controlled",
 }
 
 
@@ -39,14 +34,14 @@ def validate_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
 
     evidence_type = evidence["evidence_type"]
     if evidence_type in {"measured", "verified"}:
+        if _is_synthetic(evidence):
+            raise ValueError("synthetic evidence cannot be measured or verified")
         if not evidence.get("execution_id"):
             raise ValueError("measured/verified evidence requires execution_id")
         if not evidence.get("measured_at"):
             raise ValueError("measured/verified evidence requires measured_at")
         if evidence.get("measurement_kind") != REAL_MEASUREMENT_KIND:
             raise ValueError("measured/verified evidence requires measurement_kind=real")
-        if _is_synthetic(evidence):
-            raise ValueError("synthetic evidence cannot be measured or verified")
 
     if evidence_type == "verified":
         for field in ("verified_at", "verifier", "verification_method"):
