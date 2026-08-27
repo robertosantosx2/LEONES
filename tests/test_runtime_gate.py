@@ -18,14 +18,14 @@ def candidate(status="TOP_N", **extra):
 
 
 def test_top_n_can_execute():
-    plan = resolve_runtime(candidate())
+    plan = resolve_runtime(candidate(), runtime_commands={"llama.cpp": ["trusted-llama"]})
     assert plan["execution_authorized"] is True
     assert plan["benchmark_probe"] is False
     assert plan["measured_tps"] is None
 
 
 def test_benchmark_required_is_executable_as_probe():
-    plan = resolve_runtime(candidate("BENCHMARK_REQUIRED"))
+    plan = resolve_runtime(candidate("BENCHMARK_REQUIRED"), runtime_commands={"llama.cpp": ["trusted-llama"]})
     assert plan["execution_authorized"] is True
     assert plan["benchmark_probe"] is True
     assert plan["measurement_required"] is True
@@ -42,6 +42,6 @@ def test_runtime_availability_is_checked():
 
 
 def test_runtime_plan_preserves_estimate_without_measurement():
-    plan = resolve_runtime(candidate())
+    plan = resolve_runtime(candidate(), runtime_commands={"llama.cpp": ["trusted-llama"]})
     assert plan["estimated_tps"] == 12.0
     assert plan["measured_tps"] is None
