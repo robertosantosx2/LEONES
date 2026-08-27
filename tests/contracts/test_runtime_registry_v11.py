@@ -80,6 +80,14 @@ def test_benchmark_rejects_missing_execution_identity():
         begin({"execution_authorized": True, "runtime": {"name": "vLLM"}, "model_id": "org/model", "quantization": "FP8"})
 
 
+def test_evidence_rejects_missing_provenance():
+    record = begin(plan("vLLM", quantization="FP8"))
+    completed = complete(record, {"measured_tps": 10.5})
+    completed["execution_id"] = None
+    with pytest.raises(ValueError):
+        to_evidence(completed)
+
+
 def test_registry_rejects_duplicate_aliases(tmp_path: Path):
     registry = {"schema_version": SCHEMA_VERSION, "runtimes": [
         {"id": "a", "adapter": "a", "version": "1", "aliases": ["shared"], "modes": ["cpu"], "architectures": ["dense"], "formats": ["x"], "backends": ["cpu"], "capabilities": ["x"], "entrypoint": {"kind": "executable", "argv": ["a"]}, "availability": "host-detected", "metrics": "x", "physical_test_required": True},
