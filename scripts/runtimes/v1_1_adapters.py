@@ -13,17 +13,9 @@ from scripts.runtimes.onnxruntime_genai_adapter import ADAPTER as ONNXRT_GENAI
 from scripts.runtimes.tensorrt_llm_adapter import ADAPTER as TRTLLM
 
 ADAPTERS = {
-    "llama.cpp": LLAMA_CPP,
-    "FreeToken": FREETOKEN,
-    "AirLLM": AIRLLM,
-    "Ollama": OLLAMA,
-    "vLLM": VLLM,
-    "SGLang": SGLANG,
-    "MLX/MLX-LM": MLX,
-    "ExLlama": EXLLAMA,
-    "OpenVINO": OPENVINO,
-    "ONNX Runtime GenAI": ONNXRT_GENAI,
-    "TensorRT-LLM": TRTLLM,
+    "llama.cpp": LLAMA_CPP, "FreeToken": FREETOKEN, "AirLLM": AIRLLM, "ollama": OLLAMA,
+    "vLLM": VLLM, "SGLang": SGLANG, "MLX/MLX-LM": MLX, "ExLlama": EXLLAMA,
+    "OpenVINO": OPENVINO, "ONNX Runtime GenAI": ONNXRT_GENAI, "TensorRT-LLM": TRTLLM,
 }
 
 def get_adapter(runtime_id: str):
