@@ -1,5 +1,7 @@
+import json
+
 from runtime_selection.contract import CapabilityMatch, RuntimeSelectionPlan, validate_plan
-from runtime_selection.registry import RuntimeDescriptor, RuntimeRegistry
+from runtime_selection.registry import RuntimeDescriptor, RuntimeRegistry, build_default_registry
 
 
 def request():
@@ -54,3 +56,20 @@ def test_selection_rejects_execution_and_measurement_fields():
         assert "execution/measurement" in str(exc)
     else:
         raise AssertionError("command leaked into selection contract")
+
+
+def test_default_registry_is_loaded_from_canonical_v11_json():
+    registry = build_default_registry()
+    with open("runtime_selection/v1_1/runtime_registry.json", encoding="utf-8") as handle:
+        document = json.load(handle)
+    expected = {entry["runtime_id"] for entry in document["runtimes"]}
+    assert len(expected) == 13
+    assert {runtime.runtime_id for runtime in registry.all()} == expected
+    assert all(runtime.metadata["entrypoint_ref"].startswith("trusted://") for runtime in registry.all())
+
+
+def test_default_registry_contains_no_runtime_commands():
+    registry = build_default_registry()
+    for runtime in registry.all():
+        assert "command" not in runtime.metadata
+        assert "argv" not in runtime.metadata
