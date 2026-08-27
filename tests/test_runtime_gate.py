@@ -11,6 +11,7 @@ def candidate(status="TOP_N", **extra):
         "fit_score": 0.8,
         "evidence_level": "T3",
         "llmfit": {"estimated_tps": 12.0},
+        "optimization_families": [],
     }
     value.update(extra)
     return value
