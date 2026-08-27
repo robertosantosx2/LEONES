@@ -1,8 +1,15 @@
-"""Runtime registry and capability matching for V1.1."""
+"""Runtime registry and capability matching for V1.1.
+
+The declarative JSON registry is the single source of runtime capability
+metadata. This module converts those declarations into matchable descriptors;
+it never resolves commands or entrypoints.
+"""
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
-from typing import Any, Iterable
+from pathlib import Path
+from typing import Any, Iterable, Mapping
 
 from .contract import CapabilityMatch, RuntimeSelectionRequest
 
@@ -44,8 +51,7 @@ class RuntimeDescriptor:
         mode = workload.get("execution_mode")
         workload_ok = not self.execution_modes or not mode or mode in self.execution_modes
 
-        return CapabilityMatch(architecture, model_format, quantization, hardware,
-                               memory, context, workload_ok)
+        return CapabilityMatch(architecture, model_format, quantization, hardware, memory, context, workload_ok)
 
     @staticmethod
     def _supports(supported: frozenset[str], requested: Any) -> bool:
@@ -77,25 +83,44 @@ class RuntimeRegistry:
         ]
 
 
+def load_v1_1_registry(path: str | Path | None = None) -> RuntimeRegistry:
+    """Load the canonical declarative V1.1 registry without resolving entrypoints."""
+    registry_path = Path(path) if path else Path(__file__).with_name("v1_1") / "runtime_registry.json"
+    with registry_path.open(encoding="utf-8") as handle:
+        document: Mapping[str, Any] = json.load(handle)
+
+    if document.get("contract") != "runtime-registry.v1.1":
+        raise ValueError("unsupported runtime registry contract")
+
+    runtimes: list[RuntimeDescriptor] = []
+    for entry in document.get("runtimes", []):
+        hardware = entry.get("hardware", {})
+        memory = hardware.get("memory", {})
+        runtimes.append(
+            RuntimeDescriptor(
+                runtime_id=str(entry["runtime_id"]),
+                adapter_id=str(entry["adapter_id"]),
+                supported_architectures=frozenset(entry.get("architectures", [])),
+                supported_model_formats=frozenset(entry.get("formats", [])),
+                supported_quantizations=frozenset(entry.get("quantizations", [])),
+                hardware=frozenset(hardware.get("accelerators", [])),
+                execution_modes=frozenset(entry.get("execution_modes", [])),
+                min_memory_gb=memory.get("minimum_gb"),
+                metadata={
+                    "display_name": entry.get("display_name"),
+                    "entrypoint_ref": entry.get("entrypoint_ref"),
+                    "availability": entry.get("availability"),
+                    "capabilities": entry.get("capabilities", {}),
+                    "metrics": entry.get("metrics", {}),
+                    "measurement_policy": entry.get("measurement_policy", {}),
+                    "eligibility_gate": entry.get("eligibility_gate"),
+                    "version_policy": entry.get("version_policy", {}),
+                },
+            )
+        )
+    return RuntimeRegistry(runtimes)
+
+
 def build_default_registry() -> RuntimeRegistry:
-    """Initial V1.1 registry: declarations only; adapters are added in order."""
-    return RuntimeRegistry([
-        RuntimeDescriptor(
-            runtime_id="llama.cpp", adapter_id="llama_cpp.v1",
-            supported_model_formats=frozenset({"gguf"}),
-            supported_quantizations=frozenset({"q2", "q3", "q4", "q5", "q6", "q8", "f16", "f32"}),
-            hardware=frozenset({"cpu", "cuda", "metal", "vulkan", "sycl"}),
-        ),
-        RuntimeDescriptor(
-            runtime_id="ollama", adapter_id="ollama.v1",
-            hardware=frozenset({"cpu", "cuda", "metal", "rocm"}),
-        ),
-        RuntimeDescriptor(
-            runtime_id="FreeToken", adapter_id="freetoken.v1",
-            hardware=frozenset({"cuda"}), metadata={"requires_gate": True},
-        ),
-        RuntimeDescriptor(
-            runtime_id="AirLLM", adapter_id="airllm.v1",
-            hardware=frozenset({"cpu", "cuda"}),
-        ),
-    ])
+    """Return the canonical V1.1 registry; JSON is the sole declaration source."""
+    return load_v1_1_registry()
