@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import os
 import re
 import subprocess
 import sys
@@ -48,11 +49,20 @@ def extract_tps(raw: str, result: dict[str, Any], elapsed: float) -> float | Non
 
 def execute(selection_file: Path, runtime_commands: Path, workspace: Path, output_file: Path,
             prompt: str, timeout: float) -> tuple[dict[str, Any], str, float]:
+    # A01 is also a directly executable CLI. Do not rely on the caller having
+    # exported PYTHONPATH=. (GitHub Actions and a clean Debian shell often do not.)
+    # Inject the repository root only for the child process; runtime commands
+    # remain trusted argv lists and are unaffected by this import-path fix.
+    repo_root = Path(__file__).resolve().parents[1]
+    env = os.environ.copy()
+    existing_pythonpath = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = str(repo_root) if not existing_pythonpath else f"{repo_root}{os.pathsep}{existing_pythonpath}"
+
     cmd = [sys.executable, "scripts/run_a01_selected.py", "--selection", str(selection_file),
            "--runtime-commands", str(runtime_commands), "--workspace", str(workspace),
            "--prompt", prompt, "--out", str(output_file)]
     started = time.perf_counter()
-    proc = subprocess.run(cmd, text=True, capture_output=True, timeout=timeout + 10)
+    proc = subprocess.run(cmd, text=True, capture_output=True, timeout=timeout + 10, env=env)
     elapsed = time.perf_counter() - started
     if proc.returncode not in (0, 1):
         raise RuntimeError(f"A01 executor failed: {proc.stdout[-4000:]}\n{proc.stderr[-4000:]}")
