@@ -4,8 +4,10 @@ from __future__ import annotations
 from typing import Any
 from scripts.runtime_registry import get_runtime
 from scripts.runtimes.v1_1_adapters import get_adapter
+
 ALLOWED_FOR_EXECUTION = {"TOP_N", "BENCHMARK_REQUIRED"}
 SCHEMA_VERSION = "1.0"
+
 
 def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] | None = None,
                     runtime_commands: dict[str, list[str]] | None = None, hardware: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -32,9 +34,11 @@ def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] |
     if trusted_override is not None and (not trusted_override or not all(isinstance(x, str) for x in trusted_override)):
         raise ValueError(f"invalid trusted command for runtime: {runtime_name}")
     entrypoint = trusted_override if trusted_override is not None else list(entry.entrypoint["argv"])
-    # Authorization comes from the trusted registry/adapter binding, not from whether
-    # the command happens to have argv tokens. This permits adapter-controlled runtimes.
-    execution_authorized = bool(entry.entrypoint.get("kind")) and adapter.adapter_id == entry.adapter
+    # A registry entry describes a trusted adapter boundary, but it does not by
+    # itself authorize physical execution. Authorization requires an explicit
+    # host-provided trusted command. This keeps declarative selection separate
+    # from physical runtime execution/evidence.
+    execution_authorized = trusted_override is not None and bool(entry.entrypoint.get("kind")) and adapter.adapter_id == entry.adapter
     hw = dict(hardware or {})
     hw.update(candidate.get("hardware") or {})
     model = candidate.get("model") or {}
@@ -57,6 +61,7 @@ def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] |
         "benchmark_probe": status == "BENCHMARK_REQUIRED", "estimated_tps": llmfit.get("estimated_tps"), "measured_tps": None}
     plan.update({key: value for key, value in spec.metadata.items() if key == "runtime_eligibility"})
     return plan
+
 
 def gate_selection(selection: dict[str, Any], *, available_runtimes: set[str] | None = None,
                    runtime_commands: dict[str, list[str]] | None = None, hardware: dict[str, Any] | None = None) -> dict[str, Any]:
