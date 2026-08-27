@@ -42,11 +42,13 @@ def record_measurement(data: dict[str, Any], measured_at: str | None = None) -> 
     result["context_tokens"] = context_tokens
     result["execution_id"] = result.get("execution_id") or str(uuid4())
     result["measurement_type"] = "measured"
+    result["measurement_kind"] = "real"
     result["evidence_type"] = "measured"
     result["measured_at"] = timestamp
     validate_evidence({
         "evidence_type": "measured",
         "execution_id": result["execution_id"],
         "measured_at": timestamp,
+        "measurement_kind": result["measurement_kind"],
     })
     return result
