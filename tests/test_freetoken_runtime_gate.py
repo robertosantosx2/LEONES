@@ -30,7 +30,8 @@ def candidate():
 
 
 def test_freetoken_gate_accepts_measured_edge_moe_profile():
-    plan = resolve_runtime(candidate(), runtime_commands={"FreeToken": ["freetoken"]})
+    value = candidate()
+    plan = resolve_runtime(value, runtime_commands={"FreeToken": ["freetoken"]}, hardware=value["hardware"])
     assert plan["execution_authorized"] is True
     assert plan["benchmark_probe"] is True
     assert plan["hardware"]["pcie_h2d_bandwidth_gbps"] == 11.8
@@ -39,14 +40,14 @@ def test_freetoken_gate_accepts_measured_edge_moe_profile():
 def test_freetoken_gate_blocks_missing_pcie_measurement():
     value = candidate()
     value["hardware"].pop("pcie_h2d_bandwidth_gbps")
-    result = gate_selection({"candidates": [value]}, runtime_commands={"FreeToken": ["freetoken"]})
+    result = gate_selection({"candidates": [value]}, runtime_commands={"FreeToken": ["freetoken"]}, hardware=value["hardware"])
     assert result["counts"] == {"plans": 0, "blocked": 1}
-    assert "pcie_h2d_bandwidth_gbps" in result["blocked"][0]["reason"]
+    assert "required measured bandwidth signals are missing" in result["blocked"][0]["reason"]
 
 
 def test_freetoken_gate_blocks_when_model_fits_in_vram():
     value = candidate()
     value["model"]["quantized_weight_gb"] = 7.0
-    result = gate_selection({"candidates": [value]}, runtime_commands={"FreeToken": ["freetoken"]})
+    result = gate_selection({"candidates": [value]}, runtime_commands={"FreeToken": ["freetoken"]}, hardware=value["hardware"])
     assert result["counts"] == {"plans": 0, "blocked": 1}
     assert "already fits" in result["blocked"][0]["reason"]
