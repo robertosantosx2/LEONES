@@ -24,7 +24,7 @@ class TestLLMFitToRecommendationCandidates(unittest.TestCase):
         result = build_candidates(
             feed=self.feed(),
             llmfit_payload={"models": [{"id": "org/model", "tps": 31.5, "fit": "Perfect"}]},
-            workload="chat", hardware="i5", ram_gb=8, context_tokens=4096, top_n=1,
+            workload="chat", hardware="i5", ram_gb=8, required_runtime="llama.cpp", context_tokens=4096, top_n=1,
         )
         candidate = result["candidates"][0]
         self.assertEqual(candidate["llmfit"]["estimated_tps"], 31.5)
@@ -36,7 +36,7 @@ class TestLLMFitToRecommendationCandidates(unittest.TestCase):
         result = build_candidates(
             feed=self.feed(),
             llmfit_payload={"models": [{"id": "org/model", "fit": "No"}]},
-            workload="chat", hardware="i5", ram_gb=8, context_tokens=4096,
+            workload="chat", hardware="i5", ram_gb=8, required_runtime="llama.cpp", context_tokens=4096,
             top_n=1, require_llmfit_fit=True,
         )
         self.assertEqual(result["counts"]["eligible"], 0)
@@ -46,7 +46,7 @@ class TestLLMFitToRecommendationCandidates(unittest.TestCase):
         result = build_candidates(
             feed=self.feed(),
             llmfit_payload={"models": [{"id": "org/model", "tokens_per_second": 99}]},
-            workload="chat", hardware="i5", ram_gb=8, context_tokens=4096, top_n=1,
+            workload="chat", hardware="i5", ram_gb=8, required_runtime="llama.cpp", context_tokens=4096, top_n=1,
         )
         candidate = result["candidates"][0]
         self.assertEqual(candidate["llmfit"]["estimated_tps"], 99)
