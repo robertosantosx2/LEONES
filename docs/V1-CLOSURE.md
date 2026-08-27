@@ -4,9 +4,9 @@
 
 ## 1. Declaración
 
-V1 no significa que todo LEONES esté terminado. Significa que las piezas que forman el **camino mínimo de conocimiento → selección → ejecución → medición → evidencia** tienen contratos explícitos, pruebas y una primera validación física.
+V1 no significa que todo LEONES esté terminado. Significa que las piezas que forman el **camino mínimo de conocimiento → selección → ejecución → medición → evidencia** tienen contratos explícitos, pruebas, regresión CI y una primera validación física reproducible.
 
-El cierre debe entenderse como un **baseline reproducible**, no como el final del proyecto.
+El cierre es un **baseline reproducible**, no el final del proyecto.
 
 ## 2. Criterios alcanzados
 
@@ -32,36 +32,61 @@ El cierre debe entenderse como un **baseline reproducible**, no como el final de
 - El grader A01 valida orden, objetivo, lookup y artefacto.
 - El resultado se serializa como evidencia estructurada.
 
-### Medición
+### Medición y procedencia
 
-- El runtime puede aportar `eval_count` y `eval_duration`.
-- `measured_tps` se calcula únicamente cuando los datos necesarios están disponibles.
+- `measured` y `verified` requieren ejecución identificable y timestamp.
+- Una evidencia `measured`/`verified` exige `measurement_kind=real`.
+- Una evidencia `synthetic` es rechazada explícitamente y **no puede promocionarse** a `measured` o `verified`.
+- `measured_tps` se conserva únicamente cuando el runtime aporta los datos necesarios.
 - Cuando el runtime no informa tokens evaluados, LEONES conserva `null` en lugar de fabricar una cifra.
-- Las ejecuciones sucesivas no sobrescriben conceptualmente la historia.
+- Las ejecuciones sucesivas conservan su identidad e historia; no se selecciona arbitrariamente la cifra mayor.
 
-### CI
+### CI y regresión
 
-La integración está respaldada por los gates definidos para V1 y la suite local de regresión permanece verde.
+La regresión V1 está definida en `.github/workflows/v1-regression.yml` y ejecuta en GitHub Actions:
 
-La CI utiliza el runtime fixture para mantener la prueba determinista y portable.
+1. compilación de los caminos Python canónicos;
+2. validación de todos los esquemas JSON;
+3. suite completa `tests`;
+4. prueba explícita de que una evidencia real es aceptada;
+5. prueba explícita de que una evidencia sintética es rechazada.
 
-### Runtime real
+La CI utiliza fixtures/runtime controlado para mantener la prueba determinista y portable. **La CI no convierte sus mediciones sintéticas en evidencia física.**
 
-La validación física de cierre utilizó:
+## 3. Runtime real — evidencia física de cierre
+
+La validación física realizada en Debian utilizó:
 
 - Ollama `0.33.1`;
-- `qwen2.5:0.5b-instruct-q4_K_M`;
-- endpoint local `127.0.0.1:11434`;
+- modelo `qwen2.5:0.5b-instruct-q4_K_M`;
+- ejecución CPU-only;
 - tarea A01;
-- dos tool calls;
+- dos tool calls: `lookup_model → write_report`;
 - cero errores de herramienta;
 - resultado `success`;
 - grader `passed`, score `1.0`;
-- **40.7666 tok/s medidos en `5.744973 s`**.
+- `measurement_status=reported_by_runtime`;
+- **51.5798 tok/s**.
 
-La ejecución de cierre quedó identificada por `execution_id` `378854c5-8147-47a3-8e1b-33b078424d00` y por el hash `ae11c085b986ef1c7a88983c4deaeb82cd714e72de36c3bff81e8eff7fa3f02b` del resultado del ejecutor.
+La ejecución canónica quedó identificada por:
 
-## 3. Qué se fija como contrato
+```text
+execution_id:     ba58d9dd-15ac-4a43-88d2-2aaf537efe5e
+measured_at:      2026-08-27T06:02:24.821349+00:00
+measurement_kind: real
+evidence_type:    measured
+```
+
+El artefacto local validado fue:
+
+```text
+artifacts/h10-a01-runtime-selection-result.json
+sha256: 6c99e6bd6c02c5d5d6062c731c4a30cbf380280791259fca93174db411c7d45d
+```
+
+El registro canónico preservado en el repositorio es `artifacts/h10-a01-runtime-selection-evidence.v1.json`.
+
+## 4. Qué se fija como contrato
 
 La arquitectura V1 establece estas fronteras:
 
@@ -74,88 +99,113 @@ MODEL
   ≠ GRADING
 ```
 
-Un modelo no hereda automáticamente el rendimiento de otro runtime. Una estimación no se convierte en medición. Una cifra externa no se convierte en evidencia LEONES solo por aparecer en una fuente de conocimiento.
+Una estimación no se convierte en medición. Una medición sintética no se convierte en medición real. Una cifra externa no se convierte en evidencia LEONES solo por aparecer en una fuente de conocimiento.
 
-## 4. Higiene del repositorio
+La regla mínima de promoción es:
+
+```text
+estimated ───────────────→ estimated
+reported ────────────────→ reported
+measured + real ─────────→ measured
+verified + real ─────────→ verified
+synthetic ───────────────→ REJECTED
+```
+
+No existe un camino implícito `synthetic → measured`.
+
+## 5. Evidencia histórica y referencia canónica
+
+Las mediciones son ejecuciones distintas y deben conservar su procedencia. Durante la integración se observaron varias ejecuciones A01; no deben combinarse ni presentarse como una única medición.
+
+La referencia física canónica de este cierre V1 es la ejecución del 27 de agosto de 2026 con `51.5798 tok/s`. Las cifras anteriores permanecen históricas cuando sus artefactos y metadatos existen; **no se sustituyen silenciosamente por la cifra mayor**.
+
+Esta medición tampoco debe tratarse como benchmark comparativo general. Para comparaciones entre modelos/runtimes habrá que fijar posteriormente una metodología con repeticiones, calentamiento, contexto, generación, versiones y condiciones de hardware controladas.
+
+## 6. Camino E2E cerrado
+
+```text
+knowledge / candidate
+        ↓
+runtime-selection.v1
+        ↓
+execution_authorized
+        ↓
+A01 runtime adapter
+        ↓
+Ollama / CPU real
+        ↓
+lookup_model → write_report
+        ↓
+A01 grader
+        ↓
+measurement_kind=real
+        ↓
+evidence_type=measured
+        ↓
+artefacto canónico
+```
+
+Este camino queda protegido por tests de regresión y por el contrato de evidencia.
+
+## 7. Reproducibilidad
+
+En el entorno Debian con Ollama instalado:
+
+```bash
+cd ~/leones-work/LEONES
+
+ollama list
+
+rm -rf .leones/h10-a01-workspace
+mkdir -p .leones/h10-a01-workspace
+
+python3 scripts/run_a01_selected.py \
+  --selection artifacts/real-a01-selection.json \
+  --runtime-commands artifacts/real-a01-runtime-commands.json \
+  --workspace .leones/h10-a01-workspace \
+  --prompt 'Execute A01. Return only JSONL tool calls.' \
+  --out artifacts/h10-a01-runtime-selection-result.json
+```
+
+Después debe validarse el artefacto con `scripts.validate_evidence` y comprobarse que contiene `measurement_kind=real`, `evidence_type=measured`, un `execution_id`, timestamp, resultado A01 satisfactorio y grader `passed`.
+
+La evidencia generada **no debe copiarse ni editarse** para convertir una estimación o un fixture sintético en medición real.
+
+## 8. Verificación de cierre V1
+
+La última verificación física en Debian obtuvo:
+
+```text
+CANONICAL A01 REAL EVIDENCE: PASS
+execution_id: ba58d9dd-15ac-4a43-88d2-2aaf537efe5e
+measured_tps: 51.5798
+
+177 passed
+
+SCHEMAS: PASS (12)
+
+REAL CPU evidence: ACCEPTED
+SYNTHETIC evidence: REJECTED
+```
+
+La CI V1 añade la misma barrera como regresión permanente mediante `.github/workflows/v1-regression.yml`.
+
+## 9. Higiene del repositorio
 
 El estado generado durante una ejecución local queda fuera del árbol versionado mediante `.gitignore`, incluyendo:
 
 - `.leones/`;
-- `artifacts/`;
+- `artifacts/` de ejecución;
 - `__pycache__/`;
 - `.pytest_cache/`;
 - `.venv/`;
 - clones temporales `upstream/`.
 
-Esto permite ejecutar pruebas y benchmarks localmente sin ensuciar el repositorio ni convertir resultados efímeros en código accidentalmente versionado.
+Los artefactos canónicos destinados a documentar evidencia se versionan explícitamente y deben conservar su hash/procedencia.
 
-## 5. Evidencia histórica y referencia de cierre
+## 10. Lo que queda deliberadamente fuera de V1
 
-La evidencia de una ejecución debe poder ser auditada posteriormente. Para A01, el registro de referencia conserva:
-
-- identidad del modelo;
-- runtime y versión;
-- timestamp;
-- execution ID;
-- resultado del grader;
-- wall time;
-- throughput cuando lo reporta el runtime;
-- hash del resultado del ejecutor.
-
-Durante la integración se obtuvieron tres mediciones válidas:
-
-| Ejecución | Wall time | Throughput | Estado |
-|---|---:|---:|---|
-| histórica 1 | `2.147932 s` | `52.7164 tok/s` | histórica |
-| histórica 2 | `2.345202 s` | `47.9803 tok/s` | histórica |
-| **cierre V1** | **`5.744973 s`** | **`40.7666 tok/s`** | **referencia de cierre** |
-
-Las diferencias no son contradictorias: son ejecuciones distintas. **La última ejecución válida es la referencia de cierre de esta validación.** No se debe escoger la mayor cifra para representar el sistema.
-
-Estas mediciones tampoco deben tratarse como un benchmark comparativo general. Para ello habrá que fijar posteriormente una metodología con repeticiones, calentamiento, contexto, generación, versión del runtime y condiciones de hardware.
-
-## 6. Reproducibilidad del cierre
-
-El camino canónico de reproducción es:
-
-```bash
-cd ~/leones-work/LEONES
-
-ollama pull qwen2.5:0.5b-instruct-q4_K_M
-
-rm -rf .leones/a01-real-workspace
-mkdir -p .leones/a01-real-workspace artifacts
-
-python3 scripts/a01_runtime_benchmark.py \
-  --selection artifacts/real-a01-selection.json \
-  --runtime-commands artifacts/real-a01-runtime-commands.json \
-  --workspace .leones/a01-real-workspace \
-  --prompt 'Execute A01. Return only JSONL tool calls.' \
-  --out artifacts/a01-real-runtime-benchmark.v1.json
-
-python3 -m json.tool artifacts/a01-real-runtime-benchmark.v1.json >/dev/null
-cat .leones/a01-real-workspace/report.txt
-```
-
-La selección y los comandos de runtime deben corresponder al modelo que se pretende medir. La evidencia generada no debe copiarse ni editarse para convertir una estimación en una medición.
-
-## 7. Verificación de cierre
-
-La revisión de cierre local obtuvo:
-
-```text
-A01 REAL: ALL ASSERTIONS PASSED
-174 passed
-ALL 12 SCHEMAS OK
-```
-
-Esto verifica simultáneamente la evidencia estructurada de A01, la suite completa de regresión y la sintaxis de los doce esquemas JSON presentes en `schemas/`.
-
-El repositorio local quedó limpio después de restaurar los artefactos compilados que habían sido detectados por Git. Los resultados efímeros de la ejecución permanecen excluidos por `.gitignore`.
-
-## 8. Lo que queda deliberadamente fuera del cierre V1
-
-No se declara cerrado por esta prueba:
+V1 no declara cerrado:
 
 - el benchmark físico de todos los modelos;
 - la comparación exhaustiva de runtimes;
@@ -163,15 +213,20 @@ No se declara cerrado por esta prueba:
 - la cobertura completa de tareas agentivas;
 - la automatización de toda la cadena de recomendación;
 - la eliminación de todos los valores `unknown`;
-- la equivalencia entre mediciones de terceros y mediciones LEONES.
+- la equivalencia entre mediciones de terceros y mediciones LEONES;
+- un ranking de rendimiento general basado en esta única ejecución.
 
 Estas cuestiones pertenecen a las siguientes iteraciones.
 
-## 9. Regla de mantenimiento
+## 11. Estado de cierre
 
-Todo nuevo runtime, adaptador o benchmark que se incorpore después de V1 debe intentar satisfacer el mismo contrato. Si necesita una excepción, esa excepción debe documentarse como decisión arquitectónica y acompañarse de una prueba.
+**V1 queda técnicamente cerrada como baseline del camino E2E conocimiento → selección → ejecución → medición → evidencia**, con una validación física A01 CPU-only y una barrera CI que impide promocionar mediciones sintéticas a rendimiento real.
 
-La regla editorial y técnica para las siguientes versiones es:
+El cierre no afirma que el sistema esté terminado; afirma que el contrato mínimo queda **implementado, medido, explicado, preservado y protegido contra regresión**.
+
+## 12. Regla de mantenimiento
+
+Todo nuevo runtime, adaptador o benchmark que se incorpore después de V1 debe satisfacer el mismo contrato. Si necesita una excepción, esa excepción debe documentarse como decisión arquitectónica y acompañarse de una prueba.
 
 > **Build it. Measure it. Explain it. Preserve the evidence.**
 
