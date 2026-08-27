@@ -48,8 +48,9 @@ def build_a01_result(plan: dict[str, Any], *, workspace: Path, model_output: str
     if len(requests) != 2 or [r.get("tool") for r in requests] != ["lookup_model", "write_report"]:
         raise ValueError("A01 requires exactly lookup_model followed by write_report")
     model_id = requests[0].get("arguments", {}).get("model_id")
-    if model_id != "demo-2":
-        raise ValueError("A01 requires lookup_model(model_id=demo-2)")
+    expected_model_id = str(plan.get("model_id") or plan.get("model", {}).get("id") or "")
+    if model_id != expected_model_id:
+        raise ValueError(f"A01 requires lookup_model(model_id={expected_model_id})")
     model = lookup_model(model_id)
     requested_path = requests[1].get("arguments", {}).get("path", output_path)
     safe_path = safe_workspace_path(workspace, requested_path)
