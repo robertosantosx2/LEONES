@@ -3,6 +3,9 @@
 
 selector -> runtime-selection.v1 gate -> A01 executor -> grader
          -> runtime benchmark -> evidence -> LEONES Router.
+
+The CI path uses a controlled trusted runtime; real-runtime evidence is kept
+separate and must retain its runtime/model provenance.
 """
 from __future__ import annotations
 
