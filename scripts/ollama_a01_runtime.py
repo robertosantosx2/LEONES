@@ -47,6 +47,7 @@ def tool_definitions() -> list[dict[str, Any]]:
                     "type": "object",
                     "required": ["model_id"],
                     "properties": {"model_id": {"type": "string"}},
+                    "additionalProperties": False,
                 },
             },
         },
@@ -59,6 +60,7 @@ def tool_definitions() -> list[dict[str, Any]]:
                     "type": "object",
                     "required": ["path"],
                     "properties": {"path": {"type": "string"}},
+                    "additionalProperties": False,
                 },
             },
         },
@@ -79,6 +81,35 @@ def canonical_call(call: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(arguments, dict):
         raise ValueError("Ollama returned non-object tool arguments")
     return {"tool": name, "arguments": arguments}
+
+
+def validate_canonical_calls(calls: list[dict[str, Any]], model: str) -> None:
+    """Require the exact A01 tool-call argument contract."""
+    if [item.get("tool") for item in calls] != ["lookup_model", "write_report"]:
+        raise RuntimeError("A01 requires lookup_model followed by write_report")
+
+    lookup = calls[0].get("arguments") or {}
+    report = calls[1].get("arguments") or {}
+
+    if set(lookup) != {"model_id"}:
+        raise RuntimeError(
+            "A01 lookup_model arguments must contain exactly model_id"
+        )
+
+    if lookup.get("model_id") != model:
+        raise RuntimeError(
+            "A01 lookup_model model_id does not match selected model"
+        )
+
+    if set(report) != {"path"}:
+        raise RuntimeError(
+            "A01 write_report arguments must contain exactly path"
+        )
+
+    if report.get("path") != "report.txt":
+        raise RuntimeError(
+            "A01 write_report path must be report.txt"
+        )
 
 
 def structured_calls(message: dict[str, Any], model: str) -> list[dict[str, Any]]:
@@ -184,17 +215,55 @@ def main() -> int:
                     "minItems": 2,
                     "maxItems": 2,
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "tool": {"type": "string", "enum": ["lookup_model", "write_report"]},
-                            "arguments": {"type": "object"},
-                        },
-                        "required": ["tool", "arguments"],
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "tool": {
+                                        "const": "lookup_model",
+                                    },
+                                    "arguments": {
+                                        "type": "object",
+                                        "properties": {
+                                            "model_id": {
+                                                "const": args.model,
+                                            },
+                                        },
+                                        "required": ["model_id"],
+                                        "additionalProperties": False,
+                                    },
+                                },
+                                "required": ["tool", "arguments"],
+                                "additionalProperties": False,
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "tool": {
+                                        "const": "write_report",
+                                    },
+                                    "arguments": {
+                                        "type": "object",
+                                        "properties": {
+                                            "path": {
+                                                "const": "report.txt",
+                                            },
+                                        },
+                                        "required": ["path"],
+                                        "additionalProperties": False,
+                                    },
+                                },
+                                "required": ["tool", "arguments"],
+                                "additionalProperties": False,
+                            },
+                        ],
                     },
                 }
             },
             "required": ["tool_calls"],
+            "additionalProperties": False,
         }
+
         fallback = post_json(args.url, {
             "model": args.model,
             "messages": [
@@ -209,12 +278,7 @@ def main() -> int:
         total_eval_seconds += int(fallback.get("eval_duration") or 0)
         canonical = structured_calls(fallback.get("message") or {}, args.model)
 
-    if [item.get("tool") for item in canonical] != ["lookup_model", "write_report"]:
-        raise RuntimeError("A01 requires lookup_model followed by write_report")
-    if canonical[0].get("arguments", {}).get("model_id") != args.model:
-        raise RuntimeError("A01 lookup_model model_id does not match selected model")
-    if canonical[1].get("arguments", {}).get("path") != "report.txt":
-        raise RuntimeError("A01 write_report path must be report.txt")
+    validate_canonical_calls(canonical, args.model)
 
     print(json.dumps(canonical[0], ensure_ascii=False))
     print(json.dumps(canonical[1], ensure_ascii=False))

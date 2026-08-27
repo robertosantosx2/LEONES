@@ -48,3 +48,24 @@ def test_ollama_adapter_rejects_other_runtime():
         assert "unsupported runtime" in str(exc)
     else:
         raise AssertionError("Ollama adapter accepted another runtime")
+
+
+def test_ollama_is_exposed_through_extended_adapter_matrix():
+    from runtime_selection.extended import ADAPTERS, prepare
+
+    assert ADAPTERS["ollama"] == ADAPTER_ID
+
+    plan = RuntimeSelectionPlan(
+        runtime_id="ollama",
+        adapter_id=ADAPTER_ID,
+        model_ref="fixture/model",
+        capability_match=CapabilityMatch(True, True, True, True, True),
+    )
+
+    spec = prepare(plan)
+
+    assert spec.runtime_id == "ollama"
+    assert spec.adapter_id == ADAPTER_ID
+    assert spec.model_ref == "fixture/model"
+    assert "measured_tps" not in spec.execution_metadata
+    assert "tokens_per_second" not in spec.execution_metadata
