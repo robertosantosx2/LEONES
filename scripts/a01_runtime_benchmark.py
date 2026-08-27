@@ -61,11 +61,27 @@ def execute(selection_file: Path, runtime_commands: Path, workspace: Path, outpu
     cmd = [sys.executable, "scripts/run_a01_selected.py", "--selection", str(selection_file),
            "--runtime-commands", str(runtime_commands), "--workspace", str(workspace),
            "--prompt", prompt, "--out", str(output_file)]
+    # Never allow an executor result from a previous run to be mistaken for
+    # fresh evidence when the current runtime fails before writing its output.
+    output_file.unlink(missing_ok=True)
     started = time.perf_counter()
     proc = subprocess.run(cmd, text=True, capture_output=True, timeout=timeout + 10, env=env)
     elapsed = time.perf_counter() - started
-    if proc.returncode not in (0, 1):
-        raise RuntimeError(f"A01 executor failed: {proc.stdout[-4000:]}\n{proc.stderr[-4000:]}")
+    if proc.returncode != 0:
+        if output_file.exists():
+            raise RuntimeError(
+                f"A01 executor returned {proc.returncode}; refusing to treat a failed run as fresh success.\n"
+                f"stdout:\n{proc.stdout[-4000:]}\nstderr:\n{proc.stderr[-4000:]}"
+            )
+        raise RuntimeError(
+            f"A01 executor failed with code {proc.returncode}; no executor result was produced.\n"
+            f"stdout:\n{proc.stdout[-4000:]}\nstderr:\n{proc.stderr[-4000:]}"
+        )
+    if not output_file.exists():
+        raise RuntimeError(
+            "A01 executor exited successfully but did not produce the requested executor result.\n"
+            f"stdout:\n{proc.stdout[-4000:]}\nstderr:\n{proc.stderr[-4000:]}"
+        )
     return load_json(output_file), proc.stdout + "\n" + proc.stderr, elapsed
 
 
