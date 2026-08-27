@@ -36,6 +36,29 @@ LLAMA_SUMMARY_RE = re.compile(
 )
 
 
+MAX_RSS_RE = re.compile(
+    r"Maximum resident set size \(kbytes\):\s*(?P<kb>[0-9]+)",
+    re.I,
+)
+
+ELAPSED_RE = re.compile(
+    r"Elapsed \(wall clock\) time \(h:mm:ss or m:ss\):\s*(?P<elapsed>[0-9]+(?::[0-9]+){1,2}(?:\.[0-9]+)?)",
+    re.I,
+)
+
+def _timestamp(value: str) -> str:
+    """Normalize an ISO-8601 timestamp while preserving the UTC instant."""
+    from datetime import datetime, timezone
+
+    value = value.strip()
+    dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
 def _first(text: str, pattern: str, default: str | None = None) -> str | None:
     match = re.search(pattern, text, re.I | re.M)
     return match.group(1).strip() if match else default
@@ -44,59 +67,80 @@ def _first(text: str, pattern: str, default: str | None = None) -> str | None:
 def _wall_seconds(value: str | None) -> float | None:
     if not value:
         return None
+
     value = value.strip()
-    if re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", value):
-        return float(value)
-    parts = value.split(":")
+
     try:
-        if len(parts) == 2:
-            return int(parts[0]) * 60 + float(parts[1])
+        parts = value.split(":")
+
         if len(parts) == 3:
-            return int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+            hours = float(parts[0])
+            minutes = float(parts[1])
+            seconds = float(parts[2])
+            return hours * 3600 + minutes * 60 + seconds
+
+        if len(parts) == 2:
+            minutes = float(parts[0])
+            seconds = float(parts[1])
+            return minutes * 60 + seconds
+
+        return float(value)
     except ValueError:
         return None
-    return None
 
-
-def _timestamp(value: str) -> str:
-    dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-
-MAX_RSS_RE = re.compile(
-    r"Maximum resident set size \(kbytes\):\s*(?P<kb>[0-9]+)",
-    re.I,
-)
-
-ELAPSED_RE = re.compile(
-    r"Elapsed \(wall clock\) time .*?:\s*(?P<value>[^\n]+)",
-    re.I,
-)
 
 CMD_RE = re.compile(
     r'^\s*Command being timed:\s*"(?P<cmd>.*)"\s*$',
     re.M,
 )
 
+
 def _command_and_prompt(text: str) -> tuple[list[str], str | None]:
+    # Preferimos el argv exacto conservado por el runner.
+    marker = "===== COMMAND ====="
+    marker_pos = text.find(marker)
+
+    if marker_pos >= 0:
+        command_lines = text[marker_pos + len(marker):].splitlines()
+
+        for line in command_lines:
+            line = line.strip()
+            if line and not line.startswith("="):
+                try:
+                    command = shlex.split(line)
+                except ValueError:
+                    command = line.split()
+
+                prompt = None
+                for flag in ("-p", "--prompt"):
+                    if flag in command:
+                        index = command.index(flag)
+                        if index + 1 < len(command):
+                            prompt = " ".join(command[index + 1:])
+                        break
+
+                return command, prompt
+
+    # Fallback para logs generados directamente por /usr/bin/time.
     match = CMD_RE.search(text)
-    if not match:
-        return [], None
-    try:
-        command = shlex.split(match.group("cmd"))
-    except ValueError:
-        command = match.group("cmd").split()
-    prompt = None
-    for option in ("-p", "--prompt"):
-        if option in command:
-            index = command.index(option)
-            if index + 1 < len(command):
-                prompt = command[index + 1]
-            break
-    return command, prompt
+    if match:
+        command_text = match.group("cmd")
+        try:
+            command = shlex.split(command_text)
+        except ValueError:
+            command = command_text.split()
+
+        prompt = None
+        for flag in ("-p", "--prompt"):
+            if flag in command:
+                index = command.index(flag)
+                if index + 1 < len(command):
+                    prompt = " ".join(command[index + 1:])
+                break
+
+        return command, prompt
+
+    return [], None
 
 
 def parse_log(text: str) -> dict[str, Any]:
@@ -222,7 +266,11 @@ def parse_log(text: str) -> dict[str, Any]:
             "cpu": metadata.get("cpu", "unknown"),
             "cpu_threads": int(metadata["cpu_threads"]) if metadata.get("cpu_threads", "").isdigit() else None,
             "physical_cores": int(metadata["physical_cores"]) if metadata.get("physical_cores", "").isdigit() else None,
-            "ram_total_mb": _ram_mb(text),
+            "ram_total_mb": (
+                float(metadata["ram_total_mb"])
+                if metadata.get("ram_total_mb")
+                else _ram_mb(text)
+            ),
             "gpu": None,
         },
         "measurements": [measurement],
@@ -260,9 +308,35 @@ def main() -> int:
     parser.add_argument("--log", type=Path, required=True)
     parser.add_argument("--timestamp-end", required=True, help="UTC execution end timestamp, ISO-8601")
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument(
+        "--execution",
+        type=Path,
+        help="Optional runtime-execution.v1 JSON used to cross-check execution provenance.",
+    )
     args = parser.parse_args()
 
     text = args.log.read_text(encoding="utf-8")
+
+    if args.execution:
+        execution = json.loads(
+            args.execution.read_text(encoding="utf-8")
+        )
+
+        if execution.get("schema") != "runtime-execution.v1":
+            raise SystemExit(
+                "execution artifact is not runtime-execution.v1"
+            )
+
+        execution_id = execution.get("execution_id")
+        if not execution_id:
+            raise SystemExit(
+                "execution artifact has no execution_id"
+            )
+
+        if f"execution_id={execution_id}" not in text:
+            raise SystemExit(
+                "execution_id mismatch between execution JSON and log"
+            )
     lines = text.splitlines()
     lines.append(f"timestamp_end_utc={args.timestamp_end}")
     evidence = parse_log("\n".join(lines) + "\n")

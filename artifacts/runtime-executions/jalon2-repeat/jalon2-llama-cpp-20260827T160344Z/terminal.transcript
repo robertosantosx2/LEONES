@@ -1,0 +1,39 @@
+Script iniciado en 2026-08-27 18:03:45+02:00 [COMMAND="/home/roberto/leones-work/llama.cpp/build/bin/llama-cli -m /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf -t 4 -tb 4 -c 2048 -n 128 --perf --single-turn --warmup -p 'Explain in one short paragraph what a CPU is.'" TERM="xterm-256color" TTY="/dev/pts/4" COLUMNS="-1" LINES="-1"]
+
+
+Loading model... |-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b10655-cb300598d
+model      : /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+[1m[32m
+> Explain in one short paragraph what a CPU is.
+[0m[90m
+[Start thinking]
+
+Okay, the user is asking to explain a CPU in one short paragraph. Let me start by recalling what a CPU is. A CPU is the central processing unit, a vital component in computers. It handles the entire processing of a computer's tasks, including executing instructions. The CPU consists of a microprocessor, which processes data, and other components like registers. It's responsible for executing instructions, making decisions, and managing data flow. It works in conjunction with the main processor and memory to perform tasks efficiently. I need to make sure the explanation is concise but covers all key points. Also, check for any possible errors, like[0m
+[35m
+[ Prompt: 151,7 t/s | Generation: 38,1 t/s ]
+[0m
+
+Exiting...
+
+Script terminado en 2026-08-27 18:03:50+02:00 [CÓDIGO_SALIDA_ORDEN="0"]

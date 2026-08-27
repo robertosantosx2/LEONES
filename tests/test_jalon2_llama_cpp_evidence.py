@@ -80,3 +80,34 @@ timestamp_end_utc=2026-08-27T14:06:14Z
 
     # El throughput de prompt NO es TTFT.
     assert measurement["ttft_ms"] is None
+
+
+def test_parser_extracts_full_prompt_from_command_section():
+    evidence = parse_log(
+        LOG + "timestamp_end_utc=2026-08-27T14:06:14Z\n"
+    )
+
+    assert evidence["protocol"]["prompt"] == (
+        "Explain in one concise paragraph."
+    )
+
+
+def test_parser_extracts_comma_decimal_llama_summary():
+    log = LOG + """
+[ Prompt: 188,7 t/s | Generation: 34,5 t/s ]
+timestamp_end_utc=2026-08-27T14:06:14Z
+"""
+
+    evidence = parse_log(log)
+
+    assert evidence["protocol"]["prompt_tokens_per_second"] == 188.7
+    assert evidence["measurements"][0]["tokens_per_second"] == 34.5
+
+
+def test_parser_extracts_wall_clock_time():
+    evidence = parse_log(
+        LOG + "timestamp_end_utc=2026-08-27T14:06:14Z\n"
+    )
+
+    assert evidence["provenance"]["wall_seconds"] == 5.86
+    assert evidence["measurements"][0]["total_time_ms"] == 5860.0

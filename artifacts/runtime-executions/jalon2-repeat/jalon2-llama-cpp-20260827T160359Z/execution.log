@@ -1,0 +1,135 @@
+execution_id=jalon2-llama-cpp-20260827T160359Z
+timestamp_utc=2026-08-27T16:03:59.795471Z
+host=Aspire-A515-55
+os=Linux-7.0.0-30-generic-x86_64-desconocido-with-glibc2.43
+kernel=7.0.0-30-generic
+cpu=desconocido
+cpu_threads=8
+physical_cores=4
+ram_total_mb=7199.8046875
+runtime=llama.cpp
+runtime_version=version: 0.3.0-dev (build 10655, commit cb300598d)
+runtime_binary=/home/roberto/leones-work/llama.cpp/build/bin/llama-cli
+runtime_binary_sha256=5c8abc6bd1604fabf743e5863e837fbcb2a01a4f8fdfbd66287a6ea213457aa8
+model=Qwen3-0.6B-Q4_K_M.gguf
+model_size_bytes=396704416
+model_sha256=b0638f08417a2d3c8652760462eb5407c6e30173cf9608ad0820757a281eea0e
+threads=4
+threads_batch=4
+ctx_size=2048
+n_predict=128
+warmup=enabled
+perf=enabled
+single_turn=enabled
+prompt_sha256=bcb5bbf7d1987fb84bf5d4aa20ee8bbab4edae625ae8dbed7ac3ea81e16a891e
+
+===== COMMAND =====
+/home/roberto/leones-work/llama.cpp/build/bin/llama-cli -m /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf -t 4 -tb 4 -c 2048 -n 128 --perf --single-turn --warmup -p 'Explain in one short paragraph what a CPU is.'
+
+===== EXECUTION =====
+===== SCRIPT COMMAND =====
+/usr/bin/script -qefc '/home/roberto/leones-work/llama.cpp/build/bin/llama-cli -m /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf -t 4 -tb 4 -c 2048 -n 128 --perf --single-turn --warmup -p '"'"'Explain in one short paragraph what a CPU is.'"'"'' artifacts/runtime-executions/jalon2-repeat/jalon2-llama-cpp-20260827T160359Z/terminal.transcript
+===== TERMINAL TRANSCRIPT =====
+Script iniciado en 2026-08-27 18:04:00+02:00 [COMMAND="/home/roberto/leones-work/llama.cpp/build/bin/llama-cli -m /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf -t 4 -tb 4 -c 2048 -n 128 --perf --single-turn --warmup -p 'Explain in one short paragraph what a CPU is.'" TERM="xterm-256color" TTY="/dev/pts/4" COLUMNS="-1" LINES="-1"]
+
+
+Loading model... |-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b10655-cb300598d
+model      : /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+[1m[32m
+> Explain in one short paragraph what a CPU is.
+[0m[90m
+[Start thinking]
+
+Okay, the user wants me to explain a CPU in a single short paragraph. Let me start by recalling what a CPU is. A CPU is the central unit of the computer, responsible for executing instructions. It includes a processor, which handles all the computer's operations. The CPU is made up of multiple components, like the microprocessors, and it processes data and manages the system. I need to make sure the explanation is concise but covers all the key points: what it does, its components, and its role in the computer's operations. Also, I should avoid any technical jargon and keep it straightforward. Let me put[0m
+[35m
+[ Prompt: 221,1 t/s | Generation: 44,2 t/s ]
+[0m
+
+Exiting...
+
+Script terminado en 2026-08-27 18:04:04+02:00 [CÓDIGO_SALIDA_ORDEN="0"]
+
+===== /usr/bin/time =====
+
+
+Loading model... |-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b10655-cb300598d
+model      : /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+[1m[32m
+> Explain in one short paragraph what a CPU is.
+[0m[90m
+[Start thinking]
+
+Okay, the user wants me to explain a CPU in a single short paragraph. Let me start by recalling what a CPU is. A CPU is the central unit of the computer, responsible for executing instructions. It includes a processor, which handles all the computer's operations. The CPU is made up of multiple components, like the microprocessors, and it processes data and manages the system. I need to make sure the explanation is concise but covers all the key points: what it does, its components, and its role in the computer's operations. Also, I should avoid any technical jargon and keep it straightforward. Let me put[0m
+[35m
+[ Prompt: 221,1 t/s | Generation: 44,2 t/s ]
+[0m
+
+Exiting...
+	Command being timed: "/usr/bin/script -qefc /home/roberto/leones-work/llama.cpp/build/bin/llama-cli -m /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf -t 4 -tb 4 -c 2048 -n 128 --perf --single-turn --warmup -p 'Explain in one short paragraph what a CPU is.' artifacts/runtime-executions/jalon2-repeat/jalon2-llama-cpp-20260827T160359Z/terminal.transcript"
+	User time (seconds): 12.86
+	System time (seconds): 0.32
+	Percent of CPU this job got: 323%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.08
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 896964
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 133580
+	Voluntary context switches: 889
+	Involuntary context switches: 147
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+exit_status=0
+timestamp_end_utc=2026-08-27T16:04:04.284619Z

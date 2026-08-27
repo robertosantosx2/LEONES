@@ -1,0 +1,39 @@
+Script iniciado en 2026-08-27 18:03:55+02:00 [COMMAND="/home/roberto/leones-work/llama.cpp/build/bin/llama-cli -m /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf -t 4 -tb 4 -c 2048 -n 128 --perf --single-turn --warmup -p 'Explain in one short paragraph what a CPU is.'" TERM="xterm-256color" TTY="/dev/pts/4" COLUMNS="-1" LINES="-1"]
+
+
+Loading model... |-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b10655-cb300598d
+model      : /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+[1m[32m
+> Explain in one short paragraph what a CPU is.
+[0m[90m
+[Start thinking]
+
+Okay, I need to explain a CPU in one short paragraph. Let me start by recalling what a CPU is. A CPU, or Central Processing Unit, is the main component of a computer. It handles all the tasks a computer can do, like performing calculations, running programs, and interacting with the operating system. The CPU uses a set of integrated circuits to perform these tasks efficiently. It is crucial for processing data and managing tasks, making computers powerful and versatile. I should make sure to include key points: definition, its role, components, and its function. Keep the paragraph concise but informative. Let me check the structure:[0m
+[35m
+[ Prompt: 229,5 t/s | Generation: 41,9 t/s ]
+[0m
+
+Exiting...
+
+Script terminado en 2026-08-27 18:03:59+02:00 [CÓDIGO_SALIDA_ORDEN="0"]

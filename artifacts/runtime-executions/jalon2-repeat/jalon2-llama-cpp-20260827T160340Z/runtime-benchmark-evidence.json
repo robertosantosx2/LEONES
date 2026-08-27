@@ -1,0 +1,55 @@
+{
+  "schema": "runtime-benchmark-evidence.v1",
+  "execution_id": "jalon2-llama-cpp-20260827T160340Z",
+  "timestamp_utc": "2026-08-27T16:03:40.655504Z",
+  "runtime": {
+    "name": "llama.cpp",
+    "version": "version: 0.3.0-dev (build 10655, commit cb300598d)",
+    "binary": "/home/roberto/leones-work/llama.cpp/build/bin/llama-cli",
+    "binary_sha256": "5c8abc6bd1604fabf743e5863e837fbcb2a01a4f8fdfbd66287a6ea213457aa8"
+  },
+  "model": {
+    "path": "/home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf",
+    "sha256": "b0638f08417a2d3c8652760462eb5407c6e30173cf9608ad0820757a281eea0e"
+  },
+  "protocol": {
+    "prompt_protocol_id": "leones-local-v1",
+    "prompt_sha256": "bcb5bbf7d1987fb84bf5d4aa20ee8bbab4edae625ae8dbed7ac3ea81e16a891e",
+    "context": 2048,
+    "output_token_limit": 128,
+    "temperature": 0,
+    "top_p": null,
+    "seed": null,
+    "warmup_iterations": 1,
+    "measurement_iterations": 1
+  },
+  "hardware": {
+    "host": "Aspire-A515-55",
+    "os": "Linux-7.0.0-30-generic-x86_64-desconocido-with-glibc2.43",
+    "kernel": "7.0.0-30-generic",
+    "architecture": "x86_64",
+    "cpu": "desconocido",
+    "cpu_threads": 8,
+    "physical_cores": 4,
+    "ram_total_mb": 7199.8046875
+  },
+  "benchmark": {
+    "prompt_tok_s": 193.9,
+    "generation_tok_s": 53.6,
+    "elapsed_wall_clock": "0:03.58",
+    "maximum_rss_kb": 896440,
+    "maximum_rss_mib": 875.4296875
+  },
+  "source": {
+    "execution": "artifacts/runtime-executions/jalon2-repeat/jalon2-llama-cpp-20260827T160340Z/runtime-execution.json",
+    "raw_log": "artifacts/runtime-executions/jalon2-repeat/jalon2-llama-cpp-20260827T160340Z/execution.log",
+    "execution_sha256": "e3cf7de42d0628bf91354095944f869a2d91976946a3ccf691f8f45c807b56b6",
+    "raw_log_sha256": "a1169131ece999ccc2d2da8789632e50523bee8d824e7f85411b17f765e507c5"
+  },
+  "measurement": {
+    "warmup": 1,
+    "measurement_iterations": 1,
+    "exit_code": 0
+  },
+  "status": "VALID"
+}
