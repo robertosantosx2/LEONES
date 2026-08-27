@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """Convert a real llama.cpp execution log into runtime-benchmark-evidence.v1.1.
 
-This bridge is intentionally parser-only: it never executes the runtime and
-never fabricates performance measurements. Missing measurements remain null.
-The input log must contain the command/environment provenance emitted by the
-JALON 2 physical runner and /usr/bin/time output.
+This bridge is parser-only: it never executes the runtime and never fabricates
+performance measurements. Missing measurements remain null. The input log
+must contain the command/environment provenance emitted by the JALON 2
+physical runner and /usr/bin/time output.
 """
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import re
+import shlex
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -32,15 +32,6 @@ CMD_RE = re.compile(r'^\s*Command being timed:\s*"(?P<cmd>.*)"\s*$', re.M)
 def _first(text: str, pattern: str, default: str | None = None) -> str | None:
     match = re.search(pattern, text, re.I | re.M)
     return match.group(1).strip() if match else default
-
-
-def _number(value: str | None) -> float | None:
-    if value is None:
-        return None
-    try:
-        return float(value)
-    except ValueError:
-        return None
 
 
 def _wall_seconds(value: str | None) -> float | None:
@@ -67,6 +58,26 @@ def _timestamp(value: str) -> str:
     return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def _command_and_prompt(text: str) -> tuple[list[str], str | None]:
+    match = CMD_RE.search(text)
+    if not match:
+        return [], None
+    try:
+        command = shlex.split(match.group("cmd"))
+    except ValueError:
+        command = match.group("cmd").split()
+    prompt = None
+    if "-p" in command:
+        index = command.index("-p")
+        if index + 1 < len(command):
+            prompt = command[index + 1]
+    elif "--prompt" in command:
+        index = command.index("--prompt")
+        if index + 1 < len(command):
+            prompt = command[index + 1]
+    return command, prompt
+
+
 def parse_log(text: str) -> dict[str, Any]:
     metadata: dict[str, str] = {}
     for line in text.splitlines():
@@ -76,13 +87,13 @@ def parse_log(text: str) -> dict[str, Any]:
 
     execution_id = metadata.get("execution_id")
     timestamp_start = metadata.get("timestamp_utc")
+    timestamp_end = metadata.get("timestamp_end_utc")
     if not execution_id or not timestamp_start:
         raise ValueError("physical log requires execution_id and timestamp_utc")
+    if not timestamp_end:
+        raise ValueError("physical log requires explicit timestamp_end_utc")
 
-    command_match = CMD_RE.search(text)
-    command_text = command_match.group("cmd") if command_match else None
-    command = command_text.split() if command_text else []
-
+    command, prompt = _command_and_prompt(text)
     rss = MAX_RSS_RE.search(text)
     peak_memory_mb = float(rss.group("kb")) / 1024 if rss else None
     wall_seconds = _wall_seconds(_first(text, ELAPSED_RE.pattern))
@@ -108,13 +119,10 @@ def parse_log(text: str) -> dict[str, Any]:
         if tps_match:
             measured_tps = float(tps_match.group("tps"))
 
-    prompt = _first(text, r"^\s*prompt(?:_text)?=(.*)$")
-    prompt_hash = metadata.get("prompt_sha256")
     model = metadata.get("model") or ""
     model_sha256 = metadata.get("model_sha256")
-    runtime_version = metadata.get("runtime_version") or metadata.get("runtime_package") or "unknown"
     binary_sha256 = metadata.get("runtime_binary_sha256")
-
+    runtime_version = metadata.get("runtime_version") or metadata.get("runtime_package") or "unknown"
     measurement: dict[str, Any] = {
         "iteration": 1,
         "ttft_ms": prompt_ms,
@@ -135,11 +143,11 @@ def parse_log(text: str) -> dict[str, Any]:
         "schema": "runtime-benchmark-evidence.v1.1",
         "execution_id": execution_id,
         "timestamp_start": _timestamp(timestamp_start),
-        "timestamp_end": _timestamp(metadata["timestamp_end_utc"]),
+        "timestamp_end": _timestamp(timestamp_end),
         "model": {
             "id": model.removesuffix(".gguf"),
             "name": model,
-            "revision": model_sha256 or "unknown",
+            "revision": "unknown",
             "source": None,
             "artifact": f"artifacts/models/{model}" if model else "",
             "quantization": _first(text, r"(?:^|\s)(Q[0-9A-Z_]+)(?:\.gguf)?(?:\s|$)") or "unknown",
@@ -191,7 +199,7 @@ def parse_log(text: str) -> dict[str, Any]:
             "size": int(metadata.get("model_size_bytes", "0")),
         },
         "provenance": {
-            "prompt_sha256": prompt_hash,
+            "prompt_sha256": metadata.get("prompt_sha256"),
             "runtime_binary_sha256": binary_sha256,
             "runtime_binary": metadata.get("runtime_binary"),
             "wall_seconds": wall_seconds,
@@ -204,10 +212,7 @@ def _ram_mb(text: str) -> float | None:
     if not total:
         return None
     value = float(total.group("total"))
-    unit = total.group("unit").lower()
-    if unit.startswith("g"):
-        return value * 1024
-    return value
+    return value * 1024 if total.group("unit").lower().startswith("g") else value
 
 
 def main() -> int:
@@ -218,8 +223,6 @@ def main() -> int:
     args = parser.parse_args()
 
     text = args.log.read_text(encoding="utf-8")
-    # Keep the end timestamp explicit: the parser must not invent an execution
-    # boundary from wall time or from evidence-generation time.
     lines = text.splitlines()
     lines.append(f"timestamp_end_utc={args.timestamp_end}")
     evidence = parse_log("\n".join(lines) + "\n")
