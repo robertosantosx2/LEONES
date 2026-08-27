@@ -1,89 +1,96 @@
 # Runtime Benchmark Evidence V1.1
 
-LEONES adopts the useful parts of the Artificial Analysis methodology while keeping local-runtime evidence distinct from hosted API measurements.
+This is the operational contract for converting a real runtime execution into reusable LEONES evidence.
 
-Artificial Analysis measures real-world end-to-end inference experience, not theoretical maximum hardware performance. Its language-model API methodology separates workload size, load scenario, TTFT, output speed and end-to-end response time, and uses repeatable API parameters and standardized token counting for cross-model comparisons. See https://artificialanalysis.ai/methodology and https://artificialanalysis.ai/methodology/performance-benchmarking.
+## Canonical implementation
 
-## LEONES mapping
+- Schema: `schemas/runtime-benchmark-evidence.v1.1.json`
+- Runner: `scripts/runtime_benchmark_evidence.py`
+- Contract tests: `tests/test_runtime_benchmark_evidence_v1_1_contract.py`
+- CI gate: `.github/workflows/jalon3-runtime-execution-contract.yml`
 
-| Artificial Analysis concept | LEONES local evidence |
-| --- | --- |
-| Model / provider / endpoint | model / runtime / artifact |
-| Workload type | prompt protocol + context + output limit |
-| Single prompt | one local process execution per iteration |
-| Parallel prompts | future concurrency profile; not mixed with single-request results |
-| TTFT | local first-output latency; explicitly scoped as local-process timing |
-| Output speed | tokens/s parsed from runtime output when available |
-| End-to-end response time | total process/request time |
-| Median / distribution | per-iteration records plus aggregate summary |
-| Provider configuration | exact runtime version, backend, command and hardware |
-| Point-in-time result | execution_id + UTC timestamps |
-| Artifact identity | path + size + SHA-256 |
+## Required identity
 
-## Important comparability rule
+Every valid evidence object records:
 
-A local `llama-cli` run is **not** directly equivalent to an Artificial Analysis hosted API TTFT. The local first-output measurement includes local process startup and model loading unless the runtime is already resident behind a server. Therefore LEONES records the measurement scope and does not silently merge local and API latency series.
+- `execution_id`;
+- UTC start/end timestamps;
+- model id/name/revision;
+- quantization and context length;
+- model artifact path, size and SHA-256;
+- prompt protocol and measurement scope;
+- warm-up and measurement counts;
+- runtime name/version/command;
+- hardware identity and available telemetry;
+- per-iteration measurements;
+- aggregate statistics;
+- complete stdout/stderr;
+- process exit status;
+- artifact path/size/SHA-256.
 
-For cross-runtime local comparisons, use the same model artifact, prompt protocol, context, output limit, warm-up policy, iteration count and hardware. For API comparisons, use a separate hosted-endpoint protocol.
+## Local latency semantics
 
-## Canonical fields
+For a local process such as `llama-cli`, `first_output_ms` and `ttft_ms` are scoped as `local_process_first_output`. They can include process startup and model loading.
 
-The JSON contract is `schemas/runtime-benchmark-evidence.v1.1.json`.
+They are **not** silently treated as hosted-API TTFT. Local and API latency datasets remain separate unless a later protocol explicitly defines a valid comparison.
 
-Required identity:
+## Measurement protocol
 
-- model id/name/revision
-- quantization
-- artifact path/size/SHA-256
-- context length
-- runtime name/version/command
-- hardware
-- prompt protocol
-- warm-up count
-- measurement count
-- execution_id
-- UTC timestamps
+Warm-up executions are excluded from the measured sample. Every measured iteration is preserved individually. Aggregation provides mean, median, minimum, maximum and, with more than one sample, standard deviation.
 
-Required evidence:
+Changing model, revision, quantization, artifact, runtime, runtime version/revision, backend, hardware, workload or protocol creates a new `execution_id`.
 
-- stdout/stderr
-- exit code
-- per-iteration total time
-- first-output latency / TTFT when measurable
-- output speed when the runtime reports it
-- memory and VRAM when measurable
-- power when measurable
-- aggregate mean/median/min/max and standard deviation when enough samples exist
+## Metrics
 
-## First llama.cpp run
+Per iteration, the contract supports:
 
-Prepare a shell-free command JSON, for example:
+- first-output latency / local TTFT;
+- generation time;
+- output token count;
+- output tokens/s;
+- total wall time;
+- peak RAM;
+- peak VRAM;
+- power.
+
+Optional telemetry is `null` when unavailable. It is never fabricated.
+
+## Shell-free execution
+
+Commands are supplied as JSON arrays and executed without `shell=True`. Exact argument boundaries are therefore preserved.
+
+Example command payload:
 
 ```json
-["llama-cli", "-m", "/path/to/model.gguf", "-p", "Explain why reproducible benchmarks matter.", "-c", "4096", "-n", "256", "--temp", "0"]
+["llama-cli", "-m", "/path/to/model.gguf", "-p", "Explain reproducible benchmarks.", "-c", "4096", "-n", "256"]
 ```
 
-Then run:
+## Validation
 
-```bash
-python3 scripts/runtime_benchmark_evidence.py \
-  --command-json artifacts/llama-cpp-command.json \
-  --output artifacts/real-llama-cpp-evidence.json \
-  --artifact /path/to/model.gguf \
-  --model-id <stable-model-id> \
-  --model-name <model-name> \
-  --model-revision <immutable-revision> \
-  --quantization Q4_K_M \
-  --context 4096 \
-  --prompt-protocol-id leones-local-v1 \
-  --prompt 'Explain why reproducible benchmarks matter.' \
-  --warmup 2 \
-  --iterations 5 \
-  --runtime llama.cpp
-```
+CI performs four engineering checks:
 
-The generated evidence is suitable for later ingestion into the LEONES evidence layer. It must not be hand-edited after measurement; if corrected, rerun the measurement and generate a new `execution_id`.
+1. Python compilation of the runner;
+2. Draft 2020-12 schema validation;
+3. contract tests for timing, stdout/stderr separation, statistics and rejection rules;
+4. repository-level traceability through the JALON 3 documentation.
 
-## Validation gate
+Ordinary CI deliberately does **not** claim to perform a physical model benchmark. Physical execution belongs to the target host.
 
-A result is valid only when all measurement iterations exit successfully and the required identity/provenance fields are present. Missing optional telemetry such as power or VRAM is recorded as unavailable rather than fabricated.
+## Physical hand-off
+
+Once the GitHub engineering gate is green, Debian/Ubuntu should only:
+
+1. update to the approved GitHub revision;
+2. verify the installed runtime/build;
+3. verify the real model artifact and hash;
+4. execute the approved shell-free command;
+5. perform the configured warm-up;
+6. perform the configured iterations;
+7. preserve stdout/stderr and generated evidence;
+8. validate and archive the result.
+
+No protocol design should be required on the physical host.
+
+## Methodological reference
+
+Artificial Analysis is used as a conceptual reference for separating workload, latency, output speed and end-to-end response characteristics. LEONES preserves the distinction between local-runtime measurements and hosted-API measurements.
