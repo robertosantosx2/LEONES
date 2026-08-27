@@ -1,0 +1,35 @@
+name: JALON 5 physical execution plan
+
+on:
+  push:
+    branches: [jalon5-physical-runtime-execution-v1]
+    paths:
+      - 'docs/runtime-physical-execution-plan.v1.json'
+      - 'schemas/runtime-physical-execution-plan.v1.schema.json'
+      - 'tests/test_jalon5_physical_execution_plan.py'
+      - '.github/workflows/jalon5-physical-plan.yml'
+  pull_request:
+    branches: [main, jalon5-physical-runtime-execution-v1]
+    paths:
+      - 'docs/runtime-physical-execution-plan.v1.json'
+      - 'schemas/runtime-physical-execution-plan.v1.schema.json'
+      - 'tests/test_jalon5_physical_execution_plan.py'
+      - '.github/workflows/jalon5-physical-plan.yml'
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+      - name: Validate JSON
+        run: python -m json.tool docs/runtime-physical-execution-plan.v1.json >/dev/null && python -m json.tool schemas/runtime-physical-execution-plan.v1.schema.json >/dev/null
+      - name: Run plan tests
+        run: python -m pytest tests/test_jalon5_physical_execution_plan.py -q
+      - name: Confirm no physical execution in CI
+        run: |
+          ! grep -R -n -E 'llama-cli|ollama run|vllm serve|sglang launch|pip install.*airllm|FreeToken' tests/test_jalon5_physical_execution_plan.py docs/runtime-physical-execution-plan.v1.json
+      - name: Check whitespace
+        run: git diff --check
