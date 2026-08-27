@@ -64,4 +64,19 @@ def test_parser_does_not_invent_missing_performance_metrics():
     assert measurement["ttft_ms"] is None
     assert measurement["generation_time_ms"] is None
     assert measurement["tokens_per_second"] is None
-'''}
+
+
+def test_parser_accepts_real_llama_cpp_summary_format():
+    log = LOG + """
+[ Prompt: 174,3 t/s | Generation: 50,4 t/s ]
+timestamp_end_utc=2026-08-27T14:06:14Z
+"""
+
+    evidence = parse_log(log)
+    measurement = evidence["measurements"][0]
+
+    assert evidence["protocol"]["prompt_tokens_per_second"] == 174.3
+    assert measurement["tokens_per_second"] == 50.4
+
+    # El throughput de prompt NO es TTFT.
+    assert measurement["ttft_ms"] is None

@@ -23,10 +23,17 @@ PERF_RE = re.compile(
     r"(?P<tps>[0-9]+(?:\.[0-9]+)?)\s*tokens?/s",
     re.I,
 )
-TPS_RE = re.compile(r"(?:Generation|eval)[^\n]*?[:=]\s*(?P<tps>[0-9]+(?:\.[0-9]+)?)\s*t/s", re.I)
-MAX_RSS_RE = re.compile(r"Maximum resident set size:\s*(?P<kb>[0-9]+)\s*kbytes", re.I)
-ELAPSED_RE = re.compile(r"Elapsed \(wall clock\) time .*?:\s*(?P<value>[^\n]+)", re.I)
-CMD_RE = re.compile(r'^\s*Command being timed:\s*"(?P<cmd>.*)"\s*$', re.M)
+TPS_RE = re.compile(
+    r"(?:Generation|eval)[^\n]*?[:=]\s*(?P<tps>[0-9]+(?:[.,][0-9]+)?)\s*t/s",
+    re.I,
+)
+
+LLAMA_SUMMARY_RE = re.compile(
+    r"\[\s*Prompt:\s*(?P<prompt>[0-9]+(?:[.,][0-9]+)?)\s*t/s"
+    r"\s*\|\s*Generation:\s*(?P<generation>[0-9]+(?:[.,][0-9]+)?)\s*t/s"
+    r"\s*\]",
+    re.I,
+)
 
 
 def _first(text: str, pattern: str, default: str | None = None) -> str | None:
@@ -57,6 +64,22 @@ def _timestamp(value: str) -> str:
         dt = dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
+
+
+MAX_RSS_RE = re.compile(
+    r"Maximum resident set size \(kbytes\):\s*(?P<kb>[0-9]+)",
+    re.I,
+)
+
+ELAPSED_RE = re.compile(
+    r"Elapsed \(wall clock\) time .*?:\s*(?P<value>[^\n]+)",
+    re.I,
+)
+
+CMD_RE = re.compile(
+    r'^\s*Command being timed:\s*"(?P<cmd>.*)"\s*$',
+    re.M,
+)
 
 def _command_and_prompt(text: str) -> tuple[list[str], str | None]:
     match = CMD_RE.search(text)
@@ -112,10 +135,26 @@ def parse_log(text: str) -> dict[str, Any]:
             output_tokens = tokens
             measured_tps = tps
 
+    prompt_tokens_per_second = None
+
+    summary_match = LLAMA_SUMMARY_RE.search(text)
+    if summary_match:
+        prompt_tokens_per_second = float(
+            summary_match.group("prompt").replace(",", ".")
+        )
+        measured_tps = float(
+            summary_match.group("generation").replace(",", ".")
+        )
+
+    # El resumen moderno de llama.cpp expresa throughput del prompt,
+    # no TTFT. Solo usamos prompt_ms como TTFT cuando procede del
+    # registro explícito "prompt eval time".
+    ttft_ms = None if summary_match else prompt_ms
+
     if measured_tps is None:
         tps_match = TPS_RE.search(text)
         if tps_match:
-            measured_tps = float(tps_match.group("tps"))
+            measured_tps = float(tps_match.group("tps").replace(",", "."))
 
     model = metadata.get("model") or ""
     model_sha256 = metadata.get("model_sha256")
@@ -125,8 +164,8 @@ def parse_log(text: str) -> dict[str, Any]:
     quantization = quantization_match.group(1).upper() if quantization_match else "unknown"
     measurement: dict[str, Any] = {
         "iteration": 1,
-        "ttft_ms": prompt_ms,
-        "first_output_ms": prompt_ms,
+        "ttft_ms": ttft_ms,
+        "first_output_ms": ttft_ms,
         "generation_time_ms": generation_ms,
         "output_tokens": output_tokens,
         "tokens_per_second": measured_tps,
@@ -157,6 +196,7 @@ def parse_log(text: str) -> dict[str, Any]:
             "prompt_protocol_id": "leones-local-v1",
             "prompt": prompt or "",
             "input_tokens": None,
+            "prompt_tokens_per_second": prompt_tokens_per_second,
             "output_token_limit": int(metadata["n_predict"]) if metadata.get("n_predict", "").isdigit() else None,
             "temperature": 0,
             "top_p": None,
@@ -188,7 +228,7 @@ def parse_log(text: str) -> dict[str, Any]:
         "measurements": [measurement],
         "summary": {
             "tokens_per_second": {"mean": measured_tps, "median": measured_tps, "min": measured_tps, "max": measured_tps},
-            "ttft_ms": {"mean": prompt_ms, "median": prompt_ms, "min": prompt_ms, "max": prompt_ms},
+            "ttft_ms": {"mean": ttft_ms, "median": ttft_ms, "min": ttft_ms, "max": ttft_ms},
             "total_time_ms": {"mean": measurement["total_time_ms"], "median": measurement["total_time_ms"], "min": measurement["total_time_ms"], "max": measurement["total_time_ms"]},
             "peak_memory_mb": {"mean": peak_memory_mb, "median": peak_memory_mb, "min": peak_memory_mb, "max": peak_memory_mb},
         },
