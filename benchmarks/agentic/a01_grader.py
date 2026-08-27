@@ -6,23 +6,24 @@ from pathlib import Path
 from typing import Any
 
 A01_GRADER_ID = "A01-grader"
-A01_GRADER_VERSION = "1.0"
+A01_GRADER_VERSION = "1.1"
 EXPECTED_TOOLS = ["lookup_model", "write_report"]
-EXPECTED_MODEL_ID = "demo-2"
-EXPECTED_MODEL_NAME = "Beta"
 
 
 def grade_a01(*, tool_requests: list[dict[str, Any]], model: dict[str, Any], artifact_path: Path) -> dict[str, Any]:
+    """Grade A01 against the selected model rather than a fixture identity."""
     tools = [item.get("tool") for item in tool_requests]
     requested_id = ((tool_requests[0].get("arguments") or {}).get("model_id") if tool_requests else None)
+    expected_id = str(model.get("id") or "")
+    expected_name = str(model.get("name") or expected_id)
     artifact_exists = artifact_path.is_file()
     content = artifact_path.read_text(encoding="utf-8") if artifact_exists else ""
     checks = {
         "tool_order": tools == EXPECTED_TOOLS,
-        "target_model": requested_id == EXPECTED_MODEL_ID,
-        "lookup_result": model.get("name") == EXPECTED_MODEL_NAME,
+        "target_model": bool(expected_id) and requested_id == expected_id,
+        "lookup_result": bool(expected_name) and model.get("name") == expected_name,
         "artifact_exists": artifact_exists,
-        "artifact_contains_model": EXPECTED_MODEL_NAME in content,
+        "artifact_contains_model": bool(expected_name) and expected_name in content,
     }
     passed = all(checks.values())
     return {"id": A01_GRADER_ID, "version": A01_GRADER_VERSION,
