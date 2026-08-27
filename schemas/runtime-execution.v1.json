@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.ai/schemas/runtime-execution.v1.json",
+  "title": "LEONES runtime-execution.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "execution_id", "status", "created_at", "runtime", "model", "hardware", "workload", "protocol", "command", "environment"],
+  "properties": {
+    "schema_version": {"const": "runtime-execution.v1"},
+    "execution_id": {"type": "string", "format": "uuid"},
+    "status": {"enum": ["planned", "running", "completed", "failed", "aborted"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "finished_at": {"type": "string", "format": "date-time"},
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "adapter", "version"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "adapter": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "backend": {"type": "string"},
+        "executable": {"type": "string"}
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "revision", "quantization"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "revision": {"type": "string", "minLength": 1},
+        "artifact": {"type": "string"},
+        "artifact_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "quantization": {"type": "string", "minLength": 1}
+      }
+    },
+    "hardware": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["os", "cpu", "ram_mb"],
+      "properties": {
+        "os": {"type": "string"},
+        "kernel": {"type": "string"},
+        "cpu": {"type": "string"},
+        "cpu_threads": {"type": "integer", "minimum": 1},
+        "ram_mb": {"type": "integer", "minimum": 1},
+        "gpu": {"type": "array", "items": {"type": "object"}},
+        "backend": {"type": "string"}
+      }
+    },
+    "workload": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["context_tokens", "target_output_tokens", "concurrency"],
+      "properties": {
+        "context_tokens": {"type": "integer", "minimum": 1},
+        "target_output_tokens": {"type": "integer", "minimum": 1},
+        "concurrency": {"type": "integer", "minimum": 1},
+        "batch": {"type": "integer", "minimum": 1}
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["name", "version", "warmup_iterations", "measured_iterations", "prompt_ref"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "warmup_iterations": {"type": "integer", "minimum": 0},
+        "measured_iterations": {"type": "integer", "minimum": 1},
+        "prompt_ref": {"type": "string", "minLength": 1},
+        "prompt_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "seed": {"type": "integer"},
+        "decoding": {"type": "object"}
+      }
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["argv", "cwd", "exit_code"],
+      "properties": {
+        "argv": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "cwd": {"type": "string", "minLength": 1},
+        "exit_code": {"type": "integer"},
+        "argv_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "stdout_ref": {"type": "string"},
+        "stdout_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "stderr_ref": {"type": "string"},
+        "stderr_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"}
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["leones_revision"],
+      "properties": {
+        "leones_revision": {"type": "string", "minLength": 1},
+        "python": {"type": "string"},
+        "node": {"type": "string"},
+        "container_image": {"type": "string"}
+      }
+    },
+    "measurements": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "ttft_ms": {"type": "number", "minimum": 0},
+        "tpot_ms": {"type": "number", "minimum": 0},
+        "tokens_per_second": {"type": "number", "minimum": 0},
+        "output_tokens": {"type": "integer", "minimum": 1},
+        "total_latency_ms": {"type": "number", "minimum": 0},
+        "peak_ram_mb": {"type": "number", "minimum": 0},
+        "peak_vram_mb": {"type": "number", "minimum": 0},
+        "avg_power_w": {"type": "number", "minimum": 0},
+        "energy_wh": {"type": "number", "minimum": 0}
+      },
+      "not": {"required": ["estimated_tps"]}
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["source", "execution_id"],
+      "properties": {
+        "source": {"const": "LEONES"},
+        "execution_id": {"type": "string", "format": "uuid"},
+        "host_ref": {"type": "string"},
+        "raw_log_ref": {"type": "string"}
+      }
+    },
+    "failure": {"type": "object", "additionalProperties": true}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "completed"}}},
+      "then": {
+        "required": ["started_at", "finished_at", "measurements", "provenance"],
+        "properties": {"command": {"properties": {"exit_code": {"const": 0}}}}
+      }
+    }
+  ]
+}
