@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -82,8 +83,8 @@ def test_runtime_gate_blocks_untrusted_selection() -> None:
     assert result["execution_plans"][0]["runtime"]["command"] is None
 
 
-def test_canonical_a01_benchmark_reaches_router(tmp_path: Path) -> None:
-    """Prove the complete V1 path, without GPU/model downloads, through Router."""
+def test_canonical_a01_benchmark_reaches_router_without_pythonpath(tmp_path: Path) -> None:
+    """Prove the complete V1 CLI path from a clean environment, through Router."""
     root = Path(__file__).resolve().parents[2]
     selection_file = tmp_path / "selection.json"
     commands_file = tmp_path / "runtime-commands.json"
@@ -94,6 +95,9 @@ def test_canonical_a01_benchmark_reaches_router(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
+    # Reproduce a normal Debian/CI invocation: no PYTHONPATH=. workaround.
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
     proc = subprocess.run(
         [
             sys.executable,
@@ -108,11 +112,13 @@ def test_canonical_a01_benchmark_reaches_router(tmp_path: Path) -> None:
             str(output_file),
         ],
         cwd=root,
+        env=env,
         text=True,
         capture_output=True,
         check=False,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "ModuleNotFoundError" not in proc.stderr
 
     payload = json.loads(output_file.read_text(encoding="utf-8"))
     benchmark = payload["evidence"]["runtime_benchmark"]
