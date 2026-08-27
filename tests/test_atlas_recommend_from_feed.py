@@ -32,13 +32,13 @@ def row(tps):
 
 
 def test_recommendation_contains_cabe():
-    result = module.recommend([row(7.5)], [], "chat", "i7 32GB RTX 4060", 32, 8, 4096)
+    result = module.recommend([row(7.5)], [], "chat", "i7 32GB RTX 4060", 32, 8, 4096, required_runtime="llama.cpp")
     assert len(result) == 1
     assert result[0][-1] == "CABE"
 
 
 def test_recommendation_contains_rula_at_boundary():
-    result = module.recommend([row(10)], [], "chat", "i7 32GB RTX 4060", 32, 8, 4096)
+    result = module.recommend([row(10)], [], "chat", "i7 32GB RTX 4060", 32, 8, 4096, required_runtime="llama.cpp")
     assert len(result) == 1
     assert result[0][-1] == "RULA"
 
@@ -46,6 +46,6 @@ def test_recommendation_contains_rula_at_boundary():
 def test_missing_performance_is_explicitly_unknown():
     item = row(7.5)
     item["tokens_per_second"] = ""
-    result = module.recommend([item], [], "chat", "i7 32GB RTX 4060", 32, 8, 4096)
+    result = module.recommend([item], [], "chat", "i7 32GB RTX 4060", 32, 8, 4096, required_runtime="llama.cpp")
     assert len(result) == 1
     assert result[0][-1] == "UNKNOWN"
