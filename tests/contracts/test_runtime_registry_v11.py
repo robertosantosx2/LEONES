@@ -8,6 +8,10 @@ from scripts.runtime_benchmark_v1 import begin, complete
 from scripts.runtime_evidence_bridge import to_evidence
 
 
+OPERATIONAL = {"llama.cpp", "FreeToken", "AirLLM", "ollama", "vLLM", "SGLang"}
+ARCHIVED = {"MLX/MLX-LM", "ExLlama", "OpenVINO", "ONNX Runtime GenAI", "TensorRT-LLM"}
+
+
 def plan(runtime, **extra):
     value = {"runtime": runtime, "model_id": "org/model", "model": {"total_params_m": 7000, "active_params_m": 7000},
              "quantization": "Q4_K_M", "architecture_class": "dense", "execution_authorized": True,
@@ -21,12 +25,18 @@ def benchmark_plan():
             "model_id": "org/model", "model": {}, "quantization": "FP8", "hardware": {}, "workload": {}}
 
 
-def test_registry_has_one_common_contract_for_all_v11_runtimes():
+def test_registry_has_one_common_contract_for_operational_v11_runtimes():
     entries = registry_entries()
-    assert len(entries) == 11
-    assert set(entries) == set(ADAPTERS)
+    assert set(entries) == OPERATIONAL
+    assert OPERATIONAL <= set(ADAPTERS)
     assert all(entry.physical_test_required for entry in entries.values())
     assert SCHEMA_VERSION == "runtime-registry.v1.1"
+
+
+def test_archived_runtime_adapters_are_not_operational_registry_entries():
+    entries = registry_entries()
+    assert ARCHIVED.isdisjoint(entries)
+    assert ARCHIVED <= set(ADAPTERS)
 
 
 def test_registry_entries_are_structurally_valid():
@@ -39,9 +49,10 @@ def test_registry_entries_are_structurally_valid():
         assert isinstance(entry.physical_test_required, bool)
 
 
-def test_every_adapter_accepts_a_controlled_plan():
+def test_every_operational_adapter_accepts_a_controlled_plan():
     entries = registry_entries()
-    for runtime, adapter in ADAPTERS.items():
+    for runtime in OPERATIONAL:
+        adapter = ADAPTERS[runtime]
         entry = entries[runtime]
         p = plan(runtime, quantization=entry.formats[0])
         if runtime == "FreeToken":
@@ -57,7 +68,7 @@ def test_canonical_ollama_identifier_is_preserved():
 
 
 def test_capability_match_blocks_incompatible_runtime():
-    ok, reasons = capability_match(registry_entries()["TensorRT-LLM"], backend="metal")
+    ok, reasons = capability_match(registry_entries()["vLLM"], backend="metal")
     assert not ok and reasons
 
 
