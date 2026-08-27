@@ -55,3 +55,7 @@ FreeToken conserva su gate específico de elegibilidad dentro de su adapter; las
 La CI solo valida el contrato y el flujo con fixtures controlados. Las pruebas físicas de cada runtime quedan reservadas al host adecuado. Esto incluye, entre otros, Apple Silicon para MLX/MLX-LM, CUDA/NVIDIA para TensorRT-LLM y ExLlama, y hosts Intel adecuados para OpenVINO.
 
 La existencia de un adapter no implica que el runtime haya sido ejecutado físicamente por LEONES.
+
+## Estado V1.1
+
+El contrato común, los adapters y el puente de benchmark/evidence están listos para CI; las ejecuciones físicas quedan deliberadamente fuera de esta fase y se activarán por host/runtime cuando exista el hardware adecuado.
