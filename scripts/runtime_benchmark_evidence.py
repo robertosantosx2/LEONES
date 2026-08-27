@@ -94,18 +94,17 @@ def gpu_snapshot() -> tuple[float | None, float | None]:
             capture_output=True, text=True, timeout=5, check=False,
         ).stdout.strip().splitlines()[0]
         memory, power = line.split(",", 1)
-        return float(memory), float(power)
+        return float(memory.strip()), float(power.strip())
     except Exception:
         return None, None
 
 
 def run_once(command: list[str]) -> dict:
-    """Run one process; first-output latency is based on non-empty stdout only.
+    """Run one process and preserve stdout/stderr separately.
 
-    Stderr is excluded from first-output timing because runtimes commonly emit
-    startup/performance logs there. This is a local observable and must not be
-    presented as hosted/API TTFT unless the runtime's stdout is known to carry
-    the first generated token.
+    First-output latency is a local observable: time until the first non-empty
+    stdout line. It must not be presented as hosted/API TTFT unless stdout is
+    known to correspond to the first generated token.
     """
     started = time.perf_counter()
     first_stdout = None
@@ -133,6 +132,7 @@ def run_once(command: list[str]) -> dict:
     combined = stdout + "\n" + stderr
     tps = TPS_RE.findall(combined)
     tokens = TOKENS_RE.findall(stdout)
+    peak_vram, power = gpu_snapshot()
     return {
         "ttft_ms": first_stdout,
         "first_output_ms": first_stdout,
@@ -140,7 +140,7 @@ def run_once(command: list[str]) -> dict:
         "output_tokens": int(tokens[-1]) if tokens else None,
         "tokens_per_second": float(tps[-1].replace(",", ".")) if tps else None,
         "total_time_ms": round(total_ms, 3),
-        "peak_memory_mb": child_rss(), "peak_vram_mb": gpu_snapshot()[0], "power_w": gpu_snapshot()[1],
+        "peak_memory_mb": child_rss(), "peak_vram_mb": peak_vram, "power_w": power,
         "exit_code": exit_code, "stdout": stdout, "stderr": stderr,
     }
 
