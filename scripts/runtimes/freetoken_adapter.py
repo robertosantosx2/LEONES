@@ -14,6 +14,8 @@ class FreeTokenAdapter(RuntimeAdapter):
                                              "moe": plan.get("moe") or {}, "workload": plan.get("workload") or {}})
 
     def validate(self, plan: dict[str, Any], entry: RuntimeEntry) -> None:
+        if plan.get("architecture_class") != "moe":
+            raise ValueError("FreeToken eligibility gate: runtime is specialized for MoE models")
         decision = self._eligibility(plan)
         if not decision["eligible"]:
             raise ValueError("FreeToken eligibility gate: " + "; ".join(decision["reasons"]))
