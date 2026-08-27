@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Canonical A01 path: selection -> trusted runtime -> evidence -> Router."""
+"""Canonical A01 path: selector -> runtime -> grader -> evidence -> Router."""
 from __future__ import annotations
 
 import argparse
@@ -52,15 +52,30 @@ def execute(selection_file: Path, runtime_commands: Path, workspace: Path, outpu
     cmd = [sys.executable, "scripts/run_a01_selected.py", "--selection", str(selection_file),
            "--runtime-commands", str(runtime_commands), "--workspace", str(workspace),
            "--prompt", prompt, "--out", str(output_file)]
+    # Never allow a previous executor result to become fresh evidence.
     output_file.unlink(missing_ok=True)
     started = time.perf_counter()
     proc = subprocess.run(cmd, text=True, capture_output=True, timeout=timeout + 10, env=env)
     elapsed = time.perf_counter() - started
     if proc.returncode != 0:
-        raise RuntimeError(f"A01 executor failed with code {proc.returncode}.\nstdout:\n{proc.stdout[-4000:]}\nstderr:\n{proc.stderr[-4000:]}")
+        if output_file.exists():
+            raise RuntimeError(f"A01 executor returned {proc.returncode}; refusing stale/failed evidence.\nstdout:\n{proc.stdout[-4000:]}\nstderr:\n{proc.stderr[-4000:]}")
+        raise RuntimeError(f"A01 executor failed with code {proc.returncode}; no executor result was produced.\nstdout:\n{proc.stdout[-4000:]}\nstderr:\n{proc.stderr[-4000:]}")
     if not output_file.exists():
-        raise RuntimeError("A01 executor exited successfully but produced no executor result")
+        raise RuntimeError(f"A01 executor exited successfully but did not produce the requested executor result.\nstdout:\n{proc.stdout[-4000:]}\nstderr:\n{proc.stderr[-4000:]}")
     return load_json(output_file), proc.stdout + "\n" + proc.stderr, elapsed
+
+
+def promote_measured_hardware(result: dict[str, Any]) -> dict[str, Any]:
+    """Propagate runtime-reported hardware into the plan consumed by evidence and Router."""
+    hardware = result.get("hardware")
+    if not isinstance(hardware, dict):
+        return result
+    runtime_selection = result.get("runtime_selection")
+    plans = runtime_selection.get("execution_plans") if isinstance(runtime_selection, dict) else None
+    if isinstance(plans, list) and plans and isinstance(plans[0], dict):
+        plans[0]["hardware"] = hardware
+    return result
 
 
 def build_benchmark(result: dict[str, Any], raw: str, elapsed: float) -> dict[str, Any]:
@@ -80,18 +95,6 @@ def build_benchmark(result: dict[str, Any], raw: str, elapsed: float) -> dict[st
         "estimated_tps": plan.get("estimated_tps"), "measured_tps": tps,
         "executor_result_sha256": hashlib.sha256(json.dumps(result, sort_keys=True).encode()).hexdigest(),
     }
-
-
-def promote_measured_hardware(result: dict[str, Any]) -> dict[str, Any]:
-    """Copy runtime-reported hardware into the execution plan used by evidence and Router."""
-    hardware = result.get("hardware")
-    if not isinstance(hardware, dict):
-        return result
-    runtime_selection = result.get("runtime_selection")
-    plans = runtime_selection.get("execution_plans") if isinstance(runtime_selection, dict) else None
-    if isinstance(plans, list) and plans and isinstance(plans[0], dict):
-        plans[0]["hardware"] = hardware
-    return result
 
 
 def run_router(evidence: dict[str, Any], out: Path) -> dict[str, Any]:
