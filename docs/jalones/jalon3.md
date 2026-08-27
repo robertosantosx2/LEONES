@@ -1,7 +1,7 @@
 # JALON3 — Protocolo de medición real y evidencia V1.1
 
 **Estado:** EN DESARROLLO — contrato congelado, ejecución física pendiente  
-**Base:** `jalon2-evidence-bridge` (`947f61e4a65e9a34151999c8f94fd606295009f5`)  
+**Base:** `jalon2-closed` (`73b741bc3a53f6a5ea9d5c08eec5c5da6c4ee384`), cuya genealogía contiene el cierre físico `947f61e4a65e9a34151999c8f94fd606295009f5`  
 **Rama de trabajo:** `jalon3-runtime-execution-contract-v2`
 
 ## 1. Objetivo
