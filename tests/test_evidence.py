@@ -16,7 +16,12 @@ def test_measured_requires_execution_identity():
 
 
 def test_measured_can_be_explicitly_verified():
-    measured = {"evidence_type": "measured", "execution_id": "run-1", "measured_at": "2026-08-21T00:00:00+00:00"}
+    measured = {
+        "evidence_type": "measured",
+        "execution_id": "run-1",
+        "measured_at": "2026-08-21T00:00:00+00:00",
+        "measurement_kind": "real",
+    }
     verified = promote_to_verified(
         measured,
         verifier="test-verifier",
