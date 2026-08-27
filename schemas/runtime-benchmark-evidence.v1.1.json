@@ -1,59 +1,22 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "runtime-benchmark-evidence.v1.1",
-  "title": "LEONES Runtime Benchmark Evidence V1.1",
+  "$id": "https://leones.local/schemas/runtime-benchmark-evidence.v1.1.schema.json",
+  "title": "LEONES Runtime Benchmark Evidence v1.1",
   "type": "object",
-  "required": ["schema", "execution_id", "timestamp_start", "timestamp_end", "model", "protocol", "runtime", "hardware", "measurements", "process", "artifact"],
+  "additionalProperties": false,
+  "required": ["schema", "execution_id", "timestamp_start", "timestamp_end", "model", "protocol", "runtime", "hardware", "measurements", "summary", "process", "artifact"],
   "properties": {
     "schema": {"const": "runtime-benchmark-evidence.v1.1"},
     "execution_id": {"type": "string", "minLength": 8},
     "timestamp_start": {"type": "string", "format": "date-time"},
     "timestamp_end": {"type": "string", "format": "date-time"},
-    "model": {
-      "type": "object",
-      "required": ["id", "name", "revision", "quantization", "context_length"],
-      "properties": {
-        "id": {"type": "string"}, "name": {"type": "string"}, "revision": {"type": "string"},
-        "source": {"type": ["string", "null"]}, "artifact": {"type": "string"},
-        "quantization": {"type": "string"}, "context_length": {"type": "integer", "minimum": 1}
-      }, "additionalProperties": true
-    },
-    "protocol": {
-      "type": "object",
-      "required": ["prompt_protocol_id", "warmup_iterations", "measurement_iterations"],
-      "properties": {
-        "prompt_protocol_id": {"type": "string"}, "prompt": {"type": "string"},
-        "input_tokens": {"type": ["integer", "null"], "minimum": 0},
-        "output_token_limit": {"type": ["integer", "null"], "minimum": 1},
-        "temperature": {"type": ["number", "null"]}, "top_p": {"type": ["number", "null"]},
-        "seed": {"type": ["integer", "null"]}, "context": {"type": "integer", "minimum": 1},
-        "warmup_iterations": {"type": "integer", "minimum": 0},
-        "measurement_iterations": {"type": "integer", "minimum": 1}
-      }, "additionalProperties": true
-    },
-    "runtime": {
-      "type": "object",
-      "required": ["name", "version", "command"],
-      "properties": {"name": {"type": "string"}, "version": {"type": "string"}, "revision": {"type": ["string", "null"]}, "backend": {"type": ["string", "null"]}, "command": {"type": "array", "items": {"type": "string"}}},
-      "additionalProperties": true
-    },
-    "hardware": {"type": "object", "required": ["os", "cpu", "ram_total_mb"], "additionalProperties": true},
-    "measurements": {
-      "type": "array", "minItems": 1, "items": {
-        "type": "object", "required": ["iteration", "exit_code", "total_time_ms", "stdout", "stderr"],
-        "properties": {
-          "iteration": {"type": "integer", "minimum": 1}, "ttft_ms": {"type": ["number", "null"], "minimum": 0},
-          "first_output_ms": {"type": ["number", "null"], "minimum": 0}, "generation_time_ms": {"type": ["number", "null"], "minimum": 0},
-          "output_tokens": {"type": ["integer", "null"], "minimum": 0}, "tokens_per_second": {"type": ["number", "null"], "minimum": 0},
-          "total_time_ms": {"type": "number", "minimum": 0}, "peak_memory_mb": {"type": ["number", "null"], "minimum": 0},
-          "peak_vram_mb": {"type": ["number", "null"], "minimum": 0}, "power_w": {"type": ["number", "null"], "minimum": 0},
-          "exit_code": {"type": "integer"}, "stdout": {"type": "string"}, "stderr": {"type": "string"}
-        }, "additionalProperties": true
-      }
-    },
-    "summary": {"type": "object", "additionalProperties": true},
-    "process": {"type": "object", "required": ["exit_code"], "properties": {"exit_code": {"type": "integer"}, "stdout": {"type": "string"}, "stderr": {"type": "string"}}, "additionalProperties": true},
-    "artifact": {"type": "object", "required": ["path", "sha256", "size"], "properties": {"path": {"type": "string"}, "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "size": {"type": "integer", "minimum": 0}}, "additionalProperties": true}
-  },
-  "additionalProperties": true
+    "model": {"type":"object","additionalProperties":false,"required":["id","name","revision","source","artifact","quantization","context_length"],"properties":{"id":{"type":"string","minLength":1},"name":{"type":"string","minLength":1},"revision":{"type":"string","minLength":1},"source":{"type":["string","null"]},"artifact":{"type":"string","minLength":1},"quantization":{"type":"string","minLength":1},"context_length":{"type":"integer","minimum":1}}},
+    "protocol": {"type":"object","additionalProperties":false,"required":["prompt_protocol_id","prompt_sha256","input_tokens","output_token_limit","temperature","top_p","seed","context","warmup_iterations","measurement_iterations"],"properties":{"prompt_protocol_id":{"type":"string","minLength":1},"prompt_sha256":{"type":["string","null"],"pattern":"^[a-fA-F0-9]{64}$"},"input_tokens":{"type":["integer","null"],"minimum":0},"output_token_limit":{"type":"integer","minimum":1},"temperature":{"type":"number"},"top_p":{"type":["number","null"],"minimum":0,"maximum":1},"seed":{"type":["integer","null"]},"context":{"type":"integer","minimum":1},"warmup_iterations":{"type":"integer","minimum":0},"measurement_iterations":{"type":"integer","minimum":1}}},
+    "runtime": {"type":"object","additionalProperties":false,"required":["name","version","revision","backend","binary","binary_sha256","command"],"properties":{"name":{"type":"string","minLength":1},"version":{"type":"string","minLength":1},"revision":{"type":["string","null"]},"backend":{"type":["string","null"]},"binary":{"type":"string","minLength":1},"binary_sha256":{"type":["string","null"],"pattern":"^[a-fA-F0-9]{64}$"},"command":{"type":"array","minItems":1,"items":{"type":"string"}}}},
+    "hardware": {"type":"object","additionalProperties":false,"required":["host","os","kernel","architecture","cpu","cpu_threads","physical_cores","ram_total_mb","gpu","vram_total_mb"],"properties":{"host":{"type":"string"},"os":{"type":"string"},"kernel":{"type":"string"},"architecture":{"type":"string"},"cpu":{"type":"string"},"cpu_threads":{"type":["integer","null"],"minimum":1},"physical_cores":{"type":["integer","null"],"minimum":1},"ram_total_mb":{"type":["number","null"],"minimum":0},"gpu":{"type":["string","null"]},"vram_total_mb":{"type":["number","null"],"minimum":0}}},
+    "measurements": {"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["iteration","ttft_ms","first_output_ms","generation_time_ms","output_tokens","tokens_per_second","total_time_ms","peak_memory_mb","peak_vram_mb","power_w","exit_code","stdout","stderr"],"properties":{"iteration":{"type":"integer","minimum":1},"ttft_ms":{"type":["number","null"],"minimum":0},"first_output_ms":{"type":["number","null"],"minimum":0},"generation_time_ms":{"type":["number","null"],"minimum":0},"output_tokens":{"type":["integer","null"],"minimum":0},"tokens_per_second":{"type":["number","null"],"minimum":0},"total_time_ms":{"type":"number","minimum":0},"peak_memory_mb":{"type":["number","null"],"minimum":0},"peak_vram_mb":{"type":["number","null"],"minimum":0},"power_w":{"type":["number","null"],"minimum":0},"exit_code":{"type":"integer"},"stdout":{"type":"string"},"stderr":{"type":"string"}}}},
+    "summary": {"type":"object","additionalProperties":false,"required":["measurement_count","metrics"],"properties":{"measurement_count":{"type":"integer","minimum":1},"metrics":{"type":"object","additionalProperties":true}}},
+    "process": {"type":"object","additionalProperties":false,"required":["exit_code","stdout","stderr"],"properties":{"exit_code":{"type":"integer"},"stdout":{"type":"string"},"stderr":{"type":"string"}}},
+    "artifact": {"type":"object","additionalProperties":false,"required":["path","sha256","size"],"properties":{"path":{"type":"string","minLength":1},"sha256":{"type":"string","pattern":"^[a-fA-F0-9]{64}$"},"size":{"type":"integer","minimum":0}}}
+  }
 }
