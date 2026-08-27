@@ -32,12 +32,12 @@ def test_available_memory_is_observed_not_invented():
 
 
 def test_profile_feeds_canonical_selector():
-    result = select_from_profile(profile(), [row()], workload="chat")
+    result = select_from_profile(profile(), [row()], workload="chat", required_runtime="llama.cpp")
     assert result["selector"] == "LEONES-model-selection"
     assert result["selection_policy"]["ram_gb"] == 7.0
     assert result["counts"]["eligible"] == 1
 
 
 def test_model_over_available_memory_is_rejected():
-    result = select_from_profile(profile(), [row(estimated_memory_gb="8")], workload="chat")
+    result = select_from_profile(profile(), [row(estimated_memory_gb="8")], workload="chat", required_runtime="llama.cpp")
     assert result["counts"]["rejected"] == 1
