@@ -26,6 +26,8 @@ class RuntimeEntry:
     metrics: str
     physical_test_required: bool
     host_requirements: tuple[str, ...] = ()
+    deployment_class: tuple[str, ...] = ()
+    serving_profiles: tuple[str, ...] = ()
 
 
 def load_registry(path: Path = REGISTRY_PATH) -> dict[str, Any]:
@@ -68,6 +70,8 @@ def registry_entries(path: Path = REGISTRY_PATH) -> dict[str, RuntimeEntry]:
         if not isinstance(raw["physical_test_required"], bool):
             raise ValueError(f"runtime {runtime_id} has invalid physical_test_required")
         host_requirements = _as_strings(raw.get("host_requirements", []), "host_requirements", runtime_id)
+        deployment_class = _as_strings(raw.get("deployment_class", []), "deployment_class", runtime_id)
+        serving_profiles = _as_strings(raw.get("serving_profiles", []), "serving_profiles", runtime_id)
         entry = RuntimeEntry(
             id=runtime_id,
             adapter=raw["adapter"],
@@ -83,6 +87,8 @@ def registry_entries(path: Path = REGISTRY_PATH) -> dict[str, RuntimeEntry]:
             metrics=raw["metrics"],
             physical_test_required=raw["physical_test_required"],
             host_requirements=host_requirements,
+            deployment_class=deployment_class,
+            serving_profiles=serving_profiles,
         )
         entries[entry.id] = entry
         identities[entry.id] = entry.id
@@ -95,7 +101,9 @@ def registry_entries(path: Path = REGISTRY_PATH) -> dict[str, RuntimeEntry]:
 
 def capability_match(entry: RuntimeEntry, *, architecture: str | None = None, model_format: str | None = None,
                       mode: str | None = None, backend: str | None = None,
-                      required_capabilities: set[str] | None = None) -> tuple[bool, list[str]]:
+                      required_capabilities: set[str] | None = None,
+                      deployment_class: str | None = None,
+                      serving_profile: str | None = None) -> tuple[bool, list[str]]:
     reasons: list[str] = []
     if architecture and architecture not in entry.architectures:
         reasons.append(f"architecture unsupported: {architecture}")
@@ -105,6 +113,10 @@ def capability_match(entry: RuntimeEntry, *, architecture: str | None = None, mo
         reasons.append(f"execution mode unsupported: {mode}")
     if backend and backend not in entry.backends:
         reasons.append(f"backend unsupported: {backend}")
+    if deployment_class and deployment_class not in entry.deployment_class:
+        reasons.append(f"deployment class unsupported: {deployment_class}")
+    if serving_profile and serving_profile not in entry.serving_profiles:
+        reasons.append(f"serving profile unsupported: {serving_profile}")
     missing = sorted((required_capabilities or set()) - set(entry.capabilities))
     if missing:
         reasons.append("missing capabilities: " + ", ".join(missing))
