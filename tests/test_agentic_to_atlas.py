@@ -7,6 +7,7 @@ def test_measured_agentic_result_becomes_atlas_feed_record():
             "evidence_type": "measured",
             "execution_id": "run-a01-1",
             "measured_at": "2026-08-21T00:00:00+00:00",
+            "measurement_kind": "real",
         },
         "model": {"name": "demo", "revision": "r1"},
         "hardware": {"profile": "H1"},
