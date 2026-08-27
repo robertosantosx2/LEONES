@@ -55,8 +55,8 @@ def _legacy_class(value: str | None) -> str:
 def recommend(rows: list[dict[str, str]], *legacy_args, workload: str | None = None,
               hardware: str | None = None, ram: float | None = None, vram: float = 0,
               context: int = 4096, top_n: int = 10, llmfit: dict | None = None,
-              require_llmfit_fit: bool = False):
-    """Use the canonical selector; legacy positional mode is read-only."""
+              require_llmfit_fit: bool = False, required_runtime: str | None = None):
+    """Use the canonical selector; runtime must be selected before model evaluation."""
     if legacy_args:
         # Historical callers: (economic_rows, workload, hardware, ram, vram, context[, top_n]).
         if len(legacy_args) == 6:
@@ -68,7 +68,8 @@ def recommend(rows: list[dict[str, str]], *legacy_args, workload: str | None = N
             raise TypeError("legacy recommend signature requires 6 or 7 positional arguments")
         result = select(rows, workload=workload, hardware=hardware, ram_gb=ram,
                         vram_gb=vram, context_tokens=context, top_n=top_n,
-                        llmfit=llmfit, require_llmfit_fit=require_llmfit_fit)
+                        llmfit=llmfit, require_llmfit_fit=require_llmfit_fit,
+                        required_runtime=required_runtime)
         source_by_id = {(r.get("model_id") or r.get("model_name")): r for r in rows}
         return [
             (item.get("rank"), item.get("model_id"), item.get("model_name"),
@@ -76,11 +77,12 @@ def recommend(rows: list[dict[str, str]], *legacy_args, workload: str | None = N
              _legacy_class(source_by_id.get(item.get("model_id"), {}).get("tokens_per_second")))
             for item in result["candidates"][:top_n]
         ]
-    if None in (workload, hardware, ram):
-        raise TypeError("workload, hardware and ram are required")
+    if None in (workload, hardware, ram, required_runtime):
+        raise TypeError("workload, hardware, ram and required_runtime are required")
     return select(rows, workload=workload, hardware=hardware, ram_gb=ram,
                   vram_gb=vram, context_tokens=context, top_n=top_n,
-                  llmfit=llmfit, require_llmfit_fit=require_llmfit_fit)
+                  llmfit=llmfit, require_llmfit_fit=require_llmfit_fit,
+                  required_runtime=required_runtime)
 
 
 def write_legacy_csv(result: dict, source_rows: list[dict[str, str]], output: Path) -> None:
@@ -108,6 +110,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workload", required=True); parser.add_argument("--hardware", required=True)
     parser.add_argument("--ram", type=float, required=True); parser.add_argument("--vram", type=float, default=0)
+    parser.add_argument("--runtime", required=True)
     parser.add_argument("--context", type=int, default=4096); parser.add_argument("--top-n", type=int, default=10)
     parser.add_argument("--feed", type=Path, default=DEFAULT_FEED); parser.add_argument("--llmfit", type=Path)
     parser.add_argument("--require-llmfit-fit", action="store_true"); parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
@@ -117,7 +120,7 @@ def main() -> int:
     llmfit = json.loads(args.llmfit.read_text(encoding="utf-8")) if args.llmfit else None
     result = recommend(rows, workload=args.workload, hardware=args.hardware, ram=args.ram,
                        vram=args.vram, context=args.context, top_n=args.top_n, llmfit=llmfit,
-                       require_llmfit_fit=args.require_llmfit_fit)
+                       require_llmfit_fit=args.require_llmfit_fit, required_runtime=args.runtime)
     write_legacy_csv(result, rows, args.out)
     print(f"eligible={result['counts']['eligible']} top_n={result['counts']['top_n']} rejected={result['counts']['rejected']} -> {args.out}")
     return 0
