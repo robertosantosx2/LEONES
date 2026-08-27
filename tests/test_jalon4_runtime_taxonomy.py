@@ -4,12 +4,17 @@ from pathlib import Path
 from scripts.runtime_registry import capability_match, registry_entries
 
 
+OPERATIONAL = {"llama.cpp", "FreeToken", "AirLLM", "ollama", "vLLM", "SGLang"}
+ARCHIVED = {"MLX/MLX-LM", "ExLlama", "OpenVINO", "ONNX Runtime GenAI", "TensorRT-LLM"}
+
+
 def test_registry_has_complete_deployment_taxonomy():
     data = json.loads(Path("runtime_registry.v1.1.json").read_text(encoding="utf-8"))
     allowed = set(data["taxonomy"]["deployment_class"])
     profiles = set(data["taxonomy"]["serving_profile"])
     entries = registry_entries()
-    assert len(entries) == 11
+    assert set(entries) == OPERATIONAL
+    assert ARCHIVED.isdisjoint(entries)
     for entry in entries.values():
         assert entry.deployment_class
         assert set(entry.deployment_class) <= allowed
