@@ -1,0 +1,138 @@
+{
+  "contract": "runtime-registry.v1.1",
+  "runtimes": [
+    {
+      "runtime_id": "llama.cpp",
+      "display_name": "llama.cpp",
+      "version_policy": {"mode": "minimum", "version": "0.0.0"},
+      "adapter_id": "llama_cpp",
+      "entrypoint_ref": "trusted://llama_cpp/default",
+      "availability": {"status": "unknown", "probe": "adapter_probe"},
+      "execution_modes": ["cpu", "gpu", "hybrid"],
+      "architectures": ["llama", "qwen", "mistral", "gemma", "phi", "generic"] ,
+      "formats": ["gguf"],
+      "hardware": {
+        "accelerators": ["cpu", "cuda", "metal", "vulkan", "rocm"],
+        "memory": {"unit": "GB", "minimum_gb": 1},
+        "bandwidth": {"required": false},
+        "backends": ["cpu", "cuda", "metal", "vulkan", "rocm"]
+      },
+      "capabilities": {
+        "batching": true,
+        "kv_cache": true,
+        "speculative_decoding": true,
+        "multimodal": false,
+        "concurrency": true,
+        "streaming": true
+      },
+      "metrics": {
+        "source": "stdout",
+        "required_fields": ["tokens_generated", "elapsed_seconds", "tokens_per_second"]
+      },
+      "measurement_policy": {
+        "estimated_tps_allowed": true,
+        "measured_tps_requires_benchmark": true
+      }
+    },
+    {
+      "runtime_id": "ollama",
+      "display_name": "Ollama",
+      "version_policy": {"mode": "host_discovered"},
+      "adapter_id": "ollama_a01",
+      "entrypoint_ref": "trusted://ollama/a01",
+      "availability": {"status": "unknown", "probe": "adapter_probe"},
+      "execution_modes": ["cpu", "gpu", "hybrid", "serving"],
+      "architectures": ["llama", "qwen", "mistral", "gemma", "phi", "generic"],
+      "formats": ["ollama-native", "gguf"],
+      "hardware": {
+        "accelerators": ["cpu", "cuda", "metal", "rocm"],
+        "memory": {"unit": "GB", "minimum_gb": 1},
+        "bandwidth": {"required": false},
+        "backends": ["cpu", "cuda", "metal", "rocm"]
+      },
+      "capabilities": {
+        "batching": true,
+        "kv_cache": true,
+        "speculative_decoding": false,
+        "multimodal": true,
+        "concurrency": true,
+        "streaming": true
+      },
+      "metrics": {
+        "source": "adapter",
+        "required_fields": ["tokens_generated", "elapsed_seconds", "tokens_per_second"]
+      },
+      "measurement_policy": {
+        "estimated_tps_allowed": true,
+        "measured_tps_requires_benchmark": true
+      }
+    },
+    {
+      "runtime_id": "freetoken",
+      "display_name": "FreeToken",
+      "version_policy": {"mode": "host_discovered"},
+      "adapter_id": "freetoken",
+      "entrypoint_ref": "trusted://freetoken/default",
+      "availability": {"status": "unknown", "probe": "adapter_probe"},
+      "execution_modes": ["gpu", "hybrid"],
+      "architectures": ["generic"],
+      "formats": ["runtime-native"],
+      "hardware": {
+        "accelerators": ["cuda"],
+        "memory": {"unit": "GB", "minimum_gb": 1},
+        "bandwidth": {"required": true},
+        "backends": ["cuda"]
+      },
+      "capabilities": {
+        "batching": true,
+        "kv_cache": true,
+        "speculative_decoding": true,
+        "multimodal": false,
+        "concurrency": true,
+        "streaming": true
+      },
+      "metrics": {
+        "source": "adapter",
+        "required_fields": ["tokens_generated", "elapsed_seconds", "tokens_per_second"]
+      },
+      "measurement_policy": {
+        "estimated_tps_allowed": true,
+        "measured_tps_requires_benchmark": true
+      },
+      "eligibility_gate": "freetoken_gate"
+    },
+    {
+      "runtime_id": "airllm",
+      "display_name": "AirLLM",
+      "version_policy": {"mode": "host_discovered"},
+      "adapter_id": "airllm",
+      "entrypoint_ref": "trusted://airllm/default",
+      "availability": {"status": "unknown", "probe": "adapter_probe"},
+      "execution_modes": ["cpu", "gpu", "hybrid"],
+      "architectures": ["llama", "qwen", "mistral", "generic"],
+      "formats": ["transformers", "safetensors", "runtime-native"],
+      "hardware": {
+        "accelerators": ["cpu", "cuda"],
+        "memory": {"unit": "GB", "minimum_gb": 1},
+        "bandwidth": {"required": true},
+        "backends": ["cpu", "cuda"]
+      },
+      "capabilities": {
+        "batching": false,
+        "kv_cache": true,
+        "speculative_decoding": false,
+        "multimodal": false,
+        "concurrency": false,
+        "streaming": true
+      },
+      "metrics": {
+        "source": "adapter",
+        "required_fields": ["tokens_generated", "elapsed_seconds", "tokens_per_second"]
+      },
+      "measurement_policy": {
+        "estimated_tps_allowed": true,
+        "measured_tps_requires_benchmark": true
+      }
+    }
+  ]
+}
