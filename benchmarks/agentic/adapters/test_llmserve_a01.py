@@ -1,6 +1,13 @@
 from pathlib import Path
+import sys
 
 import pytest
+
+# This test lives below the repository root. Ensure package imports remain
+# stable when pytest places the test directory ahead of the repo root.
+REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from llmserve_a01 import build_a01_result
 
