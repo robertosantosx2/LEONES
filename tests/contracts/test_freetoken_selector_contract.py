@@ -23,6 +23,7 @@ def freetoken_candidate(**extra):
         "rank": 1,
         "fit_score": 0.9,
         "evidence_level": "T3",
+        "optimization_families": [],
         "model": {"total_params_b": 32, "quantized_weight_gb": 18},
         "moe": {"is_moe": True},
         "workload": {"agentic": True},
