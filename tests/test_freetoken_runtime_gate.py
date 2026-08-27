@@ -8,6 +8,7 @@ def candidate():
         "runtime": "FreeToken",
         "quantization": "NVFP4",
         "selection_status": "BENCHMARK_REQUIRED",
+        "optimization_families": [],
         "model": {
             "id": "qwen/qwen3.6-35b-a3b",
             "name": "Qwen3.6-35B-A3B",
