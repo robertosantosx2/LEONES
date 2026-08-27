@@ -3,8 +3,7 @@ import sys
 import time
 from pathlib import Path
 
-from scripts.runtime_benchmark_evidence import now, run_once, sha256_file, sha256_text, summarize
-
+from scripts.runtime_benchmark_evidence import TIMEOUT_EXIT_CODE, now, run_once, sha256_file, sha256_text, summarize
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schemas/runtime-benchmark-evidence.v1.1.json"
 
@@ -33,6 +32,21 @@ def test_output_tokens_are_not_invented_from_stderr_or_tps():
     result = run_once([sys.executable, "-c", code])
     assert result["tokens_per_second"] == 20
     assert result["output_tokens"] is None
+
+
+def test_timeout_terminates_hanging_process_group():
+    code = "import time; time.sleep(10)"
+    started = time.perf_counter()
+    result = run_once([sys.executable, "-c", code], timeout=0.05)
+    elapsed = time.perf_counter() - started
+    assert result["exit_code"] == TIMEOUT_EXIT_CODE
+    assert "process timeout" in result["stderr"]
+    assert elapsed < 2
+
+
+def test_timeout_must_be_positive():
+    with __import__("pytest").raises(ValueError, match="positive"):
+        run_once([sys.executable, "-c", "print('x')"], timeout=0)
 
 
 def test_summary_is_deterministic():
