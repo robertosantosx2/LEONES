@@ -2,9 +2,9 @@ name: JALON 4 runtime taxonomy
 
 on:
   push:
-    branches: [jalon4-runtime-taxonomy-selection-v1]
+    branches: [jalon4-runtime-selection-v1]
   pull_request:
-    branches: [main, jalon4-runtime-taxonomy-selection-v1]
+    branches: [main, jalon4-runtime-selection-v1]
 
 jobs:
   taxonomy:
@@ -26,9 +26,10 @@ jobs:
               json.loads(p.read_text(encoding='utf-8'))
               print('VALID', p)
           entries = registry_entries()
-          assert len(entries) == 11
+          assert len(entries) == 6
+          assert set(entries) == {'llama.cpp', 'FreeToken', 'AirLLM', 'ollama', 'vLLM', 'SGLang'}
           assert all(e.deployment_class and e.serving_profiles for e in entries.values())
-          print('VALID runtime taxonomy:', len(entries))
+          print('VALID operational runtime taxonomy:', len(entries))
           PY
       - name: Run JALON 4 tests
         run: python -m pytest tests/test_jalon4_runtime_taxonomy.py -q
