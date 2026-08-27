@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from scripts.runtime_benchmark_evidence import run_once, sha256_file, summary
+from scripts.runtime_benchmark_evidence import run_once, sha256_file, summarize
 
 
 def test_run_once_captures_output_and_timing():
@@ -24,12 +24,14 @@ def test_summary_contains_median_and_stdev():
         {"ttft_ms": 10, "generation_time_ms": 100, "tokens_per_second": 10, "total_time_ms": 110, "peak_memory_mb": 100, "peak_vram_mb": None, "power_w": None},
         {"ttft_ms": 20, "generation_time_ms": 120, "tokens_per_second": 12, "total_time_ms": 140, "peak_memory_mb": 110, "peak_vram_mb": None, "power_w": None},
     ]
-    out = summary(measurements)
-    assert out["tokens_per_second"]["median"] == 11
-    assert "stdev" in out["ttft_ms"]
+    out = summarize(measurements)
+    assert isinstance(out, dict)
+    assert out["measurement_count"] == 2
+    assert out["metrics"]["tokens_per_second"]["median"] == 11
+    assert "stdev" in out["metrics"]["ttft_ms"]
 
 
 def test_schema_example_is_json():
     schema = Path("schemas/runtime-benchmark-evidence.v1.1.json")
     payload = json.loads(schema.read_text(encoding="utf-8"))
-    assert payload["$id"] == "runtime-benchmark-evidence.v1.1"
+    assert payload["$id"] == "https://leones.local/schemas/runtime-benchmark-evidence.v1.1.schema.json"
