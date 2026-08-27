@@ -7,6 +7,36 @@
 
 ---
 
+## 🟢 Estado V1
+
+**La cadena A01 está integrada y validada.** LEONES ya puede recorrer el camino completo desde una selección de modelo hasta un runtime real, ejecutar una tarea agentiva, validar su trayectoria y conservar la medición devuelta por el runtime.
+
+```text
+selector
+  → runtime-selection.v1
+  → execution plan autorizado
+  → Ollama
+  → modelo real
+  → A01
+  → tools
+  → grader
+  → runtime-benchmark.v1
+  → evidencia medida
+```
+
+La prueba real realizada con Ollama `0.33.1` y `qwen2.5:0.5b-instruct-q4_K_M` produjo **47.9803 tok/s**, `2.345202 s` de tiempo de pared y `A01 score = 1.0`. Esta cifra es una medición de esa ejecución, no una afirmación universal sobre el modelo o el hardware.
+
+Los tres gates asociados a la corrección de la integración quedaron verdes: **Agentic A01 contract**, **LEONES Contract Tests** y **LEONES V1 Complete Gate**.
+
+### Documentación de referencia
+
+- [V1 — A01 con runtime real](docs/V1-A01-REAL-RUNTIME.md): recorrido técnico, evidencia, metodología y límites.
+- [V1 — Limpieza, fijación y conservación de evidencia](docs/V1-CLEAN-ROOM.md): política para separar código, estado local, fixtures y evidencia.
+- [PIPELINE_E2E.md](PIPELINE_E2E.md): descripción integral del pipeline.
+- [CONTRIBUTING.md](CONTRIBUTING.md): contrato para contribuir sin romper procedencia, contratos o CI.
+
+---
+
 # 📖 Qué es LEONES
 
 LEONES es un ecosistema abierto para responder una pregunta concreta: **qué modelo, runtime, hardware y configuración permiten ejecutar una tarea real de IA de forma razonable, reproducible, abierta y económicamente sostenible**.
@@ -250,76 +280,6 @@ Documentación general: [`docs/PILLARS.md`](docs/PILLARS.md) · [`docs/ARCHITECT
 
 **Objetivo.** Utilizar harnesses especializados como referencia de ejecución/evaluación y mantener separada la infraestructura de agente de la base de evidencia de LEONES.
 
-**Metodología.** Cada harness se integra como adaptador: tarea definida → entorno aislado → permisos explícitos → ejecución → trazas → resultado → benchmark. La selección de harness no modifica los hechos del Atlas.
+**Metodología.** Cada harness se integra como adaptador: tarea definida → entorno aislado → permisos explícitos → ejecución → trazabilidad → grading → evidencia. Un harness externo es una fuente técnica o un componente de integración, no una autoridad automática sobre el catálogo LEONES.
 
-Los harnesses de referencia del proyecto son **Hermes, DeepSeek Harness y Buddy**, junto con la integración de **Magnitude** como asistente de coding y **ODS** como servidor de stacks IA.
-
-## 14. ODS — servidor de stacks IA
-
-**Motivación.** Muchos usuarios necesitan algo más que un modelo: necesitan inferencia, UI, RAG, agentes, voz, imagen, workflows y otras piezas del stack.
-
-**Objetivo.** Investigar ODS como referencia para la composición y despliegue de stacks locales, manteniendo separada su función de la evidencia propia de LEONES.
-
-**Metodología.** Estudiar capacidades → identificar componentes reutilizables → documentar evidencia → integrar mediante adaptadores → medir cuando proceda.
-
-Documentación: [`docs/subprojects/ods/`](docs/subprojects/ods/).
-
-## 15. Magnitude
-
-**Motivación.** La selección de modelo y runtime necesita considerar el hardware disponible y las condiciones reales de ejecución.
-
-**Objetivo.** Estudiar Magnitude como fuente de conocimiento y posible componente auxiliar para perfilado, estimación y ejecución.
-
-**Metodología.** Analizar hardware → modelos → cuantización → runtime → configuración → rendimiento → conservar la procedencia y separar las cifras externas de las mediciones LEONES.
-
-Documentación: [`docs/subprojects/magnitude/`](docs/subprojects/magnitude/).
-
-## 16. FreeToken y otras fuentes de conocimiento
-
-LEONES incorpora proyectos externos como **fuentes de conocimiento, evidencia e inspiración**, no como hechos propios. Cada ficha debe explicar qué es el proyecto, para qué sirve, qué aporta a LEONES, qué evidencia existe y qué parte está pendiente de verificación o medición.
-
-La incorporación de una fuente externa **no promociona automáticamente sus resultados a mediciones LEONES**.
-
----
-
-# 🔬 Principio de evidencia
-
-Toda afirmación relevante debe conservar su procedencia. LEONES distingue entre:
-
-```text
-FUENTE
-  ↓
-EVIDENCIA
-  ↓
-ESTIMACIÓN / OBSERVACIÓN / REPORTE
-  ↓
-MEDICIÓN LEONES
-  ↓
-VERIFICACIÓN
-  ↓
-CONOCIMIENTO PUBLICABLE
-```
-
-No se deben mezclar estas capas para producir una cifra aparentemente más precisa de lo que realmente está demostrado.
-
----
-
-# 🧪 Calidad y reproducibilidad
-
-Los cambios que afectan a código, contratos, esquemas, selección de runtimes, ejecución, benchmarks o datos deben acompañarse de las pruebas y evidencias correspondientes.
-
-La CI es parte del contrato del proyecto. Un cambio no se considera terminado únicamente porque funcione en el entorno del desarrollador: debe mantener los consumidores, contratos y rutas de integración relevantes.
-
-Para contribuir, consulta **[CONTRIBUTING.md](CONTRIBUTING.md)**.
-
----
-
-# 📚 Documentación
-
-La documentación técnica se encuentra principalmente bajo [`docs/`](docs/), mientras que el conocimiento publicable se integra en la web de LEONES. Las fuentes externas deben conservar su identidad y procedencia y no deben confundirse con evidencia generada por LEONES.
-
----
-
-# 📜 Licencia
-
-Consulta los ficheros de licencia del repositorio y la documentación específica de cada subproyecto o fuente externa. Las licencias de terceros no deben interpretarse como licencia de LEONES.
+Documentación: [`docs/subprojects/`](docs/subprojects/).
