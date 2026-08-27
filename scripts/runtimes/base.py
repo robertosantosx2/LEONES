@@ -28,13 +28,18 @@ class RuntimeAdapter:
     def validate(self, plan: dict[str, Any], entry: RuntimeEntry) -> None:
         runtime_value = plan.get("runtime")
         selected_runtime = runtime_value.get("name") if isinstance(runtime_value, dict) else runtime_value
+        selected_adapter = runtime_value.get("adapter") if isinstance(runtime_value, dict) else None
         if selected_runtime != self.runtime_id:
             raise ValueError(f"runtime mismatch for {self.adapter_id}")
+        if selected_adapter is not None and selected_adapter != self.adapter_id:
+            raise ValueError(f"adapter mismatch for {self.runtime_id}")
         if not plan.get("model_id"):
             raise ValueError("runtime plan has no model identity")
         if not plan.get("quantization"):
             raise ValueError("runtime plan has no quantization")
         validate_entrypoint(entry)
+        if entry.id != self.runtime_id:
+            raise ValueError(f"registry runtime mismatch for {self.runtime_id}")
         if entry.adapter != self.adapter_id:
             raise ValueError(f"registry adapter mismatch for {self.runtime_id}")
         ok, reasons = capability_match(
