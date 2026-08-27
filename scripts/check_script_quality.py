@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Comprueba reglas sencillas de legibilidad para los scripts de LEONES.
+"""Revisa la legibilidad básica de los scripts de LEONES.
 
-No modifica archivos. Solo detecta problemas fáciles de corregir antes de aceptar
-un script nuevo o modificado.
+No modifica archivos. Por defecto informa de problemas para poder limpiar el
+proyecto poco a poco. Con ``--strict`` devuelve error si encuentra alguno.
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ MAX_LINE_LENGTH = 100
 
 
 def python_files(directory: Path) -> list[Path]:
-    """Devuelve los scripts Python, sin revisar cachés ni submódulos vendorizados."""
+    """Devuelve scripts propios, ignorando cachés y código de terceros."""
     return sorted(
         path
         for path in directory.rglob("*.py")
@@ -26,7 +26,7 @@ def python_files(directory: Path) -> list[Path]:
 
 
 def check_file(path: Path) -> list[str]:
-    """Devuelve avisos comprensibles para un único script."""
+    """Devuelve avisos sencillos para un script."""
     lines = path.read_text(encoding="utf-8").splitlines()
     problems: list[str] = []
 
@@ -46,9 +46,14 @@ def check_file(path: Path) -> list[str]:
 
 
 def main() -> int:
-    """Revisa los scripts y devuelve 1 si encuentra incumplimientos."""
+    """Audita scripts y aplica el resultado solo si se solicita ``--strict``."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", nargs="?", type=Path, default=DEFAULT_DIR)
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="termina con error si encuentra incumplimientos",
+    )
     args = parser.parse_args()
 
     failures = 0
@@ -63,7 +68,7 @@ def main() -> int:
 
     if failures:
         print(f"\n{failures} avisos de calidad de scripts.")
-        return 1
+        return 1 if args.strict else 0
 
     print("OK: todos los scripts cumplen las comprobaciones básicas.")
     return 0
