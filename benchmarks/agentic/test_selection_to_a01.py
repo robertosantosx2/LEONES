@@ -40,6 +40,12 @@ def _runtime_code() -> str:
     )
 
 
+def _clean_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    return env
+
+
 def test_selector_to_a01_measured_evidence(tmp_path: Path) -> None:
     result = run_selected(
         _selection(),
@@ -83,6 +89,46 @@ def test_runtime_gate_blocks_untrusted_selection() -> None:
     assert result["execution_plans"][0]["runtime"]["command"] is None
 
 
+def test_direct_a01_selector_cli_without_pythonpath(tmp_path: Path) -> None:
+    """The selector CLI itself must work from a clean Debian/CI shell."""
+    root = Path(__file__).resolve().parents[2]
+    selection_file = tmp_path / "selection.json"
+    commands_file = tmp_path / "runtime-commands.json"
+    output_file = tmp_path / "executor-result.json"
+    workspace = tmp_path / "workspace"
+    selection_file.write_text(json.dumps(_selection()), encoding="utf-8")
+    commands_file.write_text(
+        json.dumps({"fixture-runtime": [sys.executable, "-c", _runtime_code()]}),
+        encoding="utf-8",
+    )
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_a01_selected.py",
+            "--selection",
+            str(selection_file),
+            "--runtime-commands",
+            str(commands_file),
+            "--workspace",
+            str(workspace),
+            "--out",
+            str(output_file),
+        ],
+        cwd=root,
+        env=_clean_env(),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "ModuleNotFoundError" not in proc.stderr
+    payload = json.loads(output_file.read_text(encoding="utf-8"))
+    assert payload["agentic"]["outcome"]["status"] == "success"
+    assert payload["agentic"]["grader"]["status"] == "passed"
+    assert (workspace / "report.txt").read_text(encoding="utf-8") == "Model: Beta\n"
+
+
 def test_canonical_a01_benchmark_reaches_router_without_pythonpath(tmp_path: Path) -> None:
     """Prove the complete V1 CLI path from a clean environment, through Router."""
     root = Path(__file__).resolve().parents[2]
@@ -95,9 +141,6 @@ def test_canonical_a01_benchmark_reaches_router_without_pythonpath(tmp_path: Pat
         encoding="utf-8",
     )
 
-    # Reproduce a normal Debian/CI invocation: no PYTHONPATH=. workaround.
-    env = os.environ.copy()
-    env.pop("PYTHONPATH", None)
     proc = subprocess.run(
         [
             sys.executable,
@@ -112,7 +155,7 @@ def test_canonical_a01_benchmark_reaches_router_without_pythonpath(tmp_path: Pat
             str(output_file),
         ],
         cwd=root,
-        env=env,
+        env=_clean_env(),
         text=True,
         capture_output=True,
         check=False,
