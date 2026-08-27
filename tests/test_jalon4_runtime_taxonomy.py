@@ -9,7 +9,7 @@ def test_registry_has_complete_deployment_taxonomy():
     allowed = set(data["taxonomy"]["deployment_class"])
     profiles = set(data["taxonomy"]["serving_profile"])
     entries = registry_entries()
-    assert len(entries) == 12
+    assert len(entries) == 11
     assert list(entries) == [
         "llama.cpp", "FreeToken", "AirLLM", "ollama", "vLLM", "SGLang",
         "MLX/MLX-LM", "ExLlama", "OpenVINO", "ONNX Runtime GenAI", "TensorRT-LLM",
