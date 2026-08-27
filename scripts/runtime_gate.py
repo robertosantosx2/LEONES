@@ -30,26 +30,23 @@ def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] |
     if trusted_override is not None and (not trusted_override or not all(isinstance(x, str) for x in trusted_override)):
         raise ValueError(f"invalid trusted command for runtime: {runtime_name}")
     entrypoint = trusted_override if trusted_override is not None else list(entry.entrypoint["argv"])
-    # An adapter-controlled runtime has passed selection validation but is not yet executable.
-    execution_authorized = bool(entrypoint)
+    # Adapter-controlled runtimes remain un-authorized until a real runner is bound.
+    execution_authorized = entry.entrypoint["kind"] != "adapter-controlled" and bool(entrypoint)
 
     hw = dict(hardware or {})
     hw.update(candidate.get("hardware") or {})
     model = candidate.get("model") or {}
-    runtime_plan = {
-        "schema_version": SCHEMA_VERSION, "model_id": model_id, "model": model,
+    runtime_plan = {"schema_version": SCHEMA_VERSION, "model_id": model_id, "model": model,
         "runtime": {"name": entry.id, "version": candidate.get("runtime_version")}, "quantization": quantization,
         "model_format": candidate.get("model_format"),
         "architecture_class": "moe" if (candidate.get("moe") or {}).get("is_moe") else "dense",
         "execution_mode": candidate.get("execution_mode"), "backend": candidate.get("backend"),
         "required_capabilities": candidate.get("required_capabilities") or [], "hardware": hw,
         "workload": candidate.get("workload") or {}, "moe": candidate.get("moe") or {},
-        "execution_authorized": execution_authorized,
-    }
+        "execution_authorized": execution_authorized}
     spec = adapter.prepare(runtime_plan, entry)
     llmfit = candidate.get("llmfit") or {}
-    plan = {
-        "schema_version": SCHEMA_VERSION, "category": candidate.get("category"),
+    plan = {"schema_version": SCHEMA_VERSION, "category": candidate.get("category"),
         "architecture_class": runtime_plan["architecture_class"],
         "parameters": {"total_parameters_m": model.get("total_params_m"), "active_parameters_m": model.get("active_params_m"),
                        "selection_basis": candidate.get("parameter_selection_basis")},
@@ -65,9 +62,7 @@ def resolve_runtime(candidate: dict[str, Any], *, available_runtimes: set[str] |
         "workload": candidate.get("workload") or {}, "selection_status": status, "selection_rank": candidate.get("rank"),
         "fit_score": candidate.get("fit_score"), "evidence_level": candidate.get("evidence_level"),
         "execution_authorized": execution_authorized, "measurement_required": True,
-        "benchmark_probe": status == "BENCHMARK_REQUIRED", "estimated_tps": llmfit.get("estimated_tps"), "measured_tps": None,
-    }
-    # Adapter metadata is carried generically; the selector never branches on runtime identity.
+        "benchmark_probe": status == "BENCHMARK_REQUIRED", "estimated_tps": llmfit.get("estimated_tps"), "measured_tps": None}
     plan.update({key: value for key, value in spec.metadata.items() if key == "runtime_eligibility"})
     return plan
 
@@ -77,10 +72,8 @@ def gate_selection(selection: dict[str, Any], *, available_runtimes: set[str] | 
                    hardware: dict[str, Any] | None = None) -> dict[str, Any]:
     plans, blocked = [], []
     for candidate in selection.get("candidates", []):
-        try:
-            plans.append(resolve_runtime(candidate, available_runtimes=available_runtimes, runtime_commands=runtime_commands, hardware=hardware))
-        except ValueError as exc:
-            blocked.append({"model_id": candidate.get("model_id") or candidate.get("model_name"),
-                            "selection_status": candidate.get("selection_status"), "reason": str(exc)})
+        try: plans.append(resolve_runtime(candidate, available_runtimes=available_runtimes, runtime_commands=runtime_commands, hardware=hardware))
+        except ValueError as exc: blocked.append({"model_id": candidate.get("model_id") or candidate.get("model_name"),
+                                                  "selection_status": candidate.get("selection_status"), "reason": str(exc)})
     return {"schema_version": SCHEMA_VERSION, "gate": "LEONES-runtime-selection-gate", "execution_plans": plans,
             "blocked": blocked, "counts": {"plans": len(plans), "blocked": len(blocked)}}
