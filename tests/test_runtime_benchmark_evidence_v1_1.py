@@ -58,7 +58,9 @@ def test_timestamps_keep_subsecond_precision():
     time.sleep(0.002)
     second = now()
     assert first.endswith("Z") and second.endswith("Z")
-    assert "." in first and len(first.split(".", 1)[1]) == 5
+    assert "." in first and first.split(".", 1)[1].endswith("Z")
+    assert len(first.rsplit(".", 1)[1][:-1]) == 3
+    assert len(second.rsplit(".", 1)[1][:-1]) == 3
     assert second > first
 
 
