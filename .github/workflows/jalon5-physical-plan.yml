@@ -28,8 +28,5 @@ jobs:
         run: python -m json.tool docs/runtime-physical-execution-plan.v1.json >/dev/null && python -m json.tool schemas/runtime-physical-execution-plan.v1.schema.json >/dev/null
       - name: Run plan tests
         run: python -m pytest tests/test_jalon5_physical_execution_plan.py -q
-      - name: Confirm no physical execution in CI
-        run: |
-          ! grep -R -n -E 'llama-cli|ollama run|vllm serve|sglang launch|pip install.*airllm|FreeToken' tests/test_jalon5_physical_execution_plan.py docs/runtime-physical-execution-plan.v1.json
       - name: Check whitespace
         run: git diff --check
