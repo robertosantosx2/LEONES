@@ -15,7 +15,11 @@ jobs:
           python-version: '3.12'
       - name: Install test runner
         run: python -m pip install --upgrade pytest
+      - name: Full repository regression
+        run: python -m pytest tests -q
       - name: Runtime V1.1 contract regression
         run: python -m pytest tests/contracts/test_runtime_registry_v11.py tests/test_runtime_gate.py -q
       - name: Syntax check
         run: python -m compileall -q scripts/runtime_registry.py scripts/runtime_gate.py scripts/runtime_benchmark_v1.py scripts/runtime_evidence_bridge.py scripts/runtimes
+      - name: Diff hygiene
+        run: git diff --check
