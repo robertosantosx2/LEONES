@@ -2,6 +2,20 @@
 
 Los scripts son la interfaz local mínima entre una persona y LEONES. Cada herramienta responde a una pregunta concreta y hace una sola cosa.
 
+## Norma de simplicidad
+
+La regla obligatoria es: **mínimo código necesario, máxima claridad**.
+
+El contrato completo está en [`../docs/SCRIPT_STYLE_CONTRACT.md`](../docs/SCRIPT_STYLE_CONTRACT.md). En resumen, todo script nuevo o modificado debe tener una responsabilidad clara, una interfaz comprensible, un docstring inicial, comentarios que expliquen las decisiones no obvias y ningún trabajo oculto.
+
+La comprobación práctica es:
+
+```bash
+python scripts/check_script_quality.py
+```
+
+Durante la migración histórica el auditor informa sin bloquear. Cuando una familia de scripts haya sido limpiada, puede comprobarse con `--strict`.
+
 ## Documentación por fases
 
 Los scripts que formen parte de una fase importante deben quedar trazados en su paquete documental. El cierre de fase sigue:
