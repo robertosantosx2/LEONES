@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "candidates": [
+    {
+      "model_id": "demo-2",
+      "model_name": "Beta",
+      "runtime": "fixture-runtime",
+      "runtime_version": "fixture-1",
+      "quantization": "fixture",
+      "optimization_families": [],
+      "selection_status": "TOP_N",
+      "rank": 1,
+      "fit_score": 1.0,
+      "evidence_level": "estimated",
+      "llmfit": {
+        "estimated_tps": 10.0
+      }
+    }
+  ]
+}
