@@ -24,7 +24,7 @@ class CanonicalE2EContractTests(unittest.TestCase):
             "is_moe": "true",
             "agentic": "true",
         }
-        selected = select([row], workload="agentic", hardware="contract-cpu", ram_gb=32, top_n=1)
+        selected = select([row], workload="agentic", hardware="contract-cpu", ram_gb=32, top_n=1, required_runtime="FreeToken")
         candidate = selected["candidates"][0]
 
         measured = build_runtime_feedback({
