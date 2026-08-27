@@ -16,6 +16,11 @@ def plan(runtime, **extra):
     return value
 
 
+def benchmark_plan():
+    return {"execution_authorized": True, "runtime": {"name": "vLLM", "adapter": "vllm.v1.1"},
+            "model_id": "org/model", "model": {}, "quantization": "FP8", "hardware": {}, "workload": {}}
+
+
 def test_registry_has_one_common_contract_for_all_v11_runtimes():
     entries = registry_entries()
     assert len(entries) == 11
@@ -57,9 +62,9 @@ def test_capability_match_blocks_incompatible_runtime():
 
 
 def test_benchmark_never_turns_estimate_into_measurement():
-    record = begin({"execution_authorized": True, "runtime": {"name": "vLLM", "adapter": "vllm.v1.1"},
-                    "model_id": "org/model", "model": {}, "quantization": "FP8", "hardware": {},
-                    "workload": {}, "estimated_tps": 123.0})
+    p = benchmark_plan()
+    p["estimated_tps"] = 123.0
+    record = begin(p)
     assert record["measured"] is None
     with pytest.raises(ValueError):
         complete(record, {"estimated_tps": 123.0})
@@ -70,7 +75,7 @@ def test_benchmark_never_turns_estimate_into_measurement():
 
 
 def test_benchmark_rejects_non_numeric_measurements():
-    record = begin(plan("vLLM", quantization="FP8"))
+    record = begin(benchmark_plan())
     with pytest.raises(ValueError):
         complete(record, {"measured_tps": "10.5"})
 
@@ -81,7 +86,7 @@ def test_benchmark_rejects_missing_execution_identity():
 
 
 def test_evidence_rejects_missing_provenance():
-    record = begin(plan("vLLM", quantization="FP8"))
+    record = begin(benchmark_plan())
     completed = complete(record, {"measured_tps": 10.5})
     completed["execution_id"] = None
     with pytest.raises(ValueError):
