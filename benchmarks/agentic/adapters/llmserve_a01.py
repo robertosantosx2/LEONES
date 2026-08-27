@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A01 execution adapter for a trusted LLMServe/llama.cpp-style runtime."""
+"""A01 execution adapter for trusted runtimes."""
 from __future__ import annotations
 
 import json
@@ -21,19 +21,31 @@ def run_runtime(plan: dict[str, Any], prompt: str, *, timeout_seconds: float = 6
     if not isinstance(command, list) or not command or not all(isinstance(x, str) for x in command):
         raise ValueError("runtime.command must be a trusted argv list")
     started = time.monotonic()
-    completed = subprocess.run([*command, prompt], check=False, capture_output=True, text=True,
-                               timeout=timeout_seconds, shell=False)
+    completed = subprocess.run([*command, prompt], check=False, capture_output=True, text=True, timeout=timeout_seconds, shell=False)
     elapsed = time.monotonic() - started
     if completed.returncode != 0:
         raise RuntimeError(f"runtime exited with code {completed.returncode}")
     return completed.stdout, elapsed
 
 
+def runtime_hardware(model_output: str) -> dict[str, Any] | None:
+    """Extract the optional host snapshot emitted by a trusted runtime."""
+    for line in model_output.splitlines():
+        try:
+            value = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        hardware = value.get("leones_runtime_hardware") if isinstance(value, dict) else None
+        if isinstance(hardware, dict):
+            return hardware
+    return None
+
+
 def build_a01_result(plan: dict[str, Any], *, workspace: Path, model_output: str,
                      lookup_model: Callable[[str], dict[str, str]],
                      write_report: Callable[[str, str], str], output_path: str,
                      runtime_seconds: float | None = None) -> dict[str, Any]:
-    """Grade one real model response under A01's strict tool contract."""
+    """Grade one runtime response under A01's strict tool contract."""
     trace = Trace()
     config = RunConfig("LEONES-Agentic", "1.0", "A01", "1.0", max_tool_calls=2)
     trace.add("model", name=plan["model"].get("id"), status="completed")
@@ -60,24 +72,17 @@ def build_a01_result(plan: dict[str, Any], *, workspace: Path, model_output: str
     passed = grader["status"] == "passed"
     trace.add("artifact", name="report.txt", status="verified" if passed else "failed", details={"path": str(artifact_path)})
     trace.add("grader", name=grader["id"], status=grader["status"], details=grader["checks"])
-    measurement = build_measurement(
-        elapsed_seconds=runtime_seconds or 0.0,
-        output=model_output,
-        source=str(plan.get("runtime", {}).get("name") or "trusted-runtime"),
-    ) if runtime_seconds is not None else None
+    measurement = build_measurement(elapsed_seconds=runtime_seconds or 0.0, output=model_output,
+                                     source=str(plan.get("runtime", {}).get("name") or "trusted-runtime")) if runtime_seconds is not None else None
     metrics: dict[str, Any] = {"tool_calls": 2, "tool_errors": 0, "recovery_count": 0}
     if measurement is not None:
-        metrics.update({
-            "runtime_wall_seconds": measurement["wall_seconds"],
-            "measured_tps": measurement["measured_tps"],
-            "measurement_status": measurement["measurement_status"],
-        })
-    return build_result(config, trace, model=plan["model"], hardware=plan["hardware"],
+        metrics.update({"runtime_wall_seconds": measurement["wall_seconds"], "measured_tps": measurement["measured_tps"], "measurement_status": measurement["measurement_status"]})
+    hardware = runtime_hardware(model_output) or plan["hardware"]
+    return build_result(config, trace, model=plan["model"], hardware=hardware,
                         inference=plan.get("inference", {}),
                         outcome={"status": "success" if passed else "failed", "score": grader["score"]},
                         metrics=metrics, runtime=plan["runtime"], scaffold={"name": "runtime-A01"},
-                        environment={"mode": "real-runtime"},
-                        tools=[{"name": "lookup_model"}, {"name": "write_report"}],
+                        environment={"mode": "real-runtime"}, tools=[{"name": "lookup_model"}, {"name": "write_report"}],
                         grader=grader, evidence_type="measured", evidence_source="LEONES-A01-runtime")
 
 
