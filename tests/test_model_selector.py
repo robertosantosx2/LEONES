@@ -36,25 +36,26 @@ class TestModelSelector(unittest.TestCase):
     def test_llmfit_estimate_never_becomes_measurement(self):
         llmfit = {"candidates": [{"model_id": "example/model", "fit_level": "Good", "estimated_tps": 30}]}
         result = select([BASE], workload="general", hardware="Intel i5-1035G1 7GB", ram_gb=7,
-                        llmfit=llmfit, top_n=1)
+                        llmfit=llmfit, top_n=1, required_runtime="llama.cpp")
         item = result["candidates"][0]
         self.assertEqual(item["llmfit"]["estimated_tps"], 30)
         self.assertNotIn("measured_tps", item["llmfit"])
         self.assertTrue(result["selection_policy"]["measured_performance_required_for_final_claim"])
 
     def test_missing_llmfit_marks_top_candidate_for_benchmark(self):
-        result = select([BASE], workload="general", hardware="Intel i5-1035G1 7GB", ram_gb=7, top_n=1)
+        result = select([BASE], workload="general", hardware="Intel i5-1035G1 7GB", ram_gb=7, top_n=1, required_runtime="llama.cpp")
         self.assertEqual(result["candidates"][0]["selection_status"], "BENCHMARK_REQUIRED")
 
     def test_price_cannot_change_score(self):
-        first = select([BASE], workload="general", hardware="Intel i5-1035G1 7GB", ram_gb=7, top_n=1)
+        first = select([BASE], workload="general", hardware="Intel i5-1035G1 7GB", ram_gb=7, top_n=1, required_runtime="llama.cpp")
         altered = dict(BASE, hardware_price_eur="999999")
-        second = select([altered], workload="general", hardware="Intel i5-1035G1 7GB", ram_gb=7, top_n=1)
+        second = select([altered], workload="general", hardware="Intel i5-1035G1 7GB", ram_gb=7, top_n=1, required_runtime="llama.cpp")
         self.assertEqual(first["candidates"][0]["fit_score"], second["candidates"][0]["fit_score"])
 
     def test_rejections_are_explainable_and_states_are_closed(self):
         result = select([dict(BASE, model_id="bad", technical_profile_level="unknown")],
-                        workload="general", hardware="Intel i5-1035G1 7GB", ram_gb=7)
+                        workload="general", hardware="Intel i5-1035G1 7GB", ram_gb=7,
+                        required_runtime="llama.cpp")
         self.assertEqual(result["rejected"][0]["selection_status"], "REJECTED")
         self.assertTrue(result["rejected"][0]["reasons"])
         self.assertIn(result["rejected"][0]["selection_status"], SELECTION_STATES)
