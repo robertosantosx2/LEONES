@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "evidence_type": "measured",
+  "measurement_kind": "real",
+  "status": "reported",
+  "execution_id": "ba58d9dd-15ac-4a43-88d2-2aaf537efe5e",
+  "measured_at": "2026-08-27T06:02:24.821349+00:00",
+  "model": "qwen2.5:0.5b-instruct-q4_K_M",
+  "runtime": "ollama",
+  "runtime_version": "0.33.1",
+  "task": "A01",
+  "measured_tps": 51.5798,
+  "measurement_status": "reported_by_runtime",
+  "tool_calls": 2,
+  "tool_errors": 0,
+  "outcome": "success",
+  "grader": {
+    "id": "A01-grader",
+    "version": "1.1",
+    "status": "passed",
+    "score": 1.0
+  },
+  "runtime_selection": {
+    "execution_authorized": true,
+    "measurement_required": true,
+    "selection_rank": 1
+  },
+  "source_artifact": "artifacts/h10-a01-runtime-selection-result.json",
+  "source_artifact_sha256": "6c99e6bd6c02c5d5d6062c731c4a30cbf380280791259fca93174db411c7d45d"
+}
