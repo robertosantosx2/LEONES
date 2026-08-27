@@ -9,7 +9,7 @@ def test_registry_has_complete_deployment_taxonomy():
     allowed = set(data["taxonomy"]["deployment_class"])
     profiles = set(data["taxonomy"]["serving_profile"])
     entries = registry_entries()
-    assert len(entries) == 10
+    assert len(entries) == 11
     for entry in entries.values():
         assert entry.deployment_class
         assert set(entry.deployment_class) <= allowed
@@ -19,7 +19,7 @@ def test_registry_has_complete_deployment_taxonomy():
 
 def test_cpudatacenter_profile_filters_out_local_runtimes():
     entries = registry_entries()
-    ok, reasons = capability_match(entries["Ollama"], deployment_class="datacenter")
+    ok, reasons = capability_match(entries["ollama"], deployment_class="datacenter")
     assert not ok
     assert any("deployment class" in reason for reason in reasons)
     ok, reasons = capability_match(entries["vLLM"], deployment_class="datacenter", serving_profile="multi_user")
