@@ -2,9 +2,9 @@ name: JALON 3 runtime evidence contract
 
 on:
   push:
-    branches: [jalon3-runtime-execution-contract-v2]
+    branches: [jalon3-runtime-execution-contract-v3]
   pull_request:
-    branches: [main, jalon2-closed]
+    branches: [main, jalon3-runtime-execution-contract-v3]
 
 jobs:
   contract:
@@ -26,6 +26,6 @@ jobs:
               print('VALID', p)
           PY
       - name: Run JALON 3 tests
-        run: python -m pytest tests/test_runtime_benchmark_evidence_v1_1.py -q
+        run: python -m pytest tests/test_runtime_benchmark_evidence_v1_1.py tests/test_runtime_benchmark_evidence.py -q
       - name: Check whitespace
         run: git diff --check
