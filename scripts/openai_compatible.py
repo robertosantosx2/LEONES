@@ -1,14 +1,12 @@
 """Minimal OpenAI-compatible inference boundary used by LEONES.
 
-Design decision: keep this connector deliberately boring. ODS/Hermes and
-Magnitude can both consume an OpenAI-compatible endpoint, so LEONES should
-not maintain two inference protocols. This module performs transport and
-normalization only; agent behavior, benchmarking, and evidence remain owned
-by their respective contracts.
+ODS/Hermes and Magnitude can both consume an OpenAI-compatible endpoint, so
+LEONES keeps one transport boundary instead of two inference protocols.
+This module performs transport and normalization only; agent behavior,
+benchmarking, and evidence remain owned by their respective contracts.
 
-The implementation uses only the Python standard library. That keeps the
-first physical integration dependency-light and makes the connector usable
-before Ubuntu-specific runtime installation.
+Only the Python standard library is used so the first physical integration
+stays dependency-light and can be tested before Ubuntu-specific installation.
 """
 
 from __future__ import annotations
@@ -41,8 +39,14 @@ class OpenAICompatibleEndpoint:
 
     @property
     def normalized_base_url(self) -> str:
-        """Return the API base without a trailing slash."""
-        return self.base_url.rstrip("/")
+        """Normalize either a host URL or an already supplied `/v1` URL.
+
+        ODS documentation commonly gives `http://host:8080/v1`, while other
+        OpenAI-compatible clients conventionally store the host root. LEONES
+        accepts both so configuration does not need a second URL convention.
+        """
+        value = self.base_url.rstrip("/")
+        return value[:-3] if value.endswith("/v1") else value
 
 
 def _headers(endpoint: OpenAICompatibleEndpoint) -> dict[str, str]:
@@ -69,19 +73,19 @@ def _get_json(endpoint: OpenAICompatibleEndpoint, path: str) -> tuple[int, dict[
 
 
 def health(endpoint: OpenAICompatibleEndpoint) -> dict[str, Any]:
-    """Check the canonical model-discovery endpoint and normalize its result."""
-    started = datetime.now(timezone.utc).isoformat()
+    """Check `/v1/models` and normalize the observable result."""
+    checked_at = datetime.now(timezone.utc).isoformat()
     status, payload = _get_json(endpoint, "/v1/models")
     return {
-        "base_url": endpoint.normalized_base_url,
+        "base_url": f"{endpoint.normalized_base_url}/v1",
         "http_status": status,
         "models": payload.get("data", []),
-        "checked_at": started,
+        "checked_at": checked_at,
     }
 
 
 def list_models(endpoint: OpenAICompatibleEndpoint) -> list[dict[str, Any]]:
-    """Return models advertised by the endpoint."""
+    """Return models advertised by `/v1/models`."""
     _, payload = _get_json(endpoint, "/v1/models")
     models = payload.get("data", [])
     if not isinstance(models, list):
@@ -96,11 +100,10 @@ def chat(
     max_tokens: int = 128,
     temperature: float | None = None,
 ) -> dict[str, Any]:
-    """Execute one non-streaming chat completion and normalize observations.
+    """Execute one non-streaming chat completion and preserve observations.
 
-    No benchmark metric is calculated here. The connector records only what
-    the endpoint observed/reported; LEONES measurement contracts remain the
-    authority for physical performance claims.
+    No benchmark metric is invented here. Endpoint-reported usage and timing
+    are observations; JALÓN 3 remains the authority for physical performance.
     """
     if not messages:
         raise ValueError("messages must not be empty")
@@ -134,14 +137,13 @@ def chat(
     except urllib.error.URLError as exc:
         raise RuntimeError(f"OpenAI-compatible chat failed: {exc.reason}") from exc
 
-    finished_at = datetime.now(timezone.utc).isoformat()
     return {
         "provider_id": "openai-compatible",
-        "base_url": endpoint.normalized_base_url,
+        "base_url": f"{endpoint.normalized_base_url}/v1",
         "model": endpoint.model,
         "request_id": payload.get("id"),
         "started_at": started_at,
-        "finished_at": finished_at,
+        "finished_at": datetime.now(timezone.utc).isoformat(),
         "latency_seconds": time.monotonic() - started,
         "usage": payload.get("usage"),
         "response_status": status,
