@@ -1,0 +1,50 @@
+============================================================
+LEONES — JALÓN 6 RECOMMENDATION EVIDENCE GATE
+============================================================
+UTC: 20260828T233933Z
+BRANCH: rc1-minimal-script-cleanup
+
+========== CONTRACT ==========
+PASS: canonical recommendation/evidence components present
+
+========== GATE TESTS ==========
+...F                                                                     [100%]
+=================================== FAILURES ===================================
+________________ test_external_score_requires_evidence_profile _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-roberto/pytest-35/test_external_score_requires_e0')
+
+    def test_external_score_requires_evidence_profile(tmp_path: Path) -> None:
+        payload = base_decision()
+        payload["evidence_profile"] = {}
+        result = run_gate(tmp_path, payload)
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: ERROR: external score has no evidence profile
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/roberto/leones-work/LEONES/.venv/bin/python', '/home/roberto/leones-work/LEONES/scripts/...l_score_requires_e0/decision.json'], returncode=1, stdout='', stderr='ERROR: external score has no evidence profile\n').returncode
+
+tests/test_jalon6_recommendation_gate.py:61: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_jalon6_recommendation_gate.py::test_external_score_requires_evidence_profile
+1 failed, 3 passed in 0.14s
+
+========== EXISTING EVIDENCE BOUNDARY TESTS ==========
+..........                                                               [100%]
+10 passed in 0.06s
+
+========== STATIC INVARIANTS ==========
+
+========== DIFF ==========
+
+============================================================
+JALÓN 6 — MACHINE-READABLE RESULT
+============================================================
+CONTRACT_GATE=FAIL
+GATE_TESTS=FAIL
+EVIDENCE_BOUNDARY_GATE=FAIL
+INVARIANT_GATE=FAIL
+DIFF_GATE=FAIL
+JALON6_DECLARATIVE_CLOSE=FAIL
+AUDIT_EXIT_CODE=1
+============================================================
