@@ -39,12 +39,20 @@ def build_command(
     context_tokens: int | None = None,
     max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS,
 ) -> list[str]:
-    # llama-cli remains interactive after a predefined prompt unless simple IO is
-    # requested. A bounded prediction count is also required so benchmark runs
-    # terminate deterministically instead of using llama-cli's unlimited default.
+    # --simple-io makes subprocess I/O deterministic; --single-turn is required
+    # by the tested llama-cli build to terminate after the predefined prompt.
+    # A bounded prediction count prevents llama-cli's unlimited default.
     if max_output_tokens < 1:
         raise ValueError("max_output_tokens must be positive")
-    command = [executable, "-m", model_path, "-p", prompt, "--simple-io"]
+    command = [
+        executable,
+        "-m",
+        model_path,
+        "-p",
+        prompt,
+        "--simple-io",
+        "--single-turn",
+    ]
     if context_tokens is not None:
         if context_tokens < 1:
             raise ValueError("context_tokens must be positive")
