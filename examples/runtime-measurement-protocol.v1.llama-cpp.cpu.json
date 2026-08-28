@@ -79,7 +79,8 @@
   "provenance": {
     "created_at": "2026-08-27T00:00:00Z",
     "owner": "LEONES",
-    "evidence_policy": "preserve_raw_and_normalized"
+    "evidence_policy": "preserve_raw_and_normalized",
+    "protocol_sha256": "024e8fde2d20f6e21df6f739abe9b8e2c6f64b168688059de18035bc7aeea84d"
   },
   "acceptance": {
     "minimum_successful_runs": 5,
