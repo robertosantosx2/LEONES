@@ -111,7 +111,10 @@ def aggregate_task_results(results: Iterable[dict[str, Any]]) -> dict[str, Any]:
         "schema_version": SUMMARY_SCHEMA_VERSION,
         "task_results": [r.get("task_id") for r in items],
         "benchmark_evidence_ids": [
-            r.get("benchmark_evidence_id") for r in items if r.get("benchmark_evidence_id")
+            r.get("benchmark_evidence_id")
+            for r in valid_items
+            if r.get("completion_status") in {"completed", "failed"}
+            and r.get("benchmark_evidence_id")
         ],
         "counts": counts,
         "evaluated_tasks": evaluated,
