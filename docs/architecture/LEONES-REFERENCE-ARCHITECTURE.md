@@ -50,6 +50,14 @@ LEONES
               MANADA
 ```
 
+## Contrato de decisión
+
+El flujo anterior queda formalizado por **[LEONES Decision Contract v1](LEONES-DECISION-CONTRACT-v1.md)**. Ese contrato define las responsabilidades y fronteras entre Atlas, LLMFit, la decisión de LEONES, ODS/SOHO, Magnitude, `llama-server`, medición y benchmark de tareas.
+
+### Regla central
+
+> **LLMFit informa; LEONES decide. ODS/Magnitude aportan capacidades; LEONES integra. `llama-server` ejecuta; LEONES mide. La medición produce evidencia; la evidencia alimenta benchmarks de tareas y MANADA.**
+
 ## Principios de interpretación
 
 1. **LEONES conserva la autoridad de decisión.** LLMFit aporta la información de adecuación de modelo/hardware; no sustituye la decisión de LEONES.
@@ -110,3 +118,19 @@ Cada nueva pieza debe responder a una de estas preguntas:
 Si una pieza pertenece a descubrimiento o Atlas, se considera **protegida por defecto** y se audita antes de tocarla.
 
 Si no cumple ninguna función y existe una sustitución real, puede pasar a `deprecated/` conservando procedencia. No se elimina ni se depreca por intuición.
+
+## Próximo umbral operativo
+
+Todo lo anterior puede cerrarse y auditarse en GitHub. El siguiente paso que exige Ubuntu es la validación de la cadena real:
+
+```text
+selección
+  → runtime gate
+  → interfaz llama-server
+  → modelo local
+  → ejecución física
+  → medición
+  → evidencia
+```
+
+No se considera validada una capacidad de rendimiento hasta ejecutarla en hardware real y conservar evidencia reproducible.
