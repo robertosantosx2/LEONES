@@ -34,7 +34,8 @@ Los gates asociados a la integración quedaron verdes: **Agentic A01 contract**,
 - [`docs/V1-CLEAN-ROOM.md`](docs/V1-CLEAN-ROOM.md) — política de limpieza, versionado y conservación de evidencia.
 - [`docs/RELEASE-CANDIDATE-1.md`](docs/RELEASE-CANDIDATE-1.md) — plan maestro de Release Candidate 1.
 - [`docs/RELEASE-CANDIDATE-1-HERMES.md`](docs/RELEASE-CANDIDATE-1-HERMES.md) — integración de Hermes como harness agéntico de RC1.
-- [`docs/RELEASE-CANDIDATE-1-ENDGAME.md`](docs/RELEASE-CANDIDATE-1-ENDGAME.md) — **plan de ejecución de RC1 hasta instalación de ODS/Plenitude, benchmarks físicos y publicación en MANADA**.
+- [`docs/RELEASE-CANDIDATE-1-ENDGAME.md`](docs/RELEASE-CANDIDATE-1-ENDGAME.md) — plan de ejecución de RC1 hasta instalación de ODS/Magnitude, benchmarks físicos y publicación en MANADA.
+- [`docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md`](docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md) — contrato RC1 para separar `llama-cli`, `llama-server`, ODS/Hermes y Magnitude.
 - [`PIPELINE_E2E.md`](PIPELINE_E2E.md) — pipeline integral.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contrato de contribución.
 
@@ -58,6 +59,53 @@ Por eso LEONES distingue siempre entre:
 - `measured`: medición ejecutada por LEONES;
 - `verified`: dato que ha superado el quality gate definido por el proyecto;
 - `unknown`: información que todavía no está demostrada.
+
+---
+
+# 🧭 Orientación RC1: medir productos reales, no reconstruirlos
+
+LEONES reutiliza tanto como sea posible el trabajo de los proyectos especializados.
+
+```text
+                     LEONES
+                       │
+              investigación / Atlas
+                       │
+                    LLMFit
+                       │
+              selección y decisión
+                       │
+             ┌─────────┴─────────┐
+             │                   │
+          ODS/SOHO          Magnitude/personal
+             │                   │
+           Hermes        agente + motor propio
+             │                   │
+      llama-server        llama.cpp integrado
+             │                   │
+             └─────────┬─────────┘
+                       │
+                 tarea real
+                       │
+                 benchmark LEONES
+                       │
+                 medición física
+                       │
+                    evidencia
+                       │
+                    MANADA
+```
+
+La responsabilidad de LEONES es **decidir qué probar y medir qué ocurre realmente**. ODS/Hermes y Magnitude aportan el agente y el mecanismo de inferencia que realmente utilizan. LEONES no debe crear un agente ni un servidor paralelo salvo que una necesidad futura esté demostrada y documentada.
+
+Para RC1 se fija una distinción especialmente importante:
+
+- **`llama-cli`**: ejecución directa útil para benchmarks de inferencia de bajo nivel y para el protocolo físico de JALÓN 3.
+- **`llama-server`**: servidor HTTP OpenAI-compatible de llama.cpp; es la frontera de inferencia que ODS/Hermes utiliza por defecto.
+- **ODS/Hermes**: harness agéntico SOHO que consume un proveedor OpenAI-compatible.
+- **Magnitude**: agente personal que incorpora su propio motor de inferencia construido sobre llama.cpp y que además puede interoperar con endpoints OpenAI-compatible.
+
+La documentación normativa de esta separación está en [`docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md`](docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md).
 
 ---
 
@@ -121,3 +169,15 @@ Los subproyectos de LEONES se organizan en **capas complementarias**. Cada uno r
 Documentación: [`docs/phases/2026-08-daily-prospection/`](docs/phases/2026-08-daily-prospection/) · [`docs/SOURCE-DISCOVERY.md`](docs/SOURCE-DISCOVERY.md).
 
 ## 2. Open LLM Atlas
+
+Atlas conserva la parte de **investigación, conocimiento y procedencia** de LEONES. No se elimina por la orientación RC1: al contrario, proporciona la base que alimenta selección, comparación, evidencia y publicación.
+
+Atlas debe distinguir siempre entre datos externos, observaciones, estimaciones y mediciones físicas promovidas por los quality gates.
+
+---
+
+## Principio operativo RC1
+
+> **Poco código, cada pieza con una responsabilidad, comentarios que expliquen decisiones y README que explique cómo utilizarla.**
+
+LEONES integra antes de duplicar, mide antes de afirmar y documenta antes de congelar.
