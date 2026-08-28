@@ -2,7 +2,7 @@
 
 ## Estado
 
-**EN CURSO — diseño e implementación mínima.**
+**BASE FIJADA — implementación mínima validada; cierre funcional pendiente.**
 
 JALÓN 7 convierte la medición de ejecución en un resultado de trabajo verificable: qué tarea se ejecutó, sobre qué modelo/runtime/hardware, con qué evidencia y si la tarea se completó según un criterio explícito.
 
@@ -16,7 +16,8 @@ selección
   → ejecución
   → medición
   → runtime-benchmark.v1
-  → resultado de tarea
+  → task-result.v1
+  → agregación
   → clasificación
   → recomendación
 ```
@@ -29,7 +30,7 @@ La utilidad de J7 se expresa mediante tareas completadas bajo un protocolo repro
 
 ## Contrato mínimo `task-result.v1`
 
-Cada resultado de tarea debe conservar, como mínimo:
+Cada resultado de tarea conserva, como mínimo:
 
 - `schema_version`: `task-result.v1`.
 - `task_id`: identificador estable de la tarea.
@@ -49,19 +50,21 @@ Cada resultado de tarea debe conservar, como mínimo:
 ## Reglas de validez
 
 1. Una tarea sólo puede marcarse `completed` si su criterio de éxito está definido y satisfecho.
-2. Una estimación externa no puede producir por sí sola un `completion_status=completed` medido.
+2. Una estimación externa no puede producir por sí sola `completion_status=completed` medido.
 3. Un resultado de tarea debe poder rastrearse hasta su ejecución y, cuando proceda, hasta `runtime-benchmark.v1`.
 4. Un resultado sin evidencia suficiente debe quedar explícitamente `invalid` o `not_evaluated`, nunca rellenarse por inferencia.
-5. La agregación de tareas debe ser determinista y conservar los resultados individuales.
+5. La agregación de tareas es determinista y conserva los resultados individuales.
 6. ODS/Magnitude pueden aportar configuración, perfilado o evidencia reportada, pero no adquieren autoridad para declarar la recomendación final de LEONES.
 
 ## Agregación
 
-J7 podrá calcular una tasa de tareas completadas sobre un conjunto definido:
+J7 calcula, sobre un conjunto definido:
 
 `completed_tasks / evaluated_tasks`
 
 La agregación no sustituye las métricas instrumentales; las complementa. Una recomendación debe poder explicar tanto **qué tareas se completaron** como **con qué comportamiento de ejecución**.
+
+Los identificadores de `runtime-benchmark.v1` se conservan sólo para resultados válidos y evaluados (`completed` o `failed`). Una tarea `not_evaluated` no contamina la lista de evidencia de benchmark.
 
 ## No alcance
 
@@ -74,4 +77,6 @@ La agregación no sustituye las métricas instrumentales; las complementa. Una r
 
 ## Cierre de J7
 
-El cierre requiere contrato implementado, tests contractuales, trazabilidad desde ejecución/medición hasta resultado de tarea y consumo por clasificación/recomendación existente. La validación física de suites que necesiten hardware real queda fuera de CI y se ejecutará sólo cuando el host sea imprescindible.
+La base contractual y su implementación mínima están fijadas y cubiertas por tests. Para cerrar J7 falta únicamente demostrar el consumo del resumen `task-result.v1` por la **clasificación/recomendación existente**, sin introducir un clasificador ni un recomendador paralelo.
+
+La validación física de suites que necesiten hardware real queda fuera de CI y se ejecutará sólo cuando el host sea imprescindible.
