@@ -21,11 +21,10 @@ TOKENS_PER_SECOND = re.compile(
     r"(?:Generation:\s*)?([0-9]+(?:[.,][0-9]+)?)\s*(?:tok(?:ens)?|t)/s",
     re.I,
 )
-
 LLAMA_CPP_GENERATION_TPS = re.compile(
-    r"Generation:\s*([0-9]+(?:[.,][0-9]+)?)\s*t/s",
-    re.I,
+    r"Generation:\s*([0-9]+(?:[.,][0-9]+)?)\s*t/s", re.I
 )
+LLAMA_CPP_REVISION = re.compile(r"commit\s+([0-9a-f]+)", re.I)
 
 
 def now() -> str:
@@ -60,6 +59,38 @@ def command_version(executable: str) -> str:
     return text.splitlines()[0] if text else "unknown"
 
 
+def runtime_revision(version: str) -> str | None:
+    match = LLAMA_CPP_REVISION.search(version)
+    return match.group(1) if match else None
+
+
+def command_output_token_limit(command: list[str]) -> int | None:
+    for flag in ("-n", "--predict", "--n-predict"):
+        if flag in command:
+            i = command.index(flag)
+            if i + 1 < len(command):
+                try:
+                    value = int(command[i + 1])
+                except ValueError:
+                    return None
+                return value if value > 0 else None
+    return None
+
+
+def infer_backend(command: list[str], explicit: str | None) -> str | None:
+    if explicit:
+        return explicit
+    for flag in ("-ngl", "--n-gpu-layers"):
+        if flag in command:
+            i = command.index(flag)
+            if i + 1 < len(command):
+                try:
+                    return "gpu" if int(command[i + 1]) > 0 else "cpu"
+                except ValueError:
+                    return None
+    return "cpu"
+
+
 def hardware() -> dict:
     ram_total_mb = 0
     try:
@@ -68,11 +99,18 @@ def hardware() -> dict:
         ram_total_mb = int(pages * page_size / 1024 / 1024)
     except (AttributeError, OSError, ValueError):
         pass
-    return {
-        "os": platform.platform(),
-        "cpu": platform.processor() or platform.machine(),
-        "ram_total_mb": ram_total_mb,
-    }
+
+    cpu = platform.processor() or ""
+    if not cpu and Path("/proc/cpuinfo").exists():
+        try:
+            for line in Path("/proc/cpuinfo").read_text(encoding="utf-8").splitlines():
+                if line.lower().startswith("model name") and ":" in line:
+                    cpu = line.split(":", 1)[1].strip()
+                    break
+        except OSError:
+            pass
+    cpu = cpu or platform.machine() or "unknown"
+    return {"os": platform.platform(), "cpu": cpu, "ram_total_mb": ram_total_mb}
 
 
 def peak_memory_mb() -> float | None:
@@ -144,16 +182,21 @@ def run_once(command: list[str]) -> dict:
     else:
         matches = TOKENS_PER_SECOND.findall(text)
         tps = float(matches[-1].replace(",", ".")) if matches else None
-    gen_ms = None if first_output is None else max(0.0, total - first_output)
-    out_tokens = (
-        round(tps * gen_ms / 1000) if tps is not None and gen_ms is not None else None
+
+    output_tokens = command_output_token_limit(command)
+    generation_ms = (
+        output_tokens / tps * 1000
+        if output_tokens is not None and tps and tps > 0
+        else None
     )
     vram, power = gpu_snapshot()
     return {
-        "ttft_ms": first_output,
+        # First non-empty process output is intentionally NOT called TTFT:
+        # llama-cli emits startup/prompt text before generated tokens.
+        "ttft_ms": None,
         "first_output_ms": first_output,
-        "generation_time_ms": gen_ms,
-        "output_tokens": out_tokens,
+        "generation_time_ms": generation_ms,
+        "output_tokens": output_tokens,
         "tokens_per_second": tps,
         "total_time_ms": round(total, 3),
         "peak_memory_mb": peak_memory_mb(),
@@ -192,12 +235,7 @@ def summary(measurements: list[dict]) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument(
-        "--command-json",
-        type=Path,
-        required=True,
-        help="JSON array containing the shell-free command",
-    )
+    ap.add_argument("--command-json", type=Path, required=True)
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--artifact", type=Path, required=True)
     ap.add_argument("--model-id", required=True)
@@ -216,23 +254,31 @@ def main() -> int:
     ap.add_argument("--runtime", default="llama.cpp")
     ap.add_argument("--backend", default=None)
     args = ap.parse_args()
+
     if args.warmup < 0:
         raise SystemExit("warmup must be >= 0")
-    if args.iterations < 1:
-        raise SystemExit("iterations must be >= 1")
+    if args.iterations < 5:
+        raise SystemExit("iterations must be >= 5 for runtime-benchmark-evidence.v1.1")
     if args.cooldown_seconds < 0:
         raise SystemExit("cooldown-seconds must be >= 0")
     if args.output_token_limit < 1:
         raise SystemExit("output-token-limit must be >= 1")
     if not re.fullmatch(r"[a-f0-9]{64}", args.protocol_sha256):
         raise SystemExit("protocol-sha256 must be a lowercase 64-character SHA-256")
+
     command = json.loads(args.command_json.read_text(encoding="utf-8"))
-    if (
-        not isinstance(command, list)
-        or not command
-        or not all(isinstance(x, str) for x in command)
-    ):
+    if not isinstance(command, list) or not command or not all(isinstance(x, str) for x in command):
         raise SystemExit("command-json must contain a non-empty JSON string array")
+
+    command_limit = command_output_token_limit(command)
+    if command_limit != args.output_token_limit:
+        raise SystemExit(
+            f"command output-token limit {command_limit!r} does not match protocol "
+            f"{args.output_token_limit}"
+        )
+
+    version = command_version(command[0])
+    backend = infer_backend(command, args.backend)
 
     warmups = []
     for _ in range(args.warmup):
@@ -253,11 +299,22 @@ def main() -> int:
     artifact = args.artifact.resolve()
     if not artifact.exists() or not artifact.is_file():
         raise SystemExit(f"artifact does not exist: {artifact}")
+
     successful_runs = sum(m["exit_code"] == 0 for m in measurements)
     warmup_success = all(m["exit_code"] == 0 for m in warmups)
-    valid = successful_runs >= 5 and warmup_success and all(
-        m["exit_code"] == 0 for m in measurements
+    complete_metrics = all(
+        m["exit_code"] == 0
+        and m["tokens_per_second"] is not None
+        and m["output_tokens"] == args.output_token_limit
+        and m["generation_time_ms"] is not None
+        for m in measurements
     )
+    valid = (
+        successful_runs == args.iterations
+        and warmup_success
+        and complete_metrics
+    )
+
     evidence = {
         "schema": "runtime-benchmark-evidence.v1.1",
         "status": "valid" if valid else "invalid",
@@ -282,12 +339,13 @@ def main() -> int:
             "warmup_iterations": args.warmup,
             "measurement_iterations": args.iterations,
             "cooldown_seconds": args.cooldown_seconds,
+            "ttft_method": "not_available_from_llama_cli_stdout",
         },
         "runtime": {
             "name": args.runtime,
-            "version": command_version(command[0]),
-            "revision": None,
-            "backend": args.backend,
+            "version": version,
+            "revision": runtime_revision(version),
+            "backend": backend,
             "command": command,
         },
         "hardware": hardware(),
@@ -301,8 +359,10 @@ def main() -> int:
             "minimum_successful_runs": 5,
             "successful_runs": successful_runs,
             "warmup_success": warmup_success,
+            "complete_metrics": complete_metrics,
             "require_exit_code_zero": True,
             "allow_partial_results": False,
+            "require_output_token_limit_match": True,
         },
         "process": {
             "exit_code": max(m["exit_code"] for m in measurements),
@@ -316,9 +376,7 @@ def main() -> int:
         },
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(
-        json.dumps(evidence, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
+    args.output.write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(
         json.dumps(
             {
