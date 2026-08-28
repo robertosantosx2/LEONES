@@ -18,6 +18,18 @@ fase → implementación → validación → aceptación
 
 ## Índice principal
 
+### RC1 — producto mínimo operativo
+
+- [`RELEASE-CANDIDATE-1.md`](RELEASE-CANDIDATE-1.md) — plan maestro congelado de RC1.
+- [`RELEASE-CANDIDATE-1-ENDGAME.md`](RELEASE-CANDIDATE-1-ENDGAME.md) — recorrido hasta instalación, benchmark físico y publicación en MANADA.
+- [`RELEASE-CANDIDATE-1-HERMES.md`](RELEASE-CANDIDATE-1-HERMES.md) — integración de Hermes como harness agentivo.
+- [`RC1-AGENTIC-TASK-CONTRACT.md`](RC1-AGENTIC-TASK-CONTRACT.md) — contrato de la tarea agentiva mínima y su comparación.
+- [`RC1-STACK-INTEGRATION-CONTRACT.md`](RC1-STACK-INTEGRATION-CONTRACT.md) — contrato ODS/Magnitude: integrar, observar y medir sin duplicar sus capas.
+- [`rc1/RC1-TASK-FIXTURE.json`](rc1/RC1-TASK-FIXTURE.json) — fixture determinista de la tarea RC1-A01.
+- [`rc1/RC1-RESULT-SCHEMA.md`](rc1/RC1-RESULT-SCHEMA.md) — esquema mínimo del resultado agentivo normalizado.
+
+La regla de RC1 es: **GitHub primero; Ubuntu sólo cuando la máquina real sea imprescindible**. ODS/Hermes y Magnitude aportan el agente y el mecanismo de inferencia; LEONES aporta selección, tarea, medición, evidencia y promoción.
+
 ### Arquitectura y fundamentos
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — arquitectura global, pipeline y vocabulario.
@@ -129,19 +141,17 @@ LLMFIT → FIT INICIAL
     ↓
 MODELO + CUANTIZACIÓN + RUNTIME
     ↓
-BENCHMARK LEONES → MEDICIÓN
+SELECCIÓN LEONES
     ↓
-CABE / RULA
+ODS/HERMES o MAGNITUDE
     ↓
-RECOMENDADOR / ROUTER
+TAREA RC1
     ↓
-AGENTES / HARNESS
+BENCHMARK
     ↓
-WEB / MANADA
+JALÓN 3 / EVIDENCIA FÍSICA
+    ↓
+PROMOCIÓN
+    ↓
+MANADA
 ```
-
-ODS y Magnitude se mantienen como integraciones externas medibles; FreeToken, Odysseus, AirLLM, LLMFit y los runtimes documentados en `sources/` son fuentes de conocimiento/referencia que pueden alimentar hipótesis y adaptadores, pero nunca convierten por sí mismos sus claims en mediciones LEONES.
-
-## Regla de estado
-
-Una página puede describir trabajo en curso, pero **solo una fase con validación y aceptación explícita puede aparecer como ACEPTADA**. La documentación debe distinguir siempre entre implementación, fuente, evidencia, estimación, medición y plan futuro.
