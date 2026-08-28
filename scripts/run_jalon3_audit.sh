@@ -23,8 +23,16 @@ SCHEMA="schemas/runtime-benchmark-evidence.v1.1.json"
 EVIDENCE="artifacts/runtime-executions/jalon3-run-001/runtime-benchmark-evidence.json"
 STAMP="$(date -u '+%Y%m%dT%H%M%SZ')"
 OUT="$OUTDIR/jalon3-audit-$STAMP.txt"
+LOCKDIR=".git/jalon3-audit-runner.lock"
 
 mkdir -p "$OUTDIR" "$TRACKED_DIR"
+
+if ! mkdir "$LOCKDIR" 2>/dev/null; then
+    echo "ERROR: another JALON 3 runner appears to be active."
+    echo "If no runner is active, remove stale lock: $LOCKDIR"
+    exit 6
+fi
+trap 'rmdir "$LOCKDIR" 2>/dev/null || true' EXIT
 
 # Only runner-owned generated paths may already be dirty.
 UNRELATED="$(git status --porcelain --untracked-files=all | grep -vE '^.. (artifacts/jalon3-audit/|docs/audits/jalon3/latest\\.txt$)' || true)"
@@ -34,14 +42,16 @@ if [ -n "$UNRELATED" ]; then
     exit 3
 fi
 
-# Never force-push and never silently overwrite a divergent local branch.
+# Synchronize before measuring. Never force-push and never silently overwrite
+# a divergent local branch. A concurrent remote push is handled later with a
+# non-destructive rebase/autostash retry.
 git fetch origin "$BRANCH" >/dev/null 2>&1 || {
     echo "ERROR: unable to fetch origin/$BRANCH"
     exit 4
 }
 if ! git merge-base --is-ancestor HEAD "origin/$BRANCH"; then
     echo "ERROR: local branch is not an ancestor of origin/$BRANCH."
-    echo "Synchronize first with: git pull --rebase origin $BRANCH"
+    echo "Synchronize first with: git pull --rebase --autostash origin $BRANCH"
     exit 5
 fi
 
@@ -77,8 +87,8 @@ run_tests_gate() {
         echo "FAIL: pytest unavailable"
         return 20
     fi
-    pytest -q
-    rc=$?
+    local rc=0
+    pytest -q || rc=$?
     if [ "$rc" -eq 0 ]; then
         echo "PASS: pytest"
     else
@@ -89,9 +99,13 @@ run_tests_gate() {
 
 run_diff_gate() {
     echo "========== GATE: DIFF =========="
-    git diff --check
-    rc=$?
-    if [ "$rc" -eq 0 ]; then echo "PASS: git diff --check"; else echo "FAIL: git diff --check"; fi
+    local rc=0
+    git diff --check || rc=$?
+    if [ "$rc" -eq 0 ]; then
+        echo "PASS: git diff --check"
+    else
+        echo "FAIL: git diff --check"
+    fi
     return "$rc"
 }
 
@@ -279,9 +293,20 @@ else
 fi
 
 echo "========== PUSH =========="
+PUSH_RC=0
 if ! git push origin "$BRANCH"; then
-    echo "ERROR: push failed; no force-push attempted."
-    [ "$AUDIT_RC" -eq 0 ] && AUDIT_RC=50
+    echo "WARN: remote advanced during audit; attempting safe rebase/autostash."
+    git fetch origin "$BRANCH"
+    if git pull --rebase --autostash origin "$BRANCH" && git push origin "$BRANCH"; then
+        echo "PASS: push recovered after remote race via rebase"
+    else
+        echo "ERROR: push failed after safe rebase retry; no force-push attempted."
+        PUSH_RC=50
+    fi
+fi
+
+if [ "$AUDIT_RC" -eq 0 ] && [ "$PUSH_RC" -ne 0 ]; then
+    AUDIT_RC="$PUSH_RC"
 fi
 
 echo "========== FINAL =========="
