@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "leones-ods-magnitude-decision.v1",
+  "title": "LEONES ODS Magnitude Decision Contract V1",
+  "type": "object",
+  "required": ["schema", "decision_id", "timestamp", "workload", "hardware", "runtime", "sources", "decision"],
+  "properties": {
+    "schema": {"const": "leones-ods-magnitude-decision.v1"},
+    "decision_id": {"type": "string", "minLength": 8},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "workload": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {"id": {"type": "string"}, "description": {"type": ["string", "null"]}},
+      "additionalProperties": true
+    },
+    "hardware": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {"id": {"type": "string"}, "os": {"type": ["string", "null"]}, "cpu": {"type": ["string", "null"]}, "ram_gb": {"type": ["number", "null"]}, "gpu": {"type": ["string", "null"]}, "vram_gb": {"type": ["number", "null"]}, "tier": {"type": ["string", "null"]}},
+      "additionalProperties": true
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["id", "selection_status"],
+      "properties": {"id": {"type": "string"}, "selection_status": {"enum": ["preselected", "approved", "rejected"]}},
+      "additionalProperties": true
+    },
+    "sources": {
+      "type": "object",
+      "required": ["ods_magnitude", "llmfit"],
+      "properties": {
+        "ods_magnitude": {
+          "type": "object",
+          "required": ["available", "evidence_type"],
+          "properties": {"available": {"type": "boolean"}, "product": {"type": ["string", "null"]}, "version": {"type": ["string", "null"]}, "revision": {"type": ["string", "null"]}, "observed_at": {"type": ["string", "null"]}, "evidence_type": {"enum": ["reported", "observed", "measured", "unknown"]}, "estimate_only": {"type": "boolean"}},
+          "additionalProperties": true
+        },
+        "llmfit": {
+          "type": "object",
+          "required": ["available", "estimate_only"],
+          "properties": {"available": {"type": "boolean"}, "version": {"type": ["string", "null"]}, "observed_at": {"type": ["string", "null"]}, "estimate_only": {"const": true}},
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "candidates": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+    "decision": {
+      "type": "object",
+      "required": ["status", "model_id", "basis", "benchmark_required"],
+      "properties": {
+        "status": {"enum": ["REJECTED", "CANDIDATE", "SELECTED", "BENCHMARK_REQUIRED"]},
+        "model_id": {"type": ["string", "null"]},
+        "basis": {"type": "array", "items": {"type": "string"}},
+        "benchmark_required": {"type": "boolean"},
+        "measured_performance_used": {"type": "boolean"},
+        "measured_execution_id": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
