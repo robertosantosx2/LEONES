@@ -1,0 +1,64 @@
+{
+  "schema": "runtime-execution.v1",
+  "execution_id": "jalon2-llama-cpp-20260827T160340Z",
+  "timestamp_start": "2026-08-27T16:03:40.655504Z",
+  "timestamp_end": "2026-08-27T16:03:44.916607Z",
+  "model": {
+    "path": "/home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf",
+    "sha256": "b0638f08417a2d3c8652760462eb5407c6e30173cf9608ad0820757a281eea0e"
+  },
+  "protocol": {
+    "prompt_protocol_id": "leones-local-v1",
+    "prompt_sha256": "bcb5bbf7d1987fb84bf5d4aa20ee8bbab4edae625ae8dbed7ac3ea81e16a891e",
+    "context": 2048,
+    "output_token_limit": 128,
+    "temperature": 0,
+    "top_p": null,
+    "seed": null,
+    "warmup_iterations": 1,
+    "measurement_iterations": 1
+  },
+  "runtime": {
+    "name": "llama.cpp",
+    "version": "version: 0.3.0-dev (build 10655, commit cb300598d)",
+    "binary": "/home/roberto/leones-work/llama.cpp/build/bin/llama-cli",
+    "binary_sha256": "5c8abc6bd1604fabf743e5863e837fbcb2a01a4f8fdfbd66287a6ea213457aa8"
+  },
+  "hardware": {
+    "host": "Aspire-A515-55",
+    "os": "Linux-7.0.0-30-generic-x86_64-desconocido-with-glibc2.43",
+    "kernel": "7.0.0-30-generic",
+    "architecture": "x86_64",
+    "cpu": "desconocido",
+    "cpu_threads": 8,
+    "physical_cores": 4,
+    "ram_total_mb": 7199.8046875
+  },
+  "command": [
+    "/home/roberto/leones-work/llama.cpp/build/bin/llama-cli",
+    "-m",
+    "/home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf",
+    "-t",
+    "4",
+    "-tb",
+    "4",
+    "-c",
+    "2048",
+    "-n",
+    "128",
+    "--perf",
+    "--single-turn",
+    "--warmup",
+    "-p",
+    "Explain in one short paragraph what a CPU is."
+  ],
+  "result": {
+    "exit_code": 0,
+    "wall_seconds": 3.584610709996923,
+    "maximum_rss_kb": 896440
+  },
+  "artifacts": {
+    "raw_log": "artifacts/runtime-executions/jalon2-repeat/jalon2-llama-cpp-20260827T160340Z/execution.log",
+    "evidence": "artifacts/runtime-executions/jalon2-repeat/jalon2-llama-cpp-20260827T160340Z/runtime-benchmark-evidence.json"
+  }
+}

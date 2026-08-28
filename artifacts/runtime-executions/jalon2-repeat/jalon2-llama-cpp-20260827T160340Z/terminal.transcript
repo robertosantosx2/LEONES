@@ -1,0 +1,41 @@
+Script iniciado en 2026-08-27 18:03:41+02:00 [COMMAND="/home/roberto/leones-work/llama.cpp/build/bin/llama-cli -m /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf -t 4 -tb 4 -c 2048 -n 128 --perf --single-turn --warmup -p 'Explain in one short paragraph what a CPU is.'" TERM="xterm-256color" TTY="/dev/pts/4" COLUMNS="-1" LINES="-1"]
+
+
+Loading model... |-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b10655-cb300598d
+model      : /home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+[1m[32m
+> Explain in one short paragraph what a CPU is.
+[0m[90m
+[Start thinking]
+
+Okay, the user wants me to explain a CPU in a one-paragraph short answer. Let me start by recalling what a CPU is. A CPU is the central unit of a computer, responsible for performing all the computer's tasks, including fetching and processing instructions from memory, and controlling the computer's operations.
+
+I need to make sure the answer is concise. I should mention its role, like executing instructions, managing data, and interacting with other components. Also, including its function in the overall system is important. Let me check the structure: start with its role, explain its functions, and end with its significance. Avoid adding[0m
+[35m
+[ Prompt: 193,9 t/s | Generation: 53,6 t/s ]
+[0m
+
+Exiting...
+
+Script terminado en 2026-08-27 18:03:44+02:00 [CÓDIGO_SALIDA_ORDEN="0"]

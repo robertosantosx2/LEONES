@@ -1,0 +1,75 @@
+{
+  "schema": "runtime-benchmark-summary.v1",
+  "jalon": "JALON 2",
+  "runtime": "llama.cpp",
+  "model": "Qwen3-0.6B-Q4_K_M.gguf",
+  "model_sha256": "b0638f08417a2d3c8652760462eb5407c6e30173cf9608ad0820757a281eea0e",
+  "quantization": "Q4_K_M",
+  "context_size": 2048,
+  "n_predict": 128,
+  "threads": 4,
+  "threads_batch": 4,
+  "warmup": true,
+  "runs": 5,
+  "valid_runs": 5,
+  "generation_tok_s": {
+    "mean": 43.6,
+    "median": 41.9,
+    "min": 38.1,
+    "max": 53.6
+  },
+  "prompt_tok_s": {
+    "mean": 185.66,
+    "median": 193.9,
+    "min": 132.1,
+    "max": 229.5
+  },
+  "rss_mib": {
+    "mean": 875.60390625,
+    "min": 875.4296875,
+    "max": 875.94140625
+  },
+  "executions": [
+    {
+      "execution_id": "jalon2-llama-cpp-20260827T160340Z",
+      "generation_tok_s": 53.6,
+      "prompt_tok_s": 193.9,
+      "maximum_rss_mib": 875.4296875,
+      "execution_sha256": "e3cf7de42d0628bf91354095944f869a2d91976946a3ccf691f8f45c807b56b6",
+      "log_sha256": "a1169131ece999ccc2d2da8789632e50523bee8d824e7f85411b17f765e507c5"
+    },
+    {
+      "execution_id": "jalon2-llama-cpp-20260827T160344Z",
+      "generation_tok_s": 38.1,
+      "prompt_tok_s": 151.7,
+      "maximum_rss_mib": 875.48046875,
+      "execution_sha256": "069424b9e14154473e3dc395ea2ac146a9a9bd5a35bef9a18385d47b151b9a40",
+      "log_sha256": "e30cd5ee86fac68e400e20e24075241acdeb55b4c1232af456f973174f454da1"
+    },
+    {
+      "execution_id": "jalon2-llama-cpp-20260827T160350Z",
+      "generation_tok_s": 40.2,
+      "prompt_tok_s": 132.1,
+      "maximum_rss_mib": 875.47265625,
+      "execution_sha256": "7bf55309fe8c573cc2dcbf208d03d117677a74caf5d23cad4603edcd220e7120",
+      "log_sha256": "e46560b7c873ede836f7bcd11417eb6c65fec3ea03caa224ce338a950d1be3c2"
+    },
+    {
+      "execution_id": "jalon2-llama-cpp-20260827T160355Z",
+      "generation_tok_s": 41.9,
+      "prompt_tok_s": 229.5,
+      "maximum_rss_mib": 875.6953125,
+      "execution_sha256": "7761d715e86234eb84e794d1485b75934410177fe474ffaf7399b09c61ffa8b3",
+      "log_sha256": "b3f169d10edcabba9943c449ad27f1dbf56c158cae15cd0dd679d9e02c855ce3"
+    },
+    {
+      "execution_id": "jalon2-llama-cpp-20260827T160359Z",
+      "generation_tok_s": 44.2,
+      "prompt_tok_s": 221.1,
+      "maximum_rss_mib": 875.94140625,
+      "execution_sha256": "ebc5114bebd7694c0b04e506346d9be9f4fac3c5883e46df0803d53ef832bb43",
+      "log_sha256": "ac33933f26b5b58999e914183f34e01a01e1c1551c84f63debe6fdf18c8044d9"
+    }
+  ],
+  "status": "VALID"
+}

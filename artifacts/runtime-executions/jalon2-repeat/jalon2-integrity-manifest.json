@@ -1,0 +1,113 @@
+{
+  "schema": "runtime-benchmark-integrity-manifest.v1",
+  "jalon": "JALON 2",
+  "runtime": "llama.cpp",
+  "artifact_root": "artifacts/runtime-executions/jalon2-repeat",
+  "files": [
+    {
+      "path": "jalon2-llama-cpp-20260827T160340Z/execution.log",
+      "sha256": "a1169131ece999ccc2d2da8789632e50523bee8d824e7f85411b17f765e507c5",
+      "size_bytes": 6632
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160340Z/runtime-benchmark-evidence.json",
+      "sha256": "651f327e4357accd053cffce137edcb90f57403acda6dd6af731f6a993748cb1",
+      "size_bytes": 1956
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160340Z/runtime-execution.json",
+      "sha256": "e3cf7de42d0628bf91354095944f869a2d91976946a3ccf691f8f45c807b56b6",
+      "size_bytes": 2008
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160340Z/terminal.transcript",
+      "sha256": "7848009731f39c74bd809b34202bbc29dd910f3596e4dcc769ea77cbc856bc38",
+      "size_bytes": 2179
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160344Z/execution.log",
+      "sha256": "e30cd5ee86fac68e400e20e24075241acdeb55b4c1232af456f973174f454da1",
+      "size_bytes": 6646
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160344Z/runtime-benchmark-evidence.json",
+      "sha256": "34b53b9400a4b842079b85a5c3094bb3286e2982fe6a1006f045992c75707318",
+      "size_bytes": 1957
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160344Z/runtime-execution.json",
+      "sha256": "069424b9e14154473e3dc395ea2ac146a9a9bd5a35bef9a18385d47b151b9a40",
+      "size_bytes": 2008
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160344Z/terminal.transcript",
+      "sha256": "2a219616d177f1cd28454df09441ae1c28977779acad59d1e6500e7d5a63fa1d",
+      "size_bytes": 2188
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160350Z/execution.log",
+      "sha256": "e46560b7c873ede836f7bcd11417eb6c65fec3ea03caa224ce338a950d1be3c2",
+      "size_bytes": 6644
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160350Z/runtime-benchmark-evidence.json",
+      "sha256": "346e79f29cd9846212cc43ed2febd172106cab6df49c9e4b3f9b963250cf0ce4",
+      "size_bytes": 1957
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160350Z/runtime-execution.json",
+      "sha256": "7bf55309fe8c573cc2dcbf208d03d117677a74caf5d23cad4603edcd220e7120",
+      "size_bytes": 2007
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160350Z/terminal.transcript",
+      "sha256": "ca44ed215dd00814fe8e9b18c463f8ad23cca1f45377aae8af8df379bd0a3263",
+      "size_bytes": 2187
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160355Z/execution.log",
+      "sha256": "b3f169d10edcabba9943c449ad27f1dbf56c158cae15cd0dd679d9e02c855ce3",
+      "size_bytes": 6616
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160355Z/runtime-benchmark-evidence.json",
+      "sha256": "7dec021d87ec96ef74aaf53517f7a5065bd7418404fc35301299c3b8f2693f9c",
+      "size_bytes": 1956
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160355Z/runtime-execution.json",
+      "sha256": "7761d715e86234eb84e794d1485b75934410177fe474ffaf7399b09c61ffa8b3",
+      "size_bytes": 2008
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160355Z/terminal.transcript",
+      "sha256": "9c374f1529406377e53212b8b765b34af6e0782f6b92075f7ca05a21f0b758bc",
+      "size_bytes": 2173
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160359Z/execution.log",
+      "sha256": "ac33933f26b5b58999e914183f34e01a01e1c1551c84f63debe6fdf18c8044d9",
+      "size_bytes": 6558
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160359Z/runtime-benchmark-evidence.json",
+      "sha256": "ed7e7ef862167bff3cadf15ab06f23968241fb9289ae13eca0a68968e30ccfc6",
+      "size_bytes": 1957
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160359Z/runtime-execution.json",
+      "sha256": "ebc5114bebd7694c0b04e506346d9be9f4fac3c5883e46df0803d53ef832bb43",
+      "size_bytes": 2008
+    },
+    {
+      "path": "jalon2-llama-cpp-20260827T160359Z/terminal.transcript",
+      "sha256": "ae4e237ab6767d6e7aa8ca4fb3591182a93d21743098685cf88557783d4265c0",
+      "size_bytes": 2144
+    },
+    {
+      "path": "jalon2-summary.json",
+      "sha256": "979ff8956f37ff4a7f6ae46ef8270707924ec8c6a63d9b9a6dd68bed0b481d2e",
+      "size_bytes": 2479
+    }
+  ]
+}
