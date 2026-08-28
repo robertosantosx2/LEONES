@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in __import__("sys").path:
     __import__("sys").path.insert(0, str(ROOT))
 
-from scripts.runtime_registry import get_runtime
+from scripts.runtime_registry import capability_match, get_runtime
 from scripts.runtimes.v1_1_adapters import get_adapter
 
 ALLOWED_FOR_EXECUTION = {"TOP_N", "BENCHMARK_REQUIRED"}
@@ -44,6 +44,20 @@ def resolve_runtime(
     if available_runtimes is not None and runtime_name not in available_runtimes:
         raise ValueError(f"runtime is unavailable: {runtime_name}")
     entry = get_runtime(runtime_name)
+    deployment_class = candidate.get("deployment_class")
+    serving_profile = candidate.get("serving_profile")
+    ok, reasons = capability_match(
+        entry,
+        architecture=candidate.get("architecture_class"),
+        model_format=candidate.get("model_format"),
+        mode=candidate.get("execution_mode"),
+        backend=candidate.get("backend"),
+        deployment_class=deployment_class,
+        serving_profile=serving_profile,
+        required_capabilities=set(candidate.get("required_capabilities") or []),
+    )
+    if not ok:
+        raise ValueError("runtime capability mismatch: " + "; ".join(reasons))
     adapter = get_adapter(entry.id)
     trusted_override = (runtime_commands or {}).get(runtime_name)
     if trusted_override is not None and (
@@ -55,10 +69,6 @@ def resolve_runtime(
         if trusted_override is not None
         else list(entry.entrypoint["argv"])
     )
-    # A registry entry describes a trusted adapter boundary, but it does not by
-    # itself authorize physical execution. Authorization requires an explicit
-    # host-provided trusted command. This keeps declarative selection separate
-    # from physical runtime execution/evidence.
     execution_authorized = (
         trusted_override is not None
         and bool(entry.entrypoint.get("kind"))
