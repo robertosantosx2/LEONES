@@ -34,8 +34,14 @@ if ! mkdir "$LOCKDIR" 2>/dev/null; then
 fi
 trap 'rmdir "$LOCKDIR" 2>/dev/null || true' EXIT
 
-# Only runner-owned generated paths may already be dirty.
-UNRELATED="$(git status --porcelain --untracked-files=all | grep -vE '^.. (artifacts/jalon3-audit/|docs/audits/jalon3/latest\\.txt$)' || true)"
+# Only runner-owned generated paths may already be dirty. Use exact path
+# handling instead of a fragile regular expression over porcelain output.
+UNRELATED="$(git status --porcelain --untracked-files=all | awk '
+    {
+        path=substr($0,4)
+        if (path != "docs/audits/jalon3/latest.txt" && path !~ /^artifacts\/jalon3-audit\//) print
+    }
+')"
 if [ -n "$UNRELATED" ]; then
     echo "ERROR: unrelated working-tree changes; runner stopped."
     echo "$UNRELATED"
