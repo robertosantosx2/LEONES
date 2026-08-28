@@ -1,0 +1,29 @@
+============================================================
+LEONES — JALÓN 4 AUDIT RUNNER
+============================================================
+UTC: 20260828T231348Z
+BRANCH: rc1-minimal-script-cleanup
+
+========== CONTRACT ==========
+PASS: JALÓN 4 contract and runtime registry present
+
+========== TAXONOMY TESTS ==========
+.....                                                                    [100%]
+5 passed in 0.02s
+
+========== ADAPTER/STACK CONTRACT TESTS ==========
+........                                                                 [100%]
+8 passed in 0.04s
+
+========== DIFF ==========
+
+============================================================
+JALÓN 4 — MACHINE-READABLE RESULT
+============================================================
+CONTRACT_GATE=PASS
+TAXONOMY_GATE=PASS
+ADAPTER_GATE=PASS
+DIFF_GATE=PASS
+JALON4_DECLARATIVE_CLOSE=PASS
+AUDIT_EXIT_CODE=0
+============================================================
