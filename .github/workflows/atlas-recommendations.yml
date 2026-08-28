@@ -7,9 +7,8 @@ on:
       hardware: {description: "Hardware profile", required: true, default: "cpu-i5-16gb"}
       ram: {description: "RAM in GB", required: true, default: "16"}
       vram: {description: "VRAM in GB", required: false, default: "0"}
+      runtime: {description: "Inference runtime", required: true, default: "llama.cpp"}
       context: {description: "Required context tokens", required: true, default: "4096"}
-      required_jgb: {description: "Minimum JGB level (optional)", required: false, default: ""}
-      prefer_jgb: {description: "Prefer higher JGB", required: false, default: "false"}
   schedule:
     - cron: '47 5 * * *'
 
@@ -36,20 +35,22 @@ jobs:
         run: PYTHONPATH=. python3 -m pytest -q scripts/test_runtime_feedback_atlas.py
       - name: Apply measured runtime evidence to Atlas feed
         run: python3 scripts/runtime_feedback_atlas.py
-      - name: Generate recommendation report
+      - name: Generate recommendation report through canonical selector
         env:
           WORKLOAD: ${{ inputs.workload || 'chat' }}
           HARDWARE: ${{ inputs.hardware || 'cpu-i5-16gb' }}
           RAM: ${{ inputs.ram || '16' }}
           VRAM: ${{ inputs.vram || '0' }}
+          RUNTIME: ${{ inputs.runtime || 'llama.cpp' }}
           CONTEXT: ${{ inputs.context || '4096' }}
-          REQUIRED_JGB: ${{ inputs.required_jgb }}
-          PREFER_JGB: ${{ inputs.prefer_jgb || 'false' }}
         run: |
-          args="--workload $WORKLOAD --hardware $HARDWARE --ram $RAM --vram $VRAM --context $CONTEXT"
-          if [ -n "$REQUIRED_JGB" ]; then args="$args --min-jgb $REQUIRED_JGB"; fi
-          if [ "$PREFER_JGB" = "true" ]; then args="$args --prefer-jgb"; fi
-          python3 scripts/atlas_recommend_from_feed.py $args
+          python3 scripts/atlas_recommend_from_feed.py \
+            --workload "$WORKLOAD" \
+            --hardware "$HARDWARE" \
+            --ram "$RAM" \
+            --vram "$VRAM" \
+            --runtime "$RUNTIME" \
+            --context "$CONTEXT"
       - name: Generate economic ranking
         env:
           HARDWARE: ${{ inputs.hardware || 'cpu-i5-16gb' }}
