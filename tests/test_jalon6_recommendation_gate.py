@@ -54,12 +54,14 @@ def test_recommend_is_valid_only_with_evidence(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
-def test_external_score_requires_evidence_profile(tmp_path: Path) -> None:
+def test_external_score_requires_nonempty_evidence_profile(tmp_path: Path) -> None:
     payload = base_decision()
     payload["evidence_profile"] = {}
     result = run_gate(tmp_path, payload)
-    assert result.returncode == 0, result.stderr
+    assert result.returncode != 0
+    assert "evidence profile" in result.stderr
+
     payload.pop("evidence_profile")
     result = run_gate(tmp_path, payload)
     assert result.returncode != 0
-    assert "evidence profile" in result.stderr
+    assert "missing required field: evidence_profile" in result.stderr
