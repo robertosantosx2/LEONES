@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -u
+set -euo pipefail
 
 # JALÓN 3 — canonical audit runner.
 # One command on Ubuntu -> audit -> tracked latest.txt -> Git push.
@@ -10,6 +10,11 @@ ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
 BRANCH="$(git branch --show-current)"
+if [ -z "$BRANCH" ]; then
+    echo "ERROR: detached HEAD; runner stopped."
+    exit 2
+fi
+
 TRACKED_DIR="docs/audits/jalon3"
 TRACKED_OUT="$TRACKED_DIR/latest.txt"
 OUTDIR="artifacts/jalon3-audit"
@@ -21,23 +26,23 @@ OUT="$OUTDIR/jalon3-audit-$STAMP.txt"
 
 mkdir -p "$OUTDIR" "$TRACKED_DIR"
 
-# Generated audit files are allowed; unrelated work is never overwritten.
+# Only runner-owned generated paths may already be dirty.
 UNRELATED="$(git status --porcelain --untracked-files=all | grep -vE '^.. (artifacts/jalon3-audit/|docs/audits/jalon3/latest\\.txt$)' || true)"
 if [ -n "$UNRELATED" ]; then
     echo "ERROR: unrelated working-tree changes; runner stopped."
     echo "$UNRELATED"
-    exit 2
+    exit 3
 fi
 
 # Never force-push and never silently overwrite a divergent local branch.
 git fetch origin "$BRANCH" >/dev/null 2>&1 || {
     echo "ERROR: unable to fetch origin/$BRANCH"
-    exit 3
+    exit 4
 }
 if ! git merge-base --is-ancestor HEAD "origin/$BRANCH"; then
     echo "ERROR: local branch is not an ancestor of origin/$BRANCH."
     echo "Synchronize first with: git pull --rebase origin $BRANCH"
-    exit 4
+    exit 5
 fi
 
 # Full transcript -> local artifact + one compact Git-tracked mirror.
@@ -61,7 +66,7 @@ run_contract_gate() {
         return 11
     fi
     echo "PASS: canonical contract present"
-    grep -E '^(\\*\\*Estado:\\*\\*|\\*\\*Fecha:\\*\\*|\\*\\*Base:\\*\\*|\\*\\*Commit de implementación asociado:\\*\\*)' "$CONTRACT" || true
+    grep -E '^(\*\*Estado:\*\*|\*\*Fecha:\*\*|\*\*Base:\*\*|\*\*Commit de implementación asociado:\*\*)' "$CONTRACT" || true
     echo "PASS: v1.1 schema present"
     return 0
 }
@@ -109,8 +114,7 @@ data = json.loads(p.read_text(encoding="utf-8"))
 schema = json.loads(schema_path.read_text(encoding="utf-8"))
 errors = []
 
-required = schema["required"]
-for key in required:
+for key in schema["required"]:
     if key not in data:
         errors.append(f"missing:{key}")
 
@@ -141,7 +145,6 @@ process = data.get("process", {})
 measurements = data.get("measurements")
 artifact = data.get("artifact", {})
 
-# JALÓN 3 is specifically the physical llama.cpp execution gate.
 if runtime.get("name") != "llama.cpp":
     errors.append(f"runtime_not_llama_cpp:{runtime.get('name')}")
 if not str(runtime.get("version", "")).strip():
@@ -272,7 +275,7 @@ git add -f "$TRACKED_OUT"
 if git diff --cached --quiet; then
     echo "No new tracked audit changes."
 else
-    git commit -m "chore: capture JALON 3 audit" || AUDIT_RC=40
+    git commit -m "chore: capture JALON 3 audit"
 fi
 
 echo "========== PUSH =========="
