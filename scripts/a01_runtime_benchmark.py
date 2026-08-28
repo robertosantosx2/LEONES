@@ -2,7 +2,7 @@
 """Canonical A01 path.
 
 selector -> runtime-selection.v1 gate -> A01 executor -> grader
-         -> runtime benchmark -> evidence.
+         -> runtime benchmark -> evidence -> JALON 7 task result.
 
 The CI path uses a controlled trusted runtime; real-runtime evidence is kept
 separate and must retain its runtime/model provenance.
@@ -18,6 +18,8 @@ import re
 import subprocess
 import sys
 import time
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -60,10 +62,6 @@ def execute(
     prompt: str,
     timeout: float,
 ) -> tuple[dict[str, Any], str, float]:
-    # A01 is also a directly executable CLI. Do not rely on the caller having
-    # exported PYTHONPATH=. (GitHub Actions and a clean shell often do not.)
-    # Inject the repository root only for the child process; runtime commands
-    # remain trusted argv lists and are unaffected by this import-path fix.
     repo_root = Path(__file__).resolve().parents[1]
     env = os.environ.copy()
     existing_pythonpath = env.get("PYTHONPATH")
@@ -72,7 +70,6 @@ def execute(
         if not existing_pythonpath
         else f"{repo_root}{os.pathsep}{existing_pythonpath}"
     )
-
     cmd = [
         sys.executable,
         "scripts/run_a01_selected.py",
@@ -87,8 +84,6 @@ def execute(
         "--out",
         str(output_file),
     ]
-    # Never allow an executor result from a previous run to be mistaken for
-    # fresh evidence when the current runtime fails before writing its output.
     output_file.unlink(missing_ok=True)
     started = time.perf_counter()
     proc = subprocess.run(
@@ -114,7 +109,13 @@ def execute(
 
 
 def build_benchmark(
-    selection: dict[str, Any], result: dict[str, Any], raw: str, elapsed: float
+    selection: dict[str, Any],
+    result: dict[str, Any],
+    raw: str,
+    elapsed: float,
+    *,
+    execution_id: str | None = None,
+    finished_at: str | None = None,
 ) -> dict[str, Any]:
     plans = result.get("runtime_selection", {}).get("execution_plans", [])
     plan = plans[0] if plans else {}
@@ -124,22 +125,41 @@ def build_benchmark(
     model = plan.get("model", {})
     tps = extract_tps(raw, result, elapsed)
     wall = agentic.get("metrics", {}).get("runtime_wall_seconds", elapsed)
-    return {
+    execution_id = execution_id or f"a01-{uuid.uuid4().hex}"
+    finished_at = finished_at or datetime.now(timezone.utc).isoformat()
+    model_id = model.get("id") or plan.get("model_id")
+    benchmark = {
         "schema": "runtime-benchmark.v1",
+        "schema_version": "runtime-benchmark.v1",
         "status": "measured",
+        "measurement_status": "measured",
         "task": "A01",
+        "execution_id": execution_id,
+        "finished_at": finished_at,
         "runtime": runtime.get("name"),
-        "model": model.get("id") or plan.get("model_id"),
+        "adapter": runtime.get("adapter"),
+        "runtime_version": runtime.get("version"),
+        "model": model_id,
+        "model_id": model_id,
+        "model_revision": model.get("revision"),
         "quantization": plan.get("quantization"),
+        "hardware": plan.get("hardware", {}),
+        "workload": plan.get("workload", {}),
         "wall_seconds": float(wall),
         "tokens_per_second": tps,
         "grader_pass": outcome.get("status") == "success",
         "estimated_tps": plan.get("estimated_tps"),
         "measured_tps": tps,
+        "measured": {
+            "wall_seconds": float(wall),
+            "tokens_per_second": tps,
+        },
         "executor_result_sha256": hashlib.sha256(
             json.dumps(result, sort_keys=True).encode()
         ).hexdigest(),
     }
+    benchmark["benchmark_evidence_id"] = f"A01:{execution_id}"
+    return benchmark
 
 
 def main() -> int:
@@ -167,10 +187,19 @@ def main() -> int:
         args.prompt,
         args.timeout,
     )
-    benchmark = build_benchmark(selection, result, raw, elapsed)
+    execution_id = f"a01-{uuid.uuid4().hex}"
+    finished_at = datetime.now(timezone.utc).isoformat()
+    benchmark = build_benchmark(
+        selection,
+        result,
+        raw,
+        elapsed,
+        execution_id=execution_id,
+        finished_at=finished_at,
+    )
     evidence = {
         "schema": "evidence.v1",
-        "evidence_id": f"A01:{benchmark.get('model')}:{benchmark.get('runtime')}",
+        "evidence_id": benchmark["benchmark_evidence_id"],
         "source": "LEONES-A01-runtime-benchmark",
         "selection": selection,
         "runtime_selection": result.get("runtime_selection"),
