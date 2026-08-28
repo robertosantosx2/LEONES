@@ -14,6 +14,15 @@ from .external_stack import PreflightResult
 class MagnitudeAdapter:
     expected_ref: str
 
+    def evidence(self):
+        from .external_stack import EvidenceResult
+        return EvidenceResult(
+            state="REPORTED",
+            product="Magnitude",
+            version=self.expected_ref,
+            source="fixed_ref",
+        )
+
     def preflight(self) -> PreflightResult:
         return PreflightResult(
             status="PASS",
