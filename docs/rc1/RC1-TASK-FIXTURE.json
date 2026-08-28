@@ -1,0 +1,28 @@
+{
+  "schema": "leones.rc1.task-fixture.v1",
+  "task_id": "RC1-A01",
+  "task_version": "1.0.0",
+  "records": [
+    {
+      "model_id": "fixture-model-alpha",
+      "family": "fixture",
+      "parameter_count": "1B",
+      "license": "MIT",
+      "expected_role": "general"
+    },
+    {
+      "model_id": "fixture-model-beta",
+      "family": "fixture",
+      "parameter_count": "3B",
+      "license": "Apache-2.0",
+      "expected_role": "coding"
+    }
+  ],
+  "lookup_target": "fixture-model-beta",
+  "expected": {
+    "model_id": "fixture-model-beta",
+    "parameter_count": "3B",
+    "license": "Apache-2.0",
+    "expected_role": "coding"
+  }
+}
