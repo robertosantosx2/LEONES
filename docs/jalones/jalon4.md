@@ -1,6 +1,6 @@
 # JALÓN 4 — Taxonomía y alcance de runtimes físicos
 
-**Estado:** 🟡 EN PREPARACIÓN  
+**Estado:** 🟠 IMPLEMENTACIÓN FIJADA · VALIDACIÓN DE HOST PENDIENTE  
 **Base:** `rc1-minimal-script-cleanup`
 
 ## 1. Objetivo
@@ -25,36 +25,15 @@ La combinación de ambos campos forma parte del contrato de selección.
 
 ## 3. Registro actual
 
-El registro `runtime-registry.v1.1` contiene 11 runtimes:
-
-- llama.cpp
-- FreeToken
-- AirLLM
-- Ollama
-- vLLM
-- SGLang
-- MLX/MLX-LM
-- ExLlama
-- OpenVINO
-- ONNX Runtime GenAI
-- TensorRT-LLM
-
-Cada entrada declara, como mínimo, clase de despliegue, perfil de servicio, modos, arquitecturas, formatos, backends, capacidades, entrypoint, disponibilidad, métrica y requisitos del host.
+El registro `runtime-registry.v1.1` contiene 11 runtimes. Cada entrada declara clase de despliegue, perfil de servicio, modos, arquitecturas, formatos, backends, capacidades, entrypoint, disponibilidad, métrica y requisitos del host.
 
 ## 4. Regla de selección
 
 El selector no debe considerar equivalente un runtime local y uno de serving.
 
-Ejemplo canónico:
-
 ```text
-workstation + single_user
-        ↓
-llama.cpp / Ollama / FreeToken / AirLLM / ...
-
- datacenter + multi_user
-        ↓
-vLLM / SGLang / TensorRT-LLM
+workstation + single_user → runtimes workstation
+ datacenter + multi_user   → runtimes datacenter
 ```
 
 La clasificación no afirma rendimiento. Solo determina compatibilidad declarativa.
@@ -65,33 +44,27 @@ Toda entrada marcada `physical_test_required: true` necesita validación en el h
 
 El registro puede declarar compatibilidad; no puede convertir esa declaración en medición.
 
-## 6. Separación respecto de JALÓN 3
+## 6. Integración realizada
+
+La puerta `scripts/runtime_gate.py` aplica ahora la taxonomía del registro al candidato seleccionado. Si se proporcionan `deployment_class`, `serving_profile`, arquitectura, formato, modo, backend o capacidades requeridas, cualquier incompatibilidad bloquea el plan antes de la ejecución física.
+
+Además, las pruebas de JALÓN 4 cubren tanto la taxonomía del registro como su aplicación efectiva en la puerta de runtime.
+
+## 7. Separación respecto de JALÓN 3
 
 JALÓN 3 fija cómo medir y conservar evidencia.
 
 JALÓN 4 fija **qué runtime puede entrar legítimamente en el plan de ejecución** según el contexto de despliegue.
 
 ```text
-JALÓN 3
-medir correctamente
-       ↓
-JALÓN 4
-seleccionar correctamente
-       ↓
+selección
+   ↓
+JALÓN 4 — compatibilidad
+   ↓
 runtime físico
-       ↓
-evidencia v1.1
+   ↓
+JALÓN 3 — medición/evidencia
 ```
-
-## 7. Estado de implementación
-
-La taxonomía y el registro ya están implementados. Las pruebas de JALÓN 4 verifican:
-
-- que existen los 11 runtimes canónicos;
-- que cada entrada pertenece a la taxonomía declarada;
-- que `datacenter + multi_user` acepta vLLM;
-- que `datacenter` rechaza Ollama;
-- que `workstation + single_user` acepta FreeToken.
 
 ## 8. Lo que queda fuera
 
@@ -103,6 +76,8 @@ La taxonomía y el registro ya están implementados. Las pruebas de JALÓN 4 ver
 
 ## 9. Criterio de cierre
 
-JALÓN 4 podrá cerrarse cuando el contrato de taxonomía quede integrado de forma verificable en el flujo de selección y exista evidencia automatizada suficiente para impedir combinaciones incompatibles sin depender de intervención manual.
+JALÓN 4 podrá cerrarse cuando la validación en el host confirme que el flujo real respeta la taxonomía y las combinaciones incompatibles quedan bloqueadas sin intervención manual.
 
-La ejecución física de runtimes seguirá siendo una fase separada y estará sujeta al contrato de medición de JALÓN 3.
+## 10. Próximo paso
+
+**Ubuntu:** ejecutar únicamente la batería corta de JALÓN 4 y devolver el resultado resumido. No hay que rediseñar ni escribir código adicional antes de esa validación.
