@@ -344,9 +344,48 @@ Para contribuir, consulta **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 ---
 
+# 🚧 Release Candidate 1 — versión mínima operativa
+
+**RC1 es el siguiente objetivo de producto después del cierre de JALÓN 3.** El objetivo no es terminar todo LEONES, sino cerrar un **vertical slice mínimo, reproducible y demostrable** que conecte hardware, selección, runtime, ejecución, medición, evidencia y recomendación.
+
+### Objetivo de RC1
+
+```text
+hardware
+   ↓
+perfil hardware
+   ↓
+selección de candidatos
+   ↓
+plan runtime autorizado
+   ↓
+llama.cpp
+   ↓
+ejecución real
+   ↓
+medición
+   ↓
+evidencia
+   ↓
+validación
+   ↓
+recomendación explicable
+```
+
+La hoja de ruta, el alcance congelado, los gates técnicos y la **Definition of Done** están documentados en **[`docs/RELEASE-CANDIDATE-1.md`](docs/RELEASE-CANDIDATE-1.md)**.
+
+**Regla de alcance:** *menos superficie, más realidad*. JALÓN 1, JALÓN 2 y JALÓN 3 se consideran base cerrada; RC1 debe reutilizar sus contratos en lugar de reabrirlos. Los runtimes adicionales, la UI definitiva, la batería completa de benchmarks, TCO y otras ampliaciones no bloquean el primer producto operativo.
+
+---
+
 # 📚 Documentación
 
 La documentación técnica se encuentra principalmente bajo [`docs/`](docs/), mientras que el conocimiento publicable se integra en la web de LEONES. Las fuentes externas deben conservar su identidad y procedencia y no deben confundirse con evidencia generada por LEONES.
+
+- **[`docs/RELEASE-CANDIDATE-1.md`](docs/RELEASE-CANDIDATE-1.md)** — plan congelado para construir la primera versión mínima operativa.
+- **[`docs/completed/JALON-3-MEASUREMENT-PROTOCOL.md`](docs/completed/JALON-3-MEASUREMENT-PROTOCOL.md)** — contrato operativo de medición física cerrado.
+- **[`docs/README.md`](docs/README.md)** — índice documental canónico.
+- **[`PIPELINE_E2E.md`](PIPELINE_E2E.md)** — recorrido integral.
 
 ---
 
