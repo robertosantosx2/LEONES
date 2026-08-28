@@ -1,33 +1,55 @@
 #!/usr/bin/env python3
-"""One-command Selector de LLM -> runtime-selection.v1 pipeline.
+"""Build the smallest traceable LEONES model-selection decision.
 
-Mandatory order: use case -> hardware -> inference runtime -> optimization ->
-external estimators -> 6 models/category/estimator -> 3/category -> runtime gate.
-Dense selection uses total parameters; MoE selection uses active parameters.
+The pipeline answers one question: **given this workload, observed hardware,
+fit evidence and chosen runtime, what should LEONES test next?**
+
+Order is contractual:
+
+    workload → hardware → inference config → model candidates → fit reduction
+    → runtime gate → authorized execution plan
+
+The script may use LLMFit and other external fit sources as *estimation*.
+Those signals are never treated as physical measurements. A later runtime
+runner owns execution, and the evidence layer owns measurement acceptance.
+
+Inputs are local JSON/CSV files plus the selected runtime. Output is one JSON
+selection artifact. The script does not download models, execute inference,
+benchmark hardware or publish results.
 """
 
 from __future__ import annotations
-import argparse, json, re
+
+import argparse
+import csv
+import json
+import re
 from pathlib import Path
+
+from scripts.fit_consensus import (
+    CATEGORIES,
+    build_consensus,
+    reduce_estimator_outputs,
+)
 from scripts.hardware_profile import profile as probe_hardware
-from scripts.model_selector import DEFAULT_FEED, select
-from scripts.fit_consensus import CATEGORIES, build_consensus, reduce_estimator_outputs
-from scripts.runtime_gate import gate_selection
 from scripts.inference_config import resolve_inference_configuration
+from scripts.model_selector import DEFAULT_FEED, select
+from scripts.runtime_gate import gate_selection
 
 
 def load_rows(path: Path) -> list[dict[str, str]]:
-    import csv
-
+    """Load a UTF-8 CSV feed without changing its values or provenance."""
     with path.open(encoding="utf-8-sig", newline="") as fh:
         return list(csv.DictReader(fh))
 
 
 def _norm(value: object) -> str:
+    """Normalize identifiers only for comparison; preserve original values."""
     return re.sub(r"[^a-z0-9]+", " ", str(value or "").lower()).strip()
 
 
 def _representative_ids(reduction: dict) -> set[str]:
+    """Return normalized model IDs selected by the fit consensus."""
     return {
         _norm(item.get("model_id"))
         for category in CATEGORIES
@@ -36,20 +58,34 @@ def _representative_ids(reduction: dict) -> set[str]:
 
 
 def enrich_external_fit(selection: dict, fit_sources: dict | None) -> dict:
-    """Reduce external estimator union to exactly 3 representatives/category."""
+    """Keep the agreed fit-consensus representatives and provenance.
+
+    Six estimator outputs are required by the current selection contract. The
+    reduction produces three representatives per category. Their role is to
+    reduce the search space before physical execution; it is not a benchmark.
+    """
     if not fit_sources:
         raise ValueError(
             "six fit estimator outputs are required before model valuation"
         )
+
     reduction = reduce_estimator_outputs(fit_sources)
     selection["fit_cross_validation"] = reduction
     selected_ids = _representative_ids(reduction)
+
     for candidate in selection.get("candidates", []):
         model_id = candidate.get("model_id") or candidate.get("model_name")
-        candidate["fit_cross_validation"] = build_consensus(model_id, fit_sources)
+        candidate["fit_cross_validation"] = build_consensus(
+            model_id, fit_sources
+        )
         candidate["parameter_representative"] = _norm(model_id) in selected_ids
+
+    # Only consensus representatives continue. The original selection data
+    # remains embedded in the artifact, so this is a reduction, not a rewrite.
     selection["candidates"] = [
-        x for x in selection.get("candidates", []) if x.get("parameter_representative")
+        candidate
+        for candidate in selection.get("candidates", [])
+        if candidate.get("parameter_representative")
     ]
     selection["counts"]["fit_representatives"] = len(selection["candidates"])
     selection["counts"]["fit_representatives_expected"] = 9
@@ -69,13 +105,18 @@ def build_pipeline(
     hardware: dict | None = None,
     runtime_commands: dict[str, list[str]] | None = None,
 ) -> dict:
+    """Build selection, inference configuration and runtime authorization."""
     if not runtime:
         raise ValueError("inference runtime must be decided before model evaluation")
+
+    # Hardware can be injected by tests or a trusted caller. Otherwise this is
+    # the single observation boundary: selection never invents host facts.
     host = hardware or probe_hardware()
     memory = host.get("memory", {})
     available_bytes = memory.get("available_bytes") or memory.get("total_bytes")
     if available_bytes is None:
         raise ValueError("hardware profile has no usable memory measurement")
+
     ram_gb = float(available_bytes) / (1024**3)
     hardware_label = host.get("cpu", {}).get("model") or "unknown-cpu"
     gpus = host.get("gpu") or []
@@ -87,6 +128,7 @@ def build_pipeline(
         "gpu": gpus[0].get("description") if gpus else None,
         "vram_gb": vram_gb,
     }
+
     measurements = host.get("measurements") or host.get("measurement") or {}
     hardware_v1.update(
         {
@@ -98,6 +140,10 @@ def build_pipeline(
             or measurements.get("cpu_moe_bandwidth_gbps"),
         }
     )
+
+    # Fix inference conditions before comparing models. Otherwise the selector
+    # could rank candidates under a context/runtime configuration that later
+    # changes at execution time.
     inference = resolve_inference_configuration(
         workload=workload,
         hardware=hardware_v1,
@@ -105,7 +151,7 @@ def build_pipeline(
         optimizations=optimizations,
         context_tokens=context,
     )
-    # Only after inference configuration is fixed do we evaluate model candidates.
+
     selection = select(
         load_rows(feed),
         workload=workload,
@@ -120,8 +166,13 @@ def build_pipeline(
     )
     selection["inference_configuration"] = inference
     selection = enrich_external_fit(selection, fit_sources)
+
+    # The runtime gate is the last decision boundary. It can authorize an
+    # execution plan; it cannot execute the runtime or claim measured output.
     gate = gate_selection(
-        selection, runtime_commands=runtime_commands, hardware=hardware_v1
+        selection,
+        runtime_commands=runtime_commands,
+        hardware=hardware_v1,
     )
     return {
         "schema_version": "1.0",
@@ -134,6 +185,7 @@ def build_pipeline(
 
 
 def main() -> int:
+    """Run the pipeline from explicit input files and write one JSON artifact."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workload", required=True)
     parser.add_argument("--runtime", required=True)
@@ -146,6 +198,7 @@ def main() -> int:
     parser.add_argument("--runtime-commands", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
+
     llmfit = json.loads(args.llmfit.read_text(encoding="utf-8"))
     fit_sources = json.loads(args.fit_sources.read_text(encoding="utf-8"))
     commands = (
@@ -153,6 +206,7 @@ def main() -> int:
         if args.runtime_commands
         else None
     )
+
     result = build_pipeline(
         workload=args.workload,
         feed=args.feed,
@@ -166,10 +220,13 @@ def main() -> int:
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(
-        json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
     )
     print(
-        f"selection={result['selection']['counts']} runtime_plans={result['runtime_selection']['counts']['plans']} -> {args.out}"
+        f"selection={result['selection']['counts']} "
+        f"runtime_plans={result['runtime_selection']['counts']['plans']} "
+        f"-> {args.out}"
     )
     return 0
 
