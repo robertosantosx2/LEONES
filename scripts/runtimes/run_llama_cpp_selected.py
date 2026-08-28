@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute an already-authorized LEONES runtime plan with llama.cpp.
+"""Execute one already-authorized LEONES runtime plan with llama.cpp.
 
 This is intentionally the final local execution bridge: it accepts a runtime
 plan produced by ``runtime_gate.py``, refuses unauthorized plans, builds a
@@ -10,14 +10,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import subprocess
+import uuid
 from pathlib import Path
 from typing import Any
 
+from scripts.record_benchmark import record_measurement
 from scripts.runtimes.llama_cpp_adapter import (
     build_command_from_plan,
     tokens_per_second_pattern,
 )
-from scripts.run_and_record_benchmark import run_and_record
 
 
 def run_plan(
@@ -30,9 +33,32 @@ def run_plan(
     context_tokens: int,
     executable: str = "llama-cli",
 ) -> dict[str, Any]:
+    """Execute one authorized plan and return its observed measurement."""
     command = build_command_from_plan(
-        plan, model_path, prompt, executable=executable, context_tokens=context_tokens
+        plan,
+        model_path,
+        prompt,
+        executable=executable,
+        context_tokens=context_tokens,
     )
+    completed = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    output = f"{completed.stdout}\n{completed.stderr}"
+    if completed.returncode != 0:
+        raise RuntimeError(
+            f"llama.cpp command failed with exit code {completed.returncode}"
+        )
+
+    match = re.search(tokens_per_second_pattern(), output)
+    if not match:
+        raise ValueError(
+            "llama.cpp output does not contain a tokens-per-second measurement"
+        )
+
     metadata = {
         "model": plan["model_id"],
         "variant": plan.get("variant") or "default",
@@ -44,11 +70,14 @@ def run_plan(
         "selection_rank": plan.get("selection_rank"),
         "fit_score": plan.get("fit_score"),
         "selection_status": plan.get("selection_status"),
+        "execution_id": str(uuid.uuid4()),
+        "tokens_per_second": float(match.group(1)),
     }
-    return run_and_record(command, metadata, tokens_per_second_pattern())
+    return record_measurement(metadata)
 
 
 def main() -> int:
+    """Execute one JSON plan from explicit local inputs and print its result."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--model", required=True)
