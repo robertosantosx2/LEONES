@@ -46,9 +46,35 @@ def resolve_runtime(
     entry = get_runtime(runtime_name)
     deployment_class = candidate.get("deployment_class")
     serving_profile = candidate.get("serving_profile")
+    hw = dict(hardware or {})
+    hw.update(candidate.get("hardware") or {})
+    adapter = get_adapter(entry.id)
+
+    # Runtime-specific eligibility is authoritative for specialized runtimes.
+    # Let the adapter reject an invalid model/workload before generic taxonomy
+    # matching can mask the actionable reason.
+    runtime_plan_probe = {
+        "runtime": entry.id,
+        "adapter": entry.adapter,
+        "model_id": model_id,
+        "model": candidate.get("model") or {},
+        "hardware": hw,
+        "moe": candidate.get("moe") or {},
+        "workload": candidate.get("workload") or {},
+        "architecture_class": (
+            "moe"
+            if (candidate.get("moe") or {}).get("is_moe")
+            else "dense"
+        ),
+        "execution_mode": candidate.get("execution_mode"),
+        "backend": candidate.get("backend"),
+        "quantization": quantization,
+    }
+    adapter.validate(runtime_plan_probe, entry)
+
     ok, reasons = capability_match(
         entry,
-        architecture=candidate.get("architecture_class"),
+        architecture=runtime_plan_probe["architecture_class"],
         model_format=candidate.get("model_format"),
         mode=candidate.get("execution_mode"),
         backend=candidate.get("backend"),
@@ -58,7 +84,6 @@ def resolve_runtime(
     )
     if not ok:
         raise ValueError("runtime capability mismatch: " + "; ".join(reasons))
-    adapter = get_adapter(entry.id)
     trusted_override = (runtime_commands or {}).get(runtime_name)
     if trusted_override is not None and (
         not trusted_override or not all(isinstance(x, str) for x in trusted_override)
@@ -74,8 +99,6 @@ def resolve_runtime(
         and bool(entry.entrypoint.get("kind"))
         and adapter.adapter_id == entry.adapter
     )
-    hw = dict(hardware or {})
-    hw.update(candidate.get("hardware") or {})
     model = candidate.get("model") or {}
     runtime_plan = {
         "schema_version": SCHEMA_VERSION,
