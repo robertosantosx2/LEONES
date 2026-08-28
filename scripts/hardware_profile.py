@@ -1,9 +1,24 @@
 #!/usr/bin/env python3
-"""Collect a reproducible Linux hardware profile for LEONES model selection.
+"""Observe the local Linux hardware needed by the RC1 decision path.
 
-The probe reports observed host facts only. It does not infer model fit and it
-does not benchmark a model. Expensive measurements are opt-in; the default
-profile is safe to run on a Debian/Ubuntu workstation.
+Inputs
+------
+No model, prompt or external service is required. The script reads standard
+Linux interfaces and commands when they are available.
+
+Output
+------
+A JSON profile containing observed platform, CPU, memory, GPU, disks, network
+link speeds and tool availability. With ``--out`` the same JSON is written to
+that path; otherwise it is printed to stdout.
+
+Boundary
+--------
+This script **observes** hardware. It does not estimate model fit, download or
+run models, benchmark hardware, install software, or publish anything.
+Optional/unsupported measurements are represented as missing values rather
+than invented values. That distinction is important because this profile is
+the evidence boundary between the user's machine and later selection logic.
 """
 
 from __future__ import annotations
@@ -20,15 +35,19 @@ from typing import Any
 
 
 def _run(*args: str) -> str:
+    """Run one read-only probe and return empty text when it is unavailable."""
     try:
         return subprocess.check_output(
             args, text=True, stderr=subprocess.DEVNULL
         ).strip()
     except (FileNotFoundError, subprocess.CalledProcessError):
+        # A missing Linux utility is not proof that the corresponding hardware
+        # is absent. Returning empty data preserves that uncertainty honestly.
         return ""
 
 
 def _num(value: str) -> float | None:
+    """Convert a numeric probe value without manufacturing a fallback."""
     try:
         return float(value)
     except (TypeError, ValueError):
@@ -36,12 +55,14 @@ def _num(value: str) -> float | None:
 
 
 def cpu() -> dict[str, Any]:
+    """Return CPU facts exposed by ``lscpu`` or portable Python fallbacks."""
     info = {}
     raw = _run("lscpu")
     for line in raw.splitlines():
         if ":" in line:
             key, value = line.split(":", 1)
             info[key.strip()] = value.strip()
+
     return {
         "model": info.get("Model name", platform.processor()),
         "cores": int(info["CPU(s)"])
@@ -54,17 +75,22 @@ def cpu() -> dict[str, Any]:
 
 
 def memory() -> dict[str, Any]:
+    """Return total and available memory as observed by ``free -b``."""
     mem = {}
     raw = _run("free", "-b")
     for line in raw.splitlines():
         if line.startswith("Mem:"):
             fields = line.split()
             if len(fields) >= 7:
-                mem = {"total_bytes": int(fields[1]), "available_bytes": int(fields[6])}
+                mem = {
+                    "total_bytes": int(fields[1]),
+                    "available_bytes": int(fields[6]),
+                }
     return mem
 
 
 def gpu() -> list[dict[str, str]]:
+    """Return display controllers visible to PCI enumeration."""
     raw = _run("lspci", "-mm")
     result = []
     for line in raw.splitlines():
@@ -78,6 +104,7 @@ def gpu() -> list[dict[str, str]]:
 
 
 def disks() -> list[dict[str, Any]]:
+    """Return block-device facts exposed by ``lsblk`` without benchmarking."""
     raw = _run("lsblk", "-dn", "-o", "NAME,TYPE,SIZE,ROTA,MODEL")
     result = []
     for line in raw.splitlines()[1:]:
@@ -109,6 +136,7 @@ def network_bandwidth() -> dict[str, Any]:
 
 
 def profile() -> dict[str, Any]:
+    """Build the complete observation-only profile consumed by selection."""
     return {
         "schema_version": "1.0",
         "probe": "LEONES-hardware-profile",
@@ -135,6 +163,7 @@ def profile() -> dict[str, Any]:
 
 
 def main() -> int:
+    """Print or save the observed profile; never performs a physical benchmark."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
