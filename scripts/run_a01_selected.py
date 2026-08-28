@@ -15,7 +15,7 @@ from pathlib import Path
 
 # When executed as ``python scripts/run_a01_selected.py`` Python puts only the
 # scripts/ directory on sys.path. Bootstrap the repository root so the CLI is
-# usable from a clean Debian shell without requiring PYTHONPATH=.
+# usable from a clean shell without requiring PYTHONPATH=.
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -44,10 +44,13 @@ def run_selected(
     timeout_seconds: float = 60.0,
 ) -> dict:
     gate = gate_selection(selection, runtime_commands=runtime_commands)
-    executable = [p for p in gate["execution_plans"] if p.get("execution_authorized")]
+    executable = [
+        p for p in gate["execution_plans"] if p.get("execution_authorized")
+    ]
     if not executable:
         raise RuntimeError(
-            "runtime-selection.v1 produced no executable plan; trusted runtime command is required"
+            "runtime-selection.v1 produced no executable plan; "
+            "trusted runtime command is required"
         )
     plan = executable[0]
     workspace.mkdir(parents=True, exist_ok=True)
@@ -93,10 +96,10 @@ def main() -> int:
     args.out.write_text(
         json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    print(
-        f"A01 status={result['agentic']['outcome']['status']} evidence={result['evidence']['evidence_type']} -> {args.out}"
-    )
-    return 0 if result["agentic"]["outcome"]["status"] == "success" else 1
+    status = result["agentic"]["outcome"]["status"]
+    evidence_type = result["evidence"]["evidence_type"]
+    print(f"A01 status={status} evidence={evidence_type} -> {args.out}")
+    return 0 if status == "success" else 1
 
 
 if __name__ == "__main__":
