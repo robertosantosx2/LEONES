@@ -21,7 +21,9 @@ def test_run_plan_rejects_unauthorized_before_execution(tmp_path):
 
 def test_llama_cpp_command_is_non_interactive_and_bounded():
     command = build_command("llama-cli", "model.gguf", "hola", context_tokens=128)
-    assert command[:6] == ["llama-cli", "-m", "model.gguf", "-p", "hola", "--simple-io"]
+    assert command[:7] == [
+        "llama-cli", "-m", "model.gguf", "-p", "hola", "--simple-io", "--single-turn"
+    ]
     assert command[-4:] == ["-c", "128", "-n", "128"]
 
 
