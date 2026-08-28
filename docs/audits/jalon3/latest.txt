@@ -1,7 +1,7 @@
 ============================================================
 LEONES — JALÓN 3 AUDIT RUNNER
 ============================================================
-UTC: 20260828T224123Z
+UTC: 20260828T224646Z
 ROOT: /home/roberto/leones-work/LEONES
 
 ========== CONTRACT ==========
@@ -14,17 +14,17 @@ OK: docs/jalones/jalon3.md
 ========== GIT STATUS ==========
  M artifacts/jalon3-audit/jalon3-audit-20260828T222836Z.txt
  M artifacts/jalon3-audit/jalon3-audit-20260828T223148Z.txt
-?? docs/audits/jalon3/latest.txt
+ M docs/audits/jalon3/latest.txt
 
 ========== GIT BRANCH ==========
 rc1-minimal-script-cleanup
 
 ========== GIT LOG ==========
-51a92da (HEAD -> rc1-minimal-script-cleanup, origin/rc1-minimal-script-cleanup) chore: publish JALON 3 tracked audit
+42a053f (HEAD -> rc1-minimal-script-cleanup, origin/rc1-minimal-script-cleanup) chore: capture JALON 3 audit
+51a92da chore: publish JALON 3 tracked audit
 6e6856c chore: capture JALON 3 audit
 dc0a090 docs: document JALON 3 tracked audit output
 119cca6 chore: make JALON 3 audit output Git-tracked
-c62f1c2 chore: capture JALON 3 audit
 
 ========== JALÓN 3 FILES ==========
 artifacts/a01-real-runtime-benchmark.v1.json
@@ -33,6 +33,7 @@ artifacts/jalon3-audit/jalon3-audit-20260828T222147Z.txt
 artifacts/jalon3-audit/jalon3-audit-20260828T222836Z.txt
 artifacts/jalon3-audit/jalon3-audit-20260828T223148Z.txt
 artifacts/jalon3-audit/jalon3-audit-20260828T224123Z.txt
+artifacts/jalon3-audit/jalon3-audit-20260828T224646Z.txt
 artifacts/llama-cpp-smollm2-135m-real-benchmark.json
 artifacts/runtime-executions/jalon2-llama-cpp-20260827T145744Z/runtime-benchmark-evidence.json
 artifacts/runtime-executions/jalon2-llama-cpp-20260827T153456Z/runtime-benchmark-evidence.json
@@ -390,7 +391,7 @@ scripts/validate_web_assets.py
 ........................................................................ [ 56%]
 ........................................................................ [ 84%]
 ........................................                                 [100%]
-256 passed in 0.95s
+256 passed in 1.23s
 
 ========== DIFF CHECK ==========
 git diff --check exit code: 0
@@ -398,10 +399,10 @@ git diff --check exit code: 0
 ========== FINAL STATUS ==========
  M artifacts/jalon3-audit/jalon3-audit-20260828T222836Z.txt
  M artifacts/jalon3-audit/jalon3-audit-20260828T223148Z.txt
-?? docs/audits/jalon3/latest.txt
+ M docs/audits/jalon3/latest.txt
 
 ============================================================
-AUDIT OUTPUT: artifacts/jalon3-audit/jalon3-audit-20260828T224123Z.txt
+AUDIT OUTPUT: artifacts/jalon3-audit/jalon3-audit-20260828T224646Z.txt
 TRACKED AUDIT: docs/audits/jalon3/latest.txt
 ============================================================
 
