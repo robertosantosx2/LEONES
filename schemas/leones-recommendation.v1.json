@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "leones-recommendation.v1",
+  "title": "LEONES Recommendation V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "recommendation_id", "entity", "decision_ref", "evidence_refs", "status", "rationale", "unknowns", "next_action"],
+  "properties": {
+    "schema": {"const": "leones-recommendation.v1"},
+    "recommendation_id": {"type": "string", "minLength": 8},
+    "entity": {"type": "string", "minLength": 1},
+    "decision_ref": {"type": "string", "minLength": 1},
+    "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "status": {"enum": ["recommend", "watch", "reject", "verify_first"]},
+    "rationale": {"type": "string", "minLength": 1},
+    "unknowns": {"type": "array", "items": {"type": "string"}},
+    "next_action": {"enum": ["recommend", "verify", "measure", "profile", "watch", "reject"]},
+    "minimum_evidence_met": {"type": "boolean"},
+    "trace_ref": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "recommend"}}},
+      "then": {
+        "required": ["minimum_evidence_met"],
+        "properties": {"minimum_evidence_met": {"const": true}, "next_action": {"const": "recommend"}, "evidence_refs": {"minItems": 1}}
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "verify_first"}}},
+      "then": {"properties": {"next_action": {"enum": ["verify", "measure", "profile"]}, "unknowns": {"minItems": 1}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "watch"}}},
+      "then": {"properties": {"next_action": {"const": "watch"}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "reject"}}},
+      "then": {"properties": {"next_action": {"const": "reject"}}}
+    }
+  ]
+}
