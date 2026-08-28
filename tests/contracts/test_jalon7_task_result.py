@@ -1,5 +1,6 @@
 import unittest
 
+from scripts.a01_runtime_benchmark import build_benchmark
 from scripts.task_result import (
     aggregate_task_results,
     task_result_from_runtime_benchmark,
@@ -33,11 +34,35 @@ def benchmark(evidence=True):
         "benchmark_evidence_id": "evidence-a01-001" if evidence else None,
         "runtime": "llama.cpp",
         "runtime_version": "1.0",
+        "adapter": "llama.cpp.v1.1",
         "model_id": "example/model",
         "model_revision": "r1",
         "hardware": {"cpu": "contract-cpu"},
         "workload": {"name": "A01"},
-        "measurement_status": "MEASURED",
+        "measurement_status": "measured",
+        "finished_at": "2026-08-29T12:00:00+00:00",
+    }
+
+
+def a01_result():
+    return {
+        "runtime_selection": {
+            "execution_plans": [
+                {
+                    "runtime": {"name": "llama.cpp", "adapter": "llama.cpp.v1.1", "version": "1.0"},
+                    "model": {"id": "example/model", "revision": "r1"},
+                    "model_id": "example/model",
+                    "quantization": "Q4_K_M",
+                    "hardware": {"cpu": "contract-cpu"},
+                    "workload": {"name": "A01"},
+                    "estimated_tps": 10.0,
+                }
+            ]
+        },
+        "agentic": {
+            "outcome": {"status": "success"},
+            "metrics": {"runtime_wall_seconds": 2.0},
+        },
     }
 
 
@@ -82,7 +107,7 @@ class Jalon7TaskResultTests(unittest.TestCase):
         )
         self.assertEqual(projected["execution_id"], "exec-a01-001")
         self.assertEqual(projected["benchmark_evidence_id"], "evidence-a01-001")
-        self.assertEqual(projected["measurement_status"], "MEASURED")
+        self.assertEqual(projected["measurement_status"], "measured")
 
     def test_projection_refuses_missing_execution_identity(self):
         bad = benchmark()
@@ -95,6 +120,21 @@ class Jalon7TaskResultTests(unittest.TestCase):
                 task_revision="1",
                 completion_status="completed",
             )
+
+    def test_a01_builder_emits_jalon7_traceability_fields(self):
+        built = build_benchmark(
+            {"candidates": []},
+            a01_result(),
+            "10 tokens/s",
+            2.0,
+            execution_id="exec-a01-builder",
+            finished_at="2026-08-29T12:00:00+00:00",
+        )
+        self.assertEqual(built["schema_version"], "runtime-benchmark.v1")
+        self.assertEqual(built["execution_id"], "exec-a01-builder")
+        self.assertEqual(built["benchmark_evidence_id"], "A01:exec-a01-builder")
+        self.assertEqual(built["measurement_status"], "measured")
+        self.assertEqual(built["measured"]["tokens_per_second"], 10.0)
 
 
 if __name__ == "__main__":
