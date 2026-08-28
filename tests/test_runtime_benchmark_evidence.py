@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from scripts.runtime_benchmark_evidence import run_once, sha256_file, summary
+from scripts.runtime_benchmark_evidence import _run_checked, run_once, sha256_file, summary
 
 
 def test_run_once_captures_output_and_timing():
@@ -10,6 +10,15 @@ def test_run_once_captures_output_and_timing():
     assert "12.5 tok/s" in result["stdout"]
     assert result["first_output_ms"] is not None
     assert result["tokens_per_second"] == 12.5
+
+
+def test_run_checked_rejects_nonzero_exit():
+    try:
+        _run_checked(["python3", "-c", "raise SystemExit(7)"])
+    except RuntimeError as exc:
+        assert "exit code 7" in str(exc)
+    else:
+        raise AssertionError("failed measurement was accepted")
 
 
 def test_sha256_is_stable(tmp_path: Path):
@@ -33,3 +42,7 @@ def test_schema_example_is_json():
     schema = Path("schemas/runtime-benchmark-evidence.v1.1.json")
     payload = json.loads(schema.read_text(encoding="utf-8"))
     assert payload["$id"] == "runtime-benchmark-evidence.v1.1"
+    assert "protocol_id" in payload["properties"]["protocol"]["required"]
+    assert "protocol_sha256" in payload["properties"]["protocol"]["required"]
+    assert "cooldown_seconds" in payload["properties"]["protocol"]["required"]
+    assert payload["properties"]["measurements"]["minItems"] == 5
