@@ -1,7 +1,7 @@
 ============================================================
 LEONES — JALÓN 3 AUDIT RUNNER
 ============================================================
-UTC: 20260828T225115Z
+UTC: 20260828T225513Z
 ROOT: /home/roberto/leones-work/LEONES
 
 ========== CONTRACT ==========
@@ -20,11 +20,11 @@ OK: docs/jalones/jalon3.md
 rc1-minimal-script-cleanup
 
 ========== GIT LOG ==========
-6a3e14e (HEAD -> rc1-minimal-script-cleanup) chore: capture JALON 3 audit
+df69a7e (HEAD -> rc1-minimal-script-cleanup) chore: capture JALON 3 audit
+6a3e14e chore: capture JALON 3 audit
 546e885 chore: capture JALON 3 audit
 42a053f (origin/rc1-minimal-script-cleanup) chore: capture JALON 3 audit
 51a92da chore: publish JALON 3 tracked audit
-6e6856c chore: capture JALON 3 audit
 
 ========== JALÓN 3 FILES ==========
 artifacts/a01-real-runtime-benchmark.v1.json
@@ -36,6 +36,7 @@ artifacts/jalon3-audit/jalon3-audit-20260828T224123Z.txt
 artifacts/jalon3-audit/jalon3-audit-20260828T224646Z.txt
 artifacts/jalon3-audit/jalon3-audit-20260828T224934Z.txt
 artifacts/jalon3-audit/jalon3-audit-20260828T225115Z.txt
+artifacts/jalon3-audit/jalon3-audit-20260828T225513Z.txt
 artifacts/llama-cpp-smollm2-135m-real-benchmark.json
 artifacts/runtime-executions/jalon2-llama-cpp-20260827T145744Z/runtime-benchmark-evidence.json
 artifacts/runtime-executions/jalon2-llama-cpp-20260827T153456Z/runtime-benchmark-evidence.json
@@ -393,7 +394,7 @@ scripts/validate_web_assets.py
 ........................................................................ [ 56%]
 ........................................................................ [ 84%]
 ........................................                                 [100%]
-256 passed in 0.99s
+256 passed in 1.02s
 
 ========== DIFF CHECK ==========
 git diff --check exit code: 0
@@ -404,7 +405,7 @@ git diff --check exit code: 0
  M docs/audits/jalon3/latest.txt
 
 ============================================================
-AUDIT OUTPUT: artifacts/jalon3-audit/jalon3-audit-20260828T225115Z.txt
+AUDIT OUTPUT: artifacts/jalon3-audit/jalon3-audit-20260828T225513Z.txt
 TRACKED AUDIT: docs/audits/jalon3/latest.txt
 ============================================================
 
