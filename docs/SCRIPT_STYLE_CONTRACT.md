@@ -1,6 +1,8 @@
 # Contrato de scripts LEONES
 
-Los scripts de LEONES deben poder ser entendidos y utilizados por una persona con conocimientos mínimos de programación.
+> **RC1:** mínimo código necesario, máxima documentación útil y ninguna duplicación funcional.
+
+Los scripts de LEONES deben poder ser entendidos y utilizados por una persona con conocimientos mínimos de programación. Un script no es una arquitectura: es una pieza pequeña que responde a una pregunta concreta dentro de un recorrido mayor.
 
 ## Reglas obligatorias
 
@@ -14,6 +16,9 @@ Los scripts de LEONES deben poder ser entendidos y utilizados por una persona co
 8. **Sin trabajo oculto:** un script no debe instalar paquetes, publicar datos, modificar repositorios ni ejecutar cargas físicas salvo que su propósito lo indique expresamente.
 9. **Reutilización prudente:** no duplicar una función ya existente. Si compartir código realmente simplifica el proyecto, usar un módulo pequeño y bien documentado.
 10. **Prueba:** todo cambio funcional debe conservar o ampliar las pruebas existentes.
+11. **README operativo:** todo script del núcleo debe estar descrito en `scripts/README.md` y, cuando necesite instrucciones propias, tener documentación específica junto al componente.
+12. **Fronteras explícitas:** selección, ejecución, medición, evidencia y publicación deben permanecer separadas salvo que exista un contrato que justifique unirlas.
+13. **Procedencia:** ningún script puede transformar por conveniencia `estimated`, `reported`, `observed`, `measured`, `verified` o `unknown` en otra categoría.
 
 ## Criterio de aceptación
 
@@ -24,8 +29,39 @@ Un script se considera limpio cuando una persona que no conoce el proyecto puede
 - ¿Qué va a cambiar o producir?
 - ¿Qué no hace?
 
+Para un script del núcleo RC1 también debe ser posible contestar:
+
+- ¿Qué contrato consume?
+- ¿Qué contrato entrega?
+- ¿Dónde encaja en el camino mínimo?
+- ¿Qué parte requiere ejecución física real?
+
 La complejidad accidental debe eliminarse. La complejidad propia del problema puede permanecer, pero debe quedar explicada.
+
+## Documentación interna
+
+Los comentarios no deben describir obviedades como "incrementamos el contador". Deben preservar decisiones que una futura simplificación podría romper accidentalmente, por ejemplo:
+
+- por qué se rechaza una entrada;
+- por qué un valor desconocido permanece ausente;
+- por qué un límite de generación es obligatorio;
+- por qué una función delega en otro módulo en lugar de duplicar su lógica;
+- por qué una medición no puede ser promocionada automáticamente a `verified`.
+
+## Documentación externa
+
+`README.md` y la documentación de fase explican el **modelo mental** de la herramienta: cuándo usarla, cuándo no usarla, qué entrada necesita, qué salida entrega y qué viene después.
+
+No se debe copiar el código al README. Se debe documentar el contrato.
 
 ## Política de migración
 
 Esta norma se aplica a los scripts nuevos y a todo script que se modifique. Los scripts antiguos se simplificarán de forma incremental, sin reescrituras masivas que puedan cambiar su comportamiento sin necesidad.
+
+Antes de mover un script a `deprecated` se deben identificar sus consumidores. Si existe un consumidor activo, primero se migra o se declara explícitamente por qué permanece fuera del núcleo RC1.
+
+Un movimiento a `deprecated` debe conservar trazabilidad y explicar qué pieza lo sustituye, si existe.
+
+## Regla RC1
+
+> **Si una pieza puede eliminarse sin romper el camino mínimo ni perder conocimiento, no debe mantenerse en el núcleo por inercia histórica.**
