@@ -35,7 +35,8 @@ Los gates asociados a la integración quedaron verdes: **Agentic A01 contract**,
 - [`docs/RELEASE-CANDIDATE-1.md`](docs/RELEASE-CANDIDATE-1.md) — plan maestro de Release Candidate 1.
 - [`docs/RELEASE-CANDIDATE-1-HERMES.md`](docs/RELEASE-CANDIDATE-1-HERMES.md) — integración de Hermes como harness agéntico de RC1.
 - [`docs/RELEASE-CANDIDATE-1-ENDGAME.md`](docs/RELEASE-CANDIDATE-1-ENDGAME.md) — plan de ejecución de RC1 hasta instalación de ODS/Magnitude, benchmarks físicos y publicación en MANADA.
-- [`docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md`](docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md) — contrato RC1 para separar `llama-cli`, `llama-server`, ODS/Hermes y Magnitude.
+- [`docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md`](docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md) — contrato de interfaces y separación entre `llama-cli`, `llama-server`, ODS/Hermes y Magnitude.
+- [`docs/OPENAI-COMPATIBLE-CONNECTOR-ODS-MAGNITUDE.md`](docs/OPENAI-COMPATIBLE-CONNECTOR-ODS-MAGNITUDE.md) — **nuevo contrato común de conector OpenAI-compatible para ODS/Hermes y Magnitude**.
 - [`docs/RC1-AGENTIC-TASK-CONTRACT.md`](docs/RC1-AGENTIC-TASK-CONTRACT.md) — contrato mínimo de la tarea agentiva comparable, métricas, evidencia y gate de Ubuntu.
 - [`PIPELINE_E2E.md`](PIPELINE_E2E.md) — pipeline integral.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contrato de contribución.
@@ -104,9 +105,11 @@ Para RC1 se fija una distinción especialmente importante:
 - **`llama-cli`**: ejecución directa útil para benchmarks de inferencia de bajo nivel y para el protocolo físico de JALÓN 3.
 - **`llama-server`**: servidor HTTP OpenAI-compatible de llama.cpp; es la frontera de inferencia que ODS/Hermes utiliza por defecto.
 - **ODS/Hermes**: harness agéntico SOHO que consume un proveedor OpenAI-compatible.
-- **Magnitude**: agente personal que incorpora su propio motor de inferencia construido sobre llama.cpp y que además puede interoperar con endpoints OpenAI-compatible.
+- **Magnitude**: agente personal que incorpora su propio camino local y además puede interoperar con endpoints OpenAI-compatible.
 
-La documentación normativa de esta separación está en [`docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md`](docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md).
+ODS/Hermes y Magnitude comparten una frontera de integración útil para LEONES: **OpenAI-compatible**. Por eso RC1 utiliza un único conector mínimo para `/v1/models` y `/v1/chat/completions`, manteniendo separadas las arquitecturas y benchmarks propios de cada producto.
+
+La documentación normativa está en [`docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md`](docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md) y [`docs/OPENAI-COMPATIBLE-CONNECTOR-ODS-MAGNITUDE.md`](docs/OPENAI-COMPATIBLE-CONNECTOR-ODS-MAGNITUDE.md).
 
 ---
 
