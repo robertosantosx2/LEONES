@@ -36,6 +36,7 @@ Los gates asociados a la integración quedaron verdes: **Agentic A01 contract**,
 - [`docs/RELEASE-CANDIDATE-1-HERMES.md`](docs/RELEASE-CANDIDATE-1-HERMES.md) — integración de Hermes como harness agéntico de RC1.
 - [`docs/RELEASE-CANDIDATE-1-ENDGAME.md`](docs/RELEASE-CANDIDATE-1-ENDGAME.md) — plan de ejecución de RC1 hasta instalación de ODS/Magnitude, benchmarks físicos y publicación en MANADA.
 - [`docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md`](docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md) — contrato RC1 para separar `llama-cli`, `llama-server`, ODS/Hermes y Magnitude.
+- [`docs/RC1-AGENTIC-TASK-CONTRACT.md`](docs/RC1-AGENTIC-TASK-CONTRACT.md) — contrato mínimo de la tarea agentiva comparable, métricas, evidencia y gate de Ubuntu.
 - [`PIPELINE_E2E.md`](PIPELINE_E2E.md) — pipeline integral.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contrato de contribución.
 
@@ -160,7 +161,7 @@ Los subproyectos de LEONES se organizan en **capas complementarias**. Cada uno r
 
 ## 1. Prospector / Prospección diaria
 
-**Motivación.** El ecosistema de IA abierta cambia demasiado deprisa para mantener un catálogo manual. Modelos, repositorios, benchmarks, runtimes, datasets y herramientas aparecen continuamente.
+**Motivación.** El ecosistema de IA abierta cambia demasiado deprisa para mantener un catálogo manual. Modelos, repositorios, benchmarks, datasets y herramientas aparecen continuamente.
 
 **Objetivo.** Descubrir candidatos nuevos de forma automatizada, priorizando software y modelos compatibles con los principios de apertura de LEONES.
 
