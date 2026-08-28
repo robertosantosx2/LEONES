@@ -47,54 +47,31 @@ def sha256_file(path: Path) -> str:
 
 def command_version(executable: str) -> str:
     try:
-        p = subprocess.run(
+        proc = subprocess.run(
             [executable, "--version"],
             capture_output=True,
             text=True,
             timeout=10,
             check=False,
         )
-        return (
-            (p.stdout or p.stderr).strip().splitlines()[0]
-            if (p.stdout or p.stderr).strip()
-            else "unknown"
-        )
-    except Exception as exc:
-        return f"unavailable: {exc}"
+    except (OSError, subprocess.SubprocessError):
+        return "unknown"
+    text = (proc.stdout + "\n" + proc.stderr).strip()
+    return text.splitlines()[0] if text else "unknown"
 
 
 def hardware() -> dict:
-    ram_mb = None
+    ram_total_mb = 0
     try:
         pages = os.sysconf("SC_PHYS_PAGES")
-        size = os.sysconf("SC_PAGE_SIZE")
-        ram_mb = round(pages * size / 1024 / 1024, 2)
-    except (ValueError, OSError, AttributeError):
+        page_size = os.sysconf("SC_PAGE_SIZE")
+        ram_total_mb = int(pages * page_size / 1024 / 1024)
+    except (AttributeError, OSError, ValueError):
         pass
-    gpu = None
-    if shutil.which("nvidia-smi"):
-        try:
-            p = subprocess.run(
-                [
-                    "nvidia-smi",
-                    "--query-gpu=name,memory.total",
-                    "--format=csv,noheader,nounits",
-                ],
-                capture_output=True,
-                text=True,
-                timeout=5,
-                check=False,
-            )
-            gpu = p.stdout.strip() or None
-        except Exception:
-            pass
     return {
         "os": platform.platform(),
-        "kernel": platform.release(),
-        "architecture": platform.machine(),
-        "cpu": platform.processor() or platform.uname().processor,
-        "ram_total_mb": ram_mb,
-        "gpu": gpu,
+        "cpu": platform.processor() or platform.machine(),
+        "ram_total_mb": ram_total_mb,
     }
 
 
@@ -102,8 +79,9 @@ def peak_memory_mb() -> float | None:
     try:
         import resource
 
-        return round(resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / 1024, 2)
-    except Exception:
+        value = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+        return round(value / 1024, 3) if value else None
+    except (ImportError, AttributeError, OSError):
         return None
 
 
@@ -111,7 +89,7 @@ def gpu_snapshot() -> tuple[float | None, float | None]:
     if not shutil.which("nvidia-smi"):
         return None, None
     try:
-        p = subprocess.run(
+        proc = subprocess.run(
             [
                 "nvidia-smi",
                 "--query-gpu=memory.used,power.draw",
@@ -122,10 +100,15 @@ def gpu_snapshot() -> tuple[float | None, float | None]:
             timeout=5,
             check=False,
         )
-        line = p.stdout.strip().splitlines()[0]
-        mem, power = [x.strip() for x in line.split(",", 1)]
-        return float(mem), float(power)
-    except Exception:
+    except (OSError, subprocess.SubprocessError):
+        return None, None
+    line = next((x.strip() for x in proc.stdout.splitlines() if x.strip()), "")
+    if not line:
+        return None, None
+    parts = [x.strip() for x in line.split(",")]
+    try:
+        return float(parts[0]), float(parts[1])
+    except (IndexError, ValueError):
         return None, None
 
 
@@ -227,6 +210,7 @@ def main() -> int:
     ap.add_argument("--warmup", type=int, default=1)
     ap.add_argument("--iterations", type=int, default=5)
     ap.add_argument("--cooldown-seconds", type=float, default=5.0)
+    ap.add_argument("--output-token-limit", type=int, default=128)
     ap.add_argument("--protocol-id", required=True)
     ap.add_argument("--protocol-sha256", required=True)
     ap.add_argument("--runtime", default="llama.cpp")
@@ -238,6 +222,8 @@ def main() -> int:
         raise SystemExit("iterations must be >= 1")
     if args.cooldown_seconds < 0:
         raise SystemExit("cooldown-seconds must be >= 0")
+    if args.output_token_limit < 1:
+        raise SystemExit("output-token-limit must be >= 1")
     if not re.fullmatch(r"[a-f0-9]{64}", args.protocol_sha256):
         raise SystemExit("protocol-sha256 must be a lowercase 64-character SHA-256")
     command = json.loads(args.command_json.read_text(encoding="utf-8"))
@@ -292,6 +278,7 @@ def main() -> int:
             "prompt_protocol_id": args.prompt_protocol_id,
             "prompt": args.prompt,
             "context": args.context,
+            "output_token_limit": args.output_token_limit,
             "warmup_iterations": args.warmup,
             "measurement_iterations": args.iterations,
             "cooldown_seconds": args.cooldown_seconds,
