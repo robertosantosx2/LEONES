@@ -33,7 +33,9 @@ ADAPTER = LlamaCppAdapter()
 def build_command(
     executable: str, model_path: str, prompt: str, *, context_tokens: int | None = None
 ) -> list[str]:
-    command = [executable, "-m", model_path, "-p", prompt]
+    # llama-cli remains interactive after a predefined prompt unless simple IO is
+    # requested. The subprocess evidence runner must terminate deterministically.
+    command = [executable, "-m", model_path, "-p", prompt, "--simple-io"]
     if context_tokens is not None:
         if context_tokens < 1:
             raise ValueError("context_tokens must be positive")
