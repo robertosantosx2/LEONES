@@ -73,10 +73,18 @@ def build_pipeline(
         raise ValueError("inference runtime must be decided before model evaluation")
     host = hardware or probe_hardware()
     memory = host.get("memory", {})
-    available_bytes = memory.get("available_bytes") or memory.get("total_bytes")
-    if available_bytes is None:
+
+    # Prefer total physical RAM for model-fit decisions. Keep
+    # available_bytes as a compatibility fallback for legacy callers/tests
+    # that provide only the older memory field.
+    total_bytes = memory.get("total_bytes")
+    if total_bytes is None:
+        total_bytes = memory.get("available_bytes")
+
+    if total_bytes is None:
         raise ValueError("hardware profile has no usable memory measurement")
-    ram_gb = float(available_bytes) / (1024**3)
+
+    ram_gb = float(total_bytes) / (1024**3)
     hardware_label = host.get("cpu", {}).get("model") or "unknown-cpu"
     gpus = host.get("gpu") or []
     vram_gb = float(host.get("vram_gb") or 0)

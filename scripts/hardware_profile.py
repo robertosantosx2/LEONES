@@ -36,17 +36,81 @@ def _num(value: str) -> float | None:
 
 
 def cpu() -> dict[str, Any]:
-    info = {}
+    """Return CPU facts using locale-independent Linux sources."""
     raw = _run("lscpu")
+    info = {}
+
     for line in raw.splitlines():
         if ":" in line:
             key, value = line.split(":", 1)
             info[key.strip()] = value.strip()
+
+    model = None
+    proc_cpuinfo = Path("/proc/cpuinfo")
+    if proc_cpuinfo.exists():
+        try:
+            for line in proc_cpuinfo.read_text(
+                encoding="utf-8", errors="ignore"
+            ).splitlines():
+                if line.lower().startswith("model name"):
+                    model = line.split(":", 1)[1].strip()
+                    if model:
+                        break
+        except OSError:
+            pass
+
+    if not model:
+        for key in (
+            "Model name",
+            "Nombre del modelo",
+            "Nom du modèle",
+            "Modellname",
+        ):
+            if info.get(key):
+                model = info[key]
+                break
+
+    if not model:
+        model = platform.processor() or None
+
+    threads_value = info.get("CPU(s)")
+    threads = (
+        int(threads_value)
+        if threads_value and threads_value.isdigit()
+        else os.cpu_count()
+    )
+
+    # Physical cores: /proc/cpuinfo is locale-independent and works even
+    # when lscpu is translated.
+    physical_cores = set()
+    if proc_cpuinfo.exists():
+        try:
+            blocks = proc_cpuinfo.read_text(
+                encoding="utf-8", errors="ignore"
+            ).split("\n\n")
+            for block in blocks:
+                values = {}
+                for line in block.splitlines():
+                    if ":" in line:
+                        key, value = line.split(":", 1)
+                        values[key.strip()] = value.strip()
+
+                processor = values.get("processor")
+                if processor is None:
+                    continue
+
+                physical_id = values.get("physical id", "0")
+                core_id = values.get("core id", processor)
+                physical_cores.add((physical_id, core_id))
+        except OSError:
+            pass
+
+    cores = len(physical_cores) or None
+
     return {
-        "model": info.get("Model name", platform.processor()),
-        "cores": int(info["CPU(s)"])
-        if info.get("CPU(s)", "").isdigit()
-        else os.cpu_count(),
+        "model": model,
+        "cores": cores,
+        "threads": threads,
         "architecture": info.get("Architecture", platform.machine()),
         "mhz": _num(info.get("CPU MHz", "")),
         "cache_l3": info.get("L3 cache"),
@@ -95,16 +159,38 @@ def disks() -> list[dict[str, Any]]:
 
 
 def network_bandwidth() -> dict[str, Any]:
-    """Return interface link speed where Linux exposes it; no traffic test."""
+    """Return interface link speed where Linux exposes it; no traffic test.
+
+    Sysfs entries under /sys/class/net are not uniformly readable across
+    physical, virtual and container/host interfaces. A single unreadable
+    interface must never invalidate the complete hardware profile.
+    """
     result = {}
     root = Path("/sys/class/net")
-    if root.exists():
-        for iface in root.iterdir():
-            speed = iface / "speed"
-            if speed.exists():
-                value = speed.read_text().strip()
-                if value.isdigit() and int(value) > 0:
-                    result[iface.name] = {"link_mbps": int(value)}
+
+    try:
+        interfaces = list(root.iterdir())
+    except (OSError, PermissionError):
+        return result
+
+    for iface in interfaces:
+        speed = iface / "speed"
+
+        try:
+            if not speed.exists():
+                continue
+            value = speed.read_text(encoding="utf-8").strip()
+        except (OSError, PermissionError, ValueError):
+            continue
+
+        try:
+            link_mbps = int(value)
+        except (TypeError, ValueError):
+            continue
+
+        if link_mbps > 0:
+            result[iface.name] = {"link_mbps": link_mbps}
+
     return result
 
 

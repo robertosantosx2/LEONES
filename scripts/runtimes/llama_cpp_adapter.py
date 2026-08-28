@@ -50,14 +50,22 @@ def build_command(
         model_path,
         "-p",
         prompt,
-        "--simple-io",
-        "--single-turn",
     ]
+
+    # Preserve the historical default command contract while making an
+    # explicitly bounded execution non-interactive and deterministic.
     if context_tokens is not None:
         if context_tokens < 1:
             raise ValueError("context_tokens must be positive")
-        command.extend(["-c", str(context_tokens)])
-    command.extend(["-n", str(max_output_tokens)])
+        command.extend([
+            "--simple-io",
+            "--single-turn",
+            "-c",
+            str(context_tokens),
+            "-n",
+            str(max_output_tokens),
+        ])
+
     return command
 
 

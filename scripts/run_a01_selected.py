@@ -21,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.runtime_gate import gate_selection
+from scripts.hardware_profile import profile as probe_hardware
 from benchmarks.agentic.adapters.llmserve_a01 import execute_a01
 
 
@@ -43,7 +44,40 @@ def run_selected(
     output_path: str = "report.txt",
     timeout_seconds: float = 60.0,
 ) -> dict:
-    gate = gate_selection(selection, runtime_commands=runtime_commands)
+    # Capture the real host profile at execution time so measured A01
+    # evidence preserves the hardware on which the runtime actually ran.
+    host = probe_hardware()
+    memory = host.get("memory", {})
+    total_bytes = memory.get("total_bytes")
+    ram_gb = (
+        round(float(total_bytes) / (1024**3), 1)
+        if total_bytes is not None
+        else 0
+    )
+    cpu_info = host.get("cpu") or {}
+    hardware = {
+        "ram_gb": ram_gb,
+        "os": host.get("platform", {}).get("system", "unknown"),
+        "cpu": cpu_info.get("model"),
+        "gpu": (
+            (host.get("gpu") or [{}])[0].get("description")
+            if host.get("gpu")
+            else None
+        ),
+        "vram_gb": host.get("vram_gb"),
+        "host_memory_bandwidth_gbps": host.get("host_memory_bandwidth_gbps")
+        or (host.get("measurements") or {}).get("memory_bandwidth_gbps"),
+        "pcie_h2d_bandwidth_gbps": host.get("pcie_h2d_bandwidth_gbps")
+        or (host.get("measurements") or {}).get("pcie_h2d_bandwidth_gbps"),
+        "cpu_moe_bandwidth_gbps": host.get("cpu_moe_bandwidth_gbps")
+        or (host.get("measurements") or {}).get("cpu_moe_bandwidth_gbps"),
+    }
+
+    gate = gate_selection(
+        selection,
+        runtime_commands=runtime_commands,
+        hardware=hardware,
+    )
     executable = [p for p in gate["execution_plans"] if p.get("execution_authorized")]
     if not executable:
         raise RuntimeError(
