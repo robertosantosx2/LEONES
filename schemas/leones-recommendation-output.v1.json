@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.local/schemas/leones-recommendation-output.v1.json",
+  "title": "LEONES Recommendation Output V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "output_id", "recommendation_ref", "entity", "status", "rationale", "unknowns", "next_action", "decision_ref", "evidence_refs", "generated_at"],
+  "properties": {
+    "schema": {"const": "leones-recommendation-output.v1"},
+    "output_id": {"type": "string", "minLength": 8},
+    "recommendation_ref": {"type": "string", "minLength": 1},
+    "entity": {"type": "string", "minLength": 1},
+    "status": {"enum": ["recommend", "watch", "reject", "verify_first"]},
+    "rationale": {"type": "string", "minLength": 1},
+    "unknowns": {"type": "array", "items": {"type": "string"}},
+    "next_action": {"enum": ["recommend", "verify", "measure", "profile", "watch", "reject"]},
+    "decision_ref": {"type": "string", "minLength": 1},
+    "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "trace_ref": {"type": "string", "minLength": 1},
+    "generated_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "recommend"}}}, "then": {"properties": {"next_action": {"const": "recommend"}}}},
+    {"if": {"properties": {"status": {"const": "watch"}}}, "then": {"properties": {"next_action": {"const": "watch"}}}},
+    {"if": {"properties": {"status": {"const": "reject"}}}, "then": {"properties": {"next_action": {"const": "reject"}}}}
+  ]
+}
