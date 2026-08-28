@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # JALÓN 3 — canonical audit runner.
-# One command on Ubuntu -> audit -> tracked latest.txt -> Git push.
+# One command on Ubuntu -> sync -> audit -> tracked latest.txt -> Git push.
 # The runner never declares operational closure unless a real llama.cpp
 # evidence artifact satisfies the canonical v1.1 contract.
 
@@ -34,8 +34,8 @@ if ! mkdir "$LOCKDIR" 2>/dev/null; then
 fi
 trap 'rmdir "$LOCKDIR" 2>/dev/null || true' EXIT
 
-# Only runner-owned generated paths may already be dirty. Use exact path
-# handling instead of a fragile regular expression over porcelain output.
+# Only runner-owned generated paths may already be dirty. Everything else is
+# protected from accidental inclusion in the audit commit.
 UNRELATED="$(git status --porcelain --untracked-files=all | awk '
     {
         path=substr($0,4)
@@ -48,17 +48,26 @@ if [ -n "$UNRELATED" ]; then
     exit 3
 fi
 
-# Synchronize before measuring. Never force-push and never silently overwrite
-# a divergent local branch. A concurrent remote push is handled later with a
-# non-destructive rebase/autostash retry.
+# Synchronize safely before auditing. The old runner incorrectly rejected a
+# local branch that was ahead of origin. Here the three legitimate states are:
+#   1) equal            -> continue;
+#   2) local ahead      -> continue and push later;
+#   3) remote ahead or  -> rebase with autostash.
+# A divergent history is also handled by the same non-destructive rebase.
 git fetch origin "$BRANCH" >/dev/null 2>&1 || {
     echo "ERROR: unable to fetch origin/$BRANCH"
     exit 4
 }
-if ! git merge-base --is-ancestor HEAD "origin/$BRANCH"; then
-    echo "ERROR: local branch is not an ancestor of origin/$BRANCH."
-    echo "Synchronize first with: git pull --rebase --autostash origin $BRANCH"
-    exit 5
+
+REMOTE="origin/$BRANCH"
+if git merge-base --is-ancestor "$REMOTE" HEAD; then
+    echo "SYNC: local branch is equal to or ahead of $REMOTE."
+elif git merge-base --is-ancestor HEAD "$REMOTE"; then
+    echo "SYNC: remote is ahead; rebasing local branch."
+    git pull --rebase --autostash origin "$BRANCH"
+else
+    echo "SYNC: histories diverged; rebasing local branch onto $REMOTE."
+    git pull --rebase --autostash origin "$BRANCH"
 fi
 
 # Full transcript -> local artifact + one compact Git-tracked mirror.
@@ -300,16 +309,20 @@ fi
 
 echo "========== PUSH =========="
 PUSH_RC=0
-if ! git push origin "$BRANCH"; then
-    echo "WARN: remote advanced during audit; attempting safe rebase/autostash."
-    git fetch origin "$BRANCH"
-    if git pull --rebase --autostash origin "$BRANCH" && git push origin "$BRANCH"; then
-        echo "PASS: push recovered after remote race via rebase"
-    else
-        echo "ERROR: push failed after safe rebase retry; no force-push attempted."
-        PUSH_RC=50
+for attempt in 1 2 3; do
+    if git push origin "$BRANCH"; then
+        echo "PASS: push succeeded (attempt $attempt)"
+        break
     fi
-fi
+    if [ "$attempt" -eq 3 ]; then
+        echo "ERROR: push failed after 3 safe attempts; no force-push attempted."
+        PUSH_RC=50
+        break
+    fi
+    echo "WARN: remote advanced during audit; synchronizing safely (attempt $attempt)."
+    git fetch origin "$BRANCH"
+    git pull --rebase --autostash origin "$BRANCH"
+done
 
 if [ "$AUDIT_RC" -eq 0 ] && [ "$PUSH_RC" -ne 0 ]; then
     AUDIT_RC="$PUSH_RC"
