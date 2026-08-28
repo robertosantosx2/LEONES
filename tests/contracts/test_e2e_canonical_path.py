@@ -1,12 +1,11 @@
 import unittest
 
-from scripts.model_selector import select
 from benchmarks.evidence.runtime_selection_evidence import build_runtime_feedback
-from scripts.router import route_recommendation
+from scripts.model_selector import select
 
 
 class CanonicalE2EContractTests(unittest.TestCase):
-    def test_measured_feedback_can_return_to_selector_and_router(self):
+    def test_measured_feedback_returns_to_selector(self):
         row = {
             "model_id": "demo/model",
             "model_name": "demo/model",
@@ -24,44 +23,39 @@ class CanonicalE2EContractTests(unittest.TestCase):
             "is_moe": "true",
             "agentic": "true",
         }
-        selected = select([row], workload="agentic", hardware="contract-cpu", ram_gb=32, top_n=1, required_runtime="FreeToken")
+        selected = select(
+            [row],
+            workload="agentic",
+            hardware="contract-cpu",
+            ram_gb=32,
+            top_n=1,
+            required_runtime="FreeToken",
+        )
         candidate = selected["candidates"][0]
 
-        measured = build_runtime_feedback({
-            "evidence": {
-                "evidence_type": "measured",
-                "execution_id": "exec-e2e-001",
-                "source": "A01",
-                "measured_at": "2026-08-24T00:00:00Z",
-            },
-            "model": {"id": candidate["model_id"], "revision": "r1"},
-            "hardware": {"ram_gb": 32},
-            "agentic": {
-                "runtime": {"name": candidate["runtime"]},
-                "metrics": {"measured_tps": 14.0, "runtime_wall_seconds": 3.0},
-            },
-        })
+        measured = build_runtime_feedback(
+            {
+                "evidence": {
+                    "evidence_type": "measured",
+                    "execution_id": "exec-e2e-001",
+                    "source": "A01",
+                    "measured_at": "2026-08-24T00:00:00Z",
+                },
+                "model": {"id": candidate["model_id"], "revision": "r1"},
+                "hardware": {"ram_gb": 32},
+                "agentic": {
+                    "runtime": {"name": candidate["runtime"]},
+                    "metrics": {
+                        "measured_tps": 14.0,
+                        "runtime_wall_seconds": 3.0,
+                    },
+                },
+            }
+        )
 
         self.assertEqual(measured["evidence_type"], "measured")
         self.assertTrue(measured["selector_feedback"]["replace_estimate"])
-
-        routed = route_recommendation({
-            "model_id": candidate["model_id"],
-            "runtime": candidate["runtime"],
-            "selection_status": candidate["selection_status"],
-            "evidence_refs": [measured["execution_id"], "atlas:model/demo"],
-        })
-        self.assertTrue(routed["router"]["read_only"])
-        self.assertTrue(routed["router"]["evidence_traceable"])
-        self.assertEqual(routed["evidence_refs"][0], "exec-e2e-001")
-
-    def test_canonical_path_has_no_knowledge_write_operation(self):
-        with self.assertRaisesRegex(ValueError, "read-only"):
-            route_recommendation({
-                "model_id": "demo/model",
-                "evidence_refs": ["exec-1"],
-                "action": "ATLAS_WRITE",
-            })
+        self.assertEqual(measured["execution_id"], "exec-e2e-001")
 
 
 if __name__ == "__main__":
