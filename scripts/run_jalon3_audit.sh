@@ -14,13 +14,14 @@ TRACKED_DIR="docs/audits/jalon3"
 TRACKED_OUT="$TRACKED_DIR/latest.txt"
 OUTDIR="artifacts/jalon3-audit"
 CONTRACT="docs/jalones/jalon3.md"
+EVIDENCE="artifacts/runtime-executions/jalon3-run-001/runtime-benchmark-evidence.json"
 STAMP="$(date -u '+%Y%m%dT%H%M%SZ')"
 OUT="$OUTDIR/jalon3-audit-$STAMP.txt"
 
 mkdir -p "$OUTDIR" "$TRACKED_DIR"
 
 # Refuse to run over unrelated user work. Generated audit artifacts are allowed.
-UNRELATED="$(git status --porcelain --untracked-files=all | grep -vE '^.. (artifacts/jalon3-audit/|docs/audits/jalon3/latest\.txt$)' || true)"
+UNRELATED="$(git status --porcelain --untracked-files=all | grep -vE '^.. (artifacts/jalon3-audit/|docs/audits/jalon3/latest\\.txt$)' || true)"
 if [ -n "$UNRELATED" ]; then
     echo "ERROR: working tree contains unrelated changes; runner stopped."
     echo "$UNRELATED"
@@ -57,7 +58,7 @@ run_audit() {
     echo "========== CONTRACT =========="
     if [ -f "$CONTRACT" ]; then
         echo "OK: $CONTRACT"
-        grep -E '^(\*\*Estado:\*\*|\*\*Fecha:\*\*|\*\*Base:\*\*|\*\*Commit de implementación asociado:\*\*)' "$CONTRACT" || true
+        grep -E '^(\\*\\*Estado:\\*\\*|\\*\\*Fecha:\\*\\*|\\*\\*Base:\\*\\*|\\*\\*Commit de implementación asociado:\\*\\*)' "$CONTRACT" || true
     else
         echo "ERROR: missing canonical contract: $CONTRACT"
         return 10
@@ -106,10 +107,97 @@ run_audit() {
     echo "git diff --check exit code: 0"
     echo
 
+    echo "========== REAL RUNTIME EVIDENCE AUDIT =========="
+    if [ -f "$EVIDENCE" ]; then
+        echo "FOUND: $EVIDENCE"
+        python - "$EVIDENCE" <<'PY'
+import hashlib, json, pathlib, sys
+
+p = pathlib.Path(sys.argv[1])
+data = json.loads(p.read_text(encoding="utf-8"))
+errors = []
+
+required = ["schema", "execution_id", "timestamp_start", "timestamp_end", "model", "protocol", "runtime", "hardware", "measurements", "process", "artifact"]
+for k in required:
+    if k not in data:
+        errors.append(f"missing:{k}")
+
+if data.get("schema") != "runtime-benchmark-evidence.v1.1":
+    errors.append("schema_mismatch")
+
+for obj, keys in {
+    "model": ["id", "name", "revision", "quantization", "context_length"],
+    "protocol": ["prompt_protocol_id", "warmup_iterations", "measurement_iterations"],
+    "runtime": ["name", "version", "command"],
+    "hardware": ["os", "cpu", "ram_total_mb"],
+    "artifact": ["path", "sha256", "size"],
+}.items():
+    section = data.get(obj, {})
+    if isinstance(section, dict):
+        for k in keys:
+            if k not in section:
+                errors.append(f"missing:{obj}.{k}")
+    else:
+        errors.append(f"invalid:{obj}")
+
+measurements = data.get("measurements", [])
+if not isinstance(measurements, list) or not measurements:
+    errors.append("measurements_empty")
+else:
+    for i, m in enumerate(measurements, 1):
+        for k in ["iteration", "exit_code", "total_time_ms", "stdout", "stderr"]:
+            if k not in m:
+                errors.append(f"measurement_{i}_missing:{k}")
+        if m.get("exit_code") != 0:
+            errors.append(f"measurement_{i}_exit_code:{m.get('exit_code')}")
+
+artifact = data.get("artifact", {})
+artifact_path = pathlib.Path(artifact.get("path", ""))
+if artifact_path.exists() and artifact_path.is_file():
+    digest = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+    if artifact.get("sha256") != digest:
+        errors.append("artifact_sha256_mismatch")
+    if artifact.get("size") != artifact_path.stat().st_size:
+        errors.append("artifact_size_mismatch")
+else:
+    print(f"artifact_local_check=NOT_AVAILABLE path={artifact_path}")
+
+print(f"schema={data.get('schema')}")
+print(f"execution_id={data.get('execution_id')}")
+print(f"model_id={data.get('model',{}).get('id')}")
+print(f"model_name={data.get('model',{}).get('name')}")
+print(f"quantization={data.get('model',{}).get('quantization')}")
+print(f"runtime={data.get('runtime',{}).get('name')} version={data.get('runtime',{}).get('version')}")
+print(f"hardware_cpu={data.get('hardware',{}).get('cpu')}")
+print(f"hardware_ram_mb={data.get('hardware',{}).get('ram_total_mb')}")
+print(f"warmup_iterations={data.get('protocol',{}).get('warmup_iterations')}")
+print(f"measurement_iterations_declared={data.get('protocol',{}).get('measurement_iterations')}")
+print(f"measurement_iterations_found={len(measurements) if isinstance(measurements,list) else 0}")
+
+tps = [m.get("tokens_per_second") for m in measurements if isinstance(m, dict) and m.get("tokens_per_second") is not None]
+print(f"tokens_per_second_samples={len(tps)}")
+if tps:
+    print(f"tokens_per_second_mean={sum(tps)/len(tps):.4f}")
+    print(f"tokens_per_second_min={min(tps):.4f}")
+    print(f"tokens_per_second_max={max(tps):.4f}")
+
+print(f"evidence_local_validation={'PASS' if not errors else 'FAIL'}")
+if errors:
+    for e in errors:
+        print(f"ERROR:{e}")
+    raise SystemExit(60)
+PY
+    else
+        echo "NOT PRESENT: $EVIDENCE"
+        return 61
+    fi
+    echo
+
     echo "========== REAL RUNTIME EVIDENCE DISCOVERY =========="
-    for f in artifacts/runtime-executions/jalon3-run-001/runtime-benchmark-evidence.json \
-             artifacts/a01-real-runtime-benchmark.v1.json \
-             artifacts/llama-cpp-smollm2-135m-real-benchmark.json; do
+    for f in \
+        "$EVIDENCE" \
+        artifacts/a01-real-runtime-benchmark.v1.json \
+        artifacts/llama-cpp-smollm2-135m-real-benchmark.json; do
         if [ -f "$f" ]; then
             echo "FOUND: $f"
         else
@@ -157,7 +245,6 @@ echo "audit_exit_code=$AUDIT_RC"
 echo "full_local_audit=$OUT"
 echo "tracked_audit=$TRACKED_OUT"
 git status --short
-
 echo "============================================================"
 
 exit "$AUDIT_RC"
