@@ -207,15 +207,6 @@ def summary(measurements: list[dict]) -> dict:
     return result
 
 
-def _run_checked(command: list[str]) -> dict:
-    result = run_once(command)
-    if result["exit_code"] != 0:
-        raise RuntimeError(
-            f"measurement command failed with exit code {result['exit_code']}"
-        )
-    return result
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -259,14 +250,14 @@ def main() -> int:
 
     warmups = []
     for _ in range(args.warmup):
-        warmups.append(_run_checked(command))
+        warmups.append(run_once(command))
         if args.cooldown_seconds:
             time.sleep(args.cooldown_seconds)
 
     start = now()
     measurements = []
     for i in range(1, args.iterations + 1):
-        m = _run_checked(command)
+        m = run_once(command)
         m["iteration"] = i
         measurements.append(m)
         if i != args.iterations and args.cooldown_seconds:
@@ -276,10 +267,14 @@ def main() -> int:
     artifact = args.artifact.resolve()
     if not artifact.exists() or not artifact.is_file():
         raise SystemExit(f"artifact does not exist: {artifact}")
-    if len(measurements) < 5:
-        raise SystemExit("measurement acceptance requires at least 5 runs")
+    successful_runs = sum(m["exit_code"] == 0 for m in measurements)
+    warmup_success = all(m["exit_code"] == 0 for m in warmups)
+    valid = successful_runs >= 5 and warmup_success and all(
+        m["exit_code"] == 0 for m in measurements
+    )
     evidence = {
         "schema": "runtime-benchmark-evidence.v1.1",
+        "status": "valid" if valid else "invalid",
         "execution_id": "rt-" + uuid.uuid4().hex,
         "timestamp_start": start,
         "timestamp_end": end,
@@ -315,6 +310,13 @@ def main() -> int:
         },
         "measurements": measurements,
         "summary": summary(measurements),
+        "acceptance": {
+            "minimum_successful_runs": 5,
+            "successful_runs": successful_runs,
+            "warmup_success": warmup_success,
+            "require_exit_code_zero": True,
+            "allow_partial_results": False,
+        },
         "process": {
             "exit_code": max(m["exit_code"] for m in measurements),
             "stdout": "\n".join(m["stdout"] for m in measurements),
@@ -334,13 +336,14 @@ def main() -> int:
         json.dumps(
             {
                 "execution_id": evidence["execution_id"],
+                "status": evidence["status"],
                 "output": str(args.output),
                 "summary": evidence["summary"],
             },
             indent=2,
         )
     )
-    return 0
+    return 0 if valid else 1
 
 
 if __name__ == "__main__":
