@@ -3,9 +3,10 @@
   "$id": "runtime-benchmark-evidence.v1.1",
   "title": "LEONES Runtime Benchmark Evidence V1.1",
   "type": "object",
-  "required": ["schema", "execution_id", "timestamp_start", "timestamp_end", "model", "protocol", "runtime", "hardware", "measurements", "process", "artifact"],
+  "required": ["schema", "status", "execution_id", "timestamp_start", "timestamp_end", "model", "protocol", "runtime", "hardware", "measurements", "summary", "acceptance", "process", "artifact"],
   "properties": {
     "schema": {"const": "runtime-benchmark-evidence.v1.1"},
+    "status": {"enum": ["valid", "invalid"]},
     "execution_id": {"type": "string", "minLength": 8},
     "timestamp_start": {"type": "string", "format": "date-time"},
     "timestamp_end": {"type": "string", "format": "date-time"},
@@ -20,26 +21,38 @@
     },
     "protocol": {
       "type": "object",
-      "required": ["prompt_protocol_id", "warmup_iterations", "measurement_iterations"],
+      "required": ["protocol_id", "protocol_sha256", "prompt_protocol_id", "warmup_iterations", "measurement_iterations", "cooldown_seconds", "ttft_method"],
       "properties": {
+        "protocol_id": {"type": "string"},
+        "protocol_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "prompt_protocol_id": {"type": "string"}, "prompt": {"type": "string"},
         "input_tokens": {"type": ["integer", "null"], "minimum": 0},
         "output_token_limit": {"type": ["integer", "null"], "minimum": 1},
         "temperature": {"type": ["number", "null"]}, "top_p": {"type": ["number", "null"]},
         "seed": {"type": ["integer", "null"]}, "context": {"type": "integer", "minimum": 1},
         "warmup_iterations": {"type": "integer", "minimum": 0},
-        "measurement_iterations": {"type": "integer", "minimum": 1}
+        "measurement_iterations": {"type": "integer", "minimum": 5},
+        "cooldown_seconds": {"type": "number", "minimum": 0},
+        "ttft_method": {"type": "string"}
       }, "additionalProperties": true
     },
     "runtime": {
       "type": "object",
-      "required": ["name", "version", "command"],
-      "properties": {"name": {"type": "string"}, "version": {"type": "string"}, "revision": {"type": ["string", "null"]}, "backend": {"type": ["string", "null"]}, "command": {"type": "array", "items": {"type": "string"}}},
+      "required": ["name", "version", "revision", "backend", "command"],
+      "properties": {
+        "name": {"type": "string"}, "version": {"type": "string"},
+        "revision": {"type": ["string", "null"]}, "backend": {"type": ["string", "null"]},
+        "command": {"type": "array", "items": {"type": "string"}}
+      }, "additionalProperties": true
+    },
+    "hardware": {
+      "type": "object",
+      "required": ["os", "cpu", "ram_total_mb"],
+      "properties": {"os": {"type": "string"}, "cpu": {"type": "string", "minLength": 1}, "ram_total_mb": {"type": "integer", "minimum": 1}},
       "additionalProperties": true
     },
-    "hardware": {"type": "object", "required": ["os", "cpu", "ram_total_mb"], "additionalProperties": true},
     "measurements": {
-      "type": "array", "minItems": 1, "items": {
+      "type": "array", "minItems": 5, "items": {
         "type": "object", "required": ["iteration", "exit_code", "total_time_ms", "stdout", "stderr"],
         "properties": {
           "iteration": {"type": "integer", "minimum": 1}, "ttft_ms": {"type": ["number", "null"], "minimum": 0},
@@ -52,8 +65,25 @@
       }
     },
     "summary": {"type": "object", "additionalProperties": true},
-    "process": {"type": "object", "required": ["exit_code"], "properties": {"exit_code": {"type": "integer"}, "stdout": {"type": "string"}, "stderr": {"type": "string"}}, "additionalProperties": true},
-    "artifact": {"type": "object", "required": ["path", "sha256", "size"], "properties": {"path": {"type": "string"}, "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "size": {"type": "integer", "minimum": 0}}, "additionalProperties": true}
+    "acceptance": {
+      "type": "object",
+      "required": ["minimum_successful_runs", "successful_runs", "warmup_success", "complete_metrics", "require_exit_code_zero", "allow_partial_results"],
+      "properties": {
+        "minimum_successful_runs": {"const": 5}, "successful_runs": {"type": "integer", "minimum": 0},
+        "warmup_success": {"type": "boolean"}, "complete_metrics": {"type": "boolean"},
+        "require_exit_code_zero": {"type": "boolean"}, "allow_partial_results": {"type": "boolean"}
+      }, "additionalProperties": true
+    },
+    "process": {
+      "type": "object", "required": ["exit_code"],
+      "properties": {"exit_code": {"type": "integer"}, "stdout": {"type": "string"}, "stderr": {"type": "string"}},
+      "additionalProperties": true
+    },
+    "artifact": {
+      "type": "object", "required": ["path", "sha256", "size"],
+      "properties": {"path": {"type": "string"}, "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "size": {"type": "integer", "minimum": 0}},
+      "additionalProperties": true
+    }
   },
   "additionalProperties": true
 }

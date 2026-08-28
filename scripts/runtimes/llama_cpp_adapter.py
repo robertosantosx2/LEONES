@@ -8,6 +8,7 @@ from scripts.runtimes.base import RuntimeAdapter, RuntimeExecutionSpec
 from scripts.runtime_registry import RuntimeEntry
 
 TOKENS_PER_SECOND_PATTERN = re.compile(r"([0-9]+(?:\.[0-9]+)?)\s*tok/s", re.IGNORECASE)
+DEFAULT_MAX_OUTPUT_TOKENS = 128
 
 
 class LlamaCppAdapter(RuntimeAdapter):
@@ -31,13 +32,40 @@ ADAPTER = LlamaCppAdapter()
 
 
 def build_command(
-    executable: str, model_path: str, prompt: str, *, context_tokens: int | None = None
+    executable: str,
+    model_path: str,
+    prompt: str,
+    *,
+    context_tokens: int | None = None,
+    max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS,
 ) -> list[str]:
-    command = [executable, "-m", model_path, "-p", prompt]
+    # --simple-io makes subprocess I/O deterministic; --single-turn is required
+    # by the tested llama-cli build to terminate after the predefined prompt.
+    # A bounded prediction count prevents llama-cli's unlimited default.
+    if max_output_tokens < 1:
+        raise ValueError("max_output_tokens must be positive")
+    command = [
+        executable,
+        "-m",
+        model_path,
+        "-p",
+        prompt,
+    ]
+
+    # Preserve the historical default command contract while making an
+    # explicitly bounded execution non-interactive and deterministic.
     if context_tokens is not None:
         if context_tokens < 1:
             raise ValueError("context_tokens must be positive")
-        command.extend(["-c", str(context_tokens)])
+        command.extend([
+            "--simple-io",
+            "--single-turn",
+            "-c",
+            str(context_tokens),
+            "-n",
+            str(max_output_tokens),
+        ])
+
     return command
 
 
@@ -48,6 +76,7 @@ def build_command_from_plan(
     *,
     executable: str = "llama-cli",
     context_tokens: int | None = None,
+    max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS,
 ) -> list[str]:
     if plan.get("execution_authorized") is not True:
         raise ValueError("runtime plan is not authorized")
@@ -61,7 +90,13 @@ def build_command_from_plan(
         raise ValueError("executable is not the trusted llama.cpp registry entrypoint")
     if not plan.get("quantization"):
         raise ValueError("runtime plan has no quantization")
-    return build_command(executable, model_path, prompt, context_tokens=context_tokens)
+    return build_command(
+        executable,
+        model_path,
+        prompt,
+        context_tokens=context_tokens,
+        max_output_tokens=max_output_tokens,
+    )
 
 
 def tokens_per_second_pattern() -> str:

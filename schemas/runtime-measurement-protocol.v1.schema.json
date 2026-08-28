@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robertosantosx2.github.io/LEONES/schemas/runtime-measurement-protocol.v1.schema.json",
+  "title": "LEONES Runtime Measurement Protocol V1",
+  "description": "Frozen operational contract for reproducible physical LLM runtime measurements. It defines what must be fixed before execution and what the runner must preserve as evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "protocol_id", "protocol_version", "state", "objective", "workload", "execution", "metrics", "environment", "provenance", "acceptance"],
+  "properties": {
+    "schema": { "const": "runtime-measurement-protocol.v1" },
+    "protocol_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$" },
+    "protocol_version": { "const": "1.0" },
+    "state": { "enum": ["draft", "frozen"] },
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["benchmark_kind", "comparison_scope"],
+      "properties": {
+        "benchmark_kind": { "enum": ["single_runtime", "runtime_comparison", "hardware_comparison", "regression"] },
+        "comparison_scope": { "type": "string", "minLength": 1 },
+        "notes": { "type": "string" }
+      }
+    },
+    "workload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "input", "generation", "decoding"],
+      "properties": {
+        "model": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "revision", "artifact", "quantization"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "revision": { "type": "string", "minLength": 1 },
+            "artifact": { "type": "string", "minLength": 1 },
+            "quantization": { "type": "string", "minLength": 1 },
+            "artifact_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["prompt_protocol_id", "prompt", "context_length"],
+          "properties": {
+            "prompt_protocol_id": { "type": "string", "minLength": 1 },
+            "prompt": { "type": "string" },
+            "prompt_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "input_tokens_expected": { "type": ["integer", "null"], "minimum": 0 },
+            "context_length": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "generation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_output_tokens", "stop_policy"],
+          "properties": {
+            "max_output_tokens": { "type": "integer", "minimum": 1 },
+            "stop_policy": { "enum": ["eos", "fixed_tokens", "eos_or_fixed_tokens", "explicit_stop_sequence"] },
+            "stop_sequences": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "decoding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["temperature", "top_p", "top_k", "seed"],
+          "properties": {
+            "temperature": { "type": "number", "minimum": 0 },
+            "top_p": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+            "top_k": { "type": "integer", "minimum": 0 },
+            "seed": { "type": ["integer", "null"] }
+          }
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["warmup_runs", "measurement_runs", "discard_failed_runs", "run_order", "cooldown_seconds"],
+      "properties": {
+        "warmup_runs": { "type": "integer", "minimum": 0 },
+        "measurement_runs": { "type": "integer", "minimum": 1 },
+        "discard_failed_runs": { "type": "boolean" },
+        "run_order": { "enum": ["fixed", "randomized"] },
+        "cooldown_seconds": { "type": "number", "minimum": 0 },
+        "max_runtime_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "isolation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["background_workloads", "power_profile", "network_policy"],
+          "properties": {
+            "background_workloads": { "enum": ["none_required", "none_verified", "allowed"] },
+            "power_profile": { "type": "string", "minLength": 1 },
+            "network_policy": { "enum": ["offline", "restricted", "online"] }
+          }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "required", "optional"],
+      "properties": {
+        "primary": { "enum": ["decode_tokens_per_second", "end_to_end_tokens_per_second", "ttft_ms"] },
+        "required": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["ttft_ms", "generation_time_ms", "output_tokens", "decode_tokens_per_second", "total_time_ms"] } },
+        "optional": { "type": "array", "uniqueItems": true, "items": { "enum": ["input_tokens", "prefill_tokens_per_second", "peak_memory_mb", "peak_vram_mb", "power_w", "energy_wh", "p50_ttft_ms", "p95_ttft_ms", "p99_ttft_ms", "p50_tps", "p95_tps", "p99_tps"] } }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime", "hardware", "os", "command"],
+      "properties": {
+        "runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "version"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "version": { "type": "string", "minLength": 1 },
+            "revision": { "type": ["string", "null"] },
+            "backend": { "type": ["string", "null"] }
+          }
+        },
+        "hardware": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cpu", "ram_mb"],
+          "properties": {
+            "cpu": { "type": "string", "minLength": 1 },
+            "ram_mb": { "type": "integer", "minimum": 1 },
+            "gpu": { "type": ["string", "null"] },
+            "vram_mb": { "type": ["integer", "null"], "minimum": 0 },
+            "memory_bandwidth_gbps": { "type": ["number", "null"], "minimum": 0 }
+          }
+        },
+        "os": { "type": "string", "minLength": 1 },
+        "command": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "environment_variables": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_at", "owner", "evidence_policy"],
+      "properties": {
+        "created_at": { "type": "string", "format": "date-time" },
+        "owner": { "type": "string", "minLength": 1 },
+        "evidence_policy": { "enum": ["preserve_raw", "preserve_raw_and_normalized"] },
+        "protocol_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_successful_runs", "require_exit_code_zero", "require_raw_stdout_stderr", "require_artifact_hash"],
+      "properties": {
+        "minimum_successful_runs": { "type": "integer", "minimum": 1 },
+        "require_exit_code_zero": { "const": true },
+        "require_raw_stdout_stderr": { "const": true },
+        "require_artifact_hash": { "const": true },
+        "allow_partial_results": { "const": false }
+      }
+    }
+  }
+}

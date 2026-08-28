@@ -1,0 +1,34 @@
+name: JALON 3 measurement protocol
+
+on:
+  pull_request:
+    paths:
+      - 'schemas/runtime-measurement-protocol.v1.schema.json'
+      - 'examples/runtime-measurement-protocol.v1*.json'
+      - 'scripts/validate_runtime_measurement_protocol.py'
+      - 'docs/jalones/JALON-3-runtime-measurement-protocol.md'
+  push:
+    branches:
+      - main
+      - jalon3-measurement-protocol
+    paths:
+      - 'schemas/runtime-measurement-protocol.v1.schema.json'
+      - 'examples/runtime-measurement-protocol.v1*.json'
+      - 'scripts/validate_runtime_measurement_protocol.py'
+      - 'docs/jalones/JALON-3-runtime-measurement-protocol.md'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate protocol examples
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in examples/runtime-measurement-protocol.v1*.json; do
+            python scripts/validate_runtime_measurement_protocol.py "$f"
+          done

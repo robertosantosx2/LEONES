@@ -1,0 +1,49 @@
+name: JALON 3 measurement contract
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/runtime_benchmark_evidence.py'
+      - 'scripts/runtimes/llama_cpp_adapter.py'
+      - 'scripts/runtimes/run_llama_cpp_selected.py'
+      - 'schemas/runtime-benchmark-evidence.v1.1.json'
+      - 'tests/test_runtime_benchmark_evidence.py'
+      - 'tests/test_run_llama_cpp_selected.py'
+      - '.github/workflows/jalon3-measurement-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/runtime_benchmark_evidence.py'
+      - 'scripts/runtimes/llama_cpp_adapter.py'
+      - 'scripts/runtimes/run_llama_cpp_selected.py'
+      - 'schemas/runtime-benchmark-evidence.v1.1.json'
+      - 'tests/test_runtime_benchmark_evidence.py'
+      - 'tests/test_run_llama_cpp_selected.py'
+      - '.github/workflows/jalon3-measurement-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pytest
+      - name: Compile measurement path
+        run: |
+          python -m py_compile \
+            scripts/runtime_benchmark_evidence.py \
+            scripts/runtimes/llama_cpp_adapter.py \
+            scripts/runtimes/run_llama_cpp_selected.py
+      - name: Validate evidence schema JSON
+        run: python -m json.tool schemas/runtime-benchmark-evidence.v1.1.json >/dev/null
+      - name: Run JALON 3 contract tests
+        run: python -m pytest -q tests/test_runtime_benchmark_evidence.py tests/test_run_llama_cpp_selected.py

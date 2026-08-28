@@ -32,6 +32,12 @@ Los gates asociados a la integración quedaron verdes: **Agentic A01 contract**,
 
 - [`docs/V1-A01-REAL-RUNTIME.md`](docs/V1-A01-REAL-RUNTIME.md) — metodología, recorrido, evidencia y límites de la ejecución real.
 - [`docs/V1-CLEAN-ROOM.md`](docs/V1-CLEAN-ROOM.md) — política de limpieza, versionado y conservación de evidencia.
+- [`docs/RELEASE-CANDIDATE-1.md`](docs/RELEASE-CANDIDATE-1.md) — plan maestro de Release Candidate 1.
+- [`docs/RELEASE-CANDIDATE-1-HERMES.md`](docs/RELEASE-CANDIDATE-1-HERMES.md) — integración de Hermes como harness agéntico de RC1.
+- [`docs/RELEASE-CANDIDATE-1-ENDGAME.md`](docs/RELEASE-CANDIDATE-1-ENDGAME.md) — plan de ejecución de RC1 hasta instalación de ODS/Magnitude, benchmarks físicos y publicación en MANADA.
+- [`docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md`](docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md) — contrato de interfaces y separación entre `llama-cli`, `llama-server`, ODS/Hermes y Magnitude.
+- [`docs/OPENAI-COMPATIBLE-CONNECTOR-ODS-MAGNITUDE.md`](docs/OPENAI-COMPATIBLE-CONNECTOR-ODS-MAGNITUDE.md) — **nuevo contrato común de conector OpenAI-compatible para ODS/Hermes y Magnitude**.
+- [`docs/RC1-AGENTIC-TASK-CONTRACT.md`](docs/RC1-AGENTIC-TASK-CONTRACT.md) — contrato mínimo de la tarea agentiva comparable, métricas, evidencia y gate de Ubuntu.
 - [`PIPELINE_E2E.md`](PIPELINE_E2E.md) — pipeline integral.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contrato de contribución.
 
@@ -55,6 +61,55 @@ Por eso LEONES distingue siempre entre:
 - `measured`: medición ejecutada por LEONES;
 - `verified`: dato que ha superado el quality gate definido por el proyecto;
 - `unknown`: información que todavía no está demostrada.
+
+---
+
+# 🧭 Orientación RC1: medir productos reales, no reconstruirlos
+
+LEONES reutiliza tanto como sea posible el trabajo de los proyectos especializados.
+
+```text
+                     LEONES
+                       │
+              investigación / Atlas
+                       │
+                    LLMFit
+                       │
+              selección y decisión
+                       │
+             ┌─────────┴─────────┐
+             │                   │
+          ODS/SOHO          Magnitude/personal
+             │                   │
+           Hermes        agente + motor propio
+             │                   │
+      llama-server        llama.cpp integrado
+             │                   │
+             └─────────┬─────────┘
+                       │
+                 tarea real
+                       │
+                 benchmark LEONES
+                       │
+                 medición física
+                       │
+                    evidencia
+                       │
+                    MANADA
+```
+
+La responsabilidad de LEONES es **decidir qué probar y medir qué ocurre realmente**. ODS/Hermes y Magnitude aportan el agente y el mecanismo de inferencia que realmente utilizan. LEONES no debe crear un agente ni un servidor paralelo salvo que una necesidad futura esté demostrada y documentada.
+
+Para RC1 se fija una distinción especialmente importante:
+
+- **`llama-cli`**: ejecución directa útil para benchmarks de inferencia de bajo nivel y para el protocolo físico de JALÓN 3.
+- **`llama-server`**: servidor HTTP OpenAI-compatible de llama.cpp; es la frontera de inferencia que ODS/Hermes utiliza por defecto.
+- **ODS/Hermes**: harness agéntico SOHO que consume un proveedor OpenAI-compatible.
+- **Magnitude**: agente personal que incorpora su propio camino local y además puede interoperar con endpoints OpenAI-compatible.
+
+ODS/Hermes y Magnitude comparten una frontera de integración útil para LEONES: **OpenAI-compatible**. Por eso RC1 utiliza un único conector mínimo para `/v1/models` y `/v1/chat/completions`, manteniendo separadas las arquitecturas y benchmarks propios de cada producto.
+
+La documentación normativa está en [`docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md`](docs/INFERENCE-INTERFACES-ODS-MAGNITUDE.md) y [`docs/OPENAI-COMPATIBLE-CONNECTOR-ODS-MAGNITUDE.md`](docs/OPENAI-COMPATIBLE-CONNECTOR-ODS-MAGNITUDE.md).
 
 ---
 
@@ -109,7 +164,7 @@ Los subproyectos de LEONES se organizan en **capas complementarias**. Cada uno r
 
 ## 1. Prospector / Prospección diaria
 
-**Motivación.** El ecosistema de IA abierta cambia demasiado deprisa para mantener un catálogo manual. Modelos, repositorios, benchmarks, runtimes, datasets y herramientas aparecen continuamente.
+**Motivación.** El ecosistema de IA abierta cambia demasiado deprisa para mantener un catálogo manual. Modelos, repositorios, benchmarks, datasets y herramientas aparecen continuamente.
 
 **Objetivo.** Descubrir candidatos nuevos de forma automatizada, priorizando software y modelos compatibles con los principios de apertura de LEONES.
 
@@ -119,237 +174,14 @@ Documentación: [`docs/phases/2026-08-daily-prospection/`](docs/phases/2026-08-d
 
 ## 2. Open LLM Atlas
 
-**Motivación.** La información sobre modelos está fragmentada, cambia con frecuencia y mezcla nombres, familias, checkpoints, variantes, organizaciones y afirmaciones de apertura.
+Atlas conserva la parte de **investigación, conocimiento y procedencia** de LEONES. No se elimina por la orientación RC1: al contrario, proporciona la base que alimenta selección, comparación, evidencia y publicación.
 
-**Objetivo.** Construir la base canónica de identidad y evidencia de modelos y familias de modelos que LEONES puede utilizar sin perder procedencia.
-
-**Metodología.** Feed → identidad → evidencia → quality gate → `verified-only` → catálogo canónico. Los registros sin evidencia suficiente permanecen `unknown`/`unverified`; no se rellenan por inferencia.
-
-Atlas es la **fuente de identidad y evidencia**, no un ranking arbitrario.
-
-Documentación: [`atlas/README.md`](atlas/README.md) · [`docs/phases/2026-08-atlas-expanded/`](docs/phases/2026-08-atlas-expanded/).
-
-## 3. Índice JGB / apertura
-
-**Motivación.** "Open source", "open weights", "open model" y "open research" no significan necesariamente lo mismo. Un único porcentaje de apertura ocultaría diferencias importantes.
-
-**Objetivo.** Medir y documentar sistemáticamente la apertura de cada modelo con criterios explícitos, manteniendo separados los grados de libertad y su evidencia.
-
-**Metodología.** Definir criterios → localizar evidencia primaria → clasificar cada dimensión → conservar procedencia → publicar únicamente lo que esté suficientemente respaldado. JGB no se mezcla con rendimiento, precio o velocidad.
-
-Documentación: [`web/proyectos/atlas/openness/JGB-INDEX.md`](web/proyectos/atlas/openness/JGB-INDEX.md) · [`docs/phases/2026-08-jgb-systematic/`](docs/phases/2026-08-jgb-systematic/).
-
-## 4. Matriz de hardware
-
-**Motivación.** Un modelo puede ser excelente en un benchmark y, sin embargo, ser inútil para una máquina concreta por RAM, VRAM, ancho de banda, CPU, almacenamiento o aceleración disponible.
-
-**Objetivo.** Relacionar modelos y configuraciones con perfiles reales de hardware, inicialmente CPU × RAM × GPU y posteriormente con mediciones más completas.
-
-**Metodología.** Detectar hardware → normalizar perfil → estimar requisitos → generar matriz de compatibilidad → contrastar con mediciones → conservar diferencia entre compatibilidad, estimación y rendimiento físico.
-
-La matriz **no es un benchmark físico** por sí misma.
-
-Documentación: [`docs/phases/2026-08-hardware-matrix/`](docs/phases/2026-08-hardware-matrix/) · [`docs/completed/H08-HARDWARE-MATRIX.md`](docs/completed/H08-HARDWARE-MATRIX.md).
-
-## 5. Hardware Pricing / precios
-
-**Motivación.** El mejor hardware técnico no es necesariamente la mejor compra. La decisión necesita precio temporal y no solo especificaciones.
-
-**Objetivo.** Construir un histórico reproducible de precios y utilizar observaciones válidas para enriquecer la recomendación hardware/modelo.
-
-**Metodología.** Extracción periódica → normalización → control de calidad → deduplicación → histórico → integración con perfiles hardware → publicación de observaciones.
-
-Documentación: [`docs/phases/2026-08-hardware-pricing/`](docs/phases/2026-08-hardware-pricing/) · [`docs/atlas-hardware-price-integration.md`](docs/atlas-hardware-price-integration.md).
-
-## 6. Ranking económico / TCO
-
-**Motivación.** Comparar precio de compra sin rendimiento, consumo, capacidad o vida útil produce decisiones engañosas.
-
-**Objetivo.** Introducir una capa económica separada de la calidad del modelo y del rendimiento bruto.
-
-**Metodología.** Precio observado + perfil hardware + capacidad/rendimiento disponible → métricas económicas → ranking, manteniendo JGB, rendimiento, hardware y precio como dimensiones independientes.
-
-Documentación: [`docs/phases/2026-08-economic-ranking-v1/`](docs/phases/2026-08-economic-ranking-v1/).
-
-## 7. LLMFit — primera estimación de encaje modelo ↔ máquina
-
-**Motivación.** Antes de ejecutar un benchmark físico o descargar varios gigabytes de pesos, LEONES necesita una **primera estimación rápida y barata** de qué modelos son candidatos razonables para el hardware disponible.
-
-**Objetivo.** Incorporar [llmfit](https://www.llmfit.org/) como **capa de estimación inicial de model fit**, aprovechando su análisis de hardware y su capacidad de valorar qué modelos pueden ejecutarse en una máquina concreta. El proyecto de referencia es [`AlexsJones/llmfit`](https://github.com/AlexsJones/llmfit).
-
-LLMFit **no sustituye Atlas, el recomendador ni los benchmarks de LEONES**. Es una señal previa de encaje. Su resultado debe conservarse como `estimated`/`reported` según el origen del dato y nunca promocionarse automáticamente a `measured`.
-
-**Metodología.**
-
-```text
-HARDWARE DEL USUARIO
-        ↓
-   LLMFit / FIT
-        ↓
- candidatos iniciales
-        ↓
-Atlas + apertura + evidencia
-        ↓
- requisitos / cuantización / runtime
-        ↓
- benchmark LEONES
-        ↓
-  MEDICIÓN REAL
-        ↓
- recomendación final
-```
-
-El flujo previsto es:
-
-1. detectar CPU, RAM, GPU/VRAM y otras capacidades relevantes;
-2. ejecutar LLMFit como filtro/estimador inicial;
-3. conservar sus supuestos y fuente;
-4. cruzar candidatos con Atlas y evidencia técnica;
-5. incorporar cuantización, contexto y runtime reales;
-6. descartar candidatos incompatibles antes de descargar cuando la evidencia lo justifique;
-7. ejecutar benchmark LEONES sobre los candidatos restantes;
-8. sustituir la hipótesis por medición cuando exista evidencia física;
-9. retroalimentar la matriz y el recomendador sin sobrescribir el histórico de estimaciones.
-
-**Regla de arquitectura:** LLMFit es **front-end de estimación**, no fuente de verdad. LEONES mantiene la procedencia y conserva la diferencia entre `fit estimado` y `rendimiento medido`.
-
-Documentación prevista: [`docs/integrations/LLMFIT/`](docs/integrations/LLMFIT/) · [`docs/phases/2026-08-atlas-recommendation-pipeline/`](docs/phases/2026-08-atlas-recommendation-pipeline/).
-
-## 8. CABE / RULA
-
-**Motivación.** Saber si un modelo "cabe" en una máquina no es suficiente; también importa si la velocidad resultante hace viable una tarea.
-
-**Objetivo.** Traducir rendimiento medido en categorías operativas sin destruir el dato continuo.
-
-**Metodología.** Conservar `tokens_per_second` como métrica primaria y derivar clasificación:
-
-```text
-<1 tok/s      → No CABE
-1–<10 tok/s   → CABE
-10–100 tok/s  → RULA
->100 tok/s    → RULA+
-```
-
-La clasificación nunca sustituye a la medición.
-
-Documentación: [`docs/phases/2026-08-cabe-rula/`](docs/phases/2026-08-cabe-rula/) · [`docs/completed/H09-CABE-RULA.md`](docs/completed/H09-CABE-RULA.md).
-
-## 9. Atlas → recomendador
-
-**Motivación.** Un catálogo no responde a la pregunta del usuario: "¿qué modelo debería utilizar yo para esta tarea y este hardware?".
-
-**Objetivo.** Convertir evidencia de modelos + hardware + rendimiento + apertura + precio en recomendaciones trazables.
-
-**Metodología.** Prospección → ingesta → evidencia → calidad → hipótesis → matriz hardware → **LLMFit como estimación inicial cuando esté disponible** → recomendación → enriquecimiento → validación → publicación. CABE/RULA, JGB y los datos económicos permanecen como dimensiones independientes.
-
-Documentación: [`docs/phases/2026-08-atlas-recommendation-pipeline/`](docs/phases/2026-08-atlas-recommendation-pipeline/) · [`docs/completed/H10-ATLAS-RECOMMENDER-PIPELINE.md`](docs/completed/H10-ATLAS-RECOMMENDER-PIPELINE.md).
-
-## 10. Benchmarks reales
-
-**Motivación.** Los benchmarks publicados por terceros son imprescindibles, pero no sustituyen la medición en el hardware y runtime que realmente utiliza el usuario.
-
-**Objetivo.** Crear una batería reproducible que mida modelos, runtimes y tareas en condiciones controladas.
-
-**Metodología.** Fijar hardware + modelo + cuantización + runtime + contexto → ejecutar tarea controlada → recoger tiempo, tokens y resultado → validar → almacenar evidencia con procedencia. La medición LEONES nunca se confunde con una cifra declarada por el fabricante.
-
-Documentación: [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) · [`docs/completed/BENCHMARK-MEASURED-EVIDENCE.md`](docs/completed/BENCHMARK-MEASURED-EVIDENCE.md) · [`docs/completed/PHYSICAL-BENCHMARK-VALIDATION.md`](docs/completed/PHYSICAL-BENCHMARK-VALIDATION.md).
-
-## 11. Evaluación agentiva
-
-**Motivación.** Un agente no se puede evaluar solo por tokens/segundo ni por una respuesta final. Importan herramientas, trayectoria, recuperación ante errores, coste, tiempo, seguridad y artefactos producidos.
-
-**Objetivo.** Evaluar agentes mediante tareas reales y reproducibles, no únicamente mediante preguntas sintéticas.
-
-**Metodología.** Tarea → entorno controlado → herramientas → trazas → outcome → trajectory → grading → coste/tiempo → seguridad → artefactos → informe. Las métricas se conservan separadas para evitar que una única puntuación oculte fallos.
-
-Documentación: [`docs/EVALUACION_AGENTIC_TESTS.md`](docs/EVALUACION_AGENTIC_TESTS.md) · [`docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md`](docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md).
-
-## 12. Runtime / Router / Quant
-
-**Motivación.** El modelo no ejecuta solo: el resultado depende del motor, cuantización, placement, contexto, batching, aceleración y estrategia de routing.
-
-**Objetivo.** Separar modelo, runtime y configuración para poder comparar combinaciones reproducibles y seleccionar dinámicamente la mejor opción para una tarea.
-
-**Metodología.** Registrar cada ejecución como una combinación explícita `modelo + cuantización + runtime + hardware + configuración`; medir; comparar; alimentar Router sin ocultar las condiciones de la medición.
-
-Documentación general: [`docs/PILLARS.md`](docs/PILLARS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
-
-## 13. Agentes y harnesses
-
-**Motivación.** LEONES necesita una capa de ejecución agéntica capaz de probar tareas reales de manera reproducible y comparable.
-
-**Objetivo.** Utilizar harnesses especializados como referencia de ejecución/evaluación y mantener separada la infraestructura de agente de la base de evidencia de LEONES.
-
-**Metodología.** Cada harness se integra como adaptador: tarea definida → entorno aislado → permisos explícitos → ejecución → trazas → resultado → benchmark. La selección de harness no modifica los hechos del Atlas.
-
-Los harnesses de referencia del proyecto son **Hermes, DeepSeek Harness y Buddy**, junto con la integración de **Magnitude** como asistente de coding y **ODS** como servidor de stacks IA.
-
-## 14. ODS — servidor de stacks IA
-
-**Motivación.** Muchos usuarios necesitan algo más que un modelo: necesitan inferencia, UI, RAG, agentes, voz, imagen, workflows y otras piezas del stack.
-
-**Objetivo.** Investigar ODS como referencia para la composición y despliegue de stacks locales, manteniendo separada su función de la evidencia propia de LEONES.
-
-**Metodología.** Estudiar capacidades → identificar componentes reutilizables → documentar evidencia → integrar mediante adaptadores → medir cuando proceda.
-
-Documentación: [`docs/subprojects/ods/`](docs/subprojects/ods/).
-
-## 15. Magnitude
-
-**Motivación.** La selección de modelo y runtime necesita considerar el hardware disponible y las condiciones reales de ejecución.
-
-**Objetivo.** Estudiar Magnitude como fuente de conocimiento y posible componente auxiliar para perfilado, estimación y ejecución.
-
-**Metodología.** Analizar hardware → modelos → cuantización → runtime → configuración → rendimiento → conservar la procedencia y separar las cifras externas de las mediciones LEONES.
-
-Documentación: [`docs/subprojects/magnitude/`](docs/subprojects/magnitude/).
-
-## 16. FreeToken y otras fuentes de conocimiento
-
-LEONES incorpora proyectos externos como **fuentes de conocimiento, evidencia e inspiración**, no como hechos propios. Cada ficha debe explicar qué es el proyecto, para qué sirve, qué aporta a LEONES, qué evidencia existe y qué parte está pendiente de verificación o medición.
-
-La incorporación de una fuente externa **no promociona automáticamente sus resultados a mediciones LEONES**.
+Atlas debe distinguir siempre entre datos externos, observaciones, estimaciones y mediciones físicas promovidas por los quality gates.
 
 ---
 
-# 🔬 Principio de evidencia
+## Principio operativo RC1
 
-Toda afirmación relevante debe conservar su procedencia. LEONES distingue entre:
+> **Poco código, cada pieza con una responsabilidad, comentarios que expliquen decisiones y README que explique cómo utilizarla.**
 
-```text
-FUENTE
-  ↓
-EVIDENCIA
-  ↓
-ESTIMACIÓN / OBSERVACIÓN / REPORTE
-  ↓
-MEDICIÓN LEONES
-  ↓
-VERIFICACIÓN
-  ↓
-CONOCIMIENTO PUBLICABLE
-```
-
-No se deben mezclar estas capas para producir una cifra aparentemente más precisa de lo que realmente está demostrado.
-
----
-
-# 🧪 Calidad y reproducibilidad
-
-Los cambios que afectan a código, contratos, esquemas, selección de runtimes, ejecución, benchmarks o datos deben acompañarse de las pruebas y evidencias correspondientes.
-
-La CI es parte del contrato del proyecto. Un cambio no se considera terminado únicamente porque funcione en el entorno del desarrollador: debe mantener los consumidores, contratos y rutas de integración relevantes.
-
-Para contribuir, consulta **[CONTRIBUTING.md](CONTRIBUTING.md)**.
-
----
-
-# 📚 Documentación
-
-La documentación técnica se encuentra principalmente bajo [`docs/`](docs/), mientras que el conocimiento publicable se integra en la web de LEONES. Las fuentes externas deben conservar su identidad y procedencia y no deben confundirse con evidencia generada por LEONES.
-
----
-
-# 📜 Licencia
-
-Consulta los ficheros de licencia del repositorio y la documentación específica de cada subproyecto o fuente externa. Las licencias de terceros no deben interpretarse como licencia de LEONES.
+LEONES integra antes de duplicar, mide antes de afirmar y documenta antes de congelar.
