@@ -6,7 +6,7 @@ La intención no es sustituir la documentación normativa de cada fase, sino hac
 
 ## Qué significa «terminado» aquí
 
-Solo se incluyen los hitos que el proyecto declara aceptados en `docs/phases/README.md`:
+Solo se incluyen los hitos que el proyecto declara aceptados en `docs/phases/README.md` y los jalones que disponen de un contrato operativo cerrado:
 
 - H01 — precios mensuales de hardware.
 - H02 — integración de precios con hardware, Atlas y recomendador.
@@ -14,6 +14,7 @@ Solo se incluyen los hitos que el proyecto declara aceptados en `docs/phases/REA
 - H04 — prospección diaria automatizada.
 - H05 — protocolo y sistema documental.
 - H10 — pipeline diario Atlas → recomendador.
+- **JALÓN 3 — protocolo de medición real.**
 
 H06, H07, H08 y H09 **no se documentan aquí como terminados**, porque siguen en evolución.
 
@@ -38,10 +39,13 @@ Después se incluye el mapa de scripts y workflows para que sea posible pasar de
 | H04 | [Prospección diaria](H04-DAILY-PROSPECTION.md) | Explica descubrimiento, licencias, enriquecimiento y publicación. |
 | H05 | [Sistema documental](H05-DOCUMENTATION-SYSTEM.md) | Explica cómo se cierra y mantiene una fase. |
 | H10 | [Pipeline Atlas → recomendador](H10-ATLAS-RECOMMENDER-PIPELINE.md) | Explica el recorrido diario completo y sus contratos. |
+| JALÓN 3 | [Protocolo de medición real](JALON-3-MEASUREMENT-PROTOCOL.md) | Contrato operativo para identidad, configuración, hardware, ejecución, medición, evidencia, validación y promoción de resultados físicos. |
 
 ## Regla para futuros cambios
 
 Si se modifica un script de un componente terminado, primero hay que decidir si sigue siendo compatible con su contrato de aceptación. Si la modificación cambia comportamiento, evidencia, entradas, salidas o invariantes, la fase debe volver a validarse y su estado debe dejar de considerarse automáticamente cerrado hasta superar esa validación.
+
+Para JALÓN 3 esto implica una regla adicional: **cambiar el protocolo de medición no es una simple edición documental si altera qué se considera una ejecución válida, qué evidencia se conserva o cómo se promociona un resultado**. En ese caso debe abrirse una nueva revisión del contrato y volver a ejecutar sus gates.
 
 ## Regla de limpieza
 
