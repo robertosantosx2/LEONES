@@ -46,7 +46,7 @@ def endpoint():
     thread.start()
     try:
         yield OpenAICompatibleEndpoint(
-            f"http://127.0.0.1:{server.server_port}",
+            f"http://127.0.0.1:{server.server_port}/v1",
             "test-model",
             api_key="local-test-key",
         )
@@ -64,9 +64,17 @@ def test_endpoint_rejects_invalid_configuration():
         OpenAICompatibleEndpoint("http://localhost", "model", timeout_seconds=0)
 
 
+def test_endpoint_accepts_root_or_v1_url():
+    root = OpenAICompatibleEndpoint("http://localhost:8080", "model")
+    versioned = OpenAICompatibleEndpoint("http://localhost:8080/v1/", "model")
+    assert root.normalized_base_url == "http://localhost:8080"
+    assert versioned.normalized_base_url == "http://localhost:8080"
+
+
 def test_health_uses_models_endpoint(endpoint):
     result = health(endpoint)
     assert result["http_status"] == 200
+    assert result["base_url"].endswith("/v1")
     assert result["models"][0]["id"] == "test-model"
 
 
