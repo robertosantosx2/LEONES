@@ -207,6 +207,15 @@ def summary(measurements: list[dict]) -> dict:
     return result
 
 
+def _run_checked(command: list[str]) -> dict:
+    result = run_once(command)
+    if result["exit_code"] != 0:
+        raise RuntimeError(
+            f"measurement command failed with exit code {result['exit_code']}"
+        )
+    return result
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -226,9 +235,20 @@ def main() -> int:
     ap.add_argument("--prompt", default="")
     ap.add_argument("--warmup", type=int, default=1)
     ap.add_argument("--iterations", type=int, default=5)
+    ap.add_argument("--cooldown-seconds", type=float, default=5.0)
+    ap.add_argument("--protocol-id", required=True)
+    ap.add_argument("--protocol-sha256", required=True)
     ap.add_argument("--runtime", default="llama.cpp")
     ap.add_argument("--backend", default=None)
     args = ap.parse_args()
+    if args.warmup < 0:
+        raise SystemExit("warmup must be >= 0")
+    if args.iterations < 1:
+        raise SystemExit("iterations must be >= 1")
+    if args.cooldown_seconds < 0:
+        raise SystemExit("cooldown-seconds must be >= 0")
+    if not re.fullmatch(r"[a-f0-9]{64}", args.protocol_sha256):
+        raise SystemExit("protocol-sha256 must be a lowercase 64-character SHA-256")
     command = json.loads(args.command_json.read_text(encoding="utf-8"))
     if (
         not isinstance(command, list)
@@ -236,18 +256,28 @@ def main() -> int:
         or not all(isinstance(x, str) for x in command)
     ):
         raise SystemExit("command-json must contain a non-empty JSON string array")
+
+    warmups = []
     for _ in range(args.warmup):
-        run_once(command)
+        warmups.append(_run_checked(command))
+        if args.cooldown_seconds:
+            time.sleep(args.cooldown_seconds)
+
     start = now()
     measurements = []
     for i in range(1, args.iterations + 1):
-        m = run_once(command)
+        m = _run_checked(command)
         m["iteration"] = i
         measurements.append(m)
+        if i != args.iterations and args.cooldown_seconds:
+            time.sleep(args.cooldown_seconds)
     end = now()
+
     artifact = args.artifact.resolve()
     if not artifact.exists() or not artifact.is_file():
         raise SystemExit(f"artifact does not exist: {artifact}")
+    if len(measurements) < 5:
+        raise SystemExit("measurement acceptance requires at least 5 runs")
     evidence = {
         "schema": "runtime-benchmark-evidence.v1.1",
         "execution_id": "rt-" + uuid.uuid4().hex,
@@ -262,11 +292,14 @@ def main() -> int:
             "context_length": args.context,
         },
         "protocol": {
+            "protocol_id": args.protocol_id,
+            "protocol_sha256": args.protocol_sha256,
             "prompt_protocol_id": args.prompt_protocol_id,
             "prompt": args.prompt,
             "context": args.context,
             "warmup_iterations": args.warmup,
             "measurement_iterations": args.iterations,
+            "cooldown_seconds": args.cooldown_seconds,
         },
         "runtime": {
             "name": args.runtime,
@@ -276,6 +309,10 @@ def main() -> int:
             "command": command,
         },
         "hardware": hardware(),
+        "warmup": {
+            "count": len(warmups),
+            "exit_codes": [m["exit_code"] for m in warmups],
+        },
         "measurements": measurements,
         "summary": summary(measurements),
         "process": {
@@ -303,7 +340,7 @@ def main() -> int:
             indent=2,
         )
     )
-    return 0 if all(m["exit_code"] == 0 for m in measurements) else 1
+    return 0
 
 
 if __name__ == "__main__":
