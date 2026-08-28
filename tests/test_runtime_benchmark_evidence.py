@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from scripts.runtime_benchmark_evidence import _run_checked, run_once, sha256_file, summary
+from scripts.runtime_benchmark_evidence import run_once, sha256_file, summary
 
 
 def test_run_once_captures_output_and_timing():
@@ -12,13 +12,10 @@ def test_run_once_captures_output_and_timing():
     assert result["tokens_per_second"] == 12.5
 
 
-def test_run_checked_rejects_nonzero_exit():
-    try:
-        _run_checked(["python3", "-c", "raise SystemExit(7)"])
-    except RuntimeError as exc:
-        assert "exit code 7" in str(exc)
-    else:
-        raise AssertionError("failed measurement was accepted")
+def test_run_once_preserves_nonzero_exit_and_output():
+    result = run_once(["python3", "-c", "print('failed run'); raise SystemExit(7)"])
+    assert result["exit_code"] == 7
+    assert "failed run" in result["stdout"]
 
 
 def test_sha256_is_stable(tmp_path: Path):
