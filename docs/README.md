@@ -84,6 +84,7 @@ Las cuatro capas de conocimiento permanecen separadas: **fuente → evidencia �
 - [`RESULT_SCHEMA.md`](RESULT_SCHEMA.md) — resultado canónico.
 - [`completed/BENCHMARK-MEASURED-EVIDENCE.md`](completed/BENCHMARK-MEASURED-EVIDENCE.md) — evidencia de benchmarks medidos.
 - [`completed/PHYSICAL-BENCHMARK-VALIDATION.md`](completed/PHYSICAL-BENCHMARK-VALIDATION.md) — validación física.
+- [`completed/JALON-3-MEASUREMENT-PROTOCOL.md`](completed/JALON-3-MEASUREMENT-PROTOCOL.md) — **JALÓN 3 🟢: contrato operativo de medición real, hardware, ejecución, evidencia y validación.**
 - [`completed/H09-CABE-RULA.md`](completed/H09-CABE-RULA.md) — CABE/RULA.
 
 ### Integraciones
