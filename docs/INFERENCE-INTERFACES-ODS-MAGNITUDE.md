@@ -6,51 +6,58 @@
 
 ## 1. Decisión cerrada
 
-La primera integración agentiva de LEONES debe partir de **ODS/Hermes mediante su interfaz OpenAI-compatible hacia `llama-server`**.
+ODS/Hermes y Magnitude tienen una frontera de interoperabilidad común: **OpenAI-compatible**.
 
-Magnitude se tratará de forma diferente: su arquitectura actual incorpora **su propio motor de inferencia basado en llama.cpp**, por lo que no debemos forzar `llama-server` como requisito de Magnitude.
-
-Esto produce dos caminos de ejecución legítimos:
+Por tanto, LEONES implementará **un único conector OpenAI-compatible** para la primera integración agentiva. No habrá un conector específico para ODS y otro distinto para Magnitude salvo que una diferencia real, demostrada experimentalmente, lo haga imprescindible.
 
 ```text
-                    LEONES
-                       |
-              selección / decisión
-                       |
-             +---------+---------+
-             |                   |
-            ODS              Magnitude
-             |                   |
-           Hermes          agente + ACN
-             |                   |
-   OpenAI-compatible       provider / engine
-             |                   |
-       llama-server       motor propio sobre llama.cpp
-             |                   |
-             +---------+---------+
-                       |
-                 tarea real
-                       |
-                 medición LEONES
-                       |
-                    evidencia
-                       |
-                     MANADA
+                         LEONES
+                           |
+                  selección / decisión
+                           |
+                  tarea agentiva RC1
+                           |
+             +-------------+-------------+
+             |                           |
+            ODS                       Magnitude
+             |                           |
+           Hermes                  agent / provider
+             |                           |
+             +-------------+-------------+
+                           |
+                  OpenAI-compatible
+                           |
+                  /v1/models
+                  /v1/chat/completions
+                           |
+                  backend de inferencia
+                           |
+                     modelo local
+                           |
+                    medición LEONES
+                           |
+                       evidencia
+                           |
+                         MANADA
 ```
+
+El conector común sólo unifica la **frontera de inferencia**. No unifica los agentes, las herramientas, la memoria, el navegador, el perfilado de hardware ni los motores internos.
+
+La especificación detallada está en [`OPENAI-COMPATIBLE-CONNECTOR-ODS-MAGNITUDE.md`](OPENAI-COMPATIBLE-CONNECTOR-ODS-MAGNITUDE.md).
 
 ## 2. ODS + Hermes
 
-La documentación oficial de ODS describe Hermes como un servicio que habla con el proveedor de modelo mediante una **API compatible con OpenAI**. En la configuración local por defecto, ODS apunta Hermes a `llama-server` mediante `llama-server:8080/v1`.
+La documentación oficial de ODS describe Hermes como un servicio que habla con el proveedor de modelo mediante una **API compatible con OpenAI**. En la configuración local por defecto, ODS apunta Hermes a `llama-server` mediante `llama-server:8080/v1`. citeturn0search0turn0search1
 
 Por tanto, para LEONES:
 
 - Hermes es el **harness/agente**;
-- `llama-server` es el **backend de inferencia local** por defecto;
+- `llama-server` es el **backend de inferencia local** por defecto de ODS;
 - la frontera que debemos integrar y observar es la **API OpenAI-compatible**;
-- `llama-cli` no es la interfaz agentiva de ODS;
+- `llama-cli` no es la interfaz agentiva de Hermes;
 - LEONES no debe duplicar Hermes ni implementar otro agente.
 
-Referencia primaria: `nxpatterns/Osmantic-ODS`, `ods/docs/HERMES.md`.
+ODS también documenta que su API puede consumirse directamente con el SDK de OpenAI y que `/v1/models` permite conocer el modelo servido. citeturn0search3
 
 ## 3. `llama-cli` frente a `llama-server`
 
@@ -62,7 +69,7 @@ Se utiliza para una ejecución directa y controlada del modelo. Es adecuado para
 
 ### `llama-server`
 
-Es el servicio HTTP OpenAI-compatible de llama.cpp. Es adecuado cuando un agente, como Hermes, necesita consumir el modelo como proveedor.
+Es el servicio HTTP OpenAI-compatible de llama.cpp. Es adecuado cuando un agente necesita consumir el modelo como proveedor.
 
 La separación queda fijada así:
 
@@ -80,17 +87,39 @@ RC1 / tarea agentiva ODS
     -> medición de tarea por LEONES
 ```
 
-LEONES puede reutilizar ambos caminos sin convertir ninguno en un runtime propio.
+LEONES reutiliza ambos caminos sin convertir ninguno en un runtime propio.
 
 ## 4. Magnitude
 
-La documentación oficial actual de Magnitude define el producto como un agente local con **su propio motor de inferencia**. El README del proyecto indica que dicho motor está escrito en Rust y construido sobre llama.cpp, y que Magnitude perfila el hardware, recomienda modelos y gestiona la carga/configuración local.
+Magnitude se orienta a un agente con modelos locales integrados, perfilado de hardware y selección/configuración de modelos. Su documentación pública indica además que puede conectarse a un **endpoint OpenAI-compatible externo**. citeturn1search0
 
-La arquitectura del repositorio separa, entre otros componentes, `clients`, `sdk`, `acn`, `ai`, `providers` y `agent`. Esto significa que la interfaz de inferencia debe entenderse como una capacidad interna del producto, no como una simple dependencia de un `llama-server` externo.
+La documentación de proveedores de Magnitude define explícitamente:
 
-Magnitude también declara soporte para usar un endpoint OpenAI-compatible externo. Esa capacidad es útil como ruta de interoperabilidad, pero **no debe convertirse en la hipótesis de referencia del benchmark de Magnitude**: el benchmark debe medir primero el camino nativo que el producto ofrece al usuario.
+```text
+provider: 'openai-generic'
+options:
+  model
+  baseUrl
+  apiKey?
+  temperature?
+  headers?
+```
 
-Referencia primaria: `magnitudedev/magnitude`, `README.md` y documentación de arquitectura del repositorio.
+Esto permite utilizar el mismo tipo de endpoint que consume ODS/Hermes. citeturn1search1turn1search2
+
+Por tanto Magnitude tiene dos rutas legítimas para LEONES:
+
+### A. Magnitude nativo
+
+Magnitude controla su propia inferencia local. Esta es la ruta que debe medirse cuando la pregunta sea:
+
+> **¿Qué experiencia completa ofrece Magnitude en este hardware de consumo?**
+
+### B. Magnitude mediante OpenAI-compatible
+
+Magnitude utiliza `openai-generic` para consumir un endpoint externo. Esta ruta es especialmente valiosa para LEONES porque permite reutilizar el mismo conector y, si se apunta al mismo backend que ODS/Hermes, mantener constante la inferencia mientras se compara la capa agente.
+
+La ruta B **no sustituye** a la ruta A: son experimentos diferentes y deben etiquetarse como tales.
 
 ## 5. Qué debe medir LEONES
 
@@ -140,31 +169,43 @@ La métrica principal de LEONES pasa a ser conceptualmente:
 
 ## 6. Primera prueba física
 
-No se debe ejecutar todavía hasta haber terminado la auditoría documental de Magnitude y preparado el contrato mínimo de tarea.
-
-La primera prueba física deberá ser:
+La primera prueba física debe aprovechar el conector común y separar claramente los experimentos:
 
 ```text
 hardware de consumo real
         |
         +--> ODS + Hermes + llama-server
+        |          |
+        |       conector común
+        |
+        +--> Magnitude + OpenAI-compatible
+        |          |
+        |       mismo conector
         |
         +--> Magnitude nativo
-        |
-        +--> misma tarea versionada
-        |
-        +--> misma familia/modelo cuando sea posible
-        |
-        +--> evidencia LEONES
+                   |
+                camino propio
 ```
 
-La comparación debe mantener constantes todas las variables que realmente puedan mantenerse constantes y registrar explícitamente las que sean diferentes por arquitectura.
+Para la comparación ODS/Hermes ↔ Magnitude mediante endpoint común, se mantendrán constantes, cuando sea posible:
+
+- hardware;
+- backend;
+- modelo;
+- cuantización;
+- contexto;
+- tarea;
+- prompt/protocolo;
+- límites de generación.
+
+Las diferencias que no puedan mantenerse constantes deben quedar registradas, no ocultas.
 
 ## 7. Qué NO hacemos
 
 - No creamos `LEONES-server`.
 - No creamos un agente LEONES que sustituya a Hermes o Magnitude.
-- No obligamos a Magnitude a utilizar `llama-server` si su camino nativo es distinto.
+- No creamos dos conectores para la misma interfaz.
+- No obligamos a Magnitude a utilizar `llama-server` en su camino nativo.
 - No confundimos una prueba de `llama-cli` con una prueba de Hermes.
 - No publicamos un resultado agentivo como si fuera una medición de tokens/s.
 - No inventamos equivalencias entre métricas producidas por diferentes motores.
@@ -185,27 +226,34 @@ Esto aplica especialmente a las futuras aportaciones de **AirLLM** y **FreeToken
 
 Ubuntu se solicita solamente cuando el repositorio ya pueda responder documentalmente a estas preguntas:
 
-- ¿qué proceso inicia ODS para servir el modelo?
+- ¿qué endpoint OpenAI-compatible expone ODS?
 - ¿qué endpoint consume Hermes?
-- ¿qué interfaz utiliza Magnitude en su camino nativo?
-- ¿qué proveedor/engine utiliza Magnitude?
-- ¿qué modelo concreto vamos a probar?
+- ¿cómo se configura Magnitude para `openai-generic`?
+- ¿cuál es el camino nativo de Magnitude?
+- ¿qué backend y modelo concreto vamos a probar?
 - ¿qué tarea agentiva vamos a ejecutar?
 - ¿qué variables serán constantes?
 - ¿qué variables serán específicas de cada producto?
 - ¿qué evidencia debemos conservar?
 - ¿cómo se convertirá la ejecución en un resultado publicable en MANADA?
 
-Solo entonces se pasa a Ubuntu para `instalar -> ejecutar -> medir -> conservar evidencia`.
+El diseño ya responde estas preguntas. El siguiente paso que requiere Ubuntu es la verificación física:
 
-## 10. Fuentes primarias
+```text
+instalar -> arrancar -> health -> inferencia -> tarea -> medir -> conservar evidencia
+```
 
-- ODS / Hermes: `nxpatterns/Osmantic-ODS`, `ods/docs/HERMES.md`.
-- Magnitude: `magnitudedev/magnitude`, `README.md`.
-- Magnitude architecture guidance: `AGENTS.md` y estructura de `packages/`.
-- llama.cpp: documentación oficial de `llama-server` y su API OpenAI-compatible.
+## 10. Fuentes primarias revisadas
 
-Estas fuentes son normativas para esta decisión. Si cambian upstream, LEONES debe revisar este documento antes de cambiar su arquitectura.
+- ODS / Hermes: `Osmantic/ODS`, `ods/docs/HERMES.md`. citeturn0search0
+- ODS integration guide / OpenAI compatibility. citeturn0search3
+- ODS architecture / agent execution flow. citeturn0search9
+- Magnitude: sitio oficial y capacidad de conectar un endpoint OpenAI-compatible. citeturn1search0
+- Magnitude LLM Providers: `openai-generic`, `baseUrl`, `model`, `apiKey` y opciones. citeturn1search1
+- Magnitude compatible LLMs: ejemplo de configuración `openai-generic`. citeturn1search2
+- llama.cpp: servidor OpenAI-compatible, como backend físico de referencia cuando corresponda.
+
+Estas fuentes son normativas para la decisión de diseño. Si cambian upstream, LEONES debe revisar este documento antes de cambiar su arquitectura.
 
 ---
 
@@ -213,4 +261,6 @@ Estas fuentes son normativas para esta decisión. Si cambian upstream, LEONES de
 
 **CERRADO para el diseño de RC1.**
 
-Pendiente únicamente la ejecución física y la verificación experimental de las interfaces en el hardware de consumo objetivo. Esa ejecución requiere Ubuntu.
+La interfaz común ya no es una hipótesis: ODS/Hermes y Magnitude documentan compatibilidad con la frontera OpenAI-compatible. LEONES utilizará un único conector mínimo para esa frontera y conservará como experimento separado el camino nativo de Magnitude.
+
+**Ubuntu aún no es necesario para diseñar el conector. Sí será necesario para verificar físicamente los endpoints, ejecutar las tareas y producir la primera evidencia real de RC1.**
