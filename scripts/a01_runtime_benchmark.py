@@ -2,7 +2,7 @@
 """Canonical A01 path.
 
 selector -> runtime-selection.v1 gate -> A01 executor -> grader
-         -> runtime benchmark -> evidence -> LEONES Router.
+         -> runtime benchmark -> evidence.
 
 The CI path uses a controlled trusted runtime; real-runtime evidence is kept
 separate and must retain its runtime/model provenance.
@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import importlib.util
 import json
 import os
 import re
@@ -62,7 +61,7 @@ def execute(
     timeout: float,
 ) -> tuple[dict[str, Any], str, float]:
     # A01 is also a directly executable CLI. Do not rely on the caller having
-    # exported PYTHONPATH=. (GitHub Actions and a clean Debian shell often do not.)
+    # exported PYTHONPATH=. (GitHub Actions and a clean shell often do not.)
     # Inject the repository root only for the child process; runtime commands
     # remain trusted argv lists and are unaffected by this import-path fix.
     repo_root = Path(__file__).resolve().parents[1]
@@ -143,39 +142,6 @@ def build_benchmark(
     }
 
 
-def run_router(evidence: dict[str, Any], out: Path) -> dict[str, Any]:
-    """Call the repository's canonical Router, not a parallel routing policy."""
-    router_path = Path("scripts/leones-router.py")
-    spec = importlib.util.spec_from_file_location("leones_router", router_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"cannot load canonical Router: {router_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    benchmark = evidence["runtime_benchmark"]
-    model_name = benchmark.get("model")
-    model = {"model": {"name": model_name, "format": None, "size_bytes": None}}
-    plan = evidence.get("runtime_selection", {}).get("execution_plans", [{}])[0]
-    model["model"]["format"] = (plan.get("runtime") or {}).get("format") or (
-        plan.get("variant") or ""
-    )
-    hardware = {"hardware": plan.get("hardware", {})}
-    task = {"task": "A01", "capabilities": ["tool_use"]}
-    router_input = {
-        "evidence": {"evidence_type": "measured", "source": evidence["source"]},
-        "model": {"name": model_name},
-        "agentic": {
-            "outcome": {"status": "success" if benchmark["grader_pass"] else "failed"},
-            "runtime": {"name": benchmark.get("runtime")},
-        },
-        "runtime_benchmark": benchmark,
-    }
-    decision = module.route(hardware, model, task, {}, router_input)
-    out.write_text(
-        json.dumps(decision, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    return decision
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--selection", required=True, type=Path)
@@ -212,9 +178,7 @@ def main() -> int:
         "runtime_benchmark": benchmark,
         "executor_result": result,
     }
-    router_out = args.out.with_name("router-decision.v1.json")
-    decision = run_router(evidence, router_out)
-    payload = {"evidence": evidence, "router": decision}
+    payload = {"evidence": evidence}
     args.out.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
