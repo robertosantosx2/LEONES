@@ -7,10 +7,12 @@ cd "$ROOT"
 STAMP="$(date -u '+%Y%m%dT%H%M%SZ')"
 OUTDIR="artifacts/jalon3-audit"
 OUT="$OUTDIR/jalon3-audit-$STAMP.txt"
+TRACKED_DIR="docs/audits/jalon3"
+TRACKED_OUT="$TRACKED_DIR/latest.txt"
 CONTRACT="docs/jalones/jalon3.md"
 
-mkdir -p "$OUTDIR"
-exec > >(tee "$OUT") 2>&1
+mkdir -p "$OUTDIR" "$TRACKED_DIR"
+exec > >(tee "$OUT" | tee "$TRACKED_OUT") 2>&1
 
 echo "============================================================"
 echo "LEONES — JALÓN 3 AUDIT RUNNER"
@@ -86,13 +88,15 @@ echo
 
 echo "============================================================"
 echo "AUDIT OUTPUT: $OUT"
+echo "TRACKED AUDIT: $TRACKED_OUT"
 echo "============================================================"
 echo
 
 echo "========== PUBLISH AUDIT =========="
-# artifacts/ is intentionally ignored for bulk runtime output; this audit artifact
-# is explicitly force-added so the runner can publish its own machine-generated evidence.
-git add -f "$OUT"
+# Runtime artifacts remain ignored. The compact audit mirror is deliberately
+# tracked so the complete runner output can be read from Git without copying
+# terminal output into chat.
+git add "$TRACKED_OUT"
 
 if git diff --cached --quiet; then
     echo "No hay cambios nuevos que commitear."
@@ -104,6 +108,7 @@ fi
 echo
 echo "========== PUSH RESULT =========="
 git status --short
-echo "Archivo de auditoría: $OUT"
+echo "Archivo de auditoría local: $OUT"
+echo "Auditoría rastreada: $TRACKED_OUT"
 
 exit "$DIFF_CHECK_RC"
