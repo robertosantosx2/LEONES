@@ -23,6 +23,16 @@ class MagnitudeAdapter:
             source="fixed_ref",
         )
 
+    def benchmark(self, plan):
+        from scripts.runtime_benchmark_v1 import begin, complete
+        measured = plan.get("measured")
+        benchmark_plan = dict(plan)
+        benchmark_plan.pop("measured", None)
+        record = begin(benchmark_plan)
+        if not measured:
+            raise ValueError("real measured facts are required")
+        return complete(record, measured)
+
     def preflight(self) -> PreflightResult:
         return PreflightResult(
             status="PASS",
