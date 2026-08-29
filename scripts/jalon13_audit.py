@@ -11,11 +11,15 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# JALÓN 5 fijó el contrato de decisión real de LEONES: ODS/Magnitude + LLMFit
+# alimentan al selector LEONES. No existe un segundo ``leones-decision.v1``.
+# Mantener aquí el nombre canónico evita que el readiness gate invente una
+# interfaz que el proyecto no utiliza.
 REQUIRED = [
     "scripts/run_leones_v1.sh",
     "scripts/leones_v1.py",
     "schemas/leones-v1-preflight.v1.json",
-    "schemas/leones-decision.v1.json",
+    "schemas/leones-ods-magnitude-decision.v1.json",
     "schemas/leones-e2e-operation.v1.json",
     "schemas/leones-recommendation.v1.json",
     "schemas/leones-recommendation-output.v1.json",
