@@ -23,11 +23,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # These are references to existing contracts, not a second source of truth.
 CONTRACTS = {
-    "runtime_registry": ROOT / "schemas/runtime-registry.v1.1.json",
-    "decision": ROOT / "schemas/leones-decision.v1.json",
+    "decision": ROOT / "schemas/leones-ods-magnitude-decision.v1.json",
     "recommendation": ROOT / "schemas/leones-recommendation.v1.json",
     "recommendation_output": ROOT / "schemas/leones-recommendation-output.v1.json",
     "e2e_operation": ROOT / "schemas/leones-e2e-operation.v1.json",
+    "e2e_trace": ROOT / "schemas/leones-e2e-trace.v1.json",
 }
 
 
