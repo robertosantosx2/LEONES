@@ -36,7 +36,11 @@ else
   git pull --rebase --autostash origin "$BRANCH"
 fi
 
-exec > >(tee "$OUT" | tee "$TRACKED_OUT") 2>&1
+# Keep the terminal transcript in the immutable local audit file. The tracked
+# mirror is copied only after the audit finishes, so Git never commits a file
+# that is still being written by tee.
+exec 3>&1 4>&2
+exec > >(tee "$OUT") 2>&1
 RC=0
 
 echo "============================================================"
@@ -45,27 +49,21 @@ echo "============================================================"
 echo "UTC: $STAMP"
 echo "BRANCH: $BRANCH"
 echo
-
 echo "========== CONTRACT =========="
 [ -f docs/jalones/jalon5.md ] && [ -f schemas/leones-ods-magnitude-decision.v1.json ] && echo "PASS: JALÓN 5 contract and schema present" || { echo "FAIL: JALÓN 5 contract/schema missing"; RC=1; }
 
 echo
-
 echo "========== DECISION CONTRACT TESTS =========="
 pytest -q tests/test_jalon5_decision_contract.py || RC=1
 
 echo
-
 echo "========== EXISTING SELECTOR/INTEGRATION TESTS =========="
 pytest -q tests/test_ods_magnitude_benchmark_bridge.py tests/test_promote_measured_benchmark.py tests/test_publish_measured_benchmark.py || RC=1
 
 echo
-
 echo "========== DIFF =========="
 git diff --check || RC=1
-
 echo
-
 echo "============================================================"
 echo "JALÓN 5 — MACHINE-READABLE RESULT"
 echo "============================================================"
@@ -76,6 +74,9 @@ echo "DIFF_GATE=$([ "$RC" -eq 0 ] && echo PASS || echo FAIL)"
 echo "JALON5_CONTRACT_CLOSE=$([ "$RC" -eq 0 ] && echo PASS || echo FAIL)"
 echo "AUDIT_EXIT_CODE=$RC"
 echo "============================================================"
+
+exec 1>&3 2>&4
+cp "$OUT" "$TRACKED_OUT"
 
 git add -f "$TRACKED_OUT"
 if ! git diff --cached --quiet; then
