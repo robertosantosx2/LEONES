@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Create a faithful LEONES recommendation output; never re-score or re-decide."""
+"""Create the transport format for a canonical LEONES recommendation.
+
+For readers with little programming experience:
+this program takes a recommendation that has already been validated and
+writes the same decision/evidence information in the public output format.
+It does not re-score the model, benchmark it, or make a second decision.
+"""
 from __future__ import annotations
 import json, sys
 from datetime import datetime, timezone
@@ -8,12 +14,18 @@ from pathlib import Path
 FORBIDDEN = {"score", "ranking_score", "estimated_tps", "tokens_per_second_estimate"}
 REQUIRED = ("recommendation_id", "entity", "decision_ref", "evidence_refs", "status", "rationale", "unknowns", "next_action")
 
+
 def fail(msg: str) -> None:
+    """Stop immediately when the input breaks the output contract."""
     print(f"ERROR: {msg}", file=sys.stderr); raise SystemExit(1)
 
+
 def build(rec: dict) -> dict:
+    """Copy canonical recommendation fields into the stable output envelope."""
     for key in REQUIRED:
         if key not in rec: fail(f"missing recommendation field: {key}")
+    # A forbidden field here would mean this layer has started inventing
+    # its own measurement/scoring system, which is explicitly prohibited.
     leaked = FORBIDDEN.intersection(rec)
     if leaked: fail(f"recommendation contains forbidden parallel metric: {sorted(leaked)}")
     out = {
@@ -32,7 +44,9 @@ def build(rec: dict) -> dict:
     if "trace_ref" in rec: out["trace_ref"] = rec["trace_ref"]
     return out
 
+
 def main(src: str, dst: str) -> None:
+    """Read a validated recommendation and write its faithful consumer output."""
     rec = json.loads(Path(src).read_text(encoding="utf-8"))
     if not isinstance(rec, dict): fail("recommendation must be a JSON object")
     Path(dst).write_text(json.dumps(build(rec), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
