@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # These are references to existing contracts, not a second source of truth.
 CONTRACTS = {
+    "preflight": ROOT / "schemas/leones-v1-preflight.v1.json",
     "decision": ROOT / "schemas/leones-ods-magnitude-decision.v1.json",
     "recommendation": ROOT / "schemas/leones-recommendation.v1.json",
     "recommendation_output": ROOT / "schemas/leones-recommendation-output.v1.json",
