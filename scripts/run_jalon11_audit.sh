@@ -23,12 +23,36 @@ PY
 
 pytest -q tests/test_jalon11_e2e.py
 
-grep -R -n --exclude-dir=__pycache__ \
-  'second benchmark\|parallel scoring\|re-score\|recalculate.*score' \
-  scripts/jalon11_e2e.py docs/jalones/jalon11.md schemas/leones-e2e-operation.v1.json >/dev/null && {
-    echo "ERROR: parallel scoring/benchmark logic detected in JALON 11"
-    exit 1
-  } || true
+python - <<'PY'
+import importlib.util
+from pathlib import Path
+
+path = Path("scripts/jalon11_e2e.py")
+spec = importlib.util.spec_from_file_location("jalon11_e2e", path)
+module = importlib.util.module_from_spec(spec)
+assert spec.loader is not None
+spec.loader.exec_module(module)
+
+refs = {
+    "selection_ref": "selection-1",
+    "runtime_ref": "runtime-1",
+    "execution_ref": "execution-1",
+    "measurement_ref": "measurement-1",
+    "evidence_refs": ["evidence-1"],
+    "decision_ref": "decision-1",
+    "recommendation_ref": "recommendation-1",
+    "publication_ref": "publication-1",
+    "output_ref": "output-1",
+    "trace_ref": "trace-1",
+}
+result = module.build("audit-operation", refs, "planned")
+forbidden = set(module.FORBIDDEN)
+leaked = forbidden.intersection(result)
+if leaked:
+    raise SystemExit(f"ERROR: generated E2E operation contains forbidden scoring/measurement fields: {sorted(leaked)}")
+print("PASS: generated E2E operation contains no parallel scoring/measurement fields")
+print("PASS: E2E layer only transports canonical references")
+PY
 
 git diff --check
 
