@@ -1,0 +1,15 @@
+{
+  "schema": "leones-e2e-operation.v1",
+  "operation_id": "op-example-0001",
+  "selection_ref": "selection-example",
+  "runtime_ref": "runtime-llama-cpp",
+  "execution_ref": "execution-example",
+  "measurement_ref": "measurement-example",
+  "evidence_refs": ["evidence-example"],
+  "decision_ref": "decision-example",
+  "recommendation_ref": "recommendation-example",
+  "publication_ref": "publication-example",
+  "output_ref": "output-example",
+  "trace_ref": "trace-example",
+  "status": "planned"
+}
