@@ -38,7 +38,11 @@ else
   git pull --rebase --autostash origin "$BRANCH"
 fi
 
-exec > >(tee "$OUT" | tee "$TRACKED_OUT") 2>&1
+# Save the real terminal streams so the tracked audit is copied only after
+# the audit itself is finished. This prevents tee/process-substitution from
+# modifying latest.txt while Git is committing it.
+exec 3>&1 4>&2
+exec > >(tee "$OUT") 2>&1
 
 RC=0
 
@@ -48,7 +52,6 @@ echo "============================================================"
 echo "UTC: $STAMP"
 echo "BRANCH: $BRANCH"
 echo
-
 echo "========== CONTRACT =========="
 if [ -f docs/jalones/jalon4.md ] && [ -f runtime_registry.v1.1.json ]; then
   echo "PASS: JALÓN 4 contract and runtime registry present"
@@ -67,7 +70,6 @@ pytest -q tests/test_external_stack_contract.py tests/test_ods_magnitude_adapter
 echo
 echo "========== DIFF =========="
 git diff --check || RC=1
-
 echo
 echo "============================================================"
 echo "JALÓN 4 — MACHINE-READABLE RESULT"
@@ -79,6 +81,11 @@ echo "DIFF_GATE=$([ "$RC" -eq 0 ] && echo PASS || echo FAIL)"
 echo "JALON4_DECLARATIVE_CLOSE=$([ "$RC" -eq 0 ] && echo PASS || echo FAIL)"
 echo "AUDIT_EXIT_CODE=$RC"
 echo "============================================================"
+
+# Stop recording before touching Git. latest.txt is therefore a stable
+# snapshot of the audit, not a file that changes during its own commit.
+exec 1>&3 2>&4
+cp "$OUT" "$TRACKED_OUT"
 
 git add -f "$TRACKED_OUT"
 if ! git diff --cached --quiet; then
