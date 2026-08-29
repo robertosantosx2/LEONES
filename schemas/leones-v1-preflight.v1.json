@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.local/schemas/leones-v1-preflight.v1.json",
+  "title": "LEONES V1 preflight",
+  "description": "Observed host information used before a physical LEONES operation. It is not a benchmark or recommendation.",
+  "type": "object",
+  "required": ["schema", "status", "python", "platform", "machine", "processor", "cpu_count", "runtimes_detected", "contracts_present", "note"],
+  "properties": {
+    "schema": {"const": "leones-v1-preflight.v1"},
+    "status": {"const": "observed"},
+    "python": {"type": "string"},
+    "platform": {"type": "string"},
+    "machine": {"type": "string"},
+    "processor": {"type": "string"},
+    "cpu_count": {"type": ["integer", "null"], "minimum": 1},
+    "runtimes_detected": {"type": "object", "additionalProperties": {"type": ["string", "null"]}},
+    "contracts_present": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "boolean"}},
+    "note": {"type": "string"}
+  },
+  "additionalProperties": false
+}
