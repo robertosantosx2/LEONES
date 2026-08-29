@@ -1,7 +1,7 @@
 ============================================================
 LEONES — JALÓN 6 RECOMMENDATION EVIDENCE GATE
 ============================================================
-UTC: 20260828T234053Z
+UTC: 20260829T054744Z
 BRANCH: rc1-minimal-script-cleanup
 
 ========== CONTRACT ==========
@@ -9,11 +9,11 @@ PASS: canonical recommendation/evidence components present
 
 ========== GATE TESTS ==========
 ....                                                                     [100%]
-4 passed in 0.17s
+4 passed in 0.20s
 
 ========== EXISTING EVIDENCE BOUNDARY TESTS ==========
 ..........                                                               [100%]
-10 passed in 0.04s
+10 passed in 0.05s
 
 ========== STATIC INVARIANTS ==========
 PASS: no parallel benchmark/scoring system introduced
