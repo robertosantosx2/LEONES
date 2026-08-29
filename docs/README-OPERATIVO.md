@@ -10,7 +10,7 @@ Si la petición es **«limpia, fija y da esplendor»**, ese documento define el 
 
 ## 2. Después: estado de los jalones
 
-Lee [`jalones/JALONES-1-10-BASELINE.md`](jalones/JALONES-1-10-BASELINE.md).
+Lee [`jalones/JALONES-1-10-BASELINE.md`](jalones/JALONES-1-10-BASELINE.md) y, cuando exista un jalón activo posterior, su contrato específico.
 
 Es el mapa compacto de lo que está cerrado y de las fronteras que no deben romperse.
 
@@ -38,10 +38,11 @@ Los documentos y artefactos de runtime explican cómo se conserva una ejecución
 - JALÓN 8: trazabilidad E2E.
 - JALÓN 9: recomendación canónica.
 - JALÓN 10: salida fiel de recomendación.
+- JALÓN 11: operación E2E que conecta los contratos anteriores.
 
 ## 7. Scripts
 
-La documentación específica de scripts se encuentra en `scripts/README.md`. Los scripts operativos deben tener comentarios/docstrings que expliquen su intención y sus fronteras.
+La documentación específica de scripts se encuentra en `scripts/README.md` y `docs/SCRIPTS-OPERATIVOS.md`. Los scripts operativos deben tener comentarios/docstrings que expliquen su intención y sus fronteras.
 
 Los runners `run_jalon*.sh` son auditores. No son una segunda implementación de los contratos.
 
@@ -53,6 +54,7 @@ Los runners `run_jalon*.sh` son auditores. No son una segunda implementación de
 4. Ejecutar primero los tests/gates existentes.
 5. Sólo después modificar código.
 6. Si se solicita «limpia, fija y da esplendor», aplicar `STRICT` antes de construir la siguiente pieza.
+7. En JALÓN 11, demostrar primero la cadena declarativa y reservar la ejecución física para Ubuntu.
 
 ## 9. Regla de lenguaje
 
