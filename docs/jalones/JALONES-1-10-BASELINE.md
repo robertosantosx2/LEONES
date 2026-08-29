@@ -1,4 +1,4 @@
-# LEONES — Baseline consolidada JALONES 1–10
+# LEONES — Baseline consolidada JALONES 1–11
 
 **Estado:** FIJADO  
 **Fecha de consolidación:** 29 de agosto de 2026  
@@ -43,6 +43,8 @@ faithful recommendation output
 E2E trace
 ```
 
+JALÓN 11 añade la operación que conecta estas referencias en una única unidad trazable. No sustituye ningún contrato anterior.
+
 ## Estado de los jalones
 
 | Jalón | Responsabilidad cerrada | Naturaleza | Ejecución física | Estado |
@@ -57,6 +59,7 @@ E2E trace
 | 8 | trazabilidad E2E | contractual | No para el contrato | **CERRADO DECLARATIVO** |
 | 9 | recomendación canónica | contractual | No | **CERRADO** |
 | 10 | salida fiel de recomendación | contractual | No | **CERRADO** |
+| 11 | operación E2E sobre contratos existentes | operacional | Pendiente | **CERRADO DECLARATIVO** |
 
 ## Hitos técnicos que no deben perderse
 
@@ -84,6 +87,10 @@ JALÓN 6 establece la frontera: la recomendación necesita evidencia y no introd
 
 JALÓN 8 fija una única traza de ciclo de vida. La traza sirve para demostrar cómo una selección llega a una recomendación; no debe convertirse en una segunda fuente de decisión.
 
+### Operación E2E
+
+JALÓN 11 define una estructura mínima de referencias para demostrar el recorrido completo. El operador puede validar esta cadena sin hardware. Cuando una etapa requiera ejecución física, la operación debe referenciar la evidencia real ya definida, nunca sustituirla por una simulación presentada como medición.
+
 ## Reglas de conservación
 
 1. No rediseñar retroactivamente JALONES 1–10.
@@ -96,11 +103,12 @@ JALÓN 8 fija una única traza de ciclo de vida. La traza sirve para demostrar c
 8. Documentar toda nueva superficie con comentarios pedagógicos y `.md` de uso.
 9. Reservar Ubuntu para las operaciones que necesiten ejecución física.
 10. Toda nueva etapa debe añadir la mínima superficie contractual necesaria.
+11. JALÓN 11 sólo enlaza referencias existentes; no reinterpreta sus resultados.
 
 ## Criterio para la siguiente etapa
 
-La fase siguiente no consiste en inventar otro sistema. Consiste en **conectar de forma operacional los contratos ya cerrados**, ejecutar los casos que requieran hardware real, recoger evidencia y comprobar que la recomendación final es trazable hasta la decisión y sus fuentes.
+La siguiente operación debe demostrar en Ubuntu una ejecución E2E real cuando el host y los artefactos estén disponibles. El objetivo no es volver a diseñar LEONES, sino recoger evidencia de que los contratos ya fijados pueden recorrer una ruta única hasta la recomendación final.
 
 ## Frase de recuperación
 
-> **JALONES 1–10 están fijados: no rediseñar; limpiar, documentar, integrar, ejecutar cuando sea necesario, medir, evidenciar, decidir, validar, publicar, recomendar y trazar.**
+> **JALONES 1–10 están fijados y JALÓN 11 conecta sus contratos: no rediseñar; limpiar, documentar, integrar, ejecutar cuando sea necesario, medir, evidenciar, decidir, validar, publicar, recomendar, presentar y trazar.**
