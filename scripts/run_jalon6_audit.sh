@@ -27,7 +27,11 @@ if [ -n "$UNRELATED" ]; then
   exit 3
 fi
 
-exec > >(tee "$OUT" | tee "$TRACKED_OUT") 2>&1
+# The audit transcript is written to a timestamped artifact first. We restore
+# the normal terminal before copying/committing latest.txt, which makes the
+# runner idempotent and guarantees a clean working tree after a successful run.
+exec 3>&1 4>&2
+exec > >(tee "$OUT") 2>&1
 RC=0
 
 echo "============================================================"
@@ -58,11 +62,9 @@ grep -Fq 'No crea nuevos benchmarks' docs/jalones/jalon6.md || RC=1
 grep -Fq 'No inventa ponderaciones' docs/jalones/jalon6.md || RC=1
 grep -Fq 'next_action' scripts/validate_recommendation_gate.py || RC=1
 [ "$RC" -eq 0 ] && echo "PASS: no parallel benchmark/scoring system introduced"
-
 echo
 echo "========== DIFF =========="
 git diff --check || RC=1
-
 echo
 echo "============================================================"
 echo "JALÓN 6 — MACHINE-READABLE RESULT"
@@ -75,6 +77,9 @@ echo "DIFF_GATE=$([ "$RC" -eq 0 ] && echo PASS || echo FAIL)"
 echo "JALON6_DECLARATIVE_CLOSE=$([ "$RC" -eq 0 ] && echo PASS || echo FAIL)"
 echo "AUDIT_EXIT_CODE=$RC"
 echo "============================================================"
+
+exec 1>&3 2>&4
+cp "$OUT" "$TRACKED_OUT"
 
 git add -f "$TRACKED_OUT"
 if ! git diff --cached --quiet; then
