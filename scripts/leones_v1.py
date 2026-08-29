@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Small user-facing entry point for the first LEONES V1 workflow.
 
-This file is deliberately boring.  It does not contain a new recommendation
-engine.  Its job is to give a person a simple command that explains what LEONES
+This file is deliberately boring. It does not contain a new recommendation
+engine. Its job is to give a person a simple command that explains what LEONES
 can see on the current machine before any physical run is requested.
 
 A reader with little programming experience can think of this script as a
 front door: it collects basic machine facts and points at the contracts that
-already contain the real logic.  It must never invent a performance result.
+already contain the real logic. It must never invent a performance result.
 """
 
 from __future__ import annotations
@@ -17,7 +17,6 @@ import json
 import os
 import platform
 import shutil
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
