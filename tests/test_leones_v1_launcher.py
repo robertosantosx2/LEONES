@@ -5,11 +5,12 @@ ROOT = Path(__file__).resolve().parents[1]
 LAUNCHER = ROOT / "scripts/run_leones_v1.sh"
 
 
-def test_launcher_exists_and_uses_canonical_front_door() -> None:
+def test_launcher_exists_and_delegates_without_parallel_logic() -> None:
     text = LAUNCHER.read_text(encoding="utf-8")
     assert "scripts/leones_v1.py preflight --pretty" in text
-    assert "benchmark" in text.lower()
-    assert "recommendation" not in text.lower() or "recommendation" in text.lower()
+    assert "tokens_per_second" not in text
+    assert "estimated_tps" not in text
+    assert "ranking_score" not in text
 
 
 def test_launcher_produces_json_preflight() -> None:
