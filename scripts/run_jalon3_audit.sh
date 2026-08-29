@@ -2,10 +2,9 @@
 set -euo pipefail
 
 # JALÓN 3 — canonical audit runner.
-# One command on Ubuntu -> sync -> audit -> tracked latest.txt -> Git push.
+# One command on Ubuntu -> sync -> audit -> stable audit snapshot -> Git push.
 # The runner never declares operational closure unless a real llama.cpp
 # evidence artifact satisfies the canonical v1.1 contract.
-
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
@@ -28,14 +27,12 @@ LOCKDIR=".git/jalon3-audit-runner.lock"
 mkdir -p "$OUTDIR" "$TRACKED_DIR"
 
 if ! mkdir "$LOCKDIR" 2>/dev/null; then
-    echo "ERROR: another JALON 3 runner appears to be active."
+    echo "ERROR: another JALÓN 3 runner appears to be active."
     echo "If no runner is active, remove stale lock: $LOCKDIR"
     exit 6
 fi
 trap 'rmdir "$LOCKDIR" 2>/dev/null || true' EXIT
 
-# Only runner-owned generated paths may already be dirty. Everything else is
-# protected from accidental inclusion in the audit commit.
 UNRELATED="$(git status --porcelain --untracked-files=all | awk '
     {
         path=substr($0,4)
@@ -48,12 +45,6 @@ if [ -n "$UNRELATED" ]; then
     exit 3
 fi
 
-# Synchronize safely before auditing. The old runner incorrectly rejected a
-# local branch that was ahead of origin. Here the three legitimate states are:
-#   1) equal            -> continue;
-#   2) local ahead      -> continue and push later;
-#   3) remote ahead or  -> rebase with autostash.
-# A divergent history is also handled by the same non-destructive rebase.
 git fetch origin "$BRANCH" >/dev/null 2>&1 || {
     echo "ERROR: unable to fetch origin/$BRANCH"
     exit 4
@@ -70,8 +61,11 @@ else
     git pull --rebase --autostash origin "$BRANCH"
 fi
 
-# Full transcript -> local artifact + one compact Git-tracked mirror.
-exec > >(tee "$OUT" | tee "$TRACKED_OUT") 2>&1
+# Keep the transcript in the timestamped local artifact while the audit runs.
+# latest.txt is copied only after output recording stops; otherwise tee would
+# continue writing to a file that Git had already committed.
+exec 3>&1 4>&2
+exec > >(tee "$OUT") 2>&1
 
 AUDIT_RC=0
 CONTRACT_RC=0
@@ -298,8 +292,10 @@ printf 'JALON3_OPERATIONAL_CLOSE=%s\n' "$( [ "$AUDIT_RC" -eq 0 ] && echo PASS ||
 printf 'AUDIT_EXIT_CODE=%s\n' "$AUDIT_RC"
 echo "============================================================"
 
-# Publish the tracked mirror even on FAIL, so a failed audit is remotely
-# inspectable without copying terminal output into chat.
+# Stop recording before touching Git. latest.txt is now a stable snapshot.
+exec 1>&3 2>&4
+cp "$OUT" "$TRACKED_OUT"
+
 git add -f "$TRACKED_OUT"
 if git diff --cached --quiet; then
     echo "No new tracked audit changes."
