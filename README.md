@@ -34,9 +34,11 @@ LLMFIT / MODEL FIT
       ↓
 SELECCIÓN DE MODELO + RUNTIME
       ↓
-ROUTER
+DECISIÓN DE STACK
       ↓
-AGENT / TAREA REAL
+ODS / MAGNITUDE / RUNTIME DIRECTO
+      ↓
+ROUTER / AGENT / TAREA REAL
       ↓
 BENCHMARK
       ↓
@@ -86,7 +88,8 @@ HOST LINUX
 | JALÓN 1 | 🟢 Cerrado | Base CI y contratos iniciales |
 | JALÓN 2 | 🟢 Cerrado | Ejecución física + evidencia reproducible con llama.cpp |
 | JALÓN 3 | 🟢 Cerrado operativamente | Contrato `runtime-benchmark-evidence.v1.1` + auditoría física |
-| Siguiente bloque | 🔵 Preparado | Decisión **LEONES → ODS | Magnitude** + tiers de hardware |
+| Decisión ODS | Magnitude | 🟢 Contrato fijado | Selección de stack sin scoring paralelo |
+| Tiers de hardware | 🔵 Preparado | Capa de interpretación sobre ODS, Magnitude, LLMFit y evidencia LEONES |
 
 ## JALÓN 2 — referencia histórica
 
@@ -176,16 +179,7 @@ Docs: [`docs/integrations/LLMFIT/`](docs/integrations/LLMFIT/) · [`docs/phases/
 
 ## 7. CABE / RULA
 
-Conserva `tokens_per_second` como dato primario y deriva una clasificación operativa:
-
-```text
-<1 tok/s       → No CABE
-1–<10 tok/s    → CABE
-10–100 tok/s   → RULA
->100 tok/s     → RULA+
-```
-
-La clasificación nunca sustituye a la medición.
+Conserva `tokens_per_second` como dato primario y deriva una clasificación operativa. La clasificación nunca sustituye a la medición.
 
 Docs: [`docs/phases/2026-08-cabe-rula/`](docs/phases/2026-08-cabe-rula/) · [`docs/completed/H09-CABE-RULA.md`](docs/completed/H09-CABE-RULA.md)
 
@@ -198,6 +192,8 @@ Una ejecución queda determinada por:
 `modelo + cuantización + runtime + hardware + configuración`
 
 LLMFit puede filtrar candidatos; la medición física prevalece sobre la estimación cuando ambas existen.
+
+La decisión de stack ODS/Magnitude está fijada en [`docs/subprojects/LEONES-ODS-MAGNITUDE-DECISION-CONTRACT.md`](docs/subprojects/LEONES-ODS-MAGNITUDE-DECISION-CONTRACT.md).
 
 Docs: [`docs/PILLARS.md`](docs/PILLARS.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
@@ -244,9 +240,9 @@ La frontera es explícita:
 - **medición LEONES** requiere una ejecución LEONES reproducible;
 - una herramienta externa no se convierte automáticamente en verdad canónica.
 
-Cuando una herramienta se integra, se documentan función, procedencia, supuestos y límites. Se reutiliza su arquitectura cuando es adecuada; **no se crea innecesariamente un sistema paralelo**.
+ODS se reserva para despliegue/stack local; Magnitude para ejecución agentiva/runtime. Cuando ambos son necesarios pueden combinarse. Si un runtime directo resuelve el workload, no se añade una capa innecesaria.
 
-Docs: [`docs/subprojects/ods/`](docs/subprojects/ods/) · [`docs/subprojects/magnitude/`](docs/subprojects/magnitude/)
+Docs: [`docs/subprojects/README.md`](docs/subprojects/README.md) · [`docs/subprojects/ODS-Magnitude-INTEGRATION.md`](docs/subprojects/ODS-Magnitude-INTEGRATION.md) · [`docs/subprojects/ODS-Magnitude-AUDIT.md`](docs/subprojects/ODS-Magnitude-AUDIT.md)
 
 ---
 
@@ -256,12 +252,16 @@ LEONES utiliza contratos versionados para mantener separadas selección, ejecuci
 
 `runtime-selection.v1.1` es declarativo: identifica runtime, adaptador, modelo, compatibilidad, restricciones y razón de selección. No es rendimiento medido ni una orden de ejecución.
 
+El contrato de decisión ODS/Magnitude define `none`, `ods`, `magnitude` y `ods+magnitude` como opciones de stack, sin crear un scoring paralelo.
+
 El contrato de evidencia de JALÓN 3 es `runtime-benchmark-evidence.v1.1`.
 
 ```text
 runtime-selection
       ↓
 plan validado
+      ↓
+decisión de stack
       ↓
 adapter / runner
       ↓
@@ -310,11 +310,27 @@ Para contribuir: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 # Siguiente bloque lógico
 
-Con JALÓN 3 cerrado, el siguiente bloque es **consumir el contrato**, no rediseñar la medición.
+Con JALÓN 3 cerrado y el contrato de decisión ODS/Magnitude fijado, el siguiente bloque es **implementarlo mínimamente sobre las piezas existentes**.
 
-La prioridad es cerrar el contrato de decisión **LEONES → ODS | Magnitude**, utilizar **LLMFit** como fuente de ajuste/fit cuando corresponda y derivar los tiers de hardware de consumo a partir de las capacidades reales de esas herramientas.
+La secuencia es:
 
-Los tiers de LEONES serán una **capa de interpretación** sobre ODS, Magnitude y LLMFit, no una segunda base de datos paralela de modelos y rendimiento.
+```text
+contrato fijado
+      ↓
+adaptadores mínimos
+      ↓
+validación sin dependencias externas
+      ↓
+plan consumible por el runner existente
+      ↓
+Ubuntu: ejecución física
+      ↓
+benchmark + evidencia
+      ↓
+tiers de hardware
+```
+
+Los tiers serán una **capa de interpretación** sobre ODS, Magnitude, LLMFit y evidencia LEONES; no una segunda base de datos paralela de modelos y rendimiento.
 
 ---
 
@@ -324,6 +340,7 @@ Los tiers de LEONES serán una **capa de interpretación** sobre ODS, Magnitude 
 - [`docs/PILLARS.md`](docs/PILLARS.md) — pilares del sistema.
 - [`PIPELINE_E2E.md`](PIPELINE_E2E.md) — recorrido integral.
 - [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) — resultados y evidencia.
+- [`docs/subprojects/LEONES-ODS-MAGNITUDE-DECISION-CONTRACT.md`](docs/subprojects/LEONES-ODS-MAGNITUDE-DECISION-CONTRACT.md) — contrato de decisión.
 - [`docs/completed/JALON-1.md`](docs/completed/JALON-1.md) — cierre del JALÓN 1.
 - [`docs/completed/JALON-3.md`](docs/completed/JALON-3.md) — cierre operativo del JALÓN 3.
 - [`docs/V1-A01-REAL-RUNTIME.md`](docs/V1-A01-REAL-RUNTIME.md) — A01 con runtime real.
