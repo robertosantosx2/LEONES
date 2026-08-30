@@ -15,47 +15,57 @@ class LlamaCppAdapter(RuntimeAdapter):
     runtime_id = "llama.cpp"
     adapter_id = "llama_cpp.v1.1"
 
+    def validate(self, plan: dict[str, Any], entry: RuntimeEntry) -> None:
+        """Validate the physical llama.cpp contract before authorization.
+
+        A trusted executable alone is not enough to authorize physical
+        execution: llama.cpp also needs an explicit GGUF model artifact with
+        provenance. This prevents a seemingly valid selection from becoming
+        an executable plan with an unresolved model reference.
+        """
+        super().validate(plan, entry)
+        model_format = str(plan.get("model_format") or "").upper()
+        if model_format != "GGUF":
+            raise ValueError("llama.cpp physical plan requires model_format=GGUF")
+        artifact = plan.get("model_artifact")
+        if not isinstance(artifact, dict):
+            raise ValueError("llama.cpp physical plan requires model_artifact")
+        model_path = artifact.get("path")
+        model_sha256 = artifact.get("sha256")
+        if not isinstance(model_path, str) or not model_path:
+            raise ValueError("model_artifact.path is required")
+        if not isinstance(model_sha256, str) or not model_sha256:
+            raise ValueError("model_artifact.sha256 is required")
+
     def prepare(
         self, plan: dict[str, Any], entry: RuntimeEntry
     ) -> RuntimeExecutionSpec:
         self.validate(plan, entry)
         trusted_entrypoint = plan.get("trusted_entrypoint") or list(entry.entrypoint["argv"])
-        artifact = plan.get("model_artifact")
+        artifact = plan["model_artifact"]
+        model_path = artifact["path"]
+        if not trusted_entrypoint or not all(isinstance(x, str) for x in trusted_entrypoint):
+            raise ValueError("trusted llama.cpp entrypoint is invalid")
+        executable = trusted_entrypoint[0]
+        if os.path.basename(executable) != "llama-cli" or len(trusted_entrypoint) != 1:
+            raise ValueError("llama.cpp physical plan requires trusted llama-cli executable")
+        context_tokens = (plan.get("workload") or {}).get("context_tokens")
+        command = build_command_prefix(
+            executable,
+            model_path,
+            context_tokens=context_tokens,
+        )
         metadata: dict[str, Any] = {
             "metrics": entry.metrics,
-            "format": plan.get("model_format", "GGUF"),
+            "format": "GGUF",
+            "execution_command": command,
+            "model_artifact": dict(artifact),
         }
-        if artifact is not None:
-            if not isinstance(artifact, dict):
-                raise ValueError("model_artifact must be an object")
-            model_path = artifact.get("path")
-            if not isinstance(model_path, str) or not model_path:
-                raise ValueError("model_artifact.path is required")
-            if not trusted_entrypoint or not all(isinstance(x, str) for x in trusted_entrypoint):
-                raise ValueError("trusted llama.cpp entrypoint is invalid")
-            executable = trusted_entrypoint[0]
-            if os.path.basename(executable) != "llama-cli" or len(trusted_entrypoint) != 1:
-                raise ValueError("llama.cpp physical plan requires trusted llama-cli executable")
-            context_tokens = (plan.get("workload") or {}).get("context_tokens")
-            command = build_command_prefix(
-                executable,
-                model_path,
-                context_tokens=context_tokens,
-            )
-            metadata["execution_command"] = command
-            metadata["model_artifact"] = dict(artifact)
-            return RuntimeExecutionSpec(
-                self.runtime_id,
-                self.adapter_id,
-                plan["model_id"],
-                tuple(command),
-                metadata,
-            )
         return RuntimeExecutionSpec(
             self.runtime_id,
             self.adapter_id,
             plan["model_id"],
-            tuple(trusted_entrypoint),
+            tuple(command),
             metadata,
         )
 
