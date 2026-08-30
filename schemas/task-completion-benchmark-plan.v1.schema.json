@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.local/schemas/task-completion-benchmark-plan.v1.schema.json",
+  "title": "LEONES Task Completion Benchmark Plan v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "plan_id", "decision_id", "profile", "execution", "tasks", "metrics", "integrity"],
+  "properties": {
+    "schema": {"const": "task-completion-benchmark-plan.v1"},
+    "plan_id": {"type": "string", "minLength": 1},
+    "decision_id": {"type": "string", "minLength": 1},
+    "profile": {"type": "string", "enum": ["performance", "task_completion", "combined"]},
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "runtime", "hardware", "context", "warmup", "attempts"],
+      "properties": {
+        "model": {"type": "object"},
+        "runtime": {"type": "object"},
+        "hardware": {"type": "object"},
+        "context": {"type": "integer", "minimum": 1},
+        "warmup": {"type": "integer", "minimum": 0},
+        "attempts": {"type": "integer", "minimum": 1}
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task_id", "family", "version", "success_criteria", "max_turns", "timeout_seconds"],
+        "properties": {
+          "task_id": {"type": "string"},
+          "family": {"type": "string", "enum": ["knowledge", "reasoning", "coding", "terminal", "long_horizon_agent", "artifact", "multimodal"]},
+          "version": {"type": "string"},
+          "fixture_ref": {"type": ["string", "null"]},
+          "allowed_tools": {"type": "array", "items": {"type": "string"}},
+          "success_criteria": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "max_turns": {"type": "integer", "minimum": 1},
+          "timeout_seconds": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "efficiency"],
+      "properties": {
+        "primary": {"type": "array", "items": {"type": "string", "enum": ["pass_at_1", "ttft", "first_answer_token", "output_tps", "tpot", "e2e_time"]}},
+        "efficiency": {"type": "array", "items": {"type": "string", "enum": ["input_tokens", "output_tokens", "reasoning_tokens", "total_tokens", "peak_memory_mb", "errors", "retries"]}}
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frozen_before_audit", "dev_suite_separate", "contamination_policy"],
+      "properties": {
+        "frozen_before_audit": {"type": "boolean"},
+        "dev_suite_separate": {"type": "boolean"},
+        "contamination_policy": {"type": "string"}
+      }
+    }
+  }
+}
