@@ -2,82 +2,112 @@
 
 ## Purpose
 
-This document explains the system without requiring knowledge of the development history.
-
 LEONES is an experimental ecosystem for running useful local agentic AI on consumer hardware. The project prioritises Open software and, among Open alternatives, Copyleft.
 
-The key engineering rule is **small, composable scripts**. Each script does one clearly defined job. A higher-level command may call several of them, but the lower-level scripts remain independently understandable and testable.
+The key engineering rule is **small, composable scripts**. Each script does one clearly defined job. A higher-level command may orchestrate several of them, but execution must not be duplicated across competing runners.
 
-## The complete pipeline
+## Canonical execution pipeline
+
+The operational path is:
 
 ```text
 USER / MACHINE
       │
       ▼
-┌──────────────────────┐
-│ leones-hardware      │  identify machine
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│ llmfit preselector   │  first hardware/model estimate
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│ leones-model         │  identify + verify model
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│ leones-infer         │  measure inference
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│ leones-lotb          │  measure agentic tasks
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│ leones-report        │  create Markdown result
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│ leones-publish       │  validate and publish
-└──────────┬───────────┘
-           ▼
- GitHub / MANADA / web
+Hardware identification
+      │
+      ▼
+LLMFit / external candidate estimates
+      │
+      ▼
+LEONES model identity + evidence
+      │
+      ▼
+runtime-selection.v1
+      │
+      ▼
+existing Agentic Runner
+      │
+      ▼
+trusted RuntimeAdapter
+      │
+      ▼
+physical runtime
+      │
+      ▼
+measurement
+      │
+      ▼
+grader / task result
+      │
+      ▼
+evidence + validation
+      │
+      ▼
+recommendation / MANADA publication
 ```
 
-`leones.py` may orchestrate this sequence, but it should contain as little domain logic as possible.
+**There is one execution boundary.** `benchmarks.agentic.runner` is the canonical runner. Task-specific adapters and CLI bridges may prepare inputs or translate a selected plan, but they must delegate execution to the existing runner boundary rather than introduce a second runner architecture.
 
-`llmfit` is deliberately a **preselector**, not a source of truth. Its estimates reduce the candidate space before LEONES applies identity/evidence, openness, task suitability and measured performance. See [`integrations/LLMFIT/README.md`](integrations/LLMFIT/README.md).
+`leones.py` and higher-level commands may orchestrate this sequence, but they should contain as little domain and execution logic as possible.
 
-## Architecture layers
+## Runner boundary
 
-### 1. Knowledge
+The canonical runner provides:
 
-Buddy is a central candidate component because LEONES wants knowledge and context to remain controlled when the model, backend or hardware changes.
+- append-only execution traces;
+- execution configuration and task identity;
+- selected-runtime preparation through `RuntimeAdapter`;
+- selected-runtime execution through an injected executor;
+- tool-call budgeting and trace events;
+- canonical result construction;
+- explicit separation of lifecycle status from evidence provenance.
+
+`runtime-selection.v1` remains declarative. Selection does not execute a model and does not invent measurements. A trusted adapter is the only component that translates an authorised selection into an executable runtime specification.
+
+The A01 path follows the same boundary:
 
 ```text
-Knowledge / context
-        │
-      Buddy
-        │
-        ▼
-Agent / harness
-        │
-        ▼
-Local inference API
-        │
-        ▼
-Model + backend
-        │
-        ▼
-Hardware
+selection output
+      ↓
+runtime_gate
+      ↓
+run_a01_selected.py
+      ↓
+A01 runtime adapter
+      ↓
+existing agentic runner contracts
+      ↓
+trusted runtime command
+      ↓
+A01 grader + measurement
 ```
 
-The layers must remain replaceable where practical.
+A convenience script is not a competing runner merely because it is executable from the shell. It is a bridge when it delegates to the canonical execution components.
 
-### 2. Hardware-aware model preselection
+## Evidence rule
 
-`llmfit` occupies the first decision layer after hardware identification:
+A result must preserve enough technical information to be understood and reproduced. Third-party benchmark numbers are useful for research but are not official LEONES measurements.
+
+Evidence provenance is separate from result status:
+
+```text
+estimated / reported / measured
+                 │
+                 ▼
+        explicit validation
+                 │
+                 ▼
+             verified
+```
+
+The runner may emit `measured` only when actual runtime execution evidence exists. It must never promote evidence to `verified` automatically; independent verification remains a separate operation.
+
+For physical runtime benchmarks, the measurement protocol freezes the workload, runtime, model artifact, hardware, execution parameters, repetition count, provenance and acceptance rules. Failed runs remain evidence of failure and are not silently discarded.
+
+## Hardware-aware model preselection
+
+`llmfit` occupies the first decision layer after hardware identification. It is a **preselector**, not a source of truth:
 
 ```text
 hardware + user intent
@@ -100,55 +130,13 @@ hardware + user intent
  LEONES evidence + Router
 ```
 
-The output is explicitly an **estimate**. It must never be recorded as a LEONES measurement merely because it was produced locally.
+Its estimates must remain distinct from measured LEONES performance. External ODS/Magnitude and other benchmark sources follow the same provenance rule.
 
-The adapter should preserve the external values independently, for example:
+## Inference and agentic evaluation
 
-- `llmfit_quality_estimate`;
-- `llmfit_speed_estimate`;
-- `llmfit_fit`;
-- `llmfit_context_fit`;
-- `llmfit_quantization`;
-- `llmfit_run_mode`;
-- `llmfit_memory_estimate`;
-- `llmfit_runtime`;
-- `llmfit_source_version`.
+Inference measures the model/backend/hardware combination. It must not be confused with agentic task performance. Relevant concepts include model identity, quantisation, artifact identity, runtime/version, prompt evaluation speed, generation speed, memory, total time and errors.
 
-See [`integrations/LLMFIT/README.md`](integrations/LLMFIT/README.md) and [`sources/LLMFIT.md`](sources/LLMFIT.md).
-
-### 3. Inference
-
-Inference measures the model/backend/hardware combination. It must not be confused with agentic performance.
-
-Minimum concepts:
-
-- model identifier;
-- quantisation;
-- model SHA-256 where available;
-- backend and version/commit;
-- prompt evaluation speed;
-- generation speed;
-- memory;
-- total time;
-- stability/errors.
-
-The canonical result contract is [`RESULT_SCHEMA.md`](RESULT_SCHEMA.md).
-
-### 4. Agentic evaluation
-
-LOTB measures whether an agent can complete defined tasks:
-
-- B01 — memory/locality;
-- B02 — files;
-- B03 — multistep task;
-- B04 — recovery from failure;
-- B05 — local coding.
-
-A fast model is not automatically a good agent. The agentic evaluation contract is documented in [`EVALUACION_AGENTIC_TESTS.md`](EVALUACION_AGENTIC_TESTS.md), with harness references in [`AGENT_HARNESSES.md`](AGENT_HARNESSES.md).
-
-### 5. Evidence
-
-A result must preserve enough technical information to be understood and reproduced. Third-party benchmark numbers are useful for research but are not official LEONES measurements.
+LOTB measures whether an agent can complete defined tasks. A fast model is not automatically a good agent; task completion and success therefore remain first-class results alongside tok/s.
 
 ## Hardware profiles
 
@@ -159,7 +147,7 @@ The project uses memory as a central classification variable:
 - H2 — 32 GB;
 - H3 — 64 GB.
 
-CPU and GPU are recorded separately. A profile describes a class of hardware; a result describes an actual experiment. The hardware matrix is documented in [`phases/2026-08-hardware-matrix/`](phases/2026-08-hardware-matrix/) and [`completed/H08-HARDWARE-MATRIX.md`](completed/H08-HARDWARE-MATRIX.md).
+CPU and GPU are recorded separately. A profile describes a class of hardware; a result describes an actual experiment.
 
 ## Performance thresholds
 
@@ -178,25 +166,9 @@ Task completion time and success are equally important. LEONES therefore avoids 
 hardware → model → inference → LOTB → report.md → validation → GitHub
 ```
 
-The report identifies the experiment, not the person.
-
-Never publish names, emails, personal usernames, identifiable hostnames, serial numbers, UUIDs, MAC/IP addresses, exact location, personal paths, credentials or tokens.
-
-Result states:
-
-```text
-reported → reproducible → verified
-                 │
-                 └── rejected
-```
-
-A `reported` result must never be presented as `verified`.
-
-The historical `metaLEONES` terminology is no longer used as the current project name; current documentation uses **MANADA** consistently.
+The report identifies the experiment, not the person. Never publish names, emails, personal usernames, identifiable hostnames, serial numbers, UUIDs, MAC/IP addresses, exact location, personal paths, credentials or tokens.
 
 ## Discovery and recommendations
-
-LEONES also has a prospecting layer. It looks for new Open projects and prioritises Copyleft candidates, especially projects that can improve models, inference, harnesses, tools, skills or agentic UX.
 
 Discovery is deliberately separate from acceptance:
 
@@ -204,46 +176,25 @@ Discovery is deliberately separate from acceptance:
 discover → inspect → classify → test → recommend → incorporate
 ```
 
-Finding a project does not mean that LEONES endorses it. The discovery index is [`phases/2026-08-daily-prospection/`](phases/2026-08-daily-prospection/), while the knowledge-source registry is [`sources/README.md`](sources/README.md).
+Finding a project does not mean that LEONES endorses it.
 
 ## External knowledge sources
 
-The principal documented sources include:
+The principal documented sources include FreeToken, LLMFit, AirLLM, ODS, Magnitude and local runtimes. These sources are knowledge/discovery inputs. Their claims remain separated from LEONES measurements under the four-layer knowledge contract:
 
-- FreeToken and «El otro FreeToken» / Odysseus — [`sources/FREETOKEN.md`](sources/FREETOKEN.md), [`sources/FREETOKEN-EL-OTRO-FREETOKEN.md`](sources/FREETOKEN-EL-OTRO-FREETOKEN.md);
-- LLMFit — [`sources/LLMFIT.md`](sources/LLMFIT.md);
-- AirLLM — [`sources/AIRLLM.md`](sources/AIRLLM.md);
-- ODS — [`sources/ODS.md`](sources/ODS.md);
-- Magnitude — [`sources/MAGNITUDE.md`](sources/MAGNITUDE.md);
-- local runtimes — [`sources/LOCAL-RUNTIMES-2026.md`](sources/LOCAL-RUNTIMES-2026.md).
+```text
+source → evidence → estimate → LEONES measurement
+```
 
-These sources are knowledge/discovery inputs. Their claims remain separated from LEONES measurements under the four-layer knowledge contract: **source → evidence → estimate → LEONES measurement**.
-
-## Integrations and deployment profiles
-
-ODS and Magnitude are external deployment/agent profiles, not internal truth sources:
-
-- [`integrations/ODS/README.md`](integrations/ODS/README.md) — ODS installation, preflight, configuration and independent benchmark.
-- [`integrations/Magnitude/README.md`](integrations/Magnitude/README.md) — Magnitude agent, skills, configuration and benchmark.
-- [`integrations/LLMFIT/README.md`](integrations/LLMFIT/README.md) — LLMFit preselection contract.
-- [`integrations/DATA-CONTRACT.md`](integrations/DATA-CONTRACT.md) — integration data contract.
-- [`integrations/E2E.md`](integrations/E2E.md) — end-to-end validation.
+ODS and Magnitude are external deployment/agent profiles, not internal truth sources. Their native benchmark paths remain distinct from LEONES physical measurements unless their output is explicitly imported with provenance.
 
 ## Automation
 
-GitHub Actions may call the small scripts to:
-
-- perform scheduled discovery;
-- aggregate public results;
-- regenerate statistics and charts;
-- produce weekly/monthly reports;
-- prepare community/social content.
-
-Automation must not bypass privacy checks or turn unverified information into official results. Workflow rules are documented in [`CI-WORKFLOW-RULES.md`](CI-WORKFLOW-RULES.md).
+GitHub Actions may validate contracts, run deterministic tests, perform scheduled discovery, aggregate public results and prepare reports. CI must not pretend its runner hardware is the user's target machine, bypass privacy checks or turn unverified information into official results.
 
 ## Design rules for scripts
 
-Every script should answer one question. Its documentation must state:
+Every script should answer one question and document:
 
 1. what it does;
 2. what it does not do;
@@ -254,11 +205,9 @@ Every script should answer one question. Its documentation must state:
 7. exit/error behaviour;
 8. related scripts.
 
-Prefer composition over duplication. If a script needs another capability, call the existing script or shared module rather than copying its implementation.
+Prefer composition over duplication. If a script needs execution capability, reuse the canonical runner/adapter boundary instead of copying it.
 
 ## Documentation navigation
-
-The canonical navigation chain is:
 
 ```text
 README.md
@@ -274,7 +223,7 @@ validation
 completed guide / code / workflow
 ```
 
-See [`DOCUMENTATION_PROTOCOL.md`](DOCUMENTATION_PROTOCOL.md) for the mandatory closure rule.
+See `DOCUMENTATION_PROTOCOL.md` for the mandatory closure rule.
 
 ## Vocabulary
 
@@ -285,5 +234,3 @@ See [`DOCUMENTATION_PROTOCOL.md`](DOCUMENTATION_PROTOCOL.md) for the mandatory c
 - **MANADA** — protocol for anonymised real-machine reports and community observations.
 - **CABE** — project vocabulary for whether a configuration fits.
 - **RULA** — project vocabulary for whether a configuration runs usefully.
-
-The historical conversation is not required to understand these concepts; this repository documentation is the canonical explanation.
