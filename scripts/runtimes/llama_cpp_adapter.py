@@ -73,11 +73,12 @@ def build_command_prefix(
         raise ValueError("executable is not the trusted llama.cpp entrypoint")
     if not model_path:
         raise ValueError("model_path is required")
-    command = [executable, "-m", model_path, "-p"]
+    command = [executable, "-m", model_path]
     if context_tokens is not None:
         if context_tokens < 1:
             raise ValueError("context_tokens must be positive")
         command.extend(["-c", str(context_tokens)])
+    command.append("-p")
     return command
 
 
@@ -85,8 +86,7 @@ def build_command(
     executable: str, model_path: str, prompt: str, *, context_tokens: int | None = None
 ) -> list[str]:
     command = build_command_prefix(executable, model_path, context_tokens=context_tokens)
-    prompt_index = command.index("-p") + 1
-    command.insert(prompt_index, prompt)
+    command.append(prompt)
     return command
 
 
