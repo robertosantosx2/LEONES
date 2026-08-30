@@ -104,6 +104,7 @@ def resolve_runtime(
     runtime_plan_probe["trusted_entrypoint"] = list(entrypoint)
     runtime_plan_probe["execution_authorized"] = execution_authorized
     spec = adapter.prepare(runtime_plan_probe, entry)
+    runtime_eligibility = spec.metadata.get("runtime_eligibility")
     execution_command = list(entrypoint)
     if execution_authorized and spec.metadata.get("execution_command"):
         execution_command = list(spec.metadata["execution_command"])
@@ -174,6 +175,7 @@ def resolve_runtime(
         "fit_score": candidate.get("fit_score"),
         "evidence_level": candidate.get("evidence_level"),
         "execution_authorized": execution_authorized,
+        "runtime_eligibility": runtime_eligibility,
         "measurement_required": True,
         "benchmark_probe": status == "BENCHMARK_REQUIRED",
         "estimated_tps": llmfit.get("estimated_tps"),
@@ -191,7 +193,8 @@ def gate_selection(
     hardware: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     plans: list[dict[str, Any]] = []
-    blocked = 0
+    blocked_entries: list[dict[str, Any]] = []
+
     for candidate in selection.get("candidates", []):
         try:
             plans.append(
@@ -202,10 +205,27 @@ def gate_selection(
                     hardware=hardware,
                 )
             )
-        except ValueError:
-            blocked += 1
+        except ValueError as exc:
+            blocked_entry = {
+                "model_id": candidate.get("model_id") or candidate.get("model_name"),
+                "runtime": candidate.get("runtime"),
+                "reason": str(exc),
+            }
+
+            # Preserve any runtime-specific eligibility evidence already
+            # attached to the candidate.
+            runtime_eligibility = candidate.get("runtime_eligibility")
+            if runtime_eligibility is not None:
+                blocked_entry["runtime_eligibility"] = runtime_eligibility
+
+            blocked_entries.append(blocked_entry)
+
     return {
         "schema_version": SCHEMA_VERSION,
         "execution_plans": plans,
-        "counts": {"plans": len(plans), "blocked": blocked},
+        "blocked": blocked_entries,
+        "counts": {
+            "plans": len(plans),
+            "blocked": len(blocked_entries),
+        },
     }

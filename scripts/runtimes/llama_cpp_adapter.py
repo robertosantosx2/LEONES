@@ -22,11 +22,14 @@ class LlamaCppAdapter(RuntimeAdapter):
         execution: llama.cpp also needs an explicit GGUF model artifact with
         provenance. This prevents a seemingly valid selection from becoming
         an executable plan with an unresolved model reference.
+
+        The llama.cpp-specific format contract is checked before the generic
+        capability gate so callers receive the canonical GGUF error.
         """
-        super().validate(plan, entry)
         model_format = str(plan.get("model_format") or "").upper()
         if model_format != "GGUF":
             raise ValueError("llama.cpp physical plan requires model_format=GGUF")
+        super().validate(plan, entry)
         artifact = plan.get("model_artifact")
         if not isinstance(artifact, dict):
             raise ValueError("llama.cpp physical plan requires model_artifact")

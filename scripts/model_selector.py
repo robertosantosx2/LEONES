@@ -227,7 +227,10 @@ def select(rows: Iterable[dict[str, Any]], *, workload: str, hardware: str, ram_
             "confidence": "high" if row.get("quality_score") and row.get("tokens_per_second") else "medium",
             "model": runtime_evidence["model"],
             "moe": runtime_evidence["moe"],
-            "workload": runtime_evidence["workload"],
+            "workload": {
+                **runtime_evidence["workload"],
+                "context_tokens": context_tokens,
+            },
             "reasons": reasons + score_reasons,
         })
     selected.sort(key=lambda item: (-item["fit_score"], _norm(item["model_id"])))
