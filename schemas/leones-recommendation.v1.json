@@ -16,7 +16,8 @@
     "unknowns": {"type": "array", "items": {"type": "string"}},
     "next_action": {"enum": ["recommend", "verify", "measure", "profile", "watch", "reject"]},
     "minimum_evidence_met": {"type": "boolean"},
-    "trace_ref": {"type": "string", "minLength": 1}
+    "trace_ref": {"type": "string", "minLength": 1},
+    "task_summary_ref": {"type": "string", "minLength": 1}
   },
   "allOf": [
     {
