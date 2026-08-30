@@ -15,15 +15,13 @@ LEONES construye una cadena reproducible para responder una pregunta práctica:
 
 No es otro catálogo de modelos ni otro chatbot. Es un sistema de **descubrimiento, selección, ejecución, medición, evidencia y decisión**.
 
-Su principio fundamental es simple:
+Su principio rector es:
 
 > **Una afirmación no se convierte en un hecho por repetición: se descubre, documenta, contrasta, mide cuando corresponde y conserva con su procedencia.**
 
 ---
 
-## Estado y cadena operativa
-
-La arquitectura distingue explícitamente entre **estimación, observación, reporte externo, medición física y verificación**.
+## Cadena operativa
 
 ```text
 DESCUBRIMIENTO
@@ -57,9 +55,9 @@ CONOCIMIENTO COLECTIVO
 
 **GitHub/CI prepara y valida; el host Linux ejecuta y mide.**
 
-CI puede validar contratos, esquemas, código, fixtures, tests y gates. No puede sustituir una medición realizada sobre el hardware y runtime reales.
+CI valida contratos, esquemas, código, fixtures, tests y gates. No sustituye una medición realizada sobre el hardware y runtime reales.
 
-El **runner existente es la vía canónica de ejecución medida**. LEONES no crea un segundo runner paralelo para JALÓN 3 ni convierte el protocolo de medición en otra arquitectura de ejecución.
+El **runner existente es la vía canónica de ejecución medida**. No se crea un segundo runner paralelo ni se convierte el protocolo de medición en otra arquitectura de ejecución.
 
 ```text
 GitHub / CI
@@ -67,7 +65,7 @@ GitHub / CI
   ├─ esquemas
   ├─ validadores
   ├─ tests
-  └─ preparación del runner
+  └─ runner / auditoría
           │
           ▼
 HOST LINUX
@@ -80,21 +78,17 @@ HOST LINUX
 
 ---
 
-# Hitos cerrados y en curso
+# Estado del proyecto
 
-## V1 — A01 con runtime real
+| Bloque | Estado | Resultado |
+|---|---|---|
+| V1 / A01 | 🟢 Cerrado | Cadena real de selección → ejecución → benchmark → evidencia |
+| JALÓN 1 | 🟢 Cerrado | Base CI y contratos iniciales |
+| JALÓN 2 | 🟢 Cerrado | Ejecución física + evidencia reproducible con llama.cpp |
+| JALÓN 3 | 🟢 Cerrado operativamente | Contrato `runtime-benchmark-evidence.v1.1` + auditoría física |
+| Siguiente bloque | 🔵 Preparado | Decisión **LEONES → ODS | Magnitude** + tiers de hardware |
 
-La cadena A01 dispone de una integración real de extremo a extremo: selección → autorización de runtime → ejecución de tarea → validación → benchmark → evidencia.
-
-La ejecución de referencia registrada utilizó Ollama `0.33.1` con `qwen2.5:0.5b-instruct-q4_K_M` y obtuvo **47.9803 tok/s**, `2.345202 s` de tiempo de pared y **A01 score 1.0**.
-
-Estos valores pertenecen a esa ejecución concreta y **no son una cifra universal del modelo**.
-
-## JALÓN 2 — evidencia física
-
-JALÓN 2 estableció el puente entre ejecución física y conservación de evidencia con `llama.cpp`.
-
-Referencia histórica registrada:
+## JALÓN 2 — referencia histórica
 
 ```text
 llama.cpp
@@ -104,15 +98,33 @@ CPU · 4 threads
 43.6 tok/s de media
 ```
 
-La evidencia física de JALÓN 2 es histórica e inmutable: los resultados posteriores no deben reescribirla para hacerlos coincidir.
+Esta evidencia es histórica e inmutable. Los resultados posteriores no deben reescribirla.
 
-## JALÓN 3 — protocolo de medición real
+## JALÓN 3 — cierre operativo
 
-JALÓN 3 convierte la medición real en un **contrato operativo reproducible**.
+JALÓN 3 quedó **cerrado operativamente el 2026-08-28**. El contrato de medición dejó de ser solo diseño: una ejecución física real lo satisfizo y el runner canónico produjo todos los gates de cierre.
 
-El contrato se prepara y valida en GitHub. El runner existente es la vía de ejecución. El host Linux se utiliza únicamente cuando hace falta producir evidencia que requiere runtime y hardware físicos.
+Runner canónico:
 
-**Criterio de cierre:** JALÓN 3 no queda empíricamente cerrado hasta que una ejecución física autorizada produzca evidencia válida conforme al protocolo congelado.
+```text
+scripts/run_jalon3_audit.sh
+```
+
+Gates:
+
+```text
+CONTRACT_GATE=PASS
+TESTS_GATE=PASS
+DIFF_GATE=PASS
+REAL_RUNTIME_EVIDENCE_GATE=PASS
+REPRODUCIBILITY_GATE=PASS
+JALON3_OPERATIONAL_CLOSE=PASS
+AUDIT_EXIT_CODE=0
+```
+
+La evidencia de cierre registra identidad del modelo y artefacto, cuantización, runtime y versión, protocolo de workload, warm-up, cinco mediciones, entorno, códigos de salida, stdout/stderr, timestamps y hashes.
+
+**JALÓN 3 no se rediseña y su evidencia no se modifica retroactivamente.**
 
 ---
 
@@ -120,7 +132,7 @@ El contrato se prepara y valida en GitHub. El runner existente es la vía de eje
 
 ## 1. Prospector
 
-Descubre modelos, repositorios, benchmarks, runtimes, datasets y herramientas. Filtra candidatos según los criterios del proyecto y alimenta el Atlas.
+Descubre modelos, repositorios, benchmarks, runtimes, datasets y herramientas. Filtra candidatos y alimenta el Atlas.
 
 **No convierte candidatos en conocimiento canónico.**
 
@@ -144,7 +156,7 @@ Docs: [`web/proyectos/atlas/openness/JGB-INDEX.md`](web/proyectos/atlas/openness
 
 Relaciona modelos con CPU, RAM, GPU/VRAM, almacenamiento y otras capacidades relevantes.
 
-La compatibilidad estimada **no equivale a rendimiento medido**.
+**Compatibilidad estimada no equivale a rendimiento medido.**
 
 Docs: [`docs/phases/2026-08-hardware-matrix/`](docs/phases/2026-08-hardware-matrix/) · [`docs/completed/H08-HARDWARE-MATRIX.md`](docs/completed/H08-HARDWARE-MATRIX.md)
 
@@ -156,21 +168,7 @@ Docs: [`docs/phases/2026-08-hardware-pricing/`](docs/phases/2026-08-hardware-pri
 
 ## 6. LLMFit
 
-LLMFit aporta una **primera estimación de encaje modelo ↔ máquina** y permite reducir candidatos antes de ejecutar o descargar modelos cuando la evidencia disponible lo permite.
-
-```text
-hardware
-   ↓
-LLMFit / fit estimado
-   ↓
-candidatos
-   ↓
-Atlas + evidencia + cuantización + runtime
-   ↓
-benchmark LEONES
-   ↓
-medición física
-```
+Aporta una primera estimación de encaje **modelo ↔ máquina** para reducir candidatos antes de ejecutar o descargar modelos cuando la evidencia disponible lo permite.
 
 LLMFit **no es fuente de verdad** y nunca convierte una estimación en `measured`.
 
@@ -195,11 +193,9 @@ Docs: [`docs/phases/2026-08-cabe-rula/`](docs/phases/2026-08-cabe-rula/) · [`do
 
 LEONES separa la decisión declarativa de la ejecución.
 
-Una ejecución queda determinada por la combinación explícita de:
+Una ejecución queda determinada por:
 
 `modelo + cuantización + runtime + hardware + configuración`
-
-El selector y el Router trabajan con las restricciones y evidencias disponibles. El rendimiento no se atribuye al modelo ignorando runtime, cuantización o hardware.
 
 LLMFit puede filtrar candidatos; la medición física prevalece sobre la estimación cuando ambas existen.
 
@@ -214,8 +210,6 @@ Los benchmarks orientados a tareas complementan los benchmarks externos: el obje
 Docs: [`docs/EVALUACION_AGENTIC_TESTS.md`](docs/EVALUACION_AGENTIC_TESTS.md) · [`docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md`](docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md)
 
 ## 10. Runner y medición física
-
-El runner existente ocupa una posición única en la arquitectura:
 
 ```text
 selección autorizada
@@ -233,24 +227,24 @@ medición
 evidence
 ```
 
-El runner **no decide qué resultado es verdadero** ni inventa mediciones. Ejecuta la configuración autorizada y conserva los datos necesarios para que el benchmark y los validadores puedan determinar si la ejecución es válida.
+El runner ejecuta la configuración autorizada y conserva los datos necesarios para validar la ejecución. **No inventa mediciones ni convierte fixtures en evidencia física.**
 
-No se promocionan fixtures a evidencia física. Una ejecución fallida puede conservarse como incidente cuando corresponda, pero nunca se presenta como benchmark válido.
+El runner canónico de auditoría de JALÓN 3 es `scripts/run_jalon3_audit.sh`.
 
-Docs: [`docs/completed/`](docs/completed/) · [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md)
+Docs: [`docs/completed/JALON-3.md`](docs/completed/JALON-3.md) · [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md)
 
 ## 11. ODS, Magnitude, FreeToken, AirLLM, Ollama y llama.cpp
 
 LEONES puede utilizar herramientas externas para descubrimiento, profiling, estimación, ejecución o comparación.
 
-La separación es esencial:
+La frontera es explícita:
 
 - **evidencia externa** sigue siendo evidencia externa;
 - **estimación** sigue siendo estimación;
 - **medición LEONES** requiere una ejecución LEONES reproducible;
-- una herramienta externa no se convierte automáticamente en parte de la verdad canónica del proyecto.
+- una herramienta externa no se convierte automáticamente en verdad canónica.
 
-Cuando una herramienta se integra, se documentan su función, procedencia, supuestos y límites. Se reutiliza su arquitectura cuando es adecuada; **no se crea innecesariamente un sistema paralelo**.
+Cuando una herramienta se integra, se documentan función, procedencia, supuestos y límites. Se reutiliza su arquitectura cuando es adecuada; **no se crea innecesariamente un sistema paralelo**.
 
 Docs: [`docs/subprojects/ods/`](docs/subprojects/ods/) · [`docs/subprojects/magnitude/`](docs/subprojects/magnitude/)
 
@@ -258,9 +252,11 @@ Docs: [`docs/subprojects/ods/`](docs/subprojects/ods/) · [`docs/subprojects/mag
 
 # Contratos y evidencia
 
-LEONES utiliza contratos versionados para evitar que selección, ejecución y medición se mezclen.
+LEONES utiliza contratos versionados para mantener separadas selección, ejecución, medición y evidencia.
 
-En particular, `runtime-selection.v1.1` es deliberadamente declarativo: identifica runtime, adaptador, modelo, compatibilidad, restricciones y razón de selección, pero no contiene comandos de ejecución ni rendimiento medido.
+`runtime-selection.v1.1` es declarativo: identifica runtime, adaptador, modelo, compatibilidad, restricciones y razón de selección. No es rendimiento medido ni una orden de ejecución.
+
+El contrato de evidencia de JALÓN 3 es `runtime-benchmark-evidence.v1.1`.
 
 ```text
 runtime-selection
@@ -276,25 +272,9 @@ benchmark
 evidence
 ```
 
-La frontera evita que un plan de selección se convierta accidentalmente en una orden de ejecución o en una afirmación de rendimiento.
-
 ---
 
-# Modelo de estados de evidencia
-
-```text
-FUENTE
-  ↓
-EVIDENCIA
-  ↓
-REPORTE / OBSERVACIÓN / ESTIMACIÓN
-  ↓
-MEDICIÓN LEONES
-  ↓
-VERIFICACIÓN
-  ↓
-CONOCIMIENTO PUBLICABLE
-```
+# Estados de evidencia
 
 | Estado | Significado |
 |---|---|
@@ -313,8 +293,6 @@ CONOCIMIENTO PUBLICABLE
 
 La CI forma parte del contrato del proyecto.
 
-Todo cambio que afecte a código, contratos, esquemas, selección de runtimes, ejecución, benchmarks o datos debe conservar sus consumidores y superar las pruebas y validaciones correspondientes.
-
 Principios:
 
 - contratos explícitos y versionados;
@@ -330,12 +308,24 @@ Para contribuir: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ---
 
+# Siguiente bloque lógico
+
+Con JALÓN 3 cerrado, el siguiente bloque es **consumir el contrato**, no rediseñar la medición.
+
+La prioridad es cerrar el contrato de decisión **LEONES → ODS | Magnitude**, utilizar **LLMFit** como fuente de ajuste/fit cuando corresponda y derivar los tiers de hardware de consumo a partir de las capacidades reales de esas herramientas.
+
+Los tiers de LEONES serán una **capa de interpretación** sobre ODS, Magnitude y LLMFit, no una segunda base de datos paralela de modelos y rendimiento.
+
+---
+
 # Documentación clave
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — arquitectura general.
 - [`docs/PILLARS.md`](docs/PILLARS.md) — pilares del sistema.
 - [`PIPELINE_E2E.md`](PIPELINE_E2E.md) — recorrido integral.
 - [`docs/RESULT_SCHEMA.md`](docs/RESULT_SCHEMA.md) — resultados y evidencia.
+- [`docs/completed/JALON-1.md`](docs/completed/JALON-1.md) — cierre del JALÓN 1.
+- [`docs/completed/JALON-3.md`](docs/completed/JALON-3.md) — cierre operativo del JALÓN 3.
 - [`docs/V1-A01-REAL-RUNTIME.md`](docs/V1-A01-REAL-RUNTIME.md) — A01 con runtime real.
 - [`docs/V1-CLEAN-ROOM.md`](docs/V1-CLEAN-ROOM.md) — limpieza, versionado y evidencia.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribución.
