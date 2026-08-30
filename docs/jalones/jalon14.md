@@ -44,9 +44,12 @@ JALÓN 14 sólo orquesta componentes existentes. No contiene:
 
 - un nuevo selector;
 - un nuevo sistema de scoring;
+- un segundo sistema de scoring;
 - un benchmark alternativo;
 - una segunda medición de tok/s;
 - una traducción de estimaciones externas a `measured`.
+
+Estas prohibiciones son deliberadas: LEONES debe tener una única cadena canónica de decisión, ejecución, medición y evidencia. Este jalón no crea una vía paralela para obtener, transformar o volver a puntuar resultados.
 
 ## Criterio de cierre
 
