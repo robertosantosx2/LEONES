@@ -74,7 +74,11 @@ def validate(doc: dict) -> None:
         fail("runtime command must be a non-empty argv array")
 
     if doc["state"] == "frozen" and doc["provenance"].get("protocol_sha256") is None:
-        print("WARNING: frozen protocol has no protocol_sha256; populate it after canonical serialization.", file=sys.stderr)
+        print(
+            "WARNING: frozen protocol has no protocol_sha256; "
+            "populate it after canonical serialization.",
+            file=sys.stderr,
+        )
 
 
 def main() -> int:

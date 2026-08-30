@@ -8,13 +8,13 @@
 
 ## 1. Propósito
 
-JALON3 fija el punto de continuación para la primera prueba real de un runtime en Debian. La prueba no debe producir solamente una cifra de rendimiento: debe producir una evidencia LEONES estructurada, reproducible, auditable y reutilizable.
+JALON3 fija el punto de continuación para la primera prueba real de un runtime en **Ubuntu**. La prueba no debe producir solamente una cifra de rendimiento: debe producir una evidencia LEONES estructurada, reproducible, auditable y reutilizable.
 
 La primera ejecución objetivo es `llama.cpp`.
 
 ## 2. Referencia metodológica
 
-La metodología de Artificial Analysis se toma como referencia conceptual, no como copia del protocolo. AA define sus benchmarks de rendimiento como mediciones de rendimiento end-to-end experimentado por el usuario/sistema y separa explícitamente TTFT, velocidad de salida y tiempo end-to-end. También fija workloads, parámetros y métodos de conteo de tokens para hacer comparaciones reproducibles.
+La metodología de Artificial Analysis se toma como referencia conceptual, no como copia del protocolo. Su metodología actual mide el rendimiento end-to-end experimentado por el usuario/sistema y separa TTFT, velocidad de salida y tiempo end-to-end. Para sus benchmarks de LLM usa workloads explícitos, prompts variables, mediciones repetidas y representación estadística por mediana/P50. También distingue los tokens usados para medir rendimiento de los tokens nativos del modelo.
 
 Para LEONES se adopta especialmente:
 
@@ -26,7 +26,10 @@ Para LEONES se adopta especialmente:
 - conservación de datos y condiciones;
 - identificación estable del modelo/runtime;
 - resultados estructurados y machine-readable;
-- distinción entre medición local y medición de API.
+- distinción entre medición local y medición de API;
+- prohibición de convertir estimaciones de terceros en mediciones físicas.
+
+**Importante:** Artificial Analysis usa actualmente workloads de 1k/10k/100k tokens y su benchmark web por defecto usa 10k de entrada. LEONES no copiará esos tamaños automáticamente para una ejecución local: el workload local queda fijado mediante `prompt_protocol_id` y forma parte de la identidad experimental.
 
 ## 3. Contrato de medición
 
@@ -164,7 +167,30 @@ validación
 artifact de evidencia LEONES
 ```
 
-## 7. Implementación ya integrada
+## 7. Runner canónico de auditoría
+
+El punto operativo de JALON3 queda fijado en:
+
+`scripts/run_jalon3_audit.sh`
+
+El runner es el único mecanismo canónico para auditar y publicar el estado del jalón desde Ubuntu. Su contrato operativo es:
+
+1. exigir una rama Git válida y rechazar `detached HEAD`;
+2. impedir dos runners simultáneos mediante lock local;
+3. rechazar cambios ajenos al runner antes de comenzar;
+4. sincronizar con `origin/<branch>` antes de auditar;
+5. ejecutar los gates de contrato, tests, `git diff --check`, evidencia física y reproducibilidad;
+6. generar un transcript completo en `artifacts/jalon3-audit/`;
+7. mantener una única copia compacta rastreada en `docs/audits/jalon3/latest.txt`;
+8. no declarar cierre operacional si falla cualquier gate;
+9. publicar también los resultados `FAIL`, para que el fallo sea auditable;
+10. si el remoto avanza durante la auditoría, intentar únicamente `fetch + pull --rebase --autostash + push`;
+11. no utilizar nunca `push --force`;
+12. devolver un código de salida no cero cuando el jalón no esté operacionalmente cerrado.
+
+La carrera de publicación remota se considera un problema de sincronización, no una razón para rebajar los gates de evidencia.
+
+## 8. Implementación ya integrada
 
 JALON3 se apoya en la implementación fusionada en `main` mediante PR #63:
 
@@ -175,7 +201,7 @@ JALON3 se apoya en la implementación fusionada en `main` mediante PR #63:
 
 El adaptador de `llama.cpp` ya está conectado al runtime-selection gate y construye comandos sin shell, rechazando planes no autorizados o de otro runtime.
 
-## 8. Qué NO se debe hacer al continuar
+## 9. Qué NO se debe hacer al continuar
 
 - No copiar manualmente una cifra del terminal.
 - No convertir una estimación de LLMFit/Magnitude en una medición real.
@@ -184,14 +210,15 @@ El adaptador de `llama.cpp` ya está conectado al runtime-selection gate y const
 - No sustituir las iteraciones por una única media.
 - No cambiar el prompt, cuantización o contexto sin crear una nueva ejecución.
 - No declarar un benchmark válido si faltan los campos obligatorios del contrato.
+- No usar `git push --force` para resolver una carrera del runner.
 
-## 9. Punto exacto de continuación en Debian
+## 10. Punto exacto de continuación en Ubuntu
 
-Cuando se retome JALON3 delante del equipo Debian:
+Cuando se retome JALON3 delante del equipo Ubuntu:
 
-1. actualizar `main`;
-2. ejecutar tests completos;
-3. comprobar `git diff --check` y estado limpio;
+1. actualizar la rama de trabajo de forma no destructiva;
+2. ejecutar el runner canónico;
+3. comprobar tests y estado limpio;
 4. identificar hardware y runtime instalados;
 5. comprobar disponibilidad/versionado de `llama.cpp`;
 6. seleccionar modelo y artefacto GGUF concretos;
@@ -205,9 +232,9 @@ Cuando se retome JALON3 delante del equipo Debian:
 14. incorporar la evidencia al flujo LEONES;
 15. documentar el resultado sin modificar retroactivamente las condiciones.
 
-## 10. Criterio de cierre de JALON3
+## 11. Criterio de cierre de JALON3
 
-JALON3 queda completamente cerrado cuando exista al menos una ejecución real de `llama.cpp` en Debian que:
+JALON3 queda completamente cerrado cuando exista al menos una ejecución real de `llama.cpp` en Ubuntu que:
 
 - haya pasado por `runtime-selection.v1`/runtime gate;
 - utilice un artefacto de modelo identificado;
@@ -219,9 +246,9 @@ JALON3 queda completamente cerrado cuando exista al menos una ejecución real de
 - registre hardware y versión exacta del runtime;
 - y pueda ser reutilizada por el sistema de evidencia/recomendación de LEONES.
 
-**JALON3 no se considera cerrado por haber implementado el harness. El cierre requiere la primera medición real en Debian.**
+**JALON3 no se considera cerrado por haber implementado el harness ni por tener tests verdes. El cierre operacional requiere la primera medición real en Ubuntu.**
 
-## 11. Referencias externas
+## 12. Referencias externas
 
 Artificial Analysis — Benchmarking Methodology: https://artificialanalysis.ai/methodology
 
@@ -229,7 +256,7 @@ Artificial Analysis — Language Model API Performance Benchmarking: https://art
 
 Artificial Analysis — Data API: https://artificialanalysis.ai/data-api
 
-## 12. Frase de recuperación
+## 13. Frase de recuperación
 
 > **JALON3 = primera medición real reproducible de runtime → evidencia LEONES V1.1.**
 

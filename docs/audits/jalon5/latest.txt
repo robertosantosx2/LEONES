@@ -1,0 +1,29 @@
+============================================================
+LEONES — JALÓN 5 AUDIT RUNNER
+============================================================
+UTC: 20260829T054917Z
+BRANCH: rc1-minimal-script-cleanup
+
+========== CONTRACT ==========
+PASS: JALÓN 5 contract and schema present
+
+========== DECISION CONTRACT TESTS ==========
+...                                                                      [100%]
+3 passed in 0.02s
+
+========== EXISTING SELECTOR/INTEGRATION TESTS ==========
+......                                                                   [100%]
+6 passed in 0.04s
+
+========== DIFF ==========
+
+============================================================
+JALÓN 5 — MACHINE-READABLE RESULT
+============================================================
+CONTRACT_GATE=PASS
+DECISION_GATE=PASS
+INTEGRATION_GATE=PASS
+DIFF_GATE=PASS
+JALON5_CONTRACT_CLOSE=PASS
+AUDIT_EXIT_CODE=0
+============================================================

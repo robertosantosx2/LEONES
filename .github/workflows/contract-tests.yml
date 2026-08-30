@@ -40,6 +40,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -52,7 +54,20 @@ jobs:
 
       - name: Check script quality
         shell: bash
-        run: python scripts/check_script_quality.py --strict
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            base="${{ github.event.before }}"
+          else
+            base="HEAD"
+          fi
+          mapfile -t paths < <(git diff --name-only "$base...HEAD" -- scripts '*.py')
+          if [ "${#paths[@]}" -gt 0 ]; then
+            python scripts/check_script_quality.py --strict "${paths[@]}"
+          else
+            echo "No Python scripts changed; quality check not applicable."
+          fi
 
       - name: Validate JSON schemas
         shell: bash

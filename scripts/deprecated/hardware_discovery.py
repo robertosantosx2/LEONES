@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-"""Discover and optionally measure a local machine for LEONES/MANADA.
+"""Historical hardware discovery and microbenchmark helper.
 
-Privacy-safe by design: never emits hostname, serials, UUIDs, MAC/IP, exact
-paths or exact location. Run on the user's machine, not in GitHub Actions.
-Output is suitable for a MANADA report and later Atlas verification.
-
-Linux/Debian first. Hardware inventory uses standard commands when available.
-Optional measurements use NumPy for CPU/memory and fio for storage.
+RC1 separates hardware observation from measurement. The active
+``hardware_profile.py`` owns the hardware observation boundary; runtime
+measurement is handled by the authorized execution/evidence path. This older
+script mixed inventory with optional NumPy/fio-style measurements and is kept
+only for provenance.
 """
 
 from __future__ import annotations
-import json, os, platform, shutil, subprocess, time
+
+import json
+import os
+import platform
+import shutil
+import subprocess
+import time
 from pathlib import Path
 
 
@@ -60,32 +65,33 @@ def storage():
         data = json.loads(raw)
     except Exception:
         return []
-    out = []
-    for d in data.get("blockdevices", []):
-        if d.get("type") == "disk":
-            out.append(
-                {
-                    "name": d.get("name"),
-                    "type": d.get("type"),
-                    "size": d.get("size"),
-                    "model": d.get("model"),
-                    "transport": d.get("tran"),
-                }
-            )
-    return out
+    return [
+        {
+            "name": d.get("name"),
+            "type": d.get("type"),
+            "size": d.get("size"),
+            "model": d.get("model"),
+            "transport": d.get("tran"),
+        }
+        for d in data.get("blockdevices", [])
+        if d.get("type") == "disk"
+    ]
 
 
 def gpu():
     text = cmd(["lspci", "-mm"])
-    rows = []
-    for line in text.splitlines():
-        if (
-            "VGA compatible controller" in line
-            or "3D controller" in line
-            or "Display controller" in line
-        ):
-            rows.append(line)
-    return rows
+    return [
+        line
+        for line in text.splitlines()
+        if any(
+            label in line
+            for label in (
+                "VGA compatible controller",
+                "3D controller",
+                "Display controller",
+            )
+        )
+    ]
 
 
 def numpy_measure():
@@ -93,18 +99,16 @@ def numpy_measure():
         import numpy as np
     except Exception:
         return {"status": "numpy_not_installed"}
-    # Deliberately modest sizes: a discovery run should finish quickly.
     n = 2048
     a = np.random.random((n, n)).astype(np.float32)
     b = np.random.random((n, n)).astype(np.float32)
     t0 = time.perf_counter()
-    c = a @ b
+    a @ b
     dt = time.perf_counter() - t0
     flops = (2.0 * n**3) / max(dt, 1e-9)
-    # Large sequential copy, repeated twice, to estimate user-space memory throughput.
     x = np.empty(256 * 1024 * 1024 // 4, dtype=np.float32)
     t0 = time.perf_counter()
-    y = x.copy()
+    x.copy()
     dt2 = time.perf_counter() - t0
     bw = x.nbytes / max(dt2, 1e-9) / 1e9
     return {

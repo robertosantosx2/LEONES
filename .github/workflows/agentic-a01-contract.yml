@@ -24,9 +24,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install --upgrade pip pytest
-      - run: PYTHONPATH=. python -m pytest -q
-        working-directory: benchmarks/agentic/adapters
-      - run: PYTHONPATH=. python -m pytest -q
-        working-directory: benchmarks/evidence
+      - run: PYTHONPATH=. python -m pytest -q benchmarks/agentic/adapters
+      - run: PYTHONPATH=. python -m pytest -q benchmarks/evidence
       - name: Selector -> runtime-selection.v1 -> A01
         run: PYTHONPATH=. python -m pytest -q benchmarks/agentic/test_selection_to_a01.py

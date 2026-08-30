@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pruebas del contrato de mediciones reales."""
+"""Tests for the active benchmark recorder."""
 
 import pytest
 

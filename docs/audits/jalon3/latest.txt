@@ -1,0 +1,45 @@
+========== GATE: CONTRACT ==========
+PASS: canonical contract present
+**Estado:** FIJADO
+**Fecha:** 2026-08-27
+**Base:** `main`
+**Commit de implementación asociado:** `21d23496cb6ff727002bbdeb35f804c7b850722b`
+PASS: v1.1 schema present
+========== GATE: TESTS ==========
+........................................................................ [ 25%]
+........................................................................ [ 50%]
+........................................................................ [ 75%]
+.....................................................................    [100%]
+285 passed in 2.64s
+PASS: pytest
+========== GATE: DIFF ==========
+PASS: git diff --check
+========== GATE: REAL RUNTIME EVIDENCE ==========
+execution_id=rt-8f5164e3648c46a3a91e1f1b637d83f6
+model=Qwen3-0.6B name=Qwen3 0.6B Instruct Awq
+quantization=Q4_K_M
+runtime=llama.cpp version=version: 0.3.0-dev (build 10655, commit cb300598d)
+warmup_iterations=1
+measurement_iterations_declared=5
+measurement_iterations_found=5
+process_exit_code=0
+artifact=/home/roberto/leones-work/LEONES/artifacts/models/Qwen3-0.6B-Q4_K_M.gguf
+artifact_sha256=b0638f08417a2d3c8652760462eb5407c6e30173cf9608ad0820757a281eea0e
+PASS: runtime-benchmark-evidence.v1.1
+PASS: real runtime = llama.cpp
+PASS: measurements and stdout/stderr preserved
+PASS: artifact hash/size verified
+========== GATE: REPRODUCIBILITY ==========
+PASS: execution identity, timestamps, model, protocol, runtime and hardware present
+
+============================================================
+JALÓN 3 — MACHINE-READABLE RESULT
+============================================================
+CONTRACT_GATE=PASS
+TESTS_GATE=PASS
+DIFF_GATE=PASS
+REAL_RUNTIME_EVIDENCE_GATE=PASS
+REPRODUCIBILITY_GATE=PASS
+JALON3_OPERATIONAL_CLOSE=PASS
+AUDIT_EXIT_CODE=0
+============================================================

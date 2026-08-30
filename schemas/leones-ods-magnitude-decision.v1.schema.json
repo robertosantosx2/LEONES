@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.local/schemas/leones-ods-magnitude-decision.v1.schema.json",
+  "title": "LEONES → ODS | Magnitude Decision v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "decision_id", "created_at", "user_intent", "selection_mode", "selection", "sources", "decision", "benchmark_profile", "provenance"],
+  "properties": {
+    "schema": {"const": "leones-ods-magnitude-decision.v1"},
+    "decision_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "user_intent": {"type": "string", "enum": ["chat", "coding", "reasoning", "agent", "server", "multimodal", "custom"]},
+    "selection_mode": {"type": "string", "enum": ["explicit", "assisted", "automatic"]},
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority"],
+      "properties": {
+        "authority": {"type": "string", "enum": ["user", "llmfit", "ods", "magnitude"]},
+        "model": {"type": ["string", "null"]},
+        "revision": {"type": ["string", "null"]},
+        "quantization": {"type": ["string", "null"]},
+        "runtime": {"type": ["string", "null"]},
+        "run_mode": {"type": ["string", "null"]},
+        "context": {"type": ["integer", "null"], "minimum": 1}
+      }
+    },
+    "hardware_target": {"type": ["object", "null"]},
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["llmfit", "ods", "magnitude"],
+      "properties": {
+        "llmfit": {"$ref": "#/$defs/source"},
+        "ods": {"$ref": "#/$defs/source"},
+        "magnitude": {"$ref": "#/$defs/source"}
+      }
+    },
+    "decision": {"type": "string", "enum": ["proceed", "validate", "blocked", "user_confirmation_required"]},
+    "benchmark_profile": {"type": "string", "enum": ["performance", "task_completion", "combined"]},
+    "consent": {"type": ["object", "null"]},
+    "provenance": {"type": "array", "items": {"$ref": "#/$defs/provenance"}}
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {"type": "string", "enum": ["observed", "queried", "unavailable"]},
+        "version": {"type": ["string", "null"]},
+        "ref": {"type": ["string", "null"]},
+        "payload_sha256": {"type": ["string", "null"], "pattern": "^[a-fA-F0-9]{64}$"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "status"],
+      "properties": {
+        "field": {"type": "string"},
+        "status": {"type": "string", "enum": ["user_selected", "observed", "recommended", "configured", "estimated", "measured", "derived"]},
+        "source": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

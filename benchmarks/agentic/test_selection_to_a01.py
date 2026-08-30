@@ -18,7 +18,7 @@ def _selection() -> dict:
             {
                 "model_id": "demo-2",
                 "model_name": "Beta",
-                "runtime": "fixture-runtime",
+                "runtime": "llama.cpp",
                 "runtime_version": "test-1",
                 "quantization": "fixture",
                 "optimization_families": [],
@@ -49,7 +49,7 @@ def _clean_env() -> dict[str, str]:
 def test_selector_to_a01_measured_evidence(tmp_path: Path) -> None:
     result = run_selected(
         _selection(),
-        runtime_commands={"fixture-runtime": [sys.executable, "-c", _runtime_code()]},
+        runtime_commands={"llama.cpp": [sys.executable, "-c", _runtime_code()]},
         workspace=tmp_path,
         prompt="Execute A01",
     )
@@ -84,9 +84,8 @@ def test_runtime_gate_blocks_untrusted_selection() -> None:
         ]
     }
     result = gate_selection(selection, runtime_commands={})
-    assert result["counts"] == {"plans": 1, "blocked": 0}
-    assert result["execution_plans"][0]["execution_authorized"] is False
-    assert result["execution_plans"][0]["runtime"]["command"] is None
+    assert result["counts"] == {"plans": 0, "blocked": 1}
+    assert result["blocked"][0]["reason"] == "unknown runtime: missing-runtime"
 
 
 def test_direct_a01_selector_cli_without_pythonpath(tmp_path: Path) -> None:
@@ -98,7 +97,7 @@ def test_direct_a01_selector_cli_without_pythonpath(tmp_path: Path) -> None:
     workspace = tmp_path / "workspace"
     selection_file.write_text(json.dumps(_selection()), encoding="utf-8")
     commands_file.write_text(
-        json.dumps({"fixture-runtime": [sys.executable, "-c", _runtime_code()]}),
+        json.dumps({"llama.cpp": [sys.executable, "-c", _runtime_code()]}),
         encoding="utf-8",
     )
 
@@ -129,15 +128,15 @@ def test_direct_a01_selector_cli_without_pythonpath(tmp_path: Path) -> None:
     assert (workspace / "report.txt").read_text(encoding="utf-8") == "Model: Beta\n"
 
 
-def test_canonical_a01_benchmark_reaches_router_without_pythonpath(tmp_path: Path) -> None:
-    """Prove the complete V1 CLI path from a clean environment, through Router."""
+def test_canonical_a01_benchmark_without_pythonpath(tmp_path: Path) -> None:
+    """Prove the canonical A01 benchmark path from a clean environment."""
     root = Path(__file__).resolve().parents[2]
     selection_file = tmp_path / "selection.json"
     commands_file = tmp_path / "runtime-commands.json"
     output_file = tmp_path / "runtime-benchmark.json"
     selection_file.write_text(json.dumps(_selection()), encoding="utf-8")
     commands_file.write_text(
-        json.dumps({"fixture-runtime": [sys.executable, "-c", _runtime_code()]}),
+        json.dumps({"llama.cpp": [sys.executable, "-c", _runtime_code()]}),
         encoding="utf-8",
     )
 
@@ -165,19 +164,12 @@ def test_canonical_a01_benchmark_reaches_router_without_pythonpath(tmp_path: Pat
 
     payload = json.loads(output_file.read_text(encoding="utf-8"))
     benchmark = payload["evidence"]["runtime_benchmark"]
-    router = payload["router"]
 
     assert payload["evidence"]["schema"] == "evidence.v1"
     assert benchmark["schema"] == "runtime-benchmark.v1"
     assert benchmark["status"] == "measured"
     assert benchmark["task"] == "A01"
     assert benchmark["grader_pass"] is True
-    assert benchmark["runtime"] == "fixture-runtime"
+    assert benchmark["runtime"] == "llama.cpp"
     assert benchmark["model"] == "demo-2"
     assert benchmark["executor_result_sha256"]
-    assert router["decision_type"] == "heuristic_with_primary_evidence"
-    assert router["decision"] == "evidence_supported"
-    assert router["primary_evidence"]["type"] == "measured"
-    assert router["primary_evidence"]["runtime_benchmark_measured"] is True
-    assert router["primary_evidence"]["model_match"] is True
-    assert router["primary_evidence"]["runtime_match"] is True

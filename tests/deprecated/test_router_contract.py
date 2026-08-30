@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.router import route_recommendation
+from scripts.deprecated.router import route_recommendation
 
 
 class RouterContractTests(unittest.TestCase):

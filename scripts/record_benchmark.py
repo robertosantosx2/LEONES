@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Valida y registra una medición real de inferencia.
+"""Record an observed benchmark measurement.
 
-La procedencia es explícita: ``estimated`` y ``reported`` nunca pasan por esta
-función. La propia operación de registrar una ejecución crea su identidad
-inmutable (`execution_id`) si el adaptador no la suministra.
+This module validates the small legacy record shape used by the active
+llama.cpp runner. It does not execute commands or publish results.
 """
 
 from __future__ import annotations
@@ -29,7 +28,7 @@ REQUIRED = (
 def record_measurement(
     data: dict[str, Any], measured_at: str | None = None
 ) -> dict[str, Any]:
-    """Validate a real execution result and mark it as measured."""
+    """Validate and mark a real-inference record as measured."""
     missing = [key for key in REQUIRED if key not in data]
     if missing:
         raise ValueError(f"missing required fields: {', '.join(missing)}")

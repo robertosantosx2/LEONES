@@ -31,7 +31,6 @@ jobs:
             scripts/run_a01_selected.py \
             scripts/runtime_gate.py \
             scripts/record_benchmark.py \
-            scripts/run_and_record_benchmark.py \
             benchmarks/agentic/adapters/llmserve_a01.py \
             benchmarks/agentic/graders/a01_grader.py
 

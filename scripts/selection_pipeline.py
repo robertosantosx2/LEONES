@@ -176,9 +176,9 @@ def main() -> int:
     args.out.write_text(
         json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    print(
-        f"selection={result['selection']['counts']} runtime_plans={result['runtime_selection']['counts']['plans']} -> {args.out}"
-    )
+    counts = result["selection"]["counts"]
+    plans = result["runtime_selection"]["counts"]["plans"]
+    print(f"selection={counts} runtime_plans={plans} -> {args.out}")
     return 0
 
 

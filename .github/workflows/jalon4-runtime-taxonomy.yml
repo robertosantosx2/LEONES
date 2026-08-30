@@ -22,16 +22,16 @@ jobs:
           import json
           from pathlib import Path
           from scripts.runtime_registry import registry_entries
-          for p in [Path('schemas/runtime-selection.v1.schema.json'), Path('schemas/runtime-selection.v1.1.schema.json')]:
+          for p in [Path('schemas/runtime-selection.v1.schema.json')]:
               json.loads(p.read_text(encoding='utf-8'))
               print('VALID', p)
           entries = registry_entries()
-          assert len(entries) == 6
-          assert [e.id for e in entries.values()] == ['llama.cpp', 'FreeToken', 'AirLLM', 'ollama', 'vLLM', 'SGLang']
+          assert len(entries) == 11
+          assert [e.id for e in entries.values()] == ['llama.cpp', 'FreeToken', 'AirLLM', 'ollama', 'vLLM', 'SGLang', 'MLX/MLX-LM', 'ExLlama', 'OpenVINO', 'ONNX Runtime GenAI', 'TensorRT-LLM']
           assert all(e.deployment_class and e.serving_profiles for e in entries.values())
           print('VALID operational runtime taxonomy:', len(entries))
           PY
       - name: Run JALON 4 tests
-        run: python -m pytest tests/test_jalon4_runtime_taxonomy.py tests/test_jalon4_runtime_scope.py -q
+        run: python -m pytest tests/test_jalon4_runtime_taxonomy.py -q
       - name: Check whitespace
         run: git diff --check

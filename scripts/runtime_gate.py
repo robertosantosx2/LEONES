@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in __import__("sys").path:
     __import__("sys").path.insert(0, str(ROOT))
 
-from scripts.runtime_registry import get_runtime
+from scripts.runtime_registry import capability_match, get_runtime
 from scripts.runtimes.v1_1_adapters import get_adapter
 
 ALLOWED_FOR_EXECUTION = {"TOP_N", "BENCHMARK_REQUIRED"}
@@ -44,7 +44,46 @@ def resolve_runtime(
     if available_runtimes is not None and runtime_name not in available_runtimes:
         raise ValueError(f"runtime is unavailable: {runtime_name}")
     entry = get_runtime(runtime_name)
+    deployment_class = candidate.get("deployment_class")
+    serving_profile = candidate.get("serving_profile")
+    hw = dict(hardware or {})
+    hw.update(candidate.get("hardware") or {})
     adapter = get_adapter(entry.id)
+
+    # Runtime-specific eligibility is authoritative for specialized runtimes.
+    # Let the adapter reject an invalid model/workload before generic taxonomy
+    # matching can mask the actionable reason.
+    runtime_plan_probe = {
+        "runtime": entry.id,
+        "adapter": entry.adapter,
+        "model_id": model_id,
+        "model": candidate.get("model") or {},
+        "hardware": hw,
+        "moe": candidate.get("moe") or {},
+        "workload": candidate.get("workload") or {},
+        "architecture_class": (
+            "moe"
+            if (candidate.get("moe") or {}).get("is_moe")
+            else "dense"
+        ),
+        "execution_mode": candidate.get("execution_mode"),
+        "backend": candidate.get("backend"),
+        "quantization": quantization,
+    }
+    adapter.validate(runtime_plan_probe, entry)
+
+    ok, reasons = capability_match(
+        entry,
+        architecture=runtime_plan_probe["architecture_class"],
+        model_format=candidate.get("model_format"),
+        mode=candidate.get("execution_mode"),
+        backend=candidate.get("backend"),
+        deployment_class=deployment_class,
+        serving_profile=serving_profile,
+        required_capabilities=set(candidate.get("required_capabilities") or []),
+    )
+    if not ok:
+        raise ValueError("runtime capability mismatch: " + "; ".join(reasons))
     trusted_override = (runtime_commands or {}).get(runtime_name)
     if trusted_override is not None and (
         not trusted_override or not all(isinstance(x, str) for x in trusted_override)
@@ -55,17 +94,11 @@ def resolve_runtime(
         if trusted_override is not None
         else list(entry.entrypoint["argv"])
     )
-    # A registry entry describes a trusted adapter boundary, but it does not by
-    # itself authorize physical execution. Authorization requires an explicit
-    # host-provided trusted command. This keeps declarative selection separate
-    # from physical runtime execution/evidence.
     execution_authorized = (
         trusted_override is not None
         and bool(entry.entrypoint.get("kind"))
         and adapter.adapter_id == entry.adapter
     )
-    hw = dict(hardware or {})
-    hw.update(candidate.get("hardware") or {})
     model = candidate.get("model") or {}
     runtime_plan = {
         "schema_version": SCHEMA_VERSION,

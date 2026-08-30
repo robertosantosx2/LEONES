@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-"""🦁 LEONES · Router v0.5.
+"""Historical LEONES heuristic router retained for provenance.
 
-Combina Task Intelligence + Hardware + Model + Atlas + evidencia primaria.
-Una ejecución A01 medida puede reforzar o bloquear una ruta concreta. Las
-mediciones runtime son evidencia primaria y no deben volver a degradarse a
-estimaciones.
+RC1 does not use this parallel recommendation path. Selection and runtime
+authorization now have explicit boundaries in the minimal pipeline.
 """
 
 from __future__ import annotations
@@ -30,7 +28,6 @@ def route(hw, model, task=None, atlas=None, evidence=None):
     capabilities = set((task or {}).get("capabilities", []))
     records = (atlas or {}).get("records", [])
     evidence = evidence or {}
-
     candidates = []
     for r in records:
         if r.get("kind") != "model":
@@ -49,7 +46,6 @@ def route(hw, model, task=None, atlas=None, evidence=None):
         candidates.append((score, r))
     candidates.sort(key=lambda x: x[0], reverse=True)
     evidence_matches = [r for _, r in candidates if r.get("name") == m.get("name")]
-
     primary = evidence.get("evidence", {})
     agentic = evidence.get("agentic", {})
     outcome = agentic.get("outcome", {})
@@ -58,13 +54,8 @@ def route(hw, model, task=None, atlas=None, evidence=None):
     evidence_runtime = (agentic.get("runtime") or {}).get("name")
     runtime_benchmark = evidence.get("runtime_benchmark") or {}
     benchmark_measured = runtime_benchmark.get("status") == "measured"
-
-    # A measured runtime is authoritative for the concrete execution path;
-    # otherwise retain the old format-based fallback.
-    runtime = (
-        evidence_runtime
-        if measured and evidence_runtime
-        else ("llama.cpp" if fmt == "gguf" else None)
+    runtime = evidence_runtime if measured and evidence_runtime else (
+        "llama.cpp" if fmt == "gguf" else None
     )
     evidence_matches_model = (
         measured and evidence_model and evidence_model == m.get("name")
@@ -72,7 +63,6 @@ def route(hw, model, task=None, atlas=None, evidence=None):
     evidence_runtime_match = bool(
         evidence_matches_model and evidence_runtime and evidence_runtime == runtime
     )
-
     decision = "candidate" if fits is not False else "reject_memory"
     if task_name == "vision" and "vision" not in capabilities:
         decision = "insufficient_task_capability"
@@ -80,19 +70,7 @@ def route(hw, model, task=None, atlas=None, evidence=None):
         decision = "evidence_supported" if decision == "candidate" else decision
     elif evidence_matches_model and outcome.get("status") in ("failed", "error"):
         decision = "evidence_failed"
-
-    reason = "Heurística basada en memoria, formato, tarea y evidencia Atlas."
-    if evidence_matches_model:
-        reason += f" A01 {primary.get('evidence_type')} para este modelo; outcome={outcome.get('status', 'unknown')}"
-        if evidence_runtime:
-            reason += f" runtime={evidence_runtime}."
-        if benchmark_measured:
-            reason += f" Benchmark runtime medido: wall={runtime_benchmark.get('wall_seconds')}s, tok/s={runtime_benchmark.get('tokens_per_second')}."
-    elif primary:
-        reason += " La evidencia suministrada no corresponde al modelo actual."
-    else:
-        reason += " Sin evidencia primaria de ejecución."
-
+    reason = "Heurística histórica basada en memoria, formato, tarea y evidencia."
     return {
         "router_version": "0.5",
         "decision_type": "heuristic_with_primary_evidence",
@@ -113,14 +91,6 @@ def route(hw, model, task=None, atlas=None, evidence=None):
         "atlas": {
             "records_available": len(records),
             "matching_records": len(evidence_matches),
-            "ranked_candidates": [
-                {
-                    "name": r.get("name"),
-                    "score": score,
-                    "evidence_state": (r.get("evidence") or {}).get("state"),
-                }
-                for score, r in candidates[:5]
-            ],
         },
         "runtime": runtime,
         "primary_evidence": {
@@ -129,36 +99,19 @@ def route(hw, model, task=None, atlas=None, evidence=None):
             "model_match": bool(evidence_matches_model),
             "runtime_match": evidence_runtime_match,
             "runtime_benchmark_measured": benchmark_measured,
-            "tokens_per_second": runtime_benchmark.get("tokens_per_second"),
-            "wall_seconds": runtime_benchmark.get("wall_seconds"),
         },
         "memory_check": {
             "safety_factor": SAFETY_FACTOR,
             "estimated_required_ram_gb": round(required, 2)
-            if required is not None
-            else None,
+            if required is not None else None,
             "fits_heuristically": fits,
         },
         "reason": reason,
-        "next_step": "inference"
-        if benchmark_measured
-        and evidence_matches_model
-        and outcome.get("status") == "success"
-        else (
-            "runtime_benchmark"
-            if decision == "evidence_supported"
-            else (
-                "review_constraints"
-                if decision
-                in ("reject_memory", "insufficient_task_capability", "evidence_failed")
-                else "inference"
-            )
-        ),
     }
 
 
 def main():
-    p = argparse.ArgumentParser(description="LEONES Router v0.5")
+    p = argparse.ArgumentParser(description="Historical LEONES router")
     p.add_argument("--hardware", required=True)
     p.add_argument("--model", required=True)
     p.add_argument("--task")
@@ -167,24 +120,18 @@ def main():
     p.add_argument("--json", action="store_true")
     a = p.parse_args()
     try:
-        task = load_json(a.task) if a.task else {}
-        atlas = load_json(a.atlas) if a.atlas else {}
-        evidence = load_json(a.evidence) if a.evidence else {}
-        result = route(load_json(a.hardware), load_json(a.model), task, atlas, evidence)
+        result = route(
+            load_json(a.hardware), load_json(a.model),
+            load_json(a.task) if a.task else {},
+            load_json(a.atlas) if a.atlas else {},
+            load_json(a.evidence) if a.evidence else {},
+        )
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"ERROR: no se pudieron leer las entradas JSON: {exc}", file=sys.stderr)
         return 2
-    if a.json:
-        print(json.dumps(result, indent=2, ensure_ascii=False))
-        return 0
-    print("🦁 LEONES · Router v0.5")
-    print(f"Tarea: {result['task']['name'] or 'no definida'}")
-    print(f"Decisión: {result['decision']}")
-    print(f"Modelo: {result['model']['name'] or 'desconocido'}")
-    print(f"Runtime candidato: {result['runtime'] or 'desconocido'}")
-    print(f"Evidencia primaria: {result['primary_evidence']['type'] or 'none'}")
-    print(f"Siguiente paso: {result['next_step']}")
+    print(json.dumps(result, indent=2, ensure_ascii=False) if a.json else result["decision"])
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

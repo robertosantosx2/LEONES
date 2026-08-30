@@ -1,0 +1,33 @@
+============================================================
+LEONES — JALÓN 6 RECOMMENDATION EVIDENCE GATE
+============================================================
+UTC: 20260829T054921Z
+BRANCH: rc1-minimal-script-cleanup
+
+========== CONTRACT ==========
+PASS: canonical recommendation/evidence components present
+
+========== GATE TESTS ==========
+....                                                                     [100%]
+4 passed in 0.29s
+
+========== EXISTING EVIDENCE BOUNDARY TESTS ==========
+..........                                                               [100%]
+10 passed in 0.04s
+
+========== STATIC INVARIANTS ==========
+PASS: no parallel benchmark/scoring system introduced
+
+========== DIFF ==========
+
+============================================================
+JALÓN 6 — MACHINE-READABLE RESULT
+============================================================
+CONTRACT_GATE=PASS
+GATE_TESTS=PASS
+EVIDENCE_BOUNDARY_GATE=PASS
+INVARIANT_GATE=PASS
+DIFF_GATE=PASS
+JALON6_DECLARATIVE_CLOSE=PASS
+AUDIT_EXIT_CODE=0
+============================================================

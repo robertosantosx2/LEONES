@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.local/schemas/leones-e2e-operation.v1.json",
+  "title": "LEONES E2E Operation V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "operation_id", "selection_ref", "runtime_ref", "execution_ref",
+    "measurement_ref", "evidence_refs", "decision_ref", "recommendation_ref",
+    "publication_ref", "output_ref", "trace_ref", "status"
+  ],
+  "properties": {
+    "schema": {"const": "leones-e2e-operation.v1"},
+    "operation_id": {"type": "string", "minLength": 8},
+    "selection_ref": {"type": "string", "minLength": 1},
+    "runtime_ref": {"type": "string", "minLength": 1},
+    "execution_ref": {"type": "string", "minLength": 1},
+    "measurement_ref": {"type": "string", "minLength": 1},
+    "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+    "decision_ref": {"type": "string", "minLength": 1},
+    "recommendation_ref": {"type": "string", "minLength": 1},
+    "publication_ref": {"type": "string", "minLength": 1},
+    "output_ref": {"type": "string", "minLength": 1},
+    "trace_ref": {"type": "string", "minLength": 1},
+    "status": {"enum": ["planned", "executed", "measured", "recommended", "published"]}
+  }
+}

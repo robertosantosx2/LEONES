@@ -1,0 +1,404 @@
+============================================================
+LEONES — JALÓN 3 AUDIT RUNNER
+============================================================
+UTC: 20260828T223148Z
+ROOT: /home/roberto/leones-work/LEONES
+
+========== CONTRACT ==========
+OK: docs/jalones/jalon3.md
+**Estado:** FIJADO
+**Fecha:** 2026-08-27
+**Base:** `main`
+**Commit de implementación asociado:** `21d23496cb6ff727002bbdeb35f804c7b850722b`
+
+========== GIT STATUS ==========
+ M artifacts/jalon3-audit/jalon3-audit-20260828T222836Z.txt
+ M scripts/run_jalon3_audit.sh
+
+========== GIT BRANCH ==========
+rc1-minimal-script-cleanup
+
+========== GIT LOG ==========
+c62f1c2 (HEAD -> rc1-minimal-script-cleanup) chore: capture JALON 3 audit
+2d15347 fix: align JALON 3 audit runner with canonical contract
+ac8b851 chore: replace JALON 3 audit runner
+20ed9c6 chore: publish JALON 3 audit runner and evidence
+9c69fc1 docs: clean and freeze JALON 7 baseline
+
+========== JALÓN 3 FILES ==========
+artifacts/a01-real-runtime-benchmark.v1.json
+artifacts/jalon3-audit/jalon3-audit-20260828T221938Z.txt
+artifacts/jalon3-audit/jalon3-audit-20260828T222147Z.txt
+artifacts/jalon3-audit/jalon3-audit-20260828T222836Z.txt
+artifacts/jalon3-audit/jalon3-audit-20260828T223148Z.txt
+artifacts/llama-cpp-smollm2-135m-real-benchmark.json
+artifacts/runtime-executions/jalon2-llama-cpp-20260827T145744Z/runtime-benchmark-evidence.json
+artifacts/runtime-executions/jalon2-llama-cpp-20260827T153456Z/runtime-benchmark-evidence.json
+artifacts/runtime-executions/jalon2-llama-cpp-20260827T154923Z/runtime-benchmark-evidence.json
+artifacts/runtime-executions/jalon2-llama-cpp-20260827T155114Z/runtime-benchmark-evidence.json
+artifacts/runtime-executions/jalon2-llama-cpp-20260827T155941Z/runtime-benchmark-evidence.json
+artifacts/runtime-executions/jalon3-run-001/runtime-benchmark-evidence.json
+artifacts/runtime-executions/jalon3-run-001.stdout.log
+docs/completed/BENCHMARK-MEASURED-EVIDENCE.md
+docs/completed/PHYSICAL-BENCHMARK-VALIDATION.md
+docs/jalones/jalon3.md
+docs/knowledge/artificial-analysis-optima-agentic-benchmarks.md
+docs/runtime-benchmark-evidence-v1.1.md
+docs/sources/ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md
+docs/subprojects/deepseek-harness/upstream/BENCHMARK.md
+scripts/a01_runtime_benchmark.py
+scripts/atlas_benchmark_adapters.py
+scripts/deprecated/__pycache__/record_benchmark.cpython-314.pyc
+scripts/deprecated/__pycache__/run_and_record_benchmark.cpython-314.pyc
+scripts/deprecated/run_and_record_benchmark.py
+scripts/normalize_cabe_rula_measurement.py
+scripts/promote_measured_benchmark.py
+scripts/publish_measured_benchmark.py
+scripts/__pycache__/a01_runtime_benchmark.cpython-314.pyc
+scripts/__pycache__/normalize_cabe_rula_measurement.cpython-314.pyc
+scripts/__pycache__/promote_measured_benchmark.cpython-314.pyc
+scripts/__pycache__/publish_measured_benchmark.cpython-314.pyc
+scripts/__pycache__/record_benchmark.cpython-314.pyc
+scripts/__pycache__/run_and_record_benchmark.cpython-314.pyc
+scripts/__pycache__/runtime_benchmark_evidence.cpython-314.pyc
+scripts/__pycache__/runtime_benchmark_v1.cpython-314.pyc
+scripts/__pycache__/validate_measured_benchmark.cpython-314.pyc
+scripts/record_benchmark.py
+scripts/run_jalon3_audit.sh
+scripts/runtime_benchmark_evidence.py
+scripts/runtime_benchmark_v1.py
+scripts/validate_measured_benchmark.py
+tests/contracts/__pycache__/test_runtime_selection_benchmark_e2e_v11.cpython-314-pytest-9.1.1.pyc
+tests/contracts/test_runtime_selection_benchmark_e2e_v11.py
+tests/deprecated/__pycache__/test_record_benchmark.cpython-314-pytest-9.1.1.pyc
+tests/deprecated/__pycache__/test_run_and_record_benchmark.cpython-314-pytest-9.1.1.pyc
+tests/deprecated/test_run_and_record_benchmark.py
+tests/__pycache__/test_ods_magnitude_benchmark_bridge.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_promote_measured_benchmark.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_publish_measured_benchmark.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_record_benchmark.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_run_and_record_benchmark.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_run_and_record_benchmark_integration.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_runtime_benchmark_evidence.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_runtime_benchmark_evidence_v1_1.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_runtime_measurement.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_synthetic_benchmark.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_validate_measured_benchmark.cpython-314-pytest-9.1.1.pyc
+tests/test_ods_magnitude_benchmark_bridge.py
+tests/test_promote_measured_benchmark.py
+tests/test_publish_measured_benchmark.py
+tests/test_record_benchmark.py
+tests/test_runtime_benchmark_evidence.py
+tests/test_runtime_measurement.py
+tests/test_synthetic_benchmark.py
+tests/test_validate_measured_benchmark.py
+
+========== DOCUMENTACIÓN CANÓNICA JALÓN 3 ==========
+235 docs/jalones/jalon3.md
+--- HEAD ---
+# JALON3 — Protocolo de medición real y evidencia V1.1
+
+**Estado:** FIJADO
+**Fecha:** 2026-08-27
+**Base:** `main`
+**Commit de implementación asociado:** `21d23496cb6ff727002bbdeb35f804c7b850722b`
+**PR asociado:** #63 — runtime benchmark evidence v1.1 and llama.cpp protocol
+
+## 1. Propósito
+
+JALON3 fija el punto de continuación para la primera prueba real de un runtime en Debian. La prueba no debe producir solamente una cifra de rendimiento: debe producir una evidencia LEONES estructurada, reproducible, auditable y reutilizable.
+
+La primera ejecución objetivo es `llama.cpp`.
+
+## 2. Referencia metodológica
+
+La metodología de Artificial Analysis se toma como referencia conceptual, no como copia del protocolo. AA define sus benchmarks de rendimiento como mediciones de rendimiento end-to-end experimentado por el usuario/sistema y separa explícitamente TTFT, velocidad de salida y tiempo end-to-end. También fija workloads, parámetros y métodos de conteo de tokens para hacer comparaciones reproducibles.
+
+Para LEONES se adopta especialmente:
+
+- condiciones de prueba explícitas;
+- workload/prompt identificado;
+- separación de TTFT y velocidad posterior al primer token;
+- medición end-to-end;
+- repetición de mediciones;
+- conservación de datos y condiciones;
+- identificación estable del modelo/runtime;
+- resultados estructurados y machine-readable;
+- distinción entre medición local y medición de API.
+
+## 3. Contrato de medición
+
+Cada ejecución debe registrar:
+
+### Modelo
+
+- `model_id`
+- `model_name`
+- `model_revision`
+- `model_source`
+--- TAIL ---
+6. seleccionar modelo y artefacto GGUF concretos;
+7. obtener y registrar su revisión/hash;
+8. ejecutar warm-up;
+9. ejecutar las iteraciones reales;
+10. generar `runtime-benchmark-evidence.v1.1`;
+11. validar el JSON contra el schema;
+12. revisar stdout/stderr y métricas;
+13. conservar el artefacto y SHA-256;
+14. incorporar la evidencia al flujo LEONES;
+15. documentar el resultado sin modificar retroactivamente las condiciones.
+
+## 10. Criterio de cierre de JALON3
+
+JALON3 queda completamente cerrado cuando exista al menos una ejecución real de `llama.cpp` en Debian que:
+
+- haya pasado por `runtime-selection.v1`/runtime gate;
+- utilice un artefacto de modelo identificado;
+- ejecute el runtime real;
+- produzca evidencia `runtime-benchmark-evidence.v1.1` válida;
+- conserve las mediciones individuales;
+- conserve stdout/stderr;
+- tenga `execution_id`, timestamps y hash;
+- registre hardware y versión exacta del runtime;
+- y pueda ser reutilizada por el sistema de evidencia/recomendación de LEONES.
+
+**JALON3 no se considera cerrado por haber implementado el harness. El cierre requiere la primera medición real en Debian.**
+
+## 11. Referencias externas
+
+Artificial Analysis — Benchmarking Methodology: https://artificialanalysis.ai/methodology
+
+Artificial Analysis — Language Model API Performance Benchmarking: https://artificialanalysis.ai/methodology/performance-benchmarking
+
+Artificial Analysis — Data API: https://artificialanalysis.ai/data-api
+
+## 12. Frase de recuperación
+
+> **JALON3 = primera medición real reproducible de runtime → evidencia LEONES V1.1.**
+
+Al continuar, no hay que rediseñar el protocolo: hay que ejecutar la prueba real y cerrar la evidencia.
+========== IMPLEMENTACIÓN ==========
+OK: schemas/runtime-benchmark-evidence.v1.1.json
+OK: scripts/runtime_benchmark_evidence.py
+OK: tests/test_runtime_benchmark_evidence.py
+OK: docs/runtime-benchmark-evidence-v1.1.md
+
+========== SCRIPTS ==========
+scripts/a01_runtime_benchmark.py
+scripts/adivino_approve.py
+scripts/adivino_mail.py
+scripts/adivino.py
+scripts/agentic_to_atlas.py
+scripts/artifact_acquirer.py
+scripts/atlas_artificial_analysis_adapter.py
+scripts/atlas_benchmark_adapters.py
+scripts/atlas_build_feed.py
+scripts/atlas_economic_rank.py
+scripts/atlas_empirical_collectors.py
+scripts/atlas_evidence_audit.py
+scripts/atlas_external_evidence.py
+scripts/atlas_hardware_matrix.py
+scripts/atlas_hf_leaderboard_adapter.py
+scripts/atlas_hypotheses.py
+scripts/atlas_identity_audit.py
+scripts/atlas_ingest_ndjson.py
+scripts/atlas_ingest_prospection.py
+scripts/atlas_jgb_enrich.py
+scripts/atlas_llm_stats_adapter.py
+scripts/atlas_lm_arena_adapter.py
+scripts/atlas_measured_performance.py
+scripts/atlas_msa_adapter.py
+scripts/atlas_promote_verified.py
+scripts/atlas_quality_audit.py
+scripts/atlas_recommendation_enrich.py
+scripts/atlas_recommend_from_feed.py
+scripts/atlas_source_adapters.py
+scripts/atlas_technical_evidence.py
+scripts/atlas_vellum_lambda_adapter.py
+scripts/check_script_quality.py
+scripts/check_workflow_concurrency.py
+scripts/classify_cabe_rula.py
+scripts/classify_performance.py
+scripts/collect_hardware_prices.py
+scripts/deprecated/atlas_recommend.py
+scripts/deprecated/hardware_discovery.py
+scripts/deprecated/leones-e2e.py
+scripts/deprecated/leones-evaluacion.py
+scripts/deprecated/leones-hardware.py
+scripts/deprecated/leones-infer.py
+scripts/deprecated/leones-manada-report.py
+scripts/deprecated/leones-manada-stats.py
+scripts/deprecated/leones-model.py
+scripts/deprecated/leones-privacy.py
+scripts/deprecated/leones-publish.py
+scripts/deprecated/leones.py
+scripts/deprecated/leones-report.py
+scripts/deprecated/leones-router.py
+scripts/deprecated/leones-runtime.py
+scripts/deprecated/leones-stats.py
+scripts/deprecated/leones-task.py
+scripts/deprecated/README.md
+scripts/deprecated/router.py
+scripts/deprecated/run_and_record_benchmark.py
+scripts/discover_copyleft.py
+scripts/enrich_measured_performance.py
+scripts/evaluate_jgb.py
+scripts/fit_consensus.py
+scripts/freetoken_runtime.py
+scripts/hardware_profile.py
+scripts/inference_config.py
+scripts/integrate_web_logos.py
+scripts/integrations/external_stack.py
+scripts/integrations/__init__.py
+scripts/integrations/install_magnitude.sh
+scripts/integrations/install_ods.sh
+scripts/integrations/magnitude_adapter.py
+scripts/integrations/magnitude_preflight.py
+scripts/integrations/ods_adapter.py
+scripts/integrations/ods_preflight.py
+scripts/llmfit_to_recommendation_candidates.py
+scripts/local/README.md
+scripts/model_selector.py
+scripts/normalize_cabe_rula_measurement.py
+scripts/ollama_a01_runtime.py
+scripts/promote_measured_benchmark.py
+scripts/prospection/bot_agents.py
+scripts/prospection/bot_hardware.py
+scripts/prospection/bot_harnesses.py
+scripts/prospection/bot_models.py
+scripts/prospection/bot_runtimes.py
+scripts/prospection/bots_catalog.json
+scripts/prospection/bot_skills.py
+scripts/prospection/classifier.py
+scripts/prospection/daily_atlas_ingest.py
+scripts/prospection/daily_report.py
+scripts/prospection/discover_additional_forge_adapters.py
+scripts/prospection/discover_forge_instances.py
+scripts/prospection/enrich_github.py
+scripts/prospection/enrich_sources.py
+scripts/prospection/merge_discoveries.py
+scripts/prospection/new_source_discovery_registry.json
+scripts/prospection/normalize_live_discoveries.py
+scripts/prospection/PROCEDIMIENTO_DESCUBRIMIENTO_NUEVAS_FUENTES.md
+scripts/prospection/publish_web_prospection.py
+scripts/prospection/run_daily_prospection.py
+scripts/prospection/run_federated_discovery.py
+scripts/prospection/run_federated_parallel.py
+scripts/prospection/run_live_discovery.py
+scripts/prospection/run_weekly_source_batch.py
+scripts/prospection/source_adapters.py
+scripts/prospection/source_coverage.py
+scripts/prospection/sources_registry.json
+scripts/prospectors/license_gate.py
+scripts/prospectors/models.py
+scripts/prospectors/README.md
+scripts/prospectors/repos.py
+scripts/publish_measured_benchmark.py
+scripts/__pycache__/a01_runtime_benchmark.cpython-314.pyc
+scripts/__pycache__/agentic_to_atlas.cpython-314.pyc
+scripts/__pycache__/artifact_acquirer.cpython-314.pyc
+scripts/__pycache__/atlas_economic_rank.cpython-314.pyc
+scripts/__pycache__/atlas_hardware_matrix.cpython-314.pyc
+scripts/__pycache__/atlas_measured_performance.cpython-314.pyc
+scripts/__pycache__/atlas_promote_verified.cpython-314.pyc
+scripts/__pycache__/atlas_recommend_from_feed.cpython-314.pyc
+scripts/__pycache__/check_script_quality.cpython-314.pyc
+scripts/__pycache__/classify_cabe_rula.cpython-314.pyc
+scripts/__pycache__/classify_performance.cpython-314.pyc
+scripts/__pycache__/collect_hardware_prices.cpython-314.pyc
+scripts/__pycache__/enrich_measured_performance.cpython-314.pyc
+scripts/__pycache__/evaluate_jgb.cpython-314.pyc
+scripts/__pycache__/fit_consensus.cpython-314.pyc
+scripts/__pycache__/freetoken_runtime.cpython-314.pyc
+scripts/__pycache__/hardware_profile.cpython-314.pyc
+scripts/__pycache__/inference_config.cpython-314.pyc
+scripts/__pycache__/jalon2_llama_cpp_evidence.cpython-314.pyc
+scripts/__pycache__/jalon2_runtime_execution.cpython-314.pyc
+scripts/__pycache__/leones-router.cpython-314.pyc
+scripts/__pycache__/llmfit_to_recommendation_candidates.cpython-314.pyc
+scripts/__pycache__/model_selector.cpython-314.pyc
+scripts/__pycache__/normalize_cabe_rula_measurement.cpython-314.pyc
+scripts/__pycache__/ollama_a01_runtime.cpython-314.pyc
+scripts/__pycache__/promote_measured_benchmark.cpython-314.pyc
+scripts/__pycache__/publish_measured_benchmark.cpython-314.pyc
+scripts/__pycache__/record_benchmark.cpython-314.pyc
+scripts/__pycache__/router.cpython-314.pyc
+scripts/__pycache__/run_a01_selected.cpython-314.pyc
+scripts/__pycache__/run_and_record_benchmark.cpython-314.pyc
+scripts/__pycache__/runtime_benchmark_evidence.cpython-314.pyc
+scripts/__pycache__/runtime_benchmark_v1.cpython-314.pyc
+scripts/__pycache__/runtime_evidence_bridge.cpython-314.pyc
+scripts/__pycache__/runtime_feedback_atlas.cpython-314.pyc
+scripts/__pycache__/runtime_gate.cpython-314.pyc
+scripts/__pycache__/runtime_registry.cpython-314.pyc
+scripts/__pycache__/select_from_hardware_profile.cpython-314.pyc
+scripts/__pycache__/selection_pipeline.cpython-314.pyc
+scripts/__pycache__/task_result.cpython-314.pyc
+scripts/__pycache__/test_atlas_economic_rank.cpython-314-pytest-9.1.1.pyc
+scripts/__pycache__/test_atlas_price_integration.cpython-314-pytest-9.1.1.pyc
+scripts/__pycache__/test_atlas_promotion.cpython-314-pytest-9.1.1.pyc
+scripts/__pycache__/test_freetoken_runtime.cpython-314-pytest-9.1.1.pyc
+scripts/__pycache__/test_hardware_price_bot.cpython-314-pytest-9.1.1.pyc
+scripts/__pycache__/test_runtime_feedback_atlas.cpython-314-pytest-9.1.1.pyc
+scripts/__pycache__/validate_evidence.cpython-314.pyc
+scripts/__pycache__/validate_measured_benchmark.cpython-314.pyc
+scripts/quality_hardware_prices.py
+scripts/README.md
+scripts/record_benchmark.py
+scripts/run_a01_selected.py
+scripts/run_jalon3_audit.sh
+scripts/runtime_benchmark_evidence.py
+scripts/runtime_benchmark_v1.py
+scripts/runtime_evidence_bridge.py
+scripts/runtime_feedback_atlas.py
+scripts/runtime_gate.py
+scripts/runtime_registry.py
+scripts/runtimes/airllm_adapter.py
+scripts/runtimes/base.py
+scripts/runtimes/declarative_adapters.py
+scripts/runtimes/exllama_adapter.py
+scripts/runtimes/freetoken_adapter.py
+scripts/runtimes/llama_cpp_adapter.py
+scripts/runtimes/mlx_adapter.py
+scripts/runtimes/ollama_adapter.py
+scripts/runtimes/onnxruntime_genai_adapter.py
+scripts/runtimes/openvino_adapter.py
+scripts/runtimes/run_llama_cpp_selected.py
+scripts/runtimes/sglang_adapter.py
+scripts/runtimes/tensorrt_llm_adapter.py
+scripts/runtimes/v1_1_adapters.py
+scripts/runtimes/vllm_adapter.py
+scripts/select_from_hardware_profile.py
+scripts/selection_pipeline.py
+scripts/task_result.py
+scripts/test_atlas_economic_rank.py
+scripts/test_atlas_price_integration.py
+scripts/test_atlas_promotion.py
+scripts/test_freetoken_runtime.py
+scripts/test_hardware_price_bot.py
+scripts/test_runtime_feedback_atlas.py
+scripts/update_hardware_prices.py
+scripts/validate_evidence.py
+scripts/validate_measured_benchmark.py
+scripts/validate_recommendation_gate.py
+scripts/validate_web_assets.py
+
+========== TESTS ==========
+........................................................................ [ 28%]
+........................................................................ [ 56%]
+........................................................................ [ 84%]
+........................................                                 [100%]
+256 passed in 0.97s
+
+========== DIFF CHECK ==========
+git diff --check exit code: 0
+
+========== FINAL STATUS ==========
+ M artifacts/jalon3-audit/jalon3-audit-20260828T222836Z.txt
+ M scripts/run_jalon3_audit.sh
+
+============================================================
+AUDIT OUTPUT: artifacts/jalon3-audit/jalon3-audit-20260828T223148Z.txt
+============================================================
+
+========== PUBLISH AUDIT ==========

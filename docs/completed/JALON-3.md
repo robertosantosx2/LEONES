@@ -1,77 +1,95 @@
-# JALÓN 3 — Protocolo de medición real
+# JALÓN 3 — Protocolo de medición real y evidencia
 
-**Estado: 🟢 CERRADO (diseño y contrato)**  
-**Fecha de cierre: 2026-08-27**
+**Estado: 🟢 CERRADO OPERATIVAMENTE**  
+**Fecha de cierre operativo: 2026-08-28**  
+**Contrato:** `runtime-benchmark-evidence.v1.1`  
+**Runtime validado:** `llama.cpp`  
+**Runner canónico:** `scripts/run_jalon3_audit.sh`
 
-## Objetivo
+## 1. Decisión
 
-Fijar antes de la ejecución física el protocolo que convierte una ejecución de runtime en evidencia comparable, reproducible y conservable.
-
-## Contrato mínimo de una medición
-
-Toda medición LEONES debe conservar, cuando esté disponible:
-
-- modelo y revisión/checkpoint;
-- cuantización;
-- contexto y configuración de inferencia;
-- prompt/tarea y protocolo de generación;
-- warm-up;
-- número de iteraciones;
-- TTFT, cuando el runtime lo permita;
-- throughput de generación (`tokens/s`), con su definición explícita;
-- tokens de entrada/salida cuando estén disponibles;
-- tiempo de pared y/o duración de ejecución;
-- memoria RAM y VRAM, cuando puedan observarse;
-- consumo energético, si existe una fuente de medición válida;
-- versión exacta del runtime;
-- hardware y sistema operativo;
-- comando realmente ejecutado;
-- stdout/stderr relevantes;
-- timestamp;
-- `execution_id` único;
-- hash del artefacto o de la evidencia conservada.
-
-## Reglas de medición
-
-1. **No mezclar estimación, dato reportado y medición física.**
-2. El hardware, modelo, cuantización y runtime deben quedar identificados.
-3. El warm-up debe quedar registrado y separado de las iteraciones medidas.
-4. Las iteraciones y el protocolo deben ser constantes dentro de una comparación.
-5. Un dato ausente se conserva como `unknown`; no se inventa ni se deduce sin declarar el método.
-6. El throughput debe indicar qué tokens y qué intervalo representa.
-7. La evidencia debe permitir reconstruir qué se ejecutó, cuándo, dónde y con qué configuración.
-8. Una medición de una máquina concreta no se presenta como rendimiento universal del modelo.
-
-## Flujo canónico
+JALÓN 3 queda cerrado de forma operativa. El contrato de medición ya no es solo diseño: existe una ejecución física real que lo satisface y el runner canónico declara:
 
 ```text
-modelo + revisión + cuantización
-              ↓
-        hardware/OS
-              ↓
-       runtime/version
-              ↓
-     protocolo controlado
-              ↓
-          warm-up
-              ↓
-       N iteraciones
-              ↓
-      métricas observadas
-              ↓
-       evidence record
-              ↓
-       quality/validation
-              ↓
-        conservación
+CONTRACT_GATE=PASS
+TESTS_GATE=PASS
+DIFF_GATE=PASS
+REAL_RUNTIME_EVIDENCE_GATE=PASS
+REPRODUCIBILITY_GATE=PASS
+JALON3_OPERATIONAL_CLOSE=PASS
+AUDIT_EXIT_CODE=0
 ```
 
-## Relación con JALÓN 2
+## 2. Evidencia física de cierre
 
-El protocolo queda **cerrado antes de Debian**. JALÓN 2 es el encargado de ejecutar este contrato en runtime físico y producir la primera evidencia real bajo estas condiciones.
+La ejecución aceptada por el runner registra:
 
-Por tanto, cerrar JALÓN 3 **no significa que todas las métricas ya estén medidas**; significa que no será necesario rediseñar el protocolo al llegar a Debian.
+- `execution_id`: `rt-8f5164e3648c46a3a91e1f1b637d83f6`
+- modelo: `Qwen3-0.6B`
+- nombre: `Qwen3 0.6B Instruct Awq`
+- cuantización: `Q4_K_M`
+- runtime: `llama.cpp`
+- versión: `0.3.0-dev (build 10655, commit cb300598d)`
+- warm-up: `1`
+- mediciones declaradas: `5`
+- mediciones encontradas: `5`
+- exit code: `0`
+- artefacto GGUF identificado y localizado
+- SHA-256 del artefacto verificado
+- stdout/stderr y mediciones individuales conservados
 
-## Decisión
+## 3. Contrato que queda fijado
 
-**JALÓN 3 queda cerrado en su dimensión de diseño, contrato y protocolo.** La ejecución física permanece en JALÓN 2.
+`runtime-benchmark-evidence.v1.1` exige identidad del modelo y artefacto, protocolo de workload, warm-up, iteraciones, métricas, entorno, runtime, ejecución, stdout/stderr y hashes.
+
+Se mantiene la separación entre:
+
+```text
+reported / estimated  !=  measured
+API benchmark         !=  local runtime measurement
+selection             !=  execution
+execution             !=  evidence publication
+```
+
+## 4. Runner canónico
+
+`scripts/run_jalon3_audit.sh` es el único punto operativo de auditoría de JALÓN 3.
+
+Garantías fijadas:
+
+- sincronización segura con `origin/<branch>`;
+- no fuerza-push;
+- bloqueo contra ejecuciones concurrentes;
+- rechazo de cambios de trabajo ajenos al runner;
+- validación del contrato y schema;
+- ejecución completa de pytest;
+- `git diff --check`;
+- validación física de `llama.cpp`;
+- comprobación de hash y tamaño del artefacto;
+- comprobación de identidad y reproducibilidad;
+- conservación de auditoría local y espejo `docs/audits/jalon3/latest.txt`;
+- publicación automática segura con reintentos de sincronización.
+
+## 5. Criterio de cierre satisfecho
+
+El criterio original exigía una ejecución real que pasara por el runtime gate, utilizara un artefacto identificado, ejecutara el runtime real, produjera evidencia válida, conservara las mediciones y stdout/stderr, registrara identidad, timestamps, hardware y versión del runtime y pudiera reutilizarse por el sistema de evidencia/recomendación.
+
+La auditoría física ha demostrado todos esos requisitos.
+
+## 6. Regla de continuidad
+
+No se rediseña JALÓN 3 ni se altera retroactivamente su evidencia.
+
+El flujo queda fijado como:
+
+```text
+selección → runtime gate → ejecución → medición → evidencia → validación → conservación
+```
+
+La siguiente etapa debe consumir este contrato, no crear otro sistema paralelo.
+
+## 7. Siguiente bloque
+
+El siguiente bloque lógico es cerrar el contrato de decisión **LEONES → ODS | Magnitude**, usando además **LLMFit** como fuente de ajuste/fit cuando corresponda, y derivar los tiers de hardware de consumo de las capacidades reales de esas herramientas.
+
+Los tiers de LEONES no podrán convertirse en una segunda base de datos de modelos: serán una capa de interpretación sobre las salidas de ODS, Magnitude y LLMFit.

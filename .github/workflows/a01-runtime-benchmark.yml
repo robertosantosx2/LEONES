@@ -35,7 +35,7 @@ jobs:
             scripts/run_a01_selected.py \
             benchmarks/agentic/a01_grader.py
 
-      - name: Execute selector -> runtime-selection.v1 -> A01 -> grader -> benchmark -> evidence -> Router
+      - name: Execute selector -> runtime-selection.v1 -> A01 -> grader -> benchmark -> evidence
         run: |
           rm -rf .leones/a01-workspace artifacts/a01-runtime-benchmark
           mkdir -p artifacts/a01-runtime-benchmark
@@ -62,9 +62,7 @@ jobs:
           # path but intentionally does not pretend to measure throughput.
           tps = benchmark['measured_tps']
           assert tps is None or tps > 0
-          assert payload['router']
           assert (root / 'a01-executor-result.json').exists()
-          assert (root / 'router-decision.v1.json').exists()
           print('A01 canonical gate: PASS')
           print('runtime:', benchmark['runtime'])
           print('model:', benchmark['model'])
@@ -79,4 +77,3 @@ jobs:
           path: |
             artifacts/a01-runtime-benchmark/a01-runtime-benchmark.v1.json
             artifacts/a01-runtime-benchmark/a01-executor-result.json
-            artifacts/a01-runtime-benchmark/router-decision.v1.json

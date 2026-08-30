@@ -20,11 +20,13 @@ DEFAULT_DIR = ROOT / "scripts"
 MAX_LINE_LENGTH = 100
 
 
-def python_files(directory: Path) -> list[Path]:
+def python_files(path: Path) -> list[Path]:
     """Devuelve scripts propios y omite cachés y código importado."""
+    if path.is_file():
+        return [path] if path.suffix == ".py" else []
     return sorted(
         path
-        for path in directory.rglob("*.py")
+        for path in path.rglob("*.py")
         if "__pycache__" not in path.parts
         and ".git" not in path.parts
         and "upstream" not in path.parts
@@ -80,7 +82,12 @@ def check_file(path: Path) -> list[str]:
 def main() -> int:
     """Audita scripts y devuelve error solo con ``--strict`` si hay avisos."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("directory", nargs="?", type=Path, default=DEFAULT_DIR)
+    parser.add_argument(
+        "paths",
+        nargs="*",
+        type=Path,
+        help="scripts or directories to check; defaults to scripts/",
+    )
     parser.add_argument(
         "--strict",
         action="store_true",
@@ -89,7 +96,9 @@ def main() -> int:
     args = parser.parse_args()
 
     failures = 0
-    for path in python_files(args.directory):
+    paths = args.paths or [DEFAULT_DIR]
+    files = sorted({path for selected in paths for path in python_files(selected)})
+    for path in files:
         lines = path.read_text(encoding="utf-8").splitlines()
         if not is_executable_script(lines):
             continue

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Pruebas del runner sin ejecutar un modelo real."""
+"""Tests for the archived generic benchmark execution recorder."""
 
 import pytest
 
-from scripts.run_and_record_benchmark import run_and_record
+from scripts.deprecated.run_and_record_benchmark import run_and_record
 
 
 def metadata():

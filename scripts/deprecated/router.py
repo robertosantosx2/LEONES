@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Canonical read-only Router for LEONES recommendations."""
+"""Historical read-only recommendation router kept for provenance.
+
+RC1 uses the selection pipeline and runtime gate instead of this parallel
+recommendation router. Retained because it represents an earlier contract.
+"""
 
 from __future__ import annotations
 
 from copy import deepcopy
 from typing import Any
-
 
 ALLOWED_MODES = {"OPEN_ALL", "FORCE_COPYLEFT_CHECK"}
 
@@ -13,7 +16,7 @@ ALLOWED_MODES = {"OPEN_ALL", "FORCE_COPYLEFT_CHECK"}
 def route_recommendation(
     recommendation: dict[str, Any], *, osi_mode: str = "OPEN_ALL"
 ) -> dict[str, Any]:
-    """Validate and expose a recommendation without mutating canonical knowledge."""
+    """Validate and expose a historical recommendation without mutation."""
     if osi_mode not in ALLOWED_MODES:
         raise ValueError("unsupported osi_mode")
     if not isinstance(recommendation, dict):
@@ -29,7 +32,6 @@ def route_recommendation(
         "DELETE_KNOWLEDGE",
     }:
         raise ValueError("Router is read-only")
-
     result = deepcopy(recommendation)
     result["router"] = {
         "schema_version": "1.0",
