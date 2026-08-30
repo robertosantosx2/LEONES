@@ -9,6 +9,9 @@ import json
 import time
 import uuid
 
+from runtime_selection.adapters import ExecutionSpec, RuntimeAdapter
+from runtime_selection.contract import RuntimeSelectionPlan, validate_plan
+
 EVENT_TYPES = {"model", "tool_call", "tool_result", "error", "recovery", "artifact", "grader", "other"}
 EVIDENCE_TYPES = {"estimated", "reported", "measured", "verified"}
 
@@ -46,6 +49,87 @@ class RunConfig:
     def __post_init__(self) -> None:
         if self.max_tool_calls < 1:
             raise ValueError("max_tool_calls must be >= 1")
+
+
+def prepare_selected_runtime(
+    trace: Trace,
+    plan: RuntimeSelectionPlan,
+    adapter: RuntimeAdapter,
+) -> ExecutionSpec:
+    """Materialize a validated selection plan through the existing runner boundary.
+
+    Selection remains declarative: no command, executable or measurement is
+    added here. The trusted adapter is the only component allowed to translate
+    the plan into an execution specification.
+    """
+    validate_plan(plan.to_dict())
+    if adapter.adapter_id != plan.adapter_id:
+        raise ValueError(
+            f"adapter mismatch: plan={plan.adapter_id!r}, adapter={adapter.adapter_id!r}"
+        )
+
+    started = time.monotonic()
+    trace.add(
+        "model",
+        name=plan.model_ref,
+        status="selected",
+        details={"runtime_id": plan.runtime_id, "adapter_id": plan.adapter_id},
+    )
+    try:
+        spec = adapter.prepare(plan)
+    except Exception as exc:
+        trace.add(
+            "error",
+            name=plan.runtime_id,
+            duration_seconds=time.monotonic() - started,
+            status="selection_error",
+            details={"error_type": type(exc).__name__},
+        )
+        raise
+
+    trace.add(
+        "model",
+        name=plan.model_ref,
+        duration_seconds=time.monotonic() - started,
+        status="prepared",
+        details={
+            "runtime_id": spec.runtime_id,
+            "adapter_id": spec.adapter_id,
+            "execution_metadata": spec.execution_metadata,
+        },
+    )
+    return spec
+
+
+def execute_selected_runtime(
+    trace: Trace,
+    plan: RuntimeSelectionPlan,
+    adapter: RuntimeAdapter,
+    executor: Callable[[ExecutionSpec], Any],
+) -> Any:
+    """Run a selected runtime without creating a second execution architecture."""
+    spec = prepare_selected_runtime(trace, plan, adapter)
+    started = time.monotonic()
+    try:
+        result = executor(spec)
+    except Exception as exc:
+        trace.add(
+            "error",
+            name=spec.runtime_id,
+            duration_seconds=time.monotonic() - started,
+            status="execution_error",
+            details={"error_type": type(exc).__name__},
+        )
+        raise
+
+    trace.add(
+        "model",
+        name=spec.model_ref,
+        duration_seconds=time.monotonic() - started,
+        status="completed",
+        details={"runtime_id": spec.runtime_id, "adapter_id": spec.adapter_id},
+    )
+    return result
 
 
 def execute_tool(
