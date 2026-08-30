@@ -1,49 +1,78 @@
-# JALÓN 7 — Publicación controlada de evidencia medida
+# JALÓN 7 — Resultados de tareas y frontera de clasificación
 
-**Estado:** 🟠 CONTRATO FIJADO — EJECUCIÓN PENDIENTE
-**Base:** `rc1-minimal-script-cleanup`
+**Estado:** 🟡 BASE CONTRACTUAL FIJADA — CONEXIÓN A CLASIFICACIÓN/RECOMENDACIÓN PENDIENTE
+**Base canónica:** `main` (`31b6879`)
 
 ## 1. Propósito
 
-JALÓN 7 cierra la frontera entre una medición real ya validada y su incorporación controlada al almacén empírico reutilizable de LEONES.
+JALÓN 7 convierte una ejecución ya medida y validada en un resultado de tarea auditable, sin crear otro benchmark, otro selector ni otra fuente de verdad.
 
-`JALÓN 3 → validate_measured_benchmark → promote_measured_benchmark → publish_measured_benchmark → Atlas`
+```text
+runtime-benchmark.v1
+        ↓
+   task-result.v1
+        ↓
+ agregación determinista
+        ↓
+clasificación / recomendación existente
+```
 
-No ejecuta modelos, no calcula benchmarks y no convierte estimaciones en mediciones.
+La finalidad no es medir tokens/segundo de nuevo. La finalidad es representar **qué tarea se completó, falló, quedó inválida o no fue evaluada**, conservando la procedencia de la ejecución y de la evidencia.
 
-## 2. Autoridad
+## 2. Componentes canónicos
 
-La evidencia física validada conserva su procedencia. La publicación es un paso explícito y posterior a la validación.
+- `scripts/task_result.py`
+- `schemas/task-result.v1.json` cuando corresponda al contrato publicado
+- `tests/contracts/test_jalon7_task_result.py`
+- proyección desde `runtime-benchmark.v1`
+- agregación determinista `task-set-summary.v1`
 
-- `measured` es la única clase publicable por este flujo.
-- La identidad de modelo, hardware y runtime debe estar presente.
-- `tokens_per_second` debe ser numérico y no negativo.
-- La promoción puede enriquecer el registro, pero no debe cambiar su naturaleza.
-- El publicador añade evidencia; no borra ni sustituye registros anteriores.
+La implementación existente valida como mínimo:
 
-## 3. Componentes canónicos
+- identidad de tarea, ejecución, modelo y runtime;
+- `completion_status` en `completed`, `failed`, `invalid` o `not_evaluated`;
+- estado de medición;
+- procedencia obligatoria;
+- evidencia para tareas completadas;
+- `completion_score` sólo cuando exista y esté acotado a `[0,1]`.
 
-- `scripts/validate_measured_benchmark.py`
-- `scripts/promote_measured_benchmark.py`
-- `scripts/publish_measured_benchmark.py`
-- `scripts/runtime_feedback_atlas.py`
-- tests existentes de validación, promoción y publicación.
+## 3. Regla de procedencia
 
-No se crea un segundo almacén de verdad ni un segundo benchmark.
+Un `task-result.v1` es una **proyección** de una evidencia de runtime existente. No puede fabricar identidad de ejecución ni convertir una estimación en medición.
 
-## 4. Contrato operativo mínimo
+Para una tarea `completed`, debe existir `benchmark_evidence_id`. Las tareas `not_evaluated` no se promocionan a evidencia de benchmark.
 
-1. Recibir una medición producida por runtime real.
-2. Validar identidad y `measurement_type=measured`.
-3. Enriquecer sin fabricar rendimiento.
-4. Publicar como registro JSONL independiente.
-5. Conservar procedencia y marcas de evidencia cuando existan.
-6. Permitir revisión posterior antes de cualquier incorporación adicional a Atlas.
+La agregación conserva los cuatro estados y sólo considera `completed` y `failed` como tareas evaluadas.
+
+## 4. Frontera con clasificación y recomendación
+
+JALÓN 7 no debe crear un nuevo sistema de clasificación ni un nuevo ranking de modelos.
+
+La siguiente pieza debe consumir `task-set-summary.v1` desde la clasificación/recomendación ya existente y utilizar sus estados y evidencia como entrada auditable.
+
+En particular:
+
+- no se añade otro selector;
+- no se añade otro benchmark de rendimiento;
+- no se calcula un `ranking_score` paralelo;
+- no se mezcla `estimated_tps` con `measured_tps`;
+- no se convierte automáticamente una tasa de finalización en una nueva autoridad de selección.
+
+La recomendación continúa siendo responsabilidad del contrato canónico de LEONES; JALÓN 7 aporta evidencia de ejecución de tareas para esa decisión.
 
 ## 5. Criterio de cierre
 
-El cierre declarativo requiere que el runner compruebe el contrato y que las pruebas de validación/promoción/publicación pasen. La publicación de una medición física nueva en el entorno objetivo sigue siendo una operación explícita cuando corresponda.
+El contrato base de JALÓN 7 está fijado cuando:
 
-**Frase de recuperación:**
+1. `task-result.v1` es validable;
+2. existe proyección desde `runtime-benchmark.v1`;
+3. la agregación es determinista;
+4. los cuatro estados de tarea se conservan explícitamente;
+5. la trazabilidad `A01 → task result → evidencia` es comprobable;
+6. las tareas no evaluadas quedan fuera de `benchmark_evidence_ids`.
 
-> JALÓN 7 = medición validada → promoción explícita → publicación reproducible, sin fabricar evidencia.
+Queda como siguiente trabajo conectar el resumen J7 con la clasificación/recomendación existente, **sin crear una arquitectura paralela**.
+
+## 6. Frase de recuperación
+
+> **JALÓN 7 = ejecución medida → resultado de tarea → agregación determinista → clasificación/recomendación existente.**
