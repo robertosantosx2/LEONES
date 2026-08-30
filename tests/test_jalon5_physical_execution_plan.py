@@ -74,3 +74,27 @@ def test_jalon5_rejects_non_llama_trusted_executable():
         assert "llama-cli" in str(exc)
     else:
         raise AssertionError("invalid llama.cpp trusted executable was accepted")
+
+
+def test_jalon5_rejects_llama_without_model_artifact():
+    try:
+        resolve_runtime(
+            candidate(model_artifact=None),
+            runtime_commands={"llama.cpp": ["llama-cli"]},
+        )
+    except ValueError as exc:
+        assert "model_artifact" in str(exc)
+    else:
+        raise AssertionError("llama.cpp plan was authorized without model artifact")
+
+
+def test_jalon5_rejects_llama_without_gguf_format():
+    try:
+        resolve_runtime(
+            candidate(model_format="safetensors"),
+            runtime_commands={"llama.cpp": ["llama-cli"]},
+        )
+    except ValueError as exc:
+        assert "GGUF" in str(exc)
+    else:
+        raise AssertionError("llama.cpp plan accepted a non-GGUF artifact")
