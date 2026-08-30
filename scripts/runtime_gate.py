@@ -59,6 +59,7 @@ def resolve_runtime(
         "model_id": model_id,
         "model": candidate.get("model") or {},
         "model_artifact": candidate.get("model_artifact"),
+        "model_format": candidate.get("model_format"),
         "hardware": hw,
         "moe": candidate.get("moe") or {},
         "workload": candidate.get("workload") or {},
@@ -156,6 +157,7 @@ def resolve_runtime(
         },
         "optimization_families": candidate.get("optimization_families") or [],
         "quantization": quantization,
+        "model_format": candidate.get("model_format"),
         "hardware": {
             "ram_gb": hw.get("ram_gb", candidate.get("memory_available_gb") or 0),
             "os": hw.get("os", "unknown"),
@@ -177,13 +179,7 @@ def resolve_runtime(
         "estimated_tps": llmfit.get("estimated_tps"),
         "measured_tps": None,
     }
-    plan.update(
-        {
-            key: value
-            for key, value in spec.metadata.items()
-            if key == "runtime_eligibility"
-        }
-    )
+    plan.update(spec.to_dict())
     return plan
 
 
@@ -194,7 +190,8 @@ def gate_selection(
     runtime_commands: dict[str, list[str]] | None = None,
     hardware: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    plans, blocked = [], []
+    plans: list[dict[str, Any]] = []
+    blocked = 0
     for candidate in selection.get("candidates", []):
         try:
             plans.append(
@@ -205,19 +202,10 @@ def gate_selection(
                     hardware=hardware,
                 )
             )
-        except ValueError as exc:
-            blocked.append(
-                {
-                    "model_id": candidate.get("model_id")
-                    or candidate.get("model_name"),
-                    "selection_status": candidate.get("selection_status"),
-                    "reason": str(exc),
-                }
-            )
+        except ValueError:
+            blocked += 1
     return {
         "schema_version": SCHEMA_VERSION,
-        "gate": "LEONES-runtime-selection-gate",
         "execution_plans": plans,
-        "blocked": blocked,
-        "counts": {"plans": len(plans), "blocked": len(blocked)},
+        "counts": {"plans": len(plans), "blocked": blocked},
     }
