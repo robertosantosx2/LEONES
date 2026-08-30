@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from scripts.jalon9_recommend import attach_task_summary
+
 SCRIPT = Path(__file__).parents[1] / "scripts" / "jalon9_recommend.py"
 
 
@@ -20,6 +22,19 @@ def base() -> dict:
         "unknowns": [],
         "next_action": "recommend",
         "minimum_evidence_met": True,
+    }
+
+
+def summary() -> dict:
+    return {
+        "schema_version": "task-set-summary.v1",
+        "task_results": ["A01"],
+        "benchmark_evidence_ids": ["evidence-001"],
+        "counts": {"completed": 1, "failed": 0, "invalid": 0, "not_evaluated": 0},
+        "evaluated_tasks": 1,
+        "completed_tasks": 1,
+        "completion_rate": 1.0,
+        "invalid_contract": {},
     }
 
 
@@ -60,3 +75,24 @@ def test_parallel_scoring_is_forbidden(tmp_path: Path) -> None:
     payload["score"] = 0.91
     result = run(tmp_path, payload)
     assert result.returncode != 0
+
+
+def test_task_summary_is_attached_without_changing_decision() -> None:
+    recommendation = base()
+    enriched = attach_task_summary(
+        recommendation, summary(), task_summary_ref="artifacts/task-set-summary.json"
+    )
+    assert enriched["task_summary_ref"] == "artifacts/task-set-summary.json"
+    assert enriched["status"] == recommendation["status"]
+    assert enriched["next_action"] == recommendation["next_action"]
+
+
+def test_invalid_task_summary_is_rejected() -> None:
+    invalid = summary()
+    invalid["counts"]["completed"] = 2
+    try:
+        attach_task_summary(base(), invalid, task_summary_ref="summary.json")
+    except ValueError as exc:
+        assert "evaluated_tasks" in str(exc)
+    else:
+        raise AssertionError("invalid task summary must be rejected")
