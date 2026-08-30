@@ -58,6 +58,7 @@ def resolve_runtime(
         "adapter": entry.adapter,
         "model_id": model_id,
         "model": candidate.get("model") or {},
+        "model_artifact": candidate.get("model_artifact"),
         "hardware": hw,
         "moe": candidate.get("moe") or {},
         "workload": candidate.get("workload") or {},
@@ -99,11 +100,19 @@ def resolve_runtime(
         and bool(entry.entrypoint.get("kind"))
         and adapter.adapter_id == entry.adapter
     )
+    runtime_plan_probe["trusted_entrypoint"] = list(entrypoint)
+    runtime_plan_probe["execution_authorized"] = execution_authorized
+    spec = adapter.prepare(runtime_plan_probe, entry)
+    execution_command = list(entrypoint)
+    if execution_authorized and spec.metadata.get("execution_command"):
+        execution_command = list(spec.metadata["execution_command"])
+
     model = candidate.get("model") or {}
     runtime_plan = {
         "schema_version": SCHEMA_VERSION,
         "model_id": model_id,
         "model": model,
+        "model_artifact": candidate.get("model_artifact"),
         "runtime": {"name": entry.id, "version": candidate.get("runtime_version")},
         "quantization": quantization,
         "model_format": candidate.get("model_format"),
@@ -116,9 +125,9 @@ def resolve_runtime(
         "hardware": hw,
         "workload": candidate.get("workload") or {},
         "moe": candidate.get("moe") or {},
+        "trusted_entrypoint": list(entrypoint),
         "execution_authorized": execution_authorized,
     }
-    spec = adapter.prepare(runtime_plan, entry)
     llmfit = candidate.get("llmfit") or {}
     plan = {
         "schema_version": SCHEMA_VERSION,
@@ -135,11 +144,12 @@ def resolve_runtime(
             "name": model_name,
             "revision": candidate.get("revision"),
         },
+        "model_artifact": candidate.get("model_artifact"),
         "variant": candidate.get("variant"),
         "runtime": {
             "name": entry.id,
             "adapter": adapter.adapter_id,
-            "command": entrypoint,
+            "command": execution_command,
             "entrypoint": entrypoint,
             "entrypoint_kind": entry.entrypoint["kind"],
             "version": candidate.get("runtime_version"),
