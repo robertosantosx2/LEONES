@@ -1,6 +1,28 @@
 {
   "generated_at": "2026-08-31T11:40:40.722372+00:00",
-  "sources": [
+  "day": 0,
+  "day_name": "monday",
+  "sources_assigned": [
+    "codeberg",
+    "forgejo",
+    "kallithea",
+    "gitlab"
+  ],
+  "sources_total": 24,
+  "sources_completed": 4,
+  "sources_failed": 0,
+  "raw_results_by_source": {
+    "codeberg": 39,
+    "forgejo": 0,
+    "gitlab": 39,
+    "kallithea": 0
+  },
+  "unique_discoveries": 78,
+  "failures": [],
+  "queries": 2,
+  "workers": 4,
+  "per_source_timeout_seconds": 75,
+  "weekly_assignment": [
     {
       "id": "codeberg",
       "name": "Codeberg",
@@ -121,5 +143,7 @@
       "name": "Hugging Face Papers",
       "day": 2
     }
-  ]
+  ],
+  "output": "/home/runner/work/LEONES/LEONES/data/prospection/weekly_sources/sources-2026-08-31.ndjson",
+  "cadence": "weekly-per-source"
 }
