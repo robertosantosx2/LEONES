@@ -3,8 +3,17 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Any
+import argparse
 import json
 from pathlib import Path
+import sys
+
+# Allow the documented ``python scripts/rc2_wizard.py`` entrypoint to work
+# from the repository root without requiring PYTHONPATH configuration.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from scripts.rc2_beta_session import BetaSession
 from scripts.rc2_i18n import tr
 from runtime_selection.hardware_profile import normalize_hardware, normalize_candidates
@@ -73,4 +82,16 @@ def run_wizard(io: WizardIO|None=None, *, examples_root: str = "examples/rc2") -
     session.authorize_installation(); io.show("[✓] Instalación autorizada / Installation authorized / 安装已授权")
     return session
 
-if __name__ == "__main__": run_wizard()
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="LEONES RC2 beta wizard")
+    parser.add_argument("--non-interactive", action="store_true", help="run a deterministic smoke flow without prompts")
+    args = parser.parse_args(argv)
+    if args.non_interactive:
+        answers = iter(("1", "1", "1"))
+        session = run_wizard(WizardIO(input_fn=lambda _: next(answers)))
+        return 0 if session.state == "READY_FOR_INSTALL" else 1
+    run_wizard()
+    return 0
+
+if __name__ == "__main__":
+    raise SystemExit(main())
