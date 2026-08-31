@@ -10,7 +10,8 @@
 | JALÓN 3 | 🟢 Cerrado | Contrato de medición real + auditoría física |
 | JALÓN 4 | 🟢 **Cerrado** | Metodología AA + contrato LEONES → ODS/Magnitude + benchmark de tareas + tiers |
 | RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end: selección → gate → Ollama → A01 → medición → evidencia |
-| RC2 | 🟡 **En preparación** | Flujo beta: hardware → modelo → ODS/Magnitude → consentimiento → instalación → verificación → benchmark opcional |
+| RC2-A | 🟢 **Validado** | Orquestación beta: hardware → candidatos → modelo → ODS/Magnitude → consentimiento |
+| RC2-B → RC2-H | 🟡 **En validación física** | Instalación, verificación, benchmark opcional, resultado y piloto externo |
 
 ## RC1 — ejecución efectiva validada
 
@@ -31,16 +32,23 @@ RC2 convierte la ejecución validada en RC1 en un recorrido que un usuario exter
 
 ```text
 INSTALAR → HARDWARE → PERFILAR → CANDIDATOS → ELEGIR MODELO
-          → COMPARAR TODAS LAS FUNCIONALIDADES ODS/MAGNITUDE
-          → ELEGIR STACK → PLAN → CONSENTIMIENTO
-          → INSTALAR → VERIFICAR → ¿BENCHMARK?
-          → SÍ: AUTORIZAR → RUNNER RC1 → MEDICIÓN → EVIDENCIA
-          → NO: FIN
+          → COMPARAR ODS/MAGNITUDE → ELEGIR STACK → PLAN
+          → CONSENTIMIENTO → INSTALAR → VERIFICAR
+          → ¿BENCHMARK? → SÍ: RUNNER RC1 → MEDICIÓN → EVIDENCIA
+                         → NO: FIN
 ```
 
-El wizard ASCII de RC2 ya orquesta la parte de decisión hasta el consentimiento de instalación. La instalación y la ejecución física siguen siendo efectos explícitos de adaptadores/runners; el wizard no los dispara por sorpresa.
+### RC2-A — validado
 
-Antes de elegir ODS o Magnitude, LEONES debe exponer las funcionalidades relevantes de cada opción, vinculadas a su versión/ref, junto con requisitos, componentes, permisos, red, almacenamiento, privacidad y limitaciones. ODS y Magnitude siguen siendo las fuentes de sus propias capacidades; LEONES las orquesta y valida.
+El wizard ASCII ya demuestra la capa de decisión y consentimiento. La suite local está verde: **334 tests passed**.
+
+LLMFit aporta la inteligencia especializada de hardware/model-fit. Sus cifras de rendimiento permanecen marcadas como `estimated`; no son evidencia física.
+
+### RC2-B y siguientes — siguiente gate
+
+El siguiente paso ya no es añadir abstracciones: es validar el recorrido sobre una instalación real, invocar únicamente las interfaces soportadas por el stack elegido y comprobar instalación, health checks, ejecución y evidencia.
+
+LEONES **no crea otro instalador de ODS ni otro instalador de Magnitude, ni otro runner RC2**. Reutiliza los proyectos y runners canónicos.
 
 **Plan:** [`docs/RC2-BETA-USER-FLOW.md`](docs/RC2-BETA-USER-FLOW.md)  
 **Manual de usuario beta:** [`docs/RC2-USER-MANUAL.md`](docs/RC2-USER-MANUAL.md)  
@@ -52,9 +60,7 @@ Antes de elegir ODS o Magnitude, LEONES debe exponer las funcionalidades relevan
 
 ### Beta testers
 
-El punto de entrada documental para un beta tester es el [manual de instalación de RC2](docs/RC2-INSTALLATION-MANUAL.md). Después puede consultar el [manual de usuario](docs/RC2-USER-MANUAL.md) y el [flujo canónico](docs/RC2-BETA-USER-FLOW.md).
-
-Cada máquina debe producir su propia evidencia: nuevo `execution_id`, timestamp, métrica y procedencia. Una medición histórica nunca sustituye una ejecución actual.
+El punto de entrada documental para un beta tester es el [manual de instalación de RC2](docs/RC2-INSTALLATION-MANUAL.md). Cada máquina debe producir su propia evidencia: nuevo `execution_id`, timestamp, métrica y procedencia. Una medición histórica nunca sustituye una ejecución actual.
 
 ## Componentes principales
 
@@ -66,4 +72,4 @@ Los componentes de descubrimiento, Atlas, hardware, precio/TCO, LLMFit, selecci�
 
 ## ODS y Magnitude
 
-ODS se utiliza como integración de stack local y Magnitude como integración de agente/asistente. Sus contratos ya están fijados; RC2 añade una experiencia de elección informada que **expone sus funcionalidades antes de que el usuario elija**.
+ODS se utiliza como integración de stack local y Magnitude como integración de agente/asistente. RC2 presenta sus funcionalidades antes de la elección y mantiene separadas recomendación, instalación y benchmark.
