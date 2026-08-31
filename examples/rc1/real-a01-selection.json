@@ -1,0 +1,23 @@
+{
+  "candidates": [
+    {
+      "selection_status": "TOP_N",
+      "rank": 1,
+      "fit_score": 1.0,
+      "evidence_level": "estimated",
+      "model_id": "qwen2.5:0.5b-instruct-q4_K_M",
+      "model_name": "qwen2.5:0.5b-instruct-q4_K_M",
+      "model": {
+        "id": "qwen2.5:0.5b-instruct-q4_K_M",
+        "name": "qwen2.5:0.5b-instruct-q4_K_M"
+      },
+      "runtime": "ollama",
+      "runtime_version": "local",
+      "quantization": "Q4_K_M",
+      "model_format": "Ollama-managed",
+      "optimization_families": [],
+      "hardware": {},
+      "workload": {}
+    }
+  ]
+}
