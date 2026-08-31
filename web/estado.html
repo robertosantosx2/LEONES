@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Estado actual de LEONES: JALÓN 3 y JALÓN 4 cerrados, RC1 validado y RC2 en preparación con LLMFit como inteligencia de hardware.">
+<meta name="description" content="Estado actual de LEONES: JALÓN 3 y JALÓN 4 cerrados, RC1 validado y RC2 avanzando hacia el flujo beta completo.">
 <title>LEONES · Estado</title>
 <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3">
 <link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-2">
@@ -14,8 +14,8 @@
 <p>De los contratos a la ejecución física y ahora al recorrido completo de usuario beta.</p>
 </div></header>
 <main class="site-main" id="main">
-<section class="site-section"><span class="site-tag">Ahora · RC2</span><h2>Preparar el flujo completo de usuario</h2>
-<p class="site-lead"><strong>RC2 está en preparación · RC2-A implementado · RC2-B fijado.</strong> El objetivo es que una persona pueda instalar LEONES, conocer su hardware, recibir modelos candidatos, comparar las funcionalidades de ODS y Magnitude, elegir un stack, prepararlo y decidir si quiere ejecutar un benchmark real.</p>
+<section class="site-section"><span class="site-tag">Ahora · RC2</span><h2>El flujo beta ya tiene su columna vertebral</h2>
+<p class="site-lead"><strong>RC2 está en preparación.</strong> El wizard ASCII ya conduce las decisiones de hardware, modelo y stack, presenta ODS y Magnitude antes de la elección y separa explícitamente el consentimiento de instalación del consentimiento de benchmark.</p>
 <pre class="site-stack">INSTALAR
    ↓
 HARDWARE → LLMFIT
@@ -30,29 +30,31 @@ EXPLICAR ODS / MAGNITUDE
    ↓
 ELEGIR STACK
    ↓
-INSTALAR / PREPARAR
+PLAN → CONSENTIMIENTO
+   ↓
+INSTALAR → VERIFICAR
    ↓
 ¿BENCHMARK REAL?
    ├─ NO → FIN
-   └─ SÍ → RUNNER → MEDICIÓN → EVIDENCIA → RESULTADO</pre>
-<p><a href="../docs/RC2-BETA-USER-FLOW.md">Ver plan completo de RC2 →</a> · <a href="../docs/RC2-B-LLMFIT-HARDWARE-INTELLIGENCE.md">Ver RC2-B / LLMFit →</a></p>
+   └─ SÍ → AUTORIZAR → RC1 RUNNER → MEDICIÓN → EVIDENCIA</pre>
+<p><a href="../docs/RC2-BETA-USER-FLOW.md">Ver plan completo de RC2 →</a> · <a href="../docs/RC2-I-INSTALLATION-CONSENT.md">Instalación y consentimiento →</a> · <a href="../docs/RC2-J-BENCHMARK-CONSENT.md">Benchmark y handoff RC1 →</a></p>
 </section>
 <section class="site-section"><span class="site-tag">RC1 · Validado</span><h2>La cadena técnica ya está demostrada</h2>
 <p>RC1 ejecutó una selección autorizada sobre un host Linux, atravesó el gate, ejecutó Ollama y A01, pasó el grader y produjo una medición nueva conservada como evidencia.</p>
 <div class="site-note"><strong>qwen2.5:0.5b-instruct-q4_K_M</strong> · Ollama · A01 · <strong>53.3795 tok/s</strong> · 2026-08-31 · execution_id <code>e07822d0-d991-4e9b-985b-b9afea0c13c0</code>.</div>
 <p><a href="../docs/completed/RC1-EFFECTIVE-EXECUTION.md">Ver cierre documental de RC1 →</a></p>
 </section>
+<section class="site-section"><span class="site-tag">RC2 · Wizard</span><h2>Una experiencia, varias barreras explícitas</h2>
+<pre class="site-stack">MODELO → STACK → INSTALACIÓN → VERIFICACIÓN → BENCHMARK</pre>
+<div class="site-grid">
+<article class="site-card"><h3>Elección informada</h3><p>Antes de elegir ODS o Magnitude se presentan sus funcionalidades respaldadas por contrato/evidencia, no promesas.</p></article>
+<article class="site-card"><h3>Consentimiento</h3><p>Elegir un stack no instala nada. Instalar correctamente tampoco autoriza un benchmark.</p></article>
+<article class="site-card"><h3>Handoff RC1</h3><p>Cuando el usuario autoriza el benchmark, RC2 entrega un plan autorizado al runner ya validado en RC1.</p></article>
+</div>
+</section>
 <section class="site-section"><span class="site-tag">RC2-B · LLMFit</span><h2>Hardware intelligence sin perfilador paralelo</h2>
 <p><strong>LLMFit es la fuente especializada de hardware y model-fit.</strong> LEONES consume su salida machine-readable, conserva la procedencia y presenta candidatos; no reimplementa sus heurísticas. Las estimaciones permanecen como estimaciones y sólo una ejecución real del runner/protocolo LEONES produce evidencia medida.</p>
-<div class="site-grid">
-<article class="site-card"><h3>LLMFit</h3><p>Detección de hardware, fit, candidatos, cuantización y estimaciones; interfaz JSON para automatización.</p></article>
-<article class="site-card"><h3>LEONES</h3><p>Normalización, procedencia, decisión del usuario, orquestación y evidencia reproducible.</p></article>
-</div>
 <p><a href="../docs/integrations/LLMFIT.md">Contrato de integración LLMFit →</a></p>
-</section>
-<section class="site-section"><span class="site-tag">RC2-A · Implementado</span><h2>Primer punto de entrada beta</h2>
-<p><code>scripts/rc2_beta.py</code> ya proporciona una orquestación CLI mínima. No instala software, no descarga modelos y no ejecuta runtimes todavía.</p>
-<p>La siguiente fase es <strong>RC2-C — selección humana</strong>, después de validar LLMFit sobre hardware real.</p>
 </section>
 <section class="site-section"><span class="site-tag">Base consolidada</span><h2>Qué queda cerrado</h2>
 <div class="site-grid">
@@ -62,15 +64,15 @@ INSTALAR / PREPARAR
 <article class="site-card"><h3>JALÓN 4</h3><p>🟢 Cerrado. Metodología AA, decisión ODS/Magnitude, benchmark de tareas y tiers.</p></article>
 </div></section>
 <section class="site-section"><span class="site-tag">ODS / Magnitude</span><h2>Elección informada</h2>
-<p>RC2 no presentará ODS y Magnitude como dos nombres intercambiables. Antes de elegir, el usuario verá las funcionalidades relevantes de cada alternativa, sus componentes, requisitos, permisos, red, almacenamiento, privacidad y limitaciones según la versión/ref disponible.</p>
+<p>RC2 no presenta ODS y Magnitude como dos nombres intercambiables. Antes de elegir, el usuario ve las funcionalidades relevantes de cada alternativa, sus componentes, requisitos, permisos, red, almacenamiento, privacidad y limitaciones según la versión/ref disponible.</p>
 <div class="site-grid">
 <article class="site-card"><h3>ODS</h3><p>Stack local: inferencia, interfaz, gateway, RAG/search, voz, agentes/workflows, imágenes, privacidad y observabilidad, según la instalación y versión seleccionadas.</p></article>
 <article class="site-card"><h3>Magnitude</h3><p>Asistente/agente local: perfilado, recomendación, descarga/configuración, ejecución, skills y endpoints OpenAI-compatible, según la instalación y versión seleccionadas.</p></article>
 </div>
 </section>
-<section class="site-section"><span class="site-tag">Beta</span><h2>De la demostración a máquinas externas</h2>
-<p>El siguiente objetivo es probar el flujo con usuarios reales. Cada máquina debe generar su propia evidencia; las mediciones históricas nunca se reutilizan como resultados de otro equipo.</p>
-<p><a href="../docs/BETA-TESTER-INSTALL.md">Manual actual de beta tester →</a> · <a href="../docs/RC2-BETA-USER-FLOW.md">Plan RC2 →</a></p>
+<section class="site-section"><span class="site-tag">Próxima prueba</span><h2>Validación física RC2</h2>
+<p>La arquitectura ya está preparada para una primera prueba integrada. El siguiente salto requiere una máquina real para comprobar detección de hardware, candidatos, instalación, verificación, consentimiento y handoff al runner.</p>
+<p><a href="../docs/BETA-TESTER-INSTALL.md">Manual beta tester →</a> · <a href="../docs/RC2-BETA-USER-FLOW.md">Plan RC2 →</a></p>
 </section>
 <section class="site-section"><span class="site-tag">Regla</span><h2>Medir antes de afirmar</h2><p><code>estimated</code>, <code>reported</code>, <code>observed</code>, <code>configured</code> y <code>measured</code> mantienen fronteras distintas. Lo desconocido permanece desconocido.</p></section>
 </main>
