@@ -11,8 +11,8 @@
       "type": "object",
       "required": ["id", "version", "tasks"],
       "properties": {
-        "id": {"type": "string"},
-        "version": {"type": "string"},
+        "id": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
         "tasks": {"type": "array", "items": {"type": "string"}},
         "metric": {"type": ["string", "null"]},
         "estimated_duration_seconds": {"type": ["number", "null"], "minimum": 0}
@@ -23,5 +23,10 @@
     "consent_at": {"type": ["string", "null"]},
     "execution_id": {"type": ["string", "null"]}
   },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "benchmark_authorized"}}}, "then": {"properties": {"execution_authorized": {"const": true}}}},
+    {"if": {"properties": {"status": {"enum": ["benchmark_declined", "benchmark_blocked"]}}}, "then": {"properties": {"execution_authorized": {"const": false}}}},
+    {"if": {"properties": {"status": {"enum": ["benchmark_completed", "benchmark_failed"]}}}, "then": {"required": ["execution_id"]}}
+  ],
   "additionalProperties": false
 }
