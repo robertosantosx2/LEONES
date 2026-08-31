@@ -4,7 +4,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Any
 import argparse
-
 from pathlib import Path
 import sys
 
@@ -16,7 +15,7 @@ from scripts.rc2_beta_session import BetaSession
 from scripts.rc2_i18n import tr
 from runtime_selection.hardware_profile import normalize_hardware, normalize_candidates
 from runtime_selection.rc2_candidates import to_selection_plan
-from runtime_selection.llmfit import LLMFitError, run_recommend, normalise_hardware, normalise_candidates
+from runtime_selection.llmfit import LLMFitError, run_recommend, run_system, normalise_hardware, normalise_candidates
 
 BANNER = r"""
 ╔══════════════════════════════════════════════════════════════╗
@@ -27,7 +26,7 @@ BANNER = r"""
 
 STACKS = {
     "ODS": {"name":"ods","adapter":"ods.v1","mode":"local-stack","capabilities":{"es":("Stack local de inferencia","Preparación y validación del plan","Integración con ejecución local","Medición/evidencia mediante pipeline común cuando proceda"),"en":("Local inference stack","Execution-plan preparation and validation","Local execution integration","Measurement/evidence through the common pipeline when applicable"),"zh":("本地推理栈","执行计划准备与验证","本地执行集成","在适用时通过通用流水线进行测量/证据")}},
-    "Magnitude": {"name":"magnitude","adapter":"magnitude.v1","mode":"agent","capabilities":{"es":("Integración orientada a agente/asistente","Preparación de metadatos de ejecución","Ejecución separada de la preparación","Reutilización de benchmark/evidencia comunes"),"en":("Agent/assistant-oriented integration","Execution metadata preparation","Execution separated from preparation","Reuse of common benchmark/evidence") ,"zh":("面向代理/助手的集成","执行元数据准备","执行与准备分离","复用通用基准测试/证据")}},
+    "Magnitude": {"name":"magnitude","adapter":"magnitude.v1","mode":"agent","capabilities":{"es":("Integración orientada a agente/asistente","Preparación de metadatos de ejecución","Ejecución separada de la preparación","Reutilización de benchmark/evidencia comunes"),"en":("Agent/assistant-oriented integration","Execution metadata preparation","Execution separated from preparation","Reuse of common benchmark/evidence"),"zh":("面向代理/助手的集成","执行元数据准备","执行与准备分离","复用通用基准测试/证据")}},
 }
 
 @dataclass
@@ -50,11 +49,12 @@ def _live_inputs(io: WizardIO) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Read real machine facts and recommendations from LLMFit."""
     io.show("\n[INFO] Detectando hardware y candidatos mediante LLMFit...")
     try:
+        system = run_system()
         result = run_recommend(limit=5)
     except LLMFitError as exc:
         io.show(f"[!] LLMFit no disponible o inválido: {exc}")
         raise
-    hardware = normalize_hardware(normalise_hardware(result))
+    hardware = normalize_hardware(normalise_hardware(system))
     raw_candidates = normalise_candidates(result)
     candidates = normalize_candidates([
         {
