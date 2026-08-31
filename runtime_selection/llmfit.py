@@ -1,11 +1,13 @@
 """LLMFit integration boundary for RC2 hardware intelligence.
 
-This module deliberately does not implement model-fit heuristics. It consumes
-LLMFit's machine-readable output and normalises the result for LEONES.
+LLMFit remains the authority for detected hardware facts and model estimates.
+Host OS/architecture identity is filled from the executing machine only when
+LLMFit does not expose those fields.
 """
 from __future__ import annotations
 from dataclasses import dataclass
 import json
+import platform
 import shutil
 import subprocess
 from typing import Any, Mapping, Sequence
@@ -43,11 +45,14 @@ def _run_json(command: list[str], *, timeout_seconds: int = 30) -> Mapping[str, 
     return raw
 
 def build_recommend_command(*, limit: int = 5, use_case: str | None = None, max_context: int | None = None) -> list[str]:
-    if limit < 1: raise ValueError("limit must be >= 1")
+    if limit < 1:
+        raise ValueError("limit must be >= 1")
     command = ["llmfit", "recommend", "--json", "--limit", str(limit)]
-    if use_case: command.extend(["--use-case", use_case])
+    if use_case:
+        command.extend(["--use-case", use_case])
     if max_context is not None:
-        if max_context < 1: raise ValueError("max_context must be >= 1")
+        if max_context < 1:
+            raise ValueError("max_context must be >= 1")
         command.extend(["--max-context", str(max_context)])
     return command
 
@@ -55,28 +60,40 @@ def run_recommend(*, limit: int = 5, use_case: str | None = None, max_context: i
     command = build_recommend_command(limit=limit, use_case=use_case, max_context=max_context)
     raw = _run_json(command, timeout_seconds=timeout_seconds)
     models = raw.get("models", [])
-    if not isinstance(models, list): raise LLMFitError("LLMFit JSON field 'models' must be a list")
+    if not isinstance(models, list):
+        raise LLMFitError("LLMFit JSON field 'models' must be a list")
     system = raw.get("system", {})
-    return LLMFitResult(command=tuple(command), version=raw.get("version") if isinstance(raw.get("version"), str) else None, system=system if isinstance(system, dict) else {}, models=tuple(m for m in models if isinstance(m, dict)), raw=raw)
+    return LLMFitResult(
+        command=tuple(command),
+        version=raw.get("version") if isinstance(raw.get("version"), str) else None,
+        system=system if isinstance(system, dict) else {},
+        models=tuple(m for m in models if isinstance(m, dict)),
+        raw=raw,
+    )
 
 def run_system(*, timeout_seconds: int = 30) -> Mapping[str, Any]:
     return _run_json(["llmfit", "--json", "system"], timeout_seconds=timeout_seconds)
 
-def normalise_hardware(result: LLMFitResult | Mapping[str, Any]) -> dict[str, Any]:
-    """Map current LLMFit facts without inventing dedicated VRAM.
-
-    LLMFit reports integrated Intel/Apple memory as shared or unified memory.
-    LEONES therefore preserves the numeric capacity but labels its memory kind
-    so downstream selection cannot mistake it for dedicated VRAM.
-    """
-    root = result.raw if isinstance(result, LLMFitResult) else result
+def _system_payload(result: LLMFitResult | Mapping[str, Any]) -> tuple[Mapping[str, Any], str | None]:
+    if isinstance(result, LLMFitResult):
+        root = result.raw
+        source = result.system
+        version = result.version
+    else:
+        root = result
+        version = None
+        source = result
     if not isinstance(root, Mapping):
         root = {}
-    source = result.system if isinstance(result, LLMFitResult) else root.get("system", root)
-    if not isinstance(source, Mapping):
+    if isinstance(root.get("system"), Mapping):
+        source = root["system"]
+    elif not isinstance(source, Mapping):
         source = {}
-    node = root.get("node", {}) if isinstance(root.get("node", {}), Mapping) else {}
+    return source, version
 
+def normalise_hardware(result: LLMFitResult | Mapping[str, Any]) -> dict[str, Any]:
+    """Map current LLMFit facts without fabricating dedicated VRAM."""
+    source, version = _system_payload(result)
     gpus = source.get("gpus")
     first = gpus[0] if isinstance(gpus, list) and gpus and isinstance(gpus[0], Mapping) else {}
     gpu = first.get("name") or source.get("gpu_name")
@@ -87,12 +104,20 @@ def normalise_hardware(result: LLMFitResult | Mapping[str, Any]) -> dict[str, An
 
     cpu = source.get("cpu_name") or source.get("cpu")
     ram = source.get("total_ram_gb") or source.get("ram_gb")
-    os_name = node.get("os") or source.get("os") or source.get("os_name")
-    architecture = node.get("architecture") or source.get("architecture") or source.get("arch")
+    os_name = source.get("os") or source.get("os_name")
+    architecture = source.get("architecture") or source.get("arch")
+
+    # LLMFit 1.1.x system JSON does not expose OS/architecture. These are
+    # execution-host facts, not fit heuristics, so platform is the appropriate
+    # authoritative fallback for the machine running LEONES.
+    if os_name is None:
+        os_name = platform.platform()
+    if architecture is None:
+        architecture = platform.machine()
 
     return {
         "source": "llmfit",
-        "source_version": result.version if isinstance(result, LLMFitResult) else None,
+        "source_version": version,
         "cpu": cpu,
         "ram_gb": ram,
         "gpu": gpu,
@@ -107,7 +132,15 @@ def normalise_hardware(result: LLMFitResult | Mapping[str, Any]) -> dict[str, An
     }
 
 def normalise_candidates(result: LLMFitResult) -> list[dict[str, Any]]:
-    candidates=[]
+    candidates = []
     for rank, model in enumerate(result.models, start=1):
-        candidates.append({"rank":rank,"source":"llmfit","model":model.get("name") or model.get("id"),"fit":model.get("fit") or model.get("fit_level") or model.get("score"),"estimated_tps":model.get("estimated_tps") or model.get("tps"),"quantization":model.get("quantization") or model.get("quant") or model.get("best_quant"),"raw":dict(model)})
+        candidates.append({
+            "rank": rank,
+            "source": "llmfit",
+            "model": model.get("name") or model.get("id"),
+            "fit": model.get("fit") or model.get("fit_level") or model.get("score"),
+            "estimated_tps": model.get("estimated_tps") or model.get("tps"),
+            "quantization": model.get("quantization") or model.get("quant") or model.get("best_quant"),
+            "raw": dict(model),
+        })
     return candidates
