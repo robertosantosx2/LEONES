@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.local/schemas/rc2-installation-plan.v1.json",
+  "title": "LEONES RC2 Installation Plan v1",
+  "type": "object",
+  "required": ["schema_version", "model", "stack", "platform", "consent", "status"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "model": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {"type": "string"},
+        "quantization": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "stack": {"enum": ["ods", "magnitude"]},
+    "platform": {"type": "object", "required": ["os"], "properties": {"os": {"type": "string"}}, "additionalProperties": true},
+    "requirements": {"type": "array", "items": {"type": "object", "required": ["name", "status"], "properties": {"name": {"type": "string"}, "status": {"enum": ["ok", "missing", "unknown", "blocked"]}}, "additionalProperties": true}},
+    "actions": {"type": "array", "items": {"type": "object", "required": ["id", "effect"], "properties": {"id": {"type": "string"}, "effect": {"enum": ["read_only", "download", "install", "modify_environment", "network"]}}, "additionalProperties": true}},
+    "consent": {"enum": ["not_requested", "required", "granted", "denied"]},
+    "status": {"enum": ["PLAN_READY", "PREFLIGHT_REQUIRED", "CONSENT_REQUIRED", "INSTALLING", "INSTALLED", "VERIFICATION_FAILED", "READY_FOR_BENCHMARK", "BLOCKED"]}
+  },
+  "additionalProperties": false
+}
