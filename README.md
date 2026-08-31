@@ -85,11 +85,56 @@ HOST LINUX
 | Bloque | Estado | Resultado |
 |---|---|---|
 | V1 / A01 | 🟢 Cerrado | Cadena real de selección → ejecución → benchmark → evidencia |
+| RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end: selección → gate → Ollama → A01 → medición → evidencia |
 | JALÓN 1 | 🟢 Cerrado | Base CI y contratos iniciales |
 | JALÓN 2 | 🟢 Cerrado | Ejecución física + evidencia reproducible con llama.cpp |
 | JALÓN 3 | 🟢 Cerrado operativamente | Contrato `runtime-benchmark-evidence.v1.1` + auditoría física |
 | Decisión ODS | Magnitude | 🟢 Contrato fijado | Selección de stack sin scoring paralelo |
 | Tiers de hardware | 🔵 Preparado | Capa de interpretación sobre ODS, Magnitude, LLMFit y evidencia LEONES |
+
+## RC1 — ejecución efectiva validada
+
+RC1 ha demostrado sobre un host Linux una ejecución nueva y real desde la selección autorizada hasta la evidencia A01.
+
+```text
+selección
+   ↓
+runtime-selection gate
+   ↓
+execution_authorized=true
+   ↓
+comando confiable
+   ↓
+Ollama
+   ↓
+qwen2.5:0.5b-instruct-q4_K_M
+   ↓
+A01
+   ↓
+grader=passed
+   ↓
+measurement_kind=real
+   ↓
+53.3795 tok/s
+   ↓
+artifacts/rc1-effective-execution.json
+```
+
+La ejecución cerrada corresponde al `execution_id` `e07822d0-d991-4e9b-985b-b9afea0c13c0`, con `A01=success`, `score=1.0`, `evidence=measured` y `measurement_kind=real`.
+
+La evidencia anterior de 40.7666 tok/s del 27 de agosto no fue reutilizada. RC1 generó una medición nueva el 31 de agosto de 2026.
+
+**Cierre completo:** [`docs/completed/RC1-EFFECTIVE-EXECUTION.md`](docs/completed/RC1-EFFECTIVE-EXECUTION.md)
+
+### Beta testers
+
+La primera ejecución de usuarios externos se puede realizar siguiendo el manual reproducible de instalación y ejecución:
+
+**[`docs/BETA-TESTER-INSTALL.md`](docs/BETA-TESTER-INSTALL.md)**
+
+El repositorio incluye además el plan mínimo de selección y el comando confiable utilizados por la beta en [`examples/rc1/`](examples/rc1/).
+
+Cada beta tester debe producir su propio `execution_id`, timestamp, métrica y SHA-256. La medición de referencia de RC1 no se reutiliza como resultado de otra máquina.
 
 ## JALÓN 2 — referencia histórica
 
@@ -310,25 +355,7 @@ Para contribuir: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 # Siguiente bloque lógico
 
-Con JALÓN 3 cerrado y el contrato de decisión ODS/Magnitude fijado, el siguiente bloque es **implementarlo mínimamente sobre las piezas existentes**.
-
-La secuencia es:
-
-```text
-contrato fijado
-      ↓
-adaptadores mínimos
-      ↓
-validación sin dependencias externas
-      ↓
-plan consumible por el runner existente
-      ↓
-Ubuntu: ejecución física
-      ↓
-benchmark + evidencia
-      ↓
-tiers de hardware
-```
+Con JALÓN 3 cerrado, RC1 validado y el contrato de decisión ODS/Magnitude fijado, el siguiente bloque es **continuar la implementación mínima sobre las piezas existentes**.
 
 Los tiers serán una **capa de interpretación** sobre ODS, Magnitude, LLMFit y evidencia LEONES; no una segunda base de datos paralela de modelos y rendimiento.
 
@@ -343,6 +370,8 @@ Los tiers serán una **capa de interpretación** sobre ODS, Magnitude, LLMFit y 
 - [`docs/subprojects/LEONES-ODS-MAGNITUDE-DECISION-CONTRACT.md`](docs/subprojects/LEONES-ODS-MAGNITUDE-DECISION-CONTRACT.md) — contrato de decisión.
 - [`docs/completed/JALON-1.md`](docs/completed/JALON-1.md) — cierre del JALÓN 1.
 - [`docs/completed/JALON-3.md`](docs/completed/JALON-3.md) — cierre operativo del JALÓN 3.
+- [`docs/completed/RC1-EFFECTIVE-EXECUTION.md`](docs/completed/RC1-EFFECTIVE-EXECUTION.md) — cierre efectivo de RC1.
+- [`docs/BETA-TESTER-INSTALL.md`](docs/BETA-TESTER-INSTALL.md) — instalación y ejecución para beta testers.
 - [`docs/V1-A01-REAL-RUNTIME.md`](docs/V1-A01-REAL-RUNTIME.md) — A01 con runtime real.
 - [`docs/V1-CLEAN-ROOM.md`](docs/V1-CLEAN-ROOM.md) — limpieza, versionado y evidencia.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribución.
