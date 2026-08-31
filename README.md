@@ -73,7 +73,7 @@ El **runner existente es la vía canónica de ejecución medida**. No se crea un
 | JALÓN 3 | 🟢 Cerrado | Contrato de medición real + auditoría física |
 | JALÓN 4 | 🟢 **Cerrado** | Metodología AA + contrato LEONES → ODS/Magnitude + benchmark de tareas + tiers |
 | RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end: selección → gate → Ollama → A01 → medición → evidencia |
-| RC2 | 🟡 **En preparación** | Flujo completo de usuario beta: hardware → perfilado → modelo → ODS/Magnitude → instalación → benchmark opcional |
+| RC2 | 🟡 **En preparación** | Flujo completo de usuario beta; **RC2-A implementado** |
 
 ## RC1 — ejecución efectiva validada
 
@@ -97,30 +97,18 @@ La evidencia anterior de 40.7666 tok/s del 27 de agosto no fue reutilizada. RC1 
 RC2 convierte la ejecución validada en RC1 en un recorrido que un usuario externo pueda completar sin conocer la arquitectura interna.
 
 ```text
-INSTALAR
-   ↓
-DETECTAR / DECLARAR HARDWARE
-   ↓
-PERFILAR
-   ↓
-PROPONER MODELOS
-   ↓
-ELEGIR MODELO
-   ↓
-EXPLICAR TODAS LAS FUNCIONALIDADES DE ODS Y MAGNITUDE
-   ↓
-ELEGIR STACK
-   ↓
-INSTALAR / PREPARAR
-   ↓
-¿BENCHMARK REAL?
-   ├─ NO → FIN
-   └─ SÍ → RUNNER → MEDICIÓN → EVIDENCIA → RESULTADO
+INSTALAR → HARDWARE → PERFILAR → CANDIDATOS → ELEGIR MODELO
+          → COMPARAR TODAS LAS FUNCIONALIDADES ODS/MAGNITUDE
+          → ELEGIR STACK → PREPARAR → ¿BENCHMARK?
+          → SÍ: RUNNER → MEDICIÓN → EVIDENCIA → RESULTADO
+          → NO: FIN
 ```
 
-La elección ODS/Magnitude no será una caja de radio con dos nombres: LEONES deberá exponer antes de elegir las funcionalidades relevantes, componentes, requisitos, permisos, consumo, red, privacidad y limitaciones de cada alternativa, siempre vinculados a la versión/ref disponible. ODS y Magnitude siguen siendo las fuentes de sus propias capacidades; LEONES las orquesta y las valida.
+Antes de elegir ODS o Magnitude, LEONES debe exponer las funcionalidades relevantes de cada opción, vinculadas a su versión/ref, junto con requisitos, componentes, permisos, red, almacenamiento, privacidad y limitaciones. ODS y Magnitude siguen siendo las fuentes de sus propias capacidades; LEONES las orquesta y valida.
 
-**Plan RC2:** [`docs/RC2-BETA-USER-FLOW.md`](docs/RC2-BETA-USER-FLOW.md)
+**Plan:** [`docs/RC2-BETA-USER-FLOW.md`](docs/RC2-BETA-USER-FLOW.md)  
+**RC2-A implementado:** [`docs/RC2-A-IMPLEMENTATION.md`](docs/RC2-A-IMPLEMENTATION.md)  
+**Entrada beta:** [`scripts/rc2_beta.py`](scripts/rc2_beta.py)
 
 ### Beta testers
 
@@ -181,8 +169,22 @@ El runner no inventa mediciones ni convierte fixtures en evidencia física.
 
 **RC2 — LEONES Beta User Flow.**
 
-El objetivo ya no es demostrar que la cadena técnica funciona —RC1 lo ha demostrado— sino que una persona pueda recorrerla de principio a fin:
+RC2 ya tiene implementado el primer punto de entrada de orquestación (**RC2-A**). No instala ni ejecuta todavía: esa frontera se mantiene deliberadamente para que las operaciones con efectos laterales queden aisladas y auditables.
+
+El siguiente bloque es **RC2-B — hardware y perfilado real**, conectando el flujo con ODS/Magnitude sin crear un tercer perfilador.
+
+El objetivo final de RC2 es que una persona pueda recorrerla de principio a fin:
 
 **instalar → hardware → perfilado → candidatos → elección → ODS/Magnitude informado → instalación → benchmark opcional → evidencia → resultado.**
 
 El alcance y los criterios de aceptación están fijados en [`docs/RC2-BETA-USER-FLOW.md`](docs/RC2-BETA-USER-FLOW.md).
+
+## Desarrollo RC2
+
+Para probar el bootstrap sin efectos laterales:
+
+```bash
+python3 scripts/rc2_beta.py --selection examples/rc1/real-a01-selection.json --stack ods --benchmark no
+```
+
+Las pruebas automatizadas de RC2-A están en `tests/test_rc2_beta_flow.py`.
