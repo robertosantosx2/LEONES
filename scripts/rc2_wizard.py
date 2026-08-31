@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""RC2 beta wizard: trilingual hardware -> model -> stack -> consent -> handoff."""
+"""RC2 beta wizard: live hardware/candidates -> user decisions -> handoff."""
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Any
 import argparse
-import json
+
 from pathlib import Path
 import sys
 
@@ -16,6 +16,7 @@ from scripts.rc2_beta_session import BetaSession
 from scripts.rc2_i18n import tr
 from runtime_selection.hardware_profile import normalize_hardware, normalize_candidates
 from runtime_selection.rc2_candidates import to_selection_plan
+from runtime_selection.llmfit import LLMFitError, run_recommend, normalise_hardware, normalise_candidates
 
 BANNER = r"""
 ╔══════════════════════════════════════════════════════════════╗
@@ -26,7 +27,7 @@ BANNER = r"""
 
 STACKS = {
     "ODS": {"name":"ods","adapter":"ods.v1","mode":"local-stack","capabilities":{"es":("Stack local de inferencia","Preparación y validación del plan","Integración con ejecución local","Medición/evidencia mediante pipeline común cuando proceda"),"en":("Local inference stack","Execution-plan preparation and validation","Local execution integration","Measurement/evidence through the common pipeline when applicable"),"zh":("本地推理栈","执行计划准备与验证","本地执行集成","在适用时通过通用流水线进行测量/证据")}},
-    "Magnitude": {"name":"magnitude","adapter":"magnitude.v1","mode":"agent","capabilities":{"es":("Integración orientada a agente/asistente","Preparación de metadatos de ejecución","Ejecución separada de la preparación","Reutilización de benchmark/evidencia comunes"),"en":("Agent/assistant-oriented integration","Execution metadata preparation","Execution separated from preparation","Reuse of common benchmark/evidence"),"zh":("面向代理/助手的集成","执行元数据准备","执行与准备分离","复用通用基准测试/证据")}},
+    "Magnitude": {"name":"magnitude","adapter":"magnitude.v1","mode":"agent","capabilities":{"es":("Integración orientada a agente/asistente","Preparación de metadatos de ejecución","Ejecución separada de la preparación","Reutilización de benchmark/evidencia comunes"),"en":("Agent/assistant-oriented integration","Execution metadata preparation","Execution separated from preparation","Reuse of common benchmark/evidence") ,"zh":("面向代理/助手的集成","执行元数据准备","执行与准备分离","复用通用基准测试/证据")}},
 }
 
 @dataclass
@@ -45,9 +46,31 @@ def _choose(io: WizardIO, title: str, options: tuple[str,...]) -> str:
         if answer.isdigit() and 1 <= int(answer) <= len(options): return options[int(answer)-1]
         io.show("  ! Opción no válida / Invalid option / 无效选项")
 
-def _load_json(path: Path, default: Any) -> Any:
-    if not path.exists(): return default
-    return json.loads(path.read_text(encoding="utf-8"))
+def _live_inputs(io: WizardIO) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Read real machine facts and recommendations from LLMFit."""
+    io.show("\n[INFO] Detectando hardware y candidatos mediante LLMFit...")
+    try:
+        result = run_recommend(limit=5)
+    except LLMFitError as exc:
+        io.show(f"[!] LLMFit no disponible o inválido: {exc}")
+        raise
+    hardware = normalize_hardware(normalise_hardware(result))
+    raw_candidates = normalise_candidates(result)
+    candidates = normalize_candidates([
+        {
+            "model_id": item.get("model") or item.get("raw", {}).get("id"),
+            "name": item.get("model") or item.get("raw", {}).get("name") or item.get("raw", {}).get("id"),
+            "rank": item.get("rank"),
+            "fit": item.get("fit"),
+            "estimated_tps": item.get("estimated_tps"),
+            "source": item.get("source", "llmfit"),
+            "source_version": result.version,
+            "evidence_level": "estimated",
+            "revision": item.get("raw", {}).get("revision"),
+        }
+        for item in raw_candidates
+    ])
+    return hardware, candidates
 
 def _show_stack(io: WizardIO, name: str) -> None:
     io.show(f"\n╔══ {name.upper()} ══")
@@ -57,15 +80,18 @@ def _show_stack(io: WizardIO, name: str) -> None:
         for c in caps[key]: io.show(f"║    ✓ {c}")
     io.show("╚═══════════════════════════════════════════════════════════")
 
-def run_wizard(io: WizardIO|None=None, *, examples_root: str = "examples/rc2") -> BetaSession:
-    io=io or WizardIO(); session=BetaSession(); root=Path(examples_root)
+def run_wizard(io: WizardIO|None=None) -> BetaSession:
+    io=io or WizardIO(); session=BetaSession()
     io.show(BANNER); io.show(tr("your_team")); io.show("")
-    hardware=normalize_hardware(_load_json(root/"hardware-profile.json", {"source":"fixture"}))
-    session.advance("HARDWARE_READY", hardware=hardware); io.show("[✓] Hardware / Hardware / 硬件 ✓")
-    candidates=normalize_candidates(_load_json(root/"llmfit-candidates.json", []))
+    try:
+        hardware, candidates = _live_inputs(io)
+    except LLMFitError:
+        session.block("LLMFIT_UNAVAILABLE","Live LLMFit input unavailable / No se pudo obtener entrada real de LLMFit / 无法获取 LLMFit 实时输入")
+        return session
+    session.advance("HARDWARE_READY", hardware=hardware); io.show("[✓] Hardware real / Live hardware / 实时硬件 ✓")
     labels=tuple(f"{c['name']} · fit={c['fit']} · {c['source']}" for c in candidates)
     if not labels:
-        session.block("NO_MODEL_CANDIDATES","No candidates / Aucun / 无候选模型"); return session
+        session.block("NO_MODEL_CANDIDATES","No live candidates / No hay candidatos reales / 无实时候选模型"); return session
     chosen_label=_choose(io,tr("choose_model"),labels); chosen=candidates[labels.index(chosen_label)]
     session.advance("MODEL_SELECTED", model_choice=chosen)
     for name in STACKS: _show_stack(io,name)
@@ -78,13 +104,14 @@ def run_wizard(io: WizardIO|None=None, *, examples_root: str = "examples/rc2") -
     if install.startswith("Cancelar"):
         session.block("INSTALL_DECLINED","Installation not authorized / Instalación no autorizada / 未授权安装"); return session
     session.authorize_installation(); io.show("[✓] Instalación autorizada / Installation authorized / 安装已授权")
+    io.show("\n[INFO] La instalación/verificación física se realiza según el manual RC2 antes de autorizar el benchmark.")
     return session
 
 def _non_interactive_smoke() -> BetaSession:
     """Exercise only the RC2 state contract; never prompts or claims real installation."""
     session=BetaSession()
     hardware={"source":"smoke","cpu":"fixture","ram_gb":8}
-    model={"name":"Qwen2.5 0.5B Instruct","fit":1.0,"source":"llmfit"}
+    model={"model_id":"smoke-model","name":"smoke-model","fit":1.0,"source":"fixture"}
     stack={"name":"ods","adapter":"ods.v1","mode":"local-stack"}
     plan={"schema":"selection-plan.v1","mode":"smoke"}
     session.advance("HARDWARE_READY", hardware=hardware)
