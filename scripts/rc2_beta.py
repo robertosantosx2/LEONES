@@ -15,25 +15,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 ODS_FEATURES = [
-    "local inference",
-    "Open WebUI",
-    "gateway",
-    "RAG/search",
-    "voice",
-    "agents/workflows",
-    "image generation",
-    "privacy",
-    "observability",
+    "local inference", "Open WebUI", "gateway", "RAG/search", "voice",
+    "agents/workflows", "image generation", "privacy", "observability",
 ]
 MAGNITUDE_FEATURES = [
-    "local agent",
-    "local models",
-    "hardware profiling",
-    "model recommendation",
-    "download/configuration",
-    "local execution",
-    "skills",
-    "OpenAI-compatible endpoints",
+    "local agent", "local models", "hardware profiling", "model recommendation",
+    "download/configuration", "local execution", "skills", "OpenAI-compatible endpoints",
 ]
 
 
@@ -43,6 +30,29 @@ def load_selection(path: Path) -> dict:
     if not isinstance(data, dict):
         raise ValueError("selection must be a JSON object")
     return data
+
+
+def selection_candidates(selection: dict) -> list[dict]:
+    """Read the canonical RC1 candidate list, with legacy-plan compatibility."""
+    candidates = selection.get("candidates")
+    if isinstance(candidates, list):
+        return [item for item in candidates if isinstance(item, dict)]
+    plans = selection.get("execution_plans")
+    if isinstance(plans, list):
+        return [item for item in plans if isinstance(item, dict)]
+    return []
+
+
+def candidate_model_id(candidate: dict) -> str:
+    model_id = candidate.get("model_id") or candidate.get("model_name")
+    if model_id:
+        return str(model_id)
+    model = candidate.get("model")
+    if isinstance(model, dict):
+        return str(model.get("id") or model.get("name") or "unknown")
+    if model:
+        return str(model)
+    return "unknown"
 
 
 def show_hardware() -> None:
@@ -85,10 +95,10 @@ def main(argv: list[str] | None = None) -> int:
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             print(f"  ERROR: cannot read selection: {exc}", file=sys.stderr)
             return 2
-        plans = selection.get("execution_plans", [])
-        print(f"  ✓ loaded {len(plans)} authorized-plan candidate(s)")
-        for plan in plans:
-            print(f"    - {plan.get('model_id', 'unknown')}")
+        candidates = selection_candidates(selection)
+        print(f"  ✓ loaded {len(candidates)} candidate(s)")
+        for candidate in candidates:
+            print(f"    - {candidate_model_id(candidate)}")
     else:
         print("  → candidate presentation is wired in the next RC2 phase")
     show_stack_choice()
