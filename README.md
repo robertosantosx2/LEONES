@@ -1,5 +1,6 @@
+# LEONES
 
-# Estado del proyecto
+## Estado del proyecto
 
 | Bloque | Estado | Resultado |
 |---|---|---|
@@ -42,6 +43,8 @@ El wizard ASCII de RC2 ya orquesta la parte de decisión hasta el consentimiento
 Antes de elegir ODS o Magnitude, LEONES debe exponer las funcionalidades relevantes de cada opción, vinculadas a su versión/ref, junto con requisitos, componentes, permisos, red, almacenamiento, privacidad y limitaciones. ODS y Magnitude siguen siendo las fuentes de sus propias capacidades; LEONES las orquesta y valida.
 
 **Plan:** [`docs/RC2-BETA-USER-FLOW.md`](docs/RC2-BETA-USER-FLOW.md)  
+**Manual de usuario beta:** [`docs/RC2-USER-MANUAL.md`](docs/RC2-USER-MANUAL.md)  
+**Manual de instalación:** [`docs/RC2-INSTALLATION-MANUAL.md`](docs/RC2-INSTALLATION-MANUAL.md)  
 **Wizard:** [`scripts/rc2_wizard.py`](scripts/rc2_wizard.py)  
 **Instalación/consentimiento:** [`docs/RC2-I-INSTALLATION-CONSENT.md`](docs/RC2-I-INSTALLATION-CONSENT.md)  
 **Benchmark/hand-off:** [`docs/RC2-J-BENCHMARK-CONSENT.md`](docs/RC2-J-BENCHMARK-CONSENT.md)  
@@ -49,13 +52,13 @@ Antes de elegir ODS o Magnitude, LEONES debe exponer las funcionalidades relevan
 
 ### Beta testers
 
-Manual de instalación: [`docs/BETA-TESTER-INSTALL.md`](docs/BETA-TESTER-INSTALL.md).
+El punto de entrada documental para un beta tester es el [manual de instalación de RC2](docs/RC2-INSTALLATION-MANUAL.md). Después puede consultar el [manual de usuario](docs/RC2-USER-MANUAL.md) y el [flujo canónico](docs/RC2-BETA-USER-FLOW.md).
 
 Cada máquina debe producir su propia evidencia: nuevo `execution_id`, timestamp, métrica y procedencia. Una medición histórica nunca sustituye una ejecución actual.
 
 ## Componentes principales
 
-## Prospector, Atlas, hardware y selección
+### Prospector, Atlas, hardware y selección
 
 Los componentes de descubrimiento, Atlas, hardware, precio/TCO, LLMFit, selección, router y recomendación mantienen las fronteras documentadas en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
