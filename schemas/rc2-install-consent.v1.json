@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.local/schemas/rc2-install-consent.v1.json",
+  "title": "LEONES RC2 Installation Consent v1",
+  "type": "object",
+  "required": ["schema_version", "decision", "selection", "plan_summary"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "decision": {"enum": ["authorized", "declined"]},
+    "selection": {"type": "object", "required": ["model_id", "stack"], "properties": {"model_id": {"type": "string", "minLength": 1}, "stack": {"enum": ["ods", "magnitude"]}}, "additionalProperties": true},
+    "plan_summary": {"type": "object", "required": ["actions", "side_effects"], "properties": {"actions": {"type": "array", "items": {"type": "string"}}, "side_effects": {"type": "array", "items": {"type": "string"}}, "network": {"type": "string"}, "storage": {"type": "string"}}, "additionalProperties": true},
+    "recorded_at": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}
