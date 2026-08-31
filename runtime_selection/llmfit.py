@@ -63,21 +63,48 @@ def run_system(*, timeout_seconds: int = 30) -> Mapping[str, Any]:
     return _run_json(["llmfit", "--json", "system"], timeout_seconds=timeout_seconds)
 
 def normalise_hardware(result: LLMFitResult | Mapping[str, Any]) -> dict[str, Any]:
-    """Map LLMFit facts without fabricating VRAM, OS, or architecture."""
-    source = result.system if isinstance(result, LLMFitResult) else result.get("system", result)
-    if not isinstance(source, Mapping): source = {}
+    """Map current LLMFit facts without inventing dedicated VRAM.
+
+    LLMFit reports integrated Intel/Apple memory as shared or unified memory.
+    LEONES therefore preserves the numeric capacity but labels its memory kind
+    so downstream selection cannot mistake it for dedicated VRAM.
+    """
+    root = result.raw if isinstance(result, LLMFitResult) else result
+    if not isinstance(root, Mapping):
+        root = {}
+    source = result.system if isinstance(result, LLMFitResult) else root.get("system", root)
+    if not isinstance(source, Mapping):
+        source = {}
+    node = root.get("node", {}) if isinstance(root.get("node", {}), Mapping) else {}
+
     gpus = source.get("gpus")
-    gpu = None; vram = None; backend = None
-    if isinstance(gpus, list) and gpus:
-        first = gpus[0] if isinstance(gpus[0], Mapping) else {}
-        gpu = first.get("name")
-        vram = first.get("vram_gb")
-        backend = first.get("backend")
-    cpu = source.get("cpu") or source.get("cpu_name")
-    ram = source.get("ram_gb") or source.get("total_ram_gb")
-    os_name = source.get("os") or source.get("os_name")
-    architecture = source.get("architecture") or source.get("arch")
-    return {"source":"llmfit","source_version":result.version if isinstance(result, LLMFitResult) else None,"cpu":cpu,"ram_gb":ram,"gpu":gpu,"vram_gb":vram,"os":os_name,"architecture":architecture,"accelerators":[backend] if backend else [],"verification":"detected","raw":dict(source)}
+    first = gpus[0] if isinstance(gpus, list) and gpus and isinstance(gpus[0], Mapping) else {}
+    gpu = first.get("name") or source.get("gpu_name")
+    vram = first.get("vram_gb") if first.get("vram_gb") is not None else source.get("gpu_vram_gb")
+    backend = first.get("backend") or source.get("backend")
+    unified = bool(first.get("unified_memory", source.get("unified_memory", False)))
+    memory_kind = "unified" if unified else ("dedicated" if vram is not None else None)
+
+    cpu = source.get("cpu_name") or source.get("cpu")
+    ram = source.get("total_ram_gb") or source.get("ram_gb")
+    os_name = node.get("os") or source.get("os") or source.get("os_name")
+    architecture = node.get("architecture") or source.get("architecture") or source.get("arch")
+
+    return {
+        "source": "llmfit",
+        "source_version": result.version if isinstance(result, LLMFitResult) else None,
+        "cpu": cpu,
+        "ram_gb": ram,
+        "gpu": gpu,
+        "vram_gb": vram,
+        "gpu_memory_kind": memory_kind,
+        "unified_memory": unified,
+        "os": os_name,
+        "architecture": architecture,
+        "accelerators": [backend] if backend else [],
+        "verification": "detected",
+        "raw": dict(source),
+    }
 
 def normalise_candidates(result: LLMFitResult) -> list[dict[str, Any]]:
     candidates=[]
