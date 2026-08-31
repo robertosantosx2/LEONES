@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
-"""RC2 beta wizard: presentation and explicit decisions only.
-
-The wizard is intentionally side-effect free. Real hardware, installation and
-benchmark adapters are invoked only by later integration layers after gates.
-"""
+"""RC2 beta wizard: explicit decisions and canonical session state."""
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Callable
 
 from scripts.rc2_beta_session import BetaSession
-
 
 BANNER = r"""
 ╔══════════════════════════════════════════════════════════════╗
@@ -19,6 +14,30 @@ BANNER = r"""
 ╚══════════════════════════════════════════════════════════════╝
 """
 
+STACKS = {
+    "ODS": {
+        "runtime_id": "ods",
+        "adapter_id": "ods.v1",
+        "mode": "local-stack",
+        "capabilities": (
+            "Stack local de inferencia",
+            "Preparación y validación del plan de ejecución",
+            "Integración con ejecución local",
+            "Medición/evidencia mediante el pipeline común cuando proceda",
+        ),
+    },
+    "Magnitude": {
+        "runtime_id": "magnitude",
+        "adapter_id": "magnitude.v1",
+        "mode": "agent",
+        "capabilities": (
+            "Integración orientada a agente/asistente",
+            "Preparación de metadatos de ejecución",
+            "Ejecución separada de la preparación",
+            "Reutilización de benchmark/evidencia comunes",
+        ),
+    },
+}
 
 @dataclass
 class WizardIO:
@@ -44,6 +63,14 @@ def _choose(io: WizardIO, title: str, options: tuple[str, ...]) -> str:
         io.show("  ! Opción no válida. Elige una de las opciones mostradas.")
 
 
+def _show_stack(io: WizardIO, name: str) -> None:
+    spec = STACKS[name]
+    io.show(f"\n╔══ {name.upper()} · FUNCIONALIDADES DISPONIBLES ══")
+    for capability in spec["capabilities"]:
+        io.show(f"║  ✓ {capability}")
+    io.show("╚═══════════════════════════════════════════════════════════")
+
+
 def run_wizard(io: WizardIO | None = None) -> BetaSession:
     io = io or WizardIO()
     session = BetaSession()
@@ -58,13 +85,25 @@ def run_wizard(io: WizardIO | None = None) -> BetaSession:
     session.advance("MODEL_SELECTED", model_choice=model)
     io.show(f"[✓] Modelo: {model}")
 
-    stack = _choose(io, "STACK · conoce antes de elegir", ("ODS — stack local", "Magnitude — agente/asistente"))
-    session.advance("STACK_SELECTED", stack=stack)
-    io.show(f"[✓] Stack: {stack}")
+    for name in STACKS:
+        _show_stack(io, name)
+    stack = _choose(io, "ELIGE TU STACK", tuple(STACKS))
+    spec = STACKS[stack]
+    session.advance(
+        "STACK_SELECTED",
+        stack_selection={
+            "runtime_id": spec["runtime_id"],
+            "adapter_id": spec["adapter_id"],
+            "execution_mode": spec["mode"],
+            "selection_source": "user",
+        },
+    )
+    io.show(f"[✓] Stack seleccionado: {stack}")
+    io.show("[i] Elegir stack no autoriza su instalación ni ningún benchmark.")
 
     session.advance("READY_FOR_INSTALL", installation={"status": "plan_pending"})
     io.show("\n[✓] Plan de instalación preparado.")
-    io.show("[!] La instalación real requiere consentimiento explícito y se ejecutará fuera de este wizard.")
+    io.show("[!] La instalación real requiere consentimiento explícito.")
     return session
 
 
