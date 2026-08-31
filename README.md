@@ -44,23 +44,35 @@ El wizard ASCII ya demuestra la capa de decisión y consentimiento. La suite loc
 
 LLMFit aporta la inteligencia especializada de hardware/model-fit. Sus cifras de rendimiento permanecen marcadas como `estimated`; no son evidencia física.
 
-### RC2-B y siguientes — siguiente gate
+### RC2-B y siguientes — validación física
 
-El siguiente paso ya no es añadir abstracciones: es validar el recorrido sobre una instalación real, invocar únicamente las interfaces soportadas por el stack elegido y comprobar instalación, health checks, ejecución y evidencia.
+El siguiente trabajo es físico: instalar/verificar el stack elegido en una máquina real, ejecutar los health checks, decidir si se autoriza el benchmark y, si procede, reutilizar el runner canónico de RC1 para generar evidencia nueva.
+
+Durante instalaciones largas, LEONES debe mantener actividad visible. El porcentaje mostrado debe representar fases reales del flujo de LEONES; no se debe inventar un porcentaje interno de un instalador externo que no lo proporcione.
+
+Un fallo de conectividad o del instalador externo debe quedar como fallo explícito de instalación, conservando el error original y sin avanzar al benchmark.
 
 LEONES **no crea otro instalador de ODS ni otro instalador de Magnitude, ni otro runner RC2**. Reutiliza los proyectos y runners canónicos.
 
-**Plan:** [`docs/RC2-BETA-USER-FLOW.md`](docs/RC2-BETA-USER-FLOW.md)  
-**Manual de usuario beta:** [`docs/RC2-USER-MANUAL.md`](docs/RC2-USER-MANUAL.md)  
-**Manual de instalación:** [`docs/RC2-INSTALLATION-MANUAL.md`](docs/RC2-INSTALLATION-MANUAL.md)  
-**Wizard:** [`scripts/rc2_wizard.py`](scripts/rc2_wizard.py)  
-**Instalación/consentimiento:** [`docs/RC2-I-INSTALLATION-CONSENT.md`](docs/RC2-I-INSTALLATION-CONSENT.md)  
-**Benchmark/hand-off:** [`docs/RC2-J-BENCHMARK-CONSENT.md`](docs/RC2-J-BENCHMARK-CONSENT.md)  
-**LLMFit:** [`docs/integrations/LLMFIT.md`](docs/integrations/LLMFIT.md)
+## Manuales RC2 — punto de entrada del beta tester
 
-### Beta testers
+**1. [Manual de instalación de RC2](docs/RC2-INSTALLATION-MANUAL.md)** — prepara la máquina, ejecuta el preflight, instala/verifica y explica cómo registrar fallos.
 
-El punto de entrada documental para un beta tester es el [manual de instalación de RC2](docs/RC2-INSTALLATION-MANUAL.md). Cada máquina debe producir su propia evidencia: nuevo `execution_id`, timestamp, métrica y procedencia. Una medición histórica nunca sustituye una ejecución actual.
+**2. [Manual de usuario beta RC2](docs/RC2-USER-MANUAL.md)** — explica el recorrido desde el hardware hasta la evidencia en lenguaje de usuario.
+
+**3. [Flujo contractual RC2](docs/RC2-BETA-USER-FLOW.md)** — define gates, estados y límites de la implementación.
+
+**4. [Wizard RC2](scripts/rc2_wizard.py)** — punto de entrada CLI.
+
+**5. [Instalación/consentimiento](docs/RC2-I-INSTALLATION-CONSENT.md)** — contrato de autorización.
+
+**6. [Benchmark/hand-off](docs/RC2-J-BENCHMARK-CONSENT.md)** — consentimiento y entrega al runner canónico.
+
+**7. [Integración LLMFit](docs/integrations/LLMFIT.md)** — procedencia de hardware/model-fit.
+
+### Regla para beta testers
+
+Cada máquina debe producir su propia evidencia: nuevo `execution_id`, timestamp, métrica y procedencia. Una medición histórica nunca sustituye una ejecución actual.
 
 ## Componentes principales
 
