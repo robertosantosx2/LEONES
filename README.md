@@ -9,7 +9,7 @@
 | JALÓN 3 | 🟢 Cerrado | Contrato de medición real + auditoría física |
 | JALÓN 4 | 🟢 **Cerrado** | Metodología AA + contrato LEONES → ODS/Magnitude + benchmark de tareas + tiers |
 | RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end: selección → gate → Ollama → A01 → medición → evidencia |
-| RC2 | 🟡 **En preparación** | Flujo completo de usuario beta; **RC2-A implementado · RC2-B LLMFit fijado · RC2-C contrato de selección fijado** |
+| RC2 | 🟡 **En preparación** | Flujo beta: hardware → modelo → ODS/Magnitude → consentimiento → instalación → verificación → benchmark opcional |
 
 ## RC1 — ejecución efectiva validada
 
@@ -24,10 +24,6 @@ selección → gate → execution_authorized=true
 
 La ejecución cerrada corresponde al `execution_id` `e07822d0-d991-4e9b-985b-b9afea0c13c0`, con `A01=success`, `score=1.0`, `evidence=measured` y `measurement_kind=real`.
 
-La evidencia anterior de 40.7666 tok/s del 27 de agosto no fue reutilizada. RC1 generó una medición nueva el 31 de agosto de 2026.
-
-**Cierre:** [`docs/completed/RC1-EFFECTIVE-EXECUTION.md`](docs/completed/RC1-EFFECTIVE-EXECUTION.md)
-
 ## RC2 — flujo de usuario beta
 
 RC2 convierte la ejecución validada en RC1 en un recorrido que un usuario externo pueda completar sin conocer la arquitectura interna.
@@ -35,37 +31,35 @@ RC2 convierte la ejecución validada en RC1 en un recorrido que un usuario exter
 ```text
 INSTALAR → HARDWARE → PERFILAR → CANDIDATOS → ELEGIR MODELO
           → COMPARAR TODAS LAS FUNCIONALIDADES ODS/MAGNITUDE
-          → ELEGIR STACK → PREPARAR → ¿BENCHMARK?
-          → SÍ: RUNNER → MEDICIÓN → EVIDENCIA → RESULTADO
+          → ELEGIR STACK → PLAN → CONSENTIMIENTO
+          → INSTALAR → VERIFICAR → ¿BENCHMARK?
+          → SÍ: AUTORIZAR → RUNNER RC1 → MEDICIÓN → EVIDENCIA
           → NO: FIN
 ```
+
+El wizard ASCII de RC2 ya orquesta la parte de decisión hasta el consentimiento de instalación. La instalación y la ejecución física siguen siendo efectos explícitos de adaptadores/runners; el wizard no los dispara por sorpresa.
 
 Antes de elegir ODS o Magnitude, LEONES debe exponer las funcionalidades relevantes de cada opción, vinculadas a su versión/ref, junto con requisitos, componentes, permisos, red, almacenamiento, privacidad y limitaciones. ODS y Magnitude siguen siendo las fuentes de sus propias capacidades; LEONES las orquesta y valida.
 
 **Plan:** [`docs/RC2-BETA-USER-FLOW.md`](docs/RC2-BETA-USER-FLOW.md)  
-**RC2-A implementado:** [`docs/RC2-A-IMPLEMENTATION.md`](docs/RC2-A-IMPLEMENTATION.md)  
-**RC2-B — LLMFit:** [`docs/RC2-B-LLMFIT-HARDWARE-INTELLIGENCE.md`](docs/RC2-B-LLMFIT-HARDWARE-INTELLIGENCE.md)  
-**RC2-C — selección humana:** [`docs/RC2-C-MODEL-SELECTION.md`](docs/RC2-C-MODEL-SELECTION.md)  
-**Integración LLMFit:** [`docs/integrations/LLMFIT.md`](docs/integrations/LLMFIT.md)  
-**Entrada beta:** [`scripts/rc2_beta.py`](scripts/rc2_beta.py)
+**Wizard:** [`scripts/rc2_wizard.py`](scripts/rc2_wizard.py)  
+**Instalación/consentimiento:** [`docs/RC2-I-INSTALLATION-CONSENT.md`](docs/RC2-I-INSTALLATION-CONSENT.md)  
+**Benchmark/hand-off:** [`docs/RC2-J-BENCHMARK-CONSENT.md`](docs/RC2-J-BENCHMARK-CONSENT.md)  
+**LLMFit:** [`docs/integrations/LLMFIT.md`](docs/integrations/LLMFIT.md)
 
 ### Beta testers
 
-Manual de instalación actual: [`docs/BETA-TESTER-INSTALL.md`](docs/BETA-TESTER-INSTALL.md).
+Manual de instalación: [`docs/BETA-TESTER-INSTALL.md`](docs/BETA-TESTER-INSTALL.md).
 
-Los resultados de cada máquina deben producir su propio `execution_id`, timestamp, métrica y procedencia. La evidencia de una máquina nunca se reutiliza como medición de otra.
+Cada máquina debe producir su propia evidencia: nuevo `execution_id`, timestamp, métrica y procedencia. Una medición histórica nunca sustituye una ejecución actual.
 
----
-
-# Componentes principales
+## Componentes principales
 
 ## Prospector, Atlas, hardware y selección
 
 Los componentes de descubrimiento, Atlas, hardware, precio/TCO, LLMFit, selección, router y recomendación mantienen las fronteras documentadas en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 **LLMFit es la fuente especializada de inteligencia hardware/model-fit.** LEONES no reimplementa sus heurísticas: consume su salida JSON, conserva la procedencia y normaliza candidatos. Sus estimaciones permanecen como `estimated`; una medición física de LEONES sólo nace de una ejecución real del runner/protocolo correspondiente.
-
-LLMFit documenta detección de hardware, recomendaciones JSON, planificación de hardware y benchmarking local de runtimes. [`docs/integrations/LLMFIT.md`](docs/integrations/LLMFIT.md) fija la frontera de integración.
 
 ## ODS y Magnitude
 
