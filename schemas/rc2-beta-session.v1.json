@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leones.local/schemas/rc2-beta-session.v1.json",
+  "title": "LEONES RC2 Beta Session v1",
+  "type": "object",
+  "required": ["schema_version", "state", "gates"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "state": {"type": "string"},
+    "gates": {"type": "object", "additionalProperties": {"type": "boolean"}},
+    "hardware": {"type": ["object", "null"]},
+    "declared_overrides": {"type": ["object", "null"]},
+    "llmfit": {"type": ["object", "null"]},
+    "model_selection": {"type": ["object", "null"]},
+    "stack_selection": {"type": ["object", "null"]},
+    "installation": {"type": ["object", "null"]},
+    "benchmark_consent": {"type": ["object", "null"]},
+    "execution_id": {"type": ["string", "null"]},
+    "error": {"type": ["object", "null"]}
+  },
+  "additionalProperties": false
+}
