@@ -73,7 +73,7 @@ El **runner existente es la vía canónica de ejecución medida**. No se crea un
 | JALÓN 3 | 🟢 Cerrado | Contrato de medición real + auditoría física |
 | JALÓN 4 | 🟢 **Cerrado** | Metodología AA + contrato LEONES → ODS/Magnitude + benchmark de tareas + tiers |
 | RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end: selección → gate → Ollama → A01 → medición → evidencia |
-| RC2 | 🟡 **En preparación** | Flujo completo de usuario beta; **RC2-A implementado** |
+| RC2 | 🟡 **En preparación** | Flujo completo de usuario beta; **RC2-A implementado · RC2-B LLMFit fijado** |
 
 ## RC1 — ejecución efectiva validada
 
@@ -108,6 +108,8 @@ Antes de elegir ODS o Magnitude, LEONES debe exponer las funcionalidades relevan
 
 **Plan:** [`docs/RC2-BETA-USER-FLOW.md`](docs/RC2-BETA-USER-FLOW.md)  
 **RC2-A implementado:** [`docs/RC2-A-IMPLEMENTATION.md`](docs/RC2-A-IMPLEMENTATION.md)  
+**RC2-B — LLMFit:** [`docs/RC2-B-LLMFIT-HARDWARE-INTELLIGENCE.md`](docs/RC2-B-LLMFIT-HARDWARE-INTELLIGENCE.md)  
+**Integración LLMFit:** [`docs/integrations/LLMFIT.md`](docs/integrations/LLMFIT.md)  
 **Entrada beta:** [`scripts/rc2_beta.py`](scripts/rc2_beta.py)
 
 ### Beta testers
@@ -124,7 +126,9 @@ Los resultados de cada máquina deben producir su propio `execution_id`, timesta
 
 Los componentes de descubrimiento, Atlas, hardware, precio/TCO, LLMFit, selección, router y recomendación mantienen las fronteras documentadas en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-LLMFit filtra candidatos cuando la evidencia disponible lo permite; la medición física prevalece sobre cualquier estimación.
+**LLMFit es la fuente especializada de inteligencia hardware/model-fit.** LEONES no reimplementa sus heurísticas: consume su salida JSON, conserva la procedencia y normaliza candidatos. Sus estimaciones permanecen como `estimated`; una medición física de LEONES sólo nace de una ejecución real del runner/protocolo correspondiente.
+
+LLMFit documenta detección de hardware, recomendaciones JSON, planificación de hardware y benchmarking local de runtimes. [`docs/integrations/LLMFIT.md`](docs/integrations/LLMFIT.md) fija la frontera de integración.
 
 ## ODS y Magnitude
 
@@ -169,13 +173,13 @@ El runner no inventa mediciones ni convierte fixtures en evidencia física.
 
 **RC2 — LEONES Beta User Flow.**
 
-RC2 ya tiene implementado el primer punto de entrada de orquestación (**RC2-A**). No instala ni ejecuta todavía: esa frontera se mantiene deliberadamente para que las operaciones con efectos laterales queden aisladas y auditables.
+RC2-A ya implementa el primer punto de entrada de orquestación. RC2-B fija la arquitectura de hardware intelligence: **LLMFit detecta/perfila y aporta model-fit; LEONES normaliza, conserva procedencia y decide; ODS/Magnitude siguen siendo integraciones separadas.**
 
-El siguiente bloque es **RC2-B — hardware y perfilado real**, conectando el flujo con ODS/Magnitude sin crear un tercer perfilador.
+El siguiente bloque es **RC2-C — selección humana**, alimentado por los candidatos de LLMFit y presentado con suficiente contexto para que el usuario pueda elegir conscientemente.
 
 El objetivo final de RC2 es que una persona pueda recorrerla de principio a fin:
 
-**instalar → hardware → perfilado → candidatos → elección → ODS/Magnitude informado → instalación → benchmark opcional → evidencia → resultado.**
+**instalar → hardware → perfilado LLMFit → candidatos → elección → ODS/Magnitude informado → instalación → benchmark opcional → evidencia → resultado.**
 
 El alcance y los criterios de aceptación están fijados en [`docs/RC2-BETA-USER-FLOW.md`](docs/RC2-BETA-USER-FLOW.md).
 
@@ -187,4 +191,4 @@ Para probar el bootstrap sin efectos laterales:
 python3 scripts/rc2_beta.py --selection examples/rc1/real-a01-selection.json --stack ods --benchmark no
 ```
 
-Las pruebas automatizadas de RC2-A están en `tests/test_rc2_beta_flow.py`.
+La frontera LLMFit está en `runtime_selection/llmfit.py` y sus pruebas en `tests/test_llmfit_integration.py`. La ejecución de LLMFit sobre hardware real se reserva para la validación física de RC2-B; no es necesaria todavía.
