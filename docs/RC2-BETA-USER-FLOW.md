@@ -1,6 +1,6 @@
 # RC2 — LEONES Beta User Flow
 
-**Estado:** plan fijado  
+**Estado:** RC2-A implementado · RC2-B/H en preparación  
 **Fecha:** 31 de agosto de 2026  
 **Predecesor:** RC1 — ejecución efectiva validada  
 
@@ -264,9 +264,13 @@ RC2 debe consumir, no duplicar:
 
 ## 6. Fases de implementación
 
-### RC2-A — Orquestación
+### RC2-A — Orquestación · 🟢 Implementado
 
-Un comando/entrypoint de beta que conduzca el recorrido sin obligar al usuario a conocer los scripts internos.
+`python3 scripts/rc2_beta.py` proporciona el primer punto de entrada CLI y conduce el recorrido mínimo sin obligar al usuario a conocer los scripts internos. Permite cargar una selección validada, mostrar las capacidades de ODS/Magnitude y registrar la decisión de benchmark.
+
+**Límite:** no instala, descarga ni ejecuta runtimes. Las operaciones con efectos laterales quedan para las fases posteriores.
+
+**Documento de implementación:** [`docs/RC2-A-IMPLEMENTATION.md`](RC2-A-IMPLEMENTATION.md).
 
 ### RC2-B — Hardware y perfilado
 
