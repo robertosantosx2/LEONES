@@ -45,10 +45,14 @@ def _choose(io:WizardIO,title:str,options:tuple[str,...])->str:
 def _live_inputs(io:WizardIO)->tuple[dict[str,Any],list[dict[str,Any]]]:
     io.show("\n[INFO] Detectando hardware y candidatos mediante LLMFit...")
     try:
-        system=run_system(); result=run_recommend(limit=5)
+        system=run_system()
+        result=run_recommend(limit=5)
     except LLMFitError as exc:
-        io.show(f"[!] LLMFit no disponible o inválido: {exc}"); raise
-    hardware=normalize_hardware(normalise_hardware({"system":system}))
+        io.show(f"[!] LLMFit no disponible o inválido: {exc}")
+        raise
+    # run_system() already returns the {"system": {...}} payload. Do not nest
+    # it again: normalise_hardware() understands the current LLMFit envelope.
+    hardware=normalize_hardware(normalise_hardware(system))
     raw_candidates=normalise_candidates(result)
     candidates=normalize_candidates([{"model_id":item.get("model") or item.get("raw",{}).get("id"),"name":item.get("model") or item.get("raw",{}).get("name") or item.get("raw",{}).get("id"),"rank":item.get("rank"),"fit":item.get("fit"),"estimated_tps":item.get("estimated_tps"),"source":item.get("source","llmfit"),"source_version":result.version,"evidence_level":"estimated","revision":item.get("raw",{}).get("revision")} for item in raw_candidates])
     return hardware,candidates
