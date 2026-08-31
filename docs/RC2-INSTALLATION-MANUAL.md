@@ -173,7 +173,23 @@ Sólo autoriza si estás de acuerdo.
 
 **Cancelar la instalación es una salida válida.**
 
-## 10. Verificación
+## 10. Instalación: actividad visible y diagnóstico
+
+Una instalación puede tardar varios minutos. **Nunca debe parecer que LEONES se ha quedado bloqueado.** Cuando la herramienta canónica proporcione progreso, la interfaz debe mostrarlo; para descargas largas, usa una barra/porcentaje visible.
+
+Por ejemplo, para el instalador oficial de ODS, evita `curl -fsSL`, porque oculta el progreso. Tras haber dado el consentimiento explícito y siguiendo la URL/ref indicada por la integración, usa una ejecución que conserve la barra de descarga:
+
+```bash
+curl -fL --progress-bar https://install.osmantic.com/ods.sh | bash
+```
+
+La barra de `curl` representa **la descarga del instalador**, no el porcentaje interno de instalación de ODS. LEONES no debe inventar un porcentaje de fases que la herramienta externa no exponga.
+
+Si una operación externa no ofrece porcentaje, muestra al menos actividad indeterminada (spinner/mensaje periódico) y la etapa actual. Si se produce un timeout, conserva el error original y marca la instalación como fallida/bloqueada.
+
+**Importante:** este comando no es un instalador creado por LEONES. Ejecuta el instalador oficial del stack elegido. LEONES no crea otro instalador de ODS ni otro de Magnitude.
+
+## 11. Verificación
 
 Una instalación autorizada no significa que esté lista. Debe pasar los health checks definidos por la integración:
 
@@ -193,7 +209,7 @@ INSTALL_FAILED / BLOCKED
 
 No continúes con benchmark si la integración no está verificada.
 
-## 11. Benchmark opcional
+## 12. Benchmark opcional
 
 Cuando el stack esté preparado, LEONES debe preguntar explícitamente:
 
@@ -203,7 +219,7 @@ Si eliges **No**, termina el recorrido sin ejecutar el benchmark.
 
 Si eliges **Sí**, el consentimiento debe autorizar el benchmark concreto y entonces se entrega el plan al runner canónico de RC1.
 
-## 12. Qué se mide
+## 13. Qué se mide
 
 La evidencia debe distinguir medición real de estimación. Una ejecución válida conserva, cuando corresponda:
 
@@ -221,7 +237,7 @@ La evidencia debe distinguir medición real de estimación. Una ejecución váli
 
 Una medición del 27 de agosto o de cualquier fecha anterior **no sustituye** una ejecución actual.
 
-## 13. Privacidad
+## 14. Privacidad
 
 RC2 debe funcionar con privacidad por defecto:
 
@@ -230,7 +246,7 @@ RC2 debe funcionar con privacidad por defecto:
 - no compartas prompts, archivos, conversaciones o código salvo que el protocolo de prueba lo requiera y hayas decidido hacerlo;
 - la contribución de evidencia al conocimiento colectivo debe ser opt-in.
 
-## 14. Qué debe entregar un beta tester
+## 15. Qué debe entregar un beta tester
 
 Si la prueba llega al benchmark, conserva:
 
@@ -247,7 +263,7 @@ Si la prueba llega al benchmark, conserva:
 
 No borres los mensajes de error originales.
 
-## 15. Qué NO hacer
+## 16. Qué NO hacer
 
 - No reutilizar una evidencia histórica como resultado actual.
 - No convertir `estimated` en `measured`.
@@ -256,7 +272,7 @@ No borres los mensajes de error originales.
 - No asumir que una funcionalidad anunciada está disponible en cualquier versión.
 - No declarar RC2 validado por una prueba exclusivamente local del desarrollador.
 
-## 16. Problemas
+## 17. Problemas
 
 Cuando algo falle, registra:
 
@@ -276,7 +292,7 @@ execution_id (si existe):
 
 No ocultes ni resumas de forma destructiva el error original.
 
-## 17. Criterio de éxito del piloto
+## 18. Criterio de éxito del piloto
 
 La prueba es especialmente valiosa si un usuario externo puede completar sin intervención del desarrollador:
 
