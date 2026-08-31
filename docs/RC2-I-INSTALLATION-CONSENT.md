@@ -4,6 +4,23 @@
 
 RC2-I conecta la elección de ODS/Magnitude con una instalación explícitamente autorizada. La selección nunca instala por sorpresa.
 
+## Antes de instalar
+
+LEONES debe presentar un resumen verificable del plan que se ejecutará:
+
+- modelo y variante seleccionados;
+- stack seleccionado;
+- componentes/acciones;
+- versión o referencia cuando se conozca;
+- almacenamiento previsto cuando se conozca;
+- uso de red y descargas;
+- permisos requeridos;
+- cambios locales;
+- información que permanecerá local;
+- opción de cancelar.
+
+Todo dato desconocido se presenta como desconocido/null; nunca se inventa.
+
 ## Flujo
 
 ```text
@@ -12,14 +29,7 @@ STACK_SELECTED
 INSTALL_PLAN_READY
       ↓
 ┌─────────────────────────────────────────────┐
-│ LEONES explica qué instalará                 │
-│ • componentes                               │
-│ • versión/ref                              │
-│ • espacio requerido si se conoce            │
-│ • red/descargas                             │
-│ • permisos                                  │
-│ • cambios locales                            │
-│ • opción de cancelar                         │
+│ LEONES explica el plan                      │
 └──────────────────────┬──────────────────────┘
                        ↓
               ¿AUTORIZAR INSTALACIÓN?
@@ -28,7 +38,7 @@ INSTALL_PLAN_READY
                ↓                 ↓
         INSTALL_DECLINED   INSTALL_AUTHORIZED
                                   ↓
-                              INSTALL
+                              INSTALLING
                                   ↓
                               VERIFY
                          /              \
@@ -37,30 +47,26 @@ INSTALL_PLAN_READY
           READY_FOR_BENCHMARK       BLOCKED
 ```
 
-## Reglas
+## Consentimiento
 
-1. La instalación requiere consentimiento específico.
-2. El consentimiento debe identificar el stack y el plan que se va a ejecutar.
-3. Un consentimiento anterior no autoriza automáticamente una instalación diferente.
-4. Cancelar no se considera error.
-5. La instalación debe ser idempotente cuando el componente ya esté verificado.
-6. Verificación separada: instalar no equivale a estar listo.
-7. Ningún benchmark queda autorizado por instalar correctamente.
-8. Los secretos y credenciales no se solicitan salvo que un componente los requiera y el usuario lo haya aceptado expresamente.
+El consentimiento debe identificar el stack y el plan. Un consentimiento anterior no autoriza una instalación diferente. Cancelar no es un error.
 
-## Estados canónicos
+El contrato de persistencia es `schemas/rc2-install-consent.v1.json`.
 
-- `INSTALL_PLAN_READY`
-- `INSTALL_CONSENT_REQUIRED`
-- `INSTALL_DECLINED`
-- `INSTALL_AUTHORIZED`
-- `INSTALLING`
-- `INSTALL_VERIFIED`
-- `INSTALL_FAILED`
-- `READY_FOR_BENCHMARK`
+## Instalación y verificación
+
+El instalador es el único componente autorizado a producir efectos laterales. Debe ser idempotente cuando sea posible. Si el componente ya está correctamente instalado y verificado, no debe modificarse innecesariamente.
+
+La verificación es independiente de la instalación. Solo una verificación satisfactoria puede producir `READY_FOR_BENCHMARK`.
+
+**Instalar correctamente no autoriza ningún benchmark.** El consentimiento de benchmark sigue gobernado por RC2-F.
+
+## Seguridad
+
+No se aceptan comandos ocultos ni acciones fuera del plan autorizado. Los secretos y credenciales no se imprimen ni se incorporan a la evidencia.
 
 ## Integración
 
-El instalador será un adaptador con efectos laterales. El wizard presenta y solicita consentimiento; el adaptador ejecuta. La sesión conserva el resultado y los detalles de verificación.
+RC2-I consume `stack_selection`, genera un plan y persiste su consentimiento/resultado en la sesión RC2-G. Después entrega el control al gate de benchmark y al pipeline de ejecución/evidencia validado en RC1.
 
 RC2-I no redefine los contratos de ODS/Magnitude ni el runner RC1.
