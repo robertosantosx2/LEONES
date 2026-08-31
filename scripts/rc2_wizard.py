@@ -28,7 +28,7 @@ BANNER = r"""
 
 STACKS = {
     "ODS": {"name":"ods","adapter":"ods.v1","mode":"local-stack","capabilities":{"es":("Stack local de inferencia","Preparación y validación del plan","Integración con ejecución local","Medición/evidencia mediante pipeline común cuando proceda"),"en":("Local inference stack","Execution-plan preparation and validation","Local execution integration","Measurement/evidence through the common pipeline when applicable"),"zh":("本地推理栈","执行计划准备与验证","本地执行集成","在适用时通过通用流水线进行测量/证据")}},
-    "Magnitude": {"name":"magnitude","adapter":"magnitude.v1","mode":"agent","capabilities":{"es":("Integración orientada a agente/asistente","Preparación de metadatos de ejecución","Ejecución separada de la preparación","Reutilización de benchmark/evidencia comunes"),"en":("Agent/assistant-oriented integration","Execution metadata preparation","Execution separated from preparation","Reuse of common benchmark/evidence")}},
+    "Magnitude": {"name":"magnitude","adapter":"magnitude.v1","mode":"agent","capabilities":{"es":("Integración orientada a agente/asistente","Preparación de metadatos de ejecución","Ejecución separada de la preparación","Reutilización de benchmark/evidencia comunes"),"en":("Agent/assistant-oriented integration","Execution metadata preparation","Execution separated from preparation","Reuse of common benchmark/evidence"),"zh":("面向代理/助手的集成","执行元数据准备","执行与准备分离","复用通用基准测试/证据")}},
 }
 
 @dataclass
@@ -90,8 +90,8 @@ def main(argv: list[str] | None = None) -> int:
         answers = iter(("1", "1", "1"))
         session = run_wizard(WizardIO(input_fn=lambda _: next(answers)))
         return 0 if session.state == "READY_FOR_INSTALL" else 1
-    run_wizard()
-    return 0
+    session = run_wizard()
+    return 0 if session.state == "READY_FOR_INSTALL" else 1
 
 if __name__ == "__main__":
     raise SystemExit(main())
