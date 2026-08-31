@@ -37,4 +37,6 @@ def test_rc2_bootstrap_can_load_selection_fixture():
 def test_selection_fixture_is_valid_json():
     data = json.loads(FIXTURE.read_text(encoding="utf-8"))
     assert isinstance(data, dict)
-    assert data.get("execution_plans")
+    candidates = data.get("candidates")
+    assert isinstance(candidates, list) and candidates
+    assert candidates[0].get("model_id") == "qwen2.5:0.5b-instruct-q4_K_M"
