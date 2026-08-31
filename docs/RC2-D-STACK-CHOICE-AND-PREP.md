@@ -105,9 +105,11 @@ La medición de RC1 sigue siendo la referencia para distinguir estimación de ej
 
 ## 7. No duplicar funciones
 
-LEONES no debe crear otro instalador de ODS ni otro instalador de Magnitude. La responsabilidad de instalación pertenece al proyecto elegido; LEONES prepara, valida, solicita consentimiento, invoca la interfaz soportada y verifica el resultado.
+No debe crear otro instalador de ODS ni otro instalador de Magnitude.
 
 Tampoco debe tratar una recomendación o estimación de ODS/Magnitude como medición LEONES.
+
+La responsabilidad de instalación pertenece al proyecto elegido; LEONES prepara, valida, solicita consentimiento, invoca la interfaz soportada y verifica el resultado.
 
 ## 8. Estados mínimos
 
