@@ -1,0 +1,22 @@
+[
+  {
+    "model_id": "qwen2.5:0.5b-instruct-q4_K_M",
+    "name": "Qwen2.5 0.5B Instruct Q4_K_M",
+    "rank": 1,
+    "fit": 1.0,
+    "estimated_tps": null,
+    "source": "llmfit",
+    "source_version": "fixture-1",
+    "evidence_level": "estimated"
+  },
+  {
+    "model_id": "qwen2.5:1.5b-instruct-q4_K_M",
+    "name": "Qwen2.5 1.5B Instruct Q4_K_M",
+    "rank": 2,
+    "fit": 0.87,
+    "estimated_tps": null,
+    "source": "llmfit",
+    "source_version": "fixture-1",
+    "evidence_level": "estimated"
+  }
+]
