@@ -1,67 +1,3 @@
-# LEONES — Local Ecosystem of Open Neural Expert Systems
-
-> **IA agéntica libre/open para hardware de consumo.**  
-> **Linux primero · evidencia real · conocimiento colectivo.**
-
-[🌐 Web](https://robertosantosx2.github.io/LEONES/) · [⚙️ Aplicación](https://robertosantosx2.github.io/LEONES/app.html) · [🦁 GitHub](https://github.com/robertosantosx2/LEONES) · [🤝 Contribuir](CONTRIBUTING.md)
-
----
-
-## Qué es LEONES
-
-LEONES construye una cadena reproducible para responder una pregunta práctica:
-
-> **¿Qué modelo, runtime, hardware y configuración permiten realizar una tarea real de IA de forma razonable, reproducible, abierta y económicamente sostenible?**
-
-No es otro catálogo de modelos ni otro chatbot. Es un sistema de **descubrimiento, selección, ejecución, medición, evidencia y decisión**.
-
-Su principio rector es:
-
-> **Una afirmación no se convierte en un hecho por repetición: se descubre, documenta, contrasta, mide cuando corresponde y conserva con su procedencia.**
-
----
-
-## Cadena operativa
-
-```text
-DESCUBRIMIENTO
-      ↓
-ATLAS + EVIDENCIA + APERTURA
-      ↓
-HARDWARE + PRECIO / TCO
-      ↓
-LLMFIT / MODEL FIT
-      ↓
-SELECCIÓN DE MODELO + RUNTIME
-      ↓
-DECISIÓN DE STACK
-      ↓
-ODS / MAGNITUDE / RUNTIME DIRECTO
-      ↓
-ROUTER / AGENT / TAREA REAL
-      ↓
-BENCHMARK
-      ↓
-RUNNER CANÓNICO
-      ↓
-MEDICIÓN FÍSICA
-      ↓
-EVIDENCIA REPRODUCIBLE
-      ↓
-RECOMENDACIÓN
-      ↓
-CONOCIMIENTO COLECTIVO
-```
-
-### Regla de frontera
-
-**GitHub/CI prepara y valida; el host Linux ejecuta y mide.**
-
-CI valida contratos, esquemas, código, fixtures, tests y gates. No sustituye una medición realizada sobre el hardware y runtime reales.
-
-El **runner existente es la vía canónica de ejecución medida**. No se crea un segundo runner paralelo ni se convierte el protocolo de medición en otra arquitectura de ejecución.
-
----
 
 # Estado del proyecto
 
@@ -73,7 +9,7 @@ El **runner existente es la vía canónica de ejecución medida**. No se crea un
 | JALÓN 3 | 🟢 Cerrado | Contrato de medición real + auditoría física |
 | JALÓN 4 | 🟢 **Cerrado** | Metodología AA + contrato LEONES → ODS/Magnitude + benchmark de tareas + tiers |
 | RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end: selección → gate → Ollama → A01 → medición → evidencia |
-| RC2 | 🟡 **En preparación** | Flujo completo de usuario beta; **RC2-A implementado · RC2-B LLMFit fijado** |
+| RC2 | 🟡 **En preparación** | Flujo completo de usuario beta; **RC2-A implementado · RC2-B LLMFit fijado · RC2-C contrato de selección fijado** |
 
 ## RC1 — ejecución efectiva validada
 
@@ -109,6 +45,7 @@ Antes de elegir ODS o Magnitude, LEONES debe exponer las funcionalidades relevan
 **Plan:** [`docs/RC2-BETA-USER-FLOW.md`](docs/RC2-BETA-USER-FLOW.md)  
 **RC2-A implementado:** [`docs/RC2-A-IMPLEMENTATION.md`](docs/RC2-A-IMPLEMENTATION.md)  
 **RC2-B — LLMFit:** [`docs/RC2-B-LLMFIT-HARDWARE-INTELLIGENCE.md`](docs/RC2-B-LLMFIT-HARDWARE-INTELLIGENCE.md)  
+**RC2-C — selección humana:** [`docs/RC2-C-MODEL-SELECTION.md`](docs/RC2-C-MODEL-SELECTION.md)  
 **Integración LLMFit:** [`docs/integrations/LLMFIT.md`](docs/integrations/LLMFIT.md)  
 **Entrada beta:** [`scripts/rc2_beta.py`](scripts/rc2_beta.py)
 
@@ -133,62 +70,3 @@ LLMFit documenta detección de hardware, recomendaciones JSON, planificación de
 ## ODS y Magnitude
 
 ODS se utiliza como integración de stack local y Magnitude como integración de agente/asistente. Sus contratos ya están fijados; RC2 añade una experiencia de elección informada que **expone sus funcionalidades antes de que el usuario elija**.
-
-- [`docs/integrations/ODS.md`](docs/integrations/ODS.md)
-- [`docs/integrations/Magnitude.md`](docs/integrations/Magnitude.md)
-- [`docs/subprojects/LEONES-ODS-MAGNITUDE-DECISION-CONTRACT.md`](docs/subprojects/LEONES-ODS-MAGNITUDE-DECISION-CONTRACT.md)
-
-## Runner y medición física
-
-```text
-selección autorizada → runner → runtime → modelo + hardware
-                                      ↓
-                                  benchmark
-                                      ↓
-                                  medición
-                                      ↓
-                                   evidence
-```
-
-El runner no inventa mediciones ni convierte fixtures en evidencia física.
-
----
-
-# Estados de evidencia
-
-| Estado | Significado |
-|---|---|
-| `estimated` | cálculo o estimación |
-| `reported` | dato declarado por una fuente externa |
-| `observed` | configuración observada en un entorno |
-| `measured` | medición ejecutada por LEONES |
-| `verified` | dato que superó el quality gate correspondiente |
-| `unknown` | todavía no demostrado |
-
-**Nunca se eleva un estado por inferencia, conveniencia o repetición.**
-
----
-
-# Siguiente bloque lógico
-
-**RC2 — LEONES Beta User Flow.**
-
-RC2-A ya implementa el primer punto de entrada de orquestación. RC2-B fija la arquitectura de hardware intelligence: **LLMFit detecta/perfila y aporta model-fit; LEONES normaliza, conserva procedencia y decide; ODS/Magnitude siguen siendo integraciones separadas.**
-
-El siguiente bloque es **RC2-C — selección humana**, alimentado por los candidatos de LLMFit y presentado con suficiente contexto para que el usuario pueda elegir conscientemente.
-
-El objetivo final de RC2 es que una persona pueda recorrerla de principio a fin:
-
-**instalar → hardware → perfilado LLMFit → candidatos → elección → ODS/Magnitude informado → instalación → benchmark opcional → evidencia → resultado.**
-
-El alcance y los criterios de aceptación están fijados en [`docs/RC2-BETA-USER-FLOW.md`](docs/RC2-BETA-USER-FLOW.md).
-
-## Desarrollo RC2
-
-Para probar el bootstrap sin efectos laterales:
-
-```bash
-python3 scripts/rc2_beta.py --selection examples/rc1/real-a01-selection.json --stack ods --benchmark no
-```
-
-La frontera LLMFit está en `runtime_selection/llmfit.py` y sus pruebas en `tests/test_llmfit_integration.py`. La ejecución de LLMFit sobre hardware real se reserva para la validación física de RC2-B; no es necesaria todavía.
