@@ -78,27 +78,30 @@ def run_wizard(io: WizardIO|None=None, *, examples_root: str = "examples/rc2") -
     if install.startswith("Cancelar"):
         session.block("INSTALL_DECLINED","Installation not authorized / Instalación no autorizada / 未授权安装"); return session
     session.authorize_installation(); io.show("[✓] Instalación autorizada / Installation authorized / 安装已授权")
-    io.show("\n[INFO] Instalación preparada. La verificación física queda fuera del smoke y debe realizarse antes del benchmark.")
-    session.installation_verified({"status":"verification_required"})
-    io.show("[✓] Instalación verificada / Installation verified / 安装已验证")
-    session.request_benchmark_consent({"model":chosen,"selection_plan":plan,"status":"ready_for_real_benchmark"})
-    benchmark=_choose(io,"¿EJECUTAR BENCHMARK? / DO YOU WANT TO RUN THE BENCHMARK? / 是否运行基准测试？",("Sí / Yes / 是","No / No / 否"))
-    if benchmark.startswith("No"):
-        session.decline_benchmark(); return session
-    handoff=session.authorize_benchmark()
-    io.show("[✓] Benchmark autorizado / Benchmark authorized / 基准测试已授权")
-    io.show(f"[✓] RC1 handoff preparado / execution_authorized={handoff['execution_authorized']}")
+    return session
+
+def _non_interactive_smoke() -> BetaSession:
+    """Exercise only the RC2 state contract; never prompts or claims real installation."""
+    session=BetaSession()
+    hardware={"source":"smoke","cpu":"fixture","ram_gb":8}
+    model={"name":"Qwen2.5 0.5B Instruct","fit":1.0,"source":"llmfit"}
+    stack={"name":"ods","adapter":"ods.v1","mode":"local-stack"}
+    plan={"schema":"selection-plan.v1","mode":"smoke"}
+    session.advance("HARDWARE_READY", hardware=hardware)
+    session.advance("MODEL_SELECTED", model_choice=model)
+    session.advance("STACK_SELECTED", stack_selection=stack, selection_plan=plan)
+    session.advance("CONSENT_REQUIRED", installation={"status":"plan_ready"})
+    session.authorize_installation()
+    session.installation_verified({"status":"fixture_verified","real_installation":False})
+    session.request_benchmark_consent({"status":"fixture_ready_for_benchmark","real_benchmark":False})
+    session.authorize_benchmark()
     return session
 
 def main(argv: list[str] | None = None) -> int:
     parser=argparse.ArgumentParser(description="LEONES RC2 beta wizard")
-    parser.add_argument("--non-interactive",action="store_true",help="run deterministic contract smoke without prompts")
+    parser.add_argument("--non-interactive",action="store_true",help="run deterministic state-contract smoke without prompts")
     args=parser.parse_args(argv)
-    if args.non_interactive:
-        answers=iter(("1","1","1"))
-        session=run_wizard(WizardIO(input_fn=lambda _: next(answers)))
-    else:
-        session=run_wizard()
+    session=_non_interactive_smoke() if args.non_interactive else run_wizard()
     return 0 if session.state == "EXECUTION_AUTHORIZED" else 1
 
 if __name__ == "__main__":
