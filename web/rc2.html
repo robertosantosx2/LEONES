@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="LEONES RC2: recorrido beta desde hardware real hasta selección, stack, instalación, benchmark y evidencia." />
+<title>LEONES · RC2 Beta</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-17-8" />
+<link rel="stylesheet" href="assets/css/site.css?v=2026-08-17-8" />
+<style>
+.rc2-hero-note{margin-top:1rem;padding:1rem 1.15rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}.rc2-state{display:inline-block;padding:.3rem .55rem;border-radius:999px;background:#eef5f8;font-weight:800;font-size:.78rem}.rc2-flow{overflow:auto}.rc2-gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}.rc2-card{padding:1.1rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}.rc2-card h3{margin-top:0}.rc2-card p:last-child{margin-bottom:0}.rc2-warning{border-left:4px solid #315d7d;padding:.8rem 1rem;background:#f5f8fa}.rc2-links{display:flex;flex-wrap:wrap;gap:.7rem}.rc2-links a{font-weight:800}.rc2-small{font-size:.9rem;color:#5d6d77}
+</style>
+</head>
+<body>
+<header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Beta · RC2</span><h1>LEONES · RC2</h1><p>Del hardware real a una decisión reproducible: modelo, stack, instalación, benchmark y evidencia.</p><div class="rc2-hero-note"><span class="rc2-state">RC2-A validado · RC2-B→H en validación física</span><p><strong>RC2 no sustituye las herramientas canónicas.</strong> Orquesta LLMFit, ODS/Magnitude y el runner de evidencia de LEONES, manteniendo separadas estimaciones y mediciones reales.</p></div></div></header>
+<main class="site-main" id="main">
+<section class="site-section" aria-labelledby="flow-title"><span class="site-tag">Recorrido beta</span><h2 id="flow-title">Una persona puede seguir este camino</h2><div class="rc2-flow"><pre class="site-stack">HARDWARE REAL
+      ↓
+LLMFIT → CANDIDATOS → ELEGIR MODELO
+                         ↓
+                ODS  ↔  MAGNITUDE
+                         ↓
+                  ELEGIR STACK
+                         ↓
+                  CONSENTIMIENTO
+                         ↓
+                 INSTALAR / VERIFICAR
+                         ↓
+                 ¿BENCHMARK? ───── NO → FIN
+                         │
+                        SÍ
+                         ↓
+              RUNNER CANÓNICO RC1
+                         ↓
+             MEDICIÓN REAL → EVIDENCIA
+                         ↓
+                 RESULTADO / HANDOFF</pre></div></section>
+<section class="site-section" aria-labelledby="gates-title"><span class="site-tag">Gates</span><h2 id="gates-title">Qué está validado y qué falta</h2><div class="rc2-gates"><article class="rc2-card"><h3>RC2-A · 🟢</h3><p>Orquestación beta: hardware → candidatos → modelo → ODS/Magnitude → consentimiento.</p><p class="rc2-small">Suite: 334 tests passed.</p></article><article class="rc2-card"><h3>RC2-B · 🟡</h3><p>Instalación y verificación física en una máquina real. Debe haber estado claro y diagnóstico si falla.</p></article><article class="rc2-card"><h3>RC2-C/D · 🟡</h3><p>Health checks, elección y preparación del stack sin duplicar instaladores ni runners.</p></article><article class="rc2-card"><h3>RC2-E→H · 🟡</h3><p>Benchmark opcional autorizado, evidencia, resultado y repetición por beta testers externos.</p></article></div></section>
+<section class="site-section" aria-labelledby="truth-title"><span class="site-tag">Regla de evidencia</span><h2 id="truth-title">Estimación no es medición</h2><div class="rc2-warning"><p><strong>LLMFit orienta; la ejecución real demuestra.</strong> Las cifras de fit/tok/s de LLMFit se conservan como <code>estimated</code>. Una evidencia de LEONES sólo nace de una ejecución física con el runner/protocolo correspondiente.</p></div><p>Un beta tester debe producir su propio <code>execution_id</code>, timestamp, métrica y procedencia. Una medición histórica no sustituye una ejecución actual.</p></section>
+<section class="site-section" aria-labelledby="install-title"><span class="site-tag">Instalación</span><h2 id="install-title">Actividad visible y fallos honestos</h2><div class="site-grid"><article class="site-card"><h3>Durante operaciones largas</h3><p>LEONES debe mostrar actividad y, cuando conozca fases reales, un porcentaje que represente esas fases. Nunca debe inventar el progreso interno de un instalador externo.</p></article><article class="site-card"><h3>Si la red falla</h3><p>Un timeout del instalador externo se registra como fallo de instalación, conservando el error original. No se presenta como instalación exitosa ni se continúa al benchmark.</p></article><article class="site-card"><h3>Sin arquitectura paralela</h3><p>LEONES no crea otro instalador de ODS, otro instalador de Magnitude ni otro runner RC2. Reutiliza las interfaces y runners canónicos.</p></article></div></section>
+<section class="site-section" aria-labelledby="manuals-title"><span class="site-tag">Para beta testers</span><h2 id="manuals-title">Manuales y código</h2><div class="rc2-links"><a href="../docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación RC2</a><a href="../docs/RC2-USER-MANUAL.md">Manual de usuario RC2</a><a href="../docs/RC2-BETA-USER-FLOW.md">Flujo contractual RC2</a><a href="../scripts/rc2_wizard.py">Wizard RC2</a><a href="../README.md">README del proyecto</a></div><p class="rc2-small">La web explica el recorrido; la instalación y las mediciones se ejecutan en la máquina del beta tester.</p></section>
+<section class="site-section" aria-labelledby="status-title"><span class="site-tag">Estado</span><h2 id="status-title">Dónde estamos</h2><p>RC1 está validado end-to-end. RC2-A está validado. El siguiente hito es demostrar físicamente el flujo RC2-B en una instalación real y, después, generar evidencia nueva mediante el camino canónico.</p></section>
+</main>
+<script src="assets/js/navigation.js?v=2026-08-17-8" defer></script>
+</body>
+</html>
