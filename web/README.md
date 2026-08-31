@@ -12,6 +12,31 @@ La web de LEONES prioriza, en este orden:
 
 La estética no debe introducir complejidad que no aporte una función clara.
 
+## Estado visible
+
+A 31 de agosto de 2026 la web debe reflejar el siguiente estado canónico:
+
+- **JALÓN 1:** 🟢 cerrado.
+- **JALÓN 2:** 🟢 cerrado, con ejecución física y evidencia reproducible.
+- **JALÓN 3:** 🟢 cerrado operativamente, con contrato `runtime-benchmark-evidence.v1.1`.
+- **RC1:** 🟢 validado mediante ejecución efectiva end-to-end.
+- **ODS / Magnitude:** 🟢 contrato de decisión fijado, sin scoring paralelo.
+- **Beta:** preparada para recoger ejecuciones independientes sobre hardware de terceros.
+
+La página pública de referencia para este estado es [`estado.html`](estado.html).
+
+## RC1
+
+La web no debe presentar RC1 como una simple validación de código. El hito demostrado es físico:
+
+```text
+selección → gate → execution_authorized=true
+         → runtime real → modelo real → A01
+         → grader → medición → evidencia
+```
+
+La ejecución de referencia produjo `53.3795 tok/s` con `qwen2.5:0.5b-instruct-q4_K_M` sobre Ollama el 2026-08-31. Esa cifra es histórica para esa ejecución y no debe reutilizarse como medición de otro equipo.
+
 ## Arquitectura
 
 ```text
@@ -60,4 +85,8 @@ Los scripts locales son herramientas autónomas. El usuario descarga solo las he
 
 ## Criterio de terminado
 
-Una página está terminada cuando una persona puede abrirla, entender para qué sirve, navegar al siguiente paso y revisar su contenido sin conocer la arquitectura interna del proyecto.
+Una página está terminada cuando una persona puede abrirla, entender para qué sirve, navegar al siguiente paso y revisar su contenido sin conocer la arquitectura interna.
+
+## Regla de producto
+
+La web debe reflejar el repositorio real. No anunciar capacidades como cerradas si no existe evidencia correspondiente en el proyecto. Cuando haya una medición física nueva, debe enlazarse a su evidencia y conservar su carácter local y reproducible.
