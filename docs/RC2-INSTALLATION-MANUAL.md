@@ -177,15 +177,33 @@ Sólo autoriza si estás de acuerdo.
 
 Una instalación puede tardar varios minutos. **Nunca debe parecer que LEONES se ha quedado bloqueado.** Cuando la herramienta canónica proporcione progreso, la interfaz debe mostrarlo; para descargas largas, usa una barra/porcentaje visible.
 
-Por ejemplo, para el instalador oficial de ODS, evita `curl -fsSL`, porque oculta el progreso. Tras haber dado el consentimiento explícito y siguiendo la URL/ref indicada por la integración, usa una ejecución que conserve la barra de descarga:
+Para el instalador oficial de ODS, evita `curl -fsSL`, porque oculta el progreso. Tras haber dado el consentimiento explícito y siguiendo la URL/ref indicada por la integración, descarga primero el instalador a un fichero temporal y **sólo ejecútalo si la descarga termina correctamente**:
 
 ```bash
-curl -fL --progress-bar https://install.osmantic.com/ods.sh | bash
+set -o pipefail
+rm -f /tmp/ods-install.sh
+
+if curl -fL --progress-bar --connect-timeout 15 --max-time 300 \
+    https://install.osmantic.com/ods.sh \
+    -o /tmp/ods-install.sh; then
+    echo
+    echo "[✓] Descarga del instalador completada"
+    echo "[INFO] Ejecutando instalador oficial de ODS..."
+    bash /tmp/ods-install.sh
+else
+    rc=$?
+    echo
+    echo "[✗] No se pudo descargar el instalador de ODS (curl rc=$rc)"
+    echo "[INFO] Instalación bloqueada: no se ejecutará ningún fichero incompleto o inexistente."
+    exit "$rc"
+fi
 ```
 
 La barra de `curl` representa **la descarga del instalador**, no el porcentaje interno de instalación de ODS. LEONES no debe inventar un porcentaje de fases que la herramienta externa no exponga.
 
-Si una operación externa no ofrece porcentaje, muestra al menos actividad indeterminada (spinner/mensaje periódico) y la etapa actual. Si se produce un timeout, conserva el error original y marca la instalación como fallida/bloqueada.
+Si una operación externa no ofrece porcentaje, muestra al menos actividad indeterminada (spinner/mensaje periódico) y la etapa actual. Si se produce un timeout, conserva el error original y marca la instalación como `INSTALL_FAILED`/`BLOCKED`. **No continúes automáticamente intentando ejecutar el instalador.**
+
+Si el instalador oficial proporciona su propio progreso, debe conservarse en pantalla. Si no proporciona progreso cuantificable, debe mostrarse actividad durante la operación sin fabricar una cifra.
 
 **Importante:** este comando no es un instalador creado por LEONES. Ejecuta el instalador oficial del stack elegido. LEONES no crea otro instalador de ODS ni otro de Magnitude.
 
@@ -235,7 +253,7 @@ La evidencia debe distinguir medición real de estimación. Una ejecución váli
 - procedencia;
 - hashes cuando correspondan.
 
-Una medición del 27 de agosto o de cualquier fecha anterior **no sustituye** una ejecución actual.
+Una medición histórica **no sustituye una ejecución actual**.
 
 ## 14. Privacidad
 
