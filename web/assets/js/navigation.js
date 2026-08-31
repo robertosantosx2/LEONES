@@ -12,6 +12,7 @@
         ["Conocimiento de IA en Local", "conocimiento.html", "top"],
         ["Optimización de inferencia", "conocimiento-optimizacion.html", "top"],
         ["Aplicación", "app.html", "top"],
+        ["RC2 · Beta", "rc2.html", "application"],
         ["Evaluación", "evaluacion.html", "application"],
         ["Recomendaciones", "recommendations.html", "application"],
         ["Recomendar a LEONES", "recomendar.html", "application"],
