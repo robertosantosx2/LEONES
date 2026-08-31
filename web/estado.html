@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Estado actual de LEONES: JALÓN 3 cerrado, RC1 validado y beta testers preparados.">
+<title>LEONES · Estado</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-2">
+</head>
+<body>
+<header class="site-hero"><div class="site-hero__inner">
+<span class="site-tag">Estado del proyecto · 31 agosto 2026</span>
+<h1>LEONES · Estado</h1>
+<p>De los contratos a la ejecución física: qué está cerrado, qué está validado y qué viene después.</p>
+</div></header>
+<main class="site-main" id="main">
+<section class="site-section"><span class="site-tag">Ahora</span><h2>RC1 · ejecución efectiva validada</h2>
+<p class="site-lead"><strong>RC1 está validado.</strong> La cadena completa se ha ejecutado sobre un host Linux con selección autorizada, gate, runtime Ollama, modelo real, tarea A01, grader y medición nueva.</p>
+<pre class="site-stack">SELECCIÓN
+   ↓
+RUNTIME GATE
+   ↓
+execution_authorized=true
+   ↓
+OLLAMA
+   ↓
+qwen2.5:0.5b-instruct-q4_K_M
+   ↓
+A01 → grader=passed
+   ↓
+measurement_kind=real
+   ↓
+53.3795 tok/s
+   ↓
+artifacts/rc1-effective-execution.json</pre>
+<div class="site-note"><strong>Ejecución:</strong> <code>e07822d0-d991-4e9b-985b-b9afea0c13c0</code> · <strong>fecha:</strong> 2026-08-31 · <strong>evidencia:</strong> measured.</div>
+<p><a href="../docs/completed/RC1-EFFECTIVE-EXECUTION.md">Ver cierre documental de RC1 →</a></p>
+</section>
+<section class="site-section"><span class="site-tag">Base consolidada</span><h2>Qué queda detrás</h2>
+<div class="site-grid">
+<article class="site-card"><h3>JALÓN 1</h3><p>🟢 Cerrado. CI y contratos iniciales.</p></article>
+<article class="site-card"><h3>JALÓN 2</h3><p>🟢 Cerrado. Ejecución física con llama.cpp y evidencia reproducible.</p></article>
+<article class="site-card"><h3>JALÓN 3</h3><p>🟢 Cerrado operativamente. Contrato de medición real y auditoría física.</p></article>
+<article class="site-card"><h3>ODS / Magnitude</h3><p>🟢 Contrato de decisión fijado. Sin scoring paralelo.</p></article>
+</div></section>
+<section class="site-section"><span class="site-tag">Siguiente paso</span><h2>Beta testers</h2>
+<p>La siguiente fase no requiere otra arquitectura: requiere ejecutar el sistema en máquinas externas y conservar evidencia comparable.</p>
+<div class="site-grid">
+<article class="site-card"><h3>Instalar</h3><p>Ubuntu/Linux + Python + Ollama + modelo de referencia.</p></article>
+<article class="site-card"><h3>Ejecutar</h3><p>El runner canónico consume la selección autorizada y produce una evidencia nueva.</p></article>
+<article class="site-card"><h3>Conservar</h3><p>Cada participante entrega su execution_id, métrica, entorno y SHA-256.</p></article>
+</div>
+<p><a href="../docs/BETA-TESTER-INSTALL.md">Abrir manual de beta tester →</a></p>
+</section>
+<section class="site-section"><span class="site-tag">Regla</span><h2>Medir antes de afirmar</h2><p>La medición histórica del proyecto no se reutiliza como medición de otra máquina. <code>estimated</code>, <code>reported</code> y <code>measured</code> mantienen fronteras distintas.</p></section>
+</main>
+<script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
+</body></html>
