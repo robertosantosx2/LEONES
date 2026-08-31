@@ -2,11 +2,7 @@
 
 This module deliberately does not implement model-fit heuristics. It consumes
 LLMFit's machine-readable output and normalises the result for LEONES.
-
-No installation, download, benchmark, or network operation is performed here.
-The caller decides whether and when to invoke the external ``llmfit`` command.
 """
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -22,8 +18,6 @@ class LLMFitError(RuntimeError):
 
 @dataclass(frozen=True)
 class LLMFitResult:
-    """Normalised, provenance-preserving LLMFit result."""
-
     command: tuple[str, ...]
     version: str | None
     system: Mapping[str, Any]
@@ -32,22 +26,31 @@ class LLMFitResult:
 
 
 def executable() -> str | None:
-    """Return the resolved LLMFit executable without executing it."""
-
     return shutil.which("llmfit")
 
 
-def build_recommend_command(
-    *,
-    limit: int = 5,
-    use_case: str | None = None,
-    max_context: int | None = None,
-) -> list[str]:
-    """Build a read-only JSON recommendation command."""
+def _run_json(command: list[str], *, timeout_seconds: int = 30) -> Mapping[str, Any]:
+    if executable() is None:
+        raise LLMFitError("llmfit executable not found")
+    try:
+        completed = subprocess.run(command, check=False, capture_output=True, text=True, timeout=timeout_seconds)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise LLMFitError(f"LLMFit execution failed: {exc}") from exc
+    if completed.returncode != 0:
+        detail = completed.stderr.strip() or completed.stdout.strip()
+        raise LLMFitError(f"LLMFit exited with {completed.returncode}: {detail}")
+    try:
+        raw = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise LLMFitError("LLMFit did not return valid JSON") from exc
+    if not isinstance(raw, dict):
+        raise LLMFitError("LLMFit JSON root must be an object")
+    return raw
 
+
+def build_recommend_command(*, limit: int = 5, use_case: str | None = None, max_context: int | None = None) -> list[str]:
     if limit < 1:
         raise ValueError("limit must be >= 1")
-
     command = ["llmfit", "recommend", "--json", "--limit", str(limit)]
     if use_case:
         command.extend(["--use-case", use_case])
@@ -58,91 +61,68 @@ def build_recommend_command(
     return command
 
 
-def run_recommend(
-    *,
-    limit: int = 5,
-    use_case: str | None = None,
-    max_context: int | None = None,
-    timeout_seconds: int = 30,
-) -> LLMFitResult:
-    """Run LLMFit recommendations and preserve its raw provenance."""
-
-    command = build_recommend_command(
-        limit=limit, use_case=use_case, max_context=max_context
-    )
-    if executable() is None:
-        raise LLMFitError("llmfit executable not found")
-
-    try:
-        completed = subprocess.run(
-            command,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise LLMFitError(f"LLMFit execution failed: {exc}") from exc
-
-    if completed.returncode != 0:
-        detail = completed.stderr.strip() or completed.stdout.strip()
-        raise LLMFitError(f"LLMFit exited with {completed.returncode}: {detail}")
-
-    try:
-        raw = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        raise LLMFitError("LLMFit did not return valid JSON") from exc
-
-    if not isinstance(raw, dict):
-        raise LLMFitError("LLMFit JSON root must be an object")
-
+def run_recommend(*, limit: int = 5, use_case: str | None = None, max_context: int | None = None, timeout_seconds: int = 30) -> LLMFitResult:
+    command = build_recommend_command(limit=limit, use_case=use_case, max_context=max_context)
+    raw = _run_json(command, timeout_seconds=timeout_seconds)
     models = raw.get("models", [])
     if not isinstance(models, list):
         raise LLMFitError("LLMFit JSON field 'models' must be a list")
-
     system = raw.get("system", {})
-    if not isinstance(system, dict):
-        system = {}
-
-    version = raw.get("version")
     return LLMFitResult(
         command=tuple(command),
-        version=version if isinstance(version, str) else None,
-        system=system,
+        version=raw.get("version") if isinstance(raw.get("version"), str) else None,
+        system=system if isinstance(system, dict) else {},
         models=tuple(m for m in models if isinstance(m, dict)),
         raw=raw,
     )
 
 
-def normalise_hardware(result: LLMFitResult) -> dict[str, Any]:
-    """Map LLMFit system data without inventing missing values."""
+def run_system(*, timeout_seconds: int = 30) -> Mapping[str, Any]:
+    """Read LLMFit's authoritative detected-system JSON."""
+    return _run_json(["llmfit", "--json", "system"], timeout_seconds=timeout_seconds)
 
-    source = result.system
-    keys = ("os", "architecture", "cpu", "ram_gb", "gpu", "vram_gb", "backend")
+
+def normalise_hardware(result: LLMFitResult | Mapping[str, Any]) -> dict[str, Any]:
+    """Map current LLMFit system JSON to LEONES canonical hardware fields."""
+    source = result.system if isinstance(result, LLMFitResult) else result.get("system", result)
+    if not isinstance(source, Mapping):
+        source = {}
+    gpus = source.get("gpus")
+    gpu = None
+    vram = None
+    backend = None
+    if isinstance(gpus, list) and gpus:
+        first = gpus[0] if isinstance(gpus[0], Mapping) else {}
+        gpu = first.get("name")
+        vram = first.get("vram_gb")
+        backend = first.get("backend")
+    cpu = source.get("cpu") or source.get("cpu_name")
+    ram = source.get("ram_gb") or source.get("total_ram_gb")
     return {
         "source": "llmfit",
-        "source_version": result.version,
-        **{key: source.get(key) for key in keys},
+        "source_version": result.version if isinstance(result, LLMFitResult) else None,
+        "cpu": cpu,
+        "ram_gb": ram,
+        "gpu": gpu or ("Integrated GPU" if source.get("has_gpu") else None),
+        "vram_gb": vram,
+        "os": source.get("os"),
+        "architecture": source.get("architecture"),
+        "accelerators": [backend] if backend else [],
+        "verification": "detected",
         "raw": dict(source),
     }
 
 
 def normalise_candidates(result: LLMFitResult) -> list[dict[str, Any]]:
-    """Expose candidates while retaining LLMFit's estimates as estimates."""
-
     candidates: list[dict[str, Any]] = []
     for rank, model in enumerate(result.models, start=1):
-        candidates.append(
-            {
-                "rank": rank,
-                "source": "llmfit",
-                "model": model.get("name") or model.get("id"),
-                "fit": model.get("fit"),
-                "estimated_tps": model.get("estimated_tps")
-                or model.get("tps"),
-                "quantization": model.get("quantization")
-                or model.get("quant"),
-                "raw": dict(model),
-            }
-        )
+        candidates.append({
+            "rank": rank,
+            "source": "llmfit",
+            "model": model.get("name") or model.get("id"),
+            "fit": model.get("fit") or model.get("fit_level") or model.get("score"),
+            "estimated_tps": model.get("estimated_tps") or model.get("tps"),
+            "quantization": model.get("quantization") or model.get("quant") or model.get("best_quant"),
+            "raw": dict(model),
+        })
     return candidates
