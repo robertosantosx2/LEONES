@@ -1,0 +1,12 @@
+{
+  "cpu": "Example CPU 8-core",
+  "ram_gb": 32,
+  "gpu": "Example GPU",
+  "vram_gb": 8,
+  "os": "Linux",
+  "architecture": "x86_64",
+  "accelerators": [],
+  "source": "fixture",
+  "source_version": "rc2-fixture-1",
+  "verification": "detected"
+}
