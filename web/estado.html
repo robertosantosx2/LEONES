@@ -15,7 +15,7 @@
 </div></header>
 <main class="site-main" id="main">
 <section class="site-section"><span class="site-tag">Ahora · RC2</span><h2>Preparar el flujo completo de usuario</h2>
-<p class="site-lead"><strong>RC2 está en preparación.</strong> El objetivo es que una persona pueda instalar LEONES, conocer su hardware, recibir modelos candidatos, comparar las funcionalidades de ODS y Magnitude, elegir un stack, prepararlo y decidir si quiere ejecutar un benchmark real.</p>
+<p class="site-lead"><strong>RC2 está en preparación · RC2-A implementado.</strong> El objetivo es que una persona pueda instalar LEONES, conocer su hardware, recibir modelos candidatos, comparar las funcionalidades de ODS y Magnitude, elegir un stack, prepararlo y decidir si quiere ejecutar un benchmark real.</p>
 <pre class="site-stack">INSTALAR
    ↓
 HARDWARE
@@ -35,12 +35,16 @@ INSTALAR / PREPARAR
 ¿BENCHMARK REAL?
    ├─ NO → FIN
    └─ SÍ → RUNNER → MEDICIÓN → EVIDENCIA → RESULTADO</pre>
-<p><a href="../docs/RC2-BETA-USER-FLOW.md">Ver plan completo de RC2 →</a></p>
+<p><a href="../docs/RC2-BETA-USER-FLOW.md">Ver plan completo de RC2 →</a> · <a href="../docs/RC2-A-IMPLEMENTATION.md">Ver RC2-A →</a></p>
 </section>
 <section class="site-section"><span class="site-tag">RC1 · Validado</span><h2>La cadena técnica ya está demostrada</h2>
 <p>RC1 ejecutó una selección autorizada sobre un host Linux, atravesó el gate, ejecutó Ollama y A01, pasó el grader y produjo una medición nueva conservada como evidencia.</p>
 <div class="site-note"><strong>qwen2.5:0.5b-instruct-q4_K_M</strong> · Ollama · A01 · <strong>53.3795 tok/s</strong> · 2026-08-31 · execution_id <code>e07822d0-d991-4e9b-985b-b9afea0c13c0</code>.</div>
 <p><a href="../docs/completed/RC1-EFFECTIVE-EXECUTION.md">Ver cierre documental de RC1 →</a></p>
+</section>
+<section class="site-section"><span class="site-tag">RC2-A · Implementado</span><h2>Primer punto de entrada beta</h2>
+<p><code>scripts/rc2_beta.py</code> ya proporciona una orquestación CLI mínima: puede cargar una selección validada, presentar las capacidades funcionales de ODS y Magnitude y registrar la decisión de benchmark. No instala software, no descarga modelos y no ejecuta runtimes todavía.</p>
+<p>La siguiente fase es <strong>RC2-B — hardware y perfilado real</strong>.</p>
 </section>
 <section class="site-section"><span class="site-tag">Base consolidada</span><h2>Qué queda cerrado</h2>
 <div class="site-grid">
