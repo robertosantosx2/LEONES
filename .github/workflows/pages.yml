@@ -54,17 +54,25 @@ jobs:
           cp README.md _site/README.md
           cp INSTALL.md _site/INSTALL.md
 
+          # Raw .md files must remain static files on GitHub Pages.
           touch _site/.nojekyll
 
       - name: Verify RC2 publication payload
         run: |
-          test -f _site/rc2.html
+          set -e
+          test -f _site/INSTALL.md
           test -f _site/docs/RC2-INSTALLATION-MANUAL.md
           test -f _site/docs/RC2-USER-MANUAL.md
           test -f _site/docs/RC2-BETA-USER-FLOW.md
+          test -f _site/rc2.html
           test -f _site/scripts/rc2_wizard.py
           test -f _site/README.md
-          echo "RC2 publication payload verified."
+          test -f _site/.nojekyll
+          echo "RC2 publication payload verified:"
+          printf '%s\n' \
+            '/INSTALL.md' \
+            '/docs/RC2-USER-MANUAL.md' \
+            '/docs/RC2-INSTALLATION-MANUAL.md'
 
       - name: Verify prospection data is included
         run: |
