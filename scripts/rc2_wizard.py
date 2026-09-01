@@ -8,7 +8,8 @@ from pathlib import Path
 import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-if str(REPO_ROOT) not in sys.path: sys.path.insert(0, str(REPO_ROOT))
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.rc2_beta_session import BetaSession
 from scripts.rc2_i18n import tr
@@ -19,81 +20,177 @@ from runtime_selection.llmfit import LLMFitError, run_recommend, run_system, nor
 BANNER = r"""
 ╔══════════════════════════════════════════════════════════════╗
 ║                    L E O N E S                              ║
-║              B E T A  ·  R C 2  ·  ES / EN / 中文          ║
+║                    B E T A · R C 2                         ║
 ╚══════════════════════════════════════════════════════════════╝
 """
+
 STACKS = {
-    "ODS":{"name":"ods","adapter":"ods.v1","mode":"local-stack","capabilities":{"es":("Stack local de inferencia","Preparación y validación del plan","Integración con ejecución local","Medición/evidencia mediante pipeline común cuando proceda"),"en":("Local inference stack","Execution-plan preparation and validation","Local execution integration","Measurement/evidence through the common pipeline when applicable"),"zh":("本地推理栈","执行计划准备与验证","本地执行集成","在适用时通过通用流水线进行测量/证据")}},
-    "Magnitude":{"name":"magnitude","adapter":"magnitude.v1","mode":"agent","capabilities":{"es":("Integración orientada a agente/asistente","Preparación de metadatos de ejecución","Ejecución separada de la preparación","Reutilización de benchmark/evidencia comunes"),"en":("Agent/assistant-oriented integration","Execution metadata preparation","Execution separated from preparation","Reuse of common benchmark/evidence"),"zh":("面向代理/助手的集成","执行元数据准备","执行与准备分离","复用通用基准测试/证据")}},
+    "ODS": {
+        "name": "ods",
+        "adapter": "ods.v1",
+        "mode": "local-stack",
+        "title_key": "ods_title",
+        "capability_keys": tuple(f"ods_capability_{i}" for i in range(1, 5)),
+    },
+    "Magnitude": {
+        "name": "magnitude",
+        "adapter": "magnitude.v1",
+        "mode": "agent",
+        "title_key": "magnitude_title",
+        "capability_keys": tuple(f"magnitude_capability_{i}" for i in range(1, 5)),
+    },
 }
+
+
 @dataclass
 class WizardIO:
-    input_fn: Callable[[str],str]=input
-    output_fn: Callable[[str],None]=print
-    def ask(self,prompt:str)->str:return self.input_fn(prompt)
-    def show(self,text:str="")->None:self.output_fn(text)
+    input_fn: Callable[[str], str] = input
+    output_fn: Callable[[str], None] = print
 
-def _choose(io:WizardIO,title:str,options:tuple[str,...])->str:
-    io.show(f"\n┌─ {title} ────────────────────────────────────────────────┐")
-    for i,option in enumerate(options,1):io.show(f"│  [{i}] {option}")
+    def ask(self, prompt: str) -> str:
+        return self.input_fn(prompt)
+
+    def show(self, text: str = "") -> None:
+        self.output_fn(text)
+
+
+def _show_multiline(io: WizardIO, text: str, prefix: str = "") -> None:
+    for line in text.splitlines():
+        io.show(f"{prefix}{line}")
+
+
+def _choose(io: WizardIO, title: str, options: tuple[str, ...]) -> str:
+    io.show("")
+    _show_multiline(io, title)
+    io.show("┌──────────────────────────────────────────────────────────┐")
+    for i, option in enumerate(options, 1):
+        lines = option.splitlines()
+        io.show(f"│  [{i}] {lines[0]}")
+        for line in lines[1:]:
+            io.show(f"│      {line}")
     io.show("└──────────────────────────────────────────────────────────┘")
     while True:
-        answer=io.ask("LEONES> ").strip()
-        if answer.isdigit() and 1<=int(answer)<=len(options):return options[int(answer)-1]
-        io.show("  ! Opción no válida / Invalid option / 无效选项")
+        answer = io.ask("LEONES> ").strip()
+        if answer.isdigit() and 1 <= int(answer) <= len(options):
+            return options[int(answer) - 1]
+        _show_multiline(io, tr("invalid_option"), prefix="  ! ")
 
-def _live_inputs(io:WizardIO)->tuple[dict[str,Any],list[dict[str,Any]]]:
-    io.show("\n[INFO] Detectando hardware y candidatos mediante LLMFit...")
+
+def _live_inputs(io: WizardIO) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    io.show("")
+    _show_multiline(io, tr("detecting_hardware"), prefix="[INFO] ")
     try:
-        system=run_system()
-        result=run_recommend(limit=5)
+        system = run_system()
+        result = run_recommend(limit=5)
     except LLMFitError as exc:
-        io.show(f"[!] LLMFit no disponible o inválido: {exc}")
+        io.show(f"[!] {tr('llmfit_unavailable').splitlines()[0]}: {exc}")
         raise
-    hardware=normalize_hardware(normalise_hardware(system))
-    raw_candidates=normalise_candidates(result)
-    candidates=normalize_candidates([{"model_id":item.get("model") or item.get("raw",{}).get("id"),"name":item.get("model") or item.get("raw",{}).get("name") or item.get("raw",{}).get("id"),"rank":item.get("rank"),"fit":item.get("fit"),"estimated_tps":item.get("estimated_tps"),"source":item.get("source","llmfit"),"source_version":result.version,"evidence_level":"estimated","revision":item.get("raw",{}).get("revision")} for item in raw_candidates])
-    return hardware,candidates
+    hardware = normalize_hardware(normalise_hardware(system))
+    raw_candidates = normalise_candidates(result)
+    candidates = normalize_candidates(
+        [
+            {
+                "model_id": item.get("model") or item.get("raw", {}).get("id"),
+                "name": item.get("model") or item.get("raw", {}).get("name") or item.get("raw", {}).get("id"),
+                "rank": item.get("rank"),
+                "fit": item.get("fit"),
+                "estimated_tps": item.get("estimated_tps"),
+                "source": item.get("source", "llmfit"),
+                "source_version": result.version,
+                "evidence_level": "estimated",
+                "revision": item.get("raw", {}).get("revision"),
+            }
+            for item in raw_candidates
+        ]
+    )
+    return hardware, candidates
 
-def _show_stack(io:WizardIO,name:str)->None:
-    io.show(f"\n╔══ {name.upper()} ══"); caps=STACKS[name]["capabilities"]
-    for key,language in (("es","Español"),("en","English"),("zh","中文")):
-        io.show(f"║  {language}")
-        for c in caps[key]:io.show(f"║    ✓ {c}")
-    io.show("╚═══════════════════════════════════════════════════════════")
 
-def run_wizard(io:WizardIO|None=None)->BetaSession:
-    io=io or WizardIO(); session=BetaSession(); io.show(BANNER); io.show(tr("your_team")); io.show("")
-    try: hardware,candidates=_live_inputs(io)
+def _show_stack(io: WizardIO, name: str) -> None:
+    stack = STACKS[name]
+    io.show("")
+    _show_multiline(io, tr(stack["title_key"]))
+    for capability_key in stack["capability_keys"]:
+        _show_multiline(io, tr(capability_key), prefix="  ✓ ")
+
+
+def run_wizard(io: WizardIO | None = None) -> BetaSession:
+    io = io or WizardIO()
+    session = BetaSession()
+    io.show(BANNER)
+    _show_multiline(io, tr("banner_subtitle"))
+    _show_multiline(io, tr("your_team"))
+    io.show("")
+    try:
+        hardware, candidates = _live_inputs(io)
     except LLMFitError:
-        session.block("LLMFIT_UNAVAILABLE","Live LLMFit input unavailable / No se pudo obtener entrada real de LLMFit / 无法获取 LLMFit 实时输入"); return session
-    session.advance("HARDWARE_READY",hardware=hardware); io.show("[✓] Hardware real / Live hardware / 实时硬件 ✓")
-    io.show("[i] Las cifras de LLMFit son ESTIMACIONES. No son evidencia de ejecución real.")
-    io.show("[i] LLMFit values are ESTIMATES. They are not real execution evidence.")
-    io.show("[i] LLMFit 数值是估算值，不是真实执行证据。")
-    labels=tuple(f"{c['name']} · fit={c['fit']} · ~{c['estimated_tps']} tok/s · {c['source']} · ESTIMATED" for c in candidates)
+        session.block("LLMFIT_UNAVAILABLE", tr("live_input_blocked"))
+        return session
+
+    session.advance("HARDWARE_READY", hardware=hardware)
+    _show_multiline(io, tr("hardware_ready"), prefix="[✓] ")
+    _show_multiline(io, tr("estimated_notice"), prefix="[i] ")
+
+    labels = tuple(
+        f"{c['name']} · fit={c['fit']} · ~{c['estimated_tps']} tok/s · {c['source']} · ESTIMATED"
+        for c in candidates
+    )
     if not labels:
-        session.block("NO_MODEL_CANDIDATES","No live candidates / No hay candidatos reales / 无实时候选模型"); return session
-    chosen_label=_choose(io,tr("choose_model"),labels); chosen=candidates[labels.index(chosen_label)]; session.advance("MODEL_SELECTED",model_choice=chosen)
-    for name in STACKS:_show_stack(io,name)
-    stack_name=_choose(io,tr("choose_stack"),tuple(STACKS)); stack=STACKS[stack_name]
-    plan=to_selection_plan(chosen,hardware,{"name":stack["name"],"adapter":stack["adapter"],"mode":stack["mode"]})
-    # Keep the canonical public keys explicit: stack is the chosen stack, while
-    # stack_selection is retained for compatibility with the RC2 contract.
-    session.advance("STACK_SELECTED",stack=stack,stack_selection=stack,selection_plan=plan)
-    io.show(f"[✓] {stack_name} / selected / 已选择")
-    session.advance("CONSENT_REQUIRED",installation={"status":"plan_ready"})
-    install=_choose(io,tr("install_consent"),("Autorizar / Authorize / 授权","Cancelar / Cancel / 取消"))
-    if install.startswith("Cancelar"):
-        session.block("INSTALL_DECLINED","Installation not authorized / Instalación no autorizada / 未授权安装"); return session
-    session.authorize_installation(); io.show("[✓] Instalación autorizada / Installation authorized / 安装已授权")
-    io.show("\n[INFO] La instalación/verificación física se realiza según el manual RC2 antes de autorizar el benchmark.")
+        session.block("NO_MODEL_CANDIDATES", tr("no_model_candidates"))
+        return session
+
+    chosen_label = _choose(io, tr("choose_model"), labels)
+    chosen = candidates[labels.index(chosen_label)]
+    session.advance("MODEL_SELECTED", model_choice=chosen)
+
+    for name in STACKS:
+        _show_stack(io, name)
+    stack_name = _choose(io, tr("choose_stack"), tuple(STACKS))
+    stack = STACKS[stack_name]
+    plan = to_selection_plan(
+        chosen,
+        hardware,
+        {"name": stack["name"], "adapter": stack["adapter"], "mode": stack["mode"]},
+    )
+    session.advance("STACK_SELECTED", stack=stack, stack_selection=stack, selection_plan=plan)
+    _show_multiline(io, tr("selected"), prefix=f"[✓] {stack_name} / ")
+
+    session.advance("CONSENT_REQUIRED", installation={"status": "plan_ready"})
+    install = _choose(io, tr("install_consent"), (tr("authorize"), tr("cancel")))
+    if install == tr("cancel"):
+        session.block("INSTALL_DECLINED", tr("install_blocked"))
+        return session
+
+    session.authorize_installation()
+    _show_multiline(io, tr("installation_authorized"), prefix="[✓] ")
+    _show_multiline(io, tr("physical_install_notice"), prefix="[INFO] ")
     return session
 
-def _non_interactive_smoke()->BetaSession:
-    session=BetaSession(); hardware={"source":"smoke","cpu":"fixture","ram_gb":8}; model={"model_id":"smoke-model","name":"smoke-model","fit":1.0,"source":"fixture"}; stack={"name":"ods","adapter":"ods.v1","mode":"local-stack"}; plan={"schema":"selection-plan.v1","mode":"smoke"}
-    session.advance("HARDWARE_READY",hardware=hardware); session.advance("MODEL_SELECTED",model_choice=model); session.advance("STACK_SELECTED",stack=stack,stack_selection=stack,selection_plan=plan); session.advance("CONSENT_REQUIRED",installation={"status":"plan_ready"}); session.authorize_installation(); session.installation_verified({"status":"fixture_verified","real_installation":False}); session.request_benchmark_consent({"status":"fixture_ready_for_benchmark","real_benchmark":False}); session.authorize_benchmark(); return session
 
-def main(argv:list[str]|None=None)->int:
-    parser=argparse.ArgumentParser(description="LEONES RC2 beta wizard"); parser.add_argument("--non-interactive",action="store_true",help="run deterministic state-contract smoke without prompts"); args=parser.parse_args(argv); session=_non_interactive_smoke() if args.non_interactive else run_wizard(); return 0 if session.state=="EXECUTION_AUTHORIZED" else 1
-if __name__=="__main__":raise SystemExit(main())
+def _non_interactive_smoke() -> BetaSession:
+    session = BetaSession()
+    hardware = {"source": "smoke", "cpu": "fixture", "ram_gb": 8}
+    model = {"model_id": "smoke-model", "name": "smoke-model", "fit": 1.0, "source": "fixture"}
+    stack = {"name": "ods", "adapter": "ods.v1", "mode": "local-stack"}
+    plan = {"schema": "selection-plan.v1", "mode": "smoke"}
+    session.advance("HARDWARE_READY", hardware=hardware)
+    session.advance("MODEL_SELECTED", model_choice=model)
+    session.advance("STACK_SELECTED", stack=stack, stack_selection=stack, selection_plan=plan)
+    session.advance("CONSENT_REQUIRED", installation={"status": "plan_ready"})
+    session.authorize_installation()
+    session.installation_verified({"status": "fixture_verified", "real_installation": False})
+    session.request_benchmark_consent({"status": "fixture_ready_for_benchmark", "real_benchmark": False})
+    session.authorize_benchmark()
+    return session
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="LEONES RC2 beta wizard")
+    parser.add_argument("--non-interactive", action="store_true", help="run deterministic state-contract smoke without prompts")
+    args = parser.parse_args(argv)
+    session = _non_interactive_smoke() if args.non_interactive else run_wizard()
+    return 0 if session.state == "EXECUTION_AUTHORIZED" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
