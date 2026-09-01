@@ -3,6 +3,7 @@
     "use strict";
     const navigation = [
         ["Inicio", "index.html", "top"],
+        ["Inicio rápido", "inicio-rapido.html", "top"],
         ["Proyectos", "proyectos.html", "top"],
         ["Atlas", "atlas.html", "project"],
         ["Pilares", "pilares.html", "project"],
