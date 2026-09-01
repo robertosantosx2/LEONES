@@ -4,7 +4,12 @@ from scripts.rc2_benchmark_consent import request_and_decide
 
 def ready_session():
     s = BetaSession()
-    s.advance("READY_FOR_BENCHMARK", model="fixture", stack="fixture")
+    s.advance("HARDWARE_READY", hardware={"source": "fixture"})
+    s.advance("MODEL_SELECTED", model_choice={"model_id": "fixture"})
+    s.advance("STACK_SELECTED", stack={"name": "ods"})
+    s.advance("CONSENT_REQUIRED", installation={"status": "plan_ready"})
+    s.authorize_installation()
+    s.installation_verified({"status": "fixture_verified", "real_installation": True})
     return s
 
 
