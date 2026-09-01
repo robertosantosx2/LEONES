@@ -58,6 +58,8 @@ class BetaSession:
         self.advance("INSTALLING", installation_consent="granted")
 
     def installation_verified(self, verification: dict[str, Any] | None = None) -> None:
+        if self.state == "CONSENT_REQUIRED":
+            raise RuntimeError("installation consent is required before verification")
         if self.state != "INSTALLING":
             raise RuntimeError("installation is not in progress")
         verification = verification or {"status": "verified"}
