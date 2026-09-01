@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Deterministic RC2 beta-session state machine.
 
-This module orchestrates contracts. Side effects remain behind explicit gates:
-installation requires installation consent; benchmark execution requires a
-separate benchmark consent and hands an already-authorized plan to RC1.
+The session is the authorization boundary for RC2. Installation and benchmark
+execution are explicit gates; callers cannot skip physical verification or
+benchmark consent by assigning a later state directly.
 """
 from __future__ import annotations
 
@@ -17,6 +17,21 @@ STATES = (
     "EXECUTION_AUTHORIZED", "COMPLETE", "BLOCKED",
 )
 
+_TRANSITIONS = {
+    "START": {"HARDWARE_READY", "BLOCKED"},
+    "HARDWARE_READY": {"MODEL_SELECTED", "BLOCKED"},
+    "MODEL_SELECTED": {"STACK_SELECTED", "BLOCKED"},
+    "STACK_SELECTED": {"READY_FOR_INSTALL", "CONSENT_REQUIRED", "BLOCKED"},
+    "READY_FOR_INSTALL": {"CONSENT_REQUIRED", "BLOCKED"},
+    "CONSENT_REQUIRED": {"INSTALLING", "BLOCKED"},
+    "INSTALLING": {"READY_FOR_BENCHMARK", "BLOCKED"},
+    "READY_FOR_BENCHMARK": {"BENCHMARK_CONSENT_REQUIRED", "BLOCKED"},
+    "BENCHMARK_CONSENT_REQUIRED": {"READY_FOR_BENCHMARK", "EXECUTION_AUTHORIZED", "BLOCKED"},
+    "EXECUTION_AUTHORIZED": {"COMPLETE", "BLOCKED"},
+    "COMPLETE": set(),
+    "BLOCKED": {"HARDWARE_READY", "BLOCKED"},
+}
+
 
 @dataclass
 class BetaSession:
@@ -27,6 +42,8 @@ class BetaSession:
     def advance(self, state: str, **data: Any) -> None:
         if state not in STATES:
             raise ValueError(f"unknown RC2 state: {state}")
+        if state != "BLOCKED" and state not in _TRANSITIONS[self.state]:
+            raise RuntimeError(f"invalid RC2 transition: {self.state} -> {state}")
         self.state = state
         self.data.update(data)
         self.error = None
@@ -43,7 +60,10 @@ class BetaSession:
     def installation_verified(self, verification: dict[str, Any] | None = None) -> None:
         if self.state != "INSTALLING":
             raise RuntimeError("installation is not in progress")
-        self.advance("READY_FOR_BENCHMARK", installation_verification=verification or {"status": "verified"})
+        verification = verification or {"status": "verified"}
+        if verification.get("real_installation") is False:
+            raise RuntimeError("real installation verification is required")
+        self.advance("READY_FOR_BENCHMARK", installation_verification=verification)
 
     def request_benchmark_consent(self, benchmark: dict[str, Any]) -> None:
         if self.state != "READY_FOR_BENCHMARK":
@@ -59,11 +79,15 @@ class BetaSession:
         if self.state != "BENCHMARK_CONSENT_REQUIRED":
             raise RuntimeError("benchmark consent is not currently requested")
         benchmark = self.data.get("benchmark") or {}
+        verification = self.data.get("installation_verification") or {}
+        if verification.get("real_installation") is False:
+            raise RuntimeError("real installation verification is required")
         handoff = {
             "schema_version": "1.0",
             "status": "benchmark_authorized",
             "benchmark": benchmark,
             "execution_authorized": True,
+            "installation_verified": True,
         }
         self.advance("EXECUTION_AUTHORIZED", benchmark_consent="granted", rc1_handoff=handoff)
         return handoff
@@ -75,16 +99,38 @@ class BetaSession:
 
     def snapshot(self) -> dict[str, Any]:
         return {
-            "schema_version": "1.0", "state": self.state,
+            "schema_version": "1.0",
+            "state": self.state,
             "gates": {
-                "hardware_ready": self.state in STATES[1:],
-                "model_selected": self.state in STATES[2:],
-                "stack_selected": self.state in STATES[3:],
-                "ready_for_install": self.state in STATES[4:],
-                "ready_for_benchmark": self.state in STATES[7:],
+                "hardware_ready": self.state in {
+                    "HARDWARE_READY", "MODEL_SELECTED", "STACK_SELECTED",
+                    "READY_FOR_INSTALL", "CONSENT_REQUIRED", "INSTALLING",
+                    "READY_FOR_BENCHMARK", "BENCHMARK_CONSENT_REQUIRED",
+                    "EXECUTION_AUTHORIZED", "COMPLETE",
+                },
+                "model_selected": self.state in {
+                    "MODEL_SELECTED", "STACK_SELECTED", "READY_FOR_INSTALL",
+                    "CONSENT_REQUIRED", "INSTALLING", "READY_FOR_BENCHMARK",
+                    "BENCHMARK_CONSENT_REQUIRED", "EXECUTION_AUTHORIZED", "COMPLETE",
+                },
+                "stack_selected": self.state in {
+                    "STACK_SELECTED", "READY_FOR_INSTALL", "CONSENT_REQUIRED",
+                    "INSTALLING", "READY_FOR_BENCHMARK", "BENCHMARK_CONSENT_REQUIRED",
+                    "EXECUTION_AUTHORIZED", "COMPLETE",
+                },
+                "ready_for_install": self.state in {
+                    "READY_FOR_INSTALL", "CONSENT_REQUIRED", "INSTALLING",
+                    "READY_FOR_BENCHMARK", "BENCHMARK_CONSENT_REQUIRED",
+                    "EXECUTION_AUTHORIZED", "COMPLETE",
+                },
+                "ready_for_benchmark": self.state in {
+                    "READY_FOR_BENCHMARK", "BENCHMARK_CONSENT_REQUIRED",
+                    "EXECUTION_AUTHORIZED", "COMPLETE",
+                },
                 "execution_authorized": self.state in {"EXECUTION_AUTHORIZED", "COMPLETE"},
             },
-            **self.data, "error": self.error,
+            **self.data,
+            "error": self.error,
         }
 
 
