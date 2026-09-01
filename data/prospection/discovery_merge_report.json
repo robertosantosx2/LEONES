@@ -2,7 +2,7 @@
   "live_input": "data/prospection/live_discoveries.ndjson",
   "federated_input": "data/prospection/federated_discoveries.ndjson",
   "output": "data/prospection/discovery_input.ndjson",
-  "unique_discoveries": 291,
+  "unique_discoveries": 288,
   "unique_by_source": {
     "cgit-instance:git.zx2c4.com": 1,
     "codeberg": 39,
@@ -12,7 +12,7 @@
     "github": 87,
     "gitlab": 39,
     "huggingface": 40,
-    "huggingface-papers": 33
+    "huggingface-papers": 30
   },
   "multi_source_records": 0,
   "note": "Duplicate canonical URLs collapse to one record while all provenance records are preserved. License Gate remains independent."
