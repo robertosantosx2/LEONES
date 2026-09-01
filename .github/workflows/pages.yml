@@ -7,6 +7,10 @@ on:
       - 'web/**'
       - 'assets/**'
       - 'results/**'
+      - 'docs/RC2-*.md'
+      - 'scripts/rc2_wizard.py'
+      - 'README.md'
+      - 'INSTALL.md'
       - '.github/workflows/pages.yml'
   workflow_run:
     workflows: ["Daily OSI Prospection"]
@@ -42,7 +46,25 @@ jobs:
           cp -a web/. _site/
           if [ -d results ]; then cp -a results _site/results; fi
           if [ -d assets ]; then cp -a assets _site/assets; fi
+
+          # Publish beta documentation/source at stable project-site paths.
+          mkdir -p _site/docs _site/scripts
+          cp docs/RC2-*.md _site/docs/
+          cp scripts/rc2_wizard.py _site/scripts/
+          cp README.md _site/README.md
+          cp INSTALL.md _site/INSTALL.md
+
           touch _site/.nojekyll
+
+      - name: Verify RC2 publication payload
+        run: |
+          test -f _site/rc2.html
+          test -f _site/docs/RC2-INSTALLATION-MANUAL.md
+          test -f _site/docs/RC2-USER-MANUAL.md
+          test -f _site/docs/RC2-BETA-USER-FLOW.md
+          test -f _site/scripts/rc2_wizard.py
+          test -f _site/README.md
+          echo "RC2 publication payload verified."
 
       - name: Verify prospection data is included
         run: |
