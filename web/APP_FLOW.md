@@ -1,17 +1,60 @@
 # LEONES App — flujo guiado
 
-La aplicación web no ejecuta scripts en el navegador. Su función es conducir al usuario y generar el siguiente comando local.
+La aplicación web **no ejecuta la infraestructura local en el navegador**. Su función es explicar el recorrido, recoger decisiones y conducir al usuario hacia las herramientas locales que correspondan.
 
-## Flujo
+## Flujo canónico RC2
 
-Necesidad → Hardware → Modelo → Inferencia → Evaluación → Informe → Privacidad/Publicación → Estadísticas → mejores recomendaciones.
+```text
+Necesidad
+   ↓
+Hardware real
+   ↓
+LLMFIT
+   ↓
+Candidatos
+   ↓
+Elección humana
+   ↓
+ODS / Magnitude
+   ↓
+Stack propuesto
+   ↓
+Consentimiento de instalación
+   ↓
+Instalar → Verificar
+   ↓
+Consentimiento de benchmark
+   ↓
+Handoff RC1
+   ↓
+Medir
+   ↓
+Evidencia
+   ↓
+Recomendación
+```
 
-Cada usuario puede detenerse en cualquier punto. El estado del recorrido se conserva localmente en `localStorage`.
+La elección del usuario y la autorización de operaciones son explícitas. **El consentimiento para instalar no autoriza automáticamente un benchmark.** Son dos decisiones independientes.
+
+## Qué aporta cada capa
+
+- **Hardware real:** establece las capacidades observables del equipo.
+- **LLMFIT:** ayuda a acotar candidatos compatibles con el hardware.
+- **ODS / Magnitude:** aportan conocimiento especializado sobre despliegue, modelos, inferencia y agentes. LEONES los utiliza como fuentes/decisión de stack; no crea un scoring paralelo que los sustituya.
+- **RC1:** recibe la configuración autorizada y mantiene el camino canónico de ejecución y evidencia.
+- **Benchmark:** comprueba una tarea concreta y no solo una cifra sintética.
+- **Evidencia:** conserva qué se ejecutó, dónde, cuándo y con qué resultado.
+
+## ESTIMATED ≠ MEASURED
+
+Las estimaciones sirven para seleccionar y priorizar. Una estimación de ODS, Magnitude, LLMFIT u otra fuente externa **no es una medición física de LEONES**.
+
+Solo una ejecución real registrada mediante el camino de ejecución/evidencia correspondiente puede producir evidencia física. Los valores desconocidos permanecen desconocidos; no se rellenan por inferencia.
 
 ## Manada
 
-La contribución es voluntaria. Los resultados técnicos agregados permiten conocer qué combinaciones funcionan realmente en hardware de consumo y mejorar futuras recomendaciones. La aplicación explica qué datos son útiles y qué categorías no deben publicarse.
+La contribución a Manada es voluntaria. Los resultados técnicos agregados pueden servir para conocer qué combinaciones funcionan realmente en hardware de consumo y mejorar futuras recomendaciones. La aplicación debe explicar qué datos son útiles antes de cualquier publicación.
 
-## Evidencia
+## Principio de producto
 
-La interfaz distingue entre recomendación provisional y evidencia. Si no existe evidencia suficiente, la recomendación debe considerarse desconocida/provisional y no un hecho.
+La web documenta y conduce. La infraestructura local ejecuta. RC1 mide y produce evidencia. LEONES aprende de los resultados sin confundir recomendaciones provisionales con hechos medidos.
