@@ -14,14 +14,14 @@ La estética no debe introducir complejidad que no aporte una función clara.
 
 ## Estado visible
 
-A 31 de agosto de 2026 la web debe reflejar el siguiente estado canónico:
+La web debe reflejar el estado canónico real del repositorio:
 
 - **JALÓN 1:** 🟢 cerrado.
 - **JALÓN 2:** 🟢 cerrado, con ejecución física y evidencia reproducible.
 - **JALÓN 3:** 🟢 cerrado operativamente, con contrato `runtime-benchmark-evidence.v1.1`.
 - **RC1:** 🟢 validado mediante ejecución efectiva end-to-end.
 - **ODS / Magnitude:** 🟢 contrato de decisión fijado, sin scoring paralelo.
-- **Beta:** preparada para recoger ejecuciones independientes sobre hardware de terceros.
+- **RC2:** 🟡 preparado para beta, con instalación, verificación, consentimiento de benchmark y handoff al camino canónico de RC1.
 
 La página pública de referencia para este estado es [`estado.html`](estado.html).
 
@@ -30,12 +30,27 @@ La página pública de referencia para este estado es [`estado.html`](estado.htm
 La web no debe presentar RC1 como una simple validación de código. El hito demostrado es físico:
 
 ```text
-selección → gate → execution_authorized=true
-         → runtime real → modelo real → A01
-         → grader → medición → evidencia
+selección → gate → execution autorizado
+         → runtime real → modelo real → benchmark
+         → medición → evidencia reproducible
 ```
 
-La ejecución de referencia produjo `53.3795 tok/s` con `qwen2.5:0.5b-instruct-q4_K_M` sobre Ollama el 2026-08-31. Esa cifra es histórica para esa ejecución y no debe reutilizarse como medición de otro equipo.
+Las cifras históricas de ejecuciones concretas deben conservarse en su documentación/evidencia correspondiente y no reutilizarse como mediciones de otro equipo, runtime, modelo o configuración. La web no debe convertir una ejecución histórica en un benchmark universal.
+
+## RC2
+
+RC2 organiza el paso desde la selección hasta la ejecución de beta:
+
+```text
+necesidad → hardware real → candidatos → elección
+          → ODS / Magnitude → stack
+          → consentimiento instalación
+          → instalar → verificar
+          → consentimiento benchmark
+          → handoff RC1 → medir → evidenciar
+```
+
+Los dos consentimientos son independientes. La instalación no implica autorización para ejecutar un benchmark.
 
 ## Arquitectura
 
@@ -82,6 +97,14 @@ JavaScript resuelve comportamiento, no problemas que HTML o CSS puedan resolver 
 La web documenta, explica y presenta LEONES. No debe convertirse en un paquete que el usuario tenga que descargar para ejecutar la infraestructura.
 
 Los scripts locales son herramientas autónomas. El usuario descarga solo las herramientas necesarias para realizar pruebas en su propio equipo.
+
+## Evidencia y lenguaje
+
+- **ESTIMATED** no equivale a **MEASURED**.
+- Una recomendación no equivale a evidencia.
+- Una preflight no equivale a una instalación verificada.
+- Una instalación verificada no equivale a un benchmark ejecutado.
+- Un benchmark ejecutado debe conservar su procedencia y configuración.
 
 ## Criterio de terminado
 
