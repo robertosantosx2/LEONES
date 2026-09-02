@@ -1,4 +1,4 @@
-# Cuadros maestros · actualización semanal (Artificial Analysis)
+# Cuadros maestros · actualización diaria (Artificial Analysis)
 
 ## Qué se actualiza
 
@@ -7,7 +7,7 @@
 
 ## Cadencia
 
-- **Semanal** (lunes ~09:00 Europe/Madrid) vía automatización Grok del proyecto LEONES.
+- **Diaria** · **05:00 Europe/Madrid** vía automatización Grok del proyecto LEONES.
 - Fuente de ranking: [Artificial Analysis · Model Leaderboard](https://artificialanalysis.ai/leaderboards/models) — **open weights**, Intelligence Index (Coding Index solo para desempates de coding).
 
 ## Contrato
