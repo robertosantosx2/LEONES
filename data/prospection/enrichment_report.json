@@ -1,9 +1,9 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 288,
+  "repositories_processed": 294,
   "enriched_ok": 85,
-  "non_github_preserved": 201,
+  "non_github_preserved": 207,
   "errors": 2,
   "github_token_used": true,
   "diagnostics": [
@@ -12,14 +12,14 @@
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4852"
+      "rate_limit_remaining": "4849"
     },
     {
       "repository": "ramaiahsvn/aim.pat",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4779"
+      "rate_limit_remaining": "4776"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."
