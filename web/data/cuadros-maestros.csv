@@ -1,0 +1,36 @@
+cpu_tier,gpu,vendor,vram_gb,ram_2,ram_4,ram_8,ram_16,ram_32,ram_64,notes
+i5≈R5,RTX 5090,nvidia,32,—,—,Qwen3.8-27B Q4 (AA~52),Qwen3-Coder 30B-A3B Q4,Qwen3.8-27B Q5/Q6,27B Q6 + offload / MoE parcial,ESTIMATED
+i5≈R5,RTX 4090,nvidia,24,—,—,Qwen3.8-27B Q3-Q4,Qwen3-Coder 30B-A3B Q4,27B Q5,30B-A3B Q5 + offload,ESTIMATED
+i5≈R5,RX 7900 XTX,amd,24,—,—,Qwen3.8-27B Q3-Q4,Qwen3-Coder 30B-A3B Q4,27B Q5,30B-A3B Q5 + offload,ESTIMATED
+i5≈R5,RTX 5080/5070 Ti/4080 S,nvidia,16,—,—,Qwen3.8-27B Q3,Qwen3.8-27B Q3-Q4,27B Q4,27B Q4 + offload,ESTIMATED
+i5≈R5,RX 9070 XT/9070/7800 XT,amd,16,—,—,Qwen3.8-27B Q3,Qwen3.8-27B Q3-Q4,27B Q4,27B Q4 + offload,ESTIMATED
+i5≈R5,RX 7900 XT,amd,20,—,—,Qwen3.8-27B Q3-Q4,Qwen3-Coder 30B-A3B Q4,30B-A3B Q4,30B-A3B Q5,ESTIMATED
+i5≈R5,RTX 5070/4070 Ti,nvidia,12,—,—,gpt-oss-20b Q4,gpt-oss-20b Q4,20B Q5,20B Q5 + offload,ESTIMATED
+i5≈R5,RTX 4070/5060 Ti 16GB,nvidia,12-16,—,—,Mellum 12B Q4,Qwen3.8-27B Q3 (16GB),27B Q3-Q4,27B Q4 + offload,ESTIMATED
+i5≈R5,Arc B580,intel,12,—,—,Mellum 12B Q4,gpt-oss-20b Q4,20B Q4,20B Q4 + offload,ESTIMATED
+i5≈R5,RTX 3060 12GB,nvidia,12,—,—,Mellum 12B Q4,gpt-oss-20b Q4,20B Q4,20B Q4 + offload,ESTIMATED
+i5≈R5,RTX 4060/5060,nvidia,8,—,—,Ornith-9B Q4,Ornith-9B Q5,14B Q4 offload,14B Q4 offload,ESTIMATED
+i5≈R5,RX 7600,amd,8,—,—,Ornith-9B Q4,Ornith-9B Q5,14B Q4 offload,14B Q4 offload,ESTIMATED
+i5≈R5,iGPU/CPU,cpu,0,—,—,LFM2.5-2.6B / Qwen3-4B,Qwen3-8B Q4,Qwen3-14B Q3,Qwen3.8-27B Q2-Q3,ESTIMATED
+i7≈R7,RTX 5090,nvidia,32,—,—,Qwen3.8-27B Q4,Qwen3-Coder 30B-A3B Q4,30B-A3B Q5 + Flash parcial,V4 Flash / Flash-Next parcial,ESTIMATED
+i7≈R7,RTX 4090,nvidia,24,—,—,Qwen3.8-27B Q4,Qwen3-Coder 30B-A3B Q4,30B-A3B Q5,Flash/Next parcial + 30B,ESTIMATED
+i7≈R7,RX 7900 XTX,amd,24,—,—,Qwen3.8-27B Q4,Qwen3-Coder 30B-A3B Q4,30B-A3B Q5,Flash parcial híbrido,ESTIMATED
+i7≈R7,RTX 5080/5070 Ti/4080 S,nvidia,16,—,—,Qwen3.8-27B Q3,Qwen3.8-27B Q4,27B Q4 + offload 30B,30B-A3B Q4 híbrido,ESTIMATED
+i7≈R7,RX 9070 XT/7800 XT,amd,16,—,—,Qwen3.8-27B Q3,Qwen3.8-27B Q4,27B Q4 + offload,30B-A3B híbrido,ESTIMATED
+i7≈R7,RX 7900 XT,amd,20,—,—,Qwen3.8-27B Q4,Qwen3-Coder 30B-A3B Q4,30B-A3B Q5,30B-A3B + MoE parcial,ESTIMATED
+i7≈R7,RTX 5070/4070 Ti,nvidia,12,—,—,gpt-oss-20b Q4,gpt-oss-20b Q4,20B Q5 / 27B Q2 offload,Qwen3.8-27B Q3 híbrido,ESTIMATED
+i7≈R7,Arc B580,intel,12,—,—,Mellum 12B Q4,gpt-oss-20b Q4,20B Q4 + offload,27B Q3 híbrido,ESTIMATED
+i7≈R7,RTX 4060/5060,nvidia,8,—,—,Ornith-9B Q4,Ornith-9B Q5,14B Q4 híbrido,gpt-oss-20b Q3 híbrido,ESTIMATED
+i7≈R7,RX 7600,amd,8,—,—,Ornith-9B Q4,Ornith-9B Q5,14B Q4 híbrido,gpt-oss-20b Q3 híbrido,ESTIMATED
+i7≈R7,iGPU/CPU,cpu,0,—,—,Qwen3-4B / LFM2.5,Qwen3-8B Q4,Qwen3-14B Q4,Qwen3.8-27B Q3,ESTIMATED
+i9≈R9,RTX 5090,nvidia,32,—,—,Qwen3.8-27B Q4,Qwen3-Coder 30B-A3B Q4-Q5,Flash-Next / V4 Flash parcial,Mejor MoE parcial open,ESTIMATED
+i9≈R9,RTX 4090,nvidia,24,—,—,Qwen3.8-27B Q4,Qwen3-Coder 30B-A3B Q4,30B-A3B Q5 + MoE offload,V4 Flash / Flash-Next híbrido,ESTIMATED
+i9≈R9,RX 7900 XTX,amd,24,—,—,Qwen3.8-27B Q4,Qwen3-Coder 30B-A3B Q4,30B-A3B Q5 + offload,MoE parcial híbrido,ESTIMATED
+i9≈R9,RTX 5080/5070 Ti/4080 S,nvidia,16,—,—,Qwen3.8-27B Q3,Qwen3.8-27B Q4,30B-A3B híbrido,30B-A3B Q4 + MoE parcial,ESTIMATED
+i9≈R9,RX 9070 XT/7800 XT,amd,16,—,—,Qwen3.8-27B Q3,Qwen3.8-27B Q4,30B-A3B híbrido,30B-A3B + offload MoE,ESTIMATED
+i9≈R9,RX 7900 XT,amd,20,—,—,Qwen3.8-27B Q4,Qwen3-Coder 30B-A3B Q4,30B-A3B Q5,30B-A3B + MoE parcial,ESTIMATED
+i9≈R9,RTX 5070/4070 Ti,nvidia,12,—,—,gpt-oss-20b Q4,gpt-oss-20b Q5,Qwen3.8-27B Q3 híbrido,Qwen3.8-27B Q4 híbrido,ESTIMATED
+i9≈R9,Arc B580,intel,12,—,—,Mellum 12B Q4,gpt-oss-20b Q4,27B Q3 híbrido,27B Q4 híbrido,ESTIMATED
+i9≈R9,RTX 4060/5060,nvidia,8,—,—,Ornith-9B Q4,14B Q4 híbrido,gpt-oss-20b Q3 híbrido,Qwen3.8-27B Q2-Q3 híbrido,ESTIMATED
+i9≈R9,RX 7600,amd,8,—,—,Ornith-9B Q4,14B Q4 híbrido,gpt-oss-20b Q3 híbrido,Qwen3.8-27B Q2-Q3 híbrido,ESTIMATED
+i9≈R9,iGPU/CPU,cpu,0,—,—,Qwen3-4B / 8B,Qwen3-14B Q4,Qwen3.8-27B Q3,Qwen3.8-27B Q4,ESTIMATED
