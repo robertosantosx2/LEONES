@@ -2,26 +2,12 @@
 (() => {
     "use strict";
     const navigation = [
-        ["Inicio", "index.html", "top"],
-        ["Inicio rápido", "inicio-rapido.html", "top"],
-        ["Proyectos", "proyectos.html", "top"],
-        ["Atlas", "atlas.html", "project"],
-        ["Pilares", "pilares.html", "project"],
-        ["Arquitectura", "arquitectura.html", "project"],
-        ["Pila", "pila.html", "project"],
-        ["Operación", "operacion.html", "project"],
-        ["Conocimiento de IA en Local", "conocimiento.html", "top"],
-        ["Optimización de inferencia", "conocimiento-optimizacion.html", "top"],
-        ["Aplicación", "app.html", "top"],
-        ["RC2 · Beta", "rc2.html", "application"],
-        ["Evaluación", "evaluacion.html", "application"],
-        ["Recomendaciones", "recommendations.html", "application"],
-        ["Recomendar a LEONES", "recomendar.html", "application"],
-        ["Resultados", "resultados.html", "application"],
-        ["Manada", "manada.html", "top"],
-        ["Prospección", "prospeccion.html", "top"],
-        ["Horizonte", "horizon.html", "top"],
-        ["Contacto", "contacto.html", "top"],
+        ["Inicio", "index.html", "top"], ["Inicio rápido", "inicio-rapido.html", "top"], ["Proyectos", "proyectos.html", "top"],
+        ["Atlas", "atlas.html", "project"], ["Pilares", "pilares.html", "project"], ["Arquitectura", "arquitectura.html", "project"],
+        ["Pila", "pila.html", "project"], ["Operación", "operacion.html", "project"], ["Conocimiento de IA en Local", "conocimiento.html", "top"],
+        ["Optimización de inferencia", "conocimiento-optimizacion.html", "top"], ["Aplicación", "app.html", "top"], ["RC2 · Beta", "rc2.html", "application"],
+        ["Evaluación", "evaluacion.html", "application"], ["Recomendaciones", "recommendations.html", "application"], ["Recomendar a LEONES", "recomendar.html", "application"],
+        ["Resultados", "resultados.html", "application"], ["Manada", "manada.html", "top"], ["Prospección", "prospeccion.html", "top"], ["Horizonte", "horizon.html", "top"], ["Contacto", "contacto.html", "top"]
     ];
     const base = "assets/graphics/leones-logo-principal.jpg";
     const currentPath = window.location.pathname.split("/").pop() || "index.html";
@@ -47,7 +33,20 @@
         const close = () => { side.classList.remove("is-open"); backdrop.classList.remove("is-open"); toggle.setAttribute("aria-expanded", "false"); };
         toggle.addEventListener("click", () => { const open = !side.classList.contains("is-open"); side.classList.toggle("is-open", open); backdrop.classList.toggle("is-open", open); toggle.setAttribute("aria-expanded", String(open)); }); backdrop.addEventListener("click", close); side.addEventListener("click", (e) => { if (e.target.closest("a")) close(); }); document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", renderNavigation); else renderNavigation();
+    function normalizePublishedLinks() {
+        document.querySelectorAll("a[href]").forEach((link) => {
+            const href = link.getAttribute("href"); if (!href) return;
+            if (href === "../INSTALL.md") link.setAttribute("href", "INSTALL.md");
+            else if (href === "../README.md") link.setAttribute("href", "README.md");
+            else if (href.startsWith("../docs/")) {
+                const target = href.slice(3);
+                if (/^docs\/RC2-(USER-MANUAL|INSTALLATION-MANUAL|BETA-USER-FLOW)\.md$/.test(target)) link.setAttribute("href", target);
+                else link.setAttribute("href", `https://github.com/robertosantosx2/LEONES/blob/main/${target}`);
+            } else if (href.startsWith("../scripts/")) link.setAttribute("href", `https://github.com/robertosantosx2/LEONES/blob/main/${href.slice(3)}`);
+        });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { renderNavigation(); normalizePublishedLinks(); });
+    else { renderNavigation(); normalizePublishedLinks(); }
 })();
 
 /* LEONES — Prospección: publicar explicación funcional en español */
