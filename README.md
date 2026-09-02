@@ -58,6 +58,8 @@ LLMFit aporta la inteligencia especializada de hardware/model-fit. Sus cifras de
 
 El trabajo restante es físico: instalar/verificar el stack elegido en una máquina real, ejecutar los health checks, decidir si se autoriza el benchmark y, si procede, reutilizar el runner canónico de RC1 para generar evidencia nueva.
 
+La detección del runtime de contenedores no presupone Docker rootless. RC2 distingue **Docker directo**, **Docker mediante sudo**, **Docker rootless** y **Podman**. En Fedora/RHEL-family, Podman puede estar presente sin que eso implique automáticamente que ODS esté listo: el runtime del host y la compatibilidad efectiva de ODS son estados separados.
+
 Durante instalaciones largas, LEONES debe mantener actividad visible. El porcentaje mostrado debe representar fases reales del flujo de LEONES; no se debe inventar un porcentaje interno de un instalador externo que no lo proporcione.
 
 Un fallo de conectividad o del instalador externo debe quedar como fallo explícito de instalación, conservando el error original y sin avanzar al benchmark.
