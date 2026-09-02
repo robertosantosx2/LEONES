@@ -23,7 +23,7 @@ def test_tr_all_keeps_aligned_debug_view():
     assert rendered[2].startswith("中文 │ ")
 
 
-def test_catalog_contains_rc2_ui_copy_without_screen_specific_sources():
+def test_catalog_contains_operator_copy():
     required = {
         "choose_language",
         "choose_model",
@@ -43,8 +43,15 @@ def test_catalog_contains_rc2_ui_copy_without_screen_specific_sources():
         "next_step_magnitude",
         "offer_run_installer",
         "installation_authorized",
-        "physical_install_notice",
+        "verify_title",
+        "verify_pass",
+        "verify_fail",
+        "a01_title",
+        "benchmark_consent",
+        "benchmark_run_yes",
+        "benchmark_run_no",
+        "benchmark_declined",
+        "benchmark_authorized",
+        "benchmark_need_ollama",
     }
-    # physical_install_notice was replaced by clearer keys; keep only present ones
-    required.discard("physical_install_notice")
     assert required <= TEXT.keys()

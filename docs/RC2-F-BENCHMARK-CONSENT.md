@@ -4,64 +4,64 @@
 
 ## Objetivo
 
-Permitir que el beta tester decida explícitamente si quiere ejecutar un benchmark real después de instalar y verificar el stack elegido.
+Permitir que el beta tester decida explícitamente si quiere ejecutar un **benchmark A01 real** después de instalar y verificar el stack elegido.
+
+## Benchmark canónico
+
+| Campo | Valor |
+|-------|--------|
+| id | `LEONES-Agentic` |
+| task | `A01` |
+| prompt | `Execute A01. Return only JSONL tool calls.` |
+| métricas | `wall_seconds`, `measured_tps`, `grader_pass` |
+| runner | RC1 `scripts/a01_runtime_benchmark.py` |
+| puente local | `scripts/ollama_a01_runtime.py` (requiere Ollama) |
 
 ## Flujo
 
 ```text
 READY_FOR_BENCHMARK
         ↓
- explicación del benchmark
+ explicación A01
         ↓
  consentimiento explícito
      ┌──┴──┐
     NO     SÍ
     ↓       ↓
-   FIN    execution plan
+   FIN    EXECUTION_AUTHORIZED
              ↓
-          runtime
+          RC1 A01
              ↓
-        task benchmark
-             ↓
-          grader
-             ↓
-        measurement
-             ↓
-          evidence
+        measurement / evidence
 ```
 
 ## Antes de preguntar
 
 LEONES debe explicar:
 
-- qué tarea o conjunto de tareas se ejecutará;
-- qué métrica se medirá;
-- diferencia entre estimación y medición real;
-- duración aproximada cuando pueda conocerse;
-- qué modelo, cuantización, runtime y configuración se usarán;
-- qué archivos de evidencia se conservarán;
-- qué información del hardware aparecerá en el resultado;
-- si habrá descargas, red o consumo relevante de recursos;
-- que cancelar o responder `no` no invalida la instalación.
+- qué tarea A01 se ejecutará;
+- qué métricas se medirán;
+- diferencia ESTIMATED vs MEASURED;
+- modelo seleccionado;
+- runtime previsto (Ollama local cuando esté disponible);
+- que cancelar no invalida la instalación;
+- que sin Ollama la ejecución queda bloqueada, no inventada.
 
 ## Respuestas
 
-- `benchmark_declined`: el usuario no quiere medir; no se ejecuta el runtime.
-- `benchmark_authorized`: el usuario acepta la ejecución definida por el plan.
-- `benchmark_blocked`: no puede ejecutarse por un requisito no satisfecho.
-- `benchmark_completed`: ejecución terminada y evidencia conservada.
-- `benchmark_failed`: ejecución intentada pero sin resultado válido.
+- `benchmark_declined`
+- `benchmark_authorized`
+- `benchmark_blocked` (p. ej. sin Ollama)
+- `benchmark_completed` (medición válida + evidence)
+- `benchmark_failed` (intento sin resultado válido)
 
 ## Reglas
 
 1. No ejecutar benchmark por defecto.
-2. No interpretar una aceptación genérica de instalación como autorización de benchmark.
-3. El benchmark solo puede ejecutarse sobre un plan de ejecución autorizado.
-4. La medición real debe conservar execution_id, timestamps, modelo, runtime, configuración y evidencia.
-5. Una ejecución fallida no debe publicarse como medición válida.
-6. Las estimaciones de LLMFit, ODS, Magnitude u otras fuentes permanecen diferenciadas de las mediciones LEONES.
-7. El resultado debe ser reproducible en la medida permitida por el entorno local.
+2. Instalar ≠ autorizar benchmark.
+3. Solo sobre plan autorizado y stack verificado.
+4. Conservar `execution_id`, timestamps, modelo, runtime y evidencia.
+5. Un fallo no se publica como medición válida.
+6. Las estimaciones LLMFit permanecen diferenciadas.
 
-## Alcance RC2
-
-RC2-F cierra la decisión humana. La ejecución física y la validación de resultados reutilizan el pipeline de RC1 en lugar de crear un segundo sistema de benchmark.
+Relacionado: `docs/RC2-J-BENCHMARK-CONSENT.md` (handoff RC1), `docs/RC2-L-INTEGRATED-BETA-JOURNEY.md` (operador).

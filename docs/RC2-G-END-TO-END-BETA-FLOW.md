@@ -1,21 +1,19 @@
 # RC2-G — End-to-End Beta Flow
 
-**Estado:** 🟢 Contrato fijado
+**Estado:** 🟢 Contrato fijado · operador canónico = `./leones`
 
-RC2-G integra RC2-A..F en un único recorrido de usuario. Es la primera especificación del producto beta completo; no sustituye los contratos anteriores.
+RC2-G integra RC2-A..F (y J/K/L) en un único recorrido de usuario. No sustituye los contratos de cada puerta; fija el orden y prohíbe cadenas paralelas.
 
 ## Recorrido canónico
 
 ```text
-INSTALL LEONES
+INSTALL LEONES (+ LLMFit en PATH)
     ↓
-PREFLIGHT
+LANGUAGE CHOICE (one UI language for the session)
     ↓
-HARDWARE OBSERVED
+PREFLIGHT / HARDWARE OBSERVED (LLMFit)
     ↓
-LLMFIT PROFILE
-    ↓
-MODEL CANDIDATES
+MODEL CANDIDATES (ESTIMATED)
     ↓
 USER MODEL CHOICE
     ↓
@@ -23,60 +21,51 @@ ODS / MAGNITUDE CAPABILITY PRESENTATION
     ↓
 USER STACK CHOICE
     ↓
-INSTALLATION PLAN
-    ↓
 INSTALL CONSENT
     ↓
-INSTALL + VERIFY
+INSTALL (canonical script, optional now/later)
+    ↓
+PHYSICAL VERIFY (observe host)
     ↓
 READY_FOR_BENCHMARK
     ↓
-BENCHMARK EXPLANATION
+A01 EXPLANATION
     ↓
 BENCHMARK CONSENT
    ┌┴──────────────┐
    NO              YES
    ↓                ↓
-COMPLETE        EXECUTION
+COMPLETE*       EXECUTION_AUTHORIZED
                     ↓
-                 GRADER
+              RC1 A01 runner
                     ↓
-                MEASUREMENT
+              GRADER + MEASUREMENT
                     ↓
                  EVIDENCE
+                    ↓
+                 COMPLETE
+
+* sin medición; instalación intacta
 ```
-
-## Persistencia
-
-Cada etapa debe conservar un estado explícito y no depender de memoria de pantalla. Como mínimo se conservan: hardware observado, overrides declarados, perfil/candidatos LLMFit, modelo seleccionado, stack seleccionado, plan de instalación, consentimiento de instalación, verificación, decisión de benchmark y execution_id cuando exista ejecución.
-
-## Reanudación
-
-Si una etapa falla, el usuario debe poder reanudar desde el último estado válido sin repetir acciones ya verificadas. No se deben repetir descargas o instalaciones cuando el estado local ya demuestra que están completadas.
 
 ## Gates
 
-- `HARDWARE_READY`: hardware suficiente para continuar o limitaciones explícitas.
-- `MODEL_SELECTED`: selección humana válida.
-- `STACK_SELECTED`: ODS o Magnitude seleccionado tras mostrar funcionalidades.
-- `READY_FOR_INSTALL`: plan y preflight completos.
-- `READY_FOR_BENCHMARK`: instalación verificada.
-- `EXECUTION_AUTHORIZED`: consentimiento específico para benchmark.
+- `HARDWARE_READY`
+- `MODEL_SELECTED`
+- `STACK_SELECTED`
+- `CONSENT_REQUIRED` → `INSTALLING`
+- `READY_FOR_BENCHMARK` (solo tras `real_installation: true`)
+- `BENCHMARK_CONSENT_REQUIRED`
+- `EXECUTION_AUTHORIZED` → `COMPLETE` (si A01 produce medición válida)
 
 Ningún gate se satisface por inferencia silenciosa.
 
-## Errores
-
-Los errores deben ser accionables: indicar etapa, causa, si es recuperable y qué debe hacer el usuario. Un dato desconocido se conserva como `unknown`/`null`; nunca se transforma en un valor favorable inventado.
-
-## Privacidad
-
-El flujo debe explicar qué datos locales se detectan y qué evidencia se conserva. No se envían resultados fuera del host por defecto.
-
 ## Regla RC1
 
-La ejecución de benchmark reutiliza el pipeline efectivo validado en RC1. RC2-G no crea un segundo runner ni una segunda semántica de evidencia.
+La ejecución de benchmark reutiliza el pipeline RC1 (`a01_runtime_benchmark.py`). RC2 no crea un segundo runner ni una segunda semántica de evidencia.
 
 ## Criterio de cierre
 
-RC2-G estará listo para validación física cuando exista una implementación que pueda recorrer el flujo completo con fixtures y mocks sin hardware real, y todos los gates y transiciones estén cubiertos por tests. La validación física final requiere al menos un host Linux real.
+- tests de sesión, wizard, i18n y verificación física;
+- operador único `./leones`;
+- documentación alineada en RC2-L, RC2-F/J, RC2-K, RC2-H.

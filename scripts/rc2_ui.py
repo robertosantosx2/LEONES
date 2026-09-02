@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Presentation-only RC2 beta terminal UI.
+"""Presentation-only map of the RC2 beta journey.
 
-The UI is deliberately harmless: it never installs software or starts a
-benchmark. It presents the canonical journey and the explicit consent gates.
+This module is NOT the operator. The beta tester runs ``./leones``,
+which executes ``scripts/rc2_wizard.py``.
+
+``rc2_ui`` only prints an ASCII map of the canonical stages so docs and
+humans share one picture of the flow. It never installs software, never
+verifies stacks, and never starts a benchmark.
 """
 from __future__ import annotations
 
@@ -19,35 +23,36 @@ BANNER = r'''
 '''
 
 STEPS = [
-    ("01", "HARDWARE", "Detectar y explicar el equipo"),
-    ("02", "LLMFIT", "Construir candidatos de modelo"),
-    ("03", "MODELO", "Elección humana del modelo"),
-    ("04", "ODS / MAGNITUDE", "Comparar funcionalidades y elegir stack"),
-    ("05", "INSTALACIÓN", "Preflight → consentimiento → instalación → verificación"),
-    ("06", "BENCHMARK", "Explicar → consentimiento → ejecución → evidencia"),
+    ("00", "IDIOMA", "Elegir un idioma de interfaz"),
+    ("01", "HARDWARE", "Detectar equipo vía LLMFit"),
+    ("02", "MODELO", "Elección humana del modelo"),
+    ("03", "STACK", "ODS o Magnitude con descripción"),
+    ("04", "INSTALACIÓN", "Consentimiento → instalador → verify física"),
+    ("05", "A01", "Explicar → consentimiento → runner RC1"),
 ]
 
 
 def render() -> str:
-    lines = [BANNER.rstrip(), "", "  ┌─ RECORRIDO RC2 ─────────────────────────────────────────┐"]
+    lines = [BANNER.rstrip(), "", "  ┌─ RECORRIDO RC2 (mapa; no ejecuta) ─────────────────────┐"]
     for number, title, description in STEPS:
-        lines.append(f"  │ {number}  {title:<18} │ {description:<35} │")
-        if number != "06":
-            lines.append("  │      │                                                 │")
-            lines.append("  │      ▼                                                 │")
+        lines.append(f"  │ {number}  {title:<14} │ {description:<37} │")
+        if number != "05":
+            lines.append("  │      │                                               │")
+            lines.append("  │      ▼                                               │")
     lines += [
         "  └─────────────────────────────────────────────────────────┘",
         "",
         "  ╭─ REGLAS ───────────────────────────────────────────────╮",
+        "  │ [✓] Un idioma por sesión.                             │",
         "  │ [✓] El usuario decide modelo y stack.                  │",
         "  │ [✓] Instalar NO autoriza el benchmark.                │",
-        "  │ [✓] Medir NO significa publicar fuera del host.      │",
+        "  │ [✓] Verificar es observar el host, no confiar en exit0│",
         "  │ [✓] estimated ≠ measured.                             │",
         "  │ [✓] Un fallo nunca se presenta como medición válida.  │",
         "  ╰────────────────────────────────────────────────────────╯",
         "",
-        "  ► Próxima acción: seleccionar modelo",
-        "  ⚠ Esta interfaz es presentación; no ejecuta instalaciones.",
+        "  ► Operador canónico: ./leones",
+        "  ⚠ Esta interfaz es solo mapa; no ejecuta instalaciones.",
     ]
     return "\n".join(lines)
 
