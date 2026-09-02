@@ -69,15 +69,14 @@ jobs:
               s = s.replace('href="../scripts/', 'href="' + repo + 'scripts/')
               s = s.replace('assets/graphics/logos/leones-prospection.svg', 'assets/graphics/leones-logo-principal.jpg')
               s = s.replace('href="sources/FREETOKEN.md"', 'href="https://github.com/FlashML-org/FreeToken"')
-              s = s.replace('architecture.html#lotb', 'app.html')
-              s = s.replace('arquitectura.html#lotb', 'app.html')
-              # LOTB was retired from LEONES. Sanitize stale public copies during publication.
+              s = s.replace('href="architecture.html#lotb"', 'href="app.html"')
+              s = s.replace('href="arquitectura.html#lotb"', 'href="app.html"')
               s = s.replace('LOTB', 'Evaluación agentiva')
               s = s.replace('lotb', 'evaluation-agentiva')
               p.write_text(s, encoding='utf-8')
           PY
 
-      - name: Verify published pages and local links
+      - name: Verify published pages and canonical navigation
         run: |
           set -e
           for f in web/*.html; do test -f "_site/$(basename "$f")"; done
@@ -87,6 +86,13 @@ jobs:
           from pathlib import Path
           from urllib.parse import urlparse, unquote
           root = Path('_site').resolve(); errors = []
+          canonical_script = 'assets/js/navigation.js'
+          canonical_pages = {
+              'index.html','inicio-rapido.html','proyectos.html','atlas.html','pilares.html','arquitectura.html',
+              'pila.html','operacion.html','conocimiento.html','conocimiento-optimizacion.html','conocimiento-sglang.html',
+              'fuentes.html','app.html','rc2.html','evaluacion.html','recommendations.html','recomendar.html','resultados.html',
+              'manada.html','prospeccion.html','horizon.html','contacto.html'
+          }
           class P(HTMLParser):
               def __init__(self, src): super().__init__(); self.src = src
               def handle_starttag(self, tag, attrs):
@@ -97,10 +103,20 @@ jobs:
                       candidate = (self.src.parent / unquote(u.path)).resolve()
                       if candidate.is_dir(): candidate /= 'index.html'
                       if not candidate.exists(): errors.append(f'{self.src.relative_to(root)} -> {v}')
-          for page in root.rglob('*.html'): P(page).feed(page.read_text(encoding='utf-8'))
+          for page in root.rglob('*.html'):
+              text = page.read_text(encoding='utf-8')
+              P(page).feed(text)
+              if page.name in canonical_pages and canonical_script not in text:
+                  errors.append(f'{page.relative_to(root)} -> missing canonical navigation script')
+          nav = root / canonical_script
+          if not nav.is_file(): errors.append(f'missing canonical navigation asset: {canonical_script}')
+          else:
+              nav_text = nav.read_text(encoding='utf-8')
+              for target in sorted(canonical_pages - {'index.html'}):
+                  if f'"{target}"' not in nav_text: errors.append(f'{canonical_script} -> missing menu target {target}')
           if errors:
-              print('Broken local links:'); print('\n'.join(errors)); raise SystemExit(1)
-          print(f'Web link integrity verified: {len(list(root.rglob("*.html")))} HTML pages')
+              print('Web integrity errors:'); print('\n'.join(errors)); raise SystemExit(1)
+          print(f'Web integrity verified: {len(list(root.rglob("*.html")))} HTML pages; canonical navigation present on {len(canonical_pages)} public pages.')
           PY
 
       - name: Verify RC2 publication payload
