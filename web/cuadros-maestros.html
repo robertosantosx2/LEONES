@@ -1,1 +1,129 @@
-PLACEHOLDER_REPLACE
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="LEONES · Cuadros maestros filtrables CPU × RAM × GPU → mejor LLM open-weight (Artificial Analysis).">
+<title>LEONES · Cuadros maestros hardware → LLM</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-02-5">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-02-5">
+<link rel="stylesheet" href="assets/graphics/brand.css">
+<style>
+body{margin:0;background:#f4f7f9;color:#14202b;font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+.hero{background:linear-gradient(135deg,#0b2539,#1769aa);color:#fff;padding:3rem 1.25rem 2.2rem}
+.hero>div,main{width:min(1280px,calc(100% - 2rem));margin:auto}
+.hero h1{font-size:clamp(1.9rem,4.5vw,3.1rem);line-height:1.05;margin:.25rem 0}
+.hero p{max-width:920px;color:#d9e9f3}
+main{padding:1.4rem 0 4rem}
+.card{background:#fff;border:1px solid #d9e2e9;border-radius:1rem;padding:1.2rem 1.3rem;margin-bottom:1.15rem;box-shadow:0 8px 24px rgb(16 47 73 / 6%)}
+h2{color:#102f49;margin:0 0 .55rem;font-size:1.3rem}
+.note{padding:.8rem 1rem;background:#edf3f7;border-left:4px solid #1769aa;border-radius:.4rem;margin:.7rem 0}
+.warn{padding:.8rem 1rem;background:#fff5d8;border-left:4px solid #b77700;border-radius:.4rem;margin:.7rem 0}
+.filters{display:flex;flex-wrap:wrap;gap:.55rem;align-items:center;margin:.7rem 0}
+.filters label{font-weight:800;font-size:.85rem}
+.filters select,a.btn{padding:.45rem .7rem;border-radius:.5rem;border:1px solid #cbd9e2;background:#fff;font-weight:700;text-decoration:none;color:#102f49;font-size:.85rem;cursor:pointer}
+a.btn-primary{background:#12344f;color:#fff;border-color:#12344f}
+.tabs{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 .9rem}
+.tabs button{padding:.5rem .85rem;border-radius:.55rem;border:1px solid #cbd9e2;background:#f7fafc;font-weight:800;cursor:pointer;color:#12344f}
+.tabs button.active{background:#1769aa;color:#fff;border-color:#1769aa}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.master{border-collapse:collapse;width:100%;min-width:900px;font-size:.78rem}
+.master th,.master td{border:1px solid #d5dee6;padding:.4rem .35rem;text-align:center;vertical-align:middle}
+.master thead th{background:#12344f;color:#fff}
+.master td.gpu,.master th.gpu{text-align:left;font-weight:700;white-space:nowrap;background:#f7fafc}
+.master .na{color:#9aa8b3}
+.master .m{font-weight:800;color:#102f49;line-height:1.25}
+.vendor-nvidia td.gpu{border-left:3px solid #76b900}
+.vendor-amd td.gpu{border-left:3px solid #ed1c24}
+.vendor-intel td.gpu{border-left:3px solid #0071c5}
+.vendor-cpu td.gpu{border-left:3px solid #43a047}
+#status{font-size:.85rem;color:#5a6d7a}
+ul.compact{margin:.35rem 0;padding-left:1.15rem}
+</style>
+</head>
+<body>
+<header class="hero"><div>
+<div style="font-weight:800;opacity:.9;font-size:.8rem;letter-spacing:.04em">LEONES · CLASIFICACIÓN · ESTIMATED</div>
+<h1>Cuadros maestros · hardware → LLM</h1>
+<p>Tres matrices (i5/R5, i7/R7, i9/R9). Columnas = RAM. Filas = GPU de consumo por potencia. Celda = mejor <strong>open-weight</strong> viable según Artificial Analysis (Intelligence Index), acotado por VRAM/RAM. Filtra por fabricante y descarga CSV.</p>
+</div></header>
+<main id="main">
+<section class="card">
+<div class="note"><strong>ESTIMATED ≠ MEASURED.</strong> Clasificación de encaje, no medición LEONES.</div>
+<div class="warn"><strong>Reglas:</strong> VRAM limita primero · 2–4 GB RAM no viable · solo open-weight · AA ~sept 2026 · quant Q3–Q5/MoE.</div>
+</section>
+<section class="card">
+<div class="filters">
+<label for="vendor">Fabricante</label>
+<select id="vendor"><option value="all">Todos</option><option value="nvidia">NVIDIA</option><option value="amd">AMD</option><option value="intel">Intel</option><option value="cpu">iGPU / CPU</option></select>
+<a class="btn btn-primary" href="data/cuadros-maestros.csv" download>Descargar CSV</a>
+<a class="btn" href="https://artificialanalysis.ai/leaderboards/models" target="_blank" rel="noopener">Artificial Analysis</a>
+<a class="btn" href="puede-mi-pc.html">¿Puede mi PC?</a>
+</div>
+<p id="status">Cargando datos…</p>
+<div class="tabs" role="tablist">
+<button type="button" class="active" data-tier="i5≈R5">i5 ≈ Ryzen 5</button>
+<button type="button" data-tier="i7≈R7">i7 ≈ Ryzen 7</button>
+<button type="button" data-tier="i9≈R9">i9 ≈ Ryzen 9</button>
+</div>
+<div class="table-wrap"><table class="master" id="grid"><thead><tr>
+<th class="gpu">GPU · VRAM</th><th>2 GB</th><th>4 GB</th><th>8 GB</th><th>16 GB</th><th>32 GB</th><th>64 GB</th>
+</tr></thead><tbody></tbody></table></div>
+</section>
+<section class="card">
+<h2>Notas</h2>
+<ul class="compact">
+<li>Kimi K3 / GLM-5.3 completos no caben en PC de consumo; solo MoE parcial/offload.</li>
+<li>Fuente de ranking: <a href="https://artificialanalysis.ai/leaderboards/models">Artificial Analysis</a>. Datos: <code>data/cuadros-maestros.csv</code>.</li>
+<li>LEONES: candidatos → benchmark → <code>measured</code>.</li>
+</ul>
+<p><a href="fuentes.html">Fuentes</a> · <a href="msa-sc-local.html">MSA Run local</a> · <a href="runtimes-locales.html">Runtimes</a></p>
+</section>
+</main>
+<script src="assets/js/navigation.js?v=2026-09-02-5" defer></script>
+<script>
+(() => {
+  let rows = [], tier = 'i5≈R5', vendor = 'all';
+  const tbody = document.querySelector('#grid tbody');
+  const status = document.getElementById('status');
+  const parse = (text) => {
+    const lines = text.trim().split(/\r?\n/);
+    const headers = lines[0].split(',');
+    return lines.slice(1).map(line => {
+      const cols = []; let cur = '', q = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { q = !q; continue; }
+        if (c === ',' && !q) { cols.push(cur); cur = ''; continue; }
+        cur += c;
+      }
+      cols.push(cur);
+      const o = {}; headers.forEach((h, i) => o[h] = cols[i] || '');
+      return o;
+    });
+  };
+  const cell = (v) => {
+    if (!v || v === '—' || v === '-') return '<span class="na">—</span>';
+    return '<div class="m">' + v.replace(/</g,'&lt;') + '</div>';
+  };
+  const render = () => {
+    const filtered = rows.filter(r => r.cpu_tier === tier && (vendor === 'all' || r.vendor === vendor));
+    tbody.innerHTML = filtered.map(r => {
+      const vram = r.vram_gb && r.vram_gb !== '0' ? ' · ' + r.vram_gb + ' GB' : '';
+      return `<tr class="vendor-${r.vendor}"><td class="gpu">${r.gpu}${vram}</td><td>${cell(r.ram_2)}</td><td>${cell(r.ram_4)}</td><td>${cell(r.ram_8)}</td><td>${cell(r.ram_16)}</td><td>${cell(r.ram_32)}</td><td>${cell(r.ram_64)}</td></tr>`;
+    }).join('');
+    status.textContent = `Tier ${tier} · filtro ${vendor}: ${filtered.length} GPUs. ESTIMATED ≠ MEASURED.`;
+  };
+  document.querySelectorAll('.tabs button').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    tier = btn.dataset.tier;
+    render();
+  }));
+  document.getElementById('vendor').addEventListener('change', e => { vendor = e.target.value; render(); });
+  fetch('data/cuadros-maestros.csv?v=2026-09-02-5').then(r => r.text()).then(t => { rows = parse(t); render(); })
+    .catch(() => { status.textContent = 'No se pudo cargar data/cuadros-maestros.csv'; });
+})();
+</script>
+</body>
+</html>
