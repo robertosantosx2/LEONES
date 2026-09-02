@@ -39,7 +39,17 @@ def test_installation_requires_explicit_consent():
     assert s.snapshot()["state"] == "INSTALLING"
 
 
-def test_real_installation_verification_is_required():
+@pytest.mark.parametrize(
+    "verification",
+    [
+        {"status": "fixture_verified", "real_installation": False},
+        {"status": "fixture_verified", "real_installation": None},
+        {"status": "fixture_verified"},
+        {},
+        None,
+    ],
+)
+def test_installation_verification_rejects_non_true_real_installation(verification):
     s = BetaSession()
     s.advance("HARDWARE_READY")
     s.advance("MODEL_SELECTED")
@@ -47,7 +57,8 @@ def test_real_installation_verification_is_required():
     s.advance("CONSENT_REQUIRED")
     s.authorize_installation()
     with pytest.raises(RuntimeError, match="real installation verification"):
-        s.installation_verified({"status": "fixture_verified", "real_installation": False})
+        s.installation_verified(verification)
+    assert s.snapshot()["state"] == "INSTALLING"
 
 
 def test_benchmark_requires_verified_installation_and_creates_rc1_handoff():
