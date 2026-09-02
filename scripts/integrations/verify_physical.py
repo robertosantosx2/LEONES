@@ -3,6 +3,10 @@
 
 Read-only checks against the host. Never installs, never invents PASS.
 `real_installation` is True only when stack-specific evidence is observed.
+
+For ODS, Docker may be rootful and may require sudo for the current shell.
+Podman is detected separately but is not treated as an ODS PASS unless a
+Docker-compatible CLI/Compose interface is actually available.
 """
 from __future__ import annotations
 
@@ -49,6 +53,20 @@ def _which(name: str) -> str | None:
     return shutil.which(name)
 
 
+def _docker_access() -> tuple[list[str] | None, str | None]:
+    """Return the working Docker argv prefix and access mode."""
+    if not _which("docker"):
+        return None, None
+    rc, _ = _run(["docker", "info"])
+    if rc == 0:
+        return ["docker"], "direct"
+    if _which("sudo"):
+        rc, _ = _run(["sudo", "docker", "info"])
+        if rc == 0:
+            return ["sudo", "docker"], "sudo"
+    return None, None
+
+
 def verify_magnitude() -> PhysicalVerification:
     path = _which("magnitude")
     version_rc, version = _run(["magnitude", "--version"]) if path else (1, "")
@@ -81,40 +99,38 @@ def verify_magnitude() -> PhysicalVerification:
 
 def verify_ods() -> PhysicalVerification:
     docker_path = _which("docker")
-    docker_rc, docker_version = _run(["docker", "--version"]) if docker_path else (1, "")
+    docker_cmd, docker_access = _docker_access()
+    docker_rc, docker_version = _run(docker_cmd + ["--version"]) if docker_cmd else (1, "")
     compose_rc, compose_version = (
-        _run(["docker", "compose", "version"]) if docker_path else (1, "")
+        _run(docker_cmd + ["compose", "version"]) if docker_cmd else (1, "")
     )
+
+    podman_path = _which("podman")
+    podman_rc, podman_version = _run(["podman", "--version"]) if podman_path else (1, "")
+    podman_info_rc, _ = _run(["podman", "info"]) if podman_path else (1, "")
 
     # Prefer an explicit ODS CLI when upstream provides one.
     ods_path = _which("ods")
     ods_rc, ods_version = _run(["ods", "--version"]) if ods_path else (1, "")
 
-    # Secondary observation: local docker images whose name mentions ods.
+    # Secondary observation: local Docker images whose name mentions ODS.
     images_rc, images_out = (1, "")
     ods_images: list[str] = []
-    if docker_path and docker_rc == 0:
-        images_rc, _ = _run(
-            ["docker", "images", "--format", "{{.Repository}}:{{.Tag}}"],
+    if docker_cmd and docker_rc == 0:
+        images_rc, images_out = _run(
+            docker_cmd + ["images", "--format", "{{.Repository}}:{{.Tag}}"],
             timeout=15.0,
         )
         if images_rc == 0:
-            raw = subprocess.run(
-                ["docker", "images", "--format", "{{.Repository}}:{{.Tag}}"],
-                capture_output=True,
-                text=True,
-                timeout=15.0,
-                check=False,
-            )
-            if raw.returncode == 0:
-                ods_images = [
-                    line.strip()
-                    for line in (raw.stdout or "").splitlines()
-                    if "ods" in line.lower()
-                ][:10]
+            ods_images = [
+                line.strip()
+                for line in images_out.splitlines()
+                if "ods" in line.lower()
+            ][:10]
 
     checks = {
         "docker_in_path": docker_path is not None,
+        "docker_accessible": docker_cmd is not None,
         "docker_version_ok": docker_rc == 0 and bool(docker_version),
         "docker_compose_ok": compose_rc == 0 and bool(compose_version),
         "ods_cli_or_image_observed": bool(ods_path and ods_rc == 0) or bool(ods_images),
@@ -122,10 +138,17 @@ def verify_ods() -> PhysicalVerification:
     observed: dict[str, Any] = {}
     if docker_path:
         observed["docker_path"] = docker_path
+    if docker_access:
+        observed["docker_access"] = docker_access
     if docker_rc == 0 and docker_version:
         observed["docker_version"] = docker_version
     if compose_rc == 0 and compose_version:
         observed["compose_version"] = compose_version
+    if podman_path:
+        observed["podman_path"] = podman_path
+    if podman_rc == 0 and podman_version:
+        observed["podman_version"] = podman_version
+        observed["podman_accessible"] = podman_info_rc == 0
     if ods_path:
         observed["ods_path"] = ods_path
     if ods_rc == 0 and ods_version:
@@ -134,13 +157,24 @@ def verify_ods() -> PhysicalVerification:
         observed["ods_docker_images"] = ods_images
 
     missing = [name for name, ok in checks.items() if not ok]
-    # Physical PASS requires docker toolchain + at least one ODS-specific signal.
     passed = (
         checks["docker_in_path"]
+        and checks["docker_accessible"]
         and checks["docker_version_ok"]
         and checks["docker_compose_ok"]
         and checks["ods_cli_or_image_observed"]
     )
+    message = (
+        "ODS toolchain and at least one ODS artifact were observed."
+        if passed
+        else "ODS is not physically verified on this host yet."
+    )
+    if not passed and podman_path and podman_info_rc == 0 and docker_cmd is None:
+        message = (
+            "Podman is available and working, but the current ODS installer "
+            "requires a Docker-compatible CLI/Compose interface."
+        )
+
     return PhysicalVerification(
         stack="ods",
         status="PASS" if passed else "FAIL",
@@ -148,11 +182,7 @@ def verify_ods() -> PhysicalVerification:
         checks=checks,
         observed=observed,
         missing=missing,
-        message=(
-            "ODS toolchain and at least one ODS artifact were observed."
-            if passed
-            else "ODS is not physically verified on this host yet."
-        ),
+        message=message,
     )
 
 
