@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="LEONES · Cuadros maestros filtrables CPU × RAM × GPU → mejor LLM open-weight (Artificial Analysis). Actualización semanal.">
+<meta name="description" content="LEONES · Cuadros maestros filtrables CPU × RAM × GPU → mejor LLM open-weight (Artificial Analysis). Actualización diaria 05:00 Europe/Madrid.">
 <title>LEONES · Cuadros maestros hardware → LLM</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-02-6">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-02-6">
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-02-7">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-02-7">
 <link rel="stylesheet" href="assets/graphics/brand.css">
 <style>
 body{margin:0;background:#f4f7f9;color:#14202b;font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -43,14 +43,14 @@ ul.compact{margin:.35rem 0;padding-left:1.15rem}
 </head>
 <body>
 <header class="hero"><div>
-<div style="font-weight:800;opacity:.9;font-size:.8rem;letter-spacing:.04em">LEONES · CLASIFICACIÓN · ESTIMATED · REFRESH SEMANAL AA</div>
+<div style="font-weight:800;opacity:.9;font-size:.8rem;letter-spacing:.04em">LEONES · CLASIFICACIÓN · ESTIMATED · REFRESH DIARIO AA</div>
 <h1>Cuadros maestros · hardware → LLM</h1>
-<p>Tres matrices (i5/R5, i7/R7, i9/R9). Columnas = RAM. Filas = GPU de consumo por potencia. Celda = mejor <strong>open-weight</strong> viable según Artificial Analysis (Intelligence Index), acotado por VRAM/RAM. El CSV se revisa <strong>cada lunes</strong> con el ranking open-weight publicado por AA.</p>
+<p>Tres matrices (i5/R5, i7/R7, i9/R9). Columnas = RAM. Filas = GPU de consumo por potencia. Celda = mejor <strong>open-weight</strong> viable según Artificial Analysis (Intelligence Index), acotado por VRAM/RAM. El CSV se revisa <strong>cada día a las 05:00</strong> (Europe/Madrid) con el ranking open-weight publicado por AA.</p>
 </div></header>
 <main id="main">
 <section class="card">
 <div class="note"><strong>ESTIMATED ≠ MEASURED.</strong> Clasificación de encaje, no medición LEONES. Ranking de referencia: <a href="https://artificialanalysis.ai/leaderboards/models">Artificial Analysis</a> (open weights).</div>
-<div class="warn"><strong>Reglas:</strong> VRAM limita primero · 2–4 GB RAM no viable · solo open-weight · quant Q3–Q5/MoE · actualización automática semanal (lunes 09:00 Europe/Madrid).</div>
+<div class="warn"><strong>Reglas:</strong> VRAM limita primero · 2–4 GB RAM no viable · solo open-weight · quant Q3–Q5/MoE · actualización automática diaria (05:00 Europe/Madrid).</div>
 </section>
 <section class="card">
 <div class="filters">
@@ -74,7 +74,7 @@ ul.compact{margin:.35rem 0;padding-left:1.15rem}
 <section class="card">
 <h2>Notas</h2>
 <ul class="compact">
-<li><strong>Refresh semanal:</strong> cada lunes se re-lee el leaderboard open-weight de Artificial Analysis y, si hay cambios materiales, se actualiza <code>data/cuadros-maestros.csv</code> (sin commits vacíos).</li>
+<li><strong>Refresh diario:</strong> cada día a las 05:00 (Europe/Madrid) se re-lee el leaderboard open-weight de Artificial Analysis y, si hay cambios materiales, se actualiza <code>data/cuadros-maestros.csv</code> (sin commits vacíos).</li>
 <li>Kimi K3 / GLM-5.x completos no caben en PC de consumo; solo MoE parcial/offload.</li>
 <li>Fuente de ranking: <a href="https://artificialanalysis.ai/leaderboards/models">Artificial Analysis</a>. Política: <a href="data/CUADROS-MAESTROS-UPDATE.md">CUADROS-MAESTROS-UPDATE.md</a>.</li>
 <li>LEONES: candidatos → benchmark → <code>measured</code>.</li>
@@ -82,7 +82,7 @@ ul.compact{margin:.35rem 0;padding-left:1.15rem}
 <p><a href="fuentes.html">Fuentes</a> · <a href="msa-sc-local.html">MSA Run local</a> · <a href="runtimes-locales.html">Runtimes</a></p>
 </section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-02-6" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-02-7" defer></script>
 <script>
 (() => {
   let rows = [], tier = 'i5≈R5', vendor = 'all';
@@ -114,7 +114,7 @@ ul.compact{margin:.35rem 0;padding-left:1.15rem}
       const vram = r.vram_gb && r.vram_gb !== '0' ? ' · ' + r.vram_gb + ' GB' : '';
       return `<tr class="vendor-${r.vendor}"><td class="gpu">${r.gpu}${vram}</td><td>${cell(r.ram_2)}</td><td>${cell(r.ram_4)}</td><td>${cell(r.ram_8)}</td><td>${cell(r.ram_16)}</td><td>${cell(r.ram_32)}</td><td>${cell(r.ram_64)}</td></tr>`;
     }).join('');
-    status.textContent = `Tier ${tier} · filtro ${vendor}: ${filtered.length} GPUs · refresh semanal AA · ESTIMATED ≠ MEASURED.`;
+    status.textContent = `Tier ${tier} · filtro ${vendor}: ${filtered.length} GPUs · refresh diario AA 05:00 Madrid · ESTIMATED ≠ MEASURED.`;
   };
   document.querySelectorAll('.tabs button').forEach(btn => btn.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
@@ -123,7 +123,7 @@ ul.compact{margin:.35rem 0;padding-left:1.15rem}
     render();
   }));
   document.getElementById('vendor').addEventListener('change', e => { vendor = e.target.value; render(); });
-  fetch('data/cuadros-maestros.csv?v=2026-09-02-6').then(r => r.text()).then(t => { rows = parse(t); render(); })
+  fetch('data/cuadros-maestros.csv?v=2026-09-02-7').then(r => r.text()).then(t => { rows = parse(t); render(); })
     .catch(() => { status.textContent = 'No se pudo cargar data/cuadros-maestros.csv'; });
 })();
 </script>
