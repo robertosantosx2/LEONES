@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="LEONES · Cuadros maestros: CPU × RAM × GPU → mejor LLM open-weight según Artificial Analysis.">
+<title>LEONES · Cuadros maestros hardware → LLM</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-02-3">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-02-3">
+<link rel="stylesheet" href="assets/graphics/brand.css">
+<style>
+body{margin:0;background:#f4f7f9;color:#14202b;font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+.hero{background:linear-gradient(135deg,#0b2539,#1769aa);color:#fff;padding:3.2rem 1.25rem 2.4rem}
+.hero>div,main{width:min(1280px,calc(100% - 2rem));margin:auto}
+.hero h1{font-size:clamp(1.9rem,4.5vw,3.2rem);line-height:1.05;margin:.25rem 0}
+.hero p{max-width:920px;color:#d9e9f3}
+main{padding:1.5rem 0 4rem}
+.card{background:#fff;border:1px solid #d9e2e9;border-radius:1rem;padding:1.25rem 1.35rem;margin-bottom:1.25rem;box-shadow:0 8px 24px rgb(16 47 73 / 6%)}
+h2{color:#102f49;margin:0 0 .6rem;font-size:1.35rem}
+h3{color:#1769aa;margin:1rem 0 .4rem;font-size:1.05rem}
+.badge{display:inline-block;border-radius:999px;padding:.2rem .55rem;background:#eaf4ff;border:1px solid #cbddea;font-weight:800;font-size:.72rem;margin-right:.35rem}
+.note{padding:.85rem 1rem;background:#edf3f7;border-left:4px solid #1769aa;border-radius:.4rem;margin:.75rem 0}
+.warn{padding:.85rem 1rem;background:#fff5d8;border-left:4px solid #b77700;border-radius:.4rem;margin:.75rem 0}
+.table-wrap{overflow-x:auto;margin:.75rem 0 0;-webkit-overflow-scrolling:touch}
+table.master{border-collapse:collapse;width:100%;min-width:920px;font-size:.78rem}
+.master th,.master td{border:1px solid #d5dee6;padding:.45rem .4rem;text-align:center;vertical-align:middle}
+.master thead th{background:#12344f;color:#fff;font-weight:800;position:sticky;top:0;z-index:2}
+.master th.gpu{text-align:left;background:#1b4a66;min-width:11.5rem;white-space:nowrap}
+.master td.gpu{text-align:left;font-weight:700;background:#f7fafc;white-space:nowrap}
+.master .vram{color:#5a6d7a;font-weight:600;font-size:.7rem}
+.master .cell{line-height:1.25}
+.master .m{font-weight:800;color:#102f49}
+.master .q{color:#4a6578;font-size:.7rem}
+.master .aa{color:#1769aa;font-weight:700;font-size:.68rem}
+.master .na{color:#9aa8b3;font-style:italic}
+.master .cpu{background:#e8f5e9}
+.master .low{background:#fff8e8}
+.master .mid{background:#eef6fb}
+.master .hi{background:#e8f0fa}
+.master .top{background:#e3f2e8}
+.legend span{display:inline-block;margin:.2rem .55rem .2rem 0;font-size:.78rem}
+.dot{display:inline-block;width:.7rem;height:.7rem;border-radius:2px;margin-right:.25rem;vertical-align:middle}
+.dot-na{background:#eceff1}.dot-low{background:#fff8e8;border:1px solid #e0c070}.dot-mid{background:#eef6fb;border:1px solid #a8c8e0}.dot-hi{background:#e8f0fa;border:1px solid #90b0d0}.dot-top{background:#e3f2e8;border:1px solid #8bc49a}.dot-cpu{background:#e8f5e9;border:1px solid #81c784}
+ul.compact{margin:.4rem 0;padding-left:1.2rem}ul.compact li{margin:.25rem 0}
+code{font-size:.9em}
+</style>
+</head>
+<body>
+<header class="hero"><div>
+<div><span class="badge" style="background:#fff3;border-color:#fff5;color:#fff">LEONES · ATIFICACIÓN</span></div>
+<h1>Cuadros maestros · hardware → LLM</h1>
+<p>Tres matrices por clase de CPU (Intel + Ryzen equivalente). Columnas = RAM del sistema. Filas = GPU de consumo ordenadas por potencia. Celda = <strong>mejor modelo open-weight viable</strong> según ranking de Artificial Analysis (Intelligence Index), acotado por VRAM/RAM realistas en cuantización práctica (Q3–Q5 / MoE).</p>
+</div></header>
+<main id="main">
+
+<section class="card">
+<h2>Contrato de lectura</h2>
+<div class="note"><strong>ESTIMATED ≠ MEASURED.</strong> Las celdas son una <em>clasificación de encaje</em>: el LLM open-weight con mejor señal AA que cabe de forma usable en ese presupuesto de memoria. No es una medición LEONES de tok/s ni de calidad agentica en ese hardware.</div>
+<div class="warn"><strong>Reglas de encaje:</strong> (1) Limita primero la <em>VRAM de la GPU</em>; la RAM del sistema solo permite offload/CPU-only y no multiplica la VRAM. (2) 2–4 GB de RAM de sistema = no usable para LLM modernos (salvo experimentación). (3) Solo modelos <strong>open-weight</strong> (ejecutables en local). (4) Índice AA = Intelligence Index v4.x, open weights, referencia ~sept 2026. (5) Cuantización típica Q4_K / Q3_K_XL; contexto corto–medio (~4–8K) salvo que se indique.</div>
+<p class="legend">
+<span><i class="dot dot-na"></i> No viable</span>
+<span><i class="dot dot-low"></i> Pequeño / limitado</span>
+<span><i class="dot dot-mid"></i> Medio</span>
+<span><i class="dot dot-hi"></i> Alto</span>
+<span><i class="dot dot-top"></i> Tope open local</span>
+<span><i class="dot dot-cpu"></i> Principalmente CPU/offload</span>
+</p>
+</section>
+
+<section class="card">
+<h2>Referencia rápida · open-weight AA (sept 2026)</h2>
+<ul class="compact">
+<li><strong>Kimi K3 / GLM-5.3</strong> — ~60 AA · flagship open (cientos de GB; multi-GPU / servidor)</li>
+<li><strong>GLM-5.3-Flash</strong> — ~57 AA · MoE ~320B / ~18B activos · necesita mucha VRAM o cluster</li>
+<li><strong>Qwen3.8-Flash-Next / DeepSeek V4 Flash</strong> — ~52–56 AA · MoE grandes (parcial/offload en 24–32 GB)</li>
+<li><strong>Qwen3.8-27B</strong> — ~52 AA · dense 27B · ~12–16 GB Q3–Q4</li>
+<li><strong>Qwen3-Coder 30B-A3B</strong> — fuerte coding · MoE ~19–22 GB Q4</li>
+<li><strong>gpt-oss-20b / Mellum 12B / Ornith-9B</strong> — ~14 / 9 / 6 GB clase</li>
+<li><strong>Qwen3-4B / Granite 8B / LFM2.5-2.6B</strong> — edge · 2–6 GB</li>
+</ul>
+<p style="font-size:.85rem;color:#5a6d7a">Fuentes de ranking: <a href="https://artificialanalysis.ai/leaderboards/models">Artificial Analysis</a>. Encaje VRAM alineado con catálogos tipo MSA Run local y reglas Q4 ≈ 0,5–0,6 GB/B denso + KV.</p>
+</section>
+
+<!-- ========== i5 / Ryzen 5 ========== -->
+<section class="card">
+<h2>1 · Intel Core i5 ≈ AMD Ryzen 5</h2>
+<p>CPU de consumo medio. Bueno para GPU-bound; offload CPU usable pero más lento que i7/i9. Prioriza modelos que quepan enteros en VRAM.</p>
+<div class="table-wrap">
+<table class="master" aria-label="Cuadro maestro i5 Ryzen 5">
+<thead>
+<tr>
+<th class="gpu">GPU (potencia ↓) · VRAM</th>
+<th>2 GB RAM</th><th>4 GB RAM</th><th>8 GB RAM</th><th>16 GB RAM</th><th>32 GB RAM</th><th>64 GB RAM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="gpu">RTX 5090 <span class="vram">32 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="low"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q4 · 8K</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3-Coder 30B-A3B</div><div class="q">Q4</div><div class="aa">coding fuerte</div></div></td>
+<td class="top"><div class="cell"><div class="m">Qwen3.8-27B Q5/Q6</div><div class="q">+ ctx largo</div><div class="aa">AA ~52</div></div></td>
+<td class="top"><div class="cell"><div class="m">Qwen3.8-27B Q6 + offload</div><div class="q">o MoE parcial Flash</div><div class="aa">tope single-GPU</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 4090 / RX 7900 XTX <span class="vram">24 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="low"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q3–Q4</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3-Coder 30B-A3B</div><div class="q">Q4 ~21 GB</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">Qwen3.8-27B Q5</div><div class="q">ctx medio</div><div class="aa">AA ~52</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B Q5 + offload</div><div class="q">MoE parcial</div><div class="aa">tope 24 GB</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 5080 / 5070 Ti / 4080 S <span class="vram">16 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q3_K_XL</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q3–Q4</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B Q4</div><div class="q">+ más ctx</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">27B Q4 + offload</div><div class="q">o gpt-oss-20b Q5</div><div class="aa">AA ~52</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RX 9070 XT / 9070 / 7800 XT <span class="vram">16 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q3 (Vulkan)</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q3–Q4</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B Q4</div><div class="q">ctx medio</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">27B Q4 + RAM offload</div><div class="q">ROCm/Vulkan</div><div class="aa">AA ~52</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 5070 / 4070 Ti / 4070 S <span class="vram">12 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">gpt-oss-20b / Mellum 12B</div><div class="q">Q4</div><div class="aa">clase 12B–20B</div></div></td>
+<td class="mid"><div class="cell"><div class="m">gpt-oss-20b</div><div class="q">Q4</div><div class="aa">MoE 20B</div></div></td>
+<td class="hi"><div class="cell"><div class="m">gpt-oss-20b Q5</div><div class="q">o 14B Q5</div><div class="aa">mejor quant</div></div></td>
+<td class="hi"><div class="cell"><div class="m">20B Q5 + offload 27B Q2</div><div class="q">marginal</div><div class="aa">—</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RX 7900 XT <span class="vram">20 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q3–Q4</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3-Coder 30B-A3B</div><div class="q">Q4 justo</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B Q4</div><div class="q">+ ctx</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B Q5</div><div class="q">offload ligero</div><div class="aa">tope 20 GB</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 4070 / 5060 Ti 16GB <span class="vram">12–16 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Mellum 12B / 14B</div><div class="q">Q4</div><div class="aa">clase media</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B (16GB)</div><div class="q">Q3</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">27B Q3–Q4</div><div class="q">16GB VRAM</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">27B Q4 + offload</div><div class="q">—</div><div class="aa">AA ~52</div></div></td>
+</tr>
+<tr>
+<td class="gpu">Arc B580 / RTX 3060 12GB <span class="vram">12 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Mellum 12B / Qwen3-14B</div><div class="q">Q4</div><div class="aa">clase 12–14B</div></div></td>
+<td class="mid"><div class="cell"><div class="m">gpt-oss-20b</div><div class="q">Q4 justo</div><div class="aa">MoE</div></div></td>
+<td class="mid"><div class="cell"><div class="m">gpt-oss-20b Q4</div><div class="q">+ ctx</div><div class="aa">—</div></div></td>
+<td class="mid"><div class="cell"><div class="m">20B Q4 + offload</div><div class="q">—</div><div class="aa">—</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 4060 / 5060 / RX 7600 <span class="vram">8 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="low"><div class="cell"><div class="m">Ornith-9B / Qwen3-8B</div><div class="q">Q4</div><div class="aa">clase 8–9B</div></div></td>
+<td class="low"><div class="cell"><div class="m">Ornith-9B / Granite 8B</div><div class="q">Q4–Q5</div><div class="aa">—</div></div></td>
+<td class="mid"><div class="cell"><div class="m">9B Q5 + offload 14B</div><div class="q">lento</div><div class="aa">—</div></div></td>
+<td class="mid"><div class="cell"><div class="m">14B Q4 offload</div><div class="q">CPU+GPU</div><div class="aa">—</div></div></td>
+</tr>
+<tr>
+<td class="gpu">iGPU / sin GPU dedicada <span class="vram">compartida</span></td>
+<td class="na">—</td><td class="na">—</td><td class="cpu"><div class="cell"><div class="m">LFM2.5-2.6B / Qwen3-4B</div><div class="q">CPU</div><div class="aa">edge</div></div></td>
+<td class="cpu"><div class="cell"><div class="m">Qwen3-8B Q4</div><div class="q">CPU lento</div><div class="aa">—</div></div></td>
+<td class="cpu"><div class="cell"><div class="m">Qwen3-14B Q3</div><div class="q">CPU</div><div class="aa">usable lento</div></div></td>
+<td class="cpu"><div class="cell"><div class="m">Qwen3.8-27B Q2–Q3</div><div class="q">CPU very slow</div><div class="aa">AA ~52*</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<!-- ========== i7 / Ryzen 7 ========== -->
+<section class="card">
+<h2>2 · Intel Core i7 ≈ AMD Ryzen 7</h2>
+<p>Más núcleos y mejor ancho de banda de memoria: offload CPU más usable. Con 32–64 GB RAM se puede empujar un escalón de modelo respecto al i5 en la misma GPU.</p>
+<div class="table-wrap">
+<table class="master" aria-label="Cuadro maestro i7 Ryzen 7">
+<thead>
+<tr>
+<th class="gpu">GPU (potencia ↓) · VRAM</th>
+<th>2 GB RAM</th><th>4 GB RAM</th><th>8 GB RAM</th><th>16 GB RAM</th><th>32 GB RAM</th><th>64 GB RAM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="gpu">RTX 5090 <span class="vram">32 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="low"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q4</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3-Coder 30B-A3B</div><div class="q">Q4</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B Q5 + Flash parcial</div><div class="q">offload MoE</div><div class="aa">↑ vs i5</div></div></td>
+<td class="top"><div class="cell"><div class="m">DeepSeek V4 Flash / Qwen3.8-Flash parcial</div><div class="q">offload agresivo</div><div class="aa">AA ~52–56</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 4090 / RX 7900 XTX <span class="vram">24 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q4</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3-Coder 30B-A3B</div><div class="q">Q4</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B Q5</div><div class="q">+ offload</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">Flash/Next parcial + 30B</div><div class="q">64 GB host</div><div class="aa">AA ~52–56</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 5080 / 5070 Ti / 4080 S <span class="vram">16 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q3</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B Q4</div><div class="q">—</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">27B Q4 + offload 30B-A3B</div><div class="q">híbrido</div><div class="aa">↑</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B Q4 híbrido</div><div class="q">GPU+CPU</div><div class="aa">coding</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RX 9070 XT / 7800 XT <span class="vram">16 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q3</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B Q4</div><div class="q">—</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">27B Q4 + offload</div><div class="q">—</div><div class="aa">AA ~52</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B híbrido</div><div class="q">ROCm/Vulkan</div><div class="aa">coding</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 5070 / 4070 Ti <span class="vram">12 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">gpt-oss-20b</div><div class="q">Q4</div><div class="aa">MoE</div></div></td>
+<td class="mid"><div class="cell"><div class="m">gpt-oss-20b Q4</div><div class="q">—</div><div class="aa">—</div></div></td>
+<td class="hi"><div class="cell"><div class="m">20B Q5 / 27B Q2 offload</div><div class="q">híbrido</div><div class="aa">↑</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B Q3 híbrido</div><div class="q">usable</div><div class="aa">AA ~52</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RX 7900 XT <span class="vram">20 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q4</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3-Coder 30B-A3B</div><div class="q">Q4</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B Q5</div><div class="q">—</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B + MoE parcial</div><div class="q">—</div><div class="aa">tope 20 GB</div></div></td>
+</tr>
+<tr>
+<td class="gpu">Arc B580 / RTX 3060 12GB <span class="vram">12 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Mellum 12B</div><div class="q">Q4</div><div class="aa">—</div></div></td>
+<td class="mid"><div class="cell"><div class="m">gpt-oss-20b</div><div class="q">Q4</div><div class="aa">MoE</div></div></td>
+<td class="hi"><div class="cell"><div class="m">20B Q4 + offload 14B</div><div class="q">—</div><div class="aa">—</div></div></td>
+<td class="hi"><div class="cell"><div class="m">27B Q3 híbrido</div><div class="q">lento</div><div class="aa">AA ~52</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 4060 / RX 7600 <span class="vram">8 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="low"><div class="cell"><div class="m">Ornith-9B</div><div class="q">Q4</div><div class="aa">—</div></div></td>
+<td class="low"><div class="cell"><div class="m">Ornith-9B Q5</div><div class="q">—</div><div class="aa">—</div></div></td>
+<td class="mid"><div class="cell"><div class="m">14B Q4 híbrido</div><div class="q">—</div><div class="aa">—</div></div></td>
+<td class="mid"><div class="cell"><div class="m">gpt-oss-20b Q3 híbrido</div><div class="q">CPU+GPU</div><div class="aa">—</div></div></td>
+</tr>
+<tr>
+<td class="gpu">iGPU / sin dedicada <span class="vram">—</span></td>
+<td class="na">—</td><td class="na">—</td><td class="cpu"><div class="cell"><div class="m">Qwen3-4B / LFM2.5</div><div class="q">CPU</div><div class="aa">edge</div></div></td>
+<td class="cpu"><div class="cell"><div class="m">Qwen3-8B Q4</div><div class="q">CPU</div><div class="aa">—</div></div></td>
+<td class="cpu"><div class="cell"><div class="m">Qwen3-14B Q4</div><div class="q">CPU</div><div class="aa">—</div></div></td>
+<td class="cpu"><div class="cell"><div class="m">Qwen3.8-27B Q3</div><div class="q">CPU (mejor que i5)</div><div class="aa">AA ~52*</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<!-- ========== i9 / Ryzen 9 ========== -->
+<section class="card">
+<h2>3 · Intel Core i9 ≈ AMD Ryzen 9</h2>
+<p>Máximo offload en PC de consumo. Con 64 GB RAM y GPU ≥16 GB se puede acercar a MoE grandes en modo híbrido (sigue lejos de Kimi K3 / GLM-5.3 completos).</p>
+<div class="table-wrap">
+<table class="master" aria-label="Cuadro maestro i9 Ryzen 9">
+<thead>
+<tr>
+<th class="gpu">GPU (potencia ↓) · VRAM</th>
+<th>2 GB RAM</th><th>4 GB RAM</th><th>8 GB RAM</th><th>16 GB RAM</th><th>32 GB RAM</th><th>64 GB RAM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="gpu">RTX 5090 <span class="vram">32 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q4</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3-Coder 30B-A3B</div><div class="q">Q4–Q5</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">Flash-Next / V4 Flash parcial</div><div class="q">+ 30B en GPU</div><div class="aa">AA ~52–56</div></div></td>
+<td class="top"><div class="cell"><div class="m">Mejor MoE parcial open</div><div class="q">V4 Flash / Flash-Next</div><div class="aa">AA ~52–56 · tope PC</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 4090 / RX 7900 XTX <span class="vram">24 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q4</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3-Coder 30B-A3B</div><div class="q">Q4</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B Q5 + MoE offload</div><div class="q">—</div><div class="aa">↑</div></div></td>
+<td class="top"><div class="cell"><div class="m">DeepSeek V4 Flash / Flash-Next híbrido</div><div class="q">mejor offload i9</div><div class="aa">AA ~52–56</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 5080 / 5070 Ti / 4080 S <span class="vram">16 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q3</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B Q4</div><div class="q">—</div><div class="aa">AA ~52</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B híbrido</div><div class="q">GPU+CPU</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B Q4 + MoE parcial</div><div class="q">offload fuerte</div><div class="aa">coding / AA~52+</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RX 9070 XT / 7800 XT <span class="vram">16 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q3</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B Q4</div><div class="q">—</div><div class="aa">AA ~52</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B híbrido</div><div class="q">—</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B + offload MoE</div><div class="q">ROCm</div><div class="aa">coding</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 5070 / 4070 Ti <span class="vram">12 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">gpt-oss-20b</div><div class="q">Q4</div><div class="aa">MoE</div></div></td>
+<td class="hi"><div class="cell"><div class="m">gpt-oss-20b Q5</div><div class="q">—</div><div class="aa">—</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B Q3 híbrido</div><div class="q">—</div><div class="aa">AA ~52</div></div></td>
+<td class="top"><div class="cell"><div class="m">Qwen3.8-27B Q4 híbrido</div><div class="q">mejor CPU i9</div><div class="aa">AA ~52</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RX 7900 XT <span class="vram">20 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Qwen3.8-27B</div><div class="q">Q4</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3-Coder 30B-A3B</div><div class="q">Q4</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B Q5</div><div class="q">—</div><div class="aa">coding</div></div></td>
+<td class="top"><div class="cell"><div class="m">30B-A3B + MoE parcial</div><div class="q">—</div><div class="aa">tope 20 GB PC</div></div></td>
+</tr>
+<tr>
+<td class="gpu">Arc B580 / RTX 3060 12GB <span class="vram">12 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="mid"><div class="cell"><div class="m">Mellum 12B</div><div class="q">Q4</div><div class="aa">—</div></div></td>
+<td class="mid"><div class="cell"><div class="m">gpt-oss-20b</div><div class="q">Q4</div><div class="aa">MoE</div></div></td>
+<td class="hi"><div class="cell"><div class="m">27B Q3 híbrido</div><div class="q">—</div><div class="aa">AA ~52</div></div></td>
+<td class="hi"><div class="cell"><div class="m">27B Q4 híbrido</div><div class="q">i9 offload</div><div class="aa">AA ~52</div></div></td>
+</tr>
+<tr>
+<td class="gpu">RTX 4060 / RX 7600 <span class="vram">8 GB</span></td>
+<td class="na">—</td><td class="na">—</td><td class="low"><div class="cell"><div class="m">Ornith-9B</div><div class="q">Q4</div><div class="aa">—</div></div></td>
+<td class="mid"><div class="cell"><div class="m">14B Q4 híbrido</div><div class="q">—</div><div class="aa">—</div></div></td>
+<td class="mid"><div class="cell"><div class="m">gpt-oss-20b Q3 híbrido</div><div class="q">—</div><div class="aa">—</div></div></td>
+<td class="hi"><div class="cell"><div class="m">Qwen3.8-27B Q2–Q3 híbrido</div><div class="q">viable i9</div><div class="aa">AA ~52*</div></div></td>
+</tr>
+<tr>
+<td class="gpu">iGPU / sin dedicada <span class="vram">—</span></td>
+<td class="na">—</td><td class="na">—</td><td class="cpu"><div class="cell"><div class="m">Qwen3-4B / 8B</div><div class="q">CPU</div><div class="aa">edge</div></div></td>
+<td class="cpu"><div class="cell"><div class="m">Qwen3-14B Q4</div><div class="q">CPU</div><div class="aa">—</div></div></td>
+<td class="cpu"><div class="cell"><div class="m">Qwen3.8-27B Q3</div><div class="q">CPU</div><div class="aa">AA ~52*</div></div></td>
+<td class="cpu"><div class="cell"><div class="m">Qwen3.8-27B Q4</div><div class="q">mejor CPU-only PC</div><div class="aa">AA ~52</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="card">
+<h2>Notas metodológicas</h2>
+<ul class="compact">
+<li><strong>Por qué no aparecen Kimi K3 / GLM-5.3 completos:</strong> son MoE de cientos de miles de millones de parámetros; en PC de consumo solo entran en modo parcial/offload muy degradado, no como “el que más puntúa y corre bien”.</li>
+<li><strong>CPU equivalent:</strong> i5≈R5 (6–8–10c), i7≈R7 (8–12c), i9≈R9 (12–16c+). El salto real está en núcleos, IMC y canales de memoria para offload.</li>
+<li><strong>2 / 4 GB RAM:</strong> marcados no viables: el SO + runtime ya consumen ese margen.</li>
+<li><strong>Actualización:</strong> re-rankear cuando Artificial Analysis mueva el top open-weight o salgan GGUF medidos nuevos (p. ej. vía MSA Run local).</li>
+<li><strong>LEONES:</strong> estas celdas alimentan candidatos; el benchmark propio decide <code>measured</code>.</li>
+</ul>
+<p><a href="fuentes.html">Fuentes</a> · <a href="msa-sc-local.html">MSA Run local</a> · <a href="runtimes-locales.html">Runtimes</a> · <a href="puede-mi-pc.html">¿Puede mi PC?</a> · <a href="https://artificialanalysis.ai/leaderboards/models">Artificial Analysis</a></p>
+</section>
+</main>
+<script src="assets/js/navigation.js?v=2026-09-02-3" defer></script>
+</body>
+</html>
