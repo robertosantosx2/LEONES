@@ -62,8 +62,8 @@ class BetaSession:
             raise RuntimeError("installation consent is required before verification")
         if self.state != "INSTALLING":
             raise RuntimeError("installation is not in progress")
-        verification = verification or {"status": "verified"}
-        if verification.get("real_installation") is False:
+        verification = verification or {}
+        if verification.get("real_installation") is not True:
             raise RuntimeError("real installation verification is required")
         self.advance("READY_FOR_BENCHMARK", installation_verification=verification)
 
@@ -82,7 +82,7 @@ class BetaSession:
             raise RuntimeError("benchmark consent is not currently requested")
         benchmark = self.data.get("benchmark") or {}
         verification = self.data.get("installation_verification") or {}
-        if verification.get("real_installation") is False:
+        if verification.get("real_installation") is not True:
             raise RuntimeError("real installation verification is required")
         handoff = {
             "schema_version": "1.0",
