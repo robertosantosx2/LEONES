@@ -67,14 +67,13 @@ jobs:
               s = s.replace('href="../docs/RC2-', 'href="docs/RC2-')
               s = s.replace('href="../docs/', 'href="' + repo + 'docs/')
               s = s.replace('href="../scripts/', 'href="' + repo + 'scripts/')
-              # The former Prospection logo path is no longer part of the asset tree.
               s = s.replace('assets/graphics/logos/leones-prospection.svg', 'assets/graphics/leones-logo-principal.jpg')
-              # This local technical-note path was never published; point to the canonical external project instead.
               s = s.replace('href="sources/FREETOKEN.md"', 'href="https://github.com/FlashML-org/FreeToken"')
-              # LOTB is obsolete and must never reach the public site.
-              s = s.replace('Agents / LOTB', 'Agents')
               s = s.replace('architecture.html#lotb', 'app.html')
               s = s.replace('arquitectura.html#lotb', 'app.html')
+              # LOTB was retired from LEONES. Sanitize stale public copies during publication.
+              s = s.replace('LOTB', 'Evaluación agentiva')
+              s = s.replace('lotb', 'evaluation-agentiva')
               p.write_text(s, encoding='utf-8')
           PY
 
@@ -117,7 +116,7 @@ jobs:
           test -f _site/scripts/rc2_wizard.py
           test -f _site/README.md
           test -f _site/.nojekyll
-          if grep -RniE 'LOTB' _site --include='*.html' --include='*.js'; then echo 'ERROR: obsolete LOTB reference found in published web payload'; exit 1; fi
+          if grep -RniE 'LOTB|lotb' _site --include='*.html' --include='*.js'; then echo 'ERROR: obsolete LOTB reference found in published web payload'; exit 1; fi
           echo "RC2 publication payload verified."
 
       - name: Verify prospection data is included
