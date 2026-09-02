@@ -87,6 +87,52 @@ HARDWARE → CANDIDATOS → MODELO → ODS/MAGNITUDE
 
 La instalación de ODS/Magnitude sólo se ejecuta después del consentimiento y mediante sus interfaces canónicas.
 
+## 5. Runtime de contenedores para ODS
+
+LEONES RC2 ya no presupone que Docker sea **rootless**.
+
+La política es:
+
+```text
+CONTENEDORES
+├── Docker directo             → válido
+├── Docker mediante sudo       → válido
+├── Docker rootless            → válido
+└── Podman                     → detectado explícitamente
+```
+
+Un Docker rootful accesible mediante `sudo docker` **no es un error**. LEONES pasa al instalador ODS el estado ya observado para evitar que el instalador intente adivinar incorrectamente el modo rootless.
+
+En Fedora/RHEL y derivados, si el equipo sólo dispone de Podman, LEONES lo detecta y lo informa. El ODS actual usa un contrato Docker + Compose; por tanto LEONES **no instala Docker silenciosamente ni declara Podman como ODS compatible sin verificar una interfaz Docker-compatible**. Esto evita sustituir la elección de runtime del sistema sin consentimiento.
+
+La comprobación previa de ODS expone además:
+
+- runtime detectado;
+- acceso directo o mediante `sudo`;
+- modo rootless/rootful cuando puede determinarse;
+- Compose disponible;
+- presencia de Podman;
+- compatibilidad efectiva con el contrato de instalación de ODS.
+
+## 6. Comprobación física
+
+La verificación física de ODS es posterior a la instalación. Sólo puede producir `PASS` cuando se observa realmente el toolchain y una señal específica de ODS (CLI o imagen local). Un Docker operativo por sí solo **no equivale a ODS instalado**.
+
+Por tanto:
+
+```text
+Docker/Podman detectado
+        ↓
+interfaz compatible con ODS
+        ↓
+instalación autorizada
+        ↓
+verificación física
+        ↓
+PASS → benchmark
+FAIL → reparar / volver a verificar
+```
+
 ## Requisitos
 
 - Linux para la validación RC2 actual.
