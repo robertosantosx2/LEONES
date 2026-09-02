@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#102f49">
   <meta name="description" content="LEONES: diagnóstico, selección, ejecución y evidencia reproducible para IA local.">
   <title>LEONES · IA local. Con criterio.</title>
-  <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-17-6">
-  <link rel="stylesheet" href="assets/css/site.css?v=2026-08-17-6">
-  <link rel="stylesheet" href="assets/css/home-brand.css?v=2026-08-17-6">
+  <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-02-1">
+  <link rel="stylesheet" href="assets/css/site.css?v=2026-09-02-1">
+  <link rel="stylesheet" href="assets/css/home-brand.css?v=2026-09-02-1">
   <link rel="stylesheet" href="assets/graphics/brand.css">
 </head>
 <body>
@@ -23,6 +23,7 @@
     <p class="hero-copy">De una necesidad concreta a una recomendación reproducible: hardware observado, modelo elegido, stack de ejecución, medición y evidencia.</p>
     <div class="site-flow" aria-label="Accesos principales">
       <a class="site-flow__node site-flow__node--primary" href="app.html">Empezar diagnóstico <span>→</span></a>
+      <a class="site-flow__node" href="puede-mi-pc.html">¿Puede mi PC?</a>
       <a class="site-flow__node" href="atlas.html">Explorar Atlas</a>
       <a class="site-flow__node" href="prospeccion.html">Ver novedades</a>
       <a class="site-flow__node" href="fuentes.html">Fuentes de conocimiento</a>
@@ -45,12 +46,12 @@
 <article class="site-card"><span class="card-eyebrow">DISCOVER</span><h3>Prospección</h3><p>Descubre modelos, runtimes, técnicas, hardware y cambios relevantes.</p><a href="prospeccion.html">Explorar →</a></article>
 <article class="site-card"><span class="card-eyebrow">KNOWLEDGE</span><h3>Atlas</h3><p>Conocimiento estructurado sobre modelos, capacidades y ecosistema.</p><a href="atlas.html">Entrar →</a></article>
 <article class="site-card"><span class="card-eyebrow">DECIDE</span><h3>Router</h3><p>Transforma necesidad, hardware y evidencia en una ruta razonada.</p><a href="pilares.html#router">Ver →</a></article>
-<article class="site-card"><span class="card-eyebrow">EXECUTE</span><h3>Hardware + runtime</h3><p>La ejecución real depende de memoria, backend, contexto, cuantización y configuración.</p><a href="pila.html">Ver la pila →</a></article>
-<article class="site-card"><span class="card-eyebrow">AGENTS</span><h3>Agents</h3><p>Evalúa si un sistema completa tareas reales, no solo si genera muchos tokens.</p><a href="arquitectura.html">Ver →</a></article>
+<article class="site-card"><span class="card-eyebrow">EXECUTE</span><h3>Hardware + runtime</h3><p>La ejecución real depende de memoria, backend, contexto, cuantización y configuración.</p><a href="pila.html">Ver la pila →</a> · <a href="runtimes-locales.html">Runtimes →</a></article>
+<article class="site-card"><span class="card-eyebrow">AGENTS</span><h3>Agents</h3><p>Evalúa si un sistema completa tareas reales, no solo si genera muchos tokens.</p><a href="arquitectura.html">Ver →</a> · <a href="diagramas.html">Diagramas →</a></article>
 <article class="site-card"><span class="card-eyebrow">LEARN</span><h3>Manada</h3><p>Resultados voluntarios que amplían la evidencia sobre hardware real.</p><a href="manada.html">Entrar →</a></article>
 </div></section>
 <section class="site-section" id="ods-magnitude"><div class="section-heading"><span class="site-tag">Stack de ejecución</span><span class="section-index">03</span></div><h2>ODS y Magnitude: no son solo fuentes</h2><p class="site-lead">LEONES los trata como referencias y, cuando procede, como opciones reales de ejecución. Cada uno aporta capacidades distintas y la elección depende de la necesidad, el hardware y la evidencia disponible.</p><div class="site-grid site-grid--ecosystem">
-<article class="site-card"><span class="card-eyebrow">ODS · OSMANTIC DEPLOYMENT SYSTEM</span><h3>Un servidor AI local completo</h3><p>ODS instala y conecta un stack local alrededor de la inferencia: modelos locales, interfaz web tipo ChatGPT, dashboard de control y gestión, detección de hardware y selección de modelo, voz, agentes, workflows, RAG, búsqueda, generación de imágenes, privacidad, observabilidad y herramientas de desarrollo.</p><p><strong>Capacidades:</strong> Open WebUI; Whisper para transcripción; Kokoro para texto a voz; Qdrant + embeddings para RAG; API compatibles con OpenAI; n8n para automatización; agentes; Privacy Shield para protección de PII; ComfyUI para generación de imágenes; SearXNG y otras opciones de búsqueda; OpenCode; Memory Shepherd; métricas, salud de servicios, gestión de modelos, extensiones y herramientas de diagnóstico.</p><p><strong>Infraestructura:</strong> instalación automatizada, autodetección de GPU y memoria, selección determinista de modelo según hardware, overlays de aceleración, extensiones modulares y soporte multi-GPU en los caminos compatibles.</p><p><strong>En LEONES:</strong> ODS es especialmente relevante cuando el objetivo es desplegar una plataforma local completa alrededor del LLM, no solamente ejecutar una inferencia.</p><a href="fuentes.html">Ver evidencia y fuente →</a></article>
+<article class="site-card"><span class="card-eyebrow">ODS · OSMANTIC DEPLOYMENT SYSTEM</span><h3>Un servidor AI local completo</h3><p>ODS instala y conecta un stack local alrededor de la inferencia: modelos locales, interfaz web tipo ChatGPT, dashboard de control y gestión, detección de hardware y selección de modelo, voz, agentes, workflows, RAG, búsqueda, generación de imágenes, privacidad, observabilidad y herramientas de desarrollo.</p><p><strong>Capacidades:</strong> Open WebUI; Whisper para transcripción; Kokoro para texto a voz; Qdrant + embeddings para RAG; API compatibles con OpenAI; n8n para automatización; agentes; Privacy Shield para protección de PII; ComfyUI para generación de imágenes; SearXNG y otras opciones de búsqueda; OpenCode; Memory Shepherd; métricas, salud de servicios, gestión de modelos, extensiones y herramientas de diagnóstico.</p><p><strong>Infraestructura:</strong> instalación automatizada, autodetección de GPU y memoria, selección determinista de modelo según hardware, overlays de aceleración, extensiones modulares y soporte multi-GPU en los caminos compatibles.</p><p><strong>En LEONES:</strong> ODS es especialmente relevante cuando el objetivo es desplegar una plataforma local completa alrededor del LLM, no solamente ejecutar una inferencia.</p><a href="fuentes.html">Ver evidencia y fuente →</a> · <a href="stack-explorer.html">Explorar stacks →</a></article>
 <article class="site-card"><span class="card-eyebrow">MAGNITUDE · LOCAL CODING AGENT</span><h3>Agente de coding + motor de inferencia local</h3><p>Magnitude combina un agente de programación con un motor de inferencia local construido en Rust sobre llama.cpp. Perfila el hardware, recomienda modelos ejecutables y gestiona configuración e inferencia orientada al trabajo agentivo.</p><p><strong>Capacidades:</strong> perfilado de hardware; modos Balanced, Best Quality, Fastest y Lightweight; descarga y configuración de modelos; cálculo previo de memoria; configuraciones verificadas; ajuste de aceleración, placement y batching; reutilización de caché y prefill; cambio de modelos; ventanas de contexto consistentes; agentes paralelos; inspección y edición de archivos; ejecución de comandos; trabajo con imágenes; sesiones largas y delegación a otros agentes.</p><p><strong>En LEONES:</strong> Magnitude es especialmente relevante cuando la pregunta es qué modelo y configuración permiten completar trabajo de desarrollo real de forma local, no solo qué modelo cabe en memoria.</p><a href="fuentes.html">Ver evidencia y fuente →</a></article>
 </div><p class="site-note"><strong>Regla de evidencia:</strong> las capacidades declaradas por ODS o Magnitude sirven para orientar y seleccionar; una medición de LEONES en hardware real sigue siendo una medición propia. <strong>ESTIMATED ≠ MEASURED.</strong></p></section>
 <section class="site-section site-section--principle"><div class="section-heading"><span class="site-tag">La idea central</span><span class="section-index">04</span></div><h2>Decidir con evidencia</h2><p class="site-lead principle-flow">Necesidad <b>→</b> Hardware observado <b>→</b> LLMFit <b>→</b> candidatos <b>→</b> elección humana <b>→</b> ODS / Magnitude <b>→</b> instalación <b>→</b> medición <b>→</b> evidencia.</p><p>La documentación, la prospección y la aplicación forman un ciclo continuo: <strong>observar, estructurar, decidir, autorizar, ejecutar, medir y aprender.</strong></p></section>
@@ -60,9 +61,11 @@
 <article class="site-card"><h3>✓ ODS / Magnitude</h3><p>Integrados como opciones de stack y fuentes de capacidad.</p></article>
 <article class="site-card"><h3>✓ Consentimientos</h3><p>Instalación y benchmark son autorizaciones independientes.</p></article>
 <article class="site-card"><h3>→ Validación física</h3><p>El siguiente cierre exige comprobar instalación, verificación y flujo completo sobre un equipo real.</p></article>
-</div></section>
+</div>
+<p style="margin-top:1.25rem"><a href="estado.html">Ver estado detallado →</a> · <a href="roadmap.html">Roadmap →</a> · <a href="rc2.html">RC2 Beta →</a></p>
+</section>
 </main>
-<footer class="site-footer"><div>LEONES · IA local con criterio</div><div>Conocimiento abierto · Evidencia reproducible · 2026</div></footer>
-<script src="assets/js/navigation.js?v=2026-08-17-6" defer></script>
+<footer class="site-footer"><div>LEONES · IA local con criterio · <a href="logos.html">Identidad visual</a></div><div>Conocimiento abierto · Evidencia reproducible · 2026</div></footer>
+<script src="assets/js/navigation.js?v=2026-09-02-1" defer></script>
 </body>
 </html>
