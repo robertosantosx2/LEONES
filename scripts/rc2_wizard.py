@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 import argparse
 from pathlib import Path
+import subprocess
 import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +33,8 @@ STACKS = {
         "mode": "local-stack",
         "title_key": "ods_title",
         "summary_key": "ods_summary",
+        "next_step_key": "next_step_ods",
+        "install_script": "scripts/integrations/install_ods.sh",
         "capability_keys": tuple(f"ods_capability_{i}" for i in range(1, 5)),
     },
     "Magnitude": {
@@ -40,6 +43,8 @@ STACKS = {
         "mode": "agent",
         "title_key": "magnitude_title",
         "summary_key": "magnitude_summary",
+        "next_step_key": "next_step_magnitude",
+        "install_script": "scripts/integrations/install_magnitude.sh",
         "capability_keys": tuple(f"magnitude_capability_{i}" for i in range(1, 5)),
     },
 }
@@ -82,7 +87,6 @@ def _choose(io: WizardIO, title: str, options: tuple[str, ...]) -> str:
 def _choose_language(io: WizardIO) -> str:
     """Ask once, in all labels, then lock a single UI language."""
     labels = tuple(LANGUAGE_LABELS[code] for code in LANGUAGES)
-    # The language prompt itself is shown with short native labels only.
     io.show("")
     io.show("ELIGE EL IDIOMA / CHOOSE LANGUAGE / 选择语言")
     io.show("┌──────────────────────────────────────────────────────────┐")
@@ -138,6 +142,80 @@ def _stack_choice_labels() -> tuple[str, ...]:
     return tuple(tr(STACKS[name]["summary_key"]) for name in STACKS)
 
 
+def _show_decision_summary(
+    io: WizardIO,
+    *,
+    model_name: str,
+    stack_name: str,
+    stack: dict[str, Any],
+) -> None:
+    script = stack["install_script"]
+    io.show("")
+    io.show("═" * 60)
+    _show_multiline(io, tr("what_was_decided"))
+    io.show("═" * 60)
+    io.show(f"  {tr('label_model')}: {model_name}")
+    io.show(f"  {tr('label_stack')}: {stack_name} ({stack['name']})")
+    io.show(f"  {tr('label_status')}: {tr('status_authorized_not_installed')}")
+    io.show("")
+    _show_multiline(io, tr("installation_authorized"), prefix="[✓] ")
+    _show_multiline(io, tr("not_installed_yet"), prefix="[!] ")
+    io.show("")
+    _show_multiline(io, tr("next_step_title"))
+    _show_multiline(io, tr(stack["next_step_key"]), prefix="  ")
+    io.show(f"  $ bash {script}")
+    io.show("")
+    _show_multiline(io, tr("next_step_after_install"), prefix="[i] ")
+
+
+def _maybe_run_installer(io: WizardIO, stack: dict[str, Any]) -> dict[str, Any]:
+    """Offer to run the canonical installer after consent. Never marks verified."""
+    script = REPO_ROOT / stack["install_script"]
+    choice = _choose(
+        io,
+        tr("offer_run_installer"),
+        (tr("run_installer_yes"), tr("run_installer_no")),
+    )
+    if choice == tr("run_installer_no"):
+        _show_multiline(io, tr("installer_deferred"), prefix="[i] ")
+        return {
+            "status": "deferred",
+            "script": str(script.relative_to(REPO_ROOT)),
+            "real_installation": False,
+        }
+
+    _show_multiline(io, tr("installer_launching"), prefix="[INFO] ")
+    io.show(f"[INFO] $ bash {script.relative_to(REPO_ROOT)}")
+    try:
+        completed = subprocess.run(
+            ["bash", str(script)],
+            cwd=str(REPO_ROOT),
+            check=False,
+        )
+        rc = completed.returncode
+    except OSError as exc:
+        io.show(f"[!] {exc}")
+        rc = 1
+
+    if rc == 0:
+        _show_multiline(io, tr("installer_finished_ok"), prefix="[✓] ")
+        return {
+            "status": "installer_exited_0",
+            "script": str(script.relative_to(REPO_ROOT)),
+            "returncode": rc,
+            # Exit 0 is not LEONES verification. Physical verify is a separate gate.
+            "real_installation": False,
+        }
+
+    _show_multiline(io, tr("installer_finished_fail"), prefix="[!] ")
+    return {
+        "status": "installer_failed_or_cancelled",
+        "script": str(script.relative_to(REPO_ROOT)),
+        "returncode": rc,
+        "real_installation": False,
+    }
+
+
 def run_wizard(io: WizardIO | None = None) -> BetaSession:
     io = io or WizardIO()
     session = BetaSession()
@@ -191,8 +269,21 @@ def run_wizard(io: WizardIO | None = None) -> BetaSession:
         session.block("INSTALL_DECLINED", tr("install_blocked"))
         return session
     session.authorize_installation()
-    _show_multiline(io, tr("installation_authorized"), prefix="[✓] ")
-    _show_multiline(io, tr("physical_install_notice"), prefix="[INFO] ")
+
+    model_name = str(chosen.get("name") or chosen.get("model_id") or "unknown")
+    _show_decision_summary(
+        io,
+        model_name=model_name,
+        stack_name=stack_name,
+        stack=stack,
+    )
+    install_result = _maybe_run_installer(io, stack)
+    session.data["installation"] = {
+        "status": "INSTALLING",
+        "consent": "granted",
+        "stack": stack["name"],
+        "installer": install_result,
+    }
     return session
 
 

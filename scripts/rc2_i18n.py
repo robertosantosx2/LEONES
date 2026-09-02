@@ -88,14 +88,82 @@ TEXT = {
     },
     "selected": {"es": "seleccionado", "en": "selected", "zh": "已选择"},
     "installation_authorized": {
-        "es": "Instalación autorizada; queda pendiente la instalación/verificación física.",
-        "en": "Installation authorized; physical installation/verification is still pending.",
-        "zh": "安装已授权；实际安装/验证仍待完成。",
+        "es": "Consentimiento de instalación concedido.",
+        "en": "Installation consent granted.",
+        "zh": "已授予安装授权。",
     },
-    "physical_install_notice": {
-        "es": "Esta RC2 no instala ODS/Magnitude automáticamente. Completa la instalación mediante la interfaz canónica del stack y verifica físicamente antes de autorizar el benchmark.",
-        "en": "This RC2 does not install ODS/Magnitude automatically. Complete installation through the stack's canonical interface and verify it physically before authorizing the benchmark.",
-        "zh": "此 RC2 不会自动安装 ODS/Magnitude。请通过运行栈的标准接口完成安装，并在授权基准测试前进行实际验证。",
+    "not_installed_yet": {
+        "es": "Aún NO se ha instalado nada en tu equipo.",
+        "en": "Nothing has been installed on your machine yet.",
+        "zh": "尚未在你的设备上安装任何内容。",
+    },
+    "what_was_decided": {
+        "es": "RESUMEN DE DECISIONES",
+        "en": "DECISION SUMMARY",
+        "zh": "决策摘要",
+    },
+    "label_model": {"es": "Modelo", "en": "Model", "zh": "模型"},
+    "label_stack": {"es": "Stack", "en": "Stack", "zh": "运行栈"},
+    "label_status": {"es": "Estado", "en": "Status", "zh": "状态"},
+    "status_authorized_not_installed": {
+        "es": "autorizado · instalación física pendiente",
+        "en": "authorized · physical install pending",
+        "zh": "已授权 · 实际安装待完成",
+    },
+    "next_step_title": {
+        "es": "SIGUIENTE PASO",
+        "en": "NEXT STEP",
+        "zh": "下一步",
+    },
+    "next_step_ods": {
+        "es": "Instalar ODS con el instalador canónico de LEONES:",
+        "en": "Install ODS with the canonical LEONES installer:",
+        "zh": "使用 LEONES 标准安装程序安装 ODS：",
+    },
+    "next_step_magnitude": {
+        "es": "Instalar Magnitude con el instalador canónico de LEONES:",
+        "en": "Install Magnitude with the canonical LEONES installer:",
+        "zh": "使用 LEONES 标准安装程序安装 Magnitude：",
+    },
+    "next_step_after_install": {
+        "es": "Cuando termine la instalación, verifica el stack. Solo entonces podrás autorizar un benchmark. Instalar ≠ medir.",
+        "en": "When installation finishes, verify the stack. Only then can you authorize a benchmark. Install ≠ measure.",
+        "zh": "安装完成后请验证运行栈。只有在那之后才能授权基准测试。安装 ≠ 测量。",
+    },
+    "offer_run_installer": {
+        "es": "¿Ejecutar ahora el instalador canónico del stack elegido?",
+        "en": "Run the canonical installer for the chosen stack now?",
+        "zh": "现在运行所选运行栈的标准安装程序吗？",
+    },
+    "run_installer_yes": {
+        "es": "Sí, ejecutar el instalador ahora",
+        "en": "Yes, run the installer now",
+        "zh": "是，现在运行安装程序",
+    },
+    "run_installer_no": {
+        "es": "No, lo haré yo más tarde",
+        "en": "No, I will do it later",
+        "zh": "否，我稍后再做",
+    },
+    "installer_launching": {
+        "es": "Lanzando instalador canónico...",
+        "en": "Launching canonical installer...",
+        "zh": "正在启动标准安装程序……",
+    },
+    "installer_finished_ok": {
+        "es": "El instalador terminó. Revisa su salida y verifica el stack antes de un benchmark.",
+        "en": "Installer finished. Review its output and verify the stack before any benchmark.",
+        "zh": "安装程序已结束。请检查其输出并在基准测试前验证运行栈。",
+    },
+    "installer_finished_fail": {
+        "es": "El instalador falló o se canceló. Conserva el mensaje original; no se ha marcado como verificado.",
+        "en": "Installer failed or was cancelled. Keep the original message; nothing was marked verified.",
+        "zh": "安装程序失败或已取消。请保留原始信息；未标记为已验证。",
+    },
+    "installer_deferred": {
+        "es": "Instalador no ejecutado. Usa el comando del SIGUIENTE PASO cuando quieras.",
+        "en": "Installer not run. Use the NEXT STEP command when ready.",
+        "zh": "未运行安装程序。准备好后请使用“下一步”中的命令。",
     },
     "ods_title": {
         "es": "STACK LOCAL ODS",

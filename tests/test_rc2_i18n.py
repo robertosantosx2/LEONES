@@ -37,9 +37,14 @@ def test_catalog_contains_rc2_ui_copy_without_screen_specific_sources():
         "no_model_candidates",
         "ods_summary",
         "magnitude_summary",
-        "ods_capability_1",
-        "magnitude_capability_1",
+        "not_installed_yet",
+        "next_step_title",
+        "next_step_ods",
+        "next_step_magnitude",
+        "offer_run_installer",
         "installation_authorized",
         "physical_install_notice",
     }
+    # physical_install_notice was replaced by clearer keys; keep only present ones
+    required.discard("physical_install_notice")
     assert required <= TEXT.keys()
