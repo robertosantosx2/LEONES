@@ -54,7 +54,7 @@ jobs:
           cp INSTALL.md _site/INSTALL.md
           touch _site/.nojekyll
 
-      - name: Normalize legacy relative links
+      - name: Normalize legacy relative links and obsolete assets
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -67,6 +67,14 @@ jobs:
               s = s.replace('href="../docs/RC2-', 'href="docs/RC2-')
               s = s.replace('href="../docs/', 'href="' + repo + 'docs/')
               s = s.replace('href="../scripts/', 'href="' + repo + 'scripts/')
+              # The former Prospection logo path is no longer part of the asset tree.
+              s = s.replace('assets/graphics/logos/leones-prospection.svg', 'assets/graphics/leones-logo-principal.jpg')
+              # This local technical-note path was never published; point to the canonical external project instead.
+              s = s.replace('href="sources/FREETOKEN.md"', 'href="https://github.com/FlashML-org/FreeToken"')
+              # LOTB is obsolete and must never reach the public site.
+              s = s.replace('Agents / LOTB', 'Agents')
+              s = s.replace('architecture.html#lotb', 'app.html')
+              s = s.replace('arquitectura.html#lotb', 'app.html')
               p.write_text(s, encoding='utf-8')
           PY
 
