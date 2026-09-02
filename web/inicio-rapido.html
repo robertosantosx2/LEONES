@@ -4,14 +4,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Inicio rápido de LEONES RC2: comandos de arranque, interfaz, decisiones y teclas del wizard.">
 <title>LEONES · Inicio rápido</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-02-1">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-02-1">
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-02-2">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-02-2">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Beta · RC2</span><h1>LEONES · Inicio rápido</h1><p>Arranca el beta tester, entiende la pantalla y sabe exactamente cuándo debes decidir y qué tecla pulsar.</p></div></header>
 <main class="site-main" id="main">
 <section class="site-section" aria-labelledby="deps-title"><span class="site-tag">0 · Dependencias</span><h2 id="deps-title">Antes de clonar: LLMFit</h2><p><strong>LLMFit es una dependencia dura de LEONES.</strong> Detecta tu hardware y propone candidatos de modelo. LEONES no lo instala ni lo sustituye: debe estar disponible como comando <code>llmfit</code> en el PATH.</p><p>Sus cifras de velocidad son <strong>ESTIMATED</strong>, no mediciones LEONES.</p><p>En Linux / Fedora (recomendado, sin sudo):</p><pre class="site-stack">curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
-echo 'export PATH="$HOME/.local/bin:$PATH"' &gt;&gt; ~/.bashrc
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 command -v llmfit</pre><p>Alternativas: <code>brew install llmfit</code> o <code>uv tool install -U llmfit</code>.</p><p>Documentación oficial de LLMFit: <a href="https://www.llmfit.org/">https://www.llmfit.org/</a> · <a href="https://github.com/AlexsJones/llmfit">GitHub AlexsJones/llmfit</a>.</p></section>
 <section class="site-section" aria-labelledby="start-title"><span class="site-tag">1 · Arranque</span><h2 id="start-title">De cero a LEONES</h2><p>En una terminal Linux, el camino mínimo del beta tester es:</p><pre class="site-stack">git clone https://github.com/robertosantosx2/LEONES.git
@@ -21,7 +21,13 @@ cd LEONES
 git pull --ff-only origin main
 ./install.sh
 ./leones</pre></section>
-<section class="site-section" aria-labelledby="screen-title"><span class="site-tag">2 · Qué vas a encontrar</span><h2 id="screen-title">La interfaz es una terminal guiada</h2><p>RC2 no abre una aplicación gráfica: muestra un wizard ASCII en la terminal. Verás un encabezado de LEONES, mensajes de estado y, cuando llega una decisión, una caja de opciones numeradas.</p><pre class="site-stack">╔══════════════════════════════════════════════════════════════╗
+<section class="site-section" aria-labelledby="screen-title"><span class="site-tag">2 · Qué vas a encontrar</span><h2 id="screen-title">La interfaz es una terminal guiada</h2><p>RC2 no abre una aplicación gráfica: muestra un wizard ASCII en la terminal. La <strong>primera pregunta es el idioma</strong> (Español / English / 中文). A partir de ahí solo se muestra el idioma elegido.</p><pre class="site-stack">ELIGE EL IDIOMA / CHOOSE LANGUAGE / 选择语言
+┌──────────────────────────────────────────┐
+│  [1] Español                             │
+│  [2] English                             │
+│  [3] 中文                                 │
+└──────────────────────────────────────────┘
+LEONES></pre><p>Después verás el encabezado de LEONES, mensajes de estado y, cuando llega una decisión, una caja de opciones numeradas.</p><pre class="site-stack">╔══════════════════════════════════════════════════════════════╗
 ║                    L E O N E S                              ║
 ║                    B E T A · R C 2                         ║
 ╚══════════════════════════════════════════════════════════════╝
@@ -34,10 +40,12 @@ git pull --ff-only origin main
 [2] modelo B · fit=...
 [3] modelo C · fit=...
 
-LEONES&gt;</pre><p>La línea <code>LEONES&gt;</code> es el punto de entrada para tus decisiones. <strong>No uses flechas, ratón ni letras salvo que una pantalla concreta las indique:</strong> en el wizard actual las opciones se seleccionan escribiendo el número y pulsando <strong>Enter</strong>.</p></section>
-<section class="site-section" aria-labelledby="keys-title"><span class="site-tag">3 · Teclas</span><h2 id="keys-title">Qué pulsar en cada momento</h2><div class="site-grid"><article class="site-card"><h3>Elegir modelo</h3><p>Escribe <strong>1</strong>, <strong>2</strong>, <strong>3</strong>… según el candidato mostrado y pulsa <strong>Enter</strong>.</p></article><article class="site-card"><h3>Elegir stack</h3><p>Cuando aparezcan ODS y Magnitude, escribe el número de la opción elegida y pulsa <strong>Enter</strong>.</p></article><article class="site-card"><h3>Autorizar instalación</h3><p>En la pantalla de consentimiento, elige la opción numerada de <strong>Autorizar</strong> y pulsa <strong>Enter</strong>, o elige <strong>Cancelar</strong> para salir sin instalar.</p></article><article class="site-card"><h3>Opción inválida</h3><p>Si introduces algo que no corresponde a una opción, LEONES lo indica y vuelve a mostrar el prompt. No se ejecuta una decisión accidental.</p></article><article class="site-card"><h3>Salir del menú web</h3><p>En la navegación de la web, <strong>Esc</strong> cierra el menú lateral en pantallas pequeñas. Esto no controla el wizard de terminal.</p></article></div></section>
-<section class="site-section" aria-labelledby="decisions-title"><span class="site-tag">4 · Tus decisiones</span><h2 id="decisions-title">Dónde debes tomar decisiones</h2><div class="site-grid site-grid--journey"><article class="site-card"><span class="card-number">01</span><h3>HARDWARE</h3><p>Observa el hardware detectado. No tienes que introducirlo si la detección funciona. Si algo aparece como desconocido, no lo inventes.</p></article><article class="site-card site-card--featured"><span class="card-number">02</span><h3>MODELO</h3><p>Compara modelo, fit, requisitos y procedencia. Las cifras con <strong>ESTIMATED</strong> son orientativas. Aquí decides qué modelo quieres probar.</p></article><article class="site-card"><span class="card-number">03</span><h3>STACK</h3><p>Lee las capacidades que se muestran para ODS y Magnitude. Aquí decides qué stack quieres preparar para tu objetivo.</p></article><article class="site-card"><span class="card-number">04</span><h3>INSTALACIÓN</h3><p>Antes de producir cambios en el equipo aparece el consentimiento. Aquí decides si autorizas la instalación. Puedes cancelar.</p></article></div></section>
-<section class="site-section" aria-labelledby="flow-title"><span class="site-tag">5 · Qué ocurre después</span><h2 id="flow-title">No todas las pantallas son decisiones</h2><pre class="site-stack">DETECTAR HARDWARE
+LEONES></pre><p>La línea <code>LEONES></code> es el punto de entrada para tus decisiones. <strong>No uses flechas, ratón ni letras salvo que una pantalla concreta las indique:</strong> en el wizard actual las opciones se seleccionan escribiendo el número y pulsando <strong>Enter</strong>.</p></section>
+<section class="site-section" aria-labelledby="keys-title"><span class="site-tag">3 · Teclas</span><h2 id="keys-title">Qué pulsar en cada momento</h2><div class="site-grid"><article class="site-card"><h3>Idioma</h3><p>Primera pantalla: elige <strong>1</strong>, <strong>2</strong> o <strong>3</strong> y pulsa <strong>Enter</strong>.</p></article><article class="site-card"><h3>Elegir modelo</h3><p>Escribe <strong>1</strong>, <strong>2</strong>, <strong>3</strong>… según el candidato mostrado y pulsa <strong>Enter</strong>.</p></article><article class="site-card"><h3>Elegir stack</h3><p>Cada opción incluye una descripción breve (ODS = stack local de inferencia; Magnitude = agente/asistente local). Elige el número y pulsa <strong>Enter</strong>.</p></article><article class="site-card"><h3>Autorizar instalación</h3><p>En la pantalla de consentimiento, elige la opción numerada de <strong>Autorizar</strong> y pulsa <strong>Enter</strong>, o elige <strong>Cancelar</strong> para salir sin instalar.</p></article><article class="site-card"><h3>Opción inválida</h3><p>Si introduces algo que no corresponde a una opción, LEONES lo indica y vuelve a mostrar el prompt. No se ejecuta una decisión accidental.</p></article></div></section>
+<section class="site-section" aria-labelledby="decisions-title"><span class="site-tag">4 · Tus decisiones</span><h2 id="decisions-title">Dónde debes tomar decisiones</h2><div class="site-grid site-grid--journey"><article class="site-card"><span class="card-number">01</span><h3>HARDWARE</h3><p>Observa el hardware detectado. No tienes que introducirlo si la detección funciona. Si algo aparece como desconocido, no lo inventes.</p></article><article class="site-card site-card--featured"><span class="card-number">02</span><h3>MODELO</h3><p>Compara modelo, fit, requisitos y procedencia. Las cifras con <strong>ESTIMATED</strong> son orientativas. Aquí decides qué modelo quieres probar.</p></article><article class="site-card"><span class="card-number">03</span><h3>STACK</h3><p><strong>ODS</strong>: stack local de inferencia (modelos, UI y servicios en tu máquina). <strong>Magnitude</strong>: agente/asistente local orientado a tareas con el modelo elegido. La opción del menú ya incluye esa descripción.</p></article><article class="site-card"><span class="card-number">04</span><h3>INSTALACIÓN</h3><p>Antes de producir cambios en el equipo aparece el consentimiento. Aquí decides si autorizas la instalación. Puedes cancelar.</p></article></div></section>
+<section class="site-section" aria-labelledby="flow-title"><span class="site-tag">5 · Qué ocurre después</span><h2 id="flow-title">No todas las pantallas son decisiones</h2><pre class="site-stack">ELEGIR IDIOMA
+       ↓
+DETECTAR HARDWARE
        ↓
 MOSTRAR CANDIDATOS
        ↓
@@ -67,6 +75,6 @@ execution_id (si existe):</pre><p>Un fallo reproducible también es información
 <section class="site-section" aria-labelledby="links-title"><span class="site-tag">8 · Documentación</span><h2 id="links-title">Si necesitas más detalle</h2><p><a href="INSTALL.md">Instalación mínima →</a></p><p><a href="docs/RC2-USER-MANUAL.md">Manual de usuario RC2 →</a></p><p><a href="docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación RC2 →</a></p><p><a href="rc2.html">Estado y gates de RC2 →</a></p></section>
 </main>
 <footer class="site-footer"><div>LEONES · IA local con criterio</div><div>Beta RC2 · Inicio rápido</div></footer>
-<script src="assets/js/navigation.js?v=2026-09-02-1" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-02-2" defer></script>
 </body>
 </html>
