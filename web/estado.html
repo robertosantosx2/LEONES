@@ -2,20 +2,20 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Estado actual de LEONES: JALONES cerrados, RC1 validado y RC2 preparado para el recorrido beta integrado con verificación física y benchmark A01.">
+<meta name="description" content="Estado actual de LEONES: JALONES cerrados, RC1 validado y RC2 preparada para validación física.">
 <title>LEONES · Estado</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-03-1">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-03-1">
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-03-2">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-03-2">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
 <span class="site-tag">Estado del proyecto · 3 septiembre 2026</span>
 <h1>LEONES · Estado</h1>
-<p>RC2 ya tiene un recorrido beta integrado: idioma, hardware, candidatos, elección, stack, instalación, verificación física, consentimiento A01 y handoff al camino RC1.</p>
+<p>RC2 tiene implementado el recorrido beta integrado. El siguiente paso es exclusivamente físico: comprobar runtime, instalación, verificación y benchmark sobre un equipo real.</p>
 </div></header>
 <main class="site-main" id="main">
-<section class="site-section"><span class="site-tag">Ahora · RC2</span><h2>El recorrido beta está implementado</h2>
-<p class="site-lead"><strong>RC2 está preparado para beta.</strong> El operador canónico es <code>./leones</code> → <code>scripts/rc2_wizard.py</code>. El flujo fija una sola elección de idioma por sesión, usa LLMFit para hardware/model-fit, presenta ODS/Magnitude antes de la elección y separa instalación, verificación y benchmark.</p>
+<section class="site-section"><span class="site-tag">Ahora · RC2</span><h2>Implementado; pendiente de prueba física</h2>
+<p class="site-lead"><strong>RC2 está preparada para la validación beta.</strong> El operador canónico es <code>./leones</code> → <code>scripts/rc2_wizard.py</code>. El flujo fija idioma por sesión, usa LLMFit para hardware/model-fit, presenta ODS/Magnitude antes de la elección y separa instalación, verificación y benchmark.</p>
 <pre class="site-stack">IDIOMA
    ↓
 HARDWARE + CANDIDATOS (LLMFIT · ESTIMATED)
@@ -37,6 +37,14 @@ EXPLICACIÓN A01 → CONSENTIMIENTO
                               MEDICIÓN / EVIDENCIA</pre>
 <p><a href="../docs/RC2-L-INTEGRATED-BETA-JOURNEY.md">Ver recorrido beta integrado →</a> · <a href="../docs/RC2-I-INSTALLATION-CONSENT.md">Instalación y consentimiento →</a> · <a href="../docs/RC2-J-BENCHMARK-CONSENT.md">A01 y handoff RC1 →</a></p>
 </section>
+<section class="site-section"><span class="site-tag">Runtime del host</span><h2>Docker y Podman se detectan sin suposiciones</h2>
+<div class="site-grid">
+<article class="site-card"><h3>Docker</h3><p>RC2 acepta Docker accesible directamente o mediante <code>sudo</code>. Rootful no es un error. Rootless se registra como una propiedad observada, no como un requisito artificial.</p></article>
+<article class="site-card"><h3>Podman</h3><p>En Fedora/RHEL-family, Podman puede ser el runtime disponible. LEONES lo detecta y registra su estado, pero no lo convierte por inferencia en una instalación ODS válida.</p></article>
+<article class="site-card"><h3>Compatibilidad</h3><p>Runtime disponible → acceso funcional → Compose/interfaz compatible → señal específica de ODS. Cada estado tiene su propio gate.</p></article>
+</div>
+<div class="site-note"><strong>Regla:</strong> que Docker o Podman funcionen demuestra capacidad del host; no demuestra que ODS esté instalado ni verificado.</div>
+</section>
 <section class="site-section"><span class="site-tag">Benchmark canónico · A01</span><h2>La medición beta tiene contrato explícito</h2>
 <div class="site-grid">
 <article class="site-card"><h3>LEONES-Agentic</h3><p><strong>Task:</strong> A01 · <code>Execute A01. Return only JSONL tool calls.</code></p></article>
@@ -53,7 +61,7 @@ EXPLICACIÓN A01 → CONSENTIMIENTO
 <section class="site-section"><span class="site-tag">Gates RC2</span><h2>Ningún paso se satisface por inferencia silenciosa</h2>
 <div class="site-grid">
 <article class="site-card"><h3>Hardware / modelo</h3><p>HARDWARE_READY → MODEL_SELECTED: LLMFit orienta candidatos; la elección final es humana.</p></article>
-<article class="site-card"><h3>Instalación</h3><p>CONSENT_REQUIRED → INSTALLING → verificación física. Solo <code>real_installation: true</code> permite continuar.</p></article>
+<article class="site-card"><h3>Instalación</h3><p>CONSENT_REQUIRED → INSTALLING → verificación física. Solo una señal de instalación real permite continuar.</p></article>
 <article class="site-card"><h3>Benchmark</h3><p>BENCHMARK_CONSENT_REQUIRED → EXECUTION_AUTHORIZED. Instalar no autoriza A01.</p></article>
 <article class="site-card"><h3>Evidencia</h3><p>Solo una ejecución válida produce medición. Un fallo no se publica como resultado válido.</p></article>
 </div>
@@ -65,23 +73,16 @@ EXPLICACIÓN A01 → CONSENTIMIENTO
 <article class="site-card"><h3>JALÓN 3</h3><p>🟢 Cerrado. Contrato de medición real y auditoría física.</p></article>
 <article class="site-card"><h3>JALÓN 4</h3><p>🟢 Cerrado. Metodología AA, decisión ODS/Magnitude, benchmark de tareas y tiers.</p></article>
 <article class="site-card"><h3>RC1</h3><p>🟢 Validado. Pipeline efectivo de ejecución, medición y evidencia.</p></article>
-<article class="site-card"><h3>RC2</h3><p>🟡 Preparado para beta. Operador único, i18n, instalación, verificación física, consentimiento A01 y handoff RC1.</p></article>
+<article class="site-card"><h3>RC2</h3><p>🟡 Preparada para validación física. Runtime, instalación, verificación y benchmark deben demostrar su estado sobre el host.</p></article>
 </div></section>
 <section class="site-section"><span class="site-tag">ODS / Magnitude</span><h2>Elección informada</h2>
 <p>RC2 presenta capacidades declaradas antes de pedir la elección. No crea un scoring paralelo que sustituya las fuentes especializadas ni convierte sus estimaciones en mediciones LEONES.</p>
 <div class="site-grid">
-<article class="site-card"><h3>ODS</h3><p>Stack local de inferencia y servicios, con capacidades según contrato, instalación y versión. El adaptador LEONES prepara y verifica; no instala ODS por sí mismo.</p></article>
-<article class="site-card"><h3>Magnitude</h3><p>Integración orientada a agente/asistente local, con preparación de metadatos y ejecución separada según contrato y versión.</p></article>
-</div>
-</section>
-<section class="site-section"><span class="site-tag">Limitaciones conocidas</span><h2>Lo que todavía debe cumplirse en el host</h2>
-<div class="site-grid">
-<article class="site-card"><h3>A01</h3><p>Requiere <code>ollama</code> en PATH y el modelo disponible localmente.</p></article>
-<article class="site-card"><h3>ODS</h3><p>La verificación física exige una señal específica: CLI <code>ods</code> o imagen Docker con “ods”.</p></article>
-<article class="site-card"><h3>Reanudación</h3><p>La reanudación desde estado persistido todavía no está implementada como producto.</p></article>
+<article class="site-card"><h3>ODS</h3><p>Integración de stack local. La preparación y verificación de LEONES no sustituyen al instalador canónico de ODS.</p></article>
+<article class="site-card"><h3>Magnitude</h3><p>Integración orientada a agente/asistente local. Preparación y ejecución permanecen separadas de la medición propia de LEONES.</p></article>
 </div>
 </section>
 <section class="site-section"><span class="site-tag">Regla</span><h2>Medir antes de afirmar</h2><p><code>estimated</code>, <code>reported</code>, <code>observed</code>, <code>configured</code> y <code>measured</code> mantienen fronteras distintas. Lo desconocido permanece desconocido.</p></section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-03-1" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-03-2" defer></script>
 </body></html>
