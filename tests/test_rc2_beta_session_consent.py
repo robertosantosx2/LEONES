@@ -13,6 +13,13 @@ def ready_session():
     return s
 
 
+def verified_session():
+    s = ready_session()
+    s.authorize_installation()
+    s.installation_verified({"source": "test", "real_installation": True})
+    return s
+
+
 def test_install_requires_explicit_consent():
     s = ready_session()
     with pytest.raises(RuntimeError):
@@ -22,9 +29,7 @@ def test_install_requires_explicit_consent():
 
 
 def test_benchmark_requires_verified_installation_and_explicit_consent():
-    s = ready_session()
-    s.authorize_installation()
-    s.installation_verified()
+    s = verified_session()
     s.request_benchmark_consent({"id": "LEONES-Agentic", "version": "1.0", "tasks": ["A01"]})
     assert s.snapshot()["gates"]["execution_authorized"] is False
     handoff = s.authorize_benchmark()
@@ -34,9 +39,7 @@ def test_benchmark_requires_verified_installation_and_explicit_consent():
 
 
 def test_declined_benchmark_never_authorizes_execution():
-    s = ready_session()
-    s.authorize_installation()
-    s.installation_verified()
+    s = verified_session()
     s.request_benchmark_consent({"id": "LEONES-Agentic", "version": "1.0", "tasks": ["A01"]})
     s.decline_benchmark()
     assert s.state == "READY_FOR_BENCHMARK"
