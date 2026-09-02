@@ -13,7 +13,6 @@ LANGUAGE_LABELS = {
     "zh": "中文",
 }
 
-# Active UI language for the current process/session.
 _active_language = "es"
 
 TEXT = {
@@ -151,9 +150,9 @@ TEXT = {
         "zh": "正在启动标准安装程序……",
     },
     "installer_finished_ok": {
-        "es": "El instalador terminó. Revisa su salida y verifica el stack antes de un benchmark.",
-        "en": "Installer finished. Review its output and verify the stack before any benchmark.",
-        "zh": "安装程序已结束。请检查其输出并在基准测试前验证运行栈。",
+        "es": "El instalador terminó. Eso no es verificación LEONES; ahora comprobamos el host.",
+        "en": "Installer finished. That is not LEONES verification; now we check the host.",
+        "zh": "安装程序已结束。这不是 LEONES 验证；现在检查主机。",
     },
     "installer_finished_fail": {
         "es": "El instalador falló o se canceló. Conserva el mensaje original; no se ha marcado como verificado.",
@@ -161,9 +160,64 @@ TEXT = {
         "zh": "安装程序失败或已取消。请保留原始信息；未标记为已验证。",
     },
     "installer_deferred": {
-        "es": "Instalador no ejecutado. Usa el comando del SIGUIENTE PASO cuando quieras.",
-        "en": "Installer not run. Use the NEXT STEP command when ready.",
-        "zh": "未运行安装程序。准备好后请使用“下一步”中的命令。",
+        "es": "Instalador no ejecutado. Aun así puedes verificar si el stack ya está en el equipo.",
+        "en": "Installer not run. You can still verify if the stack is already on the host.",
+        "zh": "未运行安装程序。如果运行栈已在主机上，仍可验证。",
+    },
+    "verify_title": {
+        "es": "VERIFICACIÓN FÍSICA",
+        "en": "PHYSICAL VERIFICATION",
+        "zh": "物理验证",
+    },
+    "verify_running": {
+        "es": "Comprobando en este equipo si el stack está realmente instalado...",
+        "en": "Checking this host for a real stack installation...",
+        "zh": "正在检查此主机是否真正安装了运行栈……",
+    },
+    "verify_pass": {
+        "es": "Verificación física: PASS. El stack se observó en este equipo.",
+        "en": "Physical verification: PASS. The stack was observed on this host.",
+        "zh": "物理验证：通过。已在此主机上观察到运行栈。",
+    },
+    "verify_fail": {
+        "es": "Verificación física: FAIL. El stack no está verificado en este equipo.",
+        "en": "Physical verification: FAIL. The stack is not verified on this host.",
+        "zh": "物理验证：失败。此主机上的运行栈未通过验证。",
+    },
+    "verify_missing": {
+        "es": "Faltan o fallan estas comprobaciones:",
+        "en": "These checks are missing or failed:",
+        "zh": "缺少或失败的检查：",
+    },
+    "verify_observed": {
+        "es": "Observado:",
+        "en": "Observed:",
+        "zh": "观察到：",
+    },
+    "verify_next_fail": {
+        "es": "Instala o repara el stack y vuelve a verificar. Sin PASS no hay benchmark.",
+        "en": "Install or repair the stack and verify again. No PASS means no benchmark.",
+        "zh": "请安装或修复运行栈后再次验证。未通过则不能进行基准测试。",
+    },
+    "verify_next_pass": {
+        "es": "Stack verificado. Siguiente puerta: consentimiento de benchmark (todavía no se ha medido nada).",
+        "en": "Stack verified. Next gate: benchmark consent (nothing has been measured yet).",
+        "zh": "运行栈已验证。下一关：基准测试授权（尚未进行任何测量）。",
+    },
+    "offer_verify_again": {
+        "es": "¿Reintentar la verificación física?",
+        "en": "Retry physical verification?",
+        "zh": "是否重试物理验证？",
+    },
+    "verify_again_yes": {
+        "es": "Sí, verificar de nuevo",
+        "en": "Yes, verify again",
+        "zh": "是，再次验证",
+    },
+    "verify_again_no": {
+        "es": "No, salir sin verificar",
+        "en": "No, exit without verification",
+        "zh": "否，在未验证的情况下退出",
     },
     "ods_title": {
         "es": "STACK LOCAL ODS",
@@ -257,7 +311,6 @@ def set_language(language: str) -> str:
 
 
 def tr(key: str, language: str | None = None) -> str:
-    """Return the text for one UI language (default: active session language)."""
     validate_catalog()
     lang = language or _active_language
     if lang not in LANGUAGES:
@@ -266,7 +319,6 @@ def tr(key: str, language: str | None = None) -> str:
 
 
 def tr_all(key: str) -> str:
-    """Debug helper: show ES/EN/ZH aligned. Not used by the interactive wizard."""
     validate_catalog()
     values = TEXT[key]
     width = max(len(LANGUAGE_LABELS[language]) for language in LANGUAGES)

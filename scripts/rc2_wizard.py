@@ -15,6 +15,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.rc2_beta_session import BetaSession
 from scripts.rc2_i18n import LANGUAGES, LANGUAGE_LABELS, set_language, tr
+from scripts.integrations.verify_physical import verify_stack
 from runtime_selection.hardware_profile import normalize_hardware, normalize_candidates
 from runtime_selection.rc2_candidates import to_selection_plan
 from runtime_selection.llmfit import LLMFitError, run_recommend, run_system, normalise_hardware, normalise_candidates
@@ -85,7 +86,6 @@ def _choose(io: WizardIO, title: str, options: tuple[str, ...]) -> str:
 
 
 def _choose_language(io: WizardIO) -> str:
-    """Ask once, in all labels, then lock a single UI language."""
     labels = tuple(LANGUAGE_LABELS[code] for code in LANGUAGES)
     io.show("")
     io.show("ELIGE EL IDIOMA / CHOOSE LANGUAGE / 选择语言")
@@ -138,7 +138,6 @@ def _show_stack(io: WizardIO, name: str) -> None:
 
 
 def _stack_choice_labels() -> tuple[str, ...]:
-    """One-line labels that explain each option inside the choice menu."""
     return tuple(tr(STACKS[name]["summary_key"]) for name in STACKS)
 
 
@@ -169,7 +168,6 @@ def _show_decision_summary(
 
 
 def _maybe_run_installer(io: WizardIO, stack: dict[str, Any]) -> dict[str, Any]:
-    """Offer to run the canonical installer after consent. Never marks verified."""
     script = REPO_ROOT / stack["install_script"]
     choice = _choose(
         io,
@@ -203,7 +201,6 @@ def _maybe_run_installer(io: WizardIO, stack: dict[str, Any]) -> dict[str, Any]:
             "status": "installer_exited_0",
             "script": str(script.relative_to(REPO_ROOT)),
             "returncode": rc,
-            # Exit 0 is not LEONES verification. Physical verify is a separate gate.
             "real_installation": False,
         }
 
@@ -214,6 +211,48 @@ def _maybe_run_installer(io: WizardIO, stack: dict[str, Any]) -> dict[str, Any]:
         "returncode": rc,
         "real_installation": False,
     }
+
+
+def _show_verification(io: WizardIO, result: dict[str, Any]) -> None:
+    io.show("")
+    io.show("═" * 60)
+    _show_multiline(io, tr("verify_title"))
+    io.show("═" * 60)
+    if result.get("status") == "PASS" and result.get("real_installation") is True:
+        _show_multiline(io, tr("verify_pass"), prefix="[✓] ")
+    else:
+        _show_multiline(io, tr("verify_fail"), prefix="[!] ")
+    if result.get("observed"):
+        io.show(f"  {tr('verify_observed')}")
+        for key, value in result["observed"].items():
+            io.show(f"    - {key}: {value}")
+    if result.get("missing"):
+        io.show(f"  {tr('verify_missing')}")
+        for item in result["missing"]:
+            io.show(f"    - {item}")
+    if result.get("message"):
+        io.show(f"  [i] {result['message']}")
+
+
+def _run_physical_verification(io: WizardIO, stack_name: str) -> dict[str, Any]:
+    """Observe the host. Never invent PASS."""
+    while True:
+        io.show("")
+        _show_multiline(io, tr("verify_running"), prefix="[INFO] ")
+        verification = verify_stack(stack_name)
+        result = verification.to_dict()
+        _show_verification(io, result)
+        if result.get("status") == "PASS" and result.get("real_installation") is True:
+            _show_multiline(io, tr("verify_next_pass"), prefix="[✓] ")
+            return result
+        _show_multiline(io, tr("verify_next_fail"), prefix="[!] ")
+        again = _choose(
+            io,
+            tr("offer_verify_again"),
+            (tr("verify_again_yes"), tr("verify_again_no")),
+        )
+        if again == tr("verify_again_no"):
+            return result
 
 
 def run_wizard(io: WizardIO | None = None) -> BetaSession:
@@ -284,11 +323,29 @@ def run_wizard(io: WizardIO | None = None) -> BetaSession:
         "stack": stack["name"],
         "installer": install_result,
     }
+
+    verification = _run_physical_verification(io, stack["name"])
+    session.data["installation"]["verification"] = verification
+    if verification.get("real_installation") is True:
+        session.installation_verified(
+            {
+                "status": verification.get("status"),
+                "real_installation": True,
+                "stack": stack["name"],
+                "checks": verification.get("checks"),
+                "observed": verification.get("observed"),
+                "message": verification.get("message"),
+            }
+        )
+    else:
+        session.block(
+            "PHYSICAL_VERIFY_FAILED",
+            verification.get("message") or tr("verify_fail"),
+        )
     return session
 
 
 def _non_interactive_smoke() -> bool:
-    """Verify that synthetic installation data cannot cross the physical gate."""
     session = BetaSession()
     session.advance("HARDWARE_READY", hardware={"source": "smoke"})
     session.advance("MODEL_SELECTED", model_choice={"model_id": "smoke-model"})
@@ -316,7 +373,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.non_interactive:
         return 0 if _non_interactive_smoke() else 1
     session = run_wizard()
-    return 0 if session.state == "EXECUTION_AUTHORIZED" else 1
+    return 0 if session.state in {"READY_FOR_BENCHMARK", "EXECUTION_AUTHORIZED"} else 1
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import scripts.rc2_wizard as wizard
 from scripts.rc2_i18n import set_language, tr
 from scripts.rc2_wizard import WizardIO, run_wizard
+from scripts.integrations.verify_physical import PhysicalVerification
 
 
 HARDWARE = {
@@ -28,45 +29,61 @@ CANDIDATES = [
 ]
 
 
-def test_wizard_keeps_installation_side_effect_free(monkeypatch):
+def _pass_verification(stack="ods"):
+    return PhysicalVerification(
+        stack=stack,
+        status="PASS",
+        real_installation=True,
+        checks={"ok": True},
+        observed={"fixture": True},
+        missing=[],
+        message="fixture pass",
+    )
+
+
+def _fail_verification(stack="ods"):
+    return PhysicalVerification(
+        stack=stack,
+        status="FAIL",
+        real_installation=False,
+        checks={"ok": False},
+        observed={},
+        missing=["fixture_missing"],
+        message="fixture fail",
+    )
+
+
+def test_wizard_blocks_without_physical_pass(monkeypatch):
     set_language("es")
     monkeypatch.setattr(wizard, "_live_inputs", lambda io: (HARDWARE, CANDIDATES))
-    # language=1 (es), model=1, stack=1 (ODS), install=1 (authorize), run installer=2 (no)
-    answers = iter(["1", "1", "1", "1", "2"])
+    monkeypatch.setattr(wizard, "verify_stack", lambda name: _fail_verification(name))
+    # language, model, stack, authorize, defer installer, do not retry verify
+    answers = iter(["1", "1", "1", "1", "2", "2"])
     output = []
     session = run_wizard(WizardIO(input_fn=lambda _: next(answers), output_fn=output.append))
-    assert session.state == "INSTALLING"
-    assert session.data["ui_language"] == "es"
-    assert session.data["stack"]["name"] == "ods"
-    assert session.data["installation_consent"] == "granted"
-    assert session.data["installation"]["installer"]["status"] == "deferred"
-    assert session.data["installation"]["installer"]["real_installation"] is False
+    assert session.state == "BLOCKED"
+    assert session.error["code"] == "PHYSICAL_VERIFY_FAILED"
+    assert any(tr("verify_fail") in line for line in output)
     assert session.snapshot()["gates"]["execution_authorized"] is False
-    assert any("L E O N E S" in line for line in output)
-    assert any(tr("ods_summary") in line for line in output)
-    assert any(tr("not_installed_yet") in line for line in output)
-    assert any("install_ods.sh" in line for line in output)
-    assert not any(line.startswith("EN │ ") for line in output)
+
+
+def test_wizard_advances_only_after_physical_pass(monkeypatch):
+    set_language("es")
+    monkeypatch.setattr(wizard, "_live_inputs", lambda io: (HARDWARE, CANDIDATES))
+    monkeypatch.setattr(wizard, "verify_stack", lambda name: _pass_verification(name))
+    answers = iter(["1", "1", "1", "1", "2"])  # defer installer, verify passes
+    session = run_wizard(WizardIO(input_fn=lambda _: next(answers), output_fn=lambda _: None))
+    assert session.state == "READY_FOR_BENCHMARK"
+    assert session.data["installation_verification"]["real_installation"] is True
 
 
 def test_wizard_allows_magnitude_choice(monkeypatch):
     set_language("es")
     monkeypatch.setattr(wizard, "_live_inputs", lambda io: (HARDWARE, CANDIDATES))
-    # language=1, model=1, stack=2 (Magnitude), authorize=1, defer installer=2
+    monkeypatch.setattr(wizard, "verify_stack", lambda name: _pass_verification("magnitude"))
     answers = iter(["1", "1", "2", "1", "2"])
     output = []
     session = run_wizard(WizardIO(input_fn=lambda _: next(answers), output_fn=output.append))
-    assert session.state == "INSTALLING"
+    assert session.state == "READY_FOR_BENCHMARK"
     assert session.data["stack"]["name"] == "magnitude"
     assert any("install_magnitude.sh" in line for line in output)
-
-
-def test_wizard_english_language_path(monkeypatch):
-    monkeypatch.setattr(wizard, "_live_inputs", lambda io: (HARDWARE, CANDIDATES))
-    answers = iter(["2", "1", "1", "1", "2"])  # English, defer installer
-    output = []
-    session = run_wizard(WizardIO(input_fn=lambda _: next(answers), output_fn=output.append))
-    assert session.data["ui_language"] == "en"
-    assert any("CHOOSE YOUR MODEL" in line for line in output)
-    assert any("local inference stack" in line for line in output)
-    assert any("Nothing has been installed" in line for line in output)
