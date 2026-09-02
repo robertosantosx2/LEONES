@@ -47,15 +47,69 @@ jobs:
           if [ -d results ]; then cp -a results _site/results; fi
           if [ -d assets ]; then cp -a assets _site/assets; fi
 
-          # Publish beta documentation/source at stable project-site paths.
           mkdir -p _site/docs _site/scripts
           cp docs/RC2-*.md _site/docs/
           cp scripts/rc2_wizard.py _site/scripts/
           cp README.md _site/README.md
           cp INSTALL.md _site/INSTALL.md
 
-          # Raw .md files must remain static files on GitHub Pages.
           touch _site/.nojekyll
+
+      - name: Normalize legacy relative links
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root = Path('_site')
+          for p in root.rglob('*.html'):
+              s = p.read_text(encoding='utf-8')
+              s = s.replace('href="../INSTALL.md"', 'href="INSTALL.md"')
+              s = s.replace('href="../README.md"', 'href="README.md"')
+              s = s.replace('href="../docs/RC2-', 'href="docs/RC2-')
+              s = s.replace('href="../scripts/rc2_wizard.py"', 'href="scripts/rc2_wizard.py"')
+              p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Verify published pages and local links
+        run: |
+          set -e
+          for f in web/*.html; do
+            test -f "_site/$(basename "$f")"
+          done
+          for f in index.html inicio-rapido.html proyectos.html atlas.html pilares.html arquitectura.html pila.html operacion.html conocimiento.html conocimiento-optimizacion.html app.html rc2.html evaluacion.html recommendations.html recomendar.html resultados.html manada.html prospeccion.html horizon.html contacto.html; do
+            test -f "_site/$f"
+          done
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.parse import urlparse, unquote
+
+          root = Path('_site').resolve()
+          errors = []
+          class P(HTMLParser):
+              def __init__(self, src):
+                  super().__init__(); self.src = src
+              def handle_starttag(self, tag, attrs):
+                  for k, v in attrs:
+                      if k not in ('href', 'src') or not v:
+                          continue
+                      u = urlparse(v)
+                      if u.scheme or u.netloc or v.startswith('#') or v.startswith('data:') or v.startswith('mailto:') or v.startswith('javascript:'):
+                          continue
+                      target = unquote(u.path)
+                      base = self.src.parent
+                      candidate = (base / target).resolve()
+                      if candidate.is_dir(): candidate = candidate / 'index.html'
+                      if not candidate.exists():
+                          errors.append(f'{self.src.relative_to(root)} -> {v}')
+
+          for page in root.rglob('*.html'):
+              P(page).feed(page.read_text(encoding='utf-8'))
+          if errors:
+              print('Broken local links:')
+              print('\n'.join(errors))
+              raise SystemExit(1)
+          print(f'Web link integrity verified: {len(list(root.rglob("*.html")))} HTML pages')
+          PY
 
       - name: Verify RC2 publication payload
         run: |
@@ -65,14 +119,16 @@ jobs:
           test -f _site/docs/RC2-USER-MANUAL.md
           test -f _site/docs/RC2-BETA-USER-FLOW.md
           test -f _site/rc2.html
+          test -f _site/operacion.html
+          test -f _site/conocimiento-optimizacion.html
           test -f _site/scripts/rc2_wizard.py
           test -f _site/README.md
           test -f _site/.nojekyll
-          echo "RC2 publication payload verified:"
-          printf '%s\n' \
-            '/INSTALL.md' \
-            '/docs/RC2-USER-MANUAL.md' \
-            '/docs/RC2-INSTALLATION-MANUAL.md'
+          if grep -RniE 'LOTB' _site --include='*.html' --include='*.js'; then
+            echo 'ERROR: obsolete LOTB reference found in published web payload'
+            exit 1
+          fi
+          echo "RC2 publication payload verified."
 
       - name: Verify prospection data is included
         run: |
