@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""RC2 beta wizard: live hardware/candidates -> user decisions -> handoff."""
+"""RC2 beta wizard: live hardware/candidates -> user decisions -> A01 handoff."""
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Callable
 import argparse
+import json
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -48,6 +50,15 @@ STACKS = {
         "install_script": "scripts/integrations/install_magnitude.sh",
         "capability_keys": tuple(f"magnitude_capability_{i}" for i in range(1, 5)),
     },
+}
+
+A01_BENCHMARK = {
+    "id": "LEONES-Agentic",
+    "version": "1.0",
+    "task": "A01",
+    "task_version": "1.0",
+    "prompt": "Execute A01. Return only JSONL tool calls.",
+    "metrics": ["wall_seconds", "measured_tps", "grader_pass"],
 }
 
 
@@ -235,7 +246,6 @@ def _show_verification(io: WizardIO, result: dict[str, Any]) -> None:
 
 
 def _run_physical_verification(io: WizardIO, stack_name: str) -> dict[str, Any]:
-    """Observe the host. Never invent PASS."""
     while True:
         io.show("")
         _show_multiline(io, tr("verify_running"), prefix="[INFO] ")
@@ -253,6 +263,192 @@ def _run_physical_verification(io: WizardIO, stack_name: str) -> dict[str, Any]:
         )
         if again == tr("verify_again_no"):
             return result
+
+
+def _show_a01_explanation(io: WizardIO, model_id: str) -> None:
+    io.show("")
+    io.show("═" * 60)
+    _show_multiline(io, tr("a01_title"))
+    io.show("═" * 60)
+    _show_multiline(io, tr("a01_what"), prefix="  • ")
+    _show_multiline(io, tr("a01_metrics"), prefix="  • ")
+    _show_multiline(io, tr("a01_runtime"), prefix="  • ")
+    _show_multiline(io, tr("a01_privacy"), prefix="  • ")
+    io.show(f"  • model_id: {model_id}")
+    io.show(f"  • task: {A01_BENCHMARK['task']} / {A01_BENCHMARK['id']} {A01_BENCHMARK['version']}")
+
+
+def _ollama_available() -> bool:
+    return shutil.which("ollama") is not None
+
+
+def _build_a01_selection(model_choice: dict[str, Any], hardware: dict[str, Any]) -> dict[str, Any]:
+    model_id = str(model_choice.get("model_id") or model_choice.get("name") or "")
+    name = str(model_choice.get("name") or model_id)
+    quant = "unknown"
+    if ":" in model_id and any(token in model_id.lower() for token in ("q4", "q5", "q8", "fp16", "f16")):
+        # Keep observed tag fragment only; do not invent a different quant.
+        quant = model_id.split(":")[-1]
+    return {
+        "candidates": [
+            {
+                "selection_status": "TOP_N",
+                "rank": model_choice.get("rank") or 1,
+                "fit_score": model_choice.get("fit"),
+                "evidence_level": model_choice.get("evidence_level", "estimated"),
+                "model_id": model_id,
+                "model_name": name,
+                "model": {"id": model_id, "name": name, "revision": model_choice.get("revision")},
+                "runtime": "ollama",
+                "runtime_version": "local",
+                "quantization": quant,
+                "model_format": "Ollama-managed",
+                "optimization_families": [],
+                "hardware": hardware or {},
+                "workload": {},
+                "llmfit": {"estimated_tps": model_choice.get("estimated_tps")},
+            }
+        ]
+    }
+
+
+def _build_ollama_runtime_commands(model_id: str) -> dict[str, list[str]]:
+    bridge = REPO_ROOT / "scripts" / "ollama_a01_runtime.py"
+    return {
+        "ollama": [
+            sys.executable,
+            str(bridge),
+            "--model",
+            model_id,
+        ]
+    }
+
+
+def _run_a01(
+    io: WizardIO,
+    *,
+    model_choice: dict[str, Any],
+    hardware: dict[str, Any],
+) -> dict[str, Any]:
+    model_id = str(model_choice.get("model_id") or model_choice.get("name") or "")
+    if not _ollama_available():
+        _show_multiline(io, tr("benchmark_need_ollama"), prefix="[!] ")
+        return {
+            "status": "benchmark_blocked",
+            "reason": "ollama_not_in_path",
+            "measured": False,
+        }
+
+    work = REPO_ROOT / ".leones" / "rc2-a01"
+    work.mkdir(parents=True, exist_ok=True)
+    selection_path = work / "selection.json"
+    runtime_commands_path = work / "runtime-commands.json"
+    out_path = work / "a01-runtime-benchmark.v1.json"
+    workspace = work / "workspace"
+
+    selection = _build_a01_selection(model_choice, hardware)
+    runtime_commands = _build_ollama_runtime_commands(model_id)
+    selection_path.write_text(json.dumps(selection, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    runtime_commands_path.write_text(
+        json.dumps(runtime_commands, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
+    _show_multiline(io, tr("benchmark_running"), prefix="[INFO] ")
+    io.show(f"[INFO] model_id={model_id}")
+    io.show(f"[INFO] out={out_path.relative_to(REPO_ROOT)}")
+    cmd = [
+        sys.executable,
+        str(REPO_ROOT / "scripts" / "a01_runtime_benchmark.py"),
+        "--selection",
+        str(selection_path),
+        "--runtime-commands",
+        str(runtime_commands_path),
+        "--workspace",
+        str(workspace),
+        "--prompt",
+        A01_BENCHMARK["prompt"],
+        "--out",
+        str(out_path),
+        "--timeout",
+        "180",
+    ]
+    try:
+        completed = subprocess.run(cmd, cwd=str(REPO_ROOT), check=False)
+        rc = completed.returncode
+    except OSError as exc:
+        io.show(f"[!] {exc}")
+        return {"status": "benchmark_failed", "reason": str(exc), "measured": False}
+
+    if rc != 0 or not out_path.exists():
+        _show_multiline(io, tr("benchmark_failed"), prefix="[!] ")
+        return {
+            "status": "benchmark_failed",
+            "returncode": rc,
+            "out": str(out_path.relative_to(REPO_ROOT)),
+            "measured": False,
+        }
+
+    try:
+        payload = json.loads(out_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        _show_multiline(io, tr("benchmark_failed"), prefix="[!] ")
+        return {"status": "benchmark_failed", "reason": str(exc), "measured": False}
+
+    evidence = payload.get("evidence") or {}
+    runtime_benchmark = evidence.get("runtime_benchmark") or {}
+    execution_id = runtime_benchmark.get("execution_id")
+    measured = runtime_benchmark.get("measurement_status") == "measured"
+    io.show("")
+    _show_multiline(io, tr("benchmark_completed"), prefix="[✓] ")
+    if execution_id:
+        io.show(f"  execution_id: {execution_id}")
+    if runtime_benchmark.get("wall_seconds") is not None:
+        io.show(f"  wall_seconds: {runtime_benchmark.get('wall_seconds')}")
+    if runtime_benchmark.get("measured_tps") is not None:
+        io.show(f"  measured_tps: {runtime_benchmark.get('measured_tps')}")
+    if runtime_benchmark.get("grader_pass") is not None:
+        io.show(f"  grader_pass: {runtime_benchmark.get('grader_pass')}")
+    io.show(f"  evidence: {out_path.relative_to(REPO_ROOT)}")
+    return {
+        "status": "benchmark_completed" if measured else "benchmark_failed",
+        "returncode": rc,
+        "out": str(out_path.relative_to(REPO_ROOT)),
+        "execution_id": execution_id,
+        "runtime_benchmark": runtime_benchmark,
+        "measured": measured,
+    }
+
+
+def _benchmark_gate(
+    io: WizardIO,
+    session: BetaSession,
+    *,
+    model_choice: dict[str, Any],
+    hardware: dict[str, Any],
+) -> None:
+    model_id = str(model_choice.get("model_id") or model_choice.get("name") or "unknown")
+    _show_a01_explanation(io, model_id)
+    choice = _choose(
+        io,
+        tr("benchmark_consent"),
+        (tr("benchmark_run_yes"), tr("benchmark_run_no")),
+    )
+    session.request_benchmark_consent(dict(A01_BENCHMARK, model_id=model_id))
+    if choice == tr("benchmark_run_no"):
+        session.decline_benchmark()
+        _show_multiline(io, tr("benchmark_declined"), prefix="[i] ")
+        return
+
+    handoff = session.authorize_benchmark()
+    _show_multiline(io, tr("benchmark_authorized"), prefix="[✓] ")
+    result = _run_a01(io, model_choice=model_choice, hardware=hardware)
+    session.data["benchmark_result"] = result
+    if result.get("measured") and result.get("execution_id"):
+        session.complete(str(result["execution_id"]))
+    elif result.get("status") == "benchmark_blocked":
+        session.block("A01_RUNTIME_UNAVAILABLE", result.get("reason") or tr("benchmark_need_ollama"))
+    else:
+        session.block("A01_FAILED", result.get("reason") or tr("benchmark_failed"))
 
 
 def run_wizard(io: WizardIO | None = None) -> BetaSession:
@@ -326,22 +522,24 @@ def run_wizard(io: WizardIO | None = None) -> BetaSession:
 
     verification = _run_physical_verification(io, stack["name"])
     session.data["installation"]["verification"] = verification
-    if verification.get("real_installation") is True:
-        session.installation_verified(
-            {
-                "status": verification.get("status"),
-                "real_installation": True,
-                "stack": stack["name"],
-                "checks": verification.get("checks"),
-                "observed": verification.get("observed"),
-                "message": verification.get("message"),
-            }
-        )
-    else:
+    if verification.get("real_installation") is not True:
         session.block(
             "PHYSICAL_VERIFY_FAILED",
             verification.get("message") or tr("verify_fail"),
         )
+        return session
+
+    session.installation_verified(
+        {
+            "status": verification.get("status"),
+            "real_installation": True,
+            "stack": stack["name"],
+            "checks": verification.get("checks"),
+            "observed": verification.get("observed"),
+            "message": verification.get("message"),
+        }
+    )
+    _benchmark_gate(io, session, model_choice=chosen, hardware=hardware)
     return session
 
 
@@ -373,7 +571,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.non_interactive:
         return 0 if _non_interactive_smoke() else 1
     session = run_wizard()
-    return 0 if session.state in {"READY_FOR_BENCHMARK", "EXECUTION_AUTHORIZED"} else 1
+    return 0 if session.state in {"READY_FOR_BENCHMARK", "COMPLETE"} else 1
 
 
 if __name__ == "__main__":
