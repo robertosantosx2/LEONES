@@ -5,9 +5,11 @@
         ["Inicio", "index.html", "top"], ["Inicio rápido", "inicio-rapido.html", "top"], ["Proyectos", "proyectos.html", "top"],
         ["Atlas", "atlas.html", "project"], ["Pilares", "pilares.html", "project"], ["Arquitectura", "arquitectura.html", "project"],
         ["Pila", "pila.html", "project"], ["Operación", "operacion.html", "project"], ["Conocimiento de IA en Local", "conocimiento.html", "top"],
-        ["Optimización de inferencia", "conocimiento-optimizacion.html", "top"], ["Aplicación", "app.html", "top"], ["RC2 · Beta", "rc2.html", "application"],
-        ["Evaluación", "evaluacion.html", "application"], ["Recomendaciones", "recommendations.html", "application"], ["Recomendar a LEONES", "recomendar.html", "application"],
-        ["Resultados", "resultados.html", "application"], ["Manada", "manada.html", "top"], ["Prospección", "prospeccion.html", "top"], ["Horizonte", "horizon.html", "top"], ["Contacto", "contacto.html", "top"]
+        ["SGLang", "conocimiento-sglang.html", "top"], ["Optimización de inferencia", "conocimiento-optimizacion.html", "top"], ["Fuentes", "fuentes.html", "top"],
+        ["Aplicación", "app.html", "top"], ["RC2 · Beta", "rc2.html", "application"], ["Evaluación", "evaluacion.html", "application"],
+        ["Recomendaciones", "recommendations.html", "application"], ["Recomendar a LEONES", "recomendar.html", "application"],
+        ["Resultados", "resultados.html", "application"], ["Manada", "manada.html", "top"], ["Prospección", "prospeccion.html", "top"],
+        ["Horizonte", "horizon.html", "top"], ["Contacto", "contacto.html", "top"]
     ];
     const base = "assets/graphics/leones-logo-principal.jpg";
     const currentPath = window.location.pathname.split("/").pop() || "index.html";
@@ -19,6 +21,8 @@
     };
     function renderNavigation() {
         if (document.querySelector(".leones-nav-runtime")) return;
+        // Retire the old page-specific knowledge bar so every public page has one canonical menu.
+        document.querySelectorAll('nav.nav[aria-label="Navegación de conocimiento"]').forEach((node) => node.remove());
         document.body.classList.add("has-leones-navigation");
         const root = document.createElement("nav"); root.className = "leones-nav-runtime"; root.setAttribute("aria-label", "Navegación principal");
         const skip = document.createElement("a"); skip.className = "skip-link"; skip.href = "#main"; skip.textContent = "Saltar al contenido"; root.appendChild(skip);
