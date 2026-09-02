@@ -46,9 +46,22 @@ RC2 se está validando inicialmente sobre Linux. Antes de empezar necesitas:
 - conexión a Internet para descargar el repositorio y los componentes que el stack elegido requiera;
 - una terminal;
 - Git;
-- Python en una versión compatible con la versión/ref de LEONES que estés probando;
+- Python 3.10 o superior;
+- **LLMFit instalado y accesible como `llmfit` en el PATH** (dependencia dura externa; LEONES no lo instala);
 - espacio suficiente para el repositorio, dependencias, modelos y componentes que finalmente aceptes instalar;
 - permisos suficientes para las operaciones que el plan de instalación indique.
+
+### 2.1 Instalar LLMFit
+
+```bash
+curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
+export PATH="$HOME/.local/bin:$PATH"
+command -v llmfit
+```
+
+Alternativas: `brew install llmfit` o `uv tool install -U llmfit`.
+
+Documentación oficial: https://www.llmfit.org/ · https://github.com/AlexsJones/llmfit
 
 **No asumas que ODS y Magnitude tienen los mismos requisitos.** LEONES debe mostrar los requisitos del stack y de la versión/ref concretos antes del consentimiento.
 
@@ -77,14 +90,27 @@ Comprueba primero el entorno sin instalar todavía un stack de inferencia:
 ```bash
 python3 --version
 git --version
+command -v llmfit
 uname -a
 ```
 
-Después ejecuta el preflight/documentación de la versión que estés probando. Si LEONES informa de una dependencia ausente, **no la sustituyas silenciosamente**: registra el mensaje y sigue las instrucciones correspondientes.
+Después ejecuta:
+
+```bash
+./install.sh
+```
+
+Si LEONES informa de una dependencia ausente, **no la sustituyas silenciosamente**: registra el mensaje y sigue las instrucciones correspondientes (en particular, instalar LLMFit si falta).
 
 ## 5. Iniciar el recorrido RC2
 
-El punto de entrada CLI del wizard es:
+El punto de entrada del beta tester es:
+
+```bash
+./leones
+```
+
+Equivalente interno (no necesario en el camino mínimo):
 
 ```bash
 python3 scripts/rc2_wizard.py

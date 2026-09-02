@@ -5,6 +5,11 @@
 Para un beta tester, el punto de entrada es ahora mínimo:
 
 ```bash
+# 0) LLMFit es dependencia dura (LEONES no lo instala)
+curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
+export PATH="$HOME/.local/bin:$PATH"
+
+# 1) LEONES
 git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES
 ./install.sh
@@ -12,10 +17,13 @@ cd LEONES
 ```
 
 **Manual corto:** [INSTALL.md](INSTALL.md)  
+**Inicio rápido (web):** [web/inicio-rapido.html](web/inicio-rapido.html)  
 **Manual RC2 completo:** [docs/RC2-INSTALLATION-MANUAL.md](docs/RC2-INSTALLATION-MANUAL.md)  
 **Manual de usuario:** [docs/RC2-USER-MANUAL.md](docs/RC2-USER-MANUAL.md)
 
-`install.sh` sólo comprueba Git, Python y LLMFit. No crea un entorno virtual ni descarga ODS, Magnitude ni modelos. `leones` es el lanzador único del wizard RC2.
+`install.sh` sólo comprueba Git, Python y **LLMFit**. No crea un entorno virtual ni descarga ODS, Magnitude ni modelos. `leones` es el lanzador único del wizard RC2.
+
+Si falta LLMFit, el instalador falla de forma explícita y muestra el comando de instalación oficial.
 
 ## Estado del proyecto
 
@@ -58,7 +66,8 @@ LEONES **no crea otro instalador de ODS ni otro instalador de Magnitude, ni otro
 
 ## Documentación RC2
 
-- [INSTALL.md](INSTALL.md) — instalación mínima para beta testers.
+- [INSTALL.md](INSTALL.md) — instalación mínima para beta testers (incluye LLMFit).
+- [Inicio rápido](web/inicio-rapido.html) — arranque, teclas y decisiones.
 - [Manual de instalación RC2](docs/RC2-INSTALLATION-MANUAL.md) — procedimiento técnico completo.
 - [Manual de usuario RC2](docs/RC2-USER-MANUAL.md) — recorrido en lenguaje de usuario.
 - [Flujo contractual RC2](docs/RC2-BETA-USER-FLOW.md) — gates y estados.
