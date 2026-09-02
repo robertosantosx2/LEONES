@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""RC2 presentation catalog: Español / English / 中文.
-
-The catalog keeps all three languages. The wizard asks for one language
-first and then shows only that language for the rest of the session.
-"""
+"""RC2 presentation catalog: Español / English / 中文."""
 from __future__ import annotations
 
 LANGUAGES = ("es", "en", "zh")
@@ -43,9 +39,9 @@ TEXT = {
         "zh": "是否授权安装？",
     },
     "benchmark_consent": {
-        "es": "¿QUIERES EJECUTAR EL BENCHMARK?",
-        "en": "DO YOU WANT TO RUN THE BENCHMARK?",
-        "zh": "是否运行基准测试？",
+        "es": "¿QUIERES EJECUTAR EL BENCHMARK A01?",
+        "en": "DO YOU WANT TO RUN THE A01 BENCHMARK?",
+        "zh": "是否运行 A01 基准测试？",
     },
     "yes": {"es": "Sí", "en": "Yes", "zh": "是"},
     "no": {"es": "No", "en": "No", "zh": "否"},
@@ -200,9 +196,9 @@ TEXT = {
         "zh": "请安装或修复运行栈后再次验证。未通过则不能进行基准测试。",
     },
     "verify_next_pass": {
-        "es": "Stack verificado. Siguiente puerta: consentimiento de benchmark (todavía no se ha medido nada).",
-        "en": "Stack verified. Next gate: benchmark consent (nothing has been measured yet).",
-        "zh": "运行栈已验证。下一关：基准测试授权（尚未进行任何测量）。",
+        "es": "Stack verificado. Siguiente puerta: consentimiento de benchmark A01.",
+        "en": "Stack verified. Next gate: A01 benchmark consent.",
+        "zh": "运行栈已验证。下一关：A01 基准测试授权。",
     },
     "offer_verify_again": {
         "es": "¿Reintentar la verificación física?",
@@ -218,6 +214,71 @@ TEXT = {
         "es": "No, salir sin verificar",
         "en": "No, exit without verification",
         "zh": "否，在未验证的情况下退出",
+    },
+    "a01_title": {
+        "es": "BENCHMARK A01 (LEONES-Agentic)",
+        "en": "A01 BENCHMARK (LEONES-Agentic)",
+        "zh": "A01 基准测试（LEONES-Agentic）",
+    },
+    "a01_what": {
+        "es": "Tarea agentic local: el modelo debe emitir exactamente dos tool calls (lookup_model → write_report).",
+        "en": "Local agentic task: the model must emit exactly two tool calls (lookup_model → write_report).",
+        "zh": "本地代理任务：模型必须恰好发出两次工具调用（lookup_model → write_report）。",
+    },
+    "a01_metrics": {
+        "es": "Se medirá: wall_seconds, measured_tps y grader_pass. ESTIMATED de LLMFit no cuenta como medición.",
+        "en": "Measured: wall_seconds, measured_tps and grader_pass. LLMFit ESTIMATED values are not measurements.",
+        "zh": "将测量：wall_seconds、measured_tps 和 grader_pass。LLMFit 估算值不算测量。",
+    },
+    "a01_runtime": {
+        "es": "Runner RC1 canónico vía Ollama local cuando esté disponible (scripts/ollama_a01_runtime.py).",
+        "en": "Canonical RC1 runner via local Ollama when available (scripts/ollama_a01_runtime.py).",
+        "zh": "在可用时通过本地 Ollama 使用标准 RC1 运行器（scripts/ollama_a01_runtime.py）。",
+    },
+    "a01_privacy": {
+        "es": "La evidencia se guarda en el host. Cancelar no invalida la instalación.",
+        "en": "Evidence stays on the host. Declining does not invalidate the installation.",
+        "zh": "证据保存在主机上。拒绝不会使安装失效。",
+    },
+    "benchmark_run_yes": {
+        "es": "Sí, ejecutar A01 ahora",
+        "en": "Yes, run A01 now",
+        "zh": "是，现在运行 A01",
+    },
+    "benchmark_run_no": {
+        "es": "No, no medir ahora",
+        "en": "No, do not measure now",
+        "zh": "否，现在不测量",
+    },
+    "benchmark_declined": {
+        "es": "Benchmark declinado. Instalación intacta; no se ha medido nada.",
+        "en": "Benchmark declined. Installation intact; nothing was measured.",
+        "zh": "已拒绝基准测试。安装保持不变；未进行任何测量。",
+    },
+    "benchmark_authorized": {
+        "es": "Benchmark autorizado. Handoff RC1 activo.",
+        "en": "Benchmark authorized. RC1 handoff active.",
+        "zh": "已授权基准测试。RC1 交接已激活。",
+    },
+    "benchmark_running": {
+        "es": "Ejecutando A01 (runner RC1)...",
+        "en": "Running A01 (RC1 runner)...",
+        "zh": "正在运行 A01（RC1 运行器）……",
+    },
+    "benchmark_need_ollama": {
+        "es": "No se puede ejecutar A01: hace falta Ollama local en PATH y un modelo disponible.",
+        "en": "Cannot run A01: local Ollama on PATH and an available model are required.",
+        "zh": "无法运行 A01：需要 PATH 中的本地 Ollama 和可用模型。",
+    },
+    "benchmark_failed": {
+        "es": "A01 falló o no produjo medición válida. No se publica como MEASURED.",
+        "en": "A01 failed or did not produce a valid measurement. Not published as MEASURED.",
+        "zh": "A01 失败或未产生有效测量。不会发布为 MEASURED。",
+    },
+    "benchmark_completed": {
+        "es": "A01 completado. Evidencia guardada en el host.",
+        "en": "A01 completed. Evidence saved on the host.",
+        "zh": "A01 已完成。证据已保存在主机上。",
     },
     "ods_title": {
         "es": "STACK LOCAL ODS",
