@@ -54,6 +54,15 @@ jobs:
           cp INSTALL.md _site/INSTALL.md
           touch _site/.nojekyll
 
+      - name: Verify source has no obsolete LOTB references
+        run: |
+          set -e
+          if grep -RniE 'LOTB|lotb' web --include='*.html' --include='*.js'; then
+            echo 'ERROR: obsolete LOTB reference found in web source'
+            exit 1
+          fi
+          echo "Web source is free of obsolete LOTB references."
+
       - name: Normalize legacy relative links and obsolete assets
         run: |
           python3 - <<'PY'
@@ -80,7 +89,7 @@ jobs:
         run: |
           set -e
           for f in web/*.html; do test -f "_site/$(basename "$f")"; done
-          for f in index.html inicio-rapido.html proyectos.html atlas.html pilares.html arquitectura.html pila.html operacion.html conocimiento.html conocimiento-optimizacion.html app.html rc2.html evaluacion.html recommendations.html recomendar.html resultados.html manada.html prospeccion.html horizon.html contacto.html; do test -f "_site/$f"; done
+          for f in index.html inicio-rapido.html proyectos.html atlas.html pilares.html arquitectura.html pila.html operacion.html conocimiento.html conocimiento-optimizacion.html conocimiento-sglang.html fuentes.html app.html rc2.html evaluacion.html recommendations.html recomendar.html resultados.html manada.html prospeccion.html horizon.html contacto.html; do test -f "_site/$f"; done
           python3 - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
