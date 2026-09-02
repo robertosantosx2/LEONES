@@ -12,18 +12,68 @@ La web de LEONES prioriza, en este orden:
 
 La estética no debe introducir complejidad que no aporte una función clara.
 
-## Estado visible
+## Estado visible · 3 septiembre 2026
 
 La web debe reflejar el estado canónico real del repositorio:
 
 - **JALÓN 1:** 🟢 cerrado.
 - **JALÓN 2:** 🟢 cerrado, con ejecución física y evidencia reproducible.
-- **JALÓN 3:** 🟢 cerrado operativamente, con contrato `runtime-benchmark-evidence.v1.1`.
+- **JALÓN 3:** 🟢 cerrado, con contrato `runtime-benchmark-evidence.v1.1`.
+- **JALÓN 4:** 🟢 cerrado, con decisión ODS/Magnitude y metodología de evaluación consolidada.
 - **RC1:** 🟢 validado mediante ejecución efectiva end-to-end.
 - **ODS / Magnitude:** 🟢 contrato de decisión fijado, sin scoring paralelo.
-- **RC2:** 🟡 preparado para beta, con instalación, verificación, consentimiento de benchmark y handoff al camino canónico de RC1.
+- **RC2:** 🟡 preparado para beta, con operador único, elección de idioma, instalación, verificación física, consentimiento A01 y handoff al camino canónico de RC1.
 
 La página pública de referencia para este estado es [`estado.html`](estado.html).
+
+## RC2 · recorrido canónico
+
+El único punto de entrada del beta tester es `./leones`, implementado por `scripts/rc2_wizard.py`.
+
+```text
+IDIOMA (una elección por sesión)
+   ↓
+HARDWARE + LLMFIT → CANDIDATOS (ESTIMATED)
+   ↓
+ELECCIÓN DE MODELO
+   ↓
+ODS / MAGNITUDE → ELECCIÓN DE STACK
+   ↓
+CONSENTIMIENTO INSTALAR
+   ↓
+INSTALAR → VERIFICACIÓN FÍSICA
+   ↓
+READY_FOR_BENCHMARK
+   ↓
+EXPLICACIÓN A01 → CONSENTIMIENTO
+   ├─ NO → FIN (instalación intacta)
+   └─ SÍ → EXECUTION_AUTHORIZED → RC1 A01
+                                      ↓
+                              MEDICIÓN / EVIDENCIA
+```
+
+La instalación no autoriza un benchmark. Solo una verificación física satisfactoria (`real_installation: true`) permite llegar a `READY_FOR_BENCHMARK`. Sin consentimiento A01 no hay ejecución.
+
+## Benchmark canónico
+
+RC2 no crea un segundo runner. Reutiliza el pipeline validado de RC1:
+
+| Campo | Valor |
+|---|---|
+| id | `LEONES-Agentic` |
+| task | `A01` |
+| prompt | `Execute A01. Return only JSONL tool calls.` |
+| métricas | `wall_seconds`, `measured_tps`, `grader_pass` |
+| runner | `scripts/a01_runtime_benchmark.py` |
+| puente local | `scripts/ollama_a01_runtime.py` |
+
+Si Ollama no está disponible en PATH, A01 queda `benchmark_blocked`; la web y el producto no deben inventar una medición.
+
+## LLMFit, ODS y Magnitude
+
+LLMFit es la fuente especializada de hardware/model-fit para perfilar el host y presentar candidatos. Sus resultados son **ESTIMATED**, no mediciones físicas de LEONES.
+
+ODS y Magnitude se presentan antes de la elección de stack con descripciones legibles y capacidades respaldadas por contrato o evidencia. LEONES no crea un scoring paralelo para sustituir esas fuentes.
 
 ## RC1
 
@@ -37,22 +87,17 @@ selección → gate → execution autorizado
 
 Las cifras históricas de ejecuciones concretas deben conservarse en su documentación/evidencia correspondiente y no reutilizarse como mediciones de otro equipo, runtime, modelo o configuración. La web no debe convertir una ejecución histórica en un benchmark universal.
 
-## RC2
+## Evidencia y lenguaje
 
-RC2 organiza el paso desde la selección hasta la ejecución de beta:
+- **ESTIMATED** no equivale a **MEASURED**.
+- Una recomendación no equivale a evidencia.
+- Una preflight no equivale a una instalación verificada.
+- Una instalación verificada no equivale a un benchmark ejecutado.
+- Un benchmark ejecutado debe conservar su procedencia y configuración.
+- Un fallo no se publica como medición válida.
+- Los valores desconocidos permanecen desconocidos.
 
-```text
-necesidad → hardware real → candidatos → elección
-          → ODS / Magnitude → stack
-          → consentimiento instalación
-          → instalar → verificar
-          → consentimiento benchmark
-          → handoff RC1 → medir → evidenciar
-```
-
-Los dos consentimientos son independientes. La instalación no implica autorización para ejecutar un benchmark.
-
-## Arquitectura
+## Arquitectura web
 
 ```text
 HTML semántico
@@ -64,31 +109,7 @@ JavaScript solo cuando aporta comportamiento
 
 La navegación es transversal. El contenido de cada página debe permanecer separado de la infraestructura interna.
 
-## Regla para CSS específico
-
-Antes de crear CSS específico para una página deben agotarse estas alternativas:
-
-1. HTML semántico adecuado.
-2. Elementos o clases existentes.
-3. Extensión pequeña y reutilizable de `assets/css/site.css`.
-4. Solo si existe una excepción conceptual real, CSS específico mínimo y documentado.
-
-## HTML
-
-- `<!doctype html>` y `lang="es"`.
-- `charset` y `viewport`.
-- título descriptivo y único.
-- `meta description` cuando corresponda.
-- encabezados en orden lógico.
-- `header`, `main`, `section`, `article` y `footer` cuando aporten semántica.
-- enlaces reales para navegación.
-- código indentado y legible; nunca comprimido en una línea.
-
-## CSS
-
 `site.css` contiene el sistema visual común. `navigation.css` contiene exclusivamente la navegación. No duplicar reglas entre páginas.
-
-## JavaScript
 
 JavaScript resuelve comportamiento, no problemas que HTML o CSS puedan resolver de forma más simple. Los scripts deben ser externos y cargarse con `defer` cuando sea posible.
 
@@ -97,14 +118,6 @@ JavaScript resuelve comportamiento, no problemas que HTML o CSS puedan resolver 
 La web documenta, explica y presenta LEONES. No debe convertirse en un paquete que el usuario tenga que descargar para ejecutar la infraestructura.
 
 Los scripts locales son herramientas autónomas. El usuario descarga solo las herramientas necesarias para realizar pruebas en su propio equipo.
-
-## Evidencia y lenguaje
-
-- **ESTIMATED** no equivale a **MEASURED**.
-- Una recomendación no equivale a evidencia.
-- Una preflight no equivale a una instalación verificada.
-- Una instalación verificada no equivale a un benchmark ejecutado.
-- Un benchmark ejecutado debe conservar su procedencia y configuración.
 
 ## Criterio de terminado
 
