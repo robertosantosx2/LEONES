@@ -1,58 +1,71 @@
-# RC2-K — Interfaz trilingüe
+# RC2-K — Interfaz multilingüe
 
-**Estado:** 🟢 Contrato fijado
+**Estado:** 🟢 Contrato actualizado (feedback beta 2026-09-02)
 
-La interfaz de usuario de RC2 será simultánea en **Español · English · 中文**. No será una traducción posterior ni una opción que oculte los otros idiomas: las tres lenguas forman parte de la presentación principal del wizard.
+La interfaz de usuario de RC2 soporta **Español · English · 中文**.
 
-## Regla visual
+## Regla de presentación (actualizada)
 
-Cada pantalla operativa debe presentar el mismo significado en los tres idiomas:
+1. Al arrancar, el wizard pregunta **una sola vez** el idioma.
+2. A partir de esa elección, **solo se muestra el idioma seleccionado**.
+3. El catálogo interno sigue manteniendo las tres traducciones completas.
+4. Añadir un idioma nuevo no debe obligar a mostrar todos a la vez.
 
 ```text
-┌────────────────────────────────────────────────────────────┐
-│  ELIGE TU MODELO                                           │
-│  CHOOSE YOUR MODEL                                         │
-│  选择你的模型                                               │
-└────────────────────────────────────────────────────────────┘
+ELIGE EL IDIOMA / CHOOSE LANGUAGE / 选择语言
+┌──────────────────────────────────────────┐
+│  [1] Español                             │
+│  [2] English                             │
+│  [3] 中文                                 │
+└──────────────────────────────────────────┘
 ```
 
-## Alcance
+Después, por ejemplo en español:
 
-Se traducen simultáneamente:
+```text
+ELIGE TU MODELO
+```
+
+No:
+
+```text
+ES │ ELIGE TU MODELO
+EN │ CHOOSE YOUR MODEL
+ZH │ 选择你的模型
+```
+
+## Motivo del cambio
+
+La presentación simultánea de los tres idiomas en cada línea dificultaba la lectura del beta tester y empeoraría al añadir más idiomas. La pregunta inicial de idioma reduce ruido sin perder cobertura multilingüe.
+
+## Alcance traducido
+
+Se traducen al idioma activo:
 
 - títulos y navegación;
 - estados y mensajes de progreso;
 - explicaciones de hardware;
 - candidatos de modelos;
-- funcionalidades de ODS y Magnitude;
+- resúmenes y funcionalidades de ODS y Magnitude;
 - requisitos y efectos de instalación;
 - consentimiento de instalación;
 - consentimiento de benchmark;
 - errores, bloqueos y recuperación;
 - resultados y resumen final.
 
-Los identificadores técnicos, nombres de modelos, comandos, rutas, métricas y valores de contrato permanecen en su forma canónica para evitar ambigüedad.
+Los identificadores técnicos, nombres de modelos, comandos, rutas, métricas y valores de contrato permanecen en su forma canónica.
 
 ## Requisitos de calidad
 
 1. No mezclar traducciones que cambien el significado técnico.
-2. No ocultar información por idioma.
-3. El texto chino debe usar Unicode UTF-8 y una tipografía con cobertura CJK adecuada.
-4. El ASCII art debe seguir siendo legible en las tres versiones.
-5. Los mensajes críticos de consentimiento deben mostrar las tres lenguas en la misma pantalla.
-6. Los tests deben verificar que cada clave obligatoria tiene ES/EN/ZH.
+2. No ocultar información crítica por falta de traducción en el idioma activo.
+3. El texto chino debe usar Unicode UTF-8.
+4. El ASCII art debe seguir siendo legible.
+5. Los mensajes de consentimiento se muestran en el idioma activo (no en tres columnas).
+6. Los tests verifican que cada clave tiene ES/EN/ZH y que el wizard usa un solo idioma tras la elección.
 
 ## Arquitectura
 
-La interfaz debe consumir claves semánticas, no cadenas duplicadas dentro del código. Esto permite ampliar idiomas posteriormente sin modificar la máquina de estados ni los contratos de ejecución.
-
-Ejemplo conceptual:
-
-```text
-ui.confirm_benchmark
-  ├── es: ¿Quieres ejecutar el benchmark?
-  ├── en: Do you want to run the benchmark?
-  └── zh: 是否运行基准测试？
-```
+La interfaz consume claves semánticas (`tr("choose_model")`), no cadenas duplicadas en el código. `set_language()` fija el idioma de sesión; `tr_all()` queda solo como ayuda de depuración.
 
 La internacionalización no modifica las decisiones ni los gates de seguridad: solo cambia la presentación humana del mismo estado canónico.

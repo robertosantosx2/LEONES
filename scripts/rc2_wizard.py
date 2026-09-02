@@ -13,7 +13,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.rc2_beta_session import BetaSession
-from scripts.rc2_i18n import tr
+from scripts.rc2_i18n import LANGUAGES, LANGUAGE_LABELS, set_language, tr
 from runtime_selection.hardware_profile import normalize_hardware, normalize_candidates
 from runtime_selection.rc2_candidates import to_selection_plan
 from runtime_selection.llmfit import LLMFitError, run_recommend, run_system, normalise_hardware, normalise_candidates
@@ -27,12 +27,20 @@ BANNER = r"""
 
 STACKS = {
     "ODS": {
-        "name": "ods", "adapter": "ods.v1", "mode": "local-stack",
-        "title_key": "ods_title", "capability_keys": tuple(f"ods_capability_{i}" for i in range(1, 5)),
+        "name": "ods",
+        "adapter": "ods.v1",
+        "mode": "local-stack",
+        "title_key": "ods_title",
+        "summary_key": "ods_summary",
+        "capability_keys": tuple(f"ods_capability_{i}" for i in range(1, 5)),
     },
     "Magnitude": {
-        "name": "magnitude", "adapter": "magnitude.v1", "mode": "agent",
-        "title_key": "magnitude_title", "capability_keys": tuple(f"magnitude_capability_{i}" for i in range(1, 5)),
+        "name": "magnitude",
+        "adapter": "magnitude.v1",
+        "mode": "agent",
+        "title_key": "magnitude_title",
+        "summary_key": "magnitude_summary",
+        "capability_keys": tuple(f"magnitude_capability_{i}" for i in range(1, 5)),
     },
 }
 
@@ -71,6 +79,23 @@ def _choose(io: WizardIO, title: str, options: tuple[str, ...]) -> str:
         _show_multiline(io, tr("invalid_option"), prefix="  ! ")
 
 
+def _choose_language(io: WizardIO) -> str:
+    """Ask once, in all labels, then lock a single UI language."""
+    labels = tuple(LANGUAGE_LABELS[code] for code in LANGUAGES)
+    # The language prompt itself is shown with short native labels only.
+    io.show("")
+    io.show("ELIGE EL IDIOMA / CHOOSE LANGUAGE / 选择语言")
+    io.show("┌──────────────────────────────────────────────────────────┐")
+    for i, label in enumerate(labels, 1):
+        io.show(f"│  [{i}] {label}")
+    io.show("└──────────────────────────────────────────────────────────┘")
+    while True:
+        answer = io.ask("LEONES> ").strip()
+        if answer.isdigit() and 1 <= int(answer) <= len(LANGUAGES):
+            return set_language(LANGUAGES[int(answer) - 1])
+        io.show("  ! Invalid option / Opción no válida / 无效选项")
+
+
 def _live_inputs(io: WizardIO) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     io.show("")
     _show_multiline(io, tr("detecting_hardware"), prefix="[INFO] ")
@@ -78,7 +103,7 @@ def _live_inputs(io: WizardIO) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         system = run_system()
         result = run_recommend(limit=5)
     except LLMFitError as exc:
-        io.show(f"[!] {tr('llmfit_unavailable').splitlines()[0]}: {exc}")
+        io.show(f"[!] {tr('llmfit_unavailable')}: {exc}")
         raise
     hardware = normalize_hardware(normalise_hardware(system))
     raw_candidates = normalise_candidates(result)
@@ -86,9 +111,13 @@ def _live_inputs(io: WizardIO) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         {
             "model_id": item.get("model") or item.get("raw", {}).get("id"),
             "name": item.get("model") or item.get("raw", {}).get("name") or item.get("raw", {}).get("id"),
-            "rank": item.get("rank"), "fit": item.get("fit"), "estimated_tps": item.get("estimated_tps"),
-            "source": item.get("source", "llmfit"), "source_version": result.version,
-            "evidence_level": "estimated", "revision": item.get("raw", {}).get("revision"),
+            "rank": item.get("rank"),
+            "fit": item.get("fit"),
+            "estimated_tps": item.get("estimated_tps"),
+            "source": item.get("source", "llmfit"),
+            "source_version": result.version,
+            "evidence_level": "estimated",
+            "revision": item.get("raw", {}).get("revision"),
         }
         for item in raw_candidates
     ])
@@ -99,14 +128,22 @@ def _show_stack(io: WizardIO, name: str) -> None:
     stack = STACKS[name]
     io.show("")
     _show_multiline(io, tr(stack["title_key"]))
+    _show_multiline(io, tr(stack["summary_key"]), prefix="  → ")
     for capability_key in stack["capability_keys"]:
         _show_multiline(io, tr(capability_key), prefix="  ✓ ")
+
+
+def _stack_choice_labels() -> tuple[str, ...]:
+    """One-line labels that explain each option inside the choice menu."""
+    return tuple(tr(STACKS[name]["summary_key"]) for name in STACKS)
 
 
 def run_wizard(io: WizardIO | None = None) -> BetaSession:
     io = io or WizardIO()
     session = BetaSession()
     io.show(BANNER)
+    language = _choose_language(io)
+    session.data["ui_language"] = language
     _show_multiline(io, tr("banner_subtitle"))
     _show_multiline(io, tr("your_team"))
     io.show("")
@@ -119,7 +156,10 @@ def run_wizard(io: WizardIO | None = None) -> BetaSession:
     session.advance("HARDWARE_READY", hardware=hardware)
     _show_multiline(io, tr("hardware_ready"), prefix="[✓] ")
     _show_multiline(io, tr("estimated_notice"), prefix="[i] ")
-    labels = tuple(f"{c['name']} · fit={c['fit']} · ~{c['estimated_tps']} tok/s · {c['source']} · ESTIMATED" for c in candidates)
+    labels = tuple(
+        f"{c['name']} · fit={c['fit']} · ~{c['estimated_tps']} tok/s · {c['source']} · ESTIMATED"
+        for c in candidates
+    )
     if not labels:
         session.block("NO_MODEL_CANDIDATES", tr("no_model_candidates"))
         return session
@@ -129,10 +169,21 @@ def run_wizard(io: WizardIO | None = None) -> BetaSession:
     session.advance("MODEL_SELECTED", model_choice=chosen)
     for name in STACKS:
         _show_stack(io, name)
-    stack_name = _choose(io, tr("choose_stack"), tuple(STACKS))
+    stack_labels = _stack_choice_labels()
+    chosen_stack_label = _choose(io, tr("choose_stack"), stack_labels)
+    stack_name = list(STACKS.keys())[stack_labels.index(chosen_stack_label)]
     stack = STACKS[stack_name]
-    plan = to_selection_plan(chosen, hardware, {"name": stack["name"], "adapter": stack["adapter"], "mode": stack["mode"]})
-    session.advance("STACK_SELECTED", stack=stack, stack_selection=stack, selection_plan=plan)
+    plan = to_selection_plan(
+        chosen,
+        hardware,
+        {"name": stack["name"], "adapter": stack["adapter"], "mode": stack["mode"]},
+    )
+    session.advance(
+        "STACK_SELECTED",
+        stack=stack,
+        stack_selection=stack,
+        selection_plan=plan,
+    )
     _show_multiline(io, tr("selected"), prefix=f"[✓] {stack_name} / ")
     session.advance("CONSENT_REQUIRED", installation={"status": "plan_ready"})
     install = _choose(io, tr("install_consent"), (tr("authorize"), tr("cancel")))
@@ -150,7 +201,10 @@ def _non_interactive_smoke() -> bool:
     session = BetaSession()
     session.advance("HARDWARE_READY", hardware={"source": "smoke"})
     session.advance("MODEL_SELECTED", model_choice={"model_id": "smoke-model"})
-    session.advance("STACK_SELECTED", stack={"name": "ods", "adapter": "ods.v1", "mode": "local-stack"})
+    session.advance(
+        "STACK_SELECTED",
+        stack={"name": "ods", "adapter": "ods.v1", "mode": "local-stack"},
+    )
     session.advance("CONSENT_REQUIRED", installation={"status": "plan_ready"})
     session.authorize_installation()
     try:
@@ -162,7 +216,11 @@ def _non_interactive_smoke() -> bool:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="LEONES RC2 beta wizard")
-    parser.add_argument("--non-interactive", action="store_true", help="verify authorization gates without physical side effects")
+    parser.add_argument(
+        "--non-interactive",
+        action="store_true",
+        help="verify authorization gates without physical side effects",
+    )
     args = parser.parse_args(argv)
     if args.non_interactive:
         return 0 if _non_interactive_smoke() else 1
