@@ -28,7 +28,19 @@ if command -v llmfit >/dev/null 2>&1; then
 else
     echo "[!] LLMFit no está instalado."
     echo "    LEONES no instala ni sustituye LLMFit: es una dependencia externa canónica."
-    echo "    Instálalo siguiendo su documentación oficial y vuelve a ejecutar ./install.sh."
+    echo
+    echo "    Instálalo primero (Linux, sin sudo):"
+    echo "      curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local"
+    echo
+    echo "    Luego asegúrate de que esté en el PATH:"
+    echo "      export PATH=\"\$HOME/.local/bin:\$PATH\""
+    echo "      command -v llmfit"
+    echo
+    echo "    Docs: https://www.llmfit.org/"
+    echo "    Repo: https://github.com/AlexsJones/llmfit"
+    echo "    Guía LEONES: INSTALL.md · web/inicio-rapido.html"
+    echo
+    echo "    Cuando llmfit esté disponible, vuelve a ejecutar ./install.sh."
     exit 2
 fi
 

@@ -4,16 +4,20 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Inicio rápido de LEONES RC2: comandos de arranque, interfaz, decisiones y teclas del wizard.">
 <title>LEONES · Inicio rápido</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-17-6">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-08-17-6">
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-02-1">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-02-1">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Beta · RC2</span><h1>LEONES · Inicio rápido</h1><p>Arranca el beta tester, entiende la pantalla y sabe exactamente cuándo debes decidir y qué tecla pulsar.</p></div></header>
 <main class="site-main" id="main">
+<section class="site-section" aria-labelledby="deps-title"><span class="site-tag">0 · Dependencias</span><h2 id="deps-title">Antes de clonar: LLMFit</h2><p><strong>LLMFit es una dependencia dura de LEONES.</strong> Detecta tu hardware y propone candidatos de modelo. LEONES no lo instala ni lo sustituye: debe estar disponible como comando <code>llmfit</code> en el PATH.</p><p>Sus cifras de velocidad son <strong>ESTIMATED</strong>, no mediciones LEONES.</p><p>En Linux / Fedora (recomendado, sin sudo):</p><pre class="site-stack">curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
+echo 'export PATH="$HOME/.local/bin:$PATH"' &gt;&gt; ~/.bashrc
+source ~/.bashrc
+command -v llmfit</pre><p>Alternativas: <code>brew install llmfit</code> o <code>uv tool install -U llmfit</code>.</p><p>Documentación oficial de LLMFit: <a href="https://www.llmfit.org/">https://www.llmfit.org/</a> · <a href="https://github.com/AlexsJones/llmfit">GitHub AlexsJones/llmfit</a>.</p></section>
 <section class="site-section" aria-labelledby="start-title"><span class="site-tag">1 · Arranque</span><h2 id="start-title">De cero a LEONES</h2><p>En una terminal Linux, el camino mínimo del beta tester es:</p><pre class="site-stack">git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES
 ./install.sh
-./leones</pre><p><strong>No necesitas lanzar el script interno directamente.</strong> <code>./leones</code> es el lanzador único del wizard RC2. La instalación mínima comprueba Git, Python y LLMFit; no instala automáticamente ODS, Magnitude ni modelos.</p><p>Si ya tienes el repositorio:</p><pre class="site-stack">cd LEONES
+./leones</pre><p><strong>No necesitas lanzar el script interno directamente.</strong> <code>./leones</code> es el lanzador único del wizard RC2. La instalación mínima comprueba Git, Python y <strong>LLMFit</strong>; no instala automáticamente ODS, Magnitude ni modelos.</p><p>Si <code>./install.sh</code> se queja de que falta LLMFit, vuelve al paso 0, instálalo y reintenta.</p><p>Si ya tienes el repositorio:</p><pre class="site-stack">cd LEONES
 git pull --ff-only origin main
 ./install.sh
 ./leones</pre></section>
@@ -60,9 +64,9 @@ Error original:
 Resultado esperado:
 Resultado obtenido:
 execution_id (si existe):</pre><p>Un fallo reproducible también es información útil para la beta.</p></section>
-<section class="site-section" aria-labelledby="links-title"><span class="site-tag">8 · Documentación</span><h2 id="links-title">Si necesitas más detalle</h2><p><a href="../INSTALL.md">Instalación mínima →</a></p><p><a href="../docs/RC2-USER-MANUAL.md">Manual de usuario RC2 →</a></p><p><a href="../docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación RC2 →</a></p><p><a href="rc2.html">Estado y gates de RC2 →</a></p></section>
+<section class="site-section" aria-labelledby="links-title"><span class="site-tag">8 · Documentación</span><h2 id="links-title">Si necesitas más detalle</h2><p><a href="INSTALL.md">Instalación mínima →</a></p><p><a href="docs/RC2-USER-MANUAL.md">Manual de usuario RC2 →</a></p><p><a href="docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación RC2 →</a></p><p><a href="rc2.html">Estado y gates de RC2 →</a></p></section>
 </main>
 <footer class="site-footer"><div>LEONES · IA local con criterio</div><div>Beta RC2 · Inicio rápido</div></footer>
-<script src="assets/js/navigation.js?v=2026-08-17-6" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-02-1" defer></script>
 </body>
 </html>

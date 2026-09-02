@@ -2,7 +2,55 @@
 
 La instalación beta debe ser pequeña: **Git + Python 3.10+ + LLMFit**. LEONES no instala automáticamente ODS, Magnitude ni modelos.
 
-## 1. Descargar
+## 0. Dependencia externa obligatoria: LLMFit
+
+**LLMFit es una dependencia dura de LEONES.**
+
+- Detecta hardware (CPU/RAM/GPU/VRAM).
+- Propone candidatos de modelo y ajuste (fit).
+- Sus cifras de velocidad son **ESTIMATED**, no mediciones LEONES.
+
+LEONES **no instala ni sustituye** LLMFit. Debe estar en el `PATH` como comando `llmfit` antes de `./install.sh`.
+
+### Instalar LLMFit (Linux / Fedora)
+
+Opción recomendada (script oficial, sin sudo):
+
+```bash
+curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
+```
+
+Añade `~/.local/bin` al PATH si aún no lo está:
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Otras opciones válidas:
+
+```bash
+# Con Homebrew (si lo usas en Linux)
+brew install llmfit
+# o
+brew install AlexsJones/llmfit/llmfit
+
+# Con uv
+uv tool install -U llmfit
+```
+
+Comprueba:
+
+```bash
+llmfit --version
+# o al menos:
+command -v llmfit
+```
+
+Documentación oficial: https://www.llmfit.org/  
+Repositorio: https://github.com/AlexsJones/llmfit
+
+## 1. Descargar LEONES
 
 ```bash
 git clone https://github.com/robertosantosx2/LEONES.git
@@ -17,7 +65,7 @@ cd LEONES
 
 El instalador comprueba Python, Git y LLMFit y deja preparado el lanzador `./leones`. No crea un entorno virtual ni descarga modelos.
 
-LLMFit es una dependencia externa y canónica de LEONES; su instalación se realiza siguiendo su documentación oficial.
+Si LLMFit no está instalado, `./install.sh` falla de forma explícita y te indica que lo instales primero.
 
 ## 3. Ejecutar
 
@@ -44,7 +92,7 @@ La instalación de ODS/Magnitude sólo se ejecuta después del consentimiento y 
 - Linux para la validación RC2 actual.
 - Git.
 - Python 3.10 o superior.
-- LLMFit instalado y accesible como `llmfit`.
+- **LLMFit instalado y accesible como `llmfit` en el PATH.**
 - Internet cuando el flujo elegido necesite descargar componentes.
 
 ## Regla de distribución
