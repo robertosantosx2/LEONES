@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# LEONES cleanup entry point. It can be called directly or from rc2_wizard.py.
+# LEONES cleanup entry point. It can be called directly or from the RC2 flow.
 # Nothing is removed unless the corresponding component is explicitly selected.
+# Historical evidence is deliberately preserved by the LEONES cleanup option.
 
 usage() {
   cat <<'EOF'
@@ -16,7 +17,7 @@ Usage:
   bash scripts/uninstall.sh --yes ...              # skip confirmation
 
 Components:
-  --leones      LEONES generated local state (not the source checkout)
+  --leones      LEONES generated local state (not the source checkout or evidence)
   --ods         ODS containers/images/volumes identifiable as ODS
   --magnitude   global @magnitudedev/cli
   --llms        all local Ollama models
@@ -42,7 +43,7 @@ run() { if (( DRY_RUN )); then printf '[DRY-RUN]'; printf ' %q' "$@"; printf '\n
 
 if ((${#SELECTED[@]} == 0)); then
   echo
-  echo 'LEONES — LIMPIEZA / DESINSTALACIÓN'
+echo 'LEONES — LIMPIEZA / DESINSTALACIÓN'
   echo 'Selecciona uno o varios componentes: 1,2,3,4.'
   echo
   echo '  [1] LEONES       — estado local generado por LEONES'
@@ -81,10 +82,8 @@ fi
 
 if contains leones "${SELECTED[@]}"; then
   echo '== LEONES =='
-  for path in .leones artifacts/runtime-executions artifacts/runtime-benchmark-evidence; do
-    if [[ -e "$path" ]]; then run rm -rf -- "$path"; else echo "[i] No existe: $path"; fi
-  done
-  echo '[✓] Estado local de LEONES limpiado; el checkout fuente permanece.'
+  if [[ -e .leones ]]; then run rm -rf -- .leones; else echo '[i] No existe: .leones'; fi
+  echo '[✓] Estado local de LEONES limpiado; el checkout y las evidencias históricas permanecen.'
 fi
 
 if contains magnitude "${SELECTED[@]}"; then
