@@ -4,54 +4,39 @@
 <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="description" content="LEONES RC2: recorrido beta desde hardware real hasta selección, resolución de runtime, instalación, benchmark y evidencia." />
 <title>LEONES · RC2 Beta</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-03-3" /><link rel="stylesheet" href="assets/css/site.css?v=2026-09-03-3" />
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-03-4" /><link rel="stylesheet" href="assets/css/site.css?v=2026-09-03-4" />
 <style>.rc2-hero-note{margin-top:1rem;padding:1rem 1.15rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}.rc2-state{display:inline-block;padding:.3rem .55rem;border-radius:999px;background:#eef5f8;font-weight:800;font-size:.78rem}.rc2-flow{overflow:auto}.rc2-gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}.rc2-card{padding:1.1rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}.rc2-card h3{margin-top:0}.rc2-card p:last-child{margin-bottom:0}.rc2-warning{border-left:4px solid #315d7d;padding:.8rem 1rem;background:#f5f8fa}.rc2-links{display:flex;flex-wrap:wrap;gap:.7rem}.rc2-links a{font-weight:800}.rc2-small{font-size:.9rem;color:#5d6d77}</style>
 </head>
 <body>
-<header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Beta · RC2 · 3 septiembre 2026</span><h1>LEONES · RC2</h1><p>Del hardware real a una decisión reproducible: modelo, stack, runtime ejecutable, instalación, benchmark y evidencia.</p><div class="rc2-hero-note"><span class="rc2-state">RC2-A 🟢 validado · RC2-B→H 🟡 validación física</span><p><strong>RC2 no sustituye las herramientas canónicas.</strong> Orquesta LLMFit, ODS/Magnitude y los runners de LEONES, manteniendo separadas estimaciones, estados observados y mediciones reales.</p></div></div></header>
+<header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Beta · RC2 · 3 septiembre 2026</span><h1>LEONES · RC2</h1><p>Del hardware real a una decisión reproducible: modelo, stack, runtime ejecutable, instalación, benchmark y evidencia.</p><div class="rc2-hero-note"><span class="rc2-state">Operador canónico · ./leones</span><p><strong>RC2 no sustituye las herramientas canónicas.</strong> Orquesta LLMFit, ODS/Magnitude y los runners de LEONES. Un idioma por sesión. Estimaciones, estados observados y mediciones reales permanecen separados.</p></div></div></header>
 <main class="site-main" id="main">
-<section class="site-section"><span class="site-tag">Recorrido beta</span><h2>Una persona puede seguir este camino</h2><div class="rc2-flow"><pre class="site-stack">HARDWARE REAL
+<section class="site-section"><span class="site-tag">Recorrido beta</span><h2>Operador: <code>./leones</code></h2><div class="rc2-flow"><pre class="site-stack">IDIOMA (es | en | zh)
       ↓
-LLMFIT → CANDIDATOS → ELEGIR MODELO
-                         ↓
-                ODS  ↔  MAGNITUDE
-                         ↓
-                  ELEGIR STACK
-                         ↓
-                  CONSENTIMIENTO
-                         ↓
-                 INSTALAR / VERIFICAR
-                         ↓
-               RESOLVER MODELO/RUNTIME
-                         ↓
-                 ¿BENCHMARK? ───── NO → FIN
-                         │
-                        SÍ
-                         ↓
-              RUNNER CANÓNICO RC1
-                         ↓
-             MEDICIÓN REAL → EVIDENCIA
-                         ↓
-                 RESULTADO / HANDOFF</pre></div></section>
-<section class="site-section"><span class="site-tag">Validación física</span><h2>Lo que ya hemos comprobado</h2><div class="rc2-gates"><article class="rc2-card"><h3>🟢 Instalador mínimo</h3><p><code>install.sh</code> es ejecutable y no instala automáticamente stacks ni modelos. LLMFit es dependencia dura.</p></article><article class="rc2-card"><h3>🟢 Terminal interactivo</h3><p>El lanzador restaura el eco del terminal para que las entradas del operador sean visibles durante el wizard.</p></article><article class="rc2-card"><h3>🟢 Docker / Compose</h3><p>Se distingue Docker directo, sudo, rootless y Podman. La máquina de validación observó Docker 29.1.3 y Compose v5.5.0.</p></article><article class="rc2-card"><h3>🟢 ODS físico</h3><p>Se observó ODS CLI v2.6.0 y la imagen <code>ods-privacy-shield:latest</code>. Observado no significa medido.</p></article><article class="rc2-card"><h3>🟢 Cancelación</h3><p>Cancelar el instalador externo devuelve fallo explícito y no autoriza el benchmark.</p></article><article class="rc2-card"><h3>🟢 Desinstalación</h3><p><code>--leones</code> limpia el estado local preservando checkout y evidencias históricas.</p></article></div></section>
-<section class="site-section"><span class="site-tag">A01 · primera prueba física</span><h2>Bloquear también es validar</h2><div class="rc2-warning"><p>LLMFit seleccionó un candidato <strong>GGUF</strong> de Hugging Face. Ollama estaba disponible, pero ese identificador no existía como modelo instalado en Ollama. LEONES devolvió <code>benchmark_blocked</code> y no publicó una medición.</p></div><pre class="site-stack">CANDIDATO LLMFIT
-      ↓
-HF/GGUF
-      ↓
-¿modelo disponible en Ollama?
-      ↓
-     NO
-      ↓
-A01 BLOQUEADO
-      ↓
-SIN MEASURED</pre><p><strong>Resultado:</strong> el sistema no confunde “LLMFit estima que encaja” con “este modelo puede ejecutarse ahora”.</p></section>
-<section class="site-section"><span class="site-tag">Nueva frontera</span><h2>Resolución explícita modelo → runtime</h2><div class="rc2-gates"><article class="rc2-card"><h3>1 · Candidato</h3><p>LLMFit proporciona identidad, fit y rendimiento estimado. Se conserva como <code>estimated</code>.</p></article><article class="rc2-card"><h3>2 · Resolución</h3><p>LEONES determina el runtime compatible con el formato real del modelo. GGUF puede resolver a llama.cpp; no se convierte en Ollama por defecto.</p></article><article class="rc2-card"><h3>3 · Preparación</h3><p>La resolución es declarativa: no descarga ni instala modelos. La preparación requiere su propia autorización.</p></article><article class="rc2-card"><h3>4 · Verificación</h3><p>Runtime y artefacto deben estar disponibles antes de abrir A01.</p></article><article class="rc2-card"><h3>5 · Medición</h3><p>Solo una ejecución real genera <code>measured</code> y nueva evidencia.</p></article></div></section>
-<section class="site-section"><span class="site-tag">Gates</span><h2>Qué está cerrado y qué falta</h2><div class="rc2-gates"><article class="rc2-card"><h3>RC2-A · 🟢</h3><p>Orquestación beta: hardware → candidatos → modelo → ODS/Magnitude → consentimiento.</p><p class="rc2-small">Suite de regresión RC2 validada.</p></article><article class="rc2-card"><h3>RC2-B→C · 🟡</h3><p>Instalación, health checks y verificación física del stack elegido.</p></article><article class="rc2-card"><h3>RC2-D→E · 🟡</h3><p>Resolución del modelo al runtime ejecutable y preparación sin instalaciones silenciosas.</p></article><article class="rc2-card"><h3>RC2-F→H · 🟡</h3><p>Benchmark opcional autorizado, evidencia, resultado y repetición por beta testers externos.</p></article></div></section>
-<section class="site-section"><span class="site-tag">Regla de evidencia</span><h2>Estimación no es medición</h2><div class="rc2-warning"><p><strong>LLMFit orienta; la ejecución real demuestra.</strong> Las cifras de fit/tok/s de LLMFit permanecen como <code>estimated</code>. Una evidencia LEONES sólo nace de una ejecución física con el runtime y protocolo correspondientes.</p></div><p>Un beta tester debe producir su propio <code>execution_id</code>, timestamp, métrica y procedencia. Una medición histórica nunca sustituye una ejecución actual.</p></section>
-<section class="site-section"><span class="site-tag">Instalación</span><h2>Actividad visible y fallos honestos</h2><div class="site-grid"><article class="site-card"><h3>Actividad</h3><p>Las operaciones largas muestran actividad y solo porcentajes que representen fases reales conocidas por LEONES.</p></article><article class="site-card"><h3>Errores</h3><p>Un fallo de conectividad o del instalador externo conserva el error original y no avanza al benchmark.</p></article><article class="site-card"><h3>Sin duplicados</h3><p>LEONES no crea otro instalador de ODS, otro instalador de Magnitude ni otro runner RC2.</p></article></div></section>
-<section class="site-section"><span class="site-tag">Para beta testers</span><h2>Manuales y código</h2><div class="rc2-links"><a href="../docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación RC2</a><a href="../docs/RC2-USER-MANUAL.md">Manual de usuario RC2</a><a href="../docs/RC2-BETA-USER-FLOW.md">Flujo contractual RC2</a><a href="../scripts/rc2_wizard.py">Wizard RC2</a><a href="../README.md">README</a></div><p class="rc2-small">La web explica el recorrido; instalación, resolución y medición se ejecutan en la máquina del beta tester.</p></section>
-<section class="site-section"><span class="site-tag">Estado</span><h2>Dónde estamos</h2><p><strong>RC1 está validado end-to-end. RC2-A está validado.</strong> La validación física ya ha demostrado instalación/verificación y el bloqueo correcto de A01 cuando el modelo seleccionado no está realmente disponible.</p><p>El siguiente paso técnico es integrar la resolución modelo/runtime con el wizard y el runner para que un candidato ejecutable llegue a A01 solo después de resolver y verificar su artefacto.</p></section>
+HARDWARE REAL + LLMFIT → CANDIDATOS → ELEGIR MODELO
+                                           ↓
+                                  ODS  ↔  MAGNITUDE
+                                           ↓
+                                    ELEGIR STACK
+                                           ↓
+                                    CONSENTIMIENTO
+                                           ↓
+                               INSTALAR / VERIFICAR STACK
+                                           ↓
+                             RESOLVER MODELO → RUNTIME
+                                           ↓
+                               PREFLIGHT RUNTIME/ARTEFACTO
+                                           ↓
+                               ¿BENCHMARK A01? ── NO → FIN
+                                           │
+                                          SÍ
+                                           ↓
+                                RUNNER CANÓNICO RC1
+                                           ↓
+                               MEDICIÓN REAL → EVIDENCIA</pre></div></section>
+<section class="site-section"><span class="site-tag">Reglas</span><h2>Lo que ya está fijado</h2><div class="rc2-gates"><article class="rc2-card"><h3>Un idioma</h3><p>Se elige al inicio. No se muestran ES+EN+ZH en cada línea.</p></article><article class="rc2-card"><h3>Stack con descripción</h3><p>ODS y Magnitude se eligen con resumen legible en el menú.</p></article><article class="rc2-card"><h3>Verify física</h3><p>Observa el host. Exit 0 del instalador no es PASS LEONES.</p></article><article class="rc2-card"><h3>Resolución explícita</h3><p>GGUF no se convierte en Ollama. Runtime y artefacto se comprueban antes de A01.</p></article><article class="rc2-card"><h3>A01 opcional</h3><p>Consentimiento propio. Runner RC1. Sin runtime → bloqueo, no MEASURED inventado.</p></article><article class="rc2-card"><h3>ESTIMATED ≠ MEASURED</h3><p>LLMFit orienta; solo la ejecución real produce evidencia LEONES.</p></article></div></section>
+<section class="site-section"><span class="site-tag">Validación física</span><h2>Lo observado</h2><div class="rc2-warning"><p>Cuando LLMFit propuso un candidato GGUF y Ollama no tenía ese modelo, LEONES devolvió <code>benchmark_blocked</code> y no publicó medición. Bloquear también es validar.</p></div></section>
+<section class="site-section"><span class="site-tag">Documentación</span><h2>Manuales</h2><div class="rc2-links"><a href="inicio-rapido.html">Inicio rápido</a><a href="../docs/RC2-USER-MANUAL.md">Manual de usuario</a><a href="../docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación</a><a href="../docs/RC2-L-INTEGRATED-BETA-JOURNEY.md">Recorrido integrado</a><a href="../docs/completed/rc2-wizard.md">Guía del wizard</a></div></section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-03-3" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-03-4" defer></script>
 </body>
 </html>

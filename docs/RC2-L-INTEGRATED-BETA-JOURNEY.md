@@ -10,8 +10,12 @@
 | Implementación | `scripts/rc2_wizard.py` |
 | Sesión / gates | `scripts/rc2_beta_session.py` |
 | i18n (un idioma por sesión) | `scripts/rc2_i18n.py` |
-| Verificación física | `scripts/integrations/verify_physical.py` |
-| Medición A01 | `scripts/a01_runtime_benchmark.py` + `scripts/ollama_a01_runtime.py` |
+| Verificación física del stack | `scripts/integrations/verify_physical.py` |
+| Resolución modelo → runtime | `runtime_selection/model_runtime_resolver.py` |
+| Preflight Ollama | `scripts/a01_runtime_preflight.py` |
+| Medición A01 | `scripts/a01_runtime_benchmark.py` |
+| Puente Ollama | `scripts/ollama_a01_runtime.py` |
+| Puente llama.cpp | `scripts/llama_cpp_a01_runtime.py` |
 | Mapa visual (no ejecuta) | `scripts/rc2_ui.py` |
 
 No hay un segundo wizard ni un segundo runner de benchmark.
@@ -19,53 +23,51 @@ No hay un segundo wizard ni un segundo runner de benchmark.
 ## Recorrido implementado
 
 ```text
-IDIOMA (es | en | zh)     ← se elige una vez; el resto usa solo ese idioma
+IDIOMA (es | en | zh)          ← una vez; el resto usa solo ese idioma
         ↓
-HARDWARE + CANDIDATOS     ← LLMFit en vivo (ESTIMATED)
+HARDWARE + CANDIDATOS          ← LLMFit en vivo (ESTIMATED)
         ↓
-MODELO                    ← decisión humana
+MODELO                         ← decisión humana
         ↓
-ODS / MAGNITUDE           ← resumen + capacidades en el menú
+ODS / MAGNITUDE                ← resumen en el menú
         ↓
 CONSENTIMIENTO INSTALAR
         ↓
-INSTALADOR CANÓNICO       ← opcional (sí ahora / más tarde)
+INSTALADOR CANÓNICO            ← opcional (ahora / más tarde)
         ↓
-VERIFICACIÓN FÍSICA       ← observa el host; exit 0 ≠ PASS
+VERIFICACIÓN FÍSICA DEL STACK  ← observa host; exit 0 ≠ PASS
+        ↓
+RESOLUCIÓN MODELO → RUNTIME    ← declarativa; no descarga
+        ↓
+PREFLIGHT RUNTIME/ARTEFACTO    ← Ollama model o llama-cli + ref
         ↓
 ¿A01?
    ├── NO → READY_FOR_BENCHMARK (nada medido)
-   └── SÍ → handoff RC1
-                 ↓
-           Ollama A01 bridge (si ollama en PATH)
-                 ↓
-           measured → evidence en .leones/rc2-a01/
-                 ↓
-              COMPLETE
+   └── SÍ → handoff RC1 → measured → evidence (.leones/rc2-a01/)
 ```
 
 ## Invariantes
 
 1. `ESTIMATED ≠ MEASURED`
-2. Autorizar instalación ≠ instalar ≠ verificar ≠ autorizar benchmark
-3. Sin `real_installation: true` no hay benchmark
-4. Sin consentimiento A01 no hay ejecución
-5. Sin Ollama local, A01 queda `benchmark_blocked` (no se inventa MEASURED)
+2. Autorizar instalación ≠ instalar ≠ verificar stack ≠ resolver runtime ≠ autorizar benchmark
+3. Sin `real_installation: true` del stack no hay benchmark
+4. Un id GGUF/HF no se convierte silenciosamente en nombre Ollama
+5. Sin runtime/artefacto disponible → `benchmark_blocked`, no MEASURED inventado
 6. Un fallo no se publica como medición válida
 
 ## Hecho vs abierto
 
-**Hecho implementado**
+**Hecho**
 
-- elección de idioma única;
-- resúmenes de stack en el menú;
-- resumen post-consentimiento + comando de instalador;
-- verificación física ODS/Magnitude;
-- explicación y consentimiento A01;
-- handoff y intento real vía runner RC1 + puente Ollama.
+- idioma único por sesión;
+- resúmenes de stack;
+- verify física ODS/Magnitude;
+- resolución modelo→runtime;
+- preflight Ollama / llama.cpp;
+- consentimiento A01 + runner RC1.
 
-**Limitaciones conocidas**
+**Abierto**
 
-- A01 físico requiere `ollama` en PATH y el modelo disponible localmente;
-- la verificación ODS exige señal específica (CLI `ods` o imagen Docker con “ods”);
-- la reanudación desde estado persistido aún no está implementada como producto.
+- reanudación de sesión persistida;
+- más adaptadores A01 además de Ollama y llama.cpp;
+- preparación autorizada de artefactos GGUF cuando aún no existen en el host.

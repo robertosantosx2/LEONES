@@ -2,48 +2,32 @@
 
 **Estado:** 🟢 Contrato fijado · operador canónico = `./leones`
 
-RC2-G integra RC2-A..F (y J/K/L) en un único recorrido de usuario. No sustituye los contratos de cada puerta; fija el orden y prohíbe cadenas paralelas.
+RC2-G integra las puertas RC2 en un único recorrido. No sustituye los contratos de cada puerta; fija el orden y prohíbe cadenas paralelas.
 
 ## Recorrido canónico
 
 ```text
 INSTALL LEONES (+ LLMFit en PATH)
     ↓
-LANGUAGE CHOICE (one UI language for the session)
+LANGUAGE CHOICE (one UI language)
     ↓
-PREFLIGHT / HARDWARE OBSERVED (LLMFit)
-    ↓
-MODEL CANDIDATES (ESTIMATED)
+HARDWARE + CANDIDATES (LLMFit, ESTIMATED)
     ↓
 USER MODEL CHOICE
     ↓
-ODS / MAGNITUDE CAPABILITY PRESENTATION
+STACK PRESENTATION + USER STACK CHOICE
     ↓
-USER STACK CHOICE
+INSTALL CONSENT → INSTALL (optional) → PHYSICAL STACK VERIFY
     ↓
-INSTALL CONSENT
+MODEL → RUNTIME RESOLUTION (declarative)
     ↓
-INSTALL (canonical script, optional now/later)
+RUNTIME / ARTIFACT PREFLIGHT
     ↓
-PHYSICAL VERIFY (observe host)
-    ↓
-READY_FOR_BENCHMARK
-    ↓
-A01 EXPLANATION
-    ↓
-BENCHMARK CONSENT
+A01 EXPLANATION + BENCHMARK CONSENT
    ┌┴──────────────┐
    NO              YES
    ↓                ↓
-COMPLETE*       EXECUTION_AUTHORIZED
-                    ↓
-              RC1 A01 runner
-                    ↓
-              GRADER + MEASUREMENT
-                    ↓
-                 EVIDENCE
-                    ↓
-                 COMPLETE
+COMPLETE*       EXECUTION_AUTHORIZED → RC1 A01 → EVIDENCE → COMPLETE
 
 * sin medición; instalación intacta
 ```
@@ -54,18 +38,17 @@ COMPLETE*       EXECUTION_AUTHORIZED
 - `MODEL_SELECTED`
 - `STACK_SELECTED`
 - `CONSENT_REQUIRED` → `INSTALLING`
-- `READY_FOR_BENCHMARK` (solo tras `real_installation: true`)
+- `READY_FOR_BENCHMARK` (solo tras verify física del stack)
 - `BENCHMARK_CONSENT_REQUIRED`
-- `EXECUTION_AUTHORIZED` → `COMPLETE` (si A01 produce medición válida)
-
-Ningún gate se satisface por inferencia silenciosa.
+- `EXECUTION_AUTHORIZED` → `COMPLETE` si A01 produce medición válida
+- `BLOCKED` si falta runtime/artefacto o falla la ejecución
 
 ## Regla RC1
 
-La ejecución de benchmark reutiliza el pipeline RC1 (`a01_runtime_benchmark.py`). RC2 no crea un segundo runner ni una segunda semántica de evidencia.
+La medición reutiliza `a01_runtime_benchmark.py`. RC2 no crea un segundo runner.
 
 ## Criterio de cierre
 
-- tests de sesión, wizard, i18n y verificación física;
-- operador único `./leones`;
-- documentación alineada en RC2-L, RC2-F/J, RC2-K, RC2-H.
+- operador único `./leones`
+- docs L/F/J/K/H/Q alineados (sin UI trilingüe simultánea)
+- tests de sesión, wizard, i18n, verify y resolución

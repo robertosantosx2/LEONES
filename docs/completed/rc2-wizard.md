@@ -12,6 +12,7 @@ ejecución.
 
 - No sustituye LLMFit, ODS ni Magnitude.
 - No inventa PASS de verificación ni MEASURED de benchmark.
+- No convierte un id Hugging Face/GGUF en un modelo Ollama.
 - No es un segundo runner: la medición la hace el pipeline RC1.
 
 ## Cómo arrancar
@@ -30,13 +31,15 @@ candidatos ESTIMATED
         ↓
 elección humana (modelo + stack)
         ↓
-consentimiento instalación
+consentimiento instalación + verify_physical
         ↓
-verify_physical (observa host)
+model_runtime_resolver (declarativo)
+        ↓
+preflight runtime/artefacto
         ↓
 consentimiento A01
         ↓
-a01_runtime_benchmark + ollama_a01_runtime
+a01_runtime_benchmark + (ollama | llama.cpp) bridge
         ↓
 evidence en .leones/rc2-a01/
 ```
@@ -45,25 +48,23 @@ evidence en .leones/rc2-a01/
 
 | Script | Función |
 |--------|---------|
-| `scripts/rc2_wizard.py` | Máquina de diálogo y orquestación |
-| `scripts/rc2_beta_session.py` | Gates y estados |
+| `scripts/rc2_wizard.py` | Operador / diálogo |
+| `scripts/rc2_beta_session.py` | Gates |
 | `scripts/rc2_i18n.py` | Catálogo ES/EN/ZH |
-| `scripts/integrations/verify_physical.py` | PASS/FAIL real del stack |
+| `scripts/integrations/verify_physical.py` | Stack PASS/FAIL |
+| `runtime_selection/model_runtime_resolver.py` | Modelo → runtime |
+| `scripts/a01_runtime_preflight.py` | Ollama model check |
 | `scripts/a01_runtime_benchmark.py` | Medición canónica |
-| `scripts/ollama_a01_runtime.py` | Puente modelo local → contrato A01 |
+| `scripts/ollama_a01_runtime.py` | Puente Ollama |
+| `scripts/llama_cpp_a01_runtime.py` | Puente llama.cpp |
 
 ## Invariantes
 
-1. Un idioma por sesión tras la primera pregunta.
-2. `real_installation` solo con observación física.
-3. A01 solo tras consentimiento específico.
-4. Sin Ollama → bloqueo, no medición falsa.
-
-## Mantenimiento
-
-- Añadir cadenas: `scripts/rc2_i18n.py` + test de catálogo.
-- Cambiar gates: `rc2_beta_session.py` + tests de transición.
-- Cambiar checks físicos: `verify_physical.py` + `tests/test_verify_physical.py`.
+1. Un idioma por sesión.
+2. `real_installation` solo con observación física del stack.
+3. Resolución ≠ instalación ≠ medición.
+4. A01 solo tras consentimiento específico.
+5. Runtime/artefacto ausente → bloqueo, no medición falsa.
 
 ## Documentos de contrato
 
