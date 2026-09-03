@@ -18,6 +18,7 @@ if str(REPO_ROOT) not in sys.path:
 from scripts.rc2_beta_session import BetaSession
 from scripts.rc2_i18n import LANGUAGES, LANGUAGE_LABELS, set_language, tr
 from scripts.integrations.verify_physical import verify_stack
+from scripts.a01_runtime_preflight import check_ollama_model
 from runtime_selection.hardware_profile import normalize_hardware, normalize_candidates
 from runtime_selection.rc2_candidates import to_selection_plan
 from runtime_selection.llmfit import LLMFitError, run_recommend, run_system, normalise_hardware, normalise_candidates
@@ -31,21 +32,15 @@ BANNER = r"""
 
 STACKS = {
     "ODS": {
-        "name": "ods",
-        "adapter": "ods.v1",
-        "mode": "local-stack",
-        "title_key": "ods_title",
-        "summary_key": "ods_summary",
+        "name": "ods", "adapter": "ods.v1", "mode": "local-stack",
+        "title_key": "ods_title", "summary_key": "ods_summary",
         "next_step_key": "next_step_ods",
         "install_script": "scripts/integrations/install_ods.sh",
         "capability_keys": tuple(f"ods_capability_{i}" for i in range(1, 5)),
     },
     "Magnitude": {
-        "name": "magnitude",
-        "adapter": "magnitude.v1",
-        "mode": "agent",
-        "title_key": "magnitude_title",
-        "summary_key": "magnitude_summary",
+        "name": "magnitude", "adapter": "magnitude.v1", "mode": "agent",
+        "title_key": "magnitude_title", "summary_key": "magnitude_summary",
         "next_step_key": "next_step_magnitude",
         "install_script": "scripts/integrations/install_magnitude.sh",
         "capability_keys": tuple(f"magnitude_capability_{i}" for i in range(1, 5)),
@@ -53,10 +48,7 @@ STACKS = {
 }
 
 A01_BENCHMARK = {
-    "id": "LEONES-Agentic",
-    "version": "1.0",
-    "task": "A01",
-    "task_version": "1.0",
+    "id": "LEONES-Agentic", "version": "1.0", "task": "A01", "task_version": "1.0",
     "prompt": "Execute A01. Return only JSONL tool calls.",
     "metrics": ["wall_seconds", "measured_tps", "grader_pass"],
 }
@@ -126,13 +118,10 @@ def _live_inputs(io: WizardIO) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         {
             "model_id": item.get("model") or item.get("raw", {}).get("id"),
             "name": item.get("model") or item.get("raw", {}).get("name") or item.get("raw", {}).get("id"),
-            "rank": item.get("rank"),
-            "fit": item.get("fit"),
+            "rank": item.get("rank"), "fit": item.get("fit"),
             "estimated_tps": item.get("estimated_tps"),
-            "source": item.get("source", "llmfit"),
-            "source_version": result.version,
-            "evidence_level": "estimated",
-            "revision": item.get("raw", {}).get("revision"),
+            "source": item.get("source", "llmfit"), "source_version": result.version,
+            "evidence_level": "estimated", "revision": item.get("raw", {}).get("revision"),
         }
         for item in raw_candidates
     ])
@@ -152,130 +141,70 @@ def _stack_choice_labels() -> tuple[str, ...]:
     return tuple(tr(STACKS[name]["summary_key"]) for name in STACKS)
 
 
-def _show_decision_summary(
-    io: WizardIO,
-    *,
-    model_name: str,
-    stack_name: str,
-    stack: dict[str, Any],
-) -> None:
+def _show_decision_summary(io: WizardIO, *, model_name: str, stack_name: str, stack: dict[str, Any]) -> None:
     script = stack["install_script"]
-    io.show("")
-    io.show("═" * 60)
-    _show_multiline(io, tr("what_was_decided"))
-    io.show("═" * 60)
+    io.show(""); io.show("═" * 60); _show_multiline(io, tr("what_was_decided")); io.show("═" * 60)
     io.show(f"  {tr('label_model')}: {model_name}")
     io.show(f"  {tr('label_stack')}: {stack_name} ({stack['name']})")
     io.show(f"  {tr('label_status')}: {tr('status_authorized_not_installed')}")
-    io.show("")
-    _show_multiline(io, tr("installation_authorized"), prefix="[✓] ")
-    _show_multiline(io, tr("not_installed_yet"), prefix="[!] ")
-    io.show("")
-    _show_multiline(io, tr("next_step_title"))
-    _show_multiline(io, tr(stack["next_step_key"]), prefix="  ")
-    io.show(f"  $ bash {script}")
-    io.show("")
+    io.show(""); _show_multiline(io, tr("installation_authorized"), prefix="[✓] ")
+    _show_multiline(io, tr("not_installed_yet"), prefix="[!] "); io.show("")
+    _show_multiline(io, tr("next_step_title")); _show_multiline(io, tr(stack["next_step_key"]), prefix="  ")
+    io.show(f"  $ bash {script}"); io.show("")
     _show_multiline(io, tr("next_step_after_install"), prefix="[i] ")
 
 
 def _maybe_run_installer(io: WizardIO, stack: dict[str, Any]) -> dict[str, Any]:
     script = REPO_ROOT / stack["install_script"]
-    choice = _choose(
-        io,
-        tr("offer_run_installer"),
-        (tr("run_installer_yes"), tr("run_installer_no")),
-    )
+    choice = _choose(io, tr("offer_run_installer"), (tr("run_installer_yes"), tr("run_installer_no")))
     if choice == tr("run_installer_no"):
         _show_multiline(io, tr("installer_deferred"), prefix="[i] ")
-        return {
-            "status": "deferred",
-            "script": str(script.relative_to(REPO_ROOT)),
-            "real_installation": False,
-        }
-
+        return {"status": "deferred", "script": str(script.relative_to(REPO_ROOT)), "real_installation": False}
     _show_multiline(io, tr("installer_launching"), prefix="[INFO] ")
     io.show(f"[INFO] $ bash {script.relative_to(REPO_ROOT)}")
     try:
-        completed = subprocess.run(
-            ["bash", str(script)],
-            cwd=str(REPO_ROOT),
-            check=False,
-        )
+        completed = subprocess.run(["bash", str(script)], cwd=str(REPO_ROOT), check=False)
         rc = completed.returncode
     except OSError as exc:
-        io.show(f"[!] {exc}")
-        rc = 1
-
+        io.show(f"[!] {exc}"); rc = 1
     if rc == 0:
         _show_multiline(io, tr("installer_finished_ok"), prefix="[✓] ")
-        return {
-            "status": "installer_exited_0",
-            "script": str(script.relative_to(REPO_ROOT)),
-            "returncode": rc,
-            "real_installation": False,
-        }
-
+        return {"status": "installer_exited_0", "script": str(script.relative_to(REPO_ROOT)), "returncode": rc, "real_installation": False}
     _show_multiline(io, tr("installer_finished_fail"), prefix="[!] ")
-    return {
-        "status": "installer_failed_or_cancelled",
-        "script": str(script.relative_to(REPO_ROOT)),
-        "returncode": rc,
-        "real_installation": False,
-    }
+    return {"status": "installer_failed_or_cancelled", "script": str(script.relative_to(REPO_ROOT)), "returncode": rc, "real_installation": False}
 
 
 def _show_verification(io: WizardIO, result: dict[str, Any]) -> None:
-    io.show("")
-    io.show("═" * 60)
-    _show_multiline(io, tr("verify_title"))
-    io.show("═" * 60)
+    io.show(""); io.show("═" * 60); _show_multiline(io, tr("verify_title")); io.show("═" * 60)
     if result.get("status") == "PASS" and result.get("real_installation") is True:
         _show_multiline(io, tr("verify_pass"), prefix="[✓] ")
     else:
         _show_multiline(io, tr("verify_fail"), prefix="[!] ")
     if result.get("observed"):
         io.show(f"  {tr('verify_observed')}")
-        for key, value in result["observed"].items():
-            io.show(f"    - {key}: {value}")
+        for key, value in result["observed"].items(): io.show(f"    - {key}: {value}")
     if result.get("missing"):
         io.show(f"  {tr('verify_missing')}")
-        for item in result["missing"]:
-            io.show(f"    - {item}")
-    if result.get("message"):
-        io.show(f"  [i] {result['message']}")
+        for item in result["missing"]: io.show(f"    - {item}")
+    if result.get("message"): io.show(f"  [i] {result['message']}")
 
 
 def _run_physical_verification(io: WizardIO, stack_name: str) -> dict[str, Any]:
     while True:
-        io.show("")
-        _show_multiline(io, tr("verify_running"), prefix="[INFO] ")
-        verification = verify_stack(stack_name)
-        result = verification.to_dict()
-        _show_verification(io, result)
+        io.show(""); _show_multiline(io, tr("verify_running"), prefix="[INFO] ")
+        result = verify_stack(stack_name).to_dict(); _show_verification(io, result)
         if result.get("status") == "PASS" and result.get("real_installation") is True:
-            _show_multiline(io, tr("verify_next_pass"), prefix="[✓] ")
-            return result
+            _show_multiline(io, tr("verify_next_pass"), prefix="[✓] "); return result
         _show_multiline(io, tr("verify_next_fail"), prefix="[!] ")
-        again = _choose(
-            io,
-            tr("offer_verify_again"),
-            (tr("verify_again_yes"), tr("verify_again_no")),
-        )
-        if again == tr("verify_again_no"):
-            return result
+        again = _choose(io, tr("offer_verify_again"), (tr("verify_again_yes"), tr("verify_again_no")))
+        if again == tr("verify_again_no"): return result
 
 
 def _show_a01_explanation(io: WizardIO, model_id: str) -> None:
-    io.show("")
-    io.show("═" * 60)
-    _show_multiline(io, tr("a01_title"))
-    io.show("═" * 60)
-    _show_multiline(io, tr("a01_what"), prefix="  • ")
-    _show_multiline(io, tr("a01_metrics"), prefix="  • ")
-    _show_multiline(io, tr("a01_runtime"), prefix="  • ")
-    _show_multiline(io, tr("a01_privacy"), prefix="  • ")
-    io.show(f"  • model_id: {model_id}")
-    io.show(f"  • task: {A01_BENCHMARK['task']} / {A01_BENCHMARK['id']} {A01_BENCHMARK['version']}")
+    io.show(""); io.show("═" * 60); _show_multiline(io, tr("a01_title")); io.show("═" * 60)
+    _show_multiline(io, tr("a01_what"), prefix="  • "); _show_multiline(io, tr("a01_metrics"), prefix="  • ")
+    _show_multiline(io, tr("a01_runtime"), prefix="  • "); _show_multiline(io, tr("a01_privacy"), prefix="  • ")
+    io.show(f"  • model_id: {model_id}"); io.show(f"  • task: {A01_BENCHMARK['task']} / {A01_BENCHMARK['id']} {A01_BENCHMARK['version']}")
 
 
 def _ollama_available() -> bool:
@@ -284,295 +213,128 @@ def _ollama_available() -> bool:
 
 def _build_a01_selection(model_choice: dict[str, Any], hardware: dict[str, Any]) -> dict[str, Any]:
     model_id = str(model_choice.get("model_id") or model_choice.get("name") or "")
-    name = str(model_choice.get("name") or model_id)
-    quant = "unknown"
+    name = str(model_choice.get("name") or model_id); quant = "unknown"
     if ":" in model_id and any(token in model_id.lower() for token in ("q4", "q5", "q8", "fp16", "f16")):
-        # Keep observed tag fragment only; do not invent a different quant.
         quant = model_id.split(":")[-1]
-    return {
-        "candidates": [
-            {
-                "selection_status": "TOP_N",
-                "rank": model_choice.get("rank") or 1,
-                "fit_score": model_choice.get("fit"),
-                "evidence_level": model_choice.get("evidence_level", "estimated"),
-                "model_id": model_id,
-                "model_name": name,
-                "model": {"id": model_id, "name": name, "revision": model_choice.get("revision")},
-                "runtime": "ollama",
-                "runtime_version": "local",
-                "quantization": quant,
-                "model_format": "Ollama-managed",
-                "optimization_families": [],
-                "hardware": hardware or {},
-                "workload": {},
-                "llmfit": {"estimated_tps": model_choice.get("estimated_tps")},
-            }
-        ]
-    }
+    return {"candidates": [{
+        "selection_status": "TOP_N", "rank": model_choice.get("rank") or 1, "fit_score": model_choice.get("fit"),
+        "evidence_level": model_choice.get("evidence_level", "estimated"), "model_id": model_id, "model_name": name,
+        "model": {"id": model_id, "name": name, "revision": model_choice.get("revision")}, "runtime": "ollama",
+        "runtime_version": "local", "quantization": quant, "model_format": "Ollama-managed",
+        "optimization_families": [], "hardware": hardware or {}, "workload": {},
+        "llmfit": {"estimated_tps": model_choice.get("estimated_tps")},
+    }]}
 
 
 def _build_ollama_runtime_commands(model_id: str) -> dict[str, list[str]]:
     bridge = REPO_ROOT / "scripts" / "ollama_a01_runtime.py"
-    return {
-        "ollama": [
-            sys.executable,
-            str(bridge),
-            "--model",
-            model_id,
-        ]
-    }
+    return {"ollama": [sys.executable, str(bridge), "--model", model_id]}
 
 
-def _run_a01(
-    io: WizardIO,
-    *,
-    model_choice: dict[str, Any],
-    hardware: dict[str, Any],
-) -> dict[str, Any]:
+def _run_a01(io: WizardIO, *, model_choice: dict[str, Any], hardware: dict[str, Any]) -> dict[str, Any]:
     model_id = str(model_choice.get("model_id") or model_choice.get("name") or "")
-    if not _ollama_available():
+    preflight = check_ollama_model(model_id)
+    if not preflight.available:
+        _show_multiline(io, tr("benchmark_need_ollama"), prefix="[!] ")
+        return {"status": "benchmark_blocked", "reason": preflight.reason, "measured": False}
+    if not preflight.model_available:
         _show_multiline(io, tr("benchmark_need_ollama"), prefix="[!] ")
         return {
-            "status": "benchmark_blocked",
-            "reason": "ollama_not_in_path",
-            "measured": False,
+            "status": "benchmark_blocked", "reason": preflight.reason, "model_id": model_id,
+            "installed_models": list(preflight.installed_models), "measured": False,
         }
-
-    work = REPO_ROOT / ".leones" / "rc2-a01"
-    work.mkdir(parents=True, exist_ok=True)
-    selection_path = work / "selection.json"
-    runtime_commands_path = work / "runtime-commands.json"
-    out_path = work / "a01-runtime-benchmark.v1.json"
-    workspace = work / "workspace"
-
-    selection = _build_a01_selection(model_choice, hardware)
-    runtime_commands = _build_ollama_runtime_commands(model_id)
+    work = REPO_ROOT / ".leones" / "rc2-a01"; work.mkdir(parents=True, exist_ok=True)
+    selection_path = work / "selection.json"; runtime_commands_path = work / "runtime-commands.json"
+    out_path = work / "a01-runtime-benchmark.v1.json"; workspace = work / "workspace"
+    selection = _build_a01_selection(model_choice, hardware); runtime_commands = _build_ollama_runtime_commands(model_id)
     selection_path.write_text(json.dumps(selection, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    runtime_commands_path.write_text(
-        json.dumps(runtime_commands, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-
-    _show_multiline(io, tr("benchmark_running"), prefix="[INFO] ")
-    io.show(f"[INFO] model_id={model_id}")
-    io.show(f"[INFO] out={out_path.relative_to(REPO_ROOT)}")
-    cmd = [
-        sys.executable,
-        str(REPO_ROOT / "scripts" / "a01_runtime_benchmark.py"),
-        "--selection",
-        str(selection_path),
-        "--runtime-commands",
-        str(runtime_commands_path),
-        "--workspace",
-        str(workspace),
-        "--prompt",
-        A01_BENCHMARK["prompt"],
-        "--out",
-        str(out_path),
-        "--timeout",
-        "180",
-    ]
+    runtime_commands_path.write_text(json.dumps(runtime_commands, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _show_multiline(io, tr("benchmark_running"), prefix="[INFO] "); io.show(f"[INFO] model_id={model_id}"); io.show(f"[INFO] out={out_path.relative_to(REPO_ROOT)}")
+    cmd = [sys.executable, str(REPO_ROOT / "scripts" / "a01_runtime_benchmark.py"), "--selection", str(selection_path), "--runtime-commands", str(runtime_commands_path), "--workspace", str(workspace), "--prompt", A01_BENCHMARK["prompt"], "--out", str(out_path), "--timeout", "180"]
     try:
-        completed = subprocess.run(cmd, cwd=str(REPO_ROOT), check=False)
-        rc = completed.returncode
+        completed = subprocess.run(cmd, cwd=str(REPO_ROOT), check=False); rc = completed.returncode
     except OSError as exc:
-        io.show(f"[!] {exc}")
-        return {"status": "benchmark_failed", "reason": str(exc), "measured": False}
-
+        io.show(f"[!] {exc}"); return {"status": "benchmark_failed", "reason": str(exc), "measured": False}
     if rc != 0 or not out_path.exists():
         _show_multiline(io, tr("benchmark_failed"), prefix="[!] ")
-        return {
-            "status": "benchmark_failed",
-            "returncode": rc,
-            "out": str(out_path.relative_to(REPO_ROOT)),
-            "measured": False,
-        }
-
+        return {"status": "benchmark_failed", "returncode": rc, "out": str(out_path.relative_to(REPO_ROOT)), "measured": False}
     try:
         payload = json.loads(out_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        _show_multiline(io, tr("benchmark_failed"), prefix="[!] ")
-        return {"status": "benchmark_failed", "reason": str(exc), "measured": False}
-
-    evidence = payload.get("evidence") or {}
-    runtime_benchmark = evidence.get("runtime_benchmark") or {}
-    execution_id = runtime_benchmark.get("execution_id")
-    measured = runtime_benchmark.get("measurement_status") == "measured"
-    io.show("")
-    _show_multiline(io, tr("benchmark_completed"), prefix="[✓] ")
-    if execution_id:
-        io.show(f"  execution_id: {execution_id}")
-    if runtime_benchmark.get("wall_seconds") is not None:
-        io.show(f"  wall_seconds: {runtime_benchmark.get('wall_seconds')}")
-    if runtime_benchmark.get("measured_tps") is not None:
-        io.show(f"  measured_tps: {runtime_benchmark.get('measured_tps')}")
-    if runtime_benchmark.get("grader_pass") is not None:
-        io.show(f"  grader_pass: {runtime_benchmark.get('grader_pass')}")
+        _show_multiline(io, tr("benchmark_failed"), prefix="[!] "); return {"status": "benchmark_failed", "reason": str(exc), "measured": False}
+    evidence = payload.get("evidence") or {}; runtime_benchmark = evidence.get("runtime_benchmark") or {}
+    execution_id = runtime_benchmark.get("execution_id"); measured = runtime_benchmark.get("measurement_status") == "measured"
+    io.show(""); _show_multiline(io, tr("benchmark_completed"), prefix="[✓] ")
+    if execution_id: io.show(f"  execution_id: {execution_id}")
+    if runtime_benchmark.get("wall_seconds") is not None: io.show(f"  wall_seconds: {runtime_benchmark.get('wall_seconds')}")
+    if runtime_benchmark.get("measured_tps") is not None: io.show(f"  measured_tps: {runtime_benchmark.get('measured_tps')}")
+    if runtime_benchmark.get("grader_pass") is not None: io.show(f"  grader_pass: {runtime_benchmark.get('grader_pass')}")
     io.show(f"  evidence: {out_path.relative_to(REPO_ROOT)}")
-    return {
-        "status": "benchmark_completed" if measured else "benchmark_failed",
-        "returncode": rc,
-        "out": str(out_path.relative_to(REPO_ROOT)),
-        "execution_id": execution_id,
-        "runtime_benchmark": runtime_benchmark,
-        "measured": measured,
-    }
+    return {"status": "benchmark_completed" if measured else "benchmark_failed", "returncode": rc, "out": str(out_path.relative_to(REPO_ROOT)), "execution_id": execution_id, "runtime_benchmark": runtime_benchmark, "measured": measured}
 
 
-def _benchmark_gate(
-    io: WizardIO,
-    session: BetaSession,
-    *,
-    model_choice: dict[str, Any],
-    hardware: dict[str, Any],
-) -> None:
+def _benchmark_gate(io: WizardIO, session: BetaSession, *, model_choice: dict[str, Any], hardware: dict[str, Any]) -> None:
     model_id = str(model_choice.get("model_id") or model_choice.get("name") or "unknown")
     _show_a01_explanation(io, model_id)
-    choice = _choose(
-        io,
-        tr("benchmark_consent"),
-        (tr("benchmark_run_yes"), tr("benchmark_run_no")),
-    )
-    session.request_benchmark_consent(dict(A01_BENCHMARK, model_id=model_id))
-    if choice == tr("benchmark_run_no"):
-        session.decline_benchmark()
-        _show_multiline(io, tr("benchmark_declined"), prefix="[i] ")
+    preflight = check_ollama_model(model_id)
+    if not preflight.available or not preflight.model_available:
+        _show_multiline(io, tr("benchmark_need_ollama"), prefix="[!] ")
+        session.block("A01_RUNTIME_UNAVAILABLE", preflight.reason or "model_not_available")
+        session.data["benchmark_preflight"] = {
+            "runtime": preflight.runtime, "available": preflight.available,
+            "model_id": preflight.model_id, "model_available": preflight.model_available,
+            "reason": preflight.reason, "installed_models": list(preflight.installed_models),
+        }
         return
 
-    handoff = session.authorize_benchmark()
-    _show_multiline(io, tr("benchmark_authorized"), prefix="[✓] ")
-    result = _run_a01(io, model_choice=model_choice, hardware=hardware)
-    session.data["benchmark_result"] = result
-    if result.get("measured") and result.get("execution_id"):
-        session.complete(str(result["execution_id"]))
-    elif result.get("status") == "benchmark_blocked":
-        session.block("A01_RUNTIME_UNAVAILABLE", result.get("reason") or tr("benchmark_need_ollama"))
-    else:
-        session.block("A01_FAILED", result.get("reason") or tr("benchmark_failed"))
+    choice = _choose(io, tr("benchmark_consent"), (tr("benchmark_run_yes"), tr("benchmark_run_no")))
+    session.request_benchmark_consent(dict(A01_BENCHMARK, model_id=model_id))
+    if choice == tr("benchmark_run_no"):
+        session.decline_benchmark(); _show_multiline(io, tr("benchmark_declined"), prefix="[i] "); return
+    session.authorize_benchmark(); _show_multiline(io, tr("benchmark_authorized"), prefix="[✓] ")
+    result = _run_a01(io, model_choice=model_choice, hardware=hardware); session.data["benchmark_result"] = result
+    if result.get("measured") and result.get("execution_id"): session.complete(str(result["execution_id"]))
+    elif result.get("status") == "benchmark_blocked": session.block("A01_RUNTIME_UNAVAILABLE", result.get("reason") or tr("benchmark_need_ollama"))
+    else: session.block("A01_FAILED", result.get("reason") or tr("benchmark_failed"))
 
 
 def run_wizard(io: WizardIO | None = None) -> BetaSession:
-    io = io or WizardIO()
-    session = BetaSession()
-    io.show(BANNER)
-    language = _choose_language(io)
-    session.data["ui_language"] = language
-    _show_multiline(io, tr("banner_subtitle"))
-    _show_multiline(io, tr("your_team"))
-    io.show("")
-    try:
-        hardware, candidates = _live_inputs(io)
-    except LLMFitError:
-        session.block("LLMFIT_UNAVAILABLE", tr("live_input_blocked"))
-        return session
-
-    session.advance("HARDWARE_READY", hardware=hardware)
-    _show_multiline(io, tr("hardware_ready"), prefix="[✓] ")
-    _show_multiline(io, tr("estimated_notice"), prefix="[i] ")
-    labels = tuple(
-        f"{c['name']} · fit={c['fit']} · ~{c['estimated_tps']} tok/s · {c['source']} · ESTIMATED"
-        for c in candidates
-    )
-    if not labels:
-        session.block("NO_MODEL_CANDIDATES", tr("no_model_candidates"))
-        return session
-
-    chosen_label = _choose(io, tr("choose_model"), labels)
-    chosen = candidates[labels.index(chosen_label)]
-    session.advance("MODEL_SELECTED", model_choice=chosen)
-    for name in STACKS:
-        _show_stack(io, name)
-    stack_labels = _stack_choice_labels()
-    chosen_stack_label = _choose(io, tr("choose_stack"), stack_labels)
-    stack_name = list(STACKS.keys())[stack_labels.index(chosen_stack_label)]
-    stack = STACKS[stack_name]
-    plan = to_selection_plan(
-        chosen,
-        hardware,
-        {"name": stack["name"], "adapter": stack["adapter"], "mode": stack["mode"]},
-    )
-    session.advance(
-        "STACK_SELECTED",
-        stack=stack,
-        stack_selection=stack,
-        selection_plan=plan,
-    )
-    _show_multiline(io, tr("selected"), prefix=f"[✓] {stack_name} / ")
-    session.advance("CONSENT_REQUIRED", installation={"status": "plan_ready"})
-    install = _choose(io, tr("install_consent"), (tr("authorize"), tr("cancel")))
-    if install == tr("cancel"):
-        session.block("INSTALL_DECLINED", tr("install_blocked"))
-        return session
-    session.authorize_installation()
-
-    model_name = str(chosen.get("name") or chosen.get("model_id") or "unknown")
-    _show_decision_summary(
-        io,
-        model_name=model_name,
-        stack_name=stack_name,
-        stack=stack,
-    )
-    install_result = _maybe_run_installer(io, stack)
-    session.data["installation"] = {
-        "status": "INSTALLING",
-        "consent": "granted",
-        "stack": stack["name"],
-        "installer": install_result,
-    }
-
-    verification = _run_physical_verification(io, stack["name"])
-    session.data["installation"]["verification"] = verification
+    io = io or WizardIO(); session = BetaSession(); io.show(BANNER)
+    language = _choose_language(io); session.data["ui_language"] = language
+    _show_multiline(io, tr("banner_subtitle")); _show_multiline(io, tr("your_team")); io.show("")
+    try: hardware, candidates = _live_inputs(io)
+    except LLMFitError: session.block("LLMFIT_UNAVAILABLE", tr("live_input_blocked")); return session
+    session.advance("HARDWARE_READY", hardware=hardware); _show_multiline(io, tr("hardware_ready"), prefix="[✓] "); _show_multiline(io, tr("estimated_notice"), prefix="[i] ")
+    labels = tuple(f"{c['name']} · fit={c['fit']} · ~{c['estimated_tps']} tok/s · {c['source']} · ESTIMATED" for c in candidates)
+    if not labels: session.block("NO_MODEL_CANDIDATES", tr("no_model_candidates")); return session
+    chosen_label = _choose(io, tr("choose_model"), labels); chosen = candidates[labels.index(chosen_label)]; session.advance("MODEL_SELECTED", model_choice=chosen)
+    for name in STACKS: _show_stack(io, name)
+    stack_labels = _stack_choice_labels(); chosen_stack_label = _choose(io, tr("choose_stack"), stack_labels); stack_name = list(STACKS.keys())[stack_labels.index(chosen_stack_label)]; stack = STACKS[stack_name]
+    plan = to_selection_plan(chosen, hardware, {"name": stack["name"], "adapter": stack["adapter"], "mode": stack["mode"]})
+    session.advance("STACK_SELECTED", stack=stack, stack_selection=stack, selection_plan=plan); _show_multiline(io, tr("selected"), prefix=f"[✓] {stack_name} / ")
+    session.advance("CONSENT_REQUIRED", installation={"status": "plan_ready"}); install = _choose(io, tr("install_consent"), (tr("authorize"), tr("cancel")))
+    if install == tr("cancel"): session.block("INSTALL_DECLINED", tr("install_blocked")); return session
+    session.authorize_installation(); model_name = str(chosen.get("name") or chosen.get("model_id") or "unknown")
+    _show_decision_summary(io, model_name=model_name, stack_name=stack_name, stack=stack); install_result = _maybe_run_installer(io, stack)
+    session.data["installation"] = {"status": "INSTALLING", "consent": "granted", "stack": stack["name"], "installer": install_result}
+    verification = _run_physical_verification(io, stack["name"]); session.data["installation"]["verification"] = verification
     if verification.get("real_installation") is not True:
-        session.block(
-            "PHYSICAL_VERIFY_FAILED",
-            verification.get("message") or tr("verify_fail"),
-        )
-        return session
-
-    session.installation_verified(
-        {
-            "status": verification.get("status"),
-            "real_installation": True,
-            "stack": stack["name"],
-            "checks": verification.get("checks"),
-            "observed": verification.get("observed"),
-            "message": verification.get("message"),
-        }
-    )
-    _benchmark_gate(io, session, model_choice=chosen, hardware=hardware)
-    return session
+        session.block("PHYSICAL_VERIFY_FAILED", verification.get("message") or tr("verify_fail")); return session
+    session.installation_verified({"status": verification.get("status"), "real_installation": True, "stack": stack["name"], "checks": verification.get("checks"), "observed": verification.get("observed"), "message": verification.get("message")})
+    _benchmark_gate(io, session, model_choice=chosen, hardware=hardware); return session
 
 
 def _non_interactive_smoke() -> bool:
-    session = BetaSession()
-    session.advance("HARDWARE_READY", hardware={"source": "smoke"})
-    session.advance("MODEL_SELECTED", model_choice={"model_id": "smoke-model"})
-    session.advance(
-        "STACK_SELECTED",
-        stack={"name": "ods", "adapter": "ods.v1", "mode": "local-stack"},
-    )
-    session.advance("CONSENT_REQUIRED", installation={"status": "plan_ready"})
-    session.authorize_installation()
-    try:
-        session.installation_verified({"status": "fixture_verified", "real_installation": False})
-    except RuntimeError:
-        return session.state == "INSTALLING"
+    session = BetaSession(); session.advance("HARDWARE_READY", hardware={"source": "smoke"}); session.advance("MODEL_SELECTED", model_choice={"model_id": "smoke-model"}); session.advance("STACK_SELECTED", stack={"name": "ods", "adapter": "ods.v1", "mode": "local-stack"}); session.advance("CONSENT_REQUIRED", installation={"status": "plan_ready"}); session.authorize_installation()
+    try: session.installation_verified({"status": "fixture_verified", "real_installation": False})
+    except RuntimeError: return session.state == "INSTALLING"
     return False
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="LEONES RC2 beta wizard")
-    parser.add_argument(
-        "--non-interactive",
-        action="store_true",
-        help="verify authorization gates without physical side effects",
-    )
-    args = parser.parse_args(argv)
-    if args.non_interactive:
-        return 0 if _non_interactive_smoke() else 1
-    session = run_wizard()
-    return 0 if session.state in {"READY_FOR_BENCHMARK", "COMPLETE"} else 1
+    parser = argparse.ArgumentParser(description="LEONES RC2 beta wizard"); parser.add_argument("--non-interactive", action="store_true", help="verify authorization gates without physical side effects"); args = parser.parse_args(argv)
+    if args.non_interactive: return 0 if _non_interactive_smoke() else 1
+    session = run_wizard(); return 0 if session.state in {"READY_FOR_BENCHMARK", "COMPLETE"} else 1
 
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__ == "__main__": raise SystemExit(main())
