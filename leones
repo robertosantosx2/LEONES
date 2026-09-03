@@ -3,16 +3,24 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# An upstream installer may alter terminal echo (especially around sudo/password
-# prompts). Always restore normal input echo before entering the wizard and when
-# leaving it, so typed menu choices remain visible in the user's terminal.
+# Always operate on the controlling terminal, not on stdin alone. This matters
+# when the wizard is launched from wrappers/pipes and guarantees that normal
+# input echo is restored before the first prompt and after the wizard exits.
 restore_tty() {
     if [[ -t 0 ]]; then
         stty echo echonl 2>/dev/null || true
+    fi
+    if [[ -c /dev/tty ]]; then
+        stty -F /dev/tty echo echonl 2>/dev/null || true
     fi
 }
 
 restore_tty
 trap restore_tty EXIT INT TERM
 
-exec python3 "$ROOT/scripts/rc2_wizard.py" "$@"
+set +e
+python3 "$ROOT/scripts/rc2_wizard.py" "$@"
+rc=$?
+set -e
+restore_tty
+exit "$rc"
