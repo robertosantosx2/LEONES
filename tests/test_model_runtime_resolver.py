@@ -1,12 +1,12 @@
 from runtime_selection.model_runtime_resolver import resolve_model_runtime
 
 
-def test_gguf_candidate_resolves_to_llama_cpp():
+def test_gguf_candidate_resolves_to_llama_cpp_with_executable_ref():
     result = resolve_model_runtime({"model_id": "org/Qwen3-4B-GGUF"})
     assert result.status == "RESOLVED"
     assert result.model_format == "GGUF"
     assert result.runtime_id == "llama.cpp"
-    assert result.runtime_model_ref is None
+    assert result.runtime_model_ref == "hf://org/Qwen3-4B-GGUF:Q4_1"
 
 
 def test_explicit_ollama_rejects_hugging_face_gguf_id():
@@ -25,6 +25,17 @@ def test_ollama_managed_reference_is_preserved():
     assert result.status == "RESOLVED"
     assert result.runtime_id == "ollama"
     assert result.runtime_model_ref == "qwen2.5:0.5b-instruct-q4_K_M"
+
+
+def test_explicit_gguf_ref_and_quantization_are_preserved():
+    result = resolve_model_runtime(
+        {
+            "model_id": "org/model-GGUF",
+            "quantization": "Q6_K",
+            "runtime_model_ref": "hf://org/model-GGUF:Q6_K",
+        }
+    )
+    assert result.runtime_model_ref == "hf://org/model-GGUF:Q6_K"
 
 
 def test_resolution_does_not_claim_installation_or_measurement():
