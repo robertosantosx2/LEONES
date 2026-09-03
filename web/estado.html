@@ -2,87 +2,83 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Estado actual de LEONES: JALONES cerrados, RC1 validado y RC2 preparada para validación física.">
+<meta name="description" content="Estado actual de LEONES: JALONES cerrados, RC1 validado y RC2 en validación física con resolución explícita de modelo y runtime.">
 <title>LEONES · Estado</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-03-2">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-03-2">
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-03-3">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-03-3">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
 <span class="site-tag">Estado del proyecto · 3 septiembre 2026</span>
 <h1>LEONES · Estado</h1>
-<p>RC2 tiene implementado el recorrido beta integrado. El siguiente paso es exclusivamente físico: comprobar runtime, instalación, verificación y benchmark sobre un equipo real.</p>
+<p>Desde el 1 de septiembre, RC2 ha pasado de la orquestación declarativa a la validación física: instalación, verificación, runtime real, bloqueo honesto de A01 y primera capa de resolución modelo/runtime.</p>
 </div></header>
 <main class="site-main" id="main">
-<section class="site-section"><span class="site-tag">Ahora · RC2</span><h2>Implementado; pendiente de prueba física</h2>
-<p class="site-lead"><strong>RC2 está preparada para la validación beta.</strong> El operador canónico es <code>./leones</code> → <code>scripts/rc2_wizard.py</code>. El flujo fija idioma por sesión, usa LLMFit para hardware/model-fit, presenta ODS/Magnitude antes de la elección y separa instalación, verificación y benchmark.</p>
+<section class="site-section"><span class="site-tag">Ahora · RC2</span><h2>Validación física en marcha</h2>
+<p class="site-lead"><strong>RC2-A está cerrado y RC2-B→H continúa con pruebas sobre hardware real.</strong> El operador canónico es <code>./leones</code> → <code>scripts/rc2_wizard.py</code>. El flujo detecta hardware, consulta LLMFit, presenta candidatos, registra la elección de stack y separa consentimiento, instalación, verificación y benchmark.</p>
 <pre class="site-stack">IDIOMA
    ↓
 HARDWARE + CANDIDATOS (LLMFIT · ESTIMATED)
    ↓
-ELEGIR MODELO
-   ↓
-ODS / MAGNITUDE
+ELEGIR MODELO + STACK
    ↓
 CONSENTIMIENTO INSTALAR
    ↓
 INSTALAR → VERIFICACIÓN FÍSICA
    ↓
-READY_FOR_BENCHMARK
-   ↓
-EXPLICACIÓN A01 → CONSENTIMIENTO
-   ├─ NO → FIN (instalación intacta)
-   └─ SÍ → EXECUTION_AUTHORIZED → RC1 A01
-                                      ↓
-                              MEDICIÓN / EVIDENCIA</pre>
+¿BENCHMARK?
+   ├─ NO → FIN
+   └─ SÍ
+       ↓
+RESOLVER MODELO → RUNTIME EJECUTABLE
+       ↓
+PREPARAR / VERIFICAR MODELO
+       ↓
+A01 → MEDICIÓN REAL → EVIDENCIA</pre>
+<div class="site-note"><strong>Novedad clave:</strong> un candidato de LLMFit ya no se considera automáticamente ejecutable por Ollama. La identidad del modelo, su formato y el runtime compatible deben resolverse antes de medir.</div>
 <p><a href="../docs/RC2-L-INTEGRATED-BETA-JOURNEY.md">Ver recorrido beta integrado →</a> · <a href="../docs/RC2-I-INSTALLATION-CONSENT.md">Instalación y consentimiento →</a> · <a href="../docs/RC2-J-BENCHMARK-CONSENT.md">A01 y handoff RC1 →</a></p>
 </section>
-<section class="site-section"><span class="site-tag">Runtime del host</span><h2>Docker y Podman se detectan sin suposiciones</h2>
+<section class="site-section"><span class="site-tag">Pruebas físicas · septiembre</span><h2>Lo que ya se ha demostrado</h2>
 <div class="site-grid">
-<article class="site-card"><h3>Docker</h3><p>RC2 acepta Docker accesible directamente o mediante <code>sudo</code>. Rootful no es un error. Rootless se registra como una propiedad observada, no como un requisito artificial.</p></article>
-<article class="site-card"><h3>Podman</h3><p>En Fedora/RHEL-family, Podman puede ser el runtime disponible. LEONES lo detecta y registra su estado, pero no lo convierte por inferencia en una instalación ODS válida.</p></article>
-<article class="site-card"><h3>Compatibilidad</h3><p>Runtime disponible → acceso funcional → Compose/interfaz compatible → señal específica de ODS. Cada estado tiene su propio gate.</p></article>
-</div>
-<div class="site-note"><strong>Regla:</strong> que Docker o Podman funcionen demuestra capacidad del host; no demuestra que ODS esté instalado ni verificado.</div>
-</section>
-<section class="site-section"><span class="site-tag">Benchmark canónico · A01</span><h2>La medición beta tiene contrato explícito</h2>
-<div class="site-grid">
-<article class="site-card"><h3>LEONES-Agentic</h3><p><strong>Task:</strong> A01 · <code>Execute A01. Return only JSONL tool calls.</code></p></article>
-<article class="site-card"><h3>Métricas</h3><p><code>wall_seconds</code> · <code>measured_tps</code> · <code>grader_pass</code>.</p></article>
-<article class="site-card"><h3>Camino de ejecución</h3><p>Runner RC1 <code>scripts/a01_runtime_benchmark.py</code> + puente <code>scripts/ollama_a01_runtime.py</code>.</p></article>
-</div>
-<div class="site-note"><strong>Bloqueo honesto:</strong> sin Ollama en PATH, A01 queda <code>benchmark_blocked</code>. No se publica ni se inventa un resultado MEASURED.</div>
-</section>
-<section class="site-section"><span class="site-tag">RC1 · Validado</span><h2>La cadena técnica sigue siendo la base de RC2</h2>
-<p>RC1 ejecutó una selección autorizada sobre un host Linux, atravesó el gate, ejecutó Ollama y A01, pasó el grader y produjo una medición conservada como evidencia.</p>
-<div class="site-note"><strong>qwen2.5:0.5b-instruct-q4_K_M</strong> · Ollama · A01 · <strong>53.3795 tok/s</strong> · 2026-08-31 · execution_id <code>e07822d0-d991-4e9b-985b-b9afea0c13c0</code>.</div>
-<p><a href="../docs/completed/RC1-EFFECTIVE-EXECUTION.md">Ver cierre documental de RC1 →</a></p>
-</section>
-<section class="site-section"><span class="site-tag">Gates RC2</span><h2>Ningún paso se satisface por inferencia silenciosa</h2>
-<div class="site-grid">
-<article class="site-card"><h3>Hardware / modelo</h3><p>HARDWARE_READY → MODEL_SELECTED: LLMFit orienta candidatos; la elección final es humana.</p></article>
-<article class="site-card"><h3>Instalación</h3><p>CONSENT_REQUIRED → INSTALLING → verificación física. Solo una señal de instalación real permite continuar.</p></article>
-<article class="site-card"><h3>Benchmark</h3><p>BENCHMARK_CONSENT_REQUIRED → EXECUTION_AUTHORIZED. Instalar no autoriza A01.</p></article>
-<article class="site-card"><h3>Evidencia</h3><p>Solo una ejecución válida produce medición. Un fallo no se publica como resultado válido.</p></article>
-</div>
-</section>
-<section class="site-section"><span class="site-tag">Estado consolidado</span><h2>Qué queda cerrado</h2>
-<div class="site-grid">
-<article class="site-card"><h3>JALÓN 1</h3><p>🟢 Cerrado. CI y contratos iniciales.</p></article>
-<article class="site-card"><h3>JALÓN 2</h3><p>🟢 Cerrado. Ejecución física con llama.cpp y evidencia reproducible.</p></article>
-<article class="site-card"><h3>JALÓN 3</h3><p>🟢 Cerrado. Contrato de medición real y auditoría física.</p></article>
-<article class="site-card"><h3>JALÓN 4</h3><p>🟢 Cerrado. Metodología AA, decisión ODS/Magnitude, benchmark de tareas y tiers.</p></article>
-<article class="site-card"><h3>RC1</h3><p>🟢 Validado. Pipeline efectivo de ejecución, medición y evidencia.</p></article>
-<article class="site-card"><h3>RC2</h3><p>🟡 Preparada para validación física. Runtime, instalación, verificación y benchmark deben demostrar su estado sobre el host.</p></article>
+<article class="site-card"><h3>✓ Instalador mínimo</h3><p><code>install.sh</code> es ejecutable y prepara LEONES sin instalar automáticamente stacks ni modelos. LLMFit es dependencia dura y su ausencia produce un fallo explícito.</p></article>
+<article class="site-card"><h3>✓ Terminal</h3><p>El lanzador restaura <code>stty echo echonl</code> antes y después del wizard. Las entradas del operador vuelven a ser visibles durante el flujo interactivo.</p></article>
+<article class="site-card"><h3>✓ Docker</h3><p>RC2 detecta Docker directo y Docker mediante <code>sudo</code>, además de distinguir rootless y Podman. En la máquina de validación se observó Docker 29.1.3 + Compose v5.5.0 con acceso directo.</p></article>
+<article class="site-card"><h3>✓ ODS observado</h3><p>La verificación física detectó ODS CLI <code>v2.6.0</code> y la imagen <code>ods-privacy-shield:latest</code>. La presencia observada no se confunde con una medición de rendimiento.</p></article>
+<article class="site-card"><h3>✓ Cancelación</h3><p>La cancelación del instalador externo devuelve código no cero y conserva el mensaje original. El wizard no la convierte en instalación exitosa.</p></article>
+<article class="site-card"><h3>✓ Desinstalación</h3><p><code>--leones</code> limpia el estado local sin borrar el checkout ni las evidencias históricas de <code>artifacts/runtime-executions/</code>.</p></article>
 </div></section>
-<section class="site-section"><span class="site-tag">ODS / Magnitude</span><h2>Elección informada</h2>
-<p>RC2 presenta capacidades declaradas antes de pedir la elección. No crea un scoring paralelo que sustituya las fuentes especializadas ni convierte sus estimaciones en mediciones LEONES.</p>
-<div class="site-grid">
-<article class="site-card"><h3>ODS</h3><p>Integración de stack local. La preparación y verificación de LEONES no sustituyen al instalador canónico de ODS.</p></article>
-<article class="site-card"><h3>Magnitude</h3><p>Integración orientada a agente/asistente local. Preparación y ejecución permanecen separadas de la medición propia de LEONES.</p></article>
-</div>
+<section class="site-section"><span class="site-tag">A01 · bloqueo correcto</span><h2>El primer intento físico no fabricó una medición</h2>
+<p>LLMFit propuso un candidato GGUF de Hugging Face. La máquina disponía de Ollama, pero el identificador seleccionado no estaba instalado como modelo Ollama.</p>
+<pre class="site-stack">LLMFIT
+  ↓
+khazarai/Qwen3-4B-Qwen3.6-plus-Reasoning-Distilled-GGUF
+  ↓
+¿modelo disponible en Ollama?
+  ↓
+NO
+  ↓
+A01 = benchmark_blocked
+  ↓
+NO MEASURED</pre>
+<div class="site-note"><strong>Esto es un PASS de arquitectura.</strong> El sistema bloqueó A01 antes de consentir/ejecutar porque una estimación de LLMFit no es una prueba de disponibilidad ni de ejecución.</div>
 </section>
-<section class="site-section"><span class="site-tag">Regla</span><h2>Medir antes de afirmar</h2><p><code>estimated</code>, <code>reported</code>, <code>observed</code>, <code>configured</code> y <code>measured</code> mantienen fronteras distintas. Lo desconocido permanece desconocido.</p></section>
+<section class="site-section"><span class="site-tag">Resolución modelo/runtime</span><h2>La siguiente frontera de RC2</h2>
+<div class="site-grid">
+<article class="site-card"><h3>1 · Candidato</h3><p>LLMFit entrega identidad, fit y rendimiento estimado. Todo permanece marcado como <code>estimated</code>.</p></article>
+<article class="site-card"><h3>2 · Resolución</h3><p>LEONES determina qué runtime puede ejecutar realmente el artefacto seleccionado. Un ID HF/GGUF no se convierte silenciosamente en un nombre Ollama.</p></article>
+<article class="site-card"><h3>3 · Preparación</h3><p>Preparar o instalar el artefacto requiere su propia autorización. La resolución no descarga ni ejecuta nada por sí misma.</p></article>
+<article class="site-card"><h3>4 · Verificación</h3><p>Solo después de comprobar runtime y modelo disponibles se puede abrir la puerta de A01.</p></article>
+<article class="site-card"><h3>5 · Medición</h3><p>La ejecución real produce métricas y evidencia nuevas. <code>estimated</code> nunca se transforma automáticamente en <code>measured</code>.</p></article>
+</div></section>
+<section class="site-section"><span class="site-tag">Runtime del host</span><h2>Docker y Podman se detectan sin suposiciones</h2>
+<div class="site-grid"><article class="site-card"><h3>Docker</h3><p>RC2 acepta Docker accesible directamente o mediante <code>sudo</code>. Rootful no es un error; rootless se registra como propiedad observada.</p></article><article class="site-card"><h3>Podman</h3><p>Puede estar presente como runtime del host, pero su presencia no se convierte por inferencia en una instalación ODS válida.</p></article><article class="site-card"><h3>Compatibilidad</h3><p>Runtime disponible → acceso funcional → Compose/interfaz compatible → señal específica de ODS. Cada estado tiene su propio gate.</p></article></div>
+<div class="site-note"><strong>Regla:</strong> que Docker o Podman funcionen demuestra capacidad del host; no demuestra que ODS esté instalado ni que un modelo concreto sea ejecutable.</div></section>
+<section class="site-section"><span class="site-tag">Benchmark canónico · A01</span><h2>La medición beta mantiene el contrato</h2>
+<div class="site-grid"><article class="site-card"><h3>LEONES-Agentic</h3><p><strong>Task:</strong> A01 · <code>Execute A01. Return only JSONL tool calls.</code></p></article><article class="site-card"><h3>Métricas</h3><p><code>wall_seconds</code> · <code>measured_tps</code> · <code>grader_pass</code>.</p></article><article class="site-card"><h3>Camino canónico</h3><p>El runner RC1 y sus adaptadores siguen siendo la ruta de ejecución y evidencia; RC2 no crea un runner paralelo.</p></article></div></section>
+<section class="site-section"><span class="site-tag">RC1 · Validado</span><h2>La base de ejecución permanece intacta</h2><p>RC1 ejecutó una selección autorizada sobre un host Linux, atravesó el gate, ejecutó Ollama y A01, pasó el grader y produjo una medición conservada como evidencia.</p><div class="site-note"><strong>qwen2.5:0.5b-instruct-q4_K_M</strong> · Ollama · A01 · <strong>53.3795 tok/s</strong> · 2026-08-31.</div><p><a href="../docs/completed/RC1-EFFECTIVE-EXECUTION.md">Ver cierre documental de RC1 →</a></p></section>
+<section class="site-section"><span class="site-tag">JALÓN 2 · evidencia física</span><h2>La medición de llama.cpp sigue siendo referencia canónica</h2><div class="site-note"><strong>Qwen3 0.6B Instruct Awq · Q4_K_M · CPU · 4 threads · 5 ejecuciones · 43.6 tok/s de media.</strong> Esta evidencia es física e inmutable y constituye la referencia probada para el camino llama.cpp.</div></section>
+<section class="site-section"><span class="site-tag">Estado consolidado</span><h2>Qué queda cerrado</h2><div class="site-grid"><article class="site-card"><h3>JALÓN 1</h3><p>🟢 Cerrado. CI y contratos iniciales.</p></article><article class="site-card"><h3>JALÓN 2</h3><p>🟢 Cerrado. Ejecución física con llama.cpp y evidencia reproducible.</p></article><article class="site-card"><h3>JALÓN 3</h3><p>🟢 Cerrado. Contrato de medición real y auditoría física.</p></article><article class="site-card"><h3>JALÓN 4</h3><p>🟢 Cerrado. Metodología AA, decisión ODS/Magnitude, benchmark de tareas y tiers.</p></article><article class="site-card"><h3>RC1</h3><p>🟢 Validado. Pipeline efectivo de ejecución, medición y evidencia.</p></article><article class="site-card"><h3>RC2-A</h3><p>🟢 Validado. Orquestación, consentimiento y selección.</p></article><article class="site-card"><h3>RC2-B→H</h3><p>🟡 En validación física. Instalación, verificación, resolución modelo/runtime, benchmark opcional y evidencia.</p></article></div></section>
+<section class="site-section"><span class="site-tag">Regla</span><h2>Medir antes de afirmar</h2><p><code>estimated</code>, <code>reported</code>, <code>observed</code>, <code>configured</code>, <code>resolved</code>, <code>available</code> y <code>measured</code> mantienen fronteras distintas. Lo desconocido permanece desconocido.</p></section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-03-2" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-03-3" defer></script>
 </body></html>
