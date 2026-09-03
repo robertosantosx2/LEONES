@@ -38,6 +38,7 @@ def test_leones_cleanup_preserves_historical_evidence(tmp_path):
     assert not (tmp_path / ".leones").exists()
     assert (execution / "runtime-execution.json").exists()
     assert (execution / "runtime-benchmark-evidence.json").exists()
+    assert "DESINSTALACIÓN / LIMPIEZA FINALIZADA CORRECTAMENTE" in result.stdout
 
 
 def test_leones_dry_run_does_not_remove_state_or_evidence(tmp_path):
@@ -51,3 +52,13 @@ def test_leones_dry_run_does_not_remove_state_or_evidence(tmp_path):
     assert (execution / "runtime-execution.json").exists()
     assert (execution / "runtime-benchmark-evidence.json").exists()
     assert "[DRY-RUN]" in result.stdout
+    assert "DRY-RUN finalizado correctamente" in result.stdout
+
+
+def test_uninstall_failure_is_reported(tmp_path):
+    result = run_uninstall("--opcion-inexistente", cwd=tmp_path)
+
+    assert result.returncode == 2
+    assert "DESINSTALACIÓN / LIMPIEZA FALLIDA" in result.stderr
+    assert "código 2" in result.stderr
+    assert "FINALIZADA CORRECTAMENTE" not in result.stdout
