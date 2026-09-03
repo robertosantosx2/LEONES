@@ -7,6 +7,7 @@ from typing import Any, Callable
 import argparse
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 
@@ -115,25 +116,39 @@ def _show_a01_explanation(io:WizardIO,model_id:str)->None:
     io.show(""); io.show("═"*60); _show_multiline(io,tr("a01_title")); io.show("═"*60); _show_multiline(io,tr("a01_what"),prefix="  • "); _show_multiline(io,tr("a01_metrics"),prefix="  • "); _show_multiline(io,tr("a01_runtime"),prefix="  • "); _show_multiline(io,tr("a01_privacy"),prefix="  • "); io.show(f"  • model_id: {model_id}"); io.show(f"  • task: {A01_BENCHMARK['task']} / {A01_BENCHMARK['id']} {A01_BENCHMARK['version']}")
 
 def _build_a01_selection(model_choice:dict[str,Any],hardware:dict[str,Any],resolution:dict[str,Any])->dict[str,Any]:
-    model_id=str(model_choice.get("model_id") or model_choice.get("name") or ""); name=str(model_choice.get("name") or model_id); quant="unknown"
-    return {"candidates":[{"selection_status":"TOP_N","rank":model_choice.get("rank") or 1,"fit_score":model_choice.get("fit"),"evidence_level":model_choice.get("evidence_level","estimated"),"model_id":model_id,"model_name":name,"model":{"id":model_id,"name":name,"revision":model_choice.get("revision")},"runtime":resolution["runtime_id"],"runtime_version":"local","quantization":quant,"model_format":resolution["model_format"],"optimization_families":[],"hardware":hardware or {},"workload":{},"llmfit":{"estimated_tps":model_choice.get("estimated_tps")}}]}
+    model_id=str(model_choice.get("model_id") or model_choice.get("name") or ""); name=str(model_choice.get("name") or model_id)
+    quant=str(model_choice.get("quantization") or ("Q4_1" if resolution.get("model_format")=="GGUF" else "unknown"))
+    return {"candidates":[{"selection_status":"TOP_N","rank":model_choice.get("rank") or 1,"fit_score":model_choice.get("fit"),"evidence_level":model_choice.get("evidence_level","estimated"),"model_id":model_id,"model_name":name,"model":{"id":model_id,"name":name,"revision":model_choice.get("revision")},"runtime":resolution["runtime_id"],"runtime_version":"local","quantization":quant,"model_format":resolution["model_format"],"runtime_model_ref":resolution.get("runtime_model_ref"),"optimization_families":[],"hardware":hardware or {},"workload":{},"llmfit":{"estimated_tps":model_choice.get("estimated_tps")}}]}
 
-def _build_ollama_runtime_commands(model_id:str)->dict[str,list[str]]:
-    bridge=REPO_ROOT/"scripts"/"ollama_a01_runtime.py"; return {"ollama":[sys.executable,str(bridge),"--model",model_id]}
+def _build_runtime_commands(resolution:dict[str,Any],model_id:str)->dict[str,list[str]]:
+    runtime_id=resolution.get("runtime_id")
+    if runtime_id=="ollama":
+        bridge=REPO_ROOT/"scripts"/"ollama_a01_runtime.py"; return {"ollama":[sys.executable,str(bridge),"--model",model_id]}
+    if runtime_id=="llama.cpp":
+        bridge=REPO_ROOT/"scripts"/"llama_cpp_a01_runtime.py"; ref=resolution.get("runtime_model_ref")
+        if not ref: raise RuntimeError("llama.cpp resolution has no executable model reference")
+        return {"llama.cpp":[sys.executable,str(bridge),"--model-ref",str(ref)]}
+    return {}
 
 def _resolve_for_benchmark(model_choice:dict[str,Any])->dict[str,Any]:
-    resolution=resolve_model_runtime(model_choice)
-    return resolution.to_dict()
+    return resolve_model_runtime(model_choice).to_dict()
+
+def _llama_available()->tuple[bool,str]:
+    if shutil.which("llama-cli"): return True,"llama-cli"
+    if shutil.which("llama"): return True,"llama cli"
+    return False,"llama.cpp CLI not found (expected llama-cli or llama)"
 
 def _run_a01(io:WizardIO,*,model_choice:dict[str,Any],hardware:dict[str,Any],resolution:dict[str,Any])->dict[str,Any]:
     model_id=str(model_choice.get("model_id") or model_choice.get("name") or "")
     runtime_id=resolution.get("runtime_id")
-    if runtime_id!="ollama": return {"status":"benchmark_blocked","reason":f"runtime {runtime_id or 'unknown'} is resolved but has no RC2 A01 executable adapter yet","measured":False,"resolution":resolution}
-    preflight=check_ollama_model(model_id)
-    if not preflight.available or not preflight.model_available: return {"status":"benchmark_blocked","reason":preflight.reason,"model_id":model_id,"installed_models":list(preflight.installed_models),"measured":False,"resolution":resolution}
+    if runtime_id not in {"ollama","llama.cpp"}:
+        return {"status":"benchmark_blocked","reason":f"runtime {runtime_id or 'unknown'} has no RC2 A01 executable adapter yet","measured":False,"resolution":resolution}
+    if runtime_id=="ollama":
+        preflight=check_ollama_model(model_id)
+        if not preflight.available or not preflight.model_available: return {"status":"benchmark_blocked","reason":preflight.reason,"model_id":model_id,"installed_models":list(preflight.installed_models),"measured":False,"resolution":resolution}
     work=REPO_ROOT/".leones"/"rc2-a01"; work.mkdir(parents=True,exist_ok=True); selection_path=work/"selection.json"; runtime_commands_path=work/"runtime-commands.json"; out_path=work/"a01-runtime-benchmark.v1.json"; workspace=work/"workspace"
-    selection=_build_a01_selection(model_choice,hardware,resolution); runtime_commands=_build_ollama_runtime_commands(model_id); selection_path.write_text(json.dumps(selection,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"); runtime_commands_path.write_text(json.dumps(runtime_commands,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-    _show_multiline(io,tr("benchmark_running"),prefix="[INFO] "); io.show(f"[INFO] model_id={model_id}"); io.show(f"[INFO] runtime={runtime_id}"); io.show(f"[INFO] out={out_path.relative_to(REPO_ROOT)}")
+    selection=_build_a01_selection(model_choice,hardware,resolution); runtime_commands=_build_runtime_commands(resolution,model_id); selection_path.write_text(json.dumps(selection,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"); runtime_commands_path.write_text(json.dumps(runtime_commands,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+    _show_multiline(io,tr("benchmark_running"),prefix="[INFO] "); io.show(f"[INFO] model_id={model_id}"); io.show(f"[INFO] runtime={runtime_id}"); io.show(f"[INFO] model_ref={resolution.get('runtime_model_ref')}"); io.show(f"[INFO] out={out_path.relative_to(REPO_ROOT)}")
     cmd=[sys.executable,str(REPO_ROOT/"scripts"/"a01_runtime_benchmark.py"),"--selection",str(selection_path),"--runtime-commands",str(runtime_commands_path),"--workspace",str(workspace),"--prompt",A01_BENCHMARK["prompt"],"--out",str(out_path),"--timeout","180"]
     try: rc=subprocess.run(cmd,cwd=str(REPO_ROOT),check=False).returncode
     except OSError as exc: io.show(f"[!] {exc}"); return {"status":"benchmark_failed","reason":str(exc),"measured":False,"resolution":resolution}
@@ -152,13 +167,18 @@ def _benchmark_gate(io:WizardIO,session:BetaSession,*,model_choice:dict[str,Any]
     model_id=str(model_choice.get("model_id") or model_choice.get("name") or "unknown"); _show_a01_explanation(io,model_id); resolution=_resolve_for_benchmark(model_choice); session.data["model_runtime_resolution"]=resolution
     if resolution["status"]!="RESOLVED":
         _show_multiline(io,tr("benchmark_need_ollama"),prefix="[!] "); session.block("MODEL_RUNTIME_UNRESOLVED",resolution.get("reason") or "model_runtime_unresolved"); return
-    runtime_id=resolution["runtime_id"]; io.show(f"  • resolved_runtime: {runtime_id}"); io.show(f"  • model_format: {resolution.get('model_format')}")
-    if runtime_id!="ollama":
-        reason=f"runtime {runtime_id} is resolved for this model, but A01 has no executable adapter for that runtime yet"
-        io.show(f"[!] {reason}"); session.block("A01_RUNTIME_ADAPTER_PENDING",reason); return
-    preflight=check_ollama_model(model_id)
-    if not preflight.available or not preflight.model_available:
-        _show_multiline(io,tr("benchmark_need_ollama"),prefix="[!] "); session.block("A01_RUNTIME_UNAVAILABLE",preflight.reason or "model_not_available"); session.data["benchmark_preflight"]={"runtime":preflight.runtime,"available":preflight.available,"model_id":preflight.model_id,"model_available":preflight.model_available,"reason":preflight.reason,"installed_models":list(preflight.installed_models)}; return
+    runtime_id=resolution["runtime_id"]; io.show(f"  • resolved_runtime: {runtime_id}"); io.show(f"  • model_format: {resolution.get('model_format')}"); io.show(f"  • runtime_model_ref: {resolution.get('runtime_model_ref')}")
+    if runtime_id=="llama.cpp":
+        available,detail=_llama_available()
+        session.data["benchmark_preflight"]={"runtime":"llama.cpp","available":available,"model_id":model_id,"model_available":available,"reason":None if available else detail,"runtime_command":detail}
+        if not available:
+            io.show(f"[!] {detail}"); io.show("[!] Siguiente: instala llama.cpp y vuelve a ejecutar la fase de benchmark."); session.block("A01_RUNTIME_UNAVAILABLE",detail); return
+    elif runtime_id=="ollama":
+        preflight=check_ollama_model(model_id)
+        if not preflight.available or not preflight.model_available:
+            _show_multiline(io,tr("benchmark_need_ollama"),prefix="[!] "); session.block("A01_RUNTIME_UNAVAILABLE",preflight.reason or "model_not_available"); session.data["benchmark_preflight"]={"runtime":preflight.runtime,"available":preflight.available,"model_id":preflight.model_id,"model_available":preflight.model_available,"reason":preflight.reason,"installed_models":list(preflight.installed_models)}; return
+    else:
+        reason=f"runtime {runtime_id} is resolved for this model, but A01 has no executable adapter yet"; io.show(f"[!] {reason}"); session.block("A01_RUNTIME_ADAPTER_PENDING",reason); return
     choice=_choose(io,tr("benchmark_consent"),(tr("benchmark_run_yes"),tr("benchmark_run_no"))); session.request_benchmark_consent(dict(A01_BENCHMARK,model_id=model_id))
     if choice==tr("benchmark_run_no"): session.decline_benchmark(); _show_multiline(io,tr("benchmark_declined"),prefix="[i] "); return
     session.authorize_benchmark(); _show_multiline(io,tr("benchmark_authorized"),prefix="[✓] "); result=_run_a01(io,model_choice=model_choice,hardware=hardware,resolution=resolution); session.data["benchmark_result"]=result
