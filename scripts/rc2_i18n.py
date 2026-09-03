@@ -239,9 +239,9 @@ TEXT = {
         "zh": "将测量：wall_seconds、measured_tps 和 grader_pass。LLMFit 估算值不算测量。",
     },
     "a01_runtime": {
-        "es": "Runner RC1 canónico vía Ollama local cuando esté disponible (scripts/ollama_a01_runtime.py).",
-        "en": "Canonical RC1 runner via local Ollama when available (scripts/ollama_a01_runtime.py).",
-        "zh": "在可用时通过本地 Ollama 使用标准 RC1 运行器（scripts/ollama_a01_runtime.py）。",
+        "es": "Runner RC1 canónico vía Ollama o llama.cpp cuando el runtime y el artefacto estén disponibles.",
+        "en": "Canonical RC1 runner via Ollama or llama.cpp when runtime and artifact are available.",
+        "zh": "在运行时和产物可用时，通过 Ollama 或 llama.cpp 使用标准 RC1 运行器。",
     },
     "a01_privacy": {
         "es": "La evidencia se guarda en el host. Cancelar no invalida la instalación.",
@@ -277,6 +277,21 @@ TEXT = {
         "es": "No se puede ejecutar A01: hace falta Ollama local en PATH y un modelo disponible.\nSiguiente: prepara el runtime/modelo y vuelve a ejecutar la fase de benchmark.",
         "en": "Cannot run A01: local Ollama on PATH and an available model are required.\nNext: prepare the runtime/model and rerun the benchmark phase.",
         "zh": "无法运行 A01：需要 PATH 中的本地 Ollama 和可用模型。\n下一步：准备运行时和模型后重新执行基准测试阶段。",
+    },
+    "benchmark_need_llamacpp": {
+        "es": "No se puede ejecutar A01: hace falta llama.cpp en PATH (llama-cli o llama).\nSiguiente: instala llama.cpp y vuelve a la fase de benchmark.",
+        "en": "Cannot run A01: llama.cpp must be on PATH (llama-cli or llama).\nNext: install llama.cpp and return to the benchmark phase.",
+        "zh": "无法运行 A01：PATH 中需要 llama.cpp（llama-cli 或 llama）。\n下一步：安装 llama.cpp 后返回基准测试阶段。",
+    },
+    "runtime_unresolved": {
+        "es": "No se puede abrir A01: el modelo seleccionado no tiene un runtime ejecutable resuelto.\nSiguiente: elige un candidato con runtime conocido (Ollama o GGUF/llama.cpp) o prepara el artefacto.",
+        "en": "Cannot open A01: the selected model has no resolved executable runtime.\nNext: choose a candidate with a known runtime (Ollama or GGUF/llama.cpp) or prepare the artifact.",
+        "zh": "无法打开 A01：所选模型没有已解析的可执行运行时。\n下一步：选择具有已知运行时的候选（Ollama 或 GGUF/llama.cpp），或准备产物。",
+    },
+    "runtime_adapter_pending": {
+        "es": "El runtime está resuelto, pero A01 aún no tiene adaptador ejecutable para él.\nSiguiente: usa Ollama o llama.cpp, o espera el adaptador correspondiente.",
+        "en": "The runtime is resolved, but A01 has no executable adapter for it yet.\nNext: use Ollama or llama.cpp, or wait for the matching adapter.",
+        "zh": "运行时已解析，但 A01 尚无对应的可执行适配器。\n下一步：使用 Ollama 或 llama.cpp，或等待匹配的适配器。",
     },
     "benchmark_failed": {
         "es": "A01 falló o no produjo medición válida. No se publica como MEASURED.\nSiguiente: conservar el diagnóstico, corregir el runtime y volver a medir.",
