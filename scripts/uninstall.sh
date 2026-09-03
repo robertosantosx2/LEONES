@@ -43,7 +43,7 @@ run() { if (( DRY_RUN )); then printf '[DRY-RUN]'; printf ' %q' "$@"; printf '\n
 
 if ((${#SELECTED[@]} == 0)); then
   echo
-echo 'LEONES — LIMPIEZA / DESINSTALACIÓN'
+  echo 'LEONES — LIMPIEZA / DESINSTALACIÓN'
   echo 'Selecciona uno o varios componentes: 1,2,3,4.'
   echo
   echo '  [1] LEONES       — estado local generado por LEONES'
