@@ -11,6 +11,10 @@ uses the model's native context, which can be physically impossible on a
 workstation even when the quantized model itself fits in RAM. The default of
 2048 is the validated workstation-safe A01 baseline; callers may override it
 explicitly with ``--context``.
+
+Conversation mode is disabled because A01 consumes structured model output
+from a single completion. Interactive chat mode can otherwise keep the process
+open after generation and contaminate the runner's completion contract.
 """
 from __future__ import annotations
 
@@ -58,6 +62,7 @@ def main(argv: list[str] | None = None) -> int:
         "-p", args.prompt,
         "-n", str(args.predict),
         "--no-display-prompt",
+        "-no-cnv",
     ]
     if args.threads is not None:
         command.extend(["-t", str(args.threads)])
