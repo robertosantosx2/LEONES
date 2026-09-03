@@ -23,6 +23,7 @@ def test_main_builds_safe_hf_argv_with_bounded_context(monkeypatch):
         "/usr/bin/llama-cli", "-hf", "org/model-GGUF:Q4_1",
         "-c", "2048", "-p", "return JSONL",
     ]
+    assert "-no-cnv" in command
     assert "return JSONL" in command
     assert kwargs == {"check": False, "shell": False}
 
@@ -40,7 +41,7 @@ def test_main_allows_explicit_context_and_threads(monkeypatch):
     assert calls[0] == [
         "/usr/bin/llama-cli", "-hf", "org/model-GGUF:Q4_1",
         "-c", "1024", "-p", "prompt", "-n", "16",
-        "--no-display-prompt", "-t", "4",
+        "--no-display-prompt", "-no-cnv", "-t", "4",
     ]
 
 
