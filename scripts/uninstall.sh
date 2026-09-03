@@ -90,7 +90,13 @@ if contains magnitude "${SELECTED[@]}"; then
   echo '== MAGNITUDE =='
   if command -v npm >/dev/null 2>&1; then
     if npm list -g --depth=0 @magnitudedev/cli >/dev/null 2>&1; then run npm uninstall -g @magnitudedev/cli; else echo '[i] Magnitude no aparece instalado globalmente.'; fi
-    if command -v sudo >/dev/null 2>&1 && (( ! DRY_RUN )) && sudo npm list -g --depth=0 @magnitudedev/cli >/dev/null 2>&1; then sudo npm uninstall -g @magnitudedev/cli; fi
+    if command -v sudo >/dev/null 2>&1; then
+      if (( DRY_RUN )); then
+        echo '[DRY-RUN] sudo npm uninstall -g @magnitudedev/cli (si está instalado en el ámbito de sudo)'
+      elif sudo npm list -g --depth=0 @magnitudedev/cli >/dev/null 2>&1; then
+        sudo npm uninstall -g @magnitudedev/cli
+      fi
+    fi
   else echo '[i] npm no está disponible; Magnitude no se ha modificado.'; fi
 fi
 
