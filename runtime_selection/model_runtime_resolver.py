@@ -1,6 +1,6 @@
 """Deterministic model -> runtime resolution boundary.
 
-LLMFit returns model candidates, not executable runtime artifacts.  This module
+LLMFit returns model candidates, not executable runtime artifacts. This module
 makes that distinction explicit: a model identity may be *resolved* to a
 runtime family, but it is not considered installed, available, or measured
 until a separate physical preflight proves those facts.
@@ -11,7 +11,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
-
 
 SCHEMA_VERSION = "model-runtime-resolution.v1"
 
@@ -45,11 +44,9 @@ def _infer_format(candidate: dict[str, Any]) -> str | None:
     lowered = model_id.lower()
     if "gguf" in lowered:
         return "GGUF"
-    if any(token in lowered for token in ("awq", "gptq", "fp8", "int8", "int4")):
-        return next(
-            (token.upper() for token in ("awq", "gptq", "fp8", "int8", "int4") if token in lowered),
-            None,
-        )
+    for token in ("awq", "gptq", "fp8", "int8", "int4"):
+        if token in lowered:
+            return token.upper()
     if "safetensors" in lowered:
         return "safetensors"
     return None
@@ -75,10 +72,10 @@ def resolve_model_runtime(
 ) -> Resolution:
     """Resolve a selected model to a runtime without performing installation.
 
-    Explicit runtime declarations are authoritative.  In particular, a
-    Hugging Face/GGUF identifier is never silently converted into an Ollama
-    model name.  When no runtime was declared, GGUF deterministically maps to
-    llama.cpp because that is the canonical local GGUF runtime in LEONES.
+    Explicit runtime declarations are authoritative. A Hugging Face/GGUF
+    identifier is never silently converted into an Ollama model name. For a
+    GGUF candidate, the beta execution contract uses Q4_1 unless the
+    candidate explicitly supplies another quantization/ref.
     """
     model_id = str(candidate.get("model_id") or candidate.get("model_name") or "")
     if not model_id:
@@ -87,17 +84,12 @@ def resolve_model_runtime(
     model_format = _infer_format(candidate)
     requested_runtime = _normalise_runtime(candidate.get("runtime"))
     runtime_id = requested_runtime
-
     if runtime_id is None and model_format == "GGUF":
         runtime_id = "llama.cpp"
 
     if runtime_id is None:
         return Resolution(
-            "UNRESOLVED",
-            model_id,
-            model_format,
-            None,
-            None,
+            "UNRESOLVED", model_id, model_format, None, None,
             "no deterministic runtime mapping for model candidate",
         )
 
@@ -105,23 +97,26 @@ def resolve_model_runtime(
         _normalise_runtime(item) for item in available_runtimes
     }:
         return Resolution(
-            "RUNTIME_UNAVAILABLE",
-            model_id,
-            model_format,
-            runtime_id,
-            None,
+            "RUNTIME_UNAVAILABLE", model_id, model_format, runtime_id, None,
             f"runtime is unavailable: {runtime_id}",
         )
 
     if runtime_id == "ollama" and model_format not in (None, "Ollama-managed"):
         return Resolution(
-            "BLOCKED",
-            model_id,
-            model_format,
-            runtime_id,
-            None,
+            "BLOCKED", model_id, model_format, runtime_id, None,
             "Ollama requires an Ollama-managed model reference; refusing to treat a Hugging Face/GGUF id as an Ollama model name",
         )
 
-    runtime_model_ref = model_id if runtime_id == "ollama" and model_format == "Ollama-managed" else None
-    return Resolution("RESOLVED", model_id, model_format, runtime_id, runtime_model_ref)
+    if runtime_id == "ollama":
+        return Resolution("RESOLVED", model_id, model_format, runtime_id, model_id)
+
+    if runtime_id == "llama.cpp" and model_format == "GGUF":
+        explicit_ref = candidate.get("runtime_model_ref") or candidate.get("model_ref")
+        if explicit_ref:
+            runtime_model_ref = str(explicit_ref)
+        else:
+            quantization = str(candidate.get("quantization") or "Q4_1")
+            runtime_model_ref = f"hf://{model_id}:{quantization}"
+        return Resolution("RESOLVED", model_id, model_format, runtime_id, runtime_model_ref)
+
+    return Resolution("RESOLVED", model_id, model_format, runtime_id, None)
