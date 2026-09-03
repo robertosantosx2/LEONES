@@ -27,6 +27,24 @@ EOF
 DRY_RUN=0
 ASSUME_YES=0
 SELECTED=()
+
+finish_status() {
+  local rc=$?
+  if (( rc == 0 )); then
+    if (( DRY_RUN )); then
+      echo '[✓] DRY-RUN finalizado correctamente. No se han realizado cambios.'
+    else
+      echo '[✓] DESINSTALACIÓN / LIMPIEZA FINALIZADA CORRECTAMENTE.'
+      echo '[✓] Los componentes no seleccionados no se han tocado.'
+    fi
+  else
+    echo "[✗] DESINSTALACIÓN / LIMPIEZA FALLIDA (código $rc)." >&2
+    echo '[✗] Revisa el error anterior; no se puede considerar la operación completada.' >&2
+  fi
+  return "$rc"
+}
+trap finish_status EXIT
+
 for arg in "$@"; do
   case "$arg" in
     --leones|--ods|--magnitude|--llms) SELECTED+=("${arg#--}") ;;
@@ -129,5 +147,3 @@ if contains ods "${SELECTED[@]}"; then
   else echo '[i] No hay runtime Docker/Podman operativo; ODS no se ha modificado.'; fi
   echo '[i] Docker y Podman no se desinstalan.'
 fi
-
-echo '[✓] Limpieza finalizada. Los componentes no seleccionados no se han tocado.'
