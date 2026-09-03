@@ -11,6 +11,17 @@ set -euo pipefail
 #     Docker-compatible CLI/Compose contract, so Podman-only hosts are stopped
 #     with an actionable message instead of silently installing Docker.
 
+# The upstream installer may change terminal echo around interactive prompts.
+# Restore it both before LEONES input and on every exit so the parent RC2
+# wizard never inherits a hidden-input terminal state.
+restore_tty() {
+  if [[ -t 0 ]]; then
+    stty echo echonl 2>/dev/null || true
+  fi
+}
+restore_tty
+trap restore_tty EXIT INT TERM
+
 PREFLIGHT_JSON="$(python3 scripts/integrations/ods_preflight.py)"
 printf '%s\n' "$PREFLIGHT_JSON"
 
@@ -22,6 +33,7 @@ if ! python3 -c 'import json,sys; p=json.load(sys.stdin); raise SystemExit(0 if 
   exit 2
 fi
 
+restore_tty
 printf '\nThis will install ODS and may download Docker images/models. Continue? [y/N] '
 read -r answer
 [[ "$answer" =~ ^[Yy]$ ]] || { echo "Installation cancelled."; exit 3; }
@@ -53,7 +65,7 @@ if [[ "$ODS_REF" == "main" ]]; then
   curl -fsSL https://install.osmantic.com/ods.sh | bash
 else
   tmpdir="$(mktemp -d)"
-  trap 'rm -rf "$tmpdir"' EXIT
+  trap 'restore_tty; rm -rf "$tmpdir"' EXIT
   git clone --depth 1 --branch "$ODS_REF" https://github.com/Osmantic/ODS.git "$tmpdir/ODS"
   (cd "$tmpdir/ODS/ods" && ./install.sh)
 fi
