@@ -24,7 +24,7 @@ fi
 
 printf '\nThis will install ODS and may download Docker images/models. Continue? [y/N] '
 read -r answer
-[[ "$answer" =~ ^[Yy]$ ]] || { echo "Installation cancelled."; exit 0; }
+[[ "$answer" =~ ^[Yy]$ ]] || { echo "Installation cancelled."; exit 3; }
 
 # ODS's rootless-ownership helper historically failed when its internal bare
 # `docker info` could not reach a rootful daemon that LEONES had correctly
