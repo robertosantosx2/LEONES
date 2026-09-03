@@ -1,25 +1,46 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 294,
-  "enriched_ok": 85,
-  "non_github_preserved": 207,
-  "errors": 2,
+  "repositories_processed": 293,
+  "enriched_ok": 82,
+  "non_github_preserved": 206,
+  "errors": 5,
   "github_token_used": true,
   "diagnostics": [
+    {
+      "repository": "fufellen/LLM-skills",
+      "status": 404,
+      "error_type": "HTTP 404",
+      "message": "Not Found",
+      "rate_limit_remaining": "4978"
+    },
+    {
+      "repository": "wish-maker/minder",
+      "status": 404,
+      "error_type": "HTTP 404",
+      "message": "Not Found",
+      "rate_limit_remaining": "4902"
+    },
+    {
+      "repository": "priceisaacuwjh3036/ai-server-rust-llm-api",
+      "status": 404,
+      "error_type": "HTTP 404",
+      "message": "Not Found",
+      "rate_limit_remaining": "4859"
+    },
     {
       "repository": "benlmadan9-star/eco-mesh-sdk",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4849"
+      "rate_limit_remaining": "4858"
     },
     {
       "repository": "ramaiahsvn/aim.pat",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4776"
+      "rate_limit_remaining": "4785"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."
