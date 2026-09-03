@@ -34,6 +34,11 @@ def _available_model(model_id="fixture-model"):
                             model_available=True, installed_models=(model_id,))
 
 
+def _output_contains_translation(output, key):
+    """Assert every line of a possibly multiline translation was rendered."""
+    return all(any(part in line for line in output) for part in tr(key).splitlines())
+
+
 def test_wizard_blocks_without_physical_pass(monkeypatch):
     set_language("es")
     monkeypatch.setattr(wizard, "_live_inputs", lambda io: (HARDWARE, CANDIDATES))
@@ -43,7 +48,7 @@ def test_wizard_blocks_without_physical_pass(monkeypatch):
     session = run_wizard(WizardIO(input_fn=lambda _: next(answers), output_fn=output.append))
     assert session.state == "BLOCKED"
     assert session.error["code"] == "PHYSICAL_VERIFY_FAILED"
-    assert any(tr("verify_fail") in line for line in output)
+    assert _output_contains_translation(output, "verify_fail")
 
 
 def test_wizard_blocks_a01_before_consent_when_model_unavailable(monkeypatch):
@@ -63,7 +68,7 @@ def test_wizard_blocks_a01_before_consent_when_model_unavailable(monkeypatch):
     assert session.error["code"] == "A01_RUNTIME_UNAVAILABLE"
     assert session.data["benchmark_preflight"]["model_available"] is False
     assert session.data.get("benchmark_consent") is None
-    assert any(tr("benchmark_need_ollama") in line for line in output)
+    assert _output_contains_translation(output, "benchmark_need_ollama")
 
 
 def test_wizard_can_decline_benchmark(monkeypatch):
@@ -78,7 +83,7 @@ def test_wizard_can_decline_benchmark(monkeypatch):
     assert session.state == "READY_FOR_BENCHMARK"
     assert session.data.get("benchmark_consent") == "declined"
     assert any(tr("a01_title") in line for line in output)
-    assert any(tr("benchmark_declined") in line for line in output)
+    assert _output_contains_translation(output, "benchmark_declined")
     assert session.snapshot()["gates"]["execution_authorized"] is False
 
 
@@ -100,7 +105,7 @@ def test_invalid_benchmark_choice_never_authorizes(monkeypatch):
     assert session.state == "READY_FOR_BENCHMARK"
     assert session.data["benchmark_consent"] == "declined"
     assert session.snapshot()["gates"]["execution_authorized"] is False
-    assert any(tr("invalid_option") in line for line in output)
+    assert _output_contains_translation(output, "invalid_option")
 
 
 def test_wizard_runs_a01_when_authorized(monkeypatch):
