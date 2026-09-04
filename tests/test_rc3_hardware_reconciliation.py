@@ -10,7 +10,7 @@ def test_canonical_cpu_probe_is_locale_independent(monkeypatch):
     monkeypatch.setattr(
         hardware_profile,
         "_run",
-        lambda *args, **kwargs: "0,0,0\n1,0,0\n2,1,0\n3,1,0\n4,2,0\n5,2,0\n6,3,0\n7,3,0\n" if args[:2] == ("lscpu", "-p=CPU,Core") else "",
+        lambda *args, **kwargs: "0,0,0\n1,0,0\n2,1,0\n3,1,0\n4,2,0\n5,2,0\n6,3,0\n7,3,0\n" if args[:2] == ("lscpu", "-p=CPU,Core,Socket") else "",
     )
     monkeypatch.setattr(
         hardware_profile.Path,
