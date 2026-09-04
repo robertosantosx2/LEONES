@@ -10,21 +10,20 @@
 | JALÓN 3 | 🟢 Cerrado | Contrato de medición real + auditoría física |
 | JALÓN 4 | 🟢 **Cerrado** | Metodología AA + contratos de integración + benchmark de tareas + tiers |
 | RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end |
-| RC2 | 🟡 **Histórica / validación física** | Orquestación beta, instalación y piloto externo |
-| **RC3** | 🟢 **Implementación cerrada · gate CI activo** | **Hermes → hardware profile → OMH → elección → Magnitude/ODS → medición LEONES** |
+| RC2 | 🟢 **Histórica** | Beta previa; no es el camino canónico RC3 |
+| **RC3** | 🟢 **Implementación cerrada · 🟡 físico pendiente** | **`hardware_profile.py` → candidatos → Magnitude/ODS → medición LEONES** |
 
 ## RC3 — arquitectura canónica
 
-RC3 simplifica deliberadamente el camino de instalación y selección. **Hermes es el bootstrap de descubrimiento de hardware y fit inicial de modelos. Oh My Hermes (OMH) aporta la capa operativa de routing, workflows, handoffs y gates.** LEONES normaliza lo descubierto y conserva la autoridad sobre la verificación física, ejecución, medición y evidencia.
+RC3 simplifica deliberadamente el camino de instalación y selección. **La sonda física canónica es `scripts/hardware_profile.py`.** Hermes participa como ecosistema local de runtime/model-fit y Oh My Hermes (OMH) como capa operativa de routing, workflows, handoffs y gates. LEONES normaliza, reconcilia y conserva la autoridad sobre verificación física, ejecución, medición y evidencia.
 
 ```text
-                         HERMES
-                 discovery + initial fit
+              scripts/hardware_profile.py
+                 (sonda física canónica)
                            ↓
                   hardware-profile.v1
                            ↓
-                  OH MY HERMES (OMH)
-              routing / workflows / handoffs
+         HERMES runtime hints  +  OMH operación
                            ↓
                     LEONES normalize
                            ↓
@@ -50,9 +49,9 @@ RC3 simplifica deliberadamente el camino de instalación y selección. **Hermes 
 
 ### Regla de autoridad
 
-**Hermes descubre. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.**
+**LEONES descubre el hardware. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.**
 
-Hermes aporta el descubrimiento y fit inicial; OMH no sustituye ese descubrimiento ni las sondas de LEONES. Ninguna estimación externa se convierte automáticamente en evidencia LEONES. La validación física final de los handoffs queda pendiente en Ubuntu.
+Hermes aporta ecosistema runtime/model-fit; OMH no sustituye la sonda física ni los contratos de LEONES. Ninguna estimación externa se convierte automáticamente en evidencia LEONES. La validación física final de los handoffs queda pendiente en Ubuntu.
 
 ### FitLLM / LLMFit — fuera de RC3
 
@@ -74,13 +73,15 @@ La instalación canónica queda reducida a un bootstrap limpio:
 ```text
 INSTALAR LEONES
       ↓
-VERIFICAR / INSTALAR HERMES
+VERIFICAR / INSTALAR HERMES + OMH
       ↓
-CONFIGURAR OH MY HERMES
+scripts/hardware_profile.py  (sonda física canónica)
       ↓
-HERMES DESCUBRE HARDWARE
+hardware-profile.v1
       ↓
-LEONES CAPTURA / NORMALIZA
+RC3 adapter + Hermes runtime hints
+      ↓
+LEONES reconciliation → candidate-set.v1
       ↓
 ELEGIR MODELO / CONFIGURACIÓN
       ↓
@@ -94,11 +95,7 @@ PREPARAR / INSTALAR
       ↓
 VERIFICAR FÍSICAMENTE
       ↓
-TAREAS LEONES
-      ↓
-MEDIR
-      ↓
-EVIDENCIA
+TAREAS LEONES → MEDIR → EVIDENCIA
 ```
 
 El instalador no descarga modelos ni stacks de usuario sin consentimiento. Las comprobaciones independientes son:
