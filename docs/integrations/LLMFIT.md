@@ -1,65 +1,44 @@
-# LLMFit — integración histórica LEONES
+# LLMFit / FitLLM — fuera del camino canónico RC3
 
-**Estado:** RC2 histórico · **fuera del camino canónico RC3**
+**Estado:** histórico / diferido  
+**Rol en RC3:** ninguno (no dependencia, no arranque, no selección)
 
-## Decisión RC3
+## Frontera
 
-LLMFit/FitLLM queda deliberadamente desacoplado de RC3.
+LLMFit/FitLLM queda **fuera del camino canónico RC3**. No se instala con LEONES, no bloquea el bootstrap y no participa en la selección RC3.
 
-- No es dependencia de instalación.
-- No se instala durante RC3.
-- No se invoca para descubrir hardware.
-- No participa en la selección canónica RC3.
-- No bloquea el arranque ni la medición.
-- Se conserva como conocimiento histórico y como posible `CandidateProvider` futuro.
+Se conserva como conocimiento histórico y como posible `CandidateProvider` futuro, completamente desacoplado de la instalación y del flujo físico.
 
-La arquitectura RC3 utiliza **Hermes como bootstrap de discovery y fit inicial**, seguido de normalización LEONES. El usuario elige después Magnitude u ODS.
+## Regla de autoridad (RC3)
+
+> **LEONES descubre el hardware → Hermes/OMH aportan ecosistema → usuario elige → Magnitude/ODS preparan → LEONES mide y evidencia.**
+
+Cualquier cifra de fit o ranking externo es **ESTIMATED** / **reported**, nunca medición LEONES.
+
+## Flujo canónico (referencia)
 
 ```text
-Hermes discovery
-      ↓
+LEONES physical probe (hardware_profile.py)
+        ↓
 hardware-profile.v1
-      ↓
-LEONES normalization
-      ↓
+        ↓
+Hermes/OMH (ecosistema, no sonda física)
+        ↓
 candidate-set.v1
-      ↓
-user choice
-   ┌──┴───────┐
-Magnitude    ODS
-   └──┬───────┘
-      ↓
-LEONES verification → measurement → evidence
+        ↓
+usuario elige modelo + Magnitude | ODS
+        ↓
+verificación → medición → evidencia
 ```
 
-## Por qué se conserva
+## Qué NO hace LLMFit en RC3
 
-LLMFit sigue siendo una fuente válida de conocimiento sobre ajuste modelo/hardware y puede recuperarse en el futuro como proveedor desacoplado. Su existencia no debe contaminar el bootstrap RC3 ni crear un segundo perfilador obligatorio.
+- No es requisito de `./install.sh`
+- No produce `hardware-profile.v1` autoritativo
+- No autoriza ejecución ni medición
+- No sustituye `scripts/hardware_profile.py`
 
-La interfaz y los tests históricos de `runtime_selection/llmfit.py` pueden mantenerse mientras sean necesarios para reproducir o auditar RC2. Eso no implica que RC3 los ejecute.
+## Procedencia
 
-## Frontera de evidencia
-
-Cualquier recomendación, `estimated_tps` o benchmark producido por LLMFit sigue siendo evidencia externa/estimación hasta que una ejecución controlada pase por el protocolo de medición LEONES.
-
-**ESTIMATED ≠ MEASURED.**
-
-## Futuro `CandidateProvider`
-
-Si LLMFit vuelve a incorporarse, deberá hacerlo detrás de un contrato genérico de proveedor, sin privilegios arquitectónicos:
-
-```text
-CandidateProvider
- ├── Hermes
- ├── Magnitude / fuentes de perfilado
- ├── ODS / catálogo
- └── LLMFit (futuro, opcional)
-```
-
-Todos los proveedores deberán entregar datos normalizables y conservar procedencia. LEONES seguirá siendo responsable de filtrar, verificar, medir y producir la evidencia final.
-
-## Regla definitiva
-
-> **LLMFit queda fuera de RC3. No se instala, no se ejecuta y no decide.**
->
-> **Hermes descubre → LEONES normaliza → usuario elige → Magnitude/ODS preparan → LEONES mide y evidencia.**
+- Contrato RC3: `docs/RC3-ARCHITECTURE.md`
+- STRICT: `docs/completed/RC3-STRICT-2026-09-05.md`
