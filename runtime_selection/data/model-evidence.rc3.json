@@ -1,7 +1,7 @@
 {
   "schema_version": "model-evidence.v1",
   "catalog_status": "curated_external_snapshot",
-  "as_of": "2026-09-04",
+  "as_of": "2026-09-05",
   "sources": ["Hugging Face Hub", "Artificial Analysis"],
   "candidates": [
     {
@@ -14,14 +14,15 @@
         "license": "apache-2.0"
       },
       "artifact_resolution": {
-        "status": "source_resolved",
+        "status": "resolved",
         "source_repo": "bartowski/Qwen_Qwen3.5-0.8B-GGUF",
         "format": "GGUF",
-        "filename": null,
-        "revision": null,
-        "sha256": null,
+        "filename": "Qwen_Qwen3.5-0.8B-Q4_K_M.gguf",
+        "revision": "81aea27e888aba9593dc66e2826de4bd4270b069",
+        "sha256": "fb044e93939a70469c905781334f5de1e6c8b608ced6cbc8c9249bd4127d9526",
+        "size_bytes": 580000000,
         "download_performed": false,
-        "resolution_required_before_execution": true
+        "resolution_required_before_execution": false
       },
       "artificial_analysis": {
         "intelligence_index": 5,
@@ -36,7 +37,7 @@
       "parameters_b": 0.7516,
       "quantization_bits": 4,
       "hugging_face": {"downloads": 204700000, "likes": 1575, "license": "apache-2.0", "status": "weights_available"},
-      "artificial_analysis": {"intelligence_index": 1, "reasoning": true, "context_tokens": 32000, "evidence": "external_estimate"}
+      "artificial_analysis": {"intelligence_index": 1, "downloads": null, "reasoning": true, "context_tokens": 32000, "evidence": "external_estimate"}
     },
     {
       "model_id": "google/gemma-3-1b-it",
