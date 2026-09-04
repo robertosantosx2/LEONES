@@ -27,22 +27,10 @@ git pull --ff-only origin main
 │  [2] English                             │
 │  [3] 中文                                 │
 └──────────────────────────────────────────┘
-LEONES></pre><p>Después verás el encabezado de LEONES, mensajes de estado y, cuando llega una decisión, una caja de opciones numeradas.</p><pre class="site-stack">╔══════════════════════════════════════════════════════════════╗
-║                    L E O N E S                              ║
-║                    B E T A · R C 2                         ║
-╚══════════════════════════════════════════════════════════════╝
-
-[INFO] Detectando hardware...
-[✓] Hardware disponible
-[i] Las velocidades mostradas son ESTIMATED
-
-[1] modelo A · fit=...
-[2] modelo B · fit=...
-[3] modelo C · fit=...
-
-LEONES></pre><p>La línea <code>LEONES></code> es el punto de entrada para tus decisiones. <strong>No uses flechas, ratón ni letras salvo que una pantalla concreta las indique:</strong> en el wizard actual las opciones se seleccionan escribiendo el número y pulsando <strong>Enter</strong>.</p></section>
+LEONES></pre><p>Después verás el encabezado de LEONES, mensajes de estado y, cuando llega una decisión, una caja de opciones numeradas.</p><p>La línea <code>LEONES></code> es el punto de entrada para tus decisiones. <strong>No uses flechas, ratón ni letras salvo que una pantalla concreta las indique:</strong> en el wizard actual las opciones se seleccionan escribiendo el número y pulsando <strong>Enter</strong>.</p></section>
 <section class="site-section" aria-labelledby="keys-title"><span class="site-tag">3 · Teclas</span><h2 id="keys-title">Qué pulsar en cada momento</h2><div class="site-grid"><article class="site-card"><h3>Idioma</h3><p>Primera pantalla: elige <strong>1</strong>, <strong>2</strong> o <strong>3</strong> y pulsa <strong>Enter</strong>.</p></article><article class="site-card"><h3>Elegir modelo</h3><p>Escribe <strong>1</strong>, <strong>2</strong>, <strong>3</strong>… según el candidato mostrado y pulsa <strong>Enter</strong>.</p></article><article class="site-card"><h3>Elegir stack</h3><p>Cada opción incluye una descripción breve (ODS = stack local de inferencia; Magnitude = agente/asistente local). Elige el número y pulsa <strong>Enter</strong>.</p></article><article class="site-card"><h3>Autorizar instalación</h3><p>En la pantalla de consentimiento, elige la opción numerada de <strong>Autorizar</strong> y pulsa <strong>Enter</strong>, o elige <strong>Cancelar</strong> para salir sin instalar.</p></article><article class="site-card"><h3>Opción inválida</h3><p>Si introduces algo que no corresponde a una opción, LEONES lo indica y vuelve a mostrar el prompt. No se ejecuta una decisión accidental.</p></article></div></section>
-<section class="site-section" aria-labelledby="decisions-title"><span class="site-tag">4 · Tus decisiones</span><h2 id="decisions-title">Dónde debes tomar decisiones</h2><div class="site-grid site-grid--journey"><article class="site-card"><span class="card-number">01</span><h3>HARDWARE</h3><p>Observa el hardware detectado. No tienes que introducirlo si la detección funciona. Si algo aparece como desconocido, no lo inventes.</p></article><article class="site-card site-card--featured"><span class="card-number">02</span><h3>MODELO</h3><p>Compara modelo, fit, requisitos y procedencia. Las cifras con <strong>ESTIMATED</strong> son orientativas. Aquí decides qué modelo quieres probar.</p></article><article class="site-card"><span class="card-number">03</span><h3>STACK</h3><p><strong>ODS</strong>: stack local de inferencia (modelos, UI y servicios en tu máquina). <strong>Magnitude</strong>: agente/asistente local orientado a tareas con el modelo elegido. La opción del menú ya incluye esa descripción.</p></article><article class="site-card"><span class="card-number">04</span><h3>INSTALACIÓN</h3><p>Antes de producir cambios en el equipo aparece el consentimiento. Aquí decides si autorizas la instalación. Puedes cancelar.</p></article></div></section>
+<section class="site-section" aria-labelledby="decisions-title"><span class="site-tag">4 · Tus decisiones</span><h2 id="decisions-title">Dónde debes tomar decisiones</h2><div class="site-grid site-grid--journey"><article class="site-card"><span class="card-number">01</span><h3>HARDWARE</h3><p>Observa el hardware detectado. No tienes que introducirlo si la detección funciona. Si algo aparece como desconocido, no lo inventes.</p></article><article class="site-card site-card--featured"><span class="card-number">02</span><h3>MODELO</h3><p>Compara modelo, fit, requisitos y procedencia. Las cifras con <strong>ESTIMATED</strong> son orientativas. Aquí decides qué modelo quieres probar.</p></article><article class="site-card"><span class="card-number">03</span><h3>STACK</h3><p><strong>ODS</strong>: stack local de inferencia (modelos, UI y servicios en tu máquina). <strong>Magnitude</strong>: agente/asistente local orientado a tareas con el modelo elegido. La opción del menú ya incluye esa descripción.</p></article><article class="site-card"><span class="card-number">04</span><h3>INSTALACIÓN</h3><p>Antes de producir cambios en el equipo aparece el consentimiento. Aquí decides si autorizas la instalación. Puedes cancelar.</p></article>
+<article class="site-card"><span class="card-number">05</span><h3>RUNTIME</h3><p>Tras verificar el stack, LEONES resuelve el runtime del modelo (Ollama o llama.cpp). Sin artefacto disponible, A01 se bloquea: no se inventa MEASURED.</p></article></div></section>
 <section class="site-section" aria-labelledby="flow-title"><span class="site-tag">5 · Qué ocurre después</span><h2 id="flow-title">No todas las pantallas son decisiones</h2><pre class="site-stack">ELEGIR IDIOMA
        ↓
 DETECTAR HARDWARE
@@ -61,12 +49,14 @@ MOSTRAR PLAN
        ↓
 INSTALAR → VERIFICAR
        ↓
+RESOLVER RUNTIME → PREFLIGHT
+       ↓
 [ CONSENTIMIENTO DE BENCHMARK ]
        ↓
 SI SÍ → HANDOFF RC1 → MEDICIÓN → EVIDENCIA
 SI NO → FIN</pre><p>La instalación y el benchmark son decisiones diferentes. Una instalación correcta no implica que el benchmark vaya a ejecutarse.</p></section>
 <section class="site-section" aria-labelledby="estimate-title"><span class="site-tag">6 · Regla de oro</span><h2 id="estimate-title">No confundas lo que ves</h2><div class="site-grid"><article class="site-card"><h3>ESTIMATED</h3><p>Estimación de una fuente como LLMFit. Sirve para orientar la elección.</p></article><article class="site-card"><h3>INSTALLED</h3><p>El stack ha sido instalado o está en proceso. Todavía hay que verificarlo.</p></article><article class="site-card"><h3>VERIFIED</h3><p>Los health checks de la integración han confirmado que el stack está preparado.</p></article><article class="site-card"><h3>MEASURED</h3><p>Existe una ejecución real registrada sobre el equipo y el protocolo correspondientes.</p></article></div><div class="site-note"><strong>ESTIMATED ≠ MEASURED.</strong> Una cifra que aparezca antes de ejecutar el benchmark no es el resultado de tu máquina.</div></section>
-<section class="site-section" aria-labelledby="failure-title"><span class="site-tag">7 · Si algo falla</span><h2 id="failure-title">No fuerces el recorrido</h2><p>Si LLMFit no está disponible, si una opción no puede determinarse, si la instalación falla o si la verificación no pasa, el flujo debe detenerse o marcarse como bloqueado. Conserva el mensaje original.</p><pre class="site-stack">Etapa: PREFLIGHT | INSTALL | VERIFY | BENCHMARK | EVIDENCE
+<section class="site-section" aria-labelledby="failure-title"><span class="site-tag">7 · Si algo falla</span><h2 id="failure-title">No fuerces el recorrido</h2><p>Si LLMFit no está disponible, si una opción no puede determinarse, si la instalación falla o si la verificación no pasa, el flujo debe detenerse o marcarse como bloqueado. Conserva el mensaje original.</p><pre class="site-stack">Etapa: PREFLIGHT | INSTALL | VERIFY | RESOLVE | BENCHMARK | EVIDENCE
 Comando:
 Error original:
 Resultado esperado:

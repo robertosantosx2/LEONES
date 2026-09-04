@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-03-1">
 <link rel="stylesheet" href="assets/css/site.css?v=2026-09-03-1">
 <link rel="stylesheet" href="assets/graphics/brand.css">
-<link rel="stylesheet" href="assets/graphics/brand.css">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
@@ -16,29 +15,6 @@
 <h1>LEONES · Guía completa de operación</h1>
 <p>Cómo está construido, cómo se mide y cómo recorre un beta tester el camino desde el hardware real hasta la evidencia.</p>
 </div></header>
-<div class="wrap">
-<div class="leones-section-brand"><img src="assets/graphics/logos/leones-herramientas.svg" alt="LEONES · Operación"><div><strong>LEONES · Operación</strong><br><span class="small">Identidad funcional del ecosistema</span></div></div>
-<div class="leones-logo-rail">
-<a class="leones-logo-link" href="pilares.html"><img src="assets/graphics/logos/leones-prospection.svg" alt="Prospección">Prospección</a>
-<a class="leones-logo-link" href="pilares.html#atlas"><img src="assets/graphics/logos/leones-atlas.svg" alt="Atlas">Atlas</a>
-<a class="leones-logo-link" href="pilares.html#router"><img src="assets/graphics/logos/leones-router.svg" alt="Router">Router</a>
-<a class="leones-logo-link" href="pilares.html#runtime"><img src="assets/graphics/logos/leones-hardware.svg" alt="Hardware">Hardware</a>
-<a class="leones-logo-link" href="app.html"><img src="assets/graphics/logos/leones-agents.svg" alt="Agents">Agents</a>
-<a class="leones-logo-link" href="app.html#manada"><img src="assets/graphics/logos/leones-manada.svg" alt="Manada">Manada</a>
-</div>
-</div>
-<!-- LEONES-VISUAL-IDENTITY -->
-<div class="wrap">
-  <div class="leones-section-brand"><img src="assets/graphics/logos/leones-herramientas.svg" alt="LEONES · Operación"><div><strong>LEONES · Operación</strong><br><span class="small">Identidad funcional del ecosistema</span></div></div>
-  <div class="leones-logo-rail">
-  <a class="leones-logo-link" href="pilares.html"><img src="assets/graphics/logos/leones-prospection.svg" alt="Prospección">Prospección</a>
-  <a class="leones-logo-link" href="pilares.html#atlas"><img src="assets/graphics/logos/leones-atlas.svg" alt="Atlas">Atlas</a>
-  <a class="leones-logo-link" href="pilares.html#router"><img src="assets/graphics/logos/leones-router.svg" alt="Router">Router</a>
-  <a class="leones-logo-link" href="pilares.html#runtime"><img src="assets/graphics/logos/leones-hardware.svg" alt="Hardware">Hardware</a>
-  <a class="leones-logo-link" href="arquitectura.html#lotb"><img src="assets/graphics/logos/leones-agents.svg" alt="Agents / LOTB">Agents / LOTB</a>
-  <a class="leones-logo-link" href="app.html#manada"><img src="assets/graphics/logos/leones-manada.svg" alt="Manada">Manada</a>
-</div>
-</div>
 <main class="site-main" id="main">
 <section class="site-section"><h2>1 · Principios</h2><p><strong>LEONES — Local Ecosystem of Open Neural Expert Systems</strong> estudia qué combinación de hardware y software Libre/Open permite convertir una máquina de consumo en un sistema agentic útil.</p><div class="site-note"><strong>Principio rector:</strong> LEONES mide sistemas, no solo modelos. Un agente existe para completar objetivos, no simplemente para producir tokens.</div></section>
 <section class="site-section"><h2>2 · Pila completa</h2><pre class="site-stack">HARDWARE
@@ -72,20 +48,22 @@ CONSENTIMIENTO INSTALAR
    ↓
 INSTALAR → VERIFICACIÓN FÍSICA
    ↓
-READY_FOR_BENCHMARK
+RESOLUCIÓN MODELO → RUNTIME
+   ↓
+PREFLIGHT RUNTIME / ARTEFACTO
    ↓
 EXPLICACIÓN A01 → CONSENTIMIENTO
    ├─ NO → FIN (instalación intacta)
    └─ SÍ → EXECUTION_AUTHORIZED → RC1 A01
                                       ↓
                               MEDICIÓN / EVIDENCIA</pre><p>El operador único es <code>./leones</code>, implementado en <code>scripts/rc2_wizard.py</code>. No existe un segundo wizard ni un segundo runner de benchmark.</p></section>
-<section class="site-section"><h2>4 · Gates y consentimiento</h2><div class="site-grid"><article class="site-card"><h3>Idioma</h3><p>Se elige una sola vez y la sesión usa exclusivamente ese idioma.</p></article><article class="site-card"><h3>Instalación</h3><p>Autorizar instalación no equivale a instalar ni a verificar. Solo la observación física satisfactoria permite <code>READY_FOR_BENCHMARK</code>.</p></article><article class="site-card"><h3>Benchmark</h3><p>El consentimiento A01 es independiente. Sin él no hay ejecución.</p></article><article class="site-card"><h3>Bloqueo</h3><p>Sin Ollama en PATH, A01 queda <code>benchmark_blocked</code>; LEONES no inventa MEASURED.</p></article></div></section>
-<section class="site-section"><h2>5 · A01 y medición</h2><p>El benchmark canónico de RC2 es <strong>LEONES-Agentic / A01</strong>. El runner es <code>scripts/a01_runtime_benchmark.py</code> y el puente local es <code>scripts/ollama_a01_runtime.py</code>.</p><div class="site-table-wrap"><table class="site-table"><thead><tr><th>Campo</th><th>Valor</th></tr></thead><tbody><tr><td>task</td><td><code>A01</code></td></tr><tr><td>prompt</td><td><code>Execute A01. Return only JSONL tool calls.</code></td></tr><tr><td>Métricas</td><td><code>wall_seconds</code>, <code>measured_tps</code>, <code>grader_pass</code></td></tr><tr><td>Evidencia</td><td>Resultado de ejecución con procedencia, configuración y estado válido</td></tr></tbody></table></div></section>
+<section class="site-section"><h2>4 · Gates y consentimiento</h2><div class="site-grid"><article class="site-card"><h3>Idioma</h3><p>Se elige una sola vez y la sesión usa exclusivamente ese idioma.</p></article><article class="site-card"><h3>Instalación</h3><p>Autorizar instalación no equivale a instalar ni a verificar. Solo la observación física satisfactoria permite <code>READY_FOR_BENCHMARK</code>.</p></article><article class="site-card"><h3>Benchmark</h3><p>El consentimiento A01 es independiente. Sin él no hay ejecución.</p></article><article class="site-card"><h3>Bloqueo</h3><p>Sin runtime o artefacto disponible (Ollama o llama.cpp según resolución), A01 queda <code>benchmark_blocked</code>; LEONES no inventa MEASURED.</p></article></div></section>
+<section class="site-section"><h2>5 · A01 y medición</h2><p>El benchmark canónico de RC2 es <strong>LEONES-Agentic / A01</strong>. El runner es <code>scripts/a01_runtime_benchmark.py</code>; los puentes son <code>scripts/ollama_a01_runtime.py</code> y <code>scripts/llama_cpp_a01_runtime.py</code> según la resolución del modelo.</p><div class="site-table-wrap"><table class="site-table"><thead><tr><th>Campo</th><th>Valor</th></tr></thead><tbody><tr><td>task</td><td><code>A01</code></td></tr><tr><td>prompt</td><td><code>Execute A01. Return only JSONL tool calls.</code></td></tr><tr><td>Métricas</td><td><code>wall_seconds</code>, <code>measured_tps</code>, <code>grader_pass</code></td></tr><tr><td>Evidencia</td><td>Resultado de ejecución con procedencia, configuración y estado válido</td></tr></tbody></table></div></section>
 <section class="site-section"><h2>6 · CABE / RULA y el modelo actual</h2><p>Los conceptos de capacidad y validación siguen siendo útiles para explicar la evaluación física, pero RC2 no introduce un perfilador ni un benchmark paralelo. LLMFit aporta el perfilado/model-fit y los candidatos; RC1 aporta el camino efectivo de ejecución, medición y evidencia.</p></section>
 <section class="site-section"><h2>7 · Evaluación agentiva</h2><p>La evaluación agentiva comprueba el comportamiento del sistema completo, no únicamente la velocidad de generación del modelo: éxito de tareas, uso de herramientas, errores y tiempo necesario para alcanzar el objetivo.</p><div class="site-grid"><article class="site-card"><h3>Inferencia</h3><p>Generación, tok/s, memoria, estabilidad y tiempos.</p></article><article class="site-card"><h3>Agentic</h3><p>Éxito de tareas, llamadas a herramientas, errores y tiempo de tarea.</p></article></div></section>
 <section class="site-section"><h2>8 · Evidencia</h2><div class="site-flow"><span class="site-flow__node">Estimated</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Observed</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Measured</span><span class="site-flow__arrow">→</span><span class="site-flow__node site-flow__node--primary">Evidence</span></div><p>ESTIMATED ≠ MEASURED. Lo desconocido permanece desconocido. Una métrica ausente no debe transformarse en cero ni una ejecución fallida publicarse como válida.</p></section>
 <section class="site-section"><h2>9 · Manada</h2><p>La participación es voluntaria. Antes de publicar una medición deben eliminarse datos personales, identificadores de máquina, rutas privadas, credenciales, tokens y secretos.</p></section>
-<section class="site-section"><h2>10 · Estado</h2><div class="site-grid"><article class="site-card"><h3>JALONES 1–4</h3><p>🟢 Cerrados según los contratos y evidencias consolidados.</p></article><article class="site-card"><h3>RC1</h3><p>🟢 Validado mediante ejecución efectiva end-to-end.</p></article><article class="site-card"><h3>ODS / Magnitude</h3><p>🟢 Contrato de decisión fijado, sin scoring paralelo.</p></article><article class="site-card"><h3>RC2</h3><p>🟡 Preparado para beta: operador único, i18n, instalación, verificación física, consentimiento A01 y handoff RC1.</p></article></div><p><a href="estado.html">Ver estado detallado de LEONES →</a></p></section>
+<section class="site-section"><h2>10 · Estado</h2><div class="site-grid"><article class="site-card"><h3>JALONES 1–4</h3><p>🟢 Cerrados según los contratos y evidencias consolidados.</p></article><article class="site-card"><h3>RC1</h3><p>🟢 Validado mediante ejecución efectiva end-to-end.</p></article><article class="site-card"><h3>ODS / Magnitude</h3><p>🟢 Contrato de decisión fijado, sin scoring paralelo.</p></article><article class="site-card"><h3>RC2</h3><p>🟡 Preparado para beta: operador único, i18n, instalación, verificación física, resolución modelo→runtime, consentimiento A01 y handoff RC1.</p></article></div><p><a href="estado.html">Ver estado detallado de LEONES →</a></p></section>
 <section class="site-section"><h2>11 · Documentación RC2</h2><p><a href="../docs/RC2-USER-MANUAL.md">Manual de usuario RC2 →</a> · <a href="../docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación RC2 →</a> · <a href="../docs/RC2-L-INTEGRATED-BETA-JOURNEY.md">Recorrido beta integrado →</a></p></section>
 </main>
 <script src="assets/js/navigation.js?v=2026-09-03-1" defer></script>
