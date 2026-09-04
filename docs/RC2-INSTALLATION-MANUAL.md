@@ -31,9 +31,13 @@ CONSENTIR INSTALACIÓN
       ↓
 INSTALAR / VERIFICAR
       ↓
-¿BENCHMARK?
+RESOLVER MODELO → RUNTIME
       ↓
-   SÍ → RUNNER → MEDICIÓN → EVIDENCIA
+PREFLIGHT RUNTIME / ARTEFACTO
+      ↓
+¿BENCHMARK A01?
+      ↓
+   SÍ → RUNNER RC1 → MEDICIÓN → EVIDENCIA
    NO → FIN
 ```
 
@@ -203,35 +207,9 @@ Sólo autoriza si estás de acuerdo.
 
 Una instalación puede tardar varios minutos. **Nunca debe parecer que LEONES se ha quedado bloqueado.** Cuando la herramienta canónica proporcione progreso, la interfaz debe mostrarlo; para descargas largas, usa una barra/porcentaje visible.
 
-Para el instalador oficial de ODS, evita `curl -fsSL`, porque oculta el progreso. Tras haber dado el consentimiento explícito y siguiendo la URL/ref indicada por la integración, descarga primero el instalador a un fichero temporal y **sólo ejecútalo si la descarga termina correctamente**:
+Para el instalador oficial de ODS, evita `curl -fsSL`, porque oculta el progreso. Tras haber dado el consentimiento explícito y siguiendo la URL/ref indicada por la integración, descarga primero el instalador a un fichero temporal y **sólo ejecútalo si la descarga termina correctamente**.
 
-```bash
-set -o pipefail
-rm -f /tmp/ods-install.sh
-
-if curl -fL --progress-bar --connect-timeout 15 --max-time 300 \
-    https://install.osmantic.com/ods.sh \
-    -o /tmp/ods-install.sh; then
-    echo
-    echo "[✓] Descarga del instalador completada"
-    echo "[INFO] Ejecutando instalador oficial de ODS..."
-    bash /tmp/ods-install.sh
-else
-    rc=$?
-    echo
-    echo "[✗] No se pudo descargar el instalador de ODS (curl rc=$rc)"
-    echo "[INFO] Instalación bloqueada: no se ejecutará ningún fichero incompleto o inexistente."
-    exit "$rc"
-fi
-```
-
-La barra de `curl` representa **la descarga del instalador**, no el porcentaje interno de instalación de ODS. LEONES no debe inventar un porcentaje de fases que la herramienta externa no exponga.
-
-Si una operación externa no ofrece porcentaje, muestra al menos actividad indeterminada (spinner/mensaje periódico) y la etapa actual. Si se produce un timeout, conserva el error original y marca la instalación como `INSTALL_FAILED`/`BLOCKED`. **No continúes automáticamente intentando ejecutar el instalador.**
-
-Si el instalador oficial proporciona su propio progreso, debe conservarse en pantalla. Si no proporciona progreso cuantificable, debe mostrarse actividad durante la operación sin fabricar una cifra.
-
-**Importante:** este comando no es un instalador creado por LEONES. Ejecuta el instalador oficial del stack elegido. LEONES no crea otro instalador de ODS ni otro de Magnitude.
+**Importante:** LEONES no crea otro instalador de ODS ni otro de Magnitude; usa las interfaces canónicas del stack elegido.
 
 ## 11. Verificación
 
@@ -253,15 +231,11 @@ INSTALL_FAILED / BLOCKED
 
 No continúes con benchmark si la integración no está verificada.
 
-## 12. Benchmark opcional
+## 12. Resolución modelo → runtime y benchmark opcional
 
-Cuando el stack esté preparado, LEONES debe preguntar explícitamente:
+Tras verificar el stack, LEONES resuelve de forma declarativa el runtime del modelo (Ollama-managed o GGUF→llama.cpp). **No convierte un id Hugging Face en un modelo Ollama.**
 
-> ¿Quieres medir el rendimiento real de esta combinación en tu equipo?
-
-Si eliges **No**, termina el recorrido sin ejecutar el benchmark.
-
-Si eliges **Sí**, el consentimiento debe autorizar el benchmark concreto y entonces se entrega el plan al runner canónico de RC1.
+Cuando el preflight de runtime/artefacto pase, LEONES pregunta explícitamente si quieres medir A01. Si dices **No**, termina sin ejecutar. Si dices **Sí**, se entrega el plan al runner canónico de RC1.
 
 ## 13. Qué se mide
 
@@ -276,23 +250,17 @@ La evidencia debe distinguir medición real de estimación. Una ejecución váli
 - métricas;
 - outcome;
 - artefactos;
-- procedencia;
-- hashes cuando correspondan.
+- procedencia.
 
 Una medición histórica **no sustituye una ejecución actual**.
 
 ## 14. Privacidad
 
-RC2 debe funcionar con privacidad por defecto:
-
 - no compartas secretos ni API keys;
 - no introduzcas contraseñas en informes;
-- no compartas prompts, archivos, conversaciones o código salvo que el protocolo de prueba lo requiera y hayas decidido hacerlo;
 - la contribución de evidencia al conocimiento colectivo debe ser opt-in.
 
 ## 15. Qué debe entregar un beta tester
-
-Si la prueba llega al benchmark, conserva:
 
 1. versión/ref de LEONES;
 2. sistema operativo y hardware declarado/observado;
@@ -302,23 +270,16 @@ Si la prueba llega al benchmark, conserva:
 6. decisión de benchmark;
 7. `execution_id` si se ejecutó;
 8. resultado y errores;
-9. evidencia generada;
-10. pasos necesarios para reproducir el problema si algo falla.
-
-No borres los mensajes de error originales.
+9. evidencia generada.
 
 ## 16. Qué NO hacer
 
 - No reutilizar una evidencia histórica como resultado actual.
 - No convertir `estimated` en `measured`.
-- No ejecutar comandos de instalación que LEONES no haya presentado en su plan sin registrar la desviación.
 - No proporcionar credenciales en tickets o evidencias.
-- No asumir que una funcionalidad anunciada está disponible en cualquier versión.
 - No declarar RC2 validado por una prueba exclusivamente local del desarrollador.
 
 ## 17. Problemas
-
-Cuando algo falle, registra:
 
 ```text
 LEONES ref:
@@ -326,33 +287,18 @@ SO / arquitectura:
 CPU / RAM / GPU / VRAM:
 Modelo:
 Stack: ODS | Magnitude
-Etapa: INSTALL | VERIFY | BENCHMARK | EVIDENCE
+Etapa: INSTALL | VERIFY | RESOLVE | BENCHMARK | EVIDENCE
 Comando ejecutado:
 Mensaje de error:
-Resultado esperado:
-Resultado obtenido:
 execution_id (si existe):
 ```
 
-No ocultes ni resumas de forma destructiva el error original.
-
 ## 18. Criterio de éxito del piloto
 
-La prueba es especialmente valiosa si un usuario externo puede completar sin intervención del desarrollador:
-
 ```text
-instalar
-  → declarar/detectar hardware
-  → perfilar
-  → recibir candidatos
-  → elegir modelo
-  → comparar ODS/Magnitude
-  → elegir stack
-  → consentir instalación
-  → verificar
-  → decidir benchmark
-  → ejecutar si acepta
-  → recibir evidencia
+instalar → detectar hardware → candidatos → modelo → stack
+  → consentir → verificar → resolver runtime → decidir A01
+  → ejecutar si acepta → evidencia
 ```
 
 RC2 no se considerará cerrada hasta que este recorrido sea reproducible en máquinas externas.
