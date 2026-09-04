@@ -3,9 +3,14 @@
 from __future__ import annotations
 import argparse, json
 from pathlib import Path
-from runtime_selection.decision_engine import decide_models
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from runtime_selection.decision_engine import decide_models
+
 CATALOG = ROOT / "runtime_selection/data/model-evidence.rc3.json"
 
 def main() -> int:
