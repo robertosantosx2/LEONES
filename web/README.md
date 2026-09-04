@@ -12,7 +12,7 @@ La web de LEONES prioriza, en este orden:
 
 La estética no debe introducir complejidad que no aporte una función clara.
 
-## Estado visible · 3 septiembre 2026
+## Estado visible · 4 septiembre 2026
 
 La web debe reflejar el estado canónico real del repositorio:
 
@@ -41,9 +41,11 @@ ODS / MAGNITUDE → ELECCIÓN DE STACK
    ↓
 CONSENTIMIENTO INSTALAR
    ↓
-INSTALAR → VERIFICACIÓN FÍSICA
+INSTALAR → VERIFICACIÓN FÍSICA DEL STACK
    ↓
-READY_FOR_BENCHMARK
+RESOLUCIÓN MODELO → RUNTIME (declarativa)
+   ↓
+PREFLIGHT RUNTIME / ARTEFACTO
    ↓
 EXPLICACIÓN A01 → CONSENTIMIENTO
    ├─ NO → FIN (instalación intacta)
@@ -65,9 +67,10 @@ RC2 no crea un segundo runner. Reutiliza el pipeline validado de RC1:
 | prompt | `Execute A01. Return only JSONL tool calls.` |
 | métricas | `wall_seconds`, `measured_tps`, `grader_pass` |
 | runner | `scripts/a01_runtime_benchmark.py` |
-| puente local | `scripts/ollama_a01_runtime.py` |
+| puentes | `scripts/ollama_a01_runtime.py`, `scripts/llama_cpp_a01_runtime.py` |
+| resolución | `runtime_selection/model_runtime_resolver.py` |
 
-Si Ollama no está disponible en PATH, A01 queda `benchmark_blocked`; la web y el producto no deben inventar una medición.
+GGUF/HF no se convierte silenciosamente en un modelo Ollama. Sin runtime o artefacto disponible, A01 queda `benchmark_blocked`; la web y el producto no deben inventar una medición.
 
 ## LLMFit, ODS y Magnitude
 
