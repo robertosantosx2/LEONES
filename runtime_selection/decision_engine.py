@@ -12,44 +12,113 @@ PROFILES: dict[str, dict[str, float]] = {
     "reasoning": {"intelligence": .45, "fit": .25, "context": .10, "availability": .05, "reasoning": .15},
 }
 
+
 def _norm(value: float | None, maximum: float) -> float:
     return 0.0 if value is None or maximum <= 0 else max(0.0, min(1.0, value / maximum))
 
+
 def _available_ram(hardware: dict[str, Any]) -> float:
+    """Return available RAM in GiB across canonical and legacy profiles."""
     ram = hardware.get("ram") or {}
-    return float(ram.get("available_gb") or ram.get("total_gb") or hardware.get("ram_available_gb") or hardware.get("ram_gb") or 0)
+    if ram:
+        return float(ram.get("available_gb") or ram.get("total_gb") or 0)
+
+    # Canonical hardware-profile.v1 uses memory.available_bytes and
+    # memory.visible_to_os_bytes. Keep the decision layer independent of the
+    # probe's physical representation while preserving observed values.
+    memory = hardware.get("memory") or {}
+    available_bytes = memory.get("available_bytes")
+    visible_bytes = memory.get("visible_to_os_bytes")
+    if available_bytes is not None:
+        return float(available_bytes) / (1024 ** 3)
+    if visible_bytes is not None:
+        return float(visible_bytes) / (1024 ** 3)
+
+    return float(
+        hardware.get("ram_available_gb")
+        or hardware.get("ram_gb")
+        or 0
+    )
+
 
 def _memory_estimate(item: dict[str, Any]) -> float | None:
     params = item.get("parameters_b")
-    if params is None: return None
+    if params is None:
+        return None
     return round(float(params) * int(item.get("quantization_bits") or 4) / 8 + .4, 3)
+
 
 def _fit(item: dict[str, Any], available_ram_gb: float) -> tuple[float, str, float | None]:
     estimate = _memory_estimate(item)
-    if estimate is None or available_ram_gb <= 0: return .20, "unknown", None
+    if estimate is None or available_ram_gb <= 0:
+        return .20, "unknown", None
     headroom = round(available_ram_gb - estimate, 3)
     if headroom >= max(.5, available_ram_gb * .20):
         return max(.55, min(1.0, .65 + headroom / max(available_ram_gb * 2, 1))), "fit", headroom
-    if headroom >= 0: return .35, "marginal", headroom
+    if headroom >= 0:
+        return .35, "marginal", headroom
     return .05, "insufficient", headroom
 
-def decide_models(enriched: dict[str, Any], profile: str = "balanced", hardware: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Rank proposals against the supplied physical hardware; never authorizes or measures."""
-    if profile not in PROFILES: raise ValueError(f"unknown decision profile: {profile}")
+
+def decide_models(
+    enriched: dict[str, Any],
+    profile: str = "balanced",
+    hardware: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Rank proposals against supplied physical hardware; never authorizes or measures."""
+    if profile not in PROFILES:
+        raise ValueError(f"unknown decision profile: {profile}")
     hardware = hardware or enriched.get("hardware") or {}
-    weights = PROFILES[profile]; candidates = enriched.get("candidates", []); available_ram_gb = _available_ram(hardware)
-    max_i = max([float((c.get("external_evidence") or {}).get("artificial_analysis", {}).get("intelligence_index", 0) or 0) for c in candidates] or [1])
-    max_c = max([float((c.get("external_evidence") or {}).get("artificial_analysis", {}).get("context_tokens", 0) or 0) for c in candidates] or [1])
+    weights = PROFILES[profile]
+    candidates = enriched.get("candidates", [])
+    available_ram_gb = _available_ram(hardware)
+    max_i = max([
+        float((c.get("external_evidence") or {}).get("artificial_analysis", {}).get("intelligence_index", 0) or 0)
+        for c in candidates
+    ] or [1])
+    max_c = max([
+        float((c.get("external_evidence") or {}).get("artificial_analysis", {}).get("context_tokens", 0) or 0)
+        for c in candidates
+    ] or [1])
     scored = []
     for candidate in candidates:
-        item = dict(candidate); aa = ((item.get("external_evidence") or {}).get("artificial_analysis") or {}); hf = ((item.get("external_evidence") or {}).get("hugging_face") or {})
+        item = dict(candidate)
+        aa = ((item.get("external_evidence") or {}).get("artificial_analysis") or {})
+        hf = ((item.get("external_evidence") or {}).get("hugging_face") or {})
         fit, fit_status, headroom = _fit(item, available_ram_gb)
-        factors = {"intelligence": _norm(float(aa.get("intelligence_index", 0) or 0), max_i), "fit": fit, "context": _norm(float(aa.get("context_tokens", 0) or 0), max_c), "availability": 1.0 if hf.get("status") == "weights_available" else .5 if hf.get("status") == "gated" else 0.0, "reasoning": 1.0 if aa.get("reasoning") else 0.0}
+        factors = {
+            "intelligence": _norm(float(aa.get("intelligence_index", 0) or 0), max_i),
+            "fit": fit,
+            "context": _norm(float(aa.get("context_tokens", 0) or 0), max_c),
+            "availability": 1.0 if hf.get("status") == "weights_available" else .5 if hf.get("status") == "gated" else 0.0,
+            "reasoning": 1.0 if aa.get("reasoning") else 0.0,
+        }
         item["decision_score"] = round(sum(weights[k] * factors[k] for k in weights) * 100, 3)
         item["decision_factors"] = {k: round(v, 3) for k, v in factors.items()}
-        item["local_fit_estimate"] = {"estimated_model_memory_gb": _memory_estimate(item), "available_ram_gb": available_ram_gb, "estimated_headroom_gb": headroom, "status": fit_status}
-        item["decision_profile"] = profile; item["evidence_status"] = "external_only"; item["selection_status"] = "CANDIDATE"
+        item["local_fit_estimate"] = {
+            "estimated_model_memory_gb": _memory_estimate(item),
+            "available_ram_gb": available_ram_gb,
+            "estimated_headroom_gb": headroom,
+            "status": fit_status,
+        }
+        item["decision_profile"] = profile
+        item["evidence_status"] = "external_only"
+        item["selection_status"] = "CANDIDATE"
         scored.append(item)
     scored.sort(key=lambda x: (-x["decision_score"], x["model_id"]))
-    for rank, item in enumerate(scored, 1): item["decision_rank"] = rank
-    return {"schema_version": SCHEMA_VERSION, "profile": profile, "weights": weights, "hardware": hardware, "candidates": scored, "recommended_model_id": scored[0]["model_id"] if scored else None, "user_choice_required": True, "selected_model_id": None, "execution_authorized": False, "measured": False, "measurement_required": True, "recommendation_authority": "external_evidence_plus_detected_hardware_estimate; LEONES_MEASUREMENT_FINAL"}
+    for rank, item in enumerate(scored, 1):
+        item["decision_rank"] = rank
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "profile": profile,
+        "weights": weights,
+        "hardware": hardware,
+        "candidates": scored,
+        "recommended_model_id": scored[0]["model_id"] if scored else None,
+        "user_choice_required": True,
+        "selected_model_id": None,
+        "execution_authorized": False,
+        "measured": False,
+        "measurement_required": True,
+        "recommendation_authority": "external_evidence_plus_detected_hardware_estimate; LEONES_MEASUREMENT_FINAL",
+    }
