@@ -1,75 +1,98 @@
-# LEONES RC3 — Hermes-first discovery architecture
+# LEONES RC3 — Hermes + native physical discovery architecture
 
-**Estado:** 🟢 Arquitectura fijada · implementación física pendiente de validación Ubuntu  
+**Estado:** 🟢 Arquitectura fijada · primer discovery físico Ubuntu observado · validación RC3 completa pendiente  
 **Predecesor:** RC2  
 **Decisión:** 4 de septiembre de 2026
 
 ## 1. Objetivo
 
-RC3 elimina la dependencia estructural de LLMFit/FitLLM para el descubrimiento de hardware y la preselección inicial.
+RC3 desacopla el descubrimiento físico de cualquier proveedor externo. Hermes participa en el ecosistema local y puede aportar runtime/model-fit, pero LEONES no presupone que su CLI exponga una interfaz estable y machine-readable de hardware.
 
-Hermes pasa a ser el **bootstrap de descubrimiento y fit local**. LEONES conserva la autoridad sobre la verificación física, la ejecución, la medición y la evidencia.
+La primera ejecución física en Ubuntu ha confirmado que Hermes 0.21.0 está instalado y operativo a nivel de `doctor`, mientras que su CLI pública no ofrece un comando de hardware estructurado. Por tanto, RC3 usa una sonda nativa LEONES para producir el `hardware-profile.v1` autoritativo. La implementación observa además la lógica de hardware del runtime local de Hermes cuando corresponde, pero no acopla LEONES a módulos internos de Hermes.
 
-La selección de stack queda bajo decisión explícita del usuario:
+La arquitectura queda:
 
 ```text
-                         HERMES
-                 discovery + initial fit
-                           │
-                           ▼
-                  hardware-profile.v1
-                           │
-                           ▼
-                  LEONES normalization
-                           │
-                 candidate set / fit
-                           │
-                 ┌─────────┴─────────┐
-                 ▼                   ▼
-             MAGNITUDE               ODS
-           profiling/tuning      install/stack
-                 │                   │
-                 └─────────┬─────────┘
-                           ▼
-                    selected runtime
-                           │
-                           ▼
-                     LEONES tasks
-                           │
-                           ▼
-                    real measurement
-                           │
-                           ▼
-                       evidence
-                           │
-                           ▼
-                     recommendation
+                         UBUNTU REAL
+                              │
+             ┌────────────────┴────────────────┐
+             │                                 │
+     LEONES native discovery              HERMES 0.21.0
+             │                         runtime/model ecosystem
+             │                                 │
+             ▼                                 ▼
+     hardware-profile.v1              candidate / runtime hints
+             │                                 │
+             └────────────────┬────────────────┘
+                              ▼
+                     LEONES reconciliation
+                              │
+                     candidate-set.v1
+                              │
+                     usuario elige modelo
+                              │
+                     usuario elige stack
+                       ┌──────┴──────┐
+                       ▼             ▼
+                   MAGNITUDE        ODS
+                  profile/tune   install/stack
+                       │             │
+                       └──────┬──────┘
+                              ▼
+                       selected runtime
+                              │
+                              ▼
+                         LEONES tasks
+                              │
+                              ▼
+                      real measurement
+                              │
+                              ▼
+                           evidence
+                              │
+                              ▼
+                        recommendation
 ```
 
 ## 2. Responsabilidades
 
 ### Hermes
 
-- Descubrir el hardware y backend local.
-- Evaluar memoria/fit de modelos locales.
-- Seleccionar build/cuántización/contexto compatible cuando corresponda.
-- Servir como bootstrap del runtime local.
-- Entregar el conjunto inicial de modelos/configuraciones compatibles.
+- Aportar el agente, herramientas y runtime local que correspondan.
+- Evaluar modelos/configuraciones dentro de las capacidades que realmente exponga su interfaz.
+- Servir como bootstrap operativo cuando el flujo lo requiera.
+- No se considera fuente autoritativa de hardware si no entrega un artefacto machine-readable verificable.
 
-Hermes no es autoridad de rendimiento LEONES.
+La ejecución física de RC3 observó que `hermes --help` no ofrece un comando público de hardware/system discovery. Esto coincide con la limitación documentada aguas arriba sobre resource awareness en entornos de pocos recursos. citeturn0search2
+
+### LEONES native discovery
+
+La sonda `scripts/rc3_hardware_discovery.py` consulta directamente el Ubuntu real y genera `hardware-profile.v1`.
+
+Puede observar:
+
+- CPU, topología y flags;
+- RAM total/disponible;
+- GPU PCI visible y driver;
+- VRAM NVIDIA si `nvidia-smi` está disponible;
+- módulos de memoria cuando `dmidecode` está autorizado;
+- backend/accelerators detectables.
+
+Los datos ausentes se representan como `null`/lista vacía. No se inventan valores.
 
 ### Magnitude
 
-Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado de Hermes/LEONES y aporta su perfilado, estimación, tuning y ejecución según su propia interfaz canónica.
+Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado y aporta perfilado, estimación, tuning y ejecución según su interfaz canónica.
 
 ### ODS
 
-Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado de Hermes/LEONES y aporta instalación, stack, runtime y operación según su interfaz canónica.
+Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado y aporta instalación, stack, runtime y operación según su interfaz canónica.
 
 ### LEONES
 
-- Normaliza el descubrimiento.
+- Descubre y normaliza hardware físico.
 - Conserva procedencia y versión/ref.
+- Reconcilia declaraciones con datos detectados.
 - Presenta/ejecuta la decisión del usuario.
 - Verifica físicamente los datos críticos.
 - Ejecuta tareas controladas.
@@ -85,41 +108,41 @@ No se elimina su conocimiento histórico ni su documentación de frontera: queda
 
 No debe instalarse, invocarse ni bloquear el arranque de LEONES RC3.
 
-La regla es:
-
 ```text
 RC2: LLMFit → hardware/candidatos → LEONES
-RC3: Hermes → hardware/candidatos → LEONES
+RC3: native physical discovery + Hermes/runtime hints → LEONES
 ```
 
-## 4. Contrato conceptual
+## 4. Contrato `hardware-profile.v1`
 
-RC3 usa dos contratos separados:
-
-### `hardware-profile.v1`
-
-Describe lo observado por Hermes:
+El artefacto físico RC3 tiene como fuente autoritativa `leones-native-ubuntu`:
 
 ```json
 {
-  "source": "hermes",
-  "source_version": "...",
+  "schema": "hardware-profile.v1",
+  "source": "leones-native-ubuntu",
+  "verification": "detected",
   "cpu": {},
   "ram": {},
   "gpu": [],
-  "backend": "...",
-  "available_memory": {},
-  "discovery_timestamp": "..."
+  "backend": [],
+  "accelerators": [],
+  "discovery_timestamp": "...",
+  "hermes": {
+    "discovery_cli": "not-exposed"
+  }
 }
 ```
 
-### `candidate-set.v1`
+El campo `hermes` conserva el estado de la integración sin fingir que Hermes ha emitido un perfil físico.
 
-Normaliza las propuestas sin convertirlas en mediciones:
+## 5. `candidate-set.v1`
+
+Las propuestas de modelos/configuraciones permanecen separadas de la medición:
 
 ```json
 {
-  "source": "hermes",
+  "source": "hermes-or-provider",
   "model": {},
   "quantization": "...",
   "runtime": "...",
@@ -132,37 +155,32 @@ Normaliza las propuestas sin convertirlas en mediciones:
 }
 ```
 
-Los nombres exactos de campos pueden evolucionar durante la implementación; el principio contractual no.
+Una estimación externa nunca se transforma automáticamente en `MEASURED`.
 
-## 5. Handoff
-
-El usuario selecciona uno de dos caminos:
+## 6. Handoff
 
 ```text
-HERMES
-   ↓
-LEONES discovery artifact
-   ↓
+Ubuntu
+  ↓
+LEONES native discovery
+  ↓
+hardware-profile.v1
+  ↓
+Hermes/runtime hints (si existen y son observables)
+  ↓
+LEONES reconciliation
+  ↓
+candidate-set.v1
+  ↓
 usuario elige
-   ├── MAGNITUDE
-   │      ↓
-   │   profiling/tuning
-   │      ↓
-   │   runtime
-   │
-   └── ODS
-          ↓
-       install/stack
-          ↓
-       runtime
-
-ambos
-   ↓
-LEONES task benchmark
-   ↓
-measurement
-   ↓
-evidence
+  ├── MAGNITUDE → profiling/tuning → runtime
+  └── ODS       → install/stack   → runtime
+                              ↓
+                         LEONES task
+                              ↓
+                         measurement
+                              ↓
+                           evidence
 ```
 
 El handoff debe conservar como mínimo:
@@ -173,53 +191,58 @@ El handoff debe conservar como mínimo:
 - contexto;
 - runtime/backend;
 - origen de cada decisión;
-- versión/ref de Hermes y del stack seleccionado;
+- versión/ref del componente;
 - timestamp;
 - estado `estimated` hasta que exista medición real.
 
-## 6. Regla de autoridad
+## 7. Regla de autoridad
 
 ```text
-Hermes descubre
+Hermes propone / opera
 Magnitude/ODS ejecutan y optimizan
-LEONES verifica y mide
+LEONES descubre físicamente, verifica y mide
 ```
 
 Más precisamente:
 
 > Una recomendación externa puede decir que una configuración debería funcionar. Sólo una ejecución física controlada por LEONES puede producir una medición LEONES.
 
-## 7. Instalación RC3
-
-El orden operativo previsto es:
+## 8. Instalación RC3
 
 ```text
 1. instalar LEONES
 2. instalar/verificar Hermes
-3. Hermes descubre hardware
-4. LEONES registra hardware-profile.v1
-5. Hermes propone modelos/configuraciones compatibles
-6. usuario elige modelo/configuración
-7. usuario elige Magnitude u ODS
-8. consentimiento
-9. instalar/preparar el stack elegido
-10. verificar físicamente
-11. ejecutar tareas LEONES
-12. medir
-13. registrar evidencia
+3. verificar/activar OMH
+4. LEONES descubre hardware físico
+5. registrar hardware-profile.v1
+6. consumir hints de Hermes sólo si son observables y trazables
+7. construir candidate-set.v1
+8. usuario elige modelo/configuración
+9. usuario elige Magnitude u ODS
+10. consentimiento
+11. instalar/preparar el stack elegido
+12. verificar físicamente
+13. ejecutar tareas LEONES
+14. medir
+15. registrar evidencia
 ```
 
-LEONES no crea un instalador alternativo de Magnitude ni de ODS.
+## 9. Gate físico de RC3
 
-## 8. Gate físico de RC3
+La primera pasada física ya ha confirmado el host real:
 
-La implementación completa no se declara validada hasta ejecutar en Ubuntu una máquina no previamente descrita al flujo:
+- Intel Core i5-1035G1, 4 núcleos / 8 hilos;
+- 8 GiB DDR4, dos módulos de 4 GiB;
+- Intel Iris Plus Graphics G1 visible por PCI, driver `i915`;
+- ningún `nvidia-smi`, ROCm o Vulkan CLI disponible en la sesión;
+- Hermes 0.21.0 instalado y `hermes doctor` ejecutado;
+- OMH 2.0.0 con 46/46 comprobaciones OK.
+
+Estos son **hechos de discovery**, no benchmarks.
+
+La validación completa sigue abierta hasta ejecutar:
 
 ```text
-máquina desconocida
-      ↓
-Hermes discovery
-      ↓
 hardware-profile.v1
       ↓
 LEONES cross-check
@@ -235,15 +258,19 @@ measured
 evidence
 ```
 
-Si Hermes y las sondas LEONES discrepan en CPU, RAM, GPU, VRAM, backend o memoria disponible, el flujo debe detenerse o marcar conflicto; nunca debe convertir la discrepancia en una medición válida.
+Si fuentes observables discrepan en CPU, RAM, GPU, VRAM, backend o memoria, el flujo debe detenerse o marcar conflicto; nunca debe convertir la discrepancia en una medición válida.
 
-## 9. Estado de RC3
+## 10. Estado de RC3
 
-- [x] Arquitectura Hermes-first fijada.
-- [x] LLMFit/FitLLM separado conceptualmente del camino canónico.
+- [x] Arquitectura Hermes + native discovery fijada.
+- [x] LLMFit/FitLLM separado del camino canónico.
 - [x] Magnitude y ODS definidos como handoffs alternativos elegidos por el usuario.
-- [x] Medición y evidencia siguen siendo propiedad de LEONES.
-- [ ] Adaptador machine-readable de discovery Hermes validado físicamente.
+- [x] Hermes 0.21.0 observado en Ubuntu.
+- [x] OMH 2.0.0 observado y `doctor` 46/46.
+- [x] Primer discovery físico Ubuntu observado.
+- [x] Adaptador `hardware-profile.v1` implementado.
+- [ ] Artefacto `hardware-profile.v1` generado y conservado desde la máquina física.
+- [ ] Reconciliación automática discovery ↔ perfil LEONES validada.
 - [ ] Handoff real Hermes → Magnitude validado.
 - [ ] Handoff real Hermes → ODS validado.
 - [ ] Benchmark de tareas sobre ambos caminos.
