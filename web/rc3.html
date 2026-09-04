@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="LEONES RC3: estado público, sonda física canónica, Hermes/OMH, Magnitude/ODS y gates de validación." />
+<title>LEONES · RC3</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-1" />
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-1" />
+<style>
+.rc3-hero-note{margin-top:1rem;padding:1rem 1.15rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}
+.rc3-state{display:inline-block;padding:.3rem .55rem;border-radius:999px;background:#e9f7ee;color:#0f5132;font-weight:800;font-size:.78rem}
+.rc3-state--pending{background:#fff4d8;color:#7a5b00}
+.rc3-gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.rc3-card{padding:1.1rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}
+.rc3-card h3{margin-top:0}
+.rc3-warning{border-left:4px solid #315d7d;padding:.8rem 1rem;background:#f5f8fa}
+.rc3-links{display:flex;flex-wrap:wrap;gap:.7rem}
+.rc3-links a{font-weight:800}
+</style>
+</head>
+<body>
+<header class="site-hero"><div class="site-hero__inner">
+<span class="site-tag">RC3 · 5 septiembre 2026</span>
+<h1>LEONES · RC3</h1>
+<p>Implementación y contratos cerrados. Gate CI activo. Validación física final pendiente.</p>
+<div class="rc3-hero-note">
+<span class="rc3-state">Implementación 🟢 cerrada</span>
+<span class="rc3-state rc3-state--pending" style="margin-left:.4rem">Físico 🟡 pendiente</span>
+<p style="margin-top:.8rem"><strong>Sonda física canónica:</strong> <code>scripts/hardware_profile.py</code> produce <code>hardware-profile.v1</code>. Hermes aporta ecosistema runtime/model-fit; OMH organiza operación. LLMFit/FitLLM queda fuera del camino RC3.</p>
+</div>
+</div></header>
+<main class="site-main" id="main">
+<section class="site-section"><span class="site-tag">Recorrido</span><h2>Camino canónico</h2>
+<pre class="site-stack">UBUNTU REAL
+   ↓
+scripts/hardware_profile.py
+   ↓
+hardware-profile.v1
+   ↓
+RC3 adapter + Hermes runtime hints
+   ↓
+LEONES reconciliation → candidate-set.v1
+   ↓
+HF + Artificial Analysis (evidencia EXTERNA)
+   ↓
+recomendación (no selección automática)
+   ↓
+usuario elige modelo + Magnitude | ODS
+   ↓
+consentimiento → preparar/instalar → verificar
+   ↓
+tareas LEONES → medición → evidencia</pre>
+<p class="site-note"><strong>ESTIMATED ≠ MEASURED.</strong> Una cifra de Artificial Analysis o un fit externo no es medición LEONES.</p>
+</section>
+<section class="site-section"><span class="site-tag">Roles</span><h2>Quién hace qué</h2>
+<div class="rc3-gates">
+<article class="rc3-card"><h3>LEONES</h3><p>Sonda física, contratos, ranking, consentimiento, verificación, benchmark y evidencia. Autoridad final.</p></article>
+<article class="rc3-card"><h3>Hermes</h3><p>Ecosistema local de runtime/model-fit. Observado en Ubuntu 0.21.0 vía <code>doctor</code>. No sustituye la sonda física.</p></article>
+<article class="rc3-card"><h3>Oh My Hermes</h3><p>Capa operativa: routing, workflows, handoffs y gates de operación.</p></article>
+<article class="rc3-card"><h3>Magnitude / ODS</h3><p>Stacks elegidos por el usuario. LEONES no duplica sus instaladores; verifica lo instalado antes de medir.</p></article>
+<article class="rc3-card"><h3>LLMFit</h3><p>Fuera de RC3. Histórico / futuro <code>CandidateProvider</code>, sin bloquear el arranque.</p></article>
+</div>
+</section>
+<section class="site-section"><span class="site-tag">Cerrado</span><h2>Qué ya está fijado</h2>
+<div class="rc3-gates">
+<article class="rc3-card"><h3>Arquitectura</h3><p>Hermes + native discovery documentada en <code>docs/RC3-ARCHITECTURE.md</code>.</p></article>
+<article class="rc3-card"><h3>Sonda única</h3><p><code>hardware_profile.py</code> canónica; el adaptador RC3 no reparsea CPU/GPU/RAM.</p></article>
+<article class="rc3-card"><h3>Contratos</h3><p>candidate-set, model-evidence, user-selection, resolución de artefacto.</p></article>
+<article class="rc3-card"><h3>Gate CI</h3><p><code>scripts/rc3_release_gate.py</code> + workflow de release. Estático: no inventa evidencia física.</p></article>
+<article class="rc3-card"><h3>RC2</h3><p>Histórico. No forma parte del camino canónico RC3.</p></article>
+</div>
+</section>
+<section class="site-section"><span class="site-tag">Pendiente</span><h2>Último gate: físico</h2>
+<div class="rc3-warning">
+<p>RC3 no se declara físicamente validada hasta completar en Ubuntu real:</p>
+<ul>
+<li>handoff Hermes → Magnitude</li>
+<li>handoff Hermes → ODS</li>
+<li>consentimiento e instalación/preparación real</li>
+<li>benchmark de tareas LEONES</li>
+<li>evidencia MEASURED con procedencia</li>
+</ul>
+</div>
+</section>
+<section class="site-section"><span class="site-tag">Docs</span><h2>Referencias</h2>
+<div class="rc3-links">
+<a href="../docs/RC3-ARCHITECTURE.md">Arquitectura RC3</a>
+<a href="estado.html">Estado del proyecto</a>
+<a href="app.html">Recorrido operativo</a>
+<a href="../README.md">README</a>
+<a href="rc2.html">RC2 (histórico)</a>
+</div>
+</section>
+</main>
+<script src="assets/js/navigation.js?v=2026-09-05-1" defer></script>
+</body>
+</html>

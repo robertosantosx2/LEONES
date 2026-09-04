@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="LEONES RC2: diagnóstico, selección, instalación, verificación, benchmark A01 y evidencia para IA local.">
+  <meta name="description" content="LEONES RC3: discovery físico canónico, candidatos, Magnitude/ODS, verificación, medición y evidencia.">
   <title>LEONES · Empezar diagnóstico</title>
-  <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-04-1">
-  <link rel="stylesheet" href="assets/css/site.css?v=2026-09-04-1">
+  <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-1">
+  <link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-1">
 </head>
 <body>
 <header class="site-hero">
   <div class="site-hero__inner">
-    <span class="site-tag">LEONES RC2 · BETA</span>
-    <h1>Del diagnóstico a la evidencia</h1>
-    <p>La aplicación web explica y guía el recorrido. El operador canónico del beta tester es <code>./leones</code>; la web no ejecuta la infraestructura local en el navegador.</p>
+    <span class="site-tag">LEONES RC3</span>
+    <h1>Del discovery a la evidencia</h1>
+    <p>La web explica el recorrido. La sonda física canónica es <code>scripts/hardware_profile.py</code>; Hermes/OMH operan en el ecosistema local; Magnitude u ODS se eligen con consentimiento explícito.</p>
   </div>
 </header>
 <main class="site-main" id="main">
@@ -21,60 +21,39 @@
   <div class="section-heading"><span class="site-tag">Recorrido operativo</span><span class="section-index">01</span></div>
   <h2 id="flow-title">Una sola ruta, con barreras explícitas</h2>
   <div class="site-grid site-grid--journey">
-    <article class="site-card"><span class="card-number">01</span><h3>IDIOMA</h3><p>El usuario elige una vez entre Español, English o 中文. Durante la sesión solo se muestra el idioma elegido.</p></article>
-    <article class="site-card"><span class="card-number">02</span><h3>HARDWARE + LLMFIT</h3><p>Se observa el equipo real y LLMFit aporta el perfilado y los candidatos. Sus resultados son <strong>ESTIMATED</strong>.</p></article>
-    <article class="site-card"><span class="card-number">03</span><h3>MODELO</h3><p>La persona elige qué modelo quiere probar. La recomendación no sustituye la decisión humana.</p></article>
-    <article class="site-card site-card--featured"><span class="card-number">04</span><h3>ODS / MAGNITUDE</h3><p>Antes de elegir stack se presentan sus capacidades respaldadas por contrato o evidencia.</p></article>
-    <article class="site-card"><span class="card-number">05</span><h3>CONSENTIMIENTO</h3><p>Elegir stack no instala nada. El consentimiento de instalación es independiente del consentimiento de benchmark.</p></article>
-    <article class="site-card"><span class="card-number">06</span><h3>INSTALAR</h3><p>Se muestra el comando del instalador canónico y se puede instalar ahora o dejarlo para más tarde.</p></article>
-    <article class="site-card"><span class="card-number">07</span><h3>VERIFICACIÓN FÍSICA</h3><p>LEONES observa el host y exige <code>real_installation: true</code>. Un exit 0 del instalador por sí solo no equivale a PASS.</p></article>
-    <article class="site-card"><span class="card-number">08</span><h3>RESOLUCIÓN MODELO → RUNTIME</h3><p>LEONES determina el runtime compatible (p. ej. Ollama-managed o GGUF→llama.cpp). Es declarativo: no descarga ni instala por sí solo.</p></article>
-    <article class="site-card"><span class="card-number">09</span><h3>A01</h3><p>El benchmark canónico es LEONES-Agentic / A01. Antes de ejecutarlo se explica qué se medirá y se solicita consentimiento explícito.</p></article>
-    <article class="site-card"><span class="card-number">10</span><h3>RC1 → EVIDENCIA</h3><p>Con autorización se hace handoff al runner RC1 (Ollama o llama.cpp). Sin runtime/artefacto, el benchmark queda bloqueado: nunca se inventa una medición.</p></article>
+    <article class="site-card"><span class="card-number">01</span><h3>SONDA FÍSICA</h3><p><code>hardware_profile.py</code> observa el equipo real y produce <code>hardware-profile.v1</code>. No se inventan CPU, GPU ni RAM.</p></article>
+    <article class="site-card"><span class="card-number">02</span><h3>HERMES / OMH</h3><p>Hermes aporta el ecosistema runtime/model-fit; Oh My Hermes organiza routing, workflows y handoffs. No sustituyen la sonda LEONES.</p></article>
+    <article class="site-card"><span class="card-number">03</span><h3>CANDIDATOS</h3><p><code>candidate-set.v1</code> propone. HF y Artificial Analysis aportan evidencia externa marcada como tal.</p></article>
+    <article class="site-card site-card--featured"><span class="card-number">04</span><h3>ELECCIÓN HUMANA</h3><p>El usuario elige modelo/configuración y luego Magnitude u ODS. La recomendación no selecciona sola.</p></article>
+    <article class="site-card"><span class="card-number">05</span><h3>CONSENTIMIENTO</h3><p>Instalar o preparar el stack requiere autorización explícita. Cancelar es válido.</p></article>
+    <article class="site-card"><span class="card-number">06</span><h3>VERIFICAR</h3><p>LEONES observa el host. Un instalador con código 0 no equivale automáticamente a PASS.</p></article>
+    <article class="site-card"><span class="card-number">07</span><h3>MEDIR</h3><p>Solo tras runtime y artefacto disponibles. Sin eso: bloqueo honesto, no MEASURED inventado.</p></article>
+    <article class="site-card"><span class="card-number">08</span><h3>EVIDENCIA</h3><p>Conservar procedencia, configuración, resultado y frontera estimated/measured.</p></article>
   </div>
-  <pre class="site-stack">IDIOMA → HARDWARE/LLMFIT → MODELO → ODS/MAGNITUDE
-        → CONSENTIMIENTO INSTALAR → INSTALAR → VERIFICAR
-        → RESOLVER RUNTIME → PREFLIGHT
-        → CONSENTIMIENTO A01 → RC1 → MEDIR → EVIDENCIA</pre>
-</section>
-<section class="site-section" aria-labelledby="a01-title">
-  <div class="section-heading"><span class="site-tag">Benchmark canónico</span><span class="section-index">02</span></div>
-  <h2 id="a01-title">A01: medir una tarea, no inventar una cifra</h2>
-  <div class="site-grid">
-    <article class="site-card"><h3>LEONES-Agentic</h3><p><strong>Task:</strong> A01 · <strong>prompt:</strong> <code>Execute A01. Return only JSONL tool calls.</code></p></article>
-    <article class="site-card"><h3>Métricas</h3><p><code>wall_seconds</code>, <code>measured_tps</code> y <code>grader_pass</code>, con procedencia de la ejecución.</p></article>
-    <article class="site-card"><h3>Runner</h3><p>RC1 <code>scripts/a01_runtime_benchmark.py</code> con puentes <code>ollama_a01_runtime.py</code> y <code>llama_cpp_a01_runtime.py</code>.</p></article>
-  </div>
-  <div class="site-note"><strong>Regla:</strong> sin runtime o artefacto disponible (Ollama o llama.cpp según resolución), A01 queda <code>benchmark_blocked</code>. ESTIMATED ≠ MEASURED.</div>
-</section>
-<section class="site-section" aria-labelledby="stack-title">
-  <div class="section-heading"><span class="site-tag">ODS / Magnitude</span><span class="section-index">03</span></div>
-  <h2 id="stack-title">¿Qué aporta cada stack?</h2>
-  <div class="site-grid site-grid--ecosystem">
-    <article class="site-card"><span class="card-eyebrow">ODS</span><h3>Plataforma AI local</h3><p>Stack local de inferencia con interfaz y servicios, conocimiento/RAG/search, voz, agentes/workflows, imágenes, privacidad y observabilidad, según la instalación y versión seleccionadas.</p><p><strong>LEONES:</strong> prepara y verifica; el adaptador no instala ODS por sí mismo.</p></article>
-    <article class="site-card"><span class="card-eyebrow">MAGNITUDE</span><h3>Agente de coding local</h3><p>Integración orientada a agente/asistente local: perfilado, recomendación, configuración y ejecución según la instalación y versión seleccionadas.</p><p><strong>LEONES:</strong> prepara metadatos y reutiliza los contratos comunes de benchmark/evidencia.</p></article>
-  </div>
+  <pre class="site-stack">SONDA FÍSICA → HERMES/OMH → CANDIDATOS
+        → ELECCIÓN → MAGNITUDE|ODS → CONSENTIR
+        → VERIFICAR → MEDIR → EVIDENCIA</pre>
 </section>
 <section class="site-section" aria-labelledby="truth-title">
-  <div class="section-heading"><span class="site-tag">Reglas de LEONES</span><span class="section-index">04</span></div>
+  <div class="section-heading"><span class="site-tag">Reglas de LEONES</span><span class="section-index">02</span></div>
   <h2 id="truth-title">Qué significa cada estado</h2>
   <div class="site-grid">
-    <article class="site-card"><h3>ESTIMATED</h3><p>Orientación procedente de LLMFit u otras fuentes. Sirve para seleccionar y priorizar.</p></article>
-    <article class="site-card"><h3>MEASURED</h3><p>Solo tras una ejecución real registrada por el camino de runtime/evidencia correspondiente.</p></article>
+    <article class="site-card"><h3>ESTIMATED</h3><p>Orientación externa o de ranking. Sirve para priorizar, no para publicar como medición local.</p></article>
+    <article class="site-card"><h3>MEASURED</h3><p>Solo tras ejecución real registrada por el camino de runtime/evidencia correspondiente.</p></article>
     <article class="site-card"><h3>CONSENT</h3><p>Instalar ≠ verificar ≠ autorizar benchmark. Cada operación tiene su propia barrera.</p></article>
-    <article class="site-card"><h3>UNKNOWN</h3><p>Si un dato no puede comprobarse, permanece desconocido; no se rellena por conveniencia.</p></article>
+    <article class="site-card"><h3>UNKNOWN</h3><p>Si un dato no puede comprobarse, permanece desconocido.</p></article>
   </div>
 </section>
 <section class="site-section" aria-labelledby="docs-title">
-  <div class="section-heading"><span class="site-tag">Documentación</span><span class="section-index">05</span></div>
-  <h2 id="docs-title">Para ejecutar RC2</h2>
-  <p class="site-lead">El operador único del beta tester es <code>./leones</code>. La implementación del recorrido está en <code>scripts/rc2_wizard.py</code>.</p>
-  <p><a class="app-button" href="../docs/RC2-USER-MANUAL.md">Manual de usuario RC2 →</a></p>
-  <p><a class="app-button app-button--secondary" href="../docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación RC2 →</a></p>
-  <p><a class="app-button app-button--secondary" href="../docs/RC2-L-INTEGRATED-BETA-JOURNEY.md">Recorrido beta integrado →</a></p>
+  <div class="section-heading"><span class="site-tag">Documentación</span><span class="section-index">03</span></div>
+  <h2 id="docs-title">RC3</h2>
+  <p class="site-lead">Contrato canónico en <code>docs/RC3-ARCHITECTURE.md</code>. Estado público en <a href="rc3.html">rc3.html</a> y <a href="estado.html">estado.html</a>.</p>
+  <p><a class="app-button" href="rc3.html">Estado RC3 →</a></p>
+  <p><a class="app-button app-button--secondary" href="../docs/RC3-ARCHITECTURE.md">Arquitectura RC3 →</a></p>
+  <p><a class="app-button app-button--secondary" href="rc2.html">RC2 histórico →</a></p>
 </section>
 </main>
 <footer class="site-footer"><div>LEONES · IA local con criterio</div><div>Conocimiento abierto · Evidencia reproducible · 2026</div></footer>
-<script src="assets/js/navigation.js?v=2026-09-04-1" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-05-1" defer></script>
 </body>
 </html>
