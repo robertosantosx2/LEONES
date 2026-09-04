@@ -2,51 +2,62 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Estado actual de LEONES: JALONES cerrados, RC1 validado, RC2 histórico y RC3 con implementación cerrada y validación física pendiente.">
+<meta name="description" content="Estado LEONES: RC3 implementación cerrada; observación física parcial en Aspire A515-55; handoffs y MEASURED pendientes.">
 <title>LEONES · Estado</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-2">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-2">
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-3">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-3">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
 <span class="site-tag">Estado del proyecto · 5 septiembre 2026</span>
 <h1>LEONES · Estado</h1>
-<p>RC3 fija la arquitectura canónica: sonda física nativa, Hermes/OMH en el ecosistema local, elección Magnitude u ODS, y medición solo tras ejecución real.</p>
+<p>RC3 fija la sonda física canónica, el ecosistema Hermes/OMH y la elección Magnitude u ODS. Hay observación física parcial en Ubuntu real; la validación de punta a punta sigue abierta.</p>
 </div></header>
 <main class="site-main" id="main">
-<section class="site-section"><span class="site-tag">Ahora · RC3</span><h2>Implementación cerrada · físico pendiente</h2>
-<p class="site-lead"><strong>RC3 está cerrada a nivel de contratos, módulos y gate CI.</strong> La sonda canónica es <code>scripts/hardware_profile.py</code>. Hermes 0.21.0 se observó en Ubuntu vía <code>doctor</code>, pero no sustituye el perfil de hardware machine-readable de LEONES. LLMFit/FitLLM queda fuera del camino RC3.</p>
-<pre class="site-stack">UBUNTU REAL
+<section class="site-section"><span class="site-tag">Ahora · RC3</span><h2>Implementación cerrada · físico parcial</h2>
+<p class="site-lead"><strong>Contratos y gate CI cerrados.</strong> El 5 de septiembre de 2026 se ejecutó una sesión física en <strong>Acer Aspire A515-55</strong> (Ubuntu 26.04 · i5-1035G1 · ~7&nbsp;GiB · Iris Plus G1). La sonda emitió <code>hardware-profile.v1</code>; Hermes 0.21.0 y OMH 2.0.0 pasaron <code>doctor</code>; ODS tenía stack Up y modelo T0 listado. <strong>No</strong> se declara RC3 físicamente validada: faltan handoffs formales y evidencia MEASURED bajo autoridad LEONES.</p>
+<pre class="site-stack">UBUNTU REAL (Aspire A515-55)
    ↓
-hardware_profile.py → hardware-profile.v1
+hardware_profile.py → hardware-profile.v1  ✓ OBSERVED
    ↓
-RC3 adapter + Hermes hints → reconciliation
+gate estático PASS · 29 tests  ✓
    ↓
-candidate-set.v1 + evidencia externa (HF / AA)
+Hermes 0.21.0 · OMH 2.0.0 doctor  ✓ OBSERVED
    ↓
-usuario elige modelo + Magnitude | ODS
+ODS Up · llama-server ok · T0 qwen3.5-2b  ✓ OBSERVED
    ↓
-consentir → preparar → verificar → medir → evidencia</pre>
+chat smoke timeout (~1 tok/s CPU)  ✓ FALLO DOCUMENTADO
+   ↓
+handoff formal · benchmark LEONES · MEASURED  ○ OPEN</pre>
 <div class="site-note"><strong>Regla de autoridad:</strong> LEONES descubre el hardware. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.</div>
-<div class="site-note"><strong>Regla:</strong> ESTIMATED ≠ MEASURED. El gate CI es estático: no declara handoffs ni benchmarks que solo pueden comprobarse en máquina real.</div>
-<div class="site-note"><strong>STRICT 2026-09-05:</strong> narrativa web alineada a la sonda canónica; sin «Hermes descubre» en páginas públicas RC3.</div>
+<div class="site-note"><strong>Regla:</strong> ESTIMATED ≠ MEASURED. OBSERVED ≠ VALIDATED. El gate CI no declara handoffs ni benchmarks.</div>
+<div class="site-note"><strong>Evidencia:</strong> <code>docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md</code></div>
 <p><a href="rc3.html">Ver página RC3 →</a> · <a href="../docs/RC3-ARCHITECTURE.md">Arquitectura RC3 →</a></p>
 </section>
 <section class="site-section"><span class="site-tag">Cerrado en RC3</span><h2>Qué ya no se discute</h2>
 <div class="site-grid">
-<article class="site-card"><h3>✓ Sonda única</h3><p><code>hardware_profile.py</code> es la única sonda física canónica. El adaptador RC3 no redescubre CPU/GPU/RAM.</p></article>
+<article class="site-card"><h3>✓ Sonda única</h3><p><code>hardware_profile.py</code> es la única sonda física canónica. Observada en Ubuntu 26.04 en esta sesión.</p></article>
 <article class="site-card"><h3>✓ LLMFit fuera</h3><p>No es dependencia de arranque ni participa en la selección RC3.</p></article>
 <article class="site-card"><h3>✓ Candidate set</h3><p>Propuesta, no ejecución. Sin fugas de <code>measured_tps</code> en candidatos.</p></article>
-<article class="site-card"><h3>✓ Gate CI</h3><p><code>rc3_release_gate.py</code> protege contratos, artefacto resuelto y frontera de ejecución.</p></article>
+<article class="site-card"><h3>✓ Gate CI</h3><p><code>rc3_release_gate.py</code> protege contratos; físico NOT CLAIMED a nivel release.</p></article>
 <article class="site-card"><h3>✓ RC2 histórico</h3><p>Conservado como línea previa; no es el camino canónico actual.</p></article>
 <article class="site-card"><h3>✓ RC1 intacto</h3><p>Runner y evidencia de ejecución real permanecen como base de medición.</p></article>
 </div>
 </section>
+<section class="site-section"><span class="site-tag">Observado 2026-09-05</span><h2>Sesión Aspire (parcial)</h2>
+<div class="site-grid">
+<article class="site-card"><h3>✓ Perfil hardware</h3><p>CPU/RAM/GPU observados; VRAM iGPU permanece <code>null</code> sin inventar cifras.</p></article>
+<article class="site-card"><h3>✓ Hermes / OMH</h3><p>0.21.0 y 2.0.0 con doctor usable. Plugin runtime Hermes aún no observado tras reload.</p></article>
+<article class="site-card"><h3>✓ ODS runtime</h3><p>Servicios Up; <code>llama-server</code> health ok; modelo T0 coherente con 7&nbsp;GiB.</p></article>
+<article class="site-card"><h3>✓ Magnitude CLI</h3><p>0.0.11 instalado; servicio detenido (no forzar junto a ODS en 7&nbsp;GiB).</p></article>
+<article class="site-card"><h3>⚠ Inferencia lenta</h3><p>~1 tok/s en CPU; timeout de cliente ODS documentado. No es MEASURED LEONES.</p></article>
+</div>
+</section>
 <section class="site-section"><span class="site-tag">Pendiente físico</span><h2>Antes de declarar RC3 validada</h2>
 <div class="site-grid">
-<article class="site-card"><h3>○ Handoff Magnitude</h3><p>Validar en Ubuntu el paso real hacia Magnitude tras la selección.</p></article>
-<article class="site-card"><h3>○ Handoff ODS</h3><p>Validar en Ubuntu el paso real hacia ODS tras la selección.</p></article>
-<article class="site-card"><h3>○ Consentimiento + install</h3><p>Preparación/instalación real con mensaje original si falla.</p></article>
+<article class="site-card"><h3>○ Handoff Magnitude</h3><p>Validar bajo autoridad LEONES el paso real hacia Magnitude.</p></article>
+<article class="site-card"><h3>○ Handoff ODS</h3><p>Validar bajo autoridad LEONES el paso real hacia ODS (más allá de <code>ods status</code>).</p></article>
+<article class="site-card"><h3>○ Consentimiento + install</h3><p>Preparación real con mensaje original si falla.</p></article>
 <article class="site-card"><h3>○ Benchmark + evidencia</h3><p>Tareas LEONES y MEASURED con procedencia, sin inventar cifras.</p></article>
 </div>
 </section>
@@ -56,13 +67,14 @@ consentir → preparar → verificar → medir → evidencia</pre>
 <article class="site-card"><h3>RC1</h3><p>🟢 Validado. Pipeline efectivo de ejecución, medición y evidencia.</p></article>
 <article class="site-card"><h3>RC2</h3><p>🟢 Histórico. Validación beta previa; sustituido como canónico por RC3.</p></article>
 <article class="site-card"><h3>RC3 implementación</h3><p>🟢 Cerrada. Arquitectura, contratos, sonda y gate CI activos.</p></article>
-<article class="site-card"><h3>RC3 físico</h3><p>🟡 Pendiente. Handoffs, instalación real, benchmark y evidencia MEASURED.</p></article>
+<article class="site-card"><h3>RC3 observación física</h3><p>🟡 Parcial (Aspire 2026-09-05). Sonda + ecosistema + ODS runtime observados.</p></article>
+<article class="site-card"><h3>RC3 validación física</h3><p>🔴 Abierta. Handoffs formales, benchmark LEONES y MEASURED pendientes.</p></article>
 </div>
 </section>
 <section class="site-section"><span class="site-tag">Regla</span><h2>Medir antes de afirmar</h2>
 <p><code>estimated</code>, <code>reported</code>, <code>observed</code>, <code>configured</code>, <code>resolved</code>, <code>available</code> y <code>measured</code> mantienen fronteras distintas. Lo desconocido permanece desconocido.</p>
 </section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-05-2" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-05-3" defer></script>
 </body>
 </html>
