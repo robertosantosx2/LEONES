@@ -1,0 +1,40 @@
+{
+  "schema_version": "model-evidence.v1",
+  "catalog_status": "curated_external_snapshot",
+  "as_of": "2026-09-04",
+  "sources": ["Hugging Face Hub", "Artificial Analysis"],
+  "candidates": [
+    {
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "name": "Qwen3.5 0.8B Reasoning",
+      "parameters_b": 0.9,
+      "quantization_bits": 4,
+      "hugging_face": {"status": "weights_available", "license": "apache-2.0"},
+      "artificial_analysis": {"intelligence_index": 5, "reasoning": true, "context_tokens": 262000, "evidence": "external_estimate"}
+    },
+    {
+      "model_id": "Qwen/Qwen3-0.6B",
+      "name": "Qwen3 0.6B",
+      "parameters_b": 0.7516,
+      "quantization_bits": 4,
+      "hugging_face": {"downloads": 204700000, "likes": 1575, "license": "apache-2.0", "status": "weights_available"},
+      "artificial_analysis": {"intelligence_index": 1, "reasoning": true, "context_tokens": 32000, "evidence": "external_estimate"}
+    },
+    {
+      "model_id": "google/gemma-3-1b-it",
+      "name": "Gemma 3 1B Instruct",
+      "parameters_b": 1.0,
+      "quantization_bits": 4,
+      "hugging_face": {"downloads": 49500000, "likes": 1127, "license": "gemma", "status": "gated"},
+      "artificial_analysis": {"intelligence_index": 1, "reasoning": false, "context_tokens": 32000, "evidence": "external_estimate", "deprecated": true}
+    },
+    {
+      "model_id": "microsoft/Phi-4-mini-instruct",
+      "name": "Phi-4 Mini Instruct",
+      "parameters_b": 3.836,
+      "quantization_bits": 4,
+      "hugging_face": {"downloads": 8800000, "likes": 829, "license": "mit", "status": "weights_available"},
+      "artificial_analysis": {"intelligence_index": 6, "hosted_output_tps": 43.7, "reasoning": false, "context_tokens": 128000, "evidence": "external_provider_benchmark"}
+    }
+  ]
+}
