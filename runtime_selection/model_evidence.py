@@ -6,7 +6,7 @@ from typing import Any
 SCHEMA_VERSION = "model-evidence.v1"
 
 
-def _memory_estimate_gb(parameters_b: float, bits: int, overhead_gb: float = 0.25) -> float:
+def _memory_estimate_gb(parameters_b: float, bits: int, overhead_gb: float = 0.4) -> float:
     """Conservative rough weight+runtime estimate; not a measured footprint."""
     return round(parameters_b * bits / 8 + overhead_gb, 3)
 
@@ -41,7 +41,6 @@ def enrich_candidates(
             "status": "fit" if estimate is not None and available_gb >= estimate else "marginal_or_unknown",
         }
         aa = info.get("artificial_analysis") or {}
-        hf = info.get("hugging_face") or {}
         score = float(aa.get("intelligence_index", 0) or 0)
         fit_bonus = 1 if item["local_fit_estimate"]["status"] == "fit" else 0
         item["decision_score"] = round(fit_bonus * 100 + score, 3)
