@@ -2,9 +2,9 @@
 """RC3 physical hardware discovery.
 
 The RC3 contract never treats Hermes' model-fit UI as authoritative hardware
-telemetry.  Hermes currently has local-runtime hardware logic, but its public
-CLI exposes no stable machine-readable hardware command.  Therefore this
-adapter collects the physical facts directly from the Ubuntu host and emits a
+telemetry. Hermes currently has local-runtime hardware logic, but its public
+CLI exposes no stable machine-readable hardware command. Therefore this
+adapter collects physical facts directly from the Ubuntu host and emits a
 stable ``hardware-profile.v1`` artifact with explicit provenance.
 
 This is discovery, not benchmarking: no performance number is inferred here.
@@ -50,19 +50,38 @@ def _ram() -> tuple[float | None, float | None]:
 
 
 def _cpu() -> dict[str, Any]:
-    text = _run("lscpu")
-    logical = _first(r"^CPU\(s\):\s+(\d+)", text)
-    cores = _first(r"^Core\(s\) per socket:\s+(\d+)", text)
-    sockets = _first(r"^Socket\(s\):\s+(\d+)", text)
-    threads = int(logical) if logical else None
+    # lscpu is locale-sensitive; use /proc/cpuinfo for model/flags and the
+    # machine-readable CSV mode of lscpu for topology.
+    cpuinfo = _run("cat", "/proc/cpuinfo")
+    model = _first(r"^model name\s*:\s*(.+)$", cpuinfo)
+    flags_text = _first(r"^(?:flags|Features)\s*:\s*(.+)$", cpuinfo) or ""
+
+    topology = _run("lscpu", "-p=CPU,Core,Socket")
+    rows: list[tuple[int, int, int]] = []
+    for line in topology.splitlines():
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split(",")
+        if len(parts) >= 3:
+            try:
+                rows.append((int(parts[0]), int(parts[1]), int(parts[2])))
+            except ValueError:
+                pass
+
+    logical = len({r[0] for r in rows}) or None
+    cores = len({(r[1], r[2]) for r in rows}) or None
+    sockets = len({r[2] for r in rows}) or None
+    cores_per_socket = None
+    if sockets:
+        cores_per_socket = cores // sockets if cores is not None else None
+
     return {
-        "model": _first(r"^Model name:\s+(.+)$", text),
-        "architecture": _first(r"^Architecture:\s+(.+)$", text),
-        "logical_cpus": threads,
-        "cores_per_socket": int(cores) if cores else None,
-        "sockets": int(sockets) if sockets else None,
-        "flags": (_first(r"^Flags:\s+(.+)$", text)
-                  or _first(r"^Features:\s+(.+)$", text) or "").split(),
+        "model": model,
+        "architecture": platform.machine(),
+        "logical_cpus": logical,
+        "cores_per_socket": cores_per_socket,
+        "sockets": sockets,
+        "flags": sorted(set(flags_text.split())),
     }
 
 
@@ -74,18 +93,23 @@ def _gpus() -> list[dict[str, Any]]:
         if re.search(r"VGA compatible controller|3D controller|Display controller", line, re.I):
             if current:
                 result.append(current)
-            m = re.match(r"([^ ]+)\s+(.+?)\s+\[(?:[0-9a-f]{4}):([0-9a-f]{4})\]", line, re.I)
+            m = re.match(r"([^ ]+)\s+(.+?)\s+\[([0-9a-f]{4}):([0-9a-f]{4})\]", line, re.I)
             current = {
                 "pci_address": (m.group(1) if m else line.split()[0]),
                 "description": (m.group(2).strip() if m else line.strip()),
-                "vendor_device_id": (m.group(3) if m else None),
+                "vendor_device_id": (f"{m.group(3)}:{m.group(4)}" if m else None),
                 "driver": None,
             }
         elif current:
-            driver = _first(r"Kernel driver in use:\s+(.+)$", line)
-            if driver:
-                current["driver"] = driver
-    if current:
+            m_driver = re.search(r"^\s*Kernel driver in use:\s*(\S+)\s*$", line, re.I)
+            if m_driver:
+                current["driver"] = m_driver.group(1)
+            # A new unrelated PCI function ends the current device's metadata.
+            if re.match(r"^[0-9a-f]+:[0-9a-f]+\.[0-9a-f]+\s", line, re.I):
+                if current and current not in result:
+                    result.append(current)
+                current = None
+    if current and current not in result:
         result.append(current)
     return result
 
@@ -99,8 +123,11 @@ def _nvidia() -> dict[str, Any] | None:
     for line in out.splitlines():
         parts = [p.strip() for p in line.split(",")]
         if len(parts) >= 4:
-            rows.append({"name": parts[0], "vram_gb": float(parts[1]) / 1024,
-                         "free_vram_gb": float(parts[2]) / 1024, "driver": parts[3]})
+            try:
+                rows.append({"name": parts[0], "vram_gb": float(parts[1]) / 1024,
+                             "free_vram_gb": float(parts[2]) / 1024, "driver": parts[3]})
+            except ValueError:
+                continue
     return {"tool": "nvidia-smi", "gpus": rows} if rows else None
 
 
