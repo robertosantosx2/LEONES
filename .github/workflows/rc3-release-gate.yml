@@ -1,0 +1,46 @@
+name: LEONES RC3 Release Gate
+
+on:
+  push:
+    paths:
+      - 'docs/RC3-ARCHITECTURE.md'
+      - 'runtime_selection/**'
+      - 'scripts/hardware_profile.py'
+      - 'scripts/rc3_hardware_discovery.py'
+      - 'scripts/rc3_release_gate.py'
+      - 'tests/**'
+      - '.github/workflows/rc3-release-gate.yml'
+  pull_request:
+    paths:
+      - 'docs/RC3-ARCHITECTURE.md'
+      - 'runtime_selection/**'
+      - 'scripts/hardware_profile.py'
+      - 'scripts/rc3_hardware_discovery.py'
+      - 'scripts/rc3_release_gate.py'
+      - 'tests/**'
+      - '.github/workflows/rc3-release-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rc3-release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pytest
+
+      - name: Run RC3 static release gate
+        run: python scripts/rc3_release_gate.py
+
+      - name: Run RC3 regression suite
+        run: python -m pytest tests -q
