@@ -28,11 +28,13 @@
     <article class="site-card"><span class="card-number">05</span><h3>CONSENTIMIENTO</h3><p>Elegir stack no instala nada. El consentimiento de instalación es independiente del consentimiento de benchmark.</p></article>
     <article class="site-card"><span class="card-number">06</span><h3>INSTALAR</h3><p>Se muestra el comando del instalador canónico y se puede instalar ahora o dejarlo para más tarde.</p></article>
     <article class="site-card"><span class="card-number">07</span><h3>VERIFICACIÓN FÍSICA</h3><p>LEONES observa el host y exige <code>real_installation: true</code>. Un exit 0 del instalador por sí solo no equivale a PASS.</p></article>
-    <article class="site-card"><span class="card-number">08</span><h3>A01</h3><p>El benchmark canónico es LEONES-Agentic / A01. Antes de ejecutarlo se explica qué se medirá y se solicita consentimiento explícito.</p></article>
-    <article class="site-card"><span class="card-number">09</span><h3>RC1 → EVIDENCIA</h3><p>Con autorización se hace handoff al runner RC1. Si Ollama no está disponible, el benchmark queda bloqueado: nunca se inventa una medición.</p></article>
+    <article class="site-card"><span class="card-number">08</span><h3>RESOLUCIÓN MODELO → RUNTIME</h3><p>LEONES determina el runtime compatible (p. ej. Ollama-managed o GGUF→llama.cpp). Es declarativo: no descarga ni instala por sí solo.</p></article>
+    <article class="site-card"><span class="card-number">09</span><h3>A01</h3><p>El benchmark canónico es LEONES-Agentic / A01. Antes de ejecutarlo se explica qué se medirá y se solicita consentimiento explícito.</p></article>
+    <article class="site-card"><span class="card-number">10</span><h3>RC1 → EVIDENCIA</h3><p>Con autorización se hace handoff al runner RC1 (Ollama o llama.cpp). Sin runtime/artefacto, el benchmark queda bloqueado: nunca se inventa una medición.</p></article>
   </div>
   <pre class="site-stack">IDIOMA → HARDWARE/LLMFIT → MODELO → ODS/MAGNITUDE
         → CONSENTIMIENTO INSTALAR → INSTALAR → VERIFICAR
+        → RESOLVER RUNTIME → PREFLIGHT
         → CONSENTIMIENTO A01 → RC1 → MEDIR → EVIDENCIA</pre>
 </section>
 <section class="site-section" aria-labelledby="a01-title">
@@ -41,9 +43,9 @@
   <div class="site-grid">
     <article class="site-card"><h3>LEONES-Agentic</h3><p><strong>Task:</strong> A01 · <strong>prompt:</strong> <code>Execute A01. Return only JSONL tool calls.</code></p></article>
     <article class="site-card"><h3>Métricas</h3><p><code>wall_seconds</code>, <code>measured_tps</code> y <code>grader_pass</code>, con procedencia de la ejecución.</p></article>
-    <article class="site-card"><h3>Runner</h3><p>RC1 <code>scripts/a01_runtime_benchmark.py</code> con puente local <code>scripts/ollama_a01_runtime.py</code>.</p></article>
+    <article class="site-card"><h3>Runner</h3><p>RC1 <code>scripts/a01_runtime_benchmark.py</code> con puentes <code>ollama_a01_runtime.py</code> y <code>llama_cpp_a01_runtime.py</code>.</p></article>
   </div>
-  <div class="site-note"><strong>Regla:</strong> sin Ollama en PATH, A01 queda <code>benchmark_blocked</code>. ESTIMATED ≠ MEASURED.</div>
+  <div class="site-note"><strong>Regla:</strong> sin runtime o artefacto disponible (Ollama o llama.cpp según resolución), A01 queda <code>benchmark_blocked</code>. ESTIMATED ≠ MEASURED.</div>
 </section>
 <section class="site-section" aria-labelledby="stack-title">
   <div class="section-heading"><span class="site-tag">ODS / Magnitude</span><span class="section-index">03</span></div>
