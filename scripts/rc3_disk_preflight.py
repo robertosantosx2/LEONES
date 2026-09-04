@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""RC3 disk-capacity gate before model/stack selection.
+"""RC3 disk + installation preflight before model/stack selection.
 
 The check is deliberately conservative and provenance-aware:
 - Hermes: 2 GiB recommended persistent space (upstream guidance).
@@ -11,7 +11,8 @@ The check is deliberately conservative and provenance-aware:
   final download gate.
 - ODS: 40 GiB upstream free-disk requirement for models/container images.
 
-No files are downloaded or installed by this command.
+Installation detection is read-only: command/path presence only. No files are
+installed, downloaded, started, stopped, or modified by this command.
 """
 from __future__ import annotations
 
@@ -27,7 +28,7 @@ HERMES_RECOMMENDED_GIB = 2.0
 LLM_RESERVE_GIB = 2.0
 MAGNITUDE_RESERVE_GIB = 5.0
 ODS_REQUIRED_GIB = 40.0
-SCHEMA_VERSION = "disk-preflight.v1"
+SCHEMA_VERSION = "disk-preflight.v2"
 
 
 def _usage(path: Path) -> dict[str, Any]:
@@ -63,6 +64,43 @@ def _existing(path: Path) -> dict[str, Any]:
     }
 
 
+def _command(name: str) -> dict[str, Any]:
+    resolved = shutil.which(name)
+    return {
+        "name": name,
+        "found": resolved is not None,
+        "path": resolved,
+    }
+
+
+def _installation_state() -> dict[str, Any]:
+    """Detect already-installed tools without executing them."""
+    home = Path.home()
+    commands = {
+        "hermes": _command("hermes"),
+        "magnitude": _command("magnitude"),
+        "ods": _command("ods"),
+    }
+    paths = {
+        "hermes_state": _existing(home / ".hermes"),
+        "hermes_bin": _existing(home / ".local" / "bin" / "hermes"),
+        "magnitude_state": _existing(home / ".magnitude"),
+        "ods_runtime": _existing(home / "ods"),
+        "ods_cli": _existing(home / "ods" / "ods-cli"),
+    }
+    installed = {
+        "hermes": commands["hermes"]["found"] or paths["hermes_state"]["exists"] or paths["hermes_bin"]["exists"],
+        "magnitude": commands["magnitude"]["found"] or paths["magnitude_state"]["exists"],
+        "ods": commands["ods"]["found"] or paths["ods_runtime"]["exists"] or paths["ods_cli"]["exists"],
+    }
+    return {
+        "method": "read_only_command_and_path_detection",
+        "commands": commands,
+        "paths": paths,
+        "installed": installed,
+    }
+
+
 def build_report(
     *,
     base: Path,
@@ -93,7 +131,7 @@ def build_report(
             "scope": "models and container images",
         },
     }
-    paths = {
+    existing_paths = {
         "hermes": _existing(Path.home() / ".hermes"),
         "hermes_bin": _existing(Path.home() / ".local" / "bin" / "hermes"),
         "leones": _existing(base),
@@ -117,6 +155,23 @@ def build_report(
         "hermes_plus_llm_plus_magnitude": free >= combined["hermes_plus_llm_plus_magnitude"],
         "hermes_plus_llm_plus_ods": free >= combined["hermes_plus_llm_plus_ods"],
     }
+    stack_readiness = {
+        "magnitude": {
+            "ready": status["hermes_plus_llm_plus_magnitude"],
+            "required_gib": combined["hermes_plus_llm_plus_magnitude"],
+            "headroom_gib": round(free - combined["hermes_plus_llm_plus_magnitude"], 3),
+        },
+        "ods": {
+            "ready": status["hermes_plus_llm_plus_ods"],
+            "required_gib": combined["hermes_plus_llm_plus_ods"],
+            "headroom_gib": round(free - combined["hermes_plus_llm_plus_ods"], 3),
+        },
+    }
+    selection_ready = status["hermes"] and status["llm"] and any(
+        option["ready"] for option in stack_readiness.values()
+    )
+    any_constraints = not all(option["ready"] for option in stack_readiness.values())
+
     return {
         "schema_version": SCHEMA_VERSION,
         "verification": "detected",
@@ -124,12 +179,13 @@ def build_report(
         "requirements": requirements,
         "combined_reserves_gib": combined,
         "status": status,
-        "existing_paths": paths,
+        "existing_paths": existing_paths,
+        "installation": _installation_state(),
         "download_installation": {"performed": False},
         "selection_gate": {
-            "ready": status["hermes"] and status["llm"] and (
-                status["magnitude"] or status["ods"]
-            ),
+            "ready": selection_ready,
+            "state": "READY_WITH_CONSTRAINTS" if selection_ready and any_constraints else ("READY" if selection_ready else "BLOCKED"),
+            "stack_readiness": stack_readiness,
             "model_artifact_recheck_required": True,
             "stack_choice_required": True,
         },
@@ -137,7 +193,7 @@ def build_report(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="LEONES RC3 disk-capacity preflight")
+    parser = argparse.ArgumentParser(description="LEONES RC3 disk + installation preflight")
     parser.add_argument("--base", default=".", help="filesystem location to inspect")
     parser.add_argument("--out", help="write JSON report")
     parser.add_argument("--llm-reserve-gib", type=float, default=LLM_RESERVE_GIB)
@@ -150,19 +206,27 @@ def main() -> int:
         magnitude_reserve_gib=args.magnitude_reserve_gib,
     )
     fs = report["filesystem"]
-    print("RC3 DISK PREFLIGHT")
+    print("RC3 DISK + INSTALLATION PREFLIGHT")
     print(f"Filesystem: {fs['path']}")
     print(f"Free: {fs['mount_free_gib']:.2f} GiB / {fs['mount_total_gib']:.2f} GiB")
     for key in ("hermes", "llm", "magnitude", "ods"):
         req = report["requirements"][key]["required_gib"]
         ok = "PASS" if report["status"][key] else "BLOCK"
         print(f"  {key:10s}: {ok:5s} · reserve/requirement={req:.2f} GiB")
+    print("INSTALLATION DETECTION (read-only)")
+    for key in ("hermes", "magnitude", "ods"):
+        state = "INSTALLED/PRESENT" if report["installation"]["installed"][key] else "NOT DETECTED"
+        command = report["installation"]["commands"][key]
+        print(f"  {key:10s}: {state} · command={command['path'] or 'not found'}")
     print(
         "  combined  : "
         f"Hermes+LLM+Magnitude={report['combined_reserves_gib']['hermes_plus_llm_plus_magnitude']:.2f} GiB · "
         f"Hermes+LLM+ODS={report['combined_reserves_gib']['hermes_plus_llm_plus_ods']:.2f} GiB"
     )
-    print(f"SELECTION GATE: {'READY' if report['selection_gate']['ready'] else 'BLOCKED'}")
+    print(f"SELECTION GATE: {report['selection_gate']['state']}")
+    for stack, option in report["selection_gate"]["stack_readiness"].items():
+        state = "READY" if option["ready"] else "BLOCKED"
+        print(f"  {stack:10s}: {state} · headroom={option['headroom_gib']:.2f} GiB")
     print("MODEL ARTIFACT RECHECK: required before download")
     print("INSTALL/DOWNLOAD PERFORMED: false")
     if args.out:
