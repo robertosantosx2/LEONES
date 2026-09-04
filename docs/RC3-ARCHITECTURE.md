@@ -1,6 +1,6 @@
 # LEONES RC3 — Hermes + native physical discovery architecture
 
-**Estado:** 🟢 **Implementación cerrada · gate estático CI activo · validación física final pendiente**  
+**Estado:** 🟢 **Implementación cerrada · gate CI activo · 🟡 observación física parcial (Aspire 2026-09-05) · validación física final pendiente**  
 **Predecesor:** RC2  
 **Decisión:** 5 de septiembre de 2026
 
@@ -103,7 +103,7 @@ Puede observar CPU, topología y flags; RAM visible/disponible; GPU PCI, identif
 - parámetros y contexto;
 - Artificial Analysis Intelligence Index y benchmarks externos;
 - velocidad de proveedor externo, cuando exista, etiquetada como `hosted_output_tps`;
-- estimación conservadora de memoria local a partir de parámetros/cuanti­zación.
+- estimación conservadora de memoria local a partir de parámetros/cuantización.
 
 Estas señales sirven para **ordenar y explicar candidatos**, no para crear mediciones LEONES. La salida contiene `recommended_model_id`, pero mantiene `user_choice_required: true`, `execution_authorized: false` y `measured: false`.
 
@@ -268,7 +268,7 @@ LEONES descubre físicamente, verifica y mide
 - [x] LLMFit/FitLLM separado del camino canónico.
 - [x] Magnitude y ODS definidos como handoffs alternativos elegidos por el usuario.
 - [x] Hermes 0.21.0 observado en Ubuntu.
-- [x] OMH 2.0.0 observado y `doctor` 46/46.
+- [x] OMH 2.0.0 observado y `doctor` 48/48 (sesión 2026-09-05).
 - [x] Discovery físico Ubuntu validado.
 - [x] `scripts/hardware_profile.py` fijado como sonda física canónica.
 - [x] `scripts/rc3_hardware_discovery.py` reducido a adaptador de contrato.
@@ -284,12 +284,27 @@ LEONES descubre físicamente, verifica y mide
 - [x] Gate estático de release RC3 implementado.
 - [x] Workflow CI de release RC3 implementado.
 
+### Observación física parcial — 2026-09-05 (Aspire A515-55)
+
+Ejecución real en Ubuntu 26.04.1 LTS (Acer Aspire A515-55 · i5-1035G1 · ~7 GiB · Iris Plus G1).  
+Detalle y límites: `docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md`.
+
+- [x] Sonda canónica `hardware_profile.py` → `hardware-profile.v1` (`source: leones-native-ubuntu`).
+- [x] Gate estático RC3 **PASS** · 29 tests · `physical Ubuntu validation: NOT CLAIMED` (correcto).
+- [x] Hermes 0.21.0 · `doctor` operativo en este host.
+- [x] OMH 2.0.0 · doctor **48/48** · 0 blocking.
+- [x] Magnitude 0.0.11 presente · **service Stopped**.
+- [x] ODS 2.6.0 · stack Up · `llama-server` health ok · modelo T0 `qwen3.5-2b` listado.
+- [x] Inferencia CPU **observada** (~1 tok/s en logs); `ods chat` con timeout 30s **falló** en cliente.
+
 ### Validación física final — PENDIENTE
 
-- [ ] Handoff real Hermes → Magnitude validado.
-- [ ] Handoff real Hermes → ODS validado.
+- [ ] Handoff real Hermes → Magnitude validado bajo autoridad LEONES.
+- [ ] Handoff real Hermes → ODS validado bajo autoridad LEONES.
 - [ ] Gate de consentimiento y preparación física validado en el flujo RC3.
-- [ ] Benchmark de tareas sobre ambos caminos.
-- [ ] Evidencia comparativa.
+- [ ] Benchmark de tareas LEONES (no solo smoke del stack externo).
+- [ ] Evidencia **MEASURED** con procedencia LEONES.
+- [ ] Comparativa Magnitude vs ODS cuando ambos caminos estén medidos.
 
-Estos puntos requieren ejecución física real y **no pueden cerrarse desde CI ni por diseño documental**.
+Estos puntos requieren ejecución física real y **no pueden cerrarse desde CI ni por diseño documental**.  
+OBSERVED ≠ VALIDATED. Un stack Up y un `doctor` verde no equivalen a medición LEONES.
