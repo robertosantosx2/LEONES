@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Collect a reproducible Linux hardware profile for LEONES model selection.
+"""Collect the canonical LEONES Linux hardware profile.
 
-The probe reports observed host facts only. It does not infer model fit and it
-does not benchmark a model. Expensive measurements are opt-in; the default
-profile is safe to run on a Linux workstation.
+This module is the single low-level physical probe used by RC3. It reports
+observed host facts only: no model-fit inference and no benchmarking.
 """
-
 from __future__ import annotations
 
 import argparse
@@ -20,10 +18,12 @@ from pathlib import Path
 from typing import Any
 
 
-def _run(*args: str) -> str:
+def _run(*args: str, timeout: float = 5.0) -> str:
     try:
-        return subprocess.check_output(args, text=True, stderr=subprocess.DEVNULL).strip()
-    except (FileNotFoundError, subprocess.CalledProcessError):
+        return subprocess.check_output(
+            args, text=True, stderr=subprocess.DEVNULL, timeout=timeout
+        ).strip()
+    except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return ""
 
 
@@ -34,60 +34,77 @@ def _num(value: str) -> float | None:
         return None
 
 
+def _cpuinfo() -> tuple[str | None, list[str]]:
+    try:
+        raw = Path("/proc/cpuinfo").read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None, []
+    model = None
+    flags: list[str] = []
+    for line in raw.splitlines():
+        if model is None and re.match(r"^model name\s*:", line, re.I):
+            model = line.split(":", 1)[1].strip()
+        if not flags and re.match(r"^(?:flags|Features)\s*:", line, re.I):
+            flags = line.split(":", 1)[1].split()
+    return model, sorted(set(flags))
+
+
+def _topology() -> tuple[int | None, int | None, int | None, int | None]:
+    raw = _run("lscpu", "-p=CPU,Core,Socket")
+    rows: list[tuple[int, int, int]] = []
+    for line in raw.splitlines():
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split(",")
+        if len(parts) >= 3:
+            try:
+                rows.append((int(parts[0]), int(parts[1]), int(parts[2])))
+            except ValueError:
+                continue
+    if not rows:
+        return None, None, None, None
+    logical = len({r[0] for r in rows})
+    sockets = len({r[2] for r in rows})
+    physical = len({(r[1], r[2]) for r in rows})
+    per_socket = physical // sockets if sockets else None
+    return logical, physical, sockets, per_socket
+
+
 def cpu() -> dict[str, Any]:
-    info: dict[str, str] = {}
+    model, flags = _cpuinfo()
+    logical, physical, sockets, cores_per_socket = _topology()
     raw = _run("lscpu")
+    info: dict[str, str] = {}
     for line in raw.splitlines():
         if ":" in line:
             key, value = line.split(":", 1)
             info[key.strip()] = value.strip()
-
-    model = info.get("Model name")
-    if not model:
-        try:
-            for line in Path("/proc/cpuinfo").read_text().splitlines():
-                if line.lower().startswith("model name"):
-                    _, value = line.split(":", 1)
-                    model = value.strip()
-                    break
-        except OSError:
-            pass
-    if not model:
-        model = platform.processor()
-
-    logical = int(info["CPU(s)"]) if info.get("CPU(s)", "").isdigit() else os.cpu_count()
-    physical = int(info["Core(s) per socket"]) if info.get("Core(s) per socket", "").isdigit() else None
-    sockets = int(info["Socket(s)"]) if info.get("Socket(s)", "").isdigit() else None
-    threads_per_core = (
-        int(info["Thread(s) per core"])
-        if info.get("Thread(s) per core", "").isdigit()
-        else None
-    )
-
     return {
-        "model": model or "unknown",
-        "logical_cpus": logical,
+        "model": model or platform.processor() or "unknown",
+        "logical_cpus": logical or os.cpu_count(),
         "physical_cores": physical,
-        "threads_per_core": threads_per_core,
+        "threads_per_core": (
+            logical // physical if logical and physical else None
+        ),
         "sockets": sockets,
-        "architecture": info.get("Architecture", platform.machine()),
+        "architecture": platform.machine(),
         "mhz": _num(info.get("CPU MHz", "")),
-        "cache_l3": info.get("L3 cache"),
+        "cache_l3": info.get("L3 cache") or info.get("L3 Cache"),
+        "flags": flags,
     }
 
 
 def memory() -> dict[str, Any]:
-    mem: dict[str, Any] = {}
     raw = _run("free", "-b")
     for line in raw.splitlines():
         if line.startswith("Mem:"):
             fields = line.split()
             if len(fields) >= 7:
-                mem = {
+                return {
                     "visible_to_os_bytes": int(fields[1]),
                     "available_bytes": int(fields[6]),
                 }
-    return mem
+    return {}
 
 
 def _gpu_driver(pci_address: str) -> str | None:
@@ -99,15 +116,17 @@ def _gpu_driver(pci_address: str) -> str | None:
 
 
 def gpu() -> list[dict[str, Any]]:
-    raw = _run("lspci", "-D", "-mm")
+    raw = _run("lspci", "-D", "-nn")
     result: list[dict[str, Any]] = []
     for line in raw.splitlines():
-        if not any(kind in line for kind in ("VGA compatible controller", "3D controller", "Display controller")):
+        if not re.search(r"VGA compatible controller|3D controller|Display controller", line, re.I):
             continue
         pci_address = line.split()[0] if line.split() else ""
+        match = re.search(r"\[([0-9a-f]{4}):([0-9a-f]{4})\]", line, re.I)
         result.append({
             "pci_address": pci_address,
             "description": line,
+            "vendor_device_id": f"{match.group(1)}:{match.group(2)}" if match else None,
             "driver": _gpu_driver(pci_address) if pci_address else None,
             "vram_bytes": None,
             "vram_source": None,
@@ -122,8 +141,7 @@ def disks() -> list[dict[str, Any]]:
         fields = line.split(None, 4)
         if len(fields) >= 4 and fields[1] == "disk":
             result.append({
-                "name": fields[0],
-                "size": fields[2],
+                "name": fields[0], "size": fields[2],
                 "rotational": fields[3] == "1",
                 "model": fields[4] if len(fields) > 4 else "",
             })
@@ -131,17 +149,14 @@ def disks() -> list[dict[str, Any]]:
 
 
 def network_bandwidth() -> dict[str, Any]:
-    """Return interface link speed where Linux exposes it; no traffic test."""
     result = {}
     root = Path("/sys/class/net")
     if root.exists():
         for iface in root.iterdir():
             speed = iface / "speed"
-            if not speed.exists():
-                continue
             try:
-                value = speed.read_text().strip()
-            except (OSError, ValueError):
+                value = speed.read_text().strip() if speed.exists() else ""
+            except OSError:
                 continue
             if value.isdigit() and int(value) > 0:
                 result[iface.name] = {"link_mbps": int(value)}
@@ -149,13 +164,13 @@ def network_bandwidth() -> dict[str, Any]:
 
 
 def optional_tools() -> dict[str, bool]:
-    return {
-        name: bool(shutil.which(name))
-        for name in ("nvidia-smi", "rocminfo", "vulkaninfo", "vainfo", "glxinfo")
-    }
+    return {name: bool(shutil.which(name)) for name in (
+        "nvidia-smi", "rocminfo", "vulkaninfo", "vainfo", "glxinfo"
+    )}
 
 
 def profile() -> dict[str, Any]:
+    """Return the canonical physical ``hardware-profile.v1`` source."""
     return {
         "schema_version": "hardware-profile.v1",
         "probe": "LEONES-hardware-profile",
@@ -170,16 +185,13 @@ def profile() -> dict[str, Any]:
         "gpu": gpu(),
         "disks": disks(),
         "network": network_bandwidth(),
-        "tools": {
-            name: bool(shutil.which(name))
-            for name in ("lscpu", "free", "lspci", "lsblk")
-        },
+        "tools": {name: bool(shutil.which(name)) for name in (
+            "lscpu", "free", "lspci", "lsblk"
+        )},
         "accelerator_tools": optional_tools(),
         "measurement": {
-            "cpu_benchmark": False,
-            "memory_bandwidth": False,
-            "disk_benchmark": False,
-            "gpu_benchmark": False,
+            "cpu_benchmark": False, "memory_bandwidth": False,
+            "disk_benchmark": False, "gpu_benchmark": False,
         },
     }
 
@@ -188,8 +200,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
-    result = profile()
-    text = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    text = json.dumps(profile(), ensure_ascii=False, indent=2) + "\n"
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(text, encoding="utf-8")
