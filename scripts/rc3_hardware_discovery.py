@@ -16,7 +16,12 @@ import json
 from pathlib import Path
 from typing import Any
 
-from hardware_profile import profile
+try:
+    # Package import: ``from scripts import rc3_hardware_discovery``.
+    from scripts.hardware_profile import profile
+except ModuleNotFoundError:
+    # Direct execution: ``python scripts/rc3_hardware_discovery.py``.
+    from hardware_profile import profile
 
 SCHEMA = "hardware-profile.v1"
 
