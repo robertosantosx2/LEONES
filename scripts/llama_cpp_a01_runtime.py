@@ -12,9 +12,10 @@ workstation even when the quantized model itself fits in RAM. The default of
 2048 is the validated workstation-safe A01 baseline; callers may override it
 explicitly with ``--context``.
 
-Conversation mode is disabled because A01 consumes structured model output
-from a single completion. Interactive chat mode can otherwise keep the process
-open after generation and contaminate the runner's completion contract.
+A01 requires one-shot completion rather than interactive conversation mode.
+This build exposes that contract through ``llama-completion``; ``llama-cli``
+explicitly rejects ``-no-cnv`` and falls back to an interactive session, so it
+must not be selected when the completion binary is available.
 """
 from __future__ import annotations
 
@@ -27,13 +28,17 @@ DEFAULT_CONTEXT_TOKENS = 2048
 
 
 def find_llama_cli() -> list[str]:
-    binary = shutil.which("llama-cli")
-    if binary:
-        return [binary]
+    """Return the trusted one-shot llama.cpp executable argv prefix."""
+    completion = shutil.which("llama-completion")
+    if completion:
+        return [completion]
     llama = shutil.which("llama")
     if llama:
-        return [llama, "cli"]
-    raise RuntimeError("llama.cpp CLI not found: expected llama-cli or llama")
+        return [llama, "completion"]
+    raise RuntimeError(
+        "llama.cpp completion executable not found: expected llama-completion "
+        "or the llama completion subcommand"
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
