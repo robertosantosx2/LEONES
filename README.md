@@ -11,7 +11,7 @@
 | JALÓN 4 | 🟢 **Cerrado** | Metodología AA + contratos de integración + benchmark de tareas + tiers |
 | RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end |
 | RC2 | 🟡 **Histórica / validación física** | Orquestación beta, instalación y piloto externo |
-| **RC3** | 🟢 **Arquitectura fijada · validación física pendiente** | **Hermes → hardware profile → OMH → elección → Magnitude/ODS → medición LEONES** |
+| **RC3** | 🟢 **Implementación cerrada · gate CI activo** | **Hermes → hardware profile → OMH → elección → Magnitude/ODS → medición LEONES** |
 
 ## RC3 — arquitectura canónica
 
@@ -52,7 +52,7 @@ RC3 simplifica deliberadamente el camino de instalación y selección. **Hermes 
 
 **Hermes descubre. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.**
 
-Hermes aporta el descubrimiento y fit inicial; OMH no sustituye ese descubrimiento ni las sondas de LEONES. Ninguna estimación externa se convierte automáticamente en evidencia LEONES. La validación física de esta cadena queda pendiente en Ubuntu.
+Hermes aporta el descubrimiento y fit inicial; OMH no sustituye ese descubrimiento ni las sondas de LEONES. Ninguna estimación externa se convierte automáticamente en evidencia LEONES. La validación física final de los handoffs queda pendiente en Ubuntu.
 
 ### FitLLM / LLMFit — fuera de RC3
 
@@ -84,6 +84,8 @@ LEONES CAPTURA / NORMALIZA
       ↓
 ELEGIR MODELO / CONFIGURACIÓN
       ↓
+RESOLVER ARTEFACTO CONCRETO
+      ↓
 ELEGIR MAGNITUDE U ODS
       ↓
 CONSENTIMIENTO
@@ -108,6 +110,12 @@ omh doctor
 
 El detalle contractual está en `docs/RC3-ARCHITECTURE.md`.
 
+## Gate RC3
+
+La implementación queda protegida por `scripts/rc3_release_gate.py` y `.github/workflows/rc3-release-gate.yml`. El gate valida contratos, evidencia, resolución de artefactos, selección explícita, frontera de ejecución y sonda física canónica, además de ejecutar la regresión Python.
+
+El gate **no** declara como realizadas las operaciones que sólo pueden comprobarse en Ubuntu físico: handoff real Hermes → Magnitude, handoff real Hermes → ODS, instalación/preparación real, benchmark de tareas y evidencia comparativa.
+
 ## RC2
 
 RC2 permanece como línea histórica de validación. Sus documentos y adaptadores pueden conservar integraciones anteriores, pero **no forman parte del camino canónico RC3**.
@@ -116,4 +124,4 @@ RC2 permanece como línea histórica de validación. Sus documentos y adaptadore
 
 > **Los proveedores pueden proponer. LEONES puede comprobar. Solo una ejecución controlada sobre el equipo real puede producir una medición LEONES.**
 
-RC3 está arquitectónicamente fijada. El siguiente gate es físico: ejecutar la instalación en Ubuntu, observar el descubrimiento real de Hermes, capturar `hardware-profile.v1`, contrastarlo con las sondas LEONES y sólo entonces cerrar los handoffs hacia Magnitude/ODS.
+RC3 queda **cerrada a nivel de implementación y contratos**. El siguiente y último gate es físico: ejecutar la instalación en Ubuntu, observar el flujo real Hermes/OMH, capturar `hardware-profile.v1`, contrastarlo con las sondas LEONES y validar ambos handoffs antes de declarar RC3 físicamente validada.
