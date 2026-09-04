@@ -4,8 +4,8 @@
 <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="description" content="LEONES RC3: estado público, sonda física canónica, Hermes/OMH, Magnitude/ODS y gates de validación." />
 <title>LEONES · RC3</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-1" />
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-1" />
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-3" />
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-3" />
 <style>
 .rc3-hero-note{margin-top:1rem;padding:1rem 1.15rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}
 .rc3-state{display:inline-block;padding:.3rem .55rem;border-radius:999px;background:#e9f7ee;color:#0f5132;font-weight:800;font-size:.78rem}
@@ -22,10 +22,10 @@
 <header class="site-hero"><div class="site-hero__inner">
 <span class="site-tag">RC3 · 5 septiembre 2026</span>
 <h1>LEONES · RC3</h1>
-<p>Implementación y contratos cerrados. Gate CI activo. Validación física final pendiente.</p>
+<p>Implementación y contratos cerrados. Gate CI activo. Observación física parcial en Aspire (2026-09-05). Validación completa pendiente.</p>
 <div class="rc3-hero-note">
 <span class="rc3-state">Implementación 🟢 cerrada</span>
-<span class="rc3-state rc3-state--pending" style="margin-left:.4rem">Físico 🟡 pendiente</span>
+<span class="rc3-state rc3-state--pending" style="margin-left:.4rem">Físico 🟡 parcial / completo abierto</span>
 <p style="margin-top:.8rem"><strong>Sonda física canónica:</strong> <code>scripts/hardware_profile.py</code> produce <code>hardware-profile.v1</code>. Hermes aporta ecosistema runtime/model-fit; OMH organiza operación. LLMFit/FitLLM queda fuera del camino RC3.</p>
 </div>
 </div></header>
@@ -63,19 +63,31 @@ tareas LEONES → medición → evidencia</pre>
 </section>
 <section class="site-section"><span class="site-tag">Cerrado</span><h2>Qué ya está fijado</h2>
 <div class="rc3-gates">
-<article class="rc3-card"><h3>Arquitectura</h3><p>Hermes + native discovery documentada en <code>docs/RC3-ARCHITECTURE.md</code>.</p></article>
+<article class="rc3-card"><h3>Arquitectura</h3><p>Sonda LEONES + Hermes/OMH documentada en <code>docs/RC3-ARCHITECTURE.md</code>.</p></article>
 <article class="rc3-card"><h3>Sonda única</h3><p><code>hardware_profile.py</code> canónica; el adaptador RC3 no reparsea CPU/GPU/RAM.</p></article>
 <article class="rc3-card"><h3>Contratos</h3><p>candidate-set, model-evidence, user-selection, resolución de artefacto.</p></article>
 <article class="rc3-card"><h3>Gate CI</h3><p><code>scripts/rc3_release_gate.py</code> + workflow de release. Estático: no inventa evidencia física.</p></article>
 <article class="rc3-card"><h3>RC2</h3><p>Histórico. No forma parte del camino canónico RC3.</p></article>
 </div>
 </section>
-<section class="site-section"><span class="site-tag">Pendiente</span><h2>Último gate: físico</h2>
+<section class="site-section"><span class="site-tag">Observado</span><h2>Sesión física parcial · 5 sep 2026</h2>
 <div class="rc3-warning">
-<p>RC3 no se declara físicamente validada hasta completar en Ubuntu real:</p>
+<p><strong>Host:</strong> Aspire A515-55 · Ubuntu 26.04 · i5-1035G1 · ~7&nbsp;GiB · Iris Plus G1.</p>
 <ul>
-<li>handoff Hermes → Magnitude</li>
-<li>handoff Hermes → ODS</li>
+<li>Sonda <code>hardware-profile.v1</code> emitida · gate estático PASS · 29 tests</li>
+<li>Hermes 0.21.0 · OMH 2.0.0 (48/48) · ODS Up · modelo T0 listado</li>
+<li>Magnitude CLI presente · service Stopped</li>
+<li>Inferencia CPU ~1&nbsp;tok/s · timeout de <code>ods chat</code> documentado</li>
+</ul>
+<p><strong>No</strong> equivale a RC3 físicamente validada. Detalle: <code>docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md</code>.</p>
+</div>
+</section>
+<section class="site-section"><span class="site-tag">Pendiente</span><h2>Último gate: validación física completa</h2>
+<div class="rc3-warning">
+<p>RC3 no se declara físicamente validada hasta completar bajo autoridad LEONES:</p>
+<ul>
+<li>handoff formal Hermes → Magnitude</li>
+<li>handoff formal Hermes → ODS</li>
 <li>consentimiento e instalación/preparación real</li>
 <li>benchmark de tareas LEONES</li>
 <li>evidencia MEASURED con procedencia</li>
@@ -92,6 +104,6 @@ tareas LEONES → medición → evidencia</pre>
 </div>
 </section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-05-1" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-05-3" defer></script>
 </body>
 </html>

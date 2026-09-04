@@ -11,7 +11,7 @@
 | JALÓN 4 | 🟢 **Cerrado** | Metodología AA + contratos de integración + benchmark de tareas + tiers |
 | RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end |
 | RC2 | 🟢 **Histórica** | Beta previa; no es el camino canónico RC3 |
-| **RC3** | 🟢 **Implementación cerrada · 🟡 físico pendiente** | **`hardware_profile.py` → candidatos → Magnitude/ODS → medición LEONES** |
+| **RC3** | 🟢 **Implementación cerrada · 🟡 físico parcial (Aspire 2026-09-05) · validación completa abierta** | **`hardware_profile.py` → candidatos → Magnitude/ODS → medición LEONES** |
 
 ## RC3 — arquitectura canónica
 
@@ -121,4 +121,4 @@ RC2 permanece como línea histórica de validación. Sus documentos y adaptadore
 
 > **Los proveedores pueden proponer. LEONES puede comprobar. Solo una ejecución controlada sobre el equipo real puede producir una medición LEONES.**
 
-RC3 queda **cerrada a nivel de implementación y contratos**. El siguiente y último gate es físico: ejecutar la instalación en Ubuntu, observar el flujo real Hermes/OMH, capturar `hardware-profile.v1`, contrastarlo con las sondas LEONES y validar ambos handoffs antes de declarar RC3 físicamente validada.
+RC3 queda **cerrada a nivel de implementación y contratos**. Hay **observación física parcial** documentada (Aspire A515-55, 2026-09-05): sonda, gate, Hermes/OMH y runtime ODS observados; handoffs formales y MEASURED abiertos. Ver `docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md`. El gate final sigue siendo validar handoffs y medición bajo autoridad LEONES antes de declarar RC3 físicamente validada.
