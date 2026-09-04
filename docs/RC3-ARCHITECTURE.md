@@ -1,6 +1,6 @@
 # LEONES RC3 — Hermes + native physical discovery architecture
 
-**Estado:** 🟢 Arquitectura fijada · discovery físico Ubuntu observado · validación RC3 completa pendiente  
+**Estado:** 🟢 Arquitectura fijada · discovery físico Ubuntu validado · candidate-set.v1 implementado  
 **Predecesor:** RC2  
 **Decisión:** 4 de septiembre de 2026
 
@@ -8,7 +8,7 @@
 
 RC3 desacopla el descubrimiento físico de cualquier proveedor externo. Hermes participa en el ecosistema local y puede aportar runtime/model-fit, pero LEONES no presupone que su CLI exponga una interfaz estable y machine-readable de hardware.
 
-La primera ejecución física en Ubuntu confirmó que Hermes 0.21.0 está instalado y operativo a nivel de `doctor`, mientras que su CLI pública no ofrece un comando de hardware estructurado. Por tanto, RC3 usa una sonda nativa LEONES para producir el `hardware-profile.v1` autoritativo.
+La ejecución física en Ubuntu confirmó que Hermes 0.21.0 está instalado y operativo a nivel de `doctor`, mientras que su CLI pública no ofrece un comando de hardware estructurado. Por tanto, RC3 usa una sonda nativa LEONES para producir el `hardware-profile.v1` autoritativo.
 
 La decisión de implementación queda fijada: **`scripts/hardware_profile.py` es la única sonda física canónica**. `scripts/rc3_hardware_discovery.py` es únicamente un adaptador de contrato RC3 y no debe contener un segundo parser de CPU/GPU/RAM.
 
@@ -90,6 +90,10 @@ Los datos ausentes se representan como `null`/lista vacía. No se inventan valor
 
 Esta separación evita que una corrección física se aplique en un parser pero no en el otro.
 
+### Candidate set
+
+`runtime_selection/candidate_set.py` implementa la frontera `candidate-set.v1`. Normaliza propuestas de modelos/configuraciones, conserva procedencia y distingue explícitamente `estimated` de cualquier medición. Un candidate set nunca autoriza ejecución y exige elección explícita del usuario.
+
 ### Magnitude
 
 Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado y aporta perfilado, estimación, tuning y ejecución según su interfaz canónica.
@@ -103,6 +107,7 @@ Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado y ap
 - Descubre y normaliza hardware físico.
 - Conserva procedencia y versión/ref.
 - Reconcilia declaraciones con datos detectados.
+- Construye el candidate set sin convertir estimaciones en mediciones.
 - Presenta/ejecuta la decisión del usuario.
 - Verifica físicamente los datos críticos.
 - Ejecuta tareas controladas.
@@ -144,26 +149,43 @@ El artefacto físico RC3 tiene como fuente autoritativa `leones-native-ubuntu`:
 
 El campo `hermes` conserva el estado de la integración sin fingir que Hermes ha emitido un perfil físico.
 
-## 5. `candidate-set.v1`
+## 5. Contrato `candidate-set.v1`
 
-Las propuestas de modelos/configuraciones permanecen separadas de la medición:
+`candidate-set.v1` es una capa de **propuesta**, no de ejecución ni medición. Su construcción canónica está en `runtime_selection/candidate_set.py`.
+
+Cada candidato puede conservar:
+
+- `model_id`, nombre y revisión;
+- rank/fit aportados por la fuente;
+- cuantización, parámetros y parámetros activos cuando estén disponibles;
+- runtime propuesto;
+- `estimated_tps` como estimación externa, nunca como medición;
+- `source`, `source_version` y `evidence_level`;
+- `selection_status: CANDIDATE`;
+- `execution_authorized: false`;
+- `measurement_required: true`.
+
+El contenedor añade:
 
 ```json
 {
-  "source": "hermes-or-provider",
-  "model": {},
-  "quantization": "...",
-  "runtime": "...",
-  "hardware_fit": "...",
-  "memory_estimate": {},
-  "context": {},
-  "speed_estimate": null,
-  "confidence": "external",
-  "evidence_level": "estimated"
+  "schema_version": "candidate-set.v1",
+  "hardware": {},
+  "candidates": [],
+  "candidate_count": 0,
+  "selection": {
+    "user_choice_required": true,
+    "selected_model_id": null,
+    "execution_authorized": false
+  },
+  "measurement": {
+    "measured": false,
+    "runtime_benchmark_required": true
+  }
 }
 ```
 
-Una estimación externa nunca se transforma automáticamente en `MEASURED`.
+El validador rechaza fugas de ejecución o medición (`command`, `argv`, `measured_tps`, `tokens_per_second`, etc.). Una estimación externa nunca se transforma automáticamente en `MEASURED`.
 
 ## 6. Handoff
 
@@ -235,37 +257,26 @@ LEONES descubre físicamente, verifica y mide
 
 ## 9. Gate físico de RC3
 
-La pasada física de Ubuntu observó:
+La pasada física de Ubuntu observó y reconcilió correctamente:
 
 - Intel Core i5-1035G1, 4 núcleos físicos / 8 hilos;
-- aproximadamente 7.03 GiB de RAM visibles para el sistema operativo y aproximadamente 2.20 GiB disponibles en el momento de la captura;
 - Intel Iris Plus Graphics G1, PCI `8086:8a56`, driver `i915`;
 - `vram_gb: null`, porque no se dispone de una fuente fiable que permita atribuir VRAM dedicada a esta GPU integrada;
 - `memory_modules: []` y `vendor_probe: null` en esta sesión: son campos opcionales no observados, no discrepancias físicas;
 - Hermes 0.21.0 instalado y `hermes doctor` ejecutado;
 - OMH 2.0.0 con 46/46 comprobaciones OK.
 
-Estos son **hechos de discovery**, no benchmarks. Además, `i915` es el driver Linux observado: no se debe interpretar por sí solo como confirmación de un backend de inferencia GPU utilizable por el runtime elegido.
-
-La validación completa sigue abierta hasta ejecutar:
+La reconciliación física ejecutada el 4 de septiembre de 2026 produjo:
 
 ```text
-hardware-profile.v1
-      ↓
-LEONES cross-check
-      ↓
-model fit
-      ↓
-Magnitude / ODS
-      ↓
-real task
-      ↓
-measured
-      ↓
-evidence
+CANONICAL: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+CANONICAL: 4 cores / 8 threads
+GPU: 0000:00:02.0 / 8086:8a56 / i915
+RC3 ADAPTER: mismos valores críticos
+RC3 CANONICAL RECONCILIATION: PASS
 ```
 
-Si fuentes observables discrepan en CPU, RAM, GPU, VRAM, backend o memoria, el flujo debe detenerse o marcar conflicto; nunca debe convertir la discrepancia en una medición válida.
+Estos son **hechos de discovery**, no benchmarks. Además, `i915` es el driver Linux observado: no se debe interpretar por sí solo como confirmación de un backend de inferencia GPU utilizable por el runtime elegido.
 
 ## 10. Estado de RC3
 
@@ -274,12 +285,13 @@ Si fuentes observables discrepan en CPU, RAM, GPU, VRAM, backend o memoria, el f
 - [x] Magnitude y ODS definidos como handoffs alternativos elegidos por el usuario.
 - [x] Hermes 0.21.0 observado en Ubuntu.
 - [x] OMH 2.0.0 observado y `doctor` 46/46.
-- [x] Primer discovery físico Ubuntu observado.
+- [x] Discovery físico Ubuntu validado.
 - [x] `scripts/hardware_profile.py` fijado como sonda física canónica.
 - [x] `scripts/rc3_hardware_discovery.py` reducido a adaptador de contrato.
-- [x] Tests de reconciliación y adaptación RC3 añadidos.
-- [ ] Artefacto `hardware-profile.v1` generado y conservado desde la máquina física después de esta convergencia.
-- [ ] Reconciliación automática discovery ↔ perfil LEONES validada en la máquina física.
+- [x] Reconciliación física canonical ↔ RC3 validada.
+- [x] `candidate-set.v1` implementado y protegido contra medición/ejecución prematuras.
+- [x] Tests de candidate set añadidos.
+- [ ] Test físico de normalización → candidate-set.v1.
 - [ ] Handoff real Hermes → Magnitude validado.
 - [ ] Handoff real Hermes → ODS validado.
 - [ ] Benchmark de tareas sobre ambos caminos.
