@@ -1,0 +1,12 @@
+{
+  "schema_version": "model-decision-profiles.v1",
+  "profiles": {
+    "balanced": "Equilibrio entre inteligencia, ajuste físico, contexto y disponibilidad.",
+    "quality": "Prioriza la capacidad externa aunque pueda exigir más recursos.",
+    "speed": "Prioriza margen de memoria/ajuste como proxy conservador de ejecución local; nunca es throughput medido.",
+    "memory": "Minimiza presión de memoria y favorece modelos con mayor margen.",
+    "long_context": "Prioriza la capacidad de contexto sin abandonar el filtro físico.",
+    "reasoning": "Prioriza inteligencia externa y capacidad de razonamiento, manteniendo ajuste local."
+  },
+  "authority": "Profiles rank proposals only. User selects. LEONES benchmark measures."
+}
