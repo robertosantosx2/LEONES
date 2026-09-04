@@ -1,6 +1,6 @@
 # LEONES RC3 — Hermes + native physical discovery architecture
 
-**Estado:** 🟢 Arquitectura fijada · discovery físico Ubuntu validado · candidate-set.v1 implementado  
+**Estado:** 🟢 Arquitectura fijada · discovery físico Ubuntu validado · candidate-set.v1 · evidencia externa para decisión implementada  
 **Predecesor:** RC2  
 **Decisión:** 4 de septiembre de 2026
 
@@ -35,6 +35,12 @@ La arquitectura queda:
                      LEONES reconciliation
                               │
                      candidate-set.v1
+                              │
+                 HF + Artificial Analysis
+                              │
+                    deterministic ranking
+                              │
+                 recomendación (no selección)
                               │
                      usuario elige modelo
                               │
@@ -74,25 +80,29 @@ La arquitectura queda:
 
 `scripts/hardware_profile.py` es la fuente única de hechos físicos de bajo nivel. Usa `/proc/cpuinfo`, la topología machine-readable de `lscpu`, sysfs PCI y herramientas estándar cuando están disponibles, evitando depender de etiquetas localizadas de `lscpu`.
 
-Puede observar:
-
-- CPU, topología y flags;
-- RAM visible/disponible para el sistema operativo;
-- GPU PCI visible, identificador y driver;
-- discos y red;
-- presencia de herramientas aceleradoras.
-
-Los datos ausentes se representan como `null`/lista vacía. No se inventan valores.
+Puede observar CPU, topología y flags; RAM visible/disponible; GPU PCI, identificador y driver; discos, red y herramientas aceleradoras. Los datos ausentes se representan como `null`/lista vacía. No se inventan valores.
 
 ### RC3 discovery adapter
 
 `scripts/rc3_hardware_discovery.py` **no vuelve a descubrir hardware**. Importa `profile()` desde `scripts/hardware_profile.py` y transforma su salida al contrato RC3 `hardware-profile.v1`, añadiendo únicamente metadatos RC3 y el estado de Hermes.
 
-Esta separación evita que una corrección física se aplique en un parser pero no en el otro.
-
 ### Candidate set
 
 `runtime_selection/candidate_set.py` implementa la frontera `candidate-set.v1`. Normaliza propuestas de modelos/configuraciones, conserva procedencia y distingue explícitamente `estimated` de cualquier medición. Un candidate set nunca autoriza ejecución y exige elección explícita del usuario.
+
+### Evidencia externa para la decisión
+
+`runtime_selection/model_evidence.py` añade una segunda capa, **después del candidate set y antes de la elección del usuario**. Combina señales de Hugging Face y Artificial Analysis cuando existen:
+
+- disponibilidad de pesos, licencia, descargas y likes en Hugging Face;
+- parámetros y contexto;
+- Artificial Analysis Intelligence Index y benchmarks externos;
+- velocidad de proveedor externo, cuando exista, etiquetada como `hosted_output_tps`;
+- estimación conservadora de memoria local a partir de parámetros/cuanti­zación.
+
+Estas señales sirven para **ordenar y explicar candidatos**, no para crear mediciones LEONES. La salida contiene `recommended_model_id`, pero mantiene `user_choice_required: true`, `execution_authorized: false` y `measured: false`.
+
+La instantánea inicial está en `runtime_selection/data/model-evidence.rc3.json`. Es un catálogo curado y fechado, no una base de datos viva: debe poder renovarse sin cambiar el contrato de decisión.
 
 ### Magnitude
 
@@ -108,86 +118,45 @@ Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado y ap
 - Conserva procedencia y versión/ref.
 - Reconcilia declaraciones con datos detectados.
 - Construye el candidate set sin convertir estimaciones en mediciones.
-- Presenta/ejecuta la decisión del usuario.
+- Enriquece candidatos con evidencia externa trazable.
+- Presenta una recomendación determinista, sin sustituir la elección del usuario.
 - Verifica físicamente los datos críticos.
 - Ejecuta tareas controladas.
 - Registra mediciones reales.
 - Produce evidencia reproducible.
 - Decide la recomendación final.
 
-## 3. FitLLM / LLMFit queda fuera de RC3
-
-LLMFit/FitLLM queda desacoplado y diferido como posible proveedor externo futuro, sin participar en el flujo canónico RC3.
-
-No debe instalarse, invocarse ni bloquear el arranque de LEONES RC3.
+## 3. Regla de evidencia externa
 
 ```text
-RC2: LLMFit → hardware/candidatos → LEONES
-RC3: native physical discovery + Hermes/runtime hints → LEONES
+Hugging Face / Artificial Analysis
+             ↓
+     evidencia EXTERNA
+             ↓
+   ranking / explicación
+             ↓
+     decisión del usuario
+             ↓
+      ejecución física
+             ↓
+     benchmark LEONES
+             ↓
+   evidencia MEASURED
 ```
 
-## 4. Contrato `hardware-profile.v1`
+**Nunca:** `Artificial Analysis speed → LEONES measured_tps`.
 
-El artefacto físico RC3 tiene como fuente autoritativa `leones-native-ubuntu`:
+Una velocidad publicada por Artificial Analysis es útil para comparar proveedores/modelos, pero no predice automáticamente la velocidad de llama.cpp, Magnitude u ODS sobre el hardware del usuario. La medición local debe seguir siendo independiente.
 
-```json
-{
-  "schema": "hardware-profile.v1",
-  "source": "leones-native-ubuntu",
-  "verification": "detected",
-  "cpu": {},
-  "ram": {},
-  "gpu": [],
-  "backend": [],
-  "accelerators": [],
-  "discovery_timestamp": "...",
-  "hermes": {
-    "discovery_cli": "not-exposed"
-  }
-}
-```
-
-El campo `hermes` conserva el estado de la integración sin fingir que Hermes ha emitido un perfil físico.
-
-## 5. Contrato `candidate-set.v1`
+## 4. Candidate set y evidencia
 
 `candidate-set.v1` es una capa de **propuesta**, no de ejecución ni medición. Su construcción canónica está en `runtime_selection/candidate_set.py`.
 
-Cada candidato puede conservar:
+Cada candidato puede conservar `model_id`, nombre, revisión, rank/fit, cuantización, parámetros, parámetros activos, runtime, `estimated_tps`, procedencia y `evidence_level`. El validador rechaza fugas de ejecución o medición (`command`, `argv`, `measured_tps`, `tokens_per_second`, etc.).
 
-- `model_id`, nombre y revisión;
-- rank/fit aportados por la fuente;
-- cuantización, parámetros y parámetros activos cuando estén disponibles;
-- runtime propuesto;
-- `estimated_tps` como estimación externa, nunca como medición;
-- `source`, `source_version` y `evidence_level`;
-- `selection_status: CANDIDATE`;
-- `execution_authorized: false`;
-- `measurement_required: true`.
+La capa `model-evidence.v1` añade información externa sin modificar esa frontera. La velocidad externa se conserva con semántica explícita de proveedor (`hosted_output_tps`) y no como throughput local.
 
-El contenedor añade:
-
-```json
-{
-  "schema_version": "candidate-set.v1",
-  "hardware": {},
-  "candidates": [],
-  "candidate_count": 0,
-  "selection": {
-    "user_choice_required": true,
-    "selected_model_id": null,
-    "execution_authorized": false
-  },
-  "measurement": {
-    "measured": false,
-    "runtime_benchmark_required": true
-  }
-}
-```
-
-El validador rechaza fugas de ejecución o medición (`command`, `argv`, `measured_tps`, `tokens_per_second`, etc.). Una estimación externa nunca se transforma automáticamente en `MEASURED`.
-
-## 6. Handoff
+## 5. Handoff
 
 ```text
 Ubuntu
@@ -196,13 +165,19 @@ canonical hardware_profile.py
   ↓
 hardware-profile.v1
   ↓
-RC3 adapter / Hermes runtime hints (si existen y son observables)
+RC3 adapter / Hermes runtime hints
   ↓
 LEONES reconciliation
   ↓
 candidate-set.v1
   ↓
-usuario elige
+HF + Artificial Analysis evidence
+  ↓
+deterministic ranking
+  ↓
+recommended_model_id + explicación
+  ↓
+usuario elige modelo/configuración
   ├── MAGNITUDE → profiling/tuning → runtime
   └── ODS       → install/stack   → runtime
                               ↓
@@ -213,72 +188,26 @@ usuario elige
                            evidence
 ```
 
-El handoff debe conservar como mínimo:
+El handoff debe conservar como mínimo hardware profile, modelo elegido, cuantización/build, contexto, runtime/backend, origen de cada decisión, versión/ref, timestamp y estado `estimated` hasta que exista medición real.
 
-- hardware profile;
-- modelo seleccionado;
-- cuantización/build;
-- contexto;
-- runtime/backend;
-- origen de cada decisión;
-- versión/ref del componente;
-- timestamp;
-- estado `estimated` hasta que exista medición real.
+## 6. FitLLM / LLMFit queda fuera de RC3
+
+LLMFit/FitLLM queda desacoplado y diferido como posible proveedor externo futuro, sin participar en el flujo canónico RC3.
+
+No debe instalarse, invocarse ni bloquear el arranque de LEONES RC3.
 
 ## 7. Regla de autoridad
 
 ```text
 Hermes propone / opera
+Fuentes externas informan
 Magnitude/ODS ejecutan y optimizan
 LEONES descubre físicamente, verifica y mide
 ```
 
-> Una recomendación externa puede decir que una configuración debería funcionar. Sólo una ejecución física controlada por LEONES puede producir una medición LEONES.
+> Una recomendación externa puede decir qué candidato parece mejor. Sólo una ejecución física controlada por LEONES puede producir una medición LEONES.
 
-## 8. Instalación RC3
-
-```text
-1. instalar LEONES
-2. instalar/verificar Hermes
-3. verificar/activar OMH
-4. LEONES descubre hardware físico
-5. registrar hardware-profile.v1
-6. consumir hints de Hermes sólo si son observables y trazables
-7. construir candidate-set.v1
-8. usuario elige modelo/configuración
-9. usuario elige Magnitude u ODS
-10. consentimiento
-11. instalar/preparar el stack elegido
-12. verificar físicamente
-13. ejecutar tareas LEONES
-14. medir
-15. registrar evidencia
-```
-
-## 9. Gate físico de RC3
-
-La pasada física de Ubuntu observó y reconcilió correctamente:
-
-- Intel Core i5-1035G1, 4 núcleos físicos / 8 hilos;
-- Intel Iris Plus Graphics G1, PCI `8086:8a56`, driver `i915`;
-- `vram_gb: null`, porque no se dispone de una fuente fiable que permita atribuir VRAM dedicada a esta GPU integrada;
-- `memory_modules: []` y `vendor_probe: null` en esta sesión: son campos opcionales no observados, no discrepancias físicas;
-- Hermes 0.21.0 instalado y `hermes doctor` ejecutado;
-- OMH 2.0.0 con 46/46 comprobaciones OK.
-
-La reconciliación física ejecutada el 4 de septiembre de 2026 produjo:
-
-```text
-CANONICAL: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
-CANONICAL: 4 cores / 8 threads
-GPU: 0000:00:02.0 / 8086:8a56 / i915
-RC3 ADAPTER: mismos valores críticos
-RC3 CANONICAL RECONCILIATION: PASS
-```
-
-Estos son **hechos de discovery**, no benchmarks. Además, `i915` es el driver Linux observado: no se debe interpretar por sí solo como confirmación de un backend de inferencia GPU utilizable por el runtime elegido.
-
-## 10. Estado de RC3
+## 8. Estado de RC3
 
 - [x] Arquitectura Hermes + native discovery fijada.
 - [x] LLMFit/FitLLM separado del camino canónico.
@@ -291,7 +220,10 @@ Estos son **hechos de discovery**, no benchmarks. Además, `i915` es el driver L
 - [x] Reconciliación física canonical ↔ RC3 validada.
 - [x] `candidate-set.v1` implementado y protegido contra medición/ejecución prematuras.
 - [x] Tests de candidate set añadidos.
-- [ ] Test físico de normalización → candidate-set.v1.
+- [x] Capa `model-evidence.v1` implementada.
+- [x] Catálogo inicial HF + Artificial Analysis incorporado como snapshot fechado.
+- [x] Ranking determinista separado de la selección del usuario.
+- [ ] Renovación automática de fuentes externas.
 - [ ] Handoff real Hermes → Magnitude validado.
 - [ ] Handoff real Hermes → ODS validado.
 - [ ] Benchmark de tareas sobre ambos caminos.
