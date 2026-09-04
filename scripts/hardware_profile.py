@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Collect a reproducible Linux hardware profile for LEONES model selection.
+"""Collect an observed, reproducible Linux hardware profile for LEONES.
 
-The probe reports observed host facts only. It does not infer model fit and it
-does not benchmark a model. Expensive measurements are opt-in; the default
-profile is safe to run on a Debian/Ubuntu workstation.
+This probe reports host facts only. It does not infer model fit and it does
+not benchmark a model. Optional accelerator tools are detected when present;
+missing tools are represented explicitly rather than guessed.
 """
 
 from __future__ import annotations
@@ -12,11 +12,13 @@ import argparse
 import json
 import os
 import platform
-import re
 import shutil
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+PROBE_VERSION = "hardware-profile.v1"
 
 
 def _run(*args: str) -> str:
@@ -35,51 +37,87 @@ def _num(value: str) -> float | None:
         return None
 
 
-def cpu() -> dict[str, Any]:
-    info = {}
-    raw = _run("lscpu")
-    for line in raw.splitlines():
+def _lscpu() -> dict[str, str]:
+    info: dict[str, str] = {}
+    for line in _run("lscpu").splitlines():
         if ":" in line:
             key, value = line.split(":", 1)
             info[key.strip()] = value.strip()
+    return info
+
+
+def cpu() -> dict[str, Any]:
+    info = _lscpu()
+
+    def integer(key: str) -> int | None:
+        value = info.get(key, "")
+        return int(value) if value.isdigit() else None
+
     return {
         "model": info.get("Model name", platform.processor()),
-        "cores": int(info["CPU(s)"])
-        if info.get("CPU(s)", "").isdigit()
-        else os.cpu_count(),
+        "logical_cpus": integer("CPU(s)"),
+        "physical_cores": integer("Core(s) per socket"),
+        "threads_per_core": integer("Thread(s) per core"),
+        "sockets": integer("Socket(s)"),
         "architecture": info.get("Architecture", platform.machine()),
-        "mhz": _num(info.get("CPU MHz", "")),
+        "mhz_current": _num(info.get("CPU MHz", "")),
+        "mhz_min": _num(info.get("CPU min MHz", "")),
+        "mhz_max": _num(info.get("CPU max MHz", "")),
         "cache_l3": info.get("L3 cache"),
+        "flags": info.get("Flags", "").split() or info.get("Flags", "").split(","),
     }
 
 
 def memory() -> dict[str, Any]:
-    mem = {}
-    raw = _run("free", "-b")
-    for line in raw.splitlines():
+    result: dict[str, Any] = {"source": "free -b"}
+    for line in _run("free", "-b").splitlines():
         if line.startswith("Mem:"):
             fields = line.split()
             if len(fields) >= 7:
-                mem = {"total_bytes": int(fields[1]), "available_bytes": int(fields[6])}
-    return mem
+                result.update(
+                    {
+                        "total_bytes": int(fields[1]),
+                        "available_bytes": int(fields[6]),
+                    }
+                )
+            break
+    return result
 
 
-def gpu() -> list[dict[str, str]]:
-    raw = _run("lspci", "-mm")
-    result = []
-    for line in raw.splitlines():
-        if (
-            "VGA compatible controller" in line
-            or "3D controller" in line
-            or "Display controller" in line
+def _gpu_driver(bdf: str) -> str | None:
+    driver_link = Path("/sys/bus/pci/devices") / bdf / "driver"
+    try:
+        return driver_link.resolve().name
+    except (FileNotFoundError, OSError):
+        return None
+
+
+def gpu() -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+    for line in _run("lspci", "-mm").splitlines():
+        if not any(
+            kind in line
+            for kind in (
+                "VGA compatible controller",
+                "3D controller",
+                "Display controller",
+            )
         ):
-            result.append({"description": line})
+            continue
+        bdf = line.split()[0] if line.split() else ""
+        result.append(
+            {
+                "pci_address": bdf or None,
+                "description": line,
+                "driver": _gpu_driver(bdf) if bdf else None,
+            }
+        )
     return result
 
 
 def disks() -> list[dict[str, Any]]:
     raw = _run("lsblk", "-dn", "-o", "NAME,TYPE,SIZE,ROTA,MODEL")
-    result = []
+    result: list[dict[str, Any]] = []
     for line in raw.splitlines()[1:]:
         fields = line.split(None, 4)
         if len(fields) >= 4 and fields[1] == "disk":
@@ -96,22 +134,43 @@ def disks() -> list[dict[str, Any]]:
 
 def network_bandwidth() -> dict[str, Any]:
     """Return interface link speed where Linux exposes it; no traffic test."""
-    result = {}
+    result: dict[str, Any] = {}
     root = Path("/sys/class/net")
     if root.exists():
         for iface in root.iterdir():
             speed = iface / "speed"
-            if speed.exists():
+            try:
                 value = speed.read_text().strip()
-                if value.isdigit() and int(value) > 0:
-                    result[iface.name] = {"link_mbps": int(value)}
+            except (FileNotFoundError, OSError):
+                continue
+            if value.isdigit() and int(value) > 0:
+                result[iface.name] = {"link_mbps": int(value)}
     return result
+
+
+def tools() -> dict[str, Any]:
+    names = (
+        "lscpu",
+        "free",
+        "lspci",
+        "lsblk",
+        "nvidia-smi",
+        "rocminfo",
+        "vulkaninfo",
+        "vainfo",
+        "glxinfo",
+    )
+    return {name: bool(shutil.which(name)) for name in names}
 
 
 def profile() -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
-        "probe": "LEONES-hardware-profile",
+        "schema": PROBE_VERSION,
+        "probe": {
+            "name": "LEONES-hardware-profile",
+            "version": PROBE_VERSION,
+            "observed_at_utc": datetime.now(timezone.utc).isoformat(),
+        },
         "platform": {
             "system": platform.system(),
             "release": platform.release(),
@@ -122,14 +181,12 @@ def profile() -> dict[str, Any]:
         "gpu": gpu(),
         "disks": disks(),
         "network": network_bandwidth(),
-        "tools": {
-            name: bool(shutil.which(name))
-            for name in ("lscpu", "free", "lspci", "lsblk")
-        },
+        "tools": tools(),
         "measurement": {
             "cpu_benchmark": False,
             "memory_bandwidth": False,
             "disk_benchmark": False,
+            "gpu_benchmark": False,
         },
     }
 
@@ -138,8 +195,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
-    result = profile()
-    text = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    text = json.dumps(profile(), ensure_ascii=False, indent=2) + "\n"
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(text, encoding="utf-8")
