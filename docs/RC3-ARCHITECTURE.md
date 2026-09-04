@@ -1,6 +1,6 @@
 # LEONES RC3 — Hermes + native physical discovery architecture
 
-**Estado:** 🟢 Arquitectura fijada · primer discovery físico Ubuntu observado · validación RC3 completa pendiente  
+**Estado:** 🟢 Arquitectura fijada · discovery físico Ubuntu observado · validación RC3 completa pendiente  
 **Predecesor:** RC2  
 **Decisión:** 4 de septiembre de 2026
 
@@ -8,20 +8,27 @@
 
 RC3 desacopla el descubrimiento físico de cualquier proveedor externo. Hermes participa en el ecosistema local y puede aportar runtime/model-fit, pero LEONES no presupone que su CLI exponga una interfaz estable y machine-readable de hardware.
 
-La primera ejecución física en Ubuntu ha confirmado que Hermes 0.21.0 está instalado y operativo a nivel de `doctor`, mientras que su CLI pública no ofrece un comando de hardware estructurado. Por tanto, RC3 usa una sonda nativa LEONES para producir el `hardware-profile.v1` autoritativo. La implementación observa además la lógica de hardware del runtime local de Hermes cuando corresponde, pero no acopla LEONES a módulos internos de Hermes.
+La primera ejecución física en Ubuntu confirmó que Hermes 0.21.0 está instalado y operativo a nivel de `doctor`, mientras que su CLI pública no ofrece un comando de hardware estructurado. Por tanto, RC3 usa una sonda nativa LEONES para producir el `hardware-profile.v1` autoritativo.
+
+La decisión de implementación queda fijada: **`scripts/hardware_profile.py` es la única sonda física canónica**. `scripts/rc3_hardware_discovery.py` es únicamente un adaptador de contrato RC3 y no debe contener un segundo parser de CPU/GPU/RAM.
 
 La arquitectura queda:
 
 ```text
                          UBUNTU REAL
                               │
+                              ▼
+                 scripts/hardware_profile.py
+                    CANONICAL PHYSICAL PROBE
+                              │
+                              ▼
+                     hardware-profile.v1
+                              │
              ┌────────────────┴────────────────┐
              │                                 │
-     LEONES native discovery              HERMES 0.21.0
-             │                         runtime/model ecosystem
-             │                                 │
              ▼                                 ▼
-     hardware-profile.v1              candidate / runtime hints
+     RC3 discovery adapter              HERMES 0.21.0
+   (contract mapping only)          runtime/model ecosystem
              │                                 │
              └────────────────┬────────────────┘
                               ▼
@@ -63,22 +70,25 @@ La arquitectura queda:
 - Servir como bootstrap operativo cuando el flujo lo requiera.
 - No se considera fuente autoritativa de hardware si no entrega un artefacto machine-readable verificable.
 
-La ejecución física de RC3 observó que `hermes --help` no ofrece un comando público de hardware/system discovery. Esto coincide con la limitación documentada aguas arriba sobre resource awareness en entornos de pocos recursos. citeturn0search2
+### LEONES canonical physical probe
 
-### LEONES native discovery
-
-La sonda `scripts/rc3_hardware_discovery.py` consulta directamente el Ubuntu real y genera `hardware-profile.v1`.
+`scripts/hardware_profile.py` es la fuente única de hechos físicos de bajo nivel. Usa `/proc/cpuinfo`, la topología machine-readable de `lscpu`, sysfs PCI y herramientas estándar cuando están disponibles, evitando depender de etiquetas localizadas de `lscpu`.
 
 Puede observar:
 
 - CPU, topología y flags;
-- RAM total/disponible;
-- GPU PCI visible y driver;
-- VRAM NVIDIA si `nvidia-smi` está disponible;
-- módulos de memoria cuando `dmidecode` está autorizado;
-- backend/accelerators detectables.
+- RAM visible/disponible para el sistema operativo;
+- GPU PCI visible, identificador y driver;
+- discos y red;
+- presencia de herramientas aceleradoras.
 
 Los datos ausentes se representan como `null`/lista vacía. No se inventan valores.
+
+### RC3 discovery adapter
+
+`scripts/rc3_hardware_discovery.py` **no vuelve a descubrir hardware**. Importa `profile()` desde `scripts/hardware_profile.py` y transforma su salida al contrato RC3 `hardware-profile.v1`, añadiendo únicamente metadatos RC3 y el estado de Hermes.
+
+Esta separación evita que una corrección física se aplique en un parser pero no en el otro.
 
 ### Magnitude
 
@@ -102,9 +112,7 @@ Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado y ap
 
 ## 3. FitLLM / LLMFit queda fuera de RC3
 
-LLMFit/FitLLM deja de ser dependencia dura, selector obligatorio o camino de ejecución de RC3.
-
-No se elimina su conocimiento histórico ni su documentación de frontera: queda **desacoplado y diferido** como posible proveedor externo futuro, sin participar en el flujo canónico RC3.
+LLMFit/FitLLM queda desacoplado y diferido como posible proveedor externo futuro, sin participar en el flujo canónico RC3.
 
 No debe instalarse, invocarse ni bloquear el arranque de LEONES RC3.
 
@@ -162,11 +170,11 @@ Una estimación externa nunca se transforma automáticamente en `MEASURED`.
 ```text
 Ubuntu
   ↓
-LEONES native discovery
+canonical hardware_profile.py
   ↓
 hardware-profile.v1
   ↓
-Hermes/runtime hints (si existen y son observables)
+RC3 adapter / Hermes runtime hints (si existen y son observables)
   ↓
 LEONES reconciliation
   ↓
@@ -203,8 +211,6 @@ Magnitude/ODS ejecutan y optimizan
 LEONES descubre físicamente, verifica y mide
 ```
 
-Más precisamente:
-
 > Una recomendación externa puede decir que una configuración debería funcionar. Sólo una ejecución física controlada por LEONES puede producir una medición LEONES.
 
 ## 8. Instalación RC3
@@ -229,16 +235,17 @@ Más precisamente:
 
 ## 9. Gate físico de RC3
 
-La primera pasada física ya ha confirmado el host real:
+La pasada física de Ubuntu observó:
 
-- Intel Core i5-1035G1, 4 núcleos / 8 hilos;
-- 8 GiB DDR4, dos módulos de 4 GiB;
-- Intel Iris Plus Graphics G1 visible por PCI, driver `i915`;
-- ningún `nvidia-smi`, ROCm o Vulkan CLI disponible en la sesión;
+- Intel Core i5-1035G1, 4 núcleos físicos / 8 hilos;
+- aproximadamente 7.03 GiB de RAM visibles para el sistema operativo y aproximadamente 2.20 GiB disponibles en el momento de la captura;
+- Intel Iris Plus Graphics G1, PCI `8086:8a56`, driver `i915`;
+- `vram_gb: null`, porque no se dispone de una fuente fiable que permita atribuir VRAM dedicada a esta GPU integrada;
+- `memory_modules: []` y `vendor_probe: null` en esta sesión: son campos opcionales no observados, no discrepancias físicas;
 - Hermes 0.21.0 instalado y `hermes doctor` ejecutado;
 - OMH 2.0.0 con 46/46 comprobaciones OK.
 
-Estos son **hechos de discovery**, no benchmarks.
+Estos son **hechos de discovery**, no benchmarks. Además, `i915` es el driver Linux observado: no se debe interpretar por sí solo como confirmación de un backend de inferencia GPU utilizable por el runtime elegido.
 
 La validación completa sigue abierta hasta ejecutar:
 
@@ -268,9 +275,11 @@ Si fuentes observables discrepan en CPU, RAM, GPU, VRAM, backend o memoria, el f
 - [x] Hermes 0.21.0 observado en Ubuntu.
 - [x] OMH 2.0.0 observado y `doctor` 46/46.
 - [x] Primer discovery físico Ubuntu observado.
-- [x] Adaptador `hardware-profile.v1` implementado.
-- [ ] Artefacto `hardware-profile.v1` generado y conservado desde la máquina física.
-- [ ] Reconciliación automática discovery ↔ perfil LEONES validada.
+- [x] `scripts/hardware_profile.py` fijado como sonda física canónica.
+- [x] `scripts/rc3_hardware_discovery.py` reducido a adaptador de contrato.
+- [x] Tests de reconciliación y adaptación RC3 añadidos.
+- [ ] Artefacto `hardware-profile.v1` generado y conservado desde la máquina física después de esta convergencia.
+- [ ] Reconciliación automática discovery ↔ perfil LEONES validada en la máquina física.
 - [ ] Handoff real Hermes → Magnitude validado.
 - [ ] Handoff real Hermes → ODS validado.
 - [ ] Benchmark de tareas sobre ambos caminos.
