@@ -9,8 +9,26 @@
       "name": "Qwen3.5 0.8B Reasoning",
       "parameters_b": 0.9,
       "quantization_bits": 4,
-      "hugging_face": {"status": "weights_available", "license": "apache-2.0"},
-      "artificial_analysis": {"intelligence_index": 5, "reasoning": true, "context_tokens": 262000, "evidence": "external_estimate"}
+      "hugging_face": {
+        "status": "weights_available",
+        "license": "apache-2.0"
+      },
+      "artifact_resolution": {
+        "status": "source_resolved",
+        "source_repo": "bartowski/Qwen_Qwen3.5-0.8B-GGUF",
+        "format": "GGUF",
+        "filename": null,
+        "revision": null,
+        "sha256": null,
+        "download_performed": false,
+        "resolution_required_before_execution": true
+      },
+      "artificial_analysis": {
+        "intelligence_index": 5,
+        "reasoning": true,
+        "context_tokens": 262000,
+        "evidence": "external_estimate"
+      }
     },
     {
       "model_id": "Qwen/Qwen3-0.6B",
@@ -18,7 +36,7 @@
       "parameters_b": 0.7516,
       "quantization_bits": 4,
       "hugging_face": {"downloads": 204700000, "likes": 1575, "license": "apache-2.0", "status": "weights_available"},
-      "artificial_analysis": {"intelligence_index": 1, "reasoning": true, "context_tokens": 32000, "evidence": "external_estimate"}
+      "artificial_analysis": {"intelligence_index": 1, "downloads": null, "reasoning": true, "context_tokens": 32000, "evidence": "external_estimate"}
     },
     {
       "model_id": "google/gemma-3-1b-it",
