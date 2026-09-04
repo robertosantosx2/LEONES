@@ -1,84 +1,65 @@
-# LLMFit — integración LEONES
+# LLMFit — integración histórica LEONES
 
-**Estado:** RC2-B fijado · integración de frontera
+**Estado:** RC2 histórico · **fuera del camino canónico RC3**
 
-## Propósito
+## Decisión RC3
 
-LEONES usa LLMFit como fuente especializada para **inteligencia de hardware y ajuste modelo/hardware**. LEONES no reimplementa sus heurísticas.
+LLMFit/FitLLM queda deliberadamente desacoplado de RC3.
 
-LLMFit detecta hardware local y puede producir recomendaciones JSON, análisis de ajuste, selección de cuantización, planificación de hardware y benchmarks de runtimes soportados. La interfaz de automatización documentada por LLMFit incluye `llmfit --json system`, `llmfit recommend --json` y `llmfit plan ... --json`. citeturn0search0turn0search1
+- No es dependencia de instalación.
+- No se instala durante RC3.
+- No se invoca para descubrir hardware.
+- No participa en la selección canónica RC3.
+- No bloquea el arranque ni la medición.
+- Se conserva como conocimiento histórico y como posible `CandidateProvider` futuro.
 
-## Frontera de responsabilidad
+La arquitectura RC3 utiliza **Hermes como bootstrap de discovery y fit inicial**, seguido de normalización LEONES. El usuario elige después Magnitude u ODS.
 
 ```text
-hardware real
-     ↓
-LLMFit
-     ↓
-normalización LEONES
-     ↓
-candidatos / fit / estimaciones
-     ↓
-LEONES decide y presenta
-     ↓
-ODS / Magnitude
-     ↓
-runtime real
-     ↓
-benchmark LEONES
+Hermes discovery
+      ↓
+hardware-profile.v1
+      ↓
+LEONES normalization
+      ↓
+candidate-set.v1
+      ↓
+user choice
+   ┌──┴───────┐
+Magnitude    ODS
+   └──┬───────┘
+      ↓
+LEONES verification → measurement → evidence
 ```
 
-LLMFit **no** sustituye:
+## Por qué se conserva
 
-- la decisión LEONES;
-- ODS;
-- Magnitude;
-- el runner canónico;
-- el benchmark de tareas LEONES;
-- la evidencia LEONES.
+LLMFit sigue siendo una fuente válida de conocimiento sobre ajuste modelo/hardware y puede recuperarse en el futuro como proveedor desacoplado. Su existencia no debe contaminar el bootstrap RC3 ni crear un segundo perfilador obligatorio.
 
-## Regla de estimación
+La interfaz y los tests históricos de `runtime_selection/llmfit.py` pueden mantenerse mientras sean necesarios para reproducir o auditar RC2. Eso no implica que RC3 los ejecute.
 
-Las recomendaciones y `estimated_tps` de LLMFit permanecen como **estimaciones**. Una medición física sólo se registra como `measured` después de una ejecución real del runner/protocolo LEONES.
+## Frontera de evidencia
 
-LLMFit dispone además de `bench` para mediciones de runtimes locales y conserva benchmarks locales; esto no convierte automáticamente esos resultados en evidencia LEONES. La promoción a evidencia LEONES requiere pasar por el contrato de procedencia correspondiente. citeturn0search0turn0search2
+Cualquier recomendación, `estimated_tps` o benchmark producido por LLMFit sigue siendo evidencia externa/estimación hasta que una ejecución controlada pase por el protocolo de medición LEONES.
 
-## Hardware declarado vs observado
+**ESTIMATED ≠ MEASURED.**
 
-La integración permite conservar la diferencia entre:
+## Futuro `CandidateProvider`
 
-- hardware observado por LLMFit;
-- valores declarados/corregidos por el usuario;
-- valores efectivos utilizados para la selección.
+Si LLMFit vuelve a incorporarse, deberá hacerlo detrás de un contrato genérico de proveedor, sin privilegios arquitectónicos:
 
-Si un campo no está disponible, LEONES conserva `null`/`unknown`; no lo inventa.
+```text
+CandidateProvider
+ ├── Hermes
+ ├── Magnitude / fuentes de perfilado
+ ├── ODS / catálogo
+ └── LLMFit (futuro, opcional)
+```
 
-LLMFit documenta overrides de RAM, memoria/VRAM y CPU para sistemas donde la autodetección no sea suficiente. citeturn0search0
+Todos los proveedores deberán entregar datos normalizables y conservar procedencia. LEONES seguirá siendo responsable de filtrar, verificar, medir y producir la evidencia final.
 
-## Interfaz RC2
+## Regla definitiva
 
-El adaptador `runtime_selection/llmfit.py` es deliberadamente pequeño y sin efectos laterales:
-
-- comprueba si existe `llmfit`;
-- construye una invocación JSON de recomendación;
-- ejecuta únicamente cuando el caller lo solicita;
-- conserva comando, versión y JSON bruto;
-- normaliza hardware y candidatos sin perder procedencia;
-- no instala LLMFit;
-- no descarga modelos;
-- no ejecuta benchmarks;
-- no modifica el sistema.
-
-La integración está cubierta por `tests/test_llmfit_integration.py`.
-
-## Versión / fijación
-
-RC2 debe registrar la versión/ref de LLMFit que se utilice en cada ejecución. No se debe interpretar `latest` como una versión reproducible.
-
-La integración inicial se apoya únicamente en la interfaz CLI/JSON documentada; la incorporación de REST, MCP u otras interfaces queda fuera de RC2-B hasta que exista una necesidad concreta. citeturn0search0
-
-## Decisión arquitectónica
-
-**LLMFit es el instrumento de hardware/fit; LEONES es la capa de orquestación y decisión.**
-
-Esto evita crear un tercer perfilador paralelo y mantiene la arquitectura coherente con el contrato LEONES → ODS/Magnitude.
+> **LLMFit queda fuera de RC3. No se instala, no se ejecuta y no decide.**
+>
+> **Hermes descubre → LEONES normaliza → usuario elige → Magnitude/ODS preparan → LEONES mide y evidencia.**
