@@ -72,3 +72,11 @@ Fuentes aportadas y analizadas: **Rabbit, Lemonade, llama.cpp, ODS (Osmantic), O
 El estudio separa runtimes de inferencia, servidores, stacks de despliegue, aplicaciones y workloads. Rabbit/Colibrì se incorporan como línea de investigación para MoE disk-resident; Lemonade como servidor/SDK y adaptador de backends; llama.cpp como baseline portable; ODS como capa de despliegue; MLX-LM como runtime Apple Silicon; vLLM ROCm como serving AMD; ExLlamaV2 como baseline NVIDIA cuantizado; y AnythingLLM/Tabby/GPT4All/Jan como referencias de aplicación y workload. Las fuentes externas no se convierten automáticamente en benchmarks LEONES.
 
 Correcciones de procedencia: el enlace proporcionado para GPT4All apuntaba a un listado de awesome-open-source-ai y se sustituye como fuente primaria por `https://github.com/nomic-ai/gpt4all`; el enlace alternativo proporcionado para AutoGPTQ apuntaba a `llm-compressor`, que es un proyecto distinto. `msa.millaguie.net/#sc-local` queda en estado **unresolved** porque no pudo recuperarse durante la revisión y no se inventa su contenido.
+
+## NVIDIA RTX Spark
+
+Publicación primaria aportada por el proyecto: https://x.com/NVIDIARTXSpark/status/2095580592704217349
+
+Ficha ampliada: `docs/sources/NVIDIA-RTX-SPARK.md`.
+
+RTX Spark se incorpora como **plataforma de hardware IA local de memoria unificada**. La ficha conserva la publicación de X como fuente primaria aportada, pero no atribuye a ese post datos concretos que no hayan podido recuperarse. Como contexto verificable se incorporan las comunicaciones oficiales de NVIDIA sobre la plataforma, CPU Grace + GPU Blackwell, hasta 128 GB de memoria unificada, ecosistema CUDA/RTX y orientación a agentes e inferencia local. Las cifras del fabricante se tratan como evidencia externa y no como benchmarks LEONES hasta su reproducción física.
