@@ -1,6 +1,6 @@
 # LEONES RC3 — Hermes + native physical discovery architecture
 
-**Estado:** 🟢 Arquitectura fijada · discovery físico Ubuntu validado · candidate-set.v1 · evidencia externa para decisión implementada  
+**Estado:** 🟢 Arquitectura fijada · discovery físico Ubuntu validado · candidate-set.v1 · evidencia externa · decisión determinista · selección explícita de usuario  
 **Predecesor:** RC2  
 **Decisión:** 4 de septiembre de 2026
 
@@ -44,6 +44,8 @@ La arquitectura queda:
                               │
                      usuario elige modelo
                               │
+                  selección/configuración.v1
+                              │
                      usuario elige stack
                        ┌──────┴──────┐
                        ▼             ▼
@@ -51,6 +53,9 @@ La arquitectura queda:
                   profile/tune   install/stack
                        │             │
                        └──────┬──────┘
+                              ▼
+                    consentimiento explícito
+                              │
                               ▼
                        selected runtime
                               │
@@ -104,6 +109,19 @@ Estas señales sirven para **ordenar y explicar candidatos**, no para crear medi
 
 La instantánea inicial está en `runtime_selection/data/model-evidence.rc3.json`. Es un catálogo curado y fechado, no una base de datos viva: debe poder renovarse sin cambiar el contrato de decisión.
 
+### Selección explícita del usuario
+
+`runtime_selection/user_selection.py` implementa `user-selection.v1` y cierra la frontera entre recomendación y ejecución. Recibe únicamente un candidato ya presente en la decisión, registra modelo, revisión, cuantización y runtime elegidos, y exige una elección explícita de **Magnitude u ODS**.
+
+La selección conserva deliberadamente:
+
+- `execution_authorized: false`;
+- `measurement_authorized: false`;
+- `measured: false`;
+- `consent_required_before_execution: true`.
+
+Por tanto, **elegir no equivale a autorizar ejecutar**. El consentimiento/autoridad de ejecución será un gate posterior, justo antes de la preparación y ejecución física.
+
 ### Magnitude
 
 Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado y aporta perfilado, estimación, tuning y ejecución según su interfaz canónica.
@@ -120,6 +138,8 @@ Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado y ap
 - Construye el candidate set sin convertir estimaciones en mediciones.
 - Enriquece candidatos con evidencia externa trazable.
 - Presenta una recomendación determinista, sin sustituir la elección del usuario.
+- Registra explícitamente la elección de modelo/configuración y stack.
+- Mantiene separado el consentimiento de ejecución.
 - Verifica físicamente los datos críticos.
 - Ejecuta tareas controladas.
 - Registra mediciones reales.
@@ -136,6 +156,10 @@ Hugging Face / Artificial Analysis
    ranking / explicación
              ↓
      decisión del usuario
+             ↓
+      selección v1
+             ↓
+   consentimiento explícito
              ↓
       ejecución física
              ↓
@@ -178,8 +202,12 @@ deterministic ranking
 recommended_model_id + explicación
   ↓
 usuario elige modelo/configuración
+  ↓
+user-selection.v1
   ├── MAGNITUDE → profiling/tuning → runtime
   └── ODS       → install/stack   → runtime
+                              ↓
+                  consentimiento / execution gate
                               ↓
                          LEONES task
                               ↓
@@ -188,7 +216,7 @@ usuario elige modelo/configuración
                            evidence
 ```
 
-El handoff debe conservar como mínimo hardware profile, modelo elegido, cuantización/build, contexto, runtime/backend, origen de cada decisión, versión/ref, timestamp y estado `estimated` hasta que exista medición real.
+El handoff debe conservar como mínimo hardware profile, modelo elegido, cuantización/build, contexto, runtime/backend, stack elegido, origen de cada decisión, versión/ref, timestamp y estado `estimated` hasta que exista medición real.
 
 ## 6. FitLLM / LLMFit queda fuera de RC3
 
@@ -201,11 +229,12 @@ No debe instalarse, invocarse ni bloquear el arranque de LEONES RC3.
 ```text
 Hermes propone / opera
 Fuentes externas informan
+Usuario elige
 Magnitude/ODS ejecutan y optimizan
 LEONES descubre físicamente, verifica y mide
 ```
 
-> Una recomendación externa puede decir qué candidato parece mejor. Sólo una ejecución física controlada por LEONES puede producir una medición LEONES.
+> Una recomendación externa puede decir qué candidato parece mejor. El usuario decide qué quiere probar. Sólo una ejecución física controlada por LEONES puede producir una medición LEONES.
 
 ## 8. Estado de RC3
 
@@ -223,9 +252,12 @@ LEONES descubre físicamente, verifica y mide
 - [x] Capa `model-evidence.v1` implementada.
 - [x] Catálogo inicial HF + Artificial Analysis incorporado como snapshot fechado.
 - [x] Ranking determinista separado de la selección del usuario.
+- [x] `user-selection.v1` implementado y protegido contra autorización/medición prematuras.
+- [x] Tests de selección y elección de stack añadidos.
 - [ ] Renovación automática de fuentes externas.
 - [ ] Handoff real Hermes → Magnitude validado.
 - [ ] Handoff real Hermes → ODS validado.
+- [ ] Gate de consentimiento y preparación física validado.
 - [ ] Benchmark de tareas sobre ambos caminos.
 - [ ] Evidencia comparativa.
 
