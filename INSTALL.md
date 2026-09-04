@@ -1,154 +1,125 @@
-# LEONES — instalación mínima
+# LEONES — instalación mínima RC3
 
-La instalación beta debe ser pequeña: **Git + Python 3.10+ + LLMFit**. LEONES no instala automáticamente ODS, Magnitude ni modelos.
-
-## 0. Dependencia externa obligatoria: LLMFit
-
-**LLMFit es una dependencia dura de LEONES.**
-
-- Detecta hardware (CPU/RAM/GPU/VRAM).
-- Propone candidatos de modelo y ajuste (fit).
-- Sus cifras de velocidad son **ESTIMATED**, no mediciones LEONES.
-
-LEONES **no instala ni sustituye** LLMFit. Debe estar en el `PATH` como comando `llmfit` antes de `./install.sh`.
-
-### Instalar LLMFit (Linux / Fedora)
-
-Opción recomendada (script oficial, sin sudo):
-
-```bash
-curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
-```
-
-Añade `~/.local/bin` al PATH si aún no lo está:
-
-```bash
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-Otras opciones válidas:
-
-```bash
-# Con Homebrew (si lo usas en Linux)
-brew install llmfit
-# o
-brew install AlexsJones/llmfit/llmfit
-
-# Con uv
-uv tool install -U llmfit
-```
-
-Comprueba:
-
-```bash
-llmfit --version
-# o al menos:
-command -v llmfit
-```
-
-Documentación oficial: https://www.llmfit.org/  
-Repositorio: https://github.com/AlexsJones/llmfit
+RC3 cambia el orden de arranque: **Hermes es el bootstrap de descubrimiento**. LEONES ya no exige LLMFit/FitLLM para instalarse o arrancar.
 
 ## 1. Descargar LEONES
 
 ```bash
 git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES
-```
-
-## 2. Preparar
-
-```bash
 ./install.sh
 ```
 
-El instalador comprueba Python, Git y LLMFit y deja preparado el lanzador `./leones`. No crea un entorno virtual ni descarga modelos.
+## 2. Verificar / instalar Hermes
 
-Si LLMFit no está instalado, `./install.sh` falla de forma explícita y te indica que lo instales primero.
+Hermes es el primer componente externo del flujo RC3 porque aporta el descubrimiento y fit inicial de modelos locales.
 
-## 3. Ejecutar
+Instalación oficial para Linux/macOS/WSL2:
 
 ```bash
-./leones
+curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
 ```
 
-El lanzador abre el wizard RC2. Si LLMFit no está disponible, LEONES se bloquea explícitamente y no inventa hardware ni candidatos.
+Después:
 
-## 4. Después
+```bash
+hermes --version
+hermes doctor
+```
 
-El wizard guía:
+Hermes también dispone de Desktop para Linux, Windows y macOS. Su flujo Local Models gestiona `llama.cpp`, selecciona builds adecuados al hardware y comprueba memoria/contexto antes de descargar. citeturn0search0turn19file0L2-L2
+
+**Nota:** el instalador de LEONES no debe duplicar el instalador oficial de Hermes. La integración debe invocar el componente canónico y conservar su versión/ref.
+
+## 3. Flujo RC3
 
 ```text
-HARDWARE → CANDIDATOS → MODELO → ODS/MAGNITUDE
-        → CONSENTIMIENTO → INSTALAR/VERIFICAR
-        → BENCHMARK OPCIONAL → EVIDENCIA
+LEONES
+  ↓
+HERMES DISCOVERY
+  ↓
+hardware-profile.v1
+  ↓
+LEONES NORMALIZA
+  ↓
+candidate-set.v1
+  ↓
+ELEGIR MODELO / CONFIGURACIÓN
+  ↓
+┌─────────────────┬─────────────────┐
+│ MAGNITUDE       │ ODS             │
+│ profiling/tuning│ install/stack   │
+└────────┬────────┴────────┬────────┘
+         └─────────┬───────┘
+                   ↓
+            runtime elegido
+                   ↓
+             TAREAS LEONES
+                   ↓
+               MEDICIÓN
+                   ↓
+               EVIDENCIA
 ```
 
-La instalación de ODS/Magnitude sólo se ejecuta después del consentimiento y mediante sus interfaces canónicas.
+## 4. Magnitude u ODS
 
-## 5. Runtime de contenedores para ODS
+El usuario elige el camino después del descubrimiento:
 
-LEONES RC2 ya no presupone que Docker sea **rootless**.
+### Magnitude
 
-La política es:
+Hermes entrega el perfil y la configuración inicial; LEONES realiza el handoff al flujo canónico de Magnitude para perfilado/tuning/ejecución.
 
-```text
-CONTENEDORES
-├── Docker directo             → válido
-├── Docker mediante sudo       → válido
-├── Docker rootless            → válido
-└── Podman                     → detectado explícitamente
-```
+### ODS
 
-Un Docker rootful accesible mediante `sudo docker` **no es un error**. LEONES pasa al instalador ODS el estado ya observado para evitar que el instalador intente adivinar incorrectamente el modo rootless.
+Hermes entrega el perfil y la configuración inicial; LEONES realiza el handoff al instalador/stack canónico de ODS.
 
-En Fedora/RHEL y derivados, si el equipo sólo dispone de Podman, LEONES lo detecta y lo informa. El ODS actual usa un contrato Docker + Compose; por tanto LEONES **no instala Docker silenciosamente ni declara Podman como ODS compatible sin verificar una interfaz Docker-compatible**. Esto evita sustituir la elección de runtime del sistema sin consentimiento.
+LEONES **no crea otro instalador de Magnitude ni otro instalador de ODS**.
 
-La comprobación previa de ODS expone además:
+## 5. FitLLM / LLMFit
 
-- runtime detectado;
-- acceso directo o mediante `sudo`;
-- modo rootless/rootful cuando puede determinarse;
-- Compose disponible;
-- presencia de Podman;
-- compatibilidad efectiva con el contrato de instalación de ODS.
+**Fuera de RC3.**
 
-## 6. Comprobación física
+LLMFit/FitLLM ya no es dependencia dura, no se instala y no bloquea `./install.sh` ni `./leones`.
 
-La verificación física de ODS es posterior a la instalación. Sólo puede producir `PASS` cuando se observa realmente el toolchain y una señal específica de ODS (CLI o imagen local). Un Docker operativo por sí solo **no equivale a ODS instalado**.
+La integración histórica queda documentada únicamente para trazabilidad de RC2. Podrá volver como `CandidateProvider` opcional en una release futura, pero no forma parte del camino RC3.
+
+## 6. Autoridad y evidencia
+
+Hermes puede decir qué hardware observa y qué configuración parece compatible. Eso es **discovery / fit**, no evidencia física LEONES.
+
+LEONES conserva el control de:
+
+- verificación física del hardware crítico;
+- ejecución de tareas;
+- medición de latencia/throughput y métricas de tarea;
+- `execution_id` y timestamps;
+- evidencia reproducible;
+- recomendación final.
 
 Por tanto:
 
+> **Hermes descubre → usuario elige → Magnitude/ODS ejecuta → LEONES mide.**
+
+## 7. Gate físico RC3
+
+La implementación queda pendiente de validación física hasta probar una máquina real no previamente descrita al flujo:
+
 ```text
-Docker/Podman detectado
-        ↓
-interfaz compatible con ODS
-        ↓
-instalación autorizada
-        ↓
-verificación física
-        ↓
-PASS → benchmark
-FAIL → reparar / volver a verificar
+máquina desconocida
+      ↓
+Hermes discovery
+      ↓
+LEONES cross-check
+      ↓
+modelo/configuración
+      ↓
+Magnitude u ODS
+      ↓
+tarea real
+      ↓
+measured
+      ↓
+evidence
 ```
 
-## Requisitos
-
-- Linux para la validación RC2 actual.
-- Git.
-- Python 3.10 o superior.
-- **LLMFit instalado y accesible como `llmfit` en el PATH.**
-- Internet cuando el flujo elegido necesite descargar componentes.
-
-## Regla de distribución
-
-El usuario beta necesita únicamente:
-
-1. el repositorio GitHub;
-2. `install.sh`;
-3. `leones`;
-4. este `INSTALL.md`;
-5. la documentación RC2 enlazada desde el README.
-
-El resto del repositorio es implementación, contratos, pruebas y evidencia; no forma parte de las instrucciones de instalación.
+Una discrepancia entre Hermes y las sondas de LEONES no se convierte automáticamente en PASS: debe quedar como conflicto o requerir nueva verificación.
