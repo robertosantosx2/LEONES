@@ -16,6 +16,18 @@ from runtime_selection.decision_engine import decide_models
 CATALOG = ROOT / "runtime_selection/data/model-evidence.rc3.json"
 
 
+def _display_ram_gb(hardware: dict) -> float | None:
+    ram = hardware.get("ram") or {}
+    if ram.get("available_gb") is not None:
+        return float(ram["available_gb"])
+    memory = hardware.get("memory") or {}
+    if memory.get("available_bytes") is not None:
+        return float(memory["available_bytes"]) / (1024 ** 3)
+    if memory.get("visible_to_os_bytes") is not None:
+        return float(memory["visible_to_os_bytes"]) / (1024 ** 3)
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Rank RC3 model candidates against hardware-profile.v1")
     parser.add_argument("--hardware", required=True, help="Path to hardware-profile.v1 JSON")
@@ -48,8 +60,10 @@ def main() -> int:
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(text, encoding="utf-8")
 
+    ram_gb = _display_ram_gb(result["hardware"])
+    ram_text = f"{ram_gb:.2f}" if ram_gb is not None else "unknown"
     print(f"RC3 MODEL DECISION · profile={args.profile}")
-    print(f"RAM available: {result['hardware'].get('ram', {}).get('available_gb', 'unknown')} GB")
+    print(f"RAM available: {ram_text} GB")
     for candidate in result["candidates"]:
         fit = candidate["local_fit_estimate"]
         print(
