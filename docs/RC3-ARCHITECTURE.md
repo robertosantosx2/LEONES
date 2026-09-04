@@ -1,8 +1,8 @@
 # LEONES RC3 — Hermes + native physical discovery architecture
 
-**Estado:** 🟢 Arquitectura fijada · discovery físico Ubuntu validado · candidate-set.v1 · evidencia externa · decisión determinista · selección explícita de usuario  
+**Estado:** 🟢 **Implementación cerrada · gate estático CI activo · validación física final pendiente**  
 **Predecesor:** RC2  
-**Decisión:** 4 de septiembre de 2026
+**Decisión:** 5 de septiembre de 2026
 
 ## 1. Objetivo
 
@@ -109,6 +109,10 @@ Estas señales sirven para **ordenar y explicar candidatos**, no para crear medi
 
 La instantánea inicial está en `runtime_selection/data/model-evidence.rc3.json`. Es un catálogo curado y fechado, no una base de datos viva: debe poder renovarse sin cambiar el contrato de decisión.
 
+### Resolución de artefacto
+
+`runtime_selection/artifact_resolution.py` cierra la identidad del peso antes de cualquier ejecución. Una referencia de repositorio no equivale a un artefacto ejecutable. El estado `resolved` exige, como mínimo, nombre de fichero, revisión y SHA-256; la resolución de fuente no descarga nada ni autoriza ejecución.
+
 ### Selección explícita del usuario
 
 `runtime_selection/user_selection.py` implementa `user-selection.v1` y cierra la frontera entre recomendación y ejecución. Recibe únicamente un candidato ya presente en la decisión, registra modelo, revisión, cuantización y runtime elegidos, y exige una elección explícita de **Magnitude u ODS**.
@@ -137,6 +141,7 @@ Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado y ap
 - Reconcilia declaraciones con datos detectados.
 - Construye el candidate set sin convertir estimaciones en mediciones.
 - Enriquece candidatos con evidencia externa trazable.
+- Resuelve la identidad concreta del artefacto antes de ejecutar.
 - Presenta una recomendación determinista, sin sustituir la elección del usuario.
 - Registra explícitamente la elección de modelo/configuración y stack.
 - Mantiene separado el consentimiento de ejecución.
@@ -146,7 +151,22 @@ Se activa **sólo si el usuario lo elige**. Recibe el resultado normalizado y ap
 - Produce evidencia reproducible.
 - Decide la recomendación final.
 
-## 3. Regla de evidencia externa
+## 3. Gate de release RC3
+
+La implementación RC3 queda protegida por `scripts/rc3_release_gate.py` y `.github/workflows/rc3-release-gate.yml`. El gate comprueba en CI:
+
+- presencia de los contratos y módulos canónicos;
+- integridad básica del snapshot de evidencia externa;
+- identidad completa de los artefactos marcados como `resolved`;
+- ausencia de descargas en el snapshot curado;
+- invariantes de `user-selection.v1` que impiden autorizar ejecución/medición;
+- uso de `hardware_profile.py` como sonda física canónica;
+- separación explícita de LLMFit/FitLLM del camino RC3;
+- regresión completa de `tests/`.
+
+Este gate es **estático/CI**: no convierte una prueba de integración en evidencia física y no inventa resultados.
+
+## 4. Regla de evidencia externa
 
 ```text
 Hugging Face / Artificial Analysis
@@ -158,6 +178,8 @@ Hugging Face / Artificial Analysis
      decisión del usuario
              ↓
       selección v1
+             ↓
+   resolución de artefacto
              ↓
    consentimiento explícito
              ↓
@@ -172,7 +194,7 @@ Hugging Face / Artificial Analysis
 
 Una velocidad publicada por Artificial Analysis es útil para comparar proveedores/modelos, pero no predice automáticamente la velocidad de llama.cpp, Magnitude u ODS sobre el hardware del usuario. La medición local debe seguir siendo independiente.
 
-## 4. Candidate set y evidencia
+## 5. Candidate set y evidencia
 
 `candidate-set.v1` es una capa de **propuesta**, no de ejecución ni medición. Su construcción canónica está en `runtime_selection/candidate_set.py`.
 
@@ -180,7 +202,7 @@ Cada candidato puede conservar `model_id`, nombre, revisión, rank/fit, cuantiza
 
 La capa `model-evidence.v1` añade información externa sin modificar esa frontera. La velocidad externa se conserva con semántica explícita de proveedor (`hosted_output_tps`) y no como throughput local.
 
-## 5. Handoff
+## 6. Handoff
 
 ```text
 Ubuntu
@@ -201,6 +223,8 @@ deterministic ranking
   ↓
 recommended_model_id + explicación
   ↓
+artifact resolution
+  ↓
 usuario elige modelo/configuración
   ↓
 user-selection.v1
@@ -216,15 +240,15 @@ user-selection.v1
                            evidence
 ```
 
-El handoff debe conservar como mínimo hardware profile, modelo elegido, cuantización/build, contexto, runtime/backend, stack elegido, origen de cada decisión, versión/ref, timestamp y estado `estimated` hasta que exista medición real.
+El handoff debe conservar como mínimo hardware profile, modelo elegido, cuantización/build, contexto, runtime/backend, stack elegido, origen de cada decisión, versión/ref, identidad del artefacto, timestamp y estado `estimated` hasta que exista medición real.
 
-## 6. FitLLM / LLMFit queda fuera de RC3
+## 7. FitLLM / LLMFit queda fuera de RC3
 
 LLMFit/FitLLM queda desacoplado y diferido como posible proveedor externo futuro, sin participar en el flujo canónico RC3.
 
 No debe instalarse, invocarse ni bloquear el arranque de LEONES RC3.
 
-## 7. Regla de autoridad
+## 8. Regla de autoridad
 
 ```text
 Hermes propone / opera
@@ -236,7 +260,9 @@ LEONES descubre físicamente, verifica y mide
 
 > Una recomendación externa puede decir qué candidato parece mejor. El usuario decide qué quiere probar. Sólo una ejecución física controlada por LEONES puede producir una medición LEONES.
 
-## 8. Estado de RC3
+## 9. Estado de RC3
+
+### Implementación — CERRADA
 
 - [x] Arquitectura Hermes + native discovery fijada.
 - [x] LLMFit/FitLLM separado del camino canónico.
@@ -254,11 +280,16 @@ LEONES descubre físicamente, verifica y mide
 - [x] Ranking determinista separado de la selección del usuario.
 - [x] `user-selection.v1` implementado y protegido contra autorización/medición prematuras.
 - [x] Tests de selección y elección de stack añadidos.
-- [ ] Renovación automática de fuentes externas.
+- [x] Resolución de artefactos concretos implementada.
+- [x] Gate estático de release RC3 implementado.
+- [x] Workflow CI de release RC3 implementado.
+
+### Validación física final — PENDIENTE
+
 - [ ] Handoff real Hermes → Magnitude validado.
 - [ ] Handoff real Hermes → ODS validado.
-- [ ] Gate de consentimiento y preparación física validado.
+- [ ] Gate de consentimiento y preparación física validado en el flujo RC3.
 - [ ] Benchmark de tareas sobre ambos caminos.
 - [ ] Evidencia comparativa.
 
-Los últimos puntos requieren ejecución física real y no deben cerrarse por diseño documental.
+Estos puntos requieren ejecución física real y **no pueden cerrarse desde CI ni por diseño documental**.
