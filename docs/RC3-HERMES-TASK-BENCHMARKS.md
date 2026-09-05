@@ -1,91 +1,117 @@
-# LEONES RC3 — Hermes selection + task benchmark loop
+# LEONES RC3 — Arquitectura Hermes → Magnitude/ODS → Leo001…Leo010
 
-**Decision:** 5 September 2026
+**ESTADO: FIJADA**  
+**Fecha:** 5 de septiembre de 2026
 
-## Canonical flow
+## Arquitectura canónica
 
 ```text
-hardware_profile.py
-      ↓
-hardware-profile.v1
-      ↓
-LEONES candidate-set.v1
-      ↓
-HERMES selects exactly one candidate
-      ↓
-user selects Magnitude / ODS / BOTH
-      ↓
-trusted handoff plan(s)
-      ↓
-selected stack prepares the model
-      ↓
-LEONES verifies the real endpoint
-      ↓
-10 canonical LEONES tasks
-      ↓
-MEASURED result per task
-      ↓
-comparison / recommendation
+                         ┌──────────────────────┐
+                         │ hardware_profile.py  │
+                         └──────────┬───────────┘
+                                    ↓
+                         hardware-profile.v1
+                                    ↓
+                         candidate-set.v1
+                                    ↓
+                         ┌──────────────────────┐
+                         │       HERMES         │
+                         │ selección de modelo  │
+                         └──────────┬───────────┘
+                                    ↓
+                         1 modelo de candidatos
+                                    ↓
+                         ┌──────────────────────┐
+                         │    ELECCIÓN USUARIO  │
+                         └──────────┬───────────┘
+                                    ↓
+                     ┌──────────────┼──────────────┐
+                     ↓              ↓              ↓
+                 MAGNITUDE         ODS           AMBOS
+                     └──────────────┼──────────────┘
+                                    ↓
+                         handoff declarativo
+                                    ↓
+                     preparación / ejecución real
+                                    ↓
+                         verificación endpoint
+                                    ↓
+                 ┌────────────────────────────────────┐
+                 │       SUITE BENCHMARK LEONES       │
+                 │                                    │
+                 │ Leo001  Tool use                   │
+                 │ Leo002  Multi-step                 │
+                 │ Leo003  Files / artifacts           │
+                 │ Leo004  Recovery                    │
+                 │ Leo005  Long horizon                │
+                 │ Leo006  Research / evidence         │
+                 │ Leo007  Coding                       │
+                 │ Leo008  Local operations             │
+                 │ Leo009  Safety                       │
+                 │ Leo010  Cost / latency               │
+                 └──────────────────┬─────────────────┘
+                                    ↓
+                    resultado MEDIDO por benchmark
+                                    ↓
+                 evidencia runtime-benchmark.v1.x
+                                    ↓
+                     comparación por tarea
+                                    ↓
+                         recomendación final
+
+                    ↺ repetir: volver a HERMES
+                      → nuevo modelo → Leo001…Leo010
 ```
 
-### What changed
+## Nomenclatura FIJADA
 
-- **LLMFit/FitLLM is removed from the RC3 implementation tree.** It is not a dependency and is not called by the selector.
-- **Hermes is the model-selection agent.** LEONES gives Hermes only the already-normalized candidate set. Hermes cannot introduce a model outside that set.
-- Hermes returns `selected_model_id`, rationale and confidence. LEONES validates the returned id and keeps execution/measurement authorization false.
-- The user can choose **Magnitude**, **ODS**, or **both**. When both are selected, LEONES creates two independent declarative handoff plans for the same selected model.
-- Neither handoff adapter downloads, starts, or benchmarks anything by itself. Physical execution remains behind the existing consent/execution gate.
+Los benchmarks públicos de tareas de LEONES se denominan **Leo001, Leo002, …, Leo010**.
 
-## Hermes installation
+Los antiguos identificadores `A01-001`…`A10-001` dejan de ser nombres públicos. **Leo001…Leo010 son los identificadores canónicos e inmutables.**
 
-LEONES does not vendor Hermes. `scripts/install_hermes.sh` calls the upstream installer only when the operator explicitly sets `LEONES_ALLOW_NETWORK_INSTALL=1`.
+## Principios fijados
 
-Upstream documents Linux installation with:
+1. **Hermes selecciona; LEONES valida.** Hermes sólo puede elegir entre los candidatos entregados por LEONES.
+2. **El usuario decide el backend.** Puede seleccionar Magnitude, ODS o ambos.
+3. **La selección no ejecuta.** El plan mantiene `execution_authorized=false`, `measurement_authorized=false` y `measured=false` hasta superar los gates físicos.
+4. **El benchmark es común.** Magnitude y ODS terminan exponiendo el modelo seleccionado al mismo protocolo de medición de LEONES.
+5. **El resultado es por tarea.** Se conserva Leo001…Leo010, sus ejecuciones, latencia y métricas disponibles.
+6. **La recomendación llega después de medir.** Las cifras externas sirven para selección/evidencia, pero nunca se convierten en mediciones locales.
+7. **La repetición es nativa.** Una nueva ejecución puede volver a Hermes, seleccionar otro candidato y repetir exactamente Leo001…Leo010.
+8. **LLMFit/FitLLM queda fuera de RC3.** No es dependencia ni selector.
 
-```bash
-curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+## Suite Leo
+
+| ID | Familia | Qué mide |
+|---|---|---|
+| **Leo001** | Tool use | Selección y uso correcto de herramienta |
+| **Leo002** | Multi-step | Operaciones dependientes en orden |
+| **Leo003** | Files/artifacts | Creación y verificación de artefactos |
+| **Leo004** | Recovery | Recuperación ante fallo |
+| **Leo005** | Long horizon | Conservación del estado y requisitos |
+| **Leo006** | Research | Reconciliación y trazabilidad de evidencia |
+| **Leo007** | Coding | Inspección, parche y pruebas |
+| **Leo008** | Local operations | Operación bajo permisos controlados |
+| **Leo009** | Safety | Rechazo seguro + ejecución de la parte permitida |
+| **Leo010** | Cost/latency | Cumplimiento de presupuesto |
+
+El catálogo contiene actualmente estas diez tareas. fileciteturn37file0
+
+## Ciclo de repetición
+
+```text
+Hermes → modelo X → backend → Leo001…Leo010 → resultados
+                                      ↓
+Hermes → modelo Y → backend → Leo001…Leo010 → resultados
+                                      ↓
+                           comparación tarea a tarea
 ```
 
-Then:
+No se crea otro benchmark para comparar modelos: **se reutiliza exactamente la misma suite Leo**.
 
-```bash
-hermes --version
-hermes doctor
-```
+## Comandos
 
-Hermes exposes `hermes model` for provider/model setup and `hermes -z` for a clean one-shot programmatic response. RC3 uses the latter so the selector can capture structured JSON without parsing the interactive TUI.
-
-## Stack handoff
-
-The handoff layer is declarative:
-
-```python
-from runtime_selection.handoff import build_handoffs
-
-plans = build_handoffs(selection)
-```
-
-The selected stack(s) are represented as `magnitude.v1.1` and/or `ods.v1.1` plans. The existing adapters remain the only place where a plan can become an execution specification.
-
-Magnitude is used for its native profiling/tuning/inference path. ODS is used for its local-stack/llama-server path. LEONES does not replace either project's native model-management machinery.
-
-## Benchmark by task
-
-The canonical task catalogue is `benchmarks/agentic/tasks.yaml` and currently contains ten tasks: tool use, multi-step execution, artifacts, recovery, long-horizon state, research/evidence reconciliation, coding, local operations, safety, and cost/latency budget.
-
-`scripts/leones_task_benchmark.py` runs the same task suite against an OpenAI-compatible endpoint and produces one result row per task with:
-
-- task id and family;
-- successful runs;
-- mean latency;
-- measured output tokens/s when the endpoint reports completion-token usage;
-- evidence type.
-
-The output is `artifacts/task-benchmark-latest.json` by default. This is the measurement layer; provider/catalog speed estimates are never copied into `measured` fields.
-
-## Repeat with another Hermes-selected model
-
-A repeat is intentionally a new selection + measurement cycle. Run:
+Nuevo modelo elegido por Hermes:
 
 ```bash
 python scripts/leones_task_benchmark.py \
@@ -94,9 +120,7 @@ python scripts/leones_task_benchmark.py \
   --select-with-hermes
 ```
 
-The command asks Hermes for a fresh candidate choice and then executes the complete ten-task suite against the selected endpoint.
-
-To benchmark a known candidate without reselection:
+Candidato concreto:
 
 ```bash
 python scripts/leones_task_benchmark.py \
@@ -104,10 +128,8 @@ python scripts/leones_task_benchmark.py \
   --model <candidate-id>
 ```
 
-This makes model A vs model B comparisons reproducible while preserving the distinction between **Hermes selection**, **user stack choice**, and **LEONES measurement**.
+El artefacto es `artifacts/task-benchmark-latest.json` y conserva los IDs Leo001…Leo010.
 
-## Result presentation
+## Estado
 
-The CLI prints a compact table by task and stores the complete JSON. A future web surface can consume the same `leones-task-benchmark.v1` artifact without inventing a second benchmark format.
-
-The final recommendation is computed only after task-level measurements exist. Until then, model quality, fit and external benchmarks remain decision evidence rather than LEONES measurements.
+**Arquitectura FIJADA en RC3.** La implementación queda en la rama de integración correspondiente y la validación física se mantiene separada: Hermes, Magnitude/ODS y las mediciones reales de Leo001…Leo010 sólo se declaran validadas después de ejecutarlas sobre Ubuntu.
