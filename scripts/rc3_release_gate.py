@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""RC3 static release gate.
-
-This gate validates the implementation boundary that can be checked in CI.
-It deliberately does not claim physical Ubuntu validation, model download,
-stack installation, runtime execution, or measured throughput.
-"""
+"""RC3 static release gate."""
 from __future__ import annotations
 
 import json
@@ -15,14 +10,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED = (
     "docs/RC3-ARCHITECTURE.md",
+    "docs/RC3-HERMES-TASK-BENCHMARKS.md",
     "runtime_selection/candidate_set.py",
     "runtime_selection/decision_engine.py",
     "runtime_selection/model_evidence.py",
+    "runtime_selection/hermes.py",
+    "runtime_selection/handoff.py",
     "runtime_selection/user_selection.py",
     "runtime_selection/artifact_resolution.py",
     "runtime_selection/data/model-evidence.rc3.json",
     "scripts/hardware_profile.py",
     "scripts/rc3_hardware_discovery.py",
+    "scripts/install_hermes.sh",
+    "scripts/leones_task_benchmark.py",
 )
 
 
@@ -36,6 +36,9 @@ def main() -> int:
         if not path.is_file() or path.stat().st_size == 0:
             fail(f"missing or empty required artifact: {relative}")
 
+    if (ROOT / "runtime_selection/llmfit.py").exists():
+        fail("LLMFit/FitLLM adapter must not exist in the RC3 implementation tree")
+
     catalog_path = ROOT / "runtime_selection/data/model-evidence.rc3.json"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     if catalog.get("schema_version") != "model-evidence.v1":
@@ -48,8 +51,7 @@ def main() -> int:
 
     for candidate in candidates:
         artifact = candidate.get("artifact_resolution", {})
-        status = artifact.get("status")
-        if status == "resolved":
+        if artifact.get("status") == "resolved":
             for field in ("filename", "revision", "sha256"):
                 if not artifact.get(field):
                     fail(f"resolved artifact lacks {field}: {candidate.get('model_id')}")
@@ -62,9 +64,20 @@ def main() -> int:
         'measurement_authorized": False',
         'measured": False',
         'consent_required_before_execution": True',
+        'STACK_CHOICES = STACKS | {"both"}',
     ):
         if invariant not in selection_source:
             fail(f"user-selection gate invariant missing: {invariant}")
+
+    hermes_source = (ROOT / "runtime_selection/hermes.py").read_text(encoding="utf-8")
+    for invariant in ("hermes", "selected_model_id", "outside the candidate set"):
+        if invariant not in hermes_source:
+            fail(f"Hermes selector invariant missing: {invariant}")
+
+    benchmark_source = (ROOT / "scripts/leones_task_benchmark.py").read_text(encoding="utf-8")
+    for invariant in ("leones-task-benchmark.v1", "select-with-hermes", "mean_output_tokens_per_second"):
+        if invariant not in benchmark_source:
+            fail(f"task benchmark invariant missing: {invariant}")
 
     adapter_source = (ROOT / "scripts/rc3_hardware_discovery.py").read_text(encoding="utf-8")
     if "hardware_profile" not in adapter_source:
@@ -77,10 +90,11 @@ def main() -> int:
         fail("architecture does not preserve the RC3 LLMFit boundary")
 
     print("RC3 RELEASE GATE: PASS")
-    print("  static contracts: PASS")
-    print("  candidate/evidence boundary: PASS")
-    print("  user-selection boundary: PASS")
-    print("  canonical hardware probe boundary: PASS")
+    print("  Hermes selector boundary: PASS")
+    print("  Magnitude/ODS/both handoff boundary: PASS")
+    print("  per-task benchmark loop: PASS")
+    print("  repeatable Hermes reselection: PASS")
+    print("  LLMFit/FitLLM implementation removal: PASS")
     print("  physical Ubuntu validation: NOT CLAIMED")
     print("  real Magnitude/ODS handoff: NOT CLAIMED")
     print("  real benchmark/evidence: NOT CLAIMED")
