@@ -6,6 +6,8 @@ on:
       - 'benchmarks/agentic/**'
       - 'benchmarks/evidence/**'
       - 'scripts/**'
+      - 'runtime_selection/**'
+      - 'tests/test_hermes_selection_and_task_benchmark.py'
       - '.github/workflows/agentic-a01-contract.yml'
   push:
     branches: [main]
@@ -13,14 +15,16 @@ on:
       - 'benchmarks/agentic/**'
       - 'benchmarks/evidence/**'
       - 'scripts/**'
+      - 'runtime_selection/**'
+      - 'tests/test_hermes_selection_and_task_benchmark.py'
       - '.github/workflows/agentic-a01-contract.yml'
 
 jobs:
   a01-contract:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - run: python -m pip install --upgrade pip pytest
@@ -28,5 +32,5 @@ jobs:
         working-directory: benchmarks/agentic/adapters
       - run: PYTHONPATH=. python -m pytest -q
         working-directory: benchmarks/evidence
-      - name: Selector -> runtime-selection.v1 -> A01
-        run: PYTHONPATH=. python -m pytest -q benchmarks/agentic/test_selection_to_a01.py
+      - name: RC3 Hermes -> Leo benchmark contract
+        run: PYTHONPATH=. python -m pytest -q tests/test_hermes_selection_and_task_benchmark.py
