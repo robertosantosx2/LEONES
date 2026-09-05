@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""RC3 static release gate."""
+"""RC3 static release gate.
+
+The gate checks the active RC3 route, not historical RC2/JALÓN material.
+Hermes is the sole model selector in RC3; legacy selector implementations may
+remain only outside that route for historical compatibility/audit purposes.
+"""
 from __future__ import annotations
 
 import json
@@ -12,7 +17,6 @@ REQUIRED = (
     "docs/RC3-ARCHITECTURE.md",
     "docs/RC3-HERMES-TASK-BENCHMARKS.md",
     "runtime_selection/candidate_set.py",
-    "runtime_selection/decision_engine.py",
     "runtime_selection/model_evidence.py",
     "runtime_selection/hermes.py",
     "runtime_selection/handoff.py",
@@ -23,6 +27,21 @@ REQUIRED = (
     "scripts/rc3_hardware_discovery.py",
     "scripts/install_hermes.sh",
     "scripts/leones_task_benchmark.py",
+)
+
+# Files that constitute the active RC3 selector/benchmark route. Historical
+# files elsewhere in the repository are deliberately not treated as RC3 code.
+RC3_ROUTE = (
+    "runtime_selection/candidate_set.py",
+    "runtime_selection/hermes.py",
+    "runtime_selection/handoff.py",
+    "runtime_selection/user_selection.py",
+    "runtime_selection/artifact_resolution.py",
+    "scripts/hardware_profile.py",
+    "scripts/rc3_hardware_discovery.py",
+    "scripts/install_hermes.sh",
+    "scripts/leones_task_benchmark.py",
+    "tests/test_hermes_selection_and_task_benchmark.py",
 )
 
 
@@ -38,6 +57,16 @@ def main() -> int:
 
     if (ROOT / "runtime_selection/llmfit.py").exists():
         fail("LLMFit/FitLLM adapter must not exist in the RC3 implementation tree")
+
+    # RC3 must have exactly one model-selection authority: Hermes. In
+    # particular, selector-specific legacy names and the old decision-engine
+    # entrypoint must not leak into the active route.
+    forbidden_route_terms = ("llmfit", "fitllm", "decision_engine", "model_selector")
+    for relative in RC3_ROUTE:
+        source = (ROOT / relative).read_text(encoding="utf-8").lower()
+        for term in forbidden_route_terms:
+            if term in source:
+                fail(f"legacy selector term '{term}' leaks into RC3 route: {relative}")
 
     catalog_path = ROOT / "runtime_selection/data/model-evidence.rc3.json"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
@@ -69,6 +98,11 @@ def main() -> int:
         if invariant not in selection_source:
             fail(f"user-selection gate invariant missing: {invariant}")
 
+    candidate_source = (ROOT / "runtime_selection/candidate_set.py").read_text(encoding="utf-8")
+    for forbidden_field in ("estimated_tps", "measured_tps", "benchmark_result", "command", "argv"):
+        if f'"{forbidden_field}"' in candidate_source:
+            fail(f"candidate-set must not contain execution/measurement field: {forbidden_field}")
+
     hermes_source = (ROOT / "runtime_selection/hermes.py").read_text(encoding="utf-8")
     for invariant in ("hermes", "selected_model_id", "outside the candidate set"):
         if invariant not in hermes_source:
@@ -79,6 +113,11 @@ def main() -> int:
         if invariant not in benchmark_source:
             fail(f"task benchmark invariant missing: {invariant}")
 
+    task_source = (ROOT / "benchmarks/agentic/tasks.yaml").read_text(encoding="utf-8")
+    for task_id in ("Leo001", "Leo002", "Leo003", "Leo004", "Leo005", "Leo006", "Leo007", "Leo008", "Leo009", "Leo010"):
+        if f"id: {task_id}" not in task_source:
+            fail(f"canonical task missing: {task_id}")
+
     adapter_source = (ROOT / "scripts/rc3_hardware_discovery.py").read_text(encoding="utf-8")
     if "hardware_profile" not in adapter_source:
         fail("RC3 hardware discovery adapter is not routed through canonical hardware_profile")
@@ -88,13 +127,17 @@ def main() -> int:
         fail("architecture does not name the canonical physical probe")
     if "LLMFit/FitLLM" not in architecture or "fuera de RC3" not in architecture:
         fail("architecture does not preserve the RC3 LLMFit boundary")
+    if "HERMES" not in architecture.upper():
+        fail("architecture does not identify Hermes as the RC3 selector")
 
     print("RC3 RELEASE GATE: PASS")
-    print("  Hermes selector boundary: PASS")
+    print("  Hermes-only selector route: PASS")
+    print("  candidate-set selector neutrality: PASS")
     print("  Magnitude/ODS/both handoff boundary: PASS")
     print("  per-task benchmark loop: PASS")
+    print("  Leo001-Leo010 canonical suite: PASS")
     print("  repeatable Hermes reselection: PASS")
-    print("  LLMFit/FitLLM implementation removal: PASS")
+    print("  LLMFit/FitLLM excluded from active RC3 route: PASS")
     print("  physical Ubuntu validation: NOT CLAIMED")
     print("  real Magnitude/ODS handoff: NOT CLAIMED")
     print("  real benchmark/evidence: NOT CLAIMED")
