@@ -2,10 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="LEONES RC3: estado público, sonda física canónica, Hermes/OMH, Magnitude/ODS y gates de validación." />
+<meta name="description" content="LEONES RC3: fase cerrada. Sonda física canónica, Hermes/OMH, Magnitude/ODS. Medición completa en backlog." />
 <title>LEONES · RC3</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-3" />
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-3" />
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-5" />
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-5" />
 <style>
 .rc3-hero-note{margin-top:1rem;padding:1rem 1.15rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}
 .rc3-state{display:inline-block;padding:.3rem .55rem;border-radius:999px;background:#e9f7ee;color:#0f5132;font-weight:800;font-size:.78rem}
@@ -22,10 +22,10 @@
 <header class="site-hero"><div class="site-hero__inner">
 <span class="site-tag">RC3 · 5 septiembre 2026</span>
 <h1>LEONES · RC3</h1>
-<p>Implementación y contratos cerrados. Gate CI activo. Observación física parcial en Aspire (2026-09-05). Validación completa pendiente.</p>
+<p><strong>RC3 cerrada como fase.</strong> Implementación, contratos y web alineados. Observación física parcial en Aspire (2026-09-05). Medición completa = backlog post-RC3.</p>
 <div class="rc3-hero-note">
-<span class="rc3-state">Implementación 🟢 cerrada</span>
-<span class="rc3-state rc3-state--pending" style="margin-left:.4rem">Físico 🟡 parcial / completo abierto</span>
+<span class="rc3-state">RC3 🟢 cerrada</span>
+<span class="rc3-state rc3-state--pending" style="margin-left:.4rem">Medición completa ⚪ backlog</span>
 <p style="margin-top:.8rem"><strong>Sonda física canónica:</strong> <code>scripts/hardware_profile.py</code> produce <code>hardware-profile.v1</code>. Hermes aporta ecosistema runtime/model-fit; OMH organiza operación. LLMFit/FitLLM queda fuera del camino RC3.</p>
 </div>
 </div></header>
@@ -79,12 +79,12 @@ tareas LEONES → medición → evidencia</pre>
 <li>Magnitude CLI presente · service Stopped</li>
 <li>Inferencia CPU ~1&nbsp;tok/s · timeout de <code>ods chat</code> documentado</li>
 </ul>
-<p><strong>No</strong> equivale a RC3 físicamente validada. Detalle: <code>docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md</code>.</p>
+<p><strong>No</strong> equivale a medición completa LEONES. Detalle: <code>docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md</code>.</p>
 </div>
 </section>
-<section class="site-section"><span class="site-tag">Pendiente</span><h2>Último gate: validación física completa</h2>
+<section class="site-section"><span class="site-tag">Backlog</span><h2>Post-RC3: medición completa</h2>
 <div class="rc3-warning">
-<p>RC3 no se declara físicamente validada hasta completar bajo autoridad LEONES:</p>
+<p>Estos puntos <strong>no reabren RC3</strong>. Quedan como campaña de medición posterior bajo autoridad LEONES:</p>
 <ul>
 <li>handoff formal Hermes → Magnitude</li>
 <li>handoff formal Hermes → ODS</li>
@@ -97,6 +97,7 @@ tareas LEONES → medición → evidencia</pre>
 <section class="site-section"><span class="site-tag">Docs</span><h2>Referencias</h2>
 <div class="rc3-links">
 <a href="../docs/RC3-ARCHITECTURE.md">Arquitectura RC3</a>
+<a href="../docs/completed/RC3-CLOSED-2026-09-05.md">Cierre de fase RC3</a>
 <a href="estado.html">Estado del proyecto</a>
 <a href="app.html">Recorrido operativo</a>
 <a href="../README.md">README</a>
@@ -104,6 +105,6 @@ tareas LEONES → medición → evidencia</pre>
 </div>
 </section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-05-3" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-05-5" defer></script>
 </body>
 </html>
