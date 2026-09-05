@@ -2,14 +2,16 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="LEONES RC2: recorrido beta desde hardware real hasta selección, resolución de runtime, instalación, benchmark y evidencia." />
-<title>LEONES · RC2 Beta</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-04-1" /><link rel="stylesheet" href="assets/css/site.css?v=2026-09-04-1" />
+<meta name="description" content="LEONES RC2 histórico: beta previa. El camino canónico actual es RC3." />
+<title>LEONES · RC2 · histórico</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-4" /><link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-4" />
 <style>.rc2-hero-note{margin-top:1rem;padding:1rem 1.15rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}.rc2-state{display:inline-block;padding:.3rem .55rem;border-radius:999px;background:#eef5f8;font-weight:800;font-size:.78rem}.rc2-flow{overflow:auto}.rc2-gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}.rc2-card{padding:1.1rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}.rc2-card h3{margin-top:0}.rc2-card p:last-child{margin-bottom:0}.rc2-warning{border-left:4px solid #315d7d;padding:.8rem 1rem;background:#f5f8fa}.rc2-links{display:flex;flex-wrap:wrap;gap:.7rem}.rc2-links a{font-weight:800}.rc2-small{font-size:.9rem;color:#5d6d77}</style>
 </head>
 <body>
-<header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Beta · RC2 · 4 septiembre 2026</span><h1>LEONES · RC2</h1><p>Del hardware real a una decisión reproducible: modelo, stack, runtime ejecutable, instalación, benchmark y evidencia.</p><div class="rc2-hero-note"><span class="rc2-state">Operador canónico · ./leones</span><p><strong>RC2 no sustituye las herramientas canónicas.</strong> Orquesta LLMFit, ODS/Magnitude y los runners de LEONES. Un idioma por sesión. Estimaciones, estados observados y mediciones reales permanecen separados.</p></div></div></header>
+<header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Histórico · RC2 · beta previa</span><h1>LEONES · RC2</h1><p>Del hardware real a una decisión reproducible: modelo, stack, runtime ejecutable, instalación, benchmark y evidencia.</p><div class="rc2-hero-note"><span class="rc2-state">Histórico · operador RC2 · ./leones</span><p><strong>RC2 fue la beta previa.</strong> Orquestaba LLMFit, ODS/Magnitude y runners LEONES. Sustituido como canónico por RC3. Un idioma por sesión. Estimaciones, estados observados y mediciones reales permanecen separados.</p></div></div></header>
 <main class="site-main" id="main">
+<section class="site-section"><div class="rc2-warning"><p><strong>RC2 es histórico.</strong> El camino canónico actual es <a href="rc3.html">RC3</a>: sonda <code>hardware_profile.py</code>, Hermes/OMH en ecosistema, elección Magnitude u ODS. LLMFit no es dependencia de arranque en RC3. Esta página documenta la línea beta previa.</p></div></section>
+
 <section class="site-section"><span class="site-tag">Recorrido beta</span><h2>Operador: <code>./leones</code></h2><div class="rc2-flow"><pre class="site-stack">IDIOMA (es | en | zh)
       ↓
 HARDWARE REAL + LLMFIT → CANDIDATOS → ELEGIR MODELO
@@ -33,10 +35,10 @@ HARDWARE REAL + LLMFIT → CANDIDATOS → ELEGIR MODELO
                                 RUNNER CANÓNICO RC1
                                            ↓
                                MEDICIÓN REAL → EVIDENCIA</pre></div></section>
-<section class="site-section"><span class="site-tag">Reglas</span><h2>Lo que ya está fijado</h2><div class="rc2-gates"><article class="site-card"><h3>Un idioma</h3><p>Se elige al inicio. No se muestran ES+EN+ZH en cada línea.</p></article><article class="site-card"><h3>Stack con descripción</h3><p>ODS y Magnitude se eligen con resumen legible en el menú.</p></article><article class="site-card"><h3>Verify física</h3><p>Observa el host. Exit 0 del instalador no es PASS LEONES.</p></article><article class="site-card"><h3>Resolución explícita</h3><p>GGUF no se convierte en Ollama. Runtime y artefacto se comprueban antes de A01.</p></article><article class="site-card"><h3>A01 opcional</h3><p>Consentimiento propio. Runner RC1. Sin runtime → bloqueo, no MEASURED inventado.</p></article><article class="site-card"><h3>ESTIMATED ≠ MEASURED</h3><p>LLMFit orienta; solo la ejecución real produce evidencia LEONES.</p></article></div></section>
+<section class="site-section"><span class="site-tag">Reglas</span><h2>Lo que ya está fijado</h2><div class="rc2-gates"><article class="rc2-card"><h3>Un idioma</h3><p>Se elige al inicio. No se muestran ES+EN+ZH en cada línea.</p></article><article class="rc2-card"><h3>Stack con descripción</h3><p>ODS y Magnitude se eligen con resumen legible en el menú.</p></article><article class="rc2-card"><h3>Verify física</h3><p>Observa el host. Exit 0 del instalador no es PASS LEONES.</p></article><article class="rc2-card"><h3>Resolución explícita</h3><p>GGUF no se convierte en Ollama. Runtime y artefacto se comprueban antes de A01.</p></article><article class="rc2-card"><h3>A01 opcional</h3><p>Consentimiento propio. Runner RC1. Sin runtime → bloqueo, no MEASURED inventado.</p></article><article class="rc2-card"><h3>ESTIMATED ≠ MEASURED</h3><p>LLMFit orienta; solo la ejecución real produce evidencia LEONES.</p></article></div></section>
 <section class="site-section"><span class="site-tag">Validación física</span><h2>Lo observado</h2><div class="rc2-warning"><p>Cuando LLMFit propuso un candidato GGUF y Ollama no tenía ese modelo, LEONES devolvió <code>benchmark_blocked</code> y no publicó medición. Bloquear también es validar.</p></div></section>
-<section class="site-section"><span class="site-tag">Documentación</span><h2>Manuales</h2><div class="rc2-links"><a href="inicio-rapido.html">Inicio rápido</a><a href="../docs/RC2-USER-MANUAL.md">Manual de usuario</a><a href="../docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación</a><a href="../docs/RC2-L-INTEGRATED-BETA-JOURNEY.md">Recorrido integrado</a><a href="../docs/completed/rc2-wizard.md">Guía del wizard</a></div></section>
+<section class="site-section"><span class="site-tag">Documentación</span><h2>Manuales</h2><div class="rc2-links"><a href="rc3.html">RC3 canónico</a><a href="inicio-rapido.html">Inicio rápido RC3</a><a href="../docs/RC2-USER-MANUAL.md">Manual de usuario</a><a href="../docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación</a><a href="../docs/RC2-L-INTEGRATED-BETA-JOURNEY.md">Recorrido integrado</a><a href="../docs/completed/rc2-wizard.md">Guía del wizard</a></div></section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-04-1" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-05-4" defer></script>
 </body>
 </html>
