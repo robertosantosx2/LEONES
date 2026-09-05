@@ -97,14 +97,21 @@ def validate_selection(selection: dict[str, Any]) -> None:
         raise ValueError("user model choice is required")
     if not selection.get("selected_model_id"):
         raise ValueError("selected_model_id is required")
+
     stack = selection.get("stack")
-    if stack is not None:
-        _validate_stack(stack)
     stacks = selection.get("stacks")
-    if stacks is not None and any(item not in STACKS for item in stacks):
+    if stack is None:
+        raise ValueError("stack choice is required")
+    _validate_stack(stack)
+    if not stacks:
+        raise ValueError("stack choice is required")
+    if any(item not in STACKS for item in stacks):
         raise ValueError("stacks may only contain Magnitude and ODS")
-    if stack == "both" and set(stacks or []) != STACKS:
+    if stack == "both" and set(stacks) != STACKS:
         raise ValueError("both requires Magnitude and ODS")
+    if stack != "both" and stacks != [stack]:
+        raise ValueError("stack and stacks disagree")
+
     if selection.get("execution_authorized") is not False:
         raise ValueError("user selection cannot authorize execution")
     if selection.get("measurement_authorized") is not False:
