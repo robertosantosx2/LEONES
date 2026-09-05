@@ -7,6 +7,7 @@ remain only outside that route for historical compatibility/audit purposes.
 """
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 import sys
@@ -29,8 +30,6 @@ REQUIRED = (
     "scripts/leones_task_benchmark.py",
 )
 
-# Files that constitute the active RC3 selector/benchmark route. Historical
-# files elsewhere in the repository are deliberately not treated as RC3 code.
 RC3_ROUTE = (
     "runtime_selection/candidate_set.py",
     "runtime_selection/hermes.py",
@@ -49,6 +48,19 @@ def fail(message: str) -> None:
     raise SystemExit(f"RC3 RELEASE GATE: FAIL — {message}")
 
 
+def _candidate_literal_keys(source: str) -> set[str]:
+    """Return literal dictionary keys used by candidate-set implementation."""
+    tree = ast.parse(source)
+    keys: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Dict):
+            continue
+        for key in node.keys:
+            if isinstance(key, ast.Constant) and isinstance(key.value, str):
+                keys.add(key.value)
+    return keys
+
+
 def main() -> int:
     for relative in REQUIRED:
         path = ROOT / relative
@@ -58,9 +70,6 @@ def main() -> int:
     if (ROOT / "runtime_selection/llmfit.py").exists():
         fail("LLMFit/FitLLM adapter must not exist in the RC3 implementation tree")
 
-    # RC3 must have exactly one model-selection authority: Hermes. In
-    # particular, selector-specific legacy names and the old decision-engine
-    # entrypoint must not leak into the active route.
     forbidden_route_terms = ("llmfit", "fitllm", "decision_engine", "model_selector")
     for relative in RC3_ROUTE:
         source = (ROOT / relative).read_text(encoding="utf-8").lower()
@@ -99,8 +108,9 @@ def main() -> int:
             fail(f"user-selection gate invariant missing: {invariant}")
 
     candidate_source = (ROOT / "runtime_selection/candidate_set.py").read_text(encoding="utf-8")
+    candidate_keys = _candidate_literal_keys(candidate_source)
     for forbidden_field in ("estimated_tps", "measured_tps", "benchmark_result", "command", "argv"):
-        if f'"{forbidden_field}"' in candidate_source:
+        if forbidden_field in candidate_keys:
             fail(f"candidate-set must not contain execution/measurement field: {forbidden_field}")
 
     hermes_source = (ROOT / "runtime_selection/hermes.py").read_text(encoding="utf-8")
