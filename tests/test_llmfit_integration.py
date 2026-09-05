@@ -2,6 +2,13 @@ import json
 
 import pytest
 
+# RC3 deliberately removes the LLMFit implementation adapter. Keep this
+# historical test file for audit context, but do not collect it in RC3.
+pytest.importorskip(
+    "runtime_selection.llmfit",
+    reason="LLMFit/FitLLM is outside the canonical RC3 implementation",
+)
+
 from runtime_selection.llmfit import (
     LLMFitError,
     LLMFitResult,
