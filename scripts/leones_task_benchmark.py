@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Run the canonical LEONES task suite against a selected model endpoint.
-
-The runner deliberately uses an OpenAI-compatible endpoint so Magnitude and ODS
-can both feed the same LEONES measurement layer. It never downloads or starts
-a stack. Model selection may be repeated through Hermes before every run.
-"""
+"""Run the canonical LEONES Leo001-Leo010 suite against a selected model."""
 from __future__ import annotations
 
 import argparse
@@ -24,7 +19,6 @@ TASK_FILE = ROOT / "benchmarks/agentic/tasks.yaml"
 
 
 def load_tasks(path: Path = TASK_FILE) -> list[dict[str, Any]]:
-    """Parse the deliberately simple canonical task YAML without a new dependency."""
     tasks: list[dict[str, Any]] = []
     current: dict[str, Any] | None = None
     for raw in path.read_text(encoding="utf-8").splitlines():
@@ -69,7 +63,7 @@ def _post(base_url: str, payload: dict[str, Any], timeout: int) -> tuple[dict[st
 def run_task(task: dict[str, Any], *, base_url: str, model: str, runs: int, timeout: int) -> dict[str, Any]:
     samples: list[dict[str, Any]] = []
     prompt = (
-        f"LEONES benchmark task {task['id']} ({task.get('family', 'unknown')}): "
+        f"LEONES benchmark {task['id']} ({task.get('family', 'unknown')}): "
         f"{task.get('objective', task.get('title', 'Complete the task.'))}\n"
         f"Constraints: {', '.join(task.get('constraints', []))}\n"
         "Return a concise completion; do not claim tool execution that you did not perform."
@@ -79,46 +73,41 @@ def run_task(task: dict[str, Any], *, base_url: str, model: str, runs: int, time
             body, elapsed = _post(base_url, {"model": model, "messages": [{"role": "user", "content": prompt}], "temperature": 0, "max_tokens": 256}, timeout)
             usage = body.get("usage") or {}
             completion_tokens = usage.get("completion_tokens")
-            samples.append({
-                "run": index + 1,
-                "status": "ok",
-                "latency_seconds": round(elapsed, 4),
-                "completion_tokens": completion_tokens,
-                "output_tokens_per_second": round(completion_tokens / elapsed, 3) if completion_tokens and elapsed > 0 else None,
-            })
+            samples.append({"run": index + 1, "status": "ok", "latency_seconds": round(elapsed, 4), "completion_tokens": completion_tokens, "output_tokens_per_second": round(completion_tokens / elapsed, 3) if completion_tokens and elapsed > 0 else None})
         except (OSError, urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
             samples.append({"run": index + 1, "status": "error", "error_type": type(exc).__name__})
 
     good = [s for s in samples if s["status"] == "ok"]
+    measured_tps = [s["output_tokens_per_second"] for s in good if s["output_tokens_per_second"] is not None]
     return {
-        "task_id": task["id"],
+        "benchmark_id": task["id"],
         "family": task.get("family"),
         "title": task.get("title"),
         "grader": task.get("grader"),
         "runs": samples,
         "successful_runs": len(good),
         "mean_latency_seconds": round(statistics.mean(s["latency_seconds"] for s in good), 4) if good else None,
-        "mean_output_tokens_per_second": round(statistics.mean(s["output_tokens_per_second"] for s in good if s["output_tokens_per_second"] is not None), 3) if any(s["output_tokens_per_second"] is not None for s in good) else None,
+        "mean_output_tokens_per_second": round(statistics.mean(measured_tps), 3) if measured_tps else None,
         "evidence_type": "measured" if good else "reported",
     }
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="LEONES benchmark by task")
-    parser.add_argument("--base-url", required=True, help="OpenAI-compatible /v1 base URL, without /chat/completions")
-    parser.add_argument("--model", help="Model id exposed by the selected stack")
-    parser.add_argument("--decision-json", type=Path, help="Decision JSON containing candidates[]")
-    parser.add_argument("--select-with-hermes", action="store_true", help="Ask installed Hermes to choose the model")
-    parser.add_argument("--task", default="general", help="Hermes selection objective")
+    parser = argparse.ArgumentParser(description="LEONES Leo001-Leo010 benchmark suite")
+    parser.add_argument("--base-url", required=True, help="OpenAI-compatible /v1 base URL")
+    parser.add_argument("--model")
+    parser.add_argument("--decision-json", type=Path)
+    parser.add_argument("--select-with-hermes", action="store_true")
+    parser.add_argument("--task", default="general")
     parser.add_argument("--runs", type=int, default=3)
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--output", type=Path, default=ROOT / "artifacts" / "task-benchmark-latest.json")
     args = parser.parse_args()
-
     if args.runs < 1:
         parser.error("--runs must be >= 1")
+
     model = args.model
-    selection: dict[str, Any] | None = None
+    selection = None
     if args.select_with_hermes:
         if not args.decision_json:
             parser.error("--select-with-hermes requires --decision-json")
@@ -128,30 +117,28 @@ def main() -> int:
     if not model:
         parser.error("provide --model or --select-with-hermes")
 
-    results = []
-    for task in load_tasks():
-        results.append(run_task(task, base_url=args.base_url, model=model, runs=args.runs, timeout=args.timeout))
-
+    results = [run_task(task, base_url=args.base_url, model=model, runs=args.runs, timeout=args.timeout) for task in load_tasks()]
     document = {
         "schema_version": "leones-task-benchmark.v1",
+        "benchmark_family": "Leo",
         "selector": selection or {"selector": "user_or_stack", "selected_model_id": model},
         "model": model,
         "endpoint": args.base_url,
         "task_count": len(results),
         "tasks": results,
         "repeatable": True,
-        "repeat_instruction": "Run this command again with --select-with-hermes to obtain a fresh Hermes model choice, or pass --model for a known candidate.",
+        "repeat_instruction": "Repeat with --select-with-hermes for a fresh Hermes-selected model, or --model for a known candidate.",
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    print(f"LEONES TASK BENCHMARK — model: {model}")
-    print("task                 family              latency(s)   tok/s       status")
-    print("-" * 78)
+    print(f"LEONES Leo benchmark — model: {model}")
+    print("benchmark             family              latency(s)   tok/s       status")
+    print("-" * 82)
     for result in results:
-        print(f"{result['task_id']:<20} {str(result['family']):<19} {str(result['mean_latency_seconds']):<12} {str(result['mean_output_tokens_per_second']):<11} {result['evidence_type']}")
+        print(f"{result['benchmark_id']:<21} {str(result['family']):<19} {str(result['mean_latency_seconds']):<12} {str(result['mean_output_tokens_per_second']):<11} {result['evidence_type']}")
     print(f"\nSaved: {args.output}")
-    print("Repeat with --select-with-hermes for another Hermes-selected candidate.")
+    print("Repeat with --select-with-hermes for another Hermes-selected model.")
     return 0
 
 
