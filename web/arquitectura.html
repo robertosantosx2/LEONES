@@ -2,111 +2,59 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Arquitectura canónica de LEONES y su cadena de selección, instalación, ejecución, medición y evidencia.">
-<title>LEONES · Arquitectura</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-1">
-<link rel="stylesheet" href="assets/graphics/brand.css">
+<meta name="description" content="Arquitectura LEONES RC3: sonda física canónica, Hermes/OMH, candidatos, Magnitude/ODS, medición y evidencia.">
+<title>LEONES · Arquitectura · RC3</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-4">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-4">
 </head>
 <body>
-<header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Arquitectura</span><h1>LEONES · Arquitectura</h1><p>La cadena que conecta necesidad, hardware real, selección, instalación, ejecución, medición y evidencia.</p></div></header>
-<!-- LEONES-VISUAL-IDENTITY -->
-<div class="wrap">
-  <div class="leones-section-brand"><img src="assets/graphics/logos/leones-arquitectura.svg" alt="LEONES · Arquitectura"><div><strong>LEONES · Arquitectura</strong><br><span class="small">Identidad funcional del ecosistema</span></div></div>
-  <div class="leones-logo-rail">
-  <a class="leones-logo-link" href="pilares.html"><img src="assets/graphics/logos/leones-prospection.svg" alt="Prospección">Prospección</a>
-  <a class="leones-logo-link" href="pilares.html#atlas"><img src="assets/graphics/logos/leones-atlas.svg" alt="Atlas">Atlas</a>
-  <a class="leones-logo-link" href="pilares.html#router"><img src="assets/graphics/logos/leones-router.svg" alt="Router">Router</a>
-  <a class="leones-logo-link" href="pilares.html#runtime"><img src="assets/graphics/logos/leones-hardware.svg" alt="Hardware">Hardware</a>
-  <a class="leones-logo-link" href="arquitectura.html#lotb"><img src="assets/graphics/logos/leones-agents.svg" alt="Agents / LOTB">Agents / LOTB</a>
-  <a class="leones-logo-link" href="app.html#manada"><img src="assets/graphics/logos/leones-manada.svg" alt="Manada">Manada</a>
-</div>
-</div>
+<header class="site-hero"><div class="site-hero__inner">
+<span class="site-tag">Arquitectura · RC3</span>
+<h1>Mapa del sistema</h1>
+<p>Contrato vivo en <code>docs/RC3-ARCHITECTURE.md</code>. Esta página resume el camino canónico sin sustituir el documento.</p>
+</div></header>
 <main class="site-main" id="main">
-<section class="site-section" aria-labelledby="canonical-title"><span class="site-tag">Canónica</span><h2 id="canonical-title">Del objetivo a la evidencia</h2><pre class="site-stack">NECESIDAD
-    ↓
-HARDWARE REAL
-    ↓
-LLMFIT → CANDIDATOS → ELECCIÓN HUMANA
-    ↓
-ODS / MAGNITUDE → STACK PROPUESTO
-    ↓
-CONSENTIMIENTO DE INSTALACIÓN
-    ↓
-INSTALAR → VERIFICAR
-    ↓
-CONSENTIMIENTO DE BENCHMARK
-    ↓
-HANDOFF RC1 → MEDIR → EVIDENCIA
-    ↓
-RECOMENDACIÓN</pre><p class="site-note"><strong>Fronteras:</strong> la selección propone; el consentimiento autoriza; la instalación prepara; RC1 ejecuta; la medición produce resultados; la evidencia conserva lo ocurrido. <strong>ESTIMATED ≠ MEASURED.</strong></p></section>
-<section class="site-section" aria-labelledby="decision-title"><span class="site-tag">Decisión de stack</span><h2 id="decision-title">ODS y Magnitude no sustituyen a LEONES</h2><p>LEONES aprovecha herramientas especializadas para conocer qué pila puede tener sentido en el hardware y para la tarea elegida. ODS y Magnitude aportan información de despliegue, modelos, inferencia y agentes; LEONES no crea un segundo sistema de scoring para competir con ellos.</p><pre class="site-stack">LEONES
-  │
-  ├── HARDWARE + NECESIDAD
-  │
-  ├── LLMFIT → candidatos
-  │
-  └── ODS / MAGNITUDE → opciones de stack
+<section class="site-section"><h2>Regla de autoridad</h2>
+<p class="site-lead"><strong>LEONES descubre el hardware. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.</strong></p>
+</section>
+<section class="site-section"><h2>Flujo canónico</h2>
+<pre class="site-stack">scripts/hardware_profile.py
+        (sonda física canónica)
                 ↓
-        elección del usuario
+       hardware-profile.v1
                 ↓
-          instalación autorizada
+   HERMES runtime hints + OMH operación
                 ↓
-             RC1 / A01
+         LEONES normalize
                 ↓
-        medición física + evidencia</pre></section>
-<section class="site-section" aria-labelledby="rc1-title"><span class="site-tag">RC1 · 🟢 Validado</span><h2 id="rc1-title">La arquitectura ya ha cruzado la frontera física</h2><p>RC1 demuestra una ejecución efectiva end-to-end sobre hardware real: una selección autorizada pasa por el handoff canónico, ejecuta el runtime y modelo seleccionados, realiza la tarea de benchmark y conserva la medición y su evidencia.</p><pre class="site-stack">selección autorizada
-        ↓
-HANDOFF RC1
-        ↓
-runtime real + modelo real
-        ↓
-A01 / benchmark
-        ↓
-medición física
-        ↓
-evidencia reproducible</pre><p><a href="estado.html">Estado actual →</a> · <a href="../docs/completed/RC1-EFFECTIVE-EXECUTION.md">Cierre RC1 →</a></p></section>
-<section class="site-section" aria-labelledby="ecosystem-title"><h2 id="ecosystem-title">Ecosistema completo</h2><pre class="site-stack">LEONES
-  │
-  ├── KNOWLEDGE → Atlas / Buddy
-  ├── PROSPECCIÓN → fuentes y herramientas externas
-  ├── DECISIÓN → candidatos + ODS / Magnitude
-  ├── EXECUTION → handoff al runner canónico RC1
-  └── EVIDENCE → medición reproducible
-           ↓
-       Evaluación de tarea
-           ↓
-       Recomendación
-           ↓
-         Manada</pre><p>La arquitectura separa conocimiento, decisión, ejecución y evidencia. Una recomendación puede utilizar información externa o estimada, pero solo una ejecución registrada puede convertirse en evidencia física de LEONES.</p></section>
-<section class="site-section" aria-labelledby="stack-title"><h2 id="stack-title">La pila que realmente importa</h2><pre class="site-stack">HARDWARE
-   ↓
-SISTEMA OPERATIVO
-   ↓
-RUNTIME / DRIVERS
-   ↓
-BACKEND DE INFERENCIA
-   ↓
-MODELO + CUANTIZACIÓN
-   ↓
-HARNESS / AGENTIC STACK
-   ↓
-HERRAMIENTAS / SKILLS
-   ↓
-BUDDY / KNOWLEDGE
-   ↓
-TAREA → MEDICIÓN → RESULTADO</pre><p class="site-note">Cada capa puede ser el cuello de botella. LEONES debe identificarlo sin inventar otra arquitectura paralela de ejecución.</p></section>
-<section class="site-grid"><article class="site-card"><h3>Selección</h3><p>Declara objetivo, hardware, candidatos, modelo, cuantización, runtime y restricciones. No convierte estimaciones en rendimiento medido.</p></article><article class="site-card"><h3>Instalación</h3><p>Es una operación explícitamente autorizada y separada del consentimiento para ejecutar benchmarks.</p></article><article class="site-card"><h3>Runtime</h3><p>RC1 recibe el handoff autorizado y ejecuta la configuración sobre el host real.</p></article><article class="site-card"><h3>Benchmark</h3><p>Mide tareas que representan el trabajo que queremos completar, no solo una cifra sintética.</p></article><article class="site-card"><h3>Evidencia</h3><p>Conserva procedencia, configuración, timestamps, execution_id y métricas sin elevar estados por inferencia.</p></article><article class="site-card"><h3>Recomendación</h3><p>Relaciona la tarea y la evidencia disponible con la siguiente decisión; si falta evidencia, lo reconoce como desconocido o provisional.</p></article></section>
-<section class="site-section" aria-labelledby="loop-title"><h2 id="loop-title">Bucle de mejora</h2><pre class="site-stack">RESULTADO
-    ↓
-ANÁLISIS DE PILA → CUELLO DE BOTELLA
-    ↓
-modelo / backend / runtime / harness / tools
-    ↓
-RECOMENDACIÓN
-    ↓
-RE-EVALUAR</pre><p class="site-note"><strong>Regla:</strong> no optimizar tok/s aisladamente; optimizar la capacidad real de completar tareas con la pila elegida.</p></section>
+         candidate-set.v1
+                ↓
+        ┌───────┴───────┐
+        ↓               ↓
+   MAGNITUDE           ODS
+ perfilado/tuning   install/stack
+        ↓               ↓
+        └───────┬───────┘
+                ↓
+         selected runtime
+                ↓
+           LEONES tasks
+                ↓
+         real measurement
+                ↓
+            evidence
+</pre>
+</section>
+<section class="site-section"><h2>Qué no es este diagrama</h2>
+<ul>
+<li>LLMFit/FitLLM queda fuera del camino RC3.</li>
+<li>HF / Artificial Analysis informan ranking; no producen <code>measured_tps</code> LEONES.</li>
+<li>Elegir stack no autoriza medición.</li>
+</ul>
+<p><a href="rc3.html">Estado RC3 →</a> · <a href="../docs/RC3-ARCHITECTURE.md">Contrato completo →</a> · <a href="operacion.html">Operación →</a></p>
+</section>
 </main>
-<script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
+<footer class="site-footer"><div>LEONES · Arquitectura</div><div>RC3 · 2026</div></footer>
+<script src="assets/js/navigation.js?v=2026-09-05-4" defer></script>
 </body>
 </html>
