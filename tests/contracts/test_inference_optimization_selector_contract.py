@@ -24,11 +24,9 @@ class InferenceOptimizationSelectorContractTests(unittest.TestCase):
         self.assertEqual(
             order,
             [
-                "hermes_discovery",
                 "hardware_profile.v1",
                 "candidate-set.v1",
-                "external_model_evidence",
-                "deterministic_model_ranking",
+                "hermes_model_selection",
                 "user_model_choice",
                 "user_stack_choice",
                 "runtime-selection.v1",
