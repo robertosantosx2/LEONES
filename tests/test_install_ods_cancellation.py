@@ -1,4 +1,9 @@
-import subprocess
+import pytest
+
+pytest.importorskip(
+    "runtime_selection.llmfit",
+    reason="RC2 wizard/LLMFit path is historical and outside RC3",
+)
 
 import scripts.rc2_wizard as wizard
 from scripts.rc2_i18n import set_language, tr
@@ -23,7 +28,7 @@ def test_ods_cancellation_is_nonzero_and_not_success(monkeypatch):
     assert result["status"] == "installer_failed_or_cancelled"
     assert result["returncode"] == 3
     assert result["real_installation"] is False
-    assert any(part in line for part in tr("installer_finished_fail").splitlines() for line in output)
+    assert any(part in line for line in output for part in tr("installer_finished_fail").splitlines())
 
 
 def test_ods_wrapper_uses_distinct_exit_code_for_cancelled_consent():
