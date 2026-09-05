@@ -1,7 +1,8 @@
 """RC3 explicit user selection and execution gates.
 
 Recommendations are advisory. This module records an explicit human choice of
-model/configuration and stack, but never authorizes execution or measurement.
+model/configuration and one or both execution stacks, but never authorizes
+execution or measurement.
 """
 from __future__ import annotations
 
@@ -9,6 +10,17 @@ from typing import Any
 
 SCHEMA_VERSION = "user-selection.v1"
 STACKS = {"magnitude", "ods"}
+STACK_CHOICES = STACKS | {"both"}
+
+
+def _validate_stack(stack: str) -> None:
+    if stack not in STACK_CHOICES:
+        raise ValueError(f"unsupported stack: {stack}")
+
+
+def _stack_list(stack: str) -> list[str]:
+    _validate_stack(stack)
+    return ["magnitude", "ods"] if stack == "both" else [stack]
 
 
 def create_selection(
@@ -23,10 +35,11 @@ def create_selection(
     candidates = {c.get("model_id"): c for c in decision.get("candidates", [])}
     if model_id not in candidates:
         raise ValueError(f"model is not present in decision candidates: {model_id}")
-    if stack is not None and stack not in STACKS:
-        raise ValueError(f"unsupported stack: {stack}")
+    if stack is not None:
+        _validate_stack(stack)
 
     candidate = candidates[model_id]
+    stacks = _stack_list(stack) if stack is not None else []
     return {
         "schema_version": SCHEMA_VERSION,
         "decision_profile": decision.get("profile"),
@@ -40,8 +53,10 @@ def create_selection(
         },
         "runtime": runtime,
         "stack": stack,
+        "stacks": stacks,
         "user_choice_required": False,
         "user_choice_recorded": True,
+        "user_stack_choice_recorded": bool(stacks),
         "execution_authorized": False,
         "measurement_authorized": False,
         "measured": False,
@@ -51,18 +66,27 @@ def create_selection(
 
 
 def choose_stack(selection: dict[str, Any], stack: str) -> dict[str, Any]:
-    """Add an explicit Magnitude/ODS choice while preserving execution gates."""
+    """Add an explicit Magnitude/ODS/both choice while preserving execution gates."""
     if selection.get("schema_version") != SCHEMA_VERSION:
         raise ValueError("unsupported user-selection schema")
-    if stack not in STACKS:
-        raise ValueError(f"unsupported stack: {stack}")
+    _validate_stack(stack)
     result = dict(selection)
     result["stack"] = stack
+    result["stacks"] = _stack_list(stack)
     result["user_stack_choice_recorded"] = True
     result["execution_authorized"] = False
     result["measurement_authorized"] = False
+    result["measured"] = False
     result["consent_required_before_execution"] = True
     return result
+
+
+def choose_stacks(selection: dict[str, Any], stacks: list[str]) -> dict[str, Any]:
+    """Record one or both stack choices for a comparative run."""
+    if not stacks or any(stack not in STACKS for stack in stacks):
+        raise ValueError("stacks must contain magnitude and/or ods")
+    unique = list(dict.fromkeys(stacks))
+    return choose_stack(selection, "both" if set(unique) == STACKS else unique[0])
 
 
 def validate_selection(selection: dict[str, Any]) -> None:
@@ -73,8 +97,14 @@ def validate_selection(selection: dict[str, Any]) -> None:
         raise ValueError("user model choice is required")
     if not selection.get("selected_model_id"):
         raise ValueError("selected_model_id is required")
-    if selection.get("stack") not in STACKS:
-        raise ValueError("explicit Magnitude or ODS stack choice is required")
+    stack = selection.get("stack")
+    if stack is not None:
+        _validate_stack(stack)
+    stacks = selection.get("stacks")
+    if stacks is not None and any(item not in STACKS for item in stacks):
+        raise ValueError("stacks may only contain Magnitude and ODS")
+    if stack == "both" and set(stacks or []) != STACKS:
+        raise ValueError("both requires Magnitude and ODS")
     if selection.get("execution_authorized") is not False:
         raise ValueError("user selection cannot authorize execution")
     if selection.get("measurement_authorized") is not False:
