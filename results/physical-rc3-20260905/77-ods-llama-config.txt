@@ -1,0 +1,196 @@
+/home/roberto/ods/docker-compose.nvidia.yml:7:  llama-server:
+/home/roberto/ods/docker-compose.cloud.yml:4:# llama-server container. Open WebUI, Hermes, Perplexica, and other clients
+/home/roberto/ods/docker-compose.cloud.yml:8:  llama-server:
+/home/roberto/ods/docker-compose.tier0.yml:13:  llama-server:
+/home/roberto/ods/.env:19:LLM_API_URL=http://llama-server:8080
+/home/roberto/ods/.env:22:LLM_BACKEND=llama-server
+/home/roberto/ods/.env:51:#=== LLM Settings (llama-server) ===
+/home/roberto/ods/.env:55:GGUF_FILE=Qwen3.5-2B-Q4_K_M.gguf
+/home/roberto/ods/.env:59:MODEL_RECOMMENDED_GGUF=Qwen3.5-2B-Q4_K_M.gguf
+/home/roberto/ods/.env:125:# llama-server (native llama.cpp tolerates any model field).
+/home/roberto/ods/.env:126:HERMES_LLM_BASE_URL=http://llama-server:8080/v1
+/home/roberto/ods/docker-compose.multigpu-nvidia.yml:2:  llama-server:
+/home/roberto/ods/docker-compose.lemonade-external.yml:4:# keeps ODS's managed llama-server disabled and routes ODS services
+/home/roberto/ods/installers/macos/docker-compose.macos.yml:2:# llama-server runs natively on macOS host with Metal acceleration
+/home/roberto/ods/installers/macos/docker-compose.macos.yml:9:  llama-server:
+/home/roberto/ods/installers/macos/docker-compose.macos.yml:14:  # Readiness sidecar — polls native llama-server on the macOS host.
+/home/roberto/ods/installers/macos/docker-compose.macos.yml:18:  llama-server-ready:
+/home/roberto/ods/installers/macos/docker-compose.macos.yml:28:        echo "Waiting for native llama-server on host..."
+/home/roberto/ods/installers/macos/docker-compose.macos.yml:32:        echo "llama-server is ready"
+/home/roberto/ods/installers/macos/docker-compose.macos.yml:52:      - OLLAMA_PORT=8080        # llama-server runs natively on macOS at this port
+/home/roberto/ods/installers/macos/docker-compose.macos.yml:61:      llama-server-ready:
+/home/roberto/ods/installers/windows/docker-compose.windows-amd.yml:2:# Inference server (Lemonade or llama-server) runs natively on Windows host.
+/home/roberto/ods/installers/windows/docker-compose.windows-amd.yml:6:# llama-server fallback: OpenAI-compatible API at /v1 (Vulkan only)
+/home/roberto/ods/installers/windows/docker-compose.windows-amd.yml:11:  llama-server:
+/home/roberto/ods/installers/windows/docker-compose.windows-amd.yml:30:      # in-network llama-server service. On Windows AMD, inference runs on the
+/home/roberto/ods/installers/windows/docker-compose.windows-amd.yml:37:      # LLM_API_BASE_PATH set by installer: /api/v1 for Lemonade, /v1 for llama-server
+/home/roberto/ods/installers/windows/docker-compose.windows-amd.local.yml:2:# Loaded only when local inference (Lemonade or llama-server.exe) is enabled.
+/home/roberto/ods/installers/windows/docker-compose.windows-amd.local.yml:3:# Probes both /api/v1/health (Lemonade) and /health (llama-server.exe) so the
+/home/roberto/ods/installers/windows/docker-compose.windows-amd.local.yml:11:  llama-server-ready:
+/home/roberto/ods/installers/windows/docker-compose.windows-amd.local.yml:46:      llama-server-ready:
+/home/roberto/ods/data/extensions-library/localai/manifest.yaml:18:  depends_on: [llama-server]
+/home/roberto/ods/data/extensions-library/localai/compose.yaml:6:      llama-server:
+/home/roberto/ods/data/extensions-library/localai/compose.yaml:18:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8080}
+/home/roberto/ods/data/extensions-library/open-interpreter/compose.yaml:13:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8000}
+/home/roberto/ods/data/extensions-library/langflow/compose.yaml:11:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8080}
+/home/roberto/ods/data/extensions-library/dify/manifest.yaml:33:      default: "http://llama-server:8080/v1"
+/home/roberto/ods/data/extensions-library/sillytavern/compose.yaml:9:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8080/v1}
+/home/roberto/ods/data/extensions-library/continue/compose.nvidia.yaml:2:# Wait for the containerized llama-server before starting. Kept out of
+/home/roberto/ods/data/extensions-library/continue/compose.nvidia.yaml:4:# and the macOS (apple) backend runs llama-server natively with replicas: 0;
+/home/roberto/ods/data/extensions-library/continue/compose.nvidia.yaml:10:      llama-server:
+/home/roberto/ods/data/extensions-library/continue/manifest.yaml:19:  depends_on: [llama-server]
+/home/roberto/ods/data/extensions-library/continue/manifest.yaml:32:      services_any: [continue, llama-server, ollama]
+/home/roberto/ods/data/extensions-library/continue/compose.apple.yaml:2:# On macOS, llama-server runs natively on the host (replicas: 0 in Docker).
+/home/roberto/ods/data/extensions-library/continue/compose.apple.yaml:3:# The macOS core overlay provides a `llama-server-ready` sidecar that polls
+/home/roberto/ods/data/extensions-library/continue/compose.apple.yaml:4:# the native llama-server via host.docker.internal. Containers that would
+/home/roberto/ods/data/extensions-library/continue/compose.apple.yaml:5:# normally depend on `llama-server: service_healthy` must instead wait on
+/home/roberto/ods/data/extensions-library/continue/compose.apple.yaml:11:      llama-server-ready:
+/home/roberto/ods/data/extensions-library/continue/compose.amd.yaml:2:# Wait for the containerized llama-server before starting. Kept out of
+/home/roberto/ods/data/extensions-library/continue/compose.amd.yaml:4:# and the macOS (apple) backend runs llama-server natively with replicas: 0;
+/home/roberto/ods/data/extensions-library/continue/compose.amd.yaml:10:      llama-server:
+/home/roberto/ods/data/extensions-library/continue/compose.cpu.yaml:2:# Wait for the containerized llama-server before starting. Kept out of
+/home/roberto/ods/data/extensions-library/continue/compose.cpu.yaml:4:# and the macOS (apple) backend runs llama-server natively with replicas: 0;
+/home/roberto/ods/data/extensions-library/continue/compose.cpu.yaml:10:      llama-server:
+/home/roberto/ods/data/extensions-library/continue/compose.yaml:21:      - LLM_API_URL=${LLM_API_URL:-http://ods-llama-server:8080}
+/home/roberto/ods/data/extensions-library/crewai/compose.yaml:19:      - OPENAI_API_BASE=${LLM_API_URL:-http://llama-server:8000}/v1
+/home/roberto/ods/docker-compose.base.yml:20:  # LLM Inference — llama-server (GPU-agnostic stub)
+/home/roberto/ods/docker-compose.base.yml:24:  llama-server:
+/home/roberto/ods/docker-compose.base.yml:26:    container_name: ods-llama-server
+/home/roberto/ods/docker-compose.base.yml:30:      - ./config/llama-server/models.ini:/config/models.ini:ro,z
+/home/roberto/ods/docker-compose.base.yml:35:      - /models/${GGUF_FILE:-Qwen3.5-9B-Q4_K_M.gguf}
+/home/roberto/ods/docker-compose.base.yml:40:      - --n-gpu-layers
+/home/roberto/ods/docker-compose.base.yml:42:      - --ctx-size
+/home/roberto/ods/docker-compose.base.yml:44:      - --batch-size
+/home/roberto/ods/docker-compose.base.yml:93:      # direct llama-server route for legacy/observe.
+/home/roberto/ods/docker-compose.base.yml:94:      OPENAI_API_BASE_URL: "${OPEN_WEBUI_LLM_BASE_URL:-${LLM_API_URL:-http://llama-server:8080}/v1}"
+/home/roberto/ods/docker-compose.base.yml:217:      - OLLAMA_URL=${LLM_API_URL:-http://llama-server:8080}
+/home/roberto/ods/docker-compose.base.yml:251:      - LLM_URL=${LLM_URL:-${LLM_API_URL:-http://llama-server:8080}}
+/home/roberto/ods/docker-compose.base.yml:258:      # Defaults point at the Lemonade/llama-server OpenAI-compatible base URL
+/home/roberto/ods/docker-compose.base.yml:262:      - ODS_TALK_VISION_URL=${ODS_TALK_VISION_URL:-http://llama-server:8080${LLM_API_BASE_PATH:-/v1}}
+/home/roberto/ods/templates/creative-studio.yaml:8:  services: [llama-server, open-webui, comfyui, tts, whisper]
+/home/roberto/ods/extensions/library/services/localai/manifest.yaml:18:  depends_on: [llama-server]
+/home/roberto/ods/extensions/library/services/localai/compose.yaml:6:      llama-server:
+/home/roberto/ods/extensions/library/services/localai/compose.yaml:18:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8080}
+/home/roberto/ods/extensions/library/services/open-interpreter/compose.yaml:13:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8000}
+/home/roberto/ods/extensions/library/services/langflow/compose.yaml:11:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8080}
+/home/roberto/ods/extensions/library/services/dify/manifest.yaml:33:      default: "http://llama-server:8080/v1"
+/home/roberto/ods/extensions/library/services/sillytavern/compose.yaml:9:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8080/v1}
+/home/roberto/ods/extensions/library/services/continue/compose.nvidia.yaml:2:# Wait for the containerized llama-server before starting. Kept out of
+/home/roberto/ods/extensions/library/services/continue/compose.nvidia.yaml:4:# and the macOS (apple) backend runs llama-server natively with replicas: 0;
+/home/roberto/ods/extensions/library/services/continue/compose.nvidia.yaml:10:      llama-server:
+/home/roberto/ods/extensions/library/services/continue/manifest.yaml:19:  depends_on: [llama-server]
+/home/roberto/ods/extensions/library/services/continue/manifest.yaml:32:      services_any: [continue, llama-server, ollama]
+/home/roberto/ods/extensions/library/services/continue/compose.apple.yaml:2:# On macOS, llama-server runs natively on the host (replicas: 0 in Docker).
+/home/roberto/ods/extensions/library/services/continue/compose.apple.yaml:3:# The macOS core overlay provides a `llama-server-ready` sidecar that polls
+/home/roberto/ods/extensions/library/services/continue/compose.apple.yaml:4:# the native llama-server via host.docker.internal. Containers that would
+/home/roberto/ods/extensions/library/services/continue/compose.apple.yaml:5:# normally depend on `llama-server: service_healthy` must instead wait on
+/home/roberto/ods/extensions/library/services/continue/compose.apple.yaml:11:      llama-server-ready:
+/home/roberto/ods/extensions/library/services/continue/compose.amd.yaml:2:# Wait for the containerized llama-server before starting. Kept out of
+/home/roberto/ods/extensions/library/services/continue/compose.amd.yaml:4:# and the macOS (apple) backend runs llama-server natively with replicas: 0;
+/home/roberto/ods/extensions/library/services/continue/compose.amd.yaml:10:      llama-server:
+/home/roberto/ods/extensions/library/services/continue/compose.cpu.yaml:2:# Wait for the containerized llama-server before starting. Kept out of
+/home/roberto/ods/extensions/library/services/continue/compose.cpu.yaml:4:# and the macOS (apple) backend runs llama-server natively with replicas: 0;
+/home/roberto/ods/extensions/library/services/continue/compose.cpu.yaml:10:      llama-server:
+/home/roberto/ods/extensions/library/services/continue/compose.yaml:21:      - LLM_API_URL=${LLM_API_URL:-http://ods-llama-server:8080}
+/home/roberto/ods/extensions/library/services/crewai/compose.yaml:19:      - OPENAI_API_BASE=${LLM_API_URL:-http://llama-server:8000}/v1
+/home/roberto/ods/extensions/library/templates/service-template.yaml:101:  # depends_on: [llama-server, qdrant]
+/home/roberto/ods/extensions/services/hermes/manifest.yaml:36:  depends_on: [llama-server, searxng]
+/home/roberto/ods/extensions/services/hermes/manifest.yaml:50:    local LLM (llama-server), and ships no messaging-platform adapters
+/home/roberto/ods/extensions/services/hermes/manifest.yaml:62:      default: "http://llama-server:8080/v1"
+/home/roberto/ods/extensions/services/hermes/manifest.yaml:63:      description: OpenAI-compatible endpoint Hermes talks to. Defaults to ODS's llama-server.
+/home/roberto/ods/extensions/services/hermes/manifest.yaml:67:        Dummy API key — llama-server doesn't validate it but the OpenAI SDK
+/home/roberto/ods/extensions/services/hermes/manifest.yaml:86:      services_any: [llama-server, litellm]
+/home/roberto/ods/extensions/services/hermes/manifest.yaml:89:    enabled_services_any: [llama-server, litellm]
+/home/roberto/ods/extensions/services/hermes/compose.yaml:12:    # `llama-server` via Docker's internal DNS. Upstream's reference compose
+/home/roberto/ods/extensions/services/hermes/compose.yaml:23:      - OPENAI_BASE_URL=${HERMES_LLM_BASE_URL:-http://llama-server:8080/v1}
+/home/roberto/ods/extensions/services/hermes/compose.yaml:25:      # Aggressive timeouts for local cold starts — llama-server can take
+/home/roberto/ods/extensions/services/privacy-shield/manifest.yaml:22:  depends_on: [llama-server]
+/home/roberto/ods/extensions/services/privacy-shield/compose.local.yaml:4:      llama-server:
+/home/roberto/ods/extensions/services/privacy-shield/compose.yaml:14:      - TARGET_API_URL=${LLM_API_URL:-http://llama-server:8080}/v1
+/home/roberto/ods/extensions/services/openclaw/manifest.yaml:28:  depends_on: [llama-server, searxng]
+/home/roberto/ods/extensions/services/openclaw/compose.amd.yaml:13:      # llama-server service on the Compose network.
+/home/roberto/ods/extensions/services/openclaw/compose.amd.yaml:14:      - OLLAMA_URL=http://${ODS_AGENT_HOST:-llama-server}:${AMD_INFERENCE_PORT:-8080}/api
+/home/roberto/ods/extensions/services/openclaw/compose.local.yaml:4:      llama-server:
+/home/roberto/ods/extensions/services/open-webui/manifest.yaml:21:  depends_on: [llama-server]
+/home/roberto/ods/extensions/services/open-webui/compose.local.yaml:4:      llama-server:
+/home/roberto/ods/extensions/services/token-spy/compose.yaml:18:      - OLLAMA_URL=${LLM_API_URL:-http://llama-server:8080}
+/home/roberto/ods/extensions/services/litellm/manifest.yaml:22:  depends_on: [llama-server]
+/home/roberto/ods/extensions/services/litellm/compose.apple.yaml:2:# litellm container can reach the natively-running llama-server on the macOS
+/home/roberto/ods/extensions/services/litellm/compose.apple.yaml:3:# host via the hostname `llama-server` (not in Docker on macOS, so DNS would
+/home/roberto/ods/extensions/services/litellm/compose.apple.yaml:9:      - "llama-server:${ODS_MACOS_HOST_GATEWAY:-host-gateway}"
+/home/roberto/ods/extensions/services/litellm/compose.local.yaml:4:      llama-server:
+/home/roberto/ods/extensions/services/perplexica/manifest.yaml:22:  depends_on: [searxng, llama-server]
+/home/roberto/ods/extensions/services/perplexica/compose.local.yaml:4:      llama-server:
+/home/roberto/ods/extensions/services/perplexica/compose.yaml:13:      - OPENAI_BASE_URL=${HERMES_LLM_BASE_URL:-${LLM_API_URL:-http://llama-server:8080}/v1}
+/home/roberto/ods/extensions/services/perplexica/compose.yaml:17:      - LLM_BACKEND=${LLM_BACKEND:-llama-server}
+/home/roberto/ods/extensions/services/llama-server/manifest.yaml:7:  id: llama-server
+/home/roberto/ods/extensions/services/llama-server/manifest.yaml:8:  name: llama-server (LLM Inference)
+/home/roberto/ods/extensions/services/llama-server/manifest.yaml:10:  container_name: ods-llama-server
+/home/roberto/ods/extensions/services/llama-server/manifest.yaml:12:  default_host: llama-server
+/home/roberto/ods/extensions/services/llama-server/manifest.yaml:31:      services_any: [llama-server]
+/home/roberto/ods/extensions/services/llama-server/manifest.yaml:33:    enabled_services_any: [llama-server]
+/home/roberto/ods/extensions/services/llama-server/manifest.yaml:48:      services_any: [llama-server]
+/home/roberto/ods/extensions/templates/service-template.yaml:96:  # depends_on: [llama-server, qdrant]
+/home/roberto/ods/docker-compose.arc.yml:3:# Builds llama-server from source using Intel oneAPI Base Toolkit.
+/home/roberto/ods/docker-compose.arc.yml:26:  llama-server:
+/home/roberto/ods/docker-compose.arc.yml:49:      - /models/${GGUF_FILE:-Qwen3.5-9B-Q4_K_M.gguf}
+/home/roberto/ods/docker-compose.arc.yml:54:      - --n-gpu-layers
+/home/roberto/ods/docker-compose.arc.yml:56:      - --ctx-size
+/home/roberto/ods/docker-compose.arc.yml:61:      - --batch-size
+/home/roberto/ods/docker-compose.amd.yml:7:  llama-server:
+/home/roberto/ods/docker-compose.amd.yml:9:    # Service name stays "llama-server" for compose dependency compatibility
+/home/roberto/ods/docker-compose.amd.yml:11:      context: ./extensions/services/llama-server
+/home/roberto/ods/docker-compose.amd.yml:45:      # Read-only bind of the wrapper entrypoint. Updating ctx-size sync
+/home/roberto/ods/docker-compose.amd.yml:47:      - ./extensions/services/llama-server/lemonade-entrypoint.sh:/opt/lemonade-entrypoint.sh:ro,z
+/home/roberto/ods/docker-compose.amd.yml:66:      # Lemonade at the custom ROCm-built llama-server binary while keeping the
+/home/roberto/ods/docker-compose.amd.yml:80:      start_period: 300s  # Lemonade first boot builds llama-server binary (~3-5 min)
+/home/roberto/ods/docker-compose.external-llm.yml:7:  llama-server:
+/home/roberto/ods/docker-compose.intel.yml:15:  llama-server:
+/home/roberto/ods/docker-compose.intel.yml:31:      - /models/${GGUF_FILE:-Qwen3.5-9B-Q4_K_M.gguf}
+/home/roberto/ods/docker-compose.intel.yml:36:      - --n-gpu-layers
+/home/roberto/ods/docker-compose.intel.yml:38:      - --ctx-size
+/home/roberto/ods/docker-compose.intel.yml:43:      - --batch-size
+/home/roberto/ods/docker-compose.cpu.yml:8:  llama-server:
+/home/roberto/ods/docker-compose.cpu.yml:12:      - /models/${GGUF_FILE:-Qwen3.5-9B-Q4_K_M.gguf}
+/home/roberto/ods/docker-compose.cpu.yml:17:      - --n-gpu-layers
+/home/roberto/ods/docker-compose.cpu.yml:19:      - --ctx-size
+/home/roberto/ods/docker-compose.cpu.yml:21:      - --batch-size
+/home/roberto/ods/docker-compose.multigpu-amd.yml:3:# llama-server gets all of /dev/dri + ROCR_VISIBLE_DEVICES for multi-GPU inference.
+/home/roberto/ods/docker-compose.multigpu-amd.yml:7:# Lemonade passthrough: Lemonade launches its inner llama-server via fork()+execv()
+/home/roberto/ods/docker-compose.multigpu-amd.yml:11:# Lemonade's blocked flag list (-m, --port, --ctx-size, -ngl, --jinja, --mmproj,
+/home/roberto/ods/docker-compose.multigpu-amd.yml:17:# point Lemonade at the custom ROCm llama-server binary.
+/home/roberto/ods/docker-compose.multigpu-amd.yml:21:  llama-server:
+/home/roberto/ods/docker-compose.multigpu-amd.yml:40:      # be empty (auto-split). Inherited by inner llama-server via fork()+execv().
+/home/roberto/ods/extensions-library-bundle/services/localai/manifest.yaml:18:  depends_on: [llama-server]
+/home/roberto/ods/extensions-library-bundle/services/localai/compose.yaml:6:      llama-server:
+/home/roberto/ods/extensions-library-bundle/services/localai/compose.yaml:18:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8080}
+/home/roberto/ods/extensions-library-bundle/services/open-interpreter/compose.yaml:13:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8000}
+/home/roberto/ods/extensions-library-bundle/services/langflow/compose.yaml:11:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8080}
+/home/roberto/ods/extensions-library-bundle/services/dify/manifest.yaml:33:      default: "http://llama-server:8080/v1"
+/home/roberto/ods/extensions-library-bundle/services/sillytavern/compose.yaml:9:      - LLM_API_URL=${LLM_API_URL:-http://llama-server:8080/v1}
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.nvidia.yaml:2:# Wait for the containerized llama-server before starting. Kept out of
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.nvidia.yaml:4:# and the macOS (apple) backend runs llama-server natively with replicas: 0;
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.nvidia.yaml:10:      llama-server:
+/home/roberto/ods/extensions-library-bundle/services/continue/manifest.yaml:19:  depends_on: [llama-server]
+/home/roberto/ods/extensions-library-bundle/services/continue/manifest.yaml:32:      services_any: [continue, llama-server, ollama]
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.apple.yaml:2:# On macOS, llama-server runs natively on the host (replicas: 0 in Docker).
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.apple.yaml:3:# The macOS core overlay provides a `llama-server-ready` sidecar that polls
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.apple.yaml:4:# the native llama-server via host.docker.internal. Containers that would
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.apple.yaml:5:# normally depend on `llama-server: service_healthy` must instead wait on
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.apple.yaml:11:      llama-server-ready:
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.amd.yaml:2:# Wait for the containerized llama-server before starting. Kept out of
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.amd.yaml:4:# and the macOS (apple) backend runs llama-server natively with replicas: 0;
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.amd.yaml:10:      llama-server:
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.cpu.yaml:2:# Wait for the containerized llama-server before starting. Kept out of
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.cpu.yaml:4:# and the macOS (apple) backend runs llama-server natively with replicas: 0;
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.cpu.yaml:10:      llama-server:
+/home/roberto/ods/extensions-library-bundle/services/continue/compose.yaml:21:      - LLM_API_URL=${LLM_API_URL:-http://ods-llama-server:8080}
+/home/roberto/ods/extensions-library-bundle/services/crewai/compose.yaml:19:      - OPENAI_API_BASE=${LLM_API_URL:-http://llama-server:8000}/v1
+/home/roberto/ods/extensions-library-bundle/templates/service-template.yaml:101:  # depends_on: [llama-server, qdrant]
+/home/roberto/ods/config/litellm/lemonade.yaml:13:      api_base: http://llama-server:8080/api/v1
+/home/roberto/ods/config/litellm/hybrid.yaml:5:      api_base: http://llama-server:8080/v1
+/home/roberto/ods/config/litellm/hybrid.yaml:28:      api_base: http://llama-server:8080/v1
+/home/roberto/ods/config/litellm/local.yaml:5:      api_base: http://llama-server:8080/v1
+/home/roberto/ods/config/litellm/local.yaml:11:      api_base: http://llama-server:8080/v1
+/home/roberto/ods/docker-compose.apple.yml:5:# For full Metal acceleration, run llama-server on the host (outside Docker)
+/home/roberto/ods/docker-compose.apple.yml:11:  llama-server:

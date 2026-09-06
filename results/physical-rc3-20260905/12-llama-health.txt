@@ -1,0 +1,9 @@
+--- http://127.0.0.1:8080/health ---
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 1 ms: Could not connect to server
+
+--- http://127.0.0.1:8000/health ---
+curl: (7) Failed to connect to 127.0.0.1 port 8000 after 0 ms: Could not connect to server
+
+--- http://127.0.0.1:1234/health ---
+curl: (7) Failed to connect to 127.0.0.1 port 1234 after 0 ms: Could not connect to server
+

@@ -1,0 +1,71 @@
+ Static hostname: Aspire-A515-55
+       Icon name: computer-laptop
+         Chassis: laptop 💻
+      Machine ID: 8cd486a7f6b0418b95eb2353ead8afde
+         Boot ID: 91851727a86b4de2b473ab7e8b2f3058
+Operating System: Ubuntu 26.04.1 LTS
+          Kernel: Linux 7.0.0-30-generic
+    Architecture: x86-64
+ Hardware Vendor: Acer
+  Hardware Model: Aspire A515-55
+    Hardware SKU: 0000000000000000
+Hardware Version: V1.08
+Firmware Version: V1.08
+   Firmware Date: Wed 2020-05-27
+    Firmware Age: 6y 3month 1w 2d
+
+Linux Aspire-A515-55 7.0.0-30-generic #30-Ubuntu SMP PREEMPT_DYNAMIC Fri Jul 31 18:22:54 UTC 2026 x86_64 GNU/Linux
+
+Arquitectura:                             x86_64
+modo(s) de operación de las CPUs:         32-bit, 64-bit
+Tamaños de las direcciones:               39 bits physical, 48 bits virtual
+Orden de los bytes:                       Little Endian
+CPU(s):                                   8
+Lista de la(s) CPU(s) en línea:           0-7
+ID de fabricante:                         GenuineIntel
+Nombre del modelo:                        Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+Familia de CPU:                           6
+Modelo:                                   126
+Hilo(s) de procesamiento por núcleo:      2
+Núcleo(s) por «socket»:                   4
+«Socket(s)»:                              1
+Revisión:                                 5
+CPU(s) factor de escala MHz:              40%
+CPU MHz máx.:                             3600,0000
+CPU MHz mín.:                             400,0000
+BogoMIPS:                                 2380,80
+Indicadores:                              fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt intel_pt avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves split_lock_detect dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req vnmi avx512vbmi umip pku ospke avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm md_clear flush_l1d arch_capabilities
+Virtualización:                           VT-x
+Caché L1d:                                192 KiB (4 instancias)
+Caché L1i:                                128 KiB (4 instancias)
+Caché L2:                                 2 MiB (4 instancias)
+Caché L3:                                 6 MiB (1 instancia)
+Modo(s) NUMA:                             1
+CPU(s) del nodo NUMA 0:                   0-7
+Vulnerabilidad Gather data sampling:      Vulnerable
+Vulnerabilidad Ghostwrite:                Not affected
+Vulnerabilidad Indirect target selection: Mitigation; Aligned branch/return thunks
+Vulnerabilidad Itlb multihit:             KVM: Mitigation: Split huge pages
+Vulnerabilidad L1tf:                      Not affected
+Vulnerabilidad Mds:                       Not affected
+Vulnerabilidad Meltdown:                  Not affected
+Vulnerabilidad Mmio stale data:           Mitigation; Clear CPU buffers; SMT vulnerable
+Vulnerabilidad Old microcode:             Not affected
+Vulnerabilidad Reg file data sampling:    Not affected
+Vulnerabilidad Retbleed:                  Mitigation; Enhanced IBRS
+Vulnerabilidad Spec rstack overflow:      Not affected
+Vulnerabilidad Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerabilidad Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerabilidad Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI SW loop, KVM SW loop
+Vulnerabilidad Srbds:                     Mitigation; Microcode
+Vulnerabilidad Tsa:                       Not affected
+Vulnerabilidad Tsx async abort:           Not affected
+Vulnerabilidad Vmscape:                   Not affected
+
+               total       usado       libre  compartido   búf/caché  disponible
+Mem:           7,0Gi       5,5Gi       216Mi       518Mi       2,1Gi       1,5Gi
+Inter:          10Gi       9,3Gi       1,7Gi
+
+NAME           TYPE      SIZE USED PRIO
+/dev/nvme0n1p4 partition 7,5G 5,7G   -1
+/dev/zram0     partition 3,5G 3,5G  100

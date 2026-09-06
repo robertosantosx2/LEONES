@@ -1,0 +1,145 @@
+=== ods status ===
+ODS CLI v2.6.0
+
+Usage: ods <command> [options]
+
+Commands:
+  gpu [status|topology|assignment|validate|reassign]
+                      Inspect and manage multi-GPU configuration
+  status [--json]     Show service health and GPU status (--json = machine-readable)
+  status-json         Alias for 'status --json' (kept for back-compat)
+  list [--json]       List all services and their status (--json = machine-readable)
+  enable <service>    Enable an extension service
+  disable <service>   Disable an extension service
+  purge <service>     Permanently delete service data
+  preset <action>     Save/load/list/delete/export/import presets
+  mode [local|cloud|hybrid]
+                      Switch between local/cloud/hybrid modes
+  model [current|list|swap]
+                      View or change the local LLM model tier
+  remote-provider [status|plan|configure|test|disable|remove|peer-models]
+                      Configure, test, disable, or inspect remote GPU provider routing
+  stt [current|status|download] [MODEL]
+                      View Whisper STT model, check cache, or trigger download
+  backup [options]    Create a backup of user data and config
+  backup verify <id>   Verify checksum integrity for a backup
+  restore [backup_id] Restore from a backup
+  rollback            Rollback to pre-update state (after failed update)
+  logs <service>      Tail logs for a service
+  restart [service] [--rebuild-images]
+                      Restart services (all if no service specified)
+  start [service] [--rebuild-images]
+                      Start services
+  stop [service]      Stop services
+  update [--force] [--rebuild-images]
+                      Pull latest images and restart (--force skips version-compat confirmation;
+                      --rebuild-images rebuilds locally-built images so contributor edits deploy)
+  shell <service>     Open shell in container
+  config [show|edit|validate]
+                      View, edit, or validate configuration
+  chat "<message>"    Quick chat with the LLM
+  benchmark           Run a quick performance test
+━━━ ODS Status ━━━
+
+NAME                             STATUS                            PORTS
+ods-ape                          Up 2 hours (healthy)              127.0.0.1:7890->7890/tcp
+ods-dashboard                    Up 2 hours (healthy)              80/tcp, 127.0.0.1:3001->3001/tcp
+ods-dashboard-api                Up 2 hours (healthy)              127.0.0.1:3002->3002/tcp
+ods-hermes                       Up 2 hours (healthy)              9119/tcp
+ods-hermes-proxy                 Up 2 hours (healthy)              80/tcp, 443/tcp, 2019/tcp, 443/udp, 127.0.0.1:9120->9120/tcp
+ods-langfuse-web                 Up 5 seconds (health: starting)   127.0.0.1:3006->3000/tcp
+ods-litellm                      Up 2 hours (healthy)              127.0.0.1:4000->4000/tcp
+ods-llama-server                 Up 2 hours (healthy)              127.0.0.1:11435->8080/tcp
+ods-model-router                 Up 2 hours (healthy)              9099/tcp
+ods-n8n                          Up 2 hours (healthy)              127.0.0.1:5678->5678/tcp
+ods-perplexica                   Up 2 hours (healthy)              127.0.0.1:3004->3000/tcp
+ods-privacy-shield               Up 2 hours (healthy)              127.0.0.1:8085->8085/tcp
+ods-qdrant                       Up 2 hours (healthy)              127.0.0.1:6333-6334->6333-6334/tcp
+ods-remote-provider-egress       Up 2 hours (healthy)              8091/tcp
+ods-remote-provider-ssh-tunnel   Up 2 hours (healthy)              18090-18092/tcp
+ods-searxng                      Up 2 hours (healthy)              127.0.0.1:8888->8080/tcp
+ods-webui                        Up 2 hours (healthy)              127.0.0.1:3000->8080/tcp
+ods-whisper                      Up 2 hours (healthy)              127.0.0.1:9000->8000/tcp
+
+━━━ Health Checks ━━━
+✓ APE (Agent Policy Engine): healthy
+✓ Dashboard (Control Center): healthy
+✓ Dashboard API (System Status): healthy
+✓ Hermes Auth Proxy: healthy
+⚠ Langfuse (LLM Observability): not responding
+✓ LiteLLM (API Gateway): healthy
+✓ llama-server (LLM Inference): healthy
+⚠ ODS Model Router: not responding
+✓ n8n (Workflows): healthy
+✓ Open WebUI (Chat): healthy
+✓ Perplexica (Deep Research): healthy
+✓ Privacy Shield (PII Protection): healthy
+✓ Qdrant (Vector DB): healthy
+✓ SearXNG (Web Search): healthy
+✓ Whisper (STT): healthy
+
+━━━ ODS Diagnostics ━━━
+
+[0;36mRuntime Environment:[0m
+  [0;32m✓[0m Docker CLI
+  [0;32m✓[0m Docker Daemon
+  [0;32m✓[0m Docker Compose
+  [0;32m✓[0m Dashboard HTTP
+  [0;32m✓[0m WebUI HTTP
+  [0;32m✓[0m LLM Backend: llama-server (local) — responding
+    Endpoint: http://127.0.0.1:11435
+  [0;32m✓[0m Inference contract: mode=local, owner=ods, gateway=llama-server
+
+[0;36mVoice Readiness:[0m
+  [1;33m?[0m Whisper STT disabled
+  [1;33m?[0m Kokoro TTS disabled
+
+[0;36mPreflight Checks:[0m
+  [0;32m✓[0m platform-support
+  [0;32m✓[0m compose-overlays
+  [1;33m⚠[0m memory: RAM 7GB is below tier T1 recommendation (16GB).
+  [0;32m✓[0m disk
+  [1;33m⚠[0m gpu-backend: CPU fallback selected.
+
+[0;36mSummary:[0m
+  [1;33m⚠[0m 2 warning(s) found
+
+[0;36mSuggested Fixes:[0m
+  1. Use a lower tier or increase memory to at least 16GB.
+  2. Install/verify GPU drivers for best performance or continue with small models.
+  3. Extension embeddings: container not running. Run 'ods start embeddings'.
+  4. Extension langfuse: health check failed. Check logs with 'docker logs ods-langfuse'.
+  5. Extension token-spy: container not running. Run 'ods start token-spy'.
+  6. Extension tts: container not running. Run 'ods start tts'.
+
+total 716
+drwxrwxr-x 19 roberto docker    4096 Sep  4 23:31 .
+drwxr-xr-x 66 roberto roberto   4096 Sep  5 00:28 ..
+-rw-rw-r--  1 roberto docker     836 Sep  2 22:06 .compose-flags
+-rw-------  1 roberto docker    7730 Sep  4 23:31 .env
+-rw-rw-r--  1 roberto docker   32262 Sep  2 17:39 .env.example
+-rw-------  1 roberto roberto   7730 Sep  4 23:29 .env.pre-leones-20260904-232929
+-rw-rw-r--  1 roberto docker   55446 Sep  2 17:39 .env.schema.json
+-rw-rw-r--  1 roberto docker   11357 Sep  2 17:39 LICENSE
+-rw-rw-r--  1 roberto docker    7021 Sep  2 17:39 Makefile
+drwxrwxr-x  3 roberto docker    4096 Sep  2 17:39 agents
+drwxrwxr-x  4 roberto docker    4096 Sep  2 17:39 bin
+drwxrwxr-x  2 roberto docker    4096 Sep  2 17:39 completions
+drwxrwxr-x 11 roberto docker    4096 Sep  2 17:39 config
+drwxrwxr-x 18 roberto docker    4096 Sep  4 23:32 data
+-rw-rw-r--  1 roberto docker    5144 Sep  2 17:39 docker-compose.amd.yml
+-rw-rw-r--  1 roberto docker     888 Sep  2 17:39 docker-compose.apple.yml
+-rw-rw-r--  1 roberto docker    3018 Sep  2 17:39 docker-compose.arc.yml
+-rw-rw-r--  1 roberto docker   20374 Sep  2 17:39 docker-compose.base.yml
+-rw-rw-r--  1 roberto docker     553 Sep  2 17:39 docker-compose.cloud.yml
+-rw-rw-r--  1 roberto docker     992 Sep  2 17:39 docker-compose.cpu.yml
+-rw-rw-r--  1 roberto docker     983 Sep  2 17:39 docker-compose.external-llm.yml
+-rw-rw-r--  1 roberto docker    2164 Sep  2 17:39 docker-compose.intel.yml
+-rw-rw-r--  1 roberto docker    1888 Sep  2 17:39 docker-compose.lemonade-external.yml
+-rw-rw-r--  1 roberto docker    2216 Sep  2 17:39 docker-compose.multigpu-amd.yml
+-rw-rw-r--  1 roberto docker     359 Sep  2 17:39 docker-compose.multigpu-nvidia.yml
+-rw-rw-r--  1 roberto docker    1095 Sep  2 17:39 docker-compose.nvidia.yml
+-rw-rw-r--  1 roberto docker    1015 Sep  2 17:39 docker-compose.tier0.yml
+drwxrwxr-x  6 roberto docker    4096 Sep  2 17:39 extensions
+drwxrwxr-x  6 roberto docker    4096 Sep  2 17:39 extensions-library-bundle
+ls: no se puede acceder a ''/home/roberto/ods/ods'': No existe el archivo o directorio

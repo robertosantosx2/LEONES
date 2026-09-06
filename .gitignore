@@ -32,3 +32,6 @@ Thumbs.db
 *.log
 *.tmp
 *.temp
+
+# Local long terminal captures
+/artifacts/terminal-capture/

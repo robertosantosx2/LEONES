@@ -1,0 +1,12 @@
+Usage: magnitude models [options] [command]
+
+Inspect and control local models on this computer
+
+Options:
+  -h, --help         display help for command
+
+Commands:
+  status [model-id]  Show local model installation and runtime status
+  load <model-id>    Load a local model for inference
+  stop               Stop the active local model
+  help [command]     display help for command

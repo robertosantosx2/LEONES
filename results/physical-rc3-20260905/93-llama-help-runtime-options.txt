@@ -1,0 +1,29 @@
+-t,    --threads N                      number of CPU threads to use during generation (default: -1)
+                                        (env: LLAMA_ARG_THREADS)
+-tb,   --threads-batch N                number of threads to use during batch and prompt processing (default:
+                                        same as --threads)
+-c,    --ctx-size N                     size of the prompt context (default: 0, 0 = loaded from model)
+-b,    --batch-size N                   logical maximum batch size (default: 2048)
+-ub,   --ubatch-size N                  physical maximum batch size (default: 512)
+--rope-scale N                          RoPE context scaling factor, expands context by a factor of N
+--rope-freq-scale N                     RoPE frequency scaling factor, expands context by a factor of 1/N
+--yarn-orig-ctx N                       YaRN: original context size of model (default: 0 = model training
+                                        context size)
+                                        - isolate: only spawn threads on CPUs on the node that execution
+-ngl,  --gpu-layers, --n-gpu-layers N   max. number of layers to store in VRAM, either an exact number,
+                                        context size)
+                                        max number of context checkpoints to create per slot (default:
+-cram, --cache-ram N                    set the maximum cache size in MiB (default: 8192, -1 - no limit, 0 -
+--context-shift, --no-context-shift     whether to use context shift on infinite text generation (default:
+                                        (env: LLAMA_ARG_CONTEXT_SHIFT)
+-np,   --parallel N                     number of server slots (default: -1, -1 = auto)
+                                        (env: LLAMA_ARG_N_PARALLEL)
+--threads-http N                        number of threads used to process HTTP requests (default: -1)
+                                        (env: LLAMA_ARG_THREADS_HTTP)
+--cache-prompt, --no-cache-prompt       whether to enable prompt caching (default: enabled)
+-td,   --threads-draft N                number of threads to use during generation (default: same as
+                                        --threads)
+-tbd,  --threads-batch-draft N          number of threads to use during batch and prompt processing (default:
+                                        same as --threads-draft)
+-cd,   --ctx-size-draft N               size of the prompt context for the draft model (default: 0, 0 = loaded
+-ngld, --gpu-layers-draft, --n-gpu-layers-draft N

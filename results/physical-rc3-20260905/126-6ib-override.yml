@@ -1,0 +1,29 @@
+services:
+  llama-server:
+    command:
+      - --model
+      - /models/Qwen3.5-2B-Q4_K_M.gguf
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8080"
+      - --n-gpu-layers
+      - "0"
+      - --ctx-size
+      - "4096"
+      - --batch-size
+      - "64"
+      - --ubatch-size
+      - "32"
+      - --threads
+      - "4"
+      - --threads-batch
+      - "4"
+      - --parallel
+      - "1"
+      - --no-cache-prompt
+      - --cache-ram
+      - "0"
+      - --reasoning
+      - "off"
+      - --metrics

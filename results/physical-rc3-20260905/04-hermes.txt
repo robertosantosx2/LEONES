@@ -1,0 +1,148 @@
+/home/roberto/.local/bin/hermes
+Hermes Agent v0.21.0 (2026.8.31) · upstream b51c055a · local b0ab2e16 (+1 carried commit)
+Install directory: /home/roberto/.hermes/hermes-agent
+Install method: git
+Python: 3.11.16
+OpenAI SDK: 2.24.0
+Update available: 100 commits behind — run 'hermes update'
+
+
+┌─────────────────────────────────────────────────────────┐
+│                 🩺 Hermes Doctor                        │
+└─────────────────────────────────────────────────────────┘
+
+◆ Security Advisories
+  ✓ No active security advisories
+
+◆ MCP Server Security
+  ✓ No suspicious MCP stdio commands
+
+◆ Python Environment
+  ✓ Python 3.11.16
+  ✓ SQLite 3.53.1
+    → SQLite source id: 2026-05-05 10:34:17 c88b22011a54b4f6fbd149e9f8e4…
+    → state.db: rollback journal mode (12.0 KB)
+  ✓ Virtual environment active
+  ✓ Version files consistent (0.21.0)
+
+◆ SSL / CA Certificates
+  ✓ SSL CA certificate bundle is valid
+
+◆ Required Packages
+  ✓ OpenAI SDK
+  ✓ Rich (terminal UI)
+  ✓ python-dotenv
+  ✓ PyYAML
+  ✓ HTTPX
+  ✓ Croniter (cron expressions) (optional)
+  ⚠ python-telegram-bot (optional, not installed)
+  ⚠ discord.py (optional, not installed)
+
+◆ Configuration Files
+  ✓ ~/.hermes/.env file exists
+  ✓ API key or custom endpoint configured
+  ✓ ~/.hermes/config.yaml exists
+  ✓ Config version up to date (v40)
+  ✓ No deprecated config keys or env vars
+
+◆ xAI Model Retirement (May 15, 2026)
+  ✓ No retired xAI models in config
+
+◆ Plugin import paths (removed Sep 14, 2026)
+  ✓ No enabled plugin imports paths removed on 2026-09-14
+
+◆ Auth Providers
+  ⚠ Nous Portal auth (not logged in)
+  ⚠ OpenAI Codex auth (not logged in)
+    → No Codex credentials stored. Run `hermes auth` to authenticate.
+  ⚠ MiniMax OAuth (not logged in)
+  ⚠ xAI OAuth (not logged in)
+    → No xAI OAuth credentials stored. Select xAI Grok OAuth (SuperGrok / Premium+) in `hermes model`.
+
+◆ Directory Structure
+  ✓ ~/.hermes directory exists
+  ✓ ~/.hermes/cron/ exists
+  ✓ ~/.hermes/sessions/ exists
+  ✓ ~/.hermes/logs/ exists
+  ✓ ~/.hermes/skills/ exists
+  ✓ ~/.hermes/memories/ exists
+  ✓ ~/.hermes/SOUL.md exists (persona configured)
+  ✓ ~/.hermes/memories/ directory exists
+    → MEMORY.md not created yet (will be created when the agent first writes a memory)
+    → USER.md not created yet (will be created when the agent first writes a memory)
+  ⚠ ~/.hermes/state.db exists but has issues: no such table: sessions
+    → state.db logical size 12.0 KB, 3 pages, 0 free, WAL 0 B
+    → journal_mode=delete, 0 process(es) holding the DB open
+    → FTS tables: none
+
+◆ Command Installation
+  ✓ Venv entry point exists (venv/bin/hermes)
+  ✓ ~/.local/bin/hermes exists (non-symlink)
+
+◆ External Tools
+  ✓ git
+  ✓ ripgrep (rg) (faster file search)
+    → Running inside a container — using local terminal backend (docker-in-docker is not configured by default)
+  ✓ docker (optional)
+  ✓ Node.js
+  ✓ agent-browser (resolves via npx on first use)
+  ✓ Playwright Chromium (browser engine)
+  ⚠ Browser tools (agent-browser) deps (0 critical, 1 high, 0 moderate — run: cd /home/roberto/.hermes/hermes-agent && npm audit fix --workspaces=false)
+  ⚠ web workspace deps (0 critical, 1 high, 1 moderate — build-tool advisory; clears via lockfile bump)
+    →   ^ build-time tooling (not runtime); if manual npm remediation errors with an arborist crash it's a known npm bug — clears via a lockfile bump
+  ✓ ui-tui workspace deps (no known vulnerabilities)
+
+◆ API Connectivity
+  Running 40 connectivity checks in parallel…                                                                        ⚠ OpenRouter API (not configured)
+
+◆ Tool Availability
+  ✓ browser-use
+  ✓ clarify
+  ✓ code_execution
+  ✓ computer_use
+  ✓ cronjob
+  ✓ delegation
+  ✓ desktop_ui
+  ✓ file
+  ✓ memory
+  ✓ omh
+  ✓ project
+  ✓ session_search
+  ✓ skills
+  ✓ terminal
+  ✓ todo
+  ✓ tts
+  ✓ kanban (runtime-gated; loaded only for dispatcher-spawned workers)
+  ✓ web search (keenable)
+  ✓ web extract (keenable)
+  ⚠ a2a (system dependency not met)
+  ⚠ browser (system dependency not met)
+  ⚠ browser-cdp (system dependency not met)
+  ⚠ discord (missing DISCORD_BOT_TOKEN)
+  ⚠ discord_admin (missing DISCORD_BOT_TOKEN)
+  ⚠ feishu_doc (system dependency not met)
+  ⚠ feishu_drive (system dependency not met)
+  ⚠ hermes-yuanbao (system dependency not met)
+  ⚠ homeassistant (system dependency not met)
+  ⚠ image_gen (system dependency not met)
+  ⚠ spotify (system dependency not met)
+  ⚠ video (system dependency not met)
+  ⚠ video_gen (system dependency not met)
+  ⚠ vision (system dependency not met)
+  ⚠ x_search (missing XAI_API_KEY)
+
+◆ Skills Hub
+  ⚠ Skills Hub directory not initialized (run: hermes skills list)
+  ⚠ No GITHUB_TOKEN (60 req/hr rate limit — set in ~/.hermes/.env for better rates)
+
+◆ Memory Provider
+  ✓ omh provider active
+
+────────────────────────────────────────────────────────────
+  Found 2 issue(s) to address:
+
+  1. Browser tools (agent-browser) has 1 npm vulnerability
+  2. web workspace has 2 npm vulnerabilities
+
+  Tip: run 'hermes doctor --fix' to auto-fix what's possible.
+

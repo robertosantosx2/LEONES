@@ -1,0 +1,233 @@
+{
+  "schema": "leones.rc4.fitllm_recommendation.v1",
+  "user_intent": {
+    "required": true,
+    "selection_mode": "multiple",
+    "purposes": [
+      "programming",
+      "reasoning"
+    ]
+  },
+  "phase": "RC4",
+  "provider": "fitllm_llmfit",
+  "kind": "ESTIMATED",
+  "candidate_count": 1,
+  "execution_authorized": false,
+  "measurement_authorized": false,
+  "measured": false,
+  "user_choice_required": true,
+  "fitllm_required_for_boot": false,
+  "selection_boundary": "evidence_backed_intersection",
+  "evidence_input_limit": 100,
+  "recommendations": [
+    {
+      "rank": 1,
+      "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+      "kind": "ESTIMATED",
+      "evidence_level": "estimated",
+      "source": "llmfit",
+      "raw": {
+        "best_quant": "Q6_K",
+        "capabilities": [
+          "Tool Use"
+        ],
+        "capability_ids": [
+          "tool_use"
+        ],
+        "category": "Coding",
+        "context_length": 32768,
+        "disk_size_gb": 6.09,
+        "effective_context_length": 8192,
+        "estimate_basis": {
+          "assumed_context": 8192,
+          "ddr_bandwidth_gbps": null,
+          "efficiency": 0.55,
+          "gpu_bandwidth_gbps": null,
+          "local_calibration": null,
+          "method": "backend_constant"
+        },
+        "estimated_tps": 13.7,
+        "fit_label": "Marginal",
+        "fit_level": "Marginal",
+        "gguf_sources": [
+          {
+            "provider": "unsloth",
+            "repo": "unsloth/Qwen2.5-Coder-7B-Instruct-GGUF"
+          },
+          {
+            "provider": "bartowski",
+            "repo": "bartowski/Qwen2.5-Coder-7B-Instruct-GGUF"
+          },
+          {
+            "provider": "mradermacher",
+            "repo": "mradermacher/Qwen2.5-Coder-7B-Instruct-GGUF"
+          }
+        ],
+        "installed": false,
+        "is_moe": false,
+        "license": "apache-2.0",
+        "measured_tps": null,
+        "memory_available_gb": 7.03,
+        "memory_required_gb": 7.03,
+        "moe_offloaded_gb": null,
+        "name": "Qwen/Qwen2.5-Coder-7B-Instruct",
+        "notes": [
+          "Context capped at 8192 tokens for estimation (model supports up to 32768; use --max-context to override)",
+          "Unified memory: GPU and CPU share the same pool",
+          "Best quantization for hardware: Q6_K (model default: Q4_K_M)",
+          "Baseline estimated speed: 13.7 tok/s"
+        ],
+        "ollama_name": "qwen2.5-coder:7b",
+        "parameter_count": "7.6B",
+        "params_b": 7.62,
+        "provider": "Alibaba",
+        "release_date": "2024-09-17",
+        "run_mode": "GPU",
+        "run_mode_label": "GPU",
+        "runtime": "llama.cpp",
+        "runtime_label": "llama.cpp",
+        "score": 70.6,
+        "score_components": {
+          "context": 100.0,
+          "fit": 32.5,
+          "quality": 87.7,
+          "speed": 34.3
+        },
+        "supports_tp": [
+          1,
+          2,
+          4
+        ],
+        "total_memory_gb": 7.03,
+        "usable_context": 8211,
+        "use_case": "Code generation and completion",
+        "utilization_pct": 100.0,
+        "verify_command": "llama-bench -m <path-to-Q6_K-gguf> -ngl 99 -p 512 -n 128"
+      },
+      "evidence_provenance": {
+        "selection_boundary": "evidence_backed_intersection",
+        "huggingface": {
+          "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+          "revision": null,
+          "author": null,
+          "pipeline_tag": "text-generation",
+          "library": "transformers",
+          "parameters_b": null,
+          "dtype": null,
+          "architecture": null,
+          "context_window_tokens": null,
+          "formats": [
+            "safetensors"
+          ],
+          "quantizations": [],
+          "downloads_30d": 2301302,
+          "downloads_all_time": null,
+          "likes": 792,
+          "trending_score": null,
+          "last_modified": null,
+          "created_at": "2024-09-17T13:38:49.000Z",
+          "gated": null,
+          "tags": [
+            "transformers",
+            "safetensors",
+            "qwen2",
+            "text-generation",
+            "code",
+            "codeqwen",
+            "chat",
+            "qwen",
+            "qwen-coder",
+            "conversational",
+            "en",
+            "arxiv:2409.12186",
+            "arxiv:2309.00071",
+            "arxiv:2407.10671",
+            "base_model:Qwen/Qwen2.5-Coder-7B",
+            "base_model:finetune:Qwen/Qwen2.5-Coder-7B",
+            "license:apache-2.0",
+            "text-generation-inference",
+            "endpoints_compatible",
+            "region:us",
+            "deploy:sagemaker",
+            "deploy:azure"
+          ],
+          "used_storage_bytes": null,
+          "transformers_info": {},
+          "source": "huggingface"
+        },
+        "artificial_analysis": null,
+        "evidence_rank": 37
+      }
+    }
+  ],
+  "status": "insufficient",
+  "message": "Solo hay 1 coincidencias válidas entre LLMFit y el feed de evidencia; no se fabrican candidatos para completar 3.",
+  "evidence": {
+    "schema": "leones.rc4.model-evidence.v1",
+    "model_count": 100,
+    "max_models": 100,
+    "sources": {
+      "huggingface": {
+        "kind": "model_repository_metadata",
+        "models_considered": 100
+      },
+      "artificial_analysis": {
+        "kind": "independent_benchmark_and_performance",
+        "models_available": 0,
+        "intelligence_index_version": null
+      }
+    },
+    "hardware": {
+      "source": "llmfit",
+      "source_version": null,
+      "cpu": "Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz",
+      "ram_gb": 7.03,
+      "gpu": "Intel Iris Plus Graphics G1 (Ice Lake) (integrated)",
+      "vram_gb": 7.03,
+      "gpu_memory_kind": "unified",
+      "unified_memory": true,
+      "os": "Linux-7.0.0-31-generic-x86_64-desconocido-with-glibc2.43",
+      "architecture": "x86_64",
+      "accelerators": [
+        "SYCL"
+      ],
+      "verification": "detected",
+      "raw": {
+        "available_ram_gb": 1.76,
+        "backend": "SYCL",
+        "cpu_cores": 8,
+        "cpu_name": "Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz",
+        "gpu_available_gb": null,
+        "gpu_count": 1,
+        "gpu_name": "Intel Iris Plus Graphics G1 (Ice Lake) (integrated)",
+        "gpu_vram_gb": 7.03,
+        "gpus": [
+          {
+            "backend": "SYCL",
+            "count": 1,
+            "memory_bandwidth_gbps": null,
+            "name": "Intel Iris Plus Graphics G1 (Ice Lake) (integrated)",
+            "unified_memory": true,
+            "vram_gb": 7.03
+          }
+        ],
+        "has_gpu": true,
+        "total_ram_gb": 7.03,
+        "unified_memory": true
+      }
+    }
+  },
+  "provider_version": null,
+  "command": [
+    "llmfit",
+    "recommend",
+    "--json",
+    "--limit",
+    "100",
+    "--use-case",
+    "coding"
+  ],
+  "llmfit_catalog_count": 100,
+  "evidence_backed_intersection_count": 1,
+  "artificial_analysis_available": false
+}

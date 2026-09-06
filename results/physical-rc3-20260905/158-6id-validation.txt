@@ -1,0 +1,6 @@
+content='LEONES OK'
+reasoning_present=False
+finish_reason=stop
+completion_tokens=4
+prompt_tokens=24
+DETERMINISTIC_SMOKE=PASS

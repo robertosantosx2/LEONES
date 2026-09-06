@@ -1,0 +1,23 @@
+Usage: magnitude [options] [command]
+
+Options:
+  -v, --version             Print the Magnitude version
+  --resume [id]             Resume the most recent chat session or a specific
+                            session by ID
+  --prompt <text>           Start session with an initial user message
+  --atif <path>             Write ATIF trajectory to the specified path
+  --system-override <text>  Override system prompt with raw text
+  -h, --help                display help for command
+
+Commands:
+  service                   Manage the Magnitude background service
+  hardware                  Show hardware and memory available to local
+                            inference
+  catalog                   Find, compare, and download local models
+  models                    Inspect and control local models on this computer
+  connections               Connect Magnitude models to agent harnesses
+  update                    Update Magnitude using its installation package
+                            manager
+  docs [topic-id]           Read bundled documentation for Magnitude agents
+  setup                     Interactive first time setup for installing a model
+                            and connecting it to a harness

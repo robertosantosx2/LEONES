@@ -1,0 +1,3 @@
+curl_rc=0
+elapsed_ms=1819
+validation_rc=0

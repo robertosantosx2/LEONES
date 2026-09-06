@@ -1,0 +1,1 @@
+Tiempo total smoke: 3761300 ms

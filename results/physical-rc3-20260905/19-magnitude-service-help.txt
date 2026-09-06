@@ -1,0 +1,14 @@
+Usage: magnitude service [options] [command]
+
+Manage the Magnitude background service
+
+Options:
+  -h, --help      display help for command
+
+Commands:
+  install         Start Magnitude automatically at login without starting it now
+  uninstall       Stop Magnitude and remove it from login startup
+  start           Install and start the Magnitude service
+  stop            Stop Magnitude without removing it from login startup
+  status          Show Magnitude service and active-model status
+  help [command]  display help for command

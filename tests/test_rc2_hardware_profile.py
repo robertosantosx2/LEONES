@@ -10,9 +10,12 @@ def test_unknown_hardware_is_not_fabricated():
 
 
 def test_candidate_normalization_preserves_llmfit_provenance():
-    candidates = normalize_candidates([
-        {"id": "model-a", "fit": 0.91, "estimated_tps": 12.5, "source_version": "fixture-1"}
-    ])
+    candidates = normalize_candidates(
+        [
+            {"id": "model-a", "fit": 0.91, "estimated_tps": 12.5, "source_version": "fixture-1"}
+        ],
+        source="llmfit",
+    )
     assert candidates[0]["model_id"] == "model-a"
     assert candidates[0]["fit"] == 0.91
     assert candidates[0]["estimated_tps"] == 12.5

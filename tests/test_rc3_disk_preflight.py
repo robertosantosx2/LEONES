@@ -26,8 +26,19 @@ def test_disk_preflight_distinguishes_magnitude_from_ods():
     assert report["selection_gate"]["stack_readiness"]["ods"]["ready"] in (True, False)
 
 
-def test_disk_preflight_blocks_when_filesystem_is_too_small(tmp_path):
-    report = build_report(base=tmp_path, llm_reserve_gib=10**6, magnitude_reserve_gib=10**6)
+def test_disk_preflight_blocks_when_filesystem_is_too_small(tmp_path, monkeypatch):
+    class FakeUsage:
+        total = 100 * 1024**3
+        used = 99 * 1024**3
+        free = 1 * 1024**3
+
+    monkeypatch.setattr(
+        "scripts.rc3_disk_preflight.shutil.disk_usage",
+        lambda path: FakeUsage(),
+    )
+
+    report = build_report(base=tmp_path)
+
     assert report["selection_gate"]["ready"] is False
     assert report["selection_gate"]["state"] == "BLOCKED"
     assert report["status"]["llm"] is False

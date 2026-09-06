@@ -2,66 +2,53 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Inicio rápido LEONES RC3: sonda física, Hermes/OMH, elección Magnitude u ODS, verificación y medición.">
-<title>LEONES · Inicio rápido · RC3</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-4">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-4">
+<meta name="description" content="Inicio rapido LEONES RC4: intencion, preflight, FitLLM opcional, Magnitude/ODS, Leo suite.">
+<title>LEONES · Inicio rápido · RC4</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-4">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-4">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
-<span class="site-tag">Inicio rápido · RC3 · 5 septiembre 2026</span>
-<h1>Arrancar LEONES en Ubuntu</h1>
-<p>Camino canónico actual: sonda física LEONES, ecosistema Hermes/OMH, elección explícita de Magnitude u ODS, verificación y medición solo tras ejecución real.</p>
+<span class="site-tag">Inicio rápido · RC4 · 6 septiembre 2026</span>
+<h1>Arrancar LEONES</h1>
+<p>RC3 cerrada. Camino actual: intención obligatoria, evidencia HF/AA, intersección con FitLLM opcional, elección humana.</p>
 </div></header>
 <main class="site-main" id="main">
-<section class="site-section"><span class="site-tag">0 · Qué es canónico</span><h2>RC3, no RC2</h2>
-<p class="site-lead"><strong>RC3 es el camino canónico.</strong> RC2 queda como línea histórica. LLMFit/FitLLM <strong>no</strong> es dependencia de arranque ni participa en la selección RC3.</p>
-<div class="site-note"><strong>Regla de autoridad:</strong> LEONES descubre el hardware. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.</div>
+<section class="site-section"><h2>0 · Qué es canónico</h2>
+<p class="site-lead"><strong>RC4</strong> define la recomendación. <strong>RC3</strong> permanece cerrada. FitLLM <strong>no</strong> es dependencia de arranque.</p>
+<div class="site-note"><strong>Regla:</strong> sin USER_INTENT[] no hay recomendación. ESTIMATED no es MEASURED.</div>
 </section>
-<section class="site-section"><span class="site-tag">1 · Requisitos</span><h2>Antes de instalar</h2>
+<section class="site-section"><h2>1 · Requisitos</h2>
 <ul>
-<li>Ubuntu (u otro Linux) con Python 3 y Git.</li>
-<li>Espacio en disco y, si usas ODS, Docker cuando el stack lo requiera.</li>
-<li>No hace falta LLMFit para arrancar RC3.</li>
+<li>Python 3 y Git.</li>
+<li><strong>No</strong> hace falta FitLLM para arrancar LEONES.</li>
+<li>Hermes y OMH son opcionales; no seleccionan modelo en RC4.</li>
+<li>Para la intersección real hace falta la CLI <code>llmfit</code> (p. ej. 1.1.10).</li>
 </ul>
+</section>
+<section class="site-section"><h2>2 · Arranque</h2>
 <pre class="site-stack">git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES
-./install.sh   # bootstrap LEONES + Hermes/OMH según el instalador actual
-</pre>
-<p>Comprobaciones independientes del ecosistema:</p>
-<pre class="site-stack">hermes doctor
-omh doctor
-</pre>
+git checkout rc4-fitllm-recommender
+./leones
+./leones --rc2</pre>
 </section>
-<section class="site-section"><span class="site-tag">2 · Sonda física</span><h2>La autoridad del hardware es LEONES</h2>
-<p>La única sonda física canónica es <code>scripts/hardware_profile.py</code>. Emite hechos observados (CPU, RAM, GPU PCI…). No inventa VRAM ni <code>measured_tps</code>.</p>
-<pre class="site-stack">python3 scripts/hardware_profile.py
-python3 scripts/rc3_hardware_discovery.py   # hardware-profile.v1
-python3 scripts/rc3_release_gate.py         # contratos estáticos; físico NOT CLAIMED
-</pre>
+<section class="site-section"><h2>3 · Preflight en Ubuntu</h2>
+<pre class="site-stack">python3 scripts/rc4_release_gate.py
+python3 scripts/rc4_resource_preflight.py
+python3 scripts/rc4_ubuntu_preflight.py \\
+  --purpose programming --purpose reasoning \\
+  --out results/physical-rc4-$(date +%Y%m%d)/ubuntu-preflight.json</pre>
+<p>Si hay menos de tres coincidencias verás <code>insufficient</code>: es correcto; no se inventan candidatos.</p>
 </section>
-<section class="site-section"><span class="site-tag">3 · Elección</span><h2>Modelo y un solo stack</h2>
-<p>Tras el perfil y los candidatos, <strong>tú</strong> eliges modelo/configuración y exactamente un camino:</p>
-<div class="site-grid">
-<article class="site-card"><h3>Magnitude</h3><p>Perfilado, tuning y ejecución por sus interfaces canónicas. LEONES verifica lo instalado antes de medir.</p></article>
-<article class="site-card"><h3>ODS</h3><p>Instalación y stack local por sus interfaces canónicas. LEONES no duplica el instalador ODS.</p></article>
-</div>
-<p>Consentir ≠ instalar ≠ verificar ≠ autorizar benchmark.</p>
+<section class="site-section"><h2>4 · Después de elegir modelo</h2>
+<p>Stack (Magnitude u ODS) → consentimiento → instalación → verificación → Leo001…Leo010 → evidencia MEASURED. Sin ejecución real no hay MEASURED.</p>
 </section>
-<section class="site-section"><span class="site-tag">4 · Regla de oro</span><h2>No confundas estados</h2>
-<div class="site-grid">
-<article class="site-card"><h3>ESTIMATED</h3><p>Orientación externa o de ranking. No es medición local.</p></article>
-<article class="site-card"><h3>OBSERVED</h3><p>Hecho visto en el host (doctor, status, sonda). No autoriza MEASURED.</p></article>
-<article class="site-card"><h3>MEASURED</h3><p>Solo tras ejecución real registrada por el camino LEONES.</p></article>
-<article class="site-card"><h3>UNKNOWN</h3><p>Si no se puede comprobar, permanece desconocido.</p></article>
-</div>
-<div class="site-note"><strong>ESTIMATED ≠ MEASURED. OBSERVED ≠ VALIDATED.</strong></div>
-</section>
-<section class="site-section"><span class="site-tag">5 · Docs</span><h2>Siguiente lectura</h2>
-<p><a href="rc3.html">Estado RC3 →</a> · <a href="estado.html">Estado del proyecto →</a> · <a href="operacion.html">Operación →</a> · <a href="../docs/RC3-ARCHITECTURE.md">Arquitectura RC3 →</a> · <a href="rc2.html">RC2 histórico →</a></p>
+<section class="site-section"><h2>5 · Docs</h2>
+<p><a href="rc4.html">RC4 →</a> · <a href="estado.html">Estado →</a> · <a href="operacion.html">Operación →</a> · <a href="scripts.html">Scripts →</a></p>
 </section>
 </main>
-<footer class="site-footer"><div>LEONES · IA local con criterio</div><div>RC3 · Inicio rápido · 2026</div></footer>
-<script src="assets/js/navigation.js?v=2026-09-05-4" defer></script>
+<footer class="site-footer"><div>LEONES</div><div>RC4 · Inicio rápido</div></footer>
+<script src="assets/js/navigation.js?v=2026-09-06-4" defer></script>
 </body>
 </html>

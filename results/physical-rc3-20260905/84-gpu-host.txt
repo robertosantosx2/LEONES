@@ -1,0 +1,5 @@
+00:02.0 VGA compatible controller [0300]: Intel Corporation Iris Plus Graphics G1 (Ice Lake) [8086:8a56] (rev 07)
+	Subsystem: Acer Incorporated [ALI] Device [1025:1429]
+	Kernel driver in use: i915
+	Kernel modules: i915
+00:14.0 USB controller [0c03]: Intel Corporation Ice Lake-LP USB 3.1 xHCI Host Controller [8086:34ed] (rev 30)
