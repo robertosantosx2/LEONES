@@ -24,9 +24,38 @@ SCHEMA = "leones.rc4.fitllm_recommendation.v1"
 CANDIDATE_COUNT = 3
 
 
+def _normalise_user_intent(purposes: Sequence[str]) -> list[str]:
+    """Validate the mandatory RC4 multi-purpose user intent contract."""
+    from scripts.collect_model_evidence import normalize_purposes
+
+    return normalize_purposes(purposes)
+
+
+def _llmfit_use_case(purposes: Sequence[str]) -> str:
+    """Translate RC4 multi-purpose intent to LLMFit's single use-case filter.
+
+    RC4 keeps the complete user_intent[] contract. LLMFit 1.1.10 accepts only
+    one --use-case value, so this is a boundary translation, never a rewrite
+    of the public RC4 intent.
+    """
+    mapping = (
+        ("programming", "coding"),
+        ("reasoning", "reasoning"),
+        ("multimodal", "multimodal"),
+        ("chat", "chat"),
+        ("embedding", "embedding"),
+        ("research", "general"),
+        ("general", "general"),
+    )
+    for purpose, use_case in mapping:
+        if purpose in purposes:
+            return use_case
+    return "general"
+
+
 def recommend(
     *,
-    use_case: str | None = None,
+    user_intent: Sequence[str],
     max_context: int | None = None,
     timeout_seconds: int = 30,
 ) -> dict[str, Any]:
@@ -34,8 +63,15 @@ def recommend(
 
     This envelope is proposal-only: execution and measurement remain false.
     """
+    purposes = _normalise_user_intent(user_intent)
+
     base: dict[str, Any] = {
         "schema": SCHEMA,
+        "user_intent": {
+            "required": True,
+            "selection_mode": "multiple",
+            "purposes": purposes,
+        },
         "phase": "RC4",
         "provider": "fitllm_llmfit",
         "kind": "ESTIMATED",
@@ -62,7 +98,7 @@ def recommend(
     try:
         result = llmfit_mod.run_recommend(
             limit=CANDIDATE_COUNT,
-            use_case=use_case,
+            use_case=_llmfit_use_case(purposes),
             max_context=max_context,
             timeout_seconds=timeout_seconds,
         )
@@ -104,13 +140,19 @@ def recommend(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="RC4 FitLLM optional recommender")
-    parser.add_argument("--use-case", default=None)
+    parser.add_argument(
+        "--purpose",
+        dest="purposes",
+        action="append",
+        required=True,
+        help="RC4 user intent; repeat for multiple purposes",
+    )
     parser.add_argument("--max-context", type=int, default=None)
     parser.add_argument("--json", action="store_true", help="print JSON only")
     args = parser.parse_args(argv)
 
     envelope = recommend(
-        use_case=args.use_case,
+        user_intent=args.purposes,
         max_context=args.max_context,
     )
     if args.json:

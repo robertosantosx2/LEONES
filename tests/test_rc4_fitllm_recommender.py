@@ -22,7 +22,7 @@ def _load(name: str, rel: str):
 def test_recommend_unavailable_without_binary():
     mod = _load("rc4_fitllm_recommend", "scripts/rc4_fitllm_recommend.py")
     with mock.patch("runtime_selection.llmfit.executable", return_value=None):
-        env = mod.recommend()
+        env = mod.recommend(user_intent=["coding", "research"])
     assert env["status"] == "unavailable"
     assert env["execution_authorized"] is False
     assert env["measurement_authorized"] is False
@@ -32,6 +32,9 @@ def test_recommend_unavailable_without_binary():
     assert env["kind"] == "ESTIMATED"
     assert env["candidate_count"] == 0
     assert env["recommendations"] == []
+    assert env["user_intent"]["required"] is True
+    assert env["user_intent"]["selection_mode"] == "multiple"
+    assert env["user_intent"]["purposes"] == ["programming", "research"]
 
 
 def test_recommend_ok_returns_exactly_three_estimated_candidates():
@@ -52,8 +55,9 @@ def test_recommend_ok_returns_exactly_three_estimated_candidates():
     )
     with mock.patch("runtime_selection.llmfit.executable", return_value="/usr/bin/llmfit"):
         with mock.patch("runtime_selection.llmfit.run_recommend", return_value=fake) as run:
-            env = mod.recommend()
+            env = mod.recommend(user_intent=["coding", "research"])
     run.assert_called_once()
+    assert run.call_args.kwargs["use_case"] == "coding"
     assert env["status"] == "ok"
     assert env["candidate_count"] == 3
     assert [x["model_id"] for x in env["recommendations"]] == ["demo-1", "demo-2", "demo-3"]
@@ -76,7 +80,7 @@ def test_recommend_does_not_fabricate_missing_third_candidate():
     )
     with mock.patch("runtime_selection.llmfit.executable", return_value="/usr/bin/llmfit"):
         with mock.patch("runtime_selection.llmfit.run_recommend", return_value=fake):
-            env = mod.recommend()
+            env = mod.recommend(user_intent=["coding", "research"])
     assert env["status"] == "insufficient"
     assert env["candidate_count"] == 2
     assert len(env["recommendations"]) == 2
