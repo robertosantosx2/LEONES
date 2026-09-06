@@ -1,57 +1,63 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Estado LEONES: RC3 cerrada; RC4 decisión FitLLM recomendador opcional; implementación RC4 pendiente.">
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Estado LEONES: RC3 cerrada; RC4 decision fijada; capa de recomendacion evidence-backed endurecida; preflight Ubuntu en Aspire; MEASURED completo en backlog." />
 <title>LEONES · Estado</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-1">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-1">
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-4" />
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-4" />
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
 <span class="site-tag">Estado del proyecto · 6 septiembre 2026</span>
-<h1>LEONES · Estado</h1>
-<p><strong>RC3 cerrada.</strong> <strong>RC4</strong> fija FitLLM como recomendador opcional (implementación pendiente). Medición completa sigue en backlog.</p>
+<h1>Qué está cerrado y qué sigue abierto</h1>
+<p>Fuente de verdad operativa. ESTIMATED no es MEASURED. FitLLM no es autoridad.</p>
 </div></header>
 <main class="site-main" id="main">
-<section class="site-section"><span class="site-tag">Ahora · RC4</span><h2>Decisión fijada · implementación pendiente</h2>
-<p class="site-lead"><strong>FitLLM recomienda; no manda.</strong> LEONES arranca sin FitLLM. Hermes y OMH son opcionales y no seleccionan modelo. Tras instalar Magnitude u ODS se puede ofrecer desinstalar FitLLM (opt-in). La suite Leo001…Leo010 se conserva para medir.</p>
-<pre class="site-stack">hardware_profile.py
+
+<section class="site-section"><span class="site-tag">RC4 · en desarrollo</span>
+<h2>RC4 · recomendación evidence-backed</h2>
+<p class="site-lead"><strong>Decisión fijada (2026-09-06).</strong> FitLLM/LLMFit es preselector opcional. Hermes y OMH fuera del camino canónico de selección. Leo001–Leo010 se conservan para medición.</p>
+<pre class="site-stack">USER_INTENT[] (obligatorio, múltiple)
    ↓
-candidate-set.v1
+resource + ubuntu preflight
    ↓
-FitLLM? → ESTIMATED (opcional)
+HF + Artificial Analysis → feed LEONES ≤100
    ↓
-usuario elige modelo + stack
+LLMFit CLI real ≤100
    ↓
-Magnitude | ODS → [opt-in] quitar FitLLM
+intersección por identidad → hasta 3 ESTIMATED | insufficient
    ↓
-Leo001…Leo010 → MEASURED (solo ejecución real)</pre>
-<div class="site-note"><strong>Regla RC4:</strong> LEONES descubre el hardware. FitLLM puede recomendar. El usuario elige. Magnitude u ODS ejecutan. LEONES verifica, mide y sentencia.</div>
-<div class="site-note"><strong>Docs:</strong> <code>docs/RC4-ARCHITECTURE.md</code> · <code>docs/completed/RC4-DECISION-FITLLM-RECOMMENDER-2026-09-06.md</code> · <a href="rc4.html">rc4.html</a></div>
+selección humana → stack → runtime → Leo suite → MEASURED</pre>
+<div class="site-note"><strong>Regla RC4:</strong> LEONES descubre hardware y conserva procedencia. LLMFit preselecciona desde su catálogo. Solo la intersección respaldada por el feed puede proponerse. El usuario elige. La medición física es posterior.</div>
+<div class="site-note"><strong>Evidencia Aspire (2026-09-06):</strong> release gate PASS · 6 tests RC4 PASS · ubuntu preflight PASS · resultado <code>insufficient</code> (1/3) en ~7&nbsp;GB RAM — sin padding. Artefacto: <code>results/physical-rc4-20260906/ubuntu-preflight-aspire.json</code>.</div>
+<div class="site-note"><strong>Docs:</strong> <code>docs/RC4-ARCHITECTURE.md</code> · <code>docs/RC4-EVIDENCE-BRIDGE.md</code> · <code>docs/completed/RC4-DECISION-FITLLM-RECOMMENDER-2026-09-06.md</code> · <code>docs/completed/RC4-STRICT-UBUNTU-PREFLIGHT-2026-09-06.md</code> · <a href="rc4.html">rc4.html</a></div>
 </section>
 
-<section class="site-section"><span class="site-tag">RC3 · cerrada</span><h2>RC3 cerrada · medición completa en backlog</h2>
-<p class="site-lead"><strong>Contratos y gate CI cerrados.</strong> Observación física parcial en Aspire A515-55 (2026-09-05). La fase RC3 <strong>no</strong> incluye MEASURED de punta a punta.</p>
+<section class="site-section"><span class="site-tag">RC3 · cerrada</span>
+<h2>RC3 cerrada · medición completa en backlog</h2>
+<p class="site-lead"><strong>Contratos y gate CI cerrados (2026-09-05).</strong> Observación física parcial en Aspire. La fase RC3 no incluye MEASURED de punta a punta.</p>
 <div class="site-note"><strong>Evidencia RC3:</strong> <code>docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md</code> · <strong>Cierre:</strong> <code>docs/completed/RC3-CLOSED-2026-09-05.md</code> · <a href="rc3.html">rc3.html</a></div>
 </section>
 
-<section class="site-section"><span class="site-tag">Estado consolidado</span><h2>Qué queda cerrado / abierto</h2>
+<section class="site-section"><span class="site-tag">Estado consolidado</span>
+<h2>Qué queda cerrado / abierto</h2>
 <div class="site-grid">
 <article class="site-card"><h3>JALONES 1–4</h3><p>🟢 Cerrados.</p></article>
 <article class="site-card"><h3>RC1</h3><p>🟢 Validado.</p></article>
-<article class="site-card"><h3>RC2</h3><p>🟢 Histórico.</p></article>
+<article class="site-card"><h3>RC2</h3><p>🟢 Histórico (<code>./leones --rc2</code>).</p></article>
 <article class="site-card"><h3>RC3 fase</h3><p>🟢 Cerrada.</p></article>
-<article class="site-card"><h3>Medición completa</h3><p>⚪ Backlog. Handoffs formales y MEASURED no cerrados.</p></article>
-<article class="site-card"><h3>RC4 decisión</h3><p>🟡 Fijada. FitLLM recomendador opcional. Ver <a href="rc4.html">rc4.html</a>.</p></article>
-<article class="site-card"><h3>RC4 implementación</h3><p>🔴 Pendiente. Gate, adaptador, UI costes Hermes/OMH, prompt uninstall FitLLM.</p></article>
+<article class="site-card"><h3>RC4 decisión</h3><p>🟢 Fijada. FitLLM preselector opcional.</p></article>
+<article class="site-card"><h3>RC4 capa recomendación</h3><p>🟡 Endurecida (código + tests + preflight Ubuntu). No cerrada como fase.</p></article>
+<article class="site-card"><h3>Medición completa</h3><p>⚪ Backlog. Handoffs formales y MEASURED de punta a punta abiertos.</p></article>
 </div>
 </section>
 
-<section class="site-section"><span class="site-tag">Regla</span><h2>Medir antes de afirmar</h2>
-<p><code>estimated</code>, <code>reported</code>, <code>observed</code>, <code>configured</code>, <code>resolved</code>, <code>available</code> y <code>measured</code> mantienen fronteras distintas. Lo desconocido permanece desconocido.</p>
+<section class="site-section"><span class="site-tag">Regla</span>
+<h2>Medir antes de afirmar</h2>
+<p><code>estimated</code>, <code>reported</code>, <code>observed</code>, <code>configured</code>, <code>resolved</code>, <code>available</code> y <code>measured</code> mantienen fronteras distintas. Lo desconocido permanece desconocido. ESTIMATED nunca se promociona solo a MEASURED.</p>
 </section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-06-1" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-06-4" defer></script>
 </body>
 </html>

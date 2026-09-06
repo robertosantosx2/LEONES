@@ -2,45 +2,59 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Operación LEONES RC4: sonda, FitLLM opcional, stacks, Leo suite, evidencia.">
+<meta name="description" content="Operacion LEONES RC4: intencion, evidencia HF/AA, interseccion LLMFit, preflight Ubuntu, stacks, Leo suite.">
 <title>LEONES · Operación · RC4</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-1">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-1">
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-4">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-4">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
 <span class="site-tag">Operación · RC4 · 6 septiembre 2026</span>
 <h1>Recorrido operativo</h1>
-<p>Del hardware observado a la evidencia, con FitLLM solo como recomendador opcional.</p>
+<p>De la intención del usuario a la evidencia, con FitLLM solo como preselector opcional.</p>
 </div></header>
 <main class="site-main" id="main">
 <section class="site-section"><h2>Autoridad</h2>
-<p class="site-lead"><strong>LEONES descubre el hardware. FitLLM puede recomendar. El usuario elige. Magnitude u ODS ejecutan. LEONES verifica, mide y sentencia.</strong></p>
-<div class="site-note">Hermes/OMH: opcionales. No son el selector de modelo RC4.</div>
+<p class="site-lead"><strong>LEONES descubre el hardware y fija la procedencia. LLMFit puede preseleccionar. Solo la intersección con el feed de evidencia se propone. El usuario elige. Magnitude u ODS ejecutan. LEONES mide y sentencia.</strong></p>
+<div class="site-note">Hermes/OMH: opcionales (agente/ops). No son el selector de modelo RC4.</div>
 </section>
-<section class="site-section"><h2>Camino</h2>
-<pre class="site-stack">hardware_profile.py → hardware-profile.v1
+<section class="site-section"><h2>Camino canónico</h2>
+<pre class="site-stack">./leones  →  USER_INTENT[] (múltiple, obligatorio)
    ↓
-candidate-set.v1
+rc4_resource_preflight / rc4_ubuntu_preflight
    ↓
-FitLLM? (ESTIMATED)
+HF + Artificial Analysis → feed ≤100
    ↓
-modelo + Magnitude|ODS
+LLMFit CLI ≤100 → intersección por identidad
+   ↓
+hasta 3 ESTIMATED  |  insufficient (sin padding)
+   ↓
+usuario elige modelo + stack (Magnitude | ODS)
    ↓
 consent → install → [opt-in] uninstall FitLLM
    ↓
 verify → Leo001…Leo010 → MEASURED</pre>
 </section>
+<section class="site-section"><h2>Comandos útiles</h2>
+<pre class="site-stack">python3 scripts/rc4_release_gate.py
+python3 scripts/rc4_resource_preflight.py
+python3 scripts/rc4_ubuntu_preflight.py \\
+  --purpose programming --purpose reasoning \\
+  --out results/physical-rc4-YYYYMMDD/ubuntu-preflight.json
+python3 scripts/rc4_fitllm_recommend.py \\
+  --purpose programming --purpose reasoning --json</pre>
+</section>
 <section class="site-section"><h2>Estado</h2>
 <div class="site-grid">
 <article class="site-card"><h3>RC3</h3><p>🟢 Fase cerrada.</p></article>
-<article class="site-card"><h3>RC4 decisión</h3><p>🟡 Fijada.</p></article>
-<article class="site-card"><h3>RC4 código</h3><p>🔴 Pendiente (adaptador, gate, prompts).</p></article>
+<article class="site-card"><h3>RC4 decisión</h3><p>🟢 Fijada.</p></article>
+<article class="site-card"><h3>RC4 recomendación</h3><p>🟡 Código + tests + preflight Ubuntu. Fase no cerrada.</p></article>
+<article class="site-card"><h3>MEASURED E2E</h3><p>⚪ Abierto.</p></article>
 </div>
-<p><a href="rc4.html">RC4 →</a> · <a href="../docs/RC4-ARCHITECTURE.md">Contrato →</a> · <a href="estado.html">Estado →</a></p>
+<p><a href="rc4.html">RC4 →</a> · <a href="estado.html">Estado →</a> · <a href="inicio-rapido.html">Inicio rápido →</a></p>
 </section>
 </main>
 <footer class="site-footer"><div>LEONES · Operación RC4</div><div>ESTIMATED ≠ MEASURED</div></footer>
-<script src="assets/js/navigation.js?v=2026-09-06-1" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-06-4" defer></script>
 </body>
 </html>

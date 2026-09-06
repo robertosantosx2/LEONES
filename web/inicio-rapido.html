@@ -2,51 +2,53 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Inicio rápido LEONES RC4: sonda, FitLLM opcional, Magnitude/ODS, Leo suite.">
+<meta name="description" content="Inicio rapido LEONES RC4: intencion, preflight, FitLLM opcional, Magnitude/ODS, Leo suite.">
 <title>LEONES · Inicio rápido · RC4</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-1">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-1">
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-4">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-4">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
 <span class="site-tag">Inicio rápido · RC4 · 6 septiembre 2026</span>
 <h1>Arrancar LEONES</h1>
-<p>RC3 cerrada. Camino actual de producto: sonda LEONES, FitLLM como <strong>recomendador opcional</strong>, elección humana de modelo y stack.</p>
+<p>RC3 cerrada. Camino actual: intención obligatoria, evidencia HF/AA, intersección con FitLLM opcional, elección humana.</p>
 </div></header>
 <main class="site-main" id="main">
 <section class="site-section"><h2>0 · Qué es canónico</h2>
-<p class="site-lead"><strong>RC4</strong> redefine la recomendación de modelo. <strong>RC3</strong> permanece cerrada como fase.</p>
-<div class="site-note"><strong>Regla:</strong> LEONES descubre el hardware. FitLLM puede recomendar. El usuario elige. Magnitude u ODS ejecutan. LEONES verifica, mide y sentencia.</div>
+<p class="site-lead"><strong>RC4</strong> define la recomendación. <strong>RC3</strong> permanece cerrada. FitLLM <strong>no</strong> es dependencia de arranque.</p>
+<div class="site-note"><strong>Regla:</strong> sin USER_INTENT[] no hay recomendación. ESTIMATED no es MEASURED.</div>
 </section>
 <section class="site-section"><h2>1 · Requisitos</h2>
 <ul>
 <li>Python 3 y Git.</li>
-<li><strong>No</strong> hace falta FitLLM para arrancar.</li>
-<li>Hermes y OMH son <strong>opcionales</strong> (agente/ops); no seleccionan modelo.</li>
-<li>ODS puede requerir Docker; Magnitude su propio runtime.</li>
+<li><strong>No</strong> hace falta FitLLM para arrancar LEONES.</li>
+<li>Hermes y OMH son opcionales; no seleccionan modelo en RC4.</li>
+<li>Para la intersección real hace falta la CLI <code>llmfit</code> (p. ej. 1.1.10).</li>
 </ul>
+</section>
+<section class="site-section"><h2>2 · Arranque</h2>
 <pre class="site-stack">git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES
-./install.sh
-</pre>
+git checkout rc4-fitllm-recommender
+./leones
+./leones --rc2</pre>
 </section>
-<section class="site-section"><h2>2 · Sonda física</h2>
-<pre class="site-stack">python3 scripts/hardware_profile.py
-python3 scripts/rc3_hardware_discovery.py
-</pre>
+<section class="site-section"><h2>3 · Preflight en Ubuntu</h2>
+<pre class="site-stack">python3 scripts/rc4_release_gate.py
+python3 scripts/rc4_resource_preflight.py
+python3 scripts/rc4_ubuntu_preflight.py \\
+  --purpose programming --purpose reasoning \\
+  --out results/physical-rc4-$(date +%Y%m%d)/ubuntu-preflight.json</pre>
+<p>Si hay menos de tres coincidencias verás <code>insufficient</code>: es correcto; no se inventan candidatos.</p>
 </section>
-<section class="site-section"><h2>3 · Recomendación y elección</h2>
-<p>Si FitLLM está instalado, puede proponer candidatos (ESTIMATED). Si no, eliges modelo a mano. Luego <strong>un</strong> stack: Magnitude u ODS.</p>
-<p>Tras instalar el stack, el flujo puede <strong>ofrecer</strong> desinstalar FitLLM (opt-in, nunca en silencio).</p>
-</section>
-<section class="site-section"><h2>4 · Medición</h2>
-<p>Suite <strong>Leo001…Leo010</strong> cuando haya runtime, consentimiento y ejecución real. Sin eso: no MEASURED.</p>
+<section class="site-section"><h2>4 · Después de elegir modelo</h2>
+<p>Stack (Magnitude u ODS) → consentimiento → instalación → verificación → Leo001…Leo010 → evidencia MEASURED. Sin ejecución real no hay MEASURED.</p>
 </section>
 <section class="site-section"><h2>5 · Docs</h2>
-<p><a href="rc4.html">RC4 →</a> · <a href="estado.html">Estado →</a> · <a href="../docs/RC4-ARCHITECTURE.md">Arquitectura RC4 →</a> · <a href="rc3.html">RC3 cerrada →</a></p>
+<p><a href="rc4.html">RC4 →</a> · <a href="estado.html">Estado →</a> · <a href="operacion.html">Operación →</a> · <a href="scripts.html">Scripts →</a></p>
 </section>
 </main>
 <footer class="site-footer"><div>LEONES</div><div>RC4 · Inicio rápido</div></footer>
-<script src="assets/js/navigation.js?v=2026-09-06-1" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-06-4" defer></script>
 </body>
 </html>
