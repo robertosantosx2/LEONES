@@ -1,151 +1,191 @@
-# LEONES RC4 — physical handoff, task measurement and evidence
+# LEONES RC4 — recommendation, runtime and measured evidence
 
 **Estado:** 🟡 **RC4 EN DESARROLLO**  
 **Predecesor:** RC3 (fase cerrada el 5 de septiembre de 2026)  
 **Decisión:** 6 de septiembre de 2026
 
-## 1. Objetivo
+## 1. Decisión arquitectónica
 
-RC4 no rediseña la arquitectura de RC3. Convierte en ejecución real el backlog que RC3 dejó explícitamente fuera de su cierre:
+RC4 conserva la idea útil de RC3 de que la recomendación debe conocer **para qué quiere usar la IA el humano**, pero no recupera Hermes/OMH como arquitectura de selección u orquestación.
 
-- handoff real Hermes → Magnitude;
-- handoff real Hermes → ODS;
-- gate de consentimiento y preparación física;
-- ejecución de la suite canónica Leo001…Leo010;
-- medición LEONES reproducible;
-- evidencia MEASURED;
-- comparación de caminos cuando ambos estén medidos.
+La entrada canónica de recomendación deja de ser solamente `hardware → candidate-set → FitLLM`.
 
-La regla de continuidad es estricta: **RC3 sigue siendo la frontera contractual; RC4 añade la capa física de ejecución y medición sin mover la autoridad de LEONES.**
-
-## 2. Arquitectura canónica RC4
+Es:
 
 ```text
-                         UBUNTU / EQUIPO REAL
-                                  ↓
-                     hardware_profile.py
-                                  ↓
-                       hardware-profile.v1
-                                  ↓
-                         candidate-set.v1
-                                  ↓
-                              HERMES
-                         recomendación
-                                  ↓
-                         elección usuario
-                                  ↓
-                    selección/configuración.v1
-                                  ↓
-                        artifact-resolution
-                                  ↓
-                         CONSENTIMIENTO
-                                  ↓
-                  ┌───────────────┴───────────────┐
-                  ↓                               ↓
-             MAGNITUDE                           ODS
-          profile / tune                    install / stack
-                  ↓                               ↓
-                  └───────────────┬───────────────┘
-                                  ↓
-                       verificación física
-                                  ↓
-                         Leo001 … Leo010
-                                  ↓
-                             MEDICIÓN
-                                  ↓
-                     runtime-benchmark-evidence
-                                  ↓
-                         evidencia MEASURED
-                                  ↓
-                         recomendación final
+HARDWARE
+   +
+USER_INTENT[]                 obligatorio y anterior a recomendar
+   ↓
+FITLLM / LLMFIT
+   +
+HUGGING FACE EVIDENCE
+   +
+ARTIFICIAL ANALYSIS EVIDENCE
+   ↓
+10 candidatos orientativos / evidence-ranked
+   ↓
+3 candidatos ESTIMATED
+   ↓
+selección humana
+   ↓
+runtime físico
+   ↓
+medición
+   ↓
+MEASURED evidence
 ```
 
-### Regla de autoridad
+**HF y Artificial Analysis son entradas de evidencia de FitLLM/LLMFit; no son la recomendación final ni sustituyen la medición local.**
 
-**Hermes propone. El usuario elige. Magnitude/ODS ejecutan. LEONES autoriza, verifica, mide y sentencia.**
+## 2. Contrato de recomendación RC4
 
-Ningún `estimated`, `hosted`, `observed` o resultado de un proveedor externo puede convertirse por sí mismo en `measured`.
+El request canónico es:
 
-## 3. Frontera de interfaz
+```json
+{
+  "schema": "leones.rc4.recommendation-request.v1",
+  "user_intent": {
+    "required": true,
+    "selection_mode": "multiple",
+    "purposes": [
+      "programming",
+      "research",
+      "reasoning"
+    ]
+  }
+}
+```
 
-RC4 debe conservar interfaces estables y sustituibles. LEONES no duplica instaladores ni runtimes.
+### Gate obligatorio
 
-La interfaz de usuario debe expresar **funciones y estados**, no nombres internos de herramientas. Un usuario debe poder distinguir como mínimo:
+Una recomendación RC4 es inválida si:
 
-1. **DESCUBRIR** — qué tiene físicamente el equipo;
-2. **ELEGIR** — qué modelo/configuración quiere probar;
-3. **PREPARAR** — qué camino de ejecución ha elegido;
-4. **AUTORIZAR** — qué acción física va a realizarse;
-5. **PROBAR** — qué tarea se está ejecutando;
-6. **MEDIR** — qué se ha medido realmente;
-7. **RESULTADO** — qué evidencia ha quedado registrada.
+```text
+user_intent falta              → INVALID
+selection_mode != multiple     → INVALID
+purposes falta                 → INVALID
+purposes == []                 → INVALID
+```
 
-Los estados deben ser inequívocos y no deben presentar una estimación como resultado físico. La interfaz debe mantener navegación y terminología coherentes con el resto de la web de LEONES y no introducir nomenclatura histórica de RC2/LOTB como si fuese el camino canónico RC4.
+Regla maestra:
 
-## 4. Contrato de ejecución
+```text
+NO USER INTENT
+      ↓
+NO RECOMMENDATION
+```
 
-Antes de ejecutar debe existir, como mínimo:
+La pantalla de intención debe aparecer **antes** de ejecutar la selección de modelos.
 
-- `hardware-profile.v1`;
-- candidato elegido;
-- `user-selection.v1`;
-- artefacto concreto resuelto;
-- runtime/backend y stack;
-- consentimiento explícito;
-- identidad de ejecución.
+## 3. Flujo Ubuntu
 
-La ejecución debe conservar procedencia suficiente para reconstruir:
+El preflight físico no puede saltarse la intención del usuario:
 
-- hardware;
-- modelo y revisión;
-- cuantización/formato;
-- artefacto y SHA-256;
-- runtime/backend y versión;
-- stack y versiones relevantes;
-- configuración de contexto y generación;
-- tarea Leo;
-- timestamps UTC;
-- `execution_id`;
-- métricas reales.
+```text
+Ubuntu preflight
+      ↓
+hardware_profile
+      ↓
+preguntar al humano
+      ↓
+user_intent[]
+      ↓
+validación RC4
+      ↓
+HF + Artificial Analysis
+      ↓
+FitLLM / LLMFit
+      ↓
+10 candidatos orientativos
+      ↓
+3 candidatos ESTIMATED
+      ↓
+elección del usuario
+      ↓
+artifact resolution
+      ↓
+consentimiento
+      ↓
+runtime / backend
+      ↓
+ejecución física
+      ↓
+medición
+      ↓
+MEASURED evidence
+```
 
-## 5. Suite canónica
+**El preflight nunca recomienda antes de preguntar al humano.**
 
-RC4 adopta los identificadores públicos ya fijados por RC3:
+## 4. Papel de Hugging Face
 
-| ID | Tarea |
-|---|---|
-| Leo001 | Tool use |
-| Leo002 | Multi-step |
-| Leo003 | Files / artifacts |
-| Leo004 | Recovery |
-| Leo005 | Long horizon |
-| Leo006 | Research / evidence |
-| Leo007 | Coding |
-| Leo008 | Local operations |
-| Leo009 | Safety |
-| Leo010 | Cost / latency |
+Hugging Face aporta principalmente **viabilidad técnica y señales de ecosistema**. El collector RC4 puede extraer:
 
-Los IDs son estables. Las especificaciones de tarea, entorno y grader deben estar versionadas antes de declarar resultados oficiales.
+- identificador y revisión del repositorio;
+- autor, pipeline y librería;
+- número de parámetros cuando el Hub lo expone;
+- arquitectura/configuración;
+- `torch_dtype`/dtype;
+- contexto declarado por configuración;
+- formatos disponibles o detectables: GGUF, safetensors, AWQ, GPTQ, EXL2;
+- cuantizaciones detectables, por ejemplo Q4/Q4_K_M/Q8;
+- almacenamiento declarado;
+- descargas recientes y acumuladas;
+- likes y trending score;
+- fecha de modificación y creación;
+- tags;
+- estado gated;
+- información específica de Transformers/Safetensors/GGUF cuando está disponible.
 
-Cada resultado debe permanecer identificado por **modelo + runtime/backend + stack + ejecución + tarea**.
+Estas señales sirven para determinar **qué modelos/artifacts son técnicamente plausibles y mantenidos**, no para afirmar rendimiento local medido. La API oficial de `huggingface_hub` expone `ModelInfo` con campos como configuración, parámetros de Safetensors, GGUF, descargas, likes, última modificación, tags y demás metadatos. 
 
-## 6. Medición
+## 5. Papel de Artificial Analysis
 
-RC4 no reduce el benchmark a tokens/segundo. Para las ejecuciones compatibles se registrarán, cuando estén disponibles:
+Artificial Analysis aporta señales independientes de **capacidad, calidad comparativa y rendimiento observado en su infraestructura**. El collector conserva, cuando están disponibles:
 
-- TTFT;
-- TPOT;
-- tokens/s;
-- tiempo total;
-- p50/p95/p99 cuando exista una serie suficiente;
-- memoria utilizada;
-- errores/timeout;
-- resultado de tarea;
-- recursos relevantes.
+- Artificial Analysis Intelligence Index;
+- Coding Index;
+- benchmarks específicos publicados por AA, por ejemplo GPQA, MATH, LiveCodeBench, SciCode o TerminalBench;
+- versión del Intelligence Index;
+- velocidad mediana de salida;
+- TTFT mediano;
+- tiempo hasta primer token de respuesta cuando esté disponible;
+- tiempo end-to-end cuando esté disponible;
+- contexto, parámetros, modalidad y licencia cuando el nivel de API los expone.
 
-La comparación debe respetar el protocolo congelado. El principio de evaluación limpia exige separar desarrollo/validación de la medición final y no optimizar contra un conjunto de prueba que ya se presenta como limpio.
+Los valores de Artificial Analysis son **evidencia externa/hosted**. Nunca se copian a `measured_tps` ni se presentan como velocidad del equipo Ubuntu. La API de AA documenta el endpoint de modelos de lenguaje, sus índices, benchmarks y medianas de rendimiento. urlArtificial Analysis API Referencehttps://artificialanalysis.ai/api-reference/
 
-## 7. Estados de evidencia
+## 6. Entrada de evidencia a FitLLM
+
+El collector produce `leones.rc4.model-evidence.v1` y un bloque explícito `fitllm_input`:
+
+```text
+hardware
+user_intent[]
+model_evidence[]
+    ├── huggingface
+    └── artificial_analysis
+          ↓
+     FitLLM / LLMFit
+```
+
+El collector puede ordenar un conjunto amplio de candidatos para alimentar la selección. Esa ordenación es **evidence-ranked**, no una medición local ni una autorización de ejecución.
+
+El objetivo operativo es llegar primero a un conjunto orientativo de **10 modelos** y, tras el razonamiento de FitLLM/LLMFit con hardware + intención + evidencia, producir los **3 candidatos ESTIMATED** que verá el usuario.
+
+## 7. Prefiltro de memoria
+
+El collector utiliza una estimación conservadora de memoria de pesos como **prefiltro**, no como cálculo final de runtime:
+
+```text
+weights ≈ parameters × bits_per_weight / 8
+prefilter ≈ weights × 1.20
+```
+
+No se afirma que esto sea la VRAM/RAM final necesaria: KV cache, contexto efectivo, buffers, runtime, offload y arquitectura concreta pertenecen a FitLLM/runtime y deben resolverse posteriormente.
+
+## 8. Estados de evidencia
 
 ```text
 DECLARED
@@ -157,48 +197,93 @@ OBSERVED
 MEASURED
 ```
 
-Solo una ejecución controlada sobre el equipo real puede producir `MEASURED`.
+- **DECLARED:** información declarada por una fuente o repositorio.
+- **ESTIMATED:** inferencia/selección previa a la ejecución física.
+- **OBSERVED:** dato externo observado, por ejemplo rendimiento publicado por AA.
+- **MEASURED:** resultado de una ejecución controlada sobre el equipo real.
 
-`OBSERVED` no equivale a `VALIDATED` y `VALIDATED` no debe usarse como sinónimo de `MEASURED` si el contrato no lo define así.
+Solo el runtime físico y el protocolo de medición de LEONES pueden producir `MEASURED`.
 
-## 8. Primera implementación RC4
-
-Orden de trabajo mínimo:
-
-1. congelar contratos de ejecución/medición;
-2. implementar el execution gate con consentimiento explícito;
-3. implementar adaptador de handoff Hermes → Magnitude;
-4. implementar adaptador de handoff Hermes → ODS;
-5. implementar runner Leo001…Leo010;
-6. conectar resultados al evidence bridge existente;
-7. crear gate RC4 estático/CI;
-8. ejecutar validación física en Ubuntu;
-9. repetir la misma suite sobre el segundo camino cuando proceda;
-10. publicar evidencia y recomendación comparativa.
-
-## 9. No objetivos de RC4
-
-RC4 no debe:
-
-- reabrir RC3;
-- sustituir `hardware_profile.py`;
-- convertir Hermes en autoridad física;
-- introducir otro selector de modelos;
-- convertir Magnitude u ODS en selectores;
-- reinstalar o duplicar runtimes ya proporcionados por sus caminos canónicos;
-- recuperar FitLLM/LLMFit como dependencia;
-- usar LOTB como nombre del benchmark canónico de LEONES;
-- usar velocidad de Artificial Analysis u otro proveedor como `measured_tps` local.
-
-## 10. Criterio de cierre RC4
-
-RC4 podrá declararse cerrada cuando exista evidencia reproducible de extremo a extremo para los caminos físicos que se hayan incluido en el alcance:
+## 9. Separación de responsabilidades
 
 ```text
-hardware → candidate → Hermes → user selection
-→ artifact → consent → handoff → physical verification
-→ Leo001…Leo010 → measurement → MEASURED evidence
-→ final recommendation
+hardware_profile
+    → hechos del equipo
+
+user_intent
+    → objetivos del humano
+
+Hugging Face
+    → metadata / artifacts / viabilidad técnica / adopción
+
+Artificial Analysis
+    → benchmarks externos / capacidad / rendimiento externo
+
+FitLLM / LLMFit
+    → adecuación y selección para hardware + intención + evidencia
+
+runtime
+    → ejecución real
+
+benchmark/evidence bridge
+    → medición y evidencia MEASURED
 ```
 
-La evidencia debe ser trazable, reproducible y distinguible de estimaciones y observaciones externas.
+Ninguna fuente externa puede autorizar por sí sola una ejecución ni convertir una estimación en una medición.
+
+## 10. Qué no recupera RC4
+
+RC4 **no** recupera:
+
+- Hermes como autoridad o selector;
+- OMH como capa de orquestación;
+- duplicación de runtimes;
+- resultados externos tratados como `measured`;
+- una recomendación generada antes de conocer la intención del usuario.
+
+El `candidate-set` puede permanecer como representación interna/propuesta, pero deja de ser la frontera conceptual `hardware → candidate-set → FitLLM`.
+
+## 11. Camino completo hasta la recomendación final
+
+```text
+                    ┌─────────────────┐
+                    │    HARDWARE     │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  USER INTENT[]  │
+                    │    obligatorio  │
+                    └────────┬────────┘
+                             │
+                ┌────────────▼────────────┐
+                │     FITLLM / LLMFIT     │
+                │ hardware + intent +    │
+                │ external evidence       │
+                └───────┬─────────┬───────┘
+                        │         │
+               ┌────────▼───┐ ┌──▼──────────────┐
+               │ Hugging    │ │ Artificial      │
+               │ Face       │ │ Analysis        │
+               └────────────┘ └─────────────────┘
+                        │         │
+                        └────┬────┘
+                             ▼
+                    10 candidatos
+                       orientativos
+                             │
+                             ▼
+                     3 ESTIMATED
+                             │
+                       humano elige
+                             │
+                             ▼
+                      runtime físico
+                             │
+                             ▼
+                         medición
+                             │
+                             ▼
+                     MEASURED evidence
+```
+
+Esta es la arquitectura de recomendación RC4 que debe utilizarse como baseline antes de continuar con el flujo físico de Ubuntu.
