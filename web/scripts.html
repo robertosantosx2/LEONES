@@ -8,8 +8,8 @@
             content="Scripts locales de LEONES y su separación de la infraestructura del ecosistema."
         />
         <title>LEONES · Scripts</title>
-        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-16-3" />
-        <link rel="stylesheet" href="assets/css/site.css?v=2026-08-16-1" />
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-5" />
+        <link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-5" />
     </head>
 
     <body>
@@ -152,8 +152,36 @@
                     Esa separación es deliberada y será mantenida en futuras versiones.
                 </p>
             </section>
-        </main>
 
-        <script src="assets/js/navigation.js?v=2026-08-16-3" defer></script>
+<section class="site-section"><span class="site-tag">RC4</span>
+<h2>Scripts RC4 (canónicos)</h2>
+<pre class="site-stack" style="font-size:.8rem;line-height:1.3">
+╔══════════════════════════════════════════════════════════════╗
+║  RC4 · CAPA DE RECOMENDACIÓN (ninguno marca MEASURED)        ║
+╠══════════════════════════════════════════════════════════════╣
+║  rc4_runner.py            ./leones · USER_INTENT[]           ║
+║  rc4_fitllm_recommend.py  HF/AA ≤100 × LLMFit × intersección ║
+║  rc4_ubuntu_preflight.py  hardware-profile + recommend       ║
+║  rc4_resource_preflight.py RAM/disco/software                ║
+║  rc4_release_gate.py      invariantes docs (estático)        ║
+║  rc4_component_cost.py    costes ESTIMATED / UNKNOWN         ║
+║  rc4_install_lifecycle.py install/uninstall + offer FitLLM   ║
+╚══════════════════════════════════════════════════════════════╝
+</pre>
+ul>
+<li><code>scripts/rc4_runner.py</code> — entrada <code>./leones</code>; recoge USER_INTENT[].</li>
+<li><code>scripts/rc4_fitllm_recommend.py</code> — feed HF/AA ≤100 × LLMFit CLI × intersección.</li>
+<li><code>scripts/rc4_ubuntu_preflight.py</code> — hardware-profile + recommend (solo preflight).</li>
+<li><code>scripts/rc4_resource_preflight.py</code> — RAM/disco/software instalado.</li>
+<li><code>scripts/rc4_release_gate.py</code> — invariantes de decisión/docs (estático).</li>
+<li><code>scripts/rc4_component_cost.py</code> — costes ESTIMATED / UNKNOWN.</li>
+<li><code>scripts/rc4_install_lifecycle.py</code> — pares install/uninstall + offer opt-in FitLLM.</li>
+</ul>
+<div class="site-note"><strong>Docs:</strong> <code>docs/RC4-ARCHITECTURE.md</code> · <code>docs/completed/RC4-STRICT-UBUNTU-PREFLIGHT-2026-09-06.md</code> · <a href="rc4.html">rc4.html</a></div>
+</section>
+
+</main>
+
+        <script src="assets/js/navigation.js?v=2026-09-06-5" defer></script>
     </body>
 </html>
