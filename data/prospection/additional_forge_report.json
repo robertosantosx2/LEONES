@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-09-05T08:23:15.503525+00:00",
+  "generated_at": "2026-09-06T08:42:33.979653+00:00",
   "sources": 5,
   "raw_results_by_source": {
     "onedev-instance:code.onedev.io": 0,
     "fossil-instance:fossil-scm.org": 12,
     "fossil-instance:fossilrepo.io": 0,
-    "cgit-instance:git.zx2c4.com": 0,
+    "cgit-instance:git.zx2c4.com": 2,
     "phorge-instance:phorge.it": 0
   },
-  "unique_discoveries": 6,
-  "merged_into_federation": 6,
+  "unique_discoveries": 7,
+  "merged_into_federation": 7,
   "errors": [],
   "active_adapters": [
     "cgit-instance:git.zx2c4.com",
