@@ -288,6 +288,9 @@ def recommend(
     base["candidate_count"] = len(rows)
     base["provider_version"] = result.version
     base["command"] = list(result.command)
+    # RC4 provenance: expose the complete multi-purpose LLMFit fan-out
+    # without changing the legacy/public single-command field.
+    base["llmfit"] = dict(result.raw) if isinstance(result.raw, Mapping) else {}
     base["llmfit_catalog_count"] = len(result.models)
     base["evidence_backed_intersection_count"] = len(rows)
     base["artificial_analysis_available"] = bool(aa_source.get("models_available", 0)) if isinstance(aa_source, Mapping) else False
