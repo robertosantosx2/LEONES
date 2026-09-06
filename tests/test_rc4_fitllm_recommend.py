@@ -61,6 +61,71 @@ def test_feed_is_capped_at_100_and_three_candidates_are_estimated(monkeypatch):
     assert result["measured"] is False
 
 
+def test_multiple_user_intents_query_llmfit_for_each_purpose(monkeypatch):
+    evidence = feed(
+        "org/coding-model",
+        "org/reasoning-model",
+        "org/shared-model",
+        "org/third-model",
+    )
+    calls = []
+
+    monkeypatch.setattr(
+        recommender.llmfit_mod,
+        "executable",
+        lambda: "/usr/bin/llmfit",
+    )
+
+    def fake_run(**kwargs):
+        calls.append(kwargs)
+        if kwargs["use_case"] == "coding":
+            models = [
+                {"name": "org/coding-model", "score": 90},
+                {"name": "org/third-model", "score": 80},
+            ]
+        else:
+            models = [
+                {"name": "org/reasoning-model", "score": 95},
+                {"name": "org/third-model", "score": 85},
+            ]
+        return fake_llmfit(models)
+
+    monkeypatch.setattr(
+        recommender.llmfit_mod,
+        "run_recommend",
+        fake_run,
+    )
+
+    result = recommender.recommend(
+        user_intent=["programming", "reasoning"],
+        evidence_feed=evidence,
+    )
+
+    assert result["status"] == "ok"
+    assert len(calls) == 2
+    assert [call["use_case"] for call in calls] == [
+        "coding",
+        "reasoning",
+    ]
+    assert calls[0]["limit"] == 100
+    assert calls[1]["limit"] == 100
+    assert [
+        row["model_id"] for row in result["recommendations"]
+    ] == [
+        "org/coding-model",
+        "org/third-model",
+        "org/reasoning-model",
+    ]
+    assert result["candidate_count"] == 3
+    assert result["user_intent"]["purposes"] == [
+        "programming",
+        "reasoning",
+    ]
+    assert result["execution_authorized"] is False
+    assert result["measurement_authorized"] is False
+    assert result["measured"] is False
+
+
 def test_llmfit_results_outside_evidence_are_excluded(monkeypatch):
     evidence = feed("org/model-a", "org/model-b", "org/model-c")
     monkeypatch.setattr(recommender.llmfit_mod, "executable", lambda: "/usr/bin/llmfit")

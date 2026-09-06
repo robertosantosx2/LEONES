@@ -172,13 +172,68 @@ def recommend(
             base["message"] = "El feed de evidencia no contiene modelos válidos."
             return base
 
-        # LLMFit is deliberately asked for the full supported comparison
-        # window. No unsupported custom-input CLI option is invented.
-        result = llmfit_mod.run_recommend(
-            limit=EVIDENCE_INPUT_LIMIT,
-            use_case=_llmfit_use_case(purposes),
-            max_context=max_context,
-            timeout_seconds=timeout_seconds,
+        # LLMFit has a single --use-case filter. RC4 user intent is
+        # multi-select, so query each selected purpose independently using
+        # only the supported CLI, then merge/deduplicate the catalog results.
+        # No unsupported custom-input CLI option is invented.
+        llmfit_results = []
+
+        for purpose in purposes:
+            llmfit_result = llmfit_mod.run_recommend(
+                limit=EVIDENCE_INPUT_LIMIT,
+                use_case=_llmfit_use_case([purpose]),
+                max_context=max_context,
+                timeout_seconds=timeout_seconds,
+            )
+            llmfit_results.append(llmfit_result)
+
+        if not llmfit_results:
+            raise RuntimeError("no LLMFit result for selected user intents")
+
+        merged_models = []
+        seen_llmfit = set()
+
+        for llmfit_result in llmfit_results:
+            for raw in llmfit_result.models:
+                if not isinstance(raw, Mapping):
+                    continue
+
+                keys = sorted(_llmfit_keys(raw))
+                identity = keys[0] if keys else ""
+
+                if identity and identity in seen_llmfit:
+                    continue
+
+                if identity:
+                    seen_llmfit.add(identity)
+
+                merged_models.append(raw)
+
+        # Preserve one real LLMFit result for the existing result contract.
+        # Keep complete per-purpose command provenance separately.
+        first_result = llmfit_results[0]
+
+        llmfit_commands = [
+            list(r.command)
+            for r in llmfit_results
+            if getattr(r, "command", None)
+        ]
+
+        llmfit_versions = [
+            r.version
+            for r in llmfit_results
+            if getattr(r, "version", None) is not None
+        ]
+
+        result = llmfit_mod.LLMFitResult(
+            command=tuple(first_result.command),
+            version=llmfit_versions[0] if llmfit_versions else None,
+            system=getattr(first_result, "system", {}),
+            models=tuple(merged_models),
+            raw={
+                "results": [getattr(r, "raw", {}) for r in llmfit_results],
+                "commands": llmfit_commands,
+            },
         )
     except (llmfit_mod.LLMFitError, RuntimeError, ValueError) as exc:
         base["status"] = "error"
