@@ -2,20 +2,20 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Estado LEONES: RC3 implementación cerrada; observación física parcial en Aspire A515-55; handoffs y MEASURED pendientes.">
+<meta name="description" content="Estado LEONES: RC3 fase cerrada; observación física parcial Aspire; medición completa en backlog post-RC3.">
 <title>LEONES · Estado</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-3">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-3">
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-5">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-5">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
 <span class="site-tag">Estado del proyecto · 5 septiembre 2026</span>
 <h1>LEONES · Estado</h1>
-<p>RC3 fija la sonda física canónica, el ecosistema Hermes/OMH y la elección Magnitude u ODS. Hay observación física parcial en Ubuntu real; la validación de punta a punta sigue abierta.</p>
+<p>RC3 está <strong>cerrada como fase</strong>. Sonda, contratos, web y observación física parcial fijados. La medición completa es backlog post-RC3, no un relleno de esta fase.</p>
 </div></header>
 <main class="site-main" id="main">
-<section class="site-section"><span class="site-tag">Ahora · RC3</span><h2>Implementación cerrada · físico parcial</h2>
-<p class="site-lead"><strong>Contratos y gate CI cerrados.</strong> El 5 de septiembre de 2026 se ejecutó una sesión física en <strong>Acer Aspire A515-55</strong> (Ubuntu 26.04 · i5-1035G1 · ~7&nbsp;GiB · Iris Plus G1). La sonda emitió <code>hardware-profile.v1</code>; Hermes 0.21.0 y OMH 2.0.0 pasaron <code>doctor</code>; ODS tenía stack Up y modelo T0 listado. <strong>No</strong> se declara RC3 físicamente validada: faltan handoffs formales y evidencia MEASURED bajo autoridad LEONES.</p>
+<section class="site-section"><span class="site-tag">Ahora · RC3</span><h2>RC3 cerrada · medición completa en backlog</h2>
+<p class="site-lead"><strong>Contratos y gate CI cerrados.</strong> El 5 de septiembre de 2026 se ejecutó una sesión física en <strong>Acer Aspire A515-55</strong> (Ubuntu 26.04 · i5-1035G1 · ~7&nbsp;GiB · Iris Plus G1). La sonda emitió <code>hardware-profile.v1</code>; Hermes 0.21.0 y OMH 2.0.0 pasaron <code>doctor</code>; ODS tenía stack Up y modelo T0 listado. La fase RC3 <strong>no</strong> incluye MEASURED de punta a punta: handoffs formales y benchmark LEONES quedan en backlog post-RC3.</p>
 <pre class="site-stack">UBUNTU REAL (Aspire A515-55)
    ↓
 hardware_profile.py → hardware-profile.v1  ✓ OBSERVED
@@ -31,7 +31,7 @@ chat smoke timeout (~1 tok/s CPU)  ✓ FALLO DOCUMENTADO
 handoff formal · benchmark LEONES · MEASURED  ○ OPEN</pre>
 <div class="site-note"><strong>Regla de autoridad:</strong> LEONES descubre el hardware. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.</div>
 <div class="site-note"><strong>Regla:</strong> ESTIMATED ≠ MEASURED. OBSERVED ≠ VALIDATED. El gate CI no declara handoffs ni benchmarks.</div>
-<div class="site-note"><strong>Evidencia:</strong> <code>docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md</code></div>
+<div class="site-note"><strong>Evidencia:</strong> <code>docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md</code> · <strong>Cierre:</strong> <code>docs/completed/RC3-CLOSED-2026-09-05.md</code></div>
 <p><a href="rc3.html">Ver página RC3 →</a> · <a href="../docs/RC3-ARCHITECTURE.md">Arquitectura RC3 →</a></p>
 </section>
 <section class="site-section"><span class="site-tag">Cerrado en RC3</span><h2>Qué ya no se discute</h2>
@@ -53,7 +53,7 @@ handoff formal · benchmark LEONES · MEASURED  ○ OPEN</pre>
 <article class="site-card"><h3>⚠ Inferencia lenta</h3><p>~1 tok/s en CPU; timeout de cliente ODS documentado. No es MEASURED LEONES.</p></article>
 </div>
 </section>
-<section class="site-section"><span class="site-tag">Pendiente físico</span><h2>Antes de declarar RC3 validada</h2>
+<section class="site-section"><span class="site-tag">Backlog post-RC3</span><h2>Medición completa (no reabre RC3)</h2>
 <div class="site-grid">
 <article class="site-card"><h3>○ Handoff Magnitude</h3><p>Validar bajo autoridad LEONES el paso real hacia Magnitude.</p></article>
 <article class="site-card"><h3>○ Handoff ODS</h3><p>Validar bajo autoridad LEONES el paso real hacia ODS (más allá de <code>ods status</code>).</p></article>
@@ -68,13 +68,14 @@ handoff formal · benchmark LEONES · MEASURED  ○ OPEN</pre>
 <article class="site-card"><h3>RC2</h3><p>🟢 Histórico. Validación beta previa; sustituido como canónico por RC3.</p></article>
 <article class="site-card"><h3>RC3 implementación</h3><p>🟢 Cerrada. Arquitectura, contratos, sonda y gate CI activos.</p></article>
 <article class="site-card"><h3>RC3 observación física</h3><p>🟡 Parcial (Aspire 2026-09-05). Sonda + ecosistema + ODS runtime observados.</p></article>
-<article class="site-card"><h3>RC3 validación física</h3><p>🔴 Abierta. Handoffs formales, benchmark LEONES y MEASURED pendientes.</p></article>
+<article class="site-card"><h3>RC3 fase</h3><p>🟢 Cerrada. Ver <code>docs/completed/RC3-CLOSED-2026-09-05.md</code>.</p></article>
+<article class="site-card"><h3>Medición completa</h3><p>⚪ Backlog post-RC3. Handoffs formales y MEASURED no forman parte del cierre de esta fase.</p></article>
 </div>
 </section>
 <section class="site-section"><span class="site-tag">Regla</span><h2>Medir antes de afirmar</h2>
 <p><code>estimated</code>, <code>reported</code>, <code>observed</code>, <code>configured</code>, <code>resolved</code>, <code>available</code> y <code>measured</code> mantienen fronteras distintas. Lo desconocido permanece desconocido.</p>
 </section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-05-3" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-05-5" defer></script>
 </body>
 </html>

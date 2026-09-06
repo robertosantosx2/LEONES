@@ -2,69 +2,66 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Inicio rápido de LEONES RC2: comandos de arranque, interfaz, decisiones y teclas del wizard.">
-<title>LEONES · Inicio rápido</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-04-1">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-04-1">
+<meta name="description" content="Inicio rápido LEONES RC3: sonda física, Hermes/OMH, elección Magnitude u ODS, verificación y medición.">
+<title>LEONES · Inicio rápido · RC3</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-4">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-4">
 </head>
 <body>
-<header class="site-hero"><div class="site-hero__inner"><span class="site-tag">Beta · RC2</span><h1>LEONES · Inicio rápido</h1><p>Arranca el beta tester, entiende la pantalla y sabe exactamente cuándo debes decidir y qué tecla pulsar.</p></div></header>
+<header class="site-hero"><div class="site-hero__inner">
+<span class="site-tag">Inicio rápido · RC3 · 5 septiembre 2026</span>
+<h1>Arrancar LEONES en Ubuntu</h1>
+<p>Camino canónico actual: sonda física LEONES, ecosistema Hermes/OMH, elección explícita de Magnitude u ODS, verificación y medición solo tras ejecución real.</p>
+</div></header>
 <main class="site-main" id="main">
-<section class="site-section" aria-labelledby="deps-title"><span class="site-tag">0 · Dependencias</span><h2 id="deps-title">Antes de clonar: LLMFit</h2><p><strong>LLMFit es una dependencia dura de LEONES.</strong> Detecta tu hardware y propone candidatos de modelo. LEONES no lo instala ni lo sustituye: debe estar disponible como comando <code>llmfit</code> en el PATH.</p><p>Sus cifras de velocidad son <strong>ESTIMATED</strong>, no mediciones LEONES.</p><p>En Linux / Fedora (recomendado, sin sudo):</p><pre class="site-stack">curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-command -v llmfit</pre><p>Alternativas: <code>brew install llmfit</code> o <code>uv tool install -U llmfit</code>.</p><p>Documentación oficial de LLMFit: <a href="https://www.llmfit.org/">https://www.llmfit.org/</a> · <a href="https://github.com/AlexsJones/llmfit">GitHub AlexsJones/llmfit</a>.</p></section>
-<section class="site-section" aria-labelledby="start-title"><span class="site-tag">1 · Arranque</span><h2 id="start-title">De cero a LEONES</h2><p>En una terminal Linux, el camino mínimo del beta tester es:</p><pre class="site-stack">git clone https://github.com/robertosantosx2/LEONES.git
+<section class="site-section"><span class="site-tag">0 · Qué es canónico</span><h2>RC3, no RC2</h2>
+<p class="site-lead"><strong>RC3 es el camino canónico.</strong> RC2 queda como línea histórica. LLMFit/FitLLM <strong>no</strong> es dependencia de arranque ni participa en la selección RC3.</p>
+<div class="site-note"><strong>Regla de autoridad:</strong> LEONES descubre el hardware. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.</div>
+</section>
+<section class="site-section"><span class="site-tag">1 · Requisitos</span><h2>Antes de instalar</h2>
+<ul>
+<li>Ubuntu (u otro Linux) con Python 3 y Git.</li>
+<li>Espacio en disco y, si usas ODS, Docker cuando el stack lo requiera.</li>
+<li>No hace falta LLMFit para arrancar RC3.</li>
+</ul>
+<pre class="site-stack">git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES
-./install.sh
-./leones</pre><p><strong>No necesitas lanzar el script interno directamente.</strong> <code>./leones</code> es el lanzador único del wizard RC2. La instalación mínima comprueba Git, Python y <strong>LLMFit</strong>; no instala automáticamente ODS, Magnitude ni modelos.</p><p>Si <code>./install.sh</code> se queja de que falta LLMFit, vuelve al paso 0, instálalo y reintenta.</p><p>Si ya tienes el repositorio:</p><pre class="site-stack">cd LEONES
-git pull --ff-only origin main
-./install.sh
-./leones</pre></section>
-<section class="site-section" aria-labelledby="screen-title"><span class="site-tag">2 · Qué vas a encontrar</span><h2 id="screen-title">La interfaz es una terminal guiada</h2><p>RC2 no abre una aplicación gráfica: muestra un wizard ASCII en la terminal. La <strong>primera pregunta es el idioma</strong> (Español / English / 中文). A partir de ahí solo se muestra el idioma elegido.</p><pre class="site-stack">ELIGE EL IDIOMA / CHOOSE LANGUAGE / 选择语言
-┌──────────────────────────────────────────┐
-│  [1] Español                             │
-│  [2] English                             │
-│  [3] 中文                                 │
-└──────────────────────────────────────────┘
-LEONES></pre><p>Después verás el encabezado de LEONES, mensajes de estado y, cuando llega una decisión, una caja de opciones numeradas.</p><p>La línea <code>LEONES></code> es el punto de entrada para tus decisiones. <strong>No uses flechas, ratón ni letras salvo que una pantalla concreta las indique:</strong> en el wizard actual las opciones se seleccionan escribiendo el número y pulsando <strong>Enter</strong>.</p></section>
-<section class="site-section" aria-labelledby="keys-title"><span class="site-tag">3 · Teclas</span><h2 id="keys-title">Qué pulsar en cada momento</h2><div class="site-grid"><article class="site-card"><h3>Idioma</h3><p>Primera pantalla: elige <strong>1</strong>, <strong>2</strong> o <strong>3</strong> y pulsa <strong>Enter</strong>.</p></article><article class="site-card"><h3>Elegir modelo</h3><p>Escribe <strong>1</strong>, <strong>2</strong>, <strong>3</strong>… según el candidato mostrado y pulsa <strong>Enter</strong>.</p></article><article class="site-card"><h3>Elegir stack</h3><p>Cada opción incluye una descripción breve (ODS = stack local de inferencia; Magnitude = agente/asistente local). Elige el número y pulsa <strong>Enter</strong>.</p></article><article class="site-card"><h3>Autorizar instalación</h3><p>En la pantalla de consentimiento, elige la opción numerada de <strong>Autorizar</strong> y pulsa <strong>Enter</strong>, o elige <strong>Cancelar</strong> para salir sin instalar.</p></article><article class="site-card"><h3>Opción inválida</h3><p>Si introduces algo que no corresponde a una opción, LEONES lo indica y vuelve a mostrar el prompt. No se ejecuta una decisión accidental.</p></article></div></section>
-<section class="site-section" aria-labelledby="decisions-title"><span class="site-tag">4 · Tus decisiones</span><h2 id="decisions-title">Dónde debes tomar decisiones</h2><div class="site-grid site-grid--journey"><article class="site-card"><span class="card-number">01</span><h3>HARDWARE</h3><p>Observa el hardware detectado. No tienes que introducirlo si la detección funciona. Si algo aparece como desconocido, no lo inventes.</p></article><article class="site-card site-card--featured"><span class="card-number">02</span><h3>MODELO</h3><p>Compara modelo, fit, requisitos y procedencia. Las cifras con <strong>ESTIMATED</strong> son orientativas. Aquí decides qué modelo quieres probar.</p></article><article class="site-card"><span class="card-number">03</span><h3>STACK</h3><p><strong>ODS</strong>: stack local de inferencia (modelos, UI y servicios en tu máquina). <strong>Magnitude</strong>: agente/asistente local orientado a tareas con el modelo elegido. La opción del menú ya incluye esa descripción.</p></article><article class="site-card"><span class="card-number">04</span><h3>INSTALACIÓN</h3><p>Antes de producir cambios en el equipo aparece el consentimiento. Aquí decides si autorizas la instalación. Puedes cancelar.</p></article>
-<article class="site-card"><span class="card-number">05</span><h3>RUNTIME</h3><p>Tras verificar el stack, LEONES resuelve el runtime del modelo (Ollama o llama.cpp). Sin artefacto disponible, A01 se bloquea: no se inventa MEASURED.</p></article></div></section>
-<section class="site-section" aria-labelledby="flow-title"><span class="site-tag">5 · Qué ocurre después</span><h2 id="flow-title">No todas las pantallas son decisiones</h2><pre class="site-stack">ELEGIR IDIOMA
-       ↓
-DETECTAR HARDWARE
-       ↓
-MOSTRAR CANDIDATOS
-       ↓
-[ TÚ ELIGES MODELO ]
-       ↓
-MOSTRAR ODS / MAGNITUDE
-       ↓
-[ TÚ ELIGES STACK ]
-       ↓
-MOSTRAR PLAN
-       ↓
-[ TÚ AUTORIZAS / CANCELAS INSTALACIÓN ]
-       ↓
-INSTALAR → VERIFICAR
-       ↓
-RESOLVER RUNTIME → PREFLIGHT
-       ↓
-[ CONSENTIMIENTO DE BENCHMARK ]
-       ↓
-SI SÍ → HANDOFF RC1 → MEDICIÓN → EVIDENCIA
-SI NO → FIN</pre><p>La instalación y el benchmark son decisiones diferentes. Una instalación correcta no implica que el benchmark vaya a ejecutarse.</p></section>
-<section class="site-section" aria-labelledby="estimate-title"><span class="site-tag">6 · Regla de oro</span><h2 id="estimate-title">No confundas lo que ves</h2><div class="site-grid"><article class="site-card"><h3>ESTIMATED</h3><p>Estimación de una fuente como LLMFit. Sirve para orientar la elección.</p></article><article class="site-card"><h3>INSTALLED</h3><p>El stack ha sido instalado o está en proceso. Todavía hay que verificarlo.</p></article><article class="site-card"><h3>VERIFIED</h3><p>Los health checks de la integración han confirmado que el stack está preparado.</p></article><article class="site-card"><h3>MEASURED</h3><p>Existe una ejecución real registrada sobre el equipo y el protocolo correspondientes.</p></article></div><div class="site-note"><strong>ESTIMATED ≠ MEASURED.</strong> Una cifra que aparezca antes de ejecutar el benchmark no es el resultado de tu máquina.</div></section>
-<section class="site-section" aria-labelledby="failure-title"><span class="site-tag">7 · Si algo falla</span><h2 id="failure-title">No fuerces el recorrido</h2><p>Si LLMFit no está disponible, si una opción no puede determinarse, si la instalación falla o si la verificación no pasa, el flujo debe detenerse o marcarse como bloqueado. Conserva el mensaje original.</p><pre class="site-stack">Etapa: PREFLIGHT | INSTALL | VERIFY | RESOLVE | BENCHMARK | EVIDENCE
-Comando:
-Error original:
-Resultado esperado:
-Resultado obtenido:
-execution_id (si existe):</pre><p>Un fallo reproducible también es información útil para la beta.</p></section>
-<section class="site-section" aria-labelledby="links-title"><span class="site-tag">8 · Documentación</span><h2 id="links-title">Si necesitas más detalle</h2><p><a href="INSTALL.md">Instalación mínima →</a></p><p><a href="docs/RC2-USER-MANUAL.md">Manual de usuario RC2 →</a></p><p><a href="docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación RC2 →</a></p><p><a href="rc2.html">Estado y gates de RC2 →</a></p></section>
+./install.sh   # bootstrap LEONES + Hermes/OMH según el instalador actual
+</pre>
+<p>Comprobaciones independientes del ecosistema:</p>
+<pre class="site-stack">hermes doctor
+omh doctor
+</pre>
+</section>
+<section class="site-section"><span class="site-tag">2 · Sonda física</span><h2>La autoridad del hardware es LEONES</h2>
+<p>La única sonda física canónica es <code>scripts/hardware_profile.py</code>. Emite hechos observados (CPU, RAM, GPU PCI…). No inventa VRAM ni <code>measured_tps</code>.</p>
+<pre class="site-stack">python3 scripts/hardware_profile.py
+python3 scripts/rc3_hardware_discovery.py   # hardware-profile.v1
+python3 scripts/rc3_release_gate.py         # contratos estáticos; físico NOT CLAIMED
+</pre>
+</section>
+<section class="site-section"><span class="site-tag">3 · Elección</span><h2>Modelo y un solo stack</h2>
+<p>Tras el perfil y los candidatos, <strong>tú</strong> eliges modelo/configuración y exactamente un camino:</p>
+<div class="site-grid">
+<article class="site-card"><h3>Magnitude</h3><p>Perfilado, tuning y ejecución por sus interfaces canónicas. LEONES verifica lo instalado antes de medir.</p></article>
+<article class="site-card"><h3>ODS</h3><p>Instalación y stack local por sus interfaces canónicas. LEONES no duplica el instalador ODS.</p></article>
+</div>
+<p>Consentir ≠ instalar ≠ verificar ≠ autorizar benchmark.</p>
+</section>
+<section class="site-section"><span class="site-tag">4 · Regla de oro</span><h2>No confundas estados</h2>
+<div class="site-grid">
+<article class="site-card"><h3>ESTIMATED</h3><p>Orientación externa o de ranking. No es medición local.</p></article>
+<article class="site-card"><h3>OBSERVED</h3><p>Hecho visto en el host (doctor, status, sonda). No autoriza MEASURED.</p></article>
+<article class="site-card"><h3>MEASURED</h3><p>Solo tras ejecución real registrada por el camino LEONES.</p></article>
+<article class="site-card"><h3>UNKNOWN</h3><p>Si no se puede comprobar, permanece desconocido.</p></article>
+</div>
+<div class="site-note"><strong>ESTIMATED ≠ MEASURED. OBSERVED ≠ VALIDATED.</strong></div>
+</section>
+<section class="site-section"><span class="site-tag">5 · Docs</span><h2>Siguiente lectura</h2>
+<p><a href="rc3.html">Estado RC3 →</a> · <a href="estado.html">Estado del proyecto →</a> · <a href="operacion.html">Operación →</a> · <a href="../docs/RC3-ARCHITECTURE.md">Arquitectura RC3 →</a> · <a href="rc2.html">RC2 histórico →</a></p>
+</section>
 </main>
-<footer class="site-footer"><div>LEONES · IA local con criterio</div><div>Beta RC2 · Inicio rápido</div></footer>
-<script src="assets/js/navigation.js?v=2026-09-04-1" defer></script>
+<footer class="site-footer"><div>LEONES · IA local con criterio</div><div>RC3 · Inicio rápido · 2026</div></footer>
+<script src="assets/js/navigation.js?v=2026-09-05-4" defer></script>
 </body>
 </html>

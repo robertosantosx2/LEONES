@@ -1,8 +1,9 @@
 # LEONES RC3 — Hermes + native physical discovery architecture
 
-**Estado:** 🟢 **Implementación cerrada · gate CI activo · 🟡 observación física parcial (Aspire 2026-09-05) · validación física final pendiente**  
+**Estado:** 🟢 **RC3 CERRADA** (implementación + contratos + web + observación física parcial) · gate CI activo · ⚪ medición completa = backlog post-RC3  
 **Predecesor:** RC2  
-**Decisión:** 5 de septiembre de 2026
+**Decisión:** 5 de septiembre de 2026  
+**Cierre de fase:** `docs/completed/RC3-CLOSED-2026-09-05.md`
 
 ## 1. Objetivo
 
@@ -262,7 +263,7 @@ LEONES descubre físicamente, verifica y mide
 
 ## 9. Estado de RC3
 
-### Implementación — CERRADA
+### Fase RC3 — CERRADA
 
 - [x] Arquitectura Hermes + native discovery fijada.
 - [x] LLMFit/FitLLM separado del camino canónico.
@@ -283,6 +284,8 @@ LEONES descubre físicamente, verifica y mide
 - [x] Resolución de artefactos concretos implementada.
 - [x] Gate estático de release RC3 implementado.
 - [x] Workflow CI de release RC3 implementado.
+- [x] Web operador alineada (inicio-rápido, operación, arquitectura, estado, rc3).
+- [x] Cierre de fase documentado en `docs/completed/RC3-CLOSED-2026-09-05.md`.
 
 ### Observación física parcial — 2026-09-05 (Aspire A515-55)
 
@@ -297,14 +300,15 @@ Detalle y límites: `docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md`.
 - [x] ODS 2.6.0 · stack Up · `llama-server` health ok · modelo T0 `qwen3.5-2b` listado.
 - [x] Inferencia CPU **observada** (~1 tok/s en logs); `ods chat` con timeout 30s **falló** en cliente.
 
-### Validación física final — PENDIENTE
+### Backlog post-RC3 — medición completa (no reabre RC3)
 
 - [ ] Handoff real Hermes → Magnitude validado bajo autoridad LEONES.
 - [ ] Handoff real Hermes → ODS validado bajo autoridad LEONES.
-- [ ] Gate de consentimiento y preparación física validado en el flujo RC3.
+- [ ] Gate de consentimiento y preparación física validado en el flujo orquestado.
 - [ ] Benchmark de tareas LEONES (no solo smoke del stack externo).
 - [ ] Evidencia **MEASURED** con procedencia LEONES.
 - [ ] Comparativa Magnitude vs ODS cuando ambos caminos estén medidos.
 
 Estos puntos requieren ejecución física real y **no pueden cerrarse desde CI ni por diseño documental**.  
-OBSERVED ≠ VALIDATED. Un stack Up y un `doctor` verde no equivalen a medición LEONES.
+OBSERVED ≠ VALIDATED. Un stack Up y un `doctor` verde no equivalen a medición LEONES.  
+**No reabren la fase RC3**; son trabajo posterior explícito.

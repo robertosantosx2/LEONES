@@ -1,19 +1,18 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Guía pública de operación de LEONES y recorrido canónico RC2.">
-<title>LEONES · Guía de operación</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-04-1">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-04-1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Operación LEONES RC3: sonda física, candidatos, Magnitude/ODS, verificación, medición y evidencia.">
+<title>LEONES · Operación · RC3</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-4">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-4">
 <link rel="stylesheet" href="assets/graphics/brand.css">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
-<span class="site-tag">Documentación · RC2</span>
-<h1>LEONES · Guía completa de operación</h1>
-<p>Cómo está construido, cómo se mide y cómo recorre un beta tester el camino desde el hardware real hasta la evidencia.</p>
+<span class="site-tag">Operación · RC3 · 5 septiembre 2026</span>
+<h1>Recorrido operativo canónico</h1>
+<p>Cómo se opera LEONES hoy: del hardware observado a la evidencia, sin mezclar estimaciones con mediciones.</p>
 </div></header>
 <!-- LEONES-VISUAL-IDENTITY -->
 <div class="wrap">
@@ -28,56 +27,56 @@
 </div>
 </div>
 <main class="site-main" id="main">
-<section class="site-section"><h2>1 · Principios</h2><p><strong>LEONES — Local Ecosystem of Open Neural Expert Systems</strong> estudia qué combinación de hardware y software Libre/Open permite convertir una máquina de consumo en un sistema agentic útil.</p><div class="site-note"><strong>Principio rector:</strong> LEONES mide sistemas, no solo modelos. Un agente existe para completar objetivos, no simplemente para producir tokens.</div></section>
-<section class="site-section"><h2>2 · Pila completa</h2><pre class="site-stack">HARDWARE
+<section class="site-section"><h2>1 · Autoridad</h2>
+<p class="site-lead"><strong>LEONES descubre el hardware.</strong> Hermes aporta ecosistema runtime/model-fit; OMH organiza. El usuario elige Magnitude u ODS. LEONES verifica, mide y sentencia.</p>
+<div class="site-note">LLMFit/FitLLM queda <strong>fuera</strong> del camino RC3: no es dependencia de arranque ni selector canónico.</div>
+</section>
+<section class="site-section"><h2>2 · Camino canónico</h2>
+<pre class="site-stack">UBUNTU REAL
    ↓
-SISTEMA OPERATIVO
+scripts/hardware_profile.py → hardware-profile.v1
    ↓
-RUNTIME / DRIVERS
+RC3 adapter + Hermes/OMH hints
    ↓
-BACKEND DE INFERENCIA
+candidate-set.v1 + evidencia externa (HF / AA)  [ESTIMATED / reported]
    ↓
-MODELO + CUANTIZACIÓN
+usuario elige modelo + Magnitude | ODS
    ↓
-HARNESS / AGENTIC STACK
+consentimiento → preparar/instalar → verificar (OBSERVED)
    ↓
-HERRAMIENTAS / SKILLS
-   ↓
-BUDDY / KNOWLEDGE
-   ↓
-RESULTADO + UX</pre><p>La pila se congela para poder medirla, no porque se considere óptima para siempre.</p></section>
-<section class="site-section"><h2>3 · Recorrido canónico RC2</h2><pre class="site-stack">./leones
-   ↓
-IDIOMA (es | en | zh)
-   ↓
-HARDWARE + LLMFIT → CANDIDATOS (ESTIMATED)
-   ↓
-ELECCIÓN DE MODELO
-   ↓
-ODS / MAGNITUDE → ELECCIÓN DE STACK
-   ↓
-CONSENTIMIENTO INSTALAR
-   ↓
-INSTALAR → VERIFICACIÓN FÍSICA
-   ↓
-RESOLUCIÓN MODELO → RUNTIME
-   ↓
-PREFLIGHT RUNTIME / ARTEFACTO
-   ↓
-EXPLICACIÓN A01 → CONSENTIMIENTO
-   ├─ NO → FIN (instalación intacta)
-   └─ SÍ → EXECUTION_AUTHORIZED → RC1 A01
-                                      ↓
-                              MEDICIÓN / EVIDENCIA</pre><p>El operador único es <code>./leones</code>, implementado en <code>scripts/rc2_wizard.py</code>. No existe un segundo wizard ni un segundo runner de benchmark.</p></section>
-<section class="site-section"><h2>4 · Gates y consentimiento</h2><div class="site-grid"><article class="site-card"><h3>Idioma</h3><p>Se elige una sola vez y la sesión usa exclusivamente ese idioma.</p></article><article class="site-card"><h3>Instalación</h3><p>Autorizar instalación no equivale a instalar ni a verificar. Solo la observación física satisfactoria permite <code>READY_FOR_BENCHMARK</code>.</p></article><article class="site-card"><h3>Benchmark</h3><p>El consentimiento A01 es independiente. Sin él no hay ejecución.</p></article><article class="site-card"><h3>Bloqueo</h3><p>Sin runtime o artefacto disponible (Ollama o llama.cpp según resolución), A01 queda <code>benchmark_blocked</code>; LEONES no inventa MEASURED.</p></article></div></section>
-<section class="site-section"><h2>5 · A01 y medición</h2><p>El benchmark canónico de RC2 es <strong>LEONES-Agentic / A01</strong>. El runner es <code>scripts/a01_runtime_benchmark.py</code>; los puentes son <code>scripts/ollama_a01_runtime.py</code> y <code>scripts/llama_cpp_a01_runtime.py</code> según la resolución del modelo.</p><div class="site-table-wrap"><table class="site-table"><thead><tr><th>Campo</th><th>Valor</th></tr></thead><tbody><tr><td>task</td><td><code>A01</code></td></tr><tr><td>prompt</td><td><code>Execute A01. Return only JSONL tool calls.</code></td></tr><tr><td>Métricas</td><td><code>wall_seconds</code>, <code>measured_tps</code>, <code>grader_pass</code></td></tr><tr><td>Evidencia</td><td>Resultado de ejecución con procedencia, configuración y estado válido</td></tr></tbody></table></div></section>
-<section class="site-section"><h2>6 · CABE / RULA y el modelo actual</h2><p>Los conceptos de capacidad y validación siguen siendo útiles para explicar la evaluación física, pero RC2 no introduce un perfilador ni un benchmark paralelo. LLMFit aporta el perfilado/model-fit y los candidatos; RC1 aporta el camino efectivo de ejecución, medición y evidencia.</p></section>
-<section class="site-section"><h2>7 · Evaluación agentiva</h2><p>La evaluación agentiva comprueba el comportamiento del sistema completo, no únicamente la velocidad de generación del modelo: éxito de tareas, uso de herramientas, errores y tiempo necesario para alcanzar el objetivo.</p><div class="site-grid"><article class="site-card"><h3>Inferencia</h3><p>Generación, tok/s, memoria, estabilidad y tiempos.</p></article><article class="site-card"><h3>Agentic</h3><p>Éxito de tareas, llamadas a herramientas, errores y tiempo de tarea.</p></article></div></section>
-<section class="site-section"><h2>8 · Evidencia</h2><div class="site-flow"><span class="site-flow__node">Estimated</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Observed</span><span class="site-flow__arrow">→</span><span class="site-flow__node">Measured</span><span class="site-flow__arrow">→</span><span class="site-flow__node site-flow__node--primary">Evidence</span></div><p>ESTIMATED ≠ MEASURED. Lo desconocido permanece desconocido. Una métrica ausente no debe transformarse en cero ni una ejecución fallida publicarse como válida.</p></section>
-<section class="site-section"><h2>9 · Manada</h2><p>La participación es voluntaria. Antes de publicar una medición deben eliminarse datos personales, identificadores de máquina, rutas privadas, credenciales, tokens y secretos.</p></section>
-<section class="site-section"><h2>10 · Estado</h2><div class="site-grid"><article class="site-card"><h3>JALONES 1–4</h3><p>🟢 Cerrados según los contratos y evidencias consolidados.</p></article><article class="site-card"><h3>RC1</h3><p>🟢 Validado mediante ejecución efectiva end-to-end.</p></article><article class="site-card"><h3>ODS / Magnitude</h3><p>🟢 Contrato de decisión fijado, sin scoring paralelo.</p></article><article class="site-card"><h3>RC2</h3><p>🟡 Preparado para beta: operador único, i18n, instalación, verificación física, resolución modelo→runtime, consentimiento A01 y handoff RC1.</p></article></div><p><a href="estado.html">Ver estado detallado de LEONES →</a></p></section>
-<section class="site-section"><h2>11 · Documentación RC2</h2><p><a href="../docs/RC2-USER-MANUAL.md">Manual de usuario RC2 →</a> · <a href="../docs/RC2-INSTALLATION-MANUAL.md">Manual de instalación RC2 →</a> · <a href="../docs/RC2-L-INTEGRATED-BETA-JOURNEY.md">Recorrido beta integrado →</a></p></section>
+tareas LEONES → medición → evidencia (MEASURED)
+</pre>
+</section>
+<section class="site-section"><h2>3 · Sonda y gate</h2>
+<ul>
+<li>Sonda única: <code>scripts/hardware_profile.py</code></li>
+<li>Contrato: <code>scripts/rc3_hardware_discovery.py</code> → <code>hardware-profile.v1</code></li>
+<li>Gate estático: <code>scripts/rc3_release_gate.py</code> (no declara handoffs ni benchmarks físicos)</li>
+</ul>
+</section>
+<section class="site-section"><h2>4 · Stacks</h2>
+<div class="site-grid">
+<article class="site-card"><h3>Magnitude</h3><p>Se activa solo si el usuario lo elige. LEONES no sustituye su CLI ni su servicio.</p></article>
+<article class="site-card"><h3>ODS</h3><p>Se activa solo si el usuario lo elige. Un <code>ods status</code> verde es OBSERVED, no MEASURED LEONES.</p></article>
+</div>
+</section>
+<section class="site-section"><h2>5 · Medición</h2>
+<p>La medición LEONES exige runtime y artefacto disponibles, consentimiento y ejecución controlada. Métricas como <code>wall_seconds</code> o <code>measured_tps</code> solo tras esa ejecución, con procedencia.</p>
+<p>RC1 aporta el pipeline efectivo de ejecución/evidencia cuando el camino de runtime está resuelto. A01 u otras tareas no convierten un smoke externo en evidencia LEONES por sí solas.</p>
+</section>
+<section class="site-section"><h2>6 · Estado actual</h2>
+<div class="site-grid">
+<article class="site-card"><h3>Implementación</h3><p>🟢 Cerrada (contratos, sonda, gate CI).</p></article>
+<article class="site-card"><h3>Observación física</h3><p>🟡 Parcial (Aspire 2026-09-05). Ver <a href="rc3.html">rc3.html</a>.</p></article>
+<article class="site-card"><h3>Validación física completa</h3><p>🔴 Abierta: handoffs formales, benchmark LEONES, MEASURED.</p></article>
+<article class="site-card"><h3>RC2</h3><p>🟢 Histórico. <a href="rc2.html">Documentación RC2 →</a></p></article>
+</div>
+</section>
+<section class="site-section"><h2>7 · Documentación</h2>
+<p><a href="../docs/RC3-ARCHITECTURE.md">Arquitectura RC3 →</a> · <a href="estado.html">Estado →</a> · <a href="inicio-rapido.html">Inicio rápido →</a> · <a href="../docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md">Sesión Aspire →</a></p>
+</section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-04-1" defer></script>
+<footer class="site-footer"><div>LEONES · Operación RC3</div><div>ESTIMATED ≠ MEASURED · 2026</div></footer>
+<script src="assets/js/navigation.js?v=2026-09-05-4" defer></script>
 </body>
 </html>
