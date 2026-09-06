@@ -29,6 +29,8 @@ USER_INTENT[] → HARDWARE DETECTADO → HF + ARTIFICIAL ANALYSIS → feed LEONE
 
 ### Reglas fijadas
 
+- **FitLLM/LLMFit es preselector**, no autoridad.
+- **FitLLM no es dependencia dura** de instalación o arranque.
 - El feed externo no se atribuye a LLMFit como si hubiese sido puntuado internamente.
 - La salida LLMFit solo puede aportar candidatos con respaldo en el feed.
 - La procedencia HF/AA queda en `evidence_provenance`.
@@ -37,6 +39,7 @@ USER_INTENT[] → HARDWARE DETECTADO → HF + ARTIFICIAL ANALYSIS → feed LEONE
 - Menos de tres coincidencias produce `insufficient`; no hay padding.
 - Los candidatos permanecen `ESTIMATED`.
 - `execution_authorized`, `measurement_authorized` y `measured` permanecen en `false`.
+- Tras Magnitude/ODS, la oferta de desinstalar FitLLM es **opt-in**.
 
 ## Decisión original, resumida
 
@@ -44,8 +47,8 @@ USER_INTENT[] → HARDWARE DETECTADO → HF + ARTIFICIAL ANALYSIS → feed LEONE
 2. **FitLLM es opcional**, no dependencia dura de instalación/arranque.
 3. **Hermes y OMH están fuera del camino canónico RC4**; sus referencias históricas no se borran.
 4. Tras Magnitude/ODS puede ofrecerse la desinstalación de FitLLM, siempre opt-in.
-5. Leo001…Leo010 se conserva para medición/comparación.
-6. RC3 permanece cerrada.
+5. **Leo001…Leo010** se conserva para medición/comparación.
+6. **RC3 permanece CERRADA.**
 
 ## Flujo canónico RC4
 
