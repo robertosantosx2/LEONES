@@ -1,0 +1,19 @@
+NAME                             CPU %     MEM USAGE / LIMIT   MEM %     PIDS
+ods-hermes-proxy                 0.00%     9.082MiB / 256MiB   3.55%     7
+ods-dashboard                    0.00%     2.746MiB / 2GiB     0.13%     9
+ods-langfuse-web                 0.03%     105.4MiB / 1GiB     10.29%    18
+ods-litellm                      0.25%     23.88MiB / 2GiB     1.17%     5
+ods-perplexica                   0.00%     78.11MiB / 2GiB     3.81%     16
+ods-privacy-shield               0.29%     7.207MiB / 2GiB     0.35%     1
+ods-dashboard-api                0.50%     18.46MiB / 2GiB     0.90%     7
+ods-hermes                       0.35%     31.8MiB / 4GiB      0.78%     24
+ods-n8n                          0.18%     34.63MiB / 4GiB     0.85%     20
+ods-whisper                      0.59%     16.26MiB / 4GiB     0.40%     16
+ods-remote-provider-egress       0.19%     8.395MiB / 256MiB   3.28%     5
+ods-model-router                 0.24%     6.211MiB / 256MiB   2.43%     5
+ods-ape                          0.24%     12.98MiB / 256MiB   5.07%     5
+ods-webui                        0.34%     39.54MiB / 4GiB     0.97%     25
+ods-qdrant                       0.03%     3.539MiB / 1GiB     0.35%     16
+ods-searxng                      0.00%     11.32MiB / 512MiB   2.21%     9
+ods-remote-provider-ssh-tunnel   28.36%    13.65MiB / 128MiB   10.66%    3
+ods-llama-server                 407.63%   1.558GiB / 6GiB     25.97%    13

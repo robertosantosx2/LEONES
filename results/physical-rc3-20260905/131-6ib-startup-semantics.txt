@@ -1,0 +1,20 @@
+warning: one possible reason is that llama.cpp was compiled without GPU support
+error: invalid argument: --reasoning
+warning: one possible reason is that llama.cpp was compiled without GPU support
+error: invalid argument: --reasoning
+warning: one possible reason is that llama.cpp was compiled without GPU support
+error: invalid argument: --reasoning
+warning: one possible reason is that llama.cpp was compiled without GPU support
+error: invalid argument: --reasoning
+warning: one possible reason is that llama.cpp was compiled without GPU support
+error: invalid argument: --reasoning
+warning: one possible reason is that llama.cpp was compiled without GPU support
+error: invalid argument: --reasoning
+warning: one possible reason is that llama.cpp was compiled without GPU support
+error: invalid argument: --reasoning
+warning: one possible reason is that llama.cpp was compiled without GPU support
+error: invalid argument: --reasoning
+warning: one possible reason is that llama.cpp was compiled without GPU support
+error: invalid argument: --reasoning
+warning: one possible reason is that llama.cpp was compiled without GPU support
+error: invalid argument: --reasoning

@@ -1,0 +1,9 @@
+RC3 RELEASE GATE: PASS
+  Hermes selector boundary: PASS
+  Magnitude/ODS/both handoff boundary: PASS
+  per-task benchmark loop: PASS
+  repeatable Hermes reselection: PASS
+  LLMFit/FitLLM implementation removal: PASS
+  physical Ubuntu validation: NOT CLAIMED
+  real Magnitude/ODS handoff: NOT CLAIMED
+  real benchmark/evidence: NOT CLAIMED

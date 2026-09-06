@@ -1,0 +1,2 @@
+Magnitude service unavailable:
+Magnitude service is not running. Run `magnitude service start`.

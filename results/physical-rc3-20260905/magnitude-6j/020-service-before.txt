@@ -1,0 +1,3 @@
+Magnitude service
+  Runtime         Stopped
+  Starts at login Yes

@@ -1,0 +1,73 @@
+[
+  {
+    "run": 1,
+    "content": "LEONES RC3 MEDICION",
+    "finish_reason": "stop",
+    "reasoning": false,
+    "prompt_tokens": 32,
+    "completion_tokens": 8,
+    "prompt_tok_s": 27.337202686563593,
+    "generation_tok_s": 14.645952407977651,
+    "server_ms": 1716.792,
+    "curl_ms": 1819,
+    "pass": true
+  },
+  {
+    "run": 2,
+    "content": "LEONES RC3 MEDICION",
+    "finish_reason": "stop",
+    "reasoning": false,
+    "prompt_tokens": 32,
+    "completion_tokens": 8,
+    "prompt_tok_s": 24.83741197271921,
+    "generation_tok_s": 12.834746224980266,
+    "server_ms": 1911.687,
+    "curl_ms": 1962,
+    "pass": true
+  },
+  {
+    "run": 3,
+    "content": "LEONES RC3 MEDICION",
+    "finish_reason": "stop",
+    "reasoning": false,
+    "prompt_tokens": 32,
+    "completion_tokens": 8,
+    "prompt_tok_s": 24.944070716440482,
+    "generation_tok_s": 13.811105509940543,
+    "server_ms": 1862.114,
+    "curl_ms": 1917,
+    "pass": true
+  },
+  {
+    "run": 4,
+    "content": "LEONES RC3 MEDICION",
+    "finish_reason": "stop",
+    "reasoning": false,
+    "prompt_tokens": 32,
+    "completion_tokens": 8,
+    "prompt_tok_s": 31.874541803461575,
+    "generation_tok_s": 15.695137646357159,
+    "server_ms": 1513.6480000000001,
+    "curl_ms": 1564,
+    "pass": true
+  },
+  {
+    "run": 5,
+    "content": "LEONES RC3 MEDICION",
+    "finish_reason": "stop",
+    "reasoning": false,
+    "prompt_tokens": 32,
+    "completion_tokens": 8,
+    "prompt_tok_s": 34.530722091353184,
+    "generation_tok_s": 14.50999738820047,
+    "server_ms": 1478.055,
+    "curl_ms": 1530,
+    "pass": true
+  }
+]
+
+runs_completed=5
+runs_valid=5
+generation_tok_s_min=12.8347
+generation_tok_s_max=15.6951
+generation_tok_s_avg=14.2994

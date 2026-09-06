@@ -1,0 +1,37 @@
+=== magnitude status ===
+Usage: magnitude [options] [command]
+
+Options:
+  -v, --version             Print the Magnitude version
+  --resume [id]             Resume the most recent chat session or a specific
+                            session by ID
+  --prompt <text>           Start session with an initial user message
+  --atif <path>             Write ATIF trajectory to the specified path
+  --system-override <text>  Override system prompt with raw text
+  -h, --help                display help for command
+
+Commands:
+  service                   Manage the Magnitude background service
+  hardware                  Show hardware and memory available to local
+                            inference
+  catalog                   Find, compare, and download local models
+  models                    Inspect and control local models on this computer
+  connections               Connect Magnitude models to agent harnesses
+  update                    Update Magnitude using its installation package
+                            manager
+  docs [topic-id]           Read bundled documentation for Magnitude agents
+  setup                     Interactive first time setup for installing a model
+                            and connecting it to a harness
+Magnitude service
+  Runtime         Stopped
+  Starts at login No
+error: too many arguments. Expected 0 arguments but got 1.
+total 32
+drwx------  7 roberto roberto 4096 Sep  1 00:45 .
+drwxr-xr-x 66 roberto roberto 4096 Sep  5 00:28 ..
+drwxrwxr-x  2 roberto roberto 4096 Aug 31 23:42 acn
+drwxrwxr-x  4 roberto roberto 4096 Aug 31 23:42 cache
+-rw-------  1 roberto roberto   24 Sep  1 00:45 harness-connections.json
+drwxrwxr-x  4 roberto roberto 4096 Sep  1 00:56 models
+drwx------  7 roberto roberto 4096 Aug 31 23:42 releases
+drwxrwxr-x  2 roberto roberto 4096 Sep  1 00:56 state

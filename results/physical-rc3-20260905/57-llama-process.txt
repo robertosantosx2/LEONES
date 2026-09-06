@@ -1,0 +1,2 @@
+USER                PID                 %CPU                %MEM                VSZ                 RSS                 TTY                 STAT                START               TIME                COMMAND
+root                1360558             42.3                23.3                4365688             1722928             ?                   Rsl                 sep04               499:23              /app/llama-server --model /models/Qwen3.5-2B-Q4_K_M.gguf --host 0.0.0.0 --port 8080 --n-gpu-layers 0 --ctx-size 65536 --batch-size 512 --threads 4 --parallel 1 --metrics
