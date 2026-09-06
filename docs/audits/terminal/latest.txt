@@ -1,19 +1,23 @@
 ============================================================
 LEONES — TERMINAL CAPTURE
 ============================================================
-timestamp_utc=20260906T144036Z
+timestamp_utc=20260906T144127Z
 branch=rc4-fitllm-recommender
-commit=3c503fe64a861b6e99bc08f270a07aba5c5d6b41
-command=bash -c echo "CAPTURE-TEST-OK"; echo "STDERR-TEST" >&2; exit 7
+commit=9a51c54ccba53ac1bd059569a935975c9b1f760b
+command=python scripts/rc4_fitllm_recommend.py --purpose programming --purpose reasoning --purpose research
 ============================================================
 
-CAPTURE-TEST-OK
-STDERR-TEST
+RC4 FitLLM recommendation: ok
+  candidates: 3/3
+  kind: ESTIMATED  execution_authorized: False
+  [1] ryzdfm/qwen2.5-coder-3b-claude_opus_4.6-distilled
+  [2] huihui-ai/Qwen2.5-Coder-3B-Instruct-abliterated
+  [3] Qwen/Qwen2.5-Coder-3B
 
 ============================================================
 LEONES — CAPTURE RESULT
 ============================================================
-command_exit_code=7
-full_local_capture=artifacts/terminal-capture/capture-20260906T144036Z.txt
+command_exit_code=0
+full_local_capture=artifacts/terminal-capture/capture-20260906T144127Z.txt
 tracked_snapshot=docs/audits/terminal/latest.txt
 ============================================================
