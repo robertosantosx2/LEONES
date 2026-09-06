@@ -23,7 +23,9 @@ from scripts.rc4_fitllm_recommend import recommend  # noqa: E402
 
 def run_hardware_probe() -> dict:
     cmd = [sys.executable, str(ROOT / "scripts/hardware_profile.py")]
-    completed = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, check=False)
+    completed = subprocess.run(
+        cmd, cwd=ROOT, capture_output=True, text=True, check=False
+    )
     if completed.returncode != 0:
         raise RuntimeError(
             "hardware_profile.py failed: "
@@ -39,7 +41,16 @@ def main() -> int:
         type=Path,
         default=ROOT / "results" / "rc4-ubuntu-preflight.json",
     )
-    parser.add_argument("--use-case", default=None)
+    parser.add_argument(
+        "--purpose",
+        dest="purposes",
+        action="append",
+        required=True,
+        help=(
+            "User intent purpose (repeatable). "
+            "Example: --purpose programming --purpose reasoning"
+        ),
+    )
     parser.add_argument("--max-context", type=int, default=None)
     args = parser.parse_args()
 
@@ -55,10 +66,17 @@ def main() -> int:
     try:
         hardware = run_hardware_probe()
     except (RuntimeError, json.JSONDecodeError) as exc:
-        print(f"RC4 UBUNTU PREFLIGHT: BLOCKED — hardware probe: {exc}", file=sys.stderr)
+        print(
+            f"RC4 UBUNTU PREFLIGHT: BLOCKED — hardware probe: {exc}",
+            file=sys.stderr,
+        )
         return 2
 
-    recommendation = recommend(use_case=args.use_case, max_context=args.max_context)
+    recommendation = recommend(
+        user_intent=args.purposes,
+        max_context=args.max_context,
+    )
+    status = recommendation.get("status") or "ok"
     payload = {
         "schema": "leones.rc4.ubuntu_preflight.v1",
         "observed_at_utc": observed_at,
@@ -73,18 +91,22 @@ def main() -> int:
         "measurement_authorized": False,
         "measured": False,
         "next_step": (
-            "USER_SELECT_MODEL_AND_STACK" if recommendation["status"] == "ok"
+            "USER_SELECT_MODEL_AND_STACK"
+            if status == "ok"
             else "INSTALL_FITLLM_OR_SELECT_MODEL_MANUALLY"
         ),
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    args.out.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
     print("RC4 UBUNTU PREFLIGHT: PASS")
     print(f"  hardware: {hardware.get('schema_version', 'UNKNOWN')}")
     print(
-        f"  FitLLM: {recommendation['status']} "
-        f"({recommendation['candidate_count']}/3 candidates)"
+        f"  FitLLM: {status} "
+        f"({recommendation.get('candidate_count', 0)}/3 candidates)"
     )
     print("  execution_authorized: False")
     print("  measurement_authorized: False")
