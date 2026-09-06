@@ -58,6 +58,8 @@ def resolve_runtime(
         "adapter": entry.adapter,
         "model_id": model_id,
         "model": candidate.get("model") or {},
+        "model_artifact": candidate.get("model_artifact"),
+        "model_format": candidate.get("model_format"),
         "hardware": hw,
         "moe": candidate.get("moe") or {},
         "workload": candidate.get("workload") or {},
@@ -99,11 +101,20 @@ def resolve_runtime(
         and bool(entry.entrypoint.get("kind"))
         and adapter.adapter_id == entry.adapter
     )
+    runtime_plan_probe["trusted_entrypoint"] = list(entrypoint)
+    runtime_plan_probe["execution_authorized"] = execution_authorized
+    spec = adapter.prepare(runtime_plan_probe, entry)
+    runtime_eligibility = spec.metadata.get("runtime_eligibility")
+    execution_command = list(entrypoint)
+    if execution_authorized and spec.metadata.get("execution_command"):
+        execution_command = list(spec.metadata["execution_command"])
+
     model = candidate.get("model") or {}
     runtime_plan = {
         "schema_version": SCHEMA_VERSION,
         "model_id": model_id,
         "model": model,
+        "model_artifact": candidate.get("model_artifact"),
         "runtime": {"name": entry.id, "version": candidate.get("runtime_version")},
         "quantization": quantization,
         "model_format": candidate.get("model_format"),
@@ -116,9 +127,9 @@ def resolve_runtime(
         "hardware": hw,
         "workload": candidate.get("workload") or {},
         "moe": candidate.get("moe") or {},
+        "trusted_entrypoint": list(entrypoint),
         "execution_authorized": execution_authorized,
     }
-    spec = adapter.prepare(runtime_plan, entry)
     llmfit = candidate.get("llmfit") or {}
     plan = {
         "schema_version": SCHEMA_VERSION,
@@ -135,17 +146,19 @@ def resolve_runtime(
             "name": model_name,
             "revision": candidate.get("revision"),
         },
+        "model_artifact": candidate.get("model_artifact"),
         "variant": candidate.get("variant"),
         "runtime": {
             "name": entry.id,
             "adapter": adapter.adapter_id,
-            "command": entrypoint,
+            "command": execution_command,
             "entrypoint": entrypoint,
             "entrypoint_kind": entry.entrypoint["kind"],
             "version": candidate.get("runtime_version"),
         },
         "optimization_families": candidate.get("optimization_families") or [],
         "quantization": quantization,
+        "model_format": candidate.get("model_format"),
         "hardware": {
             "ram_gb": hw.get("ram_gb", candidate.get("memory_available_gb") or 0),
             "os": hw.get("os", "unknown"),
@@ -162,18 +175,13 @@ def resolve_runtime(
         "fit_score": candidate.get("fit_score"),
         "evidence_level": candidate.get("evidence_level"),
         "execution_authorized": execution_authorized,
+        "runtime_eligibility": runtime_eligibility,
         "measurement_required": True,
         "benchmark_probe": status == "BENCHMARK_REQUIRED",
         "estimated_tps": llmfit.get("estimated_tps"),
         "measured_tps": None,
     }
-    plan.update(
-        {
-            key: value
-            for key, value in spec.metadata.items()
-            if key == "runtime_eligibility"
-        }
-    )
+    plan.update(spec.to_dict())
     return plan
 
 
@@ -184,7 +192,9 @@ def gate_selection(
     runtime_commands: dict[str, list[str]] | None = None,
     hardware: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    plans, blocked = [], []
+    plans: list[dict[str, Any]] = []
+    blocked_entries: list[dict[str, Any]] = []
+
     for candidate in selection.get("candidates", []):
         try:
             plans.append(
@@ -196,18 +206,26 @@ def gate_selection(
                 )
             )
         except ValueError as exc:
-            blocked.append(
-                {
-                    "model_id": candidate.get("model_id")
-                    or candidate.get("model_name"),
-                    "selection_status": candidate.get("selection_status"),
-                    "reason": str(exc),
-                }
-            )
+            blocked_entry = {
+                "model_id": candidate.get("model_id") or candidate.get("model_name"),
+                "runtime": candidate.get("runtime"),
+                "reason": str(exc),
+            }
+
+            # Preserve any runtime-specific eligibility evidence already
+            # attached to the candidate.
+            runtime_eligibility = candidate.get("runtime_eligibility")
+            if runtime_eligibility is not None:
+                blocked_entry["runtime_eligibility"] = runtime_eligibility
+
+            blocked_entries.append(blocked_entry)
+
     return {
         "schema_version": SCHEMA_VERSION,
-        "gate": "LEONES-runtime-selection-gate",
         "execution_plans": plans,
-        "blocked": blocked,
-        "counts": {"plans": len(plans), "blocked": len(blocked)},
+        "blocked": blocked_entries,
+        "counts": {
+            "plans": len(plans),
+            "blocked": len(blocked_entries),
+        },
     }
