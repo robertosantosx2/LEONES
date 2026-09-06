@@ -1,586 +1,90 @@
 ============================================================
 LEONES — TERMINAL CAPTURE
 ============================================================
-timestamp_utc=20260906T144428Z
+timestamp_utc=20260906T144608Z
 branch=rc4-fitllm-recommender
-commit=692c596ba3d7c14b9027b65a2d2a929177097d1b
+commit=51f951b9ed8f0fb9e58a13c45a714e97aa8b0142
 command=bash -c 
 set -e
 
 echo "============================================================"
-echo "RC4 — INSPECCION DE INTEGRACION EVIDENCE → FITLLM"
+echo "RC4 — EVIDENCE → LLMFIT INTEGRATION TEST"
 echo "============================================================"
 
 echo
-echo "=== BRANCH / STATUS ==="
-git branch --show-current
-git status --short
-git log -1 --oneline
+echo "=== PYCOMPILE ==="
+python -m py_compile scripts/rc4_fitllm_recommend.py
+echo "PASS"
 
 echo
-echo "=== COLLECTOR: API PUBLICA ==="
-grep -nE "^(def |class |SCHEMA|MAX_FITLLM_INPUT)" \
-  scripts/collect_model_evidence.py
+echo "=== TEST SUITE ==="
+pytest -q
 
 echo
-echo "=== COLLECTOR: BUILD FEED ==="
-grep -n -A80 -B10 "def build_feed" \
-  scripts/collect_model_evidence.py
-
-echo
-echo "=== FITLLM ADAPTER ==="
-sed -n "1,280p" runtime_selection/llmfit.py
-
-echo
-echo "=== RC4 RECOMMENDER ==="
-sed -n "1,320p" scripts/rc4_fitllm_recommend.py
-
-echo
-echo "=== TESTS RELACIONADOS ==="
-find tests -maxdepth 2 -type f \
-  | sort \
-  | grep -Ei "rc4|fitllm|evidence|candidate"
-
-echo
-echo "=== LLMFIT CLI CONTRACT ==="
-llmfit --version
-echo
-llmfit recommend --help
+echo "=== LIVE RC4 JSON ==="
+python scripts/rc4_fitllm_recommend.py \
+  --purpose programming \
+  --purpose reasoning \
+  --purpose research \
+  --json
 
 ============================================================
 
 ============================================================
-RC4 — INSPECCION DE INTEGRACION EVIDENCE → FITLLM
+RC4 — EVIDENCE → LLMFIT INTEGRATION TEST
 ============================================================
 
-=== BRANCH / STATUS ===
-rc4-fitllm-recommender
-692c596 chore: capture terminal output
-
-=== COLLECTOR: API PUBLICA ===
-12:SCHEMA = "leones.rc4.model-evidence.v1"
-15:MAX_FITLLM_INPUT = 100
-23:def _json_request(url: str, *, headers: Mapping[str,str]|None=None, timeout: float=30.0) -> Any:
-29:def _norm(v: Any) -> str: return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", "" if v is None else str(v).lower())).strip()
-30:def _float(v: Any) -> float|None:
-33:def _first(m: Mapping[str,Any], *keys: str) -> Any: return next((m[k] for k in keys if m.get(k) is not None), None)
-34:def _nested(m: Mapping[str,Any], *path: str) -> Any:
-41:def normalize_purposes(purposes: Iterable[str]) -> list[str]:
-49:def extract_parameter_count(info: Mapping[str,Any]) -> float|None:
-56:def extract_context(info: Mapping[str,Any]) -> int|None:
-64:def detect_formats(info: Mapping[str,Any]) -> list[str]:
-78:def detect_quantizations(info:dict[str,Any])->list[str]:
-114:def extract_hf_info(info: Mapping[str,Any]) -> dict[str,Any]:
-145:def fetch_hf_models(*, limit: int, search: str|None=None) -> list[dict[str,Any]]:
-169:def fetch_aa_models(api_key: str) -> tuple[float|None,list[dict[str,Any]]]:
-175:def aa_index(item: Mapping[str,Any], metric: str)->float|None:return _float(_nested(item,"evaluations",metric))
-176:def aa_purpose_score(item: Mapping[str,Any], purposes: list[str])->float|None:
-186:def match_aa(hf: Mapping[str,Any], aa_models: list[Mapping[str,Any]])->Mapping[str,Any]|None:
-198:def _bits(q: str|None)->float:
-204:def estimate_weight_memory_gb(parameters_b: float, bits_per_weight: float) -> float:
-218:def estimate_fit(*,parameters_b:float|None,ram_gb:float|None,vram_gb:float|None,quantization:str|None,memory_margin:float=1.2)->dict[str,Any]:
-223:def score_candidate(hf:Mapping[str,Any],aa:Mapping[str,Any]|None,purposes:list[str],fit:Mapping[str,Any])->tuple[float,dict[str,float|None]]:
-228:def build_feed(*,hardware:Mapping[str,Any],purposes:list[str],hf_models:list[Mapping[str,Any]],aa_models:list[Mapping[str,Any]],aa_index_version:float|None,limit:int=MAX_FITLLM_INPUT,memory_margin:float=1.2)->dict[str,Any]:
-242:def parse_args(argv:list[str])->argparse.Namespace:
-245:def main(argv:list[str]|None=None)->int:
-
-=== COLLECTOR: BUILD FEED ===
-218-def estimate_fit(*,parameters_b:float|None,ram_gb:float|None,vram_gb:float|None,quantization:str|None,memory_margin:float=1.2)->dict[str,Any]:
-219-    bits=_bits(quantization); weights=parameters_b*1e9*bits/8/(1024**3) if parameters_b and parameters_b>0 else None; req=weights*memory_margin if weights is not None else None
-220-    gpu=vram_gb is not None and req is not None and req<=vram_gb; cpu=ram_gb is not None and req is not None and req<=ram_gb
-221-    return {"assumed_quantization":quantization,"bits_per_weight":bits,"weight_memory_gb":round(weights,3) if weights is not None else None,"estimated_memory_with_margin_gb":round(req,3) if req is not None else None,"gpu_weight_fit":gpu,"cpu_weight_fit":cpu,"prefilter_status":"fits" if gpu or cpu else "unknown_or_exceeds","method":"weights_only_prefilter_1.20x"}
-222-
-223-def score_candidate(hf:Mapping[str,Any],aa:Mapping[str,Any]|None,purposes:list[str],fit:Mapping[str,Any])->tuple[float,dict[str,float|None]]:
-224-    ps=aa_purpose_score(aa,purposes) if aa else None; intel=aa_index(aa,"artificial_analysis_intelligence_index") if aa else None; coding=aa_index(aa,"artificial_analysis_coding_index") if aa else None
-225-    speed=_float(_nested(aa or {},"performance","median_output_tokens_per_second")) or _float((aa or {}).get("median_output_tokens_per_second")); downloads=_float(hf.get("downloads_30d")) or 0; adoption=min(100,math.log10(downloads+1)*10); bonus=10 if fit.get("prefilter_status")=="fits" else 0
-226-    return (ps or 0)+adoption*.05+bonus,{"aa_purpose_score":ps,"aa_intelligence_index":intel,"aa_coding_index":coding,"aa_median_output_tps":speed,"hf_adoption_signal":adoption,"hardware_prefilter_bonus":float(bonus)}
-227-
-228:def build_feed(*,hardware:Mapping[str,Any],purposes:list[str],hf_models:list[Mapping[str,Any]],aa_models:list[Mapping[str,Any]],aa_index_version:float|None,limit:int=MAX_FITLLM_INPUT,memory_margin:float=1.2)->dict[str,Any]:
-229-    purposes=normalize_purposes(purposes)
-230-    if not 1<=limit<=MAX_FITLLM_INPUT:raise ValueError("FitLLM input limit must be 1..100")
-231-    ram=_float(hardware.get("ram_gb"));vram=_float(hardware.get("vram_gb"));scored=[]
-232-    for hf in hf_models:
-233-        aa=match_aa(hf,aa_models); q=next((x for x in ("q4_k_m","q4","awq","gptq","int8","bf16","fp16") if x in hf.get("quantizations",[])),None)
-234-        if q is None and hf.get("parameters_b") is not None:q="q4_k_m_hypothetical"
-235-        fit=estimate_fit(parameters_b=_float(hf.get("parameters_b")),ram_gb=ram,vram_gb=vram,quantization=q,memory_margin=memory_margin); score,breakdown=score_candidate(hf,aa,purposes,fit)
-236-        aa_e={"id":aa.get("id"),"name":aa.get("name"),"slug":aa.get("slug"),"release_date":aa.get("release_date"),"evaluations":aa.get("evaluations",{}),"performance":aa.get("performance",{}),"context_window_tokens":aa.get("context_window_tokens"),"parameters":aa.get("parameters"),"licensing":aa.get("licensing"),"huggingface_url":aa.get("huggingface_url")} if aa else None
-237-        scored.append({"model_id":hf.get("model_id"),"rank_score":round(score,4),"evidence_level":"estimated","hf":dict(hf),"artificial_analysis":aa_e,"hardware_prefilter":fit,"score_breakdown":breakdown})
-238-    scored.sort(key=lambda x:x["rank_score"],reverse=True); selected=scored[:limit]
-239-    for rank,item in enumerate(selected,1):item["evidence_rank"]=rank
-240-    return {"schema":SCHEMA,"generated_at":datetime.now(timezone.utc).isoformat(),"user_intent":{"required":True,"selection_mode":"multiple","purposes":purposes},"hardware":dict(hardware),"fitllm_input":{"hardware":dict(hardware),"user_intent":{"required":True,"selection_mode":"multiple","purposes":purposes},"model_evidence":selected,"max_models":MAX_FITLLM_INPUT,"model_count":len(selected)},"sources":{"huggingface":{"kind":"model_repository_metadata","models_considered":len(hf_models)},"artificial_analysis":{"kind":"independent_benchmark_and_performance","models_available":len(aa_models),"intelligence_index_version":aa_index_version}},"candidates":selected,"candidate_count":len(selected),"status":"estimated","measurement_required":True}
-241-
-242-def parse_args(argv:list[str])->argparse.Namespace:
-243-    p=argparse.ArgumentParser(description=__doc__);p.add_argument("--ram-gb",type=float,required=True);p.add_argument("--vram-gb",type=float);p.add_argument("--cpu");p.add_argument("--gpu");p.add_argument("--purpose",dest="purposes",action="append",required=True);p.add_argument("--hf-limit",type=int,default=100);p.add_argument("--limit",type=int,default=100);p.add_argument("--memory-margin",type=float,default=1.2);p.add_argument("--aa-api-key",default=os.environ.get("ARTIFICIAL_ANALYSIS_API_KEY"));p.add_argument("--output",default="-");return p.parse_args(argv)
-244-
-245-def main(argv:list[str]|None=None)->int:
-246-    a=parse_args(argv or sys.argv[1:])
-247-    try:
-248-        purposes=normalize_purposes(a.purposes)
-249-        if a.hf_limit<1 or not 1<=a.limit<=MAX_FITLLM_INPUT:raise ValueError("--hf-limit must be >=1 and --limit must be 1..100")
-250-        if a.memory_margin<1:raise ValueError("--memory-margin must be >=1.0")
-251-        hardware={"cpu":a.cpu,"ram_gb":a.ram_gb,"gpu":a.gpu,"vram_gb":a.vram_gb}; hf=fetch_hf_models(limit=max(a.hf_limit,a.limit)); version,aa=fetch_aa_models(a.aa_api_key)
-252-        feed=build_feed(hardware=hardware,purposes=purposes,hf_models=hf,aa_models=aa,aa_index_version=version,limit=a.limit,memory_margin=a.memory_margin); payload=json.dumps(feed,ensure_ascii=False,indent=2)+"\n"
-253-        if a.output=="-":sys.stdout.write(payload)
-254-        else:
-255-            with open(a.output,"w",encoding="utf-8") as f:f.write(payload)
-256-        return 0
-257-    except (RuntimeError,ValueError) as e:print(f"[ERROR] {e}",file=sys.stderr);return 2
-258-
-259-if __name__=="__main__":raise SystemExit(main())
-
-=== FITLLM ADAPTER ===
-"""LLMFit integration boundary for RC4 model preselection.
-
-LLMFit supplies detected hardware facts and model-fit estimates. RC4 consumes
-only the preselection signal; it never treats estimates as local measurement
-and never delegates execution authorization to LLMFit.
-"""
-from __future__ import annotations
-from dataclasses import dataclass
-import json
-import platform
-import shutil
-import subprocess
-from typing import Any, Mapping, Sequence
-
-CANDIDATE_COUNT = 3
-
-
-class LLMFitError(RuntimeError):
-    """Raised when LLMFit is unavailable or returns invalid output."""
-
-
-@dataclass(frozen=True)
-class LLMFitResult:
-    command: tuple[str, ...]
-    version: str | None
-    system: Mapping[str, Any]
-    models: Sequence[Mapping[str, Any]]
-    raw: Mapping[str, Any]
-
-
-def executable() -> str | None:
-    return shutil.which("llmfit")
-
-
-def _run_json(command: list[str], *, timeout_seconds: int = 30) -> Mapping[str, Any]:
-    if executable() is None:
-        raise LLMFitError("llmfit executable not found")
-    try:
-        completed = subprocess.run(
-            command, check=False, capture_output=True, text=True, timeout=timeout_seconds
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise LLMFitError(f"LLMFit execution failed: {exc}") from exc
-    if completed.returncode != 0:
-        detail = completed.stderr.strip() or completed.stdout.strip()
-        raise LLMFitError(f"LLMFit exited with {completed.returncode}: {detail}")
-    try:
-        raw = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        raise LLMFitError("LLMFit did not return valid JSON") from exc
-    if not isinstance(raw, dict):
-        raise LLMFitError("LLMFit JSON root must be an object")
-    return raw
-
-
-def build_recommend_command(
-    *, limit: int = CANDIDATE_COUNT, use_case: str | None = None, max_context: int | None = None
-) -> list[str]:
-    if limit < 1:
-        raise ValueError("limit must be >= 1")
-    command = ["llmfit", "recommend", "--json", "--limit", str(limit)]
-    if use_case:
-        command.extend(["--use-case", use_case])
-    if max_context is not None:
-        if max_context < 1:
-            raise ValueError("max_context must be >= 1")
-        command.extend(["--max-context", str(max_context)])
-    return command
-
-
-def run_recommend(
-    *, limit: int = CANDIDATE_COUNT, use_case: str | None = None,
-    max_context: int | None = None, timeout_seconds: int = 30
-) -> LLMFitResult:
-    command = build_recommend_command(limit=limit, use_case=use_case, max_context=max_context)
-    raw = _run_json(command, timeout_seconds=timeout_seconds)
-    models = raw.get("models", [])
-    if not isinstance(models, list):
-        raise LLMFitError("LLMFit JSON field 'models' must be a list")
-    system = raw.get("system", {})
-    return LLMFitResult(
-        command=tuple(command),
-        version=raw.get("version") if isinstance(raw.get("version"), str) else None,
-        system=system if isinstance(system, dict) else {},
-        models=tuple(m for m in models if isinstance(m, dict)),
-        raw=raw,
-    )
-
-
-def run_system(*, timeout_seconds: int = 30) -> Mapping[str, Any]:
-    return _run_json(["llmfit", "--json", "system"], timeout_seconds=timeout_seconds)
-
-
-def _system_payload(result: LLMFitResult | Mapping[str, Any]) -> tuple[Mapping[str, Any], str | None]:
-    if isinstance(result, LLMFitResult):
-        root = result.raw
-        source = result.system
-        version = result.version
-    else:
-        root = result
-        version = None
-        source = result
-    if not isinstance(root, Mapping):
-        root = {}
-    if isinstance(root.get("system"), Mapping):
-        source = root["system"]
-    elif not isinstance(source, Mapping):
-        source = {}
-    return source, version
-
-
-def normalise_hardware(result: LLMFitResult | Mapping[str, Any]) -> dict[str, Any]:
-    """Map current LLMFit facts without fabricating dedicated VRAM."""
-    source, version = _system_payload(result)
-    gpus = source.get("gpus")
-    first = gpus[0] if isinstance(gpus, list) and gpus and isinstance(gpus[0], Mapping) else {}
-    gpu = first.get("name") or source.get("gpu_name")
-    vram = first.get("vram_gb") if first.get("vram_gb") is not None else source.get("gpu_vram_gb")
-    backend = first.get("backend") or source.get("backend")
-    unified = bool(first.get("unified_memory", source.get("unified_memory", False)))
-    memory_kind = "unified" if unified else ("dedicated" if vram is not None else None)
-    cpu = source.get("cpu_name") or source.get("cpu")
-    ram = source.get("total_ram_gb") or source.get("ram_gb")
-    os_name = source.get("os") or source.get("os_name")
-    architecture = source.get("architecture") or source.get("arch")
-    if os_name is None:
-        os_name = platform.platform()
-    if architecture is None:
-        architecture = platform.machine()
-    return {
-        "source": "llmfit", "source_version": version, "cpu": cpu, "ram_gb": ram,
-        "gpu": gpu, "vram_gb": vram, "gpu_memory_kind": memory_kind,
-        "unified_memory": unified, "os": os_name, "architecture": architecture,
-        "accelerators": [backend] if backend else [], "verification": "detected", "raw": dict(source),
-    }
-
-
-def normalise_candidates(result: LLMFitResult) -> list[dict[str, Any]]:
-    """Normalize FitLLM proposals while retaining their ESTIMATED provenance."""
-    candidates = []
-    for rank, model in enumerate(result.models, start=1):
-        model_id = model.get("name") or model.get("id")
-        if not model_id:
-            continue
-        candidates.append({
-            "rank": rank,
-            "source": "llmfit",
-            "model_id": model_id,
-            "name": model.get("name") or model_id,
-            "fit": model.get("fit") or model.get("fit_level") or model.get("score"),
-            "estimated_tps": model.get("estimated_tps") or model.get("tps"),
-            "quantization": model.get("quantization") or model.get("quant") or model.get("best_quant"),
-            "evidence_level": "estimated",
-            "raw": dict(model),
-        })
-        if len(candidates) == CANDIDATE_COUNT:
-            break
-    return candidates
-
-=== RC4 RECOMMENDER ===
-#!/usr/bin/env python3
-"""RC4 — FitLLM/LLMFit optional model recommender.
-
-FitLLM proposes exactly three ESTIMATED candidates. It never authorizes
-execution or MEASURED results. LEONES starts without FitLLM; a missing binary
-only degrades this recommendation step.
-"""
-from __future__ import annotations
-
-import argparse
-import json
-import sys
-from pathlib import Path
-from typing import Any, Mapping, Sequence
-
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from runtime_selection import llmfit as llmfit_mod  # noqa: E402
-
-
-SCHEMA = "leones.rc4.fitllm_recommendation.v1"
-CANDIDATE_COUNT = 3
-
-
-def _normalise_user_intent(purposes: Sequence[str]) -> list[str]:
-    """Validate the mandatory RC4 multi-purpose user intent contract."""
-    from scripts.collect_model_evidence import normalize_purposes
-
-    return normalize_purposes(purposes)
-
-
-def _llmfit_use_case(purposes: Sequence[str]) -> str:
-    """Translate RC4 multi-purpose intent to LLMFit's single use-case filter.
-
-    RC4 keeps the complete user_intent[] contract. LLMFit 1.1.10 accepts only
-    one --use-case value, so this is a boundary translation, never a rewrite
-    of the public RC4 intent.
-    """
-    mapping = (
-        ("programming", "coding"),
-        ("reasoning", "reasoning"),
-        ("multimodal", "multimodal"),
-        ("chat", "chat"),
-        ("embedding", "embedding"),
-        ("research", "general"),
-        ("general", "general"),
-    )
-    for purpose, use_case in mapping:
-        if purpose in purposes:
-            return use_case
-    return "general"
-
-
-def recommend(
-    *,
-    user_intent: Sequence[str],
-    max_context: int | None = None,
-    timeout_seconds: int = 30,
-) -> dict[str, Any]:
-    """Return exactly three proposals when FitLLM can supply three.
-
-    This envelope is proposal-only: execution and measurement remain false.
-    """
-    purposes = _normalise_user_intent(user_intent)
-
-    base: dict[str, Any] = {
-        "schema": SCHEMA,
-        "user_intent": {
-            "required": True,
-            "selection_mode": "multiple",
-            "purposes": purposes,
-        },
-        "phase": "RC4",
-        "provider": "fitllm_llmfit",
-        "kind": "ESTIMATED",
-        "candidate_count": CANDIDATE_COUNT,
-        "execution_authorized": False,
-        "measurement_authorized": False,
-        "measured": False,
-        "user_choice_required": True,
-        "fitllm_required_for_boot": False,
-        "recommendations": [],
-        "status": "ok",
-        "message": None,
-    }
-
-    if llmfit_mod.executable() is None:
-        base["status"] = "unavailable"
-        base["candidate_count"] = 0
-        base["message"] = (
-            "FitLLM/LLMFit no está en PATH. LEONES puede continuar: "
-            "elige el modelo a mano. La preselección automática queda omitida."
-        )
-        return base
-
-    try:
-        result = llmfit_mod.run_recommend(
-            limit=CANDIDATE_COUNT,
-            use_case=_llmfit_use_case(purposes),
-            max_context=max_context,
-            timeout_seconds=timeout_seconds,
-        )
-    except llmfit_mod.LLMFitError as exc:
-        base["status"] = "error"
-        base["candidate_count"] = 0
-        base["message"] = f"FitLLM falló en preselección: {exc}"
-        return base
-
-    models: Sequence[Mapping[str, Any]] = result.models
-    rows = []
-    for item in models:
-        if not isinstance(item, Mapping):
-            continue
-        model_id = item.get("id") or item.get("model") or item.get("name")
-        if not model_id:
-            continue
-        rows.append({
-            "model_id": model_id,
-            "raw": dict(item),
-            "kind": "ESTIMATED",
-        })
-        if len(rows) == CANDIDATE_COUNT:
-            break
-
-    base["recommendations"] = rows
-    base["candidate_count"] = len(rows)
-    base["provider_version"] = result.version
-    base["command"] = list(result.command)
-
-    if len(rows) != CANDIDATE_COUNT:
-        base["status"] = "insufficient"
-        base["message"] = (
-            f"FitLLM no proporcionó {CANDIDATE_COUNT} candidatos válidos "
-            f"({len(rows)} disponibles); no se fabrica una tercera opción."
-        )
-    return base
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="RC4 FitLLM optional recommender")
-    parser.add_argument(
-        "--purpose",
-        dest="purposes",
-        action="append",
-        required=True,
-        help="RC4 user intent; repeat for multiple purposes",
-    )
-    parser.add_argument("--max-context", type=int, default=None)
-    parser.add_argument("--json", action="store_true", help="print JSON only")
-    args = parser.parse_args(argv)
-
-    envelope = recommend(
-        user_intent=args.purposes,
-        max_context=args.max_context,
-    )
-    if args.json:
-        print(json.dumps(envelope, ensure_ascii=False, indent=2))
-        return 0 if envelope["status"] in {"ok", "unavailable"} else 1
-
-    print(f"RC4 FitLLM recommendation: {envelope['status']}")
-    print(f"  candidates: {envelope['candidate_count']}/{CANDIDATE_COUNT}")
-    print(f"  kind: {envelope['kind']}  execution_authorized: {envelope['execution_authorized']}")
-    if envelope.get("message"):
-        print(f"  {envelope['message']}")
-    for i, row in enumerate(envelope.get("recommendations") or [], 1):
-        print(f"  [{i}] {row.get('model_id')}")
-    if envelope["status"] == "unavailable":
-        return 0
-    return 0 if envelope["status"] == "ok" else 1
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
-
-=== TESTS RELACIONADOS ===
-tests/contracts/test_evidence_provenance_contract.py
-tests/contracts/test_technical_evidence_layer.py
-tests/integration/test_atlas_evidence_flow.py
-tests/__pycache__/test_collect_model_evidence.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_evidence.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_jalon2_llama_cpp_evidence.cpython-314.pyc
-tests/__pycache__/test_jalon2_llama_cpp_evidence.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_llmfit_to_recommendation_candidates.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_ods_magnitude_evidence.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_rc2_candidates.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_rc3_candidate_set.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_rc3_model_evidence.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_rc4_fitllm_recommender.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_rc4_release_gate.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_rc4_resource_preflight.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_runtime_benchmark_evidence.cpython-314-pytest-9.1.1.pyc
-tests/__pycache__/test_runtime_benchmark_evidence_v1_1.cpython-314-pytest-9.1.1.pyc
-tests/test_collect_model_evidence.py
-tests/test_evidence.py
-tests/test_llmfit_to_recommendation_candidates.py
-tests/test_ods_magnitude_evidence.py
-tests/test_rc2_candidates.py
-tests/test_rc3_candidate_set.py
-tests/test_rc3_model_evidence.py
-tests/test_rc4_fitllm_recommender.py
-tests/test_rc4_release_gate.py
-tests/test_rc4_resource_preflight.py
-tests/test_runtime_benchmark_evidence.py
-
-=== LLMFIT CLI CONTRACT ===
-llmfit 1.1.10
-
-Recommend top models for your hardware (JSON-friendly).
-
-Analyzes all models against detected hardware and returns the top N ranked
-recommendations. Supports filtering by use case, fit level, inference runtime,
-model capabilities, and license. JSON output is enabled by default.
-
-PRECONDITIONS:
-  Requires hardware detection. Use --memory to override GPU VRAM if needed.
-
-SIDE EFFECTS:
-  None — read-only.
-
-EXIT CODES:
-  0  Success
-  1  Hardware detection or internal error
-
-AGENT USAGE:
-  llmfit recommend
-  llmfit recommend -n 3 --use-case coding --min-fit good
-  llmfit recommend --runtime mlx --capability vision
-  llmfit recommend --force-runtime llamacpp  # get llama.cpp results on Apple Silicon
-  llmfit recommend --license apache-2.0,mit
-  llmfit recommend --output-llamacpp  # include llama.cpp commands in output
-
-  JSON output is the default. Fields: { system: {...}, models: [{ name,
-  provider, parameter_count, fit_level, run_mode, score, score_components
-  { quality, speed, fit, context }, estimated_tps, disk_size_gb,
-  memory_required_gb, memory_available_gb, utilization_pct, best_quant,
-  effective_context_length, use_case, license, runtime, capabilities,
-  llamacpp_command (when --output-llamacpp) }] }
-
-Usage: llmfit recommend [OPTIONS]
-
-Options:
-  -n, --limit <LIMIT>
-          Limit number of recommendations
-          
-          [default: 5]
-
-      --use-case <CATEGORY>
-          Filter by use case: general, coding, reasoning, chat, multimodal, embedding
-
-      --min-fit <MIN_FIT>
-          Filter by minimum fit level: perfect, good, marginal
-          
-          [default: marginal]
-
-      --runtime <RUNTIME>
-          Filter by inference runtime: mlx, llamacpp, any
-          
-          [default: any]
-
-      --force-runtime <RUNTIME>
-          Force a specific runtime override, bypassing automatic selection (e.g. get llama.cpp recommendations on Apple Silicon instead of MLX)
-
-      --capability <CAPS>
-          Filter by capability: vision, tool_use, audio, tts (comma-separated)
-
-      --license <LICENSE>
-          Filter by license (comma-separated, e.g. "apache-2.0,mit")
-
-      --json
-          Output as JSON (default for recommend)
-
-      --output-llamacpp
-          Include suggested llama.cpp commands in output for llama.cpp-compatible models
-
-      --csv
-          Output results as CSV (for spreadsheet / data analysis)
-
-      --tui
-          Force the interactive TUI, ignoring any subcommand or output flags. Useful in Docker where a baked-in CMD would otherwise run a subcommand: docker run --rm -it ghcr.io/alexsjones/llmfit --tui
-
-      --no-dashboard
-          Do not auto-start the background dashboard server
-
-  -h, --help
-          Print help (see a summary with '-h')
+=== PYCOMPILE ===
+PASS
+
+=== TEST SUITE ===
+...............................F........................................ [ 17%]
+........................................................................ [ 34%]
+........................................................................ [ 51%]
+........................................................................ [ 68%]
+..............................F......................................... [ 86%]
+..........................................................               [100%]
+=================================== FAILURES ===================================
+_ InferenceOptimizationSelectorContractTests.test_selector_order_puts_optimization_before_estimators _
+
+self = <contracts.test_inference_optimization_selector_contract.InferenceOptimizationSelectorContractTests testMethod=test_selector_order_puts_optimization_before_estimators>
+
+    def test_selector_order_puts_optimization_before_estimators(self):
+        import json
+        path = Path(__file__).parents[2] / "web" / "data" / "inference-optimization.json"
+        order = json.loads(path.read_text(encoding="utf-8"))["selector_order"]
+        self.assertLess(order.index("use_case"), order.index("estimators"))
+        self.assertLess(order.index("hardware"), order.index("estimators"))
+>       self.assertLess(order.index("runtime"), order.index("estimators"))
+                        ^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: list.index(x): x not in list
+
+tests/contracts/test_inference_optimization_selector_contract.py:26: ValueError
+___________ test_candidate_normalization_preserves_llmfit_provenance ___________
+
+    def test_candidate_normalization_preserves_llmfit_provenance():
+        candidates = normalize_candidates([
+            {"id": "model-a", "fit": 0.91, "estimated_tps": 12.5, "source_version": "fixture-1"}
+        ])
+        assert candidates[0]["model_id"] == "model-a"
+        assert candidates[0]["fit"] == 0.91
+        assert candidates[0]["estimated_tps"] == 12.5
+>       assert candidates[0]["source"] == "llmfit"
+E       AssertionError: assert 'external' == 'llmfit'
+E         
+E         - llmfit
+E         + external
+
+tests/test_rc2_hardware_profile.py:19: AssertionError
+=========================== short test summary info ============================
+FAILED tests/contracts/test_inference_optimization_selector_contract.py::InferenceOptimizationSelectorContractTests::test_selector_order_puts_optimization_before_estimators
+FAILED tests/test_rc2_hardware_profile.py::test_candidate_normalization_preserves_llmfit_provenance
+2 failed, 416 passed in 11.79s
 
 ============================================================
 LEONES — CAPTURE RESULT
 ============================================================
-command_exit_code=0
-full_local_capture=artifacts/terminal-capture/capture-20260906T144428Z.txt
+command_exit_code=1
+full_local_capture=artifacts/terminal-capture/capture-20260906T144608Z.txt
 tracked_snapshot=docs/audits/terminal/latest.txt
 ============================================================
