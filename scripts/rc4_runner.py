@@ -4,6 +4,8 @@
 Collects the mandatory multi-purpose user intent before any recommendation and
 then delegates to the canonical RC4 FitLLM/LLMFit recommender. This runner is
 proposal-only: it never authorizes execution or measurement.
+
+The historical RC2 wizard remains available explicitly through ``--rc2``.
 """
 from __future__ import annotations
 
@@ -14,6 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RECOMMENDER = ROOT / "scripts" / "rc4_fitllm_recommend.py"
+RC2_WIZARD = ROOT / "scripts" / "rc2_wizard.py"
 
 PURPOSES = (
     ("programming", "Programación / código"),
@@ -51,9 +54,22 @@ def choose_purposes() -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="LEONES RC4 default runner")
+    parser.add_argument("--rc2", action="store_true", help="run the historical RC2 wizard")
     parser.add_argument("--json", action="store_true", help="emit recommender JSON")
-    parser.add_argument("--purpose", action="append", dest="purposes", help="non-interactive purpose; repeatable")
+    parser.add_argument(
+        "--purpose",
+        action="append",
+        dest="purposes",
+        help="non-interactive purpose; repeatable",
+    )
     args = parser.parse_args(argv)
+
+    if args.rc2:
+        return subprocess.run(
+            [sys.executable, str(RC2_WIZARD)],
+            cwd=ROOT,
+            check=False,
+        ).returncode
 
     purposes = list(dict.fromkeys(args.purposes or choose_purposes()))
     command = [sys.executable, str(RECOMMENDER)]
