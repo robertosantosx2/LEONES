@@ -2,11 +2,12 @@
 """RC4 — install/uninstall pairing for optional components.
 
 Problem
-    Optional components (FitLLM, Magnitude, ODS) must always expose a matched
-    uninstall path so RC4 never leaves silent permanent residents.
+    Optional components must always expose a matched uninstall path so RC4 never
+    leaves silent permanent residents. Uninstalls are independent and opt-in.
+    LEONES state is offered last.
 
 Inputs
-    component_id in {fitllm, magnitude, ods}
+    component_id in INSTALLABLE_COMPONENTS
     stack label for the post-install FitLLM removal offer
 
 Outputs
@@ -14,8 +15,8 @@ Outputs
     post_stack_fitllm_uninstall_offer() returns an opt-in offer payload
 
 What this module does NOT do
-    Perform install/uninstall. It only encodes the contract: every installable
-    component has a removal path; FitLLM removal after Magnitude/ODS is opt-in.
+    Perform install/uninstall. Destructive actions live in scripts/uninstall.sh
+    and discovery in scripts/rc4_component_inventory.py.
 """
 from __future__ import annotations
 
@@ -25,6 +26,21 @@ INSTALLABLE_COMPONENTS: tuple[str, ...] = (
     "fitllm",
     "magnitude",
     "ods",
+    "hermes",
+    "omh",
+    "llms",
+    "leones",
+)
+
+# Order for interactive offers: LEONES always last
+OFFER_ORDER: tuple[str, ...] = (
+    "fitllm",
+    "magnitude",
+    "ods",
+    "hermes",
+    "omh",
+    "llms",
+    "leones",
 )
 
 
@@ -38,6 +54,10 @@ def assert_install_uninstall_pair(component_id: str) -> None:
 
 def all_installable() -> tuple[str, ...]:
     return INSTALLABLE_COMPONENTS
+
+
+def uninstall_offer_order() -> tuple[str, ...]:
+    return OFFER_ORDER
 
 
 def post_stack_fitllm_uninstall_offer(*, stack: str) -> dict:
