@@ -4,8 +4,8 @@
 <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="description" content="LEONES RC4: intención obligatoria, evidencia de Hugging Face y Artificial Analysis, feed de hasta 100 modelos, intersección con FitLLM/LLMFit y tres candidatos ESTIMATED antes de la selección humana." />
 <title>LEONES · RC4 · Recomendación</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-3" />
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-3" />
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-5" />
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-5" />
 <style>
 .rc4-hero-note{margin-top:1rem;padding:1rem 1.15rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}
 .rc4-state{display:inline-block;padding:.3rem .55rem;border-radius:999px;background:#fff4d8;color:#7a5b00;font-weight:800;font-size:.78rem}
@@ -24,38 +24,43 @@
 <h1>LEONES · RC4</h1>
 <p><strong>Recomendación con intención, evidencia y límites explícitos.</strong> La preselección orienta; la elección humana y la medición física LEONES conservan la autoridad.</p>
 <div class="rc4-hero-note">
-<span class="rc4-state rc4-state--ok">RC4 · regresión 422/422</span>
+<span class="rc4-state rc4-state--ok">RC4 · capa recomendación endurecida</span>
 <span class="rc4-state rc4-state--ok" style="margin-left:.4rem">RC3 · cerrada</span>
+<span class="rc4-state" style="margin-left:.4rem">MEASURED · abierto</span>
 <p style="margin-top:.8rem"><strong>Regla de autoridad:</strong> el usuario declara para qué quiere usar la IA antes de recomendar. Hugging Face y Artificial Analysis aportan evidencia externa; LEONES construye un feed de hasta 100 modelos; LLMFit se consulta con su CLI real y la propuesta se limita a la intersección respaldada por evidencia. Ninguna estimación externa se convierte en medición local.</p>
 </div>
 </div></header>
 <main class="site-main" id="main">
 <section class="site-section"><span class="site-tag">Flujo canónico</span><h2>De la necesidad a la evidencia</h2>
-<pre class="site-stack">HARDWARE DETECTADO
-   +
-USER_INTENT[] · obligatorio · selección múltiple
-   ↓
-RECURSOS / PREFLIGHT
-   ↓
-HUGGING FACE + ARTIFICIAL ANALYSIS
-   ↓
-feed LEONES · máximo 100 modelos
-   │                         │
-   │                         └── evidencia/procedencia
-   ↓
-LLMFit / FitLLM · --limit 100 · CLI soportada
-   ↓
-INTERSECCIÓN POR IDENTIDAD DE MODELO
-   ↓
-hasta 3 candidatos · ESTIMATED
-   ↓
-SELECCIÓN HUMANA
-   ↓
-resolución del artefacto / instalación
-   ↓
-Ubuntu · runtime físico
-   ↓
-medición → evidencia MEASURED → recomendación</pre>
+<pre class="site-stack">
+╔══════════════════════════════════════════════════════════════╗
+║  HARDWARE DETECTADO                                          ║
+║            +                                                 ║
+║  USER_INTENT[]  · obligatorio · selección múltiple           ║
+╠══════════════════════════════════════════════════════════════╣
+║       │                                                      ║
+║       ▼                                                      ║
+║  RECURSOS / PREFLIGHT                                        ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  HUGGING FACE + ARTIFICIAL ANALYSIS                          ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  feed LEONES · máximo 100 modelos ──► evidencia/procedencia  ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  LLMFit / FitLLM · --limit 100 · CLI real                    ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  INTERSECCIÓN POR IDENTIDAD                                  ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  hasta 3 ESTIMATED  │  insufficient (sin padding)            ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  SELECCIÓN HUMANA → stack → runtime → Leo suite → MEASURED   ║
+╚══════════════════════════════════════════════════════════════╝
+</pre>
 <p class="site-note"><strong>ESTIMATED ≠ MEASURED.</strong> El puente no inventa un mecanismo para inyectar el feed en LLMFit: la versión instalada no ofrece un flag soportado para ello. LEONES conserva la evidencia y limita la salida a la intersección verificable.</p>
 </section>
 <section class="site-section"><span class="site-tag">Intención</span><h2>Primero: ¿para qué quieres usar la IA?</h2>
@@ -116,7 +121,8 @@ elección humana
 </section>
 <section class="site-section"><span class="site-tag">Estado</span><h2>RC4 · capa de recomendación endurecida</h2>
 <div class="rc4-gates">
-<article class="rc4-card"><h3>✓ Regresión</h3><p><strong>422/422</strong> en la suite completa, según la validación física Ubuntu más reciente del runner.</p></article>
+<article class="rc4-card"><h3>✓ Gate + tests</h3><p>Release gate PASS · 6 tests contractuales RC4 PASS (Aspire, 2026-09-06).</p></article>
+<article class="rc4-card"><h3>✓ Preflight Ubuntu</h3><p>Aspire A515-55: <code>insufficient</code> real (1/3), sin padding. Ver <code>results/physical-rc4-20260906/</code>.</p></article>
 <article class="rc4-card"><h3>✓ Intent</h3><p>Contrato obligatorio, selección múltiple y propósitos no vacíos antes de recomendar.</p></article>
 <article class="rc4-card"><h3>✓ Evidencia</h3><p>Feed HF + AA con límite 100 y procedencia conservada; intersección explícita con el catálogo LLMFit.</p></article>
 <article class="rc4-card"><h3>✓ Límite de autoridad</h3><p>Candidatos <code>ESTIMATED</code>, sin autorización de ejecución ni medición.</p></article>
@@ -130,12 +136,13 @@ elección humana
 <a href="../docs/RC4-ARCHITECTURE.md">Arquitectura RC4</a>
 <a href="../docs/RC4-EVIDENCE-BRIDGE.md">Puente HF + AA → LLMFit</a>
 <a href="../docs/completed/RC4-DECISION-FITLLM-RECOMMENDER-2026-09-06.md">Acta de decisión</a>
+<a href="../docs/completed/RC4-STRICT-UBUNTU-PREFLIGHT-2026-09-06.md">STRICT Ubuntu preflight</a>
 <a href="rc3.html">RC3 · cerrada</a>
 <a href="estado.html">Estado del proyecto</a>
 <a href="../README.md">README</a>
 </div>
 </section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-06-3" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-06-5" defer></script>
 </body>
 </html>
