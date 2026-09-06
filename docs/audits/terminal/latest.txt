@@ -1,23 +1,287 @@
 ============================================================
 LEONES — TERMINAL CAPTURE
 ============================================================
-timestamp_utc=20260906T144127Z
+timestamp_utc=20260906T144319Z
 branch=rc4-fitllm-recommender
-commit=9a51c54ccba53ac1bd059569a935975c9b1f760b
-command=python scripts/rc4_fitllm_recommend.py --purpose programming --purpose reasoning --purpose research
+commit=cc5995e88bbc2fce2a4ef19533eb47b02ba2f54d
+command=python scripts/rc4_fitllm_recommend.py --purpose programming --purpose reasoning --purpose research --json
 ============================================================
 
-RC4 FitLLM recommendation: ok
-  candidates: 3/3
-  kind: ESTIMATED  execution_authorized: False
-  [1] ryzdfm/qwen2.5-coder-3b-claude_opus_4.6-distilled
-  [2] huihui-ai/Qwen2.5-Coder-3B-Instruct-abliterated
-  [3] Qwen/Qwen2.5-Coder-3B
+{
+  "schema": "leones.rc4.fitllm_recommendation.v1",
+  "user_intent": {
+    "required": true,
+    "selection_mode": "multiple",
+    "purposes": [
+      "programming",
+      "reasoning",
+      "research"
+    ]
+  },
+  "phase": "RC4",
+  "provider": "fitllm_llmfit",
+  "kind": "ESTIMATED",
+  "candidate_count": 3,
+  "execution_authorized": false,
+  "measurement_authorized": false,
+  "measured": false,
+  "user_choice_required": true,
+  "fitllm_required_for_boot": false,
+  "recommendations": [
+    {
+      "model_id": "huihui-ai/Qwen2.5-Coder-3B-Instruct-abliterated",
+      "raw": {
+        "best_quant": "Q8_0",
+        "capabilities": [
+          "Tool Use"
+        ],
+        "capability_ids": [
+          "tool_use"
+        ],
+        "category": "Coding",
+        "context_length": 32768,
+        "disk_size_gb": 3.24,
+        "effective_context_length": 8192,
+        "estimate_basis": {
+          "assumed_context": 8192,
+          "ddr_bandwidth_gbps": null,
+          "efficiency": 0.55,
+          "gpu_bandwidth_gbps": null,
+          "local_calibration": null,
+          "method": "backend_constant"
+        },
+        "estimated_tps": 28.5,
+        "fit_label": "Perfect",
+        "fit_level": "Perfect",
+        "gguf_sources": [
+          {
+            "provider": "bartowski",
+            "repo": "bartowski/Qwen2.5-Coder-3B-Instruct-abliterated-GGUF"
+          },
+          {
+            "provider": "mradermacher",
+            "repo": "mradermacher/Qwen2.5-Coder-3B-Instruct-abliterated-GGUF"
+          }
+        ],
+        "installed": false,
+        "is_moe": false,
+        "license": null,
+        "measured_tps": null,
+        "memory_available_gb": 7.03,
+        "memory_required_gb": 4.02,
+        "moe_offloaded_gb": null,
+        "name": "huihui-ai/Qwen2.5-Coder-3B-Instruct-abliterated",
+        "notes": [
+          "Context capped at 8192 tokens for estimation (model supports up to 32768; use --max-context to override)",
+          "Unified memory: GPU and CPU share the same pool",
+          "Best quantization for hardware: Q8_0 (model default: Q4_K_M)",
+          "Baseline estimated speed: 28.5 tok/s"
+        ],
+        "ollama_name": null,
+        "parameter_count": "3.1B",
+        "params_b": 3.09,
+        "provider": "huihui-ai",
+        "release_date": null,
+        "run_mode": "GPU",
+        "run_mode_label": "GPU",
+        "runtime": "llama.cpp",
+        "runtime_label": "llama.cpp",
+        "score": 81.1,
+        "score_components": {
+          "context": 100.0,
+          "fit": 100.0,
+          "quality": 73.7,
+          "speed": 71.3
+        },
+        "supports_tp": [
+          1,
+          2
+        ],
+        "total_memory_gb": 4.02,
+        "usable_context": 32768,
+        "use_case": "Code generation and completion",
+        "utilization_pct": 57.2,
+        "verify_command": "llama-bench -m <path-to-Q8_0-gguf> -ngl 99 -p 512 -n 128"
+      },
+      "kind": "ESTIMATED"
+    },
+    {
+      "model_id": "Qwen/Qwen2.5-Coder-3B",
+      "raw": {
+        "best_quant": "Q8_0",
+        "capabilities": [
+          "Tool Use"
+        ],
+        "capability_ids": [
+          "tool_use"
+        ],
+        "category": "Coding",
+        "context_length": 32768,
+        "disk_size_gb": 3.24,
+        "effective_context_length": 8192,
+        "estimate_basis": {
+          "assumed_context": 8192,
+          "ddr_bandwidth_gbps": null,
+          "efficiency": 0.55,
+          "gpu_bandwidth_gbps": null,
+          "local_calibration": null,
+          "method": "backend_constant"
+        },
+        "estimated_tps": 28.5,
+        "fit_label": "Perfect",
+        "fit_level": "Perfect",
+        "gguf_sources": [
+          {
+            "provider": "bartowski",
+            "repo": "bartowski/Qwen2.5-Coder-3B-GGUF"
+          },
+          {
+            "provider": "mradermacher",
+            "repo": "mradermacher/Qwen2.5-Coder-3B-GGUF"
+          }
+        ],
+        "installed": false,
+        "is_moe": false,
+        "license": "qwen-research",
+        "measured_tps": null,
+        "memory_available_gb": 7.03,
+        "memory_required_gb": 4.02,
+        "moe_offloaded_gb": null,
+        "name": "Qwen/Qwen2.5-Coder-3B",
+        "notes": [
+          "Context capped at 8192 tokens for estimation (model supports up to 32768; use --max-context to override)",
+          "Unified memory: GPU and CPU share the same pool",
+          "Best quantization for hardware: Q8_0 (model default: Q4_K_M)",
+          "Baseline estimated speed: 28.5 tok/s"
+        ],
+        "ollama_name": null,
+        "parameter_count": "3.1B",
+        "params_b": 3.09,
+        "provider": "Alibaba",
+        "release_date": "2024-11-08",
+        "run_mode": "GPU",
+        "run_mode_label": "GPU",
+        "runtime": "llama.cpp",
+        "runtime_label": "llama.cpp",
+        "score": 81.1,
+        "score_components": {
+          "context": 100.0,
+          "fit": 100.0,
+          "quality": 73.7,
+          "speed": 71.3
+        },
+        "supports_tp": [
+          1,
+          2
+        ],
+        "total_memory_gb": 4.02,
+        "usable_context": 32768,
+        "use_case": "Code generation and completion",
+        "utilization_pct": 57.2,
+        "verify_command": "llama-bench -m <path-to-Q8_0-gguf> -ngl 99 -p 512 -n 128"
+      },
+      "kind": "ESTIMATED"
+    },
+    {
+      "model_id": "Qwen/Qwen2.5-Coder-3B-Instruct",
+      "raw": {
+        "best_quant": "Q8_0",
+        "capabilities": [
+          "Tool Use"
+        ],
+        "capability_ids": [
+          "tool_use"
+        ],
+        "category": "Coding",
+        "context_length": 32768,
+        "disk_size_gb": 3.24,
+        "effective_context_length": 8192,
+        "estimate_basis": {
+          "assumed_context": 8192,
+          "ddr_bandwidth_gbps": null,
+          "efficiency": 0.55,
+          "gpu_bandwidth_gbps": null,
+          "local_calibration": null,
+          "method": "backend_constant"
+        },
+        "estimated_tps": 28.5,
+        "fit_label": "Perfect",
+        "fit_level": "Perfect",
+        "gguf_sources": [
+          {
+            "provider": "unsloth",
+            "repo": "unsloth/Qwen2.5-Coder-3B-Instruct-GGUF"
+          },
+          {
+            "provider": "bartowski",
+            "repo": "bartowski/Qwen2.5-Coder-3B-Instruct-GGUF"
+          },
+          {
+            "provider": "mradermacher",
+            "repo": "mradermacher/Qwen2.5-Coder-3B-Instruct-GGUF"
+          }
+        ],
+        "installed": false,
+        "is_moe": false,
+        "license": "qwen-research",
+        "measured_tps": null,
+        "memory_available_gb": 7.03,
+        "memory_required_gb": 4.02,
+        "moe_offloaded_gb": null,
+        "name": "Qwen/Qwen2.5-Coder-3B-Instruct",
+        "notes": [
+          "Context capped at 8192 tokens for estimation (model supports up to 32768; use --max-context to override)",
+          "Unified memory: GPU and CPU share the same pool",
+          "Best quantization for hardware: Q8_0 (model default: Q4_K_M)",
+          "Baseline estimated speed: 28.5 tok/s"
+        ],
+        "ollama_name": null,
+        "parameter_count": "3.1B",
+        "params_b": 3.09,
+        "provider": "Alibaba",
+        "release_date": "2024-11-06",
+        "run_mode": "GPU",
+        "run_mode_label": "GPU",
+        "runtime": "llama.cpp",
+        "runtime_label": "llama.cpp",
+        "score": 81.1,
+        "score_components": {
+          "context": 100.0,
+          "fit": 100.0,
+          "quality": 73.7,
+          "speed": 71.3
+        },
+        "supports_tp": [
+          1,
+          2
+        ],
+        "total_memory_gb": 4.02,
+        "usable_context": 32768,
+        "use_case": "Code generation and completion",
+        "utilization_pct": 57.2,
+        "verify_command": "llama-bench -m <path-to-Q8_0-gguf> -ngl 99 -p 512 -n 128"
+      },
+      "kind": "ESTIMATED"
+    }
+  ],
+  "status": "ok",
+  "message": null,
+  "provider_version": null,
+  "command": [
+    "llmfit",
+    "recommend",
+    "--json",
+    "--limit",
+    "3",
+    "--use-case",
+    "coding"
+  ]
+}
 
 ============================================================
 LEONES — CAPTURE RESULT
 ============================================================
 command_exit_code=0
-full_local_capture=artifacts/terminal-capture/capture-20260906T144127Z.txt
+full_local_capture=artifacts/terminal-capture/capture-20260906T144319Z.txt
 tracked_snapshot=docs/audits/terminal/latest.txt
 ============================================================
