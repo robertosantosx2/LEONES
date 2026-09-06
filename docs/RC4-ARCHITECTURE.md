@@ -8,22 +8,20 @@
 
 RC4 conserva la idea útil de RC3 de que la recomendación debe conocer **para qué quiere usar la IA el humano**, pero no recupera Hermes/OMH como arquitectura de selección u orquestación.
 
-La entrada canónica de recomendación deja de ser solamente `hardware → candidate-set → FitLLM`.
-
-Es:
+La entrada canónica de recomendación es:
 
 ```text
 HARDWARE
    +
 USER_INTENT[]                 obligatorio y anterior a recomendar
-   ↓
-FITLLM / LLMFIT
    +
 HUGGING FACE EVIDENCE
    +
 ARTIFICIAL ANALYSIS EVIDENCE
    ↓
-10 candidatos orientativos / evidence-ranked
+FITLLM / LLMFIT
+   ↓
+100 candidatos de entrada a FitLLM
    ↓
 3 candidatos ESTIMATED
    ↓
@@ -37,6 +35,12 @@ MEASURED evidence
 ```
 
 **HF y Artificial Analysis son entradas de evidencia de FitLLM/LLMFit; no son la recomendación final ni sustituyen la medición local.**
+
+### Regla de cardinalidad
+
+RC4 prepara **hasta 100 modelos candidatos/evidence records para FitLLM/LLMFit**. El objetivo de FitLLM es razonar sobre ese conjunto usando hardware + intención + evidencia y devolver los **3 candidatos ESTIMATED** de la recomendación.
+
+El número 100 es un máximo operativo de entrada, no una afirmación de que siempre existan 100 modelos válidos. Si el universo disponible contiene menos candidatos válidos, se conserva el conjunto disponible y se registra la cardinalidad real.
 
 ## 2. Contrato de recomendación RC4
 
@@ -95,9 +99,9 @@ validación RC4
       ↓
 HF + Artificial Analysis
       ↓
-FitLLM / LLMFit
+preparar hasta 100 entradas
       ↓
-10 candidatos orientativos
+FitLLM / LLMFit
       ↓
 3 candidatos ESTIMATED
       ↓
@@ -138,7 +142,7 @@ Hugging Face aporta principalmente **viabilidad técnica y señales de ecosistem
 - estado gated;
 - información específica de Transformers/Safetensors/GGUF cuando está disponible.
 
-Estas señales sirven para determinar **qué modelos/artifacts son técnicamente plausibles y mantenidos**, no para afirmar rendimiento local medido. La API oficial de `huggingface_hub` expone `ModelInfo` con campos como configuración, parámetros de Safetensors, GGUF, descargas, likes, última modificación, tags y demás metadatos. 
+Estas señales sirven para determinar **qué modelos/artifacts son técnicamente plausibles y mantenidos**, no para afirmar rendimiento local medido.
 
 ## 5. Papel de Artificial Analysis
 
@@ -163,16 +167,16 @@ El collector produce `leones.rc4.model-evidence.v1` y un bloque explícito `fitl
 ```text
 hardware
 user_intent[]
-model_evidence[]
+model_evidence[]        ← máximo 100
     ├── huggingface
     └── artificial_analysis
           ↓
      FitLLM / LLMFit
+          ↓
+     top 3 ESTIMATED
 ```
 
-El collector puede ordenar un conjunto amplio de candidatos para alimentar la selección. Esa ordenación es **evidence-ranked**, no una medición local ni una autorización de ejecución.
-
-El objetivo operativo es llegar primero a un conjunto orientativo de **10 modelos** y, tras el razonamiento de FitLLM/LLMFit con hardware + intención + evidencia, producir los **3 candidatos ESTIMATED** que verá el usuario.
+La ordenación previa de evidencia puede utilizarse para reducir un universo mayor a un máximo de 100 entradas, pero **no sustituye a FitLLM**. El ranking previo es discovery/evidence-ranking; la decisión de adecuación pertenece a FitLLM/LLMFit.
 
 ## 7. Prefiltro de memoria
 
@@ -255,35 +259,68 @@ El `candidate-set` puede permanecer como representación interna/propuesta, pero
                     │    obligatorio  │
                     └────────┬────────┘
                              │
-                ┌────────────▼────────────┐
-                │     FITLLM / LLMFIT     │
-                │ hardware + intent +    │
-                │ external evidence       │
-                └───────┬─────────┬───────┘
-                        │         │
-               ┌────────▼───┐ ┌──▼──────────────┐
-               │ Hugging    │ │ Artificial      │
-               │ Face       │ │ Analysis        │
-               └────────────┘ └─────────────────┘
-                        │         │
-                        └────┬────┘
-                             ▼
-                    10 candidatos
-                       orientativos
+              ┌──────────────▼──────────────┐
+              │       MODEL EVIDENCE        │
+              │                              │
+              │ HF + Artificial Analysis    │
+              │       hasta 100 modelos     │
+              └──────────────┬──────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │ FITLLM / LLMFIT │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │ 3 ESTIMATED     │
+                    └────────┬────────┘
+                             │
+                    selección humana
                              │
                              ▼
-                     3 ESTIMATED
-                             │
-                       humano elige
-                             │
-                             ▼
-                      runtime físico
+                       runtime físico
                              │
                              ▼
                          medición
                              │
                              ▼
-                     MEASURED evidence
+                       MEASURED
 ```
 
-Esta es la arquitectura de recomendación RC4 que debe utilizarse como baseline antes de continuar con el flujo físico de Ubuntu.
+## 12. Handoff físico Ubuntu
+
+Una vez obtenidos los 3 candidatos ESTIMATED, Ubuntu continúa por el camino físico ya establecido:
+
+```text
+3 ESTIMATED
+     ↓
+USER SELECTION
+     ↓
+artifact-resolution
+     ↓
+CONSENT
+     ↓
+runtime/backend
+     ↓
+physical execution
+     ↓
+benchmark
+     ↓
+evidence bridge
+     ↓
+MEASURED
+```
+
+El benchmark físico de RC4 mantiene la separación ya establecida en los contratos de runtime: una estimación de AA/LLMFit no se transforma en evidencia medida por el mero hecho de seleccionar un modelo.
+
+## 13. Criterio de cierre de esta capa
+
+La capa de recomendación estará lista para Ubuntu cuando pueda demostrar:
+
+1. el usuario selecciona uno o más `purposes` antes de recomendar;
+2. `purposes=[]` bloquea la recomendación;
+3. hardware e intención llegan a FitLLM/LLMFit;
+4. HF y AA llegan a FitLLM/LLMFit como evidencia de entrada;
+5. el conjunto de entrada a FitLLM admite hasta 100 modelos;
+6. FitLLM devuelve 3 candidatos con estado `ESTIMATED`;
+7. ningún dato externo se etiqueta como `MEASURED`;
+8. la selección de un candidato conduce al camino físico Ubuntu sin Hermes/OMH.
