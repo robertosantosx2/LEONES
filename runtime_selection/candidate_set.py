@@ -9,30 +9,54 @@ from typing import Any
 SCHEMA_VERSION = "candidate-set.v1"
 
 
-def build_candidate_set(hardware: dict[str, Any], raw_candidates: list[dict[str, Any]], *, source: str = "external", source_version: str | None = None) -> dict[str, Any]:
-    """Build a deterministic, provenance-preserving RC3 candidate set."""
+def build_candidate_set(
+    hardware: dict[str, Any],
+    raw_candidates: list[dict[str, Any]],
+    *,
+    source: str,
+    source_version: str | None = None,
+) -> dict[str, Any]:
+    """Build a deterministic, explicitly attributed RC3 candidate set.
+
+    Provenance is supplied by the discovery layer. Candidate normalization must
+    never infer a source from the shape or fields of a model record.
+    """
+    if not source:
+        raise ValueError("candidate source must be explicit")
+
     candidates: list[dict[str, Any]] = []
     for position, item in enumerate(raw_candidates, 1):
         model_id = item.get("model_id") or item.get("id")
         if not model_id:
             continue
-        item_source = item.get("source")
-        if item_source is None and ("fit" in item or "estimated_tps" in item) and source == "external":
-            item_source = "llmfit"
         candidates.append({
-            "model_id": model_id, "name": item.get("name") or model_id,
-            "revision": item.get("revision"), "rank": item.get("rank", position),
-            "fit": item.get("fit"), "estimated_tps": item.get("estimated_tps"),
-            "quantization": item.get("quantization"), "parameters": item.get("parameters"),
-            "active_parameters": item.get("active_parameters"), "runtime": item.get("runtime"),
-            "source": item_source or source, "source_version": item.get("source_version", source_version),
-            "evidence_level": item.get("evidence_level", "estimated"), "selection_status": "CANDIDATE",
-            "execution_authorized": False, "measurement_required": True,
+            "model_id": model_id,
+            "name": item.get("name") or model_id,
+            "revision": item.get("revision"),
+            "rank": item.get("rank", position),
+            "fit": item.get("fit"),
+            "estimated_tps": item.get("estimated_tps"),
+            "quantization": item.get("quantization"),
+            "parameters": item.get("parameters"),
+            "active_parameters": item.get("active_parameters"),
+            "runtime": item.get("runtime"),
+            "source": item.get("source") or source,
+            "source_version": item.get("source_version", source_version),
+            "evidence_level": item.get("evidence_level", "estimated"),
+            "selection_status": "CANDIDATE",
+            "execution_authorized": False,
+            "measurement_required": True,
         })
     return {
-        "schema_version": SCHEMA_VERSION, "hardware": hardware, "candidates": candidates,
+        "schema_version": SCHEMA_VERSION,
+        "hardware": hardware,
+        "candidates": candidates,
         "candidate_count": len(candidates),
-        "selection": {"user_choice_required": True, "selected_model_id": None, "execution_authorized": False},
+        "selection": {
+            "user_choice_required": True,
+            "selected_model_id": None,
+            "execution_authorized": False,
+        },
         "measurement": {"measured": False, "runtime_benchmark_required": True},
     }
 
