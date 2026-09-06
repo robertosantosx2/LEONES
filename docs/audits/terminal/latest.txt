@@ -1,0 +1,19 @@
+============================================================
+LEONES — TERMINAL CAPTURE
+============================================================
+timestamp_utc=20260906T144036Z
+branch=rc4-fitllm-recommender
+commit=3c503fe64a861b6e99bc08f270a07aba5c5d6b41
+command=bash -c echo "CAPTURE-TEST-OK"; echo "STDERR-TEST" >&2; exit 7
+============================================================
+
+CAPTURE-TEST-OK
+STDERR-TEST
+
+============================================================
+LEONES — CAPTURE RESULT
+============================================================
+command_exit_code=7
+full_local_capture=artifacts/terminal-capture/capture-20260906T144036Z.txt
+tracked_snapshot=docs/audits/terminal/latest.txt
+============================================================
