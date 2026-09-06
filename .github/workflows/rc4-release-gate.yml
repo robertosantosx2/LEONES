@@ -15,4 +15,4 @@ jobs:
       - name: RC4 static gate
         run: python3 scripts/rc4_release_gate.py
       - name: RC4 unit tests
-        run: python3 -m pip install pytest -q && python3 -m pytest tests/test_rc4_fitllm_recommender.py tests/test_rc4_release_gate.py -q
+        run: python3 -m pip install pytest -q && python3 -m pytest tests/test_rc4_fitllm_recommend.py tests/test_rc4_release_gate.py -q
