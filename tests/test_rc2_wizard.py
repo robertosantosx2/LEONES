@@ -1,3 +1,12 @@
+import pytest
+
+# RC2 wizard depends on the retired LLMFit adapter. RC2 remains historical;
+# its tests are retained as audit material but are not part of RC3 collection.
+pytest.importorskip(
+    "runtime_selection.llmfit",
+    reason="RC2 wizard/LLMFit path is historical and outside RC3",
+)
+
 import scripts.rc2_wizard as wizard
 from scripts.rc2_i18n import set_language, tr
 from scripts.rc2_wizard import WizardIO, run_wizard
@@ -16,7 +25,6 @@ HARDWARE = {
     "source": "fixture",
     "verification": "detected",
 }
-# Explicit Ollama-managed candidate so resolution is deterministic in tests.
 CANDIDATES = [
     {
         "model_id": "fixture-model",
@@ -44,37 +52,15 @@ OLLAMA_RESOLVED = {
 
 
 def _pass_verification(stack="ods"):
-    return PhysicalVerification(
-        stack=stack,
-        status="PASS",
-        real_installation=True,
-        checks={"ok": True},
-        observed={"fixture": True},
-        missing=[],
-        message="fixture pass",
-    )
+    return PhysicalVerification(stack=stack, status="PASS", real_installation=True, checks={"ok": True}, observed={"fixture": True}, missing=[], message="fixture pass")
 
 
 def _fail_verification(stack="ods"):
-    return PhysicalVerification(
-        stack=stack,
-        status="FAIL",
-        real_installation=False,
-        checks={"ok": False},
-        observed={},
-        missing=["fixture_missing"],
-        message="fixture fail",
-    )
+    return PhysicalVerification(stack=stack, status="FAIL", real_installation=False, checks={"ok": False}, observed={}, missing=["fixture_missing"], message="fixture fail")
 
 
 def _available_model(model_id="fixture-model"):
-    return RuntimePreflight(
-        runtime="ollama",
-        available=True,
-        model_id=model_id,
-        model_available=True,
-        installed_models=(model_id,),
-    )
+    return RuntimePreflight(runtime="ollama", available=True, model_id=model_id, model_available=True, installed_models=(model_id,))
 
 
 def _output_contains_translation(output, key):
@@ -84,11 +70,7 @@ def _output_contains_translation(output, key):
 def _patch_common(monkeypatch, *, verify, ollama=None, resolution=None, run_a01=None):
     monkeypatch.setattr(wizard, "_live_inputs", lambda io: (HARDWARE, CANDIDATES))
     monkeypatch.setattr(wizard, "verify_stack", verify)
-    monkeypatch.setattr(
-        wizard,
-        "_resolve_for_benchmark",
-        lambda model_choice: resolution or dict(OLLAMA_RESOLVED),
-    )
+    monkeypatch.setattr(wizard, "_resolve_for_benchmark", lambda model_choice: resolution or dict(OLLAMA_RESOLVED))
     if ollama is not None:
         monkeypatch.setattr(wizard, "check_ollama_model", ollama)
     if run_a01 is not None:
@@ -110,22 +92,9 @@ def test_wizard_blocks_a01_before_consent_when_model_unavailable(monkeypatch):
     set_language("es")
 
     def missing_model(model_id):
-        return RuntimePreflight(
-            runtime="ollama",
-            available=True,
-            model_id=model_id,
-            model_available=False,
-            reason="model_not_installed_in_ollama",
-            installed_models=("other-model",),
-        )
+        return RuntimePreflight(runtime="ollama", available=True, model_id=model_id, model_available=False, reason="model_not_installed_in_ollama", installed_models=("other-model",))
 
-    _patch_common(
-        monkeypatch,
-        verify=lambda name: _pass_verification(name),
-        ollama=missing_model,
-    )
-    # language, model, stack, authorize install, defer installer.
-    # No benchmark consent prompt: preflight closes the gate first.
+    _patch_common(monkeypatch, verify=lambda name: _pass_verification(name), ollama=missing_model)
     answers = iter(["1", "1", "1", "1", "2"])
     output = []
     session = run_wizard(WizardIO(input_fn=lambda _: next(answers), output_fn=output.append))
@@ -138,20 +107,8 @@ def test_wizard_blocks_a01_before_consent_when_model_unavailable(monkeypatch):
 
 def test_wizard_blocks_when_runtime_unresolved(monkeypatch):
     set_language("es")
-    unresolved = {
-        "schema_version": "model-runtime-resolution.v1",
-        "status": "UNRESOLVED",
-        "model_id": "fixture-model",
-        "model_format": None,
-        "runtime_id": None,
-        "runtime_model_ref": None,
-        "reason": "no deterministic runtime mapping for model candidate",
-    }
-    _patch_common(
-        monkeypatch,
-        verify=lambda name: _pass_verification(name),
-        resolution=unresolved,
-    )
+    unresolved = {"schema_version": "model-runtime-resolution.v1", "status": "UNRESOLVED", "model_id": "fixture-model", "model_format": None, "runtime_id": None, "runtime_model_ref": None, "reason": "no deterministic runtime mapping for model candidate"}
+    _patch_common(monkeypatch, verify=lambda name: _pass_verification(name), resolution=unresolved)
     answers = iter(["1", "1", "1", "1", "2"])
     output = []
     session = run_wizard(WizardIO(input_fn=lambda _: next(answers), output_fn=output.append))
@@ -163,11 +120,7 @@ def test_wizard_blocks_when_runtime_unresolved(monkeypatch):
 
 def test_wizard_can_decline_benchmark(monkeypatch):
     set_language("es")
-    _patch_common(
-        monkeypatch,
-        verify=lambda name: _pass_verification(name),
-        ollama=_available_model,
-    )
+    _patch_common(monkeypatch, verify=lambda name: _pass_verification(name), ollama=_available_model)
     answers = iter(["1", "1", "1", "1", "2", "2"])
     output = []
     session = run_wizard(WizardIO(input_fn=lambda _: next(answers), output_fn=output.append))
@@ -182,25 +135,9 @@ def test_invalid_benchmark_choice_never_authorizes(monkeypatch):
     set_language("es")
 
     def fake_run(*args, **kwargs):
-        return {
-            "status": "benchmark_completed",
-            "execution_id": "a01-fixture",
-            "measured": True,
-            "runtime_benchmark": {
-                "execution_id": "a01-fixture",
-                "wall_seconds": 1.2,
-                "measured_tps": 3.4,
-                "grader_pass": True,
-                "measurement_status": "measured",
-            },
-        }
+        return {"status": "benchmark_completed", "execution_id": "a01-fixture", "measured": True, "runtime_benchmark": {"execution_id": "a01-fixture", "wall_seconds": 1.2, "measured_tps": 3.4, "grader_pass": True, "measurement_status": "measured"}}
 
-    _patch_common(
-        monkeypatch,
-        verify=lambda name: _pass_verification(name),
-        ollama=_available_model,
-        run_a01=fake_run,
-    )
+    _patch_common(monkeypatch, verify=lambda name: _pass_verification(name), ollama=_available_model, run_a01=fake_run)
     answers = iter(["1", "1", "1", "1", "2", "bogus", "2"])
     output = []
     session = run_wizard(WizardIO(input_fn=lambda _: next(answers), output_fn=output.append))
@@ -215,25 +152,9 @@ def test_wizard_runs_a01_when_authorized(monkeypatch):
 
     def fake_run(io, *, model_choice, hardware, resolution):
         assert resolution["runtime_id"] == "ollama"
-        return {
-            "status": "benchmark_completed",
-            "execution_id": "a01-fixture",
-            "measured": True,
-            "runtime_benchmark": {
-                "execution_id": "a01-fixture",
-                "wall_seconds": 1.2,
-                "measured_tps": 3.4,
-                "grader_pass": True,
-                "measurement_status": "measured",
-            },
-        }
+        return {"status": "benchmark_completed", "execution_id": "a01-fixture", "measured": True, "runtime_benchmark": {"execution_id": "a01-fixture", "wall_seconds": 1.2, "measured_tps": 3.4, "grader_pass": True, "measurement_status": "measured"}}
 
-    _patch_common(
-        monkeypatch,
-        verify=lambda name: _pass_verification(name),
-        ollama=_available_model,
-        run_a01=fake_run,
-    )
+    _patch_common(monkeypatch, verify=lambda name: _pass_verification(name), ollama=_available_model, run_a01=fake_run)
     answers = iter(["1", "1", "1", "1", "2", "1"])
     session = run_wizard(WizardIO(input_fn=lambda _: next(answers), output_fn=lambda _: None))
     assert session.state == "COMPLETE"

@@ -6,6 +6,8 @@ on:
       - 'scripts/a01_runtime_benchmark.py'
       - 'scripts/run_a01_selected.py'
       - 'scripts/runtime_gate.py'
+      - 'scripts/leones_task_benchmark.py'
+      - 'runtime_selection/**'
       - 'benchmarks/agentic/**'
       - 'schemas/runtime-benchmark.v1.schema.json'
       - '.github/workflows/a01-runtime-benchmark-contract.yml'
@@ -15,6 +17,8 @@ on:
       - 'scripts/a01_runtime_benchmark.py'
       - 'scripts/run_a01_selected.py'
       - 'scripts/runtime_gate.py'
+      - 'scripts/leones_task_benchmark.py'
+      - 'runtime_selection/**'
       - 'benchmarks/agentic/**'
       - 'schemas/runtime-benchmark.v1.schema.json'
       - '.github/workflows/a01-runtime-benchmark-contract.yml'
@@ -41,8 +45,8 @@ jobs:
             scripts/a01_runtime_benchmark.py \
             scripts/run_a01_selected.py \
             scripts/runtime_gate.py \
-            benchmarks/agentic/adapters/llmserve_a01.py \
-            benchmarks/agentic/a01_grader.py
+            scripts/leones_task_benchmark.py \
+            benchmarks/agentic/adapters/llmserve_a01.py
       - name: Validate runtime benchmark schema
         run: |
           python - <<'PY'
@@ -52,5 +56,5 @@ jobs:
           json.loads(path.read_text(encoding='utf-8'))
           print(f'schema: OK {path}')
           PY
-      - name: Run canonical selector-to-A01 regression
-        run: python -m pytest -q benchmarks/agentic/test_selection_to_a01.py
+      - name: Run RC3 Hermes/Leo benchmark contract regression
+        run: python -m pytest -q tests/test_hermes_selection_and_task_benchmark.py

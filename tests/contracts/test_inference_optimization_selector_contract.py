@@ -17,15 +17,28 @@ class InferenceOptimizationSelectorContractTests(unittest.TestCase):
             "compiled-hardware", "distributed", "experimental"
         } <= families)
 
-    def test_selector_order_puts_optimization_before_estimators(self):
+    def test_selector_order_is_the_frozen_rc3_order(self):
         import json
         path = Path(__file__).parents[2] / "web" / "data" / "inference-optimization.json"
         order = json.loads(path.read_text(encoding="utf-8"))["selector_order"]
-        self.assertLess(order.index("use_case"), order.index("estimators"))
-        self.assertLess(order.index("hardware"), order.index("estimators"))
-        self.assertLess(order.index("runtime"), order.index("estimators"))
-        self.assertLess(order.index("optimization"), order.index("estimators"))
-        self.assertLess(order.index("dense_or_moe"), order.index("candidate_models"))
+        self.assertEqual(
+            order,
+            [
+                "hardware_profile.v1",
+                "candidate-set.v1",
+                "hermes_model_selection",
+                "user_model_choice",
+                "user_stack_choice",
+                "runtime-selection.v1",
+                "use_case",
+                "hardware",
+                "estimators",
+                "BENCHMARK",
+                "measurement",
+                "evidence",
+                "recommendation",
+            ],
+        )
 
     def test_moe_rule_is_explicit(self):
         import json

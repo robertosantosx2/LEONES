@@ -11,60 +11,121 @@
 | JALÓN 4 | 🟢 **Cerrado** | Metodología AA + contratos de integración + benchmark de tareas + tiers |
 | RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end |
 | RC2 | 🟢 **Histórica** | Beta previa; no es el camino canónico RC3 |
-| **RC3** | 🟢 **CERRADA** (impl. + contratos + web + obs. física parcial Aspire) · medición completa = backlog | **`hardware_profile.py` → candidatos → Magnitude/ODS → medición LEONES** |
+| **RC3** | 🟢 **Arquitectura fijada · implementación cerrada · 🟡 validación física pendiente** | **hardware → candidatos → HERMES → elección usuario → Magnitude/ODS → Leo001…Leo010 → medición → evidencia → recomendación** |
 
-## RC3 — arquitectura canónica
+## RC3 — arquitectura canónica FIJADA
 
-RC3 simplifica deliberadamente el camino de instalación y selección. **La sonda física canónica es `scripts/hardware_profile.py`.** Hermes participa como ecosistema local de runtime/model-fit y Oh My Hermes (OMH) como capa operativa de routing, workflows, handoffs y gates. LEONES normaliza, reconcilia y conserva la autoridad sobre verificación física, ejecución, medición y evidencia.
+La decisión arquitectónica de RC3 queda fijada: **Hermes es el único selector de modelos de RC3**. LEONES conserva la autoridad sobre hardware, contratos, consentimiento, ejecución, medición y evidencia. Magnitude y ODS son caminos de ejecución elegidos explícitamente por el usuario; no son selectores de modelos.
 
 ```text
-              scripts/hardware_profile.py
-                 (sonda física canónica)
-                           ↓
-                  hardware-profile.v1
-                           ↓
-         HERMES runtime hints  +  OMH operación
-                           ↓
-                    LEONES normalize
-                           ↓
-                  candidate-set.v1
-                           ↓
-                ┌──────────┴──────────┐
-                ↓                     ↓
-           MAGNITUDE                  ODS
-        profiling/tuning         install/stack
-                ↓                     ↓
-                └──────────┬──────────┘
-                           ↓
-                    selected runtime
-                           ↓
-                      LEONES tasks
-                           ↓
-                    real measurement
-                           ↓
-                       evidence
-                           ↓
-                     recommendation
+                 UBUNTU / EQUIPO REAL
+                         ↓
+              hardware_profile.py
+             sonda física canónica
+                         ↓
+                hardware-profile.v1
+                         ↓
+                 candidate-set.v1
+                         ↓
+                      HERMES
+                selección de modelo
+                         ↓
+                  1 modelo candidato
+                         ↓
+                 ELECCIÓN USUARIO
+                         ↓
+              ┌──────────┴──────────┐
+              ↓                     ↓
+         MAGNITUDE                 ODS
+       profiling/tuning        install/stack
+              ↓                     ↓
+              └──────────┬──────────┘
+                         ↓
+              consentimiento explícito
+                         ↓
+                preparación/ejecución
+                         ↓
+                 verificación física
+                         ↓
+                Leo001 … Leo010
+                         ↓
+                medición por tarea
+                         ↓
+                     evidencia
+                         ↓
+               recomendación final
+                         ↺
+              Hermes → nuevo modelo
+              → misma suite de tareas
 ```
 
-### Regla de autoridad
+### Reglas fijadas
 
-**LEONES descubre el hardware. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.**
+1. **Hermes selecciona; LEONES valida.** Hermes es el único selector activo en RC3.
+2. **El candidate set sólo contiene propuestas.** No contiene ejecución ni medición y conserva la procedencia.
+3. **El usuario elige el modelo/configuración.** Una recomendación de Hermes no autoriza por sí misma ninguna ejecución.
+4. **El usuario elige Magnitude, ODS o ambos.** La elección de stack es independiente de la selección del modelo.
+5. **Seleccionar no equivale a consentir ejecutar.** El consentimiento y el execution gate permanecen separados.
+6. **La misma suite Leo001…Leo010 se utiliza para cada modelo/backend**, para permitir comparación tarea a tarea.
+7. **Los resultados se conservan por tarea.** No se colapsan inicialmente en una única puntuación que oculte fortalezas y debilidades.
+8. **La evidencia externa no es evidencia medida local.** Datos de Hugging Face, Artificial Analysis u otras fuentes sólo informan/explican la selección.
+9. **La medición LEONES sólo nace de una ejecución física controlada y reproducible.**
+10. **La repetición es parte del diseño.** Tras medir un modelo se puede volver a Hermes, seleccionar otro candidato y repetir exactamente la misma suite.
+11. **LLMFit/FitLLM queda fuera de RC3.** No participa en la ruta canónica ni es dependencia de instalación o selección.
 
-Hermes aporta ecosistema runtime/model-fit; OMH no sustituye la sonda física ni los contratos de LEONES. Ninguna estimación externa se convierte automáticamente en evidencia LEONES. La validación física final de los handoffs queda pendiente en Ubuntu.
+## Responsabilidad de cada capa
 
-### FitLLM / LLMFit — fuera de RC3
+```text
+hardware_profile.py  → descubre hechos físicos
+candidate-set.v1     → normaliza candidatos y procedencia
+HERMES               → selecciona un modelo candidato
+usuario              → elige modelo/configuración y stack
+Magnitude / ODS      → preparan y ejecutan el camino elegido
+LEONES               → verifica, mide, conserva evidencia y recomienda
+```
 
-FitLLM/LLMFit queda **fuera del camino canónico RC3**: no es dependencia, no se instala, no bloquea el arranque y no participa en la selección RC3. Se conserva como conocimiento histórico y como posible `CandidateProvider` futuro, completamente desacoplado de la instalación y del flujo físico.
+**Regla de autoridad:** los proveedores pueden proponer; Hermes selecciona dentro del universo de candidatos; el usuario decide qué ejecutar; sólo LEONES puede convertir una ejecución física controlada en medición y evidencia LEONES.
 
-### Handoff de usuario
+## Suite canónica de tareas
 
-Una vez descubierto y normalizado el equipo y construidos los candidatos, el usuario elige explícitamente un único camino:
+La suite pública queda fijada con identificadores inmutables:
 
-- **Magnitude** → perfilado, estimación, tuning y ejecución mediante sus interfaces canónicas.
-- **ODS** → instalación y stack local mediante sus interfaces canónicas.
+| ID | Tarea |
+|---|---|
+| Leo001 | Tool use |
+| Leo002 | Multi-step |
+| Leo003 | Files / artifacts |
+| Leo004 | Recovery |
+| Leo005 | Long horizon |
+| Leo006 | Research / evidence |
+| Leo007 | Coding |
+| Leo008 | Local operations |
+| Leo009 | Safety |
+| Leo010 | Cost / latency |
 
-LEONES no duplica instaladores ni runtimes. Antes de medir, verifica físicamente lo que realmente quedó instalado y ejecutable.
+Los IDs son identificadores públicos estables; las especificaciones de tarea, entorno y grader deben versionarse antes de declarar resultados oficiales.
+
+## Repetición del benchmark
+
+El ciclo de evaluación es deliberadamente repetible:
+
+```text
+HERMES
+  ↓
+modelo A
+  ↓
+Magnitude / ODS / ambos
+  ↓
+Leo001…Leo010
+  ↓
+resultados por tarea
+  ↓
+comparación
+  ↺
+HERMES → modelo B → misma suite
+```
+
+El runner de tareas permite seleccionar un nuevo modelo mediante Hermes y repetir la suite sin cambiar el protocolo de tareas. Los resultados deben permanecer identificados por modelo, runtime/backend, stack, ejecución y tarea.
 
 ## Instalación RC3
 
@@ -75,19 +136,19 @@ INSTALAR LEONES
       ↓
 VERIFICAR / INSTALAR HERMES + OMH
       ↓
-scripts/hardware_profile.py  (sonda física canónica)
+scripts/hardware_profile.py
       ↓
 hardware-profile.v1
       ↓
-RC3 adapter + Hermes runtime hints
+candidate-set.v1
       ↓
-LEONES reconciliation → candidate-set.v1
+HERMES → selección de modelo
       ↓
 ELEGIR MODELO / CONFIGURACIÓN
       ↓
 RESOLVER ARTEFACTO CONCRETO
       ↓
-ELEGIR MAGNITUDE U ODS
+ELEGIR MAGNITUDE / ODS / ambos
       ↓
 CONSENTIMIENTO
       ↓
@@ -95,7 +156,7 @@ PREPARAR / INSTALAR
       ↓
 VERIFICAR FÍSICAMENTE
       ↓
-TAREAS LEONES → MEDIR → EVIDENCIA
+Leo001…Leo010 → MEDIR → EVIDENCIA
 ```
 
 El instalador no descarga modelos ni stacks de usuario sin consentimiento. Las comprobaciones independientes son:
@@ -105,13 +166,17 @@ hermes doctor
 omh doctor
 ```
 
-El detalle contractual está en `docs/RC3-ARCHITECTURE.md`.
+El detalle contractual está en `docs/RC3-ARCHITECTURE.md` y `docs/RC3-HERMES-TASK-BENCHMARKS.md`.
 
 ## Gate RC3
 
-La implementación queda protegida por `scripts/rc3_release_gate.py` y `.github/workflows/rc3-release-gate.yml`. El gate valida contratos, evidencia, resolución de artefactos, selección explícita, frontera de ejecución y sonda física canónica, además de ejecutar la regresión Python.
+La implementación queda protegida por `scripts/rc3_release_gate.py` y `.github/workflows/rc3-release-gate.yml`. El gate valida contratos, evidencia, resolución de artefactos, selección explícita, frontera de ejecución, sonda física canónica y la suite Leo001…Leo010.
 
-El gate **no** declara como realizadas las operaciones que sólo pueden comprobarse en Ubuntu físico: handoff real Hermes → Magnitude, handoff real Hermes → ODS, instalación/preparación real, benchmark de tareas y evidencia comparativa.
+El gate **no** declara como realizadas las operaciones que sólo pueden comprobarse en Ubuntu físico: handoff real Hermes → Magnitude, handoff real Hermes → ODS, preparación/ejecución real, benchmark completo de tareas y evidencia comparativa MEASURED.
+
+## FitLLM / LLMFit — fuera de RC3
+
+FitLLM/LLMFit queda **fuera del camino canónico RC3**: no es dependencia, no se instala, no bloquea el arranque y no participa en la selección RC3. Se conserva como conocimiento histórico y como posible proveedor futuro, completamente desacoplado de la instalación y del flujo físico.
 
 ## RC2
 
@@ -119,6 +184,6 @@ RC2 permanece como línea histórica de validación. Sus documentos y adaptadore
 
 ## Principio LEONES
 
-> **Los proveedores pueden proponer. LEONES puede comprobar. Solo una ejecución controlada sobre el equipo real puede producir una medición LEONES.**
+> **Los proveedores pueden proponer. Hermes selecciona. El usuario elige. Solo una ejecución controlada sobre el equipo real puede producir una medición LEONES.**
 
-RC3 está **cerrada como fase** (implementación, contratos, web operador y observación física parcial). Ver `docs/completed/RC3-CLOSED-2026-09-05.md` y `docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md`. La medición completa (handoffs formales + MEASURED) es **backlog post-RC3**, no un relleno silencioso de esta fase.
+RC3 queda **cerrada a nivel de arquitectura, implementación y contratos**. La validación física final sigue abierta hasta completar los handoffs reales y el benchmark Leo001…Leo010 bajo autoridad LEONES. La observación física existente no se reutiliza como evidencia MEASURED de RC3.
