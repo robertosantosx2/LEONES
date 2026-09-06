@@ -85,4 +85,7 @@ no define el camino canónico RC4.
 ## 7. Implementación (pendiente)
 
 Código, gate CI, tests y web se actualizan en commits posteriores a esta decisión.
-EOF
+
+## 8. Interfaz
+
+Toda UI CLI/web de RC4 cumple `docs/LEONES-INTERFACE-RULES.md` (idioma único, consentimientos separados, ESTIMATED≠MEASURED, costes de opcionales).

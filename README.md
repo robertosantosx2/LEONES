@@ -28,52 +28,14 @@
 
 RC3 simplifica deliberadamente el camino de instalación y selección. **La sonda física canónica es `scripts/hardware_profile.py`.** Hermes participa como ecosistema local de runtime/model-fit y Oh My Hermes (OMH) como capa operativa de routing, workflows, handoffs y gates. LEONES normaliza, reconcilia y conserva la autoridad sobre verificación física, ejecución, medición y evidencia.
 
-```text
-              scripts/hardware_profile.py
-                 (sonda física canónica)
-                           ↓
-                  hardware-profile.v1
-                           ↓
-         HERMES runtime hints  +  OMH operación
-                           ↓
-                    LEONES normalize
-                           ↓
-                  candidate-set.v1
-                           ↓
-                ┌──────────┴──────────┐
-                ↓                     ↓
-           MAGNITUDE                  ODS
-        profiling/tuning         install/stack
-                ↓                     ↓
-                └──────────┬──────────┘
-                           ↓
-                    selected runtime
-                           ↓
-                      LEONES tasks
-                           ↓
-                    real measurement
-                           ↓
-                       evidence
-                           ↓
-                     recommendation
-```
-
 ### Regla de autoridad (RC3)
 
 **LEONES descubre el hardware. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.**
 
-### FitLLM / LLMFit en RC3
-
-En RC3, FitLLM/LLMFit quedaba **fuera del camino canónico** de arranque. RC4 lo reintroduce solo como **recomendador opcional** (ver sección RC4).
-
 ### Handoff de usuario
 
-Una vez descubierto y normalizado el equipo y construidos los candidatos, el usuario elige explícitamente un único camino:
-
-- **Magnitude** → perfilado, estimación, tuning y ejecución mediante sus interfaces canónicas.
-- **ODS** → instalación y stack local mediante sus interfaces canónicas.
-
-LEONES no duplica instaladores ni runtimes. Antes de medir, verifica físicamente lo que realmente quedó instalado y ejecutable.
+- **Magnitude** → perfilado, tuning y ejecución por sus interfaces canónicas.
+- **ODS** → instalación y stack local por sus interfaces canónicas.
 
 ## Instalación (contexto RC3 / transición RC4)
 
@@ -99,8 +61,6 @@ VERIFICAR FÍSICAMENTE
 Leo001…Leo010 → MEDIR → EVIDENCIA
 ```
 
-Hermes/OMH siguen siendo opcionales:
-
 ```bash
 hermes doctor   # si están instalados
 omh doctor
@@ -114,6 +74,10 @@ RC4: gate propio pendiente de implementación (FitLLM no hard-dep; Hermes no sel
 ## RC2
 
 RC2 permanece como línea histórica de validación.
+
+## Interfaz de usuario
+
+Norma de proyecto (idioma, consentimientos, estados, errores): [`docs/LEONES-INTERFACE-RULES.md`](docs/LEONES-INTERFACE-RULES.md).
 
 ## Principio LEONES
 
