@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
-"""LEONES RC4 default runner.
+"""LEONES RC4 default runner (also wired from ./leones).
 
-Collects the mandatory multi-purpose user intent before any recommendation and
-then delegates to the canonical RC4 FitLLM/LLMFit recommender. This runner is
-proposal-only: it never authorizes execution or measurement.
+Problem
+    The human must declare USER_INTENT[] before any model proposal. This runner
+    collects that intent and delegates to rc4_fitllm_recommend.py.
 
-The historical RC2 wizard remains available explicitly through ``--rc2``.
+Inputs
+    Interactive purpose selection, or argv forwarded to the recommender.
+    --rc2 keeps the historical RC2 wizard explicitly available.
+
+Outputs
+    Recommender JSON / human-readable proposal only.
+
+What this runner does NOT do
+    Authorize execution or measurement. Install stacks. Treat FitLLM as a hard
+    boot dependency. Hermes/OMH are not consulted for model selection.
 """
 from __future__ import annotations
 
@@ -30,8 +39,16 @@ PURPOSES = (
 
 
 def choose_purposes() -> list[str]:
-    print("\nLEONES RC4 — ¿para qué quieres usar la IA?")
-    print("Selecciona uno o varios números separados por comas.\n")
+    print(
+        """
+╔══════════════════════════════════════════════════════════════╗
+║  LEONES RC4 · INTENCIÓN DE USO                               ║
+║  ──────────────────────────────────────────────────────────  ║
+║  Elige uno o varios números separados por comas.             ║
+║  Sin intención no hay recomendación.                         ║
+╚══════════════════════════════════════════════════════════════╝
+"""
+    )
     for index, (_, label) in enumerate(PURPOSES, 1):
         print(f"  [{index}] {label}")
 
