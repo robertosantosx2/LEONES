@@ -2,10 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="LEONES RC4: FitLLM como recomendador opcional de modelo. RC3 cerrada. Hermes/OMH opcionales. Leo001-Leo010 para medición." />
-<title>LEONES · RC4</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-1" />
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-1" />
+<meta name="description" content="LEONES RC4: intención obligatoria, evidencia de Hugging Face y Artificial Analysis, preselección FitLLM/LLMFit y tres candidatos ESTIMATED antes de la selección humana." />
+<title>LEONES · RC4 · Recomendación</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-2" />
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-2" />
 <style>
 .rc4-hero-note{margin-top:1rem;padding:1rem 1.15rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}
 .rc4-state{display:inline-block;padding:.3rem .55rem;border-radius:999px;background:#fff4d8;color:#7a5b00;font-weight:800;font-size:.78rem}
@@ -14,74 +14,103 @@
 .rc4-card{padding:1.1rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}
 .rc4-card h3{margin-top:0}
 .rc4-warning{border-left:4px solid #315d7d;padding:.8rem 1rem;background:#f5f8fa}
-.rc4-links{display:flex;flex-wrap:wrap;gap:.7rem}
-.rc4-links a{font-weight:800}
+.rc4-links{display:flex;flex-wrap:wrap;gap:.7rem}.rc4-links a{font-weight:800}
 </style>
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
 <span class="site-tag">RC4 · 6 septiembre 2026</span>
 <h1>LEONES · RC4</h1>
-<p><strong>Decisión fijada · implementación pendiente.</strong> FitLLM es recomendador opcional de modelo. RC3 no se reabre.</p>
+<p><strong>Recomendación con intención y evidencia.</strong> La preselección orienta; la elección humana y la medición LEONES conservan la autoridad.</p>
 <div class="rc4-hero-note">
-<span class="rc4-state">RC4 🟡 decisión</span>
-<span class="rc4-state rc4-state--ok" style="margin-left:.4rem">RC3 🟢 cerrada</span>
-<p style="margin-top:.8rem"><strong>Regla de autoridad:</strong> LEONES descubre el hardware. FitLLM puede recomendar (ESTIMATED). El usuario elige modelo y stack. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.</p>
+<span class="rc4-state rc4-state--ok">RC4 · 418 tests verdes</span>
+<span class="rc4-state rc4-state--ok" style="margin-left:.4rem">RC3 · cerrada</span>
+<p style="margin-top:.8rem"><strong>Regla de autoridad:</strong> el usuario declara para qué quiere usar la IA antes de recomendar. Hugging Face y Artificial Analysis aportan evidencia externa; FitLLM/LLMFit preselecciona; LEONES no convierte estimaciones externas en mediciones.</p>
 </div>
 </div></header>
 <main class="site-main" id="main">
-<section class="site-section"><span class="site-tag">Flujo</span><h2>Camino canónico RC4</h2>
-<pre class="site-stack">UBUNTU REAL
+<section class="site-section"><span class="site-tag">Flujo canónico</span><h2>De la necesidad a la evidencia</h2>
+<pre class="site-stack">HARDWARE REAL
+   +
+USER_INTENT[] · obligatorio · selección múltiple
    ↓
-scripts/hardware_profile.py → hardware-profile.v1
+RECURSOS / PREFLIGHT
    ↓
-candidate-set.v1
+HUGGING FACE + ARTIFICIAL ANALYSIS
    ↓
-FitLLM (opcional) → recomendación ESTIMATED
+feed de evidencia · máximo 100 modelos
    ↓
-usuario elige modelo (con o sin FitLLM)
+FitLLM / LLMFit · preselección
    ↓
-usuario elige Magnitude | ODS
+3 candidatos · ESTIMATED
    ↓
-consentimiento → preparar/instalar
+SELECCIÓN HUMANA
    ↓
-[opt-in] ofrecer desinstalar FitLLM
+artifact resolution / instalación
    ↓
-verificar → Leo001…Leo010 → MEASURED → evidencia</pre>
-<p class="site-note"><strong>ESTIMATED ≠ MEASURED.</strong> Una recomendación de FitLLM no es medición LEONES.</p>
+Ubuntu · runtime físico
+   ↓
+medición → evidencia MEASURED → recomendación</pre>
+<p class="site-note"><strong>ESTIMATED ≠ MEASURED.</strong> Las fuentes externas y FitLLM/LLMFit no producen evidencia física LEONES.</p>
 </section>
-<section class="site-section"><span class="site-tag">Decisiones</span><h2>Qué queda fijado</h2>
+<section class="site-section"><span class="site-tag">Intención</span><h2>Primero: ¿para qué quieres usar la IA?</h2>
 <div class="rc4-gates">
-<article class="rc4-card"><h3>FitLLM recomendador</h3><p>Solo orienta. El usuario puede elegir modelo a mano si FitLLM no está.</p></article>
-<article class="rc4-card"><h3>Sin hard-dep</h3><p>LEONES arranca sin FitLLM. Falta FitLLM = fallo solo en el paso de recomendación.</p></article>
-<article class="rc4-card"><h3>Hermes / OMH opcionales</h3><p>Agente y operación, no selectores de modelo. La UI debe mostrar peso en disco, RAM y si hay daemon residente.</p></article>
-<article class="rc4-card"><h3>Post-stack</h3><p>Tras Magnitude u ODS: oferta <strong>opt-in</strong> de desinstalar FitLLM. Nunca silenciosa.</p></article>
-<article class="rc4-card"><h3>Leo001…Leo010</h3><p>Suite de medición conservada. Cambia quién propone el modelo, no el protocolo de tareas.</p></article>
-<article class="rc4-card"><h3>RC3 intacta</h3><p>Fase cerrada. Acta <code>RC3-CLOSED-2026-09-05</code>. No se reescribe como abierta.</p></article>
+<article class="rc4-card"><h3>Selección múltiple</h3><p><code>user_intent[]</code> es obligatorio y debe contener al menos un propósito antes de cualquier recomendación.</p></article>
+<article class="rc4-card"><h3>Propósitos</h3><p>Programación, razonamiento, investigación, chat, multimodal, embeddings y uso general.</p></article>
+<article class="rc4-card"><h3>Frontera FitLLM</h3><p>LLMFit 1.1.10 acepta un único <code>--use-case</code>; RC4 conserva la intención completa y traduce solo en esa frontera.</p></article>
 </div>
 </section>
-<section class="site-section"><span class="site-tag">Implementación</span><h2>Pendiente (no reclamado)</h2>
+<section class="site-section"><span class="site-tag">Evidencia externa</span><h2>Hasta 100 modelos respaldados por fuentes</h2>
+<div class="rc4-gates">
+<article class="rc4-card"><h3>Hugging Face</h3><p>Metadatos del modelo, parámetros, contexto, formatos, cuantizaciones, adopción y procedencia.</p></article>
+<article class="rc4-card"><h3>Artificial Analysis</h3><p>Benchmarks e índices externos según propósito cuando existe coincidencia con el modelo.</p></article>
+<article class="rc4-card"><h3>Prefiltro físico</h3><p>La memoria de pesos es un prefiltro; RAM física y VRAM se mantienen separadas. Swap no cuenta como RAM física.</p></article>
+<article class="rc4-card"><h3>Límite</h3><p>El feed canónico entrega como máximo 100 registros. No se inventan tamaños o métricas desconocidas.</p></article>
+</div>
+</section>
+<section class="site-section"><span class="site-tag">FitLLM / LLMFit</span><h2>Preselector, no autoridad</h2>
 <div class="rc4-warning">
 <ul>
-<li>Adaptador / mensajes de recomendación FitLLM</li>
-<li>Gate y tests RC4 (no hard-dep; Hermes ≠ selector)</li>
-<li>Prompt post-install desinstalación FitLLM</li>
-<li>Textos de coste Hermes/OMH en la UI de bootstrap</li>
-<li>Web operador (inicio rápido / operación) alineada al 100%</li>
+<li>Se ejecuta con un catálogo propio y su CLI soportada; no se inventan flags para inyectar el feed externo.</li>
+<li>LEONES restringe la propuesta al universo respaldado por evidencia cuando existe coincidencia verificable.</li>
+<li>La salida final son <strong>3 candidatos ESTIMATED</strong> cuando hay tres coincidencias válidas.</li>
+<li>Si no hay tres coincidencias, el sistema declara <strong>insufficient</strong>; no fabrica candidatos.</li>
+<li>FitLLM no autoriza ejecución, benchmark ni estado <code>MEASURED</code>.</li>
 </ul>
-<p>Nada de lo anterior se declara hecho hasta existir commit de implementación + pruebas.</p>
+</div>
+</section>
+<section class="site-section"><span class="site-tag">Ubuntu</span><h2>El runner ya entra por RC4</h2>
+<pre class="site-stack">./leones
+   ↓
+RC4 · selección múltiple de user_intent[]
+   ↓
+FitLLM / LLMFit recommendation
+   ↓
+3 propuestas ESTIMATED
+   ↓
+elección humana
+
+./leones --rc2   ← compatibilidad histórica explícita</pre>
+<p class="site-note">La ruta por defecto no ejecuta ni mide automáticamente. El paso físico llega después de la selección humana, resolución del artefacto y consentimiento.</p>
+</section>
+<section class="site-section"><span class="site-tag">Estado</span><h2>RC4 · base verde</h2>
+<div class="rc4-gates">
+<article class="rc4-card"><h3>✓ Regresión</h3><p><strong>418 passed</strong> en la suite completa.</p></article>
+<article class="rc4-card"><h3>✓ Intent</h3><p>Contrato obligatorio, selección múltiple y propósitos no vacíos.</p></article>
+<article class="rc4-card"><h3>✓ Provenance</h3><p><code>external</code> sigue siendo el valor por defecto; <code>llmfit</code> se declara explícitamente.</p></article>
+<article class="rc4-card"><h3>✓ RC3 aislada</h3><p>Las referencias históricas de Hermes/OMH no se borran de la ficha RC3.</p></article>
 </div>
 </section>
 <section class="site-section"><span class="site-tag">Docs</span><h2>Referencias</h2>
 <div class="rc4-links">
 <a href="../docs/RC4-ARCHITECTURE.md">Arquitectura RC4</a>
 <a href="../docs/completed/RC4-DECISION-FITLLM-RECOMMENDER-2026-09-06.md">Acta de decisión</a>
-<a href="rc3.html">RC3 (cerrada)</a>
+<a href="rc3.html">RC3 · cerrada</a>
 <a href="estado.html">Estado del proyecto</a>
 <a href="../README.md">README</a>
 </div>
 </section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-06-1" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-06-2" defer></script>
 </body>
 </html>
