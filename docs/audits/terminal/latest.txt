@@ -1,43 +1,74 @@
 ============================================================
 LEONES — TERMINAL CAPTURE
 ============================================================
-timestamp_utc=20260906T144608Z
+timestamp_utc=20260906T144713Z
 branch=rc4-fitllm-recommender
-commit=51f951b9ed8f0fb9e58a13c45a714e97aa8b0142
+commit=9cfee3f0175f03f727470d2329f1fdc44c6b821e
 command=bash -c 
-set -e
+set +e
 
-echo "============================================================"
-echo "RC4 — EVIDENCE → LLMFIT INTEGRATION TEST"
-echo "============================================================"
+echo "=== STATUS ==="
+git status --short
+git log -1 --oneline
 
 echo
 echo "=== PYCOMPILE ==="
 python -m py_compile scripts/rc4_fitllm_recommend.py
-echo "PASS"
+echo "RC=$?"
 
 echo
-echo "=== TEST SUITE ==="
+echo "=== PYTEST ==="
 pytest -q
+echo "RC=$?"
 
 echo
-echo "=== LIVE RC4 JSON ==="
+echo "=== RC4 LIVE SUMMARY ==="
 python scripts/rc4_fitllm_recommend.py \
   --purpose programming \
   --purpose reasoning \
   --purpose research \
-  --json
+  --json > /tmp/rc4.json
+RC=$?
+echo "RC=$RC"
+
+python - <<'PY'
+import json
+
+with open("/tmp/rc4.json", encoding="utf-8") as f:
+    x=json.load(f)
+
+print("status=", x.get("status"))
+print("candidate_count=", x.get("candidate_count"))
+print("kind=", x.get("kind"))
+print("execution_authorized=", x.get("execution_authorized"))
+print("measurement_authorized=", x.get("measurement_authorized"))
+print("measured=", x.get("measured"))
+
+e=x.get("evidence") or {}
+print("evidence.schema=", e.get("schema"))
+print("evidence.max_models=", e.get("max_models"))
+print("evidence.model_count=", e.get("model_count"))
+print("HF.considered=", e.get("huggingface_models_considered"))
+print("AA.available=", e.get("artificial_analysis_models_available"))
+print("selection_boundary=", e.get("selection_boundary"))
+
+print("recommendations:")
+for i,r in enumerate(x.get("recommendations") or [],1):
+    print(i, r.get("model_id"))
+PY
+
+echo
+echo "=== END ==="
 
 ============================================================
 
-============================================================
-RC4 — EVIDENCE → LLMFIT INTEGRATION TEST
-============================================================
+=== STATUS ===
+9cfee3f chore: capture terminal output
 
 === PYCOMPILE ===
-PASS
+RC=0
 
-=== TEST SUITE ===
+=== PYTEST ===
 ...............................F........................................ [ 17%]
 ........................................................................ [ 34%]
 ........................................................................ [ 51%]
@@ -79,12 +110,34 @@ tests/test_rc2_hardware_profile.py:19: AssertionError
 =========================== short test summary info ============================
 FAILED tests/contracts/test_inference_optimization_selector_contract.py::InferenceOptimizationSelectorContractTests::test_selector_order_puts_optimization_before_estimators
 FAILED tests/test_rc2_hardware_profile.py::test_candidate_normalization_preserves_llmfit_provenance
-2 failed, 416 passed in 11.79s
+2 failed, 416 passed in 11.01s
+RC=1
+
+=== RC4 LIVE SUMMARY ===
+RC=0
+status= ok
+candidate_count= 3
+kind= ESTIMATED
+execution_authorized= False
+measurement_authorized= False
+measured= False
+evidence.schema= None
+evidence.max_models= None
+evidence.model_count= None
+HF.considered= None
+AA.available= None
+selection_boundary= None
+recommendations:
+1 Qwen/Qwen2.5-Coder-3B-Instruct
+2 ryzdfm/qwen2.5-coder-3b-claude_opus_4.6-distilled
+3 Qwen/Qwen2.5-Coder-3B
+
+=== END ===
 
 ============================================================
 LEONES — CAPTURE RESULT
 ============================================================
-command_exit_code=1
-full_local_capture=artifacts/terminal-capture/capture-20260906T144608Z.txt
+command_exit_code=0
+full_local_capture=artifacts/terminal-capture/capture-20260906T144713Z.txt
 tracked_snapshot=docs/audits/terminal/latest.txt
 ============================================================
