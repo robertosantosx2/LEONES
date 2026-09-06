@@ -1,7 +1,7 @@
 # LEONES · Reglas de interfaz (proyecto)
 
-**Estado:** 🟢 **Fijado** · 2026-09-06  
-**Origen:** feedback beta e interfaz RC2 (`./leones`, `scripts/rc2_ui.py`, `docs/RC2-*`)  
+**Estado:** 🟢 **Fijado** · 2026-09-06 (rev. idiomas + install/uninstall + costes)  
+**Origen:** feedback beta e interfaz RC2 (`./leones`, `scripts/rc2_ui.py`, `docs/RC2-*`) + feedback producto 2026-09-06  
 **Ámbito:** CLI/wizard, mensajes de instalador y páginas web de operador  
 **No sustituye:** contratos de datos, evidencia ni gates de release
 
@@ -21,25 +21,39 @@ Este documento es la **referencia de interfaz** para todo el proyecto (RC2 hist�
 
 ## 2. Idioma
 
-1. Preguntar el idioma **una sola vez** al inicio de sesión (p. ej. ES / EN / ZH).
-2. A partir de ahí, **un solo idioma** en pantalla.
-3. Prohibido el trilingüe línea a línea (ruido beta RC2).
+**Idiomas canónicos de interfaz (obligatorios en el catálogo):**
+
+| Código | Idioma |
+|--------|--------|
+| `es` | Español |
+| `en` | English |
+| `zh` | 中文 (chino) |
+| `ja` | 日本語 (japonés) |
+
+Reglas:
+
+1. Preguntar el idioma **una sola vez** al inicio de sesión.
+2. A partir de esa elección, **un solo idioma** en pantalla.
+3. Prohibido mostrar varios idiomas a la vez línea a línea (ruido beta RC2).
 4. Identificadores técnicos, comandos, rutas y nombres de métrica permanecen **canónicos** (no se “traducen” `measured_tps`, `hardware_profile.py`, `Leo001`).
-5. Si falta una clave de traducción: degradar a una lengua de respaldo **explícita**, no mezclar tres en la misma frase.
+5. Cada clave de UI del catálogo debe existir en **es / en / zh / ja**.
+6. Si falta una clave: degradar a una lengua de respaldo **explícita** (p. ej. `en`), nunca mezclar cuatro idiomas en la misma frase.
+
+```text
+ELIGE EL IDIOMA / CHOOSE LANGUAGE / 选择语言 / 言語を選択
+┌──────────────────────────────────────────┐
+│  [1] Español                             │
+│  [2] English                             │
+│  [3] 中文                                 │
+│  [4] 日本語                               │
+└──────────────────────────────────────────┘
+```
 
 ---
 
 ## 3. Etapas visibles
 
 El usuario debe saber **en qué etapa está** y **qué es lo siguiente**.
-
-Patrón mínimo:
-
-```text
-[etapa actual]
-  ↓
-[siguiente]
-```
 
 Estados visibles con texto equivalente (no solo icono):
 
@@ -55,16 +69,68 @@ Estados visibles con texto equivalente (no solo icono):
 ## 4. Decisiones humanas
 
 1. **El usuario elige** modelo (cuando aplique) y stack (Magnitude / ODS / …).
-2. Una recomendación automática (FitLLM, ranking, Hermes histórico) **no ejecuta** ni instala sola.
-3. Toda opción de menú lleva **descripción breve en el propio menú** (lección RC2: ODS vs Magnitude sin salir a buscar docs).
+2. Una recomendación automática (FitLLM, ranking, etc.) **no ejecuta** ni instala sola.
+3. Toda opción de menú lleva **descripción breve en el propio menú**.
 4. Cancelar es **válido**; no se presenta como fallo del sistema.
 5. No hay “siguiente” implícito que instale o mida sin pregunta explícita.
 
 ---
 
-## 5. Consentimientos (separados)
+## 5. Instalar y desinstalar (par obligatorio)
 
-Cada uno es una barrera propia:
+**Regla dura:** toda acción o componente que el producto ofrezca **instalar** debe ofrecer también **desinstalar** por la misma vía de interfaz (wizard, menú de mantenimiento o comando documentado en el mismo flujo).
+
+Aplica, como mínimo, a:
+
+- FitLLM / LLMFit  
+- Hermes  
+- OMH  
+- Magnitude  
+- ODS  
+- cualquier otro runtime, agente o utilidad que LEONES proponga instalar  
+
+Reglas:
+
+1. No existe “solo install” sin camino de uninstall en el producto.
+2. Desinstalar es **opt-in** y explícito (nunca silencioso ni como efecto colateral oculto).
+3. Desinstalar **no** borra evidencia LEONES, perfiles de hardware ni consentimientos registrados, salvo que el usuario lo pida en un paso aparte y etiquetado.
+4. Si el uninstall es parcial (p. ej. quita CLI pero deja imágenes Docker), la UI debe decir **qué queda** y cómo limpiarlo.
+5. Tras un install exitoso, el cierre de etapa puede recordar que existe uninstall (sin forzar).
+
+---
+
+## 6. Costes antes de instalar (disco, RAM, residencia)
+
+**Antes** de confirmar cualquier instalación ofrecida por LEONES, la interfaz **debe** informar, en el idioma de la sesión:
+
+1. **Peso en disco** (espacio aproximado que ocupará el componente o la descarga principal).  
+2. **Ocupación estimada de RAM en ejecución** (cuando el componente está activo / sirviendo).  
+3. **Residencia / daemon:** si queda algo en marcha en reposo (servicio al login, proceso en background, puerto escuchando) **aunque el usuario no esté usándolo en ese momento**, distinto de “parado del todo”.
+
+Plantilla mínima de presentación:
+
+```text
+┌─ COSTE · <nombre componente> ─────────────────────┐
+│ Disco (aprox.):     <N> (paquete + datos tipicos) │
+│ RAM en ejecución:   <N> (estimación; depende host)│
+│ En reposo:          <nada | servicio/daemon …>    │
+│ Arranque al login:  <sí | no>                     │
+└───────────────────────────────────────────────────┘
+¿Instalar <nombre>? [s/N]
+```
+
+Reglas:
+
+1. Si una cifra **no se conoce**, se muestra `UNKNOWN` / “desconocido” — **no se inventa** un número.
+2. Distinguir con claridad:  
+   - **parado** = no consume (proceso ausente);  
+   - **en reposo / idle residente** = sigue habiendo proceso o servicio vivo.
+3. Las cifras son **orientativas** (ESTIMATED de coste), no MEASURED del host del usuario, salvo que se midan en ese host y se etiqueten.
+4. No se confirma el install hasta que el usuario haya podido ver este bloque (o un equivalente accesible sin ASCII).
+
+---
+
+## 7. Consentimientos (separados)
 
 ```text
 consentir instalación  ≠  instalar
@@ -74,107 +140,87 @@ recomendar             ≠  elegir
 elegir                 ≠  ejecutar
 ```
 
-Reglas:
-
 1. No hay consentimiento genérico que autorice todo el pipeline.
-2. El consentimiento de medición (p. ej. A01 / Leo*) es **específico** y posterior a verify/preflight cuando el contrato lo exija.
+2. El consentimiento de medición es **específico**.
 3. Por defecto **no** se ejecuta benchmark.
-4. Las acciones irreversibles o con coste (descarga, disco, daemon) se muestran en un **bloque destacado** antes de confirmar.
+4. Acciones con coste (descarga, disco, daemon) van en **bloque destacado** antes de confirmar.
 
 ---
 
-## 6. Honestidad de estados (copy)
-
-En UI y logs orientados a humano:
+## 8. Honestidad de estados (copy)
 
 | Término | Uso en interfaz |
 |---------|------------------|
-| ESTIMATED | Fit / ranking / fuente externa; nunca como “velocidad de tu PC medida” |
-| OBSERVED | Visto en el host (doctor, status, sonda); no implica VALIDATED LEONES |
+| ESTIMATED | Fit, ranking o coste orientativo; no “velocidad medida de tu PC” |
+| OBSERVED | Visto en el host; no implica VALIDATED LEONES |
 | MEASURED | Solo tras ejecución real registrada por LEONES |
-| UNKNOWN | Si no se pudo comprobar |
-| BLOQUEADO | Falta runtime/artefacto/consentimiento; no se fabrica resultado |
+| UNKNOWN | No se pudo comprobar |
+| BLOQUEADO | Falta runtime/artefacto/consentimiento |
 
-Prohibido:
-
-- Presentar exit code 0 del instalador como “PASS LEONES”.
-- Presentar un fallo o timeout como medición válida.
-- Mezclar cifras ESTIMATED y MEASURED en la misma frase sin etiquetar.
+Prohibido presentar exit 0 del instalador como “PASS LEONES”, o un timeout como medición válida.
 
 ---
 
-## 7. Errores y bloqueos
+## 9. Errores y bloqueos
 
-1. Mostrar el **mensaje original** del fallo (comando, stderr relevante), no solo un eufemismo.
-2. Indicar **qué etapa falló** y **qué puede hacer el usuario** después.
-3. Runtime o artefacto ausente → bloqueo explícito, no MEASURED inventado.
-4. Dependencia opcional ausente (p. ej. FitLLM en RC4) → error **solo** en el paso de recomendación; el resto del producto sigue usable.
-5. No imprimir secretos, tokens ni contenido completo de `.env`.
-
----
-
-## 8. Costes y componentes opcionales
-
-Cuando se proponga instalar o activar algo opcional (Hermes, OMH, FitLLM, stacks):
-
-1. Decir **para qué sirve** en una o dos frases.
-2. Advertir **peso en disco** y **RAM** si se conoce o es material.
-3. Decir si deja **proceso residente / daemon / servicio al login**.
-4. Ofrecer desinstalación **opt-in** cuando el componente deje de aportar (p. ej. FitLLM tras stack instalado en RC4); nunca borrar en silencio.
+1. Mensaje **original** del fallo + etapa + siguiente paso posible.
+2. Runtime/artefacto ausente → bloqueo, no MEASURED inventado.
+3. Dependencia opcional ausente → falla solo ese paso (p. ej. recomendación FitLLM).
+4. No imprimir secretos ni `.env` completo.
 
 ---
 
-## 9. Cierre de sesión / “qué ha pasado”
+## 10. Cierre de sesión / “qué ha pasado”
 
-Al terminar un recorrido, la interfaz resume:
-
-1. Qué se instaló o no.
-2. Qué se verificó (OBSERVED) y qué no.
-3. Qué quedó pendiente.
-4. Cuál es el **siguiente paso** concreto (comando o decisión), no un “éxito” vacío.
-
----
-
-## 10. Web de operador
-
-Las páginas `inicio-rapido`, `operacion`, `estado`, `rc3`, `rc4`, `app`:
-
-1. Usan la misma semántica ESTIMATED / OBSERVED / MEASURED.
-2. No presentan fases cerradas como abiertas (p. ej. RC3 CERRADA).
-3. Enlazan contratos (`docs/…`) en lugar de reinventar reglas.
-4. Un idioma de página (`lang=…`); no duplicar párrafos enteros en tres idiomas.
+1. Qué se instaló o no.  
+2. Qué se verificó (OBSERVED) y qué no.  
+3. Qué quedó pendiente.  
+4. **Siguiente paso** concreto.  
+5. Recordatorio de que existe **desinstalación** de lo instalado vía LEONES, si aplica.
 
 ---
 
-## 11. Relación con el código
+## 11. Web de operador
+
+1. Misma semántica ESTIMATED / OBSERVED / MEASURED.  
+2. No presentar fases cerradas como abiertas.  
+3. Enlazar contratos en `docs/`.  
+4. Un `lang` de página; sin párrafos enteros cuadruplicados.
+
+---
+
+## 12. Relación con el código
 
 | Pieza | Rol |
 |-------|-----|
-| `scripts/rc2_ui.py` | Mapa ASCII histórico; no ejecuta |
+| `scripts/rc2_ui.py` | Mapa ASCII histórico |
 | `scripts/rc2_wizard.py` / `./leones` | Operador beta RC2 (histórico) |
-| `scripts/rc2_i18n.py` | Catálogo multilingüe de referencia |
-| Docs `RC2-K`, `RC2-H`, `RC2-I`, `RC2-F`, `RC2-UI-ASCII-STYLE` | Origen de estas reglas |
+| `scripts/rc2_i18n.py` | Catálogo multilingüe (ampliar a **ja**) |
 | Este documento | **Norma de interfaz de proyecto** |
 
-Cualquier wizard o CLI nuevo (RC4+) debe cumplir este documento. Si una fase necesita una excepción, se documenta en su acta **sin** silenciar consentimientos ni fronteras de evidencia.
+Wizards nuevos (RC4+) cumplen este documento. Excepciones solo en acta de fase, sin silenciar costes ni uninstall.
 
 ---
 
-## 12. Checklist rápido (PR / revisión)
+## 13. Checklist rápido (PR / revisión)
 
-- [ ] ¿Un idioma por sesión?
+- [ ] ¿Idioma de sesión en **es / en / zh / ja** (uno solo en pantalla)?
+- [ ] ¿Cada clave de UI tiene las cuatro lenguas?
 - [ ] ¿Cada opción de menú tiene descripción?
-- [ ] ¿Instalar / verificar / medir están separados?
-- [ ] ¿Los estados están etiquetados (ESTIMATED/OBSERVED/MEASURED)?
-- [ ] ¿Cancelar es seguro y explícito?
-- [ ] ¿Errores conservan mensaje original y etapa?
-- [ ] ¿Opcionales declaran disco/RAM/daemon?
-- [ ] ¿El final dice qué pasó y el siguiente paso?
+- [ ] ¿Todo lo instalable tiene **desinstalable** en el producto?
+- [ ] ¿Antes de instalar se muestran **disco**, **RAM en ejecución** y **residencia/daemon** (o UNKNOWN)?
+- [ ] ¿Se distingue parado vs idle residente?
+- [ ] ¿Instalar / verificar / medir separados?
+- [ ] ¿Estados etiquetados ESTIMATED/OBSERVED/MEASURED?
+- [ ] ¿Cancelar seguro y explícito?
+- [ ] ¿Errores con mensaje original y etapa?
+- [ ] ¿El final dice qué pasó, siguiente paso y que existe uninstall?
 
 ---
 
 ## Procedencia
 
 - Feedback beta instalador (idioma único, descripciones de stack, cierre confuso).
-- `docs/RC2-UI-ASCII-STYLE.md`, `docs/RC2-K-MULTILINGUAL-UI.md`, `docs/RC2-H-STACK-CAPABILITY-PRESENTATION.md`, `docs/RC2-I-INSTALLATION-CONSENT.md`, `docs/RC2-F-BENCHMARK-CONSENT.md`, `docs/RC2-USER-MANUAL.md`, `docs/completed/rc2-wizard.md`.
+- `docs/RC2-UI-ASCII-STYLE.md`, `docs/RC2-K-MULTILINGUAL-UI.md`, `docs/RC2-H-STACK-CAPABILITY-PRESENTATION.md`, `docs/RC2-I-INSTALLATION-CONSENT.md`, `docs/RC2-F-BENCHMARK-CONSENT.md`.
+- Producto 2026-09-06: idiomas **es/en/zh/ja**; **install ↔ uninstall**; costes **disco / RAM ejecución / daemon en reposo**.
 - Metodología LEONES: ESTIMATED ≠ MEASURED; DESCUBRIR ≠ ACEPTAR.
