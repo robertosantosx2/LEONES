@@ -75,23 +75,96 @@ def detect_formats(info: Mapping[str,Any]) -> list[str]:
         if "q8_0" in n: out.add("q8_0")
     return sorted(out)
 
-def detect_quantizations(info: Mapping[str,Any]) -> list[str]:
-    text=" ".join(str(x).lower() for x in info.get("tags",[]) or [])+" "+" ".join(str(s.get("rfilename","")) for s in info.get("siblings",[]) or [] if isinstance(s,Mapping)).lower()
-    found=set()
-    for pat in (r"q[2-8](?:_[0-9]+)?(?:_[a-z0-9]+)?",r"fp(?:32|16|8)",r"bf16",r"int8",r"awq",r"gptq",r"exl2"): found.update(re.findall(pat,text))
-    return sorted(found)
+def detect_quantizations(info:dict[str,Any])->list[str]:
+    text=json.dumps(info,ensure_ascii=False).lower()
+    found=[]
+
+    # Match the most specific quantization names first so q4_k_m
+    # is not truncated to q4_k.
+    quantizations=(
+        "q4_k_m",
+        "q4_k_s",
+        "q4_k",
+        "q8_0",
+        "q8_k",
+        "q6_k",
+        "q5_k_m",
+        "q5_k_s",
+        "q5_k",
+        "q4_0",
+        "q4_1",
+        "q3_k_m",
+        "q3_k_s",
+        "q3_k_l",
+        "q2_k",
+        "f16",
+        "f32",
+        "bf16",
+        "awq",
+        "gptq",
+        "exl2",
+    )
+
+    for q in quantizations:
+        if q in text and q not in found:
+            found.append(q)
+
+    return found
 
 def extract_hf_info(info: Mapping[str,Any]) -> dict[str,Any]:
     config=info.get("config") if isinstance(info.get("config"),Mapping) else {}
-    ti=info.get("transformers_info") if isinstance(info.get("transformers_info"),Mapping) else {}
-    return {"model_id":info.get("id") or info.get("modelId"),"revision":info.get("sha"),"author":info.get("author"),"pipeline_tag":info.get("pipeline_tag"),"library":info.get("library_name"),"parameters_b":extract_parameter_count(info),"dtype":_first(config,"torch_dtype","dtype"),"architecture":_first(config,"architectures","model_type"),"context_window_tokens":extract_context(info),"formats":detect_formats(info),"quantizations":detect_quantizations(info),"downloads_30d":info.get("downloads"),"downloads_all_time":info.get("downloads_all_time"),"likes":info.get("likes"),"trending_score":info.get("trending_score"),"last_modified":info.get("last_modified"),"created_at":info.get("created_at"),"gated":info.get("gated"),"tags":info.get("tags") or [],"used_storage_bytes":info.get("used_storage"),"transformers_info":dict(ti),"source":"huggingface"}
+    ti=info.get("transformers_info") or info.get("transformersInfo")
+    if not isinstance(ti,Mapping):
+        ti={}
+    return {
+        "model_id":info.get("id") or info.get("modelId"),
+        "revision":info.get("sha"),
+        "author":info.get("author"),
+        "pipeline_tag":info.get("pipeline_tag") or info.get("pipelineTag"),
+        "library":info.get("library_name") or info.get("libraryName"),
+        "parameters_b":extract_parameter_count(info),
+        "dtype":_first(config,"torch_dtype","dtype"),
+        "architecture":_first(config,"architectures","model_type"),
+        "context_window_tokens":extract_context(info),
+        "formats":detect_formats(info),
+        "quantizations":detect_quantizations(info),
+        "downloads_30d":info.get("downloads"),
+        "downloads_all_time":info.get("downloads_all_time") or info.get("downloadsAllTime"),
+        "likes":info.get("likes"),
+        "trending_score":info.get("trending_score") or info.get("trendingScore"),
+        "last_modified":info.get("last_modified") or info.get("lastModified"),
+        "created_at":info.get("created_at") or info.get("createdAt"),
+        "gated":info.get("gated"),
+        "tags":info.get("tags") or [],
+        "used_storage_bytes":info.get("used_storage") or info.get("usedStorage"),
+        "transformers_info":dict(ti),
+        "source":"huggingface",
+    }
+
 
 def fetch_hf_models(*, limit: int, search: str|None=None) -> list[dict[str,Any]]:
-    p={"pipeline_tag":"text-generation","sort":"downloads","direction":"-1","limit":str(limit),"expand":"author,config,downloads,downloadsAllTime,lastModified,likes,pipeline_tag,safetensors,sha,siblings,tags,transformersInfo,usedStorage,createdAt,gated,gguf"}
-    if search:p["search"]=search
-    raw=_json_request(HF_API+"/models?"+urllib.parse.urlencode(p),headers={"Accept":"application/json"})
-    if not isinstance(raw,list): raise RuntimeError("Hugging Face models endpoint returned a non-list payload")
-    return [extract_hf_info(x) for x in raw if isinstance(x,Mapping)]
+    # HF accepts individual expand fields but the combined expand list is
+    # rejected by the live API endpoint used by LEONES. Discovery therefore
+    # deliberately uses the stable default /api/models payload.
+    p={
+        "pipeline_tag":"text-generation",
+        "sort":"downloads",
+        "direction":"-1",
+        "limit":str(limit),
+    }
+    if search:
+        p["search"]=search
+    raw=_json_request(
+        HF_API+"/models?"+urllib.parse.urlencode(p),
+        headers={"Accept":"application/json"},
+    )
+    if not isinstance(raw,list):
+        raise RuntimeError("Hugging Face models endpoint returned a non-list payload")
+    return [
+        extract_hf_info(x)
+        for x in raw
+        if isinstance(x,Mapping)
+    ]
 
 def fetch_aa_models(api_key: str) -> tuple[float|None,list[dict[str,Any]]]:
     if not api_key:return None,[]
@@ -127,6 +200,20 @@ def _bits(q: str|None)->float:
     for k,b in sorted(QUANT_BITS.items(),key=lambda x:-len(x[0])):
         if k in text:return b
     return 16.0
+
+def estimate_weight_memory_gb(parameters_b: float, bits_per_weight: float) -> float:
+    """Estimate model weight memory in GiB.
+
+    This is intentionally weights-only and is a prefilter, not a runtime
+    memory prediction. Runtime buffers, KV cache, context and offload are
+    evaluated later.
+    """
+    if parameters_b < 0:
+        raise ValueError("parameters_b must be >= 0")
+    if bits_per_weight <= 0:
+        raise ValueError("bits_per_weight must be > 0")
+    return (parameters_b * 1_000_000_000 * bits_per_weight / 8) / (1024 ** 3)
+
 
 def estimate_fit(*,parameters_b:float|None,ram_gb:float|None,vram_gb:float|None,quantization:str|None,memory_margin:float=1.2)->dict[str,Any]:
     bits=_bits(quantization); weights=parameters_b*1e9*bits/8/(1024**3) if parameters_b and parameters_b>0 else None; req=weights*memory_margin if weights is not None else None

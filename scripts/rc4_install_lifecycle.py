@@ -6,8 +6,6 @@ from typing import Iterable
 
 INSTALLABLE_COMPONENTS: tuple[str, ...] = (
     "fitllm",
-    "hermes",
-    "omh",
     "magnitude",
     "ods",
 )

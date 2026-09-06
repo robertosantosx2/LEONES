@@ -80,7 +80,7 @@ def test_recommend_does_not_fabricate_missing_third_candidate():
     assert env["status"] == "insufficient"
     assert env["candidate_count"] == 2
     assert len(env["recommendations"]) == 2
-    assert "no fabrica" in env["message"]
+    assert "no se fabrica" in env["message"]
 
 
 def test_component_cost_catalog_and_prompts():

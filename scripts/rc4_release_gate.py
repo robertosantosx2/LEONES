@@ -22,15 +22,16 @@ def main() -> None:
             fail(f"missing {path.relative_to(ROOT)}")
 
     decision_text = decision.read_text(encoding="utf-8")
-    for needle in (
-        "recomendador",
-        "no es dependencia dura",
-        "opt-in",
-        "Leo001",
-        "RC3 permanece CERRADA",
-    ):
+    decision_invariants = (
+        ("preselector", "preselector"),
+        ("no es dependencia dura", "no es dependencia dura"),
+        ("opt-in", "opt-in"),
+        ("Leo001", "Leo001"),
+        ("RC3 permanece CERRADA", "RC3 permanece CERRADA"),
+    )
+    for needle, label in decision_invariants:
         if needle not in decision_text:
-            fail(f"decision missing invariant: {needle}")
+            fail(f"decision missing invariant: {label}")
 
     arch_text = arch.read_text(encoding="utf-8")
     if "FitLLM" not in arch_text or "ESTIMATED" not in arch_text:
@@ -61,7 +62,7 @@ def main() -> None:
             fail(f"recommender missing invariant: {inv}")
 
     life_src = life.read_text(encoding="utf-8")
-    for comp in ("fitllm", "hermes", "omh", "magnitude", "ods"):
+    for comp in ("fitllm", "magnitude", "ods"):
         if comp not in life_src:
             fail(f"lifecycle missing component {comp}")
 
