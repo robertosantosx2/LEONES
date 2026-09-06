@@ -1,5 +1,22 @@
 #!/usr/bin/env python3
-"""RC4 — install/uninstall pairing contract for optional components."""
+"""RC4 — install/uninstall pairing for optional components.
+
+Problem
+    Optional components (FitLLM, Magnitude, ODS) must always expose a matched
+    uninstall path so RC4 never leaves silent permanent residents.
+
+Inputs
+    component_id in {fitllm, magnitude, ods}
+    stack label for the post-install FitLLM removal offer
+
+Outputs
+    assert_install_uninstall_pair() raises if the component is undeclared
+    post_stack_fitllm_uninstall_offer() returns an opt-in offer payload
+
+What this module does NOT do
+    Perform install/uninstall. It only encodes the contract: every installable
+    component has a removal path; FitLLM removal after Magnitude/ODS is opt-in.
+"""
 from __future__ import annotations
 
 from typing import Iterable
