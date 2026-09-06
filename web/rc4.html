@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="LEONES RC4: FitLLM como recomendador opcional de modelo. RC3 cerrada. Hermes/OMH opcionales. Leo001-Leo010 para medición." />
+<title>LEONES · RC4</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-1" />
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-1" />
+<style>
+.rc4-hero-note{margin-top:1rem;padding:1rem 1.15rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}
+.rc4-state{display:inline-block;padding:.3rem .55rem;border-radius:999px;background:#fff4d8;color:#7a5b00;font-weight:800;font-size:.78rem}
+.rc4-state--ok{background:#e9f7ee;color:#0f5132}
+.rc4-gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.rc4-card{padding:1.1rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}
+.rc4-card h3{margin-top:0}
+.rc4-warning{border-left:4px solid #315d7d;padding:.8rem 1rem;background:#f5f8fa}
+.rc4-links{display:flex;flex-wrap:wrap;gap:.7rem}
+.rc4-links a{font-weight:800}
+</style>
+</head>
+<body>
+<header class="site-hero"><div class="site-hero__inner">
+<span class="site-tag">RC4 · 6 septiembre 2026</span>
+<h1>LEONES · RC4</h1>
+<p><strong>Decisión fijada · implementación pendiente.</strong> FitLLM es recomendador opcional de modelo. RC3 no se reabre.</p>
+<div class="rc4-hero-note">
+<span class="rc4-state">RC4 🟡 decisión</span>
+<span class="rc4-state rc4-state--ok" style="margin-left:.4rem">RC3 🟢 cerrada</span>
+<p style="margin-top:.8rem"><strong>Regla de autoridad:</strong> LEONES descubre el hardware. FitLLM puede recomendar (ESTIMATED). El usuario elige modelo y stack. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.</p>
+</div>
+</div></header>
+<main class="site-main" id="main">
+<section class="site-section"><span class="site-tag">Flujo</span><h2>Camino canónico RC4</h2>
+<pre class="site-stack">UBUNTU REAL
+   ↓
+scripts/hardware_profile.py → hardware-profile.v1
+   ↓
+candidate-set.v1
+   ↓
+FitLLM (opcional) → recomendación ESTIMATED
+   ↓
+usuario elige modelo (con o sin FitLLM)
+   ↓
+usuario elige Magnitude | ODS
+   ↓
+consentimiento → preparar/instalar
+   ↓
+[opt-in] ofrecer desinstalar FitLLM
+   ↓
+verificar → Leo001…Leo010 → MEASURED → evidencia</pre>
+<p class="site-note"><strong>ESTIMATED ≠ MEASURED.</strong> Una recomendación de FitLLM no es medición LEONES.</p>
+</section>
+<section class="site-section"><span class="site-tag">Decisiones</span><h2>Qué queda fijado</h2>
+<div class="rc4-gates">
+<article class="rc4-card"><h3>FitLLM recomendador</h3><p>Solo orienta. El usuario puede elegir modelo a mano si FitLLM no está.</p></article>
+<article class="rc4-card"><h3>Sin hard-dep</h3><p>LEONES arranca sin FitLLM. Falta FitLLM = fallo solo en el paso de recomendación.</p></article>
+<article class="rc4-card"><h3>Hermes / OMH opcionales</h3><p>Agente y operación, no selectores de modelo. La UI debe mostrar peso en disco, RAM y si hay daemon residente.</p></article>
+<article class="rc4-card"><h3>Post-stack</h3><p>Tras Magnitude u ODS: oferta <strong>opt-in</strong> de desinstalar FitLLM. Nunca silenciosa.</p></article>
+<article class="rc4-card"><h3>Leo001…Leo010</h3><p>Suite de medición conservada. Cambia quién propone el modelo, no el protocolo de tareas.</p></article>
+<article class="rc4-card"><h3>RC3 intacta</h3><p>Fase cerrada. Acta <code>RC3-CLOSED-2026-09-05</code>. No se reescribe como abierta.</p></article>
+</div>
+</section>
+<section class="site-section"><span class="site-tag">Implementación</span><h2>Pendiente (no reclamado)</h2>
+<div class="rc4-warning">
+<ul>
+<li>Adaptador / mensajes de recomendación FitLLM</li>
+<li>Gate y tests RC4 (no hard-dep; Hermes ≠ selector)</li>
+<li>Prompt post-install desinstalación FitLLM</li>
+<li>Textos de coste Hermes/OMH en la UI de bootstrap</li>
+<li>Web operador (inicio rápido / operación) alineada al 100%</li>
+</ul>
+<p>Nada de lo anterior se declara hecho hasta existir commit de implementación + pruebas.</p>
+</div>
+</section>
+<section class="site-section"><span class="site-tag">Docs</span><h2>Referencias</h2>
+<div class="rc4-links">
+<a href="../docs/RC4-ARCHITECTURE.md">Arquitectura RC4</a>
+<a href="../docs/completed/RC4-DECISION-FITLLM-RECOMMENDER-2026-09-06.md">Acta de decisión</a>
+<a href="rc3.html">RC3 (cerrada)</a>
+<a href="estado.html">Estado del proyecto</a>
+<a href="../README.md">README</a>
+</div>
+</section>
+</main>
+<script src="assets/js/navigation.js?v=2026-09-06-1" defer></script>
+</body>
+</html>
