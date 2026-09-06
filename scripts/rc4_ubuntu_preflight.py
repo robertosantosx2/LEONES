@@ -53,6 +53,8 @@ def main() -> int:
     )
     parser.add_argument("--max-context", type=int, default=None)
     args = parser.parse_args()
+    out = args.out if args.out.is_absolute() else (ROOT / args.out)
+    out = out.resolve()
 
     if platform.system() != "Linux":
         print(
@@ -96,8 +98,8 @@ def main() -> int:
             else "INSTALL_FITLLM_OR_SELECT_MODEL_MANUALLY"
         ),
     }
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
@@ -111,7 +113,11 @@ def main() -> int:
     print("  execution_authorized: False")
     print("  measurement_authorized: False")
     print("  measured: False")
-    print(f"  artifact: {args.out.relative_to(ROOT)}")
+    try:
+        artifact = out.relative_to(ROOT)
+    except ValueError:
+        artifact = out
+    print(f"  artifact: {artifact}")
     return 0
 
 
