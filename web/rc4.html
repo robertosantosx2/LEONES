@@ -2,10 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="LEONES RC4: intención obligatoria, evidencia de Hugging Face y Artificial Analysis, preselección FitLLM/LLMFit y tres candidatos ESTIMATED antes de la selección humana." />
+<meta name="description" content="LEONES RC4: intención obligatoria, evidencia de Hugging Face y Artificial Analysis, feed de hasta 100 modelos, intersección con FitLLM/LLMFit y tres candidatos ESTIMATED antes de la selección humana." />
 <title>LEONES · RC4 · Recomendación</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-2" />
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-2" />
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-3" />
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-3" />
 <style>
 .rc4-hero-note{margin-top:1rem;padding:1rem 1.15rem;border:1px solid #d8e0e7;border-radius:.8rem;background:#fff}
 .rc4-state{display:inline-block;padding:.3rem .55rem;border-radius:999px;background:#fff4d8;color:#7a5b00;font-weight:800;font-size:.78rem}
@@ -15,22 +15,23 @@
 .rc4-card h3{margin-top:0}
 .rc4-warning{border-left:4px solid #315d7d;padding:.8rem 1rem;background:#f5f8fa}
 .rc4-links{display:flex;flex-wrap:wrap;gap:.7rem}.rc4-links a{font-weight:800}
+.rc4-contract{overflow:auto}.rc4-contract table{width:100%;border-collapse:collapse}.rc4-contract th,.rc4-contract td{padding:.65rem;border-bottom:1px solid #d8e0e7;text-align:left;vertical-align:top}
 </style>
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
 <span class="site-tag">RC4 · 6 septiembre 2026</span>
 <h1>LEONES · RC4</h1>
-<p><strong>Recomendación con intención y evidencia.</strong> La preselección orienta; la elección humana y la medición LEONES conservan la autoridad.</p>
+<p><strong>Recomendación con intención, evidencia y límites explícitos.</strong> La preselección orienta; la elección humana y la medición física LEONES conservan la autoridad.</p>
 <div class="rc4-hero-note">
-<span class="rc4-state rc4-state--ok">RC4 · 418 tests verdes</span>
+<span class="rc4-state rc4-state--ok">RC4 · regresión 422/422</span>
 <span class="rc4-state rc4-state--ok" style="margin-left:.4rem">RC3 · cerrada</span>
-<p style="margin-top:.8rem"><strong>Regla de autoridad:</strong> el usuario declara para qué quiere usar la IA antes de recomendar. Hugging Face y Artificial Analysis aportan evidencia externa; FitLLM/LLMFit preselecciona; LEONES no convierte estimaciones externas en mediciones.</p>
+<p style="margin-top:.8rem"><strong>Regla de autoridad:</strong> el usuario declara para qué quiere usar la IA antes de recomendar. Hugging Face y Artificial Analysis aportan evidencia externa; LEONES construye un feed de hasta 100 modelos; LLMFit se consulta con su CLI real y la propuesta se limita a la intersección respaldada por evidencia. Ninguna estimación externa se convierte en medición local.</p>
 </div>
 </div></header>
 <main class="site-main" id="main">
 <section class="site-section"><span class="site-tag">Flujo canónico</span><h2>De la necesidad a la evidencia</h2>
-<pre class="site-stack">HARDWARE REAL
+<pre class="site-stack">HARDWARE DETECTADO
    +
 USER_INTENT[] · obligatorio · selección múltiple
    ↓
@@ -38,72 +39,96 @@ RECURSOS / PREFLIGHT
    ↓
 HUGGING FACE + ARTIFICIAL ANALYSIS
    ↓
-feed de evidencia · máximo 100 modelos
+feed LEONES · máximo 100 modelos
+   │                         │
+   │                         └── evidencia/procedencia
    ↓
-FitLLM / LLMFit · preselección
+LLMFit / FitLLM · --limit 100 · CLI soportada
    ↓
-3 candidatos · ESTIMATED
+INTERSECCIÓN POR IDENTIDAD DE MODELO
+   ↓
+hasta 3 candidatos · ESTIMATED
    ↓
 SELECCIÓN HUMANA
    ↓
-artifact resolution / instalación
+resolución del artefacto / instalación
    ↓
 Ubuntu · runtime físico
    ↓
 medición → evidencia MEASURED → recomendación</pre>
-<p class="site-note"><strong>ESTIMATED ≠ MEASURED.</strong> Las fuentes externas y FitLLM/LLMFit no producen evidencia física LEONES.</p>
+<p class="site-note"><strong>ESTIMATED ≠ MEASURED.</strong> El puente no inventa un mecanismo para inyectar el feed en LLMFit: la versión instalada no ofrece un flag soportado para ello. LEONES conserva la evidencia y limita la salida a la intersección verificable.</p>
 </section>
 <section class="site-section"><span class="site-tag">Intención</span><h2>Primero: ¿para qué quieres usar la IA?</h2>
 <div class="rc4-gates">
 <article class="rc4-card"><h3>Selección múltiple</h3><p><code>user_intent[]</code> es obligatorio y debe contener al menos un propósito antes de cualquier recomendación.</p></article>
 <article class="rc4-card"><h3>Propósitos</h3><p>Programación, razonamiento, investigación, chat, multimodal, embeddings y uso general.</p></article>
-<article class="rc4-card"><h3>Frontera FitLLM</h3><p>LLMFit 1.1.10 acepta un único <code>--use-case</code>; RC4 conserva la intención completa y traduce solo en esa frontera.</p></article>
+<article class="rc4-card"><h3>Frontera LLMFit</h3><p>LLMFit acepta un único <code>--use-case</code>; RC4 conserva el array completo y traduce solo en la frontera técnica.</p></article>
 </div>
 </section>
 <section class="site-section"><span class="site-tag">Evidencia externa</span><h2>Hasta 100 modelos respaldados por fuentes</h2>
 <div class="rc4-gates">
-<article class="rc4-card"><h3>Hugging Face</h3><p>Metadatos del modelo, parámetros, contexto, formatos, cuantizaciones, adopción y procedencia.</p></article>
-<article class="rc4-card"><h3>Artificial Analysis</h3><p>Benchmarks e índices externos según propósito cuando existe coincidencia con el modelo.</p></article>
-<article class="rc4-card"><h3>Prefiltro físico</h3><p>La memoria de pesos es un prefiltro; RAM física y VRAM se mantienen separadas. Swap no cuenta como RAM física.</p></article>
-<article class="rc4-card"><h3>Límite</h3><p>El feed canónico entrega como máximo 100 registros. No se inventan tamaños o métricas desconocidas.</p></article>
+<article class="rc4-card"><h3>Hugging Face</h3><p>Metadatos de repositorio, parámetros, contexto, formatos, cuantizaciones, adopción y revisión cuando están disponibles.</p></article>
+<article class="rc4-card"><h3>Artificial Analysis</h3><p>Índices, benchmarks y rendimiento externo según propósito cuando existe coincidencia. Si falta la credencial, no se inventan métricas.</p></article>
+<article class="rc4-card"><h3>Prefiltro físico</h3><p>La memoria de pesos es solo un prefiltro. RAM física y VRAM se mantienen separadas y el swap no cuenta como RAM física.</p></article>
+<article class="rc4-card"><h3>Límite duro</h3><p>El feed de selección tiene un máximo de <strong>100</strong> registros. Las métricas o tamaños desconocidos permanecen desconocidos.</p></article>
 </div>
 </section>
-<section class="site-section"><span class="site-tag">FitLLM / LLMFit</span><h2>Preselector, no autoridad</h2>
+<section class="site-section"><span class="site-tag">Puente de selección</span><h2>LLMFit preselecciona; LEONES verifica la frontera</h2>
 <div class="rc4-warning">
 <ul>
-<li>Se ejecuta con un catálogo propio y su CLI soportada; no se inventan flags para inyectar el feed externo.</li>
-<li>LEONES restringe la propuesta al universo respaldado por evidencia cuando existe coincidencia verificable.</li>
-<li>La salida final son <strong>3 candidatos ESTIMATED</strong> cuando hay tres coincidencias válidas.</li>
-<li>Si no hay tres coincidencias, el sistema declara <strong>insufficient</strong>; no fabrica candidatos.</li>
-<li>FitLLM no autoriza ejecución, benchmark ni estado <code>MEASURED</code>.</li>
+<li>LEONES construye primero el feed HF + Artificial Analysis y lo limita a 100 modelos.</li>
+<li>LLMFit se ejecuta independientemente con su catálogo y con <code>--limit 100</code>; no se inventan flags de entrada externa.</li>
+<li>Las identidades se normalizan únicamente para comparar. El ID mostrado al usuario se conserva.</li>
+<li>Solo los modelos presentes en ambas superficies pueden convertirse en candidatos.</li>
+<li>La evidencia HF/AA queda en <code>evidence_provenance</code>; no se afirma que LLMFit haya puntuado esos registros.</li>
+<li>Con tres coincidencias: <strong>3 candidatos ESTIMATED</strong>. Con menos: <strong>insufficient</strong>, sin padding.</li>
+<li>FitLLM/LLMFit no autoriza ejecución, benchmark ni estado <code>MEASURED</code>.</li>
 </ul>
 </div>
 </section>
-<section class="site-section"><span class="site-tag">Ubuntu</span><h2>El runner ya entra por RC4</h2>
+<section class="site-section"><span class="site-tag">Contrato</span><h2>Estados y autoridad</h2>
+<div class="rc4-contract">
+<table><thead><tr><th>Estado</th><th>Qué significa</th><th>Qué NO significa</th></tr></thead><tbody>
+<tr><td><code>DECLARED</code></td><td>Intención o dato declarado.</td><td>No es medición.</td></tr>
+<tr><td><code>ESTIMATED</code></td><td>Estimación de catálogo/evidencia externa/LLMFit.</td><td>No es rendimiento físico LEONES.</td></tr>
+<tr><td><code>OBSERVED</code></td><td>Observación local.</td><td>No equivale por sí sola a benchmark protocolizado.</td></tr>
+<tr><td><code>MEASURED</code></td><td>Ejecución física protocolizada.</td><td>No puede producirse desde la preselección.</td></tr>
+</tbody></table>
+</div>
+</section>
+<section class="site-section"><span class="site-tag">Ubuntu</span><h2>El runner entra por RC4</h2>
 <pre class="site-stack">./leones
    ↓
 RC4 · selección múltiple de user_intent[]
    ↓
-FitLLM / LLMFit recommendation
+evidencia HF + AA · ≤100
    ↓
-3 propuestas ESTIMATED
+LLMFit · catálogo propio · ≤100
+   ↓
+intersección respaldada
+   ↓
+hasta 3 propuestas ESTIMATED
    ↓
 elección humana
 
 ./leones --rc2   ← compatibilidad histórica explícita</pre>
-<p class="site-note">La ruta por defecto no ejecuta ni mide automáticamente. El paso físico llega después de la selección humana, resolución del artefacto y consentimiento.</p>
+<p class="site-note">La ruta por defecto no ejecuta ni mide automáticamente. La ruta física llega después de la selección humana y de la resolución del artefacto.</p>
 </section>
-<section class="site-section"><span class="site-tag">Estado</span><h2>RC4 · base verde</h2>
+<section class="site-section"><span class="site-tag">Estado</span><h2>RC4 · capa de recomendación endurecida</h2>
 <div class="rc4-gates">
-<article class="rc4-card"><h3>✓ Regresión</h3><p><strong>418 passed</strong> en la suite completa.</p></article>
-<article class="rc4-card"><h3>✓ Intent</h3><p>Contrato obligatorio, selección múltiple y propósitos no vacíos.</p></article>
-<article class="rc4-card"><h3>✓ Provenance</h3><p><code>external</code> sigue siendo el valor por defecto; <code>llmfit</code> se declara explícitamente.</p></article>
-<article class="rc4-card"><h3>✓ RC3 aislada</h3><p>Las referencias históricas de Hermes/OMH no se borran de la ficha RC3.</p></article>
+<article class="rc4-card"><h3>✓ Regresión</h3><p><strong>422/422</strong> en la suite completa, según la validación física Ubuntu más reciente del runner.</p></article>
+<article class="rc4-card"><h3>✓ Intent</h3><p>Contrato obligatorio, selección múltiple y propósitos no vacíos antes de recomendar.</p></article>
+<article class="rc4-card"><h3>✓ Evidencia</h3><p>Feed HF + AA con límite 100 y procedencia conservada; intersección explícita con el catálogo LLMFit.</p></article>
+<article class="rc4-card"><h3>✓ Límite de autoridad</h3><p>Candidatos <code>ESTIMATED</code>, sin autorización de ejecución ni medición.</p></article>
+<article class="rc4-card"><h3>✓ RC3 aislada</h3><p>Hermes/OMH permanecen solo donde corresponde a la historia de RC3; no forman parte del camino canónico RC4.</p></article>
+<article class="rc4-card"><h3>→ Próximo gate</h3><p>Validar en Ubuntu la cadena completa de evidencia → intersección → selección humana → runtime físico → medición.</p></article>
 </div>
 </section>
-<section class="site-section"><span class="site-tag">Docs</span><h2>Referencias</h2>
+<section class="site-section"><span class="site-tag">Documentación</span><h2>RC4 con trazabilidad</h2>
+<p>La implementación y sus límites están documentados en el repositorio. La documentación distingue explícitamente la evidencia externa de la evidencia física y explica por qué la ausencia de un flag de entrada en LLMFit no se resuelve inventándolo.</p>
 <div class="rc4-links">
 <a href="../docs/RC4-ARCHITECTURE.md">Arquitectura RC4</a>
+<a href="../docs/RC4-EVIDENCE-BRIDGE.md">Puente HF + AA → LLMFit</a>
 <a href="../docs/completed/RC4-DECISION-FITLLM-RECOMMENDER-2026-09-06.md">Acta de decisión</a>
 <a href="rc3.html">RC3 · cerrada</a>
 <a href="estado.html">Estado del proyecto</a>
@@ -111,6 +136,6 @@ elección humana
 </div>
 </section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-06-2" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-06-3" defer></script>
 </body>
 </html>
