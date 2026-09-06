@@ -34,13 +34,21 @@ def run_hardware_probe() -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", type=Path, default=ROOT / "results" / "rc4-ubuntu-preflight.json")
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=ROOT / "results" / "rc4-ubuntu-preflight.json",
+    )
     parser.add_argument("--use-case", default=None)
     parser.add_argument("--max-context", type=int, default=None)
     args = parser.parse_args()
 
     if platform.system() != "Linux":
-        print(f"RC4 UBUNTU PREFLIGHT: BLOCKED — host OS is {platform.system()}, expected Linux/Ubuntu", file=sys.stderr)
+        print(
+            "RC4 UBUNTU PREFLIGHT: BLOCKED — "
+            f"host OS is {platform.system()}, expected Linux/Ubuntu",
+            file=sys.stderr,
+        )
         return 2
 
     observed_at = datetime.now(timezone.utc).isoformat()
@@ -74,7 +82,10 @@ def main() -> int:
 
     print("RC4 UBUNTU PREFLIGHT: PASS")
     print(f"  hardware: {hardware.get('schema_version', 'UNKNOWN')}")
-    print(f"  FitLLM: {recommendation['status']} ({recommendation['candidate_count']}/3 candidates)")
+    print(
+        f"  FitLLM: {recommendation['status']} "
+        f"({recommendation['candidate_count']}/3 candidates)"
+    )
     print("  execution_authorized: False")
     print("  measurement_authorized: False")
     print("  measured: False")

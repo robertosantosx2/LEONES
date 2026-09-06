@@ -124,12 +124,24 @@ def path_size(path: Path) -> int | None:
     return total
 
 
-def detect_target(name: str, commands: list[str], packages: list[str], paths: list[str]) -> dict[str, Any]:
+def detect_target(
+    name: str,
+    commands: list[str],
+    packages: list[str],
+    paths: list[str],
+) -> dict[str, Any]:
     for command in commands:
         result = command_version(command)
         if result["installed"]:
-            result.update({"name": name, "size_bytes": None, "update_required": None,
-                           "install_required": False, "required_disk_bytes": None})
+            result.update(
+                {
+                    "name": name,
+                    "size_bytes": None,
+                    "update_required": None,
+                    "install_required": False,
+                    "required_disk_bytes": None,
+                }
+            )
             return result
     for package in packages:
         try:
@@ -165,7 +177,12 @@ def collect(root: str = ".") -> dict[str, Any]:
     disk = disk_state(root)
     software = [
         detect_target("ODS", ["ods"], ["ods"], ["~/ods", "~/leones-work/ODS"]),
-        detect_target("Magnitude", ["magnitude"], ["magnitude"], ["~/magnitude", "~/leones-work/Magnitude"]),
+        detect_target(
+            "Magnitude",
+            ["magnitude"],
+            ["magnitude"],
+            ["~/magnitude", "~/leones-work/Magnitude"],
+        ),
         detect_target("FitLLM / LLMFit", ["llmfit", "fitllm"], ["llmfit", "fitllm"], []),
     ]
     return {
@@ -178,13 +195,32 @@ def collect(root: str = ".") -> dict[str, Any]:
             "disk_free_bytes": disk["free_bytes"],
             "reserved_bytes": 0,
             "available_for_install_bytes": disk["free_bytes"],
-            "ods_required_disk_bytes": next(x["required_disk_bytes"] for x in software if x["name"] == "ODS"),
-            "magnitude_required_disk_bytes": next(x["required_disk_bytes"] for x in software if x["name"] == "Magnitude"),
-            "fitllm_required_disk_bytes": next(x["required_disk_bytes"] for x in software if x["name"] == "FitLLM / LLMFit"),
+            "ods_required_disk_bytes": next(
+                x["required_disk_bytes"]
+                for x in software
+                if x["name"] == "ODS"
+            ),
+            "magnitude_required_disk_bytes": next(
+                x["required_disk_bytes"]
+                for x in software
+                if x["name"] == "Magnitude"
+            ),
+            "fitllm_required_disk_bytes": next(
+                x["required_disk_bytes"]
+                for x in software
+                if x["name"] == "FitLLM / LLMFit"
+            ),
             "model_artifact_required_disk_bytes": None,
             "runtime_required_disk_bytes": None,
             "safety_margin_bytes": None,
-            "status": "requires_sizing_before_install" if any(x["install_required"] or x["update_required"] for x in software) else "ready_for_next_gate",
+            "status": (
+                "requires_sizing_before_install"
+                if any(
+                    x["install_required"] or x["update_required"]
+                    for x in software
+                )
+                else "ready_for_next_gate"
+            ),
         },
         "rules": {
             "swap_counts_as_ram": False,

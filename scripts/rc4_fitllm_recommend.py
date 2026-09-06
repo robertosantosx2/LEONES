@@ -275,7 +275,11 @@ def recommend(
                 "raw": dict(raw),
                 "evidence_provenance": {
                     "selection_boundary": SELECTION_BOUNDARY,
-                    "huggingface": dict(evidence.get("hf", {})) if isinstance(evidence.get("hf"), Mapping) else None,
+                    "huggingface": (
+                        dict(evidence.get("hf", {}))
+                        if isinstance(evidence.get("hf"), Mapping)
+                        else None
+                    ),
                     "artificial_analysis": dict(aa) if isinstance(aa, Mapping) else None,
                     "evidence_rank": evidence.get("evidence_rank"),
                 },
@@ -293,7 +297,11 @@ def recommend(
     base["llmfit"] = dict(result.raw) if isinstance(result.raw, Mapping) else {}
     base["llmfit_catalog_count"] = len(result.models)
     base["evidence_backed_intersection_count"] = len(rows)
-    base["artificial_analysis_available"] = bool(aa_source.get("models_available", 0)) if isinstance(aa_source, Mapping) else False
+    base["artificial_analysis_available"] = (
+        bool(aa_source.get("models_available", 0))
+        if isinstance(aa_source, Mapping)
+        else False
+    )
 
     if len(rows) != CANDIDATE_COUNT:
         base["status"] = "insufficient"
