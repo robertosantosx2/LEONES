@@ -1,8 +1,24 @@
 #!/usr/bin/env python3
 """RC4/UI — disk / RAM / residency cost disclosure before install.
 
-Figures are ESTIMATED product guidance unless measured on the host.
-UNKNOWN is required when a value is not known — never invent numbers.
+Problem
+    Before installing FitLLM, Magnitude or ODS, the UI must disclose approximate
+    disk, RAM-when-running, idle residency and login behaviour.
+
+Inputs
+    component_id keys in COST_CATALOG
+
+Outputs
+    ComponentCost records with kind ESTIMATED_COST
+    ASCII cost frames for CLI prompts (ESTIMATED / UNKNOWN)
+
+Rules
+    Figures are ESTIMATED product guidance unless measured on the host.
+    UNKNOWN is required when a value is not known — never invent numbers.
+
+What this module does NOT do
+    Probe the live host. Live resource numbers come from
+    rc4_resource_preflight.py / hardware_profile.py, not this catalog.
 """
 from __future__ import annotations
 
@@ -63,16 +79,25 @@ def get_cost(component_id: str) -> ComponentCost | None:
 
 def render_cost_block(cost: ComponentCost, *, lang: str = "es") -> str:
     title = {"es": "COSTE", "en": "COST", "zh": "成本", "ja": "コスト"}.get(lang, "COSTE")
+
+    def cell(label: str, value: str, width: int = 44) -> str:
+        text = f"{label}{value}"
+        if len(text) > width:
+            text = text[: width - 1] + "…"
+        return f"║  {text}".ljust(63) + "║"
+
     lines = [
-        f"┌─ {title} · {cost.display_name} ─────────────────────",
-        f"│ Disco (aprox.):     {cost.disk_approx}",
-        f"│ RAM en ejecución:   {cost.ram_when_running_approx}",
-        f"│ En reposo:          {cost.idle_resident}",
-        f"│ Arranque al login:  {cost.starts_at_login}",
+        "╔══════════════════════════════════════════════════════════════╗",
+        f"║  {title} · {cost.display_name}".ljust(63) + "║",
+        "╠══════════════════════════════════════════════════════════════╣",
+        cell("Disco (aprox.):     ", cost.disk_approx),
+        cell("RAM en ejecución:   ", cost.ram_when_running_approx),
+        cell("En reposo:          ", cost.idle_resident),
+        cell("Arranque al login:  ", cost.starts_at_login),
     ]
     if cost.notes:
-        lines.append(f"│ Nota:               {cost.notes}")
-    lines.append("└───────────────────────────────────────────────────")
+        lines.append(cell("Nota:               ", cost.notes))
+    lines.append("╚══════════════════════════════════════════════════════════════╝")
     return "\n".join(lines)
 
 
