@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 from scripts.rc4_runner import PURPOSES, RC2_WIZARD, choose_purposes, main
@@ -40,8 +41,7 @@ def test_rc2_switch_delegates_to_historical_wizard(monkeypatch):
 
     monkeypatch.setattr("scripts.rc4_runner.subprocess.run", fake_run)
     assert main(["--rc2"]) == 0
-    assert calls
     command, kwargs = calls[0]
-    assert command == ["python", str(RC2_WIZARD)] or command == [__import__("sys").executable, str(RC2_WIZARD)]
+    assert command == [sys.executable, str(RC2_WIZARD)]
     assert kwargs["cwd"] == ROOT
     assert kwargs["check"] is False
