@@ -8,6 +8,7 @@ Problem
 Inputs
     Interactive purpose selection, or argv forwarded to the recommender.
     --rc2 keeps the historical RC2 wizard explicitly available.
+    --inventory shows component inventory and exits.
 
 Outputs
     Recommender JSON / human-readable proposal only.
@@ -74,12 +75,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rc2", action="store_true", help="run the historical RC2 wizard")
     parser.add_argument("--json", action="store_true", help="emit recommender JSON")
     parser.add_argument(
+        "--inventory",
+        action="store_true",
+        help="show component inventory and uninstall offers, then exit",
+    )
+    parser.add_argument(
         "--purpose",
         action="append",
         dest="purposes",
         help="non-interactive purpose; repeatable",
     )
     args = parser.parse_args(argv)
+
+    if args.inventory:
+        inv = ROOT / "scripts" / "rc4_component_inventory.py"
+        return subprocess.run([sys.executable, str(inv)], cwd=ROOT, check=False).returncode
 
     if args.rc2:
         return subprocess.run(
@@ -88,6 +98,12 @@ def main(argv: list[str] | None = None) -> int:
             check=False,
         ).returncode
 
+    # Interactive path: show inventory first so the user can uninstall independently.
+    if args.purposes is None:
+        inv = ROOT / "scripts" / "rc4_component_inventory.py"
+        if inv.is_file():
+            subprocess.run([sys.executable, str(inv)], cwd=ROOT, check=False)
+            print()
     purposes = list(dict.fromkeys(args.purposes or choose_purposes()))
     command = [sys.executable, str(RECOMMENDER)]
     for purpose in purposes:
