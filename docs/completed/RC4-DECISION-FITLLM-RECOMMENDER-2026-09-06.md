@@ -1,98 +1,117 @@
 # RC4 · Decisión: FitLLM como preselector de modelo
 
 **Fecha:** 2026-09-06  
-**Estado:** 🟢 Decisión de arquitectura fijada  
+**Estado:** 🟢 Decisión de arquitectura fijada + adenda de integración  
 **Predecesor:** RC3 (fase **CERRADA**; no se reabre)
 
-## 1. Motivo
+## Adenda de integración — 2026-09-06
 
-RC3 cerró con sonda LEONES, contratos, web y observación física parcial.
-La línea experimental *Hermes-only selector* (`rc3-hermes-task-benchmarks`)
-no se promueve a canónica. RC4 redefine el tramo de **preselección de modelo**.
+La CLI real de LLMFit 1.1.10 no ofrece un flag soportado para inyectar en `recommend` un catálogo externo construido por LEONES. **RC4 no inventa esa interfaz.**
 
-## 2. Decisiones
+La implementación canónica separa dos superficies y las cruza por identidad:
 
-1. **FitLLM / LLMFit es el preselector de RC4, no una autoridad.**
-   - Produce una preselección de **3 LLM candidatos**.
-   - La señal es ESTIMATED (fit / ranking).
-   - No autoriza ejecución, no mide y no genera MEASURED.
-   - El usuario puede elegir uno de los candidatos o un modelo válido fuera de la preselección.
+```text
+USER_INTENT[] → HARDWARE DETECTADO → HF + ARTIFICIAL ANALYSIS → feed LEONES ≤100
+                                                        │
+                         ┌──────────────────────────────┘
+                         │
+                         ▼
+                 LLMFit CLI ≤100
+                         │
+                         └── identidad normalizada ──┐
+                                                     ▼
+                                      evidence-backed intersection
+                                                     ▼
+                                               hasta 3 ESTIMATED
+                                                     ▼
+                                               selección humana
+```
 
-2. **LEONES arranca sin FitLLM.**
-   - FitLLM no es dependencia dura de `./install.sh`.
-   - Si el usuario pide preselección y FitLLM no está: error claro en ese paso; el resto del producto sigue disponible.
+### Reglas fijadas
 
-3. **Hermes y OMH no forman parte de RC4.**
-   - No seleccionan modelo.
-   - No recomiendan modelos.
-   - No participan en el camino canónico de preparación, ejecución o medición RC4.
-   - Su arquitectura histórica no se reutiliza como capa oculta de RC4.
+- El feed externo no se atribuye a LLMFit como si hubiese sido puntuado internamente.
+- La salida LLMFit solo puede aportar candidatos con respaldo en el feed.
+- La procedencia HF/AA queda en `evidence_provenance`.
+- La frontera se declara como `selection_boundary = evidence_backed_intersection`.
+- El límite es 100 en el feed y 100 en la consulta LLMFit.
+- Menos de tres coincidencias produce `insufficient`; no hay padding.
+- Los candidatos permanecen `ESTIMATED`.
+- `execution_authorized`, `measurement_authorized` y `measured` permanecen en `false`.
 
-4. **Tras instalar Magnitude u ODS, ofrecer desinstalar FitLLM.**
-   - Motivación: FitLLM ya no aporta al camino de ejecución local una vez tomada la decisión de modelo.
-   - La desinstalación es **opt-in** (nunca silenciosa).
-   - No borrar evidencia ni perfiles LEONES al quitar FitLLM.
+## Decisión original, resumida
 
-5. **Suite Leo001…Leo010 se conserva** como protocolo de medición/comparación.
-   - Solo cambia quién propone/preselecciona el modelo antes del loop.
-   - Sin ejecución real: NOT CLAIMED / no MEASURED.
+1. **FitLLM/LLMFit es preselector, no autoridad.**
+2. **FitLLM es opcional**, no dependencia dura de instalación/arranque.
+3. **Hermes y OMH están fuera del camino canónico RC4**; sus referencias históricas no se borran.
+4. Tras Magnitude/ODS puede ofrecerse la desinstalación de FitLLM, siempre opt-in.
+5. Leo001…Leo010 se conserva para medición/comparación.
+6. RC3 permanece cerrada.
 
-6. **RC3 permanece CERRADA.**
-   - Documentos y tags de cierre RC3 no se reescriben como “abierta”.
-   - RC4 es fase nueva con su propio contrato y gate.
-
-## 3. Flujo canónico RC4
+## Flujo canónico RC4
 
 ```text
 UBUNTU / EQUIPO REAL
         ↓
-scripts/hardware_profile.py     (sonda LEONES, obligatoria)
+USER_INTENT[]                 obligatorio · múltiple · no vacío
         ↓
-hardware-profile.v1
+resource preflight
         ↓
-candidate-set.v1                (LEONES; sin measured_tps)
+hardware detectado
         ↓
-FitLLM / LLMFit                  (3 candidatos · ESTIMATED)
+Hugging Face + Artificial Analysis
         ↓
-elección humana: modelo
+LEONES evidence feed          ≤100
         ↓
-elección humana: Magnitude | ODS
+LLMFit / FitLLM CLI            ≤100 · catálogo propio
         ↓
-consentimiento
+intersección respaldada
         ↓
-preparar / instalar stack
+hasta 3 ESTIMATED
         ↓
-[opcional] ofrecer quitar FitLLM
+elección humana
         ↓
-verificar físicamente
+elección de stack + consentimiento
         ↓
-Leo001 … Leo010
+preparar / instalar
         ↓
-medición → evidencia → recomendación final
+verificación física
+        ↓
+Leo001…Leo010
+        ↓
+medición → evidencia MEASURED
 ```
 
-## 4. Regla de autoridad
+## Separación de autoridad
 
-**LEONES descubre el hardware. FitLLM preselecciona 3 candidatos. El usuario elige modelo y stack. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.**
+**LEONES** descubre y normaliza hardware, conserva la intención y mantiene la procedencia. **Hugging Face** y **Artificial Analysis** aportan evidencia externa. **LLMFit** preselecciona desde su propio catálogo. **LEONES** exige respaldo en el feed antes de proponer. El **usuario** elige. El runtime físico mide.
 
-## 5. Fuera de alcance de esta decisión
+## Estados
 
-- Implementación completa del adaptador FitLLM.
-- Reescritura del release gate (commits de implementación posteriores).
-- Validación física MEASURED en Ubuntu.
-- Promoción de la rama Hermes-selector a main.
+| Estado | Significado |
+|---|---|
+| `DECLARED` | dato declarado por usuario/fuente |
+| `ESTIMATED` | estimación o preselección previa a ejecución |
+| `OBSERVED` | observación externa/local sin ser necesariamente benchmark final |
+| `MEASURED` | ejecución física protocolizada en el equipo real |
 
-## 6. Criterios de aceptación (implementación posterior)
+Nunca se promociona automáticamente `ESTIMATED` a `MEASURED`.
 
-- [ ] Docs RC4 + README + web operador alineados.
-- [ ] Gate: FitLLM opcional y no hard-dep; Hermes/OMH fuera del camino canónico RC4.
-- [ ] Sin FitLLM: arranque OK; preselección degradada con mensaje explícito.
-- [ ] Con FitLLM: exactamente 3 candidatas/preselección sin `execution_authorized` y sin MEASURED.
-- [ ] Post-install Magnitude/ODS: prompt opt-in para desinstalar FitLLM.
-- [ ] Leo001…Leo010 siguen referenciados como suite de medición.
+## Criterios de aceptación de esta capa
 
-## 7. Procedencia
+- [x] Intención múltiple obligatoria antes de recomendar.
+- [x] Feed HF + AA con máximo 100 registros.
+- [x] LLMFit consultado mediante CLI real, sin flags inventados.
+- [x] Intersección explícita y trazable.
+- [x] Hasta tres candidatos `ESTIMATED`.
+- [x] `insufficient` cuando faltan coincidencias; sin padding.
+- [x] Sin autorización de ejecución ni medición.
+- [ ] Validación física completa de la cadena en Ubuntu.
 
-- RC3 cierre: `docs/completed/RC3-CLOSED-2026-09-05.md`
-- RC3 arquitectura: `docs/RC3-ARCHITECTURE.md`
-- Esta decisión: acta fijada el 2026-09-06
+## Procedencia
+
+- `docs/RC4-ARCHITECTURE.md`
+- `docs/RC4-EVIDENCE-BRIDGE.md`
+- `scripts/rc4_fitllm_recommend.py`
+- `scripts/collect_model_evidence.py`
+- `runtime_selection/llmfit.py`
+- `tests/test_rc4_fitllm_recommend.py`
