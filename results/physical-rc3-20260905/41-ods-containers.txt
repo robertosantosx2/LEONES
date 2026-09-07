@@ -1,0 +1,28 @@
+NAMES                            IMAGE                                                     STATUS                            PORTS
+ods-hermes-proxy                 caddy:2.11.3-alpine                                       Up 19 hours (healthy)             80/tcp, 443/tcp, 2019/tcp, 443/udp, 127.0.0.1:9120->9120/tcp
+ods-dashboard                    ods-dashboard                                             Up 19 hours (healthy)             80/tcp, 127.0.0.1:3001->3001/tcp
+ods-langfuse-web                 langfuse/langfuse:3.159.0                                 Up 5 seconds (health: starting)   127.0.0.1:3006->3000/tcp
+ods-langfuse-worker              langfuse/langfuse-worker:3.159.0                          Exited (137) 18 hours ago         
+ods-litellm                      ghcr.io/berriai/litellm:v1.81.3-stable                    Up 19 hours (healthy)             127.0.0.1:4000->4000/tcp
+ods-perplexica                   itzcrazykns1337/perplexica:slim-latest                    Up 19 hours (healthy)             127.0.0.1:3004->3000/tcp
+ods-langfuse-minio-init          minio/mc:RELEASE.2025-08-13T08-35-41Z                     Exited (0) 19 hours ago           
+ods-privacy-shield               ods-privacy-shield                                        Up 19 hours (healthy)             127.0.0.1:8085->8085/tcp
+ods-dashboard-api                ods-dashboard-api                                         Up 19 hours (healthy)             127.0.0.1:3002->3002/tcp
+ods-hermes                       nousresearch/hermes-agent:v2026.6.5                       Up 19 hours (healthy)             9119/tcp
+ods-n8n                          n8nio/n8n:2.6.4                                           Up 19 hours (healthy)             127.0.0.1:5678->5678/tcp
+ods-whisper                      ghcr.io/speaches-ai/speaches:0.9.0-rc.3-cpu               Up 19 hours (healthy)             127.0.0.1:9000->8000/tcp
+ods-langfuse-postgres            postgres:17.9-alpine                                      Exited (0) 18 hours ago           
+ods-remote-provider-egress       ods-remote-provider-egress:local                          Up 19 hours (healthy)             8091/tcp
+ods-langfuse-redis               redis:7.4.8-alpine                                        Exited (0) 18 hours ago           
+ods-model-router                 ods-model-router                                          Up 19 hours (healthy)             9099/tcp
+ods-ape                          ods-ape                                                   Up 19 hours (healthy)             127.0.0.1:7890->7890/tcp
+ods-webui                        ghcr.io/open-webui/open-webui:v0.7.2                      Up 19 hours (healthy)             127.0.0.1:3000->8080/tcp
+ods-qdrant                       qdrant/qdrant:v1.16.3                                     Up 19 hours (healthy)             127.0.0.1:6333-6334->6333-6334/tcp
+ods-searxng                      searxng/searxng:2026.3.8-a563127a2                        Up 19 hours (healthy)             127.0.0.1:8888->8080/tcp
+ods-langfuse-clickhouse          clickhouse/clickhouse-server:26.2.4.23                    Exited (0) 18 hours ago           
+ods-token-spy                    ods-token-spy                                             Exited (137) 18 hours ago         
+ods-remote-provider-ssh-tunnel   ods-remote-provider-ssh-tunnel:local                      Up 19 hours (healthy)             18090-18092/tcp
+ods-embeddings                   ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.1   Exited (0) 18 hours ago           
+ods-langfuse-minio               minio/minio:RELEASE.2025-09-07T16-13-09Z                  Exited (0) 18 hours ago           
+ods-llama-server                 ghcr.io/ggml-org/llama.cpp:server-b8248                   Up 19 hours (healthy)             127.0.0.1:11435->8080/tcp
+ods-tts                          ghcr.io/remsky/kokoro-fastapi-cpu:v0.2.4                  Exited (0) 18 hours ago           

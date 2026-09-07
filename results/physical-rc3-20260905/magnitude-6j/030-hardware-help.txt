@@ -1,0 +1,6 @@
+Usage: magnitude hardware [options]
+
+Show hardware and memory available to local inference
+
+Options:
+  -h, --help  display help for command

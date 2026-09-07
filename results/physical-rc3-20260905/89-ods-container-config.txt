@@ -1,0 +1,7 @@
+
+IMAGE=ghcr.io/ggml-org/llama.cpp:server-b8248
+CMD=["--model","/models/Qwen3.5-2B-Q4_K_M.gguf","--host","0.0.0.0","--port","8080","--n-gpu-layers","0","--ctx-size","65536","--batch-size","512","--threads","4","--parallel","1","--metrics"]
+ENTRYPOINT=["/app/llama-server"]
+ENV=["LLAMA_ARG_NO_CACHE_PROMPT","LLAMA_ARG_FLASH_ATTN=auto","LLAMA_ARG_REASONING=off","LLAMA_ARG_CACHE_TYPE_V=f16","LLAMA_ARG_SPEC_TYPE","LLAMA_ARG_N_CPU_MOE","LLAMA_ARG_CACHE_TYPE_K=f16","LLAMA_ARG_SPEC_DRAFT_N_MAX","LLAMA_ARG_CHECKPOINT_EVERY_N_TOKENS","PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","LLAMA_ARG_HOST=0.0.0.0"]
+WORKING_DIR=/app
+

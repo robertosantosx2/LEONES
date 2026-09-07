@@ -3,57 +3,35 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="LEONES RC3: discovery físico canónico, candidatos, Magnitude/ODS, verificación, medición y evidencia.">
+  <meta name="description" content="LEONES RC4: sonda física, FitLLM recomendador opcional, Magnitude/ODS, Leo suite y evidencia.">
   <title>LEONES · Empezar diagnóstico</title>
-  <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-4">
-  <link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-4">
+  <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-1">
+  <link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-1">
 </head>
 <body>
 <header class="site-hero">
   <div class="site-hero__inner">
-    <span class="site-tag">LEONES RC3</span>
+    <span class="site-tag">LEONES RC4</span>
     <h1>Del discovery a la evidencia</h1>
-    <p>La web explica el recorrido. La sonda física canónica es <code>scripts/hardware_profile.py</code>; Hermes/OMH operan en el ecosistema local; Magnitude u ODS se eligen con consentimiento explícito.</p>
+    <p>Sonda física canónica <code>hardware_profile.py</code>. FitLLM puede recomendar modelos (ESTIMATED, opcional). Magnitude u ODS se eligen con consentimiento. Hermes/OMH son opcionales y no seleccionan modelo.</p>
   </div>
 </header>
 <main class="site-main" id="main">
-<section class="site-section" aria-labelledby="flow-title">
-  <div class="section-heading"><span class="site-tag">Recorrido operativo</span><span class="section-index">01</span></div>
-  <h2 id="flow-title">Una sola ruta, con barreras explícitas</h2>
-  <div class="site-grid site-grid--journey">
-    <article class="site-card"><span class="card-number">01</span><h3>SONDA FÍSICA</h3><p><code>hardware_profile.py</code> observa el equipo real y produce <code>hardware-profile.v1</code>. No se inventan CPU, GPU ni RAM.</p></article>
-    <article class="site-card"><span class="card-number">02</span><h3>HERMES / OMH</h3><p>Hermes aporta el ecosistema runtime/model-fit; Oh My Hermes organiza routing, workflows y handoffs. No sustituyen la sonda LEONES.</p></article>
-    <article class="site-card"><span class="card-number">03</span><h3>CANDIDATOS</h3><p><code>candidate-set.v1</code> propone. HF y Artificial Analysis aportan evidencia externa marcada como tal.</p></article>
-    <article class="site-card site-card--featured"><span class="card-number">04</span><h3>ELECCIÓN HUMANA</h3><p>El usuario elige modelo/configuración y luego Magnitude u ODS. La recomendación no selecciona sola.</p></article>
-    <article class="site-card"><span class="card-number">05</span><h3>CONSENTIMIENTO</h3><p>Instalar o preparar el stack requiere autorización explícita. Cancelar es válido.</p></article>
-    <article class="site-card"><span class="card-number">06</span><h3>VERIFICAR</h3><p>LEONES observa el host. Un instalador con código 0 no equivale automáticamente a PASS.</p></article>
-    <article class="site-card"><span class="card-number">07</span><h3>MEDIR</h3><p>Solo tras runtime y artefacto disponibles. Sin eso: bloqueo honesto, no MEASURED inventado.</p></article>
-    <article class="site-card"><span class="card-number">08</span><h3>EVIDENCIA</h3><p>Conservar procedencia, configuración, resultado y frontera estimated/measured.</p></article>
-  </div>
-  <pre class="site-stack">SONDA FÍSICA → HERMES/OMH → CANDIDATOS
-        → ELECCIÓN → MAGNITUDE|ODS → CONSENTIR
-        → VERIFICAR → MEDIR → EVIDENCIA</pre>
-</section>
-<section class="site-section" aria-labelledby="truth-title">
-  <div class="section-heading"><span class="site-tag">Reglas de LEONES</span><span class="section-index">02</span></div>
-  <h2 id="truth-title">Qué significa cada estado</h2>
+<section class="site-section">
+  <h2>Recorrido operativo RC4</h2>
+  <pre class="site-stack">SONDA → CANDIDATOS → FitLLM? → ELECCIÓN → MAGNITUDE|ODS
+        → CONSENTIR → [opt-in quitar FitLLM] → VERIFICAR → Leo* → EVIDENCIA</pre>
   <div class="site-grid">
-    <article class="site-card"><h3>ESTIMATED</h3><p>Orientación externa o de ranking. Sirve para priorizar, no para publicar como medición local.</p></article>
-    <article class="site-card"><h3>MEASURED</h3><p>Solo tras ejecución real registrada por el camino de runtime/evidencia correspondiente.</p></article>
-    <article class="site-card"><h3>CONSENT</h3><p>Instalar ≠ verificar ≠ autorizar benchmark. Cada operación tiene su propia barrera.</p></article>
-    <article class="site-card"><h3>UNKNOWN</h3><p>Si un dato no puede comprobarse, permanece desconocido.</p></article>
+    <article class="site-card"><h3>ESTIMATED</h3><p>FitLLM y rankings externos. No son medición local.</p></article>
+    <article class="site-card"><h3>MEASURED</h3><p>Solo tras ejecución real bajo LEONES.</p></article>
+    <article class="site-card"><h3>CONSENT</h3><p>Instalar ≠ verificar ≠ autorizar benchmark.</p></article>
   </div>
-</section>
-<section class="site-section" aria-labelledby="docs-title">
-  <div class="section-heading"><span class="site-tag">Documentación</span><span class="section-index">03</span></div>
-  <h2 id="docs-title">RC3</h2>
-  <p class="site-lead">Contrato canónico en <code>docs/RC3-ARCHITECTURE.md</code>. Estado público en <a href="rc3.html">rc3.html</a> y <a href="estado.html">estado.html</a>.</p>
-  <p><a class="app-button" href="rc3.html">Estado RC3 →</a></p>
-  <p><a class="app-button app-button--secondary" href="../docs/RC3-ARCHITECTURE.md">Arquitectura RC3 →</a></p>
-  <p><a class="app-button app-button--secondary" href="rc2.html">RC2 histórico →</a></p>
+  <p><a class="app-button" href="rc4.html">Estado RC4 →</a></p>
+  <p><a class="app-button app-button--secondary" href="rc3.html">RC3 cerrada →</a></p>
+  <p><a class="app-button app-button--secondary" href="../docs/RC4-ARCHITECTURE.md">Arquitectura RC4 →</a></p>
 </section>
 </main>
-<footer class="site-footer"><div>LEONES · IA local con criterio</div><div>Conocimiento abierto · Evidencia reproducible · 2026</div></footer>
-<script src="assets/js/navigation.js?v=2026-09-05-4" defer></script>
+<footer class="site-footer"><div>LEONES · IA local con criterio</div><div>RC4 · 2026</div></footer>
+<script src="assets/js/navigation.js?v=2026-09-06-1" defer></script>
 </body>
 </html>

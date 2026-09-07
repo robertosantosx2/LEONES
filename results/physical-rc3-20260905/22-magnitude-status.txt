@@ -1,0 +1,6 @@
+Magnitude service
+  Runtime         Ready
+  Starts at login Yes
+  Version         0.0.11
+  Address         127.0.0.1:10100
+  Active model    None

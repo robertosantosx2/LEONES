@@ -1,0 +1,21 @@
+slot init_sampler: id  0 | task 0 | init sampler, took 0.01 ms, tokens: text = 22, total = 22
+slot update_slots: id  0 | task 0 | prompt processing done, n_tokens = 22, batch.n_tokens = 22
+slot print_timing: id  0 | task 0 | 
+prompt eval time =     720.21 ms /    22 tokens (   32.74 ms per token,    30.55 tokens per second)
+       eval time =    2717.76 ms /    32 tokens (   84.93 ms per token,    11.77 tokens per second)
+      total time =    3437.97 ms /    54 tokens
+slot      release: id  0 | task 0 | stop processing: n_tokens = 53, truncated = 0
+srv  update_slots: all slots are idle
+srv  log_server_r: done request: POST /v1/chat/completions 172.19.0.1 200
+srv  params_from_: Chat format: peg-native
+slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, sim_best = 0.875 (> 0.100 thold), f_keep = 0.396
+--
+slot init_sampler: id  0 | task 33 | init sampler, took 0.01 ms, tokens: text = 24, total = 24
+slot update_slots: id  0 | task 33 | prompt processing done, n_tokens = 24, batch.n_tokens = 24
+slot print_timing: id  0 | task 33 | 
+prompt eval time =    1315.02 ms /    24 tokens (   54.79 ms per token,    18.25 tokens per second)
+       eval time =     291.70 ms /     4 tokens (   72.93 ms per token,    13.71 tokens per second)
+      total time =    1606.72 ms /    28 tokens
+slot      release: id  0 | task 33 | stop processing: n_tokens = 27, truncated = 0
+srv  log_server_r: done request: POST /v1/chat/completions 172.19.0.1 200
+srv  update_slots: all slots are idle

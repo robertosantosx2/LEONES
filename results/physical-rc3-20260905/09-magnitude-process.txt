@@ -1,0 +1,3 @@
+roberto  3607612  0.0  0.0  16244  7364 pts/1    S+   17:39   0:00 tee results/physical-rc3-20260905/09-magnitude-process.txt
+
+LISTEN 0      4096       127.0.0.1:3000       0.0.0.0:*                                          

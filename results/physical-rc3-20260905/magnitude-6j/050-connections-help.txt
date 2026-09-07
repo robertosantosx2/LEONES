@@ -1,0 +1,14 @@
+Usage: magnitude connections [options] [command]
+
+Connect Magnitude models to agent harnesses
+
+Options:
+  -h, --help               display help for command
+
+Commands:
+  list                     List supported harnesses and their Magnitude status
+  add [options] <harness>  Connect installed Magnitude models to a harness
+  sync [harness]           Refresh configured harnesses with installed Magnitude
+                           models
+  remove <harness>         Disconnect Magnitude from a harness
+  help [command]           display help for command

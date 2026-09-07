@@ -1,0 +1,23 @@
+/usr/bin/docker
+Docker version 29.1.3, build 29.1.3-0ubuntu4.1
+Docker Compose version v5.5.0
+
+NAMES                            IMAGE                                         STATUS
+ods-hermes-proxy                 caddy:2.11.3-alpine                           Up 18 hours (healthy)
+ods-dashboard                    ods-dashboard                                 Up 18 hours (healthy)
+ods-langfuse-web                 langfuse/langfuse:3.159.0                     Up 11 seconds (health: starting)
+ods-litellm                      ghcr.io/berriai/litellm:v1.81.3-stable        Up 18 hours (healthy)
+ods-perplexica                   itzcrazykns1337/perplexica:slim-latest        Up 18 hours (healthy)
+ods-privacy-shield               ods-privacy-shield                            Up 18 hours (healthy)
+ods-dashboard-api                ods-dashboard-api                             Up 18 hours (healthy)
+ods-hermes                       nousresearch/hermes-agent:v2026.6.5           Up 18 hours (healthy)
+ods-n8n                          n8nio/n8n:2.6.4                               Up 18 hours (healthy)
+ods-whisper                      ghcr.io/speaches-ai/speaches:0.9.0-rc.3-cpu   Up 18 hours (healthy)
+ods-remote-provider-egress       ods-remote-provider-egress:local              Up 18 hours (healthy)
+ods-model-router                 ods-model-router                              Up 18 hours (healthy)
+ods-ape                          ods-ape                                       Up 18 hours (healthy)
+ods-webui                        ghcr.io/open-webui/open-webui:v0.7.2          Up 18 hours (healthy)
+ods-qdrant                       qdrant/qdrant:v1.16.3                         Up 18 hours (healthy)
+ods-searxng                      searxng/searxng:2026.3.8-a563127a2            Up 18 hours (healthy)
+ods-remote-provider-ssh-tunnel   ods-remote-provider-ssh-tunnel:local          Up 18 hours (healthy)
+ods-llama-server                 ghcr.io/ggml-org/llama.cpp:server-b8248       Up 18 hours (healthy)

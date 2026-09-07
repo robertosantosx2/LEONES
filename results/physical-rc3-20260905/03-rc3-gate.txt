@@ -1,0 +1,8 @@
+RC3 RELEASE GATE: PASS
+  static contracts: PASS
+  candidate/evidence boundary: PASS
+  user-selection boundary: PASS
+  canonical hardware probe boundary: PASS
+  physical Ubuntu validation: NOT CLAIMED
+  real Magnitude/ODS handoff: NOT CLAIMED
+  real benchmark/evidence: NOT CLAIMED

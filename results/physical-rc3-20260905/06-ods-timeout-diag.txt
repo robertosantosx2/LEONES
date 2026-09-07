@@ -1,0 +1,48 @@
+=== memory ===
+               total       usado       libre  compartido   búf/caché  disponible
+Mem:           7,0Gi       6,1Gi       232Mi       364Mi       1,5Gi       996Mi
+Inter:          10Gi       7,7Gi       3,3Gi
+=== llama-server container ===
+NAMES              STATUS                 PORTS
+ods-llama-server   Up 2 hours (healthy)   127.0.0.1:11435->8080/tcp
+=== recent logs ===
+srv  update_slots: all slots are idle
+srv  params_from_: Chat format: peg-native
+slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, sim_best = 1.000 (> 0.100 thold), f_keep = 1.000
+slot launch_slot_: id  0 | task -1 | sampler chain: logits -> ?penalties -> ?dry -> ?top-n-sigma -> top-k -> ?typical -> top-p -> min-p -> ?xtc -> temp-ext -> dist 
+slot launch_slot_: id  0 | task 3 | processing task, is_child = 0
+slot update_slots: id  0 | task 3 | new prompt, n_ctx_slot = 65536, n_keep = 0, task.n_tokens = 17
+slot update_slots: id  0 | task 3 | need to evaluate at least 1 token for each active slot (n_past = 17, task.n_tokens() = 17)
+slot update_slots: id  0 | task 3 | n_past was set to 16
+slot update_slots: id  0 | task 3 | n_tokens = 16, memory_seq_rm [16, end)
+slot update_slots: id  0 | task 3 | failed to truncate tokens with position >= 16 - clearing the memory
+slot prompt_clear: id  0 | task 3 | clearing prompt with 16 tokens
+slot init_sampler: id  0 | task 3 | init sampler, took 0.01 ms, tokens: text = 17, total = 17
+slot update_slots: id  0 | task 3 | prompt processing done, n_tokens = 17, batch.n_tokens = 17
+slot print_timing: id  0 | task 3 | 
+prompt eval time =   15482.46 ms /    17 tokens (  910.73 ms per token,     1.10 tokens per second)
+       eval time =    7453.67 ms /     8 tokens (  931.71 ms per token,     1.07 tokens per second)
+      total time =   22936.13 ms /    25 tokens
+slot      release: id  0 | task 3 | stop processing: n_tokens = 24, truncated = 0
+srv  update_slots: all slots are idle
+srv  log_server_r: done request: POST /v1/chat/completions 172.19.0.1 200
+srv  params_from_: Chat format: peg-native
+slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, sim_best = 0.214 (> 0.100 thold), f_keep = 0.125
+srv  get_availabl: updating prompt cache
+srv   prompt_save:  - saving prompt with length 24, total state size = 19.548 MiB
+srv          load:  - looking for better prompt, base f_keep = 0.125, sim = 0.214
+srv        update:  - cache state: 1 prompts, 19.548 MiB (limits: 8192.000 MiB, 65536 tokens, 65536 est)
+srv        update:    - prompt 0x648b9790bed0:      24 tokens, checkpoints:  0,    19.548 MiB
+srv  get_availabl: prompt cache update took 258.50 ms
+slot launch_slot_: id  0 | task -1 | sampler chain: logits -> ?penalties -> ?dry -> ?top-n-sigma -> top-k -> ?typical -> top-p -> min-p -> ?xtc -> temp-ext -> dist 
+slot launch_slot_: id  0 | task 12 | processing task, is_child = 0
+slot update_slots: id  0 | task 12 | new prompt, n_ctx_slot = 65536, n_keep = 0, task.n_tokens = 14
+slot update_slots: id  0 | task 12 | n_past = 3, slot.prompt.tokens.size() = 24, seq_id = 0, pos_min = 23, n_swa = 1
+slot update_slots: id  0 | task 12 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)
+slot update_slots: id  0 | task 12 | n_tokens = 0, memory_seq_rm [0, end)
+slot init_sampler: id  0 | task 12 | init sampler, took 0.00 ms, tokens: text = 14, total = 14
+slot update_slots: id  0 | task 12 | prompt processing done, n_tokens = 14, batch.n_tokens = 14
+srv          stop: cancel task, id_task = 12
+srv  log_server_r: done request: POST /v1/chat/completions 172.19.0.1 200
+slot      release: id  0 | task 12 | stop processing: n_tokens = 296, truncated = 0
+srv  update_slots: all slots are idle

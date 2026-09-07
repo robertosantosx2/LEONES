@@ -1,0 +1,11 @@
+Aspire A515-55 · Intel(R) UHD Graphics (ICL GT1)
+  Linux · x86-64 · 8 logical CPU cores
+  7 GB unified memory · Vulkan GPU acceleration
+
+Memory
+  Intel(R) UHD Graphics (ICL GT1) · Unified memory
+  5.2 GB / 7 GB used
+  Free          1.8 GB
+
+Current model
+  None

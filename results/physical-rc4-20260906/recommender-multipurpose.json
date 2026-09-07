@@ -1,0 +1,217 @@
+{
+  "schema": "leones.rc4.fitllm_recommendation.v1",
+  "user_intent": {
+    "required": true,
+    "selection_mode": "multiple",
+    "purposes": [
+      "programming",
+      "reasoning"
+    ]
+  },
+  "phase": "RC4",
+  "provider": "fitllm_llmfit",
+  "kind": "ESTIMATED",
+  "candidate_count": 1,
+  "execution_authorized": false,
+  "measurement_authorized": false,
+  "measured": false,
+  "user_choice_required": true,
+  "fitllm_required_for_boot": false,
+  "selection_boundary": "evidence_backed_intersection",
+  "evidence_input_limit": 100,
+  "recommendations": [
+    {
+      "rank": 1,
+      "model_id": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+      "kind": "ESTIMATED",
+      "evidence_level": "estimated",
+      "source": "llmfit",
+      "raw": {
+        "best_quant": "Q4_K_M",
+        "capabilities": [
+          "Tool Use"
+        ],
+        "capability_ids": [
+          "tool_use"
+        ],
+        "category": "Reasoning",
+        "context_length": 524288,
+        "disk_size_gb": 4.75,
+        "effective_context_length": 8192,
+        "estimate_basis": {
+          "assumed_context": 8192,
+          "ddr_bandwidth_gbps": null,
+          "efficiency": 0.55,
+          "gpu_bandwidth_gbps": null,
+          "local_calibration": null,
+          "method": "backend_constant"
+        },
+        "estimated_tps": 15.4,
+        "fit_label": "Marginal",
+        "fit_level": "Marginal",
+        "gguf_sources": [
+          {
+            "provider": "unsloth",
+            "repo": "unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF"
+          },
+          {
+            "provider": "mradermacher",
+            "repo": "mradermacher/DeepSeek-R1-0528-Qwen3-8B-GGUF"
+          }
+        ],
+        "installed": false,
+        "is_moe": false,
+        "license": "mit",
+        "measured_tps": null,
+        "memory_available_gb": 7.03,
+        "memory_required_gb": 6.38,
+        "moe_offloaded_gb": null,
+        "name": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+        "notes": [
+          "Context capped at 8192 tokens for estimation (model supports up to 524288; use --max-context to override)",
+          "Unified memory: GPU and CPU share the same pool",
+          "Baseline estimated speed: 15.4 tok/s"
+        ],
+        "ollama_name": null,
+        "parameter_count": "8.2B",
+        "params_b": 8.19,
+        "provider": "DeepSeek",
+        "release_date": "2025-05-29",
+        "run_mode": "GPU",
+        "run_mode_label": "GPU",
+        "runtime": "llama.cpp",
+        "runtime_label": "llama.cpp",
+        "score": 80.6,
+        "score_components": {
+          "context": 100.0,
+          "fit": 58.6,
+          "quality": 86.4,
+          "speed": 61.8
+        },
+        "supports_tp": [
+          1,
+          2,
+          4,
+          8
+        ],
+        "total_memory_gb": 6.38,
+        "usable_context": 12964,
+        "use_case": "Advanced reasoning, chain-of-thought",
+        "utilization_pct": 90.7,
+        "verify_command": "llama-bench -m <path-to-Q4_K_M-gguf> -ngl 99 -p 512 -n 128"
+      },
+      "evidence_provenance": {
+        "selection_boundary": "evidence_backed_intersection",
+        "huggingface": {
+          "model_id": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "revision": null,
+          "author": null,
+          "pipeline_tag": "text-generation",
+          "library": "transformers",
+          "parameters_b": null,
+          "dtype": null,
+          "architecture": null,
+          "context_window_tokens": null,
+          "formats": [
+            "safetensors"
+          ],
+          "quantizations": [],
+          "downloads_30d": 991215,
+          "downloads_all_time": null,
+          "likes": 1084,
+          "trending_score": null,
+          "last_modified": null,
+          "created_at": "2025-05-29T11:07:47.000Z",
+          "gated": null,
+          "tags": [
+            "transformers",
+            "safetensors",
+            "qwen3",
+            "text-generation",
+            "conversational",
+            "arxiv:2501.12948",
+            "license:mit",
+            "text-generation-inference",
+            "endpoints_compatible",
+            "region:us"
+          ],
+          "used_storage_bytes": null,
+          "transformers_info": {},
+          "source": "huggingface"
+        },
+        "artificial_analysis": null,
+        "evidence_rank": 94
+      }
+    }
+  ],
+  "status": "insufficient",
+  "message": "Solo hay 1 coincidencias válidas entre LLMFit y el feed de evidencia; no se fabrican candidatos para completar 3.",
+  "evidence": {
+    "schema": "leones.rc4.model-evidence.v1",
+    "model_count": 100,
+    "max_models": 100,
+    "sources": {
+      "huggingface": {
+        "kind": "model_repository_metadata",
+        "models_considered": 100
+      },
+      "artificial_analysis": {
+        "kind": "independent_benchmark_and_performance",
+        "models_available": 0,
+        "intelligence_index_version": null
+      }
+    },
+    "hardware": {
+      "source": "llmfit",
+      "source_version": null,
+      "cpu": "Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz",
+      "ram_gb": 7.03,
+      "gpu": "Intel Iris Plus Graphics G1 (Ice Lake) (integrated)",
+      "vram_gb": 7.03,
+      "gpu_memory_kind": "unified",
+      "unified_memory": true,
+      "os": "Linux-7.0.0-31-generic-x86_64-desconocido-with-glibc2.43",
+      "architecture": "x86_64",
+      "accelerators": [
+        "SYCL"
+      ],
+      "verification": "detected",
+      "raw": {
+        "available_ram_gb": 1.48,
+        "backend": "SYCL",
+        "cpu_cores": 8,
+        "cpu_name": "Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz",
+        "gpu_available_gb": null,
+        "gpu_count": 1,
+        "gpu_name": "Intel Iris Plus Graphics G1 (Ice Lake) (integrated)",
+        "gpu_vram_gb": 7.03,
+        "gpus": [
+          {
+            "backend": "SYCL",
+            "count": 1,
+            "memory_bandwidth_gbps": null,
+            "name": "Intel Iris Plus Graphics G1 (Ice Lake) (integrated)",
+            "unified_memory": true,
+            "vram_gb": 7.03
+          }
+        ],
+        "has_gpu": true,
+        "total_ram_gb": 7.03,
+        "unified_memory": true
+      }
+    }
+  },
+  "provider_version": null,
+  "command": [
+    "llmfit",
+    "recommend",
+    "--json",
+    "--limit",
+    "100",
+    "--use-case",
+    "coding"
+  ],
+  "llmfit_catalog_count": 200,
+  "evidence_backed_intersection_count": 1,
+  "artificial_analysis_available": false
+}

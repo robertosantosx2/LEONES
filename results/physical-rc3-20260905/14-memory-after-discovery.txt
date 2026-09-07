@@ -1,0 +1,7 @@
+               total       usado       libre  compartido   búf/caché  disponible
+Mem:           7,0Gi       5,2Gi       229Mi       352Mi       2,2Gi       1,8Gi
+Inter:          10Gi       9,5Gi       1,5Gi
+
+NAME           TYPE      SIZE USED PRIO
+/dev/nvme0n1p4 partition 7,5G   6G   -1
+/dev/zram0     partition 3,5G 3,5G  100

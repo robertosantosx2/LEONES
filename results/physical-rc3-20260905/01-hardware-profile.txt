@@ -1,0 +1,272 @@
+{
+  "schema_version": "hardware-profile.v1",
+  "probe": "LEONES-hardware-profile",
+  "observed_at_utc": "2026-09-05T15:35:54.433407+00:00",
+  "platform": {
+    "system": "Linux",
+    "release": "7.0.0-30-generic",
+    "machine": "x86_64"
+  },
+  "cpu": {
+    "model": "Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz",
+    "logical_cpus": 8,
+    "physical_cores": 4,
+    "threads_per_core": 2,
+    "sockets": 1,
+    "architecture": "x86_64",
+    "mhz": null,
+    "cache_l3": null,
+    "flags": [
+      "3dnowprefetch",
+      "abm",
+      "acpi",
+      "adx",
+      "aes",
+      "aperfmperf",
+      "apic",
+      "arat",
+      "arch_capabilities",
+      "arch_perfmon",
+      "art",
+      "avx",
+      "avx2",
+      "avx512_bitalg",
+      "avx512_vbmi2",
+      "avx512_vnni",
+      "avx512_vpopcntdq",
+      "avx512bw",
+      "avx512cd",
+      "avx512dq",
+      "avx512f",
+      "avx512ifma",
+      "avx512vbmi",
+      "avx512vl",
+      "bmi1",
+      "bmi2",
+      "bts",
+      "clflush",
+      "clflushopt",
+      "cmov",
+      "constant_tsc",
+      "cpuid",
+      "cpuid_fault",
+      "cx16",
+      "cx8",
+      "de",
+      "ds_cpl",
+      "dtes64",
+      "dtherm",
+      "dts",
+      "epb",
+      "ept",
+      "ept_ad",
+      "erms",
+      "est",
+      "f16c",
+      "flexpriority",
+      "flush_l1d",
+      "fma",
+      "fpu",
+      "fsgsbase",
+      "fsrm",
+      "fxsr",
+      "gfni",
+      "ht",
+      "hwp",
+      "hwp_act_window",
+      "hwp_epp",
+      "hwp_notify",
+      "hwp_pkg_req",
+      "ibpb",
+      "ibrs",
+      "ibrs_enhanced",
+      "ida",
+      "intel_pt",
+      "invpcid",
+      "lahf_lm",
+      "lm",
+      "mca",
+      "mce",
+      "md_clear",
+      "mmx",
+      "monitor",
+      "movbe",
+      "msr",
+      "mtrr",
+      "nonstop_tsc",
+      "nopl",
+      "nx",
+      "ospke",
+      "pae",
+      "pat",
+      "pbe",
+      "pcid",
+      "pclmulqdq",
+      "pdcm",
+      "pdpe1gb",
+      "pebs",
+      "pge",
+      "pku",
+      "pln",
+      "pni",
+      "popcnt",
+      "pse",
+      "pse36",
+      "pts",
+      "rdpid",
+      "rdrand",
+      "rdseed",
+      "rdtscp",
+      "rep_good",
+      "sdbg",
+      "sep",
+      "sha_ni",
+      "smap",
+      "smep",
+      "split_lock_detect",
+      "ss",
+      "ssbd",
+      "sse",
+      "sse2",
+      "sse4_1",
+      "sse4_2",
+      "ssse3",
+      "stibp",
+      "syscall",
+      "tm",
+      "tm2",
+      "tpr_shadow",
+      "tsc",
+      "tsc_adjust",
+      "tsc_deadline_timer",
+      "tsc_known_freq",
+      "umip",
+      "vaes",
+      "vme",
+      "vmx",
+      "vnmi",
+      "vpclmulqdq",
+      "vpid",
+      "x2apic",
+      "xgetbv1",
+      "xsave",
+      "xsavec",
+      "xsaveopt",
+      "xsaves",
+      "xtopology",
+      "xtpr"
+    ]
+  },
+  "memory": {
+    "visible_to_os_bytes": 7549530112,
+    "available_bytes": 1626640384
+  },
+  "gpu": [
+    {
+      "pci_address": "0000:00:02.0",
+      "description": "0000:00:02.0 VGA compatible controller [0300]: Intel Corporation Iris Plus Graphics G1 (Ice Lake) [8086:8a56] (rev 07)",
+      "vendor_device_id": "8086:8a56",
+      "driver": "i915",
+      "vram_bytes": null,
+      "vram_source": null
+    }
+  ],
+  "disks": [
+    {
+      "name": "zram0",
+      "size": "3,5G",
+      "rotational": false,
+      "model": ""
+    },
+    {
+      "name": "nvme0n1",
+      "size": "476,9G",
+      "rotational": false,
+      "model": "KINGSTON OM8PCP3512F-AA"
+    }
+  ],
+  "network": {
+    "vethcee777a": {
+      "link_mbps": 10000
+    },
+    "vethb4fd254": {
+      "link_mbps": 10000
+    },
+    "vethee54105": {
+      "link_mbps": 10000
+    },
+    "veth5ced0eb": {
+      "link_mbps": 10000
+    },
+    "veth541b742": {
+      "link_mbps": 10000
+    },
+    "vethdd06b9a": {
+      "link_mbps": 10000
+    },
+    "vethc7e7fcb": {
+      "link_mbps": 10000
+    },
+    "vethc24e8eb": {
+      "link_mbps": 10000
+    },
+    "vethdb3ea4b": {
+      "link_mbps": 10000
+    },
+    "veth4f5b595": {
+      "link_mbps": 10000
+    },
+    "br-9342dce36316": {
+      "link_mbps": 10000
+    },
+    "veth2a89409": {
+      "link_mbps": 10000
+    },
+    "vethed35118": {
+      "link_mbps": 10000
+    },
+    "veth6c6691a": {
+      "link_mbps": 10000
+    },
+    "veth3bdbe60": {
+      "link_mbps": 10000
+    },
+    "veth8369e99": {
+      "link_mbps": 10000
+    },
+    "vethb181640": {
+      "link_mbps": 10000
+    },
+    "br-0f5d78661300": {
+      "link_mbps": 10000
+    },
+    "vethd6cfc83": {
+      "link_mbps": 10000
+    },
+    "veth03abe1b": {
+      "link_mbps": 10000
+    },
+    "vethf0695db": {
+      "link_mbps": 10000
+    }
+  },
+  "tools": {
+    "lscpu": true,
+    "free": true,
+    "lspci": true,
+    "lsblk": true
+  },
+  "accelerator_tools": {
+    "nvidia-smi": false,
+    "rocminfo": false,
+    "vulkaninfo": false,
+    "vainfo": false,
+    "glxinfo": true
+  },
+  "measurement": {
+    "cpu_benchmark": false,
+    "memory_bandwidth": false,
+    "disk_benchmark": false,
+    "gpu_benchmark": false
+  }
+}

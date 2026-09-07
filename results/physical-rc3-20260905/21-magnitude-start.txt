@@ -1,0 +1,16 @@
+○ Starting Magnitude service
+  Downloading Magnitude service... 0% (0 B / 40.7 MB)
+  Downloading Magnitude service... 25% (10.2 MB / 40.7 MB)
+  Downloading Magnitude service... 50% (20.3 MB / 40.7 MB)
+  Downloading Magnitude service... 75% (30.5 MB / 40.7 MB)
+  Downloading Magnitude service... 100% (40.7 MB / 40.7 MB)
+  ✓ Magnitude service downloaded 100% (40.7 MB / 40.7 MB)
+  Downloading inference engine... 0%
+  Downloading inference engine... 70% (32.5 MB / 46.2 MB)
+  Downloading inference engine... 83% (38.6 MB / 46.2 MB)
+  ✓ Inference engine downloaded 100% (46.2 MB / 46.2 MB)
+  Starting inference engine
+  ✓ Inference engine started
+  Preparing Vulkan backend for Intel(R) UHD Graphics (ICL GT1)
+  ✓ Vulkan backend ready for Intel(R) UHD Graphics (ICL GT1)
+● Magnitude service is ready at 127.0.0.1:10100

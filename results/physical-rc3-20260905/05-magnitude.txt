@@ -1,0 +1,3 @@
+/home/roberto/.npm-global/bin/magnitude
+0.0.11
+error: too many arguments. Expected 0 arguments but got 1.

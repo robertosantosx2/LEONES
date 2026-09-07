@@ -1,0 +1,7 @@
+=== magnitude ===
+/home/roberto/.npm-global/bin/magnitude
+0.0.11
+=== ods ===
+/home/roberto/.local/bin/ods
+/home/roberto/leones-work/ODS
+/home/roberto/ods

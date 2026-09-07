@@ -1,0 +1,18 @@
+ods-hermes-proxy	Up 18 hours (healthy)	80/tcp, 443/tcp, 2019/tcp, 443/udp, 127.0.0.1:9120->9120/tcp
+ods-dashboard	Up 18 hours (healthy)	80/tcp, 127.0.0.1:3001->3001/tcp
+ods-langfuse-web	Up 2 seconds (health: starting)	127.0.0.1:3006->3000/tcp
+ods-litellm	Up 18 hours (healthy)	127.0.0.1:4000->4000/tcp
+ods-perplexica	Up 18 hours (healthy)	127.0.0.1:3004->3000/tcp
+ods-privacy-shield	Up 18 hours (healthy)	127.0.0.1:8085->8085/tcp
+ods-dashboard-api	Up 18 hours (healthy)	127.0.0.1:3002->3002/tcp
+ods-hermes	Up 18 hours (healthy)	9119/tcp
+ods-n8n	Up 18 hours (healthy)	127.0.0.1:5678->5678/tcp
+ods-whisper	Up 18 hours (healthy)	127.0.0.1:9000->8000/tcp
+ods-remote-provider-egress	Up 18 hours (healthy)	8091/tcp
+ods-model-router	Up 18 hours (healthy)	9099/tcp
+ods-ape	Up 18 hours (healthy)	127.0.0.1:7890->7890/tcp
+ods-webui	Up 18 hours (healthy)	127.0.0.1:3000->8080/tcp
+ods-qdrant	Up 18 hours (healthy)	127.0.0.1:6333-6334->6333-6334/tcp
+ods-searxng	Up 18 hours (healthy)	127.0.0.1:8888->8080/tcp
+ods-remote-provider-ssh-tunnel	Up 18 hours (healthy)	18090-18092/tcp
+ods-llama-server	Up 18 hours (healthy)	127.0.0.1:11435->8080/tcp

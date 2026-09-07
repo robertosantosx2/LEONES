@@ -1,0 +1,11 @@
+content='LEONES RC3 MEDICION'
+finish_reason=stop
+reasoning_present=False
+prompt_tokens=32
+completion_tokens=8
+total_tokens=40
+prompt_tok_s=31.874541803461575
+generation_tok_s=15.695137646357159
+server_total_ms=1513.6480000000001
+curl_elapsed_ms=1564
+RUN_PASS=True

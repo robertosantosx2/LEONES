@@ -25,7 +25,9 @@
         ["Fuentes", "fuentes.html", "top"],
 
         ["Aplicación", "app.html", "top"],
-        ["RC2 · Beta", "rc2.html", "application"],
+        ["RC2 · histórico", "rc2.html", "application"],
+        ["RC3 · cerrada", "rc3.html", "application"],
+        ["RC4 · FitLLM", "rc4.html", "application"],
         ["¿Puede mi PC?", "puede-mi-pc.html", "application"],
         ["Cuadros maestros", "cuadros-maestros.html", "application"],
         ["Stack Explorer", "stack-explorer.html", "application"],
@@ -50,44 +52,15 @@
         return link;
     };
     function renderNavigation() {
-        if (document.querySelector(".leones-nav-runtime")) return;
-        // Retire the old page-specific knowledge bar so every public page has one canonical menu.
-        document.querySelectorAll('nav.nav[aria-label="Navegación de conocimiento"]').forEach((node) => node.remove());
+        if (document.querySelector(".leones-nav-root")) return;
         document.body.classList.add("has-leones-navigation");
-        const root = document.createElement("nav"); root.className = "leones-nav-runtime"; root.setAttribute("aria-label", "Navegación principal");
-        const skip = document.createElement("a"); skip.className = "skip-link"; skip.href = "#main"; skip.textContent = "Saltar al contenido"; root.appendChild(skip);
-        const crumb = document.createElement("div"); crumb.className = "site-crumb"; const ci = document.createElement("div"); ci.className = "site-crumb-inner"; const home = document.createElement("a"); home.href = "index.html"; home.textContent = "Inicio"; ci.appendChild(home);
-        if (currentPage?.[2] && currentPage[2] !== "top") { const sep = document.createElement("span"); sep.textContent = "›"; ci.appendChild(sep); const gl = document.createElement("a"); gl.href = currentPage[2] === "project" ? "proyectos.html" : "app.html"; gl.textContent = currentPage[2] === "project" ? "Proyectos" : "Aplicación"; ci.appendChild(gl); }
-        const sep2 = document.createElement("span"); sep2.textContent = "›"; ci.appendChild(sep2); const cur = document.createElement("strong"); cur.textContent = currentPage?.[0] || document.title; ci.appendChild(cur); crumb.appendChild(ci); root.appendChild(crumb);
-        const toggle = document.createElement("button"); toggle.className = "leones-nav-toggle"; toggle.type = "button"; toggle.setAttribute("aria-controls", "leones-side"); toggle.setAttribute("aria-expanded", "false"); toggle.textContent = "☰ Menú"; root.appendChild(toggle);
-        const backdrop = document.createElement("div"); backdrop.className = "site-side-backdrop"; root.appendChild(backdrop); const side = document.createElement("aside"); side.className = "site-side"; side.id = "leones-side"; side.setAttribute("aria-label", "Secciones LEONES");
-        const brand = document.createElement("div"); brand.className = "site-brand"; const bl = document.createElement("a"); bl.href = "index.html"; bl.setAttribute("aria-label", "LEONES · Inicio"); const bi = document.createElement("img"); bi.src = base; bi.alt = "LEONES"; bi.width = 112; bi.height = 62; bl.appendChild(bi); brand.appendChild(bl); side.appendChild(brand);
-        const title = document.createElement("div"); title.className = "side-title"; title.textContent = "Explorar"; side.appendChild(title); navigation.forEach((item) => side.appendChild(createLink(item))); root.appendChild(side); document.body.prepend(root);
-        const main = document.querySelector("main"); if (main && !main.id) main.id = "main";
-        const close = () => { side.classList.remove("is-open"); backdrop.classList.remove("is-open"); toggle.setAttribute("aria-expanded", "false"); };
-        toggle.addEventListener("click", () => { const open = !side.classList.contains("is-open"); side.classList.toggle("is-open", open); backdrop.classList.toggle("is-open", open); toggle.setAttribute("aria-expanded", String(open)); }); backdrop.addEventListener("click", close); side.addEventListener("click", (e) => { if (e.target.closest("a")) close(); }); document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+        const root = document.createElement("div"); root.className = "leones-nav-root";
+        const side = document.createElement("nav"); side.className = "leones-side-nav"; side.setAttribute("aria-label", "Secciones");
+        const title = document.createElement("div"); title.className = "side-title"; title.textContent = "Explorar"; side.appendChild(title);
+        navigation.forEach((item) => side.appendChild(createLink(item)));
+        root.appendChild(side);
+        document.body.prepend(root);
     }
-    function normalizePublishedLinks() {
-        document.querySelectorAll("a[href]").forEach((link) => {
-            const href = link.getAttribute("href"); if (!href) return;
-            if (href === "../INSTALL.md") link.setAttribute("href", "INSTALL.md");
-            else if (href === "../README.md") link.setAttribute("href", "README.md");
-            else if (href.startsWith("../docs/")) {
-                const target = href.slice(3);
-                if (/^docs\/RC2-(USER-MANUAL|INSTALLATION-MANUAL|BETA-USER-FLOW)\.md$/.test(target)) link.setAttribute("href", target);
-                else link.setAttribute("href", `https://github.com/robertosantosx2/LEONES/blob/main/${target}`);
-            } else if (href.startsWith("../scripts/")) link.setAttribute("href", `https://github.com/robertosantosx2/LEONES/blob/main/${href.slice(3)}`);
-        });
-    }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { renderNavigation(); normalizePublishedLinks(); });
-    else { renderNavigation(); normalizePublishedLinks(); }
-})();
-
-/* LEONES — Prospección: publicar explicación funcional en español */
-(() => {
-    "use strict";
-    const page = window.location.pathname.split("/").pop() || "index.html";
-    if (page !== "prospeccion.html") return;
-    const load = () => { if (document.querySelector('script[data-leones-prospeccion-explanations="1"]')) return; const script = document.createElement("script"); script.src = "assets/js/prospeccion-explanations.js?v=2026-08-24-1"; script.dataset.leonesProspeccionExplanations = "1"; script.defer = true; document.head.appendChild(script); };
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load); else load();
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", renderNavigation);
+    else renderNavigation();
 })();

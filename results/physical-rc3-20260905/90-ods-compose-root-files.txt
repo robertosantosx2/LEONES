@@ -1,0 +1,13 @@
+docker-compose.amd.yml
+docker-compose.apple.yml
+docker-compose.arc.yml
+docker-compose.base.yml
+docker-compose.cloud.yml
+docker-compose.cpu.yml
+docker-compose.external-llm.yml
+docker-compose.intel.yml
+docker-compose.lemonade-external.yml
+docker-compose.multigpu-amd.yml
+docker-compose.multigpu-nvidia.yml
+docker-compose.nvidia.yml
+docker-compose.tier0.yml

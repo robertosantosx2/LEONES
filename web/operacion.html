@@ -2,81 +2,59 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Operación LEONES RC3: sonda física, candidatos, Magnitude/ODS, verificación, medición y evidencia.">
-<title>LEONES · Operación · RC3</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-05-4">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-05-4">
-<link rel="stylesheet" href="assets/graphics/brand.css">
+<meta name="description" content="Operacion LEONES RC4: intencion, evidencia HF/AA, interseccion LLMFit, preflight Ubuntu, stacks, Leo suite.">
+<title>LEONES · Operación · RC4</title>
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-4">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-4">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
-<span class="site-tag">Operación · RC3 · 5 septiembre 2026</span>
-<h1>Recorrido operativo canónico</h1>
-<p>Cómo se opera LEONES hoy: del hardware observado a la evidencia, sin mezclar estimaciones con mediciones.</p>
+<span class="site-tag">Operación · RC4 · 6 septiembre 2026</span>
+<h1>Recorrido operativo</h1>
+<p>De la intención del usuario a la evidencia, con FitLLM solo como preselector opcional.</p>
 </div></header>
-<!-- LEONES-VISUAL-IDENTITY -->
-<div class="wrap">
-  <div class="leones-section-brand"><img src="assets/graphics/logos/leones-herramientas.svg" alt="LEONES · Operación"><div><strong>LEONES · Operación</strong><br><span class="small">Identidad funcional del ecosistema</span></div></div>
-  <div class="leones-logo-rail">
-  <a class="leones-logo-link" href="pilares.html"><img src="assets/graphics/logos/leones-prospection.svg" alt="Prospección">Prospección</a>
-  <a class="leones-logo-link" href="pilares.html#atlas"><img src="assets/graphics/logos/leones-atlas.svg" alt="Atlas">Atlas</a>
-  <a class="leones-logo-link" href="pilares.html#router"><img src="assets/graphics/logos/leones-router.svg" alt="Router">Router</a>
-  <a class="leones-logo-link" href="pilares.html#runtime"><img src="assets/graphics/logos/leones-hardware.svg" alt="Hardware">Hardware</a>
-  <a class="leones-logo-link" href="arquitectura.html#lotb"><img src="assets/graphics/logos/leones-agents.svg" alt="Agents / LOTB">Agents / LOTB</a>
-  <a class="leones-logo-link" href="app.html#manada"><img src="assets/graphics/logos/leones-manada.svg" alt="Manada">Manada</a>
-</div>
-</div>
 <main class="site-main" id="main">
-<section class="site-section"><h2>1 · Autoridad</h2>
-<p class="site-lead"><strong>LEONES descubre el hardware.</strong> Hermes aporta ecosistema runtime/model-fit; OMH organiza. El usuario elige Magnitude u ODS. LEONES verifica, mide y sentencia.</p>
-<div class="site-note">LLMFit/FitLLM queda <strong>fuera</strong> del camino RC3: no es dependencia de arranque ni selector canónico.</div>
+<section class="site-section"><h2>Autoridad</h2>
+<p class="site-lead"><strong>LEONES descubre el hardware y fija la procedencia. LLMFit puede preseleccionar. Solo la intersección con el feed de evidencia se propone. El usuario elige. Magnitude u ODS ejecutan. LEONES mide y sentencia.</strong></p>
+<div class="site-note">Hermes/OMH: opcionales (agente/ops). No son el selector de modelo RC4.</div>
 </section>
-<section class="site-section"><h2>2 · Camino canónico</h2>
-<pre class="site-stack">UBUNTU REAL
+<section class="site-section"><h2>Camino canónico</h2>
+<pre class="site-stack">./leones  →  USER_INTENT[] (múltiple, obligatorio)
    ↓
-scripts/hardware_profile.py → hardware-profile.v1
+rc4_resource_preflight / rc4_ubuntu_preflight
    ↓
-RC3 adapter + Hermes/OMH hints
+HF + Artificial Analysis → feed ≤100
    ↓
-candidate-set.v1 + evidencia externa (HF / AA)  [ESTIMATED / reported]
+LLMFit CLI ≤100 → intersección por identidad
    ↓
-usuario elige modelo + Magnitude | ODS
+hasta 3 ESTIMATED  |  insufficient (sin padding)
    ↓
-consentimiento → preparar/instalar → verificar (OBSERVED)
+usuario elige modelo + stack (Magnitude | ODS)
    ↓
-tareas LEONES → medición → evidencia (MEASURED)
-</pre>
+consent → install → [opt-in] uninstall FitLLM
+   ↓
+verify → Leo001…Leo010 → MEASURED</pre>
 </section>
-<section class="site-section"><h2>3 · Sonda y gate</h2>
-<ul>
-<li>Sonda única: <code>scripts/hardware_profile.py</code></li>
-<li>Contrato: <code>scripts/rc3_hardware_discovery.py</code> → <code>hardware-profile.v1</code></li>
-<li>Gate estático: <code>scripts/rc3_release_gate.py</code> (no declara handoffs ni benchmarks físicos)</li>
-</ul>
+<section class="site-section"><h2>Comandos útiles</h2>
+<pre class="site-stack">python3 scripts/rc4_release_gate.py
+python3 scripts/rc4_resource_preflight.py
+python3 scripts/rc4_ubuntu_preflight.py \\
+  --purpose programming --purpose reasoning \\
+  --out results/physical-rc4-YYYYMMDD/ubuntu-preflight.json
+python3 scripts/rc4_fitllm_recommend.py \\
+  --purpose programming --purpose reasoning --json</pre>
 </section>
-<section class="site-section"><h2>4 · Stacks</h2>
+<section class="site-section"><h2>Estado</h2>
 <div class="site-grid">
-<article class="site-card"><h3>Magnitude</h3><p>Se activa solo si el usuario lo elige. LEONES no sustituye su CLI ni su servicio.</p></article>
-<article class="site-card"><h3>ODS</h3><p>Se activa solo si el usuario lo elige. Un <code>ods status</code> verde es OBSERVED, no MEASURED LEONES.</p></article>
+<article class="site-card"><h3>RC3</h3><p>🟢 Fase cerrada.</p></article>
+<article class="site-card"><h3>RC4 decisión</h3><p>🟢 Fijada.</p></article>
+<article class="site-card"><h3>RC4 recomendación</h3><p>🟡 Código + tests + preflight Ubuntu. Fase no cerrada.</p></article>
+<article class="site-card"><h3>MEASURED E2E</h3><p>⚪ Abierto.</p></article>
 </div>
-</section>
-<section class="site-section"><h2>5 · Medición</h2>
-<p>La medición LEONES exige runtime y artefacto disponibles, consentimiento y ejecución controlada. Métricas como <code>wall_seconds</code> o <code>measured_tps</code> solo tras esa ejecución, con procedencia.</p>
-<p>RC1 aporta el pipeline efectivo de ejecución/evidencia cuando el camino de runtime está resuelto. A01 u otras tareas no convierten un smoke externo en evidencia LEONES por sí solas.</p>
-</section>
-<section class="site-section"><h2>6 · Estado actual</h2>
-<div class="site-grid">
-<article class="site-card"><h3>Implementación</h3><p>🟢 Cerrada (contratos, sonda, gate CI).</p></article>
-<article class="site-card"><h3>Observación física</h3><p>🟡 Parcial (Aspire 2026-09-05). Ver <a href="rc3.html">rc3.html</a>.</p></article>
-<article class="site-card"><h3>Validación física completa</h3><p>🔴 Abierta: handoffs formales, benchmark LEONES, MEASURED.</p></article>
-<article class="site-card"><h3>RC2</h3><p>🟢 Histórico. <a href="rc2.html">Documentación RC2 →</a></p></article>
-</div>
-</section>
-<section class="site-section"><h2>7 · Documentación</h2>
-<p><a href="../docs/RC3-ARCHITECTURE.md">Arquitectura RC3 →</a> · <a href="estado.html">Estado →</a> · <a href="inicio-rapido.html">Inicio rápido →</a> · <a href="../docs/completed/RC3-PHYSICAL-SESSION-ASPIRE-2026-09-05.md">Sesión Aspire →</a></p>
+<p><a href="rc4.html">RC4 →</a> · <a href="estado.html">Estado →</a> · <a href="inicio-rapido.html">Inicio rápido →</a></p>
 </section>
 </main>
-<footer class="site-footer"><div>LEONES · Operación RC3</div><div>ESTIMATED ≠ MEASURED · 2026</div></footer>
-<script src="assets/js/navigation.js?v=2026-09-05-4" defer></script>
+<footer class="site-footer"><div>LEONES · Operación RC4</div><div>ESTIMATED ≠ MEASURED</div></footer>
+<script src="assets/js/navigation.js?v=2026-09-06-4" defer></script>
 </body>
 </html>

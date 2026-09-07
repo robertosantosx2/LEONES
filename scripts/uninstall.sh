@@ -1,27 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# LEONES cleanup entry point. It can be called directly or from the RC2 flow.
-# Nothing is removed unless the corresponding component is explicitly selected.
-# Historical evidence is deliberately preserved by the LEONES cleanup option.
+# LEONES cleanup entry point. Independent opt-in per component.
+# LEONES state is offered last. Evidence and source checkout are preserved by default.
 
 usage() {
-  cat <<'EOF'
-LEONES — uninstall / cleanup
+  cat <<'USAGE'
+LEONES — uninstall / cleanup (independent components)
 
 Usage:
-  bash scripts/uninstall.sh                         # interactive multi-selection
-  bash scripts/uninstall.sh --leones --ods --llms  # combine selections
-  bash scripts/uninstall.sh --all                  # all components
-  bash scripts/uninstall.sh --dry-run ...          # show actions without changes
-  bash scripts/uninstall.sh --yes ...              # skip confirmation
+  bash scripts/uninstall.sh                              # interactive
+  bash scripts/uninstall.sh --fitllm --magnitude         # combine
+  bash scripts/uninstall.sh --all                        # all supported
+  bash scripts/uninstall.sh --dry-run ...                # simulate
+  bash scripts/uninstall.sh --yes ...                    # skip confirm
 
-Components:
-  --leones      LEONES generated local state (not the source checkout or evidence)
-  --ods         ODS containers/images/volumes identifiable as ODS
+Components (independent):
+  --fitllm      FitLLM / LLMFit CLI (pip/user)
   --magnitude   global @magnitudedev/cli
+  --ods         ODS containers/images/volumes identifiable as ODS
+  --hermes      Hermes CLI / local state when detectable
+  --omh         Oh My Hermes when detectable
   --llms        all local Ollama models
-EOF
+  --leones      LEONES generated local state (.leones/) — offered last
+USAGE
 }
 
 DRY_RUN=0
@@ -32,14 +34,13 @@ finish_status() {
   local rc=$?
   if (( rc == 0 )); then
     if (( DRY_RUN )); then
-      echo '[✓] DRY-RUN finalizado correctamente. No se han realizado cambios.'
+      echo '[✓] DRY-RUN finalizado. No se han realizado cambios.'
     else
-      echo '[✓] DESINSTALACIÓN / LIMPIEZA FINALIZADA CORRECTAMENTE.'
-      echo '[✓] Los componentes no seleccionados no se han tocado.'
+      echo '[✓] DESINSTALACIÓN / LIMPIEZA FINALIZADA.'
+      echo '[✓] Solo se tocaron componentes explícitamente seleccionados.'
     fi
   else
-    echo "[✗] DESINSTALACIÓN / LIMPIEZA FALLIDA (código $rc)." >&2
-    echo '[✗] Revisa el error anterior; no se puede considerar la operación completada.' >&2
+    echo "[✗] FALLIDA (código $rc)." >&2
   fi
   return "$rc"
 }
@@ -47,8 +48,10 @@ trap finish_status EXIT
 
 for arg in "$@"; do
   case "$arg" in
-    --leones|--ods|--magnitude|--llms) SELECTED+=("${arg#--}") ;;
-    --all) SELECTED=(leones ods magnitude llms) ;;
+    --fitllm|--magnitude|--ods|--hermes|--omh|--llms|--leones)
+      SELECTED+=("${arg#--}")
+      ;;
+    --all) SELECTED=(fitllm magnitude ods hermes omh llms leones) ;;
     --dry-run) DRY_RUN=1 ;;
     --yes) ASSUME_YES=1 ;;
     -h|--help) usage; exit 0 ;;
@@ -59,63 +62,134 @@ done
 contains() { local x="$1"; shift; for y in "$@"; do [[ "$x" == "$y" ]] && return 0; done; return 1; }
 run() { if (( DRY_RUN )); then printf '[DRY-RUN]'; printf ' %q' "$@"; printf '\n'; else "$@"; fi; }
 
+if contains leones "${SELECTED[@]+"${SELECTED[@]}"}"; then
+  TMP=()
+  for s in "${SELECTED[@]}"; do
+    [[ "$s" != leones ]] && TMP+=("$s")
+  done
+  TMP+=(leones)
+  SELECTED=("${TMP[@]}")
+fi
+
 if ((${#SELECTED[@]} == 0)); then
   echo
-  echo 'LEONES — LIMPIEZA / DESINSTALACIÓN'
-  echo 'Selecciona uno o varios componentes: 1,2,3,4.'
+  echo '╔══════════════════════════════════════════════════════════════╗'
+  echo '║  LEONES — LIMPIEZA / DESINSTALACIÓN INDEPENDIENTE            ║'
+  echo '╚══════════════════════════════════════════════════════════════╝'
+  echo 'Selecciona uno o varios: 1,2,3…  (LEONES siempre al final si se elige)'
   echo
-  echo '  [1] LEONES       — estado local generado por LEONES'
-  echo '  [2] ODS          — recursos ODS de contenedores'
-  echo '  [3] Magnitude    — @magnitudedev/cli'
-  echo '  [4] LLM cargados — todos los modelos locales de Ollama'
-  echo '  [5] TODO         — 1 + 2 + 3 + 4'
-  echo '  [6] Salir'
+  echo '  [1] FitLLM / LLMFit'
+  echo '  [2] Magnitude'
+  echo '  [3] ODS'
+  echo '  [4] Hermes'
+  echo '  [5] Oh My Hermes (OMH)'
+  echo '  [6] LLM cargados (Ollama models)'
+  echo '  [7] LEONES estado local (.leones/)  ← último'
+  echo '  [8] TODO'
+  echo '  [9] Salir'
+  echo
   read -r -p 'LEONES> ' choice
   case "$choice" in
-    6) exit 0 ;;
-    5) SELECTED=(leones ods magnitude llms) ;;
+    8) SELECTED=(fitllm magnitude ods hermes omh llms leones) ;;
+    9) echo '[i] Sin cambios.'; exit 0 ;;
     *)
+      SELECTED=()
       IFS=',' read -r -a nums <<< "$choice"
       for n in "${nums[@]}"; do
-        case "${n//[[:space:]]/}" in
-          1) SELECTED+=(leones) ;; 2) SELECTED+=(ods) ;;
-          3) SELECTED+=(magnitude) ;; 4) SELECTED+=(llms) ;;
-          *) echo "[ERROR] Opción no válida: $n"; exit 2 ;;
+        n="${n//[[:space:]]/}"
+        case "$n" in
+          1) SELECTED+=(fitllm) ;;
+          2) SELECTED+=(magnitude) ;;
+          3) SELECTED+=(ods) ;;
+          4) SELECTED+=(hermes) ;;
+          5) SELECTED+=(omh) ;;
+          6) SELECTED+=(llms) ;;
+          7) SELECTED+=(leones) ;;
         esac
       done
       ;;
   esac
+  if ((${#SELECTED[@]} == 0)); then
+    echo '[i] Nada seleccionado.'
+    exit 0
+  fi
+  if contains leones "${SELECTED[@]}"; then
+    TMP=()
+    for s in "${SELECTED[@]}"; do [[ "$s" != leones ]] && TMP+=("$s"); done
+    TMP+=(leones)
+    SELECTED=("${TMP[@]}")
+  fi
 fi
 
-UNIQUE=()
-for item in "${SELECTED[@]}"; do contains "$item" "${UNIQUE[@]}" || UNIQUE+=("$item"); done
-SELECTED=("${UNIQUE[@]}")
-printf '\nSeleccionado: %s\n' "${SELECTED[*]}"
-
-if (( ! ASSUME_YES && ! DRY_RUN )); then
-  echo '[WARN] Se eliminarán solo los componentes seleccionados.'
-  read -r -p '¿Confirmar? [y/N] ' answer
-  [[ "$answer" =~ ^[Yy]$ ]] || { echo 'Cancelado. No se ha eliminado nada.'; exit 0; }
+if (( ! ASSUME_YES )); then
+  echo
+  echo "Se van a limpiar: ${SELECTED[*]}"
+  read -r -p '¿Confirmar? [s/N] ' ans
+  case "$ans" in
+    s|S|y|Y) ;;
+    *) echo '[i] Cancelado.'; exit 0 ;;
+  esac
 fi
 
-if contains leones "${SELECTED[@]}"; then
-  echo '== LEONES =='
-  if [[ -e .leones ]]; then run rm -rf -- .leones; else echo '[i] No existe: .leones'; fi
-  echo '[✓] Estado local de LEONES limpiado; el checkout y las evidencias históricas permanecen.'
+if contains fitllm "${SELECTED[@]}"; then
+  echo '== FitLLM / LLMFit =='
+  if command -v pipx >/dev/null 2>&1 && pipx list 2>/dev/null | grep -qi llmfit; then
+    run pipx uninstall llmfit || true
+  fi
+  if command -v pip3 >/dev/null 2>&1; then
+    run pip3 uninstall -y llmfit fitllm 2>/dev/null || true
+  elif command -v pip >/dev/null 2>&1; then
+    run pip uninstall -y llmfit fitllm 2>/dev/null || true
+  fi
+  if command -v llmfit >/dev/null 2>&1; then
+    echo "[i] llmfit sigue en PATH: $(command -v llmfit) — puede ser instalación de sistema."
+  else
+    echo '[✓] FitLLM/LLMFit no aparece en PATH (o se retiró).'
+  fi
 fi
 
 if contains magnitude "${SELECTED[@]}"; then
-  echo '== MAGNITUDE =='
+  echo '== Magnitude =='
   if command -v npm >/dev/null 2>&1; then
-    if npm list -g --depth=0 @magnitudedev/cli >/dev/null 2>&1; then run npm uninstall -g @magnitudedev/cli; else echo '[i] Magnitude no aparece instalado globalmente.'; fi
+    if npm list -g --depth=0 @magnitudedev/cli >/dev/null 2>&1; then
+      run npm uninstall -g @magnitudedev/cli
+    else
+      echo '[i] Magnitude no aparece instalado globalmente (user).'
+    fi
     if command -v sudo >/dev/null 2>&1; then
       if (( DRY_RUN )); then
-        echo '[DRY-RUN] sudo npm uninstall -g @magnitudedev/cli (si está instalado en el ámbito de sudo)'
+        echo '[DRY-RUN] sudo npm uninstall -g @magnitudedev/cli (si aplica)'
       elif sudo npm list -g --depth=0 @magnitudedev/cli >/dev/null 2>&1; then
         sudo npm uninstall -g @magnitudedev/cli
       fi
     fi
-  else echo '[i] npm no está disponible; Magnitude no se ha modificado.'; fi
+  else
+    echo '[i] npm no disponible; Magnitude no modificado.'
+  fi
+fi
+
+if contains hermes "${SELECTED[@]}"; then
+  echo '== Hermes =='
+  if command -v hermes >/dev/null 2>&1; then
+    echo "[i] hermes en PATH: $(command -v hermes) — retirada de binario de sistema no automática."
+  fi
+  if [[ -d "$HOME/.hermes" ]]; then
+    run rm -rf -- "$HOME/.hermes"
+  else
+    echo '[i] No existe ~/.hermes'
+  fi
+fi
+
+if contains omh "${SELECTED[@]}"; then
+  echo '== Oh My Hermes =='
+  if command -v omh >/dev/null 2>&1; then
+    echo "[i] omh en PATH: $(command -v omh)"
+  fi
+  if [[ -d "$HOME/.omh" ]]; then
+    run rm -rf -- "$HOME/.omh"
+  else
+    echo '[i] No existe ~/.omh'
+  fi
 fi
 
 if contains llms "${SELECTED[@]}"; then
@@ -124,12 +198,14 @@ if contains llms "${SELECTED[@]}"; then
     mapfile -t models < <(ollama list 2>/dev/null | awk 'NR>1 && $1!="" {print $1}')
     for model in "${models[@]}"; do run ollama rm "$model"; done
     echo "[✓] ${#models[@]} modelo(s) Ollama tratado(s)."
-  else echo '[i] Ollama no está disponible; no se ha modificado ningún LLM.'; fi
+  else
+    echo '[i] Ollama no disponible; LLM no modificados.'
+  fi
 fi
 
 if contains ods "${SELECTED[@]}"; then
   echo '== ODS =='
-  echo '[INFO] Solo se eliminan recursos cuyo nombre permita identificarlos como ODS.'
+  echo '[INFO] Solo recursos identificables como ODS.'
   container_cmd=()
   if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then container_cmd=(docker)
   elif command -v sudo >/dev/null 2>&1 && command -v docker >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1; then container_cmd=(sudo docker)
@@ -144,6 +220,18 @@ if contains ods "${SELECTED[@]}"; then
     mapfile -t volumes < <("${container_cmd[@]}" volume ls --format '{{.Name}}' | awk 'BEGIN{IGNORECASE=1} $0 ~ /ods/ {print $1}')
     for volume in "${volumes[@]}"; do [[ -n "$volume" ]] && run "${container_cmd[@]}" volume rm "$volume"; done
     echo '[✓] Recursos ODS identificables limpiados.'
-  else echo '[i] No hay runtime Docker/Podman operativo; ODS no se ha modificado.'; fi
+  else
+    echo '[i] No hay Docker/Podman operativo; ODS no modificado.'
+  fi
   echo '[i] Docker y Podman no se desinstalan.'
+fi
+
+if contains leones "${SELECTED[@]}"; then
+  echo '== LEONES (estado local) =='
+  if [[ -e .leones ]]; then
+    run rm -rf -- .leones
+  else
+    echo '[i] No existe: .leones'
+  fi
+  echo '[i] Checkout fuente y evidencias históricas no se borran por defecto.'
 fi

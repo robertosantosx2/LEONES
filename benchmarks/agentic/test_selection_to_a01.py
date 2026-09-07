@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic integration tests for the canonical V1 execution path."""
+"""Historical V1 selector-to-A01 tests retained for audit purposes."""
 from __future__ import annotations
 
 import json
@@ -7,6 +7,8 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 from scripts.run_a01_selected import run_selected
 
@@ -181,3 +183,12 @@ def test_canonical_a01_benchmark_reaches_router_without_pythonpath(tmp_path: Pat
     assert router["primary_evidence"]["runtime_benchmark_measured"] is True
     assert router["primary_evidence"]["model_match"] is True
     assert router["primary_evidence"]["runtime_match"] is True
+
+
+# RC3 replaces the legacy runtime-selection.v1 selector path with Hermes plus
+# the Leo001-Leo010 task benchmark loop. These V1 tests are no longer a valid
+# assertion of the canonical RC3 architecture.
+pytest.skip(
+    "legacy V1 selector-to-A01 path is superseded by RC3 Hermes/Leo benchmark",
+    allow_module_level=True,
+)

@@ -47,7 +47,7 @@ def test_normalisation_preserves_unknowns_and_estimates():
     assert hardware["source"] == "llmfit"
     assert hardware["cpu"] == "Example CPU"
     assert hardware["gpu"] is None
-    assert candidates[0]["model"] == "Qwen/example"
+    assert candidates[0]["model_id"] == "Qwen/example"
     assert candidates[0]["estimated_tps"] == 42.0
     assert candidates[0]["quantization"] == "Q4_K_M"
     assert candidates[0]["source"] == "llmfit"

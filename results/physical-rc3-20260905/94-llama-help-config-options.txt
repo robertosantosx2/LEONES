@@ -1,0 +1,7 @@
+-hff,  --hf-file FILE                   Hugging Face model file. If specified, it will override the quant in
+-hffv, --hf-file-v FILE                 Hugging Face model file for the vocoder model (default: unused)
+--webui-config JSON                     JSON that provides default WebUI settings (overrides WebUI defaults)
+                                        (env: LLAMA_ARG_WEBUI_CONFIG)
+--webui-config-file PATH                JSON file that provides default WebUI settings (overrides WebUI
+                                        (env: LLAMA_ARG_WEBUI_CONFIG_FILE)
+--models-preset PATH                    path to INI file containing model presets for the router server

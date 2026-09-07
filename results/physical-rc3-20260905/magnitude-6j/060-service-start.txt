@@ -1,0 +1,6 @@
+○ Starting Magnitude service
+  Starting inference engine
+  ✓ Inference engine started
+  Preparing Vulkan backend for Intel(R) UHD Graphics (ICL GT1)
+  ✓ Vulkan backend ready for Intel(R) UHD Graphics (ICL GT1)
+● Magnitude service is ready at 127.0.0.1:10100

@@ -1,0 +1,1 @@
+[{"Type":"bind","Source":"/home/roberto/ods/data/models","Destination":"/models","Mode":"rw,z","RW":true,"Propagation":"rprivate"},{"Type":"bind","Source":"/home/roberto/ods/config/llama-server/models.ini","Destination":"/config/models.ini","Mode":"ro,z","RW":false,"Propagation":"rprivate"}]

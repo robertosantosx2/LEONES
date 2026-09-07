@@ -1,8 +1,8 @@
-"""LLMFit integration boundary for RC2 hardware intelligence.
+"""LLMFit integration boundary for RC4 model preselection.
 
-LLMFit remains the authority for detected hardware facts and model estimates.
-Host OS/architecture identity is filled from the executing machine only when
-LLMFit does not expose those fields.
+LLMFit supplies detected hardware facts and model-fit estimates. RC4 consumes
+only the preselection signal; it never treats estimates as local measurement
+and never delegates execution authorization to LLMFit.
 """
 from __future__ import annotations
 from dataclasses import dataclass
@@ -12,8 +12,12 @@ import shutil
 import subprocess
 from typing import Any, Mapping, Sequence
 
+CANDIDATE_COUNT = 3
+
+
 class LLMFitError(RuntimeError):
     """Raised when LLMFit is unavailable or returns invalid output."""
+
 
 @dataclass(frozen=True)
 class LLMFitResult:
@@ -23,14 +27,18 @@ class LLMFitResult:
     models: Sequence[Mapping[str, Any]]
     raw: Mapping[str, Any]
 
+
 def executable() -> str | None:
     return shutil.which("llmfit")
+
 
 def _run_json(command: list[str], *, timeout_seconds: int = 30) -> Mapping[str, Any]:
     if executable() is None:
         raise LLMFitError("llmfit executable not found")
     try:
-        completed = subprocess.run(command, check=False, capture_output=True, text=True, timeout=timeout_seconds)
+        completed = subprocess.run(
+            command, check=False, capture_output=True, text=True, timeout=timeout_seconds
+        )
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise LLMFitError(f"LLMFit execution failed: {exc}") from exc
     if completed.returncode != 0:
@@ -44,7 +52,10 @@ def _run_json(command: list[str], *, timeout_seconds: int = 30) -> Mapping[str, 
         raise LLMFitError("LLMFit JSON root must be an object")
     return raw
 
-def build_recommend_command(*, limit: int = 5, use_case: str | None = None, max_context: int | None = None) -> list[str]:
+
+def build_recommend_command(
+    *, limit: int = CANDIDATE_COUNT, use_case: str | None = None, max_context: int | None = None
+) -> list[str]:
     if limit < 1:
         raise ValueError("limit must be >= 1")
     command = ["llmfit", "recommend", "--json", "--limit", str(limit)]
@@ -56,7 +67,11 @@ def build_recommend_command(*, limit: int = 5, use_case: str | None = None, max_
         command.extend(["--max-context", str(max_context)])
     return command
 
-def run_recommend(*, limit: int = 5, use_case: str | None = None, max_context: int | None = None, timeout_seconds: int = 30) -> LLMFitResult:
+
+def run_recommend(
+    *, limit: int = CANDIDATE_COUNT, use_case: str | None = None,
+    max_context: int | None = None, timeout_seconds: int = 30
+) -> LLMFitResult:
     command = build_recommend_command(limit=limit, use_case=use_case, max_context=max_context)
     raw = _run_json(command, timeout_seconds=timeout_seconds)
     models = raw.get("models", [])
@@ -71,8 +86,10 @@ def run_recommend(*, limit: int = 5, use_case: str | None = None, max_context: i
         raw=raw,
     )
 
+
 def run_system(*, timeout_seconds: int = 30) -> Mapping[str, Any]:
     return _run_json(["llmfit", "--json", "system"], timeout_seconds=timeout_seconds)
+
 
 def _system_payload(result: LLMFitResult | Mapping[str, Any]) -> tuple[Mapping[str, Any], str | None]:
     if isinstance(result, LLMFitResult):
@@ -91,6 +108,7 @@ def _system_payload(result: LLMFitResult | Mapping[str, Any]) -> tuple[Mapping[s
         source = {}
     return source, version
 
+
 def normalise_hardware(result: LLMFitResult | Mapping[str, Any]) -> dict[str, Any]:
     """Map current LLMFit facts without fabricating dedicated VRAM."""
     source, version = _system_payload(result)
@@ -101,46 +119,40 @@ def normalise_hardware(result: LLMFitResult | Mapping[str, Any]) -> dict[str, An
     backend = first.get("backend") or source.get("backend")
     unified = bool(first.get("unified_memory", source.get("unified_memory", False)))
     memory_kind = "unified" if unified else ("dedicated" if vram is not None else None)
-
     cpu = source.get("cpu_name") or source.get("cpu")
     ram = source.get("total_ram_gb") or source.get("ram_gb")
     os_name = source.get("os") or source.get("os_name")
     architecture = source.get("architecture") or source.get("arch")
-
-    # LLMFit 1.1.x system JSON does not expose OS/architecture. These are
-    # execution-host facts, not fit heuristics, so platform is the appropriate
-    # authoritative fallback for the machine running LEONES.
     if os_name is None:
         os_name = platform.platform()
     if architecture is None:
         architecture = platform.machine()
-
     return {
-        "source": "llmfit",
-        "source_version": version,
-        "cpu": cpu,
-        "ram_gb": ram,
-        "gpu": gpu,
-        "vram_gb": vram,
-        "gpu_memory_kind": memory_kind,
-        "unified_memory": unified,
-        "os": os_name,
-        "architecture": architecture,
-        "accelerators": [backend] if backend else [],
-        "verification": "detected",
-        "raw": dict(source),
+        "source": "llmfit", "source_version": version, "cpu": cpu, "ram_gb": ram,
+        "gpu": gpu, "vram_gb": vram, "gpu_memory_kind": memory_kind,
+        "unified_memory": unified, "os": os_name, "architecture": architecture,
+        "accelerators": [backend] if backend else [], "verification": "detected", "raw": dict(source),
     }
 
+
 def normalise_candidates(result: LLMFitResult) -> list[dict[str, Any]]:
+    """Normalize FitLLM proposals while retaining their ESTIMATED provenance."""
     candidates = []
     for rank, model in enumerate(result.models, start=1):
+        model_id = model.get("name") or model.get("id")
+        if not model_id:
+            continue
         candidates.append({
             "rank": rank,
             "source": "llmfit",
-            "model": model.get("name") or model.get("id"),
+            "model_id": model_id,
+            "name": model.get("name") or model_id,
             "fit": model.get("fit") or model.get("fit_level") or model.get("score"),
             "estimated_tps": model.get("estimated_tps") or model.get("tps"),
             "quantization": model.get("quantization") or model.get("quant") or model.get("best_quant"),
+            "evidence_level": "estimated",
             "raw": dict(model),
         })
+        if len(candidates) == CANDIDATE_COUNT:
+            break
     return candidates
