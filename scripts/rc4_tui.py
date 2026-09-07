@@ -2,8 +2,8 @@
 """LEONES RC4 interactive TUI.
 
 Flow: language -> machine state -> mandatory multi-select intent ->
-recommendations -> explicit model selection/consent -> installation progress
--> refreshed machine state.
+recommendations -> multi-select models -> explicit consent -> batch
+installation progress -> refreshed machine state.
 
 The recommender envelope remains ESTIMATED and never authorizes execution.
 Installation authorization exists only at the explicit user-consent boundary
@@ -238,92 +238,90 @@ def intent_screen(stdscr, language):
         elif key in (27, ord("q"), ord("Q")): raise SystemExit(0)
 
 
-def confirm_screen(stdscr, language, row):
-    model_id = row.get("model_id", "?")
+def confirm_models_screen(stdscr, language, rows):
     while True:
         stdscr.erase(); h, w = stdscr.getmaxyx()
         title = "LEONES // CONFIRMAR INSTALACIÓN" if language == "es" else "LEONES // CONFIRM INSTALLATION"
         box_title = "CONSENTIMIENTO EXPLÍCITO" if language == "es" else "EXPLICIT CONSENT"
         put(stdscr, 0, max(2, (w - len(title)) // 2), title, len(title)); box(stdscr, 2, 1, h - 6, w - 2, box_title)
         x = 5
-        put(stdscr, 5, x, "MODELO SELECCIONADO", w - 10)
-        put(stdscr, 7, x, model_id, w - 10)
-        put(stdscr, 10, x, "La instalación descargará este modelo desde Hugging Face", w - 10)
-        put(stdscr, 11, x, "y lo guardará en ./models/. Esta acción no mide ni ejecuta el modelo.", w - 10)
-        put(stdscr, 14, x, "¿Confirmar instalación?  [Y] sí   [N/ESC] cancelar", w - 10)
+        put(stdscr, 4, x, f"MODELOS SELECCIONADOS: {len(rows)}", w - 10)
+        for i, row in enumerate(rows[:8]):
+            put(stdscr, 6 + i, x, f"[{i + 1}] {row.get('model_id', '?')}", w - 10)
+        put(stdscr, min(h - 5, 16), x, "Se descargarán desde Hugging Face y se guardarán en ./models/.", w - 10)
+        put(stdscr, min(h - 4, 17), x, "La instalación no ejecuta ni mide los modelos.", w - 10)
+        put(stdscr, h - 3, x, "¿Confirmar TODAS las instalaciones?  [Y] sí   [N/ESC] cancelar", w - 10)
         stdscr.refresh(); key = stdscr.getch()
         if key in (ord("y"), ord("Y")): return True
         if key in (ord("n"), ord("N"), 27): return False
 
 
-def install_progress(stdscr, language, row):
-    model_id = row.get("model_id", "?")
-    target = MODELS_DIR / model_id.replace("/", "--")
+def batch_install_progress(stdscr, language, rows):
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
-    before = directory_bytes(target)
-    command = [sys.executable, str(INSTALLER), "--model-id", model_id, "--output-dir", str(MODELS_DIR)]
-    try:
-        process = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-    except OSError as exc:
-        return False, str(exc)
+    results = []
+    for index, row in enumerate(rows, 1):
+        model_id = row.get("model_id", "?")
+        target = MODELS_DIR / model_id.replace("/", "--")
+        before = directory_bytes(target)
+        command = [sys.executable, str(INSTALLER), "--model-id", model_id, "--output-dir", str(MODELS_DIR)]
+        try:
+            process = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+        except OSError as exc:
+            results.append((model_id, False, str(exc)))
+            continue
+        lines = []
+        started = time.monotonic()
+        while process.poll() is None:
+            current = directory_bytes(target)
+            elapsed = max(time.monotonic() - started, 0.001)
+            rate = max(0, (current - before) / elapsed)
+            if process.stdout is not None:
+                line = process.stdout.readline()
+                if line:
+                    lines.append(line.strip()); lines = lines[-3:]
+            stdscr.erase(); h, w = stdscr.getmaxyx()
+            title = "LEONES // INSTALACIÓN" if language == "es" else "LEONES // INSTALLATION"
+            put(stdscr, 0, max(2, (w - len(title)) // 2), title, len(title)); box(stdscr, 2, 1, h - 6, w - 2, "OPERACIÓN RC4")
+            x = 5
+            put(stdscr, 4, x, f"MODELO {index}/{len(rows)}: {model_id}", w - 10)
+            put(stdscr, 6, x, "ESTADO: descargando...", w - 10)
+            put(stdscr, 7, x, f"DATOS LOCALES: {human_bytes(current)}   VELOCIDAD: {human_bytes(rate)}/s", w - 10)
+            for i, line in enumerate(lines): put(stdscr, 9 + i, x, line, w - 10)
+            put(stdscr, h - 3, x, "Instalación secuencial activa; no cierres LEONES.", w - 10)
+            stdscr.refresh(); time.sleep(0.15)
+        output, _ = process.communicate(timeout=10)
+        if output:
+            lines.extend(line.strip() for line in output.splitlines()); lines = lines[-3:]
+        success = process.returncode == 0
+        results.append((model_id, success, " | ".join(lines)))
 
-    lines = []
-    started = time.monotonic()
-    last_size = before
-    spinner = ("|", "/", "-", "\\")
-    while process.poll() is None:
-        current = directory_bytes(target)
-        elapsed = max(time.monotonic() - started, 0.001)
-        rate = max(0, (current - before) / elapsed)
-        if process.stdout is not None:
-            try:
-                while True:
-                    line = process.stdout.readline()
-                    if not line:
-                        break
-                    lines.append(line.strip())
-                    lines = lines[-4:]
-            except OSError:
-                pass
-        stdscr.erase(); h, w = stdscr.getmaxyx()
-        title = "LEONES // INSTALACIÓN" if language == "es" else "LEONES // INSTALLATION"
-        put(stdscr, 0, max(2, (w - len(title)) // 2), title, len(title)); box(stdscr, 2, 1, h - 6, w - 2, "OPERACIÓN RC4")
-        x = 5
-        put(stdscr, 5, x, f"MODELO: {model_id}", w - 10)
-        put(stdscr, 7, x, f"ESTADO: descargando {spinner[int(elapsed * 4) % 4]}", w - 10)
-        put(stdscr, 8, x, f"DATOS LOCALES: {human_bytes(current)}   VELOCIDAD: {human_bytes(rate)}/s", w - 10)
-        put(stdscr, 10, x, "ACTIVIDAD", w - 10)
-        for i, line in enumerate(lines): put(stdscr, 11 + i, x, line, w - 10)
-        put(stdscr, h - 3, x, "La operación está activa; no cierres LEONES.", w - 10)
-        stdscr.refresh(); time.sleep(0.25)
-
-    output, _ = process.communicate(timeout=5)
-    if output:
-        lines.extend(line.strip() for line in output.splitlines())
-        lines = lines[-4:]
-    success = process.returncode == 0
     while True:
         stdscr.erase(); h, w = stdscr.getmaxyx()
-        title = "LEONES // INSTALACIÓN" if language == "es" else "LEONES // INSTALLATION"
-        put(stdscr, 0, max(2, (w - len(title)) // 2), title, len(title)); box(stdscr, 2, 1, h - 6, w - 2, "OPERACIÓN RC4")
+        title = "LEONES // INSTALACIÓN FINALIZADA" if language == "es" else "LEONES // INSTALLATION FINISHED"
+        put(stdscr, 0, max(2, (w - len(title)) // 2), title, len(title)); box(stdscr, 2, 1, h - 6, w - 2, "RESUMEN")
         x = 5
-        put(stdscr, 5, x, f"MODELO: {model_id}", w - 10)
-        put(stdscr, 7, x, "ESTADO: ✓ completada" if success else "ESTADO: ✗ fallida", w - 10)
-        put(stdscr, 8, x, f"TAMAÑO LOCAL: {human_bytes(directory_bytes(target))}", w - 10)
-        for i, line in enumerate(lines): put(stdscr, 10 + i, x, line, w - 10)
+        for i, (model_id, success, detail) in enumerate(results):
+            put(stdscr, 5 + i, x, f"{'✓' if success else '✗'} {model_id} :: {'OK' if success else 'FALLO'}", w - 10)
+            if i < 3 and detail: put(stdscr, 9 + i, x, detail, w - 10)
+        ok = sum(1 for _, success, _ in results if success)
+        put(stdscr, h - 4, x, f"RESULTADO: {ok}/{len(results)} modelos instalados", w - 10)
         put(stdscr, h - 3, x, "ENTER volver al estado de la máquina   Q salir", w - 10)
         stdscr.refresh(); key = stdscr.getch()
-        if key in (10, 13): return success, "Instalación completada" if success else "La instalación falló"
+        if key in (10, 13): return results
         if key in (ord("q"), ord("Q"), 27): raise SystemExit(0)
 
 
 def result_screen(stdscr, language, purposes):
     status, result = recommend(purposes)
     focus = 0
+    selected = set()
     while True:
         rows = result.get("recommendations") or []
         if rows:
             focus = max(0, min(focus, len(rows) - 1))
+            selected.intersection_update(range(min(3, len(rows))))
+        else:
+            selected.clear()
         stdscr.erase(); h, w = stdscr.getmaxyx(); title = "LEONES // RECOMENDADOR RC4" if language == "es" else "LEONES // RC4 RECOMMENDER"
         put(stdscr, 0, max(2, (w - len(title)) // 2), title, len(title)); box(stdscr, 1, 1, h - 4, w - 2, "FITLLM / LLMFIT + EVIDENCE")
         x = 4; put(stdscr, 3, x, f"STATUS: {status.upper()}", w - 8); put(stdscr, 4, x, f"INTENT: {', '.join(purposes)}", w - 8)
@@ -331,29 +329,34 @@ def result_screen(stdscr, language, purposes):
         put(stdscr, 6, x, "KIND: ESTIMATED   EXECUTION_AUTHORIZED: False", w - 8)
         put(stdscr, 7, x, "MEASUREMENT_AUTHORIZED: False   MEASURED: False", w - 8)
         put(stdscr, 8, x, "BOUNDARY: evidence_backed_intersection", w - 8)
-        put(stdscr, 10, x, "PROPUESTAS — selecciona un modelo para instalar" if language == "es" else "PROPOSALS — select a model to install", w - 8)
+        put(stdscr, 10, x, "PROPUESTAS — selecciona uno o varios modelos" if language == "es" else "PROPOSALS — select one or more models", w - 8)
         for i, row in enumerate(rows[:3]):
             marker = ">" if i == focus else " "
-            put(stdscr, 12 + i, x, f"{marker} [{i + 1}] {row.get('model_id', '?')} :: ESTIMATED", w - 8)
+            check = "X" if i in selected else " "
+            put(stdscr, 12 + i, x, f"{marker} [{check}] [{i + 1}] {row.get('model_id', '?')} :: ESTIMATED", w - 8)
         if not rows: put(stdscr, 12, x, result.get("message", "Sin candidatos"), w - 8)
-        footer = "↑/↓ o 1-3 seleccionar   ENTER instalar   R repetir   Q salir" if language == "es" else "↑/↓ or 1-3 select   ENTER install   R repeat   Q quit"
+        footer = "↑/↓ mover   ESPACIO marcar/desmarcar   1-3 marcar   ENTER instalar marcados   R repetir   Q salir" if language == "es" else "↑/↓ move   SPACE toggle   1-3 toggle   ENTER install selected   R repeat   Q quit"
         put(stdscr, h - 2, 2, footer, w - 4); stdscr.refresh(); key = stdscr.getch()
         if key in (ord("q"), ord("Q"), 27): raise SystemExit(0)
-        if key in (curses.KEY_UP, ord("k")) and rows: focus = (focus - 1) % len(rows)
-        elif key in (curses.KEY_DOWN, ord("j")) and rows: focus = (focus + 1) % len(rows)
+        if key in (curses.KEY_UP, ord("k")) and rows: focus = (focus - 1) % min(3, len(rows))
+        elif key in (curses.KEY_DOWN, ord("j")) and rows: focus = (focus + 1) % min(3, len(rows))
+        elif key == ord(" ") and rows:
+            if focus in selected: selected.remove(focus)
+            else: selected.add(focus)
         elif key in (ord("1"), ord("2"), ord("3")) and rows:
-            selected = int(chr(key)) - 1
-            if selected < len(rows): focus = selected
-        elif key in (10, 13) and rows:
-            row = rows[focus]
-            if confirm_screen(stdscr, language, row):
-                success, _ = install_progress(stdscr, language, row)
-                if success:
-                    machine_state(stdscr, language)
-                else:
-                    return
+            index = int(chr(key)) - 1
+            if index < len(rows):
+                if index in selected: selected.remove(index)
+                else: selected.add(index)
+                focus = index
+        elif key in (10, 13) and rows and selected:
+            chosen = [rows[i] for i in sorted(selected)]
+            if confirm_models_screen(stdscr, language, chosen):
+                batch_install_progress(stdscr, language, chosen)
+                machine_state(stdscr, language)
+                return
         elif key in (ord("r"), ord("R")):
-            status, result = recommend(purposes); focus = 0
+            status, result = recommend(purposes); focus = 0; selected.clear()
         elif key in (ord("b"), ord("B")): return
 
 
