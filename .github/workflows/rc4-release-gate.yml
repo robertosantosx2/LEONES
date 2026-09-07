@@ -21,4 +21,5 @@ jobs:
           tests/test_rc4_fitllm_recommend.py
           tests/test_rc4_release_gate.py
           tests/test_rc4_resource_preflight.py
-          tests/test_rc4_tui.py -q
+          tests/test_rc4_tui.py
+          tests/test_rc4_operation_progress.py -q
