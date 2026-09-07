@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Safe GGUF artifact acquisition with cache, provenance, checksum checks and progress."""
+"""Safe GGUF artifact acquisition/removal with provenance, checksums and progress."""
 
 from __future__ import annotations
 
@@ -50,13 +50,9 @@ def acquire_artifact(
 ) -> dict[str, Any]:
     """Acquire one explicitly requested artifact atomically.
 
-    The caller supplies the exact URL; this function never chooses a model or
-    quantization. Verification happens before the final cache rename.
-
     ``progress_callback`` receives visible operation state for TUI/CLI use.
-    Download progress is determinate when the server supplies Content-Length;
-    otherwise an indeterminate activity state is emitted so the UI never looks
-    frozen.
+    Download progress is determinate when Content-Length is available;
+    otherwise activity is still emitted so the UI never looks frozen.
     """
     if not url or not model_id or not quantization:
         raise ValueError("url, model_id and quantization are required")
@@ -77,11 +73,7 @@ def acquire_artifact(
         actual = _sha256(target)
         if expected and actual != expected:
             _emit(progress_callback, terminal_progress("install", False, "checksum mismatch"))
-            return {
-                "status": "CHECKSUM_MISMATCH",
-                "artifact": str(target),
-                "sha256": actual,
-            }
+            return {"status": "CHECKSUM_MISMATCH", "artifact": str(target), "sha256": actual}
         _emit(progress_callback, terminal_progress("install", True, "cache hit"))
         return {
             "status": "CACHE_HIT",
@@ -148,19 +140,45 @@ def acquire_artifact(
             "acquired_at": datetime.now(timezone.utc).isoformat(),
         }
         meta_path = _metadata_path(cache, name)
-        meta_path.write_text(
-            json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-        )
+        meta_path.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         _emit(progress_callback, terminal_progress("install", True, "artifact acquired"))
-        return {
-            "status": "ACQUIRED",
-            "artifact": str(target),
-            "sha256": actual,
-            "provenance": str(meta_path),
-        }
+        return {"status": "ACQUIRED", "artifact": str(target), "sha256": actual, "provenance": str(meta_path)}
     except Exception as exc:
         _emit(progress_callback, terminal_progress("install", False, str(exc)))
         raise
     finally:
         if tmp.exists():
             tmp.unlink()
+
+
+def remove_artifact(
+    *,
+    cache_dir: str | Path,
+    filename: str,
+    progress_callback: ProgressCallback | None = None,
+) -> dict[str, Any]:
+    """Remove one cached artifact and its LEONES provenance sidecar.
+
+    The operation is deliberately explicit: the caller supplies the exact
+    filename. It never performs broad cache cleanup or model selection.
+    """
+    if not filename or Path(filename).name != filename:
+        raise ValueError("filename must name one artifact in cache_dir")
+    cache = Path(cache_dir).expanduser()
+    target = cache / filename
+    metadata = _metadata_path(cache, filename)
+    _emit(progress_callback, OperationProgress("uninstall", OperationPhase.PREPARING, detail=filename))
+    if not target.exists() and not metadata.exists():
+        _emit(progress_callback, terminal_progress("uninstall", True, "already absent"))
+        return {"status": "ABSENT", "artifact": str(target), "provenance": str(metadata)}
+    try:
+        _emit(progress_callback, OperationProgress("uninstall", OperationPhase.REMOVING, detail=filename))
+        if target.exists():
+            target.unlink()
+        if metadata.exists():
+            metadata.unlink()
+        _emit(progress_callback, terminal_progress("uninstall", True, "artifact removed"))
+        return {"status": "REMOVED", "artifact": str(target), "provenance": str(metadata)}
+    except Exception as exc:
+        _emit(progress_callback, terminal_progress("uninstall", False, str(exc)))
+        raise
