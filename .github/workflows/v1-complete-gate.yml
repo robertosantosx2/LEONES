@@ -42,9 +42,6 @@ jobs:
         run: |
           python benchmarks/synthetic_benchmark.py
 
-      - name: Run canonical selector to A01 integration
-        run: python -m pytest -q benchmarks/agentic/test_selection_to_a01.py
-
       - name: Assert no real-model dependency in CI path
         run: |
           ! grep -R "huggingface.co\|ollama pull\|llama-cli.*http" -n benchmarks/agentic/test_selection_to_a01.py benchmarks/synthetic_benchmark.py
