@@ -8,6 +8,7 @@ selected Hugging Face model into the LEONES local-model directory.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import shutil
 import subprocess
@@ -17,6 +18,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DIR = ROOT / "models"
 MODEL_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+MARKER = ".leones-installed.json"
+
+
+def classify_failure(output: str) -> str:
+    text = output.lower()
+    if "requires approval" in text or "access denied" in text or "gated" in text:
+        return "REQUIRES_APPROVAL_HF"
+    if "authentication" in text or "not authenticated" in text or "401" in text or "token" in text and "permission" in text:
+        return "REQUIRES_AUTH_HF"
+    return "DOWNLOAD_FAILED"
 
 
 def install(model_id: str, output_dir: Path) -> int:
@@ -26,18 +37,44 @@ def install(model_id: str, output_dir: Path) -> int:
     if shutil.which("hf") is None:
         print("ERROR: no se encontró 'hf' en PATH. Instala huggingface_hub/hf antes de continuar.", file=sys.stderr)
         return 3
+
     output_dir.mkdir(parents=True, exist_ok=True)
     target = output_dir / model_id.replace("/", "--")
+    marker = target / MARKER
+    if marker.is_file():
+        print(f"MODEL={model_id}", flush=True)
+        print(f"TARGET={target}", flush=True)
+        print("PHASE=completed", flush=True)
+        print("STATUS=already_installed", flush=True)
+        return 0
+
+    if target.exists():
+        shutil.rmtree(target, ignore_errors=True)
     target.mkdir(parents=True, exist_ok=True)
+
     command = ["hf", "download", model_id, "--local-dir", str(target)]
     print(f"MODEL={model_id}", flush=True)
     print(f"TARGET={target}", flush=True)
     print("PHASE=downloading", flush=True)
-    completed = subprocess.run(command, cwd=ROOT, check=False)
+    completed = subprocess.run(command, cwd=ROOT, check=False, capture_output=True, text=True)
+    combined = (completed.stdout or "") + "\n" + (completed.stderr or "")
+    if completed.stdout:
+        print(completed.stdout, end="", flush=True)
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr, flush=True)
+
     if completed.returncode == 0:
+        marker.write_text(json.dumps({
+            "schema": "leones.installed-model.v1",
+            "model_id": model_id,
+        }, indent=2) + "\n", encoding="utf-8")
         print("PHASE=completed", flush=True)
+        print("STATUS=installed", flush=True)
     else:
+        reason = classify_failure(combined)
+        shutil.rmtree(target, ignore_errors=True)
         print("PHASE=failed", flush=True)
+        print(f"STATUS={reason}", flush=True)
     return completed.returncode
 
 
@@ -50,4 +87,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(argv))
