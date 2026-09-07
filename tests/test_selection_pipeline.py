@@ -22,6 +22,11 @@ def test_pipeline_connects_profile_selector_and_gate():
         "model_id": "org/model", "model_name": "Model", "workload": "chat",
         "hardware_id": "", "technical_profile_level": "T3",
         "runtime": "llama.cpp", "quantization": "Q4_K_M",
+        "format": "GGUF",
+        "model_artifact": {
+            "path": "artifacts/models/test.gguf",
+            "sha256": "a" * 64,
+        },
         "estimated_memory_gb": "4", "context_tokens": "4096",
         "quality_score": "80", "tokens_per_second": "10", "jgb_level": "4",
     }]

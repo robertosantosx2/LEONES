@@ -1,0 +1,55 @@
+{
+  "schema": "leones-master-hardware-model-matrix.v1",
+  "snapshot_date": "2026-09-02",
+  "aa_index": "Artificial Analysis Intelligence Index v4.1.1",
+  "selection_rule": "Among open-weight models eligible for the target hardware, select the highest measured Artificial Analysis Intelligence Index score. Do not use AA hosted speed as local-runtime evidence.",
+  "fit_rule": {
+    "authority": "LLMFit",
+    "reference_baseline": "Q4_K_M-style memory estimate only for this static snapshot",
+    "vram_overhead": 1.1,
+    "ram_overhead": 1.2,
+    "bytes_per_parameter": 0.5,
+    "note": "The production selector must delegate exact quantization and fit to LLMFit; this snapshot is not a replacement for LLMFit."
+  },
+  "cpu_tiers": [
+    {"id":"i5_ryzen5","label":"Intel Core i5 / AMD Ryzen 5"},
+    {"id":"i7_ryzen7","label":"Intel Core i7 / AMD Ryzen 7"},
+    {"id":"i9_ryzen9","label":"Intel Core i9 / AMD Ryzen 9"}
+  ],
+  "ram_gb": [2,4,8,16,32,64],
+  "gpu_inventory": [
+    {"rank":1,"vendor":"NVIDIA","model":"RTX 5090","vram_gb":32},
+    {"rank":2,"vendor":"NVIDIA","model":"RTX 4090","vram_gb":24},
+    {"rank":3,"vendor":"AMD","model":"RX 7900 XTX","vram_gb":24},
+    {"rank":4,"vendor":"NVIDIA","model":"RTX 5080","vram_gb":16},
+    {"rank":5,"vendor":"AMD","model":"RX 9070 XT","vram_gb":16},
+    {"rank":6,"vendor":"NVIDIA","model":"RTX 4080 SUPER","vram_gb":16},
+    {"rank":7,"vendor":"NVIDIA","model":"RTX 5070 Ti","vram_gb":16},
+    {"rank":8,"vendor":"AMD","model":"RX 9070","vram_gb":16},
+    {"rank":9,"vendor":"AMD","model":"RX 9060 XT 16GB","vram_gb":16},
+    {"rank":10,"vendor":"NVIDIA","model":"RTX 5060 Ti 16GB","vram_gb":16},
+    {"rank":11,"vendor":"NVIDIA","model":"RTX 4060 Ti 16GB","vram_gb":16},
+    {"rank":12,"vendor":"NVIDIA","model":"RTX 5070","vram_gb":12},
+    {"rank":13,"vendor":"Intel","model":"Arc B580","vram_gb":12},
+    {"rank":14,"vendor":"NVIDIA","model":"RTX 3060 12GB","vram_gb":12},
+    {"rank":15,"vendor":"Intel","model":"Arc B570","vram_gb":10},
+    {"rank":16,"vendor":"NVIDIA","model":"RTX 4060","vram_gb":8},
+    {"rank":17,"vendor":"AMD","model":"RX 7600","vram_gb":8},
+    {"rank":18,"vendor":"Intel","model":"Arc A580","vram_gb":8},
+    {"rank":19,"vendor":"NVIDIA","model":"RTX 3050 6GB","vram_gb":6},
+    {"rank":20,"vendor":"NVIDIA","model":"GTX 1650 4GB","vram_gb":4}
+  ],
+  "model_catalog": [
+    {"id":"g9v3-3b","name":"G9v3-3B","params_b":3.0,"aa_score":16,"aa_score_status":"measured"},
+    {"id":"qwen3.5-4b-reasoning","name":"Qwen3.5 4B (Reasoning)","params_b":4.7,"aa_score":20,"aa_score_status":"measured"},
+    {"id":"qwen3.5-9b-reasoning","name":"Qwen3.5 9B (Reasoning)","params_b":9.7,"aa_score":22,"aa_score_status":"measured"},
+    {"id":"qwen3.5-35b-a3b-reasoning","name":"Qwen3.5 35B A3B (Reasoning)","params_b":36.0,"aa_score":30,"aa_score_status":"estimated"},
+    {"id":"qwen3.5-27b-reasoning","name":"Qwen3.5 27B (Reasoning)","params_b":27.8,"aa_score":35,"aa_score_status":"measured"},
+    {"id":"qwen3.8-27b-xhigh","name":"Qwen3.8 27B (xhigh)","params_b":27.0,"aa_score":52,"aa_score_status":"measured"}
+  ],
+  "source_notes": [
+    "Artificial Analysis open-source leaderboard and size-class pages, snapshot 2026-09-02.",
+    "LLMFit documented fit model and hardware override behavior.",
+    "GPU VRAM values are vendor specifications where available; power rank is a LEONES reference ordering, not a claim of identical LLM throughput across vendors."
+  ]
+}
