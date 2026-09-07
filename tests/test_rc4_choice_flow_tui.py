@@ -5,7 +5,8 @@ def test_choice_flow_tui_exists_and_keeps_confirmation_separate():
     text = Path("scripts/rc4_choice_flow_tui.py").read_text()
     assert "PERSONAL AI ASSISTANT" in text
     assert "FULL SOHO" in text
-    assert "BOTH" in text
+    assert '"both"' in text
+    assert "PERSONAL + SOHO" in text
     assert "CONFIRMACIÓN EXPLÍCITA" in text
     assert "NO ejecuta instalación" in text
 
