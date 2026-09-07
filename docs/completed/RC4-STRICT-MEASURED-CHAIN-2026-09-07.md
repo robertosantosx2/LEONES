@@ -6,14 +6,14 @@
 
 ## Problema
 
-La capa de recomendación produce solo `ESTIMATED`. Faltaba un orquestador canónico que:
+La capa de recomendación produce solo `ESTIMATED`. El orquestador canónico debe:
 
-1. no auto-ejecute desde la recomendación;
-2. exija selección humana de `model_id`;
-3. registre stack (`magnitude|ods|none`);
-4. observe runtime (A01/Ollama) sin inventar comandos;
-5. exija doble autorización (`--authorize-execution` + `--authorize-measurement`);
-6. marque `measured=true` solo tras ejecución real exitosa.
+1. no auto-ejecutar desde la recomendación;
+2. exigir selección humana de `model_id`;
+3. registrar stack (`magnitude|ods|none`);
+4. observar runtime (A01/Ollama) sin inventar comandos;
+5. exigir doble autorización (`--authorize-execution` + `--authorize-measurement`);
+6. marcar `measured=true` solo tras ejecución real exitosa.
 
 ## Fuente canónica
 
@@ -46,35 +46,29 @@ MEASURED evidence envelope  OR  next_gate explícito
 ## Reglas
 
 - `ESTIMATED ≠ MEASURED`
-- `execution_authorized` y `measurement_authorized` son opt-in
+- autorizaciones opt-in
 - Hermes/OMH no seleccionan modelo
-- Ollama runtime no se desinstala por defecto; modelos sí (`--llms`)
-- LEONES (`.leones/`) se ofrece al final del uninstall
+- placeholder shell `<modelo…>` **no** es un model_id válido
 
-## Validación sin host físico
+## Evidencia Aspire (2026-09-06/07)
 
-```bash
-python3 -m pytest tests/test_rc4_component_inventory.py -q
-python3 scripts/rc4_resource_preflight.py --path . | head
-python3 scripts/rc4_measured_chain.py --model-id demo --stack none --json
-# measured debe ser false sin --execute
-```
+- `rc4_release_gate.py` → PASS
+- preflight: RAM ~7 GB, ODS detectado, Ollama presente
+- `measured_chain … --model-id demo` → `measured: false`
+- modelos OBSERVED: `hermes3:latest`, `qwen2.5:0.5b-instruct-q4_K_M`
+- instalar pytest si falta: `pip install --user pytest`
 
 ## Validación física (Ubuntu)
 
 ```bash
+ollama list
 python3 scripts/rc4_fitllm_recommend.py --purpose programming --json > /tmp/rec.json
 python3 scripts/rc4_measured_chain.py \
   --recommendation /tmp/rec.json \
-  --model-id <id_instalado_en_ollama> \
+  --model-id qwen2.5:0.5b-instruct-q4_K_M \
   --stack none \
   --execute --authorize-execution --authorize-measurement \
   --out results/physical-rc4-measured/chain.json
 ```
 
-Solo entonces `measured` puede ser `true`.
-
-## Cierre STRICT de esta pieza
-
-- Contrato + script + tests de inventario + docs + web alineada.
-- **No** se declara RC4 fase cerrada: el MEASURED E2E en host real sigue siendo el gate final de fase.
+Solo entonces `measured` puede ser `true`. RC4 fase **no** se cierra hasta ese E2E.
