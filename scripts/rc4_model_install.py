@@ -13,6 +13,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +29,49 @@ def classify_failure(output: str) -> str:
     if "authentication" in text or "not authenticated" in text or "401" in text or ("token" in text and "permission" in text):
         return "REQUIRES_AUTH_HF"
     return "DOWNLOAD_FAILED"
+
+
+def run_download(command: list[str]) -> tuple[int, str]:
+    """Run hf while forwarding output and emitting a periodic heartbeat."""
+    process = subprocess.Popen(
+        command,
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+    output: list[str] = []
+    started = time.monotonic()
+    next_heartbeat = started + 1.0
+
+    while True:
+        now = time.monotonic()
+        if now >= next_heartbeat and process.poll() is None:
+            elapsed = int(now - started)
+            print(f"HEARTBEAT=active ELAPSED={elapsed}s", flush=True)
+            next_heartbeat = now + 1.0
+
+        line = None
+        if process.stdout is not None:
+            import select
+            ready, _, _ = select.select([process.stdout], [], [], 0.2)
+            if ready:
+                line = process.stdout.readline()
+
+        if line:
+            output.append(line)
+            print(line, end="", flush=True)
+        elif process.poll() is not None:
+            break
+
+    if process.stdout is not None:
+        remainder = process.stdout.read()
+        if remainder:
+            output.append(remainder)
+            print(remainder, end="", flush=True)
+
+    return process.wait(), "".join(output)
 
 
 def install(model_id: str, output_dir: Path) -> int:
@@ -56,14 +100,9 @@ def install(model_id: str, output_dir: Path) -> int:
     print(f"MODEL={model_id}", flush=True)
     print(f"TARGET={target}", flush=True)
     print("PHASE=downloading", flush=True)
-    completed = subprocess.run(command, cwd=ROOT, check=False, capture_output=True, text=True)
-    combined = (completed.stdout or "") + "\n" + (completed.stderr or "")
-    if completed.stdout:
-        print(completed.stdout, end="", flush=True)
-    if completed.stderr:
-        print(completed.stderr, end="", file=sys.stderr, flush=True)
+    returncode, combined = run_download(command)
 
-    if completed.returncode == 0:
+    if returncode == 0:
         marker.write_text(json.dumps({
             "schema": "leones.installed-model.v1",
             "model_id": model_id,
@@ -75,7 +114,7 @@ def install(model_id: str, output_dir: Path) -> int:
         shutil.rmtree(target, ignore_errors=True)
         print("PHASE=failed", flush=True)
         print(f"STATUS={reason}", flush=True)
-    return completed.returncode
+    return returncode
 
 
 def main(argv: list[str] | None = None) -> int:
