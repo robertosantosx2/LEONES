@@ -31,6 +31,27 @@ def classify_failure(output: str) -> str:
     return "DOWNLOAD_FAILED"
 
 
+def parse_size(text: str) -> int | None:
+    match = re.search(r"totalling\s+([0-9]+(?:\.[0-9]+)?)\s*([KMGT]?)(?:i?B)?", text, re.I)
+    if not match:
+        return None
+    value = float(match.group(1))
+    unit = match.group(2).upper()
+    multipliers = {"": 1, "K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
+    return int(value * multipliers[unit])
+
+
+def download_plan(model_id: str) -> tuple[int | None, str]:
+    """Ask HF for the download plan so the TUI can display a real percentage."""
+    command = ["hf", "download", model_id, "--dry-run"]
+    try:
+        completed = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False, timeout=120)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return None, str(exc)
+    output = (completed.stdout or "") + "\n" + (completed.stderr or "")
+    return parse_size(output), output
+
+
 def run_download(command: list[str]) -> tuple[int, str]:
     """Run hf while forwarding output and emitting a periodic heartbeat."""
     process = subprocess.Popen(
@@ -96,10 +117,19 @@ def install(model_id: str, output_dir: Path) -> int:
         shutil.rmtree(target, ignore_errors=True)
     target.mkdir(parents=True, exist_ok=True)
 
-    command = ["hf", "download", model_id, "--local-dir", str(target)]
     print(f"MODEL={model_id}", flush=True)
     print(f"TARGET={target}", flush=True)
+    print("PHASE=planning", flush=True)
+    total_bytes, plan_output = download_plan(model_id)
+    if total_bytes is not None:
+        print(f"TOTAL_BYTES={total_bytes}", flush=True)
+    else:
+        print("TOTAL_BYTES=unknown", flush=True)
+    if plan_output and "access denied" in plan_output.lower() and "requires approval" in plan_output.lower():
+        print("PLAN_STATUS=REQUIRES_APPROVAL_HF", flush=True)
     print("PHASE=downloading", flush=True)
+
+    command = ["hf", "download", model_id, "--local-dir", str(target)]
     returncode, combined = run_download(command)
 
     if returncode == 0:
@@ -110,7 +140,7 @@ def install(model_id: str, output_dir: Path) -> int:
         print("PHASE=completed", flush=True)
         print("STATUS=installed", flush=True)
     else:
-        reason = classify_failure(combined)
+        reason = classify_failure(combined + "\n" + plan_output)
         shutil.rmtree(target, ignore_errors=True)
         print("PHASE=failed", flush=True)
         print(f"STATUS={reason}", flush=True)
