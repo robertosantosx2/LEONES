@@ -7,7 +7,7 @@ def test_rc4_tui_exists_and_uses_curses():
     assert "import curses" in text
     assert "USER INTENT[]" in text
     assert "ESTIMATED" in text
-    assert "MEASURED" in text
+    assert "local measurement boundary" in text
 
 
 def test_tui_has_mandatory_multi_select_contract():
