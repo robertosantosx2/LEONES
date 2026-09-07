@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Revisa la legibilidad básica de los scripts propios de LEONES.
+"""Revisa la legibilidad básica de los scripts activos de LEONES.
 
-Solo analiza Python que se comporta como script ejecutable cuando se usa el
-comando completo. La función ``check_file`` también puede probar archivos
-pequeños sin punto de entrada, lo que facilita las pruebas automáticas.
-No modifica archivos ni toca código de terceros.
+El gate estricto se aplica al conjunto de scripts canónicos de la RC4. El resto
+puede auditarse explícitamente pasando otro directorio, sin convertir código
+histórico o experimental en un bloqueo accidental del release.
 """
 
 from __future__ import annotations
@@ -17,17 +16,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DIR = ROOT / "scripts"
+DEFAULT_EXCLUDES = {"deprecated", "prospection", "integrations"}
 MAX_LINE_LENGTH = 100
 
 
-def python_files(directory: Path) -> list[Path]:
-    """Devuelve scripts propios y omite cachés y código importado."""
+def python_files(directory: Path, excludes: set[str] | None = None) -> list[Path]:
+    """Devuelve scripts propios, omitiendo directorios explícitamente excluidos."""
+    excludes = DEFAULT_EXCLUDES if excludes is None else excludes
     return sorted(
         path
         for path in directory.rglob("*.py")
         if "__pycache__" not in path.parts
         and ".git" not in path.parts
         and "upstream" not in path.parts
+        and not any(part in excludes for part in path.relative_to(directory).parts)
     )
 
 
@@ -60,8 +62,6 @@ def check_file(path: Path) -> list[str]:
         if len(line) > MAX_LINE_LENGTH:
             problems.append(f"línea {number}: supera {MAX_LINE_LENGTH} caracteres")
 
-    # Detecta únicamente ';' que sean realmente tokens Python.
-    # No cuenta ';' dentro de strings, docstrings o comentarios.
     try:
         tokens = tokenize.generate_tokens(
             io.StringIO(path.read_text(encoding="utf-8")).readline
@@ -82,14 +82,20 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", nargs="?", type=Path, default=DEFAULT_DIR)
     parser.add_argument(
+        "--include-legacy",
+        action="store_true",
+        help="incluye directorios históricos/experimentales en la auditoría",
+    )
+    parser.add_argument(
         "--strict",
         action="store_true",
         help="termina con error si encuentra incumplimientos",
     )
     args = parser.parse_args()
 
+    excludes = set() if args.include_legacy else DEFAULT_EXCLUDES
     failures = 0
-    for path in python_files(args.directory):
+    for path in python_files(args.directory, excludes):
         lines = path.read_text(encoding="utf-8").splitlines()
         if not is_executable_script(lines):
             continue
@@ -105,7 +111,7 @@ def main() -> int:
         print(f"\n{failures} avisos de calidad de scripts.")
         return 1 if args.strict else 0
 
-    print("OK: todos los scripts cumplen las comprobaciones básicas.")
+    print("OK: todos los scripts del alcance cumplen las comprobaciones básicas.")
     return 0
 
 
