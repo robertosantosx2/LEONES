@@ -1,4 +1,4 @@
-from scripts.rc4_resource_preflight import memory_state, swap_state, collect
+from scripts.rc4_resource_preflight import collect, memory_state, swap_state
 
 
 def test_memory_state_has_available_without_swap():
@@ -15,10 +15,17 @@ def test_swap_is_separate_from_ram():
     assert "swap" not in ram
 
 
-def test_collect_has_all_three_software_targets():
+def test_collect_has_all_software_targets():
     result = collect(".")
     names = {item["name"] for item in result["software"]}
-    assert names == {"ODS", "Magnitude", "FitLLM / LLMFit"}
+    assert names == {
+        "ODS",
+        "Magnitude",
+        "FitLLM / LLMFit",
+        "Hermes",
+        "Oh My Hermes",
+        "Ollama",
+    }
     assert result["rules"]["swap_counts_as_ram"] is False
     assert result["rules"]["unknown_sizes_are_null"] is True
 
