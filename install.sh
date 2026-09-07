@@ -34,10 +34,7 @@ if sys.version_info < (3, 10):
 PY
 
 install_fitllm() {
-  if command -v llmfit >/dev/null 2>&1; then
-    echo "[✓] FitLLM / LLMFit ya está instalado."
-    return 0
-  fi
+  if command -v llmfit >/dev/null 2>&1; then echo "[✓] FitLLM / LLMFit ya está instalado."; return 0; fi
   echo "[→] Instalando FitLLM / LLMFit..."
   curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
   export PATH="$HOME/.local/bin:$PATH"
@@ -46,14 +43,9 @@ install_fitllm() {
 }
 
 install_ods() {
-  if command -v ods >/dev/null 2>&1; then
-    echo "[✓] Osmantic ODS ya está instalado."
-    return 0
-  fi
+  if command -v ods >/dev/null 2>&1; then echo "[✓] Osmantic ODS ya está instalado."; return 0; fi
   command -v docker >/dev/null 2>&1 || fail "ODS requiere Docker; Docker no está instalado."
-  if ! docker info >/dev/null 2>&1 && ! (command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1); then
-    fail "ODS requiere un Docker operativo. Inicia Docker y vuelve a intentarlo."
-  fi
+  if ! docker info >/dev/null 2>&1 && ! (command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1); then fail "ODS requiere un Docker operativo. Inicia Docker y vuelve a intentarlo."; fi
   echo "[→] Instalando Osmantic ODS..."
   curl -fsSL https://install.osmantic.com/ods.sh | bash
   export PATH="$HOME/.local/bin:$PATH"
@@ -61,10 +53,7 @@ install_ods() {
 }
 
 install_magnitude() {
-  if command -v magnitude >/dev/null 2>&1; then
-    echo "[✓] Magnitude ya está instalado."
-    return 0
-  fi
+  if command -v magnitude >/dev/null 2>&1; then echo "[✓] Magnitude ya está instalado."; return 0; fi
   command -v npm >/dev/null 2>&1 || fail "Magnitude requiere Node.js/npm."
   echo "[→] Instalando Magnitude..."
   if npm install -g @magnitudedev/cli; then :; else
@@ -105,13 +94,31 @@ for arg in "$@"; do
   esac
 done
 
+run_component() {
+  local index="$1" total="$2" component="$3"; shift 3
+  echo "[→] Instalación $index/$total — $component"
+  "$@" &
+  local pid=$! tick=0
+  local frames=('|' '/' '-' '\\')
+  while kill -0 "$pid" 2>/dev/null; do
+    printf '\r[→] Instalando %-12s %s actividad... ' "$component" "${frames[$((tick % 4))]}"
+    tick=$((tick + 1))
+    sleep 1
+  done
+  wait "$pid"
+  printf '\r[✓] Instalación %d/%d — %-12s completada.\n' "$index" "$total" "$component"
+}
+
+total=${#selected[@]}
+index=0
 for component in "${selected[@]}"; do
+  index=$((index + 1))
   case "$component" in
-    fitllm) install_fitllm ;;
-    ods) install_ods ;;
-    magnitude) install_magnitude ;;
-    hermes) install_hermes ;;
-    omh) install_omh ;;
+    fitllm) run_component "$index" "$total" fitllm install_fitllm ;;
+    ods) run_component "$index" "$total" ods install_ods ;;
+    magnitude) run_component "$index" "$total" magnitude install_magnitude ;;
+    hermes) run_component "$index" "$total" hermes install_hermes ;;
+    omh) run_component "$index" "$total" omh install_omh ;;
   esac
 done
 
