@@ -8,79 +8,84 @@
 | JALÓN 1 | 🟢 Cerrado | Base CI y contratos iniciales |
 | JALÓN 2 | 🟢 Cerrado | Ejecución física + evidencia reproducible con llama.cpp |
 | JALÓN 3 | 🟢 Cerrado | Contrato de medición real + auditoría física |
-| JALÓN 4 | 🟢 **Cerrado** | Metodología AA + contratos de integración + benchmark de tareas + tiers |
-| RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end |
-| RC2 | 🟢 **Histórica** | Beta previa; no es el camino canónico RC3 |
-| **RC3** | 🟢 **CERRADA** (impl. + contratos + web + obs. física parcial Aspire) · medición completa = backlog | **`hardware_profile.py` → candidatos → Magnitude/ODS → medición LEONES** |
-| **RC4** | 🟡 **Decisión fijada · implementación pendiente** | **FitLLM recomendador opcional → elección humana → Magnitude/ODS → Leo001…Leo010** |
+| JALÓN 4 | 🟢 Cerrado | Metodología AA + contratos de integración + benchmark de tareas + tiers |
+| RC1 | 🟢 Validado | Ejecución efectiva end-to-end |
+| RC2 | 🟢 Histórica | Beta previa; no es el camino canónico RC3/RC4 |
+| **RC3** | 🟢 Cerrada | Arquitectura canónica y contratos de fase cerrados |
+| **RC4** | 🟡 En validación física | TUI integrada + intención obligatoria + evidencia HF/AA + recomendador LLMFit endurecido; frontera MEASURED pendiente de validación física Ubuntu |
 
-## RC4 — recomendador FitLLM (en curso)
+## RC4 — estado fijado
 
-**Regla de autoridad RC4:** LEONES descubre el hardware. FitLLM puede recomendar (ESTIMATED). El usuario elige modelo y stack. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.
+**La TUI RC4 ya está integrada en `main`.** Presenta el flujo canónico sin cambiar su semántica: idioma al inicio, estado de máquina, intención múltiple obligatoria, recomendación, elección humana, stack, runtime y medición.
 
-- FitLLM **no** es dependencia dura de arranque; sin él se puede elegir modelo a mano.
-- Hermes y OMH son **opcionales** (agente/ops), no selectores de modelo.
-- Tras instalar Magnitude u ODS se puede **ofrecer** desinstalar FitLLM (opt-in).
-- Suite **Leo001…Leo010** se conserva para medición.
-- Acta: `docs/completed/RC4-DECISION-FITLLM-RECOMMENDER-2026-09-06.md` · Contrato: `docs/RC4-ARCHITECTURE.md`
+**Regla de autoridad RC4:** LEONES descubre el hardware. Hugging Face y Artificial Analysis aportan evidencia externa. LLMFit puede preseleccionar desde su catálogo propio. LEONES cruza identidades y presenta candidatos `ESTIMATED`. El usuario elige. Solo la ejecución física protocolizada en Ubuntu produce `MEASURED`.
 
-## RC3 — arquitectura canónica (fase cerrada)
+- FitLLM/LLMFit es opcional; no es dependencia dura de arranque.
+- La intención `user_intent[]` es obligatoria, múltiple y no vacía antes de recomendar.
+- El feed externo está limitado a 100 modelos; no se inventan candidatos por padding.
+- Menos de tres coincidencias válidas produce `insufficient`.
+- Ninguna recomendación autoriza instalación, ejecución o medición.
+- Hermes y OMH no son selectores canónicos de RC4.
+- La TUI es presentación y no altera contratos de recomendación, autorización, runtime o evidencia.
 
-RC3 simplifica deliberadamente el camino de instalación y selección. **La sonda física canónica es `scripts/hardware_profile.py`.** Hermes participa como ecosistema local de runtime/model-fit y Oh My Hermes (OMH) como capa operativa de routing, workflows, handoffs y gates. LEONES normaliza, reconcilia y conserva la autoridad sobre verificación física, ejecución, medición y evidencia.
-
-### Regla de autoridad (RC3)
-
-**LEONES descubre el hardware. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.**
-
-### Handoff de usuario
-
-- **Magnitude** → perfilado, tuning y ejecución por sus interfaces canónicas.
-- **ODS** → instalación y stack local por sus interfaces canónicas.
-
-## Instalación (contexto RC3 / transición RC4)
+### Frontera pendiente
 
 ```text
-INSTALAR LEONES
-      ↓
-scripts/hardware_profile.py
-      ↓
-hardware-profile.v1 → candidate-set.v1
-      ↓
-FitLLM (opcional, RC4) → recomendación ESTIMATED
-      ↓
-ELEGIR MODELO (con o sin recomendación)
-      ↓
-ELEGIR MAGNITUDE U ODS
-      ↓
-CONSENTIMIENTO → PREPARAR / INSTALAR
-      ↓
-[opcional] ofrecer desinstalar FitLLM
-      ↓
-VERIFICAR FÍSICAMENTE
-      ↓
-Leo001…Leo010 → MEDIR → EVIDENCIA
+TUI + recomendación + CI
+          ↓
+     SELECCIÓN HUMANA
+          ↓
+   RUNTIME FÍSICO UBUNTU
+          ↓
+      MEDICIÓN REAL
+          ↓
+    EVIDENCIA MEASURED
 ```
 
-```bash
-hermes doctor   # si están instalados
-omh doctor
+Esta frontera **no se declara cerrada** hasta completar la validación física correspondiente. JA (`ja`) queda deliberadamente fuera de alcance de esta fase de limpieza.
+
+## Cadena canónica RC4
+
+```text
+HARDWARE DETECTADO
+      ↓
+USER_INTENT[] · obligatorio · múltiple · no vacío
+      ↓
+RESOURCE PREFLIGHT
+      ↓
+HUGGING FACE + ARTIFICIAL ANALYSIS
+      ↓
+FEED LEONES · ≤100
+      ↓
+LLMFit · catálogo propio · ≤100
+      ↓
+INTERSECCIÓN POR IDENTIDAD
+      ↓
+hasta 3 ESTIMATED
+      ↓
+SELECCIÓN HUMANA
+      ↓
+ARTIFACT RESOLUTION
+      ↓
+RUNTIME FÍSICO UBUNTU
+      ↓
+BENCHMARK
+      ↓
+MEASURED EVIDENCE
 ```
-
-## Gate
-
-RC3: `scripts/rc3_release_gate.py`. El gate **no** declara handoffs ni MEASURED físicos.
-RC4: gate propio pendiente de implementación (FitLLM no hard-dep; Hermes no selector).
-
-## RC2
-
-RC2 permanece como línea histórica de validación.
 
 ## Interfaz de usuario
 
-Norma de proyecto (idioma, consentimientos, estados, errores): [`docs/LEONES-INTERFACE-RULES.md`](docs/LEONES-INTERFACE-RULES.md).
+Norma fijada de proyecto: [`docs/LEONES-INTERFACE-RULES.md`](docs/LEONES-INTERFACE-RULES.md).
+
+La TUI RC4 es `scripts/rc4_tui.py`. La interfaz debe conservar la separación entre `ESTIMATED`, `OBSERVED`, `MEASURED`, `UNKNOWN` y `BLOQUEADO`, además de los consentimientos separados de instalación, ejecución y medición.
+
+## Evidencia y JALÓN 2
+
+JALÓN 2 permanece cerrado e inmutable como evidencia histórica. La integración de la TUI y la limpieza documental no modifica sus artifacts ni su resultado.
 
 ## Principio LEONES
 
 > **Los proveedores pueden proponer. FitLLM puede recomendar. El usuario elige. Solo una ejecución controlada sobre el equipo real puede producir una medición LEONES.**
 
-RC3 está **cerrada como fase**. Ver `docs/completed/RC3-CLOSED-2026-09-05.md`. **RC4** redefine el tramo de recomendación de modelo; ver `docs/RC4-ARCHITECTURE.md`.
+RC3 está cerrada como fase. RC4 tiene la capa TUI/recomendación integrada y endurecida; queda abierta únicamente la frontera de validación física Ubuntu y la posterior declaración de cierre.
