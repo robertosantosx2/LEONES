@@ -1,0 +1,26 @@
+{
+  "schema": "leones.rc4.solution_catalog.v1",
+  "status": "FIXED",
+  "solutions": {
+    "personal_assistant": {
+      "name": "Personal AI Assistant",
+      "components": ["assistant-ui", "local-runtime", "selected-llms"],
+      "functions": ["local chat", "personal assistance", "selected model access"],
+      "ports": [],
+      "disk_bytes": null,
+      "ram_bytes": null,
+      "cpu_load": "ESTIMATED/UNKNOWN",
+      "uninstall": "remove installed assistant components; preserve LEONES evidence and decision records"
+    },
+    "soho": {
+      "name": "Full Small Office/Home Office (SOHO)",
+      "components": ["soho-services", "local-runtime", "selected-llms"],
+      "functions": ["multi-user service", "local AI services", "selected model access"],
+      "ports": [],
+      "disk_bytes": null,
+      "ram_bytes": null,
+      "cpu_load": "ESTIMATED/UNKNOWN",
+      "uninstall": "remove installed SOHO components; preserve LEONES evidence and decision records"
+    }
+  }
+}
