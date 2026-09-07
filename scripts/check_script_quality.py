@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Revisa la legibilidad básica de los scripts activos de LEONES.
+"""Revisa la legibilidad básica de los scripts de LEONES.
 
-El gate estricto se aplica al conjunto de scripts canónicos de la RC4. El resto
-puede auditarse explícitamente pasando otro directorio, sin convertir código
-histórico o experimental en un bloqueo accidental del release.
+El gate estricto debe recibir explícitamente el alcance activo que se quiere
+bloquear. El modo directorio sigue disponible para auditorías completas.
 """
 
 from __future__ import annotations
@@ -21,8 +20,10 @@ MAX_LINE_LENGTH = 100
 
 
 def python_files(directory: Path, excludes: set[str] | None = None) -> list[Path]:
-    """Devuelve scripts propios, omitiendo directorios explícitamente excluidos."""
+    """Devuelve scripts Python del directorio, omitiendo exclusiones."""
     excludes = DEFAULT_EXCLUDES if excludes is None else excludes
+    if directory.is_file():
+        return [directory]
     return sorted(
         path
         for path in directory.rglob("*.py")
@@ -80,11 +81,17 @@ def check_file(path: Path) -> list[str]:
 def main() -> int:
     """Audita scripts y devuelve error solo con ``--strict`` si hay avisos."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("directory", nargs="?", type=Path, default=DEFAULT_DIR)
+    parser.add_argument(
+        "directory",
+        nargs="?",
+        type=Path,
+        default=DEFAULT_DIR,
+        help="directorio o archivo Python a auditar",
+    )
     parser.add_argument(
         "--include-legacy",
         action="store_true",
-        help="incluye directorios históricos/experimentales en la auditoría",
+        help="incluye directorios históricos/experimentales en auditorías de directorio",
     )
     parser.add_argument(
         "--strict",
