@@ -37,7 +37,7 @@ def test_aggregate_costs_all_selected_models():
     assert total["total_install_bytes"] == 40
 
 
-def test_choice_envelope_keeps_install_unauthorized():
+def test_choice_envelope_keeps_selection_separate_from_consent():
     envelope = build_choice_envelope(
         purposes=["programming", "research"],
         model_ids=["a", "b", "c", "d"],
@@ -50,8 +50,19 @@ def test_choice_envelope_keeps_install_unauthorized():
     assert envelope["models"]["artificial_limit"] is None
     assert envelope["solution"]["selection"] == "both"
     assert envelope["cost"]["aggregate"]["status"] == "PASS"
-    assert envelope["consent"]["install"] is False
+    assert envelope["consent"] == {"purpose": False, "models": False, "solution": False, "install": False}
     assert envelope["install"]["authorized"] is False
+
+
+def test_shared_components_are_deducted_once():
+    gate = disk_gate(
+        free_bytes=100,
+        model_cost_bytes=40,
+        solution_cost_bytes=20,
+        shared_component_bytes=5,
+    )
+    assert gate["required_bytes"] == 55
+    assert gate["remaining_bytes"] == 45
 
 
 def test_solution_validation():
