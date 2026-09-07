@@ -4,22 +4,28 @@
   "solutions": {
     "personal_assistant": {
       "name": "Personal AI Assistant",
+      "description": "Local personal assistant for one primary user.",
       "components": ["assistant-ui", "local-runtime", "selected-llms"],
-      "functions": ["local chat", "personal assistance", "selected model access"],
-      "ports": [],
+      "functions": ["local chat", "personal assistance", "selected model access", "local document/context workflows", "single-user local interaction"],
+      "usage_profile": "Normal use is interactive and bursty; resource consumption depends on the selected model, context and concurrent requests.",
       "disk_bytes": null,
       "ram_bytes": null,
       "cpu_load": "ESTIMATED/UNKNOWN",
+      "vram_bytes": null,
+      "simultaneous_models": "UNKNOWN",
       "uninstall": "remove installed assistant components; preserve LEONES evidence and decision records"
     },
     "soho": {
       "name": "Full Small Office/Home Office (SOHO)",
+      "description": "Local AI service stack intended for multiple users and local services.",
       "components": ["soho-services", "local-runtime", "selected-llms"],
-      "functions": ["multi-user service", "local AI services", "selected model access"],
-      "ports": [],
+      "functions": ["multi-user service", "local AI services", "selected model access", "shared local AI endpoints", "service-oriented local operation"],
+      "usage_profile": "Normal use can be concurrent and sustained; resource consumption depends on selected models, concurrency, context and enabled services.",
       "disk_bytes": null,
       "ram_bytes": null,
       "cpu_load": "ESTIMATED/UNKNOWN",
+      "vram_bytes": null,
+      "simultaneous_models": "UNKNOWN",
       "uninstall": "remove installed SOHO components; preserve LEONES evidence and decision records"
     }
   }

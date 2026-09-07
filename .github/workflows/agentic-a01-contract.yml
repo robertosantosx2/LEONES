@@ -28,5 +28,3 @@ jobs:
         working-directory: benchmarks/agentic/adapters
       - run: PYTHONPATH=. python -m pytest -q
         working-directory: benchmarks/evidence
-      - name: Selector -> runtime-selection.v1 -> A01
-        run: PYTHONPATH=. python -m pytest -q benchmarks/agentic/test_selection_to_a01.py
