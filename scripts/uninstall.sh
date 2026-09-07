@@ -121,7 +121,8 @@ if ((${#SELECTED[@]} == 0)); then
   fi
 fi
 
-if (( ! ASSUME_YES )); then
+# A dry-run is non-destructive by definition and therefore never asks for confirmation.
+if (( ! ASSUME_YES && ! DRY_RUN )); then
   echo
   echo "Se van a limpiar: ${SELECTED[*]}"
   read -r -p '¿Confirmar? [s/N] ' ans
