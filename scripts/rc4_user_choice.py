@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """RC4 user choice, aggregate cost and disk gate primitives.
 
-LEONES informs and calculates; the user decides.  This module deliberately
+LEONES informs and calculates; the user decides. This module deliberately
 contains no automatic model choice and no installation side effects.
 """
 from __future__ import annotations
@@ -67,6 +67,7 @@ def validate_model_selection(model_ids: Iterable[str]) -> list[str]:
 
 
 def aggregate_model_costs(models: Iterable[ModelCost]) -> dict:
+    """Aggregate selected model costs without imposing a model-count limit."""
     selected = list(models)
     totals: dict[str, int | None] = {}
     for field in ("disk_bytes", "runtime_bytes", "dependency_bytes", "data_bytes", "safety_margin_bytes"):
@@ -80,10 +81,28 @@ def aggregate_model_costs(models: Iterable[ModelCost]) -> dict:
     return {"model_count": len(selected), **totals}
 
 
+def aggregate_selection_costs(
+    *,
+    model_cost_bytes: int | None,
+    solution_cost_bytes: int | None,
+    shared_component_bytes: int | None = 0,
+) -> int | None:
+    """Return the total install footprint, deduplicating shared components."""
+    if model_cost_bytes is None or solution_cost_bytes is None or shared_component_bytes is None:
+        return None
+    if shared_component_bytes < 0:
+        raise ValueError("shared_component_bytes cannot be negative")
+    return model_cost_bytes + solution_cost_bytes - shared_component_bytes
+
+
 def disk_gate(*, free_bytes: int | None, model_cost_bytes: int | None,
-              solution_cost_bytes: int | None) -> dict:
+              solution_cost_bytes: int | None, shared_component_bytes: int | None = 0) -> dict:
     """Gate installation; UNKNOWN never becomes a guessed pass."""
-    required = None if model_cost_bytes is None or solution_cost_bytes is None else model_cost_bytes + solution_cost_bytes
+    required = aggregate_selection_costs(
+        model_cost_bytes=model_cost_bytes,
+        solution_cost_bytes=solution_cost_bytes,
+        shared_component_bytes=shared_component_bytes,
+    )
     if free_bytes is None or required is None:
         return {"status": "UNKNOWN", "free_bytes": free_bytes, "required_bytes": required,
                 "remaining_bytes": None, "install_allowed": False,
@@ -97,22 +116,34 @@ def disk_gate(*, free_bytes: int | None, model_cost_bytes: int | None,
 
 def build_choice_envelope(*, purposes: Iterable[str], model_ids: Iterable[str], solution: str,
                           free_disk_bytes: int | None, model_cost: Mapping[str, object],
-                          solution_cost: Mapping[str, object]) -> dict:
-    """Build the pre-confirmation decision record without installing anything."""
+                          solution_cost: Mapping[str, object], shared_component_bytes: int | None = 0) -> dict:
+    """Build the pre-confirmation decision record without installing anything.
+
+    Selection is deliberately not consent. All consent flags remain false until
+    a separate explicit confirmation step records the user's authorization.
+    """
     models = validate_model_selection(model_ids)
     sol = validate_solution(solution)
     model_total = model_cost.get("total_install_bytes")
     solution_total = solution_cost.get("total_bytes")
-    gate = disk_gate(free_bytes=free_disk_bytes,
-                     model_cost_bytes=model_total if isinstance(model_total, int) else None,
-                     solution_cost_bytes=solution_total if isinstance(solution_total, int) else None)
+    gate = disk_gate(
+        free_bytes=free_disk_bytes,
+        model_cost_bytes=model_total if isinstance(model_total, int) else None,
+        solution_cost_bytes=solution_total if isinstance(solution_total, int) else None,
+        shared_component_bytes=shared_component_bytes,
+    )
     return {
         "schema": SCHEMA,
         "user_intent": {"required": True, "selection_mode": "multiple", "purposes": list(dict.fromkeys(purposes))},
         "models": {"selection_mode": "multiple", "selected": models, "artificial_limit": None},
         "solution": {"selection": sol, "options": list(SOLUTIONS)},
-        "cost": {"models": dict(model_cost), "solution": dict(solution_cost), "aggregate": gate},
-        "consent": {"purpose": True, "models": True, "solution": True, "install": False},
+        "cost": {
+            "models": dict(model_cost),
+            "solution": dict(solution_cost),
+            "shared_component_bytes": shared_component_bytes,
+            "aggregate": gate,
+        },
+        "consent": {"purpose": False, "models": False, "solution": False, "install": False},
         "install": {"authorized": False, "partial_install_allowed": False},
     }
 
