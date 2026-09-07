@@ -1,181 +1,276 @@
 #!/usr/bin/env python3
-"""RC4 human-choice flow: language -> machine state -> purposes -> models -> solution -> costs -> consent."""
+"""RC4 human-choice flow with persistent language and evidence provenance labels."""
 from __future__ import annotations
-import curses,json,os,shutil,subprocess,sys
+import curses, json, os, shutil, subprocess, sys
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[1]; RECOMMENDER=ROOT/"scripts/rc4_fitllm_recommend.py"; CATALOG=ROOT/"catalogs/rc4_solutions.json"
-PURPOSES=(("programming","PROGRAMMING"),("reasoning","REASONING"),("research","RESEARCH"),("chat","CHAT"),("multimodal","MULTIMODAL"),("embedding","EMBEDDING"),("general","GENERAL"))
-SOLUTIONS=(("personal_assistant","PERSONAL AI ASSISTANT"),("soho","FULL SOHO"),("both","BOTH"))
-T={"es":{"select":"SELECCIONA IDIOMA","keys":"↑/↓ · ENTER","nav":"NAVEGACIÓN","dash":"Panel","machine":"Estado de máquina","intent":"Intención","rec":"Recomendador","evidence":"Evidencia","legacy":"RC2 legado","settings":"Configuración","exit":"Salir","small":"LEONES RC4 TUI -- terminal demasiado pequeña (mín. 92x25)","resize":"Redimensiona la ventana. Q: salir"},"en":{"select":"SELECT LANGUAGE","keys":"↑/↓ · ENTER","nav":"NAVIGATION","dash":"Dashboard","machine":"Machine State","intent":"Intent","rec":"Recommender","evidence":"Evidence","legacy":"RC2 legacy","settings":"Settings","exit":"Exit","small":"LEONES RC4 TUI -- terminal too small (min 92x25)","resize":"Resize the window. Q: quit"},"zh":{"select":"选择语言","keys":"↑/↓ · ENTER","nav":"导航","dash":"仪表板","machine":"机器状态","intent":"意图","rec":"推荐器","evidence":"证据","legacy":"RC2 旧版","settings":"设置","exit":"退出","small":"LEONES RC4 TUI -- 终端太小（最小 92x25）","resize":"请调整窗口大小。Q：退出"}}
-def tr(lang,key):return T.get(lang,T["es"]).get(key,key)
-def human_bytes(v):
-    if not isinstance(v,int) or v<0:return "UNKNOWN"
-    n=float(v)
-    for u in ("B","KB","MB","GB","TB"):
-        if n<1024 or u=="TB":return f"{n:.1f} {u}"
-        n/=1024
-    return "UNKNOWN"
+
+ROOT = Path(__file__).resolve().parents[1]
+RECOMMENDER = ROOT / "scripts" / "rc4_fitllm_recommend.py"
+CATALOG = ROOT / "catalogs" / "rc4_solutions.json"
+PURPOSES = (("programming", "PROGRAMMING"), ("reasoning", "REASONING"), ("research", "RESEARCH"), ("chat", "CHAT"), ("multimodal", "MULTIMODAL"), ("embedding", "EMBEDDING"), ("general", "GENERAL"))
+SOLUTIONS = (("personal_assistant", "PERSONAL AI ASSISTANT"), ("soho", "FULL SOHO"), ("both", "PERSONAL + SOHO"))
+
+T = {
+    "es": {
+        "select":"SELECCIONA IDIOMA", "keys":"↑/↓ · ENTER", "nav":"NAVEGACIÓN", "dash":"Panel", "machine":"Estado de máquina", "intent":"Intención", "rec":"Recomendador", "evidence":"Evidencia", "legacy":"RC2 legado", "settings":"Configuración", "exit":"Salir",
+        "small":"LEONES RC4 TUI -- terminal demasiado pequeña (mín. 92x25)", "resize":"Redimensiona la ventana. Q: salir", "system":"ESTADO DEL SISTEMA", "workspace":"ESPACIO DE TRABAJO RC4", "focus":"FOCUS", "unknown":"UNKNOWN",
+        "purpose_title":"PROPÓSITOS", "purpose_prompt":"Selecciona uno o varios propósitos:", "models_title":"MODELOS", "models_prompt":"MODELOS COMPATIBLES / RECOMENDADOS · SELECCIÓN MÚLTIPLE · SIN LÍMITE ARTIFICIAL", "solution_title":"SOLUCIÓN", "solution_prompt":"↑/↓ CAMBIA LA OPCIÓN Y ACTUALIZA SU FICHA", "cost_title":"COSTE DE LA SELECCIÓN", "confirm_title":"CONFIRMACIÓN EXPLÍCITA",
+        "functions":"FUNCIONALIDADES:", "usage":"USO HABITUAL:", "install":"INSTALACIÓN:", "declared":"DECLARADO", "estimated":"ESTIMADO", "measured":"MEDIDO", "selected":"seleccionado(s)", "disk":"DISCO", "ram":"RAM", "cpu":"CPU", "vram":"VRAM", "required":"requerido", "free":"libre", "sufficient":"SUFICIENTE", "insufficient":"INSUFICIENTE", "gate":"GATE DISCO", "authorized":"INSTALACIÓN AUTORIZADA=NO", "unknown_gate":"UNKNOWN no pasa el gate · no instalación parcial por defecto",
+        "continue":"[ENTER] continuar", "quit":"[Q] salir", "back":"B volver", "move":"↑/↓ mover", "choose":"↑/↓ elegir", "space":"ESPACIO seleccionar", "recalc":"R recalcular", "tab":"TAB navegación", "open":"ENTER abrir/continuar", "no_install":"NO ejecuta instalación en esta capa", "consent":"ENTER = registrar consentimiento",
+        "memory":"MEMORIA", "total":"TOTAL", "available":"LIBRE", "used":"EN USO", "load":"carga 1m", "logical":"lógico", "cpus":"CPUs", "top_mem":"TOP 5 PROCESOS · MEMORIA", "top_cpu":"TOP 5 PROCESOS · CPU", "disk_state":"DISCO", "solution_desc":"DESCRIPCIÓN", "components":"COMPONENTES", "models_count":"Modelos: {n} seleccionado(s), sin límite artificial", "purposes":"Propósitos: {v}", "solution":"Solución: {v}", "both":"PERSONAL + SOHO",
+    },
+    "en": {
+        "select":"SELECT LANGUAGE", "keys":"↑/↓ · ENTER", "nav":"NAVIGATION", "dash":"Dashboard", "machine":"Machine State", "intent":"Intent", "rec":"Recommender", "evidence":"Evidence", "legacy":"RC2 legacy", "settings":"Settings", "exit":"Exit",
+        "small":"LEONES RC4 TUI -- terminal too small (min 92x25)", "resize":"Resize the window. Q: quit", "system":"SYSTEM STATE", "workspace":"RC4 WORKSPACE", "focus":"FOCUS", "unknown":"UNKNOWN",
+        "purpose_title":"PURPOSES", "purpose_prompt":"Select one or more purposes:", "models_title":"MODELS", "models_prompt":"COMPATIBLE / RECOMMENDED MODELS · MULTI-SELECTION · NO ARTIFICIAL LIMIT", "solution_title":"SOLUTION", "solution_prompt":"↑/↓ CHANGES THE OPTION AND UPDATES ITS CARD", "cost_title":"SELECTION COST", "confirm_title":"EXPLICIT CONFIRMATION",
+        "functions":"FUNCTIONS:", "usage":"NORMAL USE:", "install":"INSTALLATION:", "declared":"DECLARED", "estimated":"ESTIMATED", "measured":"MEASURED", "selected":"selected", "disk":"DISK", "ram":"RAM", "cpu":"CPU", "vram":"VRAM", "required":"required", "free":"free", "sufficient":"SUFFICIENT", "insufficient":"INSUFFICIENT", "gate":"DISK GATE", "authorized":"INSTALLATION AUTHORIZED=NO", "unknown_gate":"UNKNOWN does not pass the gate · no partial installation by default",
+        "continue":"[ENTER] continue", "quit":"[Q] quit", "back":"B back", "move":"↑/↓ move", "choose":"↑/↓ choose", "space":"SPACE select", "recalc":"R recalculate", "tab":"TAB navigation", "open":"ENTER open/continue", "no_install":"DOES NOT execute installation in this layer", "consent":"ENTER = record consent",
+        "memory":"MEMORY", "total":"TOTAL", "available":"AVAILABLE", "used":"IN USE", "load":"1m load", "logical":"logical", "cpus":"CPUs", "top_mem":"TOP 5 PROCESSES · MEMORY", "top_cpu":"TOP 5 PROCESSES · CPU", "disk_state":"DISK", "solution_desc":"DESCRIPTION", "components":"COMPONENTS", "models_count":"Models: {n} selected, no artificial limit", "purposes":"Purposes: {v}", "solution":"Solution: {v}", "both":"PERSONAL + SOHO",
+    },
+    "zh": {
+        "select":"选择语言", "keys":"↑/↓ · ENTER", "nav":"导航", "dash":"仪表板", "machine":"机器状态", "intent":"意图", "rec":"推荐器", "evidence":"证据", "legacy":"RC2 旧版", "settings":"设置", "exit":"退出",
+        "small":"LEONES RC4 TUI -- 终端太小（最小 92x25）", "resize":"请调整窗口大小。Q：退出", "system":"系统状态", "workspace":"RC4 工作区", "focus":"焦点", "unknown":"未知",
+        "purpose_title":"用途", "purpose_prompt":"选择一个或多个用途：", "models_title":"模型", "models_prompt":"兼容 / 推荐模型 · 多选 · 无人为数量限制", "solution_title":"方案", "solution_prompt":"↑/↓ 更改选项并更新信息", "cost_title":"选择成本", "confirm_title":"明确确认",
+        "functions":"功能：", "usage":"正常使用：", "install":"安装：", "declared":"已声明", "estimated":"估算", "measured":"已测量", "selected":"已选择", "disk":"磁盘", "ram":"内存", "cpu":"CPU", "vram":"显存", "required":"需要", "free":"可用", "sufficient":"足够", "insufficient":"不足", "gate":"磁盘门禁", "authorized":"安装授权=否", "unknown_gate":"未知值不能通过门禁 · 默认不进行部分安装",
+        "continue":"[ENTER] 继续", "quit":"[Q] 退出", "back":"B 返回", "move":"↑/↓ 移动", "choose":"↑/↓ 选择", "space":"空格 选择", "recalc":"R 重新计算", "tab":"TAB 导航", "open":"ENTER 打开/继续", "no_install":"本层不会执行安装", "consent":"ENTER = 记录同意",
+        "memory":"内存", "total":"总计", "available":"可用", "used":"使用中", "load":"1分钟负载", "logical":"逻辑", "cpus":"CPU", "top_mem":"内存占用前5个进程", "top_cpu":"CPU占用前5个进程", "disk_state":"磁盘", "solution_desc":"说明", "components":"组件", "models_count":"模型：已选择 {n} 个，无人为数量限制", "purposes":"用途：{v}", "solution":"方案：{v}", "both":"个人助手 + SOHO",
+    },
+}
+
+def tr(lang, key, **kwargs):
+    value = T.get(lang, T["es"]).get(key, key)
+    return value.format(**kwargs)
+
+def human_bytes(value):
+    if not isinstance(value, int) or value < 0:
+        return tr("es", "unknown")
+    n = float(value)
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if n < 1024 or unit == "TB":
+            return f"{n:.1f} {unit}"
+        n /= 1024
+    return tr("es", "unknown")
+
 def disk_free():
-    try:return shutil.disk_usage(ROOT).free
-    except OSError:return None
-def catalog():
-    try:return json.loads(CATALOG.read_text()).get("solutions",{})
-    except (OSError,json.JSONDecodeError):return {}
-def run_recommendation(purposes):
-    cmd=[sys.executable,str(RECOMMENDER),"--json"]
-    for p in purposes:cmd += ["--purpose",p]
     try:
-        r=subprocess.run(cmd,cwd=ROOT,capture_output=True,text=True,check=False,timeout=90);return json.loads(r.stdout)
-    except (OSError,subprocess.TimeoutExpired,json.JSONDecodeError):return {"status":"unavailable","recommendations":[]}
+        return shutil.disk_usage(ROOT).free
+    except OSError:
+        return None
+
+def catalog():
+    try:
+        return json.loads(CATALOG.read_text()).get("solutions", {})
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+def run_recommendation(purposes):
+    cmd = [sys.executable, str(RECOMMENDER), "--json"]
+    for purpose in purposes:
+        cmd += ["--purpose", purpose]
+    try:
+        result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, check=False, timeout=90)
+        return json.loads(result.stdout)
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+        return {"status": "unavailable", "recommendations": []}
+
 def model_cost(row):
-    raw=row.get("raw") if isinstance(row.get("raw"),dict) else {}
-    for k in ("size_bytes","disk_bytes","size","disk_size_bytes"):
-        v=raw.get(k)
-        if isinstance(v,int) and v>=0:return v
+    raw = row.get("raw") if isinstance(row.get("raw"), dict) else {}
+    for key in ("size_bytes", "disk_bytes", "size", "disk_size_bytes"):
+        value = raw.get(key)
+        if isinstance(value, int) and value >= 0:
+            return value
     return None
-def solution_keys(solution):return ["personal_assistant","soho"] if solution=="both" else [solution]
-def aggregate(models,solution):
-    total=0;known=True
-    for m in models:
-        v=model_cost(m)
-        if v is None:known=False
-        else:total+=v
-    for k in solution_keys(solution):
-        v=catalog().get(k,{}).get("disk_bytes")
-        if not isinstance(v,int):known=False
-        else:total+=v
+
+def solution_keys(solution):
+    return ["personal_assistant", "soho"] if solution == "both" else [solution]
+
+def aggregate(models, solution):
+    total = 0
+    known = True
+    for model in models:
+        value = model_cost(model)
+        if value is None:
+            known = False
+        else:
+            total += value
+    for key in solution_keys(solution):
+        value = catalog().get(key, {}).get("disk_bytes")
+        if not isinstance(value, int):
+            known = False
+        else:
+            total += value
     return total if known else None
-def add_box(s,y,x,h,w,title):
-    if h<3 or w<4:return
-    s.addstr(y,x,"+"+"-"*(w-2)+"+")
-    for r in range(y+1,y+h-1):s.addstr(r,x,"|");s.addstr(r,x+w-1,"|")
-    s.addstr(y+h-1,x,"+"+"-"*(w-2)+"+")
-    if len(title)+4<w:s.addstr(y,x+2,"[ "+title+" ]")
-def put(s,y,x,text,width):
-    if 0<=y<s.getmaxyx()[0]:
-        try:s.addstr(y,x,text[:max(0,width)])
-        except curses.error:pass
-def language_screen(s):
-    focus=0;langs=(("es","Español"),("en","English"),("zh","中文"))
+
+def add_box(screen, y, x, height, width, title):
+    if height < 3 or width < 4:
+        return
+    screen.addstr(y, x, "+" + "-" * (width - 2) + "+")
+    for row in range(y + 1, y + height - 1):
+        screen.addstr(row, x, "|")
+        screen.addstr(row, x + width - 1, "|")
+    screen.addstr(y + height - 1, x, "+" + "-" * (width - 2) + "+")
+    if len(title) + 4 < width:
+        screen.addstr(y, x + 2, "[ " + title + " ]")
+
+def put(screen, y, x, text, width):
+    if 0 <= y < screen.getmaxyx()[0]:
+        try:
+            screen.addstr(y, x, text[:max(0, width)])
+        except curses.error:
+            pass
+
+def language_screen(screen):
+    focus = 0
+    languages = (("es", "Español"), ("en", "English"), ("zh", "中文"))
     while True:
-        s.erase();h,w=s.getmaxyx();bw=min(70,max(40,w-4));x=max(1,(w-bw)//2);add_box(s,3,x,12,bw,"LEONES RC4")
-        put(s,5,x+4,tr(langs[focus][0],"select"),bw-8)
-        for i,(_,label) in enumerate(langs):put(s,8+i,x+8,(">" if i==focus else " ")+f" [{i+1}] {label}",bw-16)
-        put(s,12,x+4,tr(langs[focus][0],"keys"),bw-8);k=s.getch()
-        if k in (curses.KEY_UP,ord('k')):focus=(focus-1)%3
-        elif k in (curses.KEY_DOWN,ord('j')):focus=(focus+1)%3
-        elif k in (10,13,ord('1'),ord('2'),ord('3')):
-            if k in (ord('1'),ord('2'),ord('3')):focus=int(chr(k))-1
-            return langs[focus][0]
-        elif k in (ord('q'),ord('Q')):raise SystemExit(0)
-def machine_state_screen(s,language):
+        screen.erase(); h, w = screen.getmaxyx(); box_width = min(70, max(40, w - 4)); x = max(1, (w - box_width) // 2)
+        add_box(screen, 3, x, 12, box_width, "LEONES RC4")
+        put(screen, 5, x + 4, tr(languages[focus][0], "select"), box_width - 8)
+        for i, (_, label) in enumerate(languages):
+            put(screen, 8 + i, x + 8, (">" if i == focus else " ") + f" [{i + 1}] {label}", box_width - 16)
+        put(screen, 12, x + 4, tr(languages[focus][0], "keys"), box_width - 8)
+        screen.refresh(); key = screen.getch()
+        if key in (curses.KEY_UP, ord("k")): focus = (focus - 1) % 3
+        elif key in (curses.KEY_DOWN, ord("j")): focus = (focus + 1) % 3
+        elif key in (10, 13, ord("1"), ord("2"), ord("3")):
+            if key in (ord("1"), ord("2"), ord("3")): focus = int(chr(key)) - 1
+            return languages[focus][0]
+        elif key in (ord("q"), ord("Q")): raise SystemExit(0)
+
+def machine_state_screen(screen, language):
     while True:
-        s.erase();h,w=s.getmaxyx()
-        if h<25 or w<92:
-            put(s,1,2,tr(language,'small'),w-4);put(s,3,2,tr(language,'resize'),w-4);s.refresh();
-            if s.getch() in (ord('q'),ord('Q')):raise SystemExit(0)
+        screen.erase(); h, w = screen.getmaxyx()
+        if h < 25 or w < 92:
+            put(screen, 1, 2, tr(language, "small"), w - 4); put(screen, 3, 2, tr(language, "resize"), w - 4); screen.refresh()
+            if screen.getch() in (ord("q"), ord("Q")): raise SystemExit(0)
             continue
-        title={"es":"LEONES // ESTADO DE LA MÁQUINA","en":"LEONES // MACHINE STATE","zh":"LEONES // 机器状态"}[language];add_box(s,1,1,h-4,w-2,title);x=4
+        title = {"es":"LEONES // ESTADO DE LA MÁQUINA", "en":"LEONES // MACHINE STATE", "zh":"LEONES // 机器状态"}[language]
+        add_box(screen, 1, 1, h - 4, w - 2, title); x = 4
         try:
-            m={}
-            for line in Path('/proc/meminfo').read_text().splitlines():a,b=line.split(':',1);m[a]=int(b.split()[0])*1024
-            total=m['MemTotal'];free=m['MemAvailable'];used=total-free
-            put(s,3,x,"MEMORIA",w-8);put(s,4,x,f"TOTAL     {human_bytes(total)}",w-8);put(s,5,x,f"LIBRE     {human_bytes(free)}",w-8);put(s,6,x,f"EN USO    {human_bytes(used)} ({used*100//total}%)",w-8)
-        except (OSError,KeyError,ValueError,ZeroDivisionError):put(s,3,x,"MEMORIA   UNKNOWN",w-8)
+            mem = {}
+            for line in Path("/proc/meminfo").read_text().splitlines():
+                key, rest = line.split(":", 1); mem[key] = int(rest.split()[0]) * 1024
+            total = mem["MemTotal"]; available = mem["MemAvailable"]; used = total - available
+            put(screen, 3, x, f"{tr(language,'memory')} [{tr(language,'measured')}]", w - 8)
+            put(screen, 4, x, f"{tr(language,'total'):10} {human_bytes(total)} [{tr(language,'measured')}]", w - 8)
+            put(screen, 5, x, f"{tr(language,'available'):10} {human_bytes(available)} [{tr(language,'measured')}]", w - 8)
+            put(screen, 6, x, f"{tr(language,'used'):10} {human_bytes(used)} ({used*100//total}%) [{tr(language,'measured')}]", w - 8)
+        except (OSError, KeyError, ValueError, ZeroDivisionError):
+            put(screen, 3, x, f"{tr(language,'memory')} [{tr(language,'unknown')}]", w - 8)
         try:
-            load=os.getloadavg()[0];cores=os.cpu_count() or 1;put(s,8,x,f"CPU       carga 1m={load:.2f} · {load*100/cores:.1f}% lógico ({cores} CPUs)",w-8)
-        except OSError:put(s,8,x,"CPU       UNKNOWN",w-8)
+            load = os.getloadavg()[0]; cores = os.cpu_count() or 1
+            put(screen, 8, x, f"{tr(language,'cpu')} [{tr(language,'measured')}] {tr(language,'load')}={load:.2f} · {load*100/cores:.1f}% {tr(language,'logical')} ({cores} {tr(language,'cpus')})", w - 8)
+        except OSError:
+            put(screen, 8, x, f"{tr(language,'cpu')} [{tr(language,'unknown')}]", w - 8)
         try:
-            u=shutil.disk_usage(ROOT);put(s,10,x,f"DISCO     libre {human_bytes(u.free)} / total {human_bytes(u.total)}",w-8)
-        except OSError:put(s,10,x,"DISCO     UNKNOWN",w-8)
-        put(s,12,x,"TOP 5 PROCESOS · MEMORIA",w-8)
+            usage = shutil.disk_usage(ROOT)
+            put(screen, 10, x, f"{tr(language,'disk_state')} [{tr(language,'measured')}] {tr(language,'free')} {human_bytes(usage.free)} / {tr(language,'total').lower()} {human_bytes(usage.total)}", w - 8)
+        except OSError:
+            put(screen, 10, x, f"{tr(language,'disk_state')} [{tr(language,'unknown')}]", w - 8)
+        put(screen, 12, x, f"{tr(language,'top_mem')} [{tr(language,'measured')}]", w - 8)
         try:
-            out=subprocess.run(['ps','-eo','pid,%mem,rss,comm','--sort=-%mem'],capture_output=True,text=True,check=False,timeout=5).stdout.splitlines()[1:6]
-            for i,line in enumerate(out):put(s,13+i,x,line,w-8)
-        except (OSError,subprocess.TimeoutExpired):put(s,13,x,"UNKNOWN",w-8)
-        put(s,18,x,"TOP 5 PROCESOS · CPU",w-8)
+            lines = subprocess.run(["ps", "-eo", "pid,%mem,rss,comm", "--sort=-%mem"], capture_output=True, text=True, check=False, timeout=5).stdout.splitlines()[1:6]
+            for i, line in enumerate(lines): put(screen, 13 + i, x, line, w - 8)
+        except (OSError, subprocess.TimeoutExpired): put(screen, 13, x, tr(language, "unknown"), w - 8)
+        put(screen, 18, x, f"{tr(language,'top_cpu')} [{tr(language,'measured')}]", w - 8)
         try:
-            out=subprocess.run(['ps','-eo','pid,%cpu,%mem,comm','--sort=-%cpu'],capture_output=True,text=True,check=False,timeout=5).stdout.splitlines()[1:6]
-            for i,line in enumerate(out):put(s,19+i,x,line,w-8)
-        except (OSError,subprocess.TimeoutExpired):put(s,19,x,"UNKNOWN",w-8)
-        put(s,h-2,x,"[ENTER] continuar   [Q] salir",w-8);s.refresh();k=s.getch()
-        if k in (ord('q'),ord('Q')):raise SystemExit(0)
-        if k in (10,13):return
-def draw(s,phase,purposes,models,selected,solution,cursor,nav_focus,nav_index,language):
-    s.erase();h,w=s.getmaxyx()
-    if h<25 or w<92:put(s,1,2,tr(language,'small'),w-4);put(s,3,2,tr(language,'resize'),w-4);s.refresh();return
-    title="LEONES // AI OPERATING SYSTEM v4";put(s,0,max(2,(w-len(title))//2),title,len(title));left=28;rx=left+3;rw=w-rx-2;top=7;by=top+2;mh=h-by-2
-    add_box(s,1,1,h-3,left,tr(language,'nav')+(" <FOCUS>" if nav_focus else ""));nav=[tr(language,k) for k in ('dash','machine','intent','rec','evidence','legacy','settings','exit')]
-    put(s,3,4,("> " if nav_focus and nav_index==0 else "[X] ")+"LEONES RC4",left-6)
-    for i,n in enumerate(nav[:5]):put(s,4+i,6,("> " if nav_focus and nav_index==i+1 else "-> ")+n,left-8)
-    for i,n in ((6,nav[5]),(7,nav[6]),(8,nav[7])):put(s,10+(i-6)*2,4,("> " if nav_focus and nav_index==i else "[ ] ")+n,left-6)
-    add_box(s,1,rx,top,rw,"ESTADO DEL SISTEMA");add_box(s,by,rx,mh,rw,"ESPACIO DE TRABAJO RC4");x=rx+3;cw=rw-6
-    labels=("1 PROPÓSITOS","2 MODELOS","3 SOLUCIÓN","4 COSTES","5 CONFIRMACIÓN");put(s,by+2,x,"  ".join((">" if i==phase else " ")+v for i,v in enumerate(labels)),cw);row=by+4
-    if phase==0:
-        put(s,row,x,"Selecciona uno o varios propósitos:",cw);row+=2
-        for i,(k,n) in enumerate(PURPOSES):put(s,row+i,x,(">" if i==cursor and not nav_focus else " ")+f" [{'X' if k in purposes else ' '}] {n}",cw)
-        put(s,row+len(PURPOSES)+1,x,"↑/↓ mover · ESPACIO seleccionar · ENTER continuar",cw)
-    elif phase==1:
-        put(s,row,x,"MODELOS COMPATIBLES / RECOMENDADOS · SELECCIÓN MÚLTIPLE · SIN LÍMITE ARTIFICIAL",cw);row+=2
-        for i,m in enumerate(models):put(s,row+i,x,(">" if i==cursor and not nav_focus else " ")+f" [{'X' if i in selected else ' '}] {i+1:>2} {str(m.get('model_id','?'))[:44]} DISCO={human_bytes(model_cost(m))} ESTIMATED",cw)
-        put(s,row+max(8,len(models))+1,x,"↑/↓ mover · ESPACIO seleccionar · ENTER continuar · R recalcular · B volver",cw)
-    elif phase==2:
-        cat=catalog();key=solution;info=cat.get(key,{})
-        put(s,row,x,"SOLUCIÓN · ↑/↓ CAMBIA LA OPCIÓN Y ACTUALIZA SU FICHA",cw);row+=2
-        for i,(k,n) in enumerate(SOLUTIONS):put(s,row+i,x,("> " if k==solution else "  ")+n,cw)
-        row+=4
-        put(s,row,x,"FUNCIONALIDADES:",cw);row+=1
-        for f in info.get('functions',[]):put(s,row,x,"· "+f,cw);row+=1
-        put(s,row,x,"USO HABITUAL: "+str(info.get('usage_profile','UNKNOWN')),cw);row+=2
-        put(s,row,x,f"INSTALACIÓN: DISCO={human_bytes(info.get('disk_bytes'))} · RAM={human_bytes(info.get('ram_bytes'))} · CPU={info.get('cpu_load','UNKNOWN')} · VRAM={human_bytes(info.get('vram_bytes'))}",cw)
-        put(s,h-3,x,"↑/↓ elegir · ENTER continuar · B volver",cw)
-    elif phase==3:
-        required=aggregate([models[i] for i in sorted(selected)],solution);free=disk_free();status='UNKNOWN' if required is None or free is None else ('SUFICIENTE' if free>=required else 'INSUFICIENTE');put(s,row,x,"COSTE DE LA SELECCIÓN",cw);row+=2
-        for i in sorted(selected):put(s,row,x,f"{models[i].get('model_id','?')}: {human_bytes(model_cost(models[i]))} [ESTIMATED/UNKNOWN]",cw);row+=1
-        for k in solution_keys(solution):
-            info=catalog().get(k,{});put(s,row,x,f"{info.get('name',k)}: DISCO={human_bytes(info.get('disk_bytes'))} RAM={human_bytes(info.get('ram_bytes'))} CPU={info.get('cpu_load','UNKNOWN')} VRAM={human_bytes(info.get('vram_bytes'))}",cw);row+=1
-        put(s,row+1,x,f"TOTAL INSTALACIÓN={human_bytes(required)} · DISCO LIBRE={human_bytes(free)}",cw);put(s,row+2,x,f"GATE DISCO={status} · INSTALACIÓN AUTORIZADA=NO",cw);put(s,row+4,x,"UNKNOWN no pasa el gate · no instalación parcial por defecto · B volver · ENTER continuar",cw)
+            lines = subprocess.run(["ps", "-eo", "pid,%cpu,%mem,comm", "--sort=-%cpu"], capture_output=True, text=True, check=False, timeout=5).stdout.splitlines()[1:6]
+            for i, line in enumerate(lines): put(screen, 19 + i, x, line, w - 8)
+        except (OSError, subprocess.TimeoutExpired): put(screen, 19, x, tr(language, "unknown"), w - 8)
+        put(screen, h - 2, x, f"{tr(language,'continue')}   {tr(language,'quit')}", w - 8); screen.refresh(); key = screen.getch()
+        if key in (ord("q"), ord("Q")): raise SystemExit(0)
+        if key in (10, 13): return
+
+def draw(screen, phase, purposes, models, selected, solution, cursor, nav_focus, nav_index, language):
+    screen.erase(); h, w = screen.getmaxyx()
+    if h < 25 or w < 92:
+        put(screen, 1, 2, tr(language, "small"), w - 4); put(screen, 3, 2, tr(language, "resize"), w - 4); screen.refresh(); return
+    title = "LEONES // AI OPERATING SYSTEM v4"; put(screen, 0, max(2, (w-len(title))//2), title, len(title))
+    left = 28; rx = left + 3; rw = w - rx - 2; top = 7; by = top + 2; mh = h - by - 2
+    add_box(screen, 1, 1, h - 3, left, tr(language, "nav") + (" <" + tr(language,"focus") + ">" if nav_focus else ""))
+    nav = [tr(language, k) for k in ("dash", "machine", "intent", "rec", "evidence", "legacy", "settings", "exit")]
+    put(screen, 3, 4, ("> " if nav_focus and nav_index == 0 else "[X] ") + "LEONES RC4", left - 6)
+    for i, name in enumerate(nav[:5]): put(screen, 4+i, 6, ("> " if nav_focus and nav_index == i+1 else "-> ") + name, left - 8)
+    for i, name in ((6, nav[5]), (7, nav[6]), (8, nav[7])): put(screen, 10+(i-6)*2, 4, ("> " if nav_focus and nav_index == i else "[ ] ") + name, left - 6)
+    add_box(screen, 1, rx, top, rw, tr(language, "system")); add_box(screen, by, rx, mh, rw, tr(language, "workspace")); x = rx + 3; cw = rw - 6
+    labels = (tr(language,"purpose_title"), tr(language,"models_title"), tr(language,"solution_title"), tr(language,"cost_title"), tr(language,"confirm_title"))
+    put(screen, by+2, x, "  ".join((">" if i == phase else " ") + f"{i+1} {v}" for i, v in enumerate(labels)), cw); row = by + 4
+    if phase == 0:
+        put(screen, row, x, tr(language,"purpose_prompt"), cw); row += 2
+        for i, (key, name) in enumerate(PURPOSES): put(screen, row+i, x, (">" if i == cursor and not nav_focus else " ") + f" [{'X' if key in purposes else ' '}] {name}", cw)
+        put(screen, row+len(PURPOSES)+1, x, f"{tr(language,'move')} · {tr(language,'space')} · {tr(language,'continue')}", cw)
+    elif phase == 1:
+        put(screen, row, x, tr(language,"models_prompt"), cw); row += 2
+        for i, model in enumerate(models):
+            state = tr(language,"declared") if model_cost(model) is not None else tr(language,"unknown")
+            put(screen, row+i, x, (">" if i == cursor and not nav_focus else " ") + f" [{'X' if i in selected else ' '}] {i+1:>2} {str(model.get('model_id','?'))[:44]} {tr(language,'disk')}={human_bytes(model_cost(model))} [{state}]", cw)
+        put(screen, row+max(8,len(models))+1, x, f"{tr(language,'move')} · {tr(language,'space')} · {tr(language,'continue')} · {tr(language,'recalc')} · {tr(language,'back')}", cw)
+    elif phase == 2:
+        info = catalog().get(solution, {})
+        put(screen, row, x, f"{tr(language,'solution_title')} · {tr(language,'solution_prompt')}", cw); row += 2
+        for key, name in SOLUTIONS: put(screen, row, x, ("> " if key == solution else "  ") + (tr(language,"both") if key == "both" else name), cw); row += 1
+        row += 1; put(screen, row, x, tr(language,"solution_desc"), cw); row += 1; put(screen, row, x, str(info.get("description", tr(language,"unknown"))), cw); row += 2
+        put(screen, row, x, tr(language,"components"), cw); row += 1; put(screen, row, x, ", ".join(info.get("components", [])) or tr(language,"unknown"), cw); row += 2
+        put(screen, row, x, tr(language,"functions"), cw); row += 1
+        for function in info.get("functions", []): put(screen, row, x, "· " + function, cw); row += 1
+        put(screen, row, x, tr(language,"usage") + " " + str(info.get("usage_profile", tr(language,"unknown"))), cw); row += 2
+        put(screen, row, x, f"{tr(language,'install')} {tr(language,'disk')}={human_bytes(info.get('disk_bytes'))} [{tr(language,'declared') if isinstance(info.get('disk_bytes'),int) else tr(language,'unknown')}] · {tr(language,'ram')}={human_bytes(info.get('ram_bytes'))} [{tr(language,'declared') if isinstance(info.get('ram_bytes'),int) else tr(language,'unknown')}] · {tr(language,'cpu')}={info.get('cpu_load',tr(language,'unknown'))} · {tr(language,'vram')}={human_bytes(info.get('vram_bytes'))}", cw)
+        put(screen, h-3, x, f"{tr(language,'choose')} · {tr(language,'continue')} · {tr(language,'back')}", cw)
+    elif phase == 3:
+        required = aggregate([models[i] for i in sorted(selected)], solution); free = disk_free(); status = tr(language,"unknown") if required is None or free is None else (tr(language,"sufficient") if free >= required else tr(language,"insufficient"))
+        put(screen, row, x, tr(language,"cost_title"), cw); row += 2
+        for i in sorted(selected):
+            value = model_cost(models[i]); state = tr(language,"declared") if value is not None else tr(language,"unknown"); put(screen, row, x, f"{models[i].get('model_id','?')}: {human_bytes(value)} [{state}]", cw); row += 1
+        for key in solution_keys(solution):
+            info = catalog().get(key, {}); put(screen, row, x, f"{info.get('name',key)}: {tr(language,'disk')}={human_bytes(info.get('disk_bytes'))} · {tr(language,'ram')}={human_bytes(info.get('ram_bytes'))} · {tr(language,'cpu')}={info.get('cpu_load',tr(language,'unknown'))} · {tr(language,'vram')}={human_bytes(info.get('vram_bytes'))}", cw); row += 1
+        put(screen, row+1, x, f"{tr(language,'required')}={human_bytes(required)} · {tr(language,'free')}={human_bytes(free)} · {status} [{tr(language,'measured') if free is not None else tr(language,'unknown')} {tr(language,'gate')}]")
+        put(screen, row+2, x, tr(language,"authorized"), cw); put(screen, row+4, x, f"{tr(language,'unknown_gate')} · {tr(language,'back')} · {tr(language,'continue')}", cw)
     else:
-        required=aggregate([models[i] for i in sorted(selected)],solution);free=disk_free();status='SUFICIENTE' if required is not None and free is not None and free>=required else ('UNKNOWN' if required is None or free is None else 'INSUFICIENTE');put(s,row,x,"CONFIRMACIÓN EXPLÍCITA",cw);row+=2
-        for line in (f"Propósitos: {', '.join(purposes)}",f"Modelos: {len(selected)} seleccionado(s), sin límite artificial",f"Solución: {solution.upper()}",f"Disco: {status} · requerido={human_bytes(required)} · libre={human_bytes(free)}"):
-            put(s,row,x,line,cw);row+=1
-        put(s,row+2,x,"ENTER = registrar consentimiento · NO ejecuta instalación en esta capa",cw);put(s,row+4,x,"B volver · Q salir",cw)
-    put(s,h-2,3,"TAB navegación · ↑/↓ mover · ENTER abrir/continuar · B volver · Q salir",w-6);s.refresh()
+        required = aggregate([models[i] for i in sorted(selected)], solution); free = disk_free(); status = tr(language,"sufficient") if required is not None and free is not None and free >= required else (tr(language,"unknown") if required is None or free is None else tr(language,"insufficient"))
+        put(screen, row, x, tr(language,"confirm_title"), cw); row += 2
+        for line in (tr(language,"purposes",v=", ".join(purposes)), tr(language,"models_count",n=len(selected)), tr(language,"solution",v=tr(language,"both") if solution=="both" else solution.upper()), f"{tr(language,'disk')}: {status} · {tr(language,'required')}={human_bytes(required)} · {tr(language,'free')}={human_bytes(free)}"):
+            put(screen, row, x, line, cw); row += 1
+        put(screen, row+2, x, f"{tr(language,'consent')} · {tr(language,'no_install')}", cw); put(screen, row+4, x, f"{tr(language,'back')} · {tr(language,'quit')}", cw)
+    put(screen, h-2, 3, f"{tr(language,'tab')} · {tr(language,'move')} · {tr(language,'open')} · {tr(language,'back')} · {tr(language,'quit')}", w-6); screen.refresh()
+
 def main():
-    def app(s):
-        curses.curs_set(0);s.keypad(True);language=language_screen(s);machine_state_screen(s,language);phase=0;purposes=[];models=[];selected=set();solution='personal_assistant';cursor=0;nav_focus=False;nav_index=0
+    def app(screen):
+        curses.curs_set(0); screen.keypad(True)
+        language = language_screen(screen); machine_state_screen(screen, language)
+        phase = 0; purposes = []; models = []; selected = set(); solution = "personal_assistant"; cursor = 0; nav_focus = False; nav_index = 0
         while True:
-            draw(s,phase,purposes,models,selected,solution,cursor,nav_focus,nav_index,language);k=s.getch()
-            if k in (ord('q'),ord('Q')):return
-            if k==9:nav_focus=not nav_focus;continue
+            draw(screen, phase, purposes, models, selected, solution, cursor, nav_focus, nav_index, language); key = screen.getch()
+            if key in (ord("q"), ord("Q")): return
+            if key == 9: nav_focus = not nav_focus; continue
             if nav_focus:
-                if k in (curses.KEY_UP,ord('k')):nav_index=(nav_index-1)%9
-                elif k in (curses.KEY_DOWN,ord('j')):nav_index=(nav_index+1)%9
-                elif k in (10,13):
-                    if nav_index==8:return
-                    if nav_index==1:machine_state_screen(s,language)
-                    nav_focus=False
+                if key in (curses.KEY_UP, ord("k")): nav_index = (nav_index - 1) % 9
+                elif key in (curses.KEY_DOWN, ord("j")): nav_index = (nav_index + 1) % 9
+                elif key in (10, 13):
+                    if nav_index == 8: return
+                    if nav_index == 1: machine_state_screen(screen, language)
+                    nav_focus = False
                 continue
-            if phase==0:
-                if k in (curses.KEY_UP,ord('k')):cursor=(cursor-1)%len(PURPOSES)
-                elif k in (curses.KEY_DOWN,ord('j')):cursor=(cursor+1)%len(PURPOSES)
-                elif k==ord(' '):p=PURPOSES[cursor][0];purposes.remove(p) if p in purposes else purposes.append(p)
-                elif k in (10,13) and purposes:models=run_recommendation(purposes).get('recommendations') or [];selected=set();cursor=0;phase=1
-            elif phase==1:
-                if models and k in (curses.KEY_UP,ord('k')):cursor=(cursor-1)%len(models)
-                elif models and k in (curses.KEY_DOWN,ord('j')):cursor=(cursor+1)%len(models)
-                elif models and k==ord(' '):selected.remove(cursor) if cursor in selected else selected.add(cursor)
-                elif k in (ord('r'),ord('R')):models=run_recommendation(purposes).get('recommendations') or [];selected=set();cursor=0
-                elif k in (10,13) and selected:phase=2;cursor=0
-                elif k in (ord('b'),ord('B')):phase=0;cursor=0
-            elif phase==2:
-                if k in (curses.KEY_UP,ord('k'),curses.KEY_DOWN,ord('j')):
-                    i=[a for a,_ in SOLUTIONS].index(solution);solution=SOLUTIONS[(i+(1 if k in (curses.KEY_DOWN,ord('j')) else -1))%3][0]
-                elif k in (10,13):phase=3
-                elif k in (ord('b'),ord('B')):phase=1
-            elif phase==3:
-                if k in (ord('b'),ord('B')):phase=2
-                elif k in (10,13):phase=4
-            elif k in (ord('b'),ord('B')):phase=3
+            if phase == 0:
+                if key in (curses.KEY_UP, ord("k")): cursor = (cursor - 1) % len(PURPOSES)
+                elif key in (curses.KEY_DOWN, ord("j")): cursor = (cursor + 1) % len(PURPOSES)
+                elif key == ord(" "): purpose = PURPOSES[cursor][0]; purposes.remove(purpose) if purpose in purposes else purposes.append(purpose)
+                elif key in (10, 13) and purposes: models = run_recommendation(purposes).get("recommendations") or []; selected = set(); cursor = 0; phase = 1
+            elif phase == 1:
+                if models and key in (curses.KEY_UP, ord("k")): cursor = (cursor - 1) % len(models)
+                elif models and key in (curses.KEY_DOWN, ord("j")): cursor = (cursor + 1) % len(models)
+                elif models and key == ord(" "): selected.remove(cursor) if cursor in selected else selected.add(cursor)
+                elif key in (ord("r"), ord("R")): models = run_recommendation(purposes).get("recommendations") or []; selected = set(); cursor = 0
+                elif key in (10, 13) and selected: phase = 2; cursor = 0
+                elif key in (ord("b"), ord("B")): phase = 0; cursor = 0
+            elif phase == 2:
+                if key in (curses.KEY_UP, ord("k"), curses.KEY_DOWN, ord("j")):
+                    index = [a for a, _ in SOLUTIONS].index(solution); solution = SOLUTIONS[(index + (1 if key in (curses.KEY_DOWN, ord("j")) else -1)) % 3][0]
+                elif key in (10, 13): phase = 3
+                elif key in (ord("b"), ord("B")): phase = 1
+            elif phase == 3:
+                if key in (ord("b"), ord("B")): phase = 2
+                elif key in (10, 13): phase = 4
+            elif key in (ord("b"), ord("B")): phase = 3
     curses.wrapper(app)
-if __name__=='__main__':raise SystemExit(main())
+
+if __name__ == "__main__": raise SystemExit(main())
