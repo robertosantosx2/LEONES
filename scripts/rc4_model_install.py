@@ -31,14 +31,34 @@ def classify_failure(output: str) -> str:
     return "DOWNLOAD_FAILED"
 
 
-def parse_size(text: str) -> int | None:
-    match = re.search(r"totalling\s+([0-9]+(?:\.[0-9]+)?)\s*([KMGT]?)(?:i?B)?", text, re.I)
-    if not match:
-        return None
-    value = float(match.group(1))
-    unit = match.group(2).upper()
+def size_to_bytes(value: str, unit: str) -> int:
     multipliers = {"": 1, "K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
-    return int(value * multipliers[unit])
+    return int(float(value) * multipliers[unit.upper()])
+
+
+def parse_size(text: str) -> int | None:
+    """Return the total final local size from the HF dry-run file table."""
+    total = 0
+    in_table = False
+    found = False
+    for raw in text.splitlines():
+        line = raw.strip()
+        if line.startswith("File") and "Bytes to download" in line:
+            in_table = True
+            continue
+        if not in_table or not line or line.startswith("-"):
+            continue
+        match = re.search(r"\s([0-9]+(?:\.[0-9]+)?)\s*([KMGT]?)i?B?\s*$", line, re.I)
+        if match:
+            total += size_to_bytes(match.group(1), match.group(2))
+            found = True
+    if found:
+        return total
+
+    match = re.search(r"totalling\s+([0-9]+(?:\.[0-9]+)?)\s*([KMGT]?)(?:i?B)?", text, re.I)
+    if match:
+        return size_to_bytes(match.group(1), match.group(2))
+    return None
 
 
 def download_plan(model_id: str) -> tuple[int | None, str]:
@@ -52,8 +72,8 @@ def download_plan(model_id: str) -> tuple[int | None, str]:
     return parse_size(output), output
 
 
-def run_download(command: list[str]) -> tuple[int, str]:
-    """Run hf while forwarding output and emitting a periodic heartbeat."""
+def run_download(command: list[str], target: Path, total_bytes: int | None) -> tuple[int, str]:
+    """Run hf while forwarding output and emitting live progress telemetry."""
     process = subprocess.Popen(
         command,
         cwd=ROOT,
@@ -64,13 +84,29 @@ def run_download(command: list[str]) -> tuple[int, str]:
     )
     output: list[str] = []
     started = time.monotonic()
+    last_bytes = directory_bytes(target)
+    last_time = started
     next_heartbeat = started + 1.0
 
     while True:
         now = time.monotonic()
         if now >= next_heartbeat and process.poll() is None:
-            elapsed = int(now - started)
-            print(f"HEARTBEAT=active ELAPSED={elapsed}s", flush=True)
+            current = directory_bytes(target)
+            elapsed = max(now - started, 0.001)
+            delta = max(0, current - last_bytes)
+            interval = max(now - last_time, 0.001)
+            rate = delta / interval
+            if total_bytes:
+                percent = min(100.0, current * 100.0 / total_bytes)
+                print(
+                    f"PROGRESS={percent:5.1f}% DOWNLOADED={current} TOTAL={total_bytes} RATE={rate:.1f}B/s",
+                    flush=True,
+                )
+            else:
+                print(f"PROGRESS=unknown DOWNLOADED={current} RATE={rate:.1f}B/s", flush=True)
+            print(f"HEARTBEAT=active ELAPSED={int(elapsed)}s", flush=True)
+            last_bytes = current
+            last_time = now
             next_heartbeat = now + 1.0
 
         line = None
@@ -93,6 +129,22 @@ def run_download(command: list[str]) -> tuple[int, str]:
             print(remainder, end="", flush=True)
 
     return process.wait(), "".join(output)
+
+
+def directory_bytes(path: Path) -> int:
+    total = 0
+    if not path.exists():
+        return 0
+    try:
+        for item in path.rglob("*"):
+            if item.is_file():
+                try:
+                    total += item.stat().st_size
+                except OSError:
+                    pass
+    except OSError:
+        pass
+    return total
 
 
 def install(model_id: str, output_dir: Path) -> int:
@@ -125,18 +177,17 @@ def install(model_id: str, output_dir: Path) -> int:
         print(f"TOTAL_BYTES={total_bytes}", flush=True)
     else:
         print("TOTAL_BYTES=unknown", flush=True)
-    if plan_output and "access denied" in plan_output.lower() and "requires approval" in plan_output.lower():
-        print("PLAN_STATUS=REQUIRES_APPROVAL_HF", flush=True)
     print("PHASE=downloading", flush=True)
 
     command = ["hf", "download", model_id, "--local-dir", str(target)]
-    returncode, combined = run_download(command)
+    returncode, combined = run_download(command, target, total_bytes)
 
     if returncode == 0:
         marker.write_text(json.dumps({
             "schema": "leones.installed-model.v1",
             "model_id": model_id,
         }, indent=2) + "\n", encoding="utf-8")
+        print("PROGRESS=100.0%", flush=True)
         print("PHASE=completed", flush=True)
         print("STATUS=installed", flush=True)
     else:
