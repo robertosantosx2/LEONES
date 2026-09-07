@@ -3,35 +3,63 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="LEONES RC4: sonda física, FitLLM recomendador opcional, Magnitude/ODS, Leo suite y evidencia.">
+  <meta name="description" content="LEONES RC4: TUI, estado de máquina, intención obligatoria, evidencia externa y recomendación ESTIMATED antes de la medición física.">
   <title>LEONES · Empezar diagnóstico</title>
-  <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-1">
-  <link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-1">
+  <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-07-2">
+  <link rel="stylesheet" href="assets/css/site.css?v=2026-09-07-2">
 </head>
 <body>
 <header class="site-hero">
   <div class="site-hero__inner">
     <span class="site-tag">LEONES RC4</span>
-    <h1>Del discovery a la evidencia</h1>
-    <p>Sonda física canónica <code>hardware_profile.py</code>. FitLLM puede recomendar modelos (ESTIMATED, opcional). Magnitude u ODS se eligen con consentimiento. Hermes/OMH son opcionales y no seleccionan modelo.</p>
+    <h1>Del estado de tu máquina a una recomendación trazable</h1>
+    <p>La TUI empieza por idioma, muestra el Estado de la máquina y pide para qué quieres usar la IA antes de recomendar. La recomendación es ESTIMATED; la medición física es una etapa posterior.</p>
   </div>
 </header>
 <main class="site-main" id="main">
 <section class="site-section">
   <h2>Recorrido operativo RC4</h2>
-  <pre class="site-stack">SONDA → CANDIDATOS → FitLLM? → ELECCIÓN → MAGNITUDE|ODS
-        → CONSENTIR → [opt-in quitar FitLLM] → VERIFICAR → Leo* → EVIDENCIA</pre>
+  <pre class="site-stack">IDIOMA
+   ↓
+ESTADO DE LA MÁQUINA
+   ↓
+USER_INTENT[] · múltiple · obligatorio
+   ↓
+HARDWARE + PREFLIGHT
+   ↓
+HF + ARTIFICIAL ANALYSIS → ≤100
+   ↓
+LLMFit opcional → catálogo ≤100
+   ↓
+INTERSECCIÓN → hasta 3 ESTIMATED | insufficient
+   ↓
+ELECCIÓN HUMANA → STACK / RUNTIME
+   ↓
+VERIFICACIÓN FÍSICA UBUNTU
+   ↓
+AUTORIZACIÓN → MEDICIÓN → MEASURED</pre>
   <div class="site-grid">
-    <article class="site-card"><h3>ESTIMATED</h3><p>FitLLM y rankings externos. No son medición local.</p></article>
-    <article class="site-card"><h3>MEASURED</h3><p>Solo tras ejecución real bajo LEONES.</p></article>
-    <article class="site-card"><h3>CONSENT</h3><p>Instalar ≠ verificar ≠ autorizar benchmark.</p></article>
+    <article class="site-card"><h3>ESTIMATED</h3><p>Recomendación basada en catálogo y evidencia externa. No es rendimiento medido localmente.</p></article>
+    <article class="site-card"><h3>OBSERVED</h3><p>Dato observado en el host: hardware, recursos o componentes instalados/detectados.</p></article>
+    <article class="site-card"><h3>MEASURED</h3><p>Solo tras ejecución física protocolizada y autorizada.</p></article>
+    <article class="site-card"><h3>CONSENT</h3><p>Recomendar ≠ elegir ≠ instalar ≠ verificar ≠ autorizar ejecución ≠ medir.</p></article>
   </div>
   <p><a class="app-button" href="rc4.html">Estado RC4 →</a></p>
-  <p><a class="app-button app-button--secondary" href="rc3.html">RC3 cerrada →</a></p>
+  <p><a class="app-button app-button--secondary" href="estado.html">Estado del proyecto →</a></p>
   <p><a class="app-button app-button--secondary" href="../docs/RC4-ARCHITECTURE.md">Arquitectura RC4 →</a></p>
+</section>
+<section class="site-section">
+  <h2>Qué ocurre en la TUI</h2>
+  <ul>
+    <li>Idioma primero: ES / EN / ZH en la implementación actual.</li>
+    <li>Después, Estado de la máquina: CPU, GPU, RAM, disco y componentes IA detectados.</li>
+    <li>Selección múltiple de propósitos antes de la recomendación.</li>
+    <li>Foco visible y navegación con TAB, flechas, ESPACIO y ENTER.</li>
+    <li>La interfaz presenta el flujo; no convierte una recomendación en ejecución.</li>
+  </ul>
 </section>
 </main>
 <footer class="site-footer"><div>LEONES · IA local con criterio</div><div>RC4 · 2026</div></footer>
-<script src="assets/js/navigation.js?v=2026-09-06-1" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-07-2" defer></script>
 </body>
 </html>
