@@ -25,7 +25,7 @@ def classify_failure(output: str) -> str:
     text = output.lower()
     if "requires approval" in text or "access denied" in text or "gated" in text:
         return "REQUIRES_APPROVAL_HF"
-    if "authentication" in text or "not authenticated" in text or "401" in text or "token" in text and "permission" in text:
+    if "authentication" in text or "not authenticated" in text or "401" in text or ("token" in text and "permission" in text):
         return "REQUIRES_AUTH_HF"
     return "DOWNLOAD_FAILED"
 
@@ -87,4 +87,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(argv))
+    raise SystemExit(main())
