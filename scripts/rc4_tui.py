@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""LEONES RC4 retro TUI with visible install/uninstall activity."""
+"""LEONES RC4 TUI.
+
+Flow: language -> machine state -> mandatory multi-select intent ->
+FitLLM/LLMFit + HF + Artificial Analysis recommendation.
+The recommendation remains ESTIMATED and never authorizes execution.
+"""
 from __future__ import annotations
 
 import curses
@@ -8,110 +13,232 @@ import os
 import shutil
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-REC = ROOT / "scripts" / "rc4_fitllm_recommend.py"
-INV = ROOT / "scripts" / "rc4_component_inventory.py"
-INS = ROOT / "install.sh"
-UN = ROOT / "scripts" / "uninstall.sh"
-
-# Make the repository root importable when this file is launched directly
-# (``python3 scripts/rc4_tui.py``), not only as a module from the repo root.
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from runtime_selection.operation_progress import OperationPhase, OperationProgress, terminal_progress
-
+RECOMMENDER = ROOT / "scripts" / "rc4_fitllm_recommend.py"
+INVENTORY = ROOT / "scripts" / "rc4_component_inventory.py"
 PURPOSES = (("programming", "PROGRAMMING"), ("reasoning", "REASONING"), ("research", "RESEARCH"), ("chat", "CHAT"), ("multimodal", "MULTIMODAL"), ("embedding", "EMBEDDING"), ("general", "GENERAL"))
 
 
-def inv() -> dict:
+def memory_stats():
     try:
-        return json.loads(subprocess.run([sys.executable, str(INV), "--json"], cwd=ROOT, capture_output=True, text=True, timeout=20).stdout)
+        values = {}
+        for line in Path("/proc/meminfo").read_text().splitlines():
+            key, value = line.split(":", 1)
+            values[key] = int(value.split()[0]) * 1024
+        total, available = values["MemTotal"], values["MemAvailable"]
+        used = total - available
+        return used, total, round(used * 100 / total)
     except Exception:
-        return {"components": [], "uninstall_offers": []}
+        return 0, 0, 0
 
 
-def comp(inventory: dict, key: str) -> dict:
-    return next((x for x in inventory.get("components", []) if x.get("component_id") == key), {})
-
-
-def pctmem() -> int:
+def cpu_percent():
     try:
-        data = {x.split(":", 1)[0]: int(x.split()[1]) for x in Path("/proc/meminfo").read_text().splitlines()}
-        return round((data["MemTotal"] - data["MemAvailable"]) * 100 / data["MemTotal"])
-    except Exception:
+        return min(100, round(os.getloadavg()[0] * 100 / (os.cpu_count() or 1)))
+    except OSError:
         return 0
 
 
-def pctcpu() -> int:
+def disk_stats():
     try:
-        a = Path("/proc/stat").read_text().splitlines()[0].split()[1:]
-        u1, n1, s1, i1 = map(int, a[:4])
-        time.sleep(0.08)
-        b = Path("/proc/stat").read_text().splitlines()[0].split()[1:]
-        u2, n2, s2, i2 = map(int, b[:4])
-        total = (u2 + n2 + s2 + i2) - (u1 + n1 + s1 + i1)
-        idle = i2 - i1
-        return round((total - idle) * 100 / total) if total else 0
+        u = shutil.disk_usage(ROOT)
+        return u.used, u.total, round(u.used * 100 / u.total)
+    except OSError:
+        return 0, 0, 0
+
+
+def human_bytes(value):
+    size = float(value)
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if size < 1024 or unit == "TB":
+            return f"{size:.1f} {unit}"
+        size /= 1024
+    return f"{value} B"
+
+
+def hardware():
+    cpu = "desconocido"
+    try:
+        for line in Path("/proc/cpuinfo").read_text().splitlines():
+            if line.lower().startswith("model name"):
+                cpu = line.split(":", 1)[1].strip()
+                break
+    except OSError:
+        pass
+    gpu = "no detectada"
+    if shutil.which("nvidia-smi"):
+        try:
+            p = subprocess.run(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"], capture_output=True, text=True, timeout=5, check=False)
+            if p.returncode == 0 and p.stdout.strip():
+                gpu = p.stdout.strip().replace("\n", "; ")
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+    return cpu, os.cpu_count() or 1, gpu
+
+
+def inventory():
+    try:
+        p = subprocess.run([sys.executable, str(INVENTORY), "--json"], cwd=ROOT, capture_output=True, text=True, timeout=20, check=False)
+        return json.loads(p.stdout)
     except Exception:
-        return 0
+        return {"components": []}
 
 
-def _run_operation(stdscr, argv: list[str], operation: str, phase: OperationPhase) -> int:
-    """Run an install/uninstall command while keeping the TUI visibly active."""
-    proc = subprocess.Popen(argv, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    lines: list[str] = []
+def agents():
+    names = []
+    for directory in (ROOT / "agents", ROOT / ".leones" / "agents"):
+        if directory.is_dir():
+            for child in sorted(directory.iterdir()):
+                if not child.name.startswith(".") and (child.is_dir() or child.suffix in {".py", ".sh", ".json", ".yaml", ".yml"}):
+                    names.append(child.stem if child.is_file() else child.name)
+    return list(dict.fromkeys(names))
+
+
+def box(stdscr, y, x, h, w, title):
+    if h < 3 or w < 4:
+        return
+    stdscr.addstr(y, x, "+" + "-" * (w - 2) + "+")
+    for row in range(y + 1, y + h - 1):
+        stdscr.addstr(row, x, "|")
+        stdscr.addstr(row, x + w - 1, "|")
+    stdscr.addstr(y + h - 1, x, "+" + "-" * (w - 2) + "+")
+    label = f"[ {title} ]"
+    if len(label) < w - 4:
+        stdscr.addstr(y, x + 2, label)
+
+
+def put(stdscr, y, x, text, width):
+    if width <= 0 or y < 0 or y >= stdscr.getmaxyx()[0]:
+        return
+    try:
+        stdscr.addnstr(y, x, str(text), width)
+    except curses.error:
+        pass
+
+
+def language_screen(stdscr):
+    languages = (("es", "Español"), ("en", "English"))
+    focus = 0
     while True:
-        rc = proc.poll()
-        if proc.stdout is not None:
-            line = proc.stdout.readline()
-            if line:
-                lines.append(line.rstrip())
-                lines = lines[-5:]
-        progress = OperationProgress(operation=operation, phase=phase, detail=lines[-1] if lines else None)
-        stdscr.erase()
-        stdscr.addstr(0, 0, "LEONES RC4 — OPERACIÓN")
-        stdscr.addstr(2, 0, progress.render())
-        for i, line in enumerate(lines, 4):
-            stdscr.addnstr(i, 0, line, max(1, curses.COLS - 1))
-        stdscr.refresh()
-        if rc is not None:
-            break
-        time.sleep(0.08)
-    result = terminal_progress(operation, success=(rc == 0))
-    stdscr.addstr(11, 0, result.render())
-    stdscr.refresh()
-    time.sleep(0.8)
-    return rc
+        stdscr.erase(); h, w = stdscr.getmaxyx()
+        bw = min(64, max(40, w - 4)); x = max(1, (w - bw) // 2)
+        box(stdscr, 3, x, 11, bw, "LEONES RC4")
+        put(stdscr, 5, x + 4, "SELECCIONA IDIOMA" if focus == 0 else "SELECT LANGUAGE", bw - 8)
+        for i, (_, label) in enumerate(languages):
+            put(stdscr, 8 + i, x + 8, f"{'>' if i == focus else ' '} [{i + 1}] {label}", bw - 16)
+        put(stdscr, 12, x + 4, "↑/↓ · ENTER", bw - 8)
+        key = stdscr.getch()
+        if key in (curses.KEY_UP, ord("k")): focus = (focus - 1) % len(languages)
+        elif key in (curses.KEY_DOWN, ord("j")): focus = (focus + 1) % len(languages)
+        elif key in (10, 13, ord("1"), ord("2")):
+            if key in (ord("1"), ord("2")): focus = int(chr(key)) - 1
+            return languages[focus][0]
+        elif key in (27, ord("q"), ord("Q")):
+            raise SystemExit(0)
 
 
-def main() -> int:
-    if not sys.stdin.isatty() or not sys.stdout.isatty():
-        print("LEONES RC4 TUI requiere un terminal interactivo")
-        return 2
+def machine_state(stdscr, language):
+    while True:
+        inv = inventory(); used, total, mp = memory_stats(); du, dt, dp = disk_stats(); cpu, cores, gpu = hardware(); names = agents()
+        stdscr.erase(); h, w = stdscr.getmaxyx()
+        if h < 25 or w < 92:
+            put(stdscr, 1, 2, "LEONES RC4 — terminal demasiado pequeña (mín. 92x25)", w - 4); put(stdscr, 3, 2, "Redimensiona la ventana. Q: salir", w - 4); stdscr.refresh()
+            if stdscr.getch() in (ord("q"), ord("Q"), 27): raise SystemExit(0)
+            continue
+        title = "LEONES // ESTADO DE LA MÁQUINA" if language == "es" else "LEONES // MACHINE STATE"
+        box_title = "ESTADO DE LA MÁQUINA" if language == "es" else "MACHINE STATE"
+        put(stdscr, 0, max(2, (w - len(title)) // 2), title, len(title)); box(stdscr, 1, 1, h - 4, w - 2, box_title)
+        x = 4
+        put(stdscr, 3, x, "HARDWARE", w - 8)
+        put(stdscr, 4, x, f"CPU     {cpu} ({cores} logical CPUs)", w - 8)
+        put(stdscr, 5, x, f"GPU     {gpu}", w - 8)
+        put(stdscr, 7, x, "RECURSOS EN USO", w - 8)
+        put(stdscr, 8, x, f"RAM     {human_bytes(used)} / {human_bytes(total)}   [{mp:>3}%]", w - 8)
+        put(stdscr, 9, x, f"CPU     {cpu_percent():>3}%", w - 8)
+        put(stdscr, 10, x, f"DISCO   {human_bytes(du)} / {human_bytes(dt)}   [{dp:>3}%]", w - 8)
+        put(stdscr, 12, x, "SOFTWARE IA INSTALADO", w - 8)
+        row = 13
+        for c in inv.get("components", []):
+            if c.get("installed"):
+                detail = " :: " + ", ".join(c.get("models", [])) if c.get("models") else ""
+                put(stdscr, row, x, f"● {c.get('display_name', c.get('component_id', '?'))}{detail}", w - 8); row += 1
+        put(stdscr, row, x, f"● Agentes ({len(names)}) :: {', '.join(names) if names else 'ninguno detectado'}", w - 8); row += 2
+        put(stdscr, row, x, "[ENTER] continuar   [Q] salir", w - 8)
+        stdscr.refresh(); key = stdscr.getch()
+        if key in (10, 13): return
+        if key in (27, ord("q"), ord("Q")): raise SystemExit(0)
 
-    def ui(stdscr):
-        curses.curs_set(0)
-        stdscr.clear()
-        stdscr.addstr(0, 0, "LEONES RC4")
-        stdscr.addstr(2, 0, "Estado de la máquina")
-        stdscr.addstr(4, 0, f"RAM ocupada: {pctmem()}%")
-        stdscr.addstr(5, 0, f"CPU:          {pctcpu()}%")
-        stdscr.addstr(7, 0, "ESC / q: salir")
-        stdscr.refresh()
+
+def recommend(purposes):
+    command = [sys.executable, str(RECOMMENDER), "--json"]
+    for purpose in purposes: command += ["--purpose", purpose]
+    try:
+        p = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=120, check=False)
+        data = json.loads(p.stdout)
+        return data.get("status", "error"), data
+    except Exception as exc:
+        return "error", {"message": str(exc)}
+
+
+def intent_screen(stdscr, language):
+    selected = set(); focus = 0
+    while True:
+        stdscr.erase(); h, w = stdscr.getmaxyx()
+        if h < 25 or w < 92:
+            put(stdscr, 1, 2, "LEONES RC4 — terminal demasiado pequeña (mín. 92x25)", w - 4); stdscr.refresh()
+            if stdscr.getch() in (ord("q"), ord("Q"), 27): raise SystemExit(0)
+            continue
+        title = "LEONES // INTENCIÓN DE USO" if language == "es" else "LEONES // USER INTENT"
+        help_text = "Selecciona uno o varios propósitos. ENTER recomienda." if language == "es" else "Select one or more purposes. ENTER recommends."
+        put(stdscr, 0, max(2, (w - len(title)) // 2), title, len(title)); box(stdscr, 1, 1, h - 4, w - 2, "USER INTENT[] — MULTI SELECT — REQUIRED")
+        put(stdscr, 3, 4, help_text, w - 8)
+        for i, (key, label) in enumerate(PURPOSES):
+            put(stdscr, 5 + i, 6, f"{'>' if i == focus else ' '} [{'X' if key in selected else ' '}] {i + 1}. {label}", w - 12)
+        footer = "ESPACIO seleccionar   ENTER recomendar   Q salir" if language == "es" else "SPACE select   ENTER recommend   Q quit"
+        put(stdscr, h - 2, 2, footer, w - 4); stdscr.refresh(); key = stdscr.getch()
+        if key in (curses.KEY_UP, ord("k")): focus = (focus - 1) % len(PURPOSES)
+        elif key in (curses.KEY_DOWN, ord("j")): focus = (focus + 1) % len(PURPOSES)
+        elif key == ord(" "):
+            name = PURPOSES[focus][0]
+            if name in selected: selected.remove(name)
+            else: selected.add(name)
+        elif key in (10, 13):
+            if selected: return [p for p, _ in PURPOSES if p in selected]
+        elif key in (27, ord("q"), ord("Q")): raise SystemExit(0)
+
+
+def result_screen(stdscr, language, purposes):
+    status, result = recommend(purposes)
+    while True:
+        stdscr.erase(); h, w = stdscr.getmaxyx(); title = "LEONES // RECOMENDADOR RC4" if language == "es" else "LEONES // RC4 RECOMMENDER"
+        put(stdscr, 0, max(2, (w - len(title)) // 2), title, len(title)); box(stdscr, 1, 1, h - 4, w - 2, "FITLLM / LLMFIT + EVIDENCE")
+        x = 4; put(stdscr, 3, x, f"STATUS: {status.upper()}", w - 8); put(stdscr, 4, x, f"INTENT: {', '.join(purposes)}", w - 8)
+        put(stdscr, 5, x, f"CANDIDATES: {result.get('candidate_count', 0)}/3", w - 8)
+        put(stdscr, 6, x, "KIND: ESTIMATED   EXECUTION_AUTHORIZED: False", w - 8)
+        put(stdscr, 7, x, "MEASUREMENT_AUTHORIZED: False   MEASURED: False", w - 8)
+        put(stdscr, 8, x, "BOUNDARY: evidence_backed_intersection", w - 8)
+        put(stdscr, 10, x, "PROPUESTAS" if language == "es" else "PROPOSALS", w - 8)
+        rows = result.get("recommendations") or []
+        for i, row in enumerate(rows[:3], 1): put(stdscr, 11 + i, x, f"[{i}] {row.get('model_id', '?')} :: ESTIMATED", w - 8)
+        if not rows: put(stdscr, 12, x, result.get("message", "Sin candidatos"), w - 8)
+        put(stdscr, h - 2, 2, "R repetir   ENTER volver a intención   Q salir", w - 4); stdscr.refresh(); key = stdscr.getch()
+        if key in (ord("q"), ord("Q"), 27): raise SystemExit(0)
+        if key in (10, 13): return
+        if key in (ord("r"), ord("R")): status, result = recommend(purposes)
+
+
+def main():
+    def app(stdscr):
+        curses.curs_set(0); stdscr.keypad(True)
+        language = language_screen(stdscr)
+        machine_state(stdscr, language)
         while True:
-            key = stdscr.getch()
-            if key in (27, ord("q"), ord("Q")):
-                return 0
-            if key in (ord("i"), ord("I")):
-                return _run_operation(stdscr, [str(INS), "--dry-run"], "install", OperationPhase.PREPARING)
-            if key in (ord("u"), ord("U")):
-                return _run_operation(stdscr, [str(UN), "--dry-run", "--yes"], "uninstall", OperationPhase.REMOVING)
-
-    return curses.wrapper(ui)
+            purposes = intent_screen(stdscr, language)
+            result_screen(stdscr, language, purposes)
+    curses.wrapper(app)
+    return 0
 
 
 if __name__ == "__main__":
