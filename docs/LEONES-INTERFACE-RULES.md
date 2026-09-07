@@ -2,7 +2,7 @@
 
 **Estado:** 🟢 **Fijado** · 2026-09-06 (rev. idiomas + install/uninstall + costes)  
 **Origen:** feedback beta e interfaz RC2 (`./leones`, `scripts/rc2_ui.py`, `docs/RC2-*`) + feedback producto 2026-09-06  
-**Ámbito:** CLI/wizard, mensajes de instalador y páginas web de operador  
+**Ámbito:** CLI/wizard, TUI, mensajes de instalador y páginas web de operador  
 **No sustituye:** contratos de datos, evidencia ni gates de release
 
 Este documento es la **referencia de interfaz** para todo el proyecto (RC2 histórico, RC3 cerrada, RC4 en curso). Las fases cambian el *qué* se recomienda o mide; estas reglas fijan *cómo* se habla con el usuario.
@@ -15,6 +15,8 @@ Este documento es la **referencia de interfaz** para todo el proyecto (RC2 hist�
 - ASCII (marcos, flechas, etapas) está permitido como **presentación**.
 - El ASCII **nunca** sustituye estados, errores, costes ni consentimientos.
 - Banner de sesión opcional; no es requisito funcional.
+- La interfaz TUI RC4 puede usar estética de **consola ASCII retro**: paneles, marcos, navegación lateral, estado del sistema, trabajos activos y visor de evidencia.
+- La TUI es presentación: no puede cambiar los contratos de recomendación, autorización, medición o evidencia.
 - Referencia histórica de mapa no ejecutable: `scripts/rc2_ui.py`.
 
 ---
@@ -41,12 +43,12 @@ Reglas:
 
 ```text
 ELIGE EL IDIOMA / CHOOSE LANGUAGE / 选择语言 / 言語を選択
-┌──────────────────────────────────────────┐
-│  [1] Español                             │
-│  [2] English                             │
-│  [3] 中文                                 │
-│  [4] 日本語                               │
-└──────────────────────────────────────────┘
++------------------------------------------+
+|  [1] Español                             |
+|  [2] English                             |
+|  [3] 中文                                 |
+|  [4] 日本語                               |
++------------------------------------------+
 ```
 
 ---
@@ -110,12 +112,12 @@ Reglas:
 Plantilla mínima de presentación:
 
 ```text
-┌─ COSTE · <nombre componente> ─────────────────────┐
-│ Disco (aprox.):     <N> (paquete + datos tipicos) │
-│ RAM en ejecución:   <N> (estimación; depende host)│
-│ En reposo:          <nada | servicio/daemon …>    │
-│ Arranque al login:  <sí | no>                     │
-└───────────────────────────────────────────────────┘
++-- COSTE · <nombre componente> ---------------------+
+| Disco (aprox.):     <N> (paquete + datos tipicos) |
+| RAM en ejecución:   <N> (estimación; depende host)|
+| En reposo:          <nada | servicio/daemon …>    |
+| Arranque al login:  <sí | no>                     |
++----------------------------------------------------+
 ¿Instalar <nombre>? [s/N]
 ```
 
@@ -133,11 +135,11 @@ Reglas:
 ## 7. Consentimientos (separados)
 
 ```text
-consentir instalación  ≠  instalar
-instalar               ≠  verificar
-verificar              ≠  autorizar medición / benchmark
-recomendar             ≠  elegir
-elegir                 ≠  ejecutar
+consentir instalación  !=  instalar
+instalar               !=  verificar
+verificar              !=  autorizar medición / benchmark
+recomendar             !=  elegir
+elegir                 !=  ejecutar
 ```
 
 1. No hay consentimiento genérico que autorice todo el pipeline.
@@ -196,6 +198,7 @@ Prohibido presentar exit 0 del instalador como “PASS LEONES”, o un timeout c
 | `scripts/rc2_ui.py` | Mapa ASCII histórico |
 | `scripts/rc2_wizard.py` / `./leones` | Operador beta RC2 (histórico) |
 | `scripts/rc2_i18n.py` | Catálogo multilingüe (ampliar a **ja**) |
+| `scripts/rc4_tui.py` | **TUI RC4 retro ASCII**, presentación del flujo canónico |
 | Este documento | **Norma de interfaz de proyecto** |
 
 Wizards nuevos (RC4+) cumplen este documento. Excepciones solo en acta de fase, sin silenciar costes ni uninstall.
@@ -217,10 +220,3 @@ Wizards nuevos (RC4+) cumplen este documento. Excepciones solo en acta de fase, 
 - [ ] ¿El final dice qué pasó, siguiente paso y que existe uninstall?
 
 ---
-
-## Procedencia
-
-- Feedback beta instalador (idioma único, descripciones de stack, cierre confuso).
-- `docs/RC2-UI-ASCII-STYLE.md`, `docs/RC2-K-MULTILINGUAL-UI.md`, `docs/RC2-H-STACK-CAPABILITY-PRESENTATION.md`, `docs/RC2-I-INSTALLATION-CONSENT.md`, `docs/RC2-F-BENCHMARK-CONSENT.md`.
-- Producto 2026-09-06: idiomas **es/en/zh/ja**; **install ↔ uninstall**; costes **disco / RAM ejecución / daemon en reposo**.
-- Metodología LEONES: ESTIMATED ≠ MEASURED; DESCUBRIR ≠ ACEPTAR.
