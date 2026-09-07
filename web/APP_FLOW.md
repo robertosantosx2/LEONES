@@ -1,60 +1,70 @@
-# LEONES App — flujo guiado
+# LEONES App — flujo guiado RC4
 
-La aplicación web **no ejecuta la infraestructura local en el navegador**. Su función es explicar el recorrido, recoger decisiones y conducir al usuario hacia las herramientas locales que correspondan.
+La aplicación web **no ejecuta la infraestructura local en el navegador**. Explica el recorrido y conduce al usuario hacia las herramientas locales correspondientes.
 
-## Flujo canónico RC2
+## Flujo canónico
 
 ```text
-Necesidad
+IDIOMA
    ↓
-Hardware real
+ESTADO DE LA MÁQUINA
    ↓
-LLMFIT
+USER_INTENT[] · obligatorio · múltiple
    ↓
-Candidatos
+HARDWARE + RESOURCE PREFLIGHT
    ↓
-Elección humana
+HF + Artificial Analysis
    ↓
-ODS / Magnitude
+LLMFit opcional · catálogo independiente
    ↓
-Stack propuesto
+INTERSECCIÓN → hasta 3 ESTIMATED | insufficient
    ↓
-Consentimiento de instalación
+ELECCIÓN HUMANA
    ↓
-Instalar → Verificar
+STACK / RUNTIME
    ↓
-Consentimiento de benchmark
+CONSENTIMIENTO Y OPERACIONES EXPLÍCITAS
    ↓
-Handoff RC1
+VERIFICACIÓN FÍSICA
    ↓
-Medir
+AUTORIZACIÓN DE EJECUCIÓN / MEDICIÓN
    ↓
-Evidencia
-   ↓
-Recomendación
+MEASURED + EVIDENCIA
 ```
 
-La elección del usuario y la autorización de operaciones son explícitas. **El consentimiento para instalar no autoriza automáticamente un benchmark.** Son dos decisiones independientes.
+La TUI es presentación. No convierte una recomendación en ejecución.
 
 ## Qué aporta cada capa
 
-- **Hardware real:** establece las capacidades observables del equipo.
-- **LLMFIT:** ayuda a acotar candidatos compatibles con el hardware.
-- **ODS / Magnitude:** aportan conocimiento especializado sobre despliegue, modelos, inferencia y agentes. LEONES los utiliza como fuentes/decisión de stack; no crea un scoring paralelo que los sustituya.
-- **RC1:** recibe la configuración autorizada y mantiene el camino canónico de ejecución y evidencia.
-- **Benchmark:** comprueba una tarea concreta y no solo una cifra sintética.
-- **Evidencia:** conserva qué se ejecutó, dónde, cuándo y con qué resultado.
+- **Estado de la máquina:** hardware, recursos y componentes IA observados en el host.
+- **USER_INTENT[]:** declara para qué se quiere usar la IA; no puede estar vacío.
+- **Hugging Face + Artificial Analysis:** evidencia externa y procedencia.
+- **LLMFit / FitLLM:** preselector opcional desde su catálogo propio.
+- **Intersección:** solo candidatos con identidad respaldada por ambas superficies llegan a la recomendación.
+- **Elección humana:** selecciona modelo/configuración y posteriormente stack/runtime.
+- **Runtime físico:** comprueba qué está realmente disponible en Ubuntu.
+- **Medición:** solo una ejecución protocolizada produce `MEASURED`.
 
 ## ESTIMATED ≠ MEASURED
 
-Las estimaciones sirven para seleccionar y priorizar. Una estimación de ODS, Magnitude, LLMFIT u otra fuente externa **no es una medición física de LEONES**.
+Las estimaciones sirven para seleccionar y priorizar. Una estimación de LLMFit, Hugging Face, Artificial Analysis u otra fuente externa **no es una medición física de LEONES**.
 
-Solo una ejecución real registrada mediante el camino de ejecución/evidencia correspondiente puede producir evidencia física. Los valores desconocidos permanecen desconocidos; no se rellenan por inferencia.
+Una preflight tampoco es una instalación verificada. Una instalación verificada tampoco es un benchmark ejecutado.
+
+## Consentimientos
+
+Las decisiones se mantienen separadas:
+
+```text
+recomendar ≠ elegir ≠ instalar ≠ verificar ≠ autorizar ejecución ≠ medir
+```
+
+No se descarga ni ejecuta una pila por el mero hecho de recomendarla.
 
 ## Manada
 
-La contribución a Manada es voluntaria. Los resultados técnicos agregados pueden servir para conocer qué combinaciones funcionan realmente en hardware de consumo y mejorar futuras recomendaciones. La aplicación debe explicar qué datos son útiles antes de cualquier publicación.
+La contribución a Manada es voluntaria. Los resultados técnicos agregados pueden ampliar la evidencia sobre hardware real, conservando procedencia y consentimiento.
 
 ## Principio de producto
 
-La web documenta y conduce. La infraestructura local ejecuta. RC1 mide y produce evidencia. LEONES aprende de los resultados sin confundir recomendaciones provisionales con hechos medidos.
+La web documenta y conduce. La infraestructura local ejecuta. LEONES aprende de resultados medidos sin confundir recomendaciones provisionales con hechos físicos.
