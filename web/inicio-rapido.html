@@ -2,28 +2,28 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Inicio rapido LEONES RC4: intencion, preflight, FitLLM opcional, Magnitude/ODS, Leo suite.">
+<meta name="description" content="Inicio rapido LEONES RC4: intencion, inventario, preflight, FitLLM opcional, cadena MEASURED.">
 <title>LEONES · Inicio rápido · RC4</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-4">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-4">
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-07-2">
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-07-2">
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
-<span class="site-tag">Inicio rápido · RC4 · 6 septiembre 2026</span>
+<span class="site-tag">Inicio rápido · RC4 · 7 septiembre 2026</span>
 <h1>Arrancar LEONES</h1>
-<p>RC3 cerrada. Camino actual: intención obligatoria, evidencia HF/AA, intersección con FitLLM opcional, elección humana.</p>
+<p>RC3 cerrada. RC4: intención obligatoria, evidencia HF/AA, intersección FitLLM opcional, inventario, cadena MEASURED opt-in.</p>
 </div></header>
 <main class="site-main" id="main">
 <section class="site-section"><h2>0 · Qué es canónico</h2>
-<p class="site-lead"><strong>RC4</strong> define la recomendación. <strong>RC3</strong> permanece cerrada. FitLLM <strong>no</strong> es dependencia de arranque.</p>
-<div class="site-note"><strong>Regla:</strong> sin USER_INTENT[] no hay recomendación. ESTIMATED no es MEASURED.</div>
+<p class="site-lead"><strong>RC4</strong> define la recomendación y el orquestador post-recomendación. <strong>RC3</strong> permanece cerrada. FitLLM <strong>no</strong> es dependencia de arranque.</p>
+<div class="site-note"><strong>Regla:</strong> sin USER_INTENT[] no hay recomendación. ESTIMATED ≠ MEASURED. No uses literales como <code>&lt;modelo&gt;</code>: pon el id exacto de <code>ollama list</code>.</div>
 </section>
 <section class="site-section"><h2>1 · Requisitos</h2>
 <ul>
 <li>Python 3 y Git.</li>
 <li><strong>No</strong> hace falta FitLLM para arrancar LEONES.</li>
 <li>Hermes y OMH son opcionales; no seleccionan modelo en RC4.</li>
-<li>Para la intersección real hace falta la CLI <code>llmfit</code> (p. ej. 1.1.10).</li>
+<li>Para intersección real: CLI <code>llmfit</code>. Para tests: <code>pytest</code> (<code>pip install --user pytest</code>).</li>
 </ul>
 </section>
 <section class="site-section"><h2>2 · Arranque</h2>
@@ -31,24 +31,37 @@
 cd LEONES
 git checkout rc4-fitllm-recommender
 ./leones
+./leones --inventory
 ./leones --rc2</pre>
 </section>
-<section class="site-section"><h2>3 · Preflight en Ubuntu</h2>
+<section class="site-section"><h2>3 · Preflight e inventario</h2>
 <pre class="site-stack">python3 scripts/rc4_release_gate.py
-python3 scripts/rc4_resource_preflight.py
-python3 scripts/rc4_ubuntu_preflight.py \\
-  --purpose programming --purpose reasoning \\
+python3 scripts/rc4_component_inventory.py
+python3 scripts/rc4_resource_preflight.py --path .
+python3 scripts/rc4_ubuntu_preflight.py \
+  --purpose programming --purpose reasoning \
   --out results/physical-rc4-$(date +%Y%m%d)/ubuntu-preflight.json</pre>
-<p>Si hay menos de tres coincidencias verás <code>insufficient</code>: es correcto; no se inventan candidatos.</p>
+<p><code>insufficient</code> con menos de tres coincidencias es correcto.</p>
 </section>
-<section class="site-section"><h2>4 · Después de elegir modelo</h2>
-<p>Stack (Magnitude u ODS) → consentimiento → instalación → verificación → Leo001…Leo010 → evidencia MEASURED. Sin ejecución real no hay MEASURED.</p>
+<section class="site-section"><h2>4 · Cadena MEASURED (opt-in)</h2>
+<pre class="site-stack"># plan sin ejecutar → measured=false
+python3 scripts/rc4_measured_chain.py --model-id demo --stack none --json
+
+# E2E: model_id REAL de ollama list (ejemplo Aspire)
+ollama list
+python3 scripts/rc4_fitllm_recommend.py --purpose programming --json > /tmp/rec.json
+python3 scripts/rc4_measured_chain.py \
+  --recommendation /tmp/rec.json \
+  --model-id qwen2.5:0.5b-instruct-q4_K_M \
+  --stack none \
+  --execute --authorize-execution --authorize-measurement \
+  --out results/physical-rc4-measured/chain.json</pre>
+<p>Sin <code>--execute</code> y doble autorización no hay MEASURED.</p>
 </section>
 <section class="site-section"><h2>5 · Docs</h2>
 <p><a href="rc4.html">RC4 →</a> · <a href="estado.html">Estado →</a> · <a href="operacion.html">Operación →</a> · <a href="scripts.html">Scripts →</a></p>
 </section>
 </main>
-<footer class="site-footer"><div>LEONES</div><div>RC4 · Inicio rápido</div></footer>
-<script src="assets/js/navigation.js?v=2026-09-06-4" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-07-2" defer></script>
 </body>
 </html>

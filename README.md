@@ -1,86 +1,104 @@
 # LEONES
 
-## Estado del proyecto
+**Local Ecosystem of Open Neural Expert Systems**
 
-| Bloque | Estado | Resultado |
-|---|---|---|
-| V1 / A01 | 🟢 Cerrado | Cadena real de selección → ejecución → benchmark → evidencia |
-| JALÓN 1 | 🟢 Cerrado | Base CI y contratos iniciales |
-| JALÓN 2 | 🟢 Cerrado | Ejecución física + evidencia reproducible con llama.cpp |
-| JALÓN 3 | 🟢 Cerrado | Contrato de medición real + auditoría física |
-| JALÓN 4 | 🟢 **Cerrado** | Metodología AA + contratos de integración + benchmark de tareas + tiers |
-| RC1 | 🟢 **Validado** | Ejecución efectiva end-to-end |
-| RC2 | 🟢 **Histórica** | Beta previa; no es el camino canónico RC3 |
-| **RC3** | 🟢 **CERRADA** (impl. + contratos + web + obs. física parcial Aspire) · medición completa = backlog | **`hardware_profile.py` → candidatos → Magnitude/ODS → medición LEONES** |
-| **RC4** | 🟡 **Decisión fijada · implementación pendiente** | **FitLLM recomendador opcional → elección humana → Magnitude/ODS → Leo001…Leo010** |
+IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y evidenciar — sin confundir ESTIMATED con MEASURED.
 
-## RC4 — recomendador FitLLM (en curso)
+| Fase | Estado | Nota |
+|------|--------|------|
+| **RC4** | 🟡 **En desarrollo** | Decisión fijada · capa de recomendación endurecida · orquestador MEASURED listo · **E2E físico pendiente** |
+| **RC3** | 🟢 **Fase cerrada** (2026-09-05) | Sonda LEONES + elección Magnitude/ODS; handoffs MEASURED no incluidos en el cierre |
 
-**Regla de autoridad RC4:** LEONES descubre el hardware. FitLLM puede recomendar (ESTIMATED). El usuario elige modelo y stack. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.
+## RC4 — estado actual (2026-09-07)
 
-- FitLLM **no** es dependencia dura de arranque; sin él se puede elegir modelo a mano.
-- Hermes y OMH son **opcionales** (agente/ops), no selectores de modelo.
-- Tras instalar Magnitude u ODS se puede **ofrecer** desinstalar FitLLM (opt-in).
-- Suite **Leo001…Leo010** se conserva para medición.
-- Acta: `docs/completed/RC4-DECISION-FITLLM-RECOMMENDER-2026-09-06.md` · Contrato: `docs/RC4-ARCHITECTURE.md`
+**Regla de autoridad:** LEONES descubre el hardware y conserva procedencia. FitLLM/LLMFit es preselector **opcional** (ESTIMATED). El usuario elige modelo y stack. Magnitude u ODS preparan/ejecutan. Solo una ejecución física autorizada produce MEASURED.
 
-## RC3 — arquitectura canónica (fase cerrada)
+### Implementado
 
-RC3 simplifica deliberadamente el camino de instalación y selección. **La sonda física canónica es `scripts/hardware_profile.py`.** Hermes participa como ecosistema local de runtime/model-fit y Oh My Hermes (OMH) como capa operativa de routing, workflows, handoffs y gates. LEONES normaliza, reconcilia y conserva la autoridad sobre verificación física, ejecución, medición y evidencia.
+- `USER_INTENT[]` obligatorio · feed HF + Artificial Analysis ≤100 · intersección con CLI LLMFit
+- hasta 3 candidatos ESTIMATED o `insufficient` (sin padding)
+- `scripts/rc4_release_gate.py` · `scripts/rc4_ubuntu_preflight.py` · `scripts/rc4_resource_preflight.py`
+- inventario y desinstalación independiente: `scripts/rc4_component_inventory.py` · `scripts/uninstall.sh`
+- cadena post-recomendación: `scripts/rc4_measured_chain.py` (selección humana → stack → runtime → A01 → MEASURED)
 
-### Regla de autoridad (RC3)
+### Evidencia Aspire (Ubuntu)
 
-**LEONES descubre el hardware. OMH organiza. El usuario elige. Magnitude u ODS preparan/ejecutan. LEONES verifica, mide y sentencia.**
+- 2026-09-06: release gate PASS · tests contractuales PASS · preflight `insufficient` (1/3) en ~7 GB RAM
+- 2026-09-06/07: `measured_chain` con `measured: false` sin autorización/ejecución; Ollama presente (`hermes3:latest`, `qwen2.5:0.5b-instruct-q4_K_M`)
 
-### Handoff de usuario
+### Pendiente de fase
 
-- **Magnitude** → perfilado, tuning y ejecución por sus interfaces canónicas.
-- **ODS** → instalación y stack local por sus interfaces canónicas.
+- MEASURED E2E en host real con modelo instalado + doble autorización
+- Acta: `docs/completed/RC4-DECISION-FITLLM-RECOMMENDER-2026-09-06.md`
+- Contrato: `docs/RC4-ARCHITECTURE.md`
+- STRICT cadena: `docs/completed/RC4-STRICT-MEASURED-CHAIN-2026-09-07.md`
 
-## Instalación (contexto RC3 / transición RC4)
-
-```text
-INSTALAR LEONES
-      ↓
-scripts/hardware_profile.py
-      ↓
-hardware-profile.v1 → candidate-set.v1
-      ↓
-FitLLM (opcional, RC4) → recomendación ESTIMATED
-      ↓
-ELEGIR MODELO (con o sin recomendación)
-      ↓
-ELEGIR MAGNITUDE U ODS
-      ↓
-CONSENTIMIENTO → PREPARAR / INSTALAR
-      ↓
-[opcional] ofrecer desinstalar FitLLM
-      ↓
-VERIFICAR FÍSICAMENTE
-      ↓
-Leo001…Leo010 → MEDIR → EVIDENCIA
-```
+## Arranque
 
 ```bash
-hermes doctor   # si están instalados
-omh doctor
+git clone https://github.com/robertosantosx2/LEONES.git
+cd LEONES
+git checkout rc4-fitllm-recommender
+./leones                 # RC4: inventario + intención + recomendación
+./leones --inventory     # solo inventario / ofertas de uninstall
+./leones --rc2           # wizard histórico RC2
+```
+
+### Preflight y cadena MEASURED
+
+```bash
+python3 scripts/rc4_release_gate.py
+python3 scripts/rc4_resource_preflight.py --path .
+python3 scripts/rc4_ubuntu_preflight.py \
+  --purpose programming --purpose reasoning \
+  --out results/physical-rc4-$(date +%Y%m%d)/ubuntu-preflight.json
+
+# plan (measured=false)
+python3 scripts/rc4_measured_chain.py --model-id demo --stack none --json
+
+# E2E físico (sustituir por un modelo REAL de `ollama list`)
+python3 scripts/rc4_fitllm_recommend.py --purpose programming --json > /tmp/rec.json
+python3 scripts/rc4_measured_chain.py \
+  --recommendation /tmp/rec.json \
+  --model-id qwen2.5:0.5b-instruct-q4_K_M \
+  --stack none \
+  --execute --authorize-execution --authorize-measurement \
+  --out results/physical-rc4-measured/chain.json
+```
+
+Tests (requieren `pytest`):
+
+```bash
+python3 -m pip install --user pytest   # si no está
+python3 -m pytest tests/test_rc4_component_inventory.py tests/test_rc4_fitllm_recommend.py -q
+```
+
+## Cadena canónica
+
+```text
+USER_INTENT[]
+      ↓
+resource + ubuntu preflight
+      ↓
+HF + AA → feed ≤100 → LLMFit CLI → intersección → ≤3 ESTIMATED | insufficient
+      ↓
+selección humana → stack (Magnitude|ODS|none) → runtime → A01 → MEASURED
+```
+
+Desinstalación independiente (LEONES al final):
+
+```bash
+bash scripts/uninstall.sh --dry-run --fitllm
+bash scripts/uninstall.sh   # menú interactivo
 ```
 
 ## Gate
 
-RC3: `scripts/rc3_release_gate.py`. El gate **no** declara handoffs ni MEASURED físicos.
-RC4: gate propio pendiente de implementación (FitLLM no hard-dep; Hermes no selector).
-
-## RC2
-
-RC2 permanece como línea histórica de validación.
-
-## Interfaz de usuario
-
-Norma de proyecto (idioma, consentimientos, estados, errores): [`docs/LEONES-INTERFACE-RULES.md`](docs/LEONES-INTERFACE-RULES.md).
+- RC3: `scripts/rc3_release_gate.py` (no declara MEASURED físicos)
+- RC4: `scripts/rc4_release_gate.py` — **implementado**; no declara MEASURED hasta evidencia física
 
 ## Principio LEONES
 
 > **Los proveedores pueden proponer. FitLLM puede recomendar. El usuario elige. Solo una ejecución controlada sobre el equipo real puede producir una medición LEONES.**
 
-RC3 está **cerrada como fase**. Ver `docs/completed/RC3-CLOSED-2026-09-05.md`. **RC4** redefine el tramo de recomendación de modelo; ver `docs/RC4-ARCHITECTURE.md`.
+Web: `web/estado.html` · `web/rc4.html` · `web/inicio-rapido.html` · `web/operacion.html`
