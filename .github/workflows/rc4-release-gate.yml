@@ -23,4 +23,5 @@ jobs:
           tests/test_rc4_resource_preflight.py
           tests/test_rc4_tui.py
           tests/test_rc4_operation_progress.py
-          tests/test_rc4_artifact_progress.py -q
+          tests/test_rc4_artifact_progress.py
+          tests/test_rc4_artifact_uninstall_progress.py -q
