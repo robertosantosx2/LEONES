@@ -20,6 +20,7 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 - `scripts/rc4_release_gate.py` · `scripts/rc4_ubuntu_preflight.py` · `scripts/rc4_resource_preflight.py`
 - inventario y desinstalación independiente: `scripts/rc4_component_inventory.py` · `scripts/uninstall.sh`
 - cadena post-recomendación: `scripts/rc4_measured_chain.py` (selección humana → stack → runtime → A01 → MEASURED)
+- `install.sh` instala/verifica las piezas RC4: **FitLLM/LLMFit + Osmantic ODS + Magnitude**
 
 ### Evidencia Aspire (Ubuntu)
 
@@ -39,10 +40,22 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES
 git checkout rc4-fitllm-recommender
+./install.sh             # instala/verifica FitLLM + ODS + Magnitude
 ./leones                 # RC4: inventario + intención + recomendación
 ./leones --inventory     # solo inventario / ofertas de uninstall
 ./leones --rc2           # wizard histórico RC2
 ```
+
+### Bootstrap RC4
+
+`./install.sh` usa los instaladores oficiales de cada componente y evita instalaciones Python globales para LLMFit. ODS requiere Docker operativo. Magnitude requiere Node.js/npm. Si un componente ya existe, se conserva y se verifica en lugar de reinstalarlo.
+
+Componentes instalados/verificados:
+
+- **FitLLM / LLMFit** — preselector ESTIMATED; no autoriza ejecución ni medición.
+- **Osmantic ODS** — stack de ejecución/aplicación; su instalador oficial gestiona la pila.
+- **Magnitude** — stack/agente de ejecución; se instala como `@magnitudedev/cli`.
+- Hermes / Oh My Hermes — capas opcionales conservadas del bootstrap anterior.
 
 ### Preflight y cadena MEASURED
 
