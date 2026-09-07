@@ -7,7 +7,7 @@ def test_choice_flow_tui_exists_and_keeps_confirmation_separate():
     assert "FULL SOHO" in text
     assert "BOTH" in text
     assert "CONFIRMACIÓN EXPLÍCITA" in text
-    assert "authorized" not in text.lower()
+    assert "no installer call" in text.lower()
 
 
 def test_solution_catalog_declares_unknown_costs():
