@@ -36,7 +36,7 @@ def memory_stats() -> tuple[int, int, int]:
         values = {}
         for line in Path("/proc/meminfo").read_text().splitlines():
             key, value = line.split(":", 1)
-            values[key] = int(value.split()[0])
+            values[key] = int(value.split()[0]) * 1024
         total = values["MemTotal"]
         available = values["MemAvailable"]
         used = total - available
@@ -146,7 +146,7 @@ def wait_key(stdscr: "curses._CursesWindow") -> int:
 
 def language_screen(stdscr: "curses._CursesWindow") -> str:
     focus = 0
-    languages = (("es", "Español"), ("en", "English"))
+    languages = (("es", "Español"), ("en", "Inglés"), ("zh", "中文 (Chino)"))
     while True:
         stdscr.erase()
         h, w = stdscr.getmaxyx()
@@ -162,13 +162,58 @@ def language_screen(stdscr: "curses._CursesWindow") -> str:
             focus = (focus - 1) % len(languages)
         elif key in (curses.KEY_DOWN, ord("j")):
             focus = (focus + 1) % len(languages)
-        elif key in (10, 13, ord("1"), ord("2")):
-            if key in (ord("1"), ord("2")):
+        elif key in (10, 13, ord("1"), ord("2"), ord("3")):
+            if key in (ord("1"), ord("2"), ord("3")):
                 focus = int(chr(key)) - 1
             return languages[focus][0]
 
 
 def machine_state_screen(stdscr: "curses._CursesWindow", language: str) -> None:
+    translations = {
+        "es": {
+            "title": "LEONES // ESTADO DE LA MÁQUINA",
+            "box": "ESTADO DE LA MÁQUINA",
+            "hardware": "HARDWARE",
+            "resources": "RECURSOS EN USO",
+            "software": "SOFTWARE IA INSTALADO",
+            "gpu_missing": "no detectada",
+            "disk": "DISCO",
+            "local_llms": "LLMs locales (modelos Ollama)",
+            "leones_local": "LEONES (estado local .leones/)",
+            "agents": "Agentes",
+            "none": "ninguno detectado",
+            "continue": "[ENTER] continuar   [M] mantenimiento   [Q] salir",
+        },
+        "en": {
+            "title": "LEONES // MACHINE STATE",
+            "box": "MACHINE STATE",
+            "hardware": "HARDWARE",
+            "resources": "RESOURCES IN USE",
+            "software": "INSTALLED AI SOFTWARE",
+            "gpu_missing": "not detected",
+            "disk": "DISK",
+            "local_llms": "Local LLMs (Ollama models)",
+            "leones_local": "LEONES (local .leones/ state)",
+            "agents": "Agents",
+            "none": "none detected",
+            "continue": "[ENTER] continue   [M] maintenance   [Q] quit",
+        },
+        "zh": {
+            "title": "LEONES // 机器状态",
+            "box": "机器状态",
+            "hardware": "硬件",
+            "resources": "正在使用的资源",
+            "software": "已安装的 AI 软件",
+            "gpu_missing": "未检测到",
+            "disk": "磁盘",
+            "local_llms": "本地 LLM（Ollama 模型）",
+            "leones_local": "LEONES（本地 .leones/ 状态）",
+            "agents": "智能体",
+            "none": "未检测到",
+            "continue": "[ENTER] 继续   [M] 维护   [Q] 退出",
+        },
+    }
+    t = translations.get(language, translations["es"])
     inv = load_inventory()
     used, total, mem_pct = memory_stats()
     disk_used, disk_total, disk_pct = disk_stats()
@@ -178,35 +223,43 @@ def machine_state_screen(stdscr: "curses._CursesWindow", language: str) -> None:
         stdscr.erase()
         h, w = stdscr.getmaxyx()
         if h < 25 or w < 92:
-            put(stdscr, 1, 2, "LEONES RC4 -- terminal demasiado pequena (min 92x25)", w - 4)
-            put(stdscr, 3, 2, "Redimensiona la ventana. Q: salir", w - 4)
+            put(stdscr, 1, 2, "LEONES RC4 -- terminal too small (min 92x25)", w - 4)
+            put(stdscr, 3, 2, "Resize the window. Q: quit", w - 4)
             if wait_key(stdscr) in (ord("q"), ord("Q")):
                 raise SystemExit(0)
             continue
-        put(stdscr, 0, max(2, (w - 34) // 2), "LEONES // MACHINE STATE", 34)
-        add_box(stdscr, 1, 1, h - 4, w - 2, "ESTADO DE LA MÁQUINA")
+        put(stdscr, 0, max(2, (w - len(t["title"])) // 2), t["title"], len(t["title"]))
+        add_box(stdscr, 1, 1, h - 4, w - 2, t["box"])
         x = 4
-        put(stdscr, 3, x, "HARDWARE", w - 8)
-        for i, line in enumerate(machine_hardware()):
+        put(stdscr, 3, x, t["hardware"], w - 8)
+        hardware = machine_hardware()
+        for i, line in enumerate(hardware):
+            if line.startswith("GPU") and line.endswith("not detected"):
+                line = f"GPU     {t['gpu_missing']}"
             put(stdscr, 4 + i, x, line, w - 8)
-        put(stdscr, 7, x, "RECURSOS EN USO", w - 8)
+        put(stdscr, 7, x, t["resources"], w - 8)
         put(stdscr, 8, x, f"RAM     {human_bytes(used)} / {human_bytes(total)}   [{mem_pct:>3}%]", w - 8)
         put(stdscr, 9, x, f"CPU     {cpu_percent():>3}%", w - 8)
-        put(stdscr, 10, x, f"DISCO   {human_bytes(disk_used)} / {human_bytes(disk_total)}   [{disk_pct:>3}%]", w - 8)
-        put(stdscr, 12, x, "SOFTWARE IA INSTALADO", w - 8)
+        put(stdscr, 10, x, f"{t['disk']:<8}{human_bytes(disk_used)} / {human_bytes(disk_total)}   [{disk_pct:>3}%]", w - 8)
+        put(stdscr, 12, x, t["software"], w - 8)
         row = 13
         for c in components:
             if not c.get("installed"):
                 continue
+            display_name = c["display_name"]
+            if display_name == "LLMs locales (Ollama models)":
+                display_name = t["local_llms"]
+            elif display_name == "LEONES (estado local .leones/)":
+                display_name = t["leones_local"]
             detail = ""
             if c.get("models"):
                 detail = " :: " + ", ".join(c["models"])
-            put(stdscr, row, x, f"● {c['display_name']}{detail}", w - 8)
+            put(stdscr, row, x, f"● {display_name}{detail}", w - 8)
             row += 1
-        agent_detail = ", ".join(agents) if agents else "ninguno detectado"
-        put(stdscr, row, x, f"● Agentes ({len(agents)}) :: {agent_detail}", w - 8)
+        agent_detail = ", ".join(agents) if agents else t["none"]
+        put(stdscr, row, x, f"● {t['agents']} ({len(agents)}) :: {agent_detail}", w - 8)
         row += 2
-        put(stdscr, row, x, "[ENTER] continuar   [M] mantenimiento   [Q] salir", w - 8)
+        put(stdscr, row, x, t["continue"], w - 8)
         key = wait_key(stdscr)
         if key in (ord("q"), ord("Q")):
             raise SystemExit(0)
