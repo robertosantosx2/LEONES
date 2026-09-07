@@ -41,7 +41,7 @@ def _build_live_evidence_feed(*,purposes:Sequence[str],timeout_seconds:int,memor
     feed=evidence_mod.build_feed(hardware=hardware,purposes=list(purposes),hf_models=hf_models,aa_models=aa_models,aa_index_version=aa_version,limit=EVIDENCE_INPUT_LIMIT,memory_margin=memory_margin)
     return feed,hardware
 def _base_envelope(purposes:list[str])->dict[str,Any]:
-    return {"schema":SCHEMA,"user_intent":{"required":True,"selection_mode":"multiple","purposes":purposes},"phase":"RC4","provider":"fitllm_llmfit","kind":"ESTIMATED","candidate_count":0,"execution_authorized":False,"measurement_authorized":False,"measured":False,"user_choice_required":True,"fitllm_required_for_boot":False,"selection_boundary":SELECTION_BOUNDARY,"evidence_input_limit":EVIDENCE_INPUT_LIMIT,"recommendations":[],"status":"ok","message":None}
+    return {"schema":SCHEMA,"user_intent":{"required":True,"selection_mode":"multiple","purposes":purposes},"phase":"RC4","provider":"fitllm_llmfit","kind":"ESTIMATED","candidate_count":0,"execution_authorized": False,"measurement_authorized": False,"measured": False,"user_choice_required":True,"fitllm_required_for_boot":False,"selection_boundary":SELECTION_BOUNDARY,"evidence_input_limit":EVIDENCE_INPUT_LIMIT,"recommendations":[],"status":"ok","message":None}
 def recommend(*,user_intent:Sequence[str],max_context:int|None=None,timeout_seconds:int=30,evidence_feed:Mapping[str,Any]|None=None)->dict[str,Any]:
     purposes=_normalise_user_intent(user_intent); base=_base_envelope(purposes)
     if llmfit_mod.executable() is None:
