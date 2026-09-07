@@ -34,13 +34,13 @@ finish_status() {
   local rc=$?
   if (( rc == 0 )); then
     if (( DRY_RUN )); then
-      echo '[✓] DRY-RUN finalizado. No se han realizado cambios.'
+      echo '[✓] DRY-RUN finalizado correctamente. No se han realizado cambios.'
     else
-      echo '[✓] DESINSTALACIÓN / LIMPIEZA FINALIZADA.'
+      echo '[✓] DESINSTALACIÓN / LIMPIEZA FINALIZADA CORRECTAMENTE.'
       echo '[✓] Solo se tocaron componentes explícitamente seleccionados.'
     fi
   else
-    echo "[✗] FALLIDA (código $rc)." >&2
+    echo "[✗] DESINSTALACIÓN / LIMPIEZA FALLIDA (código $rc)." >&2
   fi
   return "$rc"
 }
@@ -235,3 +235,5 @@ if contains leones "${SELECTED[@]}"; then
   fi
   echo '[i] Checkout fuente y evidencias históricas no se borran por defecto.'
 fi
+
+exit 0
