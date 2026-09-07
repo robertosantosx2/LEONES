@@ -7,10 +7,12 @@ def test_choice_flow_tui_exists_and_keeps_confirmation_separate():
     assert "FULL SOHO" in text
     assert "BOTH" in text
     assert "CONFIRMACIÓN EXPLÍCITA" in text
-    assert "no installer call" in text.lower()
+    assert "NO ejecuta instalación" in text
 
 
 def test_solution_catalog_declares_unknown_costs():
     text = Path("catalogs/rc4_solutions.json").read_text()
     assert '"disk_bytes": null' in text
     assert '"ram_bytes": null' in text
+    assert '"usage_profile"' in text
+    assert '"functions"' in text
