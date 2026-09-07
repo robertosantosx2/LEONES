@@ -1,6 +1,6 @@
 # LEONES · RC4 · Validación de interfaz TUI · 2026-09-07
 
-**Estado:** VALIDADA para la capa TUI en `rc4-tui-choice-flow`.
+**Estado:** VALIDADA para la capa TUI implementada en `rc4-tui-choice-flow`.
 
 ## Alcance
 
@@ -31,6 +31,10 @@ ESTIMATED != MEASURED
 ```
 
 La frontera física permanece fuera de la TUI. La recomendación RC4 conserva el estado `ESTIMATED` hasta que exista ejecución física registrada por LEONES.
+
+## Idiomas
+
+La TUI actualmente expone `es`, `en` y `zh`. La norma de interfaz fija además `ja` como idioma canónico obligatorio; por tanto, **la cobertura japonesa queda explícitamente pendiente** y no se presenta como implementada.
 
 ## Estado de evidencia
 
