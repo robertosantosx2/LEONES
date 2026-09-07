@@ -1,19 +1,12 @@
 #!/usr/bin/env python3
 """LEONES RC4 default runner (also wired from ./leones).
 
-Problem
-    The human must declare USER_INTENT[] before any model proposal. This runner
-    collects that intent and delegates to rc4_fitllm_recommend.py.
+The normal terminal path opens the dependency-free retro ASCII TUI. The TUI
+collects mandatory multi-purpose USER_INTENT[] and delegates recommendation
+to the canonical RC4 recommender. Non-interactive flags remain available for
+CI, capture and automation.
 
-Inputs
-    Interactive purpose selection, or argv forwarded to the recommender.
-    --rc2 keeps the historical RC2 wizard explicitly available.
-    --inventory shows component inventory and exits.
-
-Outputs
-    Recommender JSON / human-readable proposal only.
-
-What this runner does NOT do
+What this runner does NOT do:
     Authorize execution or measurement. Install stacks. Treat FitLLM as a hard
     boot dependency. Hermes/OMH are not consulted for model selection.
 """
@@ -27,6 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RECOMMENDER = ROOT / "scripts" / "rc4_fitllm_recommend.py"
 RC2_WIZARD = ROOT / "scripts" / "rc2_wizard.py"
+TUI = ROOT / "scripts" / "rc4_tui.py"
 
 PURPOSES = (
     ("programming", "Programación / código"),
@@ -40,19 +34,16 @@ PURPOSES = (
 
 
 def choose_purposes() -> list[str]:
+    """Keep a plain-input fallback for pipes and non-TTY environments."""
     print(
         """
-╔══════════════════════════════════════════════════════════════╗
-║  LEONES RC4 · INTENCIÓN DE USO                               ║
-║  ──────────────────────────────────────────────────────────  ║
-║  Elige uno o varios números separados por comas.             ║
-║  Sin intención no hay recomendación.                         ║
-╚══════════════════════════════════════════════════════════════╝
+LEONES RC4 · INTENCIÓN DE USO
+Elige uno o varios números separados por comas.
+Sin intención no hay recomendación.
 """
     )
     for index, (_, label) in enumerate(PURPOSES, 1):
         print(f"  [{index}] {label}")
-
     while True:
         answer = input("LEONES> ").strip()
         selected: list[str] = []
@@ -98,12 +89,11 @@ def main(argv: list[str] | None = None) -> int:
             check=False,
         ).returncode
 
-    # Interactive path: show inventory first so the user can uninstall independently.
-    if args.purposes is None:
-        inv = ROOT / "scripts" / "rc4_component_inventory.py"
-        if inv.is_file():
-            subprocess.run([sys.executable, str(inv)], cwd=ROOT, check=False)
-            print()
+    # A real terminal gets the RC4 TUI. Explicit purposes keep automation
+    # deterministic and bypass presentation entirely.
+    if args.purposes is None and not args.json and sys.stdin.isatty() and sys.stdout.isatty():
+        return subprocess.run([sys.executable, str(TUI)], cwd=ROOT, check=False).returncode
+
     purposes = list(dict.fromkeys(args.purposes or choose_purposes()))
     command = [sys.executable, str(RECOMMENDER)]
     for purpose in purposes:
