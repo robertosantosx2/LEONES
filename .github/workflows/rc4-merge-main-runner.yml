@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   merge-main:
-    if: contains(github.event.head_commit.message, '[rc4-runner]')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout RC4 branch
@@ -74,7 +73,6 @@ jobs:
           git push origin HEAD:rc4-fitllm-recommender
 
       - name: Verify branch contains main
-        if: env.MAIN_ALREADY_INTEGRATED != 'true'
         run: |
           git fetch origin main rc4-fitllm-recommender
           git merge-base --is-ancestor origin/main origin/rc4-fitllm-recommender
