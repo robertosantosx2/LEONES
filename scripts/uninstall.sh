@@ -60,7 +60,8 @@ done
 contains() { local x="$1"; shift; for y in "$@"; do [[ "$x" == "$y" ]] && return 0; done; return 1; }
 run() { if (( DRY_RUN )); then printf '[DRY-RUN]'; printf ' %q' "$@"; printf '\n'; else "$@"; fi; }
 
-if contains leones "${SELECTED[@]+"${SELECTED[@]}"}"; then
+# Keep LEONES state last whenever it was explicitly selected.
+if contains leones "${SELECTED[@]}"; then
   TMP=()
   for s in "${SELECTED[@]}"; do [[ "$s" != leones ]] && TMP+=("$s"); done
   TMP+=(leones)
