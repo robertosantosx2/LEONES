@@ -117,12 +117,26 @@ install_hermes() {
 }
 
 install_omh() {
+  local omh_skills="$HOME/.local/share/omh/generations/bootstrap-legacy/skills"
+
   if ! command -v omh >/dev/null 2>&1; then
     curl -fsSL https://raw.githubusercontent.com/rlaope/oh-my-hermes/main/install.sh | OMH_CHANNEL=stable sh
     export PATH="$HOME/.local/bin:$PATH"
   fi
   command -v omh >/dev/null 2>&1 || fail "Oh My Hermes no quedó disponible."
+
+  # Older OMH installations could leave a broken bootstrap-legacy/skills
+  # symlink behind. OMH setup expects to create this directory and aborts
+  # with FileExistsError when the dangling link is still present. Removing
+  # only a broken symlink is safe and lets OMH rebuild the managed layout.
+  if [[ -L "$omh_skills" && ! -e "$omh_skills" ]]; then
+    echo "[→] Reparando enlace residual roto de OMH: $omh_skills"
+    rm -f -- "$omh_skills"
+  fi
+
+  omh --version >/dev/null 2>&1 || fail "Oh My Hermes está presente pero no es operativo."
   omh setup
+  omh doctor >/dev/null 2>&1 || fail "Oh My Hermes quedó instalado pero la comprobación 'omh doctor' falló."
 }
 
 selected=()
@@ -144,15 +158,20 @@ run_component() {
   local index="$1" total="$2" component="$3"; shift 3
   echo "[→] Instalación $index/$total — $component"
   "$@" &
-  local pid=$! tick=0
+  local pid=$! tick=0 status
   local frames=('|' '/' '-' '\\')
   while kill -0 "$pid" 2>/dev/null; do
     printf '\r[→] Instalando %-12s %s actividad... ' "$component" "${frames[$((tick % 4))]}"
     tick=$((tick + 1))
     sleep 1
   done
-  wait "$pid"
-  printf '\r[✓] Instalación %d/%d — %-12s completada.\n' "$index" "$total" "$component"
+  if wait "$pid"; then
+    printf '\r[✓] Instalación %d/%d — %-12s completada.\n' "$index" "$total" "$component"
+  else
+    status=$?
+    printf '\r[✗] Instalación %d/%d — %-12s fallida (código %d).\n' "$index" "$total" "$component" "$status" >&2
+    return "$status"
+  fi
 }
 
 total=${#selected[@]}
