@@ -4,6 +4,10 @@
 The normal terminal path opens the dependency-free retro ASCII TUI. Privileged
 software installation/uninstallation is authorized from inside the TUI so
 sudo never steals the curses terminal for an external password prompt.
+
+NORMATIVE TUI RULE: any system-privilege interaction belongs inside the TUI
+authorization box. Never expose an external sudo/password prompt while curses
+is active. See docs/TUI_RULES_RC4.md.
 """
 from __future__ import annotations
 
@@ -16,6 +20,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 RECOMMENDER = ROOT / "scripts" / "rc4_fitllm_recommend.py"
 RC2_WIZARD = ROOT / "scripts" / "rc2_wizard.py"
 TUI = ROOT / "scripts" / "rc4_tui.py"
