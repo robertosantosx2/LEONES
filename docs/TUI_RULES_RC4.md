@@ -53,13 +53,18 @@
 - Desinstalación: pantalla independiente con selección múltiple de componentes instalados.
 - `SPACE` marca/desmarca; `1–n` alterna la selección del elemento correspondiente; `ENTER` confirma la acción.
 
-## 7. Seguridad de selección
+## 7. Seguridad de selección y privilegios
 
 - La instalación de modelos requiere consentimiento explícito.
 - Las recomendaciones RC4 siguen siendo `ESTIMATED` y no autorizan ejecución ni medición.
 - Un modelo solo cuenta como instalado cuando existe `.leones-installed.json`.
 - La desinstalación solo actúa sobre componentes explícitamente seleccionados y confirmados.
+- **Toda interacción que requiera privilegios del sistema debe permanecer dentro de la TUI.**
+- La confirmación explícita (`Y`) de instalación o desinstalación es la puerta de acción del usuario.
+- Si el sistema requiere `sudo`, la petición de autorización y contraseña debe mostrarse **dentro de un recuadro de la TUI**; nunca puede aparecer el prompt de `sudo` directamente sobre el terminal curses.
+- Una autorización de privilegios correcta debe dejar la operación ejecutándose en segundo plano y devolver el control al centro de control.
+- Si la autorización falla o el usuario cancela, la instalación/desinstalación no se inicia.
 
 ## 8. Regla de mantenimiento
 
-Antes de modificar `scripts/rc4_tui.py`, comprobar este contrato y conservar todas sus reglas. Si una nueva funcionalidad entra en conflicto con él, el contrato prevalece hasta que se modifique explícitamente este documento.
+Antes de modificar `scripts/rc4_tui.py` o cualquier lanzador que lo ejecute, comprobar este contrato y conservar todas sus reglas. Si una nueva funcionalidad entra en conflicto con él, el contrato prevalece hasta que se modifique explícitamente este documento.
