@@ -130,18 +130,29 @@ if contains fitllm "${SELECTED[@]}"; then
   if command -v pip3 >/dev/null 2>&1; then run pip3 uninstall -y llmfit fitllm 2>/dev/null || true
   elif command -v pip >/dev/null 2>&1; then run pip uninstall -y llmfit fitllm 2>/dev/null || true; fi
 
-  # The official llmfit installer may place the standalone ELF directly in
-  # /usr/local/bin when that directory is writable, even with --local.
-  # Remove only the explicitly selected llmfit binary from the known install
-  # locations. No other files are touched.
-  for llmfit_path in \
-    "$HOME/.local/bin/llmfit" \
-    "/usr/local/bin/llmfit"; do
-    if [[ -f "$llmfit_path" ]]; then
-      run rm -f -- "$llmfit_path"
+  # LLMFit is a standalone ELF. The official installer can leave it in
+  # /usr/local/bin, so LEONES owns both supported locations explicitly.
+  # Use sudo only when the selected binary is not removable by the current user.
+  remove_llmfit() {
+    local llmfit_path="$1"
+    if [[ ! -f "$llmfit_path" ]]; then
+      return 0
     fi
-  done
+    if [[ -w "$llmfit_path" || -w "$(dirname "$llmfit_path")" ]]; then
+      run rm -f -- "$llmfit_path"
+    elif command -v sudo >/dev/null 2>&1; then
+      run sudo rm -f -- "$llmfit_path"
+    else
+      echo "[✗] No se puede eliminar $llmfit_path: requiere sudo." >&2
+      return 1
+    fi
+  }
 
+  remove_llmfit "$HOME/.local/bin/llmfit"
+  remove_llmfit "/usr/local/bin/llmfit"
+
+  # Clear a stale shell hash so command -v reflects the actual PATH state.
+  hash -r 2>/dev/null || true
   if command -v llmfit >/dev/null 2>&1; then
     echo "[✗] llmfit sigue en PATH: $(command -v llmfit)" >&2
     exit 1
