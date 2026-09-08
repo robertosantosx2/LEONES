@@ -6,7 +6,7 @@
   "forgejo": 67,
   "unchanged": 168,
   "errors": 0,
-  "licenses_found": 60,
+  "licenses_found": 56,
   "error": 5,
   "workers": 12,
   "request_timeout_seconds": 10,
