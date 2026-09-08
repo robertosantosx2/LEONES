@@ -1,8 +1,8 @@
 # LEONES RC4 — guía de beta testers
 
-**Estado:** RC4 Beta / candidato de pruebas
-**Rama:** `rc4-fitllm-recommender`
-**Commit candidato:** `1603f3ed1e0819a942a08bd487b161f84b983435`
+**Estado:** RC4 Beta / candidato de pruebas  
+**Rama:** `rc4-fitllm-recommender`  
+**Commit candidato:** `3a245234da5e0b778563e30d9c76a2a5bf87458f`
 
 ## Objetivo
 
