@@ -1,8 +1,7 @@
 name: RC4 merge main runner
 
 on:
-  push:
-    branches: [rc4-fitllm-recommender]
+  workflow_dispatch:
 
 permissions:
   contents: write
