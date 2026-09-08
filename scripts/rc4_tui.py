@@ -192,57 +192,64 @@ def draw_frame(scr,lang,nav,task):
     for i,(_,label) in enumerate(NAV):put(scr,5+i*2,6,f"{'>' if i==nav else ' '} [{i+1}] {label}",navw-6)
     x=30;rw=w-x-4;top=3;th=8;mid=12;mh=max(8,h-23);bot=mid+mh+1;bh=h-bot-4
     box(scr,top,x,th,rw,t(lang,"ops"));box(scr,mid,x,mh,rw,t(lang,"selection"));box(scr,bot,x,bh,rw,t(lang,"action"))
-    s=task.snapshot();put(scr,5,x+2,f"● {t(lang,'active') if s['active'] else t(lang,'idle')}",rw-4);put(scr,6,x+2,f"{s['kind']} {s['item']}",rw-4)
-    p=s["percent"];put(scr,7,x+2,f"{t(lang,'phase')}: {s['phase']}  {progress_bar(p)} {'' if p is None else f'{p:.0f}%'}",rw-4)
-    if s["total_bytes"]:put(scr,8,x+2,f"{t(lang,'data')}: {human_bytes(s['downloaded'])} / {human_bytes(s['total_bytes'])}  {t(lang,'rate')}: {human_bytes(s['rate'])}/s",rw-4)
-    return x,rw,mid,mh,bot,bh
+    s=task.snapshot();put(scr,5,x+2,f"● {t(lang,'active') if s['active'] else t(lang,'idle')}",rw-4);put(scr,6,x+2,f"{s['kind']} {s['item']}",rw-4);put(scr,7,x+2,f"{t(lang,'phase')}: {s['phase']}  {s['percent'] if s['percent'] is not None else '—'}%",rw-4);put(scr,8,x+2,progress_bar(s['percent']),rw-4);put(scr,9,x+2,f"{t(lang,'data')}: {human_bytes(s['downloaded'])} / {human_bytes(s['total_bytes'])}   {t(lang,'rate')}: {human_bytes(s['rate'])}/s",rw-4)
+    return (x,rw,mid,mh,bot,bh)
+
+def render_selection(scr,lang,nav,task,selection,action,focus):
+    frame=draw_frame(scr,lang,nav,task)
+    if not frame:return
+    x,rw,mid,mh,bot,bh=frame
+    if nav==2:
+        put(scr,mid+2,x+2,t(lang,"intent"),rw-4);put(scr,mid+3,x+2,t(lang,"intent_help"),rw-4)
+        for i,(key,label) in enumerate(PURPOSES):
+            marked="[x]" if key in selection["intent"] else "[ ]";put(scr,mid+5+i,x+3,f"{marked} {i+1}. {label}",rw-7)
+        put(scr,bot+1,x+2,"USER INTENT[]",rw-4);put(scr,bot+2,x+2,"if not selected: Selecciona al menos un propósito.",rw-4)
+    elif nav==3:
+        put(scr,mid+2,x+2,t(lang,"recommendation"),rw-4)
+        status,data=selection.get("recommendation",("",{}));put(scr,mid+4,x+2,f"STATUS: {status}",rw-4)
+        put(scr,mid+5,x+2,t(lang,"estimated"),rw-4)
+        for i,row in enumerate(data.get("recommendations",[])[:3]):put(scr,mid+7+i,x+3,f"{i+1}. {row.get('model_id',row.get('model','?'))}",rw-7)
+    elif nav==4:
+        put(scr,mid+2,x+2,"LLMs locales",rw-4);models=local_models()
+        for i,m in enumerate(models[:max(1,mh-5)]):put(scr,mid+4+i,x+3,f"[ ] {m}",rw-7)
+        if not models:put(scr,mid+4,x+3,"(ningún modelo instalado)",rw-7)
+    elif nav==5:
+        put(scr,mid+2,x+2,"SOFTWARE IA",rw-4)
+        for i,(key,label) in enumerate(SOFTWARE):put(scr,mid+4+i,x+3,f"[ ] {label} ({key})",rw-7)
+    elif nav==6:
+        put(scr,mid+2,x+2,"DESINSTALACIÓN",rw-4);put(scr,mid+4,x+3,"Selecciona software IA para eliminar.",rw-7)
+        for i,(key,label) in enumerate(SOFTWARE):put(scr,mid+6+i,x+3,f"[ ] {label} ({key})",rw-7)
+    elif nav==1:
+        cpu,cores,gpu,ram,disk=machine_state();put(scr,mid+2,x+2,"ESTADO DE LA MÁQUINA",rw-4);put(scr,mid+4,x+3,f"CPU: {cpu}",rw-7);put(scr,mid+5,x+3,f"CPU lógicas: {cores}",rw-7);put(scr,mid+6,x+3,f"GPU: {gpu}",rw-7);put(scr,mid+7,x+3,f"RAM ocupada/total: {ram}",rw-7);put(scr,mid+8,x+3,f"DISCO ocupado/total: {disk}",rw-7);put(scr,mid+10,x+3,f"LLMs locales: {len(local_models())}",rw-7)
+    else:put(scr,mid+2,x+2,t(lang,"home"),rw-4)
+    put(scr,bot+1,x+2,action.state or t(lang,"details"),rw-4)
+    for i,line in enumerate(action.lines[:max(1,bh-4)]):put(scr,bot+2+i,x+3,line,rw-7)
+    put(scr,h:=scr.getmaxyx()[0]-2,2,f"{t(lang,'tab')} · {t(lang,'move')} · {t(lang,'open')} · {t(lang,'back')} · {t(lang,'quit')} · {t(lang,'select')}",scr.getmaxyx()[1]-4)
+    try:curses.curs_set(1)
+    except curses.error:pass
+    scr.refresh()
 
 def run_app(scr):
-    curses.curs_set(1);scr.nodelay(False);lang=language_screen(scr);nav=0;focus=0;task=TaskManager();action=ActionState();set_context(scr,lang,action);selected=[];intent=[]
-    try:
-        while True:
-            frame=draw_frame(scr,lang,nav,task)
-            if not frame:scr.getch();continue
-            x,rw,mid,mh,bot,bh=frame
+    curses.curs_set(1);scr.keypad(True);lang=language_screen(scr);nav=0;focus=0;task=TaskManager();action=ActionState();set_context(scr,lang,action);selection={"intent":set(),"recommendation":("",{})}
+    while True:
+        render_selection(scr,lang,nav,task,selection,action,focus);scr.timeout(150);key=scr.getch()
+        if key in (ord("q"),ord("Q")):break
+        if key==9:focus=(focus+1)%2
+        elif key in (curses.KEY_UP,ord("k")):nav=(nav-1)%len(NAV) if focus==0 else nav
+        elif key in (curses.KEY_DOWN,ord("j")):nav=(nav+1)%len(NAV) if focus==0 else nav
+        elif key in (10,13):
             if nav==2:
-                put(scr,mid+2,x+2,t(lang,"intent"),rw-4);put(scr,mid+3,x+2,t(lang,"intent_help"),rw-4)
-                for i,(key,label) in enumerate(PURPOSES):put(scr,mid+5+i,x+4,f"{'[x]' if key in intent else '[ ]'} {i+1}. {label}",rw-8)
-                put(scr,mid+5+len(PURPOSES),x+2,"ENTER = recomendar",rw-4)
-            elif nav==3:
-                put(scr,mid+2,x+2,t(lang,"recommendation"),rw-4);put(scr,mid+3,x+2,t(lang,"estimated"),rw-4);put(scr,mid+4,x+2,t(lang,"measured"),rw-4)
-            elif nav==4:
-                models=local_models();put(scr,mid+2,x+2,"LLMs locales: "+str(len(models)),rw-4)
-                for i,m in enumerate(models[:mh-5]):put(scr,mid+4+i,x+4,f"[{'x' if m in selected else ' '}] {m}",rw-8)
-            elif nav==5:
-                put(scr,mid+2,x+2,"SOFTWARE IA",rw-4)
-                for i,(key,label) in enumerate(SOFTWARE):put(scr,mid+4+i,x+4,f"[{'x' if key in selected else ' '}] {label}",rw-8)
-            elif nav==6:put(scr,mid+2,x+2,"DESINSTALACIÓN",rw-4)
-            elif nav==1:
-                cpu,cores,gpu,ram,disk=machine_state();put(scr,mid+2,x+2,f"CPU: {cpu}",rw-4);put(scr,mid+3,x+2,f"Cores: {cores}  GPU: {gpu}",rw-4);put(scr,mid+4,x+2,f"RAM: {ram}",rw-4);put(scr,mid+5,x+2,f"DISCO: {disk}",rw-4);put(scr,mid+7,x+2,f"LLMs locales: {len(local_models())}",rw-4)
-            else:put(scr,mid+2,x+2,t(lang,"home"),rw-4)
-            if action.lines:
-                put(scr,bot+2,x+2,action.state or t(lang,"details"),rw-4)
-                for i,line in enumerate(action.lines[:max(1,bh-5)]):put(scr,bot+3+i,x+2,line,rw-4)
-                if action.footer:put(scr,bot+bh-2,x+2,action.footer,rw-4)
-            sh,sw=scr.getmaxyx();put(scr,sh-2,2,f"{t(lang,'tab')} · {t(lang,'move')} · {t(lang,'open')} · {t(lang,'select')} · {t(lang,'back')} · {t(lang,'quit')}",sw-4);scr.refresh();key=scr.getch()
-            if key in (ord("q"),ord("Q")):break
-            if key==9:focus=(focus+1)%2
-            elif key in (curses.KEY_UP,ord("k")):nav=(nav-1)%len(NAV)
-            elif key in (curses.KEY_DOWN,ord("j")):nav=(nav+1)%len(NAV)
-            elif key in tuple(ord(str(n)) for n in range(1,8)):nav=int(chr(key))-1
-            elif key==ord(" "):
-                if nav==2:
-                    i=len(intent)%len(PURPOSES);k=PURPOSES[i][0];intent=[p for p in intent if p!=k] if k in intent else intent+[k]
-                elif nav in (5,6):
-                    i=len(selected)%len(SOFTWARE);k=SOFTWARE[i][0];selected=[p for p in selected if p!=k] if k in selected else selected+[k]
-            elif key in (10,13):
-                if nav==2:
-                    if not intent:action.update(state=t(lang,"details"),lines=["if not selected: Selecciona al menos un propósito."]);continue
-                    status,data=run_recommendation(intent);action.update(state=status.upper(),lines=[json.dumps(data,ensure_ascii=False)[:rw-4]])
-                elif nav==4 and selected:run_operation(task,"models",[{"model_id":m} for m in selected])
-                elif nav==5 and selected and confirm(scr,lang,t(lang,"confirm_install")) and privilege_prompt(scr,lang):run_operation(task,"software",selected)
-                elif nav==6 and selected and confirm(scr,lang,t(lang,"confirm_uninstall")) and privilege_prompt(scr,lang):run_operation(task,"uninstall",selected)
-    finally:clear_context()
+                if not selection["intent"]:action.update(state=t(lang,"intent"),lines=["USER INTENT[]: Selecciona al menos un propósito."]);continue
+                status,data=run_recommendation(sorted(selection["intent"]));selection["recommendation"]=(status,data);nav=3
+            elif nav in (4,5,6):
+                if nav==5:items=[k for k,_ in SOFTWARE];
+                elif nav==6:items=[k for k,_ in SOFTWARE]
+                else:items=[]
+                if items and confirm(scr,lang,t(lang,"confirm_install" if nav==5 else "confirm_uninstall")) and privilege_prompt(scr,lang):run_operation(task,"software" if nav==5 else "uninstall",items)
+        elif key==ord(" ") and nav==2:
+            i=len(selection["intent"])%len(PURPOSES);selection["intent"].add(PURPOSES[i][0])
+        elif key in (27,):nav=0
+    clear_context()
 
 def main():return curses.wrapper(run_app) or 0
 if __name__=="__main__":raise SystemExit(main())
