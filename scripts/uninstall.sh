@@ -36,11 +36,11 @@ finish_status() {
     if (( DRY_RUN )); then
       echo '[✓] DRY-RUN finalizado. No se han realizado cambios.'
     else
-      echo '[✓] DESINSTALACIÓN / LIMPIEZA FINALIZADA.'
+      echo '[✓] DESINSTALACIÓN / LIMPIEZA FINALIZADA CORRECTAMENTE.'
       echo '[✓] Solo se tocaron componentes explícitamente seleccionados.'
     fi
   else
-    echo "[✗] FALLIDA (código $rc)." >&2
+    echo "[✗] DESINSTALACIÓN / LIMPIEZA FALLIDA (código $rc)." >&2
   fi
   return "$rc"
 }
@@ -49,8 +49,7 @@ trap finish_status EXIT
 for arg in "$@"; do
   case "$arg" in
     --fitllm|--magnitude|--ods|--hermes|--omh|--llms|--leones)
-      SELECTED+=("${arg#--}")
-      ;;
+      SELECTED+=("${arg#--}") ;;
     --all) SELECTED=(fitllm magnitude ods hermes omh llms leones) ;;
     --dry-run) DRY_RUN=1 ;;
     --yes) ASSUME_YES=1 ;;
@@ -64,9 +63,7 @@ run() { if (( DRY_RUN )); then printf '[DRY-RUN]'; printf ' %q' "$@"; printf '\n
 
 if contains leones "${SELECTED[@]+"${SELECTED[@]}"}"; then
   TMP=()
-  for s in "${SELECTED[@]}"; do
-    [[ "$s" != leones ]] && TMP+=("$s")
-  done
+  for s in "${SELECTED[@]}"; do [[ "$s" != leones ]] && TMP+=("$s"); done
   TMP+=(leones)
   SELECTED=("${TMP[@]}")
 fi
@@ -98,98 +95,53 @@ if ((${#SELECTED[@]} == 0)); then
       for n in "${nums[@]}"; do
         n="${n//[[:space:]]/}"
         case "$n" in
-          1) SELECTED+=(fitllm) ;;
-          2) SELECTED+=(magnitude) ;;
-          3) SELECTED+=(ods) ;;
-          4) SELECTED+=(hermes) ;;
-          5) SELECTED+=(omh) ;;
-          6) SELECTED+=(llms) ;;
-          7) SELECTED+=(leones) ;;
+          1) SELECTED+=(fitllm) ;; 2) SELECTED+=(magnitude) ;; 3) SELECTED+=(ods) ;; 4) SELECTED+=(hermes) ;; 5) SELECTED+=(omh) ;; 6) SELECTED+=(llms) ;; 7) SELECTED+=(leones) ;;
         esac
       done
       ;;
   esac
-  if ((${#SELECTED[@]} == 0)); then
-    echo '[i] Nada seleccionado.'
-    exit 0
-  fi
+  if ((${#SELECTED[@]} == 0)); then echo '[i] Nada seleccionado.'; exit 0; fi
   if contains leones "${SELECTED[@]}"; then
-    TMP=()
-    for s in "${SELECTED[@]}"; do [[ "$s" != leones ]] && TMP+=("$s"); done
-    TMP+=(leones)
-    SELECTED=("${TMP[@]}")
+    TMP=(); for s in "${SELECTED[@]}"; do [[ "$s" != leones ]] && TMP+=("$s"); done
+    TMP+=(leones); SELECTED=("${TMP[@]}")
   fi
 fi
 
 if (( ! ASSUME_YES )); then
-  echo
-  echo "Se van a limpiar: ${SELECTED[*]}"
-  read -r -p '¿Confirmar? [s/N] ' ans
-  case "$ans" in
-    s|S|y|Y) ;;
-    *) echo '[i] Cancelado.'; exit 0 ;;
-  esac
+  echo; echo "Se van a limpiar: ${SELECTED[*]}"; read -r -p '¿Confirmar? [s/N] ' ans
+  case "$ans" in s|S|y|Y) ;; *) echo '[i] Cancelado.'; exit 0 ;; esac
 fi
 
 if contains fitllm "${SELECTED[@]}"; then
   echo '== FitLLM / LLMFit =='
-  if command -v pipx >/dev/null 2>&1 && pipx list 2>/dev/null | grep -qi llmfit; then
-    run pipx uninstall llmfit || true
-  fi
-  if command -v pip3 >/dev/null 2>&1; then
-    run pip3 uninstall -y llmfit fitllm 2>/dev/null || true
-  elif command -v pip >/dev/null 2>&1; then
-    run pip uninstall -y llmfit fitllm 2>/dev/null || true
-  fi
-  if command -v llmfit >/dev/null 2>&1; then
-    echo "[i] llmfit sigue en PATH: $(command -v llmfit) — puede ser instalación de sistema."
-  else
-    echo '[✓] FitLLM/LLMFit no aparece en PATH (o se retiró).'
-  fi
+  if command -v pipx >/dev/null 2>&1 && pipx list 2>/dev/null | grep -qi llmfit; then run pipx uninstall llmfit || true; fi
+  if command -v pip3 >/dev/null 2>&1; then run pip3 uninstall -y llmfit fitllm 2>/dev/null || true
+  elif command -v pip >/dev/null 2>&1; then run pip uninstall -y llmfit fitllm 2>/dev/null || true; fi
+  if command -v llmfit >/dev/null 2>&1; then echo "[i] llmfit sigue en PATH: $(command -v llmfit) — puede ser instalación de sistema."
+  else echo '[✓] FitLLM/LLMFit no aparece en PATH (o se retiró).'; fi
 fi
 
 if contains magnitude "${SELECTED[@]}"; then
   echo '== Magnitude =='
   if command -v npm >/dev/null 2>&1; then
-    if npm list -g --depth=0 @magnitudedev/cli >/dev/null 2>&1; then
-      run npm uninstall -g @magnitudedev/cli
-    else
-      echo '[i] Magnitude no aparece instalado globalmente (user).'
-    fi
+    if npm list -g --depth=0 @magnitudedev/cli >/dev/null 2>&1; then run npm uninstall -g @magnitudedev/cli; else echo '[i] Magnitude no aparece instalado globalmente (user).'; fi
     if command -v sudo >/dev/null 2>&1; then
-      if (( DRY_RUN )); then
-        echo '[DRY-RUN] sudo npm uninstall -g @magnitudedev/cli (si aplica)'
-      elif sudo npm list -g --depth=0 @magnitudedev/cli >/dev/null 2>&1; then
-        sudo npm uninstall -g @magnitudedev/cli
-      fi
+      if (( DRY_RUN )); then echo '[DRY-RUN] sudo npm uninstall -g @magnitudedev/cli (si aplica)'
+      elif sudo npm list -g --depth=0 @magnitudedev/cli >/dev/null 2>&1; then sudo npm uninstall -g @magnitudedev/cli; fi
     fi
-  else
-    echo '[i] npm no disponible; Magnitude no modificado.'
-  fi
+  else echo '[i] npm no disponible; Magnitude no modificado.'; fi
 fi
 
 if contains hermes "${SELECTED[@]}"; then
   echo '== Hermes =='
-  if command -v hermes >/dev/null 2>&1; then
-    echo "[i] hermes en PATH: $(command -v hermes) — retirada de binario de sistema no automática."
-  fi
-  if [[ -d "$HOME/.hermes" ]]; then
-    run rm -rf -- "$HOME/.hermes"
-  else
-    echo '[i] No existe ~/.hermes'
-  fi
+  if command -v hermes >/dev/null 2>&1; then echo "[i] hermes en PATH: $(command -v hermes) — retirada de binario de sistema no automática."; fi
+  if [[ -d "$HOME/.hermes" ]]; then run rm -rf -- "$HOME/.hermes"; else echo '[i] No existe ~/.hermes'; fi
 fi
 
 if contains omh "${SELECTED[@]}"; then
   echo '== Oh My Hermes =='
-  if command -v omh >/dev/null 2>&1; then
-    echo "[i] omh en PATH: $(command -v omh)"
-  fi
-  if [[ -d "$HOME/.omh" ]]; then
-    run rm -rf -- "$HOME/.omh"
-  else
-    echo '[i] No existe ~/.omh'
-  fi
+  if command -v omh >/dev/null 2>&1; then echo "[i] omh en PATH: $(command -v omh)"; fi
+  if [[ -d "$HOME/.omh" ]]; then run rm -rf -- "$HOME/.omh"; else echo '[i] No existe ~/.omh'; fi
 fi
 
 if contains llms "${SELECTED[@]}"; then
@@ -198,20 +150,16 @@ if contains llms "${SELECTED[@]}"; then
     mapfile -t models < <(ollama list 2>/dev/null | awk 'NR>1 && $1!="" {print $1}')
     for model in "${models[@]}"; do run ollama rm "$model"; done
     echo "[✓] ${#models[@]} modelo(s) Ollama tratado(s)."
-  else
-    echo '[i] Ollama no disponible; LLM no modificados.'
-  fi
+  else echo '[i] Ollama no disponible; LLM no modificados.'; fi
 fi
 
 if contains ods "${SELECTED[@]}"; then
-  echo '== ODS =='
-  echo '[INFO] Solo recursos identificables como ODS.'
+  echo '== ODS =='; echo '[INFO] Solo recursos identificables como ODS.'
   container_cmd=()
   if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then container_cmd=(docker)
   elif command -v sudo >/dev/null 2>&1 && command -v docker >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1; then container_cmd=(sudo docker)
   elif command -v podman >/dev/null 2>&1 && podman info >/dev/null 2>&1; then container_cmd=(podman)
-  elif command -v sudo >/dev/null 2>&1 && command -v podman >/dev/null 2>&1 && sudo podman info >/dev/null 2>&1; then container_cmd=(sudo podman)
-  fi
+  elif command -v sudo >/dev/null 2>&1 && command -v podman >/dev/null 2>&1 && sudo podman info >/dev/null 2>&1; then container_cmd=(sudo podman); fi
   if ((${#container_cmd[@]})); then
     mapfile -t ids < <("${container_cmd[@]}" ps -a --format '{{.ID}}\t{{.Names}}\t{{.Image}}' | awk 'BEGIN{IGNORECASE=1} $0 ~ /ods/ {print $1}')
     for id in "${ids[@]}"; do [[ -n "$id" ]] && run "${container_cmd[@]}" rm -f "$id"; done
@@ -220,18 +168,14 @@ if contains ods "${SELECTED[@]}"; then
     mapfile -t volumes < <("${container_cmd[@]}" volume ls --format '{{.Name}}' | awk 'BEGIN{IGNORECASE=1} $0 ~ /ods/ {print $1}')
     for volume in "${volumes[@]}"; do [[ -n "$volume" ]] && run "${container_cmd[@]}" volume rm "$volume"; done
     echo '[✓] Recursos ODS identificables limpiados.'
-  else
-    echo '[i] No hay Docker/Podman operativo; ODS no modificado.'
-  fi
+  else echo '[i] No hay Docker/Podman operativo; ODS no modificado.'; fi
   echo '[i] Docker y Podman no se desinstalan.'
 fi
 
 if contains leones "${SELECTED[@]}"; then
   echo '== LEONES (estado local) =='
-  if [[ -e .leones ]]; then
-    run rm -rf -- .leones
-  else
-    echo '[i] No existe: .leones'
-  fi
+  if [[ -e .leones ]]; then run rm -rf -- .leones; else echo '[i] No existe: .leones'; fi
   echo '[i] Checkout fuente y evidencias históricas no se borran por defecto.'
 fi
+
+exit 0
