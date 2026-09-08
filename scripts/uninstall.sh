@@ -132,13 +132,15 @@ if contains fitllm "${SELECTED[@]}"; then
 
   # LLMFit is a standalone ELF. The official installer can leave it in
   # /usr/local/bin, so LEONES owns both supported locations explicitly.
-  # Use sudo only when the selected binary is not removable by the current user.
+  # Unlink permission is determined by the parent directory, not file ownership.
   remove_llmfit() {
     local llmfit_path="$1"
+    local llmfit_dir
+    llmfit_dir="$(dirname "$llmfit_path")"
     if [[ ! -f "$llmfit_path" ]]; then
       return 0
     fi
-    if [[ -w "$llmfit_path" || -w "$(dirname "$llmfit_path")" ]]; then
+    if [[ -w "$llmfit_dir" ]]; then
       run rm -f -- "$llmfit_path"
     elif command -v sudo >/dev/null 2>&1; then
       run sudo rm -f -- "$llmfit_path"
@@ -206,6 +208,7 @@ if contains ods "${SELECTED[@]}"; then
     mapfile -t images < <("${container_cmd[@]}" images --format '{{.Repository}}:{{.Tag}}' | awk 'BEGIN{IGNORECASE=1} $0 ~ /ods/ {print $1}')
     for image in "${images[@]}"; do [[ -n "$image" ]] && run "${container_cmd[@]}" rmi "$image"; done
     mapfile -t volumes < <("${container_cmd[@]}" volume ls --format '{{.Name}}' | awk 'BEGIN{IGNORECASE=1} $0 ~ /ods/ {print $1}')
+    for volume in "${container_cmd[@]}" volume ls --format '{{.Name}}' | awk 'BEGIN{IGNORECASE=1} $0 ~ /ods/ {print $1}')
     for volume in "${volumes[@]}"; do [[ -n "$volume" ]] && run "${container_cmd[@]}" volume rm "$volume"; done
     echo '[✓] Recursos ODS identificables limpiados.'
   else echo '[i] No hay Docker/Podman operativo; ODS no modificado.'; fi
