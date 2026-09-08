@@ -34,7 +34,7 @@ finish_status() {
   local rc="${1:-0}"
   if (( rc == 0 )); then
     if (( DRY_RUN )); then
-      echo '[✓] DRY-RUN finalizado. No se han realizado cambios.'
+      echo '[✓] DRY-RUN finalizado correctamente. No se han realizado cambios.'
     else
       echo '[✓] DESINSTALACIÓN / LIMPIEZA FINALIZADA CORRECTAMENTE.'
       echo '[✓] Solo se tocaron componentes explícitamente seleccionados.'
