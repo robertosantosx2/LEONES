@@ -522,7 +522,6 @@ def render(s, lang, nav, focus, index, state, task):
         put(s, bot_y + 5, x + 4, q["message"], rw - 8)
     put(s, h - 2, 4, f"{tr(lang,'tab')} · {tr(lang,'move')} · {tr(lang,'enter')} · {tr(lang,'space')} · {tr(lang,'back')} · {tr(lang,'quit')}", w - 8)
 
-    # Physical terminal cursor follows the logical focus, so the cursor is not merely decorative.
     try:
         if focus == 0:
             cy, cx = 5 + nav * 2, 6
@@ -543,7 +542,9 @@ def app(s):
     s.timeout(120)
     lang = language_screen(s)
     nav = 0
-    focus = 1
+    # After language selection the persistent TUI always lands on [1] INICIO.
+    # Focus is deliberately on the left navigation so the visible cursor is there.
+    focus = 0
     index = 0
     state = {"purposes": set(), "selected_models": set(), "selected_software": set(), "selected_uninstall": set(), "recommendation": {}}
     task = TaskManager()
