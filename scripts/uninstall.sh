@@ -19,7 +19,7 @@ Components:
   --fitllm      FitLLM / LLMFit CLI
   --magnitude   global @magnitudedev/cli
   --ods         ODS containers/images/volumes identifiable as ODS
-  --hermes      Hermes local state when detectable
+  --hermes      Hermes local state and user launcher
   --omh         Oh My Hermes local state when detectable
   --llms        all local Ollama models
   --leones      LEONES generated local state (.leones/) — offered last
@@ -128,9 +128,6 @@ if contains fitllm "${SELECTED[@]}"; then
   if command -v pip3 >/dev/null 2>&1; then run pip3 uninstall -y llmfit fitllm 2>/dev/null || true
   elif command -v pip >/dev/null 2>&1; then run pip uninstall -y llmfit fitllm 2>/dev/null || true; fi
 
-  # LLMFit is a standalone ELF. The official installer can leave it in
-  # /usr/local/bin, so LEONES owns both supported locations explicitly.
-  # Unlink permission is determined by the parent directory, not file ownership.
   remove_llmfit() {
     local llmfit_path="$1"
     local llmfit_dir
@@ -173,8 +170,32 @@ fi
 
 if contains hermes "${SELECTED[@]}"; then
   echo '== Hermes =='
-  if command -v hermes >/dev/null 2>&1; then echo "[i] hermes en PATH: $(command -v hermes) — binario de sistema no retirado automáticamente."; fi
-  if [[ -d "$HOME/.hermes" ]]; then run rm -rf -- "$HOME/.hermes"; else echo '[i] No existe ~/.hermes'; fi
+  hermes_bin="$HOME/.local/bin/hermes"
+  hermes_state="$HOME/.hermes"
+  if [[ -e "$hermes_bin" || -L "$hermes_bin" ]]; then
+    if [[ -L "$hermes_bin" ]]; then
+      target="$(readlink "$hermes_bin")"
+      if [[ "$target" == "$HOME/.hermes/"* || "$target" == "$HOME/.local/share/hermes/"* ]]; then
+        run rm -f -- "$hermes_bin"
+      else
+        echo "[i] No se elimina $hermes_bin: enlace ajeno a Hermes."
+      fi
+    else
+      if [[ -f "$hermes_bin" ]] && grep -qF "$HOME/.hermes/hermes-agent" "$hermes_bin" 2>/dev/null; then
+        run rm -f -- "$hermes_bin"
+      else
+        echo "[i] No se elimina $hermes_bin: launcher ajeno o no verificable."
+      fi
+    fi
+  fi
+  if [[ -d "$hermes_state" ]]; then run rm -rf -- "$hermes_state"; else echo '[i] No existe ~/.hermes'; fi
+  hash -r 2>/dev/null || true
+  if command -v hermes >/dev/null 2>&1; then
+    echo "[✗] hermes sigue en PATH: $(command -v hermes)" >&2
+    exit 1
+  else
+    echo '[✓] Hermes retirado correctamente.'
+  fi
 fi
 
 if contains omh "${SELECTED[@]}"; then
