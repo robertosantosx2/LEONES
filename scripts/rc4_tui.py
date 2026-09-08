@@ -20,8 +20,8 @@ PURPOSES=(("programming","PROGRAMMING"),("reasoning","REASONING"),("research","R
 SOFTWARE=(("fitllm","FitLLM"),("ods","ODS"),("magnitude","Magnitude"),("hermes","Hermes"),("omh","OMH"))
 NAV=(("home","INICIO"),("state","ESTADO"),("intent","INTENCIÓN"),("recommend","RECOMENDADOR"),("models","LLMs / INSTALACIÓN"),("software","SOFTWARE IA"),("uninstall","DESINSTALACIÓN"))
 TEXT={
-"es":{"nav":"NAVEGACIÓN","ops":"OPERACIÓN / PROGRESO","selection":"SELECCIÓN / INFORMACIÓN PRINCIPAL","action":"ACCIÓN / ESCALADO / PRIVILEGIOS","active":"ACTIVA","idle":"SIN OPERACIONES","phase":"FASE","data":"DATOS","rate":"VELOCIDAD","tab":"TAB cambiar foco","move":"↑/↓ mover","open":"ENTER abrir","back":"ESC volver","quit":"Q salir","select":"SPACE select","details":"CARACTERÍSTICAS DE LA SELECCIÓN","accept":"ACEPTACIÓN","authorize":"AUTORIZACIÓN DEL SISTEMA","password":"Contraseña de sudo:","hidden":"Entrada oculta · ENTER confirma","cancelled":"Operación cancelada.","authorized":"Privilegios autorizados. Operación iniciada en segundo plano.","failed_auth":"No se pudo autorizar sudo. Operación cancelada.","requirements":"REQUISITOS","destination":"DESTINO","dependencies":"DEPENDENCIAS","consequences":"CONSECUENCIAS","state":"ESTADO","intent":"INTENCIÓN DE USO","intent_help":"Selecciona uno o varios propósitos","recommendation":"RECOMENDACIÓN RC4","estimated":"ESTIMATED · ejecución no autorizada · medición no autorizada","home":"Centro de control: puedes navegar mientras las operaciones continúan.","confirm_install":"¿Confirmar instalación de todos los seleccionados? [Y] sí / [N] no","confirm_uninstall":"¿Confirmar DESINSTALACIÓN de todos los seleccionados? [Y] sí / [N] no"},
-"en":{"nav":"NAVIGATION","ops":"OPERATION / PROGRESS","selection":"SELECTION / MAIN INFORMATION","action":"ACTION / ESCALATION / PRIVILEGES","active":"ACTIVE","idle":"NO OPERATIONS","phase":"PHASE","data":"DATA","rate":"SPEED","tab":"TAB switch focus","move":"↑/↓ move","open":"ENTER open","back":"ESC back","quit":"Q quit","select":"SPACE select","details":"SELECTION CHARACTERISTICS","accept":"ACCEPTANCE","authorize":"SYSTEM AUTHORIZATION","password":"sudo password:","hidden":"Hidden input · ENTER confirms","cancelled":"Operation cancelled.","authorized":"Privileges authorized. Operation started in background.","failed_auth":"sudo authorization failed. Operation cancelled.","requirements":"REQUIREMENTS","destination":"DESTINATION","dependencies":"DEPENDENCIES","consequences":"CONSEQUENCES","state":"STATE","intent":"USE INTENT","intent_help":"Select one or more purposes","recommendation":"RC4 RECOMMENDATION","estimated":"ESTIMATED · execution not authorized · measurement not authorized","home":"Control center: you can navigate while operations continue.","confirm_install":"Confirm installation of all selected? [Y] yes / [N] no","confirm_uninstall":"Confirm UNINSTALL of all selected? [Y] yes / [N] no"}}
+"es":{"nav":"NAVEGACIÓN","ops":"ACTIVIDAD RC4 / OPERACIÓN / PROGRESO","selection":"SELECCIÓN / INFORMACIÓN PRINCIPAL","action":"ACCIÓN / ESCALADO / PRIVILEGIOS","active":"ACTIVA","idle":"SIN OPERACIONES","phase":"FASE","data":"DATOS","rate":"VELOCIDAD","tab":"TAB cambiar foco","move":"↑/↓ mover","open":"ENTER abrir","back":"ESC volver","quit":"Q salir","select":"SPACE select","details":"CARACTERÍSTICAS DE LA SELECCIÓN","accept":"ACEPTACIÓN","authorize":"AUTORIZACIÓN DEL SISTEMA","password":"Contraseña de sudo:","hidden":"Entrada oculta · ENTER confirma","cancelled":"Operación cancelada.","authorized":"Privilegios autorizados. Operación iniciada en segundo plano.","failed_auth":"No se pudo autorizar sudo. Operación cancelada.","requirements":"REQUISITOS","destination":"DESTINO","dependencies":"DEPENDENCIAS","consequences":"CONSECUENCIAS","state":"ESTADO","intent":"INTENCIÓN DE USO","intent_help":"Selecciona uno o varios propósitos","recommendation":"RECOMENDACIÓN RC4","estimated":"ESTIMATED · ejecución no autorizada · medición no autorizada","measured":"MEASURED · evidencia de ejecución/medición real","home":"Centro de control: puedes navegar mientras las operaciones continúan.","confirm_install":"¿Confirmar instalación de todos los seleccionados? [Y] sí / [N] no","confirm_uninstall":"¿Confirmar DESINSTALACIÓN de todos los seleccionados? [Y] sí / [N] no"},
+"en":{"nav":"NAVIGATION","ops":"RC4 ACTIVITY / OPERATION / PROGRESS","selection":"SELECTION / MAIN INFORMATION","action":"ACTION / ESCALATION / PRIVILEGES","active":"ACTIVE","idle":"NO OPERATIONS","phase":"PHASE","data":"DATA","rate":"SPEED","tab":"TAB switch focus","move":"↑/↓ move","open":"ENTER open","back":"ESC back","quit":"Q quit","select":"SPACE select","details":"SELECTION CHARACTERISTICS","accept":"ACCEPTANCE","authorize":"SYSTEM AUTHORIZATION","password":"sudo password:","hidden":"Hidden input · ENTER confirms","cancelled":"Operation cancelled.","authorized":"Privileges authorized. Operation started in background.","failed_auth":"sudo authorization failed. Operation cancelled.","requirements":"REQUIREMENTS","destination":"DESTINATION","dependencies":"DEPENDENCIES","consequences":"CONSEQUENCES","state":"STATE","intent":"USE INTENT","intent_help":"Select one or more purposes","recommendation":"RC4 RECOMMENDATION","estimated":"ESTIMATED · execution not authorized · measurement not authorized","measured":"MEASURED · real execution/measurement evidence","home":"Control center: you can navigate while operations continue.","confirm_install":"Confirm installation of all selected? [Y] yes / [N] no","confirm_uninstall":"Confirm UNINSTALL of all selected? [Y] yes / [N] no"}}
 
 def t(lang,k): return TEXT.get(lang,TEXT["es"]).get(k,k)
 def put(s,y,x,text,width):
@@ -77,7 +77,7 @@ class TaskManager:
         with self.lock: return dict(self.__dict__)
     def start(self,kind,n):
         with self.lock:
-            self.active=True; self.kind=kind; self.item=""; self.index=0; self.total_items=n; self.percent=None; self.downloaded=0; self.total_bytes=0; self.rate=0.; self.phase="preparing"; self.results=[]; self.progress=OperationProgress(kind,OperationPhase.PREPARING,current=0,total=max(1,n))
+            self.active=True; self.kind=kind; self.item=""; self.index=0; self.total_items=n; self.percent=None; self.downloaded=0; self.total_bytes=0; self.rate=0.; self.phase="preparing"; self.progress=OperationProgress(kind,OperationPhase.PREPARING,current=0,total=max(1,n))
     def _line(self,line):
         with self.lock:
             fields={x.split("=",1)[0]:x.split("=",1)[1] for x in line.split() if "=" in x}
@@ -202,123 +202,67 @@ def draw_frame(scr,lang,nav,task):
     if h<28 or w<100:put(scr,1,2,"LEONES RC4 — terminal demasiado pequeña (mín. 100x28)",w-4);scr.refresh();return None
     box(scr,1,1,h-3,w-2,"LEONES RC4");navw=25;box(scr,3,3,h-7,navw,t(lang,"nav"))
     for i,(_,label) in enumerate(NAV):put(scr,5+i*2,6,f"{'>' if i==nav else ' '} [{i+1}] {label}",navw-6)
-    x=30;rw=w-x-4;top=3;th=8;mid=12;mh=max(8,h-23);bot=mid+mh+1;bh=max(5,h-bot-5)
-    box(scr,top,x,th,rw,t(lang,"ops"));s=task.snapshot()
-    if s["active"]:
-        blink="●" if int(time.monotonic()*2)%2==0 else "○";put(scr,5,x+3,f"{blink} {t(lang,'active')} {s['kind'].upper()} {s['index']}/{s['total_items']} {s['item']}",rw-6);put(scr,6,x+3,f"{progress_bar(s['percent'])} {s['percent']:.1f}%" if s['percent'] is not None else f"{progress_bar(None)} -- %",rw-6);put(scr,7,x+3,f"{t(lang,'phase')}: {s['phase']}  {t(lang,'data')}: {human_bytes(s['downloaded'])}  {t(lang,'rate')}: {human_bytes(s['rate'])}/s",rw-6)
-    else: put(scr,5,x+3,"○ "+(s["phase"] if s["phase"]!="idle" else t(lang,"idle")),rw-6)
-    box(scr,mid,x,mh,rw,t(lang,"selection"));box(scr,bot,x,bh,rw,t(lang,"action"))
+    x=30;rw=w-x-4;top=3;th=8;mid=12;mh=max(8,h-23);bot=mid+mh+1;bh=h-bot-4
+    box(scr,top,x,th,rw,t(lang,"ops"));box(scr,mid,x,mh,rw,t(lang,"selection"));box(scr,bot,x,bh,rw,t(lang,"action"))
+    s=task.snapshot();put(scr,5,x+2,f"● {t(lang,'active') if s['active'] else t(lang,'idle')}",rw-4);put(scr,6,x+2,f"{s['kind']} {s['item']}",rw-4);put(scr,7,x+2,f"{t(lang,'phase')}: {s['phase']}  {progress_bar(s['percent'])} {'' if s['percent'] is None else f'{s['percent']:.0f}%'}",rw-4)
     return x,rw,mid,mh,bot,bh
 
-def render_center(scr,lang,panel,state,geom):
-    x,rw,mid,mh,_,_=geom;y=mid+2
-    if panel=="home":put(scr,y,x+3,"LEONES RC4 — centro de control",rw-6);put(scr,y+2,x+3,t(lang,"home"),rw-6);return
-    if panel=="state":
-        cpu,cores,gpu,ram,disk=machine_state(); inv=inventory(); mods=local_models();
-        lines=[f"HARDWARE: CPU {cpu} ({cores})",f"GPU {gpu}",f"RAM {ram}",f"DISCO {disk}",f"SOFTWARE IA INSTALADO: {', '.join(c.get('display_name',c.get('component_id','?')) for c in inv.get('components',[]) if c.get('installed')) or 'ninguno'}",f"LLMs LOCALES: {len(mods)} :: {', '.join(mods) or 'ninguno'}"]
-        for i,line in enumerate(lines):put(scr,y+i,x+3,line,rw-6)
-    elif panel=="intent":
-        put(scr,y,x+3,"USER INTENT[] — "+t(lang,"intent_help"),rw-6)
-        for i,(_,label) in enumerate(PURPOSES):put(scr,y+2+i,x+6,f"{'>' if i==state['focus'] else ' '} [{'X' if i in state['selected'] else ' '}] [{i+1}] {label}",rw-12)
-    elif panel=="recommend":
-        rows=(state.get("result") or {}).get("recommendations") or [];put(scr,y,x+3,f"{t(lang,'recommendation')}: {state.get('status','').upper()}",rw-6);put(scr,y+1,x+3,t(lang,"estimated"),rw-6)
-        for i,row in enumerate(rows[:3]):put(scr,y+3+i,x+3,f"{'>' if i==state['focus'] else ' '} [{'X' if i in state['selected'] else ' '}] [{i+1}] {row.get('model_id','?')}",rw-6)
-    elif panel=="models":
-        put(scr,y,x+3,"LLMs LOCALES — usa R para recomendar",rw-6)
-        for i,m in enumerate(local_models()[:10]):put(scr,y+2+i,x+3,"● "+m,rw-6)
-    elif panel in ("software","uninstall"):
-        if panel=="software":items=list(SOFTWARE);hint="Selecciona uno o varios componentes para instalar"
-        else:items=[(c.get('component_id','?'),c.get('display_name',c.get('component_id','?'))) for c in inventory().get('components',[]) if c.get('installed') and c.get('uninstallable') and not c.get('offer_last')];hint="Selecciona uno o varios componentes instalados para desinstalar"
-        put(scr,y,x+3,hint,rw-6)
-        for i,(_,label) in enumerate(items[:10]):put(scr,y+2+i,x+6,f"{'>' if i==state['focus'] else ' '} [{'X' if i in state['selected'] else ' '}] [{i+1}] {label}",rw-12)
-
-def selection_details(panel,state,lang):
-    selected=state.get("selected",set())
-    if panel=="intent":return [f"{t(lang,'state')}: {', '.join(PURPOSES[i][1] for i in sorted(selected)) or 'ninguno'}",f"{t(lang,'requirements')}: recomendador RC4 + evidencia externa"]
-    if panel=="recommend":return [f"{t(lang,'state')}: {len(selected)} seleccionados",f"{t(lang,'requirements')}: artefacto descargable + evidencia",f"{t(lang,'destination')}: {MODELS_DIR}",f"{t(lang,'consequences')}: instalación del LLM; no autoriza medición"]
-    if panel=="software":return [f"{t(lang,'state')}: {', '.join(SOFTWARE[i][1] for i in sorted(selected)) or 'ninguno'}",f"{t(lang,'requirements')}: privilegios del sistema si son necesarios",f"{t(lang,'consequences')}: instalación en segundo plano"]
-    return [f"{t(lang,'state')}: {len(selected)} seleccionados",f"{t(lang,'consequences')}: eliminación del componente seleccionado"]
-
-def render_action(scr,lang,action,geom):
-    x,rw,_,_,bot,bh=geom;y=bot+2;put(scr,y,x+3,action.get("state") or t(lang,"details"),rw-6)
-    for line in action.get("lines",[]):y+=1;put(scr,y,x+3,line,rw-6)
-    if action.get("footer"):put(scr,bot+bh-2,x+3,action["footer"],rw-6)
+class ActionState:
+    def __init__(self): self.state="";self.lines=[];self.footer=""
 
 def run_app(scr):
-    scr.keypad(True);scr.timeout(200);lang=language_screen(scr)
-    try:curses.curs_set(1)
-    except curses.error:pass
-    task=TaskManager();nav=0;focus="nav";panel="home";action={"state":"","lines":[],"footer":""};set_context(scr,lang,action)
-    states={k:{"selected":set(),"focus":0} for k in ("intent","software","uninstall")};states["recommend"]={"selected":set(),"focus":0,"result":None,"status":"","purposes":[]}
+    curses.curs_set(1);scr.nodelay(False);lang=language_screen(scr);nav=0;focus=0;task=TaskManager();action=ActionState();set_context(scr,lang,action);selected=[];intent=[]
     try:
         while True:
-            geom=draw_frame(scr,lang,nav,task)
-            if geom is None:scr.getch();continue
-            state=states.get(panel,{})
-            render_center(scr,lang,panel,state,geom)
-            if not action.get("state"):action["state"]=t(lang,"details");action["lines"]=selection_details(panel,state,lang)
-            render_action(scr,lang,action,geom)
-            x,rw,mid,mh,bot,bh=geom;hint=f"TAB={t(lang,'tab')} | {t(lang,'move')} | ENTER={t(lang,'open')} | ESC={t(lang,'back')} | Q={t(lang,'quit')}";put(scr,2,32,hint,rw-4);put(scr,h-2 if (h:=scr.getmaxyx()[0]) else 0,4,hint,scr.getmaxyx()[1]-8)
-            cy=5+nav*2 if focus=="nav" else mid+3+state.get("focus",0);cx=6 if focus=="nav" else x+4
-            try:scr.move(min(scr.getmaxyx()[0]-2,cy),min(scr.getmaxyx()[1]-2,cx))
-            except curses.error:pass
+            frame=draw_frame(scr,lang,nav,task)
+            if not frame: scr.getch();continue
+            x,rw,mid,mh,bot,bh=frame
+            if nav==2:
+                put(scr,mid+2,x+2,t(lang,"intent"),rw-4);put(scr,mid+3,x+2,t(lang,"intent_help"),rw-4)
+                for i,(key,label) in enumerate(PURPOSES):mark="[x]" if key in intent else "[ ]";put(scr,mid+5+i,x+4,f"{mark} {i+1}. {label}",rw-8)
+                put(scr,mid+5+len(PURPOSES),x+2,"ENTER = recomendar",rw-4)
+                if action.lines:
+                    put(scr,bot+2,x+2,action.state or t(lang,"details"),rw-4)
+                    for i,line in enumerate(action.lines[:max(1,bh-5)]):put(scr,bot+3+i,x+2,line,rw-4)
+            elif nav==3:
+                put(scr,mid+2,x+2,t(lang,"recommendation"),rw-4);put(scr,mid+3,x+2,t(lang,"estimated"),rw-4);put(scr,mid+4,x+2,t(lang,"measured"),rw-4)
+                put(scr,mid+6,x+2,"Selecciona INTENCIÓN para obtener propuestas." if lang=="es" else "Select USE INTENT to obtain proposals.",rw-4)
+            elif nav==4:
+                models=local_models();put(scr,mid+2,x+2,"LLMs locales: "+str(len(models)),rw-4)
+                for i,m in enumerate(models[:mh-5]):put(scr,mid+4+i,x+4,f"[{'x' if m in selected else ' '}] {m}",rw-8)
+            elif nav==5:
+                put(scr,mid+2,x+2,"SOFTWARE IA",rw-4)
+                for i,(key,label) in enumerate(SOFTWARE):put(scr,mid+4+i,x+4,f"[{'x' if key in selected else ' '}] {label}",rw-8)
+            elif nav==6:
+                put(scr,mid+2,x+2,"DESINSTALACIÓN",rw-4);put(scr,mid+4,x+2,"Selecciona SOFTWARE IA y confirma abajo." if lang=="es" else "Select AI software and confirm below.",rw-4)
+            elif nav==1:
+                cpu,cores,gpu,ram,disk=machine_state();put(scr,mid+2,x+2,f"CPU: {cpu}",rw-4);put(scr,mid+3,x+2,f"Cores: {cores}  GPU: {gpu}",rw-4);put(scr,mid+4,x+2,f"RAM: {ram}",rw-4);put(scr,mid+5,x+2,f"DISCO: {disk}",rw-4);put(scr,mid+7,x+2,f"LLMs locales: {len(local_models())}",rw-4)
+            else:
+                put(scr,mid+2,x+2,t(lang,"home"),rw-4)
+            if action.lines and nav!=2:
+                put(scr,bot+2,x+2,action.state or t(lang,"details"),rw-4)
+                for i,line in enumerate(action.lines[:max(1,bh-5)]):put(scr,bot+3+i,x+2,line,rw-4)
+            put(scr,h-2 if (h:=scr.getmaxyx()[0]) else 0,2,f"{t(lang,'tab')} · {t(lang,'move')} · {t(lang,'open')} · {t(lang,'select')} · {t(lang,'back')} · {t(lang,'quit')}",scr.getmaxyx()[1]-4)
             scr.refresh();key=scr.getch()
-            if key in (ord('q'),ord('Q')):return
-            if key==9:focus="content" if focus=="nav" else "nav";continue
-            if key==27:focus="nav";action={"state":"","lines":[],"footer":""};set_context(scr,lang,action);continue
-            if focus=="nav":
-                if key in (curses.KEY_UP,ord('k')):nav=(nav-1)%len(NAV)
-                elif key in (curses.KEY_DOWN,ord('j')):nav=(nav+1)%len(NAV)
-                elif ord('1')<=key<=ord('7'):nav=int(chr(key))-1
-                elif key in (10,13):focus="content"
-                panel=NAV[nav][0];continue
-            state=states.get(panel,{})
-            if panel=="intent":
-                n=len(PURPOSES)
-                if key in (curses.KEY_UP,ord('k')):state['focus']=(state['focus']-1)%n
-                elif key in (curses.KEY_DOWN,ord('j')):state['focus']=(state['focus']+1)%n
-                elif key==32:state['selected'].symmetric_difference_update({state['focus']})
-                elif ord('1')<=key<=ord('7'):state['selected'].symmetric_difference_update({int(chr(key))-1});state['focus']=int(chr(key))-1
-                elif key in (10,13):
-                    selected=state['selected']
-                    if not selected: action.update(state=t(lang,"details"),lines=["Debes seleccionar al menos un propósito."]);continue
-                    purposes=[PURPOSES[i][0] for i in sorted(selected)];states['recommend']['purposes']=purposes;states['recommend']['status'],states['recommend']['result']=run_recommendation(purposes);states['recommend']['selected']=set();states['recommend']['focus']=0;panel="recommend";nav=3;action={"state":t(lang,"details"),"lines":[],"footer":""};set_context(scr,lang,action)
-            elif panel=="recommend":
-                rows=(state.get('result') or {}).get('recommendations') or [];n=min(3,len(rows))
-                if key in (curses.KEY_UP,ord('k')) and n:state['focus']=(state['focus']-1)%n
-                elif key in (curses.KEY_DOWN,ord('j')) and n:state['focus']=(state['focus']+1)%n
-                elif key==32 and n:state['selected'].symmetric_difference_update({state['focus']})
-                elif ord('1')<=key<=ord('3') and n:state['selected'].symmetric_difference_update({int(chr(key))-1});state['focus']=int(chr(key))-1
-                elif key in (10,13):
-                    selected=state['selected']
-                    if not selected:action.update(state=t(lang,"details"),lines=["Selecciona al menos un modelo."]);continue
-                    if task.active:continue
-                    if confirm(scr,lang,t(lang,"confirm_install")):
-                        run_operation(task,"models",[rows[i] for i in sorted(selected)]);state['selected']=set();action={"state":t(lang,"details"),"lines":["Operación enviada al panel superior."],"footer":""};set_context(scr,lang,action)
-            elif panel=="software":
-                n=len(SOFTWARE)
-                if key in (curses.KEY_UP,ord('k')):state['focus']=(state['focus']-1)%n
-                elif key in (curses.KEY_DOWN,ord('j')):state['focus']=(state['focus']+1)%n
-                elif key==32:state['selected'].symmetric_difference_update({state['focus']})
-                elif ord('1')<=key<=ord('5'):i=int(chr(key))-1;state['selected'].symmetric_difference_update({i});state['focus']=i
-                elif key in (10,13):
-                    selected=state['selected']
-                    if not selected:action.update(state=t(lang,"details"),lines=["Selecciona al menos un componente."]);continue
-                    if not task.active and confirm(scr,lang,t(lang,"confirm_install")) and privilege_prompt(scr,lang):run_operation(task,"software",[SOFTWARE[i][0] for i in sorted(selected)]);state['selected']=set()
-                elif key in (ord('d'),ord('D')):panel="uninstall";nav=6;states['uninstall']={"selected":set(),"focus":0}
-            elif panel=="uninstall":
-                comps=[c for c in inventory().get('components',[]) if c.get('installed') and c.get('uninstallable') and not c.get('offer_last')];n=min(10,len(comps))
-                if n:
-                    if key in (curses.KEY_UP,ord('k')):state['focus']=(state['focus']-1)%n
-                    elif key in (curses.KEY_DOWN,ord('j')):state['focus']=(state['focus']+1)%n
-                    elif key==32:state['selected'].symmetric_difference_update({state['focus']})
-                    elif ord('1')<=key<=ord(str(min(9,n))):i=int(chr(key))-1;state['selected'].symmetric_difference_update({i});state['focus']=i
-                    elif key in (10,13):
-                        selected=state['selected']
-                        if not selected:action.update(state=t(lang,"details"),lines=["Selecciona al menos un componente."]);continue
-                        if not task.active and confirm(scr,lang,t(lang,"confirm_uninstall")) and privilege_prompt(scr,lang):run_operation(task,"uninstall",[comps[i]['component_id'] for i in sorted(selected)]);state['selected']=set()
-            elif panel=="models" and key in (ord('r'),ord('R')):panel="intent";nav=2
-            action["lines"]=selection_details(panel,states.get(panel,{}),lang)
+            if key in (ord('q'),ord('Q')):break
+            if key==9:focus=(focus+1)%2
+            elif key in (curses.KEY_UP,ord('k')):nav=(nav-1)%len(NAV)
+            elif key in (curses.KEY_DOWN,ord('j')):nav=(nav+1)%len(NAV)
+            elif key in (ord('1'),ord('2'),ord('3'),ord('4'),ord('5'),ord('6'),ord('7')):nav=int(chr(key))-1
+            elif key==ord(' '):
+                if nav==2 and PURPOSES:
+                    i=len(intent)%len(PURPOSES);k=PURPOSES[i][0];intent=[p for p in intent if p!=k] if k in intent else intent+[k]
+                elif nav in (5,6):
+                    i=len(selected)%len(SOFTWARE);k=SOFTWARE[i][0];selected=[p for p in selected if p!=k] if k in selected else selected+[k]
+            elif key in (10,13):
+                if nav==2:
+                    if not intent: action.state=t(lang,"details");action.lines=["if not selected: Selecciona al menos un propósito." ];continue
+                    status,data=run_recommendation(intent);action.state=status.upper();action.lines=[json.dumps(data,ensure_ascii=False)[:rw-4]]
+                elif nav==4 and selected: run_operation(task,"models",[{"model_id":m} for m in selected])
+                elif nav==5 and selected:
+                    if confirm(scr,lang,t(lang,"confirm_install")) and privilege_prompt(scr,lang):run_operation(task,"software",selected)
+                elif nav==6 and selected:
+                    if confirm(scr,lang,t(lang,"confirm_uninstall")) and privilege_prompt(scr,lang):run_operation(task,"uninstall",selected)
     finally:clear_context()
 
 def main():return curses.wrapper(run_app) or 0
