@@ -52,6 +52,11 @@ latest_github_tag() {
     | python3 -c 'import json,sys; print(json.load(sys.stdin)["tag_name"].lstrip("v"))'
 }
 
+latest_hermes_version() {
+  curl -fsSL --retry 2 https://raw.githubusercontent.com/NousResearch/hermes-agent/main/pyproject.toml \
+    | python3 -c 'import re,sys; text=sys.stdin.read(); m=re.search(r"^version\s*=\s*\"([^\"]+)\"", text, re.M); print(m.group(1) if m else "")'
+}
+
 require_latest_version() {
   local component="$1" current="$2" latest="$3"
   if [[ -z "$current" ]]; then
@@ -167,7 +172,7 @@ install_hermes() {
   if (( hermes_ok )); then
     local current latest
     current="$(hermes --version 2>&1 | extract_version)"
-    latest="$(latest_github_tag NousResearch/hermes-agent)" || fail "No se pudo consultar la última versión estable de Hermes."
+    latest="$(latest_hermes_version)" || fail "No se pudo consultar la última versión estable de Hermes."
     if require_latest_version "Hermes" "$current" "$latest"; then
       echo "[→] Actualizando Hermes..."
       hermes update
