@@ -9,18 +9,18 @@ usage() {
 LEONES — uninstall / cleanup (independent components)
 
 Usage:
-  bash scripts/uninstall.sh                              # interactive
-  bash scripts/uninstall.sh --fitllm --magnitude         # combine
-  bash scripts/uninstall.sh --all                        # all supported
-  bash scripts/uninstall.sh --dry-run ...                # simulate
-  bash scripts/uninstall.sh --yes ...                    # skip confirm
+  bash scripts/uninstall.sh
+  bash scripts/uninstall.sh --fitllm --magnitude
+  bash scripts/uninstall.sh --all
+  bash scripts/uninstall.sh --dry-run ...
+  bash scripts/uninstall.sh --yes ...
 
-Components (independent):
-  --fitllm      FitLLM / LLMFit CLI (pip/user)
+Components:
+  --fitllm      FitLLM / LLMFit CLI
   --magnitude   global @magnitudedev/cli
   --ods         ODS containers/images/volumes identifiable as ODS
-  --hermes      Hermes CLI / local state when detectable
-  --omh         Oh My Hermes when detectable
+  --hermes      Hermes local state when detectable
+  --omh         Oh My Hermes local state when detectable
   --llms        all local Ollama models
   --leones      LEONES generated local state (.leones/) — offered last
 USAGE
@@ -47,8 +47,7 @@ trap 'rc=$?; finish_status "$rc"; exit "$rc"' EXIT
 
 for arg in "$@"; do
   case "$arg" in
-    --fitllm|--magnitude|--ods|--hermes|--omh|--llms|--leones)
-      SELECTED+=("${arg#--}") ;;
+    --fitllm|--magnitude|--ods|--hermes|--omh|--llms|--leones) SELECTED+=("${arg#--}") ;;
     --all) SELECTED=(fitllm magnitude ods hermes omh llms leones) ;;
     --dry-run) DRY_RUN=1 ;;
     --yes) ASSUME_YES=1 ;;
@@ -57,10 +56,20 @@ for arg in "$@"; do
   esac
 done
 
-contains() { local x="$1"; shift; for y in "$@"; do [[ "$x" == "$y" ]] && return 0; done; return 1; }
-run() { if (( DRY_RUN )); then printf '[DRY-RUN]'; printf ' %q' "$@"; printf '\n'; else "$@"; fi; }
+contains() {
+  local x="$1"; shift
+  for y in "$@"; do [[ "$x" == "$y" ]] && return 0; done
+  return 1
+}
+run() {
+  if (( DRY_RUN )); then
+    printf '[DRY-RUN]'; printf ' %q' "$@"; printf '\n'
+  else
+    "$@"
+  fi
+}
 
-# Keep LEONES state last whenever it was explicitly selected.
+# Keep LEONES state last whenever selected.
 if contains leones "${SELECTED[@]}"; then
   TMP=()
   for s in "${SELECTED[@]}"; do [[ "$s" != leones ]] && TMP+=("$s"); done
@@ -71,7 +80,7 @@ fi
 if ((${#SELECTED[@]} == 0)); then
   echo
   echo '╔══════════════════════════════════════════════════════════════╗'
-  echo '║  LEONES — LIMPIEZA / DESINSTALACIÓN INDEPENDIENTE            ║'
+  echo '║  LEONES — LIMPIEZA / DESINSTALACIÓN INDEPENDIENTE          ║'
   echo '╚══════════════════════════════════════════════════════════════╝'
   echo 'Selecciona uno o varios: 1,2,3…  (LEONES siempre al final si se elige)'
   echo
@@ -85,7 +94,7 @@ if ((${#SELECTED[@]} == 0)); then
   echo '  [8] TODO'
   echo '  [9] Salir'
   echo
-  read -r -p 'LEONES> ' choice
+  read -r -p 'LEONES> ' choice || choice=9
   case "$choice" in
     8) SELECTED=(fitllm magnitude ods hermes omh llms leones) ;;
     9) echo '[i] Sin cambios.'; exit 0 ;;
@@ -95,7 +104,8 @@ if ((${#SELECTED[@]} == 0)); then
       for n in "${nums[@]}"; do
         n="${n//[[:space:]]/}"
         case "$n" in
-          1) SELECTED+=(fitllm) ;; 2) SELECTED+=(magnitude) ;; 3) SELECTED+=(ods) ;; 4) SELECTED+=(hermes) ;; 5) SELECTED+=(omh) ;; 6) SELECTED+=(llms) ;; 7) SELECTED+=(leones) ;;
+          1) SELECTED+=(fitllm) ;; 2) SELECTED+=(magnitude) ;; 3) SELECTED+=(ods) ;;
+          4) SELECTED+=(hermes) ;; 5) SELECTED+=(omh) ;; 6) SELECTED+=(llms) ;; 7) SELECTED+=(leones) ;;
         esac
       done
       ;;
@@ -107,8 +117,10 @@ if ((${#SELECTED[@]} == 0)); then
   fi
 fi
 
-if (( ! ASSUME_YES )); then
-  echo; echo "Se van a limpiar: ${SELECTED[*]}"; read -r -p '¿Confirmar? [s/N] ' ans
+# Dry-run is inherently non-destructive and must never block on interactive input.
+if (( ! ASSUME_YES && ! DRY_RUN )); then
+  echo; echo "Se van a limpiar: ${SELECTED[*]}"
+  read -r -p '¿Confirmar? [s/N] ' ans || ans=''
   case "$ans" in s|S|y|Y) ;; *) echo '[i] Cancelado.'; exit 0 ;; esac
 fi
 
@@ -117,8 +129,7 @@ if contains fitllm "${SELECTED[@]}"; then
   if command -v pipx >/dev/null 2>&1 && pipx list 2>/dev/null | grep -qi llmfit; then run pipx uninstall llmfit || true; fi
   if command -v pip3 >/dev/null 2>&1; then run pip3 uninstall -y llmfit fitllm 2>/dev/null || true
   elif command -v pip >/dev/null 2>&1; then run pip uninstall -y llmfit fitllm 2>/dev/null || true; fi
-  if command -v llmfit >/dev/null 2>&1; then echo "[i] llmfit sigue en PATH: $(command -v llmfit) — puede ser instalación de sistema."
-  else echo '[✓] FitLLM/LLMFit no aparece en PATH (o se retiró).'; fi
+  if command -v llmfit >/dev/null 2>&1; then echo "[i] llmfit sigue en PATH: $(command -v llmfit)"; else echo '[✓] FitLLM/LLMFit no aparece en PATH (o se retiró).'; fi
 fi
 
 if contains magnitude "${SELECTED[@]}"; then
@@ -134,7 +145,7 @@ fi
 
 if contains hermes "${SELECTED[@]}"; then
   echo '== Hermes =='
-  if command -v hermes >/dev/null 2>&1; then echo "[i] hermes en PATH: $(command -v hermes) — retirada de binario de sistema no automática."; fi
+  if command -v hermes >/dev/null 2>&1; then echo "[i] hermes en PATH: $(command -v hermes) — binario de sistema no retirado automáticamente."; fi
   if [[ -d "$HOME/.hermes" ]]; then run rm -rf -- "$HOME/.hermes"; else echo '[i] No existe ~/.hermes'; fi
 fi
 
