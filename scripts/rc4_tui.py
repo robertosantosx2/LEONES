@@ -250,6 +250,7 @@ def run_app(scr):
                 items=content_items(nav,selection)
                 if items:content_index=(content_index+1)%len(items)
         elif key in (10,13):
+            items=content_items(nav,selection)
             if focus==0:
                 if nav==2:
                     if not selection["intent"]:action.update(state=t(lang,"intent"),lines=["USER INTENT[]: Selecciona al menos un propósito."]);continue
@@ -257,18 +258,29 @@ def run_app(scr):
                 elif nav in (5,6):
                     items=[k for k,_ in SOFTWARE]
                     if items and confirm(scr,lang,t(lang,"confirm_install" if nav==5 else "confirm_uninstall")) and privilege_prompt(scr,lang):run_operation(task,"software" if nav==5 else "uninstall",items)
-            else:
-                items=content_items(nav,selection)
-                if nav==2 and items:
-                    key_name=items[content_index][0];selection["intent"].add(key_name)
-                elif nav==3 and items:action.update(state=t(lang,"details"),lines=[f"Seleccionado: {items[content_index][0]}",t(lang,"estimated")])
+            elif items:
+                key_name=items[content_index][0]
+                if nav==2:
+                    if not selection["intent"]:
+                        action.update(state=t(lang,"intent"),lines=["USER INTENT[]: Selecciona al menos un propósito con SPACE."])
+                    else:
+                        status,data=run_recommendation(sorted(selection["intent"]));selection["recommendation"]=(status,data);nav=3;content_index=0
+                elif nav==3:
+                    action.update(state=t(lang,"details"),lines=[f"Seleccionado: {key_name}",t(lang,"estimated"),"ENTER: selección confirmada. La ejecución permanece no autorizada."])
+                elif nav==4:
+                    row={"model_id":key_name}
+                    if confirm(scr,lang,f"¿Confirmar instalación de {key_name}? [Y] sí / [N] no") and privilege_prompt(scr,lang):run_operation(task,"models",[row])
+                elif nav==5:
+                    if confirm(scr,lang,f"¿Confirmar instalación de {items[content_index][1]}? [Y] sí / [N] no") and privilege_prompt(scr,lang):run_operation(task,"software",[key_name])
+                elif nav==6:
+                    if confirm(scr,lang,f"¿Confirmar DESINSTALACIÓN de {items[content_index][1]}? [Y] sí / [N] no") and privilege_prompt(scr,lang):run_operation(task,"uninstall",[key_name])
         elif key==ord(" ") and focus==1:
             items=content_items(nav,selection)
             if nav==2 and items:
                 key_name=items[content_index][0]
                 if key_name in selection["intent"]:selection["intent"].remove(key_name)
                 else:selection["intent"].add(key_name)
-            elif nav in (4,5,6) and items:action.update(state=t(lang,"details"),lines=[f"Seleccionado: {items[content_index][1]}"])
+            elif nav in (4,5,6) and items:action.update(state=t(lang,"details"),lines=[f"Seleccionado: {items[content_index][1]}","ENTER ejecutar acción"])
         elif key==27:
             if focus==1:focus=0;content_index=0
             else:nav=0
