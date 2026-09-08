@@ -63,6 +63,14 @@ BENCHMARK A01 → MEASURED
 - Desinstalación independiente; LEONES se conserva como último nivel.
 - Cadena post-recomendación: selección humana → stack → runtime → A01 → MEASURED.
 
+## RC4 Beta
+
+La rama `rc4-fitllm-recommender` dispone de una guía específica para los beta testers:
+
+- `docs/RC4-BETA-TESTERS.md`
+
+La beta debe tratar toda recomendación como `ESTIMATED` y toda medición como evidencia producida por una ejecución física real. No se deben reutilizar resultados de otras máquinas como mediciones propias.
+
 ## Arranque
 
 ```bash
