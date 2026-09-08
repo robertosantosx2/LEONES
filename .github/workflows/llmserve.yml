@@ -1,0 +1,46 @@
+name: LLMServe CI
+
+on:
+  pull_request:
+    paths:
+      - '.gitmodules'
+      - 'subprojects/LLMServe'
+      - 'docs/subprojects/LLMSERVE.md'
+      - '.github/workflows/llmserve.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.gitmodules'
+      - 'subprojects/LLMServe'
+      - 'docs/subprojects/LLMSERVE.md'
+      - '.github/workflows/llmserve.yml'
+
+jobs:
+  verify-upstream:
+    name: Verify pinned llmserve upstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout LEONES with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Verify canonical upstream and pinned SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git config -f .gitmodules submodule.subprojects/LLMServe.url)" = "https://github.com/AlexsJones/llmserve.git"
+          test "$(git -C subprojects/LLMServe rev-parse HEAD)" = "85c63fce8a7c386e5fa1db8f3093502a1d077d39"
+
+      - name: Verify Rust project structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f subprojects/LLMServe/Cargo.toml
+          test -f subprojects/LLMServe/src/main.rs
+          test -f subprojects/LLMServe/src/lib.rs
+
+      - name: Cargo metadata
+        working-directory: subprojects/LLMServe
+        run: cargo metadata --no-deps --format-version 1 > /dev/null
