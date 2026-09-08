@@ -88,10 +88,32 @@ install_magnitude() {
 }
 
 install_hermes() {
-  if command -v hermes >/dev/null 2>&1; then echo "[✓] Hermes ya está instalado."; return 0; fi
+  local hermes_bin="$HOME/.local/bin/hermes"
+  local hermes_ok=0
+
+  if command -v hermes >/dev/null 2>&1; then
+    if hermes --version >/dev/null 2>&1; then
+      hermes_ok=1
+    fi
+  fi
+
+  if (( hermes_ok )); then
+    echo "[✓] Hermes ya está instalado y operativo."
+    return 0
+  fi
+
+  if [[ -x "$hermes_bin" ]]; then
+    echo "[→] Hermes existe pero no está operativo; reparando instalación..."
+  else
+    echo "[→] Instalando Hermes..."
+  fi
+
   curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
   export PATH="$HOME/.local/bin:$PATH"
+
   command -v hermes >/dev/null 2>&1 || fail "Hermes no quedó disponible."
+  hermes --version >/dev/null 2>&1 || fail "Hermes quedó instalado pero no es operativo."
+  echo "[✓] Hermes instalado y operativo: $(command -v hermes)"
 }
 
 install_omh() {
