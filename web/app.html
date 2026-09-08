@@ -3,35 +3,35 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="LEONES RC4: sonda física, FitLLM recomendador opcional, Magnitude/ODS, Leo suite y evidencia.">
+  <meta name="description" content="LEONES RC4: intención, evidencia HF/AA, FitLLM opcional, stack, cadena MEASURED.">
   <title>LEONES · Empezar diagnóstico</title>
-  <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-06-1">
-  <link rel="stylesheet" href="assets/css/site.css?v=2026-09-06-1">
+  <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-08-1">
+  <link rel="stylesheet" href="assets/css/site.css?v=2026-09-08-1">
 </head>
 <body>
 <header class="site-hero">
   <div class="site-hero__inner">
     <span class="site-tag">LEONES RC4</span>
     <h1>Del discovery a la evidencia</h1>
-    <p>Sonda física canónica <code>hardware_profile.py</code>. FitLLM puede recomendar modelos (ESTIMATED, opcional). Magnitude u ODS se eligen con consentimiento. Hermes/OMH son opcionales y no seleccionan modelo.</p>
+    <p>Intención obligatoria. Feed HF + Artificial Analysis. FitLLM preselector opcional (ESTIMATED). Magnitude u ODS por elección humana. MEASURED solo tras ejecución autorizada.</p>
   </div>
 </header>
 <main class="site-main" id="main">
 <section class="site-section">
   <h2>Recorrido operativo RC4</h2>
-  <pre class="site-stack">SONDA → CANDIDATOS → FitLLM? → ELECCIÓN → MAGNITUDE|ODS
-        → CONSENTIR → [opt-in quitar FitLLM] → VERIFICAR → Leo* → EVIDENCIA</pre>
+  <pre class="site-stack">USER_INTENT → PREFLIGHT → HF/AA ≤100 → FitLLM? → INTERSECCIÓN
+        → ELECCIÓN → STACK → RUNTIME → [opt-in] MEASURED</pre>
   <div class="site-grid">
     <article class="site-card"><h3>ESTIMATED</h3><p>FitLLM y rankings externos. No son medición local.</p></article>
-    <article class="site-card"><h3>MEASURED</h3><p>Solo tras ejecución real bajo LEONES.</p></article>
+    <article class="site-card"><h3>MEASURED</h3><p>Solo con <code>rc4_measured_chain</code> + ejecución real autorizada.</p></article>
     <article class="site-card"><h3>CONSENT</h3><p>Instalar ≠ verificar ≠ autorizar benchmark.</p></article>
   </div>
-  <p><a class="app-button" href="rc4.html">Estado RC4 →</a></p>
-  <p><a class="app-button app-button--secondary" href="rc3.html">RC3 cerrada →</a></p>
-  <p><a class="app-button app-button--secondary" href="../docs/RC4-ARCHITECTURE.md">Arquitectura RC4 →</a></p>
+  <p><a class="app-button" href="inicio-rapido.html">Inicio rápido →</a></p>
+  <p><a class="app-button app-button--secondary" href="rc4.html">Estado RC4 →</a></p>
+  <p><a class="app-button app-button--secondary" href="estado.html">Estado del proyecto →</a></p>
 </section>
 </main>
 <footer class="site-footer"><div>LEONES · IA local con criterio</div><div>RC4 · 2026</div></footer>
-<script src="assets/js/navigation.js?v=2026-09-06-1" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-08-1" defer></script>
 </body>
 </html>

@@ -1,60 +1,46 @@
 # LEONES App — flujo guiado
 
-La aplicación web **no ejecuta la infraestructura local en el navegador**. Su función es explicar el recorrido, recoger decisiones y conducir al usuario hacia las herramientas locales que correspondan.
+La aplicación web **no ejecuta la infraestructura local en el navegador**. Explica el recorrido y conduce a las herramientas locales.
 
-## Flujo canónico RC2
+## Flujo canónico RC4
 
 ```text
-Necesidad
+Necesidad → USER_INTENT[]
    ↓
-Hardware real
+Hardware real (preflight / hardware-profile)
    ↓
-LLMFIT
+Evidencia HF + Artificial Analysis (≤100)
    ↓
-Candidatos
+LLMFit CLI opcional → intersección evidence-backed
    ↓
-Elección humana
+≤3 ESTIMATED | insufficient
    ↓
-ODS / Magnitude
+Elección humana (modelo)
    ↓
-Stack propuesto
+Stack: Magnitude | ODS | none
    ↓
-Consentimiento de instalación
+Runtime preflight (p. ej. Ollama)
    ↓
-Instalar → Verificar
+Consentimiento ejecución + medición (opt-in, independientes)
    ↓
-Consentimiento de benchmark
+A01 / trusted argv → MEASURED
    ↓
-Handoff RC1
-   ↓
-Medir
-   ↓
-Evidencia
-   ↓
-Recomendación
+Evidencia / recomendación
 ```
 
-La elección del usuario y la autorización de operaciones son explícitas. **El consentimiento para instalar no autoriza automáticamente un benchmark.** Son dos decisiones independientes.
+Histórico RC2: `./leones --rc2` (wizard). No es el camino canónico RC4.
+
+## Decisiones explícitas
+
+- Instalar ≠ verificar ≠ autorizar benchmark.
+- FitLLM puede desinstalarse de forma independiente tras elegir stack.
+- ESTIMATED de FitLLM, ODS, Magnitude u otras fuentes **no** es medición LEONES.
 
 ## Qué aporta cada capa
 
-- **Hardware real:** establece las capacidades observables del equipo.
-- **LLMFIT:** ayuda a acotar candidatos compatibles con el hardware.
-- **ODS / Magnitude:** aportan conocimiento especializado sobre despliegue, modelos, inferencia y agentes. LEONES los utiliza como fuentes/decisión de stack; no crea un scoring paralelo que los sustituya.
-- **RC1:** recibe la configuración autorizada y mantiene el camino canónico de ejecución y evidencia.
-- **Benchmark:** comprueba una tarea concreta y no solo una cifra sintética.
-- **Evidencia:** conserva qué se ejecutó, dónde, cuándo y con qué resultado.
-
-## ESTIMATED ≠ MEASURED
-
-Las estimaciones sirven para seleccionar y priorizar. Una estimación de ODS, Magnitude, LLMFIT u otra fuente externa **no es una medición física de LEONES**.
-
-Solo una ejecución real registrada mediante el camino de ejecución/evidencia correspondiente puede producir evidencia física. Los valores desconocidos permanecen desconocidos; no se rellenan por inferencia.
-
-## Manada
-
-La contribución a Manada es voluntaria. Los resultados técnicos agregados pueden servir para conocer qué combinaciones funcionan realmente en hardware de consumo y mejorar futuras recomendaciones. La aplicación debe explicar qué datos son útiles antes de cualquier publicación.
-
-## Principio de producto
-
-La web documenta y conduce. La infraestructura local ejecuta. RC1 mide y produce evidencia. LEONES aprende de los resultados sin confundir recomendaciones provisionales con hechos medidos.
+| Capa | Rol |
+|------|-----|
+| LEONES | Autoridad: hardware, intersección, medición, evidencia |
+| LLMFit | Preselector ESTIMATED opcional |
+| Magnitude / ODS | Stack de ejecución (interfaces propias) |
+| Hermes / OMH | Opcionales; no seleccionan modelo en RC4 |

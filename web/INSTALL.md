@@ -1,108 +1,64 @@
-# LEONES — instalación mínima
+# LEONES — instalación mínima (RC4)
 
-La instalación beta debe ser pequeña: **Git + Python 3.10+ + LLMFit**. LEONES no instala automáticamente ODS, Magnitude ni modelos.
+La instalación debe ser pequeña: **Git + Python 3.10+**. LEONES no instala automáticamente ODS, Magnitude ni modelos.
 
-## 0. Dependencia externa obligatoria: LLMFit
+## 0. FitLLM / LLMFit — opcional (RC4)
 
-**LLMFit es una dependencia dura de LEONES.**
+**En RC4, FitLLM no es dependencia dura de arranque.**
 
-- Detecta hardware (CPU/RAM/GPU/VRAM).
-- Propone candidatos de modelo y ajuste (fit).
-- Sus cifras de velocidad son **ESTIMATED**, no mediciones LEONES.
+- Si está en el PATH (`llmfit`), participa en la intersección ESTIMATED.
+- Si no está, LEONES arranca; la recomendación puede quedar `insufficient` o sin candidatos de intersección.
+- Sus cifras son **ESTIMATED**, nunca MEASURED.
 
-LEONES **no instala ni sustituye** LLMFit. Debe estar en el `PATH` como comando `llmfit` antes de `./install.sh`.
-
-### Instalar LLMFit (Linux / Fedora)
-
-Opción recomendada (script oficial, sin sudo):
+Instalación opcional:
 
 ```bash
 curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
+# o: uv tool install -U llmfit
+command -v llmfit && llmfit --version
 ```
-
-Añade `~/.local/bin` al PATH si aún no lo está:
-
-```bash
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-Otras opciones válidas:
-
-```bash
-# Con Homebrew (si lo usas en Linux)
-brew install llmfit
-# o
-brew install AlexsJones/llmfit/llmfit
-
-# Con uv
-uv tool install -U llmfit
-```
-
-Comprueba:
-
-```bash
-llmfit --version
-# o al menos:
-command -v llmfit
-```
-
-Documentación oficial: https://www.llmfit.org/  
-Repositorio: https://github.com/AlexsJones/llmfit
 
 ## 1. Descargar LEONES
 
 ```bash
 git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES
+git checkout rc4-fitllm-recommender
 ```
 
-## 2. Preparar
+## 2. Preparar (si existe install.sh)
 
 ```bash
-./install.sh
+./install.sh   # comprueba Python/Git; no debe exigir FitLLM como hard-dep en RC4
 ```
-
-El instalador comprueba Python, Git y LLMFit y deja preparado el lanzador `./leones`. No crea un entorno virtual ni descarga modelos.
-
-Si LLMFit no está instalado, `./install.sh` falla de forma explícita y te indica que lo instales primero.
 
 ## 3. Ejecutar
 
 ```bash
-./leones
+./leones              # RC4: inventario + intención + recomendación
+./leones --inventory  # solo inventario / ofertas uninstall
+./leones --rc2        # wizard histórico
 ```
 
-El lanzador abre el wizard RC2. Si LLMFit no está disponible, LEONES se bloquea explícitamente y no inventa hardware ni candidatos.
+## 4. Preflight y MEASURED (Ubuntu)
 
-## 4. Después
-
-El wizard guía:
-
-```text
-HARDWARE → CANDIDATOS → MODELO → ODS/MAGNITUDE
-        → CONSENTIMIENTO → INSTALAR/VERIFICAR
-        → BENCHMARK OPCIONAL → EVIDENCIA
+```bash
+python3 scripts/rc4_release_gate.py
+python3 scripts/rc4_resource_preflight.py --path .
+python3 scripts/rc4_measured_chain.py --model-id demo --stack none --json
+# measured debe ser false sin --execute
 ```
 
-La instalación de ODS/Magnitude sólo se ejecuta después del consentimiento y mediante sus interfaces canónicas.
+E2E físico: model_id exacto de `ollama list` +
+`--execute --authorize-execution --authorize-measurement`.
 
 ## Requisitos
 
-- Linux para la validación RC2 actual.
-- Git.
-- Python 3.10 o superior.
-- **LLMFit instalado y accesible como `llmfit` en el PATH.**
-- Internet cuando el flujo elegido necesite descargar componentes.
+- Linux recomendado para validación física.
+- Git · Python 3.10+.
+- FitLLM opcional · Ollama/runtime según medición.
+- Internet cuando el stack o el feed lo necesiten.
 
-## Regla de distribución
+## Regla
 
-El usuario beta necesita únicamente:
-
-1. el repositorio GitHub;
-2. `install.sh`;
-3. `leones`;
-4. este `INSTALL.md`;
-5. la documentación RC2 enlazada desde el README.
-
-El resto del repositorio es implementación, contratos, pruebas y evidencia; no forma parte de las instrucciones de instalación.
+ESTIMATED ≠ MEASURED. El usuario elige. Solo la ejecución autorizada produce medición LEONES.
