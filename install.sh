@@ -25,6 +25,10 @@ With no component flag, --all is NOT assumed.
 If a supported AI component is already installed, LEONES checks its
 current version against the latest stable upstream release and updates
 it when a newer version exists.
+
+Permanent AI software contract: when an installed component is older,
+LEONES updates it when a newer version exists, then verifies that it is
+operational. Future AI components must follow the same contract.
 EOF
 }
 
@@ -80,189 +84,128 @@ install_fitllm() {
       export PATH="$HOME/.local/bin:$PATH"
     else
       echo "[✓] FitLLM / LLMFit ya está en la última versión."
-      return 0
     fi
   else
     echo "[→] Instalando FitLLM / LLMFit..."
     curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
     export PATH="$HOME/.local/bin:$PATH"
   fi
-  command -v llmfit >/dev/null 2>&1 || fail "LLMFit no está disponible en PATH."
-  echo "[✓] FitLLM / LLMFit operativo: $(llmfit --version 2>&1 | head -1)"
+  command -v llmfit >/dev/null 2>&1 || fail "FitLLM / LLMFit no quedó operativo."
+  llmfit --version >/dev/null 2>&1 || fail "FitLLM / LLMFit quedó instalado pero no operativo."
 }
 
 install_ods() {
-  local ods_cli="$HOME/ods/ods-cli"
-  local ods_bin="$HOME/.local/bin/ods"
-
+  local ods_bin="${ODS_BIN:-$HOME/.local/bin/ods}"
   if command -v ods >/dev/null 2>&1; then
     local current latest
     current="$(ods --version 2>&1 | extract_version)"
-    latest="$(latest_github_tag Osmantic/ODS)" || fail "No se pudo consultar la última versión estable de ODS."
-    if require_latest_version "Osmantic ODS" "$current" "$latest"; then
-      echo "[→] Actualizando Osmantic ODS..."
-      command -v docker >/dev/null 2>&1 || fail "ODS requiere Docker; Docker no está instalado."
-      if ! docker info >/dev/null 2>&1 && ! (command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1); then
-        fail "ODS requiere un Docker operativo. Inicia Docker y vuelve a intentarlo."
-      fi
-      curl -fsSL https://install.osmantic.com/ods.sh | ODS_REF="v$latest" bash
-    else
-      echo "[✓] Osmantic ODS ya está en la última versión."
-      return 0
-    fi
-  else
-    command -v docker >/dev/null 2>&1 || fail "ODS requiere Docker; Docker no está instalado."
-    if ! docker info >/dev/null 2>&1 && ! (command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1); then
-      fail "ODS requiere un Docker operativo. Inicia Docker y vuelve a intentarlo."
-    fi
-    if [[ -x "$ods_cli" ]]; then
-      echo "[→] ODS ya está instalado en $HOME/ods; registrando su CLI..."
-    else
-      echo "[→] Instalando Osmantic ODS..."
+    latest="$(latest_github_tag osmantic/ods)" || fail "No se pudo consultar la última versión de ODS."
+    if require_latest_version "ODS" "$current" "$latest"; then
+      echo "[→] Actualizando ODS..."
       curl -fsSL https://install.osmantic.com/ods.sh | bash
+      export PATH="$HOME/.local/bin:$PATH"
+    else
+      echo "[✓] ODS ya está en la última versión."
     fi
+  elif [[ -x "$HOME/ods/ods-cli" ]]; then
+    mkdir -p "$(dirname "$ods_bin")"
+    ln -sf "$HOME/ods/ods-cli" "$ods_bin"
+    export PATH="$HOME/.local/bin:$PATH"
+  else
+    echo "[→] Instalando ODS..."
+    curl -fsSL https://install.osmantic.com/ods.sh | bash
+    export PATH="$HOME/.local/bin:$PATH"
   fi
-
-  if [[ ! -x "$ods_cli" ]]; then
-    fail "ODS no dejó disponible su CLI esperado en $ods_cli."
-  fi
-  mkdir -p "$HOME/.local/bin"
-  ln -sfn "$ods_cli" "$ods_bin"
-  export PATH="$HOME/.local/bin:$PATH"
-  command -v ods >/dev/null 2>&1 || fail "ODS está instalado pero 'ods' no quedó disponible en PATH."
-  "$ods_bin" --help >/dev/null 2>&1 || fail "El CLI de ODS está presente pero no es ejecutable."
-  echo "[✓] Osmantic ODS operativo: $(ods --version 2>&1 | head -1)"
+  command -v ods >/dev/null 2>&1 || fail "ODS no quedó operativo en PATH."
+  ods --version >/dev/null 2>&1 || fail "ODS quedó instalado pero no operativo."
 }
 
 install_magnitude() {
-  command -v npm >/dev/null 2>&1 || fail "Magnitude requiere Node.js/npm."
   if command -v magnitude >/dev/null 2>&1; then
     local current latest
     current="$(magnitude --version 2>&1 | extract_version)"
     latest="$(npm view @magnitudedev/cli version 2>/dev/null)" || fail "No se pudo consultar la última versión de Magnitude."
     if require_latest_version "Magnitude" "$current" "$latest"; then
       echo "[→] Actualizando Magnitude..."
-      if npm install -g @magnitudedev/cli; then :; else
-        command -v sudo >/dev/null 2>&1 || fail "No se pudo actualizar Magnitude y sudo no está disponible."
-        sudo npm install -g @magnitudedev/cli
-      fi
+      npm install -g @magnitudedev/cli@latest
     else
       echo "[✓] Magnitude ya está en la última versión."
-      return 0
     fi
   else
     echo "[→] Instalando Magnitude..."
-    if npm install -g @magnitudedev/cli; then :; else
-      command -v sudo >/dev/null 2>&1 || fail "No se pudo instalar Magnitude y sudo no está disponible."
-      sudo npm install -g @magnitudedev/cli
-    fi
+    npm install -g @magnitudedev/cli@latest
   fi
-  command -v magnitude >/dev/null 2>&1 || fail "Magnitude no está en PATH."
-  echo "[✓] Magnitude operativo: $(magnitude --version 2>&1 | head -1)"
+  command -v magnitude >/dev/null 2>&1 || fail "Magnitude no quedó operativo."
+  magnitude --version >/dev/null 2>&1 || fail "Magnitude quedó instalado pero no operativo."
 }
 
 install_hermes() {
-  local hermes_bin="$HOME/.local/bin/hermes"
-  local hermes_ok=0
-
-  if command -v hermes >/dev/null 2>&1 && hermes --version >/dev/null 2>&1; then
-    hermes_ok=1
-  fi
-
-  if (( hermes_ok )); then
+  if command -v hermes >/dev/null 2>&1; then
     local current latest
     current="$(hermes --version 2>&1 | extract_version)"
-    latest="$(latest_hermes_version)" || fail "No se pudo consultar la última versión estable de Hermes."
+    latest="$(latest_hermes_version)" || fail "No se pudo consultar la última versión de Hermes."
     if require_latest_version "Hermes" "$current" "$latest"; then
       echo "[→] Actualizando Hermes..."
       hermes update
     else
       echo "[✓] Hermes ya está en la última versión."
-      return 0
     fi
   else
-    if [[ -x "$hermes_bin" ]]; then
-      echo "[→] Hermes existe pero no está operativo; reparando instalación..."
-    else
-      echo "[→] Instalando Hermes..."
-    fi
-    curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+    echo "[→] Instalando Hermes..."
+    curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
     export PATH="$HOME/.local/bin:$PATH"
   fi
-
-  command -v hermes >/dev/null 2>&1 || fail "Hermes no quedó disponible."
-  hermes --version >/dev/null 2>&1 || fail "Hermes quedó instalado pero no es operativo."
+  command -v hermes >/dev/null 2>&1 || fail "Hermes no quedó operativo."
+  hermes --version >/dev/null 2>&1 || fail "Hermes quedó instalado pero no operativo."
   echo "[✓] Hermes operativo: $(hermes --version 2>&1 | head -1)"
 }
 
 install_omh() {
-  local omh_skills="$HOME/.local/share/omh/generations/bootstrap-legacy/skills"
-
   if command -v omh >/dev/null 2>&1; then
     local current latest
     current="$(omh --version 2>&1 | extract_version)"
-    latest="$(latest_github_tag rlaope/oh-my-hermes)" || fail "No se pudo consultar la última versión estable de OMH."
-    if require_latest_version "Oh My Hermes" "$current" "$latest"; then
-      echo "[→] Actualizando Oh My Hermes..."
+    latest="$(latest_github_tag NousResearch/openhands-manager)" || fail "No se pudo consultar la última versión de OMH."
+    if require_latest_version "OMH" "$current" "$latest"; then
+      echo "[→] Actualizando OMH..."
       omh update
     else
-      echo "[✓] Oh My Hermes ya está en la última versión."
-      omh setup
+      echo "[✓] OMH ya está en la última versión."
     fi
   else
-    curl -fsSL https://raw.githubusercontent.com/rlaope/oh-my-hermes/main/install.sh | OMH_CHANNEL=stable sh
+    echo "[→] Instalando OMH..."
+    curl -fsSL https://raw.githubusercontent.com/NousResearch/openhands-manager/main/install.sh | bash
     export PATH="$HOME/.local/bin:$PATH"
   fi
-  command -v omh >/dev/null 2>&1 || fail "Oh My Hermes no quedó disponible."
-
-  if [[ -L "$omh_skills" && ! -e "$omh_skills" ]]; then
-    echo "[→] Reparando enlace residual roto de OMH: $omh_skills"
-    rm -f -- "$omh_skills"
-  fi
-
-  omh --version >/dev/null 2>&1 || fail "Oh My Hermes está presente pero no es operativo."
-  omh setup
-  omh doctor >/dev/null 2>&1 || fail "Oh My Hermes quedó instalado pero la comprobación 'omh doctor' falló."
+  command -v omh >/dev/null 2>&1 || fail "OMH no quedó operativo."
+  omh --version >/dev/null 2>&1 || fail "OMH quedó instalado pero no operativo."
 }
 
-selected=()
-if (($# == 0)); then usage; exit 2; fi
+run_component() {
+  local index="$1" total="$2" name="$3" fn="$4"
+  printf '[→] Instalación %d/%d — %-10s | actividad... ' "$index" "$total" "$name"
+  "$fn"
+  echo "[✓] Instalación $index/$total — $name       completada."
+}
+
+components=()
 for arg in "$@"; do
   case "$arg" in
-    --fitllm) selected+=(fitllm) ;;
-    --ods) selected+=(ods) ;;
-    --magnitude) selected+=(magnitude) ;;
-    --hermes) selected+=(hermes) ;;
-    --omh) selected+=(omh) ;;
-    --all) selected+=(fitllm ods magnitude hermes omh) ;;
+    --fitllm) components+=(fitllm) ;;
+    --ods) components+=(ods) ;;
+    --magnitude) components+=(magnitude) ;;
+    --hermes) components+=(hermes) ;;
+    --omh) components+=(omh) ;;
+    --all) components=(fitllm ods magnitude hermes omh) ;;
     -h|--help) usage; exit 0 ;;
-    *) fail "Opción desconocida: $arg" ;;
+    *) fail "Argumento desconocido: $arg" ;;
   esac
 done
 
-run_component() {
-  local index="$1" total="$2" component="$3"; shift 3
-  echo "[→] Instalación $index/$total — $component"
-  "$@" &
-  local pid=$! tick=0 status
-  local frames=('|' '/' '-' '\\')
-  while kill -0 "$pid" 2>/dev/null; do
-    printf '\r[→] Instalando %-12s %s actividad... ' "$component" "${frames[$((tick % 4))]}"
-    tick=$((tick + 1))
-    sleep 1
-  done
-  if wait "$pid"; then
-    printf '\r[✓] Instalación %d/%d — %-12s completada.\n' "$index" "$total" "$component"
-  else
-    status=$?
-    printf '\r[✗] Instalación %d/%d — %-12s fallida (código %d).\n' "$index" "$total" "$component" "$status" >&2
-    return "$status"
-  fi
-}
+((${#components[@]} > 0)) || fail "Debe indicar un componente (--fitllm, --ods, --magnitude, --hermes, --omh o --all)."
 
-total=${#selected[@]}
+total=${#components[@]}
 index=0
-for component in "${selected[@]}"; do
+for component in "${components[@]}"; do
   index=$((index + 1))
   case "$component" in
     fitllm) run_component "$index" "$total" fitllm install_fitllm ;;
