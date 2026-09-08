@@ -129,7 +129,25 @@ if contains fitllm "${SELECTED[@]}"; then
   if command -v pipx >/dev/null 2>&1 && pipx list 2>/dev/null | grep -qi llmfit; then run pipx uninstall llmfit || true; fi
   if command -v pip3 >/dev/null 2>&1; then run pip3 uninstall -y llmfit fitllm 2>/dev/null || true
   elif command -v pip >/dev/null 2>&1; then run pip uninstall -y llmfit fitllm 2>/dev/null || true; fi
-  if command -v llmfit >/dev/null 2>&1; then echo "[i] llmfit sigue en PATH: $(command -v llmfit)"; else echo '[✓] FitLLM/LLMFit no aparece en PATH (o se retiró).'; fi
+
+  # The official llmfit installer may place the standalone ELF directly in
+  # /usr/local/bin when that directory is writable, even with --local.
+  # Remove only the explicitly selected llmfit binary from the known install
+  # locations. No other files are touched.
+  for llmfit_path in \
+    "$HOME/.local/bin/llmfit" \
+    "/usr/local/bin/llmfit"; do
+    if [[ -f "$llmfit_path" ]]; then
+      run rm -f -- "$llmfit_path"
+    fi
+  done
+
+  if command -v llmfit >/dev/null 2>&1; then
+    echo "[✗] llmfit sigue en PATH: $(command -v llmfit)" >&2
+    exit 1
+  else
+    echo '[✓] FitLLM/LLMFit retirado correctamente.'
+  fi
 fi
 
 if contains magnitude "${SELECTED[@]}"; then
