@@ -43,13 +43,37 @@ install_fitllm() {
 }
 
 install_ods() {
-  if command -v ods >/dev/null 2>&1; then echo "[✓] Osmantic ODS ya está instalado."; return 0; fi
+  local ods_cli="$HOME/ods/ods-cli"
+  local ods_bin="$HOME/.local/bin/ods"
+
+  if command -v ods >/dev/null 2>&1; then
+    echo "[✓] Osmantic ODS ya está instalado."
+    return 0
+  fi
+
   command -v docker >/dev/null 2>&1 || fail "ODS requiere Docker; Docker no está instalado."
-  if ! docker info >/dev/null 2>&1 && ! (command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1); then fail "ODS requiere un Docker operativo. Inicia Docker y vuelve a intentarlo."; fi
-  echo "[→] Instalando Osmantic ODS..."
-  curl -fsSL https://install.osmantic.com/ods.sh | bash
+  if ! docker info >/dev/null 2>&1 && ! (command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1); then
+    fail "ODS requiere un Docker operativo. Inicia Docker y vuelve a intentarlo."
+  fi
+
+  if [[ -x "$ods_cli" ]]; then
+    echo "[→] ODS ya está instalado en $HOME/ods; registrando su CLI..."
+  else
+    echo "[→] Instalando Osmantic ODS..."
+    curl -fsSL https://install.osmantic.com/ods.sh | bash
+  fi
+
+  if [[ ! -x "$ods_cli" ]]; then
+    fail "ODS no dejó disponible su CLI esperado en $ods_cli."
+  fi
+
+  mkdir -p "$HOME/.local/bin"
+  ln -sfn "$ods_cli" "$ods_bin"
   export PATH="$HOME/.local/bin:$PATH"
-  command -v ods >/dev/null 2>&1 || warn "ODS instalado pero 'ods' aún no aparece en PATH."
+
+  command -v ods >/dev/null 2>&1 || fail "ODS está instalado pero 'ods' no quedó disponible en PATH."
+  "$ods_bin" --help >/dev/null 2>&1 || fail "El CLI de ODS está presente pero no es ejecutable."
+  echo "[✓] Osmantic ODS instalado y CLI disponible: $(command -v ods)"
 }
 
 install_magnitude() {
