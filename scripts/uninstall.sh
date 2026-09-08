@@ -179,8 +179,30 @@ fi
 
 if contains omh "${SELECTED[@]}"; then
   echo '== Oh My Hermes =='
+  local_omh_bin="$HOME/.local/bin/omh"
+  local_omh_state="$HOME/.local/share/omh"
   if command -v omh >/dev/null 2>&1; then echo "[i] omh en PATH: $(command -v omh)"; fi
+  if [[ -e "$local_omh_bin" || -L "$local_omh_bin" ]]; then
+    if [[ -L "$local_omh_bin" ]]; then
+      target="$(readlink "$local_omh_bin")"
+      if [[ "$target" == *"/.local/share/omh/"* || "$target" == "$HOME/.local/share/omh"* ]]; then
+        run rm -f -- "$local_omh_bin"
+      else
+        echo "[i] No se elimina $local_omh_bin: enlace ajeno a OMH.";
+      fi
+    else
+      echo "[i] No se elimina $local_omh_bin: no es un enlace simbólico gestionable por OMH.";
+    fi
+  fi
+  if [[ -d "$local_omh_state" ]]; then run rm -rf -- "$local_omh_state"; else echo '[i] No existe ~/.local/share/omh'; fi
   if [[ -d "$HOME/.omh" ]]; then run rm -rf -- "$HOME/.omh"; else echo '[i] No existe ~/.omh'; fi
+  hash -r 2>/dev/null || true
+  if command -v omh >/dev/null 2>&1; then
+    echo "[✗] omh sigue en PATH: $(command -v omh)" >&2
+    exit 1
+  else
+    echo '[✓] Oh My Hermes retirado correctamente.'
+  fi
 fi
 
 if contains llms "${SELECTED[@]}"; then
