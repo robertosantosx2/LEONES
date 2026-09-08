@@ -31,7 +31,7 @@ ASSUME_YES=0
 SELECTED=()
 
 finish_status() {
-  local rc=$?
+  local rc="${1:-0}"
   if (( rc == 0 )); then
     if (( DRY_RUN )); then
       echo '[✓] DRY-RUN finalizado. No se han realizado cambios.'
@@ -42,9 +42,8 @@ finish_status() {
   else
     echo "[✗] DESINSTALACIÓN / LIMPIEZA FALLIDA (código $rc)." >&2
   fi
-  return "$rc"
 }
-trap finish_status EXIT
+trap 'rc=$?; finish_status "$rc"; exit "$rc"' EXIT
 
 for arg in "$@"; do
   case "$arg" in
