@@ -21,6 +21,10 @@ Usage:
   ./install.sh --all
 
 With no component flag, --all is NOT assumed.
+
+If a supported AI component is already installed, LEONES checks its
+current version against the latest stable upstream release and updates
+it when a newer version exists.
 EOF
 }
 
@@ -33,13 +37,53 @@ if sys.version_info < (3, 10):
     raise SystemExit(1)
 PY
 
+extract_version() {
+  grep -Eo '[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?' | head -1
+}
+
+version_lt() {
+  local current="$1" latest="$2"
+  [[ "$current" != "$latest" ]] && [[ "$(printf '%s\n%s\n' "$current" "$latest" | sort -V | head -1)" == "$current" ]]
+}
+
+latest_github_tag() {
+  local repo="$1"
+  curl -fsSL --retry 2 "https://api.github.com/repos/$repo/releases/latest" \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin)["tag_name"].lstrip("v"))'
+}
+
+require_latest_version() {
+  local component="$1" current="$2" latest="$3"
+  if [[ -z "$current" ]]; then
+    fail "No se pudo determinar la versión instalada de $component."
+  fi
+  if [[ -z "$latest" ]]; then
+    fail "No se pudo consultar la última versión estable de $component."
+  fi
+  echo "[i] $component: instalada=$current · última=$latest"
+  version_lt "$current" "$latest"
+}
+
 install_fitllm() {
-  if command -v llmfit >/dev/null 2>&1; then echo "[✓] FitLLM / LLMFit ya está instalado."; return 0; fi
-  echo "[→] Instalando FitLLM / LLMFit..."
-  curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
-  export PATH="$HOME/.local/bin:$PATH"
-  command -v llmfit >/dev/null 2>&1 || fail "LLMFit se instaló pero 'llmfit' no está en PATH."
-  echo "[✓] FitLLM / LLMFit instalado."
+  if command -v llmfit >/dev/null 2>&1; then
+    local current latest
+    current="$(llmfit --version 2>&1 | extract_version)"
+    latest="$(latest_github_tag AlexsJones/llmfit)" || fail "No se pudo consultar la última versión de FitLLM/LLMFit."
+    if require_latest_version "FitLLM / LLMFit" "$current" "$latest"; then
+      echo "[→] Actualizando FitLLM / LLMFit..."
+      curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
+      export PATH="$HOME/.local/bin:$PATH"
+    else
+      echo "[✓] FitLLM / LLMFit ya está en la última versión."
+      return 0
+    fi
+  else
+    echo "[→] Instalando FitLLM / LLMFit..."
+    curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
+  command -v llmfit >/dev/null 2>&1 || fail "LLMFit no está disponible en PATH."
+  echo "[✓] FitLLM / LLMFit operativo: $(llmfit --version 2>&1 | head -1)"
 }
 
 install_ods() {
@@ -47,88 +91,125 @@ install_ods() {
   local ods_bin="$HOME/.local/bin/ods"
 
   if command -v ods >/dev/null 2>&1; then
-    echo "[✓] Osmantic ODS ya está instalado."
-    return 0
-  fi
-
-  command -v docker >/dev/null 2>&1 || fail "ODS requiere Docker; Docker no está instalado."
-  if ! docker info >/dev/null 2>&1 && ! (command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1); then
-    fail "ODS requiere un Docker operativo. Inicia Docker y vuelve a intentarlo."
-  fi
-
-  if [[ -x "$ods_cli" ]]; then
-    echo "[→] ODS ya está instalado en $HOME/ods; registrando su CLI..."
+    local current latest
+    current="$(ods --version 2>&1 | extract_version)"
+    latest="$(latest_github_tag Osmantic/ODS)" || fail "No se pudo consultar la última versión estable de ODS."
+    if require_latest_version "Osmantic ODS" "$current" "$latest"; then
+      echo "[→] Actualizando Osmantic ODS..."
+      command -v docker >/dev/null 2>&1 || fail "ODS requiere Docker; Docker no está instalado."
+      if ! docker info >/dev/null 2>&1 && ! (command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1); then
+        fail "ODS requiere un Docker operativo. Inicia Docker y vuelve a intentarlo."
+      fi
+      curl -fsSL https://install.osmantic.com/ods.sh | ODS_REF="v$latest" bash
+    else
+      echo "[✓] Osmantic ODS ya está en la última versión."
+      return 0
+    fi
   else
-    echo "[→] Instalando Osmantic ODS..."
-    curl -fsSL https://install.osmantic.com/ods.sh | bash
+    command -v docker >/dev/null 2>&1 || fail "ODS requiere Docker; Docker no está instalado."
+    if ! docker info >/dev/null 2>&1 && ! (command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1); then
+      fail "ODS requiere un Docker operativo. Inicia Docker y vuelve a intentarlo."
+    fi
+    if [[ -x "$ods_cli" ]]; then
+      echo "[→] ODS ya está instalado en $HOME/ods; registrando su CLI..."
+    else
+      echo "[→] Instalando Osmantic ODS..."
+      curl -fsSL https://install.osmantic.com/ods.sh | bash
+    fi
   fi
 
   if [[ ! -x "$ods_cli" ]]; then
     fail "ODS no dejó disponible su CLI esperado en $ods_cli."
   fi
-
   mkdir -p "$HOME/.local/bin"
   ln -sfn "$ods_cli" "$ods_bin"
   export PATH="$HOME/.local/bin:$PATH"
-
   command -v ods >/dev/null 2>&1 || fail "ODS está instalado pero 'ods' no quedó disponible en PATH."
   "$ods_bin" --help >/dev/null 2>&1 || fail "El CLI de ODS está presente pero no es ejecutable."
-  echo "[✓] Osmantic ODS instalado y CLI disponible: $(command -v ods)"
+  echo "[✓] Osmantic ODS operativo: $(ods --version 2>&1 | head -1)"
 }
 
 install_magnitude() {
-  if command -v magnitude >/dev/null 2>&1; then echo "[✓] Magnitude ya está instalado."; return 0; fi
   command -v npm >/dev/null 2>&1 || fail "Magnitude requiere Node.js/npm."
-  echo "[→] Instalando Magnitude..."
-  if npm install -g @magnitudedev/cli; then :; else
-    command -v sudo >/dev/null 2>&1 || fail "No se pudo instalar Magnitude y sudo no está disponible."
-    sudo npm install -g @magnitudedev/cli
+  if command -v magnitude >/dev/null 2>&1; then
+    local current latest
+    current="$(magnitude --version 2>&1 | extract_version)"
+    latest="$(npm view @magnitudedev/cli version 2>/dev/null)" || fail "No se pudo consultar la última versión de Magnitude."
+    if require_latest_version "Magnitude" "$current" "$latest"; then
+      echo "[→] Actualizando Magnitude..."
+      if npm install -g @magnitudedev/cli; then :; else
+        command -v sudo >/dev/null 2>&1 || fail "No se pudo actualizar Magnitude y sudo no está disponible."
+        sudo npm install -g @magnitudedev/cli
+      fi
+    else
+      echo "[✓] Magnitude ya está en la última versión."
+      return 0
+    fi
+  else
+    echo "[→] Instalando Magnitude..."
+    if npm install -g @magnitudedev/cli; then :; else
+      command -v sudo >/dev/null 2>&1 || fail "No se pudo instalar Magnitude y sudo no está disponible."
+      sudo npm install -g @magnitudedev/cli
+    fi
   fi
-  command -v magnitude >/dev/null 2>&1 || fail "Magnitude se instaló pero no está en PATH."
+  command -v magnitude >/dev/null 2>&1 || fail "Magnitude no está en PATH."
+  echo "[✓] Magnitude operativo: $(magnitude --version 2>&1 | head -1)"
 }
 
 install_hermes() {
   local hermes_bin="$HOME/.local/bin/hermes"
   local hermes_ok=0
 
-  if command -v hermes >/dev/null 2>&1; then
-    if hermes --version >/dev/null 2>&1; then
-      hermes_ok=1
-    fi
+  if command -v hermes >/dev/null 2>&1 && hermes --version >/dev/null 2>&1; then
+    hermes_ok=1
   fi
 
   if (( hermes_ok )); then
-    echo "[✓] Hermes ya está instalado y operativo."
-    return 0
-  fi
-
-  if [[ -x "$hermes_bin" ]]; then
-    echo "[→] Hermes existe pero no está operativo; reparando instalación..."
+    local current latest
+    current="$(hermes --version 2>&1 | extract_version)"
+    latest="$(latest_github_tag NousResearch/hermes-agent)" || fail "No se pudo consultar la última versión estable de Hermes."
+    if require_latest_version "Hermes" "$current" "$latest"; then
+      echo "[→] Actualizando Hermes..."
+      hermes update
+    else
+      echo "[✓] Hermes ya está en la última versión."
+      return 0
+    fi
   else
-    echo "[→] Instalando Hermes..."
+    if [[ -x "$hermes_bin" ]]; then
+      echo "[→] Hermes existe pero no está operativo; reparando instalación..."
+    else
+      echo "[→] Instalando Hermes..."
+    fi
+    curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+    export PATH="$HOME/.local/bin:$PATH"
   fi
-
-  curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
-  export PATH="$HOME/.local/bin:$PATH"
 
   command -v hermes >/dev/null 2>&1 || fail "Hermes no quedó disponible."
   hermes --version >/dev/null 2>&1 || fail "Hermes quedó instalado pero no es operativo."
-  echo "[✓] Hermes instalado y operativo: $(command -v hermes)"
+  echo "[✓] Hermes operativo: $(hermes --version 2>&1 | head -1)"
 }
 
 install_omh() {
   local omh_skills="$HOME/.local/share/omh/generations/bootstrap-legacy/skills"
 
-  if ! command -v omh >/dev/null 2>&1; then
+  if command -v omh >/dev/null 2>&1; then
+    local current latest
+    current="$(omh --version 2>&1 | extract_version)"
+    latest="$(latest_github_tag rlaope/oh-my-hermes)" || fail "No se pudo consultar la última versión estable de OMH."
+    if require_latest_version "Oh My Hermes" "$current" "$latest"; then
+      echo "[→] Actualizando Oh My Hermes..."
+      omh update
+    else
+      echo "[✓] Oh My Hermes ya está en la última versión."
+      omh setup
+    fi
+  else
     curl -fsSL https://raw.githubusercontent.com/rlaope/oh-my-hermes/main/install.sh | OMH_CHANNEL=stable sh
     export PATH="$HOME/.local/bin:$PATH"
   fi
   command -v omh >/dev/null 2>&1 || fail "Oh My Hermes no quedó disponible."
 
-  # Older OMH installations could leave a broken bootstrap-legacy/skills
-  # symlink behind. OMH setup expects to create this directory and aborts
-  # with FileExistsError when the dangling link is still present. Removing
-  # only a broken symlink is safe and lets OMH rebuild the managed layout.
   if [[ -L "$omh_skills" && ! -e "$omh_skills" ]]; then
     echo "[→] Reparando enlace residual roto de OMH: $omh_skills"
     rm -f -- "$omh_skills"
