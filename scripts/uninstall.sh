@@ -69,7 +69,6 @@ run() {
   fi
 }
 
-# Keep LEONES state last whenever selected.
 if contains leones "${SELECTED[@]}"; then
   TMP=()
   for s in "${SELECTED[@]}"; do [[ "$s" != leones ]] && TMP+=("$s"); done
@@ -117,7 +116,6 @@ if ((${#SELECTED[@]} == 0)); then
   fi
 fi
 
-# Dry-run is inherently non-destructive and must never block on interactive input.
 if (( ! ASSUME_YES && ! DRY_RUN )); then
   echo; echo "Se van a limpiar: ${SELECTED[*]}"
   read -r -p '¿Confirmar? [s/N] ' ans || ans=''
@@ -153,7 +151,6 @@ if contains fitllm "${SELECTED[@]}"; then
   remove_llmfit "$HOME/.local/bin/llmfit"
   remove_llmfit "/usr/local/bin/llmfit"
 
-  # Clear a stale shell hash so command -v reflects the actual PATH state.
   hash -r 2>/dev/null || true
   if command -v llmfit >/dev/null 2>&1; then
     echo "[✗] llmfit sigue en PATH: $(command -v llmfit)" >&2
@@ -208,7 +205,6 @@ if contains ods "${SELECTED[@]}"; then
     mapfile -t images < <("${container_cmd[@]}" images --format '{{.Repository}}:{{.Tag}}' | awk 'BEGIN{IGNORECASE=1} $0 ~ /ods/ {print $1}')
     for image in "${images[@]}"; do [[ -n "$image" ]] && run "${container_cmd[@]}" rmi "$image"; done
     mapfile -t volumes < <("${container_cmd[@]}" volume ls --format '{{.Name}}' | awk 'BEGIN{IGNORECASE=1} $0 ~ /ods/ {print $1}')
-    for volume in "${container_cmd[@]}" volume ls --format '{{.Name}}' | awk 'BEGIN{IGNORECASE=1} $0 ~ /ods/ {print $1}')
     for volume in "${volumes[@]}"; do [[ -n "$volume" ]] && run "${container_cmd[@]}" volume rm "$volume"; done
     echo '[✓] Recursos ODS identificables limpiados.'
   else echo '[i] No hay Docker/Podman operativo; ODS no modificado.'; fi
