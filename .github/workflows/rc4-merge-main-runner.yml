@@ -1,0 +1,81 @@
+name: RC4 merge main runner
+
+on:
+  push:
+    branches: [rc4-fitllm-recommender]
+
+permissions:
+  contents: write
+
+jobs:
+  merge-main:
+    if: contains(github.event.head_commit.message, '[rc4-runner]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout RC4 branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: rc4-fitllm-recommender
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge main and resolve known RC4 conflicts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+
+          if git merge --no-edit origin/main; then
+            echo "MAIN_ALREADY_INTEGRATED=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          conflicts=(
+            README.md
+            scripts/rc4_runner.py
+            scripts/rc4_tui.py
+            scripts/uninstall.sh
+            web/APP_FLOW.md
+            web/INSTALL.md
+            web/README.md
+            web/app.html
+            web/estado.html
+            web/index.html
+            web/inicio-rapido.html
+            web/operacion.html
+            web/rc4.html
+          )
+
+          for path in "${conflicts[@]}"; do
+            if git ls-files -u -- "$path" | grep -q .; then
+              git checkout --ours -- "$path"
+              git add -- "$path"
+            fi
+          done
+
+          remaining="$(git diff --name-only --diff-filter=U)"
+          if [[ -n "$remaining" ]]; then
+            echo "Unresolved merge conflicts remain:"
+            printf '%s\n' "$remaining"
+            git status --short
+            exit 1
+          fi
+
+          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- . ':!.git/*'; then
+            echo "Conflict markers remain in tracked files."
+            exit 1
+          fi
+
+          git commit --no-edit -m "merge(main): integrate main into RC4 [rc4-runner]"
+          git push origin HEAD:rc4-fitllm-recommender
+
+      - name: Verify branch contains main
+        if: env.MAIN_ALREADY_INTEGRATED != 'true'
+        run: |
+          git fetch origin main rc4-fitllm-recommender
+          git merge-base --is-ancestor origin/main origin/rc4-fitllm-recommender
+          echo "main is now an ancestor of rc4-fitllm-recommender"
