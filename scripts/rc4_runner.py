@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import curses
+import inspect
 import os
 import subprocess
 import sys
@@ -78,26 +79,30 @@ def _box(scr, y: int, x: int, h: int, w: int, title: str = "") -> None:
         pass
 
 
+def _sudo_available() -> bool:
+    import shutil
+    return shutil.which("sudo") is not None
+
+
 def _sudo_cached() -> bool:
     if os.geteuid() == 0:
         return True
-    if not shutil_which("sudo"):
+    if not _sudo_available():
         return False
-    return subprocess.run(["sudo", "-n", "-v"], stdin=subprocess.DEVNULL,
-                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                          check=False).returncode == 0
-
-
-def shutil_which(command: str) -> str | None:
-    import shutil
-    return shutil.which(command)
+    return subprocess.run(
+        ["sudo", "-n", "-v"],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    ).returncode == 0
 
 
 def _privilege_box(scr, lang: str, operation: str) -> bool:
     """Authorize sudo without allowing a sudo prompt to escape the TUI."""
-    if _sudo_cached():
+    if os.geteuid() == 0 or _sudo_cached():
         return True
-    if not shutil_which("sudo"):
+    if not _sudo_available():
         return True
 
     h, w = scr.getmaxyx()
@@ -107,41 +112,39 @@ def _privilege_box(scr, lang: str, operation: str) -> bool:
     y = max(4, h // 2 - bh // 2)
     title = "AUTORIZACIÓN DEL SISTEMA" if lang == "es" else "SYSTEM AUTHORIZATION"
     action = "instalación" if operation == "install" else "desinstalación"
-    question = (
-        f"{action.capitalize()} requiere privilegios de administrador."
-        if lang == "es" else
-        f"{operation.capitalize()} requires administrator privileges."
-    )
+
     _box(scr, y, x, bh, bw, title)
-    _put(scr, y + 2, x + 3, question, bw - 6)
-    _put(scr, y + 4, x + 3, "[Y] Autorizar    [N/ESC] Cancelar" if lang == "es"
+    _put(scr, y + 2, x + 3,
+         f"La {action} requiere privilegios de administrador." if lang == "es"
+         else f"{action.capitalize()} requires administrator privileges.", bw - 6)
+    _put(scr, y + 4, x + 3,
+         "[Y] Autorizar    [N/ESC] Cancelar" if lang == "es"
          else "[Y] Authorize    [N/ESC] Cancel", bw - 6)
     scr.refresh()
+
     while True:
         key = scr.getch()
         if key in (ord("n"), ord("N"), 27):
             return False
-        if key not in (ord("y"), ord("Y")):
-            continue
-        break
+        if key in (ord("y"), ord("Y")):
+            break
 
-    # The password prompt is rendered by the TUI, never by sudo itself.
     _box(scr, y, x, bh, bw, title)
     _put(scr, y + 2, x + 3,
          "Contraseña de sudo:" if lang == "es" else "sudo password:", bw - 6)
     _put(scr, y + 4, x + 3,
-         "(entrada oculta; ENTER confirma)" if lang == "es"
-         else "(hidden input; ENTER confirms)", bw - 6)
+         "Entrada oculta · ENTER confirma" if lang == "es"
+         else "Hidden input · ENTER confirms", bw - 6)
+    scr.refresh()
+
+    password = ""
     try:
         curses.echo(False)
-        curses.curs_set(1)
-        password = ""
         while True:
             key = scr.getch()
             if key in (10, 13):
                 break
-            if key in (27,):
-                curses.echo(True)
+            if key == 27:
                 return False
             if key in (curses.KEY_BACKSPACE, 127, 8):
                 password = password[:-1]
@@ -152,30 +155,33 @@ def _privilege_box(scr, lang: str, operation: str) -> bool:
     finally:
         curses.echo(True)
 
-    proc = subprocess.run(
-        ["sudo", "-S", "-v"],
-        input=password + "\n",
-        text=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=False,
-    )
-    password = ""
+    try:
+        proc = subprocess.run(
+            ["sudo", "-S", "-v"],
+            input=password + "\n",
+            text=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    finally:
+        password = ""
+
     _box(scr, y, x, bh, bw, title)
     if proc.returncode == 0:
         _put(scr, y + 2, x + 3,
-             "Privilegios autorizados. La operación continúa en segundo plano."
-             if lang == "es" else
-             "Privileges authorized. The operation continues in background.", bw - 6)
-        _put(scr, y + 4, x + 3, "ENTER continuar", bw - 6)
+             "Privilegios autorizados. Se ejecutará en segundo plano." if lang == "es"
+             else "Privileges authorized. It will run in background.", bw - 6)
+        _put(scr, y + 4, x + 3, "ENTER continuar" if lang == "es" else "ENTER continue", bw - 6)
         scr.refresh()
         while scr.getch() not in (10, 13):
             pass
         return True
+
     _put(scr, y + 2, x + 3,
          "No se pudo autorizar sudo. Operación cancelada." if lang == "es"
          else "sudo authorization failed. Operation cancelled.", bw - 6)
-    _put(scr, y + 4, x + 3, "ENTER volver", bw - 6)
+    _put(scr, y + 4, x + 3, "ENTER volver" if lang == "es" else "ENTER back", bw - 6)
     scr.refresh()
     while scr.getch() not in (10, 13, 27):
         pass
@@ -183,46 +189,33 @@ def _privilege_box(scr, lang: str, operation: str) -> bool:
 
 
 def run_tui() -> int:
-    """Run the TUI and bridge privileged actions into its confirmation UI."""
+    """Run the TUI with privilege authorization kept inside its confirmation box."""
     from scripts import rc4_tui as tui
-
-    # The TUI's existing Y/N confirmation remains the first authorization gate.
-    # After it succeeds, these wrappers perform the system-privilege handshake
-    # before the background task is launched, while the curses screen is active.
-    original_start_software = tui.TaskManager.start_software
-    original_start_uninstall = tui.TaskManager.start_uninstall
-    screen_ref = {"scr": None, "lang": "es"}
 
     original_confirm = tui.confirm
 
     def confirm_bridge(scr, lang, title, question):
-        screen_ref["scr"] = scr
-        screen_ref["lang"] = lang
-        return original_confirm(scr, lang, title, question)
-
-    def start_software_bridge(self, components):
-        scr = screen_ref.get("scr")
-        lang = screen_ref.get("lang", "es")
-        if scr is not None and not _privilege_box(scr, lang, "install"):
+        approved = original_confirm(scr, lang, title, question)
+        if not approved:
             return False
-        return original_start_software(self, components)
 
-    def start_uninstall_bridge(self, components):
-        scr = screen_ref.get("scr")
-        lang = screen_ref.get("lang", "es")
-        if scr is not None and not _privilege_box(scr, lang, "uninstall"):
-            return False
-        return original_start_uninstall(self, components)
+        # Inspect the TUI caller only to distinguish software install/uninstall
+        # from model installation. The existing confirmation box remains the
+        # effective user-action boundary for every operation.
+        frame = inspect.currentframe()
+        caller = frame.f_back if frame is not None else None
+        panel = caller.f_locals.get("panel") if caller is not None else None
+        if panel == "software":
+            return _privilege_box(scr, lang, "install")
+        if panel == "uninstall":
+            return _privilege_box(scr, lang, "uninstall")
+        return True
 
     tui.confirm = confirm_bridge
-    tui.TaskManager.start_software = start_software_bridge
-    tui.TaskManager.start_uninstall = start_uninstall_bridge
     try:
         return tui.main()
     finally:
         tui.confirm = original_confirm
-        tui.TaskManager.start_software = original_start_software
-        tui.TaskManager.start_uninstall = original_start_uninstall
 
 
 def main(argv: list[str] | None = None) -> int:
