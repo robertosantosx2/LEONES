@@ -3,132 +3,217 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 
-echo "============================================================"
-echo "LEONES — RC3 INSTALL"
-echo "============================================================"
-echo "[i] RC3 bootstrap: Hermes → Oh My Hermes → LEONES"
-echo
+fail() { echo "[✗] $1" >&2; exit 1; }
+warn() { echo "[!] $1" >&2; }
 
-fail() { echo "[✗] $1"; exit 1; }
+usage() {
+  cat <<'EOF'
+LEONES RC4 component installer
+
+Usage:
+  ./install.sh --fitllm
+  ./install.sh --ods
+  ./install.sh --magnitude
+  ./install.sh --hermes
+  ./install.sh --omh
+  ./install.sh --all
+
+With no component flag, --all is NOT assumed.
+
+If a supported AI component is already installed, LEONES checks its
+current version against the latest stable upstream release and updates
+it when a newer version exists.
+
+Permanent AI software contract: when an installed component is older,
+LEONES updates it when a newer version exists, then verifies that it is
+operational. Future AI components must follow the same contract.
+EOF
+}
 
 command -v python3 >/dev/null 2>&1 || fail "Python 3 no está instalado."
-command -v git >/dev/null 2>&1 || fail "Git no está instalado."
-
+command -v curl >/dev/null 2>&1 || fail "curl no está instalado."
 python3 - <<'PY' || exit 1
 import sys
 if sys.version_info < (3, 10):
-    print("[✗] LEONES RC3 requiere Python 3.10 o superior.")
+    print("[✗] LEONES RC4 requiere Python 3.10 o superior.")
     raise SystemExit(1)
-print(f"[✓] Python {sys.version.split()[0]}")
 PY
 
-echo "[✓] Git $(git --version | awk '{print $3}')"
+extract_version() {
+  grep -Eo '[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?' | head -1
+}
 
-# -----------------------------------------------------------------------------
-# Hermes: canonical bootstrap/discovery layer.
-# If already installed, update it in place using the upstream updater.
-# -----------------------------------------------------------------------------
-install_hermes() {
-    if command -v hermes >/dev/null 2>&1; then
-        echo "[✓] Hermes ya está instalado: $(hermes --version 2>/dev/null | head -1 || true)"
-        echo "[→] Hermes instalado: intentando actualizar..."
-        if hermes update --yes; then
-            echo "[✓] Hermes actualizado/verificado: $(hermes --version 2>/dev/null | head -1 || true)"
-        else
-            echo "[!] Hermes: la actualización falló; se conserva la instalación existente."
-        fi
-        return 0
+version_lt() {
+  local current="$1" latest="$2"
+  [[ "$current" != "$latest" ]] && [[ "$(printf '%s\n%s\n' "$current" "$latest" | sort -V | head -1)" == "$current" ]]
+}
+
+latest_github_tag() {
+  local repo="$1"
+  curl -fsSL --retry 2 "https://api.github.com/repos/$repo/releases/latest" \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin)["tag_name"].lstrip("v"))'
+}
+
+latest_hermes_version() {
+  curl -fsSL --retry 2 https://raw.githubusercontent.com/NousResearch/hermes-agent/main/pyproject.toml \
+    | python3 -c 'import re,sys; text=sys.stdin.read(); m=re.search(r"^version\s*=\s*\"([^\"]+)\"", text, re.M); print(m.group(1) if m else "")'
+}
+
+require_latest_version() {
+  local component="$1" current="$2" latest="$3"
+  if [[ -z "$current" ]]; then
+    fail "No se pudo determinar la versión instalada de $component."
+  fi
+  if [[ -z "$latest" ]]; then
+    fail "No se pudo consultar la última versión estable de $component."
+  fi
+  echo "[i] $component: instalada=$current · última=$latest"
+  version_lt "$current" "$latest"
+}
+
+install_fitllm() {
+  if command -v llmfit >/dev/null 2>&1; then
+    local current latest
+    current="$(llmfit --version 2>&1 | extract_version)"
+    latest="$(latest_github_tag AlexsJones/llmfit)" || fail "No se pudo consultar la última versión de FitLLM/LLMFit."
+    if require_latest_version "FitLLM / LLMFit" "$current" "$latest"; then
+      echo "[→] Actualizando FitLLM / LLMFit..."
+      curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
+      export PATH="$HOME/.local/bin:$PATH"
+    else
+      echo "[✓] FitLLM / LLMFit ya está en la última versión."
     fi
-
-    echo "[→] Hermes no está instalado. Instalando desde el instalador oficial..."
-    command -v curl >/dev/null 2>&1 || fail "curl no está instalado; es necesario para instalar Hermes."
-    curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
-
-    # The upstream installer may place the command in ~/.local/bin.
+  else
+    echo "[→] Instalando FitLLM / LLMFit..."
+    curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
     export PATH="$HOME/.local/bin:$PATH"
-    command -v hermes >/dev/null 2>&1 || fail "Hermes se instaló pero el comando 'hermes' no está en PATH."
-    echo "[✓] Hermes instalado: $(hermes --version 2>/dev/null | head -1 || true)"
+  fi
+  command -v llmfit >/dev/null 2>&1 || fail "FitLLM / LLMFit no quedó operativo."
+  llmfit --version >/dev/null 2>&1 || fail "FitLLM / LLMFit quedó instalado pero no operativo."
 }
 
-# -----------------------------------------------------------------------------
-# Oh My Hermes: operating layer above Hermes.
-# Existing installs are updated before setup so managed skills/plugins are fresh.
-# -----------------------------------------------------------------------------
+install_ods() {
+  local ods_bin="${ODS_BIN:-$HOME/.local/bin/ods}"
+  if command -v ods >/dev/null 2>&1; then
+    local current latest
+    current="$(ods --version 2>&1 | extract_version)"
+    latest="$(latest_github_tag osmantic/ods)" || fail "No se pudo consultar la última versión de ODS."
+    if require_latest_version "ODS" "$current" "$latest"; then
+      echo "[→] Actualizando ODS..."
+      curl -fsSL https://install.osmantic.com/ods.sh | bash
+      export PATH="$HOME/.local/bin:$PATH"
+    else
+      echo "[✓] ODS ya está en la última versión."
+    fi
+  elif [[ -x "$HOME/ods/ods-cli" ]]; then
+    mkdir -p "$(dirname "$ods_bin")"
+    ln -sf "$HOME/ods/ods-cli" "$ods_bin"
+    export PATH="$HOME/.local/bin:$PATH"
+  else
+    echo "[→] Instalando ODS..."
+    curl -fsSL https://install.osmantic.com/ods.sh | bash
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
+  command -v ods >/dev/null 2>&1 || fail "ODS no quedó operativo en PATH."
+  ods --version >/dev/null 2>&1 || fail "ODS quedó instalado pero no operativo."
+}
+
+install_magnitude() {
+  if command -v magnitude >/dev/null 2>&1; then
+    local current latest
+    current="$(magnitude --version 2>&1 | extract_version)"
+    latest="$(npm view @magnitudedev/cli version 2>/dev/null)" || fail "No se pudo consultar la última versión de Magnitude."
+    if require_latest_version "Magnitude" "$current" "$latest"; then
+      echo "[→] Actualizando Magnitude..."
+      npm install -g @magnitudedev/cli@latest
+    else
+      echo "[✓] Magnitude ya está en la última versión."
+    fi
+  else
+    echo "[→] Instalando Magnitude..."
+    npm install -g @magnitudedev/cli@latest
+  fi
+  command -v magnitude >/dev/null 2>&1 || fail "Magnitude no quedó operativo."
+  magnitude --version >/dev/null 2>&1 || fail "Magnitude quedó instalado pero no operativo."
+}
+
+install_hermes() {
+  if command -v hermes >/dev/null 2>&1; then
+    local current latest
+    current="$(hermes --version 2>&1 | extract_version)"
+    latest="$(latest_hermes_version)" || fail "No se pudo consultar la última versión de Hermes."
+    if require_latest_version "Hermes" "$current" "$latest"; then
+      echo "[→] Actualizando Hermes..."
+      hermes update
+    else
+      echo "[✓] Hermes ya está en la última versión."
+    fi
+  else
+    echo "[→] Instalando Hermes..."
+    curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
+  command -v hermes >/dev/null 2>&1 || fail "Hermes no quedó operativo."
+  hermes --version >/dev/null 2>&1 || fail "Hermes quedó instalado pero no operativo."
+  echo "[✓] Hermes operativo: $(hermes --version 2>&1 | head -1)"
+}
+
 install_omh() {
-    if command -v omh >/dev/null 2>&1; then
-        echo "[✓] Oh My Hermes ya está instalado: $(omh --version 2>/dev/null | head -1 || true)"
-        echo "[→] Oh My Hermes instalado: intentando actualizar..."
-        if omh update; then
-            echo "[✓] Oh My Hermes actualizado/verificado: $(omh --version 2>/dev/null | head -1 || true)"
-        else
-            echo "[!] Oh My Hermes: la actualización falló; se conserva la instalación existente."
-        fi
+  if command -v omh >/dev/null 2>&1; then
+    local current latest
+    current="$(omh --version 2>&1 | extract_version)"
+    latest="$(latest_github_tag NousResearch/openhands-manager)" || fail "No se pudo consultar la última versión de OMH."
+    if require_latest_version "OMH" "$current" "$latest"; then
+      echo "[→] Actualizando OMH..."
+      omh update
     else
-        echo "[→] Oh My Hermes no está instalado. Instalando desde el repositorio oficial..."
-        command -v curl >/dev/null 2>&1 || fail "curl no está instalado; es necesario para instalar Oh My Hermes."
-        curl -fsSL https://raw.githubusercontent.com/rlaope/oh-my-hermes/main/install.sh | OMH_CHANNEL=stable sh
-        export PATH="$HOME/.local/bin:$PATH"
-        command -v omh >/dev/null 2>&1 || fail "Oh My Hermes se instaló pero el comando 'omh' no está en PATH."
-        echo "[✓] Oh My Hermes instalado: $(omh --version 2>/dev/null | head -1 || true)"
+      echo "[✓] OMH ya está en la última versión."
     fi
-
-    echo "[→] Configurando Oh My Hermes sobre Hermes..."
-    omh setup
-    echo "[✓] Oh My Hermes configurado."
+  else
+    echo "[→] Instalando OMH..."
+    curl -fsSL https://raw.githubusercontent.com/NousResearch/openhands-manager/main/install.sh | bash
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
+  command -v omh >/dev/null 2>&1 || fail "OMH no quedó operativo."
+  omh --version >/dev/null 2>&1 || fail "OMH quedó instalado pero no operativo."
 }
 
-# -----------------------------------------------------------------------------
-# Optional execution stacks: never install them implicitly in RC3, but if the
-# user already has one, keep it current. Failures are warnings, not blockers.
-# -----------------------------------------------------------------------------
-update_magnitude_if_installed() {
-    if command -v magnitude >/dev/null 2>&1; then
-        echo "[✓] Magnitude ya está instalado: $(magnitude --version 2>/dev/null | head -1 || true)"
-        if command -v npm >/dev/null 2>&1; then
-            echo "[→] Magnitude instalado: intentando actualizar @magnitudedev/cli..."
-            if npm install -g @magnitudedev/cli; then
-                echo "[✓] Magnitude actualizado/verificado: $(magnitude --version 2>/dev/null | head -1 || true)"
-            else
-                echo "[!] Magnitude: la actualización falló; se conserva la instalación existente."
-            fi
-        else
-            echo "[!] Magnitude detectado, pero npm no está disponible; no se puede intentar la actualización."
-        fi
-    else
-        echo "[i] Magnitude no detectado; no se instala automáticamente en RC3."
-    fi
+run_component() {
+  local index="$1" total="$2" name="$3" fn="$4"
+  printf '[→] Instalación %d/%d — %-10s | actividad... ' "$index" "$total" "$name"
+  "$fn"
+  echo "[✓] Instalación $index/$total — $name       completada."
 }
 
-update_ods_if_installed() {
-    if command -v ods >/dev/null 2>&1; then
-        echo "[✓] ODS ya está instalado: $(ods --version 2>/dev/null | head -1 || true)"
-        echo "[→] ODS instalado: intentando actualizar..."
-        if ods update; then
-            echo "[✓] ODS actualizado/verificado: $(ods --version 2>/dev/null | head -1 || true)"
-        else
-            echo "[!] ODS: la actualización falló; se conserva la instalación existente."
-        fi
-    else
-        echo "[i] ODS no detectado; no se instala automáticamente en RC3."
-    fi
-}
+components=()
+for arg in "$@"; do
+  case "$arg" in
+    --fitllm) components+=(fitllm) ;;
+    --ods) components+=(ods) ;;
+    --magnitude) components+=(magnitude) ;;
+    --hermes) components+=(hermes) ;;
+    --omh) components+=(omh) ;;
+    --all) components=(fitllm ods magnitude hermes omh) ;;
+    -h|--help) usage; exit 0 ;;
+    *) fail "Argumento desconocido: $arg" ;;
+  esac
+done
 
-install_hermes
-install_omh
-update_magnitude_if_installed
-update_ods_if_installed
+((${#components[@]} > 0)) || fail "Debe indicar un componente (--fitllm, --ods, --magnitude, --hermes, --omh o --all)."
 
-# -----------------------------------------------------------------------------
-# RC3 deliberately has no LLMFit/FitLLM dependency.
-# -----------------------------------------------------------------------------
-echo
-echo "[✓] LLMFit/FitLLM: fuera de RC3 (no se instala ni bloquea el arranque)."
+total=${#components[@]}
+index=0
+for component in "${components[@]}"; do
+  index=$((index + 1))
+  case "$component" in
+    fitllm) run_component "$index" "$total" fitllm install_fitllm ;;
+    ods) run_component "$index" "$total" ods install_ods ;;
+    magnitude) run_component "$index" "$total" magnitude install_magnitude ;;
+    hermes) run_component "$index" "$total" hermes install_hermes ;;
+    omh) run_component "$index" "$total" omh install_omh ;;
+  esac
+done
 
-echo
-chmod +x "$ROOT/leones" "$ROOT/scripts/rc2_wizard.py" 2>/dev/null || true
-echo "[✓] Instalación RC3 preparada."
-echo "[i] Flujo: Hermes discovery → hardware-profile.v1 → LEONES → elección → Magnitude/ODS → medición → evidencia."
-echo "[i] Verificación Hermes: hermes doctor"
-echo "[i] Verificación OMH: omh doctor"
-echo "[i] Ejecuta: ./leones"
+echo "[✓] Instalación solicitada completada."

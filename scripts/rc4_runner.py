@@ -1,50 +1,40 @@
 #!/usr/bin/env python3
 """LEONES RC4 default runner.
 
-The interactive path opens the full human-choice TUI. Recommendation, choice,
-consent, installation, verification and measurement remain separate phases.
+Normative TUI contract: docs/TUI_RULES_RC4.md
+Privilege authorization is rendered by the TUI bottom action panel; no modal
+sudo dialog is allowed to replace or overlay the persistent three-panel frame.
 """
 from __future__ import annotations
-import argparse
-import subprocess
-import sys
+import argparse, os, subprocess, sys
 from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[1]
-RECOMMENDER = ROOT / "scripts" / "rc4_fitllm_recommend.py"
-RC2_WIZARD = ROOT / "scripts" / "rc2_wizard.py"
-TUI = ROOT / "scripts" / "rc4_choice_flow_tui.py"
-PURPOSES = (("programming", "Programación / código"), ("reasoning", "Razonamiento"), ("research", "Investigación / análisis"), ("chat", "Chat / asistente"), ("multimodal", "Multimodal"), ("embedding", "Embeddings / búsqueda semántica"), ("general", "Uso general"))
-
-def choose_purposes() -> list[str]:
-    print("\nLEONES RC4 · INTENCIÓN DE USO\nElige uno o varios números separados por comas.\nSin intención no hay recomendación.\n")
-    for index, (_, label) in enumerate(PURPOSES, 1): print(f"  [{index}] {label}")
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+RECOMMENDER=ROOT/"scripts/rc4_fitllm_recommend.py";RC2_WIZARD=ROOT/"scripts/rc2_wizard.py"
+PURPOSES=(("programming","Programación / código"),("reasoning","Razonamiento"),("research","Investigación / análisis"),("chat","Chat / asistente"),("multimodal","Multimodal"),("embedding","Embeddings / búsqueda semántica"),("general","Uso general"))
+def choose_purposes():
+    print("\nLEONES RC4 · INTENCIÓN DE USO\nElige uno o varios números separados por comas.\n")
+    for i,(_,label) in enumerate(PURPOSES,1):print(f"  [{i}] {label}")
     while True:
-        answer = input("LEONES> ").strip(); selected=[]
-        try: indexes=[int(x.strip()) for x in answer.split(",") if x.strip()]
-        except ValueError: indexes=[]
-        for index in indexes:
-            if 1 <= index <= len(PURPOSES) and PURPOSES[index-1][0] not in selected: selected.append(PURPOSES[index-1][0])
-        if selected: return selected
+        try:idx=[int(x.strip()) for x in input("LEONES> ").split(",") if x.strip()]
+        except ValueError:idx=[]
+        out=[]
+        for i in idx:
+            if 1<=i<=len(PURPOSES) and PURPOSES[i-1][0] not in out:out.append(PURPOSES[i-1][0])
+        if out:return out
         print("  ! Debes seleccionar al menos un propósito.")
-
-def main(argv: list[str] | None = None) -> int:
-    parser=argparse.ArgumentParser(description="LEONES RC4 default runner")
-    parser.add_argument("--rc2", action="store_true")
-    parser.add_argument("--json", action="store_true")
-    parser.add_argument("--inventory", action="store_true")
-    parser.add_argument("--purpose", action="append", dest="purposes")
-    args=parser.parse_args(argv)
-    if args.inventory:
-        return subprocess.run([sys.executable, str(ROOT / "scripts" / "rc4_component_inventory.py")], cwd=ROOT, check=False).returncode
-    if args.rc2:
-        return subprocess.run([sys.executable, str(RC2_WIZARD)], cwd=ROOT, check=False).returncode
-    if args.purposes is None and not args.json and sys.stdin.isatty() and sys.stdout.isatty():
-        return subprocess.run([sys.executable, str(TUI)], cwd=ROOT, check=False).returncode
-    purposes=list(dict.fromkeys(args.purposes or choose_purposes()))
-    command=[sys.executable, str(RECOMMENDER)]
-    for purpose in purposes: command.extend(["--purpose", purpose])
-    if args.json: command.append("--json")
-    return subprocess.run(command, cwd=ROOT, check=False).returncode
-
-if __name__ == "__main__": raise SystemExit(main())
+def run_tui():
+    from scripts import rc4_tui as tui
+    # The TUI itself owns both acceptance and privilege states.  Keeping this
+    # hook here preserves the runner as the single launcher without reintroducing
+    # an external/modal privilege dialog.
+    return tui.main()
+def main(argv=None):
+    p=argparse.ArgumentParser(description="LEONES RC4 default runner");p.add_argument("--rc2",action="store_true");p.add_argument("--json",action="store_true");p.add_argument("--inventory",action="store_true");p.add_argument("--purpose",action="append",dest="purposes");a=p.parse_args(argv)
+    if a.inventory:return subprocess.run([sys.executable,str(ROOT/"scripts/rc4_component_inventory.py")],cwd=ROOT,check=False).returncode
+    if a.rc2:return subprocess.run([sys.executable,str(RC2_WIZARD)],cwd=ROOT,check=False).returncode
+    if a.purposes is None and not a.json and sys.stdin.isatty() and sys.stdout.isatty():return run_tui()
+    ps=list(dict.fromkeys(a.purposes or choose_purposes()));cmd=[sys.executable,str(RECOMMENDER)];[cmd.extend(("--purpose",x)) for x in ps]
+    if a.json:cmd.append("--json")
+    return subprocess.run(cmd,cwd=ROOT,check=False).returncode
+if __name__=="__main__":raise SystemExit(main())

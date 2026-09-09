@@ -14,6 +14,8 @@ jobs:
           python-version: "3.12"
       - name: RC4 static gate
         run: python3 scripts/rc4_release_gate.py
+      - name: RC4 shell syntax
+        run: bash -n install.sh scripts/uninstall.sh
       - name: RC4 unit tests
         run: >-
           python3 -m pip install pytest -q &&
@@ -21,4 +23,9 @@ jobs:
           tests/test_rc4_fitllm_recommend.py
           tests/test_rc4_release_gate.py
           tests/test_rc4_resource_preflight.py
-          tests/test_rc4_tui.py -q
+          tests/test_rc4_tui.py
+          tests/test_rc4_operation_progress.py
+          tests/test_rc4_artifact_progress.py
+          tests/test_rc4_artifact_uninstall_progress.py
+          tests/test_rc4_resource_impact_contract.py
+          tests/test_rc4_operation_integration.py -q

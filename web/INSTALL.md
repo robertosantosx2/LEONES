@@ -1,112 +1,64 @@
-# LEONES — preparación e instalación RC4
+# LEONES — instalación mínima (RC4)
 
-La distribución actual de LEONES **no es una instalación automática de toda la pila IA**. RC4 separa diagnóstico, recomendación, elección, consentimiento, instalación, verificación, autorización y medición.
+La instalación debe ser pequeña: **Git + Python 3.10+**. LEONES no instala automáticamente ODS, Magnitude ni modelos.
 
-## 1. Preparar el repositorio
+## 0. FitLLM / LLMFit — opcional (RC4)
+
+**En RC4, FitLLM no es dependencia dura de arranque.**
+
+- Si está en el PATH (`llmfit`), participa en la intersección ESTIMATED.
+- Si no está, LEONES arranca; la recomendación puede quedar `insufficient` o sin candidatos de intersección.
+- Sus cifras son **ESTIMATED**, nunca MEASURED.
+
+Instalación opcional:
+
+```bash
+curl -fsSL https://llmfit.axjns.dev/install.sh | sh -s -- --local
+# o: uv tool install -U llmfit
+command -v llmfit && llmfit --version
+```
+
+## 1. Descargar LEONES
 
 ```bash
 git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES
+git checkout rc4-fitllm-recommender
 ```
 
-La ruta canónica actual es `main` y el lanzador RC4 es:
+## 2. Preparar (si existe install.sh)
 
 ```bash
-./leones
+./install.sh   # comprueba Python/Git; no debe exigir FitLLM como hard-dep en RC4
 ```
 
-La compatibilidad histórica se mantiene explícitamente con:
+## 3. Ejecutar
 
 ```bash
-./leones --rc2
+./leones              # RC4: inventario + intención + recomendación
+./leones --inventory  # solo inventario / ofertas uninstall
+./leones --rc2        # wizard histórico
 ```
 
-## 2. Dependencias
-
-La base del diagnóstico utiliza las herramientas que el repositorio comprueba. **LLMFit no es una dependencia dura de arranque**.
-
-Si está disponible, `llmfit` puede alimentar el preselector RC4; si no lo está, LEONES no debe inventar candidatos ni hardware.
-
-La presencia de otros componentes —runtimes, modelos locales, ODS, Magnitude, harnesses, agentes, etc.— se observa mediante el inventario y el preflight. No se da por instalada una herramienta porque aparezca en documentación.
-
-## 3. Arrancar
+## 4. Preflight y MEASURED (Ubuntu)
 
 ```bash
-./leones
+python3 scripts/rc4_release_gate.py
+python3 scripts/rc4_resource_preflight.py --path .
+python3 scripts/rc4_measured_chain.py --model-id demo --stack none --json
+# measured debe ser false sin --execute
 ```
 
-La TUI RC4 comienza por idioma y después muestra el **Estado de la máquina**: hardware, RAM/CPU/disco y componentes IA detectados cuando están disponibles.
+E2E físico: model_id exacto de `ollama list` +
+`--execute --authorize-execution --authorize-measurement`.
 
-Después se declara `USER_INTENT[]` mediante selección múltiple. La recomendación no aparece antes de esa declaración.
+## Requisitos
 
-## 4. Recomendación
+- Linux recomendado para validación física.
+- Git · Python 3.10+.
+- FitLLM opcional · Ollama/runtime según medición.
+- Internet cuando el stack o el feed lo necesiten.
 
-El recorrido es:
+## Regla
 
-```text
-HARDWARE + USER_INTENT[]
-        ↓
-HF + Artificial Analysis
-        ↓
-feed ≤100
-        ↓
-LLMFit opcional · catálogo ≤100
-        ↓
-intersección
-        ↓
-hasta 3 ESTIMATED | insufficient
-        ↓
-elección humana
-```
-
-`ESTIMATED` no significa rendimiento medido.
-
-## 5. Instalación y verificación
-
-La instalación de un componente solo debe ocurrir después de la elección y el consentimiento explícitos. La vía de instalación debe ser reversible/desinstalable.
-
-```text
-RECOMENDACIÓN
-   ↓
-ELECCIÓN
-   ↓
-CONSENTIMIENTO
-   ↓
-INSTALACIÓN
-   ↓
-VERIFICACIÓN FÍSICA
-```
-
-Instalar no autoriza un benchmark.
-
-## 6. Medición
-
-La medición física requiere gates posteriores y autorización explícita:
-
-```text
-VERIFICADO
-   ↓
-AUTORIZAR EJECUCIÓN
-   ↓
-AUTORIZAR MEDICIÓN
-   ↓
-EJECUCIÓN PROTOCOLIZADA
-   ↓
-MEASURED + EVIDENCIA
-```
-
-La frontera física RC4 sigue abierta hasta completar la validación E2E en Ubuntu.
-
-## 7. Reglas
-
-- No se rellenan candidatos cuando faltan coincidencias.
-- RAM y VRAM se contabilizan por separado.
-- El swap no cuenta como RAM física.
-- Una fuente externa no autoriza ejecución.
-- Una preflight no equivale a instalación verificada.
-- Una instalación verificada no equivale a benchmark.
-- Un benchmark histórico no se reutiliza como medición universal.
-
-## Desinstalación
-
-Cualquier componente que LEONES instale debe conservar una vía de desinstalación explícita. La desinstalación no borra la evidencia histórica del proyecto.
+ESTIMATED ≠ MEASURED. El usuario elige. Solo la ejecución autorizada produce medición LEONES.

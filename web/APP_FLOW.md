@@ -1,70 +1,46 @@
-# LEONES App — flujo guiado RC4
+# LEONES App — flujo guiado
 
-La aplicación web **no ejecuta la infraestructura local en el navegador**. Explica el recorrido y conduce al usuario hacia las herramientas locales correspondientes.
+La aplicación web **no ejecuta la infraestructura local en el navegador**. Explica el recorrido y conduce a las herramientas locales.
 
-## Flujo canónico
+## Flujo canónico RC4
 
 ```text
-IDIOMA
+Necesidad → USER_INTENT[]
    ↓
-ESTADO DE LA MÁQUINA
+Hardware real (preflight / hardware-profile)
    ↓
-USER_INTENT[] · obligatorio · múltiple
+Evidencia HF + Artificial Analysis (≤100)
    ↓
-HARDWARE + RESOURCE PREFLIGHT
+LLMFit CLI opcional → intersección evidence-backed
    ↓
-HF + Artificial Analysis
+≤3 ESTIMATED | insufficient
    ↓
-LLMFit opcional · catálogo independiente
+Elección humana (modelo)
    ↓
-INTERSECCIÓN → hasta 3 ESTIMATED | insufficient
+Stack: Magnitude | ODS | none
    ↓
-ELECCIÓN HUMANA
+Runtime preflight (p. ej. Ollama)
    ↓
-STACK / RUNTIME
+Consentimiento ejecución + medición (opt-in, independientes)
    ↓
-CONSENTIMIENTO Y OPERACIONES EXPLÍCITAS
+A01 / trusted argv → MEASURED
    ↓
-VERIFICACIÓN FÍSICA
-   ↓
-AUTORIZACIÓN DE EJECUCIÓN / MEDICIÓN
-   ↓
-MEASURED + EVIDENCIA
+Evidencia / recomendación
 ```
 
-La TUI es presentación. No convierte una recomendación en ejecución.
+Histórico RC2: `./leones --rc2` (wizard). No es el camino canónico RC4.
+
+## Decisiones explícitas
+
+- Instalar ≠ verificar ≠ autorizar benchmark.
+- FitLLM puede desinstalarse de forma independiente tras elegir stack.
+- ESTIMATED de FitLLM, ODS, Magnitude u otras fuentes **no** es medición LEONES.
 
 ## Qué aporta cada capa
 
-- **Estado de la máquina:** hardware, recursos y componentes IA observados en el host.
-- **USER_INTENT[]:** declara para qué se quiere usar la IA; no puede estar vacío.
-- **Hugging Face + Artificial Analysis:** evidencia externa y procedencia.
-- **LLMFit / FitLLM:** preselector opcional desde su catálogo propio.
-- **Intersección:** solo candidatos con identidad respaldada por ambas superficies llegan a la recomendación.
-- **Elección humana:** selecciona modelo/configuración y posteriormente stack/runtime.
-- **Runtime físico:** comprueba qué está realmente disponible en Ubuntu.
-- **Medición:** solo una ejecución protocolizada produce `MEASURED`.
-
-## ESTIMATED ≠ MEASURED
-
-Las estimaciones sirven para seleccionar y priorizar. Una estimación de LLMFit, Hugging Face, Artificial Analysis u otra fuente externa **no es una medición física de LEONES**.
-
-Una preflight tampoco es una instalación verificada. Una instalación verificada tampoco es un benchmark ejecutado.
-
-## Consentimientos
-
-Las decisiones se mantienen separadas:
-
-```text
-recomendar ≠ elegir ≠ instalar ≠ verificar ≠ autorizar ejecución ≠ medir
-```
-
-No se descarga ni ejecuta una pila por el mero hecho de recomendarla.
-
-## Manada
-
-La contribución a Manada es voluntaria. Los resultados técnicos agregados pueden ampliar la evidencia sobre hardware real, conservando procedencia y consentimiento.
-
-## Principio de producto
-
-La web documenta y conduce. La infraestructura local ejecuta. LEONES aprende de resultados medidos sin confundir recomendaciones provisionales con hechos físicos.
+| Capa | Rol |
+|------|-----|
+| LEONES | Autoridad: hardware, intersección, medición, evidencia |
+| LLMFit | Preselector ESTIMATED opcional |
+| Magnitude / ODS | Stack de ejecución (interfaces propias) |
+| Hermes / OMH | Opcionales; no seleccionan modelo en RC4 |

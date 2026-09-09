@@ -1,70 +1,64 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Estado LEONES: RC3 cerrada; RC4 integrada; TUI validada; recomendador endurecido; MEASURED E2E pendiente en Ubuntu." />
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Estado LEONES RC4: recomendacion endurecida; inventario; orquestador MEASURED; E2E fisico pendiente en Ubuntu." />
 <title>LEONES · Estado</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-07-3" />
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-07-3" />
+<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-08-1" />
+<link rel="stylesheet" href="assets/css/site.css?v=2026-09-08-1" />
 </head>
 <body>
 <header class="site-hero"><div class="site-hero__inner">
-<span class="site-tag">Estado del proyecto · 7 septiembre 2026</span>
+<span class="site-tag">Estado del proyecto · 8 septiembre 2026</span>
 <h1>Qué está cerrado y qué sigue abierto</h1>
-<p>Fuente de verdad operativa. <strong>ESTIMATED no es MEASURED.</strong> FitLLM no es autoridad.</p>
+<p>Fuente de verdad operativa. ESTIMATED no es MEASURED. FitLLM no es autoridad.</p>
 </div></header>
 <main class="site-main" id="main">
-<section class="site-section"><span class="site-tag">RC4 · en validación física</span>
-<h2>RC4 · TUI + recomendación endurecida + cadena MEASURED</h2>
-<p class="site-lead"><strong>Estado fijado.</strong> La TUI está validada como presentación. `USER_INTENT[]` es obligatorio y múltiple. Hugging Face + Artificial Analysis aportan evidencia externa; LLMFit/ FitLLM es un preselector opcional; la frontera física permanece separada.</p>
-<pre class="site-stack">IDIOMA
+
+<section class="site-section"><span class="site-tag">RC4 · en desarrollo</span>
+<h2>RC4 · recomendación + cadena MEASURED</h2>
+<p class="site-lead"><strong>Decisión fijada (2026-09-06).</strong> FitLLM es preselector opcional. Hermes/OMH fuera del selector canónico. Orquestador: <code>scripts/rc4_measured_chain.py</code>.</p>
+<pre class="site-stack">
+╔══════════════════════════════════════════════════════════════╗
+║  RC4 · CADENA CANÓNICA                                       ║
+╚══════════════════════════════════════════════════════════════╝
+USER_INTENT[] (obligatorio, múltiple)
    ↓
-ESTADO DE LA MÁQUINA
+resource + ubuntu preflight (+ Hermes/OMH/Ollama)
    ↓
-USER_INTENT[]
+HF + Artificial Analysis → feed ≤100
    ↓
-HF + Artificial Analysis → ≤100
+LLMFit CLI → intersección → ≤3 ESTIMATED | insufficient
    ↓
-LLMFit opcional → ≤100
-   ↓
-intersección → hasta 3 ESTIMATED | insufficient
-   ↓
-selección humana → stack → runtime
-   ↓
-Ubuntu físico → autorización → MEASURED</pre>
-<div class="site-note"><strong>Regla:</strong> recomendar no instala ni ejecuta por sí solo. Una preflight no es una instalación verificada; una instalación verificada no es un benchmark.</div>
-<div class="site-note"><strong>Última evidencia pública física RC4:</strong> preflight Ubuntu del 2026-09-06 con resultado <code>insufficient</code>. El estado no se promociona a MEASURED.</div>
+selección humana → stack → runtime → A01 → MEASURED
+</pre>
+<div class="site-note"><strong>Evidencia Aspire 2026-09-06/07:</strong> release gate PASS · preflight <code>insufficient</code> (1/3) · cadena plan con <code>measured: false</code> · Ollama OBSERVED. E2E MEASURED aún no ejecutado con modelo real + doble autorización.</div>
+<div class="site-note"><strong>Docs:</strong> <code>docs/RC4-ARCHITECTURE.md</code> · <code>docs/completed/RC4-STRICT-MEASURED-CHAIN-2026-09-07.md</code> · <a href="rc4.html">rc4.html</a></div>
 </section>
-<section class="site-section"><span class="site-tag">TUI RC4</span>
-<h2>Interfaz validada</h2>
-<div class="site-grid">
-<article class="site-card"><h3>✓ Idioma primero</h3><p>La implementación actual ofrece ES / EN / ZH.</p></article>
-<article class="site-card"><h3>✓ Estado de la máquina</h3><p>Muestra hardware, RAM, CPU, disco y componentes IA detectados cuando están disponibles.</p></article>
-<article class="site-card"><h3>✓ Navegación</h3><p>Foco visible, TAB, flechas, ESPACIO y ENTER.</p></article>
-<article class="site-card"><h3>✓ Intención</h3><p>Selección múltiple antes de la recomendación.</p></article>
-</div>
-</section>
+
 <section class="site-section"><span class="site-tag">RC3 · cerrada</span>
 <h2>RC3 cerrada</h2>
 <p class="site-lead"><strong>Contratos y gate CI cerrados (2026-09-05).</strong></p>
-<p><a href="rc3.html">RC3 →</a></p>
+<div class="site-note"><code>docs/completed/RC3-CLOSED-2026-09-05.md</code> · <a href="rc3.html">rc3.html</a></div>
 </section>
-<section class="site-section"><span class="site-tag">Consolidado</span>
-<h2>Qué queda cerrado / abierto</h2>
+
+<section class="site-section"><span class="site-tag">Estado consolidado</span>
+<h2>Cerrado / abierto</h2>
 <div class="site-grid">
-<article class="site-card"><h3>JALONES 1–4</h3><p>🟢 Cerrados.</p></article>
-<article class="site-card"><h3>RC1 / RC2</h3><p>🟢 Validado / histórico.</p></article>
-<article class="site-card"><h3>RC3</h3><p>🟢 Cerrada.</p></article>
-<article class="site-card"><h3>RC4 TUI</h3><p>🟢 Validada como capa de presentación.</p></article>
-<article class="site-card"><h3>RC4 recomendador</h3><p>🟢 Endurecido; candidatos ESTIMATED.</p></article>
-<article class="site-card"><h3>Cadena MEASURED E2E</h3><p>🟡 Pendiente de validación física en Ubuntu.</p></article>
+<article class="site-card"><h3>JALONES 1–4 · RC1 · RC2</h3><p>🟢 Cerrados / histórico.</p></article>
+<article class="site-card"><h3>RC3 fase</h3><p>🟢 Cerrada.</p></article>
+<article class="site-card"><h3>RC4 decisión + recomendación + gate</h3><p>🟢 Fijada y endurecida en código.</p></article>
+<article class="site-card"><h3>Inventario / uninstall</h3><p>🟢 Independiente; LEONES al final.</p></article>
+<article class="site-card"><h3>Orquestador MEASURED</h3><p>🟢 <code>rc4_measured_chain.py</code> publicado.</p></article>
+<article class="site-card"><h3>MEASURED E2E físico</h3><p>🟡 Pendiente en Ubuntu (modelo instalado + autorizaciones).</p></article>
 </div>
 </section>
+
 <section class="site-section"><span class="site-tag">Regla</span>
 <h2>Medir antes de afirmar</h2>
-<p><code>estimated</code>, <code>observed</code> y <code>measured</code> mantienen fronteras distintas. Una cifra externa o histórica nunca se convierte por redacción en una medición nueva.</p>
+<p>ESTIMATED nunca se promociona solo a MEASURED. Usar el nombre exacto de <code>ollama list</code> como model_id.</p>
 </section>
 </main>
-<script src="assets/js/navigation.js?v=2026-09-07-3" defer></script>
+<script src="assets/js/navigation.js?v=2026-09-08-1" defer></script>
 </body>
 </html>
