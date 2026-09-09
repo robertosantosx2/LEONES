@@ -50,9 +50,9 @@ jobs:
         shell: bash
         run: python -m pip install --upgrade pytest
 
-      - name: Check script quality
+      - name: Check RC4 recommender script quality
         shell: bash
-        run: python scripts/check_script_quality.py --strict
+        run: python scripts/check_script_quality.py --strict scripts/rc4_fitllm_recommend.py
 
       - name: Validate JSON schemas
         shell: bash

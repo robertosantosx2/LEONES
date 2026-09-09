@@ -641,6 +641,7 @@ def app(s):
                         put(s, s.getmaxyx()[0] - 5, 36, tr(lang, "auth_failed"), s.getmaxyx()[1] - 40)
                         s.refresh()
                         time.sleep(0.8)
+        # local measurement boundary: RC4 recommendations remain ESTIMATED.
         # MEASURED is intentionally not used here: RC4 recommendations remain ESTIMATED.
 
 
