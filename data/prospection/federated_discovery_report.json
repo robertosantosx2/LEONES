@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T09:57:36.745859+00:00",
+  "generated_at": "2026-09-15T09:28:11.337872+00:00",
   "sources_total": 25,
   "registered_sources": 24,
   "discovered_instance_batch": 2,
@@ -21,8 +21,8 @@
     "gitlab-ce": 0,
     "gnu-savannah": 0,
     "gogs": 0,
-    "huggingface": 40,
-    "huggingface-papers": 34,
+    "huggingface": 39,
+    "huggingface-papers": 36,
     "kallithea": 0,
     "notabug": 0,
     "onedev": 0,
@@ -32,7 +32,7 @@
     "sourcehut": 0,
     "srht": 0
   },
-  "unique_discoveries": 199,
+  "unique_discoveries": 200,
   "failures": [],
   "workers": 8,
   "per_worker_timeout_seconds": 90,
