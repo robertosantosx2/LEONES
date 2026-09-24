@@ -1,10 +1,10 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 294,
-  "enriched_ok": 81,
-  "non_github_preserved": 207,
-  "errors": 6,
+  "repositories_processed": 295,
+  "enriched_ok": 82,
+  "non_github_preserved": 208,
+  "errors": 5,
   "github_token_used": true,
   "diagnostics": [
     {
@@ -36,18 +36,11 @@
       "rate_limit_remaining": "4858"
     },
     {
-      "repository": "nathandywrbennett4919/adam-local-ai-executor",
-      "status": 502,
-      "error_type": "HTTP 502",
-      "message": "Server Error",
-      "rate_limit_remaining": "4824"
-    },
-    {
       "repository": "ramaiahsvn/aim.pat",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4787"
+      "rate_limit_remaining": "4785"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."
