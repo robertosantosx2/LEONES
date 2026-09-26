@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-25T09:38:45.354118+00:00",
+  "generated_at": "2026-09-26T09:23:19.257382+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -263,7 +263,7 @@
       "priority": "high",
       "status": "reachable",
       "http_status": 200,
-      "final_url": "https://huggingface.co/papers",
+      "final_url": "https://huggingface.co/papers/date/2026-09-25",
       "authentication_configured": false
     }
   ],
