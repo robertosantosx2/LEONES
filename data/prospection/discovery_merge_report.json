@@ -2,15 +2,14 @@
   "live_input": "data/prospection/live_discoveries.ndjson",
   "federated_input": "data/prospection/federated_discoveries.ndjson",
   "output": "data/prospection/discovery_input.ndjson",
-  "unique_discoveries": 298,
+  "unique_discoveries": 257,
   "unique_by_source": {
     "cgit-instance:git.zx2c4.com": 1,
-    "codeberg": 39,
     "forgejo-instance:gitea.com": 28,
     "fossil-instance:fossil-scm.org": 6,
     "framagit": 19,
     "github": 87,
-    "gitlab": 40,
+    "gitlab": 38,
     "huggingface": 40,
     "huggingface-papers": 38
   },
