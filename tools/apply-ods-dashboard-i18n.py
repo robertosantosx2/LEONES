@@ -395,6 +395,24 @@ replace_once(firstboot,
 
 p = Path(firstboot)
 source = p.read_text(encoding="utf-8")
+
+# Each wizard step is a separate React component, so it needs its own i18n hook.
+for signature in [
+    "function WelcomeStep({ deviceName, setDeviceName, onNext }) {",
+    "function UserStep({ username, setUsername, onNext, onBack }) {",
+    "function StackStep({ stack, setStack, onNext, onBack }) {",
+]:
+    source = source.replace(signature, signature + "\n  const {t} = useI18n()", 1)
+source = source.replace(
+    "  ownerCardStatusLoading,\n}) {\n  const stackTitle",
+    "  ownerCardStatusLoading,\n}) {\n  const {t} = useI18n()\n  const stackTitle",
+    1,
+)
+source = source.replace(
+    "function DoneScreen({ invite, onDone }) {\n  const [copied",
+    "function DoneScreen({ invite, onDone }) {\n  const {t} = useI18n()\n  const [copied",
+    1,
+)
 for old, new in {
     ">Welcome to ODS.<": ">{t('firstBoot.welcome.title')}<",
     ">Let's get you set up in about a minute. First, give this setup a friendly label for the owner-card audit trail.<": ">{t('firstBoot.welcome.body')}<",
@@ -421,6 +439,29 @@ for old, new in {
     ">Back</button>": ">{t('common.back')}</button>",
 }.items():
     source = source.replace(old, new)
+
+# Translate data-driven cards and richer JSX blocks.
+source = source.replace("{opt.title}", "{t(opt.titleKey)}")
+source = source.replace("{opt.blurb}", "{t(opt.blurbKey)}")
+source = source.replace(
+    "const stackTitle = STACK_OPTIONS.find(s => s.id === stack)?.title || stack",
+    "const selectedStack = STACK_OPTIONS.find(s => s.id === stack)\n  const stackTitle = selectedStack?.titleKey ? t(selectedStack.titleKey) : stack",
+)
+source = source.replace(
+    "This label is recorded on the first owner card only. It does not rename the host yet;\n          change <code className=\"text-theme-accent\">ODS_DEVICE_NAME</code> in Settings before expecting\n          <code className=\"text-theme-accent\"> {deviceName.trim() || 'ods'}.local</code> to resolve.\n          Letters, numbers, and dashes only.",
+    "{t('firstBoot.setupLabelHelp', {name: deviceName.trim() || 'ods'})}",
+)
+source = source.replace("{qrError || 'Generating QR...'}", "{qrError || t('firstBoot.done.generating')}")
+source = source.replace(
+    "Here&apos;s the owner card for <strong className=\"text-theme-text\">{invite.target_username}</strong>.\n        They scan or tap it to open ODS Talk. Keep the printed QR safe; it remains valid until revoked.",
+    "{t('firstBoot.done.body', {username: invite.target_username})}",
+)
+source = source.replace('title="Copy link"', "title={t('firstBoot.done.copy')}")
+source = source.replace('aria-label="Copy owner link"', "aria-label={t('firstBoot.done.copyAria')}")
+source = source.replace(
+    "Need more cards or guest invites later? They live under <strong>Settings</strong> / <strong>Setup / Owner</strong>.",
+    "{t('firstBoot.done.footer')}",
+)
 # Preserve existing progress/finish logic and add the selector without moving
 # the StepDots implementation used by upstream PRs.
 header = source.find("<header")
@@ -476,6 +517,7 @@ replacements = {
     "<h3>Dashboard access</h3>": "<h3>{t('profile.dashboardAccess')}</h3>",
     "Change dashboard password": "{t('profile.changePassword')}",
     "Sign out of this browser": "{t('profile.signOut')}",
+    "Saved only in this browser. Your photo is resized locally and is not sent to the AI model. This does not change your login or permissions.": "{t('profile.privacy')}",
 }
 for old, new in replacements.items():
     source = source.replace(old, new)
