@@ -150,9 +150,9 @@ export function useI18n() {
   'firstBoot.user.body': "We'll generate an owner card for them at the end. They scan it to reach ODS Talk on this ODS.",
   'firstBoot.username': 'Username',
   'firstBoot.usernamePlaceholder': 'alice',
-  'firstBoot.usernameHelp': '{t('firstBoot.usernameHelp')}',
+  'firstBoot.usernameHelp': 'Recorded with the owner card audit trail. The card remains valid until it is revoked.',
   'firstBoot.stack.title': 'Pick your stack.',
-  'firstBoot.stack.body': '{t('firstBoot.stack.body')}',
+  'firstBoot.stack.body': 'You can change this later. Start small if you want and add things as you go.',
   'firstBoot.stack.chat.title': 'Chat only',
   'firstBoot.stack.chat.blurb': 'Just the chat surface. This is what runs out of the box.',
   'firstBoot.stack.agents.title': 'Chat + Agents',
@@ -162,17 +162,17 @@ export function useI18n() {
   'firstBoot.confirm.title': 'Ready?',
   'firstBoot.confirm.body': "Tap Finish and we'll generate the owner QR for ODS Talk.",
   'firstBoot.confirm.setupLabel': 'Setup label',
-  'firstBoot.confirm.setupHint': '{t('firstBoot.confirm.setupHint')}',
+  'firstBoot.confirm.setupHint': 'owner-card audit note',
   'firstBoot.confirm.firstUser': 'First user',
   'firstBoot.confirm.stack': 'Stack',
-  'firstBoot.confirm.stackHint': '{t('firstBoot.confirm.stackHint')}',
+  'firstBoot.confirm.stackHint': 'services start in the background — verify on the dashboard after setup',
   'firstBoot.confirm.checking': 'Checking owner-card readiness...',
-  'firstBoot.confirm.finishLater': '{t('firstBoot.confirm.finishLater')}',
+  'firstBoot.confirm.finishLater': 'Finish setup now, then print an owner card from Settings / Setup / Owner after LAN access is enabled.',
   'firstBoot.confirm.configuring': 'Configuring...',
   'firstBoot.confirm.finish': 'Finish',
   'firstBoot.done.title': "You're set.",
   'firstBoot.done.body': "Here's the owner card for {username}. They scan or tap it to open ODS Talk. Keep the printed QR safe; it remains valid until revoked.",
-  'firstBoot.done.qrUnavailable': '{t('firstBoot.done.qrUnavailable')}',
+  'firstBoot.done.qrUnavailable': 'QR generation unavailable on the server.',
   'firstBoot.done.generating': 'Generating QR...',
   'firstBoot.done.copy': 'Copy link',
   'firstBoot.done.copyAria': 'Copy owner link',
@@ -579,6 +579,7 @@ for forbidden in [
     if forbidden in source:
         raise SystemExit(f"ERROR: invalid quoted translation expression generated: {forbidden!r}")
 
+firstboot_source = p.read_text(encoding="utf-8")
 for required in [
     "t('firstBoot.welcome.body')",
     "t('firstBoot.user.body')",
