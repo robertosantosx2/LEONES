@@ -385,13 +385,13 @@ def replace_once(path, old, new):
 firstboot = "ods/extensions/services/dashboard/src/pages/FirstBoot.jsx"
 replace_once(firstboot,
 "import { useEffect, useMemo, useState } from 'react'",
-"import {useEffect,useMemo,useState} from 'react'\nimport {LANGUAGES,useI18n} from '../i18n'")
+"import {useEffect,useMemo,useState} from 'react'\nimport {useI18n} from '../i18n'\nimport LanguageSelector from '../i18n/LanguageSelector'")
 
 # The hook is intentionally placed in the top-level FirstBoot component so
 # the header selector remains synchronized with the Profile selector.
 replace_once(firstboot,
 "export default function FirstBoot({ onComplete }) {",
-"export default function FirstBoot() {\n  const {language,setLanguage,t} = useI18n()")
+"export default function FirstBoot({ onComplete }) {\n  const {t} = useI18n()")
 
 p = Path(firstboot)
 source = p.read_text(encoding="utf-8")
