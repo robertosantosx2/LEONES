@@ -531,6 +531,22 @@ source = source.replace(
     'label=\"Stack\" value={stackTitle} hint=\"services start in the background — verify on the dashboard after setup\"',
     "label={t('firstBoot.confirm.stack')} value={stackTitle} hint={t('firstBoot.confirm.stackHint')}",
 )
+source = source.replace(
+    '<Row label="Setup label" value={deviceName.trim() || \'ods\'} hint="owner-card audit note" />',
+    "<Row label={t('firstBoot.confirm.setupLabel')} value={deviceName.trim() || 'ods'} hint={t('firstBoot.confirm.setupHint')} />",
+)
+source = source.replace(
+    '<Row label="First user" value={username.trim()} />',
+    "<Row label={t('firstBoot.confirm.firstUser')} value={username.trim()} />",
+)
+source = source.replace(
+    "            Share",
+    "            {t('firstBoot.done.share')}",
+)
+source = source.replace(
+    "          Open dashboard",
+    "          {t('firstBoot.done.dashboard')}",
+)
 # Preserve existing progress/finish logic and add the selector without moving
 # the StepDots implementation used by upstream PRs.
 header = source.find("<header")
