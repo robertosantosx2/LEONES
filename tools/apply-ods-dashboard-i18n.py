@@ -548,6 +548,17 @@ replacements = {
 }
 for old, new in replacements.items():
     source = source.replace(old, new)
+
+# Some original strings live inside JavaScript string literals. Replace the
+# complete call/expression so the generated JSX contains executable t(...)
+# expressions rather than a quoted "{t(...)}" string.
+source = source.replace("setNotice('{t('profile.saved')}')", "setNotice(t('profile.saved'))")
+source = source.replace("setError('{t('profile.saveError')}')", "setError(t('profile.saveError'))")
+source = source.replace("{busy ? '{t('profile.preparePhoto')}' : '{t('profile.uploadPhoto')}'", "{busy ? t('profile.preparePhoto') : t('profile.uploadPhoto')}")
+source = source.replace(
+    '<section className="profile-dashboard-access" aria-label="Dashboard access">',
+    '<section className="profile-dashboard-access" aria-label={t(\'profile.dashboardAccess\')}>',
+)
 language_block = """<LanguageSelector />
     """
 needle = '<div className="profile-photo-editor">'
