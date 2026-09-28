@@ -581,14 +581,14 @@ for forbidden in [
 
 firstboot_source = p.read_text(encoding="utf-8")
 for required in [
-    "t('firstBoot.welcome.body')",
-    "t('firstBoot.user.body')",
-    "t('firstBoot.stack.body')",
-    "t('firstBoot.confirm.body')",
-    "t('firstBoot.done.title')",
+    "firstBoot.welcome.body",
+    "firstBoot.user.body",
+    "firstBoot.stack.body",
+    "firstBoot.confirm.body",
+    "firstBoot.done.title",
 ]:
-    if required not in source:
-        raise SystemExit(f"ERROR: expected FirstBoot translation was not generated: {required!r}")
+    if required not in firstboot_source:
+        raise SystemExit(f"ERROR: expected FirstBoot translation key was not generated: {required!r}")
 
 # The installer deliberately does not alter existing test files.
 # Translation expressions are inserted as JSX expressions, never as quoted
