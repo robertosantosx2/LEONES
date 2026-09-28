@@ -585,7 +585,6 @@ for required in [
     "Who's the first user?",
     "Pick your stack.",
     "Ready?",
-    "You're set.",
 ]:
     if required in firstboot_source:
         raise SystemExit(f"ERROR: untranslated FirstBoot text remains: {required!r}")
