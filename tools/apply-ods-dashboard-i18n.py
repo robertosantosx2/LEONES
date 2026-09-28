@@ -168,6 +168,7 @@ export function useI18n() {
   'firstBoot.confirm.stackHint': 'services start in the background — verify on the dashboard after setup',
   'firstBoot.confirm.checking': 'Checking owner-card readiness...',
   'firstBoot.confirm.finishLater': 'Finish setup now, then print an owner card from Settings / Setup / Owner after LAN access is enabled.',
+  'firstBoot.confirm.proxyRequired': 'Enable ODS proxy before generating owner cards.',
   'firstBoot.confirm.configuring': 'Configuring...',
   'firstBoot.confirm.finish': 'Finish',
   'firstBoot.done.title': "You're set.",
@@ -446,6 +447,15 @@ source = source.replace(
     1,
 )
 for old, new in {
+    "        Let&apos;s get you set up in about a minute. First, give this setup a friendly label for the owner-card audit trail.": "        {t('firstBoot.welcome.body')}",
+    "        We&apos;ll generate an owner card for them at the end. They scan it to reach ODS Talk on this ODS.": "        {t('firstBoot.user.body')}",
+    "          Recorded with the owner card audit trail. The card remains valid until it is revoked.": "          {t('firstBoot.usernameHelp')}",
+    "        You can change this later. Start small if you want and add things as you go.": "        {t('firstBoot.stack.body')}",
+    "        Tap Finish and we&apos;ll generate the owner QR for ODS Talk.": "        {t('firstBoot.confirm.body')}",
+    "            {' '}Finish setup now, then print an owner card from Settings / Setup / Owner after LAN access is enabled.": "            {' '}{t('firstBoot.confirm.finishLater')}",
+    "            {ownerCardStatus.reason || 'Enable ODS proxy before generating owner cards.'}": "            {ownerCardStatus.reason || t('firstBoot.confirm.proxyRequired')}",
+    "          {finishing ? 'Configuring...' : 'Finish'}": "          {finishing ? t('firstBoot.confirm.configuring') : t('firstBoot.confirm.finish')}",
+    "        Continue": "        {t('common.continue')}",
     ">Welcome to ODS.<": ">{t('firstBoot.welcome.title')}<",
     ">Let's get you set up in about a minute. First, give this setup a friendly label for the owner-card audit trail.<": ">{t('firstBoot.welcome.body')}<",
     ">Setup label<": ">{t('firstBoot.setupLabel')}<",
