@@ -469,12 +469,7 @@ if header < 0:
     raise SystemExit("ERROR: FirstBoot header not found.")
 header_end = source.find(">", header)
 selector = """
-      <label className="firstboot-language">
-        <span>{t('common.language')}</span>
-        <select value={language} onChange={event => setLanguage(event.target.value)} aria-label={t('common.language')}>
-          {LANGUAGES.map(item => <option key={item.code} value={item.code}>{item.label}</option>)}
-        </select>
-      </label>
+      <LanguageSelector />
 """
 source = source[:header_end + 1] + selector + source[header_end + 1:]
 # Stack option labels are stored as translation keys while retaining their
@@ -493,11 +488,11 @@ profile = ROOT / "ods/extensions/services/dashboard/src/components/settings/Prof
 source = profile.read_text(encoding="utf-8")
 source = source.replace(
     "import {usePortalIdentity} from '../../contexts/PortalIdentityContext'",
-    "import {usePortalIdentity} from '../../contexts/PortalIdentityContext'\nimport {LANGUAGES,useI18n} from '../../i18n'"
+    "import {usePortalIdentity} from '../../contexts/PortalIdentityContext'\nimport {useI18n} from '../../i18n'\nimport LanguageSelector from '../../i18n/LanguageSelector'"
 )
 source = source.replace(
     "export default function ProfileSettings() {",
-    "export default function ProfileSettings() {\n  const {language,setLanguage,t} = useI18n()"
+    "export default function ProfileSettings() {\n  const {t} = useI18n()"
 )
 replacements = {
     'aria-label="Your profile"': "aria-label={t('profile.aria')}",
@@ -521,12 +516,7 @@ replacements = {
 }
 for old, new in replacements.items():
     source = source.replace(old, new)
-language_block = """<label className="profile-language">
-      <span>{t('common.language')}</span>
-      <select value={language} onChange={event => setLanguage(event.target.value)} aria-label={t('common.language')}>
-        {LANGUAGES.map(item => <option key={item.code} value={item.code}>{item.label}</option>)}
-      </select>
-    </label>
+language_block = """<LanguageSelector />
     """
 needle = '<div className="profile-photo-editor">'
 if language_block not in source:
