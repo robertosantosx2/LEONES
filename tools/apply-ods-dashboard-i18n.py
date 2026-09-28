@@ -233,6 +233,7 @@ export default {
   'firstBoot.confirm.stackHint': 'los servicios se inician en segundo plano; verifica el dashboard después de la configuración',
   'firstBoot.confirm.checking': 'Comprobando la disponibilidad de la tarjeta del propietario...',
   'firstBoot.confirm.finishLater': 'Finaliza la configuración y después imprime una tarjeta desde Settings / Setup / Owner cuando el acceso LAN esté habilitado.',
+  'firstBoot.confirm.proxyRequired': 'Activa el proxy de ODS antes de generar tarjetas de propietario.',
   'firstBoot.confirm.configuring': 'Configurando...',
   'firstBoot.confirm.finish': 'Finalizar',
   'firstBoot.done.title': 'Todo listo.',
@@ -297,6 +298,7 @@ export default {
   'firstBoot.confirm.stackHint': '服务将在后台启动；设置完成后请在 dashboard 中验证',
   'firstBoot.confirm.checking': '正在检查所有者卡片是否就绪...',
   'firstBoot.confirm.finishLater': '先完成设置；启用 LAN 访问后，可从 Settings / Setup / Owner 打印所有者卡片。',
+  'firstBoot.confirm.proxyRequired': '请先启用 ODS 代理，再生成所有者卡片。',
   'firstBoot.confirm.configuring': '正在配置...',
   'firstBoot.confirm.finish': '完成',
   'firstBoot.done.title': '设置完成。',
@@ -376,6 +378,10 @@ describe('dashboard i18n', () => {
     expect(translate('zh-CN', 'profile.save')).toBe('保存个人资料')
   })
 
+  it('falls back to the key when a translation is missing', () => {
+    expect(translate('es', 'missing.key')).toBe('missing.key')
+  })
+
   it('exposes the three supported languages', () => {
     expect(LANGUAGES.map(item => item.code)).toEqual(['en', 'es', 'zh-CN'])
   })
@@ -418,7 +424,7 @@ def replace_once(path, old, new):
 firstboot = "ods/extensions/services/dashboard/src/pages/FirstBoot.jsx"
 replace_once(firstboot,
 "import { useEffect, useMemo, useState } from 'react'",
-"import {useEffect,useMemo,useState} from 'react'\nimport {useI18n} from '../i18n'\nimport LanguageSelector from '../i18n/LanguageSelector'")
+"import { useEffect, useMemo, useState } from 'react'\nimport { useI18n } from '../i18n'\nimport LanguageSelector from '../i18n/LanguageSelector'")
 
 # The hook is intentionally placed in the top-level FirstBoot component so
 # the header selector remains synchronized with the Profile selector.
@@ -503,6 +509,27 @@ source = source.replace('aria-label="Copy owner link"', "aria-label={t('firstBoo
 source = source.replace(
     "Need more cards or guest invites later? They live under <strong>Settings</strong> / <strong>Setup / Owner</strong>.",
     "{t('firstBoot.done.footer')}",
+)
+source = source.replace(
+    "      <h1 className=\"text-3xl font-bold text-theme-text mb-3\">Who&apos;s the first user?</h1>",
+    "      <h1 className=\"text-3xl font-bold text-theme-text mb-3\">{t('firstBoot.user.title')}</h1>",
+)
+source = source.replace(
+    "      <h1 className=\"text-3xl font-bold text-theme-text mb-3\">You&apos;re set.</h1>",
+    "      <h1 className=\"text-3xl font-bold text-theme-text mb-3\">{t('firstBoot.done.title')}</h1>",
+)
+source = source.replace('aria-label=\"Back\"', "aria-label={t('common.back')}")
+source = source.replace(
+    'label=\"Setup label\" hint=\"owner-card audit note\"',
+    "label={t('firstBoot.confirm.setupLabel')} hint={t('firstBoot.confirm.setupHint')}",
+)
+source = source.replace(
+    'label=\"First user\" value={username}',
+    "label={t('firstBoot.confirm.firstUser')} value={username}",
+)
+source = source.replace(
+    'label=\"Stack\" value={stackTitle} hint=\"services start in the background — verify on the dashboard after setup\"',
+    "label={t('firstBoot.confirm.stack')} value={stackTitle} hint={t('firstBoot.confirm.stackHint')}",
 )
 # Preserve existing progress/finish logic and add the selector without moving
 # the StepDots implementation used by upstream PRs.
