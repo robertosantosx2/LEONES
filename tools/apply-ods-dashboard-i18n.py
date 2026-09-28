@@ -60,10 +60,21 @@ export const LANGUAGES = [
 const dictionaries = {en, es, 'zh-CN': zhCN}
 const EVENT = 'ods:language-changed'
 
+/**
+ * Keep language validation in one place so persisted values and UI changes
+ * follow exactly the same supported-language rules.
+ */
 function normalizeLanguage(value) {
   return LANGUAGES.some(({code}) => code === value) ? value : 'en'
 }
 
+/**
+ * Read the persisted dashboard language.
+ *
+ * localStorage is intentionally treated as optional: private browsing,
+ * browser policy, or storage quotas must never prevent the dashboard from
+ * rendering. Invalid or missing values therefore resolve to English.
+ */
 export function readLanguage() {
   try {
     return normalizeLanguage(window.localStorage.getItem(LANGUAGE_KEY))
@@ -72,6 +83,12 @@ export function readLanguage() {
   }
 }
 
+/**
+ * Persist a supported language and notify components in this browser.
+ *
+ * The custom event is needed because the browser "storage" event does not
+ * fire in the same document that performed the localStorage write.
+ */
 export function saveLanguage(value) {
   const language = normalizeLanguage(value)
   try {
@@ -90,17 +107,32 @@ function subscribe(callback) {
   }
 }
 
+/**
+ * Apply simple named placeholders such as {username} without introducing a
+ * template dependency. Unknown placeholders remain visible instead of being
+ * silently discarded, which makes incomplete translations easier to detect.
+ */
 function interpolate(value, vars = {}) {
   return value.replace(/\\{(\\w+)\\}/g, (_, key) =>
     Object.prototype.hasOwnProperty.call(vars, key) ? String(vars[key]) : '{' + key + '}'
   )
 }
 
+/**
+ * Resolve a translation using the selected dictionary, then English, then
+ * the key itself. This guarantees a deterministic fallback for partial
+ * translations and newly introduced UI strings.
+ */
 export function translate(language, key, vars) {
   const value = dictionaries[normalizeLanguage(language)]?.[key] ?? en[key] ?? key
   return interpolate(value, vars)
 }
 
+/**
+ * React hook used by dashboard components. useSyncExternalStore keeps the
+ * selector and translated UI synchronized without adding a context provider
+ * or changing the dashboard application's top-level composition.
+ */
 export function useI18n() {
   const language = useSyncExternalStore(subscribe, readLanguage, () => 'en')
   return {language, setLanguage: saveLanguage, t: (key, vars) => translate(language, key, vars)}
@@ -118,9 +150,9 @@ export function useI18n() {
   'firstBoot.user.body': "We'll generate an owner card for them at the end. They scan it to reach ODS Talk on this ODS.",
   'firstBoot.username': 'Username',
   'firstBoot.usernamePlaceholder': 'alice',
-  'firstBoot.usernameHelp': 'Recorded with the owner card audit trail. The card remains valid until it is revoked.',
+  'firstBoot.usernameHelp': '{t('firstBoot.usernameHelp')}',
   'firstBoot.stack.title': 'Pick your stack.',
-  'firstBoot.stack.body': 'You can change this later. Start small if you want and add things as you go.',
+  'firstBoot.stack.body': '{t('firstBoot.stack.body')}',
   'firstBoot.stack.chat.title': 'Chat only',
   'firstBoot.stack.chat.blurb': 'Just the chat surface. This is what runs out of the box.',
   'firstBoot.stack.agents.title': 'Chat + Agents',
@@ -130,17 +162,17 @@ export function useI18n() {
   'firstBoot.confirm.title': 'Ready?',
   'firstBoot.confirm.body': "Tap Finish and we'll generate the owner QR for ODS Talk.",
   'firstBoot.confirm.setupLabel': 'Setup label',
-  'firstBoot.confirm.setupHint': 'owner-card audit note',
+  'firstBoot.confirm.setupHint': '{t('firstBoot.confirm.setupHint')}',
   'firstBoot.confirm.firstUser': 'First user',
   'firstBoot.confirm.stack': 'Stack',
-  'firstBoot.confirm.stackHint': 'services start in the background — verify on the dashboard after setup',
+  'firstBoot.confirm.stackHint': '{t('firstBoot.confirm.stackHint')}',
   'firstBoot.confirm.checking': 'Checking owner-card readiness...',
-  'firstBoot.confirm.finishLater': 'Finish setup now, then print an owner card from Settings / Setup / Owner after LAN access is enabled.',
+  'firstBoot.confirm.finishLater': '{t('firstBoot.confirm.finishLater')}',
   'firstBoot.confirm.configuring': 'Configuring...',
   'firstBoot.confirm.finish': 'Finish',
   'firstBoot.done.title': "You're set.",
   'firstBoot.done.body': "Here's the owner card for {username}. They scan or tap it to open ODS Talk. Keep the printed QR safe; it remains valid until revoked.",
-  'firstBoot.done.qrUnavailable': 'QR generation unavailable on the server.',
+  'firstBoot.done.qrUnavailable': '{t('firstBoot.done.qrUnavailable')}',
   'firstBoot.done.generating': 'Generating QR...',
   'firstBoot.done.copy': 'Copy link',
   'firstBoot.done.copyAria': 'Copy owner link',
@@ -525,7 +557,30 @@ if language_block not in source:
     source = source.replace(needle, language_block + needle, 1)
 profile.write_text(source, encoding="utf-8")
 
-# The installer deliberately does not alter existing test files. Existing
+# Validate the generated component sources before touching the working tree.
+# These guards catch the two most dangerous classes of installer regression:
+# quoted translation expressions and untranslated core wizard copy.
+for forbidden in [
+    "setNotice('{t('profile.saved')}')",
+    "setError('{t('profile.saveError')}')",
+    "{busy ? '{t('profile.preparePhoto')}' : '{t('profile.uploadPhoto')}'",
+]:
+    if forbidden in source:
+        raise SystemExit(f"ERROR: invalid quoted translation expression generated: {forbidden!r}")
+
+for required in [
+    "t('firstBoot.welcome.body')",
+    "t('firstBoot.user.body')",
+    "t('firstBoot.stack.body')",
+    "t('firstBoot.confirm.body')",
+    "t('firstBoot.done.title')",
+]:
+    if required not in source:
+        raise SystemExit(f"ERROR: expected FirstBoot translation was not generated: {required!r}")
+
+# The installer deliberately does not alter existing test files.
+# Translation expressions are inserted as JSX expressions, never as quoted
+# strings, so React evaluates t(...) at render time. Existing
 # English tests continue to exercise the default dictionary; the new focused
 # tests cover persistence and selector behavior.
 check = subprocess.run(["git", "diff", "--check"], capture_output=True, text=True)
