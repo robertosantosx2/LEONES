@@ -18,6 +18,9 @@ Estas integraciones y prospecciones convierten herramientas externas en **perfil
 | MoE-Infinity | MoE CUDA + RAM/SSD offload + serving | [MoE-Infinity](moe-infinity/README.md) |
 | ramvamp | CPU/NVMe MoE streaming | [ramvamp](ramvamp/README.md) |
 | Edge0 | SSD streaming + routing prediction | [Edge0](edge0/README.md) |
+| FATE | expert prediction + async prefetch | [FATE](fate/README.md) |
+| MoE-Lens | hardware/performance modeling | [MoE-Lens](moe-lens/README.md) |
+| HybriMoE | CPU/GPU scheduling + cache | [HybriMoE](hybrimoe/README.md) |
 | BigMoeLLM | MoE > VRAM, mmap/paging | [BigMoeLLM](bigmoellm/README.md) |
 | FrankenMoE-CUDA | NVMe→RAM→VRAM expert tiers | [FrankenMoE-CUDA](frankenmoe-cuda/README.md) |
 | llama.cpp expert paging PoC | posible evolución upstream | [llama.cpp expert paging](llama-cpp-expert-paging/README.md) |
@@ -44,6 +47,9 @@ Estas integraciones y prospecciones convierten herramientas externas en **perfil
 | ds4-ssd | SSD/weight streaming | [ds4-ssd](ds4-ssd/README.md) |
 | moe-edge-inference | MoE edge | [edge](moe-edge-inference/README.md) |
 | moe-stream | MoE streaming | [stream](moe-stream/README.md) |
+| HOBBIT | mixed-precision expert cache | [HOBBIT](hobbit/README.md) |
+| MoE-Gen | single-GPU MoE throughput | [MoE-Gen](moe-gen/README.md) |
+| Fiddler | CPU/GPU collaborative inference | [Fiddler](fiddler/README.md) |
 
 ### P3 — radar
 
