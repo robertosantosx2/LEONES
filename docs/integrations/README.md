@@ -23,6 +23,7 @@ Estas integraciones y prospecciones convierten herramientas externas en **perfil
 | llama.cpp expert paging PoC | posible evolución upstream | [llama.cpp expert paging](llama-cpp-expert-paging/README.md) |
 | LocalAI | arquitectura multi-backend | [LocalAI](localai/README.md) |
 | llama-cpp-studio | control plane multi-runtime | [llama-cpp-studio](llama-cpp-studio/README.md) |
+| WARP | MoE NVMe paging | [WARP](WARP/README.md) |
 
 ### P2 — candidatos / investigación
 
@@ -33,7 +34,7 @@ Estas integraciones y prospecciones convierten herramientas externas en **perfil
 | moe-hotcache | hot-expert cache sobre llama.cpp | [moe-hotcache](moe-hotcache/README.md) |
 | vllm-moe | CPU offload + GPU prefetch | [vllm-moe](vllm-moe/README.md) |
 | vLLM RFC | diseño de MoE CPU offload | [RFC](vllm-cpu-offload-rfc/README.md) |
-| DynaExQ | precisión/residencia dinámica | [DynaExQ](dynae-xq/README.md) |
+| DynaExQ | precisión/residencia dinámica | [DynaExQ](dynaexq/README.md) |
 | MoE CPU/GPU Collaborative Inference | caching CPU/GPU | [CPU/GPU](moe-cpu-gpu-collaborative-inference/README.md) |
 | local-llm-npu | Intel NPU/OpenVINO | [NPU](local-llm-npu/README.md) |
 | Atomic-Chat | multi-engine local | [Atomic-Chat](atomic-chat/README.md) |
