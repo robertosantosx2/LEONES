@@ -13,3 +13,7 @@
 [submodule "subprojects/LLMFit"]
 	path = subprojects/LLMFit
 	url = https://github.com/AlexsJones/llmfit.git
+[submodule "experimental/companion-hub"]
+	path = experimental/companion-hub
+	url = https://github.com/companionintelligence/companion-hub.git
+	branch = dev
