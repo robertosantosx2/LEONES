@@ -1,6 +1,6 @@
 # Registro homogéneo del conocimiento LEONES
 
-Este registro es el índice semántico del bloque `docs/sources/`. Su función es impedir que una ficha mezcle **fuente**, **evidencia**, **estimación** y **medición LEONES**.
+Este registro es el índice semántico del bloque docs/sources/. Su función es impedir que una ficha mezcle **fuente**, **evidencia**, **estimación** y **medición LEONES**.
 
 ## Semántica común
 
@@ -25,6 +25,7 @@ Este registro es el índice semántico del bloque `docs/sources/`. Su función e
 | [AIRLLM.md](AIRLLM.md) | runtime/inferencia | candidato memory-constrained | primaria | documental + código | separada | pendiente | `runtime-candidate` |
 | [ODS.md](ODS.md) | despliegue | appliance/stack local | primaria | código/docs/installer | sí | pendiente | `research-candidate` |
 | [MAGNITUDE.md](MAGNITUDE.md) | agente/runtime | perfilado + harness agentivo | primaria | código/docs | sí | pendiente | `research-candidate` |
+| [WARP.md](WARP.md) | runtime/inferencia | candidato MoE grande con paging NVMe | primaria | documental + código + claims publicados | separada | pendiente | `runtime-candidate` |
 | [LOCAL-RUNTIMES-2026.md](LOCAL-RUNTIMES-2026.md) | radar/runtime | mapa de runtimes | primaria por entrada | consolidada | posible | por runtime | `source-inspiration` |
 | [LOCAL-INFERENCE-2026.md](LOCAL-INFERENCE-2026.md) | radar | prospección | descubrimiento | derivada | separada | pendiente | `source-inspiration` |
 | [LOCAL-INFERENCE-2026-CANDIDATES.md](LOCAL-INFERENCE-2026-CANDIDATES.md) | candidatos | promoción documental | derivada | quality gate | no equivale a medición | pendiente | `research-candidate` |
@@ -50,7 +51,7 @@ La ficha identifica qué afirmaciones están respaldadas y bajo qué condiciones
 
 ### Estimación
 
-La ficha conserva la predicción de la herramienta y sus supuestos. LLMFit, ODS, Magnitude u otra herramienta pueden aportar señales de este tipo.
+La ficha conserva la predicción de la herramienta y sus supuestos. LLMFit, ODS, Magnitude, WARP u otra herramienta pueden aportar señales de este tipo.
 
 ### Medición LEONES
 
@@ -78,15 +79,15 @@ benchmark LEONES
 measured
 ```
 
-La promoción no es automática. Un resultado `measured` es una observación reproducible, no una recomendación universal.
+La promoción no es automática. Un resultado measured es una observación reproducible, no una recomendación universal.
 
 ## Regla para la web
 
-La web consume `web/data/knowledge.json` y presenta **exactamente cuatro capas**, sin fusionarlas:
+La web consume web/data/knowledge.json y presenta **exactamente cuatro capas**, sin fusionarlas:
 
 1. **Fuente / Descubrimiento** — procedencia.
 2. **Evidencia** — respaldo verificable.
 3. **Estimación** — predicción/recomendación externa.
 4. **Medición LEONES** — resultado producido por el pipeline propio.
 
-La tarjeta web no debe inventar una quinta categoría ni convertir `estado`, `clasificación` o `próximo gate` en una de las cuatro capas. Esos metadatos pueden servir para navegar, pero no deben contaminar el contenido semántico de las cuatro capas.
+La tarjeta web no debe inventar una quinta categoría ni convertir estado, clasificación o próximo gate en una de las cuatro capas.
