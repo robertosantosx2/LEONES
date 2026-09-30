@@ -4,9 +4,9 @@ Este directorio contiene fuentes externas y conocimiento derivado convertido en 
 
 ## Contrato editorial
 
-La norma única del bloque es [`KNOWLEDGE-FICHA-CONTRACT.md`](KNOWLEDGE-FICHA-CONTRACT.md).
+La norma única del bloque es [KNOWLEDGE-FICHA-CONTRACT.md](KNOWLEDGE-FICHA-CONTRACT.md).
 
-El inventario semántico y el estado de homogeneización están en [`KNOWLEDGE-REGISTRY.md`](KNOWLEDGE-REGISTRY.md).
+El inventario semántico y el estado de homogeneización están en [KNOWLEDGE-REGISTRY.md](KNOWLEDGE-REGISTRY.md).
 
 ### Las cuatro capas nunca se mezclan
 
@@ -51,22 +51,23 @@ ANÁLISIS LEONES
 
 | Fuente | Documento | Función LEONES | Estado |
 |---|---|---|---|
-| FreeToken | [`FREETOKEN.md`](FREETOKEN.md) | exploración de selección/runtime | 🟡 `research-candidate` |
-| «El otro FreeToken» / Odysseus | [`FREETOKEN-EL-OTRO-FREETOKEN.md`](FREETOKEN-EL-OTRO-FREETOKEN.md) | referencia independiente de workspace/servicio | 🟡 `research-candidate` |
-| LLMFit | [`LLMFIT.md`](LLMFIT.md) | preselector hardware-aware | 🟢 `preselector` |
-| LLMFit + hardware real | [`LLMFIT-REAL-HARDWARE-2026-08-20.md`](LLMFIT-REAL-HARDWARE-2026-08-20.md) | verificación técnica | 🟢 `verification-leones` |
-| AirLLM | [`AIRLLM.md`](AIRLLM.md) | runtime candidato memory-constrained | 🟡 `runtime-candidate` |
-| ODS | [`ODS.md`](ODS.md) | despliegue/instalación local | 🟡 `research-candidate` |
-| Magnitude | [`MAGNITUDE.md`](MAGNITUDE.md) | agente + inference engine local | 🟡 `research-candidate` |
-| Runtimes locales | [`LOCAL-RUNTIMES-2026.md`](LOCAL-RUNTIMES-2026.md) | radar de runtimes | 🟡 `source-inspiration` |
-| Infraestructura de inferencia | [`LOCAL-INFERENCE-2026.md`](LOCAL-INFERENCE-2026.md) | prospección | 🟡 `source-inspiration` |
-| Candidatos de infraestructura | [`LOCAL-INFERENCE-2026-CANDIDATES.md`](LOCAL-INFERENCE-2026-CANDIDATES.md) | promoción documental | 🟡 `research-candidate` |
-| Verificación de infraestructura | [`LOCAL-INFERENCE-2026-VERIFICATION.md`](LOCAL-INFERENCE-2026-VERIFICATION.md) | evidencia primaria por candidato | 🟢 `verified-primary` |
-| Artificial Analysis / Optima / benchmarks agentivos | [`ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md`](ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md) | metodología y fuentes de evaluación | 🟡 `research-candidate` |
-| Buddy Harness | [`BUDDY_HARNESS.md`](BUDDY_HARNESS.md) | referencia de harness/evaluación | 🟡 `harness-reference` |
-| Mozilla / ecosistema Open Source AI | [`MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) | radar y contexto de descubrimiento | 🟡 `source-inspiration` |
+| FreeToken | [FREETOKEN.md](FREETOKEN.md) | exploración de selección/runtime | 🟡 `research-candidate` |
+| «El otro FreeToken» / Odysseus | [FREETOKEN-EL-OTRO-FREETOKEN.md](FREETOKEN-EL-OTRO-FREETOKEN.md) | referencia independiente de workspace/servicio | 🟡 `research-candidate` |
+| LLMFit | [LLMFIT.md](LLMFIT.md) | preselector hardware-aware | 🟢 `preselector` |
+| LLMFit + hardware real | [LLMFIT-REAL-HARDWARE-2026-08-20.md](LLMFIT-REAL-HARDWARE-2026-08-20.md) | verificación técnica | 🟢 `verification-leones` |
+| AirLLM | [AIRLLM.md](AIRLLM.md) | runtime candidato memory-constrained | 🟡 `runtime-candidate` |
+| ODS | [ODS.md](ODS.md) | despliegue/instalación local | 🟡 `research-candidate` |
+| Magnitude | [MAGNITUDE.md](MAGNITUDE.md) | agente + inference engine local | 🟡 `research-candidate` |
+| WARP | [WARP.md](WARP.md) | runtime candidato para MoE grandes y paging NVMe | 🟡 `runtime-candidate` |
+| Runtimes locales | [LOCAL-RUNTIMES-2026.md](LOCAL-RUNTIMES-2026.md) | radar de runtimes | 🟡 `source-inspiration` |
+| Infraestructura de inferencia | [LOCAL-INFERENCE-2026.md](LOCAL-INFERENCE-2026.md) | prospección | 🟡 `source-inspiration` |
+| Candidatos de infraestructura | [LOCAL-INFERENCE-2026-CANDIDATES.md](LOCAL-INFERENCE-2026-CANDIDATES.md) | promoción documental | 🟡 `research-candidate` |
+| Verificación de infraestructura | [LOCAL-INFERENCE-2026-VERIFICATION.md](LOCAL-INFERENCE-2026-VERIFICATION.md) | evidencia primaria por candidato | 🟢 `verified-primary` |
+| Artificial Analysis / Optima / benchmarks agentivos | [ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md](ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md) | metodología y fuentes de evaluación | 🟡 `research-candidate` |
+| Buddy Harness | [BUDDY_HARNESS.md](BUDDY_HARNESS.md) | referencia de harness/evaluación | 🟡 `harness-reference` |
+| Mozilla / ecosistema Open Source AI | [MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md](MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) | radar y contexto de descubrimiento | 🟡 `source-inspiration` |
 
-El detalle completo está en `KNOWLEDGE-REGISTRY.md`.
+El detalle completo está en KNOWLEDGE-REGISTRY.md.
 
 ## Qué significa cada estado
 
@@ -101,6 +102,10 @@ ODS actúa como **capa de despliegue e instalación**. Puede detectar hardware, 
 
 Magnitude actúa como **agente + inference engine local**, con perfilado y recomendaciones propias. Es una fuente de hipótesis e integración, no una sustitución del benchmark LEONES.
 
+### WARP
+
+WARP actúa como **runtime candidato especializado en MoE grandes con paging/streaming desde NVMe**. Su principal interés para LEONES es ampliar el espacio de modelos ejecutables cuando RAM/VRAM no bastan para mantener todos los pesos residentes. El rendimiento depende fuertemente del almacenamiento y debe medirse en el hardware real.
+
 ### FreeToken y «El otro FreeToken» / Odysseus
 
 Se mantienen como fichas independientes. La eventual integración entre ambos es una hipótesis que debe recorrer el pipeline ejecutable y producir evidencia propia.
@@ -114,7 +119,7 @@ Ante una nueva fuente o edición:
 3. clasificar cada claim como fuente, evidencia o estimación;
 4. conservar las condiciones experimentales;
 5. registrar por separado cualquier medición LEONES;
-6. actualizar `KNOWLEDGE-REGISTRY.md`;
+6. actualizar KNOWLEDGE-REGISTRY.md;
 7. actualizar la vista web sin alterar la semántica;
 8. ejecutar contract-tests/regresiones si afecta al selector, runtime o benchmark.
 
