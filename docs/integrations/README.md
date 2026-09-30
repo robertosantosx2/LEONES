@@ -1,4 +1,4 @@
-# Integraciones LEONES: LLMFit, ODS, Magnitude y runtimes de inferencia
+# Integraciones runtimes de inferencia en ODS
 
 Estas integraciones y prospecciones convierten herramientas externas en **perfiles medibles y documentados** sin convertirlas en dependencias estructurales de LEONES.
 
@@ -96,13 +96,7 @@ Ese diseño convierte ODS principalmente en un **selector de motores**. Una arqu
 └───────────────────────────────────┬───────────────────────────────────┘
                                     │
                                     ▼
-┌───────────────────────────────────────────────────────────────────────┐
-│                         LEONES VALIDATION                              │
-│                                                                       │
-│ preflight → install → health → benchmark → measure → evidence        │
-│                                                                       │
-│ estimated ≠ reported ≠ observed ≠ measured                             │
-└───────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 1. User / use-case layer
@@ -318,40 +312,7 @@ En esta arquitectura, los proyectos investigados pasan a ser **execution provide
 
 WARP, por ejemplo, puede verse como una estrategia especializada para grandes MoE y NVMe, mientras que llama-server puede ser la opción más sencilla para modelos GGUF normales y hardware con suficiente VRAM. El selector debe poder diferenciarlos según el caso.
 
-### 8. LEONES como bucle de evidencia
 
-LEONES proporciona la capa de validación independiente:
-
-```text
-hardware
-   +
-model
-   +
-runtime
-   +
-strategy
-   +
-configuration
-   │
-   ▼
-benchmark
-   │
-   ▼
-measurement
-   │
-   ▼
-evidence
-```
-
-Esto permite que ODS evolucione de una selección basada únicamente en capacidades declaradas a una selección basada en **capacidades + evidencia**.
-
-Las categorías deben mantenerse separadas:
-
-```text
-estimated ≠ reported ≠ observed ≠ measured
-```
-
-Por tanto, una cifra publicada por un proyecto no debe convertirse en una medición ODS/LEONES hasta que pueda reproducirse y registrarse como evidencia propia.
 
 ### Objetivo arquitectónico
 
