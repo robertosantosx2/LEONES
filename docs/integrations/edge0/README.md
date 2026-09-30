@@ -1,44 +1,84 @@
-# Edge0 ↔ ODS ↔ LEONES
-**Perfil:** framework open-source de inferencia MoE streaming con offload SSD y predicción de routing.
-**Estado LEONES:** 🟢 candidato P1 · ⏳ validación independiente pendiente.
+# Edge0 — ODS integration analysis
 
-## 1. Resumen
-Edge0 explora inferencia MoE con memoria limitada mediante streaming de expertos desde SSD, predicción previa de rutas y Recover-LoRA. La idea central es desacoplar el backend de inferencia de la política de recuperación de expertos.
+## Executive summary
 
-## 2. Arquitectura
-`prompt/token → prerouter → predicción de expertos → SSD/cache → compute backend`.
-Esta separación es interesante para ODS porque encaja con un Runtime Registry basado en capacidades.
+Edge0 is a research/runtime stack for sparse Mixture-of-Experts inference when total model weights exceed accelerator memory. Its Hugging Face releases are especially relevant because runtime, checkpoint and storage-aware execution are designed together.
 
-## 3. Valor para ODS
-ODS podría registrar Edge0 como runtime `moe-streaming`, seleccionándolo cuando el modelo supere VRAM/RAM y el almacenamiento tenga suficiente rendimiento. El servicio debería mantener una API estable aunque cambie el backend interno.
+**ODS classification: P1 — high-priority runtime candidate.**
 
-## 4. Backend y portabilidad
-La implementación pública actual está especialmente orientada a MLX/Apple Silicon; CUDA aparece como dirección de extensión. Por tanto, en el equipo ODS NVIDIA no debe asumirse compatibilidad operativa sin una prueba específica.
+## Relevant capabilities
 
-## 5. Riesgos
-- Estado de madurez.
-- Dependencia de abstracciones/backend concreto.
-- Beneficio del prerouter depende de localidad real del routing.
-- SSD pasa a formar parte de la ruta crítica.
+- SSD/NVMe streaming of experts.
+- GPU-resident hot expert cache.
+- Prerouter for predicting likely future experts.
+- Recover-LoRA for recovery from routing/prediction effects.
+- Sparse MoE execution.
+- OpenAI-compatible serving in the project runtime.
+- Hugging Face checkpoints designed around this execution model.
+- Current implementation emphasis on MLX/Apple Silicon; NVIDIA/CUDA maturity must be verified independently.
 
-## 6. LEONES
-Registrar backend, dispositivo, modelo, número de expertos, tasa de aciertos de predicción, cache hit, bytes SSD, TTFT/prefill/decode y calidad. Separar claramente resultados de paper/README de medidas locales.
+## Architecture
 
-## 7. Integración
-Primera fase como servicio experimental fuera del camino por defecto. Si aparece backend CUDA estable, añadir manifest:
-`moe=true, ssd=true, prediction=true, api=?`.
-La API debe verificarse, no inferirse.
+```
+Experts on SSD
+     |
+  prerouter
+     |
+predicted experts
+     |
+ expert cache
+     |
+ accelerator
+     |
+ Recover-LoRA
+```
 
-## 8. Veredicto
-| Área | Evaluación |
-|---|---|
-| MoE streaming | 🟢 |
-| SSD offload | 🟢 |
-| Predictor | 🟢 Interesante |
-| NVIDIA actual | 🟡 Pendiente |
-| Apple | 🟢 |
-| Madurez ODS | 🟡 Experimental |
-| LEONES | 🟢 |
+## ODS integration
 
-**Clasificación:** P1 — estudiar arquitectura y vigilar backend CUDA.
-**Fuente:** https://github.com/Edge0-AI/Edge0
+Expose an Edge0 adapter through the proposed Runtime Capability Manifest:
+
+- accelerator/backend;
+- minimum RAM/VRAM;
+- NVMe requirement;
+- supported model families;
+- expert streaming;
+- prerouting;
+- LoRA recovery;
+- API protocol.
+
+This should complement llama-server rather than replace it.
+
+## Hardware implications
+
+With a small NVIDIA GPU, SSD latency, sustained bandwidth, RAM and cache size become first-class resources. A 4 GB GPU should therefore be classified as experimental until measured rather than declared compatible from model size alone.
+
+## LEONES measurements
+
+Record separately:
+
+- reported model/runtime requirements;
+- observed installation and health;
+- measured SSD bandwidth;
+- cache hit rate;
+- TTFT;
+- tokens/s;
+- peak RAM/VRAM.
+
+## Risks
+
+1. CUDA maturity may lag the MLX path.
+2. SSD performance can dominate latency.
+3. Model/runtime coupling is stronger than GGUF + llama.cpp.
+4. Prerouter/Recover-LoRA may restrict arbitrary model compatibility.
+
+## Recommendation
+
+Keep Edge0 in the **P1** ODS candidate set and study its Hugging Face model packaging together with the runtime. It is a strong reference for a storage-aware MoE adapter.
+
+## Sources
+
+- Hugging Face Edge0 organization and model cards.
+- Edge0 project repository and documentation.
+- Related Edge0 research.
+
+Published benchmark figures remain **reported**, not LEONES-measured.
