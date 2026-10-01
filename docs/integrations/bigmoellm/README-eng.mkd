@@ -1,0 +1,15 @@
+# BigMoeLLM ↔ ODS ↔ LEONES
+
+**Profile:** experimental MoE runtime designed to exceed VRAM through mmap, host-memory pinning and direct NVMe streaming.
+
+**LEONES status:** experimental P1 candidate; reproduction pending.
+
+## Summary
+
+BigMoeLLM is built around consumer GPUs that cannot hold all experts simultaneously. Host memory and storage act as additional tiers while selected experts are moved to the accelerator.
+
+## ODS fit
+
+It is relevant to the low-VRAM MoE strategy and should be evaluated against MoE-Infinity and other expert-streaming runtimes.
+
+**Classification:** P1 experimental MoE candidate.
