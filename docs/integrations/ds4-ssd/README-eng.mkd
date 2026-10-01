@@ -1,0 +1,15 @@
+# ds4-ssd ↔ ODS ↔ LEONES
+
+**Profile:** inference/model project focused on SSD as a storage tier.
+
+**LEONES status:** P2/P3 radar.
+
+## Summary
+
+The project is relevant to weight/expert streaming and the broader question of using SSD capacity to extend effective model memory.
+
+## ODS fit
+
+Before integration, verify its architecture, supported models, storage format, hardware requirements and serving API. It should remain a research reference until those points are experimentally validated.
+
+**Classification:** storage-tier research/radar.
