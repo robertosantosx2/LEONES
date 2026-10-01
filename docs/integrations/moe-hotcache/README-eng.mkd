@@ -1,0 +1,15 @@
+# moe-hotcache ↔ ODS ↔ LEONES
+
+**Profile:** llama.cpp fork with dynamic hot-expert caching and host-RAM access to GPU.
+
+**LEONES status:** P2 candidate; reproduction pending.
+
+## Summary
+
+moe-hotcache keeps frequently used experts in a small GPU cache while maintaining a larger host-memory pool. Cache contents can change dynamically with workload behaviour.
+
+## ODS fit
+
+This is a natural candidate for the ODS low-VRAM MoE strategy because it retains llama.cpp compatibility while experimenting with expert locality.
+
+Quality, correctness and performance must be independently verified before adoption.
