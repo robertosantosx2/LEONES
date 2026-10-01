@@ -1,0 +1,31 @@
+# Magnitude-LEONES — Personal AI Assistant
+
+## Objective
+
+Use Magnitude as a reference integration for the **Personal AI Assistant** profile.
+
+LEONES provides preflight, installation, governance, validation and benchmarking. Magnitude provides the local agent and its execution environment.
+
+## Relevant capabilities
+
+Magnitude integrates a local agent and local models, hardware profiling, model recommendation, download/configuration, local execution, skills and OpenAI-compatible endpoints. Its local-first approach is relevant to privacy and offline operation.
+
+## Installation
+
+```bash
+npm install -g @magnitudedev/cli
+```
+
+Then, in the assistant project:
+
+```bash
+magnitude
+```
+
+## LEONES governance
+
+Skills must be catalogued by origin, version/ref, permissions, file access, network access and tools. Risky skills should not be installed automatically.
+
+Keep **observed**, **recommended/configured**, **estimated** and **measured** evidence separate.
+
+**Classification:** reference integration for a Personal AI Assistant.
