@@ -144,3 +144,7 @@ ODS y Magnitude se mantienen como integraciones externas medibles; FreeToken, Od
 ## Regla de estado
 
 Una página puede describir trabajo en curso, pero **solo una fase con validación y aceptación explícita puede aparecer como ACEPTADA**. La documentación debe distinguir siempre entre implementación, fuente, evidencia, estimación, medición y plan futuro.
+
+### Evolución LEONES
+
+- [`evolution/LOCAL-ENOUGH.md`](evolution/LOCAL-ENOUGH.md) — investigación e integración experimental de local-enough como adaptador de evidencia empírica y evaluación por tarea.
