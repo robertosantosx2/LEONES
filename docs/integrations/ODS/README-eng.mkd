@@ -1,0 +1,17 @@
+# ODS ↔ LEONES
+
+**Profile:** AI Stack Server.
+
+ODS (Osmantic Deployment System) is a local platform that connects inference, Open WebUI, dashboard, agents, workflows, RAG/search, voice, image generation and operational tools.
+
+## LEONES integration
+
+LEONES provides preflight, consent, orchestration, validation and measurement. ODS provides the AI stack.
+
+The current ODS architecture includes components such as llama-server, Open WebUI, LiteLLM, Qdrant, SearXNG, Whisper, TTS, Hermes, n8n, ComfyUI, Dashboard and observability services.
+
+## Evolution
+
+The strategic objective is to evolve ODS from a fixed backend stack into an adaptive execution framework with hardware/model profiling, a capability registry, runtime selection and evidence-driven validation.
+
+**Classification:** primary integration target.
