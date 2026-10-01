@@ -1,0 +1,33 @@
+# Magnitude ↔ ODS Integration
+
+## Role
+
+Magnitude should sit above the ODS runtime layer as an application/agent workload rather than being treated as the inference backend itself.
+
+## Proposed flow
+
+```text
+Magnitude
+   │
+   ▼
+ODS model/workload selection
+   │
+   ▼
+ODS runtime selector
+   │
+   ├── llama.cpp
+   ├── MoE-Infinity
+   ├── TensorFold
+   └── other validated runtimes
+   │
+   ▼
+OpenAI-compatible ODS endpoint
+```
+
+This keeps agent execution independent from the concrete inference engine.
+
+## LEONES
+
+LEONES should validate the complete chain independently: hardware profile → model/runtime selection → installation → health → benchmark → measured evidence.
+
+**Classification:** application-layer integration reference.
