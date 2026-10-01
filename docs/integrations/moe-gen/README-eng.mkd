@@ -1,0 +1,13 @@
+# MoE-Gen — ODS integration analysis
+
+## Executive summary
+
+MoE-Gen focuses on efficient single-GPU MoE execution through scheduling and module/expert batching rather than primarily solving model storage.
+
+**ODS classification: P2.**
+
+## ODS fit
+
+MoE-Gen is most relevant to throughput optimization. Its scheduling and batching ideas can complement storage-oriented strategies such as expert offload and streaming.
+
+It should be considered a capability or optimization layer rather than the first MoE backend for low-VRAM ODS systems.
