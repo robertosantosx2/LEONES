@@ -330,7 +330,7 @@ This would progressively turn ODS from a platform that distributes multiple infe
 
 Magnitude occupies a different position from the inference runtimes investigated in this index. In LEONES, it is studied as a reference integration for the **Personal AI Assistant** profile: Magnitude provides the agent and its local execution, while LEONES provides preflight, installation, governance, validation, and benchmarking.
 
-According to the dedicated [Magnitude](Magnitude.md) report, relevant capabilities include:
+According to the dedicated [Magnitude](Magnitude-eng.mkd) report, relevant capabilities include:
 
 - local agent and local models;
 - hardware profiling;
@@ -371,7 +371,7 @@ Skills should be cataloged by origin, version/ref, permissions, file access, net
 
 - **LLMFit — hardware-aware preselector**.
 - **ODS — AI stack server**.
-- **Magnitude — reference integration for a Personal AI Assistant**: [Magnitude](Magnitude.md).
+- **Magnitude — reference integration for a Personal AI Assistant**: [Magnitude](Magnitude-eng.mkd).
 - **WARP — experimental runtime for large MoE models using NVMe paging**.
 
 ## ODS Runtime Research
@@ -380,51 +380,51 @@ Skills should be cataloged by origin, version/ref, permissions, file access, net
 
 | Project | Profile | Report |
 |---|---|---|
-| MoE-Infinity | MoE CUDA + RAM/SSD offload + serving | [MoE-Infinity](moe-infinity/README.md) |
-| ramvamp | CPU/NVMe MoE streaming | [ramvamp](ramvamp/README.md) |
-| Edge0 | SSD streaming + routing prediction | [Edge0](edge0/README.md) |
-| FATE | expert prediction + async prefetch | [FATE](fate/README.md) |
-| MoE-Lens | hardware/performance modeling | [MoE-Lens](moe-lens/README.md) |
-| HybriMoE | CPU/GPU scheduling + cache | [HybriMoE](hybrimoe/README.md) |
-| BigMoeLLM | MoE > VRAM, mmap/paging | [BigMoeLLM](bigmoellm/README.md) |
-| FrankenMoE-CUDA | NVMe→RAM→VRAM expert tiers | [FrankenMoE-CUDA](frankenmoe-cuda/README.md) |
-| llama.cpp expert paging PoC | possible upstream evolution | [llama.cpp expert paging](llama-cpp-expert-paging/README.md) |
-| LocalAI | multi-backend architecture | [LocalAI](localai/README.md) |
-| llama-cpp-studio | multi-runtime control plane | [llama-cpp-studio](llama-cpp-studio/README.md) |
-| WARP | MoE NVMe paging | [WARP](WARP/README.md) |
+| MoE-Infinity | MoE CUDA + RAM/SSD offload + serving | [MoE-Infinity](moe-infinity/README-eng.mkd) |
+| ramvamp | CPU/NVMe MoE streaming | [ramvamp](ramvamp/README-eng.mkd) |
+| Edge0 | SSD streaming + routing prediction | [Edge0](edge0/README-eng.mkd) |
+| FATE | expert prediction + async prefetch | [FATE](fate/README-eng.mkd) |
+| MoE-Lens | hardware/performance modeling | [MoE-Lens](moe-lens/README-eng.mkd) |
+| HybriMoE | CPU/GPU scheduling + cache | [HybriMoE](hybrimoe/README-eng.mkd) |
+| BigMoeLLM | MoE > VRAM, mmap/paging | [BigMoeLLM](bigmoellm/README-eng.mkd) |
+| FrankenMoE-CUDA | NVMe→RAM→VRAM expert tiers | [FrankenMoE-CUDA](frankenmoe-cuda/README-eng.mkd) |
+| llama.cpp expert paging PoC | possible upstream evolution | [llama.cpp expert paging](llama-cpp-expert-paging/README-eng.mkd) |
+| LocalAI | multi-backend architecture | [LocalAI](localai/README-eng.mkd) |
+| llama-cpp-studio | multi-runtime control plane | [llama-cpp-studio](llama-cpp-studio/README-eng.mkd) |
+| WARP | MoE NVMe paging | [WARP](WARP/README-eng.mkd) |
 
 ### P2 — candidates / research
 
 | Project | Profile | Report |
 |---|---|---|
-| SSD MoE | SSD streaming | [ssdmoe](ssdmoe/README.md) |
-| ExpertFlow | predictive expert caching | [ExpertFlow](expertflow/README.md) |
-| moe-hotcache | hot-expert cache on llama.cpp | [moe-hotcache](moe-hotcache/README.md) |
-| vllm-moe | CPU offload + GPU prefetch | [vllm-moe](vllm-moe/README.md) |
-| vLLM RFC | MoE CPU offload design | [RFC](vllm-cpu-offload-rfc/README.md) |
-| DynaExQ | dynamic precision/residency | [DynaExQ](dynaexq/README.md) |
-| MoE CPU/GPU Collaborative Inference | CPU/GPU caching | [CPU/GPU](moe-cpu-gpu-collaborative-inference/README.md) |
-| local-llm-npu | Intel NPU/OpenVINO | [NPU](local-llm-npu/README.md) |
-| Atomic-Chat | local multi-engine | [Atomic-Chat](atomic-chat/README.md) |
-| llama.cpp.35B.moe | MoE CUDA optimizations | [fork](llama-cpp-35b-moe/README.md) |
-| moe-ssd-streaming-windows | Windows/NVIDIA SSD streaming | [Windows](moe-ssd-streaming-windows/README.md) |
-| expert-streaming-engine | expert streaming | [engine](expert-streaming-engine/README.md) |
-| ds4-ssd | SSD/weight streaming | [ds4-ssd](ds4-ssd/README.md) |
-| moe-edge-inference | MoE edge | [edge](moe-edge-inference/README.md) |
-| moe-stream | MoE streaming | [stream](moe-stream/README.md) |
-| HOBBIT | mixed-precision expert cache | [HOBBIT](hobbit/README.md) |
-| MoE-Gen | single-GPU MoE throughput | [MoE-Gen](moe-gen/README.md) |
-| Fiddler | CPU/GPU collaborative inference | [Fiddler](fiddler/README.md) |
+| SSD MoE | SSD streaming | [ssdmoe](ssdmoe/README-eng.mkd) |
+| ExpertFlow | predictive expert caching | [ExpertFlow](expertflow/README-eng.mkd) |
+| moe-hotcache | hot-expert cache on llama.cpp | [moe-hotcache](moe-hotcache/README-eng.mkd) |
+| vllm-moe | CPU offload + GPU prefetch | [vllm-moe](vllm-moe/README-eng.mkd) |
+| vLLM RFC | MoE CPU offload design | [RFC](vllm-cpu-offload-rfc/README-eng.mkd) |
+| DynaExQ | dynamic precision/residency | [DynaExQ](dynaexq/README-eng.mkd) |
+| MoE CPU/GPU Collaborative Inference | CPU/GPU caching | [CPU/GPU](moe-cpu-gpu-collaborative-inference/README-eng.mkd) |
+| local-llm-npu | Intel NPU/OpenVINO | [NPU](local-llm-npu/README-eng.mkd) |
+| Atomic-Chat | local multi-engine | [Atomic-Chat](atomic-chat/README-eng.mkd) |
+| llama.cpp.35B.moe | MoE CUDA optimizations | [fork](llama-cpp-35b-moe/README-eng.mkd) |
+| moe-ssd-streaming-windows | Windows/NVIDIA SSD streaming | [Windows](moe-ssd-streaming-windows/README-eng.mkd) |
+| expert-streaming-engine | expert streaming | [engine](expert-streaming-engine/README-eng.mkd) |
+| ds4-ssd | SSD/weight streaming | [ds4-ssd](ds4-ssd/README-eng.mkd) |
+| moe-edge-inference | MoE edge | [edge](moe-edge-inference/README-eng.mkd) |
+| moe-stream | MoE streaming | [stream](moe-stream/README-eng.mkd) |
+| HOBBIT | mixed-precision expert cache | [HOBBIT](hobbit/README-eng.mkd) |
+| MoE-Gen | single-GPU MoE throughput | [MoE-Gen](moe-gen/README-eng.mkd) |
+| Fiddler | CPU/GPU collaborative inference | [Fiddler](fiddler/README-eng.mkd) |
 
 ### P3 — radar
 
 | Project | Profile | Report |
 |---|---|---|
-| oBeaver | local/platform-aware toolkit | [oBeaver](obeaver/README.md) |
-| Forge | general Rust/CUDA runtime | [Forge](forge/README.md) |
-| BaseRT | Apple/NVIDIA-specific runtime | [BaseRT](basert/README.md) |
-| ES-MoE | training offload | [ES-MoE](es-moe/README.md) |
-| weight-streaming | weight streaming | [weight-streaming](weight-streaming/README.md) |
+| oBeaver | local/platform-aware toolkit | [oBeaver](obeaver/README-eng.mkd) |
+| Forge | general Rust/CUDA runtime | [Forge](forge/README-eng.mkd) |
+| BaseRT | Apple/NVIDIA-specific runtime | [BaseRT](basert/README-eng.mkd) |
+| ES-MoE | training offload | [ES-MoE](es-moe/README-eng.mkd) |
+| weight-streaming | weight streaming | [weight-streaming](weight-streaming/README-eng.mkd) |
 
 ## Boundary Rule
 
