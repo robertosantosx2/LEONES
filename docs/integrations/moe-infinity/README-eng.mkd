@@ -1,0 +1,17 @@
+# MoE-Infinity ↔ ODS ↔ LEONES
+
+**Profile:** CUDA runtime for MoE inference with expert offload to RAM/NVMe, activation-aware caching, prefetching and OpenAI-compatible serving.
+
+**LEONES status:** active source; priority ODS candidate; LEONES benchmark pending.
+
+## Executive summary
+
+MoE-Infinity directly addresses the bottleneck motivating this research: MoE models whose experts cannot all fit in VRAM. It keeps active computation on the GPU while offloading experts to host memory and SSD, with activation-aware caching and prefetching.
+
+The runtime also provides continuous serving, paged KV cache, SSE streaming, health monitoring and multi-GPU support.
+
+## ODS fit
+
+MoE-Infinity is currently one of the clearest candidates for the dedicated MoE branch of ODS. It can be exposed through a runtime adapter while ODS retains responsibility for hardware/model selection.
+
+**Classification:** P1 specialized MoE runtime candidate.
