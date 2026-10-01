@@ -1,0 +1,15 @@
+# llama.cpp.35B.moe ↔ ODS ↔ LEONES
+
+**Profile:** llama.cpp fork with experimental MoE offload/prefetch optimizations.
+
+**LEONES status:** P2.
+
+## Summary
+
+The fork investigates prefill and expert-access improvements for Qwen MoE models, including pinned mmap CPU weights and CUDA stream prefetch.
+
+## ODS fit
+
+Its value is primarily as a low-VRAM MoE reference and as evidence that expert-specific optimizations can be integrated into the llama.cpp family.
+
+The long-term ODS strategy should continue tracking upstream llama.cpp expert paging so that experimental forks do not need to become permanent dependencies.
