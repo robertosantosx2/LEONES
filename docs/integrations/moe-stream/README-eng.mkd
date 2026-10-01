@@ -1,0 +1,13 @@
+# moe-stream ↔ ODS ↔ LEONES
+
+**Profile:** experimental research into MoE expert streaming.
+
+**LEONES status:** P2/P3 radar.
+
+## Summary
+
+The project belongs to the second level of MoE runtime research and addresses the problem of loading only the experts required by the routing path.
+
+## ODS fit
+
+It should be compared with the more mature candidates before integration. Its main value is identifying techniques that could be incorporated into a common expert-streaming layer.
