@@ -1,10 +1,10 @@
 {
   "input": "data/prospection/enriched_discoveries.ndjson",
   "output": "data/prospection/enriched_discoveries_sources.ndjson",
-  "repositories_processed": 287,
-  "gitlab": 54,
+  "repositories_processed": 293,
+  "gitlab": 55,
   "forgejo": 67,
-  "unchanged": 162,
+  "unchanged": 167,
   "errors": 0,
   "licenses_found": 60,
   "error": 4,
