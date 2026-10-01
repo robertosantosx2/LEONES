@@ -1,0 +1,15 @@
+# SSD MoE ↔ ODS ↔ LEONES
+
+**Profile:** SSD-streaming MoE inference with a native C reader and OpenAI-compatible endpoints.
+
+**LEONES status:** P1/P2 candidate; validation pending.
+
+## Summary
+
+SSD MoE explores direct expert streaming from SSD for models such as Qwen3.5-35B-A3B and Nemotron-H 30B-A3B.
+
+## ODS fit
+
+The project is relevant to storage-first MoE execution, especially where total expert weights exceed RAM or VRAM capacity.
+
+The main integration questions are model-format compatibility, SSD bandwidth requirements, cache behaviour and serving stability.
