@@ -1,0 +1,17 @@
+# Fiddler — ODS integration analysis
+
+## Executive summary
+
+Fiddler explores CPU/GPU collaborative execution for large MoE models. Instead of using CPU only as a storage tier, selected computation can be performed on CPU to reduce data movement to the GPU.
+
+**ODS classification: P2 research capability.**
+
+## ODS fit
+
+The main contribution is a scheduling decision:
+
+GPU execution versus CPU execution versus transfer cost.
+
+This fits naturally into an ODS execution optimizer that considers hardware, bandwidth, memory pressure and workload characteristics.
+
+Fiddler should currently be treated as research evidence, not a production ODS backend.
