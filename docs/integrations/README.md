@@ -326,11 +326,52 @@ sino:
 
 Eso convertiría progresivamente ODS de una plataforma que distribuye varios motores de inferencia en un posible **framework de orquestación de inferencia local adaptativa**.
 
+## Magnitude como integración de perfil de asistente personal
+
+Magnitude ocupa una posición diferente de los runtimes de inferencia investigados en este índice. En LEONES se estudia como una integración de referencia para el perfil **Personal AI Assistant**: proporciona el agente y su ejecución local, mientras que LEONES aporta preflight, instalación, gobernanza, validación y benchmark.
+
+Según el informe específico [Magnitude](Magnitude.md), las capacidades relevantes incluyen:
+
+- agente local y modelos locales;
+- perfilado de hardware;
+- recomendación de modelos;
+- descarga y configuración;
+- ejecución local;
+- skills;
+- endpoints compatibles con OpenAI;
+- enfoque de privacidad/offline para la ejecución local.
+
+Esto encaja con la arquitectura adaptativa de ODS porque Magnitude puede aportar información y experiencia de usuario en las capas de **model/workload profiling**, **hardware profiling** y **model selection**, sin convertirse por ello en el runtime de inferencia que ODS deba utilizar.
+
+El flujo de validación propuesto por LEONES es:
+
+```text
+preflight
+   ↓
+install CLI
+   ↓
+hardware profile
+   ↓
+model recommendation
+   ↓
+user confirmation for large downloads
+   ↓
+model/Hugging Face/file/quantization record
+   ↓
+agent + tools validation
+   ↓
+independent LEONES benchmark
+   ↓
+evidence
+```
+
+Las skills deben catalogarse por origen, versión/ref, permisos, acceso a archivos, red y herramientas. LEONES no debería instalar automáticamente skills de riesgo. Asimismo, los datos deben separar `observed`, `recommended/configured`, `estimated` y `measured`, evitando registrar prompts, archivos, código, conversaciones, secretos o API keys.
+
 ## Integraciones principales
 
 - **LLMFit — preselector hardware-aware**.
-- **ODS — Servidor de Stacks IA**.
-- **Magnitude — asistente personal IA**.
+- **ODS — servidor de stacks IA**.
+- **Magnitude — integración de referencia para asistente personal IA**: [Magnitude](Magnitude.md).
 - **WARP — runtime experimental para MoE grandes mediante paging desde NVMe**.
 
 ## Prospección de runtimes para ODS
