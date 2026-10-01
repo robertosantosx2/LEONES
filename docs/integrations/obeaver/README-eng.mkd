@@ -1,0 +1,13 @@
+# oBeaver ↔ ODS ↔ LEONES
+
+**Profile:** local-first, OpenAI-compatible and platform-aware LLM inference toolkit.
+
+**LEONES status:** P2.
+
+## Summary
+
+oBeaver is interesting because it presents a platform-aware approach to local inference and can expose a common API across execution options.
+
+## ODS fit
+
+It is primarily an architectural reference for hardware-aware runtime selection and API normalization. It should not displace the more mature ODS backends without direct benchmark evidence.
