@@ -20,3 +20,8 @@ Edge0 is a research/runtime stack for sparse Mixture-of-Experts inference when t
 Edge0 should be considered both as a runtime candidate and as a source of composable capabilities for a future ODS execution layer.
 
 Its current CUDA maturity must be validated against the target hardware; the RTX 3050 should not be assumed compatible without measurement.
+
+## Technology watch
+
+- [Edge0 — ODS technology watch](../../../research/vigilancia/edge0-ods-eng.md)
+- [Spanish watch report](../../../research/vigilancia/edge0-ods.md)
