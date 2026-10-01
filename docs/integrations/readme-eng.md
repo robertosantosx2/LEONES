@@ -440,3 +440,14 @@ PREFLIGHT → CONSENT → CONTROLLED INSTALLATION
 → ESTIMATED ≠ REPORTED ≠ OBSERVED ≠ MEASURED
 → EVIDENCE
 ```
+
+
+### Additional Experimental Integrations
+
+| Project | Profile | Report |
+|---|---|---|
+| AirLLM | layer/expert streaming for Hugging Face models | [AirLLM](airllm/README-eng.mkd) |
+| Companion Hub | local application control/orchestration reference | [Companion Hub](companion-hub/README-eng.mkd) |
+| Kimi K3 in C | specialized runtime with model streaming and expert caching | [Kimi K3 in C](kimi-k3-in-c/README-eng.mkd) |
+| LaptopLLM | layer-streaming and laptop UX reference | [LaptopLLM](laptopllm/README-eng.mkd) |
+| TensorFold | specialized CUDA/MLX runtime with speculative decoding | [TensorFold](tensorfold/README-eng.mkd) |
