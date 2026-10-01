@@ -1,0 +1,13 @@
+# moe-edge-inference ↔ ODS ↔ LEONES
+
+**Profile:** research into MoE inference on edge devices.
+
+**LEONES status:** P2/P3.
+
+## Summary
+
+The project focuses on reducing memory requirements and enabling MoE execution on constrained hardware.
+
+## ODS fit
+
+It is relevant to the low-memory and edge branches of the ODS capability registry. Techniques should be evaluated against concrete hardware before being promoted from research evidence to runtime support.
