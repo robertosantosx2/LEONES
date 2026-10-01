@@ -1,0 +1,22 @@
+# Edge0 — ODS integration analysis
+
+## Executive summary
+
+Edge0 is a research/runtime stack for sparse Mixture-of-Experts inference when total model weights exceed accelerator memory. Its Hugging Face releases are particularly relevant because runtime, checkpoint and storage-aware execution are designed together.
+
+**ODS classification: P1 — high-priority runtime candidate.**
+
+## Relevant capabilities
+
+- SSD/NVMe expert streaming.
+- GPU-resident hot expert cache.
+- Prerouter prediction of likely future experts.
+- Recover-LoRA for routing/prediction effects.
+- Sparse MoE execution.
+- OpenAI-compatible serving.
+
+## ODS integration
+
+Edge0 should be considered both as a runtime candidate and as a source of composable capabilities for a future ODS execution layer.
+
+Its current CUDA maturity must be validated against the target hardware; the RTX 3050 should not be assumed compatible without measurement.
