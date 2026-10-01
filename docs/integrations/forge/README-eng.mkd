@@ -1,0 +1,15 @@
+# Forge ↔ ODS ↔ LEONES
+
+**Profile:** Rust LLM inference server with CUDA and an OpenAI-compatible API.
+
+**LEONES status:** P3.
+
+## Summary
+
+Forge implements continuous batching, chunked prefill, paged KV cache, structured output and speculative decoding, with CPU/CUDA execution and GGUF support.
+
+## ODS fit
+
+Forge is useful as another runtime candidate and as evidence for the multi-runtime architecture. It is not currently a priority for the RTX 3050 MoE strategy.
+
+**Classification:** P3 runtime radar.
