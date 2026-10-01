@@ -99,3 +99,4 @@ Estas señales justifican mantenerlo en **Vigilancia**, pero no promover todaví
 **Mantener Edge0 bajo vigilancia tecnológica para LEONES/ODS.**
 
 La arquitectura tiene un encaje claro con la abstracción de backends de ODS y su API OpenAI-compatible. El bloqueo actual es la ausencia de un backend CUDA soportado y verificable. La próxima revisión debe centrarse en ese punto, no en intentar instalar la versión MLX en el ODS Ubuntu/NVIDIA.
+\n\n**Versiones:** [English](edge0-ods-eng.md) · [Español](edge0-ods.md)\n
