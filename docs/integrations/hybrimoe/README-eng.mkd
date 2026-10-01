@@ -1,0 +1,13 @@
+# HybriMoE — ODS integration analysis
+
+## Executive summary
+
+HybriMoE explores hybrid CPU/GPU execution for MoE inference, combining dynamic scheduling, prefetching and cache management for limited accelerator memory.
+
+**ODS classification: P1/P2 — runtime/capability research.**
+
+## ODS fit
+
+The project is particularly relevant to the execution-strategy layer because it can decide where work or experts should reside according to available resources.
+
+It should be studied as a composable capability rather than automatically adopted as a complete backend.
