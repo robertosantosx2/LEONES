@@ -1,0 +1,15 @@
+# FrankenMoE-CUDA ↔ ODS ↔ LEONES
+
+**Profile:** experimental CUDA runtime with an NVMe → RAM LRU → pinned staging → VRAM hot-store pipeline for MoE.
+
+**LEONES status:** P1 experimental; independent benchmark pending.
+
+## Summary
+
+FrankenMoE-CUDA explicitly treats storage, host memory and VRAM as a hierarchy. Only the experts needed by the current workload are promoted toward the GPU.
+
+## ODS fit
+
+This is highly relevant to low-VRAM MoE execution. It should be compared with MoE-Infinity, SSD MoE and llama.cpp expert paging.
+
+**Classification:** P1 research candidate, not production-ready.
