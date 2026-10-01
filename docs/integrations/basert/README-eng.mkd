@@ -1,0 +1,15 @@
+# baseRT ↔ ODS ↔ LEONES
+
+**Profile:** inference runtime targeting Apple Silicon and NVIDIA GB10/DGX Spark.
+
+**LEONES status:** P3.
+
+## Summary
+
+baseRT provides another implementation of OpenAI-compatible serving and is relevant to newer NVIDIA hardware.
+
+## ODS fit
+
+Its value for the current RTX 3050 target is limited. It is more useful as a radar item for future hardware profiles than as an immediate backend.
+
+**Classification:** P3 research/radar.
