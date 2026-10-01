@@ -1,0 +1,13 @@
+# vLLM MoE CPU Offload RFC ↔ ODS ↔ LEONES
+
+**Profile:** vLLM RFC for dynamic expert offload to CPU with a hot subset in GPU memory.
+
+**LEONES status:** P2; design evidence, not an implementation target.
+
+## Summary
+
+The RFC describes CPU as the source of truth for expert weights while selected experts are copied to GPU as needed.
+
+## ODS fit
+
+This is strategically important because it points toward native support in a major inference engine. ODS should track implementation progress and prefer an upstream mature feature over maintaining an independent fork when practical.
