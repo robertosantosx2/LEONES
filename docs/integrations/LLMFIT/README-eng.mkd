@@ -1,0 +1,17 @@
+# LLMFit ↔ LEONES
+
+**Profile:** hardware-aware model preselector.
+
+LLMFit analyzes the available hardware and estimates which models may fit, including memory, speed, context, quantization, execution mode, and runtime signals. In LEONES it belongs deliberately before physical benchmarking.
+
+## ODS integration
+
+LLMFit can provide an initial model/runtime candidate set for ODS. Its output must be treated as a recommendation or estimate, never as measured evidence.
+
+## LEONES rule
+
+The flow remains:
+
+hardware profile → LLMFit recommendation → user choice/consent → installation → physical validation → benchmark → measured evidence.
+
+**Classification:** strategic supporting component; not an inference runtime.
