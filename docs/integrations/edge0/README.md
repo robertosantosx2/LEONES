@@ -82,3 +82,9 @@ Keep Edge0 in the **P1** ODS candidate set and study its Hugging Face model pack
 - Related Edge0 research.
 
 Published benchmark figures remain **reported**, not LEONES-measured.
+
+
+## Technology watch
+
+- [Edge0 — vigilancia ODS](../../../research/vigilancia/edge0-ods.md)
+- [English technology watch](../../../research/vigilancia/edge0-ods-eng.md)
