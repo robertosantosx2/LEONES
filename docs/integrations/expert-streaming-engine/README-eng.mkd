@@ -1,0 +1,17 @@
+# expert-streaming-engine ↔ ODS ↔ LEONES
+
+**Profile:** experimental expert-streaming project for MoE inference.
+
+**LEONES status:** P2/P3 radar.
+
+## Summary
+
+The project is relevant because it addresses the specific problem of loading only the experts required by the router instead of keeping the complete expert bank resident in accelerator memory.
+
+## ODS fit
+
+Its architecture should be compared with MoE-Infinity, SSD MoE, ramvamp, Edge0 and the llama.cpp expert-paging work.
+
+Claims should remain provisional until supported by direct reproduction and benchmark evidence.
+
+**Classification:** P2/P3 research radar.
