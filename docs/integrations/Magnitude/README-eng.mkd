@@ -1,0 +1,23 @@
+# Magnitude ↔ LEONES
+
+**Profile:** Personal AI Assistant.
+
+Magnitude is an open-source coding agent with a local inference engine. It can profile hardware, recommend models and configure local execution.
+
+## ODS integration
+
+Magnitude is better treated as an application/agent integration than as the core ODS runtime. ODS can provide the appropriate local inference endpoint while Magnitude manages agent workflows and coding tasks.
+
+## LEONES validation
+
+Record separately:
+
+- hardware observations;
+- model/runtime recommendations;
+- installation results;
+- agent/tool behaviour;
+- benchmark measurements.
+
+Do not treat model recommendations as measured performance.
+
+**Classification:** reference integration for a Personal AI Assistant.
