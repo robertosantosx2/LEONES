@@ -1,0 +1,15 @@
+# MoE-Lens — ODS integration analysis
+
+## Executive summary
+
+MoE-Lens is more valuable to ODS as a performance-modeling and hardware/runtime design reference than as an inference server.
+
+**ODS classification: P1 — architecture and modeling reference.**
+
+## ODS fit
+
+Its value is in understanding how model structure, workload, hardware and memory hierarchy influence execution time.
+
+This can feed the ODS capability registry and runtime selector, helping distinguish estimates from measured evidence.
+
+It should not be installed as the production inference backend.
