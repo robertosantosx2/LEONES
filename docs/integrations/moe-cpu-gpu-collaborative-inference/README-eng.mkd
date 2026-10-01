@@ -1,0 +1,15 @@
+# MoE CPU/GPU Collaborative Inference ↔ ODS ↔ LEONES
+
+**Profile:** research into expert caching, reuse and CPU/GPU collaboration.
+
+**LEONES status:** P2/P3.
+
+## Summary
+
+The project explores keeping experts available across CPU and GPU memory and reusing them according to routing behaviour.
+
+## ODS fit
+
+The important concept is not a standalone server but a scheduling policy that considers cache state, transfer cost and expert reuse.
+
+This can inform a future ODS execution optimizer.
