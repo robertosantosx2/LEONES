@@ -1,0 +1,19 @@
+# ExpertFlow ↔ ODS ↔ LEONES
+
+**Profile:** MoE inference system focused on routing prediction, expert caching and token scheduling.
+
+**LEONES status:** P2; architecture/research source.
+
+## Summary
+
+ExpertFlow combines dynamic expert scheduling, routing prediction, caching and generation. Separate implementations explore SSD streaming and predictive scheduling.
+
+## ODS fit
+
+The most interesting part is the execution strategy rather than the project as a monolithic backend:
+
+expert prediction → prefetch → cache → scheduling → execution.
+
+These capabilities can feed a future ODS MoE strategy.
+
+**Classification:** P2 research/architecture reference.
