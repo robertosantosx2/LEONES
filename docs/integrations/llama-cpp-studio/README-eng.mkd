@@ -1,0 +1,15 @@
+# llama-cpp-studio ↔ ODS ↔ LEONES
+
+**Profile:** local control plane for managing and serving multiple engines through an OpenAI-compatible endpoint.
+
+**LEONES status:** P1 architectural.
+
+## Summary
+
+llama-cpp-studio separates UI/control-plane concerns from the underlying inference engine and can manage different runtimes.
+
+## ODS fit
+
+This is valuable as an architectural reference for an ODS Runtime Registry and adapter layer. ODS should similarly be able to select a backend without exposing backend-specific details to applications.
+
+**Classification:** P1 control-plane architecture reference.
