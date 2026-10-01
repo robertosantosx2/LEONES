@@ -1,0 +1,13 @@
+# weight-streaming ↔ ODS ↔ LEONES
+
+**Profile:** research into weight streaming to reduce resident memory.
+
+**LEONES status:** P3 radar.
+
+## Summary
+
+Weight streaming is directly related to the objective of executing models whose full weights cannot fit in accelerator memory.
+
+## ODS fit
+
+The project is useful as a research reference for storage-aware execution, but it should remain outside the production runtime set until model support, performance and reliability are demonstrated.
