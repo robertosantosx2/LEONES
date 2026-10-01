@@ -1,0 +1,19 @@
+# llama.cpp expert paging PoC ↔ ODS ↔ LEONES
+
+**Profile:** PoC/discussion for paging MoE experts from storage within the llama.cpp ecosystem.
+
+**LEONES status:** P1 strategic; not a stable backend.
+
+## Summary
+
+The proposal explores keeping a compact expert pool and resolving selected experts on demand, using LRU-style caching and storage reads.
+
+## ODS fit
+
+This is strategically important because a mature upstream implementation could make a separate MoE runtime unnecessary.
+
+Conceptually:
+
+GGUF expert pool → router → expert IDs → CPU index → storage read → LRU → compute backend.
+
+It should therefore be monitored alongside MoE-Infinity and other specialized runtimes.
