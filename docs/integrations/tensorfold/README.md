@@ -1,89 +1,89 @@
-# TensorFold Integration Proposal for ODS
+# Propuesta de integración de TensorFold en ODS
 
-**Experimental track:** `ods-evolution`  
-**Project:** LEONES  
-**Date:** 2026-10-01  
-**Status:** Architecture and integration study — no production integration
+**Línea experimental:** `ods-evolution`  
+**Proyecto:** LEONES  
+**Fecha:** 2026-10-01  
+**Estado:** Estudio de arquitectura e integración — sin integración en producción
 
-## 1. Executive summary
+## 1. Resumen ejecutivo
 
-TensorFold is a specialized local inference runtime built around family-specific execution engines, low-resident-memory model streaming, speculative decoding, and exactness checks against serial decoding on the same engine.
+TensorFold es un runtime especializado de inferencia local basado en motores específicos por familia de modelos, streaming con baja memoria residente, speculative decoding y verificaciones de exactitud frente a la decodificación serial del mismo motor.
 
-The project has progressed significantly beyond the initial MLX-only/early-CUDA prototype. Its current documentation describes:
+El proyecto ha evolucionado de forma importante respecto al estudio inicial. Su documentación actual describe:
 
-- MLX execution on Apple Silicon;
-- CUDA execution on supported NVIDIA configurations;
-- layer/tensor-aware streaming from standard model shards;
-- OpenAI-compatible serving;
-- family-specific CUDA engines;
-- speculative decoding with MTP and DFlash-style drafters;
-- byte-exact verification against serial decoding on the same engine;
-- model-specific 4-bit checkpoints and requirements;
-- one- and two-rank CUDA execution for selected families.
+- ejecución MLX en Apple Silicon;
+- ejecución CUDA en configuraciones NVIDIA compatibles;
+- streaming de capas/tensores desde shards estándar;
+- servidor compatible con OpenAI;
+- motores CUDA específicos por familia;
+- speculative decoding con MTP y drafters tipo DFlash;
+- verificación byte-exact frente a la ejecución serial del mismo motor;
+- checkpoints cuantizados de 4 bits y requisitos específicos por modelo;
+- ejecución CUDA de uno o dos ranks para determinadas familias.
 
-The appropriate ODS role is still:
+El papel adecuado en ODS sigue siendo:
 
-> **optional specialized runtime for model families and hardware combinations where TensorFold has a supported execution path.**
+> **runtime especializado y opcional para familias de modelos y combinaciones de hardware donde TensorFold disponga de una ruta soportada.**
 
-It should complement rather than replace `llama-server`.
+Debe complementar, no sustituir, a `llama-server`.
 
-## 2. Current TensorFold architecture
+## 2. Arquitectura actual de TensorFold
 
-TensorFold's current design starts with a memory-virtualization layer:
+El diseño actual parte de una capa de virtualización de memoria:
 
 ```text
-.safetensors shards
+shards .safetensors
        ↓
-TensorFold manifest
+manifest de TensorFold
        ↓
-layer / tensor index
+índice de capas / tensores
        ↓
-mmap-backed access
+acceso mediante mmap
        ↓
-memory-budget streaming
+streaming según presupuesto de memoria
        ↓
-family-specific inference engine
+motor de inferencia específico de la familia
        ↓
-OpenAI-compatible server
+servidor compatible con OpenAI
 ```
 
-The project explicitly describes the runtime as an exact-first local inference system intended to reduce resident memory pressure while preserving the model weights and transformer architecture.
+El proyecto define el runtime como un sistema de inferencia local orientado a reducir la presión sobre la memoria residente sin modificar los pesos ni la arquitectura del transformer.
 
-This is strategically relevant to ODS because it fits the broader ODS direction of separating:
+Esto encaja con la dirección de ODS de separar:
 
-- model;
+- modelo;
 - hardware;
-- memory/storage strategy;
-- execution capabilities;
-- concrete runtime.
+- estrategia de memoria/almacenamiento;
+- capacidades de ejecución;
+- runtime concreto.
 
-## 3. Current supported execution paths
+## 3. Rutas de ejecución actuales
 
-The current TensorFold documentation describes two major hardware paths.
+La documentación actual describe dos grandes rutas de hardware.
 
 ### Apple Silicon / MLX
 
-TensorFold can stream supported model checkpoints through MLX, retaining only selected layers and pinned tensors under a resident-weight budget.
+TensorFold puede hacer streaming de checkpoints compatibles mediante MLX, conservando solo las capas y tensores fijados necesarios dentro de un presupuesto de memoria residente.
 
 ### NVIDIA / CUDA
 
-TensorFold now documents a dedicated CUDA path for several model families, including:
+TensorFold documenta ahora una ruta CUDA específica para varias familias, entre ellas:
 
 - Qwen3.8-27B;
 - Qwen3.8 Flash Next;
 - GLM-5.3-Flash;
-- Nemotron families;
-- additional family-specific recipes, including DeepSeek and other supported checkpoints.
+- familias Nemotron;
+- otras recetas específicas, incluidas DeepSeek y otros checkpoints compatibles.
 
-Support is **family- and checkpoint-specific**. CUDA support therefore does not mean that an arbitrary Hugging Face, SafeTensors, GGUF, or quantized model can be loaded.
+El soporte es **específico de familia y checkpoint**. Que exista soporte CUDA no significa que pueda cargarse cualquier modelo Hugging Face, SafeTensors, GGUF o cuantización.
 
-The current NVIDIA runbook uses an NVIDIA PyTorch container and installs TensorFold inside it. Some CUDA families use one rank, while others require two ranks and NCCL-based communication.
+El runbook NVIDIA actual utiliza un contenedor PyTorch de NVIDIA y ejecuta TensorFold dentro de él. Algunas familias CUDA usan un rank y otras requieren dos ranks y comunicación mediante NCCL.
 
-## 4. OpenAI-compatible API
+## 4. API compatible con OpenAI
 
-TensorFold provides an OpenAI-compatible serving boundary.
+TensorFold proporciona una frontera de servicio compatible con OpenAI.
 
-The current documentation exposes endpoints including:
+La documentación actual expone, entre otros:
 
 ```text
 /v1/models
@@ -92,104 +92,104 @@ The current documentation exposes endpoints including:
 /v1/responses
 ```
 
-This is the clearest integration advantage for ODS.
+Esta es la principal ventaja de integración con ODS.
 
-The proposed boundary is:
+La frontera propuesta sería:
 
 ```text
-ODS consumer
+consumidor ODS
      ↓
-LiteLLM / ODS API layer
+capa API ODS / LiteLLM
      ↓
 TensorFold
      ↓
-family-specific execution engine
+motor específico de familia
      ↓
-model checkpoint
+checkpoint
 ```
 
-ODS applications should not need to know whether the selected model is being served by llama-server or TensorFold.
+Las aplicaciones de ODS no deberían necesitar saber si el modelo seleccionado está servido por llama-server o TensorFold.
 
-## 5. Speculative decoding and exactness
+## 5. Speculative decoding y exactitud
 
-Speculative decoding is now a central part of TensorFold rather than merely a future feature.
+El speculative decoding es actualmente una parte central de TensorFold.
 
-The current runtime supports draft/verify execution using mechanisms such as:
+El runtime soporta mecanismos de generación especulativa como:
 
-- prompt-lookup drafting;
-- MTP heads;
-- DFlash-style draft models;
-- family-specific draft policies.
+- prompt-lookup;
+- cabezas MTP;
+- modelos draft tipo DFlash;
+- políticas específicas por familia.
 
-The important property is the project's **same-engine exactness contract**.
+La propiedad más interesante es el contrato de **exactitud dentro del mismo motor**.
 
-TensorFold verifies drafted tokens against serial decoding on the same engine, weights and runtime settings. Its CUDA recipe documentation reports byte-identical results for the documented verification tests.
+TensorFold verifica los tokens propuestos contra la decodificación serial usando el mismo motor, pesos y configuración. Las recetas CUDA actuales documentan pruebas con resultados byte-identical frente a su referencia serial.
 
-This distinction must remain explicit in LEONES:
+LEONES debe mantener explícita esta distinción:
 
 ```text
-TensorFold exactness
+Exactitud de TensorFold
     =
-same engine + same weights + same settings
+mismo motor + mismos pesos + misma configuración
 
-NOT
+NO significa
 
-TensorFold output
+salida de TensorFold
     =
-all other runtimes / quantizations / hardware
+todos los demás runtimes / cuantizaciones / hardware
 ```
 
-Published TensorFold benchmarks are therefore **reported evidence**, not LEONES measurements.
+Por tanto, los benchmarks publicados por TensorFold son **evidencia reportada**, no mediciones de LEONES.
 
-## 6. Current performance evidence
+## 6. Evidencia actual de rendimiento
 
-The current TensorFold CUDA recipe book reports measurements on NVIDIA DGX Spark / GB10 hardware.
+Las recetas CUDA actuales de TensorFold publican mediciones realizadas sobre hardware NVIDIA DGX Spark / GB10.
 
-For example, the documented CUDA recipes report multi-x comparisons against vLLM for selected Qwen3.8 and GLM-5.3-Flash workloads, while the underlying tests also verify byte-identical drafted decoding against TensorFold's serial reference.
+Por ejemplo, documentan comparaciones de varios múltiplos frente a vLLM para determinadas cargas Qwen3.8 y GLM-5.3-Flash, además de verificar que la generación especulativa mantiene resultados byte-identical respecto a la referencia serial de TensorFold.
 
-These figures are useful for assessing the runtime's architectural potential, but they must not be transferred to an RTX 3050 or another GPU as expected performance.
+Estas cifras son útiles para valorar el potencial arquitectónico del runtime, pero no deben trasladarse como rendimiento esperado a una RTX 3050 ni a otra GPU.
 
-LEONES should store them as:
+LEONES debe registrarlas como:
 
 ```text
-source = TensorFold project
-evidence = reported
-hardware = documented benchmark hardware
-not a LEONES measurement
+fuente = proyecto TensorFold
+evidencia = reportada
+hardware = hardware documentado por TensorFold
+no es una medición de LEONES
 ```
 
-## 7. Current LEONES hardware relevance
+## 7. Relevancia para el hardware actual de LEONES
 
-The development machine used for this study has:
+La máquina utilizada en este estudio tiene:
 
 ```text
 GPU:    NVIDIA RTX 3050 Laptop GPU
 VRAM:   4 GB
 RAM:    ~14 GB
-CUDA:   available
+CUDA:   disponible
 ```
 
-TensorFold now having a documented CUDA backend is an important change: NVIDIA support is no longer merely theoretical.
+Que TensorFold disponga ahora de una ruta CUDA documentada es un cambio importante: el soporte NVIDIA ya no es meramente teórico.
 
-However, the currently documented CUDA recipes target substantially larger-memory NVIDIA systems and specific model/checkpoint combinations. The available documentation does not establish that the modern CUDA recipes fit a 4 GB RTX 3050 Laptop GPU.
+Sin embargo, las recetas CUDA documentadas actualmente están orientadas a sistemas NVIDIA con mucha más memoria y a combinaciones concretas de modelo/checkpoint. La documentación disponible no demuestra que esas rutas modernas quepan en una RTX 3050 Laptop de 4 GB.
 
-Therefore the current LEONES evidence remains:
+Por tanto, la evidencia actual de LEONES es:
 
 ```text
-architecture relevance       = high
-CUDA backend exists          = observed in project documentation
-RTX 3050 4 GB compatibility  = not established
-RTX 3050 performance         = not measured
-LEONES measured throughput   = unavailable
+relevancia arquitectónica       = alta
+backend CUDA existente          = observado en la documentación
+compatibilidad RTX 3050 4 GB    = no establecida
+rendimiento RTX 3050            = no medido
+throughput medido por LEONES    = no disponible
 ```
 
-This is a compatibility/evidence boundary, not a claim that TensorFold can never run on a 4 GB NVIDIA GPU.
+Esto es un límite de evidencia/compatibilidad, no una afirmación de que TensorFold nunca pueda ejecutarse en una NVIDIA de 4 GB.
 
-## 8. Model-selection implications for ODS
+## 8. Implicaciones para la selección de modelos en ODS
 
-TensorFold should be represented in the ODS capability registry as a **conditional runtime**.
+TensorFold debe representarse en el registro de capacidades de ODS como un **runtime condicional**.
 
-Example:
+Ejemplo:
 
 ```yaml
 runtime:
@@ -210,24 +210,24 @@ runtime:
       gguf: false
 ```
 
-The registry should additionally record:
+El registro debería incluir además:
 
-- supported family;
-- exact checkpoint/revision;
-- quantization;
+- familia soportada;
+- checkpoint/revisión exactos;
+- cuantización;
 - backend;
-- GPU requirements;
-- rank requirements;
-- draft-model requirements;
-- context limits;
-- memory budget;
-- evidence source and evidence class.
+- requisitos de GPU;
+- número de ranks;
+- requisitos del modelo draft;
+- límites de contexto;
+- presupuesto de memoria;
+- fuente y clase de evidencia.
 
-A model must not be marked TensorFold-compatible from its architecture name alone.
+Un modelo no debe marcarse como compatible con TensorFold solo por coincidir su nombre de arquitectura.
 
-## 9. ODS integration design
+## 9. Diseño de integración en ODS
 
-A future ODS integration could expose TensorFold as an optional service:
+Una futura integración ODS podría exponer TensorFold como servicio opcional:
 
 ```text
 extensions/services/tensorfold/
@@ -237,184 +237,184 @@ extensions/services/tensorfold/
 └── README.md
 ```
 
-The service should provide:
+El servicio debería proporcionar:
 
-- health checking;
-- `/v1/models` discovery;
-- explicit model/checkpoint selection;
-- hardware compatibility checks;
-- TensorFold version capture;
-- model/runtime capability metadata;
-- optional LiteLLM routing;
-- explicit opt-in installation.
+- health check;
+- descubrimiento mediante `/v1/models`;
+- selección explícita de modelo/checkpoint;
+- comprobaciones de compatibilidad con hardware;
+- registro de versión de TensorFold;
+- metadatos de capacidades modelo/runtime;
+- routing opcional mediante LiteLLM;
+- instalación explícitamente opt-in.
 
-Because TensorFold has family-specific kernels and model requirements, ODS should avoid presenting it as a generic model backend.
+Dado que TensorFold utiliza kernels y requisitos específicos por familia, ODS no debería presentarlo como backend genérico.
 
-## 10. Role in the ODS execution framework
+## 10. Papel dentro del framework de ejecución de ODS
 
-TensorFold fits the adaptive ODS architecture as a specialized execution provider:
+TensorFold encaja en la arquitectura adaptativa de ODS como proveedor de ejecución especializado:
 
 ```text
-USER / WORKLOAD
+USUARIO / CARGA
        ↓
-MODEL PROFILE
+PERFIL DEL MODELO
        ↓
-HARDWARE + STORAGE PROFILE
+PERFIL DE HARDWARE + ALMACENAMIENTO
        ↓
-ODS CAPABILITY REGISTRY
+REGISTRO DE CAPACIDADES ODS
        ↓
-EXECUTION STRATEGY
+ESTRATEGIA DE EJECUCIÓN
        ↓
-RUNTIME SELECTOR
+SELECTOR DE RUNTIME
        ↓
  ┌──────────────┬──────────────┬──────────────┐
- │ llama-server │ TensorFold   │ other runtime│
- │ broad        │ specialized  │ specialized  │
+ │ llama-server │ TensorFold   │ otros        │
+ │ general      │ especializado│ runtimes     │
  └──────────────┴──────────────┴──────────────┘
        ↓
-UNIFIED ODS API
+API ODS UNIFICADA
        ↓
-LEONES validation
+validación LEONES
 ```
 
-TensorFold therefore strengthens the case for a capability-driven ODS selector rather than a fixed list of interchangeable backends.
+TensorFold refuerza así la idea de que ODS debería disponer de un selector basado en capacidades y no simplemente de una lista fija de backends intercambiables.
 
-## 11. Relationship with other LEONES runtime research
+## 11. Relación con otras investigaciones de runtimes en LEONES
 
-TensorFold occupies a different position from projects such as MoE-Infinity, ramvamp, Edge0 or AirLLM.
+TensorFold ocupa una posición diferente de proyectos como MoE-Infinity, ramvamp, Edge0 o AirLLM.
 
 ```text
 llama.cpp / llama-server
-    broad compatibility
+    compatibilidad amplia
 
 ramvamp
-    CPU + RAM/NVMe streaming
+    streaming CPU + RAM/NVMe
 
-MoE-Infinity / WARP / related runtimes
-    large-MoE offload and streaming
+MoE-Infinity / WARP / otros
+    offload y streaming para grandes MoE
 
 AirLLM
-    Hugging Face layer streaming
+    streaming de capas para Hugging Face
 
 TensorFold
-    family-specific optimized execution
-    + low-resident streaming
+    ejecución optimizada por familia
+    + streaming con baja memoria residente
     + speculative decoding
-    + exact same-engine verification
+    + verificación exacta dentro del mismo motor
 ```
 
-This makes TensorFold particularly interesting as a **specialized accelerator/runtime option**, rather than as another generic backend.
+Esto hace que TensorFold sea especialmente interesante como **runtime/acelerador especializado**, no como otro backend genérico.
 
-## 12. What not to do
+## 12. Qué no hacer
 
-Do not:
+No:
 
-- replace llama.cpp/llama-server;
-- assume CUDA support means arbitrary NVIDIA GPUs are supported;
-- assume a model architecture is supported without checking the exact TensorFold family and checkpoint recipe;
-- treat published DGX Spark measurements as RTX 3050 estimates;
-- claim a speedup without measuring the same workload on the target hardware;
-- treat TensorFold's same-engine exactness as cross-runtime equivalence;
-- classify an untested RTX 3050 configuration as `measured`.
+- sustituir llama.cpp/llama-server;
+- asumir que soporte CUDA implica soporte para cualquier GPU NVIDIA;
+- asumir que una arquitectura es compatible sin comprobar la familia y receta exactas de TensorFold;
+- tratar los resultados publicados en DGX Spark como estimaciones para la RTX 3050;
+- afirmar una aceleración sin medir la misma carga en el hardware objetivo;
+- interpretar la exactitud dentro del mismo motor como equivalencia entre runtimes;
+- clasificar una configuración RTX 3050 no probada como `measured`.
 
-## 13. Proposed implementation phases
+## 13. Fases de implementación propuestas
 
-### Phase 1 — capability integration
+### Fase 1 — integración de capacidades
 
-Register TensorFold in ODS with explicit model-family/checkpoint constraints.
+Registrar TensorFold en ODS con restricciones explícitas de familia/checkpoint.
 
-### Phase 2 — standalone runtime
+### Fase 2 — runtime independiente
 
-Build an optional TensorFold service using a documented supported CUDA model on suitable NVIDIA hardware.
+Crear un servicio TensorFold opcional usando un modelo CUDA documentado y hardware NVIDIA adecuado.
 
-### Phase 3 — API integration
+### Fase 3 — integración API
 
-Expose the native OpenAI-compatible endpoint through the ODS API/LiteLLM layer.
+Exponer el endpoint compatible con OpenAI mediante la capa API/LiteLLM de ODS.
 
-### Phase 4 — hardware/model admission
+### Fase 4 — admisión hardware/modelo
 
-Make ODS reject or downgrade candidates when the detected GPU memory, rank topology, context or checkpoint requirements do not fit.
+Hacer que ODS rechace o rebaje candidatos cuando no encajen la VRAM, topología de ranks, contexto o requisitos del checkpoint detectados.
 
-### Phase 5 — LEONES benchmark adapter
+### Fase 5 — adaptador de benchmark LEONES
 
-Record:
+Registrar:
 
-- exact model/revision;
-- checkpoint format and quantization;
-- TensorFold version;
+- modelo/revisión exactos;
+- formato y cuantización;
+- versión de TensorFold;
 - GPU/VRAM;
-- context;
-- draft configuration;
+- contexto;
+- configuración draft;
 - TTFT;
-- prompt processing;
-- generation tok/s;
-- peak VRAM;
-- peak RAM;
-- serial vs speculative output equivalence.
+- procesamiento del prompt;
+- tok/s de generación;
+- VRAM máxima;
+- RAM máxima;
+- equivalencia entre salida serial y especulativa.
 
-### Phase 6 — comparative validation
+### Fase 6 — validación comparativa
 
-Where the same model/checkpoint is supported by both runtimes, compare TensorFold against llama.cpp or another ODS runtime under identical conditions.
+Cuando el mismo modelo/checkpoint sea compatible con ambos runtimes, comparar TensorFold con llama.cpp u otro runtime de ODS bajo condiciones idénticas.
 
-## 14. Benchmark and evidence rules
+## 14. Reglas de benchmark y evidencia
 
-For every TensorFold result, LEONES should distinguish:
+Para cada resultado TensorFold, LEONES debe distinguir:
 
 ```text
 REPORTED
-  TensorFold's own published result.
+  resultado publicado por TensorFold.
 
 OBSERVED
-  A capability or behavior verified from the repository/runbook.
+  capacidad o comportamiento comprobado en repositorio/runbook.
 
 ESTIMATED
-  A compatibility inference made before execution.
+  inferencia de compatibilidad antes de ejecutar.
 
 MEASURED
-  A result actually produced on the target machine by LEONES.
+  resultado producido realmente por LEONES en la máquina objetivo.
 ```
 
-Only the last category should be used for claims about actual RTX 3050 throughput, latency or resource consumption.
+Solo la última categoría debe utilizarse para afirmar rendimiento, latencia o consumo real en la RTX 3050.
 
-## 15. Updated conclusion
+## 15. Conclusión actualizada
 
-TensorFold has become a substantially more relevant ODS integration candidate than the initial study suggested.
+TensorFold es ahora un candidato de integración ODS bastante más relevante que en el estudio inicial.
 
-The important update is not simply that CUDA exists: TensorFold now documents a growing set of **family-specific CUDA engines, model recipes, speculative-decoding paths and exactness tests**, alongside its MLX streaming architecture.
+El cambio importante no es únicamente la existencia de CUDA: TensorFold documenta ahora un conjunto creciente de **motores CUDA específicos por familia, recetas de modelos, rutas de speculative decoding y pruebas de exactitud**, además de su arquitectura de streaming MLX.
 
-For ODS, the resulting position is:
+Para ODS, la posición resultante es:
 
-> **TensorFold should be tracked as a specialized, capability-driven experimental runtime, with strong interest for supported CUDA model families but strict checkpoint and hardware admission.**
+> **TensorFold debe mantenerse como runtime experimental especializado y seleccionado por capacidades, con especial interés para las familias CUDA soportadas y con admisión estricta de checkpoint y hardware.**
 
-For the current RTX 3050 4 GB LEONES machine:
+Para la RTX 3050 de 4 GB utilizada por LEONES:
 
-> **No compatibility or performance claim should be made until a documented supported checkpoint can actually be admitted and measured.**
+> **No debe hacerse ninguna afirmación de compatibilidad o rendimiento hasta que un checkpoint documentadamente soportado pueda ser admitido y medido realmente.**
 
-This keeps the integration aligned with the LEONES principle:
+Esto mantiene la integración alineada con el principio de LEONES:
 
 ```text
-DISCOVERY
+DESCUBRIMIENTO
    ↓
-PROFILE
+PERFIL
    ↓
-CANDIDATES
+CANDIDATOS
    ↓
-CONSENT
+CONSENTIMIENTO
    ↓
-INSTALL
+INSTALACIÓN
    ↓
-PHYSICAL VERIFICATION
+VERIFICACIÓN FÍSICA
    ↓
 BENCHMARK
    ↓
-MEASUREMENT
+MEDICIÓN
    ↓
-EVIDENCE
+EVIDENCIA
 ```
 
-**Current integration priority:** P2/P3 experimental runtime research, with the priority increasing if a small supported CUDA checkpoint becomes available for low-VRAM NVIDIA hardware.
+**Prioridad actual de integración:** investigación experimental P2/P3, con posibilidad de aumentar la prioridad si aparece un checkpoint CUDA pequeño soportado para hardware NVIDIA de baja VRAM.
 
-## References
+## Referencias
 
 - https://github.com/ashhart/TensorFold
 - https://github.com/ashhart/TensorFold/blob/main/RUNBOOK.md
