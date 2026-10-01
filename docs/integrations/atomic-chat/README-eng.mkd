@@ -1,0 +1,17 @@
+# Atomic-Chat ↔ ODS ↔ LEONES
+
+**Profile:** local application unifying multiple inference engines behind an OpenAI-compatible API.
+
+**LEONES status:** P2.
+
+## Summary
+
+Atomic-Chat combines upstream llama.cpp, a TurboQuant variant and MLX-VLM, and adds speculative decoding.
+
+## ODS fit
+
+It is useful as an architectural example of how several inference engines can be exposed through a common application layer without forcing clients to know which backend is running.
+
+ODS could borrow this separation while keeping runtime selection in its own capability registry.
+
+**Classification:** multi-engine architectural reference.
