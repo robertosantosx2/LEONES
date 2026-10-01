@@ -2,82 +2,88 @@
 
 **Experimental track:** `ods-evolution`  
 **Project:** LEONES  
-**Date:** 2026-09-30  
+**Date:** 2026-10-01  
 **Status:** Architecture and integration study — no production integration
 
 ## 1. Executive summary
 
-TensorFold is an OpenAI-compatible inference server targeting Apple Silicon and NVIDIA GPUs. Its distinguishing feature is a family-specific kernel/runtime approach combined with speculative decoding and **exact verification against serial decoding on the same engine, weights and settings**.
+TensorFold is a specialized local inference runtime built around family-specific execution engines, low-resident-memory model streaming, speculative decoding, and exactness checks against serial decoding on the same engine.
 
-This makes TensorFold technically interesting for ODS, but very different from a general-purpose llama.cpp backend.
+The project has progressed significantly beyond the initial MLX-only/early-CUDA prototype. Its current documentation describes:
 
-The recommended role is:
+- MLX execution on Apple Silicon;
+- CUDA execution on supported NVIDIA configurations;
+- layer/tensor-aware streaming from standard model shards;
+- OpenAI-compatible serving;
+- family-specific CUDA engines;
+- speculative decoding with MTP and DFlash-style drafters;
+- byte-exact verification against serial decoding on the same engine;
+- model-specific 4-bit checkpoints and requirements;
+- one- and two-rank CUDA execution for selected families.
 
-> **optional experimental high-performance backend for specific model families and checkpoint formats.**
+The appropriate ODS role is still:
 
-It should not replace `llama-server`.
+> **optional specialized runtime for model families and hardware combinations where TensorFold has a supported execution path.**
 
-Architecture:
+It should complement rather than replace `llama-server`.
 
-```text
-                         ODS
-                          |
-                  Runtime capability
-                          |
-          +---------------+----------------+
-          |               |                |
-     llama-server      TensorFold        AirLLM
-       GGUF            MLX/CUDA       HF/SafeTensors
-          |               |                |
-          +---------------+----------------+
-                          |
-                   OpenAI-compatible
-                          |
-                    LiteLLM / WebUI
-```
+## 2. Current TensorFold architecture
 
-## 2. TensorFold's core contribution
-
-TensorFold currently serves supported model families through MLX on Apple Silicon and CUDA on NVIDIA.
-
-The current README documents:
-
-- OpenAI-compatible chat/completions/Responses APIs;
-- MLX and CUDA backends;
-- family-specific kernels;
-- speculative decoding;
-- exact draft verification;
-- model-family-specific quantized checkpoints;
-- optional MTP/DFlash-style draft models;
-- vision support for selected Qwen families;
-- context and KV-cache controls;
-- multi-rank CUDA support for selected families.
-
-This is a specialized engine, not a generic model loader.
-
-## 3. Why it is interesting for ODS
-
-ODS already uses llama.cpp as the broad compatibility backend.
-
-TensorFold could add a second path for models where its specialized kernels and speculative decoding provide a useful performance/quality combination.
-
-The conceptual difference is:
+TensorFold's current design starts with a memory-virtualization layer:
 
 ```text
-llama.cpp
-  = broad local inference engine
-
-TensorFold
-  = specialized optimized execution engine
+.safetensors shards
+       ↓
+TensorFold manifest
+       ↓
+layer / tensor index
+       ↓
+mmap-backed access
+       ↓
+memory-budget streaming
+       ↓
+family-specific inference engine
+       ↓
+OpenAI-compatible server
 ```
 
-This is analogous to having multiple database engines or multiple compilers selected for different workloads.
+The project explicitly describes the runtime as an exact-first local inference system intended to reduce resident memory pressure while preserving the model weights and transformer architecture.
 
-## 4. OpenAI API compatibility
+This is strategically relevant to ODS because it fits the broader ODS direction of separating:
 
-This is the strongest integration advantage.
+- model;
+- hardware;
+- memory/storage strategy;
+- execution capabilities;
+- concrete runtime.
 
-TensorFold exposes:
+## 3. Current supported execution paths
+
+The current TensorFold documentation describes two major hardware paths.
+
+### Apple Silicon / MLX
+
+TensorFold can stream supported model checkpoints through MLX, retaining only selected layers and pinned tensors under a resident-weight budget.
+
+### NVIDIA / CUDA
+
+TensorFold now documents a dedicated CUDA path for several model families, including:
+
+- Qwen3.8-27B;
+- Qwen3.8 Flash Next;
+- GLM-5.3-Flash;
+- Nemotron families;
+- additional family-specific recipes, including DeepSeek and other supported checkpoints.
+
+Support is **family- and checkpoint-specific**. CUDA support therefore does not mean that an arbitrary Hugging Face, SafeTensors, GGUF, or quantized model can be loaded.
+
+The current NVIDIA runbook uses an NVIDIA PyTorch container and installs TensorFold inside it. Some CUDA families use one rank, while others require two ranks and NCCL-based communication.
+
+## 4. OpenAI-compatible API
+
+TensorFold provides an OpenAI-compatible serving boundary.
+
+The current documentation exposes endpoints including:
 
 ```text
 /v1/models
@@ -86,89 +92,142 @@ TensorFold exposes:
 /v1/responses
 ```
 
-Therefore ODS consumers can potentially use it without changing their application-level API.
+This is the clearest integration advantage for ODS.
 
-The integration boundary can be:
+The proposed boundary is:
 
 ```text
 ODS consumer
-     |
-LiteLLM
-     |
+     ↓
+LiteLLM / ODS API layer
+     ↓
 TensorFold
-     |
-model-specific kernels
+     ↓
+family-specific execution engine
+     ↓
+model checkpoint
 ```
 
-## 5. Model format is the main constraint
+ODS applications should not need to know whether the selected model is being served by llama-server or TensorFold.
 
-TensorFold is not a drop-in replacement for arbitrary GGUF models.
+## 5. Speculative decoding and exactness
 
-The current model table is built around specific checkpoint conversions and supported families.
+Speculative decoding is now a central part of TensorFold rather than merely a future feature.
 
-Examples documented by the project include Qwen3.8, Qwen3.8 Flash Next, Nemotron, GLM, Gemma and DeepSeek families, with backend and quantization restrictions varying by model.
+The current runtime supports draft/verify execution using mechanisms such as:
 
-Therefore an ODS model registry would need runtime compatibility metadata:
+- prompt-lookup drafting;
+- MTP heads;
+- DFlash-style draft models;
+- family-specific draft policies.
+
+The important property is the project's **same-engine exactness contract**.
+
+TensorFold verifies drafted tokens against serial decoding on the same engine, weights and runtime settings. Its CUDA recipe documentation reports byte-identical results for the documented verification tests.
+
+This distinction must remain explicit in LEONES:
+
+```text
+TensorFold exactness
+    =
+same engine + same weights + same settings
+
+NOT
+
+TensorFold output
+    =
+all other runtimes / quantizations / hardware
+```
+
+Published TensorFold benchmarks are therefore **reported evidence**, not LEONES measurements.
+
+## 6. Current performance evidence
+
+The current TensorFold CUDA recipe book reports measurements on NVIDIA DGX Spark / GB10 hardware.
+
+For example, the documented CUDA recipes report multi-x comparisons against vLLM for selected Qwen3.8 and GLM-5.3-Flash workloads, while the underlying tests also verify byte-identical drafted decoding against TensorFold's serial reference.
+
+These figures are useful for assessing the runtime's architectural potential, but they must not be transferred to an RTX 3050 or another GPU as expected performance.
+
+LEONES should store them as:
+
+```text
+source = TensorFold project
+evidence = reported
+hardware = documented benchmark hardware
+not a LEONES measurement
+```
+
+## 7. Current LEONES hardware relevance
+
+The development machine used for this study has:
+
+```text
+GPU:    NVIDIA RTX 3050 Laptop GPU
+VRAM:   4 GB
+RAM:    ~14 GB
+CUDA:   available
+```
+
+TensorFold now having a documented CUDA backend is an important change: NVIDIA support is no longer merely theoretical.
+
+However, the currently documented CUDA recipes target substantially larger-memory NVIDIA systems and specific model/checkpoint combinations. The available documentation does not establish that the modern CUDA recipes fit a 4 GB RTX 3050 Laptop GPU.
+
+Therefore the current LEONES evidence remains:
+
+```text
+architecture relevance       = high
+CUDA backend exists          = observed in project documentation
+RTX 3050 4 GB compatibility  = not established
+RTX 3050 performance         = not measured
+LEONES measured throughput   = unavailable
+```
+
+This is a compatibility/evidence boundary, not a claim that TensorFold can never run on a 4 GB NVIDIA GPU.
+
+## 8. Model-selection implications for ODS
+
+TensorFold should be represented in the ODS capability registry as a **conditional runtime**.
+
+Example:
 
 ```yaml
 runtime:
   tensorfold:
-    supported: true
-    backend: cuda
-    checkpoint_format: nvfp4
-    drafting: mtp
+    supported: conditional
+    backends:
+      - mlx
+      - cuda
+    api:
+      openai_compatible: true
+    capabilities:
+      tensor_streaming: true
+      speculative_decoding: true
+      exact_same_engine_verification: true
+    constraints:
+      model_family_specific: true
+      checkpoint_specific: true
+      gguf: false
 ```
 
-A model should not be marked TensorFold-compatible merely because its architecture name looks similar.
+The registry should additionally record:
 
-## 6. Exact decoding
+- supported family;
+- exact checkpoint/revision;
+- quantization;
+- backend;
+- GPU requirements;
+- rank requirements;
+- draft-model requirements;
+- context limits;
+- memory budget;
+- evidence source and evidence class.
 
-TensorFold's most interesting technical property is its exact speculative decoding claim.
+A model must not be marked TensorFold-compatible from its architecture name alone.
 
-The runtime verifies drafted tokens against serial execution under the same engine, weights and settings.
+## 9. ODS integration design
 
-This matters because speculative decoding normally introduces a question:
-
-```text
-Does accelerated decoding preserve
-the reference engine's result?
-```
-
-TensorFold makes exactness part of its engine design.
-
-However, exactness is scoped:
-
-- same engine;
-- same weights;
-- same runtime;
-- same settings.
-
-It does not mean MLX and CUDA necessarily produce identical output, nor that different quantizations are identical.
-
-ODS should preserve that distinction in benchmark reports.
-
-## 7. User hardware constraint
-
-The development machine is an RTX 3050 Laptop GPU with 4 GB VRAM and approximately 14 GB RAM.
-
-The TensorFold experiments performed during this project did not produce a practical test path on that hardware for the modern model configurations investigated.
-
-Therefore LEONES should record:
-
-```text
-TensorFold:
-  architecture relevance = interesting
-  local testability on current machine = insufficient
-  MEASURED performance = unavailable
-```
-
-This is an evidence result, not a claim that TensorFold cannot run on every 4 GB NVIDIA configuration.
-
-The correct future approach is to test it on hardware/model combinations explicitly supported by TensorFold.
-
-## 8. ODS integration design
-
-Add an optional service:
+A future ODS integration could expose TensorFold as an optional service:
 
 ```text
 extensions/services/tensorfold/
@@ -178,131 +237,186 @@ extensions/services/tensorfold/
 └── README.md
 ```
 
-The service should expose TensorFold's native OpenAI API directly.
-
-ODS should provide:
+The service should provide:
 
 - health checking;
-- model discovery;
-- hardware compatibility;
-- model/runtime metadata;
+- `/v1/models` discovery;
+- explicit model/checkpoint selection;
+- hardware compatibility checks;
+- TensorFold version capture;
+- model/runtime capability metadata;
 - optional LiteLLM routing;
 - explicit opt-in installation.
 
-## 9. Runtime capabilities
+Because TensorFold has family-specific kernels and model requirements, ODS should avoid presenting it as a generic model backend.
 
-TensorFold could advertise:
+## 10. Role in the ODS execution framework
 
-```yaml
-capabilities:
-  openai_api: true
-  speculative_decoding: true
-  exact_same_engine_verification: true
-  model_family_specialization: true
-  cuda: true
-  mlx: true
-  gguf: false
-```
-
-The exact metadata should be generated from the actual installed TensorFold version.
-
-## 10. Role in LEONES
-
-TensorFold should be treated as a runtime candidate.
+TensorFold fits the adaptive ODS architecture as a specialized execution provider:
 
 ```text
-Model
-  |
-  +-- llama.cpp
-  |
-  +-- TensorFold
-  |
-  +-- AirLLM
-  |
-  +-- vLLM
-  |
-  v
-FIT / ESTIMATED
-  |
-human selection
-  |
-physical benchmark
-  |
-MEASURED
+USER / WORKLOAD
+       ↓
+MODEL PROFILE
+       ↓
+HARDWARE + STORAGE PROFILE
+       ↓
+ODS CAPABILITY REGISTRY
+       ↓
+EXECUTION STRATEGY
+       ↓
+RUNTIME SELECTOR
+       ↓
+ ┌──────────────┬──────────────┬──────────────┐
+ │ llama-server │ TensorFold   │ other runtime│
+ │ broad        │ specialized  │ specialized  │
+ └──────────────┴──────────────┴──────────────┘
+       ↓
+UNIFIED ODS API
+       ↓
+LEONES validation
 ```
 
-TensorFold's README-supported model matrix can produce ESTIMATED compatibility.
+TensorFold therefore strengthens the case for a capability-driven ODS selector rather than a fixed list of interchangeable backends.
 
-Only an actual run produces MEASURED throughput and latency.
+## 11. Relationship with other LEONES runtime research
 
-## 11. What not to do
+TensorFold occupies a different position from projects such as MoE-Infinity, ramvamp, Edge0 or AirLLM.
+
+```text
+llama.cpp / llama-server
+    broad compatibility
+
+ramvamp
+    CPU + RAM/NVMe streaming
+
+MoE-Infinity / WARP / related runtimes
+    large-MoE offload and streaming
+
+AirLLM
+    Hugging Face layer streaming
+
+TensorFold
+    family-specific optimized execution
+    + low-resident streaming
+    + speculative decoding
+    + exact same-engine verification
+```
+
+This makes TensorFold particularly interesting as a **specialized accelerator/runtime option**, rather than as another generic backend.
+
+## 12. What not to do
 
 Do not:
 
-- replace llama.cpp;
-- treat TensorFold as a generic GGUF engine;
-- claim speculative decoding is automatically faster on every model/GPU;
-- infer support for a new checkpoint from architecture name alone;
-- label the current RTX 3050 test as a performance measurement when no practical supported run was obtained.
+- replace llama.cpp/llama-server;
+- assume CUDA support means arbitrary NVIDIA GPUs are supported;
+- assume a model architecture is supported without checking the exact TensorFold family and checkpoint recipe;
+- treat published DGX Spark measurements as RTX 3050 estimates;
+- claim a speedup without measuring the same workload on the target hardware;
+- treat TensorFold's same-engine exactness as cross-runtime equivalence;
+- classify an untested RTX 3050 configuration as `measured`.
 
-## 12. Implementation phases
+## 13. Proposed implementation phases
 
-### Phase 1
-Standalone TensorFold container with one known-supported model.
+### Phase 1 — capability integration
 
-### Phase 2
-ODS manifest and health check.
+Register TensorFold in ODS with explicit model-family/checkpoint constraints.
 
-### Phase 3
-LiteLLM model target.
+### Phase 2 — standalone runtime
 
-### Phase 4
-Model registry capability metadata.
+Build an optional TensorFold service using a documented supported CUDA model on suitable NVIDIA hardware.
 
-### Phase 5
-LEONES benchmark adapter.
+### Phase 3 — API integration
 
-### Phase 6
-Compare TensorFold vs llama.cpp on the same model where both support the same checkpoint.
+Expose the native OpenAI-compatible endpoint through the ODS API/LiteLLM layer.
 
-## 13. Benchmark design
+### Phase 4 — hardware/model admission
 
-A fair comparison should record:
+Make ODS reject or downgrade candidates when the detected GPU memory, rank topology, context or checkpoint requirements do not fit.
 
-- model/checkpoint;
-- quantization;
-- backend;
-- GPU;
-- VRAM;
+### Phase 5 — LEONES benchmark adapter
+
+Record:
+
+- exact model/revision;
+- checkpoint format and quantization;
+- TensorFold version;
+- GPU/VRAM;
 - context;
-- prompt;
+- draft configuration;
 - TTFT;
 - prompt processing;
 - generation tok/s;
 - peak VRAM;
 - peak RAM;
-- speculative decoding enabled/disabled;
-- exact output comparison where applicable.
+- serial vs speculative output equivalence.
 
-The same request must be used for the competing runtimes.
+### Phase 6 — comparative validation
 
-## 14. Conclusion
+Where the same model/checkpoint is supported by both runtimes, compare TensorFold against llama.cpp or another ODS runtime under identical conditions.
 
-TensorFold is a **specialized accelerator backend**, not an ODS foundation replacement.
+## 14. Benchmark and evidence rules
 
-Its strongest reasons for experimentation are:
+For every TensorFold result, LEONES should distinguish:
 
-1. OpenAI-compatible API;
-2. specialized kernels;
-3. speculative decoding;
-4. exact verification within the same engine;
-5. modern quantized model support;
-6. MLX + CUDA coverage.
+```text
+REPORTED
+  TensorFold's own published result.
 
-Its main limitation for ODS is the narrow model/checkpoint matrix and the fact that the current LEONES development machine did not provide a practical test target for the configurations investigated.
+OBSERVED
+  A capability or behavior verified from the repository/runbook.
 
-**Verdict:** technically interesting as an optional experimental runtime; do not make it the default ODS engine.
+ESTIMATED
+  A compatibility inference made before execution.
+
+MEASURED
+  A result actually produced on the target machine by LEONES.
+```
+
+Only the last category should be used for claims about actual RTX 3050 throughput, latency or resource consumption.
+
+## 15. Updated conclusion
+
+TensorFold has become a substantially more relevant ODS integration candidate than the initial study suggested.
+
+The important update is not simply that CUDA exists: TensorFold now documents a growing set of **family-specific CUDA engines, model recipes, speculative-decoding paths and exactness tests**, alongside its MLX streaming architecture.
+
+For ODS, the resulting position is:
+
+> **TensorFold should be tracked as a specialized, capability-driven experimental runtime, with strong interest for supported CUDA model families but strict checkpoint and hardware admission.**
+
+For the current RTX 3050 4 GB LEONES machine:
+
+> **No compatibility or performance claim should be made until a documented supported checkpoint can actually be admitted and measured.**
+
+This keeps the integration aligned with the LEONES principle:
+
+```text
+DISCOVERY
+   ↓
+PROFILE
+   ↓
+CANDIDATES
+   ↓
+CONSENT
+   ↓
+INSTALL
+   ↓
+PHYSICAL VERIFICATION
+   ↓
+BENCHMARK
+   ↓
+MEASUREMENT
+   ↓
+EVIDENCE
+```
+
+**Current integration priority:** P2/P3 experimental runtime research, with the priority increasing if a small supported CUDA checkpoint becomes available for low-VRAM NVIDIA hardware.
 
 ## References
 
 - https://github.com/ashhart/TensorFold
+- https://github.com/ashhart/TensorFold/blob/main/RUNBOOK.md
+- https://github.com/ashhart/TensorFold/blob/main/docs/recipes/cuda.md
+- https://github.com/ashhart/TensorFold/blob/main/docs/recipes/glm-5.3-flash.md
