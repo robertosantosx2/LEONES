@@ -1,0 +1,15 @@
+# ES-MoE ↔ ODS ↔ LEONES
+
+**Profile:** MoE training system with expert offload to host memory/SSD and virtual-memory-style management.
+
+**LEONES status:** P3.
+
+## Summary
+
+ES-MoE is primarily focused on training beyond GPU memory. Its techniques are nevertheless relevant to the broader ODS research into memory tiers, expert placement, offload and prefetch.
+
+## ODS fit
+
+It should not be treated as a production inference backend. The useful parts are the memory-management techniques that could inform future runtime strategies.
+
+**Classification:** P3 research reference.
