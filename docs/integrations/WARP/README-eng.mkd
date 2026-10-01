@@ -1,0 +1,19 @@
+# WARP ↔ ODS ↔ LEONES
+
+**Profile:** experimental runtime for large Mixture-of-Experts inference using weight-aware paging and NVMe streaming.
+
+**LEONES status:** active source; ODS integration candidate; independent LEONES benchmark pending.
+
+## Summary
+
+WARP addresses the problem of MoE models whose weights do not fit into accelerator memory. Its architecture uses storage-aware paging and streams the required weights from NVMe.
+
+## ODS fit
+
+WARP should be treated as a specialized backend rather than a replacement for llama-server. It is especially relevant to large-MoE strategies where local NVMe bandwidth can compensate for limited VRAM.
+
+## Validation
+
+Hardware, storage throughput, model format, latency and memory behaviour must be measured independently.
+
+**Classification:** specialized MoE/NVMe runtime.
