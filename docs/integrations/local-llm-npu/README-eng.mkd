@@ -1,0 +1,15 @@
+# local-llm-npu ↔ ODS ↔ LEONES
+
+**Profile:** local inference on Intel NPU through OpenVINO GenAI with NPU/GPU/CPU fallback.
+
+**LEONES status:** P2/P3.
+
+## Summary
+
+The project extends local inference beyond CUDA and exposes an OpenAI-compatible API.
+
+## ODS fit
+
+Its main value is hardware diversity. An ODS capability registry should be able to describe NPU availability and select NPU, GPU or CPU execution according to the detected hardware.
+
+It is a useful future branch for Intel hardware profiles, but not a priority for the current RTX 3050 target.
