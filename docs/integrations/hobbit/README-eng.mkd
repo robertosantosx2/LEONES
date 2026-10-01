@@ -1,0 +1,15 @@
+# HOBBIT — ODS integration analysis
+
+## Executive summary
+
+HOBBIT combines expert loading, adaptive prefetching, cache management and mixed precision. A key idea is to mitigate an expert-cache miss by making a lower-precision representation available.
+
+**ODS classification: P2 capability candidate.**
+
+## ODS fit
+
+HOBBIT is better understood as a set of mechanisms for an adaptive MoE runtime:
+
+prediction/prefetch → multidimensional cache → precision fallback → execution.
+
+Its reported research speedups require independent validation before being used as evidence for ODS decisions.
