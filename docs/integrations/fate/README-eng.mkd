@@ -1,0 +1,17 @@
+# FATE — ODS integration analysis
+
+## Executive summary
+
+FATE addresses expert-offload latency by predicting which experts will be needed before the next layer's routing decision is fully available, enabling proactive prefetch.
+
+**ODS classification: P1 capability candidate.**
+
+## Relevant capability
+
+FATE is especially valuable for an adaptive execution layer because prediction can hide storage or host-to-device transfer latency.
+
+## ODS integration
+
+Rather than requiring FATE to become a complete ODS runtime, its prediction/prefetch technique can be composed with an expert cache and an existing serving backend.
+
+The reported research speedups are research results and must not be treated as LEONES measurements until independently reproduced.
