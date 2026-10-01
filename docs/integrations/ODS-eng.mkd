@@ -1,0 +1,17 @@
+# ODS-LEONES — AI Stack Server
+
+## Objective
+
+Use ODS as the reference integration for the **AI Stack Server** profile.
+
+LEONES provides preflight, consent, orchestration, validation and measurement. ODS provides the AI stack.
+
+## Relevant capabilities
+
+ODS combines local inference, Open WebUI, gateways, RAG/search, voice, agents/workflows, image generation, privacy and observability. Documented components include llama-server, Open WebUI, LiteLLM, Qdrant, SearXNG/Perplexica, Whisper/Kokoro, Hermes Agent, n8n, APE, OpenCode, ComfyUI, Dashboard, Privacy Shield, Token Spy and Langfuse.
+
+## Evolution
+
+The integration should evolve toward a capability registry and adaptive runtime selector instead of assuming a single inference engine.
+
+**Classification:** primary ODS/LEONES integration.
