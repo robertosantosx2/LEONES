@@ -1,0 +1,15 @@
+# LocalAI ↔ ODS ↔ LEONES
+
+**Profile:** local multi-backend engine/orchestrator with an OpenAI-compatible API.
+
+**LEONES status:** P1 architectural; direct ODS integration not initially required.
+
+## Summary
+
+LocalAI supports many inference backends and hardware acceleration paths behind a common local API.
+
+## ODS fit
+
+Its strongest relevance is architectural: it demonstrates the value of a runtime registry and a stable API independent of the concrete inference engine.
+
+ODS should learn from this pattern without making LocalAI a mandatory dependency.
