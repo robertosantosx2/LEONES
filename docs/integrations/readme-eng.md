@@ -14,7 +14,7 @@ ODS
  ├── MoE-Infinity
  ├── ramvamp
  ├── Edge0
- └── otros runtimes
+ └── other runtimes
 ```
 
 That design makes ODS primarily an **engine selector**. A more powerful architecture is to turn ODS into an **execution abstraction and composition layer**, capable of selecting the best combination of model, strategy, capabilities, and runtime for the user's specific hardware and needs.
@@ -320,18 +320,59 @@ The final vision is for ODS not to simply ask:
 
 > **"Which backend should I use?"**
 
-sino:
+but rather:
 
 > **"What combination of model, capabilities, execution strategy, and runtime is appropriate for this model, this hardware, and this objective?"**
 
 This would progressively turn ODS from a platform that distributes multiple inference engines into a potential **adaptive local inference orchestration framework**.
 
+## Magnitude as a Personal AI Assistant Integration
+
+Magnitude occupies a different position from the inference runtimes investigated in this index. In LEONES, it is studied as a reference integration for the **Personal AI Assistant** profile: Magnitude provides the agent and its local execution, while LEONES provides preflight, installation, governance, validation, and benchmarking.
+
+According to the dedicated [Magnitude](Magnitude.md) report, relevant capabilities include:
+
+- local agent and local models;
+- hardware profiling;
+- model recommendation;
+- download and configuration;
+- local execution;
+- skills;
+- OpenAI-compatible endpoints;
+- a privacy/offline-oriented approach for local execution.
+
+This fits the adaptive ODS architecture because Magnitude can contribute information and user experience to the **model/workload profiling**, **hardware profiling**, and **model selection** layers, without becoming the inference runtime that ODS must use.
+
+The LEONES validation flow is:
+
+```text
+preflight
+   ↓
+install CLI
+   ↓
+hardware profile
+   ↓
+model recommendation
+   ↓
+user confirmation for large downloads
+   ↓
+model/Hugging Face/file/quantization record
+   ↓
+agent + tools validation
+   ↓
+independent LEONES benchmark
+   ↓
+evidence
+```
+
+Skills should be cataloged by origin, version/ref, permissions, file access, network access, and tools. LEONES should not automatically install risky skills. Data should also distinguish `observed`, `recommended/configured`, `estimated`, and `measured`, while avoiding the recording of prompts, files, code, conversations, secrets, or API keys.
+
 ## Main Integrations
 
-- **LLMFit — preselector hardware-aware**.
-- **ODS — Servidor de Stacks IA**.
-- **Magnitude — asistente personal IA**.
-- **WARP — runtime experimental para MoE grandes mediante paging desde NVMe**.
+- **LLMFit — hardware-aware preselector**.
+- **ODS — AI stack server**.
+- **Magnitude — reference integration for a Personal AI Assistant**: [Magnitude](Magnitude.md).
+- **WARP — experimental runtime for large MoE models using NVMe paging**.
 
 ## ODS Runtime Research
 
