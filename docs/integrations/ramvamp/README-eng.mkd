@@ -1,0 +1,17 @@
+# ramvamp ↔ ODS ↔ LEONES
+
+**Profile:** Rust CPU-first runtime executing quantized MoE models through NVMe expert streaming.
+
+**LEONES status:** active source; priority candidate; ODS benchmark pending.
+
+## Executive summary
+
+ramvamp is particularly relevant to ODS because it does not depend on a large GPU. Common weights are memory-mapped while experts are stored in a dedicated format and loaded from NVMe with io_uring/O_DIRECT and a per-layer LFU cache.
+
+The project currently targets Qwen3-30B-A3B and provides an OpenAI-compatible server with chat completions and streaming.
+
+## ODS fit
+
+ramvamp is an excellent candidate for the CPU/NVMe strategy and complements CUDA-oriented MoE runtimes.
+
+**Classification:** P1 CPU/NVMe MoE candidate.
