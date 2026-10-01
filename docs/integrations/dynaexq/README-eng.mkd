@@ -1,0 +1,19 @@
+# DynaExQ / DynaQuant ↔ ODS ↔ LEONES
+
+**Profile:** dynamic MoE precision/residency based on routing behaviour and memory budget.
+
+**LEONES status:** P2/P3 experimental algorithm.
+
+## Summary
+
+DynaExQ studies dynamically assigning precision and residency to experts according to routing behaviour and available GPU memory.
+
+## ODS fit
+
+The technique is valuable as a capability inside a future adaptive MoE execution strategy:
+
+routing → memory pressure → precision/residency decision → cache/offload.
+
+It is not currently a standalone serving backend.
+
+**Classification:** P2/P3 research capability.
