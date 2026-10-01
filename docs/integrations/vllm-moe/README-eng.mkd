@@ -1,0 +1,15 @@
+# vllm-moe ↔ ODS ↔ LEONES
+
+**Profile:** vLLM variant with CPU expert offload and GPU prefetch.
+
+**LEONES status:** P2; experimental.
+
+## Summary
+
+vllm-moe explores an extension of vLLM in which expert weights remain primarily in CPU memory while active experts are prefetched to GPU.
+
+## ODS fit
+
+The architecture is attractive because it combines a mature serving engine with an MoE-specific memory strategy.
+
+It should be evaluated against upstream vLLM developments and MoE-Infinity before becoming an ODS dependency.
