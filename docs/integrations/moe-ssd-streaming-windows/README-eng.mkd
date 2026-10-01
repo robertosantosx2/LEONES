@@ -1,0 +1,13 @@
+# moe-ssd-streaming-windows ↔ ODS ↔ LEONES
+
+**Profile:** Windows/NVIDIA implementation of SSD-based expert streaming.
+
+**LEONES status:** P2.
+
+## Summary
+
+The project is useful because it provides evidence that SSD expert streaming can be implemented outside Linux-specific environments and can target NVIDIA consumer hardware.
+
+## ODS fit
+
+Its architecture is relevant to the general NVMe expert-streaming strategy. For ODS, Linux/Ubuntu support and independent reproduction remain necessary before treating it as a production backend.
