@@ -486,3 +486,5 @@ Research on evolving ODS into a multi-provider hybrid inference layer, with free
 - [Arquitectura completa LEONES + ODS — estado actual y evolución propuesta](ODS-LEONES-COMPLETE-ARCHITECTURE.md)
 
 - [ODS + LEONES — arquitectura completa (2026-10-02)](ODS-LEONES-COMPLETE-ARCHITECTURE-2026-10-02.md)
+
+- [ODS + LEONES — complete architecture (2026-10-02, English)](ODS-LEONES-COMPLETE-ARCHITECTURE-2026-10-02-eng.md)
