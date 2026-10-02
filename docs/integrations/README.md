@@ -480,3 +480,7 @@ Research on evolving ODS into a multi-provider hybrid inference layer, with free
 
 - [Unsloth — ODS Post-Training Service Provider — English](post-training/UNSLOTH.md)
 - [Unsloth — proveedor del servicio Post-Training de ODS — Español](post-training/UNSLOTH-ES.md)
+
+## Arquitectura completa LEONES + ODS
+
+- [Arquitectura completa LEONES + ODS — estado actual y evolución propuesta](ODS-LEONES-COMPLETE-ARCHITECTURE.md)
