@@ -123,3 +123,11 @@ CABE, JGB, fit y recomendaciones posteriores siguen sus reglas propias y no se d
 - ODS: https://github.com/Osmantic/ODS
 - ODS Quick Start: https://github.com/Osmantic/ODS/blob/main/ods/QUICKSTART.md
 - ODS Architecture: https://github.com/Osmantic/ODS/blob/main/ARCHITECTURE.md
+
+
+## Multi-provider hybrid inference
+
+Research on evolving ODS into a multi-provider hybrid inference layer, with free-provider fallback and explicit routing policies:
+
+- [Multi-provider hybrid inference / Free-provider fallback — English](MULTI-PROVIDER-HYBRID-INFERENCE.md)
+- [Inferencia híbrida multi-proveedor / fallback de proveedores gratuitos — Español](MULTI-PROVIDER-HYBRID-INFERENCE-ES.md)
