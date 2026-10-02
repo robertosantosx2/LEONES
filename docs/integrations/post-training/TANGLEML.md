@@ -1,6 +1,6 @@
 # Research: TangleML and Post-Training in LEONES Evolution
 
-**Estado:** Experimental / investigación  
+**Status:** Experimental / research  
 **Rama:** `ods-evolution`  
 **Scope:** post-training, ML workflows and hybrid computing  
 **Date:** 2026-10-02
@@ -308,18 +308,18 @@ This satisfies LEONES' open-source requirement, but **it does not provide the st
 | Criterio | TangleML |
 |---|---|
 | Open source | Yes |
-| Software modificable | Sí |
-| Uso local | Sí |
-| Ejecución remota | Sí |
-| Cloud-agnostic | Sí, según launcher/infraestructura |
-| Contenedores | Sí |
-| Reproducibilidad | Sí |
-| Caching | Sí |
-| Componentes reutilizables | Sí |
+| Software modificable | Yes |
+| Uso local | Yes |
+| Ejecución remota | Yes |
+| Cloud-agnostic | Yes, según launcher/infraestructura |
+| Contenedores | Yes |
+| Reproducibilidad | Yes |
+| Caching | Yes |
+| Componentes reutilizables | Yes |
 | Copyleft fuerte | No |
 | Anti-captura cloud por licencia | No |
-| Autohospedable | Sí |
-| Adecuado para componente experimental LEONES | Sí |
+| Autohospedable | Yes |
+| Adecuado para componente experimental LEONES | Yes |
 
 The project license must not be confused with the licenses of components, container images, models or datasets executed through Tangle. LEONES should maintain license and provenance records for each artifact.
 
@@ -410,23 +410,23 @@ When possible, the resulting artifact should include:
 | Area | Fit |
 |---|---|
 | Dataset pipelines | High |
-| SFT | Alto |
-| LoRA / QLoRA | Alto |
-| DPO | Alto |
+| SFT | High |
+| LoRA / QLoRA | High |
+| DPO | High |
 | GRPO / RLVR | Experimental |
-| Distillation | Alto |
-| Synthetic data | Alto |
-| Evaluation | Alto |
-| Benchmarking | Alto |
-| Reproducibilidad | Alto |
-| Experimentación | Alto |
-| Local execution | Alto |
-| Remote execution | Alto |
-| Hybrid execution | Alto |
+| Distillation | High |
+| Synthetic data | High |
+| Evaluation | High |
+| Benchmarking | High |
+| Reproducibilidad | High |
+| Experimentación | High |
+| Local execution | High |
+| Remote execution | High |
+| Hybrid execution | High |
 | Model serving | No: ODS |
 | Agent runtime | No: ODS |
 | Tool runtime | No: ODS |
-| Discovery | Complementario: LEONES |
+| Discovery | Complementary: LEONES |
 | Hardware profiling | LEONES |
 | Evidence governance | LEONES |
 | License/provenance governance | LEONES |
