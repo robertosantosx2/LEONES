@@ -845,3 +845,46 @@ This gives ODS a model-evolution capability while preserving provider interchang
 - LLaMA-Factory: https://github.com/hiyouga/LlamaFactory
 - LLaMA-Factory examples: https://github.com/hiyouga/LlamaFactory/tree/main/examples
 - LLaMA-Factory data documentation: https://github.com/hiyouga/LlamaFactory/blob/main/data/README.md
+
+
+## Execution model: job service, not a permanently running service
+
+LLaMA-Factory should **not run continuously as an ODS daemon or resident inference service**.
+
+The ODS Post-Training Service is the always-available control-plane boundary; the LLaMA-Factory provider is started only for an actual training job:
+
+```text
+ODS Post-Training API
+        │
+        ▼
+     Job Queue
+        │
+        ▼
+ Provider Scheduler
+        │
+        ├── no pending job → no LLaMA-Factory process/container
+        │
+        └── pending job
+                │
+                ▼
+        start isolated container
+                │
+                ▼
+           train/adapt
+                │
+                ▼
+          export artifact
+                │
+                ▼
+       validate/register/benchmark
+                │
+                ▼
+          stop/remove job
+                │
+                ▼
+       resources released
+```
+
+The provider container/process should therefore be **ephemeral and job-scoped**. ODS may keep the API, scheduler and job metadata available continuously, but the training framework itself should consume compute only while a job is executing. Failures, cancellation and timeouts should terminate the provider workload and release its resources; logs, configuration, metrics and artifacts remain attached to the ODS job record after the provider exits.
+
+This also allows ODS to support multiple post-training providers without keeping every training framework loaded or running.
