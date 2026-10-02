@@ -60,3 +60,11 @@ ODS puede detectar hardware, seleccionar modelos y desplegar un stack, pero su s
 ## Fuente primaria
 
 https://github.com/Osmantic/ODS
+
+
+## Investigación relacionada: multi-provider hybrid inference
+
+- [English — Multi-Provider Hybrid Inference / Free-Provider Fallback](../integrations/ODS/MULTI-PROVIDER-HYBRID-INFERENCE.md)
+- [Español — Inferencia híbrida multi-proveedor / fallback de proveedores gratuitos](../integrations/ODS/MULTI-PROVIDER-HYBRID-INFERENCE-ES.md)
+
+Esta línea estudia el uso de LiteLLM como gateway y de freeLLM como fuente de descubrimiento, manteniendo separadas la selección/routing de ODS y la medición independiente de LEONES.
