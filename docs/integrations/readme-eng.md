@@ -373,6 +373,7 @@ Skills should be cataloged by origin, version/ref, permissions, file access, net
 - **ODS — AI stack server**.
 - **Magnitude — reference integration for a Personal AI Assistant**: [Magnitude](Magnitude-eng.mkd).
 - **WARP — experimental runtime for large MoE models using NVMe paging**.
+- **TensorFold — specialized MLX/CUDA runtime with speculative decoding and same-engine exactness verification**.
 
 ## ODS Runtime Research
 
@@ -392,6 +393,7 @@ Skills should be cataloged by origin, version/ref, permissions, file access, net
 | LocalAI | multi-backend architecture | [LocalAI](localai/README-eng.mkd) |
 | llama-cpp-studio | multi-runtime control plane | [llama-cpp-studio](llama-cpp-studio/README-eng.mkd) |
 | WARP | MoE NVMe paging | [WARP](WARP/README-eng.mkd) |
+| TensorFold | specialized MLX/CUDA runtime + speculative decoding + same-engine exactness verification | [TensorFold](tensorfold/README-eng.mkd) |
 
 ### P2 — candidates / research
 
