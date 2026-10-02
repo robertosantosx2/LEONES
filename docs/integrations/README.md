@@ -490,3 +490,13 @@ Research on evolving ODS into a multi-provider hybrid inference layer, with free
 - [ODS + LEONES — arquitectura completa (2026-10-02)](ODS-LEONES-COMPLETE-ARCHITECTURE-2026-10-02.md)
 
 - [ODS + LEONES — complete architecture (2026-10-02, English)](ODS-LEONES-COMPLETE-ARCHITECTURE-2026-10-02-eng.md)
+
+
+## Cost awareness / Costes de IA híbrida
+
+Investigación sobre cómo informar al usuario del gasto previsto y real cuando ODS utiliza IA remota/propietaria dentro del modo híbrido:
+
+- [Cost awareness para IA híbrida — Español](LLM-COST-AWARENESS-ES.md)
+- [Cost Awareness for Hybrid AI — English](LLM-COST-AWARENESS-eng.md)
+
+La investigación propone un **Cost Envelope + Cost Ledger**, con procedencia de precios, estimación previa, coste real, caché/reasoning, retries/fallbacks, presupuestos y separación estricta entre provider cost y coste operativo local.
