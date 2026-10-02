@@ -453,3 +453,13 @@ PREFLIGHT → CONSENT → CONTROLLED INSTALLATION
 | Kimi K3 in C | specialized runtime with model streaming and expert caching | [Kimi K3 in C](kimi-k3-in-c/README-eng.mkd) |
 | LaptopLLM | layer-streaming and laptop UX reference | [LaptopLLM](laptopllm/README-eng.mkd) |
 | TensorFold | specialized CUDA/MLX runtime with speculative decoding | [TensorFold](tensorfold/README-eng.mkd) |
+
+
+## Hybrid AI cost awareness
+
+Research on informing users of projected and actual spend when ODS uses remote/proprietary AI within hybrid mode:
+
+- [Cost Awareness for Hybrid AI — English](LLM-COST-AWARENESS-eng.md)
+- [Cost awareness para IA híbrida — Español](LLM-COST-AWARENESS-ES.md)
+
+The research proposes a **Cost Envelope + Cost Ledger**, including price provenance, pre-request estimates, actual cost, cache/reasoning, retries/fallbacks, budgets, and strict separation between provider spend and local operational cost.
