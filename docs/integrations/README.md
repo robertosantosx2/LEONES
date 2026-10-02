@@ -451,3 +451,11 @@ PREFLIGHT → CONSENTIMIENTO → INSTALACIÓN CONTROLADA
 | Kimi K3 in C | runtime especializado con streaming de modelo y caché de expertos | [Kimi K3 in C](kimi-k3-in-c/README.md) |
 | LaptopLLM | referencia de streaming de capas y UX para portátiles | [LaptopLLM](laptopllm/README.md) |
 | TensorFold | runtime CUDA/MLX especializado con speculative decoding | [TensorFold](tensorfold/README.md) |
+
+
+## Multi-provider hybrid inference
+
+Research on evolving ODS into a multi-provider hybrid inference layer, with free-provider fallback and explicit routing policies:
+
+- [Multi-provider hybrid inference / Free-provider fallback — English](MULTI-PROVIDER-HYBRID-INFERENCE.md)
+- [Inferencia híbrida multi-proveedor / fallback de proveedores gratuitos — Español](MULTI-PROVIDER-HYBRID-INFERENCE-ES.md)
