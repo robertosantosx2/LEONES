@@ -420,3 +420,242 @@ EVIDENCE
 - https://github.com/ashhart/TensorFold/blob/main/RUNBOOK.md
 - https://github.com/ashhart/TensorFold/blob/main/docs/recipes/cuda.md
 - https://github.com/ashhart/TensorFold/blob/main/docs/recipes/glm-5.3-flash.md
+
+
+## 16. Deep update — 2026-10-02: maturity reassessment
+
+This section updates the original research after a fresh review of the current TensorFold documentation.
+
+### 16.1 Why the classification changed
+
+The important change is not simply that CUDA now exists. TensorFold now exposes a coherent specialized-runtime stack:
+
+- Apple Silicon / MLX execution;
+- NVIDIA / CUDA execution;
+- family-specific CUDA engines;
+- explicit model and checkpoint recipes;
+- one- and two-rank CUDA execution for selected families;
+- MTP, DFlash2 and prompt-lookup drafting;
+- serial references inside the same engine;
+- byte-level and token-level exactness checks;
+- memory-aware context admission;
+- an OpenAI-compatible API;
+- documented CUDA benchmarks on GB10 / DGX Spark;
+- detailed engineering notes covering kernels, CUDA graphs, NCCL, prefix caches and page migration.
+
+The official website currently describes TensorFold as a parallel-decoding runtime for Apple Silicon and NVIDIA GPUs with an OpenAI-compatible API. Its public example uses Nemotron 3.5 Lightning and exposes the client base URL at http://127.0.0.1:8080/v1. The site also publishes earlier MLX measurements while explicitly stating that current-release benchmarks are pending. This is much stronger evidence of implementation maturity than the initial prototype-oriented assessment.
+
+### 16.2 Current CUDA capability matrix
+
+The current NVIDIA runbook is operational documentation, not merely a future roadmap. It specifies an NVIDIA PyTorch container, installation inside that environment, CUDA serving commands and family-specific requirements.
+
+| Family | CUDA lane | Draft mechanism | Rank topology |
+|---|---|---|---|
+| Qwen3.8-27B | documented | DFlash2; serial with no drafts | 1 or 2 |
+| Qwen3.8 Flash Next | documented | MTP | 1 or 2 |
+| GLM-5.3-Flash | documented | MTP and DFlash2 | 2 |
+| Nemotron | documented | included MTP head | 1 or 2 |
+
+This must be interpreted as a capability matrix, not a universal compatibility statement. Each row depends on the exact checkpoint, quantization/layout, context, memory and hardware topology.
+
+### 16.3 Current CUDA benchmark evidence
+
+The CUDA recipe book reports measurements on NVIDIA GB10 / DGX Spark hardware:
+
+| Workload | Reported TensorFold result versus vLLM with MTP |
+|---|---:|
+| Qwen3.8-27B, 1 Spark | 2.70–3.05x |
+| Qwen3.8-27B, 2 Sparks | 1.94–2.49x |
+| Qwen3.8 Flash Next, 1 Spark | 1.60–1.79x |
+| Qwen3.8 Flash Next, 2 Sparks | 1.74–2.24x |
+| GLM-5.3-Flash, 2 Sparks | 1.78–2.06x |
+
+The documented conditions include one stream, 64-token replies, greedy and sampled workloads and medians over multiple seeds. TensorFold's drafted results are checked against its serial reference.
+
+These are project-reported measurements. They are not LEONES measurements and must not be converted into RTX 3050 performance estimates.
+
+### 16.4 Exactness is a scoped engineering contract
+
+TensorFold's exactness claim should be recorded precisely:
+
+same TensorFold engine + same weights + same runtime settings + same sampling rule = speculative result identical to the serial reference.
+
+The CUDA recipe book explains that row-invariant kernels are used so that a row verified inside a multi-row window receives the same bits as its one-row serial execution. This is a same-engine contract.
+
+It does not establish cross-runtime numerical identity. LEONES must not turn “TensorFold speculative equals TensorFold serial” into “TensorFold equals vLLM, llama.cpp or stock PyTorch”.
+
+### 16.5 Family-specific engineering is now a first-class property
+
+TensorFold is better modeled as a set of specialized execution engines behind a common serving interface than as a universal transformer loader.
+
+The GLM recipe is a particularly clear example: the current CUDA implementation uses two 128 GB GB10 systems, a roughly 182 GB 4-bit checkpoint, tensor parallelism, NCCL, CUDA graphs, MTP/DFlash2 drafting and extensive exactness tests.
+
+The DeepSeek-V4-Flash recipe shows the same specialization on MLX: complex family-specific kernels, compressed/routed structures, custom draft/verify logic and long-context memory accounting. That recipe explicitly states that its CUDA path on two DGX Sparks is not yet implemented.
+
+Therefore ODS should record family support independently from runtime support.
+
+### 16.6 Memory admission must be explicit
+
+The current runbook states that model-file size is not the complete process footprint and that CUDA context admission can fail when available memory is insufficient. Requested reply length also needs cache space.
+
+For ODS, a TensorFold candidate should therefore contain at least:
+
+- runtime;
+- backend;
+- exact family;
+- exact checkpoint and revision;
+- quantization/layout;
+- required GPU class;
+- required and observed VRAM;
+- required and observed RAM;
+- rank count;
+- admitted context;
+- draft mechanism;
+- evidence source and evidence class.
+
+A model must not be marked TensorFold-compatible from its architecture name alone.
+
+### 16.7 RTX 3050 4 GB: current evidence boundary
+
+The current LEONES target remains:
+
+GPU: NVIDIA GeForce RTX 3050 Laptop GPU  
+VRAM: 4 GB  
+System RAM: approximately 14–16 GB available to the ODS environment  
+Backend: NVIDIA CUDA
+
+Current evidence establishes:
+
+- TensorFold CUDA exists: OBSERVED.
+- Family-specific CUDA engines exist: OBSERVED.
+- OpenAI-compatible serving exists: OBSERVED.
+- RTX 3050 4 GB compatibility: NOT ESTABLISHED.
+- RTX 3050 throughput: NOT MEASURED.
+- ODS versus TensorFold comparative benchmark: NOT MEASURED.
+
+This is an evidence boundary, not a negative compatibility verdict.
+
+A 4-bit checkpoint being smaller than 4 GB would still not prove that the whole process fits. Runtime state, KV cache, activations, temporary buffers, CUDA allocations and other overheads must also fit.
+
+### 16.8 Why P1 is justified despite the lack of RTX 3050 validation
+
+P1 describes integration priority, not hardware compatibility.
+
+TensorFold now has:
+
+1. a concrete service boundary;
+2. a real CUDA implementation;
+3. reproducible family-specific recipes;
+4. a model/checkpoint capability matrix;
+5. speculative-decoding infrastructure;
+6. explicit exactness methodology;
+7. multi-rank execution;
+8. published CUDA measurements;
+9. memory/context admission logic;
+10. enough architecture to justify serious ODS integration research.
+
+This combination is materially different from a radar-only project.
+
+### 16.9 Recommended ODS architecture
+
+The clean boundary is:
+
+ODS capability registry
+→ model/family admission
+→ checkpoint admission
+→ hardware/VRAM admission
+→ rank/topology admission
+→ draft-model admission
+→ TensorFold service
+→ OpenAI-compatible /v1 API
+
+ODS applications should not need to know whether the selected model is served by llama-server or TensorFold.
+
+A future optional service could use an extensions/services/tensorfold structure with a manifest, Compose definition, Dockerfile, health check and integration documentation. The manifest should declare supported families, checkpoint constraints, memory requirements, rank topology, draft requirements and evidence status.
+
+ODS should not automatically download a large checkpoint merely because TensorFold is enabled.
+
+### 16.10 Correct admission workflow
+
+The LEONES flow remains:
+
+DISCOVERY → PROFILE → CANDIDATES → CHOICE → CONSENT → INSTALL → PHYSICAL VERIFICATION → BENCHMARK → MEASUREMENT → EVIDENCE
+
+For TensorFold specifically:
+
+1. detect the hardware;
+2. read the current family/checkpoint support;
+3. filter by VRAM, RAM, context and rank requirements;
+4. identify the smallest viable checkpoint;
+5. obtain explicit download consent;
+6. serve it;
+7. check health;
+8. query /v1/models;
+9. run a minimal completion;
+10. benchmark;
+11. record evidence separately from estimates and project-reported results.
+
+### 16.11 Benchmark fields required by LEONES
+
+A future TensorFold test should record:
+
+- TensorFold version and commit;
+- exact model repository and revision;
+- checkpoint files and quantization;
+- draft model and revision;
+- GPU, VRAM, driver and CUDA version;
+- CPU and RAM;
+- container image;
+- Python version;
+- launch arguments;
+- ranks and NCCL configuration;
+- context;
+- kernel compilation time;
+- model load time;
+- TTFT;
+- prompt tok/s;
+- generation tok/s;
+- peak VRAM;
+- peak RAM;
+- speculative acceptance and commit rate;
+- serial versus speculative token IDs or hashes;
+- repeated-run stability;
+- long-prompt behavior.
+
+If the identical model/checkpoint can run in another ODS runtime, the comparison must use the same hardware, revision, prompts, context, generation settings and repeated-run protocol.
+
+### 16.12 Evidence taxonomy
+
+LEONES should preserve four classes:
+
+- REPORTED — published by TensorFold;
+- OBSERVED — verified in source or runbook;
+- ESTIMATED — inferred before execution;
+- MEASURED — produced by LEONES on the target machine.
+
+Only MEASURED evidence can establish actual RTX 3050 performance.
+
+### 16.13 Documentation maturity caveat
+
+There is an important split in the current public documentation.
+
+The root README still emphasizes the V0/V1 memory-virtualization and MLX foundation. The current RUNBOOK and CUDA recipes contain much more detailed NVIDIA operational guidance and family-specific benchmark procedures.
+
+For LEONES this should be interpreted as:
+
+root README = architectural foundation  
+RUNBOOK + family recipes = current operational CUDA evidence
+
+The runbook also explicitly marks release-qualified memory and speed results as pending under its release-0.3.5 note. Therefore the project is mature enough for P1 research, but not every current memory/performance figure should be described as release-qualified final data.
+
+### 16.14 Updated conclusion
+
+TensorFold now deserves P1 placement because it has moved beyond the earlier prototype/radar profile into a documented specialized runtime with concrete CUDA family engines, reproducible recipes, speculative decoding, same-engine exactness and an OpenAI-compatible serving boundary.
+
+The correct ODS model is:
+
+TensorFold = specialized execution provider + family-specific admission + checkpoint-specific admission + hardware-specific admission + evidence-driven validation.
+
+For the RTX 3050 4 GB target, no compatibility or throughput claim should yet be made. The next research action is to identify the smallest currently supported CUDA checkpoint and physically test it before modifying the ODS installation.
+
+**Revised LEONES classification: P1 — high-priority integration research.**
