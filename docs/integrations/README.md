@@ -468,3 +468,9 @@ Research on evolving ODS into a multi-provider hybrid inference layer, with free
 
 - [Multi-provider hybrid inference / Free-provider fallback — English](MULTI-PROVIDER-HYBRID-INFERENCE.md)
 - [Inferencia híbrida multi-proveedor / fallback de proveedores gratuitos — Español](MULTI-PROVIDER-HYBRID-INFERENCE-ES.md)
+
+
+## Post-training / Pos-entrenamiento
+
+- [LLaMA-Factory — ODS Post-Training Service Provider — English](post-training/LLAMA-FACTORY.md)
+- [LLaMA-Factory — provider del servicio Post-Training de ODS — Español](post-training/LLAMA-FACTORY-ES.md)
