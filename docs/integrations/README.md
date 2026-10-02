@@ -459,6 +459,8 @@ Research on post-training as part of **LEONES Evolution**, using hybrid compute 
 
 - [TangleML — Post-training / hybrid compute — English](post-training/TANGLEML.md)
 - [TangleML — Post-training / computación híbrida — Español](post-training/TANGLEML-ES.md)
+- [Gerbil SDK / Tune — specialist tuning, adapters and edge runtime — English](post-training/GERBIL.md)
+- [Gerbil SDK / Tune — especialización, adapters y runtime edge — Español](post-training/GERBIL-ES.md)
 
 ## Multi-provider hybrid inference
 
