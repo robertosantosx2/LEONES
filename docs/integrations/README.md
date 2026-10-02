@@ -474,3 +474,6 @@ Research on evolving ODS into a multi-provider hybrid inference layer, with free
 
 - [LLaMA-Factory — ODS Post-Training Service Provider — English](post-training/LLAMA-FACTORY.md)
 - [LLaMA-Factory — provider del servicio Post-Training de ODS — Español](post-training/LLAMA-FACTORY-ES.md)
+
+- [Axolotl — ODS Post-Training Service Provider — English](post-training/AXOLOTL.md)
+- [Axolotl — proveedor del servicio Post-Training de ODS — Español](post-training/AXOLOTL-ES.md)
