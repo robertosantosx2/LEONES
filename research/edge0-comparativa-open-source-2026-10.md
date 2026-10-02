@@ -75,13 +75,92 @@
 
 ---
 
-## 6. Enlaces útiles
+## 6. Edge0 vs TensorFold (Qwen3.6-35B-A3B)
 
-- Framework: https://github.com/Edge0-AI/edge0
-- Edge0-35B: https://huggingface.co/Edge0/Edge0-35B-A3B-preview
-- Edge0-8B: https://huggingface.co/Edge0/Edge0-8B-A1B-preview
-- Paper: *The Other Half of the Memory Wall* (arXiv 2026-09)
+**Fecha de actualización**: 2026-10-02  
+**Contexto**: prospección de runtimes de alto rendimiento (TensorFold) frente al enfoque ultra-baja memoria de Edge0.
+
+### 6.1 ¿Qué es TensorFold?
+
+- Motor de inferencia open-source (Apache 2.0) centrado en **speculative decoding exacto** (MTP / DFlash2).
+- Soporta Apple Silicon (MLX) y NVIDIA GPU (CUDA, CC ≥ 8.9 → RTX 40/50 + Blackwell).
+- API compatible OpenAI.
+- Kernels escritos a mano por familia de modelos.
+- Ya tiene receta oficial para **Qwen3.6-35B-A3B** (el modelo base de Edge0-35B).
+
+Repositorio: https://github.com/ashhart/TensorFold · https://tensorfold.dev
+
+### 6.2 Números medidos — Edge0 nativo
+
+| Métrica | Valor | Hardware |
+|---------|-------|----------|
+| Decode | **14.9 – 17.7 tok/s** (hasta 20.4 en algunas mediciones) | Mac mini M4 Pro 24 GB |
+| Prefill cold / warm | 113 / 140 tok/s | Mismo |
+| Peak active memory | **2.9 GiB** | Mismo |
+| Vanilla mlx-lm (todo en RAM) | 3.9 tok/s · 18.2 GiB | Mismo |
+
+### 6.3 Números medidos — TensorFold + Qwen3.6-35B-A3B
+
+| Hardware | Decode single-stream | Decode concurrente | Memoria pico | Notas |
+|----------|----------------------|--------------------|--------------|-------|
+| **DGX Spark (GB10)** | **141 – 179 tok/s** | — | ~22–31 GiB | Oficiales más altos (code 179.4 / chat 141.3) |
+| **RTX PRO 6000 Blackwell** | ~140–170 tok/s (est.) | 427 → 1.094 tok/s (1→8 streams) | ~22–23 GiB | Medido concurrente |
+| **RTX 5090 32 GB** | **~120–160 tok/s** (est.) | Alto | ~22–25 GiB | Cabe cómodo |
+| **RTX 4090 24 GB** | **~80–110 tok/s** (est.) | Medio | ~22 GiB | Justo / contexto limitado |
+| Serial (sin drafts) | 86–88 tok/s | — | — | DGX Spark |
+
+**Prefill TensorFold (DGX Spark)**:
+- 2k–8k tokens: 7.1k – 7.4k tok/s
+- 64k tokens: ~3.7k tok/s
+
+### 6.4 Comparativa directa
+
+| Aspecto | Edge0 nativo (M4 Pro) | TensorFold Qwen3.6-35B (RTX / Spark) | Factor |
+|---------|-----------------------|--------------------------------------|--------|
+| **Decode** | ~16 tok/s | **80 – 180 tok/s** | **5–11×** |
+| **Prefill** | ~120–140 tok/s | **3.7k – 7.4k tok/s** | **30–50×** |
+| **Memoria activa** | **2.9 GiB** | **22–31 GiB** | **~8–10× más** |
+| **Hardware** | Mac 24 GB + SSD | RTX 4090/5090 o superior | — |
+| **Calidad** | Edge0 (Recover-LoRA) ≈ 79.2 | Base Qwen3.6 ≈ 83.2 | Base +4 pts |
+| **Soporte RTX** | No (solo MLX) | Sí (CC ≥ 8.9) | — |
+
+### 6.5 Expectativas de integración Edge0 + TensorFold
+
+| Escenario | Resultado esperado | Probabilidad |
+|-----------|--------------------|--------------|
+| Cargar checkpoint Edge0 tal cual en TensorFold | Falla o corre serial sin drafts | Casi nula |
+| Usar solo el base Qwen3.6-35B-A3B | Funciona hoy | Alta |
+| Portar prerouter + Recover-LoRA + SSD streaming a TensorFold | Decode 40–80+ tok/s manteniendo ~3–5 GiB | Requiere engineering |
+| Edge0 gana soporte CUDA nativo | Posible en roadmap | Media |
+
+**Conclusión técnica**:
+- TensorFold gana de forma aplastante en **velocidad** cuando hay VRAM suficiente.
+- Edge0 gana de forma aplastante en **memoria activa** (único 35B viable en <4 GB).
+- La combinación ideal (baja memoria + alta velocidad) aún no existe; sería un objetivo de investigación interesante para LEONES/ODS.
+
+### 6.6 Recomendación FitLLM / ODS
+
+| Perfil de hardware | Runtime recomendado | Modelo |
+|--------------------|---------------------|--------|
+| ≤ 16–24 GB RAM, sin GPU fuerte | **Edge0** | Edge0-35B / Edge0-8B |
+| RTX 4090 / 5090 o superior | **TensorFold** (o vLLM) | Qwen3.6-35B-A3B / Qwen3.8-27B |
+| Mac M4/M5 con ≥ 32 GB | Ambos viables | Edge0 (memoria) o TensorFold (velocidad) |
+| Servidor / multi-GPU | TensorFold / vLLM / otros | GLM-5.3, DeepSeek-V4, MiMo-V2.6 |
+
+Marcar siempre como **ESTIMATED** hasta tener medición física (MEASURED) en el hardware real del usuario.
 
 ---
 
-*Documento generado para investigación LEONES · 2026-10-02*
+## 7. Enlaces útiles
+
+- Framework Edge0: https://github.com/Edge0-AI/edge0
+- Edge0-35B: https://huggingface.co/Edge0/Edge0-35B-A3B-preview
+- Edge0-8B: https://huggingface.co/Edge0/Edge0-8B-A1B-preview
+- Paper Edge0: *The Other Half of the Memory Wall* (arXiv 2026-09)
+- TensorFold: https://github.com/ashhart/TensorFold · https://tensorfold.dev
+- Receta Qwen3.6-35B en TensorFold: `docs/recipes/qwen3.6-moe.md`
+
+---
+
+*Documento generado para investigación LEONES · 2026-10-02*  
+*Actualizado 2026-10-02 con datos TensorFold + RTX*
