@@ -477,3 +477,6 @@ Research on evolving ODS into a multi-provider hybrid inference layer, with free
 
 - [Axolotl — ODS Post-Training Service Provider — English](post-training/AXOLOTL.md)
 - [Axolotl — proveedor del servicio Post-Training de ODS — Español](post-training/AXOLOTL-ES.md)
+
+- [Unsloth — ODS Post-Training Service Provider — English](post-training/UNSLOTH.md)
+- [Unsloth — proveedor del servicio Post-Training de ODS — Español](post-training/UNSLOTH-ES.md)
