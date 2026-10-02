@@ -1,15 +1,3 @@
-[submodule "subprojects/ODS"]
-	path = subprojects/ODS
+[submodule "ODS-backup"]
+	path = ODS-backup
 	url = https://github.com/Osmantic/ODS.git
-[submodule "subprojects/Magnitude"]
-	path = subprojects/Magnitude
-	url = https://github.com/magnitudedev/magnitude.git
-[submodule "subprojects/Buddy"]
-	path = subprojects/Buddy
-	url = https://github.com/juanje/buddy.git
-[submodule "subprojects/DeepSeek-Harness"]
-	path = subprojects/DeepSeek-Harness
-	url = https://github.com/deepseek-ai/deepseek-harness.git
-[submodule "subprojects/LLMFit"]
-	path = subprojects/LLMFit
-	url = https://github.com/AlexsJones/llmfit.git
