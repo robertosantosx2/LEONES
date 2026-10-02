@@ -453,6 +453,13 @@ PREFLIGHT → CONSENTIMIENTO → INSTALACIÓN CONTROLADA
 | TensorFold | runtime CUDA/MLX especializado con speculative decoding | [TensorFold](tensorfold/README.md) |
 
 
+## Post-training / Pos-entrenamiento
+
+Research on post-training as part of **LEONES Evolution**, using hybrid compute while keeping **ODS as the AI execution platform**:
+
+- [TangleML — Post-training / hybrid compute — English](post-training/TANGLEML.md)
+- [TangleML — Post-training / computación híbrida — Español](post-training/TANGLEML-ES.md)
+
 ## Multi-provider hybrid inference
 
 Research on evolving ODS into a multi-provider hybrid inference layer, with free-provider fallback and explicit routing policies:
