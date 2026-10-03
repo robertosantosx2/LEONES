@@ -2,7 +2,7 @@
 
 **Fecha**: 3 de octubre de 2026  
 **Repo**: LEONES (Libre Open Agent Stack)  
-**Origen**: Análisis de tuits de @Davidstout / webAI + PDF de Andrej Karpathy + búsqueda de perfiles similares en X.
+**Origen**: Análisis de tuits de @Davidstout / webAI + PDF de Andrej Karpathy + búsqueda de perfiles similares en X + benchmarks LoRA actualizados.
 
 ---
 
@@ -98,7 +98,86 @@ Perfiles que hablan activamente de **IA local en hardware de consumo** y lo logr
 
 ---
 
-## 5. Claves de selección de modelos y técnicas (para LEONES)
+## 5. Benchmarks de LoRA (análisis actualizado 2025-2026)
+
+### 5.1 Resumen ejecutivo de LoRA
+
+LoRA sigue siendo el método PEFT dominante. Los benchmarks más recientes confirman que, **cuando se configura bien** (rank, learning rate, batch size, capas a las que se aplica), recupera entre el **95-99 %** del rendimiento de Full Fine-Tuning (FullFT) en la mayoría de tareas de SFT e incluso en RL, mientras entrena solo el 0.1-3 % de los parámetros y reduce drásticamente VRAM y tiempo.
+
+El gap con FullFT aparece principalmente cuando:
+- El dataset es muy grande (> 20-50k ejemplos de alta calidad).
+- Se necesita actualizar conocimiento “duro” del modelo base.
+- El rank es demasiado bajo (r ≤ 4-8 en tareas de alta capacidad).
+
+### 5.2 Rendimiento vs Full Fine-Tuning
+
+| Fuente / Estudio | Hallazgo clave | Recuperación de FullFT |
+|------------------|----------------|------------------------|
+| Thinking Machines Lab (2025) | LoRA iguala FullFT en sample efficiency en SFT de tamaño pequeño-mediano e incluso en RL (ranks tan bajos como 1) | ~100 % en datasets no demasiado grandes |
+| Post-Training Science (2026) | LoRA recupera mediana del **98 %** de la mejora de FullFT mientras entrena 3-13 % de parámetros | 98 % |
+| ACL Findings 2025 (Rank Trade-offs) | En razonamiento LoRA a menudo **supera** a FullFT en ranks intermedios (16-64) | Competitivo o superior |
+| Baseten Practical LoRA Research | Rank ≥ 8 iguala FullFT hasta ~30k ejemplos; ranks 1-4 saturan antes | Casi 100 % a partir de r=8 |
+
+**Conclusión práctica**: para la mayoría de fine-tunes de dominio (instruction, razonamiento, agentes, lógica formal) LoRA es suficiente y preferible.
+
+### 5.3 Efecto del Rank (r)
+
+- **r = 1-4**: suficiente para tareas muy simples o datasets pequeños. Capacidad limitada.
+- **r = 8-16**: sweet spot más usado (buen equilibrio calidad/coste).
+- **r = 32-64**: óptimo en la mayoría de estudios recientes. A partir de ~64 el retorno decrece fuerte.
+- **r ≥ 128**: casi nunca compensa el coste extra.
+
+Estudios de 2025-2026 muestran que α = 2×r o α fijo en 16-32 suele funcionar mejor que α = r.
+
+### 5.4 LoRA vs variantes (QLoRA, DoRA, etc.)
+
+| Método | VRAM | Velocidad | Calidad relativa | Cuándo usarlo |
+|--------|------|-----------|------------------|---------------|
+| **LoRA** | Media | Más rápido | Referencia | Cuando el modelo cabe en BF16 |
+| **QLoRA** | Muy baja (~0.4×) | Más lento (dequant) | Casi igual a LoRA | Cuando no cabe en VRAM (7B+ en 12-24 GB) |
+| **DoRA** | Similar a LoRA | Un poco más lento | Mejor en datasets pequeños (<5-10k) | Preferido por muchos en 2026 para datasets medianos |
+| **LoRA+** | Similar | Similar | Mejor en energía/memoria en SLMs | On-device / consumer GPUs |
+| Variantes (PiSSA, AdaLoRA, SDS-LoRA…) | Variable | Variable | A veces mejor, a veces no | Solo si el batch size y LR están bien tuneados |
+
+**Nota importante (2026)**: muchos papers de variantes muestran ganancias que desaparecen cuando se sintoniza correctamente el **batch size** de vanilla LoRA. El batch size es un hiperparámetro de primer orden.
+
+### 5.5 Memoria y Hardware de consumo (muy relevante para LEONES)
+
+Reglas prácticas 2026:
+
+| Modelo | QLoRA (r=16) | LoRA (BF16) | Full FT |
+|--------|--------------|-------------|----------------|
+| 1-3B   | 4-8 GB      | 8-12 GB    | 16-24 GB |
+| 7-8B   | 6-10 GB     | 16-24 GB   | 48 GB+   |
+| 13-14B | 10-16 GB    | 24-40 GB   | Multi-GPU |
+| 32B    | ~20 GB      | 48 GB+     | Cluster  |
+
+QLoRA permite fine-tunear 7B-13B cómodamente en una RTX 4090/5090 o incluso en 12-16 GB con offloading.
+
+### 5.6 Caso concreto: TwIL-LM3-Pro
+
+webAI usó **LoRA SFT** como primera etapa del pipeline (junto con checkpoint fusion + WiSE-FT + GRPO).  
+Resultado: +28-31 % relativo en lógica formal manteniendo casi intacta la capacidad held-out.  
+Esto confirma que LoRA + técnicas de interpolación (WiSE-FT) es una combinación extremadamente efectiva para especialización sin catástrofe de olvido.
+
+### 5.7 Recomendaciones prácticas (2026)
+
+1. **Default actual**: DoRA o LoRA con **r=16** (o r=32 si tienes VRAM) + α=32.
+2. Learning rate de LoRA suele ser ~10-33× más alto que FullFT (óptimo frecuente ~1e-3).
+3. Aplica LoRA a **todas las matrices** (incluyendo MLP), no solo atención.
+4. Usa QLoRA solo cuando el modelo no cabe en BF16.
+5. Siempre mide **in-domain + held-out** (o usa WiSE-FT si el olvido es problema).
+6. Batch size importa más de lo que la mayoría de papers reportan.
+
+### 5.8 Limitaciones conocidas de LoRA
+
+- Capacidad limitada en datasets muy grandes o actualizaciones de conocimiento factual profundo.
+- Puede introducir “intruder dimensions” que causan olvido (se mitiga con ranks moderados y α adecuados).
+- En RL de razonamiento muy largo a veces necesita ranks más altos o técnicas complementarias.
+
+---
+
+## 6. Claves de selección de modelos y técnicas (para LEONES)
 
 ### Criterios de decisión
 
@@ -139,7 +218,7 @@ Perfiles que hablan activamente de **IA local en hardware de consumo** y lo logr
 
 ---
 
-## 6. Limitaciones y riesgos
+## 7. Limitaciones y riesgos
 
 - TwIL-LM3-Pro **no** es un asistente general con safety/preference tuning completo  
 - Licencia no-comercial de webAI  
@@ -148,31 +227,34 @@ Perfiles que hablan activamente de **IA local en hardware de consumo** y lo logr
 
 ---
 
-## 7. Fuentes primarias
+## 8. Fuentes primarias
 
 - Tuit @Davidstout: https://x.com/Davidstout/status/2105367134876365135  
 - Model card: https://huggingface.co/webAI-Official/TwIL-LM3-Pro  
 - Blog webAI: https://www.webai.com/blog/meet-twil-lm3-pro-webai-s-next-step-in-local-reasoning  
 - PDF Karpathy (compartido en hilo de @0xCodez): “Andrej Karpathy – Building Small Language Models…”  
-- Perfiles X listados en sección 4
+- Perfiles X listados en sección 4  
+- Benchmarks LoRA: Thinking Machines Lab (2025), Post-Training Science (2026), ACL Findings 2025, Baseten Practical LoRA Research, papers arXiv 2025-2026 sobre rank trade-offs, DoRA, QLoRA y batch-size bias.
 
 ---
 
-## 8. Implicaciones para LEONES
+## 9. Implicaciones para LEONES
 
 Este material alimenta directamente:
 
 - Selección de modelos para el runtime A01 / agentes locales  
 - Recomendador de atlas (priorizar small + post-trained sobre frontier rentado)  
 - Pipelines de post-training que se puedan reproducir en hardware de consumo  
-- Criterios de “local-first” y ownership de los modelos
+- Criterios de “local-first” y ownership de los modelos  
+- Decisiones de rank, α, batch size y cuándo usar QLoRA vs LoRA vs DoRA
 
 **Próximos pasos sugeridos**:
 1. Evaluar TwIL-LM3-Pro (Q4) en los benchmarks de runtime de LEONES  
-2. Probar Unsloth para fine-tunes propios de agentes  
+2. Probar Unsloth para fine-tunes propios de agentes (r=16 o 32 + α=32)  
 3. Incorporar WiSE-FT / merging en el pipeline de post-training del stack  
-4. Actualizar el catálogo de atlas con estos perfiles y modelos
+4. Actualizar el catálogo de atlas con estos perfiles y modelos  
+5. Definir defaults de LoRA/DoRA/QLoRA según VRAM disponible en el runtime
 
 ---
 
-*Documento generado a partir de análisis de X + fuentes públicas · Octubre 2026*
+*Documento generado a partir de análisis de X + fuentes públicas + benchmarks LoRA 2025-2026 · Octubre 2026*
