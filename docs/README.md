@@ -90,6 +90,8 @@ Las cuatro capas de conocimiento permanecen separadas: **fuente → evidencia �
 ### Integraciones
 
 - [integrations/README.md](integrations/README.md) — índice de integraciones.
+- [ODS + LEONES — Inference Configuration Discovery (ICD), 2026-10-06](integrations/ODS/INFERENCE-CONFIGURATION-DISCOVERY-2026-10-06.md) — evolución de selección de modelo/runtime hacia descubrimiento de configuraciones de inferencia.
+
 - [integrations/LLMFIT/README.md](integrations/LLMFIT/README.md) — LLMFit.
 - [integrations/ODS/README.md](integrations/ODS/README.md) — ODS.
 - [integrations/Magnitude/README.md](integrations/Magnitude/README.md) — Magnitude.
