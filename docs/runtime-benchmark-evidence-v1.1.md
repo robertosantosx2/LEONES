@@ -4,6 +4,14 @@ LEONES adopts the useful parts of the Artificial Analysis methodology while keep
 
 Artificial Analysis measures real-world end-to-end inference experience, not theoretical maximum hardware performance. Its language-model API methodology separates workload size, load scenario, TTFT, output speed and end-to-end response time, and uses repeatable API parameters and standardized token counting for cross-model comparisons. See https://artificialanalysis.ai/methodology and https://artificialanalysis.ai/methodology/performance-benchmarking.
 
+## Inference Configuration Discovery
+
+Runtime benchmarking is also the measurement engine for comparing candidate inference configurations. The discovery unit is:
+
+`model artifact + runtime + runtime revision + configuration + hardware + workload → measured capability`
+
+Configuration variables may include quantization, KV-cache format, context length, GPU/CPU/RAM/SSD offload, speculative decoding, MTP, draft depth, batch and parallelism. Results from different configurations MUST remain distinct evidence records.
+
 ## LEONES mapping
 
 | Artificial Analysis concept | LEONES local evidence |
