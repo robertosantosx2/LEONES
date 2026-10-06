@@ -511,3 +511,13 @@ Investigación sobre cómo informar al usuario del gasto previsto y real cuando 
 - [Cost Awareness for Hybrid AI — English](LLM-COST-AWARENESS-eng.md)
 
 La investigación propone un **Cost Envelope + Cost Ledger**, con procedencia de precios, estimación previa, coste real, caché/reasoning, retries/fallbacks, presupuestos y separación estricta entre provider cost y coste operativo local.
+
+
+## Inference Configuration Discovery (ICD) — LEONES + ODS
+
+La evolución de ODS como framework adaptativo incorpora **Inference Configuration Discovery** como unidad de decisión: no solo qué modelo o runtime encaja, sino qué combinación de modelo, cuantización, engine, colocación de memoria, caché, offload, contexto y decoding produce la mejor capacidad real.
+
+- [ICD / Strata — Español](ODS/INFERENCE-CONFIGURATION-DISCOVERY-2026-10-06.md)
+- [ICD / Strata — English](ODS/INFERENCE-CONFIGURATION-DISCOVERY-2026-10-06-eng.md)
+
+Strata aporta evidencia experimental externa sobre MoE heterogéneo; sus cifras publicadas siguen separadas de las mediciones LEONES hasta su reproducción física controlada.
