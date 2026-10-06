@@ -131,3 +131,13 @@ Research on evolving ODS into a multi-provider hybrid inference layer, with free
 
 - [Multi-provider hybrid inference / Free-provider fallback — English](MULTI-PROVIDER-HYBRID-INFERENCE.md)
 - [Inferencia híbrida multi-proveedor / fallback de proveedores gratuitos — Español](MULTI-PROVIDER-HYBRID-INFERENCE-ES.md)
+
+
+## Inference Configuration Discovery (ICD)
+
+LEONES+ODS evolves from model/backend selection toward **Inference Configuration Discovery**: discovering and benchmarking the complete inference configuration that produces the best real capability for a given model, hardware profile and user objective.
+
+- [ICD / Strata — Español](INFERENCE-CONFIGURATION-DISCOVERY-2026-10-06.md)
+- [ICD / Strata — English](INFERENCE-CONFIGURATION-DISCOVERY-2026-10-06-eng.md)
+
+Strata is treated as experimental external evidence and a candidate heterogeneous-MoE execution provider. Published throughput remains external until reproduced by LEONES.
