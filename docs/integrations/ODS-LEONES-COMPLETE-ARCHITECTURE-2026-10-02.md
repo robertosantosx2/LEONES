@@ -1999,3 +1999,136 @@ La arquitectura actual de ODS, sus servicios, capas de Compose, CLI, registro de
 ODS también documenta explícitamente los modos `local`, `cloud` y `hybrid`, así como la extensión mediante servicios y el uso de LiteLLM como gateway. citeturn0search6
 
 Este documento añade sobre esa arquitectura actual la **capa evolutiva propuesta por la investigación LEONES**: Capability Registry, Runtime Selector/Optimizer, Execution Strategy/Composition, Inference Fabric y Post-Training Fabric.
+
+
+---
+
+# 26. Inference Profile: del ajuste del modelo a la capacidad real
+
+La evidencia externa experimental de Bonsai 2 añade un requisito metodológico concreto a la arquitectura.
+
+LEONES + ODS no debe preguntar solamente:
+
+> ¿Qué modelo cabe en mi GPU?
+
+La pregunta objetivo es:
+
+> **¿Qué configuración de inferencia produce la mejor capacidad real en mi GPU, para este workload y esta política?**
+
+La unidad de decisión pasa a ser un **Inference Profile**:
+
+    hardware
+    + modelo
+    + representación / cuantización
+    + runtime / versión
+    + kernel / versión
+    + GPU layers
+    + contexto
+    + KV cache
+    + MTP / speculative decoding
+    + visión
+    + slots paralelos
+    + reasoning effort
+    + flags reproducibles
+    + evidencia
+
+Esto transforma la arquitectura de un selector de ajuste de modelos en un selector de capacidad.
+
+    hardware + workload
+            |
+            v
+    modelos candidatos
+            |
+            v
+    perfiles de inferencia candidatos
+            |
+            v
+    capacidad estimada
+            |
+            v
+    benchmark físico
+            |
+            v
+    capacidad medida
+            |
+            v
+    mejor configuración real
+
+## 26.1 Contrato de evidencia externa
+
+La investigación de sudoingX sobre Bonsai 2 se incorpora como fuente externa de evidencia experimental, no como dependencia estructural.
+
+Sus resultados publicados se registran como:
+
+    EXTERNAL
+    COMMUNITY
+    MEASURED
+    NOT_REPRODUCED_BY_LEONES
+
+Pueden orientar la generación de candidatos y el diseño experimental, pero no pueden convertirse en evidencia MEASURED de LEONES hasta ser reproducidos sobre el equipo objetivo.
+
+## 26.2 Por qué importa para ODS
+
+El mismo modelo y la misma GPU pueden cambiar de capacidad mediante:
+
+    runtime
+    kernel
+    cuantización
+    contexto
+    KV cache
+    MTP
+    visión
+    flags
+
+Por tanto, Capability Registry y Runtime Selector deben representar explícitamente estas dimensiones.
+
+El objetivo de ODS pasa a ser:
+
+    modelo + hardware + workload + capacidades + evidencia
+        |
+        v
+    perfil de ejecución
+        |
+        v
+    runtime / provider
+        |
+        v
+    ejecución física
+
+## 26.3 Relación con FATE + Edge0 + HOBBIT + HybriMoE
+
+Bonsai 2 refuerza el mismo principio arquitectónico desde otra capa:
+
+    FATE       -> predicción
+    Edge0      -> prefetch / streaming
+    HOBBIT     -> cache / adaptación de precisión
+    HybriMoE   -> scheduling CPU/GPU/RAM-NVMe
+    runtime    -> ejecución
+    benchmark  -> capacidad medida
+
+No son simplemente backends independientes. Son piezas potencialmente componibles de una estrategia de ejecución cuya eficacia debe medirse.
+
+## 26.4 Bucle de evidencia LEONES
+
+    evidencia externa
+          |
+          v
+    perfil candidato
+          |
+          v
+    experimento controlado
+          |
+          v
+    benchmark
+          |
+          v
+    evidencia medida
+          |
+          v
+    MANADA / conocimiento futuro del selector
+
+Se conserva la regla existente:
+
+    ESTIMATED != REPORTED != OBSERVED != MEASURED != REPRODUCED
+
+La arquitectura evoluciona así de la selección de modelos hacia la **selección de capacidad real**.
