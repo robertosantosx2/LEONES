@@ -159,3 +159,51 @@ def test_icd_ods_like_multidimensional_search_is_deterministic_and_measurement_p
     ]
     assert ranked[0]["measured_tps"] == 77.0
     assert ranked[0]["selection_status"] == "MEASURED"
+
+
+def test_cafe_adapter_validates_and_maps_ods_runtime_configuration():
+    from runtime_selection.cafe_llama import configuration_to_env
+
+    configuration = {
+        "runtime": "cafe-llama.cpp",
+        "model_ref": "bonsai-27b",
+        "context": 8192,
+        "gpu_layers": 99,
+        "kv_cache": "turbo4",
+        "flash_attention": True,
+        "offload": "host-moe",
+        "speculation": "draft-mtp",
+        "draft_tokens": 4,
+    }
+
+    env = configuration_to_env(configuration)
+
+    assert env["CAFE_LLAMA_ENABLED"] == "true"
+    assert env["MAX_CONTEXT"] == "8192"
+    assert env["LLAMA_ARG_N_GPU_LAYERS"] == "99"
+    assert env["LLAMA_ARG_CACHE_TYPE_K"] == "turbo4"
+    assert env["LLAMA_ARG_FLASH_ATTN"] == "on"
+    assert env["LLAMA_ARG_SPEC_TYPE"] == "draft-mtp"
+    assert env["LLAMA_ARG_SPEC_DRAFT_N_MAX"] == "4"
+    assert env["LLAMA_ARG_HOST_MOE"] == "on"
+
+
+def test_cafe_adapter_rejects_invalid_turbo_and_speculation_combinations():
+    from runtime_selection.cafe_llama import configuration_to_env
+
+    base = {
+        "runtime": "cafe-llama.cpp",
+        "model_ref": "m",
+        "context": 8192,
+        "kv_cache": "turbo4",
+        "flash_attention": False,
+        "speculation": "none",
+        "draft_tokens": 0,
+    }
+    with pytest.raises(ValueError, match="turbo KV"):
+        configuration_to_env(base)
+
+    base["flash_attention"] = True
+    base["speculation"] = "draft-mtp"
+    with pytest.raises(ValueError, match="draft tokens"):
+        configuration_to_env(base)
