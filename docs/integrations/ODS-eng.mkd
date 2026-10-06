@@ -12,6 +12,22 @@ ODS combines local inference, Open WebUI, gateways, RAG/search, voice, agents/wo
 
 ## Evolution
 
+### From model selection to real capability selection
+
+ODS should move beyond reducing selection to “which model fits this GPU?”. The target question is:
+
+> **Which inference configuration produces the best real capability on this GPU, for this workload and policy?**
+
+The decision object is an **Inference Profile** combining hardware, model, quantization, runtime, kernel, context, KV cache, MTP/speculative decoding, vision, slots, reasoning effort, flags and evidence.
+
+The external Bonsai 2 research demonstrates why: the same GPU and weights can move from ~26 tok/s to ~40 tok/s through a specialized kernel and to ~50 tok/s with MTP; context limits also change by VRAM tier. LEONES keeps these figures as external evidence until physical reproduction.
+
+See: [Bonsai 2 / small-GPU — external experimental evidence](Bonsai2-Small-GPU-EXTERNAL-EVIDENCE-eng.md).
+
+### Boundary contract
+
+LEONES provides prediction, experiment design, benchmarking and evidence. ODS provides execution, orchestration and runtime selection/composition. The loop is: LEONES → ODS → physical inference → measurement → LEONES.
+
 The integration should evolve toward a capability registry and adaptive runtime selector instead of assuming a single inference engine.
 
 **Classification:** primary ODS/LEONES integration.
