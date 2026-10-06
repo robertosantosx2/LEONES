@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motores de inferencia local para ODS — Análisis técnico comparativo</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2b;--panel2:#182238;--text:#edf2f7;--muted:#9eabc0;--line:#2a3852;--accent:#6ea8fe;--good:#62d394;--warn:#f3c969;--bad:#f08a8a}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#080d18,#0e1525 55%,#0b1020);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:1600px;margin:auto;padding:28px}
+h1{font-size:32px;line-height:1.15;margin:0 0 8px}h2{margin-top:34px}h3{margin:0 0 8px}
+.lead{color:var(--muted);max-width:1100px;font-size:17px}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.pill{border:1px solid var(--line);border-radius:999px;padding:5px 10px;background:#111a2c;color:#cdd7e7}
+.controls{position:sticky;top:0;z-index:5;background:rgba(11,16,32,.94);backdrop-filter:blur(10px);border:1px solid var(--line);padding:14px;border-radius:14px;margin:22px 0}
+.controls label{margin-right:8px;color:var(--muted)}select,input,button{background:#0e1728;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:4px}
+button{cursor:pointer}button.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}.card strong{color:#fff}
+table{width:100%;border-collapse:separate;border-spacing:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+th,td{padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left;font-size:13px}th{background:#172239;position:sticky;top:87px;z-index:2}tr:last-child td{border-bottom:0}td:first-child,th:first-child{min-width:160px;font-weight:650}
+.tag{display:inline-block;padding:2px 7px;border-radius:6px;background:#20304a;margin:2px;font-size:12px}
+.callout{border-left:4px solid var(--accent);background:#111b2e;padding:14px 17px;border-radius:8px;margin:14px 0}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 15px;margin:9px 0}summary{cursor:pointer;font-weight:700}
+.small{font-size:13px;color:var(--muted)}.score{font-size:20px;font-weight:800}
+.hidden{display:none!important}.compare{overflow:auto}
+pre.map{background:#0e1728;border:1px solid var(--line);border-radius:12px;padding:14px;overflow:auto;font-size:12.5px;line-height:1.4;color:#cdd7e7}
+@media(max-width:900px){main{padding:14px}th{position:static}table{font-size:12px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Motores de inferencia local para ODS</h1>
+<p class="lead">Análisis técnico comparativo orientado a <b>ODS</b>. Incluye el mapa completo de candidatos de prospección: generalistas, MoE/memoria/streaming, segunda línea (P2/P3) e integraciones experimentales. La unidad de decisión es <i>modelo + engine + configuración + hardware + objetivo + evidencia MEASURED</i> (<b>Inference Configuration Discovery</b>).</p>
+<div class="meta">
+<span class="pill">Actualizado: 2026-10-06</span>
+<span class="pill">Inferencia local</span>
+<span class="pill">MoE / offload / streaming</span>
+<span class="pill">Speculative / parallel decode</span>
+<span class="pill">OpenAI-compatible API</span>
+<span class="pill">ODS</span>
+</div>
+
+<div class="callout"><b>Tesis principal:</b> no son alternativas equivalentes. ODS debe modelar cada uno como <b>Inference Engine Candidate</b> (o como capacidad componible del Capability Registry), no como un selector binario. El núcleo actual de ODS se apoya en <b>llama.cpp / llama-server</b>; el resto compite o se compone según perfil de hardware, modelo y objetivo.</div>
+
+<div class="controls">
+<label>Filtrar por enfoque:</label>
+<select id="focus">
+<option value="all">Todos</option>
+<option value="general">Generalista</option>
+<option value="moe">MoE / memoria / streaming</option>
+<option value="speed">Decode / speculative</option>
+<option value="experimental">Experimental / P2-P3</option>
+<option value="ods">Valor para ODS</option>
+</select>
+<label>Mostrar:</label>
+<button id="allBtn" class="active">Todo</button>
+<button id="diffBtn">Sólo diferencias</button>
+<button id="commonBtn">Sólo similitudes</button>
+<input id="search" placeholder="Buscar dimensión o motor…">
+</div>
+
+<h2>Mapa de candidatos (prospección ODS)</h2>
+
+<h3>9.1 General inference</h3>
+<pre class="map">+------------------------------------------------------------------------+
+| GENERAL INFERENCE                                                      |
++------------------------------------------------------------------------+
+| llama.cpp / llama-server   general GGUF · núcleo actual ODS            |
+| cafe-llama.cpp             fork enriquecido (MoE offload, MTP, PLE)    |
+| vLLM                       high-throughput serving · ecosistema CUDA   |
+| SGLang                     serving / scheduling / optimized inference  |
+| LocalAI                    abstracción multi-backend                   |
+| llama-cpp-studio           control-plane multi-runtime (referencia)    |
++------------------------------------------------------------------------+</pre>
+
+<h3>9.2 MoE / memoria / streaming</h3>
+<pre class="map">+------------------------------------------------------------------------+
+| MoE / MEMORY / STREAMING                                               |
++------------------------------------------------------------------------+
+| Strata              MoE gigante en PC consumo (expert cache + MTP)     |
+| MoE-Infinity        CUDA + RAM/SSD offload + serving                   |
+| ramvamp             CPU + RAM + NVMe + MoE streaming                   |
+| WARP                MoE NVMe paging                                    |
+| Edge0               SSD streaming + routing prediction                 |
+| FATE                expert prediction + async prefetch                 |
+| HOBBIT              adaptive prefetch + expert cache + mixed precision |
+| HybriMoE            CPU/GPU scheduling + collaboration                 |
+| BigMoeLLM           MoE > VRAM + mmap/paging                           |
+| FrankenMoE-CUDA     NVMe → RAM → VRAM expert tiers                     |
++------------------------------------------------------------------------+</pre>
+
+<h3>9.3 Segunda línea / radar (P2 / P3)</h3>
+<pre class="map">+------------------------------------------------------------------------+
+| P2 / P3 / EXPERIMENTAL                                                 |
++------------------------------------------------------------------------+
+| SSD MoE · ExpertFlow · moe-hotcache · vllm-moe · vLLM CPU-offload RFC  |
+| DynaExQ · CPU/GPU collaborative inference · local-llm-npu · Atomic-Chat|
+| llama.cpp.35B.moe · moe-ssd-streaming-windows · expert-streaming-engine|
+| ds4-ssd · moe-edge-inference · moe-stream · MoE-Gen · Fiddler · oBeaver|
+| Forge · BaseRT · ES-MoE · weight-streaming                             |
++------------------------------------------------------------------------+</pre>
+
+<h3>9.4 Integraciones experimentales</h3>
+<pre class="map">+------------------------------------------------------------------------+
+| EXPERIMENTAL                                                           |
++------------------------------------------------------------------------+
+| AirLLM           layer/expert streaming                                |
+| TensorFold       CUDA/MLX + speculative/parallel decoding              |
+| Kimi K3 in C     model streaming + expert cache                        |
+| LaptopLLM        layer streaming + laptop UX                           |
+| Companion Hub    control/orquestación de aplicación local (referencia) |
++------------------------------------------------------------------------+</pre>
+
+<h2>Resumen ejecutivo — candidatos prioritarios</h2>
+<div class="grid">
+<div class="card" data-tier="general"><h3>llama.cpp / cafe-llama.cpp</h3><div class="score">★★★★★</div>
+<p><b>Núcleo actual ODS y baseline universal.</b> GGUF, cuantización, CPU/GPU híbrida, offload MoE, KV low-bit, MTP. cafe añade rutas Qwen3.8-Flash-Next (PLE, host MoE, expert cache).</p>
+<span class="tag">Generalista</span><span class="tag">Baseline ODS</span><span class="tag">ggml</span></div>
+
+<div class="card" data-tier="general"><h3>vLLM · SGLang</h3><div class="score">★★★★☆</div>
+<p><b>Serving de alto throughput en CUDA.</b> vLLM: continuous batching, paged KV, ecosistema maduro. SGLang: scheduling y runtime optimizado. Candidatos cuando ODS actúa como servidor multi-usuario/batch, no solo desktop single-user.</p>
+<span class="tag">High-throughput</span><span class="tag">CUDA</span><span class="tag">Serving</span></div>
+
+<div class="card" data-tier="general"><h3>LocalAI · llama-cpp-studio</h3><div class="score">★★★☆☆</div>
+<p><b>Referencias de abstracción y control-plane.</b> LocalAI: multi-backend. llama-cpp-studio: orquestación multi-runtime. Útiles como patrones arquitectónicos para el selector de ODS, no necesariamente como únicos engines de producción.</p>
+<span class="tag">Abstraction</span><span class="tag">Control-plane</span></div>
+
+<div class="card" data-tier="moe"><h3>Strata</h3><div class="score">★★★★★</div>
+<p><b>Especialista MoE gigante en PC de consumo.</b> Expert cache adaptativo, KV streaming, CPU+GPU en paralelo, MTP. Objetivo principal: Qwen3.8-Flash-Next.</p>
+<span class="tag">MoE consumo</span><span class="tag">Expert cache</span><span class="tag">CUDA/HIP</span></div>
+
+<div class="card" data-tier="moe"><h3>MoE-Infinity · ramvamp · WARP · FrankenMoE</h3><div class="score">★★★★☆</div>
+<p><b>Eje “hacer caber MoE”.</b> Offload host/SSD (MoE-Infinity), streaming CPU/NVMe (ramvamp), paging NVMe (WARP), tiers NVMe→RAM→VRAM (FrankenMoE-CUDA).</p>
+<span class="tag">Offload</span><span class="tag">NVMe</span><span class="tag">MoE</span></div>
+
+<div class="card" data-tier="moe"><h3>Edge0 · BigMoeLLM · moe-stream</h3><div class="score">★★★★☆</div>
+<p><b>SSD/flash en el camino crítico.</b> Demand-paged experts, routing prediction, modos resident/hybrid/streaming. Edge y “modelo > RAM”.</p>
+<span class="tag">SSD streaming</span><span class="tag">Edge</span></div>
+
+<div class="card" data-tier="moe"><h3>FATE · HybriMoE · HOBBIT</h3><div class="score">★★★☆☆</div>
+<p><b>Capacidades componibles</b> del Capability Registry: predicción de expertos, scheduling CPU/GPU, cache multidimensional y precisión adaptativa. No solo backends monolíticos.</p>
+<span class="tag">Prediction</span><span class="tag">Scheduling</span><span class="tag">Adaptive cache</span></div>
+
+<div class="card" data-tier="experimental"><h3>TensorFold</h3><div class="score">★★★★☆</div>
+<p><b>Acelerador de decode</b> (draft + verify). Fuerte en Apple Silicon (MLX) y CUDA. Entra en el espacio de búsqueda cuando el modelo cabe y el objetivo es maximizar tok/s.</p>
+<span class="tag">Speculative</span><span class="tag">MLX/CUDA</span></div>
+
+<div class="card" data-tier="experimental"><h3>AirLLM · Kimi K3 · LaptopLLM · Companion Hub</h3><div class="score">★★★☆☆</div>
+<p><b>Experimentales.</b> Layer/expert streaming (AirLLM, Kimi K3, LaptopLLM) y referencia de orquestación de aplicación local (Companion Hub). Radar de prospección; validar con evidencia MEASURED antes de producción.</p>
+<span class="tag">Experimental</span><span class="tag">Streaming</span></div>
+</div>
+
+<h2>Matriz técnica (motores prioritarios)</h2>
+<div class="compare"><table id="matrix">
+<thead>
+<tr>
+<th>Dimensión</th>
+<th>llama.cpp / cafe</th>
+<th>vLLM / SGLang</th>
+<th>Strata</th>
+<th>MoE-Infinity / ramvamp / WARP</th>
+<th>Edge0 / BigMoe / moe-stream</th>
+<th>TensorFold</th>
+<th>FATE / HybriMoE / HOBBIT</th>
+</tr>
+</thead>
+<tbody>
+<tr data-type="general"><td>Qué es</td>
+<td>Runtime GGUF/ggml; núcleo ODS. cafe: fork con MoE offload, MTP, PLE.</td>
+<td>Servidores de alto throughput (CUDA): continuous batching, paged KV, scheduling.</td>
+<td>Motor MoE especializado (llama.cpp/ggml) para Qwen3.8-Flash-Next en consumo.</td>
+<td>Offload/paging/streaming de expertos (host, NVMe, tiers de memoria).</td>
+<td>Expert streaming desde SSD/flash; edge y modelo > RAM.</td>
+<td>Runtime parallel/speculative decode (MLX/CUDA).</td>
+<td>Capacidades: predicción, prefetch, cache, scheduling heterogéneo.</td></tr>
