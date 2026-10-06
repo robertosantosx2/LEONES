@@ -1,0 +1,4 @@
+ument.querySelectorAll('.controls button').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active')}
+</script>
+</body>
+</html>
