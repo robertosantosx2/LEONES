@@ -1,48 +1,13 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Local inference engines for ODS — Technical comparative analysis</title>
-<style>
-:root{--bg:#0b1020;--panel:#121a2b;--panel2:#182238;--text:#edf2f7;--muted:#9eabc0;--line:#2a3852;--accent:#6ea8fe;--good:#62d394;--warn:#f3c969;--bad:#f08a8a}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#080d18,#0e1525 55%,#0b1020);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-main{max-width:1600px;margin:auto;padding:28px}
-h1{font-size:32px;line-height:1.15;margin:0 0 8px}h2{margin-top:34px}h3{margin:0 0 8px}
-.lead{color:var(--muted);max-width:1100px;font-size:17px}
-.meta{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.pill{border:1px solid var(--line);border-radius:999px;padding:5px 10px;background:#111a2c;color:#cdd7e7}
-.controls{position:sticky;top:0;z-index:5;background:rgba(11,16,32,.94);backdrop-filter:blur(10px);border:1px solid var(--line);padding:14px;border-radius:14px;margin:22px 0}
-.controls label{margin-right:8px;color:var(--muted)}select,input,button{background:#0e1728;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:4px}
-button{cursor:pointer}button.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:17px}.card strong{color:#fff}
-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-th,td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left;font-size:13.5px}th{background:#172239;position:sticky;top:87px;z-index:2}tr:last-child td{border-bottom:0}td:first-child,th:first-child{min-width:180px;font-weight:650}
-.tag{display:inline-block;padding:2px 7px;border-radius:6px;background:#20304a;margin:2px;font-size:12px}
-.callout{border-left:4px solid var(--accent);background:#111b2e;padding:14px 17px;border-radius:8px;margin:14px 0}
-details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 15px;margin:9px 0}summary{cursor:pointer;font-weight:700}
-.small{font-size:13px;color:var(--muted)}.score{font-size:22px;font-weight:800}
-.hidden{display:none!important}
-.compare{overflow:auto}
-@media(max-width:900px){main{padding:14px}th{position:static}table{font-size:12px}}
-</style>
-</head>
+<html lang="en"><head><meta charset="utf-8"><title>Local inference engines for ODS</title>
+<style>body{font-family:system-ui;background:#0b1020;color:#edf2f7;padding:2rem;max-width:720px;margin:auto}a{color:#6ea8fe}</style></head>
 <body>
-<main>
 <h1>Local inference engines for ODS</h1>
-<p class="lead">Technical comparative analysis oriented to <b>ODS</b>. The question is not which is “best” in the abstract, but which inference problem each engine solves and what role it should play in an architecture that discovers the best real configuration for the available hardware (<i>Inference Configuration Discovery</i>).</p>
-<div class="meta">
-<span class="pill">Updated: 2026-10-06</span>
-<span class="pill">Local inference</span>
-<span class="pill">MoE / offload / streaming</span>
-<span class="pill">Speculative / parallel decode</span>
-<span class="pill">OpenAI-compatible API</span>
-<span class="pill">ODS</span>
-</div>
-
-<div class="callout"><b>Main thesis:</b> they are not equivalent alternatives. <b>cafe-llama.cpp</b> (and the ggml/llama.cpp ecosystem) is the generalist platform and baseline; <b>Strata</b> is an extreme specialization for huge MoE models on consumer hardware (expert cache + RAM/CPU + SSD + MTP); <b>TensorFold</b> is a decode accelerator (parallel/speculative) focused on Apple Silicon and CUDA; <b>MoE-Infinity</b>, <b>ramvamp</b>, <b>Edge0</b>, <b>BigMoeOnEdge</b>, <b>FrankenMoE-CUDA</b>, <b>moe-stream</b> and related projects attack the same “fit MoE models that do not fit” problem with different memory hierarchies and expert prediction; <b>FATE / HybriMoE / HOBBIT</b> contribute composable capabilities (prediction, CPU/GPU scheduling, adaptive cache). ODS should model them as <b>Inference Engine Candidates</b> + execution strategies, not as a binary selector.</div>
-
-<p class="small">Full interactive matrix, decision trees, and sources are in the complete document. This upload ensures the English version is present in LEONES docs/integrations. Local full file: artifacts.</p>
-<p><a href="https://github.com/robertosantosx2/LEONES/blob/ods-evolution/docs/integrations/cafe-llamacpp-vs-strata-vs-tensorfold-2026-10-06.html">Spanish version</a></p>
-</main>
-</body>
-</html>
+<p>Full technical comparative analysis (maps 9.1–9.4, matrix, ODS decision).</p>
+<ul>
+<li><a href="https://github.com/robertosantosx2/LEONES/blob/ods-evolution/docs/integrations/inference-engines-ods/index-en.html">Open EN loader (assembles full document)</a></li>
+<li><a href="https://github.com/robertosantosx2/LEONES/tree/ods-evolution/docs/integrations/inference-engines-ods">Parts folder (en-0/1.txt)</a></li>
+<li><a href="https://github.com/robertosantosx2/LEONES/blob/ods-evolution/docs/integrations/cafe-llamacpp-vs-strata-vs-tensorfold-2026-10-06.html">Spanish version</a></li>
+</ul>
+<p>Full interactive document is also in the local analysis artifact.</p>
+</body></html>
