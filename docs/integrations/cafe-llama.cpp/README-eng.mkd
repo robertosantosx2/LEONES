@@ -1,0 +1,62 @@
+# cafe-llama.cpp integration proposal for ODS (English summary)
+
+**Branch:** `ods-evolution` / `feat/cafe-llama-cpp-integration`  
+**Project:** LEONES  
+**Date:** 2026-10-06  
+**Status:** Architecture study — ready for downstream PR to ODS after review  
+**Upstream:** https://github.com/quimmedes/cafe-llama.cpp
+
+## Executive summary
+
+cafe-llama.cpp is a llama.cpp fork focused on real capacity for large MoE models and long contexts on modest hardware. Key additions:
+
+- First-class MoE offload to pinned host RAM (`-hmoe`), system RAM (`-cmoe`) or SSD streaming (`-ssd`)
+- Turbo low-bit KV cache (turbo4/3/2) with mandatory flash-attention
+- Qwen 3.8 Flash Next PLE / N-gram table controls
+- Strong MTP speculative decoding (`--spec-type draft-mtp`, recommended `--spec-draft-n-max 4`)
+- Native safetensors loading (no intermediate GGUF)
+- Multi-platform prebuilt binaries
+
+**Role in ODS:** optional advanced runtime that remains API- and GGUF-compatible with the existing `llama-server`. It expands the configuration space that Inference Configuration Discovery (ICD) can explore; it does not replace the baseline runtime.
+
+## Integration shape
+
+```text
+extensions/services/cafe-llama/
+├── manifest.yaml
+├── docker-compose.yml / native binary
+├── entrypoint.sh
+└── README.md
+```
+
+Expose priority flags in Dashboard advanced settings and `LLAMA_ARG_*` / Model Switchboard:
+
+- `-ngl`, `-hmoe`/`-nhmoe`, `-cmoe`/`-ncmoe`, `-ssd`/`-nssd`
+- `-c`, `-ctk`/`-ctv` (incl. turbo*), `-fa`
+- `--spec-type`, `--spec-draft-n-max`, `-md`
+- `--no-ngram` / `--ngram-ssd`
+- batch / threads / parallel
+
+Activation: `ods enable cafe-llama` or runtime selector per model/profile.
+
+## Evidence rules (LEONES)
+
+Only **MEASURED** results on target hardware may be used to claim local performance. Upstream numbers and community posts are **REPORTED** or **OBSERVED**.
+
+## Relation to other runtimes
+
+| Runtime | Role |
+|---------|------|
+| llama-server | Baseline, wide compatibility |
+| **cafe-llama.cpp** | Advanced MoE / Turbo KV / MTP drop-in |
+| TensorFold | Family-specific kernels + exact speculative |
+| Strata / heterogeneous | >VRAM placement |
+| Bonsai-style kernels | Extreme quant evidence |
+
+## Next steps
+
+1. Land this document in LEONES (this PR).
+2. After review, open a focused PR against Osmantic/ODS (or working fork) implementing the optional service and Dashboard parameter surface.
+3. Add recommended hardware profiles and ICD candidate generation in follow-up work.
+
+Full Spanish proposal: see `README.md` in this directory.
