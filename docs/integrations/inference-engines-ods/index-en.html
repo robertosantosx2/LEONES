@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Loading ODS analysis…</title></head>
+<body><p id="s">Loading full document…</p>
+<script>
+const parts=2;
+const base="https://raw.githubusercontent.com/robertosantosx2/LEONES/ods-evolution/docs/integrations/inference-engines-ods/";
+async function go(){
+  let t="";
+  for(let i=0;i<parts;i++){
+    const r=await fetch(base+"en-"+i+".txt");
+    if(!r.ok) throw new Error(r.status+" "+base+"en-"+i+".txt");
+    t+=await r.text();
+  }
+  document.open();document.write(t);document.close();
+}
+go().catch(e=>{document.getElementById("s").textContent="Error: "+e+" — use local artifact or raw parts.";});
+</script></body></html>
