@@ -483,6 +483,17 @@ Research on evolving ODS into a multi-provider hybrid inference layer, with free
 - [Unsloth — ODS Post-Training Service Provider — English](post-training/UNSLOTH.md)
 - [Unsloth — proveedor del servicio Post-Training de ODS — Español](post-training/UNSLOTH-ES.md)
 
+## Evidencia experimental externa: Bonsai 2 / small-GPU
+
+La investigación de sudoingX sobre Bonsai 2 se incorpora como **fuente externa de evidencia experimental**, no como dependencia. Refuerza un cambio arquitectónico de LEONES + ODS: pasar de preguntar «qué modelo cabe en mi GPU» a determinar «qué configuración de inferencia produce la mejor capacidad real en mi GPU».
+
+La unidad de decisión pasa a ser el **Inference Profile**: hardware + modelo + cuantización + runtime + kernel + contexto + KV + MTP + visión + flags + mediciones.
+
+- [Bonsai 2 27B / small-GPU — evidencia externa](Bonsai2-Small-GPU-EXTERNAL-EVIDENCE.md)
+- [Bonsai 2 27B / small-GPU — external evidence (English)](Bonsai2-Small-GPU-EXTERNAL-EVIDENCE-eng.md)
+
+Los resultados publicados se clasifican como EXTERNAL / COMMUNITY / MEASURED / NOT_REPRODUCED_BY_LEONES. Solo una reproducción física controlada puede convertirse en MEASURED de LEONES.
+
 ## Arquitectura completa LEONES + ODS
 
 - [Arquitectura completa LEONES + ODS — estado actual y evolución propuesta](ODS-LEONES-COMPLETE-ARCHITECTURE.md)
