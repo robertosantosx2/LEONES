@@ -1999,3 +1999,136 @@ La architecture actual de ODS, sus servicios, capas de Compose, CLI, registro de
 ODS also explicitly documents `local`, `cloud`, and `hybrid` modes, service-based extensibility, and the use of LiteLLM as a gateway. citeturn0search6
 
 Este documento añade sobre esa architecture actual la **capa evolutiva propuesta por la investigación LEONES**: Capability Registry, Runtime Selector/Optimizer, Execution Strategy/Composition, Inference Fabric y Post-Training Fabric.
+
+
+---
+
+# 26. Inference Profile: from model fit to real capability
+
+The Bonsai 2 small-GPU external evidence adds a concrete methodological requirement to the architecture.
+
+LEONES + ODS must not ask only:
+
+> Which model fits my GPU?
+
+The target question is:
+
+> **Which inference configuration produces the best real capability on my GPU, for this workload and policy?**
+
+The decision unit is therefore an **Inference Profile**:
+
+    hardware
+    + model
+    + representation / quantization
+    + runtime / version
+    + kernel / version
+    + GPU layers
+    + context
+    + KV cache
+    + MTP / speculative decoding
+    + vision
+    + parallel slots
+    + reasoning effort
+    + reproducible flags
+    + evidence
+
+This changes the architecture from a model-fit selector into a capability selector.
+
+    hardware + workload
+            |
+            v
+    candidate models
+            |
+            v
+    candidate inference profiles
+            |
+            v
+    estimated capability
+            |
+            v
+    physical benchmark
+            |
+            v
+    measured capability
+            |
+            v
+    best real configuration
+
+## 26.1 External evidence contract
+
+The sudoingX Bonsai 2 research is incorporated as an external experimental evidence source, not as a structural dependency.
+
+Its published results are stored as:
+
+    EXTERNAL
+    COMMUNITY
+    MEASURED
+    NOT_REPRODUCED_BY_LEONES
+
+They can guide candidate generation and experiment design, but they cannot become LEONES MEASURED evidence until reproduced on the target machine.
+
+## 26.2 Why this matters for ODS
+
+The same model and GPU can change capability through:
+
+    runtime
+    kernel
+    quantization
+    context
+    KV cache
+    MTP
+    vision
+    flags
+
+Therefore the Capability Registry and Runtime Selector should represent these dimensions explicitly.
+
+The ODS target becomes:
+
+    model + hardware + workload + capabilities + evidence
+        |
+        v
+    execution profile
+        |
+        v
+    runtime / provider
+        |
+        v
+    physical execution
+
+## 26.3 Relation to FATE + Edge0 + HOBBIT + HybriMoE
+
+Bonsai 2 reinforces the same architectural principle at another layer:
+
+    FATE       -> prediction
+    Edge0      -> prefetch / streaming
+    HOBBIT     -> cache / precision adaptation
+    HybriMoE   -> CPU/GPU/RAM-NVMe scheduling
+    runtime    -> execution
+    benchmark  -> measured capability
+
+The result is not a collection of independent backends. It is a composable execution strategy whose effectiveness must be measured.
+
+## 26.4 LEONES evidence loop
+
+    external evidence
+          |
+          v
+    candidate profile
+          |
+          v
+    controlled experiment
+          |
+          v
+    benchmark
+          |
+          v
+    measured evidence
+          |
+          v
+    MANADA / future selector knowledge
+
+This preserves the existing rule:
+
+    ESTIMATED != REPORTED != OBSERVED != MEASURED != REPRODUCED
+
+The architecture therefore evolves from model selection toward **real capability selection**.
