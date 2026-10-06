@@ -102,3 +102,12 @@ Instalación explícita, si se desea hacerla fuera de la TUI:
 > **Los proveedores pueden proponer. FitLLM puede recomendar. El usuario elige. Solo una ejecución controlada sobre el equipo real puede producir una medición LEONES.**
 
 Web: `web/estado.html` · `web/rc4.html` · `web/inicio-rapido.html` · `web/operacion.html`
+
+
+## Evolución: selección de capacidad real
+
+La regla de decisión de LEONES se amplía: no basta con preguntar qué modelo cabe en el hardware. La pregunta objetivo es **qué configuración de inferencia produce la mejor capacidad real en ese hardware, para el workload y la política elegidos**.
+
+La configuración incluye modelo, cuantización, runtime, kernel, contexto, KV cache, MTP/speculative decoding, visión, slots, reasoning effort, flags y evidencia. Las fuentes externas pueden aportar evidencia REPORTED/MEASURED externa, pero solo una ejecución física controlada produce MEASURED de LEONES.
+
+Esta regla queda incorporada en la evolución LEONES + ODS y se ejemplifica con la evidencia externa de Bonsai 2.
