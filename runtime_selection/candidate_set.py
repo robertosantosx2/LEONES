@@ -27,6 +27,8 @@ def build_candidate_set(hardware: dict[str, Any], raw_candidates: list[dict[str,
             "active_parameters": item.get("active_parameters"), "runtime": item.get("runtime"),
             "source": item_source or source, "source_version": item.get("source_version", source_version),
             "evidence_level": item.get("evidence_level", "estimated"), "selection_status": "CANDIDATE",
+            "configuration": item.get("configuration"),
+            "configuration_id": item.get("configuration_id"),
             "execution_authorized": False, "measurement_required": True,
         })
     return {
