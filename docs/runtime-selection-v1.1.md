@@ -9,16 +9,24 @@ selector
    ↓
 runtime-selection.v1.1
    ↓
-runtime registry + capability match
+model + runtime capability match
+   ↓
+Inference Configuration Discovery (ICD)
+   ↓
+candidate configuration plan
    ↓
 trusted adapter
    ↓
 runner
    ↓
-runtime-benchmark.v1
+runtime-benchmark.v1.1
    ↓
 evidence / Router
 ```
+
+## Inference Configuration Discovery
+
+ICD discovers the best reproducible inference configuration for a hardware + model + workload combination. Candidate variables include runtime, quantization, KV-cache, context, offload, speculative decoding, MTP, draft depth, batch and parallelism. The selector produces declarative candidates; it does not execute runtime commands. Only the benchmark layer can turn a candidate into measured performance evidence.
 
 ## Boundary rules
 
@@ -27,7 +35,10 @@ evidence / Router
 3. A registry descriptor declares capabilities; it does not prove execution availability.
 4. A trusted adapter converts a validated selection plan into runtime-specific execution details.
 5. Runtime-specific execution details MUST NOT be treated as benchmark evidence.
-6. `runtime-benchmark.v1` is the only layer that may produce a runtime performance measurement.
+6. ICD candidates are not evidence until executed and measured.
+7. `estimated_tps` is an estimate and MUST remain distinct from `measured_tps`.
+8. Runtime-specific gates remain authoritative for that runtime.
+6. `runtime-benchmark.v1.1` is the only layer that may produce a runtime performance measurement.
 7. `estimated_tps` is an estimate and MUST remain distinct from `measured_tps`.
 8. Runtime-specific gates, such as FreeToken's eligibility gate, remain authoritative for that runtime.
 
