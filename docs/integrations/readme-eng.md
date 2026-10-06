@@ -463,3 +463,14 @@ Research on informing users of projected and actual spend when ODS uses remote/p
 - [Cost awareness para IA híbrida — Español](LLM-COST-AWARENESS-ES.md)
 
 The research proposes a **Cost Envelope + Cost Ledger**, including price provenance, pre-request estimates, actual cost, cache/reasoning, retries/fallbacks, budgets, and strict separation between provider spend and local operational cost.
+\n## External experimental evidence: Bonsai 2 / small-GPU
+
+The sudoingX Bonsai 2 research is incorporated as an **external experimental evidence source**, not as a dependency. It reinforces a key LEONES + ODS architectural change: move from asking “which model fits my GPU?” to determining “which inference configuration produces the best real capability on my GPU?”.
+
+The decision unit becomes the **Inference Profile**: hardware + model + quantization + runtime + kernel + context + KV + MTP + vision + flags + measurements.
+
+- [Bonsai 2 27B / small-GPU — external evidence](Bonsai2-Small-GPU-EXTERNAL-EVIDENCE-eng.md)
+- [Bonsai 2 27B / small-GPU — evidencia externa](Bonsai2-Small-GPU-EXTERNAL-EVIDENCE.md)
+
+Published results are classified as EXTERNAL / COMMUNITY / MEASURED / NOT_REPRODUCED_BY_LEONES. Only controlled physical reproduction can become LEONES MEASURED evidence.
+
