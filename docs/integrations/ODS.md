@@ -69,3 +69,20 @@ con versión/ref, hardware, modelo, cuantización, runtime, servicios y health, 
 ## Fases
 
 ODS-0 investigación → ODS-1 contrato → ODS-2 preflight → ODS-3 instalación → ODS-4 health → ODS-5 benchmark → ODS-6 telemetría consentida → ODS-7 Atlas → ODS-8 E2E.
+
+
+## De ajuste del modelo a capacidad real
+
+ODS debe dejar de reducir la selección a qué modelo cabe en una GPU. La pregunta objetivo es:
+
+> **¿Qué configuración de inferencia produce la mejor capacidad real en esta GPU, para este workload y esta política?**
+
+El objeto de decisión es un **Inference Profile** que combina hardware, modelo, cuantización, runtime, kernel, contexto, KV cache, MTP/speculative decoding, visión, slots, reasoning effort, flags y evidencia.
+
+La investigación externa de Bonsai 2 se incorpora como evidencia experimental externa, no como dependencia. Sus mediciones publicadas sirven para generar candidatos y diseñar experimentos; solo se convierten en evidencia MEASURED de LEONES tras reproducción física.
+
+La frontera de ejecución queda:
+
+    LEONES -> predicción / experimento / evidencia
+         -> ODS -> ejecución / orquestación
+         -> inferencia física -> medición -> LEONES
