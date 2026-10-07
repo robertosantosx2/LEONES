@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-06T11:19:34.716650+00:00",
+  "generated_at": "2026-10-07T11:07:14.781671+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -32,7 +32,7 @@
       "priority": "high",
       "status": "reachable",
       "http_status": 200,
-      "final_url": "https://framagit.org/public/projects",
+      "final_url": "https://status.framasoft.org/incidents/1101/",
       "authentication_configured": false
     },
     {
@@ -52,9 +52,9 @@
       "url": "https://savannah.gnu.org/",
       "kind": "forge",
       "priority": "high",
-      "status": "error",
-      "error_type": "URLError",
-      "message": "<urlopen error [Errno 101] Network is unreachable>",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://savannah.gnu.org/",
       "authentication_configured": false
     },
     {
