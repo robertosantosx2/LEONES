@@ -205,6 +205,7 @@ def _client_with_callbacks(apply_environment, recreate_services):
         apply_environment=apply_environment,
         recreate_services=recreate_services,
         can_apply=lambda: True,
+        get_measurements=lambda model_id, workload_id: [],
     ))
     app.dependency_overrides[verify_api_key] = lambda: "test-api-key"
     return TestClient(app)
