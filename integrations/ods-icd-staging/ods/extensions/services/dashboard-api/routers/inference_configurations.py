@@ -64,11 +64,24 @@ def create_inference_configuration_router(
             )
             capabilities = CAFE_CAPABILITIES if runtime == CAFE_RUNTIME_ID else None
             try:
-                candidates.extend(discover_configurations(
+                discovered = discover_configurations(
                     model=model,
                     runtime_profiles=[profile],
                     capabilities=capabilities,
-                ))
+                )
+                if runtime == CAFE_RUNTIME_ID:
+                    # Capability products include combinations that are
+                    # individually supported but invalid together. Filter
+                    # those before exposing them to the Dashboard.
+                    compatible = []
+                    for candidate in discovered:
+                        try:
+                            validate_cafe_configuration(candidate.configuration)
+                        except (TypeError, ValueError):
+                            continue
+                        compatible.append(candidate)
+                    discovered = compatible
+                candidates.extend(discovered)
             except (TypeError, ValueError) as exc:
                 raise HTTPException(status_code=422, detail=str(exc)) from exc
         # Stable order and exact signature deduplication are provided by the
