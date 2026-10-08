@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import InferenceConfigurationPanel from './InferenceConfigurationPanel'
 import { useInferenceConfigurations } from '../../hooks/useInferenceConfigurations'
 
@@ -48,6 +48,7 @@ function hookState(overrides = {}) {
 
 describe('InferenceConfigurationPanel', () => {
   beforeEach(() => vi.clearAllMocks())
+  afterEach(() => cleanup())
 
   it('renders discovered configuration fields and the unmeasured notice', () => {
     useInferenceConfigurations.mockReturnValue(hookState())
