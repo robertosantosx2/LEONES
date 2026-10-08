@@ -61,6 +61,7 @@ def harness():
         apply_environment=apply_environment,
         recreate_services=recreate_services,
         can_apply=lambda: True,
+        get_measurements=lambda model_id, workload_id: [],
     ))
     app.dependency_overrides[verify_api_key] = lambda: "test-api-key"
     return TestClient(app), applied, recreated
@@ -76,6 +77,7 @@ def test_get_discovers_configs_and_never_claims_measurements(harness):
     assert body["configurations"]
     assert body["measurement_required"] is True
     assert body["execution_authorized"] is False
+    assert body["ranked_measured_configurations"] == []
     for item in body["configurations"]:
         assert item["measurement_required"] is True
         assert item["execution_authorized"] is False
