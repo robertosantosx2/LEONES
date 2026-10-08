@@ -1,8 +1,57 @@
 from pathlib import Path
 import sys
+import types
 
 API_ROOT = Path(__file__).resolve().parents[1] / "ods" / "extensions" / "services" / "dashboard-api"
 sys.path.insert(0, str(API_ROOT))
+
+
+def _stub_module(name, **attributes):
+    module = types.ModuleType(name)
+    for key, value in attributes.items():
+        setattr(module, key, value)
+    sys.modules[name] = module
+    return module
+
+
+class _Dummy:
+    pass
+
+
+class _AgentClientError(Exception):
+    pass
+
+
+async def _request_agent_json(*args, **kwargs):
+    return {}
+
+
+# This evidence-store unit test exercises the real staged helpers.py functions
+# without importing the entire ODS service graph. It runs in its own pytest
+# process, so these minimal dependency stubs cannot leak into other test files.
+_stub_module(
+    "config",
+    SERVICES={}, INSTALL_DIR="/tmp/ods-icd-test", DATA_DIR="/tmp/ods-icd-test",
+    LLM_BACKEND="llama-server", EXTENSIONS_DIR="/tmp/ods-icd-test/extensions",
+    GPU_BACKEND="cpu", LIBRARY_MANAGEABLE_BUILTINS=set(),
+    load_extension_manifests=lambda: [], read_live_env_value=lambda *args, **kwargs: None,
+)
+_stub_module("env_values", parse_env_value=lambda value: value)
+_stub_module(
+    "host_metrics",
+    apple_host_metrics=lambda: {}, linux_scope=lambda: "linux",
+    windows_host_metrics=lambda: {},
+)
+_stub_module(
+    "host_agent_client",
+    AgentClientError=_AgentClientError, AgentHTTPError=_AgentClientError,
+    async_request_json=_request_agent_json,
+)
+_stub_module(
+    "models", ServiceStatus=_Dummy, DiskUsage=_Dummy, ModelInfo=_Dummy,
+    BootstrapStatus=_Dummy,
+)
+_stub_module("service_health_dns", ServiceHealthResolver=_Dummy)
 
 import helpers
 
