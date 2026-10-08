@@ -172,6 +172,9 @@ def rank_measured_candidates(
         item = dict(candidate)
         item["measured_tps"] = float(tps)
         item["selection_status"] = "MEASURED"
+        item["workload_id"] = measurement.get("workload_id")
+        item["measured_at"] = measurement.get("updated_at")
+        item["sample_count"] = measurement.get("sample_count")
         ranked.append(item)
     ranked.sort(key=lambda item: (-item["measured_tps"], str(item["configuration_id"])))
     return ranked
