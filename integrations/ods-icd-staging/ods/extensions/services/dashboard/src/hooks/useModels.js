@@ -654,8 +654,10 @@ export function useModels({observe=true} = {}) {
         'Failed to benchmark model',
       )
       await fetchModels()
+      return true
     } catch (err) {
       setMutationError(err.message)
+      return false
     } finally {
       finishAction(action.token)
     }
