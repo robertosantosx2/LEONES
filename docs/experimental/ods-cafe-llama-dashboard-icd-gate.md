@@ -81,9 +81,10 @@ This branch is now the working area for all further ODS ICD work until the upstr
 
 - Branch: `ods-cafe-llama-icd-dashboard` (based on `ods-evolution`).
 - Staged ICD core and cafe adapter, with context mapping corrected to `CTX_SIZE`.
-- Added a callback-injected FastAPI router for GET discovery and POST apply, including candidate signature validation, runtime-specific constraints, and fail-closed reporting when environment update or service recreation is not confirmed.
+- Added a callback-injected FastAPI router for GET discovery and POST apply, including candidate signature validation, runtime-specific constraints, exact-workload measured ranking, and fail-closed reporting when environment update or service recreation is not confirmed.
+- Staged a merge (not blind replacement) of the existing benchmark route and performance store so measured records are partitioned by exact `configuration_id` and workload ID; model-level rankings exclude ICD-specific records.
 - Added staged Dashboard hook and parameter panel, stylesheet, and EN/ES/ZH locale strings.
-- Added backend route contract tests and a transfer/integration checklist.
+- Added backend route contract tests, exact configuration/workload evidence-store tests, and a transfer/integration checklist.
 
 **Important status distinction:** these artifacts are committed in LEONES staging only. They are not yet installed into ODS, not wired into the ODS FastAPI app or `Models.jsx`, and the staged test suite has not been executed in the ODS dependency/runtime environment. Do not change ICD-06..10 or ICD-14 to PASS until those steps and tests are completed in ODS.
 
@@ -91,6 +92,6 @@ Next implementation gates:
 1. Run the staged API tests in a controlled environment and fix any test/runtime incompatibilities.
 2. Complete the ODS main.py wiring with the actual hardware-compatible profile resolver, existing host-agent env merge, mode/lifecycle guards, and exact service allowlist.
 3. Integrate the panel into the existing Models page and merge locale keys into the canonical ODS i18n branch.
-4. Add tests for env update failure and service recreation failure/partial apply; frontend tests and build.
+4. Run the staged API/evidence tests, add frontend tests/build, and verify env update failure and service recreation failure/partial apply in the ODS test environment.
 5. Validate cache/offload/speculation env keys against the exact cafe-llama build and ODS env schema.
 6. Transfer the finished patch from this LEONES staging branch into the ODS fork branch, run the full focused suites, then open the upstream PR when GitHub write access is restored.
