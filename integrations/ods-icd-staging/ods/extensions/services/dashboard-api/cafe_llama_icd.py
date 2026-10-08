@@ -39,7 +39,23 @@ def validate_cafe_configuration(configuration: dict[str, Any]) -> None:
     if configuration.get("runtime") != RUNTIME_ID:
         raise ValueError("configuration is not a cafe-llama.cpp configuration")
 
+    kernel = str(configuration.get("kernel") or "baseline").lower()
+    if kernel not in CAPABILITIES["kernel"]:
+        raise ValueError("kernel has no verified ODS environment mapping")
     kv = str(configuration.get("kv_cache") or "").lower()
+    if kv not in CAPABILITIES["kv_cache"]:
+        raise ValueError("KV cache value is not supported by the current ODS schema")
+    offload = str(configuration.get("offload") or "none").lower()
+    if offload not in CAPABILITIES["offload"]:
+        raise ValueError("offload mode has no verified ODS environment mapping")
+    speculation_value = str(configuration.get("speculation") or "none").lower()
+    if speculation_value not in CAPABILITIES["speculation"]:
+        raise ValueError("speculation mode is not supported by this adapter")
+    draft_value = configuration.get("draft_tokens", 0)
+    if draft_value not in CAPABILITIES["draft_tokens"]:
+        raise ValueError("draft token depth is not supported by this adapter")
+    if type(configuration.get("flash_attention")) is not bool:
+        raise ValueError("flash_attention must be a boolean")
     if kv.startswith("turbo") and configuration.get("flash_attention") is not True:
         raise ValueError("turbo KV requires flash attention")
 
