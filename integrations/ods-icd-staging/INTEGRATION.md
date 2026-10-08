@@ -49,8 +49,34 @@ async def _icd_recreate_services(service_ids):
     _clear_settings_caches()
     return response
 
-# _icd_compatible_profiles must call the same hardware/runtime-profile matcher
-# used by ODS model selection. It must not simply return all model profiles.
+import platform
+from model_selection import matching_runtime_profile
+
+def _icd_compatible_profiles(model):
+    gpu = get_gpu_info()
+    ram = get_ram_metrics()
+    profile = matching_runtime_profile(
+        model,
+        backend=getattr(gpu, "gpu_backend", "cpu") if gpu else "cpu",
+        memory_type=getattr(gpu, "memory_type", "system") if gpu else "system",
+        vram_mb=getattr(gpu, "memory_total_mb", 0) if gpu else 0,
+        ram_gb=(ram or {}).get("total_gb"),
+        host_arch=platform.machine(),
+    )
+    return [profile] if profile else []
+
+def _icd_can_apply_runtime_configuration():
+    mode_denial = models_router._model_activation_mode_denial(
+        ODS_MODE_EFFECTIVE, models_router._configured_ods_mode(), LLM_BACKEND,
+    )
+    if mode_denial is not None or models_router.pixel_stream_active():
+        return False
+    if models_router._windows_hosted_runtime() and not models_router._model_management().get("canActivate"):
+        return False
+    # Also reject when ODS reports a model/bootstrap lifecycle operation active.
+    # Bind this to the branch's existing lifecycle status source before merge.
+    return not _model_lifecycle_busy()
+
 icd_router = create_inference_configuration_router(
     find_model=models_router._find_loadable_model,
     get_runtime_profiles=_icd_compatible_profiles,
