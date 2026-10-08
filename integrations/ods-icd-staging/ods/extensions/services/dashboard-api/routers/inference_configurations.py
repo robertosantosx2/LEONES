@@ -10,7 +10,7 @@ from __future__ import annotations
 import inspect
 from typing import Any, Callable, Iterable
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from cafe_llama_icd import (
@@ -23,6 +23,7 @@ from inference_configuration import (
     ConfigurationCandidate,
     configuration_signature,
     discover_configurations,
+    rank_measured_candidates,
     validate_configuration,
 )
 from security import verify_api_key
@@ -35,6 +36,7 @@ def create_inference_configuration_router(
     apply_environment: Callable[[dict[str, str]], Any],
     recreate_services: Callable[[list[str]], Any],
     can_apply: Callable[[], bool],
+    get_measurements: Callable[[str, str], Iterable[dict[str, Any]]],
 ) -> APIRouter:
     """Build ICD routes around existing ODS lifecycle functions.
 
@@ -101,14 +103,20 @@ def create_inference_configuration_router(
     @router.get("/api/models/{model_id}/inference-configurations")
     def list_inference_configurations(
         model_id: str,
+        workload_id: str = Query(default="dashboard-local-benchmark-v1:max_tokens=128"),
         api_key: str = Depends(verify_api_key),
     ) -> JSONResponse:
         model = _model_or_404(model_id)
         candidates = _discover(model)
+        candidate_dicts = [candidate.to_dict() for candidate in candidates]
+        measurements = list(get_measurements(model_id, workload_id) or [])
+        ranked = rank_measured_candidates(candidate_dicts, measurements)
         return JSONResponse({
             "schema_version": "inference-configuration-discovery.v1",
             "model_id": model_id,
-            "configurations": [candidate.to_dict() for candidate in candidates],
+            "workload_id": workload_id,
+            "configurations": candidate_dicts,
+            "ranked_measured_configurations": ranked,
             "measurement_required": True,
             "execution_authorized": False,
         }, headers={"Cache-Control": "no-store"})
