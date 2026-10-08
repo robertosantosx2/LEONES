@@ -73,9 +73,14 @@ def _icd_can_apply_runtime_configuration():
         return False
     if models_router._windows_hosted_runtime() and not models_router._model_management().get("canActivate"):
         return False
-    # Also reject when ODS reports a model/bootstrap lifecycle operation active.
-    # Bind this to the branch's existing lifecycle status source before merge.
-    return not _model_lifecycle_busy()
+    # Fail closed when host-agent status is unavailable or a model/bootstrap
+    # lifecycle operation is active.
+    status = models_router._get_agent_model_status()
+    if status is None or models_router._model_lifecycle_from_agent_status(status):
+        return False
+    if models_router._bootstrap_upgrade_download_conflict() is not None:
+        return False
+    return True
 
 icd_router = create_inference_configuration_router(
     find_model=models_router._find_loadable_model,
