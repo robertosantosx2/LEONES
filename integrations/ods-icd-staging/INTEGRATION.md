@@ -130,7 +130,7 @@ The staged tests are contract tests for the router callbacks. Once wired in ODS,
 - exact configuration ID and MEASURED-only benchmark evidence;
 - regression that default llama-server model activation is unchanged.
 
-The staged route deliberately accepts callback injection so it can be tested without running ODS's real host agent. The production callbacks still require ODS integration tests.
+The staged route deliberately accepts callback injection so it can be tested without running ODS's real host agent. The isolated LEONES evidence-store test uses dependency stubs and must not be copied unchanged into ODS's full pytest suite; port its assertions into an ODS-native test that uses the real module graph. The production callbacks still require ODS integration tests.
 
 ## 4. Evidence boundary
 
