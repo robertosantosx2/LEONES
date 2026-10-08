@@ -32,3 +32,40 @@ jobs:
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/routers/models.py
       - name: Run staged ICD API contract tests
         run: pytest -q integrations/ods-icd-staging/tests/test_inference_configuration_routes.py
+
+  dashboard-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: robertosantosx2/ODS
+          ref: feat/cafe-llama-icd-runtime-profile
+          path: ods-src
+      - uses: actions/checkout@v4
+        with:
+          repository: robertosantosx2/ODS
+          ref: feat/dashboard-i18n-es-zh
+          path: ods-i18n
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Overlay staged ICD Dashboard files
+        run: |
+          cp integrations/ods-icd-staging/ods/extensions/services/dashboard/src/pages/Models.jsx ods-src/ods/extensions/services/dashboard/src/pages/Models.jsx
+          cp integrations/ods-icd-staging/ods/extensions/services/dashboard/src/hooks/useModels.js ods-src/ods/extensions/services/dashboard/src/hooks/useModels.js
+          cp integrations/ods-icd-staging/ods/extensions/services/dashboard/src/hooks/useInferenceConfigurations.js ods-src/ods/extensions/services/dashboard/src/hooks/useInferenceConfigurations.js
+          mkdir -p ods-src/ods/extensions/services/dashboard/src/components/models
+          cp integrations/ods-icd-staging/ods/extensions/services/dashboard/src/components/models/InferenceConfigurationPanel.jsx ods-src/ods/extensions/services/dashboard/src/components/models/
+          cp integrations/ods-icd-staging/ods/extensions/services/dashboard/src/components/models/InferenceConfigurationPanel.test.jsx ods-src/ods/extensions/services/dashboard/src/components/models/
+          cp integrations/ods-icd-staging/ods/extensions/services/dashboard/src/components/models/inference-configuration-panel.css ods-src/ods/extensions/services/dashboard/src/components/models/
+          cp -r ods-i18n/ods/extensions/services/dashboard/src/i18n ods-src/ods/extensions/services/dashboard/src/
+      - name: Install Dashboard dependencies
+        working-directory: ods-src/ods/extensions/services/dashboard
+        run: npm ci
+      - name: Test staged ICD Dashboard panel
+        working-directory: ods-src/ods/extensions/services/dashboard
+        run: npm test -- src/components/models/InferenceConfigurationPanel.test.jsx
+      - name: Build Dashboard with staged ICD panel
+        working-directory: ods-src/ods/extensions/services/dashboard
+        run: npm run build
