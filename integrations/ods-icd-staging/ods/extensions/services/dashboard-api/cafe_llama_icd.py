@@ -56,12 +56,15 @@ def configuration_to_env(configuration: dict[str, Any]) -> dict[str, str]:
             env[key] = "on" if value else "off"
         else:
             env[key] = str(value)
+    # This adapter exposes one KV-cache choice for both K and V. Explicitly
+    # write every toggle so switching back to "none" cannot leave stale flags
+    # enabled in the persisted ODS environment.
+    if configuration.get("kv_cache") is not None:
+        env["LLAMA_ARG_CACHE_TYPE_V"] = str(configuration["kv_cache"])
+
     offload = str(configuration.get("offload") or "none").lower()
     env["CAFE_LLAMA_ENABLED"] = "true"
-    if offload == "host-moe":
-        env["LLAMA_ARG_HOST_MOE"] = "on"
-    elif offload == "cpu-moe":
-        env["LLAMA_ARG_CPU_MOE"] = "on"
-    elif offload == "ssd":
-        env["LLAMA_ARG_SSD_STREAMING"] = "on"
+    env["LLAMA_ARG_HOST_MOE"] = "on" if offload == "host-moe" else "off"
+    env["LLAMA_ARG_CPU_MOE"] = "on" if offload == "cpu-moe" else "off"
+    env["LLAMA_ARG_SSD_STREAMING"] = "on" if offload == "ssd" else "off"
     return env
