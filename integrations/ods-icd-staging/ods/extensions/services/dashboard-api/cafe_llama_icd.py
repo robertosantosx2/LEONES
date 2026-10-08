@@ -16,7 +16,7 @@ CAPABILITIES = {
     "flash_attention": [True, False],
     "offload": ["none", "host-moe", "cpu-moe", "ssd"],
     "speculation": ["none", "draft-mtp"],
-    "draft_tokens": [1, 2, 4],
+    "draft_tokens": [0, 1, 2, 4],
 }
 
 ENV_MAPPING = {
