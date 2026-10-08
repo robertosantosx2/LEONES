@@ -21,5 +21,6 @@
   "models.inferenceConfiguration.fields.offload": "Offload",
   "models.inferenceConfiguration.fields.speculation": "Speculation",
   "models.inferenceConfiguration.fields.draft_tokens": "Draft tokens",
-  "models.inferenceConfiguration.fields.batch": "Batch"
+  "models.inferenceConfiguration.fields.batch": "Batch",
+  "models.inferenceConfiguration.benchmark": "Benchmark this configuration"
 }
