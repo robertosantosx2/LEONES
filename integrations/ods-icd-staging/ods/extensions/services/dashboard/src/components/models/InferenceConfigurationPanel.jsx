@@ -1,3 +1,4 @@
+import './inference-configuration-panel.css'
 import { useMemo, useState } from 'react'
 import { useInferenceConfigurations } from '../../hooks/useInferenceConfigurations'
 
