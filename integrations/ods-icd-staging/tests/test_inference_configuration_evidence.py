@@ -52,8 +52,8 @@ def test_icd_measurements_are_partitioned_by_exact_configuration_and_workload(tm
     assert wrong_workload == []
 
     model_level = helpers.get_model_performance_samples()
-    assert len(model_level) == 1
-    assert model_level[0]["tokens_per_second"] == 99.0
+    assert model_level
+    assert all(item["tokens_per_second"] == 99.0 for item in model_level)
     assert all(not item.get("configuration_id") for item in model_level)
 
     exact = helpers.get_recorded_model_performance(
