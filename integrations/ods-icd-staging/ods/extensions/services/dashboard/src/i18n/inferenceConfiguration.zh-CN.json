@@ -22,5 +22,10 @@
   "models.inferenceConfiguration.fields.speculation": "推测解码",
   "models.inferenceConfiguration.fields.draft_tokens": "草稿令牌数",
   "models.inferenceConfiguration.fields.batch": "批处理",
-  "models.inferenceConfiguration.benchmark": "测试此配置"
+  "models.inferenceConfiguration.benchmark": "测试此配置",
+  "models.inferenceConfiguration.benchmarking": "正在测试…",
+  "models.inferenceConfiguration.benchmarkFailed": "测试失败。请检查控制面板错误并重试。",
+  "models.inferenceConfiguration.measured": "实测",
+  "models.inferenceConfiguration.tokensPerSecond": "令牌/秒",
+  "models.inferenceConfiguration.workload": "工作负载"
 }
