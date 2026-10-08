@@ -1,5 +1,5 @@
 import './inference-configuration-panel.css'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useInferenceConfigurations } from '../../hooks/useInferenceConfigurations'
 
 const LABELS = {
@@ -30,6 +30,7 @@ export default function InferenceConfigurationPanel({ modelId, t = key => key })
     error, applyResult, refresh, apply,
   } = useInferenceConfigurations(modelId)
   const [draft, setDraft] = useState(null)
+  useEffect(() => { setDraft(null) }, [modelId])
   const current = draft || selected?.configuration || null
 
   const exactCandidate = useMemo(() => {
