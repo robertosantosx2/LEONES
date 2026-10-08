@@ -37,6 +37,6 @@ Files in this staging area preserve ODS-relative target paths beneath `ods/` whe
 
 ## Validation state
 
-The branch now includes a callback-injected API router, a staged extension to the existing benchmark endpoint/performance store for exact configuration and workload identity, Dashboard hook/panel/styles, locale strings and backend contract tests. These are committed as isolated staging artifacts, not yet wired into ODS. The staged tests have not yet been executed.
+The branch now includes a callback-injected API router, a staged extension to the existing benchmark endpoint/performance store for exact configuration and workload identity, Dashboard hook/panel/styles, locale strings and backend contract tests. These are committed as isolated staging artifacts, not yet wired into ODS. GitHub Actions run `37855584467` passed Python compilation and the staged API contract suite (`10 passed`). The performance-store evidence tests and frontend tests/build remain unexecuted.
 
 The ODS branch previously reported 211 passed and 7 skipped for focused ICD/model-selection tests, with clean `git diff --check` and Python compilation checks. Those results do not cover the staged API router, staged frontend, integration wiring, or real hardware.
