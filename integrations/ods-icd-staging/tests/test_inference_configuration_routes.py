@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+import types
 
 import pytest
 from fastapi import FastAPI
@@ -7,6 +8,12 @@ from fastapi.testclient import TestClient
 
 API_ROOT = Path(__file__).resolve().parents[1] / "ods" / "extensions" / "services" / "dashboard-api"
 sys.path.insert(0, str(API_ROOT))
+
+# Keep the staging test isolated from ODS's production security module, whose
+# import can create a temporary API-key file when no key is configured.
+security_stub = types.ModuleType("security")
+security_stub.verify_api_key = lambda: None
+sys.modules["security"] = security_stub
 
 from routers.inference_configurations import create_inference_configuration_router
 from security import verify_api_key
