@@ -14,12 +14,15 @@ Files in this staging area preserve ODS-relative target paths beneath `ods/` whe
 |---|---|---|
 | `ods/extensions/services/dashboard-api/inference_configuration.py` | same path | Existing ICD core mirrored from ODS; tests remain the contract |
 | `ods/extensions/services/dashboard-api/cafe_llama_icd.py` | same path | Includes canonical `CTX_SIZE` mapping correction |
-| `ods/extensions/services/dashboard-api/routers/inference_configurations.py` | new router module | Staged API implementation; must be wired in `main.py` and integrated with existing model/environment helpers |
+| `ods/extensions/services/dashboard-api/routers/inference_configurations.py` | new router module | Staged GET/POST API; must be wired in `main.py` with hardware-aware profile, env, lifecycle and measurement callbacks |
+| `ods/extensions/services/dashboard-api/routers/models.py` | merge into same path, not blind replacement | Staged existing benchmark-route extension validates config ID and returns exact workload evidence |
+| `ods/extensions/services/dashboard-api/helpers.py` | merge into same path, not blind replacement | Extends existing performance store with config/workload-partitioned samples without contaminating model-level rankings |
 | `ods/extensions/services/dashboard/src/components/models/InferenceConfigurationPanel.jsx` | same path | Staged UI panel; parent must pass the existing i18n translator |
 | `ods/extensions/services/dashboard/src/components/models/inference-configuration-panel.css` | same path | Responsive panel styles |
 | `ods/extensions/services/dashboard/src/i18n/inferenceConfiguration.*.json` | merge into canonical locale bundles | EN/ES/ZH strings; not standalone runtime locale files |
 | `ods/extensions/services/dashboard/src/hooks/useInferenceConfigurations.js` | same path | Staged API hook |
-| `tests/test_inference_configuration_routes.py` | ODS dashboard-api test suite | Contract tests; run in ODS environment after wiring |
+| `tests/test_inference_configuration_routes.py` | ODS dashboard-api test suite | API contract, apply failure, partial apply and adapter-safety tests |
+| `tests/test_inference_configuration_evidence.py` | ODS dashboard-api test suite | Exact configuration/workload evidence isolation tests; run in ODS environment
 | `INTEGRATION.md` | PR/work plan | Required router, host-agent, lifecycle, i18n and test wiring
 
 ## Safety and merge rules
@@ -34,6 +37,6 @@ Files in this staging area preserve ODS-relative target paths beneath `ods/` whe
 
 ## Validation state
 
-The branch now includes a callback-injected API router, staged Dashboard hook/panel/styles, locale strings and backend contract tests. These are committed as isolated staging artifacts, not yet wired into ODS. The staged tests have not yet been executed.
+The branch now includes a callback-injected API router, a staged extension to the existing benchmark endpoint/performance store for exact configuration and workload identity, Dashboard hook/panel/styles, locale strings and backend contract tests. These are committed as isolated staging artifacts, not yet wired into ODS. The staged tests have not yet been executed.
 
 The ODS branch previously reported 211 passed and 7 skipped for focused ICD/model-selection tests, with clean `git diff --check` and Python compilation checks. Those results do not cover the staged API router, staged frontend, integration wiring, or real hardware.
