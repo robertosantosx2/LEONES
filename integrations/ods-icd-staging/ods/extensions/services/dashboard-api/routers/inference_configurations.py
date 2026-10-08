@@ -21,6 +21,7 @@ from cafe_llama_icd import (
 )
 from inference_configuration import (
     ConfigurationCandidate,
+    configuration_signature,
     discover_configurations,
     validate_configuration,
 )
@@ -120,7 +121,7 @@ def create_inference_configuration_router(
             (
                 candidate for candidate in candidates
                 if candidate.configuration_id == configuration_id
-                and candidate.configuration == configuration
+                and configuration_signature(configuration) == configuration_id
             ),
             None,
         )
@@ -159,7 +160,7 @@ def create_inference_configuration_router(
             ) from exc
 
         return JSONResponse({
-            "status": "applied",
+            "status": "configuration_applied",
             "model_id": model_id,
             "configuration_id": configuration_id,
             "runtime": runtime,
@@ -168,7 +169,7 @@ def create_inference_configuration_router(
             "service_recreation": "confirmed" if recreate_result is not False else "unknown",
             "model_activation": "unchanged",
             "benchmark_required": True,
-            "execution_authorized": True,
+            "explicit_user_apply": True,
         }, headers={"Cache-Control": "no-store"})
 
     return router
