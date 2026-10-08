@@ -148,7 +148,7 @@ export default function InferenceConfigurationPanel({ modelId, t = key => key, o
             )}
             <button type="button" onClick={refresh} disabled={loading || applying}>{tr('models.inferenceConfiguration.refresh', 'Refresh')}</button>
             <button type="button" onClick={submit} disabled={!exactCandidate || applying || loading}>
-              {applying ? t('models.inferenceConfiguration.applying', 'Applying…') : t('models.inferenceConfiguration.apply', 'Apply settings')}
+              {applying ? tr('models.inferenceConfiguration.applying', 'Applying…') : tr('models.inferenceConfiguration.apply', 'Apply settings')}
             </button>
           </div>
         </>
