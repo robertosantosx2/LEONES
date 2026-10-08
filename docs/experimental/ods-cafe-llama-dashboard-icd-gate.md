@@ -86,10 +86,10 @@ This branch is now the working area for all further ODS ICD work until the upstr
 - Added staged Dashboard hook and parameter panel, stylesheet, and EN/ES/ZH locale strings.
 - Added backend route contract tests, exact configuration/workload evidence-store tests, and a transfer/integration checklist.
 
-**Important status distinction:** these artifacts are committed in LEONES staging only. They are not yet installed into ODS, not wired into the ODS FastAPI app or `Models.jsx`, and the staged test suite has not been executed in the ODS dependency/runtime environment. Do not change ICD-06..10 or ICD-14 to PASS until those steps and tests are completed in ODS.
+**Important status distinction:** these artifacts are committed in LEONES staging only. They are not yet installed into ODS or wired into the ODS FastAPI app. GitHub Actions run [37855584467](https://github.com/robertosantosx2/LEONES/actions/runs/37855584467) passed Python compilation and the staged API route suite (`10 passed`, one deprecation warning). The exact performance-store test and frontend tests/build have not been run. Do not change ICD-06..10 or ICD-14 to PASS until the code is wired and the required tests pass in ODS.
 
 Next implementation gates:
-1. Run the staged API tests in a controlled environment and fix any test/runtime incompatibilities.
+1. Run the staged performance-store evidence tests and frontend tests/build; resolve any failures.
 2. Complete the ODS main.py wiring with the actual hardware-compatible profile resolver, existing host-agent env merge, mode/lifecycle guards, and exact service allowlist.
 3. Integrate the panel into the existing Models page and merge locale keys into the canonical ODS i18n branch.
 4. Run the staged API/evidence tests, add frontend tests/build, and verify env update failure and service recreation failure/partial apply in the ODS test environment.
