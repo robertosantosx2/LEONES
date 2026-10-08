@@ -21,5 +21,6 @@
   "models.inferenceConfiguration.fields.offload": "Descarga",
   "models.inferenceConfiguration.fields.speculation": "Especulación",
   "models.inferenceConfiguration.fields.draft_tokens": "Tokens borrador",
-  "models.inferenceConfiguration.fields.batch": "Lote"
+  "models.inferenceConfiguration.fields.batch": "Lote",
+  "models.inferenceConfiguration.benchmark": "Medir esta configuración"
 }
