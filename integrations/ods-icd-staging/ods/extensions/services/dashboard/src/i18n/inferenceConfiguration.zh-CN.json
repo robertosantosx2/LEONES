@@ -1,31 +1,25 @@
 {
-  "models": {
-    "inferenceConfiguration": {
-      "title": "推理配置",
-      "description": "查看此模型支持的运行时设置。应用设置不会激活或更换当前选中的模型。",
-      "loading": "正在发现配置…",
-      "empty": "未发现与此模型兼容的推理配置。",
-      "preset": "已发现的配置",
-      "invalidCombination": "此组合不在已发现的候选项中。请先选择受支持的组合。",
-      "measurementNotice": "发现的设置尚未经过测量。应用后请运行基准测试；性能不作保证。",
-      "refresh": "刷新",
-      "applying": "正在应用…",
-      "apply": "应用设置",
-      "applied": "设置已应用。模型尚未激活；比较性能前请测量此确切配置。",
-      "fields": {
-        "runtime": "运行时",
-        "runtime_revision": "运行时版本",
-        "kernel": "内核",
-        "quantization": "量化",
-        "context": "上下文",
-        "gpu_layers": "GPU 层数",
-        "kv_cache": "KV 缓存",
-        "flash_attention": "Flash Attention",
-        "offload": "卸载",
-        "speculation": "推测解码",
-        "draft_tokens": "草稿令牌数",
-        "batch": "批处理"
-      }
-    }
-  }
+  "models.inferenceConfiguration.title": "推理配置",
+  "models.inferenceConfiguration.description": "查看此模型支持的运行时设置。应用设置不会激活或更换当前选中的模型。",
+  "models.inferenceConfiguration.loading": "正在发现配置…",
+  "models.inferenceConfiguration.empty": "未发现与此模型兼容的推理配置。",
+  "models.inferenceConfiguration.preset": "已发现的配置",
+  "models.inferenceConfiguration.invalidCombination": "此组合不在已发现的候选项中。请先选择受支持的组合。",
+  "models.inferenceConfiguration.measurementNotice": "发现的设置尚未经过测量。应用后请运行基准测试；性能不作保证。",
+  "models.inferenceConfiguration.refresh": "刷新",
+  "models.inferenceConfiguration.applying": "正在应用…",
+  "models.inferenceConfiguration.apply": "应用设置",
+  "models.inferenceConfiguration.applied": "设置已应用。模型尚未激活；比较性能前请测量此确切配置。",
+  "models.inferenceConfiguration.fields.runtime": "运行时",
+  "models.inferenceConfiguration.fields.runtime_revision": "运行时版本",
+  "models.inferenceConfiguration.fields.kernel": "内核",
+  "models.inferenceConfiguration.fields.quantization": "量化",
+  "models.inferenceConfiguration.fields.context": "上下文",
+  "models.inferenceConfiguration.fields.gpu_layers": "GPU 层数",
+  "models.inferenceConfiguration.fields.kv_cache": "KV 缓存",
+  "models.inferenceConfiguration.fields.flash_attention": "Flash Attention",
+  "models.inferenceConfiguration.fields.offload": "卸载",
+  "models.inferenceConfiguration.fields.speculation": "推测解码",
+  "models.inferenceConfiguration.fields.draft_tokens": "草稿令牌数",
+  "models.inferenceConfiguration.fields.batch": "批处理"
 }
