@@ -26,10 +26,12 @@ export default function InferenceConfigurationPanel({ modelId, t = key => key, o
     return translated === key ? fallback : translated
   }
   const {
-    configurations, selected, selectedId, setSelectedId, loading, applying,
+    configurations, rankedMeasurements, selected, selectedId, setSelectedId, loading, applying,
     error, applyResult, refresh, apply,
   } = useInferenceConfigurations(modelId)
   const [draft, setDraft] = useState(null)
+  const [benchmarking, setBenchmarking] = useState(false)
+  const [benchmarkError, setBenchmarkError] = useState('')
   useEffect(() => { setDraft(null) }, [modelId])
   const current = draft || selected?.configuration || null
 
@@ -70,6 +72,23 @@ export default function InferenceConfigurationPanel({ modelId, t = key => key, o
   }
 
   const submit = async () => { if (exactCandidate) await apply(exactCandidate) }
+  const runExactBenchmark = async () => {
+    if (!applyResult?.configuration_id || typeof onBenchmark !== 'function' || benchmarking) return
+    setBenchmarking(true)
+    setBenchmarkError('')
+    try {
+      const succeeded = await onBenchmark(modelId, { configuration_id: applyResult.configuration_id })
+      if (!succeeded) {
+        setBenchmarkError(tr('models.inferenceConfiguration.benchmarkFailed', 'Benchmark failed. Check the Dashboard error and retry.'))
+        return
+      }
+      await refresh()
+    } finally {
+      setBenchmarking(false)
+    }
+  }
+  const measured = rankedMeasurements.find(item => item.configuration_id === selectedId)
+  const measuredRank = rankedMeasurements.findIndex(item => item.configuration_id === selectedId)
 
   return (
     <section className="ods-inference-configuration" aria-labelledby="ods-icd-title">
@@ -121,8 +140,10 @@ export default function InferenceConfigurationPanel({ modelId, t = key => key, o
           <p>{tr('models.inferenceConfiguration.measurementNotice', 'Discovered settings are unmeasured proposals. Run a benchmark after applying; performance is not guaranteed.')}</p>
           <div className="ods-inference-configuration__actions">
             {applyResult?.configuration_id && typeof onBenchmark === 'function' && (
-              <button type="button" onClick={() => onBenchmark(modelId, { configuration_id: applyResult.configuration_id })} disabled={applying || loading}>
-                {tr('models.inferenceConfiguration.benchmark', 'Benchmark this configuration')}
+              <button type="button" onClick={runExactBenchmark} disabled={applying || loading || benchmarking}>
+                {benchmarking
+                  ? tr('models.inferenceConfiguration.benchmarking', 'Benchmarking…')
+                  : tr('models.inferenceConfiguration.benchmark', 'Benchmark this configuration')}
               </button>
             )}
             <button type="button" onClick={refresh} disabled={loading || applying}>{tr('models.inferenceConfiguration.refresh', 'Refresh')}</button>
@@ -131,6 +152,14 @@ export default function InferenceConfigurationPanel({ modelId, t = key => key, o
             </button>
           </div>
         </>
+      )}
+      {benchmarkError && <p role="alert">{benchmarkError}</p>}
+      {measured && (
+        <p role="status">
+          {tr('models.inferenceConfiguration.measured', 'Measured')} {measured.measured_tps} {tr('models.inferenceConfiguration.tokensPerSecond', 'tokens/s')}
+          {measuredRank >= 0 ? ' · #' + (measuredRank + 1) : ''}
+          {' · '}{tr('models.inferenceConfiguration.workload', 'Workload')}: {measured.workload_id}
+        </p>
       )}
       {error && <p role="alert">{error}</p>}
       {applyResult && (
