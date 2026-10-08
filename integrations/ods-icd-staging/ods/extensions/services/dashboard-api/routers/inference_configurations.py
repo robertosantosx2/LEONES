@@ -62,7 +62,12 @@ def create_inference_configuration_router(
                 or profile.get("runtime_id")
                 or profile.get("backend")
             )
-            capabilities = CAFE_CAPABILITIES if runtime == CAFE_RUNTIME_ID else None
+            if runtime != CAFE_RUNTIME_ID:
+                # Do not present proposals for runtimes that have no apply
+                # adapter in this staged implementation. The generic ICD core
+                # remains available for future runtime adapters.
+                continue
+            capabilities = CAFE_CAPABILITIES
             try:
                 discovered = discover_configurations(
                     model=model,
