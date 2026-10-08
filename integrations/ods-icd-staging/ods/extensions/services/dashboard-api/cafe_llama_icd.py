@@ -31,6 +31,7 @@ ENV_MAPPING = {
     "flash_attention": "LLAMA_ARG_FLASH_ATTN",
     "speculation": "LLAMA_ARG_SPEC_TYPE",
     "draft_tokens": "LLAMA_ARG_SPEC_DRAFT_N_MAX",
+    "batch": "LLAMA_BATCH_SIZE",
 }
 
 
@@ -65,12 +66,13 @@ def configuration_to_env(configuration: dict[str, Any]) -> dict[str, str]:
     if configuration.get("kv_cache") is not None:
         env["LLAMA_ARG_CACHE_TYPE_V"] = str(configuration["kv_cache"])
 
+    # ODS schema requires draft depth >= 1. For non-speculative profiles the
+    # explicit LLAMA_ARG_SPEC_TYPE=none disables speculation, so do not write
+    # a zero draft cap into the environment.
+    if str(configuration.get("speculation") or "none").lower() in {"none", "off"}:
+        env.pop("LLAMA_ARG_SPEC_DRAFT_N_MAX", None)
+
     offload = str(configuration.get("offload") or "none").lower()
     if offload != "none":
-        raise ValueError(
-            "This offload mode has no verified ODS environment mapping yet"
-        )
-    # CAFE_LLAMA_ENABLED is part of the optional runtime scaffold; confirm it
-    # against the final ODS env schema before transferring this adapter.
-    env["CAFE_LLAMA_ENABLED"] = "true"
+        raise ValueError("This offload mode has no verified ODS environment mapping yet")
     return env
