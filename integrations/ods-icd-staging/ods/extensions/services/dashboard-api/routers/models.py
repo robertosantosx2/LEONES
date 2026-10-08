@@ -2150,6 +2150,7 @@ async def _run_current_model_benchmark(model_id: str, max_tokens: int, *, config
             status_code=502,
             detail="Benchmark returned implausible single-request throughput; result was not saved",
         )
+    evidence_persisted = False
     if gpu_info:
         gguf_path = _installed_model_path(target["gguf"]) if target.get("gguf") else None
         signature = build_sample_signature(target, gpu_info, context_size, INSTALL_DIR, gguf_path)
@@ -2180,6 +2181,8 @@ async def _run_current_model_benchmark(model_id: str, max_tokens: int, *, config
                 configuration_id=configuration_id,
                 workload_id=workload_id,
             )
+            if configuration_id:
+                evidence_persisted = True
 
     result = {
         "model": model_id,
@@ -2197,6 +2200,7 @@ async def _run_current_model_benchmark(model_id: str, max_tokens: int, *, config
             "configuration_id": configuration_id,
             "evidence_type": "measured",
             "workload_id": workload_id,
+            "evidence_persisted": evidence_persisted,
         })
     return result
 
