@@ -75,3 +75,22 @@ The PR description must retain the scope boundary above: this is ICD foundation 
 The current ODS cafe adapter maps the ICD `context` dimension to `MAX_CONTEXT`, while the ODS `.env.example` canonical setting is `CTX_SIZE`. Correct the adapter and its environment-mapping test together before treating runtime application as complete. This mismatch has not been changed because the GitHub integration also returned HTTP 403 on the ODS Contents API (`create-or-update-file-contents`), so it currently cannot push code changes to the ODS branch.
 
 Additional confirmed blocker: the integration's PR-creation endpoint and Contents write endpoint both return `Resource not accessible by integration`. Reconnecting the app may help only if the integration's actual token can receive the needed scopes; if the integration provider does not expose repository writes, use the manual PR page for submission and ask the integration provider to restore write capability. No credentials should be pasted into chat.
+## Staged implementation on LEONES branch (2026-10-09)
+
+This branch is now the working area for all further ODS ICD work until the upstream PR is ready. The staged code is isolated under `integrations/ods-icd-staging/` so LEONES runtime code is not accidentally coupled to ODS.
+
+- Branch: `ods-cafe-llama-icd-dashboard` (based on `ods-evolution`).
+- Staged ICD core and cafe adapter, with context mapping corrected to `CTX_SIZE`.
+- Added a callback-injected FastAPI router for GET discovery and POST apply, including candidate signature validation, runtime-specific constraints, and fail-closed reporting when environment update or service recreation is not confirmed.
+- Added staged Dashboard hook and parameter panel, stylesheet, and EN/ES/ZH locale strings.
+- Added backend route contract tests and a transfer/integration checklist.
+
+**Important status distinction:** these artifacts are committed in LEONES staging only. They are not yet installed into ODS, not wired into the ODS FastAPI app or `Models.jsx`, and the staged test suite has not been executed in the ODS dependency/runtime environment. Do not change ICD-06..10 or ICD-14 to PASS until those steps and tests are completed in ODS.
+
+Next implementation gates:
+1. Run the staged API tests in a controlled environment and fix any test/runtime incompatibilities.
+2. Complete the ODS main.py wiring with the actual hardware-compatible profile resolver, existing host-agent env merge, mode/lifecycle guards, and exact service allowlist.
+3. Integrate the panel into the existing Models page and merge locale keys into the canonical ODS i18n branch.
+4. Add tests for env update failure and service recreation failure/partial apply; frontend tests and build.
+5. Validate cache/offload/speculation env keys against the exact cafe-llama build and ODS env schema.
+6. Transfer the finished patch from this LEONES staging branch into the ODS fork branch, run the full focused suites, then open the upstream PR when GitHub write access is restored.
