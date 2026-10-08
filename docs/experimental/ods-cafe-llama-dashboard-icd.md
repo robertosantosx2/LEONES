@@ -137,3 +137,7 @@ The implementation belongs in ODS. LEONES retains the specification, tests, prov
 ## Explicit non-goals
 
 This phase does not replace model selection, create a new model activation path, create a second evidence database, claim hardware performance, integrate Strata or TensorFold into ODS, or authorize arbitrary runtime execution from an unvalidated configuration.
+
+## Implementation tracking
+
+See [ODS Dashboard ICD implementation gate](ods-cafe-llama-dashboard-icd-gate.md) for criterion-by-criterion status, required production evidence, merge gates, and hardware qualification requirements.
