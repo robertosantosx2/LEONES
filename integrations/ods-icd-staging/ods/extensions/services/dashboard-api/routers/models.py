@@ -2153,7 +2153,12 @@ async def _run_current_model_benchmark(model_id: str, max_tokens: int, *, config
     if gpu_info:
         gguf_path = _installed_model_path(target["gguf"]) if target.get("gguf") else None
         signature = build_sample_signature(target, gpu_info, context_size, INSTALL_DIR, gguf_path)
-        for sample_name in {model_id, loaded_model, target.get("gguf") or "", target.get("llmModelName") or ""}:
+        sample_names = (
+            {model_id}
+            if configuration_id
+            else {model_id, loaded_model, target.get("gguf") or "", target.get("llmModelName") or ""}
+        )
+        for sample_name in sample_names:
             if not sample_name:
                 continue
             await asyncio.to_thread(
@@ -2462,6 +2467,7 @@ async def benchmark_model(model_id: str, body: dict[str, Any] | None = None, api
             max_tokens = int(body["max_tokens"])
         except (TypeError, ValueError):
             raise HTTPException(status_code=400, detail="max_tokens must be an integer")
+    max_tokens = max(32, min(int(max_tokens or 128), 512))
     configuration_id = body.get("configuration_id") if isinstance(body, dict) else None
     if configuration_id is not None and (not isinstance(configuration_id, str) or not configuration_id):
         raise HTTPException(status_code=400, detail="configuration_id must be a non-empty string")
