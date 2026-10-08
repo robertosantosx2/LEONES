@@ -113,11 +113,11 @@ The sketch reads existing env text but does not write it directly. All persisten
 
 Target files are under `ods/extensions/services/dashboard/src/`.
 
-- Copy `hooks/useInferenceConfigurations.js`.
+- Merge the staged `hooks/useModels.js` change into the branch's current hook (it adds optional `configuration_id` to the existing benchmark request), and copy `hooks/useInferenceConfigurations.js`.
 - Copy `components/models/InferenceConfigurationPanel.jsx` and its stylesheet.
 - Import the existing `useI18n` hook in `Models.jsx`, pass its translator to the panel, and render the panel for the selected model. Do not create a second language state or bypass the shared i18n provider.
 - Merge the staged EN/ES/ZH keys under `models.inferenceConfiguration.*` into the canonical locale bundles on the ODS i18n branch. Keep English fallback.
-- Do not add a second activation action. After applying runtime settings, the existing benchmark action should benchmark the currently loaded model, and the receipt must identify the exact `configuration_id` before the result can rank a candidate.
+- Do not add a second activation action or a second benchmark engine. The staged `routers/models.py` change validates the requested ID against the hardware-compatible candidate and persisted env, calls the existing benchmark routine, and records the exact `configuration_id` plus `workload_id` through the existing performance store. The staged `helpers.py` extension partitions those samples by configuration/workload and excludes them from model-level ranking. Merge both files carefully, not by blind replacement. The GET endpoint returns rankings only for the requested workload and the current model/hardware.
 - Add frontend tests for loading, no candidates, API error, invalid combinations, apply pending/success/failure, and language fallback.
 
 ## 3. Backend and merge tests
