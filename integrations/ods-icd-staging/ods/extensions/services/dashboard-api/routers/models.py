@@ -2168,7 +2168,7 @@ async def _run_current_model_benchmark(model_id: str, max_tokens: int, *, config
                 gpu_info.name,
                 gpu_info.gpu_backend,
                 tokens_per_second,
-                model_id=signature.get("model_id"),
+                model_id=model_id if configuration_id else signature.get("model_id"),
                 gguf=signature.get("gguf"),
                 quantization=signature.get("quantization"),
                 architecture=signature.get("architecture"),
