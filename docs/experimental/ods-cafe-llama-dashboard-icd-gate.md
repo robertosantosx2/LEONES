@@ -86,7 +86,7 @@ This branch is now the working area for all further ODS ICD work until the upstr
 - Added staged Dashboard hook and parameter panel, stylesheet, and EN/ES/ZH locale strings.
 - Added backend route contract tests, exact configuration/workload evidence-store tests, and a transfer/integration checklist.
 
-**Important status distinction:** these artifacts are committed in LEONES staging only. They are not yet installed into ODS or wired into the ODS FastAPI app. GitHub Actions run [37855749394](https://github.com/robertosantosx2/LEONES/actions/runs/37855749394) passed Python compilation for the ICD core, adapter, API router, staged performance store and benchmark route, plus the API route suite (`10 passed`, one deprecation warning). The exact performance-store test and frontend tests/build have not been run. Do not change ICD-06..10 or ICD-14 to PASS until the code is wired and the required tests pass in ODS.
+**Important status distinction:** these artifacts are committed in LEONES staging only. They are not yet installed into ODS or wired into the ODS FastAPI app. GitHub Actions run [37856005959](https://github.com/robertosantosx2/LEONES/actions/runs/37856005959) passed Python compilation, API route contracts (`10 passed`), exact configuration/workload evidence-store tests, Dashboard panel tests (`6 passed`), and the Dashboard production build. These isolated staging checks do not prove ODS app wiring or full ODS regression safety. Do not change ICD-06..10 or ICD-14 to PASS until the code is wired and the required tests pass in ODS.
 
 Next implementation gates:
 1. Run the staged performance-store evidence tests and frontend tests/build; resolve any failures.
