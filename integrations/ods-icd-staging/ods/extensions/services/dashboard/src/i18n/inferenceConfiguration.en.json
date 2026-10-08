@@ -22,5 +22,10 @@
   "models.inferenceConfiguration.fields.speculation": "Speculation",
   "models.inferenceConfiguration.fields.draft_tokens": "Draft tokens",
   "models.inferenceConfiguration.fields.batch": "Batch",
-  "models.inferenceConfiguration.benchmark": "Benchmark this configuration"
+  "models.inferenceConfiguration.benchmark": "Benchmark this configuration",
+  "models.inferenceConfiguration.benchmarking": "Benchmarking…",
+  "models.inferenceConfiguration.benchmarkFailed": "Benchmark failed. Check the Dashboard error and retry.",
+  "models.inferenceConfiguration.measured": "Measured",
+  "models.inferenceConfiguration.tokensPerSecond": "tokens/s",
+  "models.inferenceConfiguration.workload": "Workload"
 }
