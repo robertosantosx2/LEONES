@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-07T11:07:14.781671+00:00",
+  "generated_at": "2026-10-08T11:25:59.167992+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -32,7 +32,7 @@
       "priority": "high",
       "status": "reachable",
       "http_status": 200,
-      "final_url": "https://status.framasoft.org/incidents/1101/",
+      "final_url": "https://framagit.org/public/projects",
       "authentication_configured": false
     },
     {
