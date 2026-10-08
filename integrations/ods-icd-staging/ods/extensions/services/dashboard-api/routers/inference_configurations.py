@@ -34,7 +34,7 @@ def create_inference_configuration_router(
     get_runtime_profiles: Callable[[dict[str, Any]], Iterable[dict[str, Any]]],
     apply_environment: Callable[[dict[str, str]], Any],
     recreate_services: Callable[[list[str]], Any],
-    can_apply: Callable[[], bool] = lambda: True,
+    can_apply: Callable[[], bool],
 ) -> APIRouter:
     """Build ICD routes around existing ODS lifecycle functions.
 
@@ -57,6 +57,8 @@ def create_inference_configuration_router(
         profiles = list(get_runtime_profiles(model) or [])
         candidates: list[ConfigurationCandidate] = []
         for profile in profiles:
+            if not isinstance(profile, dict):
+                continue
             runtime = (
                 profile.get("runtime")
                 or profile.get("runtime_id")
