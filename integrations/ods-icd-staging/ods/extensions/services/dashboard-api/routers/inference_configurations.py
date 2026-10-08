@@ -162,14 +162,43 @@ def create_inference_configuration_router(
             update_result = apply_environment(env)
             if inspect.isawaitable(update_result):
                 update_result = await update_result
-            recreate_result = recreate_services(["llama-server"])
-            if inspect.isawaitable(recreate_result):
-                recreate_result = await recreate_result
+            if update_result is False or update_result is None:
+                raise HTTPException(
+                    status_code=502,
+                    detail={
+                        "code": "environment_update_unconfirmed",
+                        "message": "ODS could not confirm the environment update; refresh runtime status before retrying",
+                    },
+                )
+        except HTTPException:
+            raise
         except Exception as exc:
             # Report failure without exposing callback internals or secrets.
             raise HTTPException(
                 status_code=502,
-                detail="ODS could not confirm application of the inference configuration; refresh runtime status",
+                detail={
+                    "code": "environment_update_failed",
+                    "message": "ODS could not update the runtime environment; refresh runtime status",
+                },
+            ) from exc
+
+        try:
+            recreate_result = recreate_services(["llama-server"])
+            if inspect.isawaitable(recreate_result):
+                recreate_result = await recreate_result
+            if recreate_result is False or recreate_result is None:
+                raise RuntimeError("service recreation was not confirmed")
+        except Exception as exc:
+            # Environment changes are already persisted; explicitly report
+            # partial application so the UI never claims a successful apply.
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "code": "partial_application",
+                    "environment_update": "confirmed",
+                    "service_recreation": "failed_or_unconfirmed",
+                    "message": "Runtime settings were saved but service recreation was not confirmed. Refresh runtime status before retrying.",
+                },
             ) from exc
 
         return JSONResponse({
@@ -178,8 +207,8 @@ def create_inference_configuration_router(
             "configuration_id": configuration_id,
             "runtime": runtime,
             "environment_keys": sorted(env),
-            "environment_update": "confirmed" if update_result is not False else "unknown",
-            "service_recreation": "confirmed" if recreate_result is not False else "unknown",
+            "environment_update": "confirmed",
+            "service_recreation": "confirmed",
             "model_activation": "unchanged",
             "benchmark_required": True,
             "explicit_user_apply": True,
