@@ -1,31 +1,25 @@
 {
-  "models": {
-    "inferenceConfiguration": {
-      "title": "Configuración de inferencia",
-      "description": "Explora los ajustes de runtime compatibles con este modelo. Aplicarlos no activa ni cambia el modelo seleccionado.",
-      "loading": "Buscando configuraciones…",
-      "empty": "No se han encontrado configuraciones de inferencia compatibles con este modelo.",
-      "preset": "Configuración descubierta",
-      "invalidCombination": "Esta combinación no está entre las opciones descubiertas. Elige una combinación compatible antes de aplicarla.",
-      "measurementNotice": "Los ajustes descubiertos son propuestas sin medir. Ejecuta una prueba después de aplicarlos; no se garantiza el rendimiento.",
-      "refresh": "Actualizar",
-      "applying": "Aplicando…",
-      "apply": "Aplicar ajustes",
-      "applied": "Ajustes aplicados. El modelo no se ha activado; mide esta configuración exacta antes de comparar el rendimiento.",
-      "fields": {
-        "runtime": "Runtime",
-        "runtime_revision": "Versión del runtime",
-        "kernel": "Kernel",
-        "quantization": "Cuantización",
-        "context": "Contexto",
-        "gpu_layers": "Capas GPU",
-        "kv_cache": "Caché KV",
-        "flash_attention": "Flash Attention",
-        "offload": "Descarga",
-        "speculation": "Especulación",
-        "draft_tokens": "Tokens borrador",
-        "batch": "Lote"
-      }
-    }
-  }
+  "models.inferenceConfiguration.title": "Configuración de inferencia",
+  "models.inferenceConfiguration.description": "Explora los ajustes de runtime compatibles con este modelo. Aplicarlos no activa ni cambia el modelo seleccionado.",
+  "models.inferenceConfiguration.loading": "Buscando configuraciones…",
+  "models.inferenceConfiguration.empty": "No se han encontrado configuraciones de inferencia compatibles con este modelo.",
+  "models.inferenceConfiguration.preset": "Configuración descubierta",
+  "models.inferenceConfiguration.invalidCombination": "Esta combinación no está entre las opciones descubiertas. Elige una combinación compatible antes de aplicarla.",
+  "models.inferenceConfiguration.measurementNotice": "Los ajustes descubiertos son propuestas sin medir. Ejecuta una prueba después de aplicarlos; no se garantiza el rendimiento.",
+  "models.inferenceConfiguration.refresh": "Actualizar",
+  "models.inferenceConfiguration.applying": "Aplicando…",
+  "models.inferenceConfiguration.apply": "Aplicar ajustes",
+  "models.inferenceConfiguration.applied": "Ajustes aplicados. El modelo no se ha activado; mide esta configuración exacta antes de comparar el rendimiento.",
+  "models.inferenceConfiguration.fields.runtime": "Runtime",
+  "models.inferenceConfiguration.fields.runtime_revision": "Versión del runtime",
+  "models.inferenceConfiguration.fields.kernel": "Kernel",
+  "models.inferenceConfiguration.fields.quantization": "Cuantización",
+  "models.inferenceConfiguration.fields.context": "Contexto",
+  "models.inferenceConfiguration.fields.gpu_layers": "Capas GPU",
+  "models.inferenceConfiguration.fields.kv_cache": "Caché KV",
+  "models.inferenceConfiguration.fields.flash_attention": "Flash Attention",
+  "models.inferenceConfiguration.fields.offload": "Descarga",
+  "models.inferenceConfiguration.fields.speculation": "Especulación",
+  "models.inferenceConfiguration.fields.draft_tokens": "Tokens borrador",
+  "models.inferenceConfiguration.fields.batch": "Lote"
 }
