@@ -16,6 +16,7 @@ security_stub.verify_api_key = lambda: None
 sys.modules["security"] = security_stub
 
 from routers.inference_configurations import create_inference_configuration_router
+from cafe_llama_icd import validate_cafe_configuration
 from security import verify_api_key
 
 
@@ -110,6 +111,9 @@ def test_apply_requires_a_discovered_configuration_and_reuses_callbacks(harness)
     assert body["benchmark_required"] is True
     assert applied["LLAMA_BATCH_SIZE"] == "1"
     assert applied["LLAMA_ARG_SPEC_TYPE"] == "none"
+    assert "LLAMA_ARG_SPEC_DRAFT_N_MAX" not in applied
+    assert applied["LLAMA_ARG_CACHE_TYPE_K"] == "f16"
+    assert applied["LLAMA_ARG_CACHE_TYPE_V"] == "f16"
     assert "CTX_SIZE" in applied
     assert "MAX_CONTEXT" not in applied
     assert recreated == [["llama-server"]]
@@ -250,3 +254,22 @@ def test_apply_reports_partial_state_when_recreation_fails():
     assert response.json()["detail"]["environment_update"] == "confirmed"
     assert "CTX_SIZE" in applied
 
+
+
+def test_adapter_rejects_unmapped_turbo_and_moe_offload():
+    base = {
+        "runtime": "cafe-llama.cpp",
+        "kernel": "baseline",
+        "kv_cache": "f16",
+        "flash_attention": True,
+        "offload": "none",
+        "speculation": "none",
+        "draft_tokens": 0,
+    }
+    turbo = dict(base, kv_cache="turbo4")
+    with pytest.raises(ValueError, match="current ODS schema"):
+        validate_cafe_configuration(turbo)
+
+    moe = dict(base, offload="host-moe")
+    with pytest.raises(ValueError, match="no verified ODS environment mapping"):
+        validate_cafe_configuration(moe)
