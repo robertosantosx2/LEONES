@@ -7,7 +7,7 @@ This file is the transfer checklist for moving the staged code into ODS. The sta
 Target files are under `ods/extensions/services/dashboard-api/`.
 
 1. Copy the staged ICD core and cafe adapter into their target locations.
-2. Copy `routers/inference_configurations.py` and add the module to the API app's router imports.
+2. Copy/merge `routers/inference_configurations.py` and add the module to the API app's router imports. Merge the staged `routers/models.py` changes into the branch's current file rather than blindly replacing it if upstream has moved.
 3. In `main.py`, create the router using `create_inference_configuration_router(...)` and include it alongside `models_router.router`.
 4. Bind `find_model` to `models_router._find_loadable_model` (or the canonical model lookup used by the branch).
 5. Bind `get_runtime_profiles` to the same hardware-aware compatibility decision used by ODS model selection. It must return only the profile selected/validated for the current hardware and runtime; do not pass every catalog profile as if it were compatible.
@@ -82,12 +82,27 @@ def _icd_can_apply_runtime_configuration():
         return False
     return True
 
+from helpers import get_inference_configuration_measurements
+
+def _icd_get_measurements(model_id, workload_id):
+    gpu = get_gpu_info()
+    if not gpu:
+        return []
+    return [
+        sample for sample in get_inference_configuration_measurements(workload_id=workload_id)
+        if sample.get("model_id") == model_id
+        and sample.get("gpu") == gpu.name
+        and sample.get("backend") == gpu.gpu_backend
+        and int(sample.get("vram_total_mb") or 0) == int(gpu.memory_total_mb or 0)
+    ]
+
 icd_router = create_inference_configuration_router(
     find_model=models_router._find_loadable_model,
     get_runtime_profiles=_icd_compatible_profiles,
     apply_environment=_icd_apply_environment,
     recreate_services=_icd_recreate_services,
     can_apply=_icd_can_apply_runtime_configuration,
+    get_measurements=_icd_get_measurements,
 )
 app.include_router(icd_router)
 ```
