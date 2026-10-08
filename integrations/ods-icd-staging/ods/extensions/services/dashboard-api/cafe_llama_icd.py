@@ -11,10 +11,15 @@ from typing import Any
 RUNTIME_ID = "cafe-llama.cpp"
 
 CAPABILITIES = {
-    "kernel": ["baseline", "ptq1-mmV"],
-    "kv_cache": ["f16", "q8_0", "turbo2", "turbo3", "turbo4"],
+    # Only expose settings with a known ODS env mapping. ptq1-mmV is a future
+    # runtime-build capability until the pinned cafe build exposes a verified selector.
+    "kernel": ["baseline"],
+    # Match the values documented in ODS .env.example; TurboQuant needs a
+    # separate verified adapter for the pinned cafe-llama build.
+    "kv_cache": ["f16", "q8_0"],
     "flash_attention": [True, False],
-    "offload": ["none", "host-moe", "cpu-moe", "ssd"],
+    # ODS currently documents no stable host-MoE/SSD streaming env mapping.
+    "offload": ["none"],
     "speculation": ["none", "draft-mtp"],
     "draft_tokens": [0, 1, 2, 4],
 }
@@ -56,15 +61,16 @@ def configuration_to_env(configuration: dict[str, Any]) -> dict[str, str]:
             env[key] = "on" if value else "off"
         else:
             env[key] = str(value)
-    # This adapter exposes one KV-cache choice for both K and V. Explicitly
-    # write every toggle so switching back to "none" cannot leave stale flags
-    # enabled in the persisted ODS environment.
+    # This adapter exposes one KV-cache choice for both K and V.
     if configuration.get("kv_cache") is not None:
         env["LLAMA_ARG_CACHE_TYPE_V"] = str(configuration["kv_cache"])
 
     offload = str(configuration.get("offload") or "none").lower()
+    if offload != "none":
+        raise ValueError(
+            "This offload mode has no verified ODS environment mapping yet"
+        )
+    # CAFE_LLAMA_ENABLED is part of the optional runtime scaffold; confirm it
+    # against the final ODS env schema before transferring this adapter.
     env["CAFE_LLAMA_ENABLED"] = "true"
-    env["LLAMA_ARG_HOST_MOE"] = "on" if offload == "host-moe" else "off"
-    env["LLAMA_ARG_CPU_MOE"] = "on" if offload == "cpu-moe" else "off"
-    env["LLAMA_ARG_SSD_STREAMING"] = "on" if offload == "ssd" else "off"
     return env
