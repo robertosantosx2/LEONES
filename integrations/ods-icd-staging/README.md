@@ -22,7 +22,7 @@ Files in this staging area preserve ODS-relative target paths beneath `ods/` whe
 | `ods/extensions/services/dashboard/src/i18n/inferenceConfiguration.*.json` | merge into canonical locale bundles | EN/ES/ZH strings; not standalone runtime locale files |
 | `ods/extensions/services/dashboard/src/hooks/useInferenceConfigurations.js` | same path | Staged API hook |
 | `tests/test_inference_configuration_routes.py` | ODS dashboard-api test suite | API contract, apply failure, partial apply and adapter-safety tests |
-| `tests/test_inference_configuration_evidence.py` | ODS dashboard-api test suite | Exact configuration/workload evidence isolation tests; run in ODS environment |
+| `tests/test_inference_configuration_evidence.py` | Isolated LEONES CI process | Uses dependency stubs to test the staged store logic; port assertions into ODS-native tests rather than copying this stub file into the full ODS suite |
 | `.github/workflows/ods-icd-staging.yml` | LEONES CI | Compiles staged API modules and runs the isolated route contract suite |
 | `INTEGRATION.md` | PR/work plan | Required router, host-agent, lifecycle, i18n and test wiring
 
