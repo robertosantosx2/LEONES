@@ -134,4 +134,4 @@ The staged route deliberately accepts callback injection so it can be tested wit
 
 ## 4. Evidence boundary
 
-The earlier ODS result of 211 passed / 7 skipped covers the pre-existing focused ICD/model-selection tests only. It does not certify this staged route, Dashboard component, integration wiring, or hardware performance. No throughput claim may be attached until a real target-host benchmark records the exact configuration and workload.
+The staged CI run [37856005959](https://github.com/robertosantosx2/LEONES/actions/runs/37856005959) passed Python compilation, 10 API route tests, the exact configuration/workload evidence-store test, 6 Dashboard panel tests, and a production build. The earlier ODS result of 211 passed / 7 skipped covers the pre-existing focused ICD/model-selection tests only. It does not certify this staged route, Dashboard component, integration wiring, or hardware performance. No throughput claim may be attached until a real target-host benchmark records the exact configuration and workload.
