@@ -12,6 +12,7 @@ function messageFrom(body, fallback) {
 
 export function useInferenceConfigurations(modelId, { enabled = true } = {}) {
   const [configurations, setConfigurations] = useState([])
+  const [rankedMeasurements, setRankedMeasurements] = useState([])
   const [selectedId, setSelectedId] = useState('')
   const [loading, setLoading] = useState(false)
   const [applying, setApplying] = useState(false)
@@ -21,6 +22,7 @@ export function useInferenceConfigurations(modelId, { enabled = true } = {}) {
   const refresh = useCallback(async () => {
     if (!enabled || !modelId) {
       setConfigurations([])
+      setRankedMeasurements([])
       setSelectedId('')
       return
     }
@@ -35,12 +37,14 @@ export function useInferenceConfigurations(modelId, { enabled = true } = {}) {
       if (!response.ok) throw new Error(messageFrom(body, 'Could not load inference configurations'))
       const next = Array.isArray(body?.configurations) ? body.configurations : []
       setConfigurations(next)
+      setRankedMeasurements(Array.isArray(body?.ranked_measured_configurations) ? body.ranked_measured_configurations : [])
       setSelectedId(current => next.some(item => item.configuration_id === current)
         ? current
         : (next[0]?.configuration_id || ''))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load inference configurations')
       setConfigurations([])
+      setRankedMeasurements([])
       setSelectedId('')
     } finally {
       setLoading(false)
@@ -83,7 +87,7 @@ export function useInferenceConfigurations(modelId, { enabled = true } = {}) {
     }
   }, [applying, modelId, selected])
 
-  return { configurations, selected, selectedId, setSelectedId, loading, applying, error, applyResult, refresh, apply }
+  return { configurations, rankedMeasurements, selected, selectedId, setSelectedId, loading, applying, error, applyResult, refresh, apply }
 }
 
 export default useInferenceConfigurations
