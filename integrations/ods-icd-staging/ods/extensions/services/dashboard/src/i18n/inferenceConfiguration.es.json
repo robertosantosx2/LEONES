@@ -22,5 +22,10 @@
   "models.inferenceConfiguration.fields.speculation": "Especulación",
   "models.inferenceConfiguration.fields.draft_tokens": "Tokens borrador",
   "models.inferenceConfiguration.fields.batch": "Lote",
-  "models.inferenceConfiguration.benchmark": "Medir esta configuración"
+  "models.inferenceConfiguration.benchmark": "Medir esta configuración",
+  "models.inferenceConfiguration.benchmarking": "Midiendo…",
+  "models.inferenceConfiguration.benchmarkFailed": "La medición ha fallado. Revisa el error del Dashboard e inténtalo de nuevo.",
+  "models.inferenceConfiguration.measured": "Medido",
+  "models.inferenceConfiguration.tokensPerSecond": "tokens/s",
+  "models.inferenceConfiguration.workload": "Carga de trabajo"
 }
