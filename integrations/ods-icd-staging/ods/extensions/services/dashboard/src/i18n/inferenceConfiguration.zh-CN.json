@@ -21,5 +21,6 @@
   "models.inferenceConfiguration.fields.offload": "卸载",
   "models.inferenceConfiguration.fields.speculation": "推测解码",
   "models.inferenceConfiguration.fields.draft_tokens": "草稿令牌数",
-  "models.inferenceConfiguration.fields.batch": "批处理"
+  "models.inferenceConfiguration.fields.batch": "批处理",
+  "models.inferenceConfiguration.benchmark": "测试此配置"
 }
