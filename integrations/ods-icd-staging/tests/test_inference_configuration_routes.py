@@ -173,3 +173,79 @@ def test_mtp_candidates_have_positive_draft_depth(harness):
     ]
     assert mtp
     assert all(int(item.get("draft_tokens") or 0) > 0 for item in mtp)
+
+def _client_with_callbacks(apply_environment, recreate_services):
+    profile = {
+        "runtime": "cafe-llama.cpp",
+        "runtime_revision": "test-revision",
+        "kernel": "baseline",
+        "quantization": "Q4_K_M",
+        "context_length": 4096,
+        "gpu_layers": 12,
+        "kv_cache": "f16",
+        "flash_attention": True,
+        "offload": "none",
+        "speculation": "none",
+        "draft_tokens": 0,
+        "batch": 1,
+    }
+    model = {"id": "demo-model", "runtime_profiles": [profile]}
+    app = FastAPI()
+    app.include_router(create_inference_configuration_router(
+        find_model=lambda model_id: model if model_id == "demo-model" else None,
+        get_runtime_profiles=lambda item: item.get("runtime_profiles", []),
+        apply_environment=apply_environment,
+        recreate_services=recreate_services,
+    ))
+    app.dependency_overrides[verify_api_key] = lambda: "test-api-key"
+    return TestClient(app)
+
+
+def _first_valid_candidate(client):
+    body = client.get("/api/models/demo-model/inference-configurations").json()
+    return next(
+        item for item in body["configurations"]
+        if item["configuration"]["speculation"] == "none"
+        and item["configuration"]["kv_cache"] == "f16"
+        and item["configuration"]["flash_attention"] is True
+    )
+
+
+def test_apply_reports_environment_update_failure_without_recreation():
+    recreated = []
+
+    def fail_update(_env):
+        raise RuntimeError("simulated host-agent outage")
+
+    client = _client_with_callbacks(fail_update, lambda ids: recreated.append(ids) or True)
+    candidate = _first_valid_candidate(client)
+    response = client.post(
+        "/api/models/demo-model/inference-configuration",
+        json={"configuration_id": candidate["configuration_id"], "configuration": candidate["configuration"]},
+    )
+    assert response.status_code == 502
+    assert response.json()["detail"]["code"] == "environment_update_failed"
+    assert recreated == []
+
+
+def test_apply_reports_partial_state_when_recreation_fails():
+    applied = {}
+
+    def save_env(values):
+        applied.update(values)
+        return {"status": "saved"}
+
+    def fail_recreate(_ids):
+        raise RuntimeError("simulated recreate failure")
+
+    client = _client_with_callbacks(save_env, fail_recreate)
+    candidate = _first_valid_candidate(client)
+    response = client.post(
+        "/api/models/demo-model/inference-configuration",
+        json={"configuration_id": candidate["configuration_id"], "configuration": candidate["configuration"]},
+    )
+    assert response.status_code == 502
+    assert response.json()["detail"]["code"] == "partial_application"
+    assert response.json()["detail"]["environment_update"] == "confirmed"
+    assert "CTX_SIZE" in applied
+
