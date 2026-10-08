@@ -70,3 +70,8 @@ The branch `robertosantosx2/ODS:feat/cafe-llama-icd-runtime-profile` is availabl
 - To repair the connector, reconnect the GitHub app from ChatGPT Settings → Apps, confirm that the app installation includes `robertosantosx2/ODS` and the required repository permissions, and approve any requested permission upgrade on GitHub. If the integration still returns 403 despite those settings, this needs to be fixed by the integration provider; do not share a personal access token in chat.
 
 The PR description must retain the scope boundary above: this is ICD foundation work, not a claim that Dashboard GET/POST, the editor, lifecycle wiring, i18n, or hardware benchmarking are complete.
+## Pre-merge issue found during remote review
+
+The current ODS cafe adapter maps the ICD `context` dimension to `MAX_CONTEXT`, while the ODS `.env.example` canonical setting is `CTX_SIZE`. Correct the adapter and its environment-mapping test together before treating runtime application as complete. This mismatch has not been changed because the GitHub integration also returned HTTP 403 on the ODS Contents API (`create-or-update-file-contents`), so it currently cannot push code changes to the ODS branch.
+
+Additional confirmed blocker: the integration's PR-creation endpoint and Contents write endpoint both return `Resource not accessible by integration`. Reconnecting the app may help only if the integration's actual token can receive the needed scopes; if the integration provider does not expose repository writes, use the manual PR page for submission and ask the integration provider to restore write capability. No credentials should be pasted into chat.
