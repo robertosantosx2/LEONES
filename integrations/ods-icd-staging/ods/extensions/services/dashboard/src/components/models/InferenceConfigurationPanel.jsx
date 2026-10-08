@@ -20,7 +20,7 @@ function displayValue(value) {
 }
 
 /** Staged ODS component. Pass the existing Dashboard i18n translator as t. */
-export default function InferenceConfigurationPanel({ modelId, t = key => key }) {
+export default function InferenceConfigurationPanel({ modelId, t = key => key, onBenchmark }) {
   const tr = (key, fallback) => {
     const translated = t(key)
     return translated === key ? fallback : translated
@@ -120,6 +120,11 @@ export default function InferenceConfigurationPanel({ modelId, t = key => key })
           )}
           <p>{tr('models.inferenceConfiguration.measurementNotice', 'Discovered settings are unmeasured proposals. Run a benchmark after applying; performance is not guaranteed.')}</p>
           <div className="ods-inference-configuration__actions">
+            {applyResult?.configuration_id && typeof onBenchmark === 'function' && (
+              <button type="button" onClick={() => onBenchmark(modelId, { configuration_id: applyResult.configuration_id })} disabled={applying || loading}>
+                {tr('models.inferenceConfiguration.benchmark', 'Benchmark this configuration')}
+              </button>
+            )}
             <button type="button" onClick={refresh} disabled={loading || applying}>{tr('models.inferenceConfiguration.refresh', 'Refresh')}</button>
             <button type="button" onClick={submit} disabled={!exactCandidate || applying || loading}>
               {applying ? t('models.inferenceConfiguration.applying', 'Applying…') : t('models.inferenceConfiguration.apply', 'Apply settings')}
