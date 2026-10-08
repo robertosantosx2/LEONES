@@ -10,6 +10,12 @@ from typing import Any
 
 RUNTIME_ID = "cafe-llama.cpp"
 
+UNMAPPED_FUTURE_CAPABILITIES = {
+    "kernel": ["ptq1-mmV"],
+    "kv_cache": ["turbo2", "turbo3", "turbo4"],
+    "offload": ["host-moe", "cpu-moe", "ssd"],
+}
+
 CAPABILITIES = {
     # Only expose settings with a known ODS env mapping. ptq1-mmV is a future
     # runtime-build capability until the pinned cafe build exposes a verified selector.
