@@ -1,0 +1,31 @@
+{
+  "models": {
+    "inferenceConfiguration": {
+      "title": "Inference configuration",
+      "description": "Explore supported runtime settings for this model. Applying settings does not activate or change the selected model.",
+      "loading": "Discovering configurations…",
+      "empty": "No compatible inference configurations were discovered for this model.",
+      "preset": "Discovered configuration",
+      "invalidCombination": "This combination is not in the discovered candidate set. Choose a supported combination before applying.",
+      "measurementNotice": "Discovered settings are unmeasured proposals. Run a benchmark after applying; performance is not guaranteed.",
+      "refresh": "Refresh",
+      "applying": "Applying…",
+      "apply": "Apply settings",
+      "applied": "Settings applied. The model was not activated; benchmark this exact configuration before comparing performance.",
+      "fields": {
+        "runtime": "Runtime",
+        "runtime_revision": "Runtime revision",
+        "kernel": "Kernel",
+        "quantization": "Quantization",
+        "context": "Context",
+        "gpu_layers": "GPU layers",
+        "kv_cache": "KV cache",
+        "flash_attention": "Flash Attention",
+        "offload": "Offload",
+        "speculation": "Speculation",
+        "draft_tokens": "Draft tokens",
+        "batch": "Batch"
+      }
+    }
+  }
+}
