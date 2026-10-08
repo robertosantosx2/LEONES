@@ -133,7 +133,7 @@ def test_apply_rejects_unknown_or_modified_configuration(harness):
     assert recreated == []
 
 
-def test_apply_rejects_unsupported_runtime_adapter(harness):
+def test_apply_rejects_configuration_mutated_to_unsupported_runtime(harness):
     client, applied, recreated = harness
     discovery = client.get("/api/models/demo-model/inference-configurations").json()
     candidate = discovery["configurations"][0]
