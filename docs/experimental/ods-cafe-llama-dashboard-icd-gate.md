@@ -89,9 +89,9 @@ This branch is now the working area for all further ODS ICD work until the upstr
 **Important status distinction:** these artifacts are committed in LEONES staging only. They are not yet installed into ODS or wired into the ODS FastAPI app. GitHub Actions run [37856005959](https://github.com/robertosantosx2/LEONES/actions/runs/37856005959) passed Python compilation, API route contracts (`10 passed`), exact configuration/workload evidence-store tests, Dashboard panel tests (`6 passed`), and the Dashboard production build. These isolated staging checks do not prove ODS app wiring or full ODS regression safety. Do not change ICD-06..10 or ICD-14 to PASS until the code is wired and the required tests pass in ODS.
 
 Next implementation gates:
-1. Run the staged performance-store evidence tests and frontend tests/build; resolve any failures.
+1. Add ODS-native integration tests for real host-agent callbacks, lifecycle guards, persisted environment verification, and benchmark receipt identity; the isolated staging tests now pass.
 2. Complete the ODS main.py wiring with the actual hardware-compatible profile resolver, existing host-agent env merge, mode/lifecycle guards, and exact service allowlist.
-3. Integrate the panel into the existing Models page and merge locale keys into the canonical ODS i18n branch.
+3. Merge the staged panel into the current Models page without dropping concurrent ODS/i18n changes, and merge EN/ES/ZH keys into the canonical locale dictionaries.
 4. Run the staged API/evidence tests, add frontend tests/build, and verify env update failure and service recreation failure/partial apply in the ODS test environment.
 5. Validate cache/offload/speculation env keys against the exact cafe-llama build and ODS env schema.
 6. Transfer the finished patch from this LEONES staging branch into the ODS fork branch, run the full focused suites, then open the upstream PR when GitHub write access is restored.
