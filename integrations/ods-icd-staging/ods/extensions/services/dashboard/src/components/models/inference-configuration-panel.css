@@ -1,0 +1,48 @@
+.ods-inference-configuration {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--tech-panel-border, var(--border-color, #d1d5db));
+  border-radius: 0.75rem;
+  background: var(--tech-panel-fill, var(--card-bg, transparent));
+}
+.ods-inference-configuration header h3 { margin: 0 0 0.35rem; }
+.ods-inference-configuration header p,
+.ods-inference-configuration > p { margin: 0; opacity: 0.82; }
+.ods-inference-configuration label { display: grid; gap: 0.35rem; min-width: 0; }
+.ods-inference-configuration select {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.6rem;
+  color: inherit;
+  background: var(--input-bg, transparent);
+  border: 1px solid var(--input-border, #9ca3af);
+  border-radius: 0.4rem;
+}
+.ods-inference-configuration__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: 0.8rem;
+}
+.ods-inference-configuration__fields dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.6rem;
+  margin: 0;
+}
+.ods-inference-configuration__fields dl div { min-width: 0; }
+.ods-inference-configuration__fields dt { opacity: 0.72; font-size: 0.85rem; }
+.ods-inference-configuration__fields dd { margin: 0.2rem 0 0; overflow-wrap: anywhere; }
+.ods-inference-configuration__actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.ods-inference-configuration__actions button {
+  min-height: 2.5rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--button-border, #9ca3af);
+  border-radius: 0.45rem;
+  cursor: pointer;
+}
+.ods-inference-configuration__actions button:disabled { opacity: 0.55; cursor: not-allowed; }
+@media (max-width: 480px) {
+  .ods-inference-configuration__actions { display: grid; grid-template-columns: 1fr; }
+  .ods-inference-configuration__actions button { width: 100%; }
+}
