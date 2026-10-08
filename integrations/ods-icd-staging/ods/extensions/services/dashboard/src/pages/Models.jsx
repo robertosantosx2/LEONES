@@ -377,6 +377,7 @@ export default function Models({ compact = false }) {
           <InferenceConfigurationPanel
             modelId={activeModel?.id || configuredModel || currentModel || loadedModel}
             t={t}
+            onBenchmark={benchmarkModel}
           />
         </div>
       )}
