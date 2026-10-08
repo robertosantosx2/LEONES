@@ -97,4 +97,33 @@ describe('InferenceConfigurationPanel', () => {
     expect(screen.getByText(/42.5 tokens\/s/)).toBeInTheDocument()
     expect(screen.getByText(/dashboard-local-benchmark-v1:max_tokens=128/)).toBeInTheDocument()
   })
+
+  it('shows loading, empty and API-error states', () => {
+    useInferenceConfigurations.mockReturnValue(hookState({ loading: true }))
+    const { rerender } = render(<InferenceConfigurationPanel modelId="demo-model" />)
+    expect(screen.getByRole('status')).toHaveTextContent(/discovering configurations/i)
+
+    useInferenceConfigurations.mockReturnValue(hookState({ configurations: [], selected: null, selectedId: '' }))
+    rerender(<InferenceConfigurationPanel modelId="demo-model" />)
+    expect(screen.getByText(/no compatible inference configurations/i)).toBeInTheDocument()
+
+    useInferenceConfigurations.mockReturnValue(hookState({ error: 'API unavailable' }))
+    rerender(<InferenceConfigurationPanel modelId="demo-model" />)
+    expect(screen.getByRole('alert')).toHaveTextContent('API unavailable')
+  })
+
+  it('blocks an invalid combination not present in the discovered candidate set', () => {
+    const alternate = {
+      ...candidate,
+      configuration_id: 'config-alternate',
+      configuration: { ...configuration, kv_cache: 'q8_0', flash_attention: false },
+    }
+    useInferenceConfigurations.mockReturnValue(hookState({ configurations: [candidate, alternate] }))
+    render(<InferenceConfigurationPanel modelId="demo-model" />)
+
+    fireEvent.change(screen.getByLabelText('KV cache'), { target: { value: '"q8_0"' } })
+    expect(screen.getByText(/not in the discovered candidate set/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Apply settings' })).toBeDisabled()
+  })
+
 })
