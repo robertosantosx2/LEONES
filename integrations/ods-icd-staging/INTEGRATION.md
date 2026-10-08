@@ -20,7 +20,7 @@ Target files are under `ods/extensions/services/dashboard-api/`.
    - clear the existing settings/status caches.
 8. Implement `recreate_services(service_ids)` by validating the IDs against `_SETTINGS_APPLY_ALLOWED_SERVICES`, then calling `_call_agent_core_recreate(service_ids)` and clearing caches. Preserve the existing model activation endpoint as the sole model-loading path.
 9. Ensure the route fails closed if a host-agent update or service recreation is not confirmed. If the env update succeeds but recreation fails, return an explicit partial-application error and direct the UI to refresh runtime status; do not report a successful apply.
-10. Verify `CTX_SIZE` is used for context and reconcile the adapter's cache/offload/speculation keys with the exact cafe-llama runtime build and ODS env schema before merge.
+10. Verify `CTX_SIZE`, `LLAMA_BATCH_SIZE`, `LLAMA_ARG_CACHE_TYPE_K/V`, `LLAMA_ARG_FLASH_ATTN`, `LLAMA_ARG_SPEC_TYPE`, and `LLAMA_ARG_SPEC_DRAFT_N_MAX` against the exact cafe-llama runtime build and ODS env schema before merge. The current staged adapter intentionally limits KV cache to `f16`/`q8_0` and offload to `none`; `ptq1-mmV`, TurboQuant, host/CPU MoE offload, and SSD streaming are recorded as future capabilities but are not exposed as applicable choices until their exact runtime/env mappings are verified.
 
 ### Wiring sketch (adapt to the exact ODS branch helpers)
 
