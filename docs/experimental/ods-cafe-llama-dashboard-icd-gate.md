@@ -60,3 +60,13 @@ Before proposing the Dashboard phase for upstream review:
 After code review and merge, run a controlled benchmark on the target hardware. Record the exact model file and checksum, runtime revision, kernel, quantization, context, GPU layers, KV cache, Flash Attention, offload, speculation/draft depth, batch settings, warm-up policy, workload, measured tokens/s, latency, peak VRAM/RAM, and `configuration_id`.
 
 A configuration is MEASURED only for the exact configuration and workload represented by its receipt. Any change to a performance-relevant dimension requires a new measurement.
+## Upstream submission status (2026-10-09)
+
+The branch `robertosantosx2/ODS:feat/cafe-llama-icd-runtime-profile` is available, but the ChatGPT GitHub integration cannot create the upstream pull request: a direct attempt against `Osmantic/ODS` returned HTTP 403, `Resource not accessible by integration`, on GitHub's create-pull-request endpoint. A second attempt to create a draft PR in the fork also returned 403; an issue-creation attempt in the fork was blocked as well. This points to an integration authorization limitation, not evidence that the branch or tests are invalid.
+
+- **No upstream PR has been created by the integration.**
+- Manual compare/new-PR page: https://github.com/Osmantic/ODS/compare/main...robertosantosx2:feat/cafe-llama-icd-runtime-profile
+- GitHub documents that creating a PR needs repository **Pull requests: write** permission; `X-Accepted-GitHub-Permissions` on a 403 can identify the missing permission. See https://docs.github.com/en/rest/pulls/pulls#create-a-pull-request and https://docs.github.com/en/enterprise-cloud@latest/rest/using-the-rest-api/troubleshooting-the-rest-api.
+- To repair the connector, reconnect the GitHub app from ChatGPT Settings → Apps, confirm that the app installation includes `robertosantosx2/ODS` and the required repository permissions, and approve any requested permission upgrade on GitHub. If the integration still returns 403 despite those settings, this needs to be fixed by the integration provider; do not share a personal access token in chat.
+
+The PR description must retain the scope boundary above: this is ICD foundation work, not a claim that Dashboard GET/POST, the editor, lifecycle wiring, i18n, or hardware benchmarking are complete.
