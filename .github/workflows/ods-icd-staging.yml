@@ -1,0 +1,33 @@
+name: ODS ICD staging contracts
+
+on:
+  push:
+    branches:
+      - ods-cafe-llama-icd-dashboard
+  pull_request:
+    branches:
+      - ods-evolution
+      - main
+    paths:
+      - "integrations/ods-icd-staging/**"
+      - ".github/workflows/ods-icd-staging.yml"
+
+jobs:
+  backend-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install isolated staging test dependencies
+        run: python -m pip install --upgrade pytest "fastapi>=0.115,<1" "httpx>=0.27,<0.29"
+      - name: Compile staged ICD backend modules
+        run: |
+          python -m py_compile \
+            integrations/ods-icd-staging/ods/extensions/services/dashboard-api/inference_configuration.py \
+            integrations/ods-icd-staging/ods/extensions/services/dashboard-api/cafe_llama_icd.py \
+            integrations/ods-icd-staging/ods/extensions/services/dashboard-api/routers/inference_configurations.py
+      - name: Run staged ICD API contract tests
+        run: pytest -q integrations/ods-icd-staging/tests/test_inference_configuration_routes.py
