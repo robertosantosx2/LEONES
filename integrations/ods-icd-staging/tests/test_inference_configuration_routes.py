@@ -60,6 +60,7 @@ def harness():
         get_runtime_profiles=profiles_for,
         apply_environment=apply_environment,
         recreate_services=recreate_services,
+        can_apply=lambda: True,
     ))
     app.dependency_overrides[verify_api_key] = lambda: "test-api-key"
     return TestClient(app), applied, recreated
@@ -201,6 +202,7 @@ def _client_with_callbacks(apply_environment, recreate_services):
         get_runtime_profiles=lambda item: item.get("runtime_profiles", []),
         apply_environment=apply_environment,
         recreate_services=recreate_services,
+        can_apply=lambda: True,
     ))
     app.dependency_overrides[verify_api_key] = lambda: "test-api-key"
     return TestClient(app)
