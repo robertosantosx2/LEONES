@@ -1,0 +1,62 @@
+# ODS Dashboard ICD implementation gate
+
+## Purpose
+
+This gate tracks the production implementation of Inference Configuration Discovery (ICD) in ODS. LEONES owns the acceptance contract and evidence discipline; ODS owns the runtime and Dashboard implementation.
+
+Related specifications:
+
+- [ICD runtime port](ods-cafe-llama-icd-port.md)
+- [Dashboard ICD contract](ods-cafe-llama-dashboard-icd.md)
+
+## Gate rule
+
+Do not mark a row PASS because the design or prototype exists. PASS requires an identifiable ODS implementation and reproducible test/evidence. LEONES prototype tests validate the contract, not ODS production wiring or hardware performance.
+
+| ID | Acceptance criterion | Required ODS evidence | Status |
+|---|---|---|---|
+| ICD-01 | Generic ICD schema and deterministic configuration IDs | Unit tests for canonical signatures, schema validation, and deterministic deduplication | IMPLEMENTED — focused tests reported passing |
+| ICD-02 | Existing model/runtime compatibility remains authoritative | Regression tests show `rank_catalog_models()` and runtime-profile matching unchanged | IMPLEMENTED — focused model-selection matrix passed |
+| ICD-03 | ICD is second-stage discovery on an existing selected Candidate | Test that no runtime profile returns no configurations and compatible profiles produce candidates | IMPLEMENTED — ODS Candidate bridge present |
+| ICD-04 | Discovery candidates contain no measurements and do not authorize execution | Tests reject measurement fields and assert `measurement_required=true`, `execution_authorized=false` | IMPLEMENTED — contract tests |
+| ICD-05 | cafe-llama.cpp owns runtime-specific capabilities and validation | Adapter tests for Turbo KV/Flash Attention and MTP draft-token constraints | IMPLEMENTED — focused tests |
+| ICD-06 | Dashboard can fetch configurations for a model | GET `/api/models/{model_id}/inference-configurations`, API tests and documented response schema | NOT IMPLEMENTED / NOT VERIFIED |
+| ICD-07 | Dashboard exposes editable supported parameters without unbounded combinations | Models-page panel, capability-driven controls, numeric coercion and frontend tests | NOT IMPLEMENTED / NOT VERIFIED |
+| ICD-08 | Apply validates model, runtime, schema and runtime-specific constraints | POST `/api/models/{model_id}/inference-configuration` tests for valid and invalid payloads | NOT IMPLEMENTED / NOT VERIFIED |
+| ICD-09 | Applying settings reuses existing ODS host-agent environment and lifecycle paths | Tests verify env merge/update and targeted service recreation; no direct .env writes from router | NOT IMPLEMENTED / NOT VERIFIED |
+| ICD-10 | Existing model activation remains the sole model-loading path | Regression test that configuration apply does not create a competing activation mechanism | NOT IMPLEMENTED / NOT VERIFIED |
+| ICD-11 | Benchmark uses existing ODS evidence path and exact configuration identity | Benchmark receipt associates result with exact `configuration_id`; no duplicate evidence store | NOT IMPLEMENTED / NOT VERIFIED |
+| ICD-12 | Only measured evidence can support performance ranking | Test where an ESTIMATED high value loses to an exact MEASURED candidate | CONTRACT PROVEN IN LEONES; ODS WIRING NOT VERIFIED |
+| ICD-13 | Default llama-server path is unchanged when cafe runtime is not selected | Existing runtime and model lifecycle regression tests | NOT VERIFIED |
+| ICD-14 | Dashboard text is ready for EN/ES/ZH i18n integration | UI calls the existing i18n hook and has keys under `models.inferenceConfiguration.*` | NOT IMPLEMENTED / NOT VERIFIED |
+| ICD-15 | Hardware performance claims are based on real target-host runs | Benchmark receipt includes hardware, runtime/build, model, exact config ID, workload, tokens/s and latency | NOT RUN — no hardware claim |
+
+## Validation already reported
+
+On the ODS branch `feat/cafe-llama-icd-runtime-profile`:
+
+- `211 passed, 7 skipped` for the focused ICD and model-selection test suites.
+- `git diff --check` clean.
+- Python compilation checks clean for the ICD core, cafe adapter, Candidate bridge and focused tests.
+
+These results cover the ICD core and model-selection regression surface only. They do not validate Dashboard endpoints, frontend build, lifecycle application, or physical performance.
+
+The LEONES prototype and its tests are contract evidence only. Do not reuse any LEONES result as a measurement of ODS on the user's machine.
+
+## Merge gate
+
+Before proposing the Dashboard phase for upstream review:
+
+1. Complete ICD-06 through ICD-10.
+2. Add backend tests for missing model, unsupported runtime, invalid configuration, environment merge and lifecycle failure.
+3. Add frontend tests/build checks for loading, empty/error states, parameter edits, apply and benchmark actions.
+4. Confirm all labels use the existing i18n hook and English fallback; provide Spanish and Simplified Chinese keys.
+5. Run the focused ICD/model-selection tests plus the relevant Dashboard API/frontend suites.
+6. Run `git diff --check` and inspect the final diff.
+7. Record the actual PR URL and CI status. Do not treat a pushed branch or an uncreated PR as an upstream submission.
+
+## Hardware qualification gate
+
+After code review and merge, run a controlled benchmark on the target hardware. Record the exact model file and checksum, runtime revision, kernel, quantization, context, GPU layers, KV cache, Flash Attention, offload, speculation/draft depth, batch settings, warm-up policy, workload, measured tokens/s, latency, peak VRAM/RAM, and `configuration_id`.
+
+A configuration is MEASURED only for the exact configuration and workload represented by its receipt. Any change to a performance-relevant dimension requires a new measurement.
