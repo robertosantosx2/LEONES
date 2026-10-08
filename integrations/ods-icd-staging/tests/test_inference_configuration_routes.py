@@ -108,7 +108,8 @@ def test_apply_requires_a_discovered_configuration_and_reuses_callbacks(harness)
     assert body["status"] == "configuration_applied"
     assert body["model_activation"] == "unchanged"
     assert body["benchmark_required"] is True
-    assert applied["CAFE_LLAMA_ENABLED"] == "true"
+    assert applied["LLAMA_BATCH_SIZE"] == "1"
+    assert applied["LLAMA_ARG_SPEC_TYPE"] == "none"
     assert "CTX_SIZE" in applied
     assert "MAX_CONTEXT" not in applied
     assert recreated == [["llama-server"]]
@@ -152,14 +153,14 @@ def test_apply_rejects_configuration_mutated_to_unsupported_runtime(harness):
     assert recreated == []
 
 
-def test_turbo_kv_requires_flash_attention_in_discovery(harness):
+def test_unmapped_turbo_and_offload_modes_are_not_discovered(harness):
     client, _, _ = harness
     response = client.get("/api/models/demo-model/inference-configurations")
     assert response.status_code == 200
     for item in response.json()["configurations"]:
         config = item["configuration"]
-        if str(config.get("kv_cache", "")).startswith("turbo"):
-            assert config["flash_attention"] is True
+        assert not str(config.get("kv_cache", "")).startswith("turbo")
+        assert config.get("offload") == "none"
 
 
 def test_mtp_candidates_have_positive_draft_depth(harness):
