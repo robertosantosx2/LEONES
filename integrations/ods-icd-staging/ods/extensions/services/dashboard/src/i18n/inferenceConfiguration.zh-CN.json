@@ -1,0 +1,31 @@
+{
+  "models": {
+    "inferenceConfiguration": {
+      "title": "推理配置",
+      "description": "查看此模型支持的运行时设置。应用设置不会激活或更换当前选中的模型。",
+      "loading": "正在发现配置…",
+      "empty": "未发现与此模型兼容的推理配置。",
+      "preset": "已发现的配置",
+      "invalidCombination": "此组合不在已发现的候选项中。请先选择受支持的组合。",
+      "measurementNotice": "发现的设置尚未经过测量。应用后请运行基准测试；性能不作保证。",
+      "refresh": "刷新",
+      "applying": "正在应用…",
+      "apply": "应用设置",
+      "applied": "设置已应用。模型尚未激活；比较性能前请测量此确切配置。",
+      "fields": {
+        "runtime": "运行时",
+        "runtime_revision": "运行时版本",
+        "kernel": "内核",
+        "quantization": "量化",
+        "context": "上下文",
+        "gpu_layers": "GPU 层数",
+        "kv_cache": "KV 缓存",
+        "flash_attention": "Flash Attention",
+        "offload": "卸载",
+        "speculation": "推测解码",
+        "draft_tokens": "草稿令牌数",
+        "batch": "批处理"
+      }
+    }
+  }
+}
