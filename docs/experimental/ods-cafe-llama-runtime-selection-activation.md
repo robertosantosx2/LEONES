@@ -182,3 +182,51 @@ This establishes a specific engineering requirement: cafe selection must be a fi
 The existing `ods/extensions/library/services/cafe-llama` on `main` is still a scaffold whose Dockerfile can build without a bundled binary when no release URL is set. The fork branch `feat/cafe-llama-runtime-improvements` contains one commit on top of current `main` that adds a default 0.75 CUDA binary download and flag mapping; its branch compares cleanly to `main` (1 commit ahead, 0 behind). That improvement is a candidate for the final consolidated PR, but the default download should still be reviewed for release integrity and architecture/backend constraints before activation is enabled.
 
 Do not yet change the host-agent transaction by a broad textual rewrite. First extract the current rollback/service-state seams into focused helpers and add deterministic fake-process tests, then wire the cafe path through those helpers. The target acceptance test must assert actual service calls and active `model-state.json` endpoint identity, not only test a pure selector.
+
+
+## Latest validation and concrete host-agent seam (2026-10-09)
+
+The staged contract workflow has now completed successfully on commit
+`bc523244667ddc386ef7a99c33d6b0c1c9050fba`:
+[run 37895433020](https://github.com/robertosantosx2/LEONES/actions/runs/37895433020).
+Both `backend-contracts` and `dashboard-contracts` are green, including the
+runtime-selection contract tests, exact-configuration/workload evidence-store
+tests, Dashboard panel tests, and Dashboard production build. This validates
+the LEONES staging layer only; it does not test an ODS host-agent activation.
+
+A closer read of current `Osmantic/ODS:main` identifies the exact transaction
+seams:
+
+- `ods/bin/ods-host-agent.py::_do_model_activate` resolves the model/profile,
+  captures snapshots for `.env`, model-router endpoints and consumers, writes
+  the selected model configuration, then stages a runtime.
+- The current Linux host-native container path chooses
+  `_compose_restart_llama_server`; the in-container path uses
+  `_recreate_llama_server`. The Windows, macOS and WSL branches have separate
+  ownership/activation paths and must not be redirected to the Linux cafe
+  service.
+- The existing `ContainerLlamaAdapter` in
+  `ods/bin/model_switchboard/adapters.py` already provides the stage,
+  identity-verification and completion-verification seam. It is currently
+  constructed with the llama-server restart helper.
+- After readiness, `_publish_activation_route` and
+  `model_switchboard/state.py::record_verified_route` publish a verified
+  route; the current publication records `backend_kind="llama-server"`.
+- `ods/config/model-state.schema.v1.json` and the Python validator currently
+  allow `llama-server`, `lemonade`, `hipfire`, and `unknown`, but not
+  `cafe-llama`. `ods/config/model-router/endpoints.json` currently defines
+  the llama-server and legacy Lemonade endpoints only.
+
+This narrows the production patch: runtime selection must be resolved before
+the service-stage branch; cafe must get its own adapter/restart target and
+endpoint ID; route publication and model-state schema/validator must carry the
+same provider identity; the existing snapshot/rollback path must restore both
+the prior runtime and prior router target. The default branch must continue to
+choose the existing llama-server path exactly as before.
+
+**Release gate remains closed.** No cafe activation was run against a live ODS
+instance, no ODS-native activation/rollback regression suite was executed, and
+no upstream PR has been opened. A green staging workflow must not be reported
+as full ODS CI or runtime proof. The implementation should not be merged by
+editing only the backend enum/endpoint allowlist: those changes would advertise
+a route without providing a safe runtime lifecycle.
