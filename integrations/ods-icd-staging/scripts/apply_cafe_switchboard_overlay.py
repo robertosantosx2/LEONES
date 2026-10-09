@@ -44,6 +44,32 @@ else:
     endpoints.append({"id": "cafe-llama-default", "baseUrl": "http://cafe-llama:8081"})
     endpoint_path.write_text(json.dumps(doc, indent=2) + "\n")
 
+# Route publication must use the provider that the runtime actually proved.
+replace_once(
+    ROOT / "bin/ods-host-agent.py",
+    '''    return _switchboard_state.record_verified_route(
+        INSTALL_DIR / "data" / "model-state.json", catalog_id=str(model_id),
+        runtime_model_id=proof["identity"], proof_identity=proof["identity"],
+        backend_kind="llama-server", endpoint_id="llama-server-default",
+        native_route=None, context_length=proof["contextLength"],
+        capabilities=capabilities,
+    )''',
+    '''    runtime_kind = proof.get("runtimeKind", "llama-server")
+    if runtime_kind == "cafe-llama":
+        endpoint_id = "cafe-llama-default"
+    elif runtime_kind == "llama-server":
+        endpoint_id = "llama-server-default"
+    else:
+        raise RuntimeError("Cannot publish an unknown or unproven runtime provider")
+    return _switchboard_state.record_verified_route(
+        INSTALL_DIR / "data" / "model-state.json", catalog_id=str(model_id),
+        runtime_model_id=proof["identity"], proof_identity=proof["identity"],
+        backend_kind=runtime_kind, endpoint_id=endpoint_id,
+        native_route=None, context_length=proof["contextLength"],
+        capabilities=capabilities,
+    )''',
+)
+
 # Reconciler must not discard the runtime provenance that the cafe adapter proves.
 reconciler_path = ROOT / "bin/model_switchboard/reconciler.py"
 replace_once(
