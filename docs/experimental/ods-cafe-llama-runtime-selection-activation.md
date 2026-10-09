@@ -272,3 +272,24 @@ integrated into upstream; and there is no live activation/rollback test. The
 overlay validates the runtime adapter/provenance and route-publication seams,
 not a complete ODS runtime swap. The final PR gate remains closed until those
 pieces and ODS-native regressions pass.
+
+### Activation transaction acceptance contract (2026-10-09, follow-up)
+
+A fresh inspection of `Osmantic/ODS:main` confirms that the host-agent transaction already has reusable rollback seams; the missing work is to make the runtime strategy and proof provider-aware without weakening those seams.
+
+Implementation requirements for the production patch:
+
+1. Resolve `ODS_INFERENCE_RUNTIME` once, before runtime mutation. Accept only `llama-server` (default) and `cafe-llama`; reject unknown values before snapshots or writes. Do not infer cafe from an endpoint URL, model name, or available binary.
+2. Preserve the current platform branches for Windows-native, macOS-native, and WSL-owned runtimes. Until cafe has explicit support and tests for those owners, reject `cafe-llama` there with a clear 409/unsupported-runtime response rather than redirecting them.
+3. For Linux host-native Compose, require an installed cafe service and a pinned artifact manifest before touching the existing runtime. The manifest must bind build ID, SHA-256, architecture, and backend; the selected artifact must be verified locally before service replacement.
+4. Make the restart strategy explicit (for example `compose-cafe-llama`) and keep it separate from `compose-llama`. Capture the prior provider and active route as part of the transaction. Do not treat a successful Docker command as readiness.
+5. Require runtime-reported build identity plus model identity, exact context, and a real completion before publishing the cafe route. The published proof, model-state backend kind, and endpoint ID must agree (`cafe-llama` / `cafe-llama-default`).
+6. On any failed stage, restore the previous runtime and router/consumer snapshots, then prove the previous model route. If restoration cannot be proved, report `rollback_unconfirmed`; never silently leave the router pointing at a stopped or unverified service.
+7. Test both positive and negative paths with the actual host-agent transaction seams: default runtime unchanged; unknown selector rejected before mutation; missing service/manifest rejected; wrong artifact digest rejected; failed cafe startup rolls back; identity/context/completion failure rolls back; successful activation publishes cafe identity; a second activation can return to llama-server. Assert subprocess/Compose calls, persisted `.env`, `model-state.json`, endpoint config, and rollback proof.
+8. Run the ODS-native activation and regression suites against the patched tree. The LEONES staging workflow is only a contract/build check and is not a substitute.
+
+The host-agent implementation is large and has a single outer rollback transaction with multiple dependent consumers. A broad textual replacement of the runtime branch would be unsafe. The implementation should be made as a reviewed patch against a clean current-upstream checkout, with focused tests added before enabling the new runtime branch. This is a deliberate safety boundary, not a reason to add more Dashboard controls.
+
+### Current check
+
+Workflow run [37896945923](https://github.com/robertosantosx2/LEONES/actions/runs/37896945923) has both `backend-contracts` and `dashboard-contracts` successful. It confirms the staging contracts and Dashboard build only. It does not exercise the host-agent activation transaction, the live cafe service, or rollback. The release gate therefore remains closed.
