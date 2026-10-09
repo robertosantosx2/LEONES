@@ -44,7 +44,9 @@ def test_patcher_transforms_candidate_artifact_contract(tmp_path, monkeypatch):
     assert 'org.osmantic.cafe.build-id="${CAFE_LLAMA_BUILD_ID}"' in docker
     assert "CAFE_LLAMA_ARCHITECTURE: ${CAFE_LLAMA_ARCHITECTURE:-linux-x64}" in compose_text
     assert "CAFE_LLAMA_BACKEND: ${CAFE_LLAMA_BACKEND:-cuda-12.4}" in compose_text
-    assert "CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-}" in compose_text
+    assert "CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c}" in compose_text
+    assert "https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-0.75-bin-linux-cuda-12.4-x64.tar.gz" in compose_text
+    assert '536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c' in docker
 
 
 def test_patcher_fails_closed_when_expected_anchors_move(tmp_path, monkeypatch):
