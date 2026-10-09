@@ -32,7 +32,7 @@ jobs:
       - name: Verify patcher transforms real candidate and fails closed on moved anchors
         run: pytest -q integrations/ods-icd-staging/tests/test_cafe_artifact_patcher.py integrations/ods-icd-staging/tests/test_cafe_artifact_hardening.py
       - name: Check isolated GPU smoke-test shell syntax
-        run: bash -n integrations/ods-icd-staging/scripts/smoke_test_cafe_runtime.sh
+        run: bash -n integrations/ods-icd-staging/scripts/smoke_test_cafe_runtime.sh integrations/ods-icd-staging/scripts/build_and_smoke_cafe_runtime.sh
       - name: Verify resulting pinned artifact contract
         run: |
           grep -F 'sha256sum -c -' ods-src/ods/extensions/library/services/cafe-llama/Dockerfile
