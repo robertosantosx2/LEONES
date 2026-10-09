@@ -19,6 +19,14 @@ def test_stock_runtime_remains_the_default_and_cafe_is_opt_in():
     assert 'runtime_restart_strategy = "compose-cafe-llama"' in source
 
 
+def test_host_agent_defaults_match_the_pinned_compose_artifact_profile():
+    source = OVERLAY.read_text()
+    assert '"cafe-llama-0.75-linux-x64-cuda12.4"' in source
+    assert '"536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c"' in source
+    assert '"linux-x64"' in source
+    assert '"cuda-12.4"' in source
+
+
 def test_pinned_image_is_built_and_verified_before_candidate_start():
     adapter = ADAPTER.read_text()
     build = adapter.index("self._build_artifact(env)")
