@@ -56,8 +56,14 @@ helper = '''def _compose_restart_cafe_llama_server(env: dict):
     command = ["docker", "compose"] + compose_flags + [
         "up", "-d", "--build", "--force-recreate", "--no-deps", "cafe-llama"
     ]
+    compose_env = dict(os.environ)
+    compose_env.update({str(key): str(value) for key, value in env.items()})
+    model_ref = str(env.get("GGUF_FILE") or "").strip()
+    if model_ref:
+        compose_env["CAFE_LLAMA_MODEL"] = Path(model_ref).name
     result = subprocess.run(
-        command, cwd=str(INSTALL_DIR), capture_output=True, text=True, timeout=600
+        command, cwd=str(INSTALL_DIR), env=compose_env,
+        capture_output=True, text=True, timeout=600
     )
     if result.returncode != 0:
         raise RuntimeError(
@@ -190,7 +196,7 @@ anchor,
                         inspect_artifact=_cafe_image_manifest,
                         probe_runtime_build=_cafe_running_manifest,
                         capabilities=switchboard_capabilities,
-                        rollback=_compose_restart_cafe_llama_server,
+                        rollback=_compose_restart_llama_server,
                     )
                 else:
                     runtime_restart_strategy = "compose-llama"
