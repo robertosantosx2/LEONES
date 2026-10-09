@@ -95,3 +95,9 @@ Next implementation gates:
 4. Run the staged API/evidence tests, add frontend tests/build, and verify env update failure and service recreation failure/partial apply in the ODS test environment.
 5. Validate cache/offload/speculation env keys against the exact cafe-llama build and ODS env schema.
 6. Transfer the finished patch from this LEONES staging branch into the ODS fork branch, run the full focused suites, then open the upstream PR when GitHub write access is restored.
+
+## Staged app-wiring review (2026-10-09)
+
+A full staged copy of the current ODS `main.py` now includes the ICD router factory and callback bindings for hardware-profile matching, host-agent env persistence, allowlisted `llama-server` recreation, lifecycle/mode/Pixel guards, and exact-workload hardware-filtered measurements. The staging workflow compiles this file.
+
+**Runtime-selection blocker remains:** the current model catalog profiles are hardware compatibility profiles (for example `backend: nvidia`) and do not identify `cafe-llama.cpp` as the active runtime. The resolver intentionally refuses to relabel generic profiles. Consequently the endpoint can be wired while returning no applicable cafe configurations until an explicit ODS runtime-selection/profile field and a supported runtime build/activation path are added. ICD-06..10 and ICD-14 remain NOT VERIFIED in ODS; no hardware performance claims are allowed.
