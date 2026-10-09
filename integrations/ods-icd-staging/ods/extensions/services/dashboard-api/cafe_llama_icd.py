@@ -31,7 +31,7 @@ CAPABILITIES = {
 }
 
 ENV_MAPPING = {
-    "gpu_layers": "LLAMA_ARG_N_GPU_LAYERS",
+    "gpu_layers": "N_GPU_LAYERS",
     "context": "CTX_SIZE",
     "kv_cache": "LLAMA_ARG_CACHE_TYPE_K",
     "flash_attention": "LLAMA_ARG_FLASH_ATTN",
