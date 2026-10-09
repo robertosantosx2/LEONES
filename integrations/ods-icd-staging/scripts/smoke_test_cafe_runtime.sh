@@ -7,6 +7,7 @@ IMAGE="${CAFE_SMOKE_IMAGE:-ods-cafe-llama:local}"
 MODEL_PATH="${1:-}"
 PORT="${CAFE_SMOKE_PORT:-18081}"
 TIMEOUT="${CAFE_SMOKE_TIMEOUT_SECONDS:-240}"
+EXTRA_ARGS="${CAFE_SMOKE_EXTRA_ARGS:--ngl 999}"
 NAME="ods-cafe-smoke-$$"
 CID=""
 
