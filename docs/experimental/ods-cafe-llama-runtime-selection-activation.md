@@ -149,3 +149,15 @@ Read-only review of `robertosantosx2/ODS:main` confirms why a Dashboard-only pat
 Therefore the implementation needs a runtime/provider resolution boundary that is explicit about provider ID and build provenance, and then must connect that provider to the existing model activation and request-routing flow. Merely adding `ODS_INFERENCE_RUNTIME` to `.env`, starting the optional extension, or changing `LLM_API_URL` by itself would be insufficient.
 
 This is a source-tree audit, not a passing integration test. It does not establish the exact final code change or runtime correctness; those require an ODS-native patch and CI.
+
+
+### Additional Model Switchboard findings
+
+The current ODS source tree also has these concrete integration points:
+
+- `ods/bin/model_switchboard/state.py` constrains `active.backend.kind` to `llama-server`, `lemonade`, `hipfire`, or `unknown`. Cafe needs an explicit, schema-validated identity rather than being misreported as the upstream engine.
+- `ods/bin/model_switchboard/adapters.py` defines the runtime adapter protocol and a container adapter whose `kind` is `llama-server`. A cafe adapter/provider must use the same activation proof contract while preserving distinct runtime identity and build provenance.
+- `ods/extensions/services/dashboard-api/runtime_projection.py` currently projects active runtime model/context information but does not expose a verified runtime ID/build identity. Status and API schemas need a safe, bounded extension.
+- `ods/docker-compose.base.yml` owns the baseline `llama-server` process and its readiness probe. The cafe extension's separate service cannot be made active by registering ICD candidates alone; the selected provider must be represented in the host-authoritative Switchboard state and in request routing.
+
+The implementation plan should therefore touch the Switchboard state/schema and adapter contract, the host-agent lifecycle/route publication, and the Dashboard/API projection as one coordinated change. Keep the default provider path byte-for-byte equivalent where practical, and add migration/defaulting tests for older state records before extending the allowed backend kinds.
