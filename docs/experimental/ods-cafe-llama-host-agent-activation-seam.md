@@ -3,17 +3,23 @@
 **Workstream:** LEONES → ODS  
 **Branch:** `ods-cafe-llama-icd-dashboard`  
 **Reviewed:** 2026-10-09  
-**Status:** Host-agent activation overlay staged and contract-tested; real runtime activation remains unverified.
+**Status:** Pinned cafe artifact image builds successfully in CI and its SHA-256 is verified; host-agent activation, GPU inference, and rollback remain unverified.
 
 ## Verified staging status
 
-Workflow run [37904011326](https://github.com/robertosantosx2/LEONES/actions/runs/37904011326) completed successfully for all three contract jobs at commit `42539bf56a6c46a7e3d9ac7504c4773334386d27`. Subsequent runs also passed the contract suites before the image-build smoke test was added:
+Workflow run [37906555180](https://github.com/robertosantosx2/LEONES/actions/runs/37906555180) completed successfully at commit `e082bd8c18a66ed59ee7112afab2af2bd938585e`. All three jobs passed:
 
-- `cafe-artifact-contract`: the hardening patcher and artifact contract tests pass against an ephemeral checkout of `robertosantosx2/ODS` branch `feat/cafe-llama-runtime-improvements`.
-- `backend-contracts`: staged adapter/backend contract tests pass against an ephemeral checkout of current `Osmantic/ODS` main.
-- `dashboard-contracts`: staged ICD panel tests and dashboard build pass.
+- `backend-contracts`: staged adapter/backend contracts passed against an ephemeral checkout of current `Osmantic/ODS` main.
+- `dashboard-contracts`: staged ICD panel tests and dashboard build passed.
+- `cafe-artifact-contract`: artifact patcher and contract tests passed, and the patched pinned image built on a GitHub-hosted Linux runner.
 
-The workflow additionally builds the patched pinned image on a GitHub-hosted Linux runner, executes `llama-server --version`, and inspects the resulting digest label. After `libgomp1` was added, the next build reached the loader and failed because `libcuda.so.1` was absent. This is the NVIDIA driver library normally injected by the NVIDIA container runtime on the target host, not a library that should be bundled from an arbitrary driver into the image. The build check now verifies the ELF architecture and requires all shared dependencies to resolve except this expected host-injected driver library; actual `llama-server --version` and inference still need a GPU-enabled runtime smoke test. `binutils` is added for `readelf`. Earlier smoke-test failures exposed Dockerfile LABEL continuation syntax, MIME detection treating `gzip` as ZIP, the shared-library search path, and a missing CUDA runtime (`libcudart.so.12`) from the original plain-Ubuntu base. This does not activate cafe on a live ODS host, exercise GPU inference, send a real model completion, or prove rollback against a running ODS installation. Until the new run succeeds, the candidate image is not considered build-verified.
+The artifact job downloaded the official release asset and verified its bytes with `sha256sum -c -` successfully. The image's ELF architecture and shared-library dependencies were inspected. As expected on a runner without an NVIDIA driver, `libcuda.so.1` was unresolved at image-build time; all other inspected dependencies resolved. This is the driver library expected to be injected by the NVIDIA container runtime on a compatible host. The workflow deliberately does not claim that `llama-server --version` or inference works without that driver.
+
+Earlier build failures exposed Dockerfile LABEL continuation syntax, incorrect ZIP-vs-gzip detection, the shared-library search path, a missing CUDA runtime (`libcudart.so.12`), and a missing OpenMP runtime (`libgomp.so.1`). Those build blockers are resolved in the successful run.
+
+**What is now verified:** pinned release download, SHA-256 match, image build, expected x86-64 ELF architecture, resolution of non-driver shared dependencies, image provenance labels, staged backend contracts, and dashboard contracts.
+
+**What is not verified:** starting the container with an actual NVIDIA driver/GPU, `llama-server --version` on that host, model-list/health endpoints, a real bounded model completion, host-agent activation, or rollback against a running ODS installation. CI does not activate cafe on a live ODS host and is not a GPU runtime test.
 
 ## Current ODS lifecycle seams reviewed
 
@@ -32,7 +38,7 @@ The candidate is pinned to the official cafe-llama.cpp 0.75 Linux x64 CUDA 12.4 
 - Build ID: `cafe-llama-0.75-linux-x64-cuda12.4`
 - Architecture/backend labels: `linux-x64` / `cuda-12.4`
 
-The Dockerfile checks the downloaded bytes with `sha256sum -c -` and labels the image with the declared build ID, digest, architecture, and backend. **The digest is pinned to publisher-provided release metadata; the bytes have not yet been independently downloaded, hashed, and built in this workflow.** A successful contract test proves that the pin and verification command are present, not that the artifact has been fetched or the image built successfully. Any URL override must be paired with the SHA-256 of that exact asset and matching identity metadata.
+The Dockerfile checks the downloaded bytes with `sha256sum -c -` and labels the image with the declared build ID, digest, architecture, and backend. In workflow run [37906555180](https://github.com/robertosantosx2/LEONES/actions/runs/37906555180), the asset was fetched and the SHA-256 check passed, and the image built successfully. The digest originates from GitHub release asset metadata; the CI run confirms that the downloaded bytes match that pinned value. Any URL override must be paired with the SHA-256 of that exact asset and matching identity metadata.
 
 ## Required implementation sequence
 
