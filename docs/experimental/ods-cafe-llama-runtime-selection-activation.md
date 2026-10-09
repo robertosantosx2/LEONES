@@ -230,3 +230,17 @@ no upstream PR has been opened. A green staging workflow must not be reported
 as full ODS CI or runtime proof. The implementation should not be merged by
 editing only the backend enum/endpoint allowlist: those changes would advertise
 a route without providing a safe runtime lifecycle.
+
+
+### CI fixture freshness finding
+
+The staging workflow's Dashboard job currently checks out
+`robertosantosx2/ODS:feat/cafe-llama-icd-runtime-profile` as its base tree,
+then overlays the staged panel. That branch is known to be heavily diverged
+from current ODS `main`; its successful build is therefore not proof that the
+panel integrates with the current upstream tree. Before treating Dashboard CI
+as current-main validation, change the base checkout to `robertosantosx2/ODS:main`
+while retaining the separate i18n checkout solely as a source for locale files
+that are missing in the target tree. Existing locale files must continue to be
+merged by key and never overwritten. This is an additional staging-workflow
+correction required before the final CI gate.
