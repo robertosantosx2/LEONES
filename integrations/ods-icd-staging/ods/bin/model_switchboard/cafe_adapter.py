@@ -38,6 +38,7 @@ class CafeLlamaAdapter(ContainerLlamaAdapter):
         expected_sha256: str,
         architecture: str,
         backend: str,
+        build_artifact: Callable[[dict[str, str]], None],
         inspect_artifact: Callable[[], dict[str, Any]],
         probe_runtime_build: Callable[[dict[str, str]], dict[str, Any]],
         capabilities: dict[str, bool] | None = None,
@@ -61,21 +62,21 @@ class CafeLlamaAdapter(ContainerLlamaAdapter):
         self._expected_sha256 = expected_sha256
         self._architecture = architecture.strip().lower()
         self._backend = backend.strip().lower()
+        self._build_artifact = build_artifact
         self._inspect_artifact = inspect_artifact
         self._probe_runtime_build = probe_runtime_build
         self._artifact_verified = False
         self._running_build_verified = False
 
     def stage(self, env: dict[str, str]) -> dict[str, Any]:
-        # The image does not exist on a fresh install until Compose builds it.
-        # The restart callback builds with a SHA-256-pinned asset and starts the
-        # service; only then can image labels be inspected. This is still before
-        # identity proof and route publication, and any mismatch fails closed.
+        # Build without starting the service, verify labels on the resulting
+        # image, and only then start it. A bad or unpinned artifact therefore
+        # cannot become a running candidate runtime.
         try:
-            self._restart(env)
+            self._build_artifact(env)
         except Exception as exc:
             self._artifact_verified = False
-            return result(False, f"cafe build/start failed: {exc}")
+            return result(False, f"cafe image build failed: {exc}")
         try:
             artifact = self._inspect_artifact()
         except Exception as exc:
@@ -96,7 +97,12 @@ class CafeLlamaAdapter(ContainerLlamaAdapter):
                 self._artifact_verified = False
                 return result(False, f"cafe artifact {key} does not match the pinned runtime profile")
         self._artifact_verified = True
-        return result(True, "cafe image built and artifact provenance labels verified")
+        try:
+            self._restart(env)
+        except Exception as exc:
+            self._artifact_verified = False
+            return result(False, f"cafe runtime start failed after image verification: {exc}")
+        return result(True, "cafe image provenance verified before runtime start")
 
     def verify_identity(self, env: dict[str, str]) -> dict[str, Any]:
         if not self._artifact_verified:
