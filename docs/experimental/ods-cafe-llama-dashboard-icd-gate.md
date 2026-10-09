@@ -86,7 +86,7 @@ This branch is now the working area for all further ODS ICD work until the upstr
 - Added staged Dashboard hook and parameter panel, stylesheet, and EN/ES/ZH locale strings.
 - Added backend route contract tests, exact configuration/workload evidence-store tests, and a transfer/integration checklist.
 
-**Important status distinction:** these artifacts are committed in LEONES staging only. They are not yet installed into ODS or wired into the ODS FastAPI app. GitHub Actions run [37856005959](https://github.com/robertosantosx2/LEONES/actions/runs/37856005959) passed Python compilation, API route contracts (`10 passed`), exact configuration/workload evidence-store tests, Dashboard panel tests (`6 passed`), and the Dashboard production build. These isolated staging checks do not prove ODS app wiring or full ODS regression safety. Do not change ICD-06..10 or ICD-14 to PASS until the code is wired and the required tests pass in ODS.
+**Important status distinction:** these artifacts are committed in LEONES staging only. They are not yet installed into ODS or wired into the ODS FastAPI app. The last known green isolated run is [37856152165](https://github.com/robertosantosx2/LEONES/actions/runs/37856152165) and predates the latest staged `main.py` wiring and GPU-layer mapping regression test. The branch needs a fresh green run for those additions. Even a green staging run does not prove full ODS app wiring or regression safety. Do not change ICD-06..10 or ICD-14 to PASS until the code is wired and the required tests pass in ODS.
 
 Next implementation gates:
 1. Add ODS-native integration tests for real host-agent callbacks, lifecycle guards, persisted environment verification, and benchmark receipt identity; the isolated staging tests now pass.
@@ -101,3 +101,8 @@ Next implementation gates:
 A full staged copy of the current ODS `main.py` now includes the ICD router factory and callback bindings for hardware-profile matching, host-agent env persistence, allowlisted `llama-server` recreation, lifecycle/mode/Pixel guards, and exact-workload hardware-filtered measurements. The staging workflow compiles this file.
 
 **Runtime-selection blocker remains:** the current model catalog profiles are hardware compatibility profiles (for example `backend: nvidia`) and do not identify `cafe-llama.cpp` as the active runtime. The resolver intentionally refuses to relabel generic profiles. Consequently the endpoint can be wired while returning no applicable cafe configurations until an explicit ODS runtime-selection/profile field and a supported runtime build/activation path are added. ICD-06..10 and ICD-14 remain NOT VERIFIED in ODS; no hardware performance claims are allowed.
+
+
+## Latest validation boundary (2026-10-09)
+
+The staged cafe adapter's GPU-layer key was checked against the current ODS `.env.example` and corrected to `N_GPU_LAYERS` (not `LLAMA_ARG_N_GPU_LAYERS`). The staged route tests now assert that mapping. The current ODS env example also contains the staged context, KV-cache K/V, Flash Attention, speculation, draft-token, and batch keys. The newest wiring and regression-test commits still need a confirmed green Actions run; do not reuse the earlier successful run as proof for these additions.
