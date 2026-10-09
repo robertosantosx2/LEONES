@@ -31,7 +31,7 @@ jobs:
         run: python integrations/ods-icd-staging/scripts/harden_cafe_artifact.py
       - name: Verify patcher transforms real candidate and fails closed on moved anchors
         run: pytest -q integrations/ods-icd-staging/tests/test_cafe_artifact_patcher.py integrations/ods-icd-staging/tests/test_cafe_artifact_hardening.py
-      - name: Verify resulting artifact contract without building an unpinned binary
+      - name: Verify resulting pinned artifact contract
         run: |
           grep -F 'sha256sum -c -' ods-src/ods/extensions/library/services/cafe-llama/Dockerfile
           grep -F 'CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c}' ods-src/ods/extensions/library/services/cafe-llama/compose.yaml
@@ -39,6 +39,14 @@ jobs:
           grep -F '/usr/local/bin/llama-server --version' ods-src/ods/extensions/library/services/cafe-llama/Dockerfile
           grep -F 'org.osmantic.cafe.artifact-sha256="${CAFE_LLAMA_RELEASE_SHA256}"' ods-src/ods/extensions/library/services/cafe-llama/Dockerfile
           grep -F 'CAFE_LLAMA_BUILD_ID: ${CAFE_LLAMA_BUILD_ID:-cafe-llama-0.75-linux-x64-cuda12.4}' ods-src/ods/extensions/library/services/cafe-llama/compose.yaml
+      - name: Build the pinned cafe image and execute the bundled server version check
+        run: |
+          docker build --pull \
+            --file ods-src/ods/extensions/library/services/cafe-llama/Dockerfile \
+            --tag ods-cafe-llama:ci \
+            ods-src/ods/extensions/library/services/cafe-llama
+          docker run --rm --entrypoint /usr/local/bin/llama-server ods-cafe-llama:ci --version
+          docker image inspect ods-cafe-llama:ci --format '{{ index .Config.Labels "org.osmantic.cafe.artifact-sha256" }}' | grep -Fx '536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c'
 
   backend-contracts:
     runs-on: ubuntu-latest
