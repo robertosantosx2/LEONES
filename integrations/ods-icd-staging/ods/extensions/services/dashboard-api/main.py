@@ -68,7 +68,7 @@ from host_agent_client import (
     shutdown_clients as shutdown_agent_clients,
 )
 from runtime_projection import active_runtime_projection
-from model_selection import matching_runtime_profile
+from model_selection import hardware_matching_profiles
 from routers.inference_configurations import create_inference_configuration_router
 from cloud_telemetry import get_cloud_throughput
 from agent_monitor import collect_metrics
@@ -1239,20 +1239,24 @@ def _icd_compatible_profiles(model: dict[str, Any]) -> list[dict[str, Any]]:
     backend = getattr(gpu_info, "gpu_backend", "cpu") if gpu_info else "cpu"
     memory_type = getattr(gpu_info, "memory_type", "system") if gpu_info else "system"
     vram_mb = getattr(gpu_info, "memory_total_mb", 0) if gpu_info else 0
-    profile = matching_runtime_profile(
-        model,
-        backend=backend,
-        memory_type=memory_type,
-        vram_mb=vram_mb,
-        ram_gb=ram_info.get("total_gb"),
-        host_arch=platform.machine(),
+    ram_gb = ram_info.get("total_gb")
+    profiles = hardware_matching_profiles(
+        model, backend, memory_type, vram_mb, platform.machine(), ram_gb,
     )
-    if not isinstance(profile, dict):
-        return []
-    runtime_id = profile.get("runtime") or profile.get("runtime_id")
-    if runtime_id != "cafe-llama.cpp":
-        return []
-    return [profile]
+    compatible = []
+    for profile in profiles:
+        runtime_id = profile.get("runtime") or profile.get("runtime_id")
+        if runtime_id != "cafe-llama.cpp":
+            continue
+        try:
+            if profile.get("system_ram_min_gb") is not None and float(ram_gb or 0) < float(profile["system_ram_min_gb"]):
+                continue
+            if profile.get("system_ram_max_gb") is not None and float(ram_gb or 0) > float(profile["system_ram_max_gb"]):
+                continue
+        except (TypeError, ValueError):
+            continue
+        compatible.append(profile)
+    return compatible
 
 
 def _icd_apply_environment(values: dict[str, str]) -> dict[str, Any]:
