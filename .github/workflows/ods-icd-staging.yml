@@ -28,6 +28,7 @@ jobs:
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/inference_configuration.py \
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/cafe_llama_icd.py \
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/helpers.py \
+            integrations/ods-icd-staging/ods/extensions/services/dashboard-api/main.py \
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/routers/inference_configurations.py \
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/routers/models.py
       - name: Run staged ICD API contract tests
