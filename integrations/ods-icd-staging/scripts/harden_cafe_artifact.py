@@ -24,7 +24,7 @@ RUN set -eux; \
     case "${CAFE_LLAMA_RELEASE_SHA256}" in *[!0-9a-fA-F]*|'') echo "Invalid CAFE_LLAMA_RELEASE_SHA256" >&2; exit 1 ;; esac; \
     test "${#CAFE_LLAMA_RELEASE_SHA256}" -eq 64 || { echo "SHA-256 must be 64 hex characters" >&2; exit 1; }; \
     curl -fsSL "${CAFE_LLAMA_RELEASE_URL}" -o /tmp/cafe-asset; \
-    printf '%s  %s\\n' "${CAFE_LLAMA_RELEASE_SHA256}" /tmp/cafe-asset | sha256sum -c -; \
+    printf '%s  %s\n' "${CAFE_LLAMA_RELEASE_SHA256}" /tmp/cafe-asset | sha256sum -c -; \
     if file /tmp/cafe-asset | grep -qi zip; then unzip -q /tmp/cafe-asset -d /opt/cafe-llama; \
     else tar -xzf /tmp/cafe-asset -C /opt/cafe-llama; fi; \
     rm -f /tmp/cafe-asset; \
