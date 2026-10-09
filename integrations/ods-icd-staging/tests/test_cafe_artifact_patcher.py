@@ -42,6 +42,8 @@ def test_patcher_transforms_candidate_artifact_contract(tmp_path, monkeypatch):
     assert '= "application/zip"' in docker
     assert 'test "${#CAFE_LLAMA_RELEASE_SHA256}" -eq 64' in docker
     assert "/usr/local/bin/llama-server --version" in docker
+    assert "/etc/ld.so.conf.d/cafe-llama.conf" in docker
+    assert "ldconfig" in docker
     assert 'org.osmantic.cafe.artifact-sha256="${CAFE_LLAMA_RELEASE_SHA256}"' in docker
     assert 'org.osmantic.cafe.build-id="${CAFE_LLAMA_BUILD_ID}"' in docker
     label_lines = [
