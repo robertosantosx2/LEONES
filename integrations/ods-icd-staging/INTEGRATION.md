@@ -135,3 +135,8 @@ The staged route deliberately accepts callback injection so it can be tested wit
 ## 4. Evidence boundary
 
 The staged CI run [37856005959](https://github.com/robertosantosx2/LEONES/actions/runs/37856005959) passed Python compilation, 10 API route tests, the exact configuration/workload evidence-store test, 6 Dashboard panel tests, and a production build. The earlier ODS result of 211 passed / 7 skipped covers the pre-existing focused ICD/model-selection tests only. It does not certify this staged route, Dashboard component, integration wiring, or hardware performance. No throughput claim may be attached until a real target-host benchmark records the exact configuration and workload.
+
+## cafe-llama activation gate
+
+The latest staged CI run verifies artifact hardening, backend contracts, and the Dashboard build, but does not build or activate the runtime. The source-level host-agent lifecycle review and explicit acceptance gates are recorded in [the activation-seam report](../../docs/experimental/ods-cafe-llama-host-agent-activation-seam.md). Keep the integration marked staged until the host agent selects the adapter only on explicit opt-in, verifies the running image provenance, passes readiness plus a real completion, and exercises rollback.
+
