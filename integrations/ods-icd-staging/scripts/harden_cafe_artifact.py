@@ -36,9 +36,9 @@ RUN set -eux; \
     install -m 0755 "$found" /usr/local/bin/llama-server; \
     /usr/local/bin/llama-server --version
 
-LABEL org.osmantic.cafe.build-id="${CAFE_LLAMA_BUILD_ID}" \\
-      org.osmantic.cafe.artifact-sha256="${CAFE_LLAMA_RELEASE_SHA256}" \\
-      org.osmantic.cafe.architecture="${CAFE_LLAMA_ARCHITECTURE}" \\
+LABEL org.osmantic.cafe.build-id="${CAFE_LLAMA_BUILD_ID}" \
+      org.osmantic.cafe.artifact-sha256="${CAFE_LLAMA_RELEASE_SHA256}" \
+      org.osmantic.cafe.architecture="${CAFE_LLAMA_ARCHITECTURE}" \
       org.osmantic.cafe.backend="${CAFE_LLAMA_BACKEND}"
 
 '''
