@@ -33,7 +33,7 @@ RUN set -eux; \
     rm -f /tmp/cafe-asset; \
     found=$(find /opt/cafe-llama -type f -name llama-server -perm /111 -print -quit || true); \
     if [ -z "$found" ]; then echo "Pinned asset contains no executable llama-server" >&2; exit 1; fi; \
-    install -m 0755 "$found" /usr/local/bin/llama-server; \
+    install -m 0755 "$found" /usr/local/bin/llama-server; printf '%s\n' "$(dirname "$found")" > /etc/ld.so.conf.d/cafe-llama.conf; ldconfig; \
     /usr/local/bin/llama-server --version
 
 LABEL org.osmantic.cafe.build-id="${CAFE_LLAMA_BUILD_ID}" \
