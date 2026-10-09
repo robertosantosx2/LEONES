@@ -17,6 +17,9 @@ OLD_BLOCK_START = 'ARG CAFE_LLAMA_RELEASE_URL="https://github.com/quimmedes/cafe
 OLD_BLOCK_END = 'COPY entrypoint.sh /usr/local/bin/cafe-llama-entrypoint.sh'
 NEW_BLOCK = r'''ARG CAFE_LLAMA_RELEASE_URL="https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-bin-ubuntu-x64-cuda-12.4.zip"
 ARG CAFE_LLAMA_RELEASE_SHA256=""
+ARG CAFE_LLAMA_BUILD_ID="cafe-llama-0.75-linux-x64-cuda12.4"
+ARG CAFE_LLAMA_ARCHITECTURE="linux-x64"
+ARG CAFE_LLAMA_BACKEND="cuda-12.4"
 
 RUN set -eux; \
     : "${CAFE_LLAMA_RELEASE_URL:?CAFE_LLAMA_RELEASE_URL must pin the exact release asset URL}"; \
@@ -32,6 +35,11 @@ RUN set -eux; \
     if [ -z "$found" ]; then echo "Pinned asset contains no executable llama-server" >&2; exit 1; fi; \
     install -m 0755 "$found" /usr/local/bin/llama-server; \
     /usr/local/bin/llama-server --version
+
+LABEL org.osmantic.cafe.build-id="${CAFE_LLAMA_BUILD_ID}" \\
+      org.osmantic.cafe.artifact-sha256="${CAFE_LLAMA_RELEASE_SHA256}" \\
+      org.osmantic.cafe.architecture="${CAFE_LLAMA_ARCHITECTURE}" \\
+      org.osmantic.cafe.backend="${CAFE_LLAMA_BACKEND}"
 
 '''
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -52,11 +60,11 @@ def main() -> None:
     docker = docker[:start] + NEW_BLOCK + docker[end:]
     compose = COMPOSE.read_text()
     old_arg = "        CAFE_LLAMA_RELEASE_URL: ${CAFE_LLAMA_RELEASE_URL:-}"
-    new_arg = "        CAFE_LLAMA_RELEASE_URL: ${CAFE_LLAMA_RELEASE_URL:-https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-bin-ubuntu-x64-cuda-12.4.zip}\n        CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-}"
+    new_arg = "        CAFE_LLAMA_RELEASE_URL: ${CAFE_LLAMA_RELEASE_URL:-https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-bin-ubuntu-x64-cuda-12.4.zip}\n        CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-}\n        CAFE_LLAMA_BUILD_ID: ${CAFE_LLAMA_BUILD_ID:-cafe-llama-0.75-linux-x64-cuda12.4}\n        CAFE_LLAMA_ARCHITECTURE: ${CAFE_LLAMA_ARCHITECTURE:-linux-x64}\n        CAFE_LLAMA_BACKEND: ${CAFE_LLAMA_BACKEND:-cuda-12.4}"
     compose = replace_once(compose, old_arg, new_arg, "Compose build args")
     DOCKERFILE.write_text(docker)
     COMPOSE.write_text(compose)
-    print("Hardened cafe-llama build: file/unzip/coreutils installed; SHA-256 pin required and verified.")
+    print("Hardened cafe-llama build: SHA-256 pin required and verified; image labels expose build ID, artifact digest, architecture, and backend for runtime provenance.")
     print("Build remains intentionally fail-closed until CAFE_LLAMA_RELEASE_SHA256 is set to a verified 64-hex digest.")
 
 if __name__ == "__main__":
