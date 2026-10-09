@@ -28,7 +28,7 @@ nvidia-smi >/dev/null || fail "NVIDIA driver is not healthy"
 docker image inspect "$IMAGE" >/dev/null 2>&1 || fail "Image $IMAGE is not built locally"
 
 labels="$(docker image inspect "$IMAGE" --format '{{json .Config.Labels}}')"
-read_label() { LABELS="$labels" python3 -c 'import json,os; print((json.loads(os.environ["LABELS"]) or {}).get(os.environ["KEY"], ""))' KEY="$1"; }
+read_label() { LABELS="$labels" KEY="$1" python3 -c 'import json,os; print((json.loads(os.environ["LABELS"]) or {}).get(os.environ["KEY"], ""))'; }
 BUILD_ID="$(read_label org.osmantic.cafe.build-id)"
 DIGEST="$(read_label org.osmantic.cafe.artifact-sha256)"
 ARCH="$(read_label org.osmantic.cafe.architecture)"
@@ -41,7 +41,7 @@ MODEL_DIR="$(dirname "$MODEL_PATH")"
 MODEL_NAME="$(basename "$MODEL_PATH")"
 echo "Starting isolated container; active ODS services and .env are not modified."
 echo "Image: $IMAGE ($BUILD_ID, $BACKEND); model: $MODEL_NAME; port: $PORT"
-CID="$(docker run -d --rm --name "$NAME" --gpus all \
+CID="$(docker run -d --name "$NAME" --gpus all \
   -p "127.0.0.1:${PORT}:8081" \
   -v "$MODEL_DIR:/models:ro" \
   -e "CAFE_LLAMA_MODEL=/models/$MODEL_NAME" \
@@ -66,9 +66,9 @@ if (( ready == 0 )); then
 fi
 
 models="$(curl --silent --show-error --fail "http://127.0.0.1:$PORT/v1/models")" || fail "GET /v1/models failed"
-printf '%s' "$models" | python3 -c 'import json,sys; x=json.load(sys.stdin); assert isinstance(x.get("data"),list) and x["data"], "empty or invalid model list" ' || fail "Model list response was empty or invalid"
+MODEL_ID="$(printf '%s' "$models" | python3 -c 'import json,sys; x=json.load(sys.stdin); d=x.get("data"); assert isinstance(d,list) and d and isinstance(d[0].get("id"),str) and d[0]["id"], "empty or invalid model list"; print(d[0]["id"])')" || fail "Model list response was empty or invalid"
 
-payload='{"model":"local-model","messages":[{"role":"user","content":"Reply with exactly: ODS CAFE SMOKE OK"}],"max_tokens":16,"temperature":0}'
+payload="$(MODEL_ID="$MODEL_ID" python3 -c 'import json,os; print(json.dumps({"model":os.environ["MODEL_ID"],"messages":[{"role":"user","content":"Reply with exactly: ODS CAFE SMOKE OK"}],"max_tokens":16,"temperature":0}))')"
 response="$(curl --silent --show-error --fail --max-time 90 \
   -H 'Content-Type: application/json' \
   -d "$payload" "http://127.0.0.1:$PORT/v1/chat/completions")" || {
