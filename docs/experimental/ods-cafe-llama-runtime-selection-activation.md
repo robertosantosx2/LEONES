@@ -134,3 +134,18 @@ Do not open the single upstream PR until all of these are true:
 5. Dashboard and EN/ES/ZH work must be merged against the current ODS tree, not copied over it.
 
 Until these blockers are cleared, describe the runtime selector/activation as **designed but not production-validated**. Do not mark ICD-06..10 or ICD-14 complete, and do not open the consolidated upstream PR.
+
+
+## Current ODS tree audit (2026-10-09)
+
+Read-only review of `robertosantosx2/ODS:main` confirms why a Dashboard-only patch cannot finish this integration:
+
+- `ods/.env.example` currently documents `LLM_BACKEND=llama-server` as the local default and lists `llama-server`, `lemonade`, `litellm`, and `external` as backend choices; cafe-llama is not a recognized backend/provider there.
+- `ods/.env.example` sets `LLM_API_URL=http://llama-server:8080` for the baseline.
+- `ods/docker-compose.base.yml` defines the core `llama-server` service directly and binds its command, model path, port, environment, and health check. The optional cafe extension is a separate service and endpoint.
+- `ods/bin/model_switchboard/adapters.py` exposes a `ContainerLlamaAdapter` with `kind = "llama-server"`; that adapter is a model lifecycle seam, not evidence that cafe-llama is registered as a distinct provider.
+- The prior optional-extension scaffold uses a binary called `llama-server`. The executable's filename alone cannot distinguish the upstream build from the cafe fork.
+
+Therefore the implementation needs a runtime/provider resolution boundary that is explicit about provider ID and build provenance, and then must connect that provider to the existing model activation and request-routing flow. Merely adding `ODS_INFERENCE_RUNTIME` to `.env`, starting the optional extension, or changing `LLM_API_URL` by itself would be insufficient.
+
+This is a source-tree audit, not a passing integration test. It does not establish the exact final code change or runtime correctness; those require an ODS-native patch and CI.
