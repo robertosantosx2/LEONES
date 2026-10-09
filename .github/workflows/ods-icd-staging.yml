@@ -48,7 +48,7 @@ jobs:
       - name: Test cafe artifact and running-build provenance against ODS adapter contract
         env:
           PYTHONPATH: ods-src/ods/bin
-        run: pytest -q integrations/ods-icd-staging/tests/test_cafe_adapter.py integrations/ods-icd-staging/tests/test_cafe_state_contract.py
+        run: pytest -q integrations/ods-icd-staging/tests/test_cafe_adapter.py integrations/ods-icd-staging/tests/test_cafe_state_contract.py integrations/ods-icd-staging/tests/test_cafe_artifact_hardening.py
       - name: Run exact configuration/workload evidence store tests
         run: pytest -q integrations/ods-icd-staging/tests/test_inference_configuration_evidence.py
 
