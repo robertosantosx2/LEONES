@@ -36,6 +36,8 @@ jobs:
           grep -F 'sha256sum -c -' ods-src/ods/extensions/library/services/cafe-llama/Dockerfile
           grep -F 'CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-}' ods-src/ods/extensions/library/services/cafe-llama/compose.yaml
           grep -F '/usr/local/bin/llama-server --version' ods-src/ods/extensions/library/services/cafe-llama/Dockerfile
+          grep -F 'org.osmantic.cafe.artifact-sha256="${CAFE_LLAMA_RELEASE_SHA256}"' ods-src/ods/extensions/library/services/cafe-llama/Dockerfile
+          grep -F 'CAFE_LLAMA_BUILD_ID: ${CAFE_LLAMA_BUILD_ID:-cafe-llama-0.75-linux-x64-cuda12.4}' ods-src/ods/extensions/library/services/cafe-llama/compose.yaml
 
   backend-contracts:
     runs-on: ubuntu-latest
