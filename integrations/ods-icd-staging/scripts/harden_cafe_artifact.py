@@ -52,6 +52,7 @@ def main() -> None:
     if not DOCKERFILE.is_file() or not COMPOSE.is_file():
         raise SystemExit(f"Expected candidate extension files under {ROOT}; checkout the ODS candidate branch first")
     docker = DOCKERFILE.read_text()
+    docker = replace_once(docker, "FROM ubuntu:24.04", "FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04", "CUDA runtime base image")
     docker = replace_once(docker, OLD_INSTALL, NEW_INSTALL, "Dockerfile dependency list")
     start = docker.find(OLD_BLOCK_START)
     end = docker.find(OLD_BLOCK_END)
