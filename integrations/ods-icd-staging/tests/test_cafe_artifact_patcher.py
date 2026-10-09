@@ -51,7 +51,7 @@ def test_patcher_transforms_candidate_artifact_contract(tmp_path, monkeypatch):
         ))
     ]
     assert len(label_lines) == 3
-    assert all(line.endswith("\\\\") and not line.endswith("\\\\\\\\") for line in label_lines)
+    assert all(len(line) - len(line.rstrip(chr(92))) == 1 for line in label_lines)
     assert "CAFE_LLAMA_ARCHITECTURE: ${CAFE_LLAMA_ARCHITECTURE:-linux-x64}" in compose_text
     assert "CAFE_LLAMA_BACKEND: ${CAFE_LLAMA_BACKEND:-cuda-12.4}" in compose_text
     assert "CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c}" in compose_text
