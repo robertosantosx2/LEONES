@@ -62,7 +62,7 @@ helper = '''def _compose_restart_cafe_llama_server(env: dict):
     if result.returncode != 0:
         raise RuntimeError(
             f"cafe-llama Compose start failed (exit {result.returncode}): "
-            f"{(result.stderr or "").strip()[:300]}"
+            f"{(result.stderr or '').strip()[:300]}"
         )
     logger.info("cafe-llama service built/recreated via Compose")
 
