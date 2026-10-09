@@ -1,0 +1,62 @@
+from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
+
+SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "harden_cafe_artifact.py"
+spec = spec_from_file_location("harden_cafe_artifact", SCRIPT)
+patcher = module_from_spec(spec)
+spec.loader.exec_module(patcher)
+
+
+def test_patcher_transforms_candidate_artifact_contract(tmp_path, monkeypatch):
+    root = tmp_path / "ods-src/ods/extensions/library/services/cafe-llama"
+    root.mkdir(parents=True)
+    dockerfile = root / "Dockerfile"
+    compose = root / "compose.yaml"
+    dockerfile.write_text(
+        "FROM ubuntu:24.04\n"
+        + patcher.OLD_INSTALL
+        + "\n"
+        + patcher.OLD_BLOCK_START
+        + "\nRUN curl -fsSL \\\n    -o /tmp/cafe-asset\n"
+        + patcher.OLD_BLOCK_END
+        + "\n"
+    )
+    compose.write_text(
+        "services:\n  cafe-llama:\n    build:\n      args:\n"
+        + patcher.OLD_INSTALL.replace("RUN apt-get update \\\n && apt-get install -y --no-install-recommends ca-certificates curl tar \\\n && rm -rf /var/lib/apt/lists/*", "")
+        + patcher.OLD_BLOCK_START.replace("ARG ", "        CAFE_LLAMA_RELEASE_URL: ")
+        + "\n"
+        + "        CAFE_LLAMA_RELEASE_URL: ${CAFE_LLAMA_RELEASE_URL:-}\n"
+    )
+    monkeypatch.setattr(patcher, "ROOT", root)
+    monkeypatch.setattr(patcher, "DOCKERFILE", dockerfile)
+    monkeypatch.setattr(patcher, "COMPOSE", compose)
+
+    patcher.main()
+
+    docker = dockerfile.read_text()
+    compose_text = compose.read_text()
+    assert "file coreutils unzip" in docker
+    assert "sha256sum -c -" in docker
+    assert 'test "${#CAFE_LLAMA_RELEASE_SHA256}" -eq 64' in docker
+    assert "/usr/local/bin/llama-server --version" in docker
+    assert "CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-}" in compose_text
+
+
+def test_patcher_fails_closed_when_expected_anchors_move(tmp_path, monkeypatch):
+    root = tmp_path / "ods-src/ods/extensions/library/services/cafe-llama"
+    root.mkdir(parents=True)
+    dockerfile = root / "Dockerfile"
+    compose = root / "compose.yaml"
+    dockerfile.write_text("FROM ubuntu:24.04\n# changed upstream layout\n")
+    compose.write_text("services: {}\n")
+    monkeypatch.setattr(patcher, "ROOT", root)
+    monkeypatch.setattr(patcher, "DOCKERFILE", dockerfile)
+    monkeypatch.setattr(patcher, "COMPOSE", compose)
+
+    try:
+        patcher.main()
+    except SystemExit as exc:
+        assert "expected one anchor" in str(exc)
+    else:
+        raise AssertionError("patcher must fail closed when the Dockerfile anchor moves")
