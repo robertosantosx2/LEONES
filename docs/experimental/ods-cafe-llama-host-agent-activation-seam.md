@@ -40,6 +40,19 @@ The candidate is pinned to the official cafe-llama.cpp 0.75 Linux x64 CUDA 12.4 
 
 The Dockerfile checks the downloaded bytes with `sha256sum -c -` and labels the image with the declared build ID, digest, architecture, and backend. In workflow run [37906555180](https://github.com/robertosantosx2/LEONES/actions/runs/37906555180), the asset was fetched and the SHA-256 check passed, and the image built successfully. The digest originates from GitHub release asset metadata; the CI run confirms that the downloaded bytes match that pinned value. Any URL override must be paired with the SHA-256 of that exact asset and matching identity metadata.
 
+
+## Isolated GPU runtime smoke test
+
+The script `integrations/ods-icd-staging/scripts/smoke_test_cafe_runtime.sh` is now staged for the next hardware-enabled validation. It checks the pinned image labels, starts a **separate** Docker container with `--gpus all`, requests up to 999 GPU layers by default, then tests `/health`, `/v1/models`, and a bounded `/v1/chat/completions` request. It removes its temporary container on exit and does not modify ODS `.env`, Compose services, or the active `llama-server`.
+
+After the hardened image has been built locally as `ods-cafe-llama:local`, run from the LEONES repository root, replacing the model path if needed:
+
+```bash
+bash integrations/ods-icd-staging/scripts/smoke_test_cafe_runtime.sh "$HOME/ods/data/models/Qwen3.5-2B-Q4_K_M.gguf"
+```
+
+Optional environment overrides: `CAFE_SMOKE_PORT` (default `18081`), `CAFE_SMOKE_TIMEOUT_SECONDS` (default `240`), `CAFE_SMOKE_IMAGE` (default `ods-cafe-llama:local`), and `CAFE_SMOKE_EXTRA_ARGS` (default `-ngl 999`). The script requires Docker, `curl`, `python3`, a working NVIDIA driver, and Docker's NVIDIA GPU support. **This script has been staged and its shell syntax is checked in CI; it has not been run against a physical NVIDIA GPU.** A passing result would validate the isolated runtime only, not ODS host-agent activation or rollback.
+
 ## Required implementation sequence
 
 1. **Resolve the selector before mutations.** Absent selector means existing `llama-server`. Accept `cafe-llama` only for the first supported platform: native Linux + host-managed Compose. Reject WSL/router, Apple, and container-host-agent modes until each has a separately tested implementation.
