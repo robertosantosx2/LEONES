@@ -113,6 +113,7 @@ def test_invalid_expected_digest_is_rejected_at_construction():
             wait_ready=lambda env, model, context: {},
             expected_gguf="model.gguf", context_length=8192,
             expected_build_id=BUILD_ID, expected_sha256="not-a-hash",
+            build_artifact=lambda env: None,
             architecture="linux-x64", backend="cuda-12.4",
             inspect_artifact=lambda: {}, probe_runtime_build=lambda env: {},
         )
