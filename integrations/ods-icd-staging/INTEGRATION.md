@@ -6,7 +6,7 @@ This file is the transfer checklist for moving the staged code into ODS. The sta
 
 Target files are under `ods/extensions/services/dashboard-api/`.
 
-1. Copy the staged ICD core and cafe adapter into their target locations.
+1. Copy the staged ICD core and cafe adapter into their target locations. The staged `main.py` wiring is an integration patch to review/merge, not a blind full-file replacement.
 2. Copy/merge `routers/inference_configurations.py` and add the module to the API app's router imports. Merge the staged `routers/models.py` changes into the branch's current file rather than blindly replacing it if upstream has moved.
 3. In `main.py`, create the router using `create_inference_configuration_router(...)` and include it alongside `models_router.router`.
 4. Bind `find_model` to `models_router._find_loadable_model` (or the canonical model lookup used by the branch).
@@ -130,7 +130,7 @@ The staged tests are contract tests for the router callbacks. Once wired in ODS,
 - exact configuration ID and MEASURED-only benchmark evidence;
 - regression that default llama-server model activation is unchanged.
 
-The staged route deliberately accepts callback injection so it can be tested without running ODS's real host agent. The isolated LEONES evidence-store test uses dependency stubs and must not be copied unchanged into ODS's full pytest suite; port its assertions into an ODS-native test that uses the real module graph. The production callbacks still require ODS integration tests.
+The staged route deliberately accepts callback injection so it can be tested without running ODS's real host agent. The isolated LEONES evidence-store test uses dependency stubs and must not be copied unchanged into ODS's full pytest suite; port its assertions into an ODS-native test that uses the real module graph. The production callbacks still require ODS integration tests. A review of the current model catalog found that hardware profiles use `backend` (for example `nvidia` or `cpu`) but do not declare `runtime: cafe-llama.cpp`; the staged resolver therefore returns no cafe candidates until ODS adds an explicit runtime-selection/profile contract. This is deliberate fail-closed behavior, not a finished runtime selector.
 
 ## 4. Evidence boundary
 
