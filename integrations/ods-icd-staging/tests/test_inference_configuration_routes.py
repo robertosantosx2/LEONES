@@ -16,7 +16,7 @@ security_stub.verify_api_key = lambda: None
 sys.modules["security"] = security_stub
 
 from routers.inference_configurations import create_inference_configuration_router
-from cafe_llama_icd import validate_cafe_configuration
+from cafe_llama_icd import configuration_to_env, validate_cafe_configuration
 from security import verify_api_key
 
 
@@ -278,3 +278,23 @@ def test_adapter_rejects_unmapped_turbo_and_moe_offload():
     moe = dict(base, offload="host-moe")
     with pytest.raises(ValueError, match="no verified ODS environment mapping"):
         validate_cafe_configuration(moe)
+
+
+def test_adapter_uses_ods_documented_gpu_layer_environment_key():
+    configuration = {
+        "runtime": "cafe-llama.cpp",
+        "runtime_revision": "test-revision",
+        "kernel": "baseline",
+        "quantization": "Q4_K_M",
+        "context": 4096,
+        "gpu_layers": 12,
+        "kv_cache": "f16",
+        "flash_attention": True,
+        "offload": "none",
+        "speculation": "none",
+        "draft_tokens": 0,
+        "batch": 1,
+    }
+    env = configuration_to_env(configuration)
+    assert env["N_GPU_LAYERS"] == "12"
+    assert "LLAMA_ARG_N_GPU_LAYERS" not in env
