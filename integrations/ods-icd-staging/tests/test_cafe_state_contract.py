@@ -27,3 +27,10 @@ def test_cafe_endpoint_is_not_the_legacy_llama_server_endpoint():
     endpoints = {item["id"]: item["baseUrl"] for item in doc["endpoints"]}
     assert endpoints["llama-server-default"] == "http://llama-server:8080"
     assert endpoints["cafe-llama-default"] == "http://cafe-llama:8081"
+
+def test_host_agent_publishes_only_the_verified_runtime_endpoint():
+    source = (ODS_ROOT / "bin/ods-host-agent.py").read_text()
+    assert 'runtime_kind = proof.get("runtimeKind", "llama-server")' in source
+    assert 'endpoint_id = "cafe-llama-default"' in source
+    assert 'backend_kind=runtime_kind, endpoint_id=endpoint_id' in source
+    assert 'endpoint_id = "llama-server-default"' in source
