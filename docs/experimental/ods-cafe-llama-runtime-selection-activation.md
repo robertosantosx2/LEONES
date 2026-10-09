@@ -335,3 +335,22 @@ built or run. They reinforce the order of operations: first make the extension
 artifact reproducible and verifiable, then integrate the explicit runtime
 selection and rollback branch, then test the real ODS lifecycle. Do not enable
 cafe activation on the basis of a successful Compose build alone.
+
+### Artifact hardening implementation step (2026-10-09)
+
+A fail-closed patcher is now staged at
+`integrations/ods-icd-staging/scripts/harden_cafe_artifact.py`. It is intended
+to run against a checkout of the candidate ODS extension at `ods-src/`. It
+installs the missing `file`, `coreutils`, and `unzip` tools, requires a
+64-hex `CAFE_LLAMA_RELEASE_SHA256`, verifies the downloaded asset before
+extraction, rejects assets without an executable `llama-server`, and performs
+a version probe during image construction. It refuses to patch if its source
+anchors have drifted.
+
+The patcher deliberately does not embed a guessed digest. The current GitHub
+integration returned HTTP 403 when attempting to write the candidate
+`robertosantosx2/ODS:feat/cafe-llama-runtime-improvements` branch, so this
+staged fix is not yet applied to that branch or built. Before enabling the
+runtime, obtain the actual release asset, independently establish its SHA-256,
+set the build argument, and run the build plus runtime smoke test. This remains
+a staging artifact, not proof of a successful image build.
