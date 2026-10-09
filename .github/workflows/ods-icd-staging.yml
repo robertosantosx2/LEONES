@@ -62,7 +62,38 @@ jobs:
           cp integrations/ods-icd-staging/ods/extensions/services/dashboard/src/components/models/InferenceConfigurationPanel.jsx ods-src/ods/extensions/services/dashboard/src/components/models/
           cp integrations/ods-icd-staging/ods/extensions/services/dashboard/src/components/models/InferenceConfigurationPanel.test.jsx ods-src/ods/extensions/services/dashboard/src/components/models/
           cp integrations/ods-icd-staging/ods/extensions/services/dashboard/src/components/models/inference-configuration-panel.css ods-src/ods/extensions/services/dashboard/src/components/models/
-          cp -r ods-i18n/ods/extensions/services/dashboard/src/i18n ods-src/ods/extensions/services/dashboard/src/
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          source = Path("integrations/ods-icd-staging/ods/extensions/services/dashboard/src/i18n")
+          target = Path("ods-src/ods/extensions/services/dashboard/src/i18n")
+          locales = {"en": "en.js", "es": "es.js", "zh-CN": "zh-CN.js"}
+          for locale, filename in locales.items():
+              additions = json.loads((source / f"inferenceConfiguration.{locale}.json").read_text())
+              path = target / filename
+              text = path.read_text()
+              explicit_keys = set(re.findall(r"^\\s*['\\\"]([^'\\\"]+)['\\\"]\\s*:", text, flags=re.MULTILINE))
+              lines = []
+              for key, value in additions.items():
+                  if key in explicit_keys:
+                      # Never overwrite concurrent locale work; an existing key
+                      # must be reviewed manually if it differs.
+                      match = re.search(r"^\\s*['\\\"]" + re.escape(key) + r"['\\\"]\\s*:\\s*(['\\\"])(.*?)\\1\\s*,?\\s*$", text, flags=re.MULTILINE)
+                      if match:
+                          existing = match.group(2).replace("\\\\'", "'")
+                          if existing != value:
+                              raise SystemExit(f"Translation collision in {filename}: {key}")
+                      continue
+                  lines.append("  " + json.dumps(key, ensure_ascii=False) + ": " + json.dumps(value, ensure_ascii=False) + ",")
+              if lines:
+                  closing = text.rfind("}")
+                  if closing < 0:
+                      raise SystemExit(f"Cannot find object terminator in {path}")
+                  text = text[:closing] + "\\n  // cafe-llama ICD strings merged by key; existing translations preserved.\\n" + "\\n".join(lines) + "\\n" + text[closing:]
+                  path.write_text(text)
+          PY
       - name: Install Dashboard dependencies
         working-directory: ods-src/ods/extensions/services/dashboard
         run: npm ci
