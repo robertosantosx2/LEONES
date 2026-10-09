@@ -3,11 +3,11 @@
 **Workstream:** LEONES → ODS  
 **Branch:** `ods-cafe-llama-icd-dashboard`  
 **Reviewed:** 2026-10-09  
-**Status:** Source review and implementation gate; runtime activation is not implemented.
+**Status:** Host-agent activation overlay staged and contract-tested; real runtime activation remains unverified.
 
 ## Verified staging status
 
-Workflow run [37899444975](https://github.com/robertosantosx2/LEONES/actions/runs/37899444975) completed successfully for all three jobs:
+Workflow run [37903835557](https://github.com/robertosantosx2/LEONES/actions/runs/37903835557) completed successfully for all three jobs, including static safety contracts for opt-in selection, build-before-start provenance checks, and rollback ordering:
 
 - `cafe-artifact-contract`: the hardening patcher and artifact contract tests pass against an ephemeral checkout of `robertosantosx2/ODS` branch `feat/cafe-llama-runtime-improvements`.
 - `backend-contracts`: staged adapter/backend contract tests pass against an ephemeral ODS checkout.
@@ -19,7 +19,7 @@ These jobs do not modify the ODS branch, build the cafe image, or activate a run
 
 The current `main` host agent has a single model activation transaction in `ods/bin/ods-host-agent.py`, the existing readiness helper `_wait_for_model_readiness`, and the existing Compose restart helper `_compose_restart_llama_server`. The existing runtime endpoint resolver is `_runtime_endpoint(env)`.
 
-The staged `CafeLlamaAdapter` deliberately does not select itself. The host agent must explicitly instantiate it only for an explicit cafe selection. Simply copying the adapter into ODS does not activate it.
+The staged `CafeLlamaAdapter` deliberately does not select itself. The LEONES overlay now wires explicit `ODS_INFERENCE_RUNTIME=cafe-llama` selection into the host-agent transaction, compiles against current ODS main, and adds a candidate-stop/stock-runtime restore branch. This remains a staged overlay: CI does not run Docker, activate the service, or prove rollback against a live ODS host.
 
 ## Required implementation sequence
 
