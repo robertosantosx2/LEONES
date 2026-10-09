@@ -75,6 +75,12 @@ jobs:
           upstream_i18n = Path("ods-i18n/ods/extensions/services/dashboard/src/i18n")
           target = Path("ods-src/ods/extensions/services/dashboard/src/i18n")
           target.mkdir(parents=True, exist_ok=True)
+          # Supply the shared i18n entrypoint/tests only when the target branch lacks them.
+          for support_file in ("index.js", "index.test.js"):
+              destination = target / support_file
+              seed = upstream_i18n / support_file
+              if not destination.exists() and seed.exists():
+                  shutil.copy2(seed, destination)
           locales = {"en": "en.js", "es": "es.js", "zh-CN": "zh-CN.js"}
           for locale, filename in locales.items():
               additions = json.loads((source / f"inferenceConfiguration.{locale}.json").read_text())
