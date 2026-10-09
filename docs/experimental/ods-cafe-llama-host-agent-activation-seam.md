@@ -7,36 +7,43 @@
 
 ## Verified staging status
 
-Workflow run [37903835557](https://github.com/robertosantosx2/LEONES/actions/runs/37903835557) completed successfully for all three jobs, including static safety contracts for opt-in selection, build-before-start provenance checks, and rollback ordering:
+Workflow run [37904011326](https://github.com/robertosantosx2/LEONES/actions/runs/37904011326) completed successfully for all three jobs at commit `42539bf56a6c46a7e3d9ac7504c4773334386d27`:
 
 - `cafe-artifact-contract`: the hardening patcher and artifact contract tests pass against an ephemeral checkout of `robertosantosx2/ODS` branch `feat/cafe-llama-runtime-improvements`.
-- `backend-contracts`: staged adapter/backend contract tests pass against an ephemeral ODS checkout.
+- `backend-contracts`: staged adapter/backend contract tests pass against an ephemeral checkout of current `Osmantic/ODS` main.
 - `dashboard-contracts`: staged ICD panel tests and dashboard build pass.
 
-These jobs do not modify the ODS branch, build the cafe image, or activate a running runtime.
+These jobs do not modify the ODS branch, build the cafe image, download and independently verify the release bytes, or activate a running runtime.
 
 ## Current ODS lifecycle seams reviewed
 
 The current `main` host agent has a single model activation transaction in `ods/bin/ods-host-agent.py`, the existing readiness helper `_wait_for_model_readiness`, and the existing Compose restart helper `_compose_restart_llama_server`. The existing runtime endpoint resolver is `_runtime_endpoint(env)`.
 
-The staged `CafeLlamaAdapter` deliberately does not select itself. The LEONES overlay now wires explicit `ODS_INFERENCE_RUNTIME=cafe-llama` selection into the host-agent transaction, compiles against current ODS main, and adds a candidate-stop/stock-runtime restore branch. This remains a staged overlay: CI does not run Docker, activate the service, or prove rollback against a live ODS host.
+The staged `CafeLlamaAdapter` deliberately does not select itself. The LEONES overlay wires explicit `ODS_INFERENCE_RUNTIME=cafe-llama` selection into the host-agent transaction, compiles against current ODS main, and adds a candidate-stop/stock-runtime restore branch. This remains a staged overlay: CI does not run Docker, activate the service, or prove rollback against a live ODS host.
+
+## Pinned release artifact
+
+The candidate is pinned to the official cafe-llama.cpp 0.75 Linux x64 CUDA 12.4 release asset:
+
+- Asset: `llama-0.75-bin-linux-cuda-12.4-x64.tar.gz`
+- Release: [quimmedes/cafe-llama.cpp 0.75](https://github.com/quimmedes/cafe-llama.cpp/releases/tag/0.75)
+- Asset URL: `https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-0.75-bin-linux-cuda-12.4-x64.tar.gz`
+- SHA-256 pinned from GitHub release asset metadata: `536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c`
+- Build ID: `cafe-llama-0.75-linux-x64-cuda12.4`
+- Architecture/backend labels: `linux-x64` / `cuda-12.4`
+
+The Dockerfile checks the downloaded bytes with `sha256sum -c -` and labels the image with the declared build ID, digest, architecture, and backend. **The digest is pinned to publisher-provided release metadata; the bytes have not yet been independently downloaded, hashed, and built in this workflow.** A successful contract test proves that the pin and verification command are present, not that the artifact has been fetched or the image built successfully. Any URL override must be paired with the SHA-256 of that exact asset and matching identity metadata.
 
 ## Required implementation sequence
 
 1. **Resolve the selector before mutations.** Absent selector means existing `llama-server`. Accept `cafe-llama` only for the first supported platform: native Linux + host-managed Compose. Reject WSL/router, Apple, and container-host-agent modes until each has a separately tested implementation.
 2. **Validate pinned provenance.** Require non-empty expected build ID, a 64-character lowercase SHA-256, architecture, and backend. Inspect the built image's labels; do not trust environment values as proof of image identity.
-3. **Add a dedicated Compose lifecycle helper.** Start/recreate only the allowlisted `cafe-llama` service. If Compose flags or service configuration are missing, fail closed; never fall back to recreating stock `llama-server`.
+3. **Build before starting.** Build only the allowlisted `cafe-llama` image, inspect its labels, and refuse to start it if the artifact identity does not match the expected profile. Do not use a combined Compose build-and-start operation that bypasses this check.
 4. **Resolve the correct endpoint.** For host-native Linux, use `127.0.0.1:${EXT_CAFE_LLAMA_PORT:-8081}`. Do not send cafe requests through the existing router transport by accident. Preserve the current port-8080 endpoint for the default runtime.
 5. **Verify the actual running container.** Inspect `ods-cafe-llama`, require it to be running, compare its image ID with the inspected image, and compare build ID / artifact SHA-256 labels with the pinned profile.
 6. **Run readiness and a real completion.** Check health, model listing, expected model identity, context capacity where supported, and a bounded completion. Publish the cafe route only after all checks pass.
 7. **Rollback explicitly.** Snapshot the old provider/configuration before changes. If env persistence, service startup, readiness, identity, or completion fails, do not publish cafe as active; restore the prior selection and route. A cafe failure must never silently count as success or switch providers behind the user's back.
 8. **Expose provenance.** Status and benchmark receipts should identify runtime kind, build ID, artifact digest, model, context, and resolved inference options.
-
-## Artifact blocker
-
-The staged Dockerfile hardening intentionally fails the build if `CAFE_LLAMA_RELEASE_SHA256` is empty. The digest has not yet been independently obtained and verified for the exact release asset. Do not fill it with a guessed value. Until it is pinned, a reproducible trusted image build cannot pass.
-
-The current Docker Compose defaults identify a Linux x64 CUDA 12.4 asset; the build ID, architecture, backend, URL and digest must describe the same exact artifact. Changing the URL without updating the identity metadata must be rejected.
 
 ## Acceptance tests before claiming activation
 
@@ -50,4 +57,4 @@ The current Docker Compose defaults identify a Linux x64 CUDA 12.4 asset; the bu
 
 ## Status language
 
-Until those tests and a real image/runtime smoke test pass, describe this work as **staged contract + artifact hardening + activation design**, not as a completed cafe-llama integration.
+Until a real image build, runtime activation, readiness, bounded completion, and forced rollback/switch-back smoke test pass, describe this work as **staged contract + pinned artifact metadata + activation design**, not as a completed cafe-llama integration.
