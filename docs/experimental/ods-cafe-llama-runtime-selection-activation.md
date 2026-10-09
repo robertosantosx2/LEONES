@@ -293,3 +293,10 @@ The host-agent implementation is large and has a single outer rollback transacti
 ### Current check
 
 Workflow run [37896945923](https://github.com/robertosantosx2/LEONES/actions/runs/37896945923) has both `backend-contracts` and `dashboard-contracts` successful. It confirms the staging contracts and Dashboard build only. It does not exercise the host-agent activation transaction, the live cafe service, or rollback. The release gate therefore remains closed.
+
+### Follow-up execution result (2026-10-09)
+
+- The latest staging workflow for this document commit completed successfully: [run 37897645211](https://github.com/robertosantosx2/LEONES/actions/runs/37897645211), conclusion `success`.
+- A fresh attempt to create `robertosantosx2/ODS:feat/cafe-llama-icd-activation` from `main` was rejected by GitHub with HTTP 403, `Resource not accessible by integration`. No branch or PR was created in that repository.
+- The live activation patch is still not implemented. The source inspection confirms the exact insertion point is the runtime-strategy branch inside `_do_model_activate`, after transaction snapshots and before runtime readiness; the rollback helper dispatches on `runtime_restart_strategy`. Implementing cafe safely also requires an actual Compose service/image contract and a running-build identity probe. Those contracts cannot be truthfully supplied by the current adapter prototype alone.
+- Do not cherry-pick the staging overlay into production as if it enabled cafe activation: it adds state/schema/endpoint/proof plumbing, but it does not select or start the cafe runtime.
