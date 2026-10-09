@@ -300,3 +300,38 @@ Workflow run [37896945923](https://github.com/robertosantosx2/LEONES/actions/run
 - A fresh attempt to create `robertosantosx2/ODS:feat/cafe-llama-icd-activation` from `main` was rejected by GitHub with HTTP 403, `Resource not accessible by integration`. No branch or PR was created in that repository.
 - The live activation patch is still not implemented. The source inspection confirms the exact insertion point is the runtime-strategy branch inside `_do_model_activate`, after transaction snapshots and before runtime readiness; the rollback helper dispatches on `runtime_restart_strategy`. Implementing cafe safely also requires an actual Compose service/image contract and a running-build identity probe. Those contracts cannot be truthfully supplied by the current adapter prototype alone.
 - Do not cherry-pick the staging overlay into production as if it enabled cafe activation: it adds state/schema/endpoint/proof plumbing, but it does not select or start the cafe runtime.
+
+### Fresh audit of the cafe extension artifact contract (2026-10-09)
+
+Inspection of the candidate extension on
+`robertosantosx2/ODS:feat/cafe-llama-runtime-improvements` found additional
+blockers that must be fixed before the service can be used by the activation
+transaction:
+
+- The manifest advertises `amd`, `nvidia`, `apple`, and `cpu`, while the
+  Dockerfile's default release asset is specifically the Linux x86-64 CUDA
+  12.4 build. A single default asset cannot substantiate that whole backend
+  matrix; selection must reject a mismatched artifact/backend, and the build
+  matrix must be explicit.
+- The Dockerfile calls `file /tmp/cafe-asset` to distinguish ZIP from tar.gz,
+  but its apt install list includes `ca-certificates curl tar`, not the
+  `file` package. With `set -e`, the default build can stop at that command
+  before extracting the binary.
+- The build downloads a release URL but does not verify a pinned SHA-256 before
+  extracting and executing it. A mutable URL or URL override is not build
+  provenance. The release contract needs a required digest paired with the
+  selected asset and a verification step before extraction.
+- The manifest exposes `CAFE_LLAMA_EXTRA_ARGS` as an arbitrary CLI-flag string.
+  That must not be populated by the Dashboard's ordinary settings path. The
+  runtime adapter must generate arguments from validated, versioned capability
+  fields; unsupported or conflicting options must fail before process start.
+- The Compose service builds the image locally as `ods-cafe-llama:local`; this
+  name alone gives no immutable identity. Activation needs a build manifest
+  bound to the resolved image/artifact digest, architecture, backend, and
+  runtime build ID, plus a probe proving that same identity is running.
+
+These are source-review findings, not a claim that the candidate image was
+built or run. They reinforce the order of operations: first make the extension
+artifact reproducible and verifiable, then integrate the explicit runtime
+selection and rollback branch, then test the real ODS lifecycle. Do not enable
+cafe activation on the basis of a successful Compose build alone.
