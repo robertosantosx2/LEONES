@@ -2,7 +2,7 @@
 
 Run from the LEONES repository root after checking out the candidate ODS branch at
 ods-src/. This script fails closed if the expected Dockerfile/Compose seams moved.
-It does not invent a digest: the caller must provide CAFE_LLAMA_RELEASE_SHA256.
+It pins the exact official release asset using the SHA-256 digest published in GitHub release metadata.
 """
 from pathlib import Path
 
@@ -13,10 +13,10 @@ COMPOSE = ROOT / "compose.yaml"
 OLD_INSTALL = "RUN apt-get update \\\n && apt-get install -y --no-install-recommends ca-certificates curl tar \\\n && rm -rf /var/lib/apt/lists/*"
 NEW_INSTALL = "RUN apt-get update \\\n && apt-get install -y --no-install-recommends ca-certificates curl tar file coreutils unzip \\\n && rm -rf /var/lib/apt/lists/*"
 
-OLD_BLOCK_START = 'ARG CAFE_LLAMA_RELEASE_URL="https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-bin-ubuntu-x64-cuda-12.4.zip"'
+OLD_BLOCK_START = 'ARG CAFE_LLAMA_RELEASE_URL="https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-0.75-bin-linux-cuda-12.4-x64.tar.gz"'
 OLD_BLOCK_END = 'COPY entrypoint.sh /usr/local/bin/cafe-llama-entrypoint.sh'
-NEW_BLOCK = r'''ARG CAFE_LLAMA_RELEASE_URL="https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-bin-ubuntu-x64-cuda-12.4.zip"
-ARG CAFE_LLAMA_RELEASE_SHA256=""
+NEW_BLOCK = r'''ARG CAFE_LLAMA_RELEASE_URL="https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-0.75-bin-linux-cuda-12.4-x64.tar.gz"
+ARG CAFE_LLAMA_RELEASE_SHA256="536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c"
 ARG CAFE_LLAMA_BUILD_ID="cafe-llama-0.75-linux-x64-cuda12.4"
 ARG CAFE_LLAMA_ARCHITECTURE="linux-x64"
 ARG CAFE_LLAMA_BACKEND="cuda-12.4"
@@ -60,12 +60,12 @@ def main() -> None:
     docker = docker[:start] + NEW_BLOCK + docker[end:]
     compose = COMPOSE.read_text()
     old_arg = "        CAFE_LLAMA_RELEASE_URL: ${CAFE_LLAMA_RELEASE_URL:-}"
-    new_arg = "        CAFE_LLAMA_RELEASE_URL: ${CAFE_LLAMA_RELEASE_URL:-https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-bin-ubuntu-x64-cuda-12.4.zip}\n        CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-}\n        CAFE_LLAMA_BUILD_ID: ${CAFE_LLAMA_BUILD_ID:-cafe-llama-0.75-linux-x64-cuda12.4}\n        CAFE_LLAMA_ARCHITECTURE: ${CAFE_LLAMA_ARCHITECTURE:-linux-x64}\n        CAFE_LLAMA_BACKEND: ${CAFE_LLAMA_BACKEND:-cuda-12.4}"
+    new_arg = "        CAFE_LLAMA_RELEASE_URL: ${CAFE_LLAMA_RELEASE_URL:-https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-0.75-bin-linux-cuda-12.4-x64.tar.gz}\n        CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c}\n        CAFE_LLAMA_BUILD_ID: ${CAFE_LLAMA_BUILD_ID:-cafe-llama-0.75-linux-x64-cuda12.4}\n        CAFE_LLAMA_ARCHITECTURE: ${CAFE_LLAMA_ARCHITECTURE:-linux-x64}\n        CAFE_LLAMA_BACKEND: ${CAFE_LLAMA_BACKEND:-cuda-12.4}"
     compose = replace_once(compose, old_arg, new_arg, "Compose build args")
     DOCKERFILE.write_text(docker)
     COMPOSE.write_text(compose)
     print("Hardened cafe-llama build: SHA-256 pin required and verified; image labels expose build ID, artifact digest, architecture, and backend for runtime provenance.")
-    print("Build remains intentionally fail-closed until CAFE_LLAMA_RELEASE_SHA256 is set to a verified 64-hex digest.")
+    print("The default digest matches the official 0.75 Linux x64 CUDA 12.4 tar.gz asset; overrides must supply a digest for the exact overridden asset.")
 
 if __name__ == "__main__":
     main()
