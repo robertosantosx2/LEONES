@@ -95,6 +95,23 @@ def _compose_restart_cafe_llama_server(env: dict):
     logger.info("cafe-llama service started after image provenance verification")
 
 
+def _compose_stop_cafe_llama_server(env: dict):
+    """Stop the optional candidate before restoring the stock runtime."""
+    compose_flags = resolve_compose_flags()
+    if not compose_flags:
+        raise RuntimeError("cafe-llama rollback requires resolved Compose flags")
+    result = subprocess.run(
+        ["docker", "compose"] + compose_flags + ["stop", "cafe-llama"],
+        cwd=str(INSTALL_DIR), env=_cafe_compose_env(env),
+        capture_output=True, text=True, timeout=120,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"cafe-llama stop failed during rollback (exit {result.returncode}): "
+            f"{(result.stderr or "").strip()[:300]}"
+        )
+
+
 def _cafe_image_manifest():
     """Read provenance labels from the actual local image, never from .env."""
     result = subprocess.run(
@@ -244,6 +261,19 @@ replace_once(
             hermes_model_name = gguf_file'''
 )
 
+# Restore the previous stock runtime when candidate activation fails.
+replace_once(
+'''            elif runtime_restart_strategy == "compose-llama":
+                _compose_restart_llama_server(rollback_env)
+            elif runtime_restart_strategy is not None:''',
+'''            elif runtime_restart_strategy == "compose-cafe-llama":
+                _compose_stop_cafe_llama_server(rollback_env)
+                _compose_restart_llama_server(rollback_env)
+            elif runtime_restart_strategy == "compose-llama":
+                _compose_restart_llama_server(rollback_env)
+            elif runtime_restart_strategy is not None:''',
+)
+
 # Include cafe in the fast readiness cadence and terminal-load diagnosis.
 replace_once(
 '''if runtime_restart_strategy in {"compose-llama", "container-llama", "windows-native-llama"}:''',
@@ -254,6 +284,13 @@ replace_once(
                         if runtime_restart_strategy in {'compose-llama', 'container-llama'} else None),''',
 '''terminal_failure_probe=(_staged_llama_load_failure_probe(gguf_file, runtime_stage_started)
                         if runtime_restart_strategy in {'compose-llama', 'compose-cafe-llama', 'container-llama'} else None),'''
+)
+
+replace_once(
+'''terminal_failure_probe=(_staged_llama_load_failure_probe(_gguf, runtime_stage_started)
+                        if runtime_restart_strategy in {'compose-llama', 'container-llama'} else None),''',
+'''terminal_failure_probe=(_staged_llama_load_failure_probe(_gguf, runtime_stage_started)
+                        if runtime_restart_strategy in {'compose-llama', 'compose-cafe-llama', 'container-llama'} else None),''',
 )
 
 print("Applied explicit cafe-llama host activation overlay.")
