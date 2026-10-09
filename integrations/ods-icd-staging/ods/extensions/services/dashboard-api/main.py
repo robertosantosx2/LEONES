@@ -1259,7 +1259,8 @@ def _icd_apply_environment(values: dict[str, str]) -> dict[str, Any]:
     """Merge allowlisted runtime values and persist through the host agent."""
     from cafe_llama_icd import ENV_MAPPING
 
-    allowed_keys = set(ENV_MAPPING.values())
+    # V cache is derived from the single KV-cache choice by the adapter.
+    allowed_keys = set(ENV_MAPPING.values()) | {"LLAMA_ARG_CACHE_TYPE_V"}
     if not values or any(key not in allowed_keys for key in values):
         raise ValueError("ICD attempted to change an environment key outside its adapter allowlist")
     env_path = _resolve_runtime_env_path()
