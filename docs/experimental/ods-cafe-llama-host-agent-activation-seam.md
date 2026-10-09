@@ -7,13 +7,13 @@
 
 ## Verified staging status
 
-Workflow run [37904011326](https://github.com/robertosantosx2/LEONES/actions/runs/37904011326) completed successfully for all three jobs at commit `42539bf56a6c46a7e3d9ac7504c4773334386d27`:
+Workflow run [37904011326](https://github.com/robertosantosx2/LEONES/actions/runs/37904011326) completed successfully for all three contract jobs at commit `42539bf56a6c46a7e3d9ac7504c4773334386d27`. Subsequent runs also passed the contract suites before the image-build smoke test was added:
 
 - `cafe-artifact-contract`: the hardening patcher and artifact contract tests pass against an ephemeral checkout of `robertosantosx2/ODS` branch `feat/cafe-llama-runtime-improvements`.
 - `backend-contracts`: staged adapter/backend contract tests pass against an ephemeral checkout of current `Osmantic/ODS` main.
 - `dashboard-contracts`: staged ICD panel tests and dashboard build pass.
 
-These jobs do not modify the ODS branch, build the cafe image, download and independently verify the release bytes, or activate a running runtime.
+The workflow now additionally attempts to build the patched pinned image on a GitHub-hosted Linux runner, execute `llama-server --version`, and inspect the resulting digest label. This does not activate cafe on a live ODS host, exercise GPU inference, send a real model completion, or prove rollback against a running ODS installation. The first build attempt exposed two staging defects (Dockerfile LABEL continuation syntax and MIME detection treating `gzip` as a ZIP); both were corrected in subsequent commits and the new build check is being rerun.
 
 ## Current ODS lifecycle seams reviewed
 
