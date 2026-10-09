@@ -42,6 +42,16 @@ def test_patcher_transforms_candidate_artifact_contract(tmp_path, monkeypatch):
     assert "/usr/local/bin/llama-server --version" in docker
     assert 'org.osmantic.cafe.artifact-sha256="${CAFE_LLAMA_RELEASE_SHA256}"' in docker
     assert 'org.osmantic.cafe.build-id="${CAFE_LLAMA_BUILD_ID}"' in docker
+    label_lines = [
+        line for line in docker.splitlines()
+        if line.lstrip().startswith((
+            "LABEL org.osmantic.cafe.build-id=",
+            "org.osmantic.cafe.artifact-sha256=",
+            "org.osmantic.cafe.architecture=",
+        ))
+    ]
+    assert len(label_lines) == 3
+    assert all(line.endswith("\\\\") and not line.endswith("\\\\\\\\") for line in label_lines)
     assert "CAFE_LLAMA_ARCHITECTURE: ${CAFE_LLAMA_ARCHITECTURE:-linux-x64}" in compose_text
     assert "CAFE_LLAMA_BACKEND: ${CAFE_LLAMA_BACKEND:-cuda-12.4}" in compose_text
     assert "CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c}" in compose_text
