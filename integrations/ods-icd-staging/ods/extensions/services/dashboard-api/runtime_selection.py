@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 DEFAULT_RUNTIME_ID = "llama-server"
-CAFE_RUNTIME_ID = "cafe-llama.cpp"
+CAFE_RUNTIME_ID = "cafe-llama"
 RUNTIME_SELECTOR_ENV = "ODS_INFERENCE_RUNTIME"
 
 
