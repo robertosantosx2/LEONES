@@ -68,14 +68,24 @@ jobs:
           python - <<'PY'
           import json
           import re
+          import shutil
           from pathlib import Path
 
           source = Path("integrations/ods-icd-staging/ods/extensions/services/dashboard/src/i18n")
+          upstream_i18n = Path("ods-i18n/ods/extensions/services/dashboard/src/i18n")
           target = Path("ods-src/ods/extensions/services/dashboard/src/i18n")
+          target.mkdir(parents=True, exist_ok=True)
           locales = {"en": "en.js", "es": "es.js", "zh-CN": "zh-CN.js"}
           for locale, filename in locales.items():
               additions = json.loads((source / f"inferenceConfiguration.{locale}.json").read_text())
               path = target / filename
+              # Seed only missing files from the current locale branch. Existing
+              # target files are never replaced with another branch's copy.
+              if not path.exists():
+                  seed = upstream_i18n / filename
+                  if not seed.exists():
+                      raise SystemExit(f"Missing canonical locale file: {seed}")
+                  shutil.copy2(seed, path)
               text = path.read_text()
               explicit_keys = set(re.findall(r"""^\s*['"]([^'"]+)['"]\s*:""", text, flags=re.MULTILINE))
               collisions = explicit_keys.intersection(additions)
