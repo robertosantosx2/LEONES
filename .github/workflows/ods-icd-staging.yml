@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: robertosantosx2/ODS
-          ref: feat/cafe-llama-icd-runtime-profile
+          ref: main
           path: ods-src
       - uses: actions/checkout@v4
         with:
