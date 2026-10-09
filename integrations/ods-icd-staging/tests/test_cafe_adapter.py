@@ -42,6 +42,7 @@ def adapter(*, artifact=None, running=None, restart_calls=None, plan=None):
     return CafeLlamaAdapter(
         restart=lambda env: restart_calls.append("restart"),
         wait_ready=wait_ready,
+        build_artifact=lambda env: restart_calls.append("build"),
         expected_gguf="model.gguf",
         context_length=8192,
         expected_build_id=BUILD_ID,
@@ -58,7 +59,7 @@ def test_cafe_activation_requires_pinned_artifact_and_running_build_proof():
     runtime, calls = adapter()
     result = run_runtime_activation(runtime, {"ODS_INFERENCE_RUNTIME": "cafe-llama"})
     assert result["ok"] is True
-    assert calls == ["restart"]
+    assert calls == ["build", "restart"]
     assert result["runtimeKind"] == "cafe-llama"
     assert result["runtimeBuildId"] == BUILD_ID
     assert result["artifactSha256"] == DIGEST
@@ -80,7 +81,8 @@ def test_bad_artifact_manifest_fails_before_restart(field, value):
     runtime, calls = adapter(artifact=manifest)
     staged = runtime.stage({})
     assert staged["ok"] is False
-    assert calls == []
+    # The image may be built, but a mismatched image must never be started.
+    assert calls == ["build"]
 
 
 @pytest.mark.parametrize("running", [
