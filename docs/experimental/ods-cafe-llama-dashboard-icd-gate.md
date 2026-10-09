@@ -106,3 +106,16 @@ A full staged copy of the current ODS `main.py` now includes the ICD router fact
 ## Latest validation boundary (2026-10-09)
 
 The staged cafe adapter's GPU-layer key was checked against the current ODS `.env.example` and corrected to `N_GPU_LAYERS` (not `LLAMA_ARG_N_GPU_LAYERS`). The staged route tests now assert that mapping. The current ODS env example also contains the staged context, KV-cache K/V, Flash Attention, speculation, draft-token, and batch keys. The newest wiring and regression-test commits still need a confirmed green Actions run; do not reuse the earlier successful run as proof for these additions.
+
+
+## Runtime selection decision (2026-10-09)
+
+The explicit decision contract is now recorded in
+[ods-cafe-llama-runtime-selection-activation.md](ods-cafe-llama-runtime-selection-activation.md).
+It defines runtime identity/selection precedence, opt-in activation, provider routing,
+fail-closed lifecycle behavior, canonical environment mapping, and ODS-native
+acceptance tests.
+
+The core blocker is unchanged: design documentation does not prove that current
+ODS can select a cafe-capable build and route real clients to it. Keep the gate
+closed until the real ODS provider-selection seam and lifecycle tests pass.
