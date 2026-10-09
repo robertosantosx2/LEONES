@@ -37,6 +37,7 @@ def test_patcher_transforms_candidate_artifact_contract(tmp_path, monkeypatch):
     docker = dockerfile.read_text()
     compose_text = compose.read_text()
     assert "file coreutils unzip" in docker
+    assert "FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04" in docker
     assert "sha256sum -c -" in docker
     assert 'file --mime-type -b /tmp/cafe-asset' in docker
     assert '= "application/zip"' in docker
