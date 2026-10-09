@@ -227,8 +227,10 @@ replace_once(
 '''if runtime_restart_strategy in {"compose-llama", "compose-cafe-llama", "container-llama", "windows-native-llama"}:'''
 )
 replace_once(
-'''if runtime_restart_strategy in {'compose-llama', 'container-llama'} else None),''',
-'''if runtime_restart_strategy in {'compose-llama', 'compose-cafe-llama', 'container-llama'} else None),'''
+'''terminal_failure_probe=(_staged_llama_load_failure_probe(gguf_file, runtime_stage_started)
+                        if runtime_restart_strategy in {'compose-llama', 'container-llama'} else None),''',
+'''terminal_failure_probe=(_staged_llama_load_failure_probe(gguf_file, runtime_stage_started)
+                        if runtime_restart_strategy in {'compose-llama', 'compose-cafe-llama', 'container-llama'} else None),'''
 )
 
 print("Applied explicit cafe-llama host activation overlay.")
