@@ -1,6 +1,10 @@
-from __future__ import annotations
+from pathlib import Path
+import sys
 
 import pytest
+
+API_ROOT = Path(__file__).resolve().parents[1] / "ods" / "extensions" / "services" / "dashboard-api"
+sys.path.insert(0, str(API_ROOT))
 
 from runtime_selection import (
     CAFE_RUNTIME_ID,
