@@ -5,7 +5,7 @@ import sys
 import pytest
 
 # The workflow overlays the staged adapter onto a fresh checkout of ODS main.
-ODS_BIN = Path(__file__).resolve().parents[2] / "ods-src" / "ods" / "bin"
+ODS_BIN = Path(__file__).resolve().parents[3] / "ods-src" / "ods" / "bin"
 if ODS_BIN.exists():
     sys.path.insert(0, str(ODS_BIN))
 
