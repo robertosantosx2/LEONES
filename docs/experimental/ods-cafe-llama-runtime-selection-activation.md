@@ -258,10 +258,12 @@ the legacy route remains `llama-server-default`. The current contract tests
 exercise artifact mismatch, build mismatch, missing digest, activation proof,
 schema identity and endpoint separation.
 
-The latest completed staging run before the host-agent publication delta,
-[37896828047](https://github.com/robertosantosx2/LEONES/actions/runs/37896828047),
-passed both jobs. Runs after the host-agent publication delta are still being
-checked; their result is not assumed in advance.
+The staging workflow including the host-agent publication delta passed
+both jobs in
+[run 37896945923](https://github.com/robertosantosx2/LEONES/actions/runs/37896945923)
+on commit `cb91800972464203a3c582d0a1e38ffdef4640f0`. This is successful
+contract/build validation against the current upstream source tree, not a live
+ODS runtime activation test or the full ODS regression suite.
 
 **Still not production-complete:** the host agent's `_do_model_activate` does
 not yet select and start the cafe service from `ODS_INFERENCE_RUNTIME`; the
