@@ -67,11 +67,22 @@ class CafeLlamaAdapter(ContainerLlamaAdapter):
         self._running_build_verified = False
 
     def stage(self, env: dict[str, str]) -> dict[str, Any]:
+        # The image does not exist on a fresh install until Compose builds it.
+        # The restart callback builds with a SHA-256-pinned asset and starts the
+        # service; only then can image labels be inspected. This is still before
+        # identity proof and route publication, and any mismatch fails closed.
+        try:
+            self._restart(env)
+        except Exception as exc:
+            self._artifact_verified = False
+            return result(False, f"cafe build/start failed: {exc}")
         try:
             artifact = self._inspect_artifact()
         except Exception as exc:
-            return result(False, f"cafe artifact inspection failed: {exc}")
+            self._artifact_verified = False
+            return result(False, f"cafe artifact inspection failed after build: {exc}")
         if not isinstance(artifact, dict):
+            self._artifact_verified = False
             return result(False, "cafe artifact inspection returned no manifest")
         checks = {
             "build_id": self._expected_build_id,
@@ -82,12 +93,10 @@ class CafeLlamaAdapter(ContainerLlamaAdapter):
         for key, expected in checks.items():
             actual = artifact.get(key)
             if not isinstance(actual, str) or actual.strip().lower() != expected.lower():
+                self._artifact_verified = False
                 return result(False, f"cafe artifact {key} does not match the pinned runtime profile")
         self._artifact_verified = True
-        staged = super().stage(env)
-        if not staged.get("ok"):
-            self._artifact_verified = False
-        return staged
+        return result(True, "cafe image built and artifact provenance labels verified")
 
     def verify_identity(self, env: dict[str, str]) -> dict[str, Any]:
         if not self._artifact_verified:
