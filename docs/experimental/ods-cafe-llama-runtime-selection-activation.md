@@ -232,15 +232,41 @@ editing only the backend enum/endpoint allowlist: those changes would advertise
 a route without providing a safe runtime lifecycle.
 
 
-### CI fixture freshness finding
+### CI fixture freshness finding — corrected
 
-The staging workflow's Dashboard job currently checks out
-`robertosantosx2/ODS:feat/cafe-llama-icd-runtime-profile` as its base tree,
-then overlays the staged panel. That branch is known to be heavily diverged
-from current ODS `main`; its successful build is therefore not proof that the
-panel integrates with the current upstream tree. Before treating Dashboard CI
-as current-main validation, change the base checkout to `robertosantosx2/ODS:main`
-while retaining the separate i18n checkout solely as a source for locale files
-that are missing in the target tree. Existing locale files must continue to be
-merged by key and never overwritten. This is an additional staging-workflow
-correction required before the final CI gate.
+The staging workflow now checks out the authoritative `Osmantic/ODS:main` for
+both backend adapter-contract tests and Dashboard integration. The fork's
+`feat/dashboard-i18n-es-zh` branch remains only a source of locale files that
+are missing in the target tree. Existing locale files are never overwritten;
+translation additions are merged by key and collisions fail for review.
+
+### Staged runtime provenance implementation (2026-10-09)
+
+The staging overlay now includes `CafeLlamaAdapter` and a fail-closed patcher
+that applies its contract to a fresh upstream checkout. It verifies before
+restart that the installed artifact manifest matches the pinned build ID,
+SHA-256, architecture and backend; after startup it requires the running
+runtime to report the same build ID and artifact digest. Missing or mismatched
+provenance prevents a successful activation result.
+
+The overlay also adds `cafe-llama` to the model-state Python validator and JSON
+Schema, adds a distinct `cafe-llama-default` endpoint, and modifies the staged
+reconciler so build identity and artifact digest survive the runtime activation
+proof. The staged host-agent route publisher chooses the cafe endpoint only
+when the proof explicitly reports `runtimeKind=cafe-llama`; absent that proof,
+the legacy route remains `llama-server-default`. The current contract tests
+exercise artifact mismatch, build mismatch, missing digest, activation proof,
+schema identity and endpoint separation.
+
+The latest completed staging run before the host-agent publication delta,
+[37896828047](https://github.com/robertosantosx2/LEONES/actions/runs/37896828047),
+passed both jobs. Runs after the host-agent publication delta are still being
+checked; their result is not assumed in advance.
+
+**Still not production-complete:** the host agent's `_do_model_activate` does
+not yet select and start the cafe service from `ODS_INFERENCE_RUNTIME`; the
+optional service definition and pinned, digest-verified image build are not
+integrated into upstream; and there is no live activation/rollback test. The
+overlay validates the runtime adapter/provenance and route-publication seams,
+not a complete ODS runtime swap. The final PR gate remains closed until those
+pieces and ODS-native regressions pass.
