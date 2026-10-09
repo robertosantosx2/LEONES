@@ -19,11 +19,13 @@ NOW = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def adapter(*, artifact=None, running=None, restart_calls=None, plan=None):
-    artifact = artifact or {
+    if artifact is None:
+        artifact = {
         "build_id": BUILD_ID, "sha256": DIGEST,
         "architecture": "linux-x64", "backend": "cuda-12.4",
     }
-    running = running or {"build_id": BUILD_ID, "artifact_sha256": DIGEST}
+    if running is None:
+        running = {"build_id": BUILD_ID, "artifact_sha256": DIGEST}
     restart_calls = restart_calls if restart_calls is not None else []
     plan = plan or {}
 
