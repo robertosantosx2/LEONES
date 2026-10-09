@@ -85,7 +85,7 @@ jobs:
               closing = text.rfind("}")
               if closing < 0:
                   raise SystemExit(f"Cannot find object terminator in {path}")
-              text = text[:closing] + "\\n  // cafe-llama ICD strings merged by key; existing translations preserved.\\n" + "\\n".join(lines) + "\\n" + text[closing:]
+              text = text[:closing] + "\n  // cafe-llama ICD strings merged by key; existing translations preserved.\n" + "\n".join(lines) + "\n" + text[closing:]
               path.write_text(text)
           PY
       - name: Install Dashboard dependencies
