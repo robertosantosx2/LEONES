@@ -10,7 +10,7 @@ command -v git >/dev/null || { echo "git is required" >&2; exit 1; }
 command -v docker >/dev/null || { echo "docker is required" >&2; exit 1; }
 command -v python3 >/dev/null || { echo "python3 is required" >&2; exit 1; }
 
-LEONES_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"
+LEONES_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../" && pwd)"
 PATCHER="$LEONES_ROOT/integrations/ods-icd-staging/scripts/harden_cafe_artifact.py"
 SMOKE="$LEONES_ROOT/integrations/ods-icd-staging/scripts/smoke_test_cafe_runtime.sh"
 TMP_DIR="$(mktemp -d)"
