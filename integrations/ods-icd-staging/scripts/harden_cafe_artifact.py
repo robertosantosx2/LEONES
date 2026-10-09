@@ -11,7 +11,7 @@ DOCKERFILE = ROOT / "Dockerfile"
 COMPOSE = ROOT / "compose.yaml"
 
 OLD_INSTALL = "RUN apt-get update \\\n && apt-get install -y --no-install-recommends ca-certificates curl tar \\\n && rm -rf /var/lib/apt/lists/*"
-NEW_INSTALL = "RUN apt-get update \\\n && apt-get install -y --no-install-recommends ca-certificates curl tar file coreutils unzip \\\n && rm -rf /var/lib/apt/lists/*"
+NEW_INSTALL = "RUN apt-get update \\\n && apt-get install -y --no-install-recommends ca-certificates curl tar file coreutils unzip libgomp1 \\\n && rm -rf /var/lib/apt/lists/*"
 
 OLD_BLOCK_START = 'ARG CAFE_LLAMA_RELEASE_URL="https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-bin-ubuntu-x64-cuda-12.4.zip"'
 OLD_BLOCK_END = 'COPY entrypoint.sh /usr/local/bin/cafe-llama-entrypoint.sh'
