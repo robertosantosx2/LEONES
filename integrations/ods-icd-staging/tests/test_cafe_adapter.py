@@ -59,9 +59,10 @@ def test_cafe_activation_requires_pinned_artifact_and_running_build_proof():
     result = run_runtime_activation(runtime, {"ODS_INFERENCE_RUNTIME": "cafe-llama"})
     assert result["ok"] is True
     assert calls == ["restart"]
-    # The adapter proves artifact/runtime provenance in its own identity result;
-    # the host-agent publisher still must persist this proof in model-state.
-    assert runtime.verify_identity({"ODS_INFERENCE_RUNTIME": "cafe-llama"})["runtimeKind"] == "cafe-llama"
+    assert result["runtimeKind"] == "cafe-llama"
+    assert result["runtimeBuildId"] == BUILD_ID
+    assert result["artifactSha256"] == DIGEST
+    assert result["identity"] == "model.gguf"
 
 
 @pytest.mark.parametrize("field,value", [
