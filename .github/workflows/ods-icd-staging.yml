@@ -27,12 +27,15 @@ jobs:
           python -m py_compile \
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/inference_configuration.py \
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/cafe_llama_icd.py \
+            integrations/ods-icd-staging/ods/extensions/services/dashboard-api/runtime_selection.py \
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/helpers.py \
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/main.py \
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/routers/inference_configurations.py \
             integrations/ods-icd-staging/ods/extensions/services/dashboard-api/routers/models.py
       - name: Run staged ICD API contract tests
         run: pytest -q integrations/ods-icd-staging/tests/test_inference_configuration_routes.py
+      - name: Run explicit runtime selection contract tests
+        run: pytest -q integrations/ods-icd-staging/tests/test_runtime_selection.py
       - name: Run exact configuration/workload evidence store tests
         run: pytest -q integrations/ods-icd-staging/tests/test_inference_configuration_evidence.py
 
