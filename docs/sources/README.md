@@ -56,6 +56,7 @@ ANÁLISIS LEONES
 | LLMFit | [`LLMFIT.md`](LLMFIT.md) | preselector hardware-aware | 🟢 `preselector` |
 | LLMFit + hardware real | [`LLMFIT-REAL-HARDWARE-2026-08-20.md`](LLMFIT-REAL-HARDWARE-2026-08-20.md) | verificación técnica | 🟢 `verification-leones` |
 | AirLLM | [`AIRLLM.md`](AIRLLM.md) | runtime candidato memory-constrained | 🟡 `runtime-candidate` |
+| Radiance | [`RADIANCE.md`](RADIANCE.md) | runtime candidato AMD RDNA4 / posible backend ODS | 🟡 `runtime-candidate` |
 | ODS | [`ODS.md`](ODS.md) | despliegue/instalación local | 🟡 `research-candidate` |
 | Magnitude | [`MAGNITUDE.md`](MAGNITUDE.md) | agente + inference engine local | 🟡 `research-candidate` |
 | Runtimes locales | [`LOCAL-RUNTIMES-2026.md`](LOCAL-RUNTIMES-2026.md) | radar de runtimes | 🟡 `source-inspiration` |
@@ -92,6 +93,10 @@ LLMFit actúa como **preselector hardware-aware**. Puede reducir el espacio de m
 ### AirLLM
 
 AirLLM actúa como **runtime candidato para escenarios memory-constrained**. Sus claims de memoria y rendimiento se conservan con sus condiciones originales y no pasan a `measured` sin ejecución LEONES.
+
+### Radiance
+
+Radiance actúa como **runtime candidato para AMD RDNA4 (GPUs discretas)**. Puede cubrir el hueco Tier C de ODS en AMD discrete y alimentarse vía `runtime-selection.v1`. Sus claims de eficiencia y rendimiento se conservan como evidencia externa hasta benchmark LEONES.
 
 ### ODS
 
