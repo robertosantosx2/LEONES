@@ -13,6 +13,30 @@ on:
       - ".github/workflows/ods-icd-staging.yml"
 
 jobs:
+  cafe-artifact-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: robertosantosx2/ODS
+          ref: feat/cafe-llama-runtime-improvements
+          path: ods-src
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install isolated patcher test dependency
+        run: python -m pip install --upgrade pytest
+      - name: Apply fail-closed hardening patch to disposable candidate checkout
+        run: python integrations/ods-icd-staging/scripts/harden_cafe_artifact.py
+      - name: Verify patcher transforms real candidate and fails closed on moved anchors
+        run: pytest -q integrations/ods-icd-staging/tests/test_cafe_artifact_patcher.py integrations/ods-icd-staging/tests/test_cafe_artifact_hardening.py
+      - name: Verify resulting artifact contract without building an unpinned binary
+        run: |
+          grep -F 'sha256sum -c -' ods-src/ods/extensions/library/services/cafe-llama/Dockerfile
+          grep -F 'CAFE_LLAMA_RELEASE_SHA256: ${CAFE_LLAMA_RELEASE_SHA256:-}' ods-src/ods/extensions/library/services/cafe-llama/compose.yaml
+          grep -F '/usr/local/bin/llama-server --version' ods-src/ods/extensions/library/services/cafe-llama/Dockerfile
+
   backend-contracts:
     runs-on: ubuntu-latest
     steps:
