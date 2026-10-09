@@ -41,8 +41,10 @@ jobs:
         run: pytest -q integrations/ods-icd-staging/tests/test_inference_configuration_routes.py
       - name: Run explicit runtime selection contract tests
         run: pytest -q integrations/ods-icd-staging/tests/test_runtime_selection.py
-      - name: Overlay staged cafe adapter onto current ODS main
-        run: cp integrations/ods-icd-staging/ods/bin/model_switchboard/cafe_adapter.py ods-src/ods/bin/model_switchboard/cafe_adapter.py
+      - name: Apply reviewed cafe switchboard delta to current ODS main
+        run: |
+          python integrations/ods-icd-staging/scripts/apply_cafe_switchboard_overlay.py
+          cp integrations/ods-icd-staging/ods/bin/model_switchboard/cafe_adapter.py ods-src/ods/bin/model_switchboard/cafe_adapter.py
       - name: Test cafe artifact and running-build provenance against ODS adapter contract
         env:
           PYTHONPATH: ods-src/ods/bin
