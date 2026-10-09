@@ -48,29 +48,51 @@ replace_once(
 # container recreation if the Compose project cannot be resolved.
 anchor = '''def _compose_restart_llama_server(env: dict):
     """Restart llama-server via docker compose (host-native path).'''
-helper = '''def _compose_restart_cafe_llama_server(env: dict):
-    """Build and recreate only the opt-in cafe-llama Compose service."""
-    compose_flags = resolve_compose_flags()
-    if not compose_flags:
-        raise RuntimeError("cafe-llama requires resolved Compose flags; refusing fallback")
-    command = ["docker", "compose"] + compose_flags + [
-        "up", "-d", "--build", "--force-recreate", "--no-deps", "cafe-llama"
-    ]
+helper = '''def _cafe_compose_env(env):
     compose_env = dict(os.environ)
     compose_env.update({str(key): str(value) for key, value in env.items()})
     model_ref = str(env.get("GGUF_FILE") or "").strip()
     if model_ref:
         compose_env["CAFE_LLAMA_MODEL"] = Path(model_ref).name
+    return compose_env
+
+
+def _compose_build_cafe_llama_image(env: dict):
+    """Build the pinned image without starting a runtime candidate."""
+    compose_flags = resolve_compose_flags()
+    if not compose_flags:
+        raise RuntimeError("cafe-llama requires resolved Compose flags; refusing fallback")
     result = subprocess.run(
-        command, cwd=str(INSTALL_DIR), env=compose_env,
-        capture_output=True, text=True, timeout=600
+        ["docker", "compose"] + compose_flags + ["build", "cafe-llama"],
+        cwd=str(INSTALL_DIR), env=_cafe_compose_env(env),
+        capture_output=True, text=True, timeout=900,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"cafe-llama Compose build failed (exit {result.returncode}): "
+            f"{(result.stderr or "").strip()[:300]}"
+        )
+    logger.info("cafe-llama image built; adapter will verify provenance before start")
+
+
+def _compose_restart_cafe_llama_server(env: dict):
+    """Start only the already-built, provenance-verified cafe image."""
+    compose_flags = resolve_compose_flags()
+    if not compose_flags:
+        raise RuntimeError("cafe-llama requires resolved Compose flags; refusing fallback")
+    result = subprocess.run(
+        ["docker", "compose"] + compose_flags + [
+            "up", "-d", "--force-recreate", "--no-deps", "cafe-llama"
+        ],
+        cwd=str(INSTALL_DIR), env=_cafe_compose_env(env),
+        capture_output=True, text=True, timeout=600,
     )
     if result.returncode != 0:
         raise RuntimeError(
             f"cafe-llama Compose start failed (exit {result.returncode}): "
-            f"{(result.stderr or '').strip()[:300]}"
+            f"{(result.stderr or "").strip()[:300]}"
         )
-    logger.info("cafe-llama service built/recreated via Compose")
+    logger.info("cafe-llama service started after image provenance verification")
 
 
 def _cafe_image_manifest():
@@ -187,6 +209,7 @@ anchor,
                     switchboard_adapter = _CafeLlamaAdapter(
                         restart=_compose_restart_cafe_llama_server,
                         wait_ready=_sb_wait_ready,
+                        build_artifact=_compose_build_cafe_llama_image,
                         expected_gguf=gguf_file,
                         context_length=int(context_length),
                         expected_build_id=build_id,
