@@ -185,9 +185,11 @@ anchor,
                     "code": "cafe_runtime_platform_unsupported",
                 })
                 return
+            # Defaults match the reviewed, pinned Compose artifact profile. Explicit
+            # overrides remain possible, but the image labels must match them.
             required = {
-                "CAFE_LLAMA_BUILD_ID": persisted_env.get("CAFE_LLAMA_BUILD_ID"),
-                "CAFE_LLAMA_RELEASE_SHA256": persisted_env.get("CAFE_LLAMA_RELEASE_SHA256"),
+                "CAFE_LLAMA_BUILD_ID": persisted_env.get("CAFE_LLAMA_BUILD_ID") or "cafe-llama-0.75-linux-x64-cuda12.4",
+                "CAFE_LLAMA_RELEASE_SHA256": persisted_env.get("CAFE_LLAMA_RELEASE_SHA256") or "536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c",
                 "CAFE_LLAMA_ARCHITECTURE": persisted_env.get("CAFE_LLAMA_ARCHITECTURE") or "linux-x64",
                 "CAFE_LLAMA_BACKEND": persisted_env.get("CAFE_LLAMA_BACKEND") or "cuda-12.4",
             }
@@ -219,8 +221,8 @@ anchor,
                     runtime_restart_strategy = "compose-cafe-llama"
                     if _CafeLlamaAdapter is None:
                         raise RuntimeError("cafe-llama adapter is unavailable")
-                    build_id = str(env.get("CAFE_LLAMA_BUILD_ID") or "").strip()
-                    digest = str(env.get("CAFE_LLAMA_RELEASE_SHA256") or "").strip()
+                    build_id = str(env.get("CAFE_LLAMA_BUILD_ID") or "cafe-llama-0.75-linux-x64-cuda12.4").strip()
+                    digest = str(env.get("CAFE_LLAMA_RELEASE_SHA256") or "536ec49ec1de5277578be976a5c161bb985857d5f8066e74889afff6c3f5920c").strip()
                     architecture = str(env.get("CAFE_LLAMA_ARCHITECTURE") or "linux-x64").strip()
                     backend = str(env.get("CAFE_LLAMA_BACKEND") or "cuda-12.4").strip()
                     switchboard_adapter = _CafeLlamaAdapter(
