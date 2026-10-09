@@ -161,3 +161,13 @@ The current ODS source tree also has these concrete integration points:
 - `ods/docker-compose.base.yml` owns the baseline `llama-server` process and its readiness probe. The cafe extension's separate service cannot be made active by registering ICD candidates alone; the selected provider must be represented in the host-authoritative Switchboard state and in request routing.
 
 The implementation plan should therefore touch the Switchboard state/schema and adapter contract, the host-agent lifecycle/route publication, and the Dashboard/API projection as one coordinated change. Keep the default provider path byte-for-byte equivalent where practical, and add migration/defaulting tests for older state records before extending the allowed backend kinds.
+
+
+### Repository/PR hygiene check (2026-10-09)
+
+The staged-contract workflow now completes successfully at commit `7fbfcfd26193bac7baff0a8c8e6f426dbfbb4dc7`:
+https://github.com/robertosantosx2/LEONES/actions/runs/37894384934
+
+A branch audit found the existing fork branch `robertosantosx2/ODS:feat/cafe-llama-icd-runtime-profile` is not a safe upstream PR head: GitHub's compare endpoint reports it as diverged from current `main`, 715 commits ahead and 3 behind (merge base `e3b3c89b40f7bc10e5552c0cb0fd8741ce861bbb`; main `d8b04c7f229116ecc378411210b049c913427857`). Do not open the consolidated PR from that branch or merge it wholesale. Once the implementation is validated in LEONES, port only the reviewed integration commits onto a fresh branch based on the current upstream main.
+
+The fork currently has only closed cafe-related PRs (#1, #2, #3); none is an open consolidated implementation PR. The final delivery should therefore be a new, single PR after the runtime activation gate passes, not a reopening or layering of those earlier scaffolding PRs.
