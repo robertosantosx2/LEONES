@@ -43,15 +43,15 @@ The Dockerfile checks the downloaded bytes with `sha256sum -c -` and labels the 
 
 ## Isolated GPU runtime smoke test
 
-The script `integrations/ods-icd-staging/scripts/smoke_test_cafe_runtime.sh` is now staged for the next hardware-enabled validation. It checks the pinned image labels, starts a **separate** Docker container with `--gpus all`, requests up to 999 GPU layers by default, then tests `/health`, `/v1/models`, and a bounded `/v1/chat/completions` request. It removes its temporary container on exit and does not modify ODS `.env`, Compose services, or the active `llama-server`.
+The one-command runner `integrations/ods-icd-staging/scripts/build_and_smoke_cafe_runtime.sh` clones the candidate ODS branch into a temporary directory, applies the pinned artifact hardening patch, builds a temporary image, and invokes `smoke_test_cafe_runtime.sh`. The smoke test checks image provenance, starts a **separate** Docker container with `--gpus all`, requests up to 999 GPU layers by default, then tests `/health`, `/v1/models`, and a bounded `/v1/chat/completions` request. It cleans up the temporary container, image, and checkout; it does not modify the user's ODS checkout, `.env`, Compose services, or active `llama-server`.
 
-After the hardened image has been built locally as `ods-cafe-llama:local`, run from the LEONES repository root, replacing the model path if needed:
+Run from the LEONES repository root on the NVIDIA Ubuntu host, replacing the model path if needed:
 
 ```bash
-bash integrations/ods-icd-staging/scripts/smoke_test_cafe_runtime.sh "$HOME/ods/data/models/Qwen3.5-2B-Q4_K_M.gguf"
+bash integrations/ods-icd-staging/scripts/build_and_smoke_cafe_runtime.sh "$HOME/ods/data/models/Qwen3.5-2B-Q4_K_M.gguf"
 ```
 
-Optional environment overrides: `CAFE_SMOKE_PORT` (default `18081`), `CAFE_SMOKE_TIMEOUT_SECONDS` (default `240`), `CAFE_SMOKE_IMAGE` (default `ods-cafe-llama:local`), and `CAFE_SMOKE_EXTRA_ARGS` (default `-ngl 999`). The script requires Docker, `curl`, `python3`, a working NVIDIA driver, and Docker's NVIDIA GPU support. **This script has been staged and its shell syntax is checked in CI; it has not been run against a physical NVIDIA GPU.** A passing result would validate the isolated runtime only, not ODS host-agent activation or rollback.
+Optional environment overrides: `CAFE_SMOKE_PORT` (default `18081`), `CAFE_SMOKE_TIMEOUT_SECONDS` (default `240`), and `CAFE_SMOKE_EXTRA_ARGS` (default `-ngl 999`). The runner requires Git, Docker, `curl`, `python3`, a working NVIDIA driver, network access to GitHub/release assets, and Docker's NVIDIA GPU support. **The scripts' shell syntax is checked in CI; the smoke test has not been run against a physical NVIDIA GPU.** A passing result would validate the isolated runtime only, not ODS host-agent activation or rollback.
 
 ## Required implementation sequence
 
