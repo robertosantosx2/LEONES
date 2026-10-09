@@ -11,7 +11,7 @@ DOCKERFILE = ROOT / "Dockerfile"
 COMPOSE = ROOT / "compose.yaml"
 
 OLD_INSTALL = "RUN apt-get update \\\n && apt-get install -y --no-install-recommends ca-certificates curl tar \\\n && rm -rf /var/lib/apt/lists/*"
-NEW_INSTALL = "RUN apt-get update \\\n && apt-get install -y --no-install-recommends ca-certificates curl tar file coreutils unzip libgomp1 \\\n && rm -rf /var/lib/apt/lists/*"
+NEW_INSTALL = "RUN apt-get update \\\n && apt-get install -y --no-install-recommends ca-certificates curl tar file coreutils unzip libgomp1 binutils \\\n && rm -rf /var/lib/apt/lists/*"
 
 OLD_BLOCK_START = 'ARG CAFE_LLAMA_RELEASE_URL="https://github.com/quimmedes/cafe-llama.cpp/releases/download/0.75/llama-bin-ubuntu-x64-cuda-12.4.zip"'
 OLD_BLOCK_END = 'COPY entrypoint.sh /usr/local/bin/cafe-llama-entrypoint.sh'
@@ -34,7 +34,10 @@ RUN set -eux; \
     found=$(find /opt/cafe-llama -type f -name llama-server -perm /111 -print -quit || true); \
     if [ -z "$found" ]; then echo "Pinned asset contains no executable llama-server" >&2; exit 1; fi; \
     install -m 0755 "$found" /usr/local/bin/llama-server; printf '%s\n' "$(dirname "$found")" > /etc/ld.so.conf.d/cafe-llama.conf; ldconfig; \
-    /usr/local/bin/llama-server --version
+    readelf -h /usr/local/bin/llama-server | grep -q "Machine:.*Advanced Micro Devices X86-64"; \
+    ldd /usr/local/bin/llama-server | tee /tmp/cafe-llama-ldd; \
+    if grep "not found" /tmp/cafe-llama-ldd | grep -v "libcuda.so.1"; then echo "Unresolved non-driver runtime dependency" >&2; exit 1; fi; \
+    grep -q "libcuda.so.1 => not found" /tmp/cafe-llama-ldd
 
 LABEL org.osmantic.cafe.build-id="${CAFE_LLAMA_BUILD_ID}" \
       org.osmantic.cafe.artifact-sha256="${CAFE_LLAMA_RELEASE_SHA256}" \
