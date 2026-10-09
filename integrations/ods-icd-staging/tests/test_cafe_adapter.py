@@ -27,7 +27,7 @@ def adapter(*, artifact=None, running=None, restart_calls=None, plan=None):
     restart_calls = restart_calls if restart_calls is not None else []
     plan = plan or {}
 
-    def wait_ready(env, expected_gguf, context_length):
+    def wait_ready(env, expected_gguf, context_length, **kwargs):
         return {
             "identity": "model.gguf", "contextLength": context_length,
             "contextVerified": True,
