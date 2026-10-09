@@ -71,6 +71,11 @@ jobs:
         run: |
           python integrations/ods-icd-staging/scripts/apply_cafe_switchboard_overlay.py
           cp integrations/ods-icd-staging/ods/bin/model_switchboard/cafe_adapter.py ods-src/ods/bin/model_switchboard/cafe_adapter.py
+      - name: Apply explicit cafe host-agent activation overlay and compile
+        run: |
+          python -m py_compile integrations/ods-icd-staging/scripts/apply_cafe_host_activation_overlay.py
+          python integrations/ods-icd-staging/scripts/apply_cafe_host_activation_overlay.py
+          python -m py_compile ods-src/ods/bin/ods-host-agent.py
       - name: Test cafe artifact and running-build provenance against ODS adapter contract
         env:
           PYTHONPATH: ods-src/ods/bin
