@@ -1,0 +1,103 @@
+# ODS service manifest — Strata (skeleton for PR C)
+# Copy to: extensions/services/strata/manifest.yaml
+# Schema: extensions/schema/service-manifest.v1.json
+# Validate: python scripts/audit-extensions.py --project-dir . strata
+#
+# Role: optional specialized runtime for Qwen3.8-Flash-Next only.
+# Does NOT replace llama-server. Must not be enabled by default.
+
+schema_version: ods.services.v1
+
+compatibility:
+  ods_min: "2.0.0"
+  # ods_max: optional upper bound when needed
+
+service:
+  id: strata
+  name: Strata (Qwen3.8-Flash-Next)
+  aliases: []
+  container_name: ods-strata
+  host_env: STRATA_HOST
+  default_host: strata
+  # Internal container port (Strata default)
+  port: 8080
+  external_port_env: STRATA_PORT
+  # Host bind port — keep off 11434/8080 used by core stack; override in .env
+  external_port_default: 8088
+  health: /health
+  ui_path: /          # Strata web UI (Chat / Monitor) when exposed
+  type: docker
+  # Docker path is NVIDIA-first; HIP/AMD is experimental (native/docs), not default compose
+  gpu_backends: [nvidia]
+  compose_file: compose.yaml
+  category: optional
+  depends_on: []
+
+  # Inference runtime metadata (for registry / ICD consumers)
+  llm:
+    consumes: false
+    provides: true
+    route: direct
+    openai_compatible: true
+    # Anthropic Messages and Responses are served by Strata; wire via proxy in PR D
+    model_family_specific: true
+    family: Qwen3.8-Flash-Next
+
+  # Envelope (documentation + future ICD gates; enforce in enable path)
+  requirements:
+    min_vram_gb: 12
+    min_ram_gb: 32
+    recommended_ram_gb: 64
+    disk_gb_approx: 80
+
+  # Pin upstream image/tag or source build in compose; document here for operators
+  upstream:
+    project: https://github.com/Niko1221/Strata
+    license: MIT
+    # Replace with the exact tag/commit used in the implementation PR
+    version_pin: "TODO-pin-strata-release-or-commit"
+
+env_vars:
+  # Mapped to Strata docker-entrypoint / setup (see upstream Dockerfile comments)
+  - name: FAMILY
+    description: "Model family: default flash-next, or coder, swift, unsloth"
+    default: ""
+  - name: MODEL
+    description: "Size/quant: Q2_0, IQ2_XS, IQ3_XXS, IQ3_S, …"
+    default: "IQ2_XS"
+  - name: CONTEXT
+    description: "Context window length"
+    default: "8192"
+  - name: VISION
+    description: "no | yes | cpu"
+    default: "no"
+  - name: KV
+    description: "KV cache type (e.g. int8, q4_0, k8v4)"
+    default: ""
+  - name: GPU
+    description: "Single GPU index (e.g. 0)"
+    default: ""
+  - name: GPUS
+    description: "Multi-GPU list (e.g. 0,1) or all — not default in ODS"
+    default: ""
+  - name: LOW_RAM
+    description: "auto | on | off"
+    default: "auto"
+  - name: API_KEY
+    description: "Required if the service is bound beyond loopback"
+    default: ""
+  - name: HOST
+    description: "Bind address inside container"
+    default: "0.0.0.0"
+  - name: PORT
+    description: "Port inside container"
+    default: "8080"
+  - name: REINSTALL
+    description: "Set 1 to re-run model setup with new env"
+    default: ""
+
+# Optional feature flags for Dashboard / installer (names illustrative)
+features:
+  - id: strata-inference
+    name: Strata Flash Next inference
+    required_services: [strata]
