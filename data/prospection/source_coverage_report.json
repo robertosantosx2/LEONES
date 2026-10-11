@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-10T10:38:58.916104+00:00",
+  "generated_at": "2026-10-11T10:51:56.016988+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -162,9 +162,9 @@
       "url": "https://kallithea-scm.org/",
       "kind": "forge-software",
       "priority": "medium",
-      "status": "reachable",
-      "http_status": 200,
-      "final_url": "https://kallithea-scm.org/",
+      "status": "error",
+      "error_type": "URLError",
+      "message": "<urlopen error timed out>",
       "authentication_configured": false
     },
     {

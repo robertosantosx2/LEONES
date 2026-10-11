@@ -2,10 +2,10 @@
   "live_input": "data/prospection/live_discoveries.ndjson",
   "federated_input": "data/prospection/federated_discoveries.ndjson",
   "output": "data/prospection/discovery_input.ndjson",
-  "unique_discoveries": 294,
+  "unique_discoveries": 275,
   "unique_by_source": {
     "cgit-instance:git.zx2c4.com": 1,
-    "codeberg": 39,
+    "codeberg": 20,
     "forgejo-instance:gitea.com": 28,
     "fossil-instance:fossil-scm.org": 6,
     "framagit": 19,
