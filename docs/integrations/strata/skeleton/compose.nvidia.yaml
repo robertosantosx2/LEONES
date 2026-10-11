@@ -1,0 +1,20 @@
+# ODS — Strata NVIDIA GPU overlay (skeleton for PR C in Osmantic/ODS)
+# Copy to: extensions/services/strata/compose.nvidia.yaml
+
+services:
+  strata:
+    # Optional source build at pinned commit:
+    # build:
+    #   context: https://github.com/Niko1221/Strata.git#<FULL_COMMIT>
+    #   dockerfile: Dockerfile
+    #   args:
+    #     CUDA_ARCHITECTURES: ${STRATA_CUDA_ARCHITECTURES:-75;80;86;89;120}
+    #     BUILD_VISION: ${STRATA_BUILD_VISION:-1}
+    # image: ods-strata:<FULL_COMMIT>
+    # pull_policy: never
+
+    gpus: all
+
+    environment:
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+      NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-compute,utility}
