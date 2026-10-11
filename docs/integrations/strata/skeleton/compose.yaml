@@ -1,0 +1,62 @@
+# ODS extension compose fragment — Strata (skeleton for PR C)
+# Copy to: extensions/services/strata/compose.yaml
+#
+# Resolve with (example):
+#   docker compose -f docker-compose.base.yml \
+#     -f docker-compose.nvidia.yml \
+#     -f extensions/services/strata/compose.yaml \
+#     -f extensions/services/strata/compose.nvidia.yaml config
+#
+# Notes:
+# - NVIDIA-first path. AMD HIP is experimental; do not enable via this fragment by default.
+# - First model load can take 1–3+ minutes; health start_period must stay high (upstream uses 600s).
+# - Model weights live under the data volume (~70–80 GB); consent before first pull is a product concern (Dashboard/enable).
+# - Do not bind 0.0.0.0 on the host without API_KEY.
+# - Image: prefer a pinned tag/digest or an ods-source build at a fixed commit (see manifest upstream.version_pin).
+
+services:
+  strata:
+    # Replace with pinned image or source-build label before merge
+    image: ${STRATA_IMAGE:-ods-strata:TODO-pin}
+    container_name: ods-strata
+    restart: unless-stopped
+    profiles:
+      - strata   # optional: only start when profile/enabled; align with ODS enable mechanism
+    environment:
+      FAMILY: ${STRATA_FAMILY:-}
+      MODEL: ${STRATA_MODEL:-IQ2_XS}
+      CONTEXT: ${STRATA_CONTEXT:-8192}
+      VISION: ${STRATA_VISION:-no}
+      KV: ${STRATA_KV:-}
+      GPU: ${STRATA_GPU:-}
+      GPUS: ${STRATA_GPUS:-}
+      LOW_RAM: ${STRATA_LOW_RAM:-auto}
+      API_KEY: ${STRATA_API_KEY:-}
+      HOST: 0.0.0.0
+      PORT: "8080"
+      REINSTALL: ${STRATA_REINSTALL:-}
+    volumes:
+      # Weights, pack, MTP, install config — separate from ODS GGUF catalog
+      - ${ODS_DATA_DIR:-./data}/strata:/data:z
+    ports:
+      # Loopback by default; override BIND via ODS conventions if needed
+      - "${BIND_ADDRESS:-127.0.0.1}:${STRATA_PORT:-8088}:8080"
+    ulimits:
+      memlock: -1
+    security_opt:
+      - no-new-privileges:true
+    # Logging: prefer project x-logging anchor if available in full stack merge
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      # /health is available before API key gate (upstream)
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # Cold start / first download: do not kill mid-load
+      start_period: ${STRATA_START_PERIOD:-600s}
+    # GPU devices and runtime are supplied by compose.nvidia.yaml
