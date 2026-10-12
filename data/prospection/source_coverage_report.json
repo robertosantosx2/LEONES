@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-11T10:51:56.016988+00:00",
+  "generated_at": "2026-10-12T12:05:08.711732+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -162,9 +162,9 @@
       "url": "https://kallithea-scm.org/",
       "kind": "forge-software",
       "priority": "medium",
-      "status": "error",
-      "error_type": "URLError",
-      "message": "<urlopen error timed out>",
+      "status": "reachable",
+      "http_status": 200,
+      "final_url": "https://kallithea-scm.org/",
       "authentication_configured": false
     },
     {
@@ -173,8 +173,8 @@
       "url": "https://phorge.it/",
       "kind": "forge",
       "priority": "medium",
-      "status": "reachable",
-      "http_status": 200,
+      "status": "http_error",
+      "http_status": 500,
       "final_url": "https://www.phorge.it/",
       "authentication_configured": false
     },
@@ -263,7 +263,7 @@
       "priority": "high",
       "status": "reachable",
       "http_status": 200,
-      "final_url": "https://huggingface.co/papers/date/2026-10-09",
+      "final_url": "https://huggingface.co/papers",
       "authentication_configured": false
     }
   ],
