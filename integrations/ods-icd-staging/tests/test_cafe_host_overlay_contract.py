@@ -48,8 +48,23 @@ def test_rollback_stops_candidate_then_restores_stock_runtime():
     assert stop < stop_candidate < restore_stock
 
 
+
+def test_failed_cafe_runtime_logs_are_captured_before_rollback():
+    source = OVERLAY.read_text()
+    assert "Capture cafe runtime logs before rollback replaces the failed candidate." in source
+    assert '"compose-llama", "compose-cafe-llama", "container-llama"' in source
+
+
 def test_running_identity_is_bound_to_inspected_image_and_running_container():
     source = OVERLAY.read_text()
     assert '"docker", "inspect", "ods-cafe-llama"' in source
     assert 'container.get("Image") != image["image_id"]' in source
     assert 'if not (container.get("State") or {}).get("Running")' in source
+
+def test_observe_mode_publishes_the_verified_runtime_route():
+    source = OVERLAY.read_text()
+    assert "_publish_activation_route(" in source
+    assert "final_runtime_proof" in source
+    assert "verified_capabilities" in source
+    assert 'backend_kind="llama-server"' in source
+    assert 'endpoint_id="llama-server-default"' in source

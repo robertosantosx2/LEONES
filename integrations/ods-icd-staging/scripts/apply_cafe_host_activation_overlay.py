@@ -5,7 +5,9 @@ It aborts if any expected upstream seam has drifted.
 """
 from pathlib import Path
 
-ROOT = Path("ods-src/ods")
+import os
+
+ROOT = Path(os.environ.get("ODS_CAFE_OVERLAY_ROOT", "ods-src/ods"))
 AGENT = ROOT / "bin/ods-host-agent.py"
 
 
@@ -205,6 +207,7 @@ anchor,
                     "code": "cafe_runtime_artifact_unpinned",
                 })
                 return
+        effective_mode, configured_mode = _model_activation_modes(persisted_env)
         mode_denial = _model_activation_mode_denial(effective_mode, configured_mode)'''
 )
 
@@ -276,6 +279,14 @@ replace_once(
             elif runtime_restart_strategy is not None:''',
 )
 
+# Capture cafe runtime logs before rollback replaces the failed candidate.
+replace_once(
+    '''            if runtime_restart_strategy in {"compose-llama", "container-llama"}:
+                excerpt = _failed_llama_server_log_excerpt()''',
+    '''            if runtime_restart_strategy in {"compose-llama", "compose-cafe-llama", "container-llama"}:
+                excerpt = _failed_llama_server_log_excerpt()''',
+)
+
 # Include cafe in the fast readiness cadence and terminal-load diagnosis.
 replace_once(
 '''if runtime_restart_strategy in {"compose-llama", "container-llama", "windows-native-llama"}:''',
@@ -293,6 +304,29 @@ replace_once(
                         if runtime_restart_strategy in {'compose-llama', 'container-llama'} else None),''',
 '''terminal_failure_probe=(_staged_llama_load_failure_probe(_gguf, runtime_stage_started)
                         if runtime_restart_strategy in {'compose-llama', 'compose-cafe-llama', 'container-llama'} else None),''',
+)
+
+
+# Publish the observed route through the same runtime-aware helper used
+# during activation. Preserve observe-mode's non-fatal error handling.
+replace_once(
+    '''                        _switchboard_state.record_verified_route(
+                            INSTALL_DIR / "data" / "model-state.json",
+                            catalog_id=str(model_id),
+                            runtime_model_id=verified_runtime_identity,
+                            backend_kind="llama-server",
+                            endpoint_id="llama-server-default",
+                            native_route=None,
+                            context_length=verified_context_length,
+                            capabilities=verified_capabilities,
+                            proof_identity=verified_runtime_identity,
+                        )''',
+    '''                        _publish_activation_route(
+                            env,
+                            str(model_id),
+                            final_runtime_proof,
+                            verified_capabilities,
+                        )''',
 )
 
 print("Applied explicit cafe-llama host activation overlay.")

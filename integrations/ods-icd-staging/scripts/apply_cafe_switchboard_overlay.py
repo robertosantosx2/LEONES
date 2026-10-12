@@ -5,8 +5,23 @@ the expected seams, instead of silently applying a partial or stale patch.
 """
 from pathlib import Path
 import json
+import os
+import shutil
 
-ROOT = Path("ods-src/ods")
+ROOT = Path(os.environ.get("ODS_CAFE_OVERLAY_ROOT", "ods-src/ods"))
+
+# Install the staged adapter into the target ODS checkout.
+STAGING_ROOT = Path(__file__).resolve().parents[1]
+ADAPTER_SOURCE = STAGING_ROOT / "ods/bin/model_switchboard/cafe_adapter.py"
+ADAPTER_DEST = ROOT / "bin/model_switchboard/cafe_adapter.py"
+
+if not ADAPTER_SOURCE.is_file():
+    raise SystemExit(f"Staged cafe adapter not found: {ADAPTER_SOURCE}")
+if not (ROOT / "bin/model_switchboard").is_dir():
+    raise SystemExit(f"ODS switchboard directory not found: {ROOT}")
+
+shutil.copy2(ADAPTER_SOURCE, ADAPTER_DEST)
+print(f"Installed cafe adapter: {ADAPTER_DEST}")
 
 
 def replace_once(path: Path, old: str, new: str) -> None:
@@ -75,6 +90,6 @@ reconciler_path = ROOT / "bin/model_switchboard/reconciler.py"
 replace_once(
     reconciler_path,
     '            outcome_proof = {\n                "identity": outcome_identity,\n                "contextLength": int(outcome["contextLength"]),\n                "contextVerified": bool(outcome["contextVerified"]),\n                "capabilities": dict(outcome["capabilities"]),\n                "verifiedAt": str(outcome["verifiedAt"]),\n            }\n            stable_fields = (\n                "identity",\n                "contextLength",\n                "contextVerified",\n                "capabilities",\n            )',
-    '            outcome_proof = {\n                "identity": outcome_identity,\n                "contextLength": int(outcome["contextLength"]),\n                "contextVerified": bool(outcome["contextVerified"]),\n                "capabilities": dict(outcome["capabilities"]),\n                "verifiedAt": str(outcome["verifiedAt"]),\n            }\n            if getattr(adapter, "kind", None) == "cafe-llama":\n                build_id = outcome.get("runtimeBuildId")\n                digest = outcome.get("artifactSha256")\n                if (\n                    outcome.get("runtimeKind") != "cafe-llama"\n                    or not isinstance(build_id, str) or not build_id.strip()\n                    or not isinstance(digest, str) or len(digest) != 64\n                    or any(char not in "0123456789abcdef" for char in digest)\n                ):\n                    return {\n                        "ok": False, "phase": phase,\n                        "detail": "cafe runtime proof is missing build identity or artifact digest",\n                        **proof,\n                    }\n                outcome_proof.update(runtimeKind="cafe-llama", runtimeBuildId=build_id, artifactSha256=digest)\n            stable_fields = (\n                "identity",\n                "contextLength",\n                "contextVerified",\n                "capabilities",\n                "runtimeKind",\n                "runtimeBuildId",\n                "artifactSha256",\n            )',
+    '            outcome_proof = {\n                "identity": outcome_identity,\n                "contextLength": int(outcome["contextLength"]),\n                "contextVerified": bool(outcome["contextVerified"]),\n                "capabilities": dict(outcome["capabilities"]),\n                "verifiedAt": str(outcome["verifiedAt"]),\n            }\n            if getattr(adapter, "kind", None) == "cafe-llama":\n                build_id = outcome.get("runtimeBuildId")\n                digest = outcome.get("artifactSha256")\n                if (\n                    outcome.get("runtimeKind") != "cafe-llama"\n                    or not isinstance(build_id, str) or not build_id.strip()\n                    or not isinstance(digest, str) or len(digest) != 64\n                    or any(char not in "0123456789abcdef" for char in digest)\n                ):\n                    return {\n                        "ok": False, "phase": phase,\n                        "detail": "cafe runtime proof is missing build identity or artifact digest",\n                        **proof,\n                    }\n                outcome_proof.update(runtimeKind="cafe-llama", runtimeBuildId=build_id, artifactSha256=digest)\n            stable_fields = [\n                "identity",\n                "contextLength",\n                "contextVerified",\n                "capabilities",\n            ]\n            if getattr(adapter, "kind", None) == "cafe-llama":\n                stable_fields.extend(("runtimeKind", "runtimeBuildId", "artifactSha256"))',
 )
 print("Applied cafe-llama state/schema/endpoint/provenance overlay.")

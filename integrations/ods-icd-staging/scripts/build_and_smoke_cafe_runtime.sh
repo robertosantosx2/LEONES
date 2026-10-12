@@ -15,11 +15,25 @@ PATCHER="$LEONES_ROOT/integrations/ods-icd-staging/scripts/harden_cafe_artifact.
 SMOKE="$LEONES_ROOT/integrations/ods-icd-staging/scripts/smoke_test_cafe_runtime.sh"
 TMP_DIR="$(mktemp -d)"
 IMAGE="ods-cafe-llama:smoke-$$"
+
 cleanup() {
   docker image rm -f "$IMAGE" >/dev/null 2>&1 || true
   rm -rf "$TMP_DIR"
 }
 trap cleanup EXIT INT TERM
+cleanup() {
+  STATUS=$?
+  if [[ "$STATUS" -eq 0 ]]; then
+    docker image rm -f "$IMAGE" >/dev/null 2>&1 || true
+    rm -rf "$TMP_DIR"
+  else
+    echo "Diagnostic image preserved: $IMAGE"
+    echo "Build directory preserved: $TMP_DIR"
+    echo "Inspect with: docker logs ods-cafe-debug"
+  fi
+  exit "$STATUS"
+}
+trap cleanup EXIT
 
 git clone --depth 1 --branch feat/cafe-llama-runtime-improvements \
   https://github.com/robertosantosx2/ODS.git "$TMP_DIR/ods-src"

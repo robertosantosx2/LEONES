@@ -69,14 +69,14 @@ fi
 models="$(curl --silent --show-error --fail "http://127.0.0.1:$PORT/v1/models")" || fail "GET /v1/models failed"
 MODEL_ID="$(printf '%s' "$models" | python3 -c 'import json,sys; x=json.load(sys.stdin); d=x.get("data"); assert isinstance(d,list) and d and isinstance(d[0].get("id"),str) and d[0]["id"], "empty or invalid model list"; print(d[0]["id"])')" || fail "Model list response was empty or invalid"
 
-payload="$(MODEL_ID="$MODEL_ID" python3 -c 'import json,os; print(json.dumps({"model":os.environ["MODEL_ID"],"messages":[{"role":"user","content":"Reply with exactly: ODS CAFE SMOKE OK"}],"max_tokens":16,"temperature":0}))')"
+payload="$(MODEL_ID="$MODEL_ID" python3 -c 'import json,os; print(json.dumps({"model":os.environ["MODEL_ID"],"messages":[{"role":"user","content":"Reply with exactly: ODS CAFE SMOKE OK"}],"max_tokens":128,"temperature":0,"stream":False,"chat_template_kwargs":{"enable_thinking":False}}))')"
 response="$(curl --silent --show-error --fail --max-time 90 \
   -H 'Content-Type: application/json' \
   -d "$payload" "http://127.0.0.1:$PORT/v1/chat/completions")" || {
     docker logs "$NAME" 2>&1 || true
     fail "Bounded chat completion failed"
   }
-printf '%s' "$response" | python3 -c 'import json,sys; x=json.load(sys.stdin); c=x.get("choices") or []; assert c and isinstance(c[0].get("message",{}).get("content"),str) and c[0]["message"]["content"].strip(), "no completion text"' || fail "Completion response had no text"
+printf '%s' "$response" | python3 -c 'import json,sys; x=json.load(sys.stdin); c=x.get("choices") or []; assert c, "no choices"; m=c[0].get("message",{}); content=m.get("content"); assert isinstance(content,str) and content.strip()=="ODS CAFE SMOKE OK", f"unexpected completion text: {content!r}"; assert c[0].get("finish_reason")=="stop", f"unexpected finish_reason: {c[0].get(chr(102)+chr(105)+chr(110)+chr(105)+chr(115)+chr(104)+chr(95)+chr(114)+chr(101)+chr(97)+chr(115)+chr(111)+chr(110))!r}"' || fail "Completion text or finish reason did not match"
 
 echo "PASS: image provenance, NVIDIA container startup, /health, /v1/models, and bounded chat completion."
 echo "NOTE: this does not test ODS host-agent activation or rollback; it is an isolated runtime smoke test."

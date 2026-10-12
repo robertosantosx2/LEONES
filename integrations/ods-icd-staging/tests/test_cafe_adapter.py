@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
+import os
 from pathlib import Path
 import sys
 
 import pytest
 
 # The workflow overlays the staged adapter onto a fresh checkout of ODS main.
-ODS_BIN = Path(__file__).resolve().parents[3] / "ods-src" / "ods" / "bin"
+ODS_ROOT = Path(os.environ.get("ODS_CAFE_OVERLAY_ROOT", str(Path(__file__).resolve().parents[3] / "ods-src" / "ods")))
+ODS_BIN = ODS_ROOT / "bin"
 if ODS_BIN.exists():
     sys.path.insert(0, str(ODS_BIN))
 

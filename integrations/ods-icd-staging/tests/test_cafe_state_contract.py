@@ -1,10 +1,11 @@
 import json
+import os
 from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[3]
-ODS_BIN = ROOT / "ods-src" / "ods" / "bin"
-ODS_ROOT = ROOT / "ods-src" / "ods"
+ODS_ROOT = Path(os.environ.get("ODS_CAFE_OVERLAY_ROOT", str(ROOT / "ods-src" / "ods")))
+ODS_BIN = ODS_ROOT / "bin"
 if ODS_BIN.exists():
     sys.path.insert(0, str(ODS_BIN))
 
