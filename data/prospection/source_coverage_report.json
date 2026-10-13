@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-12T12:05:08.711732+00:00",
+  "generated_at": "2026-10-13T11:52:07.835799+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -173,8 +173,8 @@
       "url": "https://phorge.it/",
       "kind": "forge",
       "priority": "medium",
-      "status": "http_error",
-      "http_status": 500,
+      "status": "reachable",
+      "http_status": 200,
       "final_url": "https://www.phorge.it/",
       "authentication_configured": false
     },
