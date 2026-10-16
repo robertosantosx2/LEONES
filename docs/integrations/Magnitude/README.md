@@ -55,10 +55,10 @@ y exigir confirmación.
 ## Preflight
 
 ```text
-Node.js → npm → arquitectura → CPU/RAM → GPU → disco → red
+Node.js → npm → arquitectura → CPU/RAM → GPU detectada → espacio libre en disco
 ```
 
-El preflight registra la versión efectiva de Node/npm y la versión instalada de la CLI. La recomendación de Magnitude se conserva como `reported`/`estimated`; no se convierte en medición LEONES.
+El preflight registra la versión efectiva de Node/npm y de la CLI si está instalada, e intenta detectar herramientas de NVIDIA (`nvidia-smi`), ROCm (`rocm-smi`) o Vulkan (`vulkaninfo`). El espacio libre se mide en el directorio de trabajo. **No comprueba conectividad de red ni certifica que un modelo quepa o que la inferencia funcione.** La recomendación de Magnitude se conserva como `reported`/`estimated`; no se convierte en medición LEONES.
 
 ## Captura de configuración
 
