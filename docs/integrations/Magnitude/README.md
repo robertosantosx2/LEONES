@@ -2,30 +2,43 @@
 
 **Perfil:** Asistente personal IA.
 
-Magnitude es un agente de coding open source que incorpora su propio motor de inferencia local, perfila el hardware, recomienda modelos y configura la ejecución. Su CLI se instala con `npm install -g @magnitudedev/cli`; soporta macOS y Linux y Windows mediante WSL. citeturn0search1turn0search4
+Magnitude es un agente de coding open source que incorpora su propio motor de inferencia local, perfila el hardware, recomienda modelos y configura la ejecución. Su CLI se instala con npm y funciona en Linux/macOS; Windows está disponible mediante WSL.
+
+## Estado de versión (revisado el 2026-10-16)
+
+- **Última versión estable publicada de `@magnitudedev/cli` verificada:** `0.2.9`.
+- **Último commit observado en `magnitudedev/magnitude:main`:** `7f029060a37ed1f7884db038222dc8f36430a08e` (2026-10-16).
+- El instalador de LEONES solicita `@latest` por defecto, para no quedarse anclado a una versión antigua. Para reproducir una instalación se puede fijar `MAGNITUDE_CLI_VERSION`, por ejemplo `MAGNITUDE_CLI_VERSION=0.2.9 ./scripts/integrations/install_magnitude.sh`.
+- La versión instalada se imprime al final y el preflight registra la versión detectada; esto no prueba que el runtime/modelo haya funcionado.
+
+Referencias primarias: [CLI releases](https://github.com/magnitudedev/magnitude/releases) · [código fuente](https://github.com/magnitudedev/magnitude).
 
 ## Qué aporta Magnitude
 
 - instalación CLI sencilla;
 - perfilado del hardware;
 - recomendaciones por calidad/velocidad/memoria;
-- motor propio sobre llama.cpp;
+- motor propio de inferencia local;
 - cálculo previo de requisitos de memoria;
 - ajuste de aceleración, placement y batching;
 - agente capaz de usar shell, editar archivos y ejecutar scripts;
 - skills extensibles.
 
-Magnitude declara que el uso local puede ser completamente privado/offline; el modo cloud es opcional. citeturn0search1turn0search5
+Magnitude permite ejecución local/offline; los servicios cloud dependen de la configuración elegida.
 
 ## Instalación controlada
 
 ```bash
-npm install -g @magnitudedev/cli
-cd proyecto-de-prueba
-magnitude
+./scripts/integrations/install_magnitude.sh
 ```
 
-LEONES no ejecutará una descarga grande automáticamente. Antes de instalar modelos pesados se muestra:
+El script realiza un preflight de solo lectura y pide confirmación antes de instalar la CLI globalmente con npm. Para fijar una versión:
+
+```bash
+MAGNITUDE_CLI_VERSION=0.2.9 ./scripts/integrations/install_magnitude.sh
+```
+
+LEONES no descargará modelos grandes automáticamente. Antes de instalar modelos pesados se debe mostrar:
 
 ```text
 modelo
@@ -37,7 +50,7 @@ espacio requerido
 runtime
 ```
 
-y se exige confirmación.
+y exigir confirmación.
 
 ## Preflight
 
@@ -45,7 +58,7 @@ y se exige confirmación.
 Node.js → npm → arquitectura → CPU/RAM → GPU → disco → red
 ```
 
-El preflight debe registrar la versión efectiva de Node/npm y la versión instalada de la CLI. La recomendación de Magnitude se conserva como `reported`/`estimated`; no se convierte en medición LEONES.
+El preflight registra la versión efectiva de Node/npm y la versión instalada de la CLI. La recomendación de Magnitude se conserva como `reported`/`estimated`; no se convierte en medición LEONES.
 
 ## Captura de configuración
 
@@ -113,3 +126,4 @@ La recomendación de Magnitude nunca sustituye a la evidencia técnica de Atlas.
 
 - Magnitude: https://magnitude.dev/
 - Magnitude GitHub: https://github.com/magnitudedev/magnitude
+- Releases: https://github.com/magnitudedev/magnitude/releases
