@@ -151,3 +151,23 @@ El workflow `.github/workflows/native-chat-validation.yml` incluye ahora tambié
 - Commit de workflow: `cad987813b465b4b4ae76a29c59a12491ec04077`.
 - Se actualizó el cuerpo de la PR #202 con esta cobertura.
 - No se dispone de un resultado de ejecución verificable a través de la integración de GitHub utilizada en esta sesión; el estado continúa siendo **pendiente de ejecución/confirmación**.
+
+
+## CI del fork — resultado y corrección (17 de octubre de 2026)
+
+La primera ejecución verificable del workflow del fork ya terminó. Run [#6](https://github.com/robertosantosx2/magnitude/actions/runs/39020134309), probado sobre el commit `cad987813b465b4b4ae76a29c59a12491ec04077`:
+
+- Instalación reproducible con Bun 1.4.2: **superada**.
+- Typecheck `packages/client-common`: **superado**.
+- Typecheck `web`: **superado**.
+- Typecheck `packages/acn`: **superado**.
+- Suite de tests web: **falló**, con 182 tests superados y 1 fallido de 183.
+- Build web: **no ejecutado**, porque el workflow se detuvo al fallar la suite.
+
+El test fallido fue `web/src/styles/tailwind-boundaries.test.ts`: encontró en la nueva UI de Chat los tonos Tailwind `red-50`, `red-900`, `red-950` y `blue-950`, que no existen en las escalas exportadas por `packages/client-common/src/utils/palette.ts`. Se corrigió `web/src/components/chat-page.tsx` para usar tonos ya definidos: fondo de error `rose-200/30`, tonos oscuros `red-800`/ `slate-900` y tonos azules `blue-900`.
+
+- Commit correctivo: `0e4722c81b56836e8f9bdebc3224b9e71163bcce`.
+- Run de validación posterior: [#7](https://github.com/robertosantosx2/magnitude/actions/runs/39020998471), en cola al registrar esta actualización.
+- El cierre de GitHub mostró además una advertencia de submódulo `inference/native/llama-cpp-rs` sin URL en `.gitmodules`; no fue la causa del fallo de tests, pero debe revisarse si afecta a otras tareas de CI.
+
+No considerar todavía superados los tests ni el build hasta que el run #7 termine. Sigue pendiente la prueba real de inferencia, cancelación, listener 10100/10101 y Open WebUI; la PR upstream #202 permanece en borrador.
