@@ -133,3 +133,12 @@ En el fork de Magnitude se corrigió el lector de streaming para que deje de lee
 - PR #202 actualizada con el alcance de la corrección y el workflow de validación del fork.
 - No se ha confirmado todavía que GitHub Actions haya ejecutado el workflow del fork; la corrección está publicada, pero no verificada mediante tests.
 - La validación funcional requiere aún ejecutar las pruebas, typecheck y build; después, en Ubuntu, probar generación real, cancelación, Open WebUI y los puertos 10100/10101.
+
+
+### Segunda corrección de ciclo de vida
+
+Se corrigió también la eliminación de una conversación durante una generación: el envío se aborta y la finalización del stream ya no debe reinsertar esa conversación en el historial local.
+
+- Commits de seguimiento: `9a35fdc0`, `f31faab8`, `2695baec`.
+- La PR #202 se actualizó para reflejar este cambio.
+- Estas correcciones siguen pendientes de verificación por tests y typecheck; no equivalen a una validación ejecutada.
