@@ -21,33 +21,33 @@ Fecha: 2026-10-17
 - Si `10101` está ocupado, el listener secundario registra una advertencia y no debe derribar el servicio principal.
 - Documentación de privacidad local y resolución de problemas.
 
-## Investigación de la alternativa Open WebUI + iframe
+## Investigación Open WebUI + iframe
 
-Se ha documentado una alternativa para evitar mantener un chat propio: añadir **Chat** al menú lateral de Magnitude y mostrar una instancia local de Open WebUI, configurada para usar la API OpenAI-compatible de Magnitude.
+Se prioriza validar si Magnitude puede incluir Open WebUI en una sección **Chat** lateral, aprovechando su historial, selector de modelo y streaming, en lugar de mantener dos implementaciones de chat.
 
-- Compatibilidad del elemento HTML `<iframe>` en navegadores modernos: confirmada mediante MDN y Can I Use.
-- Que Open WebUI permita ser cargado en un iframe: pendiente de verificar sus cabeceras `Content-Security-Policy` / `frame-ancestors` y `X-Frame-Options`.
-- Que la reciente implementación de iframe en Magnitude sea un componente de UI para incrustar sitios: no confirmado. La búsqueda del código encontró una referencia en extracción/procesamiento DOM, que no basta para concluir que exista ese componente.
-- Conexión de Open WebUI con el endpoint local de Magnitude, sesión/cookies, streaming y puertos 10100/10101: pendiente de prueba.
-- La PR #202 sigue en borrador; se ha añadido un comentario indicando que la alternativa está bajo evaluación. No se afirma que la nueva arquitectura funcione.
+- El elemento `<iframe>` y `loading="lazy"` tienen soporte amplio en navegadores modernos.
+- Chrome 154 anunció en septiembre de 2026 el nuevo sizing intrínseco `frame-sizing: content-height`, `window.requestResize()` y el opt-in `responsive-embedded-sizing`.
+- Esa novedad de tamaño adaptable está marcada como experimental/limitada y no es compatible con Firefox/Safari según las referencias consultadas. No se necesita para una aplicación de chat de altura completa: la propuesta usa un iframe al 100% del contenedor y carga diferida al abrir Chat.
+- El elemento iframe por sí solo no garantiza que Open WebUI permita el embedding. Falta comprobar `Content-Security-Policy`, `X-Frame-Options`, cookies/sesión, endpoint API, streaming y ciclo de vida.
+- La búsqueda del código principal de Magnitude encontró una referencia a iframe en extracción del DOM, pero no confirmó un componente de UI para incrustar aplicaciones externas. La búsqueda de `frame-sizing` y `iframe component` tampoco devolvió resultados. Puede haber trabajo reciente en otra rama/PR que todavía hay que identificar.
 
-Ver el plan y las condiciones en [ADR-openwebui-iframe.md](ADR-openwebui-iframe.md).
+Detalles y fuentes primarias: [ADR-openwebui-iframe.md](ADR-openwebui-iframe.md).
 
-## Estado de validación de la implementación nativa
+## Estado de validación
 
 **No validado localmente.** La integración GitHub permitió publicar commits y abrir la PR, pero esta sesión no ejecuta Bun/TypeScript ni tiene acceso al Magnitude instalado en Ubuntu. No se afirma que compile ni que la generación real funcione.
 
 La PR está en borrador y las ejecuciones de GitHub Actions reportadas por el conector terminaron en `action_required`; no se ha podido verificar CI aprobado.
 
-Pendiente para pasar a Ready for review (nativa o alternativa iframe):
+## Siguiente bloque de trabajo
 
-1. Identificar el cambio concreto de Magnitude relacionado con iframe y confirmar que se puede reutilizar desde la UI.
-2. Verificar las políticas de embedding de Open WebUI y el comportamiento de sesión/cookies.
-3. Configurar Open WebUI contra la API local de Magnitude y probar una generación real con streaming.
-4. Autorizar/ejecutar workflows según las reglas de Magnitude y pasar typecheck/build.
-5. Probar que `http://127.0.0.1:10101/` abre Chat y que `http://127.0.0.1:10100/health` sigue respondiendo, incluyendo colisión del puerto 10101.
-6. Decidir con evidencia si se simplifica la PR para usar Open WebUI o se conserva el chat nativo como alternativa.
+1. Identificar el cambio concreto de Magnitude relacionado con iframe y confirmar que es un componente de UI.
+2. Ejecutar Open WebUI y revisar sus cabeceras HTTP y redirecciones.
+3. Configurar Open WebUI contra la API OpenAI-compatible local de Magnitude y probar generación real con streaming.
+4. Probar el embedding en Chromium y Firefox, incluida la sesión/cookies.
+5. Verificar que `10100` sigue sano y que `10101` no pisa servicios existentes.
+6. Decidir con evidencia si se simplifica la PR nativa #202 o se conserva como alternativa/fallback.
 
 ## Decisión de diseño
 
-Se sigue el patrón de ODS: interfaz conversacional dedicada y separada de la gestión. Se prioriza validar si Open WebUI puede reutilizarse dentro de Magnitude mediante iframe, antes de invertir más en duplicar selector, historial y streaming. El prototipo HTML de LEONES sigue siendo una referencia de interacción, no código de producción.
+Seguir el patrón arquitectónico de ODS: interfaz conversacional dedicada y separada de la gestión. Primero validar Open WebUI embebido; evitar duplicar funcionalidades sin evidencia de que el embedding sea viable. El prototipo HTML de LEONES sigue siendo una referencia de interacción, no código de producción.
