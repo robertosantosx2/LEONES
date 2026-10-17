@@ -27,13 +27,19 @@ OPENAI_MODEL=REEMPLAZAR_POR_ID_EXACTO_DE_MAGNITUDE
 
 `local` es un valor de relleno para clientes que exigen una clave; en el mismo equipo, Magnitude no requiere autenticación para la API local. No usar este valor si OpenDots accede a Magnitude desde otro dispositivo o contenedor.
 
-Obtén los IDs disponibles:
+Configura el proveedor local sobre un checkout existente de OpenDots y valida el ID exacto del modelo (este comando modifica solo las tres variables del proveedor en `.env`, preservando el resto):
+
+```bash
+bash scripts/integrations/configure_opendots_magnitude.sh /ruta/a/OpenDots ID_EXACTO_DE_MAGNITUDE
+```
+
+El script consulta `/models` antes de escribir. Para inspeccionar manualmente los IDs disponibles:
 
 ```bash
 curl -fsS http://127.0.0.1:10100/inference/v1/models
 ```
 
-Copia un `data[].id` exacto en `OPENAI_MODEL`. No supongas que el nombre comercial o el nombre del archivo es el ID de la API.
+No supongas que el nombre comercial o el nombre del archivo es el ID de la API.
 
 ### Si OpenDots se ejecuta dentro de Docker
 
@@ -72,7 +78,7 @@ No afirmar que la aplicación es completamente local mientras haya servicios alo
 3. Ejecuta el smoke test desde el host:
 
    ```bash
-   OPENAI_MODEL='ID_EXACTO' scripts/integrations/opendots_magnitude_smoke.sh
+   OPENAI_MODEL='ID_EXACTO' bash scripts/integrations/opendots_magnitude_smoke.sh
    ```
 
    Para un endpoint de red que requiere autenticación, define también `MAGNITUDE_BASE_URL` y `MAGNITUDE_API_KEY`.
