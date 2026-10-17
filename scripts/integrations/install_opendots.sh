@@ -13,6 +13,7 @@ fail() { echo "[FAIL] $1" >&2; exit 1; }
 command -v git >/dev/null 2>&1 || fail "git is required."
 command -v node >/dev/null 2>&1 || fail "Node.js 24+ is required."
 command -v npm >/dev/null 2>&1 || fail "npm is required."
+command -v python3 >/dev/null 2>&1 || fail "Python 3 is required."
 
 node - <<'NODE' || exit 1
 const major = Number(process.versions.node.split('.')[0]);
