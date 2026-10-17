@@ -14,6 +14,7 @@ on:
   pull_request:
     paths:
       - 'scripts/integrations/opendots_magnitude_*'
+      - 'scripts/integrations/opendots_openbot_magnitude_preflight.sh'
       - 'scripts/integrations/configure_opendots_magnitude.sh'
       - 'scripts/integrations/install_opendots.sh'
       - 'docs/integrations/OPENDOTS-MAGNITUDE.md'
