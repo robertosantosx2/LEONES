@@ -10,6 +10,8 @@ let icnUrl;
 let proxyUrl;
 let proxyPort;
 let lastCompletion;
+let instanceReady = true;
+let completionCount = 0;
 
 async function listen(server) {
   server.listen(0, '127.0.0.1');
@@ -35,13 +37,14 @@ before(async () => {
       res.writeHead(200, { 'content-type': 'application/json' });
       return res.end(JSON.stringify({
         revision: 1,
-        instances: [{ id: 'instance-test-123', configurationId: 'config-test', lifecycle: { _tag: 'Ready' } }],
+        instances: [{ id: 'instance-test-123', configurationId: 'config-test', lifecycle: { _tag: instanceReady ? 'Ready' : 'Loading' } }],
       }));
     }
     if (req.method === 'POST' && url.pathname === '/v1/chat/completions') {
       const chunks = [];
       for await (const chunk of req) chunks.push(chunk);
       lastCompletion = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      completionCount += 1;
       res.writeHead(200, { 'content-type': 'text/event-stream' });
       res.end(
         'data: {"id":"chat-test","object":"chat.completion.chunk","created":1,"model":"local","choices":[{"index":0,"delta":{"content":"LOCAL_OK"},"finish_reason":null}]}\n\n' +
@@ -118,4 +121,27 @@ test('maps OpenDots chat requests to ICN instance IDs and preserves tools over S
   assert.equal(lastCompletion.model, 'config-test');
   assert.equal(lastCompletion.stream, true);
   assert.equal(lastCompletion.tools[0].function.name, 'example_tool');
+});
+
+
+test('fails closed when the selected local model is not Ready (no remote fallback)', async () => {
+  const beforeCount = completionCount;
+  instanceReady = false;
+  try {
+    const response = await fetch(`${proxyUrl}/v1/chat/completions`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: 'local',
+        messages: [{ role: 'user', content: 'This must not be sent anywhere.' }],
+        stream: true,
+      }),
+    });
+    assert.equal(response.status, 503);
+    const body = await response.json();
+    assert.match(body.error.message, /not in Ready state/);
+    assert.equal(completionCount, beforeCount, 'request must not reach the inference endpoint');
+  } finally {
+    instanceReady = true;
+  }
 });
