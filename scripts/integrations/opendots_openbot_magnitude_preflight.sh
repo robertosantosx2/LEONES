@@ -62,6 +62,15 @@ u = urlparse(values["COMPUTER_SUPERVISOR_URL"])
 if u.scheme != "http" or u.hostname not in ("127.0.0.1", "localhost"):
     raise SystemExit("FAIL: esta preflight local exige COMPUTER_SUPERVISOR_URL en loopback HTTP")
 print("PASS: variables requeridas presentes; secretos no mostrados; proveedor apunta a la fachada")
+if values.get("WEB_SEARCH_PROVIDER", "parallel").strip().lower() != "disabled":
+    print("WARN: WEB_SEARCH_PROVIDER no está desactivado; las búsquedas pueden contactar servicios externos.")
+telemetry_off = values.get("COPILOTKIT_TELEMETRY_DISABLED", "").strip().lower() == "true" or values.get("DO_NOT_TRACK", "").strip() == "1"
+if not telemetry_off:
+    print("WARN: no se detecta una desactivación explícita de telemetría CopilotKit.")
+if values.get("VOICE_API_KEY", "").strip():
+    print("WARN: VOICE_API_KEY está configurada; la voz puede usar un servicio externo.")
+if not any(values.get(k, "").strip() for k in ("INTELLIGENCE_API_URL", "INTELLIGENCE_GATEWAY_WS_URL", "INTELLIGENCE_WS_URL")):
+    print("WARN: no se puede verificar que CopilotKit Intelligence sea local; revisa la configuración de conexión.")
 PY
 
 curl -fsS --max-time 5 "$PROXY_URL/health" | python3 -c '
