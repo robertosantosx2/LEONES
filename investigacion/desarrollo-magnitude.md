@@ -148,3 +148,18 @@ Se ha añadido en el fork de Magnitude un selector de historial de conversacione
 - La documentación de investigación se actualizó después en [fc42c4d](https://github.com/robertosantosx2/magnitude/commit/fc42c4d551d8784e03bb27cfdb4b390165d150b2).
 - La descripción de la [PR upstream #202](https://github.com/magnitudedev/magnitude/pull/202) se sincronizó para reflejar este cambio y marcar que hace falta una nueva ejecución de CI sobre el último head.
 - **Pendiente:** nueva CI sobre el último commit y comprobación visual real en viewport móvil; no se afirma que esté probado en navegador.
+
+
+## Actualización CI de la última revisión — 17 de octubre de 2026
+
+La ejecución [Native Chat validation run #13](https://github.com/robertosantosx2/magnitude/actions/runs/39041845322) terminó con **success** en el head actual `fc42c4d551d8784e03bb27cfdb4b390165d150b2`, que incluye el selector de historial móvil y la actualización documental.
+
+Pasaron:
+- Instalación de dependencias con lockfile congelado.
+- Typecheck de `packages/client-common`.
+- Typecheck de `web`.
+- Typecheck de `packages/acn`.
+- Tests de web.
+- Build de producción de web.
+
+Esto elimina el bloqueo de CI para el último commit. **No** acredita la aceptación de la interfaz en navegador ni las pruebas de runtime pendientes: E2E móvil, Stop/cancelación, ciclo de vida del historial, conflicto del puerto 10101, compatibilidad con otros modelos y embedding real de Open WebUI. La PR #202 permanece en borrador hasta cubrir esas comprobaciones y recibir revisión upstream.
