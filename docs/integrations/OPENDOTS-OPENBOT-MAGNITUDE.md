@@ -60,6 +60,8 @@ docker compose -f compose.computers.yml up -d computer-supervisor
 
 5. Arranca OpenDots con `npm run dev`. En el panel **Computer** de un Dot, habilita el acceso y concede únicamente las capacidades necesarias. Browser, files y shell empiezan desactivados.
 
+Para una primera ejecución con el mínimo tráfico externo, configura además `WEB_SEARCH_PROVIDER=disabled`, `COPILOTKIT_TELEMETRY_DISABLED=true` y `DO_NOT_TRACK=1`. Deja sin configurar voz y conectores externos mientras haces las pruebas iniciales. Esto no convierte CopilotKit Intelligence en local: verifica su endpoint y licencia por separado. La preflight avisa si detecta búsqueda/telemetría potencialmente externas, una clave de voz o si no puede comprobar el endpoint de Intelligence.
+
 Para una aplicación dentro de Compose, sigue la variante documentada en [OpenDots Computer setup](https://github.com/CopilotKit/OpenDots/blob/main/docs/COMPUTERS.md); no reutilices el URL de loopback del host desde el contenedor.
 
 ## Comprobación sin efectos secundarios
