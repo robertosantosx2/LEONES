@@ -93,7 +93,7 @@ const server = http.createServer(async (req, res) => {
       for (const [key, value] of Object.entries(input)) {
         if (ALLOWED_FIELDS.has(key)) body[key] = value;
       }
-      body.model = MODEL_ALIAS;
+      body.model = instance.configurationId;
       body.model_instance_id = instance.id;
       // The pinned ICN contract exposes SSE only; TanStack AI/OpenDots consumes a stream.
       body.stream = true;
