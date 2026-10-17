@@ -171,3 +171,16 @@ El test fallido fue `web/src/styles/tailwind-boundaries.test.ts`: encontró en l
 - El cierre de GitHub mostró además una advertencia de submódulo `inference/native/llama-cpp-rs` sin URL en `.gitmodules`; no fue la causa del fallo de tests, pero debe revisarse si afecta a otras tareas de CI.
 
 No considerar todavía superados los tests ni el build hasta que el run #7 termine. Sigue pendiente la prueba real de inferencia, cancelación, listener 10100/10101 y Open WebUI; la PR upstream #202 permanece en borrador.
+
+
+### Estado del run #7 al último seguimiento
+
+El run [#7](https://github.com/robertosantosx2/magnitude/actions/runs/39020998471), sobre el commit `0e4722c81b56836e8f9bdebc3224b9e71163bcce`, ha progresado después de la corrección:
+
+- Instalación: superada.
+- Typecheck `packages/client-common`: superado.
+- Typecheck `web`: superado tras el cambio de tonos.
+- Typecheck `packages/acn`: en ejecución al consultar el estado.
+- Tests web y build: pendientes de ejecución.
+
+Por tanto, la corrección de paleta ha superado los dos typechecks visibles hasta ahora, pero todavía no hay resultado final del workflow. No afirmar que el run está verde hasta que concluya.
