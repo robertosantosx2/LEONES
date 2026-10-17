@@ -9,6 +9,7 @@ on:
       - 'scripts/integrations/configure_opendots_magnitude.sh'
       - 'scripts/integrations/install_opendots.sh'
       - 'docs/integrations/OPENDOTS-MAGNITUDE.md'
+      - 'docs/integrations/OPENDOTS-OPENBOT-MAGNITUDE.md'
       - '.github/workflows/opendots-magnitude-compat.yml'
   pull_request:
     paths:
