@@ -57,3 +57,6 @@ La PR está en borrador y las ejecuciones de GitHub Actions reportadas por el co
 ## Decisión de diseño
 
 Seguir el patrón arquitectónico de ODS: interfaz conversacional dedicada y separada de la gestión. Primero validar Open WebUI embebido; evitar duplicar funcionalidades sin evidencia de que el embedding sea viable. El prototipo HTML de LEONES sigue siendo una referencia de interacción, no código de producción.
+
+
+Guía operativa en inglés para configurar Open WebUI contra Magnitude: https://github.com/robertosantosx2/magnitude/blob/feat/native-chat-section/docs/clients/open-webui.mdx. Incluye el caso Docker/host, el acceso de red/API key y la lista de pruebas end-to-end. La guía es documentación, no evidencia de que las pruebas se hayan superado.
