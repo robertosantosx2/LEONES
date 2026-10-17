@@ -210,3 +210,14 @@ La fase siguiente necesita ejecutar Magnitude con un modelo local y probar:
 5. Que borrar una conversación durante la generación no la vuelve a introducir en el historial.
 
 La PR upstream [#202](https://github.com/magnitudedev/magnitude/pull/202) sigue abierta como borrador. Los checks upstream que requieren autorización del mantenedor y la revisión del mantenedor siguen siendo pasos distintos de este workflow del fork.
+
+
+### Detalle de logs del run #7
+
+Se inspeccionaron los logs del job, no solo el resumen:
+- Vitest: **16 archivos de test y 183 tests superados**.
+- Build Vite: completado; 5.849 módulos transformados.
+- El build muestra un aviso no bloqueante: el bundle JavaScript principal queda por encima de 500 kB minificados (aprox. 1.245 kB, gzip aprox. 379 kB). No rompe la compilación, pero se puede optimizar con code splitting en una iteración posterior.
+- Durante la limpieza del checkout GitHub mostró un warning de Git sobre el submódulo `inference/native/llama-cpp-rs` sin URL en `.gitmodules`. El job terminó correctamente y no fue la causa de fallo; merece una revisión independiente del repositorio.
+
+La validación CI del fork está, por tanto, verde. No se ha encontrado en esta sesión un test automatizado de integración que arranque el segundo listener real y fuerce un conflicto de puerto; esa comprobación sigue en la lista de pruebas de runtime.
