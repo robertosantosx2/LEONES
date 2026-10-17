@@ -5,14 +5,13 @@ set -euo pipefail
 # This script is opt-in and does not start services or change Magnitude's network exposure.
 
 usage() {
-  echo "Usage: MAGNITUDE_BASE_URL=http://127.0.0.1:10100/inference/v1 bash $0 /path/to/OpenDots EXACT_MODEL_ID" >&2
+  echo "Usage: MAGNITUDE_BASE_URL=http://127.0.0.1:10101/v1 bash $0 /path/to/OpenDots EXACT_MODEL_ID" >&2
 }
 
 [[ $# -eq 2 ]] || { usage; exit 2; }
 OPENDOTS_DIR="$(cd "$1" && pwd)"
 MODEL="$2"
-BASE_URL="${MAGNITUDE_BASE_URL:-http://127.0.0.1:10100/inference/v1}"
-API_KEY="${MAGNITUDE_API_KEY:-}"
+BASE_URL="${MAGNITUDE_BASE_URL:-http://127.0.0.1:10101/v1}"
 
 [[ -f "$OPENDOTS_DIR/package.json" && -f "$OPENDOTS_DIR/.env.example" ]] || {
   echo "[FAIL] Directory is not an OpenDots checkout (package.json/.env.example missing)." >&2
@@ -30,12 +29,10 @@ print(f"[OK] OpenDots package version: {package.get('version', 'unknown')}")
 PY
 command -v curl >/dev/null 2>&1 || { echo "[FAIL] curl is required." >&2; exit 2; }
 
-auth=()
-if [[ -n "$API_KEY" ]]; then auth=(-H "Authorization: Bearer $API_KEY"); fi
 models_file="$(mktemp)"
 trap 'rm -f "$models_file"' EXIT
 echo "[1/2] Verifying selected model against $BASE_URL/models"
-curl -fsS --connect-timeout 3 --max-time 15 "${auth[@]}" "$BASE_URL/models" -o "$models_file"
+curl -fsS --connect-timeout 3 --max-time 15 "$BASE_URL/models" -o "$models_file"
 python3 - "$MODEL" "$models_file" <<'PY'
 import json, sys
 model, path = sys.argv[1:3]
@@ -60,7 +57,7 @@ python3 - "$OPENDOTS_DIR/.env" "$BASE_URL" "$MODEL" <<'PY'
 import os, sys
 path, base_url, model = sys.argv[1:4]
 values = {
-    "OPENAI_API_KEY": os.environ.get("MAGNITUDE_API_KEY") or "local",
+    "OPENAI_API_KEY": "local",
     "OPENAI_BASE_URL": base_url,
     "OPENAI_MODEL": model,
 }
