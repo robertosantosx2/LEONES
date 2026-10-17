@@ -13,3 +13,6 @@
 [submodule "subprojects/LLMFit"]
 	path = subprojects/LLMFit
 	url = https://github.com/AlexsJones/llmfit.git
+[submodule "subprojects/LLMServe"]
+	path = subprojects/LLMServe
+	url = https://github.com/AlexsJones/llmserve.git
