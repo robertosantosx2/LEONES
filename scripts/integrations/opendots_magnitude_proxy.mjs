@@ -99,7 +99,7 @@ const server = http.createServer(async (req, res) => {
       body.stream = true;
 
       const controller = new AbortController();
-      req.on('close', () => controller.abort());
+      res.on('close', () => { if (!res.writableEnded) controller.abort(); });
       const upstream = await fetch(`${ICN_URL}/v1/chat/completions`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', accept: 'text/event-stream' },
