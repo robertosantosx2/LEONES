@@ -81,3 +81,28 @@ La PR existente [#202](https://github.com/magnitudedev/magnitude/pull/202) es el
 ## Registro de evidencias
 
 No se debe declarar una casilla completada solo porque exista código o documentación. Para cada comprobación, registrar comando o procedimiento, resultado, commit probado y enlace al workflow/log cuando exista. En este momento, typecheck, tests, build, CI aprobado y smoke test de inferencia/Open WebUI siguen pendientes de evidencia.
+
+
+## Seguimiento de implementación — 17 de octubre de 2026 (continuación)
+
+Se ha avanzado en la rama de implementación del fork robertosantosx2/magnitude (feat/native-chat-section):
+
+- Se ha extraído el procesamiento de eventos SSE a web/src/components/chat-stream.ts.
+- Se ha añadido web/src/components/chat-stream.test.ts para cubrir deltas incrementales, marcador [DONE], líneas de keepalive, errores del servidor y JSON malformado.
+- Se ha añadido una acción New chat visible en pantallas estrechas; antes el único botón estaba dentro de la barra lateral oculta en móvil.
+- La navegación web confirma que / en el puerto 10101 selecciona chat, mientras que 10100 mantiene la página inicial normal. La selección se hace según window.location.port, sin cambiar el servicio de inferencia.
+
+Commits recientes del fork: b720f279, 9ee2d5db, 690d08cc, dcc9cece, e98013a3 (la rama puede recibir commits adicionales).
+
+### Validación y bloqueo actual
+
+La consulta de GitHub Actions para el HEAD observado de la PR #202 devolvió workflows con conclusión action_required, no un resultado de tests fallidos ni un CI aprobado. Hace falta que una persona con permisos en el repositorio upstream autorice la ejecución de los workflows de la contribución externa. No se debe afirmar que las pruebas pasan hasta que se ejecuten.
+
+La nueva cobertura SSE está escrita, pero no ejecutada. Siguen pendientes:
+- Typecheck y tests del workspace, incluido el nuevo test SSE y el test del validador de URL.
+- Build web.
+- Prueba end-to-end contra Open WebUI real (cabeceras, login/sesión, API, streaming, Chromium y Firefox).
+- Prueba de inferencia local y de los puertos 10100/10101, incluido el puerto 10101 ocupado.
+- Confirmación de CI después de autorizar workflows.
+
+La PR upstream #202 continúa abierta y en borrador. No se debe marcar lista para revisión hasta obtener estas evidencias o acordar explícitamente las limitaciones restantes con los mantenedores.
