@@ -33,6 +33,12 @@ Se prioriza validar si Magnitude puede incluir Open WebUI en una sección **Chat
 
 Detalles y fuentes primarias: [ADR-openwebui-iframe.md](ADR-openwebui-iframe.md).
 
+## Implementación Open WebUI en el fork
+
+La rama `feat/native-chat-section` de [robertosantosx2/magnitude](https://github.com/robertosantosx2/magnitude/tree/feat/native-chat-section) ya contiene una vista Open WebUI opcional dentro de Chat, un validador que restringe URLs a loopback y tests unitarios para esa validación. La documentación de uso está en `docs/clients/local-chat.mdx` y la investigación técnica en `docs/clients/native-chat-research.md`.
+
+Todavía no se han ejecutado los tests, el typecheck ni el build; tampoco se ha probado contra un servidor Open WebUI real. No considerar la integración validada.
+
 ## Estado de validación
 
 **No validado localmente.** La integración GitHub permitió publicar commits y abrir la PR, pero esta sesión no ejecuta Bun/TypeScript ni tiene acceso al Magnitude instalado en Ubuntu. No se afirma que compile ni que la generación real funcione.
