@@ -221,3 +221,17 @@ Se inspeccionaron los logs del job, no solo el resumen:
 - Durante la limpieza del checkout GitHub mostró un warning de Git sobre el submódulo `inference/native/llama-cpp-rs` sin URL en `.gitmodules`. El job terminó correctamente y no fue la causa de fallo; merece una revisión independiente del repositorio.
 
 La validación CI del fork está, por tanto, verde. No se ha encontrado en esta sesión un test automatizado de integración que arranque el segundo listener real y fuerce un conflicto de puerto; esa comprobación sigue en la lista de pruebas de runtime.
+
+
+## Seguimiento actualizado — run #13 — 17 de octubre de 2026
+
+La validación más reciente ya terminó correctamente: [run #13](https://github.com/robertosantosx2/magnitude/actions/runs/39041845322), sobre el head actual `fc42c4d551d8784e03bb27cfdb4b390165d150b2`.
+
+- [x] Instalación de dependencias.
+- [x] Typecheck `packages/client-common`.
+- [x] Typecheck `web`.
+- [x] Typecheck `packages/acn`.
+- [x] Tests web.
+- [x] Build de producción.
+
+La PR upstream [#202](https://github.com/magnitudedev/magnitude/pull/202) sigue abierta, mergeable y en **draft**. La descripción ya refleja que la CI fresca ha pasado. No se ha realizado una prueba E2E de la UI en navegador; siguen pendientes la cancelación real, el ciclo completo de historial, el conflicto de puerto 10101, la compatibilidad con modelos adicionales y una prueba de Open WebUI real (CSP/X-Frame-Options, sesión, API y streaming). La CI verde no sustituye estas comprobaciones ni la revisión de mantenedores.
