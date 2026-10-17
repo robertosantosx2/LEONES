@@ -22,7 +22,7 @@ Incluye en la rama de trabajo:
 - Listener opcional adicional en `127.0.0.1:10101` para abrir directamente Chat; el servicio/API principal permanece en `127.0.0.1:10100`.
 - Documentación de privacidad local y resolución de problemas.
 
-**Límite de validación:** los cambios se prepararon mediante la integración de GitHub, pero no se ha ejecutado en este entorno el typecheck, los tests, el build web ni una generación real. La PR es un borrador y no se debe presentar como validada.
+**Estado de validación (17-10-2026):** la ejecución de GitHub Actions #10 del fork terminó correctamente: instalación, typecheck de `client-common`, web y ACN, tests web y build de producción. También consta una prueba real de API y SSE con MiniCPM5 Q4: respuesta visible con `reasoning_effort: "none"` y reconstrucción correcta del flujo hasta `[DONE]`. Esto valida CI y el protocolo de API, pero no la UI en navegador. Siguen pendientes E2E de Chat, Stop/cancelación, ciclo de vida de `localStorage`, colisión del puerto 10101, compatibilidad con otros modelos/backends y embedding real de Open WebUI. La PR #202 debe seguir en borrador.
 
 ### B. Open WebUI embebido en una página Chat
 
@@ -122,3 +122,19 @@ Se ha añadido a la rama controlada de `robertosantosx2/magnitude` una primera i
 
 
 Guía de conexión en el fork (inglés): [Open WebUI with Magnitude](https://github.com/robertosantosx2/magnitude/blob/feat/native-chat-section/docs/clients/open-webui.mdx). Describe la URL de API que necesita Open WebUI, la diferencia entre ejecutar en el host y en Docker, los requisitos de API key/acceso de red y la lista de aceptación end-to-end.
+
+
+## Registro de validación — 17 de octubre de 2026
+
+- **CI del fork:** OK en [run #10](https://github.com/robertosantosx2/magnitude/actions/runs/39023175172), sobre el head previo a la actualización documental.
+- **API no-streaming:** OK para MiniCPM5 Q4; la respuesta llegó en `content` visible usando `reasoning_effort: "none"`.
+- **API SSE:** OK para MiniCPM5 Q4; los fragmentos incrementales reconstruyeron el texto esperado y el flujo acabó con `[DONE]`.
+- **UI Native Chat real en navegador:** pendiente; la página independiente que pueda existir en el puerto 10101 no acredita el funcionamiento del componente de esta PR.
+- **Stop y cancelación:** pendiente de verificar en navegador, incluido que no aparezca texto nuevo tras detener.
+- **Persistencia:** pendiente de crear, cambiar, recargar y borrar conversaciones.
+- **Puerto 10101 ocupado:** pendiente; comprobar que el servicio/API 10100 sigue sano sin matar ni reemplazar al propietario del puerto.
+- **Compatibilidad de modelos:** pendiente; `reasoning_effort: "none"` solo se ha probado con MiniCPM5 Q4.
+- **Open WebUI:** pendiente con instancia real: CSP/X-Frame-Options, autenticación, cookies/sesión, acceso a API y streaming.
+- **Mantenedores/upstream:** pendiente de revisión y de los controles de CI que exija el repositorio original.
+
+**Criterio de salida:** no marcar la PR como lista ni sacarla de borrador hasta completar los checks de runtime pendientes. La validación automatizada del fork no equivale a aceptación por los mantenedores de Magnitude.
