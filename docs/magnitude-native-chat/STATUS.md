@@ -123,3 +123,13 @@ Se añadió en la rama `feat/native-chat-section` el workflow `.github/workflows
 **Este workflow está preparado, no validado todavía:** hasta consultar una ejecución real no se puede afirmar que haya pasado. Si GitHub Actions está desactivado en el fork, el propietario del fork debe habilitarlo en Settings → Actions; después se puede ejecutar desde la pestaña Actions → “Native Chat validation (fork)” → Run workflow.
 
 La validación local/integrada de Open WebUI, la inferencia real y el comportamiento de puertos requieren además un entorno ejecutable con Magnitude y un servidor/modelo local. No se simularán como pruebas superadas. Los resultados del fork se registrarán como evidencia de desarrollo, pero no sustituyen la autorización ni los checks requeridos por la PR #202 upstream.
+
+
+## Seguimiento — corrección del cierre SSE
+
+En el fork de Magnitude se corrigió el lector de streaming para que deje de leer al recibir el marcador terminal SSE `[DONE]`, cancele el lector sin depender de que el servidor cierre la conexión inmediatamente y reconozca cancelaciones usando `Error.name === "AbortError"`.
+
+- Commit: `0cebd29df64b2b1058263d26a4f027a2063232d1`
+- PR #202 actualizada con el alcance de la corrección y el workflow de validación del fork.
+- No se ha confirmado todavía que GitHub Actions haya ejecutado el workflow del fork; la corrección está publicada, pero no verificada mediante tests.
+- La validación funcional requiere aún ejecutar las pruebas, typecheck y build; después, en Ubuntu, probar generación real, cancelación, Open WebUI y los puertos 10100/10101.
