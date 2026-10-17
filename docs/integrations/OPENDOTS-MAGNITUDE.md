@@ -65,7 +65,17 @@ MAGNITUDE_MODEL_INSTANCE_ID='ID_EXACTO_DE_INSTANCIA' OPENAI_MODEL=local node scr
 
 Si el ICN usa otro host/puerto, define `MAGNITUDE_ICN_URL`. La fachada falla de forma visible si la instancia configurada no está disponible o no está en estado `Ready`.
 
-### 3. Configurar OpenDots
+### 3. Preparar OpenDots
+
+Si aún no existe un checkout, el instalador opcional lo clona en `~/.local/share/leones/opendots` (o en `OPENDOTS_DIR`), verifica Node.js 24+, instala dependencias bloqueadas y crea `.env` solo si falta. No actualiza ni sobrescribe un checkout existente:
+
+```bash
+bash scripts/integrations/install_opendots.sh
+```
+
+Configura CopilotKit Intelligence siguiendo la [guía oficial de OpenDots](https://github.com/CopilotKit/OpenDots/blob/main/docs/SETUP.md).
+
+### 4. Configurar OpenDots
 
 En un checkout de OpenDots ya instalado, configura sus tres variables del proveedor. El helper valida el alias contra la fachada antes de modificar `.env` y conserva las demás variables:
 
@@ -83,7 +93,7 @@ OPENAI_MODEL=local
 
 El valor `local` para la clave es un marcador para clientes que exigen una clave; la fachada solo escucha en loopback y no implementa autenticación. No expongas el puerto 10101 a la red. Esta primera implementación soporta OpenDots y la fachada en el mismo host; el modo Docker/host-remoto queda fuera de alcance hasta añadir una configuración de red autenticada y probarla.
 
-### 4. Ejecutar el smoke test
+### 5. Ejecutar el smoke test
 
 Con ICN, la instancia y la fachada en marcha:
 
