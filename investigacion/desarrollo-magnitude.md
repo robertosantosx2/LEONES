@@ -119,3 +119,6 @@ Se ha añadido a la rama controlada de `robertosantosx2/magnitude` una primera i
 - Documentación de uso, seguridad y resolución de problemas en inglés dentro del fork.
 
 **No está validado aún:** no se han ejecutado typecheck, tests, build ni pruebas end-to-end con Open WebUI real. La política CSP/X-Frame-Options, las cookies, el inicio de sesión, la conexión de Open WebUI a la API de Magnitude y el streaming real siguen pendientes de pruebas.
+
+
+Guía de conexión en el fork (inglés): [Open WebUI with Magnitude](https://github.com/robertosantosx2/magnitude/blob/feat/native-chat-section/docs/clients/open-webui.mdx). Describe la URL de API que necesita Open WebUI, la diferencia entre ejecutar en el host y en Docker, los requisitos de API key/acceso de red y la lista de aceptación end-to-end.
