@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Magnitude — Chat concept</title>
+<style>
+:root{color-scheme:light dark;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#f8fafc;color:#0f172a}
+*{box-sizing:border-box}body{margin:0;height:100vh;display:flex;background:#f8fafc;color:#0f172a}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:1px solid #cbd5e1;border-radius:9px;padding:9px 12px;background:white;color:inherit}
+aside{width:270px;border-right:1px solid #e2e8f0;padding:18px;display:flex;flex-direction:column;gap:14px;background:#f1f5f9}
+.brand{font-weight:750;font-size:19px;letter-spacing:-.03em;margin:6px 4px 16px}.nav{display:flex;gap:8px;align-items:center;text-align:left;width:100%;border-color:transparent;background:transparent}.nav.active{background:#dbeafe;color:#1d4ed8}.history{display:grid;gap:6px;overflow:auto}.history button{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;background:transparent;border-color:transparent}.history button.active{background:#e2e8f0}
+main{flex:1;min-width:0;display:flex;flex-direction:column}.top{height:68px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:0 26px;gap:14px}.model{max-width:min(45vw,380px);border:1px solid #cbd5e1;border-radius:9px;padding:9px;background:white}.messages{flex:1;overflow:auto;padding:32px 20px;display:flex;flex-direction:column;gap:22px}.empty{margin:auto;text-align:center;max-width:560px}.empty h1{font-size:32px;letter-spacing:-.04em}.empty p{color:#64748b;line-height:1.6}.bubble{max-width:850px;width:100%;margin:0 auto;white-space:pre-wrap;line-height:1.65}.bubble.user{background:#eff6ff;border:1px solid #dbeafe;border-radius:14px;padding:14px 17px}.role{font-size:12px;font-weight:700;color:#64748b;margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em}
+.composer-wrap{padding:16px 20px 22px}.composer{max-width:850px;margin:auto;border:1px solid #cbd5e1;background:white;border-radius:16px;padding:12px;box-shadow:0 6px 24px #0f172a0a}.composer textarea{display:block;width:100%;border:0;outline:0;resize:vertical;min-height:72px;max-height:220px;padding:7px;background:transparent;color:inherit}.foot{display:flex;align-items:center;justify-content:space-between;gap:12px}.muted{font-size:12px;color:#64748b}.send{background:#1d4ed8;color:white;border-color:#1d4ed8}.danger{color:#b91c1c}.new{background:#1d4ed8;color:white;border-color:#1d4ed8}
+@media(max-width:700px){aside{width:62px;padding:10px}aside .brand,aside .nav span,aside .history,aside .new span{display:none}.nav{justify-content:center;padding:10px 4px}.top{padding:0 12px}.messages{padding:22px 12px}.composer-wrap{padding:10px}.model{max-width:55vw}}
+@media(prefers-color-scheme:dark){:root,body{background:#020617;color:#e2e8f0}aside{background:#0f172a;border-color:#334155}.top{border-color:#334155}.nav.active{background:#1e3a8a;color:#bfdbfe}.history button.active{background:#1e293b}.model,.composer,button{background:#0f172a;border-color:#334155}.composer textarea{color:#e2e8f0}.bubble.user{background:#172554;border-color:#1e3a8a}.send,.new{background:#2563eb}.muted,.empty p,.role{color:#94a3b8}}
+</style></head>
+<body>
+<aside>
+  <div class="brand">◈ Magnitude</div>
+  <button class="new" id="newChat">＋ <span>New chat</span></button>
+  <button class="nav active"><span>▤ &nbsp; Chat</span></button>
+  <button class="nav"><span>▦ &nbsp; Discover</span></button>
+  <button class="nav"><span>◫ &nbsp; Catalog</span></button>
+  <button class="nav"><span>◈ &nbsp; My Models</span></button>
+  <div class="muted">RECENT CHATS</div><div class="history" id="history"></div>
+  <div style="margin-top:auto" class="muted">Local-first · No cloud fallback</div>
+</aside>
+<main>
+  <header class="top"><strong id="title">New chat</strong><div style="display:flex;align-items:center;gap:8px"><label class="muted" for="model">MODEL</label><select class="model" id="model"><option>Loading local models…</option></select></div></header>
+  <section class="messages" id="messages"><div class="empty"><h1>What would you like to explore?</h1><p>Chat directly with a model running on this machine. Responses stream as the model generates them. Conversations stay in this browser.</p></div></section>
+  <footer class="composer-wrap"><form class="composer" id="form"><textarea id="prompt" placeholder="Message your local model…" aria-label="Message your local model"></textarea><div class="foot"><span class="muted" id="status">Magnitude local inference · streaming</span><div><button type="button" id="stop" hidden>Stop</button> <button class="send" id="send">↑ Send</button></div></div></form></footer>
+</main>
+<script>
+const STORAGE='magnitude-chat-prototype-v1';let chats=JSON.parse(localStorage.getItem(STORAGE)||'[]'),current=null,controller=null,models=[];
+const $=id=>document.getElementById(id),persist=()=>localStorage.setItem(STORAGE,JSON.stringify(chats));
+function active(){return chats.find(c=>c.id===current)}
+function fresh(){const c={id:crypto.randomUUID(),title:'New chat',model:$('model').value,messages:[],updated:Date.now()};chats.unshift(c);current=c.id;persist();render()}
+function escapeText(s){return s}
+function render(){const c=active();$('title').textContent=c?.title||'New chat';$('messages').replaceChildren();if(!c||!c.messages.length){const empty=document.createElement('div');empty.className='empty';empty.innerHTML='<h1>What would you like to explore?</h1><p>Chat directly with a model running on this machine. Responses stream as the model generates them. Conversations stay in this browser.</p>';$('messages').append(empty)}else for(const m of c.messages){const b=document.createElement('article');b.className='bubble '+(m.role==='user'?'user':'assistant');const r=document.createElement('div');r.className='role';r.textContent=m.role==='user'?'You':'Magnitude';const t=document.createElement('div');t.textContent=m.content;b.append(r,t);$('messages').append(b)}$('history').replaceChildren();for(const h of chats){const b=document.createElement('button');b.textContent=h.title||'New chat';b.className=h.id===current?'active':'';b.onclick=()=>{current=h.id;$('model').value=h.model||$('model').value;render()};$('history').append(b)}$('messages').scrollTop=$('messages').scrollHeight}
+async function loadModels(){try{const r=await fetch('/inference/v1/models');if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();models=(d.data||[]).map(x=>x.id);$('model').replaceChildren();for(const id of models){const o=document.createElement('option');o.value=id;o.textContent=id;$('model').append(o)}if(!models.length)throw Error('No models are available');if(!current)fresh()}catch(e){$('model').replaceChildren(new Option('Could not load models',''));$('status').textContent='Could not load local models: '+e.message}}
+$('model').onchange=()=>{const c=active();if(c){c.model=$('model').value;persist()}};
+$('newChat').onclick=()=>fresh();$('stop').onclick=()=>controller?.abort();
+$('form').onsubmit=async e=>{e.preventDefault();const text=$('prompt').value.trim(),model=$('model').value;if(!text||!model||controller)return;if(!active())fresh();const c=active();c.model=model;c.messages.push({role:'user',content:text});if(c.title==='New chat')c.title=text.slice(0,48);c.messages.push({role:'assistant',content:''});c.updated=Date.now();$('prompt').value='';persist();render();controller=new AbortController();$('stop').hidden=false;$('send').disabled=true;$('status').textContent='Generating…';try{const res=await fetch('/inference/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model,messages:c.messages.slice(0,-1),stream:true}),signal:controller.signal});if(!res.ok)throw Error('Inference failed (HTTP '+res.status+')');const reader=res.body.getReader(),decoder=new TextDecoder();let buffer='';while(true){const {done,value}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});const parts=buffer.split('\n\n');buffer=parts.pop()||'';for(const part of parts){for(const line of part.split('\n'))if(line.startsWith('data: ')){const payload=line.slice(6);if(payload==='[DONE]')continue;try{const delta=JSON.parse(payload).choices?.[0]?.delta?.content;if(delta){c.messages[c.messages.length-1].content+=delta;const tail=$('messages').lastElementChild?.lastElementChild;if(tail)tail.textContent=c.messages[c.messages.length-1].content;else render();$('messages').scrollTop=$('messages').scrollHeight}}catch{}}}}}catch(err){if(err.name!=='AbortError'){$('status').textContent='Request failed: '+err.message}else $('status').textContent='Generation stopped'}finally{controller=null;$('stop').hidden=true;$('send').disabled=false;c.updated=Date.now();persist();render();if($('status').textContent==='Generating…')$('status').textContent='Ready'}}
+loadModels();
+</script></body></html>
