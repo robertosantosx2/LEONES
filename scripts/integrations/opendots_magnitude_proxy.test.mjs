@@ -115,7 +115,7 @@ test('maps OpenDots chat requests to ICN instance IDs and preserves tools over S
   assert.match(body, /LOCAL_OK/);
   assert.match(body, /data: \[DONE\]/);
   assert.equal(lastCompletion.model_instance_id, 'instance-test-123');
-  assert.equal(lastCompletion.model, 'local');
+  assert.equal(lastCompletion.model, 'config-test');
   assert.equal(lastCompletion.stream, true);
   assert.equal(lastCompletion.tools[0].function.name, 'example_tool');
 });
