@@ -105,3 +105,17 @@ El patrón arquitectónico deseado sigue siendo separar la interfaz conversacion
 - [Rama de diseño y seguimiento en LEONES](https://github.com/robertosantosx2/LEONES/tree/feat/magnitude-native-chat).
 - [Estado del trabajo](https://github.com/robertosantosx2/LEONES/blob/feat/magnitude-native-chat/docs/magnitude-native-chat/STATUS.md).
 - [ADR Open WebUI + iframe](https://github.com/robertosantosx2/LEONES/blob/feat/magnitude-native-chat/docs/magnitude-native-chat/ADR-openwebui-iframe.md).
+
+
+## Actualización de implementación — 17 de octubre de 2026
+
+Se ha añadido a la rama controlada de `robertosantosx2/magnitude` una primera integración optativa de Open WebUI dentro de la página Chat:
+
+- Botón **Open WebUI** en la vista nativa y retorno mediante **Back to native Chat**.
+- Campo de URL configurable; por defecto sugiere `http://127.0.0.1:3000/`, que es un ejemplo y debe coincidir con la instalación real.
+- Validación que limita el iframe a URLs HTTP(S) de loopback (`localhost`, `127.0.0.1`, `[::1]`), rechaza credenciales y esquemas no web, y elimina fragmentos.
+- Persistencia local de la URL configurada y carga del iframe solo al abrir la vista.
+- Pruebas unitarias escritas para URL válida, rechazo de hosts remotos, credenciales, esquemas no permitidos, valores malformados y fragmentos.
+- Documentación de uso, seguridad y resolución de problemas en inglés dentro del fork.
+
+**No está validado aún:** no se han ejecutado typecheck, tests, build ni pruebas end-to-end con Open WebUI real. La política CSP/X-Frame-Options, las cookies, el inicio de sesión, la conexión de Open WebUI a la API de Magnitude y el streaming real siguen pendientes de pruebas.
