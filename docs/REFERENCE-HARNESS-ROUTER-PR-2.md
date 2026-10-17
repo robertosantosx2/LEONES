@@ -1,0 +1,1 @@
+Router phase: dependency-free ranking, optional adapters and offline contract tests. Real runtime smoke is a separate empirical gate.
