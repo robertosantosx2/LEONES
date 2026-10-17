@@ -1,0 +1,45 @@
+name: OpenDots–Magnitude compatibility facade
+
+on:
+  push:
+    branches: [feat/opendots-magnitude-api, feat/opendots-openbot-magnitude]
+    paths:
+      - 'scripts/integrations/opendots_magnitude_*'
+      - 'scripts/integrations/opendots_openbot_magnitude_preflight.sh'
+      - 'scripts/integrations/configure_opendots_magnitude.sh'
+      - 'scripts/integrations/install_opendots.sh'
+      - 'docs/integrations/OPENDOTS-MAGNITUDE.md'
+      - 'docs/integrations/OPENDOTS-OPENBOT-MAGNITUDE.md'
+      - '.github/workflows/opendots-magnitude-compat.yml'
+  pull_request:
+    paths:
+      - 'scripts/integrations/opendots_magnitude_*'
+      - 'scripts/integrations/opendots_openbot_magnitude_preflight.sh'
+      - 'scripts/integrations/configure_opendots_magnitude.sh'
+      - 'scripts/integrations/install_opendots.sh'
+      - 'docs/integrations/OPENDOTS-MAGNITUDE.md'
+      - 'docs/integrations/OPENDOTS-OPENBOT-MAGNITUDE.md'
+      - '.github/workflows/opendots-magnitude-compat.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compatibility-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check JavaScript syntax
+        run: node --check scripts/integrations/opendots_magnitude_proxy.mjs
+      - name: Check shell syntax
+        run: |
+          bash -n scripts/integrations/install_opendots.sh
+          bash -n scripts/integrations/configure_opendots_magnitude.sh
+          bash -n scripts/integrations/opendots_magnitude_smoke.sh
+          bash -n scripts/integrations/opendots_openbot_magnitude_preflight.sh
+      - name: Test OpenAI compatibility translation with mock ICN
+        run: node --test scripts/integrations/opendots_magnitude_proxy.test.mjs
