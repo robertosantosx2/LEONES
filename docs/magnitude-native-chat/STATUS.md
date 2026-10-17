@@ -60,3 +60,24 @@ Seguir el patrón arquitectónico de ODS: interfaz conversacional dedicada y sep
 
 
 Guía operativa en inglés para configurar Open WebUI contra Magnitude: https://github.com/robertosantosx2/magnitude/blob/feat/native-chat-section/docs/clients/open-webui.mdx. Incluye el caso Docker/host, el acceso de red/API key y la lista de pruebas end-to-end. La guía es documentación, no evidencia de que las pruebas se hayan superado.
+
+
+## Criterios de aceptación para la entrega upstream
+
+La PR existente [#202](https://github.com/magnitudedev/magnitude/pull/202) es el único destino upstream para este trabajo; no abrir una PR duplicada. Mantenerla en borrador hasta que la validación esté respaldada por resultados verificables.
+
+- [ ] **Magnitude sigue siendo el servicio principal:** inferencia local y administración no se sustituyen ni se deshabilitan.
+- [ ] **Chat desde la barra lateral:** la navegación es accesible y los estados de carga/error están cubiertos.
+- [ ] **Open WebUI es optativo:** validar CSP/X-Frame-Options, autenticación/sesión, conexión al endpoint de Magnitude y streaming real. Si falla, el Chat nativo sigue disponible.
+- [ ] **Puerto 10100:** comprobar salud del servicio principal y API antes y después de abrir Chat.
+- [ ] **Puerto 10101:** listener adicional solo en loopback; si está ocupado, no matar ni sustituir al proceso existente y mantener sano 10100.
+- [ ] **Pruebas automatizadas:** typecheck de web, client-common y ACN; pruebas unitarias de streaming SSE, cancelación, historial, validador URL y listener opcional.
+- [ ] **Build y CI:** web build y workflows de GitHub Actions completados sin bloqueos de autorización.
+- [ ] **Prueba de ejecución real:** modelo listado, generación con streaming, cancelación y persistencia; registrar entorno y resultados.
+- [ ] **Seguridad:** no aceptar hosts remotos ni credenciales en la URL del iframe; no relajar CSP globalmente, no filtrar secretos y no exponer servicios fuera de loopback por defecto.
+- [ ] **Documentación upstream en inglés:** configuración, arquitectura, privacidad, límites conocidos, puertos, troubleshooting y evidencia de validación.
+- [ ] **Revisión final:** actualizar el cuerpo de la PR #202 con resultados reales; solo marcarla lista para revisión cuando los checks anteriores estén satisfechos o las limitaciones restantes estén explícitamente acordadas con mantenedores.
+
+## Registro de evidencias
+
+No se debe declarar una casilla completada solo porque exista código o documentación. Para cada comprobación, registrar comando o procedimiento, resultado, commit probado y enlace al workflow/log cuando exista. En este momento, typecheck, tests, build, CI aprobado y smoke test de inferencia/Open WebUI siguen pendientes de evidencia.
