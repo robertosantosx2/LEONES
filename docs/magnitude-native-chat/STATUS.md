@@ -184,3 +184,29 @@ El run [#7](https://github.com/robertosantosx2/magnitude/actions/runs/3902099847
 - Tests web y build: pendientes de ejecución.
 
 Por tanto, la corrección de paleta ha superado los dos typechecks visibles hasta ahora, pero todavía no hay resultado final del workflow. No afirmar que el run está verde hasta que concluya.
+
+
+## Resultado final de validación automatizada del fork — 17 de octubre de 2026
+
+El run [#7 de Native Chat validation (fork)](https://github.com/robertosantosx2/magnitude/actions/runs/39020998471), para el commit `0e4722c81b56836e8f9bdebc3224b9e71163bcce`, terminó con conclusión **success**.
+
+Pasos completados con éxito:
+- Instalación reproducible con Bun 1.4.2 y lockfile congelado.
+- Typecheck de `packages/client-common`.
+- Typecheck de `web`.
+- Typecheck de `packages/acn`.
+- Suite de tests de Web.
+- Build de Web.
+
+Esto confirma que la corrección de la paleta eliminó el fallo de la ejecución #6 y que el workflow configurado pasa en el fork. Es una validación automatizada del workspace cubierto; no demuestra todavía la inferencia real, el comportamiento de puertos en ejecución ni la compatibilidad del iframe con una instancia Open WebUI auténtica.
+
+### Bloqueante siguiente: pruebas de integración en Ubuntu
+
+La fase siguiente necesita ejecutar Magnitude con un modelo local y probar:
+1. `/health`, `/inference/v1/models` y una generación real con streaming y cancelación.
+2. Que `127.0.0.1:10100` conserva la administración y la API.
+3. Que `127.0.0.1:10101` abre Chat y, si el puerto está ocupado, el proceso principal sigue sano sin apropiarse del puerto ajeno.
+4. Open WebUI real: CSP, X-Frame-Options, login/sesión, API y streaming en navegador.
+5. Que borrar una conversación durante la generación no la vuelve a introducir en el historial.
+
+La PR upstream [#202](https://github.com/magnitudedev/magnitude/pull/202) sigue abierta como borrador. Los checks upstream que requieren autorización del mantenedor y la revisión del mantenedor siguen siendo pasos distintos de este workflow del fork.
