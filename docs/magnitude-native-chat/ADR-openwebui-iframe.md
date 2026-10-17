@@ -13,19 +13,29 @@ Flujo objetivo:
 
 El puerto deseado `http://127.0.0.1:10101/` puede servir como entrada local de Chat si se demuestra que puede hacerse sin romper el servicio/API de Magnitude en `10100`. No debe arrancarse un segundo proceso oculto ni cambiarse el puerto principal silenciosamente.
 
-## Compatibilidad: lo que sí está confirmado
+## Lo confirmado sobre navegadores e iframes
 
-El elemento HTML `<iframe>` está ampliamente soportado en navegadores modernos (Chrome/Chromium, Firefox, Safari y Edge). MDN lo marca como Baseline/Widely available; Can I Use informa de soporte global aproximado del 97.5% en su tabla consultada.
+Hay que separar tres características distintas:
 
-Referencias:
-- MDN: https://developer.mozilla.org/es/docs/Web/HTML/Reference/Elements/iframe
-- Can I Use: https://caniuse.com/mdn-html_elements_iframe
+1. **El elemento `<iframe>`** es ampliamente soportado por los navegadores modernos.
+2. **Carga diferida** mediante `loading="lazy"` está soportada por los navegadores modernos y conviene usarla si Chat no está visible al abrir Magnitude.
+3. **Nuevo tamaño intrínseco responsive de iframes** — `frame-sizing: content-height`, `window.requestResize()` y `<meta name="responsive-embedded-sizing" ...>` — es la novedad de Chrome 154 anunciada el 22 de septiembre de 2026. A la fecha de esta investigación, está marcada como disponibilidad limitada/experimental: las fuentes consultadas indican soporte en Chrome 154, no en Firefox ni Safari.
 
-Esto solo confirma que el navegador implementa el elemento. **No confirma que una web concreta permita ser cargada dentro de un iframe.**
+Fuentes primarias:
+- Chrome for Developers, Chrome 154 (22 sep 2026): https://developer.chrome.com/blog/new-in-chrome-154
+- MDN, `frame-sizing` (Limited availability): https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/frame-sizing
+- MDN, `responsive-embedded-sizing` (Limited availability): https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name/responsive-embedded-sizing
+- MDN, `window.requestResize()`: https://developer.mozilla.org/en-US/docs/Web/API/Window/requestResize
+- MDN, elemento iframe: https://developer.mozilla.org/es/docs/Web/HTML/Reference/Elements/iframe
+- Carga diferida: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe#loading
+
+### Consecuencia para un chat
+
+El chat es una aplicación de altura completa, no un widget cuya altura deba ajustarse a todo su contenido. Por tanto, **no dependeremos de `frame-sizing: content-height` para el layout principal**. Usaremos un contenedor de altura disponible y un iframe con `width: 100%; height: 100%` (y `loading="lazy"` si la ruta no se ha abierto aún). El nuevo sizing puede evaluarse para embeds pequeños, pero no es necesario para la experiencia de chat y no debe ser requisito para Firefox/Safari.
 
 ## Distinción importante sobre Magnitude
 
-La búsqueda de código en la rama principal de Magnitude encontró `iframe` en `packages/dom-extract/src/mappings.ts`, donde figura como elemento DOM que se expande/examina durante la extracción. Eso no demuestra que la interfaz web de Magnitude ya tenga un contenedor de iframe para incrustar aplicaciones externas. Hay que identificar y revisar el cambio reciente concreto al que se refiere la conversación antes de depender de él.
+La búsqueda de código en la rama principal de Magnitude encontró `iframe` en `packages/dom-extract/src/mappings.ts`, donde figura como elemento DOM que se expande/examina durante la extracción. La búsqueda del código por `frame-sizing` y `iframe component` no devolvió resultados. Esto no demuestra que no exista una implementación reciente en otra rama o PR; solo significa que no he identificado en la rama principal un componente de UI para incrustar aplicaciones externas. Antes de depender de ese cambio hay que identificar el commit/PR concreto.
 
 ## Bloqueos técnicos que deben probarse
 
@@ -34,7 +44,7 @@ La búsqueda de código en la rama principal de Magnitude encontró `iframe` en 
 3. **Conectividad:** configurar Open WebUI para usar el endpoint OpenAI-compatible de Magnitude. Si Open WebUI corre en Docker, `127.0.0.1` dentro del contenedor no es el host.
 4. **Ciclo de vida:** Chat debe mostrar un estado claro si Open WebUI no está instalado/no responde; no instalar ni iniciar servicios de forma inesperada.
 5. **Seguridad local:** enlazar servicios solo a loopback por defecto, no incluir secretos en URL y no exponer la API sin autenticación a la red.
-6. **Port 10101:** confirmar que no está ocupado y definir el comportamiento de colisión; conservar `10100` para la API.
+6. **Puerto 10101:** confirmar que no está ocupado y definir el comportamiento de colisión; conservar `10100` para la API.
 
 ## Plan de validación
 
@@ -48,7 +58,9 @@ La búsqueda de código en la rama principal de Magnitude encontró `iframe` en 
 
 ## Resultado actual
 
-- Soporte de `<iframe>` en navegadores: confirmado.
+- Soporte del elemento `<iframe>` en navegadores: confirmado.
+- Carga diferida `loading="lazy"`: opción recomendada para no cargar Chat hasta necesitarlo.
+- Nuevo responsive intrinsic sizing de Chrome 154: confirmado, pero no multiplataforma; no es necesario para un chat de altura completa.
 - Permiso de Open WebUI para ser embebido: pendiente de comprobación empírica.
-- Componente de embedding externo ya implementado en la UI de Magnitude: no confirmado por la búsqueda realizada.
+- Componente de embedding externo ya implementado en la UI de Magnitude: no confirmado en la rama principal por las búsquedas realizadas.
 - Integración final y prueba de generación: pendientes.
