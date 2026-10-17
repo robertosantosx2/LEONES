@@ -142,3 +142,12 @@ Se corrigió también la eliminación de una conversación durante una generaci�
 - Commits de seguimiento: `9a35fdc0`, `f31faab8`, `2695baec`.
 - La PR #202 se actualizó para reflejar este cambio.
 - Estas correcciones siguen pendientes de verificación por tests y typecheck; no equivalen a una validación ejecutada.
+
+
+### Ampliación del workflow de CI del fork
+
+El workflow `.github/workflows/native-chat-validation.yml` incluye ahora también el typecheck de `packages/acn`, para cubrir el código de servidor que crea el listener opcional.
+
+- Commit de workflow: `cad987813b465b4b4ae76a29c59a12491ec04077`.
+- Se actualizó el cuerpo de la PR #202 con esta cobertura.
+- No se dispone de un resultado de ejecución verificable a través de la integración de GitHub utilizada en esta sesión; el estado continúa siendo **pendiente de ejecución/confirmación**.
