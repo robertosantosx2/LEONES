@@ -106,3 +106,20 @@ La nueva cobertura SSE está escrita, pero no ejecutada. Siguen pendientes:
 - Confirmación de CI después de autorizar workflows.
 
 La PR upstream #202 continúa abierta y en borrador. No se debe marcar lista para revisión hasta obtener estas evidencias o acordar explícitamente las limitaciones restantes con los mantenedores.
+
+
+## Plan de validación bajo control de LEONES — 17 de octubre de 2026
+
+El propietario no tiene permisos administrativos en `magnitudedev/magnitude`, por lo que no puede autorizar los workflows de la PR upstream. Esto no impide validar el código en el fork controlado `robertosantosx2/magnitude`.
+
+Se añadió en la rama `feat/native-chat-section` el workflow `.github/workflows/native-chat-validation.yml` (commit `c0c173f5b7c3dbca038cb80a55948c531e7f518b`). Se dispara al actualizar esa rama o manualmente desde Actions, y ejecuta en el fork:
+
+1. instalación reproducible con Bun 1.4.2 y lockfile congelado;
+2. typecheck de `packages/client-common`;
+3. typecheck web;
+4. suite de pruebas web, incluida la nueva prueba de parser SSE;
+5. build web.
+
+**Este workflow está preparado, no validado todavía:** hasta consultar una ejecución real no se puede afirmar que haya pasado. Si GitHub Actions está desactivado en el fork, el propietario del fork debe habilitarlo en Settings → Actions; después se puede ejecutar desde la pestaña Actions → “Native Chat validation (fork)” → Run workflow.
+
+La validación local/integrada de Open WebUI, la inferencia real y el comportamiento de puertos requieren además un entorno ejecutable con Magnitude y un servidor/modelo local. No se simularán como pruebas superadas. Los resultados del fork se registrarán como evidencia de desarrollo, pero no sustituyen la autorización ni los checks requeridos por la PR #202 upstream.
