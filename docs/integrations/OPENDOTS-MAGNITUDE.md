@@ -27,7 +27,7 @@ OpenDots / TanStack AI
     │  OPENAI_BASE_URL=http://127.0.0.1:10101/v1
     ▼
 LEONES compatibility facade (loopback only)
-    │  maps model alias -> model_instance_id; ensures SSE
+    │  maps model alias -> model_instance_id + configuration ID; ensures SSE
     ▼
 Magnitude ICN (127.0.0.1:8080)
     │
