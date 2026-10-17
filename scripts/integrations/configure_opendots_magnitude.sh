@@ -32,9 +32,11 @@ command -v curl >/dev/null 2>&1 || { echo "[FAIL] curl is required." >&2; exit 2
 
 auth=()
 if [[ -n "$API_KEY" ]]; then auth=(-H "Authorization: Bearer $API_KEY"); fi
+models_file="$(mktemp)"
+trap 'rm -f "$models_file"' EXIT
 echo "[1/2] Verifying selected model against $BASE_URL/models"
-curl -fsS --connect-timeout 3 --max-time 15 "${auth[@]}" "$BASE_URL/models" -o /tmp/leones-opendots-magnitude-models.json
-python3 - "$MODEL" /tmp/leones-opendots-magnitude-models.json <<'PY'
+curl -fsS --connect-timeout 3 --max-time 15 "${auth[@]}" "$BASE_URL/models" -o "$models_file"
+python3 - "$MODEL" "$models_file" <<'PY'
 import json, sys
 model, path = sys.argv[1:3]
 try:
@@ -48,8 +50,6 @@ if model not in ids:
     raise SystemExit(1)
 print(f"[OK] Model id verified: {model}")
 PY
-rm -f /tmp/leones-opendots-magnitude-models.json
-
 if [[ ! -f "$OPENDOTS_DIR/.env" ]]; then
   cp "$OPENDOTS_DIR/.env.example" "$OPENDOTS_DIR/.env"
   echo "[i] Created .env from .env.example."
