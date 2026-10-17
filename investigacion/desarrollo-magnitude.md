@@ -138,3 +138,13 @@ Guía de conexión en el fork (inglés): [Open WebUI with Magnitude](https://git
 - **Mantenedores/upstream:** pendiente de revisión y de los controles de CI que exija el repositorio original.
 
 **Criterio de salida:** no marcar la PR como lista ni sacarla de borrador hasta completar los checks de runtime pendientes. La validación automatizada del fork no equivale a aceptación por los mantenedores de Magnitude.
+
+
+## Seguimiento UX móvil — 17 de octubre de 2026
+
+Se ha añadido en el fork de Magnitude un selector de historial de conversaciones visible en pantallas estrechas, junto al botón **New chat**. La barra lateral de historial sigue siendo la experiencia de escritorio, pero en móvil ya se puede volver a una conversación guardada sin depender de esa barra lateral oculta.
+
+- Commit de implementación: [c655dfe](https://github.com/robertosantosx2/magnitude/commit/c655dfe5175138dfa425ab006def8f4b5c325e9e).
+- La documentación de investigación se actualizó después en [fc42c4d](https://github.com/robertosantosx2/magnitude/commit/fc42c4d551d8784e03bb27cfdb4b390165d150b2).
+- La descripción de la [PR upstream #202](https://github.com/magnitudedev/magnitude/pull/202) se sincronizó para reflejar este cambio y marcar que hace falta una nueva ejecución de CI sobre el último head.
+- **Pendiente:** nueva CI sobre el último commit y comprobación visual real en viewport móvil; no se afirma que esté probado en navegador.
