@@ -115,3 +115,25 @@ Estas cifras son dos observaciones breves, no un benchmark sostenido ni una comp
 3. Registrar la salida de TensorFold, JSON de generación y `nvidia-smi`.
 4. Si hay error de memoria, conservar el error exacto y no elevar los límites a ciegas.
 5. Comparar ambos modelos solo con el mismo prompt y límites, y distinguir tiempo hasta primer token, tokens/s, VRAM y estabilidad.
+
+
+### Intento de arranque B1 — presupuesto CUDA insuficiente (2026-10-19)
+
+Comando ejecutado con el servidor 4B, contexto 512 y variables:
+
+```bash
+export TENSORFOLD_CUDA_MEMORY_LIMIT_GB=3.4
+export TENSORFOLD_MEMORY_RESERVE_GIB=0.5
+```
+
+TensorFold respondió:
+
+```text
+the checkpoint's 2.8 GiB of weights do not fit the 0.8 GiB the CUDA memory budget grants (1.3 GiB free less a 0.5 GiB reserve, under TENSORFOLD_CUDA_MEMORY_LIMIT_GB)
+```
+
+- **MEASURED:** el intento de carga fue rechazado antes de arrancar el servidor.
+- TensorFold informó de 1,3 GiB de memoria CUDA libre y un presupuesto utilizable de 0,8 GiB tras aplicar la reserva de 0,5 GiB.
+- El presupuesto CUDA estaba limitado además por `TENSORFOLD_CUDA_MEMORY_LIMIT_GB=3.4`.
+- **No es una prueba de que el modelo 4B sea incompatible**, ni una prueba de inferencia completada. Indica que el presupuesto disponible en ese momento no alcanza para los pesos.
+- **Siguiente diagnóstico:** comprobar `nvidia-smi` y verificar que el proceso del servidor 2B terminó de verdad. No aumentar los límites a ciegas ni arrancar dos modelos simultáneamente.
