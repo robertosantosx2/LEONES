@@ -92,13 +92,23 @@ Estas cifras son dos observaciones breves, no un benchmark sostenido ni una comp
 - Tamaño de pesos informado: **2,85 GiB** (3.061.131.350 bytes).
 - Estimación de memoria de `tensorfold-native info`: **4,85 GiB**, calculada como pesos más un margen de ejecución de 2,00 GiB.
 
-### Estado de validación
+### Resultados MEASURED — ejecución CUDA completada
 
-- **MEASURED:** el repositorio fue descargado y TensorFold reconoció los metadatos.
-- **ESTIMATED:** requisito de memoria de 4,85 GiB.
-- **PENDIENTE:** cargar el modelo, completar una generación, comprobar estabilidad y medir velocidad/VRAM.
-- El requisito estimado supera los 4 GiB de VRAM física. No se debe afirmar que el 4B funciona hasta obtener una ejecución real. El resultado del 2B no prueba que el 4B vaya a caber.
-- Antes de la prueba 4B se recomendó parar el servidor 2B para evitar competir por VRAM y empezar con contexto 512, límite de salida 32 y puerto 18084. No se registra aquí como completado porque aún no se ha recibido una salida de ejecución que lo confirme.
+- **MEASURED:** TensorFold 1.1.1 arrancó el modelo 4B en la RTX 3050 Laptop con backend CUDA y sirvió la API en `http://127.0.0.1:18084/v1`.
+- Carga del modelo: **6,4 s**.
+- Configuración: contexto **512**, `--no-thinking`, generación greedy; puerto local **18084**.
+- Registro de arranque: `model 2.75 GiB; 1 stream at once, 0.21 GiB each at a 512-token window; 0.3 GiB left after a 0.5 GiB reserve`. TensorFold mantuvo la caché de prompts de 3,0 GiB en memoria de host, sin staging de dispositivo.
+- Primera generación de 64 tokens: **53,64 tokens/s**, TTFT **193 ms**, prefill **190 ms**, generación **1,174 s**; salida en español correcta, limitada por `max_tokens`.
+- Segunda generación de 128 tokens: **53,42 tokens/s**, TTFT **212 ms**, prefill **209 ms**, generación **2,377 s**; salida en español estructurada, truncada por `max_tokens`.
+- VRAM observada tras la segunda generación: **3.143 MiB / 4.096 MiB** en total; proceso TensorFold **3.120 MiB**; temperatura **43 °C** en la captura.
+- `/v1/models` respondió y anunció el modelo `Qwen3.5-4B-MLX-4bit`, contexto máximo servido 512.
+
+### Interpretación
+
+- **MEASURED — OK:** la inferencia 4B sí funciona con CUDA en esta GPU usando la configuración probada.
+- La estimación genérica de `tensorfold-native info` (4,85 GiB) no impidió la ejecución con el presupuesto CUDA y la gestión de memoria que aplicó el servidor.
+- Comparación preliminar, no controlada: 2B registró 95,08–105,71 tokens/s y 2.411 MiB de VRAM con contexto 1.024; 4B registró 53,42–53,64 tokens/s y 3.143 MiB con contexto 512. Las diferencias de contexto y configuración impiden tratarlo como benchmark perfectamente equivalente.
+- No se ha validado todavía una sesión larga ni un contexto mayor para 4B.
 
 ## Seguridad y alcance
 
@@ -110,11 +120,11 @@ Estas cifras son dos observaciones breves, no un benchmark sostenido ni una comp
 
 ## Próximos pasos
 
-1. Arrancar el 4B con el servidor 2B detenido y contexto reducido.
-2. Si arranca, probar `/v1/models` y una generación corta con `max_tokens: 32`.
-3. Registrar la salida de TensorFold, JSON de generación y `nvidia-smi`.
-4. Si hay error de memoria, conservar el error exacto y no elevar los límites a ciegas.
-5. Comparar ambos modelos solo con el mismo prompt y límites, y distinguir tiempo hasta primer token, tokens/s, VRAM y estabilidad.
+1. Probar Qwen3.5-4B en formato GGUF `Q4_K_M` con `llama.cpp` y CUDA, manteniendo TensorFold como referencia.
+2. Mantener la prueba aislada en otro puerto localhost; no cambiar ODS ni su `.env`/Compose.
+3. Registrar versión/commit de llama.cpp, origen y hash del GGUF, argumentos de compilación/ejecución, contexto, TTFT, tokens/s, VRAM y resultado de generación.
+4. Comparar MLX/TensorFold y GGUF/llama.cpp con el mismo prompt, contexto y límites de salida cuando sea posible.
+5. No borrar las cachés ni el modelo MLX ya descargado.
 
 
 ### Intento de arranque B1 — presupuesto CUDA insuficiente (2026-10-19)
