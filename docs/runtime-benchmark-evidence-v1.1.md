@@ -87,3 +87,15 @@ The generated evidence is suitable for later ingestion into the LEONES evidence 
 ## Validation gate
 
 A result is valid only when all measurement iterations exit successfully and the required identity/provenance fields are present. Missing optional telemetry such as power or VRAM is recorded as unavailable rather than fabricated.
+
+## Recorded three-runtime Qwen3.5-4B run — 2026-10-20
+
+A three-trial, single-request API snapshot was recorded on Ubuntu with an RTX 3050 Laptop GPU. The run uses a 32-token completion cap and excludes the separate warm-up record. Because TensorFold used MLX-4bit while llama.cpp and RustingStrata used GGUF Q4_K_M, treat this as a practical runtime comparison, not a strict same-artifact benchmark.
+
+- Detailed report: [`docs/benchmarks/qwen35-4b-three-runtimes-2026-10-20.md`](benchmarks/qwen35-4b-three-runtimes-2026-10-20.md)
+- Per-trial CSV: [`docs/benchmarks/qwen35-4b-three-runtimes-2026-10-20.csv`](benchmarks/qwen35-4b-three-runtimes-2026-10-20.csv)
+- TensorFold median: 54.708 output tok/s; 0.7066 s total request time; 0.1303 s TTFT.
+- llama.cpp CUDA median: 47.646 output tok/s; 0.8680 s total request time; comparable client-side TTFT unavailable.
+- RustingStrata median: 0.8384 s total request time; its API did not expose internal output tok/s or TTFT. The report labels 32 / total request time only as an estimate, not as internal decode throughput.
+
+All nine measured requests returned HTTP 200 and 32 completion tokens. The benchmark script's final report step had a Python syntax error after measurement; the report and CSV were reconstructed from the existing per-trial JSONL without rerunning the engines. Full raw JSONL and server logs remain in the original local run directory and are not claimed to be committed in this repository.
