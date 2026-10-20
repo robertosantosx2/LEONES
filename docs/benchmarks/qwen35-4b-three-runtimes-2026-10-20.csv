@@ -1,0 +1,10 @@
+runtime,trial,model_quantization,output_tokens,output_tokens_per_second,total_request_seconds,ttft_seconds,notes
+TensorFold,1,mlx-community/Qwen3.5-4B-MLX-4bit,32,54.663,0.7094,0.1324,CUDA backend; TTFT client metric available
+TensorFold,2,mlx-community/Qwen3.5-4B-MLX-4bit,32,54.708,0.7066,0.1303,CUDA backend; TTFT client metric available
+TensorFold,3,mlx-community/Qwen3.5-4B-MLX-4bit,32,54.771,0.7058,0.1302,CUDA backend; TTFT client metric available
+llama.cpp CUDA,1,qwen3.5-4b-Q4_K_M.gguf,32,47.498,0.9544,,Client-side TTFT unavailable
+llama.cpp CUDA,2,qwen3.5-4b-Q4_K_M.gguf,32,47.646,0.8680,,Client-side TTFT unavailable
+llama.cpp CUDA,3,qwen3.5-4b-Q4_K_M.gguf,32,47.723,0.7578,,Client-side TTFT unavailable
+RustingStrata,1,qwen3.5-4b-Q4_K_M.gguf,32,,0.8384,,API does not expose internal tok/s; estimate only from median wall time
+RustingStrata,2,qwen3.5-4b-Q4_K_M.gguf,32,,0.8381,,API does not expose internal tok/s; estimate only from median wall time
+RustingStrata,3,qwen3.5-4b-Q4_K_M.gguf,32,,0.8384,,API does not expose internal tok/s; estimate only from median wall time
