@@ -18,6 +18,7 @@
 | 2026-10-19 | TensorFold native 1.1.1, CUDA | Qwen3.5-2B, `mlx-community/Qwen3.5-2B-MLX-4bit`, 4-bit group 64 | 1.024 | Velocidad de prefill no registrada | 95,08 tok/s (muestra 32 tokens); 105,71 tok/s (muestra 128 tokens) | 88,2 ms; 94,1 ms | aprox. 2.388 MiB | Inferencia real en español; ambas salidas limitadas por `max_tokens` |
 | 2026-10-19 | TensorFold native 1.1.1, CUDA | Qwen3.5-4B, `mlx-community/Qwen3.5-4B-MLX-4bit`, 4-bit group 64 | 512 | Latencia de prefill: 190 ms y 209 ms; velocidad tok/s no registrada | 53,64 tok/s (64 tokens); 53,42 tok/s (128 tokens) | 193 ms; 212 ms | aprox. 3.120 MiB | Inferencia real en español; salidas limitadas por `max_tokens` |
 | 2026-10-20 | llama.cpp CUDA, build `b11740-6fa4f6cd3` | Qwen3.5-4B GGUF `Q4_K_M` | 512 | **141,2 tok/s** | 42,4 tok/s | No registrado en el documento de la prueba | 2.808 MiB | Respuesta coherente en español; SHA-256 del GGUF verificado |
+| 2026-10-20 | llama.cpp CUDA, build `b11740-6fa4f6cd3` | Qwen3.5-2B GGUF `Q4_K_M` (`~/ods/data/models/Qwen3.5-2B-Q4_K_M.gguf`) | 2.048 | **175,0 tok/s** | **81,2 tok/s** | No registrado | No registrado en esa captura | Respuesta coherente en español con `--chat-template-kwargs '{"enable_thinking":false}'`; primera ejecución sin ese ajuste no produjo una respuesta útil |
  
 ### Otras métricas conservadas
 
@@ -25,6 +26,7 @@
 - **TensorFold Qwen3.5-4B:** carga del modelo 6,4 s; latencia de prefill 190 ms y 209 ms en las dos muestras (la velocidad de prefill en tok/s no quedó registrada); VRAM total observada 3.143 / 4.096 MiB. API local en `http://127.0.0.1:18084/v1`.
 - **TensorFold Qwen3.5-2B:** API local en `http://127.0.0.1:18083/v1`; `/v1/models` respondió correctamente.
 - **llama.cpp Qwen3.5-4B:** velocidad de procesamiento del prompt (prefill) 141,2 tok/s; contexto 512 y máximo solicitado de 128 tokens. En una captura posterior a la generación, la VRAM total ocupada era 2.831 / 4.096 MiB (proceso llama-cli 2.808 MiB); la utilización GPU de 0 % corresponde a esa captura en reposo, no a la fase de inferencia.
+- **llama.cpp Qwen3.5-2B:** prueba adicional el 2026-10-20 con contexto 2.048, máximo solicitado de 96 tokens y temperatura 0. La ejecución sin desactivar el modo de pensamiento no produjo una respuesta útil; al añadir `--chat-template-kwargs '{"enable_thinking":false}'` respondió coherentemente en español: prefill 175,0 tok/s y generación 81,2 tok/s. No se registraron VRAM ni TTFT para esta ejecución.
 - **SHA-256 del GGUF Qwen3.5-4B:** `c3c2cf023efdbd913c2363a14d5c7266db5e05c4602f1c0790eaed567d8aff23`.
 
 ## Comparación directa disponible: Qwen3.5-4B
@@ -50,7 +52,7 @@ El registro TensorFold incluye un intento inicial de arranque del modelo 4B que 
 
 1. TensorFold 1.1.1 con CUDA ejecutó Qwen3.5-2B y Qwen3.5-4B en la RTX 3050 Laptop.
 2. llama.cpp con CUDA ejecutó Qwen3.5-4B GGUF Q4_K_M en la misma GPU.
-3. En las muestras registradas, Qwen3.5-2B en TensorFold alcanzó 95,08–105,71 tok/s; Qwen3.5-4B en TensorFold, 53,42–53,64 tok/s; y Qwen3.5-4B en llama.cpp, 42,4 tok/s.
+3. En las muestras registradas, Qwen3.5-2B en TensorFold alcanzó 95,08–105,71 tok/s y en llama.cpp 81,2 tok/s; Qwen3.5-4B en TensorFold, 53,42–53,64 tok/s; y Qwen3.5-4B en llama.cpp, 42,4 tok/s. Los formatos y protocolos difieren, por lo que estas cifras no constituyen una comparación controlada.
 4. La mayor velocidad observada en TensorFold para 4B viene acompañada de un mayor uso de VRAM del proceso en estas capturas.
 5. No se ha validado mediante este conjunto de pruebas una integración con ODS, Magnitude, OpenBot ni LEONES Runtime. Son pruebas de inferencia de cada motor, no una prueba E2E de integración.
 
@@ -62,3 +64,8 @@ El registro TensorFold incluye un intento inicial de arranque del modelo 4B que 
 ## Próximo benchmark recomendado
 
 Para comparar los motores con rigor, fijar la misma pregunta/prompt, el mismo número de tokens de salida, el contexto 512, generación greedy, modelo Qwen3.5-4B, GPU sin otros procesos de inferencia, caché en estado documentado y al menos tres repeticiones por motor. Registrar TTFT, tokens/s, duración total, VRAM pico y versiones exactas. Como los formatos MLX-4bit y GGUF Q4_K_M no son idénticos, documentar esta diferencia incluso en una prueba controlada.
+
+
+## Prueba exploratoria de RustingStrata (no comparable todavía)
+
+El 2026-10-20 se volvió a ejecutar `RustingStrata` contra el GGUF Qwen3.5-4B de llama.cpp con `--gpu --ctx 512` después de preparar NVRTC 13.0.88 en un directorio aislado dentro de `~/rusting-strata-test/vendor/nvrtc13/`. El proceso terminó con código de salida `0`, y `LD_DEBUG=libs` confirmó que cargó `vendor/nvrtc13/.../libnvrtc.so` y `libnvrtc-builtins.so.13.0`, en lugar de las bibliotecas NVRTC 13.4 del sistema. En el fragmento de salida presentado no aparece el texto generado, por lo que se registra como **comprobación de carga CUDA/NVRTC superada, inferencia semántica pendiente de confirmar**; no se asigna velocidad ni se incluye como motor con inferencia validada en la tabla principal. Registro de ejecución: `/tmp/rustingstrata-test.log` en el equipo local (no es un archivo del repositorio).
