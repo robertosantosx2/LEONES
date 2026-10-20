@@ -1,0 +1,13 @@
+runtime,trial,model,format,context,prompt_tokens,completion_cap,request_latency_s,generation_tok_s,ttft_s,prefill_tok_s,http_status
+TensorFold,1,Qwen3.5-4B,MLX-4bit,256,30,32,0.7065,54.751,0.1306,,200
+TensorFold,2,Qwen3.5-4B,MLX-4bit,256,30,32,0.7068,54.714,0.1310,,200
+TensorFold,3,Qwen3.5-4B,MLX-4bit,256,30,32,0.7128,54.743,0.1296,,200
+llama.cpp CUDA,1,Qwen3.5-4B,GGUF Q4_K_M,256,30,32,0.8337,47.472,,,200
+llama.cpp CUDA,2,Qwen3.5-4B,GGUF Q4_K_M,256,30,32,0.8074,47.500,,,200
+llama.cpp CUDA,3,Qwen3.5-4B,GGUF Q4_K_M,256,30,32,0.8638,47.568,,,200
+RustingStrata,1,Qwen3.5-4B,GGUF Q4_K_M,256,30,32,0.8713,,,,200
+RustingStrata,2,Qwen3.5-4B,GGUF Q4_K_M,256,30,32,0.8383,,,,200
+RustingStrata,3,Qwen3.5-4B,GGUF Q4_K_M,256,30,32,0.8392,,,,200
+Mistral.rs,1,Qwen3.5-4B,GGUF Q4_K_M,256,30,32,6.1753,6.124,,40.107,200
+Mistral.rs,2,Qwen3.5-4B,GGUF Q4_K_M,256,30,32,6.2918,6.194,,31.746,200
+Mistral.rs,3,Qwen3.5-4B,GGUF Q4_K_M,256,30,32,6.1406,6.234,,36.946,200

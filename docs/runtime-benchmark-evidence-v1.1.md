@@ -99,3 +99,16 @@ A three-trial, single-request API snapshot was recorded on Ubuntu with an RTX 30
 - RustingStrata median: 0.8384 s total request time; its API did not expose internal output tok/s or TTFT. The report labels 32 / total request time only as an estimate, not as internal decode throughput.
 
 All nine measured requests returned HTTP 200 and 32 completion tokens. The benchmark script's final report step had a Python syntax error after measurement; the report and CSV were reconstructed from the existing per-trial JSONL without rerunning the engines. Full raw JSONL and server logs remain in the original local run directory and are not claimed to be committed in this repository.
+
+## Recorded four-runtime Qwen3.5-4B run — 2026-10-21
+
+A sequential four-runtime API benchmark was recorded on the same Ubuntu / RTX 3050 Laptop class of host, with context 256, 30 prompt tokens, temperature 0, a 32-token completion cap, three measured requests per runtime, and a separate warm-up. All twelve measured requests returned HTTP 200. TensorFold used MLX-4bit; llama.cpp CUDA, RustingStrata and Mistral.rs used GGUF Q4_K_M, so this is a practical comparison rather than a same-artifact benchmark.
+
+- Detailed report: [`docs/benchmarks/qwen35-4b-four-runtimes-2026-10-21.md`](benchmarks/qwen35-4b-four-runtimes-2026-10-21.md)
+- Per-trial CSV: [`docs/benchmarks/qwen35-4b-four-runtimes-2026-10-21.csv`](benchmarks/qwen35-4b-four-runtimes-2026-10-21.csv)
+- Updated comparison inventory: [`docs/experimental/inventario-comparativo-qwen35-tensorfold-llamacpp-2026-10-20.md`](experimental/inventario-comparativo-qwen35-tensorfold-llamacpp-2026-10-20.md)
+- Full thread chronology and engine verification record: [`docs/reports/informe-verificacion-modelo-cuda-2026-10-21.md`](reports/informe-verificacion-modelo-cuda-2026-10-21.md)
+
+Results: TensorFold median 54.74 output tok/s, 0.707 s request latency and 0.131 s TTFT; llama.cpp CUDA median 47.50 output tok/s and 0.834 s request latency; RustingStrata median 0.839 s request latency, with internal output tok/s and TTFT unavailable; Mistral.rs median 6.19 output tok/s and 6.175 s request latency. TensorFold's model log reported 8.6 s load time. Mistral.rs weights-loading to «Model loaded» took 2.682 s, but the server continued CUDA initialization afterward. No normalized isolated load time was available for llama.cpp or RustingStrata.
+
+TensorFold was approximately 15.2% faster than llama.cpp by median output speed for this workload. Do not infer RustingStrata decode speed from request latency, and do not conflate model load, server readiness, TTFT, request latency and output speed. Full raw logs/JSONL remain in the local run directory and are not claimed to be committed.
