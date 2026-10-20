@@ -1,0 +1,13 @@
+runtime,trial,model_quantization,context_tokens,prompt_tokens,completion_tokens,http_status,total_request_seconds,output_tokens_per_second,prefill_tokens_per_second,ttft_seconds,finish_reason,error
+Mistral.rs,1,GGUF Q4_K_M,256,30,32,200,6.4725,6.202,26.690,,length,
+Mistral.rs,2,GGUF Q4_K_M,256,30,32,200,6.1832,6.352,30.896,,length,
+Mistral.rs,3,GGUF Q4_K_M,256,30,32,200,6.2367,6.119,35.587,,length,
+TensorFold,1,MLX-4bit,256,30,32,200,0.7079,54.708,230.990,0.1308,length,
+TensorFold,2,MLX-4bit,256,30,32,200,0.7103,54.747,231.150,0.1308,length,
+TensorFold,3,MLX-4bit,256,30,32,200,0.7016,54.781,240.506,0.1258,length,
+llama.cpp CUDA,1,GGUF Q4_K_M,256,30,32,200,0.9552,47.551,362.446,,length,
+llama.cpp CUDA,2,GGUF Q4_K_M,256,30,32,200,0.8860,46.214,175.374,,length,
+llama.cpp CUDA,3,GGUF Q4_K_M,256,30,32,200,0.7589,47.651,395.382,,length,
+RustingStrata,1,GGUF Q4_K_M,256,30,32,200,0.8516,,,,length,
+RustingStrata,2,GGUF Q4_K_M,256,30,32,200,0.8416,,,,length,
+RustingStrata,3,GGUF Q4_K_M,256,30,32,200,0.8391,,,,length,

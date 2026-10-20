@@ -62,3 +62,22 @@ El registro TensorFold incluye un intento inicial de arranque del modelo 4B que 
 ## Próximo benchmark recomendado
 
 Para comparar los motores con rigor, fijar la misma pregunta/prompt, el mismo número de tokens de salida, el contexto 512, generación greedy, modelo Qwen3.5-4B, GPU sin otros procesos de inferencia, caché en estado documentado y al menos tres repeticiones por motor. Registrar TTFT, tokens/s, duración total, VRAM pico y versiones exactas. Como los formatos MLX-4bit y GGUF Q4_K_M no son idénticos, documentar esta diferencia incluso en una prueba controlada.
+
+
+## Seguimiento: benchmark Qwen3.5-4B con cuatro motores — 2026-10-20
+
+Se añadió una nueva ejecución física, independiente de las muestras anteriores. El protocolo configuró contexto 256, temperatura 0 y máximo de 32 tokens; se registraron tres peticiones medidas por motor tras un calentamiento, con los servidores iniciados y detenidos secuencialmente. Las 12 peticiones medidas devolvieron HTTP 200 y 32 tokens de salida.
+
+| Motor | Formato de pesos | Latencia total mediana | Generación mediana | Prefill mediano reportado | TTFT mediano |
+|---|---|---:|---:|---:|---:|
+| TensorFold | MLX-4bit | 0,7079 s | 54,747 tok/s | 231,150 tok/s | 130,8 ms |
+| llama.cpp CUDA | GGUF Q4_K_M | 0,8860 s | 47,551 tok/s | 362,446 tok/s* | No registrado |
+| RustingStrata | GGUF Q4_K_M | 0,8416 s | No expuesto | No expuesto | No expuesto |
+| Mistral.rs | GGUF Q4_K_M | 6,2367 s | 6,202 tok/s | 30,896 tok/s | No registrado |
+
+`* ` El prefill de llama.cpp procede de metadatos por petición y varió de 175,374 a 395,382 tok/s; se conserva como métrica reportada, no como medida perfectamente comparable. No se calcula tok/s para RustingStrata a partir de la latencia.
+
+- Informe detallado: [benchmark de cuatro motores](../benchmarks/qwen35-4b-four-engines-2026-10-20.md).
+- CSV por prueba: [datos del benchmark](../benchmarks/qwen35-4b-four-engines-2026-10-20.csv).
+- La ejecución previa de tres motores se conserva como registro histórico separado; no se sustituyen sus valores por los de esta nueva ejecución.
+- La comparación sigue siendo orientativa: TensorFold usa MLX-4bit y los demás GGUF Q4_K_M; solo hay tres pruebas de 32 tokens por motor.

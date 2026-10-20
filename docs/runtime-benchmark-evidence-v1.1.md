@@ -99,3 +99,18 @@ A three-trial, single-request API snapshot was recorded on Ubuntu with an RTX 30
 - RustingStrata median: 0.8384 s total request time; its API did not expose internal output tok/s or TTFT. The report labels 32 / total request time only as an estimate, not as internal decode throughput.
 
 All nine measured requests returned HTTP 200 and 32 completion tokens. The benchmark script's final report step had a Python syntax error after measurement; the report and CSV were reconstructed from the existing per-trial JSONL without rerunning the engines. Full raw JSONL and server logs remain in the original local run directory and are not claimed to be committed in this repository.
+
+
+## Follow-up four-runtime Qwen3.5-4B run — 2026-10-20
+
+A separate four-runtime run was completed on the same Ubuntu workstation (Intel Core i7-12650H, 14 GiB RAM, RTX 3050 Laptop GPU with 4 GiB VRAM). It used context 256, temperature 0, a 32-token completion cap, one uncounted warm-up per engine and three measured requests per engine. All 12 measured requests returned HTTP 200 and 32 completion tokens.
+
+- Detailed report: [Qwen3.5-4B four-runtime benchmark](benchmarks/qwen35-4b-four-engines-2026-10-20.md).
+- Per-trial CSV: [four-runtime measurements](benchmarks/qwen35-4b-four-engines-2026-10-20.csv).
+- TensorFold median: 54.747 output tok/s; 0.7079 s total request time; 0.1308 s TTFT.
+- llama.cpp CUDA median: 47.551 output tok/s; 0.8860 s total request time; client-side TTFT unavailable.
+- RustingStrata median: 0.8416 s total request time; internal output speed, prefill and TTFT were not exposed by its API.
+- Mistral.rs median: 6.202 output tok/s; 6.2367 s total request time; TTFT unavailable.
+- TensorFold used MLX-4bit; the other three runtimes used GGUF Q4_K_M. Treat the run as a practical comparison, not a same-artifact microbenchmark.
+
+The benchmark script's report-generation step failed after the measurements due to an unmatched closing parenthesis. The report and CSV were reconstructed from the existing JSONL; engines were not rerun to fix report generation. The full raw JSONL and server logs remain in the local run directory and are not claimed to be uploaded here.
