@@ -52,16 +52,58 @@ tail -25 /tmp/rustingstrata-test.log
 
 ## Resultado observado
 
-- Código de salida reportado: `0`.
-- `LD_DEBUG=libs` confirmó la carga de la biblioteca aislada `vendor/nvrtc13/.../libnvrtc.so` y de `libnvrtc-builtins.so.13.0`.
-- En la salida compartida no aparece el texto generado: el `tail` mostró principalmente mensajes de finalización del cargador dinámico. Por tanto, todavía no se afirma que la generación haya producido una respuesta coherente.
-- No se ha medido velocidad, TTFT ni VRAM pico de RustingStrata. No comparar su rendimiento con TensorFold o llama.cpp hasta confirmar una respuesta real y repetir la prueba con telemetría.
-- El archivo de log permanece local en `/tmp/rustingstrata-test.log`; no se ha subido al repositorio.
+### Inferencia y API
 
-## Siguiente verificación
+La prueba posterior confirmó inferencia real, no solo carga de bibliotecas:
 
-Inspeccionar el log completo buscando las líneas del prompt, texto de respuesta, errores de modelo y métricas. Si no contiene respuesta, repetir sin `LD_DEBUG=libs` para obtener un log limpio, manteniendo `LD_LIBRARY_PATH` y `XDG_CACHE_HOME`. No instalar ni reemplazar las bibliotecas CUDA globales para esta prueba.
+- `strata serve --model "$MODEL" --gpu --ctx 1024 --addr 127.0.0.1:18083` inició el servidor.
+- `GET /v1/models` devolvió el modelo `qwen3.5-4b-Q4_K_M`.
+- `POST /v1/chat/completions` devolvió HTTP 200 y una respuesta coherente en español. La respuesta registró 30 tokens de prompt, 32 tokens de completion y 62 tokens totales.
+- El servidor se detuvo tras la prueba. Una captura posterior de `nvidia-smi` mostró 15 MiB de uso total de GPU y solo Xorg en la lista de procesos.
 
-## Estado
+### Benchmark GPU
 
-**Carga de NVRTC 13.0: confirmada. Proceso sin error fatal según código de salida: confirmado. Inferencia coherente de extremo a extremo: pendiente de confirmación.**
+Comando usado:
+
+```bash
+LD_LIBRARY_PATH="$NVRTC_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+XDG_CACHE_HOME="$PWD/vendor/nvrtc13/cache-1300" \
+timeout 300 ./target/release/strata bench \
+  --model "$MODEL" --gpu --pp 128,512 --tg 64 --reps 3 --ctx 1024
+```
+
+Resultados del benchmark de RustingStrata:
+
+| Prompt | Prefill medio (rango) | Decode medio (rango) |
+|---:|---:|---:|
+| 128 tokens | 915,3 (906,2–925,6) tok/s | 46,6 (46,5–46,7) tok/s |
+| 512 tokens | 986,5 (985,6–988,0) tok/s | 46,1 (46,1–46,2) tok/s |
+
+El plan de memoria del motor indicó 2.752 MB para pesos/estado/scratch y 32 MB de KV para contexto 1.024. Durante la prueba del servidor, el proceso usó 2.928 MiB según `nvidia-smi`; no se midió el pico de VRAM del benchmark.
+
+### Arquitectura y expertos
+
+La consulta:
+
+```bash
+python3 "$HOME/llama.cpp-cuda/gguf-py/gguf/scripts/gguf_dump.py" "$MODEL" \
+  | grep -iE 'general.architecture|expert_count|expert_used_count|feed_forward_length'
+```
+
+no produjo líneas de metadatos en la salida compartida. Por tanto, **la arquitectura densa/MoE sigue sin verificarse**. El registro `resident experts 0/0` no es suficiente para concluir que el modelo sea denso; primero hay que leer correctamente los metadatos del GGUF.
+
+### Estado
+
+- **NVRTC 13.0.88 aislado cargado:** confirmado.
+- **Generación GPU local:** confirmada.
+- **API OpenAI-compatible no-streaming:** confirmada para `/v1/models` y `/v1/chat/completions`.
+- **Benchmark integrado:** completado con tres repeticiones por tamaño de prompt.
+- **Comparación controlada con llama.cpp/TensorFold:** pendiente.
+- **Integración E2E con ODS, Magnitude, OpenBot o LEONES Runtime:** pendiente.
+- **Licencia de RustingStrata:** no verificada.
+
+## Próximas verificaciones
+
+1. Obtener `general.architecture`, `expert_count` y `expert_used_count` con una herramienta de inspección GGUF compatible.
+2. Ejecutar llama.cpp con un protocolo equivalente y varias repeticiones antes de inferir una ventaja de rendimiento.
+3. Probar streaming y una integración real con un cliente antes de ampliar el estado de compatibilidad.
