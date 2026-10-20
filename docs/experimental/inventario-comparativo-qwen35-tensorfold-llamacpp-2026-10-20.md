@@ -13,18 +13,18 @@
 
 ## Tabla comparativa de ejecuciones completadas
 
-| Fecha | Motor / versión | Modelo y formato | Contexto | Generación medida | TTFT | VRAM del proceso | Resultado |
-|---|---|---|---:|---:|---:|---:|---|
-| 2026-10-19 | TensorFold native 1.1.1, CUDA | Qwen3.5-2B, `mlx-community/Qwen3.5-2B-MLX-4bit`, 4-bit group 64 | 1.024 | 95,08 tok/s (muestra 32 tokens); 105,71 tok/s (muestra 128 tokens) | 88,2 ms; 94,1 ms | aprox. 2.388 MiB | Inferencia real en español; ambas salidas limitadas por `max_tokens` |
-| 2026-10-19 | TensorFold native 1.1.1, CUDA | Qwen3.5-4B, `mlx-community/Qwen3.5-4B-MLX-4bit`, 4-bit group 64 | 512 | 53,64 tok/s (64 tokens); 53,42 tok/s (128 tokens) | 193 ms; 212 ms | aprox. 3.120 MiB | Inferencia real en español; salidas limitadas por `max_tokens` |
-| 2026-10-20 | llama.cpp CUDA, build `b11740-6fa4f6cd3` | Qwen3.5-4B GGUF `Q4_K_M` | 512 | 42,4 tok/s | No registrado en el documento de la prueba | 2.808 MiB | Respuesta coherente en español; SHA-256 del GGUF verificado |
+| Fecha | Motor / versión | Modelo y formato | Contexto | Prefill / procesamiento del prompt | Generación medida | TTFT | VRAM del proceso | Resultado |
+|---|---|---|---:|---|---:|---:|---:|---|
+| 2026-10-19 | TensorFold native 1.1.1, CUDA | Qwen3.5-2B, `mlx-community/Qwen3.5-2B-MLX-4bit`, 4-bit group 64 | 1.024 | Velocidad de prefill no registrada | 95,08 tok/s (muestra 32 tokens); 105,71 tok/s (muestra 128 tokens) | 88,2 ms; 94,1 ms | aprox. 2.388 MiB | Inferencia real en español; ambas salidas limitadas por `max_tokens` |
+| 2026-10-19 | TensorFold native 1.1.1, CUDA | Qwen3.5-4B, `mlx-community/Qwen3.5-4B-MLX-4bit`, 4-bit group 64 | 512 | Latencia de prefill: 190 ms y 209 ms; velocidad tok/s no registrada | 53,64 tok/s (64 tokens); 53,42 tok/s (128 tokens) | 193 ms; 212 ms | aprox. 3.120 MiB | Inferencia real en español; salidas limitadas por `max_tokens` |
+| 2026-10-20 | llama.cpp CUDA, build `b11740-6fa4f6cd3` | Qwen3.5-4B GGUF `Q4_K_M` | 512 | **141,2 tok/s** | 42,4 tok/s | No registrado en el documento de la prueba | 2.808 MiB | Respuesta coherente en español; SHA-256 del GGUF verificado |
  
 ### Otras métricas conservadas
 
 - **TensorFold Qwen3.5-2B:** tiempo de generación reportado 0,326 s para la muestra de 32 tokens y 1,201 s para 128 tokens. VRAM total observada: 2.411 / 4.096 MiB.
-- **TensorFold Qwen3.5-4B:** carga del modelo 6,4 s; prefill 190 ms y 209 ms en las dos muestras; VRAM total observada 3.143 / 4.096 MiB. API local en `http://127.0.0.1:18084/v1`.
+- **TensorFold Qwen3.5-4B:** carga del modelo 6,4 s; latencia de prefill 190 ms y 209 ms en las dos muestras (la velocidad de prefill en tok/s no quedó registrada); VRAM total observada 3.143 / 4.096 MiB. API local en `http://127.0.0.1:18084/v1`.
 - **TensorFold Qwen3.5-2B:** API local en `http://127.0.0.1:18083/v1`; `/v1/models` respondió correctamente.
-- **llama.cpp Qwen3.5-4B:** velocidad de procesamiento del prompt 141,2 tok/s; contexto 512 y máximo solicitado de 128 tokens. En una captura posterior a la generación, la VRAM total ocupada era 2.831 / 4.096 MiB (proceso llama-cli 2.808 MiB); la utilización GPU de 0 % corresponde a esa captura en reposo, no a la fase de inferencia.
+- **llama.cpp Qwen3.5-4B:** velocidad de procesamiento del prompt (prefill) 141,2 tok/s; contexto 512 y máximo solicitado de 128 tokens. En una captura posterior a la generación, la VRAM total ocupada era 2.831 / 4.096 MiB (proceso llama-cli 2.808 MiB); la utilización GPU de 0 % corresponde a esa captura en reposo, no a la fase de inferencia.
 - **SHA-256 del GGUF Qwen3.5-4B:** `c3c2cf023efdbd913c2363a14d5c7266db5e05c4602f1c0790eaed567d8aff23`.
 
 ## Comparación directa disponible: Qwen3.5-4B
@@ -33,11 +33,14 @@
 |---|---:|---:|
 | Formato / cuantización | MLX-4bit, group 64 | GGUF Q4_K_M |
 | Contexto configurado | 512 | 512 |
+| **Velocidad de prefill** | No registrada en tok/s | **141,2 tok/s** |
+| Latencia de prefill | 190 ms y 209 ms | No registrada |
+| TTFT | 193 ms y 212 ms | No registrado |
 | Velocidad de generación | 53,42–53,64 tok/s | 42,4 tok/s |
 | VRAM del proceso | 3.120 MiB | 2.808 MiB |
 | Inferencia correcta | Sí | Sí |
 
-En estas muestras, TensorFold registró aproximadamente un **26 % más de tokens/s** que llama.cpp. No debe presentarse como ventaja definitiva del motor: los formatos de pesos son diferentes y no consta que prompt, revisión exacta del modelo, plantilla, condiciones de caché y procedimiento de medida fueran idénticos. Hace falta un benchmark controlado antes de atribuir la diferencia al runtime.
+En estas muestras, TensorFold registró aproximadamente un **26 % más de velocidad de generación** que llama.cpp. Para prefill, solo consta una velocidad en llama.cpp (141,2 tok/s); TensorFold conserva latencias de prefill, pero no una velocidad en tok/s. Por tanto, no puede compararse directamente la velocidad de prefill entre ambos motores con los datos actuales. No debe presentarse como ventaja definitiva del motor: los formatos de pesos son diferentes y no consta que prompt, revisión exacta del modelo, plantilla, condiciones de caché y procedimiento de medida fueran idénticos. Hace falta un benchmark controlado antes de atribuir la diferencia al runtime.
 
 ## Intento fallido que no debe confundirse con el resultado completado
 
