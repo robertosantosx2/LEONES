@@ -59,3 +59,21 @@ Only the per-trial measurements and documented interpretation above are transcri
 ## Next validation step
 
 Run a follow-up profile with a fixed 128- or 256-token output limit, the same prompt and sampling parameters, and capture peak GPU memory. For strict cross-runtime comparisons, align model artifact/quantization and collect engine-internal generation metrics for RustingStrata. Keep these results as a separate execution rather than overwriting this record.
+
+## Prefill and model-load time (separate measurements)
+
+These figures come from earlier runtime-specific runs on the same workstation, not from the three-trial API table above. They are included as reference only; the prompts, context lengths and measurement boundaries differ.
+
+| Runtime | Prefill measurement | Model load / startup measurement | Scope and caveat |
+|---|---:|---:|---|
+| TensorFold, Qwen3.5-4B MLX-4bit | ~228–232 tok/s in the 2026-10-20 short API run | ~9.9 s to load the model in a separate startup observation | The ~9.9 s is model-load/startup observed in TensorFold logs; not included in the warm API request latency. |
+| llama.cpp CUDA, Qwen3.5-4B GGUF Q4_K_M | Earlier runs varied by prompt: ~118.14, 51.99 and 22.31 tok/s in one run; a separate run reported ~141.2 tok/s | ~1.83 s from `load_model` starting at ~0.188 s to the “model loaded” log at ~2.019 s | Prefill varies with prompt/workload; these values are from a separate historical run and should not be treated as the current API test's prefill result. |
+| RustingStrata, Qwen3.5-4B GGUF Q4_K_M | `strata bench`: 915.3 tok/s at PP=128; 986.5 tok/s at PP=512 | Not recorded in the available log evidence | Separate `strata bench` run with context 1024, `--tg 64 --reps 3`; not comparable directly to API prefill figures. |
+
+### Interpretation
+
+- **Prefill** measures processing prompt/input tokens; it is not generation speed.
+- **Model-load time** measures the startup/model initialization phase and is distinct from the time for a request sent to an already-running server.
+- RustingStrata's high prefill figures came from its own benchmark harness and different prompt batch sizes (PP=128/512). Do not rank them directly against API-derived TensorFold or llama.cpp figures.
+- The three-runtime API test above did not capture a comparable model-load duration for all three engines. Missing load timing is marked as not recorded rather than inferred.
+
