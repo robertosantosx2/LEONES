@@ -1,13 +1,13 @@
 # Daily Atlas Prospection
 
-Generated: 2026-10-20T09:31:39.088905+00:00
+Generated: 2026-10-21T09:27:54.841324+00:00
 Input: `data/prospection/classified_discoveries.ndjson`
-Discoveries: **295**
-Without declared license: **169**
+Discoveries: **298**
+Without declared license: **176**
 
 ## By type
 - model: 40
-- paper: 35
+- paper: 38
 - software: 220
 
 ## By source
@@ -19,7 +19,7 @@ Without declared license: **169**
 - github: 87
 - gitlab: 40
 - huggingface: 40
-- huggingface-papers: 35
+- huggingface-papers: 38
 
 ## Publication status
-- review: 295
+- review: 298
