@@ -18,7 +18,7 @@
 | llama.cpp CUDA | Qwen3.5-4B, GGUF Q4_K_M | Completada | 141,2 tok/s de prefill; 42,4 tok/s de generación en ejecución CLI |
 | TensorFold API | Qwen3.5-4B, MLX 4-bit | 3/3 peticiones HTTP 200 | Mediana 54,708 tok/s; 0,7066 s por petición; TTFT 0,1303 s |
 | llama.cpp API/CUDA | Qwen3.5-4B, GGUF Q4_K_M | 3/3 peticiones HTTP 200 | Mediana 47,646 tok/s; 0,8680 s por petición |
-| llama.cpp CUDA | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Barrido de offload completado | Mediana 1,93–2,00 tok/s con 12–14 capas en la tanda larga; 15 capas fue el máximo offload funcional probado |
+| llama.cpp CUDA | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Barrido de offload completado | Mediana 1,97–2,00 tok/s con 12–14 capas en la tanda larga; 15 capas fue el máximo offload funcional probado |
 | RustingStrata CUDA/NVRTC 13.0 | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Completada | 7,74 tok/s en una generación real de 64 tokens; aún no es una comparación controlada con llama.cpp |
 | RustingStrata CUDA API | Qwen3.5-4B, GGUF Q4_K_M | 3/3 peticiones HTTP 200 | Mediana 0,8384 s por petición; API sin tok/s interno ni TTFT |
 | RustingStrata bench | Qwen3.5-4B, GGUF Q4_K_M | Medición de prefill separada | 915,3 tok/s PP=128; 986,5 tok/s PP=512 |
