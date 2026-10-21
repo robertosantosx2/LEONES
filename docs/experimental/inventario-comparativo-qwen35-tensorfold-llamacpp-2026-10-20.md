@@ -62,3 +62,23 @@ El registro TensorFold incluye un intento inicial de arranque del modelo 4B que 
 ## Próximo benchmark recomendado
 
 Para comparar los motores con rigor, fijar la misma pregunta/prompt, el mismo número de tokens de salida, el contexto 512, generación greedy, modelo Qwen3.5-4B, GPU sin otros procesos de inferencia, caché en estado documentado y al menos tres repeticiones por motor. Registrar TTFT, tokens/s, duración total, VRAM pico y versiones exactas. Como los formatos MLX-4bit y GGUF Q4_K_M no son idénticos, documentar esta diferencia incluso en una prueba controlada.
+
+## Prueba adicional: Magnitude 0.2.10 con Qwen3.5-4B (2026-10-21)
+
+**Estado: CERRADA SIN INFERENCIA; no incorporar métricas de rendimiento.** Se intentó usar Magnitude como motor adicional para la comparativa. La CLI instalada es `0.2.10`; `magnitude update check/status` informó que estaba actualizada. El servicio quedó `Ready`, pero sin modelo activo.
+
+| Comprobación | Resultado |
+|---|---|
+| Pesos Qwen | `Qwen3.5-4B-UD-Q4_K_XL.gguf`, 2.990.664.000 bytes; SHA-256 verificado: `d2bfbee4de17c74e6308a4dc750be4c2271f92ae2df1e28f5c5afa0dcdb6fccc` |
+| Proyector | `mmproj-BF16.gguf`, 675.569.216 bytes; SHA-256 verificado: `169ee40fb1e234ff38b2d814eb8633611a54b6f941f11b700d96dec02cb44ddf` |
+| Inventario interno | Contiene `Qwen3.5-4B`, disponibilidad `available`, operaciones declaradas `load/unload/delete` |
+| Afiliaciones | Existe `qwen3.5-4b` variante `gguf:q4`, con repositorio objetivo `unsloth/Qwen3.5-4B-MTP-GGUF` y dependencia `magnitudedev/Qwen3.5-4B-DFlash-GGUF` |
+| Catálogo publicado | Solo 3 modelos compatibles: Gemma 4 E2B Q4 QAT y MiniCPM5 1B Q4/Q8; Qwen no aparece |
+| Carga CLI | `catalog show qwen3.5-4b` y `catalog show qwen3.5-4b:gguf:q4` devuelven ID desconocido/inválido. `models load` con ID interno o ruta `hf:...` también se rechaza |
+| Estado de ejecución | `models status`: “No local models”; `magnitude status`: Runtime Ready, Active model None |
+| Métricas | No hay inferencia completada; prefill, tok/s, TTFT, latencia y VRAM de Magnitude: **N/D (no medidos)** |
+
+**Conclusión acotada:** se verificó la integridad de los artefactos descargados, pero no se pudo activar Qwen mediante la CLI instalada. Los datos no permiten concluir que el modelo sea incapaz de ejecutarse en este hardware, ni prueban que la causa sea la memoria; la incompatibilidad observable es entre el inventario/afiliaciones y el catálogo/CLI disponibles. No modificar manualmente el estado ni borrar la caché. El artefacto de Magnitude usa `Q4_K_XL`, mientras que la fila principal de llama.cpp de esta comparativa usa `Q4_K_M`; incluso si se logra cargar, deben etiquetarse como cuantizaciones diferentes.
+
+Informe detallado: [Prueba Magnitude Qwen3.5-4B — 2026-10-21](../benchmarks/magnitude-qwen35-4b-2026-10-21.md).
+
