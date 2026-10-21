@@ -1,0 +1,450 @@
+# Dense Inference Report — October 2026
+
+**Master file:** `report-inferencia-dense_Octubre26.md`  
+**Consolidated:** 2026-10-21  
+**Project:** LEONES  
+**Scope:** Local Qwen/Qwen3.5 model tests on Ubuntu, inference engines, quantization formats, configurations, retained commands, results, and evidence limitations.
+
+> This report consolidates repository evidence and test-conversation records. It is not a full transcript of every terminal session: some complete logs remain only on the local machine. Missing commands or metrics are identified rather than guessed.
+
+## 1. Executive summary
+
+### Completed inference
+
+| Engine | Model / artifact | Result |
+|---|---|---|
+| TensorFold native 1.1.1, CUDA | Qwen3.5-2B, MLX 4-bit | 95.08 tok/s (32 tokens); 105.71 tok/s (128 tokens) |
+| TensorFold native 1.1.1, CUDA | Qwen3.5-4B, MLX 4-bit | 53.64 tok/s (64 tokens); 53.42 tok/s (128 tokens) |
+| llama.cpp CUDA CLI | Qwen3.5-4B, GGUF Q4_K_M | 141.2 tok/s prefill; 42.4 tok/s generation |
+| TensorFold API | Qwen3.5-4B, MLX 4-bit | 3/3 HTTP 200; median 54.708 tok/s, 0.7066 s/request, TTFT 0.1303 s |
+| llama.cpp CUDA API | Qwen3.5-4B, GGUF Q4_K_M | 3/3 HTTP 200; median 47.646 tok/s, 0.8680 s/request |
+| RustingStrata CUDA API | Qwen3.5-4B, GGUF Q4_K_M | 3/3 HTTP 200; median 0.8384 s/request; API did not expose internal tok/s or TTFT |
+| RustingStrata bench | Qwen3.5-4B, GGUF Q4_K_M | Separate prefill test: 915.3 tok/s PP=128; 986.5 tok/s PP=512 |
+
+### Incomplete or excluded attempts
+
+- **Magnitude 0.2.10 + Qwen3.5-4B:** artifacts downloaded and hashes verified, but CLI/catalog did not accept the model. No inference or performance metrics.
+- **KTransformers:** explicitly excluded from this round; do not build or install. No documented working Qwen3.5-4B path was identified in the examined branch.
+- **SGLang:** explicitly excluded; do not install, download the AWQ checkpoint, or benchmark it.
+- **Mistral.rs:** considered in the four-engine plan, but no measured run is present in the consolidated evidence.
+- **Qwen3.5-4B AWQ W4A16:** candidate metadata inspected only; not an executed inference or confirmed download.
+- **Qwen3-30B-A3B-Instruct IQ3_XXS:** GGUF download initiated for a future MoE test; no completed inference, hash verification, or performance results confirmed.
+- **TensorFold Qwen3.5-4B initial startup:** rejected by the CUDA memory budget; a later run with context 512 succeeded.
+
+## 2. Hardware and common environment
+
+- OS: native Ubuntu, x86_64.
+- CPU: Intel Core i7-12650H, 12th generation, 16 logical CPUs.
+- RAM: 14 GiB; a Magnitude report displayed 14.8 GB.
+- GPU: NVIDIA GeForce RTX 3050 Laptop, 4 GiB VRAM (4096 MiB).
+- NVIDIA driver: 580.178.04.
+- CUDA reported by `nvidia-smi`: 13.0.
+- During one Magnitude check, the app reported about 3.7 GiB VRAM; RAM usage was 9.3/14.8 GB with 5.5 GB free.
+- Total GPU memory, process VRAM, and free memory are different measures. Post-run snapshots do not show peak generation usage.
+
+General checks:
+
+~~~bash
+free -h
+nvidia-smi
+pgrep -af 'magnitude|Magnitude' || true
+systemctl is-active magnitude.service || true
+~~~
+
+These checks were used to detect an active Magnitude service or residual processes before switching engines, not to measure performance.
+
+## 3. Models, artifacts, and quantization
+
+### 3.1 Qwen3.5-2B on TensorFold
+
+- Model: `mlx-community/Qwen3.5-2B-MLX-4bit`.
+- MLX 4-bit weights; group size 64 in the test record.
+- Local endpoint: `http://127.0.0.1:18083/v1`; `/v1/models` responded successfully.
+- Context: 1024; output bounded by `max_tokens`.
+
+### 3.2 Qwen3.5-4B on TensorFold
+
+- Model: `mlx-community/Qwen3.5-4B-MLX-4bit`.
+- MLX 4-bit weights; group size 64.
+- Local endpoint: `http://127.0.0.1:18084/v1`.
+- Reference context: 512.
+- Model load time: 6.4 s in one run; a separate startup/API record estimated about 9.9 s. These are different records and must not be merged.
+- Prefill latency was recorded in milliseconds, but prefill tok/s was not consistently retained.
+
+### 3.3 Qwen3.5-4B on llama.cpp CUDA
+
+- File: `~/llama.cpp-cuda/models/qwen3.5-4b-Q4_K_M.gguf`, approximately 2.59 GiB.
+- Quantization: GGUF Q4_K_M / Q4_K - Medium.
+- Verified SHA-256: `c3c2cf023efdbd913c2363a14d5c7266db5e05c4602f1c0790eaed567d8aff23`.
+- Project: `~/llama.cpp-cuda`; binary: `build-cuda/bin/llama-cli`.
+- Build: `b11740-6fa4f6cd3`.
+
+Retained CLI command:
+
+~~~bash
+cd ~/llama.cpp-cuda
+
+./build-cuda/bin/llama-cli \
+  -m "$PWD/models/qwen3.5-4b-Q4_K_M.gguf" \
+  -ngl 99 \
+  -c 512 \
+  -n 128 \
+  --temp 0 \
+  --no-display-prompt \
+  -p "Responde en español en una frase: ¿qué ventajas tiene ejecutar un modelo de IA localmente?" \
+  --chat-template-kwargs '{"enable_thinking":false}'
+~~~
+
+### 3.4 Qwen3.5-4B on RustingStrata
+
+- Artifact: `qwen3.5-4b-Q4_K_M.gguf`, GGUF Q4_K_M.
+- Used in the API comparison and a separate prefill benchmark.
+- API did not expose internal generation speed or TTFT.
+- 32 tokens divided by total request time is retained only as a wall-clock estimate, not internal engine tok/s.
+
+### 3.5 Qwen3.5-4B on Magnitude
+
+Downloaded from `unsloth/Qwen3.5-4B-MTP-GGUF`, revision `86835bf9949e4d14d6860f7910b1340ad4f271a9`:
+
+| File | Size | SHA-256 |
+|---|---:|---|
+| `Qwen3.5-4B-UD-Q4_K_XL.gguf` | 2,990,664,000 bytes | `d2bfbee4de17c74e6308a4dc750be4c2271f92ae2df1e28f5c5afa0dcdb6fccc` |
+| `mmproj-BF16.gguf` | 675,569,216 bytes | `169ee40fb1e234ff38b2d814eb8633611a54b6f941f11b700d96dec02cb44ddf` |
+
+Combined size: 3,666,233,216 bytes. DFlash dependency also downloaded:
+
+- Repository: `magnitudedev/Qwen3.5-4B-DFlash-GGUF`, revision `0094e74a88676605d53b79c7c3d26096335c9746`.
+- File: `Qwen3.5-4B-DFlash-Q8_0.gguf`, 685,134,176 bytes.
+
+Hashes were checked with `sha256sum`, and snapshot links pointed to valid blobs. **Q4_K_XL is not the same quantization as Q4_K_M** used by llama.cpp/RustingStrata.
+
+### 3.6 Qwen3.5-4B AWQ candidate
+
+Candidate inspected: `matchachoco/Qwen3.5-4B-QuantStudy-AWQ-W4A16`.
+
+- Declared architecture: `Qwen3_5ForConditionalGeneration`.
+- Repository size: 3.81 GB.
+- `model.safetensors`: 3,786,643,328 bytes.
+- Declared quantization: compressed-tensors, pack-quantized INT4, group 128, with excluded layers.
+
+This was metadata inspection only. The SGLang/AWQ route was explicitly ruled out; do not download the checkpoint or install SGLang for this round.
+
+### 3.7 Qwen3-30B-A3B-Instruct IQ3_XXS
+
+Download initiated for a future MoE test:
+
+~~~bash
+hf download bartowski/Qwen_Qwen3-30B-A3B-Instruct-2507-GGUF \
+  Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf \
+  --local-dir "$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs"
+~~~
+
+The visible terminal output warned that Hugging Face requests were unauthenticated. Evidence does not confirm completion, hash verification, or model loading. **Qwen3-30B-A3B is not Qwen3.5-4B**; they are different models, and Qwen3-30B-A3B is MoE.
+
+## 4. TensorFold results: Qwen3.5-2B and 4B
+
+### 4.1 Qwen3.5-2B
+
+| Metric | Short sample | Long sample |
+|---|---:|---:|
+| Requested output tokens | 32 | 128 |
+| Generation | 95.08 tok/s | 105.71 tok/s |
+| Recorded generation time | 0.326 s | 1.201 s |
+| TTFT | 88.2 ms | 94.1 ms |
+| Process-associated VRAM | approx. 2,388 MiB | approx. 2,388 MiB |
+| Total VRAM in snapshots | 2,411 / 4,096 MiB | 2,411 / 4,096 MiB |
+| Context | 1024 | 1024 |
+
+Real inference in Spanish; both samples were capped by `max_tokens`. Prefill tok/s was not recorded.
+
+### 4.2 Qwen3.5-4B
+
+| Metric | Sample A | Sample B |
+|---|---:|---:|
+| Requested output tokens | 64 | 128 |
+| Generation | 53.64 tok/s | 53.42 tok/s |
+| Prefill latency | 190 ms | 209 ms |
+| TTFT | 193 ms | 212 ms |
+| Process-associated VRAM | approx. 3,120 MiB | approx. 3,120 MiB |
+| Total VRAM in snapshots | 3,143 / 4,096 MiB | 3,143 / 4,096 MiB |
+| Context | 512 | 512 |
+
+Prefill tok/s was not recorded. One run recorded 6.4 s model loading. The response was a real Spanish inference.
+
+### 4.3 Initial rejected startup
+
+The first TensorFold Qwen3.5-4B startup was rejected with `TENSORFOLD_CUDA_MEMORY_LIMIT_GB=3.4` and a 0.5 GiB reserve. A later CUDA run with context 512 succeeded. This indicates a memory-budget/configuration issue, not absolute incompatibility.
+
+## 5. llama.cpp CUDA results
+
+CLI run dated 2026-10-20:
+
+| Field | Result |
+|---|---|
+| Model | Qwen3.5-4B GGUF Q4_K_M |
+| Context | 512 |
+| Maximum output | 128 tokens |
+| Temperature | 0 |
+| Requested GPU layers | `-ngl 99` |
+| Prefill / prompt processing | **141.2 tok/s** |
+| Generation | **42.4 tok/s** |
+| Total VRAM in post-run snapshot | 2,831 / 4,096 MiB |
+| `llama-cli` process VRAM | 2,808 MiB |
+| GPU temperature in snapshot | 42 °C |
+| Instantaneous utilization | 0%; snapshot was taken after generation |
+| GGUF SHA-256 | Verified; see §3.3 |
+
+The Spanish answer was coherent. The 0% utilization snapshot was taken after generation and does not describe utilization during inference. This confirms local CUDA inference with `llama-cli`, not integration with Magnitude, TensorFold, ODS, or LEONES Runtime.
+
+Other historical llama.cpp prompt-processing figures were approximately 118.14, 51.99, and 22.31 tok/s, from runs/workloads whose complete protocols are not available here. Another run recorded 141.2 tok/s. Do not average or directly compare these figures as if the prompts and conditions were identical.
+
+A log recorded model loading at approximately 1.83 s, from `load_model` start (about 0.188 s) to “model loaded” (about 2.019 s). This is distinct from request latency through an already-started server.
+
+## 6. Three-engine API benchmark — 2026-10-20
+
+### Protocol
+
+- Script: `~/benchmarks/benchmark_qwen35_4b_three_engines_fixed_v2.sh`.
+- Run directory: `~/qwen35-4b-benchmark-fixed-20261020-215243`.
+- Hardware: Ubuntu x86_64, i7-12650H, 16 logical CPUs, 14 GiB RAM, RTX 3050 Laptop 4 GiB, driver 580.178.04, CUDA 13.0.
+- Three measured iterations per engine; separate warm-up excluded from measured JSONL.
+- 32 output tokens per request.
+- All nine measured requests returned HTTP 200 and stopped at the 32-token limit (`finish_reason=length`).
+- Prompt and parameters were retained in local artifacts; the GitHub report does not contain raw JSONL or complete logs.
+
+Retained command:
+
+~~~bash
+cd ~/benchmarks
+bash ~/benchmarks/benchmark_qwen35_4b_three_engines_fixed_v2.sh
+~~~
+
+### Median summary
+
+| Engine | Artifact | Median total time | Median output speed | Median TTFT |
+|---|---|---:|---:|---:|
+| TensorFold CUDA | `mlx-community/Qwen3.5-4B-MLX-4bit` | **0.7066 s** | **54.708 tok/s** | **0.1303 s** |
+| llama.cpp CUDA | `qwen3.5-4b-Q4_K_M.gguf` | 0.8680 s | 47.646 tok/s | No comparable client-side measurement |
+| RustingStrata CUDA | `qwen3.5-4b-Q4_K_M.gguf` | 0.8384 s | Not exposed by API | Not exposed by API |
+
+TensorFold prefill was approximately 228–232 tok/s for these requests. Do not confuse this with prefill latency in the earlier local tests.
+
+### Per-iteration results
+
+| Engine | Iteration | Output speed | Total time | TTFT |
+|---|---:|---:|---:|---:|
+| TensorFold | 1 | 54.663 tok/s | 0.7094 s | 0.1324 s |
+| TensorFold | 2 | 54.708 tok/s | 0.7066 s | 0.1303 s |
+| TensorFold | 3 | 54.771 tok/s | 0.7058 s | 0.1302 s |
+| llama.cpp CUDA | 1 | 47.498 tok/s | 0.9544 s | N/A |
+| llama.cpp CUDA | 2 | 47.646 tok/s | 0.8680 s | N/A |
+| llama.cpp CUDA | 3 | 47.723 tok/s | 0.7578 s | N/A |
+| RustingStrata | 1 | Not exposed | 0.8384 s | N/A |
+| RustingStrata | 2 | Not exposed | 0.8381 s | N/A |
+| RustingStrata | 3 | Not exposed | 0.8384 s | N/A |
+
+The approximate RustingStrata estimate of 38.17 tok/s is 32 tokens divided by median total request time. **It is not internal decoding speed** and must not be compared with output tok/s exposed by the other engines.
+
+### Script issue and local artifacts
+
+The three tests per engine completed. The script then failed while generating the summary due to an extra closing parenthesis in the Python report-generation section (line 302). CSV and Markdown were regenerated from the existing `results.jsonl`; the engines were not rerun.
+
+Artifacts in the local run directory:
+
+- `results.jsonl`, `results.csv`, `summary.md`
+- `tensorfold-server.log`, `llama-cpp-server.log`, `rusting-strata-server.log`
+- `environment.txt`, `nvidia-smi-before.txt`, `nvidia-smi-after.txt`, `benchmark.log`
+
+The raw records and logs are documented as local and are not claimed to be committed to GitHub.
+
+### Comparability
+
+TensorFold used an MLX-4bit artifact; llama.cpp and RustingStrata used GGUF Q4_K_M. This is a practical runtime comparison, not a strict same-artifact benchmark. Three iterations and a 32-token output cap are an initial snapshot, not a sustained-generation, long-context, concurrency, quality, energy, or statistical-significance test.
+
+The llama.cpp response contained an empty `<think>...</think>` wrapper despite settings intended to disable reasoning; the Spanish response text was coherent.
+
+## 7. Separate RustingStrata prefill benchmark
+
+A separate `strata bench` run was documented:
+
+- Context: 1024.
+- `--tg 64 --reps 3`.
+- PP=128: **915.3 tok/s**.
+- PP=512: **986.5 tok/s**.
+- Load time: not recorded.
+
+These figures come from RustingStrata's own harness and different prompt/batch sizes. They should not be ranked directly against TensorFold API prefill or historical llama.cpp figures; the same measurement phase and protocol have not been established.
+
+## 8. Magnitude 0.2.10: blocked attempt
+
+### Runtime state
+
+- CLI version: `0.2.10`.
+- `magnitude update check` and `magnitude update status`: CLI reported itself up to date.
+- Service: `Runtime Ready`.
+- Local address: `http://127.0.0.1:10100`.
+- Active model: `None`.
+- `magnitude models status`: no local models.
+- `/var/lib/magnitude/state/models.json`: `slots: {}`, empty `recentModels`, and `favorites: []`.
+
+### Recorded commands
+
+~~~bash
+magnitude --version
+magnitude update check
+magnitude update status
+magnitude models status
+magnitude status
+magnitude catalog show qwen3.5-4b
+magnitude catalog show 'qwen3.5-4b:gguf:q4'
+magnitude models load 'hf:unsloth/Qwen3.5-4B-MTP-GGUF/Qwen3.5-4B-UD-Q4_K_XL.gguf'
+~~~
+
+Results:
+
+- `magnitude catalog show qwen3.5-4b`: `Invalid catalog model ID`.
+- `magnitude catalog show 'qwen3.5-4b:gguf:q4'`: `Unknown catalog model`.
+- Loading via the `hf:...` path: `Invalid catalog model ID`.
+- `magnitude models status`: “No local models are on this computer”.
+- `magnitude status`: runtime ready, active model `None`.
+- Internal inventory listed Qwen3.5-4B as `available`, architecture `qwen35`, 4,326,350,848 parameters, with declared `load/unload/delete` operations. This does not mean the CLI could load it.
+- The published catalog reported 73/73 models evaluated but listed only Gemma 4 E2B Q4 QAT and MiniCPM5 1B Q4/Q8 as compatible. Qwen was absent.
+
+**Conclusion:** artifacts were verified, but the model was not activated. No Magnitude prefill, tok/s, TTFT, inference duration, or VRAM figures can be attributed to a Qwen inference. The exact cause was not proven; do not automatically blame memory or intrinsic model incompatibility.
+
+Maintenance constraints: do not delete verified blobs, unnecessarily redownload artifacts, manually edit `models.json` or `catalog-affiliations.json`, or blindly reinstall a CLI that reports itself up to date. Reopen the test only after a corrected catalog/load path is available, then measure a real request.
+
+## 9. KTransformers and SGLang: explicit exclusions
+
+### KTransformers
+
+- Examined branch: `qwen3.5`.
+- No documented working path was found for Qwen3.5-4B in the local configuration.
+- Visible documentation focused on Qwen3.5 MoE-400B/SGLang-KT; the classic `optimize_and_load_gguf` workflow did not demonstrate compatibility with `Qwen3_5ForConditionalGeneration` / Qwen3.5-4B.
+- Resources during the check: 14 GiB RAM, about 8.3 GiB available at that moment; RTX 3050 4 GiB with around 3.75 GiB free.
+- Explicit decision: exclude KTransformers for this round. Do not build or install it, and do not count it as a measured engine.
+
+No successful KTransformers inference command or Qwen3.5-4B measurement was found. No tok/s, prefill, TTFT, or VRAM result is therefore reported.
+
+### SGLang
+
+Explicitly excluded. Do not install SGLang, download the AWQ checkpoint, or benchmark it. No SGLang inference was measured in this round.
+
+## 10. Mistral.rs evidence status
+
+A four-engine comparison was planned: TensorFold, llama.cpp CUDA, RustingStrata, and Mistral.rs. The reproducible three-runtime report contains only TensorFold, llama.cpp, and RustingStrata. The consolidated material contains no logs, final command, or results certifying a completed Mistral.rs run. It is recorded as **no confirmed measurement**, not as a technical failure or incompatibility.
+
+## 11. Additional commands and diagnostics
+
+### Magnitude inspection
+
+~~~bash
+magnitude docs cli
+magnitude catalog recommendations
+magnitude hardware
+magnitude catalog show qwen3.5-4b
+~~~
+
+CLI documentation, recommendations, hardware, and catalog metadata were inspected. The catalog entry did not provide a working load path; the CLI rejected the ID.
+
+### Help and model-state inspection
+
+~~~bash
+magnitude models --help
+magnitude docs --help
+magnitude models load --help
+magnitude catalog pull --help
+magnitude models status
+cat /var/lib/magnitude/config.json
+~~~
+
+The `/var/lib/magnitude/state/models.json` file and service state were also inspected. The CLI reported no active local models.
+
+### Process/resource check before switching engines
+
+~~~bash
+sudo systemctl stop magnitude.service
+
+echo "===== SERVICE STATE ====="
+systemctl is-active magnitude.service || true
+
+echo
+echo "===== RESIDUAL PROCESSES ====="
+pgrep -af 'magnitude|Magnitude' || true
+
+echo
+echo "===== RAM AND SWAP ====="
+free -h
+
+echo
+echo "===== VRAM ====="
+nvidia-smi
+~~~
+
+This sequence stopped Magnitude and checked for residual RAM/VRAM-consuming processes before proceeding. The terminal requested sudo authentication. This diagnostic check does not itself provide benchmark results.
+
+## 12. Overall interpretation
+
+1. In local TensorFold samples, Qwen3.5-2B reached 95.08–105.71 tok/s and Qwen3.5-4B reached 53.42–53.64 tok/s.
+2. The retained llama.cpp CLI run reached 42.4 tok/s generation and 141.2 tok/s prompt processing for Qwen3.5-4B Q4_K_M.
+3. In the 32-token API comparison, TensorFold had the highest median output speed among exposed metrics (54.708 tok/s), versus 47.646 tok/s for llama.cpp.
+4. RustingStrata returned valid responses, but its API exposed neither internal tok/s nor TTFT. Total-request-time estimates are not decoding throughput.
+5. MLX-4bit and GGUF Q4_K_M artifacts differ. The results do not prove that every performance difference is caused solely by the engine.
+6. Magnitude did not complete inference; this is a catalog/CLI blockage, not a speed of zero.
+7. KTransformers and SGLang were excluded by explicit decision. No confirmed Mistral.rs measurement exists in the consolidated evidence.
+8. The Qwen3-30B-A3B-Instruct IQ3_XXS download is a future MoE test lead, not a completed benchmark.
+9. These records do not demonstrate end-to-end integration with ODS or LEONES Runtime; they cover individual model/engine tests.
+
+## 13. Evidence limitations and missing data
+
+- Complete logs and API JSONL remain in local directory `~/qwen35-4b-benchmark-fixed-20261020-215243`; this report does not claim they were uploaded.
+- The full text of every generated response is not retained here.
+- Some historical tests lack a complete exact prompt, artifact revision, temperature, context, or timing method.
+- TensorFold prefill tok/s was not recorded in the local 2B/4B tests.
+- llama.cpp TTFT in the API comparison was unavailable from the client-side parser/measurement.
+- RustingStrata TTFT and internal tok/s were not exposed by its API.
+- Peak VRAM throughout generation is unavailable for every engine.
+- Energy use, quality, long-context behavior, concurrency, and sustained performance have not been measured under a common protocol.
+- Model load time, TTFT from an already-warm server, total request time, and CLI process execution time have different measurement boundaries and must not be conflated.
+
+## 14. Recommended protocol for the next comparable round
+
+Preserve existing evidence and create a new run directory/execution ID; do not overwrite historical results.
+
+- Fix the same prompt, context 256 or 512, temperature 0, output limit, and template.
+- Record hash, size, quantization, revision, and path for each artifact.
+- Separate loading/warm-up and run at least three measured iterations per engine.
+- Record load time, TTFT, prefill tok/s, generation tok/s, and total duration separately.
+- Capture VRAM before, during, and after inference, plus RAM, version/build, backend, and arguments.
+- Run engines sequentially, with only one inference engine active.
+- Mark unexposed metrics N/A; do not substitute estimates unless clearly labelled.
+- For strict comparisons, use the same artifact and quantization where supported. Otherwise label the result a practical comparison of different configurations.
+- Do not reopen KTransformers or SGLang in this round, respecting the exclusion decision.
+- Treat Qwen3-30B-A3B IQ3_XXS as a separate MoE experiment, not part of the Qwen3.5-4B table.
+
+LEONES benchmark evidence methodology: `docs/runtime-benchmark-evidence-v1.1.md`.
+
+## 15. Related reports and evidence
+
+- [TensorFold + llama.cpp comparison inventory and Magnitude closure](../experimental/inventario-comparativo-qwen35-tensorfold-llamacpp-2026-10-20.md)
+- [Three-runtime API benchmark and per-iteration results](qwen35-4b-three-runtimes-2026-10-20.md)
+- [CSV for the nine measured requests](qwen35-4b-three-runtimes-2026-10-20.csv)
+- [Magnitude Qwen3.5-4B test — 2026-10-21](magnitude-qwen35-4b-2026-10-21.md)
+- [Qwen3.5-4B llama.cpp CUDA CLI test](../experimental/qwen3.5-4b-llama-cpp-rtx3050.md)
+- [LEONES benchmark evidence contract/methodology](../runtime-benchmark-evidence-v1.1.md)
+
+## 16. GitHub consolidation history
+
+Related LEONES commits:
+
+- [e595852 — initial TensorFold and llama.cpp consolidation](https://github.com/robertosantosx2/LEONES/commit/e595852ede8f5708bab96e20f171a37f870f8274)
+- [661b545 — prefill metrics](https://github.com/robertosantosx2/LEONES/commit/661b545dd0ee2a2d4654d1bb4687daed41e96398)
+- [fddc904 — local Qwen3.5-4B llama.cpp CUDA test](https://github.com/robertosantosx2/LEONES/commit/fddc904e5a8f7b23ab0ed6583bf4ef57a394458d)
+- [2db5093 — three-runtime results](https://github.com/robertosantosx2/LEONES/commit/2db50934017e3ab4257395cd9f27424a40f74e3e)
+- [d34aff0 — per-iteration results CSV](https://github.com/robertosantosx2/LEONES/commit/d34aff0625d4124fe7fe3f6ba2fa616dd25bc2bb)
+- [6d23a60 — runtime evidence index](https://github.com/robertosantosx2/LEONES/commit/6d23a604d20fad6cd0bee32c5db818cfbd5de6f6)
+- [75f93ce — blocked Magnitude attempt](https://github.com/robertosantosx2/LEONES/commit/75f93ce440445231b83d6b153b9f779c56737b3a)
+- [cc7b6c4 — Magnitude attempt closure](https://github.com/robertosantosx2/LEONES/commit/cc7b6c42faa7266c3941022b3d216f278e7f95fe)
+
+---
+**Final status:** consolidated from evidence available as of 2026-10-21. No measurements have been invented for engines or models that did not complete inference. Future tests should be added as new runs, preserving historical evidence and its limitations.
