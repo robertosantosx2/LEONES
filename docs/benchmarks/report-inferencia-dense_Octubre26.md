@@ -776,3 +776,99 @@ El plan registró pesos+estado+scratch de 1.568 MB, KV de 384 MB para contexto 4
 Log local: `~/benchmarks/qwen3-30b-a3b-iq3-xxs/rustingstrata-bench-20261021.log`.
 
 **Conclusión actualizada:** RustingStrata completa correctamente tanto el benchmark como la generación controlada. El benchmark PP128/TG32 da 12,3 tok/s de decode (rango 8,7–14,3) y 58,7 tok/s de prefill (rango 13,3–91,2), mientras que la prueba corta de generación exhibe un gran efecto de caché. Estas pruebas no son todavía un cara a cara estricto con llama.cpp: cambian la longitud, el contexto y el modo de ejecución; el resultado caliente de 25–31 tok/s con solo 16 tokens no debe extrapolarse a generaciones largas.
+
+
+### 17.13 Comparación controlada de generación: llama.cpp CUDA vs RustingStrata — 2026-10-21
+
+#### Objetivo y protocolo
+
+Se ejecutó el script local `~/benchmarks/benchmark-strata-vs-llamacpp.sh` para comparar ambos motores con el mismo GGUF y el mismo prompt visible. El script guardó logs, códigos de salida y `/usr/bin/time -v` por repetición en:
+
+`~/benchmarks/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/`
+
+Modelo y SHA-256 verificado:
+
+- `Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf`
+- `292daa2b66aec59d075532d0bcf05010bf4a3b012a4216c28dc021b73d1e9ab4`
+
+Prompt visible común: `Responde brevemente en español: ¿qué es la inferencia local?`
+
+Configuración llama.cpp:
+- build `0.7.0-dev (11740, 6fa4f6cd3)`;
+- `--n-gpu-layers 14 --fit off --ctx-size 1024`;
+- `--batch-size 64 --ubatch-size 32 --threads 8`;
+- `--predict 128 --temp 0 --seed 42 --single-turn --simple-io --verbose`.
+
+Configuración RustingStrata:
+- versión `1.0.1`;
+- `generate --model "$M" --gpu --ctx 1024 --threads 8 --prompt "$PROMPT" -n 128 --temp 0`;
+- NVRTC 13.0 vendorizado antepuesto a `LD_LIBRARY_PATH`;
+- `XDG_CACHE_HOME` aislado bajo el directorio de resultados.
+
+Se realizaron seis ejecuciones por motor, primero todas las de llama.cpp y luego todas las de Strata. Las doce terminaron con código 0. No se intercaló el orden entre motores, así que no se elimina el posible efecto de temperatura/carga del equipo.
+
+#### Velocidad de generación y tokens producidos
+
+| Motor | Rep. 1 | Rep. 2 | Rep. 3 | Rep. 4 | Rep. 5 | Rep. 6 | Mediana |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| llama.cpp (tok/s) | 1,95 | 1,86 | 2,29 | 2,02 | 1,95 | 2,04 | 1,98 |
+| RustingStrata (tok/s) | 14,34 | 29,94 | 30,08 | 30,90 | 31,89 | 29,33 | 30,01 |
+
+La mediana de Strata en las ejecuciones 2–6 es **30,08 tok/s**. Frente a la mediana completa de llama.cpp (aprox. 1,98 tok/s), las cifras observadas corresponden a una razón de aproximadamente **15,1×** para las repeticiones posteriores de Strata. Es una comparación del rendimiento observado en este protocolo, no una garantía general para otros modelos o cargas.
+
+Los tokens producidos no fueron iguales en todas las repeticiones:
+- llama.cpp: 73 tokens en las seis ejecuciones; terminó por EOS antes del máximo de 128.
+- RustingStrata: 128, 98, 128, 104, 128 y 128 tokens.
+
+Por ello, `--predict 128` / `-n 128` es un límite, no una garantía de igual número de tokens emitidos. La velocidad tok/s se toma de la métrica de generación de cada motor; no se calcula dividiendo el límite solicitado por el tiempo total.
+
+#### Datos por repetición
+
+| Motor / rep. | Prefill registrado (tok/s) | Generación (tok/s) | Tokens generados | Tiempo total | RSS máximo |
+|---|---:|---:|---:|---:|---:|
+| llama.cpp 1 | 8,56 | 1,95 | 73 | 60,15 s | 11.769.532 KiB |
+| llama.cpp 2 | 6,79 | 1,86 | 73 | 57,10 s | 11.826.788 KiB |
+| llama.cpp 3 | 5,04 | 2,29 | 73 | 75,16 s | 11.959.852 KiB |
+| llama.cpp 4 | 9,08 | 2,02 | 73 | 61,47 s | 12.281.072 KiB |
+| llama.cpp 5 | 10,97 | 1,95 | 73 | 43,35 s | 12.312.544 KiB |
+| llama.cpp 6 | 10,83 | 2,04 | 73 | 65,50 s | 12.308.524 KiB |
+| Strata 1 | 11,71 | 14,34 | 128 | 17,71 s | 8.379.540 KiB |
+| Strata 2 | 19,67 | 29,94 | 98 | 5,82 s | 7.337.164 KiB |
+| Strata 3 | 20,03 | 30,08 | 128 | 6,84 s | 7.585.856 KiB |
+| Strata 4 | 18,91 | 30,90 | 104 | 5,83 s | 7.289.712 KiB |
+| Strata 5 | 18,96 | 31,89 | 128 | 6,47 s | 7.548.684 KiB |
+| Strata 6 | 17,98 | 29,33 | 128 | 6,94 s | 7.504.556 KiB |
+
+El tiempo total incluye carga y trabajo que no equivale exclusivamente a la decodificación. Los valores de RSS proceden de GNU `time` (KiB); no son VRAM. llama.cpp estuvo entre aproximadamente 11,22 y 11,74 GiB de RSS máximo. Strata estuvo en aproximadamente 7,99 GiB en la primera ejecución y entre 6,95 y 7,23 GiB en las ejecuciones 2–6.
+
+#### Caché de expertos y efecto de calentamiento de Strata
+
+| Repetición | Hit rate | Fallos de caché | Cambios de caché | CPU expert compute, proporción del tiempo de generación |
+|---:|---:|---:|---:|---:|
+| 1 | 30,8 % | 38.272 | 128 | 83,1 % |
+| 2 | 79,0 % | 9.178 | 16 | 63,6 % |
+| 3 | 77,9 % | 12.194 | 1 | 64,2 % |
+| 4 | 80,2 % | 9.125 | 1 | 62,1 % |
+| 5 | 78,6 % | 11.856 | 1 | 61,2 % |
+| 6 | 78,8 % | 11.716 | 1 | 64,5 % |
+
+La primera ejecución de Strata fue sustancialmente más lenta y tuvo una tasa de aciertos inferior. Las cinco siguientes rondaron el 78–80 % de aciertos. Esto es evidencia de un fuerte efecto del estado de caché en esta serie. No debe suponerse que el uso de un mismo `XDG_CACHE_HOME` por sí solo garantiza persistencia de caché entre procesos; lo demostrado son las métricas observadas en los logs de cada proceso.
+
+#### Interpretación y límites
+
+1. **Resultado principal:** mediana de generación de llama.cpp de aproximadamente 1,98 tok/s; mediana de RustingStrata de 30,01 tok/s incluyendo la primera ejecución y 30,08 tok/s para las repeticiones 2–6.
+2. **Memoria:** Strata mostró menor RSS máximo en esta prueba: aproximadamente 7,0–7,24 GiB en las repeticiones posteriores, frente a 11,22–11,74 GiB en llama.cpp. RSS no equivale a RAM física exclusiva ni a VRAM.
+3. **Entrada:** el texto visible del prompt fue igual, pero los motores contabilizaron 24 tokens en llama.cpp y 16 en Strata; las plantillas/tokenizadores internos no se han demostrado equivalentes.
+4. **Terminación:** el número real de tokens difirió porque ambos motores pudieron detenerse antes del límite.
+5. **Orden de ejecución:** se ejecutó primero la serie completa de llama.cpp y luego la de Strata, sin alternancia aleatoria ni medición de temperatura continua.
+6. **Configuración:** ambos usaron GPU, contexto 1024 y ocho hilos, pero los controles de offload, batching y gestión de expertos son propios de cada motor. Es una comparación práctica de runtimes, no una comparación de kernels idénticos.
+7. **Siguiente validación:** alternar el orden de los motores, registrar temperatura/uso GPU durante cada prueba, separar carga de decodificación, conservar salida/tokenización y ejecutar una tanda larga con un criterio explícito para EOS y caché fría/caliente.
+
+Artefactos locales:
+- Script: `~/benchmarks/benchmark-strata-vs-llamacpp.sh`
+- Resultados: `~/benchmarks/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/`
+- Logs: `llama/rep-*.log`, `strata/rep-*.log`
+- Mediciones de recursos: `llama/time-*.txt`, `strata/time-*.txt`
+- Códigos de salida: `llama/rc-*.txt`, `strata/rc-*.txt`
+
+Estos artefactos permanecen en el equipo local; este apartado transcribe los resultados compartidos y no afirma que los logs se hayan subido al repositorio.
