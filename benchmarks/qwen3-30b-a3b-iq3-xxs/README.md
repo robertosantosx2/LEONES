@@ -27,9 +27,9 @@ Prior host snapshot: Ubuntu, NVIDIA RTX 3050 Laptop (4 GiB VRAM), 14 GiB RAM. A 
 
 ## Execution order
 
-1. Run `preflight_qwen3_30b_a3b_iq3_xxs.sh` (read-only, no model download).
+1. Run `bash preflight_qwen3_30b_a3b_iq3_xxs.sh` (read-only, no model download).
 2. Inspect the output and confirm exact model source/variant plus disk/memory feasibility.
-3. Run `run_qwen3_30b_a3b_iq3_xxs.sh --model /absolute/path/to/model.gguf --run` only after confirming the target file exists and the host is ready. It runs llama.cpp then RustingStrata sequentially; it does not run TensorFold on an unsupported target.
+3. Run `bash run_qwen3_30b_a3b_iq3_xxs.sh --model /absolute/path/to/model.gguf --run` only after confirming the target file exists and the host is ready. It runs llama.cpp then RustingStrata sequentially; it does not run TensorFold on an unsupported target.
 4. Review raw logs and fill `results-template.csv`; do not enter estimates as measurements.
 
 ## Isolation
