@@ -820,7 +820,7 @@ Thus, `--predict 128` / `-n 128` is a maximum, not a guarantee that the same num
 | Strata 5 | 18.96 | 31.89 | 128 | 6.47 s | 7,548,684 KiB |
 | Strata 6 | 17.98 | 29.33 | 128 | 6.94 s | 7,504,556 KiB |
 
-Total wall time includes loading and work beyond decoding alone. RSS comes from GNU `time` (KiB); it is not VRAM. llama.cpp's maximum RSS ranged from approximately 11.22 to 11.74 GiB. Strata reached approximately 7.99 GiB on the first run and 6.98–7.24 GiB on runs 2–6.
+Total wall time includes loading and work beyond decoding alone. RSS comes from GNU `time` (KiB); it is not VRAM. llama.cpp's maximum RSS ranged from approximately 11.22 to 11.74 GiB. Strata reached approximately 7.99 GiB on the first run and 6.95–7.23 GiB on runs 2–6.
 
 #### Strata expert-cache and warm-up effect
 
