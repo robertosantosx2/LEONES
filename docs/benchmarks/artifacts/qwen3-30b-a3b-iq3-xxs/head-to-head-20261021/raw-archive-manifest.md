@@ -1,11 +1,10 @@
 # Raw benchmark archive verification
 
-- Uploaded archive: `head-to-head-20261021-raw.tar.gz`
-- Archive SHA-256: `60a752fb09cf3774aec0f051bc349ee9677780fbf9c56a9ea46600952efb72dc`
-- Archive size: 1,494,277 bytes
+- Original uploaded archive (includes generated cache): `head-to-head-20261021-raw.tar.gz` — SHA-256 `60a752fb09cf3774aec0f051bc349ee9677780fbf9c56a9ea46600952efb72dc`, 1,494,277 bytes.
+- Clean archive uploaded later (raw run files only): `head-to-head-20261021-raw-no-cache.tar.gz` — SHA-256 `95496a42dd5816908d03fc373d8ef2b6f6630f84d2fd4c373287d6dbcdad6fdb`, 273,761 bytes.
 - Contents verified: 36 original per-run files (12 `rep-*.log`, 12 `time-*.txt`, 12 `rc-*.txt`) across llama.cpp and RustingStrata.
 - All 12 exit-code files contain `0\n`.
-- The uploaded archive also contains a generated RustingStrata PTX/profile cache (about 6.3 MB uncompressed). It is intentionally excluded from this manifest because it is a generated cache, not primary benchmark evidence.
+- The clean archive excludes the generated RustingStrata PTX/profile cache; it is not primary benchmark evidence.
 
 This manifest lists SHA-256 and byte size for every original log/timing/exit-code file. Paths are relative to the archive's `head-to-head-20261021/` root.
 
