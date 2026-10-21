@@ -4,37 +4,38 @@ Status: **prepared, not executed on the Ubuntu host** (2026-10-21).
 
 ## Decision and scope
 
-Target remains **Qwen3-30B-A3B IQ3_XXS**, using the Instruct checkpoint selected for this evaluation. Do not silently substitute Qwen3.5, a different quantization, or a converted checkpoint.
+Target remains **Qwen3-30B-A3B IQ3_XXS**. Preserve the exact model variant/revision selected for this test; do not silently substitute Qwen3.5, another quantization, or a converted checkpoint. Confirm whether the selected repository is the original Instruct or Instruct-2507 variant before downloading.
 
-Compare TensorFold, llama.cpp and RustingStrata only when each engine can load equivalent weights and tokenizer/template. An engine that cannot load this exact artifact is reported as **unsupported / not comparable**, not assigned a fabricated speed.
+## Compatibility gates (evidence-based)
 
-Hardware target from previous host checks: Ubuntu, NVIDIA RTX 3050 Laptop (4 GiB VRAM), 14 GiB RAM. This is a tight memory budget for a ~30B-parameter IQ3_XXS model: check the actual GGUF size, free RAM, swap, and available disk before downloading or loading. Do not download the model automatically or alter ODS configuration.
+- **llama.cpp — reference candidate.** Upstream source includes Qwen3 model support and the IQ3_XXS GGML/GGUF quantization type. That establishes format/type support in upstream, not that the user's local build or exact file is valid. See [llama.cpp quantization definitions](https://github.com/ggml-org/llama.cpp/blob/master/include/llama.h) and [GGUF quantization implementation](https://github.com/ggml-org/llama.cpp/blob/master/gguf-py/gguf/constants.py).
+- **RustingStrata — compatibility unverified.** Must confirm Qwen3 (not only Qwen3.5) architecture, IQ3_XXS tensors, tokenizer/chat template, and execution path from the checked-out source/version. Do not infer support from generic GGUF support.
+- **TensorFold — exact path likely not equivalent.** TensorFold releases frequently use MLX checkpoints for Apple silicon. A GGUF IQ3_XXS file is not an MLX checkpoint. Only compare if the actual TensorFold build supports the exact Qwen3-30B-A3B checkpoint and IQ3_XXS representation on this Linux/NVIDIA system; otherwise report **not comparable / unsupported**. Do not convert to another quantization and label it IQ3_XXS.
 
-## Why compatibility gates come first
+## Hardware and memory
 
-- **llama.cpp:** first candidate for the GGUF IQ3_XXS artifact. Verify the local build supports this Qwen3 architecture and IQ3_XXS tensor types.
-- **RustingStrata:** do not assume support merely because it can run other GGUF models. Confirm the Qwen3 (not Qwen3.5) architecture, IQ3_XXS tensor types, chat template and server interface.
-- **TensorFold:** previous experiments used an MLX checkpoint/quantization path, which is not equivalent to GGUF IQ3_XXS. Unless the current TensorFold checkout explicitly supports this exact checkpoint/quantization on the NVIDIA/Linux host, record it as unsupported. Do not convert to another quantization and call it IQ3_XXS.
+Target host from earlier checks: Ubuntu, NVIDIA RTX 3050 Laptop (4 GiB VRAM), 14 GiB RAM. This is a tight budget for a ~30B-parameter IQ3_XXS model. The active weights are not determined by the A3B active-parameter count alone: the full model weights must be represented in memory/storage. Check exact file size, free RAM, swap and disk before downloading/loading. No automatic download is authorized by these scripts.
 
 ## Controlled protocol
 
-Reuse the prior benchmark conventions where applicable:
+Reuse prior benchmark conventions where applicable:
 - sequential runs only; one engine resident at a time;
-- context 256; max generated tokens 32; 1 warm-up + 3 measured runs;
-- same prompt, sampling parameters, tokenizer/chat template where supported;
-- fixed seed if the engine supports it;
-- record model file name, exact source/revision, SHA-256, engine commit/version, launch arguments and all failures;
-- record load time, prefill tok/s, generation tok/s, wall time, peak RAM, peak VRAM, GPU layer/offload settings and exit status;
-- do not compare a TensorFold different-format checkpoint against GGUF IQ3_XXS as an apples-to-apples result.
+- context 256; max generated tokens 32; one warm-up + three measured runs;
+- identical prompt and sampling settings; fixed seed where supported;
+- record exact model source/revision, file name and SHA-256, engine commit/version, command line, chat template, exit status and failure logs;
+- record load time, prefill tok/s, generation tok/s, wall time, peak RAM, peak VRAM and GPU offload configuration;
+- do not compare TensorFold using a different-format/different-quantization checkpoint as an apples-to-apples IQ3_XXS result;
+- label first-token latency/prefill precisely: engines may define or report these differently.
 
-## Before running on Ubuntu
+## Preparation now; host run later
 
-1. Run `preflight_qwen3_30b_a3b_iq3_xxs.sh` from this directory.
-2. Confirm the exact model source and license, download only if disk/RAM feasibility is acceptable, and calculate SHA-256.
-3. Capture the actual CLI help/version for all three engines. Fill the engine-specific launch adapters only after verifying their syntax.
-4. Run llama.cpp first as the reference. Then attempt RustingStrata and TensorFold only after their compatibility gates pass.
-5. Copy `results-template.csv` and the generated preflight report into the results directory; update the comparison report with measured values, not estimates.
+1. Review this PR and the preflight script.
+2. On Ubuntu, run the read-only preflight and capture engine paths/version/help and model-file candidates.
+3. Confirm the exact model repository/revision and license; download only after checking available disk and memory.
+4. Validate GGUF metadata and SHA-256; check architecture and tensor types.
+5. Run llama.cpp first as the reference. Test RustingStrata only after its compatibility gate passes. Test TensorFold only if exact Linux/NVIDIA + checkpoint/quantization support is proven.
+6. Save outputs in a new timestamped directory; update the results CSV and comparison report with measured values, not estimates.
 
-## Safety / isolation
+## Isolation / safety
 
-The scripts must not edit `~/ods/.env`, Docker Compose, the active ODS llama-server, or existing benchmark outputs. Use dedicated loopback ports (18084–18086) and stop only processes started by this benchmark. Do not run engines concurrently on a 4 GiB GPU.
+The preflight script does not download models, start servers, install packages, or modify ODS. Benchmark runs must not edit `~/ods/.env`, Docker Compose, or the active ODS llama-server. Use dedicated loopback ports (18084–18086) if server mode is needed and stop only processes started by this benchmark. Do not run engines concurrently on a 4 GiB GPU.
