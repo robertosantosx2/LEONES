@@ -696,3 +696,64 @@ The strata bench run and 64-token generation are not the same workload as the ll
 4. RustingStrata reached 7.74 tok/s in one real 64-token generation, with the main cost in CPU expert computation and approximately 25% cache hit rate. This is one-run evidence, not a directly comparable median.
 5. The next controlled comparison must fix prompt, output length, context, warm-up, repetitions, and generation timing; RAM/swap and VRAM should also be recorded during each run.
 6. Logs, CSVs, and scripts remain in ~/benchmarks/qwen3-30b-a3b-iq3-xxs. This report incorporates available textual evidence but does not automatically upload those local files.
+
+
+### 17.11 RustingStrata: controlled 16-token generation test (2026-10-21)
+
+A short controlled test used the same GGUF file, Spanish prompt, and 16-token output limit as the controlled llama.cpp test. It ran on GPU with context 1024, 8 threads, temperature 0, isolated NVRTC 13.0, and a dedicated XDG_CACHE_HOME. The purpose was to validate generation and observe expert-cache behavior; **16 output tokens are too few for a robust sustained-performance comparison**.
+
+Model SHA-256: `292daa2b66aec59d075532d0bcf05010bf4a3b012a4216c28dc021b73d1e9ab4`.
+
+Command used for each repetition:
+
+~~~bash
+/usr/bin/time -v -o "$OUT/time-$REP.txt" \
+  ./target/release/strata generate \
+    --model "$M" --gpu --ctx 1024 --threads 8 \
+    --prompt "Responde brevemente en español: ¿qué es la inferencia local?" \
+    -n 16 --temp 0 2>&1 | tee "$OUT/rep-$REP.log"
+~~~
+
+CUDA environment: `LD_LIBRARY_PATH` prepends `~/rusting-strata-test/vendor/nvrtc13/root/usr/local/cuda-13.0/targets/x86_64-linux/lib`; `XDG_CACHE_HOME=$OUT/cache`. Output directory: `~/benchmarks/qwen3-30b-a3b-iq3-xxs/rustingstrata-controlled-20261021`.
+
+| Repetition | Prefill (tok/s) | Generation (tok/s) | Expert hit rate | Cache misses | Cache swaps | Maximum RSS |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 2.99 | 6.67 | 19.9% | 9,846 | 32 | 7,055,728 KiB (6.73 GiB) |
+| 2 | 24.41 | 31.32 | 81.7% | 2,248 | 0 | 6,062,680 KiB (5.78 GiB) |
+| 3 | 26.44 | 25.66 | 81.8% | 2,238 | 0 | 6,065,568 KiB (5.78 GiB) |
+
+All three runs exited with code 0. The median of the three generation speeds is 25.66 tok/s, but it is not a stable estimate of sustained performance: each run generated only 16 tokens and the first had a cold or much less effective cache. Repetitions 2–3, with about 81.8% cache hits, reached 31.32 and 25.66 tok/s; two warm samples are not enough to claim a definitive average. Strata reported CPU expert computation at 91.7%, 61.4%, and 67.7% of generation time, respectively.
+
+The measurements show that cache state radically changes the result. Do not directly compare this 16-token test with the llama.cpp sweep at 128/256 tokens or the earlier 64-token Strata generation. For a final comparison, perform an explicit warm-up and at least five repetitions at a common output length, reporting the first run and warm-cache runs separately.
+
+### 17.12 RustingStrata: PP128/TG32 benchmark with three repetitions
+
+Exact command:
+
+~~~bash
+LD_LIBRARY_PATH="$NVRTC${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+XDG_CACHE_HOME="$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs/strata-bench-cache" \
+/usr/bin/time -v ./target/release/strata bench \
+  --model "$M" --gpu --pp 128 --tg 32 --reps 3 --threads 8
+~~~
+
+Observed results:
+
+| Metric | Result |
+|---|---:|
+| Prefill PP=128 | 58.7 tok/s |
+| Reported prefill range | 13.3–91.2 tok/s |
+| Decode TG=32 | 12.3 tok/s |
+| Reported decode range | 8.7–14.3 tok/s |
+| Expert hit rate | 19.9% |
+| Cache misses | 29,536 |
+| Cache swaps | 96 |
+| Wall-clock time | 24.79 s |
+| Maximum RSS | 8,976,260 KiB (8.56 GiB) |
+| Status | Exit status 0 |
+
+The plan reported 1,568 MB for weights+state+scratch, 384 MB KV for context 4096, 479 MB prefill, 1,557 MB expert slots, and 886/6,144 resident experts. The broad PP and TG ranges confirm substantial variability; preserve the ranges rather than presenting only the central figure.
+
+Local log: `~/benchmarks/qwen3-30b-a3b-iq3-xxs/rustingstrata-bench-20261021.log`.
+
+**Updated conclusion:** RustingStrata successfully completes both the benchmark and controlled generation. The PP128/TG32 benchmark reports 12.3 tok/s decode (range 8.7–14.3) and 58.7 tok/s prefill (range 13.3–91.2), while the short generation test exhibits a strong cache effect. These are not yet a strict head-to-head comparison with llama.cpp: output length, context, and execution mode differ. The 25–31 tok/s warm result with only 16 output tokens must not be extrapolated to long generations.
