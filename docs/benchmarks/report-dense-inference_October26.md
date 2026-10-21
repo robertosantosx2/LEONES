@@ -757,3 +757,99 @@ The plan reported 1,568 MB for weights+state+scratch, 384 MB KV for context 4096
 Local log: `~/benchmarks/qwen3-30b-a3b-iq3-xxs/rustingstrata-bench-20261021.log`.
 
 **Updated conclusion:** RustingStrata successfully completes both the benchmark and controlled generation. The PP128/TG32 benchmark reports 12.3 tok/s decode (range 8.7–14.3) and 58.7 tok/s prefill (range 13.3–91.2), while the short generation test exhibits a strong cache effect. These are not yet a strict head-to-head comparison with llama.cpp: output length, context, and execution mode differ. The 25–31 tok/s warm result with only 16 output tokens must not be extrapolated to long generations.
+
+
+### 17.13 Controlled generation comparison: llama.cpp CUDA vs RustingStrata — 2026-10-21
+
+#### Goal and protocol
+
+The local script `~/benchmarks/benchmark-strata-vs-llamacpp.sh` compared both engines using the same GGUF file and the same visible prompt. It stored logs, exit codes, and one `/usr/bin/time -v` report per repetition under:
+
+`~/benchmarks/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/`
+
+Verified model and SHA-256:
+
+- `Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf`
+- `292daa2b66aec59d075532d0bcf05010bf4a3b012a4216c28dc021b73d1e9ab4`
+
+Shared visible prompt: `Responde brevemente en español: ¿qué es la inferencia local?`
+
+llama.cpp configuration:
+- build `0.7.0-dev (11740, 6fa4f6cd3)`;
+- `--n-gpu-layers 14 --fit off --ctx-size 1024`;
+- `--batch-size 64 --ubatch-size 32 --threads 8`;
+- `--predict 128 --temp 0 --seed 42 --single-turn --simple-io --verbose`.
+
+RustingStrata configuration:
+- version `1.0.1`;
+- `generate --model "$M" --gpu --ctx 1024 --threads 8 --prompt "$PROMPT" -n 128 --temp 0`;
+- vendored NVRTC 13.0 prepended to `LD_LIBRARY_PATH`;
+- isolated `XDG_CACHE_HOME` under the output directory.
+
+Six runs were performed per engine, with all llama.cpp runs first and all Strata runs second. All twelve exited with code 0. The engines were not interleaved, so possible machine-load or thermal-order effects were not eliminated.
+
+#### Generation throughput and produced tokens
+
+| Engine | Run 1 | Run 2 | Run 3 | Run 4 | Run 5 | Run 6 | Median |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| llama.cpp (tok/s) | 1.95 | 1.86 | 2.29 | 2.02 | 1.95 | 2.04 | 1.98 |
+| RustingStrata (tok/s) | 14.34 | 29.94 | 30.08 | 30.90 | 31.89 | 29.33 | 30.01 |
+
+The median for Strata runs 2–6 is **30.08 tok/s**. Compared with llama.cpp's median of approximately 1.98 tok/s, the observed figures correspond to roughly **15.1×** the generation throughput for Strata's later runs. This is an observed result under this protocol, not a guarantee across other models or workloads.
+
+The number of produced tokens was not identical:
+- llama.cpp: 73 tokens in all six runs; it stopped at EOS before the 128-token maximum.
+- RustingStrata: 128, 98, 128, 104, 128, and 128 tokens.
+
+Thus, `--predict 128` / `-n 128` is a maximum, not a guarantee that the same number of tokens will be emitted. Throughput is taken from each engine's generation metric; it is not calculated by dividing the requested limit by total wall time.
+
+#### Per-run data
+
+| Engine / run | Reported prefill (tok/s) | Generation (tok/s) | Tokens generated | Total wall time | Maximum RSS |
+|---|---:|---:|---:|---:|---:|
+| llama.cpp 1 | 8.56 | 1.95 | 73 | 60.15 s | 11,769,532 KiB |
+| llama.cpp 2 | 6.79 | 1.86 | 73 | 57.10 s | 11,826,788 KiB |
+| llama.cpp 3 | 5.04 | 2.29 | 73 | 75.16 s | 11,959,852 KiB |
+| llama.cpp 4 | 9.08 | 2.02 | 73 | 61.47 s | 12,281,072 KiB |
+| llama.cpp 5 | 10.97 | 1.95 | 73 | 43.35 s | 12,312,544 KiB |
+| llama.cpp 6 | 10.83 | 2.04 | 73 | 65.50 s | 12,308,524 KiB |
+| Strata 1 | 11.71 | 14.34 | 128 | 17.71 s | 8,379,540 KiB |
+| Strata 2 | 19.67 | 29.94 | 98 | 5.82 s | 7,337,164 KiB |
+| Strata 3 | 20.03 | 30.08 | 128 | 6.84 s | 7,585,856 KiB |
+| Strata 4 | 18.91 | 30.90 | 104 | 5.83 s | 7,289,712 KiB |
+| Strata 5 | 18.96 | 31.89 | 128 | 6.47 s | 7,548,684 KiB |
+| Strata 6 | 17.98 | 29.33 | 128 | 6.94 s | 7,504,556 KiB |
+
+Total wall time includes loading and work beyond decoding alone. RSS comes from GNU `time` (KiB); it is not VRAM. llama.cpp's maximum RSS ranged from approximately 11.22 to 11.74 GiB. Strata reached approximately 7.99 GiB on the first run and 6.98–7.24 GiB on runs 2–6.
+
+#### Strata expert-cache and warm-up effect
+
+| Run | Expert hit rate | Cache misses | Cache swaps | CPU expert compute, share of generation time |
+|---:|---:|---:|---:|---:|
+| 1 | 30.8% | 38,272 | 128 | 83.1% |
+| 2 | 79.0% | 9,178 | 16 | 63.6% |
+| 3 | 77.9% | 12,194 | 1 | 64.2% |
+| 4 | 80.2% | 9,125 | 1 | 62.1% |
+| 5 | 78.6% | 11,856 | 1 | 61.2% |
+| 6 | 78.8% | 11,716 | 1 | 64.5% |
+
+Strata's first run was substantially slower and had a lower cache hit rate. The following five runs had approximately 78–80% hits. This is evidence of a strong cache-state effect in this series. Reusing the same `XDG_CACHE_HOME` alone should not be assumed to guarantee cache persistence across processes; what is established here is the per-process cache data reported in the logs.
+
+#### Interpretation and limitations
+
+1. **Main result:** llama.cpp median generation throughput was approximately 1.98 tok/s; RustingStrata's was 30.01 tok/s including the first run and 30.08 tok/s for runs 2–6.
+2. **Memory:** Strata showed lower maximum RSS in this test: approximately 6.98–7.24 GiB in later runs versus 11.22–11.74 GiB for llama.cpp. RSS is not the same as exclusive physical RAM or VRAM.
+3. **Input:** the visible prompt text was the same, but llama.cpp counted 24 prompt tokens and Strata counted 16; equivalent internal templates/tokenizers have not been established.
+4. **Termination:** actual output lengths differed because either engine could stop before the requested limit.
+5. **Run order:** all llama.cpp runs were executed before all Strata runs, without randomized interleaving or continuous temperature telemetry.
+6. **Configuration:** both used GPU, context 1024, and eight threads, but offload, batching, and expert management are engine-specific. This is a practical runtime comparison, not a comparison of identical kernels.
+7. **Next validation:** alternate engine order, log temperature/GPU use during each run, separate loading from decoding, retain output/tokenization details, and run a longer test with explicit EOS and cold/warm-cache criteria.
+
+Local artifacts:
+- Script: `~/benchmarks/benchmark-strata-vs-llamacpp.sh`
+- Results: `~/benchmarks/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/`
+- Logs: `llama/rep-*.log`, `strata/rep-*.log`
+- Resource reports: `llama/time-*.txt`, `strata/time-*.txt`
+- Exit codes: `llama/rc-*.txt`, `strata/rc-*.txt`
+
+These artifacts remain on the local machine; this section records the results shared in the conversation and does not claim that the logs were uploaded to the repository.
