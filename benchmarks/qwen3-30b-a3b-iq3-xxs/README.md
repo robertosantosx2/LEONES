@@ -1,41 +1,37 @@
 # Qwen3-30B-A3B IQ3_XXS: benchmark preparation
 
-Status: **prepared, not executed on the Ubuntu host** (2026-10-21).
+Status: prepared for host preflight; no model benchmark has been run on the Ubuntu host.
 
-## Decision and scope
+## Exact target
 
-Target remains **Qwen3-30B-A3B IQ3_XXS**. Preserve the exact model variant/revision selected for this test; do not silently substitute Qwen3.5, another quantization, or a converted checkpoint. Confirm whether the selected repository is the original Instruct or Instruct-2507 variant before downloading.
+Keep **Qwen3-30B-A3B-Instruct-2507 IQ3_XXS GGUF** as the intended target unless the user confirms the previously selected source was the original Instruct variant. Never silently switch model family, revision, quantization or format. Verify the repository/revision, license, metadata, file size and SHA-256 before running.
 
-## Compatibility gates (evidence-based)
+## Updated compatibility findings (source inspected 2026-10-21)
 
-- **llama.cpp — reference candidate.** Upstream source includes Qwen3 model support and the IQ3_XXS GGML/GGUF quantization type. That establishes format/type support in upstream, not that the user's local build or exact file is valid. See [llama.cpp quantization definitions](https://github.com/ggml-org/llama.cpp/blob/master/include/llama.h) and [GGUF quantization implementation](https://github.com/ggml-org/llama.cpp/blob/master/gguf-py/gguf/constants.py).
-- **RustingStrata — compatibility unverified.** Must confirm Qwen3 (not only Qwen3.5) architecture, IQ3_XXS tensors, tokenizer/chat template, and execution path from the checked-out source/version. Do not infer support from generic GGUF support.
-- **TensorFold — exact path likely not equivalent.** TensorFold releases frequently use MLX checkpoints for Apple silicon. A GGUF IQ3_XXS file is not an MLX checkpoint. Only compare if the actual TensorFold build supports the exact Qwen3-30B-A3B checkpoint and IQ3_XXS representation on this Linux/NVIDIA system; otherwise report **not comparable / unsupported**. Do not convert to another quantization and label it IQ3_XXS.
-
+- **llama.cpp — reference engine.** Upstream includes Qwen3 MoE model support and the IQ3_XXS GGML/GGUF type. The installed local build and exact file still need verification. Official sources: [Qwen3 model code](https://github.com/ggml-org/llama.cpp/tree/master/src/models) and [quantization type definitions](https://github.com/ggml-org/llama.cpp/blob/master/gguf-py/gguf/constants.py).
+- **RustingStrata — viable candidate, not merely unknown.** Current upstream source explicitly accepts `qwen3moe` architecture in `src/config.rs` and implements GGML type ID 18 as `IQ3_XXS` in `src/quant/mod.rs`. This is a source-level compatibility signal for the exact architecture/type; the host checkout/version must match or exceed that source and the actual model must pass load + generation. Source: [architecture table](https://github.com/RustingStudio/RustingStrata/blob/main/src/config.rs), [quant type reader](https://github.com/RustingStudio/RustingStrata/blob/main/src/quant/mod.rs).
+- **TensorFold — not an equivalent third-engine run for this target on current documented support.** Current native support tables cover specific Qwen3.8/3.6/Flash Next/Nemotron/GLM families and specific checkpoint formats, not Qwen3-30B-A3B-Instruct-2507 IQ3_XXS. TensorFold documents GGUF only for selected family paths/formats; it does not mean arbitrary GGUF quant types or Qwen3 MoE are accepted. Record a capability check, but do not download/convert another checkpoint or call a different model an IQ3_XXS result. If TensorFold cannot load this exact model, report **unsupported / not comparable**. Sources: [CUDA support matrix](https://github.com/ashhart/TensorFold/blob/main/docs/recipes/cuda.md), [quantization and backend paths](https://github.com/ashhart/TensorFold/blob/main/docs/quantization.md).
+ 
 ## Hardware and memory
 
-Target host from earlier checks: Ubuntu, NVIDIA RTX 3050 Laptop (4 GiB VRAM), 14 GiB RAM. This is a tight budget for a ~30B-parameter IQ3_XXS model. The active weights are not determined by the A3B active-parameter count alone: the full model weights must be represented in memory/storage. Check exact file size, free RAM, swap and disk before downloading/loading. No automatic download is authorized by these scripts.
+Prior host snapshot: Ubuntu, NVIDIA RTX 3050 Laptop (4 GiB VRAM), 14 GiB RAM. A ~30B IQ3_XXS model can require substantially more than VRAM and may stress host RAM even with mmap and CPU offload. Inspect available RAM, swap and free disk before download/load. No script here downloads the model, installs software, or edits ODS.
 
-## Controlled protocol
+## Protocol
 
-Reuse prior benchmark conventions where applicable:
-- sequential runs only; one engine resident at a time;
-- context 256; max generated tokens 32; one warm-up + three measured runs;
-- identical prompt and sampling settings; fixed seed where supported;
-- record exact model source/revision, file name and SHA-256, engine commit/version, command line, chat template, exit status and failure logs;
-- record load time, prefill tok/s, generation tok/s, wall time, peak RAM, peak VRAM and GPU offload configuration;
-- do not compare TensorFold using a different-format/different-quantization checkpoint as an apples-to-apples IQ3_XXS result;
-- label first-token latency/prefill precisely: engines may define or report these differently.
+- Sequential runs only; do not keep multiple model engines resident at once.
+- Context/prompt: 256 tokens; generation: 32 tokens; one warm-up plus three measured repetitions where supported.
+- Use the same exact GGUF, tokenizer/chat template and prompt. Use greedy decoding / temperature 0 where available.
+- Record model repository/revision, filename, file size, SHA-256, architecture metadata, engine commit/version, exact arguments, load time, prefill tok/s, decode tok/s, peak RAM/VRAM, GPU offload and exit status.
+- llama.cpp `llama-bench` and RustingStrata `strata bench` have different reporting conventions. Keep raw logs and label prompt-processing vs generation metrics rather than assuming their fields are identical.
+- If one engine cannot load or generate from the exact file, record failure evidence; do not substitute a different format or quantization.
 
-## Preparation now; host run later
+## Execution order
 
-1. Review this PR and the preflight script.
-2. On Ubuntu, run the read-only preflight and capture engine paths/version/help and model-file candidates.
-3. Confirm the exact model repository/revision and license; download only after checking available disk and memory.
-4. Validate GGUF metadata and SHA-256; check architecture and tensor types.
-5. Run llama.cpp first as the reference. Test RustingStrata only after its compatibility gate passes. Test TensorFold only if exact Linux/NVIDIA + checkpoint/quantization support is proven.
-6. Save outputs in a new timestamped directory; update the results CSV and comparison report with measured values, not estimates.
+1. Run `preflight_qwen3_30b_a3b_iq3_xxs.sh` (read-only, no model download).
+2. Inspect the output and confirm exact model source/variant plus disk/memory feasibility.
+3. Run `run_qwen3_30b_a3b_iq3_xxs.sh --model /absolute/path/to/model.gguf --run` only after confirming the target file exists and the host is ready. It runs llama.cpp then RustingStrata sequentially; it does not run TensorFold on an unsupported target.
+4. Review raw logs and fill `results-template.csv`; do not enter estimates as measurements.
 
-## Isolation / safety
+## Isolation
 
-The preflight script does not download models, start servers, install packages, or modify ODS. Benchmark runs must not edit `~/ods/.env`, Docker Compose, or the active ODS llama-server. Use dedicated loopback ports (18084–18086) if server mode is needed and stop only processes started by this benchmark. Do not run engines concurrently on a 4 GiB GPU.
+Scripts do not modify `~/ods/.env`, Compose, ODS model routing or the active llama-server. Benchmark runs are sequential and use local CLI benchmark modes where possible. Only run commands spawned by this benchmark; do not stop unrelated model services.
