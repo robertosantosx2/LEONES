@@ -19,6 +19,8 @@
 | TensorFold API | Qwen3.5-4B, MLX 4-bit | 3/3 HTTP 200; median 54.708 tok/s, 0.7066 s/request, TTFT 0.1303 s |
 | llama.cpp CUDA API | Qwen3.5-4B, GGUF Q4_K_M | 3/3 HTTP 200; median 47.646 tok/s, 0.8680 s/request |
 | RustingStrata CUDA API | Qwen3.5-4B, GGUF Q4_K_M | 3/3 HTTP 200; median 0.8384 s/request; API did not expose internal tok/s or TTFT |
+| llama.cpp CUDA | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Offload sweep completed | 1.93–2.00 tok/s median at 12–14 layers in the longer batch; 15 layers was the highest functional offload tested |
+| RustingStrata CUDA/NVRTC 13.0 | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Completed | 7.74 tok/s in one real 64-token generation; not yet a controlled comparison with llama.cpp |
 | RustingStrata bench | Qwen3.5-4B, GGUF Q4_K_M | Separate prefill test: 915.3 tok/s PP=128; 986.5 tok/s PP=512 |
 
 ### Incomplete or excluded attempts
@@ -28,7 +30,7 @@
 - **SGLang:** explicitly excluded; do not install, download the AWQ checkpoint, or benchmark it.
 - **Mistral.rs:** considered in the four-engine plan, but no measured run is present in the consolidated evidence.
 - **Qwen3.5-4B AWQ W4A16:** candidate metadata inspected only; not an executed inference or confirmed download.
-- **Qwen3-30B-A3B-Instruct IQ3_XXS:** GGUF download initiated for a future MoE test; no completed inference, hash verification, or performance results confirmed.
+- **Qwen3-30B-A3B-Instruct IQ3_XXS:** MoE inference was later completed with llama.cpp CUDA and RustingStrata; see §17. Cross-engine results are not yet strictly comparable.
 - **TensorFold Qwen3.5-4B initial startup:** rejected by the CUDA memory budget; a later run with context 512 succeeded.
 
 ## 2. Hardware and common environment
@@ -393,7 +395,7 @@ This sequence stopped Magnitude and checked for residual RAM/VRAM-consuming proc
 5. MLX-4bit and GGUF Q4_K_M artifacts differ. The results do not prove that every performance difference is caused solely by the engine.
 6. Magnitude did not complete inference; this is a catalog/CLI blockage, not a speed of zero.
 7. KTransformers and SGLang were excluded by explicit decision. No confirmed Mistral.rs measurement exists in the consolidated evidence.
-8. The Qwen3-30B-A3B-Instruct IQ3_XXS download is a future MoE test lead, not a completed benchmark.
+8. Qwen3-30B-A3B-Instruct IQ3_XXS has measured inference results from llama.cpp CUDA and RustingStrata (§17); a controlled cross-engine comparison remains pending.
 9. These records do not demonstrate end-to-end integration with ODS or LEONES Runtime; they cover individual model/engine tests.
 
 ## 13. Evidence limitations and missing data
@@ -618,7 +620,7 @@ The complete original benchmark-ngl.sh source and logs were not versioned in thi
 |---:|---:|---:|---:|---:|---:|---:|
 | 0 | 1.40 | 1.70 | 1.63 | 1.63 | 7.82 | 11.85 GiB |
 | 1 | 1.64 | 1.51 | 1.50 | 1.51 | 11.33 | 11.74 GiB |
-| 8 | 1.66 | 1.88 | 1.74 | 7.61 | 11.74 GiB |
+| 8 | 1.66 | 1.88 | 1.74 | 1.74 | 7.61 | 11.74 GiB |
 | 10 | 1.86 | 1.76 | 1.74 | 1.76 | 7.24 | 11.54 GiB |
 | 12 | 1.78 | 2.00 | 2.15 | 2.00 | 8.28 | 11.73 GiB |
 | 14 | 2.03 | 1.97 | 1.95 | 1.97 | 8.05 | 11.74 GiB |
