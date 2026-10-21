@@ -414,7 +414,7 @@ La secuencia se usó para parar Magnitude y comprobar que no quedaran procesos c
 5. Los artefactos MLX-4bit y GGUF Q4_K_M son distintos. Los resultados no demuestran que toda diferencia se deba únicamente al motor.
 6. Magnitude no completó inferencia; su caso es un bloqueo observable de catálogo/CLI, no un resultado de velocidad cero.
 7. KTransformers y SGLang quedaron fuera por decisión explícita. Mistral.rs no tiene una ejecución medida confirmada en el material consolidado.
-8. La descarga de Qwen3-30B-A3B-Instruct IQ3_XXS es una pista de trabajo para una prueba posterior, no un benchmark concluido.
+8. Qwen3-30B-A3B-Instruct IQ3_XXS cuenta con inferencia medida en llama.cpp CUDA y RustingStrata (§17); las métricas entre motores siguen pendientes de una comparación controlada.
 9. No hay evidencia en estos registros de integración E2E con ODS o LEONES Runtime; son pruebas de motores/modelos individuales.
 
 ## 13. Límites de la evidencia y datos que faltan
@@ -639,7 +639,7 @@ El código original completo de benchmark-ngl.sh y los logs no se versionaron en
 |---:|---:|---:|---:|---:|---:|---:|
 | 0 | 1,40 | 1,70 | 1,63 | 1,63 | 7,82 | 11,85 GiB |
 | 1 | 1,64 | 1,51 | 1,50 | 1,51 | 11,33 | 11,74 GiB |
-| 8 | 1,66 | 1,88 | 1,74 | 7,61 | 11,74 GiB |
+| 8 | 1,66 | 1,88 | 1,74 | 1,74 | 7,61 | 11,74 GiB |
 | 10 | 1,86 | 1,76 | 1,74 | 1,76 | 7,24 | 11,54 GiB |
 | 12 | 1,78 | 2,00 | 2,15 | 2,00 | 8,28 | 11,73 GiB |
 | 14 | 2,03 | 1,97 | 1,95 | 1,97 | 8,05 | 11,74 GiB |
