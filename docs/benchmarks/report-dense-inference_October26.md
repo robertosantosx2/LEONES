@@ -19,7 +19,7 @@
 | TensorFold API | Qwen3.5-4B, MLX 4-bit | 3/3 HTTP 200; median 54.708 tok/s, 0.7066 s/request, TTFT 0.1303 s |
 | llama.cpp CUDA API | Qwen3.5-4B, GGUF Q4_K_M | 3/3 HTTP 200; median 47.646 tok/s, 0.8680 s/request |
 | RustingStrata CUDA API | Qwen3.5-4B, GGUF Q4_K_M | 3/3 HTTP 200; median 0.8384 s/request; API did not expose internal tok/s or TTFT |
-| llama.cpp CUDA | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Offload sweep completed | 1.93–2.00 tok/s median at 12–14 layers in the longer batch; 15 layers was the highest functional offload tested |
+| llama.cpp CUDA | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Offload sweep completed | 1.97–2.00 tok/s median at 12–14 layers in the longer batch; 15 layers was the highest functional offload tested |
 | RustingStrata CUDA/NVRTC 13.0 | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Completed | 7.74 tok/s in one real 64-token generation; not yet a controlled comparison with llama.cpp |
 | RustingStrata bench | Qwen3.5-4B, GGUF Q4_K_M | Separate prefill test: 915.3 tok/s PP=128; 986.5 tok/s PP=512 |
 
