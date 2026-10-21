@@ -839,7 +839,7 @@ Por ello, `--predict 128` / `-n 128` es un límite, no una garantía de igual n�
 | Strata 5 | 18,96 | 31,89 | 128 | 6,47 s | 7.548.684 KiB |
 | Strata 6 | 17,98 | 29,33 | 128 | 6,94 s | 7.504.556 KiB |
 
-El tiempo total incluye carga y trabajo que no equivale exclusivamente a la decodificación. Los valores de RSS proceden de GNU `time` (KiB); no son VRAM. llama.cpp estuvo entre aproximadamente 11,22 y 11,74 GiB de RSS máximo. Strata estuvo en aproximadamente 7,99 GiB en la primera ejecución y entre 6,98 y 7,24 GiB en las ejecuciones 2–6.
+El tiempo total incluye carga y trabajo que no equivale exclusivamente a la decodificación. Los valores de RSS proceden de GNU `time` (KiB); no son VRAM. llama.cpp estuvo entre aproximadamente 11,22 y 11,74 GiB de RSS máximo. Strata estuvo en aproximadamente 7,99 GiB en la primera ejecución y entre 6,95 y 7,23 GiB en las ejecuciones 2–6.
 
 #### Caché de expertos y efecto de calentamiento de Strata
 
