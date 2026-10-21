@@ -19,6 +19,8 @@
 | TensorFold API | Qwen3.5-4B, MLX 4-bit | 3/3 HTTP 200; median 54.708 tok/s, 0.7066 s/request, TTFT 0.1303 s |
 | llama.cpp CUDA API | Qwen3.5-4B, GGUF Q4_K_M | 3/3 HTTP 200; median 47.646 tok/s, 0.8680 s/request |
 | RustingStrata CUDA API | Qwen3.5-4B, GGUF Q4_K_M | 3/3 HTTP 200; median 0.8384 s/request; API did not expose internal tok/s or TTFT |
+| llama.cpp CUDA | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Offload sweep completed | 1.97–2.00 tok/s median at 12–14 layers in the longer batch; 15 layers was the highest functional offload tested |
+| RustingStrata CUDA/NVRTC 13.0 | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Completed | 7.74 tok/s in one real 64-token generation; not yet a controlled comparison with llama.cpp |
 | RustingStrata bench | Qwen3.5-4B, GGUF Q4_K_M | Separate prefill test: 915.3 tok/s PP=128; 986.5 tok/s PP=512 |
 
 ### Incomplete or excluded attempts
@@ -28,7 +30,7 @@
 - **SGLang:** explicitly excluded; do not install, download the AWQ checkpoint, or benchmark it.
 - **Mistral.rs:** considered in the four-engine plan, but no measured run is present in the consolidated evidence.
 - **Qwen3.5-4B AWQ W4A16:** candidate metadata inspected only; not an executed inference or confirmed download.
-- **Qwen3-30B-A3B-Instruct IQ3_XXS:** GGUF download initiated for a future MoE test; no completed inference, hash verification, or performance results confirmed.
+- **Qwen3-30B-A3B-Instruct IQ3_XXS:** MoE inference was later completed with llama.cpp CUDA and RustingStrata; see §17. Cross-engine results are not yet strictly comparable.
 - **TensorFold Qwen3.5-4B initial startup:** rejected by the CUDA memory budget; a later run with context 512 succeeded.
 
 ## 2. Hardware and common environment
@@ -131,15 +133,16 @@ This was metadata inspection only. The SGLang/AWQ route was explicitly ruled out
 
 ### 3.7 Qwen3-30B-A3B-Instruct IQ3_XXS
 
-Download initiated for a future MoE test:
+The artifact was downloaded and executed during the MoE session on 2026-10-21:
 
-~~~bash
-hf download bartowski/Qwen_Qwen3-30B-A3B-Instruct-2507-GGUF \
-  Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf \
-  --local-dir "$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs"
-~~~
+- Model: Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf.
+- Path: ~/benchmarks/qwen3-30b-a3b-iq3-xxs/.
+- GGUF architecture: qwen3moe; approximately 30.53B parameters, 48 blocks, 128 experts, and 8 active experts per token.
+- Quantization: IQ3_XXS; approximately 12.2 GB / 11.37 GiB.
+- SHA-256: 292daa2b66aec59d075532d0bcf05010bf4a3b012a4216c28dc021b73d1e9ab4.
+- Real inference was verified with llama.cpp CUDA and RustingStrata CUDA. Commands, offload failures, parameters, and results are documented in §17.
 
-The visible terminal output warned that Hugging Face requests were unauthenticated. Evidence does not confirm completion, hash verification, or model loading. **Qwen3-30B-A3B is not Qwen3.5-4B**; they are different models, and Qwen3-30B-A3B is MoE.
+Do not confuse this 30B MoE model with Qwen3.5-4B.
 
 ## 4. TensorFold results: Qwen3.5-2B and 4B
 
@@ -392,7 +395,7 @@ This sequence stopped Magnitude and checked for residual RAM/VRAM-consuming proc
 5. MLX-4bit and GGUF Q4_K_M artifacts differ. The results do not prove that every performance difference is caused solely by the engine.
 6. Magnitude did not complete inference; this is a catalog/CLI blockage, not a speed of zero.
 7. KTransformers and SGLang were excluded by explicit decision. No confirmed Mistral.rs measurement exists in the consolidated evidence.
-8. The Qwen3-30B-A3B-Instruct IQ3_XXS download is a future MoE test lead, not a completed benchmark.
+8. Qwen3-30B-A3B-Instruct IQ3_XXS has measured inference results from llama.cpp CUDA and RustingStrata (§17); a controlled cross-engine comparison remains pending.
 9. These records do not demonstrate end-to-end integration with ODS or LEONES Runtime; they cover individual model/engine tests.
 
 ## 13. Evidence limitations and missing data
@@ -447,4 +450,249 @@ Related LEONES commits:
 - [cc7b6c4 — Magnitude attempt closure](https://github.com/robertosantosx2/LEONES/commit/cc7b6c42faa7266c3941022b3d216f278e7f95fe)
 
 ---
-**Final status:** consolidated from evidence available as of 2026-10-21. No measurements have been invented for engines or models that did not complete inference. Future tests should be added as new runs, preserving historical evidence and its limitations.
+**Final status:** consolidated from evidence available as of 2026-10-21, including the Qwen3-30B-A3B MoE test with llama.cpp CUDA and RustingStrata (§17). No metrics are invented for engines without completed inference. Future tests should be added as new runs, preserving historical evidence and its limitations.
+
+
+## 17. MoE experiment: Qwen3-30B-A3B IQ3_XXS on llama.cpp CUDA and RustingStrata — 2026-10-21
+
+### 17.1 Goal and scope
+
+This section adds actual Qwen3-30B-A3B-Instruct-2507 IQ3_XXS runs. The session focused on verifying llama.cpp CUDA, measuring generation across --n-gpu-layers values, finding the RTX 3050 Laptop 4 GiB offload limit, running RustingStrata with driver-compatible NVRTC, and retaining both successful and failed attempts.
+
+This is not yet a perfectly controlled cross-engine comparison: initial tests used different commands and output lengths, and the two automated llama.cpp batches ran at different times. Results are retained per batch rather than merged into one median.
+
+### 17.2 Hardware and artifact
+
+| Field | Observed value |
+|---|---|
+| OS | Native Ubuntu, x86_64 |
+| CPU | Intel Core i7-12650H, 12th generation |
+| Logical CPUs | 16 |
+| Physical RAM | 14 GiB |
+| Swap | 32 GiB |
+| GPU | NVIDIA RTX 3050 Laptop |
+| Physical VRAM | 4096 MiB |
+| VRAM reported usable by llama.cpp | approximately 3768 MiB |
+| NVIDIA driver | 580.178.04 |
+| CUDA from nvidia-smi | 13.0 |
+| System CUDA Toolkit | 13.4 |
+| Model | Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf |
+| Path | ~/benchmarks/qwen3-30b-a3b-iq3-xxs/Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf |
+| Approximate size | 12.2 GB / 11.37 GiB |
+| GGUF architecture | qwen3moe |
+| Parameters | approximately 30.53B |
+| Blocks | 48 |
+| Experts | 128; 8 active per token |
+| Quantization | IQ3_XXS |
+| SHA-256 | 292daa2b66aec59d075532d0bcf05010bf4a3b012a4216c28dc021b73d1e9ab4 |
+
+System checks used:
+
+~~~bash
+free -h
+nvidia-smi
+pgrep -af 'magnitude|Magnitude' || true
+systemctl is-active magnitude.service || true
+~~~
+
+Before loading the large model, the procedure was to stop Magnitude and check for residual processes. Memory snapshots are samples, not continuous telemetry; peak /usr/bin/time RSS is distinct from VRAM.
+
+### 17.3 Software and paths
+
+- llama.cpp checkout: ~/llama.cpp-cuda.
+- Binaries: ~/llama.cpp-cuda/build-cuda/bin/llama-cli, llama-server, and llama-bench.
+- Version: 0.7.0-dev, build 11740, commit 6fa4f6cd3.
+- RustingStrata checkout: ~/rusting-strata-test.
+- Binary: ~/rusting-strata-test/target/release/strata, version 1.0.1.
+- TensorFold checkout: ~/tensorfold-test; no comparable TensorFold run with this 30B model was confirmed in this session.
+
+### 17.4 Initial llama.cpp validation: CPU and small offload
+
+| Test | Main configuration | Prompt / prefill | Generation | Outcome |
+|---|---|---:|---:|---|
+| llama-bench CPU | ngl=0, PP=128, TG=32, reps=3, threads=8 | 42.14 ± 24.48 tok/s | 1.39 ± 0.03 tok/s | RC 0 |
+| llama-bench one layer | ngl=1, PP=128, TG=32, reps=3, threads=8 | 50.93 ± 30.10 tok/s | 1.43 ± 0.04 tok/s | RC 0 |
+| CLI CPU | ngl=0 | 3.1 tok/s | 1.4 tok/s | 84.79 s; RC 0 |
+| CLI one layer, first run | ngl=1 | 0.7 tok/s | 1.4 tok/s | 116.04 s; RC 0 |
+| Monitored CLI one layer | ngl=1 | 2.9 tok/s | 1.4 tok/s | 83.18 s; RC 0 |
+
+Prefill varied substantially. Do not average llama-bench and CLI as if they were the same harness.
+
+Retained local logs:
+- llama-bench-cpu-20261021.log
+- llama-bench-ngl1-20261021.log
+- llama-cpp-generate-cpu-20261021.log
+- llama-cpp-generate-ngl1-20261021.log
+- llama-cpp-ngl1-monitored-20261021.log
+- llama-cpp-ngl1-gpu-20261021.csv
+
+These files remain on the test machine; this report does not claim they were uploaded to GitHub.
+
+### 17.5 Controlled llama-cli configuration
+
+Controlled attempts used the same parameters, changing --n-gpu-layers:
+
+~~~bash
+cd "$HOME/llama.cpp-cuda" || exit 1
+
+LLAMA="$HOME/llama.cpp-cuda/build-cuda/bin/llama-cli"
+M="$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs/Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf"
+
+"$LLAMA" \
+  --model "$M" \
+  --n-gpu-layers 14 \
+  --fit off \
+  --ctx-size 1024 \
+  --batch-size 64 \
+  --ubatch-size 32 \
+  --threads 8 \
+  --predict 16 \
+  --temp 0 \
+  --seed 42 \
+  --prompt "Responde brevemente en español: ¿qué es la inferencia local?" \
+  --single-turn \
+  --simple-io \
+  --verbose
+~~~
+
+To repeat another configuration, change only --n-gpu-layers (0, 1, 8, 10, 12, 14, 15, or 16). The automated sweep held seed, prompt, context, batch, ubatch, and threads constant, saving a log for each repetition.
+
+Common parameters:
+- context: 1024;
+- batch: 64;
+- ubatch: 32;
+- CPU threads: 8;
+- temperature: 0;
+- seed: 42;
+- output: 128 tokens in batch 1 and 256 in batch 2;
+- --fit off to prevent automatic fitting from changing requested offload.
+
+### 17.6 Offload and VRAM limit
+
+Verbose logs confirmed actual GPU layer allocation.
+
+| Requested layers | GPU layers reported | CUDA model buffer | CUDA KV | CUDA compute | Status |
+|---:|---:|---:|---:|---:|---|
+| 8 | 8/49 | 1885.45 MiB | 14 MiB | 86.25 MiB | Loaded |
+| 12 | 12/49 | 2819.27 MiB | 22 MiB | 86.25 MiB | Loaded |
+| 14 | 14/49 | 3290.68 MiB | 26 MiB | 86.25 MiB | Loaded |
+| 15 | 15/49 | 3521.88 MiB | 28 MiB | 86.25 MiB | Loaded |
+| 16 | — | 3753.09 MiB allocation failed | — | — | CUDA OOM |
+
+With 8 layers, the CPU-mapped model buffer was 9759.88 MiB. The log contained a nonfatal CUDA_Host compute buffer size mismatch warning: 4.1376 MiB versus 1.0636 MiB expected.
+
+The 16-layer attempt failed in both an initial llama-server startup and a controlled llama-cli run with cudaMalloc failed: out of memory. The controlled run requested 3753.09 MiB, nearly all CUDA memory llama.cpp reported as usable. Empirically, 15 was the highest layer count tested that loaded under this configuration; that does not make it the fastest option or guarantee enough margin at other contexts or with other GPU processes.
+
+Controlled failure log: llama-cli-ngl16-controlled-20261021.log.
+
+### 17.7 Automated layer sweep
+
+Local script: ~/benchmarks/qwen3-30b-a3b-iq3-xxs/benchmark-ngl.sh. It swept layer counts (0 1 8 10 12 14 15 16), writing individual logs, CSV, and a summary. It ran in two batches:
+
+- benchmark-ngl-20261021-212122: 2 repetitions, configured for 128 output tokens.
+- benchmark-ngl-20261021-213920: 3 repetitions, configured for 256 output tokens.
+
+Commands to run the sweep and analyze local logs:
+
+~~~bash
+bash "$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs/benchmark-ngl.sh"
+python3 "$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs/analyze-benchmarks.py"
+~~~
+
+The complete original benchmark-ngl.sh source and logs were not versioned in this change. Effective parameters and observed results are recorded here. The local analyzer writes benchmark-results-corrected.csv.
+
+#### Batch 1: 2 repetitions, 128 output tokens
+
+| GPU layers | Rep 1 tok/s | Rep 2 tok/s | Median tok/s | Median prefill tok/s | Max RSS |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 1.33 | 1.40 | 1.36 | 4.51 | 11.32 GiB |
+| 1 | 1.39 | 1.61 | 1.50 | 6.17 | 11.62 GiB |
+| 8 | 1.74 | 1.73 | 1.73 | 7.28 | 11.68 GiB |
+| 10 | 1.80 | 1.78 | 1.79 | 5.28 | 11.36 GiB |
+| 12 | 1.71 | 1.92 | 1.81 | 6.42 | 11.48 GiB |
+| 14 | 1.90 | 2.02 | 1.96 | 8.50 | 11.58 GiB |
+| 15 | 2.21 | 2.10 | 2.16 | 7.56 | 11.63 GiB |
+| 16 | Failed | — | — | — | Not comparable |
+
+#### Batch 2: 3 repetitions, 256 output tokens
+
+| GPU layers | Rep 1 tok/s | Rep 2 tok/s | Rep 3 tok/s | Median tok/s | Median prefill tok/s | Max RSS |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 1.40 | 1.70 | 1.63 | 1.63 | 7.82 | 11.85 GiB |
+| 1 | 1.64 | 1.51 | 1.50 | 1.51 | 11.33 | 11.74 GiB |
+| 8 | 1.66 | 1.88 | 1.74 | 1.74 | 7.61 | 11.74 GiB |
+| 10 | 1.86 | 1.76 | 1.74 | 1.76 | 7.24 | 11.54 GiB |
+| 12 | 1.78 | 2.00 | 2.15 | 2.00 | 8.28 | 11.73 GiB |
+| 14 | 2.03 | 1.97 | 1.95 | 1.97 | 8.05 | 11.74 GiB |
+| 15 | 1.93 | 1.94 | 1.86 | 1.93 | 10.18 | 11.74 GiB |
+| 16 | Failed | — | — | — | — | Not comparable |
+
+Prefill figures are the speeds printed in each log. Maximum RSS comes from /usr/bin/time, not VRAM. Failed 16-layer runs are excluded from medians.
+
+#### Analyzer bug and fix
+
+The first analyzer returned identical prefill and generation values because its eval time pattern also matched prompt eval time. Those initial medians were invalid and must not be cited.
+
+A real run was checked:
+- prompt: 24 tokens, 2326.72 ms, 10.31 tok/s;
+- generation: 76 tokens, 38761.43 ms, 1.93 tok/s.
+
+The analyzer was replaced to parse separate lines: one containing prompt eval time and another containing | eval time =, excluding the prompt line. The corrected CSV also separates batches so 128- and 256-token runs are not mixed. The tables above are from the corrected analyzer output.
+
+#### Provisional interpretation
+
+- 8 layers improves on CPU-only; larger gains appear at 12–15 layers.
+- In the longer batch, 12 layers has the highest median: 2.00 tok/s, range 1.78–2.15.
+- 14 layers is more consistent in that batch: 1.95–2.03 tok/s, median 1.97.
+- 15 layers reaches 2.16 tok/s median in the shorter batch but drops to 1.93 in the longer batch; it is not a universal winner.
+- 16 layers fails with OOM.
+- RSS of 11.5–11.9 GiB out of 14 GiB suggests possible memory pressure. Per-run swap telemetry was not retained, so variation is not attributed solely to swapping.
+- Next step: use 14 layers as a conservative reference and compare 12 versus 14 over at least five repetitions, alternating order. Do not repeat the full sweep unless context, model, or memory state changes.
+
+### 17.8 RustingStrata: NVRTC fix and measurements
+
+The first RustingStrata GPU run encountered a PTX mismatch: system NVRTC 13.4 generated PTX .version 9.4, rejected by the driver with CUDA_ERROR_UNSUPPORTED_PTX_VERSION. This was resolved by isolating NVRTC 13.0 libraries at:
+
+~/rusting-strata-test/vendor/nvrtc13/root/usr/local/cuda-13.0/targets/x86_64-linux/lib/
+
+The fix used temporary LD_LIBRARY_PATH and XDG_CACHE_HOME values; system libraries were not replaced. No git clean/reset was run and vendor/ was not deleted.
+
+| Test | Parameters / configuration | Prefill | Generation | Outcome |
+|---|---|---:|---:|---|
+| Strata CPU smoke | PP=128, TG=32, reps=1, threads=8 | 0.4 tok/s | 0.4 tok/s | RC 0 |
+| Strata GPU benchmark | NVRTC 13.0, reps=3 | PP=128: 48.0 tok/s (35.8–55.1) | TG=32: 11.6 tok/s (10.2–12.7) | RC 0 |
+| Strata GPU generation | 25-token prompt; 64 output tokens | 6.78 tok/s | 7.74 tok/s | RC 0; 18.35 s total |
+
+Logs:
+- strata-gpu-nvrtc13-reps3-20261021.log
+- strata-generate-gpu-nvrtc13-20261021.log
+- strata-cpu-smoke-20261021.log
+
+During GPU generation, the plan reported:
+- weights + state + scratch: 832 MB;
+- KV: 96 MB for context 1024;
+- prefill: 36 MB;
+- expert slots: 2039 MB;
+- resident experts: 1160 of 6144;
+- expert hit rate: approximately 24.9% (25,681 misses);
+- 64 cache swaps;
+- CPU expert computation: 90.1% of generation time;
+- maximum RSS: 8,089,292 KiB (approximately 7.72 GiB).
+
+The strata bench run and 64-token generation are not the same workload as the llama.cpp sweep. The 7.74 tok/s result is promising for this MoE/cache strategy, but is one real generation run, not a directly comparable median.
+
+### 17.9 Other offload and server attempts
+
+- An initial llama-server attempt with 16 layers failed during VRAM allocation. That log did not retain all CLI arguments precisely enough, so no additional parameters are inferred from it.
+- The case was repeated with controlled llama-cli settings (fit disabled, context 1024, batch 64, ubatch 32, 8 threads, 16 output tokens, temperature 0, seed 42). Sixteen layers failed again.
+- 12 and 14 layers loaded successfully in verbose CLI logs.
+- With 8 layers, most of the model remained on CPU (CPU-mapped buffer 9759.88 MiB, CUDA buffer 1885.45 MiB). More offload helps, but MoE expert computation and bandwidth remain bottlenecks.
+
+### 17.10 Qwen3-30B-A3B-specific conclusion
+
+1. Real local inference is verified with llama.cpp CUDA and RustingStrata CUDA.
+2. The highest functional llama.cpp offload observed was 15/49 layers, but the best median in the longer batch was 12 layers; 14 layers showed lower variability.
+3. 16 layers exceeds the VRAM budget for this GPU/configuration.
+4. RustingStrata reached 7.74 tok/s in one real 64-token generation, with the main cost in CPU expert computation and approximately 25% cache hit rate. This is one-run evidence, not a directly comparable median.
+5. The next controlled comparison must fix prompt, output length, context, warm-up, repetitions, and generation timing; RAM/swap and VRAM should also be recorded during each run.
+6. Logs, CSVs, and scripts remain in ~/benchmarks/qwen3-30b-a3b-iq3-xxs. This report incorporates available textual evidence but does not automatically upload those local files.

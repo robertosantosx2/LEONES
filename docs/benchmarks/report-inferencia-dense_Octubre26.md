@@ -18,6 +18,8 @@
 | llama.cpp CUDA | Qwen3.5-4B, GGUF Q4_K_M | Completada | 141,2 tok/s de prefill; 42,4 tok/s de generación en ejecución CLI |
 | TensorFold API | Qwen3.5-4B, MLX 4-bit | 3/3 peticiones HTTP 200 | Mediana 54,708 tok/s; 0,7066 s por petición; TTFT 0,1303 s |
 | llama.cpp API/CUDA | Qwen3.5-4B, GGUF Q4_K_M | 3/3 peticiones HTTP 200 | Mediana 47,646 tok/s; 0,8680 s por petición |
+| llama.cpp CUDA | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Barrido de offload completado | Mediana 1,97–2,00 tok/s con 12–14 capas en la tanda larga; 15 capas fue el máximo offload funcional probado |
+| RustingStrata CUDA/NVRTC 13.0 | Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | Completada | 7,74 tok/s en una generación real de 64 tokens; aún no es una comparación controlada con llama.cpp |
 | RustingStrata CUDA API | Qwen3.5-4B, GGUF Q4_K_M | 3/3 peticiones HTTP 200 | Mediana 0,8384 s por petición; API sin tok/s interno ni TTFT |
 | RustingStrata bench | Qwen3.5-4B, GGUF Q4_K_M | Medición de prefill separada | 915,3 tok/s PP=128; 986,5 tok/s PP=512 |
 
@@ -28,7 +30,7 @@
 - **SGLang:** descartado explícitamente; no instalar, no descargar el checkpoint AWQ ni ejecutar benchmark.
 - **Mistral.rs:** se consideró dentro del plan de comparación de cuatro motores, pero la evidencia consolidada disponible no contiene una ejecución medida atribuible a Mistral.rs. No se le asignan resultados.
 - **Qwen3.5-4B AWQ W4A16:** se inspeccionó la ficha del candidato, pero no se debe interpretar como inferencia ejecutada ni como checkpoint descargado.
-- **Qwen3-30B-A3B-Instruct IQ3_XXS:** se inició la descarga del artefacto GGUF para una futura prueba MoE; no hay en la evidencia disponible una inferencia completada ni métricas atribuibles a este modelo.
+- **Qwen3-30B-A3B-Instruct IQ3_XXS:** la prueba MoE se completó posteriormente en llama.cpp CUDA y RustingStrata; véase §17. La comparación entre motores todavía no es estrictamente equivalente.
 - **Primer arranque TensorFold Qwen3.5-4B:** hubo un intento rechazado por el presupuesto de memoria CUDA; una ejecución posterior con contexto 512 sí completó la inferencia.
 
 ## 2. Equipo y entorno común
@@ -141,15 +143,16 @@ Esta ficha solo registra el examen de metadatos del candidato. No se presenta co
 
 ### 3.7 Qwen3-30B-A3B-Instruct — IQ3_XXS
 
-Se inició una descarga del artefacto GGUF para una futura prueba MoE:
+El artefacto se descargó y ejecutó en la sesión MoE del 2026-10-21:
 
-~~~bash
-hf download bartowski/Qwen_Qwen3-30B-A3B-Instruct-2507-GGUF \
-  Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf \
-  --local-dir "$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs"
-~~~
+- Modelo: Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf.
+- Ruta: ~/benchmarks/qwen3-30b-a3b-iq3-xxs/.
+- Arquitectura GGUF: qwen3moe; aproximadamente 30,53 B parámetros, 48 bloques, 128 expertos y 8 activos por token.
+- Cuantización: IQ3_XXS; tamaño aproximado 12,2 GB / 11,37 GiB.
+- SHA-256: 292daa2b66aec59d075532d0bcf05010bf4a3b012a4216c28dc021b73d1e9ab4.
+- Se verificó inferencia real con llama.cpp CUDA y RustingStrata CUDA. Los comandos, fallos de offload, parámetros y resultados se recogen en §17.
 
-En el registro de terminal visible, Hugging Face avisó que las solicitudes eran anónimas. No hay evidencia consolidada de que la descarga terminara, de que se verificara el hash o de que el modelo llegara a cargar. No se debe confundir **Qwen3-30B-A3B** con **Qwen3.5-4B**: son modelos diferentes, y el primero es MoE.
+No debe confundirse este modelo MoE de 30B con Qwen3.5-4B.
 
 ## 4. Resultados TensorFold: Qwen3.5-2B y 4B
 
@@ -411,7 +414,7 @@ La secuencia se usó para parar Magnitude y comprobar que no quedaran procesos c
 5. Los artefactos MLX-4bit y GGUF Q4_K_M son distintos. Los resultados no demuestran que toda diferencia se deba únicamente al motor.
 6. Magnitude no completó inferencia; su caso es un bloqueo observable de catálogo/CLI, no un resultado de velocidad cero.
 7. KTransformers y SGLang quedaron fuera por decisión explícita. Mistral.rs no tiene una ejecución medida confirmada en el material consolidado.
-8. La descarga de Qwen3-30B-A3B-Instruct IQ3_XXS es una pista de trabajo para una prueba posterior, no un benchmark concluido.
+8. Qwen3-30B-A3B-Instruct IQ3_XXS cuenta con inferencia medida en llama.cpp CUDA y RustingStrata (§17); las métricas entre motores siguen pendientes de una comparación controlada.
 9. No hay evidencia en estos registros de integración E2E con ODS o LEONES Runtime; son pruebas de motores/modelos individuales.
 
 ## 13. Límites de la evidencia y datos que faltan
@@ -466,4 +469,249 @@ Commits de LEONES relacionados con la consolidación y las pruebas:
 - [cc7b6c4 — cierre del intento Magnitude](https://github.com/robertosantosx2/LEONES/commit/cc7b6c42faa7266c3941022b3d216f278e7f95fe)
 
 ---
-**Estado final de este informe:** consolidado con la evidencia disponible a 2026-10-21. No se han inventado mediciones para motores o modelos que no completaron inferencia. Las pruebas futuras deben añadirse como nuevas ejecuciones, manteniendo los registros históricos y sus limitaciones.
+**Estado final de este informe:** consolidado con la evidencia disponible a 2026-10-21, incluida la prueba MoE de Qwen3-30B-A3B con llama.cpp CUDA y RustingStrata (§17). No se han inventado métricas para motores sin inferencia completada. Las pruebas futuras deben añadirse como nuevas ejecuciones, manteniendo los registros históricos y sus limitaciones.
+
+
+## 17. Experimento MoE: Qwen3-30B-A3B IQ3_XXS en llama.cpp CUDA y RustingStrata — 2026-10-21
+
+### 17.1 Objetivo y alcance
+
+Esta sección añade las pruebas reales del modelo Qwen3-30B-A3B-Instruct-2507 IQ3_XXS al barrido previo. El foco fue verificar llama.cpp CUDA, medir generación con distintos valores de --n-gpu-layers, localizar el límite de offload de la RTX 3050 Laptop de 4 GiB, ejecutar RustingStrata con NVRTC compatible y conservar tanto los éxitos como los fallos.
+
+No es aún una comparación perfectamente controlada entre motores: las pruebas iniciales usaron comandos y longitudes de salida distintos, y las dos tandas automatizadas de llama.cpp se ejecutaron en momentos diferentes. Los resultados se conservan por tanda y no se mezclan en una única mediana.
+
+### 17.2 Hardware y artefacto
+
+| Campo | Valor observado |
+|---|---|
+| SO | Ubuntu nativo, x86_64 |
+| CPU | Intel Core i7-12650H, 12.ª generación |
+| CPU lógicas | 16 |
+| RAM física | 14 GiB |
+| Swap | 32 GiB |
+| GPU | NVIDIA RTX 3050 Laptop |
+| VRAM física | 4096 MiB |
+| VRAM utilizable informada por llama.cpp | aproximadamente 3768 MiB |
+| Driver | NVIDIA 580.178.04 |
+| CUDA de nvidia-smi | 13.0 |
+| CUDA Toolkit del sistema | 13.4 |
+| Modelo | Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf |
+| Ruta | ~/benchmarks/qwen3-30b-a3b-iq3-xxs/Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf |
+| Tamaño aproximado | 12,2 GB / 11,37 GiB |
+| Arquitectura GGUF | qwen3moe |
+| Parámetros | aproximadamente 30,53 B |
+| Bloques | 48 |
+| Expertos | 128; 8 activos por token |
+| Cuantización | IQ3_XXS |
+| SHA-256 | 292daa2b66aec59d075532d0bcf05010bf4a3b012a4216c28dc021b73d1e9ab4 |
+
+Comprobaciones de sistema utilizadas:
+
+~~~bash
+free -h
+nvidia-smi
+pgrep -af 'magnitude|Magnitude' || true
+systemctl is-active magnitude.service || true
+~~~
+
+Antes de cargar el modelo grande se indicó detener Magnitude y comprobar procesos residuales. Las capturas de memoria son muestras, no telemetría continua; el RSS máximo de /usr/bin/time es distinto de la VRAM.
+
+### 17.3 Software y rutas
+
+- Checkout llama.cpp: ~/llama.cpp-cuda.
+- Binarios: ~/llama.cpp-cuda/build-cuda/bin/llama-cli, llama-server y llama-bench.
+- Versión: 0.7.0-dev, build 11740, commit 6fa4f6cd3.
+- Checkout RustingStrata: ~/rusting-strata-test.
+- Binario: ~/rusting-strata-test/target/release/strata, versión 1.0.1.
+- Checkout TensorFold: ~/tensorfold-test; no se confirmó en esta sesión una ejecución comparable de TensorFold con este modelo de 30B.
+
+### 17.4 Validación inicial llama.cpp: CPU y offload pequeño
+
+| Prueba | Configuración principal | Prefill / prompt | Generación | Resultado |
+|---|---|---:|---:|---|
+| llama-bench CPU | ngl=0, PP=128, TG=32, reps=3, threads=8 | 42,14 ± 24,48 tok/s | 1,39 ± 0,03 tok/s | RC 0 |
+| llama-bench 1 capa | ngl=1, PP=128, TG=32, reps=3, threads=8 | 50,93 ± 30,10 tok/s | 1,43 ± 0,04 tok/s | RC 0 |
+| CLI CPU | ngl=0 | 3,1 tok/s | 1,4 tok/s | 84,79 s; RC 0 |
+| CLI 1 capa, primer intento | ngl=1 | 0,7 tok/s | 1,4 tok/s | 116,04 s; RC 0 |
+| CLI 1 capa monitorizada | ngl=1 | 2,9 tok/s | 1,4 tok/s | 83,18 s; RC 0 |
+
+El prefill varía considerablemente. No promediar llama-bench y CLI como si fueran el mismo harness.
+
+Logs locales registrados:
+- llama-bench-cpu-20261021.log
+- llama-bench-ngl1-20261021.log
+- llama-cpp-generate-cpu-20261021.log
+- llama-cpp-generate-ngl1-20261021.log
+- llama-cpp-ngl1-monitored-20261021.log
+- llama-cpp-ngl1-gpu-20261021.csv
+
+Estos archivos permanecen en el equipo de pruebas; este informe no afirma que se hayan subido a GitHub.
+
+### 17.5 Configuración controlada de llama-cli
+
+Los intentos controlados usaron los mismos parámetros, cambiando el valor de --n-gpu-layers:
+
+~~~bash
+cd "$HOME/llama.cpp-cuda" || exit 1
+
+LLAMA="$HOME/llama.cpp-cuda/build-cuda/bin/llama-cli"
+M="$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs/Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf"
+
+"$LLAMA" \
+  --model "$M" \
+  --n-gpu-layers 14 \
+  --fit off \
+  --ctx-size 1024 \
+  --batch-size 64 \
+  --ubatch-size 32 \
+  --threads 8 \
+  --predict 16 \
+  --temp 0 \
+  --seed 42 \
+  --prompt "Responde brevemente en español: ¿qué es la inferencia local?" \
+  --single-turn \
+  --simple-io \
+  --verbose
+~~~
+
+Para repetir otra configuración, cambiar solo --n-gpu-layers (0, 1, 8, 10, 12, 14, 15 o 16). El barrido automatizado mantuvo semilla, prompt, contexto, batch, ubatch e hilos constantes, y guardó un log por repetición.
+
+Parámetros comunes:
+- contexto: 1024;
+- batch: 64;
+- ubatch: 32;
+- CPU threads: 8;
+- temperatura: 0;
+- semilla: 42;
+- salida: 128 tokens en la primera tanda y 256 en la segunda;
+- --fit off para impedir que el ajuste automático altere el offload solicitado.
+
+### 17.6 Offload y límite de VRAM
+
+Los logs verbose confirmaron la asignación real de capas a GPU.
+
+| Capas solicitadas | Capas GPU reportadas | Buffer de modelo CUDA | KV CUDA | Cómputo CUDA | Estado |
+|---:|---:|---:|---:|---:|---|
+| 8 | 8/49 | 1885,45 MiB | 14 MiB | 86,25 MiB | Carga correcta |
+| 12 | 12/49 | 2819,27 MiB | 22 MiB | 86,25 MiB | Carga correcta |
+| 14 | 14/49 | 3290,68 MiB | 26 MiB | 86,25 MiB | Carga correcta |
+| 15 | 15/49 | 3521,88 MiB | 28 MiB | 86,25 MiB | Carga correcta |
+| 16 | — | reserva de 3753,09 MiB fallida | — | — | CUDA OOM |
+
+Con 8 capas, el buffer del modelo mapeado en CPU fue de 9759,88 MiB. El log mostró una advertencia no fatal de discrepancia en CUDA_Host compute buffer: 4,1376 MiB frente a 1,0636 MiB esperados.
+
+El intento de 16 capas falló tanto en un primer arranque de llama-server como en llama-cli controlado, con cudaMalloc failed: out of memory. La ejecución controlada pidió 3753,09 MiB, casi todo el presupuesto CUDA utilizable informado por llama.cpp. Empíricamente, 15 fue el mayor número de capas probado que cargó en esta configuración; eso no significa que sea la opción más rápida ni que tenga margen suficiente para otros contextos/procesos.
+
+Log del fallo controlado: llama-cli-ngl16-controlled-20261021.log.
+
+### 17.7 Barrido automatizado de capas
+
+Script local usado: ~/benchmarks/qwen3-30b-a3b-iq3-xxs/benchmark-ngl.sh. Barrió las capas (0 1 8 10 12 14 15 16), guardó logs individuales, CSV y resumen. Se ejecutó en dos tandas:
+
+- benchmark-ngl-20261021-212122: 2 repeticiones, salida configurada en 128 tokens.
+- benchmark-ngl-20261021-213920: 3 repeticiones, salida configurada en 256 tokens.
+
+Comandos de ejecución y análisis:
+
+~~~bash
+bash "$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs/benchmark-ngl.sh"
+python3 "$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs/analyze-benchmarks.py"
+~~~
+
+El código original completo de benchmark-ngl.sh y los logs no se versionaron en este cambio. Los parámetros efectivos y resultados observados se registran aquí. El analizador local genera benchmark-results-corrected.csv.
+
+#### Tanda 1: 2 repeticiones, 128 tokens de salida
+
+| Capas GPU | Rep. 1 tok/s | Rep. 2 tok/s | Mediana tok/s | Prefill mediano tok/s | RSS máximo |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 1,33 | 1,40 | 1,36 | 4,51 | 11,32 GiB |
+| 1 | 1,39 | 1,61 | 1,50 | 6,17 | 11,62 GiB |
+| 8 | 1,74 | 1,73 | 1,73 | 7,28 | 11,68 GiB |
+| 10 | 1,80 | 1,78 | 1,79 | 5,28 | 11,36 GiB |
+| 12 | 1,71 | 1,92 | 1,81 | 6,42 | 11,48 GiB |
+| 14 | 1,90 | 2,02 | 1,96 | 8,50 | 11,58 GiB |
+| 15 | 2,21 | 2,10 | 2,16 | 7,56 | 11,63 GiB |
+| 16 | Fallo | — | — | — | No comparable |
+
+#### Tanda 2: 3 repeticiones, 256 tokens de salida
+
+| Capas GPU | Rep. 1 tok/s | Rep. 2 tok/s | Rep. 3 tok/s | Mediana tok/s | Prefill mediano tok/s | RSS máximo |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 1,40 | 1,70 | 1,63 | 1,63 | 7,82 | 11,85 GiB |
+| 1 | 1,64 | 1,51 | 1,50 | 1,51 | 11,33 | 11,74 GiB |
+| 8 | 1,66 | 1,88 | 1,74 | 1,74 | 7,61 | 11,74 GiB |
+| 10 | 1,86 | 1,76 | 1,74 | 1,76 | 7,24 | 11,54 GiB |
+| 12 | 1,78 | 2,00 | 2,15 | 2,00 | 8,28 | 11,73 GiB |
+| 14 | 2,03 | 1,97 | 1,95 | 1,97 | 8,05 | 11,74 GiB |
+| 15 | 1,93 | 1,94 | 1,86 | 1,93 | 10,18 | 11,74 GiB |
+| 16 | Fallo | — | — | — | — | No comparable |
+
+Las velocidades de prefill son las impresas por cada log. El RSS procede de /usr/bin/time, no de VRAM. Las ejecuciones fallidas de 16 capas se excluyen de las medianas.
+
+#### Error del analizador y corrección
+
+El primer analizador devolvió el mismo valor para prefill y generación porque el patrón eval time también coincidía con prompt eval time. Aquellas medianas iniciales eran inválidas y no deben citarse.
+
+Se verificó una ejecución real:
+- prompt: 24 tokens, 2326,72 ms, 10,31 tok/s;
+- generación: 76 tokens, 38761,43 ms, 1,93 tok/s.
+
+El analizador se reemplazó para procesar líneas diferentes: una que contiene prompt eval time y otra que contiene | eval time =, excluyendo la línea del prompt. El CSV corregido también separa las tandas, para no mezclar ejecuciones de 128 y 256 tokens. Las tablas anteriores son la salida del analizador corregido.
+
+#### Interpretación provisional
+
+- 8 capas mejora respecto a CPU puro; las ganancias mayores aparecen entre 12 y 15 capas.
+- En la tanda larga, 12 capas logra la mediana más alta: 2,00 tok/s, rango 1,78–2,15.
+- 14 capas es más consistente en esa tanda: 1,95–2,03 tok/s, mediana 1,97.
+- 15 capas logra 2,16 tok/s de mediana en la tanda corta, pero cae a 1,93 en la larga; no es ganador universal.
+- 16 capas falla por OOM.
+- RSS de 11,5–11,9 GiB de 14 GiB sugiere posible presión de memoria. No se conservó telemetría de swap por repetición, por lo que no se atribuye la variabilidad exclusivamente al swap.
+- Siguiente paso: usar 14 capas como referencia conservadora y comparar 12 frente a 14 con al menos cinco repeticiones, alternando el orden. No repetir el barrido entero salvo que cambien contexto, modelo o estado de memoria.
+
+### 17.8 RustingStrata: solución NVRTC y mediciones
+
+La primera ejecución GPU de RustingStrata encontró una incompatibilidad PTX: NVRTC 13.4 del sistema generó PTX .version 9.4, rechazado por el driver con CUDA_ERROR_UNSUPPORTED_PTX_VERSION. Se resolvió aislando bibliotecas NVRTC 13.0 de:
+
+~/rusting-strata-test/vendor/nvrtc13/root/usr/local/cuda-13.0/targets/x86_64-linux/lib/
+
+La solución usó LD_LIBRARY_PATH y XDG_CACHE_HOME temporales; no sustituyó bibliotecas del sistema. No se ejecutaron git clean/reset ni se eliminó vendor/.
+
+| Prueba | Parámetros / configuración | Prefill | Generación | Resultado |
+|---|---|---:|---:|---|
+| Strata CPU smoke | PP=128, TG=32, reps=1, threads=8 | 0,4 tok/s | 0,4 tok/s | RC 0 |
+| Strata GPU benchmark | NVRTC 13.0, reps=3 | PP=128: 48,0 tok/s (35,8–55,1) | TG=32: 11,6 tok/s (10,2–12,7) | RC 0 |
+| Strata GPU generación | prompt 25 tokens; salida 64 tokens | 6,78 tok/s | 7,74 tok/s | RC 0; 18,35 s total |
+
+Logs:
+- strata-gpu-nvrtc13-reps3-20261021.log
+- strata-generate-gpu-nvrtc13-20261021.log
+- strata-cpu-smoke-20261021.log
+
+Durante generación GPU, el plan registró:
+- pesos + estado + scratch: 832 MB;
+- KV: 96 MB para contexto 1024;
+- prefill: 36 MB;
+- slots de expertos: 2039 MB;
+- expertos residentes: 1160 de 6144;
+- hit rate de expertos: aproximadamente 24,9 % (25.681 misses);
+- 64 cambios de caché;
+- cómputo CPU de expertos: 90,1 % del tiempo de generación;
+- RSS máximo: 8.089.292 KiB (aprox. 7,72 GiB).
+
+strata bench y la generación de 64 tokens no son el mismo workload que el barrido llama.cpp. Los 7,74 tok/s son prometedores para este MoE y esta estrategia de caché, pero corresponden a una generación real individual, no a una mediana directamente comparable.
+
+### 17.9 Otros intentos de offload y servidor
+
+- Un primer intento de llama-server con 16 capas falló durante la reserva de VRAM. Ese log no conserva todos los argumentos con precisión suficiente; no se infieren otros parámetros a partir de él.
+- El caso se repitió con llama-cli controlado (fit desactivado, contexto 1024, batch 64, ubatch 32, 8 hilos, salida 16 tokens, temperatura 0, semilla 42). 16 capas volvió a fallar.
+- 12 y 14 capas cargaron correctamente en logs verbose de CLI.
+- Con 8 capas, la mayor parte del modelo permaneció en CPU (buffer CPU mapeado 9759,88 MiB, buffer CUDA 1885,45 MiB). Más offload ayuda, pero el cálculo de expertos MoE y el ancho de banda siguen siendo cuellos de botella.
+
+### 17.10 Conclusión específica de Qwen3-30B-A3B
+
+1. La inferencia local real está verificada con llama.cpp CUDA y RustingStrata CUDA.
+2. El máximo offload funcional observado en llama.cpp fue 15/49 capas, pero la mejor mediana de la tanda larga fue 12 capas; 14 capas presentó menor variabilidad.
+3. 16 capas supera el presupuesto de VRAM para esta GPU/configuración.
+4. RustingStrata llegó a 7,74 tok/s en una generación real de 64 tokens, con el coste principal en cálculo CPU de expertos y un hit rate de caché de aproximadamente 25 %. Es una observación de una ejecución, no una mediana directamente comparable.
+5. La siguiente comparación controlada debe fijar prompt, longitud de salida, contexto, warm-up, repeticiones y método de medida de generación; además, registrar RAM/swap y VRAM durante cada ejecución.
+6. Los logs, CSV y scripts permanecen en ~/benchmarks/qwen3-30b-a3b-iq3-xxs. Este informe incorpora la evidencia textual disponible, pero no sube automáticamente esos ficheros locales.
