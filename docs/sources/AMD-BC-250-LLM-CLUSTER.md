@@ -135,3 +135,102 @@ Búsquedas útiles: `BC-250 (LLM OR llama.cpp OR Ollama OR cluster OR tok/s)`. H
 ---
 
 *Documento generado a partir de investigación web + repositorios comunitarios (2026-10-21). Actualizar cuando aparezcan nuevas mediciones o cambios de driver/Mesa.*
+
+
+---
+
+## Ampliación: red, almacenamiento, PCIe y diseños de cluster (2026-10-21)
+
+### Referencias adicionales
+
+- [wdonega/bc250-llm-setup](https://github.com/wdonega/bc250-llm-setup): guía reproducible para Ubuntu, Vulkan/RADV, TTM/GTT, servicios systemd y pruebas de dos nodos.
+- [4claps/bc250-llama-cluster](https://github.com/4claps/bc250-llama-cluster): despliegue Ansible sobre Fedora, coordinador y worker RPC.
+- [Resumen de topología 4claps](https://github.com/4claps/bc250-llama-cluster/blob/main/docs/TLDR.md): red backend, prerequisitos y parámetros validados.
+- [Guía comunitaria no oficial](https://github.com/katzzero/bc250-unofficial-community-guide): montaje, refrigeración y almacenamiento.
+- [BC-250 and the search for Cheap Compute](https://www.reddit.com/r/LocalLLaMA/comments/1tj4unp/amd_bc250_and_the_search_for_cheap_compute/): experiencia comunitaria sobre CU unlock, rendimiento y consumo.
+- [Experiencia con cluster llama.cpp](https://www.reddit.com/r/BC250Gaming/comments/1w2qtp4/llamacpp_cluster_for_local_ai/): dos nodos, PSU compartida y NIC USB 2.5GbE.
+- [llama.cpp upstream](https://github.com/ggml-org/llama.cpp): revisar versiones y cambios antes de reproducir benchmarks.
+
+### Red: opciones y arquitectura recomendada
+
+Separar la red en dos planos: (1) gestión: SSH, Ansible, actualizaciones y API; (2) backend privado: tráfico RPC entre nodos. La Ethernet integrada de 1 Gb/s es suficiente para administración, pero para el enlace de inferencia conviene probar 2.5 GbE dedicado.
+
+| Opción | Uso | Consideraciones |
+|---|---|---|
+| GbE integrado | Gestión y API | Sin coste adicional; no mezclarlo necesariamente con RPC |
+| USB 3.x a 2.5GbE | Backend dedicado | Confirmar chipset Linux, velocidad negociada y estabilidad bajo carga |
+| Enlace directo 2.5GbE | Dos nodos | Barato, sin switch; IP estática y sin gateway |
+| Switch 2.5GbE | 2–8 nodos | Fácil de ampliar; VLAN y firewall bien definidos |
+| 10GbE SFP+ / RJ45 | Uplink o experimentación | Más coste, consumo y calor; no garantiza más tok/s si la red no es el cuello de botella |
+| Wi-Fi | Gestión auxiliar | No recomendado para RPC por jitter y variabilidad |
+| NAS/NFS | Catálogo compartido y distribución | Para benchmarks, copiar el modelo al SSD local y no medir accidentalmente el NAS |
+
+Topología de referencia comunitaria para dos nodos: coordinador 10.250.0.1/30, worker 10.250.0.2/30, RPC en worker:50052. Es solo un ejemplo; adaptar a la red real. El backend no debería tener gateway ni DNS. RPC no debe exponerse a Internet ni a una LAN no confiable: es una interfaz privilegiada y no debe considerarse autenticada.
+
+Comprobaciones Linux:
+
+```bash
+ip -br link
+ip -br addr
+ip route
+sudo ethtool <INTERFAZ>
+ip -s link show <INTERFAZ>
+iperf3 -s                 # servidor
+iperf3 -c <IP_SERVIDOR> -P 4
+```
+
+Medir velocidad negociada, errores, drops y throughput antes y durante inferencia. Para un despliegue seguro, permitir RPC solo desde la IP del coordinador mediante firewall y enlazar el servicio a la interfaz backend.
+
+### SSD y opciones PCIe
+
+La BC-250 no es una placa ATX con varias ranuras PCIe estándar. La opción documentada es un M.2 2280, descrito según revisión como PCIe 2.0 ×2 o SATA III. El enlace limita el rendimiento de un NVMe moderno; el SSD más rápido no suele aumentar los tok/s una vez cargados los pesos, pero sí reduce tiempos de instalación, carga y cambio de modelo.
+
+- **NVMe M.2 2280 PCIe**: opción preferente si la revisión de placa negocia PCIe. Un SSD Gen3/Gen4 normalmente negocia a la velocidad máxima que permita la placa; no pagar una prima por cifras Gen4/Gen5 que no se pueden aprovechar.
+- **M.2 SATA 2280**: comprarlo solo tras confirmar que esa ranura/revisión soporta SATA. Un módulo SATA no funciona en una ranura exclusivamente PCIe.
+- **SSD SATA o NVMe por USB 3.x**: opción práctica para pesos, copias y traslado de modelos; el puente USB y el puerto son el límite.
+- **NAS/NFS**: útil para mantener una biblioteca compartida; copiar localmente los modelos antes de benchmark.
+- **PXE/netboot**: alternativa avanzada para flotas uniformes, con modelos y cachés mantenidos localmente.
+- **USB flash**: reservar para instalación/rescate, no para inferencia sostenida de modelos grandes.
+
+Sobre un SSD “por PCIe”: no asumir que hay un slot x4/x16 libre. Un adaptador M.2-a-PCIe puede servir como experimento si firmware, alimentación y espacio lo permiten, pero seguirá limitado por las lanes disponibles (PCIe 2.0 ×2 en la configuración descrita). Puede fallar el arranque o la enumeración y no es la recomendación para un nodo fiable. Un adaptador con varias ranuras no crea lanes ni ancho de banda adicionales. Verificar revisión, protocolo M.2, longitud 2280, alimentación y espacio antes de comprar.
+
+### Ideas de topología para LEONES
+
+1. **Coordinador + worker**: un nodo ejecuta llama-server y su GPU; el segundo ofrece ggml-rpc-server. Los clientes solo conocen la API del coordinador.
+2. **Tres planos de red**: gestión por GbE integrado, RPC por USB 2.5GbE dedicado y catálogo de modelos por NAS/VLAN independiente.
+3. **Pool de instancias independientes**: cada BC-250 sirve su propio modelo y un router distribuye peticiones. Puede aumentar throughput agregado, pero no suma la memoria UMA de varios nodos para una sola inferencia.
+4. **Cluster modular de 4–6 nodos**: switch 2.5GbE y uplink 10GbE; añadir nodos solo tras medir latencia, potencia, temperatura y rendimiento.
+5. **Arquitectura híbrida**: BC-250 para MoE de pocos parámetros activos o modelos pequeños; host x86 con más RAM para coordinación, embeddings, reranking y modelos que no caben.
+6. **Nodo de distribución**: equipo de gestión descarga modelos, verifica hashes y los replica; los nodos de inferencia no necesitan acceso general a Internet.
+7. **Degradación controlada**: mantener un modelo pequeño local en el coordinador si falla un worker; no anunciar el modelo distribuido como disponible cuando falta un nodo.
+8. **Banco de pruebas de red**: comparar enlace directo, switch 2.5GbE y uplink 10GbE manteniendo constantes modelo, cuantización, contexto, versión, prompt y split.
+9. **Operación eficiente**: medir vatios en pared por nodo y por token útil; automatizar parada segura si falla la ventilación o aparecen errores de cálculo.
+10. **Edge fleet**: inventario por MAC permanente, imágenes reproducibles, perfiles conservadores, actualización canary de un nodo y despliegue por lotes.
+
+### Compilación orientativa de llama.cpp con Vulkan y RPC
+
+La guía Ubuntu enlazada propone este punto de partida; confirmar los requisitos del upstream y el entorno Mesa antes de usarlo:
+
+```bash
+sudo apt install -y build-essential cmake git libcurl4-openssl-dev \
+  glslc libvulkan-dev spirv-headers spirv-tools
+git clone https://github.com/ggml-org/llama.cpp
+cd llama.cpp
+cmake -B build -DGGML_VULKAN=ON -DGGML_RPC=ON
+cmake --build build --config Release -j"$(nproc)"
+```
+
+Confirmar que vulkaninfo detecta RADV y no llvmpipe. Guardar commit de llama.cpp, kernel, Mesa, parámetros TTM, temperatura, cuantización, contexto y KV cache en cada resultado. Las instrucciones de Ubuntu y Fedora no deben mezclarse sin revisar paquetes, firewall, servicios y rutas.
+
+### Criterios de seguridad y evidencia
+
+- Calificar cada placa individualmente antes de desbloquear CUs o alterar BIOS, frecuencias, tensión o refrigeración. No copiar tablas de routing de CUs de otra unidad.
+- Validar refrigeración sostenida, sensores y ventiladores antes de habilitar servicios automáticos.
+- Si la API del coordinador no usa autenticación, restringirla a la LAN confiable o situar un proxy autenticado delante.
+- Registrar potencia en pared, temperaturas, frecuencia, RAM libre, GTT, errores Vulkan, contexto, KV cache, prefill y generación.
+- Para comparativas, fijar prompt, tokens de entrada/salida, contexto, cuantización, versión y parámetros del runtime; informar latencia p50/p95 además de tok/s.
+- Las cifras comunitarias son evidencia de terceros, no mediciones físicas de LEONES ni garantías de que otra placa obtenga lo mismo.
+
+### Documento complementario de Google Docs
+
+El enlace de Google Docs facilitado no pudo leerse desde las conexiones disponibles en esta sesión. Por tanto, su contenido todavía no se ha incorporado y no sería correcto afirmar que se ha integrado íntegramente. Para incluirlo sin omisiones, adjunta una exportación DOCX/PDF/Markdown o pega aquí su contenido.
