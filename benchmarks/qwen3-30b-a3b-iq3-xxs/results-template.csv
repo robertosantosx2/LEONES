@@ -1,0 +1,4 @@
+engine,model_id,model_file,model_sha256,engine_version,architecture_supported,quant_supported,format,load_seconds,prefill_tokens_per_second,generation_tokens_per_second,peak_ram_gib,peak_vram_gib,context_tokens,max_new_tokens,warmup_runs,measured_runs,launch_args,status,notes
+llama.cpp,Qwen3-30B-A3B-IQ3_XXS,,,,pending,pending,GGUF,,,,,256,32,1,3,,not_run,Reference candidate; verify local build and memory feasibility
+RustingStrata,Qwen3-30B-A3B-IQ3_XXS,,,,pending,pending,GGUF,,,,,256,32,1,3,,not_run,Do not assume Qwen3 architecture support
+TensorFold,Qwen3-30B-A3B-IQ3_XXS,,,,pending,pending,unknown,,,,,256,32,1,3,,not_run,Must prove exact checkpoint/quantization support on Linux/NVIDIA; other formats are not equivalent
