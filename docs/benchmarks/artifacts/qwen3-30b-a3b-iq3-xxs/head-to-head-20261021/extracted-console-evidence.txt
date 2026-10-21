@@ -1,0 +1,29 @@
+# Extracted console evidence — 2026-10-21
+
+Source: terminal excerpts shared in the ChatGPT conversation. This is an extraction, not the complete per-run log files.
+
+## llama.cpp
+
+| Run | Prompt eval (tok/s) | Generation time | Tokens | Generation (tok/s) |
+|---:|---:|---:|---:|---:|
+| 1 | 8.56 | 37010.25 ms | 73 | 1.9454 |
+| 2 | 6.79 | 38722.98 ms | 73 | 1.8594 |
+| 3 | 5.04 | 31438.28 ms | 73 | 2.2902 |
+| 4 | 9.08 | 35613.50 ms | 73 | 2.0217 |
+| 5 | 10.97 | 36971.53 ms | 73 | 1.9474 |
+| 6 | 10.83 | 35345.67 ms | 73 | 2.0370 |
+
+Each llama.cpp run counted 24 prompt tokens and stopped at EOS after 73 generated tokens.
+
+## RustingStrata
+
+| Run | Prompt tokens | Prefill (tok/s) | Generated tokens | Generation (tok/s) | Expert hit rate | Cache misses | Cache swaps |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 16 | 11.71 | 128 | 14.34 | 30.8% | 38272 | 128 |
+| 2 | 16 | 19.67 | 98 | 29.94 | 79.0% | 9178 | 16 |
+| 3 | 16 | 20.03 | 128 | 30.08 | 77.9% | 12194 | 1 |
+| 4 | 16 | 18.91 | 104 | 30.90 | 80.2% | 9125 | 1 |
+| 5 | 16 | 18.96 | 128 | 31.89 | 78.6% | 11856 | 1 |
+| 6 | 16 | 17.98 | 128 | 29.33 | 78.8% | 11716 | 1 |
+
+All twelve runs were reported with RC=0. Prompt token counts differ by engine (24 vs 16), and generated lengths vary due to EOS, so the comparison must retain the caveats documented in section 17.13.
