@@ -715,3 +715,64 @@ strata bench y la generación de 64 tokens no son el mismo workload que el barri
 4. RustingStrata llegó a 7,74 tok/s en una generación real de 64 tokens, con el coste principal en cálculo CPU de expertos y un hit rate de caché de aproximadamente 25 %. Es una observación de una ejecución, no una mediana directamente comparable.
 5. La siguiente comparación controlada debe fijar prompt, longitud de salida, contexto, warm-up, repeticiones y método de medida de generación; además, registrar RAM/swap y VRAM durante cada ejecución.
 6. Los logs, CSV y scripts permanecen en ~/benchmarks/qwen3-30b-a3b-iq3-xxs. Este informe incorpora la evidencia textual disponible, pero no sube automáticamente esos ficheros locales.
+
+
+### 17.11 RustingStrata: repetición controlada de 16 tokens (21-10-2026)
+
+Se añadió una prueba corta con el mismo archivo GGUF, el mismo prompt en español y un límite de 16 tokens de salida que la prueba controlada de llama.cpp. La ejecución usó GPU, contexto 1024, 8 hilos, temperatura 0, NVRTC 13.0 aislado y un directorio XDG_CACHE_HOME propio. El objetivo fue validar generación y observar caché; **16 tokens son insuficientes para una comparación robusta de rendimiento sostenido**.
+
+SHA-256 del modelo: `292daa2b66aec59d075532d0bcf05010bf4a3b012a4216c28dc021b73d1e9ab4`.
+
+Comando ejecutado en cada repetición:
+
+~~~bash
+/usr/bin/time -v -o "$OUT/time-$REP.txt" \
+  ./target/release/strata generate \
+    --model "$M" --gpu --ctx 1024 --threads 8 \
+    --prompt "Responde brevemente en español: ¿qué es la inferencia local?" \
+    -n 16 --temp 0 2>&1 | tee "$OUT/rep-$REP.log"
+~~~
+
+Entorno CUDA: `LD_LIBRARY_PATH` antepone `~/rusting-strata-test/vendor/nvrtc13/root/usr/local/cuda-13.0/targets/x86_64-linux/lib`; `XDG_CACHE_HOME=$OUT/cache`. Directorio de resultados: `~/benchmarks/qwen3-30b-a3b-iq3-xxs/rustingstrata-controlled-20261021`.
+
+| Repetición | Prefill (tok/s) | Generación (tok/s) | Hit rate de expertos | Fallos de caché | Cambios de caché | RSS máximo |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 2,99 | 6,67 | 19,9 % | 9.846 | 32 | 7.055.728 KiB (6,73 GiB) |
+| 2 | 24,41 | 31,32 | 81,7 % | 2.248 | 0 | 6.062.680 KiB (5,78 GiB) |
+| 3 | 26,44 | 25,66 | 81,8 % | 2.238 | 0 | 6.065.568 KiB (5,78 GiB) |
+
+Las tres ejecuciones terminaron con código 0. La mediana aritméticamente correcta de las tres velocidades de generación es 25,66 tok/s, pero no representa una estimación estable de rendimiento sostenido: cada repetición generó solo 16 tokens y la primera tuvo una caché fría o mucho menos efectiva. Las repeticiones 2–3, con aproximadamente 81,8 % de aciertos, dieron 31,32 y 25,66 tok/s; con solo dos muestras calientes no debe presentarse su promedio como resultado definitivo. Strata informó que el cálculo CPU de expertos representó 91,7 %, 61,4 % y 67,7 % del tiempo de generación, respectivamente.
+
+El resultado muestra que el estado de la caché cambia radicalmente la medición. No se debe comparar directamente la mediana de este test de 16 tokens con el barrido llama.cpp de 128/256 tokens ni con el test anterior de Strata de 64 tokens. Para comparación final, realizar warm-up explícito y al menos cinco repeticiones de una longitud común, reportando por separado primera ejecución y estado caliente.
+
+### 17.12 RustingStrata: benchmark PP128/TG32 con tres repeticiones
+
+Comando exacto:
+
+~~~bash
+LD_LIBRARY_PATH="$NVRTC${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+XDG_CACHE_HOME="$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs/strata-bench-cache" \
+/usr/bin/time -v ./target/release/strata bench \
+  --model "$M" --gpu --pp 128 --tg 32 --reps 3 --threads 8
+~~~
+
+Resultado observado:
+
+| Métrica | Resultado |
+|---|---:|
+| Prefill PP=128 | 58,7 tok/s |
+| Rango de prefill reportado | 13,3–91,2 tok/s |
+| Decode TG=32 | 12,3 tok/s |
+| Rango de decode reportado | 8,7–14,3 tok/s |
+| Hit rate de expertos | 19,9 % |
+| Fallos de caché | 29.536 |
+| Cambios de caché | 96 |
+| Tiempo de pared | 24,79 s |
+| RSS máximo | 8.976.260 KiB (8,56 GiB) |
+| Estado | Exit status 0 |
+
+El plan registró pesos+estado+scratch de 1.568 MB, KV de 384 MB para contexto 4096, prefill de 479 MB, slots de expertos de 1.557 MB y 886/6.144 expertos residentes. El rango amplio de PP y TG confirma variabilidad considerable; conservar los rangos es importante y no presentar solo la cifra central.
+
+Log local: `~/benchmarks/qwen3-30b-a3b-iq3-xxs/rustingstrata-bench-20261021.log`.
+
+**Conclusión actualizada:** RustingStrata completa correctamente tanto el benchmark como la generación controlada. El benchmark PP128/TG32 da 12,3 tok/s de decode (rango 8,7–14,3) y 58,7 tok/s de prefill (rango 13,3–91,2), mientras que la prueba corta de generación exhibe un gran efecto de caché. Estas pruebas no son todavía un cara a cara estricto con llama.cpp: cambian la longitud, el contexto y el modo de ejecución; el resultado caliente de 25–31 tok/s con solo 16 tokens no debe extrapolarse a generaciones largas.
