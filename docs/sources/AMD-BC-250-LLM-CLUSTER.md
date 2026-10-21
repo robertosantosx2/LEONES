@@ -231,6 +231,106 @@ Confirmar que vulkaninfo detecta RADV y no llvmpipe. Guardar commit de llama.cpp
 - Para comparativas, fijar prompt, tokens de entrada/salida, contexto, cuantización, versión y parámetros del runtime; informar latencia p50/p95 además de tok/s.
 - Las cifras comunitarias son evidencia de terceros, no mediciones físicas de LEONES ni garantías de que otra placa obtenga lo mismo.
 
-### Documento complementario de Google Docs
+---
 
-El enlace de Google Docs facilitado no pudo leerse desde las conexiones disponibles en esta sesión. Por tanto, su contenido todavía no se ha incorporado y no sería correcto afirmar que se ha integrado íntegramente. Para incluirlo sin omisiones, adjunta una exportación DOCX/PDF/Markdown o pega aquí su contenido.
+## Ampliación avanzada: optimización Vulkan, ROCm/HIP y RPC multinodo
+
+Esta sección integra el contenido proporcionado como documento complementario. Las variables y comandos son **opciones experimentales**, no ajustes universales: deben validarse con la versión de Mesa, kernel, firmware y llama.cpp instalada.
+
+### Arquitectura y gestión de energía
+
+- **APU**: Cyan Skillfish, gfx1013; familia relacionada con el silicio de PS5. La BC-250 combina CPU Zen 2 y GPU con memoria GDDR6 unificada.
+- **Memoria**: 16 GB compartidos por CPU y GPU. La memoria reservada y la disponible para Vulkan no son necesariamente iguales; driver, buffers, kernel y TTM consumen recursos.
+- **Energía y refrigeración**: estas placas pueden mantener un consumo base significativo y no comportarse como un PC convencional en reposo. Dimensionar PSU, rail de 12 V y refrigeración para carga continua; medir consumo en pared.
+- Los datos de núcleos, CUs, clocks, consumo y desbloqueos varían según revisión y modificaciones de firmware. Verificar la unidad física antes de aplicar perfiles.
+
+### llama.cpp con Vulkan: variables experimentales
+
+Vulkan sobre Mesa/RADV es la ruta de referencia comunitaria para gfx1013. La compatibilidad exacta depende de Mesa y del build de llama.cpp.
+
+~~~bash
+# Probar solo si se observan límites de asignación Vulkan en modelos/contextos grandes:
+export GGML_VK_FORCE_MAX_ALLOCATION_SIZE=2000000000
+
+# Mitigación experimental de artefactos gráficos con RADV:
+export RADV_DEBUG=nohiz
+
+# Alternativa histórica para diagnosticar problemas de compute en versiones antiguas:
+# export RADV_DEBUG=nocompute
+~~~
+
+**No aplicar todas las variables a ciegas.** Ejecutar primero sin overrides, cambiar una sola variable cada vez y comparar logs, estabilidad, rendimiento y resultados. Las opciones de RADV pueden variar entre versiones. GGML_VK_FORCE_MAX_ALLOCATION_SIZE no aumenta la memoria física: su efecto depende de la versión del backend Vulkan.
+
+### Split de memoria UMA / firmware
+
+El firmware puede ofrecer opciones para dividir o reservar memoria entre CPU y GPU. Una reserva como 12 GB para GPU y 4 GB para sistema es solo un **perfil candidato de prueba**, no una recomendación universal: puede dejar memoria insuficiente para el sistema, servicios o buffers del driver.
+
+1. Anotar la configuración original y preparar recuperación antes de cambiar firmware.
+2. Probar un split conservador y verificar memoria visible por el sistema y Vulkan.
+3. Medir un modelo representativo, incluyendo contexto y KV cache.
+4. Cambiar una sola variable y conservar el perfil estable.
+5. Documentar que Vulkan puede reportar menos memoria efectiva que la reservada en firmware.
+
+### ROCm/HIP: ruta alternativa y experimental
+
+ROCm/HIP no debe considerarse equivalente en madurez a Vulkan para esta APU. Puede interesar para cargas específicas y experimentos con rocBLAS, pero requiere builds, kernels y parches compatibles con gfx1013.
+
+~~~bash
+# Override experimental citado por proyectos comunitarios; no es universal:
+export HSA_OVERRIDE_GFX_VERSION=10.1.0
+~~~
+
+Referencias:
+- [akandr/bc250-rocm](https://github.com/akandr/bc250-rocm)
+- [GabriWar/bc250-rocm-working](https://github.com/GabriWar/bc250-rocm-working)
+
+El override no convierte automáticamente una GPU no soportada en una plataforma oficialmente soportada. Validar detección de dispositivo, kernels, exactitud, estabilidad y rendimiento. Mantener Vulkan como configuración de referencia.
+
+### RPC de llama.cpp: workers y coordinador
+
+RPC permite que un coordinador use recursos de otros equipos, pero no crea memoria físicamente unificada ni garantiza escalado lineal. El reparto depende de la versión, modelo, cuantización, split de capas/tensores y red.
+
+**Worker** — escuchar solo en la interfaz backend privada:
+
+~~~bash
+./rpc-server -H <IP_BACKEND_DEL_WORKER> -p 50052
+~~~
+
+**Coordinador** — comprobar primero las opciones admitidas por la versión instalada:
+
+~~~bash
+./llama-server --help
+# Consultar la sintaxis exacta de --rpc y los parámetros de offload
+# antes de lanzar el servidor.
+~~~
+
+Direcciones ilustrativas: workers 192.168.1.51:50052 y 192.168.1.52:50052. No copiar estas direcciones si no corresponden a la red real. Las opciones de CLI cambian entre versiones y forks; consultar --help y el commit utilizado.
+
+**Seguridad:** evitar escuchar en 0.0.0.0 en equipos con interfaces públicas o LAN no confiable. Limitar el puerto RPC al coordinador mediante firewall y no publicarlo en Internet.
+
+### Red para inferencia distribuida
+
+- Priorizar Ethernet cableada dedicada para RPC.
+- Preferir NIC nativas compatibles cuando existan; USB 2.5GbE es una alternativa económica, pero medir latencia, uso de CPU y estabilidad.
+- Separar gestión, API y RPC si es posible.
+- Medir throughput con iperf3, latencia y pérdida antes y durante la inferencia.
+- Comparar 1 GbE, 2.5 GbE y 10 GbE sin asumir que la red sea el cuello de botella.
+
+### Repositorios de soporte incorporados
+
+- [akandr/bc250](https://github.com/akandr/bc250) — instalación base, Ollama/Vulkan y pruebas.
+- [elektricm/amd-bc250-docs](https://elektricm.github.io/amd-bc250-docs/) — documentación comunitaria de hardware y software.
+- [GabriWar/bc250-rocm-working](https://github.com/GabriWar/bc250-rocm-working) — investigación de ROCm y cargas relacionadas con Stable Diffusion.
+- [llama.cpp upstream](https://github.com/ggml-org/llama.cpp) — opciones actuales de CLI, Vulkan y RPC.
+
+### Plan de validación LEONES
+
+Registrar por ejecución:
+- Identificador/revisión de placa y configuración de firmware/UMA.
+- Kernel, Mesa/RADV, runtime, commit y flags de compilación.
+- Variables de entorno activas, backend y red.
+- Modelo, hash, cuantización, contexto, KV cache y offload.
+- Prefill tok/s, generación tok/s, latencia, RAM/GTT, temperaturas, clocks, consumo en pared y errores.
+- En pruebas distribuidas: número de workers, latencia/throughput de red, capas asignadas y comportamiento al desconectar un worker.
+
+Clasificar cada resultado como **medición LEONES**, **reproducción comunitaria** o **hipótesis por validar**. No presentar variables, split de memoria ni resultados de terceros como hechos comprobados en una unidad LEONES hasta reproducirlos.
