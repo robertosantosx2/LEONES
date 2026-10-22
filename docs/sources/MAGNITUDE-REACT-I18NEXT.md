@@ -16,12 +16,10 @@ La internacionalización no debe quedarse en un selector o en unas pocas pantall
 
 ## Inventario recuperado de #193
 
-La versión cerrada de #193 confirma este alcance:
-
-- **12 idiomas activos, 650 claves por catálogo**.
-- Comparación previa: cero claves ausentes, cero claves extra y cero discrepancias de marcadores de interpolación entre los doce catálogos.
+La versión cerrada de #193 confirma el inventario original de doce idiomas y 650 claves por catálogo. Esta nueva propuesta excluye Urdu por escribirse de derecha a izquierda y queda en **11 idiomas activos, 650 claves por catálogo**.
+- Comparación previa: cero claves ausentes, cero claves extra y cero discrepancias de marcadores de interpolación entre los once catálogos.
 - Pruebas previas para cobertura de catálogos, traducciones representativas, allowlist de idiomas, mensajes de servicio conocidos y preservación de diagnósticos desconocidos.
-- Tratamiento RTL para urdu.
+- Todos los idiomas activos se escriben de izquierda a derecha (LTR); no se incluye ningún idioma RTL.
 - Cambio de idioma persistido por perfil de navegador o aplicación de escritorio.
 - Auditoría de textos visibles en filtros, adquisición/descarga, estados de modelos, métricas, categorías y especificaciones de hardware, accesibilidad, advertencias de red, errores de almacenamiento de apariencia y etiquetas de fecha/mes/día.
 - Los nombres propios, modelos, proveedores, identificadores técnicos y comandos permanecen sin traducir.
@@ -35,7 +33,6 @@ La versión cerrada de #193 confirma este alcance:
 | `es` | Español |
 | `zh-CN` | Chino simplificado |
 | `hi` | Hindi |
-| `ur` | Urdu (RTL) |
 | `bn` | Bengalí |
 | `fr` | Francés |
 | `de` | Alemán |
@@ -54,7 +51,6 @@ La rama anterior `feat/i18n-es-zh` contiene los siguientes activos que deben rev
 - `web/src/i18n/catalogs/es.ts`
 - `web/src/i18n/catalogs/zh-CN.ts`
 - `web/src/i18n/catalogs/hi.ts`
-- `web/src/i18n/catalogs/ur.ts`
 - `web/src/i18n/catalogs/bn.ts`
 - `web/src/i18n/catalogs/fr.ts`
 - `web/src/i18n/catalogs/de.ts`
@@ -85,7 +81,7 @@ No añadir detectores, backends o plugins adicionales si no aportan una necesida
 
 ### Recursos
 
-Migrar los doce catálogos existentes a recursos compatibles con i18next, preservando todas las traducciones y sus claves. Se puede conservar TypeScript si encaja con la configuración del proyecto; no es obligatorio convertirlos a JSON. Estructura sugerida:
+Migrar los once catálogos existentes a recursos compatibles con i18next, preservando todas las traducciones y sus claves. Se puede conservar TypeScript si encaja con la configuración del proyecto; no es obligatorio convertirlos a JSON. Estructura sugerida:
 
 ```text
 web/src/i18n/
@@ -95,7 +91,6 @@ web/src/i18n/
     es.ts
     zh-CN.ts
     hi.ts
-    ur.ts
     bn.ts
     fr.ts
     de.ts
@@ -113,12 +108,12 @@ Se permite mantener el directorio `catalogs/` si eso reduce el tamaño del diff;
 La implementación debe crear una sola instancia i18next y registrar `initReactI18next`. Configurar explícitamente:
 
 - `fallbackLng: "en"`
-- `supportedLngs` con exactamente los doce códigos activos.
+- `supportedLngs` con exactamente los once códigos activos.
 - `defaultNS`/namespace explícito y recursos tipados.
 - `interpolation.escapeValue: false` para React.
 - idioma inicial leído de forma segura de `localStorage["magnitude.language"]`; fallback a inglés si no existe, no es válido o el almacenamiento lanza una excepción.
 - al cambiar idioma, persistir el valor cuando el almacenamiento esté disponible.
-- actualizar `document.documentElement.lang` y `dir` (`rtl` únicamente para `ur`; `ltr` para los demás).
+- actualizar `document.documentElement.lang` y mantener `dir="ltr"` para todos los idiomas activos.
 - cambios de idioma reactivos en toda la interfaz, sin evento global manual ni estado React paralelo para mantener sincronizado el catálogo.
 
 La persistencia debe funcionar tanto en navegador como en el renderer de escritorio, sin asumir que `localStorage` existe durante SSR/importación y sin romper la interfaz si el navegador bloquea el almacenamiento. Si se usa un detector estándar, verificar específicamente este caso de fallo; se prefiere un detector pequeño y seguro si permite conservar el comportamiento sin nuevas dependencias.
@@ -135,7 +130,7 @@ La persistencia debe funcionar tanto en navegador como en el renderer de escrito
 ## Plan de migración
 
 1. **Actualizar base:** consultar el estado actual de `magnitudedev/magnitude:main` y del fork; confirmar el estado cerrado de #193 y detectar cambios concurrentes. Crear una rama nueva, por ejemplo `feat/i18next-twelve-languages`, basada en el `main` actualizado del fork.
-2. **Extraer activos:** copiar los doce catálogos auditados de `feat/i18n-es-zh` sin alterar traducciones. Guardar un inventario/hash por catálogo antes de transformarlos.
+2. **Extraer activos:** copiar los once catálogos auditados de `feat/i18n-es-zh` sin alterar traducciones. Guardar un inventario/hash por catálogo antes de transformarlos.
 3. **Añadir dependencias:** modificar el manifiesto y lockfile con el gestor oficial del repositorio.
 4. **Implementar i18next:** recursos, instancia, fallback, allowlist, persistencia segura y sincronización `lang/dir`.
 5. **Migrar el selector:** conservar el ajuste de idioma y su texto explicativo; comprobar que cambiar el idioma se refleja inmediatamente en web y desktop.
@@ -150,7 +145,7 @@ La persistencia debe funcionar tanto en navegador como en el renderer de escrito
 
 ### Integridad de catálogos
 
-- [ ] Exactamente 12 idiomas activos en la allowlist.
+- [ ] Exactamente 11 idiomas activos en la allowlist.
 - [ ] Cada recurso tiene exactamente las mismas 650 claves que el inglés, salvo cambios de upstream documentados.
 - [ ] Ningún valor traducible está vacío o es accidentalmente una copia del inglés sin justificación.
 - [ ] Cero marcadores de interpolación perdidos o añadidos. Adaptar el validador a la sintaxis que se elija (`{{name}}` si se usa interpolación i18next; conservar o transformar los antiguos `{name}` de forma sistemática).
@@ -161,7 +156,7 @@ La persistencia debe funcionar tanto en navegador como en el renderer de escrito
 - [ ] Fallback a inglés para idioma ausente o no soportado.
 - [ ] Selección persistente en browser y desktop, con almacenamiento bloqueado y sin `localStorage`.
 - [ ] Cambio de idioma reactivo en todos los componentes sin recarga.
-- [ ] `document.documentElement.lang` correcto y `dir=rtl` sólo para urdu.
+- [ ] `document.documentElement.lang` correcto y `dir=ltr` para todos los idiomas activos; no debe quedar configuración RTL específica.
 - [ ] Textos visibles y etiquetas accesibles cubiertos por la auditoría de #193.
 - [ ] Mensajes conocidos traducidos y diagnósticos desconocidos preservados literalmente.
 - [ ] Fechas, meses y días localizados por idioma.
@@ -175,13 +170,13 @@ La persistencia debe funcionar tanto en navegador como en el renderer de escrito
 - [ ] Smoke test navegador.
 - [ ] Smoke test aplicación de escritorio.
 - [ ] Revisión manual del selector y del flujo de persistencia.
-- [ ] Inspección RTL para urdu.
+- [ ] Comprobación LTR en los once idiomas activos.
 - [ ] CI del PR autorizada y verde; no dejar un estado `action_required` presentado como éxito.
-- [ ] Revisión lingüística recomendada, en especial hindi, urdu, bengalí, japonés y ucraniano, además de textos de seguridad.
+- [ ] Revisión lingüística recomendada, en especial hindi, bengalí, japonés y ucraniano, además de textos de seguridad.
 
 ## Estado real heredado (no confundir con validación nueva)
 
-La descripción de #193 registró la auditoría estática de doce catálogos × 650 claves, cero claves ausentes/extra y cero discrepancias de placeholders. También indicaba que tests, typecheck, build y smoke tests no estaban confirmados como satisfactorios y que la ejecución de GitHub Actions estaba bloqueada por `action_required`. Por tanto, esos resultados de auditoría son reutilizables como punto de partida, pero **no equivalen a una validación de la migración a react-i18next**. Todos los checks deben volver a ejecutarse después de portar.
+La descripción de #193 registró la auditoría estática de once catálogos × 650 claves, cero claves ausentes/extra y cero discrepancias de placeholders. También indicaba que tests, typecheck, build y smoke tests no estaban confirmados como satisfactorios y que la ejecución de GitHub Actions estaba bloqueada por `action_required`. Por tanto, esos resultados de auditoría son reutilizables como punto de partida, pero **no equivalen a una validación de la migración a react-i18next**. Todos los checks deben volver a ejecutarse después de portar.
 
 ## Referencias
 
