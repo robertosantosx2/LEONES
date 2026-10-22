@@ -293,3 +293,22 @@ En el plan de comparación del 20 de octubre se propuso ampliar el benchmark de 
 | Rusting Strata | Sí medido con Qwen3.5-4B GGUF Q4_K_M; se investigó incompatibilidad PTX; se inspeccionó arquitectura Qwen3.5-35B-A3B. | No hay rendimiento validado consolidado para 35B ni comparación API homogénea para todos los modelos. |
 
 No incluir motores sin medición como si su velocidad fuera cero: usar “no medido”, “no compatible” o “falló al iniciar” y conservar el log de cada intento.
+
+
+## 13. Recopilación de artefactos para reproducibilidad
+
+Se añade el recolector [`scripts/benchmarks/collect-inferencia-rtx3050-oct26.sh`](https://github.com/robertosantosx2/LEONES/blob/docs/report-inferencia-denso-octubre-2026/scripts/benchmarks/collect-inferencia-rtx3050-oct26.sh). Está diseñado para ejecutarse en Ubuntu en la máquina probada. Reúne los scripts de benchmark conocidos, los directorios de resultados, los logs/CSV/JSON disponibles, información del sistema y versiones, hashes de artefactos y hashes de modelos. **No copia los pesos de los modelos**, el historial del shell ni credenciales.
+
+Tras descargar o actualizar el checkout de LEONES, ejecuta:
+
+~~~bash
+cd "$HOME/leones-work/LEONES"
+git pull
+bash scripts/benchmarks/collect-inferencia-rtx3050-oct26.sh
+~~~
+
+Si el checkout activo de LEONES está en otra ruta, cambia solo el primer `cd` por la ruta real. El recolector crea un directorio fechado y un `.tar.gz` en `~/benchmarks/`, además del SHA-256 del archivo comprimido. Revisa `environment/missing-artifacts.txt` dentro de la colección: los archivos no encontrados quedan marcados como ausentes, sin fabricar datos.
+
+Antes de compartir el paquete, comprueba que no contenga información privada y conserva el archivo `.sha256` para verificar la integridad tras la transferencia. El recolector **no ejecuta benchmarks ni cambia configuraciones del sistema**; captura el estado y reúne los resultados existentes. Para registrar telemetría en vivo, debe lanzarse un nuevo ensayo con muestreo de GPU/RAM/swap durante cada repetición.
+
+La incorporación del recolector al repositorio no significa que los datos locales ya se hayan subido: el paquete se crea únicamente al ejecutar el script en la máquina de pruebas y transferir después el archivo resultante.
