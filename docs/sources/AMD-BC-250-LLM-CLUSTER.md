@@ -334,3 +334,277 @@ Registrar por ejecución:
 - En pruebas distribuidas: número de workers, latencia/throughput de red, capas asignadas y comportamiento al desconectar un worker.
 
 Clasificar cada resultado como **medición LEONES**, **reproducción comunitaria** o **hipótesis por validar**. No presentar variables, split de memoria ni resultados de terceros como hechos comprobados en una unidad LEONES hasta reproducirlos.
+
+
+---
+
+## Ampliación de investigación: experiencias reales de r/LocalLLaMA y clusters BC-250 (2026-10-22)
+
+**Alcance y limitación:** búsqueda web dirigida y recursiva por términos, enlaces relacionados y referencias cruzadas en Reddit. Esto no equivale a un volcado exhaustivo de todos los posts/comentarios de Reddit; los resultados siguientes son referencias localizadas y deben seguir ampliándose con búsquedas por enlaces, comentarios y subreddits relacionados. Las métricas son declaraciones de autores, no mediciones LEONES.
+
+### Referencias prioritarias: clusters y uso real
+
+#### 1. Cuatro BC-250, 2.5 GbE, Qwen Next Flash y Qwen 3.6
+- **URL principal:** https://www.reddit.com/r/LocalLLaMA/comments/1x2yv1b/running_next_flash_iq3_xxs_at_70_toks_with_100k/
+- **Valor:** experiencia de uso prolongado; cuatro placas enlazadas con adaptadores Ethernet USB de 2.5 Gb/s y switch 2.5 GbE; llama.cpp + Vulkan + RPC.
+- **Resultados declarados:** Qwen Next Flash IQ3_XXS alrededor de 60–70 tok/s con contexto cercano a 100K; dos instancias de Qwen 3.6 35B-A3B alrededor de 145 tok/s agregados (el post describe el comportamiento al crecer el contexto); consumo en pared declarado de 600–700 W con Next Flash y 800–900 W con dos instancias 35B.
+- **Qué verificar:** si 145 tok/s es agregado entre dos servidores independientes; prompt/prefill, cuantización exacta, commit, parámetros RPC, contexto real y medición de potencia. No comparar throughput agregado con velocidad de una sola secuencia.
+
+#### 2. Actualización del cluster «Monstrosity»: seis placas
+- **URL principal:** https://www.reddit.com/r/LocalLLaMA/comments/1wviphh/update_on_the_monstrosity_6_bc250_board_cluster/
+- **Valor:** uno de los relatos más útiles para escala física, contexto largo y red económica.
+- **Configuración declarada:** seis placas de minería; cinco instaladas en chasis ASRock 4U12G y una placa adicional; llama.cpp, Vulkan y RPC sobre Ethernet integrado de 1 Gb/s.
+- **Resultados declarados:** cuatro placas con Qwen Next Flash IQ2_XS, contexto de 100K, unos 28 tok/s para generación corta y unos 24 tok/s a 50K de contexto con ~115 prompt tokens/s; otras dos placas con Qwen 3.6 35B Q4, unos 60 tok/s a 100K y ~450 prompt tokens/s.
+- **Qué verificar:** cuantización/modelo exactos, cómo se asignan los nodos a cada instancia, carga simultánea, memoria disponible, throttling térmico y potencia por configuración. Es una configuración de dos cargas sobre grupos de nodos, no prueba que seis nodos formen una única memoria homogénea.
+
+#### 3. Cinco placas, Qwen3-Coder-Next Q4, Ethernet de 1 Gb/s
+- **URL principal:** https://www.reddit.com/r/LocalLLaMA/comments/1ws49si/im_calling_this_the_monstrosity_5_ex_mining_bc250/
+- **Valor:** montaje en chasis ASRock de 12 posiciones, nodos headless y reparto por red integrada.
+- **Resultados declarados:** aproximadamente 71 GB de memoria gráfica expuesta; alrededor de 40 tok/s a 30K de contexto y 30 tok/s a 100K; coste total declarado inferior a 800 USD. En comentarios, prefill indicado en torno a 160–190 tok/s y se confirma llama.cpp RPC + Vulkan.
+- **Qué verificar:** cuantización exacta, significado de «VRAM expuesta» frente a memoria realmente asignable, consumo total y si el coste incluye chasis/PSU/cableado. No tratar la suma de memoria reportada como una única UMA física.
+
+#### 4. Dos placas, Qwen3.6-35B-A3B, RPC sobre NIC USB
+- **URL principal:** https://www.reddit.com/r/BC250Gaming/comments/1w2qtp4/llamacpp_cluster_for_local_ai/
+- **Repositorio del montaje:** https://github.com/4claps/bc250-llama-cluster
+- **Valor:** informe práctico con dos placas alimentadas por una PSU de 500 W, NIC USB 2.5GbE y backend RPC dedicado.
+- **Resultado declarado:** Qwen3.6-35B-A3B Q4_K_M por encima de 70 tok/s según el autor; agente Hermes ejecutándose en otro equipo como cliente del backend.
+- **Qué verificar:** si la velocidad corresponde a una sola generación, versión/commit de llama.cpp, consumo y margen de la PSU, temperatura sostenida y throughput real de los adaptadores USB. Revisar el repositorio para playbooks, topología y parámetros reproducibles.
+
+#### 5. Experimento inicial de dos nodos: límites de Exo y velocidad de red USB
+- **URL principal:** https://www.reddit.com/r/LocalLLaMA/comments/1mqjdmn/did_anyone_tried_to_use_amd_bc250_for_inference/
+- **Valor:** experiencia temprana que identifica fallos de software distribuido y un cuello de botella de red medido por el autor.
+- **Resultados declarados:** Exo y Llama Distributed no funcionaron en su configuración; llama.cpp RPC sí. Dos adaptadores USB anunciados como «5GbE», conectados a un switch 10GbE, alcanzaron solo 2.15 Gbit/s en iperf3. Se menciona Fedora 42 y BIOS modificada.
+- **Qué verificar:** chipset y negociación real de los adaptadores, versión de driver, parámetros iperf3, CPU consumida y si 2.15 Gbit/s es un resultado unidireccional o agregado. Evidencia valiosa para no inferir throughput a partir del nombre comercial del NIC.
+
+#### 6. Discusión sobre 12 placas, Ethernet y paralelismo
+- **URL principal:** https://www.reddit.com/r/LocalLLaMA/comments/1ovgs5p/thoughts_on_the_amd_bc250_16gb_cards/
+- **Valor:** discusión técnica sobre una caja de 12 placas, puertos GbE, M.2, USB 3 y diferencias entre paralelismo por capas y tensor parallelism.
+- **Contenido relevante:** los participantes advierten que RPC no equivale a tensor parallelism y que Ethernet rápido no garantiza una mejora proporcional; se comparten cifras históricas de otros montajes, pero algunas proceden de Discord y no están enlazadas a una prueba primaria.
+- **Estado:** **discusión/hipótesis**, no benchmark reproducible. Las cifras de modelos en 2 o 6 placas necesitan localizar su post o log original antes de usarse en comparativas.
+
+### Referencias de inferencia en una sola placa que ayudan a separar rendimiento de clustering
+
+#### 7. Qwen3-Coder REAP en una BC-250
+- **URL:** https://www.reddit.com/r/LocalLLaMA/comments/1ogz0b7/
+- **Valor:** recompilación de llama.cpp y rendimiento en una placa; el autor informa una mejora aproximada del 30% en prefill y generación frente a su compilación anterior.
+- **Resultados declarados:** Qwen3-Coder-30B-A3B-Instruct pruned REAP 15B-A3B GGUF Q4, con cifras del título de alrededor de 100/70 tok/s (prefill/generación, según contexto del post).
+- **Uso en la investigación:** referencia de nodo individual; no confundir con el rendimiento agregado de un cluster.
+
+#### 8. BC-250 y «cheap compute»: desbloqueo de CUs
+- **URL:** https://www.reddit.com/r/LocalLLaMA/comments/1tj4unp/amd_bc250_and_the_search_for_cheap_compute/
+- **Valor:** análisis de registros del driver para activar compute units y benchmarks Vulkan de pp512.
+- **Resultados declarados por el autor:** 24 CU a 1500 MHz: 230 tok/s, 55 W y 71 °C; 40 CU a 1500 MHz: 372 tok/s, 125 W y 83 °C; 40 CU a 2 GHz: 466 tok/s, 181 W y 96 °C.
+- **Cautela:** estas cifras se refieren a pp512/prompt processing en una carga específica, no a generación de texto tok/s comparables directamente. Los cambios de registro, BIOS y clocks implican riesgo; no recomendar sin validación específica de la placa y recuperación.
+
+### Contexto de compra y limitaciones de hardware
+
+#### 9. Pros y contras de BC-250
+- **URL:** https://www.reddit.com/r/LocalLLM/comments/1vs1o3m/amd_bc250_proscons/
+- **Valor:** discusión sobre coste, 16 GB de memoria unificada, uso individual o cluster de dos placas y el compromiso entre memoria, soporte y consumo.
+- **Observación:** un comentario menciona que el escalado de 3–4 placas no fue bueno en modelos MoE repartidos, pero no aporta enlace de prueba en ese comentario. Mantener como pista pendiente de rastreo, no como conclusión general.
+
+#### 10. BC-250 frente a Ryzen 7840HS con 32 GB LPDDR5X
+- **URL:** https://www.reddit.com/r/LocalLLM/comments/1u8cotl/amd_bc250_or_7840hs_32gb_lpddr5x_for_local_llms/
+- **Valor:** comparación práctica de ancho de banda y memoria disponible para un único equipo.
+- **Utilidad:** recordar que 16 GB UMA de la BC-250 no son equivalentes a disponer de 32 GB de RAM; el modelo, contexto, memoria reservada y ancho de banda determinan qué configuración es más útil.
+
+#### 11. Compra de placas para cluster barato
+- **URL:** https://www.reddit.com/r/LocalLLM/comments/1po0q72/asrock_bc250_16_gb_gddr6_2560_gbs_for_under_100/
+- **Valor:** discusión sobre adquirir varias placas por menos de 100 USD cada una y enlaza directamente al experimento inicial de inferencia.
+- **Utilidad:** referencia histórica de coste; no usar el precio como precio de mercado actual ni omitir PSU, NIC, switch, refrigeración, chasis y tiempo de puesta en marcha.
+
+### Matriz comparativa de evidencia comunitaria
+
+| Caso | Nodos | Transporte | Runtime declarado | Modelo / carga | Resultado declarado | Fuerza de evidencia |
+|---|---:|---|---|---|---|---|
+| Experimento inicial | 2 | USB NIC + switch 10GbE; 2.15 Gbit/s medidos en iperf3 | llama.cpp RPC + Vulkan | prueba inicial | RPC funcionó; Exo/Llama Distributed no en ese montaje | Experiencia detallada, falta reproducibilidad completa |
+| 4 placas | 4 | USB 2.5GbE + switch 2.5GbE | llama.cpp RPC + Vulkan | Next Flash IQ3_XXS / dos instancias 35B-A3B | ~60–70 tok/s; ~145 tok/s agregado declarado; 600–900 W | Informe de campo reciente |
+| 5 placas | 5 | GbE integrado | llama.cpp RPC + Vulkan | Qwen3-Coder-Next Q4 | ~40 tok/s a 30K; ~30 tok/s a 100K | Informe de campo; configuración parcialmente documentada |
+| 6 placas, grupo de 4 | 4 | GbE integrado | llama.cpp RPC + Vulkan | Next Flash IQ2_XS | ~28 tok/s en contexto 100K; ~24 tok/s a 50K según post | Informe de campo |
+| 6 placas, grupo de 2 | 2 | GbE integrado | llama.cpp RPC + Vulkan | Qwen3.6 35B Q4 | ~60 tok/s a 100K | Informe de campo |
+| 2 placas | 2 | NIC USB 2.5GbE dedicado | llama.cpp RPC + Vulkan | Qwen3.6-35B-A3B Q4_K_M | >70 tok/s declarado | Repositorio asociado, falta normalización |
+| 1 placa | 1 | No distribuido | llama.cpp Vulkan | Qwen3-Coder REAP 15B-A3B Q4 | ~100/70 pp/tg declarado | Útil como referencia single-node; verificar unidades |
+
+**Regla comparativa:** pp/prompt processing y tg/generation no son la misma métrica; throughput agregado de dos instancias no es latencia de una única secuencia. Contexto, batch, MTP/speculative decoding, cuantización, commit y método de medida deben acompañar cada cifra.
+
+### Conclusiones técnicas que la investigación debe conservar
+
+1. **La evidencia de cluster ya no es meramente teórica:** hay informes de 2, 4, 5 y 6 placas con llama.cpp RPC y Vulkan, incluyendo modelos MoE de 35B-A3B y Qwen Next Flash.
+2. **RPC es la ruta comunitaria mejor documentada en estos ejemplos.** No inferir que Exo, Llama Distributed o tensor parallelism funcionen de forma equivalente.
+3. **La red debe evaluarse con métricas reales.** Un adaptador «5GbE» no implica 5 Gbit/s efectivos; se observan 2.15 Gbit/s en una prueba publicada. Varios clusters recientes siguen usando GbE integrado y son funcionales para sus cargas, lo que sugiere que el cuello de botella depende del patrón de comunicación y del reparto de capas.
+4. **Añadir nodos no garantiza acelerar una sola generación linealmente.** Puede aumentar la capacidad para modelos/contextos mayores o permitir varias instancias; el coste es consumo, complejidad y tráfico RPC.
+5. **El consumo es un factor de decisión de primer orden.** Los informes de 4 placas citan 600–900 W para distintas cargas. Calcular tokens útiles por kWh y por coste total del nodo, no solo tok/s.
+6. **El contexto largo penaliza la velocidad y aumenta la memoria ocupada.** Registrar 30K, 50K, 100K y contexto efectivo por separado; no comparar números con contextos diferentes sin advertencia.
+7. **No existe aún medición propia de LEONES en esta ficha.** Todo resultado Reddit sigue siendo evidencia externa hasta su reproducción documentada.
+
+### Lista de seguimiento para cerrar la investigación
+
+- [ ] Abrir cada post y revisar comentarios enlazados, edición posterior y repositorios adjuntos.
+- [ ] Extraer commits y configuración del repositorio 4claps; probar si su despliegue se reproduce en Fedora/Ubuntu sin mezclar instrucciones.
+- [ ] Encontrar el post original detrás de las cifras históricas citadas en la discusión de 12 placas.
+- [ ] Buscar informes explícitos de 3 y 4 nodos con logs, incluyendo casos donde el rendimiento no escala.
+- [ ] Normalizar las cifras con columnas separadas para prompt processing, generación, throughput agregado, contexto y potencia.
+- [ ] Mantener como ESTIMATED cualquier proyección de coste/rendimiento y reservar MEASURED para ejecuciones de LEONES.
+
+*Actualización documental de investigación web: 2026-10-22. Las cifras son reportes comunitarios atribuidos a sus autores y no han sido reproducidas por LEONES.*
+
+
+## Seguimiento de comentarios y configuración reproducible de 4claps (2026-10-22)
+
+### Resultado del rastreo de enlaces y comentarios
+
+Se revisaron los comentarios accesibles de los hilos relacionados y se siguieron los enlaces que aportan evidencia adicional. Esto amplía la investigación, pero no equivale a un volcado completo de Reddit: la visibilidad de comentarios, resultados indexados y enlaces externos puede variar.
+
+- **Cinco nodos, evidencia de primera mano en comentarios:** [“$700 (Canadian) later...”](https://www.reddit.com/r/BC250Gaming/comments/1wsukke/700_canadian_later/). Un comentarista describe cinco placas compartiendo un único modelo con llama.cpp Vulkan/RPC: aproximadamente **17 tok/s** con Qwen 3.8 Flash Next a 32K de contexto; como contraste, dos placas con Qwen3.6-35B-A3B obtenían aproximadamente **40–50 tok/s** a 32K. No es una comparación de escalado controlada: cambian modelo y carga. El comentario aclara que el objetivo de añadir placas es principalmente hacer caber modelos mayores, no acelerar automáticamente la generación.
+- **Cinco nodos, hilo de seguimiento:** [“I’m calling this the monstrosity: 5 ex-mining BC250...”](https://www.reddit.com/r/LocalLLaMA/comments/1ws49si/im_calling_this_the_monstrosity_5_ex_mining_bc250/). Complementa la discusión sobre Qwen3-Coder-Next Q4, contexto largo y red integrada de 1 Gb/s. Tratar sus cifras como resultados declarados por el autor, no como benchmark normalizado frente a los dos nodos.
+- **Dos nodos, enlace a configuración pública:** [“llama.cpp cluster for local AI”](https://www.reddit.com/r/BC250Gaming/comments/1w2qtp4/llamacpp_cluster_for_local_ai/) enlaza directamente el repositorio [4claps/bc250-llama-cluster](https://github.com/4claps/bc250-llama-cluster). El autor informa más de 70 tok/s para Qwen3.6-35B-A3B-Q4_K_M; un comentario aporta una cifra concreta de generación de 62.29 tok/s, con contexto de 65K indicado en la conversación. No mezclar esos números como si fueran una misma ejecución.
+- **Configuración posterior y parámetros explícitos:** [“More Local LLM Fun”](https://www.reddit.com/r/BC250Gaming/comments/1wi291z/more_local_llm_fun/) documenta Qwen3.6-35B-A3B-Q4_K_L, contexto 115K y RPC dedicado de 2.5 GbE por adaptadores USB 3 a Ethernet. El autor publica los argumentos de `llama-server` reproducidos abajo.
+- **Prueba creativa comparativa, no benchmark sintético:** [Qwen 3.8 en el clúster de dos nodos](https://www.reddit.com/r/BC250Gaming/comments/1wkbdru/qwen_38_on_my_two_node_bc250_cluster/) compara un mismo prompt de generación de un juego HTML: Qwen3.6-35B-A3B Q4_K_L terminó en 102.8 s (7,895 tokens; 77.9 tok/s), frente a Qwen3.8-27B UD-Q3_K_XL en 3,177 s (48,930 tokens; 15.4 tok/s). La longitud y calidad de salida difieren, así que no es una comparación controlada de capacidad general.
+- **Dos nodos conectados directamente:** [“Running local LLMs on 2 boards directly connected via Ethernet”](https://www.reddit.com/r/BC250Gaming/comments/1wnlhw7/running_local_llms_on_2_boards_directly_connected/) declara Qwen3.6-35B-A3B FP16, 45–60 tok/s según el contexto, en placas de 36 CU. Es otra configuración de hardware/modelo, no una réplica exacta de 4claps.
+- **Seis nodos:** [actualización del clúster de seis placas](https://www.reddit.com/r/LocalLLaMA/comments/1wviphh/update_on_the_monstrosity_6_bc250_board_cluster/) informa grupos de cuatro y dos nodos sobre llama.cpp Vulkan/RPC y Ethernet de 1 Gb/s. Los números de Qwen Next Flash IQ2_XS y Qwen 3.6 35B deben conservar modelo, contexto y grupo de nodos asociados.
+- **Doce nodos, cifras históricas:** [hilo sobre 12 BC-250](https://www.reddit.com/r/LocalLLaMA/comments/1ovgs5p/thoughts_on_the_amd_bc250_16gb_cards/) es principalmente una discusión de viabilidad, conexiones y estimaciones. Las cifras históricas atribuidas a Discord no llevan un informe original, log o enlace primario verificable en los resultados localizados. No se ha encontrado todavía el artefacto original; por tanto, no deben presentarse como mediciones confirmadas. Un comentario posterior en [“$700 (Canadian) later...”](https://www.reddit.com/r/BC250Gaming/comments/1wsukke/700_canadian_later/) estima aproximadamente 170 GB utilizables en 12 placas y alrededor de 30 tok/s mediante cálculo aproximado, pero lo identifica como *napkin math*, no como benchmark.
+- **Primer experimento RPC de dos nodos:** [“Did anyone tried to use AMD BC250 for inference?”](https://www.reddit.com/r/LocalLLaMA/comments/1mqjdmn/did_anyone_tried_to_use_amd_bc250_for_inference/) describe que Exo/Llama Distributed no funcionaron en aquella configuración y que llama.cpp RPC sí; los adaptadores anunciados como 5 GbE alcanzaron unos 2.15 Gbit/s en iperf3. Es evidencia útil de red y compatibilidad, no de rendimiento LLM comparable.
+
+### Repositorio 4claps: configuración para reproducir
+
+Repositorio: https://github.com/4claps/bc250-llama-cluster
+
+Documentos de referencia:
+- [README: arquitectura, hardware y límites de seguridad](https://github.com/4claps/bc250-llama-cluster/blob/main/README.md)
+- [TL;DR: pasos de despliegue y parámetros de inferencia](https://github.com/4claps/bc250-llama-cluster/blob/main/docs/TLDR.md)
+- [Estado validado y benchmark base](https://github.com/4claps/bc250-llama-cluster/blob/main/docs/current-state.md)
+- [Arquitectura y puertos](https://github.com/4claps/bc250-llama-cluster/blob/main/docs/architecture.md)
+
+**Topología funcional:** Bowie (nodo 1) ejecuta `llama-server`, carga el GGUF y utiliza su Vulkan local. Crockett (nodo 2) ejecuta `ggml-rpc-server` con Vulkan. Bowie utiliza el dispositivo RPC de Crockett mediante una conexión backend dedicada de 2.5 GbE. La API compatible con OpenAI está en el nodo coordinador; el RPC no está autenticado y debe permanecer aislado.
+
+**Baseline que el autor declara validada:**
+- Fedora 44, kernel Fedora estándar y Mesa/RADV de la fecha de validación.
+- 40/40 CU en cada placa, cualificados individualmente; no asumir que otra placa pueda usar la misma tabla.
+- Perfil Moderate: CPU objetivo 3500 MHz, escala SMU `-22`, curva GPU de 500–1750 MHz con límite de 925 mV; throttle GPU a 80 °C y recuperación a 75 °C.
+- Parámetros de kernel `ttm.pages_limit=3014656` y `ttm.page_pool_size=3014656`. Son 11.5 GiB de GTT direccionable por GPU, no VRAM dedicada; junto con unos 512 MiB de VRAM el sistema informa alrededor de 12 GiB de memoria Vulkan por placa.
+- llama.cpp fijado al commit `d775b8967a46d8beb110d444aa3b8938179e0dd8`.
+- Sin desbloqueo de núcleos CPU, cambios de firmware UMA, kernel/Mesa personalizados ni parche experimental de colas de cómputo GFX1013.
+- El inventario público de ejemplo es deliberadamente conservador y no activa automáticamente el tuning de hardware. El operador debe crear su inventario de producción local y calificar cada placa.
+
+**Preparación segura (controlador Ansible separado):**
+```bash
+ansible-galaxy collection install -r requirements.yml
+ansible-inventory -i inventories/example/hosts.yml --graph
+ansible-playbook -i inventories/example/hosts.yml site.yml --syntax-check
+ansible-lint
+yamllint .
+```
+
+Para preparar el inventario local después de leer las instrucciones de hardware, operaciones y seguridad:
+```bash
+cp -a inventories/example inventories/production
+$EDITOR inventories/production/group_vars/all.yml
+$EDITOR inventories/production/group_vars/bc250_cluster.yml
+$EDITOR inventories/production/host_vars/bowie.yml
+$EDITOR inventories/production/host_vars/crockett.yml
+ansible-inventory -i inventories/production/hosts.yml --graph
+ansible-playbook -i inventories/production/hosts.yml site.yml --syntax-check
+ansible-playbook -i inventories/production/hosts.yml site.yml --check --diff --limit bowie
+```
+El ejemplo no es una configuración lista para ejecutar: contiene IP de documentación, NICs `CHANGE_ME`, tabla WGP vacía y tuning desactivado. La instalación completa requiere Fedora 44 en ambas placas, SSH/sudo, gestión de red, cualificación de refrigeración y una NIC backend identificada por MAC. El orden de despliegue fuerza detección y validación de refrigeración antes de mantener servicios de inferencia. Seguir la documentación upstream; no copiar directamente los valores de tuning a hardware no cualificado.
+
+**Argumentos del servidor para la configuración publicada con Qwen3.6:**
+```bash
+llama-server --model Qwen3.6-35B-A3B-Q4_K_L.gguf --host 0.0.0.0 --port 8080 \
+  --rpc 10.250.0.2:50052 --gpu-layers all --split-mode layer \
+  --ctx-size 115000 --parallel 1 \
+  --cache-type-k q8_0 --cache-type-v q8_0 --jinja \
+  --cache-ram 0 --no-cache-idle-slots
+```
+El nodo coordinador usa la GPU local más la GPU remota; `--split-mode layer` distribuye capas. La configuración de despliegue documenta también `--spec-type draft-mtp --spec-draft-n-max 3 --no-spec-draft-backend-sampling` para la configuración de producción Qwen3.6 con speculative decoding MTP. No asumir que estos flags estén presentes en cada benchmark histórico: distinguir el test Qwen3-30B de 8K, la configuración Qwen3.6 a 65K y el despliegue Qwen3.6 Q4_K_L a 115K.
+
+**Resultados base publicados por 4claps (dos placas; no mediciones LEONES):**
+- Qwen3-30B-A3B-Q4_K_M, contexto 8,192, 1,024 tokens generados, split automático: prompt processing 72.48 tok/s; generación 77.77 tok/s; picos GPU 85.39 W PPT / 49 °C en Bowie y 80.34 W PPT / 66 °C en Crockett en perfil Moderate.
+- La comparación stock vs Moderate en el documento de estado muestra generación de 71.47 a 77.77 tok/s (+8.81%) y prompt processing de 48.31 a 72.48 tok/s (+50.03%) para esa carga.
+- Para la configuración de agente posterior, Qwen3.6-35B-A3B-Q4_K_L, contexto 115K, KV Q8_0, un slot, el autor registra pruebas largas sin throttling con refrigeración cualificada. No comparar directamente esos resultados con el benchmark de 8K.
+
+**Límites de reproducibilidad:** el repositorio fija llama.cpp y ciertos artefactos, pero Fedora y los paquetes no son una imagen inmutable. Los resultados dependen de cada placa, CU reales, refrigeración, NIC/driver, modelo y cuantización, versión de Mesa/RADV, contexto y perfil energético. La interfaz RPC de llama.cpp no está autenticada: el puerto 50052 debe quedar en una red aislada y limitado al coordinador. Las modificaciones de firmware, CU, voltaje y frecuencia pueden bloquear o dañar la placa.
+
+### Estado de la búsqueda de fuentes originales históricas
+
+El enlace primario reproducible de dos nodos queda localizado: 4claps. Para las cifras de clústeres de 4–6 nodos se localizaron hilos con afirmaciones directas y comentarios de seguimiento, pero no siempre logs completos o un repositorio de despliegue equivalente. Para las cifras históricas asociadas a 12 nodos, el artefacto original atribuido a Discord sigue sin localizarse. Hasta obtenerlo, registrar esos datos como **UNVERIFIED / SECONDARY CLAIM** y no como resultado medido.
+
+### Checklist de investigación actualizado
+
+- [x] Abrir hilos relacionados y seguir enlaces visibles a repositorios, publicaciones de seguimiento y comentarios técnicos.
+- [x] Extraer del repositorio 4claps la topología, requisitos, pasos Ansible, commit fijado, argumentos de servidor y resultados base.
+- [ ] Obtener logs originales y condiciones completas para los resultados de cuatro y seis nodos.
+- [ ] Localizar el mensaje o informe original de Discord citado para las cifras de doce nodos; no localizado en esta pasada.
+- [ ] Normalizar todas las cifras con columnas separadas para prompt processing, generación, throughput agregado, modelo/quant, contexto, red, potencia y número de placas.
+- [ ] Reservar MEASURED para ejecuciones reproducidas por LEONES; los reportes comunitarios siguen siendo evidencia externa.
+
+*Actualización documental de investigación web: 2026-10-22. Las cifras comunitarias se atribuyen a sus autores; ninguna de estas mediciones ha sido reproducida por LEONES.*
+
+
+## Consolidación de informes comunitarios multi-BC-250 (2026-10-22)
+
+Esta sección integra el seguimiento que antes estaba separado en `AMD-BC-250-CLUSTER-FOLLOWUP-2026-10.md), para mantener las fuentes, resultados y vacíos de evidencia en esta ficha única.
+
+### Informe titulado cuatro nodos, pero con tres nodos activos
+
+Fuente: [The super junky 4 node BC250 cluster is complete! — r/homelab](https://www.reddit.com/r/homelab/comments/1vfzpqg/the_super_junky_4_node_bc250_cluster_is_complete/).
+
+El autor dice que una de las cuatro placas compradas llegó muerta; las pruebas citadas se ejecutaron con **tres nodos activos**, no cuatro. Reporta Ubuntu, llama.cpp Vulkan + RPC, llama-swap y provisioning Ansible, además de un rack impreso en 3D, SSD usados, PSU de 1000 W y switch económico. Su objetivo es alojar dos modelos concurrentes (Qwen 3.6 27B para razonamiento y Qwen 3.6 35B-A3B como ejecutor). Es principalmente una configuración de capacidad de memoria/concurrencia; no prueba escalado lineal de generación.
+
+### Informe de seis placas con cifras separadas por grupo
+
+Fuente: [6 board local AI setup using llama Vulkan and RPC over 1gb Ethernet](https://www.reddit.com/r/BC250Gaming/comments/1wwdwy4/6_board_local_ai_setup_using_llama_vulcan_and_rpc/).
+
+El autor reporta cuatro placas de 40 CU con Qwen Flash Next 3.8 IQ_XS a unos **26 tok/s en contexto 100K**, y un par de placas con Qwen3.6-35B a unos **60 tok/s en contexto 100K**. La red indicada es Ethernet integrada de 1 Gb/s; se menciona una prueba de 2.5 GbE prevista. Temperaturas de carga declaradas: 60–75 °C con ventiladores y plenum. Son cargas/modelos/grupos diferentes, no un benchmark comparativo homogéneo.
+
+### Informe independiente de dos placas, Bazzite
+
+Fuente: [My foray into local AI — Qwen3.6-35B-A3B Q4_K_M](https://www.reddit.com/r/LocalLLaMA/comments/1wou3gr/my_foray_into_local_ai_two_bc250_ex_mining_apus/).
+
+El autor informa aproximadamente **60 tok/s a 64K de contexto**, con Qwen3.6-35B-A3B Q4_K_M, Bazzite, llama.cpp Vulkan + RPC, Ethernet integrado de 1 Gb/s, unos 27 GB de memoria GPU-visible combinada y coste aproximado de US$300 incluyendo la fuente. Es una implementación independiente de 4claps.
+
+### Fuente secundaria para rastrear las cifras históricas de doce placas
+
+La guía comunitaria [BC-250 unofficial community guide — AI inference](https://github.com/katzzero/bc250-unofficial-community-guide/blob/main/12-ai-inference.md) indexa usuarios y afirmaciones históricas de Discord y ayuda a identificar posibles autores/modelos. No es el informe original ni prueba las cifras. El mensaje de Discord, los logs crudos y el benchmark primario detrás de las cifras históricas de doce placas no se han localizado. Mantenerlas como **UNVERIFIED / SECONDARY CLAIM**.
+
+### Actualización del clúster de cuatro placas y dos instancias
+
+Fuente: [Running Next Flash IQ3_XXS at ~70 tok/s with 100k context or 2 instances of Qwen 3.6 35B A3B IQ4 at ~145 tok/s with 256k](https://www.reddit.com/r/LocalLLaMA/comments/1x2yv1b/running_next_flash_iq3_xxs_at_70_toks_with_100k/).
+
+El autor describe cuatro BC-250 en chasis ASRock 4U12G, adaptadores 2.5GbE y switch 2.5GbE, usando llama.cpp Vulkan/RPC. Resultados declarados:
+- Qwen Next Flash IQ3_XXS: aproximadamente 60–70 tok/s y unos 150 tok/s de prompt processing en las condiciones descritas.
+- Dos instancias de Qwen3.6-35B-A3B IQ4: unos 145 tok/s de generación agregada y unos 450 tok/s de prompt processing; a 150K de contexto, el agregado baja de 100 tok/s.
+- Consumo medido en enchufe por el autor: 600–700 W con Next Flash; 800–900 W con dos instancias de Qwen3.6.
+- A 258K de contexto, declara pruebas con speculative decoding de 51.1–53.5 tok/s en un caso y 51.7–54.4 tok/s con muestreo, frente a 36.4 tok/s en decodificación normal.
+
+No confundir el throughput agregado de dos instancias con la velocidad de una secuencia. El autor menciona cambios de kernels frente a llama.cpp stock; para reproducir se necesitan la build exacta, el commit y las condiciones completas. No considerar esas cifras como una reproducción independiente de LEONES.
+
+### Tabla comparativa consolidada
+
+| Placas activas en la ejecución | Modelo/carga | Resultado reportado | Runtime/red | Evidencia |
+|---|---|---|---|---|
+| 2 | Qwen3-30B-A3B Q4_K_M, contexto 8K | pp 72.48; generación 77.77 tok/s | 4claps, Vulkan + RPC, Fedora 44, commit fijado | Configuración reproducible publicada por el autor |
+| 2 | Qwen3.6-35B-A3B Q4_K_M, contexto 64K | ~60 tok/s generación | Bazzite, Vulkan + RPC, 1 GbE | Informe de autor |
+| 3 (4 compradas; 1 muerta) | Qwen 3.6 27B + Qwen 3.6 35B-A3B concurrentes | Sin normalizar sin logs por ejecución | Ubuntu, Vulkan + RPC, llama-swap, Ansible | Informe de autor; recuento activo aclarado |
+| 4 | Qwen Flash Next 3.8 IQ_XS, contexto 100K | ~26 tok/s generación | Vulkan + RPC, 1 GbE | Informe de autor |
+| 2 de un conjunto de 6 | Qwen3.6-35B, contexto 100K | ~60 tok/s generación | Vulkan + RPC, 1 GbE | Informe de autor |
+| 4 | Qwen Next Flash IQ3_XXS | ~60–70 tok/s; pp ~150 tok/s | Vulkan + RPC, 2.5 GbE | Informe de autor |
+| 4 | Dos instancias Qwen3.6-35B-A3B IQ4 | ~145 tok/s agregados; pp ~450 tok/s | Vulkan + RPC, 2.5 GbE | Informe de autor; throughput agregado |
+| 5 | Qwen3-Coder-Next Q4, contexto 30K/100K | ~40/~30 tok/s generación | Vulkan + RPC, 1 GbE | Informe de autor |
+| 12 | Informe primario no localizado | Sin valor validado | Topología discutida, sin configuración verificada | Afirmación secundaria no verificada |
+
+No usar el número de placas compradas como sustituto del número de nodos activos en cada prueba. Registrar modelo y cuantización exactos, commit de runtime, contexto real, tokens de prompt y salida, duración, transporte, potencia y temperaturas. Mantener separados prompt processing (pp), generación por secuencia y throughput agregado de varias instancias.
+
+### Checklist consolidado
+
+- [x] Registrar el post denominado cuatro nodos que realmente usó tres placas activas.
+- [x] Localizar un informe de seis placas con resultados separados para cuatro y dos nodos.
+- [x] Localizar un informe independiente de dos placas a contexto 64K.
+- [x] Encontrar una guía secundaria que indexa afirmaciones históricas de Discord.
+- [x] Añadir el informe de cuatro placas con throughput agregado y consumo en enchufe.
+- [x] Documentar configuración reproducible de dos placas en 4claps.
+- [ ] Localizar el mensaje original de Discord o logs detrás de las cifras históricas de doce placas.
+- [ ] Obtener logs completos y comandos exactos para las ejecuciones de 3, 4, 5 y 6 placas.
+- [ ] Reproducir ejecuciones seleccionadas en LEONES antes de etiquetarlas como MEASURED.
+
+**Regla de evidencia:** las cifras de Reddit/Discord siguen siendo afirmaciones de terceros hasta que LEONES reproduzca y registre las ejecuciones.

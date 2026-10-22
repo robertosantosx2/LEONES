@@ -66,6 +66,7 @@ ANÁLISIS LEONES
 | Artificial Analysis / Optima / benchmarks agentivos | [`ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md`](ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md) | metodología y fuentes de evaluación | 🟡 `research-candidate` |
 | Buddy Harness | [`BUDDY_HARNESS.md`](BUDDY_HARNESS.md) | referencia de harness/evaluación | 🟡 `harness-reference` |
 | Mozilla / ecosistema Open Source AI | [`MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md`](MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) | radar y contexto de descubrimiento | 🟡 `source-inspiration` |
+| Reddit r/LocalLLaMA | [`REDDIT-LOCALLLAMA.md`](REDDIT-LOCALLLAMA.md) | **fuente prioritaria de descubrimiento comunitario** para modelos, runtimes, hardware y benchmarks; no autoridad única | 🟡 `source-inspiration` |
 
 El detalle completo está en `KNOWLEDGE-REGISTRY.md`.
 
