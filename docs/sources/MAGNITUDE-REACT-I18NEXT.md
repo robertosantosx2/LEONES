@@ -17,7 +17,7 @@ La internacionalización no debe quedarse en un selector o en unas pocas pantall
 ## Inventario recuperado de #193
 
 La versión cerrada de #193 confirma el inventario original de doce idiomas y 650 claves por catálogo. Esta nueva propuesta excluye Urdu por escribirse de derecha a izquierda y queda en **11 idiomas activos, 650 claves por catálogo**.
-- Comparación previa: cero claves ausentes, cero claves extra y cero discrepancias de marcadores de interpolación entre los once catálogos.
+- Auditoría heredada de #193: cero claves ausentes, cero claves extra y cero discrepancias de marcadores de interpolación entre los doce catálogos originales; Urdu queda excluido de esta nueva entrega.
 - Pruebas previas para cobertura de catálogos, traducciones representativas, allowlist de idiomas, mensajes de servicio conocidos y preservación de diagnósticos desconocidos.
 - Todos los idiomas activos se escriben de izquierda a derecha (LTR); no se incluye ningún idioma RTL.
 - Cambio de idioma persistido por perfil de navegador o aplicación de escritorio.
@@ -138,7 +138,7 @@ La persistencia debe funcionar tanto en navegador como en el renderer de escrito
 7. **Migrar errores conocidos:** conservar la tabla de equivalencias de mensajes conocidos y el comportamiento de preservación de mensajes desconocidos, ahora conectado al recurso i18next.
 8. **Portar y reforzar tests:** conservar las comprobaciones de los 650 mensajes y añadir pruebas específicas de inicialización, cambio de idioma, fallback, persistencia, storage bloqueado, `lang/dir`, renderizado React y mensajes desconocidos.
 9. **Changeset y documentación:** crear un changeset apropiado según la política actual del repo y documentar los idiomas activos.
-10. **Validar:** typecheck, lint, tests, build web, smoke en navegador y desktop, y comprobaciones de RTL/selector. No afirmar que está listo hasta que los comandos reales hayan pasado.
+10. **Validar:** typecheck, lint, tests, build web, smoke en navegador y desktop, y comprobaciones del selector y de la dirección LTR. No afirmar que está listo hasta que los comandos reales hayan pasado.
 11. **Revisar diff y abrir PR nuevo:** PR draft hacia `magnitudedev/magnitude:main`, explicando que sustituye la propuesta cerrada #193 y enumera los resultados de validación reales.
 
 ## Pruebas de aceptación obligatorias
@@ -176,7 +176,7 @@ La persistencia debe funcionar tanto en navegador como en el renderer de escrito
 
 ## Estado real heredado (no confundir con validación nueva)
 
-La descripción de #193 registró la auditoría estática de once catálogos × 650 claves, cero claves ausentes/extra y cero discrepancias de placeholders. También indicaba que tests, typecheck, build y smoke tests no estaban confirmados como satisfactorios y que la ejecución de GitHub Actions estaba bloqueada por `action_required`. Por tanto, esos resultados de auditoría son reutilizables como punto de partida, pero **no equivalen a una validación de la migración a react-i18next**. Todos los checks deben volver a ejecutarse después de portar.
+La descripción de #193 registró la auditoría estática de doce catálogos × 650 claves; esta propuesta conserva los once catálogos LTR, cero claves ausentes/extra y cero discrepancias de placeholders. También indicaba que tests, typecheck, build y smoke tests no estaban confirmados como satisfactorios y que la ejecución de GitHub Actions estaba bloqueada por `action_required`. Por tanto, esos resultados de auditoría son reutilizables como punto de partida, pero **no equivalen a una validación de la migración a react-i18next**. Todos los checks deben volver a ejecutarse después de portar.
 
 ## Referencias
 
