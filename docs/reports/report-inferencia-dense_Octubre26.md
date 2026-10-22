@@ -276,3 +276,20 @@ Los scripts originales, logs completos, CSV y JSON permanecen en el equipo local
 Fijar modelo y formato que todos los motores soporten, prompt/tokenizer común, contexto 256, salida real de 32 tokens, tres repeticiones más calentamiento, misma temperatura y ejecución secuencial. Registrar carga, TTFT, prefill tok/s, decode tok/s, duración total, tokens reales de entrada/salida, VRAM/RAM pico, swap, temperatura/potencia GPU, telemetría durante la ejecución, exit code y errores.
 
 Separar resultados comparables, microbenchmarks nativos, intentos fallidos y evaluación de calidad. Para MoE registrar expertos totales/activos, offload de capas y expertos, tamaño KV y fallback CPU. No declarar ganador por prefill aislado si TTFT, decode, salida real o estabilidad no se midieron bajo el mismo protocolo.
+
+
+## 12. Motores adicionales propuestos y estado de cobertura
+
+En el plan de comparación del 20 de octubre se propuso ampliar el benchmark de Qwen3.5-4B a mistral.rs, vLLM, SGLang y KTransformers. Los datos consolidados disponibles en este informe no contienen una ejecución comparable, completada y validada para esos cuatro motores. Por tanto:
+
+| Motor | Estado que puede afirmarse con la evidencia disponible | Qué falta |
+|---|---|---|
+| mistral.rs | Se registró instalación de mistralrs 0.9.5 CUDA en ~/.local/bin/mistralrs; no hay resultados comparables consolidados aquí. | Confirmar carga del modelo, versión/commit, VRAM, TTFT, prefill/decode y tres repeticiones. |
+| vLLM | Propuesto para evaluación; sin mediciones validadas en este conjunto. | Verificar compatibilidad de arquitectura/cuanti­zación y disponibilidad de memoria; no asumir que entra en 4 GiB. |
+| SGLang | Propuesto para evaluación; sin mediciones validadas en este conjunto. | Verificar soporte de modelo/cuanti­zación y recursos; capturar fallos si no inicia. |
+| KTransformers | Propuesto para evaluación; sin mediciones validadas en este conjunto. | Verificar soporte para el modelo exacto, backend y memoria. |
+| TensorFold | Sí medido con Qwen3.5-2B MLX-4bit y, en un ensayo anterior, Qwen3.5-4B MLX-4bit. | Igualar el protocolo y resolver/registrar límites reales de salida. |
+| llama.cpp CUDA | Sí medido con Qwen3.5-4B GGUF Q4_K_M y Qwen3-30B-A3B IQ3_XXS; build y capas registrados para el 30B. | Repetir el barrido de capas con telemetría y mayor número de repeticiones. |
+| Rusting Strata | Sí medido con Qwen3.5-4B GGUF Q4_K_M; se investigó incompatibilidad PTX; se inspeccionó arquitectura Qwen3.5-35B-A3B. | No hay rendimiento validado consolidado para 35B ni comparación API homogénea para todos los modelos. |
+
+No incluir motores sin medición como si su velocidad fuera cero: usar “no medido”, “no compatible” o “falló al iniciar” y conservar el log de cada intento.
