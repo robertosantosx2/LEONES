@@ -32,6 +32,7 @@ Este registro es el índice semántico del bloque `docs/sources/`. Su función e
 | [ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md](ARTIFICIAL_ANALYSIS_OPTIMA_AGENTIC_BENCHMARKS.md) | benchmark/metodología | diseño agentivo | metodológica | externa | no es estimador | pendiente | `research-candidate` |
 | [BUDDY_HARNESS.md](BUDDY_HARNESS.md) | harness | workload agentivo | primaria | documental + código | hipótesis | pendiente | `harness-reference` |
 | [MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md](MOZILLA_OPEN_SOURCE_AI_ECOSYSTEM.md) | ecosistema | descubrimiento/contexto | publicación | claims | conceptual | no aplica | `source-inspiration` |
+| [REDDIT-LOCALLLAMA.md](REDDIT-LOCALLLAMA.md) | prospección comunitaria | **fuente prioritaria de descubrimiento** para modelos, runtimes, cuantización, hardware y experiencias de campo | comunidad pública; validar cada enlace original | claims atribuidos; corroboración necesaria | solo si se deriva explícitamente de datos incompletos | pendiente de ejecución reproducible propia | `source-inspiration` |
 | [LLMS-DE-CERO-A-HEROE-2026.md](LLMS-DE-CERO-A-HEROE-2026.md) | fundamentos | marco técnico | fuente compilada | documental | conceptual | no aplica | `source-inspiration` |
 | [KNOWLEDGE-FICHA-CONTRACT.md](KNOWLEDGE-FICHA-CONTRACT.md) | contrato | norma editorial | LEONES | contrato | n/a | n/a | `verified-primary` |
 | [KNOWLEDGE-REGISTRY.md](KNOWLEDGE-REGISTRY.md) | registro | índice semántico | LEONES | registro | n/a | n/a | `verified-primary` |
