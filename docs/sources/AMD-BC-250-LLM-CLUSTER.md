@@ -539,3 +539,72 @@ El enlace primario reproducible de dos nodos queda localizado: 4claps. Para las 
 - [ ] Reservar MEASURED para ejecuciones reproducidas por LEONES; los reportes comunitarios siguen siendo evidencia externa.
 
 *Actualización documental de investigación web: 2026-10-22. Las cifras comunitarias se atribuyen a sus autores; ninguna de estas mediciones ha sido reproducida por LEONES.*
+
+
+## Consolidación de informes comunitarios multi-BC-250 (2026-10-22)
+
+Esta sección integra el seguimiento que antes estaba separado en `AMD-BC-250-CLUSTER-FOLLOWUP-2026-10.md), para mantener las fuentes, resultados y vacíos de evidencia en esta ficha única.
+
+### Informe titulado cuatro nodos, pero con tres nodos activos
+
+Fuente: [The super junky 4 node BC250 cluster is complete! — r/homelab](https://www.reddit.com/r/homelab/comments/1vfzpqg/the_super_junky_4_node_bc250_cluster_is_complete/).
+
+El autor dice que una de las cuatro placas compradas llegó muerta; las pruebas citadas se ejecutaron con **tres nodos activos**, no cuatro. Reporta Ubuntu, llama.cpp Vulkan + RPC, llama-swap y provisioning Ansible, además de un rack impreso en 3D, SSD usados, PSU de 1000 W y switch económico. Su objetivo es alojar dos modelos concurrentes (Qwen 3.6 27B para razonamiento y Qwen 3.6 35B-A3B como ejecutor). Es principalmente una configuración de capacidad de memoria/concurrencia; no prueba escalado lineal de generación.
+
+### Informe de seis placas con cifras separadas por grupo
+
+Fuente: [6 board local AI setup using llama Vulkan and RPC over 1gb Ethernet](https://www.reddit.com/r/BC250Gaming/comments/1wwdwy4/6_board_local_ai_setup_using_llama_vulcan_and_rpc/).
+
+El autor reporta cuatro placas de 40 CU con Qwen Flash Next 3.8 IQ_XS a unos **26 tok/s en contexto 100K**, y un par de placas con Qwen3.6-35B a unos **60 tok/s en contexto 100K**. La red indicada es Ethernet integrada de 1 Gb/s; se menciona una prueba de 2.5 GbE prevista. Temperaturas de carga declaradas: 60–75 °C con ventiladores y plenum. Son cargas/modelos/grupos diferentes, no un benchmark comparativo homogéneo.
+
+### Informe independiente de dos placas, Bazzite
+
+Fuente: [My foray into local AI — Qwen3.6-35B-A3B Q4_K_M](https://www.reddit.com/r/LocalLLaMA/comments/1wou3gr/my_foray_into_local_ai_two_bc250_ex_mining_apus/).
+
+El autor informa aproximadamente **60 tok/s a 64K de contexto**, con Qwen3.6-35B-A3B Q4_K_M, Bazzite, llama.cpp Vulkan + RPC, Ethernet integrado de 1 Gb/s, unos 27 GB de memoria GPU-visible combinada y coste aproximado de US$300 incluyendo la fuente. Es una implementación independiente de 4claps.
+
+### Fuente secundaria para rastrear las cifras históricas de doce placas
+
+La guía comunitaria [BC-250 unofficial community guide — AI inference](https://github.com/katzzero/bc250-unofficial-community-guide/blob/main/12-ai-inference.md) indexa usuarios y afirmaciones históricas de Discord y ayuda a identificar posibles autores/modelos. No es el informe original ni prueba las cifras. El mensaje de Discord, los logs crudos y el benchmark primario detrás de las cifras históricas de doce placas no se han localizado. Mantenerlas como **UNVERIFIED / SECONDARY CLAIM**.
+
+### Actualización del clúster de cuatro placas y dos instancias
+
+Fuente: [Running Next Flash IQ3_XXS at ~70 tok/s with 100k context or 2 instances of Qwen 3.6 35B A3B IQ4 at ~145 tok/s with 256k](https://www.reddit.com/r/LocalLLaMA/comments/1x2yv1b/running_next_flash_iq3_xxs_at_70_toks_with_100k/).
+
+El autor describe cuatro BC-250 en chasis ASRock 4U12G, adaptadores 2.5GbE y switch 2.5GbE, usando llama.cpp Vulkan/RPC. Resultados declarados:
+- Qwen Next Flash IQ3_XXS: aproximadamente 60–70 tok/s y unos 150 tok/s de prompt processing en las condiciones descritas.
+- Dos instancias de Qwen3.6-35B-A3B IQ4: unos 145 tok/s de generación agregada y unos 450 tok/s de prompt processing; a 150K de contexto, el agregado baja de 100 tok/s.
+- Consumo medido en enchufe por el autor: 600–700 W con Next Flash; 800–900 W con dos instancias de Qwen3.6.
+- A 258K de contexto, declara pruebas con speculative decoding de 51.1–53.5 tok/s en un caso y 51.7–54.4 tok/s con muestreo, frente a 36.4 tok/s en decodificación normal.
+
+No confundir el throughput agregado de dos instancias con la velocidad de una secuencia. El autor menciona cambios de kernels frente a llama.cpp stock; para reproducir se necesitan la build exacta, el commit y las condiciones completas. No considerar esas cifras como una reproducción independiente de LEONES.
+
+### Tabla comparativa consolidada
+
+| Placas activas en la ejecución | Modelo/carga | Resultado reportado | Runtime/red | Evidencia |
+|---|---|---|---|---|
+| 2 | Qwen3-30B-A3B Q4_K_M, contexto 8K | pp 72.48; generación 77.77 tok/s | 4claps, Vulkan + RPC, Fedora 44, commit fijado | Configuración reproducible publicada por el autor |
+| 2 | Qwen3.6-35B-A3B Q4_K_M, contexto 64K | ~60 tok/s generación | Bazzite, Vulkan + RPC, 1 GbE | Informe de autor |
+| 3 (4 compradas; 1 muerta) | Qwen 3.6 27B + Qwen 3.6 35B-A3B concurrentes | Sin normalizar sin logs por ejecución | Ubuntu, Vulkan + RPC, llama-swap, Ansible | Informe de autor; recuento activo aclarado |
+| 4 | Qwen Flash Next 3.8 IQ_XS, contexto 100K | ~26 tok/s generación | Vulkan + RPC, 1 GbE | Informe de autor |
+| 2 de un conjunto de 6 | Qwen3.6-35B, contexto 100K | ~60 tok/s generación | Vulkan + RPC, 1 GbE | Informe de autor |
+| 4 | Qwen Next Flash IQ3_XXS | ~60–70 tok/s; pp ~150 tok/s | Vulkan + RPC, 2.5 GbE | Informe de autor |
+| 4 | Dos instancias Qwen3.6-35B-A3B IQ4 | ~145 tok/s agregados; pp ~450 tok/s | Vulkan + RPC, 2.5 GbE | Informe de autor; throughput agregado |
+| 5 | Qwen3-Coder-Next Q4, contexto 30K/100K | ~40/~30 tok/s generación | Vulkan + RPC, 1 GbE | Informe de autor |
+| 12 | Informe primario no localizado | Sin valor validado | Topología discutida, sin configuración verificada | Afirmación secundaria no verificada |
+
+No usar el número de placas compradas como sustituto del número de nodos activos en cada prueba. Registrar modelo y cuantización exactos, commit de runtime, contexto real, tokens de prompt y salida, duración, transporte, potencia y temperaturas. Mantener separados prompt processing (pp), generación por secuencia y throughput agregado de varias instancias.
+
+### Checklist consolidado
+
+- [x] Registrar el post denominado cuatro nodos que realmente usó tres placas activas.
+- [x] Localizar un informe de seis placas con resultados separados para cuatro y dos nodos.
+- [x] Localizar un informe independiente de dos placas a contexto 64K.
+- [x] Encontrar una guía secundaria que indexa afirmaciones históricas de Discord.
+- [x] Añadir el informe de cuatro placas con throughput agregado y consumo en enchufe.
+- [x] Documentar configuración reproducible de dos placas en 4claps.
+- [ ] Localizar el mensaje original de Discord o logs detrás de las cifras históricas de doce placas.
+- [ ] Obtener logs completos y comandos exactos para las ejecuciones de 3, 4, 5 y 6 placas.
+- [ ] Reproducir ejecuciones seleccionadas en LEONES antes de etiquetarlas como MEASURED.
+
+**Regla de evidencia:** las cifras de Reddit/Discord siguen siendo afirmaciones de terceros hasta que LEONES reproduzca y registre las ejecuciones.
