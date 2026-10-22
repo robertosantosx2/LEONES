@@ -297,7 +297,7 @@ No incluir motores sin medición como si su velocidad fuera cero: usar “no med
 
 ## 13. Recopilación de artefactos para reproducibilidad
 
-Se añade el recolector [`scripts/benchmarks/collect-inferencia-rtx3050-oct26.sh`](https://github.com/robertosantosx2/LEONES/blob/docs/report-inferencia-denso-octubre-2026/scripts/benchmarks/collect-inferencia-rtx3050-oct26.sh). Está diseñado para ejecutarse en Ubuntu en la máquina probada. Reúne los scripts de benchmark conocidos, los directorios de resultados, los logs/CSV/JSON disponibles, información del sistema y versiones, hashes de artefactos y hashes de modelos. **No copia los pesos de los modelos**, el historial del shell ni credenciales.
+Se añade el recolector [`scripts/benchmarks/collect-inferencia-rtx3050-oct26.sh`](https://github.com/robertosantosx2/LEONES/blob/docs/report-inferencia-denso-octubre-2026/scripts/benchmarks/collect-inferencia-rtx3050-oct26.sh). Está diseñado para ejecutarse en Ubuntu en la máquina probada. Reúne los scripts de benchmark conocidos, los logs/CSV/JSON/textos disponibles bajo las carpetas de experimentos de Qwen3-30B, Qwen3.5-35B y `head-to-head-20261021`, información del sistema y versiones, hashes de artefactos y hashes de modelos. Omite extensiones de pesos y carpetas de caché. **No copia los pesos de los modelos**, el historial del shell ni credenciales.
 
 Puedes descargar solo el script desde la rama del informe sin cambiar de rama ni modificar tu checkout local de LEONES:
 
@@ -309,7 +309,7 @@ curl -fsSL \
 bash "$HOME/benchmarks/tools/collect-inferencia-rtx3050-oct26.sh"
 ~~~
 
-También puedes obtener el script desde el enlace de GitHub anterior. Esta opción no cambia de rama ni toca el checkout local de LEONES. El recolector crea un directorio fechado y un `.tar.gz` en `~/benchmarks/`, además del SHA-256 del archivo comprimido. Revisa `environment/missing-artifacts.txt` dentro de la colección: los archivos no encontrados quedan marcados como ausentes, sin fabricar datos.
+También puedes obtener el script desde el enlace de GitHub anterior. Esta opción no cambia de rama ni toca el checkout local de LEONES. El recolector crea un directorio fechado y un `.tar.gz` en `~/benchmarks/`, además del SHA-256 del archivo comprimido. Revisa siempre `environment/missing-artifacts.txt` dentro de la colección. El recolector actualizado crea ese archivo incluso cuando no falta ninguna de las rutas explícitas, e incluye una nota cuando no detecta ausencias. Esa nota no demuestra que el inventario sea exhaustivo: contrasta `copied-files.txt` con las carpetas de experimentos que realmente existan. La primera colección creada el 22 de octubre de 2026 no contenía `missing-artifacts.txt` porque el script anterior solo lo creaba ante una ausencia explícita y no reunía varios logs sueltos de los experimentos 30B/35B; por tanto, no debe tratarse como paquete completo.
 
 Antes de compartir el paquete, comprueba que no contenga información privada y conserva el archivo `.sha256` para verificar la integridad tras la transferencia. El recolector **no ejecuta benchmarks ni cambia configuraciones del sistema**; captura el estado y reúne los resultados existentes. Para registrar telemetría en vivo, debe lanzarse un nuevo ensayo con muestreo de GPU/RAM/swap durante cada repetición.
 
