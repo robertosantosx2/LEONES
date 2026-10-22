@@ -447,3 +447,95 @@ Clasificar cada resultado como **medición LEONES**, **reproducción comunitaria
 - [ ] Mantener como ESTIMATED cualquier proyección de coste/rendimiento y reservar MEASURED para ejecuciones de LEONES.
 
 *Actualización documental de investigación web: 2026-10-22. Las cifras son reportes comunitarios atribuidos a sus autores y no han sido reproducidas por LEONES.*
+
+
+## Seguimiento de comentarios y configuración reproducible de 4claps (2026-10-22)
+
+### Resultado del rastreo de enlaces y comentarios
+
+Se revisaron los comentarios accesibles de los hilos relacionados y se siguieron los enlaces que aportan evidencia adicional. Esto amplía la investigación, pero no equivale a un volcado completo de Reddit: la visibilidad de comentarios, resultados indexados y enlaces externos puede variar.
+
+- **Cinco nodos, evidencia de primera mano en comentarios:** [“$700 (Canadian) later...”](https://www.reddit.com/r/BC250Gaming/comments/1wsukke/700_canadian_later/). Un comentarista describe cinco placas compartiendo un único modelo con llama.cpp Vulkan/RPC: aproximadamente **17 tok/s** con Qwen 3.8 Flash Next a 32K de contexto; como contraste, dos placas con Qwen3.6-35B-A3B obtenían aproximadamente **40–50 tok/s** a 32K. No es una comparación de escalado controlada: cambian modelo y carga. El comentario aclara que el objetivo de añadir placas es principalmente hacer caber modelos mayores, no acelerar automáticamente la generación.
+- **Cinco nodos, hilo de seguimiento:** [“I’m calling this the monstrosity: 5 ex-mining BC250...”](https://www.reddit.com/r/LocalLLaMA/comments/1ws49si/im_calling_this_the_monstrosity_5_ex_mining_bc250/). Complementa la discusión sobre Qwen3-Coder-Next Q4, contexto largo y red integrada de 1 Gb/s. Tratar sus cifras como resultados declarados por el autor, no como benchmark normalizado frente a los dos nodos.
+- **Dos nodos, enlace a configuración pública:** [“llama.cpp cluster for local AI”](https://www.reddit.com/r/BC250Gaming/comments/1w2qtp4/llamacpp_cluster_for_local_ai/) enlaza directamente el repositorio [4claps/bc250-llama-cluster](https://github.com/4claps/bc250-llama-cluster). El autor informa más de 70 tok/s para Qwen3.6-35B-A3B-Q4_K_M; un comentario aporta una cifra concreta de generación de 62.29 tok/s, con contexto de 65K indicado en la conversación. No mezclar esos números como si fueran una misma ejecución.
+- **Configuración posterior y parámetros explícitos:** [“More Local LLM Fun”](https://www.reddit.com/r/BC250Gaming/comments/1wi291z/more_local_llm_fun/) documenta Qwen3.6-35B-A3B-Q4_K_L, contexto 115K y RPC dedicado de 2.5 GbE por adaptadores USB 3 a Ethernet. El autor publica los argumentos de `llama-server` reproducidos abajo.
+- **Prueba creativa comparativa, no benchmark sintético:** [Qwen 3.8 en el clúster de dos nodos](https://www.reddit.com/r/BC250Gaming/comments/1wkbdru/qwen_38_on_my_two_node_bc250_cluster/) compara un mismo prompt de generación de un juego HTML: Qwen3.6-35B-A3B Q4_K_L terminó en 102.8 s (7,895 tokens; 77.9 tok/s), frente a Qwen3.8-27B UD-Q3_K_XL en 3,177 s (48,930 tokens; 15.4 tok/s). La longitud y calidad de salida difieren, así que no es una comparación controlada de capacidad general.
+- **Dos nodos conectados directamente:** [“Running local LLMs on 2 boards directly connected via Ethernet”](https://www.reddit.com/r/BC250Gaming/comments/1wnlhw7/running_local_llms_on_2_boards_directly_connected/) declara Qwen3.6-35B-A3B FP16, 45–60 tok/s según el contexto, en placas de 36 CU. Es otra configuración de hardware/modelo, no una réplica exacta de 4claps.
+- **Seis nodos:** [actualización del clúster de seis placas](https://www.reddit.com/r/LocalLLaMA/comments/1wviphh/update_on_the_monstrosity_6_bc250_board_cluster/) informa grupos de cuatro y dos nodos sobre llama.cpp Vulkan/RPC y Ethernet de 1 Gb/s. Los números de Qwen Next Flash IQ2_XS y Qwen 3.6 35B deben conservar modelo, contexto y grupo de nodos asociados.
+- **Doce nodos, cifras históricas:** [hilo sobre 12 BC-250](https://www.reddit.com/r/LocalLLaMA/comments/1ovgs5p/thoughts_on_the_amd_bc250_16gb_cards/) es principalmente una discusión de viabilidad, conexiones y estimaciones. Las cifras históricas atribuidas a Discord no llevan un informe original, log o enlace primario verificable en los resultados localizados. No se ha encontrado todavía el artefacto original; por tanto, no deben presentarse como mediciones confirmadas. Un comentario posterior en [“$700 (Canadian) later...”](https://www.reddit.com/r/BC250Gaming/comments/1wsukke/700_canadian_later/) estima aproximadamente 170 GB utilizables en 12 placas y alrededor de 30 tok/s mediante cálculo aproximado, pero lo identifica como *napkin math*, no como benchmark.
+- **Primer experimento RPC de dos nodos:** [“Did anyone tried to use AMD BC250 for inference?”](https://www.reddit.com/r/LocalLLaMA/comments/1mqjdmn/did_anyone_tried_to_use_amd_bc250_for_inference/) describe que Exo/Llama Distributed no funcionaron en aquella configuración y que llama.cpp RPC sí; los adaptadores anunciados como 5 GbE alcanzaron unos 2.15 Gbit/s en iperf3. Es evidencia útil de red y compatibilidad, no de rendimiento LLM comparable.
+
+### Repositorio 4claps: configuración para reproducir
+
+Repositorio: https://github.com/4claps/bc250-llama-cluster
+
+Documentos de referencia:
+- [README: arquitectura, hardware y límites de seguridad](https://github.com/4claps/bc250-llama-cluster/blob/main/README.md)
+- [TL;DR: pasos de despliegue y parámetros de inferencia](https://github.com/4claps/bc250-llama-cluster/blob/main/docs/TLDR.md)
+- [Estado validado y benchmark base](https://github.com/4claps/bc250-llama-cluster/blob/main/docs/current-state.md)
+- [Arquitectura y puertos](https://github.com/4claps/bc250-llama-cluster/blob/main/docs/architecture.md)
+
+**Topología funcional:** Bowie (nodo 1) ejecuta `llama-server`, carga el GGUF y utiliza su Vulkan local. Crockett (nodo 2) ejecuta `ggml-rpc-server` con Vulkan. Bowie utiliza el dispositivo RPC de Crockett mediante una conexión backend dedicada de 2.5 GbE. La API compatible con OpenAI está en el nodo coordinador; el RPC no está autenticado y debe permanecer aislado.
+
+**Baseline que el autor declara validada:**
+- Fedora 44, kernel Fedora estándar y Mesa/RADV de la fecha de validación.
+- 40/40 CU en cada placa, cualificados individualmente; no asumir que otra placa pueda usar la misma tabla.
+- Perfil Moderate: CPU objetivo 3500 MHz, escala SMU `-22`, curva GPU de 500–1750 MHz con límite de 925 mV; throttle GPU a 80 °C y recuperación a 75 °C.
+- Parámetros de kernel `ttm.pages_limit=3014656` y `ttm.page_pool_size=3014656`. Son 11.5 GiB de GTT direccionable por GPU, no VRAM dedicada; junto con unos 512 MiB de VRAM el sistema informa alrededor de 12 GiB de memoria Vulkan por placa.
+- llama.cpp fijado al commit `d775b8967a46d8beb110d444aa3b8938179e0dd8`.
+- Sin desbloqueo de núcleos CPU, cambios de firmware UMA, kernel/Mesa personalizados ni parche experimental de colas de cómputo GFX1013.
+- El inventario público de ejemplo es deliberadamente conservador y no activa automáticamente el tuning de hardware. El operador debe crear su inventario de producción local y calificar cada placa.
+
+**Preparación segura (controlador Ansible separado):**
+```bash
+ansible-galaxy collection install -r requirements.yml
+ansible-inventory -i inventories/example/hosts.yml --graph
+ansible-playbook -i inventories/example/hosts.yml site.yml --syntax-check
+ansible-lint
+yamllint .
+```
+
+Para preparar el inventario local después de leer las instrucciones de hardware, operaciones y seguridad:
+```bash
+cp -a inventories/example inventories/production
+$EDITOR inventories/production/group_vars/all.yml
+$EDITOR inventories/production/group_vars/bc250_cluster.yml
+$EDITOR inventories/production/host_vars/bowie.yml
+$EDITOR inventories/production/host_vars/crockett.yml
+ansible-inventory -i inventories/production/hosts.yml --graph
+ansible-playbook -i inventories/production/hosts.yml site.yml --syntax-check
+ansible-playbook -i inventories/production/hosts.yml site.yml --check --diff --limit bowie
+```
+El ejemplo no es una configuración lista para ejecutar: contiene IP de documentación, NICs `CHANGE_ME`, tabla WGP vacía y tuning desactivado. La instalación completa requiere Fedora 44 en ambas placas, SSH/sudo, gestión de red, cualificación de refrigeración y una NIC backend identificada por MAC. El orden de despliegue fuerza detección y validación de refrigeración antes de mantener servicios de inferencia. Seguir la documentación upstream; no copiar directamente los valores de tuning a hardware no cualificado.
+
+**Argumentos del servidor para la configuración publicada con Qwen3.6:**
+```bash
+llama-server --model Qwen3.6-35B-A3B-Q4_K_L.gguf --host 0.0.0.0 --port 8080 \
+  --rpc 10.250.0.2:50052 --gpu-layers all --split-mode layer \
+  --ctx-size 115000 --parallel 1 \
+  --cache-type-k q8_0 --cache-type-v q8_0 --jinja \
+  --cache-ram 0 --no-cache-idle-slots
+```
+El nodo coordinador usa la GPU local más la GPU remota; `--split-mode layer` distribuye capas. La configuración de despliegue documenta también `--spec-type draft-mtp --spec-draft-n-max 3 --no-spec-draft-backend-sampling` para la configuración de producción Qwen3.6 con speculative decoding MTP. No asumir que estos flags estén presentes en cada benchmark histórico: distinguir el test Qwen3-30B de 8K, la configuración Qwen3.6 a 65K y el despliegue Qwen3.6 Q4_K_L a 115K.
+
+**Resultados base publicados por 4claps (dos placas; no mediciones LEONES):**
+- Qwen3-30B-A3B-Q4_K_M, contexto 8,192, 1,024 tokens generados, split automático: prompt processing 72.48 tok/s; generación 77.77 tok/s; picos GPU 85.39 W PPT / 49 °C en Bowie y 80.34 W PPT / 66 °C en Crockett en perfil Moderate.
+- La comparación stock vs Moderate en el documento de estado muestra generación de 71.47 a 77.77 tok/s (+8.81%) y prompt processing de 48.31 a 72.48 tok/s (+50.03%) para esa carga.
+- Para la configuración de agente posterior, Qwen3.6-35B-A3B-Q4_K_L, contexto 115K, KV Q8_0, un slot, el autor registra pruebas largas sin throttling con refrigeración cualificada. No comparar directamente esos resultados con el benchmark de 8K.
+
+**Límites de reproducibilidad:** el repositorio fija llama.cpp y ciertos artefactos, pero Fedora y los paquetes no son una imagen inmutable. Los resultados dependen de cada placa, CU reales, refrigeración, NIC/driver, modelo y cuantización, versión de Mesa/RADV, contexto y perfil energético. La interfaz RPC de llama.cpp no está autenticada: el puerto 50052 debe quedar en una red aislada y limitado al coordinador. Las modificaciones de firmware, CU, voltaje y frecuencia pueden bloquear o dañar la placa.
+
+### Estado de la búsqueda de fuentes originales históricas
+
+El enlace primario reproducible de dos nodos queda localizado: 4claps. Para las cifras de clústeres de 4–6 nodos se localizaron hilos con afirmaciones directas y comentarios de seguimiento, pero no siempre logs completos o un repositorio de despliegue equivalente. Para las cifras históricas asociadas a 12 nodos, el artefacto original atribuido a Discord sigue sin localizarse. Hasta obtenerlo, registrar esos datos como **UNVERIFIED / SECONDARY CLAIM** y no como resultado medido.
+
+### Checklist de investigación actualizado
+
+- [x] Abrir hilos relacionados y seguir enlaces visibles a repositorios, publicaciones de seguimiento y comentarios técnicos.
+- [x] Extraer del repositorio 4claps la topología, requisitos, pasos Ansible, commit fijado, argumentos de servidor y resultados base.
+- [ ] Obtener logs originales y condiciones completas para los resultados de cuatro y seis nodos.
+- [ ] Localizar el mensaje o informe original de Discord citado para las cifras de doce nodos; no localizado en esta pasada.
+- [ ] Normalizar todas las cifras con columnas separadas para prompt processing, generación, throughput agregado, modelo/quant, contexto, red, potencia y número de placas.
+- [ ] Reservar MEASURED para ejecuciones reproducidas por LEONES; los reportes comunitarios siguen siendo evidencia externa.
+
+*Actualización documental de investigación web: 2026-10-22. Las cifras comunitarias se atribuyen a sus autores; ninguna de estas mediciones ha sido reproducida por LEONES.*
