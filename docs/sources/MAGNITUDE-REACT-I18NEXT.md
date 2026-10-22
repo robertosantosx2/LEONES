@@ -188,3 +188,28 @@ La descripción de #193 registró la auditoría estática de doce catálogos × 
 ## Próximo paso técnico
 
 Este documento deja fijados el alcance y el diseño en LEONES. La implementación ejecutable debe hacerse después en una rama nueva del fork `robertosantosx2/magnitude`, usando los catálogos anteriores y el `main` actualizado. No modificar ni reabrir #193; el resultado debe ser un PR nuevo con un diff limpio y validaciones repetidas.
+
+
+## Revisión de upstream — 2026-10-22
+
+Antes de portar la UI se revisó `magnitudedev/magnitude:main`, cuyo HEAD observado era `f81f3cb0b83afa6d08064b48da9b575bc3f81d8a`.
+
+Cambios recientes relevantes:
+- `f7170eae`: IDs de modelos locales legibles, configuración de modelos y reanudación de descargas.
+- `f81f3cb0`: valores predeterminados de sampling unificados entre Chat Completions, Responses y Anthropic Messages.
+- `web/package.json` usa Bun `1.4.2`; el workspace web tiene scripts `test`, `typecheck` y `build`.
+- En el `main` revisado no se encontró integración activa de i18next ni `web/src/i18n/catalogs/en.ts`; el port debe partir de los componentes actuales, no reemplazar `app.tsx` completo con la versión antigua de #193.
+- Las PR #202 (Native Chat) y #203 (localización del Native Chat) aparecen abiertas/draft en la consulta; #203 está apilada sobre #202. No se deben incorporar sus cambios de chat a este PR general ni asumir que forman parte de `main`.
+
+## Estado de implementación preparatoria — 2026-10-22
+
+Se creó una rama de trabajo en el fork a partir del HEAD upstream revisado:
+[`feat/react-i18next-eleven-languages`](https://github.com/robertosantosx2/magnitude/tree/feat/react-i18next-eleven-languages).
+
+Preparación remota ya aplicada en esa rama:
+- Reutilizados los once catálogos activos de la rama histórica `feat/i18n-es-zh`, excluyendo `ur`, `zh-TW`, `id`, `ko` y `vi`.
+- Convertidos los marcadores de interpolación `{variable}` a `{{variable}}` para i18next.
+- Añadido el esqueleto de inicialización `i18next` + `initReactI18next`, con fallback inglés, allowlist de once idiomas, persistencia `magnitude.language`, compatibilidad con el evento `magnitude-language-change` y dirección LTR.
+- Añadidas las dependencias `i18next` y `react-i18next` a `web/package.json`, una primera batería de pruebas de catálogos y la importación de inicialización en `web/src/run.tsx`.
+
+**No se considera terminada la migración:** aún falta conectar el selector y migrar los componentes que muestran textos visibles, auditar el diff contra el `main` actual, regenerar `bun.lock` con Bun y ejecutar tests, typecheck, build y pruebas de navegador. Estas tareas necesitan un checkout local para revisar cambios, resolver posibles errores de tipos y validar el comportamiento real; es el siguiente punto para pasar a Ubuntu.
