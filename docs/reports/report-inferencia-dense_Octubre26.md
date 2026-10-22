@@ -1,4 +1,4 @@
-# Informe de inferencia denso — Octubre de 2026
+# Inferencia en RTX 3050 4Gb oct26 — informe reproducible
 
 **Fecha de pruebas:** 22 de octubre de 2026  
 **Estado:** benchmark inicial documentado; resultados locales aún no adjuntos a este commit.  
@@ -142,3 +142,137 @@ Los siguientes artefactos quedaron guardados en el equipo local durante la sesi�
 4. Registrar errores de kernel/driver, swap y presión de memoria.
 5. Evaluar calidad de respuesta separadamente de rendimiento.
 6. Añadir al repositorio los logs/CSV/JSON como artefactos o paquete comprimido si se necesita auditoría completa.
+
+
+---
+
+## 7. Ensayos anteriores: Qwen3.5-4B, tres motores
+
+Fecha: 20 de octubre de 2026. Resultados de ensayos previos documentados en conversaciones y salidas de terminal; no revalidados en esta actualización. El microbenchmark inicial de Strata usó contexto 1024 y salida tg64; un protocolo API posterior pretendía contexto 256 y máximo 32 tokens. No son el mismo protocolo.
+
+| Motor | Modelo/formato | Prefill | Decode | VRAM aproximada | Observaciones |
+|---|---|---:|---:|---:|---|
+| TensorFold | Qwen3.5-4B MLX-4bit | No registrado | 53.42–53.64 tok/s | 3120 MiB | Carga observada 6.4 s; TTFT en logs 0.193–0.212 s; modelo 2.75 GiB, reserva 0.5 GiB, ventana 0.21 GiB. |
+| llama.cpp CUDA | Qwen3.5-4B GGUF Q4_K_M | 141.2 tok/s | 42.4 tok/s | 2808 MiB | Se usó --n-gpu-layers 99. |
+| Rusting Strata 1.0.1 | Qwen3.5-4B GGUF Q4_K_M | 915.3 tok/s pp128; 986.5 pp512 | 46.6 tok/s tg64; 46.1 tok/s tg64 | 2928 MiB | ctx=1024, 3 repeticiones; plan 2752 MB, KV 32 MB, prefill 116 MB, expertos 0/0. |
+
+Comando registrado para el microbenchmark de Strata:
+
+~~~bash
+cd "$HOME/rusting-strata-test"
+./target/release/strata bench --gpu \
+  --model "$HOME/llama.cpp-cuda/models/qwen3.5-4b-Q4_K_M.gguf" \
+  --pp 128,512 --tg 64 --reps 3 --ctx 1024
+~~~
+
+Verificar la sintaxis con strata bench --help si la CLI instalada ha cambiado.
+
+### Protocolo API controlado previsto
+
+Script base: ~/benchmarks/benchmark_qwen35_4b_three_engines_fixed_v2.sh. Configuración prevista: prompt en español sobre IA local, temperatura 0, contexto 256, salida máxima 32, 3 repeticiones más calentamiento, ejecución secuencial. TensorFold usa MLX-4bit; llama.cpp y Strata usan GGUF Q4_K_M. Artefactos previstos: benchmark.log, environment.txt, client.py, results.jsonl, results.csv, summary.md y logs de servidor.
+
+Advertencia: en un intento previo TensorFold emitió 64 y 128 tokens aunque se configuró --max-tokens 32. No dar por válido el límite sin verificar el JSON y contar tokens reales. En otra prueba el contexto TensorFold observado fue 512, no 256.
+
+## 8. MoE grande e intentos no concluyentes
+
+### Qwen3.5-35B-A3B IQ2_XXS
+
+- Archivo: Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf.
+- Tamaño: 10,676,139,840 bytes.
+- SHA-256: 479cc80b2500f7ba5f6131986da188ecb406cf7855094c5d8ae0ec332a715105.
+- Inspección de Strata: arquitectura qwen35moe, 40 capas, 256 expertos, 8 activos, embedding 2048.
+- Histograma tensorial registrado: IQ2_XXS 157, IQ2_XS 9, Q4_K 126, Q8_0 71 y otros tipos; el nombre de la cuantización no implica que todos los tensores sean IQ2_XXS.
+- Equipo: 14 GiB RAM, 31 GiB swap, RTX 3050 Laptop 4 GiB, CUDA 13.0, driver 580.178.04; unos 620 GB libres de almacenamiento en el momento del ensayo.
+- TensorFold MLX de unos 20.4 GB se consideró inviable con los recursos disponibles. No cuenta como benchmark ejecutado.
+- No hay en este resumen una medición validada de TTFT o tok/s para el 35B; registrar como caracterización/prueba incompleta, no como ganador ni resultado de rendimiento.
+
+### Error CUDA/PTX en Rusting Strata
+
+Error observado en ensayos previos con Qwen3.5-4B:
+
+~~~text
+CUDA_ERROR_UNSUPPORTED_PTX_VERSION
+~~~
+
+Contexto: Rusting Strata 1.0.1, GPU sm_86, driver 580.178.04, CUDA reportada 13.0 y NVRTC observado 13.4.92. Cambiar cudarc de cuda-13010 a cuda-13000 permitió compilar, pero no eliminó el error. Caché PTX observado: ~/.cache/rusting_strata/3404abca2c636220.ptx, 623,784 bytes. Durante una inspección llama-cli ocupaba unos 2808 MiB de VRAM, por lo que procesos concurrentes pueden afectar las pruebas. Una compilación correcta no demuestra compatibilidad de ejecución.
+
+## 9. Cuadro de conclusiones: MoE y no-MoE
+
+| Modelo | Tipo | Motor | Medidas principales | Conclusión y confianza |
+|---|---|---|---|---|
+| Qwen3.5-2B MLX-4bit | No-MoE | TensorFold 1.1.1 CUDA | API 103.407–107.068 tok/s; TTFT 0.051–0.085 s; petición 1.249–1.317 s | 5/5 HTTP 200; las cinco salidas alcanzaron 128 tokens. Aceptación especulativa muy baja: 1/56. No comparable directamente con llama-bench. |
+| Qwen3.5-4B MLX-4bit | No-MoE | TensorFold | Decode 53.42–53.64 tok/s; TTFT 0.193–0.212 s | Muestra anterior; formato MLX distinto de GGUF. Existe una advertencia de límite de tokens inconsistente. |
+| Qwen3.5-4B GGUF Q4_K_M | No-MoE | llama.cpp CUDA | Prefill 141.2; decode 42.4 tok/s | Medida de benchmark; no equivale a TTFT de API. |
+| Qwen3.5-4B GGUF Q4_K_M | No-MoE | Rusting Strata | Prefill 915.3 tok/s pp128 y 986.5 pp512; decode 46.6/46.1 tok/s tg64 | Prefill más alto de la muestra; decode solo moderadamente superior a llama.cpp. Métrica/protocolo pueden diferir. |
+| Qwen3-30B-A3B-Instruct-2507 IQ3_XXS | MoE | llama.cpp CUDA | ngl 0/1/8: mediana prefill 24.42/76.25/26.38 tok/s; mediana decode 1.45/1.44/1.88 tok/s | ngl=1 tuvo la mejor mediana prefill; ngl=8 mostró gran dispersión. Decode lento. Repetir con telemetría durante la ejecución. |
+| Qwen3.5-35B-A3B IQ2_XXS | MoE | Rusting Strata / llama.cpp | No hay rendimiento validado consolidado | Arquitectura inspeccionada, pero no se debe inferir rendimiento a partir de esa inspección. |
+| Qwen3.5-35B-A3B IQ2_XXS | MoE | TensorFold MLX | No medido | Estimación de ~20.4 GB; no viable con RAM/VRAM actuales en ese formato. |
+
+Los valores ngl=0,1,8 describen capas solicitadas para offload GPU en llama.cpp; no son el número total de capas del modelo ni el número de expertos activos. La variabilidad de ngl=8 no demuestra causalidad por sí sola. Hace falta repetir con condiciones controladas y telemetría en vivo.
+
+## 10. Reproducibilidad y cadena de custodia
+
+### Captura de entorno
+
+~~~bash
+mkdir -p "$HOME/benchmarks/inferencia-rtx3050-4gb-oct26"
+OUT="$HOME/benchmarks/inferencia-rtx3050-4gb-oct26"
+{
+  date --iso-8601=seconds
+  uname -a
+  cat /etc/os-release
+  lscpu
+  free -h
+  swapon --show
+  nvidia-smi
+  nvidia-smi -q
+  nvcc --version 2>&1 || true
+  command -v llama-bench
+  command -v llama-cli
+  command -v llama-server
+  command -v tensorfold-native
+  "$HOME/rusting-strata-test/target/release/strata" --version 2>&1 || true
+  git -C "$HOME/llama.cpp-cuda" rev-parse HEAD 2>&1 || true
+  git -C "$HOME/rusting-strata-test" rev-parse HEAD 2>&1 || true
+} > "$OUT/environment.txt" 2>&1
+~~~
+
+### Inventario de scripts y datos
+
+~~~bash
+OUT="$HOME/benchmarks/inferencia-rtx3050-4gb-oct26"
+find "$HOME/benchmarks" -maxdepth 5 -type f \
+  \( -name '*.sh' -o -name '*.py' -o -name '*.csv' -o -name '*.jsonl' \
+     -o -name '*.json' -o -name '*.log' -o -name '*.md' -o -name '*.tsv' \) \
+  -print > "$OUT/artifact-inventory.txt"
+find "$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs" -type f -print0 \
+  | sort -z | xargs -0 -r sha256sum > "$OUT/sha256-qwen3-30b.txt"
+sha256sum "$HOME/llama.cpp-cuda/models/qwen3.5-4b-Q4_K_M.gguf" \
+  > "$OUT/sha256-qwen35-4b.txt" 2>&1 || true
+~~~
+
+### Scripts originales registrados
+
+- Barrido llama.cpp: ~/benchmarks/qwen3-30b-a3b-iq3-xxs/benchmark-layer-sweep.sh
+- TensorFold API: ~/benchmarks/qwen3-30b-a3b-iq3-xxs/benchmark-tensorfold.sh
+- Benchmark común Qwen3.5-4B: ~/benchmarks/benchmark_qwen35_4b_three_engines_fixed_v2.sh
+- Resultados llama.cpp 30B: ~/benchmarks/qwen3-30b-a3b-iq3-xxs/layer-sweep-20261022-115737/
+- Resultados TensorFold 2B: ~/benchmarks/qwen3-30b-a3b-iq3-xxs/tensorfold-qwen35-2b-4bit-20261022-121705/
+
+Para preservar los scripts ejecutados, copiarlos y calcular sus hashes antes de volver a probar:
+
+~~~bash
+OUT="$HOME/benchmarks/inferencia-rtx3050-4gb-oct26"
+cp "$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs/benchmark-layer-sweep.sh" "$OUT/" 2>/dev/null || true
+cp "$HOME/benchmarks/qwen3-30b-a3b-iq3-xxs/benchmark-tensorfold.sh" "$OUT/" 2>/dev/null || true
+cp "$HOME/benchmarks/benchmark_qwen35_4b_three_engines_fixed_v2.sh" "$OUT/" 2>/dev/null || true
+sha256sum "$OUT"/*.sh > "$OUT/script-sha256.txt" 2>&1
+~~~
+
+Los scripts originales, logs completos, CSV y JSON permanecen en el equipo local; GitHub no puede leer automáticamente rutas bajo el directorio home. Este informe no inventa el contenido íntegro de scripts cuyo texto fuente no está adjunto. Para un paquete reproducible auditable, añadir esos scripts, logs por ejecución, CSV/JSON originales, configuración completa, commits exactos de los motores, hashes de modelos y códigos de salida.
+
+## 11. Protocolo recomendado para comparación válida
+
+Fijar modelo y formato que todos los motores soporten, prompt/tokenizer común, contexto 256, salida real de 32 tokens, tres repeticiones más calentamiento, misma temperatura y ejecución secuencial. Registrar carga, TTFT, prefill tok/s, decode tok/s, duración total, tokens reales de entrada/salida, VRAM/RAM pico, swap, temperatura/potencia GPU, telemetría durante la ejecución, exit code y errores.
+
+Separar resultados comparables, microbenchmarks nativos, intentos fallidos y evaluación de calidad. Para MoE registrar expertos totales/activos, offload de capas y expertos, tamaño KV y fallback CPU. No declarar ganador por prefill aislado si TTFT, decode, salida real o estabilidad no se midieron bajo el mismo protocolo.
