@@ -158,3 +158,50 @@ The attached bundle gathers available scripts, logs, CSV/JSON files, system info
 - [PR #112](https://github.com/robertosantosx2/LEONES/pull/112)
 
 For future comparisons, keep the model/format, prompt/tokenizer, context, actual output length, temperature, and repetitions fixed. Measure TTFT, prefill/decode, total time, actual token counts, peak VRAM/RAM, swap, GPU temperature/power, exit codes, and errors. Keep native microbenchmarks, API tests, failed attempts, and quality evaluations separate.
+
+
+## TensorFold MoE follow-up — 2026-10-23 (load tests, not generation benchmarks)
+
+This section records additional TensorFold tests performed on the same Ubuntu laptop after the initial report. The commands and results were supplied from terminal output during the investigation; a separate raw-log/evidence archive for these attempts has not yet been attached. These results must therefore be treated as **observed load/configuration outcomes**, not successful generation benchmarks.
+
+### Hardware and runtime versions
+
+- Host: Intel Core i7-12650H, approximately 14.8 GiB physical RAM, NVIDIA RTX 3050 Laptop with 4 GiB VRAM.
+- Driver/CUDA: NVIDIA driver 580.178.04, CUDA 13.0; GPU capability reported by TensorFold as `nvidia-sm86`.
+- TensorFold binaries inspected: 1.1.1, 1.1.2, and 1.1.3.
+- All three `serve --help` outputs expose `--backend {auto,mlx,cuda}` (1.1.3 capabilities report only `cuda` on this host), `--device`, and `--segments`; none exposes an explicit `--cpu-offload` flag. This does not prove no internal offload mechanism exists, but none was verified in these tests.
+
+### Test A — Qwen3.5-4B successful baseline
+
+The earlier report records TensorFold 1.1.1 with Qwen3.5-4B MLX-4bit at 53.42–53.64 tok/s for a prior test protocol. Subsequent local benchmark notes report approximately 54.4–54.8 tok/s generation for Qwen3.5-4B with TensorFold. These are separate runs/configurations and are not merged into one statistic. The recent 54.4–54.8 tok/s range is a reported local result; the complete raw benchmark log is not attached to this report update.
+
+### Test B — Qwen3.6-35B-A3B MLX-4bit checkpoint inspection
+
+- Checkpoint: `TensorFold/Qwen3.6-35B-A3B-MLX-4bit-MTP`.
+- TensorFold version: 1.1.3.
+- `info` recognized the model as family `qwen3_5_moe` / architecture `Qwen3_5MoeForConditionalGeneration`.
+- Quantization: 4-bit, group size 64.
+- Reported weights: 19.47 GiB; reported memory floor: 21.47 GiB (weights plus 2 GiB runtime margin).
+- The checkpoint was downloaded and inspected. **No `serve`/generation run was completed**, so no tok/s, TTFT, or successful-load result exists.
+- Assessment on this host: the estimated memory floor exceeds physical RAM plus VRAM available to the process; treat this as an inspected but unexecuted candidate, not a failed generation benchmark.
+
+### Test C — Nemotron 3.5 Lightning 30B-A3B with TensorFold 1.1.3
+
+- Checkpoint: `TensorFold/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit`.
+- `info` recognized family `nemotron_h`, format 4-bit/group 64, weights 17.27 GiB (18,544,232,887 bytes), memory floor 19.27 GiB.
+- `capabilities --json` reported engine `zig`, version 1.1.3, chip `nvidia-sm86`, and backend list `["cuda"]`. The family entry lists `mlx-q4g64`, `modelopt-nvfp4`, and `modelopt-ggml` as recognized formats.
+- A serve attempt was made with `--backend auto --parallel 1 --context 512 --temperature 0 --no-thinking`, host `127.0.0.1`, port `18089`.
+- Result: rejected before inference. Error reported 16.6 GiB checkpoint weights versus a 2.6 GiB CUDA budget (3.6 GiB free less a 1.0 GiB reserve). A later `info` call reported the more precise 17.27 GiB weight size.
+- The same rejection was observed with the `auto` backend; no HTTP server started and no tokens were generated. No tok/s or TTFT result exists.
+- The `nvidia-smi` snapshot during diagnosis showed 15 MiB used out of 4096 MiB, with Xorg using 4 MiB; this supports that the rejection was due to model size versus the available CUDA budget, not another large GPU process.
+- Changing context to 512 does not shrink model weights enough to make this checkpoint fit. No successful CPU/RAM offload configuration was identified in the public CLI options inspected.
+
+### TensorFold MoE status summary
+
+| Model | Version | Outcome | Weights / memory floor | Generation metrics |
+|---|---|---|---|---|
+| Qwen3.5-4B MLX-4bit | 1.1.1 / later local runs | Successful inference in prior tests | Smaller model; see earlier sections/logs | Earlier 53.42–53.64 tok/s; later reported 54.4–54.8 tok/s; protocols differ |
+| Qwen3.6-35B-A3B MLX-4bit-MTP | 1.1.3 | Downloaded and inspected; not served | 19.47 / 21.47 GiB | Not measured |
+| Nemotron 3.5 Lightning 30B-A3B MLX-4bit | 1.1.3 | Serve rejected at CUDA memory-budget check | 17.27 / 19.27 GiB | Not measured; zero tokens generated |
+
+**Evidence classification:** Qwen3.5-4B is the successful measured baseline. Qwen3.6-35B-A3B is inspected but unexecuted. Nemotron 30B-A3B is a failed-to-load attempt, not an inference benchmark. Do not record either large-model attempt as 0 tok/s; its generation speed is **not measured**.
