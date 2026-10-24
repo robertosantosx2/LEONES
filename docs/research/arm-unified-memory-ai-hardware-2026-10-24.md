@@ -160,11 +160,18 @@ El script comunitario CIX P1 informa de GPU disponible como `/dev/dri/card0` y P
 
 **Precio de referencia publicado:** 539 USD (MSRP oficial anunciado en PDF de 2024; no equivale a cotización actual ni incluye impuestos/envío).
 
-Enlaces:
-- Comprar / socios autorizados: https://radxa.com/products/orion/o6/
+Enlaces de compra / distribución (stock y precio O6 64 GB deben confirmarse en la ficha de cada vendedor):
+- Página oficial del producto y socios autorizados: https://radxa.com/products/orion/o6/
+- OKdo, distribuidor global que Radxa lista en su página histórica de distribuidores: https://www.okdo.com/
+- Innet24 (Alemania): https://www.innet24.de/
+- Maker-store (Alemania): https://shop.maker-store.de/
+- Allnet España: https://www.allnet.es/ — el directorio de Radxa publica contacto de ALLNET España en Carballo (A Coruña); solicitar cotización del SKU de 64 GB.
+- Directorio de distribuidores (fuente Radxa, página archivada): https://wiki.radxa.com/Buy
 - Documentación y contenido del paquete: https://docs.radxa.com/en/orion/o6
 - Accesorio de alimentación oficial: desde la sección de accesorios de https://radxa.com/products/orion/o6/
 - Almacenamiento NVMe: elegir un SSD M.2 2280 PCIe Gen4 x4 de 1–2 TB de vendedor con stock y factura en España; la ranura está confirmada por la documentación oficial.
+
+No se ha podido confirmar en esta revisión una ficha de venta actual del SKU O6 64 GB con precio final en EUR. Estos enlaces son rutas verificables hacia vendedores/distribuidores, no prueba de stock, precio ni plazo de entrega.
 
 Presupuesto que debe completarse con cotización real:
 - Placa O6 64 GB: 539 USD como referencia histórica, **no precio entregado**.
