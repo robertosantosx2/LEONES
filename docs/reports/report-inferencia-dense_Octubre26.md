@@ -158,3 +158,46 @@ El paquete adjunto reúne scripts, registros disponibles, CSV/JSON, información
 - [PR #112](https://github.com/robertosantosx2/LEONES/pull/112)
 
 Para futuras comparaciones, fijar modelo/formato común, prompt/tokenizer, contexto, salida real, temperatura y repeticiones; medir TTFT, prefill/decode, tiempo total, tokens reales, VRAM/RAM pico, swap, temperatura/potencia GPU, códigos de salida y errores. Separar microbenchmarks nativos, pruebas API, intentos fallidos y evaluación de calidad.
+
+
+## Registro detallado de carga — Qwen3-30B-A3B-Instruct-2507 IQ3_XXS (21-10-2026)
+
+**Checkpoint:** `Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf`  
+**SHA-256:** `292daa2b66aec59d075532d0bcf05010bf4a3b012a4216c28dc021b73d1e9ab4`  
+**Ruta original de los registros en Ubuntu:** `~/benchmarks/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/`
+
+### llama.cpp — observaciones de inicio en los fragmentos aportados
+
+Los extractos de `llama/rep-2.log` a `llama/rep-6.log` confirman que el modelo se cargó en la RTX 3050 Laptop GPU. En los registros aportados aparecen estas observaciones:
+
+- `NVIDIA GeForce RTX 3050 Laptop GPU (3768 MiB, 3675 MiB free)` al iniciar.
+- Capas 35–48 asignadas a `CUDA0`; el resumen de memoria muestra un buffer de modelo CUDA de **3290,68 MiB**, caché KV de **26,00 MiB** y buffer de cómputo de **86,25 MiB**.
+- Mensaje de fallback no fatal: `tensor 'token_embd.weight' (iq3_s) (and 420 others) cannot be used with preferred buffer type CUDA_Host, using CPU instead`.
+- Advertencia de contexto repetida: `CUDA_Host compute buffer size of 4.1376 MiB, does not match expectation of 1.0636 MiB`.
+- El resumen indica una asignación de memoria CUDA de 3768 MiB: 239 MiB + (3402 MiB = 3290 + 26 + 86) + 125 MiB.
+
+Estos mensajes no equivalen a un fallo fatal de arranque. En la tanda de seis ejecuciones registrada previamente, los códigos de salida fueron `0`; el mensaje de buffer `CUDA_Host` debe conservarse como advertencia de diagnóstico, no describirse como causa de fallo sin evidencia adicional.
+
+### Comandos de referencia
+
+```bash
+# llama.cpp 0.7.0-dev, build 11740, commit 6fa4f6cd3
+/usr/bin/time -v -o "$d/time-$i.txt" \
+  "$HOME/llama.cpp-cuda/build-cuda/bin/llama-cli" \
+    --model "$M" --n-gpu-layers 14 --fit off \
+    --ctx-size 1024 --batch-size 64 --ubatch-size 32 \
+    --threads 8 --predict 128 --temp 0 --seed 42 \
+    --prompt "$PROMPT" --single-turn --simple-io --verbose \
+    > "$d/rep-$i.log" 2>&1
+
+# RustingStrata 1.0.1
+XDG_CACHE_HOME="$OUT/strata/cache" /usr/bin/time -v \
+  -o "$d/time-$i.txt" "$HOME/rusting-strata-test/target/release/strata" generate \
+    --model "$M" --gpu --ctx 1024 --threads 8 \
+    --prompt "$PROMPT" -n 128 --temp 0 \
+    > "$d/rep-$i.log" 2>&1
+```
+
+### Estado de los ficheros de evidencia
+
+Los fragmentos compartidos en la conversación son salida de `grep` y no los registros originales completos. Los ficheros originales que deben adjuntarse al repositorio son `llama/rep-{1..6}.log`, `llama/time-{1..6}.txt`, `llama/rc-{1..6}.txt`, `strata/rep-{1..6}.log`, `strata/time-{1..6}.txt` y `strata/rc-{1..6}.txt`, junto con el manifiesto SHA-256. La integración actual documenta los mensajes verificables aportados; no presenta los extractos como si fueran los logs completos.
