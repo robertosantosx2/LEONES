@@ -444,3 +444,16 @@ La publicación de este Markdown no modifica los logs originales del host. Este 
 Este informe registra un resultado observado y reproducible de admisión de memoria para dos modelos MoE en una RTX 3050 Laptop de 4 GiB con TensorFold nativo 1.1.3. No es un benchmark de velocidad ni una prueba de calidad de generación.
 
 Se conserva la distinción LEONES entre ESTIMATED y MEASURED: tamaños, recursos y mensajes de error proceden de ejecuciones reales; cualquier hipótesis sobre offload, compatibilidad en otra GPU o rendimiento futuro permanece sin validar.
+
+
+## 13. Artefactos de consola añadidos al repositorio
+
+Se añadieron archivos de texto bajo docs/reports/artifacts/tensorfold-moe-forensic-2026-10-24/ para conservar las salidas disponibles en esta sesión:
+
+- qwen36-1.1.3-serve-context256.console.log
+- nemotron-1.1.3-context512.console.log
+- qwen36-info-1.1.3.console.log
+- offload-capability-audit.console.log
+- tensorfold-1.1.3-memory-options.console.log
+
+**Limitación de procedencia:** son transcripciones de consola elaboradas a partir de las salidas compartidas en la conversación. Para Qwen serve se conserva la salida mostrada completa; los registros de Nemotron, info y auditorías se identifican expresamente como transcripción, extracto o reconstrucción cuando no se compartió el archivo original íntegro. No son copias binarias certificadas de los logs del equipo. Los originales continúan en las rutas locales indicadas en la sección 11 y deben copiarse desde Ubuntu para completar una cadena de custodia byte a byte.
