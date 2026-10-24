@@ -1,0 +1,25 @@
+# Console transcript of the help/capabilities/audit output shared in the session.
+# Some long JSON/string output is summarized where the pasted console output was truncated in the chat; see report for full captured excerpts and caveats.
+===== DATE =====
+2026-10-24T21:51:22,680971026+02:00
+===== HELP SERVE =====
+usage: tensorfold serve [-h] [--host HOST] [--port PORT] [--name NAME] [--chat-template FILE] [--alias ALIAS] [--allowed-host NAME] [--allowed-origin ORIGIN] [--api-key API_KEY] [--api-key-file API_KEY_FILE] [--metrics-open] [--dashboard] [--context CONTEXT] [--speed-up SETTINGS] [--prompt-cache-gib PROMPT_CACHE_GIB] [--prompt-cache-over-cap] [--learn] [--learn-dir LEARN_DIR] [--learn-gib LEARN_GIB] [--learn-conversations] [--learn-daily-gib LEARN_DAILY_GIB] [--recall] [--recall-dir RECALL_DIR] [--recall-gib RECALL_GIB] [--recall-read-only] [--max-tokens MAX_TOKENS] [--temperature TEMPERATURE] [--top-p TOP_P] [--top-k TOP_K] [--min-p MIN_P] [--prompt-seed] [--thinking | --no-thinking] [--reasoning-effort {low,medium,high,xhigh}] [--thinking-budget THINKING_BUDGET] [--thinking-reserve THINKING_RESERVE] [--loop-guard] [--no-drafts] [--drafter DRAFTER] [--drafter-bits {0,4}] [--record RECORD] [--keep-warm SECONDS] [--compact-at COMPACT_AT] [--compact-keep COMPACT_KEEP] [--compact-memory COMPACT_MEMORY] [--slide] [--slide-graph SLIDE_GRAPH] [--parallel PARALLEL] [--cortheon] [--no-update-check] [--backend {auto,mlx,cuda}] [--device DEVICE] [--segments SEGMENTS] model
+===== CAPABILITIES JSON — RELEVANT FIELDS =====
+{"schema":1,"engine":"zig","version":"1.1.3","chip":"nvidia-sm86","backends":["cuda"],"families":{"nemotron_h":["mlx-q4g64","modelopt-nvfp4","modelopt-ggml"],"nemotron_h_omni":["mlx-q4g64","modelopt-nvfp4","modelopt-ggml"],"qwen3_5":["mlx-q4g64"],"qwen3_5_moe":["mlx-q4g64"]},"env":["TENSORFOLD_API_KEY","TENSORFOLD_NO_LIVE","TENSORFOLD_SEED_SALT","TENSORFOLD_REQUEST_LOG","TENSORFOLD_NO_UPDATE_CHECK","HF_HOME","HF_HUB_CACHE","HF_HUB_OFFLINE","BRAVE_SEARCH_API_KEY","TF_CUDA_DEVICE","TF_CUDA_SEGMENTS","TENSORFOLD_CUDA_KERNELS","TENSORFOLD_MEMORY_RESERVE_GIB","TENSORFOLD_CUDA_MEMORY_LIMIT_GB"]}
+===== FILTERED STRINGS =====
+BadSegments
+HostMemoryUnavailable
+InvalidQwenSegments
+--segments
+TF_CUDA_SEGMENTS=
+TENSORFOLD_MEMORY_RESERVE_GIB
+TENSORFOLD_CUDA_MEMORY_LIMIT_GB
+the checkpoint's  GiB of weights do not fit the  GiB the CUDA memory budget grants
+the CUDA memory budget fits no stream beside the model
+Pinned host memory the engine holds now: staging buffers and windows; only where the backend counts it (CUDA).
+--slide runs a prompt one chunk at a time, its change's scratch shared by every layer: serve it without --segments or TF_CUDA_SEGMENTS
+--vision-offload
+===== OBSERVED OPTIONAL LIBRARIES =====
+cuBLASLt found; cuBLAS found; NCCL not found; RDMA verbs found; TensorFold video libtfvideo.so not found; libjpeg-turbo found but unusable for --vision; libwebp not found; TensorFold grammar libtfgrammar.so found; RCCL not found; MCDMA RPC and fabric not found.
+===== ORIGINAL HOST FILE =====
+/home/ssantos/tensorfold-forensic-20261024/offload-capability-audit.log
