@@ -85,6 +85,46 @@ No calcular una única puntuación agregada entre inteligencia, tokens/s, memori
 - Análisis de sensibilidad: precio de referencia frente a precio europeo con IVA; y, cuando haya varios benchmarks comparables, rango de rendimiento en lugar de un único valor.
 - Lista explícita de brechas de evidencia. No se debe recomendar compra basándose únicamente en una estimación no verificada.
 
+
+## 0.1 Primera extracción de Artificial Analysis y normalización pública (consulta: 24-10-2026)
+
+Esta sección fija una primera instantánea pública; los rankings, precios y benchmarks cambian. Volver a consultar las fuentes antes de una decisión de compra.
+
+### Modelos candidatos según Artificial Analysis
+
+| Modelo | Artificial Analysis Intelligence Index | Velocidad AA publicada | Memoria/formato local conocido | Lectura para este estudio |
+|---|---:|---:|---|---|
+| [Qwen3.8 27B (Xhigh)](https://artificialanalysis.ai/models/qwen3-8-27b) | 34 | 45,2 output tok/s, medidos en API de Alibaba | 27B; pesos abiertos; Apache 2.0; contexto publicado de ~256K | Candidato principal de calidad dentro de la clase pequeña (≤40B) según la página AA consultada. Los 45,2 tok/s son de API, no de O6 ni Jetson. |
+| [Qwen3.6 35B A3B (Reasoning)](https://artificialanalysis.ai/models/qwen3-6-35b-a3b) | 19 | 129,4 output tok/s, según API de Alibaba en la página consultada | 36B totales / 3B activos; Apache 2.0; contexto 262K | Candidato MoE de mayor tamaño activo razonable para estudiar en sistemas con 64 GB; su throughput de API no es una predicción de rendimiento local. |
+| [Qwen3.6 35B A3B GGUF](https://huggingface.co/Infatoshi/Qwen3.6-35B-A3B-GGUF) | Hereda la familia del modelo; no es un ranking distinto | El repositorio publica 153,9 decode tok/s Q4_K_M en RTX 3090 y llama.cpp; prefill 329,7 tok/s | Archivo Q4_K_M listado en ~20–21,2 GB según página/artefacto | Evidencia de que existe una conversión GGUF y un benchmark local en GPU de sobremesa. No transferir esa velocidad a ARM/Orin/O6. |
+| [Qwen3.5 35B A3B](https://artificialanalysis.ai/models/qwen3-5-35b-a3b) | 19 estimado en la ficha consultada; ficha marcada obsoleta por AA | La ficha histórica publica ~147 tok/s API | 36B totales / 3B activos; Apache 2.0 | Mantener como referencia histórica, no preferirlo sobre Qwen3.6 sin justificar la versión anterior. |
+
+Fuentes primarias de modelo y evaluación:
+- Artificial Analysis, Qwen3.8 27B: https://artificialanalysis.ai/models/qwen3-8-27b
+- Artificial Analysis, Qwen3.6 35B A3B: https://artificialanalysis.ai/models/qwen3-6-35b-a3b
+- Artificial Analysis, comparación de variantes Qwen3.6: https://artificialanalysis.ai/models/comparisons/qwen3-6-35b-a3b-non-reasoning-vs-qwen3-6-35b-a3b
+- GGUF y benchmark publicado por el repositorio de conversión: https://huggingface.co/Infatoshi/Qwen3.6-35B-A3B-GGUF
+- AA advierte que las velocidades de sus fichas representan la API de primera parte o una mediana de proveedores, no una prueba local en las placas estudiadas.
+
+**Criterio de selección provisional:** Qwen3.8 27B (Xhigh) lidera esta instantánea de AA entre los candidatos de hasta 40B aquí examinados (índice 34). Qwen3.6 35B A3B (Reasoning) se mantiene como candidato MoE de interés por sus 3B parámetros activos y por existir un GGUF público. Esto no afirma que sean los dos mejores modelos absolutos ni garantiza que todas sus funciones o cuantizaciones corran en ambas placas. La lista debe actualizarse consultando el ranking completo de AA y documentando el filtro de viabilidad.
+
+### Coste por tokens/s: lo que se puede y no se puede calcular hoy
+
+| Sistema / evidencia | Coste de hardware usado | Decode publicado | Cociente aritmético | Estado y limitación |
+|---|---:|---:|---:|---|
+| Jetson AGX Orin Developer Kit 64 GB + benchmark Strata publicado en AGX Orin 32 GB | 4.012,53 € IVA incluido (precio de RS localizado; stock/precio sujetos a checkout) | 18,6–21,6 tok/s, publicado por el fork Strata en Orin 32 GB | 185,76–215,73 €/tok/s; 4,63–5,38 tok/s por 1.000 € | **ESTIMATED, NO COMPARABLE:** el precio corresponde al kit de 64 GB y el benchmark a una máquina de 32 GB; no es una medida válida de eficiencia del mismo SKU. Solo ilustra el cálculo y queda excluido de cualquier ranking final. |
+| Radxa Orion O6 64 GB + baseline oficial de llama.cpp CPU | MSRP histórico de 539 USD; precio final EUR entregado no confirmado | 36,29 ± 0,16 tok/s, tg128, con DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M | No calcular EUR/tok/s; no hay coste entregado en EUR y el modelo es 1.5B | **PUBLISHED, NO COMPARABLE** con los benchmarks MoE de 30–35B. |
+| Qwen3.6 35B A3B en API de Alibaba | No aplica: coste del hardware local no identificado | 129,4 tok/s según AA | No calcular coste de hardware/tok/s | **PUBLISHED/API**, no velocidad local ni numerador válido para coste de hardware. |
+| Qwen3.6 35B A3B Q4_K_M en RTX 3090 + llama.cpp | Precio del sistema no recogido en la fuente de benchmark | 153,9 decode tok/s (benchmark de repositorio) | No calcular hasta tener precio de sistema equivalente y ficha completa del test | **PUBLISHED/THIRD-PARTY**; GPU de sobremesa distinta de las plataformas ARM objetivo. |
+
+Cálculos ilustrativos del primer renglón:
+- 4.012,53 € ÷ 21,6 tok/s = 185,76 €/tok/s.
+- 4.012,53 € ÷ 18,6 tok/s = 215,73 €/tok/s.
+- 21,6 ÷ (4.012,53 / 1.000) = 5,38 tok/s por 1.000 €.
+- 18,6 ÷ (4.012,53 / 1.000) = 4,63 tok/s por 1.000 €.
+
+Aunque las operaciones son correctas, la comparación cruza SKU de 64 GB con mediciones de 32 GB. **No utilizar esos valores para declarar ganador ni eficiencia real.** Para un ranking válido se requiere una fuente pública que mida el mismo SKU o una combinación claramente equivalente, con modelo/runtime/configuración documentados, y precio completo del sistema correspondiente.
+
 ## 1. Plataformas evaluadas
 
 ### 1.1 Radxa Orion O6 (CIX P1)
@@ -383,4 +423,4 @@ En la evidencia pública disponible, **Jetson AGX Orin es la plataforma con meno
 
 Para un proyecto más abierto, con mayor RAM compartida y expansión PCIe, **Radxa Orion O6 64 GB es una candidata prometedora**. Ya existe un baseline oficial GGUF/CPU de 1.5B documentado por Radxa, pero falta evidencia pública comparable para MoE de 30–35B con backend Vulkan, memoria máxima, swap y consumo de pared. No recomendar comprar la O6 solo por el dato de 100 GB/s o los TOPS anunciados hasta verificar ese caso de uso.
 
-El próximo hito es completar la investigación pública: identificar los mejores modelos elegibles según Artificial Analysis, localizar benchmarks públicos de throughput para las combinaciones de hardware/modelo/runtime pertinentes, verificar precios europeos del sistema completo y calcular coste por tokens/s con las fórmulas anteriores. No se realizarán pruebas físicas. Si una combinación carece de benchmark público comparable, quedará explícitamente como brecha de evidencia.
+El siguiente hito es cerrar las brechas documentales: revisar el ranking completo de Artificial Analysis, encontrar benchmarks públicos del mismo modelo/quant en Radxa O6 y Jetson Orin, y obtener precio final del SKU exacto para cada fila calculable. El primer barrido ya está incorporado en §0.1; los valores cruzados entre Orin 32 GB y el precio del kit 64 GB se excluyen del ranking. No se realizarán pruebas físicas. Si una combinación carece de benchmark público comparable, quedará explícitamente como brecha de evidencia.
