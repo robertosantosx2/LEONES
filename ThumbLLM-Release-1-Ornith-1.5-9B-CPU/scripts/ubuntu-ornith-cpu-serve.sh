@@ -12,7 +12,7 @@ PORT="${PORT:-18088}"
 
 # Match the recipe's topology-aware intent: physical cores for decode and
 # logical CPUs for prompt/batch processing. This is adapted to the current host.
-PHYSICAL="$(lscpu -p=CORE,SOCKET | awk -F, '!/^#/ {print $1 \", \" $2}' | sort -u | wc -l)"
+PHYSICAL="$(lscpu -p=CORE,SOCKET | awk -F, '!/^#/ {print $1 "," $2}' | sort -u | wc -l)"
 LOGICAL="$(nproc)"
 PHYSICAL="${PHYSICAL// /}"
 if [[ ! "$PHYSICAL" =~ ^[0-9]+$ ]] || (( PHYSICAL < 1 )); then PHYSICAL="$LOGICAL"; fi
