@@ -125,6 +125,46 @@ Cálculos ilustrativos del primer renglón:
 
 Aunque las operaciones son correctas, la comparación cruza SKU de 64 GB con mediciones de 32 GB. **No utilizar esos valores para declarar ganador ni eficiencia real.** Para un ranking válido se requiere una fuente pública que mida el mismo SKU o una combinación claramente equivalente, con modelo/runtime/configuración documentados, y precio completo del sistema correspondiente.
 
+## 0.2 Experiencias comunitarias: repositorios, issues y benchmarks públicos (consulta: 24-10-2026)
+
+Esta sección amplía el estudio con experiencias de personas que ya intentaron ejecutar modelos localmente en placas ARM, sistemas de memoria compartida y equipos de recursos limitados. Se priorizan repositorios con instrucciones, configuraciones y números concretos. Son resultados publicados por terceros; no se han reproducido por LEONES.
+
+### Hallazgos principales
+
+| Plataforma / proyecto | Experiencia pública | Datos publicados | Qué demuestra y qué no |
+|---|---|---|---|
+| **Radxa Orion O6 64 GB — llama.cpp CPU** | [Hilo de Radxa Community: llama.cpp benchmarks](https://forum.radxa.com/t/llama-cpp-benchmarks/27813) | Qwen3 MoE ~30,53B, Q4_K, CPU, 7 hilos: **pp512 45,76 ± 0,85 tok/s; tg128 13,79 ± 0,75 tok/s**. Otro usuario publicó Q4_1 con 8 hilos: pp512 30,97 y tg128 20,30 tok/s. | Evidencia directa de un MoE de ~30B en O6 CPU. Las dos filas no son comparables entre sí: cuantización, build y configuración diferentes. |
+| **Radxa Orion O6 — KleidiAI/Vulkan** | Mismo hilo comunitario | El autor informa que KleidiAI redujo la generación de Qwen3 A3B:30B Q4_K_M a unos **12 tok/s**; Vulkan compiló pero se congeló o fue extremadamente lento durante prefill/generación. | Alerta práctica: activar un backend no garantiza aceleración. El resultado negativo de Vulkan es una experiencia de ese build/fecha, no prueba de que todas las versiones futuras fallen. |
+| **Radxa Orion O6 64 GB — Ollama CPU** | [Experiencia y benchmarks de usuario en Reddit](https://www.reddit.com/r/ollama/comments/1q33op3/radxa_orion_o6_llm_benchmarks_ollama_debian_12/) | Qwen3-Next: **2,41 eval tok/s**; Nemotron-3-nano: **6,04 eval tok/s**. Sistema headless, Ollama CPU-only; el autor destaca refrigeración y airflow. | Evidencia complementaria de ejecución real, pero los modelos, runtime y configuración no coinciden con llama-bench. El resultado de Qwen3-Next no debe mezclarse con el benchmark de Qwen3 A3B:30B. |
+| **Radxa Orion O6 — benchmark oficial** | [Guía de Arm Learning Paths para ERNIE-4.5 MoE en O6](https://learn.arm.com/learning-paths/cross-platform/ernie_moe_v9/2_llamacpp_installation/) | Procedimiento para instalar llama.cpp, descargar GGUF Q4 y validar inferencia en la placa. | Guía técnica de instalación/validación; no la contamos como benchmark de throughput hasta que haya resultados numéricos comparables. |
+| **Jetson AGX Orin 32 GB — Strata ARM64/CUDA** | [Repositorio y resultados del port](https://github.com/calvinvette/strata-inference-orin) | Qwen3.8-Flash-Next Coder IQ1_M: decode mediano **18,6–21,6 tok/s**; prefill **37,8–52,5 tok/s** en prompts de 172–1069 tokens. Con contexto 262K: prefill 58,5 tok/s y decode 6,6 tok/s. | Es la evidencia ARM64/CUDA más detallada encontrada para MoE muy grande con expertos respaldados por archivos. La variante Coder tiene expertos podados; el contexto y el tamaño de respuesta cambian mucho la velocidad. Ya se detalla en §2. |
+| **Radxa O6 + GPU discreta PCIe** | [Proyecto de benchmarks de James Geerling](https://github.com/geerlingguy/ai-benchmarks) | En una configuración O6 16 GB + RTX 3080 Ti, DeepSeek R1 14B aparece con **64,58 eval tok/s**; O6 CPU sin GPU discreta aparece con **4,33 eval tok/s** en ese conjunto de resultados. | Demuestra que el sistema completo con GPU discreta puede cambiar radicalmente el rendimiento; esos 64,58 tok/s son de la RTX 3080 Ti, no de la GPU integrada O6. No comparar como si fuese la misma configuración. |
+| **O6 CPU y O6 + RTX 3060** | [eullm/eullm: resultados y matriz de plataformas](https://github.com/eullm/eullm) | El proyecto informa **9–11 tok/s** para Qwen3.6-35B-A3B en O6 CPU y **35,6 tok/s** para el mismo modelo en O6 con RTX 3060; también informa Qwen3-14B a 33 tok/s en la configuración con GPU. | Resultado comunitario potencialmente muy relevante para coste/rendimiento con expansión PCIe. Antes de usarlo en un ranking hay que recuperar la ficha de benchmark completa: quant exacta, runtime, versión, contexto, tokens generados y SKU/precio del conjunto. |
+| **Radxa ROCK 5B+ / RK3588** | [llamacpp-workbench y documentación de benchmarks](https://github.com/SergiioB/llamacpp-workbench) | El proyecto describe pruebas de Qwen3.5-2B/4B/9B y modelos MoE podados como GLM-4.7-Flash-REAP-23B-A3B en ROCK 5B+ con ~24 GiB. Incluye presets de afinidad, hilos, KV cache y contexto. | No es la misma SoC que O6 ni Orin, pero sí una fuente práctica para estudiar inferencia ARM con memoria limitada y MoE podados. No transferir sus tokens/s a otras placas. |
+| **Jetson Orin Nano Super** | [llm-in-c: implementaciones por chip/modelo](https://github.com/baryhuang/llm-in-c) | Registra Qwen3.8-27B IQ1_S mediante llama.cpp/CUDA parcheado; las interacciones anotadas tardaron **114–156 segundos**, con uso considerable de swap. | Prueba de que “arranca” no equivale a uso interactivo rápido. La ficha consultada no proporciona una cifra de decode directamente comparable con las demás filas. |
+| **Comparación comunitaria amplia** | [Token Atlas](https://tokatlas.github.io/) | Dataset consultado el 22-10-2026: declara 41.103 registros, 733 modelos, 444 equipos y 45 backends, con enlaces a fuentes por registro. | Índice útil para seguir buscando combinaciones modelo/quant/chip/runtime y verificar atribución. No tratar el agregado como una única prueba normalizada; inspeccionar el enlace y la configuración de cada registro. |
+| **Protocolo reproducible para nuevos aportes** | [Compute:Arena — artículo de Hugging Face](https://huggingface.co/blog/basecompute/local-inference-benchmarks-computearena) y [Compute:Arena](https://computearena.ai/) | Propone sweeps de prefill de 128–16.384 tokens y decode de 128 tokens, warmup y tres repeticiones; registra hashes del modelo/runtime y telemetría de memoria, swap, temperatura y potencia. | Referencia metodológica para evaluar la calidad de futuros resultados públicos. Los números solo son comparables cuando coinciden workload, modelo/quant y configuración, y aun así hay que respetar las diferencias entre runtimes. |
+
+### Lectura crítica de la experiencia comunitaria
+
+1. **O6 sí tiene evidencia pública de MoE ~30B en CPU**: la cifra más útil localizada en el foro es 13,79 ± 0,75 tok/s de generación con Qwen3 MoE Q4_K y 7 hilos; otro build/configuración publica 20,30 tok/s con Q4_1 y 8 hilos. La diferencia subraya que cuantización, kernels, build y configuración importan. No debe presentarse una sola cifra como “la velocidad del O6”.
+2. **No se ha encontrado una prueba válida de que la GPU integrada del O6 acelere actualmente esos MoE mediante Vulkan**. En el hilo, la experiencia publicada fue negativa para una versión concreta. La existencia de Vulkan 1.3 en la especificación no reemplaza una prueba del backend y del modelo.
+3. **La memoria unificada no elimina el cuello de botella de ancho de banda ni el coste de mover expertos**. Los usuarios describen velocidades modestas en CPU para MoE grandes, y resultados muy distintos al instalar una GPU discreta. Separar siempre placa sola, placa + GPU, memoria del sistema y VRAM dedicada.
+4. **Orin tiene evidencia más profunda para offload experto con CUDA**, pero el benchmark más fuerte localizado usa Qwen3.8-Flash-Next Coder IQ1_M, expertos en archivos, MTP=4 y contextos largos; no equivale a un Qwen 30–35B completo Q4.
+5. **Los proyectos que comparten números sin configuración completa sirven como pistas, no como base para el cociente coste/rendimiento**. Por ejemplo, los 9–11 tok/s de eullm en O6 y 35,6 tok/s con RTX 3060 quedan en la lista de candidatos para verificar, no entran en el ranking hasta disponer de la receta exacta y un coste total equivalente.
+6. **Codeberg y otros forges**: la búsqueda web directa de Codeberg no devolvió contenido accesible en esta consulta. No se interpreta esa limitación como ausencia de proyectos; esta instantánea prioriza enlaces públicos verificables de GitHub, Hugging Face, foros de Radxa y Reddit.
+
+### Nuevas fuentes que conviene seguir
+
+- Foro de Radxa, hilo completo y respuestas con builds/quant alternativos: https://forum.radxa.com/t/llama-cpp-benchmarks/27813
+- Resultados de usuarios de O6 con Ollama: https://www.reddit.com/r/ollama/comments/1q33op3/radxa_orion_o6_llm_benchmarks_ollama_debian_12/
+- Índice de benchmarks por modelo y hardware: https://tokatlas.github.io/
+- Protocolo de medición abierta: https://computearena.ai/
+- Experiencias de inferencia en ARM integrado/RK3588: https://github.com/SergiioB/llamacpp-workbench
+- MoE en Jetson Orin: https://github.com/calvinvette/strata-inference-orin
+- O6 CPU y O6 + GPU PCIe en el proyecto eullm: https://github.com/eullm/eullm
+- MoE con RAM/swap en Jetson Orin Nano: https://github.com/baryhuang/llm-in-c
+
 ## 1. Plataformas evaluadas
 
 ### 1.1 Radxa Orion O6 (CIX P1)
