@@ -1,9 +1,9 @@
 # Hardware ARM con memoria unificada para inferencia local de IA
 ## Investigación técnica y plan de validación LEONES — 24 de octubre de 2026
 
-**Estado:** investigación documental; las mediciones de hardware que no se hayan ejecutado físicamente se marcan como *publicadas por terceros*, nunca como MEASURED por LEONES.  
+**Estado:** investigación documental basada exclusivamente en fuentes públicas; no se realizarán pruebas físicas de hardware para este estudio. Los datos de terceros se marcan como *PUBLISHED*, las estimaciones calculadas como *ESTIMATED* y nunca como *MEASURED por LEONES*.  
 **Rama:** `research/arm-unified-memory-ai-2026-10`  
-**Objetivo:** identificar hardware comprable y viable para inferencia local, priorizando Radxa Orion O6 de 64 GB y NVIDIA Jetson AGX Orin, con especial atención a Strata, GGUF, caché KV, descarga de expertos, drivers, PCIe, consumo y coste total.
+**Objetivo:** elaborar una comparativa documental de coste por tokens/s y tokens/s de los mejores modelos elegibles según Artificial Analysis para cada plataforma, priorizando Radxa Orion O6 de 64 GB y NVIDIA Jetson AGX Orin. Toda conclusión debe proceder de fuentes públicas trazables; no se comprarán equipos ni se harán pruebas físicas para este estudio.
 
 ## Resumen ejecutivo
 
@@ -11,7 +11,79 @@
 2. **Jetson AGX Orin 32 GB** es la ruta más sólida para validar motores CUDA ARM64 y gestión de memoria compartida. El fork `calvinvette/strata-inference-orin` publica pruebas reales en AGX Orin de 32 GB con JetPack 6.2/CUDA 12.6 y modelo GGUF MoE. Es evidencia más útil que una tabla TOPS comercial.
 3. **Jetson AGX Orin Developer Kit 64 GB** tiene precio oficial anunciado de 3.499 USD; un distribuidor europeo puede cobrar bastante más. El kit de desarrollo de 64 GB conserva el rendimiento del kit original de 32 GB, según NVIDIA; no debe confundirse con las especificaciones del módulo de producción de 64 GB.
 4. **No hay aún una comparación controlada Radxa O6 vs Jetson Orin** con el mismo modelo, cuantización, contexto, número de tokens, versiones de software y medición de pared. No se asignan tokens/s ni tokens/J a Radxa sin datos verificables.
-5. Para LEONES, separar tres estados: **PUBLISHED** (terceros, con fuente), **ESTIMATED** (cálculo o estimación identificada) y **MEASURED** (ejecución física controlada, con logs y comandos). Las cifras publicadas no deben convertirse en resultados propios.
+5. Para LEONES, separar **PUBLISHED** (terceros, con fuente) y **ESTIMATED** (cálculo derivado de fuentes, con fórmula y supuestos). **No habrá categoría MEASURED por LEONES en este estudio**, porque no se realizarán pruebas físicas. Las cifras publicadas no deben convertirse en resultados propios.
+
+
+## 0. Metodología permanente del estudio: fuentes públicas, Artificial Analysis y coste por tokens/s
+
+> **Regla de alcance:** este trabajo es una comparativa de investigación documental. No se comprarán placas, no se harán pruebas físicas y no se presentarán pruebas de laboratorio como siguiente paso requerido. Toda actualización del informe debe respetar esta regla, salvo que el usuario cambie explícitamente el alcance.
+
+### Preguntas que debe responder el resultado final
+
+1. **¿Qué tasa de generación (decode tokens/s) se publica para los mejores modelos que pueden ejecutarse razonablemente en cada plataforma?**
+2. **¿Cuál es el coste de capital por unidad de rendimiento publicado?** Métrica principal: **coste de hardware en EUR por token/s** (EUR/(tokens/s)); cuanto menor, mejor. Presentar también la inversa, **tokens/s por 1.000 € de hardware**, que resulta más intuitiva.
+3. **¿Qué modelo es el mejor candidato según Artificial Analysis (AA)** para la tarea y las restricciones del hardware, y qué evidencia pública hay de su velocidad en el runtime/plataforma concretos?
+4. **¿Cuánta incertidumbre hay?** Diferenciar una puntuación/ranking de modelo en AA, un throughput de proveedor/servicio en AA y un benchmark de inferencia local publicado por terceros: son medidas distintas y no intercambiables.
+
+### Selección de modelos: Artificial Analysis como referencia de calidad/capacidad
+
+- Consultar las páginas y tablas públicas actuales de Artificial Analysis para identificar modelos líderes, usando el índice o ranking pertinente a la tarea (p. ej., Intelligence Index y, cuando proceda, coding/agentic u otras categorías publicadas).
+- No elegir un modelo solo por su puesto global: conservar nombre y versión exactos, categoría/índice, fecha de consulta, contexto, modalidad, licencia cuando esté publicada y cualquier configuración relevante.
+- Aplicar después un filtro de viabilidad por plataforma: memoria física realmente utilizable (no contar swap como RAM), tamaño del modelo/archivo y cuantización disponible, arquitectura soportada por el runtime, formatos, backend, límites de contexto y evidencia pública de ejecución.
+- El resultado debe presentar el **mejor modelo elegible documentado por plataforma**, no afirmar que es el mejor modelo absoluto si no hay evidencia de que sea ejecutable en esa plataforma.
+- Si AA no publica velocidad para la combinación exacta modelo + hardware + runtime, marcarla como **“sin dato comparable”**. No convertir throughput de API/cloud en velocidad local ni inferir tokens/s a partir de TOPS, ancho de banda o número de parámetros.
+- Mantener por separado el modelo líder por calidad AA y el modelo con throughput local publicado. Si son distintos, explicar el compromiso; no ocultar la diferencia para producir una clasificación artificial.
+
+### Fuentes públicas admisibles y trazabilidad
+
+Prioridad recomendada:
+1. Artificial Analysis: páginas de modelos, rankings/índices y benchmarks de velocidad cuando sean accesibles públicamente.
+2. Fabricantes: especificaciones, precios oficiales, límites de potencia y documentación de software.
+3. Repositorios primarios de runtimes y sus issues/releases, con commit o versión identificable.
+4. Benchmarks públicos de terceros con configuración, modelo/quant, hardware y métricas suficientemente detallados.
+5. Distribuidores para precio actual del SKU exacto, stock, IVA y envío; conservar URL y fecha de consulta.
+
+Cada fila de evidencia debe registrar como mínimo: URL, título/autor, fecha de publicación o consulta, hardware/SKU, modelo y revisión, cuantización, runtime/versión/commit, backend, contexto y tipo de workload, definición de tokens/s (prefill o decode), potencia si se publica, precio/IVA/envío, moneda y estado **PUBLISHED** o **ESTIMATED**. Si faltan datos esenciales, no ocultarlos: usar “no publicado” o “no comparable”.
+
+### Métricas de comparación
+
+**A. Rendimiento publicado**
+- Métrica primaria de generación: **decode/output tokens/s**, con contexto y longitud de salida indicados.
+- Mantener **prefill tokens/s**, TTFT, latencia, contexto máximo y consumo como columnas independientes; no mezclarlos con decode.
+- Para cifras de rangos o varias pruebas, conservar rango/mediana y condiciones originales; no elegir el máximo aislado sin explicarlo.
+
+**B. Coste de hardware por rendimiento**
+- **EUR por token/s = coste total de adquisición documentado (EUR) ÷ decode tokens/s publicados.**
+- **Tokens/s por 1.000 € = decode tokens/s publicados ÷ (coste total EUR / 1.000).**
+- Si solo se conoce MSRP en USD o el precio no incluye IVA/envío, mostrarlo como escenario separado y no etiquetarlo como coste final entregado en España.
+- El numerador debe incluir el mismo alcance de sistema para todas las opciones: placa/kit completo, fuente, refrigeración/carcasa y almacenamiento imprescindible; identificar por separado cualquier componente ya incluido.
+- No mezclar precios de módulo suelto con kit completo. Registrar fecha de consulta, IVA, envío, stock y garantía.
+- Esta métrica es **coste de capital por throughput publicado**, no coste operativo por token ni coste energético. Sin potencia y energía verificables, tokens/J, tokens/kWh y coste eléctrico se marcan como “no disponible”; no se estiman a partir del TDP.
+
+**C. Dos vistas que nunca se deben colapsar**
+1. **Comparativa de mejor modelo elegible por plataforma:** calidad/capacidad según AA + velocidad local publicada para ese modelo si existe.
+2. **Comparativa de mejor throughput local publicado por plataforma:** modelo/runtime/configuración exactos del benchmark público, aunque el modelo no sea el líder de AA.
+No calcular una única puntuación agregada entre inteligencia, tokens/s, memoria y precio sin una fórmula explícita y una justificación. Si las pruebas usan contextos, cuantizaciones o runtimes diferentes, etiquetar el cociente coste/rendimiento como **orientativo/no normalizado**.
+
+### Incertidumbre y reglas anti-inferencia
+
+- **PUBLISHED:** cifra publicada por fuente externa; no implica reproducción ni verificación independiente por LEONES.
+- **ESTIMATED:** cálculo transparente con entradas citadas; incluir fórmula, supuestos y sensibilidad.
+- **NO DATA / NOT COMPARABLE:** falta una medición o las condiciones difieren materialmente.
+- **MEASURED BY LEONES:** no utilizar en este informe, dado que no habrá pruebas físicas.
+- No extrapolar un benchmark de 1.5B a 30–35B, un resultado de CPU a Vulkan/CUDA, un modelo podado a su versión completa, ni un resultado cloud a inferencia local.
+- No usar TOPS, GB/s de memoria o especificaciones máximas de fabricante como sustituto de tokens/s publicados.
+- No afirmar soporte de modelo/runtime/backend sin fuente pública concreta.
+- Si no existe velocidad pública para la pareja exacta hardware/modelo, la respuesta correcta es señalar la brecha de evidencia; no inventar una cifra ni ejecutar una prueba física.
+
+### Entregables finales
+
+- Tabla de mejores modelos elegibles según Artificial Analysis por plataforma, con la fecha y categoría AA.
+- Tabla de throughput local público (decode y prefill separados) con modelo/runtime/condiciones exactas.
+- Tabla de precio del sistema completo y procedencia de la cotización.
+- Ranking de **EUR por token/s** y **tokens/s por 1.000 €**, solo para filas con precio y throughput razonablemente comparables.
+- Análisis de sensibilidad: precio de referencia frente a precio europeo con IVA; y, cuando haya varios benchmarks comparables, rango de rendimiento en lugar de un único valor.
+- Lista explícita de brechas de evidencia. No se debe recomendar compra basándose únicamente en una estimación no verificada.
 
 ## 1. Plataformas evaluadas
 
@@ -225,12 +297,12 @@ Registrar por separado:
 
 No comparar precio por TOPS. Métricas útiles: EUR por GB de RAM realmente disponible, tokens/s por vatio de pared, tokens generados por kWh y coste total por token para un workload especificado.
 
-## 5. Plan de benchmark reproducible para LEONES
+## 5. Protocolo de extracción y normalización de benchmarks públicos (sin pruebas físicas)
 
-### Fase A — validar la máquina y los controladores
+### A. Revisión documental de plataforma y controladores
 
-En cada sistema guardar:
-- modelo/SKU, número de serie redactado, memoria física, kernel, distribución y firmware;
+Para cada sistema, extraer de fuentes públicas cuando exista:
+- modelo/SKU, memoria física, kernel, distribución y firmware;
 - `uname -a`, `lscpu`, `free -h`, `lsblk`, `dmesg` relevante;
 - versión del driver GPU, Vulkan/OpenCL/CUDA;
 - para Vulkan: salida de `vulkaninfo --summary`;
@@ -240,19 +312,15 @@ En cada sistema guardar:
 
 No afirmar “GPU acelerada” hasta que el log del runtime identifique el backend y la carga real de GPU.
 
-### Fase B — baseline CPU y GPU
+### B. Recopilación de benchmarks públicos de CPU y GPU
 
-Usar la misma revisión fijada de llama.cpp cuando sea posible:
-- primero prueba CPU pura;
-- luego Vulkan en O6, si el backend compila y detecta el dispositivo;
-- luego CUDA en Jetson;
-- anotar commit de llama.cpp, flags de compilación, salida de `--version`/ayuda y logs completos.
+Buscar resultados publicados con revisión fijada de llama.cpp cuando existan: CPU pura, Vulkan en O6 y CUDA en Jetson. Registrar commit, flags, backend detectado y logs que el autor haya publicado. Si no hay fuente pública suficiente, marcar el resultado como no disponible; no compilar ni probar el hardware.
 
 Modelo inicial pequeño para validar instalación; después un modelo dense de 7–8B y, finalmente, el MoE seleccionado. No empezar por el modelo más grande antes de validar el runtime.
 
-### Fase C — MoE y memoria
+### C. Selección documental de MoE y memoria
 
-Prueba primaria de interés:
+Modelos prioritarios que deben investigarse en fuentes públicas (sin ejecutarlos físicamente):
 - un modelo Qwen3-30B-A3B o Qwen3.5-35B-A3B disponible en GGUF;
 - registrar URL exacta, revisión, nombre de fichero, tamaño y SHA-256;
 - cuantización idéntica entre plataformas, siempre que el formato sea compatible;
@@ -261,21 +329,18 @@ Prueba primaria de interés:
 - distinguir modelo completo frente a variantes “Coder” con expertos eliminados;
 - registrar fallos OOM, swap, uso de SSD y si se leen expertos desde fichero.
 
-En Strata, usar la configuración publicada como baseline para reproducir primero el resultado de Orin. Después variar un único parámetro cada vez: contexto, presupuesto de caché de expertos, MTP, batch de prefill, KV y límite de potencia.
+Para Strata, registrar la configuración publicada y comparar solo benchmarks públicos existentes. No declarar reproducido el resultado ni atribuir a LEONES la medición del autor.
 
-### Fase D — protocolo de medición
+### D. Normalización de métricas publicadas
 
-- Una carga de calentamiento y al menos 3 ejecuciones medidas por configuración.
-- Prompt de contenido fijo y salida máxima fija; guardar tokens reales de entrada/salida.
-- Reportar mediana y rango, no solo el mejor resultado.
+- Extraer del autor la mediana/rango y número de repeticiones cuando estén publicados; no asumir repeticiones si no se declaran.
 - Separar tiempo de carga, TTFT, prefill tok/s, decode tok/s, latencia total y memoria máxima.
-- Medir consumo en pared durante idle, prefill y decode; informar vatios medios y energía por generación.
-- Para Strata, separar prefijos reutilizados de tokens nuevos y caché de expertos caliente de caché fría.
-- Incluir logs por ejecución, JSON/CSV, script, commit y hash de modelo.
-- Repetir con el límite de potencia sostenible, además de modo máximo, para comprobar el rendimiento continuo y la temperatura.
-- Hacer una prueba de calidad/corrección (respuesta esperada o tarea con tests) para evitar que una salida truncada o fallida cuente como éxito.
+- Separar consumo en pared, TDP y límite de potencia; son magnitudes distintas.
+- Para Strata, conservar datos de prefijos reutilizados, tokens nuevos y caché de expertos caliente/fría si la fuente los distingue.
+- Guardar URL, fecha de consulta, commit/hash disponible, modelo, configuración y cita de cada cifra.
+- Anotar si el benchmark incluye evaluación de calidad/corrección o solo velocidad.
 
-### Tabla de resultados (rellenar únicamente con mediciones)
+### Tabla de resultados públicos (rellenar únicamente con datos publicados; los cálculos derivados son ESTIMATED)
 
 | Placa / backend | Modelo / cuantización | Contexto | Prefill tok/s | Decode tok/s | TTFT | RAM máxima / swap | W pared medio decode | tokens/J | Estado |
 |---|---|---:|---:|---:|---:|---|---:|---:|---|
@@ -286,7 +351,7 @@ En Strata, usar la configuración publicada como baseline para reproducir primer
 
 Los resultados de Orin anteriores no son comparables directamente con las filas de O6 pendientes: los tamaños de prompt, modelo, configuración y contexto difieren. No derivar tokens/J sin medición de potencia.
 
-## 6. Riesgos y criterios de compra
+## 6. Riesgos de evidencia y criterios de comparación
 
 **Radxa O6 — comprar solo si:**
 - se acepta trabajo de integración de kernel/backend;
@@ -314,8 +379,8 @@ Los resultados de Orin anteriores no son comparables directamente con las filas 
 
 ## Conclusión
 
-Para un ensayo centrado en motores de inferencia, **Jetson AGX Orin 32/64 GB es la plataforma de menor riesgo técnico gracias al fork Strata con resultados publicados y una ruta CUDA ARM64**. Se han localizado páginas de distribuidores europeos con precios anunciados de unos 4.012–4.199 € IVA incluido para el kit de 64 GB; comprobar disponibilidad y total final en el checkout.
+En la evidencia pública disponible, **Jetson AGX Orin es la plataforma con menor incertidumbre documental para Strata/CUDA ARM64**, porque existe un fork con benchmarks publicados. Se han localizado páginas de distribuidores europeos con precios anunciados de unos 4.012–4.199 € IVA incluido para el kit de 64 GB; comprobar disponibilidad y total final en el checkout.
 
 Para un proyecto más abierto, con mayor RAM compartida y expansión PCIe, **Radxa Orion O6 64 GB es una candidata prometedora**. Ya existe un baseline oficial GGUF/CPU de 1.5B documentado por Radxa, pero falta la prueba decisiva: MoE de 30–35B, backend Vulkan comprobado, memoria máxima, swap y consumo de pared. No recomendar comprar la O6 solo por el dato de 100 GB/s o los TOPS anunciados hasta verificar ese caso de uso.
 
-El próximo hito debe ser un benchmark físico comparable, no otra estimación basada en TOPS. LEONES debe conservar comandos, logs, configuraciones, hashes, fallos y consumo medido para que otra persona pueda repetirlo.
+El próximo hito es completar la investigación pública: identificar los mejores modelos elegibles según Artificial Analysis, localizar benchmarks públicos de throughput para las combinaciones de hardware/modelo/runtime pertinentes, verificar precios europeos del sistema completo y calcular coste por tokens/s con las fórmulas anteriores. No se realizarán pruebas físicas. Si una combinación carece de benchmark público comparable, quedará explícitamente como brecha de evidencia.
