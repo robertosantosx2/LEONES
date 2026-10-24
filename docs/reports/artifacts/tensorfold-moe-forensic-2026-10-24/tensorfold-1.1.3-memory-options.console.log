@@ -1,0 +1,14 @@
+# Summary transcript from the memory-options audit described in the report.
+# Not a byte-for-byte copy of the original local file.
+TensorFold binary: /home/ssantos/tensorfold-1.1.3-check.aOKPG0/tensorfold-1.1.3-linux-x86_64/bin/tensorfold-native
+Version: tensorfold-native 1.1.3
+SHA256: a51ec99fa4f87ab12bd48261e1c1cbeb1e7b51f72755a71d4a7eda89712ff671
+Relevant environment variables observed:
+- TF_CUDA_DEVICE
+- TF_CUDA_SEGMENTS
+- TENSORFOLD_CUDA_KERNELS
+- TENSORFOLD_MEMORY_RESERVE_GIB
+- TENSORFOLD_CUDA_MEMORY_LIMIT_GB
+The variables were empty/not set in the inspected shell environment.
+Serve help included --segments SEGMENTS, but no obvious general --cpu-offload or --offload flag.
+The exact original local file is /home/ssantos/tensorfold-forensic-20261024/tensorfold-1.1.3-memory-options.log
