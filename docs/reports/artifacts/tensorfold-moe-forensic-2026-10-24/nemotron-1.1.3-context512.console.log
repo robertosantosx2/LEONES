@@ -1,0 +1,17 @@
+# Console transcript reconstructed from the complete error and timestamps shared in the session.
+# The original host-side log was not directly accessible to this GitHub upload.
+===== START =====
+2026-10-24T21:45:53,499655019+02:00
+tensorfold-native 1.1.3
+SHA256 a51ec99fa4f87ab12bd48261e1c1cbeb1e7b51f72755a71d4a7eda89712ff671
+===== COMMAND =====
+/home/ssantos/tensorfold-1.1.3-check.aOKPG0/tensorfold-1.1.3-linux-x86_64/bin/tensorfold-native serve TensorFold/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit --name nemotron-forensic --host 127.0.0.1 --port 18089 --backend auto --parallel 1 --context 512 --temperature 0 --no-thinking
+===== ERROR =====
+tensorfold: the checkpoint's 16.6 GiB of weights do not fit the 2.6 GiB the CUDA memory budget grants (3.6 GiB free less a 1.0 GiB reserve); free device memory or adjust TENSORFOLD_MEMORY_RESERVE_GIB / TENSORFOLD_CUDA_MEMORY_LIMIT_GB
+timeout_exit_code=1
+===== END =====
+2026-10-24T21:45:58,572657071+02:00
+Duration approx 5.073 seconds.
+Original local log paths:
+- /home/ssantos/tensorfold-forensic-20261024/nemotron-1.1.3-preflight.log
+- /home/ssantos/tensorfold-forensic-20261024/nemotron-1.1.3-context512.log
