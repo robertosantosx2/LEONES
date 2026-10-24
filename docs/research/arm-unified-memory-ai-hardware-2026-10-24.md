@@ -82,7 +82,7 @@ No calcular una única puntuación agregada entre inteligencia, tokens/s, memori
 - Tabla de precio del sistema completo y procedencia de la cotización.
 - Ranking de **EUR por token/s** y **tokens/s por 1.000 €**, solo para filas con precio y throughput razonablemente comparables.
 - Análisis de sensibilidad: precio de referencia frente a precio europeo con IVA; y, cuando haya varios benchmarks comparables, rango de rendimiento en lugar de un único valor.
-- Lista explícita debrechas de evidencia. No se debe recomendar compra basándose únicamente en una estimación no verificada.
+- Lista explícita de brechas de evidencia. No se debe recomendar compra basándose únicamente en una estimación no verificada.
 
 ## 0.1 Primera extracción de Artificial Analysis y normalización pública (consulta: 24-10-2026)
 
@@ -137,6 +137,105 @@ Esta sección amplía el estudio con experiencias de personas que ya intentaron 
 | **Radxa Orion O6 — benchmark oficial** | [Guía de Arm Learning Paths para ERNIE-4.5 MoE en O6](https://learn.arm.com/learning-paths/cross-platform/ernie_moe_v9/2_llamacpp_installation/) | Procedimiento para instalar llama.cpp, descargar GGUF Q4 y validar inferencia en la placa. | Guía técnica de instalación/validación; no la contamos como benchmark de throughput hasta que haya resultados numéricos comparables. |
 | **Jetson AGX Orin 32 GB — Strata ARM64/CUDA** | [Repositorio y resultados del port](https://github.com/calvinvette/strata-inference-orin) | Qwen3.8-Flash-Next Coder IQ1_M: decode mediano **18,6–21,6 tok/s**; prefill **37,8–52,5 tok/s** en prompts de 172–1069 tokens. Con contexto 262K: prefill 58,5 tok/s y decode 6,6 tok/s. | Es la evidencia ARM64/CUDA más detallada encontrada para MoE muy grande con expertos respaldados por archivos. La variante Coder tiene expertos podados; el contexto y el tamaño de respuesta cambian mucho la velocidad. Ya se detalla en §2. |
 | **Radxa O6 + GPU discreta PCIe** | [Proyecto de benchmarks de James Geerling](https://github.com/geerlingguy/ai-benchmarks) | En una configuración O6 16 GB + RTX 3080 Ti, DeepSeek R1 14B aparece con **64,58 eval tok/s**; O6 CPU sin GPU discreta aparece con **4,33 eval tok/s** en ese conjunto de resultados. | Demuestra que el sistema completo con GPU discreta puede cambiar radicalmente el rendimiento; no se puede extrapolar al O6 solo. |
+
+## 1. Plataformas evaluadas (reintroducido del histórico)
+
+### 1.1 Radxa Orion O6 (CIX P1)
+
+Fuentes oficiales:
+- Producto: https://radxa.com/products/orion/o6/
+- Documentación: https://docs.radxa.com/en/orion/o6
+- PDF con precio minorista oficial: https://dl.radxa.com/orion/o6/radxa_orion_o6_announcement_presentation_2024_12_18.pdf
+
+Especificaciones confirmadas:
+- SoC CIX P1 ARMv9.2, 12 núcleos (4×A720 2.6 GHz + 4×A720 2.4 GHz + 4×A520 1.8 GHz)
+- GPU Arm Immortals G720 MC10 (Vulkan 1.3 / OpenCL 2.2)
+- NPU Zhouyi anunciada 30 TOPS (no diseñada para decode autoregresivo de LLM)
+- 64 GB LPDDR5, bus 128-bit, hasta ~100 GB/s
+- PCIe Gen4 x8 físico + M.2 NVMe
+- Precio MSRP histórico 64 GB: **539 USD** (no precio final España)
+
+### 1.2 NVIDIA Jetson AGX Orin
+
+- AGX Orin 32/64 GB, CPU Cortex-A78AE + GPU Ampere, LPDDR5 compartida
+- Developer Kit 64 GB MSRP oficial: **3.499 USD**
+- Evidencia real: fork Strata en 32 GB con decode 18,6–21,6 tok/s (Qwen3.8-Flash-Next Coder)
+
+### 1.3 Alternativas de más memoria
+
+| Plataforma | RAM física compartida | Estado para esta investigación | Uso recomendado |
+|---|---:|---|---|
+| Radxa Orion O6 | Hasta 64 GB LPDDR5 | Especificaciones oficiales; benchmark LLM grande comparable no encontrado | Opción abierta para evaluar CPU/Vulkan y PCIe |
+| Jetson AGX Orin | 32/64 GB según kit/módulo | Hay fork ARM64/CUDA con mediciones reales de 32 GB | Referencia para motor especializado y offload |
+| Jetson Orin NX | 8/16 GB según SKU | CUDA maduro, memoria demasiado pequeña para varios MoE de 30B sin descarga agresiva | Modelos pequeños, visión y nodo de control |
+| AMD Strix Halo / Ryzen AI Max+ | 128–192 GB UMA | Ecosistema 2026 muy activo (multi-slot, Vulkan/ROCm) | Referencia de alto throughput en memoria unificada |
+| Apple Silicon | Configuración dependiente del equipo | Memoria unificada madura, plataforma cerrada | Referencia de experiencia de usuario y rendimiento, no hardware abierto |
+
+## 2. Evidencia reproducible: Strata en Jetson AGX Orin (reintroducido)
+
+Repositorio: https://github.com/calvinvette/strata-inference-orin  
+
+Resultados publicados (PUBLISHED, no medidos por LEONES):
+- Hardware: Jetson AGX Orin 32 GB, JetPack 6.2, CUDA 12.6, MAXN
+- Modelo: Qwen3.8-Flash-Next Coder IQ1_M, expertos a fichero, MTP speculative
+- Decode mediana: **18,6–21,6 tok/s** (respuestas 64 tokens)
+- Prefill: **37,8–52,5 tok/s** (prompts 172–1069 tokens)
+- Contexto 262K: decode cae a ~6,6 tok/s
+- RAM disponible mínima reportada ~7–9 GiB (con swap)
+
+Interpretación: evidencia sólida de que un MoE cuantizado agresivamente puede ejecutarse en Orin compartiendo RAM. No generalizable a cualquier 30–35B ni a potencia limitada.
+
+## 3. Controladores y backends: matriz de compatibilidad (reintroducido)
+
+| Plataforma / backend | Estado documental | Qué queda por verificar |
+|---|---|---|
+| Jetson Orin + CUDA + Strata ARM64 | Evidencia publicada en AGX Orin 32 GB | Repetición independiente, potencia limitada, modelos completos |
+| Jetson Orin + llama.cpp CUDA + GGUF | Vía ampliamente disponible | Compilar versión fijada, capas GPU, KV cache, MoE |
+| Orion O6 + llama.cpp CPU | Punto de partida razonable | Build limpio, kernels ARM, estabilidad |
+| Orion O6 + llama.cpp Vulkan | GPU anuncia Vulkan 1.3 | `vulkaninfo`, backend compilado, operaciones soportadas vs CPU |
+| Orion O6 + NPU Zhouyi | NPU 30 TOPS con SDK | No asumir GGUF ni decode autoregresivo (confirmado por CIX) |
+| Orion O6 + GPU PCIe externa | Ranura PCIe Gen4 x8 física | IOMMU, driver ARM64, alimentación, CUDA/ROCm |
+
+## 4. Coste total de propiedad (TCO) y escala de precios por Tiers (reintroducido + ampliado)
+
+### Escala de precios por Tiers (EUR, orientativa, sistema completo)
+
+| Tier | Rango de precio | Opciones típicas en este rango | Notas |
+|---|---|---|---|
+| **Tier 0** | ≤ 1.000 € | Radxa Orion O6 32/64 GB (MSRP histórico ~500–600 USD + IVA/envío) + NVMe + fuente | Mejor relación RAM unificada / precio de investigación abierta. Precio final España no confirmado. |
+| **Tier 1** | 1.000 – 2.000 € | O6 64 GB + accesorios premium / refrigeración / NVMe grande; o Jetson Orin NX sistemas | Ampliación de O6 o entrada Jetson de menor memoria. |
+| **Tier 2** | 2.000 – 3.000 € | Sistemas Jetson Orin de producción + carrier; o mini-PCs con Ryzen AI de gama media | Transición a CUDA maduro o AMD UMA. |
+| **Tier 3** | 3.000 – 4.000 € | Jetson AGX Orin Developer Kit 64 GB (MSRP 3.499 USD + IVA/envío ~4.000 €) | Referencia CUDA ARM de mayor memoria. |
+| **Tier 4** | 4.000 – 5.000 € | AGX Orin 64 GB con accesorios / refrigeración / NVMe de alta capacidad | Coste realista de sistema listo. |
+| **Tier 5** | 5.000 – 6.000 € | Sistemas integrados Orin o primeras configuraciones Strix Halo de entrada | |
+| **Tier 6** | 6.000 – 7.000 € | Mini-PCs / workstations con Ryzen AI Max+ 128 GB | |
+| **Tier 7** | 7.000 – 8.000 € | Configuraciones Strix Halo / Gorgon Halo de gama media | |
+| **Tier 8** | 8.000 – 9.000 € | Sistemas de 128–192 GB UMA bien equipados | |
+| **Tier 9** | 9.000 – 10.000 € | Workstations de alto ancho de banda con 192 GB UMA + almacenamiento | |
+| **Tier 10+** | > 10.000 € | Clusters, DGX Spark / GB10 class, o configuraciones enterprise | Fuera del alcance principal de este estudio. |
+
+**Advertencia:** Los rangos son orientativos y se basan en MSRP + estimaciones de IVA/envío. Toda decisión de compra requiere cotización actual con stock, IVA, envío y garantía.
+
+### 4.1 Radxa Orion O6 64 GB – presupuesto orientativo
+
+- MSRP histórico 64 GB: 539 USD
+- IVA + transporte + posible aduana: pendientes de cotización
+- NVMe 1–2 TB + fuente ≥65 W: añadir según oferta
+- **Total final España: NO VERIFICADO**
+
+### 4.2 Jetson AGX Orin Developer Kit 64 GB
+
+- MSRP oficial: 3.499 USD
+- Cotización europea reciente orientativa ~4.000 €+ (verificar stock)
+- **Total final España: NO VERIFICADO** hasta oferta concreta
+
+## 5. Plan de benchmark reproducible (resumen del histórico)
+
+Fase A — Validar máquina y drivers (uname, lscpu, free, vulkaninfo, tegrastats, vatímetro).
+Fase B — Baseline CPU → Vulkan (O6) → CUDA (Jetson) con misma revisión de llama.cpp.
+Fase C — MoE (Qwen3-30B-A3B / 35B-A3B GGUF), mismo quant, contexto 4K→8K, registrar OOM, swap, offload de expertos.
+
+Todas las cifras futuras de LEONES se etiquetarán MEASURED solo si se ejecutan físicamente (fuera del alcance actual).
 
 ## 7. Experiencias, proyectos y planes de futuro en repositorios públicos (consulta exhaustiva 24-10-2026)
 
@@ -222,6 +321,4 @@ Ecosistema muy activo en GitHub a octubre 2026:
 
 ---
 
-*Sección añadida el 24 de octubre de 2026 a partir de búsqueda exhaustiva en GitHub, Hugging Face, ModelScope, Gitee y GitCode. Todos los datos son PUBLISHED por terceros; no han sido reproducidos por LEONES.*
-
-**Nota sobre longitud:** Este informe integra la metodología, la extracción de Artificial Analysis, las experiencias comunitarias iniciales y la sección exhaustiva de repositorios. Las subsecciones históricas detalladas de análisis de plataformas individuales (precios por tiers, tablas de rendimiento extendidas, etc.) están disponibles en el historial de commits de la rama y en el archivo local completo del workspace. El informe se mantiene como documento vivo de investigación documental.
+*Informe actualizado el 24 de octubre de 2026. Se han reintroducido las tablas históricas de plataformas, backends, TCO y la nueva escala de precios por Tiers, junto con la sección exhaustiva 7 de experiencias en repositorios públicos. Todos los datos de rendimiento son PUBLISHED por terceros; no han sido reproducidos por LEONES.*
