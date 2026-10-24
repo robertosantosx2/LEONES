@@ -1,0 +1,5 @@
+plan: weights+state+scratch 960 MB (KV 96 MB for 1024 tokens, prefill 141 MB), expert slots 2166 MB, resident experts 1232/6144
+ La inferencia local es un método estadístico que se utiliza para hacer estimaciones o conclusiones sobre una población a partir de datos locales, es decir, datos cercanos o relacionados en un contexto espacial o temporal. Se centra en analizar solo una parte del conjunto de datos, generalmente en un entorno inmediato al punto de interés, para obtener estimaciones más precisas y adaptadas a ese contexto específico. Es común en análisis espaciales y en modelos de regresión local.
+prompt 16 tok 18.91 tok/s | gen 104 tok 30.90 tok/s
+CPU expert compute, share of gen time: 62.1%
+expert hit rate 80.2% (9125 misses), cache swaps 1
