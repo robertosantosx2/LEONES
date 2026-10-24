@@ -13,6 +13,131 @@
 4. **No hay aún una comparación controlada Radxa O6 vs Jetson Orin** con el mismo modelo, cuantización, contexto, número de tokens, versiones de software y medición de pared. No se asignan tokens/s ni tokens/J a Radxa sin datos verificables.
 5. Para LEONES, separar **PUBLISHED** (terceros, con fuente) y **ESTIMATED** (cálculo derivado de fuentes, con fórmula y supuestos). **No habrá categoría MEASURED por LEONES en este estudio**, porque no se realizarán pruebas físicas. Las cifras publicadas no deben convertirse en resultados propios.
 
+## 0. Metodología permanente del estudio: fuentes públicas, Artificial Analysis y coste por tokens/s
+
+> **Regla de alcance:** este trabajo es una comparativa de investigación documental. No se comprarán placas, no se harán pruebas físicas y no se presentarán pruebas de laboratorio como siguiente paso requerido. Toda actualización del informe debe respetar esta regla, salvo que el usuario cambie explícitamente el alcance.
+
+### Preguntas que debe responder el resultado final
+
+1. **¿Qué tasa de generación (decode tokens/s) se publica para los mejores modelos que pueden ejecutarse razonablemente en cada plataforma?**
+2. **¿Cuál es el coste de capital por unidad de rendimiento publicado?** Métrica principal: **coste de hardware en EUR por token/s** (EUR/(tokens/s)); cuanto menor, mejor. Presentar también la inversa, **tokens/s por 1.000 € de hardware**, que resulta más intuitiva.
+3. **¿Qué modelo es el mejor candidato según Artificial Analysis (AA)** para la tarea y las restricciones del hardware, y qué evidencia pública hay de su velocidad en el runtime/plataforma concretos?
+4. **¿Cuánta incertidumbre hay?** Diferenciar una puntuación/ranking de modelo en AA, un throughput de proveedor/servicio en AA y un benchmark de inferencia local publicado por terceros: son medidas distintas y no intercambiables.
+
+### Selección de modelos: Artificial Analysis como referencia de calidad/capacidad
+
+- Consultar las páginas y tablas públicas actuales de Artificial Analysis para identificar modelos líderes, usando el índice o ranking pertinente a la tarea (p. ej., Intelligence Index y, cuando proceda, coding/agentic u otras categorías publicadas).
+- No elegir un modelo solo por su puesto global: conservar nombre y versión exactos, categoría/índice, fecha de consulta, contexto, modalidad, licencia cuando esté publicada y cualquier configuración relevante.
+- Aplicar después un filtro de viabilidad por plataforma: memoria física realmente utilizable (no contar swap como RAM), tamaño del modelo/archivo y cuantización disponible, arquitectura soportada por el runtime, formatos, backend, límites de contexto y evidencia pública de ejecución.
+- El resultado debe presentar el **mejor modelo elegible documentado por plataforma**, no afirmar que es el mejor modelo absoluto si no hay evidencia de que sea ejecutable en esa plataforma.
+- Si AA no publica velocidad para la combinación exacta modelo + hardware + runtime, marcarla como **“sin dato comparable”**. No convertir throughput de API/cloud en velocidad local ni inferir tokens/s a partir de TOPS, ancho de banda o número de parámetros.
+- Mantener por separado el modelo líder por calidad AA y el modelo con throughput local publicado. Si son distintos, explicar el compromiso; no ocultar la diferencia para producir una clasificación artificial.
+
+### Fuentes públicas admisibles y trazabilidad
+
+Prioridad recomendada:
+1. Artificial Analysis: páginas de modelos, rankings/índices y benchmarks de velocidad cuando sean accesibles públicamente.
+2. Fabricantes: especificaciones, precios oficiales, límites de potencia y documentación de software.
+3. Repositorios primarios de runtimes y sus issues/releases, con commit o versión identificable.
+4. Benchmarks públicos de terceros con configuración, modelo/quant, hardware y métricas suficientemente detallados.
+5. Distribuidores para precio actual del SKU exacto, stock, IVA y envío; conservar URL y fecha de consulta.
+
+Cada fila de evidencia debe registrar como mínimo: URL, título/autor, fecha de publicación o consulta, hardware/SKU, modelo y revisión, cuantización, runtime/versión/commit, backend, contexto y tipo de workload, definición de tokens/s (prefill o decode), potencia si se publica, precio/IVA/envío, moneda y estado **PUBLISHED** o **ESTIMATED**. Si faltan datos esenciales, no ocultarlos: usar “no publicado” o “no comparable”.
+
+### Métricas de comparación
+
+**A. Rendimiento publicado**
+- Métrica primaria de generación: **decode/output tokens/s**, con contexto y longitud de salida indicados.
+- Mantener **prefill tokens/s**, TTFT, latencia, contexto máximo y consumo como columnas independientes; no mezclarlos con decode.
+- Para cifras de rangos o varias pruebas, conservar rango/mediana y condiciones originales; no elegir el máximo aislado sin explicarlo.
+
+**B. Coste de hardware por rendimiento**
+- **EUR por token/s = coste total de adquisición documentado (EUR) ÷ decode tokens/s publicados.**
+- **Tokens/s por 1.000 € = decode tokens/s publicados ÷ (coste total EUR / 1.000).**
+- Si solo se conoce MSRP en USD o el precio no incluye IVA/envío, mostrarlo como escenario separado y no etiquetarlo como coste final entregado en España.
+- El numerador debe incluir el mismo alcance de sistema para todas las opciones: placa/kit completo, fuente, refrigeración/carcasa y almacenamiento imprescindible; identificar por separado cualquier componente ya incluido.
+- No mezclar precios de módulo suelto con kit completo. Registrar fecha de consulta, IVA, envío, stock y garantía.
+- Esta métrica es **coste de capital por throughput publicado**, no coste operativo por token ni coste energético. Sin potencia y energía verificables, tokens/J, tokens/kWh y coste eléctrico se marcan como “no disponible”; no se estiman a partir del TDP.
+
+**C. Dos vistas que nunca se deben colapsar**
+1. **Comparativa de mejor modelo elegible por plataforma:** calidad/capacidad según AA + velocidad local publicada para ese modelo si existe.
+2. **Comparativa de mejor throughput local publicado por plataforma:** modelo/runtime/configuración exactos del benchmark público, aunque el modelo no sea el líder de AA.
+No calcular una única puntuación agregada entre inteligencia, tokens/s, memoria y precio sin una fórmula explícita y una justificación. Si las pruebas usan contextos, cuantizaciones o runtimes diferentes, etiquetar el cociente coste/rendimiento como **orientativo/no normalizado**.
+
+### Incertidumbre y reglas anti-inferencia
+
+- **PUBLISHED:** cifra publicada por fuente externa; no implica reproducción ni verificación independiente por LEONES.
+- **ESTIMATED:** cálculo transparente con entradas citadas; incluir fórmula, supuestos y sensibilidad.
+- **NO DATA / NOT COMPARABLE:** falta una medición o las condiciones difieren materialmente.
+- **MEASURED BY LEONES:** no utilizar en este informe, dado que no habrá pruebas físicas.
+- No extrapolar un benchmark de 1.5B a 30–35B, un resultado de CPU a Vulkan/CUDA, un modelo podado a su versión completa, ni un resultado cloud a inferencia local.
+- No usar TOPS, GB/s de memoria o especificaciones máximas de fabricante como sustituto de tokens/s publicados.
+- No afirmar soporte de modelo/runtime/backend sin fuente pública concreta.
+- Si no existe velocidad pública para la pareja exacta hardware/modelo, la respuesta correcta es señalar la brecha de evidencia; no inventar una cifra ni ejecutar una prueba física.
+
+### Entregables finales
+
+- Tabla de mejores modelos elegibles según Artificial Analysis por plataforma, con la fecha y categoría AA.
+- Tabla de throughput local público (decode y prefill separados) con modelo/runtime/condiciones exactas.
+- Tabla de precio del sistema completo y procedencia de la cotización.
+- Ranking de **EUR por token/s** y **tokens/s por 1.000 €**, solo para filas con precio y throughput razonablemente comparables.
+- Análisis de sensibilidad: precio de referencia frente a precio europeo con IVA; y, cuando haya varios benchmarks comparables, rango de rendimiento en lugar de un único valor.
+- Lista explícita de brechas de evidencia. No se debe recomendar compra basándose únicamente en una estimación no verificada.
+
+## 0.1 Primera extracción de Artificial Analysis y normalización pública (consulta: 24-10-2026)
+
+Esta sección fija una primera instantánea pública; los rankings, precios y benchmarks cambian. Volver a consultar las fuentes antes de una decisión de compra.
+
+### Modelos candidatos según Artificial Analysis
+
+| Modelo | Artificial Analysis Intelligence Index | Velocidad AA publicada | Memoria/formato local conocido | Lectura para este estudio |
+|---|---:|---:|---|---|
+| [Qwen3.8 27B (Xhigh)](https://artificialanalysis.ai/models/qwen3-8-27b) | 34 | 45,2 output tok/s, medidos en API de Alibaba | 27B; pesos abiertos; Apache 2.0; contexto publicado de ~256K | Candidato principal de calidad dentro de la clase pequeña (≤40B) según la página AA consultada. Los 45,2 tok/s son de API, no de O6 ni Jetson. |
+| [Qwen3.6 35B A3B (Reasoning)](https://artificialanalysis.ai/models/qwen3-6-35b-a3b) | 19 | 129,4 output tok/s, según API de Alibaba en la página consultada | 36B totales / 3B activos; Apache 2.0; contexto 262K | Candidato MoE de mayor tamaño activo razonable para estudiar en sistemas con 64 GB; su throughput de API no es una predicción de rendimiento local. |
+| [Qwen3.6 35B A3B GGUF](https://huggingface.co/Infatoshi/Qwen3.6-35B-A3B-GGUF) | Hereda la familia del modelo; no es un ranking distinto | El repositorio publica 153,9 decode tok/s Q4_K_M en RTX 3090 y llama.cpp; prefill 329,7 tok/s | Archivo Q4_K_M listado en ~20–21,2 GB según página/artefacto | Evidencia de que existe una conversión GGUF y un benchmark local en GPU de sobremesa. No transferir esa velocidad a ARM/Orin/O6. |
+| [Qwen3.5 35B A3B](https://artificialanalysis.ai/models/qwen3-5-35b-a3b) | 19 estimado en la ficha consultada; ficha marcada obsoleta por AA | La ficha histórica publica ~147 tok/s API | 36B totales / 3B activos; Apache 2.0 | Mantener como referencia histórica, no preferirlo sobre Qwen3.6 sin justificar la versión anterior. |
+
+Fuentes primarias de modelo y evaluación:
+- Artificial Analysis, Qwen3.8 27B: https://artificialanalysis.ai/models/qwen3-8-27b
+- Artificial Analysis, Qwen3.6 35B A3B: https://artificialanalysis.ai/models/qwen3-6-35b-a3b
+- Artificial Analysis, comparación de variantes Qwen3.6: https://artificialanalysis.ai/models/comparisons/qwen3-6-35b-a3b-non-reasoning-vs-qwen3-6-35b-a3b
+- GGUF y benchmark publicado por el repositorio de conversión: https://huggingface.co/Infatoshi/Qwen3.6-35B-A3B-GGUF
+- AA advierte que las velocidades de sus fichas representan la API de primera parte o una mediana de proveedores, no una prueba local en las placas estudiadas.
+
+**Criterio de selección provisional:** Qwen3.8 27B (Xhigh) lidera esta instantánea de AA entre los candidatos de hasta 40B aquí examinados (índice 34). Qwen3.6 35B A3B (Reasoning) se mantiene como candidato MoE de interés por sus 3B parámetros activos y por existir un GGUF público. Esto no afirma que sean los dos mejores modelos absolutos ni garantiza que todas sus funciones o cuantizaciones corran en ambas placas. La lista debe actualizarse consultando el ranking completo de AA y documentando el filtro de viabilidad.
+
+### Coste por tokens/s: lo que se puede y no se puede calcular hoy
+
+| Sistema / evidencia | Coste de hardware usado | Decode publicado | Cociente aritmético | Estado y limitación |
+|---|---:|---:|---:|---|
+| Jetson AGX Orin Developer Kit 64 GB + benchmark Strata publicado en AGX Orin 32 GB | 4.012,53 € IVA incluido (precio de RS localizado; stock/precio sujetos a checkout) | 18,6–21,6 tok/s, publicado por el fork Strata en Orin 32 GB | 185,76–215,73 €/tok/s; 4,63–5,38 tok/s por 1.000 € | **ESTIMATED, NO COMPARABLE:** el precio corresponde al kit de 64 GB y el benchmark a una máquina de 32 GB; no es una medida válida de eficiencia del mismo SKU. Solo ilustra el cálculo y queda excluido de cualquier ranking final. |
+| Radxa Orion O6 64 GB + baseline oficial de llama.cpp CPU | MSRP histórico de 539 USD; precio final EUR entregado no confirmado | 36,29 ± 0,16 tok/s, tg128, con DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M | No calcular EUR/tok/s; no hay coste entregado en EUR y el modelo es 1.5B | **PUBLISHED, NO COMPARABLE** con los benchmarks MoE de 30–35B. |
+| Qwen3.6 35B A3B en API de Alibaba | No aplica: coste del hardware local no identificado | 129,4 tok/s según AA | No calcular coste de hardware/tok/s | **PUBLISHED/API**, no velocidad local ni numerador válido para coste de hardware. |
+| Qwen3.6 35B A3B Q4_K_M en RTX 3090 + llama.cpp | Precio del sistema no recogido en la fuente de benchmark | 153,9 decode tok/s (benchmark de repositorio) | No calcular hasta tener precio de sistema equivalente y ficha completa del test | **PUBLISHED/THIRD-PARTY**; GPU de sobremesa distinta de las plataformas ARM objetivo. |
+
+Cálculos ilustrativos del primer renglón:
+- 4.012,53 € ÷ 21,6 tok/s = 185,76 €/tok/s.
+- 4.012,53 € ÷ 18,6 tok/s = 215,73 €/tok/s.
+- 21,6 ÷ (4.012,53 / 1.000) = 5,38 tok/s por 1.000 €.
+- 18,6 ÷ (4.012,53 / 1.000) = 4,63 tok/s por 1.000 €.
+
+Aunque las operaciones son correctas, la comparación cruza SKU de 64 GB con mediciones de 32 GB. **No utilizar esos valores para declarar ganador ni eficiencia real.** Para un ranking válido se requiere una fuente pública que mida el mismo SKU o una combinación claramente equivalente, con modelo/runtime/configuración documentados, y precio completo del sistema correspondiente.
+
+## 0.2 Experiencias comunitarias: repositorios, issues y benchmarks públicos (consulta: 24-10-2026)
+
+Esta sección amplía el estudio con experiencias de personas que ya intentaron ejecutar modelos localmente en placas ARM, sistemas de memoria compartida y equipos de recursos limitados. Se priorizan repositorios con instrucciones, configuraciones y números concretos. Son resultados publicados por terceros; no se han reproducido por LEONES.
+
+### Hallazgos principales
+
+| Plataforma / proyecto | Experiencia pública | Datos publicados | Qué demuestra y qué no |
+|---|---|---|---|
+| **Radxa Orion O6 64 GB — llama.cpp CPU** | [Hilo de Radxa Community: llama.cpp benchmarks](https://forum.radxa.com/t/llama-cpp-benchmarks/27813) | Qwen3 MoE ~30,53B, Q4_K, CPU, 7 hilos: **pp512 45,76 ± 0,85 tok/s; tg128 13,79 ± 0,75 tok/s**. Otro usuario publicó Q4_1 con 8 hilos: pp512 30,97 y tg128 20,30 tok/s. | Evidencia directa de un MoE de ~30B en O6 CPU. Las dos filas no son comparables entre sí: cuantización, build y configuración diferentes. |
+| **Radxa Orion O6 — KleidiAI/Vulkan** | Mismo hilo comunitario | El autor informa que KleidiAI redujo la generación de Qwen3 A3B:30B Q4_K_M a unos **12 tok/s**; Vulkan compiló pero se congeló o fue extremadamente lento durante prefill/generación. | Alerta práctica: activar un backend no garantiza aceleración. El resultado negativo de Vulkan es una experiencia de ese build/fecha, no prueba de que todas las versiones futuras fallen. |
+| **Radxa Orion O6 64 GB — Ollama CPU** | [Experiencia y benchmarks de usuario en Reddit](https://www.reddit.com/r/ollama/comments/1q33op3/radxa_orion_o6_llm_benchmarks_ollama_debian_12/) | Qwen3-Next: **2,41 eval tok/s**; Nemotron-3-nano: **6,04 eval tok/s**. Sistema headless, Ollama CPU-only; el autor destaca refrigeración y airflow. | Evidencia complementaria de ejecución real, pero los modelos, runtime y configuración no coinciden con llama-bench. El resultado de Qwen3-Next no debe mezclarse con el benchmark de Qwen3 A3B:30B. |
+| **Radxa Orion O6 — benchmark oficial** | [Guía de Arm Learning Paths para ERNIE-4.5 MoE en O6](https://learn.arm.com/learning-paths/cross-platform/ernie_moe_v9/2_llamacpp_installation/) | Procedimiento para instalar llama.cpp, descargar GGUF Q4 y validar inferencia en la placa. | Guía técnica de instalación/validación; no la contamos como benchmark de throughput hasta que haya resultados numéricos comparables. |
+| **Jetson AGX Orin 32 GB — Strata ARM64/CUDA** | [Repositorio y resultados del port](https://github.com/calvinvette/strata-inference-orin) | Qwen3.8-Flash-Next Coder IQ1_M: decode mediano **18,6–21,6 tok/s**; prefill **37,8–52,5 tok/s** en prompts de 172–1069 tokens. Con contexto 262K: prefill 58,5 tok/s y decode 6,6 tok/s. | Es la evidencia ARM64/CUDA más detallada encontrada para MoE muy grande con expertos respaldados por archivos. La variante Coder tiene expertos podados; el contexto y el tamaño de respuesta cambian mucho la velocidad. Ya se detalla en §2. |
+| **Radxa O6 + GPU discreta PCIe** | [Proyecto de benchmarks de James Geerling](https://github.com/geerlingguy/ai-benchmarks) | En una configuración O6 16 GB + RTX 3080 Ti, DeepSeek R1 14B aparece con **64,58 eval tok/s**; O6 CPU sin GPU discreta aparece con **4,33 eval tok/s** en ese conjunto de resultados. | Demuestra que el sistema completo con GPU discreta puede cambiar radicalmente el rendimiento; no se puede extrapolar al O6 solo. |
+
 ## 7. Experiencias, proyectos y planes de futuro en repositorios públicos (consulta exhaustiva 24-10-2026)
 
 Búsqueda realizada en GitHub, Hugging Face, ModelScope (China), Gitee, GitCode/AtomGit y repositorios de fabricantes/comunidad. Codeberg mostró actividad residualmente baja para este tema. Fecha de consulta: 24 de octubre de 2026.
@@ -98,5 +223,3 @@ Ecosistema muy activo en GitHub a octubre 2026:
 ---
 
 *Sección añadida el 24 de octubre de 2026 a partir de búsqueda exhaustiva en GitHub, Hugging Face, ModelScope, Gitee y GitCode. Todos los datos son PUBLISHED por terceros; no han sido reproducidos por LEONES.*
-
-*(Nota: este commit restaura la sección 7 completa. Las secciones 0–6 del informe original se mantienen en el historial de commits anteriores de la rama. Se recomienda consultar el historial o el archivo local completo para el texto íntegro de metodología, AA y benchmarks previos.)*
