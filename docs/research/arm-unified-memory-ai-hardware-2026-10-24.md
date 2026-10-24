@@ -47,6 +47,7 @@ Riesgos y límites:
 - El soporte Vulkan/OpenCL de la GPU no demuestra por sí solo que la versión de llama.cpp que se compile detecte correctamente la GPU, que todas las operaciones estén implementadas o que el backend sea más rápido que CPU.
 - La NPU de 30 TOPS es un acelerador separado con SDK, operadores y formatos propios. No se debe dar por hecho que acepta GGUF ni que llama.cpp/Strata la utilicen.
 - Los TOPS son irrelevantes como predictor directo de tokens/s para un modelo MoE si el runtime no puede ejecutar sus operaciones en ese acelerador.
+- **Baseline oficial de llama.cpp en CPU publicado por Radxa:** DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf, 8 hilos, pp512 = 64,60 ± 0,27 tokens/s y tg128 = 36,29 ± 0,16 tokens/s. La guía fija el commit `4aced7a` y activa ARMv9/I8MM/dotprod/KleidiAI. Esto verifica una ruta GGUF/CPU para O6; no demuestra aceleración Vulkan ni rendimiento de MoE grande. Fuente primaria: https://docs.radxa.com/en/orion/o6/app-development/artificial-intelligence/llama-cpp
 - No se ha encontrado en esta revisión un benchmark público suficientemente reproducible de O6 con un MoE de 30–35B en GGUF, con logs completos de tokens/s, RAM máxima y consumo de pared. Resultado: **no verificado**.
 
 ### 1.2 NVIDIA Jetson AGX Orin 32 GB / 64 GB
@@ -184,6 +185,16 @@ Presupuesto que debe completarse con cotización real:
 La compra solo se recomienda después de confirmar por escrito SKU de 64 GB, stock, contenido del paquete, IVA, envío a España, garantía y política de devolución. Si el vendedor no puede facilitar esos datos, registrar la oferta como “lead”, no como compra disponible.
 
 ### 4.2 Jetson AGX Orin
+
+**Ofertas europeas localizadas (consulta 24-10-2026; verificar antes de pagar):**
+
+| Vendedor | SKU | Precio anunciado | IVA / disponibilidad | Enlace |
+|---|---|---:|---|---|
+| [Aetherix](https://aetherix.com/product/nvidia-jetson-agx-orin-developer-kit-64gb-945-13730-0055-000/) | Developer Kit 64 GB, 945-13730-0055-000 | 4.199,00 € | IVA incluido; la página indicaba 3 unidades en stock y envío gratuito por Europa | [Ficha](https://aetherix.com/product/nvidia-jetson-agx-orin-developer-kit-64gb-945-13730-0055-000/) |
+| [RS España](https://es.rs-online.com/web/p/kits-de-desarrollo-de-procesadores/2539662) | Developer Kit 64 GB, 945-13730-0055-000 | 4.012,53 € | IVA incluido; la página indicaba 9 unidades disponibles para enviar y más desde otro centro | [Ficha](https://es.rs-online.com/web/p/kits-de-desarrollo-de-procesadores/2539662) |
+| [Reichelt España](https://www.reichelt.com/es/es/shop/producto/kit_de_desarrollo_nvidia_jetson_agx_orin_cpu_de_12_nucleos_64-383698) | Developer Kit 64 GB, 945-13730-0055-000 | 3.967,06 € antes de IVA | Ficha indica IVA del 21 % adicional y envío desde 9,95 €; plazo indicado 4–5 días laborables | [Ficha](https://www.reichelt.com/es/es/shop/producto/kit_de_desarrollo_nvidia_jetson_agx_orin_cpu_de_12_nucleos_64-383698) |
+
+Reichelt totaliza aproximadamente 4.800,14 € con IVA del 21 % antes del envío (3.967,06 × 1,21). Son precios visibles en páginas de producto, no garantía de que el checkout conserve stock o precio. Confirmar total final y distinguir el kit de desarrollo de un módulo suelto.
 
 Enlaces:
 - Especificaciones oficiales: https://www.nvidia.com/es-es/autonomous-machines/embedded-systems/jetson-orin/
