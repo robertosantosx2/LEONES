@@ -457,3 +457,26 @@ Se añadieron archivos de texto bajo docs/reports/artifacts/tensorfold-moe-foren
 - tensorfold-1.1.3-memory-options.console.log
 
 **Limitación de procedencia:** son transcripciones de consola elaboradas a partir de las salidas compartidas en la conversación. Para Qwen serve se conserva la salida mostrada completa; los registros de Nemotron, info y auditorías se identifican expresamente como transcripción, extracto o reconstrucción cuando no se compartió el archivo original íntegro. No son copias binarias certificadas de los logs del equipo. Los originales continúan en las rutas locales indicadas en la sección 11 y deben copiarse desde Ubuntu para completar una cadena de custodia byte a byte.
+
+
+## 14. Logs originales publicados y SHA-256
+
+Los siete logs originales del host se han añadido a este repositorio. Los enlaces siguientes apuntan a los ficheros originales, no a las transcripciones `.console.log` de la sección 13. El manifiesto se calculó en Ubuntu con `sha256sum` y se verificó con `sha256sum -c` antes del commit.
+
+| Log original | Contenido | SHA-256 |
+|---|---|---|
+| [`nemotron-1.1.3-preflight.log`](artifacts/tensorfold-moe-forensic-2026-10-24/nemotron-1.1.3-preflight.log) | Preflight de Nemotron | `a14bbc3ab48e01181b5c1643f68faed80aa99ca339b1f2296e774e445400fa4c` |
+| [`nemotron-1.1.3-context512.log`](artifacts/tensorfold-moe-forensic-2026-10-24/nemotron-1.1.3-context512.log) | Arranque y error de Nemotron | `75f6246d9b132155f65a1f499d5f391dfe65f6b553f0f566b30630d2abc6b47b` |
+| [`offload-capability-audit.log`](artifacts/tensorfold-moe-forensic-2026-10-24/offload-capability-audit.log) | Auditoría de capacidades/offload | `b83f80846b0b29643cf8ac405057fd9657bf5dc31b7c2babfa58080c1009f2ab` |
+| [`preflight.log`](artifacts/tensorfold-moe-forensic-2026-10-24/preflight.log) | Preflight adicional; verificar posible duplicado antes de tratarlo como evidencia independiente | `9c27f6c5c00a14732ab55eb14b3948d5e79873d03f7a3aba67f33bba1b727447` |
+| [`qwen36-1.1.3-serve-context256.log`](artifacts/tensorfold-moe-forensic-2026-10-24/qwen36-1.1.3-serve-context256.log) | Comando y error de arranque Qwen | `cb232b183b75689310e20f940c1334e45faf23a61d2ce48ae7a677c47feae1f4` |
+| [`qwen36-info-1.1.3.log`](artifacts/tensorfold-moe-forensic-2026-10-24/qwen36-info-1.1.3.log) | Inspección del checkpoint Qwen | `09ccbbfc4222d230c95f2dd00738f83fe9ede965d695cb412c86d449c2165438` |
+| [`tensorfold-1.1.3-memory-options.log`](artifacts/tensorfold-moe-forensic-2026-10-24/tensorfold-1.1.3-memory-options.log) | Auditoría de opciones de memoria | `b54561e0d88c675ea0f87b2a85356864317d254511bfcaf95d80f53fe2405bc3` |
+
+Manifiesto: [`SHA256SUMS-originals.txt`](artifacts/tensorfold-moe-forensic-2026-10-24/SHA256SUMS-originals.txt).
+
+**Procedencia:** los hashes se calcularon sobre los archivos copiados en Ubuntu y se verificaron localmente. Esto permite comprobar que los ficheros publicados coinciden con el manifiesto; no constituye por sí solo una certificación independiente de la fecha o del método de generación de cada log.
+
+### Informe en inglés
+
+La traducción inglesa de este informe, con enlaces a los logs originales y sus SHA-256, está disponible en [TensorFold MoE Forensic Analysis — RTX 3050 Laptop 4 GiB](analisis-forense-tensorfold-moe-2026-10-24-en.md).
