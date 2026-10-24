@@ -165,6 +165,62 @@ Esta sección amplía el estudio con experiencias de personas que ya intentaron 
 - O6 CPU y O6 + GPU PCIe en el proyecto eullm: https://github.com/eullm/eullm
 - MoE con RAM/swap en Jetson Orin Nano: https://github.com/baryhuang/llm-in-c
 
+## 0.3 Registro permanente de fuentes comunitarias y nuevos repositorios a vigilar (consulta: 24-10-2026)
+
+**Propósito:** que los repositorios siguientes formen parte de la búsqueda recurrente de evidencia para este estudio, no que sean meros enlaces al final del documento. Revisar sus README, releases, issues, discusiones, directorios de resultados y commits recientes cuando se actualice el informe. La inclusión en este registro no valida automáticamente todos los números del proyecto.
+
+### Fuentes nuevas encontradas en este barrido
+
+| Fuente | Tipo de evidencia / aportación | Prioridad de seguimiento | URL |
+|---|---|---|---|
+| **Crophes/orin-llm-bench** | Benchmarks de Jetson AGX Orin comparando llama.cpp y MLC. Declara prompt de 512 tokens, generación de 128, KV F16, batch 2048, todas las capas offloaded y 5 repeticiones en llama.cpp (1 en MLC). Incluye CSV con prefill, decode y memoria. Ejemplo publicado: Llama 3.1 8B F16 en llama.cpp ~3,40 decode tok/s; ejemplo de MLC ~11,28 tok/s, con diferencias de backend y formato que hay que conservar. | **Alta**: estructura de datos y scripts útiles para comparar runtimes en Orin. Comprobar modelo, JetPack y ramas antes de reutilizar cada fila. | https://github.com/Crophes/orin-llm-bench |
+| **jbecirovski/jetson-llm-maxperf** | Recetas de máximo rendimiento con directorios de prueba que contienen env.json, comandos, logs y códigos de salida. AGX Orin 64 GB, llama.cpp, Llama 3.1 8B: Q4_K_M 26,8–27,1 tg128 tok/s y IQ4_XS 33,5–34,5 tg128 según JetPack; en 30 W y relojes de fábrica Q4_K_M publica 8,1 tok/s frente a ~26,9 en MAXN. | **Alta**: ejemplo especialmente bueno de evidencia auditable y del impacto del modo de potencia. No trasladar números de 8B dense a MoE de 35B. | https://github.com/jbecirovski/jetson-llm-maxperf |
+| **jfdg01/jetson** | Informe de experimentos de Jetson Orin Nano 8 GB: fija commit llama.cpp, CUDA, modo 15 W, pp512/tg128 y cinco repeticiones; corrige explícitamente diferencias de cuantización, contexto y zram entre campañas. | **Alta**: patrón de documentación reproducible, incluidos errores y correcciones del protocolo. | https://github.com/jfdg01/jetson |
+| **carpetbot/benchmarking-local-llm-hosting** | Comparativa de SBC, Mac Mini y hardware edge con tokens/s, precio y TCO. El propio proyecto marca algunas filas como mediciones de terceros y otras como estimaciones no válidas para ranking; su O6 aparece como estimación, no como dato medido por el autor. | **Media-alta**: útil para descubrir dispositivos y precios históricos; conservar sus etiquetas de procedencia y no reutilizar sus estimaciones como hechos. | https://github.com/carpetbot/benchmarking-local-llm-hosting |
+| **winderai/llm-inference-benchmark** | Harness de comparación de vLLM, SGLang, TensorRT-LLM, llama.cpp y Ollama, con resultados, logs y coste por millón de tokens; usa Qwen3.8-27B y Llama 3.1 8B en una GPU H100. | **Media** para la investigación ARM; **alta** como referencia metodológica. No es un benchmark ARM ni una comparación de placas. | https://github.com/winderai/llm-inference-benchmark |
+| **nobeldhar/llm-edge-footprint** | Código, datos y resultados de investigación académica sobre inferencia edge con Llama 2 7B INT4, llama.cpp y métricas de sistema; incluye datos brutos nmon y script para repetir el experimento. Publica resultados antiguos en Raspberry Pi y AGX Orin CPU-only. | **Media**: referencia histórica para consumo de memoria/CPU y metodología; no mezclar con runtimes y modelos actuales. | https://github.com/nobeldhar/llm-edge-footprint |
+| **Embedl / Hugging Face Community Blog: Cosmos-Reason2** | Informe de optimización de inferencia local en la gama Jetson, desde Orin Nano 8 GB hasta AGX Orin 64 GB y AGX Thor, con vLLM y variantes de precisión mixta. | **Media-alta** para cuantización/edge, pero el modelo es VLM/2B y no responde directamente a la velocidad de un MoE de 35B. | https://huggingface.co/blog/JonnaMat/cosmos-reason2-report |
+| **Hugging Face Blog: LiquidAI open-d1** | Resultados en Jetson AGX Orin 64 GB y Orin Nano para d1-3B con stack NVIDIA; la métrica principal del artículo son latencias de respuesta/estado, no necesariamente decode tok/s. | **Media**: evidencia real de inferencia edge, pero workload distinto; no convertir milisegundos por consulta a tokens/s sin datos de tokens equivalentes. | https://huggingface.co/blog/LiquidAI/open-d1 |
+| **llm-infer-bench** | Benchmark cliente para servidores OpenAI-compatible que mide TTFT, TPOT y throughput por streaming HTTP; sirve para diferenciar la experiencia real de cliente de la salida interna de llama-bench. | **Media** como herramienta metodológica, no es evidencia de una placa por sí sola. | https://github.com/fujimarurtisuka-dot/llm-infer-bench |
+| **Reddit r/SBCs: O6 + llama.cpp** | Discusión enlazada a los benchmarks de O6; destaca que el O6 CPU resulta más adecuado para modelos con pocos parámetros activos, como Qwen3 A3B:30B, y plantea Vulkan/NPU como vías futuras, no como aceleración ya demostrada. | **Media**: hilo comunitario para seguir las respuestas originales y contexto histórico. | https://www.reddit.com/r/SBCs/comments/1lz8gbq |
+| **Reddit r/eutech: Qwen3.6-35B-A3B en O6** | El autor de eullm describe un resultado informal de unos 10 tok/s CPU-only con Q4_K_M y 26,5 tok/s en una configuración híbrida RTX 3060; el post indica que la cifra CPU era una prueba informal aún no incorporada a la carpeta de benchmarks. | **Media**: mantener explícitamente como informe anecdótico hasta que exista una receta/log archivado. La ficha de eullm con 9–11 y 35,6 tok/s debe comprobarse por separado. | https://www.reddit.com/r/eutech/comments/1uztayy/got_a_35ba3b_moe_model_running_at_10_toks_on_arm/ |
+
+### Lugares de búsqueda recurrente
+
+Además de las páginas anteriores, consultar sistemáticamente:
+
+- **GitHub**: repositorios, Releases, Issues y Discussions de `ggml-org/llama.cpp`, `ollama/ollama`, `ggml-org/llama.cpp` (issues de Vulkan/ARM), `dusty-nv/jetson-containers`, `NVIDIA-AI-IOT`, `calvinvette/strata-inference-orin`, `Crophes/orin-llm-bench`, `jbecirovski/jetson-llm-maxperf`, `eullm/eullm`, `geerlingguy/ai-benchmarks` y `SergiioB/llamacpp-workbench`.
+- **Hugging Face**: Community Blogs/Spaces y tarjetas de modelos GGUF con sección de benchmark; distinguir benchmarks de la conversión del modelo de las mediciones de hardware que el autor realmente ejecutó. Registrar cuantización, archivo exacto y fecha.
+- **Foros de fabricante**: Radxa Forum para Orion O6/CIX P1; NVIDIA Developer Forums para Jetson, JetPack, CUDA, swap, memoria unificada y rendimiento; Armbian Forum para estado de kernel/drivers en placas ARM.
+- **Reddit**: r/LocalLLaMA, r/ollama, r/SBCs, r/JetsonNano y comunidades ARM relevantes. Seguir comentarios que contengan repositorios, logs, scripts o aclaraciones del autor; usar los posts como pistas y buscar la fuente primaria.
+- **Codeberg y otros forges**: incluir búsqueda por nombre de proyecto, descripción, topics y mirror. La búsqueda directa de Codeberg no fue accesible en esta pasada por limitación de robots; no asumir que no existan proyectos ni registrar una ausencia como hallazgo.
+- **Índices comunitarios**: Token Atlas y otras tablas de hardware/modelo sirven para descubrir candidatos, pero cada dato debe llevarse de vuelta al registro fuente y a la configuración original.
+
+### Protocolo para incorporar una experiencia nueva
+
+Antes de que un resultado entre en las tablas de rendimiento o coste:
+
+1. Abrir la fuente primaria y guardar fecha de consulta, autor, commit/tag y enlace permanente (commit, release o comentario concreto si está disponible).
+2. Identificar placa/SKU, RAM física, GPU integrada/discreta, modo de potencia, SO/kernel, runtime/versión, backend y compilación.
+3. Registrar modelo exacto, variante completa/podada, archivo y cuantización, contexto, tokens de entrada/salida, batch, KV cache, offload, speculative decoding, hilos y estado de swap.
+4. Separar prefill, decode, TTFT, tiempo total, carga del modelo, RAM máxima, swap, potencia de pared y temperatura. No convertir una métrica a otra si falta la información.
+5. Clasificar evidencia:
+   - **A — reproducible/auditable**: scripts o comandos, versiones, modelo/quant, logs o CSV disponibles.
+   - **B — detallada pero incompleta**: el autor describe hardware, modelo y cifras, pero falta algún artefacto esencial.
+   - **C — anecdótica**: comentario/post con cifras sin receta suficiente.
+   - **D — solo indicio**: pregunta, promesa, compilación sin benchmark o cifra de API/cloud.
+6. Solo A y B pueden alimentar una tabla de throughput, con las limitaciones señaladas. C se conserva en el registro de pistas y D no se convierte en benchmark.
+7. Para coste por tokens/s, exigir precio del mismo sistema (incluidos los componentes imprescindibles) y evitar el ranking si el modelo/quant/workload no es comparable. El coste de una GPU externa debe atribuirse al conjunto placa+GPU, no a la placa sola.
+8. Registrar resultados negativos y fallos —OOM, freeze, Vulkan lento, swap excesivo, falta de soporte— con versión y contexto. No generalizarlos a versiones futuras sin nueva evidencia.
+
+### Cambios respecto a versiones anteriores del informe
+
+- Se añade una fuente de benchmark estructurado de Orin (`Crophes/orin-llm-bench`) y otra con pruebas auditable por directorio (`jbecirovski/jetson-llm-maxperf`).
+- Se añade `jfdg01/jetson` como ejemplo de cómo documentar condiciones y corregir tablas que mezclan cuantizaciones/contextos.
+- Se añade un registro de fuentes metodológicas, fuentes de inferencia edge y comunidades de búsqueda.
+- Se preservan los resultados de eullm/O6 como evidencia comunitaria pendiente de verificación de configuración, no como ranking final.
+- No se han hecho pruebas físicas; todas las cifras siguen siendo de fuentes externas.
+
 ## 1. Plataformas evaluadas
 
 ### 1.1 Radxa Orion O6 (CIX P1)
