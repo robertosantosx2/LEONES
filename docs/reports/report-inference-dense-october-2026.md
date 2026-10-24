@@ -158,3 +158,46 @@ The attached bundle gathers available scripts, logs, CSV/JSON files, system info
 - [PR #112](https://github.com/robertosantosx2/LEONES/pull/112)
 
 For future comparisons, keep the model/format, prompt/tokenizer, context, actual output length, temperature, and repetitions fixed. Measure TTFT, prefill/decode, total time, actual token counts, peak VRAM/RAM, swap, GPU temperature/power, exit codes, and errors. Keep native microbenchmarks, API tests, failed attempts, and quality evaluations separate.
+
+
+## Detailed loading diagnostics — Qwen3-30B-A3B-Instruct-2507 IQ3_XXS (2026-10-21)
+
+**Checkpoint:** `Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf`  
+**SHA-256:** `292daa2b66aec59d075532d0bcf05010bf4a3b012a4216c28dc021b73d1e9ab4`  
+**Original Ubuntu log directory:** `~/benchmarks/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/`
+
+### llama.cpp — startup observations in the supplied excerpts
+
+The supplied excerpts from `llama/rep-2.log` through `llama/rep-6.log` confirm that the model loaded onto the RTX 3050 Laptop GPU. They contain the following observations:
+
+- Startup device line: `NVIDIA GeForce RTX 3050 Laptop GPU (3768 MiB, 3675 MiB free)`.
+- Layers 35–48 were assigned to `CUDA0`; the memory summary reports a **3290.68 MiB** CUDA model buffer, **26.00 MiB** KV cache, and **86.25 MiB** compute buffer.
+- Non-fatal fallback message: `tensor 'token_embd.weight' (iq3_s) (and 420 others) cannot be used with preferred buffer type CUDA_Host, using CPU instead`.
+- Repeated context warning: `CUDA_Host compute buffer size of 4.1376 MiB, does not match expectation of 1.0636 MiB`.
+- The memory summary reports 3768 MiB CUDA allocation: 239 MiB + (3402 MiB = 3290 + 26 + 86) + 125 MiB.
+
+These messages are not evidence of a fatal startup failure. The previously recorded six-run batch returned exit code `0` for every run. Preserve the `CUDA_Host` message as a diagnostic warning; do not claim it caused a failure without further evidence.
+
+### Reference launch commands
+
+```bash
+# llama.cpp 0.7.0-dev, build 11740, commit 6fa4f6cd3
+/usr/bin/time -v -o "$d/time-$i.txt" \
+  "$HOME/llama.cpp-cuda/build-cuda/bin/llama-cli" \
+    --model "$M" --n-gpu-layers 14 --fit off \
+    --ctx-size 1024 --batch-size 64 --ubatch-size 32 \
+    --threads 8 --predict 128 --temp 0 --seed 42 \
+    --prompt "$PROMPT" --single-turn --simple-io --verbose \
+    > "$d/rep-$i.log" 2>&1
+
+# RustingStrata 1.0.1
+XDG_CACHE_HOME="$OUT/strata/cache" /usr/bin/time -v \
+  -o "$d/time-$i.txt" "$HOME/rusting-strata-test/target/release/strata" generate \
+    --model "$M" --gpu --ctx 1024 --threads 8 \
+    --prompt "$PROMPT" -n 128 --temp 0 \
+    > "$d/rep-$i.log" 2>&1
+```
+
+### Evidence-file status
+
+The excerpts shared in chat are `grep` output, not the complete original logs. The original files to include in the repository are `llama/rep-{1..6}.log`, `llama/time-{1..6}.txt`, `llama/rc-{1..6}.txt`, `strata/rep-{1..6}.log`, `strata/time-{1..6}.txt`, and `strata/rc-{1..6}.txt`, plus a SHA-256 manifest. This update documents the verifiable messages supplied; it does not misrepresent excerpts as complete log files.
