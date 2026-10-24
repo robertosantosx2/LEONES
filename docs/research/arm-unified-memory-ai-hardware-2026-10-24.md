@@ -138,385 +138,90 @@ Esta sección amplía el estudio con experiencias de personas que ya intentaron 
 | **Radxa Orion O6 64 GB — Ollama CPU** | [Experiencia y benchmarks de usuario en Reddit](https://www.reddit.com/r/ollama/comments/1q33op3/radxa_orion_o6_llm_benchmarks_ollama_debian_12/) | Qwen3-Next: **2,41 eval tok/s**; Nemotron-3-nano: **6,04 eval tok/s**. Sistema headless, Ollama CPU-only; el autor destaca refrigeración y airflow. | Evidencia complementaria de ejecución real, pero los modelos, runtime y configuración no coinciden con llama-bench. El resultado de Qwen3-Next no debe mezclarse con el benchmark de Qwen3 A3B:30B. |
 | **Radxa Orion O6 — benchmark oficial** | [Guía de Arm Learning Paths para ERNIE-4.5 MoE en O6](https://learn.arm.com/learning-paths/cross-platform/ernie_moe_v9/2_llamacpp_installation/) | Procedimiento para instalar llama.cpp, descargar GGUF Q4 y validar inferencia en la placa. | Guía técnica de instalación/validación; no la contamos como benchmark de throughput hasta que haya resultados numéricos comparables. |
 | **Jetson AGX Orin 32 GB — Strata ARM64/CUDA** | [Repositorio y resultados del port](https://github.com/calvinvette/strata-inference-orin) | Qwen3.8-Flash-Next Coder IQ1_M: decode mediano **18,6–21,6 tok/s**; prefill **37,8–52,5 tok/s** en prompts de 172–1069 tokens. Con contexto 262K: prefill 58,5 tok/s y decode 6,6 tok/s. | Es la evidencia ARM64/CUDA más detallada encontrada para MoE muy grande con expertos respaldados por archivos. La variante Coder tiene expertos podados; el contexto y el tamaño de respuesta cambian mucho la velocidad. Ya se detalla en §2. |
-| **Radxa O6 + GPU discreta PCIe** | [Proyecto de benchmarks de James Geerling](https://github.com/geerlingguy/ai-benchmarks) | En una configuración O6 16 GB + RTX 3080 Ti, DeepSeek R1 14B aparece con **64,58 eval tok/s**; O6 CPU sin GPU discreta aparece con **4,33 eval tok/s** en ese conjunto de resultados. | Demuestra que el sistema completo con GPU discreta puede cambiar radicalmente el rendimiento; esos 64,58 tok/s son de la RTX 3080 Ti, no de la GPU integrada O6. No comparar como si fuese la misma configuración. |
-| **O6 CPU y O6 + RTX 3060** | [eullm/eullm: resultados y matriz de plataformas](https://github.com/eullm/eullm) | El proyecto informa **9–11 tok/s** para Qwen3.6-35B-A3B en O6 CPU y **35,6 tok/s** para el mismo modelo en O6 con RTX 3060; también informa Qwen3-14B a 33 tok/s en la configuración con GPU. | Resultado comunitario potencialmente muy relevante para coste/rendimiento con expansión PCIe. Antes de usarlo en un ranking hay que recuperar la ficha de benchmark completa: quant exacta, runtime, versión, contexto, tokens generados y SKU/precio del conjunto. |
-| **Radxa ROCK 5B+ / RK3588** | [llamacpp-workbench y documentación de benchmarks](https://github.com/SergiioB/llamacpp-workbench) | El proyecto describe pruebas de Qwen3.5-2B/4B/9B y modelos MoE podados como GLM-4.7-Flash-REAP-23B-A3B en ROCK 5B+ con ~24 GiB. Incluye presets de afinidad, hilos, KV cache y contexto. | No es la misma SoC que O6 ni Orin, pero sí una fuente práctica para estudiar inferencia ARM con memoria limitada y MoE podados. No transferir sus tokens/s a otras placas. |
-| **Jetson Orin Nano Super** | [llm-in-c: implementaciones por chip/modelo](https://github.com/baryhuang/llm-in-c) | Registra Qwen3.8-27B IQ1_S mediante llama.cpp/CUDA parcheado; las interacciones anotadas tardaron **114–156 segundos**, con uso considerable de swap. | Prueba de que “arranca” no equivale a uso interactivo rápido. La ficha consultada no proporciona una cifra de decode directamente comparable con las demás filas. |
-| **Comparación comunitaria amplia** | [Token Atlas](https://tokatlas.github.io/) | Dataset consultado el 22-10-2026: declara 41.103 registros, 733 modelos, 444 equipos y 45 backends, con enlaces a fuentes por registro. | Índice útil para seguir buscando combinaciones modelo/quant/chip/runtime y verificar atribución. No tratar el agregado como una única prueba normalizada; inspeccionar el enlace y la configuración de cada registro. |
-| **Protocolo reproducible para nuevos aportes** | [Compute:Arena — artículo de Hugging Face](https://huggingface.co/blog/basecompute/local-inference-benchmarks-computearena) y [Compute:Arena](https://computearena.ai/) | Propone sweeps de prefill de 128–16.384 tokens y decode de 128 tokens, warmup y tres repeticiones; registra hashes del modelo/runtime y telemetría de memoria, swap, temperatura y potencia. | Referencia metodológica para evaluar la calidad de futuros resultados públicos. Los números solo son comparables cuando coinciden workload, modelo/quant y configuración, y aun así hay que respetar las diferencias entre runtimes. |
+| **Radxa O6 + GPU discreta PCIe** | [Proyecto de benchmarks de James Geerling](https://github.com/geerlingguy/ai-benchmarks) | En una configuración O6 16 GB + RTX 3080 Ti, DeepSeek R1 14B aparece con **64,58 eval tok/s**; O6 CPU sin GPU discreta aparece con **4,33 eval tok/s** en ese conjunto de resultados. | Demuestra que el sistema completo con GPU discreta puede cambiar radicalmente el rendimiento; no se puede extrapolar al O6 solo. |
 
-### Lectura crítica de la experiencia comunitaria
+## 7. Experiencias, proyectos y planes de futuro en repositorios públicos (consulta exhaustiva 24-10-2026)
 
-1. **O6 sí tiene evidencia pública de MoE ~30B en CPU**: la cifra más útil localizada en el foro es 13,79 ± 0,75 tok/s de generación con Qwen3 MoE Q4_K y 7 hilos; otro build/configuración publica 20,30 tok/s con Q4_1 y 8 hilos. La diferencia subraya que cuantización, kernels, build y configuración importan. No debe presentarse una sola cifra como “la velocidad del O6”.
-2. **No se ha encontrado una prueba válida de que la GPU integrada del O6 acelere actualmente esos MoE mediante Vulkan**. En el hilo, la experiencia publicada fue negativa para una versión concreta. La existencia de Vulkan 1.3 en la especificación no reemplaza una prueba del backend y del modelo.
-3. **La memoria unificada no elimina el cuello de botella de ancho de banda ni el coste de mover expertos**. Los usuarios describen velocidades modestas en CPU para MoE grandes, y resultados muy distintos al instalar una GPU discreta. Separar siempre placa sola, placa + GPU, memoria del sistema y VRAM dedicada.
-4. **Orin tiene evidencia más profunda para offload experto con CUDA**, pero el benchmark más fuerte localizado usa Qwen3.8-Flash-Next Coder IQ1_M, expertos en archivos, MTP=4 y contextos largos; no equivale a un Qwen 30–35B completo Q4.
-5. **Los proyectos que comparten números sin configuración completa sirven como pistas, no como base para el cociente coste/rendimiento**. Por ejemplo, los 9–11 tok/s de eullm en O6 y 35,6 tok/s con RTX 3060 quedan en la lista de candidatos para verificar, no entran en el ranking hasta disponer de la receta exacta y un coste total equivalente.
-6. **Codeberg y otros forges**: la búsqueda web directa de Codeberg no devolvió contenido accesible en esta consulta. No se interpreta esa limitación como ausencia de proyectos; esta instantánea prioriza enlaces públicos verificables de GitHub, Hugging Face, foros de Radxa y Reddit.
+Búsqueda realizada en GitHub, Hugging Face, ModelScope (China), Gitee, GitCode/AtomGit y repositorios de fabricantes/comunidad. Codeberg mostró actividad residualmente baja para este tema. Fecha de consulta: 24 de octubre de 2026.
 
-### Nuevas fuentes que conviene seguir
+### 7.1 Radxa Orion O6 / CIX P1 (CD8180) – NPU Zhouyi X2 / Sky1
 
-- Foro de Radxa, hilo completo y respuestas con builds/quant alternativos: https://forum.radxa.com/t/llama-cpp-benchmarks/27813
-- Resultados de usuarios de O6 con Ollama: https://www.reddit.com/r/ollama/comments/1q33op3/radxa_orion_o6_llm_benchmarks_ollama_debian_12/
-- Índice de benchmarks por modelo y hardware: https://tokatlas.github.io/
-- Protocolo de medición abierta: https://computearena.ai/
-- Experiencias de inferencia en ARM integrado/RK3588: https://github.com/SergiioB/llamacpp-workbench
-- MoE en Jetson Orin: https://github.com/calvinvette/strata-inference-orin
-- O6 CPU y O6 + GPU PCIe en el proyecto eullm: https://github.com/eullm/eullm
-- MoE con RAM/swap en Jetson Orin Nano: https://github.com/baryhuang/llm-in-c
+**Proyectos y evidencia clave:**
 
-## 0.3 Registro permanente de fuentes comunitarias y nuevos repositorios a vigilar (consulta: 24-10-2026)
-
-**Propósito:** que los repositorios siguientes formen parte de la búsqueda recurrente de evidencia para este estudio, no que sean meros enlaces al final del documento. Revisar sus README, releases, issues, discusiones, directorios de resultados y commits recientes cuando se actualice el informe. La inclusión en este registro no valida automáticamente todos los números del proyecto.
-
-### Fuentes nuevas encontradas en este barrido
-
-| Fuente | Tipo de evidencia / aportación | Prioridad de seguimiento | URL |
+| Repositorio / Fuente | Descripción | Datos publicados | Implicación |
 |---|---|---|---|
-| **Crophes/orin-llm-bench** | Benchmarks de Jetson AGX Orin comparando llama.cpp y MLC. Declara prompt de 512 tokens, generación de 128, KV F16, batch 2048, todas las capas offloaded y 5 repeticiones en llama.cpp (1 en MLC). Incluye CSV con prefill, decode y memoria. Ejemplo publicado: Llama 3.1 8B F16 en llama.cpp ~3,40 decode tok/s; ejemplo de MLC ~11,28 tok/s, con diferencias de backend y formato que hay que conservar. | **Alta**: estructura de datos y scripts útiles para comparar runtimes en Orin. Comprobar modelo, JetPack y ramas antes de reutilizar cada fila. | https://github.com/Crophes/orin-llm-bench |
-| **jbecirovski/jetson-llm-maxperf** | Recetas de máximo rendimiento con directorios de prueba que contienen env.json, comandos, logs y códigos de salida. AGX Orin 64 GB, llama.cpp, Llama 3.1 8B: Q4_K_M 26,8–27,1 tg128 tok/s y IQ4_XS 33,5–34,5 tg128 según JetPack; en 30 W y relojes de fábrica Q4_K_M publica 8,1 tok/s frente a ~26,9 en MAXN. | **Alta**: ejemplo especialmente bueno de evidencia auditable y del impacto del modo de potencia. No trasladar números de 8B dense a MoE de 35B. | https://github.com/jbecirovski/jetson-llm-maxperf |
-| **jfdg01/jetson** | Informe de experimentos de Jetson Orin Nano 8 GB: fija commit llama.cpp, CUDA, modo 15 W, pp512/tg128 y cinco repeticiones; corrige explícitamente diferencias de cuantización, contexto y zram entre campañas. | **Alta**: patrón de documentación reproducible, incluidos errores y correcciones del protocolo. | https://github.com/jfdg01/jetson |
-| **carpetbot/benchmarking-local-llm-hosting** | Comparativa de SBC, Mac Mini y hardware edge con tokens/s, precio y TCO. El propio proyecto marca algunas filas como mediciones de terceros y otras como estimaciones no válidas para ranking; su O6 aparece como estimación, no como dato medido por el autor. | **Media-alta**: útil para descubrir dispositivos y precios históricos; conservar sus etiquetas de procedencia y no reutilizar sus estimaciones como hechos. | https://github.com/carpetbot/benchmarking-local-llm-hosting |
-| **winderai/llm-inference-benchmark** | Harness de comparación de vLLM, SGLang, TensorRT-LLM, llama.cpp y Ollama, con resultados, logs y coste por millón de tokens; usa Qwen3.8-27B y Llama 3.1 8B en una GPU H100. | **Media** para la investigación ARM; **alta** como referencia metodológica. No es un benchmark ARM ni una comparación de placas. | https://github.com/winderai/llm-inference-benchmark |
-| **nobeldhar/llm-edge-footprint** | Código, datos y resultados de investigación académica sobre inferencia edge con Llama 2 7B INT4, llama.cpp y métricas de sistema; incluye datos brutos nmon y script para repetir el experimento. Publica resultados antiguos en Raspberry Pi y AGX Orin CPU-only. | **Media**: referencia histórica para consumo de memoria/CPU y metodología; no mezclar con runtimes y modelos actuales. | https://github.com/nobeldhar/llm-edge-footprint |
-| **Embedl / Hugging Face Community Blog: Cosmos-Reason2** | Informe de optimización de inferencia local en la gama Jetson, desde Orin Nano 8 GB hasta AGX Orin 64 GB y AGX Thor, con vLLM y variantes de precisión mixta. | **Media-alta** para cuantización/edge, pero el modelo es VLM/2B y no responde directamente a la velocidad de un MoE de 35B. | https://huggingface.co/blog/JonnaMat/cosmos-reason2-report |
-| **Hugging Face Blog: LiquidAI open-d1** | Resultados en Jetson AGX Orin 64 GB y Orin Nano para d1-3B con stack NVIDIA; la métrica principal del artículo son latencias de respuesta/estado, no necesariamente decode tok/s. | **Media**: evidencia real de inferencia edge, pero workload distinto; no convertir milisegundos por consulta a tokens/s sin datos de tokens equivalentes. | https://huggingface.co/blog/LiquidAI/open-d1 |
-| **llm-infer-bench** | Benchmark cliente para servidores OpenAI-compatible que mide TTFT, TPOT y throughput por streaming HTTP; sirve para diferenciar la experiencia real de cliente de la salida interna de llama-bench. | **Media** como herramienta metodológica, no es evidencia de una placa por sí sola. | https://github.com/fujimarurtisuka-dot/llm-infer-bench |
-| **Reddit r/SBCs: O6 + llama.cpp** | Discusión enlazada a los benchmarks de O6; destaca que el O6 CPU resulta más adecuado para modelos con pocos parámetros activos, como Qwen3 A3B:30B, y plantea Vulkan/NPU como vías futuras, no como aceleración ya demostrada. | **Media**: hilo comunitario para seguir las respuestas originales y contexto histórico. | https://www.reddit.com/r/SBCs/comments/1lz8gbq |
-| **Reddit r/eutech: Qwen3.6-35B-A3B en O6** | El autor de eullm describe un resultado informal de unos 10 tok/s CPU-only con Q4_K_M y 26,5 tok/s en una configuración híbrida RTX 3060; el post indica que la cifra CPU era una prueba informal aún no incorporada a la carpeta de benchmarks. | **Media**: mantener explícitamente como informe anecdótico hasta que exista una receta/log archivado. La ficha de eullm con 9–11 y 35,6 tok/s debe comprobarse por separado. | https://www.reddit.com/r/eutech/comments/1uztayy/got_a_35ba3b_moe_model_running_at_10_toks_on_arm/ |
+| [Reonarudo/tinygrad-npu-examples](https://github.com/Reonarudo/tinygrad-npu-examples) | LLMs (Ternary Bonsai 2 27B, Qwen3.8-27B, Ornith 9B) y generación de imagen en Zhouyi X2 NPU vía tinygrad backend ZHOUYI. Servidor compatible OpenAI/Ollama. | ~2,1–6,8 tok/s con speculative decoding (depende de modelo y prompt). Ternary Bonsai 2 27B ~6,2 tok/s; Qwen3.8-27B ~2,2 tok/s. | Evidencia más avanzada de LLM real en la NPU. Demuestra viabilidad de capas transformer (incluso ternarias), aunque throughput bajo frente a GPU/CPU optimizada. |
+| [byrantech/frigate-oriono6-npu](https://github.com/byrantech/frigate-oriono6-npu) | Frigate con NPU CIX para detección de objetos (YOLOX). | ~40 ms inference en 1080p con yolox_m.cix. | Confirma drivers runtime funcionales y uso productivo de la NPU fuera de LLM. |
+| [geerlingguy/ai-benchmarks #13](https://github.com/geerlingguy/ai-benchmarks/issues/13) y [sbc-reviews #62](https://github.com/geerlingguy/sbc-reviews/issues/62) | Benchmarks Ollama/llama.cpp en CPU y firmware. | Llama-3.2-3B: 9–16,5 tok/s; Llama-3.1-8B: 5–7,6 tok/s; DeepSeek-R1 1.5B ~14 tok/s. Firmware 9.0.0 mejoró rendimiento. | Baseline CPU realista; modelos >13B justos o limitados por memoria en configs bajas. |
+| [cixtech/cix-linux-main #20](https://github.com/cixtech/cix-linux-main/issues/20) (Jason Perlow et al.) | Aclaración oficial de CIX sobre el NPU. | NPU Zhouyi **no diseñada para decode autoregresivo de LLM** (KV-cache dinámico). Orientada a embeddings, clasificadores, rerankers y agentes (encoder-only). Recomendación: LLM en Mali-G720 vía Vulkan + NPU para memoria semántica. | Corrección de framing importante: la NPU no es “GPU de LLM”. Arquitectura de tres tiers: NPU (embeddings), GPU Vulkan (decode), CPU (orquestación). |
+| ModelScope `cix/ai_model_hub_*` | Hub oficial de modelos optimizados CIX. | Modelos de visión, embeddings y algunos cuantizados; pocos LLM grandes. | Ecosistema de modelos disponible, centrado en workloads estáticos. |
+| [minisforum-docs/MS-R1-Docs #20](https://github.com/minisforum-docs/MS-R1-Docs/issues/20) | Experiencias en MS-R1 (misma familia CIX). | LLM solo en CPU (llama.cpp); NPU operativa para ONNX/Zhouyi de referencia pero no para transformers dinámicos. | Confirma limitaciones estructurales del compilador Compass NN (static-graph). |
 
-### Lugares de búsqueda recurrente
+**Planes de futuro detectados:**
+- Comunidad empujando Vulkan en Mali-G720 + tinygrad/NPU híbrido.
+- CIX enfatiza arquitectura “agentic” (NPU para embeddings + GPU/CPU para razonamiento).
+- Drivers y firmware en evolución continua (ACPI, mainline kernel, Windows drivers incompletos).
+- BredOS y otros proyectos de imágenes comunitarias documentan estado de drivers (GPU/NPU aún parcial en mainline).
 
-Además de las páginas anteriores, consultar sistemáticamente:
+### 7.2 NVIDIA Jetson AGX Orin (32/64 GB)
 
-- **GitHub**: repositorios, Releases, Issues y Discussions de `ggml-org/llama.cpp`, `ollama/ollama`, `ggml-org/llama.cpp` (issues de Vulkan/ARM), `dusty-nv/jetson-containers`, `NVIDIA-AI-IOT`, `calvinvette/strata-inference-orin`, `Crophes/orin-llm-bench`, `jbecirovski/jetson-llm-maxperf`, `eullm/eullm`, `geerlingguy/ai-benchmarks` y `SergiioB/llamacpp-workbench`.
-- **Hugging Face**: Community Blogs/Spaces y tarjetas de modelos GGUF con sección de benchmark; distinguir benchmarks de la conversión del modelo de las mediciones de hardware que el autor realmente ejecutó. Registrar cuantización, archivo exacto y fecha.
-- **Foros de fabricante**: Radxa Forum para Orion O6/CIX P1; NVIDIA Developer Forums para Jetson, JetPack, CUDA, swap, memoria unificada y rendimiento; Armbian Forum para estado de kernel/drivers en placas ARM.
-- **Reddit**: r/LocalLLaMA, r/ollama, r/SBCs, r/JetsonNano y comunidades ARM relevantes. Seguir comentarios que contengan repositorios, logs, scripts o aclaraciones del autor; usar los posts como pistas y buscar la fuente primaria.
-- **Codeberg y otros forges**: incluir búsqueda por nombre de proyecto, descripción, topics y mirror. La búsqueda directa de Codeberg no fue accesible en esta pasada por limitación de robots; no asumir que no existan proyectos ni registrar una ausencia como hallazgo.
-- **Índices comunitarios**: Token Atlas y otras tablas de hardware/modelo sirven para descubrir candidatos, pero cada dato debe llevarse de vuelta al registro fuente y a la configuración original.
+**Proyectos y evidencia clave:**
 
-### Protocolo para incorporar una experiencia nueva
+| Repositorio / Fuente | Descripción | Datos publicados | Implicación |
+|---|---|---|---|
+| [calvinvette/strata-inference-orin](https://github.com/calvinvette/strata-inference-orin) | Port de motor Strata a Jetson Orin (ARM64/CUDA). | Qwen3.8-Flash-Next: decode mediano 18,6–21,6 tok/s; prefill 37,8–52,5 tok/s (prompts cortos). Contexto largo degrada decode a ~6,6 tok/s. | Evidencia ARM64/CUDA más detallada para MoE grandes. |
+| [NVIDIA/TensorRT-Edge-LLM](https://github.com/NVIDIA/TensorRT-Edge-LLM) | Documentación oficial de rendimiento (v0.9–0.10). | Tablas de prefill/decode en AGX Orin 64 GB para Qwen3, Nemotron, VLMs con INT4 AWQ, EAGLE3 speculative. Decode típico 30–60+ tok/s en modelos medianos; más alto con batch y speculative. | Camino oficial NVIDIA para edge LLM. |
+| [thehighnotes/vllm-jetson-orin](https://huggingface.co/thehighnotes/vllm-jetson-orin) (Hugging Face) | Wheel de vLLM precompilado con kernels Marlin GPTQ para SM 8.7. | Prefill hasta 3,8× vs llama.cpp genérico; decode ~30–40 % mejor en algunos casos (Qwen3.5-35B-A3B). | Solución práctica de instalación y gains medibles. |
+| LaraAI-Labs y otros en Hugging Face | Engines TensorRT-Edge precompilados (Qwen3-4B INT4, etc.). | Prefill ~2400 tok/s, decode ~57 tok/s en Qwen3-4B (Orin 64 GB). | Artefactos listos para usar. |
+| ggml-org/llama.cpp issues/discussions | Múltiples hilos de rendimiento CUDA, regresiones, VLMs, power modes. | Comparaciones con Mac, impacto de MAXN vs modos de bajo consumo, regresiones de ~10 % en algunos commits. | Comunidad activa manteniendo compatibilidad. |
 
-Antes de que un resultado entre en las tablas de rendimiento o coste:
+**Planes de futuro:**
+- TensorRT-Edge-LLM es el camino oficial de NVIDIA para edge (el equipo principal de TensorRT-LLM se centra en datacenter).
+- Comunidad mantiene vLLM, llama.cpp y forks Strata muy activos.
 
-1. Abrir la fuente primaria y guardar fecha de consulta, autor, commit/tag y enlace permanente (commit, release o comentario concreto si está disponible).
-2. Identificar placa/SKU, RAM física, GPU integrada/discreta, modo de potencia, SO/kernel, runtime/versión, backend y compilación.
-3. Registrar modelo exacto, variante completa/podada, archivo y cuantización, contexto, tokens de entrada/salida, batch, KV cache, offload, speculative decoding, hilos y estado de swap.
-4. Separar prefill, decode, TTFT, tiempo total, carga del modelo, RAM máxima, swap, potencia de pared y temperatura. No convertir una métrica a otra si falta la información.
-5. Clasificar evidencia:
-   - **A — reproducible/auditable**: scripts o comandos, versiones, modelo/quant, logs o CSV disponibles.
-   - **B — detallada pero incompleta**: el autor describe hardware, modelo y cifras, pero falta algún artefacto esencial.
-   - **C — anecdótica**: comentario/post con cifras sin receta suficiente.
-   - **D — solo indicio**: pregunta, promesa, compilación sin benchmark o cifra de API/cloud.
-6. Solo A y B pueden alimentar una tabla de throughput, con las limitaciones señaladas. C se conserva en el registro de pistas y D no se convierte en benchmark.
-7. Para coste por tokens/s, exigir precio del mismo sistema (incluidos los componentes imprescindibles) y evitar el ranking si el modelo/quant/workload no es comparable. El coste de una GPU externa debe atribuirse al conjunto placa+GPU, no a la placa sola.
-8. Registrar resultados negativos y fallos —OOM, freeze, Vulkan lento, swap excesivo, falta de soporte— con versión y contexto. No generalizarlos a versiones futuras sin nueva evidencia.
+### 7.3 AMD Ryzen AI Max+ / Strix Halo / Gorgon Halo (128–192 GB)
 
-### Cambios respecto a versiones anteriores del informe
+Ecosistema muy activo en GitHub a octubre 2026:
 
-- Se añade una fuente de benchmark estructurado de Orin (`Crophes/orin-llm-bench`) y otra con pruebas auditable por directorio (`jbecirovski/jetson-llm-maxperf`).
-- Se añade `jfdg01/jetson` como ejemplo de cómo documentar condiciones y corregir tablas que mezclan cuantizaciones/contextos.
-- Se añade un registro de fuentes metodológicas, fuentes de inferencia edge y comunidades de búsqueda.
-- Se preservan los resultados de eullm/O6 como evidencia comunitaria pendiente de verificación de configuración, no como ranking final.
-- No se han hecho pruebas físicas; todas las cifras siguen siendo de fuentes externas.
-
-## 1. Plataformas evaluadas
-
-### 1.1 Radxa Orion O6 (CIX P1)
-
-Fuentes oficiales:
-- Producto y vías de compra: https://radxa.com/products/orion/o6/
-- Documentación: https://docs.radxa.com/en/orion/o6
-- Especificación de bajo nivel: https://docs.radxa.com/en/orion/o6/low-level-dev
-- PDF con precio minorista oficial publicado: https://dl.radxa.com/orion/o6/radxa_orion_o6_announcement_presentation_2024_12_18.pdf
-- Proyecto comunitario de kernel CIX P1 (O6N, relacionado pero no idéntico en validación): https://github.com/AkaseToshiyuki/cix-p1-kernel-deploy
-
-Especificaciones confirmadas por Radxa:
-- SoC CIX P1, arquitectura ARMv9.2.
-- CPU de 12 núcleos: 4 Cortex-A720 de rendimiento (hasta 2,6 GHz), 4 Cortex-A720 balanceados (hasta 2,4 GHz) y 4 Cortex-A520 eficientes (hasta 1,8 GHz).
-- GPU Arm Immortals G720 MC10; documentación declara Vulkan 1.3 y OpenCL 2.2.
-- NPU anunciada como 30 TOPS; la página de producto promociona 45 TOPS combinados CPU/GPU/NPU. Estas cifras no son benchmarks de LLM y no demuestran que la NPU pueda ejecutar un modelo GGUF.
-- RAM LPDDR5, bus de 128 bits, 5500 MT/s, hasta 64 GB; ancho de banda declarado de hasta 100 GB/s.
-- Ranura PCIe x16 física con conexión PCIe Gen4 x8. No implica x16 eléctrico.
-- Ranura M.2 M-key PCIe Gen4 x4 para NVMe; M.2 E-key PCIe Gen4 x2.
-- Dos interfaces Ethernet de 5 GbE.
-- Alimentación: entrada USB-C PD de 20 V o conector ATX de 24 pines; PSU recomendada de al menos 65 W.
-- La documentación indica que el paquete suele incluir placa, disipador Radxa 8420B, caja acrílica y shield de E/S; verificar el contenido del vendedor.
-
-**Precio de referencia, no precio final de compra:** PDF oficial publicado: 8 GB 289 USD, 16 GB 329 USD, 32 GB 389 USD, 64 GB 539 USD. Es un precio minorista oficial anunciado en 2024, no una oferta actual con stock y envío confirmados. Página oficial: https://radxa.com/products/orion/o6/ (disponibilidad mediante socios autorizados). Antes de comprar, solicitar precio final en EUR con IVA español, transporte, garantía y plazo de entrega por escrito.
-
-#### Valor real para LLM
-
-La ventaja de O6 es tener 64 GB de RAM física compartida para CPU/GPU, con una GPU moderna y PCIe para expansión. Es una candidata para ejecutar modelos grandes cuantizados principalmente por CPU, probar backends Vulkan y experimentar con una GPU PCIe ARM-compatible.
-
-Riesgos y límites:
-- El controlador gráfico y el soporte del SoC son más jóvenes y menos estandarizados que CUDA en Jetson.
-- El soporte Vulkan/OpenCL de la GPU no demuestra por sí solo que la versión de llama.cpp que se compile detecte correctamente la GPU, que todas las operaciones estén implementadas o que el backend sea más rápido que CPU.
-- La NPU de 30 TOPS es un acelerador separado con SDK, operadores y formatos propios. No se debe dar por hecho que acepta GGUF ni que llama.cpp/Strata la utilicen.
-- Los TOPS son irrelevantes como predictor directo de tokens/s para un modelo MoE si el runtime no puede ejecutar sus operaciones en ese acelerador.
-- **Baseline oficial de llama.cpp en CPU publicado por Radxa:** DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf, 8 hilos, pp512 = 64,60 ± 0,27 tokens/s y tg128 = 36,29 ± 0,16 tokens/s. La guía fija el commit `4aced7a` y activa ARMv9/I8MM/dotprod/KleidiAI. Esto verifica una ruta GGUF/CPU para O6; no demuestra aceleración Vulkan ni rendimiento de MoE grande. Fuente primaria: https://docs.radxa.com/en/orion/o6/app-development/artificial-intelligence/llama-cpp
-- No se ha encontrado en esta revisión un benchmark público suficientemente reproducible de O6 con un MoE de 30–35B en GGUF, con logs completos de tokens/s, RAM máxima y consumo de pared. Resultado: **no verificado**.
-
-### 1.2 NVIDIA Jetson AGX Orin 32 GB / 64 GB
-
-Fuentes:
-- Página oficial Jetson Orin: https://www.nvidia.com/es-es/autonomous-machines/embedded-systems/jetson-orin/
-- FAQ/precios de NVIDIA: https://developer.nvidia.com/embedded/faq
-- Fork Strata para Orin: https://github.com/calvinvette/strata-inference-orin
-- Benchmarks comunitarios del fork: https://github.com/calvinvette/strata-inference-orin/blob/main/docs/COMMUNITY_BENCHMARKS.md
-
-Características relevantes:
-- AGX Orin utiliza CPU ARM Cortex-A78AE y GPU NVIDIA Ampere integrada con memoria LPDDR5 compartida.
-- Según SKU, NVIDIA publica hasta 64 GB de memoria y hasta 204,8 GB/s de ancho de banda para AGX Orin de 64 GB.
-- El módulo de producción AGX Orin 64 GB se anuncia con hasta 275 TOPS y rango configurable de potencia 15–60 W; no confundir ese dato de módulo con el kit de desarrollo ni con consumo de pared de todo el sistema.
-- NVIDIA indica un precio de 3.499 USD para el Jetson AGX Orin Developer Kit de 64 GB y especifica que su rendimiento es el mismo que el kit de desarrollo original de 32 GB, salvo la memoria.
-- Los módulos de producción se venden aparte y requieren carrier board, fuente, refrigeración y almacenamiento apropiados. Para un primer experimento es preferible un kit completo o un sistema integrado que incluya esos componentes.
-
-**Coste total:** el precio oficial de 3.499 USD no es coste entregado en España. Añadir IVA/importación si proceden, transporte, NVMe, alimentación/cableado y posible carcasa/refrigeración. Un resultado de shopping reciente mostró un listado europeo del kit a unos 4.800 EUR, pero no se considera una oferta auditada ni necesariamente comparable; comprobar stock, SKU, IVA, envío y devolución antes de decidir. Fuente oficial para MSRP: https://developer.nvidia.com/embedded/faq
-
-### 1.3 Alternativas de más memoria
-
-| Plataforma | RAM física compartida | Estado para esta investigación | Uso recomendado |
-|---|---:|---|---|
-| Radxa Orion O6 | Hasta 64 GB LPDDR5 | Especificaciones oficiales; benchmark LLM grande comparable no encontrado | Opción abierta para evaluar CPU/Vulkan y PCIe |
-| Jetson AGX Orin | 32/64 GB según kit/módulo | Hay fork ARM64/CUDA con mediciones reales de 32 GB | Referencia para motor especializado y offload |
-| Jetson Orin NX | 8/16 GB según SKU | CUDA maduro, memoria demasiado pequeña para varios MoE de 30B sin descarga agresiva | Modelos pequeños, visión y nodo de control |
-| AMD BC-250 | 16 GB GDDR6 | Proyecto comunitario y Vulkan; arquitectura APU no ARM | Referencia económica alternativa, no objetivo ARM |
-| Apple Silicon | Configuración dependiente del equipo | Memoria unificada madura, plataforma cerrada | Referencia de experiencia de usuario y rendimiento, no hardware abierto |
-
-## 2. Evidencia reproducible: Strata en Jetson AGX Orin
-
-Repositorio: https://github.com/calvinvette/strata-inference-orin  
-Rama del port descrita por el proyecto: `feat/jetson-orin-arm64`.
-
-El fork deriva de Strata y añade:
-- compilación ARM64 para SM87;
-- kernels CPU portables y backend ARM de ggml fijado;
-- presupuesto unificado de RAM física para asignaciones CPU/GPU;
-- expertos respaldados por ficheros cuando no caben en RAM;
-- sincronización ARM para buffers host mapeados en CUDA y alternativas de registro;
-- ajustes de caché VMM;
-- instalación que conserva las bibliotecas CUDA de JetPack, evitando binarios x86 o paquetes CUDA de escritorio incompatibles.
-
-Advertencia importante: el propio proyecto indica que CPU y GPU comparten los 32 GB del AGX Orin de prueba; no son 32 GB de RAM más otros 32 GB de VRAM. El runtime deja por defecto aproximadamente 6 GiB de margen físico y reserva otros 3 GiB para espacios de trabajo tardíos al calcular la caché automática de expertos. La memoria gestionada se admite para transferencia secuencial de propiedad, pero no se reporta acceso gestionado concurrente. El proyecto mantiene asignaciones de dispositivo y buffers de control mapeados en vez de reemplazar todo por managed memory.
-
-### Resultados publicados por el fork (no medidos por LEONES)
-
-Configuración documentada:
-- Hardware: Jetson AGX Orin 32 GB.
-- Sistema: JetPack 6.2, CUDA 12.6.68.
-- Modo de potencia: MAXN y relojes desbloqueados.
-- Modelo: Qwen3.8-Flash-Next Coder IQ1_M, expertos respaldados por archivos, MTP speculative de 4, prefill batch 64.
-- Build inicial descrito como Strata 0.1.40.3; el repo también documenta validación posterior tras rebase a 0.1.41.
-
-Resultados del build 0.1.40.3:
-- Decode: mediana de 18,6–21,6 tokens/s en tres ejecuciones por tamaño de prompt con respuestas de 64 tokens.
-- Prefill: mediana de 37,8–52,5 tokens/s para prompts de 172–1069 tokens.
-- Contexto largo: 31.234 tokens procesados en 584 segundos en una prueba con contexto de 32K; respuesta esperada y seguimiento superados.
-- RAM física disponible mínima reportada: 7,33 GiB; había swap en uso.
-- Validación API: respuestas greedy repetidas, streaming OpenAI/Anthropic y recuperación tras cancelación superados.
-- Visión: validación de encoder CPU/CUDA para una imagen de 56×56 y límite de encoder de 16 tokens.
-
-Validación posterior del rebase a 0.1.41:
-- Nueve capacidades de contexto desde 1K hasta 256K completadas.
-- Con contexto 262.144, prompt de 261.936 tokens procesado a 58,5 tokens/s; luego 64 tokens generados a 6,6 tokens/s.
-- RAM disponible mínima: 9,33 GiB; swap en uso.
-- El contexto más grande reduce la caché automática de expertos y la velocidad de decode.
-
-Interpretación:
-- Es evidencia relevante de que un MoE con cuantización agresiva puede ejecutarse en Jetson Orin compartiendo RAM con la GPU y usando offload de expertos a fichero.
-- No es prueba de que cualquier modelo de 30–35B funcione igual, ni de que la velocidad sea sostenible con refrigeración pasiva o a potencia limitada.
-- El modelo Coder tiene expertos eliminados respecto al modelo completo; no equivale al modelo íntegro para tareas generales.
-- Las pruebas de rendimiento no sustituyen a una validación independiente de calidad, seguridad y precisión numérica.
-- Las cifras publicadas deben permanecer etiquetadas **PUBLISHED / THIRD-PARTY** en LEONES.
-
-### Instalación indicada por el proyecto
-
-Requisitos: AGX Orin 32 GB, JetPack 6.2, CUDA 12.6 y NVMe con espacio suficiente.
-
-```bash
-git clone --branch feat/jetson-orin-arm64 https://github.com/calvinvette/strata-inference-orin.git
-cd strata-inference-orin
-./setup.sh --cuda 12
-```
-
-Seguir el README y `docs/AI_SETUP.md` del repositorio en la revisión exacta que se vaya a medir. No exponer el servidor fuera de localhost sin configurar API key. Para reproducibilidad, guardar SHA de commit, versión de JetPack, modelo GGUF y hashes de los artefactos.
-
-## 3. Controladores y backends: matriz de compatibilidad
-
-| Plataforma / backend | Estado documental | Qué queda por verificar |
+| Repositorio | Descripción | Datos destacados |
 |---|---|---|
-| Jetson Orin + CUDA + Strata ARM64 | Evidencia publicada en AGX Orin 32 GB | Repetición independiente, potencia limitada, modelos completos y métricas de pared |
-| Jetson Orin + llama.cpp CUDA + GGUF | Vía de software ampliamente disponible en ARM64/CUDA, pero el rendimiento depende de build y modelo | Compilar versión fijada, confirmar capas GPU, KV cache, MoE y memoria |
-| Orion O6 + llama.cpp CPU | ARM64 CPU como punto de partida razonable | Build limpio, kernels ARM, BLAS opcional y estabilidad |
-| Orion O6 + llama.cpp Vulkan | GPU anuncia Vulkan 1.3; compatibilidad del runtime no se deduce de la especificación | `vulkaninfo`, backend Vulkan compilado, operaciones soportadas y benchmark contra CPU |
-| Orion O6 + OpenCL | GPU anuncia OpenCL 2.2 | Backend concreto, disponibilidad de ICD, operadores y precisión |
-| Orion O6 + NPU | NPU de 30 TOPS con SDK del fabricante | Si el SDK soporta el modelo/operadores; no asumir compatibilidad GGUF ni Strata |
-| Orion O6 + GPU PCIe externa | Ranura PCIe Gen4 x8 física | IOMMU, kernel/driver ARM64 de GPU, ancho de enlace negociado, alimentación y compatibilidad de CUDA/ROCm |
+| [botAGI/strix-halo-multislot](https://github.com/botAGI/strix-halo-multislot) | Multi-slot LLM inference (hasta 32 streams). | 236 tok/s agregados (Gemma 4 26B A4B); ~90 tok/s single-stream con MTP. |
+| [visorcraft/strix-halo-llm-perf](https://github.com/visorcraft/strix-halo-llm-perf) | Benchmarks y setup reproducible. | Qwen3 30B-A3B ~86 tok/s; modelos más grandes 20–50+ tok/s. |
+| [lazarevtill/strix-halo-llm](https://github.com/lazarevtill/strix-halo-llm) | Tuning Vulkan + catálogo de bugs de medición. | Límites reales de memoria (~109 GB usable); análisis de techo de bandwidth. |
+| [hogeheer499-commits/strix-halo-guide](https://github.com/hogeheer499-commits/strix-halo-guide) | Guía basada en evidencia (Qwen3.8, Ollama, llama.cpp, Vulkan/ROCm). | Alta popularidad (cientos de stars). |
+| [pepuscz/strix-halo-llm](https://github.com/pepuscz/strix-halo-deepseek-v4-flash) | Recetas Ansible + benchmarks de calidad. | Setups ganadores para Qwen y DeepSeek con 256K–512K contexto. |
+| [ihanesman/strix-halo-windows-llm-bench](https://github.com/ihanesman/strix-halo-windows-llm-bench) | Benchmarks bajo Windows. | Impacto de backends, speculative decoding y throttle por display-off. |
+| [GaelicThunder/gb10-uma-inference-notes](https://github.com/GaelicThunder/gb10-uma-inference-notes) | Análisis de propiedades UMA en GB10. | Hallazgos sobre bandwidth-saturated storage, host→device copies inútiles (+63 %), RAM bandwidth como techo final. |
+| [DG1001/local-agentic-coding-128gb](https://github.com/DG1001/local-agentic-coding-128gb) | Benchmarks agentic coding en 128 GB UMA. | Modelos grandes (DeepSeek-V4-Flash, Qwen3.6, etc.) pasando tests de coding localmente. |
 
-Fuentes de software/controladores:
-- Radxa O6: https://docs.radxa.com/en/orion/o6
-- CIX P1 kernel deployment (proyecto comunitario para O6N, usar como pista, no como garantía de paridad O6): https://github.com/AkaseToshiyuki/cix-p1-kernel-deploy
-- Strata Orin: https://github.com/calvinvette/strata-inference-orin
-- llama.cpp: https://github.com/ggml-org/llama.cpp
+**Planes de futuro:** fuerte foco en ROCm/Vulkan optimizado, multi-slot, speculative decoding y uso de NPU XDNA para embeddings/agentes. Comunidad documentando “qué funciona de verdad” frente a claims de marketing.
 
-El script comunitario CIX P1 informa de GPU disponible como `/dev/dri/card0` y PCIe probado con una NIC RTL8125 en un O6N; marca VPU/NPU como dependientes de firmware. Esto no valida por sí solo una O6 de venta, un runtime GGUF ni aceleración LLM por NPU. La variante O6N y O6 deben mantenerse diferenciadas en la matriz.
+### 7.4 Plataformas chinas (ModelScope, Gitee, GitCode/AtomGit)
 
-## 4. Coste total de propiedad (TCO) y compras
+- **ModelScope**: Hub oficial CIX (`cix/ai_model_hub_*`) con modelos optimizados para NPU Zhouyi (visión, embeddings, algunos LLM cuantizados). OrionStarAI publica modelos Orion-14B (no específicos de hardware O6).
+- **Gitee / GitCode**: Espejos de proyectos OpenHarmony para CIX/Radxa, ipex-llm (Intel) y herramientas generales. Actividad de LLM de alto throughput en NPU CIX más baja que en GitHub.
+- Poca evidencia pública de grandes proyectos de inferencia LLM de alto throughput en CIX fuera de los repositorios ya citados en GitHub.
 
-### 4.1 Radxa Orion O6 64 GB
+### 7.5 Síntesis de madurez y brechas
 
-**Precio de referencia publicado:** 539 USD (MSRP oficial anunciado en PDF de 2024; no equivale a cotización actual ni incluye impuestos/envío).
+| Plataforma | Nivel de evidencia pública | Proyectos destacados | Estado NPU/acelerador para LLM | Madurez software | Planes de futuro visibles |
+|---|---|---|---|---|---|
+| Radxa Orion O6 / CIX | Media-Baja | tinygrad-npu-examples, Frigate, Geerling | Limitada (embeddings + capas estáticas) | Drivers en evolución | Híbrido NPU+Vulkan + agentic stack |
+| Jetson AGX Orin | Alta | TensorRT-Edge-LLM, strata-inference-orin, vLLM wheels | Excelente (CUDA/TensorRT) | Muy alta | TensorRT-Edge como camino oficial edge |
+| AMD Strix Halo / 192 GB | Alta (2026) | Múltiples repos de benchmarks multi-slot | Buena vía iGPU Vulkan/ROCm | Alta y creciendo rápidamente | Multi-slot, speculative, ROCm optimizado |
+| GB10 / DGX Spark | Media-Alta | UMA notes, agentic coding benchmarks | Excelente (CUDA + UMA) | Alta | Clustering y software NVIDIA stack |
 
-Enlaces de compra / distribución (stock y precio O6 64 GB deben confirmarse en la ficha de cada vendedor):
-- Página oficial del producto y socios autorizados: https://radxa.com/products/orion/o6/
-- OKdo, distribuidor global que Radxa lista en su página histórica de distribuidores: https://www.okdo.com/
-- Innet24 (Alemania): https://www.innet24.de/
-- Maker-store (Alemania): https://shop.maker-store.de/
-- Allnet España: https://www.allnet.es/ — el directorio de Radxa publica contacto de ALLNET España en Carballo (A Coruña); solicitar cotización del SKU de 64 GB.
-- Directorio de distribuidores (fuente Radxa, página archivada): https://wiki.radxa.com/Buy
-- Documentación y contenido del paquete: https://docs.radxa.com/en/orion/o6
-- Accesorio de alimentación oficial: desde la sección de accesorios de https://radxa.com/products/orion/o6/
-- Almacenamiento NVMe: elegir un SSD M.2 2280 PCIe Gen4 x4 de 1–2 TB de vendedor con stock y factura en España; la ranura está confirmada por la documentación oficial.
+**Brechas que persisten:**
+- Casi nulos benchmarks controlados lado a lado Radxa vs Jetson con el mismo modelo/quant/runtime.
+- NPU CIX aún no es path de producción para decode LLM completo.
+- Documentación y drivers CIX/Radxa siguen fragmentados (especialmente mainline y Windows).
 
-No se ha podido confirmar en esta revisión una ficha de venta actual del SKU O6 64 GB con precio final en EUR. Estos enlaces son rutas verificables hacia vendedores/distribuidores, no prueba de stock, precio ni plazo de entrega.
+**Recomendación de seguimiento prioritario:**
+1. `Reonarudo/tinygrad-npu-examples` — evolución del soporte NPU para LLM.
+2. Issues de CIX sobre soporte de transformers dinámicos / KV-cache.
+3. TensorRT-Edge-LLM releases y tablas de rendimiento.
+4. Repos de Strix Halo como referencia de madurez de ecosistema abierto en memoria unificada de alto ancho de banda.
 
-Presupuesto que debe completarse con cotización real:
-- Placa O6 64 GB: 539 USD como referencia histórica, **no precio entregado**.
-- IVA, transporte, posible aduana/gestión: pendientes de cotización del vendedor.
-- Fuente USB-C PD 20 V ≥65 W o fuente ATX compatible: coste pendiente según opción.
-- NVMe 1–2 TB: coste pendiente de oferta y capacidad elegidas.
-- Cableado/adaptadores y refrigeración extra: 0 € si el paquete incluye caja/disipador y basta la fuente elegida; en caso contrario añadir coste real.
-- Total final España: **NO VERIFICADO**. No sumar cifras de accesorios no consultadas ni presentar una conversión de divisa como precio final.
+---
 
-La compra solo se recomienda después de confirmar por escrito SKU de 64 GB, stock, contenido del paquete, IVA, envío a España, garantía y política de devolución. Si el vendedor no puede facilitar esos datos, registrar la oferta como “lead”, no como compra disponible.
-
-### 4.2 Jetson AGX Orin
-
-**Ofertas europeas localizadas (consulta 24-10-2026; verificar antes de pagar):**
-
-| Vendedor | SKU | Precio anunciado | IVA / disponibilidad | Enlace |
-|---|---|---:|---|---|
-| [Aetherix](https://aetherix.com/product/nvidia-jetson-agx-orin-developer-kit-64gb-945-13730-0055-000/) | Developer Kit 64 GB, 945-13730-0055-000 | 4.199,00 € | IVA incluido; la página indicaba 3 unidades en stock y envío gratuito por Europa | [Ficha](https://aetherix.com/product/nvidia-jetson-agx-orin-developer-kit-64gb-945-13730-0055-000/) |
-| [RS España](https://es.rs-online.com/web/p/kits-de-desarrollo-de-procesadores/2539662) | Developer Kit 64 GB, 945-13730-0055-000 | 4.012,53 € | IVA incluido; la página indicaba 9 unidades disponibles para enviar y más desde otro centro | [Ficha](https://es.rs-online.com/web/p/kits-de-desarrollo-de-procesadores/2539662) |
-| [Reichelt España](https://www.reichelt.com/es/es/shop/producto/kit_de_desarrollo_nvidia_jetson_agx_orin_cpu_de_12_nucleos_64-383698) | Developer Kit 64 GB, 945-13730-0055-000 | 3.967,06 € antes de IVA | Ficha indica IVA del 21 % adicional y envío desde 9,95 €; plazo indicado 4–5 días laborables | [Ficha](https://www.reichelt.com/es/es/shop/producto/kit_de_desarrollo_nvidia_jetson_agx_orin_cpu_de_12_nucleos_64-383698) |
-
-Reichelt totaliza aproximadamente 4.800,14 € con IVA del 21 % antes del envío (3.967,06 × 1,21). Son precios visibles en páginas de producto, no garantía de que el checkout conserve stock o precio. Confirmar total final y distinguir el kit de desarrollo de un módulo suelto.
-
-Enlaces:
-- Especificaciones oficiales: https://www.nvidia.com/es-es/autonomous-machines/embedded-systems/jetson-orin/
-- Precio oficial/FAQ: https://developer.nvidia.com/embedded/faq
-- Distribuidores desde NVIDIA: usar el enlace “local distributor” de la FAQ oficial.
-
-Presupuesto:
-- AGX Orin Developer Kit 64 GB: 3.499 USD de precio oficial anunciado por NVIDIA. No es precio final en EUR.
-- NVMe con espacio para modelos y packs: necesario/recomendado por el fork; seleccionar y presupuestar según capacidad.
-- Alimentación y refrigeración: verificar si vienen incluidas en el kit específico; no duplicar componentes incluidos.
-- IVA/transporte: cotizar con distribuidor europeo.
-- Total final España: **NO VERIFICADO** hasta disponer de una oferta final.
-
-Un módulo de producción AGX Orin no es un kit completo: sumar carrier board compatible, fuente, disipación, almacenamiento y carcasa. Comparar ofertas solo cuando el SKU y la lista de componentes coincidan.
-
-### 4.3 Fórmula TCO para LEONES
-
-Registrar por separado:
-1. precio del hardware y SKU;
-2. IVA e impuestos;
-3. envío y tasas de gestión;
-4. fuente, carcasa y refrigeración no incluidas;
-5. NVMe;
-6. adaptadores y cables;
-7. consumo de pared medido durante idle, prefill y decode;
-8. coste de electricidad según tarifa introducida por el usuario;
-9. disponibilidad/garantía y plazo de reposición.
-
-No comparar precio por TOPS. Métricas útiles: EUR por GB de RAM realmente disponible, tokens/s por vatio de pared, tokens generados por kWh y coste total por token para un workload especificado.
-
-## 5. Protocolo de extracción y normalización de benchmarks públicos (sin pruebas físicas)
-
-### A. Revisión documental de plataforma y controladores
-
-Para cada sistema, extraer de fuentes públicas cuando exista:
-- modelo/SKU, memoria física, kernel, distribución y firmware;
-- `uname -a`, `lscpu`, `free -h`, `lsblk`, `dmesg` relevante;
-- versión del driver GPU, Vulkan/OpenCL/CUDA;
-- para Vulkan: salida de `vulkaninfo --summary`;
-- para PCIe: `lspci -vv` y ancho/velocidad realmente negociados;
-- sensores térmicos y límites de potencia disponibles;
-- `tegrastats` en Jetson; para ambos sistemas, vatímetro externo en la toma como fuente primaria de consumo.
-
-No afirmar “GPU acelerada” hasta que el log del runtime identifique el backend y la carga real de GPU.
-
-### B. Recopilación de benchmarks públicos de CPU y GPU
-
-Buscar resultados publicados con revisión fijada de llama.cpp cuando existan: CPU pura, Vulkan en O6 y CUDA en Jetson. Registrar commit, flags, backend detectado y logs que el autor haya publicado. Si no hay fuente pública suficiente, marcar el resultado como no disponible; no compilar ni probar el hardware.
-
-Modelo inicial pequeño para validar instalación; después un modelo dense de 7–8B y, finalmente, el MoE seleccionado. No empezar por el modelo más grande antes de validar el runtime.
-
-### C. Selección documental de MoE y memoria
-
-Modelos prioritarios que deben investigarse en fuentes públicas (sin ejecutarlos físicamente):
-- un modelo Qwen3-30B-A3B o Qwen3.5-35B-A3B disponible en GGUF;
-- registrar URL exacta, revisión, nombre de fichero, tamaño y SHA-256;
-- cuantización idéntica entre plataformas, siempre que el formato sea compatible;
-- contexto de 4K y después 8K, aumentando solo si no hay presión de memoria;
-- tipo de KV explícito, batch/prefill, número de capas GPU, threads y offload registrados;
-- distinguir modelo completo frente a variantes “Coder” con expertos eliminados;
-- registrar fallos OOM, swap, uso de SSD y si se leen expertos desde fichero.
-
-Para Strata, registrar la configuración publicada y comparar solo benchmarks públicos existentes. No declarar reproducido el resultado ni atribuir a LEONES la medición del autor.
-
-### D. Normalización de métricas publicadas
-
-- Extraer del autor la mediana/rango y número de repeticiones cuando estén publicados; no asumir repeticiones si no se declaran.
-- Separar tiempo de carga, TTFT, prefill tok/s, decode tok/s, latencia total y memoria máxima.
-- Separar consumo en pared, TDP y límite de potencia; son magnitudes distintas.
-- Para Strata, conservar datos de prefijos reutilizados, tokens nuevos y caché de expertos caliente/fría si la fuente los distingue.
-- Guardar URL, fecha de consulta, commit/hash disponible, modelo, configuración y cita de cada cifra.
-- Anotar si el benchmark incluye evaluación de calidad/corrección o solo velocidad.
-
-### Tabla de resultados públicos (rellenar únicamente con datos publicados; los cálculos derivados son ESTIMATED)
-
-| Placa / backend | Modelo / cuantización | Contexto | Prefill tok/s | Decode tok/s | TTFT | RAM máxima / swap | W pared medio decode | tokens/J | Estado |
-|---|---|---:|---:|---:|---:|---|---:|---:|---|
-| Radxa O6 CPU | DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M (Radxa, terceros) | pp512 / tg128 | 64,60 ± 0,27 (pp512) | 36,29 ± 0,16 (tg128) | No publicado | No publicado | No publicado | No calculable | PUBLISHED por Radxa; no prueba física LEONES |
-| Radxa O6 Vulkan | Pendiente | 4K | No medido | No medido | No medido | No medido | No medido | No medido | PENDIENTE |
-| Jetson AGX Orin CUDA/Strata | Qwen3.8-Flash-Next Coder IQ1_M (terceros) | 32K | 37,8–52,5 tok/s en prompts cortos; caso 31.234 tokens/584 s | 18,6–21,6 tok/s (terceros) | No publicado aquí | ≥7,33 GiB libres; swap usado | No medido aquí | No medido aquí | PUBLISHED, tercero |
-| Jetson AGX Orin CUDA/Strata | Qwen3.8-Flash-Next Coder IQ1_M (terceros, rebase 0.1.41) | 256K | 58,5 tok/s en prompt de 261.936 tokens | 6,6 tok/s (64 tokens) | No publicado aquí | ≥9,33 GiB libres; swap usado | No medido aquí | No medido aquí | PUBLISHED, tercero |
-
-Los resultados de Orin anteriores no son comparables directamente con las filas de O6 pendientes: los tamaños de prompt, modelo, configuración y contexto difieren. No derivar tokens/J sin medición de potencia.
-
-## 6. Riesgos de evidencia y criterios de comparación
-
-**Radxa O6 — comprar solo si:**
-- se acepta trabajo de integración de kernel/backend;
-- el vendedor confirma versión de 64 GB y soporte/garantía;
-- hay política de devolución si Vulkan/llama.cpp no funciona como se necesita;
-- el objetivo incluye desarrollo de drivers y expansión PCIe, no solo “tokens/s listos para usar”.
-
-**Jetson AGX Orin — elegir si:**
-- el objetivo prioritario es reproducir Strata/CUDA y validar offload de expertos con menor incertidumbre;
-- el coste alto está justificado por la madurez del ecosistema y el tiempo de ingeniería ahorrado;
-- se acepta que los resultados publicados pertenecen a Orin 32 GB y a una cuantización/modelo concretos.
-
-**No comprar aún** si el requisito es ejecutar un modelo MoE completo de 30–35B a una tasa de tokens/s mínima concreta: primero fijar el modelo, la cuantización, contexto y objetivo de rendimiento, y exigir un benchmark reproducible del mismo hardware o derecho de devolución.
-
-## 7. Fuentes principales y nivel de confianza
-
-1. Radxa Orion O6 oficial: https://radxa.com/products/orion/o6/ — alta confianza en especificaciones declaradas, no en rendimiento LLM.
-2. Documentación O6: https://docs.radxa.com/en/orion/o6 — alta confianza en interfaces y configuración publicada.
-3. PDF de precios oficiales históricos: https://dl.radxa.com/orion/o6/radxa_orion_o6_announcement_presentation_2024_12_18.pdf — fuente del MSRP anunciado, no de precio actual entregado.
-4. NVIDIA Jetson Orin: https://www.nvidia.com/es-es/autonomous-machines/embedded-systems/jetson-orin/ — alta confianza en especificaciones oficiales.
-5. NVIDIA FAQ: https://developer.nvidia.com/embedded/faq — alta confianza en precio oficial anunciado y distinción entre kit y módulo.
-6. Strata Orin fork: https://github.com/calvinvette/strata-inference-orin — fuente primaria del port y de las mediciones publicadas por el autor; requiere reproducción independiente.
-7. Protocolo de benchmarks Strata: https://github.com/calvinvette/strata-inference-orin/blob/main/docs/COMMUNITY_BENCHMARKS.md — buena guía de campos de medición y transparencia.
-8. Kernel CIX P1 comunitario (O6N): https://github.com/AkaseToshiyuki/cix-p1-kernel-deploy — evidencia útil pero específica de O6N; no extrapolar sin comprobar.
-
-## Conclusión
-
-En la evidencia pública disponible, **Jetson AGX Orin es la plataforma con menor incertidumbre documental para Strata/CUDA ARM64**, porque existe un fork con benchmarks publicados. Se han localizado páginas de distribuidores europeos con precios anunciados de unos 4.012–4.199 € IVA incluido para el kit de 64 GB; comprobar disponibilidad y total final en el checkout.
-
-Para un proyecto más abierto, con mayor RAM compartida y expansión PCIe, **Radxa Orion O6 64 GB es una candidata prometedora**. Ya existe un baseline oficial GGUF/CPU de 1.5B documentado por Radxa, pero falta evidencia pública comparable para MoE de 30–35B con backend Vulkan, memoria máxima, swap y consumo de pared. No recomendar comprar la O6 solo por el dato de 100 GB/s o los TOPS anunciados hasta verificar ese caso de uso.
-
-El siguiente hito es cerrar las brechas documentales: revisar el ranking completo de Artificial Analysis, encontrar benchmarks públicos del mismo modelo/quant en Radxa O6 y Jetson Orin, y obtener precio final del SKU exacto para cada fila calculable. El primer barrido ya está incorporado en §0.1; los valores cruzados entre Orin 32 GB y el precio del kit 64 GB se excluyen del ranking. No se realizarán pruebas físicas. Si una combinación carece de benchmark público comparable, quedará explícitamente como brecha de evidencia.
+*Sección añadida el 24 de octubre de 2026 a partir de búsqueda exhaustiva en GitHub, Hugging Face, ModelScope, Gitee y GitCode. Todos los datos son PUBLISHED por terceros; no han sido reproducidos por LEONES.*
