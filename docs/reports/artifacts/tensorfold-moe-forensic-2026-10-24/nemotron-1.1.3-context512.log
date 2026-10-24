@@ -1,0 +1,1 @@
+tensorfold: the checkpoint's 16.6 GiB of weights do not fit the 2.6 GiB the CUDA memory budget grants (3.6 GiB free less a 1.0 GiB reserve); free device memory or adjust TENSORFOLD_MEMORY_RESERVE_GIB / TENSORFOLD_CUDA_MEMORY_LIMIT_GB

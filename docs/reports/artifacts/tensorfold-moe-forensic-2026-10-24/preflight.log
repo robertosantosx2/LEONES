@@ -1,0 +1,106 @@
+===== FECHA =====
+2026-10-24T21:44:33,243861681+02:00
+
+===== BINARIO 1.1.3 =====
+-rwxr-xr-x 1 ssantos ssantos 97906696 Oct 23 18:31 /home/ssantos/tensorfold-1.1.3-check.aOKPG0/tensorfold-1.1.3-linux-x86_64/bin/tensorfold-native
+a51ec99fa4f87ab12bd48261e1c1cbeb1e7b51f72755a71d4a7eda89712ff671  /home/ssantos/tensorfold-1.1.3-check.aOKPG0/tensorfold-1.1.3-linux-x86_64/bin/tensorfold-native
+tensorfold-native 1.1.3
+version_exit=0
+
+===== CAPACIDADES =====
+{"schema": 1, "engine": "zig", "version": "1.1.3", "chip": "nvidia-sm86", "backends": ["cuda"], "families": {"nemotron_h": ["mlx-q4g64", "modelopt-nvfp4", "modelopt-ggml"], "nemotron_h_omni": ["mlx-q4g64", "modelopt-nvfp4", "modelopt-ggml"], "glm5_next": ["modelopt-nvfp4"], "qwen3_5": ["mlx-q4g64"], "qwen3_5_moe": ["mlx-q4g64"], "qwen4_exp": ["mlx-q4g32", "modelopt-mixed"], "kolibri1": ["fp8-block"], "lfm2_vl": ["bf16"], "fish_omni": ["fp8-block128"]}, "serve": {"flags": {"--host": {}, "--allowed-host": {}, "--allowed-origin": {}, "--port": {}, "--name": {}, "--chat-template": {}, "--alias": {}, "--api-key": {}, "--api-key-file": {}, "--metrics-open": {}, "--dashboard": {}, "--vision": {}, "--vision-urls": {}, "--vision-max-images": {}, "--vision-max-videos": {}, "--vision-image-tokens": {}, "--vision-video-tokens": {}, "--context": {}, "--max-tokens": {}, "--temperature": {}, "--prompt-seed": {}, "--top-p": {}, "--top-k": {}, "--min-p": {}, "--thinking": {}, "--no-thinking": {}, "--reasoning-effort": {"values": ["low", "medium", "high", "xhigh"]}, "--thinking-budget": {}, "--thinking-reserve": {}, "--loop-guard": {}, "--no-drafts": {}, "--keep-warm": {}, "--compact-at": {}, "--compact-keep": {}, "--compact-memory": {}, "--slide": {}, "--slide-graph": {}, "--drafter": {}, "--drafter-bits": {"values": ["0", "4"]}, "--record": {}, "--kv-cache": {"values": ["bf16", "fp8"]}, "--mtp-drafts": {}, "--mtp-confidence": {}, "--prompt-cache-gib": {}, "--prompt-cache-over-cap": {}, "--snapshot-dir": {"values": ["none"]}, "--max-snapshots": {"values": ["0"]}, "--parallel": {}, "--no-update-check": {}, "--backend": {"values": ["auto", "cuda"]}, "--policy": {}, "--precision": {"values": ["checkpoint", "full"]}, "--device": {}, "--segments": {}, "--learn": {}, "--learn-dir": {}, "--learn-gib": {}, "--learn-min-free-gib": {}, "--learn-conversations": {}, "--learn-daily-gib": {}, "--recall": {}, "--recall-dir": {}, "--recall-gib": {}, "--recall-read-only": {}, "--cortheon": {}}}, "env": ["TENSORFOLD_API_KEY", "TENSORFOLD_NO_LIVE", "TENSORFOLD_SEED_SALT", "TENSORFOLD_REQUEST_LOG", "TENSORFOLD_NO_UPDATE_CHECK", "HF_HOME", "HF_HUB_CACHE", "HF_HUB_OFFLINE", "BRAVE_SEARCH_API_KEY", "TF_CUDA_DEVICE", "TF_CUDA_SEGMENTS", "TENSORFOLD_CUDA_KERNELS", "TENSORFOLD_MEMORY_RESERVE_GIB", "TENSORFOLD_CUDA_MEMORY_LIMIT_GB"], "optional_libraries": [{"name":"cuBLASLt","feature":"CUDA vision towers (--vision) and CUDA cuBLASLt projections","soname":"libcublasLt.so.13","found":true,"install":"install the NVIDIA CUDA 13 cuBLAS runtime; on Linux, add its directory to LD_LIBRARY_PATH; a driver-only host does not include it","usable":null,"problem":null},{"name":"cuBLAS","feature":"Drama CUDA prompt and codec GEMMs","soname":"libcublas.so.13","found":true,"install":"install the NVIDIA CUDA 13 cuBLAS runtime; on Linux, add its directory to LD_LIBRARY_PATH","usable":null,"problem":null},{"name":"NCCL","feature":"CUDA ranks (including the GLM pair)","soname":"libnccl.so.2","found":false,"install":"install the NVIDIA NCCL 2 runtime compatible with CUDA 13; on Linux, add its directory to LD_LIBRARY_PATH","usable":null,"problem":null},{"name":"RDMA verbs","feature":"RoCE/RDMA gathers","soname":"libibverbs.so.1","found":true,"install":"install rdma-core's libibverbs runtime and the provider for the network adapter","usable":null,"problem":null},{"name":"TensorFold video","feature":"video inputs (--vision)","soname":"libtfvideo.so","found":false,"install":"build the optional zig build video -Dffmpeg=PREFIX runtime against FFmpeg 9.0.2 and place it in lib beside the server; see packaging/RUNTIME.md","usable":null,"problem":null},{"name":"libjpeg-turbo","feature":"JPEG inputs (--vision)","soname":"libturbojpeg.so.0","found":true,"install":"install libjpeg-turbo 3.1.4.1 and set TENSORFOLD_LIBTURBOJPEG to its file, or put it on the documented loader path","usable":false,"problem":"libturbojpeg.so.0 is required for JPEG inputs (--vision); install libjpeg-turbo 3.1.4.1 and set TENSORFOLD_LIBTURBOJPEG to its file, or put it on the documented loader path"},{"name":"libwebp","feature":"WebP inputs (--vision)","soname":"libwebpdecoder.so.3","found":false,"install":"install libwebp 1.6.0 and set TENSORFOLD_LIBWEBP to its decoder file, or put it on the documented loader path","usable":false,"problem":"libwebpdecoder.so.3 is required for WebP inputs (--vision); install libwebp 1.6.0 and set TENSORFOLD_LIBWEBP to its decoder file, or put it on the documented loader path"},{"name":"TensorFold grammar","feature":"structured output and required tool calls (HTTP 400 when missing)","soname":"libtfgrammar.so","found":true,"install":"restore the matching release archive's lib/ directory or run zig build grammar -Dxgrammar=DIR; prepare DIR with git clone --branch v0.2.8 --recurse-submodules https://github.com/mlc-ai/xgrammar","usable":null,"problem":null},{"name":"RCCL","feature":"HIP tensor-parallel ranks","soname":"librccl.so.1","found":false,"install":"install the RCCL runtime matching the ROCm installation; on Linux, add its directory to LD_LIBRARY_PATH","usable":null,"problem":null},{"name":"MCDMA RPC","feature":"MCDMA mailbox and Metal speed-up communication","soname":"libmcdma-rpc.so","found":false,"install":"build and install MCDMA's RPC helper and set MCDMA_RPC_LIBRARY to its file","usable":null,"problem":null},{"name":"MCDMA fabric","feature":"MCDMA peer fabric","soname":"libmcdma-fabric.so","found":false,"install":"build MCDMA's fabric helper and name its inspected absolute path in the peer settings","usable":null,"problem":null}]}
+capabilities_exit=0
+
+===== INFO NEMOTRON =====
+family: Nemotron 3.5 Lightning (nemotron_h)
+format: 4-bit, group 64
+context: 262144
+weights: 17.27 GiB (18544232887 bytes)
+memory floor: 19.27 GiB (weights plus a 2.00 GiB runtime margin)
+nemotron_info_exit=0
+
+===== INFO QWEN 3.6 =====
+family: qwen3_5_moe (qwen3_5_moe)
+format: 4-bit, group 64
+weights: 19.47 GiB (20904564068 bytes)
+memory floor: 21.47 GiB (weights plus a 2.00 GiB runtime margin)
+qwen36_info_exit=0
+
+===== SNAPSHOTS EN CACHÉ =====
+--- /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit
+18G	/home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit
+d /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit -> 
+d /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots -> 
+d /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8 -> 
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/mtp-4bit.safetensors -> ../../blobs/4953d2323861b48db04d01e86559eb8b944f750ca1c1088409e2a65c6350f5f7
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/tokenizer_config.json -> ../../blobs/3231c597ea1b4b28e5a533222996ddc2dc27f53a
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/LICENSE -> ../../blobs/4d76cc87c9edb280753e3bee3b499ae461113835
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/model-00004-of-00004.safetensors -> ../../blobs/6fcd77b940874080dce8c63843c93957d96565284b7810063e592b6febd63089
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/config.json -> ../../blobs/f3b94f4d971ab6f331c616a456bcb362c320ac94
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/model.safetensors.index.json -> ../../blobs/21843de40b11f8b1d45760afc0ff0a36ff27aac2
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/.gitattributes -> ../../blobs/52373fe24473b1aa44333d318f578ae6bf04b49b
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/chat_template.jinja -> ../../blobs/d85b0c772f8fe585063847c5f6bf5ec48eb210be
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/generation_config.json -> ../../blobs/a41201df53f9d0769947989353b5d02e70491c56
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/model-00002-of-00004.safetensors -> ../../blobs/ed6020dad4cdeac47bb24d31ce8d212a607476358845b8620f1767b2fae30b3a
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/README.md -> ../../blobs/398d8760ff48afe83be5c4fcf992f81a684223f7
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/tokenizer.json -> ../../blobs/623c34567aebb18582765289fbe23d901c62704d6518d71866e0e58db892b5b7
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/model-00003-of-00004.safetensors -> ../../blobs/fcc12aa6d00fa75447fc01ba7efe288e5bae025ae44aaad0afde265ac3abb7f1
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/snapshots/d9d758fb83953437f7263256b0d96157e2a348b8/model-00001-of-00004.safetensors -> ../../blobs/7cc60a26a46712e471d74c64dc4460558b15194a879a99426c5647ef1d588ca6
+d /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/refs -> 
+d /home/ssantos/.cache/huggingface/hub/models--TensorFold--NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit/blobs -> 
+--- /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP
+20G	/home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP
+d /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP -> 
+d /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots -> 
+d /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb -> 
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/video_preprocessor_config.json -> ../../blobs/3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/mtp-4bit.safetensors -> ../../blobs/c4d7d795b06eaf39c90520940887d81c71abeda3f04f892c2ef0fbc5a8970eb4
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/tokenizer_config.json -> ../../blobs/a068e2468cff426a9b105006e74e044030a6faf4
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/model-00004-of-00004.safetensors -> ../../blobs/a5d0cf03519c26f8b506df6b0ba60526e5c08c8cea22d0c21ce92950e58a5422
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/config.json -> ../../blobs/e3a2334ebf2df216742ef3ed4b784417bfffe6fc
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/configuration.json -> ../../blobs/d24dba949ee1fe70cc810e4c4709a0bddf4e06ba
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/model.safetensors.index.json -> ../../blobs/f714d295484e01790bad8b40c2ce49323d7d2598
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/vocab.json -> ../../blobs/0aa0ce0658d60ac4a5d609f4eadb0e8e43514176
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/.gitattributes -> ../../blobs/52373fe24473b1aa44333d318f578ae6bf04b49b
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/preprocessor_config.json -> ../../blobs/2ea84a437d448ff71b08df68fdd949d5cc4ebb64
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/chat_template.jinja -> ../../blobs/a8755d827c0a7b614c246c4060dfd58ab352a8ff
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/generation_config.json -> ../../blobs/023756cfadf88e5bf69eefeee3e172f38c448d64
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/model-00002-of-00004.safetensors -> ../../blobs/31dcdb1c49eebdb1505bd14e3cb33f9cf900bd2546b638f2464694ae763a033f
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/processor_config.json -> ../../blobs/a3be3e79470d0a5befe0ba5247dfad8717d84529
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/README.md -> ../../blobs/f8d1e248f3b2867a49be5ae0e4032f09b79b9732
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/tokenizer.json -> ../../blobs/87a7830d63fcf43bf241c3c5242e96e62dd3fdc29224ca26fed8ea333db72de4
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/model-00003-of-00004.safetensors -> ../../blobs/3e66de06a1f03dade16a612a368cfce4a4c9caa4efd7d28185454384082cec03
+l /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/snapshots/f84b054c5677b6e59bdb969ae61915b0983d68bb/model-00001-of-00004.safetensors -> ../../blobs/09f3e6ecb0b7af6e6a38bc8169a134c821b0924c2679b2bb8f4426ad38d032b8
+d /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/refs -> 
+d /home/ssantos/.cache/huggingface/hub/models--TensorFold--Qwen3.6-35B-A3B-MLX-4bit-MTP/blobs -> 
+
+===== MEMORIA Y DISCO =====
+               total       usado       libre  compartido   búf/caché  disponible
+Mem:            14Gi        11Gi       1,0Gi       931Mi       3,1Gi       2,9Gi
+Inter:          31Gi       7,7Gi        24Gi
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+/dev/nvme0n1p2   937G   354G  536G  40% /
+Sat Oct 24 21:44:36 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3050 ...    Off |   00000000:01:00.0 Off |                  N/A |
+| N/A   42C    P0              6W /   45W |      15MiB /   4096MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            5911      G   /usr/lib/xorg/Xorg                        4MiB |
++-----------------------------------------------------------------------------------------+
+
+===== EVENTOS DE MEMORIA DEL KERNEL =====
+oct 22 09:07:19 ssantos-msi kernel: NVRM: GPU at PCI:0000:01:00: GPU-ac6951ca-4c9e-5d78-d295-8b6e23d03178
+oct 22 09:07:19 ssantos-msi kernel: NVRM: Xid (PCI:0000:01:00): 31, pid=203190, name=llama-server, channel 0x0000000c, intr 00000000. MMU Fault: ENGINE GRAPHICS GPC0 GPCCLIENT_T1_2 faulted @ 0x7ced_68f60000. Fault is of type FAULT_PDE ACCESS_TYPE_VIRT_READ
