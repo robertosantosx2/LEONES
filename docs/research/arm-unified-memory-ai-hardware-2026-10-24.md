@@ -344,7 +344,7 @@ Para Strata, registrar la configuración publicada y comparar solo benchmarks p�
 
 | Placa / backend | Modelo / cuantización | Contexto | Prefill tok/s | Decode tok/s | TTFT | RAM máxima / swap | W pared medio decode | tokens/J | Estado |
 |---|---|---:|---:|---:|---:|---|---:|---:|---|
-| Radxa O6 CPU | DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M (Radxa, terceros) | pp512 / tg128 | 64,60 ± 0,27 (pp512) | 36,29 ± 0,16 (tg128) | No publicado | No publicado | No publicado | No calculable | PUBLISHED; reproducir en O6 64 GB |
+| Radxa O6 CPU | DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M (Radxa, terceros) | pp512 / tg128 | 64,60 ± 0,27 (pp512) | 36,29 ± 0,16 (tg128) | No publicado | No publicado | No publicado | No calculable | PUBLISHED por Radxa; no prueba física LEONES |
 | Radxa O6 Vulkan | Pendiente | 4K | No medido | No medido | No medido | No medido | No medido | No medido | PENDIENTE |
 | Jetson AGX Orin CUDA/Strata | Qwen3.8-Flash-Next Coder IQ1_M (terceros) | 32K | 37,8–52,5 tok/s en prompts cortos; caso 31.234 tokens/584 s | 18,6–21,6 tok/s (terceros) | No publicado aquí | ≥7,33 GiB libres; swap usado | No medido aquí | No medido aquí | PUBLISHED, tercero |
 | Jetson AGX Orin CUDA/Strata | Qwen3.8-Flash-Next Coder IQ1_M (terceros, rebase 0.1.41) | 256K | 58,5 tok/s en prompt de 261.936 tokens | 6,6 tok/s (64 tokens) | No publicado aquí | ≥9,33 GiB libres; swap usado | No medido aquí | No medido aquí | PUBLISHED, tercero |
@@ -381,6 +381,6 @@ Los resultados de Orin anteriores no son comparables directamente con las filas 
 
 En la evidencia pública disponible, **Jetson AGX Orin es la plataforma con menor incertidumbre documental para Strata/CUDA ARM64**, porque existe un fork con benchmarks publicados. Se han localizado páginas de distribuidores europeos con precios anunciados de unos 4.012–4.199 € IVA incluido para el kit de 64 GB; comprobar disponibilidad y total final en el checkout.
 
-Para un proyecto más abierto, con mayor RAM compartida y expansión PCIe, **Radxa Orion O6 64 GB es una candidata prometedora**. Ya existe un baseline oficial GGUF/CPU de 1.5B documentado por Radxa, pero falta la prueba decisiva: MoE de 30–35B, backend Vulkan comprobado, memoria máxima, swap y consumo de pared. No recomendar comprar la O6 solo por el dato de 100 GB/s o los TOPS anunciados hasta verificar ese caso de uso.
+Para un proyecto más abierto, con mayor RAM compartida y expansión PCIe, **Radxa Orion O6 64 GB es una candidata prometedora**. Ya existe un baseline oficial GGUF/CPU de 1.5B documentado por Radxa, pero falta evidencia pública comparable para MoE de 30–35B con backend Vulkan, memoria máxima, swap y consumo de pared. No recomendar comprar la O6 solo por el dato de 100 GB/s o los TOPS anunciados hasta verificar ese caso de uso.
 
 El próximo hito es completar la investigación pública: identificar los mejores modelos elegibles según Artificial Analysis, localizar benchmarks públicos de throughput para las combinaciones de hardware/modelo/runtime pertinentes, verificar precios europeos del sistema completo y calcular coste por tokens/s con las fórmulas anteriores. No se realizarán pruebas físicas. Si una combinación carece de benchmark público comparable, quedará explícitamente como brecha de evidencia.
