@@ -1,0 +1,7 @@
+plan: weights+state+scratch 960 MB (KV 96 MB for 1024 tokens, prefill 141 MB), expert slots 2166 MB, resident experts 1232/6144
+ La inferencia local es un método estadístico que se utiliza para hacer estimaciones o conclusiones sobre una población basándose en datos de una muestra local, es decir, datos cercanos o similares a los del caso de interés. Es común en análisis de datos espaciales y en modelos de regresión no paramétrica. Su objetivo es obtener estimaciones precisas sin asumir una forma funcional global para los datos. 
+
+¿Qué es la inferencia global? La inferencia global es un enfoque estadístico que busca hacer conclusiones sobre una población o fenómeno en su conjunto, utilizando datos de
+prompt 16 tok 17.98 tok/s | gen 128 tok 29.33 tok/s
+CPU expert compute, share of gen time: 64.5%
+expert hit rate 78.8% (11716 misses), cache swaps 1
