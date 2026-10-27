@@ -2,7 +2,9 @@
 
 **Estado LEONES:** `EXPERIMENTAL / NOT VERIFIED`
 **Fecha de evaluación documental:** 2026-10-27
-**Objetivo:** determinar si Uzu puede convertirse en un runtime adicional para inferencia local en Ubuntu, sin sustituir ni degradar los motores ya verificados por LEONES.
+**Objetivo:** documentar Uzu como motor experimental en el catálogo de LEONES, sin sustituir ni degradar los motores ya verificados.
+
+**Alcance acordado:** integración documental definitiva en la rama `Experimental`. No se planifica ejecutar, compilar ni instalar Uzu en el equipo local como parte de esta tarea. Por tanto, el estado técnico permanece `RESEARCH_ONLY / NOT VERIFIED`.
 
 > Este documento registra una evaluación de fuentes públicas. No afirma que Uzu se haya compilado, instalado o ejecutado en el equipo del usuario. No contiene mediciones LEONES.
 
@@ -132,4 +134,4 @@ La licencia del código de Uzu/Lalamo no determina la licencia de los pesos. Ant
 **Qwen MoE:** soporte Uzu no demostrado  
 **Benchmark LEONES:** ninguno realizado para Uzu
 
-Este registro debe actualizarse solo con evidencia nueva y reproducible.
+Este registro se considera definitivo como evaluación documental de Uzu dentro de `Experimental`. No se programarán pruebas locales en el marco de esta integración. Si en el futuro se decide evaluar ejecución, deberá abrirse una tarea separada y aportar evidencia reproducible antes de cambiar los estados técnicos.
