@@ -395,3 +395,52 @@ REDIL no se considerará desplegada hasta que se cumplan como mínimo estos punt
 Aprobar REDIL como **arquitectura experimental de IA distribuida especializada** dentro de LEONES. Comenzar con seis nodos CPU de 16 GB, reservar un nodo de 32–64 GB para código/razonamiento y ampliar hacia ocho o diez servicios según resultados. La GPU debe ser una opción estratégica para visión y cargas multimodales exigentes, no un requisito de cada nodo.
 
 El primer hito no es desplegar diez modelos a la vez, sino demostrar una API común, enrutamiento correcto, fallback local y mediciones reproducibles para chat, código, visión y voz.
+
+
+## 12. Documentación, gráficos y bibliografía de investigación
+
+Este apartado es el **índice de referencia de REDIL**: reúne los documentos del subsistema, todos los gráficos arquitectónicos mantenidos en el repositorio y las fuentes primarias utilizadas para evaluar la arquitectura distribuida. Los diagramas son propuestas conceptuales; no representan un despliegue físico validado.
+
+### 12.1 Documentos del proyecto
+
+- [README de REDIL](README.md) — arquitectura, roles de nodos, especialidades, requisitos, riesgos y criterios de aceptación.
+- [Arquitectura visual](ARQUITECTURA-VISUAL.md) — guía para interpretar los gráficos y sus límites.
+- [Evaluación experimental de Distributed Llama](DISTRIBUTED-LLAMA-EXPERIMENTAL.md) — análisis de compatibilidad, riesgos y plan de pruebas.
+- [Índice documental de LEONES](../../README.md) — navegación de la documentación general.
+- [Índice de fuentes de conocimiento de LEONES](../../sources/README.md) — registro general de fuentes externas y fichas de investigación.
+
+### 12.2 Gráficos y diagramas
+
+**Gráfico A — Arquitectura general de REDIL**
+
+![Arquitectura general de REDIL: gateway, roles de servicio, red e infraestructura](ARQUITECTURA-REDIL.svg)
+
+Archivo fuente: [ARQUITECTURA-REDIL.svg](ARQUITECTURA-REDIL.svg). Representa el gateway, los roles de servicio, el nodo de inferencia distribuida opcional y la infraestructura lógica.
+
+**Gráfico B — Integración de Distributed Llama**
+
+![Distributed Llama como backend opcional detrás del gateway REDIL](DISTRIBUTED-LLAMA-REDIL.svg)
+
+Archivo fuente: [DISTRIBUTED-LLAMA-REDIL.svg](DISTRIBUTED-LLAMA-REDIL.svg). Detalla gateway, adaptador, ruta de fallback, nodo raíz y workers, junto con observabilidad y límites técnicos.
+
+**Diagrama C — Flujo lógico Mermaid**
+
+El [documento experimental](DISTRIBUTED-LLAMA-EXPERIMENTAL.md#2-encaje-arquitectónico-en-redil) incluye además un diagrama Mermaid editable en texto que explica el flujo cliente → gateway → política de enrutamiento → backend convencional o adaptador Distributed Llama → root/workers.
+
+### 12.3 Fuentes primarias de Distributed Llama
+
+Estas son las referencias upstream que deben revisarse al fijar una versión de evaluación. Las páginas de la rama `main` pueden cambiar; para resultados reproducibles se debe registrar el tag o commit exacto consultado.
+
+1. [Repositorio oficial — b4rtaz/distributed-llama](https://github.com/b4rtaz/distributed-llama) — código fuente, requisitos, formatos y descripción del proyecto.
+2. [README upstream](https://github.com/b4rtaz/distributed-llama/blob/main/README.md) — instrucciones, arquitecturas/modelos declarados y topología root/worker.
+3. [Releases y notas de versión](https://github.com/b4rtaz/distributed-llama/releases) — historial de cambios y versiones que deben fijarse antes de probar.
+4. [Issues upstream](https://github.com/b4rtaz/distributed-llama/issues) — incidencias y cuestiones abiertas sobre modelos, GPU, API y funcionamiento.
+5. [Licencia del repositorio](https://github.com/b4rtaz/distributed-llama/blob/main/LICENSE) — verificar el fichero y la licencia de la release exacta antes de redistribuir.
+
+### 12.4 Alcance y trazabilidad de la evidencia
+
+- La documentación upstream describe capacidades del proyecto; no demuestra que cada capacidad funcione con el hardware de LEONES.
+- Los ejemplos de upstream, las estimaciones y los resultados de otros equipos son **referencias externas**, no benchmarks propios.
+- La compatibilidad de Qwen3.5 y LFM3, la aceleración efectiva de la RTX 3050 y las ventajas de rendimiento del clúster siguen pendientes de prueba reproducible.
+- Para cada ejecución futura, registrar release/commit, modelo y hash, tokenizer, configuración, sistema operativo, hardware, backend efectivo, logs, TTFT, prefill, tokens/s, memoria y tráfico de red.
+- Las referencias deben revisarse al cambiar la release, el formato del modelo o el backend de aceleración. No inferir compatibilidad por similitud de nombres de familias.
