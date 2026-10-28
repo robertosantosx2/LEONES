@@ -4,6 +4,12 @@
 
 ![Diagrama vectorial de la arquitectura distribuida de REDIL](ARQUITECTURA-REDIL.svg)
 
+## Gráfico complementario — Distributed Llama
+
+![Integración de Distributed Llama como backend opcional de REDIL](DISTRIBUTED-LLAMA-REDIL.svg)
+
+Este segundo gráfico detalla el límite entre el gateway de REDIL y el motor de inferencia distribuida. La ruta convencional sigue disponible como fallback; el adaptador experimental encapsula root/workers, métricas y errores. Las flechas muestran relaciones lógicas, no una instalación existente.
+
 ## Cómo leer el diagrama
 
 - **Máquina 1 — Gateway REDIL:** entrada única, políticas, autenticación, enrutamiento, fallback y observabilidad.
