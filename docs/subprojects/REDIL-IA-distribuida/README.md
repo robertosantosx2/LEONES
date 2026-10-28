@@ -31,9 +31,11 @@ REDIL debe preservar los principios de LEONES:
 
 ## 2. Arquitectura lógica
 
-El diagrama visual de referencia está disponible en [ARQUITECTURA-VISUAL.md](ARQUITECTURA-VISUAL.md) y en el archivo vectorial [ARQUITECTURA-REDIL.svg](ARQUITECTURA-REDIL.svg). La arquitectura distingue dos planos: **REDIL como federación/orquestación de servicios especializados** y, opcionalmente, **Distributed Llama como motor experimental que reparte una misma inferencia entre varios workers**. No son la misma función y no debe suponerse que toda petición pase por Distributed Llama.
+El diagrama visual de referencia está disponible en [ARQUITECTURA-VISUAL.md](ARQUITECTURA-VISUAL.md) y en el archivo vectorial [ARQUITECTURA-REDIL.svg](ARQUITECTURA-REDIL.svg). La arquitectura distingue dos planos: **REDIL como federación/orquestación de servicios especializados** y, opcionalmente, **[Distributed Llama](https://github.com/b4rtaz/distributed-llama) como motor experimental que reparte una misma inferencia entre varios workers**. El código fuente oficial, las versiones y las incidencias se consultan en el [repositorio upstream de Distributed Llama](https://github.com/b4rtaz/distributed-llama). No son la misma función y no debe suponerse que toda petición pase por Distributed Llama.
 
 ## Evaluación de Distributed Llama como backend de REDIL
+
+**Referencia upstream oficial:** [https://github.com/b4rtaz/distributed-llama](https://github.com/b4rtaz/distributed-llama) — proyecto externo evaluado como backend opcional; su mención no implica que esté instalado ni validado en LEONES.
 
 **Decisión arquitectónica:** mantener Distributed Llama como backend opcional y experimental de inferencia distribuida. No debe convertirse en el gateway, en el planificador general ni en un requisito para los servicios de REDIL.
 
