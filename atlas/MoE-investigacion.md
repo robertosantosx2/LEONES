@@ -42,6 +42,7 @@ Ordenados por fecha aproximada de lanzamiento (más recientes primero). Datos de
 | Fecha (aprox.) | Modelo | Laboratorio | Total / Activos | Contexto | Memoria teórica Q4_K_M (llama.cpp) | HF / descarga | Características y usos preferidos |
 |----------------|--------|-------------|-----------------|----------|------------------------------------|---------------|-----------------------------------|
 | Oct 2026 | **Mellum2.1** (12B-A2.5B) | JetBrains | 12 B / 2.5 B | 131 K | ~7–8 GB | [HF](https://huggingface.co/JetBrains) (GGUF próximo) | **Código / agentes de coding**. Thinking + RL en sandboxes reales. Apache-2.0. Ideal local. |
+| Oct 2026 | **Clover-35B-A3B-Preview** | DiffuSpace | 35 B / ~3 B | hasta 128 K (anunciado) | ~19–21 GB teóricos a Q4_K_M | [Modelo](https://huggingface.co/Diffuspace/Clover-35B-A3B-Preview) · [Repo](https://github.com/DiffuSpace/Clover-35B-A3B-Preview) | MoE con difusión por bloques; 256 expertos, top-8 y experto compartido según el anuncio. **Experimental**; no viable íntegramente en la RTX 3050 de 4 GB. [Ficha LEONES](../research/clover-35b-a3b-preview-experimental-2026-10.md). |
 | Oct 2026 | **Beam** (501B-A23B) | Reflection AI | 501 B / 23 B | 1 M (API 262 K) | ~280–300 GB | Pesos Apache-2.0 prometidos | Razonamiento + coding agentic. Paridad con GLM-5.x a 3–4× menos compute. |
 | Oct 2026 | **Kolibri-1** | Aleph Alpha | 78 B / ~3.5 B | 262 K → 1 M | ~45–50 GB | HF (Apache-2.0) | Soberano DE/EN. Texto puro. |
 | Sep–Oct 2026 | **Ling-3.1-flash** | inclusionAI (Ant Group) | 560 B / ~25 B | 256 K (1 M target) | ~310–330 GB | Trial API | Reasoning / agentes / office. Thinking mode. |
@@ -118,6 +119,7 @@ Ordenados por fecha aproximada de lanzamiento (más recientes primero). Datos de
 - Añadir campos `total_params`, `active_params`, `sparsity`, `moe_experts`, `moe_topk` al schema de recomendaciones.
 - Integrar fuentes vivas (llm-releases.com, models.moe, HF trending MoE).
 - Benchmark local de Mellum2.1 y Qwen3-35B-A3B como “sweet spot” consumer.
+- Validar Clover-35B-A3B-Preview como caso de estudio de MoE de difusión; mantenerlo experimental hasta verificar backend, formato y presupuesto de memoria en Linux. Véase [ficha experimental de Clover](../research/clover-35b-a3b-preview-experimental-2026-10.md).
 
 ---
 
