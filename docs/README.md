@@ -28,6 +28,7 @@ fase → implementación → validación → aceptación
 - [`subprojects/REDIL-IA-distribuida/README.md`](subprojects/REDIL-IA-distribuida/README.md) — REDIL: propuesta de IA distribuida especializada por nodos, modelos candidatos, clases de hardware y plan de validación.
 - [`subprojects/REDIL-IA-distribuida/ARQUITECTURA-VISUAL.md`](subprojects/REDIL-IA-distribuida/ARQUITECTURA-VISUAL.md) — diagrama vectorial de la arquitectura completa de REDIL y sus roles de máquina.
 - [`subprojects/REDIL-IA-distribuida/DISTRIBUTED-LLAMA-EXPERIMENTAL.md`](subprojects/REDIL-IA-distribuida/DISTRIBUTED-LLAMA-EXPERIMENTAL.md) — evaluación experimental de Distributed Llama y plan de implantación por fases; pendiente de pruebas físicas.
+- [`subprojects/REDIL-IA-distribuida/DISTRIBUTED-LLAMA-REDIL.svg`](subprojects/REDIL-IA-distribuida/DISTRIBUTED-LLAMA-REDIL.svg) — diagrama del adaptador Distributed Llama como backend opcional detrás del gateway REDIL.
 - [`DOCUMENTATION_PROTOCOL.md`](DOCUMENTATION_PROTOCOL.md) — protocolo obligatorio de cierre y navegación documental.
 
 ### Fuentes de conocimiento
