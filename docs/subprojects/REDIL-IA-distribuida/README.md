@@ -14,6 +14,8 @@
 **Proyecto padre:** LEONES (Local Ecosystem of Open Neural Expert Systems).  
 **Nombre del subsistema:** **REDIL**.
 
+**Referencia principal y base de partida del proyecto:** [Mesh-LLM](https://github.com/Mesh-LLM/mesh-llm). REDIL toma este repositorio como referencia principal para estudiar y fundamentar el enfoque de malla distribuida de modelos/LLM; la arquitectura, los componentes y las decisiones concretas de REDIL se documentan y validan por separado en LEONES. La referencia no implica que Mesh-LLM esté integrado, instalado ni validado físicamente en este proyecto.
+
 
 ## 1. Resumen ejecutivo
 
@@ -30,6 +32,12 @@ REDIL debe preservar los principios de LEONES:
 - Ningún modelo, runtime o proveedor se instala automáticamente sin selección explícita.
 
 ## 2. Arquitectura lógica
+
+### Referencia principal del proyecto: Mesh-LLM
+
+La referencia principal para fundamentar REDIL es el repositorio [Mesh-LLM](https://github.com/Mesh-LLM/mesh-llm). Debe consultarse como punto de partida técnico para el diseño de una malla distribuida de LLM, y sus decisiones deben contrastarse con los objetivos de LEONES: operación local, heterogeneidad de equipos, autonomía, trazabilidad y mediciones reproducibles. Registrar la versión/commit de Mesh-LLM consultado cuando una decisión arquitectónica dependa de su implementación.
+
+**Alcance de esta referencia:** Mesh-LLM es la base de referencia principal; no se presenta como una dependencia ya integrada ni como una validación de REDIL. [Distributed Llama](https://github.com/b4rtaz/distributed-llama) permanece como un backend externo opcional y experimental para repartir una inferencia entre root y workers, no como sustituto de REDIL ni de la referencia principal Mesh-LLM.
 
 El diagrama visual de referencia está disponible en [ARQUITECTURA-VISUAL.md](ARQUITECTURA-VISUAL.md) y en el archivo vectorial [ARQUITECTURA-REDIL.svg](ARQUITECTURA-REDIL.svg). La arquitectura distingue dos planos: **REDIL como federación/orquestación de servicios especializados** y, opcionalmente, **[Distributed Llama](https://github.com/b4rtaz/distributed-llama) como motor experimental que reparte una misma inferencia entre varios workers**. El código fuente oficial, las versiones y las incidencias se consultan en el [repositorio upstream de Distributed Llama](https://github.com/b4rtaz/distributed-llama). No son la misma función y no debe suponerse que toda petición pase por Distributed Llama.
 
@@ -429,7 +437,13 @@ Archivo fuente: [DISTRIBUTED-LLAMA-REDIL.svg](DISTRIBUTED-LLAMA-REDIL.svg). Deta
 
 El [documento experimental](DISTRIBUTED-LLAMA-EXPERIMENTAL.md#2-encaje-arquitectónico-en-redil) incluye además un diagrama Mermaid editable en texto que explica el flujo cliente → gateway → política de enrutamiento → backend convencional o adaptador Distributed Llama → root/workers.
 
-### 12.3 Fuentes primarias de Distributed Llama
+### 12.3 Referencia principal: Mesh-LLM
+
+1. [Repositorio principal — Mesh-LLM](https://github.com/Mesh-LLM/mesh-llm) — referencia técnica principal y punto de partida para fundamentar el proyecto REDIL.
+
+Antes de basar decisiones de implementación en el repositorio, registrar el commit/tag consultado, revisar su licencia y dependencias, y separar explícitamente las capacidades documentadas upstream de las que se hayan integrado o medido en LEONES. Esta referencia principal no significa que el proyecto esté desplegado o validado localmente.
+
+### 12.4 Fuentes primarias de Distributed Llama
 
 Estas son las referencias upstream que deben revisarse al fijar una versión de evaluación. Las páginas de la rama `main` pueden cambiar; para resultados reproducibles se debe registrar el tag o commit exacto consultado.
 
@@ -439,7 +453,7 @@ Estas son las referencias upstream que deben revisarse al fijar una versión de 
 4. [Issues upstream](https://github.com/b4rtaz/distributed-llama/issues) — incidencias y cuestiones abiertas sobre modelos, GPU, API y funcionamiento.
 5. [Licencia del repositorio](https://github.com/b4rtaz/distributed-llama/blob/main/LICENSE) — verificar el fichero y la licencia de la release exacta antes de redistribuir.
 
-### 12.4 Alcance y trazabilidad de la evidencia
+### 12.5 Alcance y trazabilidad de la evidencia
 
 - La documentación upstream describe capacidades del proyecto; no demuestra que cada capacidad funcione con el hardware de LEONES.
 - Los ejemplos de upstream, las estimaciones y los resultados de otros equipos son **referencias externas**, no benchmarks propios.
