@@ -1,7 +1,7 @@
-# Distributed Llama en LLuvIA — ficha experimental y plan de implantación
+# Distributed Llama en REDIL — ficha experimental y plan de implantación
 
 **Estado:** EXPERIMENTAL · evaluación documental y plan propuesto; no instalado ni validado físicamente por LEONES.  
-**Proyecto:** LEONES → LLuvIA IA distribuida.  
+**Proyecto:** LEONES → REDIL IA distribuida.  
 **Upstream:** https://github.com/b4rtaz/distributed-llama  
 **Licencia del código upstream:** MIT (verificar la licencia de la versión y de cada artefacto antes de distribuir).  
 **Fecha de la evaluación:** 2026-10-28.
@@ -10,9 +10,9 @@
 
 ## 1. Resumen ejecutivo
 
-Distributed Llama es un candidato para **repartir una única inferencia de un modelo entre varios equipos** mediante tensor parallelism. Su topología distingue un nodo raíz y workers; el proyecto documenta ejecución CPU y una vía Vulkan experimental. Es distinto de LLuvIA en su conjunto: LLuvIA distribuye servicios especializados por función, mientras Distributed Llama intenta repartir el cálculo de un mismo modelo entre nodos.
+Distributed Llama es un candidato para **repartir una única inferencia de un modelo entre varios equipos** mediante tensor parallelism. Su topología distingue un nodo raíz y workers; el proyecto documenta ejecución CPU y una vía Vulkan experimental. Es distinto de REDIL en su conjunto: REDIL distribuye servicios especializados por función, mientras Distributed Llama intenta repartir el cálculo de un mismo modelo entre nodos.
 
-**Recomendación:** incluirlo en el radar experimental de LLuvIA, primero como backend aislado y opcional, sin sustituir el gateway ni los servicios especialistas. Empezar con dos nodos CPU y un modelo oficialmente admitido por la versión fijada; solo ampliar a cuatro u ocho nodos si las métricas justifican la complejidad.
+**Recomendación:** incluirlo en el radar experimental de REDIL, primero como backend aislado y opcional, sin sustituir el gateway ni los servicios especialistas. Empezar con dos nodos CPU y un modelo oficialmente admitido por la versión fijada; solo ampliar a cuatro u ocho nodos si las métricas justifican la complejidad.
 
 Fuentes primarias para revalidar:
 - README upstream: https://github.com/b4rtaz/distributed-llama/blob/main/README.md
@@ -20,13 +20,13 @@ Fuentes primarias para revalidar:
 - Releases: https://github.com/b4rtaz/distributed-llama/releases
 - Issues upstream (incluidas dudas de CUDA/GPU y modelos): https://github.com/b4rtaz/distributed-llama/issues
 
-## 2. Encaje arquitectónico en LLuvIA
+## 2. Encaje arquitectónico en REDIL
 
-LLuvIA conserva el enrutador global, políticas, cuotas, fallback y API unificada. Distributed Llama se encapsula detrás de un adaptador para aquellas solicitudes en las que sea útil ejecutar un modelo repartido.
+REDIL conserva el enrutador global, políticas, cuotas, fallback y API unificada. Distributed Llama se encapsula detrás de un adaptador para aquellas solicitudes en las que sea útil ejecutar un modelo repartido.
 
 ```mermaid
 flowchart TD
-    U[Cliente / LEONES] --> G[Gateway LLuvIA]
+    U[Cliente / LEONES] --> G[Gateway REDIL]
     G --> P{Política de enrutamiento}
     P -->|Modelo local en un nodo| S[Servicio especialista convencional]
     P -->|Modelo distribuido experimental habilitado| A[Adaptador Distributed Llama]
@@ -41,8 +41,8 @@ flowchart TD
 
 ### Responsabilidades y límites
 
-- **LLuvIA:** identidad de servicio, autenticación, límites de petición, selección de backend, timeout, observabilidad y fallback.
-- **Adaptador:** traducción del contrato interno de LLuvIA a la interfaz real de Distributed Llama, normalización de errores y metadatos de ejecución.
+- **REDIL:** identidad de servicio, autenticación, límites de petición, selección de backend, timeout, observabilidad y fallback.
+- **Adaptador:** traducción del contrato interno de REDIL a la interfaz real de Distributed Llama, normalización de errores y metadatos de ejecución.
 - **Distributed Llama:** reparto del cálculo de inferencia entre root y workers según la topología y el formato que soporte su versión.
 - **No asumir:** que añade RAM como memoria unificada del sistema operativo, que sirve cualquier GGUF, que expone streaming, que admite cualquier arquitectura reciente o que usa CUDA en la RTX 3050.
 
@@ -128,7 +128,7 @@ Solo después de aprobar Fases 1–3:
 1. Elegir un modelo MoE que la release soporte explícitamente, por ejemplo una variante concreta de Qwen3 MoE; no sustituirlo por Qwen3.5 sin evidencia.
 2. Repetir primero con dos nodos y luego con cuatro. Probar ocho únicamente si la limitación de memoria/heads KV y la topología real lo permiten.
 3. Evaluar la distribución de memoria, carga de expertos, red y calidad; documentar las diferencias frente al modelo denso.
-4. No reservar los diez equipos LLuvIA para una sola inferencia: los tamaños de clúster admitidos pueden no encajar con diez nodos, y los nodos no asignados pueden seguir atendiendo servicios independientes.
+4. No reservar los diez equipos REDIL para una sola inferencia: los tamaños de clúster admitidos pueden no encajar con diez nodos, y los nodos no asignados pueden seguir atendiendo servicios independientes.
 
 **Criterio de avance:** mejora reproducible y sin regresiones graves frente al baseline.
 
@@ -146,7 +146,7 @@ En la máquina RTX 3050 Laptop de 4 GB VRAM:
 
 **Criterio de avance:** backend identificado de forma inequívoca, sin OOM ni impacto inaceptable en el escritorio y con beneficio medido. Si no cumple, mantener CPU como ruta experimental y cerrar la vía GPU.
 
-### Fase 6 — Adaptador para LLuvIA
+### Fase 6 — Adaptador para REDIL
 
 No comenzar hasta que las fases de inferencia hayan pasado.
 
@@ -182,7 +182,7 @@ Emitir una decisión formal:
 | DL-06 | Modelo Qwen3 MoE explícitamente soportado | artefacto exacto, memoria, calidad, latencia | PENDIENTE |
 | DL-07 | Escalado a 4 nodos | comparación con 2 nodos y topología admitida | PENDIENTE |
 | DL-08 | Vulkan / GPU | backend efectivo, VRAM, temperatura, rendimiento | PENDIENTE |
-| DL-09 | Adaptador LLuvIA | contrato API, fallback, health checks, aislamiento | PENDIENTE |
+| DL-09 | Adaptador REDIL | contrato API, fallback, health checks, aislamiento | PENDIENTE |
 | DL-10 | Seguridad y rollback | puertos, exposición, logs, parada/eliminación | PENDIENTE |
 
 ## 6. Formato de registro de cada ejecución
@@ -223,7 +223,7 @@ Orden recomendado:
 4. Modelo MoE explícitamente soportado.
 5. Cuatro nodos si la evidencia lo justifica.
 6. Vulkan/GPU opcional.
-7. Adaptador LLuvIA tras validación.
+7. Adaptador REDIL tras validación.
 
 No instalar ni ejecutar automáticamente en la máquina de trabajo. La RTX 3050 de 4 GB VRAM es una plataforma de evaluación posterior, no una compatibilidad ya demostrada. Qwen3.5 y LFM/LFM3 permanecen fuera de la matriz de compatibilidad confirmada hasta que exista evidencia de upstream y una prueba reproducible.
 
