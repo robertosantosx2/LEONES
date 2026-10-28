@@ -1,17 +1,32 @@
-# LLuvIA — IA distribuida especializada
+# REDIL — Red distribuida de Inteligencia Artificial Local
+
+**REDIL** es un marco de cómputo **distribuido y compartido**, diseñado para democratizar el acceso a la **Inteligencia Artificial** mediante la federación y orquestación colaborativa de **ordenadores de bajos recursos**.
+
+## Significado del nombre y pilares técnicos
+
+- **R — Red (distribuida):** comunicación nodo a nodo (*peer-to-peer*) para vincular dispositivos heterogéneos en una malla de cómputo colaborativo.
+- **E — Económica (bajos recursos):** eficiencia energética y aprovechamiento de hardware modesto o reciclado, sin exigir clústeres industriales.
+- **D — Dispositivos (compartidos):** suma y compartición de recursos locales —RAM, VRAM, hilos de CPU y aceleradores modestos— aportados por cada nodo.
+- **I — Inteligencia:** ejecución, orquestación e inferencia distribuida de modelos de IA, incluidos LLM, SLM y agentes autónomos.
+- **L — Local:** operación soberana *on-premise*, con privacidad y procesamiento local sin dependencia obligatoria ni peajes de nubes centralizadas.
 
 **Estado:** propuesta de arquitectura / investigación; no desplegada ni validada físicamente.  
 **Proyecto padre:** LEONES (Local Ecosystem of Open Neural Expert Systems).  
-**Nombre del subsistema:** **LLuvIA IA-distribuida**.  
+**Nombre del subsistema:** **REDIL**.
+
+
+**Estado:** propuesta de arquitectura / investigación; no desplegada ni validada físicamente.  
+**Proyecto padre:** LEONES (Local Ecosystem of Open Neural Expert Systems).  
+**Nombre del subsistema:** **REDIL IA-distribuida**.  
 **Rama documental:** `docs/lluvia-ia-distribuida`.
 
 ## 1. Resumen ejecutivo
 
-LLuvIA propone ofrecer un único servicio de IA a través de un enrutador global que dirige cada solicitud al especialista más adecuado. Los especialistas pueden ejecutarse en equipos Ubuntu distintos, preferentemente con 16 GB de RAM y CPU, sin exigir GPU dedicada en todos los nodos. El sistema puede crecer incorporando uno o varios nodos reforzados con 32–64 GB de RAM y, de forma opcional, una GPU NVIDIA de 12–24 GB de VRAM.
+REDIL propone ofrecer un único servicio de IA a través de un enrutador global que dirige cada solicitud al especialista más adecuado. Los especialistas pueden ejecutarse en equipos Ubuntu distintos, preferentemente con 16 GB de RAM y CPU, sin exigir GPU dedicada en todos los nodos. El sistema puede crecer incorporando uno o varios nodos reforzados con 32–64 GB de RAM y, de forma opcional, una GPU NVIDIA de 12–24 GB de VRAM.
 
 La hipótesis principal no es sumar la RAM de todas las máquinas como si fuese memoria unificada, sino **distribuir servicios independientes por especialidad**, con API común, colas, límites de concurrencia, observabilidad y fallback. Una solicitud normal se atiende en un nodo; solo los flujos multimodales o agentivos necesitan coordinar varios servicios.
 
-LLuvIA debe preservar los principios de LEONES:
+REDIL debe preservar los principios de LEONES:
 
 - Local-first y operación sin dependencia obligatoria de servicios cloud.
 - Componentes reemplazables, con interfaces documentadas.
@@ -325,7 +340,7 @@ Solo añadir RAM o GPU cuando las mediciones identifiquen el cuello de botella. 
 
 ## 10. Criterios de aceptación
 
-LLuvIA no se considerará desplegada hasta que se cumplan como mínimo estos puntos:
+REDIL no se considerará desplegada hasta que se cumplan como mínimo estos puntos:
 
 1. API unificada documentada y funcional.
 2. Enrutamiento verificable para cada especialidad habilitada.
@@ -339,6 +354,6 @@ LLuvIA no se considerará desplegada hasta que se cumplan como mínimo estos pun
 
 ## 11. Decisión recomendada
 
-Aprobar LLuvIA como **arquitectura experimental de IA distribuida especializada** dentro de LEONES. Comenzar con seis nodos CPU de 16 GB, reservar un nodo de 32–64 GB para código/razonamiento y ampliar hacia ocho o diez servicios según resultados. La GPU debe ser una opción estratégica para visión y cargas multimodales exigentes, no un requisito de cada nodo.
+Aprobar REDIL como **arquitectura experimental de IA distribuida especializada** dentro de LEONES. Comenzar con seis nodos CPU de 16 GB, reservar un nodo de 32–64 GB para código/razonamiento y ampliar hacia ocho o diez servicios según resultados. La GPU debe ser una opción estratégica para visión y cargas multimodales exigentes, no un requisito de cada nodo.
 
 El primer hito no es desplegar diez modelos a la vez, sino demostrar una API común, enrutamiento correcto, fallback local y mediciones reproducibles para chat, código, visión y voz.
