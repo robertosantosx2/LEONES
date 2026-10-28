@@ -21,6 +21,114 @@ LLuvIA debe preservar los principios de LEONES:
 
 ## 2. Arquitectura lógica
 
+### Gráfico 1 — Arquitectura distribuida
+
+El gateway clasifica la petición y la dirige al servicio especializado. Los servicios pueden vivir en equipos distintos; no se presenta la RAM como memoria compartida.
+
+```mermaid
+flowchart TB
+    U["Usuario / Web / API / LEONES"] --> G["Enrutador global<br/>intención · políticas · cuotas<br/>fallback · API unificada"]
+    G --> C["Chat y texto"]
+    G --> D["Razonamiento / decisión"]
+    G --> K["Código"]
+    G --> L["Idiomas / traducción"]
+    G --> M["Matemáticas + Python/SymPy"]
+    G --> V["Imagen / documentos / OCR"]
+    G --> A["Audio de entrada / ASR"]
+    G --> T["Voz de salida / TTS"]
+    G --> F["Vídeo: FFmpeg + fotogramas"]
+    G --> R["RAG / embeddings / Qdrant"]
+    C --> O["Métricas · trazas · auditoría"]
+    D --> O
+    K --> O
+    L --> O
+    M --> O
+    V --> O
+    A --> O
+    T --> O
+    F --> O
+    R --> O
+```
+
+### Gráfico 2 — Topología orientativa de diez nodos
+
+```mermaid
+flowchart LR
+    subgraph CTRL["Entrada y control"]
+        N1["Nodo 1 · Gateway<br/>Enrutamiento y políticas"]
+    end
+    subgraph CPU["Nodos CPU · 16 GB RAM"]
+        N2["Nodo 2 · Chat"]
+        N3["Nodo 3 · Idiomas"]
+        N4["Nodo 4 · Matemáticas"]
+        N5["Nodo 5 · RAG / embeddings"]
+        N6["Nodo 6 · TTS"]
+        N7["Nodo 7 · Audio / ASR"]
+        N8["Nodo 8 · Vídeo / FFmpeg"]
+    end
+    subgraph PLUS["Nodos reforzados opcionales"]
+        N9["Nodo 9 · Código<br/>32–64 GB RAM"]
+        N10["Nodo 10 · Decisión / visión<br/>RAM ampliada y GPU opcional"]
+    end
+    N1 --> N2
+    N1 --> N3
+    N1 --> N4
+    N1 --> N5
+    N1 --> N6
+    N1 --> N7
+    N1 --> N8
+    N1 --> N9
+    N1 --> N10
+```
+
+> La asignación es una topología de referencia, no un requisito rígido: los servicios pueden agruparse o moverse según las mediciones de RAM, latencia y concurrencia. El gateway puede residir en un nodo existente. El nodo 10 representa capacidad reforzada opcional; no implica que una GPU sea obligatoria.
+
+### Gráfico 3 — Ruta de validación y escalado
+
+```mermaid
+flowchart TD
+    A["Fase 0 · Inventario de hardware y licencias"] --> B["Fase 1 · Validar cada modelo por separado"]
+    B --> C["Fase 2 · Probar API y enrutamiento"]
+    C --> D["Fase 3 · Carga combinada y caída de nodos"]
+    D --> E{"¿Qué cuello de botella muestran las métricas?"}
+    E -->|RAM| F["Reducir contexto/concurrencia o ampliar RAM"]
+    E -->|CPU| G["Optimizar runtime o mover servicio a nodo reforzado"]
+    E -->|GPU útil para la tarea| H["Evaluar nodo acelerado opcional"]
+    E -->|Red / disco| I["Optimizar transferencia, almacenamiento y colas"]
+    F --> J["Repetir pruebas y conservar logs"]
+    G --> J
+    H --> J
+    I --> J
+```
+
+```text
+                    Usuario / Web / API / LEONES
+                                |
+                                v
+                 +------------------------------+
+                 |       ENRUTADOR GLOBAL       |
+                 | intención, políticas, cuotas |
+                 | fallback, selección de nodo |
+                 | API unificada compatible    |
+                 +---------------+--------------+
+                                 |
+         +-----------+-----------+-----------+-----------+
+         |           |           |           |           |
+         v           v           v           v           v
+      [Chat]    [Decisión]   [Código]    [Idiomas]  [Matemáticas]
+         |           |           |           |           |
+         +-----------+-----------+-----------+-----------+
+                                 |
+         +-----------+-----------+-----------+-----------+
+         |           |           |           |           |
+         v           v           v           v           v
+      [Imagen]    [Audio]      [TTS]       [Vídeo]    [RAG / DB]
+         |           |           |           |           |
+         +-----------+-----------+-----------+-----------+
+                                 |
+                    Métricas / trazas / auditoría
+```
+
 ```text
                     Usuario / Web / API / LEONES
                                 |
