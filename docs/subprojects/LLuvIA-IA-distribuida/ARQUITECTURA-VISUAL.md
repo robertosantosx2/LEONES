@@ -1,13 +1,13 @@
-# Arquitectura visual de LLuvIA
+# Arquitectura visual de REDIL
 
 **Estado:** propuesta documental; no representa un despliegue ya realizado ni validado físicamente.
 
-![Diagrama vectorial de la arquitectura distribuida de LLuvIA](ARQUITECTURA-LLUVIA.svg)
+![Diagrama vectorial de la arquitectura distribuida de REDIL](ARQUITECTURA-REDIL.svg)
 
 ## Cómo leer el diagrama
 
-- **Máquina 1 — Gateway LLuvIA:** entrada única, políticas, autenticación, enrutamiento, fallback y observabilidad.
-- **Máquina 2 — Distributed Llama:** backend opcional y experimental para inferencia distribuida. No sustituye al gateway ni al router de LLuvIA.
+- **Máquina 1 — Gateway REDIL:** entrada única, políticas, autenticación, enrutamiento, fallback y observabilidad.
+- **Máquina 2 — Distributed Llama:** backend opcional y experimental para inferencia distribuida. No sustituye al gateway ni al router de REDIL.
 - **Máquinas 3–12:** diez roles de servicio ilustrativos. No significa que haya que disponer de diez ordenadores físicos; los servicios pueden agruparse o reubicarse según mediciones.
 - **Almacenamiento y red:** infraestructura lógica compartida. Compartir almacenamiento no implica memoria RAM unificada.
 
