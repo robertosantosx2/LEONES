@@ -1,0 +1,236 @@
+# LLuvIA — IA distribuida especializada
+
+**Estado:** propuesta de arquitectura / investigación; no desplegada ni validada físicamente.  
+**Proyecto padre:** LEONES (Local Ecosystem of Open Neural Expert Systems).  
+**Nombre del subsistema:** **LLuvIA IA-distribuida**.  
+**Rama documental:** `docs/lluvia-ia-distribuida`.
+
+## 1. Resumen ejecutivo
+
+LLuvIA propone ofrecer un único servicio de IA a través de un enrutador global que dirige cada solicitud al especialista más adecuado. Los especialistas pueden ejecutarse en equipos Ubuntu distintos, preferentemente con 16 GB de RAM y CPU, sin exigir GPU dedicada en todos los nodos. El sistema puede crecer incorporando uno o varios nodos reforzados con 32–64 GB de RAM y, de forma opcional, una GPU NVIDIA de 12–24 GB de VRAM.
+
+La hipótesis principal no es sumar la RAM de todas las máquinas como si fuese memoria unificada, sino **distribuir servicios independientes por especialidad**, con API común, colas, límites de concurrencia, observabilidad y fallback. Una solicitud normal se atiende en un nodo; solo los flujos multimodales o agentivos necesitan coordinar varios servicios.
+
+LLuvIA debe preservar los principios de LEONES:
+
+- Local-first y operación sin dependencia obligatoria de servicios cloud.
+- Componentes reemplazables, con interfaces documentadas.
+- Separación entre compatibilidad declarada, estimación y prueba real.
+- Toda cifra de rendimiento queda como **ESTIMATED** hasta medirla en el hardware objetivo.
+- Ningún modelo, runtime o proveedor se instala automáticamente sin selección explícita.
+
+## 2. Arquitectura lógica
+
+```text
+                    Usuario / Web / API / LEONES
+                                |
+                                v
+                 +------------------------------+
+                 |       ENRUTADOR GLOBAL       |
+                 | intención, políticas, cuotas |
+                 | fallback, selección de nodo |
+                 | API unificada compatible    |
+                 +---------------+--------------+
+                                 |
+         +-----------+-----------+-----------+-----------+
+         |           |           |           |           |
+         v           v           v           v           v
+      [Chat]    [Decisión]   [Código]    [Idiomas]  [Matemáticas]
+         |           |           |           |           |
+         +-----------+-----------+-----------+-----------+
+                                 |
+         +-----------+-----------+-----------+-----------+
+         |           |           |           |           |
+         v           v           v           v           v
+      [Imagen]    [Audio]      [TTS]       [Vídeo]    [RAG / DB]
+         |           |           |           |           |
+         +-----------+-----------+-----------+-----------+
+                                 |
+                    Métricas / trazas / auditoría
+```
+
+### Responsabilidades del enrutador
+
+1. Clasificar la intención: conversación, código, razonamiento, traducción, cálculo, imagen/documento, audio, síntesis de voz, vídeo o búsqueda documental.
+2. Seleccionar un servicio según capacidad, idioma, disponibilidad, carga y política local.
+3. Validar entradas y limitar tamaño de contexto, duración de audio/vídeo y concurrencia.
+4. Aplicar fallback cuando un nodo no esté disponible o un modelo no cubra el idioma o la tarea.
+5. Devolver una respuesta uniforme, registrando qué modelo/runtime produjo el resultado.
+6. No enviar datos a servicios externos salvo configuración explícita del usuario.
+
+La primera versión puede usar reglas y metadatos deterministas. No es obligatorio usar un LLM adicional para enrutar cada solicitud. Para casos ambiguos puede añadirse un clasificador pequeño.
+
+## 3. Especialidades y candidatos
+
+Los nombres de modelos de esta sección son **candidatos de evaluación**, no afirmaciones de compatibilidad ya comprobada. Antes de fijar versiones hay que verificar repositorio oficial, licencia, artefacto (GGUF u otro), tokenizer, runtime CPU, idiomas, memoria real y calidad en un conjunto de pruebas LEONES.
+
+| Servicio | Candidato inicial | Alternativa / herramientas | Observaciones |
+|---|---|---|---|
+| Chat y texto | Liquid AI LFM2.5-1.2B-Instruct | Qwen pequeño compatible con CPU | Conversación breve, resúmenes, extracción estructurada y clasificación. Un modelo pequeño no sustituye a uno de razonamiento avanzado. |
+| Razonamiento / decisión | Liquid AI LFM2.5-8B-A1B (MoE) | LFM2.5-1.2B-Thinking; Qwen de 3–4B o mayor en nodo reforzado | El MoE activa una parte de los parámetros por token, pero hay que alojar los pesos de los expertos necesarios. Medir memoria, latencia y fiabilidad en herramientas. |
+| Codificación | Qwen2.5-Coder-3B-Instruct | Modelo coder de 7–8B en 32–64 GB RAM | Generación y explicación de código, pruebas, depuración y refactorización. La edición de repositorios completos requiere herramientas de agente y pruebas, no solo el LLM. |
+| Idiomas / traducción | LFM2.5-1.2B-Instruct como línea base | Modelo multilingüe Qwen de 3–4B o especializado en traducción | Evaluar por parejas de idiomas; no inferir calidad equivalente para todos los idiomas. |
+| Matemáticas | LFM2.5-1.2B-Thinking como candidato ligero | Qwen con capacidad de razonamiento en nodo reforzado + Python/SymPy | Complementar el LLM con cálculo determinista y verificación. No confiar cálculos exactos solo a texto generado. |
+| Imagen / documentos / OCR | LFM2.5-VL-1.6B | PaddleOCR u otro OCR dedicado + VLM | Confirmar soporte CPU de la arquitectura visual y su preprocesamiento. Separar OCR de interpretación semántica. |
+| Audio de entrada | LFM2.5-Audio-1.5B como candidato experimental | Whisper.cpp / modelo ASR con español validado | Confirmar cobertura de español, licencia, latencia y formato de entrada. No asumir soporte multilingüe por el nombre de la familia. |
+| Voz de salida (TTS) | Piper | Otro motor TTS local con voces en español | Servicio ligero separado del LLM; verificar licencia y disponibilidad de cada voz. |
+| Vídeo | FFmpeg + muestreo de fotogramas + VLM | Nodo GPU para modelos visuales más exigentes | En la primera fase se interpreta vídeo extrayendo fotogramas; no equivale a comprensión temporal completa ni a generación de vídeo. |
+| RAG / memoria | Modelo de embeddings multilingüe + Qdrant | BM25, reranker pequeño y almacenamiento documental | Indexación y recuperación separadas del generador. Registrar fuentes y permisos; mantener datos localmente. |
+
+### Modelos LFM: encaje y límites
+
+Los modelos LFM son candidatos atractivos cuando importan tamaño reducido, inferencia local y especialización. La familia no debe considerarse una solución universal:
+
+- Un modelo de lenguaje no genera imágenes por el hecho de aceptar texto sobre ellas.
+- Un modelo de visión-lenguaje interpreta imágenes; no es necesariamente un generador visual.
+- Un modelo de audio puede tener limitaciones de idioma o de modalidad.
+- Los parámetros activos de un MoE no equivalen al tamaño de los pesos que deben almacenarse.
+- Una variante publicada no queda automáticamente soportada por cualquier versión de llama.cpp, TensorFold u otro runtime.
+
+Fuentes oficiales iniciales para revalidar antes de implementación:
+- Liquid AI: https://github.com/Liquid4All
+- Modelos en Hugging Face: https://huggingface.co/LiquidAI
+- LFM: https://www.liquid.ai/
+
+Registrar fecha de consulta, revisión/commit, licencia, artefacto exacto y runtime en la ficha de cada modelo.
+
+## 4. Clases de hardware
+
+### Clase A — nodo base CPU
+
+- Ubuntu x86-64.
+- 16 GB de RAM instalados.
+- CPU con soporte de instrucciones adecuado para el runtime; AVX2 es deseable en x86.
+- SSD de 512 GB como mínimo práctico; 1 TB si aloja varios modelos.
+- Ethernet gigabit; 2,5 GbE es preferible si el coste adicional es razonable.
+- Sin GPU dedicada.
+
+Usos: modelos pequeños cuantizados, chat básico, traducción ligera, embeddings, RAG, clasificación, Piper, procesamiento de archivos y coordinación. Los 16 GB son RAM total, no memoria libre para pesos; Ubuntu, cachés, contexto y servicios compiten por ella.
+
+### Clase B — nodo CPU reforzado
+
+- 32–64 GB de RAM.
+- CPU con más núcleos y buen ancho de banda de memoria.
+- SSD NVMe de 1 TB o más.
+- Sin GPU obligatoria.
+
+Usos: codificación y razonamiento con modelos de mayor tamaño, contextos más largos, más concurrencia y varios servicios en el mismo host. 32 GB es un escalón útil; 64 GB da margen adicional, sin garantizar por sí solo un rendimiento alto.
+
+### Clase C — nodo acelerado opcional
+
+- 32–64 GB de RAM.
+- GPU NVIDIA con 12–16 GB de VRAM como objetivo de entrada; 24 GB preferible para visión o generación más exigente.
+- Drivers y runtime fijados y comprobados.
+
+Usos: visión de mayor tamaño, procesamiento multimodal intensivo, generación de imágenes y cargas que se beneficien realmente de CUDA. Debe existir fallback CPU cuando sea viable. No se requiere que todos los nodos tengan GPU.
+
+## 5. Tamaño inicial del despliegue
+
+| Perfil | Nodos | Alcance |
+|---|---:|---|
+| Prototipo mínimo | 4–5 | Agrupar servicios compatibles: chat, código, visión, audio/TTS y RAG; algunas especialidades comparten equipo. |
+| Mínimo práctico | 6 | Separación razonable de servicios esenciales y margen para evitar contención constante. |
+| Recomendado | 8 | Mejor aislamiento, concurrencia y disponibilidad de servicios. Puede incluir un nodo reforzado. |
+| Despliegue completo | 10 | Un servicio por nodo especializado, más margen para redundancia, pruebas o réplica de servicios de mayor demanda. |
+
+Estas cifras dependen del volumen de solicitudes y de los modelos seleccionados. No implican que diez nodos multipliquen por diez la velocidad de una única consulta. El beneficio principal es la especialización y el procesamiento paralelo de solicitudes independientes.
+
+## 6. Distribución propuesta para diez nodos
+
+1. Chat general: LFM compacto.
+2. Razonamiento/decisión: LFM MoE o modelo Thinking validado; preferiblemente nodo reforzado si el consumo lo exige.
+3. Código: modelo coder compacto; preferiblemente 32 GB si se eleva a 7–8B.
+4. Idiomas y traducción: modelo multilingüe seleccionado mediante pruebas.
+5. Matemáticas: modelo de razonamiento + Python/SymPy.
+6. Imagen, documentos y OCR: VLM pequeño + OCR dedicado.
+7. Audio de entrada: ASR local con español comprobado.
+8. Voz de salida: Piper u otro TTS local.
+9. Vídeo: FFmpeg, extracción de fotogramas y cliente del servicio visual.
+10. RAG, embeddings, índice y reserva para tareas ligeras.
+
+El enrutador puede residir en un nodo existente de clase A, aunque en un despliegue crítico conviene separar el gateway y mantener una instancia de reserva. El almacenamiento de documentos debe dimensionarse según el corpus y disponer de copias de seguridad.
+
+## 7. Stack de software a evaluar
+
+- **Gateway y enrutamiento:** servicio ligero propio o proxy compatible con OpenAI; Nginx/Traefik para entrada HTTP/TLS si se necesita.
+- **Inferencia de texto:** llama.cpp u otro runtime solo después de verificar la arquitectura y el artefacto concretos.
+- **Visión:** runtime compatible con el VLM seleccionado más OCR dedicado.
+- **Audio:** Whisper.cpp u otro ASR local validado; Piper para TTS.
+- **Vídeo:** FFmpeg para decodificación y extracción de fotogramas.
+- **RAG:** Qdrant más embeddings y, si las pruebas lo justifican, BM25/reranking.
+- **Observabilidad:** métricas de latencia, TTFT, tokens/s, RAM máxima, CPU, fallos, cola, concurrencia y coste energético cuando pueda medirse.
+- **Despliegue:** servicios independientes con versiones fijadas, health checks y reinicio controlado. Contenedores son opcionales; no deben imponerse si añaden complejidad innecesaria.
+
+No instalar ni cambiar servicios existentes automáticamente. Prototipar en un puerto y directorio aislados, sin interferir con las instalaciones actuales de LEONES/ODS/Hermes.
+
+## 8. Plan de validación LEONES
+
+### Fase 0 — inventario y requisitos
+
+- Medir RAM disponible, CPU, almacenamiento, red y sistema operativo de cada equipo.
+- Identificar licencias y requisitos de los modelos.
+- Elegir un artefacto concreto por servicio.
+- Clasificar todas las previsiones de rendimiento como **ESTIMATED**.
+
+### Fase 1 — prueba de cada especialista en un nodo
+
+Para cada modelo registrar:
+- modelo y revisión exactos, formato y cuantización;
+- runtime y versión;
+- tiempo de descarga y carga;
+- RAM máxima, uso de CPU y tamaño del contexto;
+- latencia de primera respuesta, tokens/s o tiempo por tarea;
+- idioma, calidad y fallos del conjunto de pruebas;
+- comportamiento con concurrencia.
+
+### Fase 2 — enrutador
+
+- Probar clasificación correcta de intención.
+- Medir latencia añadida por enrutamiento.
+- Verificar que no se filtran datos entre usuarios.
+- Verificar timeout, cancelación, fallback y errores comprensibles.
+- Confirmar que los logs no almacenan secretos ni contenido sensible por defecto.
+
+### Fase 3 — carga combinada
+
+- Ejecutar varias especialidades en paralelo.
+- Detectar contención de RAM, CPU, disco y red.
+- Ajustar colas, concurrencia y límites de contexto.
+- Comprobar recuperación tras apagar un nodo.
+
+### Fase 4 — decisión de escalado
+
+Solo añadir RAM o GPU cuando las mediciones identifiquen el cuello de botella. Un nodo GPU no mejora automáticamente una carga limitada por CPU, memoria, red o lectura de disco.
+
+**Regla de evidencia:** benchmarks publicados o resultados de otros equipos son referencia externa, nunca mediciones LEONES del hardware local. Marcar **MEASURED** únicamente después de ejecutar la prueba en el equipo real y conservar logs reproducibles.
+
+## 9. Riesgos y mitigaciones
+
+- **RAM insuficiente:** limitar contexto y concurrencia; usar cuantización compatible; mover el servicio a clase B.
+- **MoE demasiado grande:** dimensionar por pesos totales, buffers y caché, no solo por parámetros activos.
+- **Cobertura de español deficiente en audio:** usar ASR/TTS alternativos con pruebas específicas.
+- **Errores de enrutamiento:** reglas deterministas para casos conocidos y fallback al chat general.
+- **Latencia de red:** mantener cada servicio en un único nodo cuando sea posible; transferir metadatos o fragmentos necesarios, no archivos enormes sin necesidad.
+- **Punto único de fallo:** réplica del gateway y del servicio más crítico; no confundir redundancia con memoria compartida.
+- **Cambios de upstream:** fijar versiones y revalidar al actualizar modelos o runtimes.
+- **Licencias:** revisar por separado pesos, código, voces, datos de entrenamiento y componentes auxiliares.
+
+## 10. Criterios de aceptación
+
+LLuvIA no se considerará desplegada hasta que se cumplan como mínimo estos puntos:
+
+1. API unificada documentada y funcional.
+2. Enrutamiento verificable para cada especialidad habilitada.
+3. Inventario reproducible de hardware y modelos.
+4. Medidas reales de memoria y latencia por servicio.
+5. Pruebas de idioma y calidad para las tareas anunciadas.
+6. Fallos de nodo, timeout y fallback probados.
+7. Sin envío externo de datos no autorizado.
+8. Documentación de instalación, actualización, rollback y eliminación.
+9. Resultados ESTIMATED y MEASURED claramente separados.
+
+## 11. Decisión recomendada
+
+Aprobar LLuvIA como **arquitectura experimental de IA distribuida especializada** dentro de LEONES. Comenzar con seis nodos CPU de 16 GB, reservar un nodo de 32–64 GB para código/razonamiento y ampliar hacia ocho o diez servicios según resultados. La GPU debe ser una opción estratégica para visión y cargas multimodales exigentes, no un requisito de cada nodo.
+
+El primer hito no es desplegar diez modelos a la vez, sino demostrar una API común, enrutamiento correcto, fallback local y mediciones reproducibles para chat, código, visión y voz.

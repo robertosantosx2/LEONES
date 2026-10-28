@@ -25,6 +25,7 @@ fase → implementación → validación → aceptación
 - [`PLATFORMS.md`](PLATFORMS.md) — plataformas y perfiles.
 - [`FROZEN_DECISIONS.md`](FROZEN_DECISIONS.md) — decisiones congeladas.
 - [`ROADMAP.md`](ROADMAP.md) — evolución prevista.
+- [`subprojects/LLuvIA-IA-distribuida/README.md`](subprojects/LLuvIA-IA-distribuida/README.md) — LLuvIA: propuesta de IA distribuida especializada por nodos, modelos candidatos, clases de hardware y plan de validación.
 - [`DOCUMENTATION_PROTOCOL.md`](DOCUMENTATION_PROTOCOL.md) — protocolo obligatorio de cierre y navegación documental.
 
 ### Fuentes de conocimiento
