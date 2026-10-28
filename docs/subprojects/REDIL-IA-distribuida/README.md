@@ -33,6 +33,47 @@ REDIL debe preservar los principios de LEONES:
 
 El diagrama visual de referencia está disponible en [ARQUITECTURA-VISUAL.md](ARQUITECTURA-VISUAL.md) y en el archivo vectorial [ARQUITECTURA-REDIL.svg](ARQUITECTURA-REDIL.svg). La arquitectura distingue dos planos: **REDIL como federación/orquestación de servicios especializados** y, opcionalmente, **Distributed Llama como motor experimental que reparte una misma inferencia entre varios workers**. No son la misma función y no debe suponerse que toda petición pase por Distributed Llama.
 
+## Evaluación de Distributed Llama como backend de REDIL
+
+**Decisión arquitectónica:** mantener Distributed Llama como backend opcional y experimental de inferencia distribuida. No debe convertirse en el gateway, en el planificador general ni en un requisito para los servicios de REDIL.
+
+REDIL y Distributed Llama resuelven problemas diferentes:
+
+- **REDIL — distribución de servicios:** el gateway dirige cada petición a un servicio especializado disponible (chat, código, visión, ASR, TTS, RAG, etc.). Cada servicio puede ejecutarse en una máquina diferente.
+- **Distributed Llama — distribución de una inferencia:** un nodo raíz y varios workers cooperan para ejecutar el mismo modelo. Esto puede permitir alojar un modelo que no cabe en un solo equipo, pero añade comunicación y sincronización.
+- **No hay RAM unificada automática:** repartir el modelo no convierte la memoria de todos los ordenadores en una memoria local transparente, ni garantiza más tokens/s al añadir nodos.
+
+### Diagrama específico — Adaptador Distributed Llama
+
+![Integración de Distributed Llama como backend opcional de REDIL](DISTRIBUTED-LLAMA-REDIL.svg)
+
+El gateway debe hablar con un adaptador desacoplado que encapsule la API y la topología root/worker. El adaptador debe exponer health checks, timeouts, límites de concurrencia, métricas y errores normalizados. Si el backend no responde, REDIL lo retira de la selección y utiliza otro backend local compatible; no debe reenviar datos a la nube salvo autorización explícita.
+
+### Evaluación técnica resumida
+
+| Área | Evaluación | Decisión para REDIL |
+|---|---|---|
+| Linux x86-64 / ARM | Candidato para equipos heterogéneos; comprobar ISA y build por nodo. | Evaluar en Ubuntu, primero CPU. |
+| Topología | El upstream documenta restricciones de tamaño del clúster y de cabezas KV dependientes del modelo. | No asignar automáticamente todos los nodos REDIL; validar la topología de cada modelo. |
+| Qwen3 / Qwen3 MoE | Familias enumeradas por la documentación upstream consultada. | Elegir una versión/artefacto explícito y probarlo en single-node antes de distribuir. |
+| Qwen3.5 / LFM3 | Compatibilidad no confirmada por la ficha upstream consultada. | No anunciarlos como compatibles hasta que exista prueba reproducible. |
+| CPU / Vulkan / NVIDIA | CPU es la ruta inicial más conservadora; Vulkan requiere medición. No asumir que la presencia de una RTX implica aceleración CUDA. | Comparar CPU y Vulkan por separado; medir uso real de VRAM y rendimiento. |
+| Red y latencia | La sincronización puede anular el beneficio de añadir nodos. | Usar red privada cableada y medir TTFT, prefill, tokens/s y tráfico. |
+| API y agentes | No dar por hecho soporte equivalente para streaming, cancelación o llamadas a herramientas. | Verificar cada función contra la release fijada antes de exponerla al gateway. |
+| Licencia | El repositorio upstream indica MIT; revisar el tag exacto y las licencias de los pesos por separado. | Registrar atribución y licencia del motor, pesos y dependencias. |
+
+### Plan de decisión
+
+1. Fijar versión/tag/commit, licencia, modelo, tokenizer, formato y hash.
+2. Medir una inferencia single-node CPU con prompts reproducibles.
+3. Ejecutar root + un worker en una red privada y comparar con el baseline.
+4. Probar estabilidad, pérdida de worker, timeouts, cancelación y límites de concurrencia.
+5. Evaluar un modelo MoE solo si la versión upstream lo soporta explícitamente.
+6. Comparar Vulkan/GPU únicamente en un perfil aislado y comprobar que el backend GPU se usa realmente.
+7. Implementar/activar el adaptador REDIL solo después de aprobar las fases anteriores.
+
+**Estado de evidencia:** evaluación documental y plan; no se declara instalación, despliegue, benchmark local ni compatibilidad confirmada con la RTX 3050, Qwen3.5 o LFM3. Todos los resultados permanecen **PENDIENTES** hasta conservar logs reproducibles del hardware probado.
+
 ### Gráfico 1 — Arquitectura distribuida
 
 El gateway clasifica la petición y la dirige al servicio especializado. Los servicios pueden vivir en equipos distintos; no se presenta la RAM como memoria compartida.
