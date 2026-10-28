@@ -45,11 +45,11 @@ ul.compact{margin:.35rem 0;padding-left:1.15rem}
 <header class="hero"><div>
 <div style="font-weight:800;opacity:.9;font-size:.8rem;letter-spacing:.04em">LEONES · CLASIFICACIÓN · ESTIMATED · REFRESH DIARIO AA</div>
 <h1>Cuadros maestros · hardware → LLM</h1>
-<p>Tres matrices (i5/R5, i7/R7, i9/R9). Columnas = RAM. Filas = GPU de consumo por potencia. Celda = mejor <strong>open-weight</strong> viable según Artificial Analysis (Intelligence Index), acotado por VRAM/RAM. El CSV se revisa <strong>cada día a las 05:00</strong> (Europe/Madrid) con el ranking open-weight publicado por AA. Última revisión AA: 2026-10-20.</p>
+<p>Tres matrices (i5/R5, i7/R7, i9/R9). Columnas = RAM. Filas = GPU de consumo por potencia. Celda = mejor <strong>open-weight</strong> viable según Artificial Analysis (Intelligence Index), acotado por VRAM/RAM. El CSV se revisa <strong>cada día a las 05:00</strong> (Europe/Madrid) con el ranking open-weight publicado por AA. Última revisión AA: 2026-10-28 (Index v5).</p>
 </div></header>
 <main id="main">
 <section class="card">
-<div class="note"><strong>ESTIMATED ≠ MEASURED.</strong> Clasificación de encaje, no medición LEONES. Ranking de referencia: <a href="https://artificialanalysis.ai/leaderboards/models">Artificial Analysis</a> (open weights).</div>
+<div class="note"><strong>ESTIMATED ≠ MEASURED.</strong> Clasificación de encaje, no medición LEONES. Ranking de referencia: <a href="https://artificialanalysis.ai/leaderboards/models">Artificial Analysis</a> (open weights, Index v5).</div>
 <div class="warn"><strong>Reglas:</strong> VRAM limita primero · 2–4 GB RAM no viable · solo open-weight · quant Q3–Q5/MoE · actualización automática diaria (05:00 Europe/Madrid).</div>
 </section>
 <section class="card">
@@ -75,8 +75,8 @@ ul.compact{margin:.35rem 0;padding-left:1.15rem}
 <h2>Notas</h2>
 <ul class="compact">
 <li><strong>Refresh diario:</strong> cada día a las 05:00 (Europe/Madrid) se re-lee el leaderboard open-weight de Artificial Analysis y, si hay cambios materiales, se actualiza <code>data/cuadros-maestros.csv</code> (sin commits vacíos).</li>
-<li>MiMo-V2.6-Pro / Kimi K3 / GLM-5.x completos no caben en PC de consumo; solo MoE parcial/offload en 24–32 GB + mucha RAM.</li>
-<li>Fuente de ranking: <a href="https://artificialanalysis.ai/leaderboards/models">Artificial Analysis</a>. Política: <a href="data/CUADROS-MAESTROS-UPDATE.md">CUADROS-MAESTROS-UPDATE.md</a>.</li>
+<li>MiMo-V2.6-Pro / Kimi K3 / GLM-5.x / DS V4.1 Flash completos no caben en PC de consumo; solo MoE parcial/offload en 24–32 GB + mucha RAM. Index v5: top released open DS V4.1 Flash 1017 / GLM-5.3 (AA~32), MiMo-V2.6-Pro (AA~30). Kimi K3.1 Pro (AA~46) pesos no publicados aún.</li>
+<li>Fuente de ranking: <a href="https://artificialanalysis.ai/leaderboards/models">Artificial Analysis</a> (Intelligence Index v5). Política: <a href="data/CUADROS-MAESTROS-UPDATE.md">CUADROS-MAESTROS-UPDATE.md</a>.</li>
 <li>LEONES: candidatos → benchmark → <code>measured</code>.</li>
 </ul>
 <p><a href="fuentes.html">Fuentes</a> · <a href="msa-sc-local.html">MSA Run local</a> · <a href="runtimes-locales.html">Runtimes</a></p>
@@ -114,7 +114,7 @@ ul.compact{margin:.35rem 0;padding-left:1.15rem}
       const vram = r.vram_gb && r.vram_gb !== '0' ? ' · ' + r.vram_gb + ' GB' : '';
       return `<tr class="vendor-${r.vendor}"><td class="gpu">${r.gpu}${vram}</td><td>${cell(r.ram_2)}</td><td>${cell(r.ram_4)}</td><td>${cell(r.ram_8)}</td><td>${cell(r.ram_16)}</td><td>${cell(r.ram_32)}</td><td>${cell(r.ram_64)}</td></tr>`;
     }).join('');
-    status.textContent = `Tier ${tier} · filtro ${vendor}: ${filtered.length} GPUs · Última revisión AA: 2026-10-20 · ESTIMATED ≠ MEASURED.`;
+    status.textContent = `Tier ${tier} · filtro ${vendor}: ${filtered.length} GPUs · Última revisión AA: 2026-10-28 (Index v5) · ESTIMATED ≠ MEASURED.`;
   };
   document.querySelectorAll('.tabs button').forEach(btn => btn.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
@@ -123,7 +123,7 @@ ul.compact{margin:.35rem 0;padding-left:1.15rem}
     render();
   }));
   document.getElementById('vendor').addEventListener('change', e => { vendor = e.target.value; render(); });
-  fetch('data/cuadros-maestros.csv?v=2026-10-20-1').then(r => r.text()).then(t => { rows = parse(t); render(); })
+  fetch('data/cuadros-maestros.csv?v=2026-10-28-1').then(r => r.text()).then(t => { rows = parse(t); render(); })
     .catch(() => { status.textContent = 'No se pudo cargar data/cuadros-maestros.csv'; });
 })();
 </script>
