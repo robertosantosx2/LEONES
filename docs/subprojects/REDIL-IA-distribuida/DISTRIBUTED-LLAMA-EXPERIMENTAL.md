@@ -2,7 +2,8 @@
 
 **Estado:** EXPERIMENTAL · evaluación documental y plan propuesto; no instalado ni validado físicamente por LEONES.  
 **Proyecto:** LEONES → REDIL IA distribuida.  
-**Upstream:** https://github.com/b4rtaz/distributed-llama  
+**Referencia principal del proyecto REDIL:** [Mesh-LLM](https://github.com/Mesh-LLM/mesh-llm) — base de referencia para fundamentar la arquitectura de malla distribuida.  
+**Upstream del backend evaluado en esta ficha:** [Distributed Llama](https://github.com/b4rtaz/distributed-llama) — componente externo opcional, no la base principal de REDIL.  
 **Licencia del código upstream:** MIT (verificar la licencia de la versión y de cada artefacto antes de distribuir).  
 **Fecha de la evaluación:** 2026-10-28.
 
@@ -10,12 +11,15 @@
 
 ## 1. Resumen ejecutivo
 
+**Jerarquía de referencias:** [Mesh-LLM](https://github.com/Mesh-LLM/mesh-llm) es la referencia principal para fundamentar REDIL. Esta ficha evalúa específicamente [Distributed Llama](https://github.com/b4rtaz/distributed-llama) como posible backend opcional; no debe confundirse la evaluación de ese motor con la base arquitectónica principal del proyecto. Ninguno de estos enlaces constituye por sí solo evidencia de integración o validación física en LEONES.
+
 Distributed Llama es un candidato para **repartir una única inferencia de un modelo entre varios equipos** mediante tensor parallelism. Su topología distingue un nodo raíz y workers; el proyecto documenta ejecución CPU y una vía Vulkan experimental. Es distinto de REDIL en su conjunto: REDIL distribuye servicios especializados por función, mientras Distributed Llama intenta repartir el cálculo de un mismo modelo entre nodos.
 
 **Recomendación:** incluirlo en el radar experimental de REDIL, primero como backend aislado y opcional, sin sustituir el gateway ni los servicios especialistas. Empezar con dos nodos CPU y un modelo oficialmente admitido por la versión fijada; solo ampliar a cuatro u ocho nodos si las métricas justifican la complejidad.
 
 Fuentes primarias para revalidar:
-- README upstream: https://github.com/b4rtaz/distributed-llama/blob/main/README.md
+- **Referencia principal de REDIL:** https://github.com/Mesh-LLM/mesh-llm
+- README upstream del backend experimental: https://github.com/b4rtaz/distributed-llama/blob/main/README.md
 - Repositorio y versiones: https://github.com/b4rtaz/distributed-llama
 - Releases: https://github.com/b4rtaz/distributed-llama/releases
 - Issues upstream (incluidas dudas de CUDA/GPU y modelos): https://github.com/b4rtaz/distributed-llama/issues
