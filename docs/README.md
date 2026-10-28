@@ -26,6 +26,7 @@ fase → implementación → validación → aceptación
 - [`FROZEN_DECISIONS.md`](FROZEN_DECISIONS.md) — decisiones congeladas.
 - [`ROADMAP.md`](ROADMAP.md) — evolución prevista.
 - [`subprojects/LLuvIA-IA-distribuida/README.md`](subprojects/LLuvIA-IA-distribuida/README.md) — LLuvIA: propuesta de IA distribuida especializada por nodos, modelos candidatos, clases de hardware y plan de validación.
+- [`subprojects/LLuvIA-IA-distribuida/ARQUITECTURA-VISUAL.md`](subprojects/LLuvIA-IA-distribuida/ARQUITECTURA-VISUAL.md) — diagrama vectorial de la arquitectura completa de LLuvIA y sus roles de máquina.
 - [`subprojects/LLuvIA-IA-distribuida/DISTRIBUTED-LLAMA-EXPERIMENTAL.md`](subprojects/LLuvIA-IA-distribuida/DISTRIBUTED-LLAMA-EXPERIMENTAL.md) — evaluación experimental de Distributed Llama y plan de implantación por fases; pendiente de pruebas físicas.
 - [`DOCUMENTATION_PROTOCOL.md`](DOCUMENTATION_PROTOCOL.md) — protocolo obligatorio de cierre y navegación documental.
 
