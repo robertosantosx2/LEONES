@@ -48,6 +48,24 @@ flowchart TD
 
 No debe usarse para reemplazar servicios independientes como ASR, TTS, OCR, embeddings o FFmpeg: esos componentes realizan tareas distintas y deben seguir siendo servicios separados.
 
+### Diagrama de integración
+
+La representación vectorial mantenida junto al README de REDIL muestra el límite entre gateway, adaptador y clúster:
+
+![Distributed Llama como backend experimental de REDIL](DISTRIBUTED-LLAMA-REDIL.svg)
+
+La integración se aprueba solo como **adaptador opcional**. El gateway no debe conocer los detalles internos de root/workers y tiene que poder retirar el backend de la selección cuando falle. Los servicios locales convencionales siguen siendo rutas válidas e independientes.
+
+### Decisión de arquitectura y criterios de rechazo
+
+- **Mantener como experimental** mientras no haya pruebas reproducibles de compatibilidad, rendimiento y recuperación.
+- **No asumir mejora de velocidad** por sumar nodos: medir TTFT, prefill, tokens/s, latencia total, tráfico y RAM/VRAM frente a un baseline de un nodo.
+- **No tratar la RAM como memoria unificada** ni repartir indiscriminadamente los nodos REDIL en un solo clúster.
+- **No anunciar Qwen3.5 o LFM3 como compatibles** sin soporte upstream explícito y prueba reproducible.
+- **No dar por hecho CUDA** por tener una GPU NVIDIA. Comprobar en logs qué backend se utiliza realmente; Vulkan debe compararse con CPU.
+- **No exponer root/workers directamente a Internet**. Usar red privada, puertos mínimos y datos de prueba no sensibles.
+- **No activar streaming, cancelación ni llamadas a herramientas** en el contrato REDIL hasta verificar cada capacidad contra la release elegida.
+
 ## 3. Compatibilidad: qué sabemos y qué falta comprobar
 
 | Área | Evaluación preliminar | Acción obligatoria |
@@ -229,5 +247,5 @@ No instalar ni ejecutar automáticamente en la máquina de trabajo. La RTX 3050 
 
 ## 9. Registro de cambios y revisión
 
-- 2026-10-28: evaluación documental inicial y plan de implantación por fases.
+- 2026-10-28: evaluación documental inicial y plan de implantación por fases.\n- 2026-10-28: ampliada la evaluación arquitectónica de REDIL y añadido diagrama SVG específico para el adaptador.
 - Próxima revisión: al fijar release/commit y artefacto de modelo, o cuando upstream cambie soporte de modelos, API o backend GPU.
