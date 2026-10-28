@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Distributed Llama como backend opcional de REDIL</title>
+  <desc id="desc">Diagrama del flujo desde aplicaciones al gateway REDIL, pasando por el adaptador experimental de Distributed Llama, hasta un nodo raíz y trabajadores CPU o Vulkan. Los backends locales convencionales siguen disponibles como alternativa y observabilidad cruza el sistema.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}.panel{fill:#ffffff;stroke:#334155;stroke-width:2}.redil{fill:#e0f2fe;stroke:#0369a1;stroke-width:2.5}.experimental{fill:#fef3c7;stroke:#b45309;stroke-width:2.5;stroke-dasharray:8 5}.node{fill:#f1f5f9;stroke:#475569;stroke-width:2}.fallback{fill:#dcfce7;stroke:#15803d;stroke-width:2}.title{font:700 25px sans-serif;fill:#0f172a}.h{font:700 19px sans-serif;fill:#0f172a}.t{font:15px sans-serif;fill:#334155}.small{font:13px sans-serif;fill:#475569}.line{stroke:#475569;stroke-width:2.5;fill:none}.dash{stroke:#b45309;stroke-width:2;stroke-dasharray:7 5;fill:none}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#475569"/></marker>
+    <marker id="arrowAmber" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#b45309"/></marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1200" height="900" rx="18"/>
+  <text class="title" x="600" y="44" text-anchor="middle">REDIL · Integración experimental de Distributed Llama</text>
+  <text class="small" x="600" y="70" text-anchor="middle">El gateway conserva el control; el motor distribuido es opcional y reemplazable</text>
+
+  <rect class="panel" x="350" y="100" width="500" height="72" rx="12"/>
+  <text class="h" x="600" y="129" text-anchor="middle">Aplicaciones / agentes / API</text>
+  <text class="t" x="600" y="151" text-anchor="middle">Peticiones de usuarios y servicios LEONES</text>
+
+  <path class="line" d="M600 172 V207" marker-end="url(#arrow)"/>
+  <rect class="redil" x="270" y="210" width="660" height="100" rx="14"/>
+  <text class="h" x="600" y="242" text-anchor="middle">Gateway y orquestador REDIL</text>
+  <text class="t" x="600" y="266" text-anchor="middle">Enrutamiento · políticas · límites · fallback · selección de backend</text>
+  <text class="small" x="600" y="289" text-anchor="middle">No necesita conocer la topología interna de los workers</text>
+
+  <path class="line" d="M600 310 V345 H300 V375" marker-end="url(#arrow)"/>
+  <path class="dash" d="M600 345 H900 V375" marker-end="url(#arrowAmber)"/>
+
+  <rect class="fallback" x="70" y="380" width="460" height="120" rx="14"/>
+  <text class="h" x="300" y="412" text-anchor="middle">Backends locales convencionales</text>
+  <text class="t" x="300" y="438" text-anchor="middle">llama.cpp · TensorFold · otros motores</text>
+  <text class="t" x="300" y="461" text-anchor="middle">Servicios independientes por especialidad</text>
+  <text class="small" x="300" y="483" text-anchor="middle">Ruta alternativa si el clúster no está disponible</text>
+
+  <rect class="experimental" x="650" y="380" width="480" height="120" rx="14"/>
+  <text class="h" x="890" y="412" text-anchor="middle">Adaptador Distributed Llama</text>
+  <text class="t" x="890" y="438" text-anchor="middle">API encapsulada · health checks · timeout</text>
+  <text class="t" x="890" y="461" text-anchor="middle">Métricas · errores normalizados · límites</text>
+  <text class="small" x="890" y="483" text-anchor="middle">Experimental: activación explícita y aislada</text>
+
+  <path class="dash" d="M890 500 V540" marker-end="url(#arrowAmber)"/>
+  <rect class="experimental" x="705" y="545" width="370" height="85" rx="12"/>
+  <text class="h" x="890" y="576" text-anchor="middle">Nodo raíz</text>
+  <text class="t" x="890" y="601" text-anchor="middle">Coordina una única inferencia distribuida</text>
+
+  <path class="dash" d="M890 630 V655 H770 V680" marker-end="url(#arrowAmber)"/>
+  <path class="dash" d="M890 655 H1010 V680" marker-end="url(#arrowAmber)"/>
+  <rect class="node" x="655" y="685" width="230" height="75" rx="12"/>
+  <text class="h" x="770" y="714" text-anchor="middle">Worker A</text>
+  <text class="t" x="770" y="738" text-anchor="middle">CPU / Vulkan, según build</text>
+  <rect class="node" x="895" y="685" width="230" height="75" rx="12"/>
+  <text class="h" x="1010" y="714" text-anchor="middle">Worker B…N</text>
+  <text class="t" x="1010" y="738" text-anchor="middle">Topología admitida por modelo</text>
+
+  <rect class="panel" x="70" y="555" width="460" height="130" rx="14"/>
+  <text class="h" x="300" y="586" text-anchor="middle">Control transversal de REDIL</text>
+  <text class="t" x="300" y="612" text-anchor="middle">Logs · TTFT · prefill · tokens/s · RAM/VRAM</text>
+  <text class="t" x="300" y="636" text-anchor="middle">Red · fallos · concurrencia · privacidad</text>
+  <text class="small" x="300" y="660" text-anchor="middle">Medir antes de escalar; no asumir aceleración</text>
+  <path class="line" d="M300 500 V555" marker-end="url(#arrow)"/>
+  <path class="line" d="M530 620 H620 V455 H650" marker-end="url(#arrow)"/>
+
+  <rect x="70" y="790" width="1060" height="65" rx="12" fill="#fff7ed" stroke="#c2410c" stroke-width="2"/>
+  <text class="h" x="600" y="817" text-anchor="middle">Límites explícitos</text>
+  <text class="t" x="600" y="840" text-anchor="middle">No hay RAM unificada automática · Qwen3.5/LFM3 sin compatibilidad confirmada · GPU y rendimiento pendientes de prueba</text>
+</svg>
