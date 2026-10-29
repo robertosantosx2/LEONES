@@ -453,7 +453,17 @@ Estas son las referencias upstream que deben revisarse al fijar una versión de 
 4. [Issues upstream](https://github.com/b4rtaz/distributed-llama/issues) — incidencias y cuestiones abiertas sobre modelos, GPU, API y funcionamiento.
 5. [Licencia del repositorio](https://github.com/b4rtaz/distributed-llama/blob/main/LICENSE) — verificar el fichero y la licencia de la release exacta antes de redistribuir.
 
-### 12.5 Alcance y trazabilidad de la evidencia
+### 12.5 Figuras
+
+**Figura — Arquitectura general de REDIL**
+
+![Arquitectura general de REDIL: cliente, API Gateway, router dinámico y clúster de nodos heterogéneos](REDIL_Arquitectura_General.svg)
+
+Archivo fuente: [REDIL_Arquitectura_General.svg](REDIL_Arquitectura_General.svg).
+
+El esquema es una representación conceptual de una topología con gateway y nodos heterogéneos. Los modelos, motores y equipos rotulados son ejemplos/candidatos del diagrama, no una declaración de compatibilidad ni una validación de despliegue. En particular, la selección de backend, el reparto de inferencia y el uso real de GPU deben comprobarse por separado.
+
+### 12.6 Alcance y trazabilidad de la evidencia
 
 - La documentación upstream describe capacidades del proyecto; no demuestra que cada capacidad funcione con el hardware de LEONES.
 - Los ejemplos de upstream, las estimaciones y los resultados de otros equipos son **referencias externas**, no benchmarks propios.
