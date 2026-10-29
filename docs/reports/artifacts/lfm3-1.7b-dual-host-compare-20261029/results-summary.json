@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.0",
+  "recorded_at": "2026-10-29",
+  "project": "LEONES",
+  "experiment": "LFM3-1.7B dual-host llama.cpp comparison",
+  "model": {
+    "id": "LiquidAI/LFM3-1.7B-GGUF:Q4_K_M",
+    "file": "LFM3-1.7B-Q4_K_M.gguf",
+    "quantization": "Q4_K_M"
+  },
+  "source_revisions": {
+    "msi_rtx3050": {
+      "commit": "c3df4b7e22a1ac38da663552d19e649dd97ca936",
+      "short_commit": "c3df4b7",
+      "date": "2026-10-28",
+      "report": "docs/reports/lfm3-1.7b-rtx3050-cuda-20261028.md"
+    },
+    "intel_cpu": {
+      "commit": "0893ec98f5eafad36a43a72cd1c3723d72b0d03a",
+      "short_commit": "0893ec9",
+      "date": "2026-10-29",
+      "os": "Ubuntu 26.04.1",
+      "kernel": "7.0.0-38-generic",
+      "cpu": "Intel Core i7-5500U, 2 cores / 4 threads",
+      "gpu": "Intel HD Graphics 5500",
+      "llama_cpp_version": "0.8.0-dev build 1",
+      "cmake": {
+        "build_type": "Release",
+        "GGML_NATIVE": true,
+        "GGML_OPENMP": true,
+        "GGML_AVX2": false
+      },
+      "model_path": "/home/roberto/.cache/huggingface/hub/models--LiquidAI--LFM3-1.7B-GGUF/snapshots/bad5729bba61d076fff20d2548e62526665af215/LFM3-1.7B-Q4_K_M.gguf",
+      "server": {
+        "bind": "127.0.0.1:8080",
+        "status": "ok",
+        "observed_rss_approx_gb": 1.9
+      },
+      "launcher_options": [
+        "--reasoning off",
+        "--no-reasoning-preserve",
+        "--reasoning-format deepseek",
+        "--ctx-size 2048",
+        "--threads 4",
+        "--threads-batch 4",
+        "--temp 0.1",
+        "--top-k 50",
+        "--repeat-penalty 1.1"
+      ]
+    }
+  },
+  "git_comparison": {
+    "base": "c3df4b7e22a1ac38da663552d19e649dd97ca936",
+    "head": "0893ec98f5eafad36a43a72cd1c3723d72b0d03a",
+    "ahead_by": 30,
+    "behind_by": 0,
+    "interpretation": "Intel revision is 30 commits ahead; this does not establish a model-quality or speed improvement."
+  },
+  "upstream_lfm3_support": {
+    "lfm3_1_7b_commit": "https://github.com/ggml-org/llama.cpp/commit/19cce6919992fdffd92e0ac152caaf1e2b8f254e",
+    "lfm3_audio_omni_commit": "https://github.com/ggml-org/llama.cpp/commit/19ff817fb25e9a1b838b1d7f9f4325f7bf9779c4",
+    "conclusion": "Base LFM3-1.7B support predates both compared revisions."
+  },
+  "initial_battery": {
+    "local_report_dir": "/home/roberto/lfm3-1.7b-llamacpp/reports/battery-20261029-183727",
+    "requests": 24,
+    "tests": 8,
+    "repetitions_per_test": 3,
+    "aggregate_generation_tok_s_approx": 15,
+    "prefill_tok_s_approx": 33.56,
+    "observations": [
+      {
+        "test": "es_capital",
+        "output": "Berlín.</think>Berlín.",
+        "repetitions": 3,
+        "assessment": "duplicate answer and visible reasoning marker"
+      },
+      {
+        "test": "en_capital",
+        "output": "Berlin</think>Berlin",
+        "repetitions": 3,
+        "assessment": "duplicate answer and visible reasoning marker"
+      },
+      {
+        "test": "matematicas",
+        "output_excerpt": "17 × 20 = 340; 17 × 3 = 51; 340 + 51 = 391. Wait, that's not right...",
+        "max_tokens": 64,
+        "assessment": "confused/incorrect reasoning; truncated"
+      },
+      {
+        "test": "extraccion_exacta",
+        "output": "rojo verde azul</think>rojo verde azul",
+        "assessment": "repeated content"
+      },
+      {
+        "test": "aritmetica_es",
+        "output": "9",
+        "prompt": "¿Cuánto es 12 menos 5?",
+        "repetitions": 3,
+        "assessment": "incorrect"
+      },
+      {
+        "test": "explicacion_es",
+        "assessment": "reasonable RAM/SSD explanation followed by </think> and repeated content; truncated at 100 tokens"
+      },
+      {
+        "test": "resumen",
+        "output_tokens": 35,
+        "assessment": "consistent one-sentence summary"
+      },
+      {
+        "test": "conocimiento_cpu",
+        "assessment": "reasonable AVX2 explanation, truncated at 80 tokens"
+      }
+    ],
+    "props_json": "/home/roberto/lfm3-1.7b-llamacpp/reports/battery-20261029-183727/server-props.json"
+  },
+  "template_fix": {
+    "local_results_json": "/home/roberto/lfm3-1.7b-llamacpp/reports/template-fix-20261029-184239/results.json",
+    "changes": [
+      "removed deprecated --chat-template-kwargs JSON argument",
+      "added --no-reasoning-preserve"
+    ],
+    "warning": "chat template supports preserving reasoning, consider enabling it via --reasoning-preserve",
+    "observations": [
+      {
+        "test": "capital_de",
+        "output": "Berlin</think>Berlin",
+        "seconds": 0.891,
+        "tokens": 4,
+        "finish_reason": "stop",
+        "assessment": "still duplicated"
+      },
+      {
+        "test": "exact_extraction",
+        "output": "rojo verde azul",
+        "seconds": 1.013,
+        "tokens": 5,
+        "assessment": "clean exact output"
+      },
+      {
+        "test": "subtraction",
+        "output": "12 - 5 = 7\n\n7",
+        "seconds": 1.438,
+        "tokens": 10,
+        "assessment": "correct value, violates number-only instruction"
+      },
+      {
+        "test": "multiplication_17x23",
+        "output_excerpt": "17 × 20 =",
+        "seconds": 5.738,
+        "max_tokens": 64,
+        "finish_reason": "length",
+        "assessment": "inconclusive due to truncation"
+      }
+    ]
+  },
+  "direct_cli": {
+    "options": [
+      "--reasoning off",
+      "--no-reasoning-preserve",
+      "--single-turn",
+      "--seed 42",
+      "--temp 0.1"
+    ],
+    "capital_output": "Berlin</think>Berlin",
+    "prompt_tok_s_approx": 32.5,
+    "generation_tok_s_approx": 16,
+    "conclusion": "Marker/duplication also occurs in llama-cli, so it is not shown to be API-only."
+  },
+  "decision": {
+    "rebuild_recommended": false,
+    "reason": "Both revisions have base LFM3-1.7B support; root cause of output formatting remains unisolated.",
+    "limitations": [
+      "No identical controlled A/B benchmark across the two hosts has been run.",
+      "Raw Intel logs and JSON are present on the remote host and were not copied into this GitHub repository by this session.",
+      "Reported outputs are a structured record of observations available during the review, not a replacement for original raw logs."
+    ],
+    "next_steps": [
+      "Preserve both builds and record binary hashes/configuration.",
+      "Repeat identical prompts and parameters where hardware permits.",
+      "Separate CLI from API tests.",
+      "Vary chat-template and reasoning-preservation options one at a time.",
+      "Increase generation limits for tasks that were truncated.",
+      "Archive raw logs/JSON and SHA256SUMS.txt."
+    ]
+  }
+}
