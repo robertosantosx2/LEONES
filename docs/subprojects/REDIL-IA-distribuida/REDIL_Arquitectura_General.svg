@@ -1,0 +1,87 @@
+<?xml version="1.0" standalone="no"?>
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" id="svg-diagram-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" font-family="system-ui, -apple-system, sans-serif">
+                    <defs>
+                        <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#0b0f19"/>
+                            <stop offset="100%" stop-color="#111827"/>
+                        </linearGradient>
+                        <linearGradient id="masterGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#8b5cf6"/>
+                            <stop offset="100%" stop-color="#6d28d9"/>
+                        </linearGradient>
+                        <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.4"/>
+                        </filter>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+                        </marker>
+                    </defs>
+
+                    <!-- Background -->
+                    <rect width="1000" height="650" fill="url(#bgGrad)" rx="12"/>
+
+                    <!-- Client Node -->
+                    <g transform="translate(100, 275)" filter="url(#shadow)">
+                        <rect width="160" height="100" rx="10" fill="#3b82f6" stroke="#60a5fa" stroke-width="2"/>
+                        <text x="80" y="45" fill="#ffffff" text-anchor="middle" font-weight="bold" font-size="16">👤 Cliente</text>
+                        <text x="80" y="68" fill="#dbeafe" text-anchor="middle" font-size="12">App / Agent Stack</text>
+                    </g>
+
+                    <!-- Gateway & Router -->
+                    <g transform="translate(340, 250)" filter="url(#shadow)">
+                        <rect width="220" height="150" rx="12" fill="url(#masterGrad)" stroke="#a78bfa" stroke-width="2"/>
+                        <text x="110" y="40" fill="#ffffff" text-anchor="middle" font-weight="bold" font-size="16">🌐 API Gateway</text>
+                        <line x1="20" y1="55" x2="200" y2="55" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4 4"/>
+                        <text x="110" y="85" fill="#f3e8ff" text-anchor="middle" font-weight="semibold" font-size="14">🔀 Router Dinámico</text>
+                        <text x="110" y="110" fill="#ddd6fe" text-anchor="middle" font-size="12">Cuantización &amp; Topología</text>
+                    </g>
+
+                    <!-- Cluster Box -->
+                    <rect x="630" y="40" width="330" height="570" rx="16" fill="#1e293b" fill-opacity="0.4" stroke="#475569" stroke-width="2" stroke-dasharray="6 6"/>
+                    <text x="795" y="75" fill="#94a3b8" text-anchor="middle" font-weight="bold" font-size="15" letter-spacing="1">CLUSTER REDIL</text>
+
+                    <!-- Worker Node 1 -->
+                    <g transform="translate(650, 100)" filter="url(#shadow)">
+                        <rect width="290" height="140" rx="10" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
+                        <rect x="0" y="0" width="290" height="32" rx="10" fill="#10b981"/>
+                        <text x="145" y="21" fill="#ffffff" text-anchor="middle" font-weight="bold" font-size="13">Nodo 1: High Compute GPU</text>
+                        <text x="20" y="60" fill="#34d399" font-weight="semibold" font-size="13">Hardware:</text>
+                        <text x="100" y="60" fill="#e2e8f0" font-size="13">NVIDIA RTX 3050 / 4090</text>
+                        <text x="20" y="88" fill="#fbbf24" font-weight="semibold" font-size="13">Engine:</text>
+                        <text x="100" y="88" fill="#e2e8f0" font-size="13">vLLM / TensorRT-LLM</text>
+                        <text x="20" y="116" fill="#94a3b8" font-weight="semibold" font-size="13">Tareas:</text>
+                        <text x="100" y="116" fill="#cbd5e1" font-size="12">Heavy Models / MoE Split</text>
+                    </g>
+
+                    <!-- Worker Node 2 -->
+                    <g transform="translate(650, 265)" filter="url(#shadow)">
+                        <rect width="290" height="140" rx="10" fill="#0f172a" stroke="#ef4444" stroke-width="2"/>
+                        <rect x="0" y="0" width="290" height="32" rx="10" fill="#ef4444"/>
+                        <text x="145" y="21" fill="#ffffff" text-anchor="middle" font-weight="bold" font-size="13">Nodo 2: Dedicated Unified VRAM</text>
+                        <text x="20" y="60" fill="#fca5a5" font-weight="semibold" font-size="13">Hardware:</text>
+                        <text x="100" y="60" fill="#e2e8f0" font-size="13">AMD BC-250 (16GB GDDR6)</text>
+                        <text x="20" y="88" fill="#fbbf24" font-weight="semibold" font-size="13">Engine:</text>
+                        <text x="100" y="88" fill="#e2e8f0" font-size="13">llama.cpp / Custom Backend</text>
+                        <text x="20" y="116" fill="#94a3b8" font-weight="semibold" font-size="13">Tareas:</text>
+                        <text x="100" y="116" fill="#cbd5e1" font-size="12">Mid-size / GGUF Q4 Offload</text>
+                    </g>
+
+                    <!-- Worker Node 3 -->
+                    <g transform="translate(650, 430)" filter="url(#shadow)">
+                        <rect width="290" height="140" rx="10" fill="#0f172a" stroke="#3b82f6" stroke-width="2"/>
+                        <rect x="0" y="0" width="290" height="32" rx="10" fill="#3b82f6"/>
+                        <text x="145" y="21" fill="#ffffff" text-anchor="middle" font-weight="bold" font-size="13">Nodo 3: Edge &amp; Auxiliary Node</text>
+                        <text x="20" y="60" fill="#93c5fd" font-weight="semibold" font-size="13">Hardware:</text>
+                        <text x="100" y="60" fill="#e2e8f0" font-size="13">x86 / ARM Multi-Core CPU</text>
+                        <text x="20" y="88" fill="#fbbf24" font-weight="semibold" font-size="13">Engine:</text>
+                        <text x="100" y="88" fill="#e2e8f0" font-size="13">Ollama / Local Server</text>
+                        <text x="20" y="116" fill="#94a3b8" font-weight="semibold" font-size="13">Tareas:</text>
+                        <text x="100" y="116" fill="#cbd5e1" font-size="12">Embeddings / RAG / CPU Fallback</text>
+                    </g>
+
+                    <!-- Connectors -->
+                    <path d="M 260 325 L 340 325" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrow)"/>
+                    <path d="M 560 300 L 600 300 L 600 170 L 650 170" stroke="#38bdf8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+                    <path d="M 560 325 L 650 325" stroke="#38bdf8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+                    <path d="M 560 350 L 600 350 L 600 500 L 650 500" stroke="#38bdf8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+                </svg>
