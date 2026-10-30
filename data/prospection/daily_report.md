@@ -1,14 +1,14 @@
 # Daily Atlas Prospection
 
-Generated: 2026-10-29T10:59:17.701544+00:00
+Generated: 2026-10-30T10:57:43.379627+00:00
 Input: `data/prospection/classified_discoveries.ndjson`
-Discoveries: **294**
-Without declared license: **184**
+Discoveries: **292**
+Without declared license: **180**
 
 ## By type
 - model: 40
-- paper: 34
-- software: 220
+- paper: 33
+- software: 219
 
 ## By source
 - cgit-instance:git.zx2c4.com: 1
@@ -17,9 +17,9 @@ Without declared license: **184**
 - fossil-instance:fossil-scm.org: 6
 - framagit: 19
 - github: 87
-- gitlab: 40
+- gitlab: 39
 - huggingface: 40
-- huggingface-papers: 34
+- huggingface-papers: 33
 
 ## Publication status
-- review: 294
+- review: 292
