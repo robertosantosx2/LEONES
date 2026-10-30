@@ -8,29 +8,31 @@ Consolidación de las ejecuciones físicas documentadas en LEONES hasta el 30-10
 
 ## 1. Cuadro comparativo principal
 
-| Modelo | Equipo / motor | Artefacto / cuantización | Prefill | Generación | Artificial Analysis Intelligence Index | Estado / alcance |
+| Modelo | LEONES Intelligence Score (0–100) | Equipo / motor | Artefacto / cuantización | Prefill (tok/s) | Generación / decode (tok/s) | Artificial Analysis Intelligence Index | Estado / alcance |
 |---|---|---|---:|---:|---|
-| Qwen3.5-2B | MSI RTX 3050 · TensorFold 1.1.1 CUDA · API, 5 peticiones | MLX-4bit | 105,421 tok/s reportados (media); mediana 106,455 | 128 tokens por petición | **7*** (estimado; AA v4.3.2) | 5/5 HTTP 200; TTFT mediana 84,646 ms; 1,280760 s mediana de petición |
-| Qwen3.5-2B | MSI RTX 3050 · TensorFold 1.1.1 CUDA · prueba previa | MLX-4bit | No registrado | 95,08 tok/s (32 tokens); 105,71 tok/s (128 tokens) | **7*** (estimado; AA v4.3.2) | Inferencias completadas; TTFT 88,2 / 94,1 ms |
-| Qwen3.5-4B | MSI RTX 3050 · TensorFold CUDA · ejecución local | MLX-4bit | Prefill tok/s no registrado; latencia 190–209 ms | 53,64 (64 tokens); 53,42 (128 tokens) | **N/D v5.0** (13 histórico, v4.3) | Funcional; carga ~6,4 s; TTFT 193–212 ms |
-| Qwen3.5-4B | MSI RTX 3050 · TensorFold CUDA · API, 3 peticiones | MLX-4bit | ~228–232 tok/s | Mediana 54,708 tok/s | **N/D v5.0** (13 histórico, v4.3) | 3/3 HTTP 200; 0,7066 s mediana petición; TTFT 130,3 ms |
-| Qwen3.5-4B | MSI RTX 3050 · llama.cpp CUDA · CLI | GGUF Q4_K_M | 141,2 tok/s (prueba individual) | 42,4 tok/s | **N/D v5.0** (13 histórico, v4.3) | Respuesta coherente; VRAM observada después: 2.808 MiB |
-| Qwen3.5-4B | MSI RTX 3050 · llama.cpp CUDA · API, 3 peticiones | GGUF Q4_K_M | No comparable disponible | Mediana 47,646 tok/s | **N/D v5.0** (13 histórico, v4.3) | 3/3 HTTP 200; 0,8680 s mediana petición; TTFT cliente no disponible |
-| Qwen3.5-4B | MSI RTX 3050 · RustingStrata 1.0.1 CUDA · API, 3 peticiones | GGUF Q4_K_M | No comparable en API | No expuesta por API | **N/D v5.0** (13 histórico, v4.3) | 3/3 HTTP 200; 0,8384 s mediana petición; no convertir 32 tokens/tiempo en tok/s interno |
-| Qwen3.5-4B | MSI RTX 3050 · RustingStrata bench | GGUF Q4_K_M | 915,3 tok/s PP128; 986,5 PP512 | 46,6 / 46,1 tok/s TG64 | **N/D v5.0** (13 histórico, v4.3) | Harness nativo; 3 repeticiones; ctx1024 |
-| Qwen3-30B-A3B-Instruct-2507 | MSI RTX 3050 · llama.cpp CUDA · llama-bench | GGUF IQ3_XXS | Mediana PP128: 24,42 / 76,25 / 26,38 tok/s con 0 / 1 / 8 capas GPU | Mediana TG32: 1,45 / 1,44 / 1,88 tok/s | **N/D v5.0** (modelo 2507 marcado obsoleto) | 3 repeticiones por configuración; nueve ejecuciones, exit 0 |
-| Qwen3-30B-A3B-Instruct-2507 | MSI RTX 3050 · llama.cpp CUDA · CLI, 6 ejecuciones | GGUF IQ3_XXS | 5,04–10,97 tok/s por ejecución en CSV head-to-head | Mediana calculada: 1,985 tok/s | **N/D v5.0** (modelo 2507 marcado obsoleto) | 6/6 exit 0; RSS máx. ~11,2–11,7 GiB en los registros resumidos; offload documentado |
-| Qwen3-30B-A3B-Instruct-2507 | MSI RTX 3050 · RustingStrata 1.0.1 CUDA · CLI, 6 ejecuciones | GGUF IQ3_XXS | 11,71–20,03 tok/s en CSV head-to-head | Mediana calculada: 30,01 tok/s | **N/D v5.0** (modelo 2507 marcado obsoleto) | 6/6 exit 0; RSS ~7,0–8,0 GiB; variación entre ejecuciones |
-| Qwen3-30B-A3B-Instruct-2507 | MSI RTX 3050 · RustingStrata CUDA · prueba individual anterior | GGUF IQ3_XXS | 7,74 tok/s (prompt observado) | 7,74 tok/s (generación registrada en ese ensayo) | **N/D v5.0** (modelo 2507 marcado obsoleto) | Ejecución real separada; no combinar con head-to-head de seis repeticiones |
-| LFM3-1.7B Uncensored | MSI RTX 3050 · llama.cpp CUDA · llama-bench | GGUF AD-Q4_K_M | 4.326,68 tok/s PP512 | 117,29 tok/s TG128 | **Sin ficha/índice localizado** | 3 repeticiones; ±254,02 y ±0,27 respectivamente |
-| LFM3-1.7B Uncensored | MSI RTX 3050 · llama.cpp CUDA · CLI interactivo | GGUF AD-Q4_K_M | 163,5–1.797,1 tok/s, según interacción | 99,8–104,4 tok/s | **Sin ficha/índice localizado** | Tres interacciones; no equiparar prefill posterior con PP512 |
-| Ling-3.0-Tiny | MSI RTX 3050 · llama.cpp CUDA · CLI | GGUF IQ2_M | 62,5 tok/s en reintento funcional | 5,4 tok/s | **N/D v5.0** (12 histórico, v4.3) | Código Python factorial validado con 7 comprobaciones; prueba individual |
-| Ling-3.0-Tiny | MSI RTX 3050 · llama.cpp CUDA · primera ejecución | GGUF IQ2_M | 68,7 tok/s | 8,3 tok/s | **N/D v5.0** (12 histórico, v4.3) | Salida truncada; 83,83 s; RSS máximo 2,89 GiB; no es prueba funcional completa |
-| Ling-3.0-Tiny | GB-BXi7-5500 · llama.cpp CPU (4 hilos) | GGUF Q4_K_M | 41,0 tok/s | 15,5 tok/s | **N/D v5.0** (12 histórico, v4.3) | 16,72 s; RSS máximo 7,86 GiB; código factorial validado; equipo y cuantización distintos |
-| Spark-X2.6-4B-abliterated | MSI RTX 3050 · llama.cpp CUDA b11740 · CLI | GGUF Q4_K_M | 36,9 tok/s (prueba funcional) | **7,2 tok/s** | **Sin ficha/índice localizado** | Respuesta completa; 256 tokens máximos solicitados; código 0 |
-| Spark-X2.6-4B-abliterated | MSI RTX 3050 · llama.cpp CUDA b11740 · CLI, pruebas preliminares | GGUF Q4_K_M | 66,2 / 37,3 tok/s | 5,9 / 7,9 tok/s | **Sin ficha/índice localizado** | Salidas truncadas con límites de 32 y 128 tokens |
+| Qwen3.5-2B | Pendiente — batería común | MSI RTX 3050 · TensorFold 1.1.1 CUDA · API, 5 peticiones | MLX-4bit | 105,421 tok/s reportados (media); mediana 106,455 | 128 tokens por petición | **7*** (estimado; AA v4.3.2) | 5/5 HTTP 200; TTFT mediana 84,646 ms; 1,280760 s mediana de petición |
+| Qwen3.5-2B | Pendiente — batería común | MSI RTX 3050 · TensorFold 1.1.1 CUDA · prueba previa | MLX-4bit | No registrado | 95,08 tok/s (32 tokens); 105,71 tok/s (128 tokens) | **7*** (estimado; AA v4.3.2) | Inferencias completadas; TTFT 88,2 / 94,1 ms |
+| Qwen3.5-4B | Pendiente — batería común | MSI RTX 3050 · TensorFold CUDA · ejecución local | MLX-4bit | Prefill tok/s no registrado; latencia 190–209 ms | 53,64 (64 tokens); 53,42 (128 tokens) | **N/D v5.0** (13 histórico, v4.3) | Funcional; carga ~6,4 s; TTFT 193–212 ms |
+| Qwen3.5-4B | Pendiente — batería común | MSI RTX 3050 · TensorFold CUDA · API, 3 peticiones | MLX-4bit | ~228–232 tok/s | Mediana 54,708 tok/s | **N/D v5.0** (13 histórico, v4.3) | 3/3 HTTP 200; 0,7066 s mediana petición; TTFT 130,3 ms |
+| Qwen3.5-4B | Pendiente — batería común | MSI RTX 3050 · llama.cpp CUDA · CLI | GGUF Q4_K_M | 141,2 tok/s (prueba individual) | 42,4 tok/s | **N/D v5.0** (13 histórico, v4.3) | Respuesta coherente; VRAM observada después: 2.808 MiB |
+| Qwen3.5-4B | Pendiente — batería común | MSI RTX 3050 · llama.cpp CUDA · API, 3 peticiones | GGUF Q4_K_M | No comparable disponible | Mediana 47,646 tok/s | **N/D v5.0** (13 histórico, v4.3) | 3/3 HTTP 200; 0,8680 s mediana petición; TTFT cliente no disponible |
+| Qwen3.5-4B | Pendiente — batería común | MSI RTX 3050 · RustingStrata 1.0.1 CUDA · API, 3 peticiones | GGUF Q4_K_M | No comparable en API | No expuesta por API | **N/D v5.0** (13 histórico, v4.3) | 3/3 HTTP 200; 0,8384 s mediana petición; no convertir 32 tokens/tiempo en tok/s interno |
+| Qwen3.5-4B | Pendiente — batería común | MSI RTX 3050 · RustingStrata bench | GGUF Q4_K_M | 915,3 tok/s PP128; 986,5 PP512 | 46,6 / 46,1 tok/s TG64 | **N/D v5.0** (13 histórico, v4.3) | Harness nativo; 3 repeticiones; ctx1024 |
+| Qwen3-30B-A3B-Instruct-2507 | Pendiente — batería común | MSI RTX 3050 · llama.cpp CUDA · llama-bench | GGUF IQ3_XXS | Mediana PP128: 24,42 / 76,25 / 26,38 tok/s con 0 / 1 / 8 capas GPU | Mediana TG32: 1,45 / 1,44 / 1,88 tok/s | **N/D v5.0** (modelo 2507 marcado obsoleto) | 3 repeticiones por configuración; nueve ejecuciones, exit 0 |
+| Qwen3-30B-A3B-Instruct-2507 | Pendiente — batería común | MSI RTX 3050 · llama.cpp CUDA · CLI, 6 ejecuciones | GGUF IQ3_XXS | 5,04–10,97 tok/s por ejecución en CSV head-to-head | Mediana calculada: 1,985 tok/s | **N/D v5.0** (modelo 2507 marcado obsoleto) | 6/6 exit 0; RSS máx. ~11,2–11,7 GiB en los registros resumidos; offload documentado |
+| Qwen3-30B-A3B-Instruct-2507 | Pendiente — batería común | MSI RTX 3050 · RustingStrata 1.0.1 CUDA · CLI, 6 ejecuciones | GGUF IQ3_XXS | 11,71–20,03 tok/s en CSV head-to-head | Mediana calculada: 30,01 tok/s | **N/D v5.0** (modelo 2507 marcado obsoleto) | 6/6 exit 0; RSS ~7,0–8,0 GiB; variación entre ejecuciones |
+| Qwen3-30B-A3B-Instruct-2507 | Pendiente — batería común | MSI RTX 3050 · RustingStrata CUDA · prueba individual anterior | GGUF IQ3_XXS | 7,74 tok/s (prompt observado) | 7,74 tok/s (generación registrada en ese ensayo) | **N/D v5.0** (modelo 2507 marcado obsoleto) | Ejecución real separada; no combinar con head-to-head de seis repeticiones |
+| LFM3-1.7B Uncensored | Pendiente — batería común | MSI RTX 3050 · llama.cpp CUDA · llama-bench | GGUF AD-Q4_K_M | 4.326,68 tok/s PP512 | 117,29 tok/s TG128 | **Sin ficha/índice localizado** | 3 repeticiones; ±254,02 y ±0,27 respectivamente |
+| LFM3-1.7B Uncensored | Pendiente — batería común | MSI RTX 3050 · llama.cpp CUDA · CLI interactivo | GGUF AD-Q4_K_M | 163,5–1.797,1 tok/s, según interacción | 99,8–104,4 tok/s | **Sin ficha/índice localizado** | Tres interacciones; no equiparar prefill posterior con PP512 |
+| Ling-3.0-Tiny | Pendiente — batería común | MSI RTX 3050 · llama.cpp CUDA · CLI | GGUF IQ2_M | 62,5 tok/s en reintento funcional | 5,4 tok/s | **N/D v5.0** (12 histórico, v4.3) | Código Python factorial validado con 7 comprobaciones; prueba individual |
+| Ling-3.0-Tiny | Pendiente — batería común | MSI RTX 3050 · llama.cpp CUDA · primera ejecución | GGUF IQ2_M | 68,7 tok/s | 8,3 tok/s | **N/D v5.0** (12 histórico, v4.3) | Salida truncada; 83,83 s; RSS máximo 2,89 GiB; no es prueba funcional completa |
+| Ling-3.0-Tiny | Pendiente — batería común | GB-BXi7-5500 · llama.cpp CPU (4 hilos) | GGUF Q4_K_M | 41,0 tok/s | 15,5 tok/s | **N/D v5.0** (12 histórico, v4.3) | 16,72 s; RSS máximo 7,86 GiB; código factorial validado; equipo y cuantización distintos |
+| Spark-X2.6-4B-abliterated | Pendiente — batería común | MSI RTX 3050 · llama.cpp CUDA b11740 · CLI | GGUF Q4_K_M | 36,9 tok/s (prueba funcional) | **7,2 tok/s** | **Sin ficha/índice localizado** | Respuesta completa; 256 tokens máximos solicitados; código 0 |
+| Spark-X2.6-4B-abliterated | Pendiente — batería común | MSI RTX 3050 · llama.cpp CUDA b11740 · CLI, pruebas preliminares | GGUF Q4_K_M | 66,2 / 37,3 tok/s | 5,9 / 7,9 tok/s | **Sin ficha/índice localizado** | Salidas truncadas con límites de 32 y 128 tokens |
 
 **Notas sobre el cuadro:**
+- La columna **LEONES Intelligence Score** es la clasificación principal prevista, pero permanece pendiente hasta ejecutar la misma batería de evaluación en los modelos. No se asignan notas por intuición ni se convierten índices externos en puntuaciones LEONES.
+- La cifra de Qwen3.5-2B TensorFold API (105,421 media; 106,455 mediana) corresponde a velocidad de generación reportada, no a prefill; se ha recolocado en la columna de generación. El prefill no está disponible en ese registro.
 - Las filas con distintas cuantizaciones, versiones del motor, prompts, límites de salida o protocolos no forman un ranking científico de modelos.
 - Qwen3.5-4B TensorFold usa MLX-4bit; llama.cpp y RustingStrata usan GGUF Q4_K_M. No son exactamente el mismo artefacto.
 - Para Qwen3-30B, la mediana de generación del head-to-head (1,985 tok/s llama.cpp y 30,01 tok/s RustingStrata) se ha calculado a partir de las seis filas de `results-summary.csv`; las longitudes generadas varían entre motores y ejecuciones. No presentarlo como comparación perfectamente equivalente.
@@ -101,6 +103,30 @@ La prueba es evidencia de que ambos motores ejecutaron el modelo en el equipo. S
 - [Magnitude + Qwen3.5-4B (fallo de catálogo, sin inferencia)](../benchmarks/magnitude-qwen35-4b-2026-10-21.md)
 - [Clover-35B-A3B-Preview — investigación, no ejecutado](../../research/clover-35b-a3b-preview-experimental-2026-10.md)
 
+
+## 7. LEONES Intelligence Score — clasificación principal
+
+El ranking principal de inteligencia se calculará con una batería común de cinco benchmarks públicos. El resultado será un índice de 0 a 100, independiente de los tok/s del hardware y del runtime.
+
+| Área | Benchmark | Métrica normalizada | Peso |
+|---|---|---|---:|
+| Conocimiento | MMLU-Pro | Exactitud (%) | 20 % |
+| Razonamiento científico | GPQA Diamond | Exactitud (%) | 20 % |
+| Razonamiento complejo | Humanity's Last Exam (HLE) | Exactitud (%) | 20 % |
+| Seguimiento de instrucciones | IFEval | Puntuación de cumplimiento (%) | 20 % |
+| Programación | LiveCodeBench | Pass@1 (%) | 20 % |
+
+**Cálculo:** LEONES Intelligence Score = media aritmética de las cinco puntuaciones porcentuales. Cada resultado debe corresponder a la variante exacta evaluada; se registrarán modelo, revisión/hash, cuantización, plantilla de chat, modo reasoning, parámetros de generación, versión del benchmark, fecha y número de muestras. Si falta una prueba, se mostrará el resultado parcial y el número de áreas cubiertas; no se imputará un cero ni se comparará como si fuese una puntuación completa.
+
+**Estado de la clasificación a 30-10-2026:** pendiente de ejecutar la batería homogénea. Por ello, las filas del cuadro principal muestran «Pendiente — batería común». Los índices de Artificial Analysis se mantienen en su columna como referencias externas y no se mezclan con el LEONES Intelligence Score.
+
+### Métricas de rendimiento local
+
+La matriz registra por separado:
+- **Prefill (tok/s):** velocidad de procesamiento del prompt. En llama-bench se identifica como PP y se conserva el tamaño del prompt (por ejemplo, PP128 o PP512).
+- **Generación/decode (tok/s):** velocidad de producción de tokens; en llama-bench se identifica como TG y se conserva el tamaño de generación (por ejemplo, TG32 o TG128).
+- **API/CLI:** no se sustituye una métrica ausente por tokens divididos por tiempo total si este incluye carga, colas, TTFT u otras operaciones. Los valores de API y CLI se mantienen identificados.
+- **Comparabilidad:** solo se ordenarán velocidades entre pruebas con protocolo, motor, contexto, cuantización y configuración comparables. El ranking de inteligencia nunca se ordenará por tok/s.
 
 ## Artificial Analysis Intelligence Index — referencia externa
 
