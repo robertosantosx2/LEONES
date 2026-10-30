@@ -9,8 +9,8 @@ Consolidación de las ejecuciones físicas documentadas en LEONES hasta el 30-10
 ## 1. Cuadro comparativo principal
 
 | Modelo | LEONES Intelligence Score (0–100) | Equipo / motor | Artefacto / cuantización | Prefill (tok/s) | Generación / decode (tok/s) | Artificial Analysis Intelligence Index | Estado / alcance |
-|---|---|---|---:|---:|---|
-| Qwen3.5-2B | Pendiente — batería común | MSI RTX 3050 · TensorFold 1.1.1 CUDA · API, 5 peticiones | MLX-4bit | 105,421 tok/s reportados (media); mediana 106,455 | 128 tokens por petición | **7*** (estimado; AA v4.3.2) | 5/5 HTTP 200; TTFT mediana 84,646 ms; 1,280760 s mediana de petición |
+|---|---|---|---|---:|---:|---|---|
+| Qwen3.5-2B | Pendiente — batería común | MSI RTX 3050 · TensorFold 1.1.1 CUDA · API, 5 peticiones | MLX-4bit | No registrado | Media 105,421; mediana 106,455 tok/s (128 tokens por petición) | **7*** (estimado; AA v4.3.2) | 5/5 HTTP 200; TTFT mediana 84,646 ms; 1,280760 s mediana de petición |
 | Qwen3.5-2B | Pendiente — batería común | MSI RTX 3050 · TensorFold 1.1.1 CUDA · prueba previa | MLX-4bit | No registrado | 95,08 tok/s (32 tokens); 105,71 tok/s (128 tokens) | **7*** (estimado; AA v4.3.2) | Inferencias completadas; TTFT 88,2 / 94,1 ms |
 | Qwen3.5-4B | Pendiente — batería común | MSI RTX 3050 · TensorFold CUDA · ejecución local | MLX-4bit | Prefill tok/s no registrado; latencia 190–209 ms | 53,64 (64 tokens); 53,42 (128 tokens) | **N/D v5.0** (13 histórico, v4.3) | Funcional; carga ~6,4 s; TTFT 193–212 ms |
 | Qwen3.5-4B | Pendiente — batería común | MSI RTX 3050 · TensorFold CUDA · API, 3 peticiones | MLX-4bit | ~228–232 tok/s | Mediana 54,708 tok/s | **N/D v5.0** (13 histórico, v4.3) | 3/3 HTTP 200; 0,7066 s mediana petición; TTFT 130,3 ms |
@@ -32,7 +32,7 @@ Consolidación de las ejecuciones físicas documentadas en LEONES hasta el 30-10
 
 **Notas sobre el cuadro:**
 - La columna **LEONES Intelligence Score** es la clasificación principal prevista, pero permanece pendiente hasta ejecutar la misma batería de evaluación en los modelos. No se asignan notas por intuición ni se convierten índices externos en puntuaciones LEONES.
-- La cifra de Qwen3.5-2B TensorFold API (105,421 media; 106,455 mediana) corresponde a velocidad de generación reportada, no a prefill; se ha recolocado en la columna de generación. El prefill no está disponible en ese registro.
+- La cifra de Qwen3.5-2B TensorFold API (105,421 media; 106,455 mediana) corresponde a velocidad de generación reportada, no a prefill; se presenta en la columna de generación. El prefill no está disponible en ese registro.
 - Las filas con distintas cuantizaciones, versiones del motor, prompts, límites de salida o protocolos no forman un ranking científico de modelos.
 - Qwen3.5-4B TensorFold usa MLX-4bit; llama.cpp y RustingStrata usan GGUF Q4_K_M. No son exactamente el mismo artefacto.
 - Para Qwen3-30B, la mediana de generación del head-to-head (1,985 tok/s llama.cpp y 30,01 tok/s RustingStrata) se ha calculado a partir de las seis filas de `results-summary.csv`; las longitudes generadas varían entre motores y ejecuciones. No presentarlo como comparación perfectamente equivalente.
