@@ -59,6 +59,7 @@ ANÁLISIS LEONES
 | Radiance | [`RADIANCE.md`](RADIANCE.md) | runtime candidato AMD RDNA4 / posible backend ODS | 🟡 `runtime-candidate` |
 | ODS | [`ODS.md`](ODS.md) | despliegue/instalación local | 🟡 `research-candidate` |
 | Magnitude | [`MAGNITUDE.md`](MAGNITUDE.md) | agente + inference engine local | 🟡 `research-candidate` |
+| Modelos de difusión de texto | [`TEXT-DIFFUSION-LLMS-2026-10-30.md`](TEXT-DIFFUSION-LLMS-2026-10-30.md) | catálogo DLM, requisitos HW, runtimes y benchmark reproducible | 🟡 `research-candidate` |
 | Runtimes locales | [`LOCAL-RUNTIMES-2026.md`](LOCAL-RUNTIMES-2026.md) | radar de runtimes | 🟡 `source-inspiration` |
 | Infraestructura de inferencia | [`LOCAL-INFERENCE-2026.md`](LOCAL-INFERENCE-2026.md) | prospección | 🟡 `source-inspiration` |
 | Candidatos de infraestructura | [`LOCAL-INFERENCE-2026-CANDIDATES.md`](LOCAL-INFERENCE-2026-CANDIDATES.md) | promoción documental | 🟡 `research-candidate` |
