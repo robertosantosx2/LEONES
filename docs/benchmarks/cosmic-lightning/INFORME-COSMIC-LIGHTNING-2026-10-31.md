@@ -279,3 +279,82 @@ La descarga del modelo original y de la colección GGUF se completó. La revisi�
 - Explicación oficial LFM Open License v1.0: https://www.liquid.ai/lfm-license
 - AtomicChat Uncensored GGUF y licencia declarada: https://huggingface.co/AtomicChat/LFM3-1.7B-Uncensored-GGUF
 - Expediente local de hashes: `~/modelos/cosmic-lightning/expediente-licencia/SHA256SUMS-COMPLETO.txt`
+
+
+
+## 12. Auditoría de origen y relicenciamiento — 2026-10-31
+
+### Dictamen ejecutivo
+
+**No se ha encontrado evidencia pública de una autorización de Liquid AI para relicenciar los pesos de LFM3-1.7B bajo Apache-2.0.** La evidencia disponible apunta a que Cosmic Lightning reutiliza sin cambios los pesos oficiales de LiquidAI/LFM3-1.7B, mientras que la ficha de Cosmic declara Apache-2.0. Esta discrepancia debe tratarse como una **incompatibilidad de procedencia/licencia no resuelta**, no como una relicencia válida.
+
+No es posible concluir solo con fuentes públicas que haya infracción: podría existir una autorización privada, un acuerdo de licencia separado o un error de metadatos. No se ha localizado públicamente ninguno de esos documentos ni una declaración de Liquid AI que confirme una excepción.
+
+### 12.1 Cadena de procedencia reconstruida
+
+| Eslabón | Evidencia pública observada | Conclusión |
+|---|---|---|
+| Liquid AI → LFM3-1.7B | La ficha oficial identifica el modelo como LFM3-1.7B y declara expresamente LFM Open License v1.0. Su arquitectura y tamaño coinciden con Cosmic Lightning. | Fuente upstream oficial y titular/licenciante identificado: Liquid AI. |
+| LFM3-1.7B → cosmicstack/cosmic-lightning | Un análisis público de David Hendrickson (@TeksEdge) informa que el SHA-256 del archivo de pesos de 3.46 GB coincide exactamente en ambos repositorios (prefijo/sufijo publicado: `135922ca...fb4330`) y que la configuración también es LFM3. | Evidencia externa fuerte de copia binaria idéntica del checkpoint; no de un fine-tune ni de pesos nuevos. El hash completo no está reproducido en esa publicación. |
+| Cosmic Lightning → bartowski GGUF | La ficha del repositorio GGUF declara `base_model:cosmicstack/cosmic-lightning`, `base_model:quantized:cosmicstack/cosmic-lightning` y licencia `apache-2.0`. | La cadena declarada de conversión pasa por Cosmic Lightning; no constituye prueba de autorización de Liquid AI. |
+| Liquid AI → AtomicChat Uncensored GGUF | La ficha de AtomicChat identifica LiquidAI/LFM3-1.7B como modelo base y declara licencia `other`; el informe previo de LEONES registra su modificación/ablación y cuantización. | Ejemplo distinto de derivado LFM3: no confundir con Cosmic Lightning ni usar su hash/benchmark como prueba de identidad del GGUF de bartowski. |
+
+**Límite de verificación:** el hash completo de Cosmic/LiquidAI no se ha descargado de forma independiente en esta auditoría web; se cita el cotejo externo publicado y se conserva como verificación pendiente repetir localmente contra ambos repositorios fijados por commit. El expediente local anterior verificó hashes de los archivos descargados frente a los hashes publicados por sus propios repositorios, pero eso por sí solo no compara Cosmic contra LiquidAI.
+
+### 12.2 Licencias: texto aplicable y efecto
+
+**LiquidAI/LFM3-1.7B — LFM Open License v1.0.** La ficha oficial de Liquid AI identifica esta licencia. No es Apache-2.0 sin cambios: deriva de su texto, pero condiciona las concesiones de copyright y patentes a la limitación comercial de la sección 5. El umbral definido es USD 10 millones de ingresos anuales de la entidad legal (incluye entidades vinculadas según la definición contractual). Para entidades que alcanzan/superan el umbral, el uso comercial no queda autorizado por esa licencia gratuita; Liquid AI indica que deben obtener licencia comercial. Investigación/no comercial y las organizaciones sin ánimo de lucro cualificadas tienen tratamiento específico.
+
+**Redistribución y derivados (sección 4).** La licencia permite redistribuir el Work o derivados en cualquier medio y en forma Source u Object, con o sin modificaciones, siempre que se entregue copia de la licencia, se indiquen los archivos modificados y se conserven avisos de copyright, patentes, marcas y atribución, además de los avisos NOTICE si existen. La definición de Object form incluye transformaciones mecánicas o traducciones a otros medios. Por tanto, una conversión de pesos a GGUF no borra automáticamente las condiciones upstream.
+
+La sección 4 permite añadir términos propios o diferentes para las modificaciones o para un derivado como conjunto, **pero condiciona expresamente esa posibilidad a que el uso, reproducción y distribución del Work upstream sigan cumpliendo la LFM Open License**. No equivale a poder sustituir la licencia upstream del checkpoint original por Apache-2.0 ni a eliminar sus condiciones para los receptores.
+
+**Cosmic Lightning — declaración Apache-2.0.** La ficha de Hugging Face etiqueta el repositorio como `license:apache-2.0`. Hugging Face explica que ese campo es metadato de la model card introducido por quien mantiene el repositorio; permite declarar licencias estándar o personalizadas. El campo no es una revisión de titularidad, no autentica la cadena de derechos y no constituye consentimiento del titular upstream. En la descarga local inventariada para Cosmic no apareció un archivo LICENSE/NOTICE entre los ficheros registrados; hay que volver a comprobar el árbol completo de la revisión fijada antes de afirmar de forma absoluta que no existe ningún aviso.
+
+**bartowski GGUF — declaración Apache-2.0.** La ficha del repositorio de conversión también declara Apache-2.0, pero su propia metadata lo vincula como cuantización de Cosmic Lightning. La etiqueta del repositorio no puede otorgar más derechos sobre los pesos de los que tenía el proveedor de origen. Para el contenido de los pesos cuantizados, la licencia upstream sigue siendo una cuestión material. El código, scripts, calibration corpus, imatrix, layouts y otros materiales auxiliares podrían tener derechos/licencias distintos; deben analizarse por separado y no confundirse con los pesos.
+
+### 12.3 ¿Se ha demostrado el relicenciamiento?
+
+| Pregunta de auditoría | Resultado |
+|---|---|
+| ¿Cosmic declara Apache-2.0? | Sí, como metadata del Hub. |
+| ¿LFM3 oficial declara LFM Open v1.0? | Sí, en la ficha oficial de Liquid AI. |
+| ¿Hay evidencia pública de que los pesos sean byte a byte idénticos? | Sí: un análisis independiente publica el mismo SHA-256 abreviado para ambos archivos. Falta reproducir aquí el hash completo. |
+| ¿Se ha identificado una modificación de los pesos Cosmic respecto a LFM3? | No. La evidencia disponible apunta a identidad binaria, no a fine-tuning. |
+| ¿Se ha encontrado autorización expresa de Liquid AI para Apache-2.0? | No. |
+| ¿Se ha encontrado contrato, excepción o aclaración pública del titular? | No localizado. |
+| ¿La metadata Apache del GGUF de bartowski resuelve la cuestión? | No. Es una declaración del repositorio derivado, no una autorización del titular upstream. |
+| ¿Puede declararse probado un incumplimiento jurídico? | No con la evidencia actual; faltaría descartar autorización privada y analizar jurisdicción/hechos. |
+
+**Resultado:** relicenciamiento **no acreditado**. La declaración Apache-2.0 de Cosmic Lightning no debe aceptarse como prueba suficiente de que el checkpoint de Liquid AI pasó válidamente a Apache-2.0. La posición prudente es mantener para los pesos la LFM Open License v1.0 como licencia upstream aplicable, salvo que Cosmic Stack aporte una autorización válida de Liquid AI o demuestre otra procedencia independiente.
+
+### 12.4 Qué evidencia resolvería la cuestión
+
+1. **Respuesta escrita de Liquid AI** que confirme que autorizó a Cosmic Stack a redistribuir exactamente ese checkpoint bajo Apache-2.0, con alcance sobre pesos y derivados/quantizaciones, fecha efectiva y titular/entidad autorizada.
+2. **Contrato o licencia separada** entre Liquid AI y Cosmic Stack, o prueba de que Cosmic Stack es titular/cesionario con facultad de relicenciar esos pesos.
+3. **Expediente de Cosmic Stack**: origen de los pesos, proceso de entrenamiento/fine-tuning (si lo hubo), hashes previos/posteriores, autoría, avisos y motivo documentado de la declaración Apache.
+4. **Revisión completa del árbol Git/Hugging Face** de ambos repositorios, incluidos commits históricos, LICENSE, NOTICE, README y metadatos por revisión.
+5. **Confirmación del mantenedor de bartowski** sobre la fuente exacta de los pesos, versión de llama.cpp/convertidor, tratamiento de la licencia upstream y si recibió autorización adicional. La declaración de bartowski por sí sola no sustituye el permiso del titular.
+6. **Reproducir los SHA-256 completos** de `model.safetensors` en los commits concretos de LiquidAI y Cosmic. Si son idénticos, se confirma copia binaria; si difieren, comparar tensor por tensor y establecer si existe fine-tuning real.
+
+### 12.5 Recomendación operativa para LEONES
+
+- Mantener los artefactos descargados para investigación y pruebas internas, conservando sus revisiones y hashes.
+- No redistribuir ni publicar mirrors de los pesos/quantizaciones con una etiqueta Apache-2.0 como si el relicenciamiento estuviera verificado.
+- Para redistribución, tratar provisionalmente los pesos como sujetos a LFM Open v1.0 y conservar licencia, atribución y NOTICE upstream, hasta aclaración.
+- No describir Cosmic Lightning como un nuevo modelo entrenado por Cosmic Stack: con la evidencia actual es más exacto denominarlo **republicación de LFM3-1.7B con metadata Apache-2.0 no acreditada**, pendiente de respuesta del autor.
+- Mantener la licencia del código de conversión y de los sidecars separada de la licencia de los pesos.
+- Si se usa en un producto comercial, comprobar la definición de entidad legal y el umbral de ingresos de LFM Open v1.0; solicitar asesoramiento jurídico para una decisión de distribución/comercialización.
+
+### 12.6 Fuentes consultadas
+
+- Liquid AI, ficha oficial LFM3-1.7B (identifica LFM Open License v1.0): https://huggingface.co/LiquidAI/LFM3-1.7B
+- Liquid AI, texto completo y FAQ LFM Open License v1.0: https://www.liquid.ai/lfm-license
+- Cosmic Lightning, ficha y metadata declarada: https://huggingface.co/cosmicstack/cosmic-lightning
+- Bartowski, conversión GGUF y metadata de base_model/licencia: https://huggingface.co/bartowski/cosmicstack_cosmic-lightning-GGUF
+- David Hendrickson (@TeksEdge), observación pública del SHA-256 coincidente y discrepancia de licencias: https://teapawt.org/TeksEdge
+- Hugging Face, documentación de model cards y metadatos de licencia: https://huggingface.co/docs/hub/model-cards
+- Hugging Face, documentación de licencias de repositorios: https://huggingface.co/docs/hub/main/repositories-licenses
+- Local AI Release Board, registro de lanzamiento 2026-10-29 y clasificación como modelo recién publicado/no verificado: https://recentmodel.com/models/cosmicstack/cosmic-lightning/
+
+*Nota: este apartado es una auditoría técnica/documental de procedencia y licencias, no asesoramiento jurídico. No se ha recibido respuesta de Liquid AI, Cosmic Stack ni bartowski durante esta investigación.*
