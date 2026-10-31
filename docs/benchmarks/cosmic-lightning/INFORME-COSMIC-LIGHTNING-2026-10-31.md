@@ -1,7 +1,7 @@
 # Cosmic Lightning — informe de descarga, procedencia y preparación experimental
 
 **Fecha:** 2026-10-31  
-**Estado:** artefactos descargados y auditados localmente; ejecución y benchmark de inferencia pendientes.  
+**Estado:** artefactos descargados y auditados localmente; benchmark propio de Cosmic Lightning pendiente. Se incorpora como referencia de rendimiento el ensayo previo LFM3-1.7B Uncensored, sin atribuirlo como medición directa de Cosmic Lightning.  
 **Equipo de referencia:** Ubuntu en MSI Thin 15 B12UC, Intel Core i7-12650H, 16 CPU lógicas, 14.8 GiB RAM, NVIDIA RTX 3050 Laptop GPU con 4 GiB VRAM.
 
 ## 1. Resumen ejecutivo
@@ -165,7 +165,22 @@ En la sesión se generó/consultó el resumen de metadatos y repositorio:
 
 `resumen-repositorio.txt`
 
-La licencia declarada en la ficha de Hugging Face es **Apache License 2.0**. Antes de redistribuir pesos o publicar derivados, se recomienda conservar junto al artefacto:
+### Distinción obligatoria entre licencias
+
+No deben tratarse como una única licencia ni propagarse automáticamente entre repositorios:
+
+| Artefacto / repositorio | Licencia declarada | Qué significa para este expediente |
+|---|---|---|
+| `cosmicstack/cosmic-lightning` | **Apache License 2.0** (metadatos de Hugging Face) | Es la licencia que declara la ficha del repositorio Cosmic Lightning. Debe conservarse su LICENSE/avisos y revisión exacta. |
+| Modelo base `LiquidAI/LFM3-1.7B` | **LFM Open License v1.0** | No es Apache 2.0 estándar: aunque está basada en Apache 2.0, incluye una restricción de uso comercial para entidades con ingresos anuales superiores a 10 millones USD, además de obligaciones de atribución y conservación de avisos. |
+| `AtomicChat/LFM3-1.7B-Uncensored-GGUF` | **LFM Open License v1.0** | La ficha identifica explícitamente el modelo base LiquidAI y dice que la ablación de seguridad y cuantización se distribuyen bajo la licencia base. No es el mismo artefacto que el GGUF de bartowski. |
+| `bartowski/cosmicstack_cosmic-lightning-GGUF` | **No verificada independientemente en esta auditoría** | No se debe asumir que la conversión tiene Apache 2.0 por el mero hecho de que la ficha del modelo original lo indique, ni atribuirle LFM Open sin inspeccionar su LICENSE y procedencia. |
+
+**Alerta de procedencia/licencia:** si la coincidencia uno-a-uno de pesos/hash que se está observando implica que Cosmic Lightning incorpora exactamente los pesos de LiquidAI/LFM3-1.7B, la etiqueta Apache-2.0 de la ficha Cosmic no resuelve por sí sola el posible conflicto con la licencia LFM Open v1.0 del modelo base. Hace falta determinar quién publicó los pesos, qué derechos tenía para relicenciarlos y qué LICENSE/NOTICE acompañan a la revisión concreta. La similitud arquitectónica o el nombre LFM3 no bastan para establecer identidad; la identidad binaria de los pesos sí es un indicio material y debe documentarse con hashes comparativos y sus rutas de origen. Hasta aclararlo, marcar la situación como **licencia declarada Apache-2.0 / procedencia upstream por aclarar**, no como una conclusión jurídica de que Apache prevalece.
+
+La LFM Open License v1.0 está basada en Apache 2.0, pero añade una condición comercial significativa: la licencia gratuita para uso comercial deja de aplicar si los ingresos anuales de la empresa superan USD 10 millones; para continuar se requiere licencia comercial de Liquid AI. También exige conservar avisos y atribución. No es copyleft y no impone publicar modificaciones.
+
+Antes de redistribuir pesos o publicar derivados, se recomienda conservar junto al artefacto:
 - copia de la licencia aplicable y avisos de copyright;
 - README y ficha de origen;
 - identificador de revisión exacto;
@@ -176,7 +191,36 @@ La licencia declarada en la ficha de Hugging Face es **Apache License 2.0**. Ant
 
 La licencia de la conversión GGUF y las obligaciones de redistribución deben revisarse por separado en el repositorio de bartowski, sin inferir que la ficha del modelo original resuelve automáticamente todos los términos de la conversión.
 
-## 7. Consideraciones de ejecución en el equipo de referencia
+## 7. Referencia de rendimiento heredada: LFM3-1.7B
+
+Se recuperó el informe previo de LEONES [LFM3-1.7B Uncensored — pruebas en Ubuntu](../subprojects/LFM3/README.md). Este dato permite contextualizar el rendimiento esperado de la familia/los pesos relacionados, pero **no se registra como benchmark ejecutado de Cosmic Lightning**.
+
+### Resultado experimental previo
+
+| Campo | Valor |
+|---|---|
+| Modelo probado | LFM3-1.7B Uncensored |
+| Repositorio | `AtomicChat/LFM3-1.7B-Uncensored-GGUF` |
+| Artefacto | `LFM3-1.7B-Uncensored-AD-Q4_K_M.gguf` |
+| Motor | llama.cpp CUDA, llama-bench |
+| Build | llama.cpp 0.8.0-dev, build 1; commit `c3df4b7` |
+| Equipo | MSI Thin 15 B12UC, i7-12650H, 14.8 GiB RAM, RTX 3050 Laptop 4 GiB |
+| Parámetros | `-ngl 99 -t 6 -p 512 -n 128 -r 3` |
+| Prefill | **4.326,68 ± 254,02 tok/s** (PP512) |
+| Generación | **117,29 ± 0,27 tok/s** (TG128) |
+| Estado | 3 repeticiones; ejecución confirmada |
+
+En prueba interactiva separada con `llama-cli`, se observaron 99,8–104,4 tok/s de generación. El prefill interactivo varió entre 163,5 y 1.797,1 tok/s según la interacción, por lo que no debe mezclarse con PP512.
+
+### Qué se puede y qué no se puede inferir
+
+- El usuario ha indicado que la comparación de hashes/pesos muestra coincidencia uno-a-uno con LFM3-1.7B. Se incorpora esa observación como premisa de procedencia comunicada, pendiente de adjuntar al expediente la tabla comparativa de SHA-256 y los comandos que la generaron.
+- El ensayo de 117,29 tok/s corresponde específicamente a **AtomicChat Uncensored AD-Q4_K_M**, que su propia ficha describe como pesos LFM3 modificados mediante ablación de seguridad (LoRA de rango 1 horneada, W*=2.0) y después cuantizados con el esquema AD.
+- Por tanto, no es idéntico al GGUF de bartowski por el mero hecho de compartir el modelo base o pesos upstream. Cambian el proceso de modificación, cuantización, imatrix y posiblemente el formato/metadata del artefacto.
+- Se conserva **117,29 tok/s PP512 4.326,68 tok/s** como referencia histórica de LFM3 en este equipo y runtime, no como resultado medido de Cosmic Lightning ni como promesa de que cualquier cuantización de Cosmic obtendrá esa velocidad.
+- Para trasladar formalmente la cifra a Cosmic Lightning habría que verificar igualdad SHA-256 del archivo GGUF exacto, o comparar tensor por tensor después de normalizar metadatos, y ejecutar al menos una repetición cruzada con el mismo binario y protocolo. Si el hash del GGUF completo es idéntico, la expectativa de rendimiento del artefacto es muy alta; si solo coincide el checkpoint base, no.
+
+## 8. Consideraciones de ejecución en el equipo de referencia
 
 Hardware de referencia: RTX 3050 Laptop con 4 GiB de VRAM y 14.8 GiB de RAM del sistema.
 
@@ -190,7 +234,7 @@ La cuantización IQ3_XXS (780.9 MB de archivo) es una candidata razonable para l
 
 La primera ejecución debería usar contexto modesto y generación corta; posteriormente se puede aumentar contexto y offload de GPU en pasos, registrando consumo y errores.
 
-## 8. Plan de validación pendiente
+## 9. Plan de validación pendiente
 
 | Fase | Estado | Qué debe registrarse |
 |---|---|---|
@@ -203,7 +247,7 @@ La primera ejecución debería usar contexto modesto y generación corta; poster
 | Evaluación cualitativa | Pendiente | tareas reproducibles, rúbrica y respuestas completas |
 | Registro en LEONES | Este informe | actualizar cuando existan resultados reales |
 
-## 9. Plantilla mínima para el futuro benchmark
+## 10. Plantilla mínima para el futuro benchmark
 
 Para cada ejecución, registrar:
 - fecha y hora;
@@ -219,15 +263,19 @@ Para cada ejecución, registrar:
 - resultado: éxito, OOM, error de arquitectura o salida incorrecta;
 - texto generado y evaluación.
 
-## 10. Conclusión de esta fase
+## 11. Conclusión de esta fase
 
 La descarga del modelo original y de la colección GGUF se completó. La revisión del repositorio original está fijada, los tamaños de las cuantizaciones están inventariados y los hashes disponibles fueron contrastados con Hugging Face.
 
-**No hay aún resultados de inferencia medidos.** La siguiente etapa es identificar el runtime compatible, comprobar carga en el Ubuntu de referencia y ejecutar un benchmark reproducible. Las cifras de rendimiento y calidad se incorporarán a este informe únicamente después de obtenerlas experimentalmente.
+**No hay aún resultados de inferencia medidos directamente sobre Cosmic Lightning.** Sí existe una referencia LFM3 previa en el mismo equipo: 4.326,68 ± 254,02 tok/s de PP512 y 117,29 ± 0,27 tok/s de TG128, medida sobre AtomicChat Uncensored AD-Q4_K_M con llama.cpp CUDA. No debe presentarse como resultado propio de Cosmic hasta confirmar identidad del artefacto GGUF exacto. La distinción Apache-2.0 / LFM Open v1.0 / licencia GGUF de conversión no verificada queda incorporada como asunto de procedencia prioritario.
 
 ## Referencias
 
 - Modelo original: https://huggingface.co/cosmicstack/cosmic-lightning
 - Revisión original: `b5c2c76e95397a0b73cb618a2ec506a755f2832d`
 - Conversión GGUF: https://huggingface.co/bartowski/cosmicstack_cosmic-lightning-GGUF
+- LFM3-1.7B Uncensored benchmark LEONES: https://github.com/robertosantosx2/LEONES/blob/main/docs/subprojects/LFM3/README.md
+- LFM3-1.7B upstream y licencia: https://huggingface.co/LiquidAI/LFM3-1.7B
+- Explicación oficial LFM Open License v1.0: https://www.liquid.ai/lfm-license
+- AtomicChat Uncensored GGUF y licencia declarada: https://huggingface.co/AtomicChat/LFM3-1.7B-Uncensored-GGUF
 - Expediente local de hashes: `~/modelos/cosmic-lightning/expediente-licencia/SHA256SUMS-COMPLETO.txt`
