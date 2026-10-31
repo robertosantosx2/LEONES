@@ -10,6 +10,7 @@ Los subproyectos amplían LEONES sin convertirlos en dependencias obligatorias d
 | ODS | despliegue e instalación del stack local | [`ODS/README.md`](ODS/README.md) | [`../integrations/ODS/README.md`](../integrations/ODS/README.md) |
 | Magnitude | runtime/agente local y coding | [`Magnitude/README.md`](Magnitude/README.md) | [`../integrations/Magnitude/README.md`](../integrations/Magnitude/README.md) |
 | Buddy | harness/agente personal file-first | [`buddy/README.md`](buddy/README.md) | [`../AGENT_HARNESSES.md`](../AGENT_HARNESSES.md) |
+| Open-dCoder | modelo de difusión de texto y evaluación local | [`Open-dCoder/README.md`](Open-dCoder/README.md) | benchmark local RTX 3050; evidencia inicial |
 
 ### Piezas relacionadas
 
@@ -44,6 +45,14 @@ LLMFit nunca se considera una medición propia: sus resultados permanecen como `
 **Papel:** runtime/agente local y ejecución de tareas agentivas, especialmente coding.
 
 [`Magnitude/README.md`](Magnitude/README.md) → [`../integrations/Magnitude/README.md`](../integrations/Magnitude/README.md) → [`../sources/MAGNITUDE.md`](../sources/MAGNITUDE.md).
+
+## Open-dCoder
+
+**Papel:** ejecución y evaluación local de modelos de difusión de texto, diferenciando posiciones de salida/s de tokens/s autoregresivos.
+
+[`Open-dCoder/README.md`](Open-dCoder/README.md) → entorno Ubuntu → ejecución GPU → validación funcional → benchmark reproducible.
+
+El primer registro corresponde a una prueba funcional medida en RTX 3050 Laptop. Sus cifras son exploratorias y no constituyen todavía un benchmark estadístico ni una puntuación de inteligencia comparable.
 
 ## Buddy
 
