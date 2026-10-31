@@ -1,9 +1,17 @@
 # Open-dCoder — ejecución local y benchmark inicial
 
-**Estado:** ejecutado correctamente en hardware local; benchmark exploratorio, pendiente de repetición estadística.  
+**Estado:** ejecutado localmente; incluye pruebas iniciales V1, benchmark repetido V2 y batching real V3. Evidencia específica de una tarea, no evaluación general de inteligencia.  
 **Fecha de las pruebas:** 2026-10-31.  
 **Equipo:** Ubuntu, MSI Thin 15 B12UC, Intel Core i7-12650H, 16 hilos lógicos, 14.8 GiB RAM, NVIDIA RTX 3050 Laptop de 4 GiB VRAM.  
 **Repositorio de documentación:** [LEONES](https://github.com/robertosantosx2/LEONES).
+
+## Navegación de resultados y experimentos
+
+- [Resumen ejecutivo y mapa de todos los experimentos](EXECUTIVE-SUMMARY.md)
+- [Cuaderno detallado V1/V2: metodología, validador, resultados y auditoría](EXPERIMENT-2026-10-31.md)
+- [Experimento V3: batching real, nueve configuraciones y auditoría de resultados](EXPERIMENT-V3-BATCH-2026-10-31.md)
+
+V2 proporciona el baseline de secuencia única; V3 amplía la medición a batches reales de 1, 2 y 4 secuencias. El resumen ejecutivo enlaza todos los registros y distingue las mediciones históricas de las referencias vigentes.
 
 ## 1. Objetivo y alcance
 
