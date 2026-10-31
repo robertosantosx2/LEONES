@@ -10,7 +10,7 @@ Los subproyectos amplían LEONES sin convertirlos en dependencias obligatorias d
 | ODS | despliegue e instalación del stack local | [`ODS/README.md`](ODS/README.md) | [`../integrations/ODS/README.md`](../integrations/ODS/README.md) |
 | Magnitude | runtime/agente local y coding | [`Magnitude/README.md`](Magnitude/README.md) | [`../integrations/Magnitude/README.md`](../integrations/Magnitude/README.md) |
 | Buddy | harness/agente personal file-first | [`buddy/README.md`](buddy/README.md) | [`../AGENT_HARNESSES.md`](../AGENT_HARNESSES.md) |
-| Open-dCoder | modelo de difusión de texto y evaluación local | [`Open-dCoder/README.md`](Open-dCoder/README.md) | benchmark local RTX 3050; evidencia inicial |
+| Open-dCoder | modelo de difusión de texto y evaluación local | [`Open-dCoder/README.md`](Open-dCoder/README.md) · [`Open-dCoder/EXECUTIVE-SUMMARY.md`](Open-dCoder/EXECUTIVE-SUMMARY.md) | V1/V2 single-sequence + V3 batch real en RTX 3050 |
 
 ### Piezas relacionadas
 
@@ -50,9 +50,9 @@ LLMFit nunca se considera una medición propia: sus resultados permanecen como `
 
 **Papel:** ejecución y evaluación local de modelos de difusión de texto, diferenciando posiciones de salida/s de tokens/s autoregresivos.
 
-[`Open-dCoder/README.md`](Open-dCoder/README.md) → entorno Ubuntu → ejecución GPU → validación funcional → benchmark reproducible.
+[`Open-dCoder/EXECUTIVE-SUMMARY.md`](Open-dCoder/EXECUTIVE-SUMMARY.md) → [`Open-dCoder/README.md`](Open-dCoder/README.md) → [`Open-dCoder/EXPERIMENT-2026-10-31.md`](Open-dCoder/EXPERIMENT-2026-10-31.md) (V1/V2) → [`Open-dCoder/EXPERIMENT-V3-BATCH-2026-10-31.md`](Open-dCoder/EXPERIMENT-V3-BATCH-2026-10-31.md) (batch real).
 
-El primer registro corresponde a una prueba funcional medida en RTX 3050 Laptop. Sus cifras son exploratorias y no constituyen todavía un benchmark estadístico ni una puntuación de inteligencia comparable.
+La evidencia actual incluye un benchmark repetido V2 de secuencia única y nueve configuraciones V3 de batching real, todas medidas en RTX 3050 Laptop. Son resultados de una tarea factorial, no una puntuación de inteligencia general. Los artefactos originales V3 CSV/JSONL/JSON, el log y el runner permanecen identificados en el informe como archivos locales pendientes de incorporación íntegra al repositorio.
 
 ## Buddy
 
