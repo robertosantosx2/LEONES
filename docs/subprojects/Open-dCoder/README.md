@@ -142,19 +142,15 @@ Son mediciones exploratorias separadas; no deben mezclarse con la tabla principa
 5. No se ha realizado comparación equivalente con llama.cpp, TensorFold, Transformers estándar u otros motores de difusión.
 6. No se asigna puntuación Artificial Analysis: no existe aquí una medición comparable y validada para este modelo/tarea.
 
-## 8. Próxima ronda para cerrar el benchmark
+## 8. Estado actual y siguientes pasos
 
-La siguiente iteración debe ejecutar:
-- captura de `git rev-parse HEAD`, `git status --short` y versiones exactas;
-- un calentamiento no contabilizado;
-- al menos tres repeticiones por configuración (16, 32, 64 y 128 pasos);
-- semilla fijada cuando sea aplicable y registro de la semilla;
-- mediana, mínimo, máximo y desviación;
-- pico VRAM por configuración;
-- validación sintáctica y funcional de cada salida;
-- registro de configuración efectiva de generación y resolución del aviso sobre `temperature`/`top_k`.
+La fase inicial descrita en este README se ha ampliado con dos experimentos posteriores:
+- **V2:** tres repeticiones medidas por configuración, warmup excluido y validador AST/funcional corregido. Véase el [cuaderno V1/V2](EXPERIMENT-2026-10-31.md).
+- **V3:** nueve configuraciones de batch real (1/2/4) y pasos (16/32/64), tres repeticiones por configuración. Véase el [informe V3](EXPERIMENT-V3-BATCH-2026-10-31.md).
 
-Hasta entonces, el estado de LEONES es **MEASURED — prueba funcional local inicial**, no benchmark exhaustivo ni ranking de inteligencia.
+La navegación y comparación conjunta están en el [resumen ejecutivo](EXECUTIVE-SUMMARY.md).
+
+Pendiente para cerrar la trazabilidad: incorporar los artefactos locales originales V3 (runner, CSV, JSONL, JSON y log), registrar SHA del commit Open-dLLM y manifiesto exacto de dependencias, y realizar nuevas tareas y ablaciones controladas de `temperature`/`top_k`. El estado global es **MEASURED — experimentos V1/V2/V3 sobre una tarea factorial**, no benchmark general ni ranking de inteligencia.
 
 ## 9. Referencias
 
