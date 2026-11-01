@@ -1,0 +1,4 @@
+/target/
+*.log
+*.tmp
+lab-agent-report.md
