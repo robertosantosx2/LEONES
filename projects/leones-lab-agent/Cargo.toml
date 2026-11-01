@@ -1,0 +1,14 @@
+[package]
+name = "leones-lab-agent"
+version = "0.1.0"
+edition = "2021"
+description = "Agente local de diagnóstico e investigación reproducible para LEONES"
+license = "AGPL-3.0-only"
+repository = "https://github.com/robertosantosx2/LEONES"
+readme = "README.md"
+
+[[bin]]
+name = "lab-agent"
+path = "src/main.rs"
+
+[dependencies]
