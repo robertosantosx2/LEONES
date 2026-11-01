@@ -26,6 +26,7 @@ fase → implementación → validación → aceptación
 - [`FROZEN_DECISIONS.md`](FROZEN_DECISIONS.md) — decisiones congeladas.
 - [`ROADMAP.md`](ROADMAP.md) — evolución prevista.
 - [`subprojects/REDIL-IA-distribuida/README.md`](subprojects/REDIL-IA-distribuida/README.md) — REDIL: propuesta de IA distribuida especializada por nodos, modelos candidatos, clases de hardware y plan de validación.
+- [`subprojects/TensorFold/README.md`](subprojects/TensorFold/README.md) — TensorFold: runtime de inferencia local; auditoría de memoria CUDA Qwen3.5-4B, capacidad de prompt y evidencia en RTX 3050.
 - [`subprojects/REDIL-IA-distribuida/ARQUITECTURA-VISUAL.md`](subprojects/REDIL-IA-distribuida/ARQUITECTURA-VISUAL.md) — diagrama vectorial de la arquitectura completa de REDIL y sus roles de máquina.
 - [`subprojects/REDIL-IA-distribuida/DISTRIBUTED-LLAMA-EXPERIMENTAL.md`](subprojects/REDIL-IA-distribuida/DISTRIBUTED-LLAMA-EXPERIMENTAL.md) — evaluación experimental de Distributed Llama y plan de implantación por fases; pendiente de pruebas físicas.
 - [`subprojects/REDIL-IA-distribuida/DISTRIBUTED-LLAMA-REDIL.svg`](subprojects/REDIL-IA-distribuida/DISTRIBUTED-LLAMA-REDIL.svg) — diagrama del adaptador Distributed Llama como backend opcional detrás del gateway REDIL.
