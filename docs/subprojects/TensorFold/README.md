@@ -1,9 +1,11 @@
 # TensorFold — auditoría e integración de inferencia local
 
-**Estado:** subproyecto documental; auditoría estática de regresión CUDA completada, reproducción física pendiente.  
+**Estado:** auditoría estática inicial completada; corrección de scratch diferido implementada y validada en GPU real; PR upstream #1879 abierto y pendiente de revisión/fusión.  
 **Equipo de referencia:** Ubuntu, MSI Thin 15 B12UC, Intel Core i7-12650H, 16 hilos lógicos, 14.8 GiB RAM, NVIDIA RTX 3050 Laptop 4 GiB VRAM.
 
 ## Documentación y experimentos
+
+- [Corrección CUDA con scratch diferido — implementación, validación y PR #1879 (2026-11-02)](CUDA-LAZY-SCRATCH-FIX-PR1879-2026-11-02.md) — cinco archivos modificados, 230 inserciones/28 eliminaciones, build CUDA 114/114, tests host 43/43 y ejecución en RTX 3050 4 GiB; PR abierto y pendiente de revisión/fusión.
 
 - [Auditoría profunda de la regresión de memoria CUDA en Qwen3.5-4B (2026-11-01)](CUDA-MEMORY-REGRESSION-2026-11-01.md) — commit causal, reconstrucción detallada del scratch, geometría, arena, tablas, tap ring, KV/paging, rutas opcionales, diagnóstico de admisión y plan de reproducción.
 - [Issue upstream #1827](https://github.com/ashhart/TensorFold/issues/1827) — seguimiento con mantenedores.
@@ -11,7 +13,7 @@
 
 ## Resumen técnico
 
-La capacidad máxima de filas del prompt pasó de 128 a 4096. El motor usa esa capacidad para dimensionar el scratch del arena CUDA, aunque el prompt configurado sea mucho menor.
+La auditoría inicial identificó que la capacidad máxima de filas del prompt (4096 frente a 128) inflaba la reserva anticipada de scratch. El parche posterior separa el scratch del arena de pesos y lo asigna de forma diferida según las filas requeridas, con crecimiento controlado y gestión segura de CUDA Graphs.
 
 Para el checkpoint denso `mlx-community/Qwen3.5-4B-MLX-4bit`, la reconstrucción por fórmulas estima:
 
@@ -28,9 +30,12 @@ La auditoría separa esta regresión posterior a la admisión del motor del rech
 
 - TensorFold 1.1.2 ejecutó históricamente Qwen3.5-4B en la RTX 3050: carga ~7.2 s, ~54.2 tok/s, prefill ~0.195 s y TTFT ~0.198 s.
 - Versiones posteriores 1.1.5, 1.1.6 y 1.2.0 presentaron rechazos OOM durante la investigación.
-- No se han repetido pruebas GPU para este informe.
-- No se ha modificado código ni preparado un parche.
-- La reducción de scratch es una hipótesis de diseño pendiente de auditoría de lifetimes, kernels, streams y CUDA Graphs.
+- Parche implementado en cinco archivos y publicado en PR #1879.
+- Build CUDA: 114/114 pasos correctos para sm_86 ReleaseFast.
+- Tests host: 43/43 correctos.
+- GPU real RTX 3050: ejecución hasta 512 filas; step/window byte-identical en los tamaños comparados 64/256/512; decode ≈56.5 tok/s.
+- Workspace INT8: crecimiento probado hasta 128 filas.
+- Pendiente benchmark A/B idéntico, draft:false, prompts reanudados, concurrencia y backends no CUDA.
 
 ## Regla LEONES
 
