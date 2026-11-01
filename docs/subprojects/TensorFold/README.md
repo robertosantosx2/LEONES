@@ -5,7 +5,7 @@
 
 ## Documentación y experimentos
 
-- [Corrección CUDA con scratch diferido — implementación, validación y PR #1879 (2026-11-02)](CUDA-LAZY-SCRATCH-FIX-PR1879-2026-11-02.md) — cinco archivos modificados, 230 inserciones/28 eliminaciones, build CUDA 114/114, tests host 43/43 y ejecución en RTX 3050 4 GiB; PR abierto y pendiente de revisión/fusión.
+- [Corrección CUDA con scratch diferido — implementación, validación, instalación local y PR #1879 (2026-11-02)](CUDA-LAZY-SCRATCH-FIX-PR1879-2026-11-02.md) — cinco archivos modificados, 230 inserciones/28 eliminaciones, build CUDA 114/114, tests host 43/43 y ejecución en RTX 3050 4 GiB. Incluye inventario del checkout, binario 1.1.6, toolchain, checkpoint, recursos del sistema, servicios/puertos y comandos para capturar recibos reproducibles; PR abierto y pendiente de revisión/fusión.
 
 - [Auditoría profunda de la regresión de memoria CUDA en Qwen3.5-4B (2026-11-01)](CUDA-MEMORY-REGRESSION-2026-11-01.md) — commit causal, reconstrucción detallada del scratch, geometría, arena, tablas, tap ring, KV/paging, rutas opcionales, diagnóstico de admisión y plan de reproducción.
 - [Issue upstream #1827](https://github.com/ashhart/TensorFold/issues/1827) — seguimiento con mantenedores.
