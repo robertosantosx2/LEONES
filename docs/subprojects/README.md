@@ -11,6 +11,7 @@ Los subproyectos amplían LEONES sin convertirlos en dependencias obligatorias d
 | Magnitude | runtime/agente local y coding | [`Magnitude/README.md`](Magnitude/README.md) | [`../integrations/Magnitude/README.md`](../integrations/Magnitude/README.md) |
 | Buddy | harness/agente personal file-first | [`buddy/README.md`](buddy/README.md) | [`../AGENT_HARNESSES.md`](../AGENT_HARNESSES.md) |
 | Open-dCoder | modelo de difusión de texto y evaluación local | [`Open-dCoder/README.md`](Open-dCoder/README.md) · [`Open-dCoder/EXECUTIVE-SUMMARY.md`](Open-dCoder/EXECUTIVE-SUMMARY.md) | V1/V2 single-sequence + V3 batch real en RTX 3050 |
+| TensorFold | runtime de inferencia local y auditoría de memoria CUDA | [`TensorFold/README.md`](TensorFold/README.md) · [`TensorFold/CUDA-MEMORY-REGRESSION-2026-11-01.md`](TensorFold/CUDA-MEMORY-REGRESSION-2026-11-01.md) | Qwen3.5-4B; regresión de scratch 128→4096 filas; reproducción física pendiente |
 
 ### Piezas relacionadas
 
@@ -53,6 +54,14 @@ LLMFit nunca se considera una medición propia: sus resultados permanecen como `
 [`Open-dCoder/EXECUTIVE-SUMMARY.md`](Open-dCoder/EXECUTIVE-SUMMARY.md) → [`Open-dCoder/README.md`](Open-dCoder/README.md) → [`Open-dCoder/EXPERIMENT-2026-10-31.md`](Open-dCoder/EXPERIMENT-2026-10-31.md) (V1/V2) → [`Open-dCoder/EXPERIMENT-V3-BATCH-2026-10-31.md`](Open-dCoder/EXPERIMENT-V3-BATCH-2026-10-31.md) (batch real).
 
 La evidencia actual incluye un benchmark repetido V2 de secuencia única y nueve configuraciones V3 de batching real, todas medidas en RTX 3050 Laptop. Son resultados de una tarea factorial, no una puntuación de inteligencia general. Los artefactos originales V3 CSV/JSONL/JSON, el log y el runner permanecen identificados en el informe como archivos locales pendientes de incorporación íntegra al repositorio.
+
+## TensorFold
+
+**Papel:** runtime de inferencia local y objeto de auditoría de compatibilidad/memoria en hardware limitado.
+
+[`TensorFold/README.md`](TensorFold/README.md) → [auditoría CUDA Qwen3.5-4B](TensorFold/CUDA-MEMORY-REGRESSION-2026-11-01.md) → [issue upstream #1827](https://github.com/ashhart/TensorFold/issues/1827).
+
+La auditoría estática reconstruye un incremento aproximado de 605 MiB en el scratch reservado al pasar de 128 a 4096 filas. Distingue esa reserva posterior a la admisión del rechazo temprano de pesos, cuya causa aún requiere una reproducción controlada. Las cifras son cálculos de código fuente, no nuevas mediciones físicas.
 
 ## Buddy
 
