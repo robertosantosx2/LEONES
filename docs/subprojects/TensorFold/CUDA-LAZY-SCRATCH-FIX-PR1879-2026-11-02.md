@@ -417,3 +417,242 @@ El cambio corrige el patrón de reserva anticipada de scratch para los caminos Q
 **Pendiente:** revisión y fusión upstream, benchmarks A/B rigurosos, cobertura de draft/reanudación/concurrencia y cualquier validación adicional solicitada por los mantenedores.
 
 La documentación distingue expresamente hechos medidos, resultados de tests, cálculos históricos y pruebas aún no realizadas.
+
+
+## 14. Instalación local de TensorFold y relación con el checkout de desarrollo
+
+Esta sección registra la disposición local del software para que el experimento pueda reproducirse sin confundir el binario de una versión instalada con el código fuente del PR.
+
+### 14.1 Repositorio de desarrollo
+
+El checkout utilizado para inspeccionar, modificar, compilar y validar el parche está en:
+
+```text
+~/tensorfold
+```
+
+Remotos registrados:
+
+| Nombre | URL | Función |
+|---|---|---|
+| `origin` | `https://github.com/ashhart/TensorFold.git` | Repositorio upstream |
+| `fork` | `https://github.com/robertosantosx2/TensorFold.git` | Fork donde se publicó la rama del parche |
+
+Rama de trabajo publicada:
+
+```text
+fix/qwen35-cuda-lazy-scratch
+```
+
+Commit validado:
+
+```text
+14f6500d1fa43e113a5c28493ea6ea13b0ae7f67
+```
+
+El commit contiene los cinco archivos descritos en la sección 5. La compilación CUDA y las pruebas host indicadas en este informe se realizaron desde el árbol de desarrollo `~/tensorfold`; no se deben atribuir automáticamente esos resultados a un binario precompilado instalado por separado.
+
+Comprobaciones locales útiles:
+
+```bash
+cd ~/tensorfold
+
+# Identidad del checkout, rama y estado de trabajo
+git status --short --branch
+git branch --show-current
+git log -1 --format='%H%n%s'
+
+# Remotos y relación con upstream/fork
+git remote -v
+
+# Resumen exacto del parche publicado
+git show --stat --oneline 14f6500d1fa43e113a5c28493ea6ea13b0ae7f67
+
+# Comprobar el diff del commit
+git show --format= --check 14f6500d1fa43e113a5c28493ea6ea13b0ae7f67
+```
+
+### 14.2 Binario instalado de TensorFold
+
+Además del checkout de desarrollo, el historial local registra una instalación versionada de TensorFold 1.1.6:
+
+```text
+~/.local/opt/tensorfold-1.1.6-linux-x86_64/bin/tensorfold-native
+```
+
+Esta ruta corresponde al binario instalado de la versión 1.1.6 y debe tratarse como una instalación independiente del ejecutable generado desde la rama del PR.
+
+Para inventariarlo sin asumir que el binario sigue presente:
+
+```bash
+TF_BIN="$HOME/.local/opt/tensorfold-1.1.6-linux-x86_64/bin/tensorfold-native"
+
+if [ -x "$TF_BIN" ]; then
+    ls -lh "$TF_BIN"
+    "$TF_BIN" --version 2>&1 || true
+    "$TF_BIN" --help | head -80
+else
+    echo "No se encuentra el binario registrado: $TF_BIN"
+fi
+```
+
+**Precaución de trazabilidad:** no usar el nombre de versión 1.1.6 para identificar el binario compilado con el parche. Para una repetición del experimento hay que registrar explícitamente si se ejecutó el binario instalado o el artefacto recién compilado desde `~/tensorfold`, junto con su ruta y hash.
+
+### 14.3 Historial de versiones que motivó la investigación
+
+El historial del experimento contiene estos hitos:
+
+| Versión | Evidencia registrada | Interpretación |
+|---|---|---|
+| TensorFold 1.1.2 | Ejecución histórica de Qwen3.5-4B en la RTX 3050: carga ≈7.2 s, decode ≈54.2 tok/s, prefill ≈0.195 s y TTFT ≈0.198 s | Referencia histórica funcional en el mismo equipo; no es una prueba A/B contemporánea |
+| TensorFold 1.1.4 | Primera versión publicada que incorporó el cambio upstream de chunks de prompt de hasta 4096 filas, según la auditoría del commit | Punto de introducción del cambio de arquitectura de prompt |
+| TensorFold 1.1.5 | Se registró rechazo de memoria al intentar cargar Qwen3.5-4B; pesos ≈2.8 GiB frente a presupuesto CUDA ≈2.6 GiB | Evidencia de fallo de admisión en esa configuración; no demuestra por sí sola que el scratch fuera la causa |
+| TensorFold 1.1.6 | Se registraron nuevos rechazos OOM durante la investigación; binario local versionado en `~/.local/opt/tensorfold-1.1.6-linux-x86_64/` | Versión instalada que conviene mantener separada del checkout parcheado |
+| TensorFold 1.2.0 | También se registraron rechazos OOM durante la investigación | Requiere reproducción controlada para determinar el punto exacto de fallo |
+| Checkout con PR #1879 | Build CUDA 114/114, tests host 43/43 y ejecución real en RTX 3050 hasta 512 filas | Evidencia directa del código parcheado, no de un release publicado |
+
+Las cifras de 1.1.2 son mediciones históricas del usuario. No deben compararse como benchmark A/B concluyente con los ≈56.5 tok/s de la ejecución del parche: no se ha demostrado que ambos registros usaran exactamente el mismo protocolo, contexto, estado térmico, estado de VRAM, warmup, número de repeticiones y binario.
+
+### 14.4 Toolchain CUDA y Zig
+
+Toolchain registrado para la compilación de la rama:
+
+| Componente | Versión/ruta |
+|---|---|
+| CUDA Toolkit | 13.4.92 |
+| Compilador CUDA | `/usr/local/cuda/bin/nvcc` |
+| Driver NVIDIA | 580.178.04 |
+| CUDA reportado por driver | 13.0 |
+| GPU target | `sm_86` |
+| Optimización Zig | `ReleaseFast` |
+| Zig | Build system Zig del checkout; la versión exacta del ejecutable Zig no quedó consignada en el recibo actual |
+
+Para completar el inventario en una futura repetición:
+
+```bash
+zig version
+command -v zig
+/usr/local/cuda/bin/nvcc --version
+nvidia-smi
+uname -a
+lsb_release -a 2>/dev/null || cat /etc/os-release
+```
+
+No se debe inventar una versión exacta de Zig a partir del éxito de `zig build`; el dato quedó pendiente de captura.
+
+### 14.5 Checkpoint local y caché Hugging Face
+
+El snapshot utilizado quedó almacenado bajo la caché estándar de Hugging Face:
+
+```text
+~/.cache/huggingface/hub/models--mlx-community--Qwen3.5-4B-MLX-4bit/snapshots/32f3e8ecf65426fc3306969496342d504bfa13f3
+```
+
+Archivo principal:
+
+```text
+model.safetensors
+```
+
+Tamaño registrado: 3,034,300,695 bytes. El snapshot ID es el identificador de revisión de contenido registrado en la caché; debe anotarse en toda repetición, incluso si el repositorio HF publica después una revisión nueva.
+
+Comprobaciones:
+
+```bash
+MODEL="$HOME/.cache/huggingface/hub/models--mlx-community--Qwen3.5-4B-MLX-4bit/snapshots/32f3e8ecf65426fc3306969496342d504bfa13f3"
+
+if [ -d "$MODEL" ]; then
+    du -sh "$MODEL"
+    stat -c '%n %s bytes' "$MODEL/model.safetensors"
+    sha256sum "$MODEL/model.safetensors"
+else
+    echo "No se encuentra el snapshot local registrado"
+fi
+```
+
+El hash SHA-256 no quedó registrado en el recibo original; el comando anterior permite capturarlo en una nueva ejecución. No debe rellenarse retrospectivamente con un valor supuesto.
+
+### 14.6 Servicios, puertos y aislamiento de experimentos
+
+En el último inventario disponible no había un servidor TensorFold activo en los puertos 8080 ni 18084. Este dato es una observación histórica, no una garantía sobre el estado actual del equipo.
+
+Antes de repetir pruebas, inspeccionar procesos y sockets:
+
+```bash
+pgrep -a -f 'tensorfold|llama-server|llama.cpp' || true
+ss -ltnp | grep -E ':(8080|18084)\\b' || true
+nvidia-smi
+```
+
+El equipo mantiene otros entornos de inferencia local (entre ellos ODS/Hermes y servidores llama.cpp en experimentos separados). No se debe detener, reconfigurar ni reemplazar el `llama-server` por defecto para ejecutar este ensayo. Usar un puerto de prueba libre y documentarlo en el recibo de cada repetición.
+
+No se ha registrado en este informe un puerto de servicio utilizado durante la validación CUDA del PR; por ello no se atribuye uno.
+
+### 14.7 Inventario de espacio y memoria del sistema
+
+El historial local registra un disco raíz de aproximadamente 937 GB, con unos 674 GB libres en una captura anterior. También registra un swapfile `/swap32.img` de 32 GB; el antiguo `/swap.img` de 4 GB fue retirado/deshabilitado. El uso de swap variaba entre capturas y llegó a aproximadamente 11 GB durante descargas el 2026-10-26.
+
+Estos valores son históricos y no describen necesariamente el estado del sistema el día de una futura prueba. Para un recibo reproducible, capturar:
+
+```bash
+free -h
+swapon --show
+df -h /
+lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINTS
+```
+
+La VRAM disponible es el límite inmediato de este caso, pero la RAM, el swap y el espacio libre pueden afectar la carga del checkpoint, la compilación y el comportamiento del sistema durante pruebas largas.
+
+### 14.8 Plantilla de recibo para una repetición local
+
+Guardar junto a cada resultado el siguiente inventario, completado con los valores observados en esa ejecución:
+
+```bash
+cd ~/tensorfold
+
+{
+  echo "=== FECHA ==="
+  date --iso-8601=seconds
+  echo "=== CHECKOUT ==="
+  pwd
+  git status --short --branch
+  git log -1 --format='%H%n%s'
+  git remote -v
+  echo "=== ZIG ==="
+  zig version
+  echo "=== CUDA ==="
+  /usr/local/cuda/bin/nvcc --version
+  echo "=== GPU ==="
+  nvidia-smi
+  echo "=== SISTEMA ==="
+  uname -a
+  cat /etc/os-release
+  free -h
+  swapon --show
+  df -h /
+  echo "=== PROCESOS Y PUERTOS ==="
+  pgrep -a -f 'tensorfold|llama-server|llama.cpp' || true
+  ss -ltnp | grep -E ':(8080|18084)\\b' || true
+  echo "=== MODELO ==="
+  MODEL="$HOME/.cache/huggingface/hub/models--mlx-community--Qwen3.5-4B-MLX-4bit/snapshots/32f3e8ecf65426fc3306969496342d504bfa13f3"
+  stat -c '%n %s bytes' "$MODEL/model.safetensors" 2>&1 || true
+  sha256sum "$MODEL/model.safetensors" 2>&1 || true
+} 2>&1 | tee "local-environment-$(date +%Y%m%d-%H%M%S).log"
+```
+
+Este recibo permite diferenciar una regresión del código de diferencias de versión, estado de GPU, ocupación de VRAM, checkpoint o toolchain.
+
+### 14.9 Límites de lo que se conoce de la instalación
+
+Se conserva deliberadamente esta distinción:
+
+- Está registrada la ruta del checkout, los remotos, la rama y el commit publicado.
+- Está registrada la ruta del binario instalado TensorFold 1.1.6.
+- Está registrado el snapshot del modelo y el tamaño de `model.safetensors`.
+- Están registradas las versiones CUDA, driver, GPU y sistema usadas en la validación.
+- No se dispone en el recibo actual de la versión exacta de Zig.
+- No se conserva el SHA-256 original del checkpoint.
+- No se ha fijado un puerto de servidor para la ejecución CUDA del PR.
+- El estado de procesos, puertos, VRAM, swap y disco cambia con el tiempo y debe capturarse de nuevo antes de cada benchmark.
+
+Esta sección evita presentar datos de inventario histórico como si fueran lecturas actuales y hace explícitos los campos que conviene registrar para elevar la reproducibilidad.
