@@ -241,11 +241,10 @@ Para estas dimensiones, los tamaños individuales ya cumplen la alineación de 2
 
 Difference:
 159,616 * (4096 - 128)
-= 633,? bytes
+= 633,356,288 bytes
 = 604.015625 MiB
-```
 
-La diferencia exacta en bytes es 633,? No se debe usar la cifra intermedia redondeada de esta línea como evidencia: la cifra canónica para el informe es **604.015625 MiB**, derivada de 159,616 × 3968 bytes. El total exacto es 633,? bytes; conviene regenerar el entero con una calculadora en una futura revisión si se requiere publicarlo en bytes.
+La diferencia exacta en bytes es **633,356,288**.
 
 ## 7. Scratch fijo de verify/decode
 
