@@ -236,7 +236,7 @@ Para estas dimensiones, los tamaños individuales ya cumplen la alineación de 2
              = 19.484375 MiB
 
 4096 rows:
-159,616 * 4096 = 654,811,136 bytes
+159,616 * 4096 = 653,787,136 bytes
                = 623.500000 MiB
 
 Difference:
