@@ -20,9 +20,6 @@ pub fn escape(input: &str) -> String {
     out
 }
 
-pub fn optional_string(value: Option<&str>) -> String {
-    value.map(escape).unwrap_or_else(|| "null".to_string())
-}
 
 #[cfg(test)]
 mod tests {
