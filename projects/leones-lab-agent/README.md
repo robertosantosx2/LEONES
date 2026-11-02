@@ -2,7 +2,7 @@
 
 Agente local autocontenido en Rust para diagnóstico, inventario de modelos y herramientas, y preparación de investigación reproducible dentro de LEONES.
 
-**Versión:** 0.2.0.  
+**Versión:** 0.3.0.  
 **Estado:** inventario local de solo lectura.  
 **Plataforma:** Linux x86_64 (objetivo inicial).  
 **Licencia:** AGPL-3.0-only.
@@ -11,7 +11,7 @@ Agente local autocontenido en Rust para diagnóstico, inventario de modelos y he
 
 - Cero crates externos: el bloque [dependencies] permanece vacío.
 - Solo biblioteca estándar de Rust (std) y código propio integrado en el repositorio.
-- Sin Python, Node.js, servicios remotos ni conexión de red en tiempo de ejecución.
+- Sin Python, Node.js ni conexión a Internet; el modo ask solo abre HTTP en loopback (127.0.0.1/localhost).
 - Sin lectura de secretos ni archivos .env.
 - Sin instalaciones, descargas, ejecución de modelos o cambios en servicios.
 - Inventario basado en evidencia: una ruta o entrada de caché no se presenta como modelo cargable o ejecutado.
@@ -55,8 +55,19 @@ El script comprueba formato, pruebas, compilación y ausencia de intérprete ELF
 | lab-agent models | Inventario de modelos/cachés conocidos |
 | lab-agent models --json | Inventario de modelos en JSON |
 | lab-agent inventory --json | Herramientas, modelos y componentes en JSON |
+| lab-agent ask [OPCIONES] PREGUNTA | Consulta un LLM local y permite herramientas de inventario de solo lectura |
 | lab-agent report [RUTA] | Genera un informe Markdown |
 | lab-agent version | Versión |
+
+## Asistente local
+
+El comando ask se conecta a un servidor compatible con OpenAI Chat Completions que escuche en loopback. No acepta HTTPS ni hosts remotos y no envía claves API. Ejemplo:
+
+    lab-agent ask --endpoint http://127.0.0.1:8080/v1/chat/completions --model Qwen3.5-4B "Resume el hardware y los modelos disponibles"
+
+El agente puede solicitar tres herramientas integradas: get_system_info, get_local_inventory y get_detected_tools. No existe herramienta de shell ni ejecución arbitraria. Las llamadas están limitadas a cuatro rondas por consulta. El servidor de inferencia debe estar iniciado por el usuario; Lab Agent no lo arranca ni carga modelos.
+
+La implementación HTTP y el parser/serializador JSON están escritos en el propio proyecto y usan exclusivamente std. Esta primera interfaz solo soporta HTTP local sin TLS; no se conecta a Gemini ni a proveedores remotos.
 
 ## Fuentes inspeccionadas
 
