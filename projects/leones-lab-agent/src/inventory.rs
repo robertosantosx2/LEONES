@@ -1,3 +1,4 @@
+use crate::detect;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -14,6 +15,12 @@ pub struct ModelRecord {
 }
 
 #[derive(Debug, Clone)]
+pub struct ToolRecord {
+    pub name: String,
+    pub path: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct ComponentStatus {
     pub name: String,
     pub installed: bool,
@@ -24,6 +31,7 @@ pub struct ComponentStatus {
 #[derive(Debug, Default)]
 pub struct Inventory {
     pub models: Vec<ModelRecord>,
+    pub tools: Vec<ToolRecord>,
     pub components: Vec<ComponentStatus>,
 }
 
@@ -44,10 +52,6 @@ fn model_format(path: &Path) -> Option<&'static str> {
     }
 }
 
-fn is_weight_file(path: &Path) -> bool {
-    model_format(path).is_some()
-}
-
 fn directory_size_and_weights(root: &Path, depth: usize) -> (u64, Vec<(PathBuf, String, u64)>) {
     let mut total = 0u64;
     let mut weights = Vec::new();
@@ -66,8 +70,8 @@ fn directory_size_and_weights(root: &Path, depth: usize) -> (u64, Vec<(PathBuf, 
         } else if path.is_file() {
             let size = fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
             total = total.saturating_add(size);
-            if is_weight_file(&path) {
-                weights.push((path.clone(), model_format(&path).unwrap_or("Unknown").to_string(), size));
+            if let Some(format) = model_format(&path) {
+                weights.push((path.clone(), format.to_string(), size));
             }
         }
     }
@@ -86,13 +90,14 @@ fn push_model(records: &mut Vec<ModelRecord>, name: String, source: &str, path: 
             bytes,
         });
     } else {
-        let formats = weights.iter().map(|(_, f, _)| f.as_str()).collect::<Vec<_>>();
-        let format = formats.first().copied().unwrap_or("unknown").to_string();
+        let mut formats = weights.iter().map(|(_, f, _)| f.as_str()).collect::<Vec<_>>();
+        formats.sort_unstable();
+        formats.dedup();
         records.push(ModelRecord {
             name,
             source: source.to_string(),
             path: path.display().to_string(),
-            format,
+            format: formats.join(","),
             state: "WEIGHTS_PRESENT".to_string(),
             bytes,
         });
@@ -169,6 +174,14 @@ fn component(name: &str, installed: bool, active: Option<bool>, detail: &str) ->
 
 pub fn collect() -> Inventory {
     let mut result = Inventory::default();
+    for tool in detect::TOOLS {
+        if let Some(path) = detect::find_executable(tool) {
+            result.tools.push(ToolRecord {
+                name: (*tool).to_string(),
+                path: path.display().to_string(),
+            });
+        }
+    }
     if let Some(home) = home() {
         scan_huggingface(&mut result.models, &home);
         let ods_found = scan_ods(&mut result.models, &home);
@@ -195,12 +208,17 @@ pub fn collect() -> Inventory {
         ));
     }
     result.models.sort_by(|a, b| (&a.source, &a.name, &a.path).cmp(&(&b.source, &b.name, &b.path)));
+    result.tools.sort_by(|a, b| a.name.cmp(&b.name));
     result
 }
 
 pub fn print_text(inventory: &Inventory) {
     println!("LEONES LAB AGENT — INVENTARIO CONSOLIDADO");
-    println!("Modelos y entradas locales: {}", inventory.models.len());
+    println!("Herramientas detectadas: {}", inventory.tools.len());
+    for tool in &inventory.tools {
+        println!("[FOUND] {}: {}", tool.name, tool.path);
+    }
+    println!("\nModelos y entradas locales: {}", inventory.models.len());
     for model in &inventory.models {
         println!(
             "[{}] {} | {} | {} | {} | {} bytes",
@@ -227,7 +245,15 @@ pub fn print_text(inventory: &Inventory) {
 
 pub fn to_json(inventory: &Inventory) -> String {
     use crate::output::json::escape;
-    let mut out = String::from("{\"schema_version\":1,\"models\":[");
+    let mut out = String::from("{\"schema_version\":1,\"tools\":[");
+    for (i, tool) in inventory.tools.iter().enumerate() {
+        if i > 0 { out.push(','); }
+        out.push_str(&format!(
+            "{{\"name\":{},\"path\":{}}}",
+            escape(&tool.name), escape(&tool.path)
+        ));
+    }
+    out.push_str("],\"models\":[");
     for (i, model) in inventory.models.iter().enumerate() {
         if i > 0 { out.push(','); }
         out.push_str(&format!(
@@ -264,6 +290,7 @@ mod tests {
         let inventory = Inventory::default();
         let json = to_json(&inventory);
         assert!(json.starts_with("{\"schema_version\":1"));
+        assert!(json.contains("\"tools\":[]"));
         assert!(json.contains("\"models\":[]"));
         assert!(json.contains("\"components\":[]"));
     }
