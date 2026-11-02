@@ -33,7 +33,7 @@ pub fn write_report(path: &str) -> Result<(), String> {
     if data.models.is_empty() {
         body.push_str("- No se han encontrado entradas de modelos en las ubicaciones inspeccionadas.\n");
     } else {
-        body.push_str("| Modelo | Origen | Formato | Evidencia | Bytes | Ruta |\n");
+        body.push_str("| Modelo | Origen | Formato | Evidencia | Bytes de pesos | Ruta |\n");
         body.push_str("|---|---|---|---|---:|---|\n");
         for model in &data.models {
             body.push_str(&format!(
