@@ -56,6 +56,7 @@ El script comprueba formato, pruebas, compilación y ausencia de intérprete ELF
 | lab-agent models --json | Inventario de modelos en JSON |
 | lab-agent inventory --json | Herramientas, modelos y componentes en JSON |
 | lab-agent ask [OPCIONES] PREGUNTA | Consulta un LLM local y permite herramientas de inventario de solo lectura |
+| lab-agent benchmark [OPCIONES] | Ejecuta llama-bench solo con autorización explícita |
 | lab-agent report [RUTA] | Genera un informe Markdown |
 | lab-agent version | Versión |
 
@@ -68,6 +69,19 @@ El comando ask se conecta a un servidor compatible con OpenAI Chat Completions q
 El agente puede solicitar tres herramientas integradas: get_system_info, get_local_inventory y get_detected_tools. No existe herramienta de shell ni ejecución arbitraria. Las llamadas están limitadas a cuatro rondas por consulta. El servidor de inferencia debe estar iniciado por el usuario; Lab Agent no lo arranca ni carga modelos.
 
 La implementación HTTP y el parser/serializador JSON están escritos en el propio proyecto y usan exclusivamente std. Esta primera interfaz solo soporta HTTP local sin TLS; no se conecta a Gemini ni a proveedores remotos.
+
+## Benchmarks supervisados
+
+El comando benchmark permite ejecutar exclusivamente llama-bench sobre un GGUF local. Primero realiza un dry-run y muestra el comando exacto; no ejecuta nada sin `--approve`:
+
+    lab-agent benchmark --model /ruta/modelo.gguf --prompt-tokens 512 --gen-tokens 128 --repetitions 3
+    lab-agent benchmark --model /ruta/modelo.gguf --approve
+
+Límites: prompt/generación hasta 4096 tokens, 1–5 repeticiones y timeout de 30–1800 segundos. Comprueba la cabecera GGUF, no usa shell, limpia el entorno del proceso y solo conserva variables técnicas explícitas (PATH, HOME, LD_LIBRARY_PATH, CUDA_VISIBLE_DEVICES, CUDA_HOME y OMP_NUM_THREADS). No pasa tokens ni claves API.
+
+Cada ejecución aprobada crea un directorio nuevo bajo `experiments/` con `manifest.json`, `stdout.json` y `stderr.log`. El estado `MEASURED` solo se asigna si el proceso termina correctamente y el JSON contiene métricas `avg_ts`, `stddev_ts` e identidad de modelo/backend/fecha. Si no se pueden validar, se conserva la evidencia como `RUN_COMPLETED_UNPARSED`, `FAILED` o `TIMEOUT`; nunca se inventan métricas.
+
+El LLM de `ask` no tiene acceso a la herramienta de benchmark. La ejecución de experimentos queda fuera del ciclo conversacional y requiere que el usuario lance el comando con `--approve`.
 
 ## Fuentes inspeccionadas
 
@@ -99,7 +113,7 @@ La estructura de `inventory --json`, `models --json` y `doctor --json` está doc
 ## Seguridad y límites
 
 - Solo lectura salvo el fichero de informe solicitado explícitamente.
-- No ejecuta modelos ni benchmarks.
+- El comando ask no ejecuta modelos ni benchmarks. El runner benchmark solo ejecuta llama-bench con `--approve`.
 - No llama a APIs de proveedores.
 - No lee secretos, .env, tokens ni contraseñas.
 - No inicia, detiene ni reinicia servicios.
