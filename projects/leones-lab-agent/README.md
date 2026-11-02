@@ -15,7 +15,7 @@ Agente local autocontenido en Rust para diagnóstico, inventario de modelos y he
 - Sin lectura de secretos ni archivos .env.
 - Sin instalaciones, descargas ni cambios en servicios. La única ejecución de modelos es el benchmark allowlist, bajo `--approve`.
 - Inventario basado en evidencia: una ruta o entrada de caché no se presenta como modelo cargable o ejecutado.
-- El código no copia ni incorpora código de terceros; por tanto, no introduce dependencias de licencia adicionales.
+- El código no copia ni incorpora código de terceros; incluye implementaciones propias de JSON, HTTP local y SHA-256, por lo que no introduce dependencias de licencia adicionales.
 
 ## Compilación de desarrollo
 
@@ -79,7 +79,7 @@ El comando benchmark permite ejecutar exclusivamente llama-bench sobre un GGUF l
 
 Límites: prompt/generación hasta 4096 tokens, 1–5 repeticiones y timeout de 30–1800 segundos. Comprueba la cabecera GGUF, no usa shell, limpia el entorno del proceso y solo conserva variables técnicas explícitas (PATH, HOME, LD_LIBRARY_PATH, CUDA_VISIBLE_DEVICES, CUDA_HOME y OMP_NUM_THREADS). No pasa tokens ni claves API.
 
-Cada ejecución aprobada crea un directorio nuevo bajo `experiments/` con `manifest.json`, `stdout.json` y `stderr.log`. El estado `MEASURED` solo se asigna si el proceso termina correctamente y el JSON contiene métricas `avg_ts`, `stddev_ts` e identidad de modelo/backend/fecha. Si no se pueden validar, se conserva la evidencia como `RUN_COMPLETED_UNPARSED`, `FAILED` o `TIMEOUT`; nunca se inventan métricas.
+Cada ejecución aprobada calcula SHA-256 del GGUF mediante una implementación streaming integrada y crea un directorio nuevo bajo `experiments/` con `manifest.json`, `stdout.json` y `stderr.log`. El estado `MEASURED` solo se asigna si el proceso termina correctamente y el JSON contiene métricas `avg_ts`, `stddev_ts` e identidad de modelo/backend/fecha. Si no se pueden validar, se conserva la evidencia como `RUN_COMPLETED_UNPARSED`, `FAILED` o `TIMEOUT`; nunca se inventan métricas.
 
 El LLM de `ask` no tiene acceso a la herramienta de benchmark. La ejecución de experimentos queda fuera del ciclo conversacional y requiere que el usuario lance el comando con `--approve`.
 
