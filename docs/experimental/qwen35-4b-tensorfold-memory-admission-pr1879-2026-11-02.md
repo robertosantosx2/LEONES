@@ -18,7 +18,7 @@ LEONES ya contiene una ejecución física completada:
 - **VRAM:** 3.120 MiB asociadas al proceso; 3.143 / 4.096 MiB en la captura total.
 - **Resultado:** inferencia real en español.
 
-Registro original: [TensorFold local: pruebas Qwen3.5 en Ubuntu — 2026-10-19](https://github.com/robertosantosx2/LEONES/blob/docs/tensorfold-qwen35-local-results-2026-10-19/docs/TENSORFOLD-QWEN35-LOCAL-2026-10-19.md). Inventario: [comparativa Qwen3.5, TensorFold y llama.cpp](./inventario-comparativo-qwen35-tensorfold-llamacpp-2026-10-20.md).
+Registro original: [TensorFold local: pruebas Qwen3.5 en Ubuntu — 2026-10-19](https://github.com/robertosantosx2/LEONES/blob/main/docs/experimental/tensorfold-qwen35-local-results-2026-10-19.md). Inventario: [comparativa Qwen3.5, TensorFold y llama.cpp](./inventario-comparativo-qwen35-tensorfold-llamacpp-2026-10-20.md).
 
 El registro también conserva un arranque rechazado con `TENSORFOLD_CUDA_MEMORY_LIMIT_GB=3.4` y reserva de 0,5 GiB: TensorFold informó de 1,3 GiB libres y solo 0,8 GiB de presupuesto frente a unos 2,8 GiB de pesos. **Ese rechazo concreto fue provocado por el límite configurado y la memoria libre de aquel momento; no demuestra por sí solo un error del estimador de scratch.** Después se completó la ejecución con contexto 512.
 
