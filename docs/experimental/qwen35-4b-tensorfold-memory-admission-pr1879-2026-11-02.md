@@ -223,3 +223,86 @@ Los cuatro objetivos terminaron regresando al prompt sin errores visibles. Se re
 Límites: la salida no incluye un resumen explícito de tests ni identifica por sí sola todos los artefactos generados; tampoco demuestra que los kernels se ejecuten correctamente en la RTX 3050, ni que la admisión y el crecimiento de scratch funcionen bajo presión real de VRAM. La suite global `test-cuda-host` continúa registrada como fallida por otros objetivos ajenos a estas pruebas aisladas.
 
 **Siguiente fase:** inspeccionar los artefactos/targets y realizar una prueba GPU controlada en el checkout aislado. Antes de inferencia, registrar VRAM libre y procesos, modelo/revisión, contexto 512 y configuración de memoria; no tocar la instalación estable ni el puerto 8080. Medir carga, warmup, VRAM máxima, scratch efectivo, admisión, TTFT, tok/s y salida. Detener si la memoria disponible no permite una carga segura.
+
+
+## Ejecución física con PR #1879 en RTX 3050 — 2026-11-03
+
+**Esta sección actualiza y sustituye las indicaciones anteriores que describían la prueba GPU como pendiente.** La ejecución se realizó en Ubuntu, en el checkout aislado `~/tensorfold-pr1879-validation-20261102`, sin sustituir la instalación estable ni utilizar el puerto habitual 8080.
+
+### Identidad de la prueba
+
+- Rama: `fix/qwen35-cuda-lazy-scratch`.
+- Commit probado: `b880e52707780032c3bad1b3086657c41df89ffb`.
+- Binario: `zig-out-pr1879/native/bin/tensorfold-native`, compilado para Linux x86-64, CUDA, SM 86, ReleaseFast.
+- Modelo: `mlx-community/Qwen3.5-4B-MLX-4bit`.
+- Revisión: `32f3e8ecf65426fc3306969496342d504bfa13f3`.
+- GPU: NVIDIA GeForce RTX 3050 Laptop, 4.096 MiB.
+- Servidor: `127.0.0.1:18083`, contexto 512, parallel 1, max-inflight 1.
+- Entorno: `TENSORFOLD_MEMORY_RESERVE_GIB=0.5`, `HF_HUB_OFFLINE=1`.
+- Arranque: pesos 2,81 GiB; un stream; scratch anunciado 0,21 GiB para ventana 512; reserva 0,5 GiB; carga completada en **10,4 s**.
+- El intento inicial con la reserva predeterminada de 1 GiB fue rechazado por el presupuesto de admisión (3,6 GiB libres menos 1 GiB de reserva, frente a pesos de 2,8 GiB). Al reducir explícitamente la reserva a 0,5 GiB, el servidor cargó. El rechazo inicial no se debe presentar como fallo del parche.
+
+### Inferencias reales
+
+Las tres peticiones recibieron HTTP 200. Las dos primeras quedaron limitadas por `max_tokens`; la tercera finalizó normalmente con `finish_reason=stop`.
+
+| Métrica | Thinking ON | Thinking OFF | Thinking OFF |
+|---|---:|---:|---:|
+| Archivo de evidencia | `pr1879-inference-128.json` | `pr1879-inference-no-thinking-192.json` | `pr1879-inference-no-thinking-256.json` |
+| Tokens de entrada | 51 | 56 | 59 |
+| Tokens generados | 128 | 192 | 133 |
+| Velocidad | 56,05 tok/s | 54,32 tok/s | 55,92 tok/s |
+| TTFT | 194,1 ms | 187,6 ms | 187,2 ms |
+| Prefill | 188,1 ms | 184,1 ms | 183,5 ms |
+| Tiempo de generación del motor | 2,266 s | 3,516 s | 2,360 s |
+| Finalización | `length` | `length` | `stop` |
+| Aceptación especulativa | 0/15 (0 %) | 1/99 (1,01 %) | 3/63 (4,76 %) |
+
+La tercera solicitud pidió un máximo de 256 tokens, pero el modelo produjo 133 y terminó con `stop`; no fue truncada por el límite. Las velocidades son las comunicadas por el servidor en `tensorfold`, no una estimación a partir del tiempo total de curl.
+
+La aceptación especulativa fue baja en las tres solicitudes. No hay evidencia de que speculative decoding explique la velocidad observada ni de una aceleración relevante por aceptación de borradores.
+
+### VRAM observada
+
+El registro `evidence/pr1879-gpu-monitor.csv` se tomó con `nvidia-smi` a intervalos de un segundo:
+
+- Reposo inicial: 15 MiB usados y 3.754 MiB libres según la consulta de NVIDIA.
+- Al cargar: 3.055 MiB usados.
+- Tras completar la carga: 3.211–3.215 MiB usados.
+- Durante la tercera inferencia: máximo observado de **3.227 MiB usados**, con **542 MiB libres** en la misma lectura; utilización GPU del 100 % durante varios segundos y temperatura máxima observada de 56 °C.
+- En el muestreo correspondiente a las inferencias posteriores, el uso residente subió unos pocos MiB respecto al estado estable del servidor.
+
+Estas cifras son lecturas globales de `nvidia-smi`, no un perfil de asignaciones por buffer ni una medida aislada del scratch. No permiten atribuir esos MiB adicionales a un buffer concreto ni demostrar por sí solas cuánto scratch se llegó a materializar. Sí documentan que el servidor permaneció residente y completó las tres inferencias en la GPU de 4 GiB sin OOM.
+
+### Calidad de la respuesta: advertencia importante
+
+La tercera respuesta explica incorrectamente que la asignación CUDA bajo demanda permite almacenar el modelo en RAM del host cuando la VRAM está llena. Esa no es la función del parche y no debe copiarse como explicación técnica válida.
+
+La distinción correcta es:
+
+- El parche difiere la asignación de los **buffers scratch CUDA** hasta que el motor los necesita y contabiliza el crecimiento pendiente al admitir streams y cachés.
+- No traslada automáticamente los pesos a RAM, no convierte la RAM del host en VRAM y no permite superar la capacidad física de la GPU.
+- El scratch que llegue a necesitar la inferencia activa debe caber en la memoria CUDA disponible. La ventaja buscada es evitar comprometer por adelantado capacidad que no se usa, no eliminar el requisito de que las asignaciones efectivas quepan.
+- Por tanto, esta respuesta es una inferencia funcional correcta en términos de HTTP/generación, pero contiene una explicación factual equivocada. No se considera una validación semántica satisfactoria.
+
+### Conclusión actualizada
+
+**Resultado positivo de ejecución:** el binario de la rama no fusionada del PR #1879 cargó Qwen3.5-4B en la RTX 3050 de 4 GiB con reserva explícita de 0,5 GiB y completó tres inferencias reales a 54,32–56,05 tok/s, con TTFT de 187–194 ms. El pico global observado fue 3.227 MiB.
+
+**Qué queda demostrado:** compilación del binario experimental, carga CUDA, servicio OpenAI-compatible e inferencia real repetida bajo la configuración indicada.
+
+**Qué no queda demostrado:** ahorro exacto de VRAM atribuible al scratch lazy frente a la versión base, pico exacto de cada buffer, comportamiento bajo crecimiento forzado hasta el máximo de filas, robustez con otros contextos o concurrencia, ni mejora semántica del modelo. Para cuantificar el ahorro causal hace falta una comparación controlada con la versión base, misma revisión del modelo, contexto, reserva, estado de GPU y carga de peticiones.
+
+**Estado de la suite:** los dos tests host específicos y los objetivos de compilación CUDA/host descritos anteriormente terminaron sin errores visibles según la salida comunicada. La suite global `test-cuda-host` sigue sin poder declararse superada por sus fallos en otros objetivos.
+
+### Evidencias locales
+
+Dentro de `~/tensorfold-pr1879-validation-20261102/evidence/`:
+
+- `pr1879-server-startup-reserve-05.log`
+- `pr1879-gpu-monitor.csv`
+- `pr1879-inference-128.json`
+- `pr1879-inference-no-thinking-192.json`
+- `pr1879-inference-no-thinking-256.json`
+
+La prueba es independiente de la ejecución histórica TensorFold 1.1.1 del 19-10-2026. No deben fusionarse sus cifras: son builds, fechas y condiciones de ejecución diferentes.
