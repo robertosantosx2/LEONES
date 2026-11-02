@@ -306,3 +306,76 @@ Dentro de `~/tensorfold-pr1879-validation-20261102/evidence/`:
 - `pr1879-inference-no-thinking-256.json`
 
 La prueba es independiente de la ejecución histórica TensorFold 1.1.1 del 19-10-2026. No deben fusionarse sus cifras: son builds, fechas y condiciones de ejecución diferentes.
+
+
+## Comparación física controlada: baseline frente a PR #1879 — 2026-11-03
+
+**Resultado decisivo:** con la misma GPU, modelo, revisión, contexto, concurrencia y reserva de memoria, el baseline no consigue cargar Qwen3.5-4B; el binario del PR #1879 sí lo carga y completa inferencias reales. Esta prueba demuestra una diferencia funcional de admisión/carga en el equipo ensayado. No es una comparación de velocidad, porque el baseline no llegó a iniciar el servidor.
+
+### Identidad y condiciones comunes
+
+| Parámetro | Baseline | PR #1879 |
+|---|---|---|
+| Commit | `089a18dff289d4c58043c1957ad0d7fe73d814b3` | `b880e52707780032c3bad1b3086657c41df89ffb` |
+| Binario | `zig-out-baseline/native/bin/tensorfold-native` | `zig-out-pr1879/native/bin/tensorfold-native` |
+| Modelo | `mlx-community/Qwen3.5-4B-MLX-4bit` | Igual |
+| Revisión HF | `32f3e8ecf65426fc3306969496342d504bfa13f3` | Igual |
+| GPU | RTX 3050 Laptop, 4.096 MiB | Igual |
+| Backend / contexto | CUDA / 512 | Igual |
+| Concurrencia | parallel 1, max-inflight 1 | Igual |
+| Reserva | `TENSORFOLD_MEMORY_RESERVE_GIB=0.5` | Igual |
+| Modo HF | `HF_HUB_OFFLINE=1` | Igual |
+| Puerto aislado | 18084 | 18083 |
+
+Ambos binarios se compilaron localmente en Ubuntu para x86-64, CUDA SM 86 y ReleaseFast, en worktrees separados. No se utilizó ni modificó el servidor habitual del usuario en el puerto 8080.
+
+### Resultado del baseline
+
+El arranque del commit base terminó inmediatamente con:
+
+```text
+error: cuMemAlloc: CUDA_ERROR_OUT_OF_MEMORY (2) out of memory
+tensorfold: the native CUDA engine cannot load
+/home/ssantos/.cache/huggingface/hub/models--mlx-community--Qwen3.5-4B-MLX-4bit/snapshots/32f3e8ecf65426fc3306969496342d504bfa13f3
+with its own glue kernels (OutOfDeviceMemory)
+```
+
+El proceso no abrió el puerto 18084. La petición de inferencia posterior devolvió `curl: (7) Failed to connect`, HTTP 000 y 0,000481 s; no se generó un JSON de respuesta. Esto es consecuencia de que el servidor no arrancó, no un fallo adicional de inferencia.
+
+El monitor `baseline-gpu-monitor.csv` contiene 47 muestras de reposo entre 00:54:04 y 00:54:50 (hora local comunicada por el sistema). En esas muestras se observaron 15 MiB usados, 3.754 MiB libres y 0 % de utilización en la mayoría de lecturas. **El monitor no capturó el intento de asignación fallido**, por lo que no hay pico de VRAM del baseline ni perfil de la asignación que falló.
+
+### Comparación de resultados
+
+| Resultado | Baseline | PR #1879 |
+|---|---|---|
+| Carga del modelo | **OOM en `cuMemAlloc`** | Carga completada en 10,4 s |
+| Servidor HTTP | No inicia | Inicia en 127.0.0.1:18083 |
+| Inferencias HTTP 200 | 0 | 3 |
+| Velocidad | No medible | 54,32–56,05 tok/s |
+| TTFT | No medible | 187,2–194,1 ms |
+| Pico global nvidia-smi | No capturado durante el intento | 3.227 MiB usados; 542 MiB libres |
+
+Los valores de velocidad, TTFT y pico GPU de la columna PR proceden del registro de ejecución descrito en la sección anterior. No se deben interpretar como una mejora porcentual frente al baseline: el baseline no produjo una medición equivalente.
+
+### Interpretación y límites
+
+1. La prueba aporta evidencia directa de que el commit base falla al asignar memoria CUDA para cargar el motor Qwen3.5-4B bajo las condiciones especificadas.
+2. El commit del PR #1879 supera esa barrera y realiza inferencia real en la misma GPU y con los mismos parámetros de contexto, concurrencia y reserva.
+3. El resultado es consistente con la corrección de reservas anticipadas de scratch y de admisión de memoria pendiente descrita en el PR.
+4. La prueba **no mide de forma aislada los bytes de scratch evitados** ni permite atribuir cada MiB de diferencia a un buffer concreto. Tampoco demuestra que el parche reduzca el pico de VRAM en todos los contextos.
+5. No existe comparación válida de tokens/s, TTFT, calidad de salida o pico de memoria entre builds, porque el baseline no alcanzó la fase de servicio.
+6. La inferencia PR #1879 sí tiene HTTP 200, pero una de las respuestas incluyó una explicación incorrecta sobre mover pesos a RAM. La advertencia semántica de la sección anterior sigue vigente.
+
+### Veredicto experimental
+
+**PR #1879: ventaja funcional confirmada para la carga de Qwen3.5-4B en la RTX 3050 de 4 GiB ensayada.** El baseline falla con `CUDA_ERROR_OUT_OF_MEMORY`; el PR carga y completa tres inferencias. El hallazgo justifica conservar la prueba como evidencia de regresión/corrección de admisión de memoria, sin exagerarlo como una medición exacta de ahorro de VRAM o de aceleración.
+
+### Evidencias locales de la comparación
+
+En `~/tensorfold-pr1879-baseline-20261103/evidence/`:
+
+- `baseline-server-startup.log`: salida de arranque y error OOM.
+- `baseline-gpu-monitor.csv`: muestreo GPU de reposo previo al arranque.
+- `baseline-inference-no-thinking-256.json`: **no existe**, porque curl no pudo conectar y no se creó el fichero de salida. El comando `python3 -m json.tool` posterior falló por esa ausencia; no debe citarse como resultado de inferencia.
+
+En `~/tensorfold-pr1879-validation-20261102/evidence/` permanecen el log de arranque, el monitor GPU y los tres JSON de inferencia PR enumerados en la sección anterior.
