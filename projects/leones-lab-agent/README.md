@@ -2,7 +2,7 @@
 
 Agente local autocontenido en Rust para diagnóstico, inventario de modelos y herramientas, y preparación de investigación reproducible dentro de LEONES.
 
-**Versión:** 0.3.0.  
+**Versión:** 0.4.0.  
 **Estado:** inventario local de solo lectura.  
 **Plataforma:** Linux x86_64 (objetivo inicial).  
 **Licencia:** AGPL-3.0-only.
