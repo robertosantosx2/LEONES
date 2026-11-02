@@ -1,4 +1,5 @@
 mod agent;
+mod benchmark;
 mod detect;
 mod inventory;
 mod output;
@@ -105,6 +106,7 @@ fn run() -> Result<(), String> {
             Ok(())
         }
         "ask" => run_ask(&rest),
+        "benchmark" => benchmark::run(&rest),
         "report" => {
             let path = rest.iter().find(|arg| !arg.starts_with("--"))
                 .cloned().unwrap_or_else(|| "lab-agent-report.md".to_string());
