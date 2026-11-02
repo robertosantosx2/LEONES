@@ -1,78 +1,99 @@
 # LEONES Lab Agent
 
-Agente local en Rust para diagnóstico, inventario y experimentación reproducible dentro del ecosistema LEONES.
+Agente local autocontenido en Rust para diagnóstico, inventario de modelos y herramientas, y preparación de investigación reproducible dentro de LEONES.
 
-**Estado:** fase 1 — esqueleto CLI y diagnóstico de solo lectura.  
-**Plataforma inicial:** Ubuntu Linux.  
-**Licencia:** AGPL-3.0-only, conforme a la licencia raíz de LEONES.
+**Versión:** 0.2.0.  
+**Estado:** inventario local de solo lectura.  
+**Plataforma:** Linux x86_64 (objetivo inicial).  
+**Licencia:** AGPL-3.0-only.
 
-## Principios
+## Requisitos de diseño
 
-1. **Local-first:** el agente comienza trabajando sobre el equipo donde se ejecuta.
-2. **Evidencia explícita:** inventario, estimación y medición son categorías distintas.
-3. **No destructivo por defecto:** fase 1 no instala, descarga, borra, inicia ni detiene servicios.
-4. **Autorización humana:** futuras operaciones con efectos laterales requerirán una política de permisos explícita.
-5. **Reproducibilidad:** los informes identifican el alcance y los límites de cada captura.
+- Cero crates externos: [dependencies] permanece vacío.
+- Solo biblioteca estándar de Rust (std) y código propio integrado en el repositorio.
+- Sin Python, Node.js, servicios remotos ni conexión de red en tiempo de ejecución.
+- Sin lectura de secretos ni archivos .env.
+- Sin instalaciones, descargas, ejecución de modelos o cambios en servicios.
+- Inventario basado en evidencia: una ruta o entrada de caché no se presenta como modelo cargable o ejecutado.
+- El código no copia ni incorpora código de terceros; por tanto, no introduce dependencias de licencia adicionales.
 
-## Compilar
+## Compilación de desarrollo
 
-Requiere Rust/Cargo estable. La fase 1 no tiene dependencias externas.
+Con Rust estable instalado:
 
-Desde la raíz del repositorio LEONES:
+    cargo fmt --check
+    cargo test
+    cargo build --release
 
-\`\`\`bash
-cd projects/leones-lab-agent
-cargo fmt --check
-cargo test
-cargo build --release
-\`\`\`
+## Compilación estática para Linux x86_64
 
-Ejecutar:
+El objetivo estático utiliza musl:
 
-\`\`\`bash
-./target/release/lab-agent help
-./target/release/lab-agent doctor
-./target/release/lab-agent engines
-./target/release/lab-agent models
-./target/release/lab-agent report
-\`\`\`
+    rustup target add x86_64-unknown-linux-musl
 
-El comando report acepta una ruta opcional:
+En una distribución Ubuntu se necesita el linker musl del sistema:
 
-\`\`\`bash
-./target/release/lab-agent report /tmp/leones-lab-agent-report.md
-\`\`\`
+    sudo apt-get install musl-tools
+    cargo build --release --target x86_64-unknown-linux-musl
 
-## Comandos de la fase 1
+El resultado queda en:
+
+    target/x86_64-unknown-linux-musl/release/lab-agent
+
+El workflow de GitHub Actions realiza formato, pruebas y compilación estática en un runner Linux limpio. El binario musl no depende de glibc del host. Esto no convierte en estáticas herramientas externas consultadas opcionalmente (por ejemplo nvidia-smi, systemctl o uname); el agente sigue funcionando si faltan, señalando datos no disponibles.
+
+## Comandos
 
 | Comando | Función |
 |---|---|
-| doctor | SO, kernel, CPU, RAM, GPU NVIDIA y CUDA Toolkit |
-| engines | Busca ejecutables conocidos en PATH |
-| models | Lista repositorios de la caché Hugging Face estándar |
-| report [RUTA] | Genera un informe Markdown |
-| version | Muestra la versión |
+| lab-agent doctor | SO, kernel, CPU, RAM, GPU NVIDIA y CUDA Toolkit |
+| lab-agent doctor --json | Diagnóstico en JSON |
+| lab-agent engines | Busca ejecutables conocidos en PATH |
+| lab-agent models | Inventario de modelos/cachés conocidos |
+| lab-agent models --json | Inventario de modelos en JSON |
+| lab-agent inventory --json | Inventario consolidado en JSON |
+| lab-agent report [RUTA] | Genera un informe Markdown |
+| lab-agent version | Versión |
 
-## Límites conocidos
+## Fuentes inspeccionadas
 
-- La detección de motores se basa en ejecutables presentes en PATH; no confirma que un servidor esté activo.
-- La detección de modelos solo inspecciona ~/.cache/huggingface/hub.
-- La consulta de GPU usa nvidia-smi; no se inspeccionan APIs de otros fabricantes todavía.
-- No se recorre el disco completo ni se inspeccionan directorios arbitrarios.
-- No se ejecutan modelos ni benchmarks en esta fase.
+- Caché estándar de Hugging Face: ~/.cache/huggingface/hub.
+- Directorio de modelos ODS: ~/ods/data/models.
+- Presencia del CLI Magnitude en rutas conocidas.
+- Estado del servicio Magnitude mediante systemctl is-active, sin iniciarlo.
+- Información del sistema mediante /etc/os-release, /proc, uname, nvidia-smi y nvcc.
 
-## Próximos hitos
+Las rutas son acotadas intencionadamente. No se recorren discos completos ni se inspeccionan variables de entorno de Docker Compose.
 
-- Fase 1.1: inventario estructurado JSON y manifiesto de entorno.
-- Fase 2: adaptadores de benchmark con límites de recursos y consentimiento explícito.
-- Fase 3: proveedor LLM configurable (API OpenAI-compatible local o remota).
-- Fase 4: planificador y ejecutor con permisos por herramienta.
-- Fase 5: exportación de evidencia y documentación hacia LEONES.
+## Estados de evidencia
+
+| Estado | Significado |
+|---|---|
+| CACHE_ENTRY | Entrada detectada, sin pesos confirmados |
+| WEIGHTS_PRESENT | Archivos con extensiones de pesos conocidas localizados |
+| AVAILABLE | Motor confirma que puede acceder al modelo |
+| LOAD_VERIFIED | Carga confirmada por el motor |
+| RUNNING | Ejecución confirmada |
+| MEASURED | Benchmark con métricas y protocolo registrados |
+
+La versión actual solo asigna los dos primeros estados. No infiere estados superiores.
+
+## Seguridad y límites
+
+- Solo lectura salvo el fichero de informe solicitado explícitamente.
+- No ejecuta modelos ni benchmarks.
+- No llama a APIs de proveedores.
+- No lee secretos, .env, tokens ni contraseñas.
+- No inicia, detiene ni reinicia servicios.
+- La ausencia de un resultado de detección no demuestra que un componente no exista fuera de las rutas inspeccionadas.
+- WEIGHTS_PRESENT no garantiza compatibilidad con un motor ni que el archivo sea íntegro.
+
+## Verificación automatizada
+
+El workflow .github/workflows/lab-agent.yml comprueba formato, tests y compilación x86_64-unknown-linux-musl. El resultado de GitHub Actions será la evidencia de compilación; no se afirmará que un binario se ha probado en el MSI hasta ejecutar pruebas allí.
 
 ## Desarrollo
 
-\`\`\`bash
-cargo fmt
-cargo test
-cargo clippy -- -D warnings
-\`\`\`
+    cargo fmt
+    cargo test
+    cargo build --release
