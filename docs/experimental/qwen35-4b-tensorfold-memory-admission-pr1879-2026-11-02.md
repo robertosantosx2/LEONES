@@ -342,7 +342,7 @@ with its own glue kernels (OutOfDeviceMemory)
 
 El proceso no abrió el puerto 18084. La petición de inferencia posterior devolvió `curl: (7) Failed to connect`, HTTP 000 y 0,000481 s; no se generó un JSON de respuesta. Esto es consecuencia de que el servidor no arrancó, no un fallo adicional de inferencia.
 
-El monitor `baseline-gpu-monitor.csv` contiene 47 muestras de reposo entre 00:54:04 y 00:54:50 (hora local comunicada por el sistema). En esas muestras se observaron 15 MiB usados, 3.754 MiB libres y 0 % de utilización en la mayoría de lecturas. **El monitor no capturó el intento de asignación fallido**, por lo que no hay pico de VRAM del baseline ni perfil de la asignación que falló.
+El monitor `baseline-gpu-monitor.csv` contiene **142 líneas en total: una cabecera y 141 muestras** entre 00:54:04.339 y 00:56:24.418 (hora local comunicada por el sistema). En todas las muestras se observaron 15 MiB usados y 3.754 MiB libres; la temperatura osciló entre 41 y 43 °C y la utilización fue 0 % en prácticamente todas las lecturas (la primera registró 9 %). **El monitor no capturó el intento de asignación fallido**, por lo que no hay pico de VRAM del baseline ni perfil de la asignación que falló.
 
 ### Comparación de resultados
 
@@ -379,3 +379,20 @@ En `~/tensorfold-pr1879-baseline-20261103/evidence/`:
 - `baseline-inference-no-thinking-256.json`: **no existe**, porque curl no pudo conectar y no se creó el fichero de salida. El comando `python3 -m json.tool` posterior falló por esa ausencia; no debe citarse como resultado de inferencia.
 
 En `~/tensorfold-pr1879-validation-20261102/evidence/` permanecen el log de arranque, el monitor GPU y los tres JSON de inferencia PR enumerados en la sección anterior.
+
+
+### Cierre de captura del monitor baseline — 2026-11-03
+
+El usuario confirmó el cierre del monitor con Ctrl+C y verificó el fichero local:
+
+- `wc -l evidence/baseline-gpu-monitor.csv`: **142 líneas** (cabecera + 141 muestras).
+- Primera muestra: `2026/11/03 00:54:04.339`.
+- Última muestra: `2026/11/03 00:56:24.418`.
+- Todas las muestras: 4.096 MiB totales, 15 MiB usados y 3.754 MiB libres.
+- Temperatura observada: 41–43 °C.
+- Utilización: 0 % en prácticamente todas las muestras; 9 % en la primera.
+- El log de arranque conserva `cuMemAlloc: CUDA_ERROR_OUT_OF_MEMORY (2)` y `OutOfDeviceMemory`.
+
+La captura confirma que la GPU permaneció en reposo durante el intervalo monitorizado. No contiene una muestra del intento fallido de asignación; por ello no se puede extraer de ella el pico de VRAM ni cuantificar el scratch que el baseline intentó reservar.
+
+El `git status --short` del worktree mostró `?? evidence/` y `?? zig-out-baseline/`. Son artefactos locales aún no versionados en ese worktree. No se debe añadir el directorio de compilación `zig-out-baseline/` al repositorio; conservar el binario local para reproducibilidad y archivar solo logs/CSV/JSON de evidencia seleccionados.
