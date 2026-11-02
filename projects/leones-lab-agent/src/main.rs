@@ -21,6 +21,7 @@ fn print_help() {
            lab-agent models [--json]       Inventariar modelos locales\n\
            lab-agent inventory [--json]    Inventario consolidado\n\
            lab-agent ask [OPCIONES] P      Consultar un LLM local con herramientas seguras\n\
+           lab-agent benchmark [OPCIONES] Ejecutar llama-bench con aprobación explícita\n\\
            lab-agent report [F]            Generar informe Markdown\n\
            lab-agent version               Mostrar versión\n\
            lab-agent help                  Mostrar esta ayuda\n\n\
