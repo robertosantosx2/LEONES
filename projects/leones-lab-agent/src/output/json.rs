@@ -78,11 +78,12 @@ pub fn stringify(value: &Value) -> String {
 struct Parser<'a> {
     input: &'a str,
     pos: usize,
+    depth: usize,
 }
 
 impl<'a> Parser<'a> {
     fn new(input: &'a str) -> Self {
-        Self { input, pos: 0 }
+        Self { input, pos: 0, depth: 0 }
     }
 
     fn error(&self, message: &str) -> String {
@@ -110,7 +111,12 @@ impl<'a> Parser<'a> {
 
     fn parse_value(&mut self) -> Result<Value, String> {
         self.skip_ws();
-        match self.peek() {
+        self.depth += 1;
+        if self.depth > 128 {
+            self.depth -= 1;
+            return Err(self.error("profundidad JSON superior a 128 niveles"));
+        }
+        let result = match self.peek() {
             Some(b'n') => { self.literal(b"null")?; Ok(Value::Null) }
             Some(b't') => { self.literal(b"true")?; Ok(Value::Bool(true)) }
             Some(b'f') => { self.literal(b"false")?; Ok(Value::Bool(false)) }
@@ -119,7 +125,9 @@ impl<'a> Parser<'a> {
             Some(b'{') => self.parse_object(),
             Some(b'-' | b'0'..=b'9') => self.parse_number(),
             _ => Err(self.error("se esperaba un valor")),
-        }
+        };
+        self.depth -= 1;
+        result
     }
 
     fn literal(&mut self, literal: &[u8]) -> Result<(), String> {
@@ -313,5 +321,17 @@ mod tests {
     fn parses_surrogate_pairs_and_escapes() {
         let value = parse(r#""A\n\uD83D\uDE80""#).unwrap();
         assert_eq!(value, Value::String("A\n🚀".to_string()));
+    }
+}
+
+
+#[cfg(test)]
+mod depth_tests {
+    use super::parse;
+
+    #[test]
+    fn rejects_excessive_nesting() {
+        let nested = format!("{}0{}", "[".repeat(130), "]".repeat(130));
+        assert!(parse(&nested).is_err());
     }
 }
