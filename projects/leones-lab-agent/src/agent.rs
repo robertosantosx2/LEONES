@@ -127,7 +127,7 @@ fn decode_chunked(input: &[u8]) -> Result<Vec<u8>, String> {
         if output.len() > MAX_RESPONSE_BYTES {
             return Err("La respuesta HTTP supera el límite de 8 MiB.".to_string());
         }
-        if input.get(end..end + 2) != Some(b"\r\n".as_slice()) {
+        if input.get(end..end + 2) != Some(&b"\r\n"[..]) {
             return Err("Separador de chunk inválido.".to_string());
         }
         cursor = end + 2;
