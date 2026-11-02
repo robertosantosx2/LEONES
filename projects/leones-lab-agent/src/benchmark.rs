@@ -396,3 +396,29 @@ mod metrics_tests {
         assert!(!measured_results(&value));
     }
 }
+
+
+#[cfg(test)]
+mod gguf_tests {
+    use super::has_gguf_magic;
+    use std::fs;
+    use std::io::Write;
+
+    #[test]
+    fn validates_gguf_magic_header() {
+        let path = std::env::temp_dir().join(format!("leones-lab-agent-{}.gguf", std::process::id()));
+        let mut file = fs::File::create(&path).unwrap();
+        file.write_all(b"GGUF\x03\x00\x00\x00").unwrap();
+        drop(file);
+        assert!(has_gguf_magic(&path).unwrap());
+        fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn rejects_non_gguf_magic_header() {
+        let path = std::env::temp_dir().join(format!("leones-lab-agent-{}.bin", std::process::id()));
+        fs::write(&path, b"NOPE").unwrap();
+        assert!(!has_gguf_magic(&path).unwrap());
+        fs::remove_file(path).unwrap();
+    }
+}
