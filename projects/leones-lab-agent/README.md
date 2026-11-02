@@ -81,6 +81,10 @@ Las rutas son acotadas intencionadamente. No se recorren discos completos ni se 
 
 La versión actual solo asigna los dos primeros estados. No infiere estados superiores.
 
+## Esquema de salida JSON
+
+La estructura de `inventory --json`, `models --json` y `doctor --json` está documentada en `docs/inventory-schema-v1.md`. Los consumidores deben comprobar `schema_version` e ignorar campos desconocidos.
+
 ## Seguridad y límites
 
 - Solo lectura salvo el fichero de informe solicitado explícitamente.
