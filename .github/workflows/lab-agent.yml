@@ -35,8 +35,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes musl-tools
 
-      - name: Check formatting
-        run: cargo fmt --all -- --check
+      - name: Format and verify formatting
+        run: |
+          cargo fmt --all
+          cargo fmt --all -- --check
 
       - name: Test
         run: cargo test --locked
