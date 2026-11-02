@@ -1,3 +1,4 @@
+mod agent;
 mod detect;
 mod inventory;
 mod output;
@@ -12,21 +13,60 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 fn print_help() {
     println!(
         "LEONES Lab Agent {VERSION}\n\
-         Agente local autocontenido de inventario (solo lectura).\n\n\
+         Agente local autocontenido de inventario y asistencia (solo lectura).\n\n\
          USO:\n\
            lab-agent doctor [--json]       Diagnóstico del sistema\n\
            lab-agent engines               Detectar motores y herramientas\n\
            lab-agent models [--json]       Inventariar modelos locales\n\
            lab-agent inventory [--json]    Inventario consolidado\n\
+           lab-agent ask [OPCIONES] P      Consultar un LLM local con herramientas seguras\n\
            lab-agent report [F]            Generar informe Markdown\n\
            lab-agent version               Mostrar versión\n\
            lab-agent help                  Mostrar esta ayuda\n\n\
-         No instala, descarga, ejecuta modelos ni modifica servicios."
+         ASK:\n\
+           --endpoint URL  HTTP local (por defecto http://127.0.0.1:8080/v1/chat/completions)\n\
+           --model ID      Identificador del modelo (por defecto local-model)\n\n\
+         No ejecuta comandos arbitrarios, instala, descarga ni modifica servicios."
     );
 }
 
 fn has_json(args: &[String]) -> bool {
     args.iter().any(|arg| arg == "--json")
+}
+
+fn run_ask(args: &[String]) -> Result<(), String> {
+    let mut endpoint = "http://127.0.0.1:8080/v1/chat/completions".to_string();
+    let mut model = "local-model".to_string();
+    let mut prompt_parts = Vec::new();
+    let mut index = 0usize;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--endpoint" => {
+                index += 1;
+                endpoint = args.get(index).ok_or_else(|| "--endpoint necesita una URL.".to_string())?.clone();
+            }
+            "--model" => {
+                index += 1;
+                model = args.get(index).ok_or_else(|| "--model necesita un identificador.".to_string())?.clone();
+            }
+            "--" => {
+                prompt_parts.extend_from_slice(&args[index + 1..]);
+                break;
+            }
+            _ => {
+                prompt_parts.extend_from_slice(&args[index..]);
+                break;
+            }
+        }
+        index += 1;
+    }
+    if prompt_parts.is_empty() {
+        return Err("Uso: lab-agent ask [--endpoint URL] [--model ID] PREGUNTA".to_string());
+    }
+    let prompt = prompt_parts.join(" ");
+    let answer = agent::ask(&endpoint, &model, &prompt)?;
+    println!("{answer}");
+    Ok(())
 }
 
 fn run() -> Result<(), String> {
@@ -64,6 +104,7 @@ fn run() -> Result<(), String> {
             }
             Ok(())
         }
+        "ask" => run_ask(&rest),
         "report" => {
             let path = rest.iter().find(|arg| !arg.starts_with("--"))
                 .cloned().unwrap_or_else(|| "lab-agent-report.md".to_string());
