@@ -89,3 +89,5 @@ Se ha recuperado y verificado el registro histórico de Qwen3.5-4B ejecutado con
 Informe autocontenido: [Qwen3.5-4B en TensorFold CUDA: geometría de scratch y admisión de memoria](./qwen35-4b-tensorfold-memory-admission-pr1879-2026-11-02.md).
 
 Estado: cambios de código enviados a la rama del PR; compilación y prueba GPU aún pendientes.
+
+Registro histórico de la ejecución real TensorFold 1.1.1: [resultados locales Qwen3.5](./tensorfold-qwen35-local-results-2026-10-19.md).
