@@ -65,8 +65,12 @@ fn valid_model_reference(model: &str) -> bool {
     if model.starts_with('/') || model.starts_with("./") || model.starts_with("../") {
         return true;
     }
-    parts.len() == 2 && parts.iter().all(|part| !part.is_empty())
-        && !model.contains("..") && !model.contains('@') && !model.contains(':')
+    parts.len() == 2 && parts.iter().all(|part| {
+        !part.is_empty()
+            && !part.starts_with('.')
+            && part.bytes().all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.'))
+    })
+        && !model.contains("..")
 }
 
 fn parse_args(args: &[String]) -> Result<Config, String> {
