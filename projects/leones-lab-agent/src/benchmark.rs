@@ -3,6 +3,7 @@ use crate::output::json::{self, Value};
 use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io::Read;
+use std::env;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::thread;
@@ -117,6 +118,13 @@ fn help_text() -> &'static str {
      Solo ejecuta llama-bench con argumentos construidos por el agente. No usa shell."
 }
 
+fn has_gguf_magic(path: &Path) -> Result<bool, String> {
+    let mut file = File::open(path).map_err(|e| format!("No se puede abrir el modelo: {e}"))?;
+    let mut magic = [0u8; 4];
+    file.read_exact(&mut magic).map_err(|e| format!("No se puede leer la cabecera GGUF: {e}"))?;
+    Ok(&magic == b"GGUF")
+}
+
 fn command_args(config: &Config, model: &Path) -> Vec<String> {
     vec![
         "-m".to_string(), model.display().to_string(),
@@ -199,6 +207,10 @@ fn write_manifest(
 }
 
 pub fn run(args: &[String]) -> Result<(), String> {
+    if args.iter().any(|arg| arg == "--help" || arg == "-h") {
+        println!("{}", help_text());
+        return Ok(());
+    }
     let config = parse_args(args)?;
     let model = config.model.canonicalize()
         .map_err(|e| format!("No se puede abrir el modelo {}: {e}", config.model.display()))?;
@@ -207,6 +219,9 @@ pub fn run(args: &[String]) -> Result<(), String> {
     }
     if model.extension().and_then(|v| v.to_str()).map(|v| v.eq_ignore_ascii_case("gguf")) != Some(true) {
         return Err("Este runner solo admite modelos GGUF.".to_string());
+    }
+    if !has_gguf_magic(&model)? {
+        return Err("La cabecera del fichero no es GGUF; se cancela el benchmark.".to_string());
     }
     let model_bytes = fs::metadata(&model).map_err(|e| format!("No se puede leer el modelo: {e}"))?.len();
     if model_bytes == 0 {
@@ -237,8 +252,14 @@ pub fn run(args: &[String]) -> Result<(), String> {
         .map_err(|e| format!("No se pudo crear stderr.log: {e}"))?;
 
     let started = Instant::now();
-    let mut child = Command::new(&executable)
-        .args(&args)
+    let mut command = Command::new(&executable);
+    command.args(&args).env_clear();
+    for key in ["PATH", "HOME", "LD_LIBRARY_PATH", "CUDA_VISIBLE_DEVICES", "CUDA_HOME", "OMP_NUM_THREADS"] {
+        if let Some(value) = env::var_os(key) {
+            command.env(key, value);
+        }
+    }
+    let mut child = command
         .stdin(Stdio::null())
         .stdout(Stdio::from(stdout_file))
         .stderr(Stdio::from(stderr_file))
