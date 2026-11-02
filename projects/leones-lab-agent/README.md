@@ -3,7 +3,7 @@
 Agente local autocontenido en Rust para diagnóstico, inventario de modelos y herramientas, y preparación de investigación reproducible dentro de LEONES.
 
 **Versión:** 0.4.0.  
-**Estado:** inventario local de solo lectura.  
+**Estado:** inventario de solo lectura por defecto; benchmarks locales solo con autorización explícita.  
 **Plataforma:** Linux x86_64 (objetivo inicial).  
 **Licencia:** AGPL-3.0-only.
 
@@ -13,7 +13,7 @@ Agente local autocontenido en Rust para diagnóstico, inventario de modelos y he
 - Solo biblioteca estándar de Rust (std) y código propio integrado en el repositorio.
 - Sin Python, Node.js ni conexión a Internet; el modo ask solo abre HTTP en loopback (127.0.0.1/localhost).
 - Sin lectura de secretos ni archivos .env.
-- Sin instalaciones, descargas, ejecución de modelos o cambios en servicios.
+- Sin instalaciones, descargas ni cambios en servicios. La única ejecución de modelos es el benchmark allowlist, bajo `--approve`.
 - Inventario basado en evidencia: una ruta o entrada de caché no se presenta como modelo cargable o ejecutado.
 - El código no copia ni incorpora código de terceros; por tanto, no introduce dependencias de licencia adicionales.
 
@@ -104,7 +104,7 @@ Las rutas son acotadas intencionadamente. No se recorren discos completos ni se 
 | RUNNING | Ejecución confirmada |
 | MEASURED | Benchmark con métricas y protocolo registrados |
 
-La versión actual solo asigna los dos primeros estados. No infiere estados superiores.
+El inventario solo asigna CACHE_ENTRY y WEIGHTS_PRESENT. El runner puede asignar MEASURED únicamente tras validar métricas llama-bench. AVAILABLE, LOAD_VERIFIED y RUNNING no se infieren.
 
 ## Esquema de salida JSON
 
@@ -112,11 +112,14 @@ La estructura de `inventory --json`, `models --json` y `doctor --json` está doc
 
 ## Seguridad y límites
 
-- Solo lectura salvo el fichero de informe solicitado explícitamente.
-- El comando ask no ejecuta modelos ni benchmarks. El runner benchmark solo ejecuta llama-bench con `--approve`.
+- Diagnóstico, inventario y ask son de solo lectura.
+- El informe y los directorios de evidencia se escriben únicamente a petición del usuario.
+- El comando ask no ejecuta benchmarks ni puede invocar el runner.
+- El runner solo ejecuta llama-bench con `--approve`, límites de recursos y un GGUF validado.
 - No llama a APIs de proveedores.
 - No lee secretos, .env, tokens ni contraseñas.
 - No inicia, detiene ni reinicia servicios.
+- No se admite shell, comandos arbitrarios, descarga de modelos ni endpoints LLM remotos.
 - La ausencia de un resultado de detección no demuestra que un componente no exista fuera de las rutas inspeccionadas.
 - WEIGHTS_PRESENT no garantiza compatibilidad con un motor ni que el archivo sea íntegro.
 - Los resultados de servicios no consultables se muestran como desconocidos, no como inexistentes.
