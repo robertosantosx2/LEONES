@@ -162,3 +162,17 @@ Código de la rama: [cuda_scratch.zig](https://github.com/robertosantosx2/Tensor
 - **Prueba CUDA en RTX 3050:** pendiente. No se ha utilizado Ubuntu durante este análisis.
 
 No presentar los cambios como compilados o validados por GPU. La siguiente fase será una prueba controlada en Ubuntu, aislada de la instalación estable y del servidor llama.cpp por defecto. Debe registrar memoria libre antes de carga, uso durante warmup, capacidad de scratch, pico de VRAM durante crecimiento, admisión de streams, inferencia, TTFT, tok/s y resultado de salida.
+
+## Validación host comunicada el 2026-11-03
+
+La primera ejecución local de `zig build test-cuda-host -Dtarget=x86_64-linux-gnu` terminó con varios `failed command`; por tanto, la suite global no puede declararse verde.
+
+Distinción importante al interpretar el registro:
+
+- `FAIL no-op projection` aparece en el test preexistente `zig/tests/cuda/projection_f32_host_tests.zig`, cuyo caso de prueba inyecta deliberadamente un lanzamiento CUDA que no escribe y comprueba `expectError(error.TestFailed, ...)`. Ese texto es parte de la prueba negativa, no prueba por sí solo un defecto de scratch.
+- Los errores de `CPU reference comparison` proceden de pruebas cuantizadas existentes, no de los 12 archivos modificados por este PR. Hay recibos históricos del repositorio que contienen los mismos diagnósticos; aun así, el proceso de prueba devuelve fallo y no se debe ocultar.
+- También aparecen salidas de pruebas de rechazo/errores simulados (topología GLM, contratos de kernels, carga de pesos y dependencias opcionales). Deben separarse de los dos tests nuevos antes de atribuir un fallo al parche.
+
+El usuario confirmó que `nvcc` está disponible en `/usr/local/cuda-13.4/bin/nvcc`. Esto permite pasar a la compilación CUDA `sm_86` cuando los dos tests host específicos del parche estén aislados y aprobados.
+
+**Pendiente inmediato:** registrar por separado el resultado de `test-qwen35-scratch-host` y `test-cuda-memory-admission-host`. La salida global de `test-cuda-host` no los sustituye. No se ha iniciado todavía la ejecución real en GPU con esta cabeza.
