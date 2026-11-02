@@ -48,6 +48,8 @@ jobs:
           test -z "$(cargo tree --locked --edges all --prefix none | grep -v '^leones-lab-agent v' || true)"
 
       - name: Build static Linux binary
+        env:
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER: musl-gcc
         run: cargo build --release --locked --target x86_64-unknown-linux-musl
 
       - name: Verify static ELF
