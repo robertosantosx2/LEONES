@@ -17,6 +17,7 @@ The agent never overwrites an existing evidence directory.
 | engine | string | llama-bench |
 | model_path | string | Canonical local GGUF path |
 | model_bytes | integer | Model file size in bytes |
+| model_sha256 | string | SHA-256 of the model file, computed by the built-in streaming implementation |
 | prompt_tokens | integer | Configured prompt length |
 | generation_tokens | integer | Configured generation length |
 | repetitions | integer | Number of repetitions |
