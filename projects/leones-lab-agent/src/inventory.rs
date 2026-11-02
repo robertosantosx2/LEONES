@@ -58,9 +58,7 @@ fn directory_size_and_weights(root: &Path, depth: usize) -> (u64, Vec<(PathBuf, 
     if depth > 5 {
         return (total, weights);
     }
-    let Ok(entries) = fs::read_dir(root) else {
-        return (total, weights);
-    };
+    let Ok(entries) = fs::read_dir(root) else { return (total, weights) };
     for entry in entries.flatten() {
         let path = entry.path();
         if path.is_dir() {
@@ -79,7 +77,8 @@ fn directory_size_and_weights(root: &Path, depth: usize) -> (u64, Vec<(PathBuf, 
 }
 
 fn push_model(records: &mut Vec<ModelRecord>, name: String, source: &str, path: &Path) {
-    let (bytes, weights) = directory_size_and_weights(path, 0);
+    let (_, weights) = directory_size_and_weights(path, 0);
+    let weight_bytes = weights.iter().fold(0u64, |sum, (_, _, size)| sum.saturating_add(*size));
     if weights.is_empty() {
         records.push(ModelRecord {
             name,
@@ -87,7 +86,7 @@ fn push_model(records: &mut Vec<ModelRecord>, name: String, source: &str, path: 
             path: path.display().to_string(),
             format: "unknown".to_string(),
             state: "CACHE_ENTRY".to_string(),
-            bytes,
+            bytes: 0,
         });
     } else {
         let mut formats = weights.iter().map(|(_, f, _)| f.as_str()).collect::<Vec<_>>();
@@ -99,7 +98,7 @@ fn push_model(records: &mut Vec<ModelRecord>, name: String, source: &str, path: 
             path: path.display().to_string(),
             format: formats.join(","),
             state: "WEIGHTS_PRESENT".to_string(),
-            bytes,
+            bytes: weight_bytes,
         });
     }
 }
@@ -221,7 +220,7 @@ pub fn print_text(inventory: &Inventory) {
     println!("\nModelos y entradas locales: {}", inventory.models.len());
     for model in &inventory.models {
         println!(
-            "[{}] {} | {} | {} | {} | {} bytes",
+            "[{}] {} | {} | {} | {} | {} bytes de pesos",
             model.state, model.name, model.source, model.format, model.path, model.bytes
         );
     }
@@ -257,7 +256,7 @@ pub fn to_json(inventory: &Inventory) -> String {
     for (i, model) in inventory.models.iter().enumerate() {
         if i > 0 { out.push(','); }
         out.push_str(&format!(
-            "{{\"name\":{},\"source\":{},\"path\":{},\"format\":{},\"state\":{},\"bytes\":{}}}",
+            "{{\"name\":{},\"source\":{},\"path\":{},\"format\":{},\"state\":{},\"weight_bytes\":{}}}",
             escape(&model.name), escape(&model.source), escape(&model.path),
             escape(&model.format), escape(&model.state), model.bytes
         ));
