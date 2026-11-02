@@ -170,7 +170,7 @@ impl<'a> Parser<'a> {
                         b'u' => {
                             let first = self.hex_quad()?;
                             let code = if (0xD800..=0xDBFF).contains(&first) {
-                                if !self.input.as_bytes().get(self.pos..self.pos + 2).map(|bytes| bytes == &b"\\u"[..]).unwrap_or(false) {
+                                if !self.input.as_bytes().get(self.pos..self.pos + 2).map(|bytes| bytes == b"\\u").unwrap_or(false) {
                                     return Err(self.error("par sustituto Unicode incompleto"));
                                 }
                                 self.pos += 2;
