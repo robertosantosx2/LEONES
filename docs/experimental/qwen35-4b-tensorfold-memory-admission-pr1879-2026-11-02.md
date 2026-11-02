@@ -206,3 +206,20 @@ Por tanto, la sospecha previa de que el método del motor estuviera desconectado
 - Inferencia y medición en RTX 3050: pendiente; no se ha solicitado todavía una nueva ejecución GPU.
 
 La salida silenciosa de los dos comandos no incluye contadores de tests, pero ambos procesos regresaron al prompt sin errores visibles.
+
+
+## Compilación CUDA y validación host completadas — 2026-11-03
+
+El usuario ejecutó en Ubuntu, dentro del checkout aislado `~/tensorfold-pr1879-validation-20261102`, con `/usr/local/cuda-13.4/bin` añadido a `PATH`, estos objetivos:
+
+```sh
+zig build test-qwen35-scratch-host -Dtarget=x86_64-linux-gnu
+zig build test-cuda-memory-admission-host -Dtarget=x86_64-linux-gnu
+zig build check-native-cuda-host compile-cuda-tests -Dtarget=x86_64-linux-gnu
+```
+
+Los cuatro objetivos terminaron regresando al prompt sin errores visibles. Se registran como **superados según la salida comunicada**. Los dos tests host específicos pasan y los objetivos de comprobación host nativa y compilación de tests CUDA también completaron sin fallo visible.
+
+Límites: la salida no incluye un resumen explícito de tests ni identifica por sí sola todos los artefactos generados; tampoco demuestra que los kernels se ejecuten correctamente en la RTX 3050, ni que la admisión y el crecimiento de scratch funcionen bajo presión real de VRAM. La suite global `test-cuda-host` continúa registrada como fallida por otros objetivos ajenos a estas pruebas aisladas.
+
+**Siguiente fase:** inspeccionar los artefactos/targets y realizar una prueba GPU controlada en el checkout aislado. Antes de inferencia, registrar VRAM libre y procesos, modelo/revisión, contexto 512 y configuración de memoria; no tocar la instalación estable ni el puerto 8080. Medir carga, warmup, VRAM máxima, scratch efectivo, admisión, TTFT, tok/s y salida. Detener si la memoria disponible no permite una carga segura.
