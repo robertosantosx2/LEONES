@@ -62,7 +62,7 @@ The lifecycle is deliberately monotonic and evidence-based:
 6. RUNNING — an inference process is confirmed active.
 7. MEASURED — a benchmark has recorded metrics and protocol.
 
-Version 0.2.0 currently emits CACHE_ENTRY and WEIGHTS_PRESENT only. It must not infer a later state from an earlier one.
+Version 0.3.0 currently emits CACHE_ENTRY and WEIGHTS_PRESENT only. It must not infer a later state from an earlier one.
 
 ## Doctor object
 
