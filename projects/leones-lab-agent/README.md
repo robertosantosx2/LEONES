@@ -9,7 +9,7 @@ Agente local autocontenido en Rust para diagnóstico, inventario de modelos y he
 
 ## Requisitos de diseño
 
-- Cero crates externos: [dependencies] permanece vacío.
+- Cero crates externos: el bloque [dependencies] permanece vacío.
 - Solo biblioteca estándar de Rust (std) y código propio integrado en el repositorio.
 - Sin Python, Node.js, servicios remotos ni conexión de red en tiempo de ejecución.
 - Sin lectura de secretos ni archivos .env.
@@ -31,16 +31,19 @@ El objetivo estático utiliza musl:
 
     rustup target add x86_64-unknown-linux-musl
 
-En una distribución Ubuntu se necesita el linker musl del sistema:
+En Ubuntu se necesita el linker musl:
 
     sudo apt-get install musl-tools
-    cargo build --release --target x86_64-unknown-linux-musl
+
+Después, desde este directorio:
+
+    sh scripts/build-static.sh
 
 El resultado queda en:
 
     target/x86_64-unknown-linux-musl/release/lab-agent
 
-El workflow de GitHub Actions realiza formato, pruebas y compilación estática en un runner Linux limpio. El binario musl no depende de glibc del host. Esto no convierte en estáticas herramientas externas consultadas opcionalmente (por ejemplo nvidia-smi, systemctl o uname); el agente sigue funcionando si faltan, señalando datos no disponibles.
+El script comprueba formato, pruebas, compilación y ausencia de intérprete ELF dinámico. El workflow de GitHub Actions repite estas comprobaciones en un runner Linux limpio. El binario musl no depende de glibc del host. Esto no convierte en estáticas herramientas externas consultadas opcionalmente (por ejemplo nvidia-smi, systemctl o uname); el agente sigue funcionando si faltan, señalando datos no disponibles.
 
 ## Comandos
 
@@ -48,10 +51,10 @@ El workflow de GitHub Actions realiza formato, pruebas y compilación estática 
 |---|---|
 | lab-agent doctor | SO, kernel, CPU, RAM, GPU NVIDIA y CUDA Toolkit |
 | lab-agent doctor --json | Diagnóstico en JSON |
-| lab-agent engines | Busca ejecutables conocidos en PATH |
+| lab-agent engines | Busca ejecutables conocidos en PATH y rutas locales conocidas |
 | lab-agent models | Inventario de modelos/cachés conocidos |
 | lab-agent models --json | Inventario de modelos en JSON |
-| lab-agent inventory --json | Inventario consolidado en JSON |
+| lab-agent inventory --json | Herramientas, modelos y componentes en JSON |
 | lab-agent report [RUTA] | Genera un informe Markdown |
 | lab-agent version | Versión |
 
@@ -59,7 +62,7 @@ El workflow de GitHub Actions realiza formato, pruebas y compilación estática 
 
 - Caché estándar de Hugging Face: ~/.cache/huggingface/hub.
 - Directorio de modelos ODS: ~/ods/data/models.
-- Presencia del CLI Magnitude en rutas conocidas.
+- Ejecutables de TensorFold, llama.cpp, Mistral.rs, Hermes y Magnitude en PATH o ubicaciones locales conocidas.
 - Estado del servicio Magnitude mediante systemctl is-active, sin iniciarlo.
 - Información del sistema mediante /etc/os-release, /proc, uname, nvidia-smi y nvcc.
 
@@ -87,10 +90,11 @@ La versión actual solo asigna los dos primeros estados. No infiere estados supe
 - No inicia, detiene ni reinicia servicios.
 - La ausencia de un resultado de detección no demuestra que un componente no exista fuera de las rutas inspeccionadas.
 - WEIGHTS_PRESENT no garantiza compatibilidad con un motor ni que el archivo sea íntegro.
+- Los resultados de servicios no consultables se muestran como desconocidos, no como inexistentes.
 
 ## Verificación automatizada
 
-El workflow .github/workflows/lab-agent.yml comprueba formato, tests y compilación x86_64-unknown-linux-musl. El resultado de GitHub Actions será la evidencia de compilación; no se afirmará que un binario se ha probado en el MSI hasta ejecutar pruebas allí.
+El workflow .github/workflows/lab-agent.yml comprueba formato, tests, árbol de dependencias y compilación x86_64-unknown-linux-musl. El artefacto estático se publica como artefacto de GitHub Actions cuando el workflow termina correctamente. No se afirmará que un binario se ha probado en el MSI hasta ejecutar pruebas allí.
 
 ## Desarrollo
 
