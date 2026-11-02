@@ -11,7 +11,7 @@ Los subproyectos amplían LEONES sin convertirlos en dependencias obligatorias d
 | Magnitude | runtime/agente local y coding | [`Magnitude/README.md`](Magnitude/README.md) | [`../integrations/Magnitude/README.md`](../integrations/Magnitude/README.md) |
 | Buddy | harness/agente personal file-first | [`buddy/README.md`](buddy/README.md) | [`../AGENT_HARNESSES.md`](../AGENT_HARNESSES.md) |
 | Open-dCoder | modelo de difusión de texto y evaluación local | [`Open-dCoder/README.md`](Open-dCoder/README.md) · [`Open-dCoder/EXECUTIVE-SUMMARY.md`](Open-dCoder/EXECUTIVE-SUMMARY.md) | V1/V2 single-sequence + V3 batch real en RTX 3050 |
-| LEONES Lab Agent | agente local autocontenido en Rust para diagnóstico, inventario y asistencia sobre LLM local | [`leones-lab-agent/README.md`](leones-lab-agent/README.md) | v0.3.1: inventario de hardware/modelos/herramientas; API Chat Completions solo en loopback; herramientas de solo lectura; JSON; compilación estática musl |
+| LEONES Lab Agent | agente local autocontenido en Rust para diagnóstico, inventario y asistencia sobre LLM local | [`leones-lab-agent/README.md`](leones-lab-agent/README.md) | v0.3.0: inventario de hardware/modelos/herramientas; API Chat Completions solo en loopback; herramientas de solo lectura; JSON; compilación estática musl |
 | TensorFold | runtime de inferencia local y auditoría de memoria CUDA | [`TensorFold/README.md`](TensorFold/README.md) · [`TensorFold/CUDA-MEMORY-REGRESSION-2026-11-01.md`](TensorFold/CUDA-MEMORY-REGRESSION-2026-11-01.md) | Qwen3.5-4B; regresión de scratch 128→4096 filas; reproducción física pendiente |
 
 ### Piezas relacionadas
