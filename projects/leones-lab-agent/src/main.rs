@@ -1,5 +1,6 @@
 mod agent;
 mod benchmark;
+mod benchmark_tensorfold;
 mod detect;
 mod hash;
 mod inventory;
@@ -112,6 +113,7 @@ fn run() -> Result<(), String> {
         }
         "ask" => run_ask(&rest),
         "benchmark" => benchmark::run(&rest),
+        "benchmark-tensorfold" | "tensorfold-benchmark" => benchmark_tensorfold::run(&rest),
         "report" => {
             let path = rest.iter().find(|arg| !arg.starts_with("--"))
                 .cloned().unwrap_or_else(|| "lab-agent-report.md".to_string());
