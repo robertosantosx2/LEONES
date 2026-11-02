@@ -3,7 +3,7 @@ use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 
-const TOOLS: &[&str] = &[
+pub const TOOLS: &[&str] = &[
     "tensorfold-native", "llama-server", "llama-cli", "llama-bench",
     "mistralrs", "ollama", "vllm", "hermes", "magnitude", "docker",
     "podman", "python3", "cargo", "rustc", "git",
@@ -46,7 +46,7 @@ fn known_candidates(name: &str) -> Vec<PathBuf> {
     paths
 }
 
-fn find_executable(name: &str) -> Option<PathBuf> {
+pub fn find_executable(name: &str) -> Option<PathBuf> {
     if let Some(path_var) = env::var_os("PATH") {
         for directory in env::split_paths(&path_var) {
             let candidate = directory.join(name);
