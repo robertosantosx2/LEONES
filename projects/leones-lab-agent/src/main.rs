@@ -1,6 +1,7 @@
 mod agent;
 mod benchmark;
 mod detect;
+mod hash;
 mod inventory;
 mod output;
 mod report;
