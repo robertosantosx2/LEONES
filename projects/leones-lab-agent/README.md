@@ -2,8 +2,8 @@
 
 Agente local autocontenido en Rust para diagnóstico, inventario de modelos y herramientas, y preparación de investigación reproducible dentro de LEONES.
 
-**Versión:** 0.3.0.  
-**Estado:** inventario local de solo lectura.  
+**Versión:** 0.4.0.  
+**Estado:** inventario de solo lectura por defecto; benchmarks locales solo con autorización explícita.  
 **Plataforma:** Linux x86_64 (objetivo inicial).  
 **Licencia:** AGPL-3.0-only.
 
@@ -13,9 +13,9 @@ Agente local autocontenido en Rust para diagnóstico, inventario de modelos y he
 - Solo biblioteca estándar de Rust (std) y código propio integrado en el repositorio.
 - Sin Python, Node.js ni conexión a Internet; el modo ask solo abre HTTP en loopback (127.0.0.1/localhost).
 - Sin lectura de secretos ni archivos .env.
-- Sin instalaciones, descargas, ejecución de modelos o cambios en servicios.
+- Sin instalaciones, descargas ni cambios en servicios. La única ejecución de modelos es el benchmark allowlist, bajo `--approve`.
 - Inventario basado en evidencia: una ruta o entrada de caché no se presenta como modelo cargable o ejecutado.
-- El código no copia ni incorpora código de terceros; por tanto, no introduce dependencias de licencia adicionales.
+- El código no copia ni incorpora código de terceros; incluye implementaciones propias de JSON, HTTP local y SHA-256, por lo que no introduce dependencias de licencia adicionales.
 
 ## Compilación de desarrollo
 
@@ -56,6 +56,7 @@ El script comprueba formato, pruebas, compilación y ausencia de intérprete ELF
 | lab-agent models --json | Inventario de modelos en JSON |
 | lab-agent inventory --json | Herramientas, modelos y componentes en JSON |
 | lab-agent ask [OPCIONES] PREGUNTA | Consulta un LLM local y permite herramientas de inventario de solo lectura |
+| lab-agent benchmark [OPCIONES] | Ejecuta llama-bench solo con autorización explícita |
 | lab-agent report [RUTA] | Genera un informe Markdown |
 | lab-agent version | Versión |
 
@@ -68,6 +69,19 @@ El comando ask se conecta a un servidor compatible con OpenAI Chat Completions q
 El agente puede solicitar tres herramientas integradas: get_system_info, get_local_inventory y get_detected_tools. No existe herramienta de shell ni ejecución arbitraria. Las llamadas están limitadas a cuatro rondas por consulta. El servidor de inferencia debe estar iniciado por el usuario; Lab Agent no lo arranca ni carga modelos.
 
 La implementación HTTP y el parser/serializador JSON están escritos en el propio proyecto y usan exclusivamente std. Esta primera interfaz solo soporta HTTP local sin TLS; no se conecta a Gemini ni a proveedores remotos.
+
+## Benchmarks supervisados
+
+El comando benchmark permite ejecutar exclusivamente llama-bench sobre un GGUF local. Primero realiza un dry-run y muestra el comando exacto; no ejecuta nada sin `--approve`:
+
+    lab-agent benchmark --model /ruta/modelo.gguf --prompt-tokens 512 --gen-tokens 128 --repetitions 3
+    lab-agent benchmark --model /ruta/modelo.gguf --approve
+
+Límites: prompt/generación hasta 4096 tokens, 1–5 repeticiones y timeout de 30–1800 segundos. Comprueba la cabecera GGUF, no usa shell, limpia el entorno del proceso y solo conserva variables técnicas explícitas (PATH, HOME, LD_LIBRARY_PATH, CUDA_VISIBLE_DEVICES, CUDA_HOME y OMP_NUM_THREADS). No pasa tokens ni claves API.
+
+Cada ejecución aprobada calcula SHA-256 del GGUF mediante una implementación streaming integrada y crea un directorio nuevo bajo `experiments/` con `manifest.json`, `stdout.json` y `stderr.log`. El estado `MEASURED` solo se asigna si el proceso termina correctamente y el JSON contiene métricas `avg_ts`, `stddev_ts` e identidad de modelo/backend/fecha. Si no se pueden validar, se conserva la evidencia como `RUN_COMPLETED_UNPARSED`, `FAILED` o `TIMEOUT`; nunca se inventan métricas.
+
+El LLM de `ask` no tiene acceso a la herramienta de benchmark. La ejecución de experimentos queda fuera del ciclo conversacional y requiere que el usuario lance el comando con `--approve`.
 
 ## Fuentes inspeccionadas
 
@@ -90,19 +104,22 @@ Las rutas son acotadas intencionadamente. No se recorren discos completos ni se 
 | RUNNING | Ejecución confirmada |
 | MEASURED | Benchmark con métricas y protocolo registrados |
 
-La versión actual solo asigna los dos primeros estados. No infiere estados superiores.
+El inventario solo asigna CACHE_ENTRY y WEIGHTS_PRESENT. El runner puede asignar MEASURED únicamente tras validar métricas llama-bench. AVAILABLE, LOAD_VERIFIED y RUNNING no se infieren.
 
 ## Esquema de salida JSON
 
-La estructura de `inventory --json`, `models --json` y `doctor --json` está documentada en `docs/inventory-schema-v1.md`. Los consumidores deben comprobar `schema_version` e ignorar campos desconocidos.
+La estructura de `inventory --json`, `models --json` y `doctor --json` está documentada en `docs/inventory-schema-v1.md`. Los manifiestos de benchmarks están definidos en `docs/benchmark-manifest-v1.md`. Los consumidores deben comprobar `schema_version` e ignorar campos desconocidos.
 
 ## Seguridad y límites
 
-- Solo lectura salvo el fichero de informe solicitado explícitamente.
-- No ejecuta modelos ni benchmarks.
+- Diagnóstico, inventario y ask son de solo lectura.
+- El informe y los directorios de evidencia se escriben únicamente a petición del usuario.
+- El comando ask no ejecuta benchmarks ni puede invocar el runner.
+- El runner solo ejecuta llama-bench con `--approve`, límites de recursos y un GGUF validado.
 - No llama a APIs de proveedores.
 - No lee secretos, .env, tokens ni contraseñas.
 - No inicia, detiene ni reinicia servicios.
+- No se admite shell, comandos arbitrarios, descarga de modelos ni endpoints LLM remotos.
 - La ausencia de un resultado de detección no demuestra que un componente no exista fuera de las rutas inspeccionadas.
 - WEIGHTS_PRESENT no garantiza compatibilidad con un motor ni que el archivo sea íntegro.
 - Los resultados de servicios no consultables se muestran como desconocidos, no como inexistentes.

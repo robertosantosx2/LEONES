@@ -5,6 +5,7 @@ on:
     branches:
       - feat/leones-lab-agent-standalone-v1
       - feat/leones-lab-agent-phase1
+      - feat/leones-lab-agent-benchmark-runner
   pull_request:
     paths:
       - "projects/leones-lab-agent/**"
