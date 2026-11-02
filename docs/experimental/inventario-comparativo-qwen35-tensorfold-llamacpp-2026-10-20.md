@@ -82,3 +82,10 @@ Para comparar los motores con rigor, fijar la misma pregunta/prompt, el mismo n�
 
 Informe detallado: [Prueba Magnitude Qwen3.5-4B — 2026-10-21](../benchmarks/magnitude-qwen35-4b-2026-10-21.md).
 
+## Investigación complementaria: scratch CUDA y admisión de memoria — 2026-11-02
+
+Se ha recuperado y verificado el registro histórico de Qwen3.5-4B ejecutado con TensorFold 1.1.1 en la RTX 3050, y se ha reconstruido la geometría del scratch CUDA del código actual. El análisis incluye el cálculo para 32, 64, 128, 256 y 512 filas, el workspace INT8 opcional y las correcciones de admisión propuestas en el PR #1879.
+
+Informe autocontenido: [Qwen3.5-4B en TensorFold CUDA: geometría de scratch y admisión de memoria](./qwen35-4b-tensorfold-memory-admission-pr1879-2026-11-02.md).
+
+Estado: cambios de código enviados a la rama del PR; compilación y prueba GPU aún pendientes.
