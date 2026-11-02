@@ -22,17 +22,17 @@ fn print_help() {
            lab-agent models [--json]       Inventariar modelos locales\n\
            lab-agent inventory [--json]    Inventario consolidado\n\
            lab-agent ask [OPCIONES] P      Consultar un LLM local con herramientas seguras\n\
-           lab-agent benchmark [OPCIONES] Ejecutar llama-bench con aprobación explícita\n\\
+           lab-agent benchmark [OPCIONES] Ejecutar llama-bench con aprobación explícita\n\
            lab-agent report [F]            Generar informe Markdown\n\
            lab-agent version               Mostrar versión\n\
            lab-agent help                  Mostrar esta ayuda\n\n\
          ASK:\n\
            --endpoint URL  HTTP local (por defecto http://127.0.0.1:8080/v1/chat/completions)\n\
            --model ID      Identificador del modelo (por defecto local-model)\n\n\
-         No ejecuta comandos arbitrarios. Benchmark requiere --approve; no instala ni descarga modelos."
          BENCHMARK:\n\
            --model RUTA.gguf --approve  Ejecuta llama-bench con autorización\n\
-           Sin --approve solo muestra un dry-run.\n\
+           Sin --approve solo muestra un dry-run.\n\n\
+         No ejecuta comandos arbitrarios, no instala ni descarga modelos."
     );
 }
 
