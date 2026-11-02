@@ -15,7 +15,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 fn print_help() {
     println!(
         "LEONES Lab Agent {VERSION}\n\
-         Agente local autocontenido de inventario y asistencia (solo lectura).\n\n\
+         Agente local autocontenido de inventario, asistencia y benchmarks supervisados.\n\n\
          USO:\n\
            lab-agent doctor [--json]       Diagnóstico del sistema\n\
            lab-agent engines               Detectar motores y herramientas\n\
@@ -30,6 +30,9 @@ fn print_help() {
            --endpoint URL  HTTP local (por defecto http://127.0.0.1:8080/v1/chat/completions)\n\
            --model ID      Identificador del modelo (por defecto local-model)\n\n\
          No ejecuta comandos arbitrarios. Benchmark requiere --approve; no instala ni descarga modelos."
+         BENCHMARK:\n\
+           --model RUTA.gguf --approve  Ejecuta llama-bench con autorización\n\
+           Sin --approve solo muestra un dry-run.\n\
     );
 }
 
