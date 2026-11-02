@@ -27,7 +27,7 @@ fn print_help() {
          ASK:\n\
            --endpoint URL  HTTP local (por defecto http://127.0.0.1:8080/v1/chat/completions)\n\
            --model ID      Identificador del modelo (por defecto local-model)\n\n\
-         No ejecuta comandos arbitrarios, instala, descarga ni modifica servicios."
+         No ejecuta comandos arbitrarios. Benchmark requiere --approve; no instala ni descarga modelos."
     );
 }
 
