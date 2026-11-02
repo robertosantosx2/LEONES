@@ -168,7 +168,7 @@ fn write_manifest(
     let result = object(&[
         ("schema_version", Value::Number("1".to_string())),
         ("engine", string("tensorfold-native")),
-        ("engine_version", string("1.2.x (runtime version captured separately if available)")),
+        ("engine_version", Value::Null),
         ("model_reference", string(&config.model)),
         ("tokens", Value::Number(config.tokens.to_string())),
         ("repetitions", Value::Number(config.repetitions.to_string())),
