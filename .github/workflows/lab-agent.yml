@@ -45,7 +45,7 @@ jobs:
 
       - name: Check dependency policy
         run: |
-          test -z "$(cargo tree --locked --edges normal --prefix none | grep -v '^leones-lab-agent v' || true)"
+          test -z "$(cargo tree --locked --edges all --prefix none | grep -v '^leones-lab-agent v' || true)"
 
       - name: Build static Linux binary
         run: cargo build --release --locked --target x86_64-unknown-linux-musl
