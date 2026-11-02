@@ -264,7 +264,7 @@ pub fn ask(endpoint: &str, model: &str, prompt: &str) -> Result<String, String> 
         if round == MAX_TOOL_ROUNDS {
             return Err("Se alcanzó el límite de llamadas a herramientas.".to_string());
         }
-        messages.push(message.clone());
+        messages.push((*message).clone());
         for call in calls {
             let call_id = call.get("id").and_then(Value::as_str)
                 .ok_or_else(|| "La llamada de herramienta no contiene id.".to_string())?;
@@ -321,5 +321,21 @@ mod http_tests {
     #[test]
     fn rejects_invalid_chunk_size() {
         assert!(decode_chunked(b"z\r\nx\r\n0\r\n\r\n").is_err());
+    }
+}
+
+
+#[cfg(test)]
+mod permission_tests {
+    use super::tool_result;
+
+    #[test]
+    fn refuses_arbitrary_tools() {
+        assert!(tool_result("run_shell", "{}").is_err());
+    }
+
+    #[test]
+    fn refuses_tool_arguments() {
+        assert!(tool_result("get_system_info", r#"{"command":"id"}"#).is_err());
     }
 }
