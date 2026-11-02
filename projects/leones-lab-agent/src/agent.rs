@@ -17,7 +17,7 @@ fn string(value: &str) -> Value {
 fn object(entries: &[(&str, Value)]) -> Value {
     let mut map = BTreeMap::new();
     for (key, value) in entries {
-        map.insert((*key).to_string(), value.clone());
+        map.insert((*key).to_string(), (*value).clone());
     }
     Value::Object(map)
 }
@@ -84,7 +84,7 @@ fn endpoint_parts(endpoint: &str) -> Result<(String, u16, String), String> {
         Some(index) => (&rest[..index], &rest[index..]),
         None => (rest, "/v1/chat/completions"),
     };
-    if authority.contains('@') || path.contains('\r') || path.contains('\n') {
+    if authority.contains('@') || path.contains('\r') || path.contains('\n') || path.chars().any(char::is_whitespace) {
         return Err("Endpoint inválido.".to_string());
     }
     let (host, port) = match authority.rsplit_once(':') {
@@ -234,6 +234,9 @@ pub fn ask(endpoint: &str, model: &str, prompt: &str) -> Result<String, String> 
         return Err("Debes indicar un modelo y una pregunta.".to_string());
     }
     endpoint_parts(endpoint)?;
+    if prompt.len() > 64 * 1024 {
+        return Err("La pregunta supera el límite de 64 KiB.".to_string());
+    }
     let system_prompt = "Eres LEONES Lab Agent, un asistente de laboratorio local. Responde en el idioma del usuario. Usa las herramientas disponibles cuando necesites datos reales del equipo. No inventes inventario, hardware ni resultados. Solo puedes consultar información; no ejecutes comandos arbitrarios, no instales, descargues, cargues ni elimines modelos y no cambies servicios. Distingue siempre descubrimiento, presencia de pesos, disponibilidad, carga, ejecución y benchmark medido.";
     let mut messages = vec![
         object(&[("role", string("system")), ("content", string(system_prompt))]),
@@ -301,5 +304,22 @@ mod tests {
     fn rejects_remote_and_https_endpoints() {
         assert!(endpoint_parts("https://127.0.0.1:8080/v1/chat/completions").is_err());
         assert!(endpoint_parts("http://example.com/v1/chat/completions").is_err());
+    }
+}
+
+
+#[cfg(test)]
+mod http_tests {
+    use super::decode_chunked;
+
+    #[test]
+    fn decodes_chunked_http_body() {
+        let decoded = decode_chunked(b"4\r\nWiki\r\n5\r\npedia\r\n0\r\n\r\n").unwrap();
+        assert_eq!(decoded, b"Wikipedia");
+    }
+
+    #[test]
+    fn rejects_invalid_chunk_size() {
+        assert!(decode_chunked(b"z\r\nx\r\n0\r\n\r\n").is_err());
     }
 }
