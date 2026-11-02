@@ -175,6 +175,7 @@ fn write_manifest(
     state: &str,
     model: &Path,
     model_bytes: u64,
+    model_sha256: &str,
     config: &Config,
     args: &[String],
     elapsed_ms: u128,
@@ -189,6 +190,7 @@ fn write_manifest(
         ("engine", value_string("llama-bench")),
         ("model_path", value_string(&model.display().to_string())),
         ("model_bytes", Value::Number(model_bytes.to_string())),
+        ("model_sha256", value_string(model_sha256)),
         ("prompt_tokens", Value::Number(config.prompt_tokens.to_string())),
         ("generation_tokens", Value::Number(config.generation_tokens.to_string())),
         ("repetitions", Value::Number(config.repetitions.to_string())),
@@ -240,6 +242,7 @@ pub fn run(args: &[String]) -> Result<(), String> {
         return Ok(());
     }
 
+    let model_sha256 = crate::hash::sha256_file(&model)?;
     let directory = output_directory(&config);
     if directory.exists() {
         return Err(format!("El directorio de evidencia ya existe; no se sobrescribirá: {}", directory.display()));
@@ -310,6 +313,7 @@ pub fn run(args: &[String]) -> Result<(), String> {
         state,
         &model,
         model_bytes,
+        &model_sha256,
         &config,
         &args,
         elapsed_ms,
