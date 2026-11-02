@@ -142,11 +142,32 @@ fn output_directory(config: &Config) -> PathBuf {
     })
 }
 
+fn measured_results(value: &Value) -> bool {
+    let Some(rows) = value.as_array() else { return false };
+    !rows.is_empty() && rows.iter().all(|row| {
+        let avg = row.get("avg_ts").and_then(|v| match v {
+            Value::Number(number) => number.parse::<f64>().ok(),
+            _ => None,
+        });
+        let deviation = row.get("stddev_ts").and_then(|v| match v {
+            Value::Number(number) => number.parse::<f64>().ok(),
+            _ => None,
+        });
+        let has_identity = row.get("model_filename").and_then(Value::as_str).is_some()
+            && row.get("backends").and_then(Value::as_str).is_some()
+            && row.get("test_time").and_then(Value::as_str).is_some();
+        matches!(avg, Some(value) if value.is_finite() && value > 0.0)
+            && matches!(deviation, Some(value) if value.is_finite() && value >= 0.0)
+            && has_identity
+    })
+}
+
 fn write_manifest(
     directory: &Path,
     state: &str,
     model: &Path,
     model_bytes: u64,
+    config: &Config,
     args: &[String],
     elapsed_ms: u128,
     exit_code: Option<i32>,
@@ -160,6 +181,11 @@ fn write_manifest(
         ("engine", value_string("llama-bench")),
         ("model_path", value_string(&model.display().to_string())),
         ("model_bytes", Value::Number(model_bytes.to_string())),
+        ("prompt_tokens", Value::Number(config.prompt_tokens.to_string())),
+        ("generation_tokens", Value::Number(config.generation_tokens.to_string())),
+        ("repetitions", Value::Number(config.repetitions.to_string())),
+        ("timeout_seconds", Value::Number(config.timeout_seconds.to_string())),
+        ("timestamp_unix_ns", Value::Number(SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0).to_string())),
         ("elapsed_ms", Value::Number(elapsed_ms.to_string())),
         ("exit_code", exit_code.map(|v| Value::Number(v.to_string())).unwrap_or(Value::Null)),
         ("arguments", command),
@@ -243,8 +269,12 @@ pub fn run(args: &[String]) -> Result<(), String> {
         .map_err(|e| format!("No se pudo leer stdout.json: {e}"))?;
 
     let parsed = json::parse(&stdout).ok();
-    let has_results = parsed.as_ref().and_then(Value::as_array).map(|items| !items.is_empty()).unwrap_or(false);
-    let parse_error = if has_results { None } else { Some("stdout no contiene un array JSON de resultados llama-bench") };
+    let has_results = parsed.as_ref().map(measured_results).unwrap_or(false);
+    let parse_error = if has_results {
+        None
+    } else {
+        Some("stdout no contiene resultados JSON con avg_ts, stddev_ts e identidad del modelo")
+    };
     let state = if timed_out {
         "TIMEOUT"
     } else if status.success() && has_results {
@@ -259,6 +289,7 @@ pub fn run(args: &[String]) -> Result<(), String> {
         state,
         &model,
         model_bytes,
+        &config,
         &args,
         elapsed_ms,
         status.code(),
@@ -317,5 +348,30 @@ mod tests {
         let args = vec!["--model".to_string(), "model.gguf".to_string(), "--approve".to_string()];
         let config: Config = parse_args(&args).unwrap();
         assert!(config.approved);
+    }
+}
+
+
+#[cfg(test)]
+mod metrics_tests {
+    use super::measured_results;
+    use crate::output::json;
+
+    #[test]
+    fn accepts_llama_bench_metrics() {
+        let value = json::parse(r#"[{"avg_ts":42.5,"stddev_ts":0.2,"model_filename":"m.gguf","backends":"CUDA","test_time":"2026-01-01T00:00:00Z"}]"#).unwrap();
+        assert!(measured_results(&value));
+    }
+
+    #[test]
+    fn rejects_json_without_measured_metrics() {
+        let value = json::parse(r#"[{"message":"benchmark started"}]"#).unwrap();
+        assert!(!measured_results(&value));
+    }
+
+    #[test]
+    fn rejects_zero_or_invalid_throughput() {
+        let value = json::parse(r#"[{"avg_ts":0,"stddev_ts":0,"model_filename":"m.gguf","backends":"CPU","test_time":"now"}]"#).unwrap();
+        assert!(!measured_results(&value));
     }
 }
