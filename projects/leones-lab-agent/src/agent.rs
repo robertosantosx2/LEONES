@@ -285,3 +285,21 @@ pub fn ask(endpoint: &str, model: &str, prompt: &str) -> Result<String, String> 
     }
     Err("El agente terminó sin respuesta final.".to_string())
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::endpoint_parts;
+
+    #[test]
+    fn accepts_loopback_http_endpoint() {
+        let parsed = endpoint_parts("http://127.0.0.1:8080/v1/chat/completions").unwrap();
+        assert_eq!(parsed, ("127.0.0.1".to_string(), 8080, "/v1/chat/completions".to_string()));
+    }
+
+    #[test]
+    fn rejects_remote_and_https_endpoints() {
+        assert!(endpoint_parts("https://127.0.0.1:8080/v1/chat/completions").is_err());
+        assert!(endpoint_parts("http://example.com/v1/chat/completions").is_err());
+    }
+}
