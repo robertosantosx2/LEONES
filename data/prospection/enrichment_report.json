@@ -1,10 +1,10 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 252,
-  "enriched_ok": 80,
-  "non_github_preserved": 165,
-  "errors": 7,
+  "repositories_processed": 269,
+  "enriched_ok": 81,
+  "non_github_preserved": 182,
+  "errors": 6,
   "github_token_used": true,
   "diagnostics": [
     {
@@ -12,49 +12,42 @@
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4977"
-    },
-    {
-      "repository": "Guruprasath-Annadurai/Whitepact",
-      "status": 404,
-      "error_type": "HTTP 404",
-      "message": "Not Found",
-      "rate_limit_remaining": "4955"
+      "rate_limit_remaining": "4978"
     },
     {
       "repository": "wish-maker/minder",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4903"
+      "rate_limit_remaining": "4902"
     },
     {
       "repository": "arshad1416/HA_Automation_Pi",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4872"
+      "rate_limit_remaining": "4871"
     },
     {
       "repository": "priceisaacuwjh3036/ai-server-rust-llm-api",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4862"
+      "rate_limit_remaining": "4861"
     },
     {
       "repository": "benlmadan9-star/eco-mesh-sdk",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4861"
+      "rate_limit_remaining": "4860"
     },
     {
       "repository": "ramaiahsvn/aim.pat",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4788"
+      "rate_limit_remaining": "4787"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."

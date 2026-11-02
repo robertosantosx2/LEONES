@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-01T11:19:19.737939+00:00",
+  "generated_at": "2026-11-02T12:31:33.914125+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -206,8 +206,8 @@
       "url": "https://git.zx2c4.com/cgit/",
       "kind": "git-web",
       "priority": "medium",
-      "status": "reachable",
-      "http_status": 200,
+      "status": "http_error",
+      "http_status": 502,
       "final_url": "https://git.zx2c4.com/cgit/",
       "authentication_configured": false
     },
@@ -263,7 +263,7 @@
       "priority": "high",
       "status": "reachable",
       "http_status": 200,
-      "final_url": "https://huggingface.co/papers/date/2026-10-30",
+      "final_url": "https://huggingface.co/papers",
       "authentication_configured": false
     }
   ],
