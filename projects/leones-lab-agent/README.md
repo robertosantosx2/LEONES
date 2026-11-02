@@ -108,7 +108,7 @@ La versión actual solo asigna los dos primeros estados. No infiere estados supe
 
 ## Esquema de salida JSON
 
-La estructura de `inventory --json`, `models --json` y `doctor --json` está documentada en `docs/inventory-schema-v1.md`. Los consumidores deben comprobar `schema_version` e ignorar campos desconocidos.
+La estructura de `inventory --json`, `models --json` y `doctor --json` está documentada en `docs/inventory-schema-v1.md`. Los manifiestos de benchmarks están definidos en `docs/benchmark-manifest-v1.md`. Los consumidores deben comprobar `schema_version` e ignorar campos desconocidos.
 
 ## Seguridad y límites
 
