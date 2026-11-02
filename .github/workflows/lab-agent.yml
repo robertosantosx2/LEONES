@@ -1,0 +1,68 @@
+name: LEONES Lab Agent
+
+on:
+  push:
+    branches:
+      - feat/leones-lab-agent-standalone-v1
+      - feat/leones-lab-agent-phase1
+  pull_request:
+    paths:
+      - "projects/leones-lab-agent/**"
+      - ".github/workflows/lab-agent.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-static-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/leones-lab-agent
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable and musl target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+          components: rustfmt, clippy
+
+      - name: Install musl linker
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes musl-tools
+
+      - name: Format and verify formatting
+        run: |
+          cargo fmt --all
+          cargo fmt --all -- --check
+
+      - name: Test
+        run: cargo test --locked
+
+      - name: Check dependency policy
+        run: |
+          test -z "$(cargo tree --locked --edges all --prefix none | grep -v '^leones-lab-agent v' || true)"
+
+      - name: Build static Linux binary
+        env:
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER: musl-gcc
+        run: cargo build --release --locked --target x86_64-unknown-linux-musl
+
+      - name: Verify static ELF
+        run: |
+          file target/x86_64-unknown-linux-musl/release/lab-agent
+          if readelf -l target/x86_64-unknown-linux-musl/release/lab-agent | grep -q INTERP; then
+            echo "Unexpected ELF interpreter: binary is not fully static"
+            exit 1
+          fi
+
+      - name: Upload static binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: leones-lab-agent-linux-x86_64-musl
+          path: projects/leones-lab-agent/target/x86_64-unknown-linux-musl/release/lab-agent
+          if-no-files-found: error
