@@ -150,7 +150,8 @@ fn to_hex(bytes: &[u8]) -> String {
     output
 }
 
-pub fn sha256_bytes(input: &[u8]) -> String {
+#[cfg(test)]
+fn sha256_bytes(input: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(input);
     to_hex(&hasher.finalize())
