@@ -176,3 +176,33 @@ Distinción importante al interpretar el registro:
 El usuario confirmó que `nvcc` está disponible en `/usr/local/cuda-13.4/bin/nvcc`. Esto permite pasar a la compilación CUDA `sm_86` cuando los dos tests host específicos del parche estén aislados y aprobados.
 
 **Pendiente inmediato:** registrar por separado el resultado de `test-qwen35-scratch-host` y `test-cuda-memory-admission-host`. La salida global de `test-cuda-host` no los sustituye. No se ha iniciado todavía la ejecución real en GPU con esta cabeza.
+
+
+## Validación aislada y revisión de integración — 2026-11-03
+
+El usuario ejecutó en el checkout aislado `~/tensorfold-pr1879-validation-20261102` los dos objetivos siguientes, ambos con `-Dtarget=x86_64-linux-gnu`:
+
+- `zig build test-qwen35-scratch-host -Dtarget=x86_64-linux-gnu`: terminó sin salida de error.
+- `zig build test-cuda-memory-admission-host -Dtarget=x86_64-linux-gnu`: terminó sin salida de error.
+
+Se consideran **superados ambos tests host específicos**, según la salida comunicada. Esto no convierte en verde la suite global `test-cuda-host`, que había reportado otros fallos, ni valida la ejecución CUDA en GPU.
+
+### Verificación del cableado del contador de scratch
+
+La revisión directa de la rama `fix/qwen35-cuda-lazy-scratch` confirma que la estimación sí llega al punto genérico de admisión:
+
+1. `zig/src/families/qwen3_5/cuda_native.zig` declara `Loaded.scratch_bytes`.
+2. `Qwen3.5.open()` lo inicializa con `try e.unallocatedScratchBytes()`.
+3. `zig/src/native/cuda.zig` lee el campo mediante `@hasField(L, "scratch_bytes")`, suma los bytes pendientes al consumo modelado y llama a `after.roomAfterPending(actual_model, unallocated_scratch)` antes de calcular el espacio para streams/cachés.
+
+Por tanto, la sospecha previa de que el método del motor estuviera desconectado era incorrecta y queda retirada. La secuencia de inicialización también importa: `Engine.init()` ejecuta `finishWarm()`, que llama al warmup antes de que `Qwen3.5.open()` construya `Loaded`; el cálculo de `scratch_bytes` refleja así la capacidad ya conseguida y el crecimiento que todavía podría quedar pendiente. Con `--prompt-precision int8`, el workspace opcional se prepara antes de construir `Loaded` y el estimador contempla su capacidad pendiente.
+
+### Estado actualizado
+
+- Tests host específicos de scratch y admisión: **superados** según la ejecución local comunicada.
+- Cableado `Engine.unallocatedScratchBytes() → Loaded.scratch_bytes → cuda.zig`: **verificado en código**.
+- Suite host global: **no superada**; los fallos generales anteriores siguen separados de los dos tests nuevos.
+- Compilación de kernels CUDA para sm_86: pendiente.
+- Inferencia y medición en RTX 3050: pendiente; no se ha solicitado todavía una nueva ejecución GPU.
+
+La salida silenciosa de los dos comandos no incluye contadores de tests, pero ambos procesos regresaron al prompt sin errores visibles.
