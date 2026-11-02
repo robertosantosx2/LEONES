@@ -20,7 +20,16 @@ pub fn write_report(path: &str) -> Result<(), String> {
     body.push_str(&format!("- GPU: {}\n", info.gpu));
     body.push_str(&format!("- CUDA Toolkit: {}\n\n", info.cuda));
 
-    body.push_str("## Inventario de modelos\n\n");
+    body.push_str("## Herramientas detectadas\n\n");
+    if data.tools.is_empty() {
+        body.push_str("- No se han localizado herramientas en PATH ni en rutas conocidas.\n");
+    } else {
+        for tool in &data.tools {
+            body.push_str(&format!("- {}: {}\n", tool.name, tool.path));
+        }
+    }
+
+    body.push_str("\n## Inventario de modelos\n\n");
     if data.models.is_empty() {
         body.push_str("- No se han encontrado entradas de modelos en las ubicaciones inspeccionadas.\n");
     } else {
