@@ -21,7 +21,7 @@ fi
 
 cargo fmt --all -- --check
 cargo test --locked
-cargo build --release --locked --target "$TARGET"
+CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc cargo build --release --locked --target "$TARGET"
 
 BIN="target/$TARGET/release/lab-agent"
 test -x "$BIN"
