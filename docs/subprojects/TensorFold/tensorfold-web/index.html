@@ -44,7 +44,69 @@ async function refreshHealth(){try{const h=await getJSON('/api/health');setStatu
 async function refreshModels(){try{const data=await getJSON('/api/v1/models');const models=data.data||data.models||[];const select=$('#modelSelect'),old=select.value;select.innerHTML='';models.forEach(m=>{const id=typeof m==='string'?m:m.id||m.name;if(id){const o=document.createElement('option');o.value=id;o.textContent=id;select.append(o);}});if(old&&[...select.options].some(o=>o.value===old))select.value=old;if(!select.options.length){const o=document.createElement('option');o.textContent='No models reported';o.value='';select.append(o);}$('#sendBtn').disabled=!select.value;$('#modelsOutput').textContent=JSON.stringify(data,null,2);}catch(e){$('#modelsOutput').textContent=e.message;$('#sendBtn').disabled=true;}}
 async function refreshDashboard(){try{await refreshHealth();}catch{}try{const s=await getJSON('/api/stats');$('#dashStats').textContent=JSON.stringify(s,null,2);}catch(e){$('#dashStats').textContent='Stats endpoint unavailable: '+e.message;}}
 function addMessage(role,text){$('#welcome')?.remove();const wrap=document.createElement('div');wrap.className='message '+role;const avatar=document.createElement('div');avatar.className='avatar';avatar.textContent=role==='user'?'Y':'T';const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=text;wrap.append(avatar,bubble);$('#messages').append(wrap);$('#messages').scrollTop=$('#messages').scrollHeight;return bubble;}
-async function send(){const prompt=$('#prompt').value.trim(),model=$('#modelSelect').value;if(!prompt||!model)return;$('#prompt').value='';$('#sendBtn').disabled=true;addMessage('user',prompt);history.push({role:'user',content:prompt});const out=addMessage('assistant','');let full='';try{const response=await fetch('/api/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:model,messages:history,stream:true})});if(!response.ok)throw new Error(response.status+': '+await response.text());const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='';while(true){const item=await reader.read();if(item.done)break;buffer+=decoder.decode(item.value,{stream:true});const lines=buffer.split('\n');buffer=lines.pop();for(const line of lines){if(!line.startsWith('data:'))continue;const data=line.slice(5).trim();if(data==='[DONE]')continue;try{const j=JSON.parse(data),delta=j.choices?.[0]?.delta?.content||'';if(delta){full+=delta;out.textContent=full;$('#messages').scrollTop=$('#messages').scrollHeight;}}catch{}}}if(!full)full='(The engine returned no text content.)';history.push({role:'assistant',content:full});}catch(e){out.textContent='Request failed: '+e.message;history.pop();}finally{$('#sendBtn').disabled=!$('#modelSelect').value;$('#prompt').focus();}}
+function extractText(value){
+ if(typeof value==='string')return value;
+ if(Array.isArray(value))return value.map(part=>typeof part==='string'?part:(part?.text||'')).join('');
+ return '';
+}
+async function send(){
+ const prompt=$('#prompt').value.trim(),model=$('#modelSelect').value;
+ if(!prompt||!model)return;
+ $('#prompt').value='';$('#sendBtn').disabled=true;
+ addMessage('user',prompt);history.push({role:'user',content:prompt});
+ const out=addMessage('assistant','');let full='',success=false;
+ try{
+  const response=await fetch('/api/v1/chat/completions',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({model,messages:history,stream:true})
+  });
+  if(!response.ok)throw new Error(response.status+': '+await response.text());
+  const type=response.headers.get('content-type')||'';
+  if(type.includes('application/json')){
+   const result=await response.json();
+   full=extractText(result.choices?.[0]?.message?.content||result.output_text);
+   if(!full)throw new Error('The engine returned JSON without a recognized text field.');
+   out.textContent=full;success=true;
+  }else{
+   const reader=response.body.getReader(),decoder=new TextDecoder();
+   let buffer='',eventData=[];
+   const renderEvent=()=>{
+    if(!eventData.length)return;
+    const data=eventData.join('\n');eventData=[];
+    if(data==='[DONE]')return;
+    let packet;
+    try{packet=JSON.parse(data);}catch{return;}
+    const delta=extractText(packet.choices?.[0]?.delta?.content);
+    if(delta){full+=delta;out.textContent=full;$('#messages').scrollTop=$('#messages').scrollHeight;}
+   };
+   const parseLines=(chunk,final=false)=>{
+    buffer+=chunk;
+    const lines=buffer.split('\n');buffer=final?'':lines.pop();
+    for(const raw of lines){
+     const line=raw.endsWith('\r')?raw.slice(0,-1):raw;
+     if(line===''){renderEvent();continue;}
+     if(line.startsWith('data:'))eventData.push(line.slice(5).replace(/^ /,''));
+    }
+    if(final){if(buffer.startsWith('data:'))eventData.push(buffer.slice(5).replace(/^ /,''));renderEvent();}
+   };
+   while(true){
+    const item=await reader.read();
+    if(item.done)break;
+    parseLines(decoder.decode(item.value,{stream:true}));
+   }
+   parseLines(decoder.decode(),true);
+   if(!full)throw new Error('The stream ended without text content. Check the Engine SSE format.');
+   success=true;
+  }
+  if(success)history.push({role:'assistant',content:full});
+ }catch(e){
+  out.textContent='Request failed: '+e.message;
+  history.pop();
+ }finally{
+  $('#sendBtn').disabled=!$('#modelSelect').value;
+  $('#prompt').focus();
+ }
+}
 $('#sendBtn').addEventListener('click',send);$('#prompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
 $('#refreshDashboard').addEventListener('click',refreshDashboard);$('#refreshModels').addEventListener('click',refreshModels);$('#modelSelect').addEventListener('change',()=>$('#sendBtn').disabled=!$('#modelSelect').value);
 (async()=>{try{await refreshHealth();}catch{}await refreshModels();})();setInterval(()=>{if($('#view-dashboard').classList.contains('active'))refreshDashboard();else refreshHealth().catch(()=>{});},10000);
