@@ -1,8 +1,8 @@
 # Qwen3.5-4B en TensorFold CUDA: geometría de scratch y admisión de memoria
 
 **Fecha:** 2026-11-02  
-**Estado:** análisis de código y corrección propuesta en PR; compilación y prueba GPU pendientes.  
-**Restricción de ejecución:** este trabajo se ha realizado sobre GitHub y documentación. No se ha utilizado el Ubuntu físico del equipo.
+**Estado:** comparación física baseline vs PR completada en Ubuntu el 2026-11-03; PR #1879 abierto y no fusionado.  
+**Alcance:** análisis de código, geometría de memoria, tests host aislados, compilación CUDA SM 86, carga e inferencia en RTX 3050 4 GiB y comparación controlada con el commit base. Los resultados y sus límites están diferenciados en las secciones cronológicas.
 
 ## 1. Resultado histórico que sirve de referencia
 
