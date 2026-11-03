@@ -45,6 +45,10 @@ The bridge serves files below its configured web root, rejects path traversal, s
 
 The default bind is loopback. Do not expose this server to a LAN or the public internet as-is. There is no user authentication, TLS termination, or multi-user isolation in this prototype. Keep the Engine and bridge on a trusted local machine.
 
+## Workspace menus (0.3.0)
+
+The Spanish workspace now includes working views for chat, model discovery, the native dashboard, local bots, activity history, projects, server diagnostics, API connectivity, and settings. Bots, projects, settings, and activity are stored in browser localStorage; they do not create remote records or modify the Engine. Bot instructions and project context are inserted as a system message into the next chat. Server values are read from the real `/health` and `/stats` responses; no performance metrics are simulated. The API connection view tests the health and model endpoints. The Engine URL remains a bridge startup setting (`--engine-url` or `TENSORFOLD_ENGINE_URL`).
+
 ## Current prototype limits
 
 - Statistics are displayed as raw JSON because the exact /stats schema varies by Engine build.
