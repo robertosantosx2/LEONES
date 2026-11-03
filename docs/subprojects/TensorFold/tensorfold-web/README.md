@@ -52,3 +52,11 @@ The default bind is loopback. Do not expose this server to a LAN or the public i
 - The TensorFold logo is loaded from the official TensorFold Hugging Face asset URL; a local checked-in asset is planned for offline use.
 
 Version 0.2.0 is the first source implementation in LEONES. It is not yet a verified release: run the local test checklist and record results before tagging or transferring it to TensorFold.
+
+## Smoke tests
+
+Run the standard-library static-serving checks from this directory:
+
+    python3 -m unittest discover -s tests -v
+
+The current tests cover the index route (including query strings), PNG MIME type, GET/HEAD behavior, missing files, and an unavailable Engine response. They are source-level tests and have not yet been executed on the target Ubuntu workstation.
