@@ -9,7 +9,7 @@ pub const TOOLS: &[&str] = &[
     "tensorfold-native",
     "llama-server", "llama-cli", "llama-bench",
     "ollama",
-    "vllm", "vllm serve",
+    "vllm",
     "strata", "strata-cli",
     "rustinstrata", "rust-instrata",
     "mistralrs", "hermes", "magnitude",
