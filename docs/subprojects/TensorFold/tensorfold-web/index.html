@@ -26,11 +26,19 @@ main{min-width:0;display:flex;flex-direction:column}.topbar{height:62px;border-b
 <div class="messages" id="messages"><div class="welcome" id="welcome"><img src="https://huggingface.co/spaces/TensorFold/README/resolve/main/tensorfold-logo.png" alt="TensorFold logo" onerror="this.style.display='none'"><h1>What would you like to explore?</h1><p>Chat with your local TensorFold model. Your prompts stay on this machine.</p></div></div>
 <div class="composer"><textarea id="prompt" rows="2" placeholder="Message TensorFold… (Enter to send, Shift+Enter for a new line)"></textarea><div class="composer-bottom"><div><select class="model-select" id="modelSelect"><option value="">Connect to load models</option></select><span class="hint" id="modelHint">Local inference</span></div><button class="send" id="sendBtn" disabled>↑ Send</button></div></div><div class="footnote">Requests are sent to your configured local TensorFold Engine.</div></div></section>
 <section class="view" id="view-dashboard"><div class="content"><div class="page-head"><div><h1>Engine dashboard</h1><p>Live status from the local TensorFold Engine.</p></div><button class="btn" id="refreshDashboard">Refresh</button></div>
-<div class="grid"><div class="card"><div class="card-label">Engine status</div><div class="card-value" id="dashStatus">Checking…</div><div class="card-note">GET /health</div></div>
-<div class="card"><div class="card-label">Loaded model</div><div class="card-value" id="dashModel">—</div><div class="card-note">Reported by engine</div></div>
+<div class="grid">
+<div class="card"><div class="card-label">Engine status</div><div class="card-value" id="dashStatus">Checking…</div><div class="card-note">GET /health</div></div>
+<div class="card"><div class="card-label">Loaded model</div><div class="card-value" id="dashModel">—</div><div class="card-note">Served model name</div></div>
 <div class="card"><div class="card-label">Backend / device</div><div class="card-value" id="dashDevice">—</div><div class="card-note">Reported by engine</div></div>
-<div class="card wide"><div class="card-label">Engine statistics</div><div class="json" id="dashStats">Waiting for /stats…</div></div>
-<div class="card wide"><div class="card-label">Health response</div><div class="json" id="dashHealth">Waiting for /health…</div></div></div></div></section>
+<div class="card"><div class="card-label">Decode speed</div><div class="card-value" id="statDecode">—</div><div class="card-note">decode_tokens_per_second</div></div>
+<div class="card"><div class="card-label">Prefill speed</div><div class="card-value" id="statPrefill">—</div><div class="card-note">prefill_tokens_per_second</div></div>
+<div class="card"><div class="card-label">Requests · running / waiting</div><div class="card-value" id="statRequests">—</div><div class="card-note">Scheduler snapshot</div></div>
+<div class="card"><div class="card-label">GPU memory · active / peak</div><div class="card-value" id="statMemory">—</div><div class="card-note">memory.active / memory.peak</div></div>
+<div class="card"><div class="card-label">Generated tokens · total</div><div class="card-value" id="statGenerated">—</div><div class="card-note">generation_tokens_total</div></div>
+<div class="card"><div class="card-label">Prompt tokens · total</div><div class="card-value" id="statPrompt">—</div><div class="card-note">prompt_tokens_total</div></div>
+<div class="card"><div class="card-label">Tokens in active generations</div><div class="card-value" id="statLiveTokens">—</div><div class="card-note">generation_tokens_running</div></div>
+<div class="card wide"><div class="card-label">Raw engine statistics</div><details><summary class="card-note">Show complete /stats JSON</summary><div class="json" id="dashStats">Waiting for /stats…</div></details></div>
+<div class="card wide"><div class="card-label">Health response</div><details><summary class="card-note">Show complete /health JSON</summary><div class="json" id="dashHealth">Waiting for /health…</div></details></div></div></div></section>
 <section class="view" id="view-models"><div class="content"><div class="page-head"><div><h1>Models</h1><p>Models currently exposed by the local engine.</p></div><button class="btn" id="refreshModels">Refresh models</button></div><div class="card"><div class="json" id="modelsOutput">Loading…</div></div></div></section>
 </main></div>
 <script>
@@ -42,7 +50,26 @@ async function getJSON(path){const r=await fetch(path,{cache:'no-store'});if(!r.
 function modelName(h){return h.model||h.model_id||h.model_name||(Array.isArray(h.model_ids)?h.model_ids.join(', '):'—');}
 async function refreshHealth(){try{const h=await getJSON('/api/health');setStatus(true);$('#modelHint').textContent=modelName(h);$('#dashStatus').textContent=h.status||'Online';$('#dashModel').textContent=modelName(h);$('#dashDevice').textContent=[h.backend,h.device||h.gpu||h.device_name].filter(Boolean).join(' · ')||'Not reported';$('#dashHealth').textContent=JSON.stringify(h,null,2);return h;}catch(e){setStatus(false,'Engine offline');$('#dashStatus').textContent='Offline';$('#dashHealth').textContent=e.message;throw e;}}
 async function refreshModels(){try{const data=await getJSON('/api/v1/models');const models=data.data||data.models||[];const select=$('#modelSelect'),old=select.value;select.innerHTML='';models.forEach(m=>{const id=typeof m==='string'?m:m.id||m.name;if(id){const o=document.createElement('option');o.value=id;o.textContent=id;select.append(o);}});if(old&&[...select.options].some(o=>o.value===old))select.value=old;if(!select.options.length){const o=document.createElement('option');o.textContent='No models reported';o.value='';select.append(o);}$('#sendBtn').disabled=!select.value;$('#modelsOutput').textContent=JSON.stringify(data,null,2);}catch(e){$('#modelsOutput').textContent=e.message;$('#sendBtn').disabled=true;}}
-async function refreshDashboard(){try{await refreshHealth();}catch{}try{const s=await getJSON('/api/stats');$('#dashStats').textContent=JSON.stringify(s,null,2);}catch(e){$('#dashStats').textContent='Stats endpoint unavailable: '+e.message;}}
+function numberText(value,suffix=''){return typeof value==='number'&&Number.isFinite(value)?new Intl.NumberFormat().format(value)+suffix:'—';}
+function rateText(value){return typeof value==='number'&&Number.isFinite(value)?new Intl.NumberFormat(undefined,{maximumFractionDigits:1}).format(value)+' tok/s':'—';}
+function bytesText(value){return typeof value==='number'&&Number.isFinite(value)?(value/1073741824).toFixed(2)+' GiB':'—';}
+async function refreshDashboard(){
+ try{await refreshHealth();}catch{}
+ try{
+  const s=await getJSON('/api/stats'),m=s.memory||{};
+  $('#dashStats').textContent=JSON.stringify(s,null,2);
+  $('#statDecode').textContent=rateText(s.decode_tokens_per_second);
+  $('#statPrefill').textContent=rateText(s.prefill_tokens_per_second);
+  $('#statRequests').textContent=numberText(s.running)+' / '+numberText(s.waiting);
+  $('#statMemory').textContent=bytesText(m.active)+' / '+bytesText(m.peak);
+  $('#statGenerated').textContent=numberText(s.generation_tokens_total);
+  $('#statPrompt').textContent=numberText(s.prompt_tokens_total);
+  $('#statLiveTokens').textContent=numberText(s.generation_tokens_running);
+ }catch(e){
+  $('#dashStats').textContent='Stats endpoint unavailable: '+e.message;
+  ['statDecode','statPrefill','statRequests','statMemory','statGenerated','statPrompt','statLiveTokens'].forEach(id=>$('#'+id).textContent='Unavailable');
+ }
+}
 function addMessage(role,text){$('#welcome')?.remove();const wrap=document.createElement('div');wrap.className='message '+role;const avatar=document.createElement('div');avatar.className='avatar';avatar.textContent=role==='user'?'Y':'T';const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=text;wrap.append(avatar,bubble);$('#messages').append(wrap);$('#messages').scrollTop=$('#messages').scrollHeight;return bubble;}
 function extractText(value){
  if(typeof value==='string')return value;
