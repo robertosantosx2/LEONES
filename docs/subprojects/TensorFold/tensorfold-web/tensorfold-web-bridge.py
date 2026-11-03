@@ -116,6 +116,14 @@ class Handler(BaseHTTPRequestHandler):
             raise ValueError("Invalid JSON request: " + str(exc))
 
     def do_GET(self):
+        if urlsplit(self.path).path == "/api/engine/log":
+            try:
+                with open(self.server.engine_log_path, "r", encoding="utf-8", errors="replace") as stream:
+                    content = stream.read()[-24000:]
+            except OSError:
+                content = ""
+            self.json_response(200, {"log": content})
+            return
         if urlsplit(self.path).path == "/api/engine/status":
             proc = self.server.engine_process
             running = proc is not None and proc.poll() is None
