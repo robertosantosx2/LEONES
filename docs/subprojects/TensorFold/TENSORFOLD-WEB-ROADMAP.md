@@ -1,6 +1,6 @@
 # TensorFold Web — development roadmap
 
-Status: initial implementation 0.2.0 created in branch feat/tensorfold-web-standalone.
+Status: implementation 0.2.0 in active development on feat/tensorfold-web-standalone. Source-level integration tests and the documented native stats schema have been added; target-machine execution remains pending.
 Later destination: robertosantosx2/TensorFold.
 LEONES remains the source of development until validation and review are complete.
 
@@ -9,10 +9,10 @@ Deliver a self-contained local interface for TensorFold Engine: chat, streaming,
 
 ## Milestones
 1. M0 — Base source: Python stdlib bridge, HTML/CSS/JS frontend, launcher, documentation.
-2. M1 — Functional compatibility: test /health, /stats, /v1/models, SSE chat, errors, and reconnection.
-3. M2 — UI and assets: local official logo, responsive layout, navigation, loading/error states, accessibility.
-4. M3 — Dashboard: identify the real /stats schema in Engine 1.2.0; display only verified metrics.
-5. M4 — Security and robustness: request limits, path traversal, client disconnects, timeouts, CORS/CSP, automated tests.
+2. M1 — Functional compatibility: source-level integration tests now cover /health, /stats, /v1/models, SSE forwarding, static assets, and error routes. Run the suite on Ubuntu and complete an actual browser-to-Engine chat test.
+3. M2 — UI and assets: responsive layout, navigation, model selection, live metric tiles, raw diagnostic JSON, and logo fallback are implemented. Check in the official logo as a local binary asset; complete accessibility review.
+4. M3 — Dashboard: native /stats schema verified against upstream status_routes.zig; dashboard renders decode/prefill rates, scheduler counts, memory, and token totals. Confirm against the user's running Engine 1.2.0 response.
+5. M4 — Security and robustness: request body limit, loopback default, path traversal protection, proxy timeouts, HTTPS engine URL support, and automated tests are implemented. Review client disconnect behavior, CORS/CSP, and production hardening.
 6. M5 — Release: reproducible tests on Ubuntu and RTX 3050; installation guide; versioning; review; transfer PR to TensorFold.
 
 ## Acceptance criteria
