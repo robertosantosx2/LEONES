@@ -23,12 +23,15 @@ class FakeEngineHandler(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
-        payload = (json.dumps({"status": "ok", "model": "test-model"})
+        self.server.last_path = self.path
+        payload = ('<!doctype html><script>const STATS_URL = location.pathname.replace(/\\/(dashboard)?\\/?$/, "") + "/stats?poll=1";</script>'
+                   if self.path == "/dashboard" else
+                   json.dumps({"status": "ok", "model": "test-model"})
                    if self.path == "/health" else
                    json.dumps({"data": [{"id": "test-model"}]})
                    if self.path == "/v1/models" else
                    json.dumps({"tokens_per_second": 12.5})
-                   if self.path == "/stats" else None)
+                   if self.path in ("/stats", "/stats?poll=1") else None)
         if payload is None:
             self.send_error(404)
             return
@@ -122,6 +125,18 @@ class BridgeIntegrationTests(unittest.TestCase):
     def test_stats_route_proxies_engine(self):
         with urlopen(self.base + "/api/stats") as response:
             self.assertEqual(json.load(response)["tokens_per_second"], 12.5)
+
+    def test_native_dashboard_route_proxies_engine_page(self):
+        with urlopen(self.base + "/api/dashboard") as response:
+            body = response.read().decode()
+            self.assertEqual(response.status, 200)
+            self.assertIn("STATS_URL", body)
+            self.assertEqual(self.engine.last_path, "/dashboard")
+
+    def test_native_dashboard_poll_query_reaches_stats(self):
+        with urlopen(self.base + "/api/stats?poll=1") as response:
+            self.assertEqual(json.load(response)["tokens_per_second"], 12.5)
+            self.assertEqual(self.engine.last_path, "/stats?poll=1")
 
     def test_models_route_proxies_engine(self):
         with urlopen(self.base + "/api/v1/models") as response:
