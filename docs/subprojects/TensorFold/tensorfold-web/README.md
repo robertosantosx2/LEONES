@@ -27,7 +27,7 @@ Requires Python 3.10+ and a running TensorFold Engine.
 
 Open http://127.0.0.1:8787/ .
 
-Or run ./run-tensorfold-web.sh .
+Or run `bash ./run-tensorfold-web.sh` (or make it executable once with `chmod +x run-tensorfold-web.sh` and then use `./run-tensorfold-web.sh`).
 
 ## API routes
 
