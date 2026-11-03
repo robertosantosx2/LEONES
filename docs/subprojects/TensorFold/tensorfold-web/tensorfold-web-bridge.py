@@ -29,8 +29,10 @@ class Handler(BaseHTTPRequestHandler):
     def proxy(self, path, method="GET", body=None):
         engine = self.server.engine
         try:
-            conn = http.client.HTTPConnection(engine.hostname, engine.port or 80,
-                                               timeout=300 if method == "POST" else 15)
+            conn_type = http.client.HTTPSConnection if engine.scheme == "https" else http.client.HTTPConnection
+            default_port = 443 if engine.scheme == "https" else 80
+            conn = conn_type(engine.hostname, engine.port or default_port,
+                              timeout=300 if method == "POST" else 15)
             headers = {}
             if self.headers.get("Content-Type"):
                 headers["Content-Type"] = self.headers["Content-Type"]
@@ -49,7 +51,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             if method != "HEAD":
                 while True:
-                    chunk = response.read(65536)
+                    chunk = response.read1(65536)
                     if not chunk:
                         break
                     self.wfile.write(chunk)
