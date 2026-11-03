@@ -103,8 +103,9 @@ También se contempla **[ewhacc/tandem.cpp](https://github.com/ewhacc/tandem.cpp
 
 Por tanto:
 - En el inventario aparece como tecnología asociada a llama.cpp, sin duplicar una instalación como si fuera otro runtime.
-- La mera presencia de `llama-server` o `llama-cli` no demuestra que el parche tandem.cpp esté aplicado.
-- La detección definitiva requiere una comprobación de capacidades del binario (por ejemplo, verificar que su ayuda expone `--moe-cache-mib`); hasta implementar esa sonda, el agente lo marca explícitamente como pendiente de verificación.
+- La mera presencia de `llama-server` o `llama-cli` no demuestra que el parche tandem.cpp esté aplicado; la sonda explícita consulta la capacidad anunciada por `llama-server`.
+- `lab-agent engines --probe` ejecuta únicamente `llama-server --help` (sin shell, sin modelo y sin iniciar un servidor), recoge stdout/stderr y busca `--moe-cache-mib`. La sonda es opt-in, tiene un límite de 2 segundos y clasifica el resultado como `VERIFIED`, `NOT DETECTED` o `UNKNOWN` (binario ausente, error o timeout).
+- `VERIFIED` significa que la ayuda anuncia la opción; no demuestra por sí solo que un modelo cargue correctamente ni valida rendimiento. `NOT DETECTED` no prueba de forma absoluta que sea upstream stock: puede ser otra build o una ayuda incompleta. La versión/commit y el hash del binario siguen siendo necesarios para trazabilidad.
 - Los benchmarks deberán comparar llama.cpp base y tandem.cpp con el mismo modelo, cuantización, contexto, prompt, generación y condiciones de GPU/CPU. Se registrará el commit base y el hash del parche/build para evitar atribuir resultados a la variante equivocada.
 
 La instalación y aplicación del parche quedan fuera de la detección automática: el agente no clona repositorios, no aplica parches ni recompila motores por su cuenta.
