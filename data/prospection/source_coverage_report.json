@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-02T12:31:33.914125+00:00",
+  "generated_at": "2026-11-03T11:59:13.810943+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -206,8 +206,8 @@
       "url": "https://git.zx2c4.com/cgit/",
       "kind": "git-web",
       "priority": "medium",
-      "status": "http_error",
-      "http_status": 502,
+      "status": "reachable",
+      "http_status": 200,
       "final_url": "https://git.zx2c4.com/cgit/",
       "authentication_configured": false
     },

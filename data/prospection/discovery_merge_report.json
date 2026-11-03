@@ -2,17 +2,16 @@
   "live_input": "data/prospection/live_discoveries.ndjson",
   "federated_input": "data/prospection/federated_discoveries.ndjson",
   "output": "data/prospection/discovery_input.ndjson",
-  "unique_discoveries": 269,
+  "unique_discoveries": 250,
   "unique_by_source": {
     "cgit-instance:git.zx2c4.com": 1,
-    "codeberg": 20,
     "forgejo-instance:gitea.com": 28,
     "fossil-instance:fossil-scm.org": 6,
     "framagit": 19,
     "github": 87,
-    "gitlab": 39,
+    "gitlab": 37,
     "huggingface": 40,
-    "huggingface-papers": 29
+    "huggingface-papers": 32
   },
   "multi_source_records": 0,
   "note": "Duplicate canonical URLs collapse to one record while all provenance records are preserved. License Gate remains independent."
