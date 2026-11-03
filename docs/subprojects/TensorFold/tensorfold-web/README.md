@@ -47,7 +47,7 @@ The default bind is loopback. Do not expose this server to a LAN or the public i
 
 ## Workspace menus (0.3.0)
 
-The Spanish workspace now includes working views for chat, model discovery, the native dashboard, local bots, activity history, projects, server diagnostics, API connectivity, and settings. Bots, projects, settings, and activity are stored in browser localStorage; they do not create remote records or modify the Engine. Bot instructions and project context are inserted as a system message into the next chat. Server values are read from the real `/health` and `/stats` responses; no performance metrics are simulated. The API connection view tests the health and model endpoints. The Engine URL remains a bridge startup setting (`--engine-url` or `TENSORFOLD_ENGINE_URL`).
+The Spanish workspace now includes working views for chat, model discovery, the native dashboard, local bots, history, projects, server diagnostics, API connectivity, and settings. Bots, projects, settings, and activity are stored in browser localStorage; they do not create remote records or modify the Engine. Bot instructions and project context are inserted as a system message into the next chat. Server values are read from the real `/health` and `/stats` responses; no performance metrics are simulated. The API connection view tests the health and model endpoints. The Engine URL remains a bridge startup setting (`--engine-url` or `TENSORFOLD_ENGINE_URL`).
 
 ## Current prototype limits
 
