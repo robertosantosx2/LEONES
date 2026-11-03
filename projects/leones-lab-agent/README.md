@@ -97,6 +97,18 @@ Opciones: `--tokens` (1..4096, predeterminado 256), `--reps` (1..5, predetermina
 
 La evidencia contiene el recibo original de TensorFold, `stdout.log`, `stderr.log` y `manifest.json` propio con argumentos, versión declarada, modelo, configuración, tiempo, código de salida y SHA-256 del recibo. El estado `RECEIPT_SAVED_UNVERIFIED` indica que el motor guardó un JSON; no se eleva a `MEASURED` hasta implementar un validador contra una versión concreta del esquema de recibos. No se publica automáticamente.
 
+## tandem.cpp (parche MoE para llama.cpp)
+
+También se contempla **[ewhacc/tandem.cpp](https://github.com/ewhacc/tandem.cpp)** como variante/parche de llama.cpp, no como un motor independiente ni como un ejecutable separado. El proyecto publica un conjunto de parches sobre una revisión concreta de llama.cpp; conserva los binarios y la interfaz de llama.cpp y añade, entre otras cosas, la opción `--moe-cache-mib` para controlar la caché de expertos MoE en VRAM.
+
+Por tanto:
+- En el inventario aparece como tecnología asociada a llama.cpp, sin duplicar una instalación como si fuera otro runtime.
+- La mera presencia de `llama-server` o `llama-cli` no demuestra que el parche tandem.cpp esté aplicado.
+- La detección definitiva requiere una comprobación de capacidades del binario (por ejemplo, verificar que su ayuda expone `--moe-cache-mib`); hasta implementar esa sonda, el agente lo marca explícitamente como pendiente de verificación.
+- Los benchmarks deberán comparar llama.cpp base y tandem.cpp con el mismo modelo, cuantización, contexto, prompt, generación y condiciones de GPU/CPU. Se registrará el commit base y el hash del parche/build para evitar atribuir resultados a la variante equivocada.
+
+La instalación y aplicación del parche quedan fuera de la detección automática: el agente no clona repositorios, no aplica parches ni recompila motores por su cuenta.
+
 ## Fuentes inspeccionadas
 
 - Caché estándar de Hugging Face: ~/.cache/huggingface/hub.
