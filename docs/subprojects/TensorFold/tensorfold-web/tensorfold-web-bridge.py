@@ -98,19 +98,23 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         routes = {"/api/health": "/health", "/api/stats": "/stats",
-                  "/api/v1/models": "/v1/models"}
-        path = urlsplit(self.path).path
+                  "/api/dashboard": "/dashboard", "/api/v1/models": "/v1/models"}
+        parsed = urlsplit(self.path)
+        path = parsed.path
         if path in routes:
-            self.proxy(routes[path])
+            target = routes[path] + (("?" + parsed.query) if parsed.query else "")
+            self.proxy(target)
         else:
             self.static()
 
     def do_HEAD(self):
         routes = {"/api/health": "/health", "/api/stats": "/stats",
-                  "/api/v1/models": "/v1/models"}
-        path = urlsplit(self.path).path
+                  "/api/dashboard": "/dashboard", "/api/v1/models": "/v1/models"}
+        parsed = urlsplit(self.path)
+        path = parsed.path
         if path in routes:
-            self.proxy(routes[path], "HEAD")
+            target = routes[path] + (("?" + parsed.query) if parsed.query else "")
+            self.proxy(target, "HEAD")
         else:
             self.static(head=True)
 
