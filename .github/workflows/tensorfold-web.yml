@@ -1,0 +1,35 @@
+name: TensorFold Web standard-library tests
+
+on:
+  push:
+    branches: [feat/tensorfold-web-standalone]
+    paths:
+      - "docs/subprojects/TensorFold/tensorfold-web/**"
+      - ".github/workflows/tensorfold-web.yml"
+  pull_request:
+    paths:
+      - "docs/subprojects/TensorFold/tensorfold-web/**"
+      - ".github/workflows/tensorfold-web.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: \${{ matrix.python-version }}
+      - name: Compile bridge and tests
+        working-directory: docs/subprojects/TensorFold/tensorfold-web
+        run: python -m py_compile tensorfold-web-bridge.py tests/test_bridge_static.py
+      - name: Run integration tests
+        working-directory: docs/subprojects/TensorFold/tensorfold-web
+        run: python -m unittest discover -s tests -v
