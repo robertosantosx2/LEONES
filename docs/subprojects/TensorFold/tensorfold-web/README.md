@@ -7,7 +7,7 @@ Lightweight local web UI for TensorFold Engine. Development starts in LEONES; a 
 - Plain HTML, CSS, and JavaScript.
 - Local-first: bridge binds to 127.0.0.1 by default.
 - OpenAI-compatible chat streaming through /v1/chat/completions.
-- Engine health, model discovery, and a dashboard based on the native `/stats` fields.
+- Engine health, model discovery, and the original TensorFold native `/dashboard` page embedded in the Web UI.
 - Static assets (PNG, SVG, CSS, JS) served with MIME types and GET/HEAD support.
 
 ## Architecture
@@ -35,6 +35,7 @@ Or run `bash ./run-tensorfold-web.sh` (or make it executable once with `chmod +x
 |---|---|---|
 | /api/health | /health | GET, HEAD |
 | /api/stats | /stats | GET, HEAD |
+| /api/dashboard | /dashboard | GET, HEAD |
 | /api/v1/models | /v1/models | GET, HEAD |
 | /api/v1/chat/completions | /v1/chat/completions | POST, streamed |
 
@@ -61,6 +62,12 @@ Run the standard-library static-serving checks from this directory:
 
 The standard-library integration tests cover the index route (including query strings), PNG MIME type, GET/HEAD behavior, missing files, encoded path traversal, health/stats/model proxying, SSE chat forwarding, and unavailable/unknown routes. They are source-level tests and have not yet been executed on the target Ubuntu workstation.
 
+## Native dashboard integration
+
+The Dashboard view embeds the Engine's original `GET /dashboard` HTML page in a same-origin iframe. That page owns its dial, five-minute decode history, prefill queue, memory meter, scheduler tiles and lifetime totals. Its `/stats?poll=1` requests are proxied through `/api/stats?poll=1`; the bridge preserves the query string. This avoids maintaining a second, divergent dashboard implementation.
+
+The native page and `/stats` are opt-in: start TensorFold Engine with `--dashboard`. If that flag is absent, the Engine returns 404 for these routes. TensorFold Web does not restart or change the Engine automatically.
+
 ## Dashboard data contract
 
 The UI follows the native TensorFold `GET /stats` snapshot when the Engine is started with `--dashboard`:
@@ -72,7 +79,7 @@ The UI follows the native TensorFold `GET /stats` snapshot when the Engine is st
 - `mtp_drafted_total`, `mtp_accepted_total`, `decode_rounds_total`
 - `memory.active`, `memory.cache`, `memory.peak`, optional `memory.limit`
 
-The current dashboard surfaces the most useful live values and keeps the complete response available for diagnostics. Memory counters are bytes and are displayed as GiB. Optional/missing values are not fabricated.
+The native dashboard renders these values and its own live history/visualizations. Memory counters are bytes and are displayed as GiB. Optional/missing values are not fabricated.
 
 The native `/health` response supplies the served model name, backend, device and readiness state. `/stats` and `/dashboard` are opt-in Engine routes and return 404 if the Engine was not started with `--dashboard`.
 
