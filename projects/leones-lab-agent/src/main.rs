@@ -19,7 +19,7 @@ fn print_help() {
          Agente local autocontenido de inventario, asistencia y benchmarks supervisados.\n\n\
          USO:\n\
            lab-agent doctor [--json]       Diagnóstico del sistema\n\
-           lab-agent engines               Detectar motores y herramientas\n\
+           lab-agent engines [--probe]    Detectar motores; --probe verifica tandem.cpp con --help\n\
            lab-agent models [--json]       Inventariar modelos locales\n\
            lab-agent inventory [--json]    Inventario consolidado\n\
            lab-agent ask [OPCIONES] P      Consultar un LLM local con herramientas seguras\n\
@@ -101,7 +101,7 @@ fn run() -> Result<(), String> {
                 system::print_report()
             }
         }
-        "engines" => detect::print_engines(),
+        "engines" => detect::print_engines(&rest),
         "models" | "inventory" => {
             let data = inventory::collect();
             if has_json(&rest) {
