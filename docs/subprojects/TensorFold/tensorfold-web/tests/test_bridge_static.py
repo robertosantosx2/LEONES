@@ -86,7 +86,7 @@ class BridgeIntegrationTests(unittest.TestCase):
 
     def test_workspace_navigation_views_are_present(self):
         index = SOURCE.with_name("index.html").read_text(encoding="utf-8")
-        for view in ("chat", "models", "dashboard", "bots", "activity", "projects", "server", "api", "settings"):
+        for view in ("chat", "models", "dashboard", "bots", "history", "projects", "server", "api", "settings"):
             self.assertIn('data-view="' + view + '"', index)
             self.assertIn('id="view-' + view + '"', index)
 
