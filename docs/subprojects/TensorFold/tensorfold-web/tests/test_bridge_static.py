@@ -84,6 +84,12 @@ class BridgeIntegrationTests(unittest.TestCase):
         cls.engine_thread.join(timeout=2)
         cls.temp.cleanup()
 
+    def test_workspace_navigation_views_are_present(self):
+        index = SOURCE.with_name("index.html").read_text(encoding="utf-8")
+        for view in ("chat", "models", "dashboard", "bots", "activity", "projects", "server", "api", "settings"):
+            self.assertIn('data-view="' + view + '"', index)
+            self.assertIn('id="view-' + view + '"', index)
+
     def test_root_serves_index(self):
         with urlopen(self.base + "/") as response:
             self.assertEqual(response.status, 200)
