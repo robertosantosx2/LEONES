@@ -88,6 +88,7 @@ pub fn print_engines() -> Result<(), String> {
             None => println!("[--] {}: runtime no encontrado; no se infiere que esté instalado", engine.id),
         }
     }
+    println!("[~] tandem.cpp: parche de llama.cpp, no runtime independiente; requiere validar la opción --moe-cache-mib para confirmar que el parche está aplicado.");
     println!("\nHerramientas auxiliares:");
     let mut found = 0usize;
     for tool in TOOLS {
