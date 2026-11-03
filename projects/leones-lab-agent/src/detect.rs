@@ -2,6 +2,9 @@ use std::env;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
+use std::thread;
+use std::time::{Duration, Instant};
 
 /// Runtime launchers and supporting tools. Presence is not proof that a service
 /// is running or that a particular model/backend is usable.
@@ -78,7 +81,41 @@ pub fn find_executable(name: &str) -> Option<PathBuf> {
     known_candidates(name).into_iter().find(|path| is_executable(path))
 }
 
-pub fn print_engines() -> Result<(), String> {
+/// Consulta la ayuda del binario sin cargar modelos ni iniciar un servidor.
+fn probe_tandem(path: &Path) -> String {
+    let mut child = match Command::new(path).arg("--help")
+        .stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn() {
+        Ok(child) => child,
+        Err(error) => return format!("UNKNOWN (no se pudo ejecutar --help: {error})"),
+    };
+    let deadline = Instant::now() + Duration::from_secs(2);
+    let mut timed_out = false;
+    loop {
+        match child.try_wait() {
+            Ok(Some(_)) => break,
+            Ok(None) if Instant::now() < deadline => thread::sleep(Duration::from_millis(25)),
+            Ok(None) => { timed_out = true; let _ = child.kill(); break; }
+            Err(error) => {
+                let _ = child.kill(); let _ = child.wait();
+                return format!("UNKNOWN (falló la sonda: {error})");
+            }
+        }
+    }
+    let output = match child.wait_with_output() {
+        Ok(output) => output,
+        Err(error) => return format!("UNKNOWN (no se pudo recoger --help: {error})"),
+    };
+    if timed_out { return "UNKNOWN (timeout de 2 s al consultar --help)".to_string(); }
+    let mut help = String::from_utf8_lossy(&output.stdout).into_owned();
+    help.push_str(&String::from_utf8_lossy(&output.stderr));
+    if help.contains("--moe-cache-mib") {
+        "VERIFIED (llama-server --help anuncia --moe-cache-mib)".to_string()
+    } else {
+        "NOT DETECTED (la ayuda no anuncia --moe-cache-mib; puede ser llama.cpp base u otra build)".to_string()
+    }
+}
+
+pub fn print_engines(args: &[String]) -> Result<(), String> {
     println!("LEONES LAB AGENT — DETECCIÓN DE MOTORES");
     for engine in ENGINES {
         let found = engine.executables.iter().find_map(|exe| find_executable(exe));
@@ -88,7 +125,14 @@ pub fn print_engines() -> Result<(), String> {
             None => println!("[--] {}: runtime no encontrado; no se infiere que esté instalado", engine.id),
         }
     }
-    println!("[~] tandem.cpp: parche de llama.cpp, no runtime independiente; requiere validar la opción --moe-cache-mib para confirmar que el parche está aplicado.");
+    if args.iter().any(|arg| arg == "--probe") {
+        match find_executable("llama-server") {
+            Some(path) => println!("[tandem.cpp] {}: {}", path.display(), probe_tandem(&path)),
+            None => println!("[tandem.cpp] UNKNOWN: no se encontró llama-server para consultar --help"),
+        }
+    } else {
+        println!("[~] tandem.cpp: parche de llama.cpp, no runtime independiente; usa `lab-agent engines --probe` para consultar --moe-cache-mib en la ayuda de llama-server.");
+    }
     println!("\nHerramientas auxiliares:");
     let mut found = 0usize;
     for tool in TOOLS {
