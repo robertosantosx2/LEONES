@@ -69,6 +69,9 @@ class BridgeIntegrationTests(unittest.TestCase):
 
         cls.server = ThreadingHTTPServer(("127.0.0.1", 0), MODULE.Handler)
         cls.server.web_root = cls.root
+        cls.server.engine_process = None
+        cls.server.engine_lock = threading.Lock()
+        cls.server.engine_log_path = str(cls.root / "engine.log")
         cls.server.engine = urlparse("http://127.0.0.1:" + str(cls.engine.server_port))
         cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
         cls.thread.start()
@@ -83,6 +86,23 @@ class BridgeIntegrationTests(unittest.TestCase):
         cls.engine.server_close()
         cls.engine_thread.join(timeout=2)
         cls.temp.cleanup()
+
+    def test_engine_status_and_log_routes(self):
+        with urlopen(self.base + "/api/engine/status") as response:
+            status = json.load(response)
+        self.assertFalse(status["running"])
+        with urlopen(self.base + "/api/engine/log") as response:
+            self.assertEqual(json.load(response)["log"], "")
+
+    def test_engine_manager_ui_is_present(self):
+        index = SOURCE.with_name("index.html").read_text(encoding="utf-8")
+        for element in ("engineBinary", "engineModel", "inspectEngine", "startEngine", "stopEngine"):
+            self.assertIn('id="' + element + '"', index)
+
+    def test_engine_control_routes_are_present(self):
+        bridge = SOURCE.read_text(encoding="utf-8")
+        for route in ("/api/engine/inspect", "/api/engine/start", "/api/engine/stop", "/api/engine/status"):
+            self.assertIn(route, bridge)
 
     def test_workspace_navigation_views_are_present(self):
         index = SOURCE.with_name("index.html").read_text(encoding="utf-8")
