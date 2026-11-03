@@ -91,3 +91,10 @@ Upstream references:
 - [TensorFold API contract](https://github.com/ashhart/TensorFold/blob/main/docs/api.md)
 - [Native stats snapshot implementation](https://github.com/ashhart/TensorFold/blob/main/zig/src/server/status_routes.zig)
 - [Native live status fields](https://github.com/ashhart/TensorFold/blob/main/zig/src/server/live.zig)
+
+
+## Engine process manager
+
+The Server view can inspect the installed native CLI (`capabilities --json` and `serve --help`), render supported parameters, launch a managed `tensorfold-native serve MODEL ...` process, query its PID/status, read its startup log, and stop only the process started by this Web UI. The process is launched with an argument array (never through a shell), and stdout/stderr are appended to `~/.local/state/tensorfold-web/engine.log`. Process-control routes are restricted to localhost clients; keep the bridge bound to loopback.
+
+Parameter help is sourced from the installed executable. Known common settings display range guidance and a practical starting value; options not in the curated list are shown as detected flags and can be supplied through the extra-arguments field. Blank optional sampling fields preserve model defaults. Memory-sensitive values are starting points, not guarantees: check the model's supported context and available RAM/VRAM.
