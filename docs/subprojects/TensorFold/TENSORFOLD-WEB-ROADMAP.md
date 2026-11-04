@@ -1,7 +1,7 @@
 # TensorFold Web — development roadmap
 
-Status: implementation 0.2.0 in active development on feat/tensorfold-web-standalone. Source-level integration tests and the documented native stats schema have been added; target-machine execution remains pending.
-Later destination: robertosantosx2/TensorFold.
+Status: implementation candidate in active development on feat/tensorfold-web-standalone. CI passes on Python 3.10, 3.12 and 3.14. The target Ubuntu browser/Engine/Pake runtime and native dashboard polling remain pending. This is not a production release.
+Upstream destination: ash​​hart/TensorFold (official repository: https://github.com/ashhart/TensorFold). LEONES is the staging and development source until maintainers review the transfer proposal.
 LEONES remains the source of development until validation and review are complete.
 
 ## Goal
@@ -27,6 +27,8 @@ Deliver a self-contained local interface for TensorFold Engine: chat, streaming,
 - Pake configuration points to the local bridge origin, never to a public hosted Engine; packaged desktop app can reach the bridge and stream chat.
 - Ubuntu Pake build produces the selected installer formats and a standalone executable; Windows/macOS packaging is verified on native runners before release.
 - Reproducible tests documented before a stable release.
+- Full engineering record and decision log maintained in [ARCHITECTURE-AND-ENGINEERING-RECORD.md](tensorfold-web/ARCHITECTURE-AND-ENGINEERING-RECORD.md).
+- Upstream maintainers have reviewed the proposed architecture before a TensorFold-side code PR is opened.
 
 ## Decisions
 - Keep frontend and bridge separate from Engine source.
@@ -64,3 +66,21 @@ Official Pake references:
 - https://pake.run/docs/cli/options
 - https://pake.run/docs/cli/advanced
 - https://github.com/tw93/Pake
+
+
+## Evidence and release status
+
+| Evidence layer | Status |
+|---|---|
+| Python compilation / standard-library suite | Passed in CI |
+| Python matrix 3.10 / 3.12 / 3.14 | Passed |
+| Shell syntax and Pake/PWA JSON validation | Passed in CI |
+| Live Engine chat and model discovery on target Ubuntu | Pending target-machine run |
+| Native dashboard assets and polling in browser | Pending target-machine run |
+| PWA installation/update behavior | Pending target-browser run |
+| Pake Ubuntu native build and runtime | Pending; no package artifact claimed |
+| Windows/macOS native packages | Not started |
+| Security/accessibility review | Pending |
+| Upstream TensorFold maintainer acceptance | Pending |
+
+The detailed rationale, architecture, security model, limitations, trade-offs, evidence levels and transfer gates are recorded in [ARCHITECTURE-AND-ENGINEERING-RECORD.md](tensorfold-web/ARCHITECTURE-AND-ENGINEERING-RECORD.md).
