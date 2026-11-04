@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "TensorFold Web",
+  "short_name": "TensorFold",
+  "description": "Local web interface for TensorFold Engine",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#101116",
+  "theme_color": "#101116",
+  "icons": [
+    {
+      "src": "/tensorfold-web-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

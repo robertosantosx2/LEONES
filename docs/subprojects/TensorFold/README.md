@@ -12,6 +12,11 @@
 - [Issue upstream #1827](https://github.com/ashhart/TensorFold/issues/1827) — seguimiento con mantenedores.
 - [Commit upstream que introduce chunks de 4096 filas](https://github.com/ashhart/TensorFold/commit/c50b59a23418c3f8436db68827ab8fe45ea5c603).
 
+## TensorFold Web (desarrollo activo en LEONES)
+
+- [TensorFold Web — código fuente 0.2.0](tensorfold-web/README.md) — chat SSE, descubrimiento de modelos, dashboard de estado y bridge Python sin dependencias.
+- [TensorFold Web — hoja de ruta](TENSORFOLD-WEB-ROADMAP.md) — hitos de validación, seguridad y transferencia posterior al repositorio TensorFold.
+
 ## Resumen técnico
 
 La auditoría inicial identificó que la capacidad máxima de filas del prompt (4096 frente a 128) inflaba la reserva anticipada de scratch. El parche posterior separa el scratch del arena de pesos y lo asigna de forma diferida según las filas requeridas, con crecimiento controlado y gestión segura de CUDA Graphs.
