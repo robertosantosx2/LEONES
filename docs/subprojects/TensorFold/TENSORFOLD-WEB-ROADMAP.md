@@ -50,11 +50,11 @@ PWA and Pake are complementary delivery targets, not alternatives:
 1. Start TensorFold Engine as usual (do not restart it from this packaging step).
 2. Start TensorFold Web bridge on loopback:
    ```bash
-   ./run-tensorfold-web.sh
+   bash ./run-tensorfold-web.sh
    ```
 3. In another terminal, verify `http://127.0.0.1:8787/` and then build:
    ```bash
-   ./build-pake.sh
+   bash ./build-pake.sh
    ```
 4. Install/open the generated Ubuntu package or run the retained binary. Verify model discovery, a streamed chat, navigation, and (if Engine was started with `--dashboard`) the native dashboard.
 5. Record Pake CLI version, Rust/Node versions, output file names, build result and runtime checks in the validation log. A successful package build alone is not proof that bridge lifecycle or Engine features work.
