@@ -24,7 +24,7 @@ This file is the evidence log for the first native desktop packaging test. Do no
 | Check | Result | Evidence / notes |
 |---|---|---|
 | Pake window opens | Pending | |
-| Local bridge reachable at 127.0.0.1:8787 | Pending | |
+| Local bridge reachable at 127.0.0.1:8789 | Pending | |
 | Engine health visible | Pending | |
 | Models discovered | Pending | |
 | Chat SSE streams progressively | Pending | |
