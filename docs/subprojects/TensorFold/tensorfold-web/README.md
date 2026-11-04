@@ -133,16 +133,16 @@ sudo apt install -y libdbus-1-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev \
   libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libglib2.0-dev pkg-config
 ```
 
-Start the bridge in one terminal:
+Start the bridge on an isolated port in one terminal, leaving any existing service on 8787 untouched:
 
 ```bash
-./run-tensorfold-web.sh
+TENSORFOLD_WEB_PORT=8789 bash ./run-tensorfold-web.sh
 ```
 
-Build the desktop package from another terminal:
+Build the desktop package from another terminal, targeting that same local port:
 
 ```bash
-bash ./build-pake.sh
+TENSORFOLD_WEB_URL=http://127.0.0.1:8789/ bash ./build-pake.sh
 ```
 
 The Pake config selects Ubuntu DEB and AppImage outputs and asks Pake to retain the raw executable. Exact artifact paths are printed by Pake's JSON result. Build outputs are generated locally and are not committed.
