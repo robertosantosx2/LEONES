@@ -1,5 +1,7 @@
 # TensorFold Web
 
+> Full engineering record: [ARCHITECTURE-AND-ENGINEERING-RECORD.md](ARCHITECTURE-AND-ENGINEERING-RECORD.md) — objectives, architecture, technologies, security, constraints, compromises, evidence, roadmap and upstream transfer plan.
+
 Lightweight local web UI for TensorFold Engine. Development starts in LEONES; a reviewed release will later be transferred to the TensorFold repository.
 
 ## Principles
@@ -27,7 +29,7 @@ Requires Python 3.10+ and a running TensorFold Engine.
 
 Open http://127.0.0.1:8787/ .
 
-Or run `bash bash ./run-tensorfold-web.sh` (or make it executable once with `chmod +x run-tensorfold-web.sh` and then use `./run-tensorfold-web.sh`).
+Or run `bash ./run-tensorfold-web.sh` (or make it executable once with `chmod +x run-tensorfold-web.sh` and then use `./run-tensorfold-web.sh`).
 
 ## API routes
 
@@ -56,7 +58,7 @@ The Spanish workspace now includes working views for chat, model discovery, the 
 - Conversations are held in browser memory only and are not persisted.
 - The TensorFold logo currently loads from the official TensorFold Hugging Face asset URL with a visual fallback. A checked-in local binary asset is still required for fully offline operation.
 
-Version 0.2.0 is the first source implementation in LEONES. It is not yet a verified release: run the local test checklist and record results before tagging or transferring it to TensorFold.
+This is a staging prototype, not a verified release. The automated CI matrix has passed; the target Ubuntu runtime and native Pake package remain unverified. See [PAKE-VALIDATION.md](PAKE-VALIDATION.md) and the full engineering record before any release or upstream transfer.
 
 ## Smoke tests
 
@@ -64,7 +66,7 @@ Run the standard-library static-serving checks from this directory:
 
     python3 -m unittest discover -s tests -v
 
-The standard-library integration tests cover the index route (including query strings), PNG MIME type, GET/HEAD behavior, missing files, encoded path traversal, health/stats/model proxying, SSE chat forwarding, and unavailable/unknown routes. They are source-level tests and have not yet been executed on the target Ubuntu workstation.
+The standard-library integration tests cover the index route (including query strings), static asset MIME types, GET/HEAD behavior, missing files, encoded path traversal, health/stats/model proxying, SSE chat forwarding, native dashboard forwarding, PWA assets and Pake configuration. CI runs these tests on Python 3.10, 3.12 and 3.14. These checks do not replace the pending live browser/Engine/Pake tests on the target Ubuntu workstation.
 
 ## Native dashboard integration
 
