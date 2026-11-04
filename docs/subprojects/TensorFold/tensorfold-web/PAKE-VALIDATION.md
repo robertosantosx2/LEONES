@@ -15,7 +15,7 @@ This file is the evidence log for the first native desktop packaging test. Do no
 | Node.js version | Pending |
 | Rust version | Pending |
 | WebKitGTK version | Pending |
-| Build command | `./build-pake.sh` |
+| Build command | `bash ./build-pake.sh` |
 | Build exit code | Pending |
 | Output artifacts | Pending |
 
@@ -47,14 +47,14 @@ This file is the evidence log for the first native desktop packaging test. Do no
 Terminal 1:
 
 ```bash
-./run-tensorfold-web.sh
+bash ./run-tensorfold-web.sh
 ```
 
 Terminal 2:
 
 ```bash
 curl -fsS http://127.0.0.1:8787/ >/dev/null
-./build-pake.sh
+bash ./build-pake.sh
 ```
 
 Open the generated DEB/AppImage or standalone executable and complete the runtime checklist above.
