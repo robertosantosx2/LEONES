@@ -27,7 +27,7 @@ Requires Python 3.10+ and a running TensorFold Engine.
 
 Open http://127.0.0.1:8787/ .
 
-Or run `bash ./run-tensorfold-web.sh` (or make it executable once with `chmod +x run-tensorfold-web.sh` and then use `./run-tensorfold-web.sh`).
+Or run `bash bash ./run-tensorfold-web.sh` (or make it executable once with `chmod +x run-tensorfold-web.sh` and then use `./run-tensorfold-web.sh`).
 
 ## API routes
 
@@ -142,7 +142,7 @@ Start the bridge in one terminal:
 Build the desktop package from another terminal:
 
 ```bash
-./build-pake.sh
+bash ./build-pake.sh
 ```
 
 The Pake config selects Ubuntu DEB and AppImage outputs and asks Pake to retain the raw executable. Exact artifact paths are printed by Pake's JSON result. Build outputs are generated locally and are not committed.
