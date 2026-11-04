@@ -60,7 +60,7 @@ class BridgeIntegrationTests(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         cls.root = Path(cls.temp.name)
         (cls.root / "index.html").write_text("<h1>TensorFold Web test</h1>")
-        (cls.root / "tensorfold-logo.png").write_bytes(b"\\x89PNG\\r\\n\\x1a\\nfake-test-image")
+        (cls.root / "tensorfold-logo.png").write_bytes(bytes.fromhex("89504e470d0a1a0a") + b"fake-test-image")
         (cls.root / "manifest.webmanifest").write_text(json.dumps({"name": "TensorFold Web"}))
         (cls.root / "service-worker.js").write_text('if (url.pathname.startsWith("/api/")) return;')
         (cls.root / "tensorfold-web-icon.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg"></svg>')
