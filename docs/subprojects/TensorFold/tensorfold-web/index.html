@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101116"><title>TensorFold Web</title>
+<meta name="theme-color" content="#101116"><meta name="description" content="Interfaz local para TensorFold Engine"><link rel="manifest" href="/manifest.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="TensorFold Web"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="icon" href="/tensorfold-web-icon.svg" type="image/svg+xml"><title>TensorFold Web</title>
 <style>
 :root{color-scheme:dark;--bg:#101116;--panel:#171922;--panel2:#1d202b;--line:#303340;--text:#f1f1f6;--muted:#969bad;--accent:#a78bfa;--green:#55d6a1;--red:#ff7c8b;--yellow:#e8c779;font:14px/1.5 Inter,ui-sans-serif,system-ui,sans-serif}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}button,input,textarea,select{font:inherit}button{cursor:pointer;color:inherit}
@@ -112,5 +112,6 @@ function loadSettings(){const s=readStore(STORE.settings,{autoRefresh:true,inter
 function applySettings(){const s={autoRefresh:$('#autoRefresh').checked,interval:Number($('#refreshInterval').value)||10};writeStore(STORE.settings,s);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(()=>{if(s.autoRefresh){refreshHealth().catch(()=>{});if($('#view-server').classList.contains('active'))refreshServer();}},s.interval*1000);$('#settingsMessage').textContent='Ajustes guardados. No se ha modificado la configuración del motor.';}
 $('#saveSettings').onclick=()=>{applySettings();record('Ajustes guardados','Preferencias locales');};$('#clearLocal').onclick=()=>{if(confirm('¿Eliminar todos los bots, proyectos y registros de actividad guardados en este navegador?')){Object.values(STORE).filter(k=>k!==STORE.settings).forEach(k=>localStorage.removeItem(k));activeBot=null;activeProject=null;renderBots();renderProjects();renderActivity();$('#settingsMessage').textContent='Datos locales eliminados.';}};
 (async()=>{loadSettings();applySettings();try{await refreshHealth();}catch{}await refreshModels();renderEndpoints();})(); 
+if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='127.0.0.1' || location.hostname==='localhost')){window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js').catch(err=>console.warn('PWA service worker unavailable:',err)));}
 </script>
 </body></html>
