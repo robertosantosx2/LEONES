@@ -98,3 +98,69 @@ Upstream references:
 The Server view can inspect the installed native CLI (`capabilities --json` and `serve --help`), render supported parameters, launch a managed `tensorfold-native serve MODEL ...` process, query its PID/status, read its startup log, and stop only the process started by this Web UI. The process is launched with an argument array (never through a shell), and stdout/stderr are appended to `~/.local/state/tensorfold-web/engine.log`. Process-control routes are restricted to localhost clients; keep the bridge bound to loopback.
 
 Parameter help is sourced from the installed executable. Known common settings display range guidance and a practical starting value; options not in the curated list are shown as detected flags and can be supplied through the extra-arguments field. Blank optional sampling fields preserve model defaults. Memory-sensitive values are starting points, not guarantees: check the model's supported context and available RAM/VRAM.
+
+
+## PWA installation
+
+The web frontend includes a web app manifest and a service worker for installability and an offline application shell. The service worker deliberately bypasses every `/api/*` route: chat, model discovery, Engine status, statistics and the native dashboard require a live bridge and Engine. Offline availability does not imply offline inference.
+
+In a browser, open the local bridge URL and use the browser's install action when offered. The app remains responsive on narrow/mobile screens; verify installation and standalone display on the target browser before release.
+
+## Pake desktop app (experimental)
+
+Pake is the native desktop wrapper for this same local web UI. It is configured to open `http://127.0.0.1:8787/`, not a remote website and not the raw static directory. This preserves same-origin calls to the Python bridge.
+
+### Build on Ubuntu
+
+Prerequisites from Pake's current CLI documentation:
+- Node.js 20.9 or newer.
+- Rust 1.85 or newer.
+- Pake's Linux/Tauri dependencies (WebKitGTK 4.1, GTK, DBus, libsoup and build tools).
+
+Install the Pake CLI if needed:
+
+```bash
+npm install -g pake-cli
+pake --version
+```
+
+Install Ubuntu build dependencies (only if not already present):
+
+```bash
+sudo apt update
+sudo apt install -y libdbus-1-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev \
+  libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev \
+  libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libglib2.0-dev pkg-config
+```
+
+Start the bridge in one terminal:
+
+```bash
+./run-tensorfold-web.sh
+```
+
+Build the desktop package from another terminal:
+
+```bash
+./build-pake.sh
+```
+
+The Pake config selects Ubuntu DEB and AppImage outputs and asks Pake to retain the raw executable. Exact artifact paths are printed by Pake's JSON result. Build outputs are generated locally and are not committed.
+
+### Important runtime boundary
+
+Pake packages the WebView frontend only. It does **not** bundle or install the Python bridge, TensorFold Engine, CUDA runtime, or model weights. In this first test, the bridge must already be running on loopback before opening the Pake application. Closing the Pake window does not stop the bridge or Engine. This intentionally avoids terminating an unrelated or user-managed service.
+
+### Desktop smoke checklist
+
+- [ ] Pake CLI version and build prerequisites recorded.
+- [ ] Ubuntu DEB/AppImage and retained executable generated.
+- [ ] Packaged window opens the local TensorFold Web UI.
+- [ ] Engine health and model list load.
+- [ ] Chat streams tokens without buffering.
+- [ ] Dashboard loads only when Engine was started with `--dashboard`.
+- [ ] Closing the Pake window leaves the bridge and Engine untouched.
+- [ ] Small-window/responsive layout remains usable.
+- [ ] No claim of Windows/macOS support until native builds are tested.
+
+Pake upstream documentation: https://pake.run/docs/cli/getting-started · https://pake.run/docs/cli/options · https://pake.run/docs/cli/advanced
