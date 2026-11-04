@@ -1,6 +1,6 @@
 # TensorFold Web
 
-> Full engineering record: [ARCHITECTURE-AND-ENGINEERING-RECORD.md](ARCHITECTURE-AND-ENGINEERING-RECORD.md) — objectives, architecture, technologies, security, constraints, compromises, evidence, roadmap and upstream transfer plan.
+> Full engineering record: [ARCHITECTURE-AND-ENGINEERING-RECORD.md](ARCHITECTURE-AND-ENGINEERING-RECORD.md) — objectives, architecture, technologies, security, constraints, compromises, evidence, roadmap and upstream transfer plan. The maintainer-facing proposal is in [UPSTREAM-TRANSFER-PROPOSAL.md](UPSTREAM-TRANSFER-PROPOSAL.md).
 
 Lightweight local web UI for TensorFold Engine. Development starts in LEONES; a reviewed release will later be transferred to the TensorFold repository.
 
