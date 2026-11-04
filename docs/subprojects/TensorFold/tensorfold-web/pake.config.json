@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tw93/Pake/main/schema/pake.schema.json",
+  "url": "http://127.0.0.1:8787/",
+  "name": "TensorFold Web",
+  "identifier": "dev.tensorfold.web",
+  "title": "TensorFold Web",
+  "appVersion": "0.3.0",
+  "width": 1440,
+  "height": 920,
+  "minWidth": 720,
+  "minHeight": 560,
+  "maximize": true,
+  "darkMode": true,
+  "restoreLastUrl": false,
+  "keepBinary": true,
+  "bundle": true,
+  "targets": "deb,appimage"
+}
