@@ -1,7 +1,7 @@
 # TensorFold Web — development roadmap
 
 Status: implementation candidate in active development on feat/tensorfold-web-standalone. CI passes on Python 3.10, 3.12 and 3.14. The target Ubuntu browser/Engine/Pake runtime and native dashboard polling remain pending. This is not a production release.
-Upstream destination: ash​​hart/TensorFold (official repository: https://github.com/ashhart/TensorFold). LEONES is the staging and development source until maintainers review the transfer proposal.
+Upstream destination: ashhart/TensorFold (official repository: https://github.com/ashhart/TensorFold). LEONES is the staging and development source until maintainers review the transfer proposal.
 LEONES remains the source of development until validation and review are complete.
 
 ## Goal
