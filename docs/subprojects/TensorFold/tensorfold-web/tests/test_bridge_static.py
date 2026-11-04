@@ -60,7 +60,10 @@ class BridgeIntegrationTests(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         cls.root = Path(cls.temp.name)
         (cls.root / "index.html").write_text("<h1>TensorFold Web test</h1>")
-        (cls.root / "tensorfold-logo.png").write_bytes(b"\x89PNG\r\n\x1a\nfake-test-image")
+        (cls.root / "tensorfold-logo.png").write_bytes(b"\\x89PNG\\r\\n\\x1a\\nfake-test-image")
+        (cls.root / "manifest.webmanifest").write_text(json.dumps({"name": "TensorFold Web"}))
+        (cls.root / "service-worker.js").write_text('if (url.pathname.startsWith("/api/")) return;')
+        (cls.root / "tensorfold-web-icon.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg"></svg>')
 
         cls.engine = ThreadingHTTPServer(("127.0.0.1", 0), FakeEngineHandler)
         cls.engine.last_request = None
@@ -109,6 +112,32 @@ class BridgeIntegrationTests(unittest.TestCase):
         for view in ("chat", "models", "dashboard", "bots", "history", "projects", "server", "api", "settings"):
             self.assertIn('data-view="' + view + '"', index)
             self.assertIn('id="view-' + view + '"', index)
+
+    def test_pwa_manifest_is_served_as_json(self):
+        with urlopen(self.base + "/manifest.webmanifest") as response:
+            self.assertEqual(response.status, 200)
+            self.assertEqual(json.load(response)["name"], "TensorFold Web")
+
+    def test_service_worker_is_served_and_bypasses_api(self):
+        with urlopen(self.base + "/service-worker.js") as response:
+            body = response.read().decode()
+            self.assertIn('url.pathname.startsWith("/api/")', body)
+
+    def test_pwa_icon_is_served_as_svg(self):
+        with urlopen(self.base + "/tensorfold-web-icon.svg") as response:
+            self.assertEqual(response.headers.get_content_type(), "image/svg+xml")
+            self.assertIn(b"<svg", response.read())
+
+    def test_pwa_registration_is_present_in_frontend(self):
+        index = SOURCE.with_name("index.html").read_text(encoding="utf-8")
+        self.assertIn('rel="manifest"', index)
+        self.assertIn("navigator.serviceWorker.register('/service-worker.js')", index)
+
+    def test_pake_config_targets_local_bridge(self):
+        config = json.loads(SOURCE.with_name("pake.config.json").read_text(encoding="utf-8"))
+        self.assertEqual(config["url"], "http://127.0.0.1:8787/")
+        self.assertEqual(config["targets"], "deb,appimage")
+        self.assertTrue(config["keepBinary"])
 
     def test_root_serves_index(self):
         with urlopen(self.base + "/") as response:
