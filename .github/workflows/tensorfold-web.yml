@@ -30,6 +30,12 @@ jobs:
       - name: Compile bridge and tests
         working-directory: docs/subprojects/TensorFold/tensorfold-web
         run: python -m py_compile tensorfold-web-bridge.py tests/test_bridge_static.py
+      - name: Validate Pake script and JSON manifests
+        working-directory: docs/subprojects/TensorFold/tensorfold-web
+        run: |
+          bash -n build-pake.sh
+          python -m json.tool pake.config.json >/dev/null
+          python -m json.tool manifest.webmanifest >/dev/null
       - name: Run integration tests
         working-directory: docs/subprojects/TensorFold/tensorfold-web
         run: python -m unittest discover -s tests -v
