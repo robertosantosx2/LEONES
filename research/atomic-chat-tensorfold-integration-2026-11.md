@@ -175,6 +175,8 @@ La prueba de concepto no debe modificar la instalación de Atomic Chat ni los se
 - Atomic Chat Core: https://github.com/AtomicBot-ai/atomic-chat-core
 - Atomic Chat Core agent instructions: https://github.com/AtomicBot-ai/atomic-chat-core/blob/main/AGENTS.md
 - Atomic Chat Core plan: https://github.com/AtomicBot-ai/atomic-chat-core/blob/main/PLAN.md
+- Core contract map: [atomic-chat-tensorfold-core-contracts-2026-11.md](atomic-chat-tensorfold-core-contracts-2026-11.md)
+- App integration map: [atomic-chat-tensorfold-app-contracts-2026-11.md](atomic-chat-tensorfold-app-contracts-2026-11.md)
 - Atomic Chat runtime configuration: https://github.com/AtomicBot-ai/atomic-chat-conf
 - PoC LEONES: https://github.com/robertosantosx2/LEONES/tree/research/atomic-chat-tensorfold-linux-cuda/experiments/atomic-chat-tensorfold
 - TensorFold: https://github.com/ashhart/TensorFold
