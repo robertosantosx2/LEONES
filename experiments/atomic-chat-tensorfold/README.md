@@ -6,8 +6,10 @@ This proof of concept checks whether the installed TensorFold Native CLI can be 
 
 - Linux x86_64 + NVIDIA CUDA.
 - Python 3 standard library only (no pip packages).
-- TensorFold Native 1.2.0 (or a compatible build).
+- TensorFold Native 1.2.3 (or a compatible build).
 - A model checkpoint already downloaded and supported by the installed TensorFold build.
+
+The reference machine has TensorFold Native 1.2.3 installed at `~/.local/opt/tensorfold-1.2.3-linux-x86_64/bin/tensorfold-native`. The release archive checksum was verified. Only version and capability discovery have been validated so far; model inference has not yet been run.
 
 The script does not install software, download models, edit Atomic Chat settings, or touch any pre-existing server. It selects a free loopback port, starts only the child process it owns, checks the API, and terminates that child.
 
@@ -24,7 +26,7 @@ For a cached Hugging Face repository ID, pass the exact ID if the installed Tens
 Optional environment:
 
 ```bash
-TENSORFOLD_BIN="$HOME/.local/opt/tensorfold-1.2.0-linux-x86_64/bin/tensorfold-native" \
+TENSORFOLD_BIN="$HOME/.local/opt/tensorfold-1.2.3-linux-x86_64/bin/tensorfold-native" \
 TENSORFOLD_CONTEXT=2048 \
 TENSORFOLD_TIMEOUT=300 \
 python3 poc.py /path/to/model
