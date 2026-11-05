@@ -60,6 +60,20 @@ def free_port() -> int:
         return int(sock.getsockname()[1])
 
 
+def build_command(model: str, port: int, name: str = "atomic-tensorfold-poc") -> list[str]:
+    """Build a loopback-only, single-slot CUDA server command without shell parsing."""
+    return [
+        str(BIN), "serve", model,
+        "--name", name,
+        "--host", "127.0.0.1",
+        "--port", str(port),
+        "--parallel", "1",
+        "--context", str(CONTEXT),
+        "--backend", "cuda",
+        "--no-update-check",
+    ]
+
+
 def main() -> int:
     if not MODEL:
         fail("Pass an already-downloaded local TensorFold checkpoint directory or cached repository ID.")
@@ -90,17 +104,7 @@ def main() -> int:
         )
 
     port = free_port()
-    name = "atomic-tensorfold-poc"
-    command = [
-        str(BIN), "serve", MODEL,
-        "--name", name,
-        "--host", "127.0.0.1",
-        "--port", str(port),
-        "--parallel", "1",
-        "--context", str(CONTEXT),
-        "--backend", "cuda",
-        "--no-update-check",
-    ]
+    command = build_command(MODEL, port)
     print(f"[3/6] Starting child process on 127.0.0.1:{port}")
     print("argv:", json.dumps(command))
     child = subprocess.Popen(
