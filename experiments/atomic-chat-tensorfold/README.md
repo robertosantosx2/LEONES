@@ -42,6 +42,17 @@ python3 poc.py /path/to/model
 6. `POST /v1/chat/completions` in normal and SSE streaming modes.
 7. Child-only shutdown, with SIGKILL fallback after a grace period.
 
+## Offline checks
+
+The PoC helper tests use only Python's standard library and do not start TensorFold, allocate VRAM or download a model:
+
+```bash
+python3 -m py_compile poc.py tests/test_poc.py
+python3 -m unittest discover -s tests -v
+```
+
+The LEONES pull request also runs these checks in GitHub Actions on changes to this experiment. A green CI result validates the helper code only; it does not replace the live CUDA/model/API acceptance test.
+
 ## Interpretation
 
 A pass proves only that this TensorFold binary/model combination exposes the tested local API. It does not yet prove Atomic Core integration, GPU arbitration, model catalog compatibility, tool calling, vision, structured output, embeddings, or cross-platform support. The script intentionally does not claim those capabilities.
