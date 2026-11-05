@@ -63,6 +63,10 @@ BENCHMARK A01 → MEASURED
 - Desinstalación independiente; LEONES se conserva como último nivel.
 - Cadena post-recomendación: selección humana → stack → runtime → A01 → MEASURED.
 
+## Experimentos recientes
+
+- [Tandem.cpp + Qwen3.5-35B-A3B en RTX 3050: baseline de 512 MiB y plan de comparación 768 MiB](docs/experimental/tandem-qwen35-35b-a3b-rtx3050-2026-11-05.md) — mediciones físicas del 2026-11-05.
+
 ## RC4 Beta
 
 La rama `rc4-fitllm-recommender` dispone de una guía específica para los beta testers:
