@@ -21,9 +21,9 @@ La primera entrega se limita a **Linux x86_64 + NVIDIA CUDA**. La compatibilidad
 
 El README de `atomic-chat-core` describe el núcleo TypeScript, el servidor OpenAI-compatible en `http://localhost:1337/v1` y los runtimes locales y gestionados. La versión inspeccionada durante esta investigación es `0.21.4`.
 
-Las instrucciones de `atomic-chat-core/AGENTS.md` sitúan el ciclo de vida de motores gestionados en `src/runtime/managed-text/`, los adaptadores específicos en `src/runtime/<engine>/`, la coordinación en `src/core/managed-engines.ts` y los contratos públicos en `src/contracts/`.
+Las instrucciones de `atomic-chat-core/AGENTS.md` describen tanto motores gestionados en contenedores como runtimes nativos supervisados por el core. El código actual ya contiene runtimes nativos como Foundry Local, LiteRT-LM y GenieX. Estos reutilizan `LocalRuntime`, `SidecarTable`, `spawnAndAwaitReady`, la ocupación GPU y el gateway de sesiones (`src/runtime/managed-text/`) sin convertir cada motor en un contenedor.
 
-El patrón gestionado actual está orientado a motores en contenedores (TensorRT-LLM, vLLM y SGLang). Sus descriptores se publican en `atomic-chat-conf/runtimes/` y contienen metadatos, no comandos ni scripts. No se debe asumir que ese patrón Docker sea automáticamente el adecuado para TensorFold.
+Los motores TensorRT-LLM, vLLM y SGLang siguen una ruta diferente: ciclo de vida de contenedor y descriptores de datos en `atomic-chat-conf/runtimes/`. Para TensorFold, el patrón nativo existente es la referencia adecuada; no se debe añadir Docker ni un descriptor de contenedor salvo que una prueba técnica demuestre que hace falta.
 
 ### TensorFold
 
@@ -54,9 +54,9 @@ La salida de capacidades registrada para 1.2.0 incluye `qwen3_5` con `mlx-q4g64`
 
 La solución no debe limitarse a pedir al usuario que arranque TensorFold en el puerto 8080 y configure un proveedor genérico. Eso serviría como workaround inmediato, pero no cumpliría el objetivo de que TensorFold sea un motor integrado, visible y gestionable desde Atomic Chat.
 
-### Adaptador de proceso nativo
+### Adaptador de runtime nativo (dirección recomendada)
 
-La hipótesis preferida es implementar TensorFold como un runtime nativo supervisado por el core:
+El diseño debe seguir los runtimes nativos actuales, especialmente `src/runtime/litert-lm/runtime.ts` y `src/runtime/foundry-local/runtime.ts`: `LocalRuntime`, `SidecarTable`, `spawnAndAwaitReady`, `randomFreePort`, `generateGatewayKey` / `startManagedGateway` y el hook de ocupación GPU. No se debe introducir una segunda arquitectura de lifecycle.
 
 1. El core localiza y valida el ejecutable `tensorfold-native` (o una ruta configurada explícitamente).
 2. El core comprueba versión, capacidades, plataforma, driver y modelo antes del arranque.
@@ -66,11 +66,9 @@ La hipótesis preferida es implementar TensorFold como un runtime nativo supervi
 6. El core supervisa logs, errores, parada, cancelación y limpieza del proceso.
 7. La interfaz permite seleccionar TensorFold y sus modelos, y muestra los estados reales del motor.
 
-Debe reutilizarse el ciclo de vida y las utilidades compartidas de `src/runtime/shared/` y el gateway común cuando el contrato actual lo permita. No se debe duplicar el servidor HTTP público ni crear un segundo router.
+El runtime nativo ya utiliza el gateway compartido para no exponer directamente el servidor del motor: el cliente recibe un puerto y clave de sesión del gateway, no el puerto interno de TensorFold. El gateway permite declarar rutas explícitas (inicialmente `GET /v1/models` y `POST /v1/chat/completions`) y retransmite streaming sin crear otro servidor público. El runtime debe registrar su proveedor en los contratos y wiring de `AtomicCore`, igual que los runtimes nativos existentes.
 
-### Decisión pendiente de confirmar con el código
-
-Antes de escribir el adaptador hay que determinar si la abstracción `managed-text` admite de forma limpia un motor nativo sin contenedor. Si sus invariantes exigen Docker/WSL, no se debe forzar TensorFold dentro de esa ruta: se añadirá una abstracción de runtime nativo reutilizando los contratos comunes de sesión, ocupación GPU, readiness y routing. Esta decisión requiere pruebas de diseño sobre la versión actual del core y, si cambia una decisión estable, un ADR.
+La primera revisión de código debe estudiar `src/runtime/litert-lm/runtime.ts`, `src/runtime/foundry-local/runtime.ts`, `src/runtime/shared/process.ts`, `src/runtime/managed-text/gateway.ts` y los registros de proveedor en `src/core/create.ts`. Solo se propondrá un ADR si la integración exige cambiar una decisión arquitectónica estable.
 
 ## 4. Contrato funcional de la primera entrega
 
@@ -131,7 +129,8 @@ La prueba de concepto no debe modificar la instalación de Atomic Chat ni los se
 
 ### Fase C — Atomic Chat Core
 
-- Implementar el adaptador y contratos necesarios.
+- Implementar `src/runtime/tensorfold/` siguiendo el patrón nativo (runtime, host/process probe, model metadata y tests).
+- Añadir `tensorfold` a `LocalProviderId`, contratos de modelo/settings/eventos necesarios y wiring de `src/core/create.ts`.
 - Añadir settings, selección de motor y rutas de carga/descarga/cancelación según las convenciones actuales.
 - Integrar ocupación GPU, readiness, health, logs y routing.
 - Añadir tests unitarios, de contrato, e2e y live opt-in.
