@@ -36,7 +36,7 @@ python3 poc.py /path/to/model
 
 1. `tensorfold-native --version`.
 2. `tensorfold-native capabilities --json`.
-3. Launch with argv (no shell), loopback bind and a dynamically selected port.
+3. Launch with argv (no shell), loopback bind, a dynamically selected port, explicit CUDA backend and update checks disabled.
 4. `GET /health`.
 5. `GET /v1/models`.
 6. `POST /v1/chat/completions` in normal and SSE streaming modes.
