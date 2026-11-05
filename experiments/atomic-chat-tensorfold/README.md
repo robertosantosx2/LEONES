@@ -11,7 +11,7 @@ This proof of concept checks whether the installed TensorFold Native CLI can be 
 
 The reference machine has TensorFold Native 1.2.3 installed at `~/.local/opt/tensorfold-1.2.3-linux-x86_64/bin/tensorfold-native`. The release archive checksum was verified. Only version and capability discovery have been validated so far; model inference has not yet been run.
 
-The script does not install software, download models, edit Atomic Chat settings, or touch any pre-existing server. It selects a free loopback port, starts only the child process it owns, checks the API, and terminates that child.
+The script does not install software, download models, edit Atomic Chat settings, or touch any pre-existing server. It checks that the binary declares CUDA and that GPU 0 has at least 3072 MiB free by default before loading a model. This is a safety floor, not a guarantee that the checkpoint will fit. It selects a free loopback port, starts only the child process it owns, checks the API, and terminates that child.
 
 ## Run
 
@@ -23,7 +23,7 @@ python3 poc.py /absolute/path/to/an/already-downloaded/model
 
 For a cached Hugging Face repository ID, pass the exact ID if the installed TensorFold CLI can resolve it locally.
 
-Optional environment:
+Optional environment (the VRAM floor can be raised; lowering it is an explicit risk acceptance):
 
 ```bash
 TENSORFOLD_BIN="$HOME/.local/opt/tensorfold-1.2.3-linux-x86_64/bin/tensorfold-native" \
@@ -36,7 +36,7 @@ python3 poc.py /path/to/model
 
 1. `tensorfold-native --version`.
 2. `tensorfold-native capabilities --json`.
-3. Launch with argv (no shell), loopback bind, a dynamically selected port, explicit CUDA backend and update checks disabled.
+3. Verify CUDA capability and a configurable minimum free-VRAM floor (default 3072 MiB), then launch with argv (no shell), loopback bind, a dynamically selected port, explicit CUDA backend and update checks disabled.
 4. `GET /health`.
 5. `GET /v1/models`.
 6. `POST /v1/chat/completions` in normal and SSE streaming modes.
