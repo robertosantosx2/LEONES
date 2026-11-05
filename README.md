@@ -4,6 +4,11 @@
 
 IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y evidenciar — sin confundir ESTIMATED con MEASURED.
 
+## Perfiles y benchmarks de hardware
+
+- Equipo de pruebas Ubuntu MSI Thin 15 B12UC: [perfil de hardware y software](hardware/UBUNTU-MSI-THIN-15-B12UC.md).
+- TwIL-8B Q4_K_M en RTX 3050 Laptop con llama.cpp CUDA: [informe de benchmark y metodología](docs/TWIL-8B-Q4_K_M-RTX3050-2026-11-05.md).
+
 ## RC4 — estado actual (2026-09-07)
 
 **Regla de autoridad:** LEONES descubre el hardware y conserva procedencia. FitLLM/LLMFit es preselector (ESTIMATED). El usuario elige modelo y stack. Solo una ejecución física autorizada produce MEASURED.
