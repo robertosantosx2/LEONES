@@ -61,12 +61,13 @@ A capability declaration is not proof that a specific checkpoint loads or fits t
 | Architecture | sm86 |
 | VRAM | 4096 MiB total |
 | Used VRAM | 2714 MiB |
+| Free VRAM | 1382 MiB |
 | Driver | 580.178.04 |
 | CUDA shown by driver | 13.0 |
 | Temperature | 42 °C |
 | Existing process | pre-existing `llama-server` using 2685 MiB |
 
-The existing `llama-server` was not stopped, modified or signalled. No TensorFold server or model was started. The remaining free VRAM was not treated as sufficient for a model-load test.
+The existing `llama-server` was not stopped, modified or signalled. No TensorFold server or model was started. The remaining 1382 MiB free was below the PoC's new default 3072 MiB safety floor, so a model-load attempt would be refused before spawning TensorFold. This guard is a conservative preflight, not a guarantee that a checkpoint fits.
 
 ## Executable discovery
 
