@@ -2,7 +2,7 @@
 
 Agente local autocontenido en Rust para diagnóstico, inventario de modelos y herramientas, y preparación de investigación reproducible dentro de LEONES.
 
-**Versión:** 0.4.0.  
+**Versión:** 0.5.0.  
 **Estado:** inventario de solo lectura por defecto; benchmarks locales solo con autorización explícita.  
 **Plataforma:** Linux x86_64 (objetivo inicial).  
 **Licencia:** AGPL-3.0-only.
@@ -83,6 +83,33 @@ Cada ejecución aprobada calcula SHA-256 del GGUF mediante una implementación s
 
 El LLM de `ask` no tiene acceso a la herramienta de benchmark. La ejecución de experimentos queda fuera del ciclo conversacional y requiere que el usuario lance el comando con `--approve`.
 
+## Benchmarks TensorFold (native)
+
+TensorFold dispone de su propio protocolo de benchmark y recibo; no se trata como si fuera llama-bench ni se mezclan sus métricas. El runner `benchmark-tensorfold` invoca únicamente `tensorfold-native benchmark` con argumentos internos acotados.
+
+    lab-agent benchmark-tensorfold --model owner/repo
+    lab-agent benchmark-tensorfold --model owner/repo --tokens 256 --reps 3
+    lab-agent benchmark-tensorfold --model owner/repo --approve
+
+Sin `--approve` solo se muestra el plan. El checkpoint debe existir previamente en la caché local o ser un directorio completo ya descargado. El agente no ejecuta `pull`, no descarga ni publica recibos. El modelo se pasa como ID Hugging Face o ruta local; no se aceptan flags arbitrarios, URLs, revisiones inline ni shell.
+
+Opciones: `--tokens` (1..4096, predeterminado 256), `--reps` (1..5, predeterminado 3), `--timeout` (30..1800 s, predeterminado 900), `--output` (directorio nuevo), `--approve`. La temperatura se fija a 0 para repetibilidad inicial.
+
+La evidencia contiene el recibo original de TensorFold, `stdout.log`, `stderr.log` y `manifest.json` propio con argumentos, versión declarada, modelo, configuración, tiempo, código de salida y SHA-256 del recibo. El estado `RECEIPT_SAVED_UNVERIFIED` indica que el motor guardó un JSON; no se eleva a `MEASURED` hasta implementar un validador contra una versión concreta del esquema de recibos. No se publica automáticamente.
+
+## tandem.cpp (parche MoE para llama.cpp)
+
+También se contempla **[ewhacc/tandem.cpp](https://github.com/ewhacc/tandem.cpp)** como variante/parche de llama.cpp, no como un motor independiente ni como un ejecutable separado. El proyecto publica un conjunto de parches sobre una revisión concreta de llama.cpp; conserva los binarios y la interfaz de llama.cpp y añade, entre otras cosas, la opción `--moe-cache-mib` para controlar la caché de expertos MoE en VRAM.
+
+Por tanto:
+- En el inventario aparece como tecnología asociada a llama.cpp, sin duplicar una instalación como si fuera otro runtime.
+- La mera presencia de `llama-server` o `llama-cli` no demuestra que el parche tandem.cpp esté aplicado; la sonda explícita consulta la capacidad anunciada por `llama-server`.
+- `lab-agent engines --probe` ejecuta únicamente `llama-server --help` (sin shell, sin modelo y sin iniciar un servidor), recoge stdout/stderr y busca `--moe-cache-mib`. La sonda es opt-in, tiene un límite de 2 segundos y clasifica el resultado como `VERIFIED`, `NOT DETECTED` o `UNKNOWN` (binario ausente, error o timeout).
+- `VERIFIED` significa que la ayuda anuncia la opción; no demuestra por sí solo que un modelo cargue correctamente ni valida rendimiento. `NOT DETECTED` no prueba de forma absoluta que sea upstream stock: puede ser otra build o una ayuda incompleta. La versión/commit y el hash del binario siguen siendo necesarios para trazabilidad.
+- Los benchmarks deberán comparar llama.cpp base y tandem.cpp con el mismo modelo, cuantización, contexto, prompt, generación y condiciones de GPU/CPU. Se registrará el commit base y el hash del parche/build para evitar atribuir resultados a la variante equivocada.
+
+La instalación y aplicación del parche quedan fuera de la detección automática: el agente no clona repositorios, no aplica parches ni recompila motores por su cuenta.
+
 ## Fuentes inspeccionadas
 
 - Caché estándar de Hugging Face: ~/.cache/huggingface/hub.
@@ -104,7 +131,7 @@ Las rutas son acotadas intencionadamente. No se recorren discos completos ni se 
 | RUNNING | Ejecución confirmada |
 | MEASURED | Benchmark con métricas y protocolo registrados |
 
-El inventario solo asigna CACHE_ENTRY y WEIGHTS_PRESENT. El runner puede asignar MEASURED únicamente tras validar métricas llama-bench. AVAILABLE, LOAD_VERIFIED y RUNNING no se infieren.
+El inventario solo asigna CACHE_ENTRY y WEIGHTS_PRESENT. El runner llama-bench puede asignar MEASURED tras validar sus métricas. TensorFold conserva RECEIPT_SAVED_UNVERIFIED hasta validar su esquema/versionado de recibo. AVAILABLE, LOAD_VERIFIED y RUNNING no se infieren.
 
 ## Esquema de salida JSON
 
@@ -115,7 +142,7 @@ La estructura de `inventory --json`, `models --json` y `doctor --json` está doc
 - Diagnóstico, inventario y ask son de solo lectura.
 - El informe y los directorios de evidencia se escriben únicamente a petición del usuario.
 - El comando ask no ejecuta benchmarks ni puede invocar el runner.
-- El runner solo ejecuta llama-bench con `--approve`, límites de recursos y un GGUF validado.
+- Los runners solo ejecutan llama-bench (GGUF) o tensorfold-native benchmark (checkpoint ya local) con `--approve`, límites y argumentos allowlist.
 - No llama a APIs de proveedores.
 - No lee secretos, .env, tokens ni contraseñas.
 - No inicia, detiene ni reinicia servicios.
