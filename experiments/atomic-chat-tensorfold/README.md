@@ -50,5 +50,5 @@ A pass proves only that this TensorFold binary/model combination exposes the tes
 ## Reference-machine evidence
 
 - [TensorFold Native 1.2.3 installation and capability record](evidence/tensorfold-1.2.3-install-and-capabilities-2026-11-05.md)
-- [Atomic Core integration contract map](../../../research/atomic-chat-tensorfold-core-contracts-2026-11.md)
-- [Atomic Chat app integration map](../../../research/atomic-chat-tensorfold-app-contracts-2026-11.md)
+- [Atomic Core integration contract map](../../research/atomic-chat-tensorfold-core-contracts-2026-11.md)
+- [Atomic Chat app integration map](../../research/atomic-chat-tensorfold-app-contracts-2026-11.md)
