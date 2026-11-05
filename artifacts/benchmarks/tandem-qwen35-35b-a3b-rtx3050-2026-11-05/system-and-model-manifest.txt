@@ -1,0 +1,121 @@
+2026-11-05T10:35:33+01:00
+
+Linux ssantos-msi 7.0.0-38-generic #38-Ubuntu SMP PREEMPT_DYNAMIC Fri Sep  4 09:10:14 UTC 2026 x86_64 GNU/Linux
+
+Arquitectura:                             x86_64
+modo(s) de operación de las CPUs:         32-bit, 64-bit
+Tamaños de las direcciones:               39 bits physical, 48 bits virtual
+Orden de los bytes:                       Little Endian
+CPU(s):                                   16
+Lista de la(s) CPU(s) en línea:           0-15
+ID de fabricante:                         GenuineIntel
+Nombre del modelo:                        12th Gen Intel(R) Core(TM) i7-12650H
+Familia de CPU:                           6
+Modelo:                                   154
+Hilo(s) de procesamiento por núcleo:      2
+Núcleo(s) por «socket»:                   10
+«Socket(s)»:                              1
+Revisión:                                 3
+CPU(s) factor de escala MHz:              14%
+CPU MHz máx.:                             4700,0000
+CPU MHz mín.:                             400,0000
+BogoMIPS:                                 5376,00
+Indicadores:                              fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize arch_lbr ibt flush_l1d arch_capabilities
+Virtualización:                           VT-x
+Caché L1d:                                416 KiB (10 instancias)
+Caché L1i:                                448 KiB (10 instancias)
+Caché L2:                                 9,5 MiB (7 instancias)
+Caché L3:                                 24 MiB (1 instancia)
+Modo(s) NUMA:                             1
+CPU(s) del nodo NUMA 0:                   0-15
+Vulnerabilidad Gather data sampling:      Not affected
+Vulnerabilidad Ghostwrite:                Not affected
+Vulnerabilidad Indirect target selection: Not affected
+Vulnerabilidad Itlb multihit:             Not affected
+Vulnerabilidad L1tf:                      Not affected
+Vulnerabilidad Mds:                       Not affected
+Vulnerabilidad Meltdown:                  Not affected
+Vulnerabilidad Mmio stale data:           Not affected
+Vulnerabilidad Old microcode:             Not affected
+Vulnerabilidad Reg file data sampling:    Mitigation; Clear Register File
+Vulnerabilidad Retbleed:                  Not affected
+Vulnerabilidad Spec rstack overflow:      Not affected
+Vulnerabilidad Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerabilidad Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerabilidad Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S
+Vulnerabilidad Srbds:                     Not affected
+Vulnerabilidad Tsa:                       Not affected
+Vulnerabilidad Tsx async abort:           Not affected
+Vulnerabilidad Vmscape:                   Mitigation; IBPB before exit to userspace
+
+               total       usado       libre  compartido   búf/caché  disponible
+Mem:            14Gi       5,2Gi       882Mi       328Mi       9,7Gi       9,7Gi
+Inter:          31Gi       8,0Gi        23Gi
+
+NAME        TYPE SIZE USED PRIO
+/swap32.img file  32G   8G   -1
+
+Thu Nov  5 10:35:33 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3050 ...    Off |   00000000:01:00.0 Off |                  N/A |
+| N/A   47C    P8              3W /   35W |    2077MiB /   4096MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A         1409940      G   /usr/lib/xorg/Xorg                        4MiB |
+|    0   N/A  N/A         1424218      C   ...ma.cpp/build/bin/llama-server       2054MiB |
++-----------------------------------------------------------------------------------------+
+
+tandem.cpp defaults (unset variables; LLAMA_MOE_NO_DEFAULTS=1 for none): GGML_CUDA_GRAPH_KEY_SHAPE=1 GGML_SCHED_BATCH_INPUTS=3 GGML_CUDA_MMVF_MAX=8 GGML_CUDA_Q8_CACHE=1 LLAMA_GRAPH_POOL=6 LLAMA_SRV_USER_BREAK=0 LLAMA_MOE_CPU=auto LLAMA_MOE_PREFILL_CPU=auto LLAMA_MOE_CPU_RB=64 LLAMA_MOE_CPU_DOWN_PE=64 LLAMA_HC_FUSE=1 GGML_CUDA_HC_MIX_FUSE=1 LLAMA_GDN_DIRECT=1 LLAMA_GDN_GATES=1 LLAMA_CONV_CONT=1 LLAMA_CONV_TAIL=1 LLAMA_PLE_GPU=1 LLAMA_MTP_DEFER=1
+version: 0.8.0-dev (build 11962, commit f5222f25c)
+built with GNU 15.2.0 for Linux x86_64
+
+f5222f25c18da062ab2b8a2dbbfbf4feae398566
+ M common/arg.cpp
+ M common/common.cpp
+ M common/common.h
+ M common/speculative.cpp
+ M ggml/include/ggml-backend.h
+ M ggml/include/ggml.h
+ M ggml/src/ggml-backend.cpp
+ M ggml/src/ggml-cpu/ggml-cpu.c
+ M ggml/src/ggml-cpu/ops.cpp
+ M ggml/src/ggml-cuda/common.cuh
+ M ggml/src/ggml-cuda/dsv4-hc.cu
+ M ggml/src/ggml-cuda/gated_delta_net.cu
+ M ggml/src/ggml-cuda/ggml-cuda.cu
+ M ggml/src/ggml-cuda/mmvf.cu
+ M ggml/src/ggml-cuda/mmvq.cu
+ M ggml/src/ggml.c
+ M include/llama.h
+ M src/llama-context.cpp
+ M src/llama-context.h
+ M src/llama-cparams.h
+ M src/llama-graph.cpp
+ M src/llama-graph.h
+ M src/llama-model.cpp
+ M src/llama-model.h
+ M src/llama-moe-cache.cpp
+ M src/llama-moe-cache.h
+ M src/llama-quant.cpp
+ M src/models/delta-net-base.cpp
+ M src/models/models.h
+ M src/models/qwen4exp.cpp
+ M tools/server/server-context.cpp
+?? ggml/src/ggml-cuda/hc-fused.cu
+?? ggml/src/ggml-cuda/hc-fused.cuh
+?? src/llama-moe-iq.h
+?? src/llama-prof.h
+
+479cc80b2500f7ba5f6131986da188ecb406cf7855094c5d8ae0ec332a715105  /home/ssantos/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf
