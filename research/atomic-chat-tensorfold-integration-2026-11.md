@@ -46,7 +46,7 @@ La máquina de validación disponible es un MSI Thin 15 B12UC con Ubuntu, Intel 
 
 `~/.local/opt/tensorfold-1.2.3-linux-x86_64/bin/tensorfold-native`
 
-La salida de capacidades registrada para 1.2.3 incluye `qwen3_5` con `mlx-q4g64` y `exl3`, y `qwen3_5_moe` con `mlx-q4g64`, `modelopt-mixed` y `modelopt-nvfp4`. Son capacidades declaradas por ese binario; cada familia/formato/modelo debe superar una prueba real antes de anunciarse como compatible en Atomic Chat.
+La salida real de `tensorfold-native 1.2.3` (`capabilities --json`, 2026-11-05) declara backend `cuda` y chip `nvidia-sm86`. Incluye `qwen3_5` (`mlx-q4g64`, `exl3`), `qwen3_5_moe` (`mlx-q4g64`, `modelopt-mixed`, `modelopt-nvfp4`), `qwen4`, `qwen4_text`, `gemma4`, `spark2_5`, `nemotron_h` y `glm5_next`, con los formatos concretos declarados por el binario. La presencia en la lista no demuestra que un checkpoint específico cargue correctamente.
 
 ## 3. Decisión arquitectónica propuesta
 
