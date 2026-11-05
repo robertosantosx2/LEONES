@@ -45,3 +45,10 @@ python3 poc.py /path/to/model
 ## Interpretation
 
 A pass proves only that this TensorFold binary/model combination exposes the tested local API. It does not yet prove Atomic Core integration, GPU arbitration, model catalog compatibility, tool calling, vision, structured output, embeddings, or cross-platform support. The script intentionally does not claim those capabilities.
+
+
+## Reference-machine evidence
+
+- [TensorFold Native 1.2.3 installation and capability record](evidence/tensorfold-1.2.3-install-and-capabilities-2026-11-05.md)
+- [Atomic Core integration contract map](../../../research/atomic-chat-tensorfold-core-contracts-2026-11.md)
+- [Atomic Chat app integration map](../../../research/atomic-chat-tensorfold-app-contracts-2026-11.md)
