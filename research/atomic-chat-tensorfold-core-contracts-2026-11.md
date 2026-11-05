@@ -23,6 +23,8 @@ The current core already has a native-runtime contract. TensorFold should implem
 | Settings API | `src/server/control/routes/settings.ts` consumes `LOCAL_PROVIDER_IDS` | No separate settings route should be invented |
 | Module exports | `src/runtime/index.ts` and provider-local `index.ts` | Export the provider through the established module entry |
 
+The provider also needs a dedicated `layout.provider('tensorfold')` path case in `src/config/paths.ts`; the existing `ModelRegistry` derives its model root from that provider path. The shared `ModelYml` contract currently has typed blocks for `foundry_local`, `litert_lm` and `geniex`, while its codec preserves unknown keys. A TensorFold implementation should add a typed `tensorfold` block and strict block parser, update `MODEL_YML_KEY_ORDER`, and add the new provider's path layout. Do not route a native TensorFold checkpoint through GGUF inspection or GGUF compatibility checks.
+
 The inspected `LocalRuntime` contract requires `list`, `findSession`, `getLoadedModels`, `isLoading`, `load`, `unload`, `autoIncreaseCtx`, `recreateSession` and `shutdown`. It optionally exposes `routePolicy` and `gpuOccupancy`. `LocalLoadOptions` already carries executable override, timeout, log path, verbose mode, port, cancellation signal and auto-unload control.
 
 ## 2. Native runtime pattern
@@ -56,11 +58,12 @@ The TensorFold process must be launched with an argument array and an explicit e
 
 The core's current model registry and `model.yml` are shared across providers, but TensorFold consumes native checkpoint directories and format/family combinations rather than assuming GGUF. Before code is written, settle:
 
-1. How a TensorFold checkpoint is represented in the existing registry without falsely treating it as GGUF.
+1. Add a TensorFold provider-specific model root and a typed `tensorfold` block in the shared `model.yml` contract; the generic `ModelRegistry` can then scan that provider's root.
 2. Which exact model metadata fields identify TensorFold family, quantization and checkpoint root.
 3. Whether the first release accepts only an already-downloaded local checkpoint.
 4. How the runtime reads the checkpoint's actual config and checks it against `capabilities --json`.
 5. Whether TensorFold CLI accepts a local path and what exact command-line syntax/version floor applies.
+6. Whether the runtime should launch the user-installed binary directly or use a versioned engine-build directory; the first PoC should validate the existing side-by-side user install before introducing Atomic-managed engine installation.
 
 The first release should not add model downloading. The core's current contract explicitly keeps model downloads out of the core; the app or another existing client flow owns model files. Do not create a second downloader or duplicate Hugging Face cache.
 
