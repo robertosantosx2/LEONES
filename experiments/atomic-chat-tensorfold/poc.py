@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+"""Dependency-free TensorFold Native smoke test for the Atomic Chat integration spike.
+
+Usage:
+  python3 poc.py /path/to/model-directory
+
+Environment:
+  TENSORFOLD_BIN       Native executable (default: TensorFold 1.2.0 user install)
+  TENSORFOLD_CONTEXT   Context length (default: 2048)
+  TENSORFOLD_TIMEOUT   Startup timeout in seconds (default: 300)
+"""
+from __future__ import annotations
+
+import collections
+import json
+import os
+import signal
+import socket
+import subprocess
+import sys
+import threading
+import time
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+DEFAULT_BIN = Path.home() / ".local/opt/tensorfold-1.2.0-linux-x86_64/bin/tensorfold-native"
+BIN = Path(os.environ.get("TENSORFOLD_BIN", str(DEFAULT_BIN))).expanduser()
+CONTEXT = int(os.environ.get("TENSORFOLD_CONTEXT", "2048"))
+TIMEOUT = int(os.environ.get("TENSORFOLD_TIMEOUT", "300"))
+MODEL = sys.argv[1] if len(sys.argv) > 1 else ""
+
+
+def fail(message: str) -> None:
+    raise RuntimeError(message)
+
+
+def request(url: str, payload: dict | None = None, timeout: float = 10):
+    data = None if payload is None else json.dumps(payload).encode()
+    headers = {"Content-Type": "application/json"} if data is not None else {}
+    req = urllib.request.Request(url, data=data, headers=headers)
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        return response.status, response.read()
+
+
+def free_port() -> int:
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        return int(sock.getsockname()[1])
+
+
+def main() -> int:
+    if not MODEL:
+        fail("Pass an already-downloaded local TensorFold checkpoint directory or cached repository ID.")
+    if not BIN.is_file() or not os.access(BIN, os.X_OK):
+        fail(f"TensorFold executable is missing or not executable: {BIN}")
+
+    print(f"[1/6] Binary: {BIN}")
+    version = subprocess.run([str(BIN), "--version"], check=True, text=True, capture_output=True)
+    print(version.stdout.strip() or version.stderr.strip())
+
+    print("[2/6] Reading native capabilities")
+    caps = subprocess.run([str(BIN), "capabilities", "--json"], check=True, text=True, capture_output=True)
+    try:
+        capabilities = json.loads(caps.stdout)
+    except json.JSONDecodeError:
+        fail("capabilities --json did not return valid JSON")
+    print(json.dumps(capabilities, indent=2)[:6000])
+
+    port = free_port()
+    name = "atomic-tensorfold-poc"
+    command = [
+        str(BIN), "serve", MODEL,
+        "--name", name,
+        "--host", "127.0.0.1",
+        "--port", str(port),
+        "--parallel", "1",
+        "--context", str(CONTEXT),
+    ]
+    print(f"[3/6] Starting child process on 127.0.0.1:{port}")
+    print("argv:", json.dumps(command))
+    child = subprocess.Popen(
+        command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT, text=True, bufsize=1,
+    )
+    logs = collections.deque(maxlen=160)
+
+    def drain():
+        assert child.stdout is not None
+        for line in child.stdout:
+            logs.append(line.rstrip())
+
+    reader = threading.Thread(target=drain, daemon=True)
+    reader.start()
+    base = f"http://127.0.0.1:{port}"
+
+    try:
+        deadline = time.monotonic() + TIMEOUT
+        ready = False
+        while time.monotonic() < deadline:
+            if child.poll() is not None:
+                fail(f"TensorFold exited during startup (code {child.returncode})")
+            try:
+                status, body = request(base + "/health", timeout=2)
+                if 200 <= status < 300:
+                    ready = True
+                    print("[4/6] /health:", body.decode(errors="replace")[:1000])
+                    break
+            except (OSError, urllib.error.URLError, TimeoutError):
+                time.sleep(0.5)
+        if not ready:
+            fail(f"TensorFold did not become ready within {TIMEOUT}s")
+
+        status, raw_models = request(base + "/v1/models")
+        models = json.loads(raw_models)
+        entries = models.get("data", [])
+        if not entries or not isinstance(entries[0].get("id"), str):
+            fail(f"/v1/models returned no usable model ID: {models}")
+        model_id = entries[0]["id"]
+        print("[5/6] /v1/models:", json.dumps(models)[:2000])
+
+        payload = {
+            "model": model_id,
+            "messages": [{"role": "user", "content": "Reply with exactly: ATOMIC_TENSORFOLD_OK"}],
+            "max_tokens": 64,
+            "temperature": 0,
+        }
+        status, raw = request(base + "/v1/chat/completions", payload, timeout=120)
+        answer = json.loads(raw)
+        text = answer.get("choices", [{}])[0].get("message", {}).get("content", "")
+        if not isinstance(text, str) or not text.strip():
+            fail(f"Non-streaming chat returned no text: {answer}")
+        print("non-stream response:", text[:1000])
+
+        stream_payload = dict(payload, stream=True)
+        req = urllib.request.Request(
+            base + "/v1/chat/completions",
+            data=json.dumps(stream_payload).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=120) as response:
+            stream_body = response.read().decode(errors="replace")
+        if "data: [DONE]" not in stream_body:
+            fail("Streaming response did not contain the OpenAI-compatible data: [DONE] terminator")
+        print("[6/6] Streaming: PASS (SSE data: [DONE] received)")
+        print("RESULT: PASS — health, model discovery, chat and streaming")
+        return 0
+    finally:
+        if child.poll() is None:
+            child.send_signal(signal.SIGTERM)
+            try:
+                child.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                child.kill()
+                child.wait(timeout=5)
+        reader.join(timeout=1)
+        print("\n--- TensorFold process log (tail) ---")
+        for line in logs:
+            print(line)
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except Exception as exc:
+        print(f"RESULT: FAIL — {exc}", file=sys.stderr)
+        raise SystemExit(1)
