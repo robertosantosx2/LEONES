@@ -119,6 +119,29 @@ A TensorFold catalog change therefore spans at least:
 
 The existing LiteRT-LM legacy JSON is explicitly marked deprecated and generated from the unified catalog. Do not add a parallel hand-maintained catalog source.
 
+
+### 8. TensorFold Native v1.2.3's actual server contract is now verified from the tagged source
+
+The tagged `v1.2.3` source resolves several earlier unknowns:
+
+- CLI syntax is `tensorfold-native serve MODEL [flags]`; the model is a required positional argument. It can be a local checkpoint directory or a cached Hugging Face repository name. The native `pull` command can populate the cache.
+- Native server defaults are `--host 127.0.0.1` and `--port 8080`. Both are explicit flags, so Core must pass its selected loopback address and a port allocated against its sidecar table.
+- The native CLI supports `--name` (served model ID), `--api-key`, `--api-key-file`, `--context`, `--parallel`, `--backend {auto,mlx,cuda}`, and `--no-update-check`. For the initial Linux CUDA adapter, use the exact supported flags `--backend cuda`, `--parallel 1`, and a validated `--context`; do not pass options from Python or other engine variants.
+- The server's listener is created before it logs `serving <name> at http://<host>:<port>/v1 ...`. There is no evidence in this tagged native source for a JSON stdout marker such as `"ready":true`. Core readiness should therefore key off the actual serving log line for the exact model and chosen loopback port, or use a post-spawn health probe if the process helper supports it. Do not copy LiteRT-LM's readiness marker.
+- `GET /health` exists; `GET /v1/models` is implemented by the status routes; `POST /v1/chat/completions` supports JSON and SSE. The native `openai.zig` module explicitly owns both whole-response and streaming replies.
+- The server's `--api-key` is optional on loopback. Core's established pattern can keep the host listener loopback-only and place its own generated Bearer key at the managed gateway, but the upstream authentication and gateway forwarding behavior must be tested end to end before release.
+- TensorFold handles SIGTERM and SIGINT as clean server stop signals. Core must supervise and terminate only the child process it created.
+
+Tagged source references:
+- [v1.2.3 native CLI entry point](https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/server/main.zig)
+- [v1.2.3 server CLI flags and defaults](https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/server/cli.zig)
+- [v1.2.3 server lifecycle and listening log](https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/server/serve.zig)
+- [v1.2.3 health and model discovery routes](https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/server/status_routes.zig)
+- [v1.2.3 OpenAI chat and SSE implementation](https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/server/openai.zig)
+- [v1.2.3 listener implementation](https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/server/listener.zig)
+
+**Important distinction:** the tagged source proves the CLI and HTTP contract, not a successful model load on the user's GPU. No TensorFold model inference was performed as part of this source inspection.
+
 ## Revised v1 architecture recommendation
 
 - **Provider class:** native Core provider `tensorfold`; not a managed Docker provider.
