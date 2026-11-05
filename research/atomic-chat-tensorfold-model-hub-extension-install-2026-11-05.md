@@ -93,6 +93,32 @@ The new extension should follow the Foundry Local/LiteRT-LM responsibilities:
 
 Before coding, trace the app's real startup loader and build/release packaging list so the new extension is bundled in development and production. Workspace inclusion by itself does not prove this.
 
+
+### 6. The real extension loader and platform bundle rules are now confirmed
+
+The startup path is concrete:
+
+- `web-app/src/providers/ExtensionProvider.tsx` creates the managers, then awaits `ExtensionManager.registerActive()` and `load()`.
+- `web-app/src/lib/extension.ts` reads active extension manifests from the Tauri Core service, imports the package's installed `dist/index.js`, instantiates its default class and registers its `provider` in the engine map.
+- `src-tauri/src/core/setup.rs` installs every `.tgz` found in the app's `resources/pre-install` folder, reads each package's `package.json`, extracts it under the per-user extensions directory, and records the package name and entrypoint in `extensions.json`.
+- The extension package name is a compatibility contract: the installer and persisted extension registry use it. Every shipped extension must retain the `@janhq/*` namespace. The pre-install tests reject renamed packages and duplicate provider IDs.
+- Root `package.json` selects extension tarballs through `build:extensions:linux`, `build:extensions:win32` and `build:extensions:darwin`; the scripts use exclusions. The pre-install test derives platform membership from those scripts and verifies every included package has a tarball.
+
+**Implication:** TensorFold needs one package named `@janhq/tensorfold-extension`, with `engine: "tensorfold"`, included by the Linux build script and excluded from Windows/macOS for v1. It must have a unique `providerId`, publish a pre-install tarball, and pass `tests/pre-install-tarballs.test.mjs`. Do not create a second package claiming the same provider.
+
+### 7. The Atomic Chat Conf catalog has a unified schema and generated provider exports
+
+The current `atomic-chat-conf/models/schema.catalog.json` enumerates provider `kind` values and required collection names. The catalog protocol in the app separately enumerates supported collection names and maps each to the expected array field. The existing provider exports (for example `litert-lm-models.json`) are generated compatibility views of the unified `models/catalog.json`, not independent sources of truth.
+
+A TensorFold catalog change therefore spans at least:
+- `models/schema.catalog.json`: add the `tensorfold` kind and required `tensorfold-models` collection;
+- `models/catalog.json`: add entries with immutable source revision, file list, format and provider metadata, and collection references;
+- `core/src/browser/catalogProtocol.ts`: add `tensorfold-models` to the collection allow-list and validate its `kind`;
+- `atomic-chat-conf` validation scripts/workflow: validate TensorFold-specific metadata and supported family/format/platform constraints;
+- generated legacy export only if a consumer is deliberately retained for compatibility.
+
+The existing LiteRT-LM legacy JSON is explicitly marked deprecated and generated from the unified catalog. Do not add a parallel hand-maintained catalog source.
+
 ## Revised v1 architecture recommendation
 
 - **Provider class:** native Core provider `tensorfold`; not a managed Docker provider.
