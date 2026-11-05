@@ -28,6 +28,7 @@ DEFAULT_BIN = Path.home() / ".local/opt/tensorfold-1.2.3-linux-x86_64/bin/tensor
 BIN = Path(os.environ.get("TENSORFOLD_BIN", str(DEFAULT_BIN))).expanduser()
 CONTEXT = int(os.environ.get("TENSORFOLD_CONTEXT", "2048"))
 TIMEOUT = int(os.environ.get("TENSORFOLD_TIMEOUT", "300"))
+MIN_FREE_MIB = int(os.environ.get("TENSORFOLD_MIN_FREE_MIB", "3072"))
 MODEL = sys.argv[1] if len(sys.argv) > 1 else ""
 
 
@@ -41,6 +42,16 @@ def request(url: str, payload: dict | None = None, timeout: float = 10):
     req = urllib.request.Request(url, data=data, headers=headers)
     with urllib.request.urlopen(req, timeout=timeout) as response:
         return response.status, response.read()
+
+
+def gpu_free_memory_mib() -> int:
+    """Read GPU 0 free VRAM without changing any running process."""
+    result = subprocess.run(
+        ["nvidia-smi", "--query-gpu=memory.free", "--format=csv,noheader,nounits"],
+        check=True, text=True, capture_output=True, timeout=10,
+    )
+    first = result.stdout.strip().splitlines()[0]
+    return int(first.strip())
 
 
 def free_port() -> int:
@@ -66,6 +77,17 @@ def main() -> int:
     except json.JSONDecodeError:
         fail("capabilities --json did not return valid JSON")
     print(json.dumps(capabilities, indent=2)[:6000])
+    if "cuda" not in capabilities.get("backends", []):
+        fail("This TensorFold binary does not declare the CUDA backend")
+
+    free_mib = gpu_free_memory_mib()
+    print(f"[GPU preflight] free VRAM: {free_mib} MiB; required safety floor: {MIN_FREE_MIB} MiB")
+    if free_mib < MIN_FREE_MIB:
+        fail(
+            f"Only {free_mib} MiB VRAM is free; refusing to start a model load "
+            f"below the {MIN_FREE_MIB} MiB safety floor. Close/release GPU workloads "
+            "yourself, or set TENSORFOLD_MIN_FREE_MIB deliberately if you accept the risk."
+        )
 
     port = free_port()
     name = "atomic-tensorfold-poc"
