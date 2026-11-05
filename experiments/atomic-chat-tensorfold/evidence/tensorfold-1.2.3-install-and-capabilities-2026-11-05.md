@@ -81,9 +81,9 @@ The PoC default was updated to this exact path. The eventual Atomic Core setting
 
 ## Result
 
-<badge>PASS</badge> Archive integrity, side-by-side extraction, version and capability discovery passed.
+**PASS** Archive integrity, side-by-side extraction, version and capability discovery passed.
 
-<badge>NOT RUN</badge> Model loading, `/health`, `/v1/models`, chat, SSE, latency, tokens/s and TensorFold VRAM usage remain untested on this host.
+**NOT RUN** Model loading, `/health`, `/v1/models`, chat, SSE, latency, tokens/s and TensorFold VRAM usage remain untested on this host.
 
 ## References
 
