@@ -76,6 +76,8 @@ def main() -> int:
         "--port", str(port),
         "--parallel", "1",
         "--context", str(CONTEXT),
+        "--backend", "cuda",
+        "--no-update-check",
     ]
     print(f"[3/6] Starting child process on 127.0.0.1:{port}")
     print("argv:", json.dumps(command))
