@@ -42,11 +42,11 @@ En el paquete Linux el ejecutable nativo puede llamarse `tensorfold-native`; la 
 
 ### Equipo de referencia LEONES
 
-La máquina de validación disponible es un MSI Thin 15 B12UC con Ubuntu, Intel Core i7-12650H, NVIDIA RTX 3050 Laptop de 4 GiB VRAM y driver NVIDIA 580.178.04 / CUDA 13.0. TensorFold Native 1.2.0 está instalado en:
+La máquina de validación disponible es un MSI Thin 15 B12UC con Ubuntu, Intel Core i7-12650H, NVIDIA RTX 3050 Laptop de 4 GiB VRAM y driver NVIDIA 580.178.04 / CUDA 13.0. TensorFold Native 1.2.3 está instalado en:
 
-`~/.local/opt/tensorfold-1.2.0-linux-x86_64/bin/tensorfold-native`
+`~/.local/opt/tensorfold-1.2.3-linux-x86_64/bin/tensorfold-native`
 
-La salida de capacidades registrada para 1.2.0 incluye `qwen3_5` con `mlx-q4g64` y `exl3`, y `qwen3_5_moe` con `mlx-q4g64`, `modelopt-mixed` y `modelopt-nvfp4`. Son capacidades declaradas por ese binario; cada familia/formato/modelo debe superar una prueba real antes de anunciarse como compatible en Atomic Chat.
+La salida de capacidades registrada para 1.2.3 incluye `qwen3_5` con `mlx-q4g64` y `exl3`, y `qwen3_5_moe` con `mlx-q4g64`, `modelopt-mixed` y `modelopt-nvfp4`. Son capacidades declaradas por ese binario; cada familia/formato/modelo debe superar una prueba real antes de anunciarse como compatible en Atomic Chat.
 
 ## 3. Decisión arquitectónica propuesta
 
@@ -111,7 +111,7 @@ La fase inicial puede aceptar un directorio local ya descargado. La descarga/imp
 ### Fase A — LEONES: investigación y especificación
 
 - Registrar contratos actuales de Atomic Core.
-- Verificar CLI/API de TensorFold 1.2.0 en Ubuntu + CUDA.
+- Verificar CLI/API de TensorFold 1.2.3 en Ubuntu + CUDA.
 - Definir el modelo de proceso, puertos, readiness, parada y logs.
 - Identificar las superficies de core, configuración y UI que habrá que modificar.
 - Preparar una matriz de capacidades y pruebas reproducibles.
@@ -148,7 +148,7 @@ La prueba de concepto no debe modificar la instalación de Atomic Chat ni los se
 
 ## 6. Criterios de aceptación
 
-- [ ] El core detecta TensorFold 1.2.0 y muestra sus capacidades reales.
+- [ ] El core detecta TensorFold 1.2.3 y muestra sus capacidades reales.
 - [ ] Se puede seleccionar un checkpoint local compatible sin convertirlo a GGUF.
 - [ ] El core inicia el proceso con argv seguro y puerto loopback dinámico.
 - [ ] Readiness y listado de modelos se verifican antes de ofrecer el motor como disponible.
@@ -179,3 +179,14 @@ La prueba de concepto no debe modificar la instalación de Atomic Chat ni los se
 - PoC LEONES: https://github.com/robertosantosx2/LEONES/tree/research/atomic-chat-tensorfold-linux-cuda/experiments/atomic-chat-tensorfold
 - TensorFold: https://github.com/ashhart/TensorFold
 - TensorFold CLI guide: https://tensorfold.dev/guide
+
+
+## 9. Evidencia de actualización a TensorFold 1.2.3 (2026-11-05)
+
+- Archivo Linux x86_64 descargado y checksum SHA-256 verificado (`sha256sum -c`: `OK`).
+- Instalación extraída en `~/.local/opt/tensorfold-1.2.3-linux-x86_64`, sin sobrescribir versiones anteriores.
+- `tensorfold-native --version`: `tensorfold-native 1.2.3`.
+- `capabilities --json`: backend `cuda`, chip `nvidia-sm86`; `libcublas.so.13` y `libcublasLt.so.13` detectadas.
+- La matriz de capacidades incluye `qwen3_5`, `qwen3_5_moe`, `qwen4`, `qwen4_text`, `gemma4`, `spark2_5`, `nemotron_h` y `glm5_next`, con formatos específicos declarados por el binario. Esto no certifica la carga de cada checkpoint.
+- No se arrancó un modelo TensorFold. En la captura de `nvidia-smi`, la RTX 3050 de 4 GiB tenía 2714 MiB ocupados; `llama-server` ya consumía 2685 MiB. Ese proceso preexistente se dejó intacto.
+- Inferencia, streaming, latencia y consumo de VRAM de TensorFold 1.2.3 quedan pendientes de una prueba controlada con memoria GPU disponible.
