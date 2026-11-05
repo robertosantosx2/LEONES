@@ -118,6 +118,8 @@ La fase inicial puede aceptar un directorio local ya descargado. La descarga/imp
 
 ### Fase B — LEONES: prueba de concepto
 
+- Harness independiente: [`experiments/atomic-chat-tensorfold/`](../experiments/atomic-chat-tensorfold/).
+- Ejecutar `python3 experiments/atomic-chat-tensorfold/poc.py <modelo-local>` en el Ubuntu de referencia y archivar su salida (sin credenciales).
 - Crear un pequeño harness independiente que arranque TensorFold como proceso hijo.
 - Verificar detección de versión/capacidades.
 - Cargar un checkpoint compatible que ya exista localmente.
@@ -174,5 +176,6 @@ La prueba de concepto no debe modificar la instalación de Atomic Chat ni los se
 - Atomic Chat Core agent instructions: https://github.com/AtomicBot-ai/atomic-chat-core/blob/main/AGENTS.md
 - Atomic Chat Core plan: https://github.com/AtomicBot-ai/atomic-chat-core/blob/main/PLAN.md
 - Atomic Chat runtime configuration: https://github.com/AtomicBot-ai/atomic-chat-conf
+- PoC LEONES: https://github.com/robertosantosx2/LEONES/tree/research/atomic-chat-tensorfold-linux-cuda/experiments/atomic-chat-tensorfold
 - TensorFold: https://github.com/ashhart/TensorFold
 - TensorFold CLI guide: https://tensorfold.dev/guide
