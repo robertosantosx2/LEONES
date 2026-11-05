@@ -5,7 +5,7 @@ Usage:
   python3 poc.py /path/to/model-directory
 
 Environment:
-  TENSORFOLD_BIN       Native executable (default: TensorFold 1.2.0 user install)
+  TENSORFOLD_BIN       Native executable (default: TensorFold 1.2.3 user install)
   TENSORFOLD_CONTEXT   Context length (default: 2048)
   TENSORFOLD_TIMEOUT   Startup timeout in seconds (default: 300)
 """
@@ -24,7 +24,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-DEFAULT_BIN = Path.home() / ".local/opt/tensorfold-1.2.0-linux-x86_64/bin/tensorfold-native"
+DEFAULT_BIN = Path.home() / ".local/opt/tensorfold-1.2.3-linux-x86_64/bin/tensorfold-native"
 BIN = Path(os.environ.get("TENSORFOLD_BIN", str(DEFAULT_BIN))).expanduser()
 CONTEXT = int(os.environ.get("TENSORFOLD_CONTEXT", "2048"))
 TIMEOUT = int(os.environ.get("TENSORFOLD_TIMEOUT", "300"))
