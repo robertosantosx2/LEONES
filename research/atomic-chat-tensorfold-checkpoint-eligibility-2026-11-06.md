@@ -19,14 +19,15 @@ The Qwen3.5 EXL3 documentation also distinguishes the native engine from the his
 
 ## Safe conclusion
 
-At this point there is **no verified, supported, memory-qualified TensorFold Native 1.2.3 checkpoint for the reference RTX 3050 Laptop GPU with 4 GiB VRAM**.
+At this point there is **no live receipt for the currently installed TensorFold Native 1.2.3 binary on the reference RTX 3050**. This is not the same as saying the GPU has never run TensorFold: LEONES records Qwen3.5-2B and Qwen3.5-4B inference on this exact card with TensorFold 1.1.1, and a matched baseline-vs-PR-#1879 experiment where the baseline OOMed but the PR build completed three Qwen3.5-4B inferences. See [historical RTX 3050 evidence](atomic-chat-tensorfold-historical-rtx3050-evidence-2026-11-06.md).
 
 Therefore:
-1. Do not launch Qwen3.5-2B MLX 4-bit on the reference RTX 3050 yet: the current public CUDA receipt names a GB10, not this sm_86 laptop, and its exact local `info` floor has not been measured. The checkpoint is a legitimate CUDA-path candidate for further admission research, not a proven 3050 candidate.
-2. Do not assume the cached Qwen3.5-4B dense MLX checkpoint can run via native CUDA or EXL3; v1.2.3's EXL3 CUDA statement covers Qwen3.5 MoE, not that dense checkpoint.
+1. Qwen3.5-2B MLX 4-bit is historically proven on this RTX 3050 with TensorFold 1.1.1 (context 1024; 95.08–105.71 tok/s). That historical receipt does not qualify the currently installed 1.2.3 binary or a newer rebase head. Use it as a known historical reference, not as an untested 1.2.3 claim.
+2. Qwen3.5-4B dense MLX-4bit is historically proven on this RTX 3050 with TensorFold 1.1.1 and the experimental PR #1879 build. The current 1.2.3 `info` output (4.85 GiB generic floor) is not a measured peak and must not erase those receipts. However, the matched baseline at a later commit did fail with CUDA OOM; prefer a validated build containing the lazy-scratch fix. The v1.2.3 EXL3 CUDA statement still does not admit arbitrary dense 4B EXL3 checkpoints.
 3. Do not use the Spark-X2.6-4B or Kolibri-1 recipes as a 4 GiB smoke-test model.
-4. Keep the real-inference step blocked until a specific native CUDA checkpoint is found and its exact family/format/geometry plus `tensorfold-native info` memory floor are checked.
-5. Preserve the 3072 MiB free-VRAM PoC preflight. Never stop the existing `llama-server` automatically to create headroom.
+4. For Atomic Chat, target the already-cached Qwen3.5-4B revision `32f3e8ecf65426fc3306969496342d504bfa13f3`, context 512, parallel 1, using the user's current rebased PR #1879 build after code gates pass.
+5. Treat `info`'s weights-plus-2-GiB floor as advisory, not a measured VRAM peak. Keep the independent 3072 MiB free-VRAM guard mandatory; any explicit floor override is limited to the exact historical model/version/GPU profile.
+6. Never stop the existing `llama-server` automatically to create headroom.
 
 This does not invalidate the integration architecture or offline PoC tests. It means the first real inference receipt must use a different, genuinely supported and small-enough CUDA checkpoint, or a machine with more VRAM.
 
@@ -124,3 +125,18 @@ Additional sources:
 - https://github.com/ashhart/TensorFold/blob/main/CHANGELOG.md
 - https://github.com/ashhart/TensorFold/blob/main/docs/recipes/qwen3.5-2b-native.md
 - https://huggingface.co/mlx-community/Qwen3.5-2B-MLX-4bit
+
+
+## Historical RTX 3050 evidence reconciliation (2026-11-06)
+
+The preceding sections assess the installed 1.2.3 binary and upstream support metadata. They must not be read as a statement that TensorFold has never run on the reference GPU.
+
+LEONES contains measured TensorFold 1.1.1 CUDA inference for:
+- Qwen3.5-2B MLX 4-bit, context 1024: 95.08 and 105.71 tok/s; TTFT 88.2 and 94.1 ms; about 2,388 MiB process VRAM.
+- Qwen3.5-4B MLX 4-bit, context 512: 53.64 and 53.42 tok/s; TTFT 193 and 212 ms; about 3,120 MiB process VRAM.
+
+It also contains a matched RTX 3050 baseline-vs-PR-#1879 experiment with Qwen3.5-4B at the same checkpoint revision, context, parallelism and 0.5 GiB reserve. The baseline failed at cuMemAlloc with CUDA_ERROR_OUT_OF_MEMORY; the PR build loaded in 10.4 seconds and completed three HTTP 200 chat requests at 54.32–56.05 tok/s. The observed global GPU peak was 3,227 MiB used. This confirms a functional load/admission advantage for that tested PR build; it does not quantify exact scratch bytes saved or qualify the current rebase head.
+
+The current 1.2.3 info floor of 4.85 GiB is weights plus a generic 2 GiB runtime margin. It is not a measured peak. It must remain a warning and a useful candidate-comparison metric, not a categorical proof that this previously successful checkpoint cannot run.
+
+Full evidence: [historical RTX 3050 inference reconciliation](atomic-chat-tensorfold-historical-rtx3050-evidence-2026-11-06.md).
