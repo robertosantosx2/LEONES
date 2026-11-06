@@ -27,6 +27,14 @@ class TensorFoldPocTests(unittest.TestCase):
         self.assertIn("--no-update-check", command)
         self.assertIsInstance(command, list)
 
+    def test_checkpoint_memory_floor_parses_documented_info_output(self) -> None:
+        output = "family: Example (example)\\nformat: 4-bit, group 64\\nmemory floor: 2.50 GiB (weights plus a 2.00 GiB runtime margin)\\n"
+        self.assertEqual(poc.checkpoint_memory_floor_mib(output), 2560)
+
+    def test_checkpoint_memory_floor_rejects_missing_or_non_numeric_value(self) -> None:
+        with self.assertRaises(RuntimeError):
+            poc.checkpoint_memory_floor_mib("family: Example (example)\\n")
+
     def test_free_port_is_valid_tcp_port(self) -> None:
         port = poc.free_port()
         self.assertGreater(port, 0)
