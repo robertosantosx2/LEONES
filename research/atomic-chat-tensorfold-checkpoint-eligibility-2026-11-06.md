@@ -7,9 +7,9 @@ Scope: source/recipe compatibility review only. No model was downloaded, loaded 
 
 The captured `capabilities --json` reports formats as a family-level union. The upstream Qwen3.5-2B recipe explicitly warns that `families.qwen3_5` is a union across multiple engines/geometries, and that the listed formats do not all load at every geometry.
 
-The exact checkpoint `mlx-community/Qwen3.5-2B-MLX-4bit` at revision `93760be4f1f69842a46bc13dbdc0f19e291392a3` is documented as a **native Metal preview**. Its recipe explicitly says there is no native Qwen3.5-2B backend on CUDA/non-Apple platforms. It must not be selected for the Linux CUDA PoC merely because the capability JSON contains `qwen3_5` and `mlx-q4g64`.
+The exact checkpoint `mlx-community/Qwen3.5-2B-MLX-4bit` at revision `93760be4f1f69842a46bc13dbdc0f19e291392a3` is documented in a **native Metal preview recipe**, but a review of the current upstream `main` README and changelog corrects the earlier interpretation: Qwen3.5-2B also has a native CUDA serving path. The README lists its machine scope as one Mac (M5 Max checked) or one GB10 and labels the CUDA release checks; the changelog records Qwen3.5-2B serving on CUDA (#836). The same upstream sources do **not** document an RTX 3050 / sm_86 serving receipt for this checkpoint. Thus it is not Metal-only, but its published CUDA qualification is insufficient to call it supported on this 4 GiB laptop.
 
-The Qwen3.5 EXL3 documentation also distinguishes the native engine from the historical Python CUDA engine and records format/family-specific limitations. In v1.2.3, its native-CUDA section says `qwen3_5` serves EXL3 packs of Qwen3.5 **MoE** models and Qwen3.8-27B; it does not document the dense Qwen3.5-4B checkpoint. The separate Qwen3.5-2B recipe is Metal-only. Do not treat an EXL3 repository, or a family-level `exl3` capability, as proof that an arbitrary dense Qwen3.5 checkpoint can be served by the v1.2.3 native CUDA engine.
+The Qwen3.5 EXL3 documentation also distinguishes the native engine from the historical Python CUDA engine and records format/family-specific limitations. In v1.2.3, its native-CUDA section says `qwen3_5` serves EXL3 packs of Qwen3.5 **MoE** models and Qwen3.8-27B; it does not document the dense Qwen3.5-4B checkpoint. The upstream changelog further says the 2B geometry admits only `mlx-q4g64` (#2139), so its CUDA path does not make an arbitrary EXL3 2B pack valid. Do not treat an EXL3 repository, or a family-level `exl3` capability, as proof that an arbitrary dense Qwen3.5 checkpoint can be served by the v1.2.3 native CUDA engine.
 
 ## Other inspected small-family candidates
 
@@ -22,7 +22,7 @@ The Qwen3.5 EXL3 documentation also distinguishes the native engine from the his
 At this point there is **no verified, supported, memory-qualified TensorFold Native 1.2.3 checkpoint for the reference RTX 3050 Laptop GPU with 4 GiB VRAM**.
 
 Therefore:
-1. Do not launch Qwen3.5-2B MLX 4-bit on this Linux CUDA binary.
+1. Do not launch Qwen3.5-2B MLX 4-bit on the reference RTX 3050 yet: the current public CUDA receipt names a GB10, not this sm_86 laptop, and its exact local `info` floor has not been measured. The checkpoint is a legitimate CUDA-path candidate for further admission research, not a proven 3050 candidate.
 2. Do not assume the cached Qwen3.5-4B dense MLX checkpoint can run via native CUDA or EXL3; v1.2.3's EXL3 CUDA statement covers Qwen3.5 MoE, not that dense checkpoint.
 2. Do not use the Spark-X2.6-4B or Kolibri-1 recipes as a 4 GiB smoke-test model.
 3. Keep the real-inference step blocked until a specific native CUDA checkpoint is found and its exact family/format/geometry plus `tensorfold-native info` memory floor are checked.
@@ -103,3 +103,24 @@ Sources:
 - Official NVIDIA Dory NVFP4 model card and architecture: https://huggingface.co/nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-NVFP4
 - Official checkpoint file listing and size: https://huggingface.co/nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-NVFP4/tree/main
 - TensorFold v1.2.3 native CUDA registry and qualification caveat: https://github.com/ashhart/TensorFold/blob/v1.2.3/docs/recipes/cuda.md
+
+
+## Upstream clarification: Qwen3.5-2B has a CUDA path, but not an RTX 3050 qualification (2026-11-06)
+
+A fresh review of the current upstream `main` README, recipe index and changelog found that the earlier “Metal-only” wording for Qwen3.5-2B was too broad:
+
+- The current README's model table lists Qwen3.5-2B MLX 4-bit as usable on one Mac (M5 Max checked) or one GB10, and links “CUDA release checks”.
+- The changelog records Qwen3.5-2B and Qwen3.8-27B serving on CUDA through the native server (#836).
+- The CUDA Qwen family reads mixed-width MLX checkpoints (2–8 bits per module, group size 64).
+- The current changelog's geometry clarification says Qwen3.5-2B admits only `mlx-q4g64` (#2139).
+- The published machine scope for the Qwen3.5-2B checkpoint is GB10, not RTX 3050 / sm_86. The CUDA registry and presence of sm_86 fatbins are not a per-model/per-GPU serving receipt.
+
+This changes the candidate classification from “not a CUDA candidate” to “valid native CUDA path, but only publicly qualified on GB10 for the listed checkpoint; not yet qualified on the reference laptop”. The checkpoint is approximately 1.72 GB on Hugging Face, so its eventual TensorFold `info` memory floor may be close to the laptop's 4 GiB capacity; the exact floor must be measured locally before any launch. The 3072 MiB free-VRAM guard remains mandatory, and the existing `llama-server` must not be stopped to create room.
+
+No model was downloaded or started during this documentation review.
+
+Additional sources:
+- https://github.com/ashhart/TensorFold/blob/main/README.md#qualified-models
+- https://github.com/ashhart/TensorFold/blob/main/CHANGELOG.md
+- https://github.com/ashhart/TensorFold/blob/main/docs/recipes/qwen3.5-2b-native.md
+- https://huggingface.co/mlx-community/Qwen3.5-2B-MLX-4bit
