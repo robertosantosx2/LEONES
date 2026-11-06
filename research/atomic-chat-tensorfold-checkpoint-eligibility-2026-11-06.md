@@ -37,3 +37,22 @@ This does not invalidate the integration architecture or offline PoC tests. It m
 - Native CUDA recipe book: https://github.com/ashhart/TensorFold/blob/v1.2.3/docs/recipes/cuda.md
 - Spark-X2.6-4B native CUDA recipe: https://github.com/ashhart/TensorFold/blob/v1.2.3/docs/recipes/spark-x2.6-4b-cuda.md
 - Kolibri-1 native CUDA recipe: https://github.com/ashhart/TensorFold/blob/v1.2.3/docs/recipes/kolibri-1.md
+
+
+## Local checkpoint inspection: Qwen3.5-4B MLX 4-bit (2026-11-06)
+
+The user ran the exact non-loading inspection command on the Ubuntu reference host:
+
+```text
+$ tensorfold-native info mlx-community/Qwen3.5-4B-MLX-4bit
+family: Qwen3.5-2B or Qwen3.8-27B (qwen3_5)
+format: 4-bit, group 64
+weights: 2.85 GiB (3061131350 bytes)
+memory floor: 4.85 GiB (weights plus a 2.00 GiB runtime margin)
+```
+
+This is an observed `info` result, not a model-load or inference test. The reported 4.85 GiB floor exceeds the reference GPU's 4 GiB physical VRAM by at least 0.85 GiB even with an otherwise idle GPU. The user's latest prior GPU snapshot also had only about 1.35 GiB free because the pre-existing `llama-server` process occupied approximately 2.7 GiB. Do not stop or signal that process.
+
+The family description is ambiguous (`Qwen3.5-2B or Qwen3.8-27B`) and does not identify this checkpoint as a supported dense Qwen3.5-4B native-CUDA geometry. Thus the inspection independently disqualifies it on memory, while leaving CUDA format compatibility unproven. Keep it out of the real-inference PoC. Do not attempt to start it on this host.
+
+The result confirms the memory-floor guard is useful: it should reject this checkpoint before server startup. Preserve the 3072 MiB free-VRAM guard as an additional independent safety check.
