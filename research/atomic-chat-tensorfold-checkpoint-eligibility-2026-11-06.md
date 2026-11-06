@@ -68,18 +68,18 @@ The v1.2.3 recipe book and native CUDA registry were checked for smaller familie
 | `LiquidAI/LFM3-1.7B-MLX-4bit` | The LFM3 page is explicitly a host-side metadata/layout bring-up. It says it does not register a serving engine and text generation/image input are not implemented or qualified. | Not an inference candidate, despite the small parameter count. |
 | `LiquidAI/d1-3B` | The LFM2 CUDA open path is for d1's decision model. Its loader requires the checkpoint's own BF16 weights and quantizes nothing at load; the public README describes dedicated `/v1/systemone` and `/v1/decisions` APIs, not general chat completions. | Not a general Atomic Chat text-generation candidate. Its BF16 3B weights also do not provide a plausible 4 GiB fit; do not download or load it for this PoC. |
 | Dory (`model_type: dory`) | Native CUDA registry entry, but the v1.2.3 source's pinned config is a 72-sublayer, hidden-size-2560 model with ModelOpt NVFP4 group-16 weights (or other explicitly admitted formats). | Large architecture, not a small-model candidate for a 4 GiB laptop GPU. No 4 GiB qualification. |
-| Qwen3.5-2B MLX 4-bit | Native CUDA serving exists (#836); current upstream README's documented CUDA machine scope is one GB10. The 2B geometry admits only `mlx-q4g64` (#2139). No RTX 3050/sm_86 serving receipt is documented. | Legitimate CUDA-path candidate, but not qualified on this 4 GiB RTX 3050; exact local `info` floor is still unknown. |
-| Qwen3.5-4B MLX 4-bit (user's inspected checkpoint) | `info` reports 2.85 GiB weights and a 4.85 GiB memory floor; family string is ambiguous and no dense-4B native CUDA receipt is documented. | Fails the physical VRAM floor and remains format/geometry-unqualified. |
+| Qwen3.5-2B MLX 4-bit | Native CUDA serving exists (#836); current upstream README's documented CUDA machine scope is one GB10. The 2B geometry admits only `mlx-q4g64` (#2139). LEONES separately records real 1.1.1 CUDA inference on this exact RTX 3050. | Historically proven on this GPU with 1.1.1; current 1.2.3 binary still needs a live receipt. |
+| Qwen3.5-4B MLX 4-bit (user's inspected checkpoint) | `info` reports 2.85 GiB weights and a generic 4.85 GiB floor. LEONES records real inference with 1.1.1 and the experimental PR #1879 build on this exact RTX 3050. | Known working checkpoint on this GPU with earlier builds; current 1.2.3 baseline unqualified. The info floor is not a measured peak. |
 
 The source-level native CUDA registry also contains families whose documented checkpoints are far beyond this machine (for example, 30B-class Nemotron, 24B-class Spark-X2.6, 27B-class Qwen/Dory and larger models). A registry entry is not evidence that a small quantized derivative is admitted.
 
 ### Result
 
-There is no v1.2.3 checkpoint that currently satisfies all three necessary conditions for the reference machine:
+There is no live acceptance receipt yet for the currently installed TensorFold 1.2.3 binary on the reference machine. This is not an absence of historical RTX 3050 inference: the two Qwen checkpoints above were measured with TensorFold 1.1.1, and the experimental PR #1879 build overcame a matched baseline OOM for Qwen3.5-4B. The current release still needs a fresh live run.
 
-1. A native CUDA serving path in this exact release.
-2. A model/checkpoint contract that is explicitly admitted by that path and exposes ordinary text chat generation.
-3. A reported checkpoint memory floor that fits the actual GPU budget with the PoC's safety margin.
+1. Confirm that the exact current binary/rebase build admits the known Qwen3.5-4B checkpoint.
+2. Complete JSON chat and SSE requests through the local TensorFold server.
+3. Then prove the same requests through the Atomic Core managed gateway.
 
 Do not start another model load on the reference host on the basis of parameter count or family-level capabilities. The next useful action is either to qualify a different machine with more VRAM against an explicitly supported checkpoint, or wait for a smaller native CUDA family/checkpoint to be implemented and documented upstream. The Atomic Chat integration remains a valid architecture/adapter research effort, but its live TensorFold runtime gate stays blocked.
 
