@@ -56,3 +56,36 @@ This is an observed `info` result, not a model-load or inference test. The repor
 The family description is ambiguous (`Qwen3.5-2B or Qwen3.8-27B`) and does not identify this checkpoint as a supported dense Qwen3.5-4B native-CUDA geometry. Thus the inspection independently disqualifies it on memory, while leaving CUDA format compatibility unproven. Keep it out of the real-inference PoC. Do not attempt to start it on this host.
 
 The result confirms the memory-floor guard is useful: it should reject this checkpoint before server startup. Preserve the 3072 MiB free-VRAM guard as an additional independent safety check.
+
+
+## Expanded native-CUDA candidate audit (2026-11-06)
+
+The v1.2.3 recipe book and native CUDA registry were checked for smaller families beyond the initial Qwen/Spark/Kolibri shortlist. No additional safe chat-generation checkpoint was qualified for the 4 GiB RTX 3050.
+
+| Candidate | What v1.2.3 actually supports | Decision for this PoC |
+| --- | --- | --- |
+| `LiquidAI/LFM3-1.7B-MLX-4bit` | The LFM3 page is explicitly a host-side metadata/layout bring-up. It says it does not register a serving engine and text generation/image input are not implemented or qualified. | Not an inference candidate, despite the small parameter count. |
+| `LiquidAI/d1-3B` | The LFM2 CUDA open path is for d1's decision model. Its loader requires the checkpoint's own BF16 weights and quantizes nothing at load; the public README describes dedicated `/v1/systemone` and `/v1/decisions` APIs, not general chat completions. | Not a general Atomic Chat text-generation candidate. Its BF16 3B weights also do not provide a plausible 4 GiB fit; do not download or load it for this PoC. |
+| Dory (`model_type: dory`) | Native CUDA registry entry, but the v1.2.3 source's pinned config is a 72-sublayer, hidden-size-2560 model with ModelOpt NVFP4 group-16 weights (or other explicitly admitted formats). | Large architecture, not a small-model candidate for a 4 GiB laptop GPU. No 4 GiB qualification. |
+| Qwen3.5-2B MLX 4-bit | Explicit native Metal preview; the recipe says there is no native Qwen3.5-2B backend on CUDA/non-Apple platforms. | Not supported on this Ubuntu CUDA path, regardless of memory. |
+| Qwen3.5-4B MLX 4-bit (user's inspected checkpoint) | `info` reports 2.85 GiB weights and a 4.85 GiB memory floor; family string is ambiguous and no dense-4B native CUDA receipt is documented. | Fails the physical VRAM floor and remains format/geometry-unqualified. |
+
+The source-level native CUDA registry also contains families whose documented checkpoints are far beyond this machine (for example, 30B-class Nemotron, 24B-class Spark-X2.6, 27B-class Qwen/Dory and larger models). A registry entry is not evidence that a small quantized derivative is admitted.
+
+### Result
+
+There is no v1.2.3 checkpoint that currently satisfies all three necessary conditions for the reference machine:
+
+1. A native CUDA serving path in this exact release.
+2. A model/checkpoint contract that is explicitly admitted by that path and exposes ordinary text chat generation.
+3. A reported checkpoint memory floor that fits the actual GPU budget with the PoC's safety margin.
+
+Do not start another model load on the reference host on the basis of parameter count or family-level capabilities. The next useful action is either to qualify a different machine with more VRAM against an explicitly supported checkpoint, or wait for a smaller native CUDA family/checkpoint to be implemented and documented upstream. The Atomic Chat integration remains a valid architecture/adapter research effort, but its live TensorFold runtime gate stays blocked.
+
+### Additional source references
+
+- LFM3 native bring-up (explicitly no serving engine): https://github.com/ashhart/TensorFold/blob/v1.2.3/docs/recipes/lfm3-native.md
+- Native CUDA registry and family boundaries: https://github.com/ashhart/TensorFold/blob/v1.2.3/docs/recipes/cuda.md
+- LFM2/d1 CUDA family config (BF16 weights, d1 decision model): https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/families/lfm2/config.zig
+- Dory CUDA config (72 sublayers, hidden size 2560, quantization constraints): https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/families/dory/config.zig
+- Native CUDA Dory registry/open path: https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/native/cuda.zig
