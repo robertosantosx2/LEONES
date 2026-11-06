@@ -24,9 +24,9 @@ At this point there is **no verified, supported, memory-qualified TensorFold Nat
 Therefore:
 1. Do not launch Qwen3.5-2B MLX 4-bit on the reference RTX 3050 yet: the current public CUDA receipt names a GB10, not this sm_86 laptop, and its exact local `info` floor has not been measured. The checkpoint is a legitimate CUDA-path candidate for further admission research, not a proven 3050 candidate.
 2. Do not assume the cached Qwen3.5-4B dense MLX checkpoint can run via native CUDA or EXL3; v1.2.3's EXL3 CUDA statement covers Qwen3.5 MoE, not that dense checkpoint.
-2. Do not use the Spark-X2.6-4B or Kolibri-1 recipes as a 4 GiB smoke-test model.
-3. Keep the real-inference step blocked until a specific native CUDA checkpoint is found and its exact family/format/geometry plus `tensorfold-native info` memory floor are checked.
-4. Preserve the 3072 MiB free-VRAM PoC preflight. Never stop the existing `llama-server` automatically to create headroom.
+3. Do not use the Spark-X2.6-4B or Kolibri-1 recipes as a 4 GiB smoke-test model.
+4. Keep the real-inference step blocked until a specific native CUDA checkpoint is found and its exact family/format/geometry plus `tensorfold-native info` memory floor are checked.
+5. Preserve the 3072 MiB free-VRAM PoC preflight. Never stop the existing `llama-server` automatically to create headroom.
 
 This does not invalidate the integration architecture or offline PoC tests. It means the first real inference receipt must use a different, genuinely supported and small-enough CUDA checkpoint, or a machine with more VRAM.
 
@@ -67,7 +67,7 @@ The v1.2.3 recipe book and native CUDA registry were checked for smaller familie
 | `LiquidAI/LFM3-1.7B-MLX-4bit` | The LFM3 page is explicitly a host-side metadata/layout bring-up. It says it does not register a serving engine and text generation/image input are not implemented or qualified. | Not an inference candidate, despite the small parameter count. |
 | `LiquidAI/d1-3B` | The LFM2 CUDA open path is for d1's decision model. Its loader requires the checkpoint's own BF16 weights and quantizes nothing at load; the public README describes dedicated `/v1/systemone` and `/v1/decisions` APIs, not general chat completions. | Not a general Atomic Chat text-generation candidate. Its BF16 3B weights also do not provide a plausible 4 GiB fit; do not download or load it for this PoC. |
 | Dory (`model_type: dory`) | Native CUDA registry entry, but the v1.2.3 source's pinned config is a 72-sublayer, hidden-size-2560 model with ModelOpt NVFP4 group-16 weights (or other explicitly admitted formats). | Large architecture, not a small-model candidate for a 4 GiB laptop GPU. No 4 GiB qualification. |
-| Qwen3.5-2B MLX 4-bit | Explicit native Metal preview; the recipe says there is no native Qwen3.5-2B backend on CUDA/non-Apple platforms. | Not supported on this Ubuntu CUDA path, regardless of memory. |
+| Qwen3.5-2B MLX 4-bit | Native CUDA serving exists (#836); current upstream README's documented CUDA machine scope is one GB10. The 2B geometry admits only `mlx-q4g64` (#2139). No RTX 3050/sm_86 serving receipt is documented. | Legitimate CUDA-path candidate, but not qualified on this 4 GiB RTX 3050; exact local `info` floor is still unknown. |
 | Qwen3.5-4B MLX 4-bit (user's inspected checkpoint) | `info` reports 2.85 GiB weights and a 4.85 GiB memory floor; family string is ambiguous and no dense-4B native CUDA receipt is documented. | Fails the physical VRAM floor and remains format/geometry-unqualified. |
 
 The source-level native CUDA registry also contains families whose documented checkpoints are far beyond this machine (for example, 30B-class Nemotron, 24B-class Spark-X2.6, 27B-class Qwen/Dory and larger models). A registry entry is not evidence that a small quantized derivative is admitted.
