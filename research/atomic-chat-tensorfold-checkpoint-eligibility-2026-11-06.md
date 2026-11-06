@@ -9,7 +9,7 @@ The captured `capabilities --json` reports formats as a family-level union. The 
 
 The exact checkpoint `mlx-community/Qwen3.5-2B-MLX-4bit` at revision `93760be4f1f69842a46bc13dbdc0f19e291392a3` is documented as a **native Metal preview**. Its recipe explicitly says there is no native Qwen3.5-2B backend on CUDA/non-Apple platforms. It must not be selected for the Linux CUDA PoC merely because the capability JSON contains `qwen3_5` and `mlx-q4g64`.
 
-The Qwen3.5 EXL3 documentation also distinguishes the native engine from the historical Python CUDA engine and records format/family-specific limitations. Do not treat an EXL3 repository, or a family-level `exl3` capability, as proof that an arbitrary dense Qwen3.5 checkpoint can be served by the v1.2.3 native CUDA engine.
+The Qwen3.5 EXL3 documentation also distinguishes the native engine from the historical Python CUDA engine and records format/family-specific limitations. In v1.2.3, its native-CUDA section says `qwen3_5` serves EXL3 packs of Qwen3.5 **MoE** models and Qwen3.8-27B; it does not document the dense Qwen3.5-4B checkpoint. The separate Qwen3.5-2B recipe is Metal-only. Do not treat an EXL3 repository, or a family-level `exl3` capability, as proof that an arbitrary dense Qwen3.5 checkpoint can be served by the v1.2.3 native CUDA engine.
 
 ## Other inspected small-family candidates
 
@@ -23,6 +23,7 @@ At this point there is **no verified, supported, memory-qualified TensorFold Nat
 
 Therefore:
 1. Do not launch Qwen3.5-2B MLX 4-bit on this Linux CUDA binary.
+2. Do not assume the cached Qwen3.5-4B dense MLX checkpoint can run via native CUDA or EXL3; v1.2.3's EXL3 CUDA statement covers Qwen3.5 MoE, not that dense checkpoint.
 2. Do not use the Spark-X2.6-4B or Kolibri-1 recipes as a 4 GiB smoke-test model.
 3. Keep the real-inference step blocked until a specific native CUDA checkpoint is found and its exact family/format/geometry plus `tensorfold-native info` memory floor are checked.
 4. Preserve the 3072 MiB free-VRAM PoC preflight. Never stop the existing `llama-server` automatically to create headroom.
