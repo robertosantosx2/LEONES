@@ -64,6 +64,30 @@ def checkpoint_memory_floor_mib(info_output: str) -> int:
     return math.ceil(float(match.group(1)) * 1024)
 
 
+def validate_memory_preflight(
+    checkpoint_floor_mib: int, free_mib: int, minimum_free_mib: int, allow_info_floor_overcommit: bool = False
+) -> bool:
+    """Enforce the free-VRAM guard; treat info's generic floor as advisory only when explicitly overridden.
+
+    Returns True when the info floor exceeds free VRAM but the caller explicitly accepts
+    that discrepancy for a previously measured model/version/hardware profile.
+    """
+    if free_mib < minimum_free_mib:
+        fail(
+            f"Only {free_mib} MiB VRAM is free; refusing to start below the "
+            f"{minimum_free_mib} MiB safety floor"
+        )
+    floor_exceeds_free = checkpoint_floor_mib > free_mib
+    if floor_exceeds_free and not allow_info_floor_overcommit:
+        fail(
+            f"TensorFold info reports a conservative memory floor of {checkpoint_floor_mib} MiB, "
+            f"above {free_mib} MiB currently free. This is not a measured peak, but the PoC "
+            "blocks by default. For an already-tested exact model/version/GPU profile only, "
+            "set TENSORFOLD_ALLOW_INFO_FLOOR_OVERCOMMIT=1; the free-VRAM safety floor remains mandatory."
+        )
+    return floor_exceeds_free
+
+
 def free_port() -> int:
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
@@ -115,13 +139,13 @@ def main() -> int:
 
     free_mib = gpu_free_memory_mib()
     print(f"[GPU preflight] free VRAM: {free_mib} MiB; required safety floor: {MIN_FREE_MIB} MiB")
-    if checkpoint_floor_mib > free_mib:
-        fail(f"Checkpoint memory floor {checkpoint_floor_mib} MiB exceeds currently free VRAM {free_mib} MiB")
-    if free_mib < MIN_FREE_MIB:
-        fail(
-            f"Only {free_mib} MiB VRAM is free; refusing to start a model load "
-            f"below the {MIN_FREE_MIB} MiB safety floor. Close/release GPU workloads "
-            "yourself, or set TENSORFOLD_MIN_FREE_MIB deliberately if you accept the risk."
+    allow_overcommit = os.environ.get("TENSORFOLD_ALLOW_INFO_FLOOR_OVERCOMMIT", "").strip().lower() in {"1", "true", "yes"}
+    floor_overcommit = validate_memory_preflight(checkpoint_floor_mib, free_mib, MIN_FREE_MIB, allow_overcommit)
+    if floor_overcommit:
+        print(
+            "[GPU preflight] WARNING: info's generic floor exceeds free VRAM. "
+            "Proceeding only because the explicit known-profile override is set; "
+            "native serve allocation remains authoritative."
         )
 
     port = free_port()
