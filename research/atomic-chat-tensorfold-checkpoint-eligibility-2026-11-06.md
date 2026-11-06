@@ -89,3 +89,17 @@ Do not start another model load on the reference host on the basis of parameter 
 - LFM2/d1 CUDA family config (BF16 weights, d1 decision model): https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/families/lfm2/config.zig
 - Dory CUDA config (72 sublayers, hidden size 2560, quantization constraints): https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/families/dory/config.zig
 - Native CUDA Dory registry/open path: https://github.com/ashhart/TensorFold/blob/v1.2.3/zig/src/native/cuda.zig
+
+
+## Dory 1.0 4B NVFP4: exact public checkpoint-size cross-check (2026-11-06)
+
+A further check of NVIDIA's official Hugging Face repository identifies `nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-NVFP4` as a 4B NVFP4 checkpoint. Its repository reports a 3.2 GB `model.safetensors` file (about 2.98 GiB), with the full repository about 3.22 GB.
+
+This makes Dory an especially clear rejection for the 4 GiB reference GPU even before considering its large recurrent architecture and runtime/KV allocations: applying TensorFold's documented 2.00 GiB runtime margin to the weight-file size gives a rough lower-bound estimate of about **4.98 GiB**, already above physical VRAM. This is a size-based estimate, not a locally observed `tensorfold-native info` result; no Dory files were downloaded and no process was started.
+
+The public v1.2.3 CUDA registry does list Dory, but the registry explicitly does not qualify every checkpoint, format, GPU or rank count. The official Dory NVFP4 model is therefore not a safe exception to the no-model-load decision.
+
+Sources:
+- Official NVIDIA Dory NVFP4 model card and architecture: https://huggingface.co/nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-NVFP4
+- Official checkpoint file listing and size: https://huggingface.co/nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-NVFP4/tree/main
+- TensorFold v1.2.3 native CUDA registry and qualification caveat: https://github.com/ashhart/TensorFold/blob/v1.2.3/docs/recipes/cuda.md
