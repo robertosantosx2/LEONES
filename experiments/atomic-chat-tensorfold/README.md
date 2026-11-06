@@ -11,7 +11,7 @@ This proof of concept checks whether the installed TensorFold Native CLI can be 
 
 The reference machine has TensorFold Native 1.2.3 installed at `~/.local/opt/tensorfold-1.2.3-linux-x86_64/bin/tensorfold-native`. The release archive checksum was verified. Only version and capability discovery have been validated so far; model inference has not yet been run.
 
-The script does not install software, download models, edit Atomic Chat settings, or touch any pre-existing server. It first runs `tensorfold-native info MODEL` to validate the exact local checkpoint and read its documented memory floor (weights plus the 2 GiB runtime margin), then checks that the floor fits in currently free VRAM and that GPU 0 has at least 3072 MiB free by default. `info` is a checkpoint/family and memory preflight, not proof that every family/format has a CUDA implementation; the native CUDA `serve` command remains authoritative. It selects a free loopback port, starts only the child process it owns, checks the API, and terminates that child.
+The script does not install software, download models, edit Atomic Chat settings, or touch any pre-existing server. It first runs `tensorfold-native info MODEL` to inspect the exact local checkpoint and report TensorFold's documented memory floor (weights plus a generic 2 GiB runtime margin). That floor is an estimate, not a measured peak: LEONES has historical RTX 3050 receipts where Qwen3.5-4B completed inference even though a later binary's `info` floor was 4.85 GiB. The PoC therefore blocks by default if the floor exceeds free VRAM, but supports an explicit `TENSORFOLD_ALLOW_INFO_FLOOR_OVERCOMMIT=1` override for an already-tested exact model/version/GPU profile. The independent 3072 MiB free-VRAM guard remains mandatory and cannot be bypassed by that override. Never use the override for an unqualified model. `info` is not proof that every family/format has a CUDA implementation; native CUDA `serve` remains authoritative. The script selects a free loopback port, starts only the child process it owns, checks the API, and terminates that child.
 
 ## Run
 
@@ -23,7 +23,7 @@ python3 poc.py /absolute/path/to/an/already-downloaded/model
 
 For a cached Hugging Face repository ID, pass the exact ID if the installed TensorFold CLI can resolve it locally.
 
-Optional environment (the VRAM floor can be raised; lowering it is an explicit risk acceptance):
+Optional environment (the 3072 MiB free-VRAM guard remains mandatory; the info-floor override is only for a previously tested exact profile):
 
 ```bash
 TENSORFOLD_BIN="$HOME/.local/opt/tensorfold-1.2.3-linux-x86_64/bin/tensorfold-native" \
@@ -36,7 +36,7 @@ python3 poc.py /path/to/model
 
 1. `tensorfold-native --version`.
 2. `tensorfold-native capabilities --json`.
-3. Run `tensorfold-native info MODEL` without loading weights; reject an unsupported checkpoint or a reported memory floor larger than free VRAM.
+3. Run `tensorfold-native info MODEL` without loading weights; reject a checkpoint the CLI cannot inspect. Treat its generic weights-plus-runtime floor as advisory. If it exceeds free VRAM, block by default; an explicit overcommit override is permitted only for an already-tested exact model/version/GPU profile.
 4. Verify CUDA capability and a configurable minimum free-VRAM floor (default 3072 MiB), then launch with argv (no shell), loopback bind, a dynamically selected port, explicit CUDA backend and update checks disabled.
 5. `GET /health`.
 6. `GET /v1/models`.
@@ -60,7 +60,7 @@ A pass proves only that this TensorFold binary/model combination exposes the tes
 
 ## Latest upstream and checkpoint audit
 
-See [TensorFold upstream and CUDA checkpoint audit (2026-11-06)](../../research/atomic-chat-tensorfold-upstream-audit-2026-11-06.md). It checks the latest public release, native CUDA qualification rules and the small-checkpoint candidates against the reference RTX 3050. Current result: no safe native CUDA general-chat checkpoint is qualified for the 4 GiB GPU; do not launch a model based only on a family capability declaration.
+See [historical RTX 3050 inference evidence (2026-11-06)](../../research/atomic-chat-tensorfold-historical-rtx3050-evidence-2026-11-06.md) for measured Qwen3.5-2B/4B runs on this GPU and the matched baseline-vs-PR-#1879 result. The current 1.2.3 binary still needs a fresh receipt: historical success on 1.1.1 and the old PR #1879 build does not prove the current rebase head or 1.2.3 baseline.
 
 ## Reference-machine evidence
 
