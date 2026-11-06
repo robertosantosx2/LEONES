@@ -11,7 +11,7 @@ This proof of concept checks whether the installed TensorFold Native CLI can be 
 
 The reference machine has TensorFold Native 1.2.3 installed at `~/.local/opt/tensorfold-1.2.3-linux-x86_64/bin/tensorfold-native`. The release archive checksum was verified. Only version and capability discovery have been validated so far; model inference has not yet been run.
 
-The script does not install software, download models, edit Atomic Chat settings, or touch any pre-existing server. It checks that the binary declares CUDA and that GPU 0 has at least 3072 MiB free by default before loading a model. This is a safety floor, not a guarantee that the checkpoint will fit. It selects a free loopback port, starts only the child process it owns, checks the API, and terminates that child.
+The script does not install software, download models, edit Atomic Chat settings, or touch any pre-existing server. It first runs `tensorfold-native info MODEL` to validate the exact local checkpoint and read its documented memory floor (weights plus the 2 GiB runtime margin), then checks that the floor fits in currently free VRAM and that GPU 0 has at least 3072 MiB free by default. `info` is a checkpoint/family and memory preflight, not proof that every family/format has a CUDA implementation; the native CUDA `serve` command remains authoritative. It selects a free loopback port, starts only the child process it owns, checks the API, and terminates that child.
 
 ## Run
 
@@ -36,11 +36,12 @@ python3 poc.py /path/to/model
 
 1. `tensorfold-native --version`.
 2. `tensorfold-native capabilities --json`.
-3. Verify CUDA capability and a configurable minimum free-VRAM floor (default 3072 MiB), then launch with argv (no shell), loopback bind, a dynamically selected port, explicit CUDA backend and update checks disabled.
-4. `GET /health`.
-5. `GET /v1/models`.
-6. `POST /v1/chat/completions` in normal and SSE streaming modes.
-7. Child-only shutdown, with SIGKILL fallback after a grace period.
+3. Run `tensorfold-native info MODEL` without loading weights; reject an unsupported checkpoint or a reported memory floor larger than free VRAM.
+4. Verify CUDA capability and a configurable minimum free-VRAM floor (default 3072 MiB), then launch with argv (no shell), loopback bind, a dynamically selected port, explicit CUDA backend and update checks disabled.
+5. `GET /health`.
+6. `GET /v1/models`.
+7. `POST /v1/chat/completions` in normal and SSE streaming modes.
+8. Child-only shutdown, with SIGKILL fallback after a grace period.
 
 ## Offline checks
 
