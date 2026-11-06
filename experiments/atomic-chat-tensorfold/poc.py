@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import collections
 import json
+import math
 import os
+import re
 import signal
 import socket
 import subprocess
@@ -52,6 +54,14 @@ def gpu_free_memory_mib() -> int:
     )
     first = result.stdout.strip().splitlines()[0]
     return int(first.strip())
+
+
+def checkpoint_memory_floor_mib(info_output: str) -> int:
+    """Parse TensorFold info's documented weights-plus-runtime memory floor."""
+    match = re.search(r"^memory floor:\\s*([0-9]+(?:\\.[0-9]+)?)\\s+GiB\\b", info_output, re.MULTILINE)
+    if match is None:
+        fail("tensorfold info did not report a native checkpoint memory floor")
+    return math.ceil(float(match.group(1)) * 1024)
 
 
 def free_port() -> int:
@@ -94,8 +104,19 @@ def main() -> int:
     if "cuda" not in capabilities.get("backends", []):
         fail("This TensorFold binary does not declare the CUDA backend")
 
+    print("[Checkpoint preflight] inspecting this exact checkpoint without loading it")
+    info = subprocess.run([str(BIN), "info", MODEL], text=True, capture_output=True)
+    info_output = info.stdout + info.stderr
+    print(info_output.strip()[:3000])
+    if info.returncode != 0:
+        fail("TensorFold info rejected this checkpoint; it is not eligible for the native engine")
+    checkpoint_floor_mib = checkpoint_memory_floor_mib(info_output)
+    print(f"[Checkpoint preflight] documented memory floor: {checkpoint_floor_mib} MiB")
+
     free_mib = gpu_free_memory_mib()
     print(f"[GPU preflight] free VRAM: {free_mib} MiB; required safety floor: {MIN_FREE_MIB} MiB")
+    if checkpoint_floor_mib > free_mib:
+        fail(f"Checkpoint memory floor {checkpoint_floor_mib} MiB exceeds currently free VRAM {free_mib} MiB")
     if free_mib < MIN_FREE_MIB:
         fail(
             f"Only {free_mib} MiB VRAM is free; refusing to start a model load "
