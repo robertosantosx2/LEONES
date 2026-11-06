@@ -35,6 +35,20 @@ class TensorFoldPocTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             poc.checkpoint_memory_floor_mib("family: Example (example)\n")
 
+    def test_memory_preflight_accepts_floor_within_free_vram(self) -> None:
+        self.assertFalse(poc.validate_memory_preflight(3000, 3600, 3072))
+
+    def test_memory_preflight_blocks_generic_floor_overcommit_by_default(self) -> None:
+        with self.assertRaises(RuntimeError):
+            poc.validate_memory_preflight(4967, 3741, 3072)
+
+    def test_memory_preflight_allows_explicit_known_profile_override(self) -> None:
+        self.assertTrue(poc.validate_memory_preflight(4967, 3741, 3072, True))
+
+    def test_memory_preflight_never_allows_override_below_free_vram_guard(self) -> None:
+        with self.assertRaises(RuntimeError):
+            poc.validate_memory_preflight(4967, 2500, 3072, True)
+
     def test_free_port_is_valid_tcp_port(self) -> None:
         port = poc.free_port()
         self.assertGreater(port, 0)
