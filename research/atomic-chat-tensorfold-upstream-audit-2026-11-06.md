@@ -15,7 +15,7 @@ The Atomic Chat PoC must remain research-only and refuse model startup until a r
 - The release page lists **TensorFold 1.2.3** as Latest (released 2026-11-05). No later tagged engine release is listed at this audit.
 - The current upstream recipe index states that native CUDA release images include sm_80, sm_86, sm_120 and sm_121, but calls this a build-target list rather than per-card model qualification.
 - The native CUDA runbook states that a registry entry does not qualify every checkpoint, format, GPU or rank count.
-- The current README recommends Qwen3.5-2B as the small checkpoint, but the exact native recipe is a **Metal preview** and explicitly says there is no native Qwen3.5-2B backend on CUDA/non-Apple platforms.
+- The current README lists Qwen3.5-2B as a native Metal and CUDA model, with CUDA release checks and a documented machine scope of one GB10. The recipe page itself is titled a native Metal preview, so it is not the full CUDA runbook. The changelog records native CUDA serving for Qwen3.5-2B (#836) and says the 2B geometry admits only `mlx-q4g64` (#2139). No RTX 3050/sm_86 serving receipt is listed for this checkpoint.
 
 Sources:
 - https://github.com/ashhart/TensorFold/releases
@@ -29,7 +29,7 @@ Sources:
 
 | Candidate / path | Upstream evidence | Decision for 4 GiB RTX 3050 |
 |---|---|---|
-| Qwen3.5-2B MLX 4-bit | Exact native recipe is Metal-only; recipe says CUDA/non-Apple platforms have no native backend. | **Reject** — not a CUDA candidate. |
+| Qwen3.5-2B MLX 4-bit | Native CUDA serving exists (#836); current README's documented CUDA machine scope is one GB10. Geometry admits only `mlx-q4g64` (#2139). No RTX 3050/sm_86 receipt is documented. | **Not yet qualified** — legitimate CUDA-path candidate, but not a verified RTX 3050 model. Exact local `info` floor is still unknown. |
 | Qwen3.5-4B MLX 4-bit | Reference host ran tensorfold-native info mlx-community/Qwen3.5-4B-MLX-4bit: weights 2.85 GiB; reported memory floor 4.85 GiB. | **Reject** — reported floor exceeds the card's entire 4 GiB VRAM. |
 | Nemotron 3.5 Lightning 30B-A3B MLX 4-bit | Native CUDA receipts include GB10, RTX 3090 (sm_86) and RTX PRO 6000. | **Reject** — model class/checkpoint is far beyond this laptop's VRAM budget; RTX 3090 receipt is not a 4 GiB qualification. |
 | Spark-X2.6-4B | Native CUDA recipe exists, but public CUDA measurement cited in the earlier candidate audit reports 9.47 GiB for its 8-bit checkpoint on RTX 5090. | **Reject** — published configuration is already much larger than 4 GiB; no 4 GiB-compatible native checkpoint/receipt found. |
@@ -55,7 +55,7 @@ No local state was read during this audit, and no host process was started.
 
 1. Keep PR #139 a draft. Do not remove the live-inference acceptance gate.
 2. Keep the PoC's default 3072 MiB free-VRAM safety floor and per-checkpoint info check. Neither guarantees successful model load; native CUDA serve remains authoritative.
-3. Do not implement or merge a production provider against a fictional “Qwen3.5-2B CUDA” target.
+3. Do not implement or merge a production provider assuming Qwen3.5-2B is qualified on RTX 3050: its native CUDA path is real, but the published checkpoint scope is GB10 and no sm_86 laptop receipt is documented.
 4. The next valid hardware milestone is either a later upstream native CUDA checkpoint with an exact documented sm_86 serving receipt and measured floor that fits currently free VRAM, or a test on a larger NVIDIA GPU with enough free VRAM for an already-qualified native checkpoint.
 5. Once a real model passes, continue with API compatibility, Core managed-gateway authentication/key stripping, lifecycle/cancellation, and only then app extension/UI work.
 
@@ -72,3 +72,21 @@ Until a candidate is identified and the safe memory preflight passes, do not ask
 ## Pull request
 
 https://github.com/robertosantosx2/LEONES/pull/139
+
+
+## Qwen3.5-2B CUDA qualification clarification (2026-11-06)
+
+The current upstream `main` documentation was re-read to correct the earlier shorthand that Qwen3.5-2B was Metal-only. It is **not** Metal-only:
+
+- README model table: Qwen3.5-2B MLX 4-bit, one Mac (M5 Max checked) or one GB10; “CUDA release checks”.
+- Changelog: Qwen3.5-2B and Qwen3.8-27B serve on CUDA through the native server (#836).
+- Changelog: Qwen3.5-2B's exact geometry admits only `mlx-q4g64` (#2139).
+- README's documented CUDA machine for this small checkpoint is GB10. No RTX 3050 / sm_86 serving receipt is recorded.
+
+The correct disposition is therefore: **native CUDA path exists; RTX 3050 qualification is unproven**. Its public HF checkpoint is about 1.72 GB, which makes it worth retaining as the first candidate for a careful local `tensorfold info` check if a deliberate download is later authorized. Do not pull or serve it automatically: TensorFold's reported memory floor, the instantaneous free VRAM and a model-specific sm_86 serving gate must all be checked first. With only 4 GiB total VRAM, this may still be too close to the memory boundary.
+
+Sources:
+- https://github.com/ashhart/TensorFold/blob/main/README.md#qualified-models
+- https://github.com/ashhart/TensorFold/blob/main/CHANGELOG.md
+- https://github.com/ashhart/TensorFold/blob/main/docs/recipes/qwen3.5-2b-native.md
+- https://huggingface.co/mlx-community/Qwen3.5-2B-MLX-4bit
