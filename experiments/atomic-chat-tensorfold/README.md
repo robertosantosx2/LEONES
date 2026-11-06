@@ -58,6 +58,9 @@ The LEONES pull request also runs these checks in GitHub Actions on changes to t
 
 A pass proves only that this TensorFold binary/model combination exposes the tested local API. It does not yet prove Atomic Core integration, GPU arbitration, model catalog compatibility, tool calling, vision, structured output, embeddings, or cross-platform support. The script intentionally does not claim those capabilities.
 
+## Latest upstream and checkpoint audit
+
+See [TensorFold upstream and CUDA checkpoint audit (2026-11-06)](../../research/atomic-chat-tensorfold-upstream-audit-2026-11-06.md). It checks the latest public release, native CUDA qualification rules and the small-checkpoint candidates against the reference RTX 3050. Current result: no safe native CUDA general-chat checkpoint is qualified for the 4 GiB GPU; do not launch a model based only on a family capability declaration.
 
 ## Reference-machine evidence
 
