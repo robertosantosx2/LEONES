@@ -8,6 +8,8 @@ Environment:
   TENSORFOLD_BIN       Native executable (default: TensorFold 1.2.3 user install)
   TENSORFOLD_CONTEXT   Context length (default: 2048)
   TENSORFOLD_TIMEOUT   Startup timeout in seconds (default: 300)
+  TENSORFOLD_ALLOW_INFO_FLOOR_OVERCOMMIT=1
+                       Explicit override for a previously measured exact model/version/GPU profile
 """
 from __future__ import annotations
 
