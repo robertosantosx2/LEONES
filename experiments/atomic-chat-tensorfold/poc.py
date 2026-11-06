@@ -58,7 +58,7 @@ def gpu_free_memory_mib() -> int:
 
 def checkpoint_memory_floor_mib(info_output: str) -> int:
     """Parse TensorFold info's documented weights-plus-runtime memory floor."""
-    match = re.search(r"^memory floor:\\s*([0-9]+(?:\\.[0-9]+)?)\\s+GiB\\b", info_output, re.MULTILINE)
+    match = re.search(r"^memory floor:\s*([0-9]+(?:\.[0-9]+)?)\s+GiB\b", info_output, re.MULTILINE)
     if match is None:
         fail("tensorfold info did not report a native checkpoint memory floor")
     return math.ceil(float(match.group(1)) * 1024)
