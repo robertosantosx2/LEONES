@@ -4,7 +4,7 @@
 
 ## Executive result
 
-No newly documented native TensorFold checkpoint currently qualifies as a safe general-text-chat smoke test for the reference RTX 3050.
+No new checkpoint was needed to establish historical TensorFold CUDA inference on the reference RTX 3050: LEONES already records Qwen3.5-2B and Qwen3.5-4B running with earlier builds. The remaining question is whether the current 1.2.3/rebased PR #1879 binary can reproduce the known Qwen3.5-4B profile and then pass the Atomic Chat API/gateway checks.
 
 The latest public engine release remains **1.2.3**. The upstream native CUDA registry is broad, but upstream explicitly distinguishes a family registry/build target from a checkpoint-, format-, rank- and GPU-qualified serving receipt. The release's sm_86 fatbin means kernels are present for the architecture; it does not establish that a small checkpoint has a complete native CUDA serving path on this particular card.
 
@@ -29,8 +29,8 @@ Sources:
 
 | Candidate / path | Upstream evidence | Decision for 4 GiB RTX 3050 |
 |---|---|---|
-| Qwen3.5-2B MLX 4-bit | Native CUDA serving exists (#836); current README's documented CUDA machine scope is one GB10. Geometry admits only `mlx-q4g64` (#2139). No RTX 3050/sm_86 receipt is documented. | **Not yet qualified** — legitimate CUDA-path candidate, but not a verified RTX 3050 model. Exact local `info` floor is still unknown. |
-| Qwen3.5-4B MLX 4-bit | Reference host ran tensorfold-native info mlx-community/Qwen3.5-4B-MLX-4bit: weights 2.85 GiB; reported memory floor 4.85 GiB. | **Reject** — reported floor exceeds the card's entire 4 GiB VRAM. |
+| Qwen3.5-2B MLX 4-bit | Native CUDA serving exists (#836); current README's documented CUDA machine scope is one GB10. Geometry admits only `mlx-q4g64` (#2139). Separately, LEONES has a historical TensorFold 1.1.1 real-inference receipt on this exact RTX 3050 (context 1024). | **Historically proven on this RTX 3050 with 1.1.1; current 1.2.3 binary still untested.**
+| Qwen3.5-4B MLX 4-bit | `info` on 1.2.3 reports 2.85 GiB weights and a generic 4.85 GiB floor. Historical LEONES receipts show real inference with 1.1.1 and the experimental PR #1879 build on this exact RTX 3050; the PR build succeeded where a matched later baseline OOMed. | **Known working checkpoint on this GPU with earlier builds; current 1.2.3 baseline unqualified.** The 4.85 GiB generic floor is not a measured peak.
 | Nemotron 3.5 Lightning 30B-A3B MLX 4-bit | Native CUDA receipts include GB10, RTX 3090 (sm_86) and RTX PRO 6000. | **Reject** — model class/checkpoint is far beyond this laptop's VRAM budget; RTX 3090 receipt is not a 4 GiB qualification. |
 | Spark-X2.6-4B | Native CUDA recipe exists, but public CUDA measurement cited in the earlier candidate audit reports 9.47 GiB for its 8-bit checkpoint on RTX 5090. | **Reject** — published configuration is already much larger than 4 GiB; no 4 GiB-compatible native checkpoint/receipt found. |
 | LFM3-1.7B | 1.2.3 release note records LFM3-1.7B on Intel Iris Xe; this is not an NVIDIA CUDA text-chat qualification. Existing family notes describe metadata/layout bring-up, not a completed general chat serving engine. | **Reject** — no native CUDA general-chat serving receipt. |
@@ -90,3 +90,17 @@ Sources:
 - https://github.com/ashhart/TensorFold/blob/main/CHANGELOG.md
 - https://github.com/ashhart/TensorFold/blob/main/docs/recipes/qwen3.5-2b-native.md
 - https://huggingface.co/mlx-community/Qwen3.5-2B-MLX-4bit
+
+
+## Historical RTX 3050 evidence was previously overlooked (2026-11-06)
+
+This upstream-only audit did not include the existing LEONES physical-hardware experiment records. That omission led to an incorrect broad conclusion that no small TensorFold model had been proven on the reference GPU.
+
+LEONES records:
+- TensorFold 1.1.1 + Qwen3.5-2B MLX 4-bit: 95.08–105.71 tok/s, context 1024, TTFT 88.2–94.1 ms.
+- TensorFold 1.1.1 + Qwen3.5-4B MLX 4-bit: 53.42–53.64 tok/s, context 512, TTFT 193–212 ms.
+- Experimental PR #1879 build + the same Qwen3.5-4B revision: three HTTP 200 chat requests at 54.32–56.05 tok/s; a matched baseline failed at CUDA allocation.
+
+The installed 1.2.3 binary's 4.85 GiB info floor is a generic weights-plus-runtime-margin estimate, not a measured peak. The 1.2.3 binary itself has not yet been tested live with this model. See [the historical RTX 3050 evidence report](atomic-chat-tensorfold-historical-rtx3050-evidence-2026-11-06.md) and [the detailed PR #1879 memory-admission experiment](https://github.com/robertosantosx2/LEONES/blob/main/docs/experimental/qwen35-4b-tensorfold-memory-admission-pr1879-2026-11-02.md).
+
+The next work is to complete the user's current PR #1879 rebase/review requests, then repeat the already-known Qwen3.5-4B context-512 test on that exact build. Do not spend time or disk downloading a new checkpoint.
