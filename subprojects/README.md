@@ -23,4 +23,4 @@ git submodule sync --recursive
 git submodule update --init --recursive
 ```
 
-| Picchio | https://github.com/benmaster82/picchio | Fork pendiente | Experimental MoE CPU/CUDA inference backend; development fork target: https://github.com/robertosantosx2/picchio |
+| Picchio | https://github.com/benmaster82/picchio (upstream) · https://github.com/robertosantosx2/picchio (fork) | `feature/cuda-pinned-host-slabs` (experimental) | Experimental MoE CPU/CUDA inference backend; pinned-host-memory optimization under validation |
