@@ -1,0 +1,64 @@
+# Pithos 0.5.1 — registro consolidado de ejecución (2026-11-07)
+
+> Transcripción estructurada de resultados disponibles en la sesión. No es un stdout/stderr original capturado directamente a fichero en Ubuntu.
+
+## Entorno
+- Release: Pithos 0.5.1 Linux x86-64.
+- Modelo: models/LFM3-1.7B-Q4_K_M.gguf.
+- Equipo: MSI Thin 15 B12UC; i7-12650H; Intel ADL GT2; NVIDIA RTX 3050 Laptop 4 GiB.
+- Driver NVIDIA 580.178.04; CUDA 13.0.
+- Hash GGUF: 3793e1e6e2266919d6e015287221b41100175a98eddaba92e111aed3b05c93c4.
+
+## NVIDIA RTX 3050 — PP128/TG64
+- Device: Vulkan device 1.
+- Matrices offloaded: 154.
+- GPU weights: 1063 MB.
+- KV cache: 176 MB.
+- Activations: 8 MB.
+- Whole forward pass on GPU.
+- Working set: 1.19 GB.
+- PP128 first: 627.35 tok/s; warm: 695.84 tok/s.
+- TG64 first: 103.50 tok/s; warm: 104.84 tok/s.
+- Effective weight bandwidth reported/calculated in session: ~114.3 GB/s.
+
+## Intel ADL GT2 — optimizado
+- Device: Vulkan device 0; PITHOS_VK_INTEL=1.
+- Matrices: 154; GPU weights 1063 MB; KV 176 MB; activations 8 MB.
+- Whole forward pass on GPU; working set 1.18 GB.
+- PP128 first 206.17; warm 218.48 tok/s.
+- TG64 first 24.82; warm 24.91 tok/s.
+
+## Intel ADL GT2 — estándar
+- Device: Vulkan device 0; PITHOS_VK_INTEL=0.
+- Working set 1.18 GB.
+- PP128 warm 163.20 tok/s.
+- TG64 warm 19.32 tok/s.
+
+## Intel CPU
+- Command used: --cpu.
+- Working set 1.06 GB.
+- PP128 warm 149.23 tok/s.
+- TG64 warm 37.22 tok/s.
+
+## NVIDIA prompt-length sweep
+- PP2048: PP 528.64 tok/s (3.87 s); TG256 102.51 tok/s (2.50 s).
+- PP4096: PP 424.99 tok/s (9.64 s); TG256 101.18 tok/s (2.53 s).
+- PP8192: PP 300.27 tok/s (27.28 s); TG256 101.78 tok/s (2.52 s).
+- PP8256: PP reported 550289039701.66 tok/s; elapsed 0.00 s; invalid PP. TG256 102.45.
+- PP8448: PP reported 528005583870.60 tok/s; elapsed 0.00 s; invalid PP. TG256 102.56.
+- PP8704: PP reported 544005753078.80 tok/s; elapsed 0.00 s; invalid PP. TG256 102.27.
+- PP9216: PP reported 341319696900.55 tok/s; elapsed 0.00 s; invalid PP. TG256 102.52.
+- PP10240: PP reported 640006768328.00 tok/s; elapsed 0.00 s; invalid PP. TG256 102.50.
+- PP12288: PP reported 722966549770.52 tok/s; elapsed 0.00 s; invalid PP. TG256 102.20.
+- PP16384: PP reported 215565748964.70 tok/s; elapsed 0.00 s; invalid PP. TG256 102.46.
+- All sweep runs reported 1.19 GB working set and 176 MB KV.
+
+## Source inspection notes
+- Tag v0.5.1 fetched from official Pithos remote.
+- README documents context default 8192 and max 131072; --bench [PP,TG].
+- src/main.c: bench args/defaults and benchmark branch (around line 973).
+- src/platform.c: Linux timing uses clock_gettime(CLOCK_MONOTONIC).
+- Context initialization flow was not fully inspected; root cause of invalid PP is unresolved.
+
+## Data-quality warning
+Never use PP figures where elapsed time is 0.00 s. Their corresponding TG256 figures are retained as reported, but do not prove that PP was executed with a valid context.
