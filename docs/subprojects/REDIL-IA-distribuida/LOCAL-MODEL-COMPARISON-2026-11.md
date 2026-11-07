@@ -22,7 +22,7 @@ The preliminary REDIL recommendation is to keep Qwen3.5-35B-A3B, Qwen3.5-4B and 
 
 | Model | Parameters / architecture | Published context | Input/output of checkpoint considered | Specialty |
 |---|---|---:|---|---|
-| Qwen3.5-4B | Approx. 4.7B; dense | 262,144 | Text + image; video through frame sequences; text output | Compact multimodal generalist, reasoning, OCR/documents, agents |
+| Qwen3.5-4B | 4B; dense | 262,144 | Text + image; video through frame sequences; text output | Compact multimodal generalist, reasoning, OCR/documents, agents |
 | Qwen3-30B-A3B | 30.5B total; 3.3B active; MoE, 128 experts and 8 active in Thinking-2507 | Up to 262,144 in Thinking-2507; verify exact variant | Text → text | Reasoning, knowledge, math, code and tool use |
 | Qwen3.5-35B-A3B | 35B total; 3B active; MoE with 256 experts, 8 routed + 1 shared | 262,144 native; model card says extensible to 1,010,000 | Text + image; video through frames; text output | Advanced reasoning, vision-language, documents, video and agents |
 | LFM3-1.7B | 1.73B; tri-hybrid architecture (convolutions, local and global attention) | 256K | **The tested checkpoint is text → text** | Local agents, tool calls, specialized tasks and edge |
@@ -99,11 +99,11 @@ Representative published results:
 
 | Vision / video benchmark | Qwen3.5-4B | Qwen3.5-35B-A3B |
 |---|---:|---:|
-| MMMU (visual reasoning) | N/A in the summarized 4B table consulted | 81.4 |
-| MMMU-Pro | N/A in the summarized 4B table consulted | 75.1 |
-| MathVista (mini) | N/A in the summarized 4B table consulted | 86.2 |
-| RealWorldQA | N/A in the summarized 4B table consulted | 84.1 |
-| MMBench EN-DEV | N/A in the summarized 4B table consulted | 91.5 |
+| MMMU (visual reasoning) | 77.6 | 81.4 |
+| MMMU-Pro | 66.3 | 75.1 |
+| MathVista (mini) | 85.1 | 86.2 |
+| RealWorldQA | 79.5 | 84.1 |
+| MMBench EN-DEV | 89.4 | 91.5 |
 | OCRBench | 85.0 | 91.0 |
 | VideoMME with subtitles | 83.5 | 86.6 |
 | VideoMME without subtitles | 76.9 | 82.5 |
@@ -111,7 +111,7 @@ Representative published results:
 | MVBench | 71.2 | 74.8 |
 | LVBench | 66.4 | 71.4 |
 
-The Qwen3.5-4B card also reports its own video and OCR results. Where a 4B visual result is not listed in this table, do not infer zero or copy a result from another model size.
+The 4B results are transcribed from its official model card; do not replace them with figures from other model sizes.
 
 **Interpretation limit:** video understanding is not video generation. Video input is processed through frames/temporal representations supported by the model and runtime. Actual performance depends on sampling, resolution, frame count, context and preprocessing.
 
