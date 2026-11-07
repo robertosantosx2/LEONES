@@ -91,6 +91,8 @@ Las cuatro capas de conocimiento permanecen separadas: **fuente → evidencia �
 - [`completed/BENCHMARK-MEASURED-EVIDENCE.md`](completed/BENCHMARK-MEASURED-EVIDENCE.md) — evidencia de benchmarks medidos.
 - [`completed/PHYSICAL-BENCHMARK-VALIDATION.md`](completed/PHYSICAL-BENCHMARK-VALIDATION.md) — validación física.
 - [`completed/H09-CABE-RULA.md`](completed/H09-CABE-RULA.md) — CABE/RULA.
+- [`PITHOS-LFM3-1.7B-RTX3050-2026-11-06.md`](PITHOS-LFM3-1.7B-RTX3050-2026-11-06.md) — Pithos 0.5.0, benchmark inicial LFM3-1.7B en RTX 3050.
+- [`PITHOS-LFM3-1.7B-RTX3050-2026-11-07.md`](PITHOS-LFM3-1.7B-RTX3050-2026-11-07.md) — Pithos 0.5.1, comparativa CPU/Intel Vulkan/NVIDIA Vulkan y barrido PP/TG; enlaza CSV, registro y script reproducible en `artifacts/pithos-0.5.1-2026-11-07/`.
 
 ### Integraciones
 
