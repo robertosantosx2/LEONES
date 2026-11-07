@@ -1,14 +1,15 @@
 # Picchio — subproyecto de LEONES
 
-**Estado:** integración documental inicial; fork de desarrollo pendiente.
+**Estado:** fork de desarrollo creado; primera implementación de pinned host slabs en revisión, pendiente de compilación y pruebas en hardware.
 
 ## Repositorios
 
 - Upstream: https://github.com/benmaster82/picchio
-- Fork de trabajo previsto: https://github.com/robertosantosx2/picchio
+- Fork de desarrollo: https://github.com/robertosantosx2/picchio
+- Rama experimental: `feature/cuda-pinned-host-slabs`
 - Rama local de investigación existente: `~/picchio-lab`
 
-> El fork bajo `robertosantosx2` todavía no se ha creado. La conexión GitHub disponible en esta sesión permite leer repositorios y escribir archivos, ramas y commits, pero no expone la operación GitHub de crear un fork ni crear un repositorio. No se presenta el upstream como si fuera un fork propio. Cuando el fork exista, se actualizarán aquí la URL, el pin y `.gitmodules`.
+El fork está creado y accesible. El código experimental se desarrolla en una rama separada; el upstream `benmaster82/picchio` permanece intacto. Este subproyecto se documenta aquí y no se incorpora como submódulo Git hasta validar la revisión.
 
 ## Objetivo
 
@@ -33,7 +34,7 @@ Desarrollar y validar un backend MoE híbrido CPU/CUDA para equipos de recursos 
 ## Reglas de desarrollo
 
 1. Mantener intactos el ejecutable CPU baseline y los artefactos CUDA funcionales existentes.
-2. Desarrollar en una rama aislada del fork cuando esté disponible.
+2. Desarrollar en `feature/cuda-pinned-host-slabs` y mantener `main` como referencia estable.
 3. Compilar bibliotecas experimentales con nombre/ruta separados; no sobrescribir `/tmp/libpicchio_cuda.so`.
 4. Cada cambio debe tener diff revisable, compilación, prueba funcional y medición reproducible.
 5. Separar claramente resultados **MEASURED** de hipótesis y estimaciones.
@@ -42,12 +43,13 @@ Desarrollar y validar un backend MoE híbrido CPU/CUDA para equipos de recursos 
 
 ## Primera línea de trabajo
 
-**CUDA pinned host slabs (sin asincronía):**
+**CUDA pinned host slabs (sin asincronía) — implementación inicial en revisión:**
 - API opcional `pgpu_host_register(ptr, size)` / `pgpu_host_unregister(ptr)`.
 - Registro limitado y contabilizado; fallo de registro debe degradar a memoria pageable.
 - Desregistro antes de liberar o sustituir un slab; protección frente a llamadas concurrentes del loader/prefetch.
 - Limpieza de registros pendientes al apagar el backend.
 - Prueba A/B frente a la biblioteca CUDA actual, sin modificar el ejecutable CPU baseline.
+- Implementación subida al fork; aún no compilada ni ejecutada en la RTX 3050. No se considera validada ni se atribuye mejora de rendimiento.
 
 ## Evidencia y seguimiento
 
