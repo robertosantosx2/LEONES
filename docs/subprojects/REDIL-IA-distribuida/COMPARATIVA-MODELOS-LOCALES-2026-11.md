@@ -22,7 +22,7 @@ La recomendación operativa preliminar para REDIL es mantener Qwen3.5-35B-A3B, Q
 
 | Modelo | Parámetros / arquitectura | Contexto declarado | Entrada y salida del checkpoint considerado | Especialidad |
 |---|---|---:|---|---|
-| Qwen3.5-4B | 4,7B aprox.; denso | 262.144 | Texto + imagen; vídeo mediante secuencias de fotogramas; texto de salida | Generalista multimodal compacto, razonamiento, OCR/documentos, agentes |
+| Qwen3.5-4B | 4B; denso | 262.144 | Texto + imagen; vídeo mediante secuencias de fotogramas; texto de salida | Generalista multimodal compacto, razonamiento, OCR/documentos, agentes |
 | Qwen3-30B-A3B | 30,5B totales; 3,3B activos; MoE, 128 expertos y 8 activos en la variante Thinking-2507 | Hasta 262.144 en Thinking-2507; comprobar variante exacta | Texto → texto | Razonamiento, conocimiento, matemáticas, código y uso de herramientas |
 | Qwen3.5-35B-A3B | 35B totales; 3B activos; MoE con 256 expertos, 8 enrutados + 1 compartido | 262.144 nativos; extensible según ficha hasta 1.010.000 | Texto + imagen; vídeo mediante fotogramas; texto de salida | Razonamiento avanzado, visión-lenguaje, documentos, vídeo y agentes |
 | LFM3-1.7B | 1,73B; arquitectura híbrida tri-híbrida (convoluciones, atención local y global) | 256K | **El checkpoint probado es texto → texto** | Agentes locales, llamadas a herramientas, tareas especializadas y edge |
@@ -99,11 +99,11 @@ Resultados representativos publicados:
 
 | Benchmark visual / vídeo | Qwen3.5-4B | Qwen3.5-35B-A3B |
 |---|---:|---:|
-| MMMU (razonamiento visual) | N/D en la tabla resumida de 4B consultada | 81,4 |
-| MMMU-Pro | N/D en la tabla resumida de 4B consultada | 75,1 |
-| MathVista (mini) | N/D en la tabla resumida de 4B consultada | 86,2 |
-| RealWorldQA | N/D en la tabla resumida de 4B consultada | 84,1 |
-| MMBench EN-DEV | N/D en la tabla resumida de 4B consultada | 91,5 |
+| MMMU (razonamiento visual) | 77,6 | 81,4 |
+| MMMU-Pro | 66,3 | 75,1 |
+| MathVista (mini) | 85,1 | 86,2 |
+| RealWorldQA | 79,5 | 84,1 |
+| MMBench EN-DEV | 89,4 | 91,5 |
 | OCRBench | 85,0 | 91,0 |
 | VideoMME con subtítulos | 83,5 | 86,6 |
 | VideoMME sin subtítulos | 76,9 | 82,5 |
@@ -111,7 +111,7 @@ Resultados representativos publicados:
 | MVBench | 71,2 | 74,8 |
 | LVBench | 66,4 | 71,4 |
 
-La tabla de Qwen3.5-4B ofrece además resultados propios de vídeo y OCR. Donde no se incluye un dato visual 4B en esta tabla, no se debe inferir un cero ni copiar el resultado de otro tamaño.
+Los resultados del 4B se han transcrito de su ficha oficial; no deben sustituirse por cifras de otros tamaños.
 
 **Límite de interpretación:** comprender vídeo no equivale a generar vídeo. La entrada de vídeo se procesa mediante fotogramas/representación temporal compatible con el modelo y el runtime. El rendimiento real depende del muestreo, resolución, número de fotogramas, contexto y preprocesamiento.
 
