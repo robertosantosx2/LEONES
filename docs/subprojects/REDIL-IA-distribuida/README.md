@@ -463,3 +463,12 @@ Se incorpora un informe específico y trazable con la evaluación de **Qwen3.5-4
 - [Local model comparison — English](LOCAL-MODEL-COMPARISON-2026-11.md) — versión inglesa paralela.
 
 El informe distingue explícitamente **UPSTREAM-REPORTED** (benchmarks publicados por los desarrolladores), **LOCAL-MEASURED-USER** (velocidades comunicadas para el MSI), **QUALITATIVE-ASSESSMENT** (valoración para REDIL) y **N/D**. No equipara parámetros activos MoE con tamaño total de pesos, ni asigna Artificial Analysis Intelligence Index sin una puntuación verificable en la versión metodológica correspondiente.
+
+### 12.7 Experimentos Picchio — Qwen3-30B-A3B en MSI (7 de noviembre de 2026)
+
+Se archiva la primera inferencia real de **Qwen3-30B-A3B-Instruct-2507 INT4 con Picchio v0.8.0** en un MSI Thin 15 B12UC (i7-12650H, 14 GiB RAM, RTX 3050 Laptop 4 GiB), usando streaming CPU desde NVMe:
+
+- [Informe de ejecución, métricas y revisión del hot-store](PICCHIO-QWEN3-30B-A3B-MSI-2026-11-07.md) — conversión de 16 shards y 25.013 tensores, carga en 2,8 s, generación de 128 tokens a 1,6 tok/s, RSS de 6,32 GB, caché experta de 2 GiB y análisis del código de persistencia `.picchio_usage`.
+- La prueba acredita inferencia end-to-end en el hardware indicado; no acredita aceleración GPU ni rendimiento multiusuario.
+- La persistencia de contadores `eusage` existe, pero la inspección realizada no encontró la ruta que los use para precargar/promover expertos. La hipótesis queda pendiente de revisión completa del código y no se atribuye ninguna mejora al hot-store.
+- Repetición con caché de 2 GiB, comparación con 3 GiB y pruebas de hilos CPU: **PENDING**.
