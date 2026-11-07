@@ -8,6 +8,8 @@
 - Fork de desarrollo: https://github.com/robertosantosx2/picchio
 - Rama experimental: [`feature/cuda-pinned-host-slabs`](https://github.com/robertosantosx2/picchio/tree/feature/cuda-pinned-host-slabs)
 - PR de código: [#1 — bounded CUDA-pinned host registration](https://github.com/robertosantosx2/picchio/pull/1)
+- Último commit de código registrado: `aa15756f19da5951f10d73768880c7df05937e14` (rama experimental).
+- Informe actualizado en LEONES: commit `5c613f34ea1751b18b8f1a2707d48f433f9a4343`; índice actualizado en `3fd7e71b73fede804d14837735936496abe4cf93`.
 - Rama de documentación LEONES: `subproject/picchio-bootstrap-2026-11-08`
 - Rama local de investigación: `~/picchio-lab`
 
