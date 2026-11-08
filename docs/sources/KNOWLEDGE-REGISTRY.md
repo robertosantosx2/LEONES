@@ -25,6 +25,7 @@ Este registro es el índice semántico del bloque `docs/sources/`. Su función e
 | [AIRLLM.md](AIRLLM.md) | runtime/inferencia | candidato memory-constrained | primaria | documental + código | separada | pendiente | `runtime-candidate` |
 | [ODS.md](ODS.md) | despliegue | appliance/stack local | primaria | código/docs/installer | sí | pendiente | `research-candidate` |
 | [MAGNITUDE.md](MAGNITUDE.md) | agente/runtime | perfilado + harness agentivo | primaria | código/docs | sí | pendiente | `research-candidate` |
+| [TINKER-AI-SKILL.md](TINKER-AI-SKILL.md) | entrenamiento/adaptación | pipeline SFT/LoRA remoto para especialistas pequeños exportables | primaria | documentación + scripts publicados | estimación de candidatos/modelo/coste | pendiente de entrenamiento y benchmark LEONES | `research-candidate` |
 | [LOCAL-RUNTIMES-2026.md](LOCAL-RUNTIMES-2026.md) | radar/runtime | mapa de runtimes | primaria por entrada | consolidada | posible | por runtime | `source-inspiration` |
 | [LOCAL-INFERENCE-2026.md](LOCAL-INFERENCE-2026.md) | radar | prospección | descubrimiento | derivada | separada | pendiente | `source-inspiration` |
 | [LOCAL-INFERENCE-2026-CANDIDATES.md](LOCAL-INFERENCE-2026-CANDIDATES.md) | candidatos | promoción documental | derivada | quality gate | no equivale a medición | pendiente | `research-candidate` |
