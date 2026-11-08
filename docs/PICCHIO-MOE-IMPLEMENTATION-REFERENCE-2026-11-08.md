@@ -873,3 +873,30 @@ de sincronización para preservar la propiedad de memoria. Si más adelante se
 requiere recuperación sin terminar el proceso, hará falta diseñar un protocolo
 de leases/ownership explícito que cruce la ABI C y no simplemente devolver un
 código de error desde CUDA.
+
+
+### 18.7 Validación física de PR #6 en RTX 3050 (2026-11-08)
+
+La rama `fix/cuda-stream-p1a-fail-stop`, HEAD local `9a54f5b`, se comprobó en un worktree separado del árbol de validación P1a. No se modificaron ni sobrescribieron las bibliotecas CUDA funcionales existentes. Se usó CUDA Toolkit 13.4 y arquitectura `sm_86`.
+
+**Resultados ejecutados en la GPU real:**
+
+| Prueba | Resultado observado | Clasificación |
+|---|---|---|
+| `PGPU_STREAM_FAULT_TEST` | Mensaje fatal de fallo de espera inyectado en router scores; terminación con código 134 (`SIGABRT)); el caller no continuó | **SELF-TEST — MSI / PASS** |
+| `PGPU_PINNED_TEST` | 2 slabs registrados, 1 solicitud rechazada por alineación (`align=1`); contadores CUDA y bookkeeping a cero; self-test PASS | **SELF-TEST — MSI / PASS** |
+| `PGPU_ROUTER_TEST` | F32 [128 × 2880], CPU top-1 = GPU top-1 = 99; error absoluto máximo 7.629395e-06; resultado OK | **SELF-TEST — MSI / PASS** |
+| Biblioteca runtime | Compilación correcta; `/tmp/libpicchio_cuda_p1a_failstop.so`, 1.2 MiB, ELF 64-bit x86-64 shared object | **BUILD — MSI / PASS** |
+
+La prueba de fallo confirma el comportamiento fail-stop para el punto de inyección ensayado: ante una espera fallida con trabajo CUDA encolado, el proceso aborta antes de devolver el control al propietario host. No demuestra recuperación del proceso ni fallback CPU ante ese fallo; precisamente, la política elegida termina el proceso para evitar liberar memoria cuyo uso por DMA/kernel es incierto.
+
+El test pinned confirma el autotest de registro/unregister ejecutado por el harness, pero no es un benchmark ni demuestra mejora de rendimiento. El test del router confirma paridad top-1 y error numérico pequeño para ese caso F32 sintético; no demuestra paridad INT4/INT3 ni inferencia completa.
+
+**Pendiente:**
+- comprobar INT4 e INT3 en la GPU objetivo;
+- ejecutar una prueba controlada de inferencia end-to-end;
+- probar una ruta de error recuperable y fallback CPU;
+- comprobar explícitamente shutdown limpio en una ejecución normal separada;
+- revisión humana de la política fail-stop y de su coste de disponibilidad.
+
+PR [#6](https://github.com/robertosantosx2/picchio/pull/6) se actualizó con estos resultados y permanece **Draft**. PR [#5](https://github.com/robertosantosx2/picchio/pull/5) también permanece **Draft**. No fusionar ninguno hasta cerrar los gates pendientes y obtener revisión.
