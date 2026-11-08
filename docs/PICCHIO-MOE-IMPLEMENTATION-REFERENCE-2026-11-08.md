@@ -773,13 +773,13 @@ La sincronización solo en el camino de éxito no es suficiente: también hay qu
 
 ### 18.4 Próximo paso y límite de validación
 
-P1a ya tiene una implementación aislada en [PR #5](https://github.com/robertosantosx2/picchio/pull/5), rama `feature/cuda-stream-p1a`, commit `18e0cb311767f14dd27f5fa70612210d61d993e3`.
+P1a ya tiene una implementación aislada en [PR #5](https://github.com/robertosantosx2/picchio/pull/5), rama `feature/cuda-stream-p1a`, HEAD `473c61a4df1faa0e8e1101f61b31de7fd4e2234b`.
 
 Cambios:
 - crea una única stream no bloqueante en la inicialización;
 - migra todas las copias runtime a `cudaMemcpyAsync` y todos los kernels a esa stream;
 - conserva el contrato síncrono de la API mediante sincronización antes de devolver resultados o liberar buffers prestados;
-- drena trabajo parcial antes de liberar slabs host, desalojar expertos LRU, aplicar fallback o apagar el backend;
+- sincroniza en las rutas normales de éxito y comprueba el drenaje antes del desalojo LRU; la auditoría posterior ha detectado que varios caminos de error todavía descartan el resultado de la espera.
 - no añade concurrencia, prefetch, worker threads ni solapamiento.
 
 GitHub Actions run `42497348273` terminó **PASS** en la nueva implementación: compilación de la biblioteca runtime, compilación de `PGPU_PINNED_TEST`, compilación de `PGPU_ROUTER_TEST` y `git diff --check`. El segundo run `42497496796` también terminó **PASS**, incluyendo las comprobaciones estáticas de que no queda ningún `cudaMemcpy` síncrono ni kernel launch en el stream por defecto. Son compile-only/static checks; ninguno ejecuta CUDA en la GPU.
@@ -792,3 +792,35 @@ Antes de avanzar a P1b se requiere:
 - ejecución controlada sin OOM ni corrupción.
 
 No se ha ejecutado Ubuntu ni se ha medido rendimiento nuevo durante esta fase remota. P1a no está validado en hardware; no debe mergearse hasta completar esas pruebas.
+
+
+### 18.5 Auditoría cruzada de errores y ownership (2026-11-08)
+
+La validación física inicial de PR #5 se completó parcialmente en el MSI:
+- `PGPU_PINNED_TEST`: PASS.
+- `PGPU_ROUTER_TEST`: PASS en dos ejecuciones; CPU/GPU top-1 coincidente y error absoluto máximo `7.629395e-06`.
+- La GPU regresó a un estado casi inactivo después de las pruebas.
+- No se ejecutaron inferencia Qwen, pruebas INT4/INT3, inyección de fallos ni integración completa.
+
+La revisión del código de `feature/cuda-stream-p1a` descubrió un bloqueo adicional que no cubren esas pruebas:
+
+1. `pgpu_host_unregister()` descarta el resultado de `stream_wait()`.
+2. La API de unregister devuelve `void`. En `picchio.c`, `free_slot_buffers()` llama al callback y después libera siempre el slab mediante `flat_aligned_free()`. Un simple retorno temprano dentro del backend CUDA no protege el buffer host.
+3. `pgpu_shutdown()` ignora el resultado del drenaje y continúa desregistrando memoria host, liberando cachés/scratch device y destruyendo el stream.
+4. `stream_copy()` y `CU_TRY` ignoran el resultado de la espera de recuperación; varias rutas pueden liberar asignaciones parciales después de una operación asíncrona fallida.
+5. `ensure()` reemplaza scratch device liberando el buffer anterior. Su seguridad depende de que el backend no haya quedado en estado de error con trabajo pendiente.
+6. `get_expert()` sí comprueba la espera antes de eviction LRU en la ruta normal, pero el cleanup de una subida parcial también descarta el resultado de la espera.
+
+**Interpretación:** las pruebas normales pasan, pero el contrato de vida de buffers no está demostrado para errores CUDA. El problema cruza la frontera C/CUDA y no puede corregirse únicamente haciendo que `pgpu_host_unregister()` retorne antes: el propietario C libera igualmente el slab.
+
+Se ha añadido un comentario bloqueante a [PR #5](https://github.com/robertosantosx2/picchio/pull/5) y se ha actualizado su descripción. El PR permanece Draft y no debe aprobarse ni fusionarse.
+
+**Remediación requerida antes de aprobar P1a:**
+- definir un estado de backend fallido/poisoned y una política explícita de fail-stop o retención de recursos;
+- propagar el resultado de unregister/teardown a través de la ABI C y del propietario del slab;
+- impedir que el llamador libere o recicle slabs si el backend no confirma el unregister;
+- aplicar la misma política a subidas parciales, scratch resizing, fallback y shutdown;
+- añadir inyección determinista de fallo de sincronización tras H2D/D2H encoladas;
+- verificar ownership del slab, liberación device, fallback CPU y teardown en CI y en la RTX 3050.
+
+No se ha implementado aún la corrección ni se afirma que los caminos de error sean seguros. La siguiente fase de trabajo sigue siendo remota en GitHub; Ubuntu solo será necesario para volver a ejecutar compilación y pruebas CUDA reales tras el cambio.
