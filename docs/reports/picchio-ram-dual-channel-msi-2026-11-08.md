@@ -1,7 +1,7 @@
 # Picchio en MSI Thin 15: memoria DDR4, dual channel y escalado CPU
 
 **Fecha de actualización:** 2026-11-08  
-**Estado:** investigación en curso; resultados STREAM recibidos, repetición controlada de Picchio pendiente.  
+**Estado:** investigación en curso; STREAM y primera repetición controlada de Picchio CPU-only recibidos. Comparación de afinidad P/E y temperaturas/frecuencias aún pendiente.  
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Proyecto evaluado:** [Picchio](https://github.com/robertosantosx2/picchio)
 
@@ -56,6 +56,30 @@ En esta pareja de ejecuciones, 8 hilos tardaron un 6,7% más que 4 hilos. El tie
 
 **Interpretación provisional:** añadir hilos no mejoró el rendimiento global de esta prueba. Esto no demuestra saturación del ancho de banda de RAM. Las ejecuciones todavía no estaban controladas de forma estricta respecto al estado persistente de uso de expertos, semilla y caché de páginas del sistema.
 
+
+### 3.2 Repetición controlada 4–8–8–4 (2026-11-08)
+
+Se completaron cuatro ejecuciones en modo CPU-only con Qwen3-30B-A3B INT4, contexto 512, 128 tokens, `PIN_GB=4`, cuatro hilos de I/O, mismo prompt, `SEED=12345` y rutas GPU desactivadas. Antes de cada ejecución se restauró la misma copia del hot-store persistente del modelo, ubicada en `$MODEL/.picchio_usage` (no en la raíz del repositorio). La copia de referencia quedó identificada por SHA-256:
+
+`ae2ae0bc78853f3c0d9847f187a310c67660c4ea8de7970de779cc7963902efe`
+
+Las cuatro ejecuciones informaron el mismo estado inicial: 1.182.336 rutas registradas, 41.453 aciertos de caché de 52.300 (79,3%) y 10.847 lecturas de disco. El checksum de la copia baseline se mantuvo idéntico al finalizar.
+
+| Ejecución | Hilos | Tiempo total | Rendimiento calculado | MoE | Atención | LM head | Lectura de disco |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| run1 | 4 | 100,9 s | 1,269 tok/s | 70,52 s | 24,66 s | 3,28 s | 39,09 s |
+| run1 | 8 | 105,3 s | 1,216 tok/s | 74,53 s | 25,75 s | 2,83 s | 40,75 s |
+| run2 | 8 | 108,7 s | 1,178 tok/s | 76,93 s | 26,73 s | 2,87 s | 42,08 s |
+| run2 | 4 | 109,0 s | 1,174 tok/s | 75,17 s | 28,75 s | 2,86 s | 42,09 s |
+| **Media 4 hilos** | **4** | **104,95 s** | **1,220 tok/s** | **72,85 s** | **26,71 s** | **3,07 s** | **40,59 s** |
+| **Media 8 hilos** | **8** | **107,00 s** | **1,196 tok/s** | **75,73 s** | **26,24 s** | **2,85 s** | **41,42 s** |
+
+El rendimiento calculado de cada fila es 128 tokens dividido por el tiempo total; las medias de rendimiento se calculan a partir del tiempo medio, no promediando cifras redondeadas de la interfaz. Con esta metodología, 8 hilos tardaron un 1,95% más que 4 hilos. La fase MoE fue un 3,96% más larga con 8 hilos; atención y LM head muestran diferencias pequeñas y de sentido distinto. RSS medio fue aproximadamente 8,76 GB en ambas configuraciones.
+
+**Advertencia térmica y variabilidad:** antes de la tercera ejecución (la segunda de 8 hilos), `sensors` registró 96 °C en el paquete de CPU, después de la ejecución anterior de 8 hilos. No se registraron frecuencias ni temperaturas continuamente durante cada generación. La última ejecución de 4 hilos duró 109,0 s frente a 100,9 s en la primera. Por ello, el orden alternado no eliminó los efectos térmicos ni la variabilidad temporal. La diferencia media de 1,95% es pequeña y no debe considerarse una victoria estadísticamente sólida de 4 hilos; sí confirma que 8 hilos no produjo una mejora en esta tanda.
+
+Los logs completos se guardaron localmente en `~/picchio-lab/results/dual-channel/`: `run1-4threads.log`, `run1-8threads.log`, `run2-8threads.log`, `run2-4threads.log` y `picchio_usage.baseline`. Los archivos originales todavía no se han incorporado al repositorio.
+
 ### 3.1 Ejecuciones previas con GPU de expertos activada (no comparables directamente)
 
 Se registraron también ejecuciones con GPU de expertos activada, 128 tokens y el mismo modelo/prompt:
@@ -106,24 +130,22 @@ Para DDR4-3200 de dos canales de 64 bits, el techo teórico agregado habitual es
 1. Hay dos módulos DDR4-3200 de 8 GB instalados en controladores/canales distintos; la configuración es consistente con dual channel.
 2. STREAM registró hasta 34,60 GB/s en Triad con 16 hilos y 32,24 GB/s con cuatro hilos.
 3. El resultado STREAM de ocho hilos fue inferior al de cuatro hilos en esta ejecución.
-4. Picchio CPU-only obtuvo 1,684 tok/s con cuatro hilos y 1,578 tok/s con ocho hilos en las ejecuciones disponibles.
-5. No se ha demostrado que la RAM sea el cuello de botella de Picchio ni que dual channel duplique tokens/s.
-6. La selección de expertos, caché persistente, lecturas, atención, núcleos híbridos y planificación pueden explicar parte de las diferencias.
+4. En la repetición controlada 4–8–8–4, las medias fueron 1,220 tok/s con cuatro hilos y 1,196 tok/s con ocho; ocho hilos tardaron un 1,95% más, una diferencia pequeña y potencialmente afectada por temperatura y variabilidad.
+5. La repetición controló semilla y hot-store (mismo checksum de referencia), pero no la caché de páginas del sistema ni la temperatura/frecuencia durante cada ejecución.
+6. No se ha demostrado que la RAM sea el cuello de botella de Picchio ni que dual channel duplique tokens/s. La selección de expertos, caché persistente, lecturas, atención, núcleos híbridos y planificación pueden explicar parte de las diferencias.
 
-## 6. Siguiente experimento: Picchio controlado
+## 6. Siguiente experimento
 
-Se ha preparado una repetición con:
-- `GPU=0` y todas las rutas GPU desactivadas.
-- `FLAT=0`, `IO_THREADS=4`, contexto 512, `PIN_GB=4`.
-- 128 tokens y el mismo prompt.
-- `SEED=12345`.
-- Restauración del mismo `.picchio_usage` de referencia antes de cada ejecución.
-- Orden alternado: 4, 8, 8, 4 hilos.
-- Registro de cada salida en `results/dual-channel/`.
+La primera repetición controlada 4–8–8–4 ya está completada y resumida en §3.2. Próximos pasos:
 
-El comando se ha entregado al operador local, pero **todavía no se han recibido los cuatro logs**. No considerar el experimento completado hasta archivarlos y revisar que cada ejecución partió de la misma referencia.
+1. Preservar los cuatro logs originales y la copia baseline en el repositorio como evidencia adjunta (actualmente solo están en el equipo local).
+2. Repetir el benchmark con telemetría continua de temperatura, frecuencia efectiva, potencia y throttling durante la generación; registrar además `vmstat`/fallos de página y actividad de disco.
+3. Ejecutar varias rondas con orden aleatorio o contrabalanceado y enfriamiento suficiente, informando mediana y dispersión.
+4. Probar 12 y 16 hilos solo después de estabilizar las condiciones térmicas.
+5. Identificar núcleos P/E del i7-12650H y comparar afinidad P-only, E-only y combinada.
+6. Separar el coste de lectura física de expertos del coste de cómputo y atención.
 
-Tras esa pareja controlada, ampliar a 12 y 16 hilos si procede, y probar afinidad separando núcleos P/E del i7-12650H. También conviene medir por separado latencia/throughput de lectura de expertos y presión de memoria.
+No atribuir ninguna diferencia a dual channel sin una comparación single-channel controlada en el mismo equipo.
 
 ## 7. Propuestas técnicas para Picchio
 
@@ -143,7 +165,7 @@ El operador ejecutó la prueba STREAM en `~/picchio-lab/ram-benchmark`, con fuen
 - `/tmp/picchio-cpu-8threads.log`
 - `/tmp/picchio-cpu-4threads.log` y `/tmp/picchio-cpu-8threads.log` son los nombres informados en las ejecuciones CPU-only; deben copiarse al directorio de evidencias para preservación duradera.
 
-Los datos de esta sección proceden de las salidas de terminal facilitadas por el operador en la conversación. Los archivos originales aún no se han subido al repositorio. La siguiente actualización debe adjuntar `stream.c`, `stream-results.txt` y los logs originales de Picchio, además de los logs de la repetición controlada.
+Los datos de STREAM y Picchio proceden de las salidas de terminal facilitadas por el operador. Los logs controlados están localmente en `~/picchio-lab/results/dual-channel/` y aún no se han subido. La siguiente actualización debe adjuntar `stream.c`, `stream-results.txt`, los logs originales de Picchio y los cuatro logs de esta repetición, además de la copia baseline. La ubicación del hot-store es el directorio del modelo (`~/picchio-data/qwen3-30b-a3b-int4/.picchio_usage`), no la raíz de `picchio-lab`.
 
 ## 9. Referencias
 
