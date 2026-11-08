@@ -782,7 +782,7 @@ Cambios:
 - drena trabajo parcial antes de liberar slabs host, desalojar expertos LRU, aplicar fallback o apagar el backend;
 - no añade concurrencia, prefetch, worker threads ni solapamiento.
 
-La comprobación está en GitHub Actions run `42497348273`, actualmente en curso (compile-only). El run anterior del backend original terminó PASS en los tres objetivos de compilación, pero no valida esta nueva implementación.
+GitHub Actions run `42497348273` terminó **PASS** en la nueva implementación: compilación de la biblioteca runtime, compilación de `PGPU_PINNED_TEST`, compilación de `PGPU_ROUTER_TEST` y `git diff --check`. Un segundo run `42497496796` está en curso para añadir además las comprobaciones estáticas de que no queda ningún `cudaMemcpy` síncrono ni kernel launch en el stream por defecto. Ambos son compile-only/static checks; ninguno ejecuta CUDA en la GPU.
 
 Antes de avanzar a P1b se requiere:
 - PASS de compilación CUDA 13.4.3 para el nuevo commit;
