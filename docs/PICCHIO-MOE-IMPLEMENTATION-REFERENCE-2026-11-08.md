@@ -668,3 +668,64 @@ Este informe es la referencia de diseño para la implementación de Picchio MoE.
 6. actualizar este documento cuando cambie una decisión o se obtenga nueva evidencia.
 
 **La prioridad no es reproducir tandem.cpp ni TensorFold: es adaptar sus mecanismos útiles al código, formatos, límites de memoria y hardware real de Picchio, conservando corrección y trazabilidad LEONES.**
+
+
+## 17. Auditoría adicional: prefetch CUDA de expertos (2026-11-08)
+
+Una revisión directa de `picchio.c` y `picchio_cuda.cu` en la rama `feature/cuda-pinned-host-slabs` (PR #1, HEAD `c52dfcf1107063e40bae75b4a3c2b11d164b1764`) ha precisado el estado real de P1:
+
+### 17.1 Lo que Picchio ya tiene
+
+Picchio ya implementa prefetch predictivo **host/disk**:
+- `predict_topk_into()` estima expertos de una capa futura.
+- `prefetch_issue()` reserva slots de la caché host.
+- `prefetch_run_job()` carga los expertos desde disco en un worker.
+- `slot_loading` / `slot_set_loading` publican la disponibilidad con acquire/release.
+- `cache_load_batch()` y `cache_load_batch_async()` coordinan los misses reales con los slots precargados.
+- `g_gpu_prefetch` activa esta predicción en ejecuciones con GPU.
+
+Esto evita repetir una lectura si la predicción acierta, pero no equivale a precargar pesos en VRAM.
+
+### 17.2 Lo que falta
+
+En `picchio_cuda.cu`, `get_expert()` sigue reservando memoria de dispositivo y subiendo los pesos mediante `cudaMemcpy` síncrono. No hay:
+- stream CUDA de subida separado;
+- `cudaMemcpyAsync` para pesos de expertos;
+- evento de disponibilidad por experto;
+- estado UPLOADING separado de READY;
+- lease que impida reciclar el slab host mientras DMA lo lee;
+- protección de LRU para buffers GPU pendientes o en uso.
+
+El registro `cudaHostRegister` de PR #1 no produce por sí mismo solapamiento: las copias continúan siendo síncronas. No se atribuirá mejora de rendimiento al pinned host hasta que exista transferencia asíncrona y se mida.
+
+### 17.3 Diseño propuesto
+
+Se ha publicado el diseño detallado en [CUDA_EXPERT_PREFETCH_DESIGN.md](https://github.com/robertosantosx2/picchio/blob/research/gpu-expert-prefetch-design/docs/CUDA_EXPERT_PREFETCH_DESIGN.md), PR [#2](https://github.com/robertosantosx2/picchio/pull/2), todavía Draft y solo documental.
+
+Invariantes principales:
+1. Dos streams explícitos: compute y upload.
+2. Estados de entrada GPU: ABSENT, ALLOCATING, UPLOADING, READY y FAILED.
+3. Evento CUDA tras la última copia; el stream de cómputo espera solo al experto que necesita mediante `cudaStreamWaitEvent`.
+4. Un host slab no se libera ni recicla hasta que termina la transferencia DMA; requiere lease/referencia.
+5. Ni una entrada UPLOADING ni una entrada con lease de cómputo puede ser expulsada por LRU.
+6. La admisión especulativa cuenta contra el presupuesto VRAM desde el momento de reservar buffers.
+7. Primera versión limitada al top-k de una sola capa futura; si no hay espacio, se omite el prefetch.
+8. Si la fuente no está pinned o falla cualquier paso, se conserva el upload síncrono actual.
+9. No usar `cudaDeviceSynchronize()` en el bucle de tokens.
+10. La optimización debe permanecer desactivada por defecto hasta pasar tests CUDA y benchmarks pareados.
+
+### 17.4 Secuencia de implementación
+
+- **P1a:** introducir streams explícitos sin cambiar el comportamiento; probar paridad numérica y teardown.
+- **P1b:** subir un único experto de forma asíncrona con evento y lease host; feature flag OFF por defecto.
+- **P1c:** ampliar a top-k con admission control y métricas.
+- **P2:** solo después de medir, investigar reparto adaptativo CPU/GPU.
+
+### 17.5 Estado y límites
+
+- PR #1 sigue Draft; no fusionar antes de validar CUDA en la RTX 3050.
+- PR #2 sigue Draft; no contiene código CUDA ni afirma mejoras.
+- Ninguna ejecución de Ubuntu o de la RTX 3050 se ha realizado en esta fase remota.
+- No elevar el límite pinned de 128 MiB sin medir primero tamaños de petición y margen real de RAM/swap.
+- El baseline CPU y la biblioteca CUDA funcional deben permanecer intactos.
+
