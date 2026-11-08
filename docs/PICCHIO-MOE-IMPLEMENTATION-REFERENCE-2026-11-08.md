@@ -729,3 +729,55 @@ Invariantes principales:
 - No elevar el límite pinned de 128 MiB sin medir primero tamaños de petición y margen real de RAM/swap.
 - El baseline CPU y la biblioteca CUDA funcional deben permanecer intactos.
 
+
+
+---
+
+## 18. Auditoría P1a: streams CUDA explícitos (2026-11-08)
+
+### 18.1 Auditoría del backend
+
+Se revisó el `picchio_cuda.cu` completo de PR #1, además de los límites de llamada y la gestión de slots en `picchio.c`.
+
+El backend CUDA actual utiliza:
+- copias `cudaMemcpy` síncronas;
+- kernels lanzados en el stream por defecto;
+- scratch device reutilizable entre llamadas;
+- una LRU de expertos VRAM que asigna y libera buffers durante el forward;
+- slabs host reutilizables y opcionalmente registrados con `cudaHostRegister`.
+
+La interfaz C devuelve resultados host listos al caller. Por tanto, el caller puede reutilizar o liberar los punteros host justo después de cada llamada CUDA. El nuevo diseño debe conservar esta garantía.
+
+### 18.2 Contrato P1a
+
+Se propone una sola stream explícita no bloqueante para todas las copias y kernels, con sincronización al final de cada API pública. Esto establece orden explícito, pero **no introduce todavía solapamiento ni mejora de rendimiento**.
+
+Puntos críticos:
+1. Toda copia H2D/D2H y cada kernel debe usar la misma stream.
+2. Cada retorno de error después de encolar trabajo debe drenar la stream antes de devolver el control al caller.
+3. Las subidas parciales de expertos deben completar o drenar antes de liberar el slab host.
+4. La LRU no puede liberar un buffer device mientras kernels pendientes lo referencien.
+5. `pgpu_host_unregister` y el shutdown deben esperar a que no quede DMA pendiente.
+6. La CPU fallback debe seguir siendo correcta después de cualquier error CUDA.
+
+La sincronización solo en el camino de éxito no es suficiente: también hay que cubrir fallos de copia, asignación, kernel y D2H.
+
+### 18.3 PR y CI
+
+- PR [#4](https://github.com/robertosantosx2/picchio/pull/4): contrato y auditoría P1a, Draft y documental.
+- Documento: [CUDA_STREAM_PLUMBING_P1A.md](https://github.com/robertosantosx2/picchio/blob/research/cuda-stream-plumbing-p1a/docs/CUDA_STREAM_PLUMBING_P1A.md).
+- Se añadió workflow de compilación CUDA para `sm_86`, con compilación del backend, `PGPU_PINNED_TEST` y `PGPU_ROUTER_TEST`.
+- La imagen de CI se fijó en `nvidia/cuda:13.4.3-devel-ubuntu24.04`, que coincide con la rama CUDA 13.4 usada en el MSI.
+- La CI es **compile-only**: no ejecuta los binarios CUDA ni valida una GPU real. En la consulta de estado actual no aparecen ejecuciones ni checks asociados a los commits recientes; no se declara ningún PASS.
+- PR #3 fue cerrado por duplicar el mismo trabajo y quedar desfasado; PR #4 es la propuesta activa.
+
+### 18.4 Próximo paso y límite de validación
+
+El siguiente paso de código será implementar P1a en una rama aislada, sin modificar el baseline CPU ni la biblioteca CUDA funcional. Antes de avanzar a P1b se requiere:
+- compilación real con nvcc;
+- self-tests pinned-host y router;
+- comprobación de paridad numérica;
+- prueba de error/fallback y teardown;
+- ejecución controlada en la RTX 3050.
+
+No se ha ejecutado Ubuntu ni se ha medido rendimiento nuevo durante esta fase remota. El P1a todavía no está implementado; PR #4 documenta el contrato y los riesgos que debe cumplir.
