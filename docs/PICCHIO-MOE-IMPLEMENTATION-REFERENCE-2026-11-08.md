@@ -768,7 +768,7 @@ La sincronización solo en el camino de éxito no es suficiente: también hay qu
 - Documento: [CUDA_STREAM_PLUMBING_P1A.md](https://github.com/robertosantosx2/picchio/blob/research/cuda-stream-plumbing-p1a/docs/CUDA_STREAM_PLUMBING_P1A.md).
 - Se añadió workflow de compilación CUDA para `sm_86`, con compilación del backend, `PGPU_PINNED_TEST` y `PGPU_ROUTER_TEST`.
 - La imagen de CI se fijó en `nvidia/cuda:13.4.3-devel-ubuntu24.04`, que coincide con la rama CUDA 13.4 usada en el MSI.
-- La CI es **compile-only**: no ejecuta los binarios CUDA ni valida una GPU real. En la consulta de estado actual no aparecen ejecuciones ni checks asociados a los commits recientes; no se declara ningún PASS.
+- La CI es **compile-only**: no ejecuta los binarios CUDA ni valida una GPU real. El run de GitHub Actions `42496115448` está actualmente en curso (compilación de la biblioteca compartida); todavía no se declara PASS.
 - PR #3 fue cerrado por duplicar el mismo trabajo y quedar desfasado; PR #4 es la propuesta activa.
 
 ### 18.4 Próximo paso y límite de validación
