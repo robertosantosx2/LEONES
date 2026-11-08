@@ -59,6 +59,7 @@ ANÁLISIS LEONES
 | Radiance | [`RADIANCE.md`](RADIANCE.md) | runtime candidato AMD RDNA4 / posible backend ODS | 🟡 `runtime-candidate` |
 | ODS | [`ODS.md`](ODS.md) | despliegue/instalación local | 🟡 `research-candidate` |
 | Magnitude | [`MAGNITUDE.md`](MAGNITUDE.md) | agente + inference engine local | 🟡 `research-candidate` |
+| Tinker AI Skill | [`TINKER-AI-SKILL.md`](TINKER-AI-SKILL.md) | pipeline SFT/LoRA remoto para crear especialistas exportables a GGUF | 🟡 `research-candidate` |
 | Modelos de difusión de texto | [`TEXT-DIFFUSION-LLMS-2026-10-30.md`](TEXT-DIFFUSION-LLMS-2026-10-30.md) | catálogo DLM, requisitos HW, runtimes y benchmark reproducible | 🟡 `research-candidate` |
 | Runtimes locales | [`LOCAL-RUNTIMES-2026.md`](LOCAL-RUNTIMES-2026.md) | radar de runtimes | 🟡 `source-inspiration` |
 | Infraestructura de inferencia | [`LOCAL-INFERENCE-2026.md`](LOCAL-INFERENCE-2026.md) | prospección | 🟡 `source-inspiration` |
@@ -107,6 +108,10 @@ ODS actúa como **capa de despliegue e instalación**. Puede detectar hardware, 
 ### Magnitude
 
 Magnitude actúa como **agente + inference engine local**, con perfilado y recomendaciones propias. Es una fuente de hipótesis e integración, no una sustitución del benchmark LEONES.
+
+### Tinker AI Skill
+
+Tinker AI Skill aporta una receta de preparación de datos, anonimización, SFT/LoRA remoto, evaluación de checkpoints y exportación GGUF. LEONES lo considera una metodología candidata para crear especialistas de dominio; no es un runtime local ni una medición. La primera hipótesis de prueba es Qwen3.5-4B, con validación posterior en el hardware objetivo.
 
 ### FreeToken y «El otro FreeToken» / Odysseus
 
