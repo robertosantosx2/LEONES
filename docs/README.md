@@ -44,6 +44,7 @@ fase → implementación → validación → aceptación
 - [`sources/AIRLLM.md`](sources/AIRLLM.md) — AirLLM como runtime candidato memory-constrained.
 - [`sources/ODS.md`](sources/ODS.md) — ODS como capa de despliegue.
 - [`sources/MAGNITUDE.md`](sources/MAGNITUDE.md) — Magnitude como agente e inference engine local.
+- [`sources/TINKER-AI-SKILL.md`](sources/TINKER-AI-SKILL.md) — Tinker AI Skill: preparación de datasets, LoRA remoto, evaluación y exportación GGUF para crear modelos especialistas.
 - [`sources/TEXT-DIFFUSION-LLMS-2026-10-30.md`](sources/TEXT-DIFFUSION-LLMS-2026-10-30.md) — catálogo de modelos de difusión de texto, memoria/cuantización, compatibilidad de runtimes, rendimiento externo y metodología de benchmark LEONES.
 - [`sources/LOCAL-RUNTIMES-2026.md`](sources/LOCAL-RUNTIMES-2026.md) — radar de runtimes locales.
 - [`sources/LOCAL-INFERENCE-2026.md`](sources/LOCAL-INFERENCE-2026.md) — infraestructura de inferencia.
