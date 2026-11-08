@@ -20,6 +20,8 @@ fase → implementación → validación → aceptación
 
 ### Arquitectura y fundamentos
 
+- [`PICCHIO-MOE-IMPLEMENTATION-REFERENCE-2026-11-08.md`](PICCHIO-MOE-IMPLEMENTATION-REFERENCE-2026-11-08.md) — referencia principal de Picchio MoE: estado medido, diagnóstico pinned host, revisión TensorFold/tandem.cpp, diseño de async H→D, fases, invariantes y gates de validación.
+
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — arquitectura global, pipeline y vocabulario.
 - [`PILLARS.md`](PILLARS.md) — pilares del sistema.
 - [`PLATFORMS.md`](PLATFORMS.md) — plataformas y perfiles.
