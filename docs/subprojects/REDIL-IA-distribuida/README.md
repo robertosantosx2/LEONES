@@ -472,3 +472,10 @@ Se archiva la primera inferencia real de **Qwen3-30B-A3B-Instruct-2507 INT4 con 
 - La prueba acredita inferencia end-to-end en el hardware indicado; no acredita aceleración GPU ni rendimiento multiusuario.
 - La persistencia de contadores `eusage` existe, pero la inspección realizada no encontró la ruta que los use para precargar/promover expertos. La hipótesis queda pendiente de revisión completa del código y no se atribuye ninguna mejora al hot-store.
 - La comparación de caché experta (2, 3, 4 y 5 GiB) y el ajuste de paralelismo CPU/E/S quedan documentados en el informe. La configuración provisional más rápida y consistente fue 4 hilos CPU + 4 hilos E/S + caché de 4 GiB: 1,8–2,2 tok/s en tres ejecuciones (media aproximada 2,0 tok/s). Ocho hilos CPU fueron más lentos; ocho hilos E/S no confirmaron mejora. Resultado LOCAL-MEASURED-USER, CPU-only y no extrapolable.
+
+
+## Investigación de manadas PC y Android
+
+Se incorpora el documento [REDIL-investigacion.md](REDIL-investigacion.md), que desarrolla la arquitectura de **REDIL-PC** (manadas de ordenadores sin GPU dedicada), **REDIL-ANDROID** (manadas de teléfonos), el modelo nodo → manada → federación, las estrategias de réplicas/especialistas/particionado, REDIL-NODE, los contratos de capacidad y trabajo, la API propuesta, seguridad, topologías experimentales, roadmap y métricas de validación.
+
+El documento es una propuesta de investigación: no declara implementados ni validados los clusters, agentes, APIs o aceleradores móviles. La recomendación es empezar con una manada PC de dos nodos y añadir Android después de fijar los contratos y la seguridad.
