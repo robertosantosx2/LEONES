@@ -853,7 +853,9 @@ puede demostrar que CUDA ha terminado de utilizar los recursos:
   liberar el slab.
 
 El workflow CUDA compila el harness de inyección y conserva las verificaciones
-estáticas, pero no lo ejecuta: GitHub-hosted runners no tienen GPU CUDA.
+estáticas; además compila el motor C y ejecuta su self-test CPU para cubrir el
+propietario del slab modificado. No ejecuta el harness CUDA: GitHub-hosted
+runners no tienen GPU CUDA.
 
 **Estado comprobado a esta fecha:**
 - Rama y PR #6 creados en GitHub.
