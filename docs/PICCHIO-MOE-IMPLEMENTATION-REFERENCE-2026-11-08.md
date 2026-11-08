@@ -859,8 +859,9 @@ runners no tienen GPU CUDA.
 
 **Estado comprobado a esta fecha:**
 - Rama y PR #6 creados en GitHub.
-- El workflow `42499799609` pasó: compilación de biblioteca CUDA sm_86, compilación de pinned-host/router/fault-injection harnesses, invariantes estáticas y whitespace.
-- En el workflow ampliado `42499898586`, el build del motor C y su self-test CPU pasaron; la repetición de compilación CUDA seguía en curso en la última consulta.
+- El workflow ampliado `42499898586` terminó en SUCCESS: build del motor C y self-test CPU; compilación de biblioteca CUDA sm_86; compilación de pinned-host, router y fault-injection harnesses; invariantes estáticas; y whitespace.
+- El workflow `42499799609` también pasó los checks CUDA anteriores.
+- Ninguno de estos workflows ejecuta binarios CUDA: la inyección de fallo y los tests de GPU siguen pendientes en la RTX 3050.
 - La inyección de fallo no se ha ejecutado todavía en la RTX 3050.
 - No se afirma que la política esté validada en runtime ni que los errores CUDA
   asíncronos se puedan recuperar con fallback CPU.
