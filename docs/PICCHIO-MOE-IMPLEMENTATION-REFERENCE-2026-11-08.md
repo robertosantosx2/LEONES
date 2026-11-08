@@ -824,3 +824,48 @@ Se ha añadido un comentario bloqueante a [PR #5](https://github.com/robertosant
 - verificar ownership del slab, liberación device, fallback CPU y teardown en CI y en la RTX 3050.
 
 No se ha implementado aún la corrección ni se afirma que los caminos de error sean seguros. La siguiente fase de trabajo sigue siendo remota en GitHub; Ubuntu solo será necesario para volver a ejecutar compilación y pruebas CUDA reales tras el cambio.
+
+
+### 18.6 Propuesta de remediación P1a fail-stop (2026-11-08)
+
+Se abrió [PR #6](https://github.com/robertosantosx2/picchio/pull/6), rama
+`fix/cuda-stream-p1a-fail-stop`, apilado sobre `feature/cuda-stream-p1a`
+(PR #5). Permanece Draft.
+
+La propuesta elige una política conservadora de **fail-stop** cuando no se
+puede demostrar que CUDA ha terminado de utilizar los recursos:
+
+- `stream_wait()` aborta si la sincronización falla o si el backend activo ha
+  perdido inesperadamente su stream.
+- No se limpia el error CUDA para continuar con fallback o cleanup cuando la
+  finalización de operaciones queda incierta.
+- `pgpu_host_unregister()` aborta si falla `cudaHostUnregister()`, antes de
+  devolver el control al propietario C.
+- La reversión de un `cudaHostRegister()` cuyo bookkeeping falla también
+  aborta si el unregister compensatorio falla.
+- `pgpu_shutdown()` aborta antes de liberar el resto de recursos si falla el
+  drenaje o un unregister.
+- `free_slot_buffers()` aborta si un slab está marcado como pinned pero no
+  existe callback de unregister.
+- Se añade `PGPU_STREAM_FAULT_TEST`: registra un slab host alineado, sube los
+  pesos del router y fuerza H2D + kernel + D2H antes de inyectar un fallo de
+  espera. El proceso debe abortar antes de que el llamador pueda continuar y
+  liberar el slab.
+
+El workflow CUDA compila el harness de inyección y conserva las verificaciones
+estáticas, pero no lo ejecuta: GitHub-hosted runners no tienen GPU CUDA.
+
+**Estado comprobado a esta fecha:**
+- Rama y PR #6 creados en GitHub.
+- Código y harness añadidos; CI pendiente de ejecución.
+- La inyección de fallo no se ha ejecutado todavía en la RTX 3050.
+- No se afirma que la política esté validada en runtime ni que los errores CUDA
+  asíncronos se puedan recuperar con fallback CPU.
+- PR #5 y PR #6 siguen Draft; no aprobar ni fusionar hasta pasar CI y las
+  pruebas físicas del MSI.
+
+La política fail-stop sacrifica disponibilidad del proceso ante errores CUDA
+de sincronización para preservar la propiedad de memoria. Si más adelante se
+requiere recuperación sin terminar el proceso, hará falta diseñar un protocolo
+de leases/ownership explícito que cruce la ABI C y no simplemente devolver un
+código de error desde CUDA.
