@@ -773,11 +773,22 @@ La sincronización solo en el camino de éxito no es suficiente: también hay qu
 
 ### 18.4 Próximo paso y límite de validación
 
-El siguiente paso de código será implementar P1a en una rama aislada, sin modificar el baseline CPU ni la biblioteca CUDA funcional. Antes de avanzar a P1b se requiere:
-- compilación real con nvcc;
-- self-tests pinned-host y router;
-- comprobación de paridad numérica;
-- prueba de error/fallback y teardown;
-- ejecución controlada en la RTX 3050.
+P1a ya tiene una implementación aislada en [PR #5](https://github.com/robertosantosx2/picchio/pull/5), rama `feature/cuda-stream-p1a`, commit `18e0cb311767f14dd27f5fa70612210d61d993e3`.
 
-No se ha ejecutado Ubuntu ni se ha medido rendimiento nuevo durante esta fase remota. El P1a todavía no está implementado; PR #4 documenta el contrato y los riesgos que debe cumplir.
+Cambios:
+- crea una única stream no bloqueante en la inicialización;
+- migra todas las copias runtime a `cudaMemcpyAsync` y todos los kernels a esa stream;
+- conserva el contrato síncrono de la API mediante sincronización antes de devolver resultados o liberar buffers prestados;
+- drena trabajo parcial antes de liberar slabs host, desalojar expertos LRU, aplicar fallback o apagar el backend;
+- no añade concurrencia, prefetch, worker threads ni solapamiento.
+
+La comprobación está en GitHub Actions run `42497348273`, actualmente en curso (compile-only). El run anterior del backend original terminó PASS en los tres objetivos de compilación, pero no valida esta nueva implementación.
+
+Antes de avanzar a P1b se requiere:
+- PASS de compilación CUDA 13.4.3 para el nuevo commit;
+- ejecución de pinned-host y router tests en la RTX 3050;
+- comprobación de paridad numérica INT4/INT3;
+- prueba de error/fallback y teardown;
+- ejecución controlada sin OOM ni corrupción.
+
+No se ha ejecutado Ubuntu ni se ha medido rendimiento nuevo durante esta fase remota. P1a no está validado en hardware; no debe mergearse hasta completar esas pruebas.
