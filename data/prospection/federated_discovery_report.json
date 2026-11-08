@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-07T11:07:55.079074+00:00",
+  "generated_at": "2026-11-08T11:20:22.250150+00:00",
   "sources_total": 25,
   "registered_sources": 24,
   "discovered_instance_batch": 2,
@@ -7,7 +7,7 @@
   "sources_failed_or_timed_out": 0,
   "raw_results_by_source": {
     "cgit": 0,
-    "codeberg": 0,
+    "codeberg": 20,
     "discovered-forges": 28,
     "disroot-forge": 0,
     "forgejo": 0,
@@ -32,7 +32,7 @@
     "sourcehut": 0,
     "srht": 0
   },
-  "unique_discoveries": 160,
+  "unique_discoveries": 180,
   "failures": [],
   "workers": 8,
   "per_worker_timeout_seconds": 90,
