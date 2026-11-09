@@ -1,34 +1,41 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 Subject: [PATCH] opencl: propagate dense logits readback failure
 
-This proposal makes the logits readback fail closed. It does not include the
-optional pinned-buffer-to-malloc workaround; that workaround should remain a
-separate opt-in change and be validated independently.
+Fail closed on missing or failed OpenCL events. Never copy stale host logits
+after a failed readback, and let ctx_forward() reset the lost GPU context.
 
 diff --git a/src/gpu.h b/src/gpu.h
 --- a/src/gpu.h
 +++ b/src/gpu.h
-@@
+@@ -58,1 +58,1 @@
 -void gpu_dense_logits(Gpu *g, float *out);
 +int gpu_dense_logits(Gpu *g, float *out);
 diff --git a/src/gpu_opencl.c b/src/gpu_opencl.c
 --- a/src/gpu_opencl.c
 +++ b/src/gpu_opencl.c
-@@
+@@ -1535,10 +1535,30 @@
 -static void wait_event(Gpu *g, cl_event ev) {
+-    /* spin on the status: a blocking wait sleeps in the driver and wakes up late */
+-    double t0 = time_sec();
+-    for (;;) {
+-        cl_int st = 1;
+-        if (g->cl.GetEventInfo(ev, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(st), &st, NULL) != 0 || st <= 0) break;
+-        cpu_relax();
+-    }
+-    g->st.t_wait += time_sec() - t0;
+-}
 +static int wait_event(Gpu *g, cl_event ev) {
-     /* spin on the status: a blocking wait sleeps in the driver and wakes up late */
++    /* spin on the status: a blocking wait sleeps in the driver and wakes up late */
 +    if (!ev) {
 +        if (!g->reported) {
-+            fprintf(stderr, "GPU: missing OpenCL event in wait_event\n");
++            fprintf(stderr, "GPU: missing OpenCL event in wait_event\\n");
 +            g->reported = 1;
 +        }
 +        return 0;
 +    }
-     double t0 = time_sec();
-     for (;;) {
-         cl_int st = 1;
--        if (g->cl.GetEventInfo(ev, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(st), &st, NULL) != 0 || st <= 0) break;
++    double t0 = time_sec();
++    for (;;) {
++        cl_int st = 1;
 +        cl_int e = g->cl.GetEventInfo(ev, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(st), &st, NULL);
 +        if (e != 0) {
 +            check(g, e, "query event status");
@@ -37,23 +44,26 @@ diff --git a/src/gpu_opencl.c b/src/gpu_opencl.c
 +        if (st == 0) break; /* CL_COMPLETE */
 +        if (st < 0) {
 +            if (!g->reported) {
-+                fprintf(stderr, "GPU: OpenCL command completed with status %d\n", st);
++                fprintf(stderr, "GPU: OpenCL command completed with status %d\\n", st);
 +                g->reported = 1;
 +            }
 +            return 0;
 +        }
-         cpu_relax();
-     }
-     g->st.t_wait += time_sec() - t0;
++        cpu_relax();
++    }
++    g->st.t_wait += time_sec() - t0;
 +    return !g->reported;
- }
-@@
++}
+@@ -1803,7 +1803 @@
 -void gpu_dense_logits(Gpu *g, float *out) {
-+int gpu_dense_logits(Gpu *g, float *out) {
-     dense_enqueue_upto(g, g->m->n_layer);
+-    dense_enqueue_upto(g, g->m->n_layer);
 -    wait_event(g, g->ev_logits);
 -    g->cl.ReleaseEvent(g->ev_logits);
 -    g->ev_logits = NULL;
+-    memcpy(out, g->h_logits, sizeof(float) * (size_t)g->m->n_vocab);
+-}
++int gpu_dense_logits(Gpu *g, float *out) {
++    dense_enqueue_upto(g, g->m->n_layer);
 +    int ok = wait_event(g, g->ev_logits);
 +    if (g->ev_logits) {
 +        cl_int e = g->cl.ReleaseEvent(g->ev_logits);
@@ -61,26 +71,25 @@ diff --git a/src/gpu_opencl.c b/src/gpu_opencl.c
 +        check(g, e, "release logits event");
 +    }
 +    if (!ok || g->reported) return 0;
-     memcpy(out, g->h_logits, sizeof(float) * (size_t)g->m->n_vocab);
++    memcpy(out, g->h_logits, sizeof(float) * (size_t)g->m->n_vocab);
 +    return 1;
- }
++}
 diff --git a/src/model.c b/src/model.c
 --- a/src/model.c
 +++ b/src/model.c
-@@
+@@ -1132,1 +1132,7 @@
 -    gpu_dense_logits(g, c->logits);
 +    if (!gpu_dense_logits(g, c->logits)) {
-+        /* This token's KV/recurrent state lives on the failed GPU path.
++        /* The token's KV/recurrent state lives on the failed GPU path.
 +         * lost_state() will reset the context and make ctx_forward return NULL. */
 +        c->gpu_dense = 0;
 +        c->gpu_lost = 1;
 +        return;
 +    }
-     if (all_logits) memcpy(all_logits, c->logits, sizeof(float) * (size_t)m->n_vocab);
 diff --git a/src/main.c b/src/main.c
 --- a/src/main.c
 +++ b/src/main.c
-@@
+@@ -1035,2 +1035,6 @@
              for (int i = 0; i < ntg; i++) {
                  float *lg = ctx_forward(ctx, &tok, 1);
 +                if (!lg) {
