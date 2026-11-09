@@ -28,7 +28,7 @@ diff --git a/src/gpu_opencl.c b/src/gpu_opencl.c
 +    /* spin on the status: a blocking wait sleeps in the driver and wakes up late */
 +    if (!ev) {
 +        if (!g->reported) {
-+            fprintf(stderr, "GPU: missing OpenCL event in wait_event\\n");
++            fprintf(stderr, "GPU: missing OpenCL event in wait_event\n");
 +            g->reported = 1;
 +        }
 +        return 0;
@@ -44,7 +44,7 @@ diff --git a/src/gpu_opencl.c b/src/gpu_opencl.c
 +        if (st == 0) break; /* CL_COMPLETE */
 +        if (st < 0) {
 +            if (!g->reported) {
-+                fprintf(stderr, "GPU: OpenCL command completed with status %d\\n", st);
++                fprintf(stderr, "GPU: OpenCL command completed with status %d\n", st);
 +                g->reported = 1;
 +            }
 +            return 0;
@@ -92,6 +92,6 @@ diff --git a/src/main.c b/src/main.c
 @@ -1036,1 +1036,5 @@
                  float *lg = ctx_forward(ctx, &tok, 1);
 +                if (!lg) {
-+                    fprintf(stderr, "benchmark generation stopped: context lost\\n");
++                    fprintf(stderr, "benchmark generation stopped: context lost\n");
 +                    break;
 +                }
