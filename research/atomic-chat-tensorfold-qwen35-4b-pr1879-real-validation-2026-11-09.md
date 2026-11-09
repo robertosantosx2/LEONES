@@ -252,20 +252,70 @@ At 20:48:12 on 2026-11-09:
 
 The server was deliberately left running after the test. No cleanup or shutdown is implied by this report.
 
-## 10. Raw evidence location and publication status
+## 10. Raw evidence: uploaded and verified in LEONES
 
-All raw test artifacts are retained on the Ubuntu host under:
+The raw evidence is **already published in the LEONES branch**, not merely retained on the workstation. The directory contains 65 files, including the original request bodies, raw completion responses, model metadata, server-log excerpts, GPU telemetry CSVs, per-context checksum manifests, and the consolidated `SHA256SUMS` manifest:
 
 ```
-~/tensorfold-pr1879-real-validation-20261109/evidence-a83afc3-real-generation/
+experiments/atomic-chat-tensorfold/evidence/pr1879-real-validation-2026-11-09/
 ```
 
-This report records the raw filenames and the exact hashes available in the terminal transcript. The raw JSON/CSV/log files themselves are **not attached to this LEONES Markdown file by this commit**. They remain on the validation host until copied/committed as separate artifacts. Do not claim the raw files have been uploaded to GitHub unless that upload is performed and verified.
+[Open the complete evidence directory on GitHub](https://github.com/robertosantosx2/LEONES/tree/research/atomic-chat-tensorfold-linux-cuda/experiments/atomic-chat-tensorfold/evidence/pr1879-real-validation-2026-11-09)
 
-The original worktree and report must preserve the local `zig/build/product.zig` change noted above.
+The directory was queried through the GitHub Contents API on 2026-11-09: **65 entries were returned**. The consolidated manifest is:
 
-## 11. Next validation gate
+- [SHA256SUMS](https://github.com/robertosantosx2/LEONES/blob/research/atomic-chat-tensorfold-linux-cuda/experiments/atomic-chat-tensorfold/evidence/pr1879-real-validation-2026-11-09/SHA256SUMS)
+- Per-run manifests: contexts 1280, 1536, 1664, 1668 (initial and corrected retry), and 1670.
 
-The only next context-boundary test needed to refine the current bracket is context **1671**. If it is admitted, run an exact-fill real generation with the same prompt (120 prompt tokens) and `max_tokens=1551`, preserving all telemetry and checksums. If 1671 is rejected, 1670 becomes the maximum demonstrated integer context under this exact build/model/hardware/reserve configuration.
+Evidence categories present include:
 
-No memory reserve reduction, CUDA allocator change, GPU setting change, or unrelated workload termination is recommended for this validation.
+- Exact HTTP request and response JSON for the generation runs.
+- Context-specific and baseline `/v1/models` metadata.
+- GPU time-series CSVs for contexts 768, 1024, 1280, 1536, 1664, 1668, and 1670, plus boundary/extreme attempts.
+- Server log excerpts, PID captures, system report, before/after GPU snapshots, and Git audit report.
+- SHA-256 manifests and a consolidated checksum inventory.
+
+The report and raw evidence are therefore both available in LEONES. The 65-file count describes the published directory listing; it is not a claim that every file was independently re-downloaded and re-hashed in this chat session. The manifests are retained so a local checkout can verify file integrity with `sha256sum -c`.
+
+The original worktree's deliberate `zig/build/product.zig` change noted in section 2 remains a separate source-worktree preservation concern; it is not part of the runtime evidence bundle.
+
+## 11. TensorFold PR #1879 review and final source update
+
+The real-GPU runtime campaign above used the validation build at `a83afc3ded4617ce3ddb94dbe75e0b70da1e603d`. After that campaign, the review-cleanup work was completed and pushed to the TensorFold PR branch:
+
+- PR: https://github.com/ashhart/TensorFold/pull/1879
+- Branch: `fix/qwen35-cuda-lazy-scratch`
+- Final pushed PR head at the time of this report update: `a8f6910a2`
+- Commit: `fix(cuda): correct Qwen3.5 memory diagnostic reference`
+- The push advanced the remote branch from `f6891b5e6` to `a8f6910a2`.
+- A subsequent `git fetch origin` confirmed that local validation HEAD and `origin/fix/qwen35-cuda-lazy-scratch` both resolved to `a8f6910a2`; `git status --short --branch` showed no tracked or untracked changes in that review-cleanup checkout.
+
+The final PR review response was also posted:
+https://github.com/ashhart/TensorFold/pull/1879#issuecomment-6753315137
+
+The response addressed Ash's seven review areas: scratch accounting and focused host tests; comparative performance measurements; removal of obsolete pool/build-step material and stale comments; error explanations; CUDA guard references; WDDM allocation ownership/capacity explanation; and commit-history/landing handling. It explicitly did **not** claim that the full main-vs-PR performance matrix or Windows/WDDM measurements had been completed. Ash is expected to handle any final squash/author-identity adjustment at landing; no force-push or history rewrite was performed.
+
+### Test evidence and qualification
+
+- Focused Qwen3.5 CUDA host tests: **113/113 passed**.
+- A later aggregate host test invocation reported **349/349 build steps**, **5583/5610 tests passed**, and **27 skipped**. The 27 skipped account for the difference between 5610 total and 5583 passed; this is not described as a clean 5610/5610 pass.
+- These host-side checks are distinct from the physical RTX 3050 inference campaign and should not be conflated with it.
+- The physical CUDA throughput/context results in sections 3–6 were measured on the earlier validation binary revision `a83afc3...`; the subsequent `a8f6910a2` commit corrected a review/diagnostic reference. Do not imply that a separate full runtime benchmark was rerun on `a8f6910a2`.
+
+## 12. Final workstation shutdown and resource release
+
+After the evidence campaign and PR update, the TensorFold server was stopped deliberately with `SIGTERM` against its exact PID (`539467`). The subsequent workstation checks on 2026-11-09 at approximately 23:41 local time confirmed:
+
+- No remaining process matched `tensorfold` or `tensorfold-web-bridge`.
+- TCP port `127.0.0.1:18083` was no longer listening.
+- `nvidia-smi` reported **16 MiB / 4096 MiB** in use, with only the Xorg display process attributed; GPU utilization was 0%.
+- System RAM: 8.3 GiB available.
+- Swap: 10 GiB used of 31 GiB; swap was not reset or cleared.
+
+This was a process shutdown only. The model cache, source worktrees, build outputs, logs, raw evidence and Git repositories were not deleted.
+
+## 13. Remaining validation boundary and follow-up
+
+The measured context bracket remains **1670 passed / 1672 rejected**. Context **1671 remains untested**. If the project elects to refine this boundary, the next experiment is an exact-fill generation at context 1671 with 120 prompt tokens and `max_tokens=1551`, using the same model, validation binary, CUDA backend, memory reserve and telemetry procedure. This is optional follow-up work, not a missing prerequisite for the already demonstrated 1670-token generation.
+
+The performance comparison matrix requested during review, broader concurrency/cold-prompt tests, Windows/WDDM measurement, and structured tool-call/vision/speech validation remain outside the completed evidence claims in this report.
