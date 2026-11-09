@@ -1,0 +1,10 @@
+c658925 (HEAD -> validation/intel-opencl-dense-logits) bench: stop token loop when context is lost
+ecaeaff model: reset context when dense OpenCL logits fail
+15560ac opencl: fail closed on dense logits readback errors
+2d7c871 gpu: return status from dense logits API
+0a05458 (origin/main, origin/HEAD, main, debug/intel-opencl-dense-trace) README: a minimal banner with the white Pandora mark
+a60eb8c Landing page: Pandora presents the hero figures
+6c369eb Landing page: a compact, plain hero
+bb42970 Landing page: LFM3 at about 80 tok/s with the GPU (Vulkan)
+cac54f7 (tag: v0.6.0) Version 0.6.0
+1d749ba README and landing page: OpenCL prompt on the GPU

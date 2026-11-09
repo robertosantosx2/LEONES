@@ -1,0 +1,194 @@
+diff --git a/src/main.c b/src/main.c
+index 2d6c90d..170adca 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -505,9 +505,10 @@ static int feed_text(Engine *e, const char *text) {
+ 
+ /* Generate until end-of-turn. `in_think`: generation starts inside a <think> block.
+  * Returns the generated text (caller frees); *last receives the stop token (or -1). */
+-static char *generate(Engine *e, int in_think, int *last) {
++static char *generate(Engine *e, int in_think, int *last, int *failed) {
+     Str out = { 0 };
+     Utf8Out uo = { { 0 }, 0 };
++    *failed = 0;
+     float *logits = ctx_forward(e->ctx, NULL, 0);
+     int thinking = in_think;
+     if (thinking && e->a->show_think) color("\x1b[90m");
+@@ -547,7 +548,10 @@ static char *generate(Engine *e, int in_think, int *last) {
+             break;
+         }
+         logits = ctx_forward(e->ctx, &tok, 1);
+-        if (!logits) break;
++        if (!logits) {
++            *failed = 1;
++            break;
++        }
+         if (thinking && !forced && e->a->think_budget > 0 && ++n_think >= e->a->think_budget)
+             forced = encode(e->tk, think_close(), &nforced);
+     }
+@@ -646,8 +650,13 @@ static int chat_turn(Engine *e, const char *user, int first) {
+         ctx_snapshot_free(&snap);
+         return 0;
+     }
+-    int last;
+-    char *gen = generate(e, think, &last);
++    int last, failed;
++    char *gen = generate(e, think, &last, &failed);
++    if (failed) {
++        ctx_snapshot_free(&snap);
++        free(gen);
++        return 0;
++    }
+     double tp = e->t_prompt - tp0;
+     int npr = e->n_prompt - np0;
+     print_stats(e, tp, npr, e->t_gen - tg0, e->n_gen - ng0);
+@@ -754,6 +763,7 @@ static int tools_cli(const Args *a) {
+ /* ------------------------------------------------------------------ main */
+ 
+ static int real_main(int argc, char **argv) {
++    int exit_code = 0;
+     Args a;
+     if (!parse_args(argc, argv, &a)) return 1;
+     console_init();
+@@ -1006,17 +1016,25 @@ static int real_main(int argc, char **argv) {
+             printf("VRAM cache fill: %.1f s\n", time_sec() - tw);
+         }
+         /* warm-up: touch weights once */
+-        ctx_forward(ctx, ids, 1);
++        if (!ctx_forward(ctx, ids, 1)) {
++            fprintf(stderr, "benchmark aborted: context lost during warm-up\n");
++            exit_code = 1;
++        }
+         ctx_reset(ctx);
+         double tb = 0;
+-        for (int pass = 0; pass < 2 && npp > 0; pass++) {
++        for (int pass = 0; pass < 2 && npp > 0 && !exit_code; pass++) {
+             ctx_reset(ctx);
+             memset(ctx_stats(ctx), 0, sizeof(Stats));
+             uint64_t pf0, rss0, pf1, rss1;
+             proc_mem_stats(&pf0, &rss0);
+             tb = time_sec();
+-            ctx_forward(ctx, ids, npp);
++            float *pp_logits = ctx_forward(ctx, ids, npp);
+             double tpp = time_sec() - tb;
++            if (!pp_logits) {
++                fprintf(stderr, "benchmark aborted: context lost during prompt pass\n");
++                exit_code = 1;
++                break;
++            }
+             proc_mem_stats(&pf1, &rss1);
+             printf("pp%d %s: %.2f tok/s (%.2f s) | page fault %.0f (%.2f GB) | working set %.2f GB\n", npp,
+                    pass ? "(warm)" : "(first)", npp / tpp, tpp, (double)(pf1 - pf0), (pf1 - pf0) * 4096.0 / 1073741824.0,
+@@ -1024,43 +1042,64 @@ static int real_main(int argc, char **argv) {
+             if (pass) print_profile(ctx_stats(ctx), npp, "warm prompt");
+         }
+         /* two identical generation passes: the second one runs with the touched experts resident */
+-        for (int pass = 0; pass < 2; pass++) {
++        int generation_passes = 0;
++        for (int pass = 0; pass < 2 && !exit_code; pass++) {
+             ctx_reset(ctx);
+-            if (npp > 0) ctx_forward(ctx, ids, npp < 16 ? npp : 16);
++            if (npp > 0 && !ctx_forward(ctx, ids, npp < 16 ? npp : 16)) {
++                fprintf(stderr, "benchmark aborted: context lost during generation prefill\n");
++                exit_code = 1;
++                break;
++            }
+             int tok = 1000;
++            int tg_done = 0;
+             if (pass) memset(ctx_stats(ctx), 0, sizeof(Stats));
+             uint64_t pf0, rss0, pf1, rss1;
+             proc_mem_stats(&pf0, &rss0);
+             tb = time_sec();
+             for (int i = 0; i < ntg; i++) {
+                 float *lg = ctx_forward(ctx, &tok, 1);
+-                if (!lg) {
+-                    fprintf(stderr, "benchmark generation stopped: context lost\n");
+-                    break;
+-                }
++                if (!lg) break;
+                 int best = 0;
+                 for (int v = 1; v < m.n_vocab; v++) if (lg[v] > lg[best]) best = v;
+                 tok = best;
++                tg_done++;
+             }
+             double ttg = time_sec() - tb;
+-            printf("tg%d %s: %.2f tok/s (%.2f s) | effective weight bandwidth ~%.1f GB/s\n", ntg, pass ? "(warm)" : "(first)",
+-                   ntg / ttg, ttg, m.bytes_per_token * (ntg / ttg) / 1e9);
+             proc_mem_stats(&pf1, &rss1);
+-            printf("   page fault/token: %.0f | working set %.2f GB\n", (double)(pf1 - pf0) / (ntg ? ntg : 1),
+-                   rss1 / 1073741824.0);
++            if (tg_done != ntg) {
++                fprintf(stderr, "benchmark generation aborted: completed %d/%d tokens\n", tg_done, ntg);
++                exit_code = 1;
++                break;
++            }
++            double tg_rate = ttg > 0 ? tg_done / ttg : 0;
++            printf("tg%d %s: %.2f tok/s (%.2f s) | effective weight bandwidth ~%.1f GB/s\n",
++                   tg_done, pass ? "(warm)" : "(first)", tg_rate, ttg,
++                   m.bytes_per_token * tg_rate / 1e9);
++            printf("   page fault/token: %.0f | working set %.2f GB\n",
++                   (double)(pf1 - pf0) / (tg_done ? tg_done : 1), rss1 / 1073741824.0);
++            generation_passes++;
++        }
++        if (generation_passes == 2 && !exit_code) {
++            print_profile(ctx_stats(ctx), ntg, "warm generation");
++            if (a.verbose) print_expert_coverage(&m, ctx_stats(ctx));
+         }
+-        print_profile(ctx_stats(ctx), ntg, "warm generation");
+-        if (a.verbose) print_expert_coverage(&m, ctx_stats(ctx));
+         free(ids);
+     } else if (a.raw) {
+-        if (!feed_text(&e, a.prompt)) { fprintf(stderr, "prompt too long for the context\n"); return 1; }
++        if (!feed_text(&e, a.prompt)) { fprintf(stderr, "[prompt processing aborted: context limit or GPU failure]\n"); return 1; }
+         out_str(a.prompt);
+-        int last;
+-        char *g = generate(&e, 0, &last);
+-        print_stats(&e, e.t_prompt, e.n_prompt, e.t_gen, e.n_gen);
++        int last, failed;
++        char *g = generate(&e, 0, &last, &failed);
++        if (!failed) print_stats(&e, e.t_prompt, e.n_prompt, e.t_gen, e.n_gen);
+         free(g);
++        if (failed) {
++            fprintf(stderr, "[generation aborted: GPU context lost; resend the prompt]\n");
++            exit_code = 1;
++        }
+     } else if (!a.interactive) {
+-        if (!chat_turn(&e, a.prompt, 1)) fprintf(stderr, "context full\n");
++        if (!chat_turn(&e, a.prompt, 1)) {
++            fprintf(stderr, "[turn aborted: context reset or unavailable; resend the prompt]\n");
++            exit_code = 1;
++        }
+     } else {
+         fprintf(stderr, "chat ready. Commands: /reset new conversation, /exit quit.\n");
+         int first = 1;
+@@ -1080,7 +1119,7 @@ static int real_main(int argc, char **argv) {
+                 continue;
+             }
+             if (!chat_turn(&e, line, first)) {
+-                out_str("\n[context full: conversation reset]\n");
++                out_str("\n[turn aborted: conversation reset; resend the prompt]\n");
+                 ctx_reset(ctx);
+                 sampler_reset_history(&e.smp);
+                 first = 1;
+@@ -1098,7 +1137,7 @@ static int real_main(int argc, char **argv) {
+     pool_destroy(pool);
+     tok_free(tk);
+     model_free(&m);
+-    return 0;
++    return exit_code;
+ }
+ 
+ #if defined(PITHOS_UWP)
+diff --git a/src/model.c b/src/model.c
+index 4ee36b8..486d6e2 100644
+--- a/src/model.c
++++ b/src/model.c
+@@ -1235,7 +1235,7 @@ static int lost_state(Context *c) {
+     if (!c->gpu_lost) return 0;
+     c->gpu_lost = 0;
+     ctx_reset(c);
+-    fprintf(stderr, "the context was lost with the GPU: continuing on the CPU from an empty context\n");
++    fprintf(stderr, "[GPU context lost: context reset; current operation aborted]\n");
+     return 1;
+ }
+ 

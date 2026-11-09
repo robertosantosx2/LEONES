@@ -1,0 +1,33 @@
+PITHOS INTEL OPENCL FAIL-CLOSED VALIDATION
+Date: 2026-11-09
+Model: LFM3-1.7B-Q4_K_M.gguf
+
+1. INTEL OPENCL GENERATION
+Command: --gpu opencl --gpu-device 0
+Result:
+GPU: OpenCL error -5 in read logits
+[GPU context lost: context reset; current operation aborted]
+[turn aborted: context reset or unavailable; resend the prompt]
+Exit code: 1
+
+2. INTEL OPENCL BENCHMARK
+Result:
+GPU: OpenCL error -5 in read logits
+[GPU context lost: context reset; current operation aborted]
+benchmark aborted: context lost during warm-up
+Exit code: 1
+
+3. CPU-ONLY GENERATION
+Result:
+GPU: off, CPU only
+Prompt: 27 tokens
+Generation: 32 tokens
+Prompt speed: 127.0 tok/s
+Generation speed: 33.43 tok/s
+Exit code: 0
+
+CONCLUSION
+The fail-closed behavior was validated for the observed Intel OpenCL
+readback failure. The Intel OpenCL backend was NOT repaired.
+No claim is made that NVIDIA OpenCL/Vulkan or the complete MoE path
+has been validated.
