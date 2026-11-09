@@ -1,0 +1,12 @@
+{
+  "model": "local-model",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Write a detailed, continuous technical explanation of how a local\nlanguage model performs inference on a GPU with limited video memory. Explain\nthe model loading process, memory allocation, attention, transformer layers,\ntokenization, prompt processing, autoregressive decoding, cache management,\nCPU and GPU coordination, synchronization, numerical precision, and memory\npressure. Develop every topic carefully, with concrete examples and connected\nparagraphs. Continue the explanation in depth until the output token limit is\nreached. Do not provide a short summary or stop voluntarily."
+    }
+  ],
+  "max_tokens": 1548,
+  "temperature": 0,
+  "stream": false
+}
