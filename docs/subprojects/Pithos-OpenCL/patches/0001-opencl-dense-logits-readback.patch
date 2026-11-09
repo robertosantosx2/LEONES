@@ -99,7 +99,7 @@ diff --git a/src/main.c b/src/main.c
 diff --git a/src/model.c b/src/model.c
 --- a/src/model.c
 +++ b/src/model.c
-@@ -? +? @@
+@@ -1250,2 +1250,2 @@
 -        if (c->gpu) gpu_rebalance(c->gpu, nb == 1 ? 2 : 16);
          if (lost_state(c)) return NULL;
 +        if (c->gpu) gpu_rebalance(c->gpu, nb == 1 ? 2 : 16);
