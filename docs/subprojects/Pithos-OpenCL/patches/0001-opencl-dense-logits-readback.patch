@@ -54,7 +54,7 @@ diff --git a/src/gpu_opencl.c b/src/gpu_opencl.c
 +    g->st.t_wait += time_sec() - t0;
 +    return !g->reported;
 +}
-@@ -1803,7 +1803 @@
+@@ -1803,7 +1803,13 @@
 -void gpu_dense_logits(Gpu *g, float *out) {
 -    dense_enqueue_upto(g, g->m->n_layer);
 -    wait_event(g, g->ev_logits);
@@ -89,14 +89,9 @@ diff --git a/src/model.c b/src/model.c
 diff --git a/src/main.c b/src/main.c
 --- a/src/main.c
 +++ b/src/main.c
-@@ -1035,2 +1035,6 @@
-             for (int i = 0; i < ntg; i++) {
+@@ -1036,1 +1036,5 @@
                  float *lg = ctx_forward(ctx, &tok, 1);
 +                if (!lg) {
 +                    fprintf(stderr, "benchmark generation stopped: context lost\\n");
 +                    break;
 +                }
-                 int best = 0;
-                 for (int v = 1; v < m.n_vocab; v++) if (lg[v] > lg[best]) best = v;
-                 tok = best;
-             }
