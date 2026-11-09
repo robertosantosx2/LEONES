@@ -1,0 +1,33 @@
+Pithos 0.6.0 | CPU: 12th Gen Intel(R) Core(TM) i7-12650H | 10 core / 16 thread | RAM 14.8 GB (8.2 GB free)
+kernel: avx2 (AVX-VNNI present) | thread: 10
+model: lfm3 | 24 layers (11 attn, 5 of them sliding-window 256, 13 conv) | dim 2048 | vocab 128000 | 1.02 GB | ~1039 MB/token | 0.05 s
+GPU: OpenCL | NVIDIA GeForce RTX 3050 Laptop GPU | int8/dp4a | all layers in VRAM (1.19 GB) | prompt matmuls
+VRAM cache fill: 0.0 s
+pp512 (first): 407.78 tok/s (1.26 s) | page fault 6691 (0.03 GB) | working set 1.31 GB
+pp512 (warm): 421.84 tok/s (1.21 s) | page fault 4 (0.00 GB) | working set 1.31 GB
+profile warm prompt (per token):
+  attn proj        0.15 ms     0.2 MB    1.7 GB/s    0.1 calls
+  conv proj        0.26 ms     0.5 MB    1.8 GB/s    0.1 calls
+  dense ffn        1.18 ms     2.6 MB    2.3 GB/s    0.2 calls
+  router           0.00 ms     0.0 MB    0.0 GB/s    0.0 calls
+  experts g/u      0.00 ms     0.0 MB    0.0 GB/s    0.0 calls
+  experts down     0.00 ms     0.0 MB    0.0 GB/s    0.0 calls
+  logits           0.01 ms     0.4 MB   39.3 GB/s    0.0 calls
+  attention        0.26 ms
+  routing          0.00 ms
+  resto            0.51 ms
+tg128 (first): 103.70 tok/s (1.23 s) | effective weight bandwidth ~113.0 GB/s
+   page fault/token: 0 | working set 1.31 GB
+tg128 (warm): 102.81 tok/s (1.24 s) | effective weight bandwidth ~112.0 GB/s
+   page fault/token: 0 | working set 1.31 GB
+profile warm generation (per token):
+  attn proj        0.00 ms     0.0 MB    0.0 GB/s    0.0 calls
+  conv proj        0.00 ms     0.0 MB    0.0 GB/s    0.0 calls
+  dense ffn        0.00 ms     0.0 MB    0.0 GB/s    0.0 calls
+  router           0.00 ms     0.0 MB    0.0 GB/s    0.0 calls
+  experts g/u      0.00 ms     0.0 MB    0.0 GB/s    0.0 calls
+  experts down     0.00 ms     0.0 MB    0.0 GB/s    0.0 calls
+  logits           0.00 ms     0.0 MB    0.0 GB/s    0.0 calls
+  attention        0.00 ms
+  routing          0.00 ms
+  resto            9.58 ms

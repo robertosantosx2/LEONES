@@ -1,0 +1,11 @@
+Pithos 0.6.0 | CPU: 12th Gen Intel(R) Core(TM) i7-12650H | 10 core / 16 thread | RAM 14.8 GB (8.0 GB free)
+kernel: avx2 (AVX-VNNI present) | thread: 10
+model: lfm3 | 24 layers (11 attn, 5 of them sliding-window 256, 13 conv) | dim 2048 | vocab 128000 | 1.02 GB | ~1039 MB/token | 0.04 s
+GPU: OpenCL | NVIDIA GeForce RTX 3050 Laptop GPU | int8/dp4a | all layers in VRAM (1.19 GB) | prompt matmuls
+A GPU accelerates neural network inference by executing the matrix multiplications and element-wise operations required for forward passes on many parallel threads, leveraging its massive number of cores and high memory bandwidth. This parallelism allows the GPU to process large batches of data simultaneously, significantly speeding up computation compared to CPU-based processing. Additionally, GPUs often use optimized kernels and shared memory to reduce latency and improve throughput, making them ideal for real-time or high-throughput inference tasks.
+[prompt: 27 tok in 0.15 s = 180.3 tok/s | generation: 95 tok in 0.91 s = 104.34 tok/s | context 122/8192]
+  top  8/0 experts per layer cover 0.0% of the activations
+  top 16/0 experts per layer cover 0.0% of the activations
+  top 24/0 experts per layer cover 0.0% of the activations
+  top 32/0 experts per layer cover 0.0% of the activations
+[matmul 0.12 s | attention 0.01 s | routing 0.00 s | experts on GPU 0, GPU wait 0.00 s]
