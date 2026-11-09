@@ -11,6 +11,10 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 - Pithos 0.5.0 + LFM3-1.7B Q4_K_M en RTX 3050 Laptop con Vulkan: [informe de ejecución y benchmark](docs/PITHOS-LFM3-1.7B-RTX3050-2026-11-06.md).
 - Pithos 0.5.1 + LFM3-1.7B Q4_K_M: [comparativa CPU/Intel Vulkan/NVIDIA Vulkan y barrido PP/TG](docs/PITHOS-LFM3-1.7B-RTX3050-2026-11-07.md), con [CSV](artifacts/pithos-0.5.1-2026-11-07/benchmark-results.csv), [registro consolidado](artifacts/pithos-0.5.1-2026-11-07/benchmark-session.log) y [script reproducible](artifacts/pithos-0.5.1-2026-11-07/reproduce.sh).
 
+## Integraciones de runtimes
+
+- Pithos / Intel OpenCL: [seguimiento de fiabilidad del readback de logits y parche propuesto](docs/subprojects/Pithos-OpenCL/README.md). El parche está pendiente de aplicarse y validarse sobre un fork de Pithos.
+
 ## RC4 — estado actual (2026-09-07)
 
 **Regla de autoridad:** LEONES descubre el hardware y conserva procedencia. FitLLM/LLMFit es preselector (ESTIMATED). El usuario elige modelo y stack. Solo una ejecución física autorizada produce MEASURED.
