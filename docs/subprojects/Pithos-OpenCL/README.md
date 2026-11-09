@@ -1,6 +1,6 @@
 # Pithos — Intel OpenCL dense logits reliability
 
-Estado: **integración en preparación; parche pendiente de aplicar y validar sobre un fork real de Pithos**.
+Estado: **parche aplicado en el fork personal; pendiente de compilación y validación física**.
 
 ## Objetivo
 
@@ -28,18 +28,25 @@ Modelo: `LFM3-1.7B-Q4_K_M.gguf`.
 4. `ctx_forward()` ya dispone de `lost_state()`: resetea el contexto perdido y devuelve `NULL`, permitiendo que el llamador detecte el fallo.
 5. Los consumidores de `ctx_forward()`, especialmente benchmark TG, deben comprobar `NULL` antes de leer logits.
 
-## Limitación importante
+## Implementación en el fork
 
-La integración GitHub disponible para esta sesión permite crear ramas y escribir archivos, pero no expone una operación de GitHub **Fork repository**. Por ello no se afirma que exista ya un fork de Pithos ni se modifica el repositorio upstream. Esta rama de LEONES conserva el diseño y el parche propuesto hasta que el fork pueda crearse con permisos adecuados.
+- Fork: https://github.com/robertosantosx2/Pithos
+- Rama: `fix/intel-opencl-dense-logits-fail-closed`
+- PR de validación en el fork: https://github.com/robertosantosx2/Pithos/pull/1 (Draft)
+- Base: `0a05458599d3bc3a7bd470ae28b59aa457b79b90` (sin divergencia respecto al upstream en el momento de crear la rama).
+- Cambios: API de logits con retorno de estado, comprobación del evento OpenCL, salida fail-closed, reset del contexto perdido y protección del benchmark TG.
+- `ctx_forward()` procesa `lost_state()` antes de llamar a `gpu_rebalance()`, evitando reutilizar la ruta GPU después del fallo.
+
+No se ha modificado `benmaster82/Pithos`.
 
 ## Aplicación y validación pendientes
 
-- Crear fork de `benmaster82/Pithos` bajo la cuenta propietaria.
-- Aplicar el parche de `patches/0001-opencl-dense-logits-readback.patch` en una rama de ese fork.
+- Compilar la rama del fork en Ubuntu con OpenCL Intel y Vulkan NVIDIA.
 - Compilar en Ubuntu con OpenCL Intel y Vulkan NVIDIA.
 - Repetir A/B pinned/malloc y comprobar que el fallo devuelve `NULL`, nunca logits stale.
 - Verificar fallback CPU después de pérdida del contexto.
 - Ejecutar tests y benchmark; no publicar cifras del parche hasta medirlo físicamente.
+- Actualizar el PR Draft del fork con los resultados.
 - Abrir PR upstream solo después de validar ambos backends y los callsites.
 
 ## Reglas LEONES
