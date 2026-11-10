@@ -18,6 +18,7 @@ Commits:
 - `41f9994`: corrige la salida final de la ruta de error para que retorne `NULL` después de limpiar.
 - `6c384c7`: registra `cc_shutdown()` inmediatamente después de un `cc_init()` exitoso, de modo que también se cierre el backend si falla una reserva posterior.
 - `673a6b8`: elimina el registro duplicado de `cc_shutdown()` en el llamador; el registro ahora pertenece al punto que inicializa el backend.
+- `83765d2`: añade una regresión fake-CUDA en `test_qwen36_cuda_chain.c`: permite reservar el arena de parámetros, fuerza el rechazo del primer buffer de estado DeltaNet y comprueba que `m->cchain` queda a NULL y que los bytes CUDA reservados vuelven al nivel previo.
 
 La limpieza distingue recursos:
 - **Propiedad de la cadena:** tensores CUDA `t_ab`, `t_sg`, `t_gate`; buffers `rec/ring/kc/vc/prm`; tablas auxiliares asignadas por setup.
@@ -30,13 +31,14 @@ Los fallos anteriores a la asignación de `Q36CChain` conservan sus salidas dire
 - El cambio corrige la limpieza de **fallos durante la inicialización de la cadena**, evita dejar un `m->cchain` envenenado y garantiza el registro de cierre del backend tras inicializarlo.
 - No convierte la subida de las matrices del tier en una transacción: las matrices colocadas por el tier siguen siendo propiedad del tier si la cadena no se activa.
 - No se ha demostrado todavía el comportamiento de todos los errores asíncronos CUDA ni el rollback de operaciones de upload fallidas.
+- La nueva regresión fake-CUDA está añadida, pero **todavía no se ha ejecutado**.
 - No se han ejecutado todavía los tests del repositorio ni una compilación CUDA.
 - No se ha probado en la RTX 3050 sm_86; no hay resultados de rendimiento.
 
 ## Validación pendiente en el MSI
 
 1. Compilar el target CUDA de Qwen3.6 con warnings habilitados.
-2. Ejecutar los tests fake-CUDA de tier y los tests generales disponibles.
+2. Ejecutar primero `make tests/test_qwen36_cuda_chain CUDA=1 && ./tests/test_qwen36_cuda_chain`; después ejecutar `make test-c CUDA=1`. La regresión añadida debe demostrar el rechazo parcial, `m->cchain == NULL` y la liberación de los bytes reservados.
 3. Ejecutar un caso donde la cadena decline por una matriz ausente/no colocada y comprobar que el proceso continúa por la ruta por-matriz sin corrupción.
 4. Forzar un fallo de inicialización del contexto o una reserva insuficiente y comprobar que no queda memoria CUDA/host retenida por la cadena.
 5. Arrancar de nuevo el setup en un harness que permita reintento, verificando que `m->cchain == NULL` tras el fallo.
