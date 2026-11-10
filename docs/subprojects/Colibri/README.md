@@ -9,13 +9,20 @@ Documentación de investigación y validación del motor Colibrì, separando res
 - [Especificación del planner atómico Qwen3.6 CUDA v1](research/qwen36-chain-placement-planner-spec-v1.md): contrato de inventario, presupuesto, selección de dispositivo, commit/rollback, telemetría y 18 casos de prueba unitaria.
 - [JSON Schema del manifiesto MoE v1](../../../schemas/colibri-moe-benchmark-v1.schema.json): contrato versionado para registrar experimentos y recibos.
 - [Rama de implementación en el fork Colibrì](https://github.com/robertosantosx2/colibri/tree/research/qwen36-cuda-chain-planner): cambios de código y diseño de planner.
+- [PR de revisión en el fork (draft #1)](https://github.com/robertosantosx2/colibri/pull/1): presupuesto explícito y admisión atómica de la cadena Qwen3.6.
 - [Diseño de integración tandem.cpp → Colibrì](https://github.com/robertosantosx2/colibri/blob/research/qwen36-cuda-chain-planner/docs/research/tandem-cpp-moe-integration.md): fases, invariantes, criterios de aceptación y matriz de pruebas.
 
 ## Estado de validación
 
 - Auditoría del código upstream: realizada sobre el snapshot `ewhacc/tandem.cpp` commit `e1acb8877bfcf92b4ae7c9f0e0f1d896dbf6c683`.
 - Corrección de presupuesto de VRAM con `CUDA_EXPERT_GB` numérico: implementada en la rama del fork.
-- Test fake-CUDA de regresión: añadido; ejecución pendiente.
-- Colocación global indivisible de la cadena CUDA: especificación detallada v1 publicada en LEONES; implementación en el runtime Colibrì pendiente.
+- Admisión automática indivisible del trunk de la cadena: implementada como decisión de tamaño (todas las ofertas en un dispositivo o todas en CPU); tests fake-CUDA añadidos, ejecución pendiente.
+- Límite conocido: la admisión no convierte las subidas CUDA de `q36cc_setup()` en una transacción. Fallos de upload/setup, liberación completa y rollback requieren validación de runtime y no se presentan como garantías ya demostradas.
+- `COLI_PLACE` explícito sigue siendo una política manual del usuario; la admisión atómica descrita se aplica a la colocación automática.
 - Protocolo LEONES y esquema JSON v1: publicados; aún no hay recibos de ejecución asociados.
 - Validación CUDA y benchmark en RTX 3050 sm_86: pendientes; no se atribuye rendimiento medido a esta integración.
+
+## Estado del PR
+
+- PR de revisión creado en el fork: [robertosantosx2/colibri#1](https://github.com/robertosantosx2/colibri/pull/1), en borrador.
+- La creación directa del PR contra `JustVugg/colibri` fue rechazada por GitHub con HTTP 403 (`Resource not accessible by integration`). Por tanto, no existe todavía PR upstream.
