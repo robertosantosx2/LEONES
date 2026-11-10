@@ -16,6 +16,8 @@ Commits:
 - `5489b4b`: introduce `q36cc_discard_setup()`, que libera los recursos propios de la cadena, los arrays auxiliares y limpia `m->cchain`.
 - `540ab1f`: enruta los fallos parciales de setup a la ruta común de limpieza.
 - `41f9994`: corrige la salida final de la ruta de error para que retorne `NULL` después de limpiar.
+- `6c384c7`: registra `cc_shutdown()` inmediatamente después de un `cc_init()` exitoso, de modo que también se cierre el backend si falla una reserva posterior.
+- `673a6b8`: elimina el registro duplicado de `cc_shutdown()` en el llamador; el registro ahora pertenece al punto que inicializa el backend.
 
 La limpieza distingue recursos:
 - **Propiedad de la cadena:** tensores CUDA `t_ab`, `t_sg`, `t_gate`; buffers `rec/ring/kc/vc/prm`; tablas auxiliares asignadas por setup.
@@ -25,7 +27,7 @@ Los fallos anteriores a la asignación de `Q36CChain` conservan sus salidas dire
 
 ## Alcance y límites
 
-- El cambio corrige la limpieza de **fallos durante la inicialización de la cadena** y evita dejar un `m->cchain` envenenado.
+- El cambio corrige la limpieza de **fallos durante la inicialización de la cadena**, evita dejar un `m->cchain` envenenado y garantiza el registro de cierre del backend tras inicializarlo.
 - No convierte la subida de las matrices del tier en una transacción: las matrices colocadas por el tier siguen siendo propiedad del tier si la cadena no se activa.
 - No se ha demostrado todavía el comportamiento de todos los errores asíncronos CUDA ni el rollback de operaciones de upload fallidas.
 - No se han ejecutado todavía los tests del repositorio ni una compilación CUDA.
