@@ -1,0 +1,521 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robertosantosx2.github.io/LEONES/schemas/colibri-moe-benchmark-v1.schema.json",
+  "title": "LEONES Colibri MoE benchmark manifest",
+  "description": "Versioned evidence manifest. MEASURED requires a completed execution and verified metrics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "experiment_id",
+    "created_at",
+    "status",
+    "engine",
+    "model",
+    "hardware",
+    "configuration"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "experiment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "enum": [
+        "PLAN_ONLY",
+        "RUNNING",
+        "RUN_COMPLETED_UNPARSED",
+        "MEASURED",
+        "FAILED",
+        "TIMEOUT",
+        "INVALID"
+      ]
+    },
+    "evidence_class": {
+      "enum": [
+        "ESTIMATED",
+        "HOST_TEST",
+        "FAKE_CUDA_TEST",
+        "CUDA_MEASURED"
+      ]
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "commit"
+      ],
+      "properties": {
+        "name": {
+          "const": "Colibri"
+        },
+        "version": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$"
+        },
+        "binary_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "format"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "format": {
+          "type": "string"
+        },
+        "quantization": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "size_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "hardware": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "os",
+        "kernel",
+        "cpu",
+        "ram_bytes",
+        "gpus"
+      ],
+      "properties": {
+        "os": {
+          "type": "string"
+        },
+        "kernel": {
+          "type": "string"
+        },
+        "cpu": {
+          "type": "string"
+        },
+        "ram_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ram_available_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "swap_total_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "swap_used_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "gpus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "vram_bytes"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "uuid": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "compute_capability": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "driver": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "vram_bytes": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "vram_free_before_bytes": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "vram_free_after_bytes": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context_tokens",
+        "prompt_tokens",
+        "generation_tokens",
+        "chain_enabled",
+        "expert_share"
+      ],
+      "properties": {
+        "context_tokens": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "prompt_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "generation_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "batch_size": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "sampler": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "chain_enabled": {
+          "type": "boolean"
+        },
+        "expert_share": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "expert_share_mode": {
+          "enum": [
+            "fixed",
+            "adaptive",
+            "disabled"
+          ]
+        },
+        "cuda_expert_gb": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "reserve_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "scratch_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repetitions": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "prompt_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completion_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ttft_ms": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "prefill_tokens_per_second": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "decode_tokens_per_second": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "wall_time_ms": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "gpu_vram_peak_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "process_rss_peak_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "swap_used_after_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "moe": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "experts_required": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "cache_hits": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "cache_misses": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "cpu_experts": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "uploaded_experts": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "h2d_bytes": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "upload_time_ms": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "cpu_expert_time_ms": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "sync_wait_ms": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stdout": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stderr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "metrics_file": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "checksums_file": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "failure": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "exit_code": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "MEASURED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "metrics",
+          "artifacts"
+        ],
+        "properties": {
+          "evidence_class": {
+            "const": "CUDA_MEASURED"
+          },
+          "metrics": {
+            "required": [
+              "repetitions",
+              "prefill_tokens_per_second",
+              "decode_tokens_per_second"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
