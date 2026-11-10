@@ -18,7 +18,7 @@ Documentación de investigación y validación del motor Colibrì, separando res
 - Auditoría del código upstream: realizada sobre el snapshot `ewhacc/tandem.cpp` commit `e1acb8877bfcf92b4ae7c9f0e0f1d896dbf6c683`.
 - Corrección de presupuesto de VRAM con `CUDA_EXPERT_GB` numérico: implementada en la rama del fork.
 - Admisión automática indivisible del trunk de la cadena: implementada como decisión de tamaño (todas las ofertas en un dispositivo o todas en CPU); tests fake-CUDA añadidos, ejecución pendiente.
-- Limpieza de fallos de inicialización de `q36cc_setup()`: implementada en el fork; todas las salidas posteriores a publicar `m->cchain` pasan por `q36cc_discard_setup()`, que libera recursos propios y tablas auxiliares y limpia el puntero. Compilación y tests pendientes.
+- Limpieza de fallos de inicialización de `q36cc_setup()`: implementada en el fork; todas las salidas posteriores a publicar `m->cchain` pasan por `q36cc_discard_setup()`, que libera recursos propios y tablas auxiliares y limpia el puntero; el cierre del backend queda registrado inmediatamente tras `cc_init()`, incluso si una reserva posterior falla. Compilación y tests pendientes.
 - Límite conocido: la admisión no convierte las subidas CUDA del tier en una transacción. La limpieza de fallos de setup ya está implementada, pero la liberación ante fallos asíncronos de upload y el rollback de operaciones del tier requieren validación de runtime.
 - `COLI_PLACE` explícito sigue siendo una política manual del usuario; la admisión atómica descrita se aplica a la colocación automática.
 - Protocolo LEONES y esquema JSON v1: publicados; aún no hay recibos de ejecución asociados.
