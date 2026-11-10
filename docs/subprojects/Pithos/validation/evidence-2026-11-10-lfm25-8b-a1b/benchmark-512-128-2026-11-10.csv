@@ -1,0 +1,5 @@
+model,quantization,backend,device,benchmark,phase,prefill_tokens,prefill_tok_s,prefill_seconds,prefill_page_faults,prefill_fault_accounting_gb,prefill_working_set_gb,generation_tokens,generation_tok_s,generation_seconds,generation_page_faults_per_token,generation_working_set_gb,gpu_expert_slots,gpu_expert_vram_gb,gpu_dense_vram_gb,gpu_matrices,gpu_weights_mb,experts_per_token,gpu_wait_ms_per_token,exit_code,notes
+LFM2.5-8B-A1B,Q4_K_M,OpenCL,NVIDIA RTX 3050,512/128,first,512,102.33,5.00,538305,2.05,2.59,128,46.66,2.74,1149,2.72,284,1.89,0.55,0,0,60.5,0.08,0,"Int8/dp4a; prompt tiled; NVVM TMPDIR workaround"
+LFM2.5-8B-A1B,Q4_K_M,OpenCL,NVIDIA RTX 3050,512/128,warm,512,292.39,1.75,50598,0.19,2.62,128,72.54,1.76,172,2.79,284,1.89,0.55,0,0,53.0,3.01,0,"Int8/dp4a; prompt tiled; NVVM TMPDIR workaround"
+LFM2.5-8B-A1B,Q4_K_M,Vulkan,NVIDIA RTX 3050,512/128,first,512,40.90,12.52,1495625,5.71,3.38,128,27.13,4.72,1148,3.34,0,0,0,67,471,0,,0,"67 matrices; matmuls only; experts CPU"
+LFM2.5-8B-A1B,Q4_K_M,Vulkan,NVIDIA RTX 3050,512/128,warm,512,36.50,14.03,1557959,5.94,3.30,128,30.65,4.18,441,3.30,0,0,0,67,471,0,,0,"67 matrices; matmuls only; experts CPU"
