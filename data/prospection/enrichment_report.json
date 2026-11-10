@@ -1,10 +1,10 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 253,
-  "enriched_ok": 81,
-  "non_github_preserved": 166,
-  "errors": 6,
+  "repositories_processed": 257,
+  "enriched_ok": 80,
+  "non_github_preserved": 170,
+  "errors": 7,
   "github_token_used": true,
   "diagnostics": [
     {
@@ -43,11 +43,18 @@
       "rate_limit_remaining": "4860"
     },
     {
+      "repository": "wisent-ai/brama",
+      "status": 404,
+      "error_type": "HTTP 404",
+      "message": "Not Found",
+      "rate_limit_remaining": "4832"
+    },
+    {
       "repository": "ramaiahsvn/aim.pat",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4787"
+      "rate_limit_remaining": "4789"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."
