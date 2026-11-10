@@ -214,3 +214,22 @@ Usar al menos 3 repeticiones por celda y alternar el orden de las variantes para
 **No portar:** patch GGML, optimizaciones HC/MTP específicas de Qwen4Exp, tail-skip aproximado y copia pinned masiva.
 
 Esta auditoría no declara que haya mejoras implementadas ni que exista un benchmark tandem.cpp en el MSI. El código de Colibrì debe modificarse y validarse en su propia rama; las pruebas CUDA finales se ejecutan en el hardware objetivo.
+
+
+## 10. Hallazgo confirmado en la rama de Colibrì
+
+La inspección del código de `c/qwen36_tier.c` confirmó una asimetría de presupuesto: `qt_reserve()` se restaba de la memoria libre en el modo automático, pero la rama de `CUDA_EXPERT_GB` numérico usaba directamente el número solicitado. Así, un límite explícito podía sobrepasar la memoria físicamente disponible después de descontar el margen de 1 GiB y las reservas de la cadena CUDA.
+
+Se ha corregido en la rama [research/qwen36-cuda-chain-planner](https://github.com/robertosantosx2/colibri/tree/research/qwen36-cuda-chain-planner):
+- capacidad utilizable = `max(VRAM libre - 1 GiB - qt_reserve, 0)`;
+- en modo numérico, allowance = `min(CUDA_EXPERT_GB solicitado, capacidad utilizable)`;
+- log explícito cuando el valor solicitado se recorta;
+- test fake-CUDA para 2 GiB libres, cap solicitado 1,5 GiB, reserva 128 MiB y trunk 64 MiB; el presupuesto de expertos esperado es 832 MiB.
+
+Commits:
+- Código: `0e9c8fec2b1fa54cba4c9af63ce65011bc8f40d8` (seguido de corrección del formato del log en `ed3839b657f5e2a5e36909f29f2870059d80c318`).
+- Test: `7c89c18bd17317d45541bc75a0075fa1a3c65a0b`.
+
+La lectura de `q36cc_take()` confirma además que la cadena selecciona un dispositivo con su primera matriz y rechaza matrices posteriores en otro dispositivo. Por eso la cadena requiere co-localización global de todas las proyecciones obligatorias y `lm_head`, no solo parejas `dnproj/dnout` colocadas por capa. El `auto_place()` actual distribuye ofertas por capacidad restante y sus reglas locales no garantizan ese invariante global. La siguiente fase debe admitir la cadena como un grupo indivisible y escoger un único dispositivo candidato.
+
+**Validación pendiente:** los commits están en GitHub, pero el test C no se ha ejecutado y no hay aún evidencia de compilación CUDA ni benchmark en la RTX 3050 sm_86. No presentar el cambio como validado en hardware.
