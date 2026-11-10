@@ -227,7 +227,7 @@ Se ha corregido en la rama [research/qwen36-cuda-chain-planner](https://github.c
 - test fake-CUDA para 2 GiB libres, cap solicitado 1,5 GiB, reserva 128 MiB y trunk 64 MiB; el presupuesto de expertos esperado es 832 MiB.
 
 Commits:
-- Código: `0e9c8fec2b1fa54cba4c9af63ce65011bc8f40d8` (seguido de corrección del formato del log en `ed3839b657f5e2a5e36909f29f2870059d80c318`).
+- Código final: `721fe4b38b5c2ab0376c5d5d401102bef6926c2b` (incluye la resta secuencial overflow-safe de margen y reserva).
 - Test: `7c89c18bd17317d45541bc75a0075fa1a3c65a0b`.
 
 La lectura de `q36cc_take()` confirma además que la cadena selecciona un dispositivo con su primera matriz y rechaza matrices posteriores en otro dispositivo. Por eso la cadena requiere co-localización global de todas las proyecciones obligatorias y `lm_head`, no solo parejas `dnproj/dnout` colocadas por capa. El `auto_place()` actual distribuye ofertas por capacidad restante y sus reglas locales no garantizan ese invariante global. La siguiente fase debe admitir la cadena como un grupo indivisible y escoger un único dispositivo candidato.
