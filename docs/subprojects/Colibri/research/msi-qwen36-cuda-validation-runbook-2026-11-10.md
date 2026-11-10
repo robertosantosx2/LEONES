@@ -46,26 +46,36 @@ OUT=$(ls -dt ~/colibri-validation-qwen36-* | head -1)
 echo "OUT=$OUT"
 ```
 
-## 3. Tests C y regresiones fake-CUDA
+## 3. Test de regresión específico: fallo parcial de setup
+
+Este test fake-CUDA fuerza que la cadena reserve el arena de parámetros y después falle al reservar el primer buffer de estado DeltaNet. Comprueba que `m->cchain` vuelve a NULL y que los bytes CUDA reservados por la cadena regresan al valor previo.
 
 ```bash
 cd ~/colibri/c
-make test-c 2>&1 | tee "$OUT/test-c.log"
+make tests/test_qwen36_cuda_chain CUDA=1 2>&1 | tee "$OUT/qwen36-chain-test-build.log"
+echo "${PIPESTATUS[0]}" > "$OUT/qwen36-chain-test-build.exit"
+./tests/test_qwen36_cuda_chain 2>&1 | tee "$OUT/qwen36-chain-test.log"
+echo "${PIPESTATUS[0]}" > "$OUT/qwen36-chain-test.exit"
+```
+
+Después ejecutar la suite C completa:
+
+```bash
+make test-c CUDA=1 2>&1 | tee "$OUT/test-c.log"
 echo "${PIPESTATUS[0]}" > "$OUT/test-c.exit"
 ```
 
-Este target construye y ejecuta la suite C del repositorio, incluidos los tests de tier Qwen3.6 registrados en el Makefile. Confirmar expresamente en el log que aparece y pasa `test_qwen36_tier_autoplace`. Si no aparece, no dar el test por cubierto.
+Confirmar expresamente que aparecen y pasan tanto `test_qwen36_cuda_chain` como `test_qwen36_tier_autoplace`. Si alguno no aparece, no darlo por cubierto.
 
 ## 4. Compilación del engine CUDA para sm_86
 
 ```bash
 cd ~/colibri/c
-make clean
 make qwen36 CUDA=1 CUDA_HOME=/usr/local/cuda-13.4 CUDA_ARCH=sm_86 2>&1 | tee "$OUT/qwen36-cuda-build.log"
 echo "${PIPESTATUS[0]}" > "$OUT/qwen36-cuda-build.exit"
 ```
 
-Si la compilación falla, conservar el log y no seguir con el runtime. Si el Makefile de la revisión exige otro nombre de variable, registrar el error y ajustar el comando de forma explícita, sin sustituir silenciosamente el target.
+El Makefile activa el backend CUDA con `CUDA=1` y usa `CUDA_ARCH=sm_86` para generar código para la RTX 3050. No ejecutar `make clean`: el build config gestiona la selección de objetos. Si falla, guardar el primer error completo y no continuar al runtime.
 
 ## 5. Runtime corto: cadena activada y control CPU/per-matrix
 
