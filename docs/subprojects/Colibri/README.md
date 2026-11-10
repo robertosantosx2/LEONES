@@ -5,6 +5,7 @@ Documentación de investigación y validación del motor Colibrì, separando res
 ## Investigación MoE / CUDA
 
 - [Auditoría de tandem.cpp y adaptación a Colibrì (2026-11-10)](research/tandem-cpp-audit-2026-11-10.md): inventario completo del snapshot, revisión del patch, algoritmos transferibles, límites del MSI y plan de integración.
+- [Runbook de validación Qwen3.6 CUDA en el MSI](research/msi-qwen36-cuda-validation-runbook-2026-11-10.md): comandos reproducibles para suite C, compilación `sm_86`, runtime corto, fallback y recogida de evidencias.
 - [Auditoría del ciclo de vida del setup CUDA Qwen3.6 (2026-11-10)](research/qwen36-chain-setup-lifecycle-audit-2026-11-10.md): hallazgo de salidas parciales, ownership y limpieza común implementada.
 - [Protocolo de validación MoE v1](research/colibri-moe-validation-protocol-v1.md): gates de colocación atómica, matriz CPU/GPU, métricas, repetibilidad y reglas de publicación.
 - [Especificación del planner atómico Qwen3.6 CUDA v1](research/qwen36-chain-placement-planner-spec-v1.md): contrato de inventario, presupuesto, selección de dispositivo, commit/rollback, telemetría y 18 casos de prueba unitaria.
