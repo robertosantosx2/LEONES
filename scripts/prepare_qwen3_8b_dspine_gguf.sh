@@ -15,6 +15,7 @@ info() { printf '[DSpine GGUF] %s\n' "$*"; }
 [[ -d "$DRAFT_DIR" ]] || die "Set QWEN3_8B_DSPINE_DIR to a local tencent/Qwen3-8B-DSpine-b16 HF snapshot"
 [[ -f "$TARGET_DIR/config.json" && -f "$DRAFT_DIR/config.json" ]] || die "Both local snapshots need config.json"
 [[ -f "$DRAFT_DIR/model.safetensors.index.json" || -n "$(find "$DRAFT_DIR" -maxdepth 1 -name '*.safetensors' -print -quit)" ]] || die "DSpine safetensors weights not found"
+[[ -f "$TARGET_DIR/model.safetensors.index.json" || -n "$(find "$TARGET_DIR" -maxdepth 1 -name '*.safetensors' -print -quit)" ]] || die "Target safetensors weights/index not found"
 
 command -v python3 >/dev/null || die "python3 is required"
 python3 - <<'PY' || die "Install the converter dependencies (at least torch, numpy and safetensors) in this Python environment"
