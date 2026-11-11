@@ -62,7 +62,7 @@ need() {
 run_logged() {
   local id="$1" log="$2"; shift 2
   say "$id: $*"
-  nice -n 5 "$@" 2>&1 | tee "$log"
+  nice -n 5 "$@" 2>&1 | tee -a "$log"
 }
 capture() {
   local id="$1" binary="$2" command_text="$3" log="$4"; shift 4
