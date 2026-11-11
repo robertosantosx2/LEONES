@@ -39,15 +39,15 @@
     {
       "id": "tandem-cpp",
       "display_name": "Tandem.cpp",
-      "repository": null,
-      "default_ref": null,
-      "source_status": "exact-upstream-or-fork-required",
+      "repository": "https://github.com/ewhacc/tandem.cpp.git",
+      "default_ref": "main",
+      "source_status": "known-upstream",
       "adapter": "openai-chat-completions",
-      "enabled": false,
+      "enabled": true,
       "model_artifacts": [
         "GGUF"
       ],
-      "notes": "Keep Tandem.cpp as a distinct engine entry. Its exact repository/fork and patchset must be supplied; do not label the llama.cpp upstream snapshot as Tandem.cpp."
+      "notes": "Independent Tandem.cpp repository. Preserve its own commit, tree hash, build metadata and patches; do not alias it to upstream llama.cpp."
     },
     {
       "id": "llama-cpp",
