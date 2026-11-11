@@ -22,6 +22,11 @@ class DSpineAuditTests(unittest.TestCase):
                 "selected_prefix_bridge.read selected_prefix_bridge.write"
                 if complete else "dflash"
             ),
+            "conversion/qwen.py": (
+                "class DFlashModel _is_dspine _modify_dspine_tensors "
+                "selected_prefix_code_bridge target_model_dir"
+                if complete else "class Qwen3Model"
+            ),
             "src/models/dflash.cpp": (
                 "dspine_codebook dspine_gate dspine_pred_gate dspine_prev dspine_read dspine_write "
                 "build_dspine_write build_dspine_lattice "
