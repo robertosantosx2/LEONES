@@ -31,21 +31,21 @@ jobs:
       - name: Vendor pinned engine source snapshots
         shell: bash
         env:
-          ENGINE_LIST: \${{ inputs.engines }}
-          REF_LIST: \${{ inputs.ref_overrides }}
+          ENGINE_LIST: ${{ inputs.engines }}
+          REF_LIST: ${{ inputs.ref_overrides }}
         run: |
           args=()
           IFS=',' read -ra engines <<< "$ENGINE_LIST"
-          for engine in "\${engines[@]}"; do
+          for engine in "${engines[@]}"; do
             engine="$(echo "$engine" | xargs)"
             [[ -n "$engine" ]] && args+=(--engine "$engine")
           done
           IFS=',' read -ra refs <<< "$REF_LIST"
-          for item in "\${refs[@]}"; do
+          for item in "${refs[@]}"; do
             item="$(echo "$item" | xargs)"
             [[ -n "$item" ]] && args+=(--ref "$item")
           done
-          python3 scripts/vendor_engines.py "\${args[@]}"
+          python3 scripts/vendor_engines.py "${args[@]}"
 
       - name: Commit source snapshots to LEONES
         run: |
