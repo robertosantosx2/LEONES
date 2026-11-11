@@ -354,7 +354,7 @@ def main():
                                 with open(prompt_file,"a",encoding="utf-8") as f:
                                     f.write(f"\n--- repetition {rep+1} ---\n{measured['text']}\n")
                             except Exception as e:
-                                measured = {"type":"measurement","status":"ERROR","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"source_commit":source_meta.get("commit") if source_meta else None,"build_binary_sha256":(build_meta or {}).get("binary",{}).get("sha256"),"profile":prof["name"],
+                                measured = {"type":"measurement","status":"ERROR","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"source_commit":source_meta.get("commit") if source_meta else None,"base_source_commit":base_source_meta.get("commit") if base_source_meta else None,"build_binary_sha256":(build_meta or {}).get("binary",{}).get("sha256"),"profile":prof["name"],
                                             "prompt_id":prompt["id"],"repetition":rep+1,"error":str(e),"timestamp":utc()}
                             measured["machine_after_request"] = machine_snapshot()
                             append_jsonl(results,measured)
