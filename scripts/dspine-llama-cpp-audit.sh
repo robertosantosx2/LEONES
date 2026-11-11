@@ -16,7 +16,7 @@ command -v cmake >/dev/null || die "cmake is required"
 command -v c++ >/dev/null || die "a C++ compiler is required"
 command -v python3 >/dev/null || die "python3 is required"
 
-rm -rf "$WORK_DIR"
+[[ ! -e "$WORK_DIR" ]] || die "Refusing to overwrite existing work directory: $WORK_DIR"
 mkdir -p "$(dirname "$WORK_DIR")"
 
 log "Fetch pinned DSpine implementation commit"
