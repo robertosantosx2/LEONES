@@ -144,9 +144,10 @@ python3 scripts/capture_engine_build.py \
 Use `rustc --version` and `cargo --version` for Rust engines; `zig version` and `nvcc --version` for TensorFold; and `cmake --version`, `c++ --version`, `nvcc --version` for llama.cpp/Tandem. For Tandem.cpp, also pass both its patch and the exact base snapshot metadata:
 
 ```bash
+TANDEM_SRC="$(python3 -c 'import json; print("third_party/engines/tandem-cpp/" + json.load(open("third_party/engines/tandem-cpp/SOURCE.json"))["source_tree"])')"
 python3 scripts/capture_engine_build.py --engine tandem-cpp \
   --binary "$HOME/build/tandem-msi/build/bin/llama-server" \
-  --build-command 'bash third_party/engines/tandem-cpp/source/<commit>/build.sh ...' \
+  --build-command "bash $TANDEM_SRC/build.sh $HOME/build/tandem-msi -DCMAKE_CUDA_ARCHITECTURES=86" \
   --build-log artifacts/engine-builds/tandem-cpp/build.log \
   --compiler 'cmake --version' --compiler 'c++ --version' --compiler 'nvcc --version' \
   --backend cuda --feature GGML_CUDA --feature sm_86 \
