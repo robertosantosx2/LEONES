@@ -2,7 +2,6 @@
   "schema_version": 1,
   "policy": {
     "source_snapshot": "Every engine source must be vendored into third_party/engines/<id>/source at an immutable commit.",
-    "git_mirror": "A full Git mirror is retained in third_party/engines/<id>/git-mirror.git so tags, branches and commit objects remain available.",
     "build_evidence": "Each benchmark run records source commit, dirty patch hash, submodule state, binary hash, build command, compiler/toolchain, effective arguments and environment (secrets redacted).",
     "license": "Preserve LICENSE, COPYING, NOTICE, PATENTS, TRADEMARKS and attribution files verbatim. Never remove upstream license notices.",
     "artifacts": "Each engine has a separate artifact format/model mapping; model and tokenizer hashes are recorded. No conversion is implicit."
