@@ -213,3 +213,31 @@ The normal service listens on `http://127.0.0.1:8080` by default. The dashboard 
 The current MSI Thin 15 has 14 GiB system RAM and 4 GiB VRAM. Project Maya documents **32 GiB system RAM as its minimum floor**, plus a fast NVMe SSD; recommended VRAM+RAM pools for the smallest listed packs start at 88 GiB. The MSI is below even the published minimum system-RAM floor. Do not download these 73–277 GB packs or attempt a runtime benchmark on this machine. The source snapshot and catalogue can be preserved in LEONES without claiming local feasibility.
 
 The `project-maya` benchmark config is deliberately disabled. Enabling it requires a suitable host, a chosen and verified model pack, model-specific binary/build provenance, and a dedicated adapter that can prepare/reload Maya's selected engine and exercise both API protocols as appropriate.
+
+
+## One-shot sequential build batch for the MSI
+
+The repository includes `scripts/build_engines_msi.sh`. Run it from any directory after updating the LEONES checkout to this branch:
+
+```bash
+cd ~/LEONES
+git pull --ff-only
+chmod +x scripts/build_engines_msi.sh
+bash scripts/build_engines_msi.sh
+```
+
+The batch is deliberately sequential and limits Cargo/CMake parallelism to two jobs by default. It builds Kinetic, TensorFold, current llama.cpp, the exact llama.cpp Tandem base, Tandem.cpp and RustingStrata. It uses the immutable vendored source trees and separate working/build directories, so compiler output does not dirty the preserved source snapshots. It continues after an individual engine fails, records a per-engine status, and exits non-zero if any build failed. CMake and Cargo build caches remain available for a rerun.
+
+Outputs:
+- Logs: `artifacts/engine-builds/<engine>/build.log`
+- Build provenance: `artifacts/engine-builds/<engine>/build.json`
+- Batch summary: `~/build/leones-engine-builds/build-batch-<UTC timestamp>.tsv`
+- Binaries/build trees: `~/build/leones-engine-builds/<engine>/`
+
+The script does not install missing toolchains, download model weights, start servers or run inference. TensorFold is skipped unless the exact Zig version in its `.zig-version` and CUDA NVCC are present. All CUDA CMake builds target `sm_86` and are capped at two jobs to reduce memory pressure. Connect the charger and leave sufficient free disk space before starting. You can interrupt with Ctrl+C; rerunning reuses the CMake/Cargo build directories, although an interrupted individual engine may need its build step repeated.
+
+**Project Maya is intentionally marked SKIPPED.** Its upstream setup flow selects a model pack, downloads large weight bundles and builds model-specific engines; it is not a source-only generic build. Do not run Maya setup on this 14 GiB MSI.
+
+### Expected duration on the MSI
+
+Planning estimate only, not a measured build time: allow **about 2–5 hours** for the six source builds on the i7-12650H, assuming the Rust/Zig/CMake/CUDA toolchains and dependencies are already installed, NVCC works, the machine is on AC power and the build cache is initially cold. Dependency downloads, compiler incompatibilities, low disk space or a retry after a failure can extend this to **5–8 hours or more**. TensorFold and the three CUDA CMake builds are the largest uncertainty. The script is sequential, so the machine will remain occupied until the batch exits; it does not run model inference and does not need the model weights.
