@@ -193,7 +193,7 @@
       "model_assets": []
     },
     {
-      "id": "rustinstrata",
+      "id": "rusting-strata",
       "enabled": false,
       "base_url": "http://127.0.0.1:{port}",
       "command": [
@@ -209,7 +209,7 @@
         "--threads",
         "{threads}"
       ],
-      "source_meta": "third_party/engines/rustinstrata/SOURCE.json",
+      "source_meta": "third_party/engines/rusting-strata/SOURCE.json",
       "protocol": "openai-chat-completions",
       "env": {},
       "health_path": "/health",
