@@ -12,6 +12,16 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 - Pithos 0.5.1 + LFM3-1.7B Q4_K_M: [comparativa CPU/Intel Vulkan/NVIDIA Vulkan y barrido PP/TG](docs/PITHOS-LFM3-1.7B-RTX3050-2026-11-07.md), con [CSV](artifacts/pithos-0.5.1-2026-11-07/benchmark-results.csv), [registro consolidado](artifacts/pithos-0.5.1-2026-11-07/benchmark-session.log) y [script reproducible](artifacts/pithos-0.5.1-2026-11-07/reproduce.sh).
 - MiniCPM5-2B Q4_K_M en RTX 3050 Laptop con llama.cpp CUDA: [informe de benchmark MEASURED y evaluación de viabilidad DSpark](docs/MINICPM5-2B-RTX3050-2026-11-11.md).
 
+## Registro extensible de motores y copias de código fuente
+
+- [Registro de motores](configs/engines.registry.json): identidad, repositorio oficial, formato de modelo y estado de cada fuente.
+- [Contrato de adaptadores](docs/ENGINE-ADAPTER-CONTRACT.md): cómo añadir motores sin modificar el núcleo del benchmark.
+- [Política de copias reproducibles](docs/ENGINE-SOURCE-VENDORING.md): snapshots completos, commit/tree SHA, submódulos, Git LFS y licencias.
+- [Vendor de fuentes](scripts/vendor_engines.py): crea `third_party/engines/<id>/source/` y `SOURCE.json`.
+- [Workflow GitHub Actions](.github/workflows/vendor-inference-engines.yml): importa las copias directamente en GitHub y las confirma en esta rama.
+
+Motores registrados: Kinetic, TensorFold, Tandem.cpp/llama.cpp y RustInstrata. Las fuentes sin URL upstream verificada quedan marcadas como pendientes; nunca se sustituye una bifurcación local por el upstream sin declararlo.
+
 ## Kinetic — auditoría y benchmark cruzado (2026-11-11)
 
 - Importación del código upstream Apache-2.0: `scripts/import_kinetic.sh` → `third_party/kinetic/` (snapshot completo; el SHA queda en `UPSTREAM_COMMIT`).
