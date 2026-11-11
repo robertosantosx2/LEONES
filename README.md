@@ -16,6 +16,7 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 
 - [Registro de motores](configs/engines.registry.json): identidad, repositorio oficial, formato de modelo y estado de cada fuente.
 - [Contrato de adaptadores](docs/ENGINE-ADAPTER-CONTRACT.md): cómo añadir motores sin modificar el núcleo del benchmark.
+- [Runbook de build y ejecución](docs/ENGINE-BUILD-RUNBOOK.md): comandos verificados de cada upstream, perfiles aplicables y último paso pendiente en el MSI.
 - [Política de copias reproducibles](docs/ENGINE-SOURCE-VENDORING.md): snapshots completos, commit/tree SHA, submódulos, Git LFS y licencias.
 - [Vendor de fuentes](scripts/vendor_engines.py): crea `third_party/engines/<id>/source/<commit>/` y `SOURCE.json` sin sobrescribir snapshots anteriores.\n- [Captura de compilación](scripts/capture_engine_build.py): registra binario, hash, comando, log, compilador, backend y entorno.
 - [Workflow GitHub Actions](.github/workflows/vendor-inference-engines.yml): importa las copias directamente en GitHub y las confirma en esta rama.
