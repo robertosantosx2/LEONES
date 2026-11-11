@@ -108,6 +108,61 @@ E-means is a centroid-optimization method for clustering related to k-means. It 
 
 Therefore, “2.5 bits” in this report is a mathematical sensitivity column, not a recommendation to download a guaranteed Q2.5 file. Selecting an artifact requires its repository, format, license, actual size, quantization metadata and runtime compatibility.
 
+## 6.1. E-means vs. K-means: implications for Qwen3.5-9B quantization
+
+This section expands the quantization comparison to prevent an incorrect conclusion: **E-means and K-means cannot be considered equivalent in quality for Qwen3.5-9B weights unless concrete quantized artifacts are generated and evaluated**.
+
+### What each method optimizes
+
+- **K-means** groups values (for example, weight blocks or vectors) around centroids and minimizes the within-cluster sum of squared distances through centroid assignment and update steps.
+- **E-means** is a centroid-optimization method related to k-means that uses *exponential moving average* (EMA)-style updates in a mini-batch scheme. Its main goal is to accelerate convergence toward a low-loss clustering solution; it does not by itself define a quantization format, bit width or weight encoding.
+
+The paper **“e-means: outperforming k-means (in one-tenth the epochs)”** reports a median 12.6× reduction in epochs to reach Lloyd K-means loss after 25 epochs, across 234 configurations and 16 datasets ranging from 100,000 to 100 million points. These results concern clustering optimization; **they are not an LLM quantization evaluation, do not measure Qwen perplexity and do not prove quality equivalence between E-means- and K-means-quantized weights**.
+
+Sources:
+- Paper: https://arxiv.org/abs/2611.09501
+- FAISS reference implementation: https://github.com/facebookresearch/faiss/tree/main/contrib/e_means
+
+### Are they equivalent in quality?
+
+There is insufficient evidence to claim that 3-bit E-means quantization matches 3-bit K-means quantization, or that fewer-bit E-means matches higher-bit K-means, on Qwen3.5-9B. Faster convergence or lower clustering loss does not by itself guarantee lower functional error in the model.
+
+Final quality depends on, among other factors:
+- which tensors are quantized and which remain at higher precision;
+- grouping by tensor, channel, group or block;
+- block size and number of centroids;
+- actual effective bits, scales, indices and metadata;
+- treatment of outliers and sensitive weights;
+- calibration, representative data and subsequent fine-tuning;
+- runtime kernel implementation and dequantization behavior.
+
+If centroid/code count, effective bits, block structure and index representation are identical, the centroid-search method **does not by itself change the theoretical memory budget**. E-means may find useful centroids in fewer iterations or improve the clustering objective, but model-quality equivalence must be measured separately.
+
+### TensorFold implications
+
+Do not assume TensorFold 1.2.3 includes E-means as a quantizer, automatically accepts artifacts produced with FAISS, or that its CUDA backend can directly execute any externally generated codebook. E-means would, in principle, be part of the weight preparation/calibration process; TensorFold would still need to recognize the resulting format and provide compatible loading and execution kernels.
+
+Before attributing support to TensorFold, verify:
+1. exported format and centroid/index storage specification;
+2. conversion of all required tensors, including embeddings and sensitive layers;
+3. TensorFold parser and backend kernels for that format;
+4. actual artifact size and peak load/inference memory;
+5. numerical accuracy and functional quality against a comparable baseline.
+
+### Recommended comparison protocol
+
+To test the hypothesis on Qwen3.5-9B, produce two artifacts from the same checkpoint with identical settings: one using K-means and one using E-means. Keep effective bits, groups, centroid count, excluded tensors, calibration and auxiliary precision identical. Compare:
+
+- weight and activation reconstruction error;
+- perplexity on a fixed evaluation set;
+- reasoning, knowledge, coding and instruction-following tasks;
+- generation stability, repetition and multimodal degradation if vision is evaluated;
+- on-disk size, resident memory, peak VRAM and speed in the same runtime.
+
+Add a second rate-distortion comparison (for example, lower-bit E-means against higher-bit K-means) only after establishing the equal-budget result. Record versions, hashes, calibration data and commands for every run.
+
+**Operational conclusion:** E-means is a promising alternative for accelerating or optimizing the clustering stage of quantization, but it is not accurate to label it “same quality as K-means” for Qwen3.5-9B. This report currently contains no E-means-quantized Qwen3.5-9B artifact validated in TensorFold and no measured comparison. Keep the status as **NOT MEASURED / NOT VERIFIED** until the protocol above is run.
+
 ## 7. Runtime compatibility: demonstrated vs. unproven
 
 ### TensorFold
