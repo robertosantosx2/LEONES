@@ -223,8 +223,7 @@ def main():
                       "gpu_layers":prof.get("gpu_layers",0),"parallel":prof.get("parallel",1),"device":prof.get("device","auto")}
             cmd = render(engine["command"], fields)
             env = os.environ.copy()
-            env.update(engine.get("env", {}))
-            env = {k: str(render(v, fields)) for k,v in env.items()}
+            env.update({k: str(render(v, fields)) for k,v in engine.get("env", {}).items()})
             if not isinstance(cmd,list) or not cmd or any("/ABS/PATH/" in x for x in cmd):
                 append_jsonl(results,{"type":"profile","engine":engine_id,"profile":prof["name"],"status":"CONFIG_REQUIRED","command":cmd,"model":str(engine_model),"model_sha256":engine_model_hash})
                 continue
