@@ -210,10 +210,16 @@ def main():
             continue
         engine_model_hash = sha256(engine_model)
         asset_records = []
+        missing_assets = []
         for asset in engine.get("model_assets", []):
             asset_path = pathlib.Path(asset).expanduser()
             if not asset_path.is_absolute(): asset_path = pathlib.Path(__file__).resolve().parents[1] / asset_path
-            asset_records.append({"path":str(asset_path),"sha256":sha256(asset_path) if asset_path.is_file() else None,"exists":asset_path.is_file()})
+            exists = asset_path.is_file()
+            asset_records.append({"path":str(asset_path),"sha256":sha256(asset_path) if exists else None,"exists":exists})
+            if not exists: missing_assets.append(str(asset_path))
+        if missing_assets:
+            append_jsonl(results,{"type":"engine","engine":engine_id,"status":"MODEL_ASSET_MISSING","missing_assets":missing_assets})
+            continue
         source_meta_path = pathlib.Path(engine.get("source_meta", "unused")) if engine.get("source_meta") else None
         source_meta = None
         if source_meta_path:
@@ -222,6 +228,11 @@ def main():
         if engine.get("require_source_snapshot", True) and not source_meta:
             append_jsonl(results,{"type":"engine","engine":engine_id,"status":"SOURCE_NOT_VENDORED","source_meta":str(source_meta_path) if source_meta_path else None})
             continue
+        if source_meta:
+            source_tree = pathlib.Path(__file__).resolve().parents[1] / "third_party" / "engines" / engine_id / source_meta.get("source_tree", "")
+            if source_meta.get("engine_id") != engine_id or not source_meta.get("commit") or not source_meta.get("git_commit_tree") or not source_tree.is_dir():
+                append_jsonl(results,{"type":"engine","engine":engine_id,"status":"SOURCE_EVIDENCE_INVALID","source_meta":str(source_meta_path),"source_tree":str(source_tree)})
+                continue
         build_meta_path = pathlib.Path(engine["build_meta"]) if engine.get("build_meta") else None
         build_meta = None
         if build_meta_path:
@@ -229,6 +240,9 @@ def main():
             if build_meta_path.is_file(): build_meta = json.loads(build_meta_path.read_text())
         if engine.get("require_build_evidence", True) and not build_meta:
             append_jsonl(results,{"type":"engine","engine":engine_id,"status":"BUILD_EVIDENCE_REQUIRED","build_meta":str(build_meta_path) if build_meta_path else None})
+            continue
+        if build_meta and (build_meta.get("engine_id") != engine_id or not build_meta.get("binary", {}).get("sha256")):
+            append_jsonl(results,{"type":"engine","engine":engine_id,"status":"BUILD_EVIDENCE_INVALID","build_meta":str(build_meta_path)})
             continue
         engine_summary = {"id":engine_id,"model_assets":asset_records,"profiles":[]}
         summary["engines"].append(engine_summary)
@@ -243,6 +257,13 @@ def main():
             if not isinstance(cmd,list) or not cmd or any("/ABS/PATH/" in x for x in cmd):
                 append_jsonl(results,{"type":"profile","engine":engine_id,"profile":prof["name"],"status":"CONFIG_REQUIRED","command":cmd,"model":str(engine_model),"model_sha256":engine_model_hash})
                 continue
+            executable = shutil.which(cmd[0]) if not pathlib.Path(cmd[0]).is_absolute() else cmd[0]
+            if build_meta:
+                runtime_hash = sha256(executable) if executable and pathlib.Path(executable).is_file() else None
+                expected_hash = build_meta["binary"]["sha256"]
+                if runtime_hash != expected_hash:
+                    append_jsonl(results,{"type":"profile","engine":engine_id,"profile":prof["name"],"status":"BUILD_BINARY_MISMATCH","command":cmd,"runtime_binary":executable,"runtime_sha256":runtime_hash,"build_evidence_sha256":expected_hash})
+                    continue
             base = render(engine["base_url"],fields)
             engdir = out/"engines"/engine_id; engdir.mkdir(parents=True,exist_ok=True)
             stdout_path, stderr_path = engdir/(prof["name"]+".stdout.log"), engdir/(prof["name"]+".stderr.log")
