@@ -13,10 +13,11 @@ Motores: Kinetic, TensorFold 1.2.3, Tandem.cpp (llama.cpp con configuración CPU
 ## 2. Modelo y comparabilidad
 
 Primera matriz recomendada:
-- Modelo principal: Qwen3.5-4B Q4_K_M, mismo fichero GGUF y SHA-256 para todos los motores que lo soporten.
-- Modelo secundario opcional: MiniCPM5-2B Q4_K_M, solo cuando se confirme soporte de arquitectura en los cuatro.
-- No convertir ni volver a cuantizar entre motores.
-- Un modelo no soportado se registra como UNSUPPORTED; no se sustituuye silenciosamente.
+- Modelo principal: misma familia y checkpoint Qwen3.5-4B. Kinetic y Tandem.cpp pueden usar el mismo GGUF+SHA-256; TensorFold puede requerir su artefacto MLX/EXL3 propio y RustInstrata puede tener otro formato. El harness permite un `model` distinto por motor.
+- Modelo secundario opcional: MiniCPM5-2B, solo cuando se confirme soporte de arquitectura en cada motor.
+- No convertir ni volver a cuantizar silenciosamente. Si los motores no aceptan el mismo fichero, registrar checkpoint de origen, formato, cuantización y hash individual. Esa ronda se etiqueta **COMPARACIÓN DE CHECKPOINT / CUANTIZACIONES EQUIVALENTES**, no comparación bit-a-bit.
+- Un modelo no soportado se registra como UNSUPPORTED; no se sustituye silenciosamente.
+- Solo se hará ranking directo estricto cuando el artefacto, tokenizer, plantilla de chat, contexto y cuantización sean realmente comparables.
 - Fijar contexto 512 y 1024 inicialmente; ampliar solo después de validar estabilidad.
 - Perfiles GPU: CUDA con 0/8 capas solo cuando el motor exponga el parámetro equivalente; backend real debe quedar registrado.
 - CPU: 4 y 8 hilos; GPU: mismo número de hilos host cuando sea configurable.
@@ -95,7 +96,7 @@ Directorio `artifacts/engine-comparison/<timestamp>/`:
 - `responses/<engine>/<profile>/<prompt>.txt`.
 - `machine/<engine>/<profile>/{before,during,after}.json`.
 
-El script genera estos ficheros automáticamente. Mantener los artefactos de cada sesión inmutables y enlazarlos desde el informe LEONES.
+El script genera estos ficheros automáticamente. El manifiesto y cada evento deben conservar el SHA-256 individual del artefacto usado por cada motor; nunca asumir que todos cargaron el mismo fichero. Mantener los artefactos de cada sesión inmutables y enlazarlos desde el informe LEONES.
 
 ## 9. Ejecución
 
