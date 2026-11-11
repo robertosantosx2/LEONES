@@ -1,6 +1,6 @@
 # DSpine en llama.cpp — auditoría y validación
 
-**Estado:** integración estática encontrada en el fork; pendiente build reproducible y ejecución física.  
+**Estado:** integración estática confirmada; build CPU y auditoría CI superados; pendiente verificación del GGUF Qwen3.8-27B y ejecución física.  
 **Rama LEONES:** `research/dspine-llama-cpp`.
 
 ## Fuentes primarias
@@ -88,9 +88,9 @@ Ejemplo de referencia publicado (solo para reproducir el perfil de 24 GiB, no pa
 
 Perfil LEONES: i7-12650H, RTX 3050 Laptop 4 GiB (SM 8.6), 14 GiB RAM, Ubuntu.
 
-- La pareja Qwen3.8-27B no es una candidata razonable para 4 GiB VRAM y 14 GiB RAM.
+- El target Qwen3.8-27B en Q4_K_M no es viable en el MSI. La cuantización IQ2_XXS de 8.88 GB + drafter Q4_K_M de 1.26 GB es un candidato experimental para offload híbrido y contexto 512; su calidad es reducida y la viabilidad de memoria/rendimiento aún no está demostrada.
 - La pareja Qwen3-8B no es compatible con la variante serial_table del fork. El único par con GGUF y contrato compatible confirmado es Qwen3.8-27B; para el MSI se evaluará únicamente con target IQ2_XXS y contexto corto, sin garantía de rendimiento.
-- El fork tiene una build CPU y CUDA, pero la compilación CPU no demuestra que la ruta CUDA ni la pareja de modelos funcionen.
+- El fork ya compiló en CPU en GitHub Actions; esto no demuestra que la ruta CUDA SM86 ni la pareja de modelos funcionen.
 - LEONES incluye `scripts/dspine-msi-preflight.sh`, un inventario de solo lectura que no descarga, compila ni carga modelos.
 - No descargar ni ejecutar todavía. Primero ejecutar CI y el preflight, revisar el footprint real de los ficheros elegidos y decidir offload por separado para target y drafter.
 - La validación MSI deberá ser aislada, con build en directorio separado, modelo/contexto pequeño, límites de memoria, rollback y medición frente a baseline sin speculative.
@@ -107,8 +107,8 @@ No marcar la funcionalidad como validada por el mero hecho de compilar el fork.
 ## Fases
 
 1. **Completada:** inspección de tensores, loader, code bridge, lattice y dispatch especulativo.
-2. **En curso:** auditor estático automatizado y pruebas unitarias en LEONES.
+2. **Completada:** auditor estático automatizado (7/7 checks) y pruebas unitarias en LEONES.
 3. **Completada:** build CPU del fork en GitHub Actions, run `42989628662` (GCC 13.3.0, llama.cpp 0.9.0-dev); pendiente build CUDA/SM86 en el MSI.
 4. **Completada:** identificar incompatibilidad del checkpoint Qwen3-8B y sustituir la conversión por verificación del drafter Qwen3.8-27B GGUF compatible.
-5. **Pendiente:** gate de memoria y comandos reproducibles.
+5. **En curso:** verificación CI del drafter GGUF compatible y gate de memoria; comandos reproducibles preparados.
 6. **Pendiente:** ejecución física y benchmark en MSI.
