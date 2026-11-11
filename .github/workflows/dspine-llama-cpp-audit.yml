@@ -85,6 +85,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: qwen3-8b-dspine-b16-bf16-gguf
-          path: ${{ runner.temp }}/Qwen3-8B-DSpine-b16-BF16.gguf
+          path: |
+            ${{ runner.temp }}/Qwen3-8B-DSpine-b16-BF16.gguf
+            ${{ runner.temp }}/Qwen3-8B-DSpine-b16-BF16.gguf.sha256
           if-no-files-found: error
           retention-days: 14
