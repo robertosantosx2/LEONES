@@ -115,15 +115,16 @@
         "{port}",
         "--device",
         "{device}",
-        "--gpu-layers",
+        "-ngl",
         "{gpu_layers}",
-        "--threads",
+        "-t",
         "{threads}",
         "-c",
         "{ctx}",
         "--parallel",
         "{parallel}",
-        "--no-prompt-cache"
+        "--off",
+        "warm-start"
       ],
       "source_meta": "third_party/engines/kinetic/SOURCE.json",
       "protocol": "openai-chat-completions",
@@ -142,14 +143,18 @@
       "command": [
         "/ABS/PATH/TO/tensorfold-native",
         "serve",
-        "--model",
         "{model}",
         "--host",
         "127.0.0.1",
         "--port",
         "{port}",
         "--context",
-        "{ctx}"
+        "{ctx}",
+        "--parallel",
+        "1",
+        "--temperature",
+        "0",
+        "--no-thinking"
       ],
       "source_meta": "third_party/engines/tensorfold/SOURCE.json",
       "protocol": "openai-chat-completions",
@@ -159,7 +164,12 @@
       "require_source_snapshot": true,
       "require_build_evidence": true,
       "build_meta": "artifacts/engine-builds/tensorfold/build.json",
-      "model_assets": []
+      "model_assets": [],
+      "model": "/ABS/PATH/TO/qualified-TensorFold-checkpoint",
+      "profiles": [
+        "ctx512-cuda8"
+      ],
+      "notes": "TensorFold native CUDA product build for sm_86. Serve accepts the model path positionally. Use a qualified local checkpoint directory/HF cache; do not pass a GGUF path unless the chosen TensorFold family explicitly supports it."
     },
     {
       "id": "tandem-cpp",
@@ -192,24 +202,31 @@
       "require_build_evidence": true,
       "build_meta": "artifacts/engine-builds/tandem-cpp/build.json",
       "model_assets": [],
-      "notes": "Tandem patch build. The upstream README recommends --cache-ram 0 for a 16 GB PC; leave -lm none out when the model exceeds physical RAM. Build against the separately vendored f5222f25c18da062ab2b8a2dbbfbf4feae398566 baseline."
+      "notes": "Tandem patch build. The upstream README recommends --cache-ram 0 for a 16 GB PC; leave -lm none out when the model exceeds physical RAM. Build against the separately vendored f5222f25c18da062ab2b8a2dbbfbf4feae398566 baseline.",
+      "profiles": [
+        "ctx512-cuda8"
+      ]
     },
     {
       "id": "rusting-strata",
       "enabled": false,
       "base_url": "http://127.0.0.1:{port}",
       "command": [
-        "/ABS/PATH/TO/rustinstrata-server",
+        "/ABS/PATH/TO/rustingstrata",
+        "serve",
         "--model",
         "{model}",
-        "--host",
-        "127.0.0.1",
-        "--port",
-        "{port}",
-        "--context",
+        "--gpu",
+        "--backend",
+        "cuda",
+        "--ctx",
         "{ctx}",
+        "--addr",
+        "127.0.0.1:{port}",
         "--threads",
-        "{threads}"
+        "{threads}",
+        "--parallel",
+        "1"
       ],
       "source_meta": "third_party/engines/rusting-strata/SOURCE.json",
       "protocol": "openai-chat-completions",
@@ -219,7 +236,10 @@
       "require_source_snapshot": true,
       "require_build_evidence": true,
       "build_meta": "artifacts/engine-builds/rustinstrata/build.json",
-      "model_assets": []
+      "model_assets": [],
+      "profiles": [
+        "ctx512-cuda8"
+      ]
     },
     {
       "id": "llama-cpp",
@@ -235,8 +255,10 @@
         "{ctx}",
         "-t",
         "{threads}",
+        "-ngl",
+        "{gpu_layers}",
         "-np",
-        "1"
+        "{parallel}"
       ],
       "source_meta": "third_party/engines/llama-cpp/SOURCE.json",
       "protocol": "openai-chat-completions",
@@ -247,7 +269,10 @@
       "require_build_evidence": true,
       "build_meta": "artifacts/engine-builds/llama-cpp/build.json",
       "model_assets": [],
-      "notes": "Latest upstream master; separate from Tandem.cpp's pinned base revision."
+      "notes": "Latest upstream master; separate from Tandem.cpp's pinned base revision.",
+      "profiles": [
+        "ctx512-cuda8"
+      ]
     },
     {
       "id": "llama-cpp-tandem-base",
@@ -263,8 +288,10 @@
         "{ctx}",
         "-t",
         "{threads}",
+        "-ngl",
+        "{gpu_layers}",
         "-np",
-        "1"
+        "{parallel}"
       ],
       "source_meta": "third_party/engines/llama-cpp-tandem-base/SOURCE.json",
       "protocol": "openai-chat-completions",
@@ -274,7 +301,10 @@
       "require_source_snapshot": true,
       "require_build_evidence": true,
       "build_meta": "artifacts/engine-builds/llama-cpp-tandem-base/build.json",
-      "model_assets": []
+      "model_assets": [],
+      "profiles": [
+        "ctx512-cuda8"
+      ]
     }
   ]
 }
