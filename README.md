@@ -24,7 +24,7 @@ Motores registrados: Kinetic, TensorFold, Tandem.cpp/llama.cpp y RustInstrata. L
 
 ## Kinetic — auditoría y benchmark cruzado (2026-11-11)
 
-- Importación del código upstream Apache-2.0: `scripts/import_kinetic.sh` → `third_party/kinetic/` (snapshot completo; el SHA queda en `UPSTREAM_COMMIT`).
+- Copia del código upstream Apache-2.0: `scripts/import_kinetic.sh` (compatibilidad) o `scripts/vendor_engines.py --engine kinetic` → `third_party/engines/kinetic/source/<commit>/`; el SHA y el árbol quedan registrados en `SOURCE.json`.
 - [Auditoría estática preliminar](docs/KINETIC-SOURCE-AUDIT-2026-11-11.md).
 - [Plan de benchmark Kinetic / TensorFold / Tandem.cpp / RustInstrata](docs/KINETIC-CROSS-ENGINE-BENCHMARK-PLAN-2026-11-11.md).
 - [Harness serial con control de recuperación de recursos](scripts/engine_comparison.py).
