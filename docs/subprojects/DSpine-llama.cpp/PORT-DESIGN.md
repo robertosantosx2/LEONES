@@ -68,7 +68,7 @@ Usar mismo modelo objetivo, prompt, contexto, sampler, seed y backend para basel
 
 El checkpoint GGUF comunitario publicado es Qwen3.8-27B DSpine y su target obligatorio es Qwen3.8-27B. No se debe intentar en el MSI de 4 GiB VRAM.
 
-La pareja oficial más pequeña es Qwen3-8B + Qwen3-8B-DSpine-b16 (drafter de 1.2378B parámetros). Antes de probarla en el MSI debe existir un GGUF convertido y validado para el drafter, y una cuantización GGUF del target cuya suma de pesos, KV, buffers y workspace quepa en el presupuesto real. No asumir que un drafter de 1.24B cabe gratis.
+La pareja oficial más pequeña es Qwen3-8B + Qwen3-8B-DSpine-b16 (drafter de 1.2378B parámetros). El fork incluye conversión HF→GGUF mediante `conversion/qwen.py`, clase `DFlashModel`, con `--target-model-dir`; se debe ejecutar en una máquina de desarrollo con memoria suficiente y verificar el resultado antes de llevarlo al MSI. Después hace falta una cuantización GGUF del target cuya suma de pesos, KV, buffers y workspace quepa en el presupuesto real. No asumir que un drafter de 1.24B cabe gratis.
 
 ## Criterio de habilitación MSI
 
