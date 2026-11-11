@@ -263,6 +263,14 @@ def main():
             if source_meta.get("engine_id") != engine_id or not source_meta.get("commit") or not source_meta.get("git_commit_tree") or not source_tree.is_dir():
                 append_jsonl(results,{"type":"engine","engine":engine_id,"status":"SOURCE_EVIDENCE_INVALID","source_meta":str(source_meta_path),"source_tree":str(source_tree)})
                 continue
+        base_source_meta_path = pathlib.Path(engine["base_source_meta"]) if engine.get("base_source_meta") else None
+        base_source_meta = None
+        if base_source_meta_path:
+            if not base_source_meta_path.is_absolute(): base_source_meta_path = pathlib.Path(__file__).resolve().parents[1] / base_source_meta_path
+            if base_source_meta_path.is_file(): base_source_meta = json.loads(base_source_meta_path.read_text())
+            if not base_source_meta:
+                append_jsonl(results,{"type":"engine","engine":engine_id,"status":"BASE_SOURCE_NOT_VENDORED","base_source_meta":str(base_source_meta_path)})
+                continue
         build_meta_path = pathlib.Path(engine["build_meta"]) if engine.get("build_meta") else None
         build_meta = None
         if build_meta_path:
@@ -277,9 +285,15 @@ def main():
         if build_meta and source_meta and (build_meta.get("source") or {}).get("commit") != source_meta.get("commit"):
             append_jsonl(results,{"type":"engine","engine":engine_id,"status":"BUILD_SOURCE_MISMATCH","build_meta":str(build_meta_path),"vendored_commit":source_meta.get("commit"),"built_commit":(build_meta.get("source") or {}).get("commit")})
             continue
+        if engine.get("require_patch_evidence") and not (build_meta or {}).get("build", {}).get("patches"):
+            append_jsonl(results,{"type":"engine","engine":engine_id,"status":"PATCH_EVIDENCE_REQUIRED","build_meta":str(build_meta_path)})
+            continue
+        if base_source_meta and (build_meta or {}).get("base_source", {}).get("commit") != base_source_meta.get("commit"):
+            append_jsonl(results,{"type":"engine","engine":engine_id,"status":"BUILD_BASE_SOURCE_MISMATCH","build_meta":str(build_meta_path),"vendored_base_commit":base_source_meta.get("commit"),"built_base_commit":(build_meta or {}).get("base_source", {}).get("commit")})
+            continue
         allowed_profiles = engine.get("profiles")
         skipped_profiles = [p["name"] for p in cfg["profiles"] if allowed_profiles and p["name"] not in allowed_profiles]
-        engine_summary = {"id":engine_id,"model_path":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"model_assets":asset_records,"profiles":[],"skipped_profiles":skipped_profiles}
+        engine_summary = {"id":engine_id,"model_path":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"model_assets":asset_records,"source":source_meta,"base_source":base_source_meta,"profiles":[],"skipped_profiles":skipped_profiles}
         summary["engines"].append(engine_summary)
         for profile in cfg["profiles"]:
             prof = dict(profile)
@@ -333,7 +347,7 @@ def main():
                             try:
                                 measured = stream_request(base,engine.get("chat_path", cfg["api"]["chat_path"]),engine.get("api_key", cfg["api"].get("api_key")),
                                                           prompt["messages"],settings,cfg["api"]["request_timeout_s"])
-                                measured.update({"type":"measurement","status":"OK","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"source_commit":source_meta.get("commit") if source_meta else None,"build_binary_sha256":(build_meta or {}).get("binary",{}).get("sha256"),"model_assets":asset_records,"profile":prof["name"],
+                                measured.update({"type":"measurement","status":"OK","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"source_commit":source_meta.get("commit") if source_meta else None,"base_source_commit":base_source_meta.get("commit") if base_source_meta else None,"build_binary_sha256":(build_meta or {}).get("binary",{}).get("sha256"),"model_assets":asset_records,"profile":prof["name"],
                                                  "prompt_id":prompt["id"],"repetition":rep+1,"settings":settings,
                                                  "load_s":load_s,"process_rss_bytes":process_tree_rss(proc.pid),
                                                  "elapsed_s":time.perf_counter()-t0,"timestamp":utc()})
@@ -359,7 +373,7 @@ def main():
                 (out/"machine"/engine_id/(prof["name"]+".settled.json")).write_text(json.dumps(settled,indent=2)+"\n")
             binary_path = shutil.which(cmd[0]) if cmd and not pathlib.Path(cmd[0]).is_absolute() else (cmd[0] if cmd else None)
             binary_hash = sha256(binary_path) if binary_path and pathlib.Path(binary_path).is_file() else None
-            prof_result = {"name":prof["name"],"status":engine_status,"command":cmd,"base_url":base,"binary_path":binary_path,"binary_sha256":binary_hash,"source":source_meta,"build_evidence":build_meta,"model_path":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"model_assets":asset_records,"environment":{k:("<redacted>" if SENSITIVE_ENV.search(k) else v) for k,v in env.items() if k in ("PATH","LD_LIBRARY_PATH","CC","CXX") or k.startswith(("CUDA","HIP","TENSORFOLD","LLAMA","TF_","RUST","CMAKE"))},
+            prof_result = {"name":prof["name"],"status":engine_status,"command":cmd,"base_url":base,"binary_path":binary_path,"binary_sha256":binary_hash,"source":source_meta,"base_source":base_source_meta,"build_evidence":build_meta,"model_path":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"model_assets":asset_records,"environment":{k:("<redacted>" if SENSITIVE_ENV.search(k) else v) for k,v in env.items() if k in ("PATH","LD_LIBRARY_PATH","CC","CXX") or k.startswith(("CUDA","HIP","TENSORFOLD","LLAMA","TF_","RUST","CMAKE"))},
                            "load_s":locals().get("load_s"),"stop":stop,"post_unload_recovered":recovered,
                            "machine_before":before,"machine_after":after}
             engine_summary["profiles"].append(prof_result)
