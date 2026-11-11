@@ -88,6 +88,26 @@
         "GGUF"
       ],
       "notes": "Exact upstream base commit declared by ewhacc/tandem.cpp BASE_COMMIT; use this snapshot to build an apples-to-apples unpatched baseline for Tandem.cpp."
+    },
+    {
+      "id": "project-maya",
+      "display_name": "Project Maya",
+      "repository": "https://github.com/mw00/project-maya.git",
+      "default_ref": "a3582528bfb73175fed1757b485bfcaaf01aaeaa",
+      "source_status": "known-upstream-pinned",
+      "adapter": "openai-chat-completions",
+      "enabled": false,
+      "model_artifacts": [
+        "GGUF",
+        "EXL3"
+      ],
+      "supported_models": [
+        "glm-5.3-744b",
+        "glm-5.3-flash-321b",
+        "deepseek-v4.1-flash-748b",
+        "minimax-m3.1-flash-428b"
+      ],
+      "notes": "Model-specific engine family with OpenAI-compatible /v1/chat/completions and Anthropic-compatible /v1/messages APIs, dashboard and telemetry. Keep disabled until model selection/setup, multi-engine build provenance and API smoke tests are implemented. Project code is MIT; model weights have separate licenses. Upstream's minimum floor is 32 GiB system RAM and fast NVMe; the user's MSI has 14 GiB RAM and is below the documented floor."
     }
   ]
 }
