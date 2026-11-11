@@ -38,27 +38,42 @@
     },
     {
       "id": "tandem-cpp",
-      "display_name": "Tandem.cpp (llama.cpp-based runtime)",
-      "repository": "https://github.com/ggerganov/llama.cpp.git",
-      "default_ref": "master",
-      "source_status": "upstream-base-known-local-fork-unresolved",
+      "display_name": "Tandem.cpp",
+      "repository": null,
+      "default_ref": null,
+      "source_status": "exact-upstream-or-fork-required",
       "adapter": "openai-chat-completions",
       "enabled": false,
       "model_artifacts": [
         "GGUF"
       ],
-      "notes": "If Tandem.cpp is a local fork/patchset, configure repository URL and commit to that fork instead of upstream llama.cpp; do not substitute upstream silently."
+      "notes": "Keep Tandem.cpp as a distinct engine entry. Its exact repository/fork and patchset must be supplied; do not label the llama.cpp upstream snapshot as Tandem.cpp."
     },
     {
-      "id": "rustinstrata",
-      "display_name": "RustInstrata",
-      "repository": null,
-      "default_ref": null,
-      "source_status": "source-location-required",
+      "id": "llama-cpp",
+      "display_name": "llama.cpp",
+      "repository": "https://github.com/ggml-org/llama.cpp.git",
+      "default_ref": "master",
+      "source_status": "known-upstream",
+      "adapter": "openai-chat-completions",
+      "enabled": true,
+      "model_artifacts": [
+        "GGUF"
+      ],
+      "notes": "Independent upstream runtime entry and source snapshot. Do not conflate with Tandem.cpp; record any downstream patches separately."
+    },
+    {
+      "id": "rusting-strata",
+      "display_name": "RustingStrata",
+      "repository": "https://github.com/RustingStudio/RustingStrata.git",
+      "default_ref": "main",
+      "source_status": "known-upstream",
       "adapter": "openai-chat-completions",
       "enabled": false,
-      "model_artifacts": [],
-      "notes": "No authoritative GitHub repository URL identified. Add the exact repository URL/ref before vendoring; do not guess."
+      "model_artifacts": [
+        "GGUF"
+      ],
+      "notes": "Pure-Rust Qwen GGUF engine. CUDA/NVRTC and Vulkan backends, hybrid CPU/GPU MoE experts, MTP and OpenAI-compatible serving. Validate current release capabilities and license before build/run; no performance claim is assumed for LEONES hardware."
     }
   ]
 }
