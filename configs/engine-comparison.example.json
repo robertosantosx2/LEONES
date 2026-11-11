@@ -310,6 +310,28 @@
       "profiles": [
         "ctx512-cuda8"
       ]
+    },
+    {
+      "id": "project-maya",
+      "enabled": false,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "./maya.sh",
+        "--port",
+        "{port}"
+      ],
+      "source_meta": "third_party/engines/project-maya/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/project-maya/build.json",
+      "model_assets": [],
+      "model": "/ABS/PATH/TO/project-maya-selected-model-artifact",
+      "profiles": [],
+      "notes": "Preparation-only adapter stub. Select/setup one Maya model separately before use; the current generic runner does not yet orchestrate Maya's model-specific engines or multi-binary build evidence. Disabled deliberately."
     }
   ]
 }
