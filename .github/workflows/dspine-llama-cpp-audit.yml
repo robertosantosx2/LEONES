@@ -2,6 +2,15 @@ name: DSpine llama.cpp audit
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/dspine-llama-cpp-audit.sh"
+      - "scripts/audit_dspine_llama_cpp.py"
+      - "tests/test_audit_dspine_llama_cpp.py"
+      - "docs/subprojects/DSpine-llama.cpp/**"
+      - ".github/workflows/dspine-llama-cpp-audit.yml"
   push:
     branches:
       - research/dspine-llama-cpp
