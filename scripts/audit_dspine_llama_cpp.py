@@ -27,12 +27,19 @@ def audit(root: Path) -> dict:
     enum_text = common_h.read_text(encoding="utf-8", errors="replace")
     impl_text = speculative_cpp.read_text(encoding="utf-8", errors="replace")
 
+    source_files = list(root.rglob("*.cpp")) + list(root.rglob("*.h")) + list(root.rglob("*.cu")) + list(root.rglob("*.cuh"))
+    bridge_support = any(
+        "selected_prefix_bridge" in p.read_text(encoding="utf-8", errors="replace")
+        or "DSpineCodeBridge" in p.read_text(encoding="utf-8", errors="replace")
+        for p in source_files
+    )
     checks = {
         "algorithm_enum": bool(re.search(r"COMMON_SPECULATIVE_TYPE_DSPINE", enum_text)),
         "algorithm_name": bool(re.search(r'\{\s*"draft-dspine"\s*,', impl_text)),
         "runtime_implementation": bool(
             re.search(r"common_speculative_impl_draft_dspine", impl_text)
         ),
+        "code_bridge_support": bridge_support,
     }
     implemented = all(checks.values())
     return {
