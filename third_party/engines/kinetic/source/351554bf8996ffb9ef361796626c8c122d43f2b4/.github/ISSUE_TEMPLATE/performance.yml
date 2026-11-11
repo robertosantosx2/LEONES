@@ -1,0 +1,63 @@
+name: Performance
+description: Kinetic is slower than expected, or slower than llama.cpp on the same file.
+labels: ["performance"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Numbers make this actionable. The
+        [benchmarks page](https://veloresearch.github.io/kinetic/benchmarks.html) explains how to
+        measure both engines the same way.
+  - type: textarea
+    id: bench
+    attributes:
+      label: Output of `kinetic bench <model>`
+      description: Add `--device cpu` or `--device cuda` to say which you measured, and `-t` if you set threads.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: llama
+    attributes:
+      label: llama.cpp on the same file (if you compared)
+      description: The `llama-bench` command and its output, and the llama.cpp build number.
+      render: text
+  - type: textarea
+    id: command
+    attributes:
+      label: Command or workload
+      description: If the slow case is not `kinetic bench`, what you ran or sent to the server.
+      render: shell
+  - type: textarea
+    id: info
+    attributes:
+      label: Output of `kinetic info <model>`
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Kinetic version
+      placeholder: kinetic 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      description: CPU model, RAM, and GPU with its memory and driver version.
+      placeholder: Core i7-12700H, 32 GB; RTX 3070 Laptop 8 GB, driver 566.36
+    validations:
+      required: true
+  - type: textarea
+    id: load
+    attributes:
+      label: Anything else running
+      description: Other programs using the CPU or GPU at the time (games, browsers, a second model) change results a lot.

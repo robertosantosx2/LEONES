@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-11T07:16:17.610924+00:00",
+  "engines": [
+    {
+      "id": "kinetic",
+      "status": "VENDORED",
+      "commit": "351554bf8996ffb9ef361796626c8c122d43f2b4",
+      "path": "third_party/engines/kinetic"
+    },
+    {
+      "id": "tensorfold",
+      "status": "VENDORED",
+      "commit": "3adaf786857e851d665f17b955c9768f5dda80d0",
+      "path": "third_party/engines/tensorfold"
+    },
+    {
+      "id": "llama-cpp",
+      "status": "VENDORED",
+      "commit": "f3b407ca1bfeeecebf9e9ef19fcd6eed565bd70a",
+      "path": "third_party/engines/llama-cpp"
+    },
+    {
+      "id": "rusting-strata",
+      "status": "VENDORED",
+      "commit": "e1c2d6e1722a33ca75da9757761c9df6246cba60",
+      "path": "third_party/engines/rusting-strata"
+    }
+  ]
+}

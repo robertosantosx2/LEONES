@@ -1,0 +1,22 @@
+{
+ "Engine advanced": "Avanzado del motor",
+ "Variables passed to the built-in engine": "Variables para el motor integrado",
+ "Engine variables": "Variables del motor",
+ "Environment variables passed to the built-in TensorFold engine process. Use these to raise a model load limit or adjust engine behaviour without leaving the app.": "Variables de entorno que se pasan al proceso del motor integrado de TensorFold. Úsalas para aumentar el límite de carga de un modelo o ajustar el comportamiento del motor sin salir de la aplicación.",
+ "Current app-side load limit:": "Límite de carga actual de la aplicación:",
+ "{value0} is managed by TensorFold or the system.": "{value0} lo gestiona TensorFold o el sistema y no puede configurarse aquí.",
+ "No variables set. The engine runs with its defaults.": "No hay variables definidas. El motor se ejecuta con sus valores predeterminados.",
+ "Add variable": "Añadir variable",
+ "Each variable can appear only once.": "Cada variable solo puede aparecer una vez.",
+ "Common variables": "Variables comunes",
+ "Saved values reach each engine process at its next launch; the loaded model keeps the values it started with until it reloads.": "Los valores guardados llegan a cada proceso del motor en su próximo inicio; el modelo cargado conserva los valores con los que se inició hasta que se recargue.",
+ "Saved values take effect the next time a model loads.": "Los valores guardados surtirán efecto la próxima vez que se cargue un modelo.",
+ "A load limit above the 70% default leaves less memory for everything else on this Mac. Raise it only when the engine reported that the model just barely did not fit.": "Un límite de carga superior al 70 % predeterminado deja menos memoria para todo lo demás en este Mac. Auméntalo solo si el motor indicó que el modelo apenas no cabía.",
+ "GB cap for loading GLM-5.3, replacing the 70% of RAM limit. Also raises the app-side memory check.": "Límite en GB para cargar GLM-5.3, en lugar del límite del 70 % de la RAM. También eleva la comprobación de memoria de la aplicación.",
+ "GB cap for loading Flash Next models, replacing the 70% of RAM limit. Also raises the app-side memory check.": "Límite en GB para cargar modelos Flash Next, en lugar del límite del 70 % de la RAM. También eleva la comprobación de memoria de la aplicación.",
+ "Set 1 to keep the engine off the network; model downloads need the connection back on.": "Pon 1 para mantener el motor sin conexión; las descargas de modelos necesitarán reconectar.",
+ "Where Hugging Face caches downloads. TensorFold keeps its own model folders in Settings → Model folders.": "Dónde guarda Hugging Face las descargas. TensorFold mantiene sus propias carpetas de modelos en Ajustes → Carpetas de modelos.",
+ "Engine knob: append per-request records to a file for diagnostics.": "Parámetro del motor: añade registros por solicitud a un archivo para diagnóstico.",
+ "Set 1 to hide the engine live text display in its terminal; the served model is unchanged.": "Pon 1 para ocultar la muestra de texto en vivo del motor en su terminal; el modelo servido no cambia.",
+ "Engine knob: mix a salt into request seeds.": "Parámetro del motor: mezcla una sal en las semillas de las solicitudes."
+}

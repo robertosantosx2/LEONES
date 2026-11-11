@@ -1,0 +1,957 @@
+{
+ "plain_system": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "Be brief."
+   },
+   {
+    "role": "user",
+    "content": "Hi"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  }
+ },
+ "multi_turn": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "Hi"
+   },
+   {
+    "role": "assistant",
+    "content": "Hello! How can I help?"
+   },
+   {
+    "role": "user",
+    "content": "Tell me a joke."
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  }
+ },
+ "tools_system": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "Be brief."
+   },
+   {
+    "role": "user",
+    "content": "What is the weather and the time in Paris?"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "get_weather",
+     "description": "Current weather for a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string",
+        "description": "City name"
+       },
+       "unit": {
+        "type": "string",
+        "enum": [
+         "c",
+         "f"
+        ]
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   },
+   {
+    "type": "function",
+    "function": {
+     "name": "get_time",
+     "description": "Local time in a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "tools_no_system": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "What is the weather and the time in Paris?"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "get_weather",
+     "description": "Current weather for a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string",
+        "description": "City name"
+       },
+       "unit": {
+        "type": "string",
+        "enum": [
+         "c",
+         "f"
+        ]
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   },
+   {
+    "type": "function",
+    "function": {
+     "name": "get_time",
+     "description": "Local time in a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "two_tool_flow": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "Be brief."
+   },
+   {
+    "role": "user",
+    "content": "What is the weather and the time in Paris?"
+   },
+   {
+    "role": "assistant",
+    "content": "",
+    "tool_calls": [
+     {
+      "id": "call_0",
+      "type": "function",
+      "function": {
+       "name": "get_weather",
+       "arguments": "{\"city\": \"Paris\"}"
+      }
+     },
+     {
+      "id": "call_1",
+      "type": "function",
+      "function": {
+       "name": "get_time",
+       "arguments": "{\"city\": \"Paris\"}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_0",
+    "content": "{\"temp\": 21, \"sky\": \"clear\"}"
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_1",
+    "content": "14:05"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "get_weather",
+     "description": "Current weather for a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string",
+        "description": "City name"
+       },
+       "unit": {
+        "type": "string",
+        "enum": [
+         "c",
+         "f"
+        ]
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   },
+   {
+    "type": "function",
+    "function": {
+     "name": "get_time",
+     "description": "Local time in a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "final_answer": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "Be brief."
+   },
+   {
+    "role": "user",
+    "content": "What is the weather and the time in Paris?"
+   },
+   {
+    "role": "assistant",
+    "content": "",
+    "tool_calls": [
+     {
+      "id": "call_0",
+      "type": "function",
+      "function": {
+       "name": "get_weather",
+       "arguments": "{\"city\": \"Paris\"}"
+      }
+     },
+     {
+      "id": "call_1",
+      "type": "function",
+      "function": {
+       "name": "get_time",
+       "arguments": "{\"city\": \"Paris\"}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_0",
+    "content": "{\"temp\": 21, \"sky\": \"clear\"}"
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_1",
+    "content": "14:05"
+   },
+   {
+    "role": "assistant",
+    "content": "It is 21 C and clear, and the time is 14:05."
+   },
+   {
+    "role": "user",
+    "content": "Thanks!"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "get_weather",
+     "description": "Current weather for a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string",
+        "description": "City name"
+       },
+       "unit": {
+        "type": "string",
+        "enum": [
+         "c",
+         "f"
+        ]
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   },
+   {
+    "type": "function",
+    "function": {
+     "name": "get_time",
+     "description": "Local time in a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "call_with_content": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "What is the weather and the time in Paris?"
+   },
+   {
+    "role": "assistant",
+    "content": "Let me check.",
+    "tool_calls": [
+     {
+      "id": "call_0",
+      "type": "function",
+      "function": {
+       "name": "get_weather",
+       "arguments": "{\"city\": \"Paris\", \"unit\": \"c\"}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_0",
+    "content": "21 C"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "get_weather",
+     "description": "Current weather for a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string",
+        "description": "City name"
+       },
+       "unit": {
+        "type": "string",
+        "enum": [
+         "c",
+         "f"
+        ]
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   },
+   {
+    "type": "function",
+    "function": {
+     "name": "get_time",
+     "description": "Local time in a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "think_on": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "Hi"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": true
+  }
+ },
+ "think_history": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "Hi"
+   },
+   {
+    "role": "assistant",
+    "content": "<think>\nThe user greets.\n</think>\n\nHello!"
+   },
+   {
+    "role": "user",
+    "content": "Bye"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  }
+ },
+ "think_after_query": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "What is the weather and the time in Paris?"
+   },
+   {
+    "role": "assistant",
+    "content": "<think>\nNeed tools.\n</think>\n\n",
+    "tool_calls": [
+     {
+      "id": "call_0",
+      "type": "function",
+      "function": {
+       "name": "get_weather",
+       "arguments": "{\"city\": \"Paris\"}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_0",
+    "content": "21 C"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "get_weather",
+     "description": "Current weather for a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string",
+        "description": "City name"
+       },
+       "unit": {
+        "type": "string",
+        "enum": [
+         "c",
+         "f"
+        ]
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   },
+   {
+    "type": "function",
+    "function": {
+     "name": "get_time",
+     "description": "Local time in a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "reasoning_field": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "What is the weather and the time in Paris?"
+   },
+   {
+    "role": "assistant",
+    "content": "",
+    "reasoning_content": " Need tools. ",
+    "tool_calls": [
+     {
+      "id": "call_0",
+      "type": "function",
+      "function": {
+       "name": "get_weather",
+       "arguments": "{\"city\": \"Paris\"}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_0",
+    "content": "21 C"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "get_weather",
+     "description": "Current weather for a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string",
+        "description": "City name"
+       },
+       "unit": {
+        "type": "string",
+        "enum": [
+         "c",
+         "f"
+        ]
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   },
+   {
+    "type": "function",
+    "function": {
+     "name": "get_time",
+     "description": "Local time in a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "value_types": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "x"
+   },
+   {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "call_0",
+      "type": "function",
+      "function": {
+       "name": "f",
+       "arguments": "{\"s\": \"line1\\nline2\", \"i\": -3, \"f\": 1.5, \"t\": true, \"n\": null, \"l\": [1, \"\\u00e9\\u0001\"], \"o\": {\"b\": 1, \"a\": 2}}"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_0",
+    "content": "ok"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "f",
+     "description": "",
+     "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+     }
+    }
+   }
+  ]
+ },
+ "args_object": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "x"
+   },
+   {
+    "role": "assistant",
+    "content": "",
+    "tool_calls": [
+     {
+      "id": "call_0",
+      "type": "function",
+      "function": {
+       "name": "f",
+       "arguments": {
+        "z": 1,
+        "a": "q"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_0",
+    "content": "ok"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "f",
+     "description": "d",
+     "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+     }
+    }
+   }
+  ]
+ },
+ "args_bad_json": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "x"
+   },
+   {
+    "role": "assistant",
+    "content": "",
+    "tool_calls": [
+     {
+      "id": "call_0",
+      "type": "function",
+      "function": {
+       "name": "f",
+       "arguments": "not json"
+      }
+     }
+    ]
+   },
+   {
+    "role": "tool",
+    "tool_call_id": "call_0",
+    "content": "ok"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "f",
+     "description": "d",
+     "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+     }
+    }
+   }
+  ]
+ },
+ "tools_canonical": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "x"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "function": {
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "n": {
+        "type": "integer",
+        "minimum": 1.0
+       }
+      }
+     },
+     "name": "f",
+     "strict": true
+    },
+    "type": "function"
+   }
+  ]
+ },
+ "unicode": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "Réponds en français \"vite\"."
+   },
+   {
+    "role": "user",
+    "content": "Météo à Paris ? \t日本"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "météo",
+     "description": "Temps qu'il fait \"ici\" \\ là\n",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "ville": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "ville"
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "parts": {
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": " a "
+     },
+     {
+      "type": "text",
+      "text": "b"
+     }
+    ]
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  }
+ },
+ "whitespace": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "  sys \n"
+   },
+   {
+    "role": "user",
+    "content": "\n hi \n"
+   },
+   {
+    "role": "assistant",
+    "content": "  hello \n"
+   },
+   {
+    "role": "user",
+    "content": "again "
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  }
+ },
+ "two_systems": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "s1"
+   },
+   {
+    "role": "system",
+    "content": "s2"
+   },
+   {
+    "role": "user",
+    "content": "x"
+   },
+   {
+    "role": "system",
+    "content": "s3"
+   },
+   {
+    "role": "user",
+    "content": "y"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  }
+ },
+ "tool_first": {
+  "messages": [
+   {
+    "role": "tool",
+    "tool_call_id": "call_0",
+    "content": "r"
+   },
+   {
+    "role": "user",
+    "content": "x"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  }
+ },
+ "tool_response_user": {
+  "messages": [
+   {
+    "role": "user",
+    "content": "a"
+   },
+   {
+    "role": "assistant",
+    "content": "<think>\nx\n</think>\n\nb"
+   },
+   {
+    "role": "user",
+    "content": "<tool_response>\nr\n</tool_response>"
+   }
+  ],
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "tools": [
+   {
+    "type": "function",
+    "function": {
+     "name": "get_weather",
+     "description": "Current weather for a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string",
+        "description": "City name"
+       },
+       "unit": {
+        "type": "string",
+        "enum": [
+         "c",
+         "f"
+        ]
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   },
+   {
+    "type": "function",
+    "function": {
+     "name": "get_time",
+     "description": "Local time in a city.",
+     "parameters": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    }
+   }
+  ]
+ }
+}

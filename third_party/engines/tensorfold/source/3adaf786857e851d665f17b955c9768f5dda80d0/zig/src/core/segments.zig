@@ -1,0 +1,155 @@
+//! Staggered prompt segments, for any family: each segment on its own queue does what a serial chunk of its rows does, so the output equals the chunks run in order.
+const std = @import("std");
+const mtl = @import("metal");
+const Fence = @import("fence.zig").Fence;
+const stagger = @import("stagger.zig");
+
+/// Segments one chunk can take.
+pub const MAX = stagger.MAX;
+
+/// Where layer i waits for the segment before (core/stagger.zig).
+pub const Wait = stagger.Wait;
+
+/// A segment's command buffer and open encoder; hooks encode into `enc` and leave it open.
+pub const Lane = struct {
+    k: usize,
+    cb: mtl.CommandBuffer,
+    enc: mtl.ComputeEncoder,
+    fence: Fence, // orders the segment's encoders: buffers are untracked, so encoders could overlap
+};
+
+pub const rows = stagger.rows;
+pub const start = stagger.start;
+pub const Call = stagger.Call;
+pub const next = stagger.next;
+
+/// Hooks leave the encoder open, commit nothing; what segment k+1 reads of k must be written by k's mixer or earlier.
+pub fn run(device: mtl.Device, queues: []const mtl.Queue, layers: usize, mode: mtl.DispatchType, fam: anytype) !f64 {
+    return runCommitting(device, queues, layers, mode, fam, 0);
+}
+
+/// `run`, committing every `every` layers (0: once), fenced in order; returns the chunk's summed GPU seconds.
+pub fn runCommitting(device: mtl.Device, queues: []const mtl.Queue, layers: usize, mode: mtl.DispatchType, fam: anytype, every: usize) !f64 {
+    const n = queues.len;
+    if (n == 0 or n > MAX) return error.Segments;
+    var evs: [MAX - 1]mtl.Event = undefined;
+    var n_evs: usize = 0;
+    defer for (evs[0..n_evs]) |e| e.deinit();
+    while (n_evs + 1 < n) : (n_evs += 1) evs[n_evs] = try device.event();
+    var lanes: [MAX]Lane = undefined;
+    var n_lanes: usize = 0;
+    defer for (lanes[0..n_lanes]) |l| l.fence.deinit();
+    for (queues) |q| {
+        const fence = try Fence.init(device);
+        const cb = q.commandBuffer();
+        lanes[n_lanes] = .{ .k = n_lanes, .cb = cb, .enc = cb.compute(mode), .fence = fence };
+        n_lanes += 1;
+    }
+    var done: [16]mtl.CommandBuffer = undefined;
+    var n_done: usize = 0;
+    const X = struct {
+        fam: @TypeOf(fam),
+        lanes: []Lane,
+        evs: []const mtl.Event,
+        mode: mtl.DispatchType,
+        queue: mtl.Queue,
+        every: usize,
+        layers: usize,
+        done: *[16]mtl.CommandBuffer,
+        n_done: *usize,
+
+        /// Ends the lane's encoder, waits for (or signals) `value` between encoders, opens the next behind the fence.
+        fn sync(x: *const @This(), l: *Lane, ev: mtl.Event, value: u64, wait_: bool) void {
+            l.fence.update(l.enc);
+            l.enc.end();
+            if (wait_) l.cb.waitForEvent(ev, value) else l.cb.signalEvent(ev, value);
+            l.enc = l.cb.compute(x.mode);
+            l.fence.wait(l.enc);
+        }
+        pub fn begin(x: *const @This(), k: usize) !void {
+            try x.fam.begin(&x.lanes[k]);
+        }
+        pub fn wait(x: *const @This(), i: usize) Wait {
+            return x.fam.wait(i);
+        }
+        pub fn waitFor(x: *const @This(), k: usize, i: usize) !void {
+            x.sync(&x.lanes[k], x.evs[k - 1], i + 1, true);
+            try x.fam.handoff(&x.lanes[k], i);
+        }
+        pub fn signal(x: *const @This(), k: usize, i: usize) !void {
+            x.sync(&x.lanes[k], x.evs[k], i + 1, false);
+        }
+        pub fn pre(x: *const @This(), k: usize, i: usize) !void {
+            try x.fam.pre(&x.lanes[k], i);
+        }
+        pub fn mixer(x: *const @This(), k: usize, i: usize) !void {
+            try x.fam.mixer(&x.lanes[k], i);
+        }
+        pub fn post(x: *const @This(), k: usize, i: usize) !void {
+            try x.fam.post(&x.lanes[k], i);
+            if (x.every == 0 or x.lanes.len != 1 or (i + 1) % x.every != 0 or i + 1 >= x.layers or x.n_done.* == x.done.len) return;
+            const l = &x.lanes[k];
+            l.fence.update(l.enc);
+            l.enc.end();
+            l.cb.commit();
+            x.done[x.n_done.*] = l.cb;
+            x.n_done.* += 1;
+            l.cb = x.queue.commandBuffer();
+            l.enc = l.cb.compute(x.mode);
+            l.fence.wait(l.enc);
+        }
+        pub fn finish(x: *const @This(), k: usize) !void {
+            try x.fam.finish(&x.lanes[k]);
+        }
+    };
+    const probe = probeOf(fam, n); // committed before the segments encode, so a warm queue has run it by their commit
+    const x: X = .{ .fam = fam, .lanes = lanes[0..n], .evs = evs[0..n_evs], .mode = mode, .queue = queues[0], .every = every, .layers = layers, .done = &done, .n_done = &n_done };
+    stagger.drive(n, layers, &x) catch |err| { // close the open encoders, drop the open command buffers, let committed chunks finish
+        for (lanes[0..n]) |l| l.enc.end();
+        for (done[0..n_done]) |cb| cb.wait();
+        return err;
+    };
+    for (lanes[0..n]) |l| l.enc.end();
+    if (probe) |p| try held(p);
+    for (lanes[0..n]) |l| l.cb.commit();
+    for (lanes[0..n]) |l| l.cb.wait(); // every segment ends before a failure returns and its buffers are reused
+    var gpu: f64 = 0;
+    for (done[0..n_done]) |cb| {
+        cb.wait();
+        if (cb.failure()) |msg| {
+            std.log.err("command buffer failed: {s}", .{msg});
+            return error.GpuFailed;
+        }
+        gpu += cb.gpuSeconds();
+    }
+    for (lanes[0..n]) |l| {
+        if (l.cb.failure()) |msg| {
+            std.log.err("command buffer failed: {s}", .{msg});
+            return error.GpuFailed;
+        }
+        gpu = if (n_done > 0) gpu + l.cb.gpuSeconds() else @max(gpu, l.cb.gpuSeconds());
+    }
+    return gpu;
+}
+
+/// The family's probe on the first queue (an optional `probe` hook), for chunks whose later segments wait on the GPU.
+fn probeOf(fam: anytype, n: usize) ?mtl.CommandBuffer {
+    if (n < 2 or !@hasDecl(std.meta.Child(@TypeOf(fam)), "probe")) return null;
+    return fam.probe();
+}
+
+/// Waits for the probe, so no segment commits before the first queue reaches the chunk and segment 1 never waits long.
+fn held(p: mtl.CommandBuffer) !void {
+    const t0 = mtl.clock.seconds();
+    p.wait();
+    if (p.failure()) |msg| {
+        std.log.err("command buffer failed: {s}", .{msg});
+        return error.GpuFailed;
+    }
+    const ms = (mtl.clock.seconds() - t0) * 1e3;
+    if (ms >= 500) std.log.info("segments: waited {d:.0} ms for the first queue to reach the chunk (re-wiring or earlier work)", .{ms});
+}
+
+test {
+    _ = stagger;
+}

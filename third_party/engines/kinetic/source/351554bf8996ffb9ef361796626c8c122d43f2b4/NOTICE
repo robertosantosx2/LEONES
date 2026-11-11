@@ -1,0 +1,24 @@
+Kinetic
+Copyright 2026 Velocity
+
+This product includes material from third parties:
+
+crates/kinetic-grammar/tests/data/llama.cpp
+    Example grammars from llama.cpp, used as test data.
+    Copyright (c) 2023-2026 The ggml authors. MIT License; the full text is
+    in that folder's LICENSE file.
+
+crates/kinetic-quant/src/grids
+    The IQ2_S, IQ3_S and IQ1_S/IQ1_M codebooks (iq2s_grid, iq3s_grid,
+    iq1s_grid, stored as level indices), the IQ4_NL values (kvalues_iq4nl)
+    and the MXFP4 value table, from ggml-common.h of llama.cpp. The same
+    IQ4_NL table is in crates/kinetic-cuda/cuda/gemv_legacy.cuh.
+    Copyright (c) 2023-2026 The ggml authors. MIT License; the full text is
+    in that folder's LICENSE file.
+
+crates/kinetic-quant/src/iq.rs
+    The IQ2_XXS, IQ2_XS and IQ3_XXS codebooks (iq2xxs_grid, iq2xs_grid,
+    iq3xxs_grid) and the sign table (ksigns_iq2xs), from ggml-common.h of
+    llama.cpp; crates/kinetic-cuda uploads the same tables.
+    Copyright (c) 2023-2026 The ggml authors. MIT License; the full text is
+    in crates/kinetic-quant/src/grids/LICENSE.

@@ -1,0 +1,29 @@
+[package]
+name = "kinetic-server"
+description = "Generation engine and OpenAI-compatible HTTP server"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+cuda = ["dep:kinetic-cuda", "kinetic-models/cuda", "kinetic-vision/cuda"]
+vulkan = ["dep:kinetic-vulkan", "kinetic-models/vulkan"]
+
+[dependencies]
+blake3 = { version = "1.8.7", features = ["mmap", "rayon"] }
+kinetic-cuda = { path = "../kinetic-cuda", optional = true }
+kinetic-gguf = { path = "../kinetic-gguf" }
+kinetic-grammar = { path = "../kinetic-grammar" }
+kinetic-ktc = { path = "../kinetic-ktc" }
+kinetic-models = { path = "../kinetic-models" }
+kinetic-tokenizer = { path = "../kinetic-tokenizer" }
+kinetic-vision = { path = "../kinetic-vision" }
+kinetic-vulkan = { path = "../kinetic-vulkan", optional = true }
+minijinja = { version = "2.24.0", features = ["fuel", "json", "loop_controls"] }
+minijinja-contrib = { version = "2.24.0", features = ["pycompat"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+
+[dev-dependencies]
+ureq = { version = "2.12.1", default-features = false, features = ["json"] }

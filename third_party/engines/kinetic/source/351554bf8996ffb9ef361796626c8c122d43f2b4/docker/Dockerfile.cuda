@@ -1,0 +1,32 @@
+# Kinetic with its CUDA kernels, serving an OpenAI-compatible API on port 8080.
+# The NVIDIA driver comes from the host through the NVIDIA Container Toolkit.
+#
+#   docker build -f docker/Dockerfile.cuda -t kinetic:cuda .
+#   docker run --rm --gpus all -p 8080:8080 -v "$PWD/models:/models:ro" kinetic:cuda /models/model.gguf
+
+ARG CUDA_VERSION=12.8.1
+
+FROM nvidia/cuda:${CUDA_VERSION}-devel-ubuntu24.04 AS build
+ARG RUST_VERSION=1.96.1
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl g++ \
+ && rm -rf /var/lib/apt/lists/*
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --profile minimal --default-toolchain "${RUST_VERSION}"
+ENV PATH=/root/.cargo/bin:$PATH
+WORKDIR /src
+# Only the sources: rust-toolchain.toml would make rustup fetch another toolchain.
+COPY Cargo.toml Cargo.lock ./
+COPY crates crates
+RUN cargo build --release --locked -p kinetic-cli --features cuda
+
+# Kinetic opens the driver API at runtime and needs no CUDA libraries of its own.
+FROM nvidia/cuda:${CUDA_VERSION}-base-ubuntu24.04
+COPY --from=build /src/target/release/kinetic /usr/local/bin/kinetic
+COPY LICENSE NOTICE README.md /usr/share/doc/kinetic/
+RUN useradd --system --uid 10001 --no-create-home kinetic
+USER kinetic
+VOLUME /models
+EXPOSE 8080
+ENTRYPOINT ["kinetic", "serve", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["/models/model.gguf"]

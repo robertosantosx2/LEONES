@@ -1,0 +1,28 @@
+[build-system]
+requires = ["maturin>=1.5,<2"]
+build-backend = "maturin"
+
+[project]
+name = "kinetic-engine"
+description = "Open engine for running AI locally"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Velocity" }]
+keywords = ["llm", "gguf", "inference", "local"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://veloresearch.com"
+Source = "https://github.com/Veloresearch/kinetic"
+
+[tool.maturin]
+module-name = "kinetic._kinetic"
+python-source = "python"

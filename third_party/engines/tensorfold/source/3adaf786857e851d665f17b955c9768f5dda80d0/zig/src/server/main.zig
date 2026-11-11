@@ -1,0 +1,261 @@
+//! ``tensorfold-native``: ``capabilities --json`` for the Python switch, and ``serve MODEL [flags]`` with no Python.
+const std = @import("std");
+const json = @import("json");
+const cli = @import("cli.zig");
+const log = @import("log.zig");
+const hub = @import("hub.zig");
+const engines = @import("engines.zig");
+const serve = @import("serve.zig");
+const hf_text = @import("hf_text.zig");
+const startup = @import("startup.zig");
+const slide_cli = @import("slide_cli.zig");
+const slide_key = @import("slide_key.zig");
+const api = @import("engine_api");
+const recall_open = @import("recall_open.zig");
+const benchmark = @import("benchmark.zig");
+const checkpoint_cli = @import("checkpoint_cli");
+const pdf_worker = @import("pdf_worker.zig");
+const web_cli = @import("web_cli.zig");
+
+const usage_line = "usage: tensorfold serve [-h] [--host HOST] [--port PORT] [--unix-socket PATH] [--name NAME] [--chat-template FILE]" ++
+    " [--alias ALIAS] [--allowed-host NAME] [--allowed-origin ORIGIN] [--api-key API_KEY] [--api-key-file API_KEY_FILE] [--metrics-open] [--dashboard]" ++
+    " [--max-inflight N] [--max-inflight-per-key N] [--requests-per-second N] [--request-burst N]" ++
+    " [--context CONTEXT] [--profile stable] [--speed-up SETTINGS] [--prompt-cache-gib PROMPT_CACHE_GIB] [--prompt-cache-disk DIR]" ++
+    " [--prompt-cache-over-cap] [--learn] [--learn-dir LEARN_DIR] [--learn-gib LEARN_GIB]" ++
+    " [--learn-conversations] [--learn-daily-gib LEARN_DAILY_GIB] [--recall] [--recall-dir RECALL_DIR]" ++
+    " [--recall-gib RECALL_GIB] [--recall-read-only] [--max-tokens MAX_TOKENS]" ++
+    " [--temperature TEMPERATURE] [--top-p TOP_P] [--top-k TOP_K] [--min-p MIN_P] [--prompt-seed]" ++
+    " [--thinking | --no-thinking] [--reasoning-effort {low,medium,high,xhigh}]" ++
+    " [--thinking-budget THINKING_BUDGET] [--thinking-reserve THINKING_RESERVE] [--loop-guard] [--loop-guard-stop] [--no-drafts]" ++
+    " [--drafter DRAFTER]" ++
+    " [--drafter-bits {0,4}] [--record RECORD] [--keep-warm SECONDS] [--idle-unload SECONDS]" ++
+    " [--silence-floor-dbfs DBFS] [--silence-seconds SECONDS]" ++
+    " [--silence-onset-s SECONDS] [--silence-onset-voiced-s SECONDS]" ++
+    " [--silence-mid-s SECONDS] [--silence-mid-min-voiced-s SECONDS] [--silence-redraws N]" ++
+    " [--silence-redraw-budget-s SECONDS] [--silence-redraw-controls LIST]" ++
+    " [--short-reply-ratio R] [--short-reply-chars-per-s CPS]" ++
+    " [--register-redraw-st ST] [--register-redraw-high PERCENT] [--register-high-hz HZ]" ++
+    " [--compact-at COMPACT_AT] [--compact-keep COMPACT_KEEP]" ++
+    " [--compact-memory COMPACT_MEMORY] [--slide] [--slide-graph SLIDE_GRAPH] [--slide-drift-gate] [--parallel PARALLEL]" ++
+    " [--cortheon] [--no-update-check] [--backend {auto,mlx,cuda}] [--device DEVICE]" ++
+    " [--segments SEGMENTS] model\n";
+const not_lanes = "--recall drafts from a record in the lane engine's rounds, " ++
+    "which this model's engine does not run: serve it without --recall, --recall-dir, " ++
+    "--recall-gib or --recall-read-only";
+
+/// The flags past the common ones this binary's backend serves; cli.zig reads them from the root.
+pub const serves = engines.serves;
+
+pub const std_options = engines.std_options;
+
+pub fn main(init: std.process.Init) !u8 {
+    const entry = std.Io.Clock.awake.now(init.io).toNanoseconds();
+    const gpa = init.gpa;
+    const io = init.io;
+    const a = init.arena.allocator();
+    const argv = try init.minimal.args.toSlice(a);
+    if (comptime @import("builtin").os.tag != .windows) if (argv.len == 2 and std.mem.eql(u8, argv[1], pdf_worker.arg)) pdf_worker.serve();
+    // These commands must work without a model, driver, GPU or checkout.
+    if (argv.len == 2 and std.mem.eql(u8, argv[1], "--version")) {
+        try std.Io.File.stdout().writeStreamingAll(io, "tensorfold-native " ++ @import("build_options").version ++ "\n");
+        return 0;
+    }
+    if (argv.len == 2 and (std.mem.eql(u8, argv[1], "--help") or std.mem.eql(u8, argv[1], "-h"))) {
+        try std.Io.File.stdout().writeStreamingAll(io, "usage: tensorfold-native --version | capabilities --json | models [--json] | info MODEL | pull REPO[@REVISION] | slide rollback FOLDER | web [ARGS...] | slide audit [flags] | serve MODEL [flags] | benchmark MODEL [flags]\n" ++ usage_line);
+        return 0;
+    }
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "web")) {
+        const options = @import("build_options");
+        return web_cli.main(init, argv[2..], .{ .version = options.version, .is_release = options.is_release });
+    }
+    if (argv.len >= 3 and std.mem.eql(u8, argv[1], "serve")) {
+        for (argv[2..]) |arg| if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
+            try std.Io.File.stdout().writeStreamingAll(io, usage_line);
+            return 0;
+        };
+    }
+    // the checkpoint commands need no model, GPU or driver either
+    if (argv.len >= 2 and checkpoint_cli.wants(@ptrCast(argv[1..]))) return checkpoint_cli.main(init, argv[1..]);
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "slide")) return slide_cli.main(init, argv[2..]);
+    log.init(io, false);
+    if (argv.len == 3 and std.mem.eql(u8, argv[1], "capabilities") and std.mem.eql(u8, argv[2], "--json")) {
+        if (try engines.environment(a, .{})) |why| return fail(why);
+        var out: std.Io.Writer.Allocating = .init(a);
+        var caps = engines.capabilities(a);
+        caps.optional_libraries = try @import("core").picture.runtime.probe(a, io);
+        caps.p2p = engines.p2p(a);
+        try cli.capabilities(&out.writer, caps);
+        try std.Io.File.stdout().writeStreamingAll(io, out.written());
+        return 0;
+    }
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "benchmark")) {
+        // the benchmark runs its serve child under POSIX signals and waits; Windows refuses it by name
+        if (comptime @import("builtin").os.tag == .windows) {
+            std.debug.print("tensorfold benchmark is not supported on Windows yet: run tensorfold serve and a client against it\n", .{});
+            return 2;
+        } else return benchmark.main(init, argv[2..], engines.capabilities(a));
+    }
+    if (argv.len < 2 or !std.mem.eql(u8, argv[1], "serve")) {
+        std.debug.print("usage: tensorfold-native capabilities --json | models [--json] | info MODEL | pull REPO[@REVISION] | slide rollback FOLDER | slide audit [flags] | serve MODEL [flags] | benchmark MODEL [flags]\n", .{});
+        return 2;
+    }
+    const started = std.Io.Clock.awake.now(io).toNanoseconds();
+    var u: cli.Usage = .{};
+    var args = cli.parse(a, argv[2..], &u) catch |e| switch (e) {
+        error.Usage => {
+            std.debug.print("{s}tensorfold serve: error: {s}\n", .{ usage_line, u.message });
+            return 2;
+        },
+        else => |x| return x,
+    };
+    if (try engines.environment(a, args)) |why| return fail(why);
+    const receipt = @import("core").startup_receipt;
+    receipt.enable(io, entry, try @import("sys").environment.read(bool, "TF_STARTUP_RECEIPT", false));
+    defer receipt.disable();
+    const discovery = receipt.span(.discovery);
+    if (try slide_key.slideKeyless(a, args, init.environ_map.get("TENSORFOLD_API_KEY") orelse "")) |why| {
+        std.debug.print("tensorfold: {s}\n", .{why});
+        return 2;
+    }
+    api.prompt_cache.status.named.store(args.dashboard, .monotonic); // before any store keeps a state
+    if (args.vision) for (@import("core").picture.runtime.warnings(io, a)) |warning| {
+        if (warning) |message| log.line("warning: {s}", .{message});
+    };
+    var problem: []const u8 = "";
+    const dir = try hub.resolve(a, io, init.environ_map, args.model, &problem) orelse return fail(problem);
+    // A drafter is named like a model: a directory, or a repo id `tensorfold pull` cached.
+    args.drafter_name = args.drafter;
+    if (args.drafter) |d| args.drafter = try hub.resolve(a, io, init.environ_map, d, &problem) orelse return fail(problem);
+    const model_type = modelType(a, io, dir, &problem) catch |e| {
+        if (e == error.OutOfMemory) return e;
+        return fail(problem);
+    };
+    if (args.silence.refusal(model_type) orelse args.redraw.refusal(model_type)) |why| return fail(why);
+    // the model folder held while this process reads it, so a rollback refuses it: exclusive with --slide, else shared
+    var unheld: []const u8 = "";
+    const held = api.originals.serving(a, dir, args.slide, &unheld) catch |e| switch (e) {
+        error.OutOfMemory => |x| return x,
+        else => return fail(unheld),
+    };
+    defer if (held) |h| h.release();
+    if (held == null) log.line("{s}", .{unheld});
+    if (args.rank > 0) { // a rank above 0 serves no HTTP and loads no text: it runs rank 0's steps
+        if (!try engines.follow(a, gpa, io, dir, model_type, args, &problem)) return fail(problem);
+        return 0;
+    }
+    discovery.end();
+    const tool_id_key = @import("tool_id_key.zig");
+    var tool_ids = tool_id_key.load(a, init.environ_map.get(tool_id_key.name), &problem) catch |e| switch (e) {
+        error.OutOfMemory => |x| return x,
+        error.Refused => return fail(problem),
+    };
+    var text_arena: std.heap.ArenaAllocator = .init(gpa); // the text's problem, written on its own thread
+    defer text_arena.deinit();
+    var text_problem: []const u8 = "";
+    const up = startup.both(io, loadText, .{ gpa, io, dir, args.chat_template, text_arena.allocator(), &text_problem }, engines.open, .{ a, gpa, io, dir, model_type, args, &problem }) catch |e| {
+        if (text_problem.len > 0) return fail(text_problem);
+        if (problem.len > 0) return fail(problem); // an engine that failed after saying why
+        return e;
+    } orelse return fail(problem);
+    defer up.text.deinit();
+    _ = receipt.span(.server_setup);
+    log.line("chat template: {s}", .{up.text.renderer()});
+    var record: ?*@import("engine_api").recall_store.Store = null;
+    defer if (record) |r| r.close(); // after the engine below has stopped reading it
+    var closer: Closer = .{ .opened = up.engine };
+    defer closer.deinit();
+    const served = hub.servedName(args.name, args.model, dir);
+    problem = "";
+    record = recall_open.open(gpa, io, a, args, up.text, served, &problem) catch |e| {
+        return if (problem.len > 0) fail(problem) else e;
+    };
+    if (record) |r| if (!up.engine.engine.attachRecall(r)) return fail(not_lanes);
+    const instruct = try instructSampling(a, io, dir, args, model_type, up.engine.engine.info().capability(.penalties), &problem);
+    if (problem.len > 0) return fail(problem);
+    return serve.run(gpa, io, args, .{
+        .engine = up.engine.engine,
+        .stop = .{ .ctx = &closer, .close = Closer.close, .halt = Closer.halt },
+        .text = up.text.text(),
+        .served = served,
+        .recall = record,
+        .model_dir = dir,
+        .model_type = model_type,
+        .reopen = .{ .ctx = &closer, .open = Reopen.open, .close_held = Reopen.closeHeld, .halt_held = Closer.halt, .replace = Reopen.replace },
+        .sampling = try sampling(a, io, dir, args, model_type),
+        .instruct = instruct,
+        .environ = init.environ_map,
+        .started = started,
+        .identity = engines.identity(a, args),
+        .forget_fail = if (comptime @import("build_options").slide_test_hooks) try forgetFail(init.environ_map) else 0,
+        .tool_id_key = if (tool_ids) |*key| key else null,
+    });
+}
+
+/// The reopen path the idle unload takes: the same open calls `main` made at startup.
+const Reopen = struct {
+    fn open(ctx: *anyopaque, a: std.mem.Allocator, gpa: std.mem.Allocator, io: std.Io, dir: []const u8, mt: []const u8, cargs: cli.Args, problem: *[]const u8) anyerror!?api.Opened {
+        _ = ctx;
+        return engines.open(a, gpa, io, dir, mt, cargs, problem);
+    }
+    fn closeHeld(ctx: *anyopaque) void {
+        const c: *Closer = @ptrCast(@alignCast(ctx));
+        c.closeOnce();
+    }
+    fn replace(ctx: *anyopaque, opened: api.Opened, scratch: *std.heap.ArenaAllocator) void {
+        const c: *Closer = @ptrCast(@alignCast(ctx));
+        c.adopt(opened, scratch);
+    }
+};
+
+/// TF_SLIDE_FORGET_FAIL in a -Dslide-test-hooks build: the fact whose check a delete fails, so its put-back is seen.
+fn forgetFail(env: *const std.process.Environ.Map) !u32 {
+    return @intCast((try @import("sys").environment.parse("TF_SLIDE_FORGET_FAIL", env.get("TF_SLIDE_FORGET_FAIL"))) orelse 0);
+}
+
+/// HfText.load with every failure named in `problem`, so main tells the text's failure from the engine's.
+fn loadText(gpa: std.mem.Allocator, io: std.Io, dir: []const u8, template: ?[]const u8, pa: std.mem.Allocator, problem: *[]const u8) !*hf_text.HfText {
+    const timing = @import("core").startup_receipt.span(.tokenizer);
+    defer timing.end();
+    return hf_text.HfText.load(gpa, io, dir, template, pa, problem) catch |e| {
+        if (problem.len == 0) problem.* = @errorName(e);
+        return e;
+    };
+}
+
+fn fail(message: []const u8) u8 {
+    std.debug.print("tensorfold: {s}\n", .{message});
+    return 1;
+}
+
+fn modelType(a: std.mem.Allocator, io: std.Io, dir: []const u8, problem: *[]const u8) ![]const u8 {
+    const bytes = (try @import("checkpoint_config").read(a, io, dir, problem)) orelse return "unknown";
+    const doc = std.json.parseFromSliceLeaky(std.json.Value, a, bytes, .{}) catch return "unknown";
+    if (doc != .object) return "unknown";
+    const t = doc.object.get("model_type") orelse return "unknown";
+    return if (t == .string) t.string else "unknown";
+}
+
+/// The family's defaults, generation_config.json's sampling, then the serve flags (family_sampling.resolve).
+fn sampling(a: std.mem.Allocator, io: std.Io, dir: []const u8, args: cli.Args, model_type: []const u8) !?json.Value {
+    return @import("family_sampling.zig").resolve(a, model_type, try generationConfig(a, io, dir), samplingFlags(args));
+}
+
+/// --instruct-sampling's set for sampled chats with thinking off (family_sampling.startup), or ``problem``.
+fn instructSampling(a: std.mem.Allocator, io: std.Io, dir: []const u8, args: cli.Args, model_type: []const u8, penalties: bool, problem: *[]const u8) !?json.Value {
+    const text = args.instruct_sampling orelse return null;
+    const got = try @import("family_sampling.zig").startup(a, model_type, try generationConfig(a, io, dir), samplingFlags(args), penalties, text);
+    if (got.note) |n| log.line("{s}", .{n});
+    if (got.problem) |p| problem.* = p;
+    return got.set;
+}
+
+fn generationConfig(a: std.mem.Allocator, io: std.Io, dir: []const u8) !?[]const u8 {
+    const path = try std.fs.path.join(a, &.{ dir, "generation_config.json" });
+    return std.Io.Dir.cwd().readFileAlloc(io, path, a, .limited(1 << 20)) catch null;
+}
+
+fn samplingFlags(args: cli.Args) @import("family_sampling.zig").Flags {
+    return .{ .temperature = args.temperature, .top_p = args.top_p, .top_k = args.top_k, .min_p = args.min_p };
+}
+
+const Closer = @import("idle_unload_closer.zig").Closer;

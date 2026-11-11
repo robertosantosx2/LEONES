@@ -1,0 +1,60 @@
+0.00.148.496 I srv  llama_server: initializing ...
+0.00.148.505 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.148.750 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.150.638 I srv    load_model: loading model '/home/vasylt/models/glm-5.3-flash/GLM-5.3-Flash-UD-Q2_K_XL-00001-of-00004.gguf'
+0.00.520.460 W load: special_eot_id is not in special_eog_ids - the tokenizer config may be incorrect
+0.00.520.462 W load: special_eom_id is not in special_eog_ids - the tokenizer config may be incorrect
+0.00.530.188 W llama_model_loader: tensor overrides to CPU are used with mmap enabled - consider using --load-mode none for better performance
+0.00.534.692 W model has unused tensor blk.45.attn_norm.weight (size = 16384 bytes) -- ignoring
+0.00.534.695 W model has unused tensor blk.45.ffn_norm.weight (size = 16384 bytes) -- ignoring
+0.00.534.697 W model has unused tensor blk.45.attn_q_a_norm.weight (size = 6144 bytes) -- ignoring
+0.00.534.698 W model has unused tensor blk.45.attn_kv_a_norm.weight (size = 2048 bytes) -- ignoring
+0.00.534.700 W model has unused tensor blk.45.attn_q_a.weight (size = 4325376 bytes) -- ignoring
+0.00.534.702 W model has unused tensor blk.45.attn_q_b.weight (size = 26738688 bytes) -- ignoring
+0.00.534.703 W model has unused tensor blk.45.attn_kv_a_mqa.weight (size = 2228224 bytes) -- ignoring
+0.00.534.705 W model has unused tensor blk.45.attn_k_b.weight (size = 8912896 bytes) -- ignoring
+0.00.534.706 W model has unused tensor blk.45.attn_v_b.weight (size = 8912896 bytes) -- ignoring
+0.00.534.708 W model has unused tensor blk.45.attn_output.weight (size = 46137344 bytes) -- ignoring
+0.00.534.710 W model has unused tensor blk.45.indexer.k_norm.weight (size = 512 bytes) -- ignoring
+0.00.534.711 W model has unused tensor blk.45.indexer.k_norm.bias (size = 512 bytes) -- ignoring
+0.00.534.713 W model has unused tensor blk.45.indexer.proj.weight (size = 524288 bytes) -- ignoring
+0.00.534.714 W model has unused tensor blk.45.indexer.attn_k.weight (size = 557056 bytes) -- ignoring
+0.00.534.716 W model has unused tensor blk.45.indexer.attn_q_b.weight (size = 6684672 bytes) -- ignoring
+0.00.534.718 W model has unused tensor blk.45.indexer_compressor_gate.weight (size = 557056 bytes) -- ignoring
+0.00.534.719 W model has unused tensor blk.45.indexer_compressor_ape.weight (size = 2048 bytes) -- ignoring
+0.00.534.721 W model has unused tensor blk.45.ffn_gate_inp.weight (size = 4718592 bytes) -- ignoring
+0.00.534.723 W model has unused tensor blk.45.exp_probs_b.bias (size = 1152 bytes) -- ignoring
+0.00.534.724 W model has unused tensor blk.45.ffn_gate_exps.weight (size = 792723456 bytes) -- ignoring
+0.00.534.726 W model has unused tensor blk.45.ffn_down_exps.weight (size = 1038090240 bytes) -- ignoring
+0.00.534.727 W model has unused tensor blk.45.ffn_up_exps.weight (size = 792723456 bytes) -- ignoring
+0.00.534.729 W model has unused tensor blk.45.ffn_gate_shexp.weight (size = 5767168 bytes) -- ignoring
+0.00.534.731 W model has unused tensor blk.45.ffn_down_shexp.weight (size = 6881280 bytes) -- ignoring
+0.00.534.732 W model has unused tensor blk.45.ffn_up_shexp.weight (size = 5767168 bytes) -- ignoring
+0.00.534.734 W model has unused tensor blk.45.nextn.eh_proj.weight (size = 35651584 bytes) -- ignoring
+0.00.534.736 W model has unused tensor blk.45.nextn.enorm.weight (size = 16384 bytes) -- ignoring
+0.00.534.737 W model has unused tensor blk.45.nextn.hnorm.weight (size = 16384 bytes) -- ignoring
+0.00.534.742 W model has unused tensor blk.45.nextn.shared_head_norm.weight (size = 16384 bytes) -- ignoring
+1.00.250.728 I cmn          init: llama threadpool init, n_threads = 6
+1.07.024.684 I srv    load_model: initializing, n_slots = 4, n_ctx_slot = 2048, kv_unified = 'true'
+1.07.053.661 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+1.07.053.743 I srv  server_run_i: model loaded
+1.07.053.775 I srv  server_on_li: listening on http://127.0.0.1:8091
+1.12.050.828 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+1.12.050.869 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+2.16.601.075 I slot print_timing: id  0 | task 0 | prompt eval time =   10507.13 ms /     5 tokens ( 2101.43 ms per token,     0.48 tokens per second)
+2.16.601.078 I slot print_timing: id  0 | task 0 |        eval time =   54042.12 ms /    32 tokens ( 1743.29 ms per token,     0.57 tokens per second)
+2.16.601.078 I slot print_timing: id  0 | task 0 |       total time =   64549.25 ms /    37 tokens
+2.16.601.112 I slot print_timing: id  0 | task 0 |    graphs reused =          0
+2.16.601.112 I slot print_timing: id  0 | task 0 |   graph reallocs =          1    /     0        (same size) / (changed size)
+2.16.602.006 I slot      release: id  0 | task 0 | stop processing: n_tokens = 36, truncated = 0
+2.16.654.796 W srv    operator(): got exception: {"error":{"code":400,"message":"[json.exception.parse_error.101] parse error at line 1, column 38: syntax error while parsing object - unexpected string literal; expected '}'","type":"invalid_request_error"}}
+2.16.666.714 I slot get_availabl: id  1 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+2.16.666.742 I slot launch_slot_: id  1 | task 34 | processing task, is_child = 0
+2.58.966.538 I slot print_timing: id  1 | task 34 | prompt processing, n_tokens =      7, progress = 0.64, t =  42.04 s / 0.17 tokens per second
+3.56.211.261 I slot print_timing: id  1 | task 34 | prompt eval time =   48912.74 ms /    11 tokens ( 4446.61 ms per token,     0.22 tokens per second)
+3.56.211.264 I slot print_timing: id  1 | task 34 |        eval time =   50364.81 ms /    32 tokens ( 1624.67 ms per token,     0.62 tokens per second)
+3.56.211.265 I slot print_timing: id  1 | task 34 |       total time =   99277.55 ms /    43 tokens
+3.56.211.988 I slot print_timing: id  1 | task 34 |    graphs reused =          0
+3.56.211.996 I slot print_timing: id  1 | task 34 |   graph reallocs =          3    /     0        (same size) / (changed size)
+3.56.212.189 I slot      release: id  1 | task 34 | stop processing: n_tokens = 42, truncated = 0
+3.56.245.643 I srv    operator(): operator(): cleaning up before exit...

@@ -1,0 +1,11 @@
+#version 460
+layout(local_size_x = 32) in;
+#include "common.glsl"
+// Workgroup = 256 values c.. of row t (at x + t * xs): quant_x into the gemvn layout at q, all int8 rows, then all
+// scales. With u not null it quantizes silu(x) * u (the SwiGLU, rows of u as x's).
+layout(push_constant) uniform P { F32 x; U32 q; F32 u; uint xs; uint n; } p;
+void main() {
+    uint t = gl_WorkGroupID.y, c = gl_WorkGroupID.x * 256;
+    quant_x(p.x, t * p.xs + c, min(256, p.n - c), F32(0ul), 0.0, p.u, p.q, (t * p.n + c) / 4,
+            F32(uint64_t(p.q) + gl_NumWorkGroups.y * p.n), (t * p.n + c) / 32, F32(0ul), 0);
+}

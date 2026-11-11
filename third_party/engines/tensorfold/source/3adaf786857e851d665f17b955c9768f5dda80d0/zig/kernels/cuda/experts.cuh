@@ -1,0 +1,94 @@
+// Device code of src/tensorfold/cuda/experts.cuh (lines 1-105, comments dropped).
+#pragma once
+
+#include <cuda_bf16.h>
+#include <stdint.h>
+#include "common/cp_async.cuh"
+#include "common/qmm_frag.cuh"
+
+namespace {
+
+constexpr int NTW = 4;                       // n8 tiles a warp: 32 output columns
+constexpr int COLS = 8 * NTW;
+constexpr uint32_t LOW = 0x000F000Fu;
+constexpr uint32_t K128 = 0x43004300u;       // the bf16 pair (128, 128)
+
+template <int GS>
+struct Geo {
+  static constexpr int KS = GS / 16;             // mma k-steps a group
+  static constexpr int WV = NTW * GS / 128;      // weight uint4 a lane a group
+  static constexpr int XV = GS / 32;             // input uint4 a row a lane a group
+  static constexpr int SBV = NTW / 2;            // scale and bias uint4 a quad a group
+  static constexpr int BLOCK = 32 * WV + 4 * SBV;
+};
+
+using tf_common::cp16;
+
+using tf_common::cp_commit;
+using tf_common::cp_wait;
+
+__device__ __forceinline__ uint32_t comp(const uint4& v, int c) {
+  return c == 0 ? v.x : c == 1 ? v.y : c == 2 ? v.z : v.w;
+}
+
+__device__ __forceinline__ uint32_t nib2(uint32_t w, int sh) {
+  uint32_t v = ((w >> sh) & LOW) | K128;
+  const uint32_t k = K128;
+  __nv_bfloat162 r = __hsub2(*reinterpret_cast<__nv_bfloat162*>(&v), *reinterpret_cast<const __nv_bfloat162*>(&k));
+  return *reinterpret_cast<uint32_t*>(&r);
+}
+
+__device__ __forceinline__ void mma(float (&d)[4], uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t b0, uint32_t b1) { qmm_frag::mma(d, a0, a1, a2, a3, b0, b1); }
+
+__device__ __forceinline__ float lo_f(uint32_t v) { return __uint_as_float(v << 16); }
+__device__ __forceinline__ float hi_f(uint32_t v) { return __uint_as_float(v & 0xFFFF0000u); }
+__device__ __forceinline__ float bf(float x) { return __bfloat162float(__float2bfloat16_rn(x)); }
+
+__device__ __forceinline__ float swiglu(float g, float u, float limit) {
+  float gv = bf(g), uv = bf(u);
+  if (limit > 0.f) {
+    gv = fminf(gv, limit);
+    uv = fminf(fmaxf(uv, -limit), limit);
+  }
+  return bf(gv / (1.f + expf(-gv))) * uv;
+}
+
+// a < 0 ? 0 : a, not fmaxf, which would make a NaN sum 0.
+__device__ __forceinline__ float relu2(float a) {
+  const float b = bf(a), u = b < 0.f ? 0.f : b;
+  return u * u;
+}
+
+template <int EPI, int M, int RT>
+__device__ __forceinline__ void epilogue(const float (&acc)[M][RT][NTW][4], int r, void* out, int N, int col0, int pr0,
+                                         int pr1, bool v0, bool v1, float limit) {
+#pragma unroll
+  for (int h = 0; h < 2; ++h) {
+    if (!(h ? v1 : v0)) continue;
+    const size_t row = (size_t)(h ? pr1 : pr0) * N;
+#pragma unroll
+    for (int j = 0; j < NTW; ++j) {
+      const int col = col0 + 8 * j;
+      const float a0 = acc[0][r][j][2 * h], a1 = acc[0][r][j][2 * h + 1];
+      if constexpr (EPI == 0) {
+        *reinterpret_cast<float2*>(reinterpret_cast<float*>(out) + row + col) = make_float2(a0, a1);
+      } else {
+        float o0, o1;
+        if constexpr (EPI == 1) {
+          o0 = relu2(a0);
+          o1 = relu2(a1);
+        } else if constexpr (EPI == 2) {
+          o0 = swiglu(a0, acc[M - 1][r][j][2 * h], limit);
+          o1 = swiglu(a1, acc[M - 1][r][j][2 * h + 1], limit);
+        } else {
+          o0 = a0;
+          o1 = a1;
+        }
+        *reinterpret_cast<__nv_bfloat162*>(reinterpret_cast<__nv_bfloat16*>(out) + row + col) =
+            __floats2bfloat162_rn(o0, o1);
+      }
+    }
+  }
+}
+
+}  // namespace

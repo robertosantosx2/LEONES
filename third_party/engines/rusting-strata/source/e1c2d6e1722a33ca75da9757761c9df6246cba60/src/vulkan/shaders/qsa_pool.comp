@@ -1,0 +1,30 @@
+#version 460
+layout(local_size_x = 128) in;
+#include "common.glsl"
+// QSA key pooling, as qsa_pool in kernels.cu (see there). Workgroup i = block step[0] / 4 + i when this call completes
+// it; invocation d owns dim d. Workgroup 0, the only one reading the ring, then stores this call's incomplete block.
+layout(push_constant) uniform P { F32 ik; F32 ring; F32 pool; F32 w; I32 step; double ts; uint t; uint n_rot; float eps; } p;
+shared float sx[128];
+void main() {
+    uint d = gl_LocalInvocationID.x, p0 = uint(p.step.v[0]), b = p0 / 4 + gl_WorkGroupID.x;
+    if (4 * b + 4 <= p0 + p.t) {
+        float x = 0.0;
+        for (uint m = 0; m < 4; m++) {
+            uint q = 4 * b + m;
+            x += (q >= p0 ? p.ik.v[(q - p0) * 128 + d] : p.ring.v[(q & 3) * 128 + d]) / 4.0;
+        }
+        float ss = block_sum(x * x);
+        sx[d] = x * fdiv(1.0, sqrt_(ss / 128.0 + p.eps)) * p.w.v[d];
+        barrier();
+        uint half_ = p.n_rot / 2, i = d < half_ ? d : d - half_;
+        float y = sx[d];
+        if (d < p.n_rot) {
+            float sn, cs;
+            rope_cs(double(4 * b), p.ts, i, sn, cs);
+            y = d < half_ ? sx[d] * cs - sx[d + half_] * sn : sx[d - half_] * sn + sx[d] * cs;
+        }
+        p.pool.v[b * 128 + d] = y;
+    }
+    if (gl_WorkGroupID.x == 0)
+        for (uint q = max(p0, (p0 + p.t) / 4 * 4); q < p0 + p.t; q++) p.ring.v[(q & 3) * 128 + d] = p.ik.v[(q - p0) * 128 + d];
+}

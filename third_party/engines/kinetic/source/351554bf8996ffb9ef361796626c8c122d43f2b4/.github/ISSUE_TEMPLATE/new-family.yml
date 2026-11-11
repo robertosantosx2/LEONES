@@ -1,0 +1,41 @@
+name: Support a new model family
+description: Ask for, or offer to add, an architecture Kinetic does not run yet.
+labels: ["model support", "new family"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A family is one file in `crates/kinetic-models/src/arch/`; see
+        [Adding a model family](https://veloresearch.github.io/kinetic/adding-a-family.html)
+        if you would like to add it yourself.
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      description: The model's page, for example on Hugging Face.
+      placeholder: https://huggingface.co/org/Model
+    validations:
+      required: true
+  - type: input
+    id: gguf
+    attributes:
+      label: GGUF file
+      description: A link to one GGUF file of it.
+      placeholder: https://huggingface.co/org/Model-GGUF, Model-Q4_K_M.gguf
+    validations:
+      required: true
+  - type: input
+    id: arch
+    attributes:
+      label: Architecture name
+      description: The `general.architecture` value, as `kinetic info <model>` or `python scripts/new_family.py <model> --dry-run` prints it.
+      placeholder: phi3
+    validations:
+      required: true
+  - type: dropdown
+    id: help
+    attributes:
+      label: Will you add it?
+      options:
+        - "No, asking for it"
+        - "Yes, I will open a pull request"

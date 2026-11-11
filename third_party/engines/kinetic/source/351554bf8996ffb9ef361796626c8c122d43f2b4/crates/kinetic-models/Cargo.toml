@@ -1,0 +1,47 @@
+[package]
+name = "kinetic-models"
+description = "Model architectures"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+cuda = ["dep:kinetic-cuda"]
+vulkan = ["dep:kinetic-vulkan"]
+
+[dependencies]
+half.workspace = true
+kinetic-cpu = { path = "../kinetic-cpu" }
+kinetic-cuda = { path = "../kinetic-cuda", optional = true }
+kinetic-gguf = { path = "../kinetic-gguf" }
+kinetic-quant = { path = "../kinetic-quant" }
+kinetic-vulkan = { path = "../kinetic-vulkan", optional = true }
+rayon.workspace = true
+
+[dev-dependencies]
+kinetic-tokenizer = { path = "../kinetic-tokenizer" }
+
+[[example]]
+name = "cuda_parity"
+required-features = ["cuda"]
+
+[[example]]
+name = "cuda_prefill"
+required-features = ["cuda"]
+
+[[example]]
+name = "cuda_speculative"
+required-features = ["cuda"]
+
+[[example]]
+name = "vulkan_parity"
+required-features = ["vulkan"]
+
+[[example]]
+name = "vulkan_bench"
+required-features = ["vulkan"]
+
+[[example]]
+name = "flywheel"
+required-features = ["cuda"]

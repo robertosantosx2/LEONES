@@ -1,0 +1,420 @@
+//! Affine widths of the modules the engine loads, admitted against the projection kernels this chip runs.
+const std = @import("std");
+const core = @import("core");
+const cfg = @import("config.zig");
+const affine = @import("affine.zig");
+const glue = @import("glue.zig");
+const row = core.row_projection;
+const lane = core.lane_projection;
+
+/// One affine width, as core.quant.mlx.Width: `bits` per weight, a scale and bias a `group` of K.
+pub const Width = struct { bits: u8, group: u16 };
+/// The qualified format: today's kernels and launches, unchanged.
+pub const uniform = Width{ .bits = 4, .group = 64 };
+
+pub fn isUniform(w: Width) bool {
+    return w.bits == uniform.bits and w.group == uniform.group;
+}
+
+/// A layer's projections; a layer stores entries for both mixers and uses those of its kind.
+pub const Member = enum { gate, up, down, qkv, z, b, a, out, q, k, v, o, router, shared_gate, egate, eup, edown };
+const members = @backingInt(Member.edown) + 1;
+/// The routed block's members: the router, the shared expert's gate and the stacked experts.
+pub const routed = [_]Member{ .router, .shared_gate, .egate, .eup, .edown };
+/// The widths the kernel contract checks the routed block's kernels at, in groups of `routed_group`.
+pub const routed_bits = [_]u8{ 4, 8 };
+pub const routed_group = 64;
+
+/// A member's module under its layer; with experts, `gate`, `up` and `down` are the shared expert's.
+pub fn leaf(c: cfg.Config, m: Member) []const u8 {
+    return switch (m) {
+        .gate => if (c.moe()) "mlp.shared_expert.gate_proj" else "mlp.gate_proj",
+        .up => if (c.moe()) "mlp.shared_expert.up_proj" else "mlp.up_proj",
+        .down => if (c.moe()) "mlp.shared_expert.down_proj" else "mlp.down_proj",
+        .router => "mlp.gate",
+        .shared_gate => "mlp.shared_expert_gate",
+        .egate => "mlp.switch_mlp.gate_proj",
+        .eup => "mlp.switch_mlp.up_proj",
+        .edown => "mlp.switch_mlp.down_proj",
+        .qkv => "linear_attn.in_proj_qkv",
+        .z => "linear_attn.in_proj_z",
+        .b => "linear_attn.in_proj_b",
+        .a => "linear_attn.in_proj_a",
+        .out => "linear_attn.out_proj",
+        .q => "self_attn.q_proj",
+        .k => "self_attn.k_proj",
+        .v => "self_attn.v_proj",
+        .o => "self_attn.o_proj",
+    };
+}
+
+/// Output rows and input width of a member (one expert's, for the stacked experts).
+pub fn shape(c: cfg.Config, m: Member) [2]usize {
+    return switch (m) {
+        .gate, .up => .{ c.intermediate, c.hidden },
+        .down => .{ c.hidden, c.intermediate },
+        .router => .{ c.experts, c.hidden },
+        .shared_gate => .{ 1, c.hidden },
+        .egate, .eup => .{ c.moe_intermediate, c.hidden },
+        .edown => .{ c.hidden, c.moe_intermediate },
+        .qkv => .{ c.gdnQkvDim(), c.hidden },
+        .z => .{ c.gdnValueDim(), c.hidden },
+        .b, .a => .{ c.v_heads, c.hidden },
+        .out => .{ c.hidden, c.gdnValueDim() },
+        .q => .{ c.qDim(), c.hidden },
+        .k, .v => .{ c.kvDim(), c.hidden },
+        .o => .{ c.hidden, c.heads * c.head_dim },
+    };
+}
+
+/// The device matrices of a layer: members fused into one output, in output-row order.
+pub fn stacks(kind: cfg.Kind) []const []const Member {
+    return switch (kind) {
+        .linear => &.{ &.{ .gate, .up }, &.{.down}, &.{.qkv}, &.{ .z, .b, .a }, &.{.out} },
+        .attention => &.{ &.{ .gate, .up }, &.{.down}, &.{.q}, &.{ .k, .v }, &.{.o} },
+    };
+}
+
+/// A stack's products as [first, count]: one for a stack of one width, else one a member, as the reference runs them.
+pub fn runs(ws: []const Width, out: [][2]usize) [][2]usize {
+    for (ws[1..]) |w| if (!std.meta.eql(ws[0], w)) {
+        for (out[0..ws.len], 0..) |*o, i| o.* = .{ i, 1 };
+        return out[0..ws.len];
+    };
+    out[0] = .{ 0, ws.len };
+    return out[0..1];
+}
+
+pub const Widths = struct {
+    allocator: std.mem.Allocator,
+    layers: [][members]Width,
+    embed: Width,
+    head: Width,
+
+    /// Resolves only loaded modules, so draft-head (MTP) and vision overrides never decide admission.
+    pub fn resolve(a: std.mem.Allocator, f: *const affine.Formats, c: cfg.Config) !Widths {
+        if ((try f.resolve(null)) == null) return error.MissingAffineFormat;
+        const layers = try a.alloc([members]Width, c.layers);
+        errdefer a.free(layers);
+        var name: [96]u8 = undefined;
+        for (layers, 0..) |*l, i| {
+            l.* = @splat(uniform);
+            for (stacks(c.kind(i))) |stack| for (stack) |m| {
+                l[@backingInt(m)] = try one(f, try std.fmt.bufPrint(&name, "model.layers.{d}.{s}", .{ i, leaf(c, m) }));
+            };
+            if (c.moe()) for (routed) |m| {
+                l[@backingInt(m)] = try one(f, try std.fmt.bufPrint(&name, "model.layers.{d}.{s}", .{ i, leaf(c, m) }));
+            };
+        }
+        return .{ .allocator = a, .layers = layers, .embed = try one(f, "model.embed_tokens"), .head = try one(f, "lm_head") };
+    }
+
+    /// Every module 4-bit g64, for synthetic graphs.
+    pub fn uniformAll(a: std.mem.Allocator, layers: usize) !Widths {
+        const all = try a.alloc([members]Width, layers);
+        for (all) |*l| l.* = @splat(uniform);
+        return .{ .allocator = a, .layers = all, .embed = uniform, .head = uniform };
+    }
+
+    pub fn deinit(w: *Widths) void {
+        w.allocator.free(w.layers);
+    }
+
+    pub fn of(w: *const Widths, layer: usize, m: Member) Width {
+        return w.layers[layer][@backingInt(m)];
+    }
+
+    /// 0 when every module is 4-bit g64, else a nonzero hash of every module's width.
+    pub fn tag(w: *const Widths) u64 {
+        var h = std.hash.Wyhash.init(0x27);
+        var mixed = false;
+        for (w.layers) |l| for (l) |x| {
+            mixed = mixed or !isUniform(x);
+            h.update(&.{ x.bits, @as(u8, @truncate(x.group)), @as(u8, @truncate(x.group >> 8)) });
+        };
+        for ([_]Width{ w.embed, w.head }) |x| {
+            mixed = mixed or !isUniform(x);
+            h.update(&.{ x.bits, @as(u8, @truncate(x.group)), @as(u8, @truncate(x.group >> 8)) });
+        }
+        return if (mixed) h.final() | 1 else 0;
+    }
+};
+
+fn one(f: *const affine.Formats, path: []const u8) !Width {
+    const s = (try f.resolve(path)) orelse return error.UnqualifiedQwenFormat;
+    return .{ .bits = s.bits, .group = @intCast(s.group_size) };
+}
+
+/// The timed window costs' model shape; mixed widths add their tag, so checkpoints of one shape keep their own costs.
+pub fn costShape(c: cfg.Config, tag: u64, buf: []u8, rows: usize, drafted: bool) ![]const u8 {
+    const s = try std.fmt.bufPrint(buf, "{d}/{d}/{d}/{d}/{d}/{d}", .{ c.layers, c.hidden, c.intermediate, c.vocab, rows, @intFromBool(drafted) });
+    if (tag == 0) return s;
+    return buf[0 .. s.len + (try std.fmt.bufPrint(buf[s.len..], "/w{x:0>16}", .{tag})).len];
+}
+
+/// What the chip's projection kernels run: lane kernels on tensor units for whole 32-row tiles, else the row kernels.
+pub const Chip = struct { tensor_units: bool, row_bits: []const u8 = &row.bit_widths };
+
+/// The first module admission refused, for the load's error message.
+pub const Why = struct { layer: ?usize = null, module: []const u8 = "", width: Width = uniform, reason: anyerror = error.None };
+
+pub fn admit(w: *const Widths, c: cfg.Config, chip: Chip, why: *Why) !void {
+    var buf: [3][2]usize = undefined;
+    for (0..c.layers) |i| for (stacks(c.kind(i))) |stack| {
+        var ws: [3]Width = undefined;
+        for (stack, 0..) |m, j| ws[j] = w.of(i, m);
+        const list = runs(ws[0..stack.len], &buf);
+        if (list.len == 1 and isUniform(ws[0])) continue;
+        for (list) |r| {
+            var n: usize = 0;
+            for (stack[r[0]..][0..r[1]]) |m| n += shape(c, m)[0];
+            check(chip, n, shape(c, stack[r[0]])[1], ws[r[0]]) catch |err| {
+                why.* = .{ .layer = i, .module = leaf(c, stack[r[0]]), .width = ws[r[0]], .reason = err };
+                return error.UnqualifiedQwenFormat;
+            };
+        }
+    };
+    if (c.moe()) for (0..c.layers) |i| {
+        for (routed) |m| {
+            const x = w.of(i, m);
+            checkRouted(c, chip, m, x) catch |err| {
+                why.* = .{ .layer = i, .module = leaf(c, m), .width = x, .reason = err };
+                return error.UnqualifiedQwenFormat;
+            };
+        }
+        // the router matrix stacks the shared gate's row under the experts': one width for both
+        const r = w.of(i, .router);
+        const g = w.of(i, .shared_gate);
+        if (r.bits != g.bits or r.group != g.group) {
+            why.* = .{ .layer = i, .module = leaf(c, .shared_gate), .width = g, .reason = error.SharedGateWidth };
+            return error.UnqualifiedQwenFormat;
+        }
+        // decode runs the shared expert as the experts' extra slot: one width for each pair
+        for ([_][2]Member{ .{ .gate, .egate }, .{ .up, .eup }, .{ .down, .edown } }) |pair| {
+            const x = w.of(i, pair[0]);
+            const e = w.of(i, pair[1]);
+            if (x.bits != e.bits or x.group != e.group) {
+                why.* = .{ .layer = i, .module = leaf(c, pair[0]), .width = x, .reason = error.SharedExpertWidth };
+                return error.UnqualifiedQwenFormat;
+            }
+        }
+    };
+    glue.checkEmbed(.{ .width = @intCast(c.hidden), .rows = 1, .vocab = @intCast(c.vocab), .bits = w.embed.bits, .group = w.embed.group, .metadata = .bf16 }) catch |err| {
+        why.* = .{ .module = "embed_tokens", .width = w.embed, .reason = err };
+        return error.UnqualifiedQwenFormat;
+    };
+    if (!isUniform(w.head)) check(chip, c.vocab, c.hidden, w.head) catch |err| {
+        why.* = .{ .module = "lm_head", .width = w.head, .reason = err };
+        return error.UnqualifiedQwenFormat;
+    };
+}
+
+/// One run's kernel: 4/64 keeps today's choice; other widths take the non-reg lane kernel or the row kernel.
+fn check(chip: Chip, n: usize, k: usize, w: Width) !void {
+    _ = try @import("projection.zig").split(n, k);
+    // The lane sums and odd word counts assume group 64 off the 4-bit kernel.
+    if (chip.tensor_units and w.bits != 4 and w.group != 64) return error.UnsupportedLaneGroup;
+    if (chip.tensor_units and n % 32 == 0) return (lane.Layout{ .n = n, .k = k, .format = .{ .bits = w.bits, .group = w.group }, .precompute_sums = isUniform(w), .reg = isUniform(w) }).validate();
+    if (isUniform(w) and n % 8 == 0) return;
+    if (std.mem.indexOfScalar(u8, chip.row_bits, w.bits) == null) return error.UnsupportedRowBits;
+    return (row.Weights{ .w = undefined, .scales = undefined, .biases = undefined, .n = n, .k = k, .group = w.group }).validate();
+}
+
+/// The routed block's kernels: the router's row matrix; the experts' row kernels and (tensor units) affine_mm gathers.
+fn checkRouted(c: cfg.Config, chip: Chip, m: Member, w: Width) !void {
+    const s = shape(c, m);
+    if (std.mem.indexOfScalar(u8, &routed_bits, w.bits) == null or w.group != routed_group) return error.UncheckedRoutedWidth;
+    if (std.mem.indexOfScalar(u8, chip.row_bits, w.bits) == null) return error.UnsupportedRowBits;
+    const n = if (m == .router or m == .shared_gate) routerRows(c.experts) else s[0];
+    try (row.Weights{ .w = undefined, .scales = undefined, .biases = undefined, .n = n, .k = s[1], .group = w.group, .bits = w.bits }).validate();
+    if (m == .egate or m == .eup or m == .edown) {
+        if (chip.tensor_units and (s[0] % 64 != 0 or s[1] % 64 != 0)) return error.UnsupportedExpertShape;
+    }
+}
+
+/// The router matrix's rows: the experts, the shared gate, then zero rows to a multiple of 64 (whole weight tiles).
+pub fn routerRows(experts: usize) usize {
+    return (experts + 1 + 63) / 64 * 64;
+}
+
+const all_rows = [_]u8{ 2, 3, 4, 5, 6, 8 };
+
+fn testConfig(a: std.mem.Allocator, quantization: []const u8) ![]u8 {
+    return std.fmt.allocPrint(a,
+        \\{{"model_type":"qwen3_5","text_config":{{"model_type":"qwen3_5_text","hidden_size":5120,"intermediate_size":17408,
+        \\"num_hidden_layers":64,"num_attention_heads":24,"num_key_value_heads":4,"head_dim":256,"vocab_size":248320,
+        \\"linear_num_key_heads":16,"linear_num_value_heads":48,"linear_key_head_dim":128,"linear_value_head_dim":128,
+        \\"linear_conv_kernel_dim":4,"partial_rotary_factor":0.25,"eos_token_id":248044}},"quantization":{s}}}
+    , .{quantization});
+}
+
+fn testAdmit(quantization: []const u8, chip: Chip, why: *Why) !void {
+    const a = std.testing.allocator;
+    const text = try testConfig(a, quantization);
+    defer a.free(text);
+    const c = try cfg.parse(a, text, null);
+    var f = try affine.Formats.init(a, text);
+    defer f.deinit();
+    var w = try Widths.resolve(a, &f, c);
+    defer w.deinit();
+    return admit(&w, c, chip, why);
+}
+
+fn testAdmitRouted(quantization: []const u8, why: *Why) !void {
+    const a = std.testing.allocator;
+    const text = try std.fmt.allocPrint(a,
+        \\{{"model_type":"qwen3_5_moe","text_config":{{"model_type":"qwen3_5_moe_text","hidden_size":3072,"intermediate_size":1024,
+        \\"moe_intermediate_size":1024,"shared_expert_intermediate_size":1024,"num_experts":256,"num_experts_per_tok":8,
+        \\"num_hidden_layers":48,"num_attention_heads":32,"num_key_value_heads":2,"head_dim":256,"vocab_size":248320,
+        \\"linear_num_key_heads":16,"linear_num_value_heads":64,"linear_key_head_dim":128,"linear_value_head_dim":128,
+        \\"linear_conv_kernel_dim":4,"partial_rotary_factor":0.25,"eos_token_id":248044}},"quantization":{s}}}
+    , .{quantization});
+    defer a.free(text);
+    const c = try cfg.parse(a, text, null);
+    var f = try affine.Formats.init(a, text);
+    defer f.deinit();
+    var w = try Widths.resolve(a, &f, c);
+    defer w.deinit();
+    return admit(&w, c, .{ .tensor_units = true, .row_bits = &all_rows }, why);
+}
+
+/// TensorFold/Qwen3.8-27B-oQ4 override shapes: 4-bit g64, 5-bit GDN, MLP and attention members, one 6-bit v.
+const oq4 =
+    \\{"group_size":64,"bits":4,"mode":"affine",
+    \\"language_model.model.layers.37.linear_attn.in_proj_a":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.36.linear_attn.in_proj_b":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.26.linear_attn.in_proj_z":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.62.linear_attn.out_proj":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.25.mlp.down_proj":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.27.self_attn.k_proj":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.27.self_attn.o_proj":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.27.self_attn.v_proj":{"group_size":64,"bits":6}}
+;
+
+/// The override shapes of TensorFold/Qwen3.8-27B-oQ2: 2-bit g64 with an 8-bit embedding and 3/5/6-bit members.
+const oq2 =
+    \\{"group_size":64,"bits":2,"mode":"affine",
+    \\"language_model.model.embed_tokens":{"group_size":64,"bits":8},
+    \\"language_model.model.layers.50.linear_attn.in_proj_a":{"group_size":64,"bits":3},
+    \\"language_model.model.layers.44.linear_attn.in_proj_a":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.42.linear_attn.in_proj_b":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.12.linear_attn.in_proj_z":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.10.mlp.down_proj":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.35.self_attn.k_proj":{"group_size":64,"bits":5},
+    \\"language_model.model.layers.35.self_attn.v_proj":{"group_size":64,"bits":6}}
+;
+
+test "uniform 4-bit g64 admits on both chip kinds and ignores draft-head and vision overrides" {
+    var why: Why = .{};
+    const q = "{\"bits\":4,\"group_size\":64,\"mtp.layers.0.mlp.gate_proj\":{\"bits\":8,\"group_size\":64},\"vision_tower.blocks.0.attn.qkv\":false}";
+    try testAdmit(q, .{ .tensor_units = false }, &why);
+    try testAdmit(q, .{ .tensor_units = true }, &why);
+}
+
+test "oQ4 and oQ2 formats admit once the row kernels unpack every width they declare" {
+    var why: Why = .{};
+    try testAdmit(oq4, .{ .tensor_units = false, .row_bits = &all_rows }, &why);
+    try testAdmit(oq2, .{ .tensor_units = false, .row_bits = &all_rows }, &why);
+}
+
+test "on tensor units a run that is not whole 32-row tiles takes the row kernels: oQ4's 48-row in_proj_a" {
+    var why: Why = .{};
+    try testAdmit(oq4, .{ .tensor_units = true }, &why);
+    try testAdmit(oq2, .{ .tensor_units = true }, &why);
+}
+
+test "a width the row kernels do not unpack refuses naming the module, never guessing four bits" {
+    var why: Why = .{};
+    try std.testing.expectError(error.UnqualifiedQwenFormat, testAdmit(oq4, .{ .tensor_units = false, .row_bits = &.{ 2, 4, 6, 8 } }, &why));
+    try std.testing.expectEqual(@as(?usize, 25), why.layer);
+    try std.testing.expectEqualStrings("mlp.down_proj", why.module);
+    try std.testing.expectEqual(Width{ .bits = 5, .group = 64 }, why.width);
+    try std.testing.expectError(error.UnqualifiedQwenFormat, testAdmit(oq2, .{ .tensor_units = false, .row_bits = &.{ 2, 4, 6, 8 } }, &why));
+    try std.testing.expectEqual(@as(u8, 5), why.width.bits);
+}
+
+test "a dense projection and an unsupported global group refuse" {
+    var why: Why = .{};
+    try std.testing.expectError(error.UnqualifiedQwenFormat, testAdmit("{\"bits\":4,\"group_size\":64,\"model.layers.3.self_attn.q_proj\":false}", .{ .tensor_units = false }, &why));
+    try std.testing.expectError(error.BadAffine, testAdmit("{\"bits\":4,\"group_size\":16}", .{ .tensor_units = false }, &why));
+}
+
+test "a 4/64 run off the 32-row lanes, such as a lone 48-row in_proj_b, takes the row kernels on tensor units" {
+    try check(.{ .tensor_units = true }, 48, 5120, uniform);
+    try check(.{ .tensor_units = true }, 64, 5120, uniform);
+}
+
+test "a mixed stack runs every member alone, even beside a member of its own width" {
+    var buf: [3][2]usize = undefined;
+    const four = uniform;
+    const five = Width{ .bits = 5, .group = 64 };
+    try std.testing.expectEqualSlices([2]usize, &.{.{ 0, 3 }}, runs(&.{ four, four, four }, &buf));
+    try std.testing.expectEqualSlices([2]usize, &.{ .{ 0, 1 }, .{ 1, 1 }, .{ 2, 1 } }, runs(&.{ five, four, four }, &buf));
+    try std.testing.expectEqualSlices([2]usize, &.{ .{ 0, 1 }, .{ 1, 1 }, .{ 2, 1 } }, runs(&.{ four, five, four }, &buf));
+}
+
+test "timed costs keep a uniform checkpoint's shape and give each mixed one its own" {
+    const a = std.testing.allocator;
+    var tags: [3]u64 = undefined;
+    for ([_][]const u8{ "{\"bits\":4,\"group_size\":64}", oq4, oq2 }, &tags) |quantization, *t| {
+        const text = try testConfig(a, quantization);
+        defer a.free(text);
+        const c = try cfg.parse(a, text, null);
+        var f = try affine.Formats.init(a, text);
+        defer f.deinit();
+        var w = try Widths.resolve(a, &f, c);
+        defer w.deinit();
+        t.* = w.tag();
+        var buf: [96]u8 = undefined;
+        const got = try costShape(c, t.*, &buf, 16, true);
+        try std.testing.expectEqual(t.* == 0, std.mem.eql(u8, got, "64/5120/17408/248320/16/1"));
+    }
+    try std.testing.expectEqual(@as(u64, 0), tags[0]);
+    try std.testing.expect(tags[1] != 0 and tags[2] != 0 and tags[1] != tags[2]);
+}
+
+test "resolved widths follow overrides under any checkpoint prefix" {
+    const a = std.testing.allocator;
+    const text = try testConfig(a, oq4);
+    defer a.free(text);
+    const c = try cfg.parse(a, text, null);
+    var f = try affine.Formats.init(a, text);
+    defer f.deinit();
+    var w = try Widths.resolve(a, &f, c);
+    defer w.deinit();
+    try std.testing.expectEqual(Width{ .bits = 6, .group = 64 }, w.of(27, .v));
+    try std.testing.expectEqual(Width{ .bits = 5, .group = 64 }, w.of(27, .k));
+    try std.testing.expectEqual(uniform, w.of(27, .q));
+    try std.testing.expectEqual(uniform, w.head);
+}
+
+test "the routed block admits the publisher's widths and refuses those its kernels are not checked at" {
+    var why: Why = .{};
+    // ornith-ai/Ornith-1.5-122B-MLX-4bit: 4-bit g64, the router and shared gate at 8 bits
+    const published =
+        \\{"group_size":64,"bits":4,"mode":"affine",
+        \\"language_model.model.layers.0.mlp.gate":{"group_size":64,"bits":8},
+        \\"language_model.model.layers.0.mlp.shared_expert_gate":{"group_size":64,"bits":8}}
+    ;
+    try testAdmitRouted(published, &why);
+    try testAdmitRouted("{\"group_size\":64,\"bits\":8,\"mode\":\"affine\"}", &why);
+    try std.testing.expectError(error.UnqualifiedQwenFormat, testAdmitRouted("{\"group_size\":32,\"bits\":4,\"mode\":\"affine\"}", &why));
+    try std.testing.expectEqual(error.UncheckedRoutedWidth, why.reason);
+    const five =
+        \\{"group_size":64,"bits":4,"mode":"affine",
+        \\"language_model.model.layers.3.mlp.switch_mlp.up_proj":{"group_size":64,"bits":5}}
+    ;
+    try std.testing.expectError(error.UnqualifiedQwenFormat, testAdmitRouted(five, &why));
+    try std.testing.expectEqual(error.UncheckedRoutedWidth, why.reason);
+}
+
+test "a shared expert whose width differs from the experts' is refused at admission, not at the first decode" {
+    var why: Why = .{};
+    const mixed =
+        \\{"group_size":64,"bits":4,"mode":"affine",
+        \\"language_model.model.layers.5.mlp.shared_expert.down_proj":{"group_size":64,"bits":8}}
+    ;
+    try std.testing.expectError(error.UnqualifiedQwenFormat, testAdmitRouted(mixed, &why));
+    try std.testing.expectEqual(error.SharedExpertWidth, why.reason);
+    try std.testing.expectEqualStrings("mlp.shared_expert.down_proj", why.module);
+}

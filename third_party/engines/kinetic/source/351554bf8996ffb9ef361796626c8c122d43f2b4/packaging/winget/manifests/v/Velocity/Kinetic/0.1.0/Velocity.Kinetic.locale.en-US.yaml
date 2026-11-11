@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+PackageIdentifier: Velocity.Kinetic
+PackageVersion: 0.1.0
+PackageLocale: en-US
+Publisher: Velocity
+PublisherUrl: https://veloresearch.com
+PackageName: Kinetic
+PackageUrl: https://github.com/Veloresearch/kinetic
+License: Apache-2.0
+LicenseUrl: https://github.com/Veloresearch/kinetic/blob/main/LICENSE
+ShortDescription: Open engine for running AI locally
+Description: Runs GGUF language models on your own computer, on NVIDIA GPUs or the CPU, with OpenAI- and Ollama-compatible servers. Kinetic never connects to the network, except when you run `kinetic pull`.
+Moniker: kinetic
+Tags:
+  - llm
+  - gguf
+  - inference
+  - local-ai
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

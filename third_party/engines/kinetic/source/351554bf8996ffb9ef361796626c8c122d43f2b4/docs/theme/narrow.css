@@ -1,0 +1,15 @@
+/* on narrow screens the sidebar opens over the page instead of pushing it out of view */
+@media only screen and (max-width: 1080px) {
+  .sidebar-visible .page-wrapper {
+    transform: none !important;
+  }
+  .sidebar {
+    top: var(--menu-bar-height);
+    z-index: 150;
+    max-width: 85vw;
+    box-shadow: 0 0 32px rgba(0, 0, 0, 0.5);
+  }
+  .sidebar-resize-handle {
+    display: none;
+  }
+}

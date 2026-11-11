@@ -1,0 +1,3 @@
+#version 460
+#define HD 64
+#include "attn_prefill.glsl"

@@ -1,0 +1,18 @@
+{
+  "engine_id": "kinetic",
+  "display_name": "Kinetic",
+  "repository": "https://github.com/Veloresearch/kinetic.git",
+  "ref_requested": "main",
+  "commit": "351554bf8996ffb9ef361796626c8c122d43f2b4",
+  "vendored_at": "2026-11-11T07:16:19.592386+00:00",
+  "source_tree": "source/351554bf8996ffb9ef361796626c8c122d43f2b4",
+  "submodule_status": "",
+  "git_lfs": "git-lfs pull completed",
+  "license_files": [
+    "TRADEMARKS.md",
+    "NOTICE",
+    "LICENSE"
+  ],
+  "source_status": "PINNED_SNAPSHOT",
+  "git_commit_tree": "b296660edf48cdace1dc584b8b6b3a4dbfe7eba1"
+}

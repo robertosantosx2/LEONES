@@ -1,0 +1,19 @@
+#version 460
+layout(local_size_x = 64) in;
+#include "common.glsl"
+// Workgroup = token (each rotates its per heads). NEOX pairs (i, i + n_rot/2). Token t sits at position step[0] + t.
+layout(push_constant) uniform P { F32 x; I32 step; double ts; uint stride; uint per; uint n_rot; } p;
+void main() {
+    uint t = gl_WorkGroupID.x, half_ = p.n_rot / 2;
+    double pos = double(p.step.v[0] + int(t));
+    for (uint i = gl_LocalInvocationID.x; i < half_; i += 64) {
+        float sn, cs;
+        rope_cs(pos, p.ts, i, sn, cs);
+        for (uint hd = 0; hd < p.per; hd++) {
+            uint h = (t * p.per + hd) * p.stride;
+            float a = p.x.v[h + i], bb = p.x.v[h + i + half_];
+            p.x.v[h + i] = a * cs - bb * sn;
+            p.x.v[h + i + half_] = a * sn + bb * cs;
+        }
+    }
+}

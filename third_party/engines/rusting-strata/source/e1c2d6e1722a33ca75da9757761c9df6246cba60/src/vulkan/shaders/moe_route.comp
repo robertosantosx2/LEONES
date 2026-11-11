@@ -1,0 +1,36 @@
+#version 460
+#pragma use_vulkan_memory_model
+#extension GL_KHR_memory_scope_semantics : require
+layout(local_size_x = 256) in;
+#include "common.glsl"
+#include "topk.glsl"
+layout(push_constant) uniform P { F32 p; I32 table; I32 ids; F32 wts; I32 slots; F32 wh; F32 h; MB mb; I32 step; uint n; uint k;
+    float extra_scale; uint nh; uint h_off; uint T; } p;
+
+// Decode routing of T tokens in one workgroup (subgroup i routes tokens i, i + 8, ...): router_topk, the expert cache
+// lookup (slots = table[ids], -1 = not resident; wh = weight of hits, else 0), then the routing (and h, if an expert
+// missed) copied to the host-mapped mailbox, T stored in word 1, word 8 zeroed and the request flag (word 0) raised to step[1].
+shared bool miss;
+void main() {
+    uint lane = LANE, kt = p.k * p.T;
+    if (gl_LocalInvocationID.x == 0) miss = false;
+    barrier();
+    for (uint t = WARP; t < p.T; t += ((gl_WorkGroupSize.x + 31u) / 32u)) {
+        int id;
+        float w;
+        topk(p.p, t * p.n, p.n, p.k, p.extra_scale, lane, id, w);
+        if (lane < p.k) {
+            uint o = t * p.k + lane;
+            int s = p.table.v[id];
+            p.ids.v[o] = id; p.wts.v[o] = w; p.slots.v[o] = s; p.wh.v[o] = s >= 0 ? w : 0.0;
+            p.mb.v[32 + o] = uint(id); p.mb.v[32 + kt + o] = floatBitsToUint(w); p.mb.v[32 + 2 * kt + o] = uint(s);
+            if (s < 0) miss = true;
+        }
+    }
+    barrier();
+    if (miss) for (uint i = gl_LocalInvocationID.x; i < p.nh * p.T; i += 256) p.mb.v[p.h_off + i] = floatBitsToUint(p.h.v[i]);
+    if (gl_LocalInvocationID.x == 0) { p.mb.v[1] = p.T; p.mb.v[8] = 0; }  // word 8: the combine's verdict (mb_wait)
+    // barrier() orders only shared memory: every invocation's mailbox writes must happen before the release below.
+    controlBarrier(gl_ScopeWorkgroup, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsAcquireRelease);
+    if (gl_LocalInvocationID.x == 0) atomicStore(p.mb.v[0], uint(p.step.v[1]), gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelease | gl_SemanticsMakeAvailable);
+}

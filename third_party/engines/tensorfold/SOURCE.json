@@ -1,0 +1,17 @@
+{
+  "engine_id": "tensorfold",
+  "display_name": "TensorFold",
+  "repository": "https://github.com/ashhart/TensorFold.git",
+  "ref_requested": "main",
+  "commit": "3adaf786857e851d665f17b955c9768f5dda80d0",
+  "vendored_at": "2026-11-11T07:16:24.564231+00:00",
+  "source_tree": "source/3adaf786857e851d665f17b955c9768f5dda80d0",
+  "submodule_status": "",
+  "git_lfs": "git-lfs pull completed",
+  "license_files": [
+    "NOTICE",
+    "LICENSE"
+  ],
+  "source_status": "PINNED_SNAPSHOT",
+  "git_commit_tree": "51028007a91d4c5eb002ec0aeccaa1ce25e12bd1"
+}

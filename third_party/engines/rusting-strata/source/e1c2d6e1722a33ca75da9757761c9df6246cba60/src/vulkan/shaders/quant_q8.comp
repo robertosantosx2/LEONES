@@ -1,0 +1,33 @@
+#version 460
+// x rows to q8 rows for gemmi, as quant_q8 in kernels.cu: workgroup r quantizes x row r into out row r of
+// cols int8, then cols / 32 f32 scales, then cols / 16 f32 sums d * sum(q).
+layout(local_size_x = 256) in;
+#include "common.glsl"
+layout(push_constant) uniform P { F32 x; U32 o; uint xs; uint cols; } p;
+
+void main() {
+    uint xo = gl_WorkGroupID.x * p.xs, oo = gl_WorkGroupID.x * (p.cols + p.cols / 8 + p.cols / 4) / 4, tid = gl_LocalInvocationID.x;
+    for (uint i = tid * 16; i < p.cols; i += 256 * 16) {
+        float v[16], mx = 0.0;
+        for (uint j = 0; j < 16; j++) { v[j] = p.x.v[xo + i + j]; mx = max(mx, abs(v[j])); }
+        float d, id;
+        if (LLAMA_Q8) {  // q8k_scale<16>: over the 16 lanes of a 256-block
+            float sv = 0.0; uint si = 1u << 30;
+            for (uint j = 0; j < 16; j++) if (abs(v[j]) == mx && si > i + j) { sv = v[j]; si = i + j; }
+            for (uint o = 1; o < 16; o <<= 1) {
+                float ov = subgroupShuffleXor(sv, o); uint oi = subgroupShuffleXor(si, o);
+                if (abs(ov) > abs(sv) || (abs(ov) == abs(sv) && oi < si)) { sv = ov; si = oi; }
+            }
+            id = sv != 0.0 ? rcp_d(-127.0, sv) : 0.0;
+            d = sv != 0.0 ? rcp_d(1.0, id) : 0.0;
+        } else {
+            mx = max(mx, subgroupShuffleXor(mx, 1));  // lanes 2k, 2k + 1 share one 32-block
+            d = rcp_d(mx, 127.0); id = mx > 0.0 ? rcp_d(127.0, mx) : 0.0;
+        }
+        int q[16], sum = 0;
+        for (uint j = 0; j < 16; j++) { q[j] = int(roundEven(v[j] * id)); sum += q[j]; }
+        for (uint j = 0; j < 4; j++) p.o.v[oo + i / 4 + j] = pack4(q[4 * j], q[4 * j + 1], q[4 * j + 2], q[4 * j + 3]);
+        if ((tid & 1) == 0) p.o.v[oo + p.cols / 4 + i / 32] = floatBitsToUint(d);
+        p.o.v[oo + p.cols / 4 + p.cols / 32 + i / 16] = floatBitsToUint(d * float(sum));
+    }
+}

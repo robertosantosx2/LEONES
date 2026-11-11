@@ -1,0 +1,135 @@
+name: Release
+
+# Builds the archives for a version tag and attaches them to a draft
+# release, which a maintainer reviews and publishes by hand.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # The CUDA driver is opened at runtime, so this toolkit is needed only to
+  # build the kernels. 12.8 is the first release that targets sm_120.
+  CUDA_VERSION: "12.8.1"
+
+jobs:
+  build:
+    name: ${{ matrix.target }}-${{ matrix.variant }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-22.04, target: linux-x86_64, variant: cpu }
+          - { os: ubuntu-22.04, target: linux-x86_64, variant: cuda }
+          - { os: windows-2022, target: windows-x86_64, variant: cpu }
+          - { os: windows-2022, target: windows-x86_64, variant: cuda }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # the full Linux toolkit and the build together outgrow the runner's disk
+      - name: Free disk
+        if: runner.os == 'Linux' && matrix.variant == 'cuda'
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - name: CUDA toolkit
+        if: matrix.variant == 'cuda'
+        uses: Jimver/cuda-toolkit@v0.2.24
+        with:
+          cuda: ${{ env.CUDA_VERSION }}
+          method: network
+          # The whole toolkit on Linux; on Windows only what nvcc -fatbin needs.
+          sub-packages: ${{ runner.os == 'Windows' && '["nvcc", "cudart", "visual_studio_integration"]' || '[]' }}
+
+      - name: Build
+        shell: bash
+        # the C runtime linked in, so a fresh Windows needs no Visual C++ install
+        env:
+          RUSTFLAGS: ${{ runner.os == 'Windows' && '-C target-feature=+crt-static' || '' }}
+        run: |
+          features=(--no-default-features)
+          if [ "${{ matrix.variant }}" = cuda ]; then features=(--features cuda); fi
+          cargo build --release --locked -p kinetic-cli "${features[@]}"
+          cargo build --release --locked -p kinetic-capi
+
+      - name: Check the binary
+        shell: bash
+        run: |
+          target/release/kinetic --version
+          target/release/kinetic --help > /dev/null
+
+      - name: Package
+        id: package
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          name="kinetic-${version}-${{ matrix.target }}-${{ matrix.variant }}"
+          mkdir -p "$name/include" "$name/lib"
+          cp LICENSE NOTICE README.md "$name/"
+          cp crates/kinetic-capi/include/kinetic.h "$name/include/"
+          if [ "$RUNNER_OS" = Windows ]; then
+            cp target/release/kinetic.exe "$name/"
+            cp target/release/kinetic_capi.dll target/release/kinetic_capi.dll.lib "$name/lib/"
+          else
+            cp target/release/kinetic "$name/"
+            cp target/release/libkinetic_capi.so "$name/lib/"
+          fi
+          (cd "$name" && find . -type f ! -name SHA256SUMS | sort | xargs sha256sum > SHA256SUMS)
+          if [ "$RUNNER_OS" = Windows ]; then
+            7z a -tzip "$name.zip" "$name" > /dev/null
+            echo "archive=$name.zip" >> "$GITHUB_OUTPUT"
+          else
+            tar -czf "$name.tar.gz" "$name"
+            echo "archive=$name.tar.gz" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-${{ matrix.variant }}
+          path: ${{ steps.package.outputs.archive }}
+          if-no-files-found: error
+
+  wheels:
+    name: python wheel ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: PyO3/maturin-action@v1
+        with:
+          working-directory: bindings/python
+          command: build
+          args: --release --locked -o dist
+          manylinux: "2_28"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.os }}
+          path: bindings/python/dist/*.whl
+          if-no-files-found: error
+
+  release:
+    needs: [build, wheels]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        working-directory: dist
+        run: sha256sum * > SHA256SUMS && cat SHA256SUMS
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --draft --verify-tag --title "Kinetic ${GITHUB_REF_NAME#v}"

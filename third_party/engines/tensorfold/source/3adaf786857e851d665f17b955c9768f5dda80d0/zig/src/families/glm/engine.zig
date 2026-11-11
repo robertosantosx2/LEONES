@@ -1,0 +1,573 @@
+//! Metal GLM-5.3-Flash: a greedy reply at a time; prompt in 16-row windows or tensor-unit chunks, then drafted rounds.
+const std = @import("std");
+const platform = @import("sys");
+const mtl = @import("metal");
+const cfg = @import("config.zig");
+const wts = @import("weights.zig");
+const page_cache = @import("page_cache.zig");
+const vision_mod = @import("vision.zig");
+const st = @import("state.zig");
+const fwd = @import("forward.zig");
+const mtp = @import("mtp.zig");
+const prompt_mod = @import("prompt.zig");
+const Fence = @import("../../core/fence.zig").Fence;
+const kernels = @import("kernels.zig");
+const ep_mod = @import("ep.zig");
+const CopyIndex = @import("../../core/copy_index.zig").CopyIndex;
+const checks = @import("checks.zig");
+const load_plan = @import("load_plan.zig");
+const plain_rounds = @import("plain_rounds.zig");
+const ranks = @import("ranks.zig");
+const frags = @import("../../core/frags.zig");
+const residency = @import("residency.zig");
+const Ref = wts.Ref;
+const lanes = @import("lanes");
+
+pub const Reason = enum { stop, length, cancelled };
+
+pub const Result = struct {
+    reason: Reason,
+    rounds: u64 = 0,
+    drafted: u64 = 0,
+    accepted: u64 = 0,
+    min_rows: u32 = 0,
+    prompt_seconds: f64 = 0,
+    decode_seconds: f64 = 0,
+    generated: u64 = 0,
+    gpu_seconds: f64 = 0, // the rounds' GPU time (each command buffer's start to end)
+    encode_seconds: f64 = 0, // the host's time from a round's first encode to its commit
+    gap_seconds: f64 = 0, // the GPU idle between consecutive rounds
+    copy_rounds: u64 = 0, // rounds whose drafts were copied from earlier in the history, and their drafts kept
+    copy_accepted: u64 = 0,
+    // GLM_RANKS=1: rounds by drafts kept m: [m][0] all kept, else the target's rank among the head's choices at a miss
+    draft_ranks: [st.max_rows][4]u32 = @splat(@splat(0)),
+};
+
+/// What a reply reports while it runs (called on the engine's thread).
+pub const Out = struct {
+    ctx: *anyopaque,
+    prefilled: *const fn (ctx: *anyopaque) void,
+    /// Tokens committed, in order; true ends the reply as a stop (a stop string matched).
+    tokens: *const fn (ctx: *anyopaque, toks: []const u32) bool,
+    cancelled: *const fn (ctx: *anyopaque) bool,
+};
+
+/// The outputs of a reply nobody reads (a warm-up, rank 1's half of rank 0's).
+pub const Quiet = struct {
+    pub fn prefilled(_: *anyopaque) void {}
+    pub fn tokens(_: *anyopaque, _: []const u32) bool {
+        return false;
+    }
+    pub fn cancelled(_: *anyopaque) bool {
+        return false;
+    }
+};
+
+pub const Engine = struct {
+    gpa: std.mem.Allocator,
+    device: mtl.Device,
+    queue: mtl.Queue,
+    event: mtl.SharedEvent,
+    ev: u64 = 0,
+    c: cfg.Config,
+    k: *kernels.Kernels,
+    w: *wts.Weights,
+    arena: st.Arena,
+    s: st.State,
+    sc: st.Scratch,
+    prompt_ids: Ref,
+    pick_ring: Ref, // u32 [2]: pipelined plain rounds' picks, a round's input read from the one before's on the GPU
+    round_fence: ?Fence = null, // orders pipelined plain rounds on the GPU (a shared event's wait is slower)
+    pr: ?prompt_mod.Prompt, // prompt chunks on the tensor units (null: every prompt row in 16-row decode windows)
+    ep: ?*ep_mod.Ep, // expert parallel with a peer Mac (GLM_EP names this Mac's link settings)
+    trace_last: ?Ref = null, // a prompt's last row at every capture point (each layer's sublayers), for a path comparison
+    margins: ?*std.ArrayList(f32) = null, // each emitted token's top-two logit margin (its row's logits), for a path comparison
+    chunk_rows: u32 = prompt_mod.max_rows, // a prompt chunk's rows at most (GLM_CHUNK: smaller, to check chunk-size invariance)
+    model_hash: u64 = 0, // the checkpoint's config and weight index, hashed (a peer's and a learned state's identity)
+    cut: u32 = 0, // GLM_CUTS=N: a prompt chunk also ends at N (a server's planned start, for its served == CLI check)
+    copy_min: u32 = 0, // copy drafts (GLM_COPY=N): a round copies what followed the reply's last N+ tokens earlier (0: off)
+    sampling: ?lanes.Sampling = null, // the standalone path's keyed rules (GLM_SAMPLING; the server never sets it)
+    rank_log: bool = false, // GLM_RANKS=1: each MTP depth's logits kept, and the target's rank in them where drafts miss
+    ep_arena: std.heap.ArenaAllocator, // the link settings, alive as long as the link
+    residency: ?residency.Resident = null,
+    residency_enabled: bool = true,
+    vision: ?*vision_mod.Vision = null, // --vision: the image tower
+    vision_rows: Ref = undefined, // bf16 [image tokens, hidden]: a prompt's image rows (vision only)
+    vision_limits: vision_mod.Limits = .{},
+    keepalive_target: mtl.keepalive.Target = undefined, // the engine's queue, set at load for the server's ticker
+    load_seconds: f64 = 0,
+    limit: load_plan.Limit = undefined, // the one-Mac load limit, read once at load (stream admission and the cache budget read it)
+    gpu: [2]f64 = .{ 0, 0 }, // the last command buffer's GPU start and end (host seconds)
+    fused_route: bool = true, // GLM_ROUTE=0: the Python family's cast, router and top-k launches
+    draft_vocab: u32 = 154880, // GLM_DRAFT_VOCAB: the MTP head drafts from the vocabulary's first this many tokens
+    committed: u64 = 0, // when the last command buffer was committed (mach ticks)
+
+    /// Checkpoint `dir`, caches for `cap` tokens; GLM_LAYERS=N: the first N layers; GLM_EP=settings: half the experts.
+    pub fn load(gpa: std.mem.Allocator, io: std.Io, dir: []const u8, cap: u32) !*Engine {
+        return loadWith(gpa, io, dir, cap, if (platform.c.getenv("GLM_EP")) |v| std.mem.span(v) else null, false, null, false);
+    }
+
+    /// `load` with expert parallel over `ep_path`'s link (one Mac when null) and `vision`'s image tower and rows.
+    pub fn loadWith(gpa: std.mem.Allocator, io: std.Io, dir: []const u8, cap: u32, ep_path: ?[]const u8, learn: bool, vision: ?vision_mod.Limits, defer_residency: bool) !*Engine {
+        const keep_resident = try residency.policy.flag(platform.getenv("GLM_RESIDENCY"));
+        const e = try gpa.create(Engine); // undefined memory: every field is set below
+        errdefer gpa.destroy(e);
+        const pool = mtl.objc.Pool.push();
+        defer pool.pop();
+        const t0 = platform.c.mach_absolute_time();
+        e.gpa = gpa;
+        e.ev = 0;
+        e.residency = null;
+        e.residency_enabled = keep_resident;
+        e.vision = null;
+        e.gpu = .{ 0, 0 };
+        e.fused_route = if (platform.c.getenv("GLM_ROUTE")) |v| v[0] != '0' else true;
+        e.draft_vocab = if (platform.c.getenv("GLM_DRAFT_VOCAB")) |v| std.fmt.parseInt(u32, std.mem.span(v), 10) catch 0 else 0;
+        e.committed = 0;
+        e.ep = null;
+        e.pr = null;
+        e.trace_last = null;
+        e.margins = null;
+        e.chunk_rows = prompt_mod.max_rows;
+        e.cut = if (platform.c.getenv("GLM_CUTS")) |v| std.fmt.parseInt(u32, std.mem.span(v), 10) catch 0 else 0;
+        e.copy_min = if (platform.c.getenv("GLM_COPY")) |v| std.math.clamp(std.fmt.parseInt(u32, std.mem.span(v), 10) catch 0, 0, 8) else 0;
+        e.rank_log = if (platform.c.getenv("GLM_RANKS")) |v| v[0] == '1' else false;
+        e.sampling = try fwd.envSampling(platform.c.getenv);
+        if (platform.c.getenv("GLM_CHUNK")) |v| e.chunk_rows = std.math.clamp(std.fmt.parseInt(u32, std.mem.span(v), 10) catch prompt_mod.max_rows, st.max_rows + 1, prompt_mod.max_rows);
+        e.ep_arena = .init(gpa);
+        errdefer e.ep_arena.deinit();
+        e.device = try mtl.Device.init();
+        errdefer e.device.deinit();
+        e.queue = try e.device.queue();
+        errdefer e.queue.deinit();
+        e.keepalive_target = .{ .queue = e.queue };
+        e.event = try e.device.sharedEvent();
+        errdefer e.event.deinit();
+        const path = try std.fmt.allocPrintSentinel(gpa, "{s}/config.json", .{dir}, 0);
+        defer gpa.free(path);
+        const f = try mtl.MappedFile.open(path);
+        defer f.deinit();
+        e.c = try cfg.parse(gpa, f.bytes[0..f.size]);
+        if (!cfg.whole(e.c)) return error.NotGlm53Flash; // its kernels take the whole model's counts
+        if (e.draft_vocab == 0 or e.draft_vocab > e.c.vocab) e.draft_vocab = e.c.vocab;
+        e.draft_vocab -= e.draft_vocab % 4; // the head's kernel takes four rows a simdgroup
+        const model = try load_plan.modelHash(gpa, dir, f.bytes[0..f.size]);
+        e.model_hash = model;
+        if (platform.c.getenv("GLM_LAYERS")) |v| try cfg.subset(&e.c, std.fmt.parseInt(u32, std.mem.span(v), 10) catch return error.BadLayerCount);
+        if (platform.c.getenv("GLM_MTP")) |v| if (v[0] == '0') { // no MTP head: no drafts, its ~4 GB left on disk
+            e.c.mtp = 0;
+        };
+        const link: ?ep_mod.Settings = if (ep_path) |sp| blk: {
+            const sf = try mtl.MappedFile.open(try e.ep_arena.allocator().dupeSentinel(u8, sp, 0));
+            defer sf.deinit();
+            const s = try ep_mod.readSettings(e.ep_arena.allocator(), sf.bytes[0..sf.size]);
+            const by_rows = if (platform.c.getenv("GLM_EP_SPLIT")) |v| !std.mem.eql(u8, std.mem.span(v), "experts") else true;
+            if (by_rows) try cfg.splitRows(&e.c, s.rank, 2) else try cfg.split(&e.c, s.rank, 2);
+            const tp = if (platform.c.getenv("GLM_TP")) |v| v[0] != '0' else true; // TP2: each Mac half the KDA heads (GLM_TP=0: off)
+            if (by_rows and tp) try cfg.splitHeads(&e.c, s.rank, 2);
+            if (e.c.tp > 1) { // TP2's head halves: the whole vocabulary (its kernel's pitch); no host logits to rank
+                e.draft_vocab = e.c.vocab;
+                e.rank_log = false;
+            }
+            break :blk s;
+        } else null;
+        e.k = try kernels.load(gpa, e.device);
+        errdefer {
+            e.k.deinit();
+            gpa.destroy(e.k);
+        }
+        try frags.check(e.device, e.queue, gpa); // the fragment layout nax.h gives GLM's prompt and attention kernels
+        const chunked = if (platform.c.getenv("GLM_PROMPT")) |v| v[0] != '0' else true;
+        e.limit = try load_plan.loadLimit(e.device);
+        const limit = e.limit.bytes;
+        // --vision: the image tower and its rows count against the limit beside the weights and caches
+        const tower = if (vision) |lim| vision_mod.planBytes(lim, e.c.hidden) else 0;
+        var plan_bytes = try load_plan.planBytes(gpa, e.device, dir, &e.c);
+        if (e.c.mtp > 0 and link == null and plan_bytes + tower + try load_plan.leastArena(gpa, &e.c, cap, chunked) > limit) { // one Mac: the MTP head stays on disk when only it passes the limit
+            var lean = e.c;
+            lean.mtp = 0;
+            const lean_bytes = try load_plan.planBytes(gpa, e.device, dir, &lean);
+            if (lean_bytes + tower + try load_plan.leastArena(gpa, &lean, cap, chunked) <= limit) {
+                std.log.info("glm: the MTP head would pass this Mac's {d:.1} GB load limit ({s}); loading without it (no MTP drafts, copy drafts stay)", .{ @as(f64, @floatFromInt(limit)) / 1e9, e.limit.source() });
+                e.c = lean;
+                plan_bytes = lean_bytes;
+            }
+        }
+        if (platform.c.getenv("GLM_DRY") != null) return error.DryRun;
+        e.arena = .{ .device = e.device, .gpa = gpa };
+        errdefer e.arena.deinit();
+        const both = try st.init(&e.arena, &e.c, cap);
+        e.s = both.state;
+        e.sc = both.scratch;
+        e.prompt_ids = try e.arena.buffer(@as(usize, cap) * 4);
+        e.pick_ring = try e.arena.buffer(256);
+        if (chunked and (link == null or e.c.byRows())) {
+            const rows = load_plan.chunkHeight(gpa, &e.c, &e.sc, cap, plan_bytes + e.arena.bytes + tower, limit, link != null);
+            e.pr = try prompt_mod.init(gpa, &e.arena, e.device, &e.c, &e.sc, e.k, cap, rows);
+            e.chunk_rows = @min(e.chunk_rows, rows);
+        }
+        errdefer if (e.pr) |*p| p.deinit();
+        if (plan_bytes + e.arena.bytes + tower > limit) { // refused before any weight is read: the floor's one-Mac limit
+            if (tower > 0) std.log.err("glm: --vision's image tower and its rows add {d:.1} GB", .{@as(f64, @floatFromInt(tower)) / 1e9});
+            std.log.err("glm: {d:.1} GB of weights and {d:.1} GB of caches pass this Mac's {d:.1} GB load limit ({s}); load a layer subset or the expert-parallel pair, or set GLM_LOAD_LIMIT_GB (past 70% of RAM a load risks a watchdog panic)", .{ @as(f64, @floatFromInt(plan_bytes)) / 1e9, @as(f64, @floatFromInt(e.arena.bytes)) / 1e9, @as(f64, @floatFromInt(limit)) / 1e9, e.limit.source() });
+            return error.OverMemoryLimit;
+        }
+        { // short of free memory: drop the checkpoint's own cached pages before the kernel takes other files' (#583)
+            const dropped_at = platform.c.mach_absolute_time();
+            if (page_cache.dropForLoad(gpa, dir, plan_bytes + e.arena.bytes + tower)) |d| {
+                if (d.dropped > 0) std.log.info("glm: dropped {d:.1} GiB of the checkpoint from the file cache, the {d:.1} GiB free memory lacked for the load ({d:.2} s)", .{ @as(f64, @floatFromInt(d.dropped)) / (1 << 30), @as(f64, @floatFromInt(d.deficit)) / (1 << 30), @as(f64, @floatFromInt(platform.c.mach_absolute_time() - dropped_at)) / 24e6 });
+            } else |err| std.log.warn("glm: could not drop the checkpoint's cached pages ({s}); the load reads beside them", .{@errorName(err)});
+        }
+        e.w = try wts.load(gpa, e.device, dir, &e.c, 16, false);
+        errdefer {
+            e.w.deinit();
+            gpa.destroy(e.w);
+        }
+        if (!wts.native(e.w, &e.c)) try e.k.widen(gpa, e.device); // a width, split stack or layout past the 4/64 kernels
+        try e.prepare();
+        if (link) |s| {
+            const rows = e.c.byRows();
+            var me: ep_mod.Identity = .{ .layers = e.c.layers, .run = e.c.run, .mtp = @intFromBool(e.w.mtp != null), .experts = if (rows) e.c.moe_inter else e.c.experts, .own_lo = if (rows) e.c.inter[0] else e.c.own[0], .own_hi = if (rows) e.c.inter[1] else e.c.own[1], .cap = cap, .model = model };
+            me.rest[0] = @intFromBool(rows);
+            me.rest[1] = @intCast(e.c.tp);
+            me.rest[2] = @intFromBool(learn); // --learn on both Macs or neither: each holds its half of a learned state
+            e.ep = try ep_mod.Ep.init(gpa, io, e.device, s, me);
+        }
+        if (vision) |lim| try vision_mod.attach(e, gpa, dir, f.bytes[0..f.size], lim); // --vision: the tower and its rows
+        errdefer if (e.vision) |v| v.deinit();
+        // a process's first prompt pays a one-time cost: every rank of a pair pays it here at the same step
+        if (e.pr != null and cap >= 128 and platform.c.getenv("GLM_NO_WARMUP") == null) {
+            var ids: [64]u32 = undefined;
+            for (&ids, 0..) |*t, i| t.* = @intCast(1000 + i);
+            var quiet: Quiet = .{};
+            _ = try e.generate(&ids, 2, &.{}, 0, .{ .ctx = &quiet, .prefilled = Quiet.prefilled, .tokens = Quiet.tokens, .cancelled = Quiet.cancelled });
+        }
+        e.load_seconds = @as(f64, @floatFromInt(platform.c.mach_absolute_time() - t0)) / 24e6;
+        if (!defer_residency) residency.wire(e, io);
+        return e;
+    }
+
+    /// The KDA decay rates A = exp(A_log) with MLX's Exp, on the GPU.
+    fn prepare(e: *Engine) !void {
+        const cb = e.queue.commandBuffer();
+        const enc = cb.compute(.serial);
+        for (0..e.c.run) |li| switch (e.w.layers[li].attn) {
+            .kda => |*a| {
+                enc.setPipeline(e.k.exp_f32);
+                enc.setBuffer(a.a_log.buf, a.a_log.off, 0);
+                enc.setBuffer(a.a.buf, a.a.off, 1);
+                enc.setValue(e.c.kda_heads, 2);
+                enc.dispatchThreads(mtl.Size.of(e.c.kda_heads, 1, 1), mtl.Size.of(64, 1, 1));
+            },
+            .mla => {},
+        };
+        enc.end();
+        cb.commit();
+        cb.wait();
+        if (cb.failure()) |msg| {
+            std.log.err("glm: prepare failed: {s}", .{msg});
+            return error.GpuFailed;
+        }
+    }
+
+    pub fn deinit(e: *Engine) void {
+        const gpa = e.gpa;
+        residency.drop(e);
+        if (e.ep) |ep| ep.deinit(gpa);
+        if (e.vision) |v| v.deinit();
+        e.ep_arena.deinit();
+        if (e.pr) |*p| p.deinit();
+        if (e.round_fence) |f| f.deinit();
+        e.arena.deinit();
+        e.w.deinit();
+        gpa.destroy(e.w);
+        e.k.deinit();
+        gpa.destroy(e.k);
+        e.event.deinit();
+        e.queue.deinit();
+        e.device.deinit();
+        gpa.destroy(e);
+    }
+
+    pub fn hasMtp(e: *const Engine) bool {
+        return e.w.mtp != null;
+    }
+
+    /// Expert parallel's rank 1: it runs rank 0's requests and slot commands (mirror.follow), never its own.
+    pub fn followsPeer(e: *const Engine) bool {
+        return if (e.ep) |ep| ep.rank == 1 else false;
+    }
+
+    /// Rank 1's follower (mirror.follow) ends its wait for rank 0's next command.
+    pub fn stopFollowing(e: *Engine) void {
+        if (e.ep) |ep| ep.ctl.stop.store(true, .release);
+    }
+
+    /// This Mac's decision to stop at a step; with a peer, rank 0's decision, the one both Macs take.
+    pub fn agree(e: *Engine, quit: bool) !bool {
+        const ep = e.ep orelse return quit;
+        return ep.ctl.agree(quit);
+    }
+
+    pub fn ctx(e: *Engine) fwd.Ctx {
+        return .{ .k = e.k, .c = &e.c, .w = e.w, .s = &e.s, .sc = &e.sc, .ep = e.ep, .fused_route = e.fused_route, .draft_vocab = e.draft_vocab };
+    }
+
+    /// A command buffer ordered after the last one this engine committed.
+    pub fn begin(e: *Engine) struct { cb: mtl.CommandBuffer, enc: mtl.ComputeEncoder } {
+        const cb = e.queue.commandBuffer();
+        if (e.ev > 0) cb.waitFor(e.event, e.ev);
+        return .{ .cb = cb, .enc = cb.compute(.serial) };
+    }
+
+    /// Commit and wait: no work of this engine is in flight once it returns, whatever the caller does next.
+    pub fn finish(e: *Engine, cb: mtl.CommandBuffer, enc: mtl.ComputeEncoder) !void {
+        return e.finishBy(cb, enc, false);
+    }
+
+    /// finish; `spin`: the host spins on the buffer's status instead of sleeping (a window's picks read as it ends).
+    pub fn finishBy(e: *Engine, cb: mtl.CommandBuffer, enc: mtl.ComputeEncoder, spin: bool) !void {
+        enc.end();
+        e.ev += 1;
+        cb.signal(e.event, e.ev);
+        cb.commit();
+        e.committed = platform.c.mach_absolute_time();
+        if (spin) {
+            while (@backingInt(cb.status()) < @backingInt(mtl.types.CommandBufferStatus.completed)) std.atomic.spinLoopHint();
+        } else cb.wait();
+        e.gpu = .{ cb.gpuStart(), cb.gpuEnd() };
+        if (cb.failure()) |msg| {
+            e.event.set(e.ev); // a failed buffer may never signal: the next one must not wait on it
+            std.log.err("glm: command buffer failed: {s}", .{msg});
+            if (e.ep) |ep| ep.failed.store(true, .release); // its exchanges are out of step with the peer's
+            return error.GpuFailed;
+        }
+        if (e.ep) |ep| if (ep.failed.load(.acquire) or ep.gaveUp() > 0) return error.EpLinkFailed;
+    }
+
+    /// Wait until every command buffer this engine committed has completed (before the host touches shared state).
+    pub fn sync(e: *Engine) void {
+        if (e.event.value() >= e.ev) return;
+        if (!e.event.wait(e.ev, 120_000)) std.log.err("glm: the GPU did not finish within 120 s", .{});
+    }
+
+    /// One bf16 row of `D` values from `src` to `dst`.
+    pub fn copyRow(x: *const fwd.Ctx, enc: mtl.ComputeEncoder, src: Ref, dst: Ref, D: u32) void {
+        enc.setPipeline(x.k.copy_u32);
+        enc.setBuffer(src.buf, src.off, 0);
+        enc.setBuffer(dst.buf, dst.off, 1);
+        enc.setValue(D / 2, 2);
+        enc.dispatchThreads(mtl.Size.of(D / 2, 1, 1), mtl.Size.of(256, 1, 1));
+    }
+
+    pub fn u32s(r: Ref, n: usize) []u32 {
+        return @as([*]u32, @ptrCast(@alignCast(r.addr())))[0..n];
+    }
+
+    pub const capture = checks.capture;
+    pub const trace = checks.trace;
+    pub const forced = checks.forced;
+    pub const profile = checks.profile;
+    pub const checkMatmul = checks.checkMatmul;
+    pub const profilePrompt = checks.profilePrompt;
+
+    /// One reply, greedy or sampled by `e.sampling`; `depth` drafts a round (drafted equals plain, depth 0).
+    pub fn generate(e: *Engine, prompt: []const u32, max_tokens: usize, eos: []const u32, depth: usize, out: Out) !Result {
+        const c = &e.c;
+        const D = c.hidden;
+        const P: u32 = @intCast(prompt.len);
+        if (e.ep != null and e.sampling != null and e.sampling.?.temperature > 0) return error.SampledPeerUnsupported; // the backend's refusal, before any state moves or the peer hears of it
+        if (prompt.len == 0) return error.EmptyPrompt;
+        const d: u32 = @intCast(if (e.w.mtp == null) 0 else @min(depth, st.max_rows - 1));
+        if (prompt.len + max_tokens + d + 1 > e.s.cap) return error.ContextFull;
+        const pool = mtl.objc.Pool.push();
+        defer pool.pop();
+        e.sync();
+        e.s.reset();
+        @memcpy(u32s(e.prompt_ids, prompt.len), prompt);
+        var x = e.ctx();
+        const t_start = platform.c.mach_absolute_time();
+        // the prompt: windows of up to 16 rows, the MTP head taking each row with the token after it
+        var at: u32 = 0;
+        var last_n: u32 = 1;
+        // The last prompt row draws the first reply token, keyed at P: the head's one output row is draws row 0.
+        const prompt_draws = @import("draw_rule.zig").promptDraws(e.sampling, P, c.vocab);
+        while (at < P) {
+            if (try e.agree(out.cancelled(out.ctx))) return .{ .reason = .cancelled };
+            const end = if (e.cut > at and e.cut < P) e.cut else P;
+            const chunk = e.pr != null and end - at > st.max_rows;
+            const n = @min(@as(u32, if (chunk) e.chunk_rows else st.max_rows), end - at);
+            const last = at + n == P;
+            const absorb = if (last) n - 1 else n;
+            const b = e.begin();
+            if (last and e.trace_last != null) {
+                x.dump = e.trace_last;
+                x.dump_at = 0;
+                x.dump_row = n - 1;
+            }
+            defer x.dump = null;
+            x.draws = if (last and e.sampling != null and e.sampling.?.temperature > 0) &prompt_draws else null;
+            if (chunk) {
+                const pr = &e.pr.?;
+                var px = x;
+                px.sc = &pr.streams;
+                prompt_mod.backbone(pr, &px, b.enc, e.prompt_ids.at(@as(usize, at) * 4), n, at);
+                fwd.flipKda(&x);
+                const hidden = pr.streams.hidden;
+                if (last) { // the last row into the decode scratch: the head's first token, the MTP head's first row
+                    copyRow(&x, b.enc, hidden.at(@as(usize, n - 1) * D * 2), e.sc.hidden, D);
+                    fwd.head(&x, b.enc, e.sc.hidden, e.sc.logits, e.sc.picks, 1);
+                }
+                if (d > 0 and absorb > 0) prompt_mod.mtp(pr, &px, b.enc, hidden, e.prompt_ids.at(@as(usize, at + 1) * 4), absorb, at);
+                last_n = 1;
+            } else {
+                fwd.backbone(&x, b.enc, e.prompt_ids.at(@as(usize, at) * 4), n, at);
+                fwd.flipKda(&x);
+                if (last) fwd.head(&x, b.enc, e.sc.hidden.at(@as(usize, n - 1) * D * 2), e.sc.logits, e.sc.picks, 1);
+                if (d > 0 and absorb > 0) mtp.run(&x, b.enc, e.sc.hidden, e.prompt_ids.at(@as(usize, at + 1) * 4), absorb, at, e.sc.m_picks);
+                last_n = n;
+            }
+            if (d > 0 and absorb > 0) e.s.mtp_pos = at + absorb; // both prompt paths set it after their MTP absorb
+            try e.finish(b.cb, b.enc);
+            at += n;
+        }
+        x.draws = null; // the decode loop re-arms the sampled draw each round; the MTP head drafts greedily
+        e.s.pos = P;
+        const t_prompt = platform.c.mach_absolute_time();
+        out.prefilled(out.ctx);
+        var res: Result = .{ .reason = .length, .prompt_seconds = @as(f64, @floatFromInt(t_prompt - t_start)) / 24e6 };
+        var tok = u32s(e.sc.picks, 1)[0];
+        if (e.margins) |m| try m.append(e.gpa, ranks.margin(c, e.sc.logits, 0));
+        res.generated = 1;
+        if (try e.agree(out.tokens(out.ctx, &.{tok}) or std.mem.indexOfScalar(u32, eos, tok) != null)) {
+            res.reason = .stop;
+            return res;
+        }
+        if (max_tokens <= 1) return res;
+        if (d == 0 and e.ep == null and e.copy_min == 0 and e.margins == null) {
+            try plain_rounds.run(e, &x, tok, max_tokens, eos, out, &res);
+            res.decode_seconds = @as(f64, @floatFromInt(platform.c.mach_absolute_time() - t_prompt)) / 24e6;
+            return res;
+        }
+        var emitted: usize = 1;
+        var hist: ?CopyIndex = null; // the prompt and the reply so far: copy drafts' source
+        defer if (hist) |*h| h.deinit();
+        // copy round window: most expected tokens a ms from the pair's measured round costs, if it beats an MTP round
+        var ck: f64 = 0;
+        var cr: f64 = 0;
+        var mk: f64 = @floatFromInt(d);
+        if (e.copy_min > 0) { // copy drafts need no MTP head: without one a round is the copied tokens or one plain row
+            hist = try CopyIndex.init(e.gpa, prompt);
+            try hist.?.extend(&.{tok});
+        }
+        var h0: u32 = last_n - 1; // the rows of `hidden` the MTP head takes next, and how many
+        var keep: u32 = 1;
+        var window: u32 = 0; // the last forward's rows (0: the prompt's)
+        res.min_rows = d + 1;
+        u32s(e.sc.next, 1)[0] = tok;
+        var last_end: f64 = 0;
+        var round_draws: fwd.Draws = .{}; // the current decode round's rules, rebuilt each round
+        while (true) {
+            const t_enc = platform.c.mach_absolute_time();
+            const b = e.begin();
+            if (window > 0) { // the last window's kept rows (the prompt's windows kept all theirs)
+                fwd.keepKda(&x, b.enc, window, keep);
+                fwd.flipKda(&x);
+            }
+            const ids = u32s(e.sc.ids, st.max_rows);
+            ids[0] = tok;
+            // copy drafts: what followed the reply's last tokens earlier, when they match at least copy_min deep
+            var copied: u32 = 0;
+            if (hist) |*h| {
+                const m = h.longest(8);
+                if (m.n >= e.copy_min) {
+                    const room = e.s.cap - (e.s.pos + 2);
+                    const avail: usize = @min(h.ctx.items.len - m.at, st.max_rows - 1, room);
+                    const n: f64 = @floatFromInt(m.n);
+                    const a = (ck + n) / (ck + n + cr + 1);
+                    var best = (1 + mk) / (12.9 + 4.3 * @as(f64, @floatFromInt(d))); // an MTP round's tokens a ms
+                    var expect: f64 = 1;
+                    var p: f64 = 1;
+                    for (1..avail + 1) |w| {
+                        p *= a;
+                        expect += p;
+                        const rate = expect / (12.9 + 3.5 * @as(f64, @floatFromInt(w)));
+                        if (rate > best) {
+                            best = rate;
+                            copied = @intCast(w);
+                        }
+                    }
+                    if (copied < 2) copied = 0; // a one-token copy is no better than the head's draft
+                    if (copied > 0) @memcpy(ids[1 .. 1 + copied], h.ctx.items[m.at .. m.at + copied]);
+                }
+            }
+            if (d > 0) {
+                const next = if (window == 0) e.sc.next else e.sc.picks;
+                mtp.run(&x, b.enc, e.sc.hidden.at(@as(usize, h0) * D * 2), next, keep, e.s.mtp_pos, if (copied > 0) null else e.sc.ids.at(4));
+                const base = e.s.mtp_pos + keep;
+                if (copied == 0) for (1..d) |j| {
+                    const h = if (j == 1) e.sc.m_x.at(@as(usize, keep - 1) * D * 2) else e.sc.m_x;
+                    if (e.rank_log) x.m_row = @intCast(j);
+                    mtp.chain(&x, b.enc, h, e.sc.ids.at(j * 4), base + @as(u32, @intCast(j)) - 1, e.sc.ids.at((j + 1) * 4));
+                };
+                x.m_row = 0;
+                e.s.mtp_pos = base;
+            }
+            const R = if (copied > 0) copied + 1 else d + 1;
+            fwd.backbone(&x, b.enc, e.sc.ids, R, e.s.pos);
+            // The decode rows draw keyed at their context positions; the MTP head's drafts drew greedily.
+            x.draws = if (e.sampling) |p| if (p.temperature > 0) blk: {
+                round_draws = fwd.rulesFor(p, e.s.pos + 1, c.vocab, R);
+                break :blk &round_draws;
+            } else null else null;
+            fwd.head(&x, b.enc, e.sc.hidden, e.sc.logits, e.sc.picks, R);
+            try e.finish(b.cb, b.enc);
+            res.encode_seconds += @as(f64, @floatFromInt(e.committed - t_enc)) / 24e6;
+            res.gpu_seconds += e.gpu[1] - e.gpu[0];
+            if (last_end > 0) res.gap_seconds += e.gpu[0] - last_end;
+            last_end = e.gpu[1];
+            const picks = u32s(e.sc.picks, R);
+            const drafts = u32s(e.sc.ids, R);
+            keep = 1;
+            while (keep < R and picks[keep - 1] == drafts[keep]) keep += 1;
+            res.rounds += 1;
+            res.drafted += R - 1;
+            res.accepted += keep - 1;
+            if (e.rank_log and copied == 0 and d > 0) {
+                const m = keep - 1;
+                res.draft_ranks[m][if (m == d) 0 else ranks.rankAt(c, e.draft_vocab, e.sc.m_logits, m, picks[m])] += 1;
+            }
+            if (copied > 0) {
+                res.copy_rounds += 1;
+                res.copy_accepted += keep - 1;
+                ck += @floatFromInt(keep - 1);
+                if (keep - 1 < copied) cr += 1;
+            } else mk = 0.8 * mk + 0.2 * @as(f64, @floatFromInt(keep - 1));
+            var take: usize = 0;
+            var stop = false;
+            while (take < keep and emitted + take < max_tokens) {
+                take += 1;
+                if (std.mem.indexOfScalar(u32, eos, picks[take - 1]) != null) {
+                    stop = true;
+                    break;
+                }
+            }
+            if (e.margins) |m| for (0..take) |j| try m.append(e.gpa, ranks.margin(c, e.sc.logits, @intCast(j)));
+            if (take > 0 and out.tokens(out.ctx, picks[0..take])) stop = true;
+            if (hist) |*h| try h.extend(picks[0..take]);
+            emitted += take;
+            res.generated = emitted;
+            e.s.pos += keep;
+            tok = picks[keep - 1];
+            window = R;
+            h0 = 0;
+            const quit: ?Reason = if (stop) .stop else if (emitted >= max_tokens) .length else if (out.cancelled(out.ctx)) .cancelled else if (e.s.pos + R + 1 > e.s.cap) .length else null;
+            if (try e.agree(quit != null)) {
+                res.reason = quit orelse .cancelled; // rank 1: rank 0's reason (a stop string, a cancel) is its own
+                break;
+            }
+        }
+        res.decode_seconds = @as(f64, @floatFromInt(platform.c.mach_absolute_time() - t_prompt)) / 24e6;
+        return res;
+    }
+};

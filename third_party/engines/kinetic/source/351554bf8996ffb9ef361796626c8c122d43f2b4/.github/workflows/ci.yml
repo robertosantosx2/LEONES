@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fmt:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo fmt --all -- --check
+      - run: cargo fmt --manifest-path bindings/python/Cargo.toml -- --check
+
+  check:
+    name: clippy and tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: Clippy
+        run: cargo clippy --release --locked --workspace --all-targets --all-features -- -D warnings
+      - name: Tests
+        run: cargo test --release --locked --workspace
+      - name: C example (gcc)
+        if: runner.os == 'Linux'
+        run: |
+          cargo build --release --locked -p kinetic-capi
+          gcc -std=c99 -Wall -Wextra -Werror -I crates/kinetic-capi/include \
+            crates/kinetic-capi/examples/chat.c -L target/release -lkinetic_capi -o chat
+          LD_LIBRARY_PATH=target/release ./chat 2>&1 | grep -q usage
+      - name: C example (cl)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          cargo build --release --locked -p kinetic-capi || exit /b 1
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          cl /nologo /W4 /WX /I crates\kinetic-capi\include crates\kinetic-capi\examples\chat.c target\release\kinetic_capi.dll.lib /Fe:chat.exe || exit /b 1
+          copy target\release\kinetic_capi.dll . || exit /b 1
+          chat.exe 2>&1 | findstr usage
+
+  python:
+    name: python bindings (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: bindings/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: bindings/python
+      - run: cargo clippy --release --locked --all-targets -- -D warnings
+      - run: pip install "maturin>=1.5,<2"
+      - run: maturin build --release --locked -o dist
+      - run: pip install --no-index --find-links dist kinetic-engine
+      - run: python -m unittest discover -v -s tests

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Veloresearch/kinetic/security/policy
+    about: Report vulnerabilities privately to contact@veloresearch.com, not in an issue.
+  - name: Documentation
+    url: https://veloresearch.github.io/kinetic/
+    about: Install, quick start, CLI and server reference, FAQ and troubleshooting.

@@ -1,0 +1,15 @@
+[package]
+name = "kinetic-cuda"
+description = "CUDA backend: driver bindings loaded at runtime and decode kernels"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+half.workspace = true
+kinetic-quant = { path = "../kinetic-quant" }
+libloading = "0.8.9"
+
+[dev-dependencies]
+kinetic-gguf = { path = "../kinetic-gguf" }

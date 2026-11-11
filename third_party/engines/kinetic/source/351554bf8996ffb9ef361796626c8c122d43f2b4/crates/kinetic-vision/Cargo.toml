@@ -1,0 +1,23 @@
+[package]
+name = "kinetic-vision"
+description = "Image encoders that turn pictures into language-model embeddings"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+cuda = ["dep:kinetic-cuda", "dep:half"]
+
+[dependencies]
+half = { workspace = true, optional = true }
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "webp", "bmp", "gif"] }
+kinetic-cpu = { path = "../kinetic-cpu" }
+kinetic-cuda = { path = "../kinetic-cuda", optional = true }
+kinetic-gguf = { path = "../kinetic-gguf" }
+kinetic-quant = { path = "../kinetic-quant" }
+rayon.workspace = true
+
+[dev-dependencies]
+kinetic-models = { path = "../kinetic-models" }
+kinetic-tokenizer = { path = "../kinetic-tokenizer" }

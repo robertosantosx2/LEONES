@@ -1,0 +1,14 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// qwen4exp PLE gate. Workgroup (c, t): s = key . query over stream c of token t (rows of hc * n) / sqrt(n),
+// gated[t][c n + i] = value[t][i] * sigmoid(sign(s) sqrt(max(|s|, 1e-6))).
+layout(push_constant) uniform P { F32 key; F32 query; F32 value; F32 gated; uint n; } p;
+void main() {
+    uint b = (gl_WorkGroupID.y * gl_NumWorkGroups.x + gl_WorkGroupID.x) * p.n;
+    float s = 0.0;
+    for (uint i = gl_LocalInvocationID.x; i < p.n; i += 256) s += p.key.v[b + i] * p.query.v[b + i];
+    s = fdiv(block_sum(s), sqrt_(float(p.n)));
+    float gate = sigmoid(sign(s) * sqrt_(max(abs(s), 1e-6)));
+    for (uint i = gl_LocalInvocationID.x; i < p.n; i += 256) p.gated.v[b + i] = p.value.v[gl_WorkGroupID.y * p.n + i] * gate;
+}
