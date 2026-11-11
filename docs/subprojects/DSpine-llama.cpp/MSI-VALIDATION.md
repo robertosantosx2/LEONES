@@ -47,7 +47,7 @@ El fork debe residir en un directorio separado. No reutilizar ni sobrescribir \`
 El script \`scripts/build_dspine_llama_cpp_cuda_msi.sh\`:
 - exige Git, CMake, nvcc, nvidia-smi y C++;
 - aborta si ya existe el directorio destino;
-- clona la rama \`dspine\` en \`~/src/llama.cpp-dspine\`;
+- obtiene el commit fijado d493f841b20241606c47a4e0537d3c786b5cf50b en ~/src/llama.cpp-dspine;
 - configura CUDA para \`SM86\` explícitamente;
 - compila \`llama-server\`, \`llama-cli\` y \`llama-quantize\` con dos trabajos por defecto;
 - guarda el SHA del fork y un log completo;
