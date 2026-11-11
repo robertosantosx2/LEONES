@@ -4,7 +4,7 @@
   "repository": "https://github.com/RustingStudio/RustingStrata.git",
   "ref_requested": "main",
   "commit": "e1c2d6e1722a33ca75da9757761c9df6246cba60",
-  "vendored_at": "2026-11-11T07:42:25.532915+00:00",
+  "vendored_at": "2026-11-11T07:43:03.856350+00:00",
   "source_tree": "source/e1c2d6e1722a33ca75da9757761c9df6246cba60",
   "submodule_status": "",
   "git_lfs": "git-lfs pull completed",
