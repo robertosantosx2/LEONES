@@ -41,7 +41,8 @@ All servers must bind to 127.0.0.1. A non-OpenAI API requires a dedicated adapte
 4. Add an engine config entry to `configs/engine-comparison.json`. Keep it disabled until its launch command and API semantics have been verified.
 5. Add capability declarations (context limits, quantization support, backend, KV cache, speculative features, batching, concurrency).
 6. Run smoke tests, then a single-engine baseline, then the full matrix.
-7. The runner refuses to benchmark an engine without its pinned `SOURCE.json` and build-evidence JSON. Do not disable these gates for published runs.\n8. Do not publish comparative rankings until model/tokenizer/template equivalence and backend identity are checked.
+7. The runner refuses to benchmark an engine without its pinned `SOURCE.json` and build-evidence JSON. Do not disable these gates for published runs.
+8. Do not publish comparative rankings until model/tokenizer/template equivalence and backend identity are checked.
 
 ## Fairness rules
 
