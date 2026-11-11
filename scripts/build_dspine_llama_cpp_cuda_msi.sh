@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-SRC_DIR="\${DSPINE_SRC_DIR:-$HOME/src/llama.cpp-dspine}"
-BUILD_DIR="\${DSPINE_BUILD_DIR:-$SRC_DIR/build-cuda}"
-JOBS="\${DSPINE_BUILD_JOBS:-2}"
-LOG="\${DSPINE_BUILD_LOG:-$HOME/dspine-llama-cpp-cuda-build-$(date -u +%Y%m%dT%H%M%SZ).log}"
+SRC_DIR="${DSPINE_SRC_DIR:-$HOME/src/llama.cpp-dspine}"
+BUILD_DIR="${DSPINE_BUILD_DIR:-$SRC_DIR/build-cuda}"
+JOBS="${DSPINE_BUILD_JOBS:-2}"
+LOG="${DSPINE_BUILD_LOG:-$HOME/dspine-llama-cpp-cuda-build-$(date -u +%Y%m%dT%H%M%SZ).log}"
 
 die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 for cmd in git cmake nvcc nvidia-smi c++; do
