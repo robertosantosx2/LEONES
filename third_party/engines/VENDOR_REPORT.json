@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "created_at": "2026-11-11T07:16:17.610924+00:00",
+  "created_at": "2026-11-11T07:42:00.111913+00:00",
   "engines": [
     {
       "id": "kinetic",
@@ -13,6 +13,12 @@
       "status": "VENDORED",
       "commit": "3adaf786857e851d665f17b955c9768f5dda80d0",
       "path": "third_party/engines/tensorfold"
+    },
+    {
+      "id": "tandem-cpp",
+      "status": "VENDORED",
+      "commit": "e1acb8877bfcf92b4ae7c9f0e0f1d896dbf6c683",
+      "path": "third_party/engines/tandem-cpp"
     },
     {
       "id": "llama-cpp",
