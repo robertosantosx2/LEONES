@@ -1,6 +1,13 @@
 name: Vendor inference engine sources
 
 on:
+  push:
+    branches:
+      - research/kinetic-audit-benchmark
+    paths:
+      - "scripts/vendor_engines.py"
+      - "configs/engines.registry.json"
+      - ".github/workflows/vendor-inference-engines.yml"
   workflow_dispatch:
     inputs:
       engines:
