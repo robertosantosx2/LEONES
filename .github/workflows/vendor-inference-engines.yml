@@ -15,9 +15,9 @@ on:
   workflow_dispatch:
     inputs:
       engines:
-        description: "Comma-separated registry IDs (e.g. kinetic,tensorfold,llama-cpp,tandem-cpp,rusting-strata)"
+        description: "Comma-separated registry IDs (e.g. kinetic,tensorfold,llama-cpp,llama-cpp-tandem-base,tandem-cpp,rusting-strata)"
         required: true
-        default: "kinetic,tensorfold,llama-cpp,tandem-cpp,rusting-strata"
+        default: "kinetic,tensorfold,llama-cpp,llama-cpp-tandem-base,tandem-cpp,rusting-strata"
       ref_overrides:
         description: "Optional comma-separated id=ref overrides"
         required: false
@@ -42,7 +42,7 @@ jobs:
       - name: Vendor pinned engine source snapshots
         shell: bash
         env:
-          ENGINE_LIST: ${{ inputs.engines || 'kinetic,tensorfold,llama-cpp,tandem-cpp,rusting-strata' }}
+          ENGINE_LIST: ${{ inputs.engines || 'kinetic,tensorfold,llama-cpp,llama-cpp-tandem-base,tandem-cpp,rusting-strata' }}
           REF_LIST: ${{ inputs.ref_overrides }}
         run: |
           args=()
