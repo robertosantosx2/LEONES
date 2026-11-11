@@ -87,6 +87,8 @@ Las cuatro capas de conocimiento permanecen separadas: **fuente → evidencia �
 
 ### Evaluación, benchmarks y evidencia física
 
+- [\`QWEN3.5-9B-RTX3050-2026-11-11.md\`](QWEN3.5-9B-RTX3050-2026-11-11.md) — evaluación de viabilidad Qwen3.5-9B en RTX 3050 Laptop 4 GiB: arquitectura, presupuesto de memoria, compatibilidad de runtimes, límites de evidencia y plan de validación. [English version](QWEN3.5-9B-RTX3050-2026-11-11-EN.md).
+
 - [`EVALUACION_AGENTIC_TESTS.md`](EVALUACION_AGENTIC_TESTS.md) — evaluación agentiva.
 - [`AGENT_HARNESSES.md`](AGENT_HARNESSES.md) — harnesses.
 - [`AGENTIC-INVENTORY-2026.md`](AGENTIC-INVENTORY-2026.md) — inventario agentivo.
