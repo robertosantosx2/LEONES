@@ -1,9 +1,9 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 257,
+  "repositories_processed": 253,
   "enriched_ok": 80,
-  "non_github_preserved": 170,
+  "non_github_preserved": 166,
   "errors": 7,
   "github_token_used": true,
   "diagnostics": [
@@ -19,42 +19,42 @@
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4902"
+      "rate_limit_remaining": "4899"
     },
     {
       "repository": "arshad1416/HA_Automation_Pi",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4871"
+      "rate_limit_remaining": "4868"
     },
     {
       "repository": "priceisaacuwjh3036/ai-server-rust-llm-api",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4861"
+      "rate_limit_remaining": "4858"
     },
     {
       "repository": "benlmadan9-star/eco-mesh-sdk",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4860"
+      "rate_limit_remaining": "4857"
     },
     {
       "repository": "wisent-ai/brama",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4832"
+      "rate_limit_remaining": "4829"
     },
     {
       "repository": "ramaiahsvn/aim.pat",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4789"
+      "rate_limit_remaining": "4786"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."
