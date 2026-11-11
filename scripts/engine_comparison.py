@@ -202,16 +202,21 @@ def main():
     for engine in cfg["engines"]:
         if not engine.get("enabled", False) or (allowed and engine["id"] not in allowed): continue
         engine_id = engine["id"]
+        engine_model = pathlib.Path(engine.get("model", str(model))).expanduser().resolve()
+        if not engine_model.is_file():
+            append_jsonl(results,{"type":"engine","engine":engine_id,"status":"MODEL_MISSING","model":str(engine_model)})
+            continue
+        engine_model_hash = sha256(engine_model)
         engine_summary = {"id":engine_id,"profiles":[]}
         summary["engines"].append(engine_summary)
         for profile in cfg["profiles"]:
             prof = dict(profile)
             port = available_port()
-            fields = {"model":str(model),"port":port,"ctx":prof.get("ctx",512),"threads":prof.get("threads",4),
+            fields = {"model":str(engine_model),"port":port,"ctx":prof.get("ctx",512),"threads":prof.get("threads",4),
                       "gpu_layers":prof.get("gpu_layers",0),"parallel":prof.get("parallel",1),"device":prof.get("device","auto")}
             cmd = render(engine["command"], fields)
             if not isinstance(cmd,list) or not cmd or any("/ABS/PATH/" in x for x in cmd):
-                append_jsonl(results,{"type":"profile","engine":engine_id,"profile":prof["name"],"status":"CONFIG_REQUIRED","command":cmd})
+                append_jsonl(results,{"type":"profile","engine":engine_id,"profile":prof["name"],"status":"CONFIG_REQUIRED","command":cmd,"model":str(engine_model),"model_sha256":engine_model_hash})
                 continue
             base = render(engine["base_url"],fields)
             engdir = out/"engines"/engine_id; engdir.mkdir(parents=True,exist_ok=True)
@@ -242,14 +247,14 @@ def main():
                             try:
                                 measured = stream_request(base,cfg["api"]["chat_path"],cfg["api"].get("api_key"),
                                                           prompt["messages"],settings,cfg["api"]["request_timeout_s"])
-                                measured.update({"type":"measurement","status":"OK","engine":engine_id,"profile":prof["name"],
+                                measured.update({"type":"measurement","status":"OK","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"profile":prof["name"],
                                                  "prompt_id":prompt["id"],"repetition":rep+1,"settings":settings,
                                                  "load_s":load_s,"process_rss_bytes":process_tree_rss(proc.pid),
                                                  "elapsed_s":time.perf_counter()-t0,"timestamp":utc()})
                                 with open(prompt_file,"a",encoding="utf-8") as f:
                                     f.write(f"\n--- repetition {rep+1} ---\n{measured['text']}\n")
                             except Exception as e:
-                                measured = {"type":"measurement","status":"ERROR","engine":engine_id,"profile":prof["name"],
+                                measured = {"type":"measurement","status":"ERROR","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"profile":prof["name"],
                                             "prompt_id":prompt["id"],"repetition":rep+1,"error":str(e),"timestamp":utc()}
                             measured["machine_after_request"] = machine_snapshot()
                             append_jsonl(results,measured)
@@ -257,7 +262,7 @@ def main():
                     engine_status = "COMPLETED"
                 except Exception as e:
                     engine_status = "ENGINE_ERROR"
-                    append_jsonl(results,{"type":"profile","engine":engine_id,"profile":prof["name"],"status":engine_status,"error":str(e),"command":cmd})
+                    append_jsonl(results,{"type":"profile","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"profile":prof["name"],"status":engine_status,"error":str(e),"command":cmd})
                     log_line(session_log,f"ERROR {engine_id}/{prof['name']}: {e}")
                 finally:
                     stop = stop_child(proc)
