@@ -14,7 +14,11 @@
 
 1. Revisar el resultado de los dos jobs del workflow \`DSpine llama.cpp audit\`.
 2. Descargar el artefacto \`qwen3-8b-dspine-b16-bf16-gguf\` desde GitHub Actions y verificar SHA-256.
-3. Tener el target Qwen3-8B Q4_K_M GGUF local.
+3. Tener el target Qwen3-8B Q4_K_M GGUF local. Si falta, descargarlo explícitamente:
+   ```bash
+   mkdir -p ~/models/qwen3-8b
+   hf download Qwen/Qwen3-8B-GGUF qwen3-8b-q4_k_m.gguf --local-dir ~/models/qwen3-8b
+   ```
 4. No convertir ni descargar el target HF completo en el MSI si el artefacto draft ya está validado.
 5. Ejecutar \`scripts/dspine-msi-preflight.sh\` y conservar el informe.
 
