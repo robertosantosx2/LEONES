@@ -8,6 +8,7 @@ on:
     paths:
       - "scripts/dspine-llama-cpp-audit.sh"
       - "scripts/audit_dspine_llama_cpp.py"
+      - "scripts/verify_qwen3_8_27b_dspine_gguf.py"
       - "tests/test_audit_dspine_llama_cpp.py"
       - "docs/subprojects/DSpine-llama.cpp/**"
       - ".github/workflows/dspine-llama-cpp-audit.yml"
@@ -56,10 +57,10 @@ jobs:
           retention-days: 30
 
 
-  convert-qwen3-8b-dspine:
+  verify-qwen3-8-27b-dspine:
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
       - name: Checkout LEONES
         uses: actions/checkout@v4
@@ -69,24 +70,27 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install CPU conversion dependencies
+      - name: Install GGUF verification dependencies
+        run: python -m pip install --no-cache-dir numpy huggingface_hub
+
+      - name: Clone llama.cpp DSpine branch
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install numpy safetensors transformers sentencepiece protobuf huggingface_hub
+          git clone --depth 1 --single-branch --branch dspine https://github.com/Ajay9o9/llama.cpp.git "$RUNNER_TEMP/llama.cpp-dspine"
+          git -C "$RUNNER_TEMP/llama.cpp-dspine" rev-parse HEAD
 
-      - name: Convert official Qwen3-8B DSpine checkpoint to GGUF
+      - name: Download and validate Qwen3.8-27B DSpine GGUF
         env:
+          LLAMA_CPP_DIR: ${{ runner.temp }}/llama.cpp-dspine
           HF_HUB_DISABLE_TELEMETRY: "1"
-        run: python scripts/convert_qwen3_8b_dspine_ci.py
+        run: python scripts/verify_qwen3_8_27b_dspine_gguf.py
 
-      - name: Upload validated DSpine drafter
+      - name: Upload validated DSpine drafter and SHA report
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: qwen3-8b-dspine-b16-bf16-gguf
+          name: qwen3.8-27b-dspine-b16-q4km-gguf
           path: |
-            ${{ runner.temp }}/Qwen3-8B-DSpine-b16-BF16.gguf
-            ${{ runner.temp }}/Qwen3-8B-DSpine-b16-BF16.gguf.sha256
+            ${{ runner.temp }}/Qwen3.8-27B-DSpine-b16-Q4_K_M.gguf
+            ${{ runner.temp }}/qwen3.8-27b-dspine-gguf-report.json
           if-no-files-found: error
           retention-days: 14
