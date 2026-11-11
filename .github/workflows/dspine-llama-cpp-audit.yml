@@ -76,7 +76,10 @@ jobs:
 
       - name: Clone llama.cpp DSpine branch
         run: |
-          git clone --depth 1 --single-branch --branch dspine https://github.com/Ajay9o9/llama.cpp.git "$RUNNER_TEMP/llama.cpp-dspine"
+          git init "$RUNNER_TEMP/llama.cpp-dspine"
+          git -C "$RUNNER_TEMP/llama.cpp-dspine" remote add origin https://github.com/Ajay9o9/llama.cpp.git
+          git -C "$RUNNER_TEMP/llama.cpp-dspine" fetch --depth 1 origin d493f841b20241606c47a4e0537d3c786b5cf50b
+          git -C "$RUNNER_TEMP/llama.cpp-dspine" checkout --detach FETCH_HEAD
           git -C "$RUNNER_TEMP/llama.cpp-dspine" rev-parse HEAD
 
       - name: Download and validate Qwen3.8-27B DSpine GGUF
