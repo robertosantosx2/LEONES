@@ -1,0 +1,30 @@
+name: Engine benchmark framework checks
+
+on:
+  push:
+    branches:
+      - research/kinetic-audit-benchmark
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate Python syntax
+        run: |
+          python -m py_compile scripts/vendor_engines.py scripts/engine_comparison.py
+      - name: Validate JSON configuration
+        run: |
+          python -m json.tool configs/engines.registry.json >/dev/null
+          python -m json.tool configs/engine-comparison.example.json >/dev/null
+      - name: Validate shell wrapper
+        run: bash -n scripts/import_kinetic.sh
