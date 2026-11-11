@@ -222,7 +222,8 @@ The repository includes `scripts/build_engines_msi.sh`. Run it from any director
 ```bash
 cd ~/LEONES
 git fetch origin
-git switch research/kinetic-audit-benchmark
+git switch research/kinetic-audit-benchmark 2>/dev/null || \
+  git switch --track -c research/kinetic-audit-benchmark origin/research/kinetic-audit-benchmark
 git pull --ff-only
 chmod +x scripts/build_engines_msi.sh
 bash scripts/build_engines_msi.sh
