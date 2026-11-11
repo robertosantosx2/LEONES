@@ -48,7 +48,7 @@ Documento de inventario canónico de todos los informes generados a partir de ej
 
 - `docs/benchmarks/artifacts/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/` — results-summary.csv, extracted-console-evidence.txt, logs por repetición (strata/ y llama.cpp/), tar.gz raw.
 - `docs/reports/artifacts/tensorfold-moe-forensic-2026-10-24/` — logs de preflight, serve, offload-capability-audit, Nemotron y Qwen.
-- `docs/reports/artifacts/inferencia-rtx3050-4gb-oct26-collection-*.tar.gz` — colección de inferencias RTX 305 intensificadas RTX 3050 4 GB octubre.
+- `docs/reports/artifacts/inferencia-rtx3050-4gb-oct26-collection-*.tar.gz` — colección de inferencias RTX 3050 4 GB octubre.
 - `docs/reports/evidence/picchio-dual-channel-2026-11-08/` — evidencia empaquetada.
 
 ## 3. Tabla consolidada: motor · modelos · prefill · velocidad de inferencia
