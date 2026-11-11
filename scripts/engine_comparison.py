@@ -238,12 +238,12 @@ def main():
             with open(stdout_path,"w") as so, open(stderr_path,"w") as se:
                 proc = subprocess.Popen(cmd,stdout=so,stderr=se,start_new_session=True,env=env)
                 try:
-                    health(base, cfg["api"]["health_path"], proc, cfg["api"]["startup_timeout_s"])
+                    health(base, engine.get("health_path", cfg["api"]["health_path"]), proc, cfg["api"]["startup_timeout_s"])
                     load_s = time.perf_counter()-start
                     during = machine_snapshot()
                     (out/"machine"/engine_id/(prof["name"]+".loaded.json")).write_text(json.dumps(during,indent=2)+"\n")
                     if cfg.get("warmup",True):
-                        stream_request(base,cfg["api"]["chat_path"],cfg["api"].get("api_key"),[{"role":"user","content":"Responde solamente: listo."}],
+                        stream_request(base,engine.get("chat_path", cfg["api"]["chat_path"]),engine.get("api_key", cfg["api"].get("api_key")),[{"role":"user","content":"Responde solamente: listo."}],
                                        {**PROMPT_DEFAULTS,"max_tokens":8},cfg["api"]["request_timeout_s"])
                     for prompt in cfg["prompts"]:
                         prompt_file = out/"responses"/engine_id/prof["name"]/(prompt["id"]+".txt")
