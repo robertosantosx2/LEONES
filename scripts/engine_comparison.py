@@ -30,6 +30,19 @@ def sha256(path):
             h.update(b)
     return h.hexdigest()
 
+def artifact_sha256(path):
+    """Hash a model file or a checkpoint directory deterministically."""
+    path = pathlib.Path(path)
+    if path.is_file():
+        return sha256(path), 1
+    if not path.is_dir():
+        return None, 0
+    entries = []
+    for item in sorted(p for p in path.rglob("*") if p.is_file()):
+        entries.append((item.relative_to(path).as_posix(), item.stat().st_size, sha256(item)))
+    digest = hashlib.sha256(json.dumps(entries, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
+    return digest, len(entries)
+
 def machine_snapshot():
     d = {"timestamp": utc(), "platform": platform.platform(), "kernel": platform.release(),
          "python": platform.python_version(), "cpu_count": os.cpu_count()}
@@ -205,10 +218,10 @@ def main():
         if not engine.get("enabled", False) or (allowed and engine["id"] not in allowed): continue
         engine_id = engine["id"]
         engine_model = pathlib.Path(engine.get("model", str(model))).expanduser().resolve()
-        if not engine_model.is_file():
+        if not engine_model.exists() or not (engine_model.is_file() or engine_model.is_dir()):
             append_jsonl(results,{"type":"engine","engine":engine_id,"status":"MODEL_MISSING","model":str(engine_model)})
             continue
-        engine_model_hash = sha256(engine_model)
+        engine_model_hash, engine_model_files = artifact_sha256(engine_model)
         asset_records = []
         missing_assets = []
         for asset in engine.get("model_assets", []):
@@ -297,14 +310,14 @@ def main():
                             try:
                                 measured = stream_request(base,engine.get("chat_path", cfg["api"]["chat_path"]),engine.get("api_key", cfg["api"].get("api_key")),
                                                           prompt["messages"],settings,cfg["api"]["request_timeout_s"])
-                                measured.update({"type":"measurement","status":"OK","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"source_commit":source_meta.get("commit") if source_meta else None,"build_binary_sha256":(build_meta or {}).get("binary",{}).get("sha256"),"model_assets":asset_records,"profile":prof["name"],
+                                measured.update({"type":"measurement","status":"OK","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"source_commit":source_meta.get("commit") if source_meta else None,"build_binary_sha256":(build_meta or {}).get("binary",{}).get("sha256"),"model_assets":asset_records,"profile":prof["name"],
                                                  "prompt_id":prompt["id"],"repetition":rep+1,"settings":settings,
                                                  "load_s":load_s,"process_rss_bytes":process_tree_rss(proc.pid),
                                                  "elapsed_s":time.perf_counter()-t0,"timestamp":utc()})
                                 with open(prompt_file,"a",encoding="utf-8") as f:
                                     f.write(f"\n--- repetition {rep+1} ---\n{measured['text']}\n")
                             except Exception as e:
-                                measured = {"type":"measurement","status":"ERROR","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"source_commit":source_meta.get("commit") if source_meta else None,"build_binary_sha256":(build_meta or {}).get("binary",{}).get("sha256"),"profile":prof["name"],
+                                measured = {"type":"measurement","status":"ERROR","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"source_commit":source_meta.get("commit") if source_meta else None,"build_binary_sha256":(build_meta or {}).get("binary",{}).get("sha256"),"profile":prof["name"],
                                             "prompt_id":prompt["id"],"repetition":rep+1,"error":str(e),"timestamp":utc()}
                             measured["machine_after_request"] = machine_snapshot()
                             append_jsonl(results,measured)
@@ -323,7 +336,7 @@ def main():
                 (out/"machine"/engine_id/(prof["name"]+".settled.json")).write_text(json.dumps(settled,indent=2)+"\n")
             binary_path = shutil.which(cmd[0]) if cmd and not pathlib.Path(cmd[0]).is_absolute() else (cmd[0] if cmd else None)
             binary_hash = sha256(binary_path) if binary_path and pathlib.Path(binary_path).is_file() else None
-            prof_result = {"name":prof["name"],"status":engine_status,"command":cmd,"base_url":base,"binary_path":binary_path,"binary_sha256":binary_hash,"source":source_meta,"build_evidence":build_meta,"model_path":str(engine_model),"model_sha256":engine_model_hash,"model_assets":asset_records,"environment":{k:("<redacted>" if SENSITIVE_ENV.search(k) else v) for k,v in env.items() if k in ("PATH","LD_LIBRARY_PATH","CC","CXX") or k.startswith(("CUDA","HIP","TENSORFOLD","LLAMA","TF_","RUST","CMAKE"))},
+            prof_result = {"name":prof["name"],"status":engine_status,"command":cmd,"base_url":base,"binary_path":binary_path,"binary_sha256":binary_hash,"source":source_meta,"build_evidence":build_meta,"model_path":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"model_assets":asset_records,"environment":{k:("<redacted>" if SENSITIVE_ENV.search(k) else v) for k,v in env.items() if k in ("PATH","LD_LIBRARY_PATH","CC","CXX") or k.startswith(("CUDA","HIP","TENSORFOLD","LLAMA","TF_","RUST","CMAKE"))},
                            "load_s":locals().get("load_s"),"stop":stop,"post_unload_recovered":recovered,
                            "machine_before":before,"machine_after":after}
             engine_summary["profiles"].append(prof_result)
