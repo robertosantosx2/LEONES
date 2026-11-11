@@ -9,5 +9,9 @@ Salida: artefacto cuantizado + metadatos + herramienta/backend utilizado + evide
 
 La selección debe ser reproducible y no debe confundir tamaño de archivo con memoria real de inferencia.
 
+## Investigación
+
+- [LittleBit y LittleBit-2: cuantización sub-1-bit mediante factorización latente](../docs/research/littlebit-sub-1bit-quantization-2026-11.md) — publicaciones, método, repositorios, checkpoints, compatibilidad, viabilidad en MSI y plan de experimentación CUDA SM86.
+
 ## Estado
 Arquitectura definida. Backend operativo pendiente.
