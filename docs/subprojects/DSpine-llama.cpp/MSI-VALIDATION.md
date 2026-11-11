@@ -1,73 +1,83 @@
 # Handoff de validación DSpine en MSI
 
-**No ejecutar hasta que el PR #143 tenga CI y artefacto GGUF validados.** Esta guía evita tocar el llama.cpp que ya está instalado.
+**No ejecutar hasta que el PR #143 tenga CI verde y el artefacto GGUF validado.** Esta guía evita tocar el llama.cpp ya instalado.
 
-## Candidato
+## Pareja seleccionada
 
-- Target: Qwen3-8B GGUF Q4_K_M.
-- Drafter: Qwen3-8B-DSpine-b16 convertido a GGUF BF16 por el workflow de LEONES.
-- Algoritmo: \`--spec-type draft-dflash\` (la implementación DSpine está integrada en el grafo DFlash y se activa por los tensores del drafter).
-- Primera pasada: greedy, contexto corto, una secuencia y pocos tokens especulativos.
-- No usar Qwen3.8-27B en la RTX 3050 de 4 GiB.
+- Target: Qwen3.8-27B GGUF **IQ2_XXS**, publicado por bartowski (8.88 GB).
+- Drafter: Qwen3.8-27B-DSpine-b16 GGUF **Q4_K_M**, publicado para el fork (1.26 GB).
+- Algoritmo: \`--spec-type draft-dflash\`; DSpine está integrado en el grafo DFlash y se activa por los tensores del drafter.
+- Primera pasada: greedy, contexto 512, una secuencia, bloque especulativo de 3 tokens.
+- No usar el target Q4_K_M de 17.44 GB en el MSI.
+
+**Importante:** el checkpoint oficial Qwen3-8B-DSpine-b16 no es compatible con el port actual. Su config carece de \`code_bridge_second_pass.mode=serial_table\` y de un \`head_topk\` de refinamiento. La conversión falló con el rechazo explícito del conversor; no se deben inventar esos metadatos.
 
 ## Estimación de memoria previa
 
-El target Qwen3-8B Q4_K_M publicado pesa aproximadamente 5.03 GB. El drafter oficial tiene 1.2378B parámetros; en BF16 sus pesos implican aproximadamente 2.48 GB antes de metadatos/overhead. El conjunto de pesos ronda **7.5 GB** como estimación, sin contar KV, buffers de cómputo, allocator, contexto y runtime.
+| Fichero | Tamaño |
+|---|---:|
+| Qwen3.8-27B IQ2_XXS target | 8.88 GB |
+| Qwen3.8-27B DSpine Q4_K_M drafter | 1.26 GB |
+| **Pesos combinados** | **10.14 GB** |
 
-Por eso el MSI no puede alojar ambos modelos enteros en sus 4 GiB de VRAM. La prueba solo tiene sentido con offload híbrido CPU/GPU y contexto corto. Los 14 GiB de RAM podrían permitirlo, pero no lo garantizan: hay que medir memoria disponible y consumo real. No usar el valor teórico como permiso para ejecutar.
+Es una estimación de almacenamiento de pesos, no de memoria residente. KV, buffers, allocator, contexto y runtime se añaden encima. Los 4 GiB de VRAM no pueden alojar la pareja completa: se necesita offload híbrido CPU/GPU. Los 14 GiB de RAM podrían permitir un contexto muy corto, pero no está demostrado.
 
-Fuente de tamaño del target: [Qwen3-8B GGUF Q4_K_M](https://huggingface.co/Qwen/Qwen3-8B-GGUF). Parámetros del drafter: [ficha oficial Qwen3-8B-DSpine-b16](https://huggingface.co/tencent/Qwen3-8B-DSpine-b16).
+La cuantización IQ2_XXS es muy agresiva y degrada la calidad; este primer ensayo solo determina si el runtime funciona y si la memoria cabe. No usarlo como evaluación de calidad del modelo.
+
+Fuentes:
+- [Target Qwen3.8-27B IQ2_XXS](https://huggingface.co/bartowski/Qwen3.8-27B-GGUF)
+- [Drafter DSpine Q4_K_M](https://huggingface.co/aj9o9/Qwen3.8-27B-DSpine-b16-GGUF)
 
 ## 0. Puerta previa
 
-1. Revisar el resultado de los dos jobs del workflow \`DSpine llama.cpp audit\`.
-2. Descargar el artefacto \`qwen3-8b-dspine-b16-bf16-gguf\` desde GitHub Actions y verificar SHA-256.
-3. Tener el target Qwen3-8B Q4_K_M GGUF local. Si falta, descargarlo explícitamente:
-   ```bash
-   mkdir -p ~/models/qwen3-8b
-   hf download Qwen/Qwen3-8B-GGUF qwen3-8b-q4_k_m.gguf --local-dir ~/models/qwen3-8b
-   ```
-4. No convertir ni descargar el target HF completo en el MSI si el artefacto draft ya está validado.
+1. Revisar que los jobs \`audit-and-build\` y \`verify-qwen3-8-27b-dspine\` del workflow \`DSpine llama.cpp audit\` hayan terminado correctamente.
+2. Descargar el artefacto \`qwen3.8-27b-dspine-b16-q4km-gguf\` de GitHub Actions y verificar su SHA-256 con el informe incluido.
+3. Descargar el target IQ2_XXS:
+   ~~~bash
+   mkdir -p ~/models/qwen3.8-27b
+   hf download bartowski/Qwen3.8-27B-GGUF Qwen3.8-27B-IQ2_XXS.gguf --local-dir ~/models/qwen3.8-27b
+   ~~~
+4. Comprobar tamaño y SHA-256 de ambos ficheros.
 5. Ejecutar \`scripts/dspine-msi-preflight.sh\` y conservar el informe.
 
 ## 1. Compilación aislada
 
-El fork debe residir en un directorio separado. No reutilizar ni sobrescribir `~/llama-cpp-cuda` ni los binarios de `/usr/local/bin`.
+El fork debe residir en un directorio separado. No reutilizar ni sobrescribir \`~/llama-cpp-cuda\` ni los binarios de \`/usr/local/bin\`.
 
-El script `scripts/build_dspine_llama_cpp_cuda_msi.sh`:
+El script \`scripts/build_dspine_llama_cpp_cuda_msi.sh\`:
 - exige Git, CMake, nvcc, nvidia-smi y C++;
 - aborta si ya existe el directorio destino;
-- clona la rama `dspine` en `~/src/llama.cpp-dspine`;
-- configura CUDA para `SM86` explícitamente;
-- compila `llama-server`, `llama-cli` y `llama-quantize` con dos trabajos por defecto;
+- clona la rama \`dspine\` en \`~/src/llama.cpp-dspine\`;
+- configura CUDA para \`SM86\` explícitamente;
+- compila \`llama-server\`, \`llama-cli\` y \`llama-quantize\` con dos trabajos por defecto;
 - guarda el SHA del fork y un log completo;
 - no instala ni sustituye binarios existentes.
 
 Ejecutar solo después de revisar el preflight:
 
-```bash
+~~~bash
 bash scripts/build_dspine_llama_cpp_cuda_msi.sh
-```
+~~~
 
 Si CUDA Toolkit, CMake o el compilador no son compatibles, detenerse y resolverlo antes de seguir.
 
 ## 2. Preflight de modelos y memoria
 
-- Comprobar el tamaño real de ambos GGUF con \`ls -lh\`.
-- Comprobar SHA-256 de target y drafter.
+- Confirmar que el target es Qwen3.8-27B y el drafter es Qwen3.8-27B-DSpine-b16.
 - Revisar \`nvidia-smi\` inmediatamente antes de iniciar.
-- Confirmar que el proceso no compite con otro runtime GPU importante.
-- Empezar con \`-c 1024\`, \`-np 1\` y \`--spec-draft-n-max 3\`.
+- Empezar con \`-c 512\`, \`-np 1\` y \`--spec-draft-n-max 3\`.
 - Elegir explícitamente \`-ngl\` y \`--spec-draft-ngl\` según VRAM disponible; no copiar \`999\` del ejemplo de RTX 3090.
+- Usar KV Q8_0 en target y drafter para reducir presión de memoria.
 - Mantener una ruta de rollback simple: cerrar el servidor y borrar únicamente el directorio aislado \`~/src/llama.cpp-dspine\` si fuera necesario.
+- No habilitar swap deliberadamente para forzar la carga.
 
 ## 3. Primera ejecución controlada
 
-Plantilla deliberadamente parametrizada; no ejecutar hasta fijar las rutas y los offload counts a partir del preflight:
+Plantilla parametrizada; no ejecutar hasta fijar las rutas y offload counts a partir del preflight:
 
 ~~~bash
-TARGET=/ruta/Qwen3-8B-Q4_K_M.gguf
-DRAFT=/ruta/Qwen3-8B-DSpine-b16-BF16.gguf
+TARGET=~/models/qwen3.8-27b/Qwen3.8-27B-IQ2_XXS.gguf
+DRAFT=/ruta/Qwen3.8-27B-DSpine-b16-Q4_K_M.gguf
 TARGET_NGL=<capas_target>
 DRAFT_NGL=<capas_drafter>
 
@@ -78,14 +88,18 @@ DRAFT_NGL=<capas_drafter>
   --spec-draft-n-max 3 \\
   -ngl "$TARGET_NGL" \\
   --spec-draft-ngl "$DRAFT_NGL" \\
+  --cache-type-k q8_0 \\
+  --cache-type-v q8_0 \\
+  --spec-draft-type-k q8_0 \\
+  --spec-draft-type-v q8_0 \\
   -fa on \\
-  -c 1024 \\
+  -c 512 \\
   -np 1 \\
   --host 127.0.0.1 \\
   --port 18089
 ~~~
 
-El comando no fija offload arbitrariamente. El valor de las dos variables se decide con el preflight y el log de carga. Si no cabe, reducir primero offload/contexto y registrar el resultado; no activar swap como sustituto de VRAM.
+El valor de las dos variables se decide con el preflight y el log de carga. Si no cabe, reducir primero offload/contexto y registrar el resultado; no continuar si hay OOM o presión sostenida de swap.
 
 ## 4. Smoke test
 
@@ -104,7 +118,7 @@ Después ejecutar el mismo prompt y configuración contra el mismo target sin \`
 Detenerse si:
 - el loader no detecta los tensores DSpine;
 - faltan capas read/write o hay warnings de tensor no usado;
-- la generación no coincide con el baseline greedy;
+- la generación greedy no coincide con el baseline;
 - hay OOM, CUDA error, corrupción de KV o caída del servidor;
 - el proceso consume swap de forma sostenida o el sistema pierde estabilidad.
 
