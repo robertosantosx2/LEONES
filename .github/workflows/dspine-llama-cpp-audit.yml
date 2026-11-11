@@ -42,6 +42,11 @@ jobs:
       - name: Test DSpine capability auditor
         run: python3 -m unittest discover -s tests -p 'test_audit_dspine_llama_cpp.py' -v
 
+      - name: Check shell and Python helper syntax
+        run: |
+          for script in scripts/*.sh; do bash -n "$script"; done
+          python3 -m py_compile scripts/*.py tests/*.py
+
       - name: Audit fork and build llama.cpp CPU baseline
         run: |
           bash scripts/dspine-llama-cpp-audit.sh 2>&1 | tee "$RUNNER_TEMP/dspine-audit.log"
