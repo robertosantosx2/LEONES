@@ -4,7 +4,7 @@
 $ErrorActionPreference = "Stop"
 $VM_NAME = "Ubuntu 24.04 - Rober"
 $VM_BASE = Join-Path $env:USERPROFILE "VirtualBox VMs"
-$VM_DIR = Join-Path $VM_BASE "Ubuntu-24.04-Rober"
+$VM_DIR = Join-Path $VM_BASE $VM_NAME
 $ISO_PATH = Join-Path $env:USERPROFILE "Downloads\ubuntu-24.04.5-desktop-amd64.iso"
 $RAM_MB = 6144
 $CPUS = 4
