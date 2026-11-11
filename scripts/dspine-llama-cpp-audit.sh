@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 REPO_URL="${DSPINE_LLAMA_CPP_REPO:-https://github.com/Ajay9o9/llama.cpp.git}"
-REF="${DSPINE_LLAMA_CPP_REF:-dspine}"
+PINNED_COMMIT="${DSPINE_LLAMA_CPP_COMMIT:-d493f841b20241606c47a4e0537d3c786b5cf50b}"
 WORK_DIR="${DSPINE_WORK_DIR:-${RUNNER_TEMP:-/tmp}/dspine-llama-cpp-audit}"
 JOBS="${DSPINE_BUILD_JOBS:-2}"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,12 +19,15 @@ command -v python3 >/dev/null || die "python3 is required"
 rm -rf "$WORK_DIR"
 mkdir -p "$(dirname "$WORK_DIR")"
 
-log "Clone DSpine reference fork branch"
-git clone --depth 1 --single-branch --branch "$REF" "$REPO_URL" "$WORK_DIR"
+log "Fetch pinned DSpine implementation commit"
+git init "$WORK_DIR"
+git -C "$WORK_DIR" remote add origin "$REPO_URL"
+git -C "$WORK_DIR" fetch --depth 1 origin "$PINNED_COMMIT"
+git -C "$WORK_DIR" checkout --detach FETCH_HEAD
 cd "$WORK_DIR"
 
 log "Pin source identity"
-printf 'Repository: %s\nRef: %s\nCommit: %s\n' "$REPO_URL" "$REF" "$(git rev-parse HEAD)"
+printf 'Repository: %s\nPinned commit: %s\nResolved commit: %s\n' "$REPO_URL" "$PINNED_COMMIT" "$(git rev-parse HEAD)"
 git show -s --format='Commit date: %cI%nSubject: %s%nAuthor: %an' HEAD
 
 log "Run explicit DSpine capability audit"
