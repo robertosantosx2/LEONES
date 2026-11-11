@@ -1,0 +1,42 @@
+name: DSpine llama.cpp CPU audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/dspine-llama-cpp
+    paths:
+      - "scripts/dspine-llama-cpp-audit.sh"
+      - "docs/subprojects/DSpine-llama.cpp/**"
+      - ".github/workflows/dspine-llama-cpp-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit-cpu:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout LEONES
+        uses: actions/checkout@v4
+
+      - name: Install build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake git
+
+      - name: Audit and build DSpine fork (CPU only)
+        run: |
+          bash scripts/dspine-llama-cpp-audit.sh 2>&1 | tee "$RUNNER_TEMP/dspine-audit.log"
+
+      - name: Upload audit log and source inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dspine-llama-cpp-cpu-audit
+          path: |
+            ${{ runner.temp }}/dspine-audit.log
+            ${{ runner.temp }}/dspine-llama-cpp-audit/dspine-source-inventory.txt
+          if-no-files-found: warn
+          retention-days: 30
