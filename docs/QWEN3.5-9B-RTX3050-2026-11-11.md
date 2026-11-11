@@ -108,6 +108,61 @@ E-means es un método de optimización de centroides para clustering relacionado
 
 Por tanto, en este informe “2.5 bits” es una columna matemática de sensibilidad, no una recomendación de descargar un archivo Q2.5 inexistente. Para elegir un artefacto se necesita su repositorio, formato, licencia, tamaño real, metadata de cuantización y compatibilidad con el runtime.
 
+## 6.1. E-means frente a K-means: implicaciones para cuantizar Qwen3.5-9B
+
+Esta sección amplía la comparación de cuantización para evitar una conclusión incorrecta: **E-means y K-means no pueden considerarse equivalentes en calidad para los pesos de Qwen3.5-9B sin generar y evaluar cuantizaciones concretas**.
+
+### Qué optimiza cada método
+
+- **K-means** agrupa valores (por ejemplo, bloques o vectores de pesos) alrededor de centroides y minimiza la suma de distancias cuadráticas dentro de cada grupo mediante asignación y actualización de centroides.
+- **E-means** es un método de optimización de centroides relacionado con k-means que utiliza actualizaciones tipo *exponential moving average* (EMA) en un esquema mini-batch. Su objetivo principal es acelerar la convergencia hacia una solución de clustering de baja pérdida; no define por sí mismo un formato de cuantización, un número de bits ni una codificación de pesos.
+
+El trabajo publicado como **“e-means: outperforming k-means (in one-tenth the epochs)”** informa de una mediana de 12,6× menos épocas para alcanzar la pérdida de Lloyd K-means tras 25 épocas, en 234 configuraciones y 16 conjuntos de datos, con tamaños de 100.000 a 100 millones de puntos. Estos resultados describen optimización de clustering; **no son una evaluación de cuantización de LLM, no miden perplexity de Qwen y no prueban equivalencia de calidad entre pesos cuantizados E-means y K-means**.
+
+Fuentes:
+- Paper: https://arxiv.org/abs/2611.09501
+- Implementación de referencia FAISS: https://github.com/facebookresearch/faiss/tree/main/contrib/e_means
+
+### ¿Son equivalentes en calidad?
+
+No hay base suficiente para afirmar que una cuantización E-means a 3 bits iguale a una K-means a 3 bits, ni que E-means a menos bits iguale a K-means a más bits, en Qwen3.5-9B. Una convergencia más rápida o una menor pérdida de clustering no garantiza por sí sola menor error funcional del modelo.
+
+La calidad final depende, entre otros factores, de:
+- qué tensores se cuantizan y cuáles permanecen en mayor precisión;
+- agrupación por tensor, canal, grupo o bloque;
+- tamaño de bloque y número de centroides;
+- bits efectivos reales, escalas, índices y metadatos;
+- tratamiento de outliers y pesos sensibles;
+- calibración, datos representativos y *fine-tuning* posterior;
+- implementación de kernels y des cuantización en el runtime.
+
+Si se mantienen idénticos el número de centroides/código, bits efectivos, estructura de bloques y representación de índices, el método de búsqueda de centroides **no cambia por sí mismo el presupuesto teórico de memoria**. E-means podría encontrar centroides útiles en menos iteraciones o mejorar el objetivo de clustering, pero la equivalencia de calidad del modelo debe medirse por separado.
+
+### Implicación para TensorFold
+
+No debe asumirse que TensorFold 1.2.3 incorpora E-means como cuantizador, que acepta automáticamente artefactos creados con FAISS ni que el backend CUDA ejecute directamente cualquier codebook generado externamente. E-means sería, en principio, parte del proceso de preparación/calibración de pesos; TensorFold necesitaría reconocer el formato resultante y disponer de kernels de carga y ejecución compatibles.
+
+Antes de atribuir soporte a TensorFold, verificar:
+1. formato exportado y especificación de almacenamiento de centroides/índices;
+2. conversión de todos los tensores necesarios, incluidos embeddings y capas sensibles;
+3. parser y kernels del backend TensorFold para ese formato;
+4. tamaño real del artefacto y memoria pico de carga/ejecución;
+5. exactitud numérica y calidad funcional frente a un baseline comparable.
+
+### Protocolo de comparación recomendado
+
+Para probar la hipótesis en Qwen3.5-9B, producir dos artefactos desde el mismo checkpoint y con idéntica configuración: uno con K-means y otro con E-means. Mantener iguales los bits efectivos, grupos, centroides, tensores excluidos, calibración y precisión de los componentes auxiliares. Comparar:
+
+- error de reconstrucción de pesos y de activaciones;
+- perplexity en un conjunto de evaluación fijo;
+- tareas de razonamiento, conocimiento, código e instrucciones;
+- estabilidad de generación, repeticiones y degradación multimodal si se evalúa visión;
+- tamaño en disco, memoria residente, VRAM pico y velocidad en el mismo runtime.
+
+Añadir una segunda comparación de tasa-distorsión (por ejemplo, E-means a menor bit-rate frente a K-means a mayor bit-rate) solo después de establecer el resultado a igual presupuesto. Todas las pruebas deben registrar versiones, hashes, datos de calibración y comandos.
+
+**Conclusión operativa:** E-means es una alternativa prometedora para acelerar u optimizar la fase de clustering de una cuantización, pero no es correcto etiquetarlo como “misma calidad que K-means” para Qwen3.5-9B. En este informe no existe todavía una cuantización E-means de Qwen3.5-9B validada en TensorFold ni una comparación medida. Mantener el estado como **NOT MEASURED / NOT VERIFIED** hasta ejecutar el protocolo anterior.
+
 ## 7. Compatibilidad de runtimes: lo que está demostrado y lo que no
 
 ### TensorFold
