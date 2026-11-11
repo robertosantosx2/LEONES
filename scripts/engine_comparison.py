@@ -222,6 +222,9 @@ def main():
             append_jsonl(results,{"type":"engine","engine":engine_id,"status":"MODEL_MISSING","model":str(engine_model)})
             continue
         engine_model_hash, engine_model_files = artifact_sha256(engine_model)
+        if engine_model_files == 0:
+            append_jsonl(results,{"type":"engine","engine":engine_id,"status":"MODEL_EMPTY","model":str(engine_model)})
+            continue
         asset_records = []
         missing_assets = []
         for asset in engine.get("model_assets", []):
@@ -259,7 +262,7 @@ def main():
             continue
         allowed_profiles = engine.get("profiles")
         skipped_profiles = [p["name"] for p in cfg["profiles"] if allowed_profiles and p["name"] not in allowed_profiles]
-        engine_summary = {"id":engine_id,"model_assets":asset_records,"profiles":[],"skipped_profiles":skipped_profiles}
+        engine_summary = {"id":engine_id,"model_path":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"model_assets":asset_records,"profiles":[],"skipped_profiles":skipped_profiles}
         summary["engines"].append(engine_summary)
         for profile in cfg["profiles"]:
             prof = dict(profile)
