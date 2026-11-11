@@ -60,7 +60,9 @@ Esto demuestra una ruta de código DSpine específica, no solo el registro de no
 | Qwen3.8-27B | `tencent/Qwen3.8-27B-DSpine-b16` | Checkpoint oficial Safetensors |
 | Qwen3.8-27B | `aj9o9/Qwen3.8-27B-DSpine-b16-GGUF` | Conversión GGUF comunitaria explícitamente destinada al fork |
 
-El fork implementa conversión HF→GGUF en `conversion/qwen.py` (`DFlashModel._is_dspine()` y `_modify_dspine_tensors()`). Requiere directorios locales y `--target-model-dir` para heredar tokenizer/embeddings del target.\n\nEjemplo: `python convert_hf_to_gguf.py ./models/Qwen3-8B-DSpine-b16 --target-model-dir ./models/Qwen3-8B --outtype bf16 --outfile Qwen3-8B-DSpine-b16.gguf`. LEONES incluye `scripts/prepare_qwen3_8b_dspine_gguf.sh` para convertir y verificar los tensores `dspine_*`. El drafter no es autónomo: necesita su modelo objetivo correspondiente. No intercambiar parejas entre familias.
+El fork implementa conversión HF→GGUF en `conversion/qwen.py` (`DFlashModel._is_dspine()` y `_modify_dspine_tensors()`). Requiere directorios locales y `--target-model-dir` para heredar tokenizer/embeddings del target.
+
+Ejemplo: `python convert_hf_to_gguf.py ./models/Qwen3-8B-DSpine-b16 --target-model-dir ./models/Qwen3-8B --outtype bf16 --outfile Qwen3-8B-DSpine-b16.gguf`. LEONES incluye `scripts/prepare_qwen3_8b_dspine_gguf.sh` para convertir y verificar los tensores `dspine_*`. El drafter no es autónomo: necesita su modelo objetivo correspondiente. No intercambiar parejas entre familias.
 
 ## Estado para MSI Thin 15 B12UC
 
