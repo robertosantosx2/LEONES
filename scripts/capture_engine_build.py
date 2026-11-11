@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Record reproducible build provenance for one vendored inference engine."""
 from __future__ import annotations
-import argparse, datetime, hashlib, json, pathlib, platform, shutil, subprocess
+import argparse, datetime, hashlib, json, os, pathlib, platform, shutil, subprocess, re
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 def sha(path):
@@ -37,6 +37,7 @@ def main():
       "engine_id":a.engine,"source":source,"binary":{"path":str(binary),"sha256":sha(binary),"size_bytes":binary.stat().st_size},
       "build":{"command":a.build_command,"log_path":str(log),"log_sha256":sha(log),"features":a.feature,"backend":a.backend},
       "toolchain":{"platform":platform.platform(),"python":platform.python_version(),"compilers":[command_version(x.split()) for x in a.compiler]},
+      "environment":{k:("<redacted>" if re.search(r"(TOKEN|KEY|SECRET|PASSWORD)",k,re.I) else v) for k,v in os.environ.items() if k in ("PATH","LD_LIBRARY_PATH","CC","CXX","CFLAGS","CXXFLAGS") or k.startswith(("CUDA","HIP","TENSORFOLD","LLAMA","TF_","RUST","CMAKE"))},
     }
     out.write_text(json.dumps(data,indent=2,ensure_ascii=False)+"\n")
     print(out)
