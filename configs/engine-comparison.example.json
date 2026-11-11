@@ -132,7 +132,8 @@
       "chat_path": "/v1/chat/completions",
       "require_source_snapshot": true,
       "require_build_evidence": true,
-      "build_meta": "artifacts/engine-builds/kinetic/build.json"
+      "build_meta": "artifacts/engine-builds/kinetic/build.json",
+      "model_assets": []
     },
     {
       "id": "tensorfold",
@@ -157,7 +158,8 @@
       "chat_path": "/v1/chat/completions",
       "require_source_snapshot": true,
       "require_build_evidence": true,
-      "build_meta": "artifacts/engine-builds/tensorfold/build.json"
+      "build_meta": "artifacts/engine-builds/tensorfold/build.json",
+      "model_assets": []
     },
     {
       "id": "tandem-cpp",
@@ -187,7 +189,8 @@
       "chat_path": "/v1/chat/completions",
       "require_source_snapshot": true,
       "require_build_evidence": true,
-      "build_meta": "artifacts/engine-builds/tandem-cpp/build.json"
+      "build_meta": "artifacts/engine-builds/tandem-cpp/build.json",
+      "model_assets": []
     },
     {
       "id": "rustinstrata",
@@ -213,7 +216,8 @@
       "chat_path": "/v1/chat/completions",
       "require_source_snapshot": true,
       "require_build_evidence": true,
-      "build_meta": "artifacts/engine-builds/rustinstrata/build.json"
+      "build_meta": "artifacts/engine-builds/rustinstrata/build.json",
+      "model_assets": []
     }
   ]
 }
