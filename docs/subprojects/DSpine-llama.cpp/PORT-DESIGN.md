@@ -68,7 +68,7 @@ Usar mismo modelo objetivo, prompt, contexto, sampler, seed y backend para basel
 
 El checkpoint GGUF comunitario publicado es Qwen3.8-27B DSpine y su target obligatorio es Qwen3.8-27B. No se debe intentar en el MSI de 4 GiB VRAM.
 
-La pareja oficial más pequeña es Qwen3-8B + Qwen3-8B-DSpine-b16 (drafter de 1.2378B parámetros). El fork incluye conversión HF→GGUF mediante `conversion/qwen.py`, clase `DFlashModel`, con `--target-model-dir`. LEONES automatiza la descarga selectiva de los shards objetivo, la conversión BF16 y la comprobación de tensores en el workflow `convert-qwen3-8b-dspine`; el artefacto y su SHA-256 deben quedar publicados antes de pedir el MSI. El target puede usarse como Qwen3-8B Q4_K_M GGUF (aprox. 5.03 GB); el drafter BF16 ronda 2.48 GB de pesos como estimación. El total estimado de pesos ronda 7.5 GB, antes de KV y buffers, por lo que la ejecución requiere offload híbrido y validación física.
+El checkpoint oficial Qwen3-8B-DSpine-b16 (1.2378B parámetros) no es compatible con la implementación actual del fork: carece de `code_bridge_second_pass.mode=serial_table` y de `selected_prefix_last_write_refine.head_topk`. El conversor falla de forma intencional y segura con `DSpine: only the serial_table refinement of the last write is supported`. No añadir metadatos ficticios ni forzar la conversión. La pareja compatible confirmada es Qwen3.8-27B + Qwen3.8-27B-DSpine-b16. El GGUF comunitario del drafter Q4_K_M es de 1.26 GB. El target IQ2_XXS pesa 8.88 GB, por lo que los pesos suman unos 10.14 GB antes de KV/buffers. Esta pareja es el único candidato para el ensayo MSI, con offload híbrido, contexto 512 y calidad reducida; la viabilidad no está demostrada.
 
 ## Criterio de habilitación MSI
 
