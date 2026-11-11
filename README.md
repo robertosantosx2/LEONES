@@ -17,7 +17,7 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 - [Registro de motores](configs/engines.registry.json): identidad, repositorio oficial, formato de modelo y estado de cada fuente.
 - [Contrato de adaptadores](docs/ENGINE-ADAPTER-CONTRACT.md): cómo añadir motores sin modificar el núcleo del benchmark.
 - [Política de copias reproducibles](docs/ENGINE-SOURCE-VENDORING.md): snapshots completos, commit/tree SHA, submódulos, Git LFS y licencias.
-- [Vendor de fuentes](scripts/vendor_engines.py): crea `third_party/engines/<id>/source/` y `SOURCE.json`.
+- [Vendor de fuentes](scripts/vendor_engines.py): crea `third_party/engines/<id>/source/<commit>/` y `SOURCE.json` sin sobrescribir snapshots anteriores.\n- [Captura de compilación](scripts/capture_engine_build.py): registra binario, hash, comando, log, compilador, backend y entorno.
 - [Workflow GitHub Actions](.github/workflows/vendor-inference-engines.yml): importa las copias directamente en GitHub y las confirma en esta rama.
 
 Motores registrados: Kinetic, TensorFold, Tandem.cpp/llama.cpp y RustInstrata. Las fuentes sin URL upstream verificada quedan marcadas como pendientes; nunca se sustituye una bifurcación local por el upstream sin declararlo.
