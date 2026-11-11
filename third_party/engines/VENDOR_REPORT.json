@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "created_at": "2026-11-11T07:45:35.387853+00:00",
+  "created_at": "2026-11-11T07:46:14.997546+00:00",
   "engines": [
     {
       "id": "kinetic",
@@ -31,6 +31,12 @@
       "status": "VENDORED",
       "commit": "e1c2d6e1722a33ca75da9757761c9df6246cba60",
       "path": "third_party/engines/rusting-strata"
+    },
+    {
+      "id": "llama-cpp-tandem-base",
+      "status": "VENDORED",
+      "commit": "f5222f25c18da062ab2b8a2dbbfbf4feae398566",
+      "path": "third_party/engines/llama-cpp-tandem-base"
     }
   ]
 }
