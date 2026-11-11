@@ -7,7 +7,7 @@
 
 - [Tencent/DSpine](https://github.com/Tencent/DSpine): implementación de referencia SGLang y MLX.
 - [Paper arXiv:2609.36173](https://arxiv.org/abs/2609.36173).
-- [Ajay9o9/llama.cpp, rama dspine](https://github.com/Ajay9o9/llama.cpp/tree/dspine).
+- [Ajay9o9/llama.cpp, rama dspine](https://github.com/Ajay9o9/llama.cpp/tree/dspine), implementación fijada al commit [`d493f841`](https://github.com/Ajay9o9/llama.cpp/commit/d493f841b20241606c47a4e0537d3c786b5cf50b) (`dflash : add DSpine draft model support`).
 - [Drafter oficial Qwen3-8B](https://huggingface.co/tencent/Qwen3-8B-DSpine-b16).
 - [Drafter oficial Qwen3.8-27B](https://huggingface.co/tencent/Qwen3.8-27B-DSpine-b16).
 - [Conversión GGUF comunitaria Qwen3.8-27B](https://huggingface.co/aj9o9/Qwen3.8-27B-DSpine-b16-GGUF).
