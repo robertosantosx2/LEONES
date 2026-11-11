@@ -129,7 +129,10 @@
       "protocol": "openai-chat-completions",
       "env": {},
       "health_path": "/health",
-      "chat_path": "/v1/chat/completions"
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/kinetic/build.json"
     },
     {
       "id": "tensorfold",
@@ -151,7 +154,10 @@
       "protocol": "openai-chat-completions",
       "env": {},
       "health_path": "/health",
-      "chat_path": "/v1/chat/completions"
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/tensorfold/build.json"
     },
     {
       "id": "tandem-cpp",
@@ -178,7 +184,10 @@
       "protocol": "openai-chat-completions",
       "env": {},
       "health_path": "/health",
-      "chat_path": "/v1/chat/completions"
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/tandem-cpp/build.json"
     },
     {
       "id": "rustinstrata",
@@ -201,7 +210,10 @@
       "protocol": "openai-chat-completions",
       "env": {},
       "health_path": "/health",
-      "chat_path": "/v1/chat/completions"
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/rustinstrata/build.json"
     }
   ]
 }
