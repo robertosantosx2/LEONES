@@ -1,138 +1,83 @@
-# Diseño de port DSpine a llama.cpp
+# Validación de la integración DSpine en llama.cpp
 
-**Tipo:** diseño de ingeniería previo a implementación.  
-**Estado:** bloqueado hasta disponer de un runtime llama.cpp que incorpore DSpine de verdad.
+**La implementación del port ya existe en el fork Ajay9o9/llama.cpp.** Este documento fija cómo validar su ruta real antes de trasladar cualquier build al MSI.
 
-## Referencia de comportamiento
+## Contrato observado
 
-Implementación de referencia oficial:
+La integración utiliza el modelo DFlash como arquitectura contenedora, con tensores DSpine opcionales. El checkpoint GGUF contiene los pesos del puente de código y la configuración DFlash de bloque/selector.
 
-- `Tencent/DSpine/sglang_dspine/models/dspine.py`
-- `Tencent/DSpine/sglang_dspine/spec.py`
-- `Tencent/DSpine/sglang_dspine/kernels/dspine.py`
-- `Tencent/DSpine/dspine_mlx/dspine_mlx/model.py`
-- `Tencent/DSpine/dspine_mlx/dspine_mlx/config.py`
+### Tensores del puente
 
-Blobs consultados durante esta auditoría:
+- Globales: `dspine_codebook`, `dspine_gate`, `dspine_gate_b`, `dspine_pred_gate`, `dspine_prev`.
+- Por capa: `blk.{bid}.dspine_read`, `blk.{bid}.dspine_write`.
+- Mapeo HF: `model.selected_prefix_bridge.*` y `model.layers.{bid}.selected_prefix_bridge.*`.
 
-| Archivo | Blob SHA |
-|---|---|
-| `sglang_dspine/models/dspine.py` | `d0f65f0911c3eee3de7e664200be3af0e2e77a38` |
-| `sglang_dspine/spec.py` | `0db1ed234e0486ae8f64d6c2af731bdc5fdd057d` |
-| `sglang_dspine/layers/layout.py` | `8255b86fcb056e686055409e50d366d495724c7c` |
-| `sglang_dspine/kernels/dspine.py` | `1de4ea9cb3ba4683ca9ef27b07c3c1376a813f80` |
-| `dspine_mlx/dspine_mlx/model.py` | `099209a1491c400ca0e5079d1ad1f26dd64dfecf` |
-| `dspine_mlx/dspine_mlx/config.py` | `28292eb8feacaa9bd4d04f547b78f266216cbaf7` |
+### Grafo
 
-Los hashes son blob SHAs de GitHub, no SHA del commit completo de Tencent/DSpine.
+- `build_dspine_write()`: obtiene códigos normalizados de cada fila, usa el codebook en la fila ancla, calcula un mensaje gated desde la fila predecesora y aplica el delta mediante el peso write de esa capa.
+- `build_dspine_lattice()`: reconstruye el último write para candidatos top-k condicionados por el predecesor y empaqueta candidatos/puntuaciones para el verificador.
+- El grafo invoca el write durante cada capa que tenga el tensor y construye la lattice al final si existe `model.dspine_codebook`.
 
-## Contrato que debe respetar el port
+### Runtime
 
-El checkpoint contiene un drafter con arquitectura Qwen3 y un puente de código DSpine. La implementación de referencia reutiliza componentes DFlash para el bloque de draft, pero añade semántica propia:
+El CLI usa el tipo especulativo `draft-dflash`. La clase compartida reconoce el selector top-k y consume `llama_get_embeddings_nextn()`; el modelo DSpine proporciona la lattice especializada desde el grafo. No añadir un tipo CLI ficticio `draft-dspine` salvo que el upstream lo adopte por separado.
 
-- Proyecciones de características del modelo objetivo.
-- Capas de draft Qwen3 con atención causal sobre el bloque y acceso al contexto objetivo.
-- Escrituras de código adyacente a través de capas, con pesos aprendidos en `selected_prefix_bridge.*`.
-- Refinamiento de la última escritura/selección mediante un head top-k descrito en la configuración.
-- Reglas estrictas de configuración; los modos desconocidos o terminal-corrected se rechazan.
-- Kernels de preparación/normalización de códigos, mensajes de características, finalización de escrituras y selección.
+## Validación necesaria
 
-No se debe implementar el port suponiendo que basta con reutilizar sin cambios el decodificador DFlash. La propia referencia valida el contrato del checkpoint y rehúsa configuraciones no soportadas.
+### 1. Integridad del checkpoint
 
-## Diseño sugerido en llama.cpp
+- Confirmar el repositorio y revisión exacta del target y drafter.
+- Comprobar que el GGUF contiene todos los tensores DSpine requeridos.
+- Verificar que ningún tensor de puente se omite, renombra o cuantiza de forma incompatible.
+- Verificar block size, target layers, selector top-k y dimensiones contra el modelo card/config original.
+- Confirmar que el target y drafter comparten tokenizer, vocabulario y arquitectura compatibles.
 
-### A. Identificación y validación
+### 2. Build y pruebas automáticas
 
-Añadir un tipo de speculative decoding independiente:
+- Ejecutar auditor estático de LEONES.
+- Build CPU limpio del fork.
+- Ejecutar tests existentes de llama.cpp y pruebas del parser GGUF.
+- Build CUDA en runner con toolkit y GPU compatibles si CI disponible; la build CPU no sustituye este gate.
+- Registrar SHA exacto del commit externo, compiler, CMake flags, CUDA, driver y artefactos.
 
-- Enum: `COMMON_SPECULATIVE_TYPE_DSPINE`.
-- Nombre CLI: `draft-dspine`.
-- Detección de GGUF basada en metadatos inequívocos.
-- Validación de la pareja target/drafter y de los IDs de capas.
-- Rechazo explícito cuando la configuración no corresponda a DSpine.
+### 3. Validación funcional de referencia
 
-No mapear el tipo a `draft-dflash` ni `draft-dspark`.
+- Carga del target y drafter sin warnings de tensores faltantes.
+- Primera generación con `draft-dflash` y checkpoint DSpine.
+- Confirmar en logs que el loader informa el code bridge DSpine.
+- Comparar greedy tokens contra target sin speculative.
+- Validar aceptación parcial, rechazo completo, EOS y resets KV.
+- Validar sampling solo después de greedy.
+- Comprobar que desactivar el drafter devuelve al baseline sin residuos.
 
-### B. Carga de tensores
+### 4. Rendimiento
 
-Primero documentar el inventario exacto de tensores y formas a partir del checkpoint oficial. La conversión GGUF debe conservar:
+Medir por separado:
+- prefill tokens/s;
+- decode tokens/s;
+- latencia al primer token;
+- longitud media aceptada;
+- ratio de aceptación;
+- VRAM máxima;
+- RSS y swap;
+- consumo y estabilidad térmica.
 
-- Nombres del puente `selected_prefix_bridge.*`.
-- Tensores de atención, MLP y normalización del drafter.
-- Capas objetivo requeridas para las características compartidas.
-- Metadatos de bloque, máscara y refinamiento.
+Usar mismo modelo objetivo, prompt, contexto, sampler, seed y backend para baseline y speculative. Registrar al menos tres repeticiones; no comparar resultados de máquinas distintas como si fueran equivalentes.
 
-El conversor debe tener pruebas de ida/vuelta de nombres, dimensiones y tipos de datos. BF16 debe conservarse para los tensores de puente cuando el checkpoint lo requiera.
+## Candidato MSI
 
-### C. Grafo GGML
+El checkpoint GGUF comunitario publicado es Qwen3.8-27B DSpine y su target obligatorio es Qwen3.8-27B. No se debe intentar en el MSI de 4 GiB VRAM.
 
-Separar el trabajo en subgrafos testeables:
+La pareja oficial más pequeña es Qwen3-8B + Qwen3-8B-DSpine-b16 (drafter de 1.2378B parámetros). Antes de probarla en el MSI debe existir un GGUF convertido y validado para el drafter, y una cuantización GGUF del target cuya suma de pesos, KV, buffers y workspace quepa en el presupuesto real. No asumir que un drafter de 1.24B cabe gratis.
 
-1. Extracción de hidden states del target.
-2. Proyección/normalización de características de contexto.
-3. Construcción de códigos y anclas.
-4. Una escritura adyacente aprendida por capa.
-5. Atención causal del bloque con contexto visible.
-6. Refinamiento final/top-k.
-7. Proyección a logits y tokens propuestos.
+## Criterio de habilitación MSI
 
-Evitar primero la optimización CUDA: la referencia numérica debe funcionar en CPU/GGML antes de añadir kernels específicos.
+No pedir intervención hasta:
+- auditor estático positivo;
+- build CPU CI verde;
+- build CUDA SM86 disponible o plan local reproducible;
+- pareja exacta y hashes definidos;
+- preflight de memoria conservador;
+- script de benchmark y rollback preparados.
 
-### D. Integración especulativa
-
-Reutilizar la infraestructura común de propuesta/verificación solo donde su contrato coincida. DSpine debe implementar su propio estado de draft, preparación del bloque, consumo de hidden states y reconstrucción del prefijo aceptado.
-
-Casos mínimos:
-- greedy determinista;
-- sampling con rejection sampling;
-- aceptación de prefijo parcial;
-- bloque sin tokens aceptados;
-- EOS dentro del prefijo;
-- múltiples secuencias, si el backend lo soporta;
-- reset y rollback del estado KV tras rechazo.
-
-### E. Backends
-
-Orden recomendado:
-
-1. GGML CPU de referencia.
-2. CUDA SM86.
-3. CPU/GPU híbrido, solo después de verificar coherencia numérica y asignación de memoria.
-
-No escribir kernels CUDA hasta que las pruebas CPU validen las fórmulas y el orden de operaciones.
-
-## Checkpoints y coste aproximado de memoria
-
-Metadatos públicos de Hugging Face:
-
-| Drafter | Parámetros publicados | Target obligatorio |
-|---|---:|---|
-| Qwen3-8B-DSpine-b16 | 1.2378B | Qwen3-8B |
-| Qwen3.8-27B-DSpine-b16 | 2.0259B | Qwen3.8-27B |
-
-Los parámetros no equivalen al tamaño final de pesos: el formato/precisión determina el tamaño en memoria. A estos pesos se añaden KV, buffers de contexto, workspace, embeddings/hidden states y memoria del runtime.
-
-El checkpoint oficial de Qwen3-8B se publica en Safetensors, no debe asumirse que es directamente cargable por llama.cpp. La conversión y el soporte GGUF son trabajo adicional. Una conversión comunitaria del drafter Qwen3.8-27B no es soporte upstream ni demuestra compatibilidad del runtime.
-
-## Pruebas numéricas necesarias
-
-- Comparar outputs de cada capa del drafter frente a SGLang de referencia en inputs fijos.
-- Tolerancias por dtype (BF16/FP16/F32) declaradas, no elegidas después de ver los resultados.
-- Comparar códigos/índices top-k antes de comparar tokens.
-- Verificar que el prefijo greedy aceptado coincide exactamente.
-- Repetir en CPU y CUDA.
-- Ejecutar con diferentes longitudes de contexto y tamaños de bloque.
-- Guardar prompt, tokens, seed, hashes de modelo, commit, flags y logs.
-
-## Criterios de salida antes de MSI
-
-- [ ] Un commit de llama.cpp con el tipo `draft-dspine` real.
-- [ ] Conversor y documentación de GGUF para al menos Qwen3-8B.
-- [ ] Tests de metadatos, tensores y formas.
-- [ ] Tests de equivalencia contra referencia.
-- [ ] Build CPU y CUDA en CI.
-- [ ] Smoke test de CLI que rechace modelos incompatibles.
-- [ ] Estimación de memoria calculada a partir de los ficheros exactos.
-- [ ] Paquete MSI reversible y sin tocar la instalación llama.cpp activa.
-
-Hasta completar esos puntos, no hay razón técnica para pedir una ejecución en el MSI.
+El gate MSI no se ha abierto todavía.
