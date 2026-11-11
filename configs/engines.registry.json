@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "source_snapshot": "Every engine source must be vendored into third_party/engines/<id>/source at an immutable commit.",
+    "git_mirror": "A full Git mirror is retained in third_party/engines/<id>/git-mirror.git so tags, branches and commit objects remain available.",
+    "build_evidence": "Each benchmark run records source commit, dirty patch hash, submodule state, binary hash, build command, compiler/toolchain, effective arguments and environment (secrets redacted).",
+    "license": "Preserve LICENSE, COPYING, NOTICE, PATENTS, TRADEMARKS and attribution files verbatim. Never remove upstream license notices.",
+    "artifacts": "Each engine has a separate artifact format/model mapping; model and tokenizer hashes are recorded. No conversion is implicit."
+  },
+  "engines": [
+    {
+      "id": "kinetic",
+      "display_name": "Kinetic",
+      "repository": "https://github.com/Veloresearch/kinetic.git",
+      "default_ref": "main",
+      "source_status": "known-upstream",
+      "adapter": "openai-chat-completions",
+      "enabled": true,
+      "model_artifacts": [
+        "GGUF"
+      ],
+      "notes": "Vendored by scripts/vendor_engines.py; retain Apache-2.0 and upstream notices."
+    },
+    {
+      "id": "tensorfold",
+      "display_name": "TensorFold",
+      "repository": "https://github.com/ashhart/TensorFold.git",
+      "default_ref": "main",
+      "source_status": "known-upstream",
+      "adapter": "openai-chat-completions",
+      "enabled": false,
+      "model_artifacts": [
+        "MLX",
+        "EXL3",
+        "GGUF"
+      ],
+      "notes": "Use the exact validated TensorFold commit/build and local model artifact; record CUDA reserve/device settings."
+    },
+    {
+      "id": "tandem-cpp",
+      "display_name": "Tandem.cpp (llama.cpp-based runtime)",
+      "repository": "https://github.com/ggerganov/llama.cpp.git",
+      "default_ref": "master",
+      "source_status": "upstream-base-known-local-fork-unresolved",
+      "adapter": "openai-chat-completions",
+      "enabled": false,
+      "model_artifacts": [
+        "GGUF"
+      ],
+      "notes": "If Tandem.cpp is a local fork/patchset, configure repository URL and commit to that fork instead of upstream llama.cpp; do not substitute upstream silently."
+    },
+    {
+      "id": "rustinstrata",
+      "display_name": "RustInstrata",
+      "repository": null,
+      "default_ref": null,
+      "source_status": "source-location-required",
+      "adapter": "openai-chat-completions",
+      "enabled": false,
+      "model_artifacts": [],
+      "notes": "No authoritative GitHub repository URL identified. Add the exact repository URL/ref before vendoring; do not guess."
+    }
+  ]
+}
