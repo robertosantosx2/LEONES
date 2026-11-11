@@ -95,7 +95,7 @@ Snapshot: `third_party/engines/tandem-cpp/SOURCE.json`. Tandem.cpp is a patch se
 The upstream `build.sh` checks out that base commit, applies `tandem.patch`, then builds CUDA `llama-server`. From the LEONES repository root:
 
 ```bash
-TANDEM_SRC=third_party/engines/tandem-cpp/source/e1acb8877bfcf92b4ae7c9f0e0f1d896dbf6c683
+TANDEM_SRC="$(python3 -c 'import json; print("third_party/engines/tandem-cpp/" + json.load(open("third_party/engines/tandem-cpp/SOURCE.json"))["source_tree"])')"
 bash "$TANDEM_SRC/build.sh" "$HOME/build/tandem-msi" \
   -DCMAKE_CUDA_ARCHITECTURES=86
 ```
@@ -150,7 +150,7 @@ python3 scripts/capture_engine_build.py --engine tandem-cpp \
   --build-log artifacts/engine-builds/tandem-cpp/build.log \
   --compiler 'cmake --version' --compiler 'c++ --version' --compiler 'nvcc --version' \
   --backend cuda --feature GGML_CUDA --feature sm_86 \
-  --patch third_party/engines/tandem-cpp/source/e1acb8877bfcf92b4ae7c9f0e0f1d896dbf6c683/tandem.patch \
+  --patch "$TANDEM_SRC/tandem.patch" \
   --base-source-meta third_party/engines/llama-cpp-tandem-base/SOURCE.json \
   --output artifacts/engine-builds/tandem-cpp/build.json
 ```
