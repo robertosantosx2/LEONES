@@ -20,7 +20,7 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 - [Vendor de fuentes](scripts/vendor_engines.py): crea `third_party/engines/<id>/source/<commit>/` y `SOURCE.json` sin sobrescribir snapshots anteriores.\n- [Captura de compilación](scripts/capture_engine_build.py): registra binario, hash, comando, log, compilador, backend y entorno.
 - [Workflow GitHub Actions](.github/workflows/vendor-inference-engines.yml): importa las copias directamente en GitHub y las confirma en esta rama.
 
-Motores registrados: Kinetic, TensorFold, Tandem.cpp/llama.cpp y RustInstrata. Las fuentes sin URL upstream verificada quedan marcadas como pendientes; nunca se sustituye una bifurcación local por el upstream sin declararlo.
+Motores registrados: Kinetic, TensorFold, llama.cpp, RustingStrata y Tandem.cpp (pendiente de confirmar su repositorio/fork exacto). llama.cpp y Tandem.cpp son entradas distintas: el snapshot upstream de llama.cpp nunca se presenta como si fuera el código de Tandem.cpp. RustingStrata se incorpora desde https://github.com/RustingStudio/RustingStrata; sus afirmaciones de rendimiento upstream no se consideran mediciones LEONES.
 
 ## Kinetic — auditoría y benchmark cruzado (2026-11-11)
 
