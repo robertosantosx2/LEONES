@@ -200,7 +200,11 @@ def main():
     ap.add_argument("--allow-dirty-baseline", action="store_true",
                     help="continue despite a dirty initial GPU; still record it")
     args = ap.parse_args()
-    cfg = json.loads(pathlib.Path(args.config).read_text())
+    config_path = pathlib.Path(args.config).expanduser().resolve()
+    cfg = json.loads(config_path.read_text())
+    config_hash = sha256(config_path)
+    prompt_hash = hashlib.sha256(json.dumps(cfg.get("prompts", []), sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    harness_hash = sha256(pathlib.Path(__file__).resolve())
     model = pathlib.Path(args.model).expanduser().resolve() if args.model else None
     if model and (not model.exists() or not (model.is_file() or model.is_dir())):
         ap.error(f"model not found: {model}")
@@ -216,8 +220,12 @@ def main():
         manifest_model = {"path":str(model),"kind":"directory" if model.is_dir() else "file",
                           "size_bytes":model.stat().st_size if model.is_file() else None,
                           "file_count":model_files,"sha256":model_hash}
-    manifest = {"schema_version":1, "created_at":utc(), "config":cfg, "model":manifest_model,
-                "host_baseline":baseline, "argv":sys.argv, "environment":{k:("<redacted>" if SENSITIVE_ENV.search(k) else v) for k,v in os.environ.items() if k.startswith(("CUDA","HIP","TENSORFOLD","LLAMA","TF_"))}}
+    manifest = {"schema_version":1, "created_at":utc(), "config":cfg,
+                "config_file":{"path":str(config_path),"sha256":config_hash},
+                "prompt_suite":{"sha256":prompt_hash,"prompt_ids":[p["id"] for p in cfg.get("prompts", [])]},
+                "harness":{"path":str(pathlib.Path(__file__).resolve()),"sha256":harness_hash},
+                "model":manifest_model, "host_baseline":baseline, "argv":sys.argv,
+                "environment":{k:("<redacted>" if SENSITIVE_ENV.search(k) else v) for k,v in os.environ.items() if k.startswith(("CUDA","HIP","TENSORFOLD","LLAMA","TF_"))}}
     (out/"manifest.json").write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+"\n")
     summary = {"session":str(out), "model_sha256":model_hash, "engines":[], "aborted":False}
     allowed = set(args.only.split(",")) if args.only else None
