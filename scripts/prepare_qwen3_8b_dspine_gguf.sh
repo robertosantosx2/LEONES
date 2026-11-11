@@ -66,5 +66,7 @@ if missing or not read_layers or len(read_layers) != len(write_layers):
 print("DSpine tensor inventory: PASS")
 PY
 
+sha256sum "$OUTPUT" | tee "$OUTPUT.sha256"
+
 info "Conversion and static GGUF tensor check completed."
 info "This does not load the target/drafter or prove generation correctness."
