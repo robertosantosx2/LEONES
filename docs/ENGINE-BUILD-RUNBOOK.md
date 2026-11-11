@@ -166,3 +166,49 @@ The runner checks that the build evidence belongs to the configured engine, the 
 - Do not run the full matrix until model paths, binary hashes, build JSON files and adapter health/API behavior have been checked.
 
 **The only remaining work that cannot be completed by GitHub CI is the physical build/runtime smoke test and measurement on the MSI**, because it requires the local RTX 3050, its driver, its installed CUDA/NVRTC libraries, available RAM/VRAM and local model artifacts. Until that point the framework, source snapshots and build recipes are prepared but no performance value is MEASURED.
+
+
+## Project Maya (model-specific engine family; preparation only)
+
+Upstream: https://github.com/mw00/project-maya  
+Vendored identity: `third_party/engines/project-maya/SOURCE.json`  
+Pinned commit: `a3582528bfb73175fed1757b485bfcaaf01aaeaa` (v1.1.58 release line).
+
+Project Maya is a model-specific C++ inference suite, not one generic binary/model pair. It includes dedicated engines for GLM-5.3, GLM-5.3-Flash, DeepSeek-V4.1-Flash and MiniMax-M3.1-Flash, a browser dashboard/monitor, an OpenAI-compatible `/v1/chat/completions` API and an Anthropic-compatible `/v1/messages` API. It supports NVIDIA and AMD paths; its README documents Linux x86-64, CUDA 12.x (CUDA 13 works for RTX 20 and newer), g++, Python 3.10+ and fast NVMe. The repository is MIT, but that does **not** replace each model's own license.
+
+### Model packs recorded in LEONES
+
+See `configs/models.registry.json` for the machine-readable catalogue. Upstream's smaller packs and approximate sizes:
+
+| Model | Maya setup id | Download | Whole model memory | Recommended VRAM + RAM |
+| --- | --- | ---: | ---: | ---: |
+| GLM-5.3 (744B) | `glm-5.3-maya-xs` | 170 GB | 176 GB | 192 GB |
+| GLM-5.3-Flash (321B) | `glm-maya-xs` | 73.4 GB | 80 GB | 88 GB |
+| DeepSeek-V4.1-Flash (748B) | `deepseek-maya-xs` | 277 GB | 121 GB | 128 GB |
+| MiniMax-M3.1-Flash (428B) | `minimax-maya-xs` | 93 GB | 100 GB | 128 GB |
+
+These are upstream-published sizes and memory guidance, not LEONES downloads or measured performance. DeepSeek's download includes Engram tables that remain on NVMe and are not counted in resident memory. GLM-5.3 and MiniMax model licenses differ from the project source license; check the exact model card/terms before redistributing weights.
+
+### Setup and build (for a suitable host; not the MSI)
+
+Clone/setup is upstream-managed and selects one model pack per setup:
+
+```bash
+git clone https://github.com/mw00/project-maya.git
+cd project-maya
+./setup.sh
+```
+
+The interactive setup checks hardware, offers model packs, downloads verified model files, builds the corresponding model-specific engine and starts the service. To choose a model non-interactively, use the setup IDs above, for example:
+
+```bash
+./maya.sh --setup --model glm-maya-xs
+```
+
+The normal service listens on `http://127.0.0.1:8080` by default. The dashboard and APIs are documented by upstream. Run `./maya.sh --check` first on a target machine and retain the complete setup/build log, exact source SHA, model pack manifest/checksums, each generated engine binary hash and configuration. The generic LEONES build-capture currently records one primary binary; a proper Maya benchmark adapter must capture all selected model-engine binaries and switch model packs explicitly before it is enabled.
+
+### MSI compatibility gate — do not run setup there
+
+The current MSI Thin 15 has 14 GiB system RAM and 4 GiB VRAM. Project Maya documents **32 GiB system RAM as its minimum floor**, plus a fast NVMe SSD; recommended VRAM+RAM pools for the smallest listed packs start at 88 GiB. The MSI is below even the published minimum system-RAM floor. Do not download these 73–277 GB packs or attempt a runtime benchmark on this machine. The source snapshot and catalogue can be preserved in LEONES without claiming local feasibility.
+
+The `project-maya` benchmark config is deliberately disabled. Enabling it requires a suitable host, a chosen and verified model pack, model-specific binary/build provenance, and a dedicated adapter that can prepare/reload Maya's selected engine and exercise both API protocols as appropriate.
