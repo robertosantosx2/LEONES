@@ -56,7 +56,7 @@ Esto demuestra una ruta de código DSpine específica, no solo el registro de no
 
 | Objetivo | Drafter | Observación |
 |---|---|---|
-| Qwen3-8B | `tencent/Qwen3-8B-DSpine-b16` | Checkpoint oficial Safetensors; conversor del fork implementado en `conversion/qwen.py` |
+| Qwen3-8B | `tencent/Qwen3-8B-DSpine-b16` | **No compatible con este fork**: checkpoint antiguo sin `code_bridge_second_pass` ni `selected_prefix_last_write_refine.head_topk` |
 | Qwen3.8-27B | `tencent/Qwen3.8-27B-DSpine-b16` | Checkpoint oficial Safetensors |
 | Qwen3.8-27B | `aj9o9/Qwen3.8-27B-DSpine-b16-GGUF` | Conversión GGUF comunitaria explícitamente destinada al fork |
 
@@ -64,7 +64,7 @@ El fork implementa conversión HF→GGUF en `conversion/qwen.py` (`DFlashModel._
 
 Ejemplo: `python convert_hf_to_gguf.py ./models/Qwen3-8B-DSpine-b16 --target-model-dir ./models/Qwen3-8B --outtype bf16 --outfile Qwen3-8B-DSpine-b16.gguf`. LEONES incluye `scripts/prepare_qwen3_8b_dspine_gguf.sh` para convertir y verificar los tensores `dspine_*`. El drafter no es autónomo: necesita su modelo objetivo correspondiente. No intercambiar parejas entre familias.
 
-El GGUF comunitario Qwen3.8-27B publica el drafter Q4_K_M de 1.26 GB y documenta un target Qwen3.8-27B Q4_K_M de 17.1 GB; sus benchmarks de referencia son sobre una RTX 3090 de 24 GB. Esto confirma que esa pareja no es la opción para el MSI de 4 GiB.
+El GGUF comunitario Qwen3.8-27B publica el drafter Q4_K_M de 1.26 GB. Para el target existen cuantizaciones pequeñas: IQ2_XXS de 8.88 GB y Q2_K de 10.82 GB. La pareja IQ2_XXS + drafter Q4_K_M suma aproximadamente 10.14 GB de pesos, antes de KV y buffers. Esto no cabe íntegramente en la VRAM de 4 GiB, pero merece un ensayo híbrido CPU/GPU a contexto 512; no es una garantía de que quepa ni de que sea rápido.
 
 ## Comando de referencia del modelo GGUF comunitario
 
@@ -89,7 +89,7 @@ Ejemplo de referencia publicado (solo para reproducir el perfil de 24 GiB, no pa
 Perfil LEONES: i7-12650H, RTX 3050 Laptop 4 GiB (SM 8.6), 14 GiB RAM, Ubuntu.
 
 - La pareja Qwen3.8-27B no es una candidata razonable para 4 GiB VRAM y 14 GiB RAM.
-- La pareja Qwen3-8B es la candidata más pequeña oficialmente publicada, y el fork permite convertir el drafter Safetensors a GGUF. El target de 8B también requiere planificación de memoria.
+- La pareja Qwen3-8B no es compatible con la variante serial_table del fork. El único par con GGUF y contrato compatible confirmado es Qwen3.8-27B; para el MSI se evaluará únicamente con target IQ2_XXS y contexto corto, sin garantía de rendimiento.
 - El fork tiene una build CPU y CUDA, pero la compilación CPU no demuestra que la ruta CUDA ni la pareja de modelos funcionen.
 - LEONES incluye `scripts/dspine-msi-preflight.sh`, un inventario de solo lectura que no descarga, compila ni carga modelos.
 - No descargar ni ejecutar todavía. Primero ejecutar CI y el preflight, revisar el footprint real de los ficheros elegidos y decidir offload por separado para target y drafter.
@@ -109,6 +109,6 @@ No marcar la funcionalidad como validada por el mero hecho de compilar el fork.
 1. **Completada:** inspección de tensores, loader, code bridge, lattice y dispatch especulativo.
 2. **En curso:** auditor estático automatizado y pruebas unitarias en LEONES.
 3. **Pendiente:** build CPU del fork y build CUDA/SM86 en CI adecuado.
-4. **Completada:** confirmar y automatizar conversión GGUF de Qwen3-8B; falta ejecutarla sobre los checkpoints exactos.
+4. **Completada:** identificar incompatibilidad del checkpoint Qwen3-8B y sustituir la conversión por verificación del drafter Qwen3.8-27B GGUF compatible.
 5. **Pendiente:** gate de memoria y comandos reproducibles.
 6. **Pendiente:** ejecución física y benchmark en MSI.
