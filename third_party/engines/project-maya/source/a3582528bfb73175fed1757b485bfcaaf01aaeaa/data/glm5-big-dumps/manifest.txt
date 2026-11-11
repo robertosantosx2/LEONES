@@ -1,0 +1,4 @@
+glm5-big runner expectation (f64 oracle, cast f32)
+model: tools/glm_big_fixture.py seed 777 (BIG geometry, vocab-less)
+tokens: 512 x ((i % 511) + 1)
+layout: (vocab=512, T=512) float32, element (v, t) at v + 512*t

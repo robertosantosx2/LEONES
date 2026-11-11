@@ -1,0 +1,245 @@
+// Numerical parity for the CUDA intrinsics supplied by the HIP compatibility layer.
+#include <hip/hip_runtime.h>
+#include "strata/hip_compat/intrinsics.hpp"
+
+#include <cstdint>
+#include <cstdio>
+#include <limits>
+
+#define CHECK(call)                                                                                                  \
+    do {                                                                                                             \
+        const hipError_t error = (call);                                                                             \
+        if (error != hipSuccess) {                                                                                   \
+            std::fprintf(stderr, "%s: %s\n", #call, hipGetErrorString(error));                                     \
+            return 2;                                                                                                \
+        }                                                                                                            \
+    } while (0)
+
+namespace {
+
+constexpr int kLanes = 32;
+constexpr int kIntegerResults = 7;
+constexpr int kPackedCases = 65536;
+
+// Cover every pair of byte values in the low lane and vary the other lanes to
+// catch cross-byte carry/borrow. Permutation selectors include ignored high bits.
+__host__ __device__ uint32_t packed_a(unsigned i) { return 0x01010101u * (i & 255u) ^ (i * 0x9e3779b9u); }
+__host__ __device__ uint32_t packed_b(unsigned i) { return 0x01010101u * (i >> 8) ^ (i * 0x85ebca6bu); }
+__host__ __device__ uint32_t selector(unsigned i) { return i * 0x632be59bu; }
+
+__global__ void packed_probe(uint32_t* results) {
+    const unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= kPackedCases) return;
+    const uint32_t a = (packed_a(i) & 0xffffff00u) | (i & 255u);
+    const uint32_t b = (packed_b(i) & 0xffffff00u) | (i >> 8);
+    results[i * 4] = __vsub4(a, b);
+    results[i * 4 + 1] = __vsubss4(a, b);
+    results[i * 4 + 2] = __vcmpne4(a, b);
+    results[i * 4 + 3] = __byte_perm(a, b, selector(i));
+}
+
+// Distinct predicates in both logical warps catch accidental truncation of a
+// wave64 ballot. Also exercise width-32 shuffles and shared-memory visibility.
+__global__ void logical_warp_probe(uint32_t* results) {
+    __shared__ unsigned values[64];
+    const unsigned lane = threadIdx.x;
+    const unsigned base = lane & ~31u;
+    const unsigned local = lane & 31u;
+    values[lane] = lane * 7u;
+#if HIP_VERSION_MAJOR >= 7 && !defined(STRATA_HIP_WAVE64)
+    __syncwarp(static_cast<uint64_t>(0xffffffffu));  // HIP 7's native wave32 form requires a 64-bit mask.
+#else
+    __syncwarp(0xffffffffu);
+#endif
+    results[lane * 4 + 0] = __ballot_sync(0xffffffffu, (lane & 1u) == (base ? 1u : 0u));
+    results[lane * 4 + 1] = __shfl_sync(0xffffffffu, lane, 0, 32);
+    results[lane * 4 + 2] = __shfl_down_sync(0xffffffffu, lane, 1, 32);
+    results[lane * 4 + 3] = values[base + (local ^ 1u)];
+}
+
+__global__ void intrinsic_probe(int* integer_results, float* float_shuffle, double* double_shuffle,
+                                unsigned* ballot, const uint32_t* dot_inputs) {
+    const int lane = static_cast<int>(threadIdx.x);
+    constexpr unsigned mask = 0xffffffffu;
+    const uint32_t a = 0x80ff017fu;
+    const uint32_t b = 0x0203fe81u;
+
+    integer_results[lane * kIntegerResults + 0] = __dp4a(static_cast<int>(a), static_cast<int>(b), 7);
+    integer_results[lane * kIntegerResults + 1] = __dp4a(0x7f7f7f7f, 0x7f7f7f7f, 0x7fffffff);
+    integer_results[lane * kIntegerResults + 2] = __vsub4(0x00ff0102, 0x01010103);
+    integer_results[lane * kIntegerResults + 3] = __vsub4(0x00000000, 0x01020304);
+    integer_results[lane * kIntegerResults + 4] = __vsubss4(0x807f0080, 0x017f0180);
+    integer_results[lane * kIntegerResults + 5] = __vcmpne4(0x00ff0102, 0x01010103);
+    integer_results[lane * kIntegerResults + 6] =
+        __dp4a(static_cast<int>(dot_inputs[lane * 2]), static_cast<int>(dot_inputs[lane * 2 + 1]),
+               0x7fffffff - lane);
+
+    float_shuffle[lane * 4 + 0] = __shfl_xor_sync(mask, static_cast<float>(lane), 1);
+    float_shuffle[lane * 4 + 1] = static_cast<float>(__shfl_down_sync(mask, lane, 4, 8));
+    float_shuffle[lane * 4 + 2] = static_cast<float>(__shfl_up_sync(mask, lane, 1));
+    float_shuffle[lane * 4 + 3] = static_cast<float>(__shfl_sync(mask, lane, 0));
+    double_shuffle[lane] = __shfl_xor_sync(mask, static_cast<double>(lane) + 0.25, 1);
+
+    const unsigned hit = __ballot_sync(mask, (lane & 1) == 0);
+    if (lane == 0) {
+        *ballot = hit;
+        __nanosleep(100);
+    }
+}
+
+int signed_byte(uint32_t word, int lane) {
+    const unsigned value = (word >> (lane * 8)) & 0xffu;
+    return value < 0x80u ? static_cast<int>(value) : static_cast<int>(value) - 0x100;
+}
+
+int dp4a_reference(uint32_t a, uint32_t b, int c) {
+    int64_t sum = c;
+    for (int lane = 0; lane < 4; ++lane) sum += signed_byte(a, lane) * signed_byte(b, lane);
+    return static_cast<int32_t>(static_cast<uint32_t>(sum));
+}
+
+uint32_t byte_sub_reference(uint32_t a, uint32_t b) {
+    uint32_t out = 0;
+    for (int lane = 0; lane < 4; ++lane)
+        out |= ((((a >> (lane * 8)) & 0xffu) - ((b >> (lane * 8)) & 0xffu)) & 0xffu) << (lane * 8);
+    return out;
+}
+
+uint32_t signed_saturating_sub_reference(uint32_t a, uint32_t b) {
+    uint32_t out = 0;
+    for (int lane = 0; lane < 4; ++lane) {
+        int value = signed_byte(a, lane) - signed_byte(b, lane);
+        if (value < -128) value = -128;
+        if (value > 127) value = 127;
+        out |= (static_cast<uint32_t>(value) & 0xffu) << (lane * 8);
+    }
+    return out;
+}
+
+uint32_t not_equal_reference(uint32_t a, uint32_t b) {
+    uint32_t out = 0;
+    for (int lane = 0; lane < 4; ++lane)
+        if (((a >> (lane * 8)) & 0xffu) != ((b >> (lane * 8)) & 0xffu)) out |= 0xffu << (lane * 8);
+    return out;
+}
+
+}  // namespace
+
+int main() {
+    int device = 0;
+    CHECK(hipGetDevice(&device));
+    hipDeviceProp_t properties{};
+    CHECK(hipGetDeviceProperties(&properties, device));
+    std::printf("HIP intrinsic device: %s (%s)\n", properties.name, properties.gcnArchName);
+    if (properties.warpSize != kLanes && properties.warpSize != 2 * kLanes) {
+        // wave64 (gfx908) is accepted: this probe launches kLanes threads, which occupy one half of a 64-lane
+        // wavefront; the compat layer's half-wavefront mapping must return the same wave32 results.
+        std::fprintf(stderr, "expected wave32 or wave64, got wave%d\n", properties.warpSize);
+        return 1;
+    }
+
+    int* device_integers = nullptr;
+    float* device_float_shuffle = nullptr;
+    double* device_double_shuffle = nullptr;
+    unsigned* device_ballot = nullptr;
+    uint32_t* device_dot_inputs = nullptr;
+    CHECK(hipMalloc(reinterpret_cast<void**>(&device_integers), kLanes * kIntegerResults * sizeof(int)));
+    CHECK(hipMalloc(reinterpret_cast<void**>(&device_float_shuffle), kLanes * 4 * sizeof(float)));
+    CHECK(hipMalloc(reinterpret_cast<void**>(&device_double_shuffle), kLanes * sizeof(double)));
+    CHECK(hipMalloc(reinterpret_cast<void**>(&device_ballot), sizeof(unsigned)));
+    CHECK(hipMalloc(reinterpret_cast<void**>(&device_dot_inputs), kLanes * 2 * sizeof(uint32_t)));
+
+    uint32_t dot_inputs[kLanes * 2]{};
+    for (int lane = 0; lane < kLanes; ++lane) {
+        dot_inputs[lane * 2] = 0x80ff017fu ^ (0x01010101u * static_cast<uint32_t>(lane));
+        dot_inputs[lane * 2 + 1] = 0x0203fe81u + (0x11111111u * static_cast<uint32_t>(lane));
+    }
+    CHECK(hipMemcpy(device_dot_inputs, dot_inputs, sizeof(dot_inputs), hipMemcpyHostToDevice));
+
+    hipLaunchKernelGGL(intrinsic_probe, dim3(1), dim3(kLanes), 0, 0,
+                       device_integers, device_float_shuffle, device_double_shuffle, device_ballot, device_dot_inputs);
+    CHECK(hipDeviceSynchronize());
+
+    int integers[kLanes * kIntegerResults]{};
+    float float_shuffle[kLanes * 4]{};
+    double double_shuffle[kLanes]{};
+    unsigned ballot = 0;
+    CHECK(hipMemcpy(integers, device_integers, sizeof(integers), hipMemcpyDeviceToHost));
+    CHECK(hipMemcpy(float_shuffle, device_float_shuffle, sizeof(float_shuffle), hipMemcpyDeviceToHost));
+    CHECK(hipMemcpy(double_shuffle, device_double_shuffle, sizeof(double_shuffle), hipMemcpyDeviceToHost));
+    CHECK(hipMemcpy(&ballot, device_ballot, sizeof(ballot), hipMemcpyDeviceToHost));
+
+    constexpr uint32_t a = 0x80ff017fu, b = 0x0203fe81u;
+    const uint32_t expected_integer[kIntegerResults - 1] = {
+        static_cast<uint32_t>(dp4a_reference(a, b, 7)),
+        static_cast<uint32_t>(dp4a_reference(0x7f7f7f7fu, 0x7f7f7f7fu, std::numeric_limits<int>::max())),
+        byte_sub_reference(0x00ff0102u, 0x01010103u),
+        byte_sub_reference(0x00000000u, 0x01020304u),
+        signed_saturating_sub_reference(0x807f0080u, 0x017f0180u),
+        not_equal_reference(0x00ff0102u, 0x01010103u),
+    };
+    bool ok = ballot == 0x55555555u;
+    for (int lane = 0; lane < kLanes; ++lane) {
+        for (int i = 0; i < kIntegerResults - 1; ++i)
+            ok = ok && static_cast<uint32_t>(integers[lane * kIntegerResults + i]) == expected_integer[i];
+        ok = ok && static_cast<uint32_t>(integers[lane * kIntegerResults + kIntegerResults - 1]) ==
+                     static_cast<uint32_t>(dp4a_reference(dot_inputs[lane * 2], dot_inputs[lane * 2 + 1],
+                                                          0x7fffffff - lane));
+        ok = ok && float_shuffle[lane * 4 + 0] == static_cast<float>(lane ^ 1);
+        const int down = lane % 8 < 4 ? lane + 4 : lane;
+        ok = ok && float_shuffle[lane * 4 + 1] == static_cast<float>(down);
+        ok = ok && float_shuffle[lane * 4 + 2] == static_cast<float>(lane == 0 ? 0 : lane - 1);
+        ok = ok && float_shuffle[lane * 4 + 3] == 0.0f;
+        ok = ok && double_shuffle[lane] == static_cast<double>(lane ^ 1) + 0.25;
+    }
+
+    CHECK(hipFree(device_ballot));
+    CHECK(hipFree(device_dot_inputs));
+    CHECK(hipFree(device_double_shuffle));
+    CHECK(hipFree(device_float_shuffle));
+    CHECK(hipFree(device_integers));
+    uint32_t* packed = nullptr;
+    CHECK(hipMalloc(reinterpret_cast<void**>(&packed), kPackedCases * 4 * sizeof(uint32_t)));
+    hipLaunchKernelGGL(packed_probe, dim3(kPackedCases / 256), dim3(256), 0, 0, packed);
+    CHECK(hipDeviceSynchronize());
+    auto* host = new uint32_t[kPackedCases * 4];
+    CHECK(hipMemcpy(host, packed, kPackedCases * 4 * sizeof(uint32_t), hipMemcpyDeviceToHost));
+    CHECK(hipFree(packed));
+    for (unsigned i = 0; i < kPackedCases; ++i) {
+        const uint32_t a = (packed_a(i) & 0xffffff00u) | (i & 255u);
+        const uint32_t b = (packed_b(i) & 0xffffff00u) | (i >> 8);
+        uint32_t perm = 0;
+        for (int lane = 0; lane < 4; ++lane) {
+            const unsigned pick = (selector(i) >> (4 * lane)) & 7u;
+            perm |= (((pick < 4 ? a : b) >> ((pick & 3u) * 8)) & 255u) << (lane * 8);
+        }
+        if (host[i * 4] != byte_sub_reference(a, b) ||
+            host[i * 4 + 1] != signed_saturating_sub_reference(a, b) ||
+            host[i * 4 + 2] != not_equal_reference(a, b) || host[i * 4 + 3] != perm) {
+            std::fprintf(stderr, "HIP packed-byte parity failed at pair %u\n", i);
+            ok = false;
+            break;
+        }
+    }
+    delete[] host;
+    uint32_t* logical = nullptr;
+    uint32_t logical_host[64 * 4]{};
+    CHECK(hipMalloc(reinterpret_cast<void**>(&logical), sizeof(logical_host)));
+    hipLaunchKernelGGL(logical_warp_probe, dim3(1), dim3(64), 0, 0, logical);
+    CHECK(hipDeviceSynchronize());
+    CHECK(hipMemcpy(logical_host, logical, sizeof(logical_host), hipMemcpyDeviceToHost));
+    for (unsigned lane = 0; lane < 64; ++lane) {
+        const unsigned base = lane & ~31u, local = lane & 31u;
+        ok = ok && logical_host[lane * 4 + 0] == (base ? 0xaaaaaaaau : 0x55555555u);
+        ok = ok && logical_host[lane * 4 + 1] == base;
+        ok = ok && logical_host[lane * 4 + 2] == (local == 31 ? lane : lane + 1);
+        ok = ok && logical_host[lane * 4 + 3] == (base + (local ^ 1u)) * 7u;
+    }
+    CHECK(hipFree(logical));
+    if (!ok) {
+        std::fprintf(stderr, "HIP intrinsic parity failed (ballot 0x%08x)\n", ballot);
+        return 1;
+    }
+    std::puts("HIP intrinsics parity OK: signed dot4/overflow, 65536 packed-byte pairs/permutations, wave32 shuffles, ballot and sleep");
+    return 0;
+}

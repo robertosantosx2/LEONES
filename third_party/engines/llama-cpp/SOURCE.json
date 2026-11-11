@@ -3,14 +3,14 @@
   "display_name": "llama.cpp",
   "repository": "https://github.com/ggml-org/llama.cpp.git",
   "ref_requested": "master",
-  "commit": "f3b407ca1bfeeecebf9e9ef19fcd6eed565bd70a",
-  "vendored_at": "2026-11-11T08:43:46.917259+00:00",
-  "source_tree": "source/f3b407ca1bfeeecebf9e9ef19fcd6eed565bd70a",
+  "commit": "9e9619d030bbe6b584d826a0a6cf06e38251f52b",
+  "vendored_at": "2026-11-11T08:45:06.791402+00:00",
+  "source_tree": "source/9e9619d030bbe6b584d826a0a6cf06e38251f52b",
   "submodule_status": "",
   "git_lfs": "git-lfs pull completed",
   "license_files": [
     "LICENSE"
   ],
   "source_status": "PINNED_SNAPSHOT",
-  "git_commit_tree": "11573f0822cc8bf05e9f70dfbdec2ebd16fe6a48"
+  "git_commit_tree": "6d225120c91dfa4ee01548348fd9262c0aeaba9c"
 }

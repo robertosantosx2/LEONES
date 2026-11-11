@@ -1,0 +1,19 @@
+{
+  "engine_id": "project-maya",
+  "display_name": "Project Maya",
+  "repository": "https://github.com/mw00/project-maya.git",
+  "ref_requested": "a3582528bfb73175fed1757b485bfcaaf01aaeaa",
+  "commit": "a3582528bfb73175fed1757b485bfcaaf01aaeaa",
+  "vendored_at": "2026-11-11T08:45:23.019913+00:00",
+  "source_tree": "source/a3582528bfb73175fed1757b485bfcaaf01aaeaa",
+  "submodule_status": "",
+  "git_lfs": "git-lfs pull completed",
+  "license_files": [
+    "LICENSE.deepseek-v41",
+    "LICENSE",
+    "LICENSE.qwen-community-1.0",
+    "LICENSE.minimax-m31"
+  ],
+  "source_status": "PINNED_SNAPSHOT",
+  "git_commit_tree": "89c2b14d1a3345eeb008da5fa73501462007ef41"
+}

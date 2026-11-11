@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "created_at": "2026-11-11T08:43:22.002785+00:00",
+  "created_at": "2026-11-11T08:44:33.599769+00:00",
   "engines": [
     {
       "id": "kinetic",
@@ -17,13 +17,13 @@
     {
       "id": "tandem-cpp",
       "status": "VENDORED",
-      "commit": "e1acb8877bfcf92b4ae7c9f0e0f1d896dbf6c683",
+      "commit": "d67bbcb9453a1e6c9f4b3ba0d29fb63193c57287",
       "path": "third_party/engines/tandem-cpp"
     },
     {
       "id": "llama-cpp",
       "status": "VENDORED",
-      "commit": "f3b407ca1bfeeecebf9e9ef19fcd6eed565bd70a",
+      "commit": "9e9619d030bbe6b584d826a0a6cf06e38251f52b",
       "path": "third_party/engines/llama-cpp"
     },
     {
@@ -37,6 +37,12 @@
       "status": "VENDORED",
       "commit": "f5222f25c18da062ab2b8a2dbbfbf4feae398566",
       "path": "third_party/engines/llama-cpp-tandem-base"
+    },
+    {
+      "id": "project-maya",
+      "status": "VENDORED",
+      "commit": "a3582528bfb73175fed1757b485bfcaaf01aaeaa",
+      "path": "third_party/engines/project-maya"
     }
   ]
 }

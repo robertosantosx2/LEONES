@@ -3,14 +3,14 @@
   "display_name": "Tandem.cpp",
   "repository": "https://github.com/ewhacc/tandem.cpp.git",
   "ref_requested": "main",
-  "commit": "e1acb8877bfcf92b4ae7c9f0e0f1d896dbf6c683",
-  "vendored_at": "2026-11-11T08:43:32.124045+00:00",
-  "source_tree": "source/e1acb8877bfcf92b4ae7c9f0e0f1d896dbf6c683",
+  "commit": "d67bbcb9453a1e6c9f4b3ba0d29fb63193c57287",
+  "vendored_at": "2026-11-11T08:44:54.293208+00:00",
+  "source_tree": "source/d67bbcb9453a1e6c9f4b3ba0d29fb63193c57287",
   "submodule_status": "",
   "git_lfs": "git-lfs pull completed",
   "license_files": [
     "LICENSE"
   ],
   "source_status": "PINNED_SNAPSHOT",
-  "git_commit_tree": "eed15d0f7af2dbf3e11f7e65e075655b6e028c1e"
+  "git_commit_tree": "97790534ef924806e4e02fd320830f2c65046352"
 }

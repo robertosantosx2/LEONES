@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#19191d">
+<title>Project Maya</title>
+<link rel="manifest" href="web/manifest.webmanifest">
+<link rel="icon" href="web/icon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="web/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="web/icon-180.png">
+<link rel="stylesheet" href="web/tokens.css">
+<link rel="stylesheet" href="web/components.css">
+<link rel="stylesheet" href="web/app.css">
+<link rel="stylesheet" href="web/settings.css">
+<link rel="stylesheet" href="web/monitor.css">
+<link rel="stylesheet" href="web/models.css">
+<link rel="stylesheet" href="web/turbo.css">
+<link rel="modulepreload" href="web/preact.js">
+<script>
+  // the theme before the first paint: the saved choice ("maya.theme": dark, light or system), else dark (Maya's default).
+  // (The dashboard before the redesign kept its own in "maya.ui-theme": not carried over, so every browser starts dark.)
+  try {
+    let t = localStorage.getItem("maya.theme") || "dark";
+    if (t === "system") t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    document.documentElement.dataset.theme = t;
+    // (and the colours: "maya.scheme" violet, else the default)
+    if (localStorage.getItem("maya.scheme") === "violet") document.documentElement.dataset.scheme = "violet";
+  } catch (e) {}
+</script>
+</head>
+<body>
+<div id="app"></div>
+<noscript><p style="padding:24px;font-family:system-ui,sans-serif">Project Maya's page needs JavaScript. The API works without it.</p></noscript>
+<script type="module" src="web/app.js"></script>
+</body>
+</html>
