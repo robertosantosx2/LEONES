@@ -254,7 +254,7 @@ def main():
                                         "seed":prompt.get("seed",42)}
                             t0 = time.perf_counter()
                             try:
-                                measured = stream_request(base,cfg["api"]["chat_path"],cfg["api"].get("api_key"),
+                                measured = stream_request(base,engine.get("chat_path", cfg["api"]["chat_path"]),engine.get("api_key", cfg["api"].get("api_key")),
                                                           prompt["messages"],settings,cfg["api"]["request_timeout_s"])
                                 measured.update({"type":"measurement","status":"OK","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"profile":prof["name"],
                                                  "prompt_id":prompt["id"],"repetition":rep+1,"settings":settings,
