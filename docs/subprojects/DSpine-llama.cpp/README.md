@@ -60,9 +60,9 @@ Esto demuestra una ruta de código DSpine específica, no solo el registro de no
 | Qwen3.8-27B | `tencent/Qwen3.8-27B-DSpine-b16` | Checkpoint oficial Safetensors |
 | Qwen3.8-27B | `aj9o9/Qwen3.8-27B-DSpine-b16-GGUF` | Conversión GGUF comunitaria explícitamente destinada al fork |
 
-El fork implementa conversión HF→GGUF en `conversion/qwen.py` (`DFlashModel._is_dspine()` y `_modify_dspine_tensors()`). Requiere directorios locales y `--target-model-dir` para heredar tokenizer/embeddings del target.
+El fork implementa conversión HF→GGUF en `conversion/qwen.py`, pero exige `code_bridge_second_pass.mode=serial_table` y un `head_topk` coherente. El checkpoint Qwen3-8B publicado no contiene esos campos: el CI de conversión falló explícitamente con `DSpine: only the serial_table refinement of the last write is supported`. La misma exigencia aparece en el código oficial SGLang de Tencent (`resolve_dspine_head_topk`). No se debe forzar el conversor ni inventar metadatos: el Qwen3-8B de 2026-10 es una variante anterior no servida por esta implementación.
 
-Ejemplo: `python convert_hf_to_gguf.py ./models/Qwen3-8B-DSpine-b16 --target-model-dir ./models/Qwen3-8B --outtype bf16 --outfile Qwen3-8B-DSpine-b16.gguf`. LEONES incluye `scripts/prepare_qwen3_8b_dspine_gguf.sh` para convertir y verificar los tensores `dspine_*`. El drafter no es autónomo: necesita su modelo objetivo correspondiente. No intercambiar parejas entre familias.
+La pareja que sí está alineada con el fork es Qwen3.8-27B + Qwen3.8-27B-DSpine-b16. El GGUF comunitario ya incluye el drafter Q4_K_M; LEONES añade un job CI para verificar sus tensores y metadatos. El drafter no es autónomo: necesita su modelo objetivo correspondiente. No intercambiar parejas entre familias.
 
 El GGUF comunitario Qwen3.8-27B publica el drafter Q4_K_M de 1.26 GB. Para el target existen cuantizaciones pequeñas: IQ2_XXS de 8.88 GB y Q2_K de 10.82 GB. La pareja IQ2_XXS + drafter Q4_K_M suma aproximadamente 10.14 GB de pesos, antes de KV y buffers. Esto no cabe íntegramente en la VRAM de 4 GiB, pero merece un ensayo híbrido CPU/GPU a contexto 512; no es una garantía de que quepa ni de que sea rápido.
 
