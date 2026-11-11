@@ -8,11 +8,11 @@ LEONES stores source code for every benchmarked inference runtime in its own rep
 third_party/engines/
   <engine-id>/
     SOURCE.json
-    source/                 # complete tracked tree at the pinned commit
+    source/\n      <commit-sha>/         # immutable complete tracked tree at this commit
       LICENSE / COPYING / NOTICE / ...
 ```
 
-The source tree is copied at an immutable commit. `SOURCE.json` records the upstream URL, requested ref, resolved commit, Git tree SHA, submodule state, Git LFS status and license notice files. The source is not built or executed by the vendoring workflow.
+The source tree is copied into a commit-addressed directory and never overwritten. Updating an engine creates another snapshot and leaves previous source trees intact. The root `SOURCE.json` points to the current snapshot. Each source snapshot is pinned by commit and Git tree SHA. `SOURCE.json` records the upstream URL, requested ref, resolved commit, Git tree SHA, submodule state, Git LFS status and license notice files. The source is not built or executed by the vendoring workflow.
 
 ## GitHub-only import
 
