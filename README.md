@@ -12,6 +12,16 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 - Pithos 0.5.1 + LFM3-1.7B Q4_K_M: [comparativa CPU/Intel Vulkan/NVIDIA Vulkan y barrido PP/TG](docs/PITHOS-LFM3-1.7B-RTX3050-2026-11-07.md), con [CSV](artifacts/pithos-0.5.1-2026-11-07/benchmark-results.csv), [registro consolidado](artifacts/pithos-0.5.1-2026-11-07/benchmark-session.log) y [script reproducible](artifacts/pithos-0.5.1-2026-11-07/reproduce.sh).
 - MiniCPM5-2B Q4_K_M en RTX 3050 Laptop con llama.cpp CUDA: [informe de benchmark MEASURED y evaluación de viabilidad DSpark](docs/MINICPM5-2B-RTX3050-2026-11-11.md).
 
+## Kinetic — auditoría y benchmark cruzado (2026-11-11)
+
+- Importación del código upstream Apache-2.0: `scripts/import_kinetic.sh` → `third_party/kinetic/` (snapshot completo; el SHA queda en `UPSTREAM_COMMIT`).
+- [Auditoría estática preliminar](docs/KINETIC-SOURCE-AUDIT-2026-11-11.md).
+- [Plan de benchmark Kinetic / TensorFold / Tandem.cpp / RustInstrata](docs/KINETIC-CROSS-ENGINE-BENCHMARK-PLAN-2026-11-11.md).
+- [Harness serial con control de recuperación de recursos](scripts/engine_comparison.py).
+- [Configuración de ejemplo](configs/engine-comparison.example.json).
+
+Estado: plan y harness preparados; todavía no se han ejecutado pruebas comparativas en la MSI. Los adaptadores de TensorFold y RustInstrata requieren confirmar sus comandos de servidor locales antes de habilitarlos. Las mediciones se etiquetarán MEASURED solo tras ejecución física y conservación de logs.
+
 ## RC4 — estado actual (2026-09-07)
 
 **Regla de autoridad:** LEONES descubre el hardware y conserva procedencia. FitLLM/LLMFit es preselector (ESTIMATED). El usuario elige modelo y stack. Solo una ejecución física autorizada produce MEASURED.
