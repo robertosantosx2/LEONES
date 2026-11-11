@@ -32,22 +32,24 @@ Fuente de tamaño del target: [Qwen3-8B GGUF Q4_K_M](https://huggingface.co/Qwen
 
 ## 1. Compilación aislada
 
-El fork debe residir en un directorio separado. No reutilizar ni sobrescribir \`~/llama-cpp-cuda\` ni los binarios de \`/usr/local/bin\`.
+El fork debe residir en un directorio separado. No reutilizar ni sobrescribir `~/llama-cpp-cuda` ni los binarios de `/usr/local/bin`.
 
-~~~bash
-mkdir -p ~/src
-git clone -b dspine --depth 1 https://github.com/Ajay9o9/llama.cpp.git ~/src/llama.cpp-dspine
-cd ~/src/llama.cpp-dspine
-git rev-parse HEAD
+El script `scripts/build_dspine_llama_cpp_cuda_msi.sh`:
+- exige Git, CMake, nvcc, nvidia-smi y C++;
+- aborta si ya existe el directorio destino;
+- clona la rama `dspine` en `~/src/llama.cpp-dspine`;
+- configura CUDA para `SM86` explícitamente;
+- compila `llama-server`, `llama-cli` y `llama-quantize` con dos trabajos por defecto;
+- guarda el SHA del fork y un log completo;
+- no instala ni sustituye binarios existentes.
 
-cmake -S . -B build-cuda \\
-  -DGGML_CUDA=ON \\
-  -DCMAKE_BUILD_TYPE=Release
+Ejecutar solo después de revisar el preflight:
 
-cmake --build build-cuda --target llama-server llama-cli llama-quantize -j2
-~~~
+```bash
+bash scripts/build_dspine_llama_cpp_cuda_msi.sh
+```
 
-El número de trabajos se mantiene bajo para respetar los 14 GiB de RAM. Si el preflight muestra que CUDA Toolkit, CMake o compilador no son compatibles, detenerse y resolverlo antes de compilar.
+Si CUDA Toolkit, CMake o el compilador no son compatibles, detenerse y resolverlo antes de seguir.
 
 ## 2. Preflight de modelos y memoria
 
