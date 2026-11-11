@@ -1,5 +1,9 @@
 name: Vendor inference engine sources
 
+concurrency:
+  group: vendor-inference-engines-${{ github.ref }}
+  cancel-in-progress: false
+
 on:
   push:
     branches:
@@ -13,7 +17,7 @@ on:
       engines:
         description: "Comma-separated registry IDs (e.g. kinetic,tensorfold,llama-cpp,tandem-cpp,rusting-strata)"
         required: true
-        default: "kinetic,tensorfold,tandem-cpp"
+        default: "kinetic,tensorfold,llama-cpp,tandem-cpp,rusting-strata"
       ref_overrides:
         description: "Optional comma-separated id=ref overrides"
         required: false
@@ -38,7 +42,7 @@ jobs:
       - name: Vendor pinned engine source snapshots
         shell: bash
         env:
-          ENGINE_LIST: ${{ inputs.engines || 'kinetic,tensorfold,llama-cpp,rusting-strata' }}
+          ENGINE_LIST: ${{ inputs.engines || 'kinetic,tensorfold,llama-cpp,tandem-cpp,rusting-strata' }}
           REF_LIST: ${{ inputs.ref_overrides }}
         run: |
           args=()
@@ -64,4 +68,15 @@ jobs:
             exit 0
           fi
           git commit -m "Vendor pinned inference engine source snapshots"
-          git push origin HEAD:research/kinetic-audit-benchmark
+          # Refresh the branch before pushing to avoid non-fast-forward races.
+          for attempt in 1 2 3; do
+            git fetch origin research/kinetic-audit-benchmark
+            git rebase origin/research/kinetic-audit-benchmark
+            if git push origin HEAD:refs/heads/research/kinetic-audit-benchmark; then
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed; retrying after refreshing the branch."
+            sleep $((attempt * 3))
+          done
+          echo "Unable to push vendored snapshots after three attempts." >&2
+          exit 1
