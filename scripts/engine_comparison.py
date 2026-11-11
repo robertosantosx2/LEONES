@@ -214,6 +214,17 @@ def main():
         if source_meta_path:
             if not source_meta_path.is_absolute(): source_meta_path = pathlib.Path(__file__).resolve().parents[1] / source_meta_path
             if source_meta_path.is_file(): source_meta = json.loads(source_meta_path.read_text())
+        if engine.get("require_source_snapshot", True) and not source_meta:
+            append_jsonl(results,{"type":"engine","engine":engine_id,"status":"SOURCE_NOT_VENDORED","source_meta":str(source_meta_path) if source_meta_path else None})
+            continue
+        build_meta_path = pathlib.Path(engine["build_meta"]) if engine.get("build_meta") else None
+        build_meta = None
+        if build_meta_path:
+            if not build_meta_path.is_absolute(): build_meta_path = pathlib.Path(__file__).resolve().parents[1] / build_meta_path
+            if build_meta_path.is_file(): build_meta = json.loads(build_meta_path.read_text())
+        if engine.get("require_build_evidence", True) and not build_meta:
+            append_jsonl(results,{"type":"engine","engine":engine_id,"status":"BUILD_EVIDENCE_REQUIRED","build_meta":str(build_meta_path) if build_meta_path else None})
+            continue
         engine_summary = {"id":engine_id,"profiles":[]}
         summary["engines"].append(engine_summary)
         for profile in cfg["profiles"]:
@@ -256,14 +267,14 @@ def main():
                             try:
                                 measured = stream_request(base,engine.get("chat_path", cfg["api"]["chat_path"]),engine.get("api_key", cfg["api"].get("api_key")),
                                                           prompt["messages"],settings,cfg["api"]["request_timeout_s"])
-                                measured.update({"type":"measurement","status":"OK","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"profile":prof["name"],
+                                measured.update({"type":"measurement","status":"OK","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"source_commit":source_meta.get("commit") if source_meta else None,"build_binary_sha256":(build_meta or {}).get("binary",{}).get("sha256"),"profile":prof["name"],
                                                  "prompt_id":prompt["id"],"repetition":rep+1,"settings":settings,
                                                  "load_s":load_s,"process_rss_bytes":process_tree_rss(proc.pid),
                                                  "elapsed_s":time.perf_counter()-t0,"timestamp":utc()})
                                 with open(prompt_file,"a",encoding="utf-8") as f:
                                     f.write(f"\n--- repetition {rep+1} ---\n{measured['text']}\n")
                             except Exception as e:
-                                measured = {"type":"measurement","status":"ERROR","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"profile":prof["name"],
+                                measured = {"type":"measurement","status":"ERROR","engine":engine_id,"model":str(engine_model),"model_sha256":engine_model_hash,"source_commit":source_meta.get("commit") if source_meta else None,"build_binary_sha256":(build_meta or {}).get("binary",{}).get("sha256"),"profile":prof["name"],
                                             "prompt_id":prompt["id"],"repetition":rep+1,"error":str(e),"timestamp":utc()}
                             measured["machine_after_request"] = machine_snapshot()
                             append_jsonl(results,measured)
@@ -282,7 +293,7 @@ def main():
                 (out/"machine"/engine_id/(prof["name"]+".settled.json")).write_text(json.dumps(settled,indent=2)+"\n")
             binary_path = shutil.which(cmd[0]) if cmd and not pathlib.Path(cmd[0]).is_absolute() else (cmd[0] if cmd else None)
             binary_hash = sha256(binary_path) if binary_path and pathlib.Path(binary_path).is_file() else None
-            prof_result = {"name":prof["name"],"status":engine_status,"command":cmd,"base_url":base,"binary_path":binary_path,"binary_sha256":binary_hash,"source":source_meta,"model_path":str(engine_model),"model_sha256":engine_model_hash,
+            prof_result = {"name":prof["name"],"status":engine_status,"command":cmd,"base_url":base,"binary_path":binary_path,"binary_sha256":binary_hash,"source":source_meta,"build_evidence":build_meta,"model_path":str(engine_model),"model_sha256":engine_model_hash,
                            "load_s":locals().get("load_s"),"stop":stop,"post_unload_recovered":recovered,
                            "machine_before":before,"machine_after":after}
             engine_summary["profiles"].append(prof_result)
