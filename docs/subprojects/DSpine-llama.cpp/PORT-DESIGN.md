@@ -37,7 +37,7 @@ El CLI usa el tipo especulativo `draft-dflash`. La clase compartida reconoce el 
 - Ejecutar auditor estático de LEONES.
 - Build CPU limpio del fork.
 - Ejecutar tests existentes de llama.cpp y pruebas del parser GGUF.
-- Build CUDA en runner con toolkit y GPU compatibles si CI disponible; la build CPU no sustituye este gate.
+- Build CUDA SM86 en el MSI, en directorio aislado; la build CPU de CI no sustituye este gate.
 - Registrar SHA exacto del commit externo, compiler, CMake flags, CUDA, driver y artefactos.
 
 ### 3. Validación funcional de referencia
@@ -66,7 +66,7 @@ Usar mismo modelo objetivo, prompt, contexto, sampler, seed y backend para basel
 
 ## Candidato MSI
 
-El checkpoint GGUF comunitario publicado es Qwen3.8-27B DSpine y su target obligatorio es Qwen3.8-27B. No se debe intentar en el MSI de 4 GiB VRAM.
+El checkpoint GGUF comunitario publicado es Qwen3.8-27B DSpine y su target obligatorio es Qwen3.8-27B. El target Q4 no cabe en el MSI; solo se contempla la cuantización IQ2_XXS en un ensayo híbrido de baja calidad.
 
 El checkpoint oficial Qwen3-8B-DSpine-b16 (1.2378B parámetros) no es compatible con la implementación actual del fork: carece de `code_bridge_second_pass.mode=serial_table` y de `selected_prefix_last_write_refine.head_topk`. El conversor falla de forma intencional y segura con `DSpine: only the serial_table refinement of the last write is supported`. No añadir metadatos ficticios ni forzar la conversión. La pareja compatible confirmada es Qwen3.8-27B + Qwen3.8-27B-DSpine-b16. El GGUF comunitario del drafter Q4_K_M es de 1.26 GB. El target IQ2_XXS pesa 8.88 GB, por lo que los pesos suman unos 10.14 GB antes de KV/buffers. Esta pareja es el único candidato para el ensayo MSI, con offload híbrido, contexto 512 y calidad reducida; la viabilidad no está demostrada.
 
@@ -75,7 +75,7 @@ El checkpoint oficial Qwen3-8B-DSpine-b16 (1.2378B parámetros) no es compatible
 No pedir intervención hasta:
 - auditor estático positivo;
 - build CPU CI verde;
-- build CUDA SM86 disponible o plan local reproducible;
+- build CUDA SM86 completado en el MSI sin tocar el runtime instalado;
 - pareja exacta y hashes definidos;
 - preflight de memoria conservador;
 - script de benchmark y rollback preparados.
