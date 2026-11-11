@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Vendor pinned inference-engine source repositories into LEONES.
+"""Vendor immutable inference-engine source snapshots into LEONES.
 
-Keeps a full Git mirror (history/refs/objects) plus a clean source checkout.
-Does not build or execute upstream code. Requires git; rsync is optional.
+Copies the complete tracked source tree at a pinned commit, including initialized
+submodules and Git LFS payloads when available. Does not build or execute code.
 """
 from __future__ import annotations
 import argparse, datetime, hashlib, json, pathlib, shutil, subprocess, sys, tempfile
@@ -46,19 +46,16 @@ def main():
         if not url:
             report["engines"].append({"id":eid,"status":"SOURCE_URL_REQUIRED","detail":e.get("notes")})
             failures+=1; continue
-        base=DEST/eid; mirror=base/"git-mirror.git"; source=base/"source"
+        base=DEST/eid; source=base/"source"
         base.mkdir(parents=True,exist_ok=True)
         try:
-            if not mirror.exists():
-                git(["clone","--mirror",url,str(mirror)])
-            elif args.refresh:
-                git(["--git-dir",str(mirror),"remote","update","--prune"])
             ref=overrides.get(eid,e.get("default_ref") or "HEAD")
-            commit=git(["--git-dir",str(mirror),"rev-parse",f"{ref}^{{commit}}"])
             with tempfile.TemporaryDirectory(prefix=f"leones-{eid}-") as td:
                 checkout=pathlib.Path(td)/"checkout"
-                git(["clone","--no-checkout",str(mirror),str(checkout)])
-                git(["checkout","--detach",commit],cwd=checkout)
+                git(["clone","--filter=blob:none","--no-checkout",url,str(checkout)])
+                git(["fetch","--depth=1","origin",ref],cwd=checkout)
+                git(["checkout","--detach","FETCH_HEAD"],cwd=checkout)
+                commit=git(["rev-parse","HEAD"],cwd=checkout)
                 submodules=git(["submodule","status","--recursive"],cwd=checkout,check=False)
                 subproc=subprocess.run(["git","submodule","update","--init","--recursive"],cwd=checkout,text=True,capture_output=True)
                 if subproc.returncode:
@@ -71,10 +68,10 @@ def main():
                 meta={
                   "engine_id":eid,"display_name":e.get("display_name"),"repository":url,
                   "ref_requested":ref,"commit":commit,"vendored_at":datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                  "git_mirror":"git-mirror.git","source_tree":"source",
+                  "source_tree":"source",
                   "submodule_status":submodules,"git_lfs":lfs,
                   "license_files":[p.name for p in source.iterdir() if p.is_file() and p.name.upper().startswith(("LICENSE","COPYING","NOTICE","PATENTS","TRADEMARKS"))],
-                  "source_status":"PINNED_SNAPSHOT"
+                  "source_status":"PINNED_SNAPSHOT","git_commit_tree":git(["rev-parse","HEAD^{tree}"],cwd=checkout)
                 }
                 (base/"SOURCE.json").write_text(json.dumps(meta,indent=2,ensure_ascii=False)+"\n")
             report["engines"].append({"id":eid,"status":"VENDORED","commit":commit,"path":str(base.relative_to(ROOT))})
