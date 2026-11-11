@@ -134,7 +134,10 @@
       "require_source_snapshot": true,
       "require_build_evidence": true,
       "build_meta": "artifacts/engine-builds/kinetic/build.json",
-      "model_assets": []
+      "model_assets": [],
+      "profiles": [
+        "ctx512-cuda8"
+      ]
     },
     {
       "id": "tensorfold",
