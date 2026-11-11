@@ -134,10 +134,12 @@ def process_tree_rss(pid):
 
 def stop_child(proc, timeout=30):
     if proc.poll() is not None: return {"exit_code": proc.returncode, "forced_kill": False}
-    proc.send_signal(signal.SIGTERM)
+    try: os.killpg(proc.pid, signal.SIGTERM)
+    except ProcessLookupError: pass
     try: return {"exit_code": proc.wait(timeout=timeout), "forced_kill": False}
     except subprocess.TimeoutExpired:
-        proc.kill()
+        try: os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError: pass
         return {"exit_code": proc.wait(timeout=10), "forced_kill": True}
 
 def mib_delta(a, b, key):
@@ -207,6 +209,11 @@ def main():
             append_jsonl(results,{"type":"engine","engine":engine_id,"status":"MODEL_MISSING","model":str(engine_model)})
             continue
         engine_model_hash = sha256(engine_model)
+        source_meta_path = pathlib.Path(engine.get("source_meta", "unused")) if engine.get("source_meta") else None
+        source_meta = None
+        if source_meta_path:
+            if not source_meta_path.is_absolute(): source_meta_path = pathlib.Path(__file__).resolve().parents[1] / source_meta_path
+            if source_meta_path.is_file(): source_meta = json.loads(source_meta_path.read_text())
         engine_summary = {"id":engine_id,"profiles":[]}
         summary["engines"].append(engine_summary)
         for profile in cfg["profiles"]:
@@ -215,6 +222,9 @@ def main():
             fields = {"model":str(engine_model),"port":port,"ctx":prof.get("ctx",512),"threads":prof.get("threads",4),
                       "gpu_layers":prof.get("gpu_layers",0),"parallel":prof.get("parallel",1),"device":prof.get("device","auto")}
             cmd = render(engine["command"], fields)
+            env = os.environ.copy()
+            env.update(engine.get("env", {}))
+            env = {k: str(render(v, fields)) for k,v in env.items()}
             if not isinstance(cmd,list) or not cmd or any("/ABS/PATH/" in x for x in cmd):
                 append_jsonl(results,{"type":"profile","engine":engine_id,"profile":prof["name"],"status":"CONFIG_REQUIRED","command":cmd,"model":str(engine_model),"model_sha256":engine_model_hash})
                 continue
@@ -227,7 +237,7 @@ def main():
             start = time.perf_counter()
             load_s = None
             with open(stdout_path,"w") as so, open(stderr_path,"w") as se:
-                proc = subprocess.Popen(cmd,stdout=so,stderr=se,start_new_session=True)
+                proc = subprocess.Popen(cmd,stdout=so,stderr=se,start_new_session=True,env=env)
                 try:
                     health(base, cfg["api"]["health_path"], proc, cfg["api"]["startup_timeout_s"])
                     load_s = time.perf_counter()-start
@@ -271,7 +281,9 @@ def main():
             recovered, settled = wait_settled(baseline,cfg)
             if settled:
                 (out/"machine"/engine_id/(prof["name"]+".settled.json")).write_text(json.dumps(settled,indent=2)+"\n")
-            prof_result = {"name":prof["name"],"status":engine_status,"command":cmd,"base_url":base,
+            binary_path = shutil.which(cmd[0]) if cmd and not pathlib.Path(cmd[0]).is_absolute() else (cmd[0] if cmd else None)
+            binary_hash = sha256(binary_path) if binary_path and pathlib.Path(binary_path).is_file() else None
+            prof_result = {"name":prof["name"],"status":engine_status,"command":cmd,"base_url":base,"binary_path":binary_path,"binary_sha256":binary_hash,"source":source_meta,"model_path":str(engine_model),"model_sha256":engine_model_hash,
                            "load_s":locals().get("load_s"),"stop":stop,"post_unload_recovered":recovered,
                            "machine_before":before,"machine_after":after}
             engine_summary["profiles"].append(prof_result)
