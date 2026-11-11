@@ -244,10 +244,14 @@ def main():
         if build_meta and (build_meta.get("engine_id") != engine_id or not build_meta.get("binary", {}).get("sha256")):
             append_jsonl(results,{"type":"engine","engine":engine_id,"status":"BUILD_EVIDENCE_INVALID","build_meta":str(build_meta_path)})
             continue
-        engine_summary = {"id":engine_id,"model_assets":asset_records,"profiles":[]}
+        allowed_profiles = engine.get("profiles")
+        skipped_profiles = [p["name"] for p in cfg["profiles"] if allowed_profiles and p["name"] not in allowed_profiles]
+        engine_summary = {"id":engine_id,"model_assets":asset_records,"profiles":[],"skipped_profiles":skipped_profiles}
         summary["engines"].append(engine_summary)
         for profile in cfg["profiles"]:
             prof = dict(profile)
+            if allowed_profiles and prof["name"] not in allowed_profiles:
+                continue
             port = available_port()
             fields = {"model":str(engine_model),"port":port,"ctx":prof.get("ctx",512),"threads":prof.get("threads",4),
                       "gpu_layers":prof.get("gpu_layers",0),"parallel":prof.get("parallel",1),"device":prof.get("device","auto")}
