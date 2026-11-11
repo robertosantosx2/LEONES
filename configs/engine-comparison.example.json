@@ -124,7 +124,12 @@
         "--parallel",
         "{parallel}",
         "--no-prompt-cache"
-      ]
+      ],
+      "source_meta": "third_party/engines/kinetic/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions"
     },
     {
       "id": "tensorfold",
@@ -141,7 +146,12 @@
         "{port}",
         "--context",
         "{ctx}"
-      ]
+      ],
+      "source_meta": "third_party/engines/tensorfold/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions"
     },
     {
       "id": "tandem-cpp",
@@ -163,7 +173,12 @@
         "{gpu_layers}",
         "-np",
         "{parallel}"
-      ]
+      ],
+      "source_meta": "third_party/engines/tandem-cpp/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions"
     },
     {
       "id": "rustinstrata",
@@ -181,7 +196,12 @@
         "{ctx}",
         "--threads",
         "{threads}"
-      ]
+      ],
+      "source_meta": "third_party/engines/rustinstrata/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions"
     }
   ]
 }
