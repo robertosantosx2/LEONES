@@ -56,18 +56,18 @@ Esto demuestra una ruta de código DSpine específica, no solo el registro de no
 
 | Objetivo | Drafter | Observación |
 |---|---|---|
-| Qwen3-8B | `tencent/Qwen3-8B-DSpine-b16` | Checkpoint oficial Safetensors; conversión GGUF para este port debe verificarse |
+| Qwen3-8B | `tencent/Qwen3-8B-DSpine-b16` | Checkpoint oficial Safetensors; conversor del fork implementado en `conversion/qwen.py` |
 | Qwen3.8-27B | `tencent/Qwen3.8-27B-DSpine-b16` | Checkpoint oficial Safetensors |
 | Qwen3.8-27B | `aj9o9/Qwen3.8-27B-DSpine-b16-GGUF` | Conversión GGUF comunitaria explícitamente destinada al fork |
 
-El drafter no es un modelo autónomo: necesita su modelo objetivo correspondiente. No intercambiar objetivo/drafter entre familias.
+El fork implementa conversión HF→GGUF en `conversion/qwen.py` (`DFlashModel._is_dspine()` y `_modify_dspine_tensors()`). Requiere directorios locales y `--target-model-dir` para heredar tokenizer/embeddings del target.\n\nEjemplo: `python convert_hf_to_gguf.py ./models/Qwen3-8B-DSpine-b16 --target-model-dir ./models/Qwen3-8B --outtype bf16 --outfile Qwen3-8B-DSpine-b16.gguf`. LEONES incluye `scripts/prepare_qwen3_8b_dspine_gguf.sh` para convertir y verificar los tensores `dspine_*`. El drafter no es autónomo: necesita su modelo objetivo correspondiente. No intercambiar parejas entre familias.
 
 ## Estado para MSI Thin 15 B12UC
 
 Perfil LEONES: i7-12650H, RTX 3050 Laptop 4 GiB (SM 8.6), 14 GiB RAM, Ubuntu.
 
 - La pareja Qwen3.8-27B no es una candidata razonable para 4 GiB VRAM y 14 GiB RAM.
-- La pareja Qwen3-8B es la candidata más pequeña oficialmente publicada, pero el drafter Safetensors necesita una conversión GGUF compatible y el target de 8B también requiere planificación de memoria.
+- La pareja Qwen3-8B es la candidata más pequeña oficialmente publicada, y el fork permite convertir el drafter Safetensors a GGUF. El target de 8B también requiere planificación de memoria.
 - El fork tiene una build CPU y CUDA, pero la compilación CPU no demuestra que la ruta CUDA ni la pareja de modelos funcionen.
 - No descargar ni ejecutar todavía. Primero ejecutar CI, revisar las instrucciones de uso exactas del GGUF y calcular el footprint real de los ficheros elegidos.
 - La validación MSI deberá ser aislada, con build en directorio separado, modelo/contexto pequeño, límites de memoria, rollback y medición frente a baseline sin speculative.
@@ -86,6 +86,6 @@ No marcar la funcionalidad como validada por el mero hecho de compilar el fork.
 1. **Completada:** inspección de tensores, loader, code bridge, lattice y dispatch especulativo.
 2. **En curso:** auditor estático automatizado y pruebas unitarias en LEONES.
 3. **Pendiente:** build CPU del fork y build CUDA/SM86 en CI adecuado.
-4. **Pendiente:** confirmar conversión GGUF utilizable de Qwen3-8B o preparar el candidato Qwen3.8-27B solo para pruebas fuera del MSI.
+4. **Completada:** confirmar y automatizar conversión GGUF de Qwen3-8B; falta ejecutarla sobre los checkpoints exactos.
 5. **Pendiente:** gate de memoria y comandos reproducibles.
 6. **Pendiente:** ejecución física y benchmark en MSI.
