@@ -1,0 +1,51 @@
+#version 460
+layout(local_size_x = 128) in;
+#include "common.glsl"
+// --llama-numerics prefill attention, as attn_prefill_llama in kernels.cu (see there): f32 throughout, keys in chunks
+// of 32. Workgroup (t, h) = query t of head h.
+layout(constant_id = 1) const uint HD = 128;
+layout(push_constant) uniform P { F32 q; U16 kc; U16 vc; F32 qg; F32 o; I32 step; uint t; uint nh; uint nkv; float scale; U32 qm; uint mw; } p;
+const uint R = (HD + 127) / 128;
+shared float sq[HD], sc[32];
+
+float hf(uint16_t b) { return float(uint16BitsToHalf(b)); }
+
+void main() {
+    uint t = gl_WorkGroupID.x, h = gl_WorkGroupID.y, tid = gl_LocalInvocationID.x, w = WARP, lane = LANE;
+    uint kvh = h / (p.nh / p.nkv), last = uint(p.step.v[0]) + t;
+    for (uint d = tid; d < HD; d += 128) sq[d] = p.q.v[(t * p.nh + h) * HD + d];
+    precise float acc[R], l = 0.0;
+    float m = uintBitsToFloat(0xff800000u);
+    [[unroll]] for (uint r = 0; r < R; r++) acc[r] = 0.0;
+    for (uint k0 = 0; k0 <= last; k0 += 32) {
+        uint n = min(32, last + 1 - k0);
+        barrier();
+        for (uint j = w; j < n; j += 4) {
+            uint kr = ((k0 + j) * p.nkv + kvh) * HD;
+            precise float s = 0.0;
+            for (uint d = lane; d < HD; d += 32) s = fma(sq[d], hf(p.kc.v[kr + d]), s);
+            s = warp_sum(s);
+            if (lane == 0) sc[j] = uint64_t(p.qm) != 0 && !qsa_bit(p.qm, p.mw, t, k0 + j) ? uintBitsToFloat(0xff800000u) : s * p.scale;
+        }
+        barrier();
+        float mn = m;
+        for (uint j = 0; j < n; j++) mn = max(mn, sc[j]);
+        if (mn == uintBitsToFloat(0xff800000u)) continue;  // all keys so far masked (QSA)
+        float cs = expf_(m - mn);
+        l *= cs;
+        [[unroll]] for (uint r = 0; r < R; r++) acc[r] *= cs;
+        for (uint j = 0; j < n; j++) {
+            float e = expf_(sc[j] - mn);
+            l += e;
+            uint vr = ((k0 + j) * p.nkv + kvh) * HD;
+            [[unroll]] for (uint r = 0; r < R; r++) if (tid + 128 * r < HD) acc[r] = fma(e, hf(p.vc.v[vr + tid + 128 * r]), acc[r]);
+        }
+        m = mn;
+    }
+    [[unroll]] for (uint r = 0; r < R; r++) {
+        uint d = tid + 128 * r;
+        if (d >= HD) break;
+        float gate = uint64_t(p.qg) != 0 ? sigmoid(p.qg.v[(t * p.nh + h) * 2 * HD + HD + d]) : 1.0;
+        p.o.v[(t * p.nh + h) * HD + d] = fdiv(acc[r], l) * gate;
+    }
+}

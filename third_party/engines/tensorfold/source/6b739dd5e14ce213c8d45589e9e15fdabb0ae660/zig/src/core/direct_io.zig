@@ -1,0 +1,215 @@
+//! Positional reads that skip the page cache (O_DIRECT on Linux): 4 KiB-aligned spans into aligned buffers.
+
+const std = @import("std");
+const platform = @import("sys");
+const builtin = @import("builtin");
+
+/// Offset, length and buffer alignment a direct read needs (the logical block size of every NVMe we run on).
+pub const alignment = 4096;
+
+pub const Buffer = []align(alignment) u8;
+
+/// Bytes a read of `len` bytes at `offset` occupies once widened to aligned ends.
+pub fn span(offset: u64, len: usize) usize {
+    const lo = std.mem.alignBackward(u64, offset, alignment);
+    return @intCast(std.mem.alignForward(u64, offset + len, alignment) - lo);
+}
+
+/// The largest read whose span always fits a buffer of `bytes` (whatever its offset).
+pub fn fits(bytes: usize) usize {
+    return bytes - 2 * alignment;
+}
+
+pub const File = struct {
+    fd: platform.c.fd_t,
+    direct: bool,
+
+    /// `path` read-only, direct when its file system allows it, else through the page cache.
+    pub fn open(path: [:0]const u8) !File {
+        if (builtin.os.tag == .linux or builtin.os.tag == .windows) {
+            const fd = platform.c.open(path, .{ .ACCMODE = .RDONLY, .CLOEXEC = true, .DIRECT = true });
+            if (fd >= 0) return .{ .fd = fd, .direct = true };
+        }
+        const fd = platform.c.open(path, .{ .ACCMODE = .RDONLY, .CLOEXEC = true });
+        if (fd < 0) return error.FileNotFound;
+        return .{ .fd = fd, .direct = false };
+    }
+
+    pub fn close(f: *File) void {
+        _ = platform.c.close(f.fd);
+        f.* = undefined;
+    }
+
+    /// `len` bytes at `offset`, read as their aligned span into `buf`; the result is the requested bytes within it.
+    pub fn read(f: File, buf: Buffer, offset: u64, len: usize) ![]u8 {
+        var ignored: u8 = 0;
+        return readAt(f, buf, offset, len, &ignored, sysPread);
+    }
+};
+
+fn sysPread(_: *anyopaque, fd: platform.c.fd_t, buf: [*]u8, len: usize, offset: u64) isize {
+    return platform.c.pread(fd, buf, len, @intCast(offset));
+}
+
+fn readAt(f: File, buf: Buffer, offset: u64, len: usize, ctx: *anyopaque, pread: *const fn (*anyopaque, platform.c.fd_t, [*]u8, usize, u64) isize) ![]u8 {
+    const lo = std.mem.alignBackward(u64, offset, alignment);
+    const want: usize = @intCast(offset + len - lo);
+    const whole = span(offset, len);
+    if (whole > buf.len) return error.BufferTooSmall;
+    var aligned = f.direct;
+    var got: usize = 0;
+    while (got < want) {
+        // A short O_DIRECT read is retried from the last 4 KiB boundary so the next pread stays aligned.
+        const at: usize = if (aligned) std.mem.alignBackward(usize, got, alignment) else got;
+        const ask = whole - at;
+        const n = pread(ctx, f.fd, buf.ptr + at, ask, lo + @as(u64, @intCast(at)));
+        if (n < 0) {
+            const e = platform.c.errno(n);
+            if (e == .INTR) continue;
+            // a file system that took the O_DIRECT open can still refuse its reads: the file goes through the cache
+            if (builtin.os.tag == .linux and e == .INVAL and aligned) {
+                try buffered(f.fd);
+                aligned = false;
+                continue;
+            }
+            std.log.err("read of {d} bytes at {d} failed: {t}", .{ ask, lo + at, e });
+            return error.ReadFailed;
+        }
+        if (n == 0) return error.EndOfFile;
+        if (n > @as(isize, @intCast(ask))) return error.ReadFailed;
+        const next = at + @as(usize, @intCast(n));
+        // only an aligned retry can make no progress: it read the same tail again, so the file ends inside the span
+        if (next <= got) return error.EndOfFile;
+        got = next;
+    }
+    return buf[@intCast(offset - lo)..][0..len];
+}
+
+/// Clears O_DIRECT on `fd` for this read and every later one; Linux only (macOS's std.c.O has no DIRECT field).
+fn buffered(fd: std.c.fd_t) !void {
+    const direct_flag: c_int = @bitCast(@as(u32, @bitCast(std.c.O{ .DIRECT = true })));
+    const flags = std.c.fcntl(fd, std.c.F.GETFL);
+    if (flags < 0 or std.c.fcntl(fd, std.c.F.SETFL, flags & ~direct_flag) < 0) return error.ReadFailed;
+}
+
+test "span and fits" {
+    try std.testing.expectEqual(@as(usize, 4096), span(0, 1));
+    try std.testing.expectEqual(@as(usize, 8192), span(4095, 2));
+    try std.testing.expectEqual(@as(usize, 4096), span(4096, 4096));
+    try std.testing.expectEqual(@as(usize, 3 * 4096), span(100, 2 * 4096));
+    try std.testing.expect(span(4095, fits(1 << 20)) <= 1 << 20);
+}
+
+test "direct reads return the same bytes as buffered reads" {
+    if (builtin.os.tag != .linux and builtin.os.tag != .windows) return error.SkipZigTest;
+    const gpa = std.testing.allocator;
+    var f = try File.open("/proc/self/exe");
+    defer f.close();
+    // The reference uses the page cache, so its unaligned reads do not inherit O_DIRECT.
+    var plain: File = .{ .fd = platform.c.open("/proc/self/exe", .{ .ACCMODE = .RDONLY, .CLOEXEC = true }), .direct = false };
+    try std.testing.expect(plain.fd >= 0);
+    defer plain.close();
+    const buf = try gpa.alignedAlloc(u8, .fromByteUnits(alignment), 1 << 20);
+    defer gpa.free(buf);
+    const want = try gpa.alloc(u8, 1 << 19);
+    defer gpa.free(want);
+    for ([_][2]usize{ .{ 0, 1 }, .{ 1, 4095 }, .{ 4095, 2 }, .{ 12345, 100000 }, .{ 8192, 1 << 19 } }) |c| {
+        const n = platform.c.pread(plain.fd, want.ptr, c[1], @intCast(c[0]));
+        try std.testing.expectEqual(@as(isize, @intCast(c[1])), n);
+        try std.testing.expectEqualSlices(u8, want[0..c[1]], try f.read(buf, c[0], c[1]));
+    }
+    try std.testing.expectError(error.BufferTooSmall, f.read(buf, 1, 1 << 20));
+}
+
+/// Refuses its first read with EINVAL, as a file system that accepts an O_DIRECT open but not the read does.
+const Refuse = struct {
+    refused: bool = false,
+
+    fn pread(ctx: *anyopaque, fd: std.c.fd_t, buf: [*]u8, len: usize, offset: u64) isize {
+        const r: *Refuse = @ptrCast(@alignCast(ctx));
+        if (!r.refused) {
+            r.refused = true;
+            std.c._errno().* = @backingInt(std.c.E.INVAL);
+            return -1;
+        }
+        return std.c.pread(fd, buf, len, @intCast(offset));
+    }
+};
+
+test "a direct read the file system refuses is read again through the page cache" {
+    if (builtin.os.tag != .linux) return error.SkipZigTest;
+    const gpa = std.testing.allocator;
+    var f = try File.open("/proc/self/exe");
+    defer f.close();
+    if (!f.direct) return error.SkipZigTest;
+    var plain: File = .{ .fd = std.c.open("/proc/self/exe", .{ .ACCMODE = .RDONLY, .CLOEXEC = true }), .direct = false };
+    try std.testing.expect(plain.fd >= 0);
+    defer plain.close();
+    const buf = try gpa.alignedAlloc(u8, .fromByteUnits(alignment), 1 << 20);
+    defer gpa.free(buf);
+    const want = try gpa.alloc(u8, 100000);
+    defer gpa.free(want);
+    try std.testing.expectEqual(@as(isize, @intCast(want.len)), std.c.pread(plain.fd, want.ptr, want.len, 12345));
+    var refuse: Refuse = .{};
+    try std.testing.expectEqualSlices(u8, want, try readAt(f, buf, 12345, want.len, &refuse, Refuse.pread));
+    try std.testing.expect(refuse.refused);
+    const direct_flag: c_int = @bitCast(@as(u32, @bitCast(std.c.O{ .DIRECT = true })));
+    try std.testing.expectEqual(@as(c_int, 0), std.c.fcntl(f.fd, std.c.F.GETFL) & direct_flag);
+    // later reads through the descriptor, now buffered, still return the file's bytes
+    try std.testing.expectEqualSlices(u8, want[1..][0..4095], try f.read(buf, 12346, 4095));
+}
+
+const Script = struct {
+    plan: []const usize,
+    offs: [8]u64 = undefined,
+    i: usize = 0,
+    calls: usize = 0,
+    bad: bool = false,
+
+    fn pread(ctx: *anyopaque, _: platform.c.fd_t, buf: [*]u8, len: usize, offset: u64) isize {
+        const s: *Script = @ptrCast(@alignCast(ctx));
+        if (s.calls < s.offs.len) s.offs[s.calls] = offset;
+        s.calls += 1;
+        if (offset % alignment != 0 or len % alignment != 0 or @intFromPtr(buf) % alignment != 0) s.bad = true;
+        const step = if (s.i < s.plan.len) s.plan[s.i] else len;
+        if (s.i < s.plan.len) s.i += 1;
+        const n = @min(step, len);
+        var k: usize = 0;
+        while (k < n) : (k += 1) buf[k] = @intCast((offset + k) % 251);
+        return @intCast(n);
+    }
+};
+
+fn direct(script: *Script, out: []u8, offset: u64) !void {
+    var storage: [8192]u8 align(alignment) = undefined;
+    const f: File = .{ .fd = -1, .direct = true };
+    const got = try readAt(f, &storage, offset, out.len, script, Script.pread);
+    @memcpy(out, got);
+}
+
+test "a short direct read is retried from the aligned boundary" {
+    var script: Script = .{ .plan = &.{ 100, 4096 } };
+    var got: [4096]u8 = undefined;
+    try direct(&script, &got, 0);
+    try std.testing.expect(!script.bad);
+    try std.testing.expectEqual(@as(usize, 2), script.calls);
+    try std.testing.expectEqual(@as(u64, 0), script.offs[0]);
+    try std.testing.expectEqual(@as(u64, 0), script.offs[1]);
+    for (got, 0..) |b, i| try std.testing.expectEqual(@as(u8, @intCast(i % 251)), b);
+    var boundary: Script = .{ .plan = &.{ 4096, 4096 } };
+    var wide: [8192]u8 = undefined;
+    try direct(&boundary, &wide, 0);
+    try std.testing.expect(!boundary.bad);
+    try std.testing.expectEqual(@as(u64, 0), boundary.offs[0]);
+    try std.testing.expectEqual(@as(u64, 4096), boundary.offs[1]);
+    try std.testing.expectEqual(@as(u8, @intCast(4096 % 251)), wide[4096]);
+}
+
+test "a direct read past the end of the file is a short file, not a failed read" {
+    // Linux O_DIRECT on a 100-byte file: the aligned retry returns the same 100 bytes (seen on ext4)
+    var tail: Script = .{ .plan = &.{ 100, 100 } };
+    var got: [101]u8 = undefined;
+    try std.testing.expectError(error.EndOfFile, direct(&tail, &got, 0));
+    try std.testing.expect(!tail.bad);
+    try std.testing.expectEqual(@as(usize, 2), tail.calls);
+}

@@ -1,0 +1,9 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// n = tokens * nv values; per-head parameters repeat every nv.
+layout(push_constant) uniform P { F32 beta; F32 g; F32 dt_bias; F32 a; uint n; uint nv; } p;
+void main() {
+    uint i = gl_GlobalInvocationID.x, h = i % p.nv;
+    if (i < p.n) { p.beta.v[i] = sigmoid(p.beta.v[i]); p.g.v[i] = softplus(p.g.v[i] + p.dt_bias.v[h]) * p.a.v[h]; }
+}

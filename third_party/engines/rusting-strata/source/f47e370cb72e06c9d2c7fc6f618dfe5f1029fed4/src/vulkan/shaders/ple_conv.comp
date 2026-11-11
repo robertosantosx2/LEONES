@@ -1,0 +1,22 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// qwen4exp PLE causal conv of d channels (4 taps, dilation 3) for nt tokens at positions step[0] ..: the normalized
+// rows of earlier positions live in `ring` (16 rows of d, position q in row q % 16; none before position 0).
+// r[t][i] += gated[t][i] + silu(kw[i][3] norm[t][i] + sum_k<3 kw[i][k] row(q - 9 + 3k)[i]), then row q = norm[t].
+layout(push_constant) uniform P { F32 r; F32 gated; F32 norm; F32 kw; F32 ring; I32 step; uint d; uint nt; } p;
+void main() {
+    uint i = gl_GlobalInvocationID.x;
+    if (i >= p.d) return;
+    for (uint t = 0; t < p.nt; t++) {
+        int q = p.step.v[0] + int(t);
+        uint o = t * p.d + i;
+        float acc = p.kw.v[i * 4 + 3] * p.norm.v[o];
+        for (int k = 0; k < 3; k++) {
+            int qk = q - 9 + 3 * k;
+            if (qk >= 0) acc += p.kw.v[i * 4 + k] * p.ring.v[uint(qk & 15) * p.d + i];
+        }
+        p.r.v[o] += p.gated.v[o] + silu(acc);
+        p.ring.v[uint(q & 15) * p.d + i] = p.norm.v[o];
+    }
+}

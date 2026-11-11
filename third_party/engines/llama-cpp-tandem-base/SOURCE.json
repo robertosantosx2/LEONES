@@ -4,7 +4,7 @@
   "repository": "https://github.com/ggml-org/llama.cpp.git",
   "ref_requested": "f5222f25c18da062ab2b8a2dbbfbf4feae398566",
   "commit": "f5222f25c18da062ab2b8a2dbbfbf4feae398566",
-  "vendored_at": "2026-11-11T07:46:51.807451+00:00",
+  "vendored_at": "2026-11-11T08:43:59.305605+00:00",
   "source_tree": "source/f5222f25c18da062ab2b8a2dbbfbf4feae398566",
   "submodule_status": "",
   "git_lfs": "git-lfs pull completed",

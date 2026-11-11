@@ -1,0 +1,67 @@
+#version 460
+#pragma use_vulkan_memory_model
+#extension GL_KHR_memory_scope_semantics : require
+// moe_gemv_q (xg 1) of the down experts, then moe_combine of their rows, in one dispatch: workgroup (row block,
+// token tk) covers rows r0 .. r0 + rpw of all k slots of token tk; subgroup w takes slots w, w + 8, .. and leaves its
+// sums in shared memory, then invocation i combines row r0 + i as moe_combine does (same order, same result).
+layout(local_size_x = 256) in;
+#include "common.glsl"
+#include "deq.glsl"
+#extension GL_EXT_integer_dot_product : require
+#extension GL_EXT_control_flow_attributes : require
+
+layout(push_constant) uniform P { U8 w; I32 slots; U32 xq; uint64_t stride; F32 x; F32 wh; F32 sh; F32 sg; MB mb; I32 step; U32 err;
+                                  uint rows; uint nsb; uint ntok; uint k; uint y_off; uint rpw; } p;
+
+void sb_step(U8 w, F32 xd, uint row, uint lane, uint t, uint s, inout precise float acc) {
+    uint lo, hi; float d, m;
+    qw(w, (row * p.nsb + s) * SBB, lane, lo, hi, d, m);
+    uint o = (t * p.nsb + s) * 64 + lane * 2, a = p.xq.v[o], c = p.xq.v[o + 1];
+    int dot = dotPacked4x8EXT(int(lo), int(a)) + dotPacked4x8EXT(int(hi), int(c));
+    int sx = dotPacked4x8EXT(0x01010101, int(a)) + dotPacked4x8EXT(0x01010101, int(c));
+    float dx = xd.v[(t * p.nsb + s) * 8 + (lane >> 2)];
+    acc = fma(d * dx, float(dot), acc);
+    if (MIN) acc = fma(-(m * dx), float(sx), acc);  // types with a min
+}
+
+#include "mb_wait.glsl"
+const uint RPW = 8;  // rows per workgroup (rpw) at most
+shared float part[32 * RPW];
+shared bool miss, ok;
+void main() {
+    uint tk = gl_WorkGroupID.y, k = p.k, lane = LANE, n = p.rows;
+    uint rpw = p.rpw, r0 = gl_WorkGroupID.x * rpw;
+    F32 xd = F32(uint64_t(p.xq) + p.ntok * p.nsb * 256);
+    for (uint j = WARP; j < k; j += 8) {
+        uint t = tk * k + j;
+        int e = p.slots.v[t];
+        if (e < 0) continue;  // a miss: weight 0, the CPU's result is added below
+        U8 w = U8(uint64_t(p.w) + uint64_t(e) * p.stride);
+        for (uint i = 0; i < rpw && r0 + i < n; i++) {
+            precise float acc = 0.0;
+            uint s = 0;
+            for (; s + 4 <= p.nsb; s += 4) [[unroll]] for (uint q = 0; q < 4; q++) sb_step(w, xd, r0 + i, lane, t, s + q, acc);
+            for (; s < p.nsb; s++) sb_step(w, xd, r0 + i, lane, t, s, acc);
+            acc = warp_sum(acc);
+            if (lane == 0) part[j * RPW + i] = acc;
+        }
+    }
+    if (gl_LocalInvocationID.x == 0) {
+        // As moe_combine: all tokens wait if any missed, so all of x is written or none.
+        bool m = false, any = false;
+        if (uint64_t(p.mb) != 0) for (uint j = 0; j < gl_NumWorkGroups.y * k; j++) if (p.slots.v[j] < 0) { any = true; m = m || j / k == tk; }
+        ok = !any || mb_wait(p.mb, uint(p.step.v[1]), p.err);
+        miss = m;
+    }
+    barrier();
+    uint i = gl_LocalInvocationID.x, r = r0 + i;
+    if (i >= rpw || r >= n || !ok) return;
+    precise float y = 0.0;
+    for (uint j = 0; j < k; j++) {
+        float wj = p.wh.v[tk * k + j];
+        if (wj != 0.0) y = fma(wj, part[j * RPW + i], y);
+    }
+    if (miss) y += uintBitsToFloat(p.mb.v[p.y_off + tk * n + r]);
+    if (uint64_t(p.sh) != 0) y = fma(sigmoid(p.sg.v[tk]), p.sh.v[tk * n + r], y);
+    p.x.v[tk * n + r] += y;
+}

@@ -1,0 +1,293 @@
+//! A safetensors checkpoint as the planner sees it: files, and every tensor's dtype, shape, byte range and role.
+const std = @import("std");
+const roles = @import("roles.zig");
+const safetensors = @import("core").safetensors;
+
+const Allocator = std.mem.Allocator;
+
+pub const DType = enum(u8) { bf16, f16, f32, f64, i64, i32, i16, i8, u8, u16, u32, u64, f8_e4m3, f8_e5m2, f8_e8m0, boolean };
+
+pub fn dtypeOf(text: []const u8) ?DType {
+    return dtype(safetensors.DType.parse(text) orelse return null);
+}
+
+fn dtype(value: safetensors.DType) DType {
+    return switch (value) {
+        .bool => .boolean,
+        inline else => |v| @field(DType, @tagName(v)),
+    };
+}
+
+pub fn size(d: DType) u64 {
+    return switch (d) {
+        .bf16, .f16, .i16, .u16 => 2,
+        .f32, .i32, .u32 => 4,
+        .f64, .i64, .u64 => 8,
+        .i8, .u8, .f8_e4m3, .f8_e5m2, .f8_e8m0, .boolean => 1,
+    };
+}
+
+pub const max_rank = 4;
+
+pub const Tensor = struct {
+    name: []const u8,
+    file: u32,
+    /// Absolute offset of the tensor's first byte in its file.
+    start: u64,
+    bytes: u64,
+    dtype: DType,
+    rank: u8 = 0,
+    shape: [max_rank]u64 = @splat(0),
+    class: roles.Class = .{ .role = .other },
+
+    pub fn rows(t: Tensor) u64 {
+        return if (t.rank == 0) 1 else t.shape[0];
+    }
+};
+
+pub const File = struct {
+    name: []const u8,
+    size: u64,
+    /// The Hub's SHA-256 of the whole file, when the manifest gives it.
+    sha256: ?[32]u8 = null,
+};
+
+pub const Checkpoint = struct {
+    files: []File,
+    tensors: []Tensor,
+
+    pub fn bytes(c: Checkpoint) u64 {
+        var sum: u64 = 0;
+        for (c.tensors) |t| sum += t.bytes;
+        return sum;
+    }
+
+    pub fn fileIndex(c: Checkpoint, name: []const u8) ?u32 {
+        for (c.files, 0..) |f, i| if (std.mem.eql(u8, f.name, name)) return @intCast(i);
+        return null;
+    }
+};
+
+pub const Error = error{ BadHeader, BadIndex, BadDType, Inconsistent };
+
+/// A complete safetensors file image; tensor ranges must lie within its payload.
+pub fn parseHeader(a: Allocator, file: u32, bytes: []const u8) ![]Tensor {
+    return parseHeaderInFile(a, file, bytes, bytes.len);
+}
+
+/// A header-only read with the actual file length, using the core parser for every tensor entry.
+pub fn parseHeaderInFile(a: Allocator, file: u32, bytes: []const u8, file_len: u64) ![]Tensor {
+    if (bytes.len < 8) return error.BadHeader;
+    const n = safetensors.headerSize(std.mem.readInt(u64, bytes[0..8], .little), file_len) catch return error.BadHeader;
+    if (n > bytes.len - 8) return error.BadHeader;
+    const data_len = std.math.cast(usize, file_len - 8 - n) orelse return error.BadHeader;
+    const header = safetensors.parseHeader(a, bytes[8..][0..n], data_len) catch |e| return switch (e) {
+        error.OutOfMemory => error.OutOfMemory,
+        error.UnsupportedDType => error.BadDType,
+        else => error.BadHeader,
+    };
+    var out: std.ArrayList(Tensor) = .empty;
+    for (header.keys(), header.values()) |name, entry| {
+        if (entry.rank > max_rank) return error.BadHeader;
+        var t: Tensor = .{ .name = try a.dupe(u8, name), .file = file, .start = 8 + n + entry.begin, .bytes = entry.end - entry.begin, .dtype = dtype(entry.dtype), .rank = entry.rank };
+        for (entry.shape[0..entry.rank], 0..) |d, i| t.shape[i] = d;
+        t.class = roles.classify(t.name);
+        try out.append(a, t);
+    }
+    return out.toOwnedSlice(a);
+}
+
+/// The index's weight_map: tensor name to file name.
+pub fn parseIndex(a: Allocator, text: []const u8) !std.StringArrayHashMapUnmanaged([]const u8) {
+    const root = std.json.parseFromSliceLeaky(std.json.Value, a, text, .{}) catch return error.BadIndex;
+    if (root != .object) return error.BadIndex;
+    const map = root.object.get("weight_map") orelse return error.BadIndex;
+    if (map != .object) return error.BadIndex;
+    var out: std.StringArrayHashMapUnmanaged([]const u8) = .empty;
+    var it = map.object.iterator();
+    while (it.next()) |kv| try out.put(a, kv.key_ptr.*, str(kv.value_ptr.*) orelse return error.BadIndex);
+    return out;
+}
+
+/// Read a checkpoint folder's index (or its one model.safetensors) and every file's header, nothing else.
+pub fn load(io: std.Io, a: Allocator, dir: []const u8) !Checkpoint {
+    const cwd = std.Io.Dir.cwd();
+    var names: std.ArrayList([]const u8) = .empty;
+    const index_path = try std.fs.path.join(a, &.{ dir, "model.safetensors.index.json" });
+    if (cwd.readFileAlloc(io, index_path, a, .limited(1 << 30))) |text| {
+        const map = try parseIndex(a, text);
+        for (map.values()) |f| {
+            for (names.items) |seen| {
+                if (std.mem.eql(u8, seen, f)) break;
+            } else try names.append(a, f);
+        }
+    } else |err| switch (err) {
+        error.FileNotFound => try names.append(a, "model.safetensors"),
+        else => return err,
+    }
+    std.mem.sort([]const u8, names.items, {}, lessStr);
+    var files: std.ArrayList(File) = .empty;
+    var tensors: std.ArrayList(Tensor) = .empty;
+    for (names.items, 0..) |f, i| {
+        const path = try std.fs.path.join(a, &.{ dir, f });
+        const file = try cwd.openFile(io, path, .{});
+        defer file.close(io);
+        const len = try file.length(io);
+        if (len < 8) return error.BadHeader;
+        var head: [8]u8 = undefined;
+        if (try file.readPositionalAll(io, &head, 0) != 8) return error.BadHeader;
+        const n = safetensors.headerSize(std.mem.readInt(u64, &head, .little), len) catch return error.BadHeader;
+        const buf = try a.alloc(u8, 8 + n);
+        if (try file.readPositionalAll(io, buf, 0) != buf.len) return error.BadHeader;
+        try tensors.appendSlice(a, try parseHeaderInFile(a, @intCast(i), buf, len));
+        try files.append(a, .{ .name = f, .size = len });
+    }
+    return .{ .files = files.items, .tensors = tensors.items };
+}
+
+fn lessStr(_: void, x: []const u8, y: []const u8) bool {
+    return std.mem.order(u8, x, y) == .lt;
+}
+
+fn str(v: ?std.json.Value) ?[]const u8 {
+    const x = v orelse return null;
+    return if (x == .string) x.string else null;
+}
+
+/// Build a safetensors file image in memory (tests and the loader's fixtures); tensors are laid out in the order given.
+pub fn image(a: Allocator, specs: []const struct { name: []const u8, dtype: []const u8, shape: []const u64, fill: u8 }) ![]u8 {
+    var json: std.Io.Writer.Allocating = .init(a);
+    try json.writer.writeAll("{\"__metadata__\":{\"format\":\"pt\"}");
+    var at: u64 = 0;
+    for (specs) |s| {
+        var n: u64 = size(dtypeOf(s.dtype).?);
+        for (s.shape) |d| n *= d;
+        try json.writer.print(",\"{s}\":{{\"dtype\":\"{s}\",\"shape\":[", .{ s.name, s.dtype });
+        for (s.shape, 0..) |d, i| try json.writer.print("{s}{d}", .{ if (i == 0) "" else ",", d });
+        try json.writer.print("],\"data_offsets\":[{d},{d}]}}", .{ at, at + n });
+        at += n;
+    }
+    try json.writer.writeAll("}");
+    const head = json.written();
+    const out = try a.alloc(u8, 8 + head.len + at);
+    std.mem.writeInt(u64, out[0..8], head.len, .little);
+    @memcpy(out[8..][0..head.len], head);
+    var p: usize = 8 + head.len;
+    for (specs) |s| {
+        var n: u64 = size(dtypeOf(s.dtype).?);
+        for (s.shape) |d| n *= d;
+        @memset(out[p..][0..n], s.fill);
+        p += n;
+    }
+    return out;
+}
+
+test "a safetensors header gives absolute byte ranges, dtypes, shapes and roles" {
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const img = try image(a, &.{
+        .{ .name = "model.layers.3.mlp.experts.7.down_proj.weight_packed", .dtype = "U8", .shape = &.{ 8, 4 }, .fill = 1 },
+        .{ .name = "model.layers.3.self_attn.o_proj.weight", .dtype = "BF16", .shape = &.{ 4, 4 }, .fill = 2 },
+    });
+    const ts = try parseHeader(a, 5, img);
+    try std.testing.expectEqual(@as(usize, 2), ts.len);
+    for (ts) |t| {
+        try std.testing.expectEqual(@as(u32, 5), t.file);
+        const fill: u8 = if (t.dtype == .u8) 1 else 2;
+        for (img[t.start..][0..t.bytes]) |b| try std.testing.expectEqual(fill, b);
+    }
+    try std.testing.expectEqual(roles.Role.expert, ts[0].class.role);
+    try std.testing.expectEqual(@as(?u32, 7), ts[0].class.expert);
+    try std.testing.expectEqual(roles.Role.attn_row, ts[1].class.role);
+    var bad = try a.dupe(u8, img);
+    std.mem.writeInt(u64, bad[0..8], 1 << 40, .little);
+    try std.testing.expectError(error.BadHeader, parseHeader(a, 0, bad));
+}
+
+test "byte counts and absolute end offsets past file bounds are refused before late zero dimensions" {
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const cases = [_][]const u8{
+        "{\"t\":{\"dtype\":\"U8\",\"shape\":[4611686018427387904,4],\"data_offsets\":[0,0]}}",
+        "{\"t\":{\"dtype\":\"BF16\",\"shape\":[9223372036854775808],\"data_offsets\":[0,0]}}",
+        "{\"t\":{\"dtype\":\"U8\",\"shape\":[0],\"data_offsets\":[18446744073709551615,18446744073709551615]}}",
+        "{\"t\":{\"dtype\":\"U8\",\"shape\":[18446744073709551615],\"data_offsets\":[0,18446744073709551615]}}",
+        "{\"t\":{\"dtype\":\"BF16\",\"shape\":[16777216,16777216,32768,0],\"data_offsets\":[0,0]}}",
+    };
+    for (cases) |json| {
+        const img = try a.alloc(u8, 8 + json.len);
+        std.mem.writeInt(u64, img[0..8], json.len, .little);
+        @memcpy(img[8..], json);
+        try std.testing.expectError(error.BadHeader, parseHeader(a, 0, img));
+    }
+    const empty = try image(a, &.{.{ .name = "empty", .dtype = "BF16", .shape = &.{ 4, 0 }, .fill = 0 }});
+    try std.testing.expectEqual(@as(u64, 0), (try parseHeader(a, 0, empty))[0].bytes);
+}
+
+fn twoTensors(a: Allocator) ![]u8 {
+    return image(a, &.{
+        .{ .name = "model.layers.0.mlp.down_proj.weight", .dtype = "BF16", .shape = &.{ 4, 2 }, .fill = 3 },
+        .{ .name = "model.layers.0.self_attn.o_proj.weight", .dtype = "U8", .shape = &.{ 2, 2 }, .fill = 9 },
+    });
+}
+
+test "a folder's one file loads the tensors its image parses to, in 1 MiB" {
+    const io = std.testing.io;
+    var fixtures: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer fixtures.deinit();
+    const good = try twoTensors(fixtures.allocator());
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    try tmp.dir.writeFile(io, .{ .sub_path = "model.safetensors", .data = good });
+    const dir = try tmp.dir.realPathFileAlloc(io, ".", fixtures.allocator());
+    var limited: std.heap.FixedBufferAllocator = .init(try fixtures.allocator().alloc(u8, 1 << 20));
+    const loaded = try load(io, limited.allocator(), dir);
+    try std.testing.expectEqualDeep(try parseHeader(fixtures.allocator(), 0, good), loaded.tensors);
+    try std.testing.expectEqual(@as(usize, 1), loaded.files.len);
+    try std.testing.expectEqual(@as(u64, good.len), loaded.files[0].size);
+    for (loaded.tensors, [_]u8{ 3, 9 }) |t, fill| for (good[t.start..][0..t.bytes]) |b| try std.testing.expectEqual(fill, b);
+}
+
+test "a header length past 100 MB, past the file's end or cut short is refused in 1 MiB, before the header is read" {
+    const io = std.testing.io;
+    var fixtures: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer fixtures.deinit();
+    const good = try twoTensors(fixtures.allocator());
+    const n: usize = @intCast(std.mem.readInt(u64, good[0..8], .little));
+    const room = try fixtures.allocator().alloc(u8, 1 << 20);
+    const Case = struct { length: ?u64 = null, keep: ?usize = null, size: ?u64 = null, blank: bool = false };
+    for ([_]Case{
+        .{ .length = safetensors.max_header_bytes + 1, .size = safetensors.max_header_bytes + 64 }, // sparse: only the cap refuses it
+        .{ .length = 900_000_000 },
+        .{ .length = std.math.maxInt(u64) },
+        .{ .length = good.len - 7 }, // one byte past the end
+        .{ .keep = 8 + n / 2 }, // the file ends inside its header
+        .{ .blank = true }, // the header's bytes are not JSON
+    }) |case| {
+        var tmp = std.testing.tmpDir(.{});
+        defer tmp.cleanup();
+        const bytes = try fixtures.allocator().dupe(u8, good[0 .. case.keep orelse good.len]);
+        if (case.length) |l| std.mem.writeInt(u64, bytes[0..8], l, .little);
+        if (case.blank) @memset(bytes[8..][0..n], ' ');
+        try tmp.dir.writeFile(io, .{ .sub_path = "model.safetensors", .data = bytes });
+        if (case.size) |s| {
+            const f = try tmp.dir.openFile(io, "model.safetensors", .{ .mode = .read_write });
+            defer f.close(io);
+            try f.setLength(io, s);
+        }
+        const dir = try tmp.dir.realPathFileAlloc(io, ".", fixtures.allocator());
+        var limited: std.heap.FixedBufferAllocator = .init(room);
+        try std.testing.expectError(error.BadHeader, load(io, limited.allocator(), dir));
+        try std.testing.expectError(error.BadHeader, parseHeaderInFile(limited.allocator(), 0, bytes, case.size orelse bytes.len));
+    }
+}
+
+test "an index maps tensors to files" {
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const map = try parseIndex(arena.allocator(), "{\"metadata\":{\"total_size\":3},\"weight_map\":{\"a.weight\":\"model-00001-of-00002.safetensors\",\"b\":\"model-00002-of-00002.safetensors\"}}");
+    try std.testing.expectEqualStrings("model-00002-of-00002.safetensors", map.get("b").?);
+    try std.testing.expectError(error.BadIndex, parseIndex(arena.allocator(), "{\"weight_map\":3}"));
+}

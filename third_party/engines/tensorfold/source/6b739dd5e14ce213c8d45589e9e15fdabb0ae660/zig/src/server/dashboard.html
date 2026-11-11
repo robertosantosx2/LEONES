@@ -1,0 +1,380 @@
+<!doctype html>
+<!-- TensorFold live dashboard: one file, no dependencies. Polls /stats once a second and draws the
+     decode/prefill dial and the metric tiles. Dark theme follows the OS. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>TensorFold</title>
+<style>
+  :root {
+    --bg: #0d0f12; --panel: #15181d; --line: #232830; --text: #e6e9ee; --muted: #8a93a1;
+    --accent: #4cc38a; --cool: #5aa7e8; --warm: #e0b34c; --hot: #e06c5a;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#f4f5f7; --panel:#ffffff; --line:#e1e4e9; --text:#1b1f26; --muted:#5f6875; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font:14px/1.4 ui-sans-serif,-apple-system,"SF Pro Text",system-ui,sans-serif; }
+  header { display:flex; align-items:baseline; gap:12px; padding:14px 20px; border-bottom:1px solid var(--line); }
+  header b { font-size:15px; letter-spacing:.02em; }
+  header .state { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+  header .state.on { color:var(--accent); }
+  #stale { display:none; padding:6px 20px; background:var(--hot); color:#fff; font-size:12px; }
+  main { max-width:860px; margin:0 auto; padding:20px; }
+  .dialwrap { display:flex; align-items:center; justify-content:center; gap:28px; padding:8px 0 4px; flex-wrap:wrap; }
+  .dial { display:flex; justify-content:center; padding:0; }
+  .dialside { display:flex; flex-direction:column; gap:12px; width:220px; }
+  .dialside .tile .value { font-size:17px; }
+  canvas { width:280px; height:280px; }
+  .tiles { display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-top:16px; }
+  @media (max-width:760px) { .tiles { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); } }
+  .tile { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .tile .label { font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+  .tile .value { font-size:20px; font-weight:600; font-variant-numeric:tabular-nums; margin-top:4px; }
+  .tile .value small { font-size:12px; font-weight:400; color:var(--muted); }
+  .tile .cap { font-size:11px; color:var(--muted); margin-top:3px; }
+  .bar { height:4px; border-radius:2px; background:var(--line); margin-top:8px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--accent); transition:width .5s; }
+  .bar i.warm { background:var(--warm); } .bar i.hot { background:var(--hot); }
+  .chart { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:10px 12px 6px; }
+  .chart canvas { display:block; width:100%; height:96px; }
+  h2 { font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted);
+       margin:26px 0 8px; font-weight:500; }
+  #cachetable { margin-top:14px; padding:10px 14px; background:var(--panel); border:1px solid var(--line); border-radius:10px;
+               font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; overflow-x:auto; }
+  #cachetable:empty { display:none; }
+  #cachetable table { border-collapse:collapse; width:100%; }
+  #cachetable th, #cachetable td { text-align:right; padding:2px 10px 2px 0; }
+  #cachetable th:first-child, #cachetable td:first-child { text-align:left; font-weight:600; color:var(--text); }
+  #cachetable th { color:var(--muted); font-weight:500; }
+  #totalsbar { display:flex; flex-wrap:wrap; gap:4px 22px; margin-top:14px; padding:10px 14px;
+               background:var(--panel); border:1px solid var(--line); border-radius:10px;
+               font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  #totalsbar:empty { display:none; }
+  #totalsbar b { color:var(--text); font-weight:600; }
+  footer { text-align:center; color:var(--muted); font-size:11px; padding:12px 0 24px; }
+</style>
+</head>
+<body>
+<header><b>TensorFold</b><span class="state" id="model">—</span><span class="state" id="conns"></span></header>
+<div id="stale">no answer from the server — retrying</div>
+<main>
+  <div class="dialwrap">
+    <div class="dial"><canvas id="gauge" width="560" height="560"></canvas></div>
+    <div class="dialside">
+      <div class="tile fill"><div class="label">Prefill queue</div><div class="value" id="fill">idle</div>
+        <div class="cap" id="fillcap">tokens left to prefill</div></div>
+      <div class="tile mem"><div class="label">Memory</div><div class="value" id="mem">—</div>
+        <div class="cap" id="memcap"></div><div class="bar"><i id="membar"></i></div></div>
+      <div class="tile fill"><div class="label">Tokens in flight</div><div class="value" id="gen">—</div>
+        <div class="cap" id="gencap">held by the live streams</div></div>
+    </div>
+  </div>
+  <h2 id="histlabel">Decode rate · last 5 minutes</h2>
+  <div class="chart"><canvas id="hist"></canvas></div>
+  <div class="tiles">
+    <div class="tile"><div class="label">Running</div><div class="value" id="run">—</div>
+      <div class="cap" id="runcap"></div></div>
+    <div class="tile"><div class="label">5-min gen rate</div><div class="value" id="gen5">—</div>
+      <div class="cap" id="gen5cap"></div></div>
+    <div class="tile"><div class="label">Avg prefill</div><div class="value" id="pavg">—</div>
+      <div class="cap" id="pavgcap"></div></div>
+    <div class="tile"><div class="label">MTP acceptance</div><div class="value" id="acc">—</div>
+      <div class="cap" id="acccap">drafts the verify rounds committed</div></div>
+    <div class="tile"><div class="label">Decode rounds</div><div class="value" id="rounds">—</div>
+      <div class="cap">lifetime, finished requests</div></div>
+  </div>
+  <h2 id="cachelabel">Cache</h2>
+  <div class="tiles" id="cachetiles">
+    <div class="tile"><div class="label">Prompt cache states</div><div class="value" id="cachestates">—</div>
+      <div class="cap" id="cachestatescap"></div></div>
+    <div class="tile"><div class="label">Cache hits</div><div class="value" id="cachehits">—</div>
+      <div class="cap" id="cachehitscap"></div></div>
+    <div class="tile"><div class="label">Cached tokens</div><div class="value" id="cachedtokens">—</div>
+      <div class="cap" id="cachedtokenscap"></div></div>
+    <div class="tile"><div class="label">Prefill reuse</div><div class="value" id="reuse">—</div>
+      <div class="cap" id="reusecap"></div></div>
+    <div class="tile" id="disktile" style="display:none"><div class="label">Disk tier</div><div class="value" id="diskstates">—</div>
+      <div class="cap" id="diskcap"></div></div>
+    <div class="tile" id="fsrtile" style="display:none"><div class="label">SSD expert cache</div><div class="value" id="fsrostates">—</div>
+      <div class="cap" id="fsrcap"></div></div>
+  </div>
+  <div id="cachetable"></div>
+  <div id="totalsbar"></div>
+</main>
+<footer>sampled once a second · decode/prefill are the same numbers the terminal's live line shows</footer>
+<script>
+"use strict";
+const nf = new Intl.NumberFormat();
+const el = id => document.getElementById(id);
+const fmt = v => v == null ? "—" : nf.format(Math.round(v));
+const GiB = v => v == null ? null : (v / 2**30).toFixed(1);
+const etaText = s => s < 100 ? `${Math.round(s)} s` : `${Math.round(s / 60)} min`;   // a wait, shown as s or min
+
+// the page is served at /dashboard; a proxy that adds a prefix still reaches ../stats or /stats
+const STATS_URL = location.pathname.replace(/\/(dashboard)?\/?$/, "") + "/stats?poll=1";   // the poll URL keeps the cache-busting query
+
+let shown = { decode: 0, prefill: 0 }, target = { decode: 0, prefill: 0 }, scaleMax = 80;
+let lastGood = 0;
+let histPoints = [];            // the polled decode rates: [{t, tok_s}], newest last, sparse over 5 minutes
+let prefillRates = [];          // the polled prefill rates while a prefill ran, for the average tile
+let fillSamples = [];           // the polled tokens left: [{t, left}], the drain the ETA reads
+let fillRun = 0;                // the fill the samples belong to: the server's own transition marker
+let histTop = 0;                // the chart's current y scale, decayed like the dial's
+
+function band(v) { return v >= 60 ? css("--accent") : v >= 40 ? css("--cool") : v >= 20 ? css("--warm") : css("--hot"); }
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+function arc(ctx, cx, cy, r, w, frac, color, alpha) {
+  const A0 = Math.PI * 0.75, SPAN = Math.PI * 1.5;
+  ctx.beginPath(); ctx.strokeStyle = color; ctx.globalAlpha = alpha; ctx.lineWidth = w; ctx.lineCap = "round";
+  ctx.arc(cx, cy, r, A0, A0 + SPAN * Math.min(1, Math.max(0, frac))); ctx.stroke(); ctx.globalAlpha = 1;
+}
+
+function draw() {
+  shown.decode += (target.decode - shown.decode) * 0.12;
+  shown.prefill += (target.prefill - shown.prefill) * 0.12;
+  scaleMax = Math.max(80, scaleMax * 0.999);                  // grows at once, deflates slowly
+  if (shown.decode > scaleMax * 0.95) scaleMax = shown.decode * 1.25;
+  const c = el("gauge"), x = c.getContext("2d"), S = 560;
+  x.clearRect(0, 0, S, S);
+  const cx = S / 2, cy = S / 2;
+  arc(x, cx, cy, 232, 22, 1, css("--line"), 1);               // one track
+  // prefill and decode share the dial: whichever mode is live colors the arc (they never run together)
+  const filling = fillSamples.length > 0;                     // a prompt is going in right now
+  const mode = filling || shown.prefill > 0.5 ? "prefill" : "decode";
+  if (mode === "prefill") {
+    arc(x, cx, cy, 232, 22, Math.min(1, Math.log10(1 + shown.prefill) / 4), css("--cool"), 1);
+  } else {
+    arc(x, cx, cy, 232, 22, shown.decode / scaleMax, band(shown.decode), 1);
+  }
+  x.textAlign = "center"; x.fillStyle = css("--text");
+  x.font = "600 88px ui-sans-serif,system-ui"; x.fillText(shown.decode.toFixed(1), cx, cy + 10);
+  x.font = "400 26px ui-sans-serif,system-ui"; x.fillStyle = css("--muted"); x.fillText("tok/s decode", cx, cy + 52);
+  x.font = "500 30px ui-sans-serif,system-ui"; x.fillStyle = css("--cool");
+  x.fillText(fmt(shown.prefill) + " tok/s prefill", cx, cy + 112);
+  x.fillStyle = css("--muted"); x.font = "400 22px ui-sans-serif,system-ui";
+  x.fillText("0", cx - 176, cy + 182); x.fillText(Math.round(scaleMax), cx + 158, cy + 182);
+  drawHistory();
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+function drawHistory() {
+  // The decode tok/s each poll recorded, timestamped: idle seconds leave gaps, so x follows t,
+  // not the point index. Points stop when the page's poll stops; the right edge is the newest point.
+  const c = el("hist"), box = c.getBoundingClientRect();
+  const W = Math.max(50, Math.round(box.width)), H = Math.max(30, Math.round(box.height));
+  const dpr = window.devicePixelRatio || 1;
+  if (c.width !== W * dpr || c.height !== H * dpr) { c.width = W * dpr; c.height = H * dpr; }
+  const x = c.getContext("2d");
+  x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  x.clearRect(0, 0, W, H);
+  const padL = 2, padR = 44, padT = 6, padB = 16;      // padR keeps the peak label off the last point
+  const iw = W - padL - padR, ih = H - padT - padB;
+  const now = Date.now() / 1000, span = 300;
+  const px = t => padL + iw - ((now - t) / span) * iw;  // 5-minute window slides right to left
+  const finite = histPoints.filter(p => p.tok_s != null && isFinite(p.tok_s));
+  if (!finite.length) {
+    x.fillStyle = css("--muted"); x.font = "400 12px ui-sans-serif,system-ui"; x.textAlign = "left";
+    x.fillText("no decode yet — idle", padL + 2, padT + ih / 2);
+    return;
+  }
+  const peak = Math.max(...finite.map(p => p.tok_s));
+  histTop = Math.max(peak, histTop * 0.995);           // grows at once, deflates slowly, like the dial
+  const py = v => padT + ih - Math.min(1, v / (histTop || 1)) * ih;
+  // baseline and the peak guide
+  x.strokeStyle = css("--line"); x.lineWidth = 1;
+  x.beginPath(); x.moveTo(padL, padT + ih + .5); x.lineTo(padL + iw, padT + ih + .5); x.stroke();
+  x.setLineDash([2, 4]);
+  x.beginPath(); x.moveTo(padL, py(histTop)); x.lineTo(padL + iw, py(histTop)); x.stroke();
+  x.setLineDash([]);
+  // the rate line over the sparse points
+  x.strokeStyle = css("--cool"); x.lineWidth = 2; x.lineJoin = "round";
+  x.beginPath();
+  finite.forEach((p, i) => i ? x.lineTo(px(p.t), py(p.tok_s)) : x.moveTo(px(p.t), py(p.tok_s)));
+  x.stroke();
+  // fill under the line down to the baseline
+  x.lineTo(px(finite[finite.length - 1].t), padT + ih);
+  x.lineTo(px(finite[0].t), padT + ih);
+  x.closePath();
+  x.fillStyle = css("--cool"); x.globalAlpha = 0.12; x.fill(); x.globalAlpha = 1;
+  // axis labels
+  x.fillStyle = css("--muted"); x.font = "400 11px ui-sans-serif,system-ui"; x.textAlign = "left";
+  x.fillText("0", padL, H - 3);
+  x.textAlign = "right";
+  x.fillText(`${Math.round(histTop)} tok/s`, padL + iw, padT + 4);
+  x.fillText("5 min ago", padL, H - 3);
+  x.fillText("now", padL + iw, H - 3);
+}
+
+function apply(s) {
+  target.decode = s.decode_tokens_per_second ?? 0;
+  target.prefill = s.prefill_tokens_per_second ?? 0;
+  const now = Date.now() / 1000;
+  if (target.decode > 0) { histPoints.push({ t: now, tok_s: target.decode }); }
+  if (target.prefill > 0) { prefillRates.push(target.prefill); } else { prefillRates = []; }
+  while (histPoints.length && now - histPoints[0].t > 300) histPoints.shift();
+  if (prefillRates.length > 256) prefillRates.shift();
+  el("histlabel").style.display = histPoints.length ? "" : "none";
+  el("hist").parentElement.style.display = histPoints.length ? "" : "none";
+
+  el("conns").textContent = ((s.running || 0) + (s.waiting || 0)) > 0
+    ? `${s.running || 0} active${s.waiting ? ` · ${s.waiting} waiting` : ""}`
+    : "idle";
+  el("conns").className = "state" + (((s.running || 0) + (s.waiting || 0)) ? " on" : "");
+
+  const modelParts = [s.model, s.version, s.backend, s.device].filter(v => v);
+  el("model").textContent = modelParts.length ? modelParts.join(" · ") : "—";
+
+  const memory = s.memory || {};
+  if (memory.peak!=null || memory.limit!=null) {
+    const used = GiB((memory.active || 0) + (memory.cache || 0));
+    el("mem").innerHTML = `${used} <small>GiB resident</small>`;
+    // the labels name each number for what it is: resident now, the measured peak, the configured limit
+    const caps = [];
+    if (memory.limit!=null) caps.push(`limit ${GiB(memory.limit)} GiB`);
+    if (memory.peak!=null) caps.push(`peak ${GiB(memory.peak)} GiB`);
+    if (memory.cache) caps.push(`allocator cache ${GiB(memory.cache)} GiB`);
+    el("memcap").textContent = caps.join(" · ");
+    // the bar fills against the configured limit when there is one, else the measured peak
+    const against = memory.limit!=null && memory.limit > 0 ? memory.limit : memory.peak;
+    const frac = against ? Math.min(100, 100 * ((memory.active || 0) + (memory.cache || 0)) / against) : 0;
+    const mb = el("membar");
+    mb.style.width = frac + "%"; mb.className = frac >= 95 ? "hot" : frac >= 75 ? "warm" : "";
+  } else {
+    el("mem").textContent = "—";
+    el("memcap").textContent = "";
+    el("membar").style.width = "0%";
+  }
+
+  // The prefill queue: a prompt is going in while the snapshot carries fill_tokens_left. Its drain
+  // between polls gives the live rate, and left over that rate the wait — for the whole filling set
+  // (several lanes fill at once), so the label says when the queue drains, not when a first token lands.
+  // The server's fill_run marker changes whenever the filling set does (a new prompt, a cancel, a
+  // requeue): the samples reset then, so one prompt's drain is never mixed with another's.
+  const run = s.fill_run || 0;
+  if (run !== fillRun) { fillRun = run; fillSamples = []; }
+  if (s.fill_tokens_left != null) {
+    // more left than before: the fill restarted
+    if (fillSamples.length && s.fill_tokens_left > fillSamples[fillSamples.length - 1].left) fillSamples = [];
+    fillSamples.push({ t: now, left: s.fill_tokens_left });
+    if (fillSamples.length > 64) fillSamples.shift();
+    el("fill").innerHTML = `${fmt(s.fill_tokens_left)} <small>tok</small>`;
+    let rate = null;                                   // tokens a second, from the poll-to-poll drain
+    if (fillSamples.length > 1) {
+      const a = fillSamples[0], b = fillSamples[fillSamples.length - 1];
+      if (b.t > a.t && b.left < a.left) rate = (a.left - b.left) / (b.t - a.t);
+    }
+    if (rate == null && target.prefill > 0) rate = target.prefill;   // one sample: the server's 2 s rate
+    const eta = rate ? s.fill_tokens_left / rate : null;
+    el("fillcap").textContent =
+      `of ${fmt(s.fill_prompt_tokens)} · queue drains in ~${eta == null ? "—" : etaText(eta)}`;
+  } else if (s.fill_unknown) {
+    fillSamples = [];
+    el("fill").textContent = "prefilling";
+    el("fillcap").textContent = "this backend reports no fill progress"; // honest unknown: not idle, no guessed numbers
+  } else {
+    fillSamples = [];
+    el("fill").textContent = "idle";
+    el("fillcap").textContent = "tokens left to prefill";
+  }
+
+  el("gen").textContent = fmt(s.generation_tokens_running);
+  el("gencap").textContent = (s.generation_tokens_running || 0) > 0
+    ? `across ${s.running || 0} live stream${s.running == 1 ? "" : "s"}` : "held by the live streams";
+
+  el("run").innerHTML = `${fmt(s.running)} <small>/ ${fmt((s.running || 0) + (s.waiting || 0))}</small>`;
+  el("runcap").textContent = (s.waiting || 0) > 0 ? `${s.waiting} queued for a lane` : "no requests queued";
+
+  const rates = histPoints.map(p => p.tok_s);
+  const g = { mean: rates.length ? rates.reduce((a, b) => a + b, 0) / rates.length : null,
+              min: rates.length ? Math.min(...rates) : null,
+              max: rates.length ? Math.max(...rates) : null, count: rates.length };
+  el("gen5").innerHTML = g.mean == null ? "—" : `${fmt(g.mean)} <small>tok/s</small>`;
+  el("gen5cap").textContent = g.count ? `min ${fmt(g.min)} · max ${fmt(g.max)} · ${g.count} samples` : "";
+
+  const p = prefillRates.length
+    ? { avg_tok_s: prefillRates.reduce((a, b) => a + b, 0) / prefillRates.length, count: prefillRates.length }
+    : { avg_tok_s: null, count: 0 };
+  el("pavg").innerHTML = p.avg_tok_s == null ? "—" : `${fmt(p.avg_tok_s)} <small>tok/s</small>`;
+  el("pavgcap").textContent = p.count ? `${p.count} samples this prefill` : "";
+
+  const drafted = s.mtp_drafted_total || 0, accepted = s.mtp_accepted_total || 0;
+  el("acc").innerHTML = drafted ? `${(100 * accepted / drafted).toFixed(1)}<small>%</small>` : "—";
+  el("acccap").textContent = drafted ? `${fmt(accepted)} of ${fmt(drafted)} drafts` : "drafts the verify rounds committed";
+
+  el("rounds").textContent = fmt(s.decode_rounds_total);
+
+  // Cache: the prompt cache (RAM), the disk tier, and the SSD-expert pool; each hides when the server has none.
+  const pc = s.prompt_cache, disk = s.disk, fsr = s.fsr, reuse = s.prefill_reuse;
+  const haveCache = !!(pc || disk || fsr);
+  el("cachelabel").style.display = haveCache ? "" : "none";
+  el("cachetiles").style.display = haveCache ? "" : "none";
+  if (pc) {
+    el("cachestates").textContent = fmt(pc.states);
+    // bytes counts spare snapshot storage too
+    el("cachestatescap").textContent = `${GiB((pc.bytes || 0) - (pc.spare_bytes || 0))} of ${GiB(pc.budget_bytes)} GiB held`;
+    const calls = (pc.hits || 0) + (pc.misses || 0);
+    el("cachehits").textContent = fmt(pc.hits);
+    el("cachehitscap").textContent = calls ? `${(100 * (pc.hits || 0) / calls).toFixed(1)}% of ${fmt(calls)} lookups` : "no lookups yet";
+    el("cachedtokens").textContent = fmt(s.cached_tokens_total);
+    el("cachedtokenscap").textContent = s.prompt_tokens_total ? `${(100 * (s.cached_tokens_total || 0) / (s.prompt_tokens_total || 1)).toFixed(1)}% of prompt tokens` : "restored this server lifetime";
+    if (pc.entries && pc.entries.length) {
+      el("cachetable").innerHTML = `<table><thead><tr><th>id</th><th>tokens</th><th>MiB</th><th>hits</th><th>created</th><th>last use</th></tr></thead><tbody>${
+        pc.entries.map(e => `<tr><td title="${/^[0-9a-f]{32}$/.test(e.id || "") ? e.id + ".st" : ""}"><code>${/^[0-9a-f]{32}$/.test(e.id || "") ? e.id.slice(0, 12) : "—"}</code></td><td>${fmt(e.at)}</td><td>${(e.bytes / 2**20).toFixed(1)}</td><td>${fmt(e.hits)}</td><td>${new Date(e.created_at_ms).toLocaleString()}</td><td>${new Date(e.last_access_ms).toLocaleString()}</td></tr>`).join("")}</tbody></table>`;
+    } else el("cachetable").textContent = "";
+  } else {
+    el("cachestates").textContent = "—"; el("cachestatescap").textContent = "";
+    el("cachehits").textContent = "—"; el("cachehitscap").textContent = "";
+    el("cachedtokens").textContent = s.cached_tokens_total != null ? fmt(s.cached_tokens_total) : "—";
+    el("cachedtokenscap").textContent = "";
+    el("cachetable").textContent = "";
+  }
+  if (reuse) {
+    el("reuse").innerHTML = reuse.ratio == null ? "—" : `${(100 * reuse.ratio).toFixed(1)}<small>%</small>`;
+    el("reusecap").textContent = `${fmt(reuse.prefill_cache)} cached · ${fmt(reuse.prefill_compute)} computed`;
+  } else { el("reuse").textContent = "—"; el("reusecap").textContent = ""; }
+  el("disktile").style.display = disk ? "" : "none";
+  if (disk) {
+    el("diskstates").textContent = fmt(disk.states);
+    const lat = disk.read_ms_p50 ? `read p50 ${disk.read_ms_p50} ms · p95 ${disk.read_ms_p95} ms · write p50 ${disk.write_ms_p50} ms · p95 ${disk.write_ms_p95} ms` : `read ${(disk.read_ms_ema || 0).toFixed(1)} ms · write ${(disk.write_ms_ema || 0).toFixed(1)} ms`;
+    const last = [disk.last_read_ms ? `read ${new Date(disk.last_read_ms).toLocaleTimeString()}` : "", disk.last_write_ms ? `wrote ${new Date(disk.last_write_ms).toLocaleTimeString()}` : ""].filter(v => v).join(" · ");
+    const held = disk.cap_bytes ? `${GiB(disk.held_bytes)} of ${GiB(disk.cap_bytes)} GiB` : `${GiB(disk.held_bytes)} GiB, no cap`;
+    const work = [`${fmt(disk.reads)} reads · ${fmt(disk.writes)} writes`, disk.queue_len ? `${fmt(disk.queue_len)} queued` : "",
+                  disk.prefetch_made ? `read-ahead ${fmt(disk.prefetch_used)} of ${fmt(disk.prefetch_made)} used` : "",
+                  disk.failure_count ? `${fmt(disk.failure_count)} failed${disk.last_error ? " (last " + disk.last_error + ")" : ""}` : ""];
+    el("diskcap").textContent = [held, lat, last, ...work].filter(v => v).join(" · ");
+  }
+  el("fsrtile").style.display = fsr ? "" : "none";
+  if (fsr) {
+    el("fsrostates").textContent = `${fmt(fsr.occupancy)} / ${fmt(fsr.capacity)}`;
+    el("fsrcap").textContent = `${GiB(fsr.io_bytes)} GiB read in ${fmt(fsr.io_calls)} calls · ${fmt(fsr.cache_hits)} hits · ${fmt(fsr.evictions)} evictions`;
+  }
+
+  // Lifetime totals since the server started, from the finished-request counters the /stats snapshot carries.
+  const parts = [`<span>prompt <b>${fmt(s.prompt_tokens_total)}</b> tok</span>`,
+                 `<span>generated <b>${fmt(s.generation_tokens_total)}</b> tok</span>`];
+  if (s.cached_tokens_total) parts.push(`<span>cached <b>${fmt(s.cached_tokens_total)}</b> tok</span>`);
+  if (s.preemptions_total) parts.push(`<span>preemptions <b>${fmt(s.preemptions_total)}</b></span>`);
+  if (s.latency_p50_ms != null) parts.push(`<span>latency p50 <b>${fmt(Math.round(s.latency_p50_ms))}</b> ms</span>`);
+  if (s.ttft_p50_ms != null) parts.push(`<span>ttft p50 <b>${fmt(Math.round(s.ttft_p50_ms))}</b> ms</span>`);
+  if (drafted > 0) parts.push(`<span>drafts <b>${(100 * accepted / drafted).toFixed(1)}%</b> · ${fmt(accepted)} of ${fmt(drafted)}</span>`);
+  el("totalsbar").innerHTML = parts.join("");
+}
+
+async function poll() {
+  if (document.hidden) return;
+  try {
+    const r = await fetch(STATS_URL, { cache: "no-store" });
+    if (r.ok) { apply(await r.json()); lastGood = Date.now(); el("stale").style.display = "none"; }
+  } catch (e) { /* the stale banner below covers it */ }
+  if (lastGood && Date.now() - lastGood > 5000) el("stale").style.display = "block";
+}
+poll(); setInterval(poll, 1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// After conv_seq: state = last kw-1 inputs. One thread per channel, ascending slots read only higher ones.
+// Also writes the state after each of the first min(nsnap, T - 1) tokens to snap (one state each), for rollback.
+layout(push_constant) uniform P { F32 qkv; F32 state; F32 snap; uint ch; uint kw; uint t; uint nsnap; } p;
+float input_(int s, uint c) { return s < 0 ? p.state.v[uint(int(p.kw) - 1 + s) * p.ch + c] : p.qkv.v[uint(s) * p.ch + c]; }
+void main() {
+    uint c = gl_GlobalInvocationID.x, ch = p.ch, kw = p.kw;
+    if (c >= ch) return;
+    for (uint n = 1; n <= min(p.nsnap, p.t - 1); n++)
+        for (uint k = 0; k + 1 < kw; k++) p.snap.v[((n - 1) * (kw - 1) + k) * ch + c] = input_(int(n) - int(kw - 1) + int(k), c);
+    for (uint k = 0; k + 1 < kw; k++) p.state.v[k * ch + c] = input_(int(p.t) - int(kw - 1) + int(k), c);
+}

@@ -1,0 +1,573 @@
+//! Tool calls while they are written: XML calls as argument deltas, and the one-call policy's text filter.
+const std = @import("std");
+const json = @import("json");
+const ids = @import("ids.zig");
+const reply_text = @import("reply_text.zig");
+const tool_dsml = @import("tool_dsml.zig");
+const tool_dsml_stream = @import("tool_dsml_stream.zig");
+const tool_glm_cut = @import("tool_glm_cut.zig");
+const tool_json_cut = @import("tool_json_cut.zig");
+const tool_glm_stream = @import("tool_glm_stream.zig");
+const tool_params = @import("tool_params.zig");
+const tool_specs = @import("tool_specs.zig");
+const tool_parse = @import("tool_parse.zig");
+const Value = json.Value;
+const Allocator = std.mem.Allocator;
+
+const space = reply_text.isSpaceByte;
+
+/// ``\s*<TAG=([^>\n]+)>\n?`` at the start of ``rest``: the name and the bytes matched.
+fn opening(rest: []const u8, tag: []const u8) ?struct { name: []const u8, len: usize, newline: bool } {
+    var i: usize = 0;
+    while (i < rest.len and space(rest[i])) i += 1;
+    if (!std.mem.startsWith(u8, rest[i..], tag)) return null;
+    i += tag.len;
+    const start = i;
+    while (i < rest.len and rest[i] != '>' and rest[i] != '\n') i += 1;
+    if (i == start or i >= rest.len or rest[i] != '>') return null;
+    const name = rest[start..i];
+    i += 1;
+    const newline = i < rest.len and rest[i] == '\n';
+    return .{ .name = name, .len = i + @intFromBool(newline), .newline = newline };
+}
+
+/// ``\s*TEXT`` at the start of ``rest``: bytes matched.
+fn closing(rest: []const u8, text: []const u8) ?usize {
+    var i: usize = 0;
+    while (i < rest.len and space(rest[i])) i += 1;
+    return if (std.mem.startsWith(u8, rest[i..], text)) i + text.len else null;
+}
+
+/// Streams XML, GLM and DSML argument deltas, else whole envelopes at their closers, matching the final parser.
+pub const Streamer = struct {
+    a: Allocator,
+    schemas: tool_params.Schemas,
+    known: std.StringHashMapUnmanaged([]const u8) = .empty,
+    current: []const u8 = "",
+    value_schema: tool_params.Schema = .{ .value = .null, .root = .null },
+    typed: bool = false,
+    buffer: std.ArrayList(u8) = .empty,
+    pos: usize = 0,
+    state: enum { outside, call, buffered, function, value, closing, glm, dsml, abort } = .outside,
+    index: i64 = -1,
+    args_open: bool = false,
+    lead: bool = false,
+    held: []const u8 = "",
+    streamed: bool = false,
+    searched: usize = 0, // the answer is only ever extended, so prose already searched holds no opener
+    tools: []const Value,
+    dsml_start: ?usize = null,
+    dsml_close: []const u8 = "", // the closer of the open DSML block's spelling
+    dsml_searched: usize = 0,
+    dsml_seen: bool = false,
+    buffered_start: usize = 0,
+    buffered_close: []const u8 = "",
+    glm: tool_glm_stream.Glm = .{},
+    dsml: tool_dsml_stream.Dsml = .{},
+
+    pub fn init(a: Allocator, tools: []const Value) Allocator.Error!Streamer {
+        var s: Streamer = .{ .a = a, .schemas = try tool_params.schemas(a, tools), .tools = tools };
+        for (tools) |tool| {
+            if (tool != .object) continue;
+            const spec = if (tool.get("function")) |f| (if (f == .object) f else tool) else tool;
+            const name = if (spec.get("name")) |n| (if (n.truthy()) try tool_specs.pyStr(a, n) else "") else "";
+            if (name.len == 0) continue;
+            try s.known.put(a, try std.ascii.allocLowerString(a, name), name);
+        }
+        return s;
+    }
+
+    /// One arguments delta under the open call.
+    pub fn args(s: *Streamer, fragment: []const u8) Allocator.Error!Value {
+        const function = try json.newObject(s.a);
+        try function.put(s.a, "arguments", .{ .string = fragment });
+        const one = try json.newObject(s.a);
+        try one.put(s.a, "index", try json.intValue(s.a, s.index));
+        try one.put(s.a, "function", .{ .object = function });
+        return wrap(s.a, .{ .object = one });
+    }
+
+    /// ``text`` as the bytes of a JSON string, its quotes off.
+    pub fn esc(s: *Streamer, text: []const u8) Allocator.Error![]const u8 {
+        const q = try json.quote(s.a, text, .{ .ascii = false });
+        return q[1 .. q.len - 1];
+    }
+
+    /// The delta that opens call ``name``: an XML, GLM or DSML call's header, before its arguments.
+    pub fn begin(s: *Streamer, name: []const u8, out: *std.ArrayList(Value)) Allocator.Error!void {
+        s.current = name;
+        s.index += 1;
+        s.streamed = true;
+        const function = try json.newObject(s.a);
+        try function.put(s.a, "name", .{ .string = name });
+        try function.put(s.a, "arguments", .{ .string = "" });
+        const one = try json.newObject(s.a);
+        try one.put(s.a, "index", try json.intValue(s.a, s.index));
+        try one.put(s.a, "id", .{ .string = try ids.make(s.a, "call_", 24) });
+        try one.put(s.a, "type", .{ .string = "function" });
+        try one.put(s.a, "function", .{ .object = function });
+        try out.append(s.a, try wrap(s.a, .{ .object = one }));
+        s.args_open = false;
+    }
+
+    fn emitCalls(s: *Streamer, calls: []const Value, out: *std.ArrayList(Value)) Allocator.Error!void {
+        for (try tool_parse.deltas(s.a, calls)) |delta| {
+            const one = delta.get("tool_calls").?.array[0];
+            const index = one.get("index").?.int64().?;
+            try one.object.put(s.a, "index", try json.intValue(s.a, index + s.index + 1));
+            try out.append(s.a, delta);
+        }
+        s.index += @intCast(calls.len);
+        s.streamed = true;
+    }
+
+    /// The deltas the reply's ``text`` (its whole answer so far) adds.
+    pub fn feed(s: *Streamer, text: []const u8, out: *std.ArrayList(Value)) Allocator.Error!void {
+        while (s.state != .abort) {
+            const rest = text[@min(s.pos, text.len)..];
+            switch (s.state) {
+                .outside => {
+                    if (s.pos == 0) {
+                        const trimmed = reply_text.pyStrip(text);
+                        if (trimmed.len > 0 and (trimmed[0] == '{' or trimmed[0] == '[' or
+                            std.mem.startsWith(u8, trimmed, "```")))
+                        {
+                            s.state = .abort;
+                            return;
+                        }
+                    }
+                    if (s.dsml_start) |start| {
+                        const from = @max(s.pos, s.dsml_searched -| (s.dsml_close.len - 1));
+                        const end = reply_text.findTag(text, from, s.dsml_close) orelse {
+                            s.dsml_searched = text.len;
+                            return;
+                        };
+                        s.pos = end + s.dsml_close.len;
+                        s.searched = s.pos;
+                        s.dsml_start = null;
+                        const parsed = try tool_parse.parse(s.a, text[start..s.pos], s.tools, null);
+                        if (parsed.calls) |calls| try s.emitCalls(calls, out);
+                    }
+                    if (text.len < s.searched) s.searched = s.pos;
+                    const from = @min(text.len, @max(s.pos, s.searched -| (tool_dsml.open_max - 1)));
+                    var at = from;
+                    while (std.mem.indexOfScalarPos(u8, text, at, '<')) |start| {
+                        if (tool_dsml.openedBy(text[start..])) |sp| {
+                            s.dsml_seen = true;
+                            s.pos = start + sp.open.len;
+                            s.dsml = .{ .sp = sp, .start = start, .at = s.pos };
+                            s.state = .dsml;
+                            break;
+                        }
+                        if (std.mem.startsWith(u8, text[start..], "<tool_call>")) {
+                            s.buffered_start = start;
+                            s.pos = start + "<tool_call>".len;
+                            s.glm = .{ .base = s.pos, .scan = s.pos };
+                            s.state = .call;
+                            break;
+                        }
+                        if (std.mem.startsWith(u8, text[start..], "<|tool_call>")) {
+                            s.buffered_start = start;
+                            s.buffered_close = "<tool_call|>";
+                            s.pos = start + "<|tool_call>".len;
+                            s.dsml_searched = s.pos;
+                            if (!s.giveUp()) return;
+                            break;
+                        }
+                        const end = std.mem.indexOfAnyPos(u8, text, start + 1, "<>") orelse {
+                            s.searched = start;
+                            return;
+                        };
+                        if (text[end] == '<') {
+                            at = end;
+                            continue;
+                        }
+                        if (callTag(text[start + 1 .. end])) {
+                            s.buffered_start = start;
+                            s.buffered_close = try std.mem.concat(s.a, u8, &.{ "</", text[start + 1 .. end], ">" });
+                            s.pos = end + 1;
+                            s.dsml_searched = s.pos;
+                            if (!s.giveUp()) return;
+                            break;
+                        }
+                        at = end + 1;
+                    } else {
+                        s.searched = text.len;
+                        return;
+                    }
+                },
+                .call => {
+                    if (opening(rest, "<function=")) |m| {
+                        const lower = try std.ascii.allocLowerString(s.a, reply_text.pyStrip(m.name));
+                        const name = s.known.get(lower) orelse {
+                            s.buffered_close = "</tool_call>";
+                            s.dsml_searched = s.pos;
+                            if (!s.giveUp()) return;
+                            continue;
+                        };
+                        try s.begin(name, out);
+                        s.pos += m.len;
+                        s.state = .function;
+                        continue;
+                    }
+                    const trimmed = reply_text.pyStrip(rest);
+                    // GLM's ``NAME<arg_key>K</arg_key><arg_value>V</arg_value>`` arguments stream as written
+                    if (!s.dsml_seen and !std.mem.startsWith(u8, trimmed, "<function=")) {
+                        if (!try s.glmStep(text, out)) return;
+                        continue;
+                    }
+                    if (reply_text.charCount(rest) > 256 or (trimmed.len > 0 and trimmed[0] != '<') or
+                        (s.dsml_seen and std.ascii.findIgnoreCase(rest, "</tool_call>") != null))
+                    {
+                        s.buffered_close = "</tool_call>";
+                        s.dsml_searched = s.pos;
+                        if (!s.giveUp()) return;
+                        continue;
+                    }
+                    return;
+                },
+                .glm => {
+                    if (!try s.glmStep(text, out)) return;
+                    continue;
+                },
+                .dsml => {
+                    if (!try s.dsmlStep(text, out)) return;
+                    continue;
+                },
+                .buffered => {
+                    const tail = s.buffered_close;
+                    const from = @max(s.pos, s.dsml_searched -| (tail.len - 1));
+                    const end = std.ascii.findIgnoreCasePos(text, from, tail) orelse {
+                        s.dsml_searched = text.len;
+                        return;
+                    };
+                    s.pos = end + tail.len;
+                    s.searched = s.pos;
+                    s.state = .outside;
+                    const parsed = try tool_parse.parse(s.a, text[s.buffered_start..s.pos], s.tools, null);
+                    if (parsed.calls) |calls| try s.emitCalls(calls, out);
+                },
+                .function => {
+                    if (opening(rest, "<parameter=")) |m| {
+                        const key = reply_text.pyStrip(m.name);
+                        s.value_schema = try tool_params.schemaOf(&s.schemas, s.current, key, s.a);
+                        s.typed = try typedSchema(s.a, s.value_schema);
+                        s.buffer.clearRetainingCapacity();
+                        const quoted = try json.quote(s.a, key, .{ .ascii = false });
+                        try out.append(s.a, try s.args(try std.mem.concat(s.a, u8, &.{ if (s.args_open) "," else "{", quoted, if (s.typed) ":" else ":\"" })));
+                        s.args_open = true;
+                        s.pos += m.len;
+                        s.state = .value;
+                        s.lead = !m.newline;
+                        s.held = "";
+                        continue;
+                    }
+                    if (closing(rest, "</function>")) |n| {
+                        try out.append(s.a, try s.args(if (s.args_open) "}" else "{}"));
+                        s.pos += n;
+                        s.state = .closing;
+                        continue;
+                    }
+                    return;
+                },
+                .value => {
+                    const tail = "</parameter>";
+                    const end = reply_text.findTag(rest, 0, tail);
+                    const chunk = if (end) |e| rest[0..e] else rest[0..trimTail(rest, tail.len)];
+                    s.pos += chunk.len;
+                    var piece = try std.mem.concat(s.a, u8, &.{ s.held, chunk });
+                    if (s.lead and piece.len > 0) {
+                        if (piece[0] == '\n') piece = piece[1..];
+                        s.lead = false;
+                    }
+                    var keep: []const u8 = undefined;
+                    if (end != null) {
+                        keep = if (std.mem.endsWith(u8, piece, "\n")) piece[0 .. piece.len - 1] else piece; // the framing newline
+                        s.held = "";
+                    } else {
+                        keep = reply_text.pyRstrip(piece); // its last newline may be the framing one
+                        s.held = piece[keep.len..];
+                    }
+                    if (s.typed) {
+                        try s.buffer.appendSlice(s.a, keep);
+                    } else if (keep.len > 0) try out.append(s.a, try s.args(try s.esc(keep)));
+                    if (end == null) return;
+                    if (s.typed) {
+                        const v = try tool_params.decode(s.a, s.buffer.items, s.value_schema, true);
+                        try out.append(s.a, try s.args(try json.stringify(s.a, v, .{ .ascii = false, .compact = true })));
+                    } else try out.append(s.a, try s.args("\""));
+                    s.pos += tail.len;
+                    s.state = .function;
+                },
+                .closing => {
+                    const n = closing(rest, "</tool_call>") orelse return;
+                    s.pos += n;
+                    s.state = .outside;
+                },
+                .abort => return,
+            }
+        }
+    }
+
+    /// A call that the reply's end left open: its name streamed, its envelope not closed.
+    pub fn open(s: *const Streamer) bool {
+        if (s.state == .dsml) return s.dsml.sent > 0; // the block's whole parse would keep it all as text
+        return s.index >= 0 and (s.state == .glm or s.state == .function or s.state == .value or s.state == .closing);
+    }
+
+    /// An envelope this stream cannot stream: with nothing sent yet the finish sends every call, else its closer does.
+    fn giveUp(s: *Streamer) bool {
+        if (!s.dsml_seen and !s.streamed) {
+            s.state = .abort;
+            return false;
+        }
+        s.state = .buffered;
+        return true;
+    }
+
+    /// One GLM state-machine step: whether ``feed`` goes on with the state the step left.
+    fn glmStep(s: *Streamer, text: []const u8, out: *std.ArrayList(Value)) Allocator.Error!bool {
+        switch (try tool_glm_stream.feed(s, text, out)) {
+            .wait => return false,
+            .outside => return true,
+            .unstreamable => {
+                s.buffered_close = "</tool_call>";
+                s.dsml_searched = s.pos;
+                return s.giveUp();
+            },
+            .more => unreachable,
+        }
+    }
+
+    /// One DSML state-machine step: whether ``feed`` goes on; a block it cannot stream parses whole at its closer.
+    fn dsmlStep(s: *Streamer, text: []const u8, out: *std.ArrayList(Value)) Allocator.Error!bool {
+        switch (try tool_dsml_stream.feed(s, text, out)) {
+            .wait => return false,
+            .outside => return true,
+            .rejected => {
+                s.dsml_start = s.dsml.start;
+                s.dsml_close = s.dsml.sp.close;
+                s.pos = s.dsml.start + s.dsml.sp.open.len;
+                s.dsml_searched = s.pos;
+                s.state = .outside;
+                return true;
+            },
+            .more => unreachable,
+        }
+    }
+
+    /// ``feed`` of the reply's final text; a value it cuts sends the bytes held back for a closer that never came.
+    pub fn finishCut(s: *Streamer, text: []const u8, out: *std.ArrayList(Value)) Allocator.Error!void {
+        try s.feed(text, out);
+        if (s.state == .glm) return tool_glm_stream.cut(s, text, out); // a GLM value's held bytes
+        if (s.state == .dsml) return tool_dsml_stream.cut(s, text, out); // a DSML value's held bytes
+        if (s.state != .value) return;
+        var cut = try std.mem.concat(s.a, u8, &.{ if (s.typed) s.buffer.items else "", s.held, text[@min(s.pos, text.len)..] });
+        if (s.lead and cut.len > 0 and cut[0] == '\n') cut = cut[1..];
+        s.lead = false;
+        s.pos = text.len;
+        s.held = "";
+        s.buffer.clearRetainingCapacity();
+        if (cut.len > 0) try out.append(s.a, try s.args(if (s.typed) cut else try s.esc(cut)));
+    }
+};
+
+/// A streamed reply's final prose: ``cutProse`` for a cut call, else ``finishedProse``; one-call mode rstrips it.
+pub fn endProse(a: Allocator, content: []const u8, text: []const u8, tools: []const Value, reason: []const u8, single: bool) Allocator.Error![]const u8 {
+    if (single) return reply_text.pyRstrip(try reply_text.finishedProse(a, content));
+    const cut = std.mem.eql(u8, reason, "length") and (try cutCalls(a, text, tools)) != null;
+    return if (cut) reply_text.cutProse(a, content) else reply_text.finishedProse(a, content);
+}
+
+/// A reply max_tokens cut inside a call: the calls its stream sent, the cut one included; null when none was left open.
+pub fn cutCalls(a: Allocator, text: []const u8, tools: []const Value) Allocator.Error!?[]Value {
+    var s: Streamer = try .init(a, tools);
+    var deltas: std.ArrayList(Value) = .empty;
+    try s.finishCut(text, &deltas);
+    // GLM and JSON envelopes stream no call before they close
+    if (!s.open()) return (try tool_glm_cut.cutCalls(a, text, tools)) orelse try tool_json_cut.cutCalls(a, text, tools);
+    const Call = struct { id: []const u8 = "", name: []const u8 = "", args: std.ArrayList(u8) = .empty };
+    const built = try a.alloc(Call, @intCast(s.index + 1));
+    for (built) |*c| c.* = .{};
+    for (deltas.items) |d| {
+        const one = d.get("tool_calls").?.array[0];
+        const c = &built[@intCast(one.get("index").?.int64().?)];
+        if (one.strField("id")) |id| c.id = id;
+        const f = one.get("function").?;
+        if (f.strField("name")) |n| c.name = n;
+        if (f.strField("arguments")) |piece| try c.args.appendSlice(a, piece);
+    }
+    const calls = try a.alloc(Value, built.len);
+    for (built, calls) |*c, *slot| {
+        const function = try json.newObject(a);
+        try function.put(a, "name", .{ .string = c.name });
+        try function.put(a, "arguments", .{ .string = c.args.items });
+        const one = try json.newObject(a);
+        try one.put(a, "id", .{ .string = if (c.id.len > 0) c.id else try ids.make(a, "call_", 24) });
+        try one.put(a, "type", .{ .string = "function" });
+        try one.put(a, "function", .{ .object = function });
+        slot.* = .{ .object = one };
+    }
+    return calls;
+}
+
+/// Bytes of ``rest`` that cannot be the start of a ``tail``-byte closer (Python slices characters).
+fn trimTail(rest: []const u8, tail: usize) usize {
+    const chars = reply_text.charCount(rest);
+    if (chars <= tail) return 0;
+    return rest.len - reply_text.afterChars(rest, chars - tail).len;
+}
+
+fn typedSchema(a: Allocator, schema: tool_params.Schema) Allocator.Error!bool {
+    return tool_params.schemaTakesJson(a, schema);
+}
+
+const wrap = @import("tool_parse.zig").wrapCalls;
+
+fn nameLike(s: []const u8) bool {
+    if (s.len == 0 or !(std.ascii.isAlphabetic(s[0]) or s[0] == '_')) return false;
+    for (s[1..]) |ch| if (!(std.ascii.isAlphanumeric(ch) or ch == '_' or ch == '.' or ch == '-' or ch >= 0x80)) return false;
+    return true;
+}
+
+/// Hides tool envelopes from streamed prose, holding only a partial tag between deltas.
+pub const TextFilter = struct {
+    pending: std.ArrayList(u8) = .empty,
+    hidden: ?[]const u8 = null,
+    deferred: bool = false, // a closed envelope was hidden: later prose waits for the reply's final content
+
+    pub fn feed(f: *TextFilter, a: Allocator, text: []const u8) Allocator.Error![]const u8 {
+        if (f.deferred) return "";
+        try f.pending.appendSlice(a, text);
+        var out: std.ArrayList(u8) = .empty;
+        while (f.pending.items.len > 0) {
+            const p = f.pending.items;
+            if (f.hidden) |name| {
+                const close = try std.mem.concat(a, u8, &.{ "</", name, ">" });
+                if (std.ascii.findIgnoreCase(p, close) == null) {
+                    const keep = reply_text.charCount(close) - 1;
+                    const chars = reply_text.charCount(p);
+                    const tail = if (chars > keep) reply_text.afterChars(p, chars - keep) else p;
+                    try f.reset(a, tail);
+                    break;
+                }
+                // The whole reply may keep this envelope as text, so what follows cannot overtake it.
+                f.hidden = null;
+                f.deferred = true;
+                f.pending.clearRetainingCapacity();
+                break;
+            }
+            const start = std.mem.indexOfScalar(u8, p, '<') orelse {
+                try out.appendSlice(a, p);
+                f.pending.clearRetainingCapacity();
+                break;
+            };
+            try out.appendSlice(a, p[0..start]);
+            const rest = p[start..];
+            const end = std.mem.indexOfScalar(u8, rest, '>') orelse {
+                const name = rest[1..];
+                const colon = std.mem.indexOfScalar(u8, name, ':');
+                const possible = name.len == 0 or nameLike(name) or (colon != null and nameLike(name[0..colon.?]) and
+                    std.ascii.startsWithIgnoreCase("tool_call", name[colon.? + 1 ..]));
+                if (possible) {
+                    try f.reset(a, rest);
+                    break;
+                }
+                try out.append(a, '<');
+                try f.reset(a, rest[1..]);
+                continue;
+            };
+            const name = rest[1..end];
+            if (callTag(name)) {
+                f.hidden = try std.ascii.allocLowerString(a, name);
+            } else try out.appendSlice(a, rest[0 .. end + 1]);
+            try f.reset(a, rest[end + 1 ..]);
+        }
+        return out.items;
+    }
+
+    fn reset(f: *TextFilter, a: Allocator, rest: []const u8) Allocator.Error!void {
+        const copy = try a.dupe(u8, rest);
+        f.pending.clearRetainingCapacity();
+        try f.pending.appendSlice(a, copy);
+    }
+
+    pub fn finish(f: *TextFilter) []const u8 {
+        const tail = if (f.hidden != null or f.deferred) "" else f.pending.items;
+        f.pending = .empty;
+        return tail;
+    }
+};
+
+/// ``(?:NAME:)?tool_call``, any case.
+fn callTag(name: []const u8) bool {
+    if (std.ascii.eqlIgnoreCase(name, "tool_call")) return true;
+    const colon = std.mem.indexOfScalar(u8, name, ':') orelse return false;
+    return nameLike(name[0..colon]) and std.ascii.eqlIgnoreCase(name[colon + 1 ..], "tool_call");
+}
+
+/// ``parallel_tool_calls: false`` keeps one call and hides call markup from streamed prose.
+pub const Policy = struct {
+    single: bool = false,
+    filter: TextFilter = .{},
+
+    pub fn maxCalls(p: *const Policy) ?usize {
+        return if (p.single) 1 else null;
+    }
+
+    /// Filters a str delta's text (dict deltas lose tool_calls and filter content), or passes it through.
+    pub fn text(p: *Policy, a: Allocator, s: []const u8) Allocator.Error![]const u8 {
+        return if (p.single) p.filter.feed(a, s) else s;
+    }
+
+    pub fn flush(p: *Policy) []const u8 {
+        return if (p.single) p.filter.finish() else "";
+    }
+
+    pub fn content(p: *const Policy, a: Allocator, s: []const u8) Allocator.Error![]const u8 {
+        if (!p.single) return s;
+        var f: TextFilter = .{};
+        const head = try f.feed(a, s);
+        return std.mem.concat(a, u8, &.{ head, f.finish() });
+    }
+
+    /// ``parsed_content``: a parsed reply's content, whole envelopes the parser left as text kept and the rest filtered, so an unclosed envelope stays hidden.
+    pub fn parsedContent(p: *const Policy, a: Allocator, s: []const u8) Allocator.Error![]const u8 {
+        if (!p.single) return s;
+        var out: std.ArrayList(u8) = .empty;
+        var cursor: usize = 0;
+        while (try wholeEnvelope(a, s, cursor)) |e| : (cursor = e.end) {
+            try out.appendSlice(a, try p.content(a, s[cursor..e.start]));
+            try out.appendSlice(a, s[e.start..e.end]);
+        }
+        try out.appendSlice(a, try p.content(a, s[cursor..]));
+        return out.items;
+    }
+
+    /// Held-back malformed or unoffered call envelopes kept as reply text: ``final`` past the prose ``sent``.
+    pub fn kept(p: *const Policy, final: []const u8, sent: []const u8) ?[]const u8 {
+        // Replies without parsed calls retain their leading whitespace; parsed content may be stripped.
+        const shown = if (std.mem.startsWith(u8, final, sent)) sent else reply_text.pyLstrip(sent);
+        if (!std.mem.startsWith(u8, final, shown)) return null;
+        const rest = final[shown.len..];
+        if (p.single) return if (rest.len > 0) rest else null;
+        return if (reply_text.pyStrip(rest).len > 0) rest else null;
+    }
+};
+
+/// The first whole envelope from ``from`` (``<((?:NAME:)?tool_call)>.*?</\1>``, any case).
+fn wholeEnvelope(a: Allocator, s: []const u8, from: usize) Allocator.Error!?struct { start: usize, end: usize } {
+    var at = from;
+    while (std.mem.indexOfScalarPos(u8, s, at, '<')) |start| : (at = start + 1) {
+        const close = std.mem.indexOfScalarPos(u8, s, start, '>') orelse return null;
+        if (!callTag(s[start + 1 .. close])) continue;
+        const closer = try std.mem.concat(a, u8, &.{ "</", s[start + 1 .. close], ">" });
+        const end = std.ascii.findIgnoreCasePos(s, close + 1, closer) orelse continue;
+        return .{ .start = start, .end = end + closer.len };
+    }
+    return null;
+}
+
+test {
+    _ = @import("tool_stream_test.zig");
+}

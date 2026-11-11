@@ -1,0 +1,20 @@
+#version 460
+layout(local_size_x = 128) in;
+#include "common.glsl"
+// Causal depthwise conv over [state..., current] then SiLU; state keeps the last kw-1 inputs, oldest first.
+// Workgroup = 128 channels; the first nn workgroups are then l2-normalized as l2_norm does (the decode q and k heads).
+layout(push_constant) uniform P { F32 qkv; F32 state; F32 w; F32 y; uint ch; uint kw; uint nn; float eps; } p;
+void main() {
+    uint c = gl_GlobalInvocationID.x, kw = p.kw, ch = p.ch;
+    float v = 0.0;
+    if (c < ch) {
+        float acc = 0.0;
+        for (uint k = 0; k < kw - 1; k++) acc += p.state.v[k * ch + c] * p.w.v[c * kw + k];
+        acc += p.qkv.v[c] * p.w.v[c * kw + kw - 1];
+        v = silu(acc);
+        for (uint k = 0; k + 2 < kw; k++) p.state.v[k * ch + c] = p.state.v[(k + 1) * ch + c];
+        p.state.v[(kw - 2) * ch + c] = p.qkv.v[c];
+    }
+    if (gl_WorkGroupID.x < p.nn) v *= fdiv(1.0, max(sqrt_(block_sum(v * v)), p.eps));
+    if (c < ch) p.y.v[c] = v;
+}

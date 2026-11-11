@@ -1,0 +1,32 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// QSA block scores, as qsa_score in kernels.cu: workgroup (x, y), subgroup w scores blocks 8x + w, + 512, ... for
+// query rows 8y .. 8y + 7 (row r at position step[0] + r0 + r; 4 normed, roped heads of 128 at q + 512 r) into
+// score[r * nbs + b]; the 8 rows share each pool read.
+layout(push_constant) uniform P { F32 q; F32 pool; F32 score; I32 step; int r0; uint rows; uint nbs; uint top; } p;
+shared vec4 sq[8 * 4 * 32];
+void main() {
+    uint r1 = gl_WorkGroupID.y * 8, n = min(8u, p.rows - r1), p0 = uint(p.step.v[0] + p.r0) + r1;
+    uint w = WARP, lane = LANE, nbm = (p0 + n) / 4;
+    if (nbm <= p.top) return;
+    for (uint i = gl_LocalInvocationID.x; i < n * 128; i += 256) {
+        uint o = r1 * 512 + 4 * i;
+        sq[i] = vec4(p.q.v[o], p.q.v[o + 1], p.q.v[o + 2], p.q.v[o + 3]);
+    }
+    barrier();
+    for (uint b = gl_WorkGroupID.x * 8 + w; b < nbm; b += gl_NumWorkGroups.x * 8) {
+        uint o = b * 128 + 4 * lane;
+        vec4 k = vec4(p.pool.v[o], p.pool.v[o + 1], p.pool.v[o + 2], p.pool.v[o + 3]);
+        for (uint j = 0; j < n; j++) {
+            uint nb = (p0 + j + 1) / 4;
+            if (nb <= p.top || b >= nb) continue;
+            float s = 0.0;
+            for (uint h = 0; h < 4; h++) {
+                vec4 qv = sq[(j * 4 + h) * 32 + lane];
+                s += max(warp_sum(qv.x * k.x + qv.y * k.y + qv.z * k.z + qv.w * k.w), 0.0);
+            }
+            if (lane == 0) p.score.v[(r1 + j) * p.nbs + b] = fdiv(s, sqrt_(128.0));
+        }
+    }
+}

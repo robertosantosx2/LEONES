@@ -1,0 +1,16 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// Parallel over tokens for a chunk: y[t] = silu(conv over inputs t-kw+1 .. t), inputs before the chunk from state.
+layout(push_constant) uniform P { F32 qkv; F32 state; F32 w; F32 y; uint ch; uint kw; uint t; } p;
+void main() {
+    uint i = gl_GlobalInvocationID.x, ch = p.ch, kw = p.kw;
+    if (i >= p.t * ch) return;
+    uint t = i / ch, c = i % ch;
+    precise float acc = 0.0;
+    for (uint k = 0; k < kw; k++) {
+        int s = int(t) - int(kw - 1) + int(k);  // input index; < 0 reads state slot kw - 1 + s
+        acc = fma(s < 0 ? p.state.v[uint(int(kw) - 1 + s) * ch + c] : p.qkv.v[uint(s) * ch + c], p.w.v[c * kw + k], acc);
+    }
+    p.y.v[i] = silu(acc);
+}

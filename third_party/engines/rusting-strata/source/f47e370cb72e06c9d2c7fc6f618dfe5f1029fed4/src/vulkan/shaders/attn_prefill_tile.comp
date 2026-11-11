@@ -1,0 +1,65 @@
+#version 460
+// Prefill attention for devices without cooperative matrices, tiled: one workgroup (1024 threads, 32 logical warps) handles
+// `hper` query heads that share one KV head times `bq` queries (32 tasks). The workgroup loads a tile of `BK` K and V
+// rows into shared memory once and every task reads it, instead of every query reading and q8-dequantizing the whole
+// cache from global memory (attn_prefill_dp). The arithmetic is attn_prefill_dp's: f32 Q and online softmax, one key at
+// a time in ascending order, f16 cache values, so the result matches it.
+layout(local_size_x = 1024) in;
+#include "common.glsl"
+layout(constant_id = 1) const uint HD = 128;  // 64, 128 or 256 (host spec constant)
+const uint PER = HD / 32;                     // dimensions per lane
+const uint BK = 8192 / HD;                    // keys per tile: 32, 64 or 128; 32 KB of f16 K plus V
+layout(push_constant) uniform P { F32 q; U16 kc; U16 vc; F32 qg; F32 o; I32 step; uint t; uint nh; uint nkv; float scale; U32 qm; uint mw; uint bq; uint hper; uint hgroups; } p;
+// K and V rows of the current key tile, all f16 (also with KV_Q8: ldkv rounds to f16, so this is exact).
+shared float16_t sk[8192], sv[8192];
+
+void main() {
+    uint tid = gl_LocalInvocationID.x, task = WARP, lane = LANE;
+    uint g = p.nh / p.nkv;                     // query heads per KV head
+    uint kvh = gl_WorkGroupID.y / p.hgroups, head_group = gl_WorkGroupID.y % p.hgroups;
+    uint q0 = gl_WorkGroupID.x * p.bq;
+    if (q0 >= p.t) return;                     // uniform in the workgroup: no barrier below has run
+    uint head_local = task / p.bq, q_local = task % p.bq;
+    uint h = kvh * g + head_group * p.hper + head_local, q = q0 + q_local;
+    bool live = q < p.t && head_local < p.hper && head_group * p.hper + head_local < g;
+    uint qr = min(q, p.t - 1), hr = min(h, p.nh - 1);  // inactive tasks still form a safe address below
+    uint pos0 = uint(p.step.v[0]), last_max = pos0 + min(q0 + p.bq, p.t) - 1, last_q = pos0 + q;
+    uint kvd = p.nkv * HD, kvo = kvh * HD;
+    float qv[PER], acc[PER], m = 0.0, l = 0.0;
+    bool first = true;
+    [[unroll]] for (uint j = 0; j < PER; j++) {
+        qv[j] = live ? p.q.v[(qr * p.nh + hr) * HD + lane + 32 * j] * p.scale : 0.0;
+        acc[j] = 0.0;
+    }
+    for (uint k0 = 0; k0 <= last_max; k0 += BK) {
+        barrier();
+        // All threads load the tile (inactive tasks too, they still reach the barrier). Rows past the last key are
+        // zeroed; no task reads them, since every task masks k > last_q below.
+        for (uint i = tid; i < 8192; i += 1024) {
+            uint r = i / HD, c = i % HD, k = k0 + r;
+            bool ok = k <= last_max;
+            uint off = ok ? k * kvd + kvo + c : 0;
+            sk[i] = ok ? float16_t(ldkv(p.kc, off, HD)) : float16_t(0.0);
+            sv[i] = ok ? float16_t(ldkv(p.vc, off, HD)) : float16_t(0.0);
+        }
+        barrier();
+        if (live) for (uint r = 0; r < BK; r++) {
+            uint k = k0 + r;
+            if (k > last_q || (uint64_t(p.qm) != 0 && !qsa_bit(p.qm, p.mw, q, k))) continue;
+            float s = 0.0;
+            [[unroll]] for (uint j = 0; j < PER; j++) s += qv[j] * float(sk[r * HD + lane + 32 * j]);
+            s = W64 ? warp_sum(s) : subgroupAdd(s);
+            float mn = first ? s : max(m, s), c = expf_(m - mn), e = expf_(s - mn);
+            l = first ? e : fma(l, c, e);
+            first = false;
+            [[unroll]] for (uint j = 0; j < PER; j++) acc[j] = fma(e, float(sv[r * HD + lane + 32 * j]), acc[j] * c);
+            m = mn;
+        }
+    }
+    if (!live) return;
+    [[unroll]] for (uint j = 0; j < PER; j++) {
+        uint col = lane + 32 * j;
+        float gate = uint64_t(p.qg) != 0 ? sigmoid(p.qg.v[q * p.nh * 2 * HD + h * 2 * HD + HD + col]) : 1.0;
+        p.o.v[q * p.nh * HD + h * HD + col] = fdiv(acc[j], l) * gate;
+    }
+}

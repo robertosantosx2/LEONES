@@ -1,0 +1,35 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// Workgroup (h, 0, t) = query head h of token t: out = (sum of split partials) / (sum of split sums) * sigmoid(gate),
+// the gate skipped when qg is null. As attn_merge in kernels.cu. xq not null: out is also quantized there as
+// quant_xq does (hd is a multiple of 32: a subgroup holds one scale's 32 values).
+layout(push_constant) uniform P { F32 part; F32 qg; F32 out_; I32 step; uint hd; uint ns; uint ns1; int gq_min; U8 xq; } p;
+shared float ws[256];  // split max, then split weight
+void main() {
+    uint h = gl_WorkGroupID.x, nh = gl_NumWorkGroups.x, z = gl_WorkGroupID.z, tid = gl_LocalInvocationID.x, hd = p.hd;
+    uint ns = p.step.v[2 * z] + 1 < p.gq_min ? p.ns1 : p.ns;  // attn_decode ran, not attn_decode_gqa
+    uint pp = z * nh * p.ns * (hd + 2) + h * ns * (hd + 2);
+    if (tid < ns) ws[tid] = p.part.v[pp + tid * (hd + 2) + hd];
+    barrier();
+    float M = uintBitsToFloat(0xff800000u);
+    precise float L = 0.0;
+    for (uint s = 0; s < ns; s++) M = max(M, ws[s]);
+    barrier();
+    if (tid < ns) ws[tid] = expf_(ws[tid] - M);
+    barrier();
+    for (uint s = 0; s < ns; s++) L = fma(p.part.v[pp + s * (hd + 2) + hd + 1], ws[s], L);
+    for (uint d = tid; d < hd; d += 256) {
+        precise float o = 0.0;
+        for (uint s = 0; s < ns; s++) o = fma(p.part.v[pp + s * (hd + 2) + d], ws[s], o);
+        float gate = uint64_t(p.qg) != 0 ? sigmoid(p.qg.v[(z * nh + h) * 2 * hd + hd + d]) : 1.0;
+        float v = fdiv(o, L) * gate;
+        p.out_.v[(z * nh + h) * hd + d] = v;
+        if (uint64_t(p.xq) != 0) {
+            float mx = warp_max(abs(v)), id = mx > 0.0 ? fdiv(127.0, mx) : 0.0;
+            uint n = nh * hd, i = z * n + h * hd + d;
+            p.xq.v[i] = uint8_t(int(roundEven(v * id)) & 255);
+            if ((tid & 31) == 0) F32(uint64_t(p.xq) + gl_NumWorkGroups.z * n).v[i / 32] = fdiv(mx, 127.0);
+        }
+    }
+}

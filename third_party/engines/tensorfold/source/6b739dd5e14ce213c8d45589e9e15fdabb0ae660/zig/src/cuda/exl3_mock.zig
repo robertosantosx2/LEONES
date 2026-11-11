@@ -1,0 +1,110 @@
+//! Host-only driver fault injection for EXL3 ownership tests.
+const abi = @import("abi.zig");
+const Driver = @import("driver.zig").Driver;
+pub var shared_calls: usize = 0;
+pub var shared_bytes: c_int = 0;
+pub var frees: usize = 0;
+pub var allocations: usize = 0;
+pub var fail: bool = false;
+pub var copied: [512]u8 = @splat(0);
+pub var copies: [32][512]u8 = @splat(@splat(0));
+pub var copy_count: usize = 0;
+pub var copy_len: usize = 0;
+pub var next: u64 = 256;
+pub var fail_copy: usize = 0; // the copy (1 for the first) whose waits fail, 0 for none
+pub var fail_waits: usize = 0; // how many of its waits fail before one completes
+pub var pending: bool = false; // a copy is accepted and no wait has completed it
+pub var bad_frees: usize = 0; // device frees while a copy was pending
+pub var memsets: usize = 0; // memsets on a stream the caller named
+pub var legacy_memsets: usize = 0; // memsets on the legacy default stream
+pub var memset_stream: abi.Stream = null;
+pub fn init() Driver {
+    shared_calls = 0;
+    shared_bytes = 0;
+    copy_count = 0;
+    frees = 0;
+    allocations = 0;
+    fail = false;
+    next = 256;
+    fail_copy = 0;
+    fail_waits = 0;
+    pending = false;
+    bad_frees = 0;
+    memsets = 0;
+    legacy_memsets = 0;
+    memset_stream = null;
+    var d: Driver = undefined;
+    d.api.cuMemAlloc_v2 = alloc;
+    d.api.cuMemFree_v2 = free;
+    d.api.cuMemcpyHtoD_v2 = copy;
+    d.api.cuStreamSynchronize = sync;
+    d.api.cuFuncSetAttribute = attribute;
+    d.api.cuCtxSynchronize = context;
+    d.api.cuMemsetD8Async = memsetAsync;
+    d.api.cuMemsetD8_v2 = memsetLegacy;
+    d.api.cuGetErrorName = name;
+    d.api.cuGetErrorString = name;
+    return d;
+}
+fn alloc(p: *abi.DevicePtr, _: usize) callconv(.c) abi.Result {
+    if (fail) return abi.error_not_ready;
+    p.* = next;
+    next += 256;
+    allocations += 1;
+    return 0;
+}
+fn free(_: abi.DevicePtr) callconv(.c) abi.Result {
+    if (pending) bad_frees += 1;
+    frees += 1;
+    return 0;
+}
+fn copy(_: abi.DevicePtr, src: ?*const anyopaque, n: usize) callconv(.c) abi.Result {
+    copy_len = n;
+    const count = @min(n, copied.len);
+    @memcpy(copied[0..count], @as([*]const u8, @ptrCast(src.?))[0..count]);
+    if (copy_count < copies.len) copies[copy_count] = copied;
+    copy_count += 1;
+    pending = true;
+    return 0;
+}
+fn memsetAsync(_: abi.DevicePtr, _: u8, _: usize, s: abi.Stream) callconv(.c) abi.Result {
+    memsets += 1;
+    memset_stream = s;
+    return 0;
+}
+fn memsetLegacy(_: abi.DevicePtr, _: u8, _: usize) callconv(.c) abi.Result {
+    legacy_memsets += 1;
+    return 0;
+}
+fn sync(_: abi.Stream) callconv(.c) abi.Result {
+    if (pending and copy_count == fail_copy and fail_waits > 0) {
+        fail_waits -= 1;
+        return abi.error_not_ready;
+    }
+    pending = false;
+    return 0;
+}
+fn context() callconv(.c) abi.Result {
+    pending = false;
+    return 0;
+}
+fn name(_: abi.Result, out: *?[*:0]const u8) callconv(.c) abi.Result {
+    out.* = "mock";
+    return 0;
+}
+
+test "fake attributes: EXL3 ownership driver records shared memory setup" {
+    const std = @import("std");
+    var d = init();
+    const f: @import("module.zig").Function = .{ .d = &d, .handle = @ptrFromInt(1) };
+    try f.allowDynamicShared(48 * 1024);
+    try std.testing.expectEqual(@as(usize, 1), shared_calls);
+    try std.testing.expectEqual(@as(c_int, 48 * 1024), shared_bytes);
+}
+
+fn attribute(_: abi.Function, attr: abi.FunctionAttribute, value: c_int) callconv(.c) abi.Result {
+    @import("std").debug.assert(attr == .max_dynamic_shared_size_bytes and value > 0);
+    shared_calls += 1;
+    shared_bytes = value;
+    return 0;
+}

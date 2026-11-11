@@ -1,0 +1,46 @@
+#version 460
+// y[t * ys + row] = W[row] . x[t] for t < nt (at most 4), with x pre-quantized by quant_xq at xq (nt rows of cols
+// int8 values, then their scales, one per 32): one subgroup per row, 8 rows per workgroup (CUDA gemv_row_qn). With
+// cols % 256 != 0 the lanes whose 8 values lie inside the partial last super-block also read it.
+// nt is specialization constant 5, as CUDA's template NT: a runtime count leaves acc indexed dynamically.
+layout(local_size_x = 256) in;
+#include "common.glsl"
+#define SHARED_TABLES
+#include "deq.glsl"
+#extension GL_EXT_integer_dot_product : require
+#extension GL_EXT_control_flow_attributes : require
+
+layout(push_constant) uniform P { U8 w; U32 xq; F32 y; uint ys; uint rows; uint cols; } p;
+layout(constant_id = 5) const uint NT = 1;
+
+void sb_step(F32 xd, uint row, uint lane, uint s, inout precise float acc[NT]) {
+    uint lo, hi; float d, m;
+    qw(p.w, row * rowb(p.cols) + s * SBB, lane, lo, hi, d, m);
+    [[unroll]] for (uint t = 0; t < NT; t++) {
+        uint o = (t * p.cols + s * 256) / 4 + lane * 2, a = p.xq.v[o], c = p.xq.v[o + 1];
+        int dot = dotPacked4x8EXT(int(lo), int(a)) + dotPacked4x8EXT(int(hi), int(c));
+        int sx = dotPacked4x8EXT(0x01010101, int(a)) + dotPacked4x8EXT(0x01010101, int(c));
+        float dx = xd.v[(t * p.cols + s * 256) / 32 + (lane >> 2)];
+        acc[t] = fma(d * dx, float(dot), acc[t]);
+        if (MIN) acc[t] = fma(-(m * dx), float(sx), acc[t]);  // types with a min
+    }
+}
+
+void main() {
+    uint row = gl_WorkGroupID.x * 8 + WARP, lane = LANE;
+    load_tables();
+    if (row >= p.rows) return;
+    F32 xd = F32(uint64_t(p.xq) + NT * p.cols);
+    uint nsb = p.cols >> 8;
+    precise float acc[NT];
+    [[unroll]] for (uint t = 0; t < NT; t++) acc[t] = 0.0;
+    // Four super-blocks per iteration so their loads overlap (kernels.cu: unroll 4); the sums keep their order.
+    uint s = 0;
+    for (; s + 4 <= nsb; s += 4) [[unroll]] for (uint j = 0; j < 4; j++) sb_step(xd, row, lane, s + j, acc);
+    for (; s < nsb; s++) sb_step(xd, row, lane, s, acc);
+    if ((p.cols & 255) > lane * 8) sb_step(xd, row, lane, nsb, acc);
+    [[unroll]] for (uint t = 0; t < NT; t++) {
+        float a = warp_sum(acc[t]);
+        if (lane == 0) p.y.v[t * p.ys + row] = a;
+    }
+}

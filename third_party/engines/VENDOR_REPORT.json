@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "created_at": "2026-11-11T07:46:14.997546+00:00",
+  "created_at": "2026-11-11T08:43:22.002785+00:00",
   "engines": [
     {
       "id": "kinetic",
@@ -11,7 +11,7 @@
     {
       "id": "tensorfold",
       "status": "VENDORED",
-      "commit": "3adaf786857e851d665f17b955c9768f5dda80d0",
+      "commit": "6b739dd5e14ce213c8d45589e9e15fdabb0ae660",
       "path": "third_party/engines/tensorfold"
     },
     {
@@ -29,7 +29,7 @@
     {
       "id": "rusting-strata",
       "status": "VENDORED",
-      "commit": "e1c2d6e1722a33ca75da9757761c9df6246cba60",
+      "commit": "f47e370cb72e06c9d2c7fc6f618dfe5f1029fed4",
       "path": "third_party/engines/rusting-strata"
     },
     {

@@ -1,0 +1,14 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// Prefill combine over T tokens: x[t] += sum_j wts[t, j] ye[inv[t, j]] + sigmoid(sg[t]) sh[t] (sh may be null).
+layout(push_constant) uniform P { F32 x; F32 ye; F32 wts; I32 inv; F32 sh; F32 sg; uint k; uint n; uint t; } p;
+void main() {
+    uint i = gl_GlobalInvocationID.x, n = p.n, k = p.k;
+    if (i >= p.t * n) return;
+    uint t = i / n, d = i % n;
+    precise float y = 0.0;
+    for (uint j = 0; j < k; j++) y = fma(p.wts.v[t * k + j], p.ye.v[uint(p.inv.v[t * k + j]) * n + d], y);
+    if (uint64_t(p.sh) != 0) y = fma(sigmoid(p.sg.v[t]), p.sh.v[i], y);
+    p.x.v[i] += y;
+}

@@ -1,0 +1,37 @@
+//! MOSS-Image's launches: its transformer's, encoder's and decoder's kernels, and the split-K GEMM it reads sums from.
+const std = @import("std");
+const M = @import("limits.zig").MetalLaunch;
+pub const records = [_]M{
+    .{ .name = "moss image gemm custom_kernel_tf_gemm_splitk_nax_bf16_n_t_n_t_64_64_256_2_2_bfloat16_t_bfloat16_t_int32_t_float", .threads = 128, .tg_memory = 0, .reserved = 128 },
+    .{ .name = "moss image gemm custom_kernel_tf_gemm_splitk_nax_bf16_n_t_t_t_64_64_256_2_2_bfloat16_t_bfloat16_t_int32_t_float", .threads = 128, .tg_memory = 0, .reserved = 128 },
+    .{ .name = "moss image mi_norm", .threads = 256, .tg_memory = 144, .reserved = 256 },
+    .{ .name = "moss image mi_qk", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image mi_situ", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image mi_gate_add", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image mi_bias", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image mi_attention_00", .threads = 128, .tg_memory = 0, .reserved = 128 },
+    .{ .name = "moss image mi_attention_01", .threads = 128, .tg_memory = 0, .reserved = 128 },
+    .{ .name = "moss image mi_attention_11", .threads = 128, .tg_memory = 0, .reserved = 128 },
+    .{ .name = "moss image me_norm", .threads = 256, .tg_memory = 144, .reserved = 256 },
+    .{ .name = "moss image me_head", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image me_attention", .threads = 256, .tg_memory = 144, .reserved = 256 },
+    .{ .name = "moss image me_gate", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image me_silu_mul", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image me_conv", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image me_gdn_prep", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image me_gdn", .threads = 128, .tg_memory = 1024, .reserved = 128 },
+    .{ .name = "moss image me_gated_norm", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image decoder md_unpack", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image decoder md_conv", .threads = 128, .tg_memory = 26624, .reserved = 128 },
+    .{ .name = "moss image decoder md_wino", .threads = 512, .tg_memory = 32768, .reserved = 512 },
+    .{ .name = "moss image decoder md_wino_32", .threads = 512, .tg_memory = 32768, .reserved = 512 },
+    .{ .name = "moss image decoder md_norm", .threads = 256, .tg_memory = 0, .reserved = 256 },
+    .{ .name = "moss image decoder md_group_part", .threads = 384, .tg_memory = 1536, .reserved = 384 },
+    .{ .name = "moss image decoder md_group_finish", .threads = 1024, .tg_memory = 0, .reserved = 1024 },
+    .{ .name = "moss image decoder md_attention", .threads = 128, .tg_memory = 5168, .reserved = 128 },
+    .{ .name = "moss image decoder md_pixels", .threads = 256, .tg_memory = 0, .reserved = 256 },
+};
+
+test "the MOSS-Image launches fit every Apple family" {
+    try std.testing.expectEqual(@as(usize, 0), try @import("registry.zig").checkMetal(std.testing.allocator, &records, true));
+}

@@ -1,0 +1,117 @@
+# Recipe book
+
+Each family page describes its supported checkpoint, kernels and operating limits, and says which engine it covers:
+the native engine, or the Python engine frozen at 0.6.6.
+
+For agent-assisted contributions, read the [TensorFold contributor skill](SKILL.md) before implementing a native family, kernel or serving change.
+
+| Family | Recipe |
+| --- | --- |
+| dots.mocr | [Native HIP OCR, BF16, one GPU](dots-mocr-hip.md) |
+| Kimi K3 / K3.1 | [Native Metal bring-up, synthetic only, resident budget refusal](kimi-k3-metal.md) |
+| Nemotron 3.5 Lightning | [MLX](nemotron-3.5.md), [Intel Arc, experimental](xpu-arc.md) |
+| Nemotron 3.5 Parse | [Native HIP OCR, validation and qualification limits](nemotron-parse.md) |
+| Nemotron 3.5 Super VL | [Native CUDA on one or two GB10s, images](nemotron-3.5-super-vl.md) |
+| Qwen3.8-27B | [MLX, quantization and CUDA](qwen3.8-27b.md) |
+| Qwen3.5-2B | [Native Metal preview, tied affine 4-bit](qwen3.5-2b-native.md) |
+| Qwen3.8 Flash Next | [MLX prefill and CUDA](qwen3.8-flash-next.md), [native CUDA](flash-next-cuda.md), [CUDA images](flash-next-vision.md), [exact SSD residency on Metal](fluid-subgraph-residency.md) |
+| Qwen4 dense | [Native preparation, device qualification pending](qwen4-dense.md) |
+| Ternary Bonsai 2 27B | [MLX](ternary-bonsai-2.md) |
+| GLM-5.3-Flash | [MLX on a 256 GB Mac, two-rank CUDA](glm-5.3-flash.md), [native CUDA](glm-5.3-flash-cuda.md) |
+| Gemma 4 26B-A4B | [MLX, fused one-row decode](gemma-4.md) |
+| Gemma 4 31B | [Native Metal, affine 4-bit](gemma-4-native.md) |
+| Gemma 4 12B | [Native Metal, affine 4-bit, MTP assistant](gemma-4-12b-native.md) |
+| DeepSeek-V4-Flash | [MLX on a 256 GB Mac, DSpark and MTP drafts](deepseek-v4-flash.md) |
+| Qwen3.6-35B-A3B | [MLX with MTP drafts, one-GPU CUDA](qwen3.6-moe.md) |
+| Step-5-Preview | [Native Metal on one 256 GB Mac: 2-bit experts, MTP drafts, images](step-5-preview.md) |
+| MiniMax-M3.1-Flash | [Native Metal on one 256 GB Mac: affine 3/4-bit experts, exact bf16 cache, DFlash2 drafts, images](minimax-m3.1-flash.md) |
+| Kolibri-1 | [Native CUDA, block FP8, research checkpoint](kolibri-1.md) |
+| LFM2.5-24B-A2B | [Native Metal, MLX 4-bit, shared rounds](lfm2.5-24b-a2b.md) |
+| Spark-X2.6-4B | [Native CUDA](spark-x2.6-4b-cuda.md), [native Metal, the bf16 release, contexts to 1M](spark-x2.6-4b-metal.md) |
+| Nanbeige4.3-33B | [Native Metal, the bf16 and INT4 releases, the Llama family](nanbeige-4.3-33b-metal.md) |
+
+[Persisted serving-state identities](persisted-serving-keys.md) lists the disk owners, their compatibility keys and stale-state host checks.
+
+## Capability floor
+
+The native release includes CUDA kernels for sm_80, sm_86, sm_120 and sm_121. This is a build target list, not
+per-card model qualification. Nemotron MLX 4-bit has been checked on GB10, RTX 3090 and RTX PRO 6000.
+The A100 (sm_80) has [kernel-check evidence](../../CHANGELOG.md#1012) from #846, but no served checkpoint on record;
+it is not model-qualified. See [qualified models](../../README.md#qualified-models) for the measured scope.
+`tensorfold info REPO` prints a checkpoint's memory floor: its weights plus a 2 GiB runtime margin. On macOS, a
+Flash Next (`qwen4_exp`) checkpoint instead prints its startup and cold pack budgets.
+
+| Engine | Floor |
+| --- | --- |
+| Native CUDA, NVFP4 / FP8 | Nemotron and dense Qwen have non-cluster fallback code for sm_80 to sm_89 (#901, #1470). No NVFP4/FP8 model run on sm_80 to sm_89 is recorded; no A100 model qualification is claimed. Other families keep their own gates. |
+| Flash Next, native CUDA | MLX 4-bit served on a GB10; the ModelOpt/two-local-rank path is experimental. Drafting at multiple ranks requires the prompt cache off. No qualification on every release SM is implied. |
+| Intel GPU (XPU), Nemotron | Experimental. Weights need 17.3 GiB of device memory (18 to 19.4 GB in use from 4k to 128k context); measured on an Arc Pro B70 (32 GB). Cards below 24 GB are untested and a 16 GB card cannot hold the weights. |
+| Python 0.6.6 MLX, Apple Silicon | Historical family-page scopes, not measured minimums: GLM-5.3-Flash is written for a 256 GB Mac, about 151 GiB resident. DeepSeek-V4-Flash is the same, about 151 GiB resident. Flash Next's default command sizes to a 128 GiB M4 Max. Qwen3.8-27B on a 32 GB Mac needs more than the default 22.4 GiB. Machine classes, not measured minimums. |
+
+New families go on the Zig engine: [adding a Zig family](adding-a-zig-family.md) has the steps in order, what each
+one gained, and which code owns it. For the Python engine, frozen at 0.6.6, the contributor guides cover
+[adding an MLX family](adding-a-family.md), [adding a CUDA family](adding-a-cuda-family.md) and
+[CUDA implementation rules](cuda.md).
+[Training a drafter](training-a-drafter.md) takes a target's `--record` output to a learned block drafter, with
+what each step gained on Kolibri-1.
+[EXL3 weights](exl3.md) and [universal EXL3 experts](exl3-universal-experts.md) describe the shared EXL3
+module @vcruz305 wrote for the Python engine's CUDA families in [#42](https://github.com/ashhart/TensorFold/pull/42):
+any codebook, any width per tensor, one grouped launch per MoE projection.
+
+## The contract
+
+Drafted output must equal the same engine's serial output. A resumed prompt must equal that prompt served
+fresh, and every concurrent stream must equal its solo run. This contract applies within the same weights,
+runtime and settings; another backend or quantization can have different arithmetic.
+
+The sampler keys each draw by seed, absolute position and token ID. A draft is accepted only when it
+matches that draw from the target. Each verify row must use the serial row's arithmetic, including
+attention boundaries, routing ties and recurrence updates. Rollback must restore all state after the
+accepted path, including draft-head state.
+
+Prompt reuse is equally strict. The MLX planner computes chunks from rendered tokens and caches only
+compatible boundaries. Its resume points are assistant-message starts and the second message start
+when the tokenizer exposes those markers. Chunks skip resume points less than 256 tokens from the
+previous start and otherwise end at the first eligible point or after 2,048 tokens. Without recognized
+markers, chunks use the 2,048-token grid. Rewriting earlier template text can invalidate reuse.
+The chunk scheme and kernel/runtime identity must match before a stored prefix can be reused.
+
+For CUDA checkpoint loading, see [load-time prefetch](cuda-load-prefetch.md).
+
+## Measurements
+
+`tools/bench_openai.py` contains public fixtures: a raw Fibonacci-function prompt and a chat prompt asking
+how matrix multiplication uses a GPU. The chat fixture disables thinking. After starting a server with
+`--name bench`, run from the repository root:
+
+```bash
+python3 tools/bench_openai.py http://127.0.0.1:8080 bench \
+  --tokens 64 --reps 5 --temperatures 1.0,0 --output bench.json
+```
+
+The client warms each cell, uses seeds 1234 through 1238, and reports the median decode rate after the
+first token. Sampled cells use temperature 1, top-k 20 and top-p 0.95. The client sends `ignore_eos: true`;
+MLX, GLM CUDA and the Qwen3.8-27B and Qwen3.6 CUDA engines honor it, while the Flash Next and Nemotron CUDA engines can stop
+at EOS before the requested limit.
+It measures throughput; it does not itself prove token equality. Record checkpoint and tokenizer revisions,
+runtime versions, backend, rank count, launch command and output hashes with a result. Compare serial and drafted output separately.
+
+For concurrent MLX workloads, use `tools/bench_concurrent.py` with `--alone --serial` to compare each
+concurrent reply with a solo run and check those solo runs against `draft: false`. Long-context and memory
+measurements also need a public prompt fixture and its exact rendered-token count. Separate cold, resumed
+and post-restart requests.
+
+All 0.3.5 decode, prefill, concurrency and peak-memory results are TBD [release-0.3.5]. Older public-fixture
+results in the CUDA family pages are historical measurements, not release qualification.
+
+## Kernel checks
+
+For CUDA refactors that promise unchanged machine code, use the [five-SM SASS identity runner](cuda-sass-identity.md).
+
+Use exact equality for serial versus multi-row kernels and committed caches. Use a separate trusted
+forward for model-quality checks; agreement with one's own serial implementation does not establish
+model fidelity. Include real head dimensions, sparse-attention boundaries, partial keeps and concurrent
+streams at different lengths. After changing a kernel or runtime, regenerate serial references.
+
+Measure dependent operations and complete requests. Independent microbenchmarks can hide launch cost,
+weight-cache effects and lost overlap with other work.

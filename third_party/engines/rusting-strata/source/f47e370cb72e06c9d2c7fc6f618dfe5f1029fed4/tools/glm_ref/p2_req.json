@@ -1,0 +1,1 @@
+{"prompt": "def fibonacci(n):\n    \"\"\"Return the n-th Fibonacci number.\"\"\"\n", "n_predict": 32, "temperature": 0, "top_k": 1, "n_probs": 5, "cache_prompt": false}

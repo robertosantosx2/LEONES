@@ -1,0 +1,439 @@
+//! Row block and state files: payload, a state's tokens, then a trailer; read past the page cache and checked first.
+const std = @import("std");
+const platform = @import("sys");
+const builtin = @import("builtin");
+const Name = @import("rows_chain.zig").Name;
+
+const MAGIC: u32 = 0x42524654; // "TFRB"
+const VERSION: u32 = 1;
+
+/// Offsets, lengths and buffers of uncached reads align to this (a Mac's VM page; Linux O_DIRECT needs 4 KiB of it).
+pub const alignment = 16384;
+pub const Stage = []align(alignment) u8;
+
+pub const Kind = enum(u32) { block = 1, state = 2 };
+
+/// Every file's last 96 bytes: what it is, its sizes and hashes, its name and (a state) its position.
+pub const Trailer = extern struct {
+    magic: u32 = MAGIC,
+    version: u32 = VERSION,
+    kind: u32,
+    flags: u32 = 0,
+    payload: u64,
+    payload_hash: u64,
+    meta: u64 = 0,
+    meta_hash: u64 = 0,
+    name: Name,
+    at: u32 = 0,
+    block: u32 = 0,
+    reserved: u64 = 0,
+};
+
+comptime {
+    std.debug.assert(@sizeOf(Trailer) == 96);
+}
+
+extern "c" fn posix_fadvise(fd: c_int, offset: i64, len: i64, advice: c_int) c_int;
+
+/// A file's path: `dir`/`stem``ext` (and `.part` while it is written).
+pub fn path(buf: []u8, dir: []const u8, stem: []const u8, ext: []const u8, part: bool) ![:0]const u8 {
+    return std.fmt.bufPrintSentinel(buf, "{s}/{s}{s}{s}", .{ dir, stem, ext, if (part) ".part" else "" }, 0);
+}
+
+/// A fixed-bucket latency histogram in milliseconds: the bucket edge a percentile reports.
+pub const Latency = struct {
+    pub const edges = [_]f64{ 1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000 };
+    counts: [edges.len + 1]u64 = @splat(0), // the top bucket is past the last edge
+    n: u64 = 0,
+
+    pub fn observe(l: *Latency, ms: f64) void {
+        l.n += 1;
+        for (edges, 0..) |edge, i| if (ms <= edge) {
+            l.counts[i] += 1;
+            return;
+        };
+        l.counts[edges.len] += 1;
+    }
+
+    /// The edge of the bucket `p` of the observations fall under (0: none yet, past the top edge: the top edge).
+    pub fn percentile(l: *const Latency, p: f64) f64 {
+        if (l.n == 0) return 0;
+        const half = @as(f64, @floatFromInt(l.n)) * p;
+        var seen: f64 = 0;
+        for (edges, 0..) |edge, i| {
+            seen += @floatFromInt(l.counts[i]);
+            if (seen >= half) return edge;
+        }
+        return edges[edges.len - 1];
+    }
+};
+
+/// The filesystem calls for one writer; tests supply per-store faults without a process-wide hook.
+pub const IO = struct {
+    ctx: ?*anyopaque = null,
+    read_ms_last: f64 = 0,
+    read_ms_ema: f64 = 0,
+    write_ms_last: f64 = 0,
+    write_ms_ema: f64 = 0, // last and smoothed read/write milliseconds (0: none yet)
+    read_lat: Latency = .{},
+    write_lat: Latency = .{}, // read/write latency histograms (percentiles are bucket edges)
+    last_read_ms: i64 = 0, // wall-clock ms since epoch of the last read (0: none)
+    last_write_ms: i64 = 0, // wall-clock ms since epoch of the last write (0: none)
+    write: *const fn (?*anyopaque, c_int, []const u8) anyerror!usize = writeDefault,
+    sync: *const fn (?*anyopaque, c_int) anyerror!void = syncDefault,
+
+    fn writeDefault(_: ?*anyopaque, fd: c_int, bytes: []const u8) !usize {
+        while (true) {
+            const n = platform.c.write(fd, bytes.ptr, bytes.len);
+            if (n < 0 and platform.c.errno(n) == .INTR) continue;
+            if (n < 0) return error.RowsWrite;
+            return @intCast(n);
+        }
+    }
+
+    fn syncDefault(_: ?*anyopaque, fd: c_int) !void {
+        if (platform.c.fsync(fd) != 0) return error.RowsWrite;
+    }
+};
+
+/// One file written front to back through a `.part` name (0600, past the page cache), renamed into place last.
+pub const Writer = struct {
+    fd: c_int,
+    tmp: [1200]u8 = undefined,
+    tmp_len: usize = 0,
+    hash: std.hash.Wyhash = .init(0),
+    payload: u64 = 0,
+    io: IO = .{},
+    dest: [1200]u8 = undefined,
+    dest_len: usize = 0,
+
+    pub fn open(dir: []const u8, stem: []const u8, ext: []const u8) !Writer {
+        var w: Writer = .{ .fd = -1 };
+        const t = try path(&w.tmp, dir, stem, ext, true);
+        w.tmp_len = t.len;
+        w.dest_len = (try path(&w.dest, dir, stem, ext, false)).len;
+        w.fd = platform.c.open(t, .{ .ACCMODE = .WRONLY, .CREAT = true, .TRUNC = true, .NOFOLLOW = true, .CLOEXEC = true }, @as(platform.c.mode_t, 0o600));
+        if (w.fd < 0) return error.RowsWrite;
+        if (builtin.os.tag == .macos) _ = platform.c.fcntl(w.fd, platform.c.F.NOCACHE, @as(c_int, 1));
+        return w;
+    }
+
+    /// A private temporary name remains safe if a timed-out writer outlives its store.
+    pub fn openUnique(dir: []const u8, stem: []const u8, ext: []const u8, nonce: u64) !Writer {
+        var w: Writer = .{ .fd = -1 };
+        const d = try path(&w.dest, dir, stem, ext, false);
+        w.dest_len = d.len;
+        const t = try std.fmt.bufPrintSentinel(&w.tmp, "{s}.{x}.part", .{ d, nonce }, 0);
+        w.tmp_len = t.len;
+        w.fd = platform.c.open(t, .{ .ACCMODE = .WRONLY, .CREAT = true, .EXCL = true, .NOFOLLOW = true, .CLOEXEC = true }, @as(platform.c.mode_t, 0o600));
+        if (w.fd < 0) return error.RowsWrite;
+        if (builtin.os.tag == .macos) _ = platform.c.fcntl(w.fd, platform.c.F.NOCACHE, @as(c_int, 1));
+        return w;
+    }
+
+    fn tmpPath(w: *const Writer) [:0]const u8 {
+        return w.tmp[0..w.tmp_len :0];
+    }
+
+    /// Payload bytes, appended.
+    pub fn append(w: *Writer, bytes: []const u8) !void {
+        w.hash.update(bytes);
+        try put(w.io, w.fd, bytes);
+        w.payload += bytes.len;
+    }
+
+    /// The metadata pieces and the trailer, then (a state) fsync, then the rename that makes it a file of the store.
+    pub fn finish(w: *Writer, t: Trailer, pieces: []const []const u8, sync: bool) !u64 {
+        const bytes = try w.seal(t, pieces, sync);
+        try w.publish();
+        return bytes;
+    }
+
+    /// The complete file is closed after its requested sync, still under its private temporary name.
+    pub fn seal(w: *Writer, t: Trailer, pieces: []const []const u8, sync: bool) !u64 {
+        var trailer = t;
+        trailer.payload = w.payload;
+        trailer.payload_hash = w.hash.final();
+        var mh = std.hash.Wyhash.init(1);
+        for (pieces) |m| {
+            mh.update(m);
+            try put(w.io, w.fd, m);
+            trailer.meta += m.len;
+        }
+        trailer.meta_hash = mh.final();
+        try put(w.io, w.fd, std.mem.asBytes(&trailer));
+        if (sync) try w.io.sync(w.io.ctx, w.fd);
+        if (builtin.os.tag == .linux) {
+            _ = platform.c.fdatasync(w.fd);
+            _ = posix_fadvise(w.fd, 0, 0, 4); // POSIX_FADV_DONTNEED: written pages leave the cache
+        }
+        _ = platform.c.close(w.fd);
+        w.fd = -1;
+        return trailer.payload + trailer.meta + @sizeOf(Trailer);
+    }
+
+    /// A sealed file made visible; the owner must check its generation first.
+    pub fn publish(w: *Writer) !void {
+        if (platform.c.rename(w.tmpPath(), w.dest[0..w.dest_len :0]) != 0) return error.RowsWrite;
+    }
+
+    /// A write given up: the `.part` file goes.
+    pub fn abort(w: *Writer) void {
+        if (w.fd >= 0) _ = platform.c.close(w.fd);
+        w.fd = -1;
+        _ = platform.c.unlink(w.tmpPath());
+    }
+};
+
+fn put(io: IO, fd: c_int, bytes: []const u8) !void {
+    var done: usize = 0;
+    while (done < bytes.len) {
+        const n = try io.write(io.ctx, fd, bytes[done..][0..@min(bytes.len - done, 1 << 30)]);
+        if (n == 0 or n > bytes.len - done) return error.RowsWrite;
+        done += n;
+    }
+}
+
+fn get(fd: c_int, dest: []u8, at: u64) bool {
+    var done: usize = 0;
+    while (done < dest.len) {
+        const n = platform.c.pread(fd, dest.ptr + done, @min(dest.len - done, 1 << 30), @intCast(at + done));
+        if (n < 0 and platform.c.errno(n) == .INTR) continue;
+        if (n <= 0) return false;
+        done += @intCast(n);
+    }
+    return true;
+}
+
+/// An open file of the store and its checked trailer.
+pub const Opened = struct {
+    fd: c_int,
+    trailer: Trailer,
+
+    pub fn close(o: *Opened) void {
+        _ = platform.c.close(o.fd);
+        o.fd = -1;
+    }
+};
+
+/// `file` opened past the page cache, its trailer read and checked against its size, kind and (when given) its name.
+pub fn open(file: [:0]const u8, kind: Kind, name: ?Name) !Opened {
+    var fd: c_int = -1;
+    if (builtin.os.tag == .linux) fd = platform.c.open(file, .{ .ACCMODE = .RDONLY, .CLOEXEC = true, .NOFOLLOW = true, .DIRECT = true }, @as(platform.c.mode_t, 0));
+    if (fd < 0) fd = platform.c.open(file, .{ .ACCMODE = .RDONLY, .CLOEXEC = true, .NOFOLLOW = true }, @as(platform.c.mode_t, 0));
+    if (fd < 0) return error.RowsMissing;
+    errdefer _ = platform.c.close(fd);
+    if (builtin.os.tag == .macos) _ = platform.c.fcntl(fd, platform.c.F.NOCACHE, @as(c_int, 1));
+    const end = platform.c.lseek(fd, 0, platform.c.SEEK.END);
+    if (end < @sizeOf(Trailer)) return error.RowsRead;
+    var t: Trailer = undefined;
+    var raw: [@sizeOf(Trailer) + 2 * 4096]u8 align(4096) = undefined; // O_DIRECT: an aligned read around the trailer
+    const at: u64 = @as(u64, @intCast(end)) - @sizeOf(Trailer);
+    const lo = std.mem.alignBackward(u64, at, 4096);
+    const span = std.mem.alignForward(u64, @as(u64, @intCast(end)) - lo, 4096);
+    const n = platform.c.pread(fd, &raw, @intCast(span), @intCast(lo));
+    if (n < @as(isize, @intCast(@as(u64, @intCast(end)) - lo))) return error.RowsRead;
+    @memcpy(std.mem.asBytes(&t), raw[@intCast(at - lo)..][0..@sizeOf(Trailer)]);
+    if (t.magic != MAGIC or t.version != VERSION or t.kind != @backingInt(kind)) return error.RowsRead;
+    // the two sizes are the file's own bytes: a pair that wraps past 2^64 names no file of the store
+    const sizes = std.math.add(u64, t.payload, t.meta) catch return error.RowsRead;
+    if (sizes != @as(u64, @intCast(end)) - @sizeOf(Trailer)) return error.RowsRead;
+    if (name) |want| if (!std.mem.eql(u8, &want, &t.name)) return error.RowsRead;
+    return .{ .fd = fd, .trailer = t };
+}
+
+/// The payload into `into` (aligned reads from offset 0), checked against its hash; the bytes are its first `payload`.
+pub fn payload(o: *const Opened, into: Stage) ![]u8 {
+    const n = o.trailer.payload;
+    const span = std.mem.alignForward(u64, n, alignment);
+    if (span > into.len) return error.RowsStage;
+    var done: u64 = 0;
+    while (done < n) { // past the payload the read may run into the metadata or come back short at the file's end
+        const from = std.mem.alignBackward(u64, done, 4096); // a short O_DIRECT read resumes on an aligned boundary
+        const r = platform.c.pread(o.fd, into.ptr + from, @intCast(@min(span - from, 1 << 30)), @intCast(from));
+        if (r < 0 and platform.c.errno(r) == .INTR) continue;
+        if (r <= 0) return error.RowsRead;
+        const next = from + @as(u64, @intCast(r));
+        if (next <= done) return error.RowsRead;
+        done = next;
+    }
+    if (std.hash.Wyhash.hash(0, into[0..@intCast(n)]) != o.trailer.payload_hash) return error.RowsHash;
+    return into[0..@intCast(n)];
+}
+
+/// The metadata (a state's tokens, spans and starts) into `a`'s memory, checked against its hash.
+pub fn meta(o: *const Opened, a: std.mem.Allocator) ![]u8 {
+    const m = try a.alloc(u8, @intCast(o.trailer.meta));
+    errdefer a.free(m);
+    if (!readUnaligned(o.fd, m, o.trailer.payload)) return error.RowsRead;
+    var mh = std.hash.Wyhash.init(1);
+    mh.update(m);
+    if (mh.final() != o.trailer.meta_hash) return error.RowsHash;
+    return m;
+}
+
+/// `dest.len` bytes at `at` of `fd`, through an aligned bounce buffer (O_DIRECT allows no other).
+fn readUnaligned(fd: c_int, dest: []u8, at: u64) bool {
+    var bounce: [64 * 1024]u8 align(4096) = undefined;
+    var done: usize = 0;
+    while (done < dest.len) {
+        const pos = at + done;
+        const lo = std.mem.alignBackward(u64, pos, 4096);
+        const skip: usize = @intCast(pos - lo);
+        const want = @min(dest.len - done, bounce.len - skip);
+        const span = std.mem.alignForward(usize, skip + want, 4096);
+        var got: usize = 0;
+        while (got < skip + want) {
+            const n = platform.c.pread(fd, bounce[got..].ptr, span - got, @intCast(lo + got));
+            if (n < 0 and platform.c.errno(n) == .INTR) continue;
+            if (n <= 0) return false;
+            got += @intCast(n);
+        }
+        @memcpy(dest[done..][0..want], bounce[skip..][0..want]);
+        done += want;
+    }
+    return true;
+}
+
+/// A staging buffer that holds `bytes` read in aligned spans.
+pub fn stage(a: std.mem.Allocator, bytes: u64) !Stage {
+    return a.alignedAlloc(u8, .fromByteUnits(alignment), @intCast(std.mem.alignForward(u64, @max(bytes, 1), alignment)));
+}
+
+test "a latency histogram reports the bucket edges at p50 and p95, and nothing before any sample" {
+    var l: Latency = .{};
+    try std.testing.expectEqual(@as(f64, 0), l.percentile(0.5));
+    for ([_]f64{ 3, 4, 6, 7 }) |ms| l.observe(ms); // four of five under the 10 ms edge
+    l.observe(500);
+    try std.testing.expectEqual(@as(f64, 10), l.percentile(0.5));
+    try std.testing.expectEqual(@as(f64, 500), l.percentile(0.95)); // past 95%: the 500 ms edge it fell under
+    l.observe(99999);
+    try std.testing.expectEqual(@as(f64, 5000), l.percentile(0.95)); // past the top edge: the top edge, not a guess
+}
+
+test "a block file reads back byte for byte, and a flipped byte, a cut tail or another name is refused" {
+    const a = std.testing.allocator;
+    var dir_buf: [64]u8 = undefined;
+    const dir = try std.fmt.bufPrintSentinel(&dir_buf, "/tmp/tf-rows-file-{d}", .{platform.c.getpid()}, 0);
+    _ = platform.c.mkdir(dir, 0o700);
+    defer _ = platform.c.rmdir(dir);
+    const body = try a.alloc(u8, 70_000);
+    defer a.free(body);
+    for (body, 0..) |*b, i| b.* = @truncate(i *% 31 +% 7);
+    const name: Name = @splat(5);
+    var w = try Writer.open(dir, "b", ".blk");
+    try w.append(body[0..1000]);
+    try w.append(body[1000..]);
+    const bytes = try w.finish(.{ .kind = @backingInt(Kind.block), .payload = 0, .payload_hash = 0, .name = name }, &.{}, false);
+    try std.testing.expectEqual(@as(u64, body.len + 96), bytes);
+    var buf: [128]u8 = undefined;
+    const file = try path(&buf, dir, "b", ".blk", false);
+    defer _ = platform.c.unlink(file);
+    const s = try stage(a, body.len);
+    defer a.free(s);
+    {
+        var o = try open(file, .block, name);
+        defer o.close();
+        try std.testing.expectEqualSlices(u8, body, try payload(&o, s));
+    }
+    try std.testing.expectError(error.RowsRead, open(file, .block, @splat(6)));
+    try std.testing.expectError(error.RowsRead, open(file, .state, null));
+    const fd = platform.c.open(file, .{ .ACCMODE = .RDWR }, @as(platform.c.mode_t, 0));
+    try std.testing.expect(fd >= 0);
+    defer _ = platform.c.close(fd);
+    try std.testing.expectEqual(@as(isize, 1), platform.c.pwrite(fd, "X", 1, 12345));
+    {
+        var o = try open(file, .block, name);
+        defer o.close();
+        try std.testing.expectError(error.RowsHash, payload(&o, s));
+    }
+    try std.testing.expectEqual(@as(c_int, 0), platform.c.ftruncate(fd, 5000));
+    try std.testing.expectError(error.RowsRead, open(file, .block, name));
+}
+
+test "a state file's metadata reads back checked, and an aborted write leaves nothing" {
+    const a = std.testing.allocator;
+    var dir_buf: [64]u8 = undefined;
+    const dir = try std.fmt.bufPrintSentinel(&dir_buf, "/tmp/tf-rows-meta-{d}", .{platform.c.getpid()}, 0);
+    _ = platform.c.mkdir(dir, 0o700);
+    defer _ = platform.c.rmdir(dir);
+    const tokens = [_]u32{ 1, 2, 3, 4, 5 };
+    var w = try Writer.open(dir, "s", ".st");
+    try w.append("own bytes");
+    _ = try w.finish(.{ .kind = @backingInt(Kind.state), .payload = 0, .payload_hash = 0, .name = @splat(1), .at = 4 }, &.{std.mem.sliceAsBytes(&tokens)}, true);
+    var buf: [128]u8 = undefined;
+    const file = try path(&buf, dir, "s", ".st", false);
+    defer _ = platform.c.unlink(file);
+    var o = try open(file, .state, null);
+    defer o.close();
+    try std.testing.expectEqual(@as(u32, 4), o.trailer.at);
+    const m = try meta(&o, a);
+    defer a.free(m);
+    try std.testing.expectEqualSlices(u8, std.mem.sliceAsBytes(&tokens), m);
+    var gone = try Writer.open(dir, "g", ".st");
+    try gone.append("half");
+    gone.abort();
+    var part: [128]u8 = undefined;
+    try std.testing.expectError(error.RowsMissing, open(try path(&part, dir, "g", ".st", true), .state, null));
+}
+
+test "a trailer whose two sizes wrap past 2^64 to the file's own size is refused, not read" {
+    var dir_buf: [64]u8 = undefined;
+    const dir = try std.fmt.bufPrintSentinel(&dir_buf, "/tmp/tf-rows-wrap-{d}", .{platform.c.getpid()}, 0);
+    _ = platform.c.mkdir(dir, 0o700);
+    defer _ = platform.c.rmdir(dir);
+    const name: Name = @splat(3);
+    var w = try Writer.open(dir, "w", ".blk");
+    try w.append("payload");
+    _ = try w.finish(.{ .kind = @backingInt(Kind.block), .payload = 0, .payload_hash = 0, .name = name }, &.{}, false);
+    var buf: [128]u8 = undefined;
+    const file = try path(&buf, dir, "w", ".blk", false);
+    defer _ = platform.c.unlink(file);
+    const fd = platform.c.open(file, .{ .ACCMODE = .RDWR }, @as(platform.c.mode_t, 0));
+    try std.testing.expect(fd >= 0);
+    defer _ = platform.c.close(fd);
+    const at = platform.c.lseek(fd, 0, platform.c.SEEK.END) - @sizeOf(Trailer);
+    var t: Trailer = undefined;
+    try std.testing.expectEqual(@as(isize, @sizeOf(Trailer)), platform.c.pread(fd, std.mem.asBytes(&t), @sizeOf(Trailer), at));
+    // each size alone claims more bytes than the file holds; together they add up to its size only by wrapping
+    t.payload += 1 << 63;
+    t.meta += 1 << 63;
+    try std.testing.expectEqual(@as(isize, @sizeOf(Trailer)), platform.c.pwrite(fd, std.mem.asBytes(&t), @sizeOf(Trailer), at));
+    try std.testing.expectError(error.RowsRead, open(file, .block, name));
+}
+
+test "a file shortened after open stops its payload or metadata read with RowsRead, off or on a 4 KiB boundary" {
+    const a = std.testing.allocator;
+    var dir_buf: [64]u8 = undefined;
+    const dir = try std.fmt.bufPrintSentinel(&dir_buf, "/tmp/tf-rows-cut-{d}", .{platform.c.getpid()}, 0);
+    _ = platform.c.mkdir(dir, 0o700);
+    defer _ = platform.c.rmdir(dir);
+    const body = try a.alloc(u8, 70_000);
+    defer a.free(body);
+    for (body, 0..) |*b, i| b.* = @truncate(i *% 31 +% 7);
+    var tokens: [3000]u32 = undefined;
+    for (&tokens, 0..) |*x, i| x.* = @intCast(i * 7);
+    const s = try stage(a, body.len);
+    defer a.free(s);
+    // the metadata runs from 70000 to 82000: two cuts in the payload, two in the metadata
+    for ([_]u64{ 50_001, 12 * 4096, 75_001, 19 * 4096 }) |cut| {
+        var w = try Writer.open(dir, "c", ".st");
+        try w.append(body);
+        _ = try w.finish(.{ .kind = @backingInt(Kind.state), .payload = 0, .payload_hash = 0, .name = @splat(2) }, &.{std.mem.sliceAsBytes(&tokens)}, false);
+        var buf: [128]u8 = undefined;
+        const file = try path(&buf, dir, "c", ".st", false);
+        defer _ = platform.c.unlink(file);
+        var o = try open(file, .state, null);
+        defer o.close();
+        const fd = platform.c.open(file, .{ .ACCMODE = .RDWR }, @as(platform.c.mode_t, 0));
+        try std.testing.expect(fd >= 0);
+        defer _ = platform.c.close(fd);
+        try std.testing.expectEqual(@as(c_int, 0), platform.c.ftruncate(fd, @intCast(cut)));
+        if (cut < body.len) {
+            try std.testing.expectError(error.RowsRead, payload(&o, s));
+            continue;
+        }
+        try std.testing.expectEqualSlices(u8, body, try payload(&o, s));
+        try std.testing.expectError(error.RowsRead, meta(&o, a));
+    }
+}
