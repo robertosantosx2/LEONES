@@ -64,6 +64,8 @@ El fork implementa conversión HF→GGUF en `conversion/qwen.py` (`DFlashModel._
 
 Ejemplo: `python convert_hf_to_gguf.py ./models/Qwen3-8B-DSpine-b16 --target-model-dir ./models/Qwen3-8B --outtype bf16 --outfile Qwen3-8B-DSpine-b16.gguf`. LEONES incluye `scripts/prepare_qwen3_8b_dspine_gguf.sh` para convertir y verificar los tensores `dspine_*`. El drafter no es autónomo: necesita su modelo objetivo correspondiente. No intercambiar parejas entre familias.
 
+El GGUF comunitario Qwen3.8-27B publica el drafter Q4_K_M de 1.26 GB y documenta un target Qwen3.8-27B Q4_K_M de 17.1 GB; sus benchmarks de referencia son sobre una RTX 3090 de 24 GB. Esto confirma que esa pareja no es la opción para el MSI de 4 GiB.
+
 ## Comando de referencia del modelo GGUF comunitario
 
 La tarjeta de modelo de Qwen3.8-27B documenta el uso de `--spec-type draft-dflash`, `--spec-draft-n-max 15`, `-md` para el drafter y `--spec-draft-ngl` para su offload. Su ejemplo usa una RTX 3090 de 24 GiB y no debe copiarse literalmente al MSI. El límite de 15 tokens corresponde al bloque entrenado de 16; en GPUs pequeñas se debe empezar con un valor inferior y medir.
