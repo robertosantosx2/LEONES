@@ -1,7 +1,9 @@
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from audit_dspine_llama_cpp import audit
 
 
