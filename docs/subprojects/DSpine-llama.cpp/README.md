@@ -68,6 +68,20 @@ Ejemplo: `python convert_hf_to_gguf.py ./models/Qwen3-8B-DSpine-b16 --target-mod
 
 La tarjeta de modelo de Qwen3.8-27B documenta el uso de `--spec-type draft-dflash`, `--spec-draft-n-max 15`, `-md` para el drafter y `--spec-draft-ngl` para su offload. Su ejemplo usa una RTX 3090 de 24 GiB y no debe copiarse literalmente al MSI. El límite de 15 tokens corresponde al bloque entrenado de 16; en GPUs pequeñas se debe empezar con un valor inferior y medir.
 
+Ejemplo de referencia publicado (solo para reproducir el perfil de 24 GiB, no para el MSI):
+
+```bash
+./build/bin/llama-server \
+  -m Qwen3.8-27B-Q4_K_M.gguf \
+  -md Qwen3.8-27B-DSpine-b16-Q4_K_M.gguf \
+  --spec-type draft-dflash \
+  --spec-draft-n-max 15 \
+  -ngl 999 --spec-draft-ngl 999 \
+  -fa on --jinja -c 32768 -np 1 \
+  --cache-type-k q8_0 --cache-type-v q8_0 \
+  --spec-draft-type-k q8_0 --spec-draft-type-v q8_0
+```
+
 ## Estado para MSI Thin 15 B12UC
 
 Perfil LEONES: i7-12650H, RTX 3050 Laptop 4 GiB (SM 8.6), 14 GiB RAM, Ubuntu.
