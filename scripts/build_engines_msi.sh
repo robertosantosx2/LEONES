@@ -22,6 +22,7 @@ export CMAKE_CUDA_COMPILER="$CUDACXX"
 
 declare -A STATUS
 FAILURES=0
+BLOCKED=0
 SKIPS=0
 SUCCESSES=0
 
@@ -49,6 +50,7 @@ record() {
   case "$status" in
     OK) SUCCESSES=$((SUCCESSES+1));;
     FAILED) FAILURES=$((FAILURES+1));;
+    BLOCKED) BLOCKED=$((BLOCKED+1));;
     SKIPPED) SKIPS=$((SKIPS+1));;
   esac
 }
@@ -80,7 +82,7 @@ build_kinetic() {
   local id=kinetic src log install bin cmd
   log="$LOG_ROOT/$id/build.log"; install="$WORK_ROOT/$id/install"
   mkdir -p "$LOG_ROOT/$id" "$install"
-  if ! need cargo "$id" || ! need rustc "$id"; then record "$id" SKIPPED "Rust toolchain missing"; return; fi
+  if ! need cargo "$id" || ! need rustc "$id"; then record "$id" BLOCKED "Rust toolchain missing"; return; fi
   src="$(source_dir "$id")" || { failed "$id" "$log" "source unavailable"; return; }
   bin="$install/bin/kinetic"
   cmd="cargo install --locked --path $src/crates/kinetic-cli --root $install --force"
@@ -99,14 +101,14 @@ build_tensorfold() {
   local id=tensorfold src work log bin required_zig cmd
   log="$LOG_ROOT/$id/build.log"; work="$WORK_ROOT/$id/source"
   mkdir -p "$LOG_ROOT/$id" "$WORK_ROOT/$id"
-  if ! need zig "$id" || ! need python3 "$id"; then record "$id" SKIPPED "Zig/Python toolchain missing"; return; fi
+  if ! need zig "$id" || ! need python3 "$id"; then record "$id" BLOCKED "Zig/Python toolchain missing"; return; fi
   src="$(source_dir "$id")" || { failed "$id" "$log" "source unavailable"; return; }
   required_zig="$(cat "$src/.zig-version" 2>/dev/null || true)"
   if [[ -n "$required_zig" && "$(zig version)" != "$required_zig" ]]; then
-    record "$id" SKIPPED "requires Zig $required_zig; found $(zig version)"
+    record "$id" BLOCKED "requires Zig $required_zig; found $(zig version)"
     return
   fi
-  if [[ ! -x "$CUDACXX" ]]; then record "$id" SKIPPED "CUDA compiler missing at $CUDACXX"; return; fi
+  if [[ ! -x "$CUDACXX" ]]; then record "$id" BLOCKED "CUDA compiler missing at $CUDACXX"; return; fi
   rm -rf "$work"; mkdir -p "$work"; cp -a "$src/." "$work/"
   bin="$work/zig-out/native/bin/tensorfold-native"
   cmd="zig build -j2 -Dgpu=sm_86 -Dnvcc=$CUDACXX (isolated working copy)"
@@ -126,10 +128,10 @@ build_llama() {
   log="$LOG_ROOT/$id/build.log"; build="$WORK_ROOT/$id/build"
   mkdir -p "$LOG_ROOT/$id" "$WORK_ROOT/$id"
   if ! need cmake "$id" || ! need c++ "$id"; then
-    record "$id" SKIPPED "CMake/C++ toolchain missing"; return
+    record "$id" BLOCKED "CMake/C++ toolchain missing"; return
   fi
   if [[ ! -x "$CUDACXX" ]]; then
-    record "$id" SKIPPED "CUDA compiler missing at $CUDACXX"; return
+    record "$id" BLOCKED "CUDA compiler missing at $CUDACXX"; return
   fi
   src="$(source_dir "$id")" || { failed "$id" "$log" "source unavailable"; return; }
   bin="$build/bin/llama-server"
@@ -154,10 +156,10 @@ build_tandem() {
   log="$LOG_ROOT/$id/build.log"; work="$WORK_ROOT/$id/source"; build="$WORK_ROOT/$id/build"
   mkdir -p "$LOG_ROOT/$id" "$WORK_ROOT/$id"
   if ! need cmake "$id" || ! need c++ "$id" || ! need git "$id"; then
-    record "$id" SKIPPED "CMake/C++/Git toolchain missing"; return
+    record "$id" BLOCKED "CMake/C++/Git toolchain missing"; return
   fi
   if [[ ! -x "$CUDACXX" ]]; then
-    record "$id" SKIPPED "CUDA compiler missing at $CUDACXX"; return
+    record "$id" BLOCKED "CUDA compiler missing at $CUDACXX"; return
   fi
   tandem_src="$(source_dir "$id")" || { failed "$id" "$log" "Tandem source unavailable"; return; }
   base_src="$(source_dir llama-cpp-tandem-base)" || { failed "$id" "$log" "exact base source unavailable"; return; }
@@ -196,7 +198,7 @@ build_rusting() {
   local id=rusting-strata src log target bin cmd
   log="$LOG_ROOT/$id/build.log"; target="$WORK_ROOT/$id/target"
   mkdir -p "$LOG_ROOT/$id" "$WORK_ROOT/$id"
-  if ! need cargo "$id" || ! need rustc "$id"; then record "$id" SKIPPED "Rust toolchain missing"; return; fi
+  if ! need cargo "$id" || ! need rustc "$id"; then record "$id" BLOCKED "Rust toolchain missing"; return; fi
   src="$(source_dir "$id")" || { failed "$id" "$log" "source unavailable"; return; }
   bin="$target/release/rustingstrata"
   cmd="cargo build --release --locked --manifest-path $src/Cargo.toml --target-dir $target"
@@ -246,11 +248,11 @@ build_rusting
 # Maya is source-vendored, but setup selects/downloads model packs and requires >=32 GiB RAM.
 record project-maya SKIPPED "not built: setup downloads weights; minimum host RAM is 32 GiB"
 
-say "BATCH FINISHED: OK=$SUCCESSES FAILED=$FAILURES SKIPPED=$SKIPS"
+say "BATCH FINISHED: OK=$SUCCESSES FAILED=$FAILURES BLOCKED=$BLOCKED SKIPPED=$SKIPS"
 say "Batch report: $REPORT"
 say "Per-engine build evidence: $LOG_ROOT/<engine>/build.json"
 say "Per-engine build logs: $LOG_ROOT/<engine>/build.log"
-if (( FAILURES > 0 )); then
-  say "Some builds failed. Inspect their logs and rerun after fixing prerequisites; CMake/Cargo caches are retained."
+if (( FAILURES > 0 || BLOCKED > 0 )); then
+  say "Some builds failed or were blocked by missing prerequisites. Inspect logs and rerun after fixing prerequisites; CMake/Cargo caches are retained."
   exit 1
 fi
