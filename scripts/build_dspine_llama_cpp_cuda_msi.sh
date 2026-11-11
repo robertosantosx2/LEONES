@@ -22,8 +22,12 @@ nvcc --version
 cmake --version | head -1
 c++ --version | head -1
 
-echo "========== CLONE ISOLATED FORK =========="
-git clone --depth 1 --single-branch --branch dspine https://github.com/Ajay9o9/llama.cpp.git "$SRC_DIR"
+echo "========== FETCH PINNED DSpine FORK =========="
+git init "$SRC_DIR"
+git -C "$SRC_DIR" remote add origin https://github.com/Ajay9o9/llama.cpp.git
+git -C "$SRC_DIR" fetch --depth 1 origin d493f841b20241606c47a4e0537d3c786b5cf50b
+git -C "$SRC_DIR" checkout --detach FETCH_HEAD
+echo "Pinned source commit: d493f841b20241606c47a4e0537d3c786b5cf50b"
 git -C "$SRC_DIR" rev-parse HEAD
 git -C "$SRC_DIR" status --short
 
