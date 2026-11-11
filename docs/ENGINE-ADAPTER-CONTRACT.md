@@ -37,7 +37,7 @@ All servers must bind to 127.0.0.1. A non-OpenAI API requires a dedicated adapte
 
 1. Add a unique engine object to `configs/engines.registry.json`. Include the official source URL, default immutable tag/ref, license family, model formats and protocol.
 2. Run the GitHub Actions workflow **Vendor inference engine sources** from the LEONES repository. It copies the complete source tree into LEONES and records `SOURCE.json`.
-3. Add the exact build recipe and toolchain notes under `docs/engines/<id>/`. Preserve all upstream license and attribution files. After building, capture the binary and build log with `scripts/capture_engine_build.py` and configure the resulting JSON as `build_meta`.
+3. For patch-based engines, vendor and pin the exact upstream base commit as a separate registry entry. For Tandem.cpp this is `llama-cpp-tandem-base` at `f5222f25c18da062ab2b8a2dbbfbf4feae398566`; do not compare its patched binary only against current upstream master. Add the exact build recipe and toolchain notes under `docs/engines/<id>/`. Preserve all upstream license and attribution files. After building, capture the binary and build log with `scripts/capture_engine_build.py` and configure the resulting JSON as `build_meta`.
 4. Add an engine config entry to `configs/engine-comparison.json`. Keep it disabled until its launch command and API semantics have been verified.
 5. Add capability declarations (context limits, quantization support, backend, KV cache, speculative features, batching, concurrency).
 6. Run smoke tests, then a single-engine baseline, then the full matrix.
