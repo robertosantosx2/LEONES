@@ -161,7 +161,7 @@ def wait_settled(baseline, cfg):
         last = machine_snapshot()
         ram_delta = mib_delta(baseline, last, "MemAvailable:")
         # /proc values are bytes; threshold configured in MiB.
-        ram_ok = ram_delta is None or ram_delta <= settle["ram_available_delta_mib"]
+        ram_ok = ram_delta is None or ram_delta <= settle["ram_available_delta_mib"] * 1048576
         bg, ag = gpu_values(baseline), gpu_values(last)
         vram_ok = True; util_ok = True
         if bg and ag:
@@ -220,6 +220,7 @@ def main():
             (out/"machine"/engine_id).mkdir(parents=True,exist_ok=True)
             (out/"machine"/engine_id/(prof["name"]+".before.json")).write_text(json.dumps(before,indent=2)+"\n")
             start = time.perf_counter()
+            load_s = None
             with open(stdout_path,"w") as so, open(stderr_path,"w") as se:
                 proc = subprocess.Popen(cmd,stdout=so,stderr=se,start_new_session=True)
                 try:
@@ -250,6 +251,7 @@ def main():
                             except Exception as e:
                                 measured = {"type":"measurement","status":"ERROR","engine":engine_id,"profile":prof["name"],
                                             "prompt_id":prompt["id"],"repetition":rep+1,"error":str(e),"timestamp":utc()}
+                            measured["machine_after_request"] = machine_snapshot()
                             append_jsonl(results,measured)
                             log_line(session_log,f"{engine_id}/{prof['name']} {prompt['id']} rep={rep+1} status={measured['status']}")
                     engine_status = "COMPLETED"
