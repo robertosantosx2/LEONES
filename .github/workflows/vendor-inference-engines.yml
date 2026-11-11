@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       engines:
-        description: "Comma-separated registry IDs (e.g. kinetic,tensorfold,llama-cpp,rusting-strata)"
+        description: "Comma-separated registry IDs (e.g. kinetic,tensorfold,llama-cpp,tandem-cpp,rusting-strata)"
         required: true
         default: "kinetic,tensorfold,tandem-cpp"
       ref_overrides:
