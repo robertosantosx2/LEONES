@@ -60,10 +60,9 @@ def main():
                 git(["clone","--no-checkout",str(mirror),str(checkout)])
                 git(["checkout","--detach",commit],cwd=checkout)
                 submodules=git(["submodule","status","--recursive"],cwd=checkout,check=False)
-                submodule_rc=git(["submodule","update","--init","--recursive"],cwd=checkout,check=False)
-                # Fail if submodule update failed; source must be complete.
-                if submodule_rc:
-                    raise RuntimeError("submodule update failed: "+submodule_rc)
+                subproc=subprocess.run(["git","submodule","update","--init","--recursive"],cwd=checkout,text=True,capture_output=True)
+                if subproc.returncode:
+                    raise RuntimeError("submodule update failed: "+subproc.stderr.strip())
                 lfs="not-installed"
                 if shutil.which("git-lfs"):
                     lfs=git(["lfs","pull"],cwd=checkout,check=False) or "git-lfs pull completed"
