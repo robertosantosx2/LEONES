@@ -48,6 +48,19 @@ def main() -> None:
         for notice in meta.get("license_files", []):
             if not (meta_path.parent / source_tree / notice).is_file():
                 fail(f"{eid}: declared license/notice file is missing: {notice}")
+    report_path = ROOT / "third_party" / "engines" / "VENDOR_REPORT.json"
+    if not report_path.is_file():
+        fail("VENDOR_REPORT.json is missing")
+    report = json.loads(report_path.read_text())
+    report_entries = {entry.get("id"): entry for entry in report.get("engines", [])}
+    if set(report_entries) != set(registry_ids):
+        fail("VENDOR_REPORT.json does not cover every registered source identity")
+    for source in registry_entries:
+        eid = source["id"]
+        reported = report_entries[eid]
+        meta = json.loads((ROOT / "third_party" / "engines" / eid / "SOURCE.json").read_text())
+        if reported.get("status") != "VENDORED" or reported.get("commit") != meta.get("commit"):
+            fail(f"{eid}: VENDOR_REPORT.json does not confirm the current SOURCE.json commit")
     for engine in config_entries:
         eid = engine["id"]
         if not isinstance(engine.get("command"), list) or not engine["command"] or not all(isinstance(x, str) for x in engine["command"]):
@@ -74,7 +87,7 @@ def main() -> None:
     required = {"-ngl", "-cmoe", "--moe-cache-mib", "--cache-ram"}
     if not required.issubset(set(tandem_cfg["command"])):
         fail("Tandem.cpp command is missing its documented MoE/cache flags")
-    print(f"[OK] {len(registry_ids)} registry engines match {len(config_ids)} adapters; all source snapshots, license notices, profiles and Tandem base checks passed")
+    print(f"[OK] {len(registry_ids)} registry engines, source snapshots, vendor report, license notices, adapters, profiles and Tandem base checks passed")
 
 if __name__ == "__main__":
     main()
