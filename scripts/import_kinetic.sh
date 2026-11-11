@@ -20,7 +20,7 @@ fi
 git clone --filter=blob:none "$URL" "$TMP/kinetic"
 COMMIT="$(git -C "$TMP/kinetic" rev-parse HEAD)"
 mkdir -p "$DEST"
-rsync -a --delete --exclude='.git' "$TMP/kinetic/" "$DEST/"
+rsync -a --delete --exclude='.git' --exclude='UPSTREAM.md' "$TMP/kinetic/" "$DEST/"
 printf '%s\n' "$COMMIT" > "$DEST/UPSTREAM_COMMIT"
 cat > "$DEST/LEONES_IMPORT.md" <<EOF
 # LEONES vendored source notice
