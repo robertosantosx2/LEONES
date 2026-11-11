@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "host_label": "MSI Thin 15 B12UC Ubuntu",
+  "api": {
+    "health_path": "/health",
+    "chat_path": "/v1/chat/completions",
+    "api_key": "local",
+    "startup_timeout_s": 600,
+    "request_timeout_s": 900
+  },
+  "repetitions": 2,
+  "warmup": true,
+  "settle": {
+    "timeout_s": 180,
+    "ram_available_delta_mib": 700,
+    "vram_used_delta_mib": 256,
+    "gpu_util_max_pct": 5,
+    "consecutive_idle_samples": 3,
+    "sample_interval_s": 2
+  },
+  "profiles": [
+    {
+      "name": "ctx512-cpu4",
+      "ctx": 512,
+      "threads": 4,
+      "gpu_layers": 0,
+      "parallel": 1,
+      "device": "cpu"
+    },
+    {
+      "name": "ctx1024-cpu8",
+      "ctx": 1024,
+      "threads": 8,
+      "gpu_layers": 0,
+      "parallel": 1,
+      "device": "cpu"
+    },
+    {
+      "name": "ctx512-cuda8",
+      "ctx": 512,
+      "threads": 4,
+      "gpu_layers": 8,
+      "parallel": 1,
+      "device": "cuda"
+    }
+  ],
+  "prompts": [
+    {
+      "id": "extraction_json",
+      "max_tokens": 128,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Devuelve únicamente JSON válido."
+        },
+        {
+          "role": "user",
+          "content": "Extrae del texto: nombre=Ana, edad=31, ciudad=León. Devuelve exactamente las claves nombre, edad y ciudad."
+        }
+      ]
+    },
+    {
+      "id": "reasoning",
+      "max_tokens": 192,
+      "messages": [
+        {
+          "role": "user",
+          "content": "Hay tres cajas A, B y C. Solo una contiene una moneda. A dice: la moneda está en B. B dice: la moneda no está en B. C dice: la moneda está en A. Exactamente una afirmación es verdadera. ¿Dónde está la moneda? Explica brevemente."
+        }
+      ]
+    },
+    {
+      "id": "code_generation",
+      "max_tokens": 256,
+      "messages": [
+        {
+          "role": "user",
+          "content": "Escribe una función Python llamada normalize_words(text) que convierta a minúsculas, elimine puntuación y devuelva las palabras separadas por espacios. Incluye tres asserts de prueba. Devuelve solo código."
+        }
+      ]
+    },
+    {
+      "id": "summarization",
+      "max_tokens": 192,
+      "messages": [
+        {
+          "role": "user",
+          "content": "Resume en cinco viñetas: La inferencia local ejecuta modelos en el equipo del usuario. Su rendimiento depende de la arquitectura, cuantización, ancho de banda de memoria, tamaño del contexto y backend. Una GPU pequeña puede acelerar algunas capas mientras la RAM conserva el resto. Las cachés reducen trabajo repetido, pero alteran el estado de partida de una prueba. Una comparación justa fija el mismo modelo, prompts, sampling y límites, registra consumo y repite cada caso."
+        }
+      ]
+    },
+    {
+      "id": "spanish",
+      "max_tokens": 160,
+      "messages": [
+        {
+          "role": "user",
+          "content": "En español, explica la diferencia entre latencia de primer token y velocidad de generación. Usa un ejemplo numérico breve."
+        }
+      ]
+    }
+  ],
+  "engines": [
+    {
+      "id": "kinetic",
+      "enabled": true,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "kinetic",
+        "serve",
+        "{model}",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "{port}",
+        "--device",
+        "{device}",
+        "--gpu-layers",
+        "{gpu_layers}",
+        "--threads",
+        "{threads}",
+        "-c",
+        "{ctx}",
+        "--parallel",
+        "{parallel}",
+        "--no-prompt-cache"
+      ]
+    },
+    {
+      "id": "tensorfold",
+      "enabled": false,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "/ABS/PATH/TO/tensorfold-native",
+        "serve",
+        "--model",
+        "{model}",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "{port}",
+        "--context",
+        "{ctx}"
+      ]
+    },
+    {
+      "id": "tandem-cpp",
+      "enabled": false,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "/ABS/PATH/TO/llama-server",
+        "-m",
+        "{model}",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "{port}",
+        "-c",
+        "{ctx}",
+        "-t",
+        "{threads}",
+        "-ngl",
+        "{gpu_layers}",
+        "-np",
+        "{parallel}"
+      ]
+    },
+    {
+      "id": "rustinstrata",
+      "enabled": false,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "/ABS/PATH/TO/rustinstrata-server",
+        "--model",
+        "{model}",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "{port}",
+        "--context",
+        "{ctx}",
+        "--threads",
+        "{threads}"
+      ]
+    }
+  ]
+}
