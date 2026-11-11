@@ -126,6 +126,7 @@ def stream_request(base, path, api_key, messages, settings, timeout):
             "completion_tokens": completion,
             "ttft_s": (first-started) if first is not None else None,
             "wall_s": ended-started,
+            "prefill_tokens_per_s": (prompt_tokens/(first-started) if prompt_tokens and first is not None and first > started else None),
             "decode_tokens_per_s": ((completion-1)/decode_s if completion and decode_s and decode_s > 0 else None),
             "stream_fragments": len(chunks), "raw_unparsed_sse": raw_lines}
 
@@ -179,7 +180,9 @@ def wait_settled(baseline, cfg):
         ram_ok = ram_delta is None or ram_delta <= settle["ram_available_delta_mib"] * 1048576
         bg, ag = gpu_values(baseline), gpu_values(last)
         vram_ok = True; util_ok = True
-        if bg and ag:
+        if bg and not ag:
+            vram_ok = False; util_ok = False
+        elif bg and ag:
             vram_ok = (ag["memory_used_mib"] - bg["memory_used_mib"]) <= settle["vram_used_delta_mib"]
             util_ok = ag["util_pct"] <= settle["gpu_util_max_pct"]
         if ram_ok and vram_ok and util_ok: streak += 1
@@ -260,6 +263,9 @@ def main():
         if build_meta and (build_meta.get("engine_id") != engine_id or not build_meta.get("binary", {}).get("sha256")):
             append_jsonl(results,{"type":"engine","engine":engine_id,"status":"BUILD_EVIDENCE_INVALID","build_meta":str(build_meta_path)})
             continue
+        if build_meta and source_meta and (build_meta.get("source") or {}).get("commit") != source_meta.get("commit"):
+            append_jsonl(results,{"type":"engine","engine":engine_id,"status":"BUILD_SOURCE_MISMATCH","build_meta":str(build_meta_path),"vendored_commit":source_meta.get("commit"),"built_commit":(build_meta.get("source") or {}).get("commit")})
+            continue
         allowed_profiles = engine.get("profiles")
         skipped_profiles = [p["name"] for p in cfg["profiles"] if allowed_profiles and p["name"] not in allowed_profiles]
         engine_summary = {"id":engine_id,"model_path":str(engine_model),"model_sha256":engine_model_hash,"model_file_count":engine_model_files,"model_assets":asset_records,"profiles":[],"skipped_profiles":skipped_profiles}
@@ -276,6 +282,9 @@ def main():
             env.update({k: str(render(v, fields)) for k,v in engine.get("env", {}).items()})
             if not isinstance(cmd,list) or not cmd or any("/ABS/PATH/" in x for x in cmd):
                 append_jsonl(results,{"type":"profile","engine":engine_id,"profile":prof["name"],"status":"CONFIG_REQUIRED","command":cmd,"model":str(engine_model),"model_sha256":engine_model_hash})
+                continue
+            if prof.get("device") == "cuda" and dirty_gpu is None:
+                append_jsonl(results,{"type":"profile","engine":engine_id,"profile":prof["name"],"status":"GPU_TELEMETRY_REQUIRED","reason":"nvidia-smi telemetry is unavailable for a CUDA profile"})
                 continue
             executable = shutil.which(cmd[0]) if not pathlib.Path(cmd[0]).is_absolute() else cmd[0]
             if build_meta:
