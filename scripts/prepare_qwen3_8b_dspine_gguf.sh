@@ -19,10 +19,12 @@ info() { printf '[DSpine GGUF] %s\n' "$*"; }
 
 command -v python3 >/dev/null || die "python3 is required"
 python3 - <<'PY' || die "Install the converter dependencies (at least torch, numpy and safetensors) in this Python environment"
-import torch, numpy, safetensors
+import torch, numpy, safetensors, transformers, tokenizers
 print("torch", torch.__version__)
 print("numpy", numpy.__version__)
 print("safetensors", safetensors.__version__)
+print("transformers", transformers.__version__)
+print("tokenizers", tokenizers.__version__)
 PY
 
 info "Converting the official Qwen3-8B DSpine draft using the target's tokenizer/metadata"
