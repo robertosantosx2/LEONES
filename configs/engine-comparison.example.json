@@ -205,7 +205,9 @@
       "notes": "Tandem patch build. The upstream README recommends --cache-ram 0 for a 16 GB PC; leave -lm none out when the model exceeds physical RAM. Build against the separately vendored f5222f25c18da062ab2b8a2dbbfbf4feae398566 baseline.",
       "profiles": [
         "ctx512-cuda8"
-      ]
+      ],
+      "base_source_meta": "third_party/engines/llama-cpp-tandem-base/SOURCE.json",
+      "require_patch_evidence": true
     },
     {
       "id": "rusting-strata",
