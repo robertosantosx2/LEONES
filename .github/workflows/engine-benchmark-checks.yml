@@ -26,6 +26,7 @@ jobs:
         run: |
           python -m json.tool configs/engines.registry.json >/dev/null
           python -m json.tool configs/engine-comparison.example.json >/dev/null
+          python -m json.tool configs/models.registry.json >/dev/null
           python scripts/validate_engine_config.py
           python -m json.tool configs/engines.registry.json >/dev/null
       - name: Run benchmark unit tests
