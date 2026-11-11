@@ -28,6 +28,7 @@ def audit(root: Path) -> dict:
     constants = read(root, "gguf-py/gguf/constants.py")
     mapping = read(root, "gguf-py/gguf/tensor_mapping.py")
     model = read(root, "src/models/dflash.cpp")
+    converter = read(root, "conversion/qwen.py")
     speculative = read(root, "common/speculative.cpp")
     common_h = read(root, "common/common.h")
 
@@ -46,6 +47,13 @@ def audit(root: Path) -> dict:
                 "selected_prefix_bridge.gate",
                 "selected_prefix_bridge.read",
                 "selected_prefix_bridge.write",
+            )
+        ),
+        "hf_checkpoint_conversion": all(
+            marker in converter
+            for marker in (
+                "class DFlashModel", "_is_dspine", "_modify_dspine_tensors",
+                "selected_prefix_code_bridge", "target_model_dir",
             )
         ),
         "model_loader": all(
