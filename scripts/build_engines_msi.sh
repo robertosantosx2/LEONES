@@ -125,8 +125,11 @@ build_llama() {
   local id="$1" src log build bin cmd
   log="$LOG_ROOT/$id/build.log"; build="$WORK_ROOT/$id/build"
   mkdir -p "$LOG_ROOT/$id" "$WORK_ROOT/$id"
-  if ! need cmake "$id" || ! need c++ "$id" || ! need nvcc "$id"; then
-    record "$id" SKIPPED "CMake/C++/CUDA toolchain missing"; return
+  if ! need cmake "$id" || ! need c++ "$id"; then
+    record "$id" SKIPPED "CMake/C++ toolchain missing"; return
+  fi
+  if [[ ! -x "$CUDACXX" ]]; then
+    record "$id" SKIPPED "CUDA compiler missing at $CUDACXX"; return
   fi
   src="$(source_dir "$id")" || { failed "$id" "$log" "source unavailable"; return; }
   bin="$build/bin/llama-server"
@@ -139,7 +142,7 @@ build_llama() {
     failed "$id" "$log" "llama-server compile failed"; return
   fi
   if ! capture "$id" "$bin" "$cmd" "$log" \
-      --compiler 'cmake --version' --compiler 'c++ --version' --compiler 'nvcc --version' \
+      --compiler 'cmake --version' --compiler 'c++ --version' --compiler "$CUDACXX --version" \
       --backend cuda --feature GGML_CUDA --feature sm_86; then
     failed "$id" "$log" "build evidence capture failed"; return
   fi
@@ -150,8 +153,11 @@ build_tandem() {
   local id=tandem-cpp tandem_src base_src work log build bin patch cmd
   log="$LOG_ROOT/$id/build.log"; work="$WORK_ROOT/$id/source"; build="$WORK_ROOT/$id/build"
   mkdir -p "$LOG_ROOT/$id" "$WORK_ROOT/$id"
-  if ! need cmake "$id" || ! need c++ "$id" || ! need nvcc "$id" || ! need git "$id"; then
-    record "$id" SKIPPED "CMake/C++/CUDA/Git toolchain missing"; return
+  if ! need cmake "$id" || ! need c++ "$id" || ! need git "$id"; then
+    record "$id" SKIPPED "CMake/C++/Git toolchain missing"; return
+  fi
+  if [[ ! -x "$CUDACXX" ]]; then
+    record "$id" SKIPPED "CUDA compiler missing at $CUDACXX"; return
   fi
   tandem_src="$(source_dir "$id")" || { failed "$id" "$log" "Tandem source unavailable"; return; }
   base_src="$(source_dir llama-cpp-tandem-base)" || { failed "$id" "$log" "exact base source unavailable"; return; }
@@ -177,7 +183,7 @@ build_tandem() {
     failed "$id" "$log" "Tandem llama-server compile failed"; return
   fi
   if ! capture "$id" "$bin" "$cmd" "$log" \
-      --compiler 'cmake --version' --compiler 'c++ --version' --compiler 'nvcc --version' \
+      --compiler 'cmake --version' --compiler 'c++ --version' --compiler "$CUDACXX --version" \
       --backend cuda --feature GGML_CUDA --feature sm_86 \
       --patch "$patch" \
       --base-source-meta third_party/engines/llama-cpp-tandem-base/SOURCE.json; then
