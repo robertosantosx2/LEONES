@@ -1,65 +1,82 @@
-# DSpine en llama.cpp — investigación e integración
+# DSpine en llama.cpp — auditoría y portabilidad
 
-**Estado:** investigación reproducible; todavía no hay ejecución MEASURED en el MSI.
+**Estado: BLOCKED / no existe implementación DSpine confirmada en el fork auditado.** Esta rama de LEONES conserva el trabajo de investigación y no afirma que DSpine funcione en llama.cpp.
 
-## Objetivo
+## Fuentes primarias
 
-Evaluar e integrar, de forma aislada y reversible, el soporte comunitario de DSpine para llama.cpp. La rama de trabajo de LEONES no modifica el llama.cpp instalado ni afirma compatibilidad que no haya sido probada.
+- [Tencent/DSpine](https://github.com/Tencent/DSpine): implementación oficial de inferencia para SGLang y paquete MLX.
+- [README oficial](https://github.com/Tencent/DSpine/blob/main/README.md): parejas objetivo/drafter, instalación y resultados.
+- [Paper arXiv:2609.36173](https://arxiv.org/abs/2609.36173).
+- [Ajay9o9/llama.cpp, rama dspine](https://github.com/Ajay9o9/llama.cpp/tree/dspine): fork que se debe auditar antes de atribuirle soporte.
+- [Qwen3-8B-DSpine-b16](https://huggingface.co/tencent/Qwen3-8B-DSpine-b16): checkpoint oficial de drafter.
+- [Qwen3.8-27B-DSpine-b16](https://huggingface.co/tencent/Qwen3.8-27B-DSpine-b16): checkpoint oficial de drafter para Qwen3.8-27B.
 
-- Rama LEONES: `research/dspine-llama-cpp`
-- Fork de referencia: [Ajay9o9/llama.cpp, rama dspine](https://github.com/Ajay9o9/llama.cpp/tree/dspine)
-- Implementación original: [Tencent/DSpine](https://github.com/tencent/dspine)
-- Modelo GGUF de referencia: [aj9o9/Qwen3.8-27B-DSpine-b16-GGUF](https://huggingface.co/aj9o9/Qwen3.8-27B-DSpine-b16-GGUF)
-- Artículo: [arXiv:2609.36173](https://arxiv.org/abs/2609.36173)
+## Resultado de auditoría estática del fork
+
+Se inspeccionaron en la rama `dspine` los archivos:
+
+- `common/common.h`
+- `common/speculative.cpp`
+- `common/speculative.h`
+- `src/llama-ext.h`
+- `src/models/models.h`
+- `src/models/qwen3.cpp`
+
+En `common/common.h`, el enum de algoritmos incluye `draft-dflash` y `draft-dspark`, pero no `COMMON_SPECULATIVE_TYPE_DSPINE`. En `common/speculative.cpp`, el registro incluye `draft-dflash` y `draft-dspark`, pero no `draft-dspine` ni una implementación `common_speculative_impl_draft_dspine`.
+
+**Conclusión:** el nombre de la rama y la disponibilidad de conversiones GGUF de terceros no son evidencia de que el runtime implemente DSpine. DFlash/DSpark y DSpine son algoritmos relacionados, pero no equivalentes. Un GGUF de drafter DSpine no debe pasarse a `draft-dflash` sin demostrar compatibilidad matemática y de metadatos; no se debe intentar cargarlo como si fuera equivalente.
+
+Los hashes de blobs inspeccionados y los criterios se conservan en la auditoría automatizada. El SHA exacto del commit de la rama externa debe quedar fijado por la ejecución del script, no inferirse de los hashes de archivos.
 
 ## Qué es DSpine
 
-DSpine significa *Draft in Parallel, Condition Through Depth*. Es un drafter para decodificación especulativa: propone un bloque de tokens en paralelo y transmite dependencias causales entre posiciones a través de la profundidad de sus capas. El modelo objetivo verifica las propuestas. No es un modelo conversacional autónomo ni una cuantización del modelo objetivo.
+DSpine (*Draft in Parallel, Condition Through Depth*) es una técnica de speculative decoding. En cada capa del drafter, la predicción de una posición se inyecta en la posición sucesora mediante un puente de código aprendido. Las posiciones se actualizan en paralelo mientras la dependencia causal se desarrolla a través de la profundidad.
 
-La implementación publicada para Qwen3.8-27B describe cinco capas de drafter, estados ocultos extraídos de cinco capas del modelo objetivo y bloques de 16 tokens. La selección de propuestas incluye una tabla de transiciones y una verificación especulativa. Por tanto, el drafter está acoplado a una familia/configuración de modelo objetivo; no se puede emparejar arbitrariamente con cualquier GGUF pequeño.
+La implementación oficial usa una familia DFlash-like para el bloque de draft, pero añade un code bridge específico, escritura de características por capa, reglas de atención y verificación. Compartir parte del esqueleto DFlash no convierte a un decodificador DFlash en DSpine.
 
-## Estado de compatibilidad verificado en fuentes públicas
+## Parejas oficiales
 
-| Elemento | Estado |
-|---|---|
-| llama.cpp oficial | La ficha del GGUF indica que todavía no incorpora DSpine |
-| Fork Ajay9o9 | Rama `dspine` anunciada como llama.cpp master más soporte DSpine |
-| DSpine oficial | Implementación de inferencia publicada para SGLang; también hay paquete MLX |
-| Qwen3-8B | Pareja objetivo/drafter publicada por Tencent |
-| Qwen3.8-27B | Pareja objetivo/drafter y conversión GGUF publicadas |
-| Qwen3.5 / MiniCPM / modelos arbitrarios | No asumir compatibilidad |
+| Modelo objetivo | Drafter oficial | Estado |
+|---|---|---|
+| Qwen3-8B | `tencent/Qwen3-8B-DSpine-b16` | Publicado |
+| Qwen3.8-27B | `tencent/Qwen3.8-27B-DSpine-b16` | Publicado en noviembre de 2026 |
 
-La rama debe auditarse por SHA y por los cambios reales frente al upstream antes de compilarla o recomendarla. La disponibilidad de un GGUF de drafter no prueba por sí sola que cualquier binario llama.cpp pueda cargarlo.
+No extrapolar estas parejas a Qwen3.5, MiniCPM5 u otras arquitecturas sin pesos entrenados y contrato de inferencia compatible.
 
-## Evaluación para MSI Thin 15 B12UC
+## Portar DSpine a llama.cpp: trabajo necesario
 
-Perfil de referencia LEONES: i7-12650H, RTX 3050 Laptop de 4 GiB (SM 8.6), 14 GiB RAM, Ubuntu.
+No es un simple cambio de nombre de algoritmo. El port necesita, como mínimo:
 
-**No se autoriza todavía una prueba de generación en el MSI.** Primero deben completarse la auditoría de código, la compilación limpia y las pruebas automáticas fuera del equipo. Después se preparará un paquete mínimo de validación.
+1. **Contrato de checkpoint:** leer y validar los metadatos DSpine, el tamaño del bloque, capas objetivo, capas de características, dimensiones del puente, top-k de refinamiento, token máscara y modo de segunda pasada. Rechazar configuraciones desconocidas.
+2. **Modelo de drafter:** mapear los tensores del checkpoint al grafo GGML; implementar proyecciones, atención, normalizaciones y MLP con dimensiones verificadas.
+3. **Code bridge:** implementar cada escritura aprendida de características adyacentes y su refinamiento final. Mantener el orden de redondeo y precisión compatible con el checkpoint.
+4. **Features del objetivo:** extraer las capas objetivo requeridas y transferirlas al contexto del drafter sin copias o sincronizaciones ocultas innecesarias.
+5. **Máscara y KV:** implementar atención causal dentro del bloque, visibilidad del contexto y tratamiento de KV para prefijo y bloque especulativo.
+6. **Propuesta y verificación:** generar el bloque, aplicar selección/top-k según el checkpoint, verificar con el objetivo y confirmar el prefijo aceptado con semántica correcta para greedy y sampling.
+7. **Integración runtime:** exponer un tipo inequívoco `draft-dspine`, validación de pareja objetivo/drafter y mensajes de error explícitos. Nunca autodetectar DSpine como DFlash.
+8. **Tests:** validación de metadatos, formas y nombres de tensor; pruebas numéricas contra implementación de referencia; aceptación greedy; sampling/rejection; contextos largos; CPU y CUDA.
+9. **Benchmarks:** baseline sin speculative, DSpine y, cuando sea posible, DFlash/DSpark, con el mismo objetivo, prompt, contexto, sampler y backend.
 
-El modelo GGUF Qwen3.8-27B-DSpine publicado es únicamente el drafter (Q4_K_M: alrededor de 1.26 GB); también hace falta el modelo objetivo Qwen3.8-27B. La suma de objetivo, drafter, buffers, KV y contexto hace que esta pareja no sea una candidata razonable para 4 GiB de VRAM. Podría estudiarse ejecución híbrida CPU/GPU, pero 14 GiB de RAM y swap no convierten esa configuración en una ejecución recomendable ni rápida.
+## Evaluación MSI Thin 15 B12UC
 
-La pareja Qwen3-8B merece una auditoría separada, pero no se presupone que exista una conversión GGUF compatible ni que el fork la implemente con el mismo grado de soporte.
+Perfil LEONES: Intel i7-12650H, NVIDIA RTX 3050 Laptop 4 GiB (SM 8.6), RAM 14 GiB, Ubuntu.
 
-## Fases y criterios de salida
+- El fork actual no tiene DSpine confirmado: por tanto no hay binario que probar en el MSI.
+- El método oficial SGLang exige CUDA y el stack PyTorch/SGLang; el usuario no tiene PyTorch instalado según el inventario previo.
+- Las parejas oficiales empiezan en Qwen3-8B y Qwen3.8-27B. No son candidatas cómodas para 4 GiB de VRAM.
+- No descargar los checkpoints ni intentar la ejecución en el MSI hasta disponer de un runtime real, estimación de memoria basada en tensores y un plan explícito de CPU/GPU.
+- El objetivo de la futura validación será una prueba pequeña y medible, no reproducir cifras de una RTX 3090.
 
-1. **Fuentes y procedencia:** fijar upstream, fork, rama, SHA, licencia y diferencias.
-2. **Auditoría del código:** localizar parser GGUF, arquitectura/tensor types, carga del drafter, extracción de hidden states, algoritmo de verificación, sampler y rutas CPU/CUDA.
-3. **Compilación CI:** compilar el fork en runner Linux CPU; registrar SHA y logs. La CI no equivale a validación CUDA.
-4. **Pruebas sin GPU:** ejecutar tests existentes y añadir tests de metadatos/errores si el código lo permite. No fabricar resultados de rendimiento.
-5. **Preparación MSI:** matriz de modelos, hashes, comandos, límites de memoria y rollback.
-6. **Gate físico:** solo entonces pedir intervención en el MSI para compilar CUDA, cargar modelos y medir tokens/s, aceptación, VRAM/RAM y estabilidad.
+## Estados de evidencia
 
-## Reglas de evidencia
+- `SOURCE-VERIFIED`: confirmado en fuentes/código primarios.
+- `STATIC-AUDIT`: resultado de inspección de código con SHA de fuente.
+- `CI-PASSED`: build/test ejecutado en CI con logs y SHA.
+- `MSI-MEASURED`: ejecución física en el MSI real.
+- `NOT-IMPLEMENTED`: falta el soporte de runtime necesario.
 
-- `ESTIMATED`: cálculos y predicciones; nunca presentarlos como mediciones.
-- `SOURCE-VERIFIED`: afirmaciones confirmadas en código/documentación upstream.
-- `CI-PASSED`: pruebas ejecutadas en CI, con SHA y logs.
-- `MSI-MEASURED`: únicamente resultados recogidos en el MSI real.
-- No descargar modelos grandes ni ejecutar generación en el MSI sin revisar antes memoria y almacenamiento.
-- No sustituir ni sobrescribir la instalación llama.cpp existente.
-- No fusionar ni abrir PR upstream hasta tener una implementación reproducible y una comparación válida.
+No se marcará como CI-PASSED la funcionalidad DSpine solo porque compile una versión de llama.cpp que contiene DFlash/DSpark.
 
-## Primer gate
+## Gate actual
 
-Ejecutar `scripts/dspine-llama-cpp-audit.sh` en CI o en una máquina de desarrollo. La salida registra el commit del fork y comprueba que se puede configurar y compilar una build CPU. La auditoría CUDA y la validación del modelo se reservan para una fase posterior.
+La fase de port está bloqueada por ausencia de implementación DSpine en el fork. La CI puede compilar el fork y ejecutar el auditor estático, pero el resultado esperado actual es `NOT_IMPLEMENTED`. El gate MSI permanece cerrado.
