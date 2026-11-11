@@ -26,5 +26,6 @@ jobs:
         run: |
           python -m json.tool configs/engines.registry.json >/dev/null
           python -m json.tool configs/engine-comparison.example.json >/dev/null
+          python -m json.tool configs/engines.registry.json >/dev/null
       - name: Validate shell wrapper
         run: bash -n scripts/import_kinetic.sh
