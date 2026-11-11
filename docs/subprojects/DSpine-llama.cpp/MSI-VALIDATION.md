@@ -10,6 +10,14 @@
 - Primera pasada: greedy, contexto corto, una secuencia y pocos tokens especulativos.
 - No usar Qwen3.8-27B en la RTX 3050 de 4 GiB.
 
+## Estimación de memoria previa
+
+El target Qwen3-8B Q4_K_M publicado pesa aproximadamente 5.03 GB. El drafter oficial tiene 1.2378B parámetros; en BF16 sus pesos implican aproximadamente 2.48 GB antes de metadatos/overhead. El conjunto de pesos ronda **7.5 GB** como estimación, sin contar KV, buffers de cómputo, allocator, contexto y runtime.
+
+Por eso el MSI no puede alojar ambos modelos enteros en sus 4 GiB de VRAM. La prueba solo tiene sentido con offload híbrido CPU/GPU y contexto corto. Los 14 GiB de RAM podrían permitirlo, pero no lo garantizan: hay que medir memoria disponible y consumo real. No usar el valor teórico como permiso para ejecutar.
+
+Fuente de tamaño del target: [Qwen3-8B GGUF Q4_K_M](https://huggingface.co/Qwen/Qwen3-8B-GGUF). Parámetros del drafter: [ficha oficial Qwen3-8B-DSpine-b16](https://huggingface.co/tencent/Qwen3-8B-DSpine-b16).
+
 ## 0. Puerta previa
 
 1. Revisar el resultado de los dos jobs del workflow \`DSpine llama.cpp audit\`.
