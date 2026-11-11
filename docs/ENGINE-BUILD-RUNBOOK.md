@@ -141,7 +141,21 @@ python3 scripts/capture_engine_build.py \
   --output artifacts/engine-builds/<registry-id>/build.json
 ```
 
-Use `rustc --version` and `cargo --version` for Rust engines; `zig version` and `nvcc --version` for TensorFold; and `cmake --version`, `c++ --version`, `nvcc --version` for llama.cpp/Tandem. The runner checks that the build evidence belongs to the configured engine and that the launched executable SHA-256 equals the captured binary SHA-256.
+Use `rustc --version` and `cargo --version` for Rust engines; `zig version` and `nvcc --version` for TensorFold; and `cmake --version`, `c++ --version`, `nvcc --version` for llama.cpp/Tandem. For Tandem.cpp, also pass both its patch and the exact base snapshot metadata:
+
+```bash
+python3 scripts/capture_engine_build.py --engine tandem-cpp \
+  --binary "$HOME/build/tandem-msi/build/bin/llama-server" \
+  --build-command 'bash third_party/engines/tandem-cpp/source/<commit>/build.sh ...' \
+  --build-log artifacts/engine-builds/tandem-cpp/build.log \
+  --compiler 'cmake --version' --compiler 'c++ --version' --compiler 'nvcc --version' \
+  --backend cuda --feature GGML_CUDA --feature sm_86 \
+  --patch third_party/engines/tandem-cpp/source/e1acb8877bfcf92b4ae7c9f0e0f1d896dbf6c683/tandem.patch \
+  --base-source-meta third_party/engines/llama-cpp-tandem-base/SOURCE.json \
+  --output artifacts/engine-builds/tandem-cpp/build.json
+```
+
+The runner checks that the build evidence belongs to the configured engine, the Tandem base commit matches its pinned `SOURCE.json`, a patch hash is present when required, and the launched executable SHA-256 equals the captured binary SHA-256.
 
 ## Benchmark comparability and MSI handoff
 
