@@ -38,7 +38,7 @@ jobs:
       - name: Vendor pinned engine source snapshots
         shell: bash
         env:
-          ENGINE_LIST: ${{ inputs.engines }}
+          ENGINE_LIST: ${{ inputs.engines || 'kinetic,tensorfold,llama-cpp,rusting-strata' }}
           REF_LIST: ${{ inputs.ref_overrides }}
         run: |
           args=()
