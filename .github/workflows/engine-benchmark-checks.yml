@@ -21,11 +21,12 @@ jobs:
           python-version: "3.12"
       - name: Validate Python syntax
         run: |
-          python -m py_compile scripts/vendor_engines.py scripts/engine_comparison.py scripts/capture_engine_build.py
+          python -m py_compile scripts/vendor_engines.py scripts/engine_comparison.py scripts/capture_engine_build.py scripts/validate_engine_config.py
       - name: Validate JSON configuration
         run: |
           python -m json.tool configs/engines.registry.json >/dev/null
           python -m json.tool configs/engine-comparison.example.json >/dev/null
+          python scripts/validate_engine_config.py
           python -m json.tool configs/engines.registry.json >/dev/null
       - name: Validate shell wrapper
         run: bash -n scripts/import_kinetic.sh
