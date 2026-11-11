@@ -194,22 +194,29 @@ def wait_settled(baseline, cfg):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--config", required=True)
-    ap.add_argument("--model", required=True)
+    ap.add_argument("--model", help="default model file or checkpoint directory; engines may override it in the config")
     ap.add_argument("--out", default="artifacts/engine-comparison")
     ap.add_argument("--only", help="comma-separated engine ids")
     ap.add_argument("--allow-dirty-baseline", action="store_true",
                     help="continue despite a dirty initial GPU; still record it")
     args = ap.parse_args()
     cfg = json.loads(pathlib.Path(args.config).read_text())
-    model = pathlib.Path(args.model).expanduser().resolve()
-    if not model.is_file(): ap.error(f"model not found: {model}")
-    model_hash = sha256(model)
+    model = pathlib.Path(args.model).expanduser().resolve() if args.model else None
+    if model and (not model.exists() or not (model.is_file() or model.is_dir())):
+        ap.error(f"model not found: {model}")
+    model_hash, model_files = artifact_sha256(model) if model else (None, 0)
+    if model and model_files == 0: ap.error(f"model artifact is empty: {model}")
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     out = pathlib.Path(args.out) / stamp
     for p in ["engines", "responses", "machine"]: (out/p).mkdir(parents=True, exist_ok=True)
     results = out/"results.jsonl"; session_log = out/"session.log"
     baseline = machine_snapshot()
-    manifest = {"schema_version":1, "created_at":utc(), "config":cfg, "model":{"path":str(model),"size_bytes":model.stat().st_size,"sha256":model_hash},
+    manifest_model = None
+    if model:
+        manifest_model = {"path":str(model),"kind":"directory" if model.is_dir() else "file",
+                          "size_bytes":model.stat().st_size if model.is_file() else None,
+                          "file_count":model_files,"sha256":model_hash}
+    manifest = {"schema_version":1, "created_at":utc(), "config":cfg, "model":manifest_model,
                 "host_baseline":baseline, "argv":sys.argv, "environment":{k:("<redacted>" if SENSITIVE_ENV.search(k) else v) for k,v in os.environ.items() if k.startswith(("CUDA","HIP","TENSORFOLD","LLAMA","TF_"))}}
     (out/"manifest.json").write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+"\n")
     summary = {"session":str(out), "model_sha256":model_hash, "engines":[], "aborted":False}
@@ -220,7 +227,11 @@ def main():
     for engine in cfg["engines"]:
         if not engine.get("enabled", False) or (allowed and engine["id"] not in allowed): continue
         engine_id = engine["id"]
-        engine_model = pathlib.Path(engine.get("model", str(model))).expanduser().resolve()
+        model_value = engine.get("model") or (str(model) if model else None)
+        if not model_value:
+            append_jsonl(results,{"type":"engine","engine":engine_id,"status":"MODEL_REQUIRED","reason":"supply --model or an engine-specific model path"})
+            continue
+        engine_model = pathlib.Path(model_value).expanduser().resolve()
         if not engine_model.exists() or not (engine_model.is_file() or engine_model.is_dir()):
             append_jsonl(results,{"type":"engine","engine":engine_id,"status":"MODEL_MISSING","model":str(engine_model)})
             continue
