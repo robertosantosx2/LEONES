@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sequential, resumable source builds for the LEONES MSI benchmark host.
+# Sequential, rerunnable source builds for the LEONES MSI benchmark host.
 # Builds binaries only: no model weights, no server startup, no inference.
 set -Eeuo pipefail
 umask 022
