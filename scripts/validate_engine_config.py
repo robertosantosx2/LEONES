@@ -87,6 +87,8 @@ def main() -> None:
     required = {"-ngl", "-cmoe", "--moe-cache-mib", "--cache-ram"}
     if not required.issubset(set(tandem_cfg["command"])):
         fail("Tandem.cpp command is missing its documented MoE/cache flags")
+    if tandem_cfg.get("base_source_meta") != f"third_party/engines/{base_id}/SOURCE.json" or not tandem_cfg.get("require_patch_evidence"):
+        fail("Tandem.cpp must require its exact base SOURCE.json and patch-hash evidence")
     print(f"[OK] {len(registry_ids)} registry engines, source snapshots, vendor report, license notices, adapters, profiles and Tandem base checks passed")
 
 if __name__ == "__main__":
