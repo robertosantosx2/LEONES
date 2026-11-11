@@ -18,6 +18,7 @@ on:
     paths:
       - "scripts/dspine-llama-cpp-audit.sh"
       - "scripts/audit_dspine_llama_cpp.py"
+      - "scripts/verify_qwen3_8_27b_dspine_gguf.py"
       - "tests/test_audit_dspine_llama_cpp.py"
       - "docs/subprojects/DSpine-llama.cpp/**"
       - ".github/workflows/dspine-llama-cpp-audit.yml"
