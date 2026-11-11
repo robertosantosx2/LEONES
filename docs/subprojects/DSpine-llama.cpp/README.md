@@ -108,7 +108,7 @@ No marcar la funcionalidad como validada por el mero hecho de compilar el fork.
 
 1. **Completada:** inspección de tensores, loader, code bridge, lattice y dispatch especulativo.
 2. **En curso:** auditor estático automatizado y pruebas unitarias en LEONES.
-3. **Pendiente:** build CPU del fork y build CUDA/SM86 en CI adecuado.
+3. **Completada:** build CPU del fork en GitHub Actions, run `42989628662` (GCC 13.3.0, llama.cpp 0.9.0-dev); pendiente build CUDA/SM86 en el MSI.
 4. **Completada:** identificar incompatibilidad del checkpoint Qwen3-8B y sustituir la conversión por verificación del drafter Qwen3.8-27B GGUF compatible.
 5. **Pendiente:** gate de memoria y comandos reproducibles.
 6. **Pendiente:** ejecución física y benchmark en MSI.
