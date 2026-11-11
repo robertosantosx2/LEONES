@@ -241,3 +241,23 @@ The script does not install missing toolchains, download model weights, start se
 ### Expected duration on the MSI
 
 Planning estimate only, not a measured build time: allow **about 2–5 hours** for the six source builds on the i7-12650H, assuming the Rust/Zig/CMake/CUDA toolchains and dependencies are already installed, NVCC works, the machine is on AC power and the build cache is initially cold. Dependency downloads, compiler incompatibilities, low disk space or a retry after a failure can extend this to **5–8 hours or more**. TensorFold and the three CUDA CMake builds are the largest uncertainty. The script is sequential, so the machine will remain occupied until the batch exits; it does not run model inference and does not need the model weights.
+
+
+To let Ubuntu continue even if the terminal closes, start it under the systemd sleep inhibitor (keep the MSI connected to AC power):
+
+```bash
+cd ~/LEONES
+mkdir -p "$HOME/build/leones-engine-builds"
+nohup systemd-inhibit --what=sleep:idle --why="LEONES sequential engine builds" \
+  bash scripts/build_engines_msi.sh \
+  > "$HOME/build/leones-engine-builds/launcher.log" 2>&1 < /dev/null &
+echo "Build batch PID: $!"
+```
+
+Monitor with:
+
+```bash
+tail -f "$HOME/build/leones-engine-builds/launcher.log"
+```
+
+The inhibitor prevents automatic sleep while the build process is active. Do not power off or disconnect AC. When the process exits, the inhibitor is released. A missing toolchain is reported as `BLOCKED` (and makes the batch exit non-zero); Project Maya alone is an intentional `SKIPPED`.
