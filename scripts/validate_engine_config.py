@@ -26,6 +26,28 @@ def main() -> None:
         fail(f"registry/config IDs differ; missing config={sorted(set(registry_ids)-set(config_ids))}, unregistered config={sorted(set(config_ids)-set(registry_ids))}")
     profile_names = {p.get("name") for p in config.get("profiles", [])}
     by_id = {e["id"]: e for e in registry_entries}
+    for source in registry_entries:
+        eid = source["id"]
+        meta_path = ROOT / "third_party" / "engines" / eid / "SOURCE.json"
+        if not meta_path.is_file():
+            fail(f"{eid}: vendored SOURCE.json is missing")
+        meta = json.loads(meta_path.read_text())
+        commit = meta.get("commit", "")
+        tree = meta.get("git_commit_tree", "")
+        if meta.get("engine_id") != eid or meta.get("repository") != source.get("repository"):
+            fail(f"{eid}: SOURCE.json identity/repository does not match registry")
+        if len(commit) != 40 or any(ch not in "0123456789abcdef" for ch in commit.lower()):
+            fail(f"{eid}: SOURCE.json does not contain a full commit SHA")
+        if len(tree) != 40 or any(ch not in "0123456789abcdef" for ch in tree.lower()):
+            fail(f"{eid}: SOURCE.json does not contain a full Git tree SHA")
+        source_tree = meta.get("source_tree", "")
+        if not source_tree.startswith("source/") or ".." in pathlib.PurePosixPath(source_tree).parts:
+            fail(f"{eid}: invalid source_tree path in SOURCE.json")
+        if not (meta_path.parent / source_tree).is_dir():
+            fail(f"{eid}: vendored source tree is missing")
+        for notice in meta.get("license_files", []):
+            if not (meta_path.parent / source_tree / notice).is_file():
+                fail(f"{eid}: declared license/notice file is missing: {notice}")
     for engine in config_entries:
         eid = engine["id"]
         if not isinstance(engine.get("command"), list) or not engine["command"] or not all(isinstance(x, str) for x in engine["command"]):
@@ -52,7 +74,7 @@ def main() -> None:
     required = {"-ngl", "-cmoe", "--moe-cache-mib", "--cache-ram"}
     if not required.issubset(set(tandem_cfg["command"])):
         fail("Tandem.cpp command is missing its documented MoE/cache flags")
-    print(f"[OK] {len(registry_ids)} registry engines match {len(config_ids)} benchmark adapters; profile and Tandem base checks passed")
+    print(f"[OK] {len(registry_ids)} registry engines match {len(config_ids)} adapters; all source snapshots, license notices, profiles and Tandem base checks passed")
 
 if __name__ == "__main__":
     main()
