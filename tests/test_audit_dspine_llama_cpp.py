@@ -27,12 +27,13 @@ class DSpineAuditTests(unittest.TestCase):
         self.assertFalse(result["checks"]["algorithm_enum"])
         self.assertFalse(result["checks"]["algorithm_name"])
         self.assertFalse(result["checks"]["runtime_implementation"])
+        self.assertFalse(result["checks"]["code_bridge_support"])
 
     def test_all_explicit_markers_are_required(self):
         root = self.make_tree(
             "COMMON_SPECULATIVE_TYPE_DSPINE",
             ' { "draft-dspine", COMMON_SPECULATIVE_TYPE_DSPINE }; '
-            "struct common_speculative_impl_draft_dspine {};",
+            "struct common_speculative_impl_draft_dspine {}; selected_prefix_bridge",
         )
         result = audit(root)
         self.assertEqual(result["status"], "IMPLEMENTATION_MARKERS_PRESENT")
