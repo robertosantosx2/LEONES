@@ -23,6 +23,8 @@ def main():
     ap.add_argument("--compiler",action="append",default=[],help="Compiler version command, repeatable; e.g. rustc --version")
     ap.add_argument("--feature",action="append",default=[])
     ap.add_argument("--backend",default="unknown")
+    ap.add_argument("--patch",action="append",default=[],help="Patch or build-input file whose SHA-256 must be retained; repeatable")
+    ap.add_argument("--base-source-meta",help="SOURCE.json for an exact upstream base dependency, used by patch-based engines")
     ap.add_argument("--output",help="Output JSON path")
     a=ap.parse_args()
     binary=pathlib.Path(a.binary).expanduser().resolve()
@@ -32,10 +34,22 @@ def main():
     out.parent.mkdir(parents=True,exist_ok=True)
     source_meta=ROOT/"third_party"/"engines"/a.engine/"SOURCE.json"
     source=json.loads(source_meta.read_text()) if source_meta.is_file() else None
+    patches=[]
+    for item in a.patch:
+        patch_path=pathlib.Path(item).expanduser().resolve()
+        if not patch_path.is_file(): ap.error(f"patch/build input not found: {patch_path}")
+        patches.append({"path":str(patch_path),"sha256":sha(patch_path),"size_bytes":patch_path.stat().st_size})
+    base_source=None
+    if a.base_source_meta:
+        base_path=pathlib.Path(a.base_source_meta).expanduser()
+        if not base_path.is_absolute(): base_path=ROOT/base_path
+        if not base_path.is_file(): ap.error(f"base SOURCE.json not found: {base_path}")
+        base_source=json.loads(base_path.read_text())
     data={
       "schema_version":1,"captured_at":datetime.datetime.now(datetime.timezone.utc).isoformat(),
-      "engine_id":a.engine,"source":source,"binary":{"path":str(binary),"sha256":sha(binary),"size_bytes":binary.stat().st_size},
-      "build":{"command":a.build_command,"log_path":str(log),"log_sha256":sha(log),"features":a.feature,"backend":a.backend},
+      "engine_id":a.engine,"source":source,"base_source":base_source,
+      "binary":{"path":str(binary),"sha256":sha(binary),"size_bytes":binary.stat().st_size},
+      "build":{"command":a.build_command,"log_path":str(log),"log_sha256":sha(log),"features":a.feature,"backend":a.backend,"patches":patches},
       "toolchain":{"platform":platform.platform(),"python":platform.python_version(),"compilers":[command_version(x.split()) for x in a.compiler]},
       "environment":{k:("<redacted>" if re.search(r"(TOKEN|KEY|SECRET|PASSWORD)",k,re.I) else v) for k,v in os.environ.items() if k in ("PATH","LD_LIBRARY_PATH","CC","CXX","CFLAGS","CXXFLAGS") or k.startswith(("CUDA","HIP","TENSORFOLD","LLAMA","TF_","RUST","CMAKE"))},
     }
