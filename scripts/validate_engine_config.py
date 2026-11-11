@@ -26,6 +26,25 @@ def main() -> None:
         fail(f"registry/config IDs differ; missing config={sorted(set(registry_ids)-set(config_ids))}, unregistered config={sorted(set(config_ids)-set(registry_ids))}")
     profile_names = {p.get("name") for p in config.get("profiles", [])}
     by_id = {e["id"]: e for e in registry_entries}
+    model_registry_path = ROOT / "configs" / "models.registry.json"
+    if not model_registry_path.is_file():
+        fail("configs/models.registry.json is missing")
+    model_registry = json.loads(model_registry_path.read_text())
+    model_entries = model_registry.get("models", [])
+    model_ids = [m.get("id") for m in model_entries]
+    if len(model_ids) != len(set(model_ids)) or None in model_ids:
+        fail("model registry IDs must be present and unique")
+    for model in model_entries:
+        if model.get("engine_id") not in by_id:
+            fail(f"{model.get('id')}: references an unknown engine")
+        if not model.get("license") or not model.get("setup_id"):
+            fail(f"{model.get('id')}: model license and setup_id are required")
+        if not isinstance(model.get("download_gb"), (int, float)) or not isinstance(model.get("minimum_system_ram_gb"), (int, float)):
+            fail(f"{model.get('id')}: download size and minimum system RAM must be numeric")
+    maya = by_id.get("project-maya")
+    maya_models = {m["id"] for m in model_entries if m.get("engine_id") == "project-maya"}
+    if not maya or maya_models != set(maya.get("supported_models", [])):
+        fail("Project Maya model registry does not match the engine's supported model IDs")
     for source in registry_entries:
         eid = source["id"]
         meta_path = ROOT / "third_party" / "engines" / eid / "SOURCE.json"
@@ -89,7 +108,7 @@ def main() -> None:
         fail("Tandem.cpp command is missing its documented MoE/cache flags")
     if tandem_cfg.get("base_source_meta") != f"third_party/engines/{base_id}/SOURCE.json" or not tandem_cfg.get("require_patch_evidence"):
         fail("Tandem.cpp must require its exact base SOURCE.json and patch-hash evidence")
-    print(f"[OK] {len(registry_ids)} registry engines, source snapshots, vendor report, license notices, adapters, profiles and Tandem base checks passed")
+    print(f"[OK] {len(registry_ids)} engine sources, {len(model_ids)} model records, source snapshots, vendor report, license notices, adapters, profiles and Tandem base checks passed")
 
 if __name__ == "__main__":
     main()
