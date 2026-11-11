@@ -64,14 +64,14 @@ El fork implementa conversión HF→GGUF en `conversion/qwen.py` (`DFlashModel._
 
 Ejemplo: `python convert_hf_to_gguf.py ./models/Qwen3-8B-DSpine-b16 --target-model-dir ./models/Qwen3-8B --outtype bf16 --outfile Qwen3-8B-DSpine-b16.gguf`. LEONES incluye `scripts/prepare_qwen3_8b_dspine_gguf.sh` para convertir y verificar los tensores `dspine_*`. El drafter no es autónomo: necesita su modelo objetivo correspondiente. No intercambiar parejas entre familias.
 
-## Estado para MSI Thin 15 B12UC
+## Comando de referencia del modelo GGUF comunitario\n\nLa tarjeta de modelo de Qwen3.8-27B documenta el uso de `--spec-type draft-dflash`, `--spec-draft-n-max 15`, `-md` para el drafter y `--spec-draft-ngl` para su offload. Su ejemplo usa una RTX 3090 de 24 GiB y no debe copiarse literalmente al MSI. El límite de 15 tokens corresponde al bloque entrenado de 16; en GPUs pequeñas se debe empezar con un valor inferior y medir.\n\n## Estado para MSI Thin 15 B12UC
 
 Perfil LEONES: i7-12650H, RTX 3050 Laptop 4 GiB (SM 8.6), 14 GiB RAM, Ubuntu.
 
 - La pareja Qwen3.8-27B no es una candidata razonable para 4 GiB VRAM y 14 GiB RAM.
 - La pareja Qwen3-8B es la candidata más pequeña oficialmente publicada, y el fork permite convertir el drafter Safetensors a GGUF. El target de 8B también requiere planificación de memoria.
 - El fork tiene una build CPU y CUDA, pero la compilación CPU no demuestra que la ruta CUDA ni la pareja de modelos funcionen.
-- No descargar ni ejecutar todavía. Primero ejecutar CI, revisar las instrucciones de uso exactas del GGUF y calcular el footprint real de los ficheros elegidos.
+- LEONES incluye `scripts/dspine-msi-preflight.sh`, un inventario de solo lectura que no descarga, compila ni carga modelos.\n- No descargar ni ejecutar todavía. Primero ejecutar CI y el preflight, revisar el footprint real de los ficheros elegidos y decidir offload por separado para target y drafter.
 - La validación MSI deberá ser aislada, con build en directorio separado, modelo/contexto pequeño, límites de memoria, rollback y medición frente a baseline sin speculative.
 
 ## Estados de evidencia
