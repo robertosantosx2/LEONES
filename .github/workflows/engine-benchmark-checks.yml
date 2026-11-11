@@ -28,5 +28,7 @@ jobs:
           python -m json.tool configs/engine-comparison.example.json >/dev/null
           python scripts/validate_engine_config.py
           python -m json.tool configs/engines.registry.json >/dev/null
+      - name: Run benchmark unit tests
+        run: python -m unittest discover -s tests -p 'test_engine_comparison.py' -v
       - name: Validate shell wrapper
         run: bash -n scripts/import_kinetic.sh
