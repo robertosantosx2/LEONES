@@ -46,7 +46,7 @@ def main():
         if not url:
             report["engines"].append({"id":eid,"status":"SOURCE_URL_REQUIRED","detail":e.get("notes")})
             failures+=1; continue
-        base=DEST/eid; source=base/"source"
+        base=DEST/eid
         base.mkdir(parents=True,exist_ok=True)
         try:
             ref=overrides.get(eid,e.get("default_ref") or "HEAD")
@@ -56,19 +56,25 @@ def main():
                 git(["fetch","--depth=1","origin",ref],cwd=checkout)
                 git(["checkout","--detach","FETCH_HEAD"],cwd=checkout)
                 commit=git(["rev-parse","HEAD"],cwd=checkout)
-                submodules=git(["submodule","status","--recursive"],cwd=checkout,check=False)
                 subproc=subprocess.run(["git","submodule","update","--init","--recursive"],cwd=checkout,text=True,capture_output=True)
                 if subproc.returncode:
                     raise RuntimeError("submodule update failed: "+subproc.stderr.strip())
+                submodules=git(["submodule","status","--recursive"],cwd=checkout,check=False)
                 lfs="not-installed"
                 if shutil.which("git-lfs"):
-                    lfs=git(["lfs","pull"],cwd=checkout,check=False) or "git-lfs pull completed"
-                copy_tree(checkout,source)
+                    lfsproc=subprocess.run(["git","lfs","pull"],cwd=checkout,text=True,capture_output=True)
+                    if lfsproc.returncode:
+                        raise RuntimeError("git lfs pull failed: "+lfsproc.stderr.strip())
+                    lfs="git-lfs pull completed"
+                source=base/"source"/commit
+                if not source.exists():
+                    source.parent.mkdir(parents=True,exist_ok=True)
+                    copy_tree(checkout,source)
                 # Capture exact build-relevant metadata and submodule revisions.
                 meta={
                   "engine_id":eid,"display_name":e.get("display_name"),"repository":url,
                   "ref_requested":ref,"commit":commit,"vendored_at":datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                  "source_tree":"source",
+                  "source_tree":f"source/{commit}",
                   "submodule_status":submodules,"git_lfs":lfs,
                   "license_files":[p.name for p in source.iterdir() if p.is_file() and p.name.upper().startswith(("LICENSE","COPYING","NOTICE","PATENTS","TRADEMARKS"))],
                   "source_status":"PINNED_SNAPSHOT","git_commit_tree":git(["rev-parse","HEAD^{tree}"],cwd=checkout)
