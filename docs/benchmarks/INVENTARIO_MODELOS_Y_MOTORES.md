@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (actualizado tras fusionar PR #112)  
+**Última consolidación:** 2026-11-12 (actualizado tras incorporar Uzu como evaluación documental en Experimental; PR #119)  
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -24,7 +24,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Ollama** | Incluido en matriz de runtimes; no instalado en el MSI según inventario previo | Sin ejecución local validada | No contabilizar como motor probado en este equipo. |
 | **Transformers, vLLM, SGLang, KTransformers, Mistral.rs** | Evaluación de soporte / planificación | Varias familias candidatas | Sin benchmark local normalizado acreditado en este inventario. |
 | **ThumbLLM / llama.cpp CPU (Ornith 1.5)** | Paquete Release 1 incorporado a LEONES; reproducción Linux preparada, pendiente de ejecutar | Ornith-1.5-9B-OBLITERATED Q4_K_M | El release original está orientado a Windows. Se añadieron receta y scripts Ubuntu para compilar llama.cpp b10603 (c060ca974) en CPU y servir en puerto 18088. Descarga, hash, compilación e inferencia en el MSI aún no verificados; no contabilizar como motor/modelo ejecutado. |
-| **MLX** | Formato/artefacto usado por TensorFold | Qwen3.5-2B/4B MLX-4bit | No implica ejecución nativa de MLX en Ubuntu; TensorFold cargó artefactos MLX mediante backend CUDA. |
+| **Uzu** | Evaluación documental cerrada; `RESEARCH_ONLY / NOT VERIFIED` | Qwen3.5-4B, Qwen3.5 MoE (compatibilidad investigada, no validada) | Integrado en `Experimental` mediante PR #119. No se compila, instala ni ejecuta en el MSI dentro del alcance acordado. Sin soporte Ubuntu/CUDA, GGUF ni Qwen MoE demostrado; no contabilizar como motor probado. Ver [evaluación Uzu](../../experimental/uzu/README.md). |\n| **MLX** | Formato/artefacto usado por TensorFold | Qwen3.5-2B/4B MLX-4bit | No implica ejecución nativa de MLX en Ubuntu; TensorFold cargó artefactos MLX mediante backend CUDA. |
 
 ## 2. Modelos con inferencia funcional y/o medición
 
@@ -61,7 +61,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **YASAKANI** | Prueba exploratoria | Investigación y preparación solicitadas | Sin resultado reproducible consolidado. |
 | **Colibri / Qwen3.6 CUDA** | Auditoría de código | Parser de colocación, límites de componentes/segmentos y buffers | No atribuir rendimiento de inferencia a esta auditoría. |
 | **Ornith-1.5-9B-OBLITERATED** | ThumbLLM Release 1 / llama.cpp CPU · Ubuntu MSI | Paquete upstream incorporado a rama experimental de LEONES; documentación de reproducción y scripts de setup/serve preparados. GGUF Q4_K_M, SHA-256 de referencia 88ce99bb696fbc921edc4f995c4beb12a66bf94319d00bfd5f44265d02fa6dfb; llama.cpp b10603, commit c060ca974; configuración de referencia: contexto 65.536, batch 2.048, ubatch 512, KV Q4_0, 8 hilos decode y 16 batch. | **Preparación, no ejecución local acreditada.** No hay todavía log de descarga, compilación, carga del GGUF ni generación en el MSI; no registrar tok/s. La receta de upstream cita aproximadamente 13,03 tok/s de generación y 1.302 tok/s de prompt en Ryzen 7 7840HS/Windows 11, cifras de referencia externa no reproducidas ni comparables con el MSI. |
-| **Mistral.rs, vLLM, SGLang, KTransformers** | Evaluación de runtimes | Instalación/soporte/requisitos estudiados | Sin benchmark local normalizado en este inventario. |
+| **Uzu inference runtime** | Uzu + Lalamo | Evaluación de fuentes públicas, plataforma Linux/Ubuntu, backend CUDA, formatos y compatibilidad potencial con Qwen3.5-4B y Qwen MoE. Registro definitivo en `Experimental`, PR #119 fusionado. | `RESEARCH_ONLY / NOT VERIFIED`; no se ejecutará en el laboratorio. No hay compilación, inferencia ni benchmark local acreditados. [Documento experimental](../../experimental/uzu/README.md). |\n| **Mistral.rs, vLLM, SGLang, KTransformers** | Evaluación de runtimes | Instalación/soporte/requisitos estudiados | Sin benchmark local normalizado en este inventario. |
 
 ## 4. Informes y artefactos primarios
 
