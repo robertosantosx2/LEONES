@@ -124,11 +124,9 @@ class RequestSampler:
         for n in names:
             a=first.get("disks",{}).get(n,{}); b=last.get("disks",{}).get(n,{})
             disk[n]={"read_bytes_delta":max(0,b.get("sectors_read",0)-a.get("sectors_read",0))*512,"write_bytes_delta":max(0,b.get("sectors_written",0)-a.get("sectors_written",0))*512,"read_ops_delta":max(0,b.get("reads",0)-a.get("reads",0)),"write_ops_delta":max(0,b.get("writes",0)-a.get("writes",0)),"io_ms_delta":max(0,b.get("io_ms",0)-a.get("io_ms",0))}
-        swapin=swapout=None
-        try:
-            vm=dict(line.split() for line in pathlib.Path("/proc/vmstat").read_text().splitlines() if len(line.split())==2)
-            swapin=int(vm.get("pswpin",0)); swapout=int(vm.get("pswpout",0))
-        except Exception: pass
+        va=first.get("vmstat",{}); vb=last.get("vmstat",{})
+        swapin_delta=max(0,vb.get("pswpin",0)-va.get("pswpin",0))*os.sysconf("SC_PAGE_SIZE")
+        swapout_delta=max(0,vb.get("pswpout",0)-va.get("pswpout",0))*os.sysconf("SC_PAGE_SIZE")
         gpu=[]
         for s in self.samples:
             gpu.extend(s.get("gpu",{}).get("gpus",[]))
