@@ -138,6 +138,82 @@ Fuente canónica: [`docs/benchmarks/INVENTARIO_MODELOS_Y_MOTORES.md`](../docs/be
 
 ---
 
+
+### 4.3 Dossier experimental: Qwen3-30B-A3B-Instruct-2507 IQ3_XXS en el MSI
+
+**Identidad del modelo y del artefacto.** El nombre exacto probado es **Qwen3-30B-A3B-Instruct-2507**, arquitectura Qwen3MoE, aproximadamente **30,53 B parámetros totales**, **8 de 128 expertos activos** por token. Cuantización **GGUF IQ3_XXS, 3,0625 bpw**, archivo de aproximadamente **11,37 GiB**. Artefacto: `Qwen_Qwen3-30B-A3B-Instruct-2507-IQ3_XXS.gguf`; SHA-256 `292daa2b66aec59d075532d0bcf05010bf4a3b012a4216c28dc021b73d1e9ab4`.
+
+**Plataforma común:** MSI Thin 15 B12UC, Intel Core i7-12650H, 14 GiB de RAM visible, NVIDIA RTX 3050 Laptop 4 GiB (sm_86), Ubuntu, driver 580.178.04, CUDA runtime 13.0. Las campañas usan builds, protocolos y configuraciones diferentes; sus velocidades no se deben combinar como una única clasificación.
+
+#### A. Head-to-head llama.cpp CUDA frente a RustingStrata — 21-10-2026
+
+- llama.cpp: `0.7.0-dev`, build 11740, commit `6fa4f6cd3`.
+- RustingStrata: `1.0.1`.
+- Prompt: «Responde brevemente en español: ¿qué es la inferencia local?».
+- Seis ejecuciones por motor (una inicial + cinco repeticiones); los 12 códigos de salida registrados son 0.
+- Configuración llama.cpp: `--n-gpu-layers 14 --fit off --ctx-size 1024 --batch-size 64 --ubatch-size 32 --threads 8 --predict 128 --temp 0 --seed 42`.
+- Configuración RustingStrata: `strata generate --gpu --ctx 1024 --threads 8 -n 128 --temp 0`; caché de ejecución aislada con `XDG_CACHE_HOME`.
+- El script reproducible y los resultados por repetición están en el directorio de artefactos enlazado abajo.
+
+| Motor | Ejecución | Prefill (tok/s) | Tokens generados | Decode (tok/s) | Observaciones |
+|---|---:|---:|---:|---:|---|
+| llama.cpp | 1 | 8,56 | 73 | 1,9454 | 24 tokens de prompt; EOS |
+| llama.cpp | 2 | 6,79 | 73 | 1,8594 | 24 tokens de prompt; EOS |
+| llama.cpp | 3 | 5,04 | 73 | 2,2902 | 24 tokens de prompt; EOS |
+| llama.cpp | 4 | 9,08 | 73 | 2,0217 | 24 tokens de prompt; EOS |
+| llama.cpp | 5 | 10,97 | 73 | 1,9474 | 24 tokens de prompt; EOS |
+| llama.cpp | 6 | 10,83 | 73 | 2,0370 | 24 tokens de prompt; EOS |
+| RustingStrata | 1 | 11,71 | 128 | 14,34 | 16 tokens de prompt; 30,8 % hit, 38.272 misses, 128 swaps |
+| RustingStrata | 2 | 19,67 | 98 | 29,94 | 16 tokens; 79,0 % hit, 9.178 misses, 16 swaps |
+| RustingStrata | 3 | 20,03 | 128 | 30,08 | 16 tokens; 77,9 % hit, 12.194 misses, 1 swap |
+| RustingStrata | 4 | 18,91 | 104 | 30,90 | 16 tokens; 80,2 % hit, 9.125 misses, 1 swap |
+| RustingStrata | 5 | 18,96 | 128 | 31,89 | 16 tokens; 78,6 % hit, 11.856 misses, 1 swap |
+| RustingStrata | 6 | 17,98 | 128 | 29,33 | 16 tokens; 78,8 % hit, 11.716 misses, 1 swap |
+
+**Resumen estadístico:** llama.cpp tuvo mediana de decode **1,985 tok/s**; RustingStrata, mediana **30,01 tok/s** (media aproximada 27,75 tok/s, muy afectada por la primera ejecución de calentamiento, 14,34 tok/s). En Strata, excluyendo esa primera ejecución, el decode se situó entre 29,33 y 31,89 tok/s. La tasa de acierto de expertos de las ejecuciones 2–6 quedó entre 77,9 % y 80,2 %, con 1–16 swaps; la primera ejecución registró solo 30,8 % y 128 swaps. El cálculo de medianas no elimina las diferencias metodológicas: llama.cpp procesó 24 tokens de prompt y terminó por EOS con 73 tokens; Strata procesó 16 tokens y generó longitudes variables (98–128). Por ello es una comparación práctica del comportamiento de los dos motores con ese script, no un benchmark perfectamente equivalente.
+
+#### B. Sweep nativo de llama-bench — 22-10-2026
+
+Campaña separada con `llama-bench`, mismo GGUF y build llama.cpp b11740 / commit `6fa4f6cd3`, ocho hilos, PP128 y TG32, tres repeticiones por ajuste. Se variaron las capas descargadas a GPU: `--n-gpu-layers 0/1/8`. Las nueve ejecuciones finalizaron con código 0.
+
+| N capas GPU | PP128 media | PP128 mediana | PP128 desviación estándar | TG32 media | TG32 mediana |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 22,553 | 24,420 | 8,093 | 1,487 | 1,450 |
+| 1 | **74,473** | **76,250** | 16,377 | 1,660 | 1,440 |
+| 8 | 34,957 | 26,380 | 30,746 | **1,827** | **1,880** |
+
+- `ngl=1` obtuvo la mejor mediana de prefill PP128.
+- `ngl=8` tuvo una dispersión muy alta en PP128 (9,41–69,08 tok/s); no se debe interpretar su media como rendimiento estable.
+- Decode TG32 estuvo aproximadamente entre 1,40 y 2,14 tok/s.
+- En logs de carga se observaron capas 35–48 asignadas a CUDA0, buffer de modelo CUDA de 3.290,68 MiB, KV de 26 MiB y compute de 86,25 MiB. Se registró un warning de tamaño del compute buffer CUDA_Host distinto de la expectativa; no fue fatal en esas ejecuciones y no se le atribuye causalidad sin prueba.
+- Una instantánea posterior de `nvidia-smi` no representa el pico de VRAM durante la ejecución. En pruebas históricas con llama-server también se comunicó Xid 31; conviene vigilar errores del driver y telemetría durante futuras repeticiones.
+
+Este sweep no es la misma campaña que el head-to-head de seis ejecuciones ni que la prueba de Strata. Su benchmark de generación es TG32, no 73–128 tokens generados en el head-to-head.
+
+#### C. Picchio v0.8.0 — INT4 CPU streaming y caché de expertos — 07/08-11-2026
+
+Esta es otra conversión del mismo modelo base, no el GGUF IQ3_XXS: **Qwen3-30B-A3B INT4 en safetensors**, conversión Picchio local de unos 20,6 GB en 16 shards, 25.013 tensores. La RTX 3050 no participó en la inferencia (rutas GPU desactivadas).
+
+- Primera inferencia end-to-end: contexto 512, 128 tokens, sin reasoning, 4 hilos CPU + 4 hilos I/O, caché experta 2 GiB; carga 2,8 s, generación 128 tokens en 79,1 s, **1,6 tok/s**, RSS final 6,32 GB, cache hit 59,7 %, 21.072 lecturas de disco. Respuesta coherente pero truncada al límite de 128 tokens.
+- Campaña posterior con caché de expertos 4 GiB: CPU-only, prompt/contexto y semilla controlados, 128 tokens. En la secuencia 4–8–8–4, medias: **1,220 tok/s con 4 hilos** y **1,196 tok/s con 8 hilos**; 8 hilos tardaron 1,95 % más. Diferencia pequeña, afectada potencialmente por temperatura (se observó 96 °C antes de una ejecución) y variabilidad; no demuestra que 4 hilos sea universalmente mejor.
+- La topología SMBIOS mostraba dos módulos DDR4-3200 de 8 GB en controladores/canales distintos, compatible con dual-channel. STREAM Triad alcanzó 34,60 GB/s con 16 hilos y 32,24 GB/s con 4. No se hizo una comparación single-channel controlada: no se puede afirmar que dual-channel duplique el rendimiento ni que la RAM sea el cuello de botella demostrado.
+- El hot-store persistente `.picchio_usage` registra/restaura estadísticas de uso; la inspección de código no demostró que estas estadísticas seleccionen o precarguen expertos calientes. No atribuir aceleración a esa función sin una prueba A/B.
+
+#### D. Otros intentos y límites de compatibilidad
+
+- En una prueba CPU de RustingStrata comunicada posteriormente, el modelo se ejecutó con prefill/decode de 128/32 tokens a aproximadamente **0,4 tok/s**; debe mantenerse separada del head-to-head CUDA y no usarse como su cifra representativa.
+- En octubre de 2026, TensorFold 1.1.1 no declaraba la familia Qwen3MoE / `qwen3moe`; no se debe presentar el modelo como ejecutado con TensorFold en esa versión.
+- Picchio, RustingStrata, llama.cpp y llama-bench representan rutas distintas: GGUF IQ3_XXS frente a conversión INT4 safetensors, CPU-only frente a híbrido CPU/GPU y distintas longitudes de prompt/salida. No comparar directamente sus tok/s como si fueran un único benchmark controlado.
+
+#### E. Evidencias, scripts y logs originales
+
+1. **Head-to-head, paquete bruto limpio:** [directorio de artefactos](../docs/benchmarks/artifacts/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/), [README](../docs/benchmarks/artifacts/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/README.md), [script reproducible](../docs/benchmarks/artifacts/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/benchmark-strata-vs-llamacpp.sh), [CSV por ejecución](../docs/benchmarks/artifacts/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/results-summary.csv), [extracto de consola](../docs/benchmarks/artifacts/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/extracted-console-evidence.txt), [manifiesto SHA-256](../docs/benchmarks/artifacts/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/raw-archive-manifest.md) y [archivo tar.gz de los 36 ficheros originales](../docs/benchmarks/artifacts/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/head-to-head-20261021-raw-no-cache.tar.gz). SHA-256 del tar.gz: `95496a42dd5816908d03fc373d8ef2b6f6630f84d2fd4c373287d6dbcdad6fdb` (273.761 bytes). Contiene 12 `rep-*.log`, 12 `time-*.txt` y 12 `rc-*.txt` (seis por motor); todos los códigos de salida son cero.
+2. **Copia de logs individuales versionados:** [llama.cpp: seis logs rep, seis time y seis rc](../docs/reports/artifacts/qwen3-30b-a3b-iq3-xxs-head-to-head-20261021/llama/) y [RustingStrata: seis logs rep, seis time y seis rc](../docs/reports/artifacts/qwen3-30b-a3b-iq3-xxs-head-to-head-20261021/strata/), con [manifiesto de checksums](../docs/reports/artifacts/qwen3-30b-a3b-iq3-xxs-head-to-head-20261021/SHA256SUMS.txt). Los logs de llama.cpp incluyen salida verbose extensa; los de Strata registran throughput, hit rate, misses y swaps.
+3. **Sweep llama-bench / campaña octubre:** [informe reproducible en español](../docs/reports/report-inferencia-dense_Octubre26.md), [informe en inglés](../docs/reports/report-inference-dense-october-2026.md) y [paquete de evidencias de la campaña](../docs/reports/artifacts/inferencia-rtx3050-4gb-oct26-collection-20261022-123939.tar.gz). El paquete contiene los ficheros recopilados de la campaña; no sustituye los 36 logs head-to-head anteriores.
+4. **Picchio / memoria:** [primera ejecución Qwen3-30B-A3B en MSI](../docs/subprojects/REDIL-IA-distribuida/PICCHIO-QWEN3-30B-A3B-MSI-2026-11-07.md) y [estudio de RAM dual-channel y escalado CPU](../docs/reports/picchio-ram-dual-channel-msi-2026-11-08.md). Los logs originales de Picchio siguen descritos en esos informes; no todos los archivos locales están publicados como logs individuales en GitHub.
+
+**Conclusión de LEONES:** el resultado más destacado del GGUF IQ3_XXS en este portátil fue RustingStrata CUDA híbrido, con ~30 tok/s de decode después del calentamiento, frente a ~2 tok/s en el head-to-head llama.cpp con 14 capas GPU. El sweep nativo de llama-bench confirma que una descarga pequeña (`ngl=1`) favoreció el prefill, pero no elevó de forma comparable la generación. Picchio demuestra una ruta CPU streaming viable con INT4, alrededor de 1,2–1,6 tok/s en sus pruebas documentadas. Son resultados válidos para sus protocolos concretos, no una comparación universal entre motores.
+
 ## 5. Tabla de lanzamientos MoE relevantes (oct 2025 – nov 2026)
 
 Ordenados por fecha aproximada (más recientes primero). Memorias teóricas para Q4_K_M en llama.cpp.
