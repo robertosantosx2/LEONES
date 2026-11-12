@@ -17,7 +17,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **TensorFold CUDA — Ripple** | No soportado por el binario local 1.2.0; implementación upstream experimental Metal | Ripple-65B-Preview / NVFP4 / DFlash2 | `capabilities --json` del binario local no declara familia `ricursive`/`ripple`. PR #2231 añade Ripple para Metal; PR #2260 añade DFlash2 sobre Metal. No hay ruta CUDA validada. No descargar ni intentar cargar en el MSI. |
 | **RustingStrata CUDA** | Ejecutado y medido en el MSI; evaluación ampliada de compatibilidad upstream | Qwen3.5-4B, Qwen3-30B-A3B (ejecuciones locales); catálogo upstream adicional: Qwen3.5-2B/9B, Qwen3.6-35B-A3B, Qwen3.8-27B y Qwen3.8-Flash-Next | Las ejecuciones locales acreditadas siguen siendo las indicadas; las cifras publicadas por RustingStrata en RTX 3060 12 GB / 32 GB RAM no son resultados del MSI. La RTX 3050 sm_86 pertenece a la clase Ampere admitida por el código CUDA, pero no aparece como tarjeta probada en su matriz oficial. Ver §3.5. |
 | **Tandem / llama.cpp CPU-MoE** | Ejecutado y medido | Qwen3.5-35B-A3B IQ2_XXS | Ensayo CPU-MoE con RTX 3050; decode 35,6 tok/s en la prueba no-thinking registrada. Evidencia bruta pendiente de consolidación completa en LEONES. |
-| **Pithos** | Ejecutado y medido | LFM3-1.7B | Campañas del 6 y 7 de noviembre; CSV y log preservados en artifacts/pithos-0.5.1-2026-11-07/. |
+| **Pithos 0.5.1 / 0.6.1** | Ejecutado y medido; Pandora Web documentada, instalación web 0.6.1 pendiente | LFM3-1.7B; LFM2.5-8B-A1B Q4_K_M y Q4_0 | Campañas 0.5.1 del 6–7 de noviembre y validación 0.6.1 del 9–10 de noviembre. En 0.6.1 se midieron CPU, OpenCL y Vulkan en RTX 3050; OpenCL requiere `TMPDIR` fuera de `/tmp` por `EDQUOT`. Benchmark 512/128: Q4_K_M OpenCL caliente PP/TG 292,39/72,54 tok/s; Vulkan 36,50/30,65. Pandora está integrada según el proyecto, pero el arranque web de 0.6.1 aún no ha sido confirmado en este equipo. Ver informe y CSV enlazados en §4. |
 | **Kinetic** | Compilado / pruebas de ejecución en curso | LFM3-1.7B GGUF; Qwen3.5-35B-A3B IQ2_XXS seleccionado para prueba | Se inspeccionaron versiones, binarios y catálogo; se prepararon y ejecutaron pruebas. No publicar velocidad sin log de benchmark completo y reproducible. |
 | **Colibri** | Instalado / auditado técnicamente | Compatibilidad Qwen3.6 CUDA | Auditoría del parser de colocación y configuración CUDA. Compilación o validación de código no equivale a inferencia medida. |
 | **YASAKANI** | Prueba exploratoria solicitada | Modelo/backend/resultados por consolidar | Mantener como experimento hasta que exista log que demuestre carga e inferencia. |
@@ -88,6 +88,87 @@ La compatibilidad de la familia **LiquidAI LFM3** quedó reunida en la versión 
 Referencias: [notas oficiales de llama.cpp v0.8.0](https://github.com/ggml-org/llama.cpp/releases/tag/v0.8.0), [PR #31252 (texto/visión)](https://github.com/ggml-org/llama.cpp/pull/31252), [PR #31257 (audio/omni)](https://github.com/ggml-org/llama.cpp/pull/31257) y [PR #31275 (d1)](https://github.com/ggml-org/llama.cpp/pull/31275). El pre-release **b11938** ya incluía LFM3-1.7B y LFM3-VL-2B, pero no equivale a la versión etiquetada v0.8.0 que reúne la familia.
 
 **Implicación para LEONES:** el build histórico local **llama.cpp 0.7.0-dev / b11740** es anterior a esta incorporación. Para probar LFM3 debe usarse un tag/commit posterior que incluya el soporte correspondiente y registrarse el backend, GGUF y componentes auxiliares requeridos por cada modalidad (por ejemplo, mmproj/audio). La disponibilidad upstream no demuestra que todos los modelos/modos se hayan ejecutado en el MSI; los resultados locales acreditados siguen siendo los recogidos en las tablas de pruebas.
+
+## 1.2 Pithos 0.6.1 — LFM2.5-8B-A1B en RTX 3050 (9–10-11-2026)
+
+**Equipo:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · NVIDIA driver 580.178.04 · CUDA runtime 13.0.  
+**Motor:** Pithos 0.6.1 Linux x86-64 · modelo principal `LFM2.5-8B-A1B-Q4_K_M.gguf`; contraste Q4_0.  
+**Controladores evaluados:** CPU, OpenCL NVIDIA (dispositivo 1) y Vulkan NVIDIA (dispositivo 1). Velocidades en tokens/s; prefill = procesamiento del prompt y TG/inferencia = generación.
+
+### Incidencia de OpenCL y solución
+
+La inicialización OpenCL fallaba porque NVVM intentaba crear `/tmp/dep-*.d` y el sistema devolvía `EDQUOT` (cuota de usuario excedida). No era falta de espacio en el SSD. El `/tmp` de esta sesión era tmpfs con cuotas. Se validó el workaround local:
+
+```bash
+mkdir -p "$HOME/.cache/pithos-tmp"
+TMPDIR="$HOME/.cache/pithos-tmp" ./pithos ...
+```
+
+Con ese `TMPDIR`, OpenCL inicializó, asignó expertos a la RTX 3050 y completó inferencia. No se modificaron globalmente cuotas ni permisos de `/tmp`.
+
+### Resultados Q4_K_M — generación corta
+
+Mismo prompt, contexto 512, 8 threads, batch 32, reasoning desactivado, seed 42 y 64 tokens de generación; tres repeticiones por backend.
+
+| Controlador / dispositivo | Prefill medio (tok/s) | Inferencia media (tok/s) | Repeticiones prefill | Repeticiones inferencia |
+|---|---:|---:|---|---|
+| CPU · Intel Core i7-12650H | 4,63 | 4,79 | 5,0 · 4,7 · 4,2 | 5,36 · 4,51 · 4,50 |
+| OpenCL · NVIDIA RTX 3050 | 4,20 | 13,77 | 3,7 · 4,0 · 4,9 | 10,24 · 15,00 · 16,07 |
+| Vulkan · NVIDIA RTX 3050 | 5,87 | 9,10 | 5,7 · 4,5 · 7,4 | 12,11 · 7,51 · 7,68 |
+
+Estas pruebas cortas no deben mezclarse con el benchmark 512/128.
+
+### Benchmark Q4_K_M `--bench 512,128`
+
+Misma sesión, modelo y RTX 3050; una ejecución por backend y estado de caché. OpenCL usó 284 slots de expertos (≈1,89 GB; 40% de expertos) y ≈0,55 GB de capas densas. Vulkan descargó 67 matrices (≈471 MB) y ejecutó los expertos en CPU; por tanto, no representa el mismo reparto de trabajo.
+
+| Controlador / GPU | Estado | Prefill PP512 (tok/s) | Inferencia TG128 (tok/s) | Working set |
+|---|---|---:|---:|---:|
+| OpenCL · NVIDIA RTX 3050 | Primera pasada | 102,33 | 46,66 | 2,59 / 2,72 GB |
+| OpenCL · NVIDIA RTX 3050 | Caliente | **292,39** | **72,54** | 2,62 / 2,79 GB |
+| Vulkan · NVIDIA RTX 3050 | Primera pasada | 40,90 | 27,13 | 3,38 / 3,34 GB |
+| Vulkan · NVIDIA RTX 3050 | Caliente | 36,50 | 30,65 | 3,30 / 3,30 GB |
+
+En la pasada caliente, OpenCL fue ≈8,01× más rápido en prefill y ≈2,37× en generación que Vulkan. Es una comparación de una sola ejecución por condición, no una estimación estadística. El perfil confirma ejecución GPU de expertos MoE en OpenCL (≈53 expertos/token en generación caliente); Vulkan mantuvo el cómputo de expertos en CPU. Los page faults son contadores reportados por Pithos y no deben interpretarse como bytes leídos directamente del SSD.
+
+### Contraste Q4_0 y pruebas breves posteriores
+
+| Modelo / prueba | Controlador y dispositivo efectivo | Prefill (tok/s) | Inferencia (tok/s) | Nota |
+|---|---|---:|---:|---|
+| Q4_0 · generación corta | CPU · Intel Core i7-12650H | 2,50 | 8,21 | CPU |
+| Q4_0 · generación corta | OpenCL solicitado · fallback CPU | 6,90 | 7,82 | Formatos de expertos no soportados; cero expertos GPU |
+| Q4_0 · generación corta | Vulkan · NVIDIA RTX 3050 | 8,70 | 33,42 | 1 matriz / ≈219 MB en GPU; matmuls |
+| Q4_K_M · smoke test, 8 tokens | OpenCL · NVIDIA RTX 3050 | 3,50 | 1,33 | Prompt 11 tokens; comprobación corta, no benchmark |
+| Q4_K_M · generación 16 tokens | OpenCL · NVIDIA RTX 3050 | 4,20 | 5,51 | Prompt 22 tokens; 1.465 ejecuciones de expertos GPU |
+
+Las pruebas Q4_0 no son comparables directamente con Q4_K_M. Tampoco deben compararse directamente smoke test y generación de 16 tokens con la campaña de 64 tokens o el benchmark 512/128.
+
+### Fallo inducido y recuperación
+
+Con `PITHOS_CL_FAIL=3`, el motor detectó el error OpenCL, desactivó el uso posterior de GPU e informó que intentaría continuar en CPU; sin embargo, perdió el contexto, detuvo la respuesta y terminó con código 1. **No se acredita recuperación funcional CPU desde una sesión OpenCL fallida.** La ejecución interactiva CPU independiente sí funcionó (254 tokens; ≈5,09 tok/s), pero no demuestra handoff desde OpenCL.
+
+### Pandora / interfaz web
+
+Pithos documenta Pandora como interfaz web integrada y el modo servidor mediante `--server`, con apertura del navegador mediante `--open`; la receta propuesta para este entorno es usar el modelo Q4_K_M, OpenCL dispositivo 1 y `TMPDIR="$HOME/.cache/pithos-tmp"`, escuchando inicialmente solo en `127.0.0.1:8080`. **Estado: pendiente de ejecución y verificación por el usuario.** No afirmar todavía que Pandora 0.6.1 esté instalada, que el servidor esté operativo ni que exista un lanzador de escritorio/servicio persistente. No activar `--shell` por defecto, ya que habilita ejecución de comandos.
+
+Comando de referencia, sujeto a validar las opciones exactas de `./pithos --help` de la build instalada:
+
+```bash
+cd ~/pithos-0.6.1-validation/pithos-0.6.1-linux-x64
+mkdir -p "$HOME/.cache/pithos-tmp"
+MODEL="$HOME/Pithos/models/LFM2.5-8B-A1B-Q4_K_M.gguf"
+TMPDIR="$HOME/.cache/pithos-tmp" ./pithos \
+  --model "$MODEL" --gpu opencl --gpu-device 1 --gpu-mem 2500 \
+  --server --open --host 127.0.0.1 --port 8080
+```
+
+### Evidencia detallada
+
+- [Informe Pithos 0.6.1 — LFM2.5-8B-A1B y validación OpenCL/Vulkan](https://github.com/robertosantosx2/LEONES/blob/docs/pithos-intel-opencl-validation-20261109/docs/subprojects/Pithos/validation/2026-11-10-pithos-0.6.1-lfm25-8b-a1b-validation.md)
+- [CSV benchmark PP512/TG128](https://github.com/robertosantosx2/LEONES/blob/docs/pithos-intel-opencl-validation-20261109/docs/subprojects/Pithos/validation/evidence-2026-11-10-lfm25-8b-a1b/benchmark-512-128-2026-11-10.csv)
+- [CSV eventos de validación y fault injection](https://github.com/robertosantosx2/LEONES/blob/docs/pithos-intel-opencl-validation-20261109/docs/subprojects/Pithos/validation/evidence-2026-11-10-lfm25-8b-a1b/followup-validation-events-2026-11-10.csv)
+- [CSV mediciones originales](https://github.com/robertosantosx2/LEONES/blob/docs/pithos-intel-opencl-validation-20261109/docs/subprojects/Pithos/validation/evidence-2026-11-10-lfm25-8b-a1b/measurements.csv)
+- [Script de reproducción Q4_K_M](https://github.com/robertosantosx2/LEONES/blob/docs/pithos-intel-opencl-validation-20261109/docs/subprojects/Pithos/validation/evidence-2026-11-10-lfm25-8b-a1b/reproduce-q4-k-m.sh)
 
 ## 2. Modelos con inferencia funcional y/o medición
 
