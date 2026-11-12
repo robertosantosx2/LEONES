@@ -160,6 +160,46 @@ Esta familia genera texto mediante refinamiento iterativo de tokens enmascarados
 
 **Fuentes primarias y cautelas:** [diffuse-cpp](https://github.com/iafiscal1212/diffuse-cpp) · [LLaDA oficial](https://github.com/ML-GSAI/LLaDA) · [Dream oficial](https://github.com/DreamLM/Dream) · [iLLaDA-8B-Instruct](https://huggingface.co/GSAI-ML/iLLaDA-8B-Instruct). Los resultados de benchmark y las capacidades se atribuyen a sus respectivos proyectos; no son pruebas locales LEONES.
 
+### Resultados consolidados de modelos de difusión — mediciones locales y referencias externas
+
+Esta tabla amplía el catálogo anterior con las cifras de rendimiento disponibles. Se mantiene la procedencia explícita: **MEASURED-LEONES** identifica una ejecución local comunicada/registrada en el laboratorio; **EXTERNAL_REFERENCE** identifica cifras publicadas por los proyectos upstream. No se mezclan en un ranking único porque los equipos, motores y definiciones de throughput son diferentes.
+
+| Modelo | Runtime | Hardware | Resultado | Estado / interpretación |
+|---|---|---|---:|---|
+| **Open-dCoder 0.5B** | Transformers / Open-dLLM | MSI Thin 15 · RTX 3050 4 GiB | **140,30 posiciones/s**; VRAM observada **1,184 GiB** | **MEASURED-LEONES** según la ejecución local archivada en el historial del experimento. La unidad es posiciones/s; no convertir ni comparar como tok/s. |
+| **Dream-7B** | diffuse-cpp | AMD EPYC 4465P · 12 hilos | **≈11,6 tok/s** promedio citado | **EXTERNAL_REFERENCE**. Configuración Q4_K_M con optimizaciones de caché/early-exit indicadas por upstream. |
+| **LLaDA-8B** | diffuse-cpp | AMD EPYC 4465P · 12 hilos | **≈15,3 tok/s** promedio citado | **EXTERNAL_REFERENCE**. Configuración Q4_K_M con optimizaciones de caché/early-exit indicadas por upstream. |
+| **Dream-v0-Instruct-7B** | llama.cpp, ejemplo de difusión | NVIDIA A100 | **11,98 tok/s** publicados; **166,91 ms/paso** | **EXTERNAL_REFERENCE**. Longitud máxima 512 y 256 pasos; no asumir que tok/s significa tokens nuevos/s. |
+
+#### Resultados externos por tarea: diffuse-cpp
+
+| Tarea | Dream-7B | LLaDA-8B |
+|---|---:|---:|
+| Pregunta factual | 21,6 tok/s | 24,4 tok/s |
+| Traducción francesa | 14,3 tok/s | 27,7 tok/s |
+| Aritmética | 21,6 tok/s | 15,7 tok/s |
+| Traducción española | 13,2 tok/s | 22,9 tok/s |
+| Programación | 8,2 tok/s | 4,9 tok/s |
+| Escritura creativa | 4,5 tok/s | 5,3 tok/s |
+
+Las cifras por tarea son resultados upstream y no deben combinarse con los promedios generales de la tabla anterior sin reproducir el mismo protocolo. Para Dream en A100, el desglose publicado es 108,24 ms de forward/cálculo y 58,67 ms de muestreo por paso; total medio 166,91 ms/paso.
+
+#### Modelos sin resultado de rendimiento verificable en el inventario
+
+Dream-Coder-7B, DiffuCoder-7B, DiffuLLaMA, ELYZA-Diffusion-Instruct, DiffusionGemma-26B-A4B, LLaDA2.x, iLLaDA-8B y LLaDA-MoE permanecen como **PENDIENTE / NO MEDIDO**. La disponibilidad de pesos, una ficha de modelo o una cifra de parámetros no acredita ejecución ni velocidad.
+
+**Clover-35B-A3B-Preview** dispone de un experimento local separado con llama.cpp CUDA y cuantización IQ2_S. Sus cifras (decode 4,90 tok/s y prefill 3,60 tok/s en la prueba Jinja de 256 tokens) se conservan en su [informe específico](../CLOVER-35B-A3B-PREVIEW-RTX3050-2026-10-31.md). No se agregan a las métricas de diffuse-cpp/Dream/LLaDA: el runtime y la ruta de ejecución son distintos y la métrica de throughput no demuestra por sí sola equivalencia metodológica con los DLM anteriores.
+
+#### Criterios de comparación
+
+- **posiciones/s** de Open-dCoder no es intercambiable con tokens/s.
+- Diferenciar tokens nuevos/s, tokens de secuencia/s y throughput agregado; verificar la definición de cada benchmark upstream.
+- Registrar pasos de denoising, tokens resueltos por paso, longitud de prompt/salida, early-exit, caché, cuantización y tiempo de muestreo.
+- No extrapolar los resultados de EPYC o A100 al i7-12650H/RTX 3050.
+- No atribuir a TensorFold compatibilidad con dLLM: sigue **no acreditada** en la matriz de runtimes.
+
+**Fuentes:** [Open-dLLM / Open-dCoder](https://github.com/pengzhangzhi/Open-dLLM) · [diffuse-cpp y benchmarks](https://github.com/iafiscal1212/diffuse-cpp) · [Dream](https://github.com/DreamLM/Dream) · [LLaDA](https://github.com/ML-GSAI/LLaDA) · [llama.cpp — benchmark Dream](https://github.com/ggml-org/llama.cpp/discussions/22972).
+
 ## 4. Informes y artefactos primarios
 
 ### Material formativo sobre LLM (no es benchmark)
