@@ -114,3 +114,48 @@ Para resultados robustos, ejecutar al menos tres repeticiones independientes por
 ## Seguridad y límites
 
 Los scripts solo interactúan con servidores que el operador ya ha iniciado. No contienen lógica para matar procesos, descargar modelos ni cambiar parámetros del servidor. Los pesos del modelo no se suben al repositorio.
+
+## Ejecución independiente adicional: cafe-llama.cpp · 2026-11-13
+
+Se añadió una ejecución exploratoria del mismo GGUF Qwen3.5-35B-A3B-IQ2_XXS mediante **cafe-llama.cpp**, usando la metodología Nepenthes. Esta ejecución se registra como una prueba independiente y no como una comparación controlada de motores: el prefill tuvo 89/93 tokens en caché y la configuración/extensiones de API no están demostradas como equivalentes a Tandem.cpp.
+
+### Scripts específicos
+
+- [run_cafe_independent_two_sum.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_cafe_independent_two_sum.py): ejecuta una única petición two_sum contra un servidor cafe-llama.cpp ya iniciado. Captura /health, /props, identidad del proceso, petición y respuesta completas, y monitorización mediante el resource_monitor compartido. No inicia, detiene ni reconfigura el servidor. Requiere indicar --pid y proporciona opciones para endpoint, modelo y directorio de salida.
+- [inspect_cafe_independent_run.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_cafe_independent_run.py): inspecciona un resultado ya guardado sin realizar peticiones al servidor; puede mostrar el contenido final y el razonamiento con --show-content.
+
+Ejemplo de ejecución (adaptar PID, endpoint y rutas al servidor ya iniciado):
+
+~~~bash
+python3 run_cafe_independent_two_sum.py \
+  --pid 21313 \
+  --base-url http://127.0.0.1:18086 \
+  --port 18086 \
+  --model "$HOME/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf" \
+  --output "$HOME/cafe-llama.cpp-qwen35-independent-YYYYMMDD"
+~~~
+
+Inspección posterior:
+
+~~~bash
+python3 inspect_cafe_independent_run.py \
+  "$HOME/cafe-llama.cpp-qwen35-independent-YYYYMMDD" \
+  --show-content
+~~~
+
+### Resultado registrado (ejecución 2026-11-13)
+
+- Estado: HTTP correcto, `finish_reason=stop`, sin error de petición.
+- Entrada/salida: 93 tokens de prompt, 1.060 tokens generados; 89 tokens de prompt reportados como caché.
+- Velocidad reportada: 26,62 tok/s de prompt y 31,03 tok/s de generación. El valor de prompt no es una medición fría: la mayoría de los tokens estaban en caché.
+- GPU: utilización media 89,8 %, VRAM estable 2.001 MiB, temperatura media 55,86 °C y potencia media 32,21 W.
+- CPU del proceso: media 99,74 %; CPU del sistema: media 6,97 %.
+- Swap-in del sistema: 90.112 bytes; swap-out: 0 bytes. Los contadores de swap y disco son de sistema y no se atribuyen exclusivamente al proceso.
+- Calidad: implementación two_sum con hash map correcta en O(n), negativos, duplicados y separación de índices. La respuesta contiene dos errores editoriales en las pruebas: el caso rotulado como duplicados usa [3, 2, 4], y un comentario de la prueba negativa muestra primero una suma incorrecta antes de explicar el resultado correcto.
+- `reasoning_budget_tokens=128` fue enviado en la petición; la aceptación del campo no demuestra que el servidor aplicase ese límite.
+
+Los datos originales de esta ejecución deben permanecer en su directorio de evidencia y añadirse al repositorio como artefactos, junto con manifest, respuesta íntegra, muestras de recursos, logs y hashes. Los scripts anteriores permiten repetir y revisar el experimento; no sustituyen esos datos originales.
+
+### Interpretación comparativa
+
+Los resultados de Tandem.cpp y cafe-llama.cpp se mantienen como campañas separadas. No calcular una clasificación de rendimiento ni atribuir diferencias al motor hasta disponer de repeticiones independientes y condiciones equiparadas, especialmente caché de prompt, plantilla, extensiones de razonamiento, contexto y parámetros de ejecución.
