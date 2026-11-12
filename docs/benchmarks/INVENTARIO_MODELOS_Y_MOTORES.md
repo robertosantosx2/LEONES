@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (incorporada evaluación documental de LocalAI/Parakeet.cpp para audio) (validación CUDA real de TensorFold PR #1879 en RTX 3050 con Qwen3.5-2B/4B; contraste de incorporación en TensorFold 1.2.7; inventario ampliado de modelos y motores)  
+**Última consolidación:** 2026-11-12 (incorporada evaluación de Ripple-65B-Preview: TensorFold CUDA y port Ricursive en llama.cpp)
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -13,6 +13,8 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | Motor / proyecto | Estado en el laboratorio | Modelos o familias vinculados | Validación y notas |
 |---|---|---|---|
 | **llama.cpp CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B, **Clover-35B-A3B-Preview IQ2_S**, LFM3-1.7B, Ling-3.0-Tiny, Spark-X2.6-4B, TwIL-8B | LFM3 incorporado en v0.8.0 (PR #31252/#31257); el build histórico b11740 es anterior. Incluye sweep `llama-bench` de Qwen3-30B-A3B IQ3_XXS con `ngl=0/1/8` (3 repeticiones por ajuste); `ngl=1` obtuvo la mejor mediana PP128. Binarios locales en ~/lla| **TensorFold CUDA** | Ejecutado y medido; PR #1879 validado en GPU; integración TensorFold Web en validación | Qwen3.5-2B, Qwen3.5-4B; estudios de Qwen3.5-9B y Qwen3.5-35B-A3B; intento LFM3-1.7B | Inferencia real con 2B y 4B. El parche de scratch diferido se compiló y probó en `sm_86`; Qwen3.5-4B MLX-4bit cargó y generó en RTX 3050 4 GiB (≈56 tok/s), mientras el binario `main` de comparación rechazó el arranque por presupuesto CUDA insuficiente con la misma configuración. Qwen3.5-2B MLX-4bit también se ejecutó (≈112–116 tok/s). La validación se hizo con el árbol candidato basado en PR #1879 y TensorFold Native 1.2.6; **no significa que el parche esté ya integrado en una release**. TensorFold 1.2.7 se publicó el 11-11-2026, pero a la comprobación del 12-11 no constaba la incorporación del commit del PR #1879 y el PR seguía abierto. LFM3-1.7B GGUF Q4_K_M no fue reconocido en 1.1.6. La integración TensorFold Web se verificó separadamente con 1.2.0; su bridge/UI no acredita por sí sola una nueva inferencia. Los estudios 9B/35B no acreditan ejecución en el MSI. |9B/35B no acreditan ejecución en el MSI. |
+| **llama.cpp CUDA — Ripple/Ricursive** | Port upstream en revisión; no compilado localmente | Ripple-65B-Preview (Ricursive) | PR #31715 sustituye #31692; soporte de arquitectura y conversor GGUF propuestos. No confundir soporte de código en PR con ejecución local. No hay benchmark LEONES ni prueba en el MSI. |
+| **TensorFold CUDA — Ripple** | No soportado por el binario local 1.2.0; implementación upstream experimental Metal | Ripple-65B-Preview / NVFP4 / DFlash2 | `capabilities --json` del binario local no declara familia `ricursive`/`ripple`. PR #2231 añade Ripple para Metal; PR #2260 añade DFlash2 sobre Metal. No hay ruta CUDA validada. No descargar ni intentar cargar en el MSI. |
 | **RustingStrata CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B | Bench nativo y CLI/API documentados. Algunas APIs no exponen tok/s internos: no derivarlos como si fueran métricas nativas. |
 | **Tandem / llama.cpp CPU-MoE** | Ejecutado y medido | Qwen3.5-35B-A3B IQ2_XXS | Ensayo CPU-MoE con RTX 3050; decode 35,6 tok/s en la prueba no-thinking registrada. Evidencia bruta pendiente de consolidación completa en LEONES. |
 | **Pithos** | Ejecutado y medido | LFM3-1.7B | Campañas del 6 y 7 de noviembre; CSV y log preservados en artifacts/pithos-0.5.1-2026-11-07/. |
@@ -83,6 +85,41 @@ La ficha oficial de [inclusionAI/Ling-3.0-tiny](https://huggingface.co/inclusion
 | **TwIL-8B** | GGUF Q4_K_M balanced | llama.cpp CUDA · RTX 3050 | Campaña de 24 y 26 capas GPU; protocolo y tres repeticiones en informe | Inferencia funcional medida. Arquitectura Granite no soportada por la capacidad observada de TensorFold 1.2.0. |
 | **Qwen3.5-4B** | MLX-4bit | TensorFold PR #1879 · CUDA sm_86 · RTX 3050 4 GiB | 512 tokens: **55,7–56,3 tok/s**; TTFT 173–186 ms; arranque 2,5 s; asignación de modelo 2,81 GiB; tres generaciones con hash de tokens idéntico (`e076d64ff9db`). Con `main`, la misma configuración no superó la comprobación de presupuesto CUDA; la rama candidata sí cargó y sirvió. | Validación real del parche en GPU, no benchmark A/B de rendimiento: `main` no llegó a generar, por lo que no hay comparación de velocidad. Reserva CUDA 0,5 GiB; contexto 1024; salida 512. Build CUDA 124/124 pasos y suite host 133/133 tests. |
 | **Open-dCoder-0.5B** | BF16 · snapshot HF `d0d86d5b99960c05258bb1f8265dd91564dbac67` | Open-dLLM / Transformers + PyTorch CUDA · RTX 3050 4 GiB | V2 batch 1 / 16 pasos: mediana 0,456 s y 140,30 posiciones/s, 3/3 funcionales. V3: batch 1/2/4 × 16/32/64 pasos; mejor throughput 198,22 posiciones/s agregadas en batch 4 / 16 pasos, 1,292 s por batch, 3,10 secuencias/s y 12/12 funcionales; VRAM 1,910 GiB asignada / 2,338 GiB reservada. | Inferencia y medición local acreditadas. Métrica de posiciones de difusión, no tok/s autoregresivos. Una sola tarea factorial; no equivale a evaluación general de inteligencia. V1 conserva cifras de tiempo, pero su validador tenía falsos negativos. Ver §3.3. |
+
+## 2.1 Ripple-65B-Preview (Ricursive) — auditoría de motores y viabilidad (12-11-2026)
+
+**Modelo y escala.** [ricursiveAI/Ripple-65B-Preview](https://huggingface.co/ricursiveAI/Ripple-65B-Preview) es un modelo denso de aproximadamente 65B parámetros, con arquitectura propia de la familia Ricursive y pesos BF16 distribuidos en shards que suman alrededor de 130 GB. La variante experimental [NVFP4](https://huggingface.co/ricursiveAI/Ripple-65B-Preview-NVFP4) se publica con un tamaño total aproximado de 57,2 GB. El tamaño del archivo/pesos no equivale a la memoria total de ejecución: faltan buffers, caché KV, contexto y memoria del runtime.
+
+### Motores investigados
+
+| Motor | Estado verificado | Evidencia / limitación |
+|---|---|---|
+| **TensorFold 1.2.0 CUDA (MSI)** | **No compatible en el binario local inspeccionado** | El 12-11-2026 se ejecutó `tensorfold-native 1.2.0`; `capabilities --json` informó engine Zig, chip `nvidia-sm86`, backend `cuda`, pero no incluyó familia `ricursive` ni `ripple`. El catálogo incluye otras familias (Qwen, Gemma, Nemotron, GLM, etc.). No es un fallo de instalación: la familia no está declarada por ese binario. |
+| **TensorFold upstream — Metal** | **Implementación experimental en PR** | [PR #2231](https://github.com/ashhart/TensorFold/pull/2231) incorpora Ripple para backend Metal; [PR #2260](https://github.com/ashhart/TensorFold/pull/2260) agrega speculative decoding DFlash2 y depende de la implementación Ripple. Las cifras comunicadas por el autor en M5 Ultra son resultados de ese entorno Metal; no son mediciones CUDA ni resultados LEONES. |
+| **llama.cpp — Ricursive** | **Port propuesto en upstream; sin validación local LEONES** | [PR #31692](https://github.com/ggml-org/llama.cpp/pull/31692) fue el port inicial; [PR #31715](https://github.com/ggml-org/llama.cpp/pull/31715) lo sustituye. El PR inicial describe conversor/arquitectura Ricursive y pruebas de equivalencia en modelo pequeño/capas iniciales, además de test de arquitectura CPU/CUDA. El PR sustituto advierte que no comprobó compatibilidad con GGUF existentes. No se ha compilado este PR en el MSI ni ejecutado un GGUF Ripple. |
+| **Transformers / PyTorch** | Referencia de implementación upstream, no benchmark del MSI | La model card publica arquitectura y checkpoint BF16; no se ha realizado inferencia local ni se ha acreditado rendimiento en el hardware LEONES. |
+
+### Métricas publicadas y estado de las pruebas
+
+- La model card de Ricursive informa de **250 tok/s en 2× NVIDIA B200, batch 8**. Es una cifra del fabricante en hardware de centro de datos y carga concurrente; no es comparable con una conversación individual en una RTX 3050.
+- Las mediciones publicadas en las PR de TensorFold corresponden a **M5 Ultra con Metal**. No deben trasladarse a CUDA ni a la GPU NVIDIA del MSI.
+- **Métricas LEONES de Ripple: N/D.** No se han descargado pesos, compilado el port, cargado el modelo ni medido prefill, decode, TTFT, RAM o VRAM.
+- El repositorio [AtomicChat Ripple GGUF](https://huggingface.co/AtomicChat/Ripple-65B-Preview-GGUF) ofrece cuantizaciones comunitarias. La existencia de un GGUF no garantiza compatibilidad con el PR de llama.cpp ni que todas las variantes sean válidas; comprobar conversor, metadatos y compatibilidad exacta antes de usarlo.
+
+### Viabilidad en el MSI Thin 15 B12UC
+
+El equipo de referencia es Intel Core i7-12650H, **14 GiB de RAM**, NVIDIA RTX 3050 Laptop **4 GiB VRAM**, Ubuntu, driver 580.178.04 y CUDA 13.0. En la captura aportada para esta auditoría, había 9,9 GiB de RAM disponibles y 439 GiB libres en disco.
+
+- BF16 (~130 GB) y NVFP4 (~57,2 GB) superan ampliamente la memoria física disponible. La cuantización comunitaria más pequeña citada en la investigación ronda 18,5 GB de pesos, también por encima de la RAM física.
+- El swap de 31 GiB no convierte el modelo en una carga práctica: no sustituye RAM y provocaría paginación extrema.
+- Aunque el PR de llama.cpp compile y reconozca la arquitectura, eso solo validaría el código/conversor; no demostraría que el modelo pueda ejecutarse en este MSI.
+- **Decisión:** no descargar Ripple ni intentar cargarlo en el MSI. Mantenerlo como investigación de compatibilidad upstream y reservar la ejecución integral para un host con memoria suficiente.
+
+### Próxima validación segura
+
+La siguiente prueba propuesta es clonar llama.cpp en un directorio independiente, traer la rama del [PR #31715](https://github.com/ggml-org/llama.cpp/pull/31715), compilar con `GGML_CUDA=ON` y ejecutar el test de arquitectura `ricursive`. Esta compilación aislada no debe modificar `~/llama.cpp-cuda` ni los servicios locales existentes. Solo después de compilar se evaluará el conversor GGUF con un artefacto pequeño/de prueba; no se descargará el checkpoint de 65B como parte del smoke test.
+
+**Fuentes primarias:** [model card Ripple BF16](https://huggingface.co/ricursiveAI/Ripple-65B-Preview) · [Ripple NVFP4](https://huggingface.co/ricursiveAI/Ripple-65B-Preview-NVFP4) · [llama.cpp PR #31715](https://github.com/ggml-org/llama.cpp/pull/31715) · [TensorFold PR #2231](https://github.com/ashhart/TensorFold/pull/2231) · [TensorFold PR #2260](https://github.com/ashhart/TensorFold/pull/2260).
 
 ## 3. Intentos, estudios e investigación (no contar como benchmark)
 
