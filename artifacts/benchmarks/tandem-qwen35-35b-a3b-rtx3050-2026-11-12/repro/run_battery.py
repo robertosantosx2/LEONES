@@ -135,6 +135,7 @@ def main():
                 port,
                 args.server_pid,
                 args.monitor_interval,
+                args.model_path,
             )
             sampler.start()
             try:
