@@ -50,7 +50,7 @@ def main() -> int:
     args = parser.parse_args()
 
     script_dir = pathlib.Path(__file__).resolve().parent
-    repo_root = script_dir.parents[5]
+    repo_root = script_dir.parents[4]
     monitor_script = args.monitor_script or (
         repo_root / "artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/resource_monitor.py"
     )
@@ -103,7 +103,7 @@ def main() -> int:
         "experiment": "independent-two-sum",
         "methodology": "Nepenthes",
         "engine": "cafe-llama.cpp",
-        "build": "record actual build from /props; do not infer from this script",
+        "build": props.get("build_info"),
         "model": str(args.model),
         "server_pid": args.pid,
         "server_executable": str(exe),
