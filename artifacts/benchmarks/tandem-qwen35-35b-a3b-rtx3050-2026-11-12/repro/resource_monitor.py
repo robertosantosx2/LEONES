@@ -63,6 +63,15 @@ def gpu_sample():
         return {"available":True,"gpus":rows}
     except Exception as e:return {"available":False,"error":str(e)}
 
+def vmstat_sample():
+    try:
+        d={}
+        for line in pathlib.Path("/proc/vmstat").read_text().splitlines():
+            x=line.split()
+            if len(x)==2 and x[0] in ("pswpin","pswpout"): d[x[0]]=int(x[1])
+        return d
+    except Exception: return {}
+
 def disk_sample():
     # Whole block devices only; sector counters are Linux 512-byte sectors.
     result={}
@@ -81,7 +90,7 @@ class RequestSampler:
         self.pid=find_pid(port,pid); self.interval=interval; self.samples=[]
         self.stop_event=threading.Event(); self.thread=None
     def sample(self):
-        s={"time":now(),"monotonic":time.monotonic(),"ram":read_meminfo(),"cpu_ticks":cpu_ticks(),"process":proc_stat(self.pid) if self.pid else {},"gpu":gpu_sample(),"disks":disk_sample()}
+        s={"time":now(),"monotonic":time.monotonic(),"ram":read_meminfo(),"cpu_ticks":cpu_ticks(),"process":proc_stat(self.pid) if self.pid else {},"gpu":gpu_sample(),"disks":disk_sample(),"vmstat":vmstat_sample()}
         s["pid"]=self.pid
         return s
     def _loop(self):
@@ -141,4 +150,4 @@ class RequestSampler:
           "ram_used_bytes":stats(["ram","ram_used_bytes"]),"ram_available_bytes":stats(["ram","MemAvailable_bytes"]),"process_rss_bytes":stats(["process","rss_bytes"]),
           "swap_used_bytes":stats(["ram","swap_used_bytes"]),"cpu_system_pct_avg_over_interval":cpu_pct,"process_cpu_pct_avg_over_interval":proc_pct,
           "gpu_util_pct":gstat("gpu_util_pct"),"gpu_memory_util_pct":gstat("memory_util_pct"),"vram_used_mib":gstat("vram_used_mib"),"gpu_temperature_c":gstat("temperature_c"),"gpu_power_w":gstat("power_w"),
-          "disk_deltas_all_whole_devices":disk,"gpu_sample_count":len(gpu),"swap_counters_note":"Swap-in/out counters are system-wide; per-request deltas require sampling /proc/vmstat at both boundaries."}
+          "disk_deltas_all_whole_devices":disk,"swap_in_bytes_delta_system_wide":swapin_delta,"swap_out_bytes_delta_system_wide":swapout_delta,"gpu_sample_count":len(gpu),"disk_note":"Disk deltas are system-wide per whole block device; isolate the model SSD before attributing I/O if multiple workloads are active.","swap_note":"Swap deltas are system-wide; unrelated processes may contribute."}
