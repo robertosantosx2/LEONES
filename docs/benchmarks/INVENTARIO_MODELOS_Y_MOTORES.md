@@ -25,6 +25,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Transformers, vLLM, SGLang, KTransformers, Mistral.rs** | Evaluación de soporte / planificación | Varias familias candidatas | Sin benchmark local normalizado acreditado en este inventario. |
 | **ThumbLLM / llama.cpp CPU (Ornith 1.5)** | Paquete Release 1 incorporado a LEONES; reproducción Linux preparada, pendiente de ejecutar | Ornith-1.5-9B-OBLITERATED Q4_K_M | El release original está orientado a Windows. Se añadieron receta y scripts Ubuntu para compilar llama.cpp b10603 (c060ca974) en CPU y servir en puerto 18088. Descarga, hash, compilación e inferencia en el MSI aún no verificados; no contabilizar como motor/modelo ejecutado. |
 | **Uzu** | Evaluación documental cerrada; `RESEARCH_ONLY / NOT VERIFIED` | Qwen3.5-4B, Qwen3.5 MoE (compatibilidad investigada, no validada) | Integrado en `Experimental` mediante PR #119. No se compila, instala ni ejecuta en el MSI dentro del alcance acordado. Sin soporte Ubuntu/CUDA, GGUF ni Qwen MoE demostrado; no contabilizar como motor probado. Ver [evaluación Uzu](../../experimental/uzu/README.md). |
+| **Mesh-LLM / REDIL** | Referencia arquitectónica documental; no ejecutado | Mesh-LLM como referencia principal de REDIL; Distributed Llama como backend opcional experimental | No es un motor validado en el MSI ni un benchmark. REDIL sigue en estado de propuesta/investigación, sin despliegue físico. La actualización documental está en PR #131. |
 | **MLX** | Formato/artefacto usado por TensorFold | Qwen3.5-2B/4B MLX-4bit | No implica ejecución nativa de MLX en Ubuntu; TensorFold cargó artefactos MLX mediante backend CUDA. |
 
 ## 2. Modelos con inferencia funcional y/o medición
@@ -94,6 +95,15 @@ El curso es un recurso didáctico interactivo sobre Transformers y modelos de le
 - [Pithos LFM3-1.7B — campaña 06-11](../PITHOS-LFM3-1.7B-RTX3050-2026-11-06.md)
 - [Pithos LFM3-1.7B — campaña 07-11](../PITHOS-LFM3-1.7B-RTX3050-2026-11-07.md)\n- [LFM3-1.7B — benchmark llama.cpp CUDA RTX 3050 (PR #125)](../reports/lfm3-1.7b-rtx3050-cuda-20261028.md)\n- [PR #125 — evidencias LFM3-1.7B CUDA](https://github.com/robertosantosx2/LEONES/pull/125)
 
+### REDIL — malla distribuida y referencia Mesh-LLM
+
+- [Mesh-LLM — repositorio upstream, referencia principal de REDIL](https://github.com/Mesh-LLM/mesh-llm)
+- [README de REDIL con Mesh-LLM establecido como base de referencia](https://github.com/robertosantosx2/LEONES/blob/docs/redil-mesh-llm-primary-foundation/docs/subprojects/REDIL-IA-distribuida/README.md)
+- [Figura de arquitectura general de REDIL (SVG)](https://github.com/robertosantosx2/LEONES/blob/docs/redil-mesh-llm-primary-foundation/docs/subprojects/REDIL-IA-distribuida/REDIL_Arquitectura_General.svg)
+- [PR #131 — referencia principal Mesh-LLM y actualización de figuras](https://github.com/robertosantosx2/LEONES/pull/131)
+- [Distributed Llama — backend externo opcional](https://github.com/b4rtaz/distributed-llama)
+
+**Clasificación en el inventario:** Mesh-LLM se registra como referencia arquitectónica principal del subsistema REDIL, no como motor probado. REDIL propone federar/orquestar servicios especializados entre nodos; Distributed Llama queda diferenciado como backend opcional para repartir una misma inferencia entre root y workers. No se ha acreditado instalación, integración ni validación física de Mesh-LLM o Distributed Llama en el MSI. La figura SVG es conceptual: los nodos, GPUs y motores rotulados son ejemplos de topología, no resultados de compatibilidad. La documentación de esta actualización se encuentra en la PR #131 y aún no está fusionada en main.
 ### Artefactos y proyectos de motor
 - [Uzu — evaluación documental del motor experimental (PR #119)](../../experimental/uzu/README.md)
 - [Qwen3-30B-A3B head-to-head — README](artifacts/qwen3-30b-a3b-iq3-xxs/head-to-head-20261021/README.md)
