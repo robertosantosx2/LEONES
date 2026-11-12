@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (actualizado tras incorporar Uzu como evaluación documental en Experimental; PR #119)  
+**Última consolidación:** 2026-11-12 (incorporada prueba de compatibilidad LFM3-1.7B con TensorFold 1.1.6; PR #119 y campaña LFM3 #125)  
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -13,7 +13,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | Motor / proyecto | Estado en el laboratorio | Modelos o familias vinculados | Validación y notas |
 |---|---|---|---|
 | **llama.cpp CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B, LFM3-1.7B, Ling-3.0-Tiny, Spark-X2.6-4B, TwIL-8B | Incluye sweep `llama-bench` de Qwen3-30B-A3B IQ3_XXS con `ngl=0/1/8` (3 repeticiones por ajuste); `ngl=1` obtuvo la mejor mediana PP128. Binarios locales en ~/llama.cpp-cuda/build/bin y /usr/local/bin. |
-| **TensorFold CUDA** | Ejecutado y medido | Qwen3.5-2B, Qwen3.5-4B; estudios de Qwen3.5-9B y Qwen3.5-35B-A3B | Inferencia real con 2B y 4B. PR #1879 aborda la reserva CUDA diferida de scratch para 4B. Los estudios 9B/35B no acreditan ejecución en el MSI. |
+| **TensorFold CUDA** | Ejecutado y medido; compatibilidad LFM3 no soportada/verificada en 1.1.6 | Qwen3.5-2B, Qwen3.5-4B; estudios de Qwen3.5-9B y Qwen3.5-35B-A3B; intento LFM3-1.7B | Inferencia real con 2B y 4B. PR #1879 aborda la reserva CUDA diferida de scratch para 4B. LFM3-1.7B GGUF Q4_K_M no fue reconocido: `info` rechaza el archivo (espera directorio de checkpoint o repo HF) y `capabilities --json` no declara familia `lfm3`. No se llegó a cargar ni ejecutar. Los estudios 9B/35B no acreditan ejecución en el MSI. |
 | **RustingStrata CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B | Bench nativo y CLI/API documentados. Algunas APIs no exponen tok/s internos: no derivarlos como si fueran métricas nativas. |
 | **Tandem / llama.cpp CPU-MoE** | Ejecutado y medido | Qwen3.5-35B-A3B IQ2_XXS | Ensayo CPU-MoE con RTX 3050; decode 35,6 tok/s en la prueba no-thinking registrada. Evidencia bruta pendiente de consolidación completa en LEONES. |
 | **Pithos** | Ejecutado y medido | LFM3-1.7B | Campañas del 6 y 7 de noviembre; CSV y log preservados en artifacts/pithos-0.5.1-2026-11-07/. |
@@ -41,7 +41,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Qwen3-30B-A3B** | GGUF IQ3_XXS / configuración PICCHIO | MSI RTX 3050 | Campaña de memoria dual-channel y ejecución documentada en informe PICCHIO | Consultar informe específico; no mezclar con el head-to-head anterior. |
 | **Qwen3.5-35B-A3B** | GGUF IQ2_XXS | Tandem / llama.cpp CPU-MoE · RTX 3050 + CPU/RAM | Decode aprox. **35,6 tok/s** en prueba no-thinking; prompt 46,5 tok/s; RSS aprox. 9,27 GiB; swap aprox. 7,5 GiB; GPU aprox. 2345 MiB | Ejecución real medida. Contexto 1024; no extrapolar a TensorFold. |
 | **LFM3-1.7B Uncensored** | GGUF AD-Q4_K_M | llama.cpp CUDA · RTX 3050 | llama-bench: PP512 4.326,68 tok/s; TG128 117,29 tok/s. CLI interactivo: decode aprox. 99,8–104,4 tok/s | Inferencia funcional y medición nativa. |
-| **LFM3-1.7B** | GGUF de campaña Pithos | Pithos · RTX 3050 | CSV de resultados y log de sesión conservados | Consultar informes Pithos; no asumir artefacto/protocolo idéntico al de llama.cpp. |
+| **LFM3-1.7B** | GGUF de campaña Pithos | Pithos · RTX 3050 | CSV de resultados y log de sesión conservados | Consultar informes Pithos; no asumir artefacto/protocolo idéntico al de llama.cpp. |\n| **LFM3-1.7B** | GGUF Q4_K_M | TensorFold 1.1.6 CUDA · RTX 3050 sm_86 | `tensorfold-native capabilities --json`: no declara familia `lfm3`; `tensorfold-native info <archivo.gguf>` responde que el archivo no es un directorio ni un repo HF. | **Intento de compatibilidad, no ejecución.** No se cargó el modelo ni se midió rendimiento. El rechazo evidencia que el GGUF no es una entrada aceptada por esta interfaz y que la familia no figura en las capacidades de 1.1.6; no demuestra imposibilidad futura ni descarta una implementación/checkpoint distinto. No instalar, convertir ni descargar pesos alternativos como parte de esta prueba. |
 | **Ling-3.0-Tiny** | GGUF IQ2_M | llama.cpp CUDA · RTX 3050 | Ejecución funcional: prompt 62,5 tok/s y generación 5,4 tok/s; primera ejecución truncada: 68,7 / 8,3 tok/s | Prueba de código factorial validada; primera salida truncada no es ejecución completa. |
 | **Ling-3.0-Tiny** | GGUF Q4_K_M | llama.cpp CPU · GB-BXi7-5500 | PP 41,0 tok/s; generación 15,5 tok/s | Equipo distinto del MSI; mantener separado. |
 | **Spark-X2.6-4B-abliterated** | GGUF Q4_K_M | llama.cpp CUDA · RTX 3050 | Prueba funcional: prefill 36,9 tok/s; generación 7,2 tok/s | Ejecución individual; faltan repeticiones y perfil de memoria normalizado. |
@@ -92,7 +92,7 @@ El curso es un recurso didáctico interactivo sobre Transformers y modelos de le
 - [Ling-3.0-Tiny — MSI RTX 3050](../reports/ling-3.0-tiny-ubuntu-msi-rtx3050-2026-10-29.md)
 - [Ling-3.0-Tiny — GB-BXi7-5500](../reports/ling-3.0-tiny-ubuntu-gb-bxi7-5500-2026-10-29.md)
 - [Pithos LFM3-1.7B — campaña 06-11](../PITHOS-LFM3-1.7B-RTX3050-2026-11-06.md)
-- [Pithos LFM3-1.7B — campaña 07-11](../PITHOS-LFM3-1.7B-RTX3050-2026-11-07.md)
+- [Pithos LFM3-1.7B — campaña 07-11](../PITHOS-LFM3-1.7B-RTX3050-2026-11-07.md)\n- [LFM3-1.7B — benchmark llama.cpp CUDA RTX 3050 (PR #125)](../reports/lfm3-1.7b-rtx3050-cuda-20261028.md)\n- [PR #125 — evidencias LFM3-1.7B CUDA](https://github.com/robertosantosx2/LEONES/pull/125)
 
 ### Artefactos y proyectos de motor
 - [Uzu — evaluación documental del motor experimental (PR #119)](../../experimental/uzu/README.md)
