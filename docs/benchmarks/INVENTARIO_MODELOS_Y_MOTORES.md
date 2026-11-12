@@ -551,7 +551,7 @@ audio:
 - [Qwen3.8-27B NVFP4](https://huggingface.co/Wallawalla47)
 - [Especificación CUDA de arquitecturas NVIDIA](https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/)
 
-### 3.5 TensorFold como backend nativo de Atomic Chat — propuesta de integración (12-11-2026)
+### 3.6 TensorFold como backend nativo de Atomic Chat — propuesta de integración (12-11-2026)
 
 **Clasificación:** investigación de arquitectura y propuesta de feature; no es una integración implementada ni una prueba de Atomic Chat. Se prepara una solicitud para el repositorio [Atomic Chat Core](https://github.com/AtomicBot-ai/atomic-chat-core), tomando como base la evidencia local de TensorFold y el trabajo de integración documentado en LEONES.
 
