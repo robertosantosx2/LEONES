@@ -1,4 +1,4 @@
-# Metodología reproducible · Tandem.cpp / Qwen3.5-35B-A3B · 2026-11-12
+# NEPENTHES : Metodología reproducible · Tandem.cpp / Qwen3.5-35B-A3B · 2026-11-12
 
 **Estado:** documentación y scripts publicados. Los logs binarios/JSON originales y la captura integral del host se incorporarán cuando se ejecute el recolector en el MSI.
 
