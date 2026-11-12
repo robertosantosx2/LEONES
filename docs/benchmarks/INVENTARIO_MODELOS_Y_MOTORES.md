@@ -20,7 +20,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Kinetic** | Compilado / pruebas de ejecución en curso | LFM3-1.7B GGUF; Qwen3.5-35B-A3B IQ2_XXS seleccionado para prueba | Se inspeccionaron versiones, binarios y catálogo; se prepararon y ejecutaron pruebas. No publicar velocidad sin log de benchmark completo y reproducible. |
 | **Colibri** | Instalado / auditado técnicamente | Compatibilidad Qwen3.6 CUDA | Auditoría del parser de colocación y configuración CUDA. Compilación o validación de código no equivale a inferencia medida. |
 | **YASAKANI** | Prueba exploratoria solicitada | Modelo/backend/resultados por consolidar | Mantener como experimento hasta que exista log que demuestre carga e inferencia. |
-| **Magnitude** | Integración investigada; prueba de catálogo fallida | Qwen3.5-4B | Pesos/proyector descargados y hashes verificados, pero el CLI no reconoció el ID. No hubo inferencia. |
+| **ThumbLLM (TeksEdge)** | Receta Windows auditada; reproducción Linux documentada, aún no ejecutada | Qwen3.5-4B GGUF Q4_K_M | Runtime fijado a llama.cpp build 10603 / commit `c060ca974`; receta CPU-only. La release configura `SPEC_TYPE=none`: MTP especulativo desactivado. La aplicación publicada es Windows x64, no un binario Linux. Guía Ubuntu en [LEONES](../../experimental/ThumbLLM-thumbllm-qwen3.5-4b-mtp-q4_k_m-cpu-win-x64-v0.1.0/docs/UBUNTU-REPRODUCTION.md). |\n| **Magnitude** | Integración investigada; prueba de catálogo fallida | Qwen3.5-4B | Pesos/proyector descargados y hashes verificados, pero el CLI no reconoció el ID. No hubo inferencia. |
 | **Ollama** | Incluido en matriz de runtimes; no instalado en el MSI según inventario previo | Sin ejecución local validada | No contabilizar como motor probado en este equipo. |
 | **Transformers, vLLM, SGLang, KTransformers, Mistral.rs** | Evaluación de soporte / planificación | Varias familias candidatas | Sin benchmark local normalizado acreditado en este inventario. |
 | **MLX** | Formato/artefacto usado por TensorFold | Qwen3.5-2B/4B MLX-4bit | No implica ejecución nativa de MLX en Ubuntu; TensorFold cargó artefactos MLX mediante backend CUDA. |
@@ -56,7 +56,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Qwen3.5-9B** | Estudio TensorFold / RTX 3050 | Informe de memoria, cuantización y viabilidad; comparación E-means frente a K-means | Estudio técnico, no ejecución local validada del 9B. |
 | **Qwen3.5-122B-A10B** | Estudio RTX 5090 | Evaluación teórica de memoria y cuantización | No ejecutado en hardware local. |
 | **Clover-35B-A3B-Preview** | Investigación documental | Arquitectura y requisitos | No descargado ni ejecutado localmente. |
-| **Qwen3.5-4B AWQ W4A16** | Inspección de modelo | Ficha/candidato evaluado | No ejecutado. |
+| **Qwen3.5-4B AWQ W4A16** | Inspección de modelo | Ficha/candidato evaluado | No ejecutado. |\n| **Qwen3.5-4B MTP-GGUF Q4_K_M (receta ThumbLLM)** | TeksEdge ThumbLLM / llama.cpp CPU | Modelo `unsloth/Qwen3.5-4B-MTP-GGUF`; SHA-256 de la receta: `3874209241c9a397e2f62cd3f70f80fd2dfbf0dfccb6838416bdb48a714e8630`. Runtime upstream `c060ca974` (build 10603). Contexto de receta 65.536, KV `q4_0`, batch/ubatch 2048/512, Flash Attention, mmap/repack. | Configuración de referencia analizada, no ejecutada aún en Ubuntu. Aunque el repositorio del modelo contiene MTP en el nombre, la receta usa `SPEC_TYPE=none`; no hay speculative decoding activo. El ejecutable de la release es Windows x64. La cifra upstream de ~18 tok/s es una observación durante generación, no un benchmark controlado y no comparable directamente. |
 | **YASAKANI** | Prueba exploratoria | Investigación y preparación solicitadas | Sin resultado reproducible consolidado. |
 | **Colibri / Qwen3.6 CUDA** | Auditoría de código | Parser de colocación, límites de componentes/segmentos y buffers | No atribuir rendimiento de inferencia a esta auditoría. |
 | **Mistral.rs, vLLM, SGLang, KTransformers** | Evaluación de runtimes | Instalación/soporte/requisitos estudiados | Sin benchmark local normalizado en este inventario. |
@@ -78,7 +78,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 - [Qwen3.5-9B / RTX 3050 — español](../QWEN3.5-9B-RTX3050-2026-11-11.md)
 - [Qwen3.5-9B / RTX 3050 — English](../QWEN3.5-9B-RTX3050-2026-11-11-EN.md)
 - [Spark-X2.6-4B abliterated — RTX 3050](spark-x26-4b-abliterated-rtx3050-2026-10-30.md)
-- [Magnitude + Qwen3.5-4B — prueba de catálogo](magnitude-qwen35-4b-2026-10-21.md)
+- [Magnitude + Qwen3.5-4B — prueba de catálogo](magnitude-qwen35-4b-2026-10-21.md)\n- [ThumbLLM Qwen3.5-4B — guía de auditoría y reproducción Ubuntu](../../experimental/ThumbLLM-thumbllm-qwen3.5-4b-mtp-q4_k_m-cpu-win-x64-v0.1.0/docs/UBUNTU-REPRODUCTION.md)\n- [ThumbLLM upstream — release Qwen3.5-4B CPU Windows](https://github.com/TeksEdge/ThumbLLM/releases/tag/thumbllm-qwen3.5-4b-mtp-q4_k_m-cpu-win-x64-v0.1.0)
 - [Ling-3.0-Tiny — MSI RTX 3050](../reports/ling-3.0-tiny-ubuntu-msi-rtx3050-2026-10-29.md)
 - [Ling-3.0-Tiny — GB-BXi7-5500](../reports/ling-3.0-tiny-ubuntu-gb-bxi7-5500-2026-10-29.md)
 - [Pithos LFM3-1.7B — campaña 06-11](../PITHOS-LFM3-1.7B-RTX3050-2026-11-06.md)
@@ -126,7 +126,7 @@ El informe también documenta diagnósticos de carga CUDA de Qwen3-30B-A3B (buff
 ## 6. Pendientes de consolidación
 
 - Archivar en LEONES los logs, JSONL, manifiesto y configuración íntegra de Tandem Qwen3.5-35B-A3B IQ2_XXS si no están ya completos.
-- Consolidar los resultados finales de Kinetic por modelo, cuantización, backend y versión.
+- Clonar y auditar el código fuente de ThumbLLM en Ubuntu, compilar el runtime CPU fijado, verificar el GGUF y portar/validar el frontend Linux; registrar una campaña reproducible antes de marcarlo como ejecutado.\n- Consolidar los resultados finales de Kinetic por modelo, cuantización, backend y versión.
 - Completar YASAKANI solo cuando exista una ejecución verificable.
 - Mantener Colibri como auditoría/compilación hasta disponer de inferencia reproducible.
 - Incorporar futuras pruebas como campañas fechadas, sin sobrescribir resultados históricos.
