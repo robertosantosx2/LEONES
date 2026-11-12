@@ -31,6 +31,47 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **MLX** | Formato/artefacto usado por TensorFold | Qwen3.5-2B/4B MLX-4bit | No implica ejecución nativa de MLX en Ubuntu; TensorFold cargó artefactos MLX mediante backend CUDA. |
 | **Open-dLLM / Transformers CUDA** | Ejecutado y medido | Open-dCoder-0.5B BF16 | Inferencia local con `model.diffusion_generate` en RTX 3050; campañas V1/V2 single-sequence y V3 batch real. Máximo V3: 198,22 posiciones/s agregadas (batch 4, 16 pasos). | Modelo de difusión; posiciones/s no son directamente comparables con tokens/s autoregresivos. Validación funcional limitada a una tarea factorial. Ver §3.3. |
 
+### Kairos — candidato a base de LEONES AI OS (evaluación documental, 12-11-2026)
+
+**Clasificación:** plataforma de sistema operativo y ciclo de vida de nodos; **no es un motor de inferencia ni un modelo**. No se incluye en rankings de velocidad, prefill, decode o inteligencia. Esta evaluación es documental: Kairos no está instalado, compilado ni validado en el MSI de referencia. No hay todavía imagen LEONES, prueba de arranque, medición de consumo ni validación GPU.
+
+**Hipótesis de arquitectura:** utilizar Kairos como base inmutable y reproducible de una futura edición **LEONES AI OS**, manteniendo LEONES como capa de gestión de IA:
+- **Kairos:** sistema base, imagen de arranque, instalación, configuración declarativa, particiones de estado/persistencia, actualizaciones atómicas A/B y recuperación.
+- **Capa hardware:** kernel, firmware y driver NVIDIA; compatibilidad CUDA y acceso a GPU desde los servicios.
+- **Runtime de cargas:** contenedores y servicios locales; Kubernetes/K3s opcional para nodos/cluster, sin imponerlo al perfil Desktop.
+- **LEONES:** catálogo y ciclo de vida de modelos/motores, enrutamiento, APIs, agentes, observabilidad y experiencia de usuario.
+- **REDIL / ODS:** posibles capas superiores para coordinación distribuida y orquestación, sujetas a validación independiente.
+
+**Ventajas documentadas:**
+- Kairos se define como una metadistribución Linux inmutable y modular, construida sobre distribuciones base como Ubuntu o Alpine; permite generar imágenes de sistema y personalizar componentes.
+- El sistema operativo se distribuye como imagen OCI con kernel e initramfs incluidos. Las actualizaciones emplean slots A/B, imagen de transición, evaluación de arranque y mecanismos de fallback/recuperación.
+- La configuración declarativa mediante cloud-init/cloud-config permite definir instalación y etapas del ciclo de vida. Los datos persistentes se separan del sistema base; pueden añadirse rutas persistentes mediante configuración de bind mounts.
+- K3s/K0s y los componentes de clustering son opciones del stack, no una razón para imponer Kubernetes a una estación de trabajo individual.
+
+**Riesgos y cuestiones no demostradas para LEONES:**
+1. **NVIDIA/CUDA:** no se ha demostrado que una imagen Kairos concreta soporte el driver 580.178.04, CUDA 13.0, la RTX 3050 Laptop (sm_86) ni la gestión de módulos NVIDIA tras cambios de kernel. Hay que fijar y validar kernel, driver, firmware e initramfs.
+2. **Motores:** no se ha probado llama.cpp CUDA, TensorFold 1.2.x, LocalAI, Parakeet ni RustingStrata dentro de Kairos. La compatibilidad de esos motores con Ubuntu no se transfiere automáticamente.
+3. **Persistencia:** pesos y cachés deben residir fuera de la imagen A/B. Un rollback del sistema no garantiza por sí solo la reversión ni la integridad de los datos persistentes; hacen falta política de versiones, espacio, copias y compatibilidad de esquemas.
+4. **Perfil Desktop:** validar instalación, arranque, suspensión/reanudación, red, audio, Wi-Fi, gráficos híbridos y consumo de RAM/CPU antes de considerarlo sustituto de Ubuntu en un portátil.
+5. **Complejidad operativa:** medir el coste de construir y mantener imágenes, actualizaciones y recuperación frente a Ubuntu convencional.
+
+**Plan de validación propuesto (sin ejecución acreditada):**
+- P0: seleccionar versión/base Kairos y construir una imagen de laboratorio reproducible x86-64; documentar kernel, initramfs, bootloader y particiones.
+- P1: probar arranque e instalación en VM y después en hardware no crítico; verificar persistencia, actualización A/B, rollback y recuperación.
+- P2: validar RTX 3050, driver y CUDA con pruebas de detección, compilación y carga CUDA; conservar logs y versiones exactas.
+- P3: desplegar llama.cpp CUDA y TensorFold como cargas independientes; medir memoria host/VRAM, prefill, decode, latencia y estabilidad con protocolos comparables a los de LEONES.
+- P4: evaluar LocalAI y Parakeet como servicios de audio/API; no asumir que compatibilidad documental equivale a ejecución.
+- P5: solo después, preparar perfiles **LEONES Desktop** y **LEONES Cluster**, con K3s opcional en Desktop y habilitado en Cluster si los resultados lo justifican.
+
+**Criterio de decisión:** Kairos pasa de candidato documental a base validada únicamente cuando exista una imagen reproducible que arranque en el hardware objetivo, conserve los datos de modelos durante actualización/rollback y ejecute al menos una inferencia CUDA real con logs versionados. Hasta entonces, Ubuntu sigue siendo el entorno de desarrollo y benchmark de referencia del MSI.
+
+**Fuentes primarias:**
+- [Kairos — arquitectura inmutable](https://kairos.io/docs/architecture/immutable/)
+- [Kairos — metadistribución y componentes](https://kairos.io/docs/architecture/meta/)
+- [Kairos — imágenes basadas en contenedores y actualizaciones A/B](https://kairos.io/docs/architecture/container/)
+- [Kairos — cloud-init y configuración declarativa](https://kairos.io/docs/architecture/cloud-init/)
+- [Kairos — repositorio oficial](https://github.com/kairos-io/kairos)
+
 ## 1.1 Liquid AI en llama.cpp — incorporación de LFM3 y modelos d1
 
 La compatibilidad de la familia **LiquidAI LFM3** quedó reunida en la versión **llama.cpp v0.8.0** (28-10-2026). La incorporación al código principal fue progresiva; por tanto, los commits de desarrollo/pre-release no deben confundirse con la primera versión etiquetada que agrupa todo el soporte.
