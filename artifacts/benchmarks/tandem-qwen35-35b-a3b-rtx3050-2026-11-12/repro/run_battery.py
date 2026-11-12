@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""Run a fixed reasoning/code/debug battery against an OpenAI-compatible server.
-Never starts, stops, or reconfigures the inference server. Python 3.10+, stdlib only.
-"""
+"""Run the fixed battery and sample host resources separately for every request."""
 from __future__ import annotations
-import argparse, datetime as dt, json, pathlib, time, urllib.error, urllib.request
-from urllib.parse import urlparse\nfrom resource_monitor import RequestSampler
+import argparse
+import datetime as dt
+import json
+import pathlib
+import time
+import urllib.error
+import urllib.request
+from urllib.parse import urlparse
+from resource_monitor import RequestSampler
 
 ARITHMETIC = "¿Cuánto es 17 por 23? Responde brevemente."
 TWO_SUM = ("Escribe una función Python two_sum(nums, target) que devuelva los índices de dos "
@@ -25,105 +30,167 @@ def binary_search(nums, target):
             right = mid - 1
     return -1"""
 
-# Distinct parameter combinations observed in the original campaign; duplicate IDs are excluded.
 CASES = [
-("arithmetic", ARITHMETIC, 64, 256),
-("arithmetic", ARITHMETIC, 128, 384),
-("arithmetic", ARITHMETIC, 256, 512),
-("two_sum", TWO_SUM, 128, 512),
-("two_sum", TWO_SUM, 128, 768),
-("two_sum", TWO_SUM, 256, 1024),
-("two_sum", TWO_SUM, 128, 1536),
-("two_sum", TWO_SUM, 256, 1536),
-("binary_search", BINARY_SEARCH, 128, 1536),
-("binary_search", BINARY_SEARCH, 256, 1536),
+    ("arithmetic", ARITHMETIC, 64, 256),
+    ("arithmetic", ARITHMETIC, 128, 384),
+    ("arithmetic", ARITHMETIC, 256, 512),
+    ("two_sum", TWO_SUM, 128, 512),
+    ("two_sum", TWO_SUM, 128, 768),
+    ("two_sum", TWO_SUM, 256, 1024),
+    ("two_sum", TWO_SUM, 128, 1536),
+    ("two_sum", TWO_SUM, 256, 1536),
+    ("binary_search", BINARY_SEARCH, 128, 1536),
+    ("binary_search", BINARY_SEARCH, 256, 1536),
 ]
 
 def get_json(url, timeout=20):
-    req = urllib.request.Request(url, headers={"Accept":"application/json"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode("utf-8"))
+    req = urllib.request.Request(url, headers={"Accept": "application/json"})
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        return json.loads(response.read().decode("utf-8"))
 
 def post_json(url, payload, timeout):
-    req = urllib.request.Request(url, data=json.dumps(payload, ensure_ascii=False).encode(),
-        headers={"Content-Type":"application/json","Accept":"application/json"}, method="POST")
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode("utf-8"))
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        return json.loads(response.read().decode("utf-8"))
 
 def main():
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--base-url", default="http://127.0.0.1:18086")
-    p.add_argument("--model", required=True)
-    p.add_argument("--engine", required=True)
-    p.add_argument("--mode", required=True, choices=["same-engine-new-model","same-model-new-engine"])
-    p.add_argument("--model-path", default="")
-    p.add_argument("--output", default="")
-    p.add_argument("--timeout", type=int, default=900)
-    p.add_argument("--pause", type=float, default=1.0)
-    p.add_argument("--limit", type=int, default=0)
-    p.add_argument("--monitor-interval", type=float, default=1.0, help="Resource sampling interval in seconds")
-    p.add_argument("--server-pid", type=int, default=None, help="Explicit llama-server PID; auto-detected by API port if omitted")
-    a = p.parse_args()
-    base = a.base_url.rstrip("/")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--base-url", default="http://127.0.0.1:18086")
+    parser.add_argument("--model", required=True)
+    parser.add_argument("--engine", required=True)
+    parser.add_argument("--mode", required=True, choices=["same-engine-new-model", "same-model-new-engine"])
+    parser.add_argument("--model-path", default="")
+    parser.add_argument("--output", default="")
+    parser.add_argument("--timeout", type=int, default=900)
+    parser.add_argument("--pause", type=float, default=1.0)
+    parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--monitor-interval", type=float, default=1.0)
+    parser.add_argument("--server-pid", type=int, default=None)
+    args = parser.parse_args()
+
+    base = args.base_url.rstrip("/")
+    parsed = urlparse(base)
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
     stamp = dt.datetime.now().astimezone().strftime("%Y%m%d-%H%M%S%z")
-    out = pathlib.Path(a.output or ("tandem-battery-" + stamp))
+    out = pathlib.Path(args.output or ("tandem-battery-" + stamp))
     out.mkdir(parents=True, exist_ok=False)
     (out / "responses").mkdir()
-    (out / "resources").mkdir()\n    port = urlparse(base).port or (443 if urlparse(base).scheme == "https" else 80)
+    (out / "resources").mkdir()
+
     manifest = {
-        "started_at":dt.datetime.now().astimezone().isoformat(), "mode":a.mode,
-        "engine":a.engine, "model":a.model, "model_path_or_id":a.model_path,
-        "base_url":base, "temperature":0, "stream":False, "thinking":True,
-        "reasoning_format":"deepseek",
-        "cases":[{"task":t,"budget":b,"max_tokens":m} for t,_,b,m in CASES],
-        "note":"Client does not change server configuration.",
-        "resource_monitor":{"interval_seconds":a.monitor_interval,"server_pid_argument":a.server_pid,"metrics":"Linux /proc, /proc/diskstats and nvidia-smi; system-wide disk/swap deltas"}}
+        "started_at": dt.datetime.now().astimezone().isoformat(),
+        "mode": args.mode,
+        "engine": args.engine,
+        "model": args.model,
+        "model_path_or_id": args.model_path,
+        "base_url": base,
+        "temperature": 0,
+        "stream": False,
+        "thinking": True,
+        "reasoning_format": "deepseek",
+        "cases": [{"task": task, "budget": budget, "max_tokens": maximum}
+                  for task, _, budget, maximum in CASES],
+        "note": "Client does not change server configuration.",
+        "resource_monitor": {
+            "interval_seconds": args.monitor_interval,
+            "server_pid_argument": args.server_pid,
+            "metrics": "Linux /proc, /proc/diskstats and nvidia-smi; disk and swap counters are system-wide",
+        },
     }
-    for endpoint in ("/health","/props"):
-        try: manifest[endpoint[1:]] = get_json(base+endpoint)
-        except Exception as e: manifest[endpoint[1:]] = {"capture_error":str(e)}
-    (out/"run_manifest.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+"\n")
-    cases = CASES[:a.limit] if a.limit else CASES
-    with (out/"summary.jsonl").open("w",encoding="utf-8") as summary:
-        for i,(task,prompt,budget,max_tokens) in enumerate(cases,1):
-            payload = {"model":a.model,"messages":[{"role":"user","content":prompt}],
-                "temperature":0,"max_tokens":max_tokens,"reasoning_format":"deepseek",
-                "reasoning_budget_tokens":budget,
-                "chat_template_kwargs":{"enable_thinking":True},"stream":False}
-            rec = {"index":i,"task":task,"budget":budget,"max_tokens":max_tokens,
-                   "started_at":dt.datetime.now().astimezone().isoformat(),"request":payload}
+    for endpoint in ("/health", "/props"):
+        try:
+            manifest[endpoint[1:]] = get_json(base + endpoint)
+        except Exception as error:
+            manifest[endpoint[1:]] = {"capture_error": str(error)}
+
+    cases = CASES[:args.limit] if args.limit else CASES
+    with (out / "summary.jsonl").open("w", encoding="utf-8") as summary:
+        for index, (task, prompt, budget, maximum) in enumerate(cases, 1):
+            payload = {
+                "model": args.model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0,
+                "max_tokens": maximum,
+                "reasoning_format": "deepseek",
+                "reasoning_budget_tokens": budget,
+                "chat_template_kwargs": {"enable_thinking": True},
+                "stream": False,
+            }
+            record = {
+                "index": index,
+                "task": task,
+                "budget": budget,
+                "max_tokens": maximum,
+                "started_at": dt.datetime.now().astimezone().isoformat(),
+                "request": payload,
+            }
+            sampler = RequestSampler(
+                out / "resources",
+                f"case-{index:02d}",
+                port,
+                args.server_pid,
+                args.monitor_interval,
+            )
+            sampler.start()
             try:
-                result = post_json(base+"/v1/chat/completions",payload,a.timeout)
-                rec["response"] = result
+                result = post_json(base + "/v1/chat/completions", payload, args.timeout)
+                record["response"] = result
                 choice = (result.get("choices") or [{}])[0]
-                msg = choice.get("message") or {}
+                message = choice.get("message") or {}
                 timing = result.get("timings") or {}
                 usage = result.get("usage") or {}
-                rec["metrics"] = {
-                    "id":result.get("id"),"finish_reason":choice.get("finish_reason"),
-                    "prompt_tokens":usage.get("prompt_tokens"),
-                    "completion_tokens":usage.get("completion_tokens"),
-                    "cached_tokens":(usage.get("prompt_tokens_details") or {}).get("cached_tokens"),
-                    "prompt_ms":timing.get("prompt_ms"),"predicted_ms":timing.get("predicted_ms"),
-                    "prompt_tokens_per_second":timing.get("prompt_per_second"),
-                    "generation_tokens_per_second":timing.get("predicted_per_second"),
-                    "content_chars":len(msg.get("content") or ""),
-                    "reasoning_chars":len(msg.get("reasoning_content") or "")}
-            except urllib.error.HTTPError as e:
-                rec["error"]={"http_status":e.code,"body":e.read().decode(errors="replace")}
-            except Exception as e:
-                rec["error"]={"type":type(e).__name__,"message":str(e)}
-            rec["finished_at"] = dt.datetime.now().astimezone().isoformat()
-            name = f"{i:02d}-{task}-budget{budget}-max{max_tokens}.json"
-            (out/"responses"/name).write_text(json.dumps(rec,ensure_ascii=False,indent=2)+"\n")
-            row = dict(rec.get("metrics",rec.get("error",{})))
-            row.update({"task":task,"budget":budget,"max_tokens":max_tokens,\n                "resource_metrics":rec.get("resource_metrics"),"resource_monitor_error":rec.get("resource_monitor_error")})
-            summary.write(json.dumps(row,ensure_ascii=False)+"\n"); summary.flush()
-            print(f"[{i}/{len(cases)}] {task} budget={budget} max={max_tokens}: {row}",flush=True)
-            if i < len(cases) and a.pause: time.sleep(a.pause)
+                record["metrics"] = {
+                    "id": result.get("id"),
+                    "finish_reason": choice.get("finish_reason"),
+                    "prompt_tokens": usage.get("prompt_tokens"),
+                    "completion_tokens": usage.get("completion_tokens"),
+                    "cached_tokens": (usage.get("prompt_tokens_details") or {}).get("cached_tokens"),
+                    "prompt_ms": timing.get("prompt_ms"),
+                    "predicted_ms": timing.get("predicted_ms"),
+                    "prompt_tokens_per_second": timing.get("prompt_per_second"),
+                    "generation_tokens_per_second": timing.get("predicted_per_second"),
+                    "content_chars": len(message.get("content") or ""),
+                    "reasoning_chars": len(message.get("reasoning_content") or ""),
+                }
+            except urllib.error.HTTPError as error:
+                record["error"] = {"http_status": error.code, "body": error.read().decode(errors="replace")}
+            except Exception as error:
+                record["error"] = {"type": type(error).__name__, "message": str(error)}
+            finally:
+                try:
+                    record["resource_metrics"] = sampler.finish()
+                except Exception as error:
+                    record["resource_monitor_error"] = str(error)
+
+            record["finished_at"] = dt.datetime.now().astimezone().isoformat()
+            filename = f"{index:02d}-{task}-budget{budget}-max{maximum}.json"
+            (out / "responses" / filename).write_text(
+                json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            )
+            row = dict(record.get("metrics", record.get("error", {})))
+            row.update({
+                "task": task,
+                "budget": budget,
+                "max_tokens": maximum,
+                "resource_metrics": record.get("resource_metrics"),
+                "resource_monitor_error": record.get("resource_monitor_error"),
+            })
+            summary.write(json.dumps(row, ensure_ascii=False) + "\n")
+            summary.flush()
+            print(f"[{index}/{len(cases)}] {task} budget={budget} max={maximum}: {row}", flush=True)
+            if index < len(cases) and args.pause:
+                time.sleep(args.pause)
+
     manifest["finished_at"] = dt.datetime.now().astimezone().isoformat()
-    (out/"run_manifest.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+"\n")
-    print("Results:",out.resolve())
+    (out / "run_manifest.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    print("Results:", out.resolve())
 
 if __name__ == "__main__":
     main()
