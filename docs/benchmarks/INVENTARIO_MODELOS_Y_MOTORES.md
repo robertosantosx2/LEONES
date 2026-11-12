@@ -97,8 +97,7 @@ Se verificó la rama de LEONES `feat/tensorfold-web-standalone` y su actualizaci
 **Próximo paso de validación:** inspeccionar `tensorfold-native info mlx-community/Qwen3.5-4B-MLX-4bit`, confirmar la disponibilidad real de los pesos y memoria libre, revisar el comando completo que construye el bridge y solo entonces iniciar una única instancia controlada con CUDA, puerto 8080, `--dashboard`, contexto conservador y paralelismo 1. Después, verificar `/health`, `/v1/models`, `/stats`, `/dashboard` y una petición de chat completa. Hasta completar esos pasos, clasificar TensorFold Web como **integración de interfaz en validación; motor e inferencia pendientes**, no como nuevo benchmark ni como una nueva ejecución de Qwen3.5-4B.
 
 | Modelo / proyecto | Motor / entorno | Trabajo realizado | Estado correcto |
-|---|---|---|---|
-| **Project Maya v1.1.31** | Evaluación documental del motor MoE especializado | Release [v1.1.31](https://github.com/mw00/project-maya/releases/tag/v1.1.31); modelos densos y MoE | Evaluación de arquitectura, gestión jerárquica VRAM/RAM/SSD, cuantización/model packs y API local. Modelos densos genéricos como Qwen3.5-4B y Qwen3.5-30B-A3B no tienen compatibilidad confirmada en esa release; no asumir soporte GGUF universal. Los motores especializados documentados se dirigen a GLM-5.3-Flash, DeepSeek-V4.1-Flash y MiniMax-M3.1-Flash. |\n| **Qwen3.5-35B-A3B** | TensorFold | Estimación de memoria y análisis de compatibilidad; pesos estimados en torno a 20,4 GB en el formato estudiado | Sin inferencia TensorFold validada en el MSI. |
+|---|---|---|---|| **Project Maya v1.1.31** | Evaluación documental del motor MoE especializado | Release [v1.1.31](https://github.com/mw00/project-maya/releases/tag/v1.1.31); modelos densos y MoE | Evaluación de arquitectura, gestión jerárquica VRAM/RAM/SSD, cuantización/model packs y API local. Modelos densos genéricos como Qwen3.5-4B y Qwen3.5-30B-A3B no tienen compatibilidad confirmada en esa release; no asumir soporte GGUF universal. Los motores especializados documentados se dirigen a GLM-5.3-Flash, DeepSeek-V4.1-Flash y MiniMax-M3.1-Flash. |\n| **Qwen3.5-35B-A3B** | TensorFold | Estimación de memoria y análisis de compatibilidad; pesos estimados en torno a 20,4 GB en el formato estudiado | Sin inferencia TensorFold validada en el MSI. |
 | **Qwen3.5-35B-A3B IQ2_XXS** | Kinetic | Modelo identificado/seleccionado para campaña | Vincular log definitivo antes de declarar velocidad medida. |
 | **Magnitude 0.2.15 — servicio y catálogo** | Servicio systemd `magnitude.service` / CLI | Actualización del paquete DEB a 0.2.15; servicio `Ready`, procesos `magnitude-service` y `magnitude-inference`; escucha `0.0.0.0:10100`, `requireApiKey=true`; `curl http://127.0.0.1:10100/` devolvió HTTP 200. `magnitude catalog list` mostró únicamente MiniCPM5 1B Q4. | **Instalación y disponibilidad del servicio verificadas**, no benchmark de inferencia. URL local `http://127.0.0.1:10100`; acceso desde otros dispositivos sujeto a clave de red. No había modelo activo. El HTML inicial declara `lang="en"`; esto solo acredita el idioma del documento raíz, no una auditoría completa de localización de la interfaz. |\n| **Qwen3.5-4B** | Magnitude 0.2.10 | Descarga/verificación de pesos y proyector; ID no reconocido por CLI | Sin inferencia. |
 | **Qwen3.5-9B** | Estudio TensorFold / RTX 3050 | Informe de memoria, cuantización y viabilidad; comparación E-means frente a K-means | Estudio técnico, no ejecución local validada del 9B. |
@@ -197,8 +196,29 @@ Dream-Coder-7B, DiffuCoder-7B, DiffuLLaMA, ELYZA-Diffusion-Instruct, DiffusionGe
 - Registrar pasos de denoising, tokens resueltos por paso, longitud de prompt/salida, early-exit, caché, cuantización y tiempo de muestreo.
 - No extrapolar los resultados de EPYC o A100 al i7-12650H/RTX 3050.
 - No atribuir a TensorFold compatibilidad con dLLM: sigue **no acreditada** en la matriz de runtimes.
-
 **Fuentes:** [Open-dLLM / Open-dCoder](https://github.com/pengzhangzhi/Open-dLLM) · [diffuse-cpp y benchmarks](https://github.com/iafiscal1212/diffuse-cpp) · [Dream](https://github.com/DreamLM/Dream) · [LLaDA](https://github.com/ML-GSAI/LLaDA) · [llama.cpp — benchmark Dream](https://github.com/ggml-org/llama.cpp/discussions/22972).
+
+## 3.3 NVIDIA DeepSeek-V4.1-Flash-1017-NVFP4 — evaluación documental inicial (12-11-2026)
+
+**Artefacto oficial identificado:** [`nvidia/DeepSeek-V4.1-Flash-1017-NVFP4`](https://huggingface.co/nvidia/DeepSeek-V4.1-Flash-1017-NVFP4), publicado bajo la cuenta oficial `nvidia` de Hugging Face. No confundirlo con las cuantizaciones comunitarias de nombre parecido.
+
+**Metadatos consultados en Hugging Face (12-11-2026):**
+- Autor: NVIDIA (`nvidia`); arquitectura declarada: `deepseek_v41`.
+- Tarea declarada por el Hub: `image-text-to-text`; biblioteca: Model Optimizer.
+- Formato/etiquetas: Safetensors, ModelOpt, cuantización FP4/NVFP4; el repositorio también lleva etiquetas FP8/8-bit y referencia como modelo base a `deepseek-ai/DeepSeek-V4.1-Flash-1017`.
+- Licencia declarada en el Hub: MIT.
+- Parámetros mostrados por los metadatos del repositorio: 664.898,4 M. Esta cifra se transcribe como metadato del Hub y no se interpreta aquí como número de parámetros activos.
+- Última actualización que mostraba la ficha al consultarla: 30-10-2026.
+
+**Aclaración sobre los 81 GB:** la identificación del repositorio confirma que existe un checkpoint oficial NVIDIA NVFP4, pero la consulta de metadatos realizada no expuso un tamaño total de descarga de 81 GB ni un manifiesto de archivos que permita verificar esa cifra. Por tanto, **81 GB queda como dato comunicado/pendiente de verificar**, no como tamaño confirmado del checkpoint. No reutilizar cifras de otros repositorios, variantes o estimaciones de memoria como si fueran el tamaño de este artefacto. Antes de descargar, comprobar en la pestaña *Files and versions* el tamaño acumulado de todos los shards y los archivos auxiliares; distinguir tamaño en disco, memoria residente, VRAM y memoria total requerida durante inferencia.
+
+**Viabilidad preliminar en el MSI Thin 15 B12UC:** equipo de referencia con Intel Core i7-12650H, 14 GiB RAM, RTX 3050 Laptop 4 GiB VRAM, Ubuntu, driver NVIDIA 580.178.04 y swap de 32 GiB. No se ha descargado ni ejecutado este modelo. La VRAM no permite alojar el modelo completo y la RAM física del equipo está muy por debajo de lo que cabe esperar para un checkpoint MoE de esta escala. El swap no debe contabilizarse como sustituto de RAM ni como solución de rendimiento. La activación de un subconjunto de expertos por token tampoco elimina la necesidad de almacenar/acceder a los pesos de los expertos y componentes auxiliares.
+
+**Compatibilidad/runtime:** el repositorio está etiquetado para NVIDIA Model Optimizer y Safetensors. No se ha demostrado que este checkpoint sea GGUF ni que pueda cargarse directamente con los binarios locales de llama.cpp, TensorFold, RustingStrata, Kinetic o Colibri. Tampoco se ha validado una receta de ejecución en la RTX 3050. No atribuirle compatibilidad con vLLM/SGLang ni requisitos exactos de GPU sin comprobar la configuración oficial de inferencia y las versiones de runtime asociadas a este checkpoint.
+
+**Estado LEONES:** `RESEARCH_ONLY / OFFICIAL_CHECKPOINT_IDENTIFIED / NOT_DOWNLOADED / NOT_RUN_ON_MSI`. No es benchmark ni prueba de compatibilidad. Siguiente paso: auditar la lista completa de archivos y su tamaño real, revisar la configuración/model card oficial de NVIDIA y comprobar si existe una modalidad de despliegue remoto o particionado que no requiera cargar todos los pesos en el MSI. No iniciar una descarga masiva hasta cerrar esa auditoría.
+
+**Fuente primaria:** [NVIDIA — DeepSeek-V4.1-Flash-1017-NVFP4 en Hugging Face](https://huggingface.co/nvidia/DeepSeek-V4.1-Flash-1017-NVFP4).
 
 ## 4. Informes y artefactos primarios
 
@@ -297,8 +317,7 @@ El informe también documenta diagnósticos de carga CUDA de Qwen3-30B-A3B (buff
 - Archivar en LEONES los logs, JSONL, manifiesto y configuración íntegra de Tandem Qwen3.5-35B-A3B IQ2_XXS si no están ya completos.
 - Clonar y auditar el código fuente de ThumbLLM en Ubuntu, compilar el runtime CPU fijado, verificar el GGUF y portar/validar el frontend Linux; registrar una campaña reproducible antes de marcarlo como ejecutado.\n- Consolidar los resultados finales de Kinetic por modelo, cuantización, backend y versión.
 - Completar YASAKANI solo cuando exista una ejecución verificable.
-- Ejecutar y archivar la reproducción Ubuntu de ThumbLLM/Ornith 1.5 9B: log de descarga y SHA-256, commit/flags de compilación, versión resultante de llama.cpp, configuración efectiva, log de carga/inferencia y métricas PP/TG; solo entonces promoverla a ejecución medida.
-- Mantener Colibri como auditoría/compilación hasta disponer de inferencia reproducible.
+- Ejecutar y archivar la reproducción Ubuntu de ThumbLLM/Ornith 1.5 9B: log de descarga y SHA-256, commit/flags de compilación, versión resultante de llama.cpp, configuración efectiva, log de carga/inferencia y métricas PP/TG; solo entonces promoverla a ejecución medida.- Mantener Colibri como auditoría/compilación hasta disponer de inferencia reproducible.
 - Incorporar futuras pruebas como campañas fechadas, sin sobrescribir resultados históricos.
 
 ---
