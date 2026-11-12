@@ -73,7 +73,7 @@ def main() -> int:
         raise SystemExit(f"Server PID does not exist: {args.pid}")
     exe = (proc / "exe").resolve()
     cwd = (proc / "cwd").resolve()
-    cmdline = (proc / "cmdline").read_bytes().replace(b"\\0", b" ").decode(errors="replace")
+    cmdline = (proc / "cmdline").read_bytes().replace(b"\0", b" ").decode(errors="replace")
     if exe.name != "llama-server" or "llama-server" not in cmdline:
         raise SystemExit(f"PID does not identify llama-server: exe={exe}; cmdline={cmdline}")
 
