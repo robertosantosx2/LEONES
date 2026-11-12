@@ -36,6 +36,13 @@
 
 Con thinking activado y sin presupuesto explícito, se observaron salidas de razonamiento que consumieron max_tokens enteros sin producir contenido final (finish_reason length). La prueba sin thinking sí produjo una respuesta final. El parser Qwen3-Coder separa el contenido anterior a </think> como reasoning_content; al no aparecer el cierre antes de acabar la generación, content queda vacío. El control reasoning_budget_tokens fuerza el marcador de cierre al agotar el presupuesto.
 
-## Artefactos locales pendientes de adjuntar
+## Evidencias y ficheros reproducibles
 
-Los ficheros originales están en $HOME/Descargas/tandem-research/logs/. El recolector incluido en repro/ copia los ficheros que existan, incluyendo los JSON de peticiones, startup/build logs, metadata GGUF y JSONL de benchmark. No se afirma que esos ficheros estén ya subidos: el archivo comprimido con los originales y las capturas de sistema se incorporará después de ejecutar el recolector.
+El archivo de evidencias generado el 12 de noviembre de 2026 se ha incorporado a esta rama de Git y su checksum SHA-256 se verificó localmente antes de publicarlo.
+
+- [Archivo comprimido de evidencias (TAR.GZ)](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/evidence/tandem-qwen35-evidence-20261112-235030.tar.gz)
+- [Checksum SHA-256](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/evidence/tandem-qwen35-evidence-20261112-235030.tar.gz.sha256)
+- [Scripts de reproducción](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/)
+- [Metodología de la batería](tandem-qwen35-reasoning-budget-methodology-2026-11-12.md)
+
+El archivo contiene los registros y capturas recopilados por el script de evidencias. No incluye los pesos del modelo GGUF.
