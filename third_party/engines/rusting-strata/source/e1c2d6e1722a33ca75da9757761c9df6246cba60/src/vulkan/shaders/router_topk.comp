@@ -1,0 +1,14 @@
+#version 460
+layout(local_size_x = 32) in;
+#include "common.glsl"
+#include "topk.glsl"
+layout(push_constant) uniform P { F32 p; I32 ids; F32 wts; uint n; uint k; float extra_scale; } p;
+
+// One subgroup per token (workgroup x).
+void main() {
+    uint lane = gl_LocalInvocationID.x, o = gl_WorkGroupID.x * p.k + lane;
+    int id;
+    float w;
+    topk(p.p, gl_WorkGroupID.x * p.n, p.n, p.k, p.extra_scale, lane, id, w);
+    if (lane < p.k) { p.ids.v[o] = id; p.wts.v[o] = w; }
+}

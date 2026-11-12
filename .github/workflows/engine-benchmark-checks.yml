@@ -1,0 +1,37 @@
+name: Engine benchmark framework checks
+
+on:
+  push:
+    branches:
+      - research/kinetic-audit-benchmark
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate Python syntax
+        run: |
+          python -m py_compile scripts/vendor_engines.py scripts/engine_comparison.py scripts/capture_engine_build.py scripts/validate_engine_config.py
+      - name: Validate JSON configuration
+        run: |
+          python -m json.tool configs/engines.registry.json >/dev/null
+          python -m json.tool configs/engine-comparison.example.json >/dev/null
+          python -m json.tool configs/models.registry.json >/dev/null
+          python scripts/validate_engine_config.py
+          python -m json.tool configs/engines.registry.json >/dev/null
+      - name: Run benchmark unit tests
+        run: python -m unittest discover -s tests -p 'test_engine_comparison.py' -v
+      - name: Validate shell wrappers
+        run: |
+          bash -n scripts/import_kinetic.sh
+          bash -n scripts/build_engines_msi.sh

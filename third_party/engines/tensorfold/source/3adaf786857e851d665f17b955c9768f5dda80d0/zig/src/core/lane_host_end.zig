@@ -1,0 +1,201 @@
+//! How a lane host ends jobs it will not run on: cancellations named since the last round, a failed round, a close.
+const std = @import("std");
+const fill = @import("lane_host_fill.zig");
+const lane_halt = @import("lane_halt.zig");
+const lane_stream = @import("lane_stream.zig");
+const recalls = @import("lane_host_recall.zig");
+const LaneHost = @import("lane_host.zig").LaneHost;
+const Job = LaneHost.Job;
+
+/// Cancels queued and admitted jobs named since the last round; the names are taken whole, so none is lost to memory.
+pub fn takeCancels(h: *LaneHost) void {
+    h.lock();
+    var ids = h.cancels;
+    h.cancels = .empty;
+    h.unlock();
+    defer ids.deinit(h.gpa);
+    for (ids.items) |id| {
+        var found: ?*Job = null;
+        // the status reader walks `admitted` under this lock: the removal joins the walk's critical section
+        h.lock();
+        for (h.queued.items, 0..) |job, i| if (job.id == id) {
+            found = h.queued.orderedRemove(i);
+            break;
+        };
+        if (found == null) for (h.admitted.items, 0..) |job, i| if (job.id == id) {
+            fill.unfill(h, job);
+            found = h.admitted.orderedRemove(i);
+            break;
+        };
+        h.unlock();
+        if (found) |job| {
+            if (job.fill_began and job.prefilled == null and !job.stream.finished) if (h.core.backend.vtable.cancel_prefill) |keep_prefix| {
+                keep_prefix(h.core.backend.ptr, &job.stream) catch |err| {
+                    _ = dropFailed(h, job, err);
+                    continue;
+                };
+            };
+            if (job.started and !job.stream.finished) h.core.discard(&job.stream);
+            // a cancel between two prompt calls ends the request with no call failing: this line marks the end
+            if (job.fill_began) if (h.trace) |t| {
+                const at = t.now();
+                t.line(.{ .t0_ns = at, .t1_ns = at, .kind = .cancel, .id = job.id, .stream = job.seq, .rows_to = job.stream.fill_at.load(.monotonic) });
+            };
+            h.finish(job, .cancelled, "");
+        }
+    }
+}
+
+/// The backend's failure hook hears a round's or request's error; the caller chooses the message.
+pub fn failed(h: *const LaneHost, err: anyerror) void {
+    if (h.failure) |f| f.call(f.ctx, err);
+}
+
+/// A request the backend failed: the failure hook hears the error and the request ends with the backend's words.
+pub fn dropFailed(h: *LaneHost, job: *Job, err: anyerror) bool {
+    failed(h, err);
+    return h.drop(job, h.words(err));
+}
+
+/// Sends replies and finishes jobs only after the core has reaped terminal streams.
+pub fn deliverPending(h: *LaneHost) void {
+    var i: usize = 0;
+    while (i < h.admitted.items.len) {
+        const job = h.admitted.items[i];
+        if (h.deliver(job)) continue;
+        i += 1;
+    }
+}
+
+/// A failed round takes the live streams (paused among them) and its unrun finals' prompts; the rest keep their places.
+pub fn failRound(h: *LaneHost, err: anyerror) void {
+    failed(h, err);
+    std.log.warn("lane host: a round failed ({s}): the round's streams fail", .{@errorName(err)});
+    h.core.sweep() catch {};
+    h.lock();
+    var jobs = h.admitted;
+    h.admitted = .empty;
+    h.unlock();
+    defer jobs.deinit(h.gpa);
+    for (jobs.items) |job| {
+        var in_round = false;
+        if (job.started) for (h.core.live.items) |x| {
+            if (x == &job.stream) {
+                in_round = true;
+                break;
+            }
+        };
+        if (!in_round) {
+            // the planner has this prompt decoding and offers it to no later plan: fail it, not strand its lane
+            if (job.started and !job.stream.finished and plannedToEnd(h, job)) {
+                endFailed(h, job, @errorName(err));
+                continue;
+            }
+            h.lock();
+            const kept = h.admitted.append(h.gpa, job);
+            h.unlock();
+            // the list could not take the job back; fail it rather than leak it
+            if (kept) |_| continue else |_| {}
+        }
+        endFailed(h, job, @errorName(err));
+    }
+}
+
+/// Whether the plan carried the prompt to its end: its final is listed, or a piece ends at the prompt's last row.
+fn plannedToEnd(h: *const LaneHost, job: *const Job) bool {
+    const key = @intFromPtr(job);
+    for (h.finals.items) |at| if (at == key) return true;
+    const end: u64 = job.request.prompt.len -| 1;
+    if (end == 0) return false;
+    for (h.pieces.items) |piece| if (piece.key == key and piece.end == end) return true;
+    return false;
+}
+
+/// A failed round ends every job it admitted, with the backend's error; the list is taken whole, not copied.
+pub fn failAll(h: *LaneHost, message: []const u8) void {
+    std.log.warn("lane host: a round failed ({s}): every admitted stream fails", .{message});
+    h.core.sweep() catch {};
+    h.lock();
+    var jobs = h.admitted;
+    h.admitted = .empty;
+    h.unlock();
+    defer jobs.deinit(h.gpa);
+    for (jobs.items) |job| endFailed(h, job, message);
+}
+
+/// Ends a failed job: off the filling list, its stream discarded unless already finished.
+fn endFailed(h: *LaneHost, job: *Job, message: []const u8) void {
+    h.lock();
+    fill.unfill(h, job);
+    h.unlock();
+    if (job.started and !job.stream.finished) h.core.discard(&job.stream);
+    h.finish(job, .failed, message);
+}
+
+/// Ends every queued and admitted job cancelled (the cancellations named before it first), copying nothing.
+pub fn closeAll(h: *LaneHost) void {
+    if (h.halt_reason) |reason| return lane_halt.haltAll(h, reason);
+    takeCancels(h);
+    h.lock();
+    var queued = h.queued;
+    h.queued = .empty;
+    var admitted = h.admitted;
+    h.admitted = .empty;
+    h.filling.clearRetainingCapacity();
+    h.unlock();
+    defer queued.deinit(h.gpa);
+    defer admitted.deinit(h.gpa);
+    for (admitted.items) |job| {
+        if (job.started and !job.stream.finished) h.core.discard(&job.stream);
+        h.finish(job, .cancelled, "");
+    }
+    for (queued.items) |job| h.finish(job, .cancelled, "");
+}
+
+/// No memory for another lane yet: the job waits at the queue's head, and admission holds until a job ends.
+pub fn requeue(h: *LaneHost, job: *Job) bool {
+    if (job.stream.pending != null or job.delivered != 0) return h.drop(job, "memory failure after first-token commit");
+    h.lock();
+    for (h.admitted.items, 0..) |j, i| if (j == job) {
+        _ = h.admitted.orderedRemove(i);
+        break;
+    };
+    @import("lane_host_ledger.zig").release(h, job); // it promises again when it is next taken
+    const others = h.admitted.items.len;
+    const waits = others > 0 and blk: { // with nothing else running no memory comes back: it would wait forever
+        h.queued.insert(h.gpa, 0, job) catch break :blk false;
+        break :blk true;
+    };
+    @import("lane_host_load.zig").ended(job); // before the teardown: this attempt's time leaves with it
+    if (waits) {
+        h.load.requeued += 1;
+        h.memory_lanes = others; // under the lock: a publish reads it
+    }
+    h.unlock();
+    if (!waits) {
+        h.finish(job, .failed, if (others > 0) "out of memory" else alone_words);
+        return true;
+    }
+    job.fill_on.store(false, .release); // off the lists before the teardown a status reader could have walked into
+    job.reported();
+    if (job.stream.grammar) |g| g.deinit(h.gpa); // the next admission compiles its own
+    job.stream.deinit(h.gpa);
+    lane_stream.freeProposer(h, job);
+    recalls.release(job);
+    job.started = false;
+    job.fill_began = false;
+    job.reached = 0;
+    job.cache_promise = .{};
+    job.entry = null; // looked up again at its next admission
+    h.gpa.free(job.marks);
+    job.marks = &.{};
+    h.gpa.free(job.key);
+    job.key = &.{};
+    return false;
+}
+
+const alone_words = "the engine has no memory for this request's caches with nothing else running: lower --context or --parallel";
+
+test {
+    _ = @import("lane_host_interrupted_test.zig");
+}

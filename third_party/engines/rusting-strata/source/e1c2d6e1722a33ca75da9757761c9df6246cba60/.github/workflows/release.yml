@@ -1,0 +1,49 @@
+# Builds Linux and Windows binaries when a version tag (v1.2.0, ...) is pushed and attaches them to a draft release,
+# which is published by hand. CUDA kernels compile at run time through NVRTC and the Vulkan shaders are committed,
+# so the build needs neither the CUDA toolkit nor a Vulkan SDK.
+name: release
+on:
+  push:
+    tags: ['v*']
+permissions: {}
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - run: gh release create "$GITHUB_REF_NAME" --draft --verify-tag --title "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY"
+  build:
+    needs: draft
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04  # the oldest glibc the binary will need
+            bin: rustingstrata
+            asset: rustingstrata-linux-x86_64
+          - os: windows-latest
+            bin: rustingstrata.exe
+            asset: rustingstrata-windows-x86_64.exe
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    env:
+      # .cargo/config.toml builds for the local CPU; release binaries target x86-64-v3 (AVX2 and FMA: Intel Haswell,
+      # AMD Zen and later) instead, without debug info.
+      RUSTFLAGS: -C target-cpu=x86-64-v3
+      CARGO_PROFILE_RELEASE_DEBUG: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: rustup update stable
+      - run: cargo build --release --locked
+      # Only the upload step gets the token, so build scripts of dependencies cannot read it.
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp target/release/${{ matrix.bin }} ${{ matrix.asset }}
+          gh release upload "$GITHUB_REF_NAME" ${{ matrix.asset }} --repo "$GITHUB_REPOSITORY"
+        shell: bash

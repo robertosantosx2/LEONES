@@ -1,0 +1,538 @@
+//! Context-window refusals stay streamed; other refusals preserve their HTTP status before admission.
+const std = @import("std");
+const api = @import("engine_api");
+const server = @import("root.zig");
+const json = server.json;
+const model_text = @import("model_text.zig");
+const openai = @import("openai.zig");
+const anthropic_translate = @import("anthropic_translate.zig");
+const responses_translate = @import("responses_translate.zig");
+const errors = @import("errors.zig");
+const Conn = @import("http_conn.zig").Conn;
+
+/// Bytes as tokens; every prompt renders as "prompt" (6 tokens).
+pub const TestText = struct {
+    pub fn text(t: *@This()) model_text.Text {
+        return .{ .ctx = t, .vtable = &.{ .encode = encode, .decode = decode, .token_id = tokenId, .token_string = tokenString, .vocab_size = vocabSize, .eos_ids = eosIds, .render = render, .template_source = templateSource } };
+    }
+
+    pub fn encode(_: *anyopaque, a: std.mem.Allocator, input: []const u8, _: bool) model_text.Error![]u32 {
+        const ids = try a.alloc(u32, input.len);
+        for (input, ids) |byte, *id| id.* = byte;
+        return ids;
+    }
+
+    fn decode(_: *anyopaque, a: std.mem.Allocator, ids: []const u32) std.mem.Allocator.Error![]u8 {
+        const decoded = try a.alloc(u8, ids.len);
+        for (ids, decoded) |id, *byte| byte.* = @intCast(id);
+        return decoded;
+    }
+
+    fn tokenId(_: *anyopaque, _: []const u8) ?u32 {
+        return null;
+    }
+
+    fn tokenString(_: *anyopaque, a: std.mem.Allocator, id: u32) std.mem.Allocator.Error![]u8 {
+        return std.fmt.allocPrint(a, "{d}", .{id});
+    }
+
+    fn vocabSize(_: *anyopaque) u32 {
+        return 256;
+    }
+
+    fn eosIds(_: *anyopaque) []const u32 {
+        return &.{};
+    }
+
+    fn render(_: *anyopaque, a: std.mem.Allocator, _: json.Value, _: model_text.RenderOptions, _: *[]const u8) model_text.Error!model_text.Rendered {
+        return .{ .text = try (a.dupe(u8, "prompt")) };
+    }
+
+    fn templateSource(_: *anyopaque) []const u8 {
+        return "";
+    }
+};
+
+/// An 8-token window whose engine answers "hi" at once.
+const HiEngine = struct {
+    fn engine(e: *@This()) api.Engine {
+        return .{ .ctx = e, .vtable = &.{ .info = info, .submit = submit, .cancel = cancel, .status = status, .memory = memory } };
+    }
+
+    fn info(_: *anyopaque) api.Info {
+        return .{ .context_window = 8 };
+    }
+
+    fn submit(_: *anyopaque, id: api.Id, _: *const api.Request, sink: api.Sink) api.SubmitError!void {
+        sink.event(sink.ctx, id, &.{ .prefilled = 0 });
+        sink.event(sink.ctx, id, &.{ .tokens = &.{ 'h', 'i' } });
+        sink.event(sink.ctx, id, &.{ .finished = .{ .reason = .stop } });
+    }
+
+    fn cancel(_: *anyopaque, _: api.Id) void {}
+
+    fn status(_: *anyopaque, out: *api.Status, _: []u32) void {
+        out.* = .{};
+    }
+
+    fn memory(_: *anyopaque, _: bool) ?api.Memory {
+        return null;
+    }
+};
+
+/// Two tool calls byte by byte, with a newline between them that the whole reply does not show.
+pub const CallEngine = struct {
+    const reply = "<tool_call>\n{\"name\": \"lookup\", \"arguments\": {\"q\": \"a\"}}\n</tool_call>\n" ++
+        "<tool_call>\n{\"name\": \"lookup\", \"arguments\": {\"q\": \"b\"}}\n</tool_call>";
+    const ids = blk: {
+        var out: [reply.len]u32 = undefined;
+        for (reply, &out) |byte, *id| id.* = byte;
+        break :blk out;
+    };
+    tokens: []const u32 = &ids,
+    batched: bool = false,
+
+    pub fn engine(e: *@This()) api.Engine {
+        return .{ .ctx = e, .vtable = &.{ .info = info, .submit = submit, .cancel = HiEngine.cancel, .status = HiEngine.status, .memory = HiEngine.memory } };
+    }
+
+    fn info(_: *anyopaque) api.Info {
+        return .{ .context_window = 4096 };
+    }
+
+    fn submit(ctx: *anyopaque, id: api.Id, _: *const api.Request, sink: api.Sink) api.SubmitError!void {
+        const e: *CallEngine = @ptrCast(@alignCast(ctx));
+        sink.event(sink.ctx, id, &.{ .prefilled = 0 });
+        if (e.batched) {
+            sink.event(sink.ctx, id, &.{ .tokens = e.tokens });
+        } else {
+            var at: usize = 0;
+            while (at < e.tokens.len) {
+                const n = std.unicode.utf8ByteSequenceLength(@intCast(e.tokens[at])) catch 1;
+                sink.event(sink.ctx, id, &.{ .tokens = e.tokens[at..][0..n] });
+                at += n;
+            }
+        }
+        sink.event(sink.ctx, id, &.{ .finished = .{ .reason = .stop } });
+    }
+};
+
+/// What the route's output saw: a whole reply's status, error code and sampling label, or a stream and its first role.
+const Seen = struct {
+    gone_at_open: bool = false, // the client is gone when the stream opens
+    opened: bool = false,
+    events: usize = 0,
+    role_first: bool = false,
+    status: ?u16 = null,
+    context_code: bool = false,
+    label: ?enum { exact, greedy } = null,
+    preparing: i64 = 0,
+    text: [64]u8 = undefined, // the streamed delta content, or the whole reply's message content
+    text_len: usize = 0,
+    calls: usize = 0, // the tool calls the stream started, or the whole reply's tool calls
+    arguments: [2048]u8 = undefined,
+    arguments_len: usize = 0,
+    finish: ?enum { stop, length, tool_calls } = null, // the reply's or the stream's last finish_reason
+    refusal: [160]u8 = undefined, // a whole reply's error message
+    refusal_len: usize = 0,
+
+    fn keepFinish(c: *Seen, choice: json.Value) void {
+        const f = choice.strField("finish_reason") orelse return;
+        c.finish = std.meta.stringToEnum(@TypeOf(c.finish.?), f);
+    }
+
+    fn keepArguments(c: *Seen, call: json.Value) void {
+        const f = call.get("function") orelse return;
+        const args = f.strField("arguments") orelse return;
+        const n = @min(args.len, c.arguments.len - c.arguments_len);
+        @memcpy(c.arguments[c.arguments_len..][0..n], args[0..n]);
+        c.arguments_len += n;
+    }
+
+    pub fn content(c: *const Seen) []const u8 {
+        return c.text[0..c.text_len];
+    }
+
+    fn keep(c: *Seen, part: json.Value) void {
+        if (part != .string) return;
+        const n = @min(part.string.len, c.text.len - c.text_len);
+        @memcpy(c.text[c.text_len..][0..n], part.string[0..n]);
+        c.text_len += n;
+    }
+
+    fn out(c: *Seen) openai.Out {
+        return .{ .ctx = c, .vt = &.{ .open = open, .event = event, .reply = reply } };
+    }
+
+    fn open(ctx: *anyopaque, _: usize) error{Closed}!void {
+        const c: *Seen = @ptrCast(@alignCast(ctx));
+        if (c.gone_at_open) return error.Closed;
+        c.opened = true;
+    }
+
+    fn event(ctx: *anyopaque, payload: ?json.Value) error{Closed}!void {
+        const c: *Seen = @ptrCast(@alignCast(ctx));
+        c.events += 1;
+        const p = payload orelse return;
+        if (p.get("error")) |err| {
+            const code = err.get("code") orelse return;
+            c.context_code = code == .string and std.mem.eql(u8, code.string, "context_length_exceeded");
+            return;
+        }
+        if (p.get("choices")) |ch| if (ch == .array and ch.array.len > 0) c.keepFinish(ch.array[0]);
+        if (p.get("choices")) |ch| if (ch == .array and ch.array.len > 0) if (ch.array[0].get("delta")) |d| {
+            if (d.get("content")) |t| c.keep(t);
+            if (d.get("tool_calls")) |t| if (t == .array) for (t.array) |call| {
+                if (call.get("id") != null) c.calls += 1;
+                c.keepArguments(call);
+            };
+        };
+        if (c.events != 1) return;
+        const choices = p.get("choices") orelse return;
+        if (choices != .array or choices.array.len == 0) return;
+        const role = (choices.array[0].get("delta") orelse return).get("role") orelse return;
+        c.role_first = role == .string and std.mem.eql(u8, role.string, "assistant");
+    }
+
+    fn reply(ctx: *anyopaque, status: u16, payload: json.Value) void {
+        const c: *Seen = @ptrCast(@alignCast(ctx));
+        c.status = status;
+        if (payload.get("tensorfold")) |t| if (t.get("sampling")) |l| if (l == .string) {
+            c.label = if (std.mem.eql(u8, l.string, "exact")) .exact else if (std.mem.eql(u8, l.string, "greedy")) .greedy else null;
+        };
+        if (payload.get("choices")) |ch| if (ch == .array and ch.array.len > 0) c.keepFinish(ch.array[0]);
+        if (payload.get("choices")) |ch| if (ch == .array and ch.array.len > 0) if (ch.array[0].get("message")) |m| {
+            if (m.get("content")) |t| c.keep(t);
+            if (m.get("tool_calls")) |t| if (t == .array) {
+                c.calls += t.array.len;
+                for (t.array) |call| c.keepArguments(call);
+            };
+        };
+        const err = payload.get("error") orelse return;
+        if (err.strField("message")) |m| {
+            c.refusal_len = @min(m.len, c.refusal.len);
+            @memcpy(c.refusal[0..c.refusal_len], m[0..c.refusal_len]);
+        }
+        const code = err.get("code") orelse return;
+        c.context_code = code == .string and std.mem.eql(u8, code.string, "context_length_exceeded");
+    }
+};
+
+const Route = enum { chat, messages, responses };
+
+/// A Responses request with no stored conversation to read.
+pub const NoHistory = struct {
+    pub fn conversation(_: NoHistory, cx: *errors.Cx, _: json.Value) errors.Refused![]json.Value {
+        return cx.refuse("no stored responses in this test");
+    }
+};
+
+/// `body` through `route`'s translation and the chat handler, as the route runs it; the preparing count after it.
+fn send(route: Route, body: []const u8) !Seen {
+    return sendTo(route, body, .{});
+}
+
+fn sendTo(route: Route, body: []const u8, start: Seen) !Seen {
+    var backend: HiEngine = .{};
+    return sendWith(backend.engine(), route, body, start);
+}
+
+pub fn sendWith(engine: api.Engine, route: Route, body: []const u8, start: Seen) !Seen {
+    return sendWithBudget(engine, route, body, start, 0);
+}
+
+fn sendWithBudget(engine: api.Engine, route: Route, body: []const u8, start: Seen, default_budget: i64) !Seen {
+    var text: TestText = .{};
+    var srv = try server.Server.init(std.testing.allocator, std.testing.io, engine, text.text(), .{
+        .served_name = "test-model",
+        .model_ids = &.{"test-model"},
+        .enable_thinking = false,
+        .use_drafts = false,
+        .thinking_budget = default_budget,
+    }, null);
+    defer srv.deinit();
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const raw = (try json.parse(a, body)).ok;
+    var cx: errors.Cx = .{ .a = a };
+    const chat = switch (route) {
+        .chat => raw,
+        .messages => try anthropic_translate.translate(&cx, raw, false),
+        .responses => (try responses_translate.translate(&cx, raw, NoHistory{})).chat,
+    };
+    var conn: Conn = .{ .fd = -1, .peer = "", .buf = &.{}, .gpa = a };
+    var seen = start;
+    openai.run(srv, a, seen.out(), .{ .conn = &conn }, true, chat);
+    seen.preparing = srv.preparing.load(.acquire);
+    return seen;
+}
+
+fn expectContextInStream(seen: Seen, role: bool) !void {
+    try std.testing.expect(seen.opened);
+    try std.testing.expectEqual(role, seen.role_first);
+    try std.testing.expect(seen.context_code);
+    try std.testing.expectEqual(@as(?u16, null), seen.status);
+    try std.testing.expect(seen.events >= 2);
+    try std.testing.expectEqual(@as(i64, 0), seen.preparing);
+}
+
+test "a streamed chat over the window reports context_length_exceeded after the role chunk" {
+    try expectContextInStream(try send(.chat, "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"stream\":true,\"max_tokens\":100}"), true);
+}
+
+test "a streamed chat with tools over the window reports the context error with no role chunk" {
+    try expectContextInStream(try send(.chat, "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"stream\":true,\"max_tokens\":100," ++
+        "\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"f\",\"parameters\":{\"type\":\"object\"}}}]}"), false);
+}
+
+test "a streamed Messages request over the window reports the context error in the stream" {
+    try expectContextInStream(try send(.messages, "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"stream\":true,\"max_tokens\":100}"), true);
+}
+
+test "a streamed Responses request over the window reports the context error in the stream" {
+    try expectContextInStream(try send(.responses, "{\"model\":\"test-model\",\"input\":\"x\",\"stream\":true,\"max_output_tokens\":100}"), true);
+}
+
+test "a valid streamed chat still opens with the role chunk and gives the preparing count back" {
+    const seen = try send(.chat, "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"stream\":true,\"max_tokens\":2}");
+    try std.testing.expect(seen.opened);
+    try std.testing.expect(seen.role_first);
+    try std.testing.expect(seen.events >= 3); // the role, the text, the last chunk
+    try std.testing.expectEqual(@as(?u16, null), seen.status);
+    try std.testing.expectEqual(@as(i64, 0), seen.preparing);
+}
+
+test "a stream whose client is gone when it opens gives the preparing count back" {
+    const body = "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"stream\":true,\"max_tokens\":2}";
+    const seen = try sendTo(.chat, body, .{ .gone_at_open = true });
+    try std.testing.expect(!seen.opened);
+    try std.testing.expectEqual(@as(i64, 0), seen.preparing);
+}
+
+test "disconnect at the admitted stream boundary cancels and drains its mailbox" {
+    const Waiting = struct {
+        sink: ?api.Sink = null,
+        submissions: usize = 0,
+        cancellations: usize = 0,
+        fn engine(e: *@This()) api.Engine {
+            return .{ .ctx = e, .vtable = &.{ .info = HiEngine.info, .submit = submit, .cancel = cancel, .status = HiEngine.status, .memory = HiEngine.memory } };
+        }
+        fn submit(ctx: *anyopaque, _: api.Id, _: *const api.Request, sink: api.Sink) api.SubmitError!void {
+            const e: *@This() = @ptrCast(@alignCast(ctx));
+            e.submissions += 1;
+            e.sink = sink;
+        }
+        fn cancel(ctx: *anyopaque, id: api.Id) void {
+            const e: *@This() = @ptrCast(@alignCast(ctx));
+            e.cancellations += 1;
+            const sink = e.sink.?;
+            e.sink = null;
+            sink.event(sink.ctx, id, &.{ .finished = .{ .reason = .stop } });
+        }
+    };
+    var waiting: Waiting = .{};
+    const seen = try sendWith(waiting.engine(), .chat, "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"stream\":true,\"max_tokens\":2}", .{ .gone_at_open = true });
+    try std.testing.expectEqual(@as(usize, 1), waiting.submissions);
+    try std.testing.expectEqual(@as(usize, 1), waiting.cancellations);
+    try std.testing.expect(waiting.sink == null);
+    try std.testing.expect(!seen.opened);
+    try std.testing.expectEqual(@as(i64, 0), seen.preparing);
+}
+
+test "a reply labels a greedy request greedy and a sampled one exact" {
+    const greedy = try send(.chat, "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"max_tokens\":2,\"temperature\":0}");
+    try std.testing.expectEqual(@as(?u16, 200), greedy.status);
+    try std.testing.expectEqual(.greedy, greedy.label.?);
+    const sampled = try send(.chat, "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"max_tokens\":2,\"temperature\":0.7,\"seed\":1}");
+    try std.testing.expectEqual(.exact, sampled.label.?);
+    try std.testing.expectEqual(@as(i64, 0), sampled.preparing);
+}
+
+/// A two-call reply on `route`, whole and streamed: the stream sends no text that the whole reply does not show.
+fn expectToolStreamLikeWhole(route: Route, comptime fields: []const u8) !void {
+    var backend: CallEngine = .{};
+    const whole = try sendWith(backend.engine(), route, "{" ++ fields ++ ",\"stream\":false}", .{});
+    const streamed = try sendWith(backend.engine(), route, "{" ++ fields ++ ",\"stream\":true}", .{});
+    try std.testing.expectEqual(@as(?u16, 200), whole.status);
+    try std.testing.expectEqual(@as(usize, 2), whole.calls);
+    try std.testing.expectEqual(@as(usize, 2), streamed.calls);
+    try std.testing.expectEqualStrings(whole.content(), streamed.content());
+}
+
+const tool_head = "\"model\":\"test-model\",\"max_tokens\":200,";
+
+test "a streamed chat tool reply sends no whitespace that the whole reply does not show" {
+    try expectToolStreamLikeWhole(.chat, tool_head ++ "\"messages\":[{\"role\":\"user\",\"content\":\"x\"}]," ++
+        "\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"lookup\",\"parameters\":{\"type\":\"object\"}}}]");
+}
+
+test "a streamed Messages tool reply sends no whitespace that the whole reply does not show" {
+    try expectToolStreamLikeWhole(.messages, tool_head ++ "\"messages\":[{\"role\":\"user\",\"content\":\"x\"}]," ++
+        "\"tools\":[{\"name\":\"lookup\",\"input_schema\":{\"type\":\"object\"}}]");
+}
+
+test "a streamed Responses tool reply sends no whitespace that the whole reply does not show" {
+    try expectToolStreamLikeWhole(.responses, tool_head ++ "\"input\":\"x\"," ++
+        "\"tools\":[{\"type\":\"function\",\"name\":\"lookup\",\"parameters\":{\"type\":\"object\"}}]");
+}
+
+/// HiEngine's replies from an engine that decodes greedily only.
+const GreedyEngine = struct {
+    fn engine(e: *@This()) api.Engine {
+        return .{ .ctx = e, .vtable = &.{ .info = info, .submit = HiEngine.submit, .cancel = HiEngine.cancel, .status = HiEngine.status, .memory = HiEngine.memory } };
+    }
+
+    fn info(_: *anyopaque) api.Info {
+        return .{ .context_window = 4096, .greedy_only = true };
+    }
+};
+
+test "a greedy-only engine's sampled request is a 400 before the stream opens; greedy ones are served" {
+    var backend: GreedyEngine = .{};
+    const sampled = try sendWith(backend.engine(), .chat, "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"stream\":true,\"max_tokens\":2,\"temperature\":0.7}", .{});
+    try std.testing.expect(!sampled.opened);
+    try std.testing.expectEqual(@as(?u16, 400), sampled.status);
+    try std.testing.expectEqual(@as(i64, 0), sampled.preparing);
+    const greedy = try sendWith(backend.engine(), .chat, "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"max_tokens\":2,\"temperature\":0}", .{});
+    try std.testing.expectEqual(@as(?u16, 200), greedy.status);
+    try std.testing.expectEqualStrings("hi", greedy.content());
+    const unset = try sendWith(backend.engine(), .chat, "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"max_tokens\":2}", .{});
+    try std.testing.expectEqual(@as(?u16, 200), unset.status);
+}
+
+test "a greedy-only engine's refusal names --temperature 0 when the server's own default samples" {
+    var backend: GreedyEngine = .{};
+    var text: TestText = .{};
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    for ([_]struct { []const u8, bool }{ .{ "{\"temperature\":1.0}", true }, .{ "{\"temperature\":0}", false } }) |case| {
+        const config: server.Config = .{ .served_name = "test-model", .model_ids = &.{"test-model"}, .default_sampling = (try json.parse(a, case[0])).ok };
+        var srv = try server.Server.init(std.testing.allocator, std.testing.io, backend.engine(), text.text(), config, null);
+        defer srv.deinit();
+        var cx: errors.Cx = .{ .a = a };
+        try std.testing.expectError(error.Refused, srv.resolveSampling(&cx, (try json.parse(a, "{\"temperature\":0.7}")).ok, 0, &.{}, false));
+        try std.testing.expectEqual(case[1], std.mem.indexOf(u8, cx.message, "--temperature 0") != null);
+        try std.testing.expect(try srv.resolveSampling(&cx, (try json.parse(a, "{\"temperature\":0}")).ok, 0, &.{}, false) == null);
+    }
+}
+
+/// Admission tests count submissions separately from the route's client-visible output.
+const BudgetEngine = struct {
+    supported: bool,
+    submissions: usize = 0,
+    thinking: bool = true,
+
+    fn engine(e: *@This()) api.Engine {
+        return .{ .ctx = e, .vtable = &.{ .info = info, .submit = submit, .cancel = HiEngine.cancel, .status = HiEngine.status, .memory = HiEngine.memory } };
+    }
+
+    fn info(ctx: *anyopaque) api.Info {
+        const e: *@This() = @ptrCast(@alignCast(ctx));
+        return .{ .context_window = 4096, .thinking_budget = e.supported };
+    }
+
+    fn submit(ctx: *anyopaque, id: api.Id, _: *const api.Request, sink: api.Sink) api.SubmitError!void {
+        const e: *@This() = @ptrCast(@alignCast(ctx));
+        e.submissions += 1;
+        sink.event(sink.ctx, id, &.{ .prefilled = 0 });
+        if (e.thinking) sink.event(sink.ctx, id, &.{ .tokens = &.{ '<', '/', 't', 'h', 'i', 'n', 'k', '>' } });
+        sink.event(sink.ctx, id, &.{ .tokens = &.{ 'h', 'i' } });
+        sink.event(sink.ctx, id, &.{ .finished = .{ .reason = .stop } });
+    }
+};
+
+const budget_ask = "\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"max_tokens\":32,\"chat_template_kwargs\":{\"enable_thinking\":true}";
+
+fn expectBudgetRefusal(seen: Seen, backend: BudgetEngine) !void {
+    try std.testing.expectEqual(@as(?u16, 400), seen.status);
+    try std.testing.expect(!seen.opened);
+    try std.testing.expectEqual(@as(usize, 0), seen.events);
+    try std.testing.expectEqual(@as(usize, 0), backend.submissions);
+    try std.testing.expectEqual(@as(i64, 0), seen.preparing);
+}
+
+test "an unsupported positive thinking budget is refused before streaming or submission even without a close marker" {
+    for ([_][]const u8{
+        "{" ++ budget_ask ++ ",\"stream\":true,\"thinking_budget\":1}",
+        "{" ++ budget_ask ++ ",\"stream\":false,\"thinking_budget\":1}",
+    }) |body| {
+        var backend: BudgetEngine = .{ .supported = false };
+        try expectBudgetRefusal(try sendWith(backend.engine(), .chat, body, .{}), backend);
+    }
+}
+
+test "an unsupported configured thinking budget is refused when the request leaves it unset or zero" {
+    for ([_][]const u8{
+        "{" ++ budget_ask ++ ",\"stream\":true}",
+        "{" ++ budget_ask ++ ",\"stream\":true,\"thinking_budget\":0}",
+    }) |body| {
+        var backend: BudgetEngine = .{ .supported = false };
+        try expectBudgetRefusal(try sendWithBudget(backend.engine(), .chat, body, .{}, 1), backend);
+    }
+}
+
+test "a supported positive thinking budget serves both whole and streamed replies" {
+    var backend: BudgetEngine = .{ .supported = true };
+    const whole = try sendWith(backend.engine(), .chat, "{" ++ budget_ask ++ ",\"thinking_budget\":1}", .{});
+    try std.testing.expectEqual(@as(?u16, 200), whole.status);
+    try std.testing.expectEqualStrings("hi", whole.content());
+    const streamed = try sendWith(backend.engine(), .chat, "{" ++ budget_ask ++ ",\"stream\":true,\"thinking_budget\":1}", .{});
+    try std.testing.expect(streamed.opened);
+    try std.testing.expect(streamed.role_first);
+    try std.testing.expectEqualStrings(whole.content(), streamed.content());
+    try std.testing.expectEqual(@as(usize, 2), backend.submissions);
+    try std.testing.expectEqual(@as(i64, 0), whole.preparing);
+    try std.testing.expectEqual(@as(i64, 0), streamed.preparing);
+}
+
+test "unsupported budgets leave zero unset and thinking-disabled requests valid" {
+    var backend: BudgetEngine = .{ .supported = false };
+    for ([_][]const u8{
+        "{" ++ budget_ask ++ "}",
+        "{" ++ budget_ask ++ ",\"thinking_budget\":0}",
+        "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"max_tokens\":2,\"thinking_budget\":1}",
+    }, 0..) |body, index| {
+        backend.thinking = index < 2;
+        const seen = try sendWith(backend.engine(), .chat, body, .{});
+        try std.testing.expectEqual(@as(?u16, 200), seen.status);
+        try std.testing.expectEqualStrings("hi", seen.content());
+        try std.testing.expectEqual(@as(i64, 0), seen.preparing);
+    }
+    try std.testing.expectEqual(@as(usize, 3), backend.submissions);
+}
+
+test "closed, busy or memory-pressure admission is service unavailable across chat, messages and responses" {
+    const ClosedEngine = struct {
+        reason: api.SubmitError = error.Closed,
+        fn engine(e: *@This()) api.Engine {
+            return .{ .ctx = e, .vtable = &.{ .info = HiEngine.info, .submit = submit, .cancel = HiEngine.cancel, .status = HiEngine.status, .memory = HiEngine.memory } };
+        }
+        fn submit(ctx: *anyopaque, _: api.Id, _: *const api.Request, _: api.Sink) api.SubmitError!void {
+            return @as(*@This(), @ptrCast(@alignCast(ctx))).reason;
+        }
+    };
+    const cases = [_]struct { route: Route, body: []const u8 }{
+        .{ .route = .chat, .body = "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"max_tokens\":1}" },
+        .{ .route = .messages, .body = "{\"model\":\"test-model\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"max_tokens\":1}" },
+        .{ .route = .responses, .body = "{\"model\":\"test-model\",\"input\":\"x\",\"max_output_tokens\":1}" },
+    };
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    var wrong: usize = 0;
+    var engine: ClosedEngine = .{};
+    for ([_]api.SubmitError{ error.Closed, error.Busy, error.MemoryPressure }) |reason| {
+        engine.reason = reason;
+        for (cases) |c| for ([_]bool{ false, true }) |streaming| {
+            const body = if (streaming) try std.mem.concat(arena.allocator(), u8, &.{ c.body[0 .. c.body.len - 1], ",\"stream\":true}" }) else c.body;
+            const seen = try sendWith(engine.engine(), c.route, body, .{});
+            const said = std.mem.eql(u8, seen.refusal[0..seen.refusal_len], api.pressure_message);
+            if (seen.status != 503 or seen.opened or seen.preparing != 0 or (reason == error.MemoryPressure) != said) {
+                wrong += 1;
+                std.debug.print("ADMISSION reason={s} route={s} stream={any} status={any} opened={any} events={d} preparing={d}\n", .{ @errorName(reason), @tagName(c.route), streaming, seen.status, seen.opened, seen.events, seen.preparing });
+            }
+        };
+    }
+    try std.testing.expectEqual(@as(usize, 0), wrong);
+}

@@ -1,0 +1,324 @@
+//! The Hugging Face cache on disk: where checkpoints live, their sizes, and which Zig family serves them.
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+const engines = @import("native_engines");
+
+pub const GiB: u64 = 1 << 30;
+
+/// One family the engine registry serves, with a display title.
+pub const Family = struct { model_type: []const u8, title: []const u8, formats: []const []const u8 };
+
+const titles = [_]struct { model_type: []const u8, title: []const u8 }{
+    .{ .model_type = "nemotron_h", .title = "Nemotron 3.5 Lightning" },
+    .{ .model_type = "nemotron_h_omni", .title = "Nemotron 3.5 Super VL" },
+    .{ .model_type = "qwen4_exp", .title = "Qwen3.8 Flash Next" },
+    .{ .model_type = "glm5_next", .title = "GLM-5.3-Flash" },
+    .{ .model_type = "mistral3", .title = "Mistral3 wrapper (LightOnOCR-3-1B only)" },
+    .{ .model_type = "lighton_ocr", .title = "LightOnOCR-3-1B" },
+    .{ .model_type = "qwen3_5", .title = "Qwen3.5-2B or Qwen3.8-27B" },
+    .{ .model_type = "qwen3_5_moe", .title = "Qwen3.5-MoE (Ornith-1.5-122B)" },
+    .{ .model_type = "gemma4", .title = "Gemma 4 31B" },
+    .{ .model_type = "gemma4_unified", .title = "Gemma 4 12B" },
+    .{ .model_type = "step5_vl", .title = "Step-5-Preview" },
+    .{ .model_type = "spark2_5", .title = "Spark-X2.6-4B" },
+    .{ .model_type = "minimax_m3_vl", .title = "MiniMax-M3.1-Flash" },
+    .{ .model_type = "llama", .title = "Llama architecture (Nanbeige4.3-33B)" },
+    .{ .model_type = "lfm2_moe", .title = "LFM2.5-24B-A2B" },
+};
+
+/// The family that serves `model_type` from the engine registry, or null when Zig cannot serve it (the 0.6 line may).
+pub fn family(model_type: []const u8) ?Family {
+    for (engines.families) |f| {
+        if (!std.mem.eql(u8, f.model_type, model_type)) continue;
+        var title: []const u8 = f.model_type;
+        for (titles) |t| if (std.mem.eql(u8, t.model_type, model_type)) {
+            title = t.title;
+            break;
+        };
+        return .{ .model_type = f.model_type, .title = title, .formats = f.formats };
+    }
+    return null;
+}
+
+/// HF_HUB_CACHE, or HF_HOME/hub, or the default cache under the home directory.
+pub fn cacheDir(a: Allocator, env: ?*const std.process.Environ.Map, override: ?[]const u8) ![]const u8 {
+    if (override) |o| return o;
+    const get = struct {
+        fn f(e: ?*const std.process.Environ.Map, name: []const u8) ?[]const u8 {
+            return if (e) |m| m.get(name) else null;
+        }
+    }.f;
+    if (get(env, "HF_HUB_CACHE")) |c| return c;
+    const home = get(env, "HOME") orelse get(env, "USERPROFILE") orelse ""; // Windows sets USERPROFILE, not HOME
+    if (get(env, "HF_HOME")) |h| return std.fs.path.join(a, &.{ h, "hub" });
+    return std.fs.path.join(a, &.{ home, ".cache", "huggingface", "hub" });
+}
+
+/// The repo's cache folder name: models--org--name.
+pub fn repoDirName(a: Allocator, repo: []const u8) ![]const u8 {
+    const slash = std.mem.indexOfScalar(u8, repo, '/') orelse return error.BadRepoId;
+    return std.fmt.allocPrint(a, "models--{s}--{s}", .{ repo[0..slash], repo[slash + 1 ..] });
+}
+
+/// A git sha: 40 hex characters, the only strings ever joined into a cache path.
+pub fn hexSha(text: []const u8) bool {
+    if (text.len != 40) return false;
+    for (text) |ch| {
+        const ok = (ch >= '0' and ch <= '9') or (ch >= 'a' and ch <= 'f') or (ch >= 'A' and ch <= 'F');
+        if (!ok) return false;
+    }
+    return true;
+}
+
+/// The cached snapshot serving `repo`: refs/main's revision, else the newest snapshot with a config.json.
+pub fn cachedSnapshot(a: Allocator, io: std.Io, hub: []const u8, repo: []const u8) !?[]const u8 {
+    const dir_name = try repoDirName(a, repo);
+    const root = try std.fs.path.join(a, &.{ hub, dir_name });
+    if (readSmall(a, io, try std.fs.path.join(a, &.{ root, "refs", "main" }))) |ref| {
+        const rev = std.mem.trim(u8, ref, " \r\n");
+        // The ref names the snapshot dir: only a 40-hex git sha is ever joined into a cache path.
+        if (hexSha(rev)) {
+            const snapshot = try std.fs.path.join(a, &.{ root, "snapshots", rev });
+            if (isDir(io, snapshot)) return snapshot;
+        }
+    }
+    const snapshots = try std.fs.path.join(a, &.{ root, "snapshots" });
+    var dir = std.Io.Dir.cwd().openDir(io, snapshots, .{ .iterate = true }) catch return null;
+    defer dir.close(io);
+    var newest: ?[]const u8 = null;
+    var newest_mtime: ?std.Io.Timestamp = null;
+    var it = dir.iterate();
+    while (try it.next(io)) |e| {
+        if (e.kind != .directory) continue;
+        const snapshot = try std.fs.path.join(a, &.{ snapshots, e.name });
+        if (@import("checkpoint_config").optional(a, io, snapshot) == null) continue;
+        const st = std.Io.Dir.cwd().statFile(io, snapshot, .{}) catch continue;
+        if (newest_mtime == null or st.mtime.nanoseconds > newest_mtime.?.nanoseconds) {
+            newest_mtime = st.mtime;
+            newest = snapshot;
+        }
+    }
+    return newest;
+}
+
+/// ``owner/name`` shape, without consulting the filesystem.
+pub fn isRepoIdLike(text: []const u8) bool {
+    const slash = std.mem.indexOfScalar(u8, text, '/') orelse return false;
+    if (std.mem.lastIndexOfScalar(u8, text, '/') != slash) return false;
+    if (slash == 0 or slash == text.len - 1) return false;
+    for ([_][]const u8{ text[0..slash], text[slash + 1 ..] }) |part| {
+        if (part.len > 96) return false;
+        for (part) |ch| if (!(std.ascii.isAlphanumeric(ch) or ch == '-' or ch == '_' or ch == '.')) return false;
+    }
+    return true;
+}
+
+/// One integer field from the checkpoint's config.json.
+pub fn configInt(a: Allocator, io: std.Io, dir: []const u8, key: []const u8) ?u64 {
+    const text = @import("checkpoint_config").optional(a, io, dir) orelse return null;
+    var parsed = std.json.parseFromSlice(std.json.Value, a, text, .{}) catch return null;
+    defer parsed.deinit();
+    if (parsed.value != .object) return null;
+    const v = parsed.value.object.get(key) orelse return null;
+    return if (v == .integer and v.integer >= 0) @intCast(v.integer) else null;
+}
+
+/// config.json's model_type, "unknown" when unreadable.
+pub fn modelType(a: Allocator, io: std.Io, dir: []const u8) []const u8 {
+    const text = @import("checkpoint_config").optional(a, io, dir) orelse return "unknown";
+    var parsed = std.json.parseFromSlice(std.json.Value, a, text, .{}) catch return "unknown";
+    defer parsed.deinit();
+    if (parsed.value != .object) return "unknown";
+    const t = parsed.value.object.get("model_type") orelse return "unknown";
+    return if (t == .string) t.string else "unknown";
+}
+
+const ConfigDetails = struct { is_bolt: bool, modelopt_formats: ?[]const []const u8 = null };
+
+/// Bolt identity and sorted modelopt algorithms from one config.json read; formats live in the caller's allocator.
+pub fn configDetails(a: Allocator, io: std.Io, dir: []const u8) ConfigDetails {
+    var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
+    defer arena.deinit();
+    const temp = arena.allocator();
+    const text = @import("checkpoint_config").optional(temp, io, dir) orelse return .{ .is_bolt = false };
+    var parsed = std.json.parseFromSlice(std.json.Value, temp, text, .{}) catch return .{ .is_bolt = false };
+    defer parsed.deinit();
+    if (parsed.value != .object) return .{ .is_bolt = false };
+    const root = parsed.value.object;
+    const is_bolt = blk: {
+        const model_type = root.get("model_type") orelse break :blk false;
+        if (model_type != .string or !std.mem.eql(u8, model_type.string, "nemotron_h_omni")) break :blk false;
+        const llm = root.get("llm_config") orelse break :blk false;
+        if (llm != .object) break :blk false;
+        const llm_type = llm.object.get("model_type") orelse break :blk false;
+        break :blk llm_type == .string and std.mem.eql(u8, llm_type.string, "nemotron_h_puzzle");
+    };
+    var result: ConfigDetails = .{ .is_bolt = is_bolt };
+    const qc = root.get("quantization_config") orelse return result;
+    if (qc != .object) return result;
+
+    var formats: std.ArrayList([]const u8) = .empty;
+    if (qc.object.get("quantized_layers")) |layers| {
+        if (layers != .object) return result;
+        var it = layers.object.iterator();
+        while (it.next()) |entry| {
+            if (entry.value_ptr.* != .object) return result;
+            const algorithm = entry.value_ptr.object.get("quant_algo") orelse return result;
+            if (algorithm != .string or algorithm.string.len == 0) return result;
+            var seen = false;
+            for (formats.items) |format| if (std.mem.eql(u8, format, algorithm.string)) {
+                seen = true;
+                break;
+            };
+            if (seen) continue;
+            formats.append(temp, algorithm.string) catch return result;
+        }
+    } else {
+        const algorithm = qc.object.get("quant_algo") orelse return result;
+        if (algorithm != .string or algorithm.string.len == 0) return result;
+        if (std.mem.eql(u8, algorithm.string, "MIXED_PRECISION")) return result;
+        formats.append(temp, algorithm.string) catch return result;
+    }
+    if (formats.items.len == 0) return result;
+    std.mem.sort([]const u8, formats.items, {}, struct {
+        fn lessThan(_: void, left: []const u8, right: []const u8) bool {
+            return std.mem.lessThan(u8, left, right);
+        }
+    }.lessThan);
+
+    const owned = a.alloc([]const u8, formats.items.len) catch return result;
+    for (formats.items, 0..) |format, i| {
+        owned[i] = a.dupe(u8, format) catch {
+            for (owned[0..i]) |copy| a.free(copy);
+            a.free(owned);
+            return result;
+        };
+    }
+    result.modelopt_formats = owned;
+    return result;
+}
+
+/// config.json's quantization: bits and group size, when the checkpoint is MLX-affine quantized.
+pub fn quantization(a: Allocator, io: std.Io, dir: []const u8) ?struct { bits: u64, group: u64 } {
+    const text = @import("checkpoint_config").optional(a, io, dir) orelse return null;
+    var parsed = std.json.parseFromSlice(std.json.Value, a, text, .{}) catch return null;
+    defer parsed.deinit();
+    if (parsed.value != .object) return null;
+    const q = parsed.value.object.get("quantization") orelse return null;
+    if (q != .object) return null;
+    const bits = if (q.object.get("bits")) |b| (if (b == .integer) b.integer else return null) else return null;
+    const group = if (q.object.get("group_size")) |g| (if (g == .integer) g.integer else return null) else 32;
+    if (bits <= 0 or group <= 0) return null;
+    return .{ .bits = @intCast(bits), .group = @intCast(group) };
+}
+
+/// Bytes of the files under `dir`, symlinks followed, hidden ones left out (a download's .cache, --slide's snapshot).
+pub fn sizeOf(a: Allocator, io: std.Io, dir: []const u8) !u64 {
+    var total: u64 = 0;
+    var d = std.Io.Dir.cwd().openDir(io, dir, .{ .iterate = true }) catch return 0;
+    defer d.close(io);
+    var walker = d.walk(a) catch return 0;
+    defer walker.deinit();
+    while (walker.next(io) catch null) |entry| {
+        if (entry.path[0] == '.') {
+            if (entry.kind == .directory) walker.leave(io);
+            continue;
+        }
+        // Cache snapshots hold symlinks into blobs; statFile follows them to the real sizes.
+        if (entry.kind != .file and entry.kind != .sym_link) continue;
+        const st = entry.dir.statFile(io, entry.basename, .{}) catch continue;
+        total += st.size;
+    }
+    return total;
+}
+
+pub fn isDir(io: std.Io, path: []const u8) bool {
+    var dir = std.Io.Dir.cwd().openDir(io, path, .{}) catch return false;
+    dir.close(io);
+    return true;
+}
+
+fn readSmall(a: Allocator, io: std.Io, path: []const u8) ?[]u8 {
+    return std.Io.Dir.cwd().readFileAlloc(io, path, a, .limited(16 << 20)) catch null;
+}
+
+test "security: negative quantization metadata is refused without a cast trap" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const io = std.testing.io;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const dir = try std.fmt.allocPrint(a, ".zig-cache/tmp/{s}", .{tmp.sub_path});
+    for ([_][]const u8{
+        "{\"quantization\":{\"bits\":-1,\"group_size\":32}}",
+        "{\"quantization\":{\"bits\":4,\"group_size\":-1}}",
+        "{\"quantization\":{\"bits\":0,\"group_size\":32}}",
+        "{\"quantization\":{\"bits\":4,\"group_size\":0}}",
+    }) |data| {
+        try tmp.dir.writeFile(io, .{ .sub_path = "config.json", .data = data });
+        try std.testing.expect(quantization(a, io, dir) == null);
+    }
+    try tmp.dir.writeFile(io, .{ .sub_path = "config.json", .data = "{\"quantization\":{\"bits\":4}}" });
+    const valid = quantization(a, io, dir).?;
+    try std.testing.expectEqual(@as(u64, 4), valid.bits);
+    try std.testing.expectEqual(@as(u64, 32), valid.group);
+}
+
+test "family detection matches the registry and refuses unknown types" {
+    try std.testing.expectEqualStrings("Nemotron 3.5 Lightning", family("nemotron_h").?.title);
+    try std.testing.expectEqualStrings("Qwen3.8 Flash Next", family("qwen4_exp").?.title);
+    // Every family the linked registry serves resolves; the titles are display names, so only their presence is fixed.
+    for (engines.families) |f| try std.testing.expect(family(f.model_type) != null);
+    try std.testing.expect(family("gemma3n") == null);
+    try std.testing.expect(family("unknown") == null);
+}
+
+test "cache layout helpers read a synthetic cache" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const io = std.testing.io;
+    const hub = try std.fmt.allocPrint(a, ".tf-hub-test-{d}", .{std.Io.Clock.awake.now(io).toNanoseconds()});
+    defer std.Io.Dir.cwd().deleteTree(io, hub) catch {};
+    const w = std.Io.Dir.cwd();
+    try w.createDirPath(io, try std.fs.path.join(a, &.{ hub, "models--Org--Name/snapshots/0123456789abcdef0123456789abcdef01234567" }));
+    try w.createDirPath(io, try std.fs.path.join(a, &.{ hub, "models--Org--Name/refs" }));
+    try w.writeFile(io, .{ .sub_path = try std.fs.path.join(a, &.{ hub, "models--Org--Name/snapshots/0123456789abcdef0123456789abcdef01234567/config.json" }), .data = "{\"model_type\": \"qwen4_exp\", \"quantization\": {\"bits\": 6, \"group_size\": 32}, \"max_position_embeddings\": 65536}" });
+    try w.writeFile(io, .{ .sub_path = try std.fs.path.join(a, &.{ hub, "models--Org--Name/refs/main" }), .data = "0123456789abcdef0123456789abcdef01234567\n" });
+    var weights: [4096]u8 = undefined;
+    @memset(&weights, 'x');
+    try w.writeFile(io, .{ .sub_path = try std.fs.path.join(a, &.{ hub, "models--Org--Name/snapshots/0123456789abcdef0123456789abcdef01234567/weights.safetensors" }), .data = &weights });
+    const snapshot = (try cachedSnapshot(a, io, hub, "Org/Name")).?;
+    try std.testing.expect(std.mem.endsWith(u8, snapshot, "0123456789abcdef0123456789abcdef01234567"));
+    try std.testing.expectEqualStrings("qwen4_exp", modelType(a, io, snapshot));
+    const q = quantization(a, io, snapshot).?;
+    try std.testing.expectEqual(@as(u64, 6), q.bits);
+    try std.testing.expectEqual(@as(u64, 32), q.group);
+    try std.testing.expect((try sizeOf(a, io, snapshot)) >= 4096);
+    const plain = try sizeOf(a, io, snapshot);
+    try w.createDirPath(io, try std.fs.path.join(a, &.{ snapshot, ".tensorfold-original" }));
+    const kept = try std.fs.path.join(a, &.{ snapshot, ".tensorfold-original/weights.safetensors" });
+    try w.writeFile(io, .{ .sub_path = kept, .data = &weights });
+    try std.testing.expectEqual(plain, try sizeOf(a, io, snapshot)); // --slide's snapshot is not the model's size
+    try w.createDirPath(io, try std.fs.path.join(a, &.{ hub, "models--Org--Bad/refs" }));
+    try w.createDirPath(io, try std.fs.path.join(a, &.{ hub, "models--Org--Bad/snapshots" }));
+    try w.writeFile(io, .{ .sub_path = try std.fs.path.join(a, &.{ hub, "models--Org--Bad/refs/main" }), .data = "../../models--Org--Name/snapshots/0123456789abcdef0123456789abcdef01234567" });
+    try std.testing.expect(try cachedSnapshot(a, io, hub, "Org/Bad") == null); // a ref that is not a sha is never joined
+    const missing = try cachedSnapshot(a, io, hub, "Org/Other");
+    try std.testing.expect(missing == null);
+}
+
+test "a checkpoint's size counts shards in a folder inside it" {
+    const io = std.testing.io;
+    const gpa = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    // The publisher's export keeps every shard in `tensors/`, so a walk that stopped at the top level undercounted it.
+    try tmp.dir.createDirPath(io, "tensors");
+    try tmp.dir.writeFile(io, .{ .sub_path = "config.json", .data = "{}" });
+    try tmp.dir.writeFile(io, .{ .sub_path = "tensors/model-00001-of-00001.safetensors", .data = "xxxxxxx" });
+    var buf: [64]u8 = undefined;
+    const dir = try std.fmt.bufPrint(&buf, ".zig-cache/tmp/{s}", .{tmp.sub_path});
+    try std.testing.expectEqual(@as(u64, 9), try sizeOf(gpa, io, dir));
+}

@@ -1,0 +1,60 @@
+0.00.240.813 I srv  llama_server: initializing ...
+0.00.240.822 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.241.073 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.242.711 I srv    load_model: loading model '/home/vasylt/models/glm-5.3-flash/GLM-5.3-Flash-UD-Q2_K_XL-00001-of-00004.gguf'
+0.00.624.054 W load: special_eot_id is not in special_eog_ids - the tokenizer config may be incorrect
+0.00.624.056 W load: special_eom_id is not in special_eog_ids - the tokenizer config may be incorrect
+0.00.633.738 W llama_model_loader: tensor overrides to CPU are used with mmap enabled - consider using --load-mode none for better performance
+0.00.638.208 W model has unused tensor blk.45.attn_norm.weight (size = 16384 bytes) -- ignoring
+0.00.638.211 W model has unused tensor blk.45.ffn_norm.weight (size = 16384 bytes) -- ignoring
+0.00.638.213 W model has unused tensor blk.45.attn_q_a_norm.weight (size = 6144 bytes) -- ignoring
+0.00.638.215 W model has unused tensor blk.45.attn_kv_a_norm.weight (size = 2048 bytes) -- ignoring
+0.00.638.216 W model has unused tensor blk.45.attn_q_a.weight (size = 4325376 bytes) -- ignoring
+0.00.638.218 W model has unused tensor blk.45.attn_q_b.weight (size = 26738688 bytes) -- ignoring
+0.00.638.219 W model has unused tensor blk.45.attn_kv_a_mqa.weight (size = 2228224 bytes) -- ignoring
+0.00.638.221 W model has unused tensor blk.45.attn_k_b.weight (size = 8912896 bytes) -- ignoring
+0.00.638.222 W model has unused tensor blk.45.attn_v_b.weight (size = 8912896 bytes) -- ignoring
+0.00.638.224 W model has unused tensor blk.45.attn_output.weight (size = 46137344 bytes) -- ignoring
+0.00.638.226 W model has unused tensor blk.45.indexer.k_norm.weight (size = 512 bytes) -- ignoring
+0.00.638.227 W model has unused tensor blk.45.indexer.k_norm.bias (size = 512 bytes) -- ignoring
+0.00.638.229 W model has unused tensor blk.45.indexer.proj.weight (size = 524288 bytes) -- ignoring
+0.00.638.231 W model has unused tensor blk.45.indexer.attn_k.weight (size = 557056 bytes) -- ignoring
+0.00.638.232 W model has unused tensor blk.45.indexer.attn_q_b.weight (size = 6684672 bytes) -- ignoring
+0.00.638.234 W model has unused tensor blk.45.indexer_compressor_gate.weight (size = 557056 bytes) -- ignoring
+0.00.638.236 W model has unused tensor blk.45.indexer_compressor_ape.weight (size = 2048 bytes) -- ignoring
+0.00.638.237 W model has unused tensor blk.45.ffn_gate_inp.weight (size = 4718592 bytes) -- ignoring
+0.00.638.239 W model has unused tensor blk.45.exp_probs_b.bias (size = 1152 bytes) -- ignoring
+0.00.638.241 W model has unused tensor blk.45.ffn_gate_exps.weight (size = 792723456 bytes) -- ignoring
+0.00.638.242 W model has unused tensor blk.45.ffn_down_exps.weight (size = 1038090240 bytes) -- ignoring
+0.00.638.244 W model has unused tensor blk.45.ffn_up_exps.weight (size = 792723456 bytes) -- ignoring
+0.00.638.245 W model has unused tensor blk.45.ffn_gate_shexp.weight (size = 5767168 bytes) -- ignoring
+0.00.638.247 W model has unused tensor blk.45.ffn_down_shexp.weight (size = 6881280 bytes) -- ignoring
+0.00.638.249 W model has unused tensor blk.45.ffn_up_shexp.weight (size = 5767168 bytes) -- ignoring
+0.00.638.250 W model has unused tensor blk.45.nextn.eh_proj.weight (size = 35651584 bytes) -- ignoring
+0.00.638.252 W model has unused tensor blk.45.nextn.enorm.weight (size = 16384 bytes) -- ignoring
+0.00.638.254 W model has unused tensor blk.45.nextn.hnorm.weight (size = 16384 bytes) -- ignoring
+0.00.638.259 W model has unused tensor blk.45.nextn.shared_head_norm.weight (size = 16384 bytes) -- ignoring
+1.22.392.747 I cmn          init: llama threadpool init, n_threads = 6
+1.29.366.957 I srv    load_model: initializing, n_slots = 4, n_ctx_slot = 2048, kv_unified = 'true'
+1.29.388.050 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+1.29.389.664 I srv  server_run_i: model loaded
+1.29.389.697 I srv  server_on_li: listening on http://127.0.0.1:8091
+1.31.236.124 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+1.31.236.168 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+1.44.959.394 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =      9, progress = 0.69, t =  13.72 s / 0.66 tokens per second
+4.11.951.232 I slot print_timing: id  0 | task 0 | prompt eval time =   19185.77 ms /    13 tokens ( 1475.83 ms per token,     0.68 tokens per second)
+4.11.951.235 I slot print_timing: id  0 | task 0 |        eval time =  141526.11 ms /    32 tokens ( 4565.36 ms per token,     0.22 tokens per second)
+4.11.951.235 I slot print_timing: id  0 | task 0 |       total time =  160711.89 ms /    45 tokens
+4.11.956.878 I slot print_timing: id  0 | task 0 |    graphs reused =          0
+4.11.956.880 I slot print_timing: id  0 | task 0 |   graph reallocs =          2    /     0        (same size) / (changed size)
+4.11.958.340 I slot      release: id  0 | task 0 | stop processing: n_tokens = 44, truncated = 0
+4.11.995.411 I slot get_availabl: id  1 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+4.11.995.438 I slot launch_slot_: id  1 | task 34 | processing task, is_child = 0
+4.39.995.228 I slot print_timing: id  1 | task 34 | prompt processing, n_tokens =      7, progress = 0.64, t =  27.75 s / 0.25 tokens per second
+8.48.134.754 I slot print_timing: id  1 | task 34 | prompt eval time =   63640.39 ms /    11 tokens ( 5785.49 ms per token,     0.17 tokens per second)
+8.48.134.758 I slot print_timing: id  1 | task 34 |        eval time =  212193.74 ms /    32 tokens ( 6844.96 ms per token,     0.15 tokens per second)
+8.48.134.758 I slot print_timing: id  1 | task 34 |       total time =  275834.12 ms /    43 tokens
+8.48.136.942 I slot print_timing: id  1 | task 34 |    graphs reused =          0
+8.48.136.948 I slot print_timing: id  1 | task 34 |   graph reallocs =          4    /     0        (same size) / (changed size)
+8.48.137.027 I slot      release: id  1 | task 34 | stop processing: n_tokens = 42, truncated = 0
+8.48.461.217 I srv    operator(): operator(): cleaning up before exit...

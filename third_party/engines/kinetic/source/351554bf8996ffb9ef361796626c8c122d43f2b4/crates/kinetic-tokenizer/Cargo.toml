@@ -1,0 +1,12 @@
+[package]
+name = "kinetic-tokenizer"
+description = "BPE, SentencePiece and WordPiece tokenizers for GGUF models"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+kinetic-gguf = { path = "../kinetic-gguf" }
+unicode-general-category = "1.1.0"
+unicode-normalization = "0.1.25"

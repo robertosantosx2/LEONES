@@ -1,0 +1,33 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+!zig/build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.DS_Store
+*.swp
+*.log
+.zig-toolchain
+.zig-cache/
+zig-out/
+
+# Native Qwen CPU-only Metal compiler receipts.
+.q27-metal-check/
+
+# The qwen4 device gate writes a scratch checkpoint into the tree and takes it away again.
+.qwen4-device-*/
+
+# A build tool that crashes leaves a core dump in the tree.
+/core
+*.core
+
+# Versioned GUI build resources, generated app engines stay ignored in app/.gitignore.
+!app/build/
+
+# The full E4B per-layer input oracle outputs (tools/zig/gemma4_e4b_layer_input_oracle.py --full); the committed fixture is the .json of SHA-256 prints.
+tools/zig/fixtures/e4b_layer_input_mlx.bin

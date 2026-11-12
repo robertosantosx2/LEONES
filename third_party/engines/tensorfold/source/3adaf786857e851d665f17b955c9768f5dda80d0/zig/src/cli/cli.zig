@@ -1,0 +1,91 @@
+//! The tensorfold checkpoint subcommands: `models` and `info` (pull adds downloading in its own commit).
+const std = @import("std");
+const models = @import("models.zig");
+const info = @import("info.zig");
+const pull = @import("pull.zig");
+const plan = @import("plan.zig");
+const pull_exlr8 = @import("pull_exlr8.zig");
+const lora_merge = @import("core").lora_merge;
+
+const usage =
+    \\usage: tensorfold models [--json]
+    \\       tensorfold info MODEL
+    \\       tensorfold pull REPO[@REVISION]
+    \\       tensorfold pull REPO[@REVISION] --exlr8 PROFILE --node R/N --dir DIR
+    \\       tensorfold plan MODEL [--memory-gb GIB] [--ram GB]...
+    \\       tensorfold merge MODEL ADAPTER OUT
+    \\       tensorfold merge DENSE ADAPTER OUT --quantize SHIPPED
+    \\
+;
+
+/// True when argv starts with a checkpoint subcommand.
+pub fn wants(args: []const []const u8) bool {
+    if (args.len == 0) return false;
+    const cmd = args[0];
+    return std.mem.eql(u8, cmd, "models") or std.mem.eql(u8, cmd, "info") or std.mem.eql(u8, cmd, "pull") or std.mem.eql(u8, cmd, "merge") or std.mem.eql(u8, cmd, "plan");
+}
+
+/// Runs a checkpoint subcommand; `argv` is argv[1..] as in cluster.cli.main.
+pub fn main(init: std.process.Init, argv: []const [:0]const u8) !u8 {
+    const a = init.arena.allocator();
+    var out_buf: [64 << 10]u8 = undefined;
+    var err_buf: [4 << 10]u8 = undefined;
+    var out = std.Io.File.stdout().writerStreaming(init.io, &out_buf); // streaming: positional writes from both would overwrite each other in one redirected file
+    var err = std.Io.File.stderr().writerStreaming(init.io, &err_buf);
+    defer out.interface.flush() catch {};
+    defer err.interface.flush() catch {};
+    const args = try a.alloc([]const u8, argv.len);
+    for (args, argv) |*x, y| x.* = y;
+    const env = init.environ_map;
+    if (std.mem.eql(u8, args[0], "models")) {
+        const json = args.len == 2 and std.mem.eql(u8, args[1], "--json");
+        if (args.len != 1 and !json) {
+            try err.interface.writeAll(usage);
+            return 2;
+        }
+        return models.run(a, init.io, &out.interface, env, null, json);
+    }
+    if (std.mem.eql(u8, args[0], "pull")) {
+        if (args.len < 2) {
+            try err.interface.writeAll(usage);
+            return 2;
+        }
+        const node = pull_exlr8.parseFlags(args[2..]) catch {
+            try err.interface.writeAll(usage);
+            return 2;
+        };
+        if (node) |o| return pull_exlr8.run(a, init.io, &out.interface, &err.interface, env, args[1], o);
+        return pull.run(a, init.io, &out.interface, &err.interface, env, null, args[1]);
+    }
+    if (std.mem.eql(u8, args[0], "plan")) {
+        const parsed = plan.parseArgs(a, args[1..]) orelse {
+            try err.interface.writeAll(usage);
+            return 2;
+        };
+        if (comptime !plan.supported) {
+            try err.interface.writeAll("tensorfold plan: this build has no CUDA engines, and plan answers for the CUDA admission budget\n");
+            return 2;
+        }
+        return plan.run(a, init.io, &out.interface, env, parsed.model, .{ .mem_gb = parsed.mem_gb, .ram = parsed.ram });
+    }
+    if (std.mem.eql(u8, args[0], "merge")) {
+        const m = lora_merge.parseArgs(args[1..]) orelse {
+            try err.interface.writeAll(usage);
+            return 2;
+        };
+        return lora_merge.run(init.gpa, init.io, &out.interface, &err.interface, m.dense, m.adapter, m.dest, m.shipped);
+    }
+    if (args.len != 2) {
+        try err.interface.writeAll(usage);
+        return 2;
+    }
+    return info.run(a, init.io, &out.interface, env, null, args[1]);
+}
+
+test "wants only the checkpoint subcommands" {
+    try std.testing.expect(wants(&.{"models"}));
+    try std.testing.expect(wants(&.{ "info", "Org/Flash" }));
+    try std.testing.expect(wants(&.{ "merge", "model", "adapter", "out" }));
+    try std.testing.expect(wants(&.{ "merge", "dense", "adapter", "out", "--quantize", "shipped" }));
+    try std.testing.expect(!wants(&.{"run"}) and !wants(&.{}) and !wants(&.{"serve"}));
+}

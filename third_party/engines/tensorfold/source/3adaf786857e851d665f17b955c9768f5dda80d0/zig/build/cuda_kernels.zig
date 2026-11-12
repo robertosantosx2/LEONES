@@ -1,0 +1,215 @@
+//! CUDA image names and qualification flags.
+const std = @import("std");
+
+/// Each .cu in zig/kernels/cuda (`src`, else `name`) with the flags its Python extension passes in `extra_cuda_cflags`.
+pub const Kernel = struct {
+    name: []const u8,
+    flags: []const []const u8,
+    src: ?[]const u8 = null,
+    arch_specific: bool = false,
+    min_sm: u32 = 0,
+    /// has a TF_NATIVE_FP_DECODE path (common/fp_pairs.cuh), built by -Dnative-fp-decode
+    native_fp: bool = false,
+};
+
+/// One `-Dsm` entry: the SM number and any suffix given with it ("120", "121a").
+pub const Target = struct {
+    number: u32,
+    suffix: []const u8,
+
+    pub fn parse(raw: []const u8) Target {
+        var digits: usize = 0;
+        while (digits < raw.len and std.ascii.isDigit(raw[digits])) : (digits += 1) {}
+        return .{
+            .number = std.fmt.parseInt(u32, raw[0..digits], 10) catch @panic("Invalid CUDA SM target"),
+            .suffix = raw[digits..],
+        };
+    }
+};
+
+/// One SASS profile: an SM number, plain or arch-specific (`sm_<n>a`).
+pub const Profile = struct { number: u32, arch_specific: bool };
+
+/// The one profile `k`'s image holds for `sm` (`sm_<n>a` for arch-specific kernels from 120), null below `min_sm`.
+pub fn profile(k: Kernel, sm: Target) ?Profile {
+    if (sm.number < k.min_sm) return null;
+    const added = k.arch_specific and sm.number >= 120 and sm.suffix.len == 0;
+    return .{ .number = sm.number, .arch_specific = added or std.mem.eql(u8, sm.suffix, "a") };
+}
+
+/// `k` as -Dnative-fp-decode builds it: a native_fp unit takes TF_NATIVE_FP_DECODE and sm_<n>a from sm_120 on.
+pub fn nativeFp(gpa: std.mem.Allocator, k: Kernel, on: bool) Kernel {
+    if (!on or !k.native_fp) return k;
+    var out = k;
+    out.arch_specific = true;
+    out.flags = std.mem.concat(gpa, []const u8, &.{ k.flags, &.{"-DTF_NATIVE_FP_DECODE"} }) catch @panic("OOM");
+    return out;
+}
+
+/// The torch-op replacements' qualification flags (runs/006): no contraction, no flush to zero.
+const torch_ops = &[_][]const u8{ "-O3", "--fmad=false", "--ftz=false" };
+
+/// IEEE division and square root, no contraction or flush: host glue references match bit for bit.
+const glue = &[_][]const u8{ "-O3", "--fmad=false", "--ftz=false", "--prec-div=true", "--prec-sqrt=true" };
+
+pub const kernels = [_]Kernel{
+    .{ .name = "qwen4_projection", .flags = glue },
+    .{ .name = "qwen4_gdn", .flags = glue },
+    .{ .name = "qwen4_hc", .flags = glue },
+    .{ .name = "qwen4_ple", .flags = glue },
+    .{ .name = "attn_train", .flags = &.{"-O3"} },
+    .{ .name = "qwen27_train", .flags = &.{"-O3"} },
+    .{ .name = "gdn_train", .flags = &.{ "-O3", "--fmad=false" } },
+    .{ .name = "train_q4", .flags = &.{"-O3"} },
+    .{ .name = "train_attn", .flags = &.{"-O3"} },
+    .{ .name = "flashnext_train", .flags = &.{"-O3"} },
+    .{ .name = "flashnext_gdn", .flags = &.{ "-O3", "--fmad=false" } }, // qwen4_exp/cuda/gdn.cu chain, one row
+    .{ .name = "flashnext_batch", .flags = &.{ "-O3", "--fmad=false" } }, // ours: Flash Next's batched prompt pass glue
+    .{ .name = "flashnext_mtp", .flags = &.{"-O3"} }, // ours: Flash Next's MTP drafts, a row's best score and log-sum-exp
+    .{ .name = "qmm", .flags = &.{"-O3"} }, // cuda/kernels/qmm.py lane matmul, groups of 32
+    .{ .name = "experts_rows", .flags = &.{"-O3"} }, // experts.cu's decode sums over a window or prompt chunk's rows
+    .{ .name = "route_rows", .flags = glue }, // ours: router logits and softmax top-k rows (cuda/route_rows.zig)
+    .{ .name = "flashnext_hc", .flags = glue }, // ours: Flash Next's hyper-connection and n-gram glue
+    .{ .name = "flashnext_attn", .flags = glue }, // ours: Flash Next's attention glue and its indexer's pooling and scores
+    .{ .name = "experts3", .flags = &.{"-O3"} }, // ours: 3-bit experts on experts.cu's steps, nibble words from planes
+    .{ .name = "experts3_prefill", .flags = &.{"-O3"} },
+    .{ .name = "moe", .flags = &.{"-O3"} }, // cuda/moe.py: softmax top-k routing with a sigmoid-gated shared expert
+    .{ .name = "qwen36_mtp", .flags = &.{"-O3"} }, // ours: the Qwen3.6 MTP drafter's attention at the target's head width
+    .{ .name = "ggml", .flags = &.{ "-O3", "--fmad=false" } },
+    .{ .name = "gdn", .flags = &.{ "-O3", "--fmad=false" } }, // cuda/kernels/gdn.py, tensorfold_gdn_v2
+    .{ .name = "probe", .flags = &.{"-O3"} },
+    .{ .name = "qmm_group", .flags = &.{"-O3"} }, // cuda/kernels/qmm.py, tensorfold_qmm_v5
+    .{ .name = "qmm_prefill", .flags = &.{"-O3"} },
+    .{ .name = "flashnext_fact", .flags = &.{"-O3"} }, // ours: prompt rows on qmm.cu's factored arithmetic
+    .{ .name = "flashnext_hcf", .flags = glue }, // ours: the hyper-connection read-out's prompt tiles, fn_hc's bits
+    .{ .name = "flashnext_fexp", .flags = &.{"-O3"} }, // ours: prompt pairs' experts on expert_rows' factored arithmetic
+    .{ .name = "w4a8_prefill", .flags = &.{"-O3"} }, // ours: prompt matmuls, int8 activations on MLX affine 4-bit weights
+    .{ .name = "experts", .flags = &.{"-O3"} }, // cuda/experts.py, tensorfold_experts_v7
+    .{ .name = "experts_prefill", .flags = &.{"-O3"} },
+    .{ .name = "experts_pack", .flags = &.{"-O3"} },
+    .{ .name = "prefill_attention", .flags = &.{ "-O3", "--fmad=false" } }, // tensorfold_prefill_attention_v1
+    .{ .name = "scan_rows", .flags = &.{ "-O3", "--fmad=false" } }, // nemotron_h/cuda/mamba.py
+    .{ .name = "nemotron_ops", .flags = &.{"-O3"} }, // ours: Nemotron's serial feed, routed plan and rests
+    .{ .name = "affine4_pack", .flags = &.{"-O3"} }, // ours: the MLX affine-4 repack into qlinear's tiles
+    .{ .name = "affine8", .flags = &.{"-O3"} }, // ours: MLX affine 2 to 8 bits on lane_gemv tiles of their own width
+    .{ .name = "affine_prefill", .flags = &.{"-O3"} }, // ours: qmm_prefill's prompt GEMM over affine8's tiles
+    .{ .name = "fp8_experts", .flags = &.{"-O3"}, .native_fp = true }, // fp8/experts.cu device code, fp8_experts_v6
+    .{ .name = "exlr8", .flags = &.{ "-O3", "--fmad=false" } }, // ours: EXLR8 lane projections, the Metal kernels' order
+    .{ .name = "exlr8_dense", .flags = &.{ "-O3", "--fmad=false" } }, // ours: EXLR8 dense matrices by row, the Metal order
+    .{ .name = "nvfp4_experts_tile", .flags = &.{"-O3"}, .min_sm = 80 },
+    .{ .name = "nvfp4_experts", .flags = &.{"-O3"} }, // nvfp4/experts.cu's device code, the NVFP4 expert kernels
+    .{ .name = "nvfp4_experts32", .flags = &.{"-O3"} }, // ours: GLM's routed experts at block 32 with csf0 scales
+    .{ .name = "rank_sum", .flags = &.{"-O3"} }, // ours: the rank-order sum of a reduce-scatter (rank_scatter.zig)
+    .{ .name = "lane_gemv", .flags = &.{"-O3"} }, // ours: qmm_group's arithmetic, a column tile's K slices in one CTA
+    .{ .name = "sample", .flags = &.{ "-O3", "--fmad=false", "--ftz=false" } }, // ours: the Metal engine's keyed draws
+    .{ .name = "train", .flags = &.{"-O3"} }, // ours: Sliding Weights' learning step (train.metal's kernels)
+    .{ .name = "qwen35", .flags = &.{"-O3"} }, // ours: the Qwen3.5 hybrids' glue, the Metal kernels' rounding points
+    .{ .name = "qwen35_draft", .flags = &.{"-O3"} }, // ours: the DFlash2 drafter's glue (draft_ops.metal's rounding)
+    .{ .name = "qwen35_keep", .flags = &.{"-O3"} }, // ours: a verified window's kept path applied to its stream's state
+    .{ .name = "qwen_vision", .flags = &.{ "-O3", "--fmad=false" } }, // ours: the Qwen3.5 vision tower's glue and attention
+    .{ .name = "gdn_prefill", .flags = &.{ "-O3", "--fmad=false" } }, // ours: a prompt chunk's gated delta rule (v0.6.6's chain)
+    .{ .name = "qwen35_kv8", .flags = &.{"-O3"} }, // ours: --kv-cache fp8's e4m3 attention rows for the Qwen3.5 hybrids
+    .{ .name = "qwen35_bf16_rows", .flags = &.{"-O3"} }, // ours: bf16 token rows and small bf16 dense projections (qwen3_5/cuda_bf16_rows.zig)
+    .{ .name = "joint_schema", .flags = glue }, // HIP's joint_schema.hip ported: Clef's joint schema head (cuda/joint_schema/)
+    .{ .name = "nemotron_route", .flags = glue }, // ours, each with a host reference (glue_ref.zig): Nemotron's glue
+    .{ .name = "nemotron_mamba", .flags = glue },
+    .{ .name = "nemotron_attention", .flags = glue },
+    .{ .name = "nemotron_keyed", .flags = glue },
+    .{ .name = "nemotron_latent", .flags = glue }, // ours: a latent MoE's wide picks, share sums and shared add
+    .{ .name = "ck_lane", .flags = &.{"-O3"} }, // nvfp4/lane4.cu's A8: FP8 rows times FP8 weights (checkpoint math)
+    .{ .name = "ck_experts", .flags = &.{"-O3"}, .arch_specific = true }, // ours: NVFP4 x NVFP4 experts (sm_121a)
+    .{ .name = "norms", .flags = &.{"-O3"} }, // ours: RMS norm rows for every family (cuda/norms.zig)
+    .{ .name = "embed_rows", .flags = &.{"-O3"} }, // ours: MLX affine and bf16 token rows (cuda/embed_rows.zig)
+    .{ .name = "lfm2", .flags = glue }, // ours: LFM2's short convolution, QK norm and rotary, gates and label rows
+    .{ .name = "lfm2_moe", .flags = glue }, // ours: LFM2.5-24B-A2B's router, Liquid's 3-tap conv and commit (liquid_conv.cuh)
+    .{ .name = "dots_mocr", .flags = glue }, // ours: dots.mocr's q|k|v bias and Torch-order RoPE (dots_rope.cuh)
+    .{ .name = "vit", .flags = glue }, // ours: vision towers' LayerNorm, Linear epilogues, activations, unshuffle
+    .{ .name = "moss_image", .flags = glue }, // ours: MOSS-Image's modulated norm, q/k rotary, situ, gated add
+    .{ .name = "tree_round", .flags = &.{"-O3"} }, // ours: verified tree rounds for every family (cuda/tree_round.zig)
+    .{ .name = "act_rows", .flags = &.{"-O3"} }, // ours: SwiGLU, output gates, group sums (cuda/act_rows.zig)
+    .{ .name = "gemma4_ple", .flags = &.{"-O3"} }, // ours: Gemma 4 E-series per-layer inputs (gemma4/cuda_ple.zig)
+    .{ .name = "gdn_prep", .flags = &.{"-O3"} }, // ours: Gated DeltaNet conv, norms, g and beta (cuda/gdn_prep.zig)
+    .{ .name = "qk_rows", .flags = &.{"-O3"} }, // ours: QK norm, RoPE and the cache write (cuda/qk_rows.zig)
+    .{ .name = "qmmf", .flags = &.{"-O3"}, .native_fp = true }, // nvfp4/qmmf.cu (FP8G, FP4), tensorfold_nvfp4_v3
+    .{ .name = "prompt16", .flags = &.{"-O3"}, .native_fp = true }, // nvfp4/prompt.cu FP4/FP8 tile 4, nvfp4_prompt_v1
+    .{ .name = "tree_attention", .flags = &.{"-O3"} }, // ours: committed keys and paths (cuda/tree_attention.zig)
+    .{ .name = "block_attention", .flags = &.{"-O3"} }, // ours: a drafter's block over its context (cuda/block_attention.zig)
+    .{ .name = "window_attention", .flags = &.{"-O3"} }, // ours: sliding-window attention (cuda/window_attention.zig)
+    .{ .name = "window_rows", .flags = &.{"-O3"} }, // ours: window attention at head dims 256 and 512 (cuda/window_attention.zig)
+    .{ .name = "window_pages", .flags = &.{"-O3"} }, // ours: window_rows.cuh over paged caches (Dory, Gemma 4, Spark)
+    .{ .name = "moe_glue", .flags = &.{"-O3"} }, // ours: sigmoid top-k and the weighted combine (cuda/moe_glue.zig)
+    .{ .name = "mla", .flags = &.{"-O3"} }, // ours: MLA, 64 roped columns and 128-wide heads, on GLM's chunk bodies
+    .{ .name = "dense_rows", .flags = &.{"-O3"} }, // ours: bf16 rows times weight rows into fp32 (cuda/dense_rows.zig)
+    .{ .name = "modelopt_pack", .flags = &.{"-O3"} }, // ours: ModelOpt tensors into the lane, prompt and expert layouts
+    .{ .name = "glm_kda", .flags = &.{ "-O3", "--fmad=false" } }, // GLM: the Python family's glm5_next/cuda/kda.cu
+    .{ .name = "glm_glue", .flags = &.{"-O3"} }, // ours: the Python family's Triton glue by hand, its PTX op for op
+    .{ .name = "glm_ops", .flags = &.{"-O3"} }, // ours: GLM's integer work the Python family did in torch (the DSA token lists)
+    .{ .name = "glm_index", .flags = &.{"-O3"} }, // a prompt chunk's DSA scores and top-512 pools
+    .{ .name = "minimax_m3", .flags = glue }, // ours: MiniMax-M3.1-Flash's glue (norms, RoPE prep, routing, DSpark, tower RoPE)
+    .{ .name = "minimax_m3_attn", .flags = glue }, // ours: MiniMax-M3.1-Flash's indexer and block-sparse attention
+    .{ .name = "glm_quant", .flags = torch_ops }, // ours: GLM's draft-only weight quantizers, torch at load in the Python family
+    .{ .name = "exl3_linear", .flags = &.{ "-O3", "--expt-relaxed-constexpr" } }, // exl3/linear.cu's device code, tensorfold_exl3_linear_v5
+    .{ .name = "exl3_experts", .flags = &.{ "-O3", "--expt-relaxed-constexpr" } }, // exl3/experts.cu's device code, tensorfold_exl3_experts
+    .{ .name = "exl3_candidate", .flags = &.{ "-O3", "--fmad=false", "--ftz=false" } }, // #806's EXL3 tiles: Dense's candidate
+    .{ .name = "glm_vision", .flags = &.{"-O3"} }, // ours: GLM's image tower steps around cuBLASLt (norms, rotary, softmax, merger)
+    .{ .name = "glm_mm", .flags = &.{"-O3"} }, // ours: GLM's bf16 linears on tensor cores, weights tiled at load, row-stable
+    .{ .name = "glm_dflash", .flags = &.{"-O3"} }, // the DFlash2 block drafter
+    .{ .name = "torch_argmax", .src = "torch_ops/argmax", .flags = torch_ops },
+    .{ .name = "torch_topk", .src = "torch_ops/topk", .flags = torch_ops },
+    .{ .name = "torch_pointwise", .src = "torch_ops/pointwise", .flags = torch_ops },
+    .{ .name = "torch_indexing", .src = "torch_ops/indexing", .flags = torch_ops },
+    .{ .name = "torch_movement", .src = "torch_ops/movement", .flags = torch_ops },
+    .{ .name = "torch_nemotron_constants", .src = "torch_ops/nemotron_constants", .flags = torch_ops },
+    .{ .name = "roce_gather", .src = "roce_gather", .flags = &.{"-O3"} }, // b12x's one-shot RoCE all-gather, two ranks
+    .{ .name = "l2pf", .src = "deepseek_v41/l2pf", .flags = &.{"-O3"} }, // DeepSeek V4.1's L2 prefetch of a weight table, as GLM's too (records: glm_l2pf_pending.zig)
+    .{ .name = "l2pace", .src = "deepseek_v41/l2pace", .flags = &.{"-O3"} }, // and its paced form
+    .{ .name = "drama3_staged_gemv", .flags = glue },
+    .{ .name = "drama3", .flags = &.{"-O3"} },
+    .{ .name = "drama3_fp8", .flags = &.{"-O3"} },
+    .{ .name = "drama3_codec", .flags = &.{"-O3"} },
+};
+
+/// torch.utils.cpp_extension's own nvcc flags (torch 2.13): C++20 and which half/bf16 operators the headers define.
+pub const torch_flags = [_][]const u8{
+    "-D__CUDA_NO_HALF_OPERATORS__",
+    "-D__CUDA_NO_HALF_CONVERSIONS__",
+    "-D__CUDA_NO_BFLOAT16_CONVERSIONS__",
+    "-D__CUDA_NO_HALF2_OPERATORS__",
+    "--expt-relaxed-constexpr",
+    "-std=c++20",
+};
+
+test "nativeFp: off or a unit without the path keeps the kernel; on adds the define and sm_<n>a" {
+    const p16: Kernel = .{ .name = "p16", .flags = &.{"-O3"}, .native_fp = true };
+    const plain: Kernel = .{ .name = "p", .flags = &.{"-O3"} };
+    try std.testing.expectEqual(p16, nativeFp(std.testing.allocator, p16, false));
+    try std.testing.expectEqual(plain, nativeFp(std.testing.allocator, plain, true));
+    const on = nativeFp(std.testing.allocator, p16, true);
+    defer std.testing.allocator.free(on.flags);
+    try std.testing.expectEqualDeep(@as([]const []const u8, &.{ "-O3", "-DTF_NATIVE_FP_DECODE" }), on.flags);
+    try std.testing.expectEqual(Profile{ .number = 121, .arch_specific = true }, profile(on, Target.parse("121")).?);
+    try std.testing.expectEqual(Profile{ .number = 86, .arch_specific = false }, profile(on, Target.parse("86")).?);
+}
+
+test "profile: arch-specific kernels take sm_<n>a from sm_120 on, others plain, none below min_sm" {
+    const ck: Kernel = .{ .name = "ck", .flags = &.{}, .arch_specific = true };
+    const plain: Kernel = .{ .name = "p", .flags = &.{}, .min_sm = 80 };
+    try std.testing.expectEqual(Profile{ .number = 120, .arch_specific = true }, profile(ck, Target.parse("120")).?);
+    try std.testing.expectEqual(Profile{ .number = 121, .arch_specific = true }, profile(ck, Target.parse("121")).?);
+    try std.testing.expectEqual(Profile{ .number = 86, .arch_specific = false }, profile(ck, Target.parse("86")).?);
+    try std.testing.expectEqual(Profile{ .number = 120, .arch_specific = false }, profile(plain, Target.parse("120")).?);
+    try std.testing.expectEqual(@as(?Profile, null), profile(plain, Target.parse("75")));
+}
+
+test "native_fp units: exactly fp8_experts, qmmf and prompt16 (without the flag native-fp only skips)" {
+    const want = [_][]const u8{ "fp8_experts", "qmmf", "prompt16" };
+    var seen: usize = 0;
+    for (kernels) |k| {
+        if (!k.native_fp) continue;
+        seen += 1;
+        for (want) |w| {
+            if (std.mem.eql(u8, k.name, w)) break;
+        } else return error.UnexpectedNativeFpUnit;
+    }
+    try std.testing.expectEqual(want.len, seen);
+}

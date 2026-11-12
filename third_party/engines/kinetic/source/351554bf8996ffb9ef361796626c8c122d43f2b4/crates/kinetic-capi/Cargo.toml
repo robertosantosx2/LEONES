@@ -1,0 +1,15 @@
+[package]
+name = "kinetic-capi"
+description = "C API for Kinetic: load a model, chat with it and embed text from any language"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+# `kinetic` alone would share kinetic.pdb with the command-line tool on Windows.
+name = "kinetic_capi"
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[dependencies]
+kinetic = { path = "../kinetic" }

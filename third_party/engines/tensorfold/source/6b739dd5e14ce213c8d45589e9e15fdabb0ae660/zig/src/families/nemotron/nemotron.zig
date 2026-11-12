@@ -1,0 +1,53 @@
+//! Nemotron-H (Nemotron 3.5 Lightning) on Metal: FusedDecode's kernels for rounds, mlx_lm's prefill on ours, no MLX.
+pub const config = @import("config.zig");
+pub const weights = @import("weights.zig");
+pub const kernels = @import("kernels.zig");
+pub const state = @import("state.zig");
+pub const residency = @import("residency.zig");
+pub const forward = @import("forward.zig");
+pub const layers = @import("layers.zig");
+pub const tree = @import("tree.zig");
+pub const head_tree = @import("head_tree.zig");
+pub const encoder = @import("encoder.zig");
+pub const timing = @import("timing.zig");
+pub const model = @import("model.zig");
+pub const backend = @import("backend.zig");
+pub const mtp = @import("mtp.zig");
+pub const head_block = @import("head_block.zig");
+pub const gpu_round = @import("gpu_round.zig");
+pub const round_depth = @import("round_depth.zig");
+pub const copy_lanes = @import("copy_lanes.zig");
+pub const prefill = @import("prefill.zig");
+pub const prefill_launch = @import("prefill_launch.zig");
+pub const prefill_kernels = @import("prefill_kernels.zig");
+pub const simd_attention = @import("simd_attention.zig");
+pub const slide = @import("slide.zig");
+pub const model_type = @import("living").families.nemotron_h.model_type;
+pub const linked = @import("../../core/shard_edit.zig").linked;
+pub const plainShared = @import("../../core/shard_edit.zig").plainShared;
+
+/// The existing Metal learner reads the same backend and checkpoint it has always received.
+pub fn learnModel(b: *backend.Metal, _: []const u8) *backend.Metal {
+    return b;
+}
+pub const adapters = @import("adapters.zig");
+pub const learned = @import("learned.zig");
+pub const train_ops = @import("train_ops.zig");
+pub const train_back = @import("train_back.zig");
+pub const train = @import("train.zig");
+pub const pocket_fit = @import("living").pocket_fit;
+pub const lesson_route = @import("living").lesson_route;
+pub const snapshot = @import("snapshot.zig");
+pub const kv_pages = @import("kv_pages.zig");
+pub const learned_prompts = @import("learned_prompts.zig");
+
+pub const Model = model.Model;
+
+test {
+    _ = @import("state.zig");
+    _ = @import("backend_slots_test.zig");
+    _ = @import("train_check.zig");
+    _ = @import("model.zig");
+    _ = @import("timing.zig");
+    _ = @import("round_depth.zig");
+}

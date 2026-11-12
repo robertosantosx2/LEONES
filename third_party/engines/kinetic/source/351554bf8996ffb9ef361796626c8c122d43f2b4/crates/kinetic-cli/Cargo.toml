@@ -1,0 +1,47 @@
+[package]
+name = "kinetic-cli"
+description = "The kinetic command-line tool"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "kinetic"
+path = "src/main.rs"
+
+[features]
+default = ["cuda", "vulkan"]
+# Runs models on NVIDIA GPUs; the kernels are built when nvcc is found. The
+# driver itself is opened at runtime, so the binary still starts, on the
+# CPU, on machines without one.
+cuda = ["kinetic-server/cuda", "dep:kinetic-cuda"]
+# Runs models on AMD, Intel and NVIDIA GPUs through Vulkan. The kernels are
+# compiled to SPIR-V at build time and the loader is opened at runtime, so
+# this needs no SDK to build and no driver to start.
+vulkan = ["kinetic-server/vulkan", "dep:kinetic-vulkan"]
+
+[dependencies]
+clap = { version = "4.6.1", features = ["derive"] }
+ctrlc = "3.5.2"
+kinetic-cuda = { path = "../kinetic-cuda", optional = true }
+kinetic-gguf = { path = "../kinetic-gguf" }
+kinetic-ktc = { path = "../kinetic-ktc" }
+kinetic-models = { path = "../kinetic-models" }
+kinetic-quant = { path = "../kinetic-quant" }
+kinetic-server = { path = "../kinetic-server" }
+kinetic-tokenizer = { path = "../kinetic-tokenizer" }
+kinetic-vision = { path = "../kinetic-vision" }
+kinetic-vulkan = { path = "../kinetic-vulkan", optional = true }
+rayon.workspace = true
+rustyline = { version = "19.0.0", default-features = false }
+serde_json = "1.0.149"
+sha2 = "0.10.9"
+strsim = "0.11.1"
+unicode-width = "0.2.3"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_System_Console", "Win32_System_DataExchange", "Win32_System_Memory"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2.191"

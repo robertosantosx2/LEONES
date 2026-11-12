@@ -1,0 +1,600 @@
+//! A checkpoint's tokenizer.json and chat template behind ``model_text.Text`` (our tokenizer and template engines).
+const std = @import("std");
+const tokenizer = @import("tokenizer");
+const template = @import("template");
+const json = @import("json");
+const model_text = @import("model_text.zig");
+const KimiText = @import("kimi_text.zig").KimiText;
+const dsv41_chat = @import("dsv41_chat");
+const dsv41 = if (@hasDecl(dsv41_chat, "template")) dsv41_chat.template else dsv41_chat;
+const Value = json.Value;
+const Allocator = std.mem.Allocator;
+
+const clear_thinking_env = "TF_GLM_CLEAR_THINKING";
+
+/// ``TF_GLM_CLEAR_THINKING`` (#236): false unless 1, null unless 0 or 1; given always, as TR3's template clears unset.
+pub fn glmClearThinking(value: ?[]const u8) ?bool {
+    const v = std.mem.trim(u8, value orelse "", " \t\r\n");
+    if (v.len == 0 or std.mem.eql(u8, v, "0")) return false;
+    return if (std.mem.eql(u8, v, "1")) true else null;
+}
+
+/// ``TF_DSV41_SCHEMA_PROMPT``: named on/off forms; unset keeps the published engine's schema inclusion.
+pub fn schemaPrompt(value: ?[]const u8) !bool {
+    return @import("sys").environment.value(bool, "TF_DSV41_SCHEMA_PROMPT", value, true);
+}
+
+pub const HfText = struct {
+    gpa: Allocator,
+    arena: std.heap.ArenaAllocator,
+    tok: tokenizer.Tokenizer,
+    native_kimi: ?*KimiText = null,
+    source: []const u8 = "",
+    native_deepseek: bool = false,
+    schema_prompt: bool = true, // TF_DSV41_SCHEMA_PROMPT: response_format's schema as the encoder's ``## Response Format``
+    overridden: bool = false, // the chat template is --chat-template's file
+    unread_template: bool = false, // a native DeepSeek checkpoint's own Jinja, which its encoder replaces
+    clear_thinking: ?bool = null, // GLM-5.3's, given to its template on every render (``glmClearThinking``)
+    tool_source: []const u8 = "",
+    compiled: ?template.Compiled = null,
+    tool_compiled: ?template.Compiled = null,
+    specials: std.json.Value = .null,
+    eos: []const u32 = &.{},
+    prefix: []const u32 = &.{}, // the post-processor's tokens before a text (add_special_tokens)
+    suffix: []const u32 = &.{},
+
+    /// Loads ``dir``'s tokenizer.json, chat template, special tokens, eos ids; failure reason in `problem` (from `pa`).
+    pub fn load(gpa: Allocator, io: std.Io, dir: []const u8, template_override: ?[]const u8, pa: Allocator, problem: *[]const u8) !*HfText {
+        const t = try gpa.create(HfText);
+        errdefer gpa.destroy(t);
+        t.* = .{ .gpa = gpa, .arena = .init(gpa), .tok = undefined };
+        errdefer t.arena.deinit();
+        const a = t.arena.allocator();
+        const probe = readJson(io, a, dir, "config.json");
+        if (probe == .object) if (probe.object.get("model_type")) |kind| if (kind == .string and
+            (std.mem.eql(u8, kind.string, "kimi_k3") or std.mem.eql(u8, kind.string, "kimi_k31")))
+        {
+            if (template_override != null) {
+                problem.* = "Kimi uses the release XTML renderer; --chat-template is unsupported";
+                return error.Load;
+            }
+            t.native_kimi = KimiText.load(gpa, io, dir) catch |err| {
+                if (err == error.OutOfMemory) return err;
+                problem.* = try std.fmt.allocPrint(pa, "cannot load Kimi tiktoken/XTML assets ({s})", .{@errorName(err)});
+                return error.Load;
+            };
+            return t;
+        };
+        t.tok = tokenizer.loadTokenizer(io, gpa, dir) catch |e| {
+            problem.* = try std.fmt.allocPrint(pa, "cannot read {s}/tokenizer.json ({s})", .{ dir, @errorName(e) });
+            return error.Load;
+        };
+        errdefer t.tok.deinit();
+        // each request renders its chat up to three times, and a chat's earlier messages come back every turn
+        t.tok.memo = try tokenizer.Memo.create(gpa, 64 << 20);
+        const config = readJson(io, a, dir, "tokenizer_config.json");
+        // a Clef checkpoint's tokenizer splits words with the regex this field publishes, not tokenizer.json's
+        const clef = if (std.fs.path.join(a, &.{ dir, "joint_head_config.json" })) |head| if (std.Io.Dir.cwd().access(io, head, .{})) |_| true else |_| false else |_| false;
+        if (clef and config == .object) if (config.object.get("pretokenize_regex")) |re| {
+            if (re != .string or re.string.len == 0) {
+                problem.* = "tokenizer_config.json pretokenize_regex is not a non-empty string";
+                return error.Load;
+            }
+            t.tok.overrideSplit(re.string) catch |e| {
+                problem.* = try std.fmt.allocPrint(pa, "tokenizer_config.json pretokenize_regex cannot replace the Split pattern ({s})", .{@errorName(e)});
+                return error.Load;
+            };
+        };
+        const model_config = readEosJson(io, a, dir, "config.json", 64 << 20) catch |e| {
+            problem.* = try std.fmt.allocPrint(pa, "cannot read config.json EOS ({s})", .{@errorName(e)});
+            return error.Load;
+        };
+        const generation = readEosJson(io, a, dir, "generation_config.json", 1 << 20) catch |e| {
+            problem.* = try std.fmt.allocPrint(pa, "cannot read generation_config.json EOS ({s})", .{@errorName(e)});
+            return error.Load;
+        };
+        if (model_config == .object) if (model_config.object.get("model_type")) |kind| {
+            t.native_deepseek = template_override == null and kind == .string and
+                (std.mem.eql(u8, kind.string, "deepseek_v4") or std.mem.eql(u8, kind.string, "deepseek_v41"));
+            if (kind == .string and std.mem.eql(u8, kind.string, "glm5_next")) {
+                const value = if (std.c.getenv(clear_thinking_env)) |v| std.mem.span(v) else null;
+                t.clear_thinking = glmClearThinking(value) orelse {
+                    problem.* = try std.fmt.allocPrint(pa, "{s}={s}: expected 0 or 1", .{ clear_thinking_env, value.? });
+                    return error.Load;
+                };
+            }
+        };
+        if (template_override) |path| {
+            t.source = std.Io.Dir.cwd().readFileAlloc(io, path, a, .limited(16 << 20)) catch |e| {
+                problem.* = try std.fmt.allocPrint(pa, "cannot read chat template override ({s})", .{@errorName(e)});
+                return error.Load;
+            };
+            t.overridden = true;
+        } else try t.readTemplates(io, a, dir, config);
+        if (template_override == null) t.source = @import("hf_text_parse.zig").template(model_config) orelse t.source;
+        // DeepSeek-V4.x releases ship encoding.py, not Jinja: a checkpoint's Jinja is a third party's (--chat-template)
+        if (t.native_deepseek) {
+            t.unread_template = t.source.len > 0 or t.tool_source.len > 0;
+            t.source = "";
+            t.tool_source = "";
+            t.schema_prompt = try schemaPrompt(if (std.c.getenv("TF_DSV41_SCHEMA_PROMPT")) |v| std.mem.span(v) else null);
+        }
+        t.specials = try specialsOf(a, config);
+        t.eos = t.eosIds(a, model_config, generation, config, t.tok.id_to_token.tokens.items.len) catch |e| {
+            if (e == error.OutOfMemory) return e;
+            problem.* = try std.fmt.allocPrint(pa, "invalid checkpoint EOS ({s})", .{@errorName(e)});
+            return error.Load;
+        };
+        try t.readPostProcessor(io, a, dir);
+        if (t.source.len > 0) {
+            var diag: template.Diag = .{};
+            defer if (diag.msg.len > 0) gpa.free(diag.msg);
+            t.compiled = template.compile(gpa, t.source, &diag) catch |e| {
+                problem.* = try std.fmt.allocPrint(pa, "the chat template does not compile: {s} ({s})", .{ diag.msg, @errorName(e) });
+                return error.Load;
+            };
+        }
+        if (t.tool_source.len > 0) t.tool_compiled = template.compile(gpa, t.tool_source, null) catch null;
+        return t;
+    }
+
+    pub fn deinit(t: *HfText) void {
+        if (t.compiled) |*c| c.deinit();
+        if (t.tool_compiled) |*c| c.deinit();
+        if (t.native_kimi) |kimi| kimi.deinit() else t.tok.deinit();
+        t.arena.deinit();
+        t.gpa.destroy(t);
+    }
+
+    fn readJson(io: std.Io, a: Allocator, dir: []const u8, name: []const u8) std.json.Value {
+        const path = std.fs.path.join(a, &.{ dir, name }) catch return .null;
+        const bytes = std.Io.Dir.cwd().readFileAlloc(io, path, a, .limited(64 << 20)) catch return .null;
+        return std.json.parseFromSliceLeaky(std.json.Value, a, bytes, .{}) catch .null;
+    }
+
+    /// Optional EOS documents are absent only on FileNotFound; malformed present data refuses the text load.
+    fn readEosJson(io: std.Io, a: Allocator, dir: []const u8, name: []const u8, limit: usize) !std.json.Value {
+        const path = try std.fs.path.join(a, &.{ dir, name });
+        const bytes = std.Io.Dir.cwd().readFileAlloc(io, path, a, .limited(limit)) catch |e| switch (e) {
+            error.FileNotFound => return .null,
+            else => return e,
+        };
+        const doc = try std.json.parseFromSliceLeaky(std.json.Value, a, bytes, .{ .allocate = .alloc_always });
+        if (doc != .object) return error.BadEos;
+        return doc;
+    }
+
+    /// chat_template.jinja, else chat_template.json, else tokenizer_config.json's (named: "default", and "tool_use").
+    fn readTemplates(t: *HfText, io: std.Io, a: Allocator, dir: []const u8, config: std.json.Value) !void {
+        const jinja = try std.fs.path.join(a, &.{ dir, "chat_template.jinja" });
+        if (std.Io.Dir.cwd().readFileAlloc(io, jinja, a, .limited(16 << 20))) |s| {
+            t.source = s;
+            return;
+        } else |_| {}
+        const sidecar = readJson(io, a, dir, "chat_template.json");
+        if (sidecar == .object) if (sidecar.object.get("chat_template")) |s| if (s == .string) {
+            t.source = s.string;
+            return;
+        };
+        if (config != .object) return;
+        const found = config.object.get("chat_template") orelse return;
+        switch (found) {
+            .string => |s| t.source = s,
+            .array => |list| for (list.items) |entry| {
+                if (entry != .object) continue;
+                const name = entry.object.get("name") orelse continue;
+                const body = entry.object.get("template") orelse continue;
+                if (name != .string or body != .string) continue;
+                if (std.mem.eql(u8, name.string, "default")) t.source = body.string;
+                if (std.mem.eql(u8, name.string, "tool_use")) t.tool_source = body.string;
+            },
+            .object => |o| {
+                if (o.get("default")) |d| if (d == .string) {
+                    t.source = d.string;
+                };
+                if (o.get("tool_use")) |d| if (d == .string) {
+                    t.tool_source = d.string;
+                };
+            },
+            else => {},
+        }
+    }
+
+    /// Every ``*_token`` string (or ``{"content": ...}``) in tokenizer_config.json, as apply_chat_template passes them.
+    fn specialsOf(a: Allocator, config: std.json.Value) !std.json.Value {
+        var out: std.json.ObjectMap = .empty;
+        if (config == .object) {
+            var it = config.object.iterator();
+            while (it.next()) |e| {
+                if (!std.mem.endsWith(u8, e.key_ptr.*, "_token")) continue;
+                switch (e.value_ptr.*) {
+                    .string => try out.put(a, e.key_ptr.*, e.value_ptr.*),
+                    .object => |o| if (o.get("content")) |c| if (c == .string) try out.put(a, e.key_ptr.*, c),
+                    else => {},
+                }
+            }
+        }
+        return .{ .object = out };
+    }
+
+    /// Shared model/generation EOS, plus the tokenizer's chat end when declared.
+    fn eosIds(t: *HfText, a: Allocator, model: std.json.Value, generation: std.json.Value, config: std.json.Value, vocab: usize) ![]const u32 {
+        const bound = try tokenizer.eos.vocabulary(model, vocab);
+        const ids = try tokenizer.eos.resolve(a, model, generation, bound);
+        defer a.free(ids);
+        var out: std.ArrayList(u32) = .empty;
+        errdefer out.deinit(a);
+        try out.appendSlice(a, ids);
+        if (config == .object) if (config.object.get("eos_token")) |e| {
+            const piece = switch (e) {
+                .string => |value| value,
+                .object => |o| if (o.get("content")) |c| (if (c == .string) c.string else "") else "",
+                else => "",
+            };
+            if (t.tok.specialTokenId(piece)) |id| try tokenizer.eos.appendId(a, &out, id, bound);
+        };
+        return out.toOwnedSlice(a);
+    }
+
+    /// The tokens ``add_special_tokens`` adds: TemplateProcessing's single template, or Bert and Roberta's cls and sep.
+    fn readPostProcessor(t: *HfText, io: std.Io, a: Allocator, dir: []const u8) !void {
+        const doc = readJson(io, a, dir, "tokenizer.json");
+        if (doc != .object) return;
+        const pp = doc.object.get("post_processor") orelse return;
+        var prefix: std.ArrayList(u32) = .empty;
+        var suffix: std.ArrayList(u32) = .empty;
+        try addProcessor(a, pp, &prefix, &suffix);
+        t.prefix = prefix.items;
+        t.suffix = suffix.items;
+    }
+
+    fn addProcessor(a: Allocator, pp: std.json.Value, prefix: *std.ArrayList(u32), suffix: *std.ArrayList(u32)) !void {
+        if (pp != .object) return;
+        const kind = pp.object.get("type") orelse return;
+        if (kind != .string) return;
+        if (std.mem.eql(u8, kind.string, "Sequence")) {
+            const list = pp.object.get("processors") orelse return;
+            if (list == .array) for (list.array.items) |p| try addProcessor(a, p, prefix, suffix);
+            return;
+        }
+        if (std.mem.eql(u8, kind.string, "BertProcessing") or std.mem.eql(u8, kind.string, "RobertaProcessing")) {
+            if (pp.object.get("cls")) |c| if (c == .array and c.array.items.len == 2 and c.array.items[1] == .integer) try prefix.append(a, @intCast(c.array.items[1].integer));
+            if (pp.object.get("sep")) |s| if (s == .array and s.array.items.len == 2 and s.array.items[1] == .integer) try suffix.append(a, @intCast(s.array.items[1].integer));
+            return;
+        }
+        if (!std.mem.eql(u8, kind.string, "TemplateProcessing")) return;
+        const single = pp.object.get("single") orelse return;
+        const specials = pp.object.get("special_tokens") orelse return;
+        if (single != .array or specials != .object) return;
+        var after = false;
+        for (single.array.items) |piece| {
+            if (piece != .object) continue;
+            if (piece.object.get("Sequence") != null) {
+                after = true;
+                continue;
+            }
+            const st = piece.object.get("SpecialToken") orelse continue;
+            if (st != .object) continue;
+            const id = st.object.get("id") orelse continue;
+            if (id != .string) continue;
+            const entry = specials.object.get(id.string) orelse continue;
+            if (entry != .object) continue;
+            const ids = entry.object.get("ids") orelse continue;
+            if (ids != .array) continue;
+            for (ids.array.items) |x| if (x == .integer) try (if (after) suffix else prefix).append(a, @intCast(x.integer));
+        }
+    }
+
+    pub fn text(t: *HfText) model_text.Text {
+        if (t.native_kimi) |kimi| return kimi.text();
+        return .{ .native_deepseek = t.native_deepseek and t.compiled == null, .ctx = t, .vtable = &.{
+            .encode = encodeFn,
+            .decode = decodeFn,
+            .token_id = tokenIdFn,
+            .token_string = tokenStringFn,
+            .vocab_size = vocabFn,
+            .eos_ids = eosFn,
+            .added = addedFn,
+            .render = renderFn,
+            .template_source = sourceFn,
+            .special = specialFn,
+            .token_bytes = tokenBytesFn,
+            .encode_plain = encodePlainFn,
+            .encode_masked = encodeMaskedFn,
+        } };
+    }
+
+    pub fn identity(t: *const HfText, a: Allocator) Allocator.Error![32]u8 {
+        return if (t.native_kimi) |kimi| kimi.identity() else tokenizer.identity(&t.tok, a);
+    }
+
+    fn specialFn(ctx: *anyopaque, id: u32) bool {
+        const t = self(ctx);
+        const piece = t.tok.id_to_token.get(id) orelse return false;
+        return t.tok.specials.contains(piece);
+    }
+
+    fn addedFn(ctx: *anyopaque, id: u32) bool {
+        return self(ctx).tok.isAdded(id);
+    }
+
+    fn self(ctx: *anyopaque) *HfText {
+        return @ptrCast(@alignCast(ctx));
+    }
+
+    fn encodeFn(ctx: *anyopaque, a: Allocator, s: []const u8, add_special: bool) model_text.Error![]u32 {
+        const t = self(ctx);
+        const ids = t.tok.encode(a, s) catch |e| return if (e == error.OutOfMemory) error.OutOfMemory else error.Template;
+        if (!add_special or (t.prefix.len == 0 and t.suffix.len == 0)) return ids;
+        return std.mem.concat(a, u32, &.{ t.prefix, ids, t.suffix });
+    }
+
+    fn encodePlainFn(ctx: *anyopaque, a: Allocator, s: []const u8) model_text.Error![]u32 {
+        return self(ctx).tok.encodePlain(a, s) catch |e| if (e == error.OutOfMemory) error.OutOfMemory else error.Template;
+    }
+
+    fn encodeMaskedFn(ctx: *anyopaque, a: Allocator, s: []const u8, spans: []const model_text.Span, problem: *[]const u8) model_text.Error![]u32 {
+        return self(ctx).tok.encodeMasked(a, s, spans) catch |err| {
+            if (err == error.OutOfMemory) return error.OutOfMemory;
+            problem.* = if (err == error.UnsafeNormalizedAddedTokenMask)
+                "normalized added tokens cannot be matched safely through this normalizer with request text"
+            else if (err == error.UnsafeAddedTokenMask)
+                "request text tokenizes to an added-token id in this tokenizer; the prompt cannot be encoded safely"
+            else
+                "the tokenizer cannot encode this prompt with request byte provenance";
+            return error.Template;
+        };
+    }
+
+    fn decodeFn(ctx: *anyopaque, a: Allocator, ids: []const u32) Allocator.Error![]u8 {
+        return self(ctx).tok.decode(a, ids, false) catch |e| if (e == error.OutOfMemory) error.OutOfMemory else a.dupe(u8, "\u{fffd}");
+    }
+
+    fn tokenIdFn(ctx: *anyopaque, piece: []const u8) ?u32 {
+        return self(ctx).tok.specialTokenId(piece);
+    }
+
+    fn tokenStringFn(ctx: *anyopaque, a: Allocator, id: u32) Allocator.Error![]u8 {
+        const piece = self(ctx).tok.id_to_token.get(id) orelse return a.dupe(u8, "");
+        return a.dupe(u8, piece);
+    }
+
+    fn tokenBytesFn(ctx: *anyopaque, a: Allocator, id: u32) Allocator.Error!?[]u8 {
+        return self(ctx).tok.tokenBytes(a, id) catch |e| if (e == error.OutOfMemory) error.OutOfMemory else null;
+    }
+
+    fn vocabFn(ctx: *anyopaque) u32 {
+        return @intCast(self(ctx).tok.id_to_token.tokens.items.len);
+    }
+
+    fn eosFn(ctx: *anyopaque) []const u32 {
+        return self(ctx).eos;
+    }
+
+    fn sourceFn(ctx: *anyopaque) []const u8 {
+        const t = self(ctx);
+        const source = if (t.native_deepseek and t.compiled == null) "enable_thinking thinking_mode reasoning_effort [\"none\", \"minimal\", \"low\", \"medium\", \"high\", \"xhigh\", \"max\"] " ++ dsv41.BOS ++ dsv41.USER ++ dsv41.ASSISTANT ++ dsv41.CALLS_OPEN else t.source;
+        return if (t.tool_source.len > 0) std.mem.concat(t.arena.allocator(), u8, &.{ source, " ", t.tool_source }) catch source else source;
+    }
+
+    /// What renders chat, for the start-up line: an operator sees when a checkpoint's own Jinja goes unused.
+    pub fn renderer(t: *const HfText) []const u8 {
+        if (t.native_deepseek) return if (t.unread_template) "the DeepSeek-V4.x encoder (encoding.py); the checkpoint's own chat template is not used, --chat-template FILE uses it" else "the DeepSeek-V4.x encoder (encoding.py)";
+        if (t.overridden) return "the --chat-template file";
+        return if (t.source.len > 0 or t.tool_source.len > 0) "the checkpoint's" else "none: chat requests are refused, completion prompts are served";
+    }
+
+    fn renderDeepseek(t: *HfText, a: Allocator, messages: Value, options: model_text.RenderOptions, problem: *[]const u8) model_text.Error!model_text.Rendered {
+        var opts: dsv41.Options = .{ .thinking = options.enable_thinking, .add_generation_prompt = options.add_generation_prompt };
+        if (options.images) opts.image = .{ .text = imageMarker }; // the image token, expanded by images.zig
+        if (t.schema_prompt) if (options.response_format) |rf| {
+            opts.response_format = try @import("deepseek_schema.zig").schemaFor(a, rf);
+        };
+        if (options.tools) |tools| {
+            if (tools != .array) {
+                problem.* = "tools must be a list";
+                return error.Template;
+            }
+            opts.tools = tools.array;
+        }
+        if (options.reasoning_effort) |effort| {
+            const budget = dsv41.effortOf(effort) orelse {
+                problem.* = "reasoning_effort must be 1-100 or low / medium / high / max";
+                return error.Template;
+            };
+            opts.thinking = options.enable_thinking and budget != null;
+            opts.budget = budget orelse dsv41.default_budget;
+        }
+        var diag: dsv41.Problem = .{};
+        const out = dsv41.renderProvenance(a, messages, opts, &diag) catch |err| {
+            if (err == error.OutOfMemory) return error.OutOfMemory;
+            problem.* = diag.message;
+            return error.Template;
+        };
+        return .{ .text = out.text, .spans = out.spans };
+    }
+
+    fn imageMarker(_: ?*anyopaque, _: Value) []const u8 {
+        return dsv41.IMAGE;
+    }
+
+    fn renderFn(ctx: *anyopaque, a: Allocator, messages: Value, options: model_text.RenderOptions, problem: *[]const u8) model_text.Error!model_text.Rendered {
+        const t = self(ctx);
+        const compiled = if (options.tools != null and t.tool_compiled != null) &t.tool_compiled.? else if (t.compiled) |*c| c else {
+            if (t.native_deepseek) return t.renderDeepseek(a, messages, options, problem);
+            problem.* = "this checkpoint has no chat template: send a completion prompt instead";
+            return error.Template;
+        };
+        var globals: std.json.ObjectMap = .empty;
+        if (t.specials == .object) {
+            var it = t.specials.object.iterator();
+            while (it.next()) |e| try globals.put(a, e.key_ptr.*, e.value_ptr.*);
+        }
+        try globals.put(a, "thinking_mode", .{ .string = if (options.enable_thinking) "thinking" else "chat" });
+        var context: std.json.ObjectMap = .empty;
+        try context.put(a, "enable_thinking", .{ .bool = options.enable_thinking });
+        if (options.reasoning_effort) |e| try context.put(a, "reasoning_effort", .{ .string = e });
+        if (t.clear_thinking) |clear| try context.put(a, "clear_thinking", .{ .bool = options.clear_thinking orelse clear });
+        var diag: template.Diag = .{};
+        const tools: std.json.Value = if (options.tools) |tl| try toStd(a, tl) else .null;
+        const out = template.renderProvenanceGlobals(a, compiled, try toStd(a, messages), tools, .{ .object = context }, .{ .object = globals }, options.add_generation_prompt, &diag) catch |e| {
+            if (e == error.OutOfMemory) return error.OutOfMemory;
+            problem.* = diag.msg;
+            return error.Template;
+        };
+        return .{ .text = out.s, .spans = out.spans };
+    }
+};
+
+test "model EOS does not hide a different tokenizer chat end" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    var t: HfText = undefined;
+    t.tok.vocab = std.StringHashMap(u32).init(a);
+    try t.tok.vocab.put("<|im_end|>", 248046);
+    const model = try std.json.parseFromSliceLeaky(std.json.Value, a, "{\"text_config\":{\"eos_token_id\":248044}}", .{});
+    const config = try std.json.parseFromSliceLeaky(std.json.Value, a, "{\"eos_token\":\"<|im_end|>\"}", .{});
+    try std.testing.expectEqualSlices(u32, &.{ 248044, 248046 }, try t.eosIds(a, model, .null, config, 248047));
+    const same = try std.json.parseFromSliceLeaky(std.json.Value, a, "{\"eos_token_id\":[248046]}", .{});
+    try std.testing.expectEqualSlices(u32, &.{248046}, try t.eosIds(a, same, .null, config, 248047));
+    const added = try std.json.parseFromSliceLeaky(std.json.Value, a, "{\"eos_token\":{\"content\":\"<|im_end|>\"}}", .{});
+    try std.testing.expectEqualSlices(u32, &.{ 248044, 248046 }, try t.eosIds(a, model, .null, added, 248047));
+    try std.testing.expectEqualSlices(u32, &.{248046}, try t.eosIds(a, .null, .null, config, 248047));
+}
+
+/// Our JSON value as std.json's, ints exact (past i64 as number strings) and keys in order.
+pub fn toStd(a: Allocator, v: Value) Allocator.Error!std.json.Value {
+    return switch (v) {
+        .null => .null,
+        .bool => |b| .{ .bool = b },
+        .int => |s| if (std.fmt.parseInt(i64, s, 10)) |i| .{ .integer = i } else |_| .{ .number_string = s },
+        .float => |f| .{ .float = f },
+        .string => |s| .{ .string = s },
+        .array => |items| blk: {
+            var list: std.json.Array = .init(a);
+            try list.ensureTotalCapacity(items.len);
+            for (items) |item| list.appendAssumeCapacity(try toStd(a, item));
+            break :blk .{ .array = list };
+        },
+        .object => |o| blk: {
+            var map: std.json.ObjectMap = .empty;
+            try map.ensureTotalCapacity(a, o.count());
+            for (o.keys(), o.values()) |k, item| map.putAssumeCapacity(k, try toStd(a, item));
+            break :blk .{ .object = map };
+        },
+    };
+}
+
+test "explicit template overrides checkpoint templates including tool prompts and fails closed" {
+    const gpa = std.testing.allocator;
+    const io = std.testing.io;
+    var arena = std.heap.ArenaAllocator.init(gpa);
+    defer arena.deinit();
+    const a = arena.allocator();
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    try tmp.dir.writeFile(io, .{ .sub_path = "tokenizer.json", .data =
+        \\{"model":{"type":"BPE","vocab":{"H":0},"merges":[]},"added_tokens":[]}
+    });
+    try tmp.dir.writeFile(io, .{ .sub_path = "tokenizer_config.json", .data =
+        \\{"chat_template":{"default":"default{{ messages[0].content }}","tool_use":"tools{{ messages[0].content }}"}}
+    });
+    const dir = try std.fmt.allocPrint(a, ".zig-cache/tmp/{s}", .{tmp.sub_path});
+    const path = try std.fmt.allocPrint(a, "{s}/override.jinja", .{dir});
+    var problem: []const u8 = "";
+    const messages = (try json.parse(a, "[{\"role\":\"user\",\"content\":\"H\"}]")).ok;
+    const named = try HfText.load(gpa, io, dir, null, a, &problem);
+    defer named.deinit();
+    try std.testing.expectEqualStrings("defaultH", (try named.text().render(a, messages, .{}, &problem)).text);
+    try std.testing.expectEqualStrings("toolsH", (try named.text().render(a, messages, .{ .tools = .{ .array = &.{} } }, &problem)).text);
+    try tmp.dir.writeFile(io, .{ .sub_path = "override.jinja", .data = "override{{ messages[0].content }}" });
+    const tool_override = try HfText.load(gpa, io, dir, path, a, &problem);
+    defer tool_override.deinit();
+    try std.testing.expectEqualStrings("overrideH", (try tool_override.text().render(a, messages, .{ .tools = .{ .array = &.{} } }, &problem)).text);
+    try tmp.dir.writeFile(io, .{ .sub_path = "chat_template.jinja", .data = "sidecar{{ messages[0].content }}" });
+    const sidecar = try HfText.load(gpa, io, dir, null, a, &problem);
+    defer sidecar.deinit();
+    try std.testing.expectEqualStrings("sidecarH", (try sidecar.text().render(a, messages, .{}, &problem)).text);
+    const overridden = try HfText.load(gpa, io, dir, path, a, &problem);
+    defer overridden.deinit();
+    for ([_]model_text.RenderOptions{ .{}, .{ .tools = .{ .array = &.{} } } }) |options|
+        try std.testing.expectEqualStrings("overrideH", (try overridden.text().render(a, messages, options, &problem)).text);
+    const missing = try std.fmt.allocPrint(a, "{s}/missing.jinja", .{dir});
+    try std.testing.expectError(error.Load, HfText.load(gpa, io, dir, missing, a, &problem));
+    try tmp.dir.writeFile(io, .{ .sub_path = "override.jinja", .data = "{% unknown %}" });
+    try std.testing.expectError(error.Load, HfText.load(gpa, io, dir, path, a, &problem));
+    try tmp.dir.writeFile(io, .{ .sub_path = "override.jinja", .data = "" });
+    const empty = try HfText.load(gpa, io, dir, path, a, &problem);
+    defer empty.deinit();
+    try std.testing.expectError(error.Template, empty.text().render(a, messages, .{}, &problem));
+}
+
+test "GLM-5.3 gives its template clear_thinking: earlier reasoning kept unless TF_GLM_CLEAR_THINKING=1" {
+    try std.testing.expectEqual(@as(?bool, false), glmClearThinking(null));
+    try std.testing.expectEqual(@as(?bool, false), glmClearThinking(" "));
+    try std.testing.expectEqual(@as(?bool, false), glmClearThinking("0"));
+    try std.testing.expectEqual(@as(?bool, true), glmClearThinking("1\n"));
+    for ([_][]const u8{ "true", "2", "yes" }) |bad| try std.testing.expectEqual(@as(?bool, null), glmClearThinking(bad));
+    const gpa = std.testing.allocator;
+    const io = std.testing.io;
+    var arena = std.heap.ArenaAllocator.init(gpa);
+    defer arena.deinit();
+    const a = arena.allocator();
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    try tmp.dir.writeFile(io, .{ .sub_path = "tokenizer.json", .data =
+        \\{"model":{"type":"BPE","vocab":{"H":0},"merges":[]},"added_tokens":[]}
+    });
+    // the template's first revision (the TR3 checkpoint's): reasoning kept only when clear_thinking is false
+    try tmp.dir.writeFile(io, .{ .sub_path = "chat_template.jinja", .data =
+        \\{%- for m in messages -%}{%- if (clear_thinking is defined and not clear_thinking) and m.reasoning_content is defined -%}[{{ m.reasoning_content }}]{%- endif -%}{{ m.content }}{%- endfor -%}
+    });
+    const dir = try std.fmt.allocPrint(a, ".zig-cache/tmp/{s}", .{tmp.sub_path});
+    var problem: []const u8 = "";
+    const messages = (try json.parse(a, "[{\"role\":\"user\",\"content\":\"u\"},{\"role\":\"assistant\",\"content\":\"a\",\"reasoning_content\":\"r\"},{\"role\":\"user\",\"content\":\"v\"}]")).ok;
+    const other = try HfText.load(gpa, io, dir, null, a, &problem); // no config.json: not GLM, nothing given
+    defer other.deinit();
+    try std.testing.expectEqual(@as(?bool, null), other.clear_thinking);
+    try std.testing.expectEqualStrings("uav", (try other.text().render(a, messages, .{}, &problem)).text);
+    try tmp.dir.writeFile(io, .{ .sub_path = "config.json", .data = "{\"model_type\":\"glm5_next\"}" });
+    const glm = try HfText.load(gpa, io, dir, null, a, &problem);
+    defer glm.deinit();
+    if (std.c.getenv(clear_thinking_env) == null) try std.testing.expectEqual(@as(?bool, false), glm.clear_thinking);
+    glm.clear_thinking = false;
+    try std.testing.expectEqualStrings("u[r]av", (try glm.text().render(a, messages, .{}, &problem)).text);
+    glm.clear_thinking = true;
+    try std.testing.expectEqualStrings("uav", (try glm.text().render(a, messages, .{}, &problem)).text);
+    // a request's clear_thinking wins either way; other families never hear it
+    try std.testing.expectEqualStrings("u[r]av", (try glm.text().render(a, messages, .{ .clear_thinking = false }, &problem)).text);
+    glm.clear_thinking = false;
+    try std.testing.expectEqualStrings("uav", (try glm.text().render(a, messages, .{ .clear_thinking = true }, &problem)).text);
+    try std.testing.expectEqualStrings("uav", (try other.text().render(a, messages, .{ .clear_thinking = false }, &problem)).text);
+}
+
+test "chat_template_kwargs.clear_thinking: a bool, null as unset, anything else refused" {
+    const fields = @import("fields.zig");
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    var cx: @import("errors.zig").Cx = .{ .a = a };
+    const cases = [_]struct { body: []const u8, want: ?bool }{
+        .{ .body = "{}", .want = null },
+        .{ .body = "{\"chat_template_kwargs\":{\"clear_thinking\":null}}", .want = null },
+        .{ .body = "{\"chat_template_kwargs\":{\"clear_thinking\":true}}", .want = true },
+        .{ .body = "{\"chat_template_kwargs\":{\"clear_thinking\":false,\"enable_thinking\":true}}", .want = false },
+    };
+    for (cases) |c| try std.testing.expectEqual(c.want, (try fields.thinkingFields(&cx, (try json.parse(a, c.body)).ok, &.{})).clear);
+    for ([_][]const u8{ "1", "\"true\"", "{}" }) |bad| {
+        const body = try std.fmt.allocPrint(a, "{{\"chat_template_kwargs\":{{\"clear_thinking\":{s}}}}}", .{bad});
+        try std.testing.expectError(error.Refused, fields.thinkingFields(&cx, (try json.parse(a, body)).ok, &.{}));
+        try std.testing.expectEqualStrings("chat_template_kwargs.clear_thinking must be true or false", cx.message);
+    }
+}
+
+test {
+    _ = @import("hf_eos_test.zig");
+    _ = @import("hf_text_regex_test.zig");
+    _ = @import("dory_chat_test.zig");
+    _ = @import("deepseek_chat_test.zig");
+}

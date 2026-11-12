@@ -1,0 +1,18 @@
+[package]
+name = "kinetic-vulkan"
+description = "Vulkan backend: loader opened at runtime and decode kernels for AMD, Intel and NVIDIA GPUs"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+ash = { version = "0.38.0", default-features = false, features = ["loaded", "std"] }
+kinetic-quant = { path = "../kinetic-quant" }
+
+[build-dependencies]
+naga = { version = "30.0.1", default-features = false, features = ["wgsl-in", "spv-out"] }
+
+[dev-dependencies]
+half = "2.7.1"
+kinetic-gguf = { path = "../kinetic-gguf" }

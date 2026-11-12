@@ -1,0 +1,131 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// Split-position decode attention, as attn_decode_t in kernels.cu (see there). Workgroup (x, s): token x % nt, the
+// G query heads (x / nt) * G .. + G - 1 of one KV head, split s of the positions. Lane owns PER = hd / 32 dims.
+// GQA picks the entry point: attn_decode (G = 1) works below gq_min positions, attn_decode_gqa from it on.
+layout(constant_id = 1) const uint PER = 4;
+layout(constant_id = 2) const uint G = 1;
+layout(constant_id = 3) const bool GQA = false;
+// sel (QSA): when not null and its row's count >= 0, the token attends to the cells listed after the count instead of
+// 0 ..= step (see qsa_select).
+// WIDE (nt >= 2): f16 rows in uvec4 loads. They cut two-token (MTP) calls by up to 18% at 32K but cost one-token calls
+// 4-11% at 16K+, so one token keeps the word loads.
+layout(constant_id = 4) const bool WIDE = false;
+const uint HD = PER * 32, C = 32, J = 4, NW = 8;  // positions per chunk, per subgroup; subgroups
+layout(push_constant) uniform P { F32 q; U32 kc; U32 vc; F32 part; I32 step; I32 sel; uint sst; uint nh; uint nkv; float scale; int gq_min;
+                                  uint pz; uint nt; } p;
+layout(buffer_reference, std430, buffer_reference_align = 16) buffer UV4 { uvec4 v[]; };
+shared float sq[PER * 256];  // G * HD query values, then NW * HD subgroup partials
+shared float ss[G * C], sc[G], sm[G], sl[G];
+
+float hraw(uint r, uint d) { return unpackHalf2x16(r)[d & 1]; }
+
+void main() {
+    uint t = gl_WorkGroupID.x % p.nt, bx = gl_WorkGroupID.x / p.nt, sy = gl_WorkGroupID.y, ns = gl_NumWorkGroups.y;
+    uint qo = t * p.nh * HD, po = t * p.pz;
+    int pos = p.step.v[2 * t];
+    if ((pos + 1 >= p.gq_min) != GQA) return;
+    float ninf = uintBitsToFloat(0xff800000u);
+    uint so = t * p.sst;
+    bool sp = uint64_t(p.sel) != 0 && p.sel.v[so] >= 0;
+    // At least 16 positions per split: short contexts use few workgroups instead of many near-empty ones.
+    uint n_pos = sp ? uint(p.sel.v[so]) : uint(pos) + 1, per_s = max((n_pos + ns - 1) / ns, 16u), p0 = sy * per_s, p1 = min(n_pos, p0 + per_s);
+    uint tid = gl_LocalInvocationID.x, w = WARP, lane = LANE, h0 = bx * G;
+    if (p0 >= n_pos) {  // empty split
+        for (uint i = 0; i < G; i++)
+            for (uint d = tid; d < HD + 2; d += 256) p.part.v[po + ((h0 + i) * ns + sy) * (HD + 2) + d] = d == HD ? ninf : 0.0;
+        return;
+    }
+    uint g = h0 / (p.nh / p.nkv);
+    for (uint i = tid; i < G * HD; i += 256) sq[i] = p.q.v[qo + h0 * HD + i];
+    precise float acc[G * PER], l = 0.0;  // l, m: running sum and max of head w (subgroups w < G)
+    float m = ninf;
+    [[unroll]] for (uint i = 0; i < G * PER; i++) acc[i] = 0.0;
+#define cell(i) (sp ? uint(p.sel.v[so + 1 + (i)]) : (i))
+    barrier();
+    for (uint c0 = p0; c0 < p1; c0 += C) {
+        uint kr[J * PER / 2], vr[J * PER / 2];
+        [[unroll]] for (uint j = 0; j < J; j++) {
+            // Positions past p1 load the row p1 - 1 and keep zeros: a select, not a branch around the loads (#276).
+            uint tt = c0 + w * J + j, r = ((cell(min(tt, p1 - 1)) * p.nkv + g) * HD + lane * PER) / 2;
+            if (KV_Q8 && PER % 4 == 0) {  // the lane's PER values in PER / 4 word loads
+                [[unroll]] for (uint d = 0; d < PER / 2; d += 2) {
+                    uvec2 k = ldkv4(U16(uint64_t(p.kc)), 2 * (r + d), HD), v = ldkv4(U16(uint64_t(p.vc)), 2 * (r + d), HD);
+                    if (tt >= p1) { k = uvec2(0); v = uvec2(0); }
+                    kr[j * PER / 2 + d] = k.x; kr[j * PER / 2 + d + 1] = k.y;
+                    vr[j * PER / 2 + d] = v.x; vr[j * PER / 2 + d + 1] = v.y;
+                }
+            } else if (!KV_Q8 && WIDE && PER % 8 == 0) {  // the lane's PER halves in PER / 8 uvec4 loads
+                [[unroll]] for (uint d = 0; d < PER / 2; d += 4) {
+                    uvec4 k = UV4(uint64_t(p.kc)).v[(r + d) / 4], v = UV4(uint64_t(p.vc)).v[(r + d) / 4];
+                    [[unroll]] for (uint e = 0; e < 4; e++) {
+                        kr[j * PER / 2 + d + e] = tt >= p1 ? 0 : k[e]; vr[j * PER / 2 + d + e] = tt >= p1 ? 0 : v[e];
+                    }
+                }
+            } else {
+                [[unroll]] for (uint d = 0; d < PER / 2; d++) {
+                    uint k = KV_Q8 ? ldkv2(U16(uint64_t(p.kc)), 2 * (r + d), HD) : p.kc.v[r + d];
+                    uint v = KV_Q8 ? ldkv2(U16(uint64_t(p.vc)), 2 * (r + d), HD) : p.vc.v[r + d];
+                    kr[j * PER / 2 + d] = tt >= p1 ? 0 : k; vr[j * PER / 2 + d] = tt >= p1 ? 0 : v;
+                }
+            }
+        }
+        float kf[J * PER], sp[J * G];
+        [[unroll]] for (uint j = 0; j < J; j++)
+            [[unroll]] for (uint d = 0; d < PER; d++) kf[j * PER + d] = hraw(kr[j * PER / 2 + d / 2], d);
+        [[unroll]] for (uint i = 0; i < G; i++) {
+            float qv[PER];
+            [[unroll]] for (uint d = 0; d < PER; d++) qv[d] = sq[i * HD + lane * PER + d];
+            [[unroll]] for (uint j = 0; j < J; j++) {
+                precise float s = 0.0;
+                [[unroll]] for (uint d = 0; d < PER; d++) s = fma(qv[d], kf[j * PER + d], s);
+                sp[j * G + i] = s;
+            }
+        }
+        {   // warp_sum_scatter<J * G>: lane l ends with the sum of sp[l / (32 / (J * G))]
+            const uint N = J * G, L = 32 / N;
+            [[unroll]] for (uint S = N / 2; S >= 1; S /= 2) {
+                bool hi = (lane & (S * 32 / N)) != 0;
+                [[unroll]] for (uint i = 0; i < S; i++) {
+                    float keep = hi ? sp[i + S] : sp[i], send = hi ? sp[i] : sp[i + S];
+                    sp[i] = keep + subgroupShuffleXor(send, S * 32 / N);
+                }
+            }
+            float s = sp[0];
+            [[unroll]] for (uint o = 16 / N; o >= 1; o /= 2) s += subgroupShuffleXor(s, o);
+            uint k = lane / L, j = k / G;
+            if (lane % L == 0) ss[(k % G) * C + w * J + j] = c0 + w * J + j < p1 ? s * p.scale : ninf;
+        }
+        barrier();
+        if (w < G) {  // the chunk holds at least one position, so mn is finite
+            float s = ss[w * C + lane], mn = max(m, warp_max(s)), e = expf_(s - mn), cs = expf_(m - mn);
+            ss[w * C + lane] = e;
+            l = fma(l, cs, warp_sum(e)); m = mn;
+            if (lane == 0) sc[w] = cs;
+        }
+        barrier();
+        [[unroll]] for (uint j = 0; j < J; j++)
+            [[unroll]] for (uint i = 0; i < G; i++) {
+                float e = ss[i * C + w * J + j];
+                [[unroll]] for (uint d = 0; d < PER; d++) {
+                    float v = hraw(vr[j * PER / 2 + d / 2], d);
+                    acc[i * PER + d] = j == 0 ? fma(acc[i * PER + d], sc[i], e * v) : fma(e, v, acc[i * PER + d]);
+                }
+            }
+        barrier();
+    }
+    if (w < G && lane == 0) { sm[w] = m; sl[w] = l; }
+    [[unroll]] for (uint i = 0; i < G; i++) {  // the queries are no longer needed (the loop ends on a barrier)
+        [[unroll]] for (uint d = 0; d < PER; d++) sq[w * HD + lane * PER + d] = acc[i * PER + d];
+        barrier();
+        uint pp = po + ((h0 + i) * ns + sy) * (HD + 2);
+        for (uint d = tid; d < HD; d += 256) {
+            float o = 0.0;
+            [[unroll]] for (uint k = 0; k < NW; k++) o += sq[k * HD + d];
+            p.part.v[pp + d] = o;
+        }
+        if (tid == 0) { p.part.v[pp + HD] = sm[i]; p.part.v[pp + HD + 1] = sl[i]; }
+        barrier();
+    }
+}

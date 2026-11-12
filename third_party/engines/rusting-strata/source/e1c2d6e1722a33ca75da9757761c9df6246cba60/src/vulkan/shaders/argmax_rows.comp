@@ -1,0 +1,40 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// Two passes, as argmax_part and argmax_rows in kernels.cu. FINAL = false: workgroup (g, r) writes part[r * PARTS + g] =
+// (largest x, its index) of row r over i = 256 g + t + 256 PARTS k. FINAL = true: workgroup r reduces the PARTS of row
+// r to o[r] = index of the largest x in row r (the first one on ties, like ops::argmax).
+layout(constant_id = 1) const bool FINAL = false;
+const uint PARTS = 64;
+layout(push_constant) uniform P { F32 x; I32 part; I32 o; uint n; } p;
+shared float sv[8];
+shared int si[8];
+void take(inout float b, inout int bi, float v, int vi) { if (v > b || (v == b && vi < bi)) { b = v; bi = vi; } }
+void reduce(inout float b, inout int bi) {
+    for (uint o = 16; o > 0; o >>= 1) take(b, bi, subgroupShuffleXor(b, o), subgroupShuffleXor(bi, o));
+}
+void main() {
+    uint t = gl_LocalInvocationID.x, lane = LANE, w = WARP;
+    uint r = FINAL ? gl_WorkGroupID.x : gl_WorkGroupID.y, xo = r * p.n;
+    int n = int(p.n), bi = n;
+    float b = uintBitsToFloat(0xff800000u);
+    if (FINAL) {
+        if (t < PARTS) { b = intBitsToFloat(p.part.v[2 * (r * PARTS + t)]); bi = p.part.v[2 * (r * PARTS + t) + 1]; }
+    } else {
+        for (uint i = gl_WorkGroupID.x * 256 + t; i < p.n; i += 256 * PARTS) {
+            float v = p.x.v[xo + i];
+            if (v > b || bi == n) { b = v; bi = int(i); }
+        }
+    }
+    reduce(b, bi);
+    if (lane == 0) { sv[w] = b; si[w] = bi; }
+    barrier();
+    if (w == 0) {
+        b = lane < 8 ? sv[lane] : uintBitsToFloat(0xff800000u); bi = lane < 8 ? si[lane] : n;
+        reduce(b, bi);
+        if (lane == 0) {
+            if (FINAL) p.o.v[r] = bi;
+            else { p.part.v[2 * (r * PARTS + gl_WorkGroupID.x)] = floatBitsToInt(b); p.part.v[2 * (r * PARTS + gl_WorkGroupID.x) + 1] = bi; }
+        }
+    }
+}

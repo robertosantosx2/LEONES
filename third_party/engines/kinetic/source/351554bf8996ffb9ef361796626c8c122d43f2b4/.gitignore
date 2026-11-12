@@ -1,0 +1,7 @@
+/target
+*.gguf
+*.ktc
+/bindings/python/target
+__pycache__/
+*.egg-info/
+bindings/*/build/

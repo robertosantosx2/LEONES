@@ -1,0 +1,61 @@
+name: Bug report
+description: Something does not work as documented, crashes or gives a wrong answer.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. Please check the
+        [troubleshooting page](https://veloresearch.github.io/kinetic/faq.html) first.
+        Security problems go to contact@veloresearch.com, not here.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you expected, and what you got instead. Paste errors as text, not screenshots.
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command
+      description: The exact command you ran, or the request you sent to the server.
+      render: shell
+      placeholder: kinetic run model.gguf "Hello" --temp 0
+    validations:
+      required: true
+  - type: textarea
+    id: info
+    attributes:
+      label: Output of `kinetic info <model>`
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Kinetic version
+      description: Output of `kinetic --version`, and how you installed it (release archive, pip, Docker, source).
+      placeholder: kinetic 0.1.0, windows-x86_64-cuda archive
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Windows 11 23H2 / Ubuntu 24.04
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      description: CPU model, and GPU with driver version if you use one (`nvidia-smi` shows both).
+      placeholder: Ryzen 7 7840U; RTX 4070, driver 566.36
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else
+      description: Does it happen with `--device cpu`? With another model? With `--no-prompt-cache`?

@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llama-cpp-kinetic"
+version = "0.1.0"
+description = "Runs code written for llama-cpp-python on Kinetic, unchanged"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Velocity" }]
+dependencies = ["kinetic-engine"]
+
+[project.urls]
+Source = "https://github.com/Veloresearch/kinetic"
+
+[tool.setuptools]
+py-modules = ["llama_cpp_kinetic"]

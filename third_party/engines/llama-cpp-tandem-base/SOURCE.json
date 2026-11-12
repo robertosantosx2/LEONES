@@ -1,0 +1,16 @@
+{
+  "engine_id": "llama-cpp-tandem-base",
+  "display_name": "llama.cpp (Tandem.cpp base)",
+  "repository": "https://github.com/ggml-org/llama.cpp.git",
+  "ref_requested": "f5222f25c18da062ab2b8a2dbbfbf4feae398566",
+  "commit": "f5222f25c18da062ab2b8a2dbbfbf4feae398566",
+  "vendored_at": "2026-11-11T08:45:19.168243+00:00",
+  "source_tree": "source/f5222f25c18da062ab2b8a2dbbfbf4feae398566",
+  "submodule_status": "",
+  "git_lfs": "git-lfs pull completed",
+  "license_files": [
+    "LICENSE"
+  ],
+  "source_status": "PINNED_SNAPSHOT",
+  "git_commit_tree": "04dae487cd6aa3e34b973b27691190e0d6113737"
+}

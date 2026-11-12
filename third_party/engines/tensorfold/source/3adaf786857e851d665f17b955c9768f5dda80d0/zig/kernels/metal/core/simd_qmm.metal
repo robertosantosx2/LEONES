@@ -1,0 +1,458 @@
+// Row-exact 4-bit projections before the M5: 8-row simdgroup-matrix tiles, and a scalar twin for 1-2 rows.
+#include <metal_stdlib>
+using namespace metal;
+
+// K inputs, N outputs, R rows; one is 1.0 read at run time so the compiler can't fold or reorder the fma sums.
+struct TfSqArgs { int K, N, R; float one; };
+
+// The bf16 at index e (0..7) of 8 packed bf16, as fp32.
+inline float tf_sq_bf8(uint4 v, int e) {
+  const uint w = v[e / 2];
+  return as_type<float>((e % 2) ? (w & 0xFFFF0000u) : (w << 16));
+}
+
+// A row's 8 inputs summed left to right.
+inline float tf_sq_sum8(uint4 v, float one) {
+  float t = tf_sq_bf8(v, 0);
+  for (int e = 1; e < 8; e++) t = fma(tf_sq_bf8(v, e), one, t);
+  return t;
+}
+
+// 2^-4s: inputs pre-scaled so a nibble masked in place (code * 2^4s) multiplies to the exact product.
+inline float tf_sq_pre(int s) { return as_type<float>(uint(127 - 4 * s) << 23); }
+
+// The prepass's word for 16 rows of 64 inputs: 1 when every value is zero or a normal half, so half holds it exactly.
+[[kernel]] void tf_sq_fits(const device uint4* X [[buffer(0)]],
+                           constant TfSqArgs& a [[buffer(4)]],
+                           device uint* FL [[buffer(6)]],
+                           uint lane [[thread_index_in_simdgroup]],
+                           uint3 tg [[threadgroup_position_in_grid]]) {
+  const int K = a.K, R = a.R, G = K / 64, g = int(tg.x), t = int(tg.y);
+  const int row = min(t * 16 + int(lane) / 2, R - 1);
+  bool ok = true;
+  #pragma unroll
+  for (int q = 0; q < 4; q++) {
+    const uint4 v = X[size_t(row) * (K / 8) + 8 * g + 4 * (int(lane) % 2) + q];
+    #pragma unroll
+    for (int e = 0; e < 8; e++) {
+      const float f = tf_sq_bf8(v, e), m = fabs(f);
+      ok = ok && (f == 0.0f || (m >= 0x1p-14f && m <= 65504.0f && float(half(f)) == f));
+    }
+  }
+  const bool all = simd_all(ok);
+  if (lane == 0) FL[t * G + g] = all ? 1u : 0u;
+}
+
+// R rows in 8-row tiles, NT 8-column tiles; K chunks c, c + SGS, ... summed by a fixed tree; loops unrolled (+15-20%).
+template <int S, int NT, int RT, bool H>
+inline void tf_sq_tiles(const device uint4* X, const device uint* W, const device bfloat* SC, const device bfloat* BI,
+                        constant TfSqArgs& a, device bfloat* OUT, const device uint* FL, uint sgi, uint sgs, uint lane,
+                        uint3 tg, threadgroup float* red) {
+  const int K = a.K, N = a.N, R = a.R, G = K / 64, SGS = int(sgs);
+  const float one = a.one;
+  const int sg = int(sgi);
+  const int qid = int(lane) / 4;
+  const int fm = (qid & 4) + ((int(lane) / 2) % 4);
+  const int fn = (qid & 2) * 2 + (int(lane) % 2) * 2;
+  const int nb = int(tg.x) * (8 * NT);
+  const int rb = int(tg.y) * (8 * RT);
+  const device uint2* W2 = (const device uint2*)W;
+  int wrow[NT];
+  #pragma unroll
+  for (int t = 0; t < NT; t++) wrow[t] = min(nb + 8 * t + fm, N - 1);
+  int xr0[RT], xr1[RT];
+  #pragma unroll
+  for (int rt = 0; rt < RT; rt++) {
+    xr0[rt] = min(rb + 8 * rt + fn, R - 1);
+    xr1[rt] = min(rb + 8 * rt + fn + 1, R - 1);
+  }
+  for (int c = sg; c < S; c += SGS) {
+    float acc[RT][NT][2];
+    #pragma unroll
+    for (int rt = 0; rt < RT; rt++)
+      #pragma unroll
+      for (int t = 0; t < NT; t++) { acc[rt][t][0] = 0.0f; acc[rt][t][1] = 0.0f; }
+    for (int g = c; g < G; g += S) {
+      uint2 wv[NT];
+      #pragma unroll
+      for (int t = 0; t < NT; t++) wv[t] = W2[size_t(wrow[t]) * (K / 16) + 4 * g + fn / 2];
+      uint4 xa[RT], xb[RT];
+      float xs0[RT], xs1[RT];
+      #pragma unroll
+      for (int rt = 0; rt < RT; rt++) {
+        xa[rt] = X[size_t(xr0[rt]) * (K / 8) + 8 * g + fm];
+        xb[rt] = X[size_t(xr1[rt]) * (K / 8) + 8 * g + fm];
+        float v = tf_sq_sum8(xa[rt], one), u = tf_sq_sum8(xb[rt], one);
+        v = fma(simd_shuffle_xor(v, ushort(2)), one, v); u = fma(simd_shuffle_xor(u, ushort(2)), one, u);
+        v = fma(simd_shuffle_xor(v, ushort(4)), one, v); u = fma(simd_shuffle_xor(u, ushort(4)), one, u);
+        v = fma(simd_shuffle_xor(v, ushort(16)), one, v); u = fma(simd_shuffle_xor(u, ushort(16)), one, u);
+        xs0[rt] = v; xs1[rt] = u;
+      }
+      simdgroup_matrix<float, 8, 8> P[RT][NT];
+      #pragma unroll
+      for (int rt = 0; rt < RT; rt++)
+        #pragma unroll
+        for (int t = 0; t < NT; t++) P[rt][t] = simdgroup_matrix<float, 8, 8>(0.0f);
+      // H, tiles tf_sq_fits marked: codes q 2^-12 (0x3400 | q less 0.25) times half X; exact, P 2^-12 of fp32's
+      const bool fast = H && FL[(rb / 16) * G + g] != 0u;
+      if (fast) {
+        #pragma unroll
+        for (int s = 0; s < 8; s++) {
+          simdgroup_matrix<half, 8, 8> bm[RT];
+          #pragma unroll
+          for (int rt = 0; rt < RT; rt++) {
+            bm[rt].thread_elements()[0] = half(tf_sq_bf8(xa[rt], s));
+            bm[rt].thread_elements()[1] = half(tf_sq_bf8(xb[rt], s));
+          }
+          #pragma unroll
+          for (int t = 0; t < NT; t++) {
+            simdgroup_matrix<half, 8, 8> am;
+            am.thread_elements()[0] = as_type<half>(ushort(0x3400u | ((wv[t].x >> (4 * s)) & 0xFu))) - 0.25h;
+            am.thread_elements()[1] = as_type<half>(ushort(0x3400u | ((wv[t].y >> (4 * s)) & 0xFu))) - 0.25h;
+            #pragma unroll
+            for (int rt = 0; rt < RT; rt++) simdgroup_multiply_accumulate(P[rt][t], am, bm[rt], P[rt][t]);
+          }
+        }
+      } else
+      #pragma unroll
+      for (int s = 0; s < 8; s++) {
+        const float ps = tf_sq_pre(s);
+        const uint mask = 0xFu << (4 * s);
+        simdgroup_matrix<float, 8, 8> bm[RT];
+        #pragma unroll
+        for (int rt = 0; rt < RT; rt++) {
+          bm[rt].thread_elements()[0] = tf_sq_bf8(xa[rt], s) * ps;
+          bm[rt].thread_elements()[1] = tf_sq_bf8(xb[rt], s) * ps;
+        }
+        #pragma unroll
+        for (int t = 0; t < NT; t++) {
+          simdgroup_matrix<float, 8, 8> am;
+          am.thread_elements()[0] = float(wv[t].x & mask);
+          am.thread_elements()[1] = float(wv[t].y & mask);
+          #pragma unroll
+          for (int rt = 0; rt < RT; rt++) simdgroup_multiply_accumulate(P[rt][t], am, bm[rt], P[rt][t]);
+        }
+      }
+      #pragma unroll
+      for (int t = 0; t < NT; t++) {
+        const float sc = fast ? float(SC[size_t(wrow[t]) * G + g]) * 4096.0f : float(SC[size_t(wrow[t]) * G + g]);
+        const float bi = float(BI[size_t(wrow[t]) * G + g]);
+        #pragma unroll
+        for (int rt = 0; rt < RT; rt++) {
+          acc[rt][t][0] = fma(bi, xs0[rt], fma(sc, P[rt][t].thread_elements()[0], acc[rt][t][0]));
+          acc[rt][t][1] = fma(bi, xs1[rt], fma(sc, P[rt][t].thread_elements()[1], acc[rt][t][1]));
+        }
+      }
+    }
+    if (S == 1) {
+      #pragma unroll
+      for (int rt = 0; rt < RT; rt++)
+        #pragma unroll
+        for (int t = 0; t < NT; t++)
+          #pragma unroll
+          for (int e = 0; e < 2; e++) {
+            const int row = rb + 8 * rt + fn + e, n = nb + 8 * t + fm;
+            if (row < R && n < N) OUT[size_t(row) * N + n] = bfloat(acc[rt][t][e]);
+          }
+      return;
+    }
+    #pragma unroll
+    for (int rt = 0; rt < RT; rt++)
+      #pragma unroll
+      for (int t = 0; t < NT; t++)
+        #pragma unroll
+        for (int e = 0; e < 2; e++) red[((c * RT + rt) * NT + t) * 64 + int(lane) * 2 + e] = acc[rt][t][e];
+  }
+  threadgroup_barrier(mem_flags::mem_threadgroup);
+  for (int idx = sg * 32 + int(lane); idx < RT * NT * 64; idx += SGS * 32) {
+    float v[S];
+    #pragma unroll
+    for (int k = 0; k < S; k++) v[k] = red[k * (RT * NT * 64) + idx];
+    #pragma unroll
+    for (int w = 1; w < S; w *= 2)
+      #pragma unroll
+      for (int k = 0; k + w < S; k += 2 * w) v[k] = fma(v[k + w], one, v[k]);
+    const int rt = idx / (NT * 64), t = (idx / 64) % NT, l = (idx % 64) / 2, e = idx % 2;
+    const int lq = l / 4;
+    const int row = rb + 8 * rt + (lq & 2) * 2 + (l % 2) * 2 + e, n = nb + 8 * t + (lq & 4) + ((l / 2) % 4);
+    if (row < R && n < N) OUT[size_t(row) * N + n] = bfloat(v[0]);
+  }
+}
+
+template <int S, int NT, int RT>
+[[kernel]] void tf_sq_mma(const device uint4* X [[buffer(0)]],
+                          const device uint* W [[buffer(1)]],
+                          const device bfloat* SC [[buffer(2)]],
+                          const device bfloat* BI [[buffer(3)]],
+                          constant TfSqArgs& a [[buffer(4)]],
+                          device bfloat* OUT [[buffer(5)]],
+                          uint sgi [[simdgroup_index_in_threadgroup]],
+                          uint sgs [[simdgroups_per_threadgroup]],
+                          uint lane [[thread_index_in_simdgroup]],
+                          uint3 tg [[threadgroup_position_in_grid]]) {
+  threadgroup float red[S > 1 ? S * RT * NT * 64 : 1];
+  tf_sq_tiles<S, NT, RT, false>(X, W, SC, BI, a, OUT, nullptr, sgi, sgs, lane, tg, red);
+}
+
+// tf_sq_mma's bits through half operands where tf_sq_fits's words (FL) allow.
+template <int S, int NT, int RT>
+[[kernel]] void tf_sq_mmh(const device uint4* X [[buffer(0)]],
+                          const device uint* W [[buffer(1)]],
+                          const device bfloat* SC [[buffer(2)]],
+                          const device bfloat* BI [[buffer(3)]],
+                          constant TfSqArgs& a [[buffer(4)]],
+                          device bfloat* OUT [[buffer(5)]],
+                          const device uint* FL [[buffer(6)]],
+                          uint sgi [[simdgroup_index_in_threadgroup]],
+                          uint sgs [[simdgroups_per_threadgroup]],
+                          uint lane [[thread_index_in_simdgroup]],
+                          uint3 tg [[threadgroup_position_in_grid]]) {
+  threadgroup float red[S > 1 ? S * RT * NT * 64 : 1];
+  tf_sq_tiles<S, NT, RT, true>(X, W, SC, BI, a, OUT, FL, sgi, sgs, lane, tg, red);
+}
+
+// tf_sq_mma's bits with P adjacent K chunks a simdgroup, summed by the tree's first levels in registers: wider tiles.
+template <int S, int NT, int RT, int P>
+[[kernel]] void tf_sq_mmp(const device uint4* X [[buffer(0)]],
+                          const device uint* W [[buffer(1)]],
+                          const device bfloat* SC [[buffer(2)]],
+                          const device bfloat* BI [[buffer(3)]],
+                          constant TfSqArgs& a [[buffer(4)]],
+                          device bfloat* OUT [[buffer(5)]],
+                          uint sgi [[simdgroup_index_in_threadgroup]],
+                          uint lane [[thread_index_in_simdgroup]],
+                          uint3 tg [[threadgroup_position_in_grid]]) {
+  constexpr int SG = S / P;
+  const int K = a.K, N = a.N, R = a.R, G = K / 64;
+  const float one = a.one;
+  const int sg = int(sgi);
+  const int qid = int(lane) / 4;
+  const int fm = (qid & 4) + ((int(lane) / 2) % 4);
+  const int fn = (qid & 2) * 2 + (int(lane) % 2) * 2;
+  const int nb = int(tg.x) * (8 * NT);
+  const int rb = int(tg.y) * (8 * RT);
+  threadgroup float red[SG > 1 ? SG * RT * NT * 64 : 1];
+  const device uint2* W2 = (const device uint2*)W;
+  int wrow[NT];
+  #pragma unroll
+  for (int t = 0; t < NT; t++) wrow[t] = min(nb + 8 * t + fm, N - 1);
+  int xr0[RT], xr1[RT];
+  #pragma unroll
+  for (int rt = 0; rt < RT; rt++) {
+    xr0[rt] = min(rb + 8 * rt + fn, R - 1);
+    xr1[rt] = min(rb + 8 * rt + fn + 1, R - 1);
+  }
+  float acc[P][RT][NT][2];
+  #pragma unroll
+  for (int p = 0; p < P; p++)
+    #pragma unroll
+    for (int rt = 0; rt < RT; rt++)
+      #pragma unroll
+      for (int t = 0; t < NT; t++) { acc[p][rt][t][0] = 0.0f; acc[p][rt][t][1] = 0.0f; }
+  for (int g0 = sg * P; g0 < G; g0 += S) {
+    #pragma unroll
+    for (int p = 0; p < P; p++) {
+      const int g = g0 + p;  // chunk sg * P + p's next group
+      if (g >= G) break;
+      uint2 wv[NT];
+      #pragma unroll
+      for (int t = 0; t < NT; t++) wv[t] = W2[size_t(wrow[t]) * (K / 16) + 4 * g + fn / 2];
+      uint4 xa[RT], xb[RT];
+      float xs0[RT], xs1[RT];
+      #pragma unroll
+      for (int rt = 0; rt < RT; rt++) {
+        xa[rt] = X[size_t(xr0[rt]) * (K / 8) + 8 * g + fm];
+        xb[rt] = X[size_t(xr1[rt]) * (K / 8) + 8 * g + fm];
+        float v = tf_sq_sum8(xa[rt], one), u = tf_sq_sum8(xb[rt], one);
+        v = fma(simd_shuffle_xor(v, ushort(2)), one, v); u = fma(simd_shuffle_xor(u, ushort(2)), one, u);
+        v = fma(simd_shuffle_xor(v, ushort(4)), one, v); u = fma(simd_shuffle_xor(u, ushort(4)), one, u);
+        v = fma(simd_shuffle_xor(v, ushort(16)), one, v); u = fma(simd_shuffle_xor(u, ushort(16)), one, u);
+        xs0[rt] = v; xs1[rt] = u;
+      }
+      simdgroup_matrix<float, 8, 8> Q[RT][NT];
+      #pragma unroll
+      for (int rt = 0; rt < RT; rt++)
+        #pragma unroll
+        for (int t = 0; t < NT; t++) Q[rt][t] = simdgroup_matrix<float, 8, 8>(0.0f);
+      #pragma unroll
+      for (int s = 0; s < 8; s++) {
+        const float ps = tf_sq_pre(s);
+        const uint mask = 0xFu << (4 * s);
+        simdgroup_matrix<float, 8, 8> bm[RT];
+        #pragma unroll
+        for (int rt = 0; rt < RT; rt++) {
+          bm[rt].thread_elements()[0] = tf_sq_bf8(xa[rt], s) * ps;
+          bm[rt].thread_elements()[1] = tf_sq_bf8(xb[rt], s) * ps;
+        }
+        #pragma unroll
+        for (int t = 0; t < NT; t++) {
+          simdgroup_matrix<float, 8, 8> am;
+          am.thread_elements()[0] = float(wv[t].x & mask);
+          am.thread_elements()[1] = float(wv[t].y & mask);
+          #pragma unroll
+          for (int rt = 0; rt < RT; rt++) simdgroup_multiply_accumulate(Q[rt][t], am, bm[rt], Q[rt][t]);
+        }
+      }
+      #pragma unroll
+      for (int t = 0; t < NT; t++) {
+        const float sc = float(SC[size_t(wrow[t]) * G + g]);
+        const float bi = float(BI[size_t(wrow[t]) * G + g]);
+        #pragma unroll
+        for (int rt = 0; rt < RT; rt++) {
+          acc[p][rt][t][0] = fma(bi, xs0[rt], fma(sc, Q[rt][t].thread_elements()[0], acc[p][rt][t][0]));
+          acc[p][rt][t][1] = fma(bi, xs1[rt], fma(sc, Q[rt][t].thread_elements()[1], acc[p][rt][t][1]));
+        }
+      }
+    }
+  }
+  #pragma unroll
+  for (int w = 1; w < P; w *= 2)  // the tree's levels inside this simdgroup's chunks
+    #pragma unroll
+    for (int k = 0; k + w < P; k += 2 * w)
+      #pragma unroll
+      for (int rt = 0; rt < RT; rt++)
+        #pragma unroll
+        for (int t = 0; t < NT; t++)
+          #pragma unroll
+          for (int e = 0; e < 2; e++) acc[k][rt][t][e] = fma(acc[k + w][rt][t][e], one, acc[k][rt][t][e]);
+  if (SG == 1) {
+    #pragma unroll
+    for (int rt = 0; rt < RT; rt++)
+      #pragma unroll
+      for (int t = 0; t < NT; t++)
+        #pragma unroll
+        for (int e = 0; e < 2; e++) {
+          const int row = rb + 8 * rt + fn + e, n = nb + 8 * t + fm;
+          if (row < R && n < N) OUT[size_t(row) * N + n] = bfloat(acc[0][rt][t][e]);
+        }
+    return;
+  }
+  #pragma unroll
+  for (int rt = 0; rt < RT; rt++)
+    #pragma unroll
+    for (int t = 0; t < NT; t++)
+      #pragma unroll
+      for (int e = 0; e < 2; e++) red[((sg * RT + rt) * NT + t) * 64 + int(lane) * 2 + e] = acc[0][rt][t][e];
+  threadgroup_barrier(mem_flags::mem_threadgroup);
+  for (int idx = sg * 32 + int(lane); idx < RT * NT * 64; idx += SG * 32) {
+    float v[SG];
+    #pragma unroll
+    for (int k = 0; k < SG; k++) v[k] = red[k * (RT * NT * 64) + idx];
+    #pragma unroll
+    for (int w = 1; w < SG; w *= 2)  // the tree's remaining levels, over chunks 0, P, 2P, ...
+      #pragma unroll
+      for (int k = 0; k + w < SG; k += 2 * w) v[k] = fma(v[k + w], one, v[k]);
+    const int rt = idx / (NT * 64), t = (idx / 64) % NT, l = (idx % 64) / 2, e = idx % 2;
+    const int lq = l / 4;
+    const int row = rb + 8 * rt + (lq & 2) * 2 + (l % 2) * 2 + e, n = nb + 8 * t + (lq & 4) + ((l / 2) % 4);
+    if (row < R && n < N) OUT[size_t(row) * N + n] = bfloat(v[0]);
+  }
+}
+
+// 1-2 rows over the same weight loads: each lane runs one chunk of NR outputs with the MMA kernel's chains.
+template <int S, int NR, int XB, int RS>
+[[kernel]] void tf_sq_scalar(const device uint4* X [[buffer(0)]],
+                             const device uint* W [[buffer(1)]],
+                             const device bfloat* SC [[buffer(2)]],
+                             const device bfloat* BI [[buffer(3)]],
+                             constant TfSqArgs& a [[buffer(4)]],
+                             device bfloat* OUT [[buffer(5)]],
+                             uint sgi [[simdgroup_index_in_threadgroup]],
+                             uint sgs [[simdgroups_per_threadgroup]],
+                             uint lane [[thread_index_in_simdgroup]],
+                             uint3 tg [[threadgroup_position_in_grid]]) {
+  constexpr int XP = 76;  // floats a staged group: 64 inputs, 8 word sums, pad (bank spread)
+  constexpr int SLOTS = 32 / S;
+  threadgroup float xs[RS * XB * XP];
+  const int K = a.K, N = a.N, G = K / 64, SGS = int(sgs);
+  const float one = a.one;
+  const int tid = int(sgi) * 32 + int(lane);
+  const int c = int(lane) % S;
+  const int n0 = (int(tg.x) * SGS + int(sgi)) * (SLOTS * NR) + int(lane) / S;
+  const device uint4* wr[NR];
+  const device bfloat* sr[NR];
+  const device bfloat* br[NR];
+  float acc[NR][RS];
+  for (int u = 0; u < NR; u++) {
+    const int nn = min(n0 + SLOTS * u, N - 1);
+    wr[u] = (const device uint4*)(W + size_t(nn) * (K / 8));
+    sr[u] = SC + size_t(nn) * G;
+    br[u] = BI + size_t(nn) * G;
+    for (int r = 0; r < RS; r++) acc[u][r] = 0.0f;
+  }
+  uint4 nw[NR][2];
+  for (int u = 0; u < NR; u++)
+    for (int h = 0; h < 2; h++) nw[u][h] = c < G ? wr[u][2 * c + h] : uint4(0);
+  for (int b0 = 0; b0 < G; b0 += XB) {
+    const int nbk = min(XB, G - b0);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (int idx = tid; idx < RS * nbk * 8; idx += SGS * 32) {
+      const int r = RS == 1 ? 0 : idx / (nbk * 8);
+      const int gl = (RS == 1 ? idx : idx - r * (nbk * 8)) / 8, j = idx % 8;
+      const uint4 v = X[size_t(r) * (K / 8) + 8 * (b0 + gl) + j];
+      threadgroup float* xr = xs + r * (XB * XP) + gl * XP;
+      for (int e = 0; e < 8; e++) xr[8 * e + j] = tf_sq_bf8(v, e) * tf_sq_pre(e);
+      xr[64 + j] = tf_sq_sum8(v, one);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (int g = b0 + c; g < b0 + nbk; g += S) {
+      uint4 wv[NR][2];
+      for (int u = 0; u < NR; u++)
+        for (int h = 0; h < 2; h++) wv[u][h] = nw[u][h];
+      if (g + S < G)
+        for (int u = 0; u < NR; u++)
+          for (int h = 0; h < 2; h++) nw[u][h] = wr[u][2 * (g + S) + h];
+      float xsum[RS];
+      float P[NR][RS];
+      for (int r = 0; r < RS; r++) {
+        const threadgroup float* xg = xs + r * (XB * XP) + (g - b0) * XP;
+        const float4 p0 = *(const threadgroup float4*)(xg + 64);
+        const float4 p1 = *(const threadgroup float4*)(xg + 68);
+        xsum[r] = fma(fma(p0.w, one, p0.z), one, fma(p0.y, one, p0.x));
+        xsum[r] = fma(fma(fma(p1.w, one, p1.z), one, fma(p1.y, one, p1.x)), one, xsum[r]);
+        for (int u = 0; u < NR; u++) P[u][r] = 0.0f;
+      }
+      for (int s = 0; s < 8; s++) {
+        float xq[RS][8];
+        for (int r = 0; r < RS; r++) {
+          const threadgroup float* xg = xs + r * (XB * XP) + (g - b0) * XP + 8 * s;
+          const float4 lo = *(const threadgroup float4*)(xg), hi = *(const threadgroup float4*)(xg + 4);
+          xq[r][0] = lo.x; xq[r][1] = lo.y; xq[r][2] = lo.z; xq[r][3] = lo.w;
+          xq[r][4] = hi.x; xq[r][5] = hi.y; xq[r][6] = hi.z; xq[r][7] = hi.w;
+        }
+        for (int u = 0; u < NR; u++)
+          for (int i = 0; i < 8; i++) {
+            const float q = float(wv[u][i / 4][i % 4] & (0xFu << (4 * s)));
+            for (int r = 0; r < RS; r++) P[u][r] = fma(xq[r][i], q, P[u][r]);
+          }
+      }
+      for (int u = 0; u < NR; u++) {
+        const float sc = float(sr[u][g]), bi = float(br[u][g]);
+        for (int r = 0; r < RS; r++) {
+          acc[u][r] = fma(sc, P[u][r], acc[u][r]);
+          acc[u][r] = fma(bi, xsum[r], acc[u][r]);
+        }
+      }
+    }
+  }
+  for (int u = 0; u < NR; u++)
+    for (int r = 0; r < RS; r++) {
+      float v = acc[u][r];
+      for (int m = 1; m < S; m <<= 1) v = fma(simd_shuffle_xor(v, ushort(m)), one, v);
+      const int n = n0 + SLOTS * u;
+      if (n < N && c == 0) OUT[size_t(r) * N + n] = bfloat(v);
+    }
+}
+
+#define TF_SQ_MMA(S, NT, RT) template [[host_name("tf_sq_mma_" #S "_" #NT "_" #RT)]] [[kernel]] decltype(tf_sq_mma<S, NT, RT>) tf_sq_mma<S, NT, RT>;
+#define TF_SQ_MMH(S, NT, RT) template [[host_name("tf_sq_mmh_" #S "_" #NT "_" #RT)]] [[kernel]] decltype(tf_sq_mmh<S, NT, RT>) tf_sq_mmh<S, NT, RT>;
+TF_SQ_MMH(8, 1, 1) TF_SQ_MMH(8, 2, 1) TF_SQ_MMH(8, 4, 1) TF_SQ_MMH(8, 1, 2) TF_SQ_MMH(8, 2, 2) TF_SQ_MMH(8, 4, 2)
+TF_SQ_MMA(8, 1, 1) TF_SQ_MMA(8, 2, 1) TF_SQ_MMA(8, 4, 1) TF_SQ_MMA(8, 1, 2) TF_SQ_MMA(8, 2, 2) TF_SQ_MMA(8, 4, 2)
+TF_SQ_MMA(16, 1, 1) TF_SQ_MMA(16, 2, 1) TF_SQ_MMA(16, 4, 1) TF_SQ_MMA(16, 1, 2) TF_SQ_MMA(16, 2, 2)
+TF_SQ_MMA(32, 1, 1) TF_SQ_MMA(32, 2, 1) TF_SQ_MMA(32, 1, 2)
+#define TF_SQ_MMP(S, NT, RT, P) template [[host_name("tf_sq_mmp_" #S "_" #NT "_" #RT "_" #P)]] [[kernel]] decltype(tf_sq_mmp<S, NT, RT, P>) tf_sq_mmp<S, NT, RT, P>;
+TF_SQ_MMP(16, 4, 2, 2)
+#define TF_SQ_SCALAR(S, NR, XB, RS) template [[host_name("tf_sq_scalar_" #S "_" #NR "_" #RS)]] [[kernel]] decltype(tf_sq_scalar<S, NR, XB, RS>) tf_sq_scalar<S, NR, XB, RS>;
+TF_SQ_SCALAR(8, 1, 32, 1) TF_SQ_SCALAR(8, 2, 32, 1) TF_SQ_SCALAR(8, 1, 16, 2) TF_SQ_SCALAR(8, 2, 16, 2)
+TF_SQ_SCALAR(16, 1, 32, 1) TF_SQ_SCALAR(16, 2, 32, 1) TF_SQ_SCALAR(16, 1, 16, 2) TF_SQ_SCALAR(16, 2, 16, 2)
+TF_SQ_SCALAR(32, 1, 32, 1) TF_SQ_SCALAR(32, 2, 32, 1) TF_SQ_SCALAR(32, 1, 32, 2) TF_SQ_SCALAR(32, 2, 32, 2)

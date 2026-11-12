@@ -1,0 +1,82 @@
+name: Vendor inference engine sources
+
+concurrency:
+  group: vendor-inference-engines-${{ github.ref }}
+  cancel-in-progress: false
+
+on:
+  push:
+    branches:
+      - research/kinetic-audit-benchmark
+    paths:
+      - "scripts/vendor_engines.py"
+      - "configs/engines.registry.json"
+      - ".github/workflows/vendor-inference-engines.yml"
+  workflow_dispatch:
+    inputs:
+      engines:
+        description: "Comma-separated registry IDs (e.g. kinetic,tensorfold,llama-cpp,llama-cpp-tandem-base,tandem-cpp,rusting-strata,project-maya)"
+        required: true
+        default: "kinetic,tensorfold,llama-cpp,llama-cpp-tandem-base,tandem-cpp,rusting-strata,project-maya"
+      ref_overrides:
+        description: "Optional comma-separated id=ref overrides"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout LEONES
+        uses: actions/checkout@v4
+        with:
+          ref: research/kinetic-audit-benchmark
+          fetch-depth: 1
+
+      - name: Install Git LFS
+        run: git lfs install
+
+      - name: Vendor pinned engine source snapshots
+        shell: bash
+        env:
+          ENGINE_LIST: ${{ inputs.engines || 'kinetic,tensorfold,llama-cpp,llama-cpp-tandem-base,tandem-cpp,rusting-strata,project-maya' }}
+          REF_LIST: ${{ inputs.ref_overrides }}
+        run: |
+          args=()
+          IFS=',' read -ra engines <<< "$ENGINE_LIST"
+          for engine in "${engines[@]}"; do
+            engine="$(echo "$engine" | xargs)"
+            [[ -n "$engine" ]] && args+=(--engine "$engine")
+          done
+          IFS=',' read -ra refs <<< "$REF_LIST"
+          for item in "${refs[@]}"; do
+            item="$(echo "$item" | xargs)"
+            [[ -n "$item" ]] && args+=(--ref "$item")
+          done
+          python3 scripts/vendor_engines.py "${args[@]}"
+
+      - name: Commit source snapshots to LEONES
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add third_party/engines
+          if git diff --cached --quiet; then
+            echo "No vendored source changes."
+            exit 0
+          fi
+          git commit -m "Vendor pinned inference engine source snapshots"
+          # Refresh the branch before pushing to avoid non-fast-forward races.
+          for attempt in 1 2 3; do
+            git fetch origin research/kinetic-audit-benchmark
+            git rebase origin/research/kinetic-audit-benchmark
+            if git push origin HEAD:refs/heads/research/kinetic-audit-benchmark; then
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed; retrying after refreshing the branch."
+            sleep $((attempt * 3))
+          done
+          echo "Unable to push vendored snapshots after three attempts." >&2
+          exit 1

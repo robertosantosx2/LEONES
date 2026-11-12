@@ -1,0 +1,12 @@
+#version 460
+layout(local_size_x = 128) in;
+#include "common.glsl"
+// Workgroup = row, in place. Row r is vector r % per of token r / per (tokens `stride` floats apart).
+layout(push_constant) uniform P { F32 x; uint n; uint per; uint stride; float eps; } p;
+void main() {
+    uint r = gl_WorkGroupID.x, xo = r / p.per * p.stride + r % p.per * p.n;
+    float s = 0.0;
+    for (uint i = gl_LocalInvocationID.x; i < p.n; i += 128) s += p.x.v[xo + i] * p.x.v[xo + i];
+    float sc = fdiv(1.0, max(sqrt_(block_sum(s)), p.eps));
+    for (uint i = gl_LocalInvocationID.x; i < p.n; i += 128) p.x.v[xo + i] *= sc;
+}

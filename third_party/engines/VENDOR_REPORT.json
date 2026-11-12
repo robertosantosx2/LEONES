@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-11T08:44:33.599769+00:00",
+  "engines": [
+    {
+      "id": "kinetic",
+      "status": "VENDORED",
+      "commit": "351554bf8996ffb9ef361796626c8c122d43f2b4",
+      "path": "third_party/engines/kinetic"
+    },
+    {
+      "id": "tensorfold",
+      "status": "VENDORED",
+      "commit": "6b739dd5e14ce213c8d45589e9e15fdabb0ae660",
+      "path": "third_party/engines/tensorfold"
+    },
+    {
+      "id": "tandem-cpp",
+      "status": "VENDORED",
+      "commit": "d67bbcb9453a1e6c9f4b3ba0d29fb63193c57287",
+      "path": "third_party/engines/tandem-cpp"
+    },
+    {
+      "id": "llama-cpp",
+      "status": "VENDORED",
+      "commit": "9e9619d030bbe6b584d826a0a6cf06e38251f52b",
+      "path": "third_party/engines/llama-cpp"
+    },
+    {
+      "id": "rusting-strata",
+      "status": "VENDORED",
+      "commit": "f47e370cb72e06c9d2c7fc6f618dfe5f1029fed4",
+      "path": "third_party/engines/rusting-strata"
+    },
+    {
+      "id": "llama-cpp-tandem-base",
+      "status": "VENDORED",
+      "commit": "f5222f25c18da062ab2b8a2dbbfbf4feae398566",
+      "path": "third_party/engines/llama-cpp-tandem-base"
+    },
+    {
+      "id": "project-maya",
+      "status": "VENDORED",
+      "commit": "a3582528bfb73175fed1757b485bfcaaf01aaeaa",
+      "path": "third_party/engines/project-maya"
+    }
+  ]
+}

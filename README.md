@@ -13,6 +13,28 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 - Qwen3.5-9B en RTX 3050 Laptop 4 GiB: [evaluación de viabilidad ES](docs/QWEN3.5-9B-RTX3050-2026-11-11.md) · [English report](docs/QWEN3.5-9B-RTX3050-2026-11-11-EN.md) (ESTIMATED; no benchmark físico 9B).
 - MiniCPM5-2B Q4_K_M en RTX 3050 Laptop con llama.cpp CUDA: [informe de benchmark MEASURED y evaluación de viabilidad DSpark](docs/MINICPM5-2B-RTX3050-2026-11-11.md).
 
+## Registro extensible de motores y copias de código fuente
+
+- [Registro de motores](configs/engines.registry.json): identidad, repositorio oficial, formato de modelo y estado de cada fuente.
+- [Contrato de adaptadores](docs/ENGINE-ADAPTER-CONTRACT.md): cómo añadir motores sin modificar el núcleo del benchmark.
+- [Runbook de build y ejecución](docs/ENGINE-BUILD-RUNBOOK.md): comandos verificados de cada upstream, perfiles aplicables y último paso pendiente en el MSI.
+- [Registro de modelos](configs/models.registry.json): artefactos, cuantizaciones, licencias y requisitos de memoria por modelo.
+- [Política de copias reproducibles](docs/ENGINE-SOURCE-VENDORING.md): snapshots completos, commit/tree SHA, submódulos, Git LFS y licencias.
+- [Vendor de fuentes](scripts/vendor_engines.py): crea `third_party/engines/<id>/source/<commit>/` y `SOURCE.json` sin sobrescribir snapshots anteriores.\n- [Captura de compilación](scripts/capture_engine_build.py): registra binario, hash, comando, log, compilador, backend y entorno.
+- [Workflow GitHub Actions](.github/workflows/vendor-inference-engines.yml): importa las copias directamente en GitHub y las confirma en esta rama.
+
+Motores registrados: Kinetic, TensorFold, llama.cpp, RustingStrata y Tandem.cpp (`ewhacc/tandem.cpp`). llama.cpp y Tandem.cpp son entradas distintas: el snapshot upstream de llama.cpp nunca se presenta como si fuera el código de Tandem.cpp. RustingStrata se incorpora desde https://github.com/RustingStudio/RustingStrata; sus afirmaciones de rendimiento upstream no se consideran mediciones LEONES.
+
+## Kinetic — auditoría y benchmark cruzado (2026-11-11)
+
+- Copia del código upstream Apache-2.0: `scripts/import_kinetic.sh` (compatibilidad) o `scripts/vendor_engines.py --engine kinetic` → `third_party/engines/kinetic/source/<commit>/`; el SHA y el árbol quedan registrados en `SOURCE.json`.
+- [Auditoría estática preliminar](docs/KINETIC-SOURCE-AUDIT-2026-11-11.md).
+- [Plan de benchmark Kinetic / TensorFold / Tandem.cpp / RustInstrata](docs/KINETIC-CROSS-ENGINE-BENCHMARK-PLAN-2026-11-11.md).
+- [Harness serial con control de recuperación de recursos](scripts/engine_comparison.py).
+- [Configuración de ejemplo](configs/engine-comparison.example.json).
+
+Estado: plan y harness preparados; todavía no se han ejecutado pruebas comparativas en la MSI. Los adaptadores de TensorFold y RustInstrata requieren confirmar sus comandos de servidor locales antes de habilitarlos. Las mediciones se etiquetarán MEASURED solo tras ejecución física y conservación de logs.
+
 ## RC4 — estado actual (2026-09-07)
 
 **Regla de autoridad:** LEONES descubre el hardware y conserva procedencia. FitLLM/LLMFit es preselector (ESTIMATED). El usuario elige modelo y stack. Solo una ejecución física autorizada produce MEASURED.

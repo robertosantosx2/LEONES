@@ -1,0 +1,175 @@
+hc_init 12 4 128
+hc_mixes_attn-0 12 24
+hc_pre_attn-0 12 4
+hc_post_attn-0 12 4
+hc_comb_attn-0 12 4 4
+attn_norm-0 12 128
+kda_q_conv-0 12 256
+kda_k_conv-0 12 256
+kda_v_conv-0 12 256
+kda_g1-0 12 8 32
+kda_beta-0 12 8
+kda_scan_out-0 12 8 32
+kda_g2-0 12 8 32
+kda_normed-0 12 8 32
+kda_out-0 12 128
+hc_attn_post-0 12 4 128
+hc_mixes_ffn-0 12 24
+hc_pre_ffn-0 12 4
+hc_post_ffn-0 12 4
+hc_comb_ffn-0 12 4 4
+ffn_norm-0 12 128
+ffn_out-0 12 128
+l_out-0 12 4 128
+hc_mixes_attn-1 12 24
+hc_pre_attn-1 12 4
+hc_post_attn-1 12 4
+hc_comb_attn-1 12 4 4
+attn_norm-1 12 128
+kda_q_conv-1 12 256
+kda_k_conv-1 12 256
+kda_v_conv-1 12 256
+kda_g1-1 12 8 32
+kda_beta-1 12 8
+kda_scan_out-1 12 8 32
+kda_g2-1 12 8 32
+kda_normed-1 12 8 32
+kda_out-1 12 128
+hc_attn_post-1 12 4 128
+hc_mixes_ffn-1 12 24
+hc_pre_ffn-1 12 4
+hc_post_ffn-1 12 4
+hc_comb_ffn-1 12 4 4
+ffn_norm-1 12 128
+ffn_moe_logits-1 12 12
+ffn_moe_probs-1 12 12
+ffn_moe_probs_biased-1 12 12
+ffn_moe_topk-1 12 3
+ffn_moe_weights-1 12 3
+ffn_moe_out-1 12 128
+ffn_shexp-1 12 128
+ffn_out-1 12 128
+l_out-1 12 4 128
+hc_mixes_attn-2 12 24
+hc_pre_attn-2 12 4
+hc_post_attn-2 12 4
+hc_comb_attn-2 12 4 4
+attn_norm-2 12 128
+kda_q_conv-2 12 256
+kda_k_conv-2 12 256
+kda_v_conv-2 12 256
+kda_g1-2 12 8 32
+kda_beta-2 12 8
+kda_scan_out-2 12 8 32
+kda_g2-2 12 8 32
+kda_normed-2 12 8 32
+kda_out-2 12 128
+hc_attn_post-2 12 4 128
+hc_mixes_ffn-2 12 24
+hc_pre_ffn-2 12 4
+hc_post_ffn-2 12 4
+hc_comb_ffn-2 12 4 4
+ffn_norm-2 12 128
+ffn_moe_logits-2 12 12
+ffn_moe_probs-2 12 12
+ffn_moe_probs_biased-2 12 12
+ffn_moe_topk-2 12 3
+ffn_moe_weights-2 12 3
+ffn_moe_out-2 12 128
+ffn_shexp-2 12 128
+ffn_out-2 12 128
+l_out-2 12 4 128
+hc_mixes_attn-3 12 24
+hc_pre_attn-3 12 4
+hc_post_attn-3 12 4
+hc_comb_attn-3 12 4 4
+attn_norm-3 12 128
+q_resid-3 12 96
+kv_cmpr-3 12 64
+q_absorbed-3 12 8 64
+indexer_q-3 12 4 16
+indexer_k-3 12 16
+indexer_gate-3 12 16
+indexer_pool_k-3 6 16
+indexer_weights-3 12 4
+indexer_score-3 12 6
+kqv_out-3 12 384
+attn_out-3 12 128
+hc_attn_post-3 12 4 128
+hc_mixes_ffn-3 12 24
+hc_pre_ffn-3 12 4
+hc_post_ffn-3 12 4
+hc_comb_ffn-3 12 4 4
+ffn_norm-3 12 128
+ffn_moe_logits-3 12 12
+ffn_moe_probs-3 12 12
+ffn_moe_probs_biased-3 12 12
+ffn_moe_topk-3 12 3
+ffn_moe_weights-3 12 3
+ffn_moe_out-3 12 128
+ffn_shexp-3 12 128
+ffn_out-3 12 128
+l_out-3 12 4 128
+hc_mixes_attn-4 12 24
+hc_pre_attn-4 12 4
+hc_post_attn-4 12 4
+hc_comb_attn-4 12 4 4
+attn_norm-4 12 128
+kda_q_conv-4 12 256
+kda_k_conv-4 12 256
+kda_v_conv-4 12 256
+kda_g1-4 12 8 32
+kda_beta-4 12 8
+kda_scan_out-4 12 8 32
+kda_g2-4 12 8 32
+kda_normed-4 12 8 32
+kda_out-4 12 128
+hc_attn_post-4 12 4 128
+hc_mixes_ffn-4 12 24
+hc_pre_ffn-4 12 4
+hc_post_ffn-4 12 4
+hc_comb_ffn-4 12 4 4
+ffn_norm-4 12 128
+ffn_moe_logits-4 12 12
+ffn_moe_probs-4 12 12
+ffn_moe_probs_biased-4 12 12
+ffn_moe_topk-4 12 3
+ffn_moe_weights-4 12 3
+ffn_moe_out-4 12 128
+ffn_shexp-4 12 128
+ffn_out-4 12 128
+l_out-4 12 4 128
+hc_mixes_attn-5 12 24
+hc_pre_attn-5 12 4
+hc_post_attn-5 12 4
+hc_comb_attn-5 12 4 4
+attn_norm-5 12 128
+q_resid-5 12 96
+kv_cmpr-5 12 64
+q_absorbed-5 12 8 64
+indexer_q-5 12 4 16
+indexer_k-5 12 16
+indexer_gate-5 12 16
+indexer_pool_k-5 6 16
+indexer_weights-5 12 4
+indexer_score-5 12 6
+kqv_out-5 12 384
+attn_out-5 12 128
+hc_attn_post-5 12 4 128
+hc_mixes_ffn-5 12 24
+hc_pre_ffn-5 12 4
+hc_post_ffn-5 12 4
+hc_comb_ffn-5 12 4 4
+ffn_norm-5 12 128
+ffn_moe_logits-5 12 12
+ffn_moe_probs-5 12 12
+ffn_moe_probs_biased-5 12 12
+ffn_moe_topk-5 12 3
+ffn_moe_weights-5 12 3
+ffn_moe_out-5 12 128
+ffn_shexp-5 12 128
+ffn_out-5 12 128
+l_out-5 12 4 128
+hc_head 12 128
+result_norm 12 128
+result_output 12 512

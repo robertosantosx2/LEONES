@@ -1,0 +1,23 @@
+[package]
+name = "kinetic-python"
+description = "Python bindings for Kinetic"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.91"
+license = "Apache-2.0"
+publish = false
+
+[lib]
+name = "kinetic_python"
+crate-type = ["cdylib"]
+
+[dependencies]
+kinetic = { path = "../../crates/kinetic" }
+pyo3 = { version = "0.21.2", features = ["abi3-py39", "extension-module"] }
+
+# Built by maturin on its own, so the engine's workspace never needs Python.
+[workspace]
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

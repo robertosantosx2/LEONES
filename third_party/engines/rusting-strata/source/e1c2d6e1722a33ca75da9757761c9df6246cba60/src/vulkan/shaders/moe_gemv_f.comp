@@ -1,0 +1,28 @@
+#version 460
+// Expert GEMV for float types (CUDA moe_gemv_f32 / _bf16): workgroup x = row, y = slot k, z = matrix (z = 1: weights
+// + w2, output + y2 bytes). Slot k multiplies expert ids[k] (skipped when negative) by x + (k / xg) * xs, into
+// y + k * rows. Lane l covers elements [8l, 8l + 8) of every super-block.
+layout(local_size_x = 32) in;
+#include "common.glsl"
+#include "deq.glsl"
+
+layout(push_constant) uniform P { U8 w; I32 ids; F32 x; F32 y; uint64_t stride; uint64_t w2; uint64_t y2; uint xs; uint rows; uint cols; uint xg; } p;
+
+void main() {
+    uint k = gl_WorkGroupID.y, row = gl_WorkGroupID.x, lane = gl_LocalInvocationID.x;
+    int e = p.ids.v[k];
+    if (e < 0) return;
+    U8 w = U8(uint64_t(p.w) + uint64_t(e) * p.stride + gl_WorkGroupID.z * p.w2);
+    F32 y = F32(uint64_t(p.y) + gl_WorkGroupID.z * p.y2);
+    uint xo = k / p.xg * p.xs;
+    float acc = 0.0, v[8];
+    for (uint s = 0; s < (p.cols + 255) >> 8; s++) {
+        if (s * 256 + lane * 8 >= p.cols) break;  // partial last super-block
+        deq8(w, row * rowb(p.cols) + s * SBB, lane, v);
+        uint o = xo + s * 256 + lane * 8;
+        acc += v[0] * p.x.v[o] + v[1] * p.x.v[o + 1] + v[2] * p.x.v[o + 2] + v[3] * p.x.v[o + 3]
+             + v[4] * p.x.v[o + 4] + v[5] * p.x.v[o + 5] + v[6] * p.x.v[o + 6] + v[7] * p.x.v[o + 7];
+    }
+    acc = warp_sum(acc);
+    if (lane == 0) y.v[k * p.rows + row] = acc;
+}

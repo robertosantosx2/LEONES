@@ -1,0 +1,344 @@
+//! The NVMe tier on real files: whole and delta files round-trip bit for bit, split ranks, damage.
+
+const std = @import("std");
+const testing = std.testing;
+const pool_mod = @import("pool.zig");
+const Pool = pool_mod.Pool;
+const Family = pool_mod.Family;
+const HostPool = @import("pagestore.zig").HostPool;
+const disk = @import("disk.zig");
+
+const fams = [_]Family{
+    .{ .name = "comp.2", .ratio = 2, .row_bytes = 584, .split = true },
+    .{ .name = "index_k.2", .ratio = 2, .row_bytes = 132 },
+    .{ .name = "comp.20", .ratio = 1, .row_bytes = 584, .split = true },
+};
+
+/// Fills a page of every family with bytes that name (family, logical page, byte).
+fn fill(h: *HostPool, p: *const Pool, logical: u32, pg: u32, salt: u8) void {
+    for (fams, 0..) |f, fi| {
+        if (f.split and !p.owns(pg)) continue;
+        const v = h.pageOf(@intCast(fi), p.familyPage(f, pg));
+        for (v, 0..) |*b, i| b.* = @truncate(i *% 131 +% logical *% 7 +% fi *% 29 +% salt);
+    }
+}
+
+fn familyPages(gpa: std.mem.Allocator, p: *const Pool, pages: []const u32, first: u32, owned_only: bool) ![][]u32 {
+    const out = try gpa.alloc([]u32, fams.len);
+    for (fams, 0..) |f, fi| {
+        var l: std.ArrayList(u32) = .empty;
+        for (pages[first..], first..) |pg, k| {
+            if (f.split and p.world > 1 and owned_only and k % p.world != p.rank) continue;
+            try l.append(gpa, p.familyPage(f, pg));
+        }
+        out[fi] = try l.toOwnedSlice(gpa);
+    }
+    return out;
+}
+
+fn freePages(gpa: std.mem.Allocator, x: [][]u32) void {
+    for (x) |l| gpa.free(l);
+    gpa.free(x);
+}
+
+fn roundTrip(world: u32, rank: u32) !void {
+    const gpa = testing.allocator;
+    const io = testing.io;
+    var tmp = testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const root = try tmp.dir.realPathFileAlloc(io, ".", gpa);
+    defer gpa.free(root);
+    var p = try Pool.init(gpa, .{ .families = &fams, .page = 256 }, 64 * 256, world, rank);
+    defer p.deinit();
+    var h = try HostPool.init(gpa, &p);
+    defer h.deinit();
+    // small chunks so pool segments span many chunks; few staging buffers so the pump waits on the lanes
+    const d = try disk.Disk.open(gpa, io, .{ .root = root, .compat = @splat(5), .rank = rank, .world = world, .chunk = 3 * 74_752, .staging = 3, .lanes = 3, .min_tokens = 1 });
+    defer d.close();
+    const a = try p.newSlot(32 * 256);
+    const pos: u64 = 9 * 256 + 100;
+    try a.ensure(pos);
+    for (a.mapped(), 0..) |pg, k| fill(&h, &p, @intCast(k), pg, 1);
+    const ids = try gpa.alloc(i32, pos);
+    defer gpa.free(ids);
+    for (ids, 0..) |*t, i| t.* = @intCast(i * 3 + 1);
+    var blob: [5000]u8 = undefined;
+    for (&blob, 0..) |*x, i| x.* = @truncate(9 - i % 5);
+    const fp = try familyPages(gpa, &p, a.mapped(), 0, true);
+    defer freePages(gpa, fp);
+    const src: disk.WriteSrc = .{ .key = @splat(1), .tag = 4, .page = 256, .pos = pos, .npages = a.len, .ids = ids, .store = h.store(), .families = &fams, .pages = fp, .blobs = &.{.{ .name = "rings", .bytes = &blob }} };
+    const size = try d.writeFile(&src);
+    _ = try d.register(&src, size);
+    // a newer turn stacks a delta on it: pages [9, 14) only (page 9 was partial in the base)
+    const pos2: u64 = 13 * 256 + 7;
+    try a.ensure(pos2);
+    for (a.mapped()[9..], 9..) |pg, k| fill(&h, &p, @intCast(k), pg, 2);
+    const ids2 = try gpa.alloc(i32, pos2);
+    defer gpa.free(ids2);
+    for (ids2, 0..) |*t, i| t.* = @intCast(i * 3 + 1);
+    const fp2 = try familyPages(gpa, &p, a.mapped(), 9, true);
+    defer freePages(gpa, fp2);
+    const src2: disk.WriteSrc = .{ .key = @splat(2), .base = @splat(1), .tag = 4, .page = 256, .pos = pos2, .first_page = 9, .npages = a.len, .ids = ids2[9 * 256 ..], .store = h.store(), .families = &fams, .pages = fp2, .blobs = &.{.{ .name = "rings", .bytes = blob[0..77] }} };
+    const size2 = try d.writeFile(&src2);
+    _ = try d.register(&src2, size2);
+    try testing.expect(size2 < size);
+    try testing.expectError(error.HasDependents, d.remove(@splat(1)));
+    // restore the delta onto other pages through its chain
+    const b = try p.newSlot(32 * 256);
+    try b.ensure(pos2);
+    var ext: std.ArrayList(disk.Extent) = .empty;
+    defer ext.deinit(gpa);
+    try d.extents(@splat(2), &ext);
+    try testing.expectEqual(@as(usize, 2), ext.items.len);
+    try testing.expectEqual(@as(u32, 9), ext.items[0].hi);
+    const tp = try familyPages(gpa, &p, b.mapped(), 0, false);
+    defer freePages(gpa, tp);
+    const sink: disk.ReadSink = .{ .store = h.store(), .families = &fams, .page = 256, .world = world, .rank = rank, .pages = tp };
+    try testing.expect(try d.readFile(ext.items[0], &sink, false) == null);
+    var got = (try d.readFile(ext.items[1], &sink, true)).?;
+    defer got.deinit(gpa);
+    try testing.expectEqualSlices(u8, blob[0..77], got.blobs[0].bytes);
+    for (a.mapped(), b.mapped()) |pa, pb| for (fams, 0..) |f, fi| {
+        if (f.split and !p.owns(pa)) continue;
+        try testing.expectEqualSlices(u8, h.pageOf(@intCast(fi), p.familyPage(f, pa)), h.pageOf(@intCast(fi), p.familyPage(f, pb)));
+    };
+    // damage one chunk: the read refuses it before or as its rows land
+    var nb: [48]u8 = undefined;
+    const key2: [16]u8 = @splat(2);
+    const name = try std.fmt.bufPrint(&nb, "{x}.tfs", .{&key2});
+    const f = try d.dir.openFile(io, name, .{ .mode = .read_write });
+    var one = [_]u8{0};
+    _ = try f.readPositional(io, &.{&one}, 3 * 4096 + 100);
+    one[0] ^= 0xff;
+    try f.writePositionalAll(io, &one, 3 * 4096 + 100);
+    f.close(io);
+    try testing.expectError(error.ChecksumMismatch, d.readFile(ext.items[1], &sink, true));
+}
+
+test "whole and delta files round-trip bit for bit (replicated)" {
+    try roundTrip(1, 0);
+}
+
+test "split ranks write and restore their own pages (rank 0 and 1 of 2)" {
+    try roundTrip(2, 0);
+    try roundTrip(2, 1);
+}
+
+/// A restore's sink that refuses every page it is handed.
+const Refusing = struct {
+    fn read(_: *anyopaque, _: u32, _: []const u32, _: []u8) anyerror!void {
+        return error.Unused;
+    }
+    fn write(_: *anyopaque, _: u32, _: []const u32, _: []const u8) anyerror!void {
+        return error.SinkRefused;
+    }
+    fn copy(_: *anyopaque, _: u32, _: u32, _: u32) anyerror!void {
+        return error.Unused;
+    }
+    fn fence(_: *anyopaque) anyerror!u64 {
+        return 0;
+    }
+    fn wait(_: *anyopaque, _: u64) anyerror!void {}
+    fn publish(_: *anyopaque) anyerror!void {}
+    const vtable: @import("pagestore.zig").PageStore.VTable = .{ .read = read, .write = write, .copyPage = copy, .fence = fence, .waitFence = wait, .publish = publish };
+};
+
+test "a restore its sink refuses mid-stream gives every staging buffer back, and the next restore runs" {
+    const gpa = testing.allocator;
+    const io = testing.io;
+    var tmp = testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const root = try tmp.dir.realPathFileAlloc(io, ".", gpa);
+    defer gpa.free(root);
+    var p = try Pool.init(gpa, .{ .families = &fams, .page = 256 }, 64 * 256, 1, 0);
+    defer p.deinit();
+    var h = try HostPool.init(gpa, &p);
+    defer h.deinit();
+    // four buffers: the pump keeps three reads in flight, so two are still out when the first chunk is refused
+    const d = try disk.Disk.open(gpa, io, .{ .root = root, .compat = @splat(4), .chunk = 3 * 74_752, .staging = 4, .lanes = 2, .min_tokens = 1 });
+    defer d.close();
+    const a = try p.newSlot(32 * 256);
+    const pos: u64 = 9 * 256 + 100;
+    try a.ensure(pos);
+    for (a.mapped(), 0..) |pg, k| fill(&h, &p, @intCast(k), pg, 3);
+    const ids = try gpa.alloc(i32, pos);
+    defer gpa.free(ids);
+    for (ids, 0..) |*t, i| t.* = @intCast(i);
+    const fp = try familyPages(gpa, &p, a.mapped(), 0, true);
+    defer freePages(gpa, fp);
+    const src: disk.WriteSrc = .{ .key = @splat(3), .tag = 4, .page = 256, .pos = pos, .npages = a.len, .ids = ids, .store = h.store(), .families = &fams, .pages = fp };
+    _ = try d.register(&src, try d.writeFile(&src));
+    var ext: std.ArrayList(disk.Extent) = .empty;
+    defer ext.deinit(gpa);
+    try d.extents(@splat(3), &ext);
+    const b = try p.newSlot(32 * 256);
+    try b.ensure(pos);
+    const tp = try familyPages(gpa, &p, b.mapped(), 0, false);
+    defer freePages(gpa, tp);
+    var refusing: u8 = 0;
+    const refused: disk.ReadSink = .{ .store = .{ .ptr = &refusing, .vtable = &Refusing.vtable }, .families = &fams, .page = 256, .world = 1, .rank = 0, .pages = tp };
+    try testing.expectError(error.SinkRefused, d.readFile(ext.items[0], &refused, false));
+    const free = d.staging.free_n;
+    // repaired before any assert: a buffer short, the next restore's pump would wait in Staging.get, and close asserts
+    for (d.staging.free_list, 0..) |*x, i| x.* = @intCast(i);
+    d.staging.free_n = d.staging.count;
+    try testing.expectEqual(d.staging.count, free);
+    const sink: disk.ReadSink = .{ .store = h.store(), .families = &fams, .page = 256, .world = 1, .rank = 0, .pages = tp };
+    try testing.expect(try d.readFile(ext.items[0], &sink, false) == null);
+    try testing.expectEqual(d.staging.count, d.staging.free_n);
+}
+
+test "split reconcile refuses before deleting temporary files or indexing physical bytes" {
+    const gpa = testing.allocator;
+    const io = testing.io;
+    var tmp = testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const root = try tmp.dir.realPathFileAlloc(io, ".", gpa);
+    defer gpa.free(root);
+    const d = try disk.Disk.open(gpa, io, .{ .root = root, .compat = @splat(9), .world = 2 });
+    defer d.close();
+    const f = try d.dir.createFile(io, "unreconciled.tmp", .{});
+    f.close(io);
+    var found: std.ArrayList(disk.Disk.Found) = .empty;
+    defer found.deinit(gpa);
+    try testing.expectError(error.SplitReconcileUnsupported, d.scan(&found));
+    try testing.expectEqual(@as(usize, 0), d.recs.items.len);
+    try testing.expectEqual(@as(u64, 0), d.used);
+    const kept = try d.dir.openFile(io, "unreconciled.tmp", .{});
+    kept.close(io);
+}
+
+test "logical charge counts delta pages and bounded measure independently of blob and padded file bytes" {
+    const charge = @import("disk_charge.zig").charge;
+    var src: disk.WriteSrc = undefined;
+    src.page = 64;
+    src.npages = 7;
+    src.first_page = 4;
+    src.ids = &.{ 1, 2, 3 };
+    src.measure = 3000;
+    src.families = &fams;
+    var expected: u64 = 3012;
+    for (fams) |f| expected += 3 * f.pageBytes(64) / (if (f.split) @as(u64, 2) else 1);
+    try testing.expectEqual(expected, charge(&src, 2, 999999));
+    try testing.expectEqual(expected, charge(&src, 2, 4096));
+    try testing.expectEqual(@as(u64, 4096), charge(&src, 1, 4096));
+}
+
+test "fresh serving starts do not accumulate files from previous processes" {
+    const gpa = testing.allocator;
+    const io = testing.io;
+    var tmp = testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const root = try tmp.dir.realPathFileAlloc(io, ".", gpa);
+    defer gpa.free(root);
+    const opts: disk.Options = .{ .root = root, .compat = @splat(5), .rank = 0, .world = 2, .fresh_start = true };
+    {
+        const d = try disk.Disk.open(gpa, io, opts);
+        defer d.close();
+        // Exercise cleanup with hundreds of stale files.
+        for (0..300) |i| {
+            var name_buf: [32]u8 = undefined;
+            const name = try std.fmt.bufPrint(&name_buf, "stale-{d}.tfs", .{i});
+            const f = try d.dir.createFile(io, name, .{});
+            f.close(io);
+        }
+        // These are disposable, unindexed files left by a previous serving process.
+        for ([_][]const u8{ "old.tfs", "interrupted.tmp", "keep.txt" }) |name| {
+            const f = try d.dir.createFile(io, name, .{});
+            f.close(io);
+        }
+    }
+    const other = try disk.Disk.open(gpa, io, .{ .root = root, .compat = @splat(5), .rank = 1, .world = 2 });
+    defer other.close();
+    const peer = try other.dir.createFile(io, "peer.tfs", .{});
+    peer.close(io);
+    const foreign = try disk.Disk.open(gpa, io, .{ .root = root, .compat = @splat(6) });
+    defer foreign.close();
+    const unrelated = try foreign.dir.createFile(io, "foreign.tfs", .{});
+    unrelated.close(io);
+
+    const reopened = try disk.Disk.open(gpa, io, opts);
+    defer reopened.close();
+    try testing.expectError(error.FileNotFound, reopened.dir.openFile(io, "old.tfs", .{}));
+    try testing.expectError(error.FileNotFound, reopened.dir.openFile(io, "interrupted.tmp", .{}));
+    var it = reopened.dir.iterate();
+    while (try it.next(io)) |ent| {
+        try testing.expect(!std.mem.endsWith(u8, ent.name, ".tfs"));
+        try testing.expect(!std.mem.endsWith(u8, ent.name, ".tmp"));
+    }
+    const marker = try reopened.dir.openFile(io, "keep.txt", .{});
+    marker.close(io);
+    const peer_after = try other.dir.openFile(io, "peer.tfs", .{});
+    peer_after.close(io);
+    const foreign_after = try foreign.dir.openFile(io, "foreign.tfs", .{});
+    foreign_after.close(io);
+}
+
+test "fresh namespace has one owner and an active owner prevents cleanup" {
+    const gpa = testing.allocator;
+    const io = testing.io;
+    var tmp = testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const root = try tmp.dir.realPathFileAlloc(io, ".", gpa);
+    defer gpa.free(root);
+    const opts: disk.Options = .{ .root = root, .compat = @splat(3), .fresh_start = true };
+    const owner = try disk.Disk.open(gpa, io, opts);
+    defer owner.close();
+    const file = try owner.dir.createFile(io, "active.tfs", .{});
+    file.close(io);
+    try testing.expectError(error.SessionNamespaceBusy, disk.Disk.open(gpa, io, opts));
+    const kept = try owner.dir.openFile(io, "active.tfs", .{});
+    kept.close(io);
+}
+
+test "unknown dtype uses nonfollowing stat and cleanup errors surface" {
+    const ns = @import("disk_namespace.zig");
+    const io = testing.io;
+    var tmp = testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const file = try tmp.dir.createFile(io, "old.tfs", .{});
+    file.close(io);
+    try ns.discard(tmp.dir, io, .{ .name = "old.tfs", .kind = .unknown, .inode = 0 });
+    try testing.expectError(error.FileNotFound, tmp.dir.openFile(io, "old.tfs", .{}));
+    try tmp.dir.createDirPath(io, "keep.tmp");
+    try ns.discard(tmp.dir, io, .{ .name = "keep.tmp", .kind = .unknown, .inode = 0 });
+    try testing.expectEqual(std.Io.File.Kind.directory, (try tmp.dir.statFile(io, "keep.tmp", .{})).kind);
+    try tmp.dir.symLink(io, "elsewhere", "link.tfs", .{});
+    try ns.discard(tmp.dir, io, .{ .name = "link.tfs", .kind = .unknown, .inode = 0 });
+    try testing.expectEqual(std.Io.File.Kind.sym_link, (try tmp.dir.statFile(io, "link.tfs", .{ .follow_symlinks = false })).kind);
+    try testing.expectError(error.FileNotFound, ns.discard(tmp.dir, io, .{ .name = "missing.tmp", .kind = .unknown, .inode = 0 }));
+    if (ns.discard(tmp.dir, io, .{ .name = "keep.tmp", .kind = .file, .inode = 0 })) |_| {
+        return error.TestUnexpectedResult;
+    } else |_| {}
+}
+
+/// A file whose ids claim tokens [256, 0): its position below its first page, so `pos - first_page * page` wraps.
+fn scanBackwards() !void {
+    const gpa = testing.allocator;
+    const io = testing.io;
+    var tmp = testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const root = try tmp.dir.realPathFileAlloc(io, ".", gpa);
+    defer gpa.free(root);
+    const d = try disk.Disk.open(gpa, io, .{ .root = root, .compat = @splat(4) });
+    defer d.close();
+    const fmt = @import("format.zig");
+    const key: [16]u8 = @splat(7);
+    const head: fmt.Head = .{ .key = key, .compat = @splat(4), .tag = 1, .kind = 0, .page = 256, .world = 1, .rank = 0, .first_page = 1, .npages = 1, .nseg = 0, .ndigest = 0, .pos = 0 };
+    var l = try fmt.Layout.build(gpa, head, &.{.{ .name = fmt.segName("ids"), .kind = .ids, .family = 0, .nbytes = 0, .chunk = 4096 }});
+    defer l.deinit(gpa);
+    var buf: [4096]u8 = undefined;
+    l.encode(&buf);
+    var nb: [48]u8 = undefined;
+    try d.dir.writeFile(io, .{ .sub_path = try std.fmt.bufPrint(&nb, "{x}.tfs", .{&key}), .data = &buf });
+    var found: std.ArrayList(disk.Disk.Found) = .empty;
+    defer found.deinit(gpa);
+    try d.scan(&found);
+    try testing.expectEqual(@as(usize, 0), found.items.len);
+    try testing.expectEqual(@as(u64, 1), d.stats.bad);
+}
+
+// In a child: if found's `h.pos - first_page * page` is unchecked, a safe build panics and only this test fails
+test "a restart file whose position is below its first page is refused, not counted by a length that wraps" {
+    try testing.expectEqual(@import("sys").isolate.Outcome.passed, try @import("sys").isolate.run(scanBackwards, .{}));
+}

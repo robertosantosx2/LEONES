@@ -1,0 +1,27 @@
+{
+    "version": "0.1.0",
+    "description": "Open engine for running AI locally",
+    "homepage": "https://github.com/Veloresearch/kinetic",
+    "license": "Apache-2.0",
+    "notes": "The CUDA build runs on the CPU too when no NVIDIA driver is present.",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/Veloresearch/kinetic/releases/download/v0.1.0/kinetic-0.1.0-windows-x86_64-cuda.zip",
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "extract_dir": "kinetic-0.1.0-windows-x86_64-cuda"
+        }
+    },
+    "bin": "kinetic.exe",
+    "checkver": "github",
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/Veloresearch/kinetic/releases/download/v$version/kinetic-$version-windows-x86_64-cuda.zip",
+                "extract_dir": "kinetic-$version-windows-x86_64-cuda"
+            }
+        },
+        "hash": {
+            "url": "$baseurl/SHA256SUMS"
+        }
+    }
+}

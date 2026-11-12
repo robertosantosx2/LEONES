@@ -1,0 +1,20 @@
+[package]
+name = "kinetic"
+description = "Run local GGUF and .ktc language models from Rust: generate, chat and embed"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+default = ["cuda"]
+# Runs text models on NVIDIA GPUs that can take them; see kinetic-cli.
+cuda = ["kinetic-server/cuda"]
+
+[dependencies]
+kinetic-gguf = { path = "../kinetic-gguf" }
+kinetic-ktc = { path = "../kinetic-ktc" }
+kinetic-models = { path = "../kinetic-models" }
+kinetic-server = { path = "../kinetic-server" }
+kinetic-tokenizer = { path = "../kinetic-tokenizer" }
+serde_json = "1.0.149"

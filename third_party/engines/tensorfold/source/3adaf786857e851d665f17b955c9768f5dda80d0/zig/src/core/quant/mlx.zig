@@ -1,0 +1,546 @@
+//! MLX affine weights: i32 words of `bits`-wide codes, a scale and bias a group of K; host and device side.
+
+const std = @import("std");
+const types = @import("types.zig");
+const slice = @import("slice.zig");
+const convert = @import("convert.zig");
+const keys = @import("keys.zig");
+pub const geometry = @import("mlx_geometry.zig");
+
+const Tensor = types.Tensor;
+const Allocator = std.mem.Allocator;
+const join = types.join;
+const refuse = types.refuse;
+
+pub const id: types.Format = .mlx;
+pub const decoder: types.Decoder = .mlx;
+
+pub const bit_widths = [_]u8{ 2, 3, 4, 5, 6, 8 };
+
+/// One affine width: groups of `group` weights share a scale and a bias, `bits` per weight.
+pub const Width = struct { bits: u8, group: u16 };
+
+/// The config's `quantization` table: the global width and the per-module overrides (mixed-width conversions).
+pub const Config = struct {
+    global: Width,
+    /// A per-tensor entry under the config's own key; `null` marks one this format refuses, which fails on lookup.
+    overrides: std.StringHashMapUnmanaged(?Width) = .empty,
+    /// The same entries under their module's canonical key, so every spelling of a module finds its width.
+    modules: std.StringHashMapUnmanaged(?Width) = .empty,
+
+    /// The width the table names `key` with, else its module under any spelling, else the global one.
+    pub fn width(q: Config, key: []const u8) error{UnsupportedQuantization}!Width {
+        const named = q.overrides.get(key) orelse q.modules.get(keys.canonical(key));
+        if (named) |w| return w orelse error.UnsupportedQuantization;
+        return q.global;
+    }
+
+    /// One entry under its own key and its module's; an alias already there must declare the same width.
+    fn add(q: *Config, a: Allocator, key: []const u8, w: ?Width) DetectError!void {
+        try q.overrides.put(a, key, w);
+        const slot = try q.modules.getOrPut(a, keys.canonical(key));
+        if (slot.found_existing and !std.meta.eql(slot.value_ptr.*, w)) {
+            std.log.warn("{s}: another spelling of module {s} declares a different width", .{ key, slot.key_ptr.* });
+            return error.UnsupportedQuantization;
+        }
+        slot.value_ptr.* = w;
+    }
+};
+
+/// Why a table is refused: allocation, or two spellings of one module that declare different widths (unsupported).
+pub const DetectError = Allocator.Error || error{UnsupportedQuantization};
+
+/// The affine width an object of the config names, or null when it is not one the kernels run.
+fn affineWidth(o: std.json.ObjectMap) ?Width {
+    const bits = intOrNull(o.get("bits")) orelse return null;
+    const group = intOrNull(o.get("group_size")) orelse return null;
+    if (o.get("mode")) |m| if (m != .string or !std.mem.eql(u8, m.string, "affine")) return null;
+    if (std.mem.indexOfScalar(i64, &.{ 2, 3, 4, 5, 6, 8 }, bits) == null) return null;
+    if (std.mem.indexOfScalar(i64, &.{ 32, 64, 128 }, group) == null) return null;
+    return .{ .bits = @intCast(bits), .group = @intCast(group) };
+}
+
+fn intOrNull(v: ?std.json.Value) ?i64 {
+    const value = v orelse return null;
+    return switch (value) {
+        .integer => |i| i,
+        .float => |f| if (f == @floor(f) and @abs(f) < 1e15) @as(i64, @intFromFloat(f)) else null,
+        else => null,
+    };
+}
+
+/// The checkpoint's `quantization` object when it is MLX affine (`mode` absent or "affine"), else null.
+pub fn detect(a: Allocator, src: types.Sources) DetectError!?Config {
+    const obj = src.quantization;
+    var q: Config = .{ .global = affineWidth(obj) orelse return null };
+    var it = obj.iterator();
+    while (it.next()) |kv| if (kv.value_ptr.* == .object) try q.add(a, kv.key_ptr.*, affineWidth(kv.value_ptr.object));
+    return q;
+}
+
+/// An affine projection as stored: i32 words [N, K * bits / 32], tables [N, K / group]; a stack leads with E + 1.
+pub const Host = struct { words: Tensor, scales: Tensor, biases: Tensor, bits: u8, group: u16 };
+
+/// Whether `key` holds an MLX affine projection (a table of scales beside its words).
+pub fn matches(t: anytype, key: []const u8) bool {
+    var buf: [256]u8 = undefined;
+    return t.has(join(&buf, &.{ key, ".scales" }));
+}
+
+/// The fp32 scale and bias tables when the pair is not one of the dtypes the kernels read as stored.
+pub fn tables(a: Allocator, scale: Tensor, bias: Tensor) convert.Error![2]Tensor {
+    if (scale.dtype == bias.dtype and convert.tableDtype(scale.dtype)) return .{ scale, bias };
+    return .{ try convert.float32(a, scale), try convert.float32(a, bias) };
+}
+
+/// `_packed`: an affine projection as stored (group tables widened to fp32 only when not fp32, bf16 or fp16 pairs).
+pub fn read(a: Allocator, t: anytype, key: []const u8) !Host {
+    var buf: [256]u8 = undefined;
+    var other: [256]u8 = undefined;
+    var words = try t.get(join(&buf, &.{ key, ".weight" }));
+    const w = try t.width(key);
+    if ((words.dtype != .u32 and words.dtype != .i32) or words.rank != 2) return refuse(key, "weight is not packed int32 words");
+    words.dtype = .i32;
+    const scale = try t.get(join(&buf, &.{ key, ".scales" }));
+    const bias = try t.get(join(&other, &.{ key, ".biases" }));
+    _ = geometry.shape(words, scale, bias, w.bits, w.group, false) catch
+        return refuse(key, "packed words and group tables have incompatible or unrepresentable geometry");
+    const pair = try tables(a, scale, bias);
+    return .{ .words = words, .scales = pair[0], .biases = pair[1], .bits = w.bits, .group = w.group };
+}
+
+/// Output rows N of a projection.
+pub fn rows(h: Host) usize {
+    return h.words.shape[0];
+}
+
+/// The bytes of the three tensors.
+pub fn bytes(h: Host) usize {
+    return h.words.bytes.len + h.scales.bytes.len + h.biases.bytes.len;
+}
+
+/// `_halves`: a fused [embedding | hidden] projection split in two along K, words and group tables alike.
+pub fn halves(a: Allocator, p: Host) ![2]Host {
+    _ = try geometry.shape(p.words, p.scales, p.biases, p.bits, p.group, false);
+    const groups = p.scales.shape[1];
+    const half = groups * p.group / 2;
+    if (groups % 2 != 0 or half * p.bits % 32 != 0) return refuse("fc", "does not split on a word boundary");
+    const word = p.words.shape[1] / 2;
+    const tab = groups / 2;
+    var out: [2]Host = undefined;
+    for (&out, 0..) |*o, i| {
+        const w = if (i == 0) [2]usize{ 0, word } else [2]usize{ word, p.words.shape[1] };
+        const g = if (i == 0) [2]usize{ 0, tab } else [2]usize{ tab, groups };
+        o.* = .{
+            .words = try slice.takeCols(a, p.words, w[0], w[1]),
+            .scales = try slice.takeCols(a, p.scales, g[0], g[1]),
+            .biases = try slice.takeCols(a, p.biases, g[0], g[1]),
+            .bits = p.bits,
+            .group = p.group,
+        };
+    }
+    return out;
+}
+
+/// `_rows`: output rows `spans` of a projection, the share of a column-split one.
+pub fn sliceRows(a: Allocator, p: Host, spans: []const slice.Span) slice.Error!Host {
+    _ = geometry.shape(p.words, p.scales, p.biases, p.bits, p.group, false) catch return error.UnevenSplit;
+    return .{ .words = try slice.takeRows(a, p.words, spans), .scales = try slice.takeRows(a, p.scales, spans), .biases = try slice.takeRows(a, p.biases, spans), .bits = p.bits, .group = p.group };
+}
+
+/// `_cols`: one rank's whole input groups of a row-split projection, whose fp32 outputs the ranks sum.
+pub fn sliceCols(a: Allocator, p: Host, r: slice.Rank, what: []const u8) slice.Error!Host {
+    _ = geometry.shape(p.words, p.scales, p.biases, p.bits, p.group, false) catch return error.UnevenSplit;
+    const groups = try slice.even(p.scales.shape[1], r.world, what);
+    const words = groups * p.group * p.bits / 32;
+    return .{
+        .words = try slice.takeCols(a, p.words, r.rank * words, (r.rank + 1) * words),
+        .scales = try slice.takeCols(a, p.scales, r.rank * groups, (r.rank + 1) * groups),
+        .biases = try slice.takeCols(a, p.biases, r.rank * groups, (r.rank + 1) * groups),
+        .bits = p.bits,
+        .group = p.group,
+    };
+}
+
+/// A stack of E + 1 experts cut to a rank's `part` of them (the shared one last, kept on rank 0).
+pub fn sliceStack(a: Allocator, p: Host, r: slice.Rank, part: usize) slice.Error!Host {
+    _ = geometry.shape(p.words, p.scales, p.biases, p.bits, p.group, true) catch return error.UnevenSplit;
+    return .{ .words = try slice.takeExperts(a, p.words, r, part), .scales = try slice.takeExperts(a, p.scales, r, part), .biases = try slice.takeExperts(a, p.biases, r, part), .bits = p.bits, .group = p.group };
+}
+
+/// An uploaded projection (or stack of them): the same tensors on the device.
+pub const Device = struct { words: types.Buf, scales: types.Buf, biases: types.Buf, bits: u8, group: u16 };
+
+/// The checkpoint's words and tables on the device as stored: this format keeps its layout.
+pub fn upload(u: types.Uploader, h: Host) !Device {
+    _ = try geometry.shape(h.words, h.scales, h.biases, h.bits, h.group, h.words.rank == 3);
+    return .{ .words = try u.tensor(h.words), .scales = try u.tensor(h.scales), .biases = try u.tensor(h.biases), .bits = h.bits, .group = h.group };
+}
+
+/// What the kernels read of an MLX projection: the three addresses, the tables' type and the width.
+pub const Matrix = struct { words: u64, scale: u64, bias: u64, tables: types.Tables, bits: u8, group: u16 };
+
+pub const View = struct { n: u32, k: u32, matrix: Matrix };
+
+fn tableKind(dtype: types.DType) error{UnsupportedTables}!types.Tables {
+    return switch (dtype) {
+        .f32 => .f32,
+        .f16 => .f16,
+        .bf16 => .bf16,
+        else => error.UnsupportedTables,
+    };
+}
+
+/// The projection's (N, K) and addresses; a stack (E + 1, N, ...) reads as one expert's shape at the stack's addresses.
+pub fn view(d: Device, stacked: bool) error{UnsupportedTables}!View {
+    const dims = geometry.shape(d.words, d.scales, d.biases, d.bits, d.group, stacked) catch
+        return error.UnsupportedTables;
+    if (d.scales.dtype != d.biases.dtype) return error.UnsupportedTables;
+    inline for (.{ d.words, d.scales, d.biases }) |buffer| geometry.address(buffer) catch
+        return error.UnsupportedTables;
+    const matrix: Matrix = .{ .words = d.words.ptr, .scale = d.scales.ptr, .bias = d.biases.ptr, .tables = try tableKind(d.scales.dtype), .bits = d.bits, .group = d.group };
+    return .{ .n = dims.n, .k = dims.k, .matrix = matrix };
+}
+
+fn table64(dtype: types.DType, data: []const u8, i: usize) f64 {
+    return @as(f64, convert.load(dtype, data, i));
+}
+
+/// Weights of a projection: its rows (a stack's leading dimensions folded) by K.
+pub fn elements(h: Host) usize {
+    var n_rows: usize = 1;
+    for (h.words.shape[0 .. h.words.rank - 1]) |d| n_rows *= d;
+    return n_rows * h.scales.shape[h.scales.rank - 1] * h.group;
+}
+
+/// fp64 dequantization of every row of `h` (leading dimensions folded), scale * code + bias, into `out` [rows, K].
+pub fn reference(h: Host, out: []f64) error{UnexpectedTensor}!void {
+    const dims = try geometry.scalarShape(h.words, h.scales, h.biases, h.bits, h.group, h.words.rank == 3);
+    if (!convert.tableDtype(h.scales.dtype) or !convert.tableDtype(h.biases.dtype)) return error.UnexpectedTensor;
+    const rank = h.words.rank;
+    var n_rows: usize = 1;
+    for (h.words.shape[0 .. rank - 1]) |d| n_rows *= d;
+    const groups = h.scales.shape[h.scales.rank - 1];
+    const k = groups * h.group;
+    const words_row = h.words.shape[rank - 1];
+    if (out.len != dims.elements) return error.UnexpectedTensor;
+    const mask: u64 = (@as(u64, 1) << @intCast(h.bits)) - 1;
+    for (0..n_rows) |r| for (0..k) |c| {
+        const bit = c * h.bits;
+        const at = r * words_row + (bit >> 5);
+        const lo: u64 = std.mem.readInt(u32, h.words.bytes[4 * at ..][0..4], .little);
+        const hi: u64 = if ((bit & 31) + h.bits > 32) std.mem.readInt(u32, h.words.bytes[4 * (at + 1) ..][0..4], .little) else 0;
+        const code: f64 = @floatFromInt(((lo | hi << 32) >> @intCast(bit & 31)) & mask);
+        const g = r * groups + c / h.group;
+        out[r * k + c] = code * table64(h.scales.dtype, h.scales.bytes, g) + table64(h.biases.dtype, h.biases.bytes, g);
+    };
+}
+
+/// MLX affine words and tables as fp32 [R, K] the way torch computes them (product rounded, then sum), widths 2 to 8.
+pub fn dequant(a: Allocator, words: Tensor, scale: Tensor, bias: Tensor, group: usize) convert.Error![]f32 {
+    if (words.rank != 2 or scale.rank != 2 or bias.rank != 2 or !std.mem.eql(usize, scale.shape[0..2], bias.shape[0..2])) return error.UnexpectedTensor;
+    if (words.dtype != .u32 and words.dtype != .i32) return error.UnexpectedTensor;
+    if (!convert.isFloat(scale.dtype) or scale.dtype == .f64 or !convert.isFloat(bias.dtype) or bias.dtype == .f64) return error.UnexpectedTensor;
+    const n_rows = words.shape[0];
+    const k = try geometry.product(scale.shape[1], group);
+    const packed_bits = try geometry.product(32, words.shape[1]);
+    if (k == 0) return error.UnexpectedTensor;
+    const bits = packed_bits / k;
+    if (bits < 2 or bits > 8) return error.UnsupportedQuantization;
+    const dims = try geometry.scalarShape(words, scale, bias, bits, group, false);
+    const row_words = words.shape[1];
+    const out = try a.alloc(f32, dims.elements);
+    const mask: u64 = (@as(u64, 1) << @intCast(bits)) - 1;
+    for (0..n_rows) |r| for (0..k) |c| {
+        // a code may run into the next word (3, 5, 6 and 7 bits): read the pair
+        const bit = c * bits;
+        const at = r * row_words + (bit >> 5);
+        const lo: u64 = std.mem.readInt(u32, words.bytes[4 * at ..][0..4], .little);
+        const hi: u64 = if ((bit & 31) + bits > 32)
+            std.mem.readInt(u32, words.bytes[4 * (at + 1) ..][0..4], .little)
+        else
+            0;
+        const code: f32 = @floatFromInt(((lo | hi << 32) >> @intCast(bit & 31)) & mask);
+        const g = r * scale.shape[1] + c / group;
+        const s = convert.load(scale.dtype, scale.bytes, g);
+        const b = convert.load(bias.dtype, bias.bytes, g);
+        // torch multiplies, then adds: two roundings
+        const prod = code * s;
+        out[r * k + c] = prod + b;
+    };
+    return out;
+}
+
+fn hostOf(words: []const u32, scales: []const u16, biases: []const u16, rows_n: usize, bits: u8, group: u16) Host {
+    const groups = scales.len / rows_n;
+    return .{
+        .words = .{ .dtype = .i32, .rank = 2, .shape = .{ rows_n, words.len / rows_n, 1, 1, 1 }, .bytes = std.mem.sliceAsBytes(words) },
+        .scales = .{ .dtype = .bf16, .rank = 2, .shape = .{ rows_n, groups, 1, 1, 1 }, .bytes = std.mem.sliceAsBytes(scales) },
+        .biases = .{ .dtype = .bf16, .rank = 2, .shape = .{ rows_n, groups, 1, 1, 1 }, .bytes = std.mem.sliceAsBytes(biases) },
+        .bits = bits,
+        .group = group,
+    };
+}
+
+test "the reference unpacks low code first, across words for 3 bits" {
+    var four = [_]u32{0x76543210};
+    var scale = [_]u16{0x4000}; // bf16 2.0
+    var bias = [_]u16{0xBF80}; // bf16 -1.0
+    var out4: [8]f64 = undefined;
+    try reference(hostOf(&four, &scale, &bias, 1, 4, 8), &out4);
+    try std.testing.expectEqualSlices(f64, &.{ -1, 1, 3, 5, 7, 9, 11, 13 }, &out4);
+    // 32 codes of 3 bits: code i is i % 8, packed little-endian over three words
+    var three: [3]u32 = @splat(0);
+    for (0..32) |i| {
+        const bit = i * 3;
+        const v: u64 = (i % 8) << @intCast(bit & 31);
+        three[bit >> 5] |= @truncate(v);
+        if ((bit & 31) + 3 > 32) three[(bit >> 5) + 1] |= @truncate(v >> 32);
+    }
+    var scale3 = [_]u16{0x3F80}; // 1.0
+    var bias3 = [_]u16{0x0000};
+    var out3: [32]f64 = undefined;
+    try reference(hostOf(&three, &scale3, &bias3, 1, 3, 32), &out3);
+    for (out3, 0..) |v, i| try std.testing.expectEqual(@as(f64, @floatFromInt(i % 8)), v);
+}
+
+test "dequant unpacks 4-bit words low nibble first" {
+    var words = [_]u32{0x76543210};
+    var scale = [_]u16{0x4000};
+    var bias = [_]u16{0xBF80};
+    const h = hostOf(&words, &scale, &bias, 1, 4, 8);
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const out = try dequant(arena.allocator(), h.words, h.scales, h.biases, 8);
+    try std.testing.expectEqualSlices(f32, &.{ -1, 1, 3, 5, 7, 9, 11, 13 }, out);
+}
+
+test "dequant reads 3- and 6-bit codes across words as the reference does" {
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    inline for (.{ 3, 6 }) |bits| {
+        // one row of 32 codes, code i = i % 2^bits, packed little-endian
+        var words: [bits]u32 = @splat(0);
+        for (0..32) |i| {
+            const bit = i * bits;
+            const v: u64 = @as(u64, i % (1 << bits)) << @intCast(bit & 31);
+            words[bit >> 5] |= @truncate(v);
+            if ((bit & 31) + bits > 32) words[(bit >> 5) + 1] |= @truncate(v >> 32);
+        }
+        var scale = [_]u16{0x4000}; // 2.0
+        var bias = [_]u16{0xBF80}; // -1.0
+        const h = hostOf(&words, &scale, &bias, 1, bits, 32);
+        const out = try dequant(arena.allocator(), h.words, h.scales, h.biases, 32);
+        var want: [32]f64 = undefined;
+        try reference(h, &want);
+        for (out, want, 0..) |x, y, i| {
+            try std.testing.expectEqual(@as(f32, @floatFromInt(i % (1 << bits))) * 2 - 1, x);
+            try std.testing.expectEqual(@as(f64, x), y);
+        }
+    }
+}
+
+test "a projection splits its words and group tables on the same boundary" {
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    var words: [2 * 4]u32 = undefined;
+    for (&words, 0..) |*w, i| w.* = @intCast(i);
+    var scales: [2 * 2]u16 = .{ 10, 11, 12, 13 };
+    try std.testing.expectError(error.UnexpectedTensor, halves(arena.allocator(), hostOf(&words, &scales, &scales, 2, 4, 32)));
+    const p = hostOf(&words, &scales, &scales, 2, 2, 32);
+    const pair = try halves(arena.allocator(), p);
+    try std.testing.expectEqual(@as(usize, 2), pair[0].words.shape[1]);
+    try std.testing.expectEqual(@as(usize, 1), pair[1].scales.shape[1]);
+    try std.testing.expectEqualSlices(u32, &.{ 2, 3, 6, 7 }, @alignCast(std.mem.bytesAsSlice(u32, pair[1].words.bytes)));
+    try std.testing.expectEqualSlices(u16, &.{ 11, 13 }, @alignCast(std.mem.bytesAsSlice(u16, pair[1].scales.bytes)));
+}
+
+test "a column split keeps whole groups and a row split its own rows" {
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    var words: [4 * 4]u32 = undefined;
+    for (&words, 0..) |*w, i| w.* = @intCast(i);
+    var scales: [4 * 2]u16 = .{ 0, 1, 2, 3, 4, 5, 6, 7 };
+    // Two bits: four words a row hold sixty-four codes, two admitted groups of thirty-two.
+    const p = hostOf(&words, &scales, &scales, 4, 2, 32);
+    var unsupported: Device = .{ .words = undefined, .scales = undefined, .biases = undefined, .bits = 8, .group = 8 };
+    inline for (.{ "words", "scales", "biases" }) |field| {
+        const t = @field(p, field);
+        @field(unsupported, field) = .{ .ptr = @intFromPtr(t.bytes.ptr), .len = t.bytes.len, .dtype = t.dtype, .rank = t.rank, .shape = t.shape };
+    }
+    try std.testing.expectError(error.UnsupportedTables, view(unsupported, false));
+    const c = try sliceCols(a, p, .{ .rank = 1, .world = 2 }, "test");
+    try std.testing.expectEqual(@as(usize, 2), c.words.shape[1]);
+    try std.testing.expectEqualSlices(u32, &.{ 2, 3, 6, 7, 10, 11, 14, 15 }, @alignCast(std.mem.bytesAsSlice(u32, c.words.bytes)));
+    try std.testing.expectEqualSlices(u16, &.{ 1, 3, 5, 7 }, @alignCast(std.mem.bytesAsSlice(u16, c.scales.bytes)));
+    const q = try sliceRows(a, p, &.{ .{ .from = 1, .to = 2 }, .{ .from = 3, .to = 4 } });
+    try std.testing.expectEqualSlices(u32, &.{ 4, 5, 6, 7, 12, 13, 14, 15 }, @alignCast(std.mem.bytesAsSlice(u32, q.words.bytes)));
+}
+
+test "the config's per-tensor widths override the global one" {
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const text =
+        \\{"group_size": 64, "bits": 4, "mode": "affine",
+        \\ "layers.0.mlp.gate": {"group_size": 32, "bits": 8},
+        \\ "vision_tower.x": {"group_size": 64, "bits": 7}}
+    ;
+    const obj = (try std.json.parseFromSliceLeaky(std.json.Value, a, text, .{})).object;
+    const q = (try detect(a, .{ .root = obj, .quantization = obj })).?;
+    try std.testing.expectEqual(Width{ .bits = 8, .group = 32 }, try q.width("layers.0.mlp.gate"));
+    try std.testing.expectEqual(Width{ .bits = 4, .group = 64 }, try q.width("layers.1.mlp.gate"));
+    try std.testing.expectError(error.UnsupportedQuantization, q.width("vision_tower.x"));
+    const gptq = (try std.json.parseFromSliceLeaky(std.json.Value, a, "{\"group_size\": 64, \"bits\": 4, \"mode\": \"gptq\"}", .{})).object;
+    try std.testing.expect((try detect(a, .{ .root = gptq, .quantization = gptq })) == null);
+}
+
+/// `codes` packed `bits` wide, low code first, into little-endian words (a code may cross into the next word).
+fn packCodes(bits: u8, codes: []const u8, words: []u32) void {
+    @memset(words, 0);
+    for (codes, 0..) |code, i| {
+        const bit = i * bits;
+        const v: u64 = @as(u64, code) << @intCast(bit & 31);
+        words[bit >> 5] |= @truncate(v);
+        if ((bit & 31) + bits > 32) words[(bit >> 5) + 1] |= @truncate(v >> 32);
+    }
+}
+
+/// A checkpoint as `read` sees it: tensors by name, and the config's widths by the key the loader asks for.
+const Fixture = struct {
+    q: Config,
+    names: []const []const u8,
+    tensors: []const Tensor,
+
+    pub fn has(f: Fixture, name: []const u8) bool {
+        return f.find(name) != null;
+    }
+
+    pub fn get(f: Fixture, name: []const u8) error{MissingTensor}!Tensor {
+        return f.tensors[f.find(name) orelse return error.MissingTensor];
+    }
+
+    pub fn width(f: Fixture, key: []const u8) error{UnsupportedQuantization}!Width {
+        return f.q.width(key);
+    }
+
+    fn find(f: Fixture, name: []const u8) ?usize {
+        for (f.names, 0..) |n, i| if (std.mem.eql(u8, n, name)) return i;
+        return null;
+    }
+};
+
+test "an override under the oQ prefix reads a 5-bit tensor the loader names its own way" {
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const text =
+        \\{"group_size": 64, "bits": 4, "mode": "affine",
+        \\ "language_model.model.layers.0.mlp.down_proj": {"group_size": 64, "bits": 5, "mode": "affine"}}
+    ;
+    const obj = (try std.json.parseFromSliceLeaky(std.json.Value, a, text, .{})).object;
+    const q = (try detect(a, .{ .root = obj, .quantization = obj })).?;
+    // one row of 64 codes 5 bits wide: ten words and one group; the global 4 bits would need eight words
+    var codes: [64]u8 = undefined;
+    for (&codes, 0..) |*c, i| c.* = @intCast(i % 32);
+    var words: [10]u32 = undefined;
+    packCodes(5, &codes, &words);
+    var scale = [_]u16{0x3F80}; // bf16 1.0
+    var bias = [_]u16{0x0000};
+    const fx: Fixture = .{
+        .q = q,
+        .names = &.{ "model.layers.0.mlp.down_proj.weight", "model.layers.0.mlp.down_proj.scales", "model.layers.0.mlp.down_proj.biases" },
+        .tensors = &.{
+            .{ .dtype = .u32, .rank = 2, .shape = .{ 1, 10, 1, 1, 1 }, .bytes = std.mem.sliceAsBytes(&words) },
+            .{ .dtype = .bf16, .rank = 2, .shape = .{ 1, 1, 1, 1, 1 }, .bytes = std.mem.sliceAsBytes(&scale) },
+            .{ .dtype = .bf16, .rank = 2, .shape = .{ 1, 1, 1, 1, 1 }, .bytes = std.mem.sliceAsBytes(&bias) },
+        },
+    };
+    const h = try read(a, fx, "model.layers.0.mlp.down_proj");
+    try std.testing.expectEqual(Width{ .bits = 5, .group = 64 }, Width{ .bits = h.bits, .group = h.group });
+    var out: [64]f64 = undefined;
+    try reference(h, &out);
+    for (out, codes) |v, c| try std.testing.expectEqual(@as(f64, @floatFromInt(c)), v);
+}
+
+/// The table `text` declares, parsed into `a`.
+fn tableOf(a: Allocator, text: []const u8) DetectError!?Config {
+    const obj = (std.json.parseFromSliceLeaky(std.json.Value, a, text, .{}) catch unreachable).object;
+    return detect(a, .{ .root = obj, .quantization = obj });
+}
+
+test "an override declared in any spelling answers every spelling of its module" {
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const spellings = [_][]const u8{
+        "layers.0.mlp.down_proj",
+        "model.layers.0.mlp.down_proj",
+        "language_model.model.layers.0.mlp.down_proj",
+        "model.language_model.layers.0.mlp.down_proj",
+        "model.language_model.model.layers.0.mlp.down_proj",
+        "text_model.layers.0.mlp.down_proj",
+        "model.layers.0.mlp.down_proj.weight",
+        "language_model.model.layers.0.mlp.down_proj.weight",
+    };
+    for (spellings) |declared| {
+        const text = try std.fmt.allocPrint(a, "{{\"group_size\": 64, \"bits\": 4, \"{s}\": {{\"group_size\": 32, \"bits\": 3}}}}", .{declared});
+        const q = (try tableOf(a, text)).?;
+        for (spellings) |asked| try std.testing.expectEqual(Width{ .bits = 3, .group = 32 }, try q.width(asked));
+        // the config's own key stays in `overrides`, for loaders that read the map by it
+        try std.testing.expectEqual(@as(?Width, .{ .bits = 3, .group = 32 }), q.overrides.get(declared).?);
+        try std.testing.expectEqual(Width{ .bits = 4, .group = 64 }, try q.width("model.layers.1.mlp.down_proj"));
+    }
+    const mtp = (try tableOf(a, "{\"group_size\": 64, \"bits\": 4, \"language_model.mtp.fc\": {\"group_size\": 64, \"bits\": 8}}")).?;
+    try std.testing.expectEqual(Width{ .bits = 8, .group = 64 }, try mtp.width("mtp.fc.weight"));
+    try std.testing.expectEqual(Width{ .bits = 4, .group = 64 }, try mtp.width("fc"));
+}
+
+test "aliases of one module must agree on its width" {
+    const log_level = std.testing.log_level;
+    std.testing.log_level = .err;
+    defer std.testing.log_level = log_level;
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    try std.testing.expectError(error.UnsupportedQuantization, tableOf(a,
+        \\{"group_size": 64, "bits": 4, "language_model.model.layers.0.mlp.up_proj": {"group_size": 64, "bits": 5},
+        \\ "model.layers.0.mlp.up_proj.weight": {"group_size": 64, "bits": 6}}
+    ));
+    try std.testing.expectError(error.UnsupportedQuantization, tableOf(a,
+        \\{"group_size": 64, "bits": 4, "language_model.model.layers.0.mlp.up_proj": {"group_size": 64, "bits": 5},
+        \\ "layers.0.mlp.up_proj": {"group_size": 32, "bits": 5}}
+    ));
+    // an unsupported entry and a width for the same module disagree too
+    try std.testing.expectError(error.UnsupportedQuantization, tableOf(a,
+        \\{"group_size": 64, "bits": 4, "language_model.model.layers.0.mlp.up_proj": {"group_size": 64, "bits": 5},
+        \\ "model.layers.0.mlp.up_proj": {"group_size": 64, "bits": 5, "mode": "mxfp4"}}
+    ));
+    const same = (try tableOf(a,
+        \\{"group_size": 64, "bits": 4, "language_model.model.layers.0.mlp.up_proj": {"group_size": 64, "bits": 5},
+        \\ "model.layers.0.mlp.up_proj": {"group_size": 64, "bits": 5, "mode": "affine"}}
+    )).?;
+    try std.testing.expectEqual(Width{ .bits = 5, .group = 64 }, try same.width("layers.0.mlp.up_proj"));
+}
+
+test "an entry the kernels do not run refuses every spelling of its module" {
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const q = (try tableOf(a,
+        \\{"group_size": 64, "bits": 4, "language_model.model.layers.0.mlp.gate_proj": {"group_size": 64, "bits": 4, "mode": "mxfp4"},
+        \\ "model.layers.0.mlp.gate_proj": {"group_size": 16, "bits": 4},
+        \\ "language_model.model.layers.1.mlp.gate_proj": {"group_size": 64, "bits": 7}}
+    )).?;
+    for ([_][]const u8{ "layers.0.mlp.gate_proj", "model.layers.0.mlp.gate_proj.weight", "model.language_model.layers.0.mlp.gate_proj" }) |key|
+        try std.testing.expectError(error.UnsupportedQuantization, q.width(key));
+    try std.testing.expectError(error.UnsupportedQuantization, q.width("model.layers.1.mlp.gate_proj"));
+    try std.testing.expectEqual(Width{ .bits = 4, .group = 64 }, try q.width("model.layers.2.mlp.gate_proj"));
+}
+
+test {
+    _ = keys;
+    _ = @import("mlx_geometry_test.zig");
+    _ = @import("mlx_checkpoint_test.zig");
+}

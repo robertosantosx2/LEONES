@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""Validate that the engine registry and benchmark adapters remain in sync."""
+from __future__ import annotations
+import json
+import pathlib
+import sys
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+
+def fail(message: str) -> None:
+    print(f"[ERROR] {message}", file=sys.stderr)
+    raise SystemExit(1)
+
+def main() -> None:
+    registry = json.loads((ROOT / "configs/engines.registry.json").read_text())
+    config = json.loads((ROOT / "configs/engine-comparison.example.json").read_text())
+    registry_entries = registry.get("engines", [])
+    config_entries = config.get("engines", [])
+    registry_ids = [e.get("id") for e in registry_entries]
+    config_ids = [e.get("id") for e in config_entries]
+    if len(registry_ids) != len(set(registry_ids)) or None in registry_ids:
+        fail("registry engine IDs must be present and unique")
+    if len(config_ids) != len(set(config_ids)) or None in config_ids:
+        fail("benchmark engine IDs must be present and unique")
+    if set(registry_ids) != set(config_ids):
+        fail(f"registry/config IDs differ; missing config={sorted(set(registry_ids)-set(config_ids))}, unregistered config={sorted(set(config_ids)-set(registry_ids))}")
+    profile_names = {p.get("name") for p in config.get("profiles", [])}
+    by_id = {e["id"]: e for e in registry_entries}
+    model_registry_path = ROOT / "configs" / "models.registry.json"
+    if not model_registry_path.is_file():
+        fail("configs/models.registry.json is missing")
+    model_registry = json.loads(model_registry_path.read_text())
+    model_entries = model_registry.get("models", [])
+    model_ids = [m.get("id") for m in model_entries]
+    if len(model_ids) != len(set(model_ids)) or None in model_ids:
+        fail("model registry IDs must be present and unique")
+    for model in model_entries:
+        if model.get("engine_id") not in by_id:
+            fail(f"{model.get('id')}: references an unknown engine")
+        if not model.get("license") or not model.get("setup_id"):
+            fail(f"{model.get('id')}: model license and setup_id are required")
+        if not isinstance(model.get("download_gb"), (int, float)) or not isinstance(model.get("minimum_system_ram_gb"), (int, float)):
+            fail(f"{model.get('id')}: download size and minimum system RAM must be numeric")
+    maya = by_id.get("project-maya")
+    maya_models = {m["id"] for m in model_entries if m.get("engine_id") == "project-maya"}
+    if not maya or maya_models != set(maya.get("supported_models", [])):
+        fail("Project Maya model registry does not match the engine's supported model IDs")
+    for source in registry_entries:
+        eid = source["id"]
+        meta_path = ROOT / "third_party" / "engines" / eid / "SOURCE.json"
+        if not meta_path.is_file():
+            fail(f"{eid}: vendored SOURCE.json is missing")
+        meta = json.loads(meta_path.read_text())
+        commit = meta.get("commit", "")
+        tree = meta.get("git_commit_tree", "")
+        if meta.get("engine_id") != eid or meta.get("repository") != source.get("repository"):
+            fail(f"{eid}: SOURCE.json identity/repository does not match registry")
+        if len(commit) != 40 or any(ch not in "0123456789abcdef" for ch in commit.lower()):
+            fail(f"{eid}: SOURCE.json does not contain a full commit SHA")
+        if len(tree) != 40 or any(ch not in "0123456789abcdef" for ch in tree.lower()):
+            fail(f"{eid}: SOURCE.json does not contain a full Git tree SHA")
+        source_tree = meta.get("source_tree", "")
+        if not source_tree.startswith("source/") or ".." in pathlib.PurePosixPath(source_tree).parts:
+            fail(f"{eid}: invalid source_tree path in SOURCE.json")
+        if not (meta_path.parent / source_tree).is_dir():
+            fail(f"{eid}: vendored source tree is missing")
+        for notice in meta.get("license_files", []):
+            if not (meta_path.parent / source_tree / notice).is_file():
+                fail(f"{eid}: declared license/notice file is missing: {notice}")
+    report_path = ROOT / "third_party" / "engines" / "VENDOR_REPORT.json"
+    if not report_path.is_file():
+        fail("VENDOR_REPORT.json is missing")
+    report = json.loads(report_path.read_text())
+    report_entries = {entry.get("id"): entry for entry in report.get("engines", [])}
+    if set(report_entries) != set(registry_ids):
+        fail("VENDOR_REPORT.json does not cover every registered source identity")
+    for source in registry_entries:
+        eid = source["id"]
+        reported = report_entries[eid]
+        meta = json.loads((ROOT / "third_party" / "engines" / eid / "SOURCE.json").read_text())
+        if reported.get("status") != "VENDORED" or reported.get("commit") != meta.get("commit"):
+            fail(f"{eid}: VENDOR_REPORT.json does not confirm the current SOURCE.json commit")
+    for engine in config_entries:
+        eid = engine["id"]
+        if not isinstance(engine.get("command"), list) or not engine["command"] or not all(isinstance(x, str) for x in engine["command"]):
+            fail(f"{eid}: command must be a non-empty argv list")
+        unknown = set(engine.get("profiles", [])) - profile_names
+        if unknown:
+            fail(f"{eid}: unknown profile names {sorted(unknown)}")
+        expected_source = f"third_party/engines/{eid}/SOURCE.json"
+        if engine.get("source_meta") != expected_source:
+            fail(f"{eid}: source_meta must be {expected_source}")
+        expected_build = f"artifacts/engine-builds/{eid}/build.json"
+        if engine.get("build_meta") != expected_build:
+            fail(f"{eid}: build_meta must be {expected_build}")
+        if engine.get("enabled") and any("/ABS/PATH/" in arg for arg in engine["command"]):
+            fail(f"{eid}: enabled engine still has a placeholder executable path")
+    tandem = by_id.get("tandem-cpp", {})
+    base_id = tandem.get("tandem_base_engine")
+    base = by_id.get(base_id)
+    if not base or base.get("default_ref") != tandem.get("tandem_base_commit"):
+        fail("Tandem.cpp must reference a separately registered exact llama.cpp base commit")
+    if len(tandem.get("tandem_base_commit", "")) != 40:
+        fail("Tandem.cpp base commit must be a full 40-character SHA")
+    tandem_cfg = next(e for e in config_entries if e["id"] == "tandem-cpp")
+    required = {"-ngl", "-cmoe", "--moe-cache-mib", "--cache-ram"}
+    if not required.issubset(set(tandem_cfg["command"])):
+        fail("Tandem.cpp command is missing its documented MoE/cache flags")
+    if tandem_cfg.get("base_source_meta") != f"third_party/engines/{base_id}/SOURCE.json" or not tandem_cfg.get("require_patch_evidence"):
+        fail("Tandem.cpp must require its exact base SOURCE.json and patch-hash evidence")
+    print(f"[OK] {len(registry_ids)} engine sources, {len(model_ids)} model records, source snapshots, vendor report, license notices, adapters, profiles and Tandem base checks passed")
+
+if __name__ == "__main__":
+    main()

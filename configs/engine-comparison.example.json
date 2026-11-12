@@ -1,0 +1,337 @@
+{
+  "schema_version": 1,
+  "host_label": "MSI Thin 15 B12UC Ubuntu",
+  "api": {
+    "health_path": "/health",
+    "chat_path": "/v1/chat/completions",
+    "api_key": "local",
+    "startup_timeout_s": 600,
+    "request_timeout_s": 900
+  },
+  "repetitions": 2,
+  "warmup": true,
+  "settle": {
+    "timeout_s": 180,
+    "ram_available_delta_mib": 700,
+    "vram_used_delta_mib": 256,
+    "gpu_util_max_pct": 5,
+    "consecutive_idle_samples": 3,
+    "sample_interval_s": 2
+  },
+  "profiles": [
+    {
+      "name": "ctx512-cpu4",
+      "ctx": 512,
+      "threads": 4,
+      "gpu_layers": 0,
+      "parallel": 1,
+      "device": "cpu"
+    },
+    {
+      "name": "ctx1024-cpu8",
+      "ctx": 1024,
+      "threads": 8,
+      "gpu_layers": 0,
+      "parallel": 1,
+      "device": "cpu"
+    },
+    {
+      "name": "ctx512-cuda8",
+      "ctx": 512,
+      "threads": 4,
+      "gpu_layers": 8,
+      "parallel": 1,
+      "device": "cuda"
+    }
+  ],
+  "prompts": [
+    {
+      "id": "extraction_json",
+      "max_tokens": 128,
+      "messages": [
+        {
+          "role": "system",
+          "content": "Devuelve únicamente JSON válido."
+        },
+        {
+          "role": "user",
+          "content": "Extrae del texto: nombre=Ana, edad=31, ciudad=León. Devuelve exactamente las claves nombre, edad y ciudad."
+        }
+      ]
+    },
+    {
+      "id": "reasoning",
+      "max_tokens": 192,
+      "messages": [
+        {
+          "role": "user",
+          "content": "Hay tres cajas A, B y C. Solo una contiene una moneda. A dice: la moneda está en B. B dice: la moneda no está en B. C dice: la moneda está en A. Exactamente una afirmación es verdadera. ¿Dónde está la moneda? Explica brevemente."
+        }
+      ]
+    },
+    {
+      "id": "code_generation",
+      "max_tokens": 256,
+      "messages": [
+        {
+          "role": "user",
+          "content": "Escribe una función Python llamada normalize_words(text) que convierta a minúsculas, elimine puntuación y devuelva las palabras separadas por espacios. Incluye tres asserts de prueba. Devuelve solo código."
+        }
+      ]
+    },
+    {
+      "id": "summarization",
+      "max_tokens": 192,
+      "messages": [
+        {
+          "role": "user",
+          "content": "Resume en cinco viñetas: La inferencia local ejecuta modelos en el equipo del usuario. Su rendimiento depende de la arquitectura, cuantización, ancho de banda de memoria, tamaño del contexto y backend. Una GPU pequeña puede acelerar algunas capas mientras la RAM conserva el resto. Las cachés reducen trabajo repetido, pero alteran el estado de partida de una prueba. Una comparación justa fija el mismo modelo, prompts, sampling y límites, registra consumo y repite cada caso."
+        }
+      ]
+    },
+    {
+      "id": "spanish",
+      "max_tokens": 160,
+      "messages": [
+        {
+          "role": "user",
+          "content": "En español, explica la diferencia entre latencia de primer token y velocidad de generación. Usa un ejemplo numérico breve."
+        }
+      ]
+    }
+  ],
+  "engines": [
+    {
+      "id": "kinetic",
+      "enabled": true,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "kinetic",
+        "serve",
+        "{model}",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "{port}",
+        "--device",
+        "{device}",
+        "-ngl",
+        "{gpu_layers}",
+        "-t",
+        "{threads}",
+        "-c",
+        "{ctx}",
+        "--parallel",
+        "{parallel}",
+        "--off",
+        "warm-start"
+      ],
+      "source_meta": "third_party/engines/kinetic/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/kinetic/build.json",
+      "model_assets": [],
+      "profiles": [
+        "ctx512-cuda8"
+      ]
+    },
+    {
+      "id": "tensorfold",
+      "enabled": false,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "/ABS/PATH/TO/tensorfold-native",
+        "serve",
+        "{model}",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "{port}",
+        "--context",
+        "{ctx}",
+        "--parallel",
+        "1",
+        "--temperature",
+        "0",
+        "--no-thinking"
+      ],
+      "source_meta": "third_party/engines/tensorfold/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/tensorfold/build.json",
+      "model_assets": [],
+      "model": "/ABS/PATH/TO/qualified-TensorFold-checkpoint",
+      "profiles": [
+        "ctx512-cuda8"
+      ],
+      "notes": "TensorFold native CUDA product build for sm_86. Serve accepts the model path positionally. Use a qualified local checkpoint directory/HF cache; do not pass a GGUF path unless the chosen TensorFold family explicitly supports it."
+    },
+    {
+      "id": "tandem-cpp",
+      "enabled": false,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "/ABS/PATH/TO/tandem/build/bin/llama-server",
+        "-m",
+        "{model}",
+        "-ngl",
+        "99",
+        "-cmoe",
+        "--moe-cache-mib",
+        "auto",
+        "--cache-ram",
+        "0",
+        "-np",
+        "1",
+        "-c",
+        "{ctx}",
+        "-t",
+        "{threads}"
+      ],
+      "source_meta": "third_party/engines/tandem-cpp/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/tandem-cpp/build.json",
+      "model_assets": [],
+      "notes": "Tandem patch build. The upstream README recommends --cache-ram 0 for a 16 GB PC; leave -lm none out when the model exceeds physical RAM. Build against the separately vendored f5222f25c18da062ab2b8a2dbbfbf4feae398566 baseline.",
+      "profiles": [
+        "ctx512-cuda8"
+      ],
+      "base_source_meta": "third_party/engines/llama-cpp-tandem-base/SOURCE.json",
+      "require_patch_evidence": true
+    },
+    {
+      "id": "rusting-strata",
+      "enabled": false,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "/ABS/PATH/TO/rustingstrata",
+        "serve",
+        "--model",
+        "{model}",
+        "--gpu",
+        "--backend",
+        "cuda",
+        "--ctx",
+        "{ctx}",
+        "--addr",
+        "127.0.0.1:{port}",
+        "--threads",
+        "{threads}",
+        "--parallel",
+        "1"
+      ],
+      "source_meta": "third_party/engines/rusting-strata/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/rusting-strata/build.json",
+      "model_assets": [],
+      "profiles": [
+        "ctx512-cuda8"
+      ]
+    },
+    {
+      "id": "llama-cpp",
+      "enabled": false,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "/ABS/PATH/TO/llama-server",
+        "-m",
+        "{model}",
+        "-fit",
+        "on",
+        "-c",
+        "{ctx}",
+        "-t",
+        "{threads}",
+        "-ngl",
+        "{gpu_layers}",
+        "-np",
+        "{parallel}"
+      ],
+      "source_meta": "third_party/engines/llama-cpp/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/llama-cpp/build.json",
+      "model_assets": [],
+      "notes": "Latest upstream master; separate from Tandem.cpp's pinned base revision.",
+      "profiles": [
+        "ctx512-cuda8"
+      ]
+    },
+    {
+      "id": "llama-cpp-tandem-base",
+      "enabled": false,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "/ABS/PATH/TO/llama-cpp-tandem-base/build/bin/llama-server",
+        "-m",
+        "{model}",
+        "-fit",
+        "on",
+        "-c",
+        "{ctx}",
+        "-t",
+        "{threads}",
+        "-ngl",
+        "{gpu_layers}",
+        "-np",
+        "{parallel}"
+      ],
+      "source_meta": "third_party/engines/llama-cpp-tandem-base/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/llama-cpp-tandem-base/build.json",
+      "model_assets": [],
+      "profiles": [
+        "ctx512-cuda8"
+      ]
+    },
+    {
+      "id": "project-maya",
+      "enabled": false,
+      "base_url": "http://127.0.0.1:{port}",
+      "command": [
+        "./maya.sh",
+        "--port",
+        "{port}"
+      ],
+      "source_meta": "third_party/engines/project-maya/SOURCE.json",
+      "protocol": "openai-chat-completions",
+      "env": {},
+      "health_path": "/health",
+      "chat_path": "/v1/chat/completions",
+      "require_source_snapshot": true,
+      "require_build_evidence": true,
+      "build_meta": "artifacts/engine-builds/project-maya/build.json",
+      "model_assets": [],
+      "model": "/ABS/PATH/TO/project-maya-selected-model-artifact",
+      "profiles": [],
+      "notes": "Preparation-only adapter stub. Select/setup one Maya model separately before use; the current generic runner does not yet orchestrate Maya's model-specific engines or multi-binary build evidence. Disabled deliberately."
+    }
+  ]
+}

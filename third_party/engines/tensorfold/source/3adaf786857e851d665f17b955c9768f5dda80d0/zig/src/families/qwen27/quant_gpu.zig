@@ -1,0 +1,491 @@
+//! Runtime specialization preserves the original M5 group arithmetic and GPU-resident argument buffers.
+const std = @import("std");
+const mtl = @import("metal");
+const lane = @import("core").lane_projection;
+const row = @import("core").row_projection;
+const sources = @import("qwen_runtime_sources");
+const projection = @import("projection.zig");
+const profile = @import("core").gpu_profile;
+pub const Ref = projection.Ref;
+/// Group sums the input's producer wrote: XS[group * stride + row], in the lane projection's order.
+pub const Sums = struct { ref: Ref, stride: u32 };
+
+pub const Key = struct { kind: Kind, n: u32 = 0, k: u32, slices: u32 = 0, tile: u32 = 0, tmr: u32 = 0, edge: bool = false, skip: u32 = 0, cut: [2]u32 = .{ 0, 0 }, bits: u8 = 4, group: u32 = 64, long: bool = false };
+pub const Kind = enum { projection, xsum, norm, input_norm, mlp, ane_input, mlp_ane, add_ane };
+
+/// Whether prompt chunks take one reg dispatch a projection (`Kernels.long_prompt`): Ultras with tensor units only.
+pub fn longPrompt(name: []const u8, tensor_units: bool) bool {
+    return tensor_units and std.mem.endsWith(u8, name, " Ultra");
+}
+
+test "long prompt dispatches only on an Ultra with tensor units" {
+    try std.testing.expect(longPrompt("Apple M5 Ultra", true));
+    try std.testing.expect(!longPrompt("Apple M5 Max", true));
+    try std.testing.expect(!longPrompt("Apple M5 Pro", true));
+    try std.testing.expect(!longPrompt("Apple M3 Ultra", false));
+}
+
+/// Whether a reg projection's `rows` take its long key: prompt rows past `lane.reg_rows` on a `longPrompt` chip.
+pub fn longKey(long_prompt: bool, prompt: bool, rows: u32) bool {
+    return long_prompt and prompt and rows > lane.reg_rows;
+}
+
+test "only prompt chunks past 128 rows take the long key" {
+    try std.testing.expect(longKey(true, true, 129));
+    try std.testing.expect(longKey(true, true, 2048));
+    try std.testing.expect(!longKey(true, true, 128));
+    try std.testing.expect(!longKey(true, false, 2048));
+    try std.testing.expect(!longKey(false, true, 2048));
+}
+
+pub const Kernels = struct {
+    allocator: std.mem.Allocator,
+    residency: ?mtl.ResidencySet.Follow = null,
+    device: mtl.Device,
+    profiler: ?*profile.Trace = null,
+    row_pipelines: ?row.Pipelines = null,
+    simd: ?row.simd.Pipelines = null,
+    simd_bits: ?row.simd_bits.Pipelines = null,
+    /// Raw matrices take simd_qmm_bits' tiles; off on tensor units, whose raw matrices are runs short of a lane tile.
+    raw_tiles: bool = true,
+    /// Per [n, k] shape: whether the scalar twin's 1-2 row bits equal the tiles' (checked once on this chip).
+    twins: std.AutoHashMapUnmanaged([2]usize, bool) = .empty,
+    /// The same for simd_qmm_bits, per [bits, n, k].
+    bit_twins: std.AutoHashMapUnmanaged([4]usize, bool) = .empty,
+    /// Per [n, k]: whether simd_qmm's chunk pairs give its tiles' bits (checked once on this chip).
+    pair_twins: std.AutoHashMapUnmanaged([2]usize, bool) = .empty,
+    /// Set around prompt chunks: prompt rows take projection.promptSplit, decoded rows the decode split.
+    prompt: bool = false,
+    /// Set on `longPrompt` chips: prompt chunks past 128 rows take one reg dispatch a projection, on their own key.
+    long_prompt: bool = false,
+    lanes: std.AutoHashMapUnmanaged(Key, lane.Projection) = .empty,
+    cache: std.AutoHashMapUnmanaged(Key, mtl.Pipeline) = .empty,
+    /// Per [n, k]: whether simd_qmm's half operands give its tiles' bits (checked once on this chip).
+    half_twins: std.AutoHashMapUnmanaged([2]usize, bool) = .empty,
+    /// The last norm's output and its tf_sq_fits words, while no later norm has written over it.
+    fits: ?Fits = null,
+    fits_words: ?mtl.Buffer = null,
+
+    pub fn setResident(k: *Kernels, hook: ?mtl.ResidencySet.Follow) void {
+        var it = k.lanes.valueIterator();
+        while (it.next()) |p| {
+            if (k.residency) |f| mtl.resident.fields.apply(p, f, false);
+            if (hook) |f| mtl.resident.fields.apply(p, f, true);
+        }
+        k.residency = hook;
+    }
+
+    pub fn joined(k: *Kernels, p: *const lane.Projection) void {
+        if (k.residency) |f| mtl.resident.fields.apply(p, f, true);
+    }
+
+    pub fn deinit(k: *Kernels) void {
+        k.setResident(null);
+        if (k.row_pipelines) |*pipelines| pipelines.deinit();
+        if (k.simd) |*pipelines| pipelines.deinit();
+        if (k.simd_bits) |*pipelines| pipelines.deinit();
+        k.twins.deinit(k.allocator);
+        k.bit_twins.deinit(k.allocator);
+        k.pair_twins.deinit(k.allocator);
+        k.half_twins.deinit(k.allocator);
+        if (k.fits_words) |b| b.deinit();
+        var lane_it = k.lanes.valueIterator();
+        while (lane_it.next()) |p| p.deinit();
+        k.lanes.deinit(k.allocator);
+        var it = k.cache.valueIterator();
+        while (it.next()) |p| p.deinit();
+        k.cache.deinit(k.allocator);
+    }
+
+    fn get(k: *Kernels, key: Key) !mtl.Pipeline {
+        if (k.cache.get(key)) |p| return p;
+        const source = try specializedSource(k.allocator, key);
+        defer k.allocator.free(source);
+        const library = try mtl.Library.fromSource(k.device, source, mtl.CompileOptions.mlx());
+        defer library.deinit();
+        const name: [:0]const u8 = switch (key.kind) {
+            .projection => unreachable,
+            .xsum => "custom_kernel_q27_xsum_bfloat16_t_int32_t_float",
+            .norm => "custom_kernel_q27_norm_xs_bfloat16_t_bfloat16_t_bfloat16_t_floatc_int32_t_bfloat16_t_bfloat16_t_float",
+            .input_norm => "custom_kernel_q27_norm_input_bfloat16_t_bfloat16_t_floatc_int32_t_bfloat16_t_float",
+            .mlp => "custom_kernel_q27_mlp_xs_bfloat16_t_bfloat16_t_int32_t_bfloat16_t_float",
+            .ane_input => "q27_ane_input",
+            .mlp_ane => "q27_mlp_ane",
+            .add_ane => "q27_add_ane",
+        };
+        const p = try mtl.Pipeline.init(k.device, library, name, false);
+        errdefer p.deinit();
+        try k.cache.put(k.allocator, key, p);
+        return p;
+    }
+
+    pub fn quant(k: *Kernels, input_encoder: mtl.ComputeEncoder, p: projection.Linear, x: Ref, xs: ?Sums, dims: Ref, y: Ref, rows: u32) !void {
+        return k.quantSkip(input_encoder, p, x, xs, dims, y, rows, 0);
+    }
+
+    /// `quant` over input groups [cut[0], cut[0] + cut[1]) only, into fp32 partial sums.
+    pub fn quantCut(k: *Kernels, input_encoder: mtl.ComputeEncoder, p: projection.Linear, x: Ref, xs: Sums, dims: Ref, y: Ref, rows: u32, cut: [2]u32) !void {
+        return k.quantImpl(input_encoder, p, x, xs, dims, y, rows, 0, cut);
+    }
+
+    /// `quant` over a fused two-half projection (the MLP's gate_up) without the first `skip` tiles of each half.
+    pub fn quantSkip(k: *Kernels, input_encoder: mtl.ComputeEncoder, p: projection.Linear, x: Ref, xs: ?Sums, dims: Ref, y: Ref, rows: u32, skip: u32) !void {
+        return k.quantImpl(input_encoder, p, x, xs, dims, y, rows, skip, .{ 0, 0 });
+    }
+
+    fn quantImpl(k: *Kernels, input_encoder: mtl.ComputeEncoder, p: projection.Linear, x: Ref, xs: ?Sums, dims: Ref, y: Ref, rows: u32, skip: u32, cut: [2]u32) !void {
+        if (p.runs.len > 0) return k.quantRuns(input_encoder, p, x, xs, dims, y, rows, skip, cut);
+        return k.quantOne(input_encoder, p, x, xs, dims, y, rows, skip, cut);
+    }
+
+    /// The lane projection a launch of `p` takes, compiled from source and cached the first time its key is seen.
+    fn laneEntry(
+        k: *Kernels,
+        p: projection.Linear,
+        sk: u32,
+        skip: u32,
+        cut: [2]u32,
+        long: bool,
+    ) !std.AutoHashMapUnmanaged(Key, lane.Projection).GetOrPutResult {
+        const reg = p.bits == 4 and p.group == 64;
+        const key = Key{
+            .kind = .projection,
+            .n = p.n,
+            .k = p.k,
+            .slices = if (reg) sk else p.slices,
+            .skip = skip,
+            .cut = cut,
+            .bits = p.bits,
+            .group = p.group,
+            .long = long,
+        };
+        const half = p.n / 64;
+        const ranges = [_][2]usize{ .{ skip, half - skip }, .{ half + skip, half - skip } };
+        const entry = try k.lanes.getOrPut(k.allocator, key);
+        if (!entry.found_existing) {
+            errdefer _ = k.lanes.remove(key);
+            entry.value_ptr.* = try lane.Projection.init(k.allocator, k.device, .{
+                .n = p.n,
+                .k = p.k,
+                .format = .{ .bits = p.bits, .group = p.group },
+                .sk = key.slices,
+                .ranges = if (skip > 0) &ranges else &.{},
+                .groups = if (cut[1] > 0) .{ cut[0], cut[1] } else null,
+                .output = if (cut[1] > 0) .f32 else .bf16,
+                .precompute_sums = reg or (p.bits == 8 and p.group == 64),
+                .reg = reg,
+                .rows = if (long) lane.max_reg_rows else lane.reg_rows,
+            });
+            k.joined(entry.value_ptr);
+        }
+        return entry;
+    }
+
+    /// Compiles at load the decode-row pipeline a later `quant` of `p` takes (for shapes no target layer uses).
+    pub fn prepareDecode(k: *Kernels, p: projection.Linear) !void {
+        if (p.runs.len > 0 or p.raw != null or p.tile != 32 or k.prompt) return;
+        // decoded rows never take the long key (longKey needs prompt rows)
+        _ = try k.laneEntry(p, p.slices, 0, .{ 0, 0 }, false);
+    }
+
+    fn quantOne(k: *Kernels, input_encoder: mtl.ComputeEncoder, p: projection.Linear, x: Ref, xs: ?Sums, dims: Ref, y: Ref, rows: u32, skip: u32, cut: [2]u32) !void {
+        if ((skip > 0 or cut[1] > 0) and p.raw != null) return error.BadCoreProjectionRows;
+        if (skip > 0 and (p.raw != null or skip >= p.n / 64)) return error.BadCoreProjectionRows;
+        if (p.raw) |raw| if (raw.bits != 4 and k.tiled(raw)) {
+            if (rows == 0 or p.tile != 32) return error.BadCoreProjectionRows;
+            // A raw matrix takes at most 128 rows a dispatch; a prompt pass can hand it up to the frame's 2,048.
+            const stride: u32 = @intCast(raw.n);
+            var done: u32 = 0;
+            while (done < rows) : (done += 128) {
+                const take = @min(rows - done, 128);
+                try k.strided(input_encoder, raw, .{
+                    .buffer = x.buffer,
+                    .offset = x.offset + @as(usize, done) * raw.k * 2,
+                }, .{
+                    .buffer = y.buffer,
+                    .offset = y.offset + @as(usize, done) * @as(usize, stride) * 2,
+                }, take, stride, p.gn);
+            }
+            return;
+        };
+        var span = profile.begin(k.profiler, input_encoder, .dense);
+        // Prompt rows take the checkpoint matrix's split, as decoded rows already do through `p.slices`.
+        const gn = if (p.gn != 0) p.gn else p.n;
+        const sk = if (k.prompt) projection.promptSplit(gn, p.k) orelse p.slices else p.slices;
+        span.shape = .{ .n = p.n, .k = p.k, .sk = sk, .bits = p.bits };
+        errdefer span.cancel();
+        const e = span.encoder;
+
+        _ = dims;
+        if (rows == 0 or rows > @import("gpu_frame.zig").max_rows or p.tile != 32) return error.BadCoreProjectionRows;
+        if (p.raw) |raw| {
+            if (raw.bits == 4 and raw.group == 64 and raw.sum == .f32 and raw.n % 8 == 0) {
+                const m = row.simd.Matrix{ .w = raw.w, .w_off = raw.w_off, .scales = raw.scales, .s_off = raw.s_off, .biases = raw.biases, .b_off = raw.b_off, .n = raw.n, .k = raw.k };
+                const scalar = try k.twin(m); // loads the tiles before they're read
+                const paired = try k.pairTwin(m);
+                if (try k.halfCall(m, x, rows, gn)) |half| {
+                    row.simd.encodeHalf(e, half, m, x.buffer, x.offset, y.buffer, y.offset, k.fits_words.?, 0);
+                } else row.simd.encode(e, try row.simd.call(&k.simd.?, raw.n, raw.k, rows, scalar, paired, gn), m, x.buffer, x.offset, y.buffer, y.offset);
+                e.barrier();
+                try span.end();
+                return;
+            }
+            if (k.row_pipelines == null) k.row_pipelines = try row.Pipelines.load(k.device);
+            const call = try row.call(&k.row_pipelines.?, raw, rows, false);
+            e.setPipeline(call.pipeline);
+            e.setBuffer(x.buffer, x.offset, 0);
+            e.setBuffer(raw.w, raw.w_off, 1);
+            e.setBuffer(raw.scales, raw.s_off, 2);
+            e.setBuffer(raw.biases, raw.b_off, 3);
+            e.setValue(call.dims, 4);
+            e.setBuffer(y.buffer, y.offset, 5);
+            e.dispatchGroups(.{ .width = call.groups }, .{ .width = call.threads });
+            e.barrier();
+            try span.end();
+            return;
+        }
+        const reg = p.bits == 4 and p.group == 64;
+        if (!reg and (skip > 0 or cut[1] > 0)) return error.BadCoreProjectionRows;
+        const long = reg and longKey(k.long_prompt, k.prompt, rows);
+        const sums: ?Sums = if (reg or (p.bits == 8 and p.group == 64)) xs else null;
+        const entry = try k.laneEntry(p, sk, skip, cut, long);
+        const step = entry.value_ptr.max_rows;
+        var first: u32 = 0;
+        while (first < rows) : (first += step) {
+            const xr = lane.Ref{ .buf = x.buffer, .off = x.offset + @as(usize, first) * p.k * 2 };
+            const w = lane.Ref{ .buf = p.words.buffer, .off = p.words.offset };
+            const sb = lane.Ref{ .buf = p.pairs.buffer, .off = p.pairs.offset };
+            const yr = lane.Ref{ .buf = y.buffer, .off = y.offset + @as(usize, first) * p.n * @as(usize, if (cut[1] > 0) 4 else 2) };
+            if (sums) |s| try entry.value_ptr.encodeSums(e, xr, w, sb, .{ .ref = .{ .buf = s.ref.buffer, .off = s.ref.offset + @as(usize, first) * 4 }, .stride = s.stride }, yr, @min(rows - first, step)) else try entry.value_ptr.encode(e, xr, w, sb, yr, @min(rows - first, step));
+        }
+        try span.end();
+    }
+
+    /// A mixed stack: each member its own product into its columns; row kernels write the fused rows at a stride.
+    fn quantRuns(k: *Kernels, input_encoder: mtl.ComputeEncoder, p: projection.Linear, x: Ref, xs: ?Sums, dims: Ref, y: Ref, rows: u32, skip: u32, cut: [2]u32) !void {
+        if (skip > 0 or cut[1] > 0 or rows == 0) return error.BadCoreProjectionRows;
+        for (p.runs) |run| {
+            if (run.linear.raw) |raw| {
+                // The raw member takes 128 rows a dispatch, as quantOne does; lane siblings below run one row a launch.
+                var done: u32 = 0;
+                while (done < rows) : (done += 128) {
+                    const take = @min(rows - done, 128);
+                    try k.strided(input_encoder, raw, .{
+                        .buffer = x.buffer,
+                        .offset = x.offset + @as(usize, done) * raw.k * 2,
+                    }, .{
+                        .buffer = y.buffer,
+                        .offset = y.offset + (@as(usize, done) * p.n + run.first) * 2,
+                    }, take, p.n, run.linear.gn);
+                }
+                continue;
+            }
+            for (0..rows) |r| { // lane kernels take one row a launch until they write at a stride
+                const xr = Ref{ .buffer = x.buffer, .offset = x.offset + r * p.k * 2 };
+                const sr: ?Sums = if (xs) |s| .{ .ref = .{ .buffer = s.ref.buffer, .offset = s.ref.offset + r * 4 }, .stride = s.stride } else null;
+                const yr = Ref{ .buffer = y.buffer, .offset = y.offset + (r * p.n + run.first) * 2 };
+                try k.quantOne(input_encoder, run.linear, xr, sr, dims, yr, 1, 0, .{ 0, 0 });
+            }
+        }
+    }
+
+    /// simd_qmm's tiles at any width (4-bit: its bits), else the row kernel; output row m at y + m * stride values.
+    fn strided(k: *Kernels, input_encoder: mtl.ComputeEncoder, raw: row.Weights, x: Ref, y: Ref, rows: u32, stride: u32, whole: usize) !void {
+        // `whole` is the checkpoint matrix's rows (0: the staged rows), so a rank splits K as one Mac does.
+        var span = profile.begin(k.profiler, input_encoder, .dense);
+        span.shape = .{ .n = @intCast(raw.n), .k = @intCast(raw.k), .sk = 1, .bits = raw.bits };
+        errdefer span.cancel();
+        const e = span.encoder;
+        if (k.tiled(raw)) {
+            if (k.simd_bits == null) k.simd_bits = try row.simd_bits.Pipelines.load(k.device);
+            const m = row.simd_bits.Matrix{ .w = raw.w, .w_off = raw.w_off, .scales = raw.scales, .s_off = raw.s_off, .biases = raw.biases, .b_off = raw.b_off };
+            const scalar = rows <= row.simd.max_scalar_rows and try k.bitTwin(m, raw, whole); // loads the tiles before they're read
+            const call = try row.simd_bits.call(&k.simd_bits.?, raw.bits, raw.n, raw.k, rows, stride, scalar, whole);
+            row.simd_bits.encode(e, call, m, x.buffer, x.offset, y.buffer, y.offset);
+            e.barrier();
+            try span.end();
+            return;
+        }
+        if (k.row_pipelines == null) k.row_pipelines = try row.Pipelines.load(k.device);
+        const call = try row.callStrided(&k.row_pipelines.?, raw, rows, stride);
+        e.setPipeline(call.pipeline);
+        e.setBuffer(x.buffer, x.offset, 0);
+        e.setBuffer(raw.w, raw.w_off, 1);
+        e.setBuffer(raw.scales, raw.s_off, 2);
+        e.setBuffer(raw.biases, raw.b_off, 3);
+        e.setValue(call.dims, 4);
+        e.setBuffer(y.buffer, y.offset, 5);
+        e.dispatchGroups(.{ .width = call.groups }, .{ .width = call.threads });
+        e.barrier();
+        try span.end();
+    }
+
+    /// Checks simd_qmm_bits' scalar twin against its tiles once per width, shape and K split key.
+    fn bitTwin(k: *Kernels, m: row.simd_bits.Matrix, raw: row.Weights, whole: usize) !bool {
+        const key = [4]usize{ raw.bits, raw.n, raw.k, whole };
+        if (k.bit_twins.get(key)) |ok| return ok;
+        const ok = try row.simd_bits.twinExact(&k.simd_bits.?, k.device, raw.bits, m, raw.n, raw.k, whole);
+        if (!ok) std.log.info("qwen27: {d}-bit {d}x{d} rows take simdgroup tiles at every width (the scalar twin's bits differ on this chip)", .{ raw.bits, raw.n, raw.k });
+        try k.bit_twins.put(k.allocator, key, ok);
+        return ok;
+    }
+
+    /// Groups of 64 with fp32 sums at a width the tiles unpack, where raw matrices take the tiles.
+    fn tiled(k: *const Kernels, raw: row.Weights) bool {
+        return k.raw_tiles and raw.group == 64 and raw.sum == .f32 and raw.n % 8 == 0 and std.mem.indexOfScalar(u8, &row.simd_bits.bit_widths, raw.bits) != null;
+    }
+
+    /// Loads the tiles on first use and checks the scalar twin against them once per shape.
+    fn twin(k: *Kernels, m: row.simd.Matrix) !bool {
+        if (k.simd == null) k.simd = try row.simd.Pipelines.load(k.device);
+        if (k.twins.get(.{ m.n, m.k })) |ok| return ok;
+        const ok = try row.simd.twinExact(&k.simd.?, k.device, m);
+        if (!ok) std.log.info("qwen27: {d}x{d} rows take simdgroup tiles at every width (the scalar twin's bits differ on this chip)", .{ m.n, m.k });
+        try k.twins.put(k.allocator, .{ m.n, m.k }, ok);
+        return ok;
+    }
+
+    /// Whether this shape's prompt rows may take simd_qmm's chunk pairs: checked against its tiles once per shape.
+    fn pairTwin(k: *Kernels, m: row.simd.Matrix) !bool {
+        if (k.pair_twins.get(.{ m.n, m.k })) |ok| return ok;
+        const ok = try row.simd.pairedExact(&k.simd.?, k.device, m);
+        if (!ok and row.simd.pairs(m.n, 2, row.simd.splits(m.n))) std.log.info("qwen27: {d}x{d} rows keep simd_qmm's plain tiles (chunk pairs' bits differ on this chip)", .{ m.n, m.k });
+        try k.pair_twins.put(k.allocator, .{ m.n, m.k }, ok);
+        return ok;
+    }
+
+    pub fn sum(k: *Kernels, input_encoder: mtl.ComputeEncoder, x: Ref, dims: Ref, xs: Ref, width: u32, rows: u32) !void {
+        var span = profile.begin(k.profiler, input_encoder, .xsum);
+        errdefer span.cancel();
+        const e = span.encoder;
+
+        e.setPipeline(try k.get(.{ .kind = .xsum, .k = width }));
+        bind(e, .{ x, dims, xs });
+        e.dispatchThreads(mtl.Size.of(width / 64, padded(rows), 1), mtl.Size.of(@min(width / 64, 256), 1, 1));
+        try span.end();
+    }
+
+    pub fn norm(k: *Kernels, input_encoder: mtl.ComputeEncoder, h: Ref, residual: ?Ref, weight: Ref, eps: Ref, dims: Ref, combined: Ref, out: Ref, xs: Ref, width: u32, rows: u32) !void {
+        var span = profile.begin(k.profiler, input_encoder, .norm);
+        errdefer span.cancel();
+        const e = span.encoder;
+
+        e.setPipeline(try k.get(.{ .kind = if (residual != null) .norm else .input_norm, .k = width }));
+        if (residual) |r| bind(e, .{ h, r, weight, eps, dims, combined, out, xs }) else bind(e, .{ h, weight, eps, dims, out, xs });
+        e.dispatchGroups(mtl.Size.of(1, padded(rows), 1), mtl.Size.of(width / 16, 1, 1));
+        k.fits = null;
+        // tf_sq_fits's words for this output: prompt rows' projections of it may take half operands
+        if (k.raw_tiles and rows >= half_rows) {
+            if (k.simd == null) k.simd = try row.simd.Pipelines.load(k.device);
+            const bytes = row.simd.fitsBytes(width, rows);
+            if (k.fits_words == null or k.fits_words.?.length() < bytes) {
+                if (k.fits_words) |b| b.deinit();
+                k.fits_words = null;
+                k.fits_words = try k.device.buffer(row.simd.fitsBytes(width, @import("gpu_frame.zig").max_rows), mtl.ResourceOptions.private);
+            }
+            e.barrier();
+            row.simd.encodeFits(e, &k.simd.?, width, rows, out.buffer, out.offset, k.fits_words.?, 0);
+            e.barrier();
+            k.fits = .{ .x = out, .rows = rows, .k = width };
+        }
+        try span.end();
+    }
+
+    /// `m`'s half-operand tiles over x's rows: only on the last norm's output at its rows, where they keep its bits.
+    fn halfCall(k: *Kernels, m: row.simd.Matrix, x: Ref, rows: u32, gn: usize) !?row.simd.Call {
+        const f = k.fits orelse return null;
+        if (!std.meta.eql(f.x.buffer, x.buffer) or f.x.offset != x.offset or f.rows != rows or f.k != m.k) return null;
+        const c = (try row.simd.callHalf(&k.simd.?, m.n, m.k, rows, gn)) orelse return null;
+        const ok = k.half_twins.get(.{ m.n, m.k }) orelse blk: {
+            const exact = try row.simd.halfExact(&k.simd.?, k.device, m);
+            if (!exact) std.log.info("qwen27: {d}x{d} rows keep simd_qmm's fp32 tiles (half operands' bits differ on this chip)", .{ m.n, m.k });
+            try k.half_twins.put(k.allocator, .{ m.n, m.k }, exact);
+            break :blk exact;
+        };
+        return if (ok) c else null;
+    }
+
+    /// Prompt rows [base, base + 128) into the Neural Engine's fp16 input planes [hidden][128].
+    pub fn aneInput(k: *Kernels, input_encoder: mtl.ComputeEncoder, x: Ref, dims: Ref, planes: Ref, hidden: u32, width: u32, columns: u32, base: u32) !void {
+        var span = profile.begin(k.profiler, input_encoder, .copy);
+        errdefer span.cancel();
+        const e = span.encoder;
+        e.setPipeline(try k.get(.{ .kind = .ane_input, .k = hidden, .n = width, .tile = columns }));
+        bind(e, .{ x, dims, planes });
+        e.setValue(@as(i32, @intCast(base)), 3);
+        e.dispatchThreads(mtl.Size.of(128, hidden, 1), mtl.Size.of(128, 1, 1));
+        try span.end();
+    }
+
+    /// `mlp` over 64-column groups from `first`; gate/up below `columns` come from the Neural Engine's planes.
+    pub fn mlpAne(k: *Kernels, input_encoder: mtl.ComputeEncoder, gate: Ref, up: Ref, dims: Ref, out: Ref, xs: Ref, planes: Ref, hidden: u32, width: u32, columns: u32, rows: u32, first: u32, groups: u32) !void {
+        var span = profile.begin(k.profiler, input_encoder, .activation);
+        errdefer span.cancel();
+        const e = span.encoder;
+        e.setPipeline(try k.get(.{ .kind = .mlp_ane, .k = hidden, .n = width, .tile = columns }));
+        bind(e, .{ gate, up, dims, out, xs, planes });
+        e.setValue(first, 6);
+        e.dispatchGroups(mtl.Size.of(groups, padded(rows), 1), mtl.Size.of(64, 1, 1));
+        try span.end();
+    }
+
+    /// Add the ANE fp16 partial to the GPU fp32 partial for these rows, rounding once to bf16.
+    pub fn addAne(k: *Kernels, input_encoder: mtl.ComputeEncoder, partial: Ref, planes: Ref, y: Ref, hidden: u32, width: u32, columns: u32, rows: u32, base: u32) !void {
+        var span = profile.begin(k.profiler, input_encoder, .copy);
+        errdefer span.cancel();
+        const e = span.encoder;
+        e.setPipeline(try k.get(.{ .kind = .add_ane, .k = hidden, .n = width, .tile = columns }));
+        bind(e, .{ partial, planes, y });
+        e.setValue(@as(i32, @intCast(base)), 3);
+        e.dispatchThreads(mtl.Size.of(hidden, rows, 1), mtl.Size.of(256, 1, 1));
+        try span.end();
+    }
+
+    pub fn mlp(k: *Kernels, input_encoder: mtl.ComputeEncoder, gate: Ref, up: Ref, dims: Ref, out: Ref, xs: Ref, width: u32, rows: u32) !void {
+        var span = profile.begin(k.profiler, input_encoder, .activation);
+        errdefer span.cancel();
+        const e = span.encoder;
+
+        e.setPipeline(try k.get(.{ .kind = .mlp, .k = width, .n = width }));
+        bind(e, .{ gate, up, dims, out, xs });
+        e.dispatchGroups(mtl.Size.of(width / 64, padded(rows), 1), mtl.Size.of(64, 1, 1));
+        try span.end();
+    }
+};
+
+/// A norm's output of this many rows or more gets tf_sq_fits's words: prompt chunks, not decode or verify rows.
+pub const half_rows = 64;
+
+/// A norm's output, its rows and width: the words in `Kernels.fits_words` are its.
+const Fits = struct { x: Ref, rows: u32, k: u32 };
+
+pub fn padded(rows: u32) u32 {
+    return 16 * ((rows + 15) / 16);
+}
+
+fn bind(e: mtl.ComputeEncoder, refs: anytype) void {
+    inline for (refs, 0..) |r, i| e.setBuffer(r.buffer, r.offset, i);
+}
+
+/// The quantized helper specialization compiled by get.
+pub fn specializedSource(a: std.mem.Allocator, key: Key) ![]u8 {
+    const template = switch (key.kind) {
+        .projection => unreachable,
+        .xsum => sources.xsum,
+        .norm => sources.norm_xs,
+        .input_norm => sources.norm_input,
+        .mlp => sources.mlp_xs,
+        .ane_input, .mlp_ane, .add_ane => sources.mlp_ane,
+    };
+    const mark = std.mem.indexOf(u8, template, "Q27_SPECIALIZE") orelse return error.BadKernelSource;
+    const definitions = switch (key.kind) {
+        .projection => unreachable,
+        .xsum => try std.fmt.allocPrint(a, "constexpr int K={d}, GS=64;", .{key.k}),
+        .norm, .input_norm => try std.fmt.allocPrint(a, "constexpr int K={d};", .{key.k}),
+        .mlp => try std.fmt.allocPrint(a, "constexpr int N={d};", .{key.n}),
+        .ane_input, .mlp_ane, .add_ane => try std.fmt.allocPrint(a, "constant constexpr int H={d}, N={d}, A={d};", .{ key.k, key.n, key.tile }),
+    };
+    defer a.free(definitions);
+    const source = try std.mem.concat(a, u8, &.{ template[0..mark], definitions, template[mark + "Q27_SPECIALIZE".len ..] });
+    return source;
+}

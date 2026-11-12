@@ -1,0 +1,495 @@
+//! GLM-5.3-Flash behind the lane core: a stream a slot, each slot operation sent to the peer Mac before it runs.
+const std = @import("std");
+const lanes = @import("lanes");
+const st = @import("state.zig");
+const slots_mod = @import("slots.zig");
+const slot_images = @import("slot_images.zig");
+const pool = @import("pool.zig");
+const mirror = @import("mirror.zig");
+const snapshot = @import("snapshot.zig");
+const timing = @import("timing.zig");
+const prompt_fill = @import("prefill.zig");
+const Engine = @import("engine.zig").Engine;
+const be = lanes.backend;
+const Stream = lanes.Stream;
+const fwd = @import("forward.zig");
+
+/// One stream's window and a shared forward's rows, ms on one M5 Ultra (a pair times its own at load: timing.zig).
+const one_mac_window_costs = costTable(13.0, 4.1);
+const one_mac_shared_costs = costTable(8.4 + 4.1, 4.1);
+/// The acceptance estimates' rate, below the core's 0.15: a stream takes about twice the misses in a row to go plain.
+const depth_rate = 0.08;
+
+fn costTable(comptime one: f64, comptime row: f64) [st.max_rows]lanes.config.Cost {
+    var c: [st.max_rows]lanes.config.Cost = undefined;
+    for (&c, 0..) |*x, i| x.* = .{ .width = i + 1, .ms = one + row * @as(f64, @floatFromInt(i)) };
+    return c;
+}
+
+pub const Backend = struct {
+    gpa: std.mem.Allocator,
+    sl: *slots_mod.Slots,
+    by: std.AutoHashMapUnmanaged(*Stream, u32) = .empty,
+    filling: std.AutoHashMapUnmanaged(*Stream, prompt_fill.State) = .empty,
+    image_owner: ?*Stream = null,
+    words: std.ArrayList(u32) = .empty, // the next command's words
+    wins: std.ArrayList(slots_mod.Win) = .empty,
+    drafts: std.ArrayList(slots_mod.Draft) = .empty,
+    costs: ?timing.Costs = null, // a pair's rank 0: its windows and head step as timed (shared forwards priced the same)
+
+    pub fn deinit(b: *Backend) void {
+        if (b.image_owner != null) slot_images.end(b.sl);
+        b.filling.deinit(b.gpa);
+        b.by.deinit(b.gpa);
+        b.words.deinit(b.gpa);
+        b.wins.deinit(b.gpa);
+        b.drafts.deinit(b.gpa);
+    }
+
+    pub fn backend(b: *Backend) be.Backend {
+        return .{ .ptr = b, .vtable = &.{ .prefill = prefill, .prefill_step = prefillStep, .first = first, .queue = queue, .read = read, .verify = verify, .keep = keep, .draft = draft, .release = release, .reports_fill = true } };
+    }
+
+    /// Windows of up to 16 rows (drafted == plain at every width), the MTP head's chains, every stream in one forward.
+    pub fn facts(b: *const Backend) lanes.Model {
+        return .{
+            .learn_row_costs = b.sl.e.ep == null and !b.sl.e.device.tensorUnits(), // the table is an M5 Ultra's: others pay more
+            .allocate_shared_drafts = b.sl.e.hasMtp(),
+            .limit_shared_drafts = b.sl.e.hasMtp(),
+            .exact_width = st.max_rows,
+            .first_copy_rows = 4,
+            .mtp = b.sl.e.hasMtp(),
+            .speculate = true,
+            .gpu_tokens = b.sl.e.ep == null, // one-token rounds queued ahead, each reading the one before's pick on the GPU
+            .speculate_early = false,
+            .plain_guard = true, // a shared round's draft row costs about what a plain row does: draft where it wins
+            .drafts = 4,
+            .window_costs = if (b.costs) |*c| &c.window else if (b.sl.e.ep == null) &one_mac_window_costs else &.{},
+            .mtp_step_ms = if (b.costs) |c| c.head_ms else 1.3,
+            .depth_rate = depth_rate,
+            .streams_exact = true,
+            .hidden_rows = true,
+            .batch_rows = st.max_rows,
+            .max_streams = @intCast(b.sl.slots.len),
+            .shared_costs = if (b.sl.e.ep == null) &one_mac_shared_costs else &.{},
+            .draft_streams = true,
+        };
+    }
+
+    /// The cache tokens a stream of `prompt` and `max_new` tokens can reach: its prompt, its reply, a last window.
+    fn need(prompt: usize, max_new: usize) u32 {
+        return @intCast(@min(prompt + max_new + st.max_rows + 1, std.math.maxInt(u32)));
+    }
+
+    /// The lane host's admission check: whether a request's caches fit in the pool beside the running streams'.
+    pub fn fits(ptr: *anyopaque, prompt: u32, max_new: u32) bool {
+        const b = self(ptr);
+        return pool.fits(b.sl, need(prompt, max_new));
+    }
+
+    fn self(ptr: *anyopaque) *Backend {
+        return @ptrCast(@alignCast(ptr));
+    }
+
+    fn slotOf(b: *Backend, s: *Stream) !u32 {
+        return b.by.get(s) orelse error.UnknownStream;
+    }
+
+    fn prefill(ptr: *anyopaque, s: *Stream) anyerror!void {
+        while (!try prefillStep(ptr, s, 0)) {}
+    }
+    fn prefillStep(ptr: *anyopaque, s: *Stream, _: u32) anyerror!bool {
+        return prompt_fill.step(self(ptr), s, 0);
+    }
+
+    pub fn beginPrompt(b: *Backend, s: *Stream) !prompt_fill.State {
+        const e = b.sl.e;
+        if (e.followsPeer()) return error.FollowsPeer;
+        if (e.ep != null and s.sampling != null and s.sampling.?.temperature > 0) return error.SampledPeerUnsupported;
+        const prompt = s.prompt();
+        if (prompt.len == 0) return error.EmptyPrompt;
+        if (prompt.len + s.max_new + st.max_rows + 1 > pool.capacity(b.sl)) return error.ContextFull;
+        const reuse: ?*const snapshot.Snap = if (s.reuse.saved) |saved| @ptrCast(@alignCast(saved)) else null;
+        const i = b.sl.pick(reuse) orelse return error.NoFreeSlot;
+        try b.by.put(b.gpa, s, i);
+        errdefer release(b, s);
+        // Admission can precede other fills' reservations; temporary exhaustion waits for a lane to finish.
+        pool.reserve(b.sl, i, need(prompt.len, s.max_new), reuse) catch |err| return switch (err) {
+            error.PoolFull => error.LaneMemory,
+            else => err,
+        };
+        b.words.clearRetainingCapacity();
+        try b.words.appendSlice(b.gpa, &.{ i, @intFromBool(s.drafts) });
+        try b.words.appendSlice(b.gpa, prompt);
+        try mirror.send(e, .begin, b.words.items);
+        try b.sl.begin(i, prompt, s.drafts);
+        s.cached = 0;
+        if (s.images.len > 0 and e.ep != null) return error.VisionOnPair;
+        var at: u32 = 0;
+        if (s.reuse.saved) |saved| { // a kept state of this prompt's prefix: the pass starts there
+            const snap: *snapshot.Snap = @ptrCast(@alignCast(saved));
+            if (snap.at < prompt.len and b.sl.usable(snap)) {
+                b.restore(i, snap) catch |err| {
+                    s.reuse_failed = true;
+                    s.reuse_error = err;
+                    return err;
+                };
+                at = snap.at;
+                s.cached = at;
+            } else {
+                s.reuse_failed = true;
+                s.reuse_error = if (snap.at >= prompt.len) error.SnapshotNotPrefix else if (snap.stale) error.SnapshotStale else error.SnapshotMissing;
+            }
+        }
+        // the images the restored state does not hold through the tower: the chunks inject their rows
+        if (s.images.len > 0) try @import("prompt_images.zig").prepare(b, s, i, s.cached);
+        s.fill_at.store(at, .monotonic);
+        return .{ .stream = s, .slot = i, .at = at };
+    }
+    pub fn decoding(b: *const Backend) bool {
+        return b.by.count() > b.filling.count();
+    }
+    pub fn promptRows(b: *const Backend, at: u32, end: u32) u32 {
+        return b.sl.chunkRows(at, end);
+    }
+    pub fn chunkPrompt(b: *Backend, s: *Stream, i: u32, at: u32, n: u32) !void {
+        const e = b.sl.e;
+        try @import("prompt_images.zig").prepare(b, s, i, at); // the chunk's rows read no image ending by `at`
+        try b.copyOut(i, at);
+        try mirror.send(e, .chunk, &.{ i, at, n });
+        const draws = @import("draw_rule.zig").promptDraws(s.sampling, @intCast(s.prompt_len), e.c.vocab);
+        const chunk_draws: ?*const fwd.Draws = if (draws.n > 0 and at + n == s.prompt_len) &draws else null;
+        try b.sl.chunk(i, at, n, chunk_draws);
+    }
+    pub fn encodeImages(b: *Backend, i: u32, images: []const lanes.stream.Image) !void {
+        try slot_images.encode(b.sl, i, images);
+    }
+    pub fn endImages(b: *Backend) void {
+        slot_images.end(b.sl);
+    }
+    pub fn finishPrompt(b: *Backend, s: *Stream) !void {
+        if (b.image_owner == s) {
+            slot_images.end(b.sl);
+            b.image_owner = null;
+        }
+    }
+    pub fn abortPrompt(b: *Backend, s: *Stream) void {
+        release(b, s);
+    }
+
+    fn restore(b: *Backend, i: u32, snap: *const snapshot.Snap) !void {
+        if (snap.home != i) try b.copyOut(i, 0);
+        try mirror.send(b.sl.e, .restore, &.{ i, snap.id });
+        try b.sl.restore(i, snap.id);
+    }
+
+    /// Before slot `i` writes: resident states past `at` made whole as budget allows; pair rank 1 copies the same ids.
+    fn copyOut(b: *Backend, i: u32, at: u32) !void {
+        b.words.clearRetainingCapacity();
+        try b.words.append(b.gpa, i);
+        const done = b.sl.copyOut(i, at, &b.words, b.gpa);
+        if (b.words.items.len > 1) try mirror.send(b.sl.e, .copy_out, b.words.items); // the copies made, even if a later one failed
+        return done;
+    }
+
+    /// The prompt cache's Snapshots functions: a stream's prompt state, mirrored to the peer by id.
+    pub fn snapBytes(ptr: *anyopaque, at: u32) u64 {
+        const b = self(ptr);
+        return snapshot.bytes(&b.sl.e.c, at, b.sl.resident());
+    }
+
+    /// A disk read allocates a whole image, even when ordinary saves share the live MLA pool.
+    pub fn snapReadBytes(ptr: *anyopaque, at: u32) u64 {
+        return snapshot.bytes(&self(ptr).sl.e.c, at, false);
+    }
+
+    pub fn snapCharged(_: *anyopaque, saved: *anyopaque) u64 {
+        const snap: *snapshot.Snap = @ptrCast(@alignCast(saved));
+        return snap.bytes;
+    }
+
+    pub fn snapSave(ptr: *anyopaque, owner: ?*anyopaque, at: u32) anyerror!*anyopaque {
+        const b = self(ptr);
+        const i = try b.slotOf(@ptrCast(@alignCast(owner orelse return error.NoStream)));
+        const id = b.sl.next_snap;
+        if (at != b.sl.slots[i].s.pos or b.sl.slots[i].rows != 0) return error.SnapshotOutOfStep;
+        try mirror.send(b.sl.e, .save, &.{ id, i, at });
+        return try b.sl.save(i, at, id, b.sl.resident());
+    }
+
+    pub fn snapReclaim(_: *anyopaque, dir: [:0]const u8, key: u64) !u64 {
+        var buf: [1100]u8 = undefined;
+        return lanes.learned_dirs.fileBytes(try snapshot.path(&buf, dir, key, 0));
+    }
+    pub fn peerOtherUsed(ptr: *anyopaque, id: u64) !u64 {
+        const b = self(ptr);
+        if (b.sl.e.ep == null) return 0;
+        try mirror.send(b.sl.e, .disk_other_used, &.{ @truncate(id), @truncate(id >> 32) });
+        const value = try b.sl.e.ep.?.ctl.waitReplyValue();
+        if (value == std.math.maxInt(u64)) return error.PeerDiskRead;
+        return value;
+    }
+    pub fn peerOtherNext(ptr: *anyopaque, after: ?u64) !?u64 {
+        const b = self(ptr);
+        if (b.sl.e.ep == null) return null;
+        const value = after orelse 0;
+        try mirror.send(b.sl.e, .disk_other_next, &.{ @truncate(value), @truncate(value >> 32), @intFromBool(after != null) });
+        const found = (try b.sl.e.ep.?.ctl.waitReplyOptional()) orelse return null;
+        if (found == std.math.maxInt(u64)) return error.PeerDiskRead;
+        return found;
+    }
+    pub fn peerOtherBytes(ptr: *anyopaque, id: u64) !u64 {
+        const b = self(ptr);
+        if (b.sl.e.ep == null) return 0;
+        try mirror.send(b.sl.e, .disk_other_bytes, &.{ @truncate(id), @truncate(id >> 32) });
+        const count = try b.sl.e.ep.?.ctl.waitReplyValue();
+        if (count == std.math.maxInt(u64)) return error.PeerDiskRead;
+        return count;
+    }
+    pub fn peerOtherRemove(ptr: *anyopaque, id: u64) !void {
+        const b = self(ptr);
+        if (b.sl.e.ep == null) return;
+        try mirror.send(b.sl.e, .disk_other_remove, &.{ @truncate(id), @truncate(id >> 32) });
+        if (!try b.sl.e.ep.?.ctl.waitReply()) return error.PeerLearnDelete;
+    }
+    pub fn peerNeed(ptr: *anyopaque, saved: *anyopaque, extra: u64) !u64 {
+        const b = self(ptr);
+        if (b.sl.e.ep == null) return 0;
+        const snap: *snapshot.Snap = @ptrCast(@alignCast(saved));
+        try mirror.send(b.sl.e, .disk_need, &.{ snap.id, @truncate(extra), @truncate(extra >> 32) });
+        return b.sl.e.ep.?.ctl.waitReplyValue();
+    }
+    pub fn peerReclaim(ptr: *anyopaque, key: u64) !u64 {
+        const b = self(ptr);
+        if (b.sl.e.ep == null) return 0;
+        try mirror.send(b.sl.e, .disk_reclaim, &.{ @truncate(key), @truncate(key >> 32) });
+        return b.sl.e.ep.?.ctl.waitReplyValue();
+    }
+    pub fn peerReserve(ptr: *anyopaque, saved: *anyopaque, key: u64, extra: u64) !void {
+        const b = self(ptr);
+        if (b.sl.e.ep == null) return;
+        const snap: *snapshot.Snap = @ptrCast(@alignCast(saved));
+        try mirror.send(b.sl.e, .disk_reserve, &.{ snap.id, @truncate(key), @truncate(key >> 32), @truncate(extra), @truncate(extra >> 32) });
+        if (!try b.sl.e.ep.?.ctl.waitReply()) return error.PeerDiskFull;
+    }
+    pub fn peerFinish(ptr: *anyopaque, key: u64, success: bool) !void {
+        const b = self(ptr);
+        if (b.sl.e.ep == null) return;
+        try mirror.send(b.sl.e, .disk_finish, &.{ @truncate(key), @truncate(key >> 32), @intFromBool(success) });
+        if (!try b.sl.e.ep.?.ctl.waitReply()) return error.PeerDiskOutOfStep;
+    }
+
+    /// --learn: a kept state to its file here and, on a pair, rank 1's half there; an error unless both are written.
+    pub fn snapWrite(ptr: *anyopaque, saved: *anyopaque, dir: [:0]const u8, key: u64) anyerror!void {
+        const b = self(ptr);
+        const snap: *snapshot.Snap = @ptrCast(@alignCast(saved));
+        var buf: [1100]u8 = undefined;
+        const file = try snapshot.path(&buf, dir, key, 0);
+        try mirror.send(b.sl.e, .persist, &.{ snap.id, @truncate(key), @truncate(key >> 32) });
+        const own = b.sl.writeSnap(snap.id, file);
+        if (b.sl.e.ep) |ep| if (!try ep.ctl.waitReply()) return error.PeerLearnFailed;
+        return own;
+    }
+
+    /// --learn: learned state `key` read back here and, on a pair, rank 1's half there; an error unless both are.
+    pub fn snapRead(ptr: *anyopaque, dir: [:0]const u8, key: u64, at: u32) anyerror!*anyopaque {
+        const b = self(ptr);
+        var buf: [1100]u8 = undefined;
+        const file = try snapshot.path(&buf, dir, key, 0);
+        const id = b.sl.next_snap;
+        try mirror.send(b.sl.e, .load, &.{ id, @truncate(key), @truncate(key >> 32), at });
+        const own = b.sl.readSnap(id, at, file);
+        const peer = if (b.sl.e.ep) |ep| try ep.ctl.waitReply() else true;
+        const snap = own catch |err| {
+            if (b.sl.e.ep != null and peer) try mirror.send(b.sl.e, .drop, &.{id}); // rank 1's half goes too
+            return err;
+        };
+        if (!peer) {
+            b.sl.drop(id);
+            return error.PeerLearnFailed;
+        }
+        return snap;
+    }
+
+    /// --learn: learned state `key`'s file here and, on a pair, rank 1's half removed.
+    pub fn snapForget(ptr: *anyopaque, dir: [:0]const u8, key: u64) void {
+        snapForgetChecked(ptr, dir, key) catch |err| std.log.err("glm: learned deletion failed: {s}", .{@errorName(err)});
+    }
+    pub fn snapForgetChecked(ptr: *anyopaque, dir: [:0]const u8, key: u64) !void {
+        const b = self(ptr);
+        try mirror.send(b.sl.e, .forget, &.{ @truncate(key), @truncate(key >> 32) });
+        if (b.sl.e.ep) |ep| if (!try ep.ctl.waitReply()) return error.PeerLearnDelete;
+        var buf: [1100]u8 = undefined;
+        try lanes.learned_dirs.unlink(try snapshot.path(&buf, dir, key, 0));
+    }
+
+    pub fn snapRestore(_: *anyopaque, _: ?*anyopaque, _: *anyopaque) anyerror!void {
+        return error.BackendRestores; // the prompt pass restores, before its first chunk
+    }
+
+    pub fn snapDrop(ptr: *anyopaque, saved: *anyopaque) void {
+        const b = self(ptr);
+        const snap: *snapshot.Snap = @ptrCast(@alignCast(saved));
+        mirror.send(b.sl.e, .drop, &.{snap.id}) catch |err| std.log.err("glm: the peer kept a dropped state: {s}", .{@errorName(err)});
+        b.sl.drop(snap.id);
+    }
+
+    fn first(ptr: *anyopaque, s: *Stream, position: u64) anyerror!u64 {
+        const b = self(ptr);
+        const i = try b.slotOf(s);
+        if (position != b.sl.length(i)) return error.PositionMismatch;
+        return b.sl.ringPut(Engine.u32s(b.sl.e.sc.picks, 1)[0]);
+    }
+
+    /// The next one-token round queued ahead: its token the handle's (read on GPU) or the host's, its pick a handle.
+    fn queue(ptr: *anyopaque, s: *Stream, feed: be.Feed, position: u64) anyerror!u64 {
+        const b = self(ptr);
+        const i = try b.slotOf(s);
+        if (b.sl.e.ep != null) return error.Unsupported; // a pair's ranks run windows in step
+        if (position != b.sl.length(i) + 1) return error.PositionMismatch;
+        const from = switch (feed) {
+            .handle => |h| @as(u32, @intCast(h)),
+            .value => |v| b.sl.ringPut(v),
+        };
+        // The stream's sampling arms the queued round's keyed draw (a positive temperature); greedy streams stay plain.
+        return try b.sl.queueRound(i, from, s.sampling);
+    }
+
+    fn read(ptr: *anyopaque, handle: u64) anyerror!u32 {
+        return self(ptr).sl.ringGet(@intCast(handle));
+    }
+
+    fn verify(ptr: *anyopaque, windows: []const be.Window, out: []be.Verified) anyerror!void {
+        const b = self(ptr);
+        b.wins.clearRetainingCapacity();
+        var total: usize = 0;
+        for (windows) |w| {
+            if (w.parents != null or w.early) return error.TreeWindowsUnsupported;
+            const i = try b.slotOf(w.stream);
+            const at = b.sl.length(i);
+            for (w.positions, 0..) |p, r| if (p != at + r + 1) return error.PositionMismatch;
+            if (w.held > b.sl.slots[i].held_n or at + w.rows() + 1 > b.sl.slots[i].s.cap) return error.WindowOutOfStep;
+            total += w.rows();
+            try b.wins.append(b.gpa, .{ .slot = i, .pending = w.pending, .held = w.held, .tokens = w.tokens });
+        }
+        if (total > st.max_rows) return error.WindowOutOfStep;
+        const draws = @import("draw_rule.zig").windowDraws(windows, b.sl.e.c.vocab);
+        try mirror.windowWords(&b.words, b.gpa, b.sl.digest, b.wins.items);
+        try mirror.send(b.sl.e, .window, b.words.items);
+        try b.sl.window(b.wins.items, &draws);
+        const picks = Engine.u32s(b.sl.e.sc.picks, total);
+        var row: usize = 0;
+        for (windows, out, b.wins.items) |w, o, win| {
+            @memcpy(o.sampled, picks[row..][0..w.rows()]);
+            @memcpy(o.drafts[0..w.held], Engine.u32s(b.sl.slots[win.slot].held, w.held));
+            @memcpy(o.drafts[w.held..], w.tokens);
+            row += w.rows();
+        }
+    }
+
+    fn keep(ptr: *anyopaque, windows: []const be.Window, paths: []const []const u32) anyerror!void {
+        const b = self(ptr);
+        for (windows, paths) |w, path| {
+            for (path, 0..) |r, k| if (r != k) return error.TreeWindowsUnsupported;
+            const i = try b.slotOf(w.stream);
+            const kept: u32 = @intCast(path.len);
+            if (kept == 0 or kept > b.sl.slots[i].rows) return error.KeepOutOfStep;
+            try mirror.send(b.sl.e, .keep, &.{ i, kept });
+            try b.sl.keep(i, kept);
+        }
+    }
+
+    fn draft(ptr: *anyopaque, requests: []const be.DraftRequest) anyerror!void {
+        const b = self(ptr);
+        var ones: [st.max_rows]u32 = undefined; // a prompt's first token, the one its head absorbs with
+        b.drafts.clearRetainingCapacity();
+        if (requests.len > ones.len) return error.DraftOutOfStep;
+        for (requests, 0..) |r, k| {
+            if (r.early or r.lanes != null or r.ranks) return error.TreeDraftsUnsupported;
+            if (r.rows) |path| {
+                if (path.len != r.follow.len) return error.DraftOutOfStep;
+                for (path, 0..) |x, j| if (x != j) return error.TreeDraftsUnsupported;
+            }
+            const follow: []const u32 = if (r.first) |f| blk: {
+                ones[k] = switch (f) {
+                    .handle => |h| try b.sl.ringGet(@intCast(h)),
+                    .value => |v| v,
+                };
+                break :blk ones[k .. k + 1];
+            } else r.follow;
+            try b.drafts.append(b.gpa, .{ .slot = try b.slotOf(r.stream), .prompt = r.rows == null, .follow = follow, .depth = r.depth });
+        }
+        try b.sl.checkDrafts(b.drafts.items); // before rank 1 hears of them: it must never fail where rank 0 did not
+        try mirror.draftWords(&b.words, b.gpa, b.drafts.items);
+        try mirror.send(b.sl.e, .draft, b.words.items);
+        try b.sl.draftAll(b.drafts.items);
+    }
+
+    fn release(ptr: *anyopaque, s: *Stream) void {
+        const b = self(ptr);
+        _ = b.filling.remove(s);
+        b.finishPrompt(s) catch {};
+        const kv = b.by.fetchRemove(s) orelse return;
+        mirror.send(b.sl.e, .release, &.{kv.value}) catch |err| std.log.err("glm: the peer missed a release: {s}", .{@errorName(err)});
+        b.sl.release(kv.value);
+    }
+};
+
+test "zero grant: GLM Metal MTP resumes after a long priced skip" {
+    var w: @import("weights.zig").Weights = undefined;
+    w.mtp = @as(@import("weights.zig").Mtp, undefined);
+    var e: Engine = undefined;
+    e.w = &w;
+    e.ep = null;
+    const objc = @import("metal").objc;
+    const no_arch = objc.msg(objc.Id, objc.class("NSObject"), "new", .{}); // facts() asks it for tensor units, no GPU
+    defer objc.release(no_arch);
+    e.device = .{ .id = no_arch };
+    var slots: [16]slots_mod.Slot = undefined;
+    var sl: slots_mod.Slots = undefined;
+    sl.e = &e;
+    sl.slots = &slots;
+    var b: Backend = undefined;
+    b.sl = &sl;
+    b.costs = null;
+    try lanes.shared_draft_check.check(b.facts(), false);
+}
+
+test "shared head costs: GLM Metal MTP retains costed copy grants" {
+    var w: @import("weights.zig").Weights = undefined;
+    w.mtp = @as(@import("weights.zig").Mtp, undefined);
+    var e: Engine = undefined;
+    e.w = &w;
+    e.ep = null;
+    const objc = @import("metal").objc;
+    const no_arch = objc.msg(objc.Id, objc.class("NSObject"), "new", .{}); // facts() asks it for tensor units, no GPU
+    defer objc.release(no_arch);
+    e.device = .{ .id = no_arch };
+    var slots: [16]slots_mod.Slot = undefined;
+    var sl: slots_mod.Slots = undefined;
+    sl.e = &e;
+    sl.slots = &slots;
+    var b: Backend = undefined;
+    b.sl = &sl;
+    b.costs = null;
+    try lanes.shared_head_cost_check.check(b.facts());
+}
+
+test "GLM disk charge: a whole read is larger than a resident save and charged at its actual size" {
+    var e: Engine = undefined;
+    e.c = .{};
+    var sl: slots_mod.Slots = undefined;
+    sl.e = &e;
+    sl.learned = null;
+    var b: Backend = undefined;
+    b.sl = &sl;
+    const resident = Backend.snapBytes(&b, 130000);
+    const whole = Backend.snapReadBytes(&b, 130000);
+    try std.testing.expectEqual(@as(u64, snapshot.bytes(&e.c, 130000, false)), whole);
+    try std.testing.expect(whole > resident + (2 << 30));
+    var snap: snapshot.Snap = .{ .id = 1, .at = 130000, .buf = undefined, .bytes = whole };
+    try std.testing.expectEqual(whole, Backend.snapCharged(&b, &snap));
+    snap.bytes = @intCast(resident);
+    try std.testing.expectEqual(resident, Backend.snapCharged(&b, &snap));
+    try std.testing.expectEqual([2]u64{ 147619840, 2643622912 }, [2]u64{ resident, whole });
+}

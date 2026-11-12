@@ -1,0 +1,16 @@
+{
+  "engine_id": "rusting-strata",
+  "display_name": "RustingStrata",
+  "repository": "https://github.com/RustingStudio/RustingStrata.git",
+  "ref_requested": "main",
+  "commit": "f47e370cb72e06c9d2c7fc6f618dfe5f1029fed4",
+  "vendored_at": "2026-11-11T08:45:07.769038+00:00",
+  "source_tree": "source/f47e370cb72e06c9d2c7fc6f618dfe5f1029fed4",
+  "submodule_status": "",
+  "git_lfs": "git-lfs pull completed",
+  "license_files": [
+    "LICENSE.md"
+  ],
+  "source_status": "PINNED_SNAPSHOT",
+  "git_commit_tree": "b521692c718a03ef74a55c505c12d58a820d1ba8"
+}

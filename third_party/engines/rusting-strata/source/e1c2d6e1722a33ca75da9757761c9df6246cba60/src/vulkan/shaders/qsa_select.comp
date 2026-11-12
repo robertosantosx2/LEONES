@@ -1,0 +1,70 @@
+#version 460
+layout(local_size_x = 1024) in;
+#include "common.glsl"
+// QSA block selection, as qsa_select in kernels.cu (see there): workgroup r keeps the top `top` blocks of row r by
+// score (ties to the lower block), in block order, as a cell list (mw = 0) or a block mask (mw > 0).
+layout(push_constant) uniform P { F32 score; I32 sel; U32 mask; I32 step; int r0; uint nbs; uint top; uint sst; uint mw; } p;
+shared uint hist[256], sthr, skk;
+shared uint ws[32];
+
+// Exclusive prefix sum over the workgroup; tot gets the total.
+uint block_scan(uint v, out uint tot) {
+    uint x = W64 ? warp_scan(v) : subgroupInclusiveAdd(v), w = WARP;
+    barrier();
+    if (LANE == 31) ws[w] = x;
+    barrier();
+    if (w == 0) ws[LANE] = W64 ? warp_scan(ws[LANE]) : subgroupInclusiveAdd(ws[LANE]);
+    barrier();
+    tot = ws[31];
+    return x - v + (w > 0 ? ws[w - 1] : 0);
+}
+
+void main() {
+    uint r = gl_WorkGroupID.x, pos = uint(p.step.v[0] + p.r0) + r, nb = (pos + 1) / 4, tid = gl_LocalInvocationID.x;
+    uint so = r * p.sst, mo = r * p.mw, uo = r * p.nbs, n = gl_WorkGroupSize.x;
+    if (nb <= p.top) {
+        if (p.mw > 0) for (uint i = tid; i < p.mw; i += n) p.mask.v[mo + i] = ~0u;
+        else if (tid == 0) p.sel.v[so] = -1;
+        return;
+    }
+    uint thr = 0, hi = 0, kk = p.top;
+    for (int sh = 24; sh >= 0; sh -= 8) {
+        for (uint i = tid; i < 256; i += n) hist[i] = 0;
+        barrier();
+        for (uint i = tid; i < nb; i += n) {
+            uint u = floatBitsToUint(p.score.v[uo + i]);
+            if ((u & hi) == thr) atomicAdd(hist[(u >> sh) & 255], 1);
+        }
+        barrier();
+        if (tid == 0) {
+            uint bin = 255;
+            for (; bin > 0 && kk > hist[bin]; bin--) kk -= hist[bin];
+            sthr = thr | bin << sh; skk = kk;
+        }
+        barrier();
+        thr = sthr; kk = skk; hi |= 255u << sh;
+        barrier();
+    }
+    if (p.mw > 0) {
+        for (uint i = tid; i < p.mw; i += n) p.mask.v[mo + i] = 0;
+        barrier();
+    }
+    uint cs = (nb + n - 1) / n, i0 = min(nb, tid * cs), i1 = min(nb, i0 + cs), gt = 0, eq = 0, tg, te;
+    for (uint i = i0; i < i1; i++) { uint u = floatBitsToUint(p.score.v[uo + i]); gt += u > thr ? 1 : 0; eq += u == thr ? 1 : 0; }
+    gt = block_scan(gt, tg);
+    eq = block_scan(eq, te);
+    for (uint i = i0; i < i1; i++) {
+        uint u = floatBitsToUint(p.score.v[uo + i]);
+        if (u > thr || (u == thr && eq < kk)) {
+            uint o = gt + min(eq, kk);
+            if (p.mw > 0) atomicOr(p.mask.v[mo + (i >> 5)], 1u << (i & 31));
+            else for (uint m = 0; m < 4; m++) p.sel.v[so + 1 + 4 * o + m] = int(4 * i + m);
+        }
+        gt += u > thr ? 1 : 0; eq += u == thr ? 1 : 0;
+    }
+    if (p.mw > 0) { if (tid == 0) atomicOr(p.mask.v[mo + (nb >> 5)], 1u << (nb & 31)); }
+    else {
+        for (uint q = 4 * nb + tid; q <= pos; q += n) p.sel.v[so + 1 + 4 * p.top + q - 4 * nb] = int(q);
+        if (tid == 0) p.sel.v[so] = int(4 * p.top + pos + 1 - 4 * nb);
+    }
+}

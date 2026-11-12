@@ -1,0 +1,82 @@
+//! The Qwen3.5 CUDA engine's layers (their projections on the tiles of their widths) and its kernel tables.
+const cuda = @import("cuda");
+
+const Affine4 = cuda.qlinear.Affine4;
+const AffineN = cuda.qlinear.AffineN;
+
+/// A projection on the tiles of its width: Affine4's for 4-bit codes, AffineN's for the rest, qlinear's for ModelOpt's.
+pub const Proj = union(enum) {
+    a4: Affine4,
+    an: AffineN,
+    ql: cuda.qlinear.Weight, // NVFP4, FP8 or bf16 as a ModelOpt checkpoint stores it (cuda_modelopt.zig)
+    /// EXL3 trellis projection (cuda.exl3.Dense, bf16 in and out); only in an EXL3 checkpoint's engine.
+    x3: cuda.exl3.Weight,
+    /// A small unquantized bf16 matrix [n][k] (the GDN in_proj_a / in_proj_b), cuda_bf16.zig's denseRows.
+    bf: Bf16,
+
+    pub fn outputs(p: Proj) usize {
+        return switch (p) {
+            inline .a4, .an, .x3, .bf => |q| q.n,
+            .ql => |w| w.outputs(),
+        };
+    }
+
+    pub fn inputs(p: Proj) usize {
+        return switch (p) {
+            inline .a4, .an, .x3, .bf => |q| q.k,
+            .ql => |w| w.inputs(),
+        };
+    }
+};
+
+pub const Bf16 = struct { w: u64, n: usize, k: usize };
+
+pub const Delta = struct { qkv: Proj, z: Proj, a: Proj, b: Proj, out: Proj, conv: u64, norm: u64, a_log: u64, dt_bias: u64 };
+pub const Attention = struct { q: Proj, k: Proj, v: Proj, o: Proj, q_norm: u64, k_norm: u64 };
+/// A dense SwiGLU MLP, or routed experts (the shared one last in their tables) behind a router of bf16 rows.
+pub const Mlp = union(enum) { dense: struct { gate: Proj, up: Proj, down: Proj }, moe: struct { router: u64, experts: cuda.experts.Layer } };
+pub const Layer = struct {
+    input_norm: u64,
+    post_norm: u64,
+    mlp: Mlp,
+    mixer: union(enum) { delta: Delta, attention: Attention },
+};
+
+/// qwen35.cu's kernels, each tf_q35_ and its name.
+pub const Fns = struct {
+    embed: cuda.Function,
+    embed8: cuda.Function,
+    norm: cuda.Function,
+    norm_shift: cuda.Function, // a plain BF16 checkpoint's norms: HF's raw w, 1 + w in FP32
+    sums: cuda.Function,
+    gdn_pre: cuda.Function,
+    conv_commit: cuda.Function,
+    gdn_chain: cuda.Function,
+    gdn_slots_1: cuda.Function,
+    gdn_slots_2: cuda.Function,
+    gdn_slots_4: cuda.Function,
+    gdn_slots_8: cuda.Function,
+    gdn_slots_16: cuda.Function,
+    gdn_post: cuda.Function,
+    head_norm: cuda.Function,
+    head_norm_shift: cuda.Function,
+    rope: cuda.Function,
+    attn_partial: cuda.Function,
+    attn_rows: cuda.Function,
+    attn_partial_whole: cuda.Function,
+    attn_rows_whole: cuda.Function,
+    attn_merge: cuda.Function,
+    attn_gate: cuda.Function,
+    mlp_act: cuda.Function,
+    argmax: cuda.Function,
+    argmax_slices: cuda.Function,
+    argmax_merge: cuda.Function,
+    tap: cuda.Function,
+    splice: cuda.Function,
+};
+
+/// qwen35_keep.cu's kernels (Cache.keep).
+pub const Keeps = struct { apply: cuda.Function, apply_pend: cuda.Function, conv: cuda.Function, compact: cuda.Function };
+
+/// qwen35_kv8.cu's kernels: the cache writes, attention reads and keep's moves over e4m3 rows (--kv-cache fp8).
+pub const Kv8 = struct { rope: cuda.Function, attn_partial: cuda.Function, attn_rows: cuda.Function, attn_partial8_whole: cuda.Function, attn_rows8_whole: cuda.Function, compact: cuda.Function };

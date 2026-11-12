@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "policy": "Engine source license and model-weight license are independent. Preserve the model publisher's license and exact quant/checkpoint identity. Model sizes are upstream-published estimates, not LEONES downloads or benchmarks.",
+  "models": [
+    {
+      "id": "glm-5.3-744b",
+      "engine_id": "project-maya",
+      "name": "GLM-5.3",
+      "parameters_b": 744,
+      "active_parameters_b": 40,
+      "setup_id": "glm-5.3-maya-xs",
+      "quant": "Project Maya Maya-XS GGUF",
+      "download_gb": 170,
+      "whole_model_memory_gb": 176,
+      "recommended_vram_plus_ram_gb": 192,
+      "minimum_system_ram_gb": 32,
+      "license": "Z.ai model license (not the Project Maya MIT license)",
+      "modalities": [
+        "text"
+      ],
+      "notes": "Upstream also lists Unsloth UD-IQ2_M at 238.6 GB. Maya-XS is a text-only model pack."
+    },
+    {
+      "id": "glm-5.3-flash-321b",
+      "engine_id": "project-maya",
+      "name": "GLM-5.3-Flash",
+      "parameters_b": 321,
+      "active_parameters_b": 18,
+      "setup_id": "glm-maya-xs",
+      "quant": "Project Maya Maya-XS GGUF",
+      "download_gb": 73.4,
+      "whole_model_memory_gb": 80,
+      "recommended_vram_plus_ram_gb": 88,
+      "minimum_system_ram_gb": 32,
+      "license": "MIT (model)",
+      "modalities": [
+        "text",
+        "image"
+      ],
+      "notes": "Upstream default Maya-S is about 96.5 GB; Maya-XS is the smaller pack. The project supports images on the documented supported paths."
+    },
+    {
+      "id": "deepseek-v4.1-flash-748b",
+      "engine_id": "project-maya",
+      "name": "DeepSeek-V4.1-Flash-1017",
+      "parameters_b": 748,
+      "active_parameters_b": null,
+      "setup_id": "deepseek-maya-xs",
+      "quant": "Project Maya Maya-XS v2",
+      "download_gb": 277,
+      "whole_model_memory_gb": 121,
+      "recommended_vram_plus_ram_gb": 128,
+      "minimum_system_ram_gb": 32,
+      "license": "MIT (model)",
+      "modalities": [
+        "text",
+        "image"
+      ],
+      "notes": "Download includes separate Engram tables which remain on SSD. Memory and download figures differ because the Engram tables are not resident."
+    },
+    {
+      "id": "minimax-m3.1-flash-428b",
+      "engine_id": "project-maya",
+      "name": "MiniMax-M3.1-Flash",
+      "parameters_b": 428,
+      "active_parameters_b": 23,
+      "setup_id": "minimax-maya-xs",
+      "quant": "Project Maya Maya-XS",
+      "download_gb": 93,
+      "whole_model_memory_gb": 100,
+      "recommended_vram_plus_ram_gb": 128,
+      "minimum_system_ram_gb": 32,
+      "license": "MiniMax Community License",
+      "modalities": [
+        "text",
+        "image"
+      ],
+      "notes": "Maya-XS is the smaller listed pack; upstream also offers Maya-S at about 122 GB."
+    }
+  ]
+}

@@ -1,0 +1,1959 @@
+{
+ "version": 1,
+ "kind": "cross-backend numerical consistency",
+ "issue": "#36 (M2-T7)",
+ "date": "2026-11-08",
+ "generator": "tools/consistency.py",
+ "status": "m2",
+ "note": "Computed on the M2 build in the M2-T7 GPU window (2026-11-08): both backends re-run on the same cached reference, plus the STRATA_MMQ= (f16 GEMM) and STRATA_GEMM_FMA=1 attribution arms. Per-op rows come from the --nocapture logs of tests/kernels.rs and tests/llama_numerics.rs.",
+ "inputs": {
+  "cuda": {
+   "tag": "m2-cuda-sm70",
+   "file": "target/parity-result-m2-cuda-sm70.json",
+   "total": 640,
+   "agree": 628,
+   "either": 634,
+   "strict_pct": 98.12,
+   "either_pct": 99.06
+  },
+  "vulkan": {
+   "tag": "m2-vk-sm70",
+   "file": "target/parity-result-m2-vk-sm70.json",
+   "total": 640,
+   "agree": 625,
+   "either": 629,
+   "strict_pct": 97.66,
+   "either_pct": 98.28
+  },
+  "reference": "target/parity-ref.json",
+  "alt": "target/llama-batch-argmax.json"
+ },
+ "end_to_end": {
+  "total": 640,
+  "divergent": 7,
+  "divergent_pct": 1.09,
+  "cuda_only_correct": 5,
+  "vulkan_only_correct": 2,
+  "both_wrong": 0,
+  "missing_top5": false
+ },
+ "divergences": [
+  {
+   "prompt": 12,
+   "prompt_text": "A train leaves at 9:15 and travels 180 km at 72 km",
+   "position": 5,
+   "cuda_token": 314,
+   "vulkan_token": 11,
+   "reference_token": 11,
+   "alt_token": 314,
+   "cuda_matches_reference": false,
+   "vulkan_matches_reference": true,
+   "cuda_matches_alt": true,
+   "explained_by": "either-mode-ambiguity",
+   "confidence": "evidence",
+   "follow_up": null,
+   "cuda_top5": [
+    [
+     314,
+     -0.6499
+    ],
+    [
+     11,
+     -0.7389
+    ],
+    [
+     321,
+     -9.567
+    ],
+    [
+     318,
+     -9.998
+    ],
+    [
+     567,
+     -10.01
+    ]
+   ],
+   "cuda_top5_gap": 0.08893,
+   "vulkan_top5": [
+    [
+     11,
+     -0.5727
+    ],
+    [
+     314,
+     -0.8306
+    ],
+    [
+     321,
+     -9.844
+    ],
+    [
+     318,
+     -10.38
+    ],
+    [
+     567,
+     -10.53
+    ]
+   ],
+   "vulkan_top5_gap": 0.2579
+  },
+  {
+   "prompt": 16,
+   "prompt_text": "What license terms apply here? Summarize:",
+   "position": 0,
+   "cuda_token": 27775,
+   "vulkan_token": 760,
+   "reference_token": 27775,
+   "alt_token": 27775,
+   "cuda_matches_reference": true,
+   "vulkan_matches_reference": false,
+   "cuda_matches_alt": true,
+   "explained_by": "gemm-int8-vs-f16",
+   "confidence": "arm (STRATA_MMQ= moves it)",
+   "follow_up": "M3-T5",
+   "cuda_top5": [
+    [
+     27775,
+     -0.6447
+    ],
+    [
+     760,
+     -0.957
+    ],
+    [
+     1919,
+     -2.419
+    ],
+    [
+     9205,
+     -6.441
+    ],
+    [
+     13962,
+     -9.21
+    ]
+   ],
+   "cuda_top5_gap": 0.3123,
+   "vulkan_top5": [
+    [
+     760,
+     -0.7501
+    ],
+    [
+     27775,
+     -0.782
+    ],
+    [
+     1919,
+     -2.699
+    ],
+    [
+     9205,
+     -6.034
+    ],
+    [
+     13962,
+     -9.13
+    ]
+   ],
+   "vulkan_top5_gap": 0.0319
+  },
+  {
+   "prompt": 16,
+   "prompt_text": "What license terms apply here? Summarize:",
+   "position": 23,
+   "cuda_token": 3665,
+   "vulkan_token": 4530,
+   "reference_token": 3665,
+   "alt_token": 3665,
+   "cuda_matches_reference": true,
+   "vulkan_matches_reference": false,
+   "cuda_matches_alt": true,
+   "explained_by": "gemm-int8-vs-f16",
+   "confidence": "arm (STRATA_MMQ= moves it)",
+   "follow_up": "M3-T5",
+   "cuda_top5": [
+    [
+     3665,
+     -0.5558
+    ],
+    [
+     4530,
+     -1.094
+    ],
+    [
+     3387,
+     -2.6
+    ],
+    [
+     18576,
+     -5.132
+    ],
+    [
+     28201,
+     -5.219
+    ]
+   ],
+   "cuda_top5_gap": 0.5384,
+   "vulkan_top5": [
+    [
+     4530,
+     -0.6111
+    ],
+    [
+     3665,
+     -1.043
+    ],
+    [
+     3387,
+     -2.462
+    ],
+    [
+     28201,
+     -4.987
+    ],
+    [
+     18576,
+     -5.0
+    ]
+   ],
+   "vulkan_top5_gap": 0.4321
+  },
+  {
+   "prompt": 17,
+   "prompt_text": "Find the error in this log:",
+   "position": 13,
+   "cuda_token": 8240,
+   "vulkan_token": 332,
+   "reference_token": 332,
+   "alt_token": 8240,
+   "cuda_matches_reference": false,
+   "vulkan_matches_reference": true,
+   "cuda_matches_alt": true,
+   "explained_by": "either-mode-ambiguity",
+   "confidence": "evidence",
+   "follow_up": null,
+   "cuda_top5": [
+    [
+     8240,
+     -1.165
+    ],
+    [
+     332,
+     -1.2
+    ],
+    [
+     321,
+     -2.343
+    ],
+    [
+     314,
+     -2.657
+    ],
+    [
+     31639,
+     -2.82
+    ]
+   ],
+   "cuda_top5_gap": 0.03493,
+   "vulkan_top5": [
+    [
+     332,
+     -1.15
+    ],
+    [
+     8240,
+     -1.173
+    ],
+    [
+     321,
+     -2.509
+    ],
+    [
+     314,
+     -2.536
+    ],
+    [
+     20735,
+     -3.772
+    ]
+   ],
+   "vulkan_top5_gap": 0.02267
+  },
+  {
+   "prompt": 17,
+   "prompt_text": "Find the error in this log:",
+   "position": 16,
+   "cuda_token": 4490,
+   "vulkan_token": 1412,
+   "reference_token": 4490,
+   "alt_token": 4490,
+   "cuda_matches_reference": true,
+   "vulkan_matches_reference": false,
+   "cuda_matches_alt": true,
+   "explained_by": "no-coop-matrices",
+   "confidence": "arm (STRATA_MMQ= does not move it)",
+   "follow_up": "M3-T5",
+   "cuda_top5": [
+    [
+     4490,
+     -1.116
+    ],
+    [
+     1412,
+     -1.382
+    ],
+    [
+     4202,
+     -1.619
+    ],
+    [
+     1510,
+     -2.732
+    ],
+    [
+     1500,
+     -3.33
+    ]
+   ],
+   "cuda_top5_gap": 0.2655,
+   "vulkan_top5": [
+    [
+     1412,
+     -1.243
+    ],
+    [
+     4490,
+     -1.516
+    ],
+    [
+     4202,
+     -1.667
+    ],
+    [
+     1510,
+     -2.05
+    ],
+    [
+     12505,
+     -2.937
+    ]
+   ],
+   "vulkan_top5_gap": 0.2728
+  },
+  {
+   "prompt": 18,
+   "prompt_text": "Which of these cities is the largest by population",
+   "position": 30,
+   "cuda_token": 364,
+   "vulkan_token": 12041,
+   "reference_token": 364,
+   "alt_token": 364,
+   "cuda_matches_reference": true,
+   "vulkan_matches_reference": false,
+   "cuda_matches_alt": true,
+   "explained_by": "gemm-int8-vs-f16",
+   "confidence": "arm (STRATA_MMQ= moves it)",
+   "follow_up": "M3-T5",
+   "cuda_top5": [
+    [
+     364,
+     -0.7352
+    ],
+    [
+     12041,
+     -0.9842
+    ],
+    [
+     314,
+     -2.654
+    ],
+    [
+     2785,
+     -3.698
+    ],
+    [
+     11930,
+     -3.703
+    ]
+   ],
+   "cuda_top5_gap": 0.249,
+   "vulkan_top5": [
+    [
+     12041,
+     -0.7804
+    ],
+    [
+     364,
+     -0.882
+    ],
+    [
+     314,
+     -3.11
+    ],
+    [
+     2785,
+     -3.306
+    ],
+    [
+     11930,
+     -3.827
+    ]
+   ],
+   "vulkan_top5_gap": 0.1016
+  },
+  {
+   "prompt": 19,
+   "prompt_text": "List the keys whose value is false:",
+   "position": 3,
+   "cuda_token": 4566,
+   "vulkan_token": 3766,
+   "reference_token": 4566,
+   "alt_token": 4566,
+   "cuda_matches_reference": true,
+   "vulkan_matches_reference": false,
+   "cuda_matches_alt": true,
+   "explained_by": "gemm-int8-vs-f16",
+   "confidence": "arm (STRATA_MMQ= moves it)",
+   "follow_up": "M3-T5",
+   "cuda_top5": [
+    [
+     4566,
+     -0.6826
+    ],
+    [
+     3766,
+     -0.9548
+    ],
+    [
+     795,
+     -2.257
+    ],
+    [
+     10031,
+     -5.956
+    ],
+    [
+     1879,
+     -6.51
+    ]
+   ],
+   "cuda_top5_gap": 0.2722,
+   "vulkan_top5": [
+    [
+     3766,
+     -0.6988
+    ],
+    [
+     4566,
+     -0.9295
+    ],
+    [
+     795,
+     -2.272
+    ],
+    [
+     10031,
+     -6.133
+    ],
+    [
+     1879,
+     -6.383
+    ]
+   ],
+   "vulkan_top5_gap": 0.2307
+  }
+ ],
+ "arms": [
+  {
+   "name": "f16",
+   "file": "target/parity-result-m2-vk-sm70-f16.json",
+   "total": 640,
+   "agree": 629,
+   "either": 635,
+   "divergent": 3,
+   "resolved": 6,
+   "unexplained": 2
+  },
+  {
+   "name": "cuda-fma",
+   "file": "target/parity-result-m2-cuda-sm70-fma.json",
+   "total": 640,
+   "agree": 630,
+   "either": 636,
+   "divergent": 2,
+   "resolved": 7,
+   "unexplained": 2
+  }
+ ],
+ "per_op": [
+  {
+   "op": "add",
+   "case": "n 1000, not a block multiple",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.03e-09
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 6.03e-09
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 0 nh 24 nkv 2 hd 256 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 8.69e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 8.69e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 0 nh 24 nkv 2 hd 256 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 8.69e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 8.69e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 1000 nh 16 nkv 2 hd 256 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 1.28e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.28e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 1000 nh 16 nkv 2 hd 256 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 1.09e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.09e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 2100 nh 32 nkv 8 hd 128 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 1.38e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.38e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 2100 nh 32 nkv 8 hd 128 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 1.38e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.38e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 16 nkv 2 hd 256 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 9.74e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 9.74e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 16 nkv 2 hd 256 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 9.74e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 9.74e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 32 nkv 8 hd 128 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 9.65e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 9.65e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 32 nkv 8 hd 128 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 9.65e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 9.65e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 4 nkv 2 hd 128 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 1.04e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.04e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 4 nkv 2 hd 128 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 1.04e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.04e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 4 nkv 2 hd 256 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 9.91e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 9.91e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 4 nkv 2 hd 256 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 9.91e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 9.91e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 4 nkv 2 hd 64 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 9.56e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 9.56e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 4 nkv 2 hd 64 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 9.56e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 9.56e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 8 nkv 8 hd 128 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 1.06e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.06e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_decode",
+   "case": "pos 5 nh 8 nkv 8 hd 128 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 1.06e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.06e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "attn_prefill",
+   "case": "pos 0 nh 24 nkv 2 hd 256",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 6.14e-05
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "attn_prefill",
+   "case": "pos 1000 nh 16 nkv 2 hd 256",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 3.52e-05
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "attn_prefill",
+   "case": "pos 2100 nh 32 nkv 8 hd 128",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 3.02e-05
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "attn_prefill",
+   "case": "pos 5 nh 16 nkv 2 hd 256",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 6.11e-05
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "attn_prefill",
+   "case": "pos 5 nh 32 nkv 8 hd 128",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 6.24e-05
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "attn_prefill",
+   "case": "pos 5 nh 4 nkv 2 hd 128",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 7.26e-05
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "attn_prefill",
+   "case": "pos 5 nh 4 nkv 2 hd 256",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 6.37e-05
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "attn_prefill",
+   "case": "pos 5 nh 4 nkv 2 hd 64",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 6.42e-05
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "attn_prefill",
+   "case": "pos 5 nh 8 nkv 8 hd 128",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 6.13e-05
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 128 nh 32 nkv 8 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 2.98e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.36e-06
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 128 nh 32 nkv 8 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 2.98e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.36e-06
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 128 nh 4 nkv 2 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 7.26e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 2.45e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 128 nh 4 nkv 2 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 7.26e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 2.45e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 128 nh 8 nkv 8 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.13e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 2.68e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 128 nh 8 nkv 8 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.13e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 2.68e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 256 nh 16 nkv 2 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 3.51e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 4.42e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 256 nh 16 nkv 2 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 3.51e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 4.28e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 256 nh 24 nkv 2 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.14e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.21e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 256 nh 24 nkv 2 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.14e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.21e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 256 nh 4 nkv 2 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.37e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.95e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 256 nh 4 nkv 2 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.37e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.95e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 64 nh 4 nkv 2 gq_min 0",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.42e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 2.22e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_vs_decode",
+   "case": "hd 64 nh 4 nkv 2 gq_min 2048",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.42e-05
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 2.22e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "conv",
+   "case": "ch 300 kw 4, 2 steps",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 5.49e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 5.49e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "conv_l2_norm",
+   "case": "ch 424 kw 4",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "conv_seq",
+   "case": "T 10 ch 96 kw 4",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "conv_state",
+   "case": "ch 300 kw 4, 2 steps",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 0.0
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 0.0
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "deltanet",
+   "case": "ilv false",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 1.96e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.96e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "deltanet",
+   "case": "ilv true",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 2.02e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 2.02e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "same-kernel (bit-exact)"
+  },
+  {
+   "op": "dequant+gemv",
+   "case": "F32 blk.0.ffn_gate_inp.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 7.17e-07
+    },
+    "vulkan_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 7.17e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "dequant+gemv",
+   "case": "IQ2_XS blk.0.ffn_gate_exps.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 8.18e-07
+    },
+    "vulkan_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 8.18e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "dequant+gemv",
+   "case": "IQ3_XXS blk.0.ffn_down_exps.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 4.13e-07
+    },
+    "vulkan_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 4.13e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "dequant+gemv",
+   "case": "IQ4_XS blk.1.ffn_down_exps.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 4.12e-07
+    },
+    "vulkan_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 4.12e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "dequant+gemv",
+   "case": "Q4_K output.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 8.16e-07
+    },
+    "vulkan_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 8.16e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "dequant+gemv",
+   "case": "Q5_K blk.0.attn_gate.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 8.36e-07
+    },
+    "vulkan_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 8.36e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "dequant+gemv",
+   "case": "Q6_K blk.0.ffn_down_shexp.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 4.19e-07
+    },
+    "vulkan_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 4.19e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "dequant+gemv",
+   "case": "Q8_0 blk.1.ffn_down_shexp.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 4.19e-07
+    },
+    "vulkan_vs_cpu": {
+     "max_abs": 0.0,
+     "rel_l2": 4.19e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "gemm",
+   "case": "F32 blk.0.ffn_gate_inp.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 4.87e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 0.0
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "gemm",
+   "case": "F32 blk.0.ffn_gate_inp.weight [different f16 input conversion]",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 4.79e-05
+    }
+   },
+   "explained_by": "f16-round-vs-trunc"
+  },
+  {
+   "op": "gemm",
+   "case": "IQ2_XS blk.0.ffn_gate_exps.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 8.95e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 0.0
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "gemm",
+   "case": "IQ2_XS blk.0.ffn_gate_exps.weight [different f16 input conversion]",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 0.000541
+    }
+   },
+   "explained_by": "f16-round-vs-trunc"
+  },
+  {
+   "op": "gemm",
+   "case": "IQ3_XXS blk.0.ffn_down_exps.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.31e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 4.02e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "gemm",
+   "case": "IQ3_XXS blk.0.ffn_down_exps.weight [different GEMM math]",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 0.00351
+    }
+   },
+   "explained_by": "gemm-int8-vs-f16"
+  },
+  {
+   "op": "gemm",
+   "case": "IQ4_XS blk.1.ffn_down_exps.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.42e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 4.39e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "gemm",
+   "case": "IQ4_XS blk.1.ffn_down_exps.weight [different GEMM math]",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 0.00408
+    }
+   },
+   "explained_by": "gemm-int8-vs-f16"
+  },
+  {
+   "op": "gemm",
+   "case": "Q4_K output.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 9.13e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 7.71e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "gemm",
+   "case": "Q4_K output.weight [different GEMM math]",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 0.00317
+    }
+   },
+   "explained_by": "gemm-int8-vs-f16"
+  },
+  {
+   "op": "gemm",
+   "case": "Q5_K blk.0.attn_gate.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 9.58e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 8.16e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "gemm",
+   "case": "Q5_K blk.0.attn_gate.weight [different GEMM math]",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 0.00332
+    }
+   },
+   "explained_by": "gemm-int8-vs-f16"
+  },
+  {
+   "op": "gemm",
+   "case": "Q6_K blk.0.ffn_down_shexp.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.47e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 4.12e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "gemm",
+   "case": "Q6_K blk.0.ffn_down_shexp.weight [different GEMM math]",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 0.00378
+    }
+   },
+   "explained_by": "gemm-int8-vs-f16"
+  },
+  {
+   "op": "gemm",
+   "case": "Q8_0 blk.1.ffn_down_shexp.weight",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 6.01e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 4.12e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "gemm",
+   "case": "Q8_0 blk.1.ffn_down_shexp.weight [different GEMM math]",
+   "cells": {
+    "cuda_vs_vulkan": {
+     "rel_l2": 0.0036
+    }
+   },
+   "explained_by": "gemm-int8-vs-f16"
+  },
+  {
+   "op": "gemm_dense",
+   "case": "dense 4096",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 5.56e-06
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 6.92e-07
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "l2_norm",
+   "case": "128 x 2 per token, 3 tokens",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 5.89e-09
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 5.89e-09
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "moe_combine",
+   "case": "shared false",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 3.71e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 3.71e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "expert-slot-layout"
+  },
+  {
+   "op": "moe_combine",
+   "case": "shared true",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 4.45e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 4.45e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "expert-slot-layout"
+  },
+  {
+   "op": "moe_gemv",
+   "case": "3 experts 512x2048 IQ2_XS",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 8.86e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 8.86e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "expert-slot-layout"
+  },
+  {
+   "op": "norm_gate",
+   "case": "4 heads of 128",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 4.31e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 4.31e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "rms_norm",
+   "case": "2048 x 3 rows",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 4.3e-07
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 4.3e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "rope_neox",
+   "case": "hd 128, 64 rotated, pos 30000",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 2.52e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 2.52e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "router_topk",
+   "case": "n 256 k 8 t 3",
+   "cells": {
+    "cuda_vs_cpu": {
+     "max_abs": 1.19e-07
+    },
+    "vulkan_vs_cpu": {
+     "max_abs": 1.19e-07
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": null
+  },
+  {
+   "op": "ssm_gates",
+   "case": "beta, 3 tokens of 5 heads",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 3e-08
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 3e-08
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "ssm_gates_g",
+   "case": "g, 3 tokens of 5 heads",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 1.44e-10
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 1.44e-10
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 1
+    }
+   },
+   "explained_by": "summation-order"
+  },
+  {
+   "op": "swiglu",
+   "case": "n 1000, not a block multiple",
+   "cells": {
+    "cuda_vs_cpu": {
+     "rel_l2": 4.24e-09
+    },
+    "vulkan_vs_cpu": {
+     "rel_l2": 4.24e-09
+    },
+    "cuda_vs_vulkan": {
+     "differing_bits": 0
+    }
+   },
+   "explained_by": null
+  }
+ ],
+ "other_measurements": [
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 1400 gq_min 0",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 1.45e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 1400 gq_min 0",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 0.000623
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 1400 gq_min 2048",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 1.45e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 1400 gq_min 2048",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 0.000623
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 300 gq_min 0",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 2.94e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 300 gq_min 0",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 0.000619
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 300 gq_min 2048",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 2.94e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 300 gq_min 2048",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 0.000619
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 511 gq_min 0",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 2.96e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 511 gq_min 0",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 0.000622
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 511 gq_min 2048",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 2.96e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 511 gq_min 2048",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 0.000622
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 512 gq_min 0",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 2.96e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 512 gq_min 0",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 0.000623
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 512 gq_min 2048",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 2.96e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 512 gq_min 2048",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 0.000623
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 7 gq_min 0",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 5.1e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 7 gq_min 0",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 0.000332
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 7 gq_min 2048",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 5.1e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_decode_llama",
+   "case": "n_pos 7 gq_min 2048",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 0.000332
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_llama",
+   "case": "hd 128",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 2.39e-07
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_llama",
+   "case": "hd 128",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 7.26e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_llama",
+   "case": "hd 256",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 1.73e-07
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_llama",
+   "case": "hd 256",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 6.11e-05
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_llama",
+   "case": "hd 64",
+   "comparison": "llama_vs_cpu",
+   "values": {
+    "rel_l2": 2.18e-07
+   },
+   "explained_by": null
+  },
+  {
+   "op": "attn_prefill_llama",
+   "case": "hd 64",
+   "comparison": "default_vs_cpu",
+   "values": {
+    "rel_l2": 6.42e-05
+   },
+   "explained_by": null
+  }
+ ],
+ "per_op_unparsed": [],
+ "per_op_skipped": [
+  "SKIP: default-model checks on /mnt/models/unsloth/Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf",
+  "SKIP: default-model checks on /mnt/models/unsloth/Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf",
+  "SKIP: vulkan: Vulkan init: no usable Vulkan device 0 (0 usable; llvmpipe (LLVM 19.1.7, 256 bits): a CPU device)",
+  "SKIP: vulkan: Vulkan init: no usable Vulkan device 0 (0 usable; llvmpipe (LLVM 19.1.7, 256 bits): a CPU device)"
+ ],
+ "registry": [
+  {
+   "id": "gemm-int8-vs-f16",
+   "title": "int8-quantized GEMM (Vulkan) vs f16 tensor-core GEMM (CUDA)",
+   "applies_to": "vulkan vs cuda, prefill GEMM on quantized weight types",
+   "mechanism": "Vulkan takes the int8 MMQ path for types its policy allows (src/vulkan/mod.rs:819); sm_70 CUDA always takes the f16 path because `i8_gemm` is false on Volta (src/cuda/mod.rs:558). X is quantized to int8 per 32 elements on one side and rounded to f16 on the other, so the two GEMMs multiply different numbers.",
+   "measured": "3.17e-3 .. 4.08e-3 relative L2 per-op (docs/V100-results.md:303-310)",
+   "arm": "STRATA_MMQ= forces the f16 GEMM on Vulkan and isolates this entry",
+   "follow_up": "M3-T5 (Vulkan parity gap, docs/ROADMAP.md:351)"
+  },
+  {
+   "id": "f16-round-vs-trunc",
+   "title": "f16 conversion rounding vs truncation",
+   "applies_to": "cuda vs vulkan, f16 GEMM operands",
+   "mechanism": "CUDA converts operands with `__float2half` (round to nearest even); this driver's SPIR-V `OpFConvert` truncates toward zero, so the two f16 GEMMs see different operands.",
+   "measured": "5.41e-4 (IQ2_XS), 4.79e-5 (F32) relative L2 per-op (docs/V100-results.md:303-310); recorded, not asserted, by tests/kernels.rs:409",
+   "arm": null,
+   "follow_up": "M3-T5"
+  },
+  {
+   "id": "summation-order",
+   "title": "summation order (mma.sync tile order vs cooperative matrices vs FMA)",
+   "applies_to": "cuda vs vulkan and tensor-core vs FMA, same f16 products",
+   "mechanism": "sm_70 CUDA sums the f16 products through `mma.sync.m8n8k4` (src/cuda/kernels.cu:mma884); Vulkan has no VK_KHR_cooperative_matrix on this driver and sums through its own workgroup reduction (src/vulkan/shaders/gemmi.glsl), the FMA arms sum serially. The products are the same, the accumulation tree is not.",
+   "measured": "2.6e-7 .. 8.2e-7 relative L2 per backend against its own reference; 1e-6 .. 1e-4 cross-backend on the same math (docs/V100-results.md:303-310)",
+   "arm": "STRATA_VK_NO_COOP= forces Vulkan off cooperative matrices; STRATA_GEMM_FMA=1 the CUDA FMA path",
+   "follow_up": null
+  },
+  {
+   "id": "no-coop-matrices",
+   "title": "no cooperative matrices on Vulkan (V100 driver)",
+   "applies_to": "vulkan",
+   "mechanism": "Vulkan 1.4.312 on this host exposes no VK_KHR_cooperative_matrix, so Vulkan cannot use the same MMA instruction shape as CUDA; its prefill GEMM and attention use explicit workgroup reductions. This is the Vulkan side of `summation-order`.",
+   "measured": "1e-6 .. 5e-4 relative L2 where only the reduction tree differs (docs/V100-results.md:529-551)",
+   "arm": "STRATA_VK_NO_COOP=",
+   "follow_up": "M3-T5"
+  },
+  {
+   "id": "q8-kv",
+   "title": "q8 KV cache quantization",
+   "applies_to": "`--kv q8` arms only (not used by --llama-numerics parity)",
+   "mechanism": "`--kv q8` stores K/V as int8 with per-32 scales, the default path stores f16; the attention scores read quantized K and the output quantized V. `--kv q8` does not combine with `--llama-numerics` by design (src/main.rs), so parity keeps f16 KV.",
+   "measured": "1.55e-3 .. 2.06e-3 relative L2 q8 vs f16 decode/prefill (docs/V100-results.md:556-558); KV bytes 341/642 = 53.1 % (M2-T6)",
+   "arm": "--kv q8",
+   "follow_up": null
+  },
+  {
+   "id": "expert-slot-layout",
+   "title": "expert-slot layout and MoE routing order",
+   "applies_to": "cuda vs vulkan, MoE GEMV/combine",
+   "mechanism": "The router's top-k expert ids are the same, but the per-slot gather order and the combine reduction order differ between the CUDA and Vulkan MoE kernels; parity runs also pass `--fixed-experts` so routing is identical on both sides.",
+   "measured": "not measured above the summation-order floor in the M1/M0 per-op runs; re-recorded in the M2-T7 window",
+   "arm": "--fixed-experts (parity only)",
+   "follow_up": null
+  },
+  {
+   "id": "either-mode-ambiguity",
+   "title": "llama.cpp's own two modes disagree at this position",
+   "applies_to": "end-to-end argmax only",
+   "mechanism": "llama.cpp run as one batch and llama.cpp run token-by-token disagree at this position (target/llama-batch-argmax.json, tools/selfparity.py); the two engines sit on either side of a near-tie whose winner depends on summation order. The v1 gate counts a token that matches either llama.cpp mode.",
+   "measured": "llama.cpp self-agreement 630/640 (docs/m6-results.md: 98.28 %)",
+   "arm": null,
+   "follow_up": null
+  }
+ ],
+ "unexplained": [],
+ "follow_ups": [
+  "M3-T5"
+ ],
+ "kld": null
+}

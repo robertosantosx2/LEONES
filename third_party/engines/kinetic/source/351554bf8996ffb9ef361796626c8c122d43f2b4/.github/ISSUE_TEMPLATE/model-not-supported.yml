@@ -1,0 +1,48 @@
+name: Model not supported
+description: A GGUF file that Kinetic refuses to load, or loads but answers badly.
+labels: ["model support"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The [models page](https://veloresearch.github.io/kinetic/models.html) lists the
+        architectures, tokenizers and weight types Kinetic runs today. One issue per architecture, please;
+        search first, someone may have asked already.
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      description: Name and a link to the exact GGUF file (for example its Hugging Face page and file name).
+      placeholder: https://huggingface.co/org/Model-GGUF, Model-Q4_K_M.gguf
+    validations:
+      required: true
+  - type: textarea
+    id: info
+    attributes:
+      label: Output of `kinetic info <model>`
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Command and error
+      description: The command you ran and everything Kinetic printed.
+      render: shell
+      placeholder: |
+        kinetic run model.gguf "Hello"
+        kinetic: architecture phi3 is not supported yet
+    validations:
+      required: true
+  - type: textarea
+    id: reference
+    attributes:
+      label: Does it work in llama.cpp?
+      description: If the model loads but answers badly, the output of llama.cpp for the same prompt with `--temp 0 --top-k 1 --repeat-penalty 1` helps a lot.
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and device
+      placeholder: Ubuntu 24.04, Ryzen 9 7950X, no GPU
+    validations:
+      required: true

@@ -1,0 +1,36 @@
+#version 460
+// y[t * ys + row] = W[row] . x[t * xs ..] for t < nt (at most 4): one subgroup per row, lane l covers elements
+// [8l, 8l + 8) of every super-block, of a partial last one too (CUDA gemv_row). nt is specialization constant 5, as in
+// gemv_q; the workgroup size (constant 6, a multiple of 32) sets the rows per workgroup, as CUDA's gemv_cfg wpb.
+layout(local_size_x_id = 6) in;
+#include "common.glsl"
+#include "deq.glsl"
+
+layout(push_constant) uniform P { U8 w; F32 x; F32 y; uint xs; uint ys; uint cols; uint rows; } p;
+layout(constant_id = 5) const uint NT = 1;
+
+void step(uint row, uint lane, uint s, inout float acc[NT]) {
+    float v[8];
+    deq8(p.w, row * rowb(p.cols) + s * SBB, lane, v);
+    for (uint t = 0; t < NT; t++) {
+        uint o = t * p.xs + s * 256 + lane * 8;
+        acc[t] += v[0] * p.x.v[o] + v[1] * p.x.v[o + 1] + v[2] * p.x.v[o + 2] + v[3] * p.x.v[o + 3]
+                + v[4] * p.x.v[o + 4] + v[5] * p.x.v[o + 5] + v[6] * p.x.v[o + 6] + v[7] * p.x.v[o + 7];
+    }
+}
+
+void main() {
+    uint row = gl_WorkGroupID.x * (gl_WorkGroupSize.x / 32) + WARP, lane = LANE;
+    if (row >= p.rows) return;
+    float acc[NT];
+    for (uint t = 0; t < NT; t++) acc[t] = 0.0;
+    // Four super-blocks per step so their loads overlap; the sums keep their order.
+    uint s = 0, nsb = p.cols >> 8;
+    for (; s + 4 <= nsb; s += 4) [[unroll]] for (uint j = 0; j < 4; j++) step(row, lane, s + j, acc);
+    for (; s < nsb; s++) step(row, lane, s, acc);
+    if ((p.cols & 255) > lane * 8) step(row, lane, nsb, acc);
+    for (uint t = 0; t < NT; t++) {
+        float a = warp_sum(acc[t]);
+        if (lane == 0) p.y.v[t * p.ys + row] = a;
+    }
+}

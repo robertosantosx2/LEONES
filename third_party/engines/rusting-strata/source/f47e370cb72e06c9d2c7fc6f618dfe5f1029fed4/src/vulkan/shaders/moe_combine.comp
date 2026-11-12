@@ -1,0 +1,34 @@
+#version 460
+#pragma use_vulkan_memory_model
+#extension GL_KHR_memory_scope_semantics : require
+layout(local_size_x = 256) in;
+#include "common.glsl"
+layout(push_constant) uniform P { F32 x; F32 ye; F32 w; F32 sh; F32 sg; MB mb; I32 step; I32 slots; U32 err; uint k; uint y_off; uint n; } p;
+
+// x += sum_j w[j] ye[j] + sigmoid(sg) sh + cpu (sh and mb may be null). If a slot of any token missed, wait for the
+// CPU worker (mb_wait); when the wait gives up nothing is added. Workgroup y = token: x, ye, w, slots, sh, sg and the
+// CPU result advance by one token's worth.
+#include "mb_wait.glsl"
+shared bool miss, ok;
+void main() {
+    uint seq = uint(p.step.v[1]), tk = gl_WorkGroupID.y, k = p.k, n = p.n;
+    bool mbx = uint64_t(p.mb) != 0;
+    if (gl_LocalInvocationID.x == 0) {
+        // The worker answers once for all tokens: tokens without a miss wait too, so all of x is written or none.
+        bool m = false, any = false;
+        if (mbx) for (uint j = 0; j < gl_NumWorkGroups.y * k; j++) if (p.slots.v[j] < 0) { any = true; m = m || j / k == tk; }
+        ok = !any || mb_wait(p.mb, seq, p.err);
+        miss = m;
+    }
+    barrier();
+    uint i = gl_GlobalInvocationID.x;
+    if (i >= n || !ok) return;
+    precise float y = 0.0;
+    for (uint j = 0; j < k; j++) {
+        float wj = p.w.v[tk * k + j];
+        if (wj != 0.0) y = fma(wj, p.ye.v[(tk * k + j) * n + i], y);
+    }
+    if (miss) y += uintBitsToFloat(p.mb.v[p.y_off + tk * n + i]);
+    if (uint64_t(p.sh) != 0) y = fma(sigmoid(p.sg.v[tk]), p.sh.v[tk * n + i], y);
+    p.x.v[tk * n + i] += y;
+}

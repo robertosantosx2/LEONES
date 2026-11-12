@@ -1,0 +1,13 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// Workgroup y = token t: out[t][i] = sum over streams c of xn[t][c n + i] * sigmoid(g[t][c n + i]) / hc.
+layout(push_constant) uniform P { F32 xn; F32 g; F32 out_; uint n; uint hc; } p;
+void main() {
+    uint i = gl_GlobalInvocationID.x;
+    if (i >= p.n) return;
+    uint b = gl_WorkGroupID.y * p.hc * p.n + i;
+    float s = 0.0;
+    for (uint c = 0; c < p.hc; c++) s += fdiv(p.xn.v[b + c * p.n] * sigmoid(p.g.v[b + c * p.n]), float(p.hc));
+    p.out_.v[gl_WorkGroupID.y * p.n + i] = s;
+}

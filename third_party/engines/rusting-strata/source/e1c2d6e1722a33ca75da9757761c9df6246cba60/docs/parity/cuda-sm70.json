@@ -1,0 +1,193 @@
+{
+ "tag": "cuda-sm70",
+ "date": "2026-11-07",
+ "device": "Tesla V100-SXM2-32GB (sm_70)",
+ "driver": "580.178.04",
+ "cuda_toolkit": "12.9.2 (nvcc 12.9.86)",
+ "nvrtc": "12.9.86",
+ "model": "Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf",
+ "strata_commit": "ae957398f9a620913f893e57b2ab46f5bc6c9b5b",
+ "strata_flags": [
+  "--gpu",
+  "--backend",
+  "cuda",
+  "--llama-numerics",
+  "--fixed-experts"
+ ],
+ "n": 32,
+ "limit": 20,
+ "total": 640,
+ "agree": 630,
+ "either": 636,
+ "strict_pct": 98.44,
+ "either_pct": 99.38,
+ "llama_self_agreement": 630,
+ "gate": "pass",
+ "ref_sha256": {
+  "parity_ref": "0c30267cb673d42e97b4511fce0b3a97a494ccbae4f5a61f68502a6fae3d2155",
+  "llama_batch": "ba5e28ac2368918b84951f266ac1475f31d4eb9f9c00ee6a5eeec64c2e30036c"
+ },
+ "rows": [
+  {
+   "prompt": "Write a Rust function that returns the n-th Fibona",
+   "prompt_tokens": 26,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "In Python, how do I read a CSV file and compute th",
+   "prompt_tokens": 33,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "Explain what this C code does: int f(int *a, int n",
+   "prompt_tokens": 54,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "Write a SQL query that returns the top 5 customers",
+   "prompt_tokens": 42,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "Write a regular expression that matches an IPv4 ad",
+   "prompt_tokens": 27,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "Fix the bug: def avg(xs): return sum(xs) / len(xs)",
+   "prompt_tokens": 36,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "Give a bash one-liner that finds the 10 largest fi",
+   "prompt_tokens": 31,
+   "agree": 31,
+   "n": 32,
+   "first_miss": 9,
+   "top2_gap_at_miss": 0.0329
+  },
+  {
+   "prompt": "Why is the sky blue? Answer in three sentences.<|i",
+   "prompt_tokens": 23,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "Розкажи коротко про історію Києва.<|im_end|>",
+   "prompt_tokens": 26,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "Объясни, что такое квантовая запутанность, простым",
+   "prompt_tokens": 31,
+   "agree": 28,
+   "n": 32,
+   "first_miss": 3,
+   "top2_gap_at_miss": 0.5055
+  },
+  {
+   "prompt": "请用简单的语言解释什么是机器学习。<|im_end|>",
+   "prompt_tokens": 19,
+   "agree": 30,
+   "n": 32,
+   "first_miss": 23,
+   "top2_gap_at_miss": 0.0837
+  },
+  {
+   "prompt": "A train leaves at 9:15 and travels 180 km at 72 km",
+   "prompt_tokens": 44,
+   "agree": 31,
+   "n": 32,
+   "first_miss": 5,
+   "top2_gap_at_miss": 0.0564
+  },
+  {
+   "prompt": "Define the word 'entropy' as used in information t",
+   "prompt_tokens": 24,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "Give me a simple recipe for pancakes.<|im_end|>",
+   "prompt_tokens": 20,
+   "agree": 31,
+   "n": 32,
+   "first_miss": 11,
+   "top2_gap_at_miss": 0.1449
+  },
+  {
+   "prompt": "Summarize this design document in five bullet poin",
+   "prompt_tokens": 995,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "What license terms apply here? Summarize:",
+   "prompt_tokens": 444,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "Find the error in this log:",
+   "prompt_tokens": 1367,
+   "agree": 31,
+   "n": 32,
+   "first_miss": 13,
+   "top2_gap_at_miss": 0.2825
+  },
+  {
+   "prompt": "Which of these cities is the largest by population",
+   "prompt_tokens": 281,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "List the keys whose value is false:",
+   "prompt_tokens": 553,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  },
+  {
+   "prompt": "Which row has the highest score?",
+   "prompt_tokens": 541,
+   "agree": 32,
+   "n": 32,
+   "first_miss": null,
+   "top2_gap_at_miss": null
+  }
+ ],
+ "note": "either 636/640 at or above the 634/640 bar; ref_sha256.parity_ref is the token-by-token reference, ref_sha256.llama_batch the context-as-one-batch reference"
+}

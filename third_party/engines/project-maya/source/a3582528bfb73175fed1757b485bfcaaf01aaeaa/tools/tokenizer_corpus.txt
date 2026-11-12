@@ -1,0 +1,21 @@
+The GLM-5.3-Flash tokenizer diff corpus: every boundary the transcription can get wrong.
+Digits split in groups of at most three: 1 12 123 1234 12345 123456 1234567 20261003 0123456789.
+Numbers with punctuation: 3.14159, 1,000,000, 12:34:56, 10.42.0.17, +86-138-0013-8000.
+Contractions of every case: I'm you're we've they'll he'd it's DON'T won't CAN'T Should've.
+Whitespace runs:    single,   double,    four,	trailing and a tab run
+line endings:
+CRLF here
+and a bare LF
+and a trailing line without a newline.
+Combining marks: á ê ï õ ů ç ñ (decomposed) and Zalgo-ish: ż̷̡͖̬͔̈́͋̆a̸̡̛̟̣̗̅l̶͖͖̈́g̵̡͕̹͕͌o̸̪̎.
+CJK: 计算机程序设计语言的一小段文字，用来测试分词边界。日本語のテキストも混ぜる。한국어 텍스트도.
+Emoji: 👋🏽 🇩🇪 👨‍👩‍👧‍👦 🕊️ (with variation selectors and ZWJ sequences).
+Mixed scripts in one line: x=Δy², naïve—résumé, файл/файл, Σ=∑f(x_i)dx.
+Punctuation runs: !!! ??? ... —— …… «» „" ‚' []{}()<> and a smiley :)
+The GLM chat markers as literals: <|system|>, <|user|>, <|assistant|>, <|observation|>, [gMASK], <sop>, [MASK].
+Repeated specials: <|user|><|assistant|><|endoftext|><|endoftext|>
+A long word that cannot be in any vocab: Supercalifragilisticexpialidociousificationism.
+Repeated words to exercise merge counts: the the the the the the the the the the.
+Byte edges: control chars, null-ish spaces, soft hyphen ­, zero-width ​ joins.
+The quick brown fox jumps over the lazy dog while 42 pandas eat 3,000 bamboo shoots.
+EOF on its own line, no trailing newline.

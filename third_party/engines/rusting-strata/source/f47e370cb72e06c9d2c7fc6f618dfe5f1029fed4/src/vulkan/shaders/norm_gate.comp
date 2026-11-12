@@ -1,0 +1,18 @@
+#version 460
+layout(local_size_x = 128) in;
+#include "common.glsl"
+// Workgroup = head: o = rmsnorm(o_h) * w * silu(z_h) (sigmoid(z_h) when sig), in place. With q not null, o is then also quantized as quant_xq
+// does (heads are contiguous, so the rows are tokens).
+layout(push_constant) uniform P { F32 o; F32 w; F32 z; uint n; float eps; U32 q; uint sig; } p;
+void main() {
+    uint ho = gl_WorkGroupID.x * p.n;
+    float s = 0.0;
+    for (uint i = gl_LocalInvocationID.x; i < p.n; i += 128) s += p.o.v[ho + i] * p.o.v[ho + i];
+    float sc = fdiv(1.0, sqrt_(fdiv(block_sum(s), float(p.n)) + p.eps));
+    for (uint i = gl_LocalInvocationID.x; i < p.n; i += 128) p.o.v[ho + i] = p.o.v[ho + i] * sc * p.w.v[i] * (p.sig != 0 ? sigmoid(p.z.v[ho + i]) : silu(p.z.v[ho + i]));
+    if (uint64_t(p.q) != 0) {
+        memoryBarrierBuffer();
+        barrier();
+        quant_x(p.o, ho, p.n, F32(0ul), 0.0, F32(0ul), p.q, ho / 4, F32(uint64_t(p.q) + gl_NumWorkGroups.x * p.n), ho / 32, F32(0ul), 0);
+    }
+}

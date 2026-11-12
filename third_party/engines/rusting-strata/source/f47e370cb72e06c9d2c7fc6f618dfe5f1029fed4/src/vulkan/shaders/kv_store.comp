@@ -1,0 +1,9 @@
+#version 460
+layout(local_size_x = 256) in;
+#include "common.glsl"
+// Store `total` values (consecutive tokens of n each, heads of hd) of k and v into the caches from position step[0].
+layout(push_constant) uniform P { F32 k; F32 v; U16 kc; U16 vc; I32 step; uint n; uint total; uint hd; } p;
+void main() {
+    uint i = gl_GlobalInvocationID.x, e = uint(p.step.v[0]) * p.n + i;
+    if (i < p.total) { kv_put(p.kc, e, p.hd, p.k.v[i]); kv_put(p.vc, e, p.hd, p.v.v[i]); }
+}

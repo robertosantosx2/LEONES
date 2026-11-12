@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "source_snapshot": "Every engine source must be vendored into third_party/engines/<id>/source at an immutable commit.",
+    "build_evidence": "Each benchmark run records source commit, dirty patch hash, submodule state, binary hash, build command, compiler/toolchain, effective arguments and environment (secrets redacted).",
+    "license": "Preserve LICENSE, COPYING, NOTICE, PATENTS, TRADEMARKS and attribution files verbatim. Never remove upstream license notices.",
+    "artifacts": "Each engine has a separate artifact format/model mapping; model and tokenizer hashes are recorded. No conversion is implicit."
+  },
+  "engines": [
+    {
+      "id": "kinetic",
+      "display_name": "Kinetic",
+      "repository": "https://github.com/Veloresearch/kinetic.git",
+      "default_ref": "main",
+      "source_status": "known-upstream",
+      "adapter": "openai-chat-completions",
+      "enabled": true,
+      "model_artifacts": [
+        "GGUF"
+      ],
+      "notes": "Vendored by scripts/vendor_engines.py; retain Apache-2.0 and upstream notices."
+    },
+    {
+      "id": "tensorfold",
+      "display_name": "TensorFold",
+      "repository": "https://github.com/ashhart/TensorFold.git",
+      "default_ref": "main",
+      "source_status": "known-upstream",
+      "adapter": "openai-chat-completions",
+      "enabled": false,
+      "model_artifacts": [
+        "MLX",
+        "EXL3",
+        "GGUF"
+      ],
+      "notes": "Use the exact validated TensorFold commit/build and local model artifact; record CUDA reserve/device settings."
+    },
+    {
+      "id": "tandem-cpp",
+      "display_name": "Tandem.cpp",
+      "repository": "https://github.com/ewhacc/tandem.cpp.git",
+      "default_ref": "main",
+      "source_status": "known-upstream",
+      "adapter": "openai-chat-completions",
+      "enabled": true,
+      "model_artifacts": [
+        "GGUF"
+      ],
+      "notes": "Independent Tandem.cpp patch-set repository. Its tandem.patch targets llama.cpp base commit f5222f25c18da062ab2b8a2dbbfbf4feae398566; compare against the separately vendored llama-cpp-tandem-base snapshot, not current llama.cpp master. Preserve its own commit, tree hash, build metadata and patch.",
+      "tandem_base_engine": "llama-cpp-tandem-base",
+      "tandem_base_commit": "f5222f25c18da062ab2b8a2dbbfbf4feae398566"
+    },
+    {
+      "id": "llama-cpp",
+      "display_name": "llama.cpp",
+      "repository": "https://github.com/ggml-org/llama.cpp.git",
+      "default_ref": "master",
+      "source_status": "known-upstream",
+      "adapter": "openai-chat-completions",
+      "enabled": true,
+      "model_artifacts": [
+        "GGUF"
+      ],
+      "notes": "Independent upstream runtime entry and source snapshot. Do not conflate with Tandem.cpp; record any downstream patches separately."
+    },
+    {
+      "id": "rusting-strata",
+      "display_name": "RustingStrata",
+      "repository": "https://github.com/RustingStudio/RustingStrata.git",
+      "default_ref": "main",
+      "source_status": "known-upstream",
+      "adapter": "openai-chat-completions",
+      "enabled": false,
+      "model_artifacts": [
+        "GGUF"
+      ],
+      "notes": "Pure-Rust Qwen GGUF engine. CUDA/NVRTC and Vulkan backends, hybrid CPU/GPU MoE experts, MTP and OpenAI-compatible serving. Validate current release capabilities and license before build/run; no performance claim is assumed for LEONES hardware."
+    },
+    {
+      "id": "llama-cpp-tandem-base",
+      "display_name": "llama.cpp (Tandem.cpp base)",
+      "repository": "https://github.com/ggml-org/llama.cpp.git",
+      "default_ref": "f5222f25c18da062ab2b8a2dbbfbf4feae398566",
+      "source_status": "known-upstream-pinned-base",
+      "adapter": "openai-chat-completions",
+      "enabled": false,
+      "model_artifacts": [
+        "GGUF"
+      ],
+      "notes": "Exact upstream base commit declared by ewhacc/tandem.cpp BASE_COMMIT; use this snapshot to build an apples-to-apples unpatched baseline for Tandem.cpp."
+    },
+    {
+      "id": "project-maya",
+      "display_name": "Project Maya",
+      "repository": "https://github.com/mw00/project-maya.git",
+      "default_ref": "a3582528bfb73175fed1757b485bfcaaf01aaeaa",
+      "source_status": "known-upstream-pinned",
+      "adapter": "openai-chat-completions",
+      "enabled": false,
+      "model_artifacts": [
+        "GGUF",
+        "EXL3"
+      ],
+      "supported_models": [
+        "glm-5.3-744b",
+        "glm-5.3-flash-321b",
+        "deepseek-v4.1-flash-748b",
+        "minimax-m3.1-flash-428b"
+      ],
+      "notes": "Model-specific engine family with OpenAI-compatible /v1/chat/completions and Anthropic-compatible /v1/messages APIs, dashboard and telemetry. Keep disabled until model selection/setup, multi-engine build provenance and API smoke tests are implemented. Project code is MIT; model weights have separate licenses. Upstream's minimum floor is 32 GiB system RAM and fast NVMe; the user's MSI has 14 GiB RAM and is below the documented floor."
+    }
+  ]
+}

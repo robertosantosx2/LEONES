@@ -1,0 +1,594 @@
+//! The batched pass's kernels, scratch, a sequence's view, and the hooks a verify window or the MTP head passes.
+
+const std = @import("std");
+const cuda = @import("cuda");
+const gdn = @import("cuda_gdn.zig");
+const ple = @import("cuda_ple.zig");
+const wt = @import("cuda_prompt_wt.zig");
+const tk = @import("cuda_tile_kernels.zig");
+const load = @import("cuda_prompt_load.zig");
+const shared = @import("cuda_batch_side.zig");
+const layers_n = wt.layers_n;
+const linear_n = wt.linear_n;
+const dims = wt.dims;
+const streams = wt.streams;
+const wide = wt.wide;
+const low = wt.low;
+const eps = wt.eps;
+const vocab = wt.vocab;
+const experts_n = wt.experts_n;
+const slots = wt.slots;
+const moe_w = wt.moe_w;
+const tile = wt.tile;
+const q_heads = wt.q_heads;
+const kv_heads = wt.kv_heads;
+const head_dim = wt.head_dim;
+const index_heads = wt.index_heads;
+const index_dim = wt.index_dim;
+const half = wt.half;
+const proj_n = wt.proj_n;
+const out_k = wt.out_k;
+const nch = wt.nch;
+const ple_layer = wt.ple_layer;
+const ple_tail_n = wt.ple_tail_n;
+const state_n = wt.state_n;
+const hc_sk = wt.hc_sk;
+const out_sk = wt.out_sk;
+const Q4 = wt.Q4;
+const HcW = wt.HcW;
+const Layer = load.Layer;
+
+/// Normed-stream partial sums a row: D / 256 blocks of each stream.
+pub const pss_n = (dims / 256) * streams;
+/// The widest projection row: the DeltaNet's q|k|v|z|b|a (attention's q|k|v|indexer is 13952).
+pub const proj_row = @max(gdn.proj_width, proj_n);
+/// Attention rows a _chunks launch takes (its scratch: rows x nch x heads x dim fp32).
+pub const att_rows: usize = 256;
+/// Neurons a pocket's activations take a row (fn_back's max_pocket).
+pub const pocket_stride: usize = 128;
+/// Prompt rows one fused attention launch takes (their selections staged att_rows at a time).
+pub const fused_rows: usize = 1024;
+/// Lanes one attention launch takes at once (fn_lanes MAX); the table: [lane][4] cache addresses, ints, row lanes.
+pub const attn_lanes: usize = 32;
+pub const lanes_ptrs: usize = (wt.layers_n / 4) * attn_lanes * 4 * 8;
+pub const lanes_bytes: usize = lanes_ptrs + (4 * attn_lanes + att_rows) * 4;
+/// Rows a pass holds at most unless asked for more.
+pub const default_chunk: usize = 1536;
+/// The most rows TF_FLASHNEXT_CHUNK may ask for (the largest measured pass; its scratch is about 13 GiB more).
+pub const max_chunk: usize = 16384;
+const ratio = wt.index_ratio;
+const top = wt.index_top;
+const idw = wt.index_idw;
+pub const cubin_qmm: [:0]const u8 = "_ZN6tf_qmm10qmm_kernelILi32ELi16ELi64ELi1ELi4ELi4ELb0ELb0ELb0EEEvPK13__nv_bfloat16PKfPKjS3_S3_PvPfiiiiiii";
+pub const qmm_smem: u32 = 9472;
+/// fn_gdn_chain_tpr's staged rows: 2 x 16 steps of q, k, v (128 fp32 each) and g, beta.
+pub const chain_tpr_smem: u32 = 2 * 16 * (3 * 128 * 4 + 16);
+/// fn_gdn_fused's shared memory (its SMEM): two chain stages, two readout batches, the conv rows and 16 norm scales.
+pub const gdn_fused_smem: u32 = chain_tpr_smem + 2 * 16 * 128 * 4 + 16 * 2 * 128 * 4 + 16 * 4;
+/// fn_gdn_fused's block: 256 chain threads and 128 producer threads.
+pub const gdn_fused_threads: u32 = 384;
+/// Pairs an expert item takes: the core rows kernel's tile.
+const rows_tile: usize = cuda.experts.RowsExperts.tile;
+const plan_small: usize = cuda.grouped.small;
+
+fn cint(v: usize) c_int {
+    return @intCast(v);
+}
+
+fn cdiv(a: usize, b: usize) usize {
+    return (a + b - 1) / b;
+}
+
+/// Which rows get the head: the last (a prompt), every row (a verify window or a round), or none.
+pub const Logits = enum { last, all, none };
+
+/// A read-out's kept tensors (fn_back's HcKept): h and normed [rows, wide], v fp32 [rows, low (+ 4)], up, inject.
+pub const HcKeep = struct { h: u64 = 0, normed: u64 = 0, v: u64 = 0, up: u64 = 0, inject: u64 = 0 };
+
+/// A layer's kept tensors, row strides their own widths; 0 leaves one out.
+pub const LayerKeep = struct {
+    /// DeltaNet: projection rows [rows, proj] and the conv history before the chunk.
+    proj: u64 = 0,
+    hist: u64 = 0,
+    /// The chain's end state goes here, the sequence's own left as before the chunk; 0: in place.
+    state_out: u64 = 0,
+    /// This layer's pending-row log and its control word (fn_late in flashnext_batch.cu); 0: none.
+    log: u64 = 0,
+    log_ctl: u64 = 0,
+    attn_hc: HcKeep = .{},
+    mlp_hc: HcKeep = .{},
+    /// The mixer's and the MoE's branches [rows, dims] bf16 as the write-backs add them (the MoE's with its pocket).
+    mix_branch: u64 = 0,
+    moe_branch: u64 = 0,
+    /// The MoE layer (fn_back's MoeKept): its input [rows, dims] bf16, experts and weights [rows, 11].
+    moe_x: u64 = 0,
+    moe_ids: u64 = 0,
+    moe_wts: u64 = 0,
+    /// Attention (fn_back's AttnKept): q|gate, k and v projections, and o_proj's input, bf16.
+    pq: u64 = 0,
+    pk: u64 = 0,
+    pv: u64 = 0,
+    gated: u64 = 0,
+};
+
+/// What a pass keeps: a drafted window's rollback (cuda_mtp.zig), or a training pass's tensors with the final mixer's.
+pub const Keep = struct {
+    layers: [layers_n]LayerKeep = @splat(.{}),
+    mixer: HcKeep = .{},
+};
+
+/// A sequence of a training pass (Pass.spans): its first row and its rows.
+pub const Span = struct { at: usize, rows: usize };
+
+/// Adds to a layer's fp32 MoE output `out` [rows, dims] (the slots' sum) before its rounding, from its input and slots.
+pub const MoeAdd = struct {
+    ctx: *anyopaque,
+    add: *const fn (ctx: *anyopaque, layer: usize, x: u64, ids: u64, wts: u64, out: u64, rows: usize) anyerror!void,
+    /// A bit a layer it adds to; the others write back as without it.
+    layers: u64 = std.math.maxInt(u64),
+
+    pub fn at(m: MoeAdd, layer: usize) bool {
+        return m.layers >> @intCast(layer) & 1 != 0;
+    }
+};
+
+comptime {
+    std.debug.assert(layers_n <= 64); // MoeAdd.layers holds a bit a layer
+}
+
+/// A caller's view into the pass. Without any, the pass is the server's prompt pass.
+pub const Hooks = struct {
+    logits: Logits = .last,
+    /// Device [rows, vocab] bf16 for `.all` (else the pass's own buffer for the last row).
+    logits_out: u64 = 0,
+    keep: ?*Keep = null,
+    /// Device [rows, wide] bf16: every row's streams after the last MoE write-back (the MTP head's input); 0: none.
+    streams: u64 = 0,
+    /// A training pass's adds to each layer's MoE output, in place of the model's own (Model.pocket).
+    moe_add: ?MoeAdd = null,
+    /// The rows are prompt tokens (a fill), not a decode or verify window.
+    prompt: bool = false,
+    /// The last row's scores also in seq.logits (a sync, a vocab-row copy); drafted windows' draws read device rows.
+    host_logits: bool = true,
+    /// Prompt cache marks inside this pass (TF_FLASHNEXT_KEEP_INPASS): each one's states go to its kept state's buffer.
+    marks: [max_marks]Mark = .{ .{}, .{} },
+};
+
+/// Rows a layer's pending-row log holds, and the pending count past which a chain stores its state in place.
+pub const late_rows: usize = 48;
+pub const late_store: usize = 12;
+/// One log row of a layer: k [nk, dk], v [nv, dv], decay and beta [nv, 2], fp32.
+pub const late_row_bytes: usize = (gdn.nk * gdn.dk + gdn.nv * gdn.dv + gdn.nv * 2) * 4;
+
+/// A rolled-back lane's windows for fn_late_roll (fn_roll::Job, by value): its conv windows and the n-gram tail.
+pub const RollJob = extern struct { win: u64 = 0, hist: u64 = 0, rows: u64 = 0, stride: c_longlong = 0, taps: c_int = 0, c: c_int = 0 };
+pub const roll_jobs_max = 40;
+pub const RollJobs = extern struct { j: [roll_jobs_max]RollJob = @splat(.{}), n: c_int = 0 };
+
+comptime {
+    std.debug.assert(@sizeOf(RollJob) == 40 and @sizeOf(RollJobs) == 1608);
+}
+
+/// A prompt cache mark inside a pass: the stream's position `at` and the kept state's device buffer (base 0: none).
+pub const Mark = struct { at: usize = 0, base: u64 = 0 };
+pub const max_marks = 2;
+
+/// TF_FLASHNEXT_VERIFY_HOST_LOGITS=1: drafted windows also copy their last row's scores to the host, as before.
+pub fn verifyHostLogits() bool {
+    const v = std.c.getenv("TF_FLASHNEXT_VERIFY_HOST_LOGITS") orelse return false;
+    return std.mem.eql(u8, std.mem.span(v), "1");
+}
+
+/// The kernels the pass launches besides the captured Triton ones, loaded once.
+pub const Kernels = @import("cuda_batch_kernels.zig").Kernels;
+
+/// The compute stream as a pass's pinned staging uses it: copies from it, an event behind them, and a drain.
+pub const Uploads = struct {
+    stream: cuda.Stream,
+    event: cuda.Event,
+
+    pub fn copy(u: Uploads, dst: u64, bytes: []const u8) !void {
+        try cuda.copy_source.enqueue(u.stream.d, dst, bytes, u.stream);
+    }
+    pub fn record(u: Uploads) !void {
+        try u.event.record(u.stream);
+    }
+    pub fn wait(u: Uploads) !void {
+        try u.event.synchronize();
+    }
+    pub fn drain(u: Uploads) !void {
+        try u.stream.synchronize();
+    }
+};
+
+/// Pinned bytes' uploads and the fence that says when the bytes may change (`Q`: `Uploads`, or a test's stand-in).
+pub fn Staging(comptime Q: type) type {
+    return struct {
+        const Self = @This();
+        q: Q,
+        /// An upload was queued after the event's last record (a copy or the record failed): only a drain covers it.
+        open: bool = false,
+
+        /// Queues a copy from the staged bytes; until `fence` records behind it, `ready` drains the stream.
+        pub fn upload(g: *Self, dst: u64, bytes: []const u8) !void {
+            g.open = true;
+            try g.q.copy(dst, bytes);
+        }
+
+        /// Records the event behind every upload queued so far.
+        pub fn fence(g: *Self) !void {
+            try g.q.record();
+            g.open = false;
+        }
+
+        /// Returns once no queued upload reads the staged bytes: the event's wait, or a drain if one came after it.
+        pub fn ready(g: *Self) !void {
+            if (!g.open) return g.q.wait();
+            try g.q.drain();
+            g.open = false;
+        }
+    };
+}
+
+const sizes = @import("cuda_scratch_sizes.zig");
+pub const head_rows_one = sizes.head_rows_one;
+pub const Sizes = sizes.Sizes;
+const hcPartRows = sizes.hcPartRows;
+const partRows = sizes.partRows;
+
+/// Device scratch for chunks of up to `cap` rows.
+pub const Scratch = struct {
+    cap: usize,
+    /// The shared expert's stream (cuda_batch_side.zig); null: it runs after the routed experts on the pass's stream.
+    side: ?shared.Side = null,
+    bufs: std.ArrayList(cuda.DeviceBuffer) = .empty,
+    ids: u64 = 0,
+    pos: u64 = 0,
+    h: u64 = 0,
+    pss: u64 = 0,
+    norm: u64 = 0,
+    rinv: u64 = 0,
+    dn: u64 = 0,
+    hc_part: u64 = 0,
+    hc_up: u64 = 0,
+    native_part: u64 = 0,
+    act: u64 = 0,
+    xs_act: u64 = 0,
+    inj: u64 = 0,
+    mixed: u64 = 0,
+    xsm: u64 = 0,
+    proj: u64 = 0,
+    part: u64 = 0,
+    rank_input: u64 = 0,
+    rank_gather: u64 = 0,
+    rank_output: u64 = 0,
+    rank_result: u64 = 0,
+    /// part's second cap-stride slice is zeros (native lanes write only the first): a writeback adds it once.
+    part_zero: bool = false,
+    gout: u64 = 0,
+    gxs: u64 = 0,
+    ys: u64 = 0,
+    gq: u64 = 0,
+    gk: u64 = 0,
+    gv: u64 = 0,
+    ggb: u64 = 0,
+    q: u64 = 0,
+    iq: u64 = 0,
+    po: u64 = 0,
+    pm: u64 = 0,
+    pl: u64 = 0,
+    /// An attention block's rows' key lists, key counts and sparse flags (attention.AttnScratch ids/nk/sparse).
+    qids: u64 = 0,
+    qnk: u64 = 0,
+    qspr: u64 = 0,
+    /// A shared round's lane table (lanes_bytes) for its one-launch attention.
+    lanes_tab: u64 = 0,
+    ao: u64 = 0,
+    gated: u64 = 0,
+    gxs_attn: u64 = 0,
+    router_l: u64 = 0,
+    picks: u64 = 0,
+    picks_ep: u64 = 0, // the rank's own experts' picks (cuda_moe_native.zig) at --tp
+    wts: u64 = 0,
+    members: u64 = 0,
+    items: u64 = 0,
+    counts: u64 = 0,
+    rank: u64 = 0,
+    hist: u64 = 0,
+    moe_act: u64 = 0,
+    shared_gate: u64 = 0,
+    shared_up: u64 = 0,
+    shared_act: u64 = 0,
+    shared_out: u64 = 0,
+    y: u64 = 0,
+    branch: u64 = 0,
+    /// A layer's MoE output in fp32 [cap, dims] when something adds to it, and the pocket's activations [cap, 128].
+    moe_f32: u64 = 0,
+    pocket_act: u64 = 0,
+    ple_emb: u64 = 0,
+    ple_xs: u64 = 0,
+    ple_keys: u64 = 0,
+    ple_vals: u64 = 0,
+    ple_part: u64 = 0,
+    ple_gated: u64 = 0,
+    ple_pss: u64 = 0,
+    ple_nrow: u64 = 0,
+    logits: u64 = 0,
+    /// A split head's local columns before the gather, or the grouped draft head's scores: head_rows * vocab bytes.
+    head_local: u64 = 0,
+    head_rows: usize = 0,
+    /// hc_part's bytes (hcPartRows): a read-out that would write more refuses (Pass.readoutKeep / readoutNative).
+    hc_part_bytes: usize = 0,
+    inv: u64 = 0,
+    dummy: u64 = 0,
+    /// Pinned host copies of what a pass uploads (ids, positions, n-gram rows and sums), owned until the copies land.
+    host: ?cuda.HostBuffer = null,
+    /// The uploads from `host` and the event recorded after a pass's last one: the next pass waits before writing it.
+    staging: ?Staging(Uploads) = null,
+
+    fn add(s: *Scratch, gpa: std.mem.Allocator, d: *const cuda.Driver, len: usize) !u64 {
+        var b = try cuda.DeviceBuffer.alloc(d, @max(len, 256));
+        errdefer b.free();
+        try s.bufs.append(gpa, b);
+        return b.ptr;
+    }
+
+    /// Byte offsets of the staged ids, positions, n-gram rows and their sums in `host`, and its length.
+    fn hostAt(cap: usize) [6]usize {
+        const pos = std.mem.alignForward(usize, cap * 4, 16);
+        const emb = pos + (cap + 1) * 16;
+        const xs = emb + cap * dims * 2;
+        const tab = std.mem.alignForward(usize, xs + cap * (dims / 32) * 4, 16);
+        return .{ 0, pos, emb, xs, tab, tab + lanes_bytes };
+    }
+
+    /// Waits until the last pass's uploads have read `host` (they are queued behind its kernels), so it may change.
+    pub fn ready(s: *Scratch) !void {
+        if (s.staging) |*g| try g.ready();
+    }
+
+    /// A queued copy from `host` to the device, which must stay unchanged until it lands.
+    pub fn upload(s: *Scratch, dst: u64, src: []const u8) !void {
+        try s.staging.?.upload(dst, src);
+    }
+
+    /// Marks `host` read once the stream reaches here: every upload queued before this point has copied its bytes.
+    pub fn uploaded(s: *Scratch) !void {
+        if (s.staging) |*g| try g.fence();
+    }
+
+    /// The staged ids [n], positions [n] (in 16-byte rows), n-gram rows [n, dims] and their 32-group sums.
+    pub fn hostIds(s: *const Scratch, n: usize) []i32 {
+        return @alignCast(std.mem.bytesAsSlice(i32, s.host.?.bytes[hostAt(s.cap)[0]..][0 .. n * 4]));
+    }
+    pub fn hostPos(s: *const Scratch, n: usize) []i32 {
+        return @alignCast(std.mem.bytesAsSlice(i32, s.host.?.bytes[hostAt(s.cap)[1]..][0 .. n * 4]));
+    }
+    /// The staged lane table (lanes_bytes).
+    pub fn hostLanes(s: *const Scratch) []u8 {
+        return s.host.?.bytes[hostAt(s.cap)[4]..][0..lanes_bytes];
+    }
+    pub fn hostEmb(s: *const Scratch, n: usize) []u16 {
+        return @alignCast(std.mem.bytesAsSlice(u16, s.host.?.bytes[hostAt(s.cap)[2]..][0 .. n * dims * 2]));
+    }
+    pub fn hostXs(s: *const Scratch, n: usize) []f32 {
+        return @alignCast(std.mem.bytesAsSlice(f32, s.host.?.bytes[hostAt(s.cap)[3]..][0 .. n * (dims / 32) * 4]));
+    }
+
+    /// Bytes `alloc(cap)` takes on the device.
+    pub fn bytes(cap: usize, z: Sizes) usize {
+        const head_rows = z.head_rows;
+        const pairs = cap * slots;
+        const nblk = cdiv(pairs, plan_small);
+        const items = cdiv(pairs, tile) + experts_n + 1;
+        var n: usize = 0;
+        n += cap * 4 + (cap + 1) * 16;
+        n += cap * streams * 4 + cap * wide * 2 * 2 + cap * pss_n * 4 + cap * (low + 4) * 2 + hcPartRows(cap) * (low + 4) * 4;
+        n += cap * wide * 2 + (if (z.lane_reduce) 8 * cap * dims * 4 else 0);
+        n += cap * low * 2 + cap * (low / 32) * 4 + cap * streams * 2 + cap * dims * 2 + cap * (dims / 32) * 4;
+        n += cap * proj_row * 2 + partRows(cap) * dims * 4 + cap * gdn.value_dim * (2 + 4 + 4) + cap * (gdn.value_dim / 32) * 4;
+        n += cap * (2 * gdn.nk * gdn.dk + 2 * gdn.nv) * 4;
+        n += cap * q_heads * head_dim * 2 + cap * index_heads * index_dim * 2;
+        n += att_rows * nch * q_heads * (head_dim + 2) * 4 + cap * out_k * 2 * 2 + cap * (out_k / 32) * 4;
+        n += fused_rows * (idw + 2) * 4 + lanes_bytes;
+        n += cap * (experts_n + 1) * 4 + pairs * 4 * 2 + pairs * 4 + items * 3 * 4 + 8 + pairs * 4 + nblk * (experts_n + 1) * 4 + pairs * 4;
+        n += cap * moe_w * 6 + cap * dims * 4;
+        n += pairs * moe_w * 2 + pairs * dims * 4 + cap * dims * 2;
+        n += cap * dims * 2 + cap * (dims / 32) * 4 + cap * wide * 2 + cap * dims * 2 + 4 * cap * dims * 4;
+        n += cap * wide * 2 * 2 + cap * streams * 4 + vocab * 2 + head_rows * vocab + half * 4 + 4096;
+        n += cap * dims * 4 + cap * pocket_stride * 4;
+        n += cap * out_k * 4 + cap * dims * 6;
+        return n;
+    }
+
+    pub fn alloc(gpa: std.mem.Allocator, d: *const cuda.Driver, stream: cuda.Stream, cap: usize, z: Sizes) !Scratch {
+        const head_rows = z.head_rows;
+        var s: Scratch = .{ .cap = cap, .head_rows = head_rows };
+        errdefer {
+            cuda.completion.drain(d, stream, "Flash Next scratch work did not drain before rollback");
+            s.free(gpa);
+        }
+        const pairs = cap * slots;
+        const nblk = cdiv(pairs, plan_small);
+        const items = cdiv(pairs, tile) + experts_n + 1;
+        s.ids = try s.add(gpa, d, cap * 4);
+        // a position every 16 bytes: one a block of att_rows rows, or one a row of a decode round
+        s.pos = try s.add(gpa, d, (cap + 1) * 16);
+        s.h = try s.add(gpa, d, cap * wide * 2);
+        s.pss = try s.add(gpa, d, cap * pss_n * 4);
+        s.norm = try s.add(gpa, d, cap * wide * 2);
+        s.rinv = try s.add(gpa, d, cap * streams * 4);
+        s.dn = try s.add(gpa, d, cap * (low + 4) * 2);
+        s.hc_part_bytes = hcPartRows(cap) * (low + 4) * 4;
+        s.hc_part = try s.add(gpa, d, s.hc_part_bytes);
+        s.hc_up = try s.add(gpa, d, cap * wide * 2);
+        if (z.lane_reduce) s.native_part = try s.add(gpa, d, 8 * cap * dims * 4);
+        s.act = try s.add(gpa, d, cap * low * 2);
+        s.xs_act = try s.add(gpa, d, cap * (low / 32) * 4);
+        s.inj = try s.add(gpa, d, cap * streams * 2);
+        s.mixed = try s.add(gpa, d, cap * dims * 2);
+        s.xsm = try s.add(gpa, d, cap * (dims / 32) * 4);
+        s.proj = try s.add(gpa, d, cap * proj_row * 2);
+        s.rank_input = try s.add(gpa, d, cap * out_k * 2);
+        s.rank_gather = try s.add(gpa, d, cap * out_k * 2);
+        s.rank_output = try s.add(gpa, d, cap * dims * 2);
+        s.rank_result = try s.add(gpa, d, cap * dims * 4);
+        s.part = try s.add(gpa, d, partRows(cap) * dims * 4);
+        try s.bufs.items[s.bufs.items.len - 1].fill8(0, stream.handle);
+        s.part_zero = true;
+        s.gout = try s.add(gpa, d, cap * gdn.value_dim * 2);
+        s.gxs = try s.add(gpa, d, cap * (gdn.value_dim / 32) * 4);
+        s.ys = try s.add(gpa, d, cap * gdn.value_dim * 4);
+        s.gq = try s.add(gpa, d, cap * gdn.nk * gdn.dk * 4);
+        s.gk = try s.add(gpa, d, cap * gdn.nk * gdn.dk * 4);
+        s.gv = try s.add(gpa, d, cap * gdn.value_dim * 4);
+        s.ggb = try s.add(gpa, d, cap * gdn.nv * 2 * 4);
+        s.q = try s.add(gpa, d, cap * q_heads * head_dim * 2);
+        s.iq = try s.add(gpa, d, cap * index_heads * index_dim * 2);
+        s.po = try s.add(gpa, d, att_rows * nch * q_heads * head_dim * 4);
+        s.pm = try s.add(gpa, d, att_rows * nch * q_heads * 4);
+        s.pl = try s.add(gpa, d, att_rows * nch * q_heads * 4);
+        s.qids = try s.add(gpa, d, fused_rows * idw * 4);
+        s.qnk = try s.add(gpa, d, fused_rows * 4);
+        s.qspr = try s.add(gpa, d, fused_rows * 4);
+        s.lanes_tab = try s.add(gpa, d, lanes_bytes);
+        s.ao = try s.add(gpa, d, cap * out_k * 2);
+        s.gated = try s.add(gpa, d, cap * out_k * 2);
+        s.gxs_attn = try s.add(gpa, d, cap * (out_k / 32) * 4);
+        s.router_l = try s.add(gpa, d, cap * (experts_n + 1) * 4);
+        s.picks = try s.add(gpa, d, pairs * 4);
+        s.picks_ep = try s.add(gpa, d, pairs * 4);
+        s.wts = try s.add(gpa, d, pairs * 4);
+        s.members = try s.add(gpa, d, pairs * 4);
+        s.items = try s.add(gpa, d, items * 3 * 4);
+        s.counts = try s.add(gpa, d, 8);
+        s.rank = try s.add(gpa, d, pairs * 4);
+        s.hist = try s.add(gpa, d, nblk * (experts_n + 1) * 4);
+        s.shared_gate = try s.add(gpa, d, cap * moe_w * 2);
+        s.shared_up = try s.add(gpa, d, cap * moe_w * 2);
+        s.shared_act = try s.add(gpa, d, cap * moe_w * 2);
+        s.shared_out = try s.add(gpa, d, cap * dims * 4);
+        s.moe_act = try s.add(gpa, d, pairs * moe_w * 2);
+        s.y = try s.add(gpa, d, pairs * dims * 4);
+        s.branch = try s.add(gpa, d, cap * dims * 2);
+        s.moe_f32 = try s.add(gpa, d, cap * dims * 4);
+        s.pocket_act = try s.add(gpa, d, cap * pocket_stride * 4);
+        s.ple_emb = try s.add(gpa, d, cap * dims * 2);
+        s.ple_xs = try s.add(gpa, d, cap * (dims / 32) * 4);
+        s.ple_keys = try s.add(gpa, d, cap * wide * 2);
+        s.ple_vals = try s.add(gpa, d, cap * dims * 2);
+        s.ple_part = try s.add(gpa, d, 4 * cap * dims * 4);
+        s.ple_gated = try s.add(gpa, d, cap * wide * 2);
+        s.ple_pss = try s.add(gpa, d, cap * streams * 4);
+        s.ple_nrow = try s.add(gpa, d, cap * wide * 2);
+        s.logits = try s.add(gpa, d, vocab * 2);
+        s.head_local = try s.add(gpa, d, head_rows * vocab);
+        var inv: [half]f32 = undefined;
+        for (&inv, 0..) |*o, i| o.* = @floatCast(std.math.pow(f64, 10_000_000.0, -@as(f64, @floatFromInt(i)) / @as(f64, half)));
+        s.inv = try s.add(gpa, d, half * 4);
+        try s.bufs.items[s.bufs.items.len - 1].uploadAsync(0, std.mem.sliceAsBytes(&inv), stream.handle);
+        s.dummy = try s.add(gpa, d, 4096);
+        try s.bufs.items[s.bufs.items.len - 1].fill8(0, stream.handle);
+        try stream.synchronize();
+        s.host = try cuda.HostBuffer.alloc(d, hostAt(cap)[5]);
+        s.staging = .{ .q = .{ .stream = stream, .event = try cuda.Event.init(d, false) } };
+        if (shared.on()) s.side = try shared.Side.init(d); // last: a refused allocation above never makes a stream
+        return s;
+    }
+
+    pub fn free(s: *Scratch, gpa: std.mem.Allocator) void {
+        if (s.staging) |*g| {
+            // no queued upload may still read `host`; a wait that fails has lost the context, and its copies with it
+            g.ready() catch {};
+            g.q.event.deinit();
+        }
+        if (s.host) |*h| h.free();
+        if (s.side) |*x| x.deinit();
+        for (s.bufs.items) |*b| b.free();
+        s.bufs.deinit(gpa);
+        s.* = undefined;
+    }
+};
+
+/// A sequence's state the pass reads and leaves as the row-by-row path would.
+pub const SeqState = struct {
+    /// The sequence's generation (Seq.gen), for graph keys; 0 for the draft head's own views.
+    gen: u64 = 0,
+    media: ?@import("cuda_media.zig").View = null,
+    conv: []cuda.DeviceBuffer,
+    state: []cuda.DeviceBuffer,
+    kc: []cuda.DeviceBuffer,
+    vc: []cuda.DeviceBuffer,
+    ikc: []cuda.DeviceBuffer,
+    /// Each attention layer's pooled indexer keys [cap / 4, 128] bf16.
+    pooled: []cuda.DeviceBuffer,
+    tail: cuda.DeviceBuffer,
+    history: *[2]i64,
+    /// Tokens the caches hold.
+    cap: usize,
+    /// Block scores for an attention block's rows [min(rows, att_rows), scoreStride(cap)] fp32 (the engine's).
+    scores: u64,
+    /// The attention caches' pages (pt 0: kc, vc, ikc and pooled are contiguous rows).
+    pg: @import("cuda_glue.zig").Pg = .{},
+};
+
+pub const scoreStride = sizes.scoreStride;
+pub const scoreBytes = sizes.scoreBytes;
+
+/// One stream's rows in a shared pass from `pos` on its own caches, and its window's rollback, hidden rows and scores.
+pub const Lane = struct { seq: SeqState, pos: usize, rows: usize = 1, keep: ?*const Keep = null, streams: u64 = 0, logits: u64 = 0 };
+
+/// The engine's resident weights the pass reads.
+pub const Model = struct {
+    collective: ?*@import("cuda_collective.zig").Collective = null,
+    table_w: u64,
+    table_s: u64,
+    table_b: u64,
+    table_dense: bool = false,
+    layers: []const Layer,
+    mixer: HcW,
+    head: Q4,
+    ngram: *const ple.Ngram,
+    /// The engine's own adds to the MoE outputs: a taught folder's pockets (null: none).
+    pocket: ?MoeAdd = null,
+};
+
+/// The rows' n-gram embeddings, gathered on a host thread while the GPU embeds and runs layer 0.
+pub const Gather = struct {
+    ngram: *const ple.Ngram,
+    history: []i64,
+    ids: []const u32,
+    emb: []u16,
+    xs: []f32,
+    failed: ?anyerror = null,
+    ns: i96 = 0,
+    io: std.Io,
+    /// A round's rows, each gathered after its own stream's history (empty: every row after `history`).
+    lanes: []const Lane = &.{},
+
+    pub fn main(g: *Gather) void {
+        const t0 = std.Io.Clock.awake.now(g.io).toNanoseconds();
+        defer g.ns = std.Io.Clock.awake.now(g.io).toNanoseconds() - t0;
+        if (g.lanes.len == 0) {
+            g.ngram.rows(g.history, g.ids, g.emb, g.xs) catch |err| {
+                g.failed = err;
+            };
+            return;
+        }
+        var row0: usize = 0;
+        for (g.lanes) |l| {
+            g.ngram.rows(l.seq.history[0..], g.ids[row0..][0..l.rows], g.emb[row0 * dims ..][0 .. l.rows * dims], g.xs[row0 * (dims / 32) ..][0 .. l.rows * (dims / 32)]) catch |err| {
+                g.failed = err;
+                return;
+            };
+            row0 += l.rows;
+        }
+    }
+};
+
+test {
+    _ = @import("cuda_batch_state_test.zig");
+    _ = @import("cuda_nvfp4_tile.zig");
+}
+
+pub const Pg = @import("cuda_glue.zig").Pg;
