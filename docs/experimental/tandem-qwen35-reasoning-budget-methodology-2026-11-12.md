@@ -119,29 +119,121 @@ Los scripts solo interactúan con servidores que el operador ya ha iniciado. No 
 
 Se añadió una ejecución exploratoria del mismo GGUF Qwen3.5-35B-A3B-IQ2_XXS mediante **cafe-llama.cpp**, usando la metodología Nepenthes. Esta ejecución se registra como una prueba independiente y no como una comparación controlada de motores: el prefill tuvo 89/93 tokens en caché y la configuración/extensiones de API no están demostradas como equivalentes a Tandem.cpp.
 
-### Scripts específicos
+### Scripts específicos y procedimiento de uso
 
-- [run_cafe_independent_two_sum.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_cafe_independent_two_sum.py): ejecuta una única petición two_sum contra un servidor cafe-llama.cpp ya iniciado. Captura /health, /props, identidad del proceso, petición y respuesta completas, y monitorización mediante el resource_monitor compartido. No inicia, detiene ni reconfigura el servidor. Requiere indicar --pid y proporciona opciones para endpoint, modelo y directorio de salida.
-- [inspect_cafe_independent_run.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_cafe_independent_run.py): inspecciona un resultado ya guardado sin realizar peticiones al servidor; puede mostrar el contenido final y el razonamiento con --show-content.
+Los dos scripts están en el directorio `repro/`:
 
-Ejemplo de ejecución (adaptar PID, endpoint y rutas al servidor ya iniciado):
+- [`run_NEPENTHES_cafe_independent_two_sum.py`](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_NEPENTHES_cafe_independent_two_sum.py): lanza una petición de prueba y registra la respuesta junto con la telemetría del host. **No arranca, detiene ni reconfigura el servidor**.
+- [`inspect_NEPENTHES_cafe_independent_run.py`](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_cafe_independent_run.py): lee los ficheros guardados por el runner. No necesita que el servidor siga activo y no vuelve a ejecutar el modelo.
+
+#### 1. Preparar el entorno
+
+Clonar el repositorio (o actualizar la copia existente) y situarse en la rama que contiene este experimento:
 
 ~~~bash
-python3 run_cafe_independent_two_sum.py \
-  --pid 21313 \
+git clone https://github.com/robertosantosx2/LEONES.git
+cd LEONES
+git checkout benchmarks/tandem-qwen35-reasoning-battery-2026-11-12
+git pull --ff-only
+~~~
+
+En una copia ya clonada, basta con:
+
+~~~bash
+cd /ruta/a/LEONES
+git fetch origin
+git switch benchmarks/tandem-qwen35-reasoning-battery-2026-11-12
+git pull --ff-only
+~~~
+
+El runner requiere Python 3 y el monitor compartido `resource_monitor.py`, que debe existir en:
+
+~~~text
+artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/resource_monitor.py
+~~~
+
+Usa la biblioteca estándar de Python; no requiere instalar paquetes con pip.
+
+#### 2. Comprobar el servidor existente
+
+Antes de ejecutar el runner, inicia manualmente `cafe-llama.cpp` con el modelo y los parámetros que quieras evaluar. El script no lo inicia por ti. Comprueba que el endpoint responde:
+
+~~~bash
+curl -fsS http://127.0.0.1:18086/health
+~~~
+
+Localiza el PID del servidor:
+
+~~~bash
+pgrep -af 'llama-server.*18086'
+~~~
+
+Identifica el PID correcto y verifica que corresponde al ejecutable esperado:
+
+~~~bash
+PID=21313
+readlink -f "/proc/$PID/exe"
+tr '\0' ' ' < "/proc/$PID/cmdline"
+echo
+~~~
+
+Sustituye `21313` por el PID real. No uses un PID antiguo sin comprobarlo: puede haber sido reutilizado por otro proceso.
+
+#### 3. Ejecutar la prueba Nepenthes
+
+Desde el directorio `repro/`, ejecuta:
+
+~~~bash
+cd artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro
+
+python3 run_NEPENTHES_cafe_independent_two_sum.py \
+  --pid "$PID" \
   --base-url http://127.0.0.1:18086 \
   --port 18086 \
   --model "$HOME/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf" \
-  --output "$HOME/cafe-llama.cpp-qwen35-independent-YYYYMMDD"
+  --output "$HOME/cafe-llama.cpp-qwen35-nepenthes-$(date +%Y%m%d-%H%M%S)"
 ~~~
 
-Inspección posterior:
+Parámetros:
+
+- `--pid`: obligatorio; PID del proceso `llama-server` que ya está atendiendo la petición.
+- `--base-url`: URL base de la API OpenAI-compatible. Por defecto, `http://127.0.0.1:18086`.
+- `--port`: puerto que utiliza el monitor de recursos; debe corresponder al servidor probado.
+- `--model`: ruta del GGUF; por defecto apunta al Qwen3.5-35B-A3B IQ2_XXS indicado en este informe.
+- `--output`: directorio nuevo para esta ejecución. No reutilices un directorio con contenido: el runner se niega a sobrescribir evidencias.
+- `--max-tokens`, `--reasoning-budget-tokens` y `--timeout`: permiten cambiar el máximo de generación, el campo de presupuesto enviado y el tiempo límite. El valor predeterminado de presupuesto es 128; enviarlo no demuestra que el servidor lo aplique.
+- `--monitor-script`: opcional; permite indicar otra ruta al `resource_monitor.py` si no está en la ubicación del repositorio documentada arriba.
+
+La tarea enviada es una implementación de `two_sum` en Python con complejidad O(n), números negativos, duplicados, índices distintos y resultado `None` cuando no hay solución. El runner usa temperatura 0, `reasoning_format=deepseek`, `enable_thinking=true` y `stream=false`.
+
+#### 4. Inspeccionar los resultados
+
+Copia la ruta exacta que imprimió el runner y pásala al inspector:
 
 ~~~bash
-python3 inspect_cafe_independent_run.py \
-  "$HOME/cafe-llama.cpp-qwen35-independent-YYYYMMDD" \
+python3 inspect_NEPENTHES_cafe_independent_run.py \
+  "$HOME/cafe-llama.cpp-qwen35-nepenthes-AAAAMMDD-HHMMSS"
+~~~
+
+Para mostrar también el texto final generado y el razonamiento que la API exponga por separado:
+
+~~~bash
+python3 inspect_NEPENTHES_cafe_independent_run.py \
+  "$HOME/cafe-llama.cpp-qwen35-nepenthes-AAAAMMDD-HHMMSS" \
   --show-content
 ~~~
+
+El inspector no modifica los datos. Informa de identidad de ejecución, build, modelo, tiempos, tokens, métricas de recursos y número de muestras de monitorización.
+
+#### 5. Ficheros que produce el runner
+
+Dentro del directorio indicado con `--output`:
+
+- `manifest.json`: configuración, identidad del proceso, `/health`, `/props`, petición enviada y notas de interpretación.
+- `responses/independent-two-sum.json`: respuesta íntegra, métricas derivadas, errores si los hubiera y resumen de recursos.
+- `resources/resource_samples.jsonl`: muestras temporales de monitorización.
+
+Conserva el directorio completo para reproducibilidad. No edites manualmente los JSON originales; si necesitas anotaciones, guárdalas en un fichero separado. El script de inspección requiere los tres ficheros anteriores.
 
 ### Resultado registrado (ejecución 2026-11-13)
 
