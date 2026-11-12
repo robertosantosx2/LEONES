@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (incorporada verificación de Magnitude 0.2.15 en Ubuntu: servicio operativo y catálogo MiniCPM5 1B; sin inferencia local todavía)  
+**Última consolidación:** 2026-11-12 (incorporada evaluación documental de Mage-VL-Cowork y situación en Artificial Analysis)  
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -26,6 +26,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **ThumbLLM / llama.cpp CPU (Ornith 1.5)** | Paquete Release 1 incorporado a LEONES; reproducción Linux preparada, pendiente de ejecutar | Ornith-1.5-9B-OBLITERATED Q4_K_M | El release original está orientado a Windows. Se añadieron receta y scripts Ubuntu para compilar llama.cpp b10603 (c060ca974) en CPU y servir en puerto 18088. Descarga, hash, compilación e inferencia en el MSI aún no verificados; no contabilizar como motor/modelo ejecutado. |
 | **Project Maya** | Integrado documentalmente / adaptador deshabilitado; fuente upstream vendorizada en PR #142 | GLM-5.3, GLM-5.3-Flash, DeepSeek-V4.1-Flash, MiniMax-M3.1-Flash | Familia independiente y motores/model packs específicos; API OpenAI y Anthropic documentadas. La evaluación histórica v1.1.31 se conserva como referencia, pero la rama de integración posterior fija upstream en v1.1.58 (`a3582528bfb73175fed1757b485bfcaaf01aaeaa`). No ejecutar en MSI: 14 GiB RAM frente al mínimo documentado de 32 GiB; 4 GiB VRAM. Sin inferencia local ni rendimiento medido. Ver PR #142. |\n| **Uzu** | Evaluación documental cerrada; `RESEARCH_ONLY / NOT VERIFIED` | Qwen3.5-4B, Qwen3.5 MoE (compatibilidad investigada, no validada) | Integrado en `Experimental` mediante PR #119. No se compila, instala ni ejecuta en el MSI dentro del alcance acordado. Sin soporte Ubuntu/CUDA, GGUF ni Qwen MoE demostrado; no contabilizar como motor probado. Ver [evaluación Uzu](../../experimental/uzu/README.md). |
 | **Mesh-LLM / REDIL** | Referencia arquitectónica documental; no ejecutado | Mesh-LLM como referencia principal de REDIL; Distributed Llama como backend opcional experimental | No es un motor validado en el MSI ni un benchmark. REDIL sigue en estado de propuesta/investigación, sin despliegue físico. La actualización documental está en PR #131. |
+| **Mage-VL-Cowork (Microsoft Mage)** | Investigación documental; no instalado ni ejecutado en el MSI | Agente CUA multimodal 4B; GUI + código/terminal | 66,0% OSWorld-Verified (361 tareas, 50 pasos; media de dos ejecuciones publicada por el equipo); no es un resultado de Artificial Analysis ni un benchmark LEONES. Sin inferencia local ni compatibilidad Ubuntu/GGUF verificada. |
 | **MLX** | Formato/artefacto usado por TensorFold | Qwen3.5-2B/4B MLX-4bit | No implica ejecución nativa de MLX en Ubuntu; TensorFold cargó artefactos MLX mediante backend CUDA. |
 
 ## 1.1 Liquid AI en llama.cpp — incorporación de LFM3 y modelos d1
@@ -219,6 +220,38 @@ Dream-Coder-7B, DiffuCoder-7B, DiffuLLaMA, ELYZA-Diffusion-Instruct, DiffusionGe
 **Estado LEONES:** `RESEARCH_ONLY / OFFICIAL_CHECKPOINT_IDENTIFIED / NOT_DOWNLOADED / NOT_RUN_ON_MSI`. No es benchmark ni prueba de compatibilidad. Siguiente paso: auditar la lista completa de archivos y su tamaño real, revisar la configuración/model card oficial de NVIDIA y comprobar si existe una modalidad de despliegue remoto o particionado que no requiera cargar todos los pesos en el MSI. No iniciar una descarga masiva hasta cerrar esa auditoría.
 
 **Fuente primaria:** [NVIDIA — DeepSeek-V4.1-Flash-1017-NVFP4 en Hugging Face](https://huggingface.co/nvidia/DeepSeek-V4.1-Flash-1017-NVFP4).
+
+
+### Mage-VL-Cowork (Microsoft Mage, 4B) — agente híbrido de uso del ordenador
+
+**Clasificación LEONES:** `RESEARCH_ONLY / DOCUMENTED / NOT RUN ON MSI`. Es un agente multimodal de *computer use* (CUA), no un modelo conversacional general ni un motor de inferencia. Una única política visión-lenguaje decide entre dos canales de actuación: (1) GUI, basada en capturas de pantalla y acciones de ratón/teclado, y (2) código/terminal, para operar mediante comandos, scripts y bibliotecas de aplicaciones. El objetivo es alternar ambos canales dentro del mismo agente, sin depender de un router externo para escogerlos.
+
+**Aportación técnica:** el informe del equipo Microsoft Mage describe un currículo progresivo de cinco etapas: GUI-oriented midtraining, GUI-agent SFT, coding/terminal SFT, hybrid CUA SFT y online hybrid RL. La página del proyecto informa de 293.806 tareas sintéticas, 6.915 habilidades y 318.837 trayectorias retenidas para la construcción del corpus. El resultado de entrenamiento que debe destacarse no es solo el tamaño 4B, sino el aprendizaje de cuándo conviene interactuar visualmente con una aplicación y cuándo ejecutar código o comandos para completar la misma tarea.
+
+**Resultados publicados por Microsoft (no reproducidos por LEONES):**
+
+| Evaluación | Resultado | Protocolo / interpretación |
+|---|---:|---|
+| OSWorld-Verified — checkpoint final RL | **66,04%** (redondeado por el proyecto a 66,0%) | Media de dos pasadas independientes: 65,33% y 66,75%; 361 tareas retenidas, excluyendo Google Drive; presupuesto de 50 pasos; escritorio 1920×1080. |
+| OSWorld — GUI Agent SFT | 45,56% | Etapa GUI previa a la unificación híbrida. |
+| OSWorld — Hybrid CUA SFT | 55,84% | Etapa posterior a la combinación GUI + terminal. |
+| OSWorld — Online Hybrid RL | 66,04% | Mejora de 10,20 puntos porcentuales frente a Hybrid CUA SFT (la página también informa +10,16 pp usando valores internos no redondeados). |
+| WebVoyager-Static — checkpoint SFT | **58,6% (377/643)** | Evaluación estática en 15 sitios; resultado del checkpoint SFT, no del checkpoint RL final. |
+
+La tabla de categorías OSWorld publicada por el proyecto da 87,5% en tareas de sistema operativo, 64,9% en Office, 65,0% en uso diario, 66,3% en tareas profesionales y 62,7% en workflows multiaplicación. Estas cifras pertenecen al protocolo y harness del equipo autor; no son una puntuación de inteligencia general ni deben mezclarse con benchmarks de LLM de texto.
+
+**Artificial Analysis:** a fecha de esta actualización no se ha localizado una ficha individual verificable de Mage-VL-Cowork en el catálogo público de modelos de Artificial Analysis ni una puntuación suya en el Intelligence Index. Por tanto, registrar **Artificial Analysis Intelligence Index: N/D — no listado/verificado**, no asignarle posición ni estimar un índice a partir del 66,0% de OSWorld. OSWorld mide éxito de tareas de interacción con escritorio; Artificial Analysis Intelligence Index mide capacidades generales mediante otra batería. No son magnitudes intercambiables.
+
+**Compatibilidad y viabilidad en el MSI Thin 15 B12UC:** el equipo de referencia tiene Intel Core i7-12650H, 14 GiB de RAM y RTX 3050 Laptop de 4 GiB VRAM. El checkpoint oficial está publicado en Hugging Face y el repositorio oficial ofrece código de entrenamiento/evaluación, pero esta revisión documental no ha verificado un paquete GGUF oficial, soporte de la arquitectura en llama.cpp/TensorFold, una ruta de inferencia CUDA para Ubuntu ni memoria total en ejecución. No asumir que 4B parámetros equivalen a 4 GB de memoria ni reutilizar tamaños de cuantización comunitaria sin verificar artefactos, hashes, arquitectura y runtime. El agente también requiere un entorno de ejecución de herramientas y escritorio compatible; cargar los pesos por sí solo no reproduce el sistema CUA.
+
+**Estado experimental:** no descargado, compilado, cargado ni ejecutado en el MSI; no hay velocidad, TTFT, consumo máximo RAM/VRAM ni tasa de éxito local. El 66,0% y el 58,6% son resultados upstream, no resultados LEONES. Antes de planificar una prueba local, auditar el README y los requisitos de inferencia del repositorio oficial, verificar formato/arquitectura y dependencias, y preparar un escritorio de prueba aislado con permisos mínimos. No conceder al agente acceso irrestricto al host, credenciales ni archivos personales.
+
+**Fuentes primarias:**
+- [Página técnica oficial de Mage-VL-Cowork](https://microsoft.github.io/Mage/cowork/)
+- [Informe técnico arXiv: 2610.40747](https://arxiv.org/abs/2610.40747)
+- [Modelo y model card oficial en Hugging Face](https://huggingface.co/microsoft/Mage-VL-Cowork)
+- [Código oficial Microsoft/Mage — mage_vl_cowork](https://github.com/microsoft/Mage/tree/main/mage_vl_cowork)
+
 
 ## 4. Informes y artefactos primarios
 
