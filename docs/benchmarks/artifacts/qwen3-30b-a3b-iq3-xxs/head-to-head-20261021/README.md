@@ -20,8 +20,8 @@ This directory contains the reproducible benchmark script, structured metrics, e
 
 ## Raw evidence status
 
-The clean archive `head-to-head-20261021-raw-no-cache.tar.gz` was uploaded and verified. Its SHA-256 is `95496a42dd5816908d03fc373d8ef2b6f6630f84d2fd4c373287d6dbcdad6fdb` (273,761 bytes). It contains 36 original per-run files: six `rep-*.log`, six `time-*.txt`, and six `rc-*.txt` for each engine, with all recorded exit codes equal to zero. The earlier archive including a generated RustingStrata PTX/profile cache had SHA-256 `60a752fb09cf3774aec0f051bc349ee9677780fbf9c56a9ea46600952efb72dc` (1,494,277 bytes).
+The clean archive `head-to-head-20261021-raw-no-cache.tar.gz` is committed in this GitHub directory. Its SHA-256 is `95496a42dd5816908d03fc373d8ef2b6f6630f84d2fd4c373287d6dbcdad6fdb` (273,761 bytes). It contains 36 original per-run files: six `rep-*.log`, six `time-*.txt`, and six `rc-*.txt` for each engine, with all recorded exit codes equal to zero. The earlier archive including a generated RustingStrata PTX/profile cache had SHA-256 `60a752fb09cf3774aec0f051bc349ee9677780fbf9c56a9ea46600952efb72dc` (1,494,277 bytes).
 
-The checksum manifest is committed here. The clean archive itself is **not yet stored in this GitHub directory**: the available GitHub connector can create UTF-8 text files but does not expose a binary upload operation for repository files. To commit the archive from the Ubuntu checkout, copy it into this directory and run `git add head-to-head-20261021-raw-no-cache.tar.gz && git commit -m 'benchmarks: preserve raw head-to-head logs' && git push`. The CSV and console excerpt remain useful structured evidence, but are not substitutes for complete raw logs.
+The checksum manifest and complete clean archive are both committed here. The CSV and console excerpt are useful structured evidence, while the tar.gz preserves the original per-run logs, GNU time reports and exit-code files.
 
 See also report section 17.13 in `docs/benchmarks/report-inferencia-dense_Octubre26.md` and its English counterpart.
