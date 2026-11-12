@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (incorporada prueba de compatibilidad LFM3-1.7B con TensorFold 1.1.6; PR #119 y campaña LFM3 #125)  
+**Última consolidación:** 2026-11-12 (incorporada evaluación documental de modelos de difusión de lenguaje y del motor diffuse-cpp)  
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -20,7 +20,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Kinetic** | Compilado / pruebas de ejecución en curso | LFM3-1.7B GGUF; Qwen3.5-35B-A3B IQ2_XXS seleccionado para prueba | Se inspeccionaron versiones, binarios y catálogo; se prepararon y ejecutaron pruebas. No publicar velocidad sin log de benchmark completo y reproducible. |
 | **Colibri** | Instalado / auditado técnicamente | Compatibilidad Qwen3.6 CUDA | Auditoría del parser de colocación y configuración CUDA. Compilación o validación de código no equivale a inferencia medida. |
 | **YASAKANI** | Prueba exploratoria solicitada | Modelo/backend/resultados por consolidar | Mantener como experimento hasta que exista log que demuestre carga e inferencia. |
-| **ThumbLLM (TeksEdge)** | Receta Windows auditada; reproducción Linux documentada, aún no ejecutada | Qwen3.5-4B GGUF Q4_K_M | Runtime fijado a llama.cpp build 10603 / commit `c060ca974`; receta CPU-only. La release configura `SPEC_TYPE=none`: MTP especulativo desactivado. La aplicación publicada es Windows x64, no un binario Linux. Guía Ubuntu en [LEONES](../../experimental/ThumbLLM-thumbllm-qwen3.5-4b-mtp-q4_k_m-cpu-win-x64-v0.1.0/docs/UBUNTU-REPRODUCTION.md). |\n| **Magnitude** | Integración investigada; prueba de catálogo fallida | Qwen3.5-4B | Pesos/proyector descargados y hashes verificados, pero el CLI no reconoció el ID. No hubo inferencia. |
+| **ThumbLLM (TeksEdge)** | Receta Windows auditada; reproducción Linux documentada, aún no ejecutada | Qwen3.5-4B GGUF Q4_K_M | Runtime fijado a llama.cpp build 10603 / commit `c060ca974`; receta CPU-only. La release configura `SPEC_TYPE=none`: MTP especulativo desactivado. La aplicación publicada es Windows x64, no un binario Linux. Guía Ubuntu en [LEONES](../../experimental/ThumbLLM-thumbllm-qwen3.5-4b-mtp-q4_k_m-cpu-win-x64-v0.1.0/docs/UBUNTU-REPRODUCTION.md). |\n| **diffuse-cpp** | Investigado documentalmente; no instalado ni ejecutado | LLaDA-8B-Instruct, Dream-v0-Instruct-7B | Motor C++ basado en GGML para dLLM; publica cuantización Q4_K_M y optimizaciones de caché/planificación. Sus cifras upstream proceden de AMD EPYC 4465P de 12 núcleos, no del CPU Intel de referencia. Sin validación local. [Repositorio](https://github.com/iafiscal1212/diffuse-cpp). |\n| **Magnitude** | Integración investigada; prueba de catálogo fallida | Qwen3.5-4B | Pesos/proyector descargados y hashes verificados, pero el CLI no reconoció el ID. No hubo inferencia. |
 | **Ollama** | Incluido en matriz de runtimes; no instalado en el MSI según inventario previo | Sin ejecución local validada | No contabilizar como motor probado en este equipo. |
 | **Transformers, vLLM, SGLang, KTransformers, Mistral.rs** | Evaluación de soporte / planificación | Varias familias candidatas | Sin benchmark local normalizado acreditado en este inventario. |
 | **ThumbLLM / llama.cpp CPU (Ornith 1.5)** | Paquete Release 1 incorporado a LEONES; reproducción Linux preparada, pendiente de ejecutar | Ornith-1.5-9B-OBLITERATED Q4_K_M | El release original está orientado a Windows. Se añadieron receta y scripts Ubuntu para compilar llama.cpp b10603 (c060ca974) en CPU y servir en puerto 18088. Descarga, hash, compilación e inferencia en el MSI aún no verificados; no contabilizar como motor/modelo ejecutado. |
@@ -97,6 +97,39 @@ La ficha oficial de [inclusionAI/Ling-3.0-tiny](https://huggingface.co/inclusion
 - **Estado LEONES:** `EXPERIMENTAL / DOCUMENTED / NOT RUN ON MSI`. El adaptador permanece deliberadamente deshabilitado; registro de fuentes/modelos y documentación no significan orquestación runtime completa. La ejecución física requiere un host compatible, setup/reload de model pack, procedencia de los binarios específicos y smoke test de API.
 
 **Decisión:** conservar Project Maya en Experimental como familia independiente y como referencia arquitectónica para MoE de gran tamaño. No priorizar su ejecución en el MSI actual. No declarar compatibilidad con Qwen denso/MoE ni rendimiento local hasta disponer de evidencia reproducible.
+
+## 3.2 Modelos de difusión de lenguaje (dLLM) — evaluación documental, CPU como referencia
+
+Esta familia genera texto mediante refinamiento iterativo de tokens enmascarados o parcialmente definidos, en lugar de la decodificación causal token a token habitual. La generación paralela no implica por sí sola menor latencia: el coste depende del número de pasos de refinamiento, el tamaño de bloque, la cuantización, el hardware y la implementación del motor.
+
+**Equipo de referencia para esta evaluación:** GB-BXi7-5500 con Intel Core i7-5500U (2 núcleos / 4 hilos), Ubuntu. La referencia autoregresiva local es LFM3-1.7B GGUF Q4_K_M, aproximadamente 15–16 tok/s de generación en la campaña archivada. Es una referencia orientativa: no existe todavía una comparación dLLM frente a LFM3 con idéntico prompt, longitud de salida y protocolo en ese equipo.
+
+| Modelo / familia | Tamaño / arquitectura | Motor y compatibilidad | Viabilidad para el CPU de referencia | Estado LEONES |
+|---|---|---|---|---|
+| **LLaDA-8B-Instruct** | 8.02B parámetros; difusión por enmascaramiento, backbone tipo LLaMA | Implementación oficial PyTorch/Transformers; conversor y soporte declarados por diffuse-cpp | El modelo cuantizado Q4_K_M publicado por diffuse-cpp ocupa aproximadamente 4.5–5.1 GB según su documentación. Puede caber en 14 GiB de RAM en principio, pero no hay medición en i7-5500U y no se espera asumir velocidad interactiva. La RTX 3050 de 4 GiB no puede alojarlo íntegramente en VRAM. | Candidato de referencia para estudiar dLLM, no descargado ni ejecutado. |
+| **Dream-v0-Instruct-7B** | 7.6B parámetros; difusión, backbone Qwen2.5 con GQA | Implementación oficial PyTorch; conversor y soporte declarados por diffuse-cpp | Mismas reservas de memoria y rendimiento que LLaDA-8B. Sin prueba en el i7-5500U. | Candidato secundario; no descargado ni ejecutado. |
+| **iLLaDA-8B-Instruct** | 7.62B parámetros; difusión bidireccional enmascarada, contexto anunciado de 8.192 | Checkpoint publicado por GSAI-ML; el repositorio oficial indica reutilización del código LLaDA mediante `mask_id=5`. No se ha verificado conversión/compatibilidad con diffuse-cpp. | Demasiado grande para VRAM completa de 4 GiB; ejecución CPU no probada. Su benchmark de modelo no acredita rendimiento en este equipo. | Seguimiento documental; no ejecutar hasta verificar soporte del motor y cuantización. |
+| **LLaDA-MoE-7B-A1B-Instruct** | MoE de 7B totales y aprox. 1B activos por inferencia, según el repositorio oficial | Implementación oficial LLaDA; diffuse-cpp no declara soporte para esta variante MoE | Los parámetros activos reducen cómputo por token, pero no eliminan el almacenamiento de expertos. No asumir que cabe en 4 GiB VRAM ni que diffuse-cpp lo soporte. | Investigación futura; sin ejecución ni benchmark. |
+| **Tiny-A2D / repositorio dllm citado en conversación** | Identidad, arquitectura, número de parámetros y checkpoint no verificados con evidencia primaria suficiente | No se ha confirmado un runtime reproducible ni un artefacto descargable inequívoco | No clasificar como modelo pequeño ejecutable ni asignar requisitos/rendimiento. | Referencia no verificada; excluida de candidatos aprobados hasta identificar modelo, paper y pesos exactos. |
+
+### Motor: diffuse-cpp
+
+- [Repositorio upstream](https://github.com/iafiscal1212/diffuse-cpp): motor C++ basado en GGML para inferencia de modelos de difusión de lenguaje.
+- El README declara soporte para **LLaDA-8B-Instruct** y **Dream-v0-Instruct-7B**, cuantización Q4_K_M y funciones como caché entre pasos y planificación adaptativa del número de iteraciones.
+- El upstream publica resultados de **14–28 tok/s en prompts fáciles** con Q4_K_M, caché y salida adaptativa. Su tabla de benchmark identifica un **AMD EPYC 4465P de 12 núcleos / 12 hilos, 125 GB RAM**, por lo que estas cifras no son transferibles al Intel i7-5500U de 2 núcleos / 4 hilos. No se deben presentar como rendimiento esperado ni como resultado LEONES.
+- La cifra de tamaño de los pesos cuantizados (aprox. 4.5–5.1 GB) no incluye necesariamente todos los buffers, contexto ni memoria de proceso.
+- No confundir el paralelismo de refinamiento con generación causal. Las métricas de tokens/s de motores distintos pueden contar trabajo de forma diferente; una comparación justa debe fijar texto final, pasos, tokens útiles, latencia total y calidad.
+
+### Decisión y plan de evaluación
+
+1. Registrar **diffuse-cpp + LLaDA-8B-Instruct Q4_K_M** como primer experimento técnico, condicionado a verificar licencia, artefacto, dependencias y compatibilidad real del build con el CPU Intel.
+2. Mantener **Dream-v0-Instruct-7B** como segundo candidato si la primera ruta funciona.
+3. Seguir **iLLaDA-8B-Instruct** por su mejora declarada sobre LLaDA, pero no asumir compatibilidad GGUF/diffuse-cpp hasta que exista conversor o soporte explícito.
+4. Mantener **LLaDA-MoE-7B-A1B** en investigación: el 1B activo no significa pesos totales de 1B y el motor diffuse-cpp no declara soporte MoE.
+5. No descargar ni ejecutar todavía en el MSI RTX 3050 como objetivo primario. El primer benchmark debe ser CPU-only en el GB-BXi7-5500 y registrar RAM máxima, tiempo total, tokens útiles/s, número de pasos, calidad en español y estabilidad.
+6. Comparar con LFM3-1.7B usando exactamente la misma batería de tareas (extracción, aritmética, razonamiento breve, comprensión y español), límites de salida y protocolo. El umbral de referencia es 15–16 tok/s de generación LFM3, no una cifra publicada en otro procesador.
+
+**Fuentes primarias y cautelas:** [diffuse-cpp](https://github.com/iafiscal1212/diffuse-cpp) · [LLaDA oficial](https://github.com/ML-GSAI/LLaDA) · [Dream oficial](https://github.com/DreamLM/Dream) · [iLLaDA-8B-Instruct](https://huggingface.co/GSAI-ML/iLLaDA-8B-Instruct). Los resultados de benchmark y las capacidades se atribuyen a sus respectivos proyectos; no son pruebas locales LEONES.
 
 ## 4. Informes y artefactos primarios
 
