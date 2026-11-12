@@ -551,6 +551,57 @@ audio:
 - [Qwen3.8-27B NVFP4](https://huggingface.co/Wallawalla47)
 - [Especificación CUDA de arquitecturas NVIDIA](https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/)
 
+### 3.5 TensorFold como backend nativo de Atomic Chat — propuesta de integración (12-11-2026)
+
+**Clasificación:** investigación de arquitectura y propuesta de feature; no es una integración implementada ni una prueba de Atomic Chat. Se prepara una solicitud para el repositorio [Atomic Chat Core](https://github.com/AtomicBot-ai/atomic-chat-core), tomando como base la evidencia local de TensorFold y el trabajo de integración documentado en LEONES.
+
+**Motivación basada en resultados del laboratorio:** TensorFold ya ha demostrado inferencia CUDA funcional en el MSI Thin 15 B12UC (RTX 3050 Laptop, 4 GiB VRAM) con checkpoints Qwen3.5 MLX-4bit. En las campañas registradas se han observado aproximadamente 112,2–116,5 tok/s con Qwen3.5-2B y 55,7–56,3 tok/s con Qwen3.5-4B, además de TTFT bajo y carga funcional del 4B con la corrección experimental de scratch diferido. Son resultados de configuraciones concretas; no garantizan el mismo rendimiento dentro de Atomic Chat ni demuestran que el arreglo de PR #1879 esté incluido en una release publicada.
+
+**Propuesta técnica:** incorporar TensorFold como proveedor local seleccionable, junto a los backends existentes, mediante un adaptador nativo en `atomic-chat-core`. La primera entrega debería limitarse a Linux x86_64 con NVIDIA CUDA y a una única instancia/modelo gestionado. El objetivo es que Atomic Chat descubra, arranque, supervise, consulte y detenga `tensorfold-native` como proceso local, sin convertir TensorFold en un proveedor remoto OpenAI ni exigir Docker.
+
+| Área | Propuesta | Criterio de implementación |
+|---|---|---|
+| Registro del proveedor | Añadir `tensorfold` al identificador/lista de proveedores locales y al registro de runtimes | Mantener la selección coherente con el contrato actual de `atomic-chat-core`; no crear un segundo gestor de procesos |
+| Proceso y ciclo de vida | Lanzar y supervisar `tensorfold-native` como proceso hijo gestionado | Reutilizar el runtime local, la tabla de sidecars, readiness, cancelación, apagado y limpieza existentes |
+| Detección de capacidad | Consultar versión, `capabilities --json` e información del checkpoint | Validar familia, formato y cuantización reales; no inferir compatibilidad solo por el nombre del modelo |
+| API local | Integrar descubrimiento de modelos y chat, inicialmente `/v1/models` y `/v1/chat/completions` | Probar respuestas JSON y streaming SSE de extremo a extremo antes de declarar compatibilidad |
+| Red y seguridad | Escuchar en loopback, puerto asignado/controlado por el runtime y acceso a través del gateway gestionado | Reutilizar validación de Host, autenticación y allowlist del gateway; no exponer el servidor de inferencia directamente |
+| GPU y memoria | Registrar ocupación antes del arranque y liberarla solo tras confirmar la salida del proceso | Separar memoria de pesos, KV cache y scratch/workspace; no terminar procesos GPU ajenos para liberar VRAM |
+| Modelos | Empezar con checkpoints locales compatibles y rutas ya disponibles | No añadir descargas de pesos al core ni asumir que TensorFold acepta GGUF genérico |
+| Plataforma | Primera fase: Linux x86_64 + NVIDIA CUDA | Dejar Windows, macOS, Docker y otras aceleraciones para fases posteriores |
+
+**Reutilización de arquitectura:** la implementación debe encajar en los mecanismos que ya utiliza Atomic Chat Core para proveedores locales —identificadores, runtime local, supervisión de sidecars, gateway de sesiones y registro/ocupación GPU— en vez de introducir otro subsistema paralelo. Los nombres concretos de módulos y puntos de extensión deben confirmarse contra la versión actual del repositorio durante la implementación.
+
+**Alcance recomendado para una primera versión:**
+1. Detección del binario y comprobación de versión/capacidades.
+2. Selección de un checkpoint local que TensorFold declare compatible.
+3. Arranque supervisado con CUDA, contexto acotado, paralelismo 1 y puerto loopback.
+4. Readiness mediante health check y registro del modelo servido.
+5. Chat JSON y streaming SSE a través del gateway de Atomic Chat.
+6. Cancelación, descarga/parada, cierre de sesión y limpieza de procesos/ocupación GPU.
+7. Tests unitarios y de ciclo de vida sin GPU; prueba de aceptación opcional en hardware CUDA con modelo pequeño.
+
+**Límites y riesgos que deben figurar en el diseño:**
+- La estimación genérica de memoria que devuelva la herramienta de inspección no equivale al pico real de VRAM. La elegibilidad debe combinar perfil de modelo/configuración, memoria disponible y margen de seguridad.
+- La reserva de GPU debe ser transaccional: adquirir antes de arrancar y liberar solo cuando el proceso haya terminado de verdad. Un timeout o una cancelación de petición no demuestra que el proceso haya liberado memoria.
+- Atomic Chat no debe matar ni reiniciar procesos CUDA que no haya creado y registrado.
+- La compatibilidad debe evaluarse por combinación de versión de TensorFold, familia, formato, cuantización, contexto y backend; no por extensión de archivo ni por etiqueta genérica “Qwen”.
+- La compatibilidad de structured output/tool calling, visión, audio, embeddings y múltiples modelos simultáneos queda fuera de la primera fase hasta disponer de pruebas específicas.
+- La integración TensorFold Web de LEONES es una experiencia de UI/bridge independiente; no debe presentarse como implementación del proveedor en Atomic Chat.
+
+**Estado de la propuesta:** issue preparado para presentar en [Atomic Chat Core — Issues](https://github.com/AtomicBot-ai/atomic-chat-core/issues), pero no publicado desde esta actualización. La rama de investigación de LEONES [PR #139](https://github.com/robertosantosx2/LEONES/pull/139) conserva el trabajo previo del PoC y sus comprobaciones; no equivale a un merge en Atomic Chat Core.
+
+**Evidencia y documentación relacionada:**
+- [Validación CUDA de Qwen3.5-2B/4B y PR #1879 en RTX 3050](../subprojects/TensorFold/CUDA-LAZY-SCRATCH-FIX-PR1879-2026-11-02.md).
+- [TensorFold upstream — PR #1879](https://github.com/ashhart/TensorFold/pull/1879) y [release v1.2.7](https://github.com/ashhart/TensorFold/releases/tag/v1.2.7). La release v1.2.7 no debe considerarse prueba de que el cambio de PR #1879 esté incorporado.
+- [LEONES PR #139 — investigación de integración TensorFold/Atomic Chat](https://github.com/robertosantosx2/LEONES/pull/139).
+- [Plan de pruebas del runtime Atomic Chat Core](https://github.com/robertosantosx2/LEONES/blob/research/atomic-chat-tensorfold-linux-cuda/research/atomic-chat-tensorfold-core-runtime-test-plan-2026-11-06.md).
+- [Elegibilidad de checkpoints TensorFold](https://github.com/robertosantosx2/LEONES/blob/research/atomic-chat-tensorfold-linux-cuda/research/atomic-chat-tensorfold-checkpoint-eligibility-2026-11-06.md).
+- [PoC de TensorFold para Atomic Chat en LEONES](https://github.com/robertosantosx2/LEONES/tree/research/atomic-chat-tensorfold-linux-cuda/experiments/atomic-chat-tensorfold).
+- [Repositorio Atomic Chat Core](https://github.com/AtomicBot-ai/atomic-chat-core).
+
+**Decisión:** GO para abrir y discutir el feature request e implementar un adaptador experimental en Linux/CUDA; NO-GO para marcarlo como backend disponible o recomendarlo como integración de producción hasta completar pruebas reales de API/streaming, gateway, ciclo de vida, gestión de GPU y apagado sin procesos huérfanos.
+
 ## 4. Informes y artefactos primarios
 
 ### Material formativo sobre LLM (no es benchmark)
@@ -610,6 +661,7 @@ El curso es un recurso didáctico interactivo sobre Transformers y modelos de le
 - [TensorFold — corrección CUDA lazy scratch / PR #1879](../subprojects/TensorFold/CUDA-LAZY-SCRATCH-FIX-PR1879-2026-11-02.md)
 - [TensorFold upstream — PR #1879](https://github.com/ashhart/TensorFold/pull/1879)
 - [TensorFold upstream — release v1.2.7 (contraste de incorporación)](https://github.com/ashhart/TensorFold/releases/tag/v1.2.7)
+- [Propuesta de backend nativo TensorFold para Atomic Chat — investigación y alcance](../../research/atomic-chat-tensorfold-core-runtime-test-plan-2026-11-06.md)
 - [Pithos — CSV de benchmark](../../artifacts/pithos-0.5.1-2026-11-07/benchmark-results.csv)
 - [Pithos — log de sesión](../../artifacts/pithos-0.5.1-2026-11-07/benchmark-session.log)
 
