@@ -25,6 +25,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **LocalAI / Parakeet.cpp** | Investigación documental; benchmark local pendiente | LocalAI como proveedor experimental; Parakeet.cpp (ASR) y backends de audio asociados | Estudio arquitectónico incorporado el 12-11-2026. No instalado ni ejecutado en el MSI; no hay mediciones locales de precisión, RTF, latencia, RAM o VRAM. Propuesta: LocalAI opcional detrás de ODS; comparar wrapper LocalAI con Parakeet.cpp directo antes de decidir adopción. Ver §3.4. |\n| **Ollama** | Incluido en matriz de runtimes; no instalado en el MSI según inventario previo | Sin ejecución local validada | No contabilizar como motor probado en este equipo. |
 | **MiniCPM5-2B Q4_K_M / llama.cpp CUDA** | Ejecutado y medido en el MSI; evaluación DSpark cerrada sin instalación | MiniCPM5-2B Q4_K_M; borrador MiniCPM5-2B-DSpark evaluado documentalmente | RTX 3050 Laptop 4 GiB, sm_86. CPU: 54,3/21,5 tok/s (prefill/generación); CUDA ctx 512: 755,3/86,5; CUDA ctx 2048: 817,40/85,50. Offload 43/43 capas; KV CUDA 84 MiB. SGLang + DSpark BF16 no viable por memoria y sin receta validada para esta GPU; GPTQ + DSpark no documentado. Auditoría local: Python 3.14.4, PyTorch/SGLang/Triton/FlashInfer ausentes. Ver informe fechado 11-11-2026 en §4. |\n| **Phi-4-mini-instruct / llama.cpp CUDA** | Candidato priorizado; descarga e inferencia local pendientes | Phi-4-mini-instruct 3.8B GGUF Q4_K_M (2,49 GB) | Modelo denso de Microsoft; GGUF comunitario de Unsloth documenta uso con llama.cpp. Adecuado como candidato de prueba, no como ejecución acreditada. En MSI comenzar con contexto 2048 y offload GPU conservador; el contexto anunciado de 128K no es objetivo práctico para 4 GiB VRAM. Ver §3.7. |
 | **Infernix** | Investigación documental; no compilado ni ejecutado | Qwen3.8-Flash-Next, Qwen3.8-27B, Qwen3.6, Qwen3.5-122B-A10B | Motor C++/CUDA orientado a RTX 50/Blackwell; el README exige RTX 50-series para otros equipos. Sin soporte sm_86 documentado ni modelo pequeño confirmado. No viable para el MSI actual; ver §3.5. |
+| **tqLLM 1.5.0** | Investigación documental; no instalado, compilado ni ejecutado en el MSI | Qwen3.5-4B y modelos menores como candidatos; Qwen3.8-27B y Flash-Next descartados por memoria; Qwen3.5/3.6 MoE no verificados | Motor C++/CUDA con GGUF, formatos TurboQuant, memory fit, offload de embeddings/cabeza/KV a RAM y speculative decoding. La release 1.5.0 (10-11-2026) vuelve a cargar Qwen3.5-4B y menores; el dato publicado de 106–185 tok/s corresponde a RTX 3090, no al MSI. RTX 3050 sm_86 pertenece a la familia RTX 30 contemplada, pero 4 GiB no están validados. Ver §3.8. |
 | **Transformers, vLLM, SGLang, KTransformers, Mistral.rs, DynaLM** | Evaluación de soporte / planificación; sin prueba local de TwIL-8B | TwIL-8B Granite GGUF Q4_K_M como caso de compatibilidad pendiente | No hay inferencia ni benchmark de TwIL-8B acreditados con estos motores. vLLM se considera una ruta a investigar con pesos compatibles/Safetensors, no una garantía de carga directa de este GGUF. DynaLM queda como candidato documental citado en la conversación, con soporte Granite/GGUF/CUDA aún no verificado independientemente. |
 | **ThumbLLM / llama.cpp CPU (Ornith 1.5)** | Paquete Release 1 incorporado a LEONES; reproducción Linux preparada, pendiente de ejecutar | Ornith-1.5-9B-OBLITERATED Q4_K_M | El release original está orientado a Windows. Se añadieron receta y scripts Ubuntu para compilar llama.cpp b10603 (c060ca974) en CPU y servir en puerto 18088. Descarga, hash, compilación e inferencia en el MSI aún no verificados; no contabilizar como motor/modelo ejecutado. |
 | **Project Maya** | Investigación documental ampliada; integración en LEONES deshabilitada / no ejecutada | GLM-5.3 (744B), GLM-5.3-Flash (321B), DeepSeek-V4.1-Flash-1017 (748B), MiniMax-M3.1-Flash (428B), Qwen-3.8-Flash-Next / CYBER-FROST | Motor especializado MoE con engines y packs por familia; GGUF/EXL3 según modelo, API OpenAI/Anthropic y UI web. Documentación upstream revisada el 12-11-2026. En el MSI no hay modelo ejecutable soportado: Maya exige al menos 32 GB de RAM física y NVMe; el equipo tiene 14 GiB RAM + 4 GiB VRAM (18 GiB combinados). Qwen UD-IQ2_XS es el candidato menos exigente (47 GB para el modelo residente; 64 GB VRAM+RAM recomendados), pero sigue por debajo del mínimo de RAM física. Sin descarga, instalación, inferencia ni benchmark local. Ver §3.7 y PR #142. |\n| **Uzu** | Evaluación documental cerrada; `RESEARCH_ONLY / NOT VERIFIED` | Qwen3.5-4B, Qwen3.5 MoE (compatibilidad investigada, no validada) | Integrado en `Experimental` mediante PR #119. No se compila, instala ni ejecuta en el MSI dentro del alcance acordado. Sin soporte Ubuntu/CUDA, GGUF ni Qwen MoE demostrado; no contabilizar como motor probado. Ver [evaluación Uzu](../../experimental/uzu/README.md). |
@@ -879,6 +880,51 @@ Para cada variante registrar modelo/archivo exacto, SHA-256, versión y commit d
 
 **Criterio de promoción:** Colibri solo pasa a «compilado» cuando se conserve la salida de compilación; a «validado» cuando pasen las pruebas automatizadas y la compilación CUDA en el MSI; y a «ejecutado/medido» cuando exista una inferencia Qwen3.6 reproducible con modelo, hash, contexto, parámetros, logs y métricas PP/TG/TTFT y memoria. Hasta entonces, rendimiento local = N/D.
 
+### 3.8 tqLLM 1.5.0 — evaluación de compatibilidad y viabilidad en MSI RTX 3050 (12-11-2026)
+
+**Clasificación LEONES:** investigación documental basada en el repositorio y documentación upstream consultados el 12-11-2026. **No instalado, compilado ni ejecutado en el MSI.** No hay resultados locales de carga, prefill, decode, TTFT, RAM, VRAM o swap. No incluir tqLLM en rankings de rendimiento hasta completar una campaña reproducible.
+
+**Proyecto y versión.** [turbo-tan/tqllm](https://github.com/turbo-tan/tqllm) es un motor C++ de inferencia para modelos Qwen soportados y pesos GGUF, con backends CUDA para NVIDIA y Metal para Apple Silicon. Expone un servidor HTTP compatible con la API de OpenAI y un monitor web integrado. En la consulta del 12-11-2026, la rama principal anuncia **v1.5.0**, publicada el 10-11-2026. La versión 1.5.0 incorpora compilación nativa Windows MSVC/CUDA, nuevas rutas de speculative decoding y correcciones para volver a cargar Qwen3.5-4B y modelos menores con embeddings compartidos.
+
+**Compatibilidad del equipo.** La RTX 3050 Laptop del MSI es Ampere sm_86 y pertenece a la familia RTX 30 que el proyecto incluye en sus imágenes CUDA x86-64. Esto acredita afinidad de arquitectura, no viabilidad con 4 GiB de VRAM. La guía Docker exige Linux, GPU NVIDIA, Docker Compose y NVIDIA Container Toolkit; la ruta nativa requiere CMake 3.25+, CUDA C++20 y un toolkit reciente. La guía declara CUDA 12.9 y 13.0 probados en RTX 3090. El toolkit local CUDA 13.4 no está validado por esa referencia y debe comprobarse en compilación o contenedor. La imagen precompilada contempla arquitecturas CUDA 86, 89 y 120.
+
+| Familia / modelo | Estado upstream observado | Evaluación para el MSI |
+|---|---|---|
+| **Qwen3.5-4B GGUF Q4_K_M** | La changelog 1.5.0 indica que Qwen3.5 4B y menores vuelven a cargar; publica 106–185 tok/s en RTX 3090 | **Primer candidato experimental.** El rendimiento publicado no es transferible al MSI. Hay que verificar carga y memoria con contexto pequeño. |
+| Qwen3.5-2B y modelos menores | Incluidos en la corrección de carga de 1.5.0 | Candidatos secundarios; confirmar archivos/tensores y probar si el 4B no deja margen suficiente. |
+| Qwen3.8-27B | Archivos TQ3/TQ4, K-quant e IQ; la tabla de soporte declara NVIDIA de 16 GB en adelante | **No viable/recomendable** en 4 GiB. No descargar para esta campaña. |
+| Qwen3.5 / Qwen3.6 27B densos | Se declaran de la misma arquitectura que Qwen3.8-27B; no reejecutados para 1.5.0 | Descartar en el MSI por el presupuesto de memoria publicado para 27B. |
+| Qwen3.6-35B-A3B (qwen35moe) | La propia documentación indica que los GGUF MoE Qwen3.5/3.6 todavía no están verificados | **No soportado/validado.** No inferir compatibilidad por el soporte general de Qwen3.5 denso. |
+| Qwen3.8-Flash-Next 125B MoE | Requiere 24 GB GPU + 64 GB RAM (o GB10/DGX Spark) | **No viable** en el MSI. |
+
+**Técnicas relevantes para LEONES/REDIL.**
+
+- **Memory fit (-fit on):** durante la carga mide memoria y reduce el consumo siguiendo una política documentada: puede mover embeddings y LM head a RAM, reducir buffers de prefill, cambiar el formato KV, trasladar parte de KV a RAM y finalmente reducir contexto. Es una estrategia de ajuste, no una garantía de que cualquier modelo quepa.
+- **MoE y memoria host:** existen opciones para alojar expertos en RAM y mantener una caché de expertos en VRAM (--moe-host-mb, --moe-cache-mb); no deben confundirse con soporte confirmado de cada arquitectura.
+- **TqCache:** permite mantener posiciones KV en memoria del sistema (--kv-host) y elegir formatos KV compactos. Trasladar KV a RAM reduce presión de VRAM, pero añade transferencias y no convierte RAM/swap en memoria GPU.
+- **TurboQuant:** formatos propios TQ3 (3,125 bits/peso), TQ4 (4,125 bits/peso) y TQ3_4S (4 bits/peso). TQ3/TQ4 usan tipos GGUF propios del proyecto y requieren sus kernels; no son formatos intercambiables con cualquier build de llama.cpp. TQ3_4S sí aparece también en el proyecto llama.cpp-tq3.
+- **Speculative decoding:** DFlash2 y MTP pueden proponer tokens para verificación por el modelo principal. Añaden coste/memoria auxiliar y su beneficio depende del modelo, drafter y aceptación; no asumir aceleración en una GPU de 4 GiB.
+- **API y monitor:** el servidor escucha por defecto en http://localhost:8086; incluye monitor de prefill, generación y uso de hardware, lo que podría facilitar una integración experimental con ODS/REDIL si se valida primero el runtime.
+
+**Decisión:** **GO condicionado únicamente para una prueba aislada con Qwen3.5-4B Q4_K_M; NO-GO para Qwen 27B, Qwen3.6-35B-A3B y Flash-Next en este MSI.** La prioridad de prueba es determinar si el 4B carga sin OOM y conserva margen para contexto y buffers. Si el 4B no resulta estable, bajar a Qwen3.5-2B. No utilizar la swap de 31 GiB como argumento para declarar un modelo operativo: swap sostenida puede degradar severamente la latencia y bloquear el escritorio.
+
+**Plan de validación propuesto (no ejecutado):**
+1. Registrar commit/tag exacto de tqLLM, versión de Docker/NVIDIA Container Toolkit o CMake/CUDA, driver y sm_86.
+2. Comprobar espacio disponible y verificar procedencia, tamaño y SHA-256 del GGUF Qwen3.5-4B Q4_K_M.
+3. Iniciar con contexto 512 o 1024, una sola sesión, memory fit activado, sin drafter y sin concurrencia; inspeccionar el informe de memory fit.
+4. Capturar VRAM/RAM/swap durante carga, prefill y generación; ejecutar al menos tres repeticiones con prompt y salida fijos.
+5. Registrar TTFT, prefill tok/s, decode tok/s, pico de VRAM, RSS/pico RAM, swap, temperatura, estabilidad y logs completos.
+6. Solo después comparar una segunda campaña con contexto 2048 y, si cabe, speculative decoding; comparar con TensorFold y llama.cpp usando el mismo GGUF/protocolo cuando sea posible.
+
+**Fuentes primarias consultadas (12-11-2026):**
+- [Repositorio tqLLM y matriz de modelos soportados](https://github.com/turbo-tan/tqllm)
+- [Release 1.5.0](https://github.com/turbo-tan/tqllm/releases/tag/v1.5.0)
+- [Changelog — corrección de Qwen3.5-4B y modelos menores](https://github.com/turbo-tan/tqllm/blob/main/CHANGELOG.md)
+- [Quick start, Docker y compilación nativa](https://github.com/turbo-tan/tqllm/blob/main/docs/guides/quickstart.md)
+- [Opciones de servidor, memory fit, MoE y TqCache](https://github.com/turbo-tan/tqllm/blob/main/docs/reference/options.md)
+- [Formatos de pesos TurboQuant](https://github.com/turbo-tan/tqllm/blob/main/docs/reference/formats.md)
+- [Arquitectura interna](https://github.com/turbo-tan/tqllm/blob/main/docs/ARCHITECTURE.md)
+
 ## 4. Informes y artefactos primarios
 
 ### Kinetic 0.1.0 + LiquidAI LFM3-1.7B Q4_K_M — RTX 3050 CUDA (11-11-2026)
@@ -1001,6 +1047,7 @@ El informe también documenta diagnósticos de carga CUDA de Qwen3-30B-A3B (buff
 
 ## 6. Pendientes de consolidación
 
+- Evaluar tqLLM 1.5.0 en un checkout/entorno aislado: primero validar Qwen3.5-4B Q4_K_M en RTX 3050 sm_86 con contexto corto y archivar versión, GGUF/hash, memory fit, logs y métricas; no probar 27B/MoE en este MSI.
 - Archivar en LEONES los logs, JSONL, manifiesto y configuración íntegra de Tandem Qwen3.5-35B-A3B IQ2_XXS si no están ya completos.
 - Clonar y auditar el código fuente de ThumbLLM en Ubuntu, compilar el runtime CPU fijado, verificar el GGUF y portar/validar el frontend Linux; registrar una campaña reproducible antes de marcarlo como ejecutado.\n- Consolidar los resultados finales de Kinetic por modelo, cuantización, backend y versión.
 - **YASAKANI:** localizar/confirmar el repositorio y su versión; auditar README, licencia, dependencias, requisitos de CPU/GPU/CUDA, modelos y formatos admitidos; preparar instalación aislada; ejecutar primero comprobaciones no destructivas y después una inferencia mínima en el MSI. Archivar comandos, commits, logs, configuración, consumo RAM/VRAM y métricas de prefill/decode/latencia si aplica. Hasta entonces, mantener `PENDIENTE DE IDENTIFICACIÓN / NO EJECUTADO`; no inferir compatibilidad ni rendimiento.
