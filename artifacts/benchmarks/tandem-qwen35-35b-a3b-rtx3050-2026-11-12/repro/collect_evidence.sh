@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # Collect logs and host measurements without stopping/restarting any service.
-ROOT="\${ROOT:-$HOME/Descargas/tandem-research}"
-REPO="\${REPO:-$ROOT/engines/tandem.cpp}"
-LOG_DIR="\${LOG_DIR:-$ROOT/logs}"
-MODEL="\${MODEL:-$HOME/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf}"
+ROOT="${ROOT:-$HOME/Descargas/tandem-research}"
+REPO="${REPO:-$ROOT/engines/tandem.cpp}"
+LOG_DIR="${LOG_DIR:-$ROOT/logs}"
+MODEL="${MODEL:-$HOME/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
-OUT="\${OUT:-$HOME/Descargas/tandem-qwen35-evidence-$STAMP}"
+OUT="${OUT:-$HOME/Descargas/tandem-qwen35-evidence-$STAMP}"
 mkdir -p "$OUT/logs" "$OUT/system" "$OUT/model" "$OUT/repo"
 printf 'captured_at=%s\nhostname=%s\nroot=%s\nrepo=%s\nmodel=%s\n' "$(date --iso-8601=seconds)" "$(hostname)" "$ROOT" "$REPO" "$MODEL" > "$OUT/collection-manifest.txt"
 for pattern in 'qwen35-*' 'tandem-cuda-build.log'; do
@@ -38,7 +38,7 @@ fi
 if [ -f "$MODEL" ]; then
   stat "$MODEL" > "$OUT/model/model-stat.txt"
   du -h "$MODEL" > "$OUT/model/model-size.txt"
-  if [ "\${HASH_MODEL:-0}" = "1" ]; then sha256sum "$MODEL" > "$OUT/model/model-sha256.txt"
+  if [ "${HASH_MODEL:-0}" = "1" ]; then sha256sum "$MODEL" > "$OUT/model/model-sha256.txt"
   else echo 'Not hashed; set HASH_MODEL=1 to hash the full GGUF.' > "$OUT/model/model-sha256.txt"; fi
 fi
 (cd "$OUT"; find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 -r sha256sum > SHA256SUMS)
