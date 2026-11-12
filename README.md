@@ -12,6 +12,7 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 - Pithos 0.5.1 + LFM3-1.7B Q4_K_M: [comparativa CPU/Intel Vulkan/NVIDIA Vulkan y barrido PP/TG](docs/PITHOS-LFM3-1.7B-RTX3050-2026-11-07.md), con [CSV](artifacts/pithos-0.5.1-2026-11-07/benchmark-results.csv), [registro consolidado](artifacts/pithos-0.5.1-2026-11-07/benchmark-session.log) y [script reproducible](artifacts/pithos-0.5.1-2026-11-07/reproduce.sh).
 - Qwen3.5-9B en RTX 3050 Laptop 4 GiB: [evaluación de viabilidad ES](docs/QWEN3.5-9B-RTX3050-2026-11-11.md) · [English report](docs/QWEN3.5-9B-RTX3050-2026-11-11-EN.md) (ESTIMATED; no benchmark físico 9B).
 - MiniCPM5-2B Q4_K_M en RTX 3050 Laptop con llama.cpp CUDA: [informe de benchmark MEASURED y evaluación de viabilidad DSpark](docs/MINICPM5-2B-RTX3050-2026-11-11.md).
+- DSpine para llama.cpp: [auditoría y compatibilidad](docs/subprojects/DSpine-llama.cpp/README.md), [validación MSI](docs/subprojects/DSpine-llama.cpp/MSI-VALIDATION.md) y [verificador del drafter Qwen3.8-27B](scripts/verify_qwen3_8_27b_dspine_gguf.py) (rama experimental; sin mediciones MSI todavía).
 
 ## RC4 — estado actual (2026-09-07)
 
