@@ -36,6 +36,58 @@
 
 Con thinking activado y sin presupuesto explícito, se observaron salidas de razonamiento que consumieron max_tokens enteros sin producir contenido final (finish_reason length). La prueba sin thinking sí produjo una respuesta final. El parser Qwen3-Coder separa el contenido anterior a </think> como reasoning_content; al no aparecer el cierre antes de acabar la generación, content queda vacío. El control reasoning_budget_tokens fuerza el marcador de cierre al agotar el presupuesto.
 
+
+## Comportamiento de los recursos del MSI
+
+### Qué se midió y qué no
+
+La batería registra métricas de generación por petición (tokens de entrada/salida, duración, velocidad y motivo de finalización). En cambio, el recolector de evidencias ejecutó capturas del sistema y del proceso en un momento concreto; no tomó una serie temporal de CPU/RAM/VRAM/SSD asociada a cada petición. Por tanto, la fotografía siguiente describe el estado del servidor cargado durante la campaña, no picos exactos de cada fila. No se deben interpretar los mismos valores como mediciones independientes de cada prompt.
+
+### Fotografía del equipo con el modelo cargado
+
+| Recurso | Captura disponible | Lectura técnica |
+|---|---|---|
+| RAM | 14 GiB totales; 3,1 GiB usados; 1,4 GiB libres; 11 GiB en buff/cache; 11 GiB disponibles | No aparece presión de memoria física en esa captura: Linux podía recuperar buena parte de la caché. «Libre» por sí solo infravalora la memoria disponible. |
+| Swap | 32 GiB configurados; aproximadamente 1,2 GiB ocupados | Había páginas en swap, pero la ocupación no demuestra actividad de intercambio durante las generaciones ni thrashing. No se guardaron contadores temporales de swap-in/swap-out por petición. |
+| VRAM | 1.953 MiB de 4.096 MiB ocupados; proceso del servidor alrededor de 1.930 MiB | El servidor mantenía una huella GPU relativamente contenida, dejando aproximadamente 2,1 GiB sin ocupar en esa captura. Es coherente con la estrategia CPU-MoE; no demuestra por sí sola el hit rate ni la ubicación efectiva de cada experto. |
+| GPU | RTX 3050 Laptop, 4 GiB, sm_86; temperatura observada 44 °C | No se conservó una serie temporal de utilización, potencia, reloj o temperatura por petición. |
+| CPU | Intel Core i7-12650H; servidor configurado con 8 threads y 8 threads de batch; `--cpu-moe` | La ruta CPU-MoE sitúa el trabajo de expertos en CPU y memoria del host, mientras que otras operaciones usan GPU. No hay porcentaje de uso, frecuencia ni carga por ejecución en la evidencia recopilada. |
+| SSD / almacenamiento | El GGUF local ocupa aproximadamente 9,94 GiB y el servidor lo carga desde esa ruta | No hay mediciones de lectura, escritura, latencia, IOPS ni espacio libre tomadas durante la batería. La caché de páginas de Linux puede intervenir en lecturas posteriores, pero no se midió su efecto por prompt. |
+| Proceso servidor | PID 12228; puerto 18086; contexto 2048; un slot; caché de expertos configurada en 512 MiB | La caché de expertos de 512 MiB es un parámetro de configuración, no una medición de memoria efectivamente residente ni de tasa de aciertos. El servidor permaneció cargado entre peticiones; no se reinició entre cada caso. |
+
+**Interpretación global.** La señal más clara es que el modelo de 35B se ejecutó con una huella GPU observada de alrededor de 1,9 GiB, apoyándose en CPU-MoE y memoria del host en una RTX 3050 de 4 GiB. La RAM disponible reportada (11 GiB) no indicaba presión severa en el instante de captura. La presencia de 1,2 GiB ocupados en swap merece registrarse, pero sin contadores de actividad no permite afirmar que las generaciones estuvieran paginando activamente. Tampoco hay datos suficientes para afirmar que el SSD fuera cuello de botella o para cuantificar el uso de CPU.
+
+### Recursos por ejecución: alcance de la evidencia
+
+El servidor se mantuvo residente en el puerto 18086 y atendió las peticiones de forma secuencial con un slot. La tabla vincula cada ejecución con su resultado de generación y deja explícito que no existe telemetría de recursos por petición. Los tiempos aproximados se calculan como completion / tok/s cuando ambos datos están disponibles; no son cronometraje independiente.
+
+| Caso | Budget | completion | Velocidad | Tiempo aprox. de generación | RAM / VRAM / CPU / swap / SSD por petición |
+|---|---:|---:|---:|---:|---|
+| 17 × 23 | 64 | 70 | 35,62 tok/s | 1,97 s | No capturados individualmente; aplica solo la fotografía compartida anterior como contexto del servidor. |
+| 17 × 23 | 128 | 134 | No registrado | No calculable | No capturados individualmente. |
+| 17 × 23 | 256, repetición A | 262 | 34,58 tok/s | 7,58 s | No capturados individualmente. |
+| 17 × 23 | 256, repetición B | 263 | 33,11 tok/s | 7,94 s | No capturados individualmente. |
+| two_sum | 128 | 512 | 33,07 tok/s | 15,48 s | No capturados individualmente. |
+| two_sum | 128 | 768 | 32,51 tok/s | 23,62 s | No capturados individualmente. |
+| two_sum | 256 | 1.024 | 33,27 tok/s | 30,78 s | No capturados individualmente. |
+| two_sum | 128 | 1.165 | 32,58 tok/s | 35,76 s | No capturados individualmente. |
+| two_sum | 256 | 1.201 | 32,32 tok/s | 37,16 s | No capturados individualmente. |
+| binary_search | 128 | 1.435 | 34,79 tok/s | 41,25 s | No capturados individualmente. |
+| binary_search | 256 | 1.536 | 33,20 tok/s | 46,27 s | No capturados individualmente. |
+
+Los tiempos son estimaciones aritméticas a partir de la velocidad media informada por el servidor; pueden diferir del tiempo total de pared por prefill, preparación, colas y latencias de la API. La tabla no implica que RAM, VRAM o CPU permanecieran constantes durante cada generación: simplemente no se muestrearon con suficiente resolución para saberlo.
+
+### Qué instrumentar en una siguiente repetición
+
+Para poder comparar el comportamiento físico de cada ejecución, conviene añadir muestreo con marcas de tiempo y correlación con el ID de petición:
+- GPU: `nvidia-smi --query-gpu=timestamp,utilization.gpu,utilization.memory,memory.used,memory.free,temperature.gpu,power.draw,clocks.gr --format=csv -l 1`.
+- CPU y memoria: muestreo de `/proc/stat`, `/proc/meminfo` y `/proc/<PID>/status` o `pidstat -rud -p <PID> 1`.
+- Swap: deltas de `pswpin` y `pswpout` en `/proc/vmstat`, no solo el tamaño ocupado.
+- SSD: deltas de `/proc/diskstats` para el dispositivo que contiene el modelo, junto con espacio disponible antes/después.
+- Registrar hora de inicio/fin, request ID, budget, completion y métricas de la API en el mismo fichero de eventos.
+
+Así se podrá calcular consumo máximo y medio por petición y detectar si las generaciones largas elevan CPU, RAM, VRAM, swap o I/O. En esta batería, esas relaciones quedan como hipótesis de trabajo y no como resultados medidos.
+
 ## Evidencias y ficheros reproducibles
 
 El archivo de evidencias generado el 12 de noviembre de 2026 se ha incorporado a esta rama de Git y su checksum SHA-256 se verificó localmente antes de publicarlo.
