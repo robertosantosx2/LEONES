@@ -26,46 +26,6 @@
 | binary_search | 256 | 1536 | 1536 | 33.20 | length |
 
 
-## Comportamiento de la máquina y límites de la telemetría
-
-### Qué se midió realmente
-
-El recolector incluido en `repro/collect_evidence.sh` hizo **una captura del host al terminar la batería**, no un muestreo continuo ni una captura antes/después de cada petición. Ejecutó `free -h`, `swapon --show`, `df -hT $HOME`, `nvidia-smi`, `nvidia-smi -q`, `lscpu` y una única consulta de procesos (`ps`). Por tanto, los valores siguientes describen el estado observado del equipo con el servidor cargado en ese momento; no deben leerse como máximos, medias o consumos atribuibles a cada fila de resultados.
-
-### Estado observado del equipo
-
-- **RAM:** el host tenía 14 GiB. La captura posterior a la carga mostró aproximadamente 3,1 GiB usados, 1,4 GiB libres, unos 11 GiB en caché/buffers y 11 GiB disponibles. En Linux, la memoria disponible es una referencia más útil que la columna «libre»: buena parte de la caché puede recuperarse si una aplicación la necesita. La captura no proporciona el pico de RAM de cada generación.
-- **Swap:** había unos 1,2 GiB usados de los 31 GiB visibles. Esto indica que existían páginas intercambiadas en el sistema, pero no demuestra que cada petición estuviera leyendo/escribiendo swap ni permite calcular actividad de swap durante la generación. Tampoco equivale a RAM adicional rápida.
-- **VRAM:** `nvidia-smi` mostró aproximadamente 1.953 MiB ocupados de 4.096 MiB; el proceso del servidor aparecía con unos 1.930 MiB. La temperatura observada fue 44 °C. Es una muestra puntual, no el pico de VRAM ni la temperatura máxima de la batería. La opción `--moe-cache-mib 512` configura una caché de expertos de 512 MiB, pero ese parámetro por sí solo no prueba que se ocuparan exactamente 512 MiB ni informa de su tasa de aciertos.
-- **CPU:** el equipo es un Intel Core i7-12650H y el servidor se lanzó con `-t 8 -tb 8`, además de `--cpu-moe`. En esta configuración, los expertos MoE se gestionan en CPU; la GPU sigue participando en las partes descargadas a CUDA. El recolector guardó `lscpu` y una lectura puntual de `%CPU`/RSS del proceso, pero no registró utilización por núcleo, frecuencia, potencia ni promedios durante cada petición. No es posible afirmar qué ejecución saturó más la CPU.
-- **SSD/almacenamiento:** el recolector guardó `df -hT $HOME`, que informa de capacidad y espacio libre del sistema de archivos. No ejecutó una prueba de lectura/escritura ni registró IOPS, latencia, caudal, temperatura o actividad del SSD. Por eso no se puede atribuir a una ejecución una carga concreta de disco. El modelo GGUF de unos 9,94 GiB se encuentra en almacenamiento local; su tamaño no equivale a una lectura completa desde SSD en cada petición.
-- **Proceso y servicio:** todas las peticiones de esta batería se dirigieron al mismo servidor local, con un slot (`-np 1`), contexto 2048 y CPU-MoE. La captura de procesos y `/props` confirma el estado del servicio en el instante de recogida, pero no constituye un perfil temporal por solicitud.
-
-### Lectura por grupo de ejecuciones
-
-Los grupos de abajo comparten el mismo estado de máquina y la misma configuración del servidor. Las diferencias de tokens/s son mediciones de generación; **no hay telemetría individual que permita asociarles diferencias de RAM, VRAM, CPU, swap o SSD**.
-
-| Ejecuciones | Comportamiento observable | Qué puede decirse de los recursos |
-|---|---|---|
-| Aritmética, budgets 64 y 128; dos repeticiones con budget 256 | Respuestas cortas; 34,58 y 33,11 tok/s en las dos muestras de budget 256. | El trabajo generado fue pequeño frente a los casos de código. No se midió una reducción de memoria ni una diferencia de carga de CPU/GPU entre budgets. El estado RAM/VRAM/swap descrito arriba es común y posterior a la batería. |
-| `two_sum`, budgets 128 (512 y 768 tokens máximos) y 256 (1024 máximos) | Las tres generaciones alcanzaron `max_tokens` y terminaron con `finish_reason=length`. | Al producir más tokens, la generación duró más; eso no permite deducir un aumento concreto de RAM o VRAM. No se registró memoria incremental por token ni actividad de swap durante esos tramos. |
-| `two_sum`, budget 128 y 256 con máximo 1536 | Ambas terminaron con `finish_reason=stop`; completions de 1165 y 1201 tokens. | Son las ejecuciones largas de esta tarea, pero no hay máximos de recursos por solicitud. La lectura puntual de RAM/VRAM no permite decidir cuál consumió más. |
-| `binary_search`, budget 128 con máximo 1536 | Completó 1435 tokens y terminó con `stop`. | No existe perfil CPU/RAM/VRAM/SSD asociado a esta petición. La captura general solo confirma el estado del equipo con el servidor cargado. |
-| `binary_search`, budget 256 con máximo 1536 | Alcanzó 1536 tokens y terminó con `length`. | La salida fue más larga que la de budget 128, pero no se midió el consumo incremental ni un pico de memoria específico. No se puede concluir que budget 256 necesitara más VRAM o swap. |
-
-### Conclusión sobre la estabilidad del MSI
-
-La evidencia disponible es compatible con que el MSI ejecutara la batería con el servidor Qwen3.5-35B-A3B cargado, CPU-MoE y una ocupación de VRAM observada inferior a la capacidad física de 4 GiB. La captura de RAM también mostraba memoria disponible, aunque había swap ocupado. Esto describe una máquina que pudo mantener el servicio activo en el momento de la captura; **no demuestra por sí solo ausencia de presión de memoria durante todos los tokens ni descarta picos transitorios**.
-
-Para obtener un perfil real por ejecución en una repetición futura habría que muestrear, con marcas de tiempo, `/proc/<pid>/status` o `smaps_rollup`, `/proc/vmstat`, `nvidia-smi --query-gpu` y métricas de CPU/IO durante cada petición, guardando un intervalo de muestreo y asociando cada tramo al ID de la petición. También convendría registrar contadores de lectura/escritura del dispositivo y picos, no solo `df`. Esta batería no recogió esos datos, así que no se reconstruyen retrospectivamente.
-
-### Interpretación
-
-- En aritmética, los tres presupuestos produjeron 391. Budget 64 ya bastó para esa tarea elemental.
-- En two_sum, las salidas con 512/768/1024 tokens se truncaron. Con max_tokens 1536, ambos presupuestos completaron; 128 fue aproximadamente 0.8% más rápido y no se demostró mejora cualitativa con 256.
-- En binary_search, ambas identificaron correctamente left = mid + 1. Budget 128 terminó; 256 llegó al límite max_tokens y truncó la respuesta.
-- Recomendación empírica para estas tareas: budget 128 como punto de partida; 256 no aportó una mejora consistente. No generalizar fuera de esta combinación de modelo, cuantización, motor, build y host.
-
 ## Diagnóstico thinking
 
 Con thinking activado y sin presupuesto explícito, se observaron salidas de razonamiento que consumieron max_tokens enteros sin producir contenido final (finish_reason length). La prueba sin thinking sí produjo una respuesta final. El parser Qwen3-Coder separa el contenido anterior a </think> como reasoning_content; al no aparecer el cierre antes de acabar la generación, content queda vacío. El control reasoning_budget_tokens fuerza el marcador de cierre al agotar el presupuesto.
