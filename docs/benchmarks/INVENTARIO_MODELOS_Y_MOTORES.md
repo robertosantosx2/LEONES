@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (incorporada actualización de desarrollo Colibri Qwen3.6 CUDA; sin pruebas ejecutadas ni validación MSI)
+**Última consolidación:** 2026-11-12 (incorporada evaluación DSpine en llama.cpp y verificación CI del drafter Qwen3.8-27B)
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -1058,3 +1058,54 @@ La comparación de generación CUDA ctx 2048 frente a CPU da aproximadamente 3,9
 **Auditoría de entorno (11-11-2026, 09:13):** Python 3.14.4; pip 25.1.1; PyTorch, SGLang, Triton y FlashInfer ausentes; CUDA Toolkit 13.4.92; driver NVIDIA 580.178.04 (nvidia-smi informa CUDA 13.0); 14 GiB RAM, 31 GiB swap, 309 GiB disponibles en la raíz. La GPU tenía 1.545 MiB ocupados en esa captura y llama-cli seguía activo con 1.522 MiB. No se modificó ni instaló ningún paquete durante la auditoría.
 
 **Decisión final:** evaluación cerrada. MiniCPM5-2B queda como modelo ejecutado y medido con llama.cpp CUDA. SGLang + DSpark BF16 queda como **NO VIABLE en la configuración oficial para este MSI de 4 GiB**; GPTQ + DSpark como **NO DOCUMENTADO/NO SOPORTADO por la receta consultada**. No se ha probado una ejecución DSpark real y no debe etiquetarse como benchmark. Reabrir solo si aparece una ruta upstream explícita para objetivo cuantizado + DSpark y una estrategia de memoria que quepa, o si se dispone de hardware con VRAM suficiente.
+
+
+## DSpine en llama.cpp — speculative decoding con DFlash (12-11-2026)
+
+**Estado LEONES:** integración de código auditada y build CPU del fork completados en CI; GGUF del drafter Qwen3.8-27B verificado por CI. **Pendiente de preflight, compilación CUDA SM86 e inferencia en el MSI.** No se contabiliza como motor ejecutado ni como benchmark local.
+
+DSpine (*Draft in Parallel, Condition Through Depth: Adjacent Causal Injection for Speculative Decoding*) es una arquitectura de speculative decoding que construye candidatos en paralelo e inyecta información del token predecesor a través de capas, con refinamiento serial de la última escritura y una tabla de transición. En el fork investigado no aparece como un tipo de speculative decoding separado: está integrado en el modelo DFlash y se selecciona mediante `--spec-type draft-dflash`.
+
+### Implementación auditada
+
+- **Fork:** [Ajay9o9/llama.cpp, rama dspine](https://github.com/Ajay9o9/llama.cpp/tree/dspine).
+- **Commit fijado:** [`d493f841b20241606c47a4e0537d3c786b5cf50b`](https://github.com/Ajay9o9/llama.cpp/commit/d493f841b20241606c47a4e0537d3c786b5cf50b), evitando depender de una rama móvil.
+- Se localizaron y auditaron el esquema GGUF `DSPINE_*`, el mapeo `selected_prefix_bridge.*`, la conversión HF→GGUF en `conversion/qwen.py`, el loader C++ en `src/models/dflash.cpp`, los grafos `build_dspine_write` / `build_dspine_lattice` y la ruta de speculative decoding `draft-dflash`.
+- La integración requiere la ruta DFlash compatible; no basta con que un modelo sea Qwen ni con renombrar un checkpoint.
+
+### Compatibilidad de checkpoints
+
+El checkpoint oficial [`tencent/Qwen3-8B-DSpine-b16`](https://huggingface.co/tencent/Qwen3-8B-DSpine-b16) **no es compatible con la implementación actual de este fork**. Su configuración no declara `code_bridge_second_pass.mode=serial_table` ni el `head_topk` requerido por el refinamiento de última escritura. El conversor lo rechaza explícitamente. LEONES retiró la receta de conversión para este checkpoint; no se inventan metadatos ni se fuerza su carga.
+
+La pareja investigada para la validación actual es:
+
+| Componente | Artefacto | Tamaño aproximado | Estado |
+|---|---|---:|---|
+| Target | [Qwen3.8-27B IQ2_XXS GGUF](https://huggingface.co/bartowski/Qwen3.8-27B-GGUF) | 8,88 GB | Candidato experimental para el MSI; cuantización muy agresiva |
+| Drafter DSpine | [Qwen3.8-27B-DSpine-b16 Q4_K_M GGUF](https://huggingface.co/aj9o9/Qwen3.8-27B-DSpine-b16-GGUF) | 1,26 GB | Verificado por CI; pesos del code bridge conservados en BF16 |
+
+El total de pesos estimado es **10,14 GB**, antes de KV cache, buffers y memoria del runtime. No cabe íntegramente en los 4 GiB de VRAM de la RTX 3050; cualquier ensayo requiere offload híbrido CPU/GPU, contexto corto y selección explícita de capas GPU. La cuantización IQ2_XXS del target puede degradar sustancialmente la calidad: esta pareja se plantea como *smoke test* de viabilidad, no como recomendación de calidad o producción.
+
+### Evidencia reproducible y estado de validación
+
+Workflow [LEONES DSpine CI #42991023838](https://github.com/robertosantosx2/LEONES/actions/runs/42991023838), completado con éxito:
+
+- **Auditoría estática:** 7/7 comprobaciones de integración detectadas.
+- **Tests del auditor:** PASS.
+- **Sintaxis:** comprobaciones `bash -n` y `py_compile` PASS.
+- **Build CPU:** `llama-cli` compilado desde el commit fijado del fork; GCC 13.3.0, llama.cpp 0.9.0-dev.
+- **GGUF DSpine Qwen3.8-27B:** descarga, inventario de tensores y validación de metadatos completados; se publicó un artefacto CI con informe y SHA-256.
+- **Qwen3-8B:** rechazo de conversión esperado por incompatibilidad de `serial_table`; no se declara soportado.
+- **CUDA SM86 / MSI:** todavía no ejecutado. No hay velocidad de prefill, decode, aceptación especulativa ni comparación greedy/DSpine medida en el equipo.
+
+El desarrollo y las recetas están aislados en [PR #143](https://github.com/robertosantosx2/LEONES/pull/143), rama `research/dspine-llama-cpp`; no modifican el llama.cpp instalado ni acreditan todavía una integración en el upstream oficial de ggml-org.
+
+### Próxima validación en el MSI
+
+1. Ejecutar primero `scripts/dspine-msi-preflight.sh` desde el worktree de la rama para confirmar driver, CUDA, compilador, RAM y espacio disponible. El preflight es de solo lectura.
+2. Si el preflight es correcto, compilar en un directorio aislado con `scripts/build_dspine_llama_cpp_cuda_msi.sh`, fijado al commit auditado y a CUDA SM86. No sustituir el llama.cpp instalado.
+3. Empezar con contexto 512, `--spec-draft-n-max 3`, `-np 1`, KV Q8_0 y offload GPU conservador explícito tanto para target como para drafter. Ajustar capas solo tras comprobar VRAM real; no copiar configuraciones `-ngl 999` de GPUs de 24 GiB.
+4. Comparar target greedy y DSpine con el mismo prompt, contexto y condiciones. Registrar tokens/s de prompt y generación, latencia, tokens aceptados/rechazados, RAM, swap, VRAM, SHA de ambos GGUF y logs completos.
+5. Detener la prueba ante OOM, avisos de tensores/metadatos, salida inestable o presión sostenida de swap.
+
+**Conclusión:** DSpine ya tiene una ruta de código identificada, auditada y compilada en CPU, y un drafter Qwen3.8-27B GGUF validado en CI. El siguiente hito no es otro análisis documental: es superar el preflight del MSI y demostrar una inferencia CUDA SM86 reproducible. Hasta entonces, el soporte local permanece en estado *experimental / no ejecutado*.
