@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (incorporada evaluación de Ripple-65B-Preview: TensorFold CUDA y port Ricursive en llama.cpp)
+**Última consolidación:** 2026-11-12 (incorporada evaluación documental de Infernix para RTX 3050 sm_86)
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -23,6 +23,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **YASAKANI** | Prueba exploratoria solicitada | Modelo/backend/resultados por consolidar | Mantener como experimento hasta que exista log que demuestre carga e inferencia. |
 | **ThumbLLM (TeksEdge)** | Receta Windows auditada; reproducción Linux documentada, aún no ejecutada | Qwen3.5-4B GGUF Q4_K_M | Runtime fijado a llama.cpp build 10603 / commit `c060ca974`; receta CPU-only. La release configura `SPEC_TYPE=none`: MTP especulativo desactivado. La aplicación publicada es Windows x64, no un binario Linux. Guía Ubuntu en [LEONES](../../experimental/ThumbLLM-thumbllm-qwen3.5-4b-mtp-q4_k_m-cpu-win-x64-v0.1.0/docs/UBUNTU-REPRODUCTION.md). |\n| **diffuse-cpp** | Investigado documentalmente; no instalado ni ejecutado | LLaDA-8B-Instruct, Dream-v0-Instruct-7B | Motor C++ basado en GGML para dLLM; publica cuantización Q4_K_M y optimizaciones de caché/planificación. Sus cifras upstream proceden de AMD EPYC 4465P de 12 núcleos, no del CPU Intel de referencia. Sin validación local. [Repositorio](https://github.com/iafiscal1212/diffuse-cpp). |\n| **Magnitude 0.2.15** | Instalado y servicio operativo; catálogo consultado | MiniCPM5 1B (Q4); antecedente Qwen3.5-4B en 0.2.10 | `magnitude status`: Runtime Ready, Owner Server, versión 0.2.15, `0.0.0.0:10100`; HTTP local 200. Catálogo: un modelo compatible (MiniCPM5 1B Q4). No hay modelo activo ni inferencia medida. La escucha en todas las interfaces exige clave API. La prueba histórica 0.2.10 con Qwen3.5-4B sigue documentada como ID no reconocido; no confundir ambas campañas. |
 | **LocalAI / Parakeet.cpp** | Investigación documental; benchmark local pendiente | LocalAI como proveedor experimental; Parakeet.cpp (ASR) y backends de audio asociados | Estudio arquitectónico incorporado el 12-11-2026. No instalado ni ejecutado en el MSI; no hay mediciones locales de precisión, RTF, latencia, RAM o VRAM. Propuesta: LocalAI opcional detrás de ODS; comparar wrapper LocalAI con Parakeet.cpp directo antes de decidir adopción. Ver §3.4. |\n| **Ollama** | Incluido en matriz de runtimes; no instalado en el MSI según inventario previo | Sin ejecución local validada | No contabilizar como motor probado en este equipo. |
+| **Infernix** | Investigación documental; no compilado ni ejecutado | Qwen3.8-Flash-Next, Qwen3.8-27B, Qwen3.6, Qwen3.5-122B-A10B | Motor C++/CUDA orientado a RTX 50/Blackwell; el README exige RTX 50-series para otros equipos. Sin soporte sm_86 documentado ni modelo pequeño confirmado. No viable para el MSI actual; ver §3.5. |
 | **Transformers, vLLM, SGLang, KTransformers, Mistral.rs, DynaLM** | Evaluación de soporte / planificación; sin prueba local de TwIL-8B | TwIL-8B Granite GGUF Q4_K_M como caso de compatibilidad pendiente | No hay inferencia ni benchmark de TwIL-8B acreditados con estos motores. vLLM se considera una ruta a investigar con pesos compatibles/Safetensors, no una garantía de carga directa de este GGUF. DynaLM queda como candidato documental citado en la conversación, con soporte Granite/GGUF/CUDA aún no verificado independientemente. |
 | **ThumbLLM / llama.cpp CPU (Ornith 1.5)** | Paquete Release 1 incorporado a LEONES; reproducción Linux preparada, pendiente de ejecutar | Ornith-1.5-9B-OBLITERATED Q4_K_M | El release original está orientado a Windows. Se añadieron receta y scripts Ubuntu para compilar llama.cpp b10603 (c060ca974) en CPU y servir en puerto 18088. Descarga, hash, compilación e inferencia en el MSI aún no verificados; no contabilizar como motor/modelo ejecutado. |
 | **Project Maya** | Integrado documentalmente / adaptador deshabilitado; fuente upstream vendorizada en PR #142 | GLM-5.3, GLM-5.3-Flash, DeepSeek-V4.1-Flash, MiniMax-M3.1-Flash | Familia independiente y motores/model packs específicos; API OpenAI y Anthropic documentadas. La evaluación histórica v1.1.31 se conserva como referencia, pero la rama de integración posterior fija upstream en v1.1.58 (`a3582528bfb73175fed1757b485bfcaaf01aaeaa`). No ejecutar en MSI: 14 GiB RAM frente al mínimo documentado de 32 GiB; 4 GiB VRAM. Sin inferencia local ni rendimiento medido. Ver PR #142. |\n| **Uzu** | Evaluación documental cerrada; `RESEARCH_ONLY / NOT VERIFIED` | Qwen3.5-4B, Qwen3.5 MoE (compatibilidad investigada, no validada) | Integrado en `Experimental` mediante PR #119. No se compila, instala ni ejecuta en el MSI dentro del alcance acordado. Sin soporte Ubuntu/CUDA, GGUF ni Qwen MoE demostrado; no contabilizar como motor probado. Ver [evaluación Uzu](../../experimental/uzu/README.md). |
@@ -523,6 +524,32 @@ audio:
 - [Parakeet.cpp](https://github.com/mudler/parakeet.cpp) · [NVIDIA NeMo](https://github.com/NVIDIA/NeMo)
 - [Whisper.cpp](https://github.com/ggml-org/whisper.cpp) · [Moonshine](https://github.com/usefulsensors/moonshine)
 - [Investigación ampliada LocalAI/Parakeet en LEONES](../../research/localai-parakeet-integration.md)
+
+### 3.5 Infernix — motor CUDA orientado a RTX 50 / Blackwell (12-11-2026)
+
+**Clasificación:** investigación documental; no instalado, compilado ni ejecutado en el MSI. No contabilizar como motor compatible ni como benchmark local.
+
+[Infernix](https://github.com/Wallawalla47/Infernix) es un motor C++/CUDA derivado de NInfer, diseñado para servir modelos Qwen mediante artefactos propios .ninfer y .infernix. El proyecto está enfocado en GPUs NVIDIA Blackwell y el README indica expresamente que otro PC necesita una GPU **RTX serie 50** y driver NVIDIA 580 o posterior. La guía de compilación Linux documenta Ubuntu 24.04, CUDA Toolkit **13.4 o posterior**, CMake 3.28+, Ninja y C++20.
+
+| Modelo / ruta publicada | Requisitos publicados relevantes | Evaluación en MSI RTX 3050 4 GiB (sm_86) |
+|---|---|---|
+| Qwen3.8-Flash-Next | Ruta Blackwell; documentación de despliegue con RTX 5090 sm_120a, gran memoria de sistema y artefactos auxiliares voluminosos | **No viable**: arquitectura GPU, memoria y requisitos de la ruta exceden el equipo |
+| Qwen3.8-27B NVFP4 | Requisito de RTX 50-series; pesos publicados en torno a 20 GB de VRAM | **No viable**: capacidad de VRAM y generación de GPU incompatibles |
+| Qwen3.6-27B / 35B-A3B | Catálogo del proyecto orientado a la plataforma RTX 50; no se ha encontrado una ruta compacta sm_86 documentada | **No validado**: no inferir compatibilidad por el nombre Qwen ni por ser MoE |
+| Qwen3.5-122B-A10B NVFP4 | Ruta Blackwell/RTX 5090 y memoria muy superior a la disponible | **No viable** |
+| Modelo pequeño alternativo | No se ha identificado en el catálogo/documentación consultados un checkpoint pequeño preparado para RTX 3050 | **Sin candidato acreditado** |
+
+**Comparación con el entorno del laboratorio:** MSI Thin 15 B12UC, Intel Core i7-12650H, 14 GiB RAM, RTX 3050 Laptop de 4 GiB (sm_86), driver 580.178.04 y CUDA Toolkit local 13.0. El driver satisface el mínimo 580 citado por el README, pero eso no convierte la GPU Ampere sm_86 en Blackwell ni resuelve los requisitos de memoria. Además, el toolkit instalado (13.0) es inferior al mínimo 13.4 indicado por la guía de compilación. No actualizar el CUDA del sistema ni alterar los runtimes existentes para intentar esta compilación.
+
+**Conclusión técnica:** **NO-GO para instalación/compilación en el MSI en su estado actual.** No hay evidencia de que los kernels o artefactos publicados funcionen en sm_86. Cambiar únicamente la arquitectura de compilación a sm_86 no demuestra portabilidad: habría que auditar los kernels CUDA, instrucciones Tensor Core/PTX, dependencias y formatos de cuantización, y determinar si existe una ruta alternativa para Ampere. Los requisitos RTX 50 del README y las rutas NVFP4/Flash-Next documentadas no deben presentarse como compatibles con RTX 3050.
+
+**Siguiente paso admisible:** auditoría estática del código fuente (CMake, flags de arquitectura, archivos .cu/.cuh, intrinsics, PTX y dependencias) para separar componentes genéricos de kernels Blackwell-only. Si se justifica una prueba posterior, hacerla en un checkout/contendor aislado con CUDA Toolkit 13.4, sin modificar TensorFold, llama.cpp, ODS ni el CUDA del sistema. Solo promover a “compilado” o “ejecutado” tras conservar commit, comando, logs, arquitectura efectiva y prueba de inferencia.
+
+**Fuentes primarias y documentación técnica consultada:**
+- [Repositorio Infernix](https://github.com/Wallawalla47/Infernix) · [README y requisitos de compilación](https://github.com/Wallawalla47/Infernix/blob/main/README.md)
+- [Guía Qwen3.8-Flash-Next](https://github.com/Wallawalla47/Infernix/blob/main/docs/qwen3_8-flash-next.md)
+- [Qwen3.8-27B NVFP4](https://huggingface.co/Wallawalla47)
+- [Especificación CUDA de arquitecturas NVIDIA](https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/)
 
 ## 4. Informes y artefactos primarios
 
