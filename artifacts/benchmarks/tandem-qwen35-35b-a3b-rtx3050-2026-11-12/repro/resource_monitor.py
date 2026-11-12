@@ -84,10 +84,22 @@ def disk_sample():
     except Exception: pass
     return result
 
+def mount_for_path(path):
+    if not path:
+        return {"model_path": None, "note": "No local model path supplied."}
+    try:
+        target=pathlib.Path(path).expanduser()
+        if not target.exists():
+            return {"model_path": str(target), "note": "Path not visible or not present on this host."}
+        r=subprocess.run(["findmnt","-n","-o","SOURCE,TARGET,FSTYPE","-T",str(target)],capture_output=True,text=True,timeout=3)
+        return {"model_path": str(target), "mount": r.stdout.strip(), "error": r.stderr.strip() if r.returncode else None}
+    except Exception as e:
+        return {"model_path": str(path), "error": str(e)}
+
 class RequestSampler:
-    def __init__(self, outdir, request_id, port, pid=None, interval=1.0):
+    def __init__(self, outdir, request_id, port, pid=None, interval=1.0, model_path=None):
         self.outdir=pathlib.Path(outdir); self.request_id=request_id; self.port=port
-        self.pid=find_pid(port,pid); self.interval=interval; self.samples=[]
+        self.pid=find_pid(port,pid); self.interval=interval; self.samples=[]; self.model_mount=mount_for_path(model_path)
         self.stop_event=threading.Event(); self.thread=None
     def sample(self):
         s={"time":now(),"monotonic":time.monotonic(),"ram":read_meminfo(),"cpu_ticks":cpu_ticks(),"process":proc_stat(self.pid) if self.pid else {},"gpu":gpu_sample(),"disks":disk_sample(),"vmstat":vmstat_sample()}
@@ -144,7 +156,7 @@ class RequestSampler:
             hz=os.sysconf("SC_CLK_TCK"); elapsed=b["monotonic"]-a["monotonic"]
             if pa and pb and elapsed>0:
                 proc_pct=100*((pb["utime_ticks"]+pb["stime_ticks"])-(pa["utime_ticks"]+pa["stime_ticks"]))/(hz*elapsed)
-        return {"request_id":self.request_id,"pid":self.pid,"started_at":self.started,"finished_at":self.finished,"sample_count":len(self.samples),"interval_seconds":self.interval,
+        return {"request_id":self.request_id,"pid":self.pid,"model_storage":self.model_mount,"started_at":self.started,"finished_at":self.finished,"sample_count":len(self.samples),"interval_seconds":self.interval,
           "ram_used_bytes":stats(["ram","ram_used_bytes"]),"ram_available_bytes":stats(["ram","MemAvailable_bytes"]),"process_rss_bytes":stats(["process","rss_bytes"]),
           "swap_used_bytes":stats(["ram","swap_used_bytes"]),"cpu_system_pct_avg_over_interval":cpu_pct,"process_cpu_pct_avg_over_interval":proc_pct,
           "gpu_util_pct":gstat("gpu_util_pct"),"gpu_memory_util_pct":gstat("memory_util_pct"),"vram_used_mib":gstat("vram_used_mib"),"gpu_temperature_c":gstat("temperature_c"),"gpu_power_w":gstat("power_w"),
