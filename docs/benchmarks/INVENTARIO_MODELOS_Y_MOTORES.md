@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (incorporada evaluación documental de Mage-VL-Cowork y situación en Artificial Analysis; Open-dCoder V1/V2/V3 incorporados)  
+**Última consolidación:** 2026-11-12 (validación CUDA real de TensorFold PR #1879 en RTX 3050 con Qwen3.5-2B/4B; contraste de incorporación en TensorFold 1.2.7; inventario ampliado de modelos y motores)  
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -12,8 +12,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 
 | Motor / proyecto | Estado en el laboratorio | Modelos o familias vinculados | Validación y notas |
 |---|---|---|---|
-| **llama.cpp CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B, **Clover-35B-A3B-Preview IQ2_S**, LFM3-1.7B, Ling-3.0-Tiny, Spark-X2.6-4B, TwIL-8B | LFM3 incorporado en v0.8.0 (PR #31252/#31257); el build histórico b11740 es anterior. Incluye sweep `llama-bench` de Qwen3-30B-A3B IQ3_XXS con `ngl=0/1/8` (3 repeticiones por ajuste); `ngl=1` obtuvo la mejor mediana PP128. Binarios locales en ~/llama.cpp-cuda/build/bin y /usr/local/bin. |
-| **TensorFold CUDA** | Ejecutado y medido; integración TensorFold Web 1.2.0 en validación | Qwen3.5-2B, Qwen3.5-4B; estudios de Qwen3.5-9B y Qwen3.5-35B-A3B; intento LFM3-1.7B | Inferencia real con 2B y 4B. PR #1879 aborda la reserva CUDA diferida de scratch para 4B. LFM3-1.7B GGUF Q4_K_M no fue reconocido en 1.1.6. El 12-11-2026 se verificó TensorFold Native 1.2.0 con backend CUDA en `nvidia-sm86`, catálogo que incluye `mlx-community/Qwen3.5-4B-MLX-4bit` y opción `--dashboard`; la UI TensorFold Web/bridge funciona en 127.0.0.1:8787, pero el motor no estaba iniciado en 127.0.0.1:8080. Por tanto, esta integración web todavía no acredita una nueva inferencia ni benchmark. Los estudios 9B/35B no acreditan ejecución en el MSI. |
+| **llama.cpp CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B, **Clover-35B-A3B-Preview IQ2_S**, LFM3-1.7B, Ling-3.0-Tiny, Spark-X2.6-4B, TwIL-8B | LFM3 incorporado en v0.8.0 (PR #31252/#31257); el build histórico b11740 es anterior. Incluye sweep `llama-bench` de Qwen3-30B-A3B IQ3_XXS con `ngl=0/1/8` (3 repeticiones por ajuste); `ngl=1` obtuvo la mejor mediana PP128. Binarios locales en ~/lla| **TensorFold CUDA** | Ejecutado y medido; PR #1879 validado en GPU; integración TensorFold Web en validación | Qwen3.5-2B, Qwen3.5-4B; estudios de Qwen3.5-9B y Qwen3.5-35B-A3B; intento LFM3-1.7B | Inferencia real con 2B y 4B. El parche de scratch diferido se compiló y probó en `sm_86`; Qwen3.5-4B MLX-4bit cargó y generó en RTX 3050 4 GiB (≈56 tok/s), mientras el binario `main` de comparación rechazó el arranque por presupuesto CUDA insuficiente con la misma configuración. Qwen3.5-2B MLX-4bit también se ejecutó (≈112–116 tok/s). La validación se hizo con el árbol candidato basado en PR #1879 y TensorFold Native 1.2.6; **no significa que el parche esté ya integrado en una release**. TensorFold 1.2.7 se publicó el 11-11-2026, pero a la comprobación del 12-11 no constaba la incorporación del commit del PR #1879 y el PR seguía abierto. LFM3-1.7B GGUF Q4_K_M no fue reconocido en 1.1.6. La integración TensorFold Web se verificó separadamente con 1.2.0; su bridge/UI no acredita por sí sola una nueva inferencia. Los estudios 9B/35B no acreditan ejecución en el MSI. |9B/35B no acreditan ejecución en el MSI. |
 | **RustingStrata CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B | Bench nativo y CLI/API documentados. Algunas APIs no exponen tok/s internos: no derivarlos como si fueran métricas nativas. |
 | **Tandem / llama.cpp CPU-MoE** | Ejecutado y medido | Qwen3.5-35B-A3B IQ2_XXS | Ensayo CPU-MoE con RTX 3050; decode 35,6 tok/s en la prueba no-thinking registrada. Evidencia bruta pendiente de consolidación completa en LEONES. |
 | **Pithos** | Ejecutado y medido | LFM3-1.7B | Campañas del 6 y 7 de noviembre; CSV y log preservados en artifacts/pithos-0.5.1-2026-11-07/. |
@@ -82,11 +81,25 @@ La ficha oficial de [inclusionAI/Ling-3.0-tiny](https://huggingface.co/inclusion
 | **Ling-3.0-Tiny** | GGUF Q4_K_M | llama.cpp CPU · GB-BXi7-5500 | PP 41,0 tok/s; generación 15,5 tok/s | Equipo distinto del MSI; mantener separado. |
 | **Spark-X2.6-4B-abliterated** | GGUF Q4_K_M | llama.cpp CUDA · RTX 3050 | Prueba funcional: prefill 36,9 tok/s; generación 7,2 tok/s | Ejecución individual; faltan repeticiones y perfil de memoria normalizado. |
 | **TwIL-8B** | GGUF Q4_K_M balanced | llama.cpp CUDA · RTX 3050 | Campaña de 24 y 26 capas GPU; protocolo y tres repeticiones en informe | Inferencia funcional medida. Arquitectura Granite no soportada por la capacidad observada de TensorFold 1.2.0. |
-| **Qwen3.5-4B** | MLX-4bit | TensorFold PR #1879 · CUDA sm_86 | Build CUDA y suites host validadas; ejecución GPU real; decode aprox. 56,5 tok/s en esa ejecución | Validación del parche, no benchmark A/B formal ni prueba de todas las rutas. |
+| **Qwen3.5-4B** | MLX-4bit | TensorFold PR #1879 · CUDA sm_86 · RTX 3050 4 GiB | 512 tokens: **55,7–56,3 tok/s**; TTFT 173–186 ms; arranque 2,5 s; asignación de modelo 2,81 GiB; tres generaciones con hash de tokens idéntico (`e076d64ff9db`). Con `main`, la misma configuración no superó la comprobación de presupuesto CUDA; la rama candidata sí cargó y sirvió. | Validación real del parche en GPU, no benchmark A/B de rendimiento: `main` no llegó a generar, por lo que no hay comparación de velocidad. Reserva CUDA 0,5 GiB; contexto 1024; salida 512. Build CUDA 124/124 pasos y suite host 133/133 tests. |
 | **Open-dCoder-0.5B** | BF16 · snapshot HF `d0d86d5b99960c05258bb1f8265dd91564dbac67` | Open-dLLM / Transformers + PyTorch CUDA · RTX 3050 4 GiB | V2 batch 1 / 16 pasos: mediana 0,456 s y 140,30 posiciones/s, 3/3 funcionales. V3: batch 1/2/4 × 16/32/64 pasos; mejor throughput 198,22 posiciones/s agregadas en batch 4 / 16 pasos, 1,292 s por batch, 3,10 secuencias/s y 12/12 funcionales; VRAM 1,910 GiB asignada / 2,338 GiB reservada. | Inferencia y medición local acreditadas. Métrica de posiciones de difusión, no tok/s autoregresivos. Una sola tarea factorial; no equivale a evaluación general de inteligencia. V1 conserva cifras de tiempo, pero su validador tenía falsos negativos. Ver §3.3. |
 
 ## 3. Intentos, estudios e investigación (no contar como benchmark)
 
+### TensorFold CUDA — validación de PR #1879 en RTX 3050 (12-11-2026)
+
+Se realizó una validación de la corrección de asignación diferida de scratch de Qwen3.5 CUDA en el MSI Thin 15 (RTX 3050 Laptop, 4 GiB VRAM, driver 580.178.04, CUDA Toolkit 13.4, Zig 0.17.0). El árbol candidato se compiló para `sm_86` y se ejecutó con los checkpoints MLX-4bit locales. Esta campaña es distinta de la integración TensorFold Web 1.2.0 descrita debajo.
+
+| Modelo | Configuración | Resultado medido | Evidencia / cautela |
+|---|---|---|---|
+| **Qwen3.5-4B** | MLX-4bit; CUDA; contexto 1024; reserva 0,5 GiB; 512 tokens; no-thinking; sin drafts | **55,7–56,3 tok/s**; TTFT 173–186 ms; startup 2,5 s; asignación 2,81 GiB | Tres generaciones produjeron el mismo prefijo SHA-256 de tokens: `e076d64ff9db`. La rama candidata cargó y sirvió; el binario `main` usado como control rechazó el arranque por presupuesto de memoria CUDA insuficiente con los mismos parámetros. Esto acredita la diferencia de carga observada, no una mejora de velocidad A/B. |
+| **Qwen3.5-2B** | MLX-4bit; CUDA; contexto 1024; reserva predeterminada 1 GiB; 512 tokens | **112,2–116,5 tok/s**; TTFT aprox. 76 ms; startup 1,8 s; asignación 1,44 GiB | Dos generaciones produjeron el mismo prefijo SHA-256 de tokens: `ea070ff2b735`. Ejecución funcional en el mismo candidato. |
+
+**Compilación y tests:** build CUDA `124/124` pasos correctos; suite `test-cuda-host` `369/369` pasos y `133/133` tests correctos. Los binarios se construyeron para `sm_86`. SHA-256 del binario candidato: `2fd5337cdc2c801ebfcccdfb429d26d3673efe2b1f6dfdd76f330bb43463436d`.
+
+**Estado upstream separado de la validación local:** [PR #1879](https://github.com/ashhart/TensorFold/pull/1879) contiene la corrección propuesta. En la comprobación del 12-11-2026 seguía abierto y sin merge. [TensorFold v1.2.7](https://github.com/ashhart/TensorFold/releases/tag/v1.2.7), publicada el 11-11-2026, no mencionaba el cambio; la comparación del historial tampoco mostró el commit del PR dentro de la etiqueta. Por tanto, **no registrar el arreglo como incorporado en 1.2.7**. La prueba local acredita el comportamiento del árbol candidato, no el de la release 1.2.7.
+
+**Alcance:** se valida la ruta de carga/generación de estos dos checkpoints y esta configuración de memoria/contexto en la RTX 3050. No se acredita compatibilidad universal de Qwen3.5, todas las longitudes de contexto, múltiples streams, ni rendimiento de modelos 9B/35B con TensorFold. La advertencia `libtfgrammar.so` afecta structured output/required tool calls; no invalida la generación ordinaria ensayada.
 ### TensorFold Web standalone — estado de integración (12-11-2026)
 
 Se verificó la rama de LEONES `feat/tensorfold-web-standalone` y su actualización local hasta el commit `20d5fc20`. La aplicación web y su bridge Python están ejecutándose en `127.0.0.1:8787`; el bridge apunta al motor en `http://127.0.0.1:8080`. El proceso del bridge observado fue `tensorfold-web-bridge.py`; no se detuvo ni se modificó durante esta comprobación.
@@ -394,6 +407,8 @@ El curso es un recurso didáctico interactivo sobre Transformers y modelos de le
 - [TensorFold — README del subproyecto](../subprojects/TensorFold/README.md)
 - [TensorFold — regresión de memoria CUDA](../subprojects/TensorFold/CUDA-MEMORY-REGRESSION-2026-11-01.md)
 - [TensorFold — corrección CUDA lazy scratch / PR #1879](../subprojects/TensorFold/CUDA-LAZY-SCRATCH-FIX-PR1879-2026-11-02.md)
+- [TensorFold upstream — PR #1879](https://github.com/ashhart/TensorFold/pull/1879)
+- [TensorFold upstream — release v1.2.7 (contraste de incorporación)](https://github.com/ashhart/TensorFold/releases/tag/v1.2.7)
 - [Pithos — CSV de benchmark](../../artifacts/pithos-0.5.1-2026-11-07/benchmark-results.csv)
 - [Pithos — log de sesión](../../artifacts/pithos-0.5.1-2026-11-07/benchmark-session.log)
 
