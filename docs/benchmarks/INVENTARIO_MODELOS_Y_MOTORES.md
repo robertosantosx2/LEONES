@@ -44,6 +44,22 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **LFM3-1.7B Uncensored** | GGUF AD-Q4_K_M | llama.cpp CUDA · RTX 3050 | llama-bench: PP512 4.326,68 tok/s; TG128 117,29 tok/s. CLI interactivo: decode aprox. 99,8–104,4 tok/s | Inferencia funcional y medición nativa. |
 | **LFM3-1.7B** | GGUF de campaña Pithos | Pithos · RTX 3050 | CSV de resultados y log de sesión conservados | Consultar informes Pithos; no asumir artefacto/protocolo idéntico al de llama.cpp. |\n| **LFM3-1.7B** | GGUF Q4_K_M | TensorFold 1.1.6 CUDA · RTX 3050 sm_86 | `tensorfold-native capabilities --json`: no declara familia `lfm3`; `tensorfold-native info <archivo.gguf>` responde que el archivo no es un directorio ni un repo HF. | **Intento de compatibilidad, no ejecución.** No se cargó el modelo ni se midió rendimiento. El rechazo evidencia que el GGUF no es una entrada aceptada por esta interfaz y que la familia no figura en las capacidades de 1.1.6; no demuestra imposibilidad futura ni descarta una implementación/checkpoint distinto. No instalar, convertir ni descargar pesos alternativos como parte de esta prueba. |
 | **Ling-3.0-Tiny** | GGUF IQ2_M | llama.cpp CUDA · RTX 3050 | Ejecución funcional: prompt 62,5 tok/s y generación 5,4 tok/s; primera ejecución truncada: 68,7 / 8,3 tok/s | Prueba de código factorial validada; primera salida truncada no es ejecución completa. |
+
+### Ling-3.0-Tiny (Ling 3.0 Tiny 8B A1B): arquitectura, formatos y compatibilidad
+
+La ficha oficial de [inclusionAI/Ling-3.0-tiny](https://huggingface.co/inclusionAI/Ling-3.0-tiny) identifica **7.893,4 millones de parámetros** y la arquitectura **`bailing_hybrid`**. El nombre A1B indica su clase de activación/cómputo reducido; no debe confundirse con el número de parámetros que hay que almacenar: el modelo completo ronda los 7,9B. La ficha declara licencia MIT. Existe además una distribución GGUF oficial: [inclusionAI/Ling-3.0-tiny-GGUF](https://huggingface.co/inclusionAI/Ling-3.0-tiny-GGUF).
+
+**Estado en el MSI:** no es una mera estimación de viabilidad. La tabla de resultados anterior conserva una ejecución funcional real con **GGUF IQ2_M + llama.cpp CUDA en la RTX 3050 de 4 GiB** (62,5 tok/s de prompt y 5,4 tok/s de generación). La primera ejecución truncada (68,7 / 8,3 tok/s) se conserva como antecedente y no debe usarse como resultado representativo. Consultar el [informe de prueba Ling-3.0-Tiny en el MSI](../reports/ling-3.0-tiny-ubuntu-msi-rtx3050-2026-10-29.md) para comandos, configuración y contexto.
+
+**Lectura de viabilidad y límites:**
+- La activación dispersa puede reducir el cómputo por token, pero no reduce el almacenamiento de pesos a solo 1B: deben alojarse los pesos completos de los expertos y demás componentes.
+- La prueba IQ2_M demuestra que esta combinación concreta de modelo, cuantización y llama.cpp sí se ejecutó en el MSI. No extrapolar su velocidad a Q4_K_M, otros contextos, otros builds ni otros motores.
+- La ficha GGUF por sí sola no acredita compatibilidad universal. La compatibilidad con llama.cpp queda demostrada para el artefacto/configuración de la prueba registrada; no se da por demostrada para TensorFold, RustingStrata, Magnitude u otros runtimes.
+- No se ha registrado en este inventario una ejecución Ling-3.0-Tiny con TensorFold. Una eventual integración debe empezar por verificar el soporte de la arquitectura `bailing_hybrid` y del GGUF concreto, en una rama aislada.
+- No reutilizar como hechos técnicos estimaciones genéricas de tamaños Q4/Q5/Q8 ni afirmaciones de una topología concreta de expertos/capas sin contrastarlas con los metadatos y el archivo exacto de la variante. El tamaño del fichero cuantizado tampoco equivale a la memoria RAM/VRAM total durante inferencia.
+
+**Clasificación:** modelo ejecutado y medido en el MSI con llama.cpp CUDA (IQ2_M); análisis de portabilidad a otros motores pendiente. No es una nueva campaña ni una nueva medición.
+
 | **Ling-3.0-Tiny** | GGUF Q4_K_M | llama.cpp CPU · GB-BXi7-5500 | PP 41,0 tok/s; generación 15,5 tok/s | Equipo distinto del MSI; mantener separado. |
 | **Spark-X2.6-4B-abliterated** | GGUF Q4_K_M | llama.cpp CUDA · RTX 3050 | Prueba funcional: prefill 36,9 tok/s; generación 7,2 tok/s | Ejecución individual; faltan repeticiones y perfil de memoria normalizado. |
 | **TwIL-8B** | GGUF Q4_K_M balanced | llama.cpp CUDA · RTX 3050 | Campaña de 24 y 26 capas GPU; protocolo y tres repeticiones en informe | Inferencia funcional medida. Arquitectura Granite no soportada por la capacidad observada de TensorFold 1.2.0. |
