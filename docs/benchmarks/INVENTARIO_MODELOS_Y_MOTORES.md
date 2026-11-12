@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (incorporada evaluación documental de Phi-4-mini-instruct para RTX 3050 sm_86)
+**Última consolidación:** 2026-11-12 (incorporadas evaluaciones documentales de Phi-4-mini-instruct, Infernix y E2B Embed)
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -13,6 +13,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | Motor / proyecto | Estado en el laboratorio | Modelos o familias vinculados | Validación y notas |
 |---|---|---|---|
 | **llama.cpp CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B, **Clover-35B-A3B-Preview IQ2_S**, LFM3-1.7B, Ling-3.0-Tiny, Spark-X2.6-4B, TwIL-8B | LFM3 incorporado en v0.8.0 (PR #31252/#31257); el build histórico b11740 es anterior. Incluye sweep `llama-bench` de Qwen3-30B-A3B IQ3_XXS con `ngl=0/1/8` (3 repeticiones por ajuste); `ngl=1` obtuvo la mejor mediana PP128. Binarios locales en ~/lla| **TensorFold CUDA** | Ejecutado y medido; PR #1879 validado en GPU; integración TensorFold Web en validación | Qwen3.5-2B, Qwen3.5-4B; estudios de Qwen3.5-9B y Qwen3.5-35B-A3B; intento LFM3-1.7B | Inferencia real con 2B y 4B. El parche de scratch diferido se compiló y probó en `sm_86`; Qwen3.5-4B MLX-4bit cargó y generó en RTX 3050 4 GiB (≈56 tok/s), mientras el binario `main` de comparación rechazó el arranque por presupuesto CUDA insuficiente con la misma configuración. Qwen3.5-2B MLX-4bit también se ejecutó (≈112–116 tok/s). La validación se hizo con el árbol candidato basado en PR #1879 y TensorFold Native 1.2.6; **no significa que el parche esté ya integrado en una release**. TensorFold 1.2.7 se publicó el 11-11-2026, pero a la comprobación del 12-11 no constaba la incorporación del commit del PR #1879 y el PR seguía abierto. LFM3-1.7B GGUF Q4_K_M no fue reconocido en 1.1.6. La integración TensorFold Web se verificó separadamente con 1.2.0; su bridge/UI no acredita por sí sola una nueva inferencia. Los estudios 9B/35B no acreditan ejecución en el MSI. |9B/35B no acreditan ejecución en el MSI. |
+| **E2B Runtime / Embed** | Evaluación documental; diagnóstico del host pendiente; no instalado ni ejecutado | Sandboxes Linux aisladas para agentes; Firecracker microVM; SDK Python/JavaScript | E2B Embed permite alojar el runtime y dashboard en un único host Linux propio con KVM. No es un motor de inferencia ni utiliza la RTX 3050 para ejecutar modelos. En el MSI: kernel 7.0.0-38 y 14 GiB RAM registrados; kernel supera el mínimo recomendado, RAM alcanza el umbral recomendado de 12 GiB pero el ajuste predeterminado `HUGEPAGES=2048` reserva 4 GiB. Ubuntu exacto, KVM, `/dev/net/tun`, cgroup v2 y Docker/Compose deben comprobarse antes de instalar. Sin prueba de sandbox local ni validación de seguridad todavía; ver §1.3. |
 | **llama.cpp CUDA — Ripple/Ricursive** | Port upstream en revisión; no compilado localmente | Ripple-65B-Preview (Ricursive) | PR #31715 sustituye #31692; soporte de arquitectura y conversor GGUF propuestos. No confundir soporte de código en PR con ejecución local. No hay benchmark LEONES ni prueba en el MSI. |
 | **TensorFold CUDA — Ripple** | No soportado por el binario local 1.2.0; implementación upstream experimental Metal | Ripple-65B-Preview / NVFP4 / DFlash2 | `capabilities --json` del binario local no declara familia `ricursive`/`ripple`. PR #2231 añade Ripple para Metal; PR #2260 añade DFlash2 sobre Metal. No hay ruta CUDA validada. No descargar ni intentar cargar en el MSI. |
 | **RustingStrata CUDA** | Ejecutado y medido en otros modelos; compatibilidad Qwen3.6-35B-A3B evaluada documentalmente, prueba MSI pendiente | Qwen3.5-4B, Qwen3-30B-A3B; **Qwen3.6-35B-A3B UD-Q2_K_XL (candidato, no ejecutado localmente)** | Motor Rust v1.2.1 con CUDA NVRTC y offload híbrido de expertos CPU/GPU; admite arquitectura Ampere sm_80+. La RTX 3050 sm_86 cumple el umbral arquitectónico, pero no figura entre las GPU probadas para este modelo. Referencia Qwen3.6 publicada en RTX 3060 12 GiB + 32 GiB RAM; no extrapolar sus velocidades al MSI. Ver §3.6. |
@@ -32,6 +33,101 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Mage-VL-Cowork (Microsoft Mage)** | Investigación documental; no instalado ni ejecutado en el MSI | Agente CUA multimodal 4B; GUI + código/terminal | 66,0% OSWorld-Verified (361 tareas, 50 pasos; media de dos ejecuciones publicada por el equipo); no es un resultado de Artificial Analysis ni un benchmark LEONES. Sin inferencia local ni compatibilidad Ubuntu/GGUF verificada. |
 | **MLX** | Formato/artefacto usado por TensorFold | Qwen3.5-2B/4B MLX-4bit | No implica ejecución nativa de MLX en Ubuntu; TensorFold cargó artefactos MLX mediante backend CUDA. |
 | **Open-dLLM / Transformers CUDA** | Ejecutado y medido | Open-dCoder-0.5B BF16 | Inferencia local con `model.diffusion_generate` en RTX 3050; campañas V1/V2 single-sequence y V3 batch real. Máximo V3: 198,22 posiciones/s agregadas (batch 4, 16 pasos). | Modelo de difusión; posiciones/s no son directamente comparables con tokens/s autoregresivos. Validación funcional limitada a una tarea factorial. Ver §3.3. |
+
+### 1.3 E2B Runtime / Embed — sandboxes Firecracker en Ubuntu (12-11-2026)
+
+**Clasificación LEONES:** infraestructura de ejecución aislada para agentes; no es un modelo, un motor de inferencia ni un benchmark de tokens/s. Investigación documental completada; diagnóstico físico e instalación pendientes. No se ha instalado E2B Embed ni creado una sandbox en el MSI.
+
+**Qué es y qué opciones hay.**
+- **E2B Cloud:** servicio gestionado por E2B. El SDK Python/JavaScript crea sandboxes en la infraestructura cloud de E2B; requiere cuenta y credenciales del servicio.
+- **E2B Runtime / Embed:** distribución open source del runtime que ejecuta las sandboxes de E2B. Embed empaqueta API, orquestador Firecracker, almacenes, dashboard y plantilla base para ejecutarlos en un único host Linux controlado por el operador. El paquete Compose puede instalarse sin cuenta E2B ni licencia; genera una clave API propia para esa instalación.
+- **E2B Embed no equivale a ejecutar un modelo local:** proporciona una microVM Linux por sandbox para ejecutar código y tareas de agentes. Los modelos pueden seguir ejecutándose en TensorFold, llama.cpp u otro servicio separado, local o remoto; E2B no aprovecha directamente la RTX 3050 para inferencia.
+
+**Requisitos publicados para Docker Compose Embed (documentación upstream consultada el 12-11-2026):**
+- Linux x86-64 o arm64, host bare-metal o VM con virtualización anidada; KVM funcional y dispositivos `/dev/kvm` y `/dev/net/tun`.
+- Ubuntu 24.04 recomendado; kernel 6.8 o posterior en x86-64, glibc 2.34 o posterior y cgroup v2. Se requieren además `iptables`, `rsync`, `e2fsprogs` e `iproute2`; `python3-venv` se necesita para el flujo de prueba.
+- Docker Engine 27 o posterior y Docker Compose 2.24 o posterior.
+- 12 GiB de RAM recomendados y 20 GiB de espacio libre en disco.
+- Conectividad HTTPS saliente hacia Docker Hub, `us-docker.pkg.dev`, `storage.googleapis.com`, `github.com` y `raw.githubusercontent.com`.
+- La configuración predeterminada `HUGEPAGES=2048` reserva 2048 páginas enormes de 2 MiB (4 GiB de RAM) para las sandboxes. El preflight no comprueba que haya memoria suficiente; `host-setup` puede fallar si el host no puede reservarla. En un equipo con poca memoria se puede reducir el parámetro en `.env`, pero debe medirse el efecto y no asumir que la configuración por defecto es adecuada.
+- Embed es un despliegue de un solo host, no un clúster multi-nodo. La instalación Compose prepara el host, descarga artefactos Firecracker, obtiene imágenes, migra bases de datos y construye la plantilla `base`. No es una operación puramente de usuario ni debe lanzarse sin revisar los cambios y los recursos disponibles.
+
+**Evaluación preliminar del MSI LEONES.** Equipo de referencia: MSI Thin 15 B12UC, Intel Core i7-12650H, 14 GiB RAM, RTX 3050 Laptop 4 GiB, Ubuntu, kernel registrado `7.0.0-38-generic`; espacio libre previamente registrado en la raíz: aproximadamente 466 GB. Estos datos proceden del inventario del laboratorio y deben refrescarse con el diagnóstico antes de instalar.
+
+| Requisito | Estado conocido en el MSI | Evaluación |
+|---|---|---|
+| Linux x86-64 | Ubuntu; arquitectura x86-64 implícita en el equipo | Plausible; confirmar versión exacta y glibc |
+| Kernel x86-64 >= 6.8 | 7.0.0-38-generic registrado | Cumple el mínimo de versión, sujeto a comprobar el kernel activo |
+| KVM y `/dev/kvm` | No comprobado en esta campaña | Bloqueante hasta validar BIOS/UEFI, módulo y dispositivo |
+| `/dev/net/tun` | No comprobado | Bloqueante hasta validar |
+| cgroup v2 y página de 4 KiB | No comprobados | Validar |
+| Docker Engine >= 27 / Compose >= 2.24 | Versiones actuales no comprobadas | Validar |
+| RAM >= 12 GiB recomendados | 14 GiB registrados | Cumple por poco; la reserva predeterminada de 4 GiB puede presionar el sistema, especialmente con TensorFold/modelos activos |
+| Disco libre >= 20 GiB | Aproximadamente 466 GB registrados en raíz | Cumplía en la última medición disponible; volver a comprobar |
+| GPU NVIDIA | RTX 3050 Laptop 4 GiB | No es requisito de aceleración de E2B; no aumenta la capacidad de inferencia de modelos |
+
+**Diagnóstico previo — solo lectura.** Ejecutar y conservar la salida antes de instalar:
+
+```bash
+echo "========== OS / KERNEL / LIBC =========="
+cat /etc/os-release
+uname -r
+getconf GNU_LIBC_VERSION
+getconf PAGESIZE
+
+echo
+echo "========== CPU / VIRTUALIZACIÓN =========="
+lscpu | grep -E 'Architecture|Model name|Virtualization|CPU\(s\)'
+grep -m1 -oE '\\b(vmx|svm)\\b' /proc/cpuinfo || true
+
+echo
+echo "========== KVM / TUN =========="
+ls -l /dev/kvm /dev/net/tun 2>&1
+lsmod | grep -E '^(kvm|tun)' || true
+id
+groups
+
+echo
+echo "========== CGROUPS =========="
+stat -fc %T /sys/fs/cgroup
+mount | grep cgroup
+
+echo
+echo "========== DOCKER =========="
+docker version
+docker compose version
+docker info
+
+echo
+echo "========== MEMORIA / HUGE PAGES =========="
+free -h
+grep -E 'HugePages|Hugepagesize|MemTotal|MemAvailable' /proc/meminfo
+swapon --show
+
+echo
+echo "========== DISCO =========="
+df -h /
+```
+
+**Plan de prueba controlada (no ejecutado):**
+1. Revisar el diagnóstico anterior, confirmar que la virtualización Intel VT-x está habilitada en firmware y validar acceso a KVM/TUN sin cambiar aún la configuración.
+2. Confirmar Docker/Compose y cgroup v2. No añadir el usuario al grupo `docker` ni cargar módulos, reservar huge pages o alterar sysctl sin revisar el impacto y cerrar las aplicaciones de inferencia.
+3. Revisar `embed/compose/README.md`, `compose.yaml` y `.env` del tag/commit fijado de `e2b-dev/runtime`; registrar commit y hashes. Evaluar puertos, reglas de red, volúmenes, servicios y cambios de host. La documentación indica que los servicios/API/dashboard usan puertos del host y que Embed responde por HTTP sin TLS propio: mantenerlo en red de confianza, restringir el firewall y no exponer puertos internos.
+4. Si el host tiene margen suficiente, instalar en un directorio aislado, con la configuración de huge pages dimensionada explícitamente. El comando oficial Compose es `docker compose up -d --wait`; no ejecutarlo hasta completar los pasos anteriores. La primera ejecución prepara el host y crea la plantilla `base`.
+5. Verificar `docker compose ps`, logs de `ready`, dashboard y variables SDK generadas. Ejecutar el smoke test oficial y crear, ejecutar un comando, pausar y reanudar una sandbox; guardar logs y tiempos.
+6. Medir RAM, swap, huge pages, disco, CPU, temperatura y estabilidad del escritorio durante creación/ejecución/pausa. Repetir con TensorFold detenido y luego con carga local representativa solo si la primera prueba es estable.
+7. Documentar el teardown y la limpieza segura según la guía upstream; no borrar volúmenes ni datos sin inventario previo.
+
+**Valor potencial para LEONES / ODS:** E2B puede aportar a los agentes un entorno Linux efímero y aislado para ejecutar código generado, inspeccionar archivos y producir artefactos, manteniendo el runtime de inferencia como servicio independiente. Sería un backend opcional de ejecución de herramientas, no un sustituto de TensorFold, llama.cpp, el router de modelos ni de los contenedores ODS. La integración debería encapsular endpoint/clave SDK, ciclo de vida de sandbox, límites de CPU/RAM/disco, política de red, persistencia/expiración y auditoría. No confiar secretos de producción al sandbox ni asumir que la microVM elimina la necesidad de controles de red y autorización.
+
+**Decisión provisional:** **GO para diagnóstico no destructivo; NO-GO para instalar todavía.** El kernel y los recursos registrados parecen cercanos a los requisitos, pero KVM, TUN, cgroup, Docker y la versión de Ubuntu no están verificados. La RAM es el principal riesgo operativo: 14 GiB totales dejan poco margen si se reservan 4 GiB de huge pages y se mantienen motores/modelos locales activos. No registrar E2B como instalado, ejecutado o validado hasta que exista evidencia de una sandbox creada y probada en este MSI.
+
+**Fuentes primarias:**
+- [E2B Runtime — repositorio oficial y arquitectura](https://github.com/e2b-dev/runtime)
+- [E2B Embed — Compose, requisitos, instalación y smoke test](https://github.com/e2b-dev/runtime/blob/main/embed/compose/README.md)
+- [E2B Embed — referencia operativa, puertos, servicios y secretos](https://github.com/e2b-dev/runtime/blob/main/embed/docs/REFERENCE.md)
+- [E2B Embed — anuncio oficial (30-09-2026)](https://e2b.dev/resources/introducing-e2b-embed)
+- [E2B Runtime — arquitectura](https://github.com/e2b-dev/runtime/blob/main/docs/ARCHITECTURE.md)
 
 ### Kairos — candidato a base de LEONES AI OS (evaluación documental, 12-11-2026)
 
