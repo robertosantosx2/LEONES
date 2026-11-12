@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12  
+**Última consolidación:** 2026-11-12 (actualizado tras fusionar PR #112)  
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -12,7 +12,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 
 | Motor / proyecto | Estado en el laboratorio | Modelos o familias vinculados | Validación y notas |
 |---|---|---|---|
-| **llama.cpp CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B, LFM3-1.7B, Ling-3.0-Tiny, Spark-X2.6-4B, TwIL-8B | Mayor historial de pruebas CLI y llama-bench. Binarios locales en ~/llama-cpp-cuda/build/bin y /usr/local/bin. |
+| **llama.cpp CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B, LFM3-1.7B, Ling-3.0-Tiny, Spark-X2.6-4B, TwIL-8B | Incluye sweep `llama-bench` de Qwen3-30B-A3B IQ3_XXS con `ngl=0/1/8` (3 repeticiones por ajuste); `ngl=1` obtuvo la mejor mediana PP128. Binarios locales en ~/llama.cpp-cuda/build/bin y /usr/local/bin. |
 | **TensorFold CUDA** | Ejecutado y medido | Qwen3.5-2B, Qwen3.5-4B; estudios de Qwen3.5-9B y Qwen3.5-35B-A3B | Inferencia real con 2B y 4B. PR #1879 aborda la reserva CUDA diferida de scratch para 4B. Los estudios 9B/35B no acreditan ejecución en el MSI. |
 | **RustingStrata CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B | Bench nativo y CLI/API documentados. Algunas APIs no exponen tok/s internos: no derivarlos como si fueran métricas nativas. |
 | **Tandem / llama.cpp CPU-MoE** | Ejecutado y medido | Qwen3.5-35B-A3B IQ2_XXS | Ensayo CPU-MoE con RTX 3050; decode 35,6 tok/s en la prueba no-thinking registrada. Evidencia bruta pendiente de consolidación completa en LEONES. |
@@ -29,11 +29,12 @@ Este documento es el índice único de modelos que se han investigado, descargad
 
 | Modelo | Cuantización / artefacto | Motor / equipo | Resultado disponible | Estado y cautela |
 |---|---|---|---|---|
-| **Qwen3.5-2B** | MLX-4bit | TensorFold CUDA · RTX 3050 | 95,08 tok/s (32 tokens); 105,71 tok/s (128); campaña API posterior: media 105,421 y mediana 106,455 tok/s; TTFT aprox. 84–94 ms | Inferencia funcional. Prefill no registrado en todas las pruebas. |
+| **Qwen3.5-2B** | MLX-4bit | TensorFold CUDA · RTX 3050 | Campaña API de octubre (5 peticiones, 66 entrada/128 salida): media 105,421 y mediana 106,455 tok/s; media TTFT 77,956 ms (mediana 84,646 ms); prefill medio 74,142 ms. Además, ensayos previos de 95,08 tok/s (32 tokens) y 105,71 tok/s (128). | Inferencia funcional. Las cinco respuestas llegaron al límite de 128 tokens; aceptación especulativa reportada 1/56 (1,7857%). No comparar directamente con `llama-bench`. |
 | **Qwen3.5-4B** | MLX-4bit | TensorFold CUDA · RTX 3050 | 53,64 tok/s (64 tokens), 53,42 tok/s (128); API de tres peticiones: mediana 54,708 tok/s, TTFT 130,3 ms y prefill aprox. 228–232 tok/s | Inferencia funcional. Hubo un primer rechazo de memoria; después se completaron ejecuciones. |
 | **Qwen3.5-4B** | GGUF Q4_K_M | llama.cpp CUDA · RTX 3050 | CLI: prefill 141,2 tok/s y decode 42,4 tok/s; API de tres peticiones: mediana decode 47,646 tok/s | Inferencia funcional. CLI y API son protocolos distintos. |
 | **Qwen3.5-4B** | GGUF Q4_K_M | RustingStrata CUDA · RTX 3050 | Bench nativo: PP128 915,3 tok/s; PP512 986,5 tok/s; TG64 46,6 / 46,1 tok/s. API sin tok/s interno expuesto | Inferencia funcional y benchmark nativo. API no comparable en tok/s. |
 | **Qwen3-30B-A3B-Instruct-2507** | GGUF IQ3_XXS | llama.cpp CUDA · RTX 3050 | Head-to-head de seis ejecuciones; mediana decode calculada 1,985 tok/s; PP128 mediana 24,42 / 76,25 / 26,38 tok/s con 0 / 1 / 8 capas GPU | Inferencia funcional con offload. Las longitudes y configuraciones varían entre ensayos. |
+| **Qwen3-30B-A3B-Instruct-2507** | GGUF IQ3_XXS | llama.cpp `llama-bench` CUDA · RTX 3050 | Sweep `ngl=0/1/8`, PP128 (media/mediana): 22,553/24,420; 74,473/76,250; 34,957/26,380 tok/s. TG32: media 1,487; 1,660; 1,827 tok/s, respectivamente. Tres repeticiones por ajuste. | Nueve ejecuciones con código 0. `ngl=8` mostró alta variabilidad PP128; `ngl=1` tuvo la mejor mediana PP128. Benchmark separado del head-to-head y de Strata. |
 | **Qwen3-30B-A3B-Instruct-2507** | GGUF IQ3_XXS | RustingStrata CUDA · RTX 3050 | Head-to-head de seis ejecuciones; mediana decode calculada 30,01 tok/s; RSS aprox. 7–8 GiB | Inferencia funcional. No es comparación perfectamente equivalente con llama.cpp. |
 | **Qwen3-30B-A3B** | GGUF IQ3_XXS / configuración PICCHIO | MSI RTX 3050 | Campaña de memoria dual-channel y ejecución documentada en informe PICCHIO | Consultar informe específico; no mezclar con el head-to-head anterior. |
 | **Qwen3.5-35B-A3B** | GGUF IQ2_XXS | Tandem / llama.cpp CPU-MoE · RTX 3050 + CPU/RAM | Decode aprox. **35,6 tok/s** en prueba no-thinking; prompt 46,5 tok/s; RSS aprox. 9,27 GiB; swap aprox. 7,5 GiB; GPU aprox. 2345 MiB | Ejecución real medida. Contexto 1024; no extrapolar a TensorFold. |
@@ -64,8 +65,10 @@ Este documento es el índice único de modelos que se han investigado, descargad
 
 ### Inventarios y comparativas generales
 - [Inventario comparativo histórico (30-10-2026)](inventario-comparativo-ejecuciones-modelos-ubuntu-2026-10-30.md)
-- [Informe de inferencia densa — español](report-inferencia-dense_Octubre26.md)
-- [Dense inference report — English](report-dense-inference_October26.md)
+- [Informe reproducible de inferencia RTX 3050 — español](../reports/report-inferencia-dense_Octubre26.md)
+- [Reproducible RTX 3050 inference report — English](../reports/report-inference-dense-october-2026.md)
+- [Paquete de evidencias del benchmark de octubre (tar.gz)](../reports/artifacts/inferencia-rtx3050-4gb-oct26-collection-20261022-123939.tar.gz)
+- [Script recolector de evidencias](../../scripts/benchmarks/collect-inferencia-rtx3050-oct26.sh)
 - [Qwen3.5-4B: tres runtimes](qwen35-4b-three-runtimes-2026-10-20.md)
 - [CSV Qwen3.5-4B / tres runtimes](qwen35-4b-three-runtimes-2026-10-20.csv)
 - [Inventario experimental Qwen3.5 TensorFold / llama.cpp](../experimental/inventario-comparativo-qwen35-tensorfold-llamacpp-2026-10-20.md)
@@ -99,6 +102,15 @@ Este documento es el índice único de modelos que se han investigado, descargad
 - [README del smoke test local](../../scripts/local/llm-smoke-test/README.md)
 - [Contrato de evidencia runtime v1.1](../runtime-benchmark-evidence-v1.1.md)
 - [Manifiesto de benchmark del LEONES Lab Agent](../../projects/leones-lab-agent/docs/benchmark-manifest-v1.md)
+
+### Campaña reproducible de inferencia densa — 22-10-2026
+
+El informe fusionado en [PR #112](https://github.com/robertosantosx2/LEONES/pull/112) añade una campaña independiente con dos ensayos que deben mantenerse separados:
+
+- **llama.cpp + Qwen3-30B-A3B IQ3_XXS:** `llama-bench`, PP128/TG32, `ngl=0/1/8`, tres repeticiones por ajuste. La mediana PP128 más alta fue 76,250 tok/s con `ngl=1`; `ngl=8` fue inestable (PP128 entre 9,41 y 69,08 tok/s). Decode TG32 quedó entre 1,40 y 2,14 tok/s.
+- **TensorFold 1.1.1 + Qwen3.5-2B MLX-4bit:** cinco peticiones API secuenciales, 66 tokens de entrada y 128 de salida reportados; velocidad media 105,421 tok/s, mediana 106,455 tok/s y TTFT medio 77,956 ms. Todas alcanzaron el límite de salida, por lo que deben tratarse como respuestas potencialmente truncadas.
+
+El informe también documenta diagnósticos de carga CUDA de Qwen3-30B-A3B (buffer de modelo CUDA 3290,68 MiB, KV 26 MiB, compute 86,25 MiB), comandos de referencia, advertencias `CUDA_Host` no fatales y estado de los artefactos. La captura `nvidia-smi` posterior a la ejecución no equivale a telemetría de pico. No mezclar estos datos con el head-to-head anterior ni usarlos para ordenar motores con modelos/protocolos distintos.
 
 ## 5. Reglas para mantenerlo actualizado
 
