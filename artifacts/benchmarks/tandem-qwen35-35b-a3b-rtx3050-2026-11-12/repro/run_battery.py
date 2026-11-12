@@ -3,7 +3,7 @@
 Never starts, stops, or reconfigures the inference server. Python 3.10+, stdlib only.
 """
 from __future__ import annotations
-import argparse, datetime as dt, json, pathlib, time, urllib.error, urllib.request
+import argparse, datetime as dt, json, pathlib, time, urllib.error, urllib.request\nfrom urllib.parse import urlparse\nfrom resource_monitor import RequestSampler
 
 ARITHMETIC = "¿Cuánto es 17 por 23? Responde brevemente."
 TWO_SUM = ("Escribe una función Python two_sum(nums, target) que devuelva los índices de dos "
@@ -59,20 +59,20 @@ def main():
     p.add_argument("--output", default="")
     p.add_argument("--timeout", type=int, default=900)
     p.add_argument("--pause", type=float, default=1.0)
-    p.add_argument("--limit", type=int, default=0)
+    p.add_argument("--limit", type=int, default=0)\n    p.add_argument("--monitor-interval", type=float, default=1.0, help="Resource sampling interval in seconds")\n    p.add_argument("--server-pid", type=int, default=None, help="Explicit llama-server PID; auto-detected by API port if omitted")
     a = p.parse_args()
     base = a.base_url.rstrip("/")
     stamp = dt.datetime.now().astimezone().strftime("%Y%m%d-%H%M%S%z")
     out = pathlib.Path(a.output or ("tandem-battery-" + stamp))
     out.mkdir(parents=True, exist_ok=False)
-    (out / "responses").mkdir()
+    (out / "responses").mkdir()\n    (out / "resources").mkdir()\n    port = urlparse(base).port or (443 if urlparse(base).scheme == "https" else 80)
     manifest = {
         "started_at":dt.datetime.now().astimezone().isoformat(), "mode":a.mode,
         "engine":a.engine, "model":a.model, "model_path_or_id":a.model_path,
         "base_url":base, "temperature":0, "stream":False, "thinking":True,
         "reasoning_format":"deepseek",
         "cases":[{"task":t,"budget":b,"max_tokens":m} for t,_,b,m in CASES],
-        "note":"Client does not change server configuration."
+        "note":"Client does not change server configuration.",\n        "resource_monitor":{"interval_seconds":a.monitor_interval,"server_pid_argument":a.server_pid,"metrics":"Linux /proc, /proc/diskstats and nvidia-smi; system-wide disk/swap deltas"}}
     }
     for endpoint in ("/health","/props"):
         try: manifest[endpoint[1:]] = get_json(base+endpoint)
@@ -112,7 +112,7 @@ def main():
             name = f"{i:02d}-{task}-budget{budget}-max{max_tokens}.json"
             (out/"responses"/name).write_text(json.dumps(rec,ensure_ascii=False,indent=2)+"\n")
             row = dict(rec.get("metrics",rec.get("error",{})))
-            row.update({"task":task,"budget":budget,"max_tokens":max_tokens})
+            row.update({"task":task,"budget":budget,"max_tokens":max_tokens,\n                "resource_metrics":rec.get("resource_metrics"),"resource_monitor_error":rec.get("resource_monitor_error")})
             summary.write(json.dumps(row,ensure_ascii=False)+"\n"); summary.flush()
             print(f"[{i}/{len(cases)}] {task} budget={budget} max={max_tokens}: {row}",flush=True)
             if i < len(cases) and a.pause: time.sleep(a.pause)
