@@ -82,6 +82,19 @@ Para poder comparar el comportamiento físico de cada ejecución, conviene añad
 
 Así se podrá calcular consumo máximo y medio por petición y detectar si las generaciones largas elevan CPU, RAM, VRAM, swap o I/O. En esta batería, esas relaciones quedan como hipótesis de trabajo y no como resultados medidos.
 
+
+## Instrumentación para próximas ejecuciones
+
+Se han añadido scripts para registrar recursos durante **cada petición**, con una ventana de muestreo independiente y un identificador local de caso:
+
+- [Runner de batería instrumentado](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_battery.py)
+- [Monitor Linux/NVIDIA](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/resource_monitor.py)
+- [Guía de uso y límites de medición](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/RESOURCE_MONITORING.md)
+
+El runner genera `resource_metrics` dentro de cada JSON de respuesta y de `summary.jsonl`, además de muestras brutas en `resources/resource_samples.jsonl`. Incluye RAM del host y RSS del servidor, swap, CPU del sistema y del proceso, utilización y VRAM de NVIDIA, temperatura/potencia/reloj GPU y deltas de E/S por dispositivo de bloque. También identifica el montaje que contiene el GGUF.
+
+**Importante:** esta instrumentación queda preparada para las siguientes campañas; no modifica los resultados históricos ni reconstruye telemetría que no se capturó en noviembre. Antes de una batería completa, la guía recomienda validar con `--limit 1`. Los contadores de disco y swap son del sistema y pueden incluir actividad ajena al servidor; se documentan esos límites.
+
 ## Evidencias y ficheros reproducibles
 
 El archivo de evidencias generado el 12 de noviembre de 2026 se ha incorporado a esta rama de Git y su checksum SHA-256 se verificó localmente antes de publicarlo.
