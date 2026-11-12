@@ -253,6 +253,33 @@ La tabla de categorías OSWorld publicada por el proyecto da 87,5% en tareas de 
 - [Código oficial Microsoft/Mage — mage_vl_cowork](https://github.com/microsoft/Mage/tree/main/mage_vl_cowork)
 
 
+## 3.4 Comparación documental: Qwen3.5-35B-A3B y Nemotron 3.5 Lightning (12-11-2026)
+
+Esta comparación amplía la evaluación de familias MoE. **No es un benchmark LEONES**: los resultados de inteligencia proceden de las fichas y evaluaciones oficiales de cada fabricante, con protocolos distintos. No deben interpretarse como una prueba head-to-head.
+
+| Característica | Qwen3.5-35B-A3B | NVIDIA Nemotron 3.5 Lightning 30B-A3B |
+|---|---:|---:|
+| Parámetros totales declarados | 35B (≈36B en el resumen de artefactos HF) | 30B |
+| Parámetros activos por token | 3B | 3B |
+| Arquitectura | Híbrida Gated DeltaNet + Gated Attention + MoE | Híbrida Mamba-2 + MoE + atención |
+| Expertos | 256; 8 routed + 1 shared activados | 128 routed; top-6 + 1 shared |
+| Contexto | 262.144 nativo; extensible hasta ≈1,01M | Hasta 1M anunciado por NVIDIA |
+| Modalidad | Texto con encoder de visión | Texto |
+| Enfoque destacado | Modelo general multimodal, razonamiento y código | Ejecución eficiente, agentes de larga duración y uso de herramientas |
+| Estado en el MSI | Ejecutado con Tandem/llama.cpp CPU-MoE, IQ2_XXS; véase tabla de mediciones | No ejecutado ni medido en el MSI |
+
+**¿Cuál es más pesado?** Qwen3.5-35B-A3B: tiene 5B parámetros más (aprox. 16,7 % más que 30B). Ambos activan aproximadamente 3B por token. La activación similar no significa que ocupen la misma memoria: deben almacenarse o recuperarse los pesos de todos los expertos, además de embeddings, capas compartidas, cachés y estados.
+
+**¿Cuál parece más capaz?** Los resultados oficiales publicados por Qwen son superiores en varias pruebas comunes de razonamiento y programación: Qwen informa GPQA Diamond 84,2, MMLU-Pro 85,3 y SWE-bench Verified 69,2. NVIDIA informa para Nemotron Lightning NVFP4 GPQA Diamond 75,57, MMLU-Pro 81,62 y SWE-bench Verified 52,80. Son cifras de evaluaciones de cada fabricante y no se han obtenido con un protocolo común; por ello son indicios, no una clasificación concluyente. La lectura prudente es que Qwen tiene mejores cifras publicadas en esos indicadores, mientras que Nemotron está especialmente orientado a cargas agentic, ejecución sostenida y decodificación especulativa (MTP, DFlash/DSpark). No afirmar que Nemotron sea globalmente menos inteligente a partir de esta tabla.
+
+**Compatibilidad TensorFold:** la instalación local verificada es TensorFold Native 1.2.0. Su salida de capacidades declara la familia `qwen3_5_moe` con formatos `mlx-q4g64`, `modelopt-mixed` y `modelopt-nvfp4`; esto no demuestra que cualquier checkpoint Qwen3.5-35B-A3B pueda cargarse en el MSI ni que quepa en 4 GiB de VRAM. En esa versión local no se registró la familia Nemotron Lightning en `capabilities --json`. La presencia de recetas o soporte en la rama actual de TensorFold no debe atribuirse retroactivamente al binario 1.2.0. Nemotron requiere una verificación específica de arquitectura, formato, kernels y memoria antes de intentar su ejecución.
+
+**Viabilidad en el MSI Thin 15 B12UC:** con 14 GiB de RAM y RTX 3050 Laptop de 4 GiB, ninguno debe considerarse un modelo íntegramente residente en VRAM. Qwen ya cuenta con una ejecución real en Tandem/llama.cpp CPU-MoE: IQ2_XXS, contexto 1024, decode ≈35,6 tok/s en la prueba no-thinking, con RSS ≈9,27 GiB y swap ≈7,5 GiB. Ese resultado no predice el rendimiento de TensorFold ni es comparable con Nemotron. Nemotron permanece como candidato de investigación; no descargar ni declarar viabilidad local solo por su NVFP4 o por los 3B activos.
+
+**Conclusión para el inventario:** Qwen3.5-35B-A3B es el más pesado; ambos tienen 3B activos. Qwen presenta mejores puntuaciones publicadas en varios benchmarks generales citados, pero la superioridad global no está demostrada en una evaluación común. Nemotron merece una prueba independiente si se habilita una ruta compatible con el hardware y el runtime.
+
+**Fuentes primarias:** [Qwen3.5-35B-A3B — model card y benchmarks](https://huggingface.co/Qwen/Qwen3.5-35B-A3B) · [Nemotron 3.5 Lightning — NVIDIA model card y benchmarks](https://build.nvidia.com/nvidia/nemotron-3.5-lightning-30b-a3b/modelcard) · [Nemotron 3.5 Lightning — especificaciones técnicas de NVIDIA NeMo](https://github.com/NVIDIA-NeMo/Nemotron/blob/main/docs/nemotron/lightning35/README.md) · [Informe NVIDIA Nemotron 3.5 Super y Lightning](https://research.nvidia.com/labs/nemotron/Nemotron-3.5-Super-and-Lightning/).
+
 ## 4. Informes y artefactos primarios
 
 ### Material formativo sobre LLM (no es benchmark)
