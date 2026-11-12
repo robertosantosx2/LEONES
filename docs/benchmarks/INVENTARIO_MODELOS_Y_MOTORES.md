@@ -15,7 +15,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **llama.cpp CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B, **Clover-35B-A3B-Preview IQ2_S**, LFM3-1.7B, Ling-3.0-Tiny, Spark-X2.6-4B, TwIL-8B | LFM3 incorporado en v0.8.0 (PR #31252/#31257); el build histórico b11740 es anterior. Incluye sweep `llama-bench` de Qwen3-30B-A3B IQ3_XXS con `ngl=0/1/8` (3 repeticiones por ajuste); `ngl=1` obtuvo la mejor mediana PP128. Binarios locales en ~/lla| **TensorFold CUDA** | Ejecutado y medido; PR #1879 validado en GPU; integración TensorFold Web en validación | Qwen3.5-2B, Qwen3.5-4B; estudios de Qwen3.5-9B y Qwen3.5-35B-A3B; intento LFM3-1.7B | Inferencia real con 2B y 4B. El parche de scratch diferido se compiló y probó en `sm_86`; Qwen3.5-4B MLX-4bit cargó y generó en RTX 3050 4 GiB (≈56 tok/s), mientras el binario `main` de comparación rechazó el arranque por presupuesto CUDA insuficiente con la misma configuración. Qwen3.5-2B MLX-4bit también se ejecutó (≈112–116 tok/s). La validación se hizo con el árbol candidato basado en PR #1879 y TensorFold Native 1.2.6; **no significa que el parche esté ya integrado en una release**. TensorFold 1.2.7 se publicó el 11-11-2026, pero a la comprobación del 12-11 no constaba la incorporación del commit del PR #1879 y el PR seguía abierto. LFM3-1.7B GGUF Q4_K_M no fue reconocido en 1.1.6. La integración TensorFold Web se verificó separadamente con 1.2.0; su bridge/UI no acredita por sí sola una nueva inferencia. Los estudios 9B/35B no acreditan ejecución en el MSI. |9B/35B no acreditan ejecución en el MSI. |
 | **llama.cpp CUDA — Ripple/Ricursive** | Port upstream en revisión; no compilado localmente | Ripple-65B-Preview (Ricursive) | PR #31715 sustituye #31692; soporte de arquitectura y conversor GGUF propuestos. No confundir soporte de código en PR con ejecución local. No hay benchmark LEONES ni prueba en el MSI. |
 | **TensorFold CUDA — Ripple** | No soportado por el binario local 1.2.0; implementación upstream experimental Metal | Ripple-65B-Preview / NVFP4 / DFlash2 | `capabilities --json` del binario local no declara familia `ricursive`/`ripple`. PR #2231 añade Ripple para Metal; PR #2260 añade DFlash2 sobre Metal. No hay ruta CUDA validada. No descargar ni intentar cargar en el MSI. |
-| **RustingStrata CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B | Bench nativo y CLI/API documentados. Algunas APIs no exponen tok/s internos: no derivarlos como si fueran métricas nativas. |
+| **RustingStrata CUDA** | Ejecutado y medido en el MSI; evaluación ampliada de compatibilidad upstream | Qwen3.5-4B, Qwen3-30B-A3B (ejecuciones locales); catálogo upstream adicional: Qwen3.5-2B/9B, Qwen3.6-35B-A3B, Qwen3.8-27B y Qwen3.8-Flash-Next | Las ejecuciones locales acreditadas siguen siendo las indicadas; las cifras publicadas por RustingStrata en RTX 3060 12 GB / 32 GB RAM no son resultados del MSI. La RTX 3050 sm_86 pertenece a la clase Ampere admitida por el código CUDA, pero no aparece como tarjeta probada en su matriz oficial. Ver §3.5. |
 | **Tandem / llama.cpp CPU-MoE** | Ejecutado y medido | Qwen3.5-35B-A3B IQ2_XXS | Ensayo CPU-MoE con RTX 3050; decode 35,6 tok/s en la prueba no-thinking registrada. Evidencia bruta pendiente de consolidación completa en LEONES. |
 | **Pithos** | Ejecutado y medido | LFM3-1.7B | Campañas del 6 y 7 de noviembre; CSV y log preservados en artifacts/pithos-0.5.1-2026-11-07/. |
 | **Kinetic** | Compilado / pruebas de ejecución en curso | LFM3-1.7B GGUF; Qwen3.5-35B-A3B IQ2_XXS seleccionado para prueba | Se inspeccionaron versiones, binarios y catálogo; se prepararon y ejecutaron pruebas. No publicar velocidad sin log de benchmark completo y reproducible. |
@@ -601,6 +601,57 @@ audio:
 - [Repositorio Atomic Chat Core](https://github.com/AtomicBot-ai/atomic-chat-core).
 
 **Decisión:** GO para abrir y discutir el feature request e implementar un adaptador experimental en Linux/CUDA; NO-GO para marcarlo como backend disponible o recomendarlo como integración de producción hasta completar pruebas reales de API/streaming, gateway, ciclo de vida, gestión de GPU y apagado sin procesos huérfanos.
+
+### 3.5 RustingStrata 1.2.1 — evaluación ampliada de Qwen en el MSI (12-11-2026)
+
+**Clasificación:** evaluación documental del catálogo y de las pruebas upstream, complementaria a las ejecuciones locales ya registradas. No se ha instalado ni ejecutado RustingStrata 1.2.1 en esta nueva campaña ni se han descargado los modelos grandes mencionados aquí. No promover estos modelos a «ejecutados» o «medidos en el MSI».
+
+**Proyecto:** [RustingStrata](https://github.com/RustingStudio/RustingStrata), motor de inferencia escrito en Rust para modelos GGUF. La versión declarada en su README consultado es **1.2.1**. Incluye kernels CUDA compilados en tiempo de ejecución mediante NVRTC y backend Vulkan; los expertos que no caben en VRAM pueden ejecutarse en CPU mientras la GPU trabaja. La colocación de expertos se adapta al enrutamiento observado. No depende de llama.cpp/ggml para el motor de inferencia.
+
+**Familias declaradas upstream:** Qwen3.5/3.6 (`qwen35moe`, `qwen35`), Qwen3-Next (`qwen3next`), Qwen3.8-Flash-Next (`qwen4exp`), Qwen3 (`qwen3`, `qwen3moe`), además de DeepSeek-V4.1-Flash y GLM-5.3-Flash. La presencia en el catálogo no garantiza que cada cuantización, modalidad o variante pueda ejecutarse con la memoria disponible en el MSI.
+
+**Compatibilidad de GPU:** el proyecto declara CUDA para Volta (sm_70), Turing (sm_75) y Ampere o posterior (sm_80+). La RTX 3050 Laptop del MSI es Ampere sm_86 y cumple ese nivel de arquitectura; sin embargo, la tabla upstream de tarjetas realmente probadas identifica una RTX 3060 12 GB como referencia Ampere, no una RTX 3050 4 GB. Por tanto, sm_86 es una compatibilidad arquitectónica declarada, no una validación de rendimiento ni de memoria para este portátil. CUDA NVRTC se carga en tiempo de ejecución. Vulkan requiere Vulkan 1.3 y capacidades adicionales del controlador.
+
+#### Modelos Qwen: catálogo upstream y viabilidad estimada en el MSI
+
+| Modelo / archivo upstream | Evidencia publicada por RustingStrata | Situación estimada en MSI: 14 GiB RAM + RTX 3050 4 GiB |
+|---|---|---|
+| **Qwen3.5-2B Q4_K_M** | 208 tok/s de decode en RTX 3060 12 GB (CUDA/Vulkan, prueba breve) | **Candidato prioritario.** Ya existe ejecución local anterior con TensorFold; RustingStrata requiere benchmark propio para comparar motores. |
+| **Qwen3-4B-Instruct-2507 Q4_K_M** | 104/110 tok/s CUDA/Vulkan en RTX 3060 12 GB | **Candidato prioritario.** Tamaño más razonable para probar con contexto moderado; rendimiento MSI desconocido. |
+| **Qwen3.5-9B Q5_K_S** | 51/53 tok/s CUDA/Vulkan en RTX 3060 12 GB | **Prueba condicionada.** Con 14 GiB RAM y 4 GiB VRAM puede haber presión de memoria; empezar con cuantización más pequeña y contexto bajo si existe artefacto compatible. |
+| **Qwen3-30B-A3B UD-Q2_K_XL** | 114/123 tok/s CUDA/Vulkan en RTX 3060 12 GB | **Experimental y muy ajustado.** Ya hay ejecución local previa de Qwen3-30B-A3B IQ3_XXS con RustingStrata registrada en este inventario, pero no extrapolar sus resultados a este archivo ni a Qwen3.6. |
+| **Qwen3.6-35B-A3B UD-Q2_K_XL** | Archivo de 11,7 GiB; 118,2 tok/s decode corto y 113,4 tras prompt de 4K en RTX 3060 12 GB / Ryzen 5 7600X / 32 GB RAM | **No recomendado con la configuración actual.** El archivo por sí solo consume casi toda la RAM física nominal; además hacen falta SO, caché, KV y buffers. Solo tendría sentido como experimento con RAM ampliada y contexto limitado. |
+| **Qwen3.6-35B-A3B UD-Q4_XS** | 94/96 tok/s CUDA/Vulkan en RTX 3060 12 GB; el upstream indica que cabía el 57% de los expertos en VRAM | **No viable como primera prueba en 4 GiB VRAM / 14 GiB RAM.** La referencia dispone de tres veces la VRAM y más del doble de RAM. |
+| **Qwen3.8-27B UD-IQ3_XXS** | 20,6/20,5 tok/s CUDA/Vulkan en RTX 3060 12 GB; se indica una ocupación GPU de 10,8 GB | **No recomendado.** La huella GPU de referencia ya excede ampliamente los 4 GiB disponibles. El offload CPU no elimina la necesidad de memoria host suficiente. |
+| **Qwen3.8-Flash-Next GSQ-RCO IQ2_XS** | GGUF de dos shards, aproximadamente 64 GB; 33,0 tok/s decode y 109,3 tok/s prefill en RustingStrata sobre RTX 3060 12 GB y 30 GiB RAM. Los expertos que no cabían en GPU se leían parcialmente desde NVMe. | **No viable en el MSI actual.** La referencia utilizó más del doble de RAM física y tres veces la VRAM. El propio informe advierte de streaming desde NVMe; con 14 GiB RAM la presión de memoria y el tráfico de disco serían extremos. |
+
+Las velocidades upstream son cifras del mantenedor y no se deben presentar como resultados independientes ni como predicción de rendimiento para el MSI. En particular, el dato Qwen3.8-Flash-Next de 33 tok/s no implica que el modelo pueda alcanzar esa velocidad con 4 GiB VRAM y 14 GiB RAM.
+
+#### Orden recomendado para una campaña local
+
+1. Qwen3.5-2B Q4_K_M: smoke test y comparación directa con TensorFold.
+2. Qwen3-4B-Instruct-2507 Q4_K_M: medir prefill, decode, TTFT, RAM y VRAM.
+3. Qwen3.5-9B con cuantización conservadora: solo si los dos anteriores terminan sin swap excesivo.
+4. Qwen3.6-35B-A3B IQ2: aplazar hasta ampliar RAM; no descargar el Qwen3.8-Flash-Next de ~64 GB en la configuración actual.
+
+Para que la comparación sea válida, fijar GGUF exacto y SHA-256, contexto, prompt, longitud de salida, backend, versión, temperatura, número de repeticiones y estado de page cache. Registrar por separado prefill, decode, TTFT, RAM pico, swap, VRAM pico, temperatura y tiempo de carga. No comparar el benchmark de referencia RTX 3060 con el MSI como si fueran máquinas equivalentes.
+
+**Comandos de referencia (no ejecutados en esta actualización):**
+
+```bash
+rustingstrata --version
+rustingstrata check --backend cuda --model /ruta/al/modelo.gguf
+rustingstrata calibrate --model /ruta/al/modelo.gguf
+rustingstrata bench --model /ruta/al/modelo.gguf --gpu --mtp 0 --pp 512,4096 --tg 128 --reps 3 --ctx 4096
+```
+
+La calibración se realiza una vez por modelo y máquina. Para las primeras pruebas conviene mantener el contexto en 2048–4096 y dejar margen de VRAM; no aumentar el contexto hasta comprobar el consumo real. RustingStrata lee expertos que no caben en GPU desde el GGUF mediante la caché de páginas del sistema, por lo que la ubicación del modelo en un sistema de archivos que cachee datos y el estado de page cache pueden cambiar sustancialmente los resultados.
+
+**Fuentes upstream consultadas (12-11-2026):**
+- [RustingStrata — README, familias, cuantizaciones y resultados resumidos](https://github.com/RustingStudio/RustingStrata)
+- [Uso, CLI, contexto, KV y API](https://github.com/RustingStudio/RustingStrata/blob/main/docs/USAGE.md)
+- [Benchmarks detallados Qwen3.6 y Qwen3.8](https://github.com/RustingStudio/RustingStrata/blob/main/docs/BENCHMARKS.md)
+- [Matriz de GPUs probadas y clases CUDA admitidas](https://github.com/RustingStudio/RustingStrata/blob/main/docs/SUPPORTED_GPUS.md)
 
 ## 4. Informes y artefactos primarios
 
