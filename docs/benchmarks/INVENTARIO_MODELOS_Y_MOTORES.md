@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (validación CUDA real de TensorFold PR #1879 en RTX 3050 con Qwen3.5-2B/4B; contraste de incorporación en TensorFold 1.2.7; inventario ampliado de modelos y motores)  
+**Última consolidación:** 2026-11-12 (incorporada evaluación documental de LocalAI/Parakeet.cpp para audio) (validación CUDA real de TensorFold PR #1879 en RTX 3050 con Qwen3.5-2B/4B; contraste de incorporación en TensorFold 1.2.7; inventario ampliado de modelos y motores)  
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -20,7 +20,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Colibri** | Instalado / auditado técnicamente | Compatibilidad Qwen3.6 CUDA | Auditoría del parser de colocación y configuración CUDA. Compilación o validación de código no equivale a inferencia medida. |
 | **YASAKANI** | Prueba exploratoria solicitada | Modelo/backend/resultados por consolidar | Mantener como experimento hasta que exista log que demuestre carga e inferencia. |
 | **ThumbLLM (TeksEdge)** | Receta Windows auditada; reproducción Linux documentada, aún no ejecutada | Qwen3.5-4B GGUF Q4_K_M | Runtime fijado a llama.cpp build 10603 / commit `c060ca974`; receta CPU-only. La release configura `SPEC_TYPE=none`: MTP especulativo desactivado. La aplicación publicada es Windows x64, no un binario Linux. Guía Ubuntu en [LEONES](../../experimental/ThumbLLM-thumbllm-qwen3.5-4b-mtp-q4_k_m-cpu-win-x64-v0.1.0/docs/UBUNTU-REPRODUCTION.md). |\n| **diffuse-cpp** | Investigado documentalmente; no instalado ni ejecutado | LLaDA-8B-Instruct, Dream-v0-Instruct-7B | Motor C++ basado en GGML para dLLM; publica cuantización Q4_K_M y optimizaciones de caché/planificación. Sus cifras upstream proceden de AMD EPYC 4465P de 12 núcleos, no del CPU Intel de referencia. Sin validación local. [Repositorio](https://github.com/iafiscal1212/diffuse-cpp). |\n| **Magnitude 0.2.15** | Instalado y servicio operativo; catálogo consultado | MiniCPM5 1B (Q4); antecedente Qwen3.5-4B en 0.2.10 | `magnitude status`: Runtime Ready, Owner Server, versión 0.2.15, `0.0.0.0:10100`; HTTP local 200. Catálogo: un modelo compatible (MiniCPM5 1B Q4). No hay modelo activo ni inferencia medida. La escucha en todas las interfaces exige clave API. La prueba histórica 0.2.10 con Qwen3.5-4B sigue documentada como ID no reconocido; no confundir ambas campañas. |
-| **Ollama** | Incluido en matriz de runtimes; no instalado en el MSI según inventario previo | Sin ejecución local validada | No contabilizar como motor probado en este equipo. |
+| **LocalAI / Parakeet.cpp** | Investigación documental; benchmark local pendiente | LocalAI como proveedor experimental; Parakeet.cpp (ASR) y backends de audio asociados | Estudio arquitectónico incorporado el 12-11-2026. No instalado ni ejecutado en el MSI; no hay mediciones locales de precisión, RTF, latencia, RAM o VRAM. Propuesta: LocalAI opcional detrás de ODS; comparar wrapper LocalAI con Parakeet.cpp directo antes de decidir adopción. Ver §3.4. |\n| **Ollama** | Incluido en matriz de runtimes; no instalado en el MSI según inventario previo | Sin ejecución local validada | No contabilizar como motor probado en este equipo. |
 | **Transformers, vLLM, SGLang, KTransformers, Mistral.rs** | Evaluación de soporte / planificación | Varias familias candidatas | Sin benchmark local normalizado acreditado en este inventario. |
 | **ThumbLLM / llama.cpp CPU (Ornith 1.5)** | Paquete Release 1 incorporado a LEONES; reproducción Linux preparada, pendiente de ejecutar | Ornith-1.5-9B-OBLITERATED Q4_K_M | El release original está orientado a Windows. Se añadieron receta y scripts Ubuntu para compilar llama.cpp b10603 (c060ca974) en CPU y servir en puerto 18088. Descarga, hash, compilación e inferencia en el MSI aún no verificados; no contabilizar como motor/modelo ejecutado. |
 | **Project Maya** | Integrado documentalmente / adaptador deshabilitado; fuente upstream vendorizada en PR #142 | GLM-5.3, GLM-5.3-Flash, DeepSeek-V4.1-Flash, MiniMax-M3.1-Flash | Familia independiente y motores/model packs específicos; API OpenAI y Anthropic documentadas. La evaluación histórica v1.1.31 se conserva como referencia, pero la rama de integración posterior fija upstream en v1.1.58 (`a3582528bfb73175fed1757b485bfcaaf01aaeaa`). No ejecutar en MSI: 14 GiB RAM frente al mínimo documentado de 32 GiB; 4 GiB VRAM. Sin inferencia local ni rendimiento medido. Ver PR #142. |\n| **Uzu** | Evaluación documental cerrada; `RESEARCH_ONLY / NOT VERIFIED` | Qwen3.5-4B, Qwen3.5 MoE (compatibilidad investigada, no validada) | Integrado en `Experimental` mediante PR #119. No se compila, instala ni ejecuta en el MSI dentro del alcance acordado. Sin soporte Ubuntu/CUDA, GGUF ni Qwen MoE demostrado; no contabilizar como motor probado. Ver [evaluación Uzu](../../experimental/uzu/README.md). |
@@ -351,6 +351,69 @@ En batch 4 / 32 pasos se contrastaron los registros CSV y JSONL locales: 11/12 s
 
 **Artefactos originales V3 pendientes de incorporación íntegra:** runner `benchmark_opendcoder_v3_batch.py`, CSV `opendcoder_v3_20261031T110532Z.csv`, JSONL `opendcoder_v3_20261031T110532Z_outputs.jsonl`, JSON `opendcoder_v3_20261031T110532Z_summary.json` y `benchmark-v3-console.log`. Sus rutas locales constan en el informe V3; esta ficha no afirma que los ficheros originales estén ya versionados en GitHub.
 
+### 3.4 LocalAI y Parakeet.cpp — evaluación de arquitectura de audio (12-11-2026)
+
+**Clasificación:** investigación documental; no instalado ni ejecutado en el MSI. No contabilizar como benchmark ni como compatibilidad local validada.
+
+**LocalAI** se evalúa como servidor/proveedor opcional de inferencia con API HTTP compatible con OpenAI, especialmente útil para prototipar capacidades de audio y desacoplar motores especializados. No se propone sustituir ODS, Hermes, TensorFold ni el router de LEONES. ODS debe conservar routing, políticas, selección de proveedor y observabilidad; LocalAI quedaría detrás de una interfaz intercambiable.
+
+**Parakeet.cpp** ([repositorio](https://github.com/mudler/parakeet.cpp)) es el candidato prioritario para ASR local: implementación C++ basada en ggml de modelos NVIDIA NeMo Parakeet. La investigación identifica como candidatos una variante compacta TDT/CTC (~110M) para primera prueba y Parakeet TDT v3 (~0.6B) para evaluar calidad y multilingüismo. El soporte exacto depende del checkpoint, formato, versión y pipeline; no asumir que streaming, VAD, diarización, embeddings y clasificación de sonidos están disponibles en todos los modelos o en una sola ruta.
+
+| Componente/capacidad | Uso potencial en LEONES | Estado |
+|---|---|---|
+| Parakeet.cpp ASR | Transcripción, dictado y audio para Hermes/ODS | Candidato; no probado localmente |
+| Timestamps | Subtítulos SRT/VTT y sincronización | Verificar granularidad y API |
+| Streaming | Transcripción incremental y voz conversacional | Medir latencia extremo a extremo |
+| VAD | Detección de inicio/fin de voz | Validar pipeline |
+| Diarización | Separación de hablantes | Validar modelo/pipeline; no equivale a identificar personas |
+| Sound-event detection | Alarmas y eventos acústicos | Evaluar backend/modelo específico |
+| LocalAI API | Exponer transcripción mediante endpoint de audio | Integración propuesta, no configurada en ODS |
+| TTS complementario | Respuesta hablada en LEONES Voice | Revisar proyectos, pesos, calidad y licencias por separado |
+
+**Arquitectura propuesta:** LEONES UI/Voice → ODS Router → proveedor de audio → Parakeet.cpp directo o LocalAI experimental. La aplicación cliente no debería depender de un backend concreto. LocalAI puede acelerar el prototipado; debe compararse con Parakeet.cpp como servicio independiente antes de adoptar un wrapper permanente.
+
+Ejemplo de endpoint documentado por LocalAI (la ruta y el identificador del modelo deben ajustarse a la configuración real desplegada):
+
+```bash
+curl http://localhost:8080/v1/audio/transcriptions \
+  -F file="@audio.wav" \
+  -F model="parakeet-110m"
+```
+
+Configuración conceptual, **no existente ni validada en ODS**:
+
+```yaml
+audio:
+  transcription:
+    provider: localai
+    base_url: http://local-ai:8080/v1
+    model: parakeet-110m
+  capabilities:
+    timestamps: true
+    streaming: experimental
+    vad: optional
+    diarization: optional
+```
+
+**Viabilidad en el equipo de referencia:** MSI Thin 15 B12UC, i7-12650H, 14 GiB RAM y RTX 3050 Laptop de 4 GiB. Hipótesis por verificar: el modelo compacto podría ser un servicio auxiliar; la ruta CPU permitiría evitar competencia de VRAM con TensorFold. No se ha medido footprint, coexistencia, temperatura, RTF ni precisión. No reservar VRAM ni modificar ODS/llama-server por defecto durante la prueba.
+
+**Plan de validación:**
+1. Smoke test CPU con Parakeet.cpp; registrar commit, build, modelo, cuantización y hashes.
+2. Repetir en CUDA si el backend y la compilación lo permiten.
+3. Comparar Parakeet.cpp directo y Parakeet vía LocalAI.
+4. Comparar con Whisper.cpp y Moonshine usando el mismo corpus español/inglés.
+5. Medir WER/CER, RTF, latencia de primera respuesta, tiempo de carga, RAM/VRAM pico, temperatura, consumo y estabilidad.
+6. Probar concurrencia con TensorFold activo y modo CPU alternativo.
+7. Si supera criterios, crear proveedor `audio.transcription` para ODS con health check, timeout, cancelación, límites de tamaño/duración y telemetría que no almacene audio ni transcripciones sensibles por defecto.
+
+**Decisión preliminar:** GO para benchmark e integración experimental; NO-GO para dependencia de producción o cambio de arquitectura por defecto hasta validar calidad, rendimiento, footprint, API, mantenimiento y licencias de código/pesos por separado.
+
+**Fuentes primarias:**
+- [LocalAI](https://localai.io/) · [Documentación](https://localai.io/docs/) · [Audio to Text](https://localai.io/docs/features/audio-to-text/) · [Repositorio](https://github.com/mudler/LocalAI)
+- [Parakeet.cpp](https://github.com/mudler/parakeet.cpp) · [NVIDIA NeMo](https://github.com/NVIDIA/NeMo)
+- [Whisper.cpp](https://github.com/ggml-org/whisper.cpp) · [Moonshine](https://github.com/usefulsensors/moonshine)
+- [Investigación ampliada LocalAI/Parakeet en LEONES](../../research/localai-parakeet-integration.md)
+
 ## 4. Informes y artefactos primarios
 
 ### Material formativo sobre LLM (no es benchmark)
@@ -370,6 +433,7 @@ El curso es un recurso didáctico interactivo sobre Transformers y modelos de le
 - [Inventario experimental Qwen3.5 TensorFold / llama.cpp](../experimental/inventario-comparativo-qwen35-tensorfold-llamacpp-2026-10-20.md)
 
 ### Informes de modelos
+- [LocalAI y Parakeet.cpp — investigación de integración y benchmark propuesto](../../research/localai-parakeet-integration.md)
 - [Open-dCoder — resumen ejecutivo y mapa V1/V2/V3](../subprojects/Open-dCoder/EXECUTIVE-SUMMARY.md)
 - [Open-dCoder — informe V1/V2](../subprojects/Open-dCoder/EXPERIMENT-2026-10-31.md)
 - [Open-dCoder — informe V3 batch real](../subprojects/Open-dCoder/EXPERIMENT-V3-BATCH-2026-10-31.md)
