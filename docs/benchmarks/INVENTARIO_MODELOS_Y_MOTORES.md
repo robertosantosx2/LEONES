@@ -23,6 +23,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **ThumbLLM (TeksEdge)** | Receta Windows auditada; reproducción Linux documentada, aún no ejecutada | Qwen3.5-4B GGUF Q4_K_M | Runtime fijado a llama.cpp build 10603 / commit `c060ca974`; receta CPU-only. La release configura `SPEC_TYPE=none`: MTP especulativo desactivado. La aplicación publicada es Windows x64, no un binario Linux. Guía Ubuntu en [LEONES](../../experimental/ThumbLLM-thumbllm-qwen3.5-4b-mtp-q4_k_m-cpu-win-x64-v0.1.0/docs/UBUNTU-REPRODUCTION.md). |\n| **Magnitude** | Integración investigada; prueba de catálogo fallida | Qwen3.5-4B | Pesos/proyector descargados y hashes verificados, pero el CLI no reconoció el ID. No hubo inferencia. |
 | **Ollama** | Incluido en matriz de runtimes; no instalado en el MSI según inventario previo | Sin ejecución local validada | No contabilizar como motor probado en este equipo. |
 | **Transformers, vLLM, SGLang, KTransformers, Mistral.rs** | Evaluación de soporte / planificación | Varias familias candidatas | Sin benchmark local normalizado acreditado en este inventario. |
+| **ThumbLLM / llama.cpp CPU (Ornith 1.5)** | Paquete Release 1 incorporado a LEONES; reproducción Linux preparada, pendiente de ejecutar | Ornith-1.5-9B-OBLITERATED Q4_K_M | El release original está orientado a Windows. Se añadieron receta y scripts Ubuntu para compilar llama.cpp b10603 (c060ca974) en CPU y servir en puerto 18088. Descarga, hash, compilación e inferencia en el MSI aún no verificados; no contabilizar como motor/modelo ejecutado. |
 | **MLX** | Formato/artefacto usado por TensorFold | Qwen3.5-2B/4B MLX-4bit | No implica ejecución nativa de MLX en Ubuntu; TensorFold cargó artefactos MLX mediante backend CUDA. |
 
 ## 2. Modelos con inferencia funcional y/o medición
@@ -59,6 +60,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Qwen3.5-4B AWQ W4A16** | Inspección de modelo | Ficha/candidato evaluado | No ejecutado. |\n| **Qwen3.5-4B MTP-GGUF Q4_K_M (receta ThumbLLM)** | TeksEdge ThumbLLM / llama.cpp CPU | Modelo `unsloth/Qwen3.5-4B-MTP-GGUF`; SHA-256 de la receta: `3874209241c9a397e2f62cd3f70f80fd2dfbf0dfccb6838416bdb48a714e8630`. Runtime upstream `c060ca974` (build 10603). Contexto de receta 65.536, KV `q4_0`, batch/ubatch 2048/512, Flash Attention, mmap/repack. | Configuración de referencia analizada, no ejecutada aún en Ubuntu. Aunque el repositorio del modelo contiene MTP en el nombre, la receta usa `SPEC_TYPE=none`; no hay speculative decoding activo. El ejecutable de la release es Windows x64. La cifra upstream de ~18 tok/s es una observación durante generación, no un benchmark controlado y no comparable directamente. |
 | **YASAKANI** | Prueba exploratoria | Investigación y preparación solicitadas | Sin resultado reproducible consolidado. |
 | **Colibri / Qwen3.6 CUDA** | Auditoría de código | Parser de colocación, límites de componentes/segmentos y buffers | No atribuir rendimiento de inferencia a esta auditoría. |
+| **Ornith-1.5-9B-OBLITERATED** | ThumbLLM Release 1 / llama.cpp CPU · Ubuntu MSI | Paquete upstream incorporado a rama experimental de LEONES; documentación de reproducción y scripts de setup/serve preparados. GGUF Q4_K_M, SHA-256 de referencia 88ce99bb696fbc921edc4f995c4beb12a66bf94319d00bfd5f44265d02fa6dfb; llama.cpp b10603, commit c060ca974; configuración de referencia: contexto 65.536, batch 2.048, ubatch 512, KV Q4_0, 8 hilos decode y 16 batch. | **Preparación, no ejecución local acreditada.** No hay todavía log de descarga, compilación, carga del GGUF ni generación en el MSI; no registrar tok/s. La receta de upstream cita aproximadamente 13,03 tok/s de generación y 1.302 tok/s de prompt en Ryzen 7 7840HS/Windows 11, cifras de referencia externa no reproducidas ni comparables con el MSI. |
 | **Mistral.rs, vLLM, SGLang, KTransformers** | Evaluación de runtimes | Instalación/soporte/requisitos estudiados | Sin benchmark local normalizado en este inventario. |
 
 ## 4. Informes y artefactos primarios
@@ -97,6 +99,16 @@ Este documento es el índice único de modelos que se han investigado, descargad
 - [Pithos — CSV de benchmark](../../artifacts/pithos-0.5.1-2026-11-07/benchmark-results.csv)
 - [Pithos — log de sesión](../../artifacts/pithos-0.5.1-2026-11-07/benchmark-session.log)
 
+### ThumbLLM — Ornith 1.5 9B CPU (reproducción Ubuntu)
+
+- [Paquete ThumbLLM Release 1 incorporado a LEONES](https://github.com/robertosantosx2/LEONES/tree/experimental/thumbllm-release-1-ornith-1.5-9b-cpu/ThumbLLM-Release-1-Ornith-1.5-9B-CPU)
+- [Guía de reproducción en Ubuntu](https://github.com/robertosantosx2/LEONES/blob/experimental/thumbllm-release-1-ornith-1.5-9b-cpu/ThumbLLM-Release-1-Ornith-1.5-9B-CPU/docs/ubuntu-reproduction.md)
+- [Script de instalación, descarga, verificación y compilación CPU](https://github.com/robertosantosx2/LEONES/blob/experimental/thumbllm-release-1-ornith-1.5-9b-cpu/ThumbLLM-Release-1-Ornith-1.5-9B-CPU/scripts/ubuntu-ornith-cpu-setup.sh)
+- [Script de servicio local (puerto 18088)](https://github.com/robertosantosx2/LEONES/blob/experimental/thumbllm-release-1-ornith-1.5-9b-cpu/ThumbLLM-Release-1-Ornith-1.5-9B-CPU/scripts/ubuntu-ornith-cpu-serve.sh)
+- [Release upstream ThumbLLM](https://github.com/TeksEdge/ThumbLLM/releases/tag/Release-1-Ornith-1.5-9B-CPU)
+
+La reproducción se mantiene aislada del servicio ODS en el puerto 8080: el servidor previsto escucha en 127.0.0.1:18088. La guía fija como referencia el tag de ThumbLLM y el commit histórico de llama.cpp declarados por el release. Hasta ejecutar el setup y conservar el log completo, este trabajo es preparación reproducible, no benchmark.
+
 ### Infraestructura de registro
 - [Matriz de runtimes del smoke test](../../scripts/local/llm-smoke-test/RUNTIME_MATRIX.md)
 - [README del smoke test local](../../scripts/local/llm-smoke-test/README.md)
@@ -128,6 +140,7 @@ El informe también documenta diagnósticos de carga CUDA de Qwen3-30B-A3B (buff
 - Archivar en LEONES los logs, JSONL, manifiesto y configuración íntegra de Tandem Qwen3.5-35B-A3B IQ2_XXS si no están ya completos.
 - Clonar y auditar el código fuente de ThumbLLM en Ubuntu, compilar el runtime CPU fijado, verificar el GGUF y portar/validar el frontend Linux; registrar una campaña reproducible antes de marcarlo como ejecutado.\n- Consolidar los resultados finales de Kinetic por modelo, cuantización, backend y versión.
 - Completar YASAKANI solo cuando exista una ejecución verificable.
+- Ejecutar y archivar la reproducción Ubuntu de ThumbLLM/Ornith 1.5 9B: log de descarga y SHA-256, commit/flags de compilación, versión resultante de llama.cpp, configuración efectiva, log de carga/inferencia y métricas PP/TG; solo entonces promoverla a ejecución medida.
 - Mantener Colibri como auditoría/compilación hasta disponer de inferencia reproducible.
 - Incorporar futuras pruebas como campañas fechadas, sin sobrescribir resultados históricos.
 
