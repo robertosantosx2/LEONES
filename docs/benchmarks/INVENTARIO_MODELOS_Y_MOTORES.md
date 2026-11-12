@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (incorporada evaluación documental de Infernix para RTX 3050 sm_86)
+**Última consolidación:** 2026-11-12 (incorporada evaluación documental de Phi-4-mini-instruct para RTX 3050 sm_86)
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -23,6 +23,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **YASAKANI** | Prueba exploratoria solicitada | Modelo/backend/resultados por consolidar | Mantener como experimento hasta que exista log que demuestre carga e inferencia. |
 | **ThumbLLM (TeksEdge)** | Receta Windows auditada; reproducción Linux documentada, aún no ejecutada | Qwen3.5-4B GGUF Q4_K_M | Runtime fijado a llama.cpp build 10603 / commit `c060ca974`; receta CPU-only. La release configura `SPEC_TYPE=none`: MTP especulativo desactivado. La aplicación publicada es Windows x64, no un binario Linux. Guía Ubuntu en [LEONES](../../experimental/ThumbLLM-thumbllm-qwen3.5-4b-mtp-q4_k_m-cpu-win-x64-v0.1.0/docs/UBUNTU-REPRODUCTION.md). |\n| **diffuse-cpp** | Investigado documentalmente; no instalado ni ejecutado | LLaDA-8B-Instruct, Dream-v0-Instruct-7B | Motor C++ basado en GGML para dLLM; publica cuantización Q4_K_M y optimizaciones de caché/planificación. Sus cifras upstream proceden de AMD EPYC 4465P de 12 núcleos, no del CPU Intel de referencia. Sin validación local. [Repositorio](https://github.com/iafiscal1212/diffuse-cpp). |\n| **Magnitude 0.2.15** | Instalado y servicio operativo; catálogo consultado | MiniCPM5 1B (Q4); antecedente Qwen3.5-4B en 0.2.10 | `magnitude status`: Runtime Ready, Owner Server, versión 0.2.15, `0.0.0.0:10100`; HTTP local 200. Catálogo: un modelo compatible (MiniCPM5 1B Q4). No hay modelo activo ni inferencia medida. La escucha en todas las interfaces exige clave API. La prueba histórica 0.2.10 con Qwen3.5-4B sigue documentada como ID no reconocido; no confundir ambas campañas. |
 | **LocalAI / Parakeet.cpp** | Investigación documental; benchmark local pendiente | LocalAI como proveedor experimental; Parakeet.cpp (ASR) y backends de audio asociados | Estudio arquitectónico incorporado el 12-11-2026. No instalado ni ejecutado en el MSI; no hay mediciones locales de precisión, RTF, latencia, RAM o VRAM. Propuesta: LocalAI opcional detrás de ODS; comparar wrapper LocalAI con Parakeet.cpp directo antes de decidir adopción. Ver §3.4. |\n| **Ollama** | Incluido en matriz de runtimes; no instalado en el MSI según inventario previo | Sin ejecución local validada | No contabilizar como motor probado en este equipo. |
+| **Phi-4-mini-instruct / llama.cpp CUDA** | Candidato priorizado; descarga e inferencia local pendientes | Phi-4-mini-instruct 3.8B GGUF Q4_K_M (2,49 GB) | Modelo denso de Microsoft; GGUF comunitario de Unsloth documenta uso con llama.cpp. Adecuado como candidato de prueba, no como ejecución acreditada. En MSI comenzar con contexto 2048 y offload GPU conservador; el contexto anunciado de 128K no es objetivo práctico para 4 GiB VRAM. Ver §3.7. |
 | **Infernix** | Investigación documental; no compilado ni ejecutado | Qwen3.8-Flash-Next, Qwen3.8-27B, Qwen3.6, Qwen3.5-122B-A10B | Motor C++/CUDA orientado a RTX 50/Blackwell; el README exige RTX 50-series para otros equipos. Sin soporte sm_86 documentado ni modelo pequeño confirmado. No viable para el MSI actual; ver §3.5. |
 | **Transformers, vLLM, SGLang, KTransformers, Mistral.rs, DynaLM** | Evaluación de soporte / planificación; sin prueba local de TwIL-8B | TwIL-8B Granite GGUF Q4_K_M como caso de compatibilidad pendiente | No hay inferencia ni benchmark de TwIL-8B acreditados con estos motores. vLLM se considera una ruta a investigar con pesos compatibles/Safetensors, no una garantía de carga directa de este GGUF. DynaLM queda como candidato documental citado en la conversación, con soporte Granite/GGUF/CUDA aún no verificado independientemente. |
 | **ThumbLLM / llama.cpp CPU (Ornith 1.5)** | Paquete Release 1 incorporado a LEONES; reproducción Linux preparada, pendiente de ejecutar | Ornith-1.5-9B-OBLITERATED Q4_K_M | El release original está orientado a Windows. Se añadieron receta y scripts Ubuntu para compilar llama.cpp b10603 (c060ca974) en CPU y servir en puerto 18088. Descarga, hash, compilación e inferencia en el MSI aún no verificados; no contabilizar como motor/modelo ejecutado. |
@@ -98,7 +99,6 @@ Referencias: [notas oficiales de llama.cpp v0.8.0](https://github.com/ggml-org/l
 ### Incidencia de OpenCL y solución
 
 La inicialización OpenCL fallaba porque NVVM intentaba crear `/tmp/dep-*.d` y el sistema devolvía `EDQUOT` (cuota de usuario excedida). No era falta de espacio en el SSD. El `/tmp` de esta sesión era tmpfs con cuotas. Se validó el workaround local:
-
 ```bash
 mkdir -p "$HOME/.cache/pithos-tmp"
 TMPDIR="$HOME/.cache/pithos-tmp" ./pithos ...
@@ -197,8 +197,7 @@ La ficha oficial de [inclusionAI/Ling-3.0-tiny](https://huggingface.co/inclusion
 **Lectura de viabilidad y límites:**
 - La activación dispersa puede reducir el cómputo por token, pero no reduce el almacenamiento de pesos a solo 1B: deben alojarse los pesos completos de los expertos y demás componentes.
 - La prueba IQ2_M demuestra que esta combinación concreta de modelo, cuantización y llama.cpp sí se ejecutó en el MSI. No extrapolar su velocidad a Q4_K_M, otros contextos, otros builds ni otros motores.
-- La ficha GGUF por sí sola no acredita compatibilidad universal. La compatibilidad con llama.cpp queda demostrada para el artefacto/configuración de la prueba registrada; no se da por demostrada para TensorFold, RustingStrata, Magnitude u otros runtimes.
-- No se ha registrado en este inventario una ejecución Ling-3.0-Tiny con TensorFold. Una eventual integración debe empezar por verificar el soporte de la arquitectura `bailing_hybrid` y del GGUF concreto, en una rama aislada.
+- La ficha GGUF por sí sola no acredita compatibilidad universal. La compatibilidad con llama.cpp queda demostrada para el artefacto/configuración de la prueba registrada; no se da por demostrada para TensorFold, RustingStrata, Magnitude u otros runtimes.- No se ha registrado en este inventario una ejecución Ling-3.0-Tiny con TensorFold. Una eventual integración debe empezar por verificar el soporte de la arquitectura `bailing_hybrid` y del GGUF concreto, en una rama aislada.
 - No reutilizar como hechos técnicos estimaciones genéricas de tamaños Q4/Q5/Q8 ni afirmaciones de una topología concreta de expertos/capas sin contrastarlas con los metadatos y el archivo exacto de la variante. El tamaño del fichero cuantizado tampoco equivale a la memoria RAM/VRAM total durante inferencia.
 
 **Clasificación:** modelo ejecutado y medido en el MSI con llama.cpp CUDA (IQ2_M); análisis de portabilidad a otros motores pendiente. No es una nueva campaña ni una nueva medición.
@@ -297,7 +296,6 @@ Se realizó una validación de la corrección de asignación diferida de scratch
 Se verificó la rama de LEONES `feat/tensorfold-web-standalone` y su actualización local hasta el commit `20d5fc20`. La aplicación web y su bridge Python están ejecutándose en `127.0.0.1:8787`; el bridge apunta al motor en `http://127.0.0.1:8080`. El proceso del bridge observado fue `tensorfold-web-bridge.py`; no se detuvo ni se modificó durante esta comprobación.
 
 **Versión y catálogo:** `tensorfold-native 1.2.0`, instalado en `~/.local/opt/tensorfold-1.2.0-linux-x86_64/bin/tensorfold-native`. `capabilities --json` declara engine Zig, chip `nvidia-sm86`, backend `cuda`, familia `qwen3_5` con formatos `mlx-q4g64` y `exl3`, y familia `qwen3_5_moe` con `mlx-q4g64`, `modelopt-mixed` y `modelopt-nvfp4`. El comando `models` devuelve, entre otros, `mlx-community/Qwen3.5-4B-MLX-4bit` y `Qwen/Qwen3.5-4B`. Esto acredita presencia en el catálogo local, no que los pesos estén descargados, que el modelo cargue correctamente ni que quepa en la VRAM disponible.
-
 **Integración de la interfaz:** el bridge implementa `/api/engine/inspect`, `/api/engine/start`, `/api/engine/stop` y `/api/engine/status`. La vista Servidor permite inspeccionar la ayuda del binario, construir argumentos admitidos y gestionar el proceso hijo. La vista Panel integra el dashboard original en un iframe a través de `/api/dashboard`; la interfaz informa de que el motor debe iniciarse con `--dashboard` para habilitar `/dashboard` y `/stats`. La ayuda de TensorFold 1.2.0 confirma que `--dashboard` es una opción de `serve`.
 
 **Estado real observado:** `/api/engine/status` devolvió `managed:false`, `running:false`, `pid:null`; el log del motor estaba vacío. No había proceso `tensorfold-native`, el puerto 8080 estaba libre y `http://127.0.0.1:8080/health` rechazaba la conexión. En consecuencia, la UI/bridge sí estaban activos, pero el motor TensorFold no estaba arrancado ni gestionado por la UI. No se registró inferencia, carga de modelo, dashboard nativo servido ni rendimiento en esta sesión.
@@ -398,7 +396,6 @@ Dream-Coder-7B, DiffuCoder-7B, DiffuLLaMA, ELYZA-Diffusion-Instruct, DiffusionGe
 **Clover-35B-A3B-Preview** dispone de un experimento local separado con llama.cpp CUDA y cuantización IQ2_S. Sus cifras (decode 4,90 tok/s y prefill 3,60 tok/s en la prueba Jinja de 256 tokens) se conservan en su [informe específico](../CLOVER-35B-A3B-PREVIEW-RTX3050-2026-10-31.md). No se agregan a las métricas de diffuse-cpp/Dream/LLaDA: el runtime y la ruta de ejecución son distintos y la métrica de throughput no demuestra por sí sola equivalencia metodológica con los DLM anteriores.
 
 #### Criterios de comparación
-
 - **posiciones/s** de Open-dCoder no es intercambiable con tokens/s.
 - Diferenciar tokens nuevos/s, tokens de secuencia/s y throughput agregado; verificar la definición de cada benchmark upstream.
 - Registrar pasos de denoising, tokens resueltos por paso, longitud de prompt/salida, early-exit, caché, cuantización y tiempo de muestreo.
@@ -497,7 +494,6 @@ Esta comparación amplía la evaluación de familias MoE. **No es un benchmark L
 - Equipo: MSI Thin 15 B12UC, Intel Core i7-12650H (16 hilos), 14,8 GiB RAM, NVIDIA RTX 3050 Laptop 4 GiB, Ubuntu, driver 580.178.04, CUDA 13.0.
 - Software medido: Python 3.12.15, PyTorch 2.11.0+cu128, Transformers 4.54.1, huggingface-hub 0.36.2, psutil 7.2.2.
 - Tarea común: generar una función recursiva Python `factorial(n)`, producir `ValueError` para negativos e incluir `print(factorial(5))`. El validador evalúa sintaxis y los dos casos funcionales de factorial; no es un sandbox general ni comprueba por separado el print.
-
 ### Evolución de las campañas
 
 | Campaña | Diseño | Resultado principal | Interpretación |
@@ -597,7 +593,6 @@ audio:
 5. Medir WER/CER, RTF, latencia de primera respuesta, tiempo de carga, RAM/VRAM pico, temperatura, consumo y estabilidad.
 6. Probar concurrencia con TensorFold activo y modo CPU alternativo.
 7. Si supera criterios, crear proveedor `audio.transcription` para ODS con health check, timeout, cancelación, límites de tamaño/duración y telemetría que no almacene audio ni transcripciones sensibles por defecto.
-
 **Decisión preliminar:** GO para benchmark e integración experimental; NO-GO para dependencia de producción o cambio de arquitectura por defecto hasta validar calidad, rendimiento, footprint, API, mantenimiento y licencias de código/pesos por separado.
 
 **Fuentes primarias:**
@@ -697,8 +692,7 @@ audio:
 
 | Modelo / archivo upstream | Evidencia publicada por RustingStrata | Situación estimada en MSI: 14 GiB RAM + RTX 3050 4 GiB |
 |---|---|---|
-| **Qwen3.5-2B Q4_K_M** | 208 tok/s de decode en RTX 3060 12 GB (CUDA/Vulkan, prueba breve) | **Candidato prioritario.** Ya existe ejecución local anterior con TensorFold; RustingStrata requiere benchmark propio para comparar motores. |
-| **Qwen3-4B-Instruct-2507 Q4_K_M** | 104/110 tok/s CUDA/Vulkan en RTX 3060 12 GB | **Candidato prioritario.** Tamaño más razonable para probar con contexto moderado; rendimiento MSI desconocido. |
+| **Qwen3.5-2B Q4_K_M** | 208 tok/s de decode en RTX 3060 12 GB (CUDA/Vulkan, prueba breve) | **Candidato prioritario.** Ya existe ejecución local anterior con TensorFold; RustingStrata requiere benchmark propio para comparar motores. || **Qwen3-4B-Instruct-2507 Q4_K_M** | 104/110 tok/s CUDA/Vulkan en RTX 3060 12 GB | **Candidato prioritario.** Tamaño más razonable para probar con contexto moderado; rendimiento MSI desconocido. |
 | **Qwen3.5-9B Q5_K_S** | 51/53 tok/s CUDA/Vulkan en RTX 3060 12 GB | **Prueba condicionada.** Con 14 GiB RAM y 4 GiB VRAM puede haber presión de memoria; empezar con cuantización más pequeña y contexto bajo si existe artefacto compatible. |
 | **Qwen3-30B-A3B UD-Q2_K_XL** | 114/123 tok/s CUDA/Vulkan en RTX 3060 12 GB | **Experimental y muy ajustado.** Ya hay ejecución local previa de Qwen3-30B-A3B IQ3_XXS con RustingStrata registrada en este inventario, pero no extrapolar sus resultados a este archivo ni a Qwen3.6. |
 | **Qwen3.6-35B-A3B UD-Q2_K_XL** | Archivo de 11,7 GiB; 118,2 tok/s decode corto y 113,4 tras prompt de 4K en RTX 3060 12 GB / Ryzen 5 7600X / 32 GB RAM | **No recomendado con la configuración actual.** El archivo por sí solo consume casi toda la RAM física nominal; además hacen falta SO, caché, KV y buffers. Solo tendría sentido como experimento con RAM ampliada y contexto limitado. |
@@ -797,10 +791,67 @@ Una vez verificados los flags de la versión fijada, comenzar con calibración y
 **Fuentes primarias:**
 - [RustingStrata — repositorio y README v1.2.1](https://github.com/RustingStudio/RustingStrata)
 - [GPU soportadas y distinción entre probadas y solo compilables](https://github.com/RustingStudio/RustingStrata/blob/main/docs/SUPPORTED_GPUS.md)
-- [Uso, flags, KV cache, calibración y page cache](https://github.com/RustingStudio/RustingStrata/blob/main/docs/USAGE.md)
-- [Benchmarks y protocolo upstream](https://github.com/RustingStudio/RustingStrata/blob/main/docs/BENCHMARKS.md)
+- [Uso, flags, KV cache, calibración y page cache](https://github.com/RustingStudio/RustingStrata/blob/main/docs/USAGE.md)- [Benchmarks y protocolo upstream](https://github.com/RustingStudio/RustingStrata/blob/main/docs/BENCHMARKS.md)
 - [Resultados de referencia Qwen3.6-35B-A3B](https://rustingstudio.com/strata/docs/v1-results/)
 - [Ficha del motor y resultados publicados](https://rustingstudio.com/strata/)
+
+## 3.7 Phi-4-mini-instruct — evaluación de viabilidad y plan de prueba en MSI (12-11-2026)
+
+**Estado LEONES:** `RESEARCH_ONLY / CANDIDATE / NOT_DOWNLOADED / NOT_RUN_ON_MSI`. Esta actualización documenta la selección y el procedimiento propuesto; no acredita descarga, carga, generación ni benchmark local.
+
+**Modelo seleccionado:** [Microsoft Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct), modelo denso decoder-only de **3,8B parámetros**. La ficha oficial declara ventana de contexto de hasta **128K tokens**, soporte de español y otras lenguas, chat-completion y licencia MIT. Microsoft advierte que el rendimiento puede variar entre idiomas y que el modelo puede presentar limitaciones en idiomas distintos del inglés. El checkpoint oficial de Microsoft está publicado en Safetensors; para esta prueba se propone un GGUF comunitario, que debe identificarse como tal y no atribuirse como conversión oficial de Microsoft.
+
+**Artefacto GGUF recomendado:** [unsloth/Phi-4-mini-instruct-GGUF](https://huggingface.co/unsloth/Phi-4-mini-instruct-GGUF), archivo `Phi-4-mini-instruct-Q4_K_M.gguf`, tamaño publicado **2,49 GB**. La ficha del repositorio describe su uso con llama.cpp y el archivo incluye el formato de chat de Phi. La cuantización Q4_K_M es el punto de partida recomendado por equilibrio entre tamaño y calidad; el tamaño del archivo no equivale al consumo total de RAM/VRAM durante inferencia.
+
+**Viabilidad para el MSI Thin 15 B12UC:**
+- Hardware: Intel Core i7-12650H, 14 GiB RAM, NVIDIA RTX 3050 Laptop 4 GiB (sm_86), Ubuntu, driver 580.178.04, CUDA runtime 13.0 y swap de 31 GiB.
+- **Candidato viable para una prueba controlada**, especialmente con llama.cpp GGUF. El archivo Q4_K_M de 2,49 GB cabe en almacenamiento y su huella de pesos es compatible con una prueba en este equipo; aún hay que reservar memoria para el proceso, buffers, contexto/KV y el sistema.
+- No asumir que todo el modelo cabe en los 4 GiB de VRAM. Comenzar en CPU y después probar offload parcial; vigilar VRAM y RAM pico. El offload no debe fijarse por anticipado como óptimo.
+- Aunque Microsoft anuncia 128K de contexto, no intentar ese contexto en el MSI. Empezar con 2.048 tokens y subir a 4.096 solo si el consumo real deja margen. La memoria KV y los buffers crecen con el contexto.
+- No confundir Phi-4-mini-instruct (3,8B) con Phi-4 (14B), Phi-4-multimodal (5,6B) ni Phi-4-reasoning (14B); esta campaña se limita al modelo mini de texto.
+
+**Descarga propuesta (no ejecutada en esta actualización):**
+
+```bash
+mkdir -p ~/phi-lab/models ~/phi-lab/results
+cd ~/phi-lab/models
+wget -c -O Phi-4-mini-instruct-Q4_K_M.gguf \
+  "https://huggingface.co/unsloth/Phi-4-mini-instruct-GGUF/resolve/main/Phi-4-mini-instruct-Q4_K_M.gguf"
+sha256sum Phi-4-mini-instruct-Q4_K_M.gguf | tee ../results/model.sha256
+```
+
+**Primera prueba funcional con llama.cpp CUDA local (no ejecutada):**
+
+Usar el binario CUDA ya disponible en `~/llama-cpp-cuda/build/bin/llama-cli`, verificando primero su versión. La primera pasada será CPU-only para separar compatibilidad del modelo de la asignación CUDA:
+
+```bash
+cd ~/phi-lab
+LLAMA="$HOME/llama-cpp-cuda/build/bin/llama-cli"
+MODEL="$HOME/phi-lab/models/Phi-4-mini-instruct-Q4_K_M.gguf"
+"$LLAMA" --version
+"$LLAMA" -m "$MODEL" -c 2048 -ngl 0 -n 128 -cnv \
+  2>&1 | tee results/phi4-mini-cpu.log
+```
+
+Si la carga CPU funciona, repetir con offload parcial conservador (por ejemplo `-ngl 8`), registrar `nvidia-smi` antes/durante/después y detener la prueba si aparece OOM o presión severa de memoria. Ajustar el número de capas solo a partir de la telemetría observada; no dar por supuesto que `-ngl 8` es la configuración óptima.
+
+**Matriz mínima de benchmark:**
+
+| Variante | Backend | Contexto inicial | Estado |
+|---|---|---:|---|
+| CPU baseline | llama.cpp, `-ngl 0` | 2.048 | Pendiente |
+| CUDA parcial | llama.cpp, `-ngl 8` inicial; ajustar según VRAM | 2.048 | Pendiente |
+| CUDA ajustado | Offload máximo estable, medido y documentado | 2.048; después 4.096 si hay margen | Pendiente |
+
+Para cada variante registrar modelo/archivo exacto, SHA-256, versión y commit de llama.cpp, comando completo, prompt, seed, tokens de entrada/salida, prefill (tok/s), decode (tok/s), TTFT, latencia total, RAM pico, swap, VRAM pico, temperatura y resultado funcional. Ejecutar al menos tres repeticiones por configuración y mantener separadas las métricas CLI y API. No comparar resultados con otros modelos si cambian prompt, contexto o protocolo.
+
+**Criterio de promoción:** Phi-4-mini-instruct solo pasa a «ejecutado» cuando exista un log de carga y generación real en el MSI; solo pasa a «medido» cuando se archiven las métricas y la configuración reproducible. Hasta entonces, todas las velocidades y consumos locales son N/D.
+
+**Fuentes primarias y artefactos:**
+- [Microsoft — ficha oficial Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct)
+- [Microsoft Foundry — ficha del modelo, 3,8B y 128K](https://ai.azure.com/catalog/models/Phi-4-mini-instruct)
+- [Unsloth — GGUF Q4_K_M (2,49 GB) y guía llama.cpp](https://huggingface.co/unsloth/Phi-4-mini-instruct-GGUF)
+- [Archivo Q4_K_M](https://huggingface.co/unsloth/Phi-4-mini-instruct-GGUF/blob/main/Phi-4-mini-instruct-Q4_K_M.gguf)
 
 ## 4. Informes y artefactos primarios
 
@@ -897,8 +948,7 @@ El informe también documenta diagnósticos de carga CUDA de Qwen3-30B-A3B (buff
 3. Registrar modelo, repositorio, archivo, cuantización, hash, motor, versión/commit, backend, contexto y parámetros.
 4. Conservar resultados brutos: CSV/JSONL/log y comando exacto.
 5. Anotar el equipo real. Las mediciones del GB-BXi7-5500 y del MSI no se mezclan.
-6. No rellenar N/D con estimaciones. Las estimaciones pertenecen a informes de viabilidad.
-7. Actualizar la tabla al cerrar cada campaña; una prueba solo pasa a “medida” con evidencia reproducible.
+6. No rellenar N/D con estimaciones. Las estimaciones pertenecen a informes de viabilidad.7. Actualizar la tabla al cerrar cada campaña; una prueba solo pasa a “medida” con evidencia reproducible.
 8. Usar el manifiesto de evidencia LEONES para nuevos benchmarks y mantener esta página como índice humano.
 
 ## 6. Pendientes de consolidación
