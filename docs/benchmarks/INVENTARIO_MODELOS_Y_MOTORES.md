@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (incorporada evaluación documental de Mage-VL-Cowork y situación en Artificial Analysis)  
+**Última consolidación:** 2026-11-12 (incorporada evaluación documental de Mage-VL-Cowork y situación en Artificial Analysis; Open-dCoder V1/V2/V3 incorporados)  
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -28,6 +28,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Mesh-LLM / REDIL** | Referencia arquitectónica documental; no ejecutado | Mesh-LLM como referencia principal de REDIL; Distributed Llama como backend opcional experimental | No es un motor validado en el MSI ni un benchmark. REDIL sigue en estado de propuesta/investigación, sin despliegue físico. La actualización documental está en PR #131. |
 | **Mage-VL-Cowork (Microsoft Mage)** | Investigación documental; no instalado ni ejecutado en el MSI | Agente CUA multimodal 4B; GUI + código/terminal | 66,0% OSWorld-Verified (361 tareas, 50 pasos; media de dos ejecuciones publicada por el equipo); no es un resultado de Artificial Analysis ni un benchmark LEONES. Sin inferencia local ni compatibilidad Ubuntu/GGUF verificada. |
 | **MLX** | Formato/artefacto usado por TensorFold | Qwen3.5-2B/4B MLX-4bit | No implica ejecución nativa de MLX en Ubuntu; TensorFold cargó artefactos MLX mediante backend CUDA. |
+| **Open-dLLM / Transformers CUDA** | Ejecutado y medido | Open-dCoder-0.5B BF16 | Inferencia local con `model.diffusion_generate` en RTX 3050; campañas V1/V2 single-sequence y V3 batch real. Máximo V3: 198,22 posiciones/s agregadas (batch 4, 16 pasos). | Modelo de difusión; posiciones/s no son directamente comparables con tokens/s autoregresivos. Validación funcional limitada a una tarea factorial. Ver §3.3. |
 
 ## 1.1 Liquid AI en llama.cpp — incorporación de LFM3 y modelos d1
 
@@ -82,6 +83,7 @@ La ficha oficial de [inclusionAI/Ling-3.0-tiny](https://huggingface.co/inclusion
 | **Spark-X2.6-4B-abliterated** | GGUF Q4_K_M | llama.cpp CUDA · RTX 3050 | Prueba funcional: prefill 36,9 tok/s; generación 7,2 tok/s | Ejecución individual; faltan repeticiones y perfil de memoria normalizado. |
 | **TwIL-8B** | GGUF Q4_K_M balanced | llama.cpp CUDA · RTX 3050 | Campaña de 24 y 26 capas GPU; protocolo y tres repeticiones en informe | Inferencia funcional medida. Arquitectura Granite no soportada por la capacidad observada de TensorFold 1.2.0. |
 | **Qwen3.5-4B** | MLX-4bit | TensorFold PR #1879 · CUDA sm_86 | Build CUDA y suites host validadas; ejecución GPU real; decode aprox. 56,5 tok/s en esa ejecución | Validación del parche, no benchmark A/B formal ni prueba de todas las rutas. |
+| **Open-dCoder-0.5B** | BF16 · snapshot HF `d0d86d5b99960c05258bb1f8265dd91564dbac67` | Open-dLLM / Transformers + PyTorch CUDA · RTX 3050 4 GiB | V2 batch 1 / 16 pasos: mediana 0,456 s y 140,30 posiciones/s, 3/3 funcionales. V3: batch 1/2/4 × 16/32/64 pasos; mejor throughput 198,22 posiciones/s agregadas en batch 4 / 16 pasos, 1,292 s por batch, 3,10 secuencias/s y 12/12 funcionales; VRAM 1,910 GiB asignada / 2,338 GiB reservada. | Inferencia y medición local acreditadas. Métrica de posiciones de difusión, no tok/s autoregresivos. Una sola tarea factorial; no equivale a evaluación general de inteligencia. V1 conserva cifras de tiempo, pero su validador tenía falsos negativos. Ver §3.3. |
 
 ## 3. Intentos, estudios e investigación (no contar como benchmark)
 
@@ -280,6 +282,62 @@ Esta comparación amplía la evaluación de familias MoE. **No es un benchmark L
 
 **Fuentes primarias:** [Qwen3.5-35B-A3B — model card y benchmarks](https://huggingface.co/Qwen/Qwen3.5-35B-A3B) · [Nemotron 3.5 Lightning — NVIDIA model card y benchmarks](https://build.nvidia.com/nvidia/nemotron-3.5-lightning-30b-a3b/modelcard) · [Nemotron 3.5 Lightning — especificaciones técnicas de NVIDIA NeMo](https://github.com/NVIDIA-NeMo/Nemotron/blob/main/docs/nemotron/lightning35/README.md) · [Informe NVIDIA Nemotron 3.5 Super y Lightning](https://research.nvidia.com/labs/nemotron/Nemotron-3.5-Super-and-Lightning/).
 
+## 3.3 Open-dCoder-0.5B — dLLM medido localmente en la RTX 3050
+
+**Clasificación:** modelo de difusión de lenguaje (dLLM), ejecutado y medido en Ubuntu con PyTorch/Transformers y la ruta `model.diffusion_generate`. No confundir con un modelo causal autoregresivo ni comparar sus posiciones/s directamente con tok/s de llama.cpp, TensorFold u otros motores autoregresivos.
+
+**Modelo y entorno**
+- Modelo: [`fredzzp/open-dcoder-0.5B`](https://huggingface.co/fredzzp/open-dcoder-0.5B), 494.032.768 parámetros, BF16.
+- Snapshot Hugging Face: `d0d86d5b99960c05258bb1f8265dd91564dbac67`.
+- Equipo: MSI Thin 15 B12UC, Intel Core i7-12650H (16 hilos), 14,8 GiB RAM, NVIDIA RTX 3050 Laptop 4 GiB, Ubuntu, driver 580.178.04, CUDA 13.0.
+- Software medido: Python 3.12.15, PyTorch 2.11.0+cu128, Transformers 4.54.1, huggingface-hub 0.36.2, psutil 7.2.2.
+- Tarea común: generar una función recursiva Python `factorial(n)`, producir `ValueError` para negativos e incluir `print(factorial(5))`. El validador evalúa sintaxis y los dos casos funcionales de factorial; no es un sandbox general ni comprueba por separado el print.
+
+### Evolución de las campañas
+
+| Campaña | Diseño | Resultado principal | Interpretación |
+|---|---|---|---|
+| **V1** | Secuencia única; 16/32/64/128 pasos; 3 repeticiones | 143,34 / 71,80 / 36,08 / 18,17 posiciones/s; VRAM asignada 1,184 GiB | El extractor/validador inicial produjo falsos negativos (0/3 válidas en todas las configuraciones). Conservar como histórico de rendimiento, no usar sus etiquetas de calidad. |
+| **V2** | Secuencia única; validador corregido; warmup excluido; 3 repeticiones | 16 pasos: 0,456 s mediana, 140,30 posiciones/s, 3/3 funcionales, 1,184 GiB VRAM. 32 pasos: 70,66 posiciones/s y 0/3 funcionales. 64: 35,37 posiciones/s y 3/3. 128: 17,86 posiciones/s y 3/3. | Baseline de una secuencia. En esta tarea, 16 pasos fue la opción más rápida entre las que superaron la validación funcional. |
+| **V3** | Batch real 1/2/4 × 16/32/64 pasos; 1 warmup y 3 repeticiones por configuración | Nueve configuraciones, 27 batches medidos; mejor resultado: batch 4 / 16 pasos, 198,22 posiciones/s agregadas, 3,10 secuencias/s, 1,292 s por batch, 12/12 funcionales, 1,910 GiB asignados y 2,338 GiB reservados. | El batch aumenta el throughput agregado, no linealmente, a costa de latencia de batch y memoria mayores. No hubo OOM en las nueve configuraciones. |
+
+### Matriz completa V3
+
+| Batch | Pasos | Mediana batch (s) | Secuencias/s | Posiciones/s agregadas | Sintaxis | Funcional | VRAM asignada (GiB) |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 16 | 0,460 | 2,17 | 139,15 | 100 % | 100 % | 1,184 |
+| 1 | 32 | 0,949 | 1,05 | 67,45 | 100 % | 33,3 % | 1,184 |
+| 1 | 64 | 1,811 | 0,55 | 35,33 | 100 % | 100 % | 1,184 |
+| 2 | 16 | 0,765 | 2,62 | 167,37 | 100 % | 100 % | 1,427 |
+| 2 | 32 | 1,532 | 1,31 | 83,53 | 100 % | 100 % | 1,427 |
+| 2 | 64 | 3,064 | 0,65 | 41,78 | 100 % | 100 % | 1,427 |
+| 4 | 16 | 1,292 | 3,10 | **198,22** | 100 % | 100 % | 1,910 |
+| 4 | 32 | 2,583 | 1,55 | 99,12 | 91,7 % | 66,7 % | 1,910 |
+| 4 | 64 | 5,167 | 0,77 | 49,55 | 100 % | 100 % | 1,910 |
+
+En batch 4 / 32 pasos se contrastaron los registros CSV y JSONL locales: 11/12 salidas sintácticas (91,7 %) y 8/12 funcionales (66,7 %). El detalle por repetición fue 3/4 y 3/4; 4/4 y 2/4; 4/4 y 3/4, respectivamente. Se conserva esta auditoría frente a la discrepancia del resumen mostrado en consola.
+
+### Lectura operativa
+
+- **Menor latencia de una petición:** V3 batch 1 / 16 pasos, mediana 0,460 s.
+- **Equilibrio batch:** batch 2 / 16 pasos, 0,765 s por batch y 167,37 posiciones/s agregadas.
+- **Máximo throughput agregado medido:** batch 4 / 16 pasos, 198,22 posiciones/s.
+- 32 pasos no fue estable en calidad funcional para esta tarea; no recomendarlo como configuración por defecto con esta evidencia.
+- La comparación V2→V3 en batch 1 / 16 pasos (140,30 frente a 139,15 posiciones/s) difiere aproximadamente -0,8 %, por lo que V3 conserva el baseline single-sequence.
+- El warning de Transformers sobre `temperature`/`top_k` se mantuvo. La inspección del código encontró rutas que consumen esos parámetros, pero falta una ablación A/B que confirme su efecto experimental.
+- La evidencia cubre una sola tarea factorial. No es un benchmark general de programación ni una puntuación de inteligencia.
+
+### Documentación primaria vinculada
+
+1. [Resumen ejecutivo y mapa V1/V2/V3](../subprojects/Open-dCoder/EXECUTIVE-SUMMARY.md)
+2. [README del subproyecto Open-dCoder](../subprojects/Open-dCoder/README.md)
+3. [Cuaderno V1/V2: protocolo, validador, resultados y auditoría](../subprojects/Open-dCoder/EXPERIMENT-2026-10-31.md)
+4. [Informe V3: batching real, matriz completa y auditoría](../subprojects/Open-dCoder/EXPERIMENT-V3-BATCH-2026-10-31.md)
+5. [Repositorio upstream Open-dLLM](https://github.com/zhangsheng93/Open-dLLM)
+6. [Checkpoint en Hugging Face](https://huggingface.co/fredzzp/open-dcoder-0.5B)
+
+**Artefactos originales V3 pendientes de incorporación íntegra:** runner `benchmark_opendcoder_v3_batch.py`, CSV `opendcoder_v3_20261031T110532Z.csv`, JSONL `opendcoder_v3_20261031T110532Z_outputs.jsonl`, JSON `opendcoder_v3_20261031T110532Z_summary.json` y `benchmark-v3-console.log`. Sus rutas locales constan en el informe V3; esta ficha no afirma que los ficheros originales estén ya versionados en GitHub.
+
 ## 4. Informes y artefactos primarios
 
 ### Material formativo sobre LLM (no es benchmark)
@@ -299,6 +357,9 @@ El curso es un recurso didáctico interactivo sobre Transformers y modelos de le
 - [Inventario experimental Qwen3.5 TensorFold / llama.cpp](../experimental/inventario-comparativo-qwen35-tensorfold-llamacpp-2026-10-20.md)
 
 ### Informes de modelos
+- [Open-dCoder — resumen ejecutivo y mapa V1/V2/V3](../subprojects/Open-dCoder/EXECUTIVE-SUMMARY.md)
+- [Open-dCoder — informe V1/V2](../subprojects/Open-dCoder/EXPERIMENT-2026-10-31.md)
+- [Open-dCoder — informe V3 batch real](../subprojects/Open-dCoder/EXPERIMENT-V3-BATCH-2026-10-31.md)
 - [Project Maya v1.1.31 — release upstream](https://github.com/mw00/project-maya/releases/tag/v1.1.31)
 - [Project Maya — PR de integración, catálogo y snapshots (#142)](https://github.com/robertosantosx2/LEONES/pull/142)
 - [TwIL-8B Q4_K_M — RTX 3050](../TWIL-8B-Q4_K_M-RTX3050-2026-11-05.md)
