@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (incorporado benchmark formal Kinetic + LFM3-1.7B CUDA; Qwen3.5-35B-A3B queda pendiente de prueba)
+**Última consolidación:** 2026-11-12 (incorporados benchmark Kinetic + LFM3-1.7B CUDA y evaluación documental tqLLM 1.5.0 para RTX 3050 sm_86)
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
