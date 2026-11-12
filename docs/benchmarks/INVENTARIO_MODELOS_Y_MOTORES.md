@@ -12,7 +12,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 
 | Motor / proyecto | Estado en el laboratorio | Modelos o familias vinculados | Validación y notas |
 |---|---|---|---|
-| **llama.cpp CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B, LFM3-1.7B, Ling-3.0-Tiny, Spark-X2.6-4B, TwIL-8B | Incluye sweep `llama-bench` de Qwen3-30B-A3B IQ3_XXS con `ngl=0/1/8` (3 repeticiones por ajuste); `ngl=1` obtuvo la mejor mediana PP128. Binarios locales en ~/llama.cpp-cuda/build/bin y /usr/local/bin. |
+| **llama.cpp CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B, LFM3-1.7B, Ling-3.0-Tiny, Spark-X2.6-4B, TwIL-8B | LFM3 incorporado en v0.8.0 (PR #31252/#31257); el build histórico b11740 es anterior. Incluye sweep `llama-bench` de Qwen3-30B-A3B IQ3_XXS con `ngl=0/1/8` (3 repeticiones por ajuste); `ngl=1` obtuvo la mejor mediana PP128. Binarios locales en ~/llama.cpp-cuda/build/bin y /usr/local/bin. |
 | **TensorFold CUDA** | Ejecutado y medido; compatibilidad LFM3 no soportada/verificada en 1.1.6 | Qwen3.5-2B, Qwen3.5-4B; estudios de Qwen3.5-9B y Qwen3.5-35B-A3B; intento LFM3-1.7B | Inferencia real con 2B y 4B. PR #1879 aborda la reserva CUDA diferida de scratch para 4B. LFM3-1.7B GGUF Q4_K_M no fue reconocido: `info` rechaza el archivo (espera directorio de checkpoint o repo HF) y `capabilities --json` no declara familia `lfm3`. No se llegó a cargar ni ejecutar. Los estudios 9B/35B no acreditan ejecución en el MSI. |
 | **RustingStrata CUDA** | Ejecutado y medido | Qwen3.5-4B, Qwen3-30B-A3B | Bench nativo y CLI/API documentados. Algunas APIs no exponen tok/s internos: no derivarlos como si fueran métricas nativas. |
 | **Tandem / llama.cpp CPU-MoE** | Ejecutado y medido | Qwen3.5-35B-A3B IQ2_XXS | Ensayo CPU-MoE con RTX 3050; decode 35,6 tok/s en la prueba no-thinking registrada. Evidencia bruta pendiente de consolidación completa en LEONES. |
@@ -27,6 +27,22 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Project Maya** | Integrado documentalmente / adaptador deshabilitado; fuente upstream vendorizada en PR #142 | GLM-5.3, GLM-5.3-Flash, DeepSeek-V4.1-Flash, MiniMax-M3.1-Flash | Familia independiente y motores/model packs específicos; API OpenAI y Anthropic documentadas. La evaluación histórica v1.1.31 se conserva como referencia, pero la rama de integración posterior fija upstream en v1.1.58 (`a3582528bfb73175fed1757b485bfcaaf01aaeaa`). No ejecutar en MSI: 14 GiB RAM frente al mínimo documentado de 32 GiB; 4 GiB VRAM. Sin inferencia local ni rendimiento medido. Ver PR #142. |\n| **Uzu** | Evaluación documental cerrada; `RESEARCH_ONLY / NOT VERIFIED` | Qwen3.5-4B, Qwen3.5 MoE (compatibilidad investigada, no validada) | Integrado en `Experimental` mediante PR #119. No se compila, instala ni ejecuta en el MSI dentro del alcance acordado. Sin soporte Ubuntu/CUDA, GGUF ni Qwen MoE demostrado; no contabilizar como motor probado. Ver [evaluación Uzu](../../experimental/uzu/README.md). |
 | **Mesh-LLM / REDIL** | Referencia arquitectónica documental; no ejecutado | Mesh-LLM como referencia principal de REDIL; Distributed Llama como backend opcional experimental | No es un motor validado en el MSI ni un benchmark. REDIL sigue en estado de propuesta/investigación, sin despliegue físico. La actualización documental está en PR #131. |
 | **MLX** | Formato/artefacto usado por TensorFold | Qwen3.5-2B/4B MLX-4bit | No implica ejecución nativa de MLX en Ubuntu; TensorFold cargó artefactos MLX mediante backend CUDA. |
+
+## 1.1 Liquid AI en llama.cpp — incorporación de LFM3 y modelos d1
+
+La compatibilidad de la familia **LiquidAI LFM3** quedó reunida en la versión **llama.cpp v0.8.0** (28-10-2026). La incorporación al código principal fue progresiva; por tanto, los commits de desarrollo/pre-release no deben confundirse con la primera versión etiquetada que agrupa todo el soporte.
+
+| Modelo / familia | Capacidades | PR upstream | Primera versión etiquetada |
+|---|---|---|---|
+| **LFM3-1.7B** | Texto | [#31252](https://github.com/ggml-org/llama.cpp/pull/31252) | **v0.8.0** |
+| **LFM3-VL-2B** | Visión e imagen | [#31252](https://github.com/ggml-org/llama.cpp/pull/31252) | **v0.8.0** |
+| **LFM3-Audio-2B** | ASR y TTS | [#31257](https://github.com/ggml-org/llama.cpp/pull/31257) | **v0.8.0** |
+| **LFM3-Omni-2B** | Audio conversacional/multimodal | [#31257](https://github.com/ggml-org/llama.cpp/pull/31257) | **v0.8.0** |
+| **d1-2B / d1-Omni-2B** | Modelos de decisión LiquidAI | [#31275](https://github.com/ggml-org/llama.cpp/pull/31275) | **v0.8.0** |
+
+Referencias: [notas oficiales de llama.cpp v0.8.0](https://github.com/ggml-org/llama.cpp/releases/tag/v0.8.0), [PR #31252 (texto/visión)](https://github.com/ggml-org/llama.cpp/pull/31252), [PR #31257 (audio/omni)](https://github.com/ggml-org/llama.cpp/pull/31257) y [PR #31275 (d1)](https://github.com/ggml-org/llama.cpp/pull/31275). El pre-release **b11938** ya incluía LFM3-1.7B y LFM3-VL-2B, pero no equivale a la versión etiquetada v0.8.0 que reúne la familia.
+
+**Implicación para LEONES:** el build histórico local **llama.cpp 0.7.0-dev / b11740** es anterior a esta incorporación. Para probar LFM3 debe usarse un tag/commit posterior que incluya el soporte correspondiente y registrarse el backend, GGUF y componentes auxiliares requeridos por cada modalidad (por ejemplo, mmproj/audio). La disponibilidad upstream no demuestra que todos los modelos/modos se hayan ejecutado en el MSI; los resultados locales acreditados siguen siendo los recogidos en las tablas de pruebas.
 
 ## 2. Modelos con inferencia funcional y/o medición
 
