@@ -27,7 +27,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **Infernix** | Investigación documental; no compilado ni ejecutado | Qwen3.8-Flash-Next, Qwen3.8-27B, Qwen3.6, Qwen3.5-122B-A10B | Motor C++/CUDA orientado a RTX 50/Blackwell; el README exige RTX 50-series para otros equipos. Sin soporte sm_86 documentado ni modelo pequeño confirmado. No viable para el MSI actual; ver §3.5. |
 | **Transformers, vLLM, SGLang, KTransformers, Mistral.rs, DynaLM** | Evaluación de soporte / planificación; sin prueba local de TwIL-8B | TwIL-8B Granite GGUF Q4_K_M como caso de compatibilidad pendiente | No hay inferencia ni benchmark de TwIL-8B acreditados con estos motores. vLLM se considera una ruta a investigar con pesos compatibles/Safetensors, no una garantía de carga directa de este GGUF. DynaLM queda como candidato documental citado en la conversación, con soporte Granite/GGUF/CUDA aún no verificado independientemente. |
 | **ThumbLLM / llama.cpp CPU (Ornith 1.5)** | Paquete Release 1 incorporado a LEONES; reproducción Linux preparada, pendiente de ejecutar | Ornith-1.5-9B-OBLITERATED Q4_K_M | El release original está orientado a Windows. Se añadieron receta y scripts Ubuntu para compilar llama.cpp b10603 (c060ca974) en CPU y servir en puerto 18088. Descarga, hash, compilación e inferencia en el MSI aún no verificados; no contabilizar como motor/modelo ejecutado. |
-| **Project Maya** | Integrado documentalmente / adaptador deshabilitado; fuente upstream vendorizada en PR #142 | GLM-5.3, GLM-5.3-Flash, DeepSeek-V4.1-Flash, MiniMax-M3.1-Flash | Familia independiente y motores/model packs específicos; API OpenAI y Anthropic documentadas. La evaluación histórica v1.1.31 se conserva como referencia, pero la rama de integración posterior fija upstream en v1.1.58 (`a3582528bfb73175fed1757b485bfcaaf01aaeaa`). No ejecutar en MSI: 14 GiB RAM frente al mínimo documentado de 32 GiB; 4 GiB VRAM. Sin inferencia local ni rendimiento medido. Ver PR #142. |\n| **Uzu** | Evaluación documental cerrada; `RESEARCH_ONLY / NOT VERIFIED` | Qwen3.5-4B, Qwen3.5 MoE (compatibilidad investigada, no validada) | Integrado en `Experimental` mediante PR #119. No se compila, instala ni ejecuta en el MSI dentro del alcance acordado. Sin soporte Ubuntu/CUDA, GGUF ni Qwen MoE demostrado; no contabilizar como motor probado. Ver [evaluación Uzu](../../experimental/uzu/README.md). |
+| **Project Maya** | Investigación documental ampliada; integración en LEONES deshabilitada / no ejecutada | GLM-5.3 (744B), GLM-5.3-Flash (321B), DeepSeek-V4.1-Flash-1017 (748B), MiniMax-M3.1-Flash (428B), Qwen-3.8-Flash-Next / CYBER-FROST | Motor especializado MoE con engines y packs por familia; GGUF/EXL3 según modelo, API OpenAI/Anthropic y UI web. Documentación upstream revisada el 12-11-2026. En el MSI no hay modelo ejecutable soportado: Maya exige al menos 32 GB de RAM física y NVMe; el equipo tiene 14 GiB RAM + 4 GiB VRAM (18 GiB combinados). Qwen UD-IQ2_XS es el candidato menos exigente (47 GB para el modelo residente; 64 GB VRAM+RAM recomendados), pero sigue por debajo del mínimo de RAM física. Sin descarga, instalación, inferencia ni benchmark local. Ver §3.7 y PR #142. |\n| **Uzu** | Evaluación documental cerrada; `RESEARCH_ONLY / NOT VERIFIED` | Qwen3.5-4B, Qwen3.5 MoE (compatibilidad investigada, no validada) | Integrado en `Experimental` mediante PR #119. No se compila, instala ni ejecuta en el MSI dentro del alcance acordado. Sin soporte Ubuntu/CUDA, GGUF ni Qwen MoE demostrado; no contabilizar como motor probado. Ver [evaluación Uzu](../../experimental/uzu/README.md). |
 | **Mesh-LLM / REDIL** | Referencia arquitectónica documental; no ejecutado | Mesh-LLM como referencia principal de REDIL; Distributed Llama como backend opcional experimental | No es un motor validado en el MSI ni un benchmark. REDIL sigue en estado de propuesta/investigación, sin despliegue físico. La actualización documental está en PR #131. |
 | **Mage-VL-Cowork (Microsoft Mage)** | Investigación documental; no instalado ni ejecutado en el MSI | Agente CUA multimodal 4B; GUI + código/terminal | 66,0% OSWorld-Verified (361 tareas, 50 pasos; media de dos ejecuciones publicada por el equipo); no es un resultado de Artificial Analysis ni un benchmark LEONES. Sin inferencia local ni compatibilidad Ubuntu/GGUF verificada. |
 | **MLX** | Formato/artefacto usado por TensorFold | Qwen3.5-2B/4B MLX-4bit | No implica ejecución nativa de MLX en Ubuntu; TensorFold cargó artefactos MLX mediante backend CUDA. |
@@ -961,3 +961,52 @@ El informe también documenta diagnósticos de carga CUDA de Qwen3-30B-A3B (buff
 
 ---
 **Nota de precisión:** este inventario combina informes versionados de LEONES con resultados de laboratorio comunicados durante las sesiones. Los registros que todavía no tienen artefacto bruto versionado quedan identificados como pendientes de archivo; no se presentan como evidencia independiente auditada.
+
+## 3.7 Project Maya — catálogo vigente y viabilidad en el MSI Ubuntu (12-11-2026)
+
+**Clasificación LEONES:** investigación documental de upstream; **no instalado, no descargado y no ejecutado** en el MSI. No hay mediciones locales de prefill, decode, TTFT, VRAM, RAM ni estabilidad. La presencia de un modelo en el catálogo de Maya no equivale a que sea ejecutable en el hardware de referencia.
+
+**Proyecto y arquitectura.** [Project Maya](https://github.com/mw00/project-maya) es un runtime MoE especializado, no un cargador universal de GGUF. Mantiene los expertos más usados en VRAM, otros en RAM y los restantes en NVMe, moviéndolos según el enrutamiento. Tiene motores/rutas específicas para familias de modelos y expone API compatibles con OpenAI y Anthropic, interfaz web y monitor. La compatibilidad declarada upstream incluye NVIDIA desde Volta / RTX 20, por lo que la RTX 3050 Ampere sm_86 cumple el umbral arquitectónico de GPU; eso no resuelve el déficit de memoria del equipo.
+
+**Catálogo upstream observado el 12-11-2026.** Los cuatro modelos principales y Qwen aparecen en la documentación actual del repositorio:
+
+| Modelo / variante | Cuantización o pack documentado | Descarga aproximada | Memoria total recomendada (VRAM + RAM) | Evaluación en el MSI |
+|---|---|---:|---:|---|
+| **GLM-5.3-Flash (321B; 18B activos)** | Maya-XS / Maya-S24 / Maya-S / Maya-M / Maya-L; también EXL3 comunitarios | 73–156 GB (según pack) | 88–192 GB | No viable con 18 GiB combinados y 14 GiB RAM física |
+| **GLM-5.3 (744B; ~40B activos)** | Maya-XS GGUF o UD-IQ2_M | 170–239 GB | 192–256 GB | No viable |
+| **DeepSeek-V4.1-Flash-1017 (748B)** | Maya-XS / Maya-S, GGUF comunitarios y EXL3 | 277–467 GB según variante | 128–384 GB | No viable |
+| **MiniMax-M3.1-Flash (428B; 23B activos)** | Maya-XS / Maya-S GGUF o EXL3 3.5 bpw | 93–197 GB | 128–256 GB | No viable |
+| **Qwen-3.8-Flash-Next** | Unsloth UD-IQ2_XS GGUF o CYBER-FROST Q5_K_M GGUF | 80–113 GB según variante | 64 GB (UD-IQ2_XS) / 96 GB (CYBER-FROST) | Es el menos exigente, pero no cumple el mínimo de RAM física |
+
+Los tamaños de descarga y los requisitos de memoria no son magnitudes intercambiables. En DeepSeek las tablas Engram/n-gram permanecen en SSD; en Qwen la tabla n-gram de 52 GB también permanece en SSD. El tamaño de pesos/descarga no es el total de RAM+VRAM necesario para mantener los expertos residentes.
+
+**Requisitos mínimos frente al hardware del MSI.** La guía oficial de memoria indica que, incluso por debajo de la memoria recomendada y leyendo expertos desde SSD, cada modelo necesita como mínimo:
+- GPU compatible (NVIDIA desde V100 / RTX 20 en adelante).
+- **32 GB de RAM física**.
+- SSD NVMe rápido con espacio suficiente para el modelo y sus índices/archivos auxiliares.
+
+| Recurso | Requisito / recomendación Maya | MSI Thin 15 B12UC | Resultado |
+|---|---:|---:|---|
+| GPU NVIDIA | V100 / RTX 20 o posterior | RTX 3050 Laptop, Ampere sm_86, 4 GiB | Arquitectura compatible |
+| RAM física | **32 GB mínimo** | **14 GiB** | **No cumple** |
+| VRAM + RAM | Qwen UD-IQ2_XS: 64 GB recomendados; CYBER-FROST Q5_K_M: 96 GB | ≈18 GiB combinados | Muy por debajo |
+| Almacenamiento | NVMe rápido | NVMe presente; espacio libre a comprobar | No compensa el déficit de RAM |
+| Swap | No cuenta como RAM física | 32 GiB configurados | No sustituye el mínimo |
+
+**Conclusión por modelo y decisión de compra.**
+1. **No descargar ni lanzar ningún pack de Maya en la configuración actual.** Los 14 GiB de RAM incumplen el mínimo explícito de upstream. La swap no transforma ese límite en memoria física; forzar la carga puede provocar paginación extrema, OOM o una experiencia inutilizable.
+2. **Qwen-3.8-Flash-Next UD-IQ2_XS es el primer candidato solo después de ampliar RAM.** El objetivo mínimo para experimentar sería 32 GB de RAM física y NVMe con espacio suficiente; para aproximarse al perfil recomendado, unos 60 GB de RAM con la RTX 3050 (≈64 GB combinados). No se ha demostrado rendimiento en esta GPU.
+3. **CYBER-FROST Q5_K_M** requiere alrededor de 84 GB de memoria para el modelo y 96 GB recomendados; con 4 GiB de VRAM, apuntar a unos 92 GB de RAM para alcanzar la recomendación. No es una opción realista para el MSI sin una ampliación extraordinaria y debe seguir como investigación.
+4. GLM-5.3-Flash, GLM-5.3, DeepSeek-V4.1-Flash y MiniMax-M3.1-Flash quedan fuera del alcance práctico de este portátil; sus tamaños y perfiles de memoria son de estaciones de trabajo/servidores con mucha más RAM y/o VRAM.
+
+**Prueba no destructiva disponible, cuando se cumpla el mínimo de memoria:** clonar el repositorio y ejecutar `./maya.sh --check` para revisar GPU, driver, CUDA toolkit, compilador, CPU, RAM y condiciones del sistema. No ejecutar `--setup` ni seleccionar/descargar un modelo en el MSI actual. La documentación upstream advierte además que `systemd-oomd` en Ubuntu puede terminar la sesión de usuario durante cargas con presión de memoria; no se recomienda desactivarlo como atajo para eludir requisitos insuficientes.
+
+**Implicación para LEONES:** mantener Maya en Experimental/Research como motor MoE externo opcional, con adaptador deshabilitado. No incluirlo en el conjunto de motores disponibles para el MSI ni en rankings de rendimiento. Una futura integración debe comprobar versión, familia, cuantización, formato, memoria física, VRAM, NVMe y disponibilidad de API por separado; no inferir soporte universal por ser GGUF. El código upstream vendorizado para la propuesta de integración está fijado en PR #142 a v1.1.58 (`a3582528bfb73175fed1757b485bfcaaf01aaeaa`); esa versión integrada en la rama de trabajo no debe confundirse con una ejecución local ni con una release instalada.
+
+**Fuentes primarias (consulta 12-11-2026):**
+- [Project Maya — repositorio y catálogo](https://github.com/mw00/project-maya)
+- [Project Maya — requisitos y procedimiento de instalación](https://github.com/mw00/project-maya/blob/main/docs/SETUP.md)
+- [Project Maya — tabla de memoria por modelo y mínimo de sistema](https://github.com/mw00/project-maya/blob/main/docs/MEMORY.md)
+- [Project Maya — modelos, formatos y cuantizaciones](https://github.com/mw00/project-maya/blob/main/docs/MODELS.md)
+- [Project Maya — parámetros y configuración Qwen-3.8-Flash-Next](https://github.com/mw00/project-maya/blob/main/docs/SETTINGS.md#qwen-38-flash-next-cyber-frost)
+- [LEONES — propuesta de integración Project Maya, PR #142](https://github.com/robertosantosx2/LEONES/pull/142)
