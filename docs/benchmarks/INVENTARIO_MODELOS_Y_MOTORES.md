@@ -67,6 +67,12 @@ Este documento es el índice único de modelos que se han investigado, descargad
 
 ## 4. Informes y artefactos primarios
 
+### Material formativo sobre LLM (no es benchmark)
+- [Curso interactivo de fundamentos de LLM — versión española](../../cursollm-es.html)
+
+El curso es un recurso didáctico interactivo sobre Transformers y modelos de lenguaje; no representa una ejecución ni una comparación de modelos o motores del laboratorio. En la validación local de la traducción se detectaron regresiones JavaScript en revisiones anteriores (`querySelectorTodo`, claves de datos traducidas y eventos/etiquetas de entrada). Un candidato local con las correcciones recuperó la estructura esperada (293 botones, 84 elementos de flujo y 34 secciones) y no produjo excepciones JavaScript durante la carga. Esta comprobación no equivale a una batería funcional completa ni certifica la copia exacta publicada en GitHub: quedan pendientes las interacciones exhaustivas de pasos, animaciones, cuestionarios, glosario, tokenizer y tema. La copia remota sí contiene las correcciones estáticas revisadas (`querySelectorAll`, `heads` y eventos `input`).
+
+
 ### Inventarios y comparativas generales
 - [Inventario comparativo histórico (30-10-2026)](inventario-comparativo-ejecuciones-modelos-ubuntu-2026-10-30.md)
 - [Informe reproducible de inferencia RTX 3050 — español](../reports/report-inferencia-dense_Octubre26.md)
