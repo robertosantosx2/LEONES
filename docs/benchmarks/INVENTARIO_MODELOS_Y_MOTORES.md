@@ -1,6 +1,6 @@
 # Inventario maestro de modelos, motores y pruebas locales
 
-**Última consolidación:** 2026-11-12 (incorporada evaluación documental de Infernix para RTX 3050 sm_86)
+**Última consolidación:** 2026-11-12 (actualización upstream de Tandem.cpp 11–12-11-2026; incorporada evaluación documental de Infernix para RTX 3050 sm_86)
 **Repositorio:** [robertosantosx2/LEONES](https://github.com/robertosantosx2/LEONES)  
 **Equipo principal de referencia:** MSI Thin 15 B12UC · Intel Core i7-12650H · 14 GiB RAM · NVIDIA RTX 3050 Laptop 4 GiB · Ubuntu · driver 580.178.04 · CUDA 13.0.
 
@@ -16,7 +16,7 @@ Este documento es el índice único de modelos que se han investigado, descargad
 | **llama.cpp CUDA — Ripple/Ricursive** | Port upstream en revisión; no compilado localmente | Ripple-65B-Preview (Ricursive) | PR #31715 sustituye #31692; soporte de arquitectura y conversor GGUF propuestos. No confundir soporte de código en PR con ejecución local. No hay benchmark LEONES ni prueba en el MSI. |
 | **TensorFold CUDA — Ripple** | No soportado por el binario local 1.2.0; implementación upstream experimental Metal | Ripple-65B-Preview / NVFP4 / DFlash2 | `capabilities --json` del binario local no declara familia `ricursive`/`ripple`. PR #2231 añade Ripple para Metal; PR #2260 añade DFlash2 sobre Metal. No hay ruta CUDA validada. No descargar ni intentar cargar en el MSI. |
 | **RustingStrata CUDA** | Ejecutado y medido en el MSI; evaluación ampliada de compatibilidad upstream | Qwen3.5-4B, Qwen3-30B-A3B (ejecuciones locales); catálogo upstream adicional: Qwen3.5-2B/9B, Qwen3.6-35B-A3B, Qwen3.8-27B y Qwen3.8-Flash-Next | Las ejecuciones locales acreditadas siguen siendo las indicadas; las cifras publicadas por RustingStrata en RTX 3060 12 GB / 32 GB RAM no son resultados del MSI. La RTX 3050 sm_86 pertenece a la clase Ampere admitida por el código CUDA, pero no aparece como tarjeta probada en su matriz oficial. Ver §3.5. |
-| **Tandem / llama.cpp CPU-MoE** | Ejecutado y medido | Qwen3.5-35B-A3B IQ2_XXS | Ensayo CPU-MoE con RTX 3050; decode 35,6 tok/s en la prueba no-thinking registrada. Evidencia bruta pendiente de consolidación completa en LEONES. |
+| **Tandem.cpp / llama.cpp CPU-MoE** | Ejecutado y medido localmente; upstream actualizado, Qwen3.6 estudiado pero no probado en el MSI | Qwen3.5-35B-A3B IQ2_XXS (local); Qwen3.6-35B-A3B (benchmark upstream) | En el MSI: Qwen3.5-35B-A3B, caché 512/768 MiB, decode medio descriptivo 37,14 tok/s (512 MiB) y 35,67 tok/s (768 MiB; pruebas de 512 tokens); prefill 46,5 tok/s en una ejecución registrada. Evidencias archivadas en LEONES. Upstream 11–12-11: launcher tandem-run.py, margen de caché por defecto 512 MiB, lectura anticipada desde SSD, calibración de kernels CPU y correcciones de memoria/threads. Qwen3.6-35B-A3B figura en benchmarks upstream, pero no está probado en el MSI. |
 | **Pithos** | Ejecutado y medido | LFM3-1.7B | Campañas del 6 y 7 de noviembre; CSV y log preservados en artifacts/pithos-0.5.1-2026-11-07/. |
 | **Kinetic** | Compilado / pruebas de ejecución en curso | LFM3-1.7B GGUF; Qwen3.5-35B-A3B IQ2_XXS seleccionado para prueba | Se inspeccionaron versiones, binarios y catálogo; se prepararon y ejecutaron pruebas. No publicar velocidad sin log de benchmark completo y reproducible. |
 | **Colibri** | Instalado / auditado técnicamente | Compatibilidad Qwen3.6 CUDA | Auditoría del parser de colocación y configuración CUDA. Compilación o validación de código no equivale a inferencia medida. |
@@ -101,7 +101,7 @@ Referencias: [notas oficiales de llama.cpp v0.8.0](https://github.com/ggml-org/l
 | **Qwen3-30B-A3B-Instruct-2507** | GGUF IQ3_XXS | llama.cpp `llama-bench` CUDA · RTX 3050 | Sweep `ngl=0/1/8`, PP128 (media/mediana): 22,553/24,420; 74,473/76,250; 34,957/26,380 tok/s. TG32: media 1,487; 1,660; 1,827 tok/s, respectivamente. Tres repeticiones por ajuste. | Nueve ejecuciones con código 0. `ngl=8` mostró alta variabilidad PP128; `ngl=1` tuvo la mejor mediana PP128. Benchmark separado del head-to-head y de Strata. |
 | **Qwen3-30B-A3B-Instruct-2507** | GGUF IQ3_XXS | RustingStrata CUDA · RTX 3050 | Head-to-head de seis ejecuciones; mediana decode calculada 30,01 tok/s; RSS aprox. 7–8 GiB | Inferencia funcional. No es comparación perfectamente equivalente con llama.cpp. |
 | **Qwen3-30B-A3B** | GGUF IQ3_XXS / configuración PICCHIO | MSI RTX 3050 | Campaña de memoria dual-channel y ejecución documentada en informe PICCHIO | Consultar informe específico; no mezclar con el head-to-head anterior. |
-| **Qwen3.5-35B-A3B** | GGUF IQ2_XXS | Tandem / llama.cpp CPU-MoE · RTX 3050 + CPU/RAM | Decode aprox. **35,6 tok/s** en prueba no-thinking; prompt 46,5 tok/s; RSS aprox. 9,27 GiB; swap aprox. 7,5 GiB; GPU aprox. 2345 MiB | Ejecución real medida. Contexto 1024; no extrapolar a TensorFold. |
+| **Qwen3.5-35B-A3B** | GGUF IQ2_XXS | Tandem.cpp / llama.cpp CPU-MoE · RTX 3050 + CPU/RAM | Caché MoE 512 MiB: decode 33,558 / 38,770 / 38,265 tok/s (256 tokens) y 37,957 tok/s (512 tokens); media descriptiva conjunta **37,14 tok/s**. Caché 768 MiB: 31,72 tok/s de media en tres pruebas de 256 tokens y **35,67 tok/s** de media en dos pruebas de 512 tokens. Prefill: **46,5 tok/s** en una ejecución no-thinking registrada (no es una media de campaña). RSS aprox. 9,27 GiB, swap aprox. 7,5 GiB, GPU aprox. 2345 MiB. | Inferencia real medida; contexto 1024. No hay baseline vanilla equivalente, por lo que no se atribuye speedup. Evidencia: [informe LEONES](https://github.com/robertosantosx2/LEONES/blob/Experimental/docs/experimental/tandem-qwen35-35b-a3b-rtx3050-2026-11-05.md) y [artefactos brutos](https://github.com/robertosantosx2/LEONES/tree/Experimental/artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-05). |
 | **Clover-35B-A3B-Preview** | GGUF IQ2_S (`Clover-35B-A3B-Preview-IQ2_S-exps-down3-hq.gguf`, 13.795.534.208 bytes) | llama.cpp CUDA · RTX 3050 4 GiB | `llama-speculative-simple` con `draft-self`: carga 21,94 s; prompt 2,36 tok/s (107 tokens); eval 2,80 tok/s; 17 tokens previstos, 7/7 aceptados; RSS 9.693.388 KB; salida coherente en inglés. Ejecuciones custom-Jinja: 95 tokens a 5,15 tok/s (prompt 2,79; carga 20,82 s) y 255 tokens a 4,90 tok/s (prompt 3,60; carga 20,39 s; RSS 10,08 GiB; exit 0). Ejecución convencional adicional: 127 tokens a 2,68 tok/s, prompt 2,21 tok/s, carga 20,67 s, con salida repetitiva. | **Inferencia local ejecutada y medida** con el artefacto IQ2_S concreto. Rendimiento bajo y calidad variable según plantilla/protocolo; no equivale a validar el modelo original BF16/INT4 ni su carga íntegra en VRAM. Mantener Experimental. |
 | **LFM3-1.7B Uncensored** | GGUF AD-Q4_K_M | llama.cpp CUDA · RTX 3050 | llama-bench: PP512 4.326,68 tok/s; TG128 117,29 tok/s. CLI interactivo: decode aprox. 99,8–104,4 tok/s | Inferencia funcional y medición nativa. |
 | **LFM3-1.7B** | GGUF de campaña Pithos | Pithos · RTX 3050 | CSV de resultados y log de sesión conservados | Consultar informes Pithos; no asumir artefacto/protocolo idéntico al de llama.cpp. |\n| **LFM3-1.7B** | GGUF Q4_K_M | TensorFold 1.1.6 CUDA · RTX 3050 sm_86 | `tensorfold-native capabilities --json`: no declara familia `lfm3`; `tensorfold-native info <archivo.gguf>` responde que el archivo no es un directorio ni un repo HF. | **Intento de compatibilidad, no ejecución.** No se cargó el modelo ni se midió rendimiento. El rechazo evidencia que el GGUF no es una entrada aceptada por esta interfaz y que la familia no figura en las capacidades de 1.1.6; no demuestra imposibilidad futura ni descarta una implementación/checkpoint distinto. No instalar, convertir ni descargar pesos alternativos como parte de esta prueba. |
@@ -196,6 +196,35 @@ La arquitectura identificada para TwIL-8B es Granite. El hecho de que un motor a
 **Decisión:** mantener llama.cpp como único motor con ejecución local de TwIL-8B acreditada en este MSI. Las alternativas anteriores quedan en investigación documental; no se han instalado, ejecutado ni comparado. No modificar servicios ODS/TensorFold ni sustituir el motor validado sin una prueba aislada y reproducible.
 
 ## 3. Intentos, estudios e investigación (no contar como benchmark)
+
+### Tandem.cpp — actualización upstream y compatibilidad Qwen3.6 (12-11-2026)
+
+El README upstream de [ewhacc/tandem.cpp](https://github.com/ewhacc/tandem.cpp) documenta una actualización fechada **11–12 de noviembre de 2026**. El proyecto sigue siendo un conjunto de parches sobre llama.cpp (base f5222f25c) para acelerar inferencia MoE con expertos en RAM/SSD y caché de expertos en GPU. La actualización no equivale a una nueva ejecución local en el MSI.
+
+**Cambios upstream relevantes:**
+- Nuevo lanzador tandem-run.py: detecta GPU, VRAM, RAM, CPU y disco, propone flags y puede hacer una calibración inicial; --dry-run permite inspeccionar el plan sin descargar ni arrancar nada.
+- La reserva/margen por defecto para la caché de expertos GPU baja de 1024 a **512 MiB**. También existe --moe-cache-mib auto, que calcula el espacio disponible tras modelo, KV y buffers.
+- Lectura anticipada de expertos desde SSD con varios hilos para modelos mayores que la RAM; las ganancias dependen fuertemente de la unidad y de cuánto del modelo quepa en memoria.
+- Calibración inicial de kernels i-quant CPU, mejor reparto CPU/subida a GPU, uso de huge pages para expertos fijados cuando la RAM lo permite.
+- Correcciones del 12-11: los hilos CPU de expertos duermen cuando están inactivos; el tamaño de caché automático reserva espacio para los grafos CUDA; el cálculo de hilos usa núcleos físicos dentro del CPU set; las reglas de RAM reconocen límites cgroup de contenedores.
+- El prefill también mejora en determinadas cargas: el README publica factores de **1,4–1,8×** en prompts de 64K para los modelos medidos; no es una cifra específica de Qwen3.6 ni del MSI.
+
+**Qwen3.6-35B-A3B:** el modelo aparece explícitamente en la matriz upstream de Tandem. En una RTX 6000 Ada de 48 GB con Threadripper PRO 5955WX, el README publica estos resultados de decode (tok/s; greedy / sampling recomendado):
+
+| Presupuesto de memoria GPU | llama.cpp | Tandem.cpp | Ganancia aproximada |
+|---:|---:|---:|---:|
+| Modelo completo, 22,4 GB | 173,1 / 173,1 | 179,2 / 179,2 | 1,04× |
+| 16 GB | 117,8 / 117,8 | 148,6 / 148,6 | 1,26× |
+| 12 GB | 97,2 / 96,5 | 136,5 / 135,4 | 1,40× |
+| 8 GB | 79,8 / 80,0 | 115,0 / 114,5 | 1,44× |
+
+Son cifras upstream, no resultados LEONES ni una medición con una RTX 3050. El presupuesto de 8 GB tampoco representa una validación en una GPU sm_86 de 4 GB. La tabla demuestra que Tandem ejecuta Qwen3.6-35B-A3B en su banco de pruebas y que la ventaja crece cuando se limita la memoria GPU; cuando el modelo cabe completo, la diferencia es pequeña.
+
+**Compatibilidad y límites en el MSI:** Qwen3.6-35B-A3B dispone de conversión GGUF y se identifica con la arquitectura qwen35moe; llama.cpp declara soporte para Qwen3.6. El README de Tandem aplica reglas genéricas a otros GGUF MoE, pero el proyecto solo declara pruebas CUDA en Linux con **sm_89** y **sm_120** (no sm_86). Por tanto, el estado correcto para el MSI Thin 15 B12UC (RTX 3050 4 GiB, sm_86, 14 GiB RAM) es **UPSTREAM_MODEL_BENCHMARKED / MSI_NOT_VALIDATED**. No afirmar que Qwen3.6 esté validado localmente ni que las cifras de la RTX 6000 Ada sean transferibles. La memoria de 14 GiB es inferior al tamaño habitual de los GGUF cuantizados de 35B; la prueba requeriría una cuantización IQ muy agresiva y atención a la presión de RAM/SSD. No iniciar descarga ni alterar servidores existentes antes de revisar el plan del lanzador.
+
+**Acción de laboratorio recomendada:** actualizar primero una copia aislada de Tandem, inspeccionar python3 tandem-run.py --model /ruta/al/modelo.gguf --dry-run (o las opciones de simulación de hardware), comprobar la selección de --moe-cache-mib y los límites de RAM, y solo después decidir si merece la pena una prueba corta en otro puerto. Registrar por separado prefill, decode, RSS, swap-in/out y VRAM; comparar con llama.cpp vanilla con idéntico modelo, contexto, prompt y parámetros.
+
+**Fuentes primarias:** [Tandem.cpp README y resultados](https://github.com/ewhacc/tandem.cpp); [Qwen3.6-35B-A3B GGUF de ggml-org](https://huggingface.co/ggml-org/Qwen3.6-35B-A3B-GGUF); [README oficial Qwen3.6](https://github.com/AlibabaCloud-Official/Qwen3.6).
 
 ### TensorFold CUDA — validación de PR #1879 en RTX 3050 (12-11-2026)
 
@@ -754,7 +783,7 @@ El informe también documenta diagnósticos de carga CUDA de Qwen3-30B-A3B (buff
 
 ## 6. Pendientes de consolidación
 
-- Archivar en LEONES los logs, JSONL, manifiesto y configuración íntegra de Tandem Qwen3.5-35B-A3B IQ2_XXS si no están ya completos.
+- Actualizar y, cuando sea posible, repetir en el MSI la campaña Tandem con el upstream 11–12-11-2026; validar sm_86 y medir prefill/decode con baseline vanilla equivalente. La campaña histórica Qwen3.5 ya está archivada en Experimental con informe, manifiesto y JSON/logs.
 - Clonar y auditar el código fuente de ThumbLLM en Ubuntu, compilar el runtime CPU fijado, verificar el GGUF y portar/validar el frontend Linux; registrar una campaña reproducible antes de marcarlo como ejecutado.\n- Consolidar los resultados finales de Kinetic por modelo, cuantización, backend y versión.
 - Completar YASAKANI solo cuando exista una ejecución verificable.
 - Ejecutar y archivar la reproducción Ubuntu de ThumbLLM/Ornith 1.5 9B: log de descarga y SHA-256, commit/flags de compilación, versión resultante de llama.cpp, configuración efectiva, log de carga/inferencia y métricas PP/TG; solo entonces promoverla a ejecución medida.- Mantener Colibri como auditoría/compilación hasta disponer de inferencia reproducible.
