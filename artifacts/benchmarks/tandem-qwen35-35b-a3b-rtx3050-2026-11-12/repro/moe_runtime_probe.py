@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Low-overhead per-request MoE host/PCIe telemetry; standard library only."""
 from __future__ import annotations
-import csv,json,pathlib,shutil,statistics,subprocess,threading,time
+import json,pathlib,statistics,threading,time
 from datetime import datetime
 
 def stamp(): return datetime.now().astimezone().isoformat()
@@ -42,28 +42,11 @@ def cpufreq():
         try:v.append(int(p.read_text())/1000)
         except Exception:pass
     return {'mean_mhz':statistics.fmean(v),'min_mhz':min(v),'max_mhz':max(v)} if v else {}
-def gpu():
-    exe=shutil.which('nvidia-smi')
-    if not exe:return {'available':False,'error':'nvidia-smi not found'}
-    fields='timestamp,index,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw,clocks.gr,clocks.mem,pcie.rx_throughput,pcie.tx_throughput'
-    try:
-        p=subprocess.run([exe,'--query-gpu='+fields,'--format=csv,noheader,nounits'],capture_output=True,text=True,timeout=2)
-        if p.returncode:return {'available':False,'error':p.stderr.strip(),'query':fields}
-        rows=[]
-        for row in csv.reader(p.stdout.splitlines()):
-            if len(row)<12:continue
-            v=[x.strip() for x in row]
-            def num(x):
-                try:return float(x)
-                except ValueError:return None
-            rows.append(dict(zip(('timestamp','index','gpu_util_pct','memory_util_pct','vram_used_mib','vram_total_mib','temperature_c','power_w','graphics_clock_mhz','memory_clock_mhz','pcie_rx_mib_s','pcie_tx_mib_s'),[v[0],v[1]]+[num(x) for x in v[2:12]])))
-        return {'available':True,'gpus':rows}
-    except Exception as e:return {'available':False,'error':str(e),'query':fields}
 class RuntimeProbe:
     def __init__(self,outdir,request_id,pid=None,interval=.5):
         self.outdir=pathlib.Path(outdir);self.request_id=request_id;self.pid=pid;self.interval=max(.2,float(interval));self.samples=[];self.stop_event=threading.Event()
     def sample(self):
-        return {'time':stamp(),'monotonic':time.monotonic(),'pid':self.pid,'process':proc(self.pid),'pressure':{k:pressure(k) for k in ('cpu','memory','io')},'cpu_frequency':cpufreq(),'gpu':gpu()}
+        return {'time':stamp(),'monotonic':time.monotonic(),'pid':self.pid,'process':proc(self.pid),'pressure':{k:pressure(k) for k in ('cpu','memory','io')},'cpu_frequency':cpufreq()}
     def loop(self):
         while not self.stop_event.is_set():self.samples.append(self.sample());self.stop_event.wait(self.interval)
         self.samples.append(self.sample())
@@ -86,8 +69,4 @@ class RuntimeProbe:
             v=vals(path);return {'min':min(v),'mean':statistics.fmean(v),'max':max(v)} if v else None
         a=self.samples[0] if self.samples else {};b=self.samples[-1] if self.samples else {};p0=a.get('process',{});p1=b.get('process',{})
         delta={k:max(0,p1[k]-p0[k]) for k in ('read_bytes','write_bytes','rchar','wchar','syscr','syscw','sched_runtime_ns','sched_wait_ns') if k in p0 and k in p1}
-        gs=[g for s in self.samples for g in s.get('gpu',{}).get('gpus',[])]
-        def gstat(k):
-            v=[g[k] for g in gs if isinstance(g.get(k),(int,float))]
-            return {'min':min(v),'mean':statistics.fmean(v),'max':max(v)} if v else None
-        return {'request_id':self.request_id,'pid':self.pid,'sample_count':len(self.samples),'interval_seconds':self.interval,'process_io_scheduler_deltas':delta,'threads':stat(['process','Threads']),'rss_kib':stat(['process','VmRSS']),'peak_rss_kib':stat(['process','VmHWM']),'fd_count':stat(['process','fd_count']),'cpu_frequency_mhz':stat(['cpu_frequency','mean_mhz']),'cpu_pressure_some_avg10':stat(['pressure','cpu','some','avg10']),'memory_pressure_some_avg10':stat(['pressure','memory','some','avg10']),'memory_pressure_full_avg10':stat(['pressure','memory','full','avg10']),'io_pressure_some_avg10':stat(['pressure','io','some','avg10']),'io_pressure_full_avg10':stat(['pressure','io','full','avg10']),'gpu_util_pct':gstat('gpu_util_pct'),'vram_used_mib':gstat('vram_used_mib'),'gpu_temperature_c':gstat('temperature_c'),'gpu_power_w':gstat('power_w'),'pcie_rx_mib_s':gstat('pcie_rx_mib_s'),'pcie_tx_mib_s':gstat('pcie_tx_mib_s'),'gpu_sample_count':len(gs),'limitations':['PCIe throughput is device-wide, not process-attributed.','PSI is host-wide.','Short requests may not provide stable percentiles.','Per-layer routing and expert-cache hits require engine trace/log support.']}
+        return {'request_id':self.request_id,'pid':self.pid,'sample_count':len(self.samples),'interval_seconds':self.interval,'process_io_scheduler_deltas':delta,'threads':stat(['process','Threads']),'rss_kib':stat(['process','VmRSS']),'peak_rss_kib':stat(['process','VmHWM']),'fd_count':stat(['process','fd_count']),'cpu_frequency_mhz':stat(['cpu_frequency','mean_mhz']),'cpu_pressure_some_avg10':stat(['pressure','cpu','some','avg10']),'memory_pressure_some_avg10':stat(['pressure','memory','some','avg10']),'memory_pressure_full_avg10':stat(['pressure','memory','full','avg10']),'io_pressure_some_avg10':stat(['pressure','io','some','avg10']),'io_pressure_full_avg10':stat(['pressure','io','full','avg10']),'limitations':['PCIe throughput is device-wide, not process-attributed.','PSI is host-wide.','Short requests may not provide stable percentiles.','GPU and PCIe measurements are collected by resource_monitor.py to avoid duplicate nvidia-smi polling.','Per-layer routing and expert-cache hits require engine trace/log support.']}
