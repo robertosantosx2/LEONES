@@ -1,10 +1,10 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 252,
-  "enriched_ok": 80,
-  "non_github_preserved": 165,
-  "errors": 7,
+  "repositories_processed": 247,
+  "enriched_ok": 79,
+  "non_github_preserved": 160,
+  "errors": 8,
   "github_token_used": true,
   "diagnostics": [
     {
@@ -15,46 +15,53 @@
       "rate_limit_remaining": "4978"
     },
     {
+      "repository": "cool-japan/kizzasi",
+      "status": 404,
+      "error_type": "HTTP 404",
+      "message": "Not Found",
+      "rate_limit_remaining": "4959"
+    },
+    {
       "repository": "wish-maker/minder",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4899"
+      "rate_limit_remaining": "4901"
     },
     {
       "repository": "arshad1416/HA_Automation_Pi",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4868"
+      "rate_limit_remaining": "4870"
     },
     {
       "repository": "priceisaacuwjh3036/ai-server-rust-llm-api",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4858"
+      "rate_limit_remaining": "4860"
     },
     {
       "repository": "benlmadan9-star/eco-mesh-sdk",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4857"
+      "rate_limit_remaining": "4859"
     },
     {
       "repository": "wisent-ai/brama",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4829"
+      "rate_limit_remaining": "4831"
     },
     {
       "repository": "ramaiahsvn/aim.pat",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4786"
+      "rate_limit_remaining": "4788"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."
