@@ -32,7 +32,7 @@ class TraceInspectorTests(unittest.TestCase):
         self.assertEqual(result["routing_events"], 4)
         self.assertEqual(layer["tokens_observed"], 2)
         self.assertEqual(layer["unique_experts_seen"], 3)
-        self.assertEqual(layer["top_experts"][0], [1, 2])
+        self.assertEqual(tuple(layer["top_experts"][0]), (1, 2))
 
     def test_verbose_cache_log_aggregation(self):
         log = (
