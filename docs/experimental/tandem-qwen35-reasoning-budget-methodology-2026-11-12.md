@@ -319,7 +319,7 @@ Los resultados publicados en estas fuentes deben citarse con su hardware, modelo
 
 ## Sondas MoE NEPENTHES: instrumentación y diagnóstico
 
-La batería integra ahora una segunda sonda por petición: [moe_runtime_probe.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/moe_runtime_probe.py). Se ejecuta junto a `resource_monitor.py`; no modifica ni reinicia el servidor. El intervalo se controla con `--monitor-interval` (para la próxima campaña se recomienda comenzar con 0,5 s y mantenerlo idéntico en todas las comparaciones).
+La batería integra ahora una segunda sonda por petición: [moe_runtime_probe.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/moe_runtime_probe.py). Se ejecuta junto a `resource_monitor.py`; no modifica ni reinicia el servidor. Añade E/S y planificación del proceso, hilos, RSS/HWM, descriptores, PSI y frecuencia CPU. El monitor compartido amplía la consulta NVIDIA para incluir throughput PCIe RX/TX, además de GPU/VRAM/temperatura/potencia. El intervalo se controla con `--monitor-interval` (para la próxima campaña se recomienda comenzar con 0,5 s y mantenerlo idéntico en todas las comparaciones).
 
 ### Señales recogidas automáticamente
 
@@ -328,7 +328,7 @@ La batería integra ahora una segunda sonda por petición: [moe_runtime_probe.py
 | Proceso llama-server | `/proc/PID/io`: bytes/caracteres leídos y escritos, llamadas de E/S; `schedstat`: tiempo ejecutado y esperando; hilos, RSS/HWM y descriptores | Lectura del modelo/expertos, presión de planificación, crecimiento de memoria o exceso de hilos |
 | PSI del kernel | `/proc/pressure/cpu`, `memory`, `io` (`some/full avg10`) | Tiempo durante el que tareas quedan retrasadas por CPU, memoria o E/S; complementa los porcentajes de utilización |
 | CPU | Frecuencia actual agregada de los núcleos disponibles | Caída de frecuencia, límites térmicos/energéticos o variación de plataforma |
-| GPU/VRAM | Utilización, memoria, temperatura, potencia, relojes y throughput PCIe RX/TX de `nvidia-smi` | GPU infrautilizada, presión de VRAM, transferencia host↔device y posibles fases limitadas por PCIe |
+| GPU/VRAM | Utilización, memoria, temperatura, potencia, relojes y throughput PCIe RX/TX de `nvidia-smi` recogidos por `resource_monitor.py` | GPU infrautilizada, presión de VRAM, transferencia host↔device y posibles fases limitadas por PCIe |
 | API y respuesta | tokens, prefill/decode, caché de prompt, tiempos y finalización ya recogidos por el runner | Separar TTFT/prefill de generación y evitar confundir caché de prompt con caché de expertos |
 
 Los datos por petición se guardan en `resources/moe_runtime_samples.jsonl`; el resumen se incorpora a `moe_runtime_metrics` en cada JSON de respuesta y en `summary.jsonl`. La sonda registra también el número de muestras válidas y las limitaciones. PSI es del host y PCIe es del dispositivo completo, no del proceso: no atribuirlos exclusivamente a llama-server. Las lecturas de PCIe dependen de los campos admitidos por el driver; si no están disponibles se conservan como no medidos.
