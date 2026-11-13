@@ -48,6 +48,6 @@ def main():
     if a.server_log:r['cache_log']=read_log(a.server_log)
     r['sources']={'trace':str(a.trace) if a.trace else None,'server_log':str(a.server_log) if a.server_log else None}
     out=json.dumps(r,ensure_ascii=False,indent=2)
-    if a.output:a.output.write_text(out+'\\n',encoding='utf-8')
+    if a.output:a.output.write_text(out+'chr(10)',encoding='utf-8')
     print(out)
 if __name__=='__main__':main()
