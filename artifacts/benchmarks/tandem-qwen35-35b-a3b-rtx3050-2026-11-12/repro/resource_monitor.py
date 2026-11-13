@@ -48,20 +48,28 @@ def find_pid(port, explicit=None):
 def gpu_sample():
     exe=shutil.which("nvidia-smi")
     if not exe: return {"available":False,"error":"nvidia-smi not found"}
-    q="timestamp,index,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw,clocks.gr,pcie.rx_throughput,pcie.tx_throughput"
-    try:
-        r=subprocess.run([exe,f"--query-gpu={q}","--format=csv,noheader,nounits"],capture_output=True,text=True,timeout=2)
-        if r.returncode: return {"available":False,"error":r.stderr.strip()}
-        rows=[]
-        for row in csv.reader(r.stdout.splitlines()):
-            if len(row)>=11:
+    base="timestamp,index,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw,clocks.gr"
+    queries=[(base+",pcie.rx_throughput,pcie.tx_throughput",True),(base,False)]
+    errors=[]
+    for q,has_pcie in queries:
+        try:
+            r=subprocess.run([exe,f"--query-gpu={q}","--format=csv,noheader,nounits"],capture_output=True,text=True,timeout=2)
+            if r.returncode:
+                errors.append(r.stderr.strip()); continue
+            rows=[]
+            for row in csv.reader(r.stdout.splitlines()):
                 vals=[x.strip() for x in row]
+                if len(vals)<9: continue
                 def num(x):
                     try:return float(x)
                     except:return None
-                rows.append({"timestamp":vals[0],"index":vals[1],"gpu_util_pct":num(vals[2]),"memory_util_pct":num(vals[3]),"vram_used_mib":num(vals[4]),"vram_total_mib":num(vals[5]),"temperature_c":num(vals[6]),"power_w":num(vals[7]),"graphics_clock_mhz":num(vals[8]),"pcie_rx_mib_s":num(vals[9]),"pcie_tx_mib_s":num(vals[10])})
-        return {"available":True,"gpus":rows}
-    except Exception as e:return {"available":False,"error":str(e)}
+                item={"timestamp":vals[0],"index":vals[1],"gpu_util_pct":num(vals[2]),"memory_util_pct":num(vals[3]),"vram_used_mib":num(vals[4]),"vram_total_mib":num(vals[5]),"temperature_c":num(vals[6]),"power_w":num(vals[7]),"graphics_clock_mhz":num(vals[8]),"pcie_rx_mib_s":None,"pcie_tx_mib_s":None}
+                if has_pcie and len(vals)>=11:
+                    item["pcie_rx_mib_s"]=num(vals[9]); item["pcie_tx_mib_s"]=num(vals[10])
+                rows.append(item)
+            return {"available":True,"gpus":rows,"pcie_available":has_pcie}
+        except Exception as e: errors.append(str(e))
+    return {"available":False,"error":"; ".join(errors),"query":"nvidia-smi GPU and optional PCIe fields"}
 
 def vmstat_sample():
     try:
