@@ -318,7 +318,7 @@ Cite published results with their hardware, model, quantization, workload, and v
 
 ## NEPENTHES MoE probes: instrumentation and diagnosis
 
-The battery now integrates a second per-request probe: [moe_runtime_probe.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/moe_runtime_probe.py). It runs alongside `resource_monitor.py`; it does not modify or restart the server. Its interval is controlled by `--monitor-interval` (for the next campaign, start at 0.5 s and keep it identical across comparisons).
+The battery now integrates a second per-request probe: [moe_runtime_probe.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/moe_runtime_probe.py). It runs alongside `resource_monitor.py`; it does not modify or restart the server. It adds process I/O/scheduling, threads, RSS/HWM, file descriptors, PSI, and CPU frequency. The shared monitor extends its NVIDIA query with PCIe RX/TX throughput, alongside GPU/VRAM/temperature/power. The interval is controlled by `--monitor-interval` (for the next campaign, start at 0.5 s and keep it identical across comparisons).
 
 ### Automatically collected signals
 
@@ -327,7 +327,7 @@ The battery now integrates a second per-request probe: [moe_runtime_probe.py](..
 | llama-server process | `/proc/PID/io`: bytes/chars read and written, I/O calls; `schedstat`: runtime and wait time; threads, RSS/HWM, and file descriptors | Model/expert reads, scheduler pressure, memory growth, or excessive threads |
 | Kernel PSI | `/proc/pressure/cpu`, `memory`, `io` (`some/full avg10`) | Time tasks are stalled by CPU, memory, or I/O contention; complements utilization percentages |
 | CPU | Current frequency aggregated across available cores | Frequency drops, thermal/power limits, or platform variation |
-| GPU/VRAM | Utilization, memory, temperature, power, clocks, and PCIe RX/TX throughput from `nvidia-smi` | Underused GPU, VRAM pressure, host↔device traffic, and possible PCIe-bound phases |
+| GPU/VRAM | Utilization, memory, temperature, power, clocks, and PCIe RX/TX throughput from `nvidia-smi`, collected by `resource_monitor.py` | Underused GPU, VRAM pressure, host↔device traffic, and possible PCIe-bound phases |
 | API and response | Tokens, prefill/decode, prompt cache, timings, and completion already collected by the runner | Separating TTFT/prefill from generation and prompt-cache effects from expert-cache effects |
 
 Per-request samples are saved to `resources/moe_runtime_samples.jsonl`; summaries are added as `moe_runtime_metrics` in each response JSON and in `summary.jsonl`. The probe records valid sample counts and limitations. PSI is host-wide and PCIe is device-wide, not process-attributed: do not attribute either exclusively to llama-server. PCIe fields depend on driver support; unavailable fields remain unmeasured.
