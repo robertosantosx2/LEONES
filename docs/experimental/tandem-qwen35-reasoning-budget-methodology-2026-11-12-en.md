@@ -314,3 +314,58 @@ When evaluating an MoE engine, record—when exposed by the engine—per-layer/t
 Keep three policies distinct: (1) static hot-expert placement, (2) dynamic live cache with replacement, and (3) hybrid execution of cold experts on CPU/over PCIe. Ostinato adds a specific hypothesis for agent sessions: resident experts can also serve short prefills after tool outputs. Treat this as a hypothesis to validate for each engine+model pair and workload, not as a universal property of MoE.
 
 Cite published results with their hardware, model, quantization, workload, and version. Do not merge them with NEPENTHES measurements or present them as local results. For cross-engine comparisons, keep the model and cache state constant and document any differences in API, template, routing, or offload policy.
+
+
+## NEPENTHES MoE probes: instrumentation and diagnosis
+
+The battery now integrates a second per-request probe: [moe_runtime_probe.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/moe_runtime_probe.py). It runs alongside `resource_monitor.py`; it does not modify or restart the server. Its interval is controlled by `--monitor-interval` (for the next campaign, start at 0.5 s and keep it identical across comparisons).
+
+### Automatically collected signals
+
+| Probe | Metrics | Bottlenecks it helps identify |
+|---|---|---|
+| llama-server process | `/proc/PID/io`: bytes/chars read and written, I/O calls; `schedstat`: runtime and wait time; threads, RSS/HWM, and file descriptors | Model/expert reads, scheduler pressure, memory growth, or excessive threads |
+| Kernel PSI | `/proc/pressure/cpu`, `memory`, `io` (`some/full avg10`) | Time tasks are stalled by CPU, memory, or I/O contention; complements utilization percentages |
+| CPU | Current frequency aggregated across available cores | Frequency drops, thermal/power limits, or platform variation |
+| GPU/VRAM | Utilization, memory, temperature, power, clocks, and PCIe RX/TX throughput from `nvidia-smi` | Underused GPU, VRAM pressure, host↔device traffic, and possible PCIe-bound phases |
+| API and response | Tokens, prefill/decode, prompt cache, timings, and completion already collected by the runner | Separating TTFT/prefill from generation and prompt-cache effects from expert-cache effects |
+
+Per-request samples are saved to `resources/moe_runtime_samples.jsonl`; summaries are added as `moe_runtime_metrics` in each response JSON and in `summary.jsonl`. The probe records valid sample counts and limitations. PSI is host-wide and PCIe is device-wide, not process-attributed: do not attribute either exclusively to llama-server. PCIe fields depend on driver support; unavailable fields remain unmeasured.
+
+### Expert routing and cache: offline probe
+
+[inspect_NEPENTHES_moe_trace.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_moe_trace.py) analyzes two sources without querying or modifying the server:
+
+- **Verbose engine log:** aggregates hits, misses, CPU misses (if reported by the engine), hit rate, and uploaded MiB when matching `llama_moe_cache` lines are present. Example:
+
+  ```bash
+  python3 inspect_NEPENTHES_moe_trace.py \
+    --server-log "$HOME/tandem-nepenthes-qwen35-18085.log" \
+    --output "$HOME/moe-cache-summary.json"
+  ```
+
+- **MCT1 routing trace:** for builds implementing `LLAMA_MOE_CACHE_TRACE`, summarizes routing events and observed tokens per layer, distinct selected experts, coverage, entropy, and most frequently selected experts:
+
+  ```bash
+  python3 inspect_NEPENTHES_moe_trace.py \
+    --trace "$HOME/tandem-moe.trace" \
+    --server-log "$HOME/tandem-nepenthes-qwen35-18085.log" \
+    --output "$HOME/moe-routing-summary.json"
+  ```
+
+**Compatibility verified for the reference Tandem.cpp build:** its llama.cpp submodule commit `f5222f25c18da062ab2b8a2dbbfbf4feae398566` contains aggregated `llama_moe_cache` hit/miss/uploaded-byte statistics, but does not contain `LLAMA_MOE_CACHE_TRACE` or the MCT1 format. Therefore, the first full run can measure aggregate cache behavior if the log retains those lines; it cannot attribute routing or hits per layer. The MCT1 parser is ready for a future compatible build, but must not be enabled or reported as available on the current build. The current upstream [moe-cache-tune.py](https://github.com/ggml-org/llama.cpp/blob/master/scripts/moe-cache-tune.py) documents MCT1 and cache replay; that does not mean Tandem's pinned commit includes it.
+
+### Interpreting signals and locating bottlenecks
+
+- **PCIe / expert-miss bottleneck:** slow generation, sustained PCIe activity, and a cache log with many misses/uploaded MiB. Confirm with a controlled cache/placement variation; global PCIe throughput alone does not establish causality.
+- **CPU/RAM bottleneck:** high process CPU, stable or falling frequency, CPU/memory PSI pressure, and rising RSS/swap. Distinguish actual memory pressure from simple swap occupancy.
+- **GPU/compute bottleneck:** sustained GPU utilization, low PSI wait, and low PCIe throughput during decode; vary batch, offload, and kernels separately.
+- **Storage bottleneck:** process read deltas and elevated I/O PSI, especially on cold load. Do not mix GGUF loading with warm generation.
+- **Routing imbalance:** can only be claimed with per-layer/token routing traces; entropy, coverage, and expert concentration estimate skew, not execution cost.
+- **Prefill versus decode:** keep short and long prompts separate; measure TTFT/prefill and decode tokens/s separately. Prompt cache and expert cache are distinct mechanisms.
+
+Do not infer hit rate from cache size, expert transfers from GPU utilization, or per-layer compute from global utilization. Missing signals must be marked `unavailable`/unmeasured. Telemetry has overhead: cadence, tools, and versions must be fixed and declared in every campaign.
+
+### Validation before the full battery
+
+First run one request with `--limit 1 --monitor-interval 0.5`; verify `moe_runtime_metrics` and `resources/moe_runtime_samples.jsonl` appear, the PID matches the server, and multiple samples were collected. Then inspect the Tandem log with the script above. If no cache lines are present, mark cache probing unavailable; do not restart the server just to force a logging option. Run the full battery only after this validation.
