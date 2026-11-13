@@ -637,3 +637,19 @@ La evolución de ODS como framework adaptativo incorpora **Inference Configurati
 - [ICD / Strata — English](ODS/INFERENCE-CONFIGURATION-DISCOVERY-2026-10-06-eng.md)
 
 Strata aporta evidencia experimental externa sobre MoE heterogéneo; sus cifras publicadas siguen separadas de las mediciones LEONES hasta su reproducción física controlada.
+
+
+### Fuentes primarias revisadas — 13/11/2026
+
+- [Notas de TensorFold 1.2.7](https://github.com/ashhart/TensorFold/releases/tag/v1.2.7)
+- [Historial de releases de TensorFold](https://github.com/ashhart/TensorFold/releases)
+- [README del runtime nativo y matriz de modelos cualificados](https://github.com/ashhart/TensorFold/blob/main/README.md)
+- [Runbook Linux/CUDA de TensorFold](https://github.com/ashhart/TensorFold/blob/main/RUNBOOK.md)
+- [Web oficial de TensorFold](https://tensorfold.dev/)
+- [Guía de CLI y serving de TensorFold](https://tensorfold.dev/guide)
+- [Contrato de modos de proveedor de ODS](https://github.com/Osmantic/ODS/blob/main/ods/docs/ENGINE-PROVIDER-MODES.md)
+- [Contrato de runtime backend de ODS](https://github.com/Osmantic/ODS/blob/main/ods/docs/BACKEND-CONTRACT.md)
+- [Creación de extensiones e instalación gestionada en ODS](https://github.com/Osmantic/ODS/blob/main/ods/docs/EXTENSIONS.md)
+- [Catálogo de extensiones incluidas en ODS](https://github.com/Osmantic/ODS/blob/main/ods/extensions/CATALOG.md)
+- [Changelog ODS 3.0.0 y notas de Model Switchboard en 2.6.0](https://github.com/Osmantic/ODS/blob/main/ods/CHANGELOG.md)
+- [Estado de ODS V3 y límites de cualificación](https://github.com/Osmantic/ODS)
