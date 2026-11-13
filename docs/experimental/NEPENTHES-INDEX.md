@@ -61,3 +61,12 @@ Consulta la [metodología](tandem-qwen35-reasoning-budget-methodology-2026-11-12
 
 **Ubicación:** `docs/experimental/NEPENTHES-INDEX.md`  
 **Rama de referencia:** `benchmarks/tandem-qwen35-reasoning-battery-2026-11-12`
+
+
+## Referencias técnicas MoE
+
+- [TensorFold-MoE — arquitectura y técnicas de inferencia sparse-MoE](../../research/moe/TensorFold-MoE.md).
+- [Investigación MoE de LEONES — routing, cachés y evidencia empírica](../../atlas/MoE-investigacion.md).
+- [Ostinato (arXiv:2611.11533) — ejecución CPU/GPU con expertos residentes en prefill y decode](https://arxiv.org/abs/2611.11533).
+
+Estas fuentes aportan contexto para formular experimentos MoE; sus resultados externos no son benchmarks NEPENTHES ni deben atribuirse al hardware local.
