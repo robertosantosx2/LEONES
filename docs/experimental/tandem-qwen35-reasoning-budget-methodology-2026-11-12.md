@@ -251,3 +251,50 @@ Los datos originales de esta ejecución deben permanecer en su directorio de evi
 ### Interpretación comparativa
 
 Los resultados de Tandem.cpp y cafe-llama.cpp se mantienen como campañas separadas. No calcular una clasificación de rendimiento ni atribuir diferencias al motor hasta disponer de repeticiones independientes y condiciones equiparadas, especialmente caché de prompt, plantilla, extensiones de razonamiento, contexto y parámetros de ejecución.
+
+
+## Estructura reutilizable de Nepenthes: motor + modelo
+
+Nepenthes identifica la **metodología de ensayo**. Cada ejecución queda identificada por el par concreto **motor + modelo**; el motor es el runtime evaluado (por ejemplo, `cafe-llama.cpp` o `Tandem.cpp`) y el modelo es el artefacto exacto (familia, tamaño, cuantización y hash cuando esté disponible).
+
+La documentación se organiza en tres niveles:
+
+1. **Metodología:** este documento define el protocolo común, las variables, los controles, la telemetría y el uso de los scripts.
+2. **Plantilla motor + modelo:** [NEPENTHES-engine-model-report-template.md](NEPENTHES-engine-model-report-template.md). Se copia para cada nueva combinación y obliga a registrar identidad del motor, identidad del modelo, configuración, ejecución, resultados, calidad y limitaciones.
+3. **Informe de ejecución:** un documento concreto por combinación y campaña. Como primer ejemplo, [cafe-llama.cpp + Qwen3.5-35B-A3B · 2026-11-13](nepenthes-cafe-llama.cpp-qwen3.5-35b-a3b-2026-11-13.md).
+
+### Convención de identificación
+
+Usar siempre el formato:
+
+`NEPENTHES_<MOTOR>_<MODELO>_<AAAAMMDD>`
+
+El nombre legible del informe debe expresar ambos componentes, por ejemplo: **cafe-llama.cpp + Qwen3.5-35B-A3B**. No crear un informe llamado únicamente por el modelo o únicamente por el motor.
+
+### Scripts y flujo operativo
+
+- `run_NEPENTHES_*.py`: ejecuta la petición o batería contra un servidor ya iniciado, recoge respuesta y telemetría, y crea un directorio de evidencia nuevo. Nunca inicia, detiene ni reconfigura el motor.
+- `inspect_NEPENTHES_*.py`: lee el directorio de evidencia creado por el runner, presenta métricas y permite mostrar el contenido. No vuelve a consultar el servidor ni modifica los resultados.
+- Los scripts específicos del motor pueden variar en argumentos y tareas. La plantilla y el informe deben documentar siempre el comando exacto empleado, incluyendo PID/endpoint, ruta del modelo, directorio de salida y versión del script.
+- Antes de repetir una prueba, usar un directorio de salida nuevo. No sobrescribir ni editar los JSON originales.
+
+Ejemplo para esta campaña cafe-llama.cpp:
+
+```bash
+python3 run_NEPENTHES_cafe_independent_two_sum.py \
+  --pid "$PID" \
+  --base-url http://127.0.0.1:18086 \
+  --port 18086 \
+  --model "$HOME/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf" \
+  --output "$HOME/cafe-llama.cpp-qwen35-nepenthes-$(date +%Y%m%d-%H%M%S)"
+```
+
+Inspección del resultado:
+
+```bash
+python3 inspect_NEPENTHES_cafe_independent_run.py \
+  "$HOME/cafe-llama.cpp-qwen35-nepenthes-AAAAMMDD-HHMMSS" \
+  --show-content
+```
+
+El informe de cada par debe enlazar el script runner, el inspector y el directorio/archivo de evidencia preservado. No se deben trasladar cifras de una combinación motor/modelo a otra ni presentar campañas independientes como comparación controlada.
