@@ -62,7 +62,7 @@ Primero ejecutar solo una petición con \`--limit 1\`, comprobar que el PID no s
 
 ## MoE runtime probe (added 2026-11-14)
 
-`run_battery.py` now starts [`moe_runtime_probe.py`](moe_runtime_probe.py) for every request and adds the summary to `moe_runtime_metrics`. The probe samples process I/O/scheduler counters, thread count, RSS/HWM, file descriptors, kernel CPU/memory/I/O PSI, CPU frequency, NVIDIA utilization/VRAM/temperature/power/clocks, and PCIe RX/TX throughput when exposed by `nvidia-smi`. Raw samples are written to `resources/moe_runtime_samples.jsonl`.
+`run_battery.py` now starts [`moe_runtime_probe.py`](moe_runtime_probe.py) for every request and adds the summary to `moe_runtime_metrics`. This probe samples process I/O/scheduler counters, thread count, RSS/HWM, file descriptors, kernel CPU/memory/I/O PSI, and CPU frequency. The shared `resource_monitor.py` captures NVIDIA utilization/VRAM/temperature/power/clocks and PCIe RX/TX throughput when exposed by `nvidia-smi`. Raw samples are written to `resources/moe_runtime_samples.jsonl`; the GPU/PCIe time series remains in `resources/resource_samples.jsonl`.
 
 Use `--monitor-interval 0.5` for the next controlled run. PCIe counters are device-wide; PSI is host-wide. Neither is attributable to the server alone. Keep cadence constant across all A/B runs.
 
