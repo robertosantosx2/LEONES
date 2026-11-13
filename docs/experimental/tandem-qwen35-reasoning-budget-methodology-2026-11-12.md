@@ -370,3 +370,17 @@ No deducir hit rate de tamaño de caché, ni transferencias de expertos desde us
 ### Validación previa a la batería completa
 
 Primero ejecutar los tests unitarios `python3 -m unittest -v test_NEPENTHES_moe_probes.py` desde `repro/`. Después ejecutar una sola petición con `--limit 1 --monitor-interval 0.5`; verificar que aparecen `moe_runtime_metrics` y `resources/moe_runtime_samples.jsonl`, que el PID coincide con el servidor y que hay varias muestras. Después inspeccionar el log de Tandem con el script anterior. Si no hay líneas de caché, registrar la sonda de caché como no disponible; no reiniciar el servidor solo para forzar una opción de logging. La batería completa se lanzará únicamente después de esta comprobación.
+
+
+### Instrumentación interna pendiente: siguiente nivel
+
+Las sondas externas no permiten separar el tiempo de routing, el cálculo de expertos calientes/fríos ni la espera de sincronización. Para una futura instrumentación del motor (no incluida en esta integración) NEPENTHES debería solicitar un perfil por capa y fase con:
+
+- routing/preparación y construcción de worklist;
+- llamadas MoE por capa, expertos requeridos, únicos, residentes, hits, misses y fallbacks;
+- tiempo y bytes de lectura desde RAM/SSD y transferencia H2D;
+- tiempo de cómputo de expertos en CPU y GPU;
+- duración de las ramas hot y cold, solapamiento efectivo, espera de join y merge;
+- prefill y decode identificados explícitamente, con token/batch y marca temporal.
+
+Esta descomposición sigue el tipo de perfil publicado en la discusión [Experts first llama.cpp](https://www.reddit.com/r/LocalLLaMA/comments/1tknbzh/experts_first_llamacpp/), que separa routing, hot lane, cold lane, overlap/join y merge. La discusión [MoE cache on 4 GB VRAM](https://github.com/ggml-org/llama.cpp/discussions/32007) y el [análisis de caché de expertos en Reddit](https://www.reddit.com/r/LocalLLaMA/comments/1vfhns3/a_llamacpp_pr_caches_hot_moe_experts_on_the_gpu/) muestran por qué medir misses y bytes transferidos es más informativo que comparar solo capacidad de caché y tok/s. Son informes externos con hardware y builds distintos; sirven para formular hipótesis, no para predecir resultados del MSI.
