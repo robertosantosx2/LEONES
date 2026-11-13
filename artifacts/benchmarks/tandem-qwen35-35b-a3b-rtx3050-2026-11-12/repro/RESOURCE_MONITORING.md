@@ -76,3 +76,6 @@ python3 inspect_NEPENTHES_moe_trace.py --trace "$HOME/path/to/moe.trace" --serve
 ```
 
 The exact Tandem.cpp llama.cpp submodule commit used for the reference build (`f5222f25c18da062ab2b8a2dbbfbf4feae398566`) has aggregate cache hit/miss/upload logging but does not implement `LLAMA_MOE_CACHE_TRACE`/MCT1. Its `log_stats()` is called when the cache is destroyed, so aggregate counters may only be flushed when the server exits normally. Do not stop a running server just to collect them. Routing-per-layer data will be unavailable in the next run unless the engine is separately instrumented or upgraded. The inspector supports MCT1 for compatible future builds; it does not generate a trace itself.
+
+
+**PSI interpretation:** `avg10` is the kernel's rolling 10-second average at each sample, not a request-scoped stall percentage. Short requests can include contention from outside the request window. Use PSI as host-wide context and correlate it with process I/O/scheduler deltas; never attribute it solely to llama-server.
