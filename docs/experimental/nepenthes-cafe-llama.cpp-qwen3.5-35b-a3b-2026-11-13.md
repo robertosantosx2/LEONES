@@ -80,8 +80,8 @@ El campo `reasoning_budget_tokens=128` fue enviado en el cuerpo HTTP. No hay evi
 
 Los scripts Nepenthes están publicados en:
 
-- [Runner: run_NEPENTHES_cafe_independent_two_sum.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_NEPENTHES_cafe_independent_two_sum.py)
-- [Inspector: inspect_NEPENTHES_cafe_independent_run.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_cafe_independent_run.py)
+- [Runner: run_NEPENTHES_independent_two_sum.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_NEPENTHES_independent_two_sum.py)
+- [Inspector: inspect_NEPENTHES_independent_run.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_independent_run.py)
 - [Monitor compartido: resource_monitor.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/resource_monitor.py)
 
 Desde el directorio `repro/`, comprobar primero el endpoint y el PID real:
@@ -94,7 +94,7 @@ pgrep -af 'llama-server.*18086'
 Ejecutar la prueba en un directorio de salida nuevo:
 
 ```bash
-python3 run_NEPENTHES_cafe_independent_two_sum.py \
+python3 run_NEPENTHES_independent_two_sum.py \
   --pid "$PID" \
   --base-url http://127.0.0.1:18086 \
   --port 18086 \
@@ -105,7 +105,7 @@ python3 run_NEPENTHES_cafe_independent_two_sum.py \
 Inspeccionar la ruta exacta generada por el runner:
 
 ```bash
-python3 inspect_NEPENTHES_cafe_independent_run.py \
+python3 inspect_NEPENTHES_independent_run.py \
   "$HOME/cafe-llama.cpp-qwen35-nepenthes-AAAAMMDD-HHMMSS" \
   --show-content
 ```
@@ -175,5 +175,5 @@ Los logs, hashes y el paquete comprimido de evidencia completa siguen pendientes
 
 - [Metodología Nepenthes](tandem-qwen35-reasoning-budget-methodology-2026-11-12.md)
 - [Plantilla reutilizable motor + modelo](NEPENTHES-engine-model-report-template.md)
-- [Runner](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_NEPENTHES_cafe_independent_two_sum.py)
-- [Inspector](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_cafe_independent_run.py)
+- [Runner](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_NEPENTHES_independent_two_sum.py)
+- [Inspector](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_independent_run.py)
