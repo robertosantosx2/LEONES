@@ -590,3 +590,19 @@ The decision unit becomes the **Inference Profile**: hardware + model + quantiza
 
 Published results are classified as EXTERNAL / COMMUNITY / MEASURED / NOT_REPRODUCED_BY_LEONES. Only controlled physical reproduction can become LEONES MEASURED evidence.
 
+
+
+### Primary sources reviewed — 2026-11-13
+
+- [TensorFold 1.2.7 release notes](https://github.com/ashhart/TensorFold/releases/tag/v1.2.7)
+- [TensorFold release history](https://github.com/ashhart/TensorFold/releases)
+- [TensorFold native runtime README and qualified-model matrix](https://github.com/ashhart/TensorFold/blob/main/README.md)
+- [TensorFold Linux/CUDA runbook](https://github.com/ashhart/TensorFold/blob/main/RUNBOOK.md)
+- [TensorFold official site](https://tensorfold.dev/)
+- [TensorFold command-line and serving guide](https://tensorfold.dev/guide)
+- [ODS engine provider modes contract](https://github.com/Osmantic/ODS/blob/main/ods/docs/ENGINE-PROVIDER-MODES.md)
+- [ODS backend runtime contract](https://github.com/Osmantic/ODS/blob/main/ods/docs/BACKEND-CONTRACT.md)
+- [ODS extension authoring and managed installation](https://github.com/Osmantic/ODS/blob/main/ods/docs/EXTENSIONS.md)
+- [ODS bundled extension catalog](https://github.com/Osmantic/ODS/blob/main/ods/extensions/CATALOG.md)
+- [ODS 3.0.0 changelog and 2.6.0 Model Switchboard notes](https://github.com/Osmantic/ODS/blob/main/ods/CHANGELOG.md)
+- [ODS V3 project status and release boundaries](https://github.com/Osmantic/ODS)
