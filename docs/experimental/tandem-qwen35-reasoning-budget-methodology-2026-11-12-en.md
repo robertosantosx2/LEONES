@@ -297,3 +297,20 @@ python3 inspect_NEPENTHES_independent_run.py \
 ~~~
 
 Each pair's report must link to the runner, inspector, and preserved evidence directory/archive. Figures must not be transferred from one engine/model combination to another, and independent campaigns must not be presented as controlled comparisons.
+
+
+## Complementary technical references: hybrid MoE inference
+
+These sources provide technical context for designing and evaluating NEPENTHES campaigns on Mixture-of-Experts models. They are research and architecture references; **they do not replace the measurement protocol or establish that their mechanisms are implemented in the engines under test**.
+
+- [TensorFold-MoE: sparse-MoE inference architecture](../../research/moe/TensorFold-MoE.md) — a synthesis of SSD/RAM/VRAM hierarchies, offloading, concurrent CPU/GPU execution, routing traces, pre-gating, and speculative decoding. It explicitly distinguishes proposed integrations from existing features and external results from measurements on the MSI.
+- [LEONES MoE research](../../atlas/MoE-investigacion.md) — context on routing skew, expert working sets, live cache versus static placement, miss cost, per-layer/token telemetry, and the MEASURED status of engines on the reference hardware.
+- [Ostinato: Fast CPU-GPU MoE Inference for Local Agents via Resident Experts in Every Forward Pass (arXiv:2611.11533)](https://arxiv.org/abs/2611.11533) — a hybrid-execution study that keeps resident experts on GPUs during both prefill and decode, sends cold routes to the CPU, and selects a prefill path according to input length. The paper evaluates agent sessions with DeepSeek-V4-Flash and Qwen3-235B-A22B on a workstation with four RTX 4090D GPUs; its figures must not be extrapolated to the MSI's 4-GiB RTX 3050.
+
+### Using these references in NEPENTHES
+
+When evaluating an MoE engine, record—when exposed by the engine—per-layer/token routing distributions, resident expert sets, cache hits/misses, RAM↔VRAM movement, CPU and GPU work, PCIe transfers, and separate behavior for short prefill, long prefill, and decode. If instrumentation is unavailable, mark those metrics unavailable: do not infer cache hit rate from cache capacity or infer the working set from tok/s.
+
+Keep three policies distinct: (1) static hot-expert placement, (2) dynamic live cache with replacement, and (3) hybrid execution of cold experts on CPU/over PCIe. Ostinato adds a specific hypothesis for agent sessions: resident experts can also serve short prefills after tool outputs. Treat this as a hypothesis to validate for each engine+model pair and workload, not as a universal property of MoE.
+
+Cite published results with their hardware, model, quantization, workload, and version. Do not merge them with NEPENTHES measurements or present them as local results. For cross-engine comparisons, keep the model and cache state constant and document any differences in API, template, routing, or offload policy.
