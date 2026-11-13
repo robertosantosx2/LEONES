@@ -33,8 +33,12 @@ Las métricas no medidas se identifican como tales. Se separan las mediciones de
 |---|---|---|
 | **Tandem.cpp** — batería de razonamiento y presupuesto, 12-11-2026 | [Informe de la batería](tandem-qwen35-reasoning-budget-battery-2026-11-12.md) | [Scripts, monitorización y artefactos](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/) |
 | **cafe-llama.cpp** — ejecución independiente, 13-11-2026 | [Informe de ejecución](nepenthes-cafe-llama.cpp-qwen3.5-35b-a3b-2026-11-13.md) | [Datos primarios completos](../../artifacts/benchmarks/qwen35-35b-a3b-engine-comparison-2026-11-13/cafe-llama.cpp/) |
+| **Tandem.cpp** — batería independiente instrumentada, 13-11-2026 (10 casos; evidencia detallada publicada 6–10) | [Informe de ejecución](nepenthes-tandem.cpp-qwen3.5-35b-a3b-2026-11-13.md) | [Fragmento primario y SHA-256](../../artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/evidence/) |
 
 **Importante sobre la interpretación:** la ejecución de cafe-llama.cpp del 13-11-2026 es una prueba independiente, no una comparación A/B controlada con Tandem.cpp. Sus condiciones y métricas —incluida la caché de prompt— deben leerse en su propio informe; no deben presentarse como una comparación directa de rendimiento.
+
+
+**Alcance de la evidencia Tandem.cpp (13-11-2026):** el runner informa de 10/10 casos completados, pero el fragmento primario publicado conserva solo los registros detallados 6–10. El informe declara los datos ausentes y no certifica la corrección funcional ni estadísticas completas de la batería.
 
 ## Scripts de reproducción e inspección
 
