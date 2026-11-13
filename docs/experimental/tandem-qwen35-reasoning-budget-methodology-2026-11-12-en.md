@@ -383,3 +383,6 @@ External probes cannot separate routing time, hot/cold expert compute, and synch
 - explicit prefill/decode phase, token/batch identity, and timestamps.
 
 This decomposition follows the profiling style published in the [Experts first llama.cpp discussion](https://www.reddit.com/r/LocalLLaMA/comments/1tknbzh/experts_first_llamacpp/), which separates routing, hot lane, cold lane, overlap/join, and merge. The [4-GB-VRAM MoE cache discussion](https://github.com/ggml-org/llama.cpp/discussions/32007) and [Reddit discussion of hot-expert caching](https://www.reddit.com/r/LocalLLaMA/comments/1vfhns3/a_llamacpp_pr_caches_hot_moe_experts_on_the_gpu/) show why misses and transferred bytes are more informative than cache capacity and tok/s alone. These are external reports on different hardware/builds; use them to formulate hypotheses, not to predict MSI results.
+
+
+**PSI time-window interpretation:** `*_avg10` fields are kernel rolling averages over the 10 seconds preceding each sample, not percentages calculated exclusively within the request. For short requests they may include unrelated activity before or after the request; treat them as host-contention context and cross-check against `/proc/PID/io` and `schedstat` deltas and the time series. Do not average `avg10` values and claim that percentage of the request was stalled.
