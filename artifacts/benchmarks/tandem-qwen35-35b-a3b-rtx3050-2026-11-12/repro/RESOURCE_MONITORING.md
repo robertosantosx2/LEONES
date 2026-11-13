@@ -62,9 +62,9 @@ Primero ejecutar solo una petición con \`--limit 1\`, comprobar que el PID no s
 
 ## MoE runtime probe (added 2026-11-14)
 
-`run_battery.py` now starts [`moe_runtime_probe.py`](moe_runtime_probe.py) for every request and adds the summary to `moe_runtime_metrics`. This probe samples process I/O/scheduler counters, thread count, RSS/HWM, file descriptors, kernel CPU/memory/I/O PSI, and CPU frequency. The shared `resource_monitor.py` captures NVIDIA utilization/VRAM/temperature/power/clocks and PCIe RX/TX throughput when exposed by `nvidia-smi`. Raw samples are written to `resources/moe_runtime_samples.jsonl`; the GPU/PCIe time series remains in `resources/resource_samples.jsonl`.
+`run_battery.py` now starts [`moe_runtime_probe.py`](moe_runtime_probe.py) for every request and adds the summary to `moe_runtime_metrics`. This probe samples process I/O/scheduler counters, thread count, RSS/HWM, file descriptors, kernel CPU/memory/I/O PSI, and CPU frequency. The shared `resource_monitor.py` captures NVIDIA utilization/VRAM/temperature/power/clocks and PCIe RX/TX throughput when exposed by `nvidia-smi`. Raw process/PSI/CPU-frequency samples are written to `resources/moe_runtime_samples.jsonl`; the GPU/PCIe time series remains in `resources/resource_samples.jsonl`.
 
-Use `--monitor-interval 0.5` for the next controlled run. PCIe counters are device-wide; PSI is host-wide. Neither is attributable to the server alone. Keep cadence constant across all A/B runs.
+Run the unit tests before the preflight: `python3 -m unittest -v test_NEPENTHES_moe_probes.py`. Use `--monitor-interval 0.5` for the next controlled run. PCIe counters are device-wide; PSI is host-wide. Neither is attributable to the server alone. Keep cadence constant across all A/B runs.
 
 ## MoE cache and routing log inspector
 
@@ -75,4 +75,4 @@ python3 inspect_NEPENTHES_moe_trace.py --server-log "$HOME/path/to/tandem.log" -
 python3 inspect_NEPENTHES_moe_trace.py --trace "$HOME/path/to/moe.trace" --server-log "$HOME/path/to/tandem.log"
 ```
 
-The exact Tandem.cpp llama.cpp submodule commit used for the reference build (`f5222f25c18da062ab2b8a2dbbfbf4feae398566`) has aggregate cache hit/miss/upload logging but does not implement `LLAMA_MOE_CACHE_TRACE`/MCT1. Thus routing-per-layer data will be unavailable in the next run unless the engine is separately instrumented or upgraded. The inspector supports MCT1 for compatible future builds; it does not generate a trace itself.
+The exact Tandem.cpp llama.cpp submodule commit used for the reference build (`f5222f25c18da062ab2b8a2dbbfbf4feae398566`) has aggregate cache hit/miss/upload logging but does not implement `LLAMA_MOE_CACHE_TRACE`/MCT1. Its `log_stats()` is called when the cache is destroyed, so aggregate counters may only be flushed when the server exits normally. Do not stop a running server just to collect them. Routing-per-layer data will be unavailable in the next run unless the engine is separately instrumented or upgraded. The inspector supports MCT1 for compatible future builds; it does not generate a trace itself.
