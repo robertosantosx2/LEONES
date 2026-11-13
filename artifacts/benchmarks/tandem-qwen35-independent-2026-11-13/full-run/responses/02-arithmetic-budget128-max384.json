@@ -1,0 +1,476 @@
+{
+  "index": 2,
+  "task": "arithmetic",
+  "budget": 128,
+  "max_tokens": 384,
+  "started_at": "2026-11-13T23:50:41.014856+01:00",
+  "request": {
+    "model": "/home/ssantos/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf",
+    "messages": [
+      {
+        "role": "user",
+        "content": "¿Cuánto es 17 por 23? Responde brevemente."
+      }
+    ],
+    "temperature": 0,
+    "max_tokens": 384,
+    "reasoning_format": "deepseek",
+    "reasoning_budget_tokens": 128,
+    "chat_template_kwargs": {
+      "enable_thinking": true
+    },
+    "stream": false
+  },
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "length",
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "390 + 51 = 441\n\n3.  **Formulate the Answer:**\n    *   Direct answer: 391.\n    *   Wait, let me re-calculate.\n    *   17 * 23\n    *   10 * 23 = 230\n    *   7 * 23 = 161\n    *   230 + 161 = 391.\n    *   My previous mental check was wrong (17 * 20 = 340, not 390).\n    *   Correct calculation:\n        *   17 * 20 = 340\n        *   17 * 3 = 51\n        *   340 + 51 = 391.\n    *   Alternative method:\n        *   17 * 23 = (20 - 3) * 23 = 460 - 69 = 391.\n    *   Alternative method:\n        *   17 * 23",
+          "reasoning_content": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   Question: \"¿Cuánto es 17 por 23?\" (How much is 17 times 23?)\n    *   Constraint: \"Responde brevemente\" (Answer briefly).\n    *   Language: Spanish.\n\n2.  **Calculate the Math:**\n    *   17 * 23\n    *   Breakdown: 17 * (20 + 3) = 17 * 20 + 17 * 3\n    *  "
+        }
+      }
+    ],
+    "created": 1794610253,
+    "model": "/home/ssantos/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf",
+    "system_fingerprint": "b11962-f5222f25c",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 384,
+      "prompt_tokens": 29,
+      "total_tokens": 413,
+      "prompt_tokens_details": {
+        "cached_tokens": 25
+      }
+    },
+    "id": "chatcmpl-aVar3oecARv4UMqu2bl103g4tTQn4nrE",
+    "timings": {
+      "cache_n": 25,
+      "prompt_n": 4,
+      "prompt_ms": 70.856,
+      "prompt_per_token_ms": 17.714,
+      "prompt_per_second": 56.452523427797225,
+      "predicted_n": 384,
+      "predicted_ms": 11998.102,
+      "predicted_per_token_ms": 31.32663707571802,
+      "predicted_per_second": 31.921715618020247
+    }
+  },
+  "metrics": {
+    "id": "chatcmpl-aVar3oecARv4UMqu2bl103g4tTQn4nrE",
+    "finish_reason": "length",
+    "prompt_tokens": 29,
+    "completion_tokens": 384,
+    "cached_tokens": 25,
+    "prompt_ms": 70.856,
+    "predicted_ms": 11998.102,
+    "prompt_tokens_per_second": 56.452523427797225,
+    "generation_tokens_per_second": 31.921715618020247,
+    "content_chars": 498,
+    "reasoning_chars": 308
+  },
+  "resource_metrics": {
+    "request_id": "case-02",
+    "pid": 10314,
+    "model_storage": {
+      "model_path": "/home/ssantos/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf",
+      "mount": "/dev/nvme0n1p2 / ext4",
+      "error": null
+    },
+    "started_at": "2026-11-13T23:50:41.017807+01:00",
+    "finished_at": "2026-11-13T23:50:53.113770+01:00",
+    "sample_count": 13,
+    "interval_seconds": 1.0,
+    "ram_used_bytes": {
+      "min": 4371582976,
+      "max": 4651839488,
+      "mean": 4458100893.538462
+    },
+    "ram_available_bytes": {
+      "min": 11262214144,
+      "max": 11542470656,
+      "mean": 11455952738.461538
+    },
+    "process_rss_bytes": {
+      "min": 10031853568,
+      "max": 10180489216,
+      "mean": 10106822025.846153
+    },
+    "swap_used_bytes": {
+      "min": 27951104,
+      "max": 30703616,
+      "mean": 29856689.230769232
+    },
+    "cpu_system_pct_avg_over_interval": 56.80660916554089,
+    "process_cpu_pct_avg_over_interval": 888.5223286128822,
+    "gpu_util_pct": {
+      "min": 47.0,
+      "max": 93.0,
+      "mean": 78.61538461538461
+    },
+    "gpu_memory_util_pct": {
+      "min": 21.0,
+      "max": 51.0,
+      "mean": 41.15384615384615
+    },
+    "vram_used_mib": {
+      "min": 1981.0,
+      "max": 2043.0,
+      "mean": 2019.6153846153845
+    },
+    "gpu_temperature_c": {
+      "min": 48.0,
+      "max": 57.0,
+      "mean": 54.61538461538461
+    },
+    "gpu_power_w": {
+      "min": 10.57,
+      "max": 31.96,
+      "mean": 28.54076923076923
+    },
+    "gpu_graphics_clock_mhz": {
+      "min": 1477.0,
+      "max": 1687.0,
+      "mean": 1613.3076923076924
+    },
+    "disk_deltas_all_whole_devices": {
+      "loop17": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop42": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop41": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop37": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop27": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop0": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop10": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "nvme0n1": {
+        "read_bytes_delta": 129257472,
+        "write_bytes_delta": 3477504,
+        "read_ops_delta": 31359,
+        "write_ops_delta": 95,
+        "io_ms_delta": 803
+      },
+      "loop15": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop44": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop3": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop24": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop18": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop19": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop4": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop36": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop14": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop20": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop23": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop34": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop39": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop22": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop1": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop30": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop33": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop12": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop9": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop31": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop35": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop8": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop13": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop6": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop32": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop16": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop5": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop38": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop43": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop45": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop26": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop28": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop25": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop7": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop2": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop21": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop11": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop29": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      },
+      "loop40": {
+        "read_bytes_delta": 0,
+        "write_bytes_delta": 0,
+        "read_ops_delta": 0,
+        "write_ops_delta": 0,
+        "io_ms_delta": 0
+      }
+    },
+    "swap_in_bytes_delta_system_wide": 0,
+    "swap_out_bytes_delta_system_wide": 2678784,
+    "gpu_sample_count": 13,
+    "disk_note": "Disk deltas are system-wide per whole block device; isolate the model SSD before attributing I/O if multiple workloads are active.",
+    "swap_note": "Swap deltas are system-wide; unrelated processes may contribute."
+  },
+  "finished_at": "2026-11-13T23:50:53.114763+01:00"
+}
