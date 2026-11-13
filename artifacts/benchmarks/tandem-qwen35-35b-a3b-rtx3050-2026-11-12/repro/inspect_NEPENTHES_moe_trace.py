@@ -34,7 +34,7 @@ def read_trace(path):
     return {'format':'MCT1','bytes':len(data),'n_layers':n_layer,'experts_selected_per_token':n_used,'groups':groups,'record_count':records,'routing_events':events,'tokens_observed_by_layer':dict(tokens),'per_layer':per,'limitations':['MCT1 records selected expert IDs by layer but no explicit prefill/decode phase or wall-clock timestamps.','Routing distribution is not cache hit rate, transfer latency, or expert compute time.']}
 def read_log(path):
     text=pathlib.Path(path).read_text(errors='replace');r={'cache_log_lines':0,'hits':0,'misses':0,'misses_on_cpu':0,'uploaded_mib':0.0}
-    pattern=r'llama_moe_cache: ubatch .*?: hits = (\\d+), misses = (\\d+)(?: \\((\\d+) on the CPU\\))?, hit rate = [0-9.]+%, uploaded = ([0-9.]+) MiB'
+    pattern=r'llama_moe_cache: ubatch .*?: hits = ([0-9]+), misses = ([0-9]+)(?: \(([0-9]+) on the CPU\))?, hit rate = [0-9.]+%, uploaded = ([0-9.]+) MiB'
     for m in re.finditer(pattern,text):
         r['cache_log_lines']+=1;r['hits']+=int(m.group(1));r['misses']+=int(m.group(2));r['misses_on_cpu']+=int(m.group(3) or 0);r['uploaded_mib']+=float(m.group(4))
     total=r['hits']+r['misses'];r['hit_rate_pct']=100*r['hits']/total if total else None
