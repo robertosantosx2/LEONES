@@ -33,8 +33,12 @@ Unmeasured metrics must be identified as such. Cold-cache and warm-cache measure
 |---|---|---|
 | **Tandem.cpp** — reasoning-budget battery, 2026-11-12 | [Battery report (English)](tandem-qwen35-reasoning-budget-battery-2026-11-12-en.md) · [Informe de la batería (Español)](tandem-qwen35-reasoning-budget-battery-2026-11-12.md) | [Scripts, monitoring, and artifacts](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/) |
 | **cafe-llama.cpp** — independent run, 2026-11-13 | [Execution report (English)](nepenthes-cafe-llama.cpp-qwen3.5-35b-a3b-2026-11-13-en.md) · [Informe de ejecución (Español)](nepenthes-cafe-llama.cpp-qwen3.5-35b-a3b-2026-11-13.md) | [Complete primary data](../../artifacts/benchmarks/qwen35-35b-a3b-engine-comparison-2026-11-13/cafe-llama.cpp/) |
+| **Tandem.cpp** — independent instrumented battery, 2026-11-13 (10 cases; detailed evidence published for 6–10) | [Execution report (English)](nepenthes-tandem.cpp-qwen3.5-35b-a3b-2026-11-13-en.md) · [Informe de ejecución (Español)](nepenthes-tandem.cpp-qwen3.5-35b-a3b-2026-11-13.md) | [Primary excerpt and SHA-256](../../artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/evidence/) |
 
 **Important interpretation note:** the cafe-llama.cpp run from 2026-11-13 is an independent test, not a controlled A/B comparison against Tandem.cpp. Its conditions and metrics—including prompt-cache state—must be read in its own report; they must not be presented as a direct performance comparison.
+
+
+**Tandem.cpp evidence scope (2026-11-13):** the runner reports 10/10 completed cases, but the published primary excerpt preserves detailed records only for cases 6–10. The report identifies the missing data and does not certify functional correctness or complete battery statistics.
 
 ## Reproduction and inspection scripts
 
