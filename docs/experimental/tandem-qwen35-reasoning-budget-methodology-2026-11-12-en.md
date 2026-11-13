@@ -369,3 +369,17 @@ Do not infer hit rate from cache size, expert transfers from GPU utilization, or
 ### Validation before the full battery
 
 First run the unit tests with `python3 -m unittest -v test_NEPENTHES_moe_probes.py` from `repro/`. Then run one request with `--limit 1 --monitor-interval 0.5`; verify `moe_runtime_metrics` and `resources/moe_runtime_samples.jsonl` appear, the PID matches the server, and multiple samples were collected. Then inspect the Tandem log with the script above. If no cache lines are present, mark cache probing unavailable; do not restart the server just to force a logging option. Run the full battery only after this validation.
+
+
+### Pending engine-internal instrumentation: next level
+
+External probes cannot separate routing time, hot/cold expert compute, and synchronization wait. For future engine instrumentation (not included in this integration), NEPENTHES should request a per-layer, per-phase profile containing:
+
+- routing/preparation and worklist construction;
+- MoE calls per layer, requested/unique/resident experts, hits, misses, and fallbacks;
+- read time/bytes from RAM/SSD and H2D transfer time/bytes;
+- CPU and GPU expert-compute time;
+- hot- and cold-lane duration, effective overlap, join wait, and merge;
+- explicit prefill/decode phase, token/batch identity, and timestamps.
+
+This decomposition follows the profiling style published in the [Experts first llama.cpp discussion](https://www.reddit.com/r/LocalLLaMA/comments/1tknbzh/experts_first_llamacpp/), which separates routing, hot lane, cold lane, overlap/join, and merge. The [4-GB-VRAM MoE cache discussion](https://github.com/ggml-org/llama.cpp/discussions/32007) and [Reddit discussion of hot-expert caching](https://www.reddit.com/r/LocalLLaMA/comments/1vfhns3/a_llamacpp_pr_caches_hot_moe_experts_on_the_gpu/) show why misses and transferred bytes are more informative than cache capacity and tok/s alone. These are external reports on different hardware/builds; use them to formulate hypotheses, not to predict MSI results.
