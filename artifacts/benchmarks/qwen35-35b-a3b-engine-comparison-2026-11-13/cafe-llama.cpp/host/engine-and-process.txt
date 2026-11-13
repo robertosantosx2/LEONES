@@ -1,0 +1,14 @@
+=== FECHA ===
+2026-11-13T00:53:45+01:00
+
+=== COMMIT DEL MOTOR ===
+de3516007a2f785094ca9f697e468353919b140b
+de3516007a2f785094ca9f697e468353919b140b
+safetensors : add lfm2 / lfm2_moe direct loading; llama : skip provided weights in foreign mapping ranges
+2026-10-15 13:46:59 -0300
+
+=== ESTADO DEL REPOSITORIO DEL MOTOR ===
+
+=== PROCESO SERVIDOR ===
+    PID ELAPSED %CPU %MEM COMMAND
+  21313    1223 10.2 59.4 ./build-nepenthes/bin/llama-server -m /home/ssantos/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf --host 127.0.0.1 --port 18086 -c 2048 -b 128 -ub 64 -t 8 -tb 8 -ngl 99 --cpu-moe --moe-cache-mib 512 -np 1

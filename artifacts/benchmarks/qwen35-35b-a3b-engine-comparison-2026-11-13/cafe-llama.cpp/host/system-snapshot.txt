@@ -1,0 +1,88 @@
+=== KERNEL ===
+Linux ssantos-msi 7.0.0-43-generic #43-Ubuntu SMP PREEMPT_DYNAMIC Fri Oct 23 13:25:25 UTC 2026 x86_64 GNU/Linux
+
+=== CPU ===
+Arquitectura:                             x86_64
+modo(s) de operación de las CPUs:         32-bit, 64-bit
+Tamaños de las direcciones:               39 bits physical, 48 bits virtual
+Orden de los bytes:                       Little Endian
+CPU(s):                                   16
+Lista de la(s) CPU(s) en línea:           0-15
+ID de fabricante:                         GenuineIntel
+Nombre del modelo:                        12th Gen Intel(R) Core(TM) i7-12650H
+Familia de CPU:                           6
+Modelo:                                   154
+Hilo(s) de procesamiento por núcleo:      2
+Núcleo(s) por «socket»:                   10
+«Socket(s)»:                              1
+Revisión:                                 3
+CPU(s) factor de escala MHz:              21%
+CPU MHz máx.:                             4700,0000
+CPU MHz mín.:                             400,0000
+BogoMIPS:                                 5376,00
+Indicadores:                              fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize arch_lbr ibt flush_l1d arch_capabilities
+Virtualización:                           VT-x
+Caché L1d:                                416 KiB (10 instancias)
+Caché L1i:                                448 KiB (10 instancias)
+Caché L2:                                 9,5 MiB (7 instancias)
+Caché L3:                                 24 MiB (1 instancia)
+Modo(s) NUMA:                             1
+CPU(s) del nodo NUMA 0:                   0-15
+Vulnerabilidad Gather data sampling:      Not affected
+Vulnerabilidad Ghostwrite:                Not affected
+Vulnerabilidad Indirect target selection: Not affected
+Vulnerabilidad Itlb multihit:             Not affected
+Vulnerabilidad L1tf:                      Not affected
+Vulnerabilidad Mds:                       Not affected
+Vulnerabilidad Meltdown:                  Not affected
+Vulnerabilidad Mmio stale data:           Not affected
+Vulnerabilidad Old microcode:             Not affected
+Vulnerabilidad Reg file data sampling:    Mitigation; Clear Register File
+Vulnerabilidad Retbleed:                  Not affected
+Vulnerabilidad Spec rstack overflow:      Not affected
+Vulnerabilidad Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerabilidad Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerabilidad Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S
+Vulnerabilidad Srbds:                     Not affected
+Vulnerabilidad Tsa:                       Not affected
+Vulnerabilidad Tsx async abort:           Not affected
+Vulnerabilidad Vmscape:                   Mitigation; IBPB before exit to userspace
+
+=== MEMORIA ===
+               total       usado       libre  compartido   búf/caché  disponible
+Mem:            14Gi       4,3Gi       653Mi       248Mi        10Gi        10Gi
+Inter:          31Gi       2,3Gi        29Gi
+
+=== SWAP ===
+NAME        TYPE SIZE USED PRIO
+/swap32.img file  32G 2,3G   -1
+
+=== NVIDIA ===
+Fri Nov 13 00:53:45 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3050 ...    Off |   00000000:01:00.0 Off |                  N/A |
+| N/A   41C    P8              3W /   35W |    2001MiB /   4096MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            5678      G   /usr/lib/xorg/Xorg                        4MiB |
+|    0   N/A  N/A           21313      C   ...ld-nepenthes/bin/llama-server       1978MiB |
++-----------------------------------------------------------------------------------------+
+
+=== CUDA TOOLKIT ===
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2026 NVIDIA Corporation
+Built on Tue_Sep_01_08:45:21_PDT_2026
+Cuda compilation tools, release 13.4, V13.4.92
+Build cuda_13.4.r13.4/compiler.38855100_0
