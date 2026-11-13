@@ -72,7 +72,7 @@ class RuntimeProbe:
     def finish(self):
         self.stop_event.set();self.thread.join();self.finished=stamp()
         with (self.outdir/'moe_runtime_samples.jsonl').open('a',encoding='utf-8') as f:
-            for s in self.samples:f.write(json.dumps({'request_id':self.request_id,**s},ensure_ascii=False)+'\\n')
+            for s in self.samples:f.write(json.dumps({'request_id':self.request_id,**s},ensure_ascii=False)+'chr(10)')
         return self.summary()
     def summary(self):
         def vals(path):
