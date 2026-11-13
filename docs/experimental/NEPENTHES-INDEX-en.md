@@ -70,3 +70,12 @@ See the [methodology](tandem-qwen35-reasoning-budget-methodology-2026-11-12-en.m
 - [Ostinato (arXiv:2611.11533) — CPU/GPU execution with resident experts in prefill and decode](https://arxiv.org/abs/2611.11533).
 
 These sources provide context for MoE experiments; external results are not NEPENTHES benchmarks and must not be attributed to local hardware.
+
+
+## MoE probes and telemetry
+
+- [MoE runtime probe](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/moe_runtime_probe.py) — per-request PSI, process I/O/scheduling, CPU frequency, VRAM, GPU, and PCIe telemetry.
+- [MoE routing/cache inspector](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_moe_trace.py) — cache-log summary and MCT1 parser for compatible builds.
+- [Monitoring and usage](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/RESOURCE_MONITORING.md) — evidence format, limitations, and preflight validation.
+
+The integration is explained in the [NEPENTHES methodology](tandem-qwen35-reasoning-budget-methodology-2026-11-12-en.md). The reference Tandem build exposes aggregate cache counters, but not MCT1 per-layer routing.
