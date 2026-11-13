@@ -377,6 +377,124 @@ Skills should be cataloged by origin, version/ref, permissions, file access, net
 
 ## ODS Runtime Research
 
+
+### P0 — strategic integration / active qualification
+
+P0 is introduced here for projects that have crossed the threshold from research interest to a strategically important integration target: the upstream runtime is operationally mature, its API and capability surface align with ODS, and there is a concrete path to controlled qualification. P0 does **not** mean that integration is already implemented, that every model is supported, or that the project is safe to enable by default.
+
+| Project | Profile | Report |
+|---|---|---|
+| TensorFold | multi-backend native inference provider; CUDA/HIP/XPU paths; OpenAI/Anthropic APIs; speculative decoding, prompt-state reuse, concurrency and image-capable serving | [TensorFold](tensorfold/README-eng.mkd) |
+
+### Why TensorFold has been promoted to P0
+
+A fresh review on 2026-11-13 changes the earlier P1 assessment. TensorFold has advanced through the 1.2.x engine line to **1.2.7 (released 2026-11-11)**. This is not just a version-number increase: the release stream demonstrates active work across model families, accelerators, serving semantics, cache behavior, conformance and operational tooling.
+
+The strongest maturity signals are:
+
+- **Multiple accelerator families:** native NVIDIA CUDA, AMD HIP (including documented gfx1151/RDNA paths), and Intel XPU conformance work. The website also advertises AMD HIP/Vulkan, but LEONES should distinguish the advertised backend label from each model/OS combination actually qualified in release documentation.
+- **Native runtime:** a Zig engine that reads supported checkpoints and runs Metal/CUDA kernels directly. The Linux release archive has an explicit runtime/driver floor: glibc 2.28+, NVIDIA R580+ and CUDA 13.0 for the CUDA build.
+- **Serving interoperability:** OpenAI-compatible and Anthropic-compatible APIs, with chat/completions, Responses, WebSocket Responses, tool calls, local Unix-socket serving and API authentication options documented across the project.
+- **Beyond text generation:** model-dependent image input, an image-generation endpoint for engines exposing that capability, OCR/image-chat paths, and selected embeddings/reranking/decision endpoints. These capabilities are family- and backend-specific, not universal features of every checkpoint.
+- **Speculative decoding:** MTP and external drafters such as DFlash2 and DSpine-b16 on explicitly supported family/backend combinations. Drafting remains opt-in where documented; it must not be assumed from a cached drafter or a model name.
+- **Prompt-state reuse:** in-memory and disk-backed prompt retention, conversation resume and cache admission work designed for multi-agent use. Version 1.2.6 reported large follow-up first-token improvements at 8–16 concurrent agents while preserving replies in its named test setups.
+- **Concurrency and scheduling:** parallel request admission, shared rounds, prompt/decode scheduling, cache budgeting and model-specific memory planning are now treated as engine-level behavior.
+- **Conformance and reproducibility:** family-specific conformance profiles, exactness gates, benchmark receipts and a benchmark inspection workflow. The public benchmark board distinguishes receipt versions and warns that community submissions are not independently hardware-verified.
+- **Operator surface:** TensorFold Web provides a local model-selection and chat interface; the project also has a separate desktop workspace and a separate fleet/enterprise project, TensorFold Starlight. These are related products, not all one interchangeable runtime package.
+
+### Release 1.2.7: concrete evidence, not a generic compatibility claim
+
+The 1.2.7 release (11 November 2026) adds, among other changes:
+
+- WebSocket transport for the Responses API;
+- LightOnOCR-3 0.8B and 4B image-chat serving on CUDA from publisher BF16 weights;
+- an XPU conformance profile for Qwen3.8-27B on Intel Arc Pro B70;
+- prompt-cache visibility in the dashboard and `/stats`;
+- long-conversation resume improvements, including a reported M3 Ultra case where a 34K history resumes at the end of the previous turn and first-token latency falls from about 85 seconds to about 0.3 seconds;
+- CUDA, HIP and Metal performance/memory changes, with output-equivalence claims stated per measurement rather than generalized.
+
+The preceding 1.2.6 release adds CUDA DSpine-b16 drafting for Qwen3.8-27B (opt-in), a local owner-only Unix socket, `POST /v1/images/generations` for engines with image capability, and a substantial prompt-cache/concurrent-agent improvement. Its named GB10 and Apple Silicon measurements are release-specific, not a universal speed multiplier.
+
+Headline figures must always retain their model, backend, hardware, release, context, concurrency and decoding conditions. For example, the 1.2.7 release reports specific Metal, CUDA and HIP results; these are not directly comparable to one another and are not LEONES benchmarks.
+
+### What this means for ODS
+
+ODS has now developed a practical integration seam that did not exist in the earlier assessment:
+
+1. The ODS provider-mode contract explicitly permits an owner-run external OpenAI-compatible server in local mode, with external URL, model ID and provider identity represented in configuration.
+2. The contract requires an adapter boundary for URL normalization, authentication, health/version/model discovery, chat and optional capability probes, error classification and recovery hints.
+3. ODS 2.6.0 release notes describe stable Model Switchboard routing for local applications, context propagation, model identity validation and rollback-aware runtime swaps.
+4. ODS V3 provides an extension-recipe workflow and a broader operator surface, but a recipe or catalog entry is not proof that a provider has been qualified.
+
+This makes a staged integration realistic:
+
+**Stage A — external provider qualification.** Run TensorFold as an owner-managed service and connect it through ODS's existing external OpenAI-compatible provider mode. Keep the existing ODS runtime and installation untouched. Validate endpoint, auth, model identity, chat, streaming/tool calls and the selected profile's required optional capabilities.
+
+**Stage B — first-class provider adapter.** If Stage A passes, add a small TensorFold-specific adapter/profile rather than scattering TensorFold conditionals across installer, dashboard and Compose code. The adapter should query the installed engine's `capabilities --json`, pin or validate its version, expose only capabilities proven for the selected model/backend, and provide bounded health/model/completion probes.
+
+**Stage C — optional managed service/extension.** Only after lifecycle and security tests should ODS offer an opt-in managed service. Pin release archive/checksum or image digest, model revision, runtime flags and resource plan. Do not make TensorFold a default dependency and do not silently download checkpoints.
+
+### ODS capability mapping
+
+| ODS contract area | TensorFold fit | Qualification still required |
+|---|---|---|
+| Local external provider | Strong: OpenAI-compatible API and configurable model ID | Host/container URL reachability, auth, lifecycle ownership |
+| Model Switchboard | Strong architectural fit for a stable ODS model alias | Swap, identity, context propagation, rollback and consumer tests |
+| Chat/completions/streaming | Documented | ODS client compatibility, cancellation, errors and long streams |
+| Tool/function calls | Documented on supported paths | Exact tool schema/streaming conformance for each chosen model |
+| Vision/OCR | Available for selected family/backend combinations | Per-checkpoint image tower, processor, VRAM and endpoint tests |
+| Image generation | Endpoint exists when the engine exposes image capability | ODS product contract and supported model/backend matrix |
+| Embeddings/rerank | Selected endpoints/families exist | Provider contract and ODS RAG consumer compatibility |
+| Metrics/stats | Engine dashboard, `/stats`, `/v1/load` and memory endpoints vary by release | ODS telemetry adapter and explicit unsupported states |
+| Install/update/rollback | Native archive and checksum workflow documented | ODS-managed lifecycle, pinning, rollback and security review |
+
+### Hardware qualification: RTX 3050 4 GB remains an open gate
+
+TensorFold's current CUDA release has fatbins for sm_80, sm_86, sm_120 and sm_121. The runbook records selected model checks on an RTX 3090 (sm_86), and the project explicitly warns that one sm_86 result does not qualify every GPU of that compute-capability class.
+
+This is meaningful progress for the architecture family, but **it does not qualify the MSI RTX 3050 Laptop GPU with 4 GB VRAM**. The published small Qwen3.5-2B quick-start path is checked on Mac/GB10, not specifically on a 4 GB RTX 3050. Large published CUDA workloads use GB10, RTX 3090 or RTX PRO 6000-class hardware and must not be projected onto the laptop.
+
+For LEONES, record the following as separate facts:
+
+- CUDA backend and sm_86 kernel images: documented;
+- selected sm_86 model execution: documented on RTX 3090;
+- RTX 3050 4 GB full-checkpoint admission: not established;
+- RTX 3050 throughput, peak VRAM and sustained stability: not measured;
+- ODS + TensorFold end-to-end integration on the MSI: not measured.
+
+The next hardware experiment should begin with `capabilities --json`, `info` memory-floor inspection and the smallest explicitly supported CUDA checkpoint. Only then should a controlled pull/serve test be proposed. A 4-bit file smaller than 4 GB is not enough: CUDA context, weights, temporary buffers, KV/prompt cache, drafter and other allocations all count.
+
+### P0 execution plan and acceptance gates
+
+P0 means that TensorFold deserves an active, bounded integration track. It does not authorize installation or replacement of the current ODS runtime.
+
+1. **Freeze upstream evidence:** record TensorFold 1.2.7 release/tag/commit, archive checksum, RUNBOOK, model qualification table and exact checkpoint revisions.
+2. **Capability discovery:** capture `tensorfold capabilities --json`, version, backend, family, format and model memory floor.
+3. **Hardware admission:** collect GPU compute capability, VRAM, driver, CUDA runtime, RAM, free disk, container access and context/cache budget.
+4. **External-provider smoke test:** use ODS external-provider mode without changing the managed ODS engine; verify health, model list, one completion, streaming, auth and tool calls.
+5. **Consumer conformance:** test LiteLLM/Model Switchboard and each enabled ODS consumer; verify identity, context, cancellation, error propagation and rollback.
+6. **Optional capabilities:** test vision/OCR, embeddings, rerank and image generation only when the selected model/backend advertises them.
+7. **Benchmark:** capture TTFT, prompt tok/s, decode tok/s, concurrency, prompt-resume latency, peak VRAM/RAM, load time and stability; compare only against the same checkpoint/settings on the same hardware.
+8. **Security/lifecycle:** verify loopback binding, API key handling, owner-only Unix socket where used, pinned artifacts, update/rollback and no implicit model download.
+9. **Promotion review:** retain P0 only while active qualification is underway; once a tested provider adapter lands, classify by integration status and ongoing strategic value rather than upstream excitement.
+
+### Evidence and scope rules
+
+Use four distinct labels:
+
+- **UPSTREAM-REPORTED** — a release note, recipe or benchmark published by TensorFold;
+- **SOURCE-OBSERVED** — capability/flag/implementation visible in a pinned source or release archive;
+- **LEONES-MEASURED** — independently reproduced on named LEONES hardware;
+- **ODS-QUALIFIED** — the provider passes ODS adapter, consumer, lifecycle and rollback gates.
+
+Do not collapse these categories. A TensorFold benchmark is not automatically a LEONES measurement; a successful standalone TensorFold server is not automatically an ODS-qualified provider; and an ODS extension recipe is not a complete provider integration.
+
+### Decision
+
+**Promote TensorFold from P1 to P0 — strategic integration / active qualification.** The promotion is justified by its current multi-accelerator native engine, expanding model-family coverage, mature OpenAI/Anthropic serving surface, prompt-state and concurrency engineering, conformance tooling, benchmark receipts and a direct fit with ODS's external-provider/Model Switchboard architecture.
+
+The immediate integration target is **not** “replace llama-server” and not “enable TensorFold by default”. It is a separately owned TensorFold process connected through ODS's external-provider contract, with a future first-class adapter conditional on conformance. RTX 3050 4 GB qualification remains a separate unresolved hardware gate.
+
 ### P1 — high priority
 
 | Project | Profile | Report |
@@ -393,7 +511,6 @@ Skills should be cataloged by origin, version/ref, permissions, file access, net
 | LocalAI | multi-backend architecture | [LocalAI](localai/README-eng.mkd) |
 | llama-cpp-studio | multi-runtime control plane | [llama-cpp-studio](llama-cpp-studio/README-eng.mkd) |
 | WARP | MoE NVMe paging | [WARP](WARP/README-eng.mkd) |
-| TensorFold | specialized MLX/CUDA runtime + speculative decoding + same-engine exactness verification | [TensorFold](tensorfold/README-eng.mkd) |
 
 ### P2 — candidates / research
 
@@ -452,7 +569,6 @@ PREFLIGHT → CONSENT → CONTROLLED INSTALLATION
 | Companion Hub | local application control/orchestration reference | [Companion Hub](companion-hub/README-eng.mkd) |
 | Kimi K3 in C | specialized runtime with model streaming and expert caching | [Kimi K3 in C](kimi-k3-in-c/README-eng.mkd) |
 | LaptopLLM | layer-streaming and laptop UX reference | [LaptopLLM](laptopllm/README-eng.mkd) |
-| TensorFold | specialized CUDA/MLX runtime with speculative decoding | [TensorFold](tensorfold/README-eng.mkd) |
 
 
 ## Hybrid AI cost awareness
