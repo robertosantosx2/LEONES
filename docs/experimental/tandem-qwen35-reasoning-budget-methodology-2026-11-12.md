@@ -37,7 +37,7 @@ Todos están en el directorio repro de este archivo de experimento:
 - [run_battery.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_battery.py): cliente común. Guarda el JSON completo de cada petición/respuesta, summary.jsonl, run_manifest.json y captura /health y /props.
 - [repeat_same_engine_new_model.sh](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/repeat_same_engine_new_model.sh): cambia el modelo manteniendo el endpoint/motor.
 - [repeat_same_model_new_engine.sh](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/repeat_same_model_new_engine.sh): cambia el motor manteniendo el GGUF.
-- [collect_evidence.sh](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/collect_evidence.sh): copia logs y metadatos existentes y captura sistema, GPU, CUDA, proceso y commits. Genera tar.gz y SHA256SUMS.
+- [collect_evidence.sh](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/collect_evidence.sh): copia logs y metadatos existentes y captura sistema, GPU, CUDA, proceso y commits. Genera tar.gz y SHA256SUMS.\n- [moe_runtime_probe.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/moe_runtime_probe.py): añade telemetría por petición de E/S, planificación, PSI y frecuencia CPU.\n- [inspect_NEPENTHES_moe_trace.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_moe_trace.py): inspecciona logs de caché y routing traces MCT1 compatibles.\n- [test_NEPENTHES_moe_probes.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/test_NEPENTHES_moe_probes.py): pruebas unitarias de las sondas.
 
 ## Requisitos
 
