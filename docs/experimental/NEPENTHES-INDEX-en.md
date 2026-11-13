@@ -31,8 +31,8 @@ Unmeasured metrics must be identified as such. Cold-cache and warm-cache measure
 
 | Engine / campaign | Report | Evidence |
 |---|---|---|
-| **Tandem.cpp** — reasoning-budget battery, 2026-11-12 | [Battery report](tandem-qwen35-reasoning-budget-battery-2026-11-12.md) | [Scripts, monitoring, and artifacts](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/) |
-| **cafe-llama.cpp** — independent run, 2026-11-13 | [Execution report](nepenthes-cafe-llama.cpp-qwen3.5-35b-a3b-2026-11-13.md) | [Complete primary data](../../artifacts/benchmarks/qwen35-35b-a3b-engine-comparison-2026-11-13/cafe-llama.cpp/) |
+| **Tandem.cpp** — reasoning-budget battery, 2026-11-12 | [Battery report (English)](tandem-qwen35-reasoning-budget-battery-2026-11-12-en.md) · [Informe de la batería (Español)](tandem-qwen35-reasoning-budget-battery-2026-11-12.md) | [Scripts, monitoring, and artifacts](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/) |
+| **cafe-llama.cpp** — independent run, 2026-11-13 | [Execution report (English)](nepenthes-cafe-llama.cpp-qwen3.5-35b-a3b-2026-11-13-en.md) · [Informe de ejecución (Español)](nepenthes-cafe-llama.cpp-qwen3.5-35b-a3b-2026-11-13.md) | [Complete primary data](../../artifacts/benchmarks/qwen35-35b-a3b-engine-comparison-2026-11-13/cafe-llama.cpp/) |
 
 **Important interpretation note:** the cafe-llama.cpp run from 2026-11-13 is an independent test, not a controlled A/B comparison against Tandem.cpp. Its conditions and metrics—including prompt-cache state—must be read in its own report; they must not be presented as a direct performance comparison.
 
