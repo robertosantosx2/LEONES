@@ -48,18 +48,18 @@ def find_pid(port, explicit=None):
 def gpu_sample():
     exe=shutil.which("nvidia-smi")
     if not exe: return {"available":False,"error":"nvidia-smi not found"}
-    q="timestamp,index,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw,clocks.gr"
+    q="timestamp,index,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw,clocks.gr,pcie.rx_throughput,pcie.tx_throughput"
     try:
         r=subprocess.run([exe,f"--query-gpu={q}","--format=csv,noheader,nounits"],capture_output=True,text=True,timeout=2)
         if r.returncode: return {"available":False,"error":r.stderr.strip()}
         rows=[]
         for row in csv.reader(r.stdout.splitlines()):
-            if len(row)>=9:
+            if len(row)>=11:
                 vals=[x.strip() for x in row]
                 def num(x):
                     try:return float(x)
                     except:return None
-                rows.append({"timestamp":vals[0],"index":vals[1],"gpu_util_pct":num(vals[2]),"memory_util_pct":num(vals[3]),"vram_used_mib":num(vals[4]),"vram_total_mib":num(vals[5]),"temperature_c":num(vals[6]),"power_w":num(vals[7]),"graphics_clock_mhz":num(vals[8])})
+                rows.append({"timestamp":vals[0],"index":vals[1],"gpu_util_pct":num(vals[2]),"memory_util_pct":num(vals[3]),"vram_used_mib":num(vals[4]),"vram_total_mib":num(vals[5]),"temperature_c":num(vals[6]),"power_w":num(vals[7]),"graphics_clock_mhz":num(vals[8]),"pcie_rx_mib_s":num(vals[9]),"pcie_tx_mib_s":num(vals[10])})
         return {"available":True,"gpus":rows}
     except Exception as e:return {"available":False,"error":str(e)}
 
@@ -159,5 +159,5 @@ class RequestSampler:
         return {"request_id":self.request_id,"pid":self.pid,"model_storage":self.model_mount,"started_at":self.started,"finished_at":self.finished,"sample_count":len(self.samples),"interval_seconds":self.interval,
           "ram_used_bytes":stats(["ram","ram_used_bytes"]),"ram_available_bytes":stats(["ram","MemAvailable_bytes"]),"process_rss_bytes":stats(["process","rss_bytes"]),
           "swap_used_bytes":stats(["ram","swap_used_bytes"]),"cpu_system_pct_avg_over_interval":cpu_pct,"process_cpu_pct_avg_over_interval":proc_pct,
-          "gpu_util_pct":gstat("gpu_util_pct"),"gpu_memory_util_pct":gstat("memory_util_pct"),"vram_used_mib":gstat("vram_used_mib"),"gpu_temperature_c":gstat("temperature_c"),"gpu_power_w":gstat("power_w"),"gpu_graphics_clock_mhz":gstat("graphics_clock_mhz"),
+          "gpu_util_pct":gstat("gpu_util_pct"),"gpu_memory_util_pct":gstat("memory_util_pct"),"vram_used_mib":gstat("vram_used_mib"),"gpu_temperature_c":gstat("temperature_c"),"gpu_power_w":gstat("power_w"),"gpu_graphics_clock_mhz":gstat("graphics_clock_mhz"),"pcie_rx_mib_s":gstat("pcie_rx_mib_s"),"pcie_tx_mib_s":gstat("pcie_tx_mib_s"),
           "disk_deltas_all_whole_devices":disk,"swap_in_bytes_delta_system_wide":swapin_delta,"swap_out_bytes_delta_system_wide":swapout_delta,"gpu_sample_count":len(gpu),"disk_note":"Disk deltas are system-wide per whole block device; isolate the model SSD before attributing I/O if multiple workloads are active.","swap_note":"Swap deltas are system-wide; unrelated processes may contribute."}
