@@ -123,8 +123,8 @@ Se añadió una ejecución exploratoria del mismo GGUF Qwen3.5-35B-A3B-IQ2_XXS m
 
 Los dos scripts están en el directorio `repro/`:
 
-- [`run_NEPENTHES_cafe_independent_two_sum.py`](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_NEPENTHES_cafe_independent_two_sum.py): lanza una petición de prueba y registra la respuesta junto con la telemetría del host. **No arranca, detiene ni reconfigura el servidor**.
-- [`inspect_NEPENTHES_cafe_independent_run.py`](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_cafe_independent_run.py): lee los ficheros guardados por el runner. No necesita que el servidor siga activo y no vuelve a ejecutar el modelo.
+- [`run_NEPENTHES_independent_two_sum.py`](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_NEPENTHES_independent_two_sum.py): lanza una petición de prueba y registra la respuesta junto con la telemetría del host. **No arranca, detiene ni reconfigura el servidor**.
+- [`inspect_NEPENTHES_independent_run.py`](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_independent_run.py): lee los ficheros guardados por el runner. No necesita que el servidor siga activo y no vuelve a ejecutar el modelo.
 
 #### 1. Preparar el entorno
 
@@ -186,7 +186,7 @@ Desde el directorio `repro/`, ejecuta:
 ~~~bash
 cd artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro
 
-python3 run_NEPENTHES_cafe_independent_two_sum.py \
+python3 run_NEPENTHES_independent_two_sum.py \
   --pid "$PID" \
   --base-url http://127.0.0.1:18086 \
   --port 18086 \
@@ -211,14 +211,14 @@ La tarea enviada es una implementación de `two_sum` en Python con complejidad O
 Copia la ruta exacta que imprimió el runner y pásala al inspector:
 
 ~~~bash
-python3 inspect_NEPENTHES_cafe_independent_run.py \
+python3 inspect_NEPENTHES_independent_run.py \
   "$HOME/cafe-llama.cpp-qwen35-nepenthes-AAAAMMDD-HHMMSS"
 ~~~
 
 Para mostrar también el texto final generado y el razonamiento que la API exponga por separado:
 
 ~~~bash
-python3 inspect_NEPENTHES_cafe_independent_run.py \
+python3 inspect_NEPENTHES_independent_run.py \
   "$HOME/cafe-llama.cpp-qwen35-nepenthes-AAAAMMDD-HHMMSS" \
   --show-content
 ~~~
@@ -281,7 +281,7 @@ El nombre legible del informe debe expresar ambos componentes, por ejemplo: **ca
 Ejemplo para esta campaña cafe-llama.cpp:
 
 ```bash
-python3 run_NEPENTHES_cafe_independent_two_sum.py \
+python3 run_NEPENTHES_independent_two_sum.py \
   --pid "$PID" \
   --base-url http://127.0.0.1:18086 \
   --port 18086 \
@@ -292,7 +292,7 @@ python3 run_NEPENTHES_cafe_independent_two_sum.py \
 Inspección del resultado:
 
 ```bash
-python3 inspect_NEPENTHES_cafe_independent_run.py \
+python3 inspect_NEPENTHES_independent_run.py \
   "$HOME/cafe-llama.cpp-qwen35-nepenthes-AAAAMMDD-HHMMSS" \
   --show-content
 ```
