@@ -10,6 +10,7 @@ import urllib.error
 import urllib.request
 from urllib.parse import urlparse
 from resource_monitor import RequestSampler
+from moe_runtime_probe import RuntimeProbe
 
 ARITHMETIC = "¿Cuánto es 17 por 23? Responde brevemente."
 TWO_SUM = ("Escribe una función Python two_sum(nums, target) que devuelva los índices de dos "
@@ -99,7 +100,7 @@ def main():
         "resource_monitor": {
             "interval_seconds": args.monitor_interval,
             "server_pid_argument": args.server_pid,
-            "metrics": "Linux /proc, /proc/diskstats and nvidia-smi; disk and swap counters are system-wide",
+            "metrics": "resource_monitor.py plus moe_runtime_probe.py: Linux /proc, PSI, process I/O/scheduler, CPU frequency, NVIDIA utilization/VRAM/PCIe throughput; PSI and PCIe counters are host/device-wide",
         },
     }
     for endpoint in ("/health", "/props"):
@@ -138,6 +139,8 @@ def main():
                 args.model_path,
             )
             sampler.start()
+            runtime_probe = RuntimeProbe(out / "resources", f"case-{index:02d}", sampler.pid, args.monitor_interval)
+            runtime_probe.start()
             try:
                 result = post_json(base + "/v1/chat/completions", payload, args.timeout)
                 record["response"] = result
@@ -167,6 +170,10 @@ def main():
                     record["resource_metrics"] = sampler.finish()
                 except Exception as error:
                     record["resource_monitor_error"] = str(error)
+                try:
+                    record["moe_runtime_metrics"] = runtime_probe.finish()
+                except Exception as error:
+                    record["moe_runtime_probe_error"] = str(error)
 
             record["finished_at"] = dt.datetime.now().astimezone().isoformat()
             filename = f"{index:02d}-{task}-budget{budget}-max{maximum}.json"
@@ -179,7 +186,9 @@ def main():
                 "budget": budget,
                 "max_tokens": maximum,
                 "resource_metrics": record.get("resource_metrics"),
+                "moe_runtime_metrics": record.get("moe_runtime_metrics"),
                 "resource_monitor_error": record.get("resource_monitor_error"),
+                "moe_runtime_probe_error": record.get("moe_runtime_probe_error"),
             })
             summary.write(json.dumps(row, ensure_ascii=False) + "\n")
             summary.flush()
