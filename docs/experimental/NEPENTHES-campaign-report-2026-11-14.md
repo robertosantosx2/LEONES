@@ -253,11 +253,12 @@ La primera versión ejecutable del recolector común está publicada en **repro/
 - GPU/VRAM, memoria de procesos CUDA cuando nvidia-smi --query-compute-apps la expone y PCIe RX/TX con semántica device-wide.
 - Eventos normalizados y registros request/response correlacionados por run_id, request_id y reloj monotónico.
 - Importador offline [import_NEPENTHES_nsys_sqlite.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/import_NEPENTHES_nsys_sqlite.py): integra Runtime API, kernels, memcpy y sincronización desde SQLite en eventos JSONL, conserva IDs de correlación y mapea procesos/hilos. Los tiempos Nsight permanecen en un dominio separado; no se inventa alineación con monotonic_ns.
+- Interfaz de eventos C++17 [nepenthes_trace.hpp](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/nepenthes_trace.hpp), con smoke test compilado/ejecutado en CI. Proporciona eventos de routing, cache, KV, alloc/free, transfer, kernel, sync, stall, OOM y fallback mediante callback sin asignación dinámica en la emisión.
 - collection_report.json, recuentos de cobertura separados entre eventos del runner y eventos de adaptador, y SHA256SUMS.
 
 ### Validación CI
 
-Los workflows **NEPENTHES probe tests**, **V1 regression** y **runtime-v11-regression** finalizaron correctamente para el commit de implementación **92a5220b4e8476c9a17e508a5eb3634ad567d943**. La suite NEPENTHES incluye tests del recolector universal, importador Nsight, inspector Nsight, sondas MoE y archivo histórico, además de compileall. El resultado confirma pruebas sintéticas/offline y regresiones CI; no una prueba física en el MSI.
+El workflow **NEPENTHES probe tests** finalizó correctamente para el commit **745886b3342e32a83f882b07f01be107b5884c9d**: compileall, compilación/ejecución del smoke test C++17 y 23 tests Python del recolector universal, importador Nsight, inspector Nsight, sondas MoE y archivo histórico. Los workflows **V1 regression** y **runtime-v11-regression** también habían finalizado correctamente en el commit anterior **92a5220b4e8476c9a17e508a5eb3634ad567d943**; se están repitiendo para el head que incorpora el hook C++. Estos resultados confirman pruebas sintéticas/offline y regresiones CI, no una prueba física en el MSI.
 
 ### Lo que todavía no se debe afirmar
 
