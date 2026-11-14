@@ -46,7 +46,7 @@ int main() {
     assert(capture.last_kind.load() == static_cast<std::uint16_t>(nepenthes::EventKind::routing));
 
     nepenthes::Event wait{};
-    wait.kind = nepenthes::EventKind::host_wait_end;
+    wait.kind = nepenthes::EventKind::stall;
     wait.request_id = 42;
     wait.layer = 7;
     {
