@@ -26,6 +26,7 @@ Las métricas no medidas se identifican como tales. Se separan las mediciones de
 | [Plantilla de informe motor + modelo](NEPENTHES-engine-model-report-template.md) | Esquema reutilizable para registrar cada combinación de motor y modelo. |
 | [Hoja de ruta de rendimiento y capacidad](NEPENTHES-performance-capacity-roadmap.md) | Plan de trabajo FAST PATH y CAPACITY PATH, fases, métricas y gates de validación. |
 | [Diseño de memoria jerárquica](NEPENTHES-memory-tiering-design.md) | Propuesta técnica para VRAM, RAM, almacenamiento, caché, prefetch, backpressure y fallback. |
+| [Informe de campaña NEPENTHES (14-11-2026)](NEPENTHES-campaign-report-2026-11-14.md) | Hallazgos de la batería y Nsight, hipótesis no demostradas y campaña priorizada de sondas, velocidad y capacidad. |
 | [Issue de desarrollo #148](https://github.com/robertosantosx2/LEONES/issues/148) | Seguimiento del desarrollo completo. |
 
 ## Informes y campañas actuales
