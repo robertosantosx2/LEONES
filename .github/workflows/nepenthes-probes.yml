@@ -30,4 +30,4 @@ jobs:
         run: |
           python -m unittest -v \
             test_NEPENTHES_moe_probes.py \
-            test_NEPENTHES_nsys_sqlite.py
+            test_NEPENTHES_nsys_sqlite.py \\\n            test_archive_NEPENTHES_evidence.py
