@@ -54,7 +54,7 @@ int main() {
     }
     assert(capture.count.load() == 2);
     assert(capture.last_duration.load() <= nepenthes::monotonic_now_ns());
-    assert(capture.last_kind.load() == static_cast<std::uint16_t>(nepenthes::EventKind::host_wait_end));
+    assert(capture.last_kind.load() == static_cast<std::uint16_t>(nepenthes::EventKind::stall));
 
     nepenthes::Trace::disable();
     assert(!nepenthes::Trace::enabled());
