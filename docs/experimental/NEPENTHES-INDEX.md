@@ -26,6 +26,7 @@ Las métricas no medidas se identifican como tales. Se separan las mediciones de
 | [Plantilla de informe motor + modelo](NEPENTHES-engine-model-report-template.md) | Esquema reutilizable para registrar cada combinación de motor y modelo. |
 | [Hoja de ruta de rendimiento y capacidad](NEPENTHES-performance-capacity-roadmap.md) | Plan de trabajo FAST PATH y CAPACITY PATH, fases, métricas y gates de validación. |
 | [Roadmap NEPENTHES](Roadmap-NEPENTHES.md) | Cronología operativa de 28 hitos, estado real, sondas pendientes, gates de aceptación y registro vivo de fases superadas. |
+| [Integración de sondas Tandem.cpp](https://github.com/robertosantosx2/tandem.cpp/blob/nepenthes/universal-observability-20261114/nepenthes/README.md) | Sink JSONL activo, applier determinista y cobertura de sondas KV/CUDA/MoE/workers; límites de correlación y validación. |
 | [Diseño de memoria jerárquica](NEPENTHES-memory-tiering-design.md) | Propuesta técnica para VRAM, RAM, almacenamiento, caché, prefetch, backpressure y fallback. |
 | [Informe de campaña NEPENTHES (14-11-2026)](NEPENTHES-campaign-report-2026-11-14.md) | Hallazgos de la batería y Nsight, hipótesis no demostradas y campaña priorizada de sondas, velocidad y capacidad. |
 | [Issue de desarrollo #148](https://github.com/robertosantosx2/LEONES/issues/148) | Seguimiento del desarrollo completo. |
@@ -58,6 +59,7 @@ Los scripts publicados para la campaña actual se encuentran en:
 - [Recolector universal](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/nepenthes_universal_collector.py) y [contrato de sondas](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/UNIVERSAL_COLLECTOR.md) — telemetría host/GPU, por hilo, cgroup v2, PCIe, eventos y expediente SHA-256.
 - [Importador Nsight SQLite](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/import_NEPENTHES_nsys_sqlite.py) — normaliza actividades CUDA Runtime, kernels, memcpy y sincronización, conservando su dominio de reloj original.
 - [Hook C++ de eventos](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/nepenthes_trace.hpp) y [smoke test](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/test_nepenthes_trace.cpp) — interfaz header-only C++17, sin asignación dinámica en el camino de emisión.
+- [Applier de sondas Tandem.cpp](https://github.com/robertosantosx2/tandem.cpp/blob/nepenthes/universal-observability-20261114/nepenthes/apply_runtime_probes.py) — aplica instrumentación de runtime sobre la fuente fijada después de `tandem.patch` y `runtime.patch`.
 - [Batería instrumentada](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_battery.py) — activa el expediente universal de forma optativa con `--universal-collector`.
 
 Consulta la [metodología](tandem-qwen35-reasoning-budget-methodology-2026-11-12.md) para los requisitos, comandos y precauciones de uso. El runner no inicia, detiene ni reconfigura el servidor; cada ejecución debe usar un directorio de salida nuevo.
