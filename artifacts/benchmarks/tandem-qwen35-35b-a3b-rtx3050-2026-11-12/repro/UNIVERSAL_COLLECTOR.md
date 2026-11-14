@@ -21,7 +21,7 @@ Use `--pid PID` when the process name is ambiguous. Press Ctrl-C to finish the c
 ## Output contract
 
 - `run_manifest.json`: run UUID, schema version, wall/monotonic start and end, engine/model identity, host/Python identity, target PID, sampling cadence, metadata, probe capability snapshot and measurement semantics.
-- `samples/telemetry.jsonl`: host CPU counters, RAM/swap, vmstat, PSI, CPU frequency, block-device counters, target process stat/status/I/O/schedstat/FD count, cgroup-v2 counters and GPU/VRAM telemetry. Each row carries run UUID, wall timestamp and monotonic nanoseconds.
+- `samples/telemetry.jsonl`: host CPU counters, RAM/swap, vmstat, PSI, CPU frequency, block-device counters, target process stat/status/I/O, per-thread CPU and scheduler counters, FD count, cgroup-v2 counters and GPU/VRAM telemetry. Each row carries run UUID, wall timestamp and monotonic nanoseconds.
 - `samples/pcie.jsonl`: raw `nvidia-smi dmon -s t` rows, if supported.
 - `events/engine_events.jsonl`: normalized engine events when an adapter emits them.
 - `requests/*.json`: optional normalized request/response records.
@@ -74,7 +74,7 @@ Every event contains a run UUID, optional request ID, unique event ID, source, w
 |---|---|---|
 | Host CPU | Raw `/proc/stat` counters | Host-wide; derive deltas between monotonic samples |
 | RAM / swap | `/proc/meminfo`, vmstat | Host-wide |
-| Process | stat/status/io/schedstat, threads, RSS/HWM, FD count | One PID; PID reuse/exit must be checked |
+| Process / threads | stat/status/io, per-thread utime/stime, schedstat runtime/runqueue wait/timeslices, context switches, CPU affinity, RSS/HWM, FD count | One PID and up to 512 TIDs; PID reuse/exit must be checked; no stack sampling |
 | Scheduler pressure | PSI CPU/memory/I/O and process schedstat | PSI is host/cgroup context, not a per-request attribution |
 | CPU frequency | sysfs scaling frequency | Per online CPU where exposed; not proof of effective clock under load |
 | Storage | Whole-device `/proc/diskstats`, cgroup-v2 `io.stat` | Device counters are host-wide; map device topology before attribution |
@@ -84,7 +84,7 @@ Every event contains a run UUID, optional request ID, unique event ID, source, w
 | Nsight / CUDA | External profile files in `profiles/`; existing SQLite inspector | Collector does not itself start Nsight or instrument CUDA |
 | MoE / KV / allocator | Normalized event adapter contract | Requires engine-side hooks; host polling cannot infer routing, cache hits or KV occupancy |
 
-A missing probe is reported unavailable, never as zero. Host PSI, swap, block I/O and GPU PCIe include unrelated workloads. Do not sum physical and virtual block-device counters without understanding the storage stack. The process sampler follows one PID, not all descendants. Short captures may not contain enough samples for meaningful percentiles.
+A missing probe is reported unavailable, never as zero. Host PSI, swap, block I/O and GPU PCIe include unrelated workloads. Do not sum physical and virtual block-device counters without understanding the storage stack. The process sampler follows one PID, records up to 512 threads (TIDs) including schedstat runtime and runqueue wait, and does not aggregate descendants or capture CPU call stacks. Short captures may not contain enough samples for meaningful percentiles.
 
 ## Current boundary
 
