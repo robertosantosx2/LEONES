@@ -10,6 +10,7 @@ import unittest
 
 from inspect_NEPENTHES_moe_trace import read_log, read_trace
 from moe_runtime_probe import RuntimeProbe
+from resource_monitor import parse_pcie_dmon_line
 
 
 class TraceInspectorTests(unittest.TestCase):
@@ -48,6 +49,24 @@ class TraceInspectorTests(unittest.TestCase):
         self.assertEqual(result["misses"], 3)
         self.assertEqual(result["uploaded_mib"], 5.0)
         self.assertAlmostEqual(result["hit_rate_pct"], 62.5)
+
+
+class PcieDmonParserTests(unittest.TestCase):
+    def test_parse_pcie_dmon_data_row(self):
+        row = parse_pcie_dmon_line("    0   2502    207")
+        self.assertEqual(row["gpu_index"], 0)
+        self.assertEqual(row["pcie_rx_mbps"], 2502.0)
+        self.assertEqual(row["pcie_tx_mbps"], 207.0)
+        self.assertEqual(row["source"], "nvidia-smi-dmon")
+
+    def test_parse_zero_is_a_valid_measurement(self):
+        row = parse_pcie_dmon_line("    0      0      0")
+        self.assertEqual(row["pcie_rx_mbps"], 0.0)
+        self.assertEqual(row["pcie_tx_mbps"], 0.0)
+
+    def test_ignore_dmon_headers_and_invalid_rows(self):
+        self.assertIsNone(parse_pcie_dmon_line("# gpu  rxpci  txpci"))
+        self.assertIsNone(parse_pcie_dmon_line("    0      -      -"))
 
 
 class RuntimeProbeTests(unittest.TestCase):
