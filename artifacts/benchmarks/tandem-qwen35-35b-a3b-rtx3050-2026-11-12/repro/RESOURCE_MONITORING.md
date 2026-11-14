@@ -88,3 +88,26 @@ The exact Tandem.cpp llama.cpp submodule commit used for the reference build (`f
 - A measured zero is a valid sample. No dmon data rows means unavailable telemetry, not zero traffic.
 - PCIe is device-wide and may include transfers unrelated to the inference request. Correlate timestamps with the process, GPU, cache, and token metrics; do not equate PCIe traffic directly with expert-weight transfers.
 - If the driver/device does not provide dmon PCIe data, `pcie_sample_count` is zero and the PCIe summary fields are null. The monitor does not infer missing values.
+
+
+## Nsight Systems SQLite inspector
+
+El inspector de solo lectura `inspect_NEPENTHES_nsys_sqlite.py` resume una exportación SQLite de Nsight Systems sin modificarla. Separa las duraciones de API CUDA host de las actividades de kernels GPU y de las transferencias memcpy; decodifica `copyKind` con `CUpti_ActivityMemcpyKind` y `srcKind/dstKind` con `CUpti_ActivityMemoryKind`.
+
+Uso desde el directorio `repro/`:
+
+```bash
+python3 inspect_NEPENTHES_nsys_sqlite.py \
+  "$HOME/NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-20261114.sqlite" \
+  --output "$HOME/NEPENTHES_QWEN35_CORRELATED_20261114/nsys-analysis.json"
+```
+
+Incluye tablas disponibles y sus recuentos, llamadas CUDA por hilo/API, kernels por nombre, transferencias por dirección y tipo de memoria, y vecinos GPU de `k_host_add_wait` en el mismo dispositivo/contexto/stream. La detección de tablas CPU es solo una lista de candidatas; hay que revisar esquema y contenido antes de afirmar que hay muestreo o planificación CPU.
+
+El informe advierte que:
+- API Runtime host no es tiempo de ejecución GPU.
+- Bytes acumulados de memcpy no son memoria residente.
+- El patrón de kernels vecinos no identifica el worker CPU ni demuestra la causa de la espera.
+- Una tabla ausente no equivale a actividad cero.
+
+Tests sintéticos: `python3 -m unittest -v test_NEPENTHES_nsys_sqlite.py`. No se debe declarar validado hasta ejecutar esta prueba en el entorno de desarrollo o CI.
