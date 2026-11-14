@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+from contextlib import closing
 import json
 import pathlib
 import sqlite3
@@ -64,7 +65,7 @@ def analyze_database(path: pathlib.Path) -> dict:
     if not path.is_file():
         raise FileNotFoundError(path)
 
-    with _connect_readonly(path) as db:
+    with closing(_connect_readonly(path)) as db:
         tables = _tables(db)
         strings = _strings(db, tables)
         report = {
