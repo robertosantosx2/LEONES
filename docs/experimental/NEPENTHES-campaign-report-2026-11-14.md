@@ -17,11 +17,15 @@ La campaña debe producir evidencia completa por ejecución, no solo tokens/s: c
 
 ## 2. Evidencia ya archivada en LEONES
 
-### 2.1 Expediente de la ejecución del 12-11-2026
+### 2.1 Comparación MoE 512 vs 768 MiB — 05-11-2026
+
+El informe histórico y los nueve artefactos primarios están archivados en la rama `Experimental`: [informe de 05-11](https://github.com/robertosantosx2/LEONES/blob/Experimental/docs/experimental/tandem-qwen35-35b-a3b-rtx3050-2026-11-05.md) y [directorio de evidencia](https://github.com/robertosantosx2/LEONES/tree/Experimental/artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-05/). Incluye baseline 512 MiB, cinco respuestas JSON de 768 MiB, logs 512/768, manifiesto hardware/modelo y log de compilación. Resultado: 37,957 tok/s en la única muestra de 512 tokens a 512 MiB frente a 35,671 tok/s de media en dos muestras de 512 tokens a 768 MiB (~6% menos); VRAM observada 2.077 frente a 2.345 MiB. La muestra es pequeña; la recomendación histórica fue conservar 512 MiB, no una prueba estadística definitiva.
+
+### 2.2 Expediente de la ejecución del 12-11-2026
 
 Está publicado el paquete [tandem-qwen35-evidence-20261112-235030.tar.gz](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/evidence/tandem-qwen35-evidence-20261112-235030.tar.gz), de 288.463 bytes, con su sidecar SHA-256. Hash registrado: `82660fe04f665181285a3d81dd89e6b1f768a6be33cfaffa8db1730bb79d2548`.
 
-### 2.2 Batería independiente del 13-11-2026
+### 2.3 Batería independiente del 13-11-2026
 
 El expediente está publicado en:
 
@@ -34,7 +38,7 @@ No es una comparación A/B controlada con cafe-llama.cpp. La corrección funcion
 
 También se conserva el fragmento de terminal `terminal-tail-cases-06-10.txt` con su sidecar SHA-256 bajo `tandem-qwen35-independent-2026-11-13/evidence/`; es evidencia parcial y no sustituye las respuestas originales.
 
-### 2.3 Sondas y scripts de campaña
+### 2.4 Sondas y scripts de campaña
 
 En [repro/](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/) ya están versionados:
 
