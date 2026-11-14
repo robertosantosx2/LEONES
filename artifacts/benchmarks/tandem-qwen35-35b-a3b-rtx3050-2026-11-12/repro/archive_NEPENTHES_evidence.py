@@ -92,7 +92,7 @@ def collect_archive(
         if not source.exists():
             missing.append({"source": str(source), "status": "missing"})
             continue
-        label = source.name or f"source-{index + 1}"
+        label = (source.parent.name if source.is_file() else source.name) or f"source-{index + 1}"
         if any(item["label"] == label for item in entries):
             label = f"{label}-{index + 1}"
         for original, relative in evidence_files(source):
