@@ -192,6 +192,9 @@ La captura correlacionada del 14-11-2026 está identificada localmente en `$HOME
 
 Estos archivos siguen siendo **pendientes de subir**: esta sesión puede inspeccionar GitHub, pero no leer directamente el filesystem de tu Ubuntu. No se crean copias ficticias ni se reconstruyen logs a partir de resúmenes. El expediente 12-11, el full-run 13-11 y el fragmento de terminal 13-11 ya están presentes en LEONES. Queda cotejar el tarball local `NEPENTHES_TANDEM_QWEN35_20261113_full.tar.gz` y el piloto, si existen, para determinar si aportan archivos no duplicados; además, falta archivar `NEPENTHES_CUDA_TOOLING_20261114` y el expediente correlacionado del 14-11.
 
+
+Para cerrar este pendiente se añadió el [script de entrada de archivo](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/archive_NEPENTHES_evidence.py). Desde la raíz del checkout LEONES se ejecuta `python3 artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/archive_NEPENTHES_evidence.py --stage`; copia los expedientes conocidos a una carpeta timestamped, valida hashes, registra rutas ausentes y solo prepara con Git el nuevo directorio. No hace commit ni push.
+
 ## 8. Criterio de aceptación de la campaña
 
 Una ejecución solo se declara archivada cuando existen originales, manifiesto, hashes verificables, inventario de sondas, reporte de cobertura y resultado funcional. Una mejora solo se declara demostrada con A/B reproducible. Una ruta de capacidad solo se declara válida si completa la inferencia sin OOM bajo el perfil declarado, aunque su velocidad sea muy baja.
