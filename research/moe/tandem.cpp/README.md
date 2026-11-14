@@ -20,3 +20,8 @@ This is a source snapshot copied into LEONES, not a Git submodule. The source fi
 The project is a patch set applied to a specific llama.cpp base revision. It is not a standalone inference engine and should be built in an isolated worktree. See the upstream README for usage, supported expert tensor layouts, runtime flags, benchmark methodology, and limitations.
 
 No benchmark has been run on the LEONES MSI Thin 15 hardware merely by archiving this source.
+
+## NEPENTHES — observabilidad
+
+La instrumentación universal, sus fases, límites de correlación, validación CI y criterio de aceptación se mantienen en el [índice NEPENTHES](NEPENTHES-INDEX.md). El código fuente activo y el PR de implementación están en [robertosantosx2/tandem.cpp](https://github.com/robertosantosx2/tandem.cpp/pull/1).
+
