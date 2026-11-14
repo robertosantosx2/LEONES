@@ -45,23 +45,74 @@ def find_pid(port, explicit=None):
             return int(p.name)
     return None
 
+def parse_pcie_dmon_line(line):
+    """Parse one nvidia-smi dmon -s t data row; rates are decimal MB/s."""
+    match=re.match(r"^\s*(\d+)\s+([0-9.]+|-)\s+([0-9.]+|-)\s*$", line)
+    if not match: return None
+    def value(raw):
+        try: return float(raw)
+        except (TypeError, ValueError): return None
+    return {"gpu_index":int(match.group(1)),"pcie_rx_mbps":value(match.group(2)),
+            "pcie_tx_mbps":value(match.group(3)),"timestamp":now(),"source":"nvidia-smi-dmon"}
+
+class PcieDmonSampler:
+    """Keep one dmon process alive per request; do not spawn it at every sample."""
+    def __init__(self):
+        self.process=None; self.thread=None; self.samples=[]; self.error=None
+        self.stop_event=threading.Event(); self.lock=threading.Lock()
+    def start(self):
+        exe=shutil.which("nvidia-smi")
+        if not exe:
+            self.error="nvidia-smi not found"
+            return
+        try:
+            self.process=subprocess.Popen([exe,"dmon","-s","t","-d","1"],
+                stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,bufsize=1)
+            self.thread=threading.Thread(target=self._read,daemon=True)
+            self.thread.start()
+        except Exception as error:
+            self.error=str(error)
+    def _read(self):
+        try:
+            for line in self.process.stdout:
+                sample=parse_pcie_dmon_line(line)
+                if sample is not None:
+                    with self.lock: self.samples.append(sample)
+                if self.stop_event.is_set() and self.process.poll() is not None: break
+        except Exception as error:
+            self.error=str(error)
+    def finish(self):
+        self.stop_event.set()
+        if self.process and self.process.poll() is None:
+            self.process.terminate()
+            try: self.process.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                self.process.kill(); self.process.wait(timeout=2)
+        if self.thread: self.thread.join(timeout=2)
+        with self.lock: return list(self.samples)
+    def latest(self):
+        with self.lock: return dict(self.samples[-1]) if self.samples else None
+
 def gpu_sample():
     exe=shutil.which("nvidia-smi")
     if not exe: return {"available":False,"error":"nvidia-smi not found"}
-    q="timestamp,index,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw,clocks.gr"
+    query="timestamp,index,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw,clocks.gr"
     try:
-        r=subprocess.run([exe,f"--query-gpu={q}","--format=csv,noheader,nounits"],capture_output=True,text=True,timeout=2)
+        r=subprocess.run([exe,f"--query-gpu={query}","--format=csv,noheader,nounits"],capture_output=True,text=True,timeout=2)
         if r.returncode: return {"available":False,"error":r.stderr.strip()}
         rows=[]
         for row in csv.reader(r.stdout.splitlines()):
-            if len(row)>=9:
-                vals=[x.strip() for x in row]
-                def num(x):
-                    try:return float(x)
-                    except:return None
-                rows.append({"timestamp":vals[0],"index":vals[1],"gpu_util_pct":num(vals[2]),"memory_util_pct":num(vals[3]),"vram_used_mib":num(vals[4]),"vram_total_mib":num(vals[5]),"temperature_c":num(vals[6]),"power_w":num(vals[7]),"graphics_clock_mhz":num(vals[8])})
+            vals=[x.strip() for x in row]
+            if len(vals)<9: continue
+            def num(x):
+                try:return float(x)
+                except:return None
+            rows.append({"timestamp":vals[0],"index":vals[1],"gpu_util_pct":num(vals[2]),
+                "memory_util_pct":num(vals[3]),"vram_used_mib":num(vals[4]),"vram_total_mib":num(vals[5]),
+                "temperature_c":num(vals[6]),"power_w":num(vals[7]),"graphics_clock_mhz":num(vals[8])})
         return {"available":True,"gpus":rows}
-    except Exception as e:return {"available":False,"error":str(e)}
+    except Exception as error:
+        return {"available":False,"error":str(error)}
 
 def vmstat_sample():
     try:
@@ -100,9 +151,11 @@ class RequestSampler:
     def __init__(self, outdir, request_id, port, pid=None, interval=1.0, model_path=None):
         self.outdir=pathlib.Path(outdir); self.request_id=request_id; self.port=port
         self.pid=find_pid(port,pid); self.interval=interval; self.samples=[]; self.model_mount=mount_for_path(model_path)
-        self.stop_event=threading.Event(); self.thread=None
+        self.stop_event=threading.Event(); self.thread=None; self.pcie=PcieDmonSampler()
     def sample(self):
-        s={"time":now(),"monotonic":time.monotonic(),"ram":read_meminfo(),"cpu_ticks":cpu_ticks(),"process":proc_stat(self.pid) if self.pid else {},"gpu":gpu_sample(),"disks":disk_sample(),"vmstat":vmstat_sample()}
+        s={"time":now(),"monotonic":time.monotonic(),"ram":read_meminfo(),"cpu_ticks":cpu_ticks(),
+           "process":proc_stat(self.pid) if self.pid else {},"gpu":gpu_sample(),"disks":disk_sample(),
+           "vmstat":vmstat_sample(),"pcie":self.pcie.latest()}
         s["pid"]=self.pid
         return s
     def _loop(self):
@@ -111,15 +164,19 @@ class RequestSampler:
             self.stop_event.wait(self.interval)
         self.samples.append(self.sample())
     def start(self):
-        self.started=now(); self.thread=threading.Thread(target=self._loop,daemon=True); self.thread.start()
+        self.started=now()
+        self.pcie.start()
+        self.thread=threading.Thread(target=self._loop,daemon=True); self.thread.start()
     def finish(self):
         self.stop_event.set(); self.thread.join(); self.finished=now()
+        pcie_samples=self.pcie.finish()
         raw=self.outdir/"resource_samples.jsonl"
         with raw.open("a",encoding="utf-8") as f:
             for s in self.samples:
                 f.write(json.dumps({"request_id":self.request_id,**s},ensure_ascii=False)+"\n")
-        return self.summary()
-    def summary(self):
+        return self.summary(pcie_samples)
+    def summary(self, pcie_samples=None):
+        pcie_samples=pcie_samples if pcie_samples is not None else self.pcie.finish()
         def nums(path):
             vals=[]
             for s in self.samples:
@@ -140,10 +197,12 @@ class RequestSampler:
         swapin_delta=max(0,vb.get("pswpin",0)-va.get("pswpin",0))*os.sysconf("SC_PAGE_SIZE")
         swapout_delta=max(0,vb.get("pswpout",0)-va.get("pswpout",0))*os.sysconf("SC_PAGE_SIZE")
         gpu=[]
-        for s in self.samples:
-            gpu.extend(s.get("gpu",{}).get("gpus",[]))
+        for s in self.samples: gpu.extend(s.get("gpu",{}).get("gpus",[]))
         def gstat(k):
             v=[x[k] for x in gpu if isinstance(x.get(k),(int,float))]
+            return {"min":min(v),"max":max(v),"mean":statistics.fmean(v)} if v else None
+        def pstat(k):
+            v=[x[k] for x in pcie_samples if isinstance(x.get(k),(int,float))]
             return {"min":min(v),"max":max(v),"mean":statistics.fmean(v)} if v else None
         # CPU percentages from first/last counters over the monitored interval.
         cpu_pct=proc_pct=None
@@ -160,4 +219,6 @@ class RequestSampler:
           "ram_used_bytes":stats(["ram","ram_used_bytes"]),"ram_available_bytes":stats(["ram","MemAvailable_bytes"]),"process_rss_bytes":stats(["process","rss_bytes"]),
           "swap_used_bytes":stats(["ram","swap_used_bytes"]),"cpu_system_pct_avg_over_interval":cpu_pct,"process_cpu_pct_avg_over_interval":proc_pct,
           "gpu_util_pct":gstat("gpu_util_pct"),"gpu_memory_util_pct":gstat("memory_util_pct"),"vram_used_mib":gstat("vram_used_mib"),"gpu_temperature_c":gstat("temperature_c"),"gpu_power_w":gstat("power_w"),"gpu_graphics_clock_mhz":gstat("graphics_clock_mhz"),
+          "pcie_rx_mbps":pstat("pcie_rx_mbps"),"pcie_tx_mbps":pstat("pcie_tx_mbps"),"pcie_sample_count":len(pcie_samples),
+          "pcie_source":"nvidia-smi-dmon" if pcie_samples else None,"pcie_note":"PCIe rates are device-wide MB/s samples at dmon cadence (normally 1 s), not request-exclusive byte counters. No sample means unavailable, not zero.",
           "disk_deltas_all_whole_devices":disk,"swap_in_bytes_delta_system_wide":swapin_delta,"swap_out_bytes_delta_system_wide":swapout_delta,"gpu_sample_count":len(gpu),"disk_note":"Disk deltas are system-wide per whole block device; isolate the model SSD before attributing I/O if multiple workloads are active.","swap_note":"Swap deltas are system-wide; unrelated processes may contribute."}

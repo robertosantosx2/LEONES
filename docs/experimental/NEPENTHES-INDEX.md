@@ -70,3 +70,12 @@ Consulta la [metodología](tandem-qwen35-reasoning-budget-methodology-2026-11-12
 - [Ostinato (arXiv:2611.11533) — ejecución CPU/GPU con expertos residentes en prefill y decode](https://arxiv.org/abs/2611.11533).
 
 Estas fuentes aportan contexto para formular experimentos MoE; sus resultados externos no son benchmarks NEPENTHES ni deben atribuirse al hardware local.
+
+
+## Sondas MoE y telemetría
+
+- [Sonda de runtime MoE](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/moe_runtime_probe.py) — PSI, E/S y planificación del proceso, hilos/RSS y frecuencia CPU por petición.
+- [Inspector de routing/cache MoE](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_moe_trace.py) — resumen de estadísticas de caché en logs y parser MCT1 para builds compatibles.
+- [Monitorización y uso](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/RESOURCE_MONITORING.md) — formato de evidencias, límites y validación previa.
+
+La integración se explica en la [metodología NEPENTHES](tandem-qwen35-reasoning-budget-methodology-2026-11-12.md). La build Tandem de referencia ofrece contadores agregados de caché, pero no routing por capa MCT1.

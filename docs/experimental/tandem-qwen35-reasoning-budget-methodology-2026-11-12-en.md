@@ -37,7 +37,7 @@ All scripts are in this experiment's `repro` directory:
 - [run_battery.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_battery.py): common client. Saves the complete JSON for each request/response, `summary.jsonl`, `run_manifest.json`, and captures `/health` and `/props`.
 - [repeat_same_engine_new_model.sh](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/repeat_same_engine_new_model.sh): changes the model while keeping the endpoint/engine.
 - [repeat_same_model_new_engine.sh](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/repeat_same_model_new_engine.sh): changes the engine while keeping the GGUF.
-- [collect_evidence.sh](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/collect_evidence.sh): copies existing logs and metadata and captures system, GPU, CUDA, process, and commit information. Generates a tar.gz and SHA256SUMS.
+- [collect_evidence.sh](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/collect_evidence.sh): copies existing logs and metadata and captures system, GPU, CUDA, process, and commit information. Generates a tar.gz and SHA256SUMS.\n- [moe_runtime_probe.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/moe_runtime_probe.py): adds per-request process I/O/scheduling, PSI, and CPU-frequency telemetry.\n- [inspect_NEPENTHES_moe_trace.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_moe_trace.py): inspects cache logs and compatible MCT1 routing traces.\n- [test_NEPENTHES_moe_probes.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/test_NEPENTHES_moe_probes.py): unit tests for the probes.
 
 ## Requirements
 
@@ -314,3 +314,75 @@ When evaluating an MoE engine, record—when exposed by the engine—per-layer/t
 Keep three policies distinct: (1) static hot-expert placement, (2) dynamic live cache with replacement, and (3) hybrid execution of cold experts on CPU/over PCIe. Ostinato adds a specific hypothesis for agent sessions: resident experts can also serve short prefills after tool outputs. Treat this as a hypothesis to validate for each engine+model pair and workload, not as a universal property of MoE.
 
 Cite published results with their hardware, model, quantization, workload, and version. Do not merge them with NEPENTHES measurements or present them as local results. For cross-engine comparisons, keep the model and cache state constant and document any differences in API, template, routing, or offload policy.
+
+
+## NEPENTHES MoE probes: instrumentation and diagnosis
+
+The battery now integrates a second per-request probe: [moe_runtime_probe.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/moe_runtime_probe.py). It runs alongside `resource_monitor.py`; it does not modify or restart the server. It adds process I/O/scheduling, threads, RSS/HWM, file descriptors, PSI, and CPU frequency. The shared monitor extends its NVIDIA query with PCIe RX/TX throughput, alongside GPU/VRAM/temperature/power. The interval is controlled by `--monitor-interval` (for the next campaign, start at 0.5 s and keep it identical across comparisons).
+
+### Automatically collected signals
+
+| Probe | Metrics | Bottlenecks it helps identify |
+|---|---|---|
+| llama-server process | `/proc/PID/io`: bytes/chars read and written, I/O calls; `schedstat`: runtime and wait time; threads, RSS/HWM, and file descriptors | Model/expert reads, scheduler pressure, memory growth, or excessive threads |
+| Kernel PSI | `/proc/pressure/cpu`, `memory`, `io` (`some/full avg10`) | Time tasks are stalled by CPU, memory, or I/O contention; complements utilization percentages |
+| CPU | Current frequency aggregated across available cores | Frequency drops, thermal/power limits, or platform variation |
+| GPU/VRAM | Utilization, memory, temperature, power, clocks, and PCIe RX/TX throughput from `nvidia-smi`, collected by `resource_monitor.py` | Underused GPU, VRAM pressure, host↔device traffic, and possible PCIe-bound phases |
+| API and response | Tokens, prefill/decode, prompt cache, timings, and completion already collected by the runner | Separating TTFT/prefill from generation and prompt-cache effects from expert-cache effects |
+
+Per-request samples are saved to `resources/moe_runtime_samples.jsonl`; summaries are added as `moe_runtime_metrics` in each response JSON and in `summary.jsonl`. The probe records valid sample counts and limitations. PSI is host-wide and PCIe is device-wide, not process-attributed: do not attribute either exclusively to llama-server. PCIe fields depend on driver support; unavailable fields remain unmeasured.
+
+### Expert routing and cache: offline probe
+
+[inspect_NEPENTHES_moe_trace.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_moe_trace.py) analyzes two sources without querying or modifying the server:
+
+- **Verbose engine log:** aggregates hits, misses, CPU misses (if reported by the engine), hit rate, and uploaded MiB when matching `llama_moe_cache` lines are present. Example:
+
+  ```bash
+  python3 inspect_NEPENTHES_moe_trace.py \
+    --server-log "$HOME/tandem-nepenthes-qwen35-18085.log" \
+    --output "$HOME/moe-cache-summary.json"
+  ```
+
+- **MCT1 routing trace:** for builds implementing `LLAMA_MOE_CACHE_TRACE`, summarizes routing events and observed tokens per layer, distinct selected experts, coverage, entropy, and most frequently selected experts:
+
+  ```bash
+  python3 inspect_NEPENTHES_moe_trace.py \
+    --trace "$HOME/tandem-moe.trace" \
+    --server-log "$HOME/tandem-nepenthes-qwen35-18085.log" \
+    --output "$HOME/moe-routing-summary.json"
+  ```
+
+**Compatibility verified for the reference Tandem.cpp build:** its llama.cpp submodule commit `f5222f25c18da062ab2b8a2dbbfbf4feae398566` contains aggregated `llama_moe_cache` hit/miss/uploaded-byte statistics, but does not contain `LLAMA_MOE_CACHE_TRACE` or the MCT1 format. `log_stats()` is called when the cache object is destroyed; therefore, aggregate lines may appear only when the server is shut down normally, not during generation. Preserve the log and run the inspector after the operator has shut down the server normally; do not force termination or interrupt the battery to obtain them. The first full run can measure aggregate cache behavior if the log retains those lines; it cannot attribute routing or hits per layer. The MCT1 parser is ready for a future compatible build, but must not be enabled or reported as available on the current build. The current upstream [moe-cache-tune.py](https://github.com/ggml-org/llama.cpp/blob/master/scripts/moe-cache-tune.py) documents MCT1 and cache replay; that does not mean Tandem's pinned commit includes it.
+
+### Interpreting signals and locating bottlenecks
+
+- **PCIe / expert-miss bottleneck:** slow generation, sustained PCIe activity, and a cache log with many misses/uploaded MiB. Confirm with a controlled cache/placement variation; global PCIe throughput alone does not establish causality.
+- **CPU/RAM bottleneck:** high process CPU, stable or falling frequency, CPU/memory PSI pressure, and rising RSS/swap. Distinguish actual memory pressure from simple swap occupancy.
+- **GPU/compute bottleneck:** sustained GPU utilization, low PSI wait, and low PCIe throughput during decode; vary batch, offload, and kernels separately.
+- **Storage bottleneck:** process read deltas and elevated I/O PSI, especially on cold load. Do not mix GGUF loading with warm generation.
+- **Routing imbalance:** can only be claimed with per-layer/token routing traces; entropy, coverage, and expert concentration estimate skew, not execution cost.
+- **Prefill versus decode:** keep short and long prompts separate; measure TTFT/prefill and decode tokens/s separately. Prompt cache and expert cache are distinct mechanisms.
+
+Do not infer hit rate from cache size, expert transfers from GPU utilization, or per-layer compute from global utilization. Missing signals must be marked `unavailable`/unmeasured. Telemetry has overhead: cadence, tools, and versions must be fixed and declared in every campaign.
+
+### Validation before the full battery
+
+First run the unit tests with `python3 -m unittest -v test_NEPENTHES_moe_probes.py` from `repro/`. Then run one request with `--limit 1 --monitor-interval 0.5`; verify `moe_runtime_metrics` and `resources/moe_runtime_samples.jsonl` appear, the PID matches the server, and multiple samples were collected. Then inspect the Tandem log with the script above. If no cache lines are present, mark cache probing unavailable; do not restart the server just to force a logging option. Run the full battery only after this validation.
+
+
+### Pending engine-internal instrumentation: next level
+
+External probes cannot separate routing time, hot/cold expert compute, and synchronization wait. For future engine instrumentation (not included in this integration), NEPENTHES should request a per-layer, per-phase profile containing:
+
+- routing/preparation and worklist construction;
+- MoE calls per layer, requested/unique/resident experts, hits, misses, and fallbacks;
+- read time/bytes from RAM/SSD and H2D transfer time/bytes;
+- CPU and GPU expert-compute time;
+- hot- and cold-lane duration, effective overlap, join wait, and merge;
+- explicit prefill/decode phase, token/batch identity, and timestamps.
+
+This decomposition follows the profiling style published in the [Experts first llama.cpp discussion](https://www.reddit.com/r/LocalLLaMA/comments/1tknbzh/experts_first_llamacpp/), which separates routing, hot lane, cold lane, overlap/join, and merge. The [4-GB-VRAM MoE cache discussion](https://github.com/ggml-org/llama.cpp/discussions/32007) and [Reddit discussion of hot-expert caching](https://www.reddit.com/r/LocalLLaMA/comments/1vfhns3/a_llamacpp_pr_caches_hot_moe_experts_on_the_gpu/) show why misses and transferred bytes are more informative than cache capacity and tok/s alone. These are external reports on different hardware/builds; use them to formulate hypotheses, not to predict MSI results.
+
+
+**PSI time-window interpretation:** `*_avg10` fields are kernel rolling averages over the 10 seconds preceding each sample, not percentages calculated exclusively within the request. For short requests they may include unrelated activity before or after the request; treat them as host-contention context and cross-check against `/proc/PID/io` and `schedstat` deltas and the time series. Do not average `avg10` values and claim that percentage of the request was stalled.
