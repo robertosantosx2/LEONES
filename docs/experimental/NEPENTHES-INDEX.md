@@ -49,6 +49,7 @@ Los scripts publicados para la campaña actual se encuentran en:
 - [Runner Nepenthes](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_NEPENTHES_independent_two_sum.py) — ejecuta una petición contra un servidor ya iniciado y registra la evidencia de la prueba.
 - [Inspector Nepenthes](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_independent_run.py) — inspecciona el directorio de evidencia guardado, sin necesitar consultar el servidor.
 - [Monitor de recursos](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/resource_monitor.py) — dependencia compartida de monitorización.
+- [Inspector Nsight SQLite](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_nsys_sqlite.py) — análisis offline de API CUDA, kernels, transferencias y secuencias de espera.
 
 Consulta la [metodología](tandem-qwen35-reasoning-budget-methodology-2026-11-12.md) para los requisitos, comandos y precauciones de uso. El runner no inicia, detiene ni reconfigura el servidor; cada ejecución debe usar un directorio de salida nuevo.
 
