@@ -54,6 +54,8 @@ Los scripts publicados para la campaña actual se encuentran en:
 - [Monitor de recursos](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/resource_monitor.py) — dependencia compartida de monitorización.
 - [Entrada de archivo histórico](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/archive_NEPENTHES_evidence.py) — copia no destructiva de expedientes locales, deduplicación SHA-256 y manifiesto.
 - [Inspector Nsight SQLite](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_nsys_sqlite.py) — análisis offline de API CUDA, kernels, transferencias y secuencias de espera.
+- [Recolector universal](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/nepenthes_universal_collector.py) y [contrato de sondas](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/UNIVERSAL_COLLECTOR.md) — telemetría host/GPU, por hilo, cgroup v2, PCIe, eventos y expediente SHA-256.
+- [Batería instrumentada](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_battery.py) — activa el expediente universal de forma optativa con `--universal-collector`.
 
 Consulta la [metodología](tandem-qwen35-reasoning-budget-methodology-2026-11-12.md) para los requisitos, comandos y precauciones de uso. El runner no inicia, detiene ni reconfigura el servidor; cada ejecución debe usar un directorio de salida nuevo.
 
