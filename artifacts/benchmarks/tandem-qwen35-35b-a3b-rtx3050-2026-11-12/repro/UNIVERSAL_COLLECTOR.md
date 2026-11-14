@@ -123,3 +123,12 @@ python3 import_NEPENTHES_nsys_sqlite.py \\
 The importer is read-only against the source database. It writes events/nsys_activity.jsonl, profiles/nsys_import_report.json, updates the collection coverage report and regenerates SHA256SUMS. It imports CUDA Runtime API, kernel, memcpy and synchronization tables when their schemas are present; missing tables/columns remain explicitly unavailable.
 
 **Clock-domain rule:** Nsight start/end values are preserved as source_start_ns/source_end_ns with source_clock="nsys_activity_ns". They are not copied into monotonic_ns or assigned wall timestamps because no host-clock correlation marker is inferred. CUDA correlation IDs are preserved but are not guessed to be request IDs. An engine/runner adapter must provide explicit markers before cross-domain timing or request attribution is claimed.
+
+
+## C++ engine-side hook contract
+
+The header-only adapter surface is in nepenthes_trace.hpp. It is C++17, allocation-free on the emit path, uses steady_clock nanoseconds, and has no dependency on JSON or CUDA. The engine installs a non-blocking, thread-safe sink before starting inference workers; call sites emit fixed-size events for routing/cache/KV/allocation/transfer/kernel/synchronization/host-wait/OOM/fallback. ScopedEvent records a host-side duration without allocating.
+
+The callback is responsible for safely buffering and serializing events into the JSONL contract above. It must not block a worker or call back into inference. Install/disable only at controlled lifecycle boundaries; the current API deliberately does not support hot-swapping a sink while worker threads are active.
+
+The C++ smoke test is test_nepenthes_trace.cpp and runs in the NEPENTHES workflow with g++ C++17. This validates the hook API and no-op/emit/timer behavior, not integration into Tandem.cpp. Actual call sites and a bounded, non-blocking sink still need a writable Tandem.cpp fork and separate review.
