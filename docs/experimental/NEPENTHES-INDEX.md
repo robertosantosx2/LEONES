@@ -35,6 +35,10 @@ Las métricas no medidas se identifican como tales. Se separan las mediciones de
 
 | Motor / campaña | Documento | Evidencia |
 |---|---|---|
+| **Tandem.cpp** — comparación caché MoE 512 vs 768 MiB, 05-11-2026 | [Informe de baseline y comparación](https://github.com/robertosantosx2/LEONES/blob/Experimental/docs/experimental/tandem-qwen35-35b-a3b-rtx3050-2026-11-05.md) | [Logs, manifiesto y cinco resultados JSON](https://github.com/robertosantosx2/LEONES/tree/Experimental/artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-05/) |
+
+| Motor / campaña | Documento | Evidencia |
+|---|---|---|
 | **Tandem.cpp** — batería de razonamiento y presupuesto, 12-11-2026 | [Informe de la batería](tandem-qwen35-reasoning-budget-battery-2026-11-12.md) | [Scripts, monitorización y artefactos](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/) |
 | **cafe-llama.cpp** — ejecución independiente, 13-11-2026 | [Informe de ejecución](nepenthes-cafe-llama.cpp-qwen3.5-35b-a3b-2026-11-13.md) | [Datos primarios completos](../../artifacts/benchmarks/qwen35-35b-a3b-engine-comparison-2026-11-13/cafe-llama.cpp/) |
 | **Tandem.cpp** — batería independiente instrumentada, 13-11-2026 (10 casos) | [Informe completo de ejecución](nepenthes-tandem.cpp-qwen3.5-35b-a3b-2026-11-13.md) | [Manifiesto, 10 respuestas, resumen, 255 muestras y SHA-256](../../artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/) |
