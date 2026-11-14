@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import csv
 import hashlib
 import json
@@ -394,6 +395,7 @@ class UniversalCollector:
         self.started_wall = None
         self.started_mono = None
         self.sample_count = 0
+        self.finished = False
 
     def _mkdir(self):
         self.run_dir.mkdir(parents=True, exist_ok=False)
@@ -483,6 +485,8 @@ class UniversalCollector:
         return self.run_dir
 
     def finish(self):
+        if self.finished:
+            return self.run_dir
         if not self.thread:
             raise RuntimeError("collector was not started")
         self.stop_event.set()
@@ -538,6 +542,7 @@ class UniversalCollector:
                 digest = hashlib.sha256(path.read_bytes()).hexdigest()
                 sums.append(f"{digest}  {path.relative_to(self.run_dir)}")
         (self.run_dir / "SHA256SUMS").write_text("\n".join(sums) + "\n", encoding="utf-8")
+        self.finished = True
         return self.run_dir
 
 
