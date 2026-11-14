@@ -176,24 +176,63 @@ El scheduler de memoria debe soportar admission control, eviction por coste/reut
 7. Implementar CAPACITY PATH por etapas y sus pruebas de estrés.
 8. Ejecutar validación física en Ubuntu solo tras revisión del usuario.
 
-## 7. Pendiente de archivo local
+## 7. Archivo histórico cerrado — 14-11-2026
 
-La captura correlacionada del 14-11-2026 está identificada localmente en `$HOME/NEPENTHES_QWEN35_CORRELATED_20261114`:
+<badge>VERIFICADO EN GITHUB</badge>
 
-- `qwen35-correlated-20261114.nsys-rep` (SHA-256 `f5ced9493e2055dd1c28e7e3d6e5c0c03e0d445a52924a0a71c39339b7c35104`)
-- `qwen35-correlated-20261114.sqlite`
-- `qwen35-correlated-summary.txt`
-- `server.log`
-- `correlated-inference-response.json`
-- `binary-inspection.txt`
-- `moe-instrumentation-check.txt`
-- `preflight.txt`
-- `real-library-identities.txt`
+El expediente local se incorporó a la rama `nepenthes/performance-capacity-roadmap-20261114` en:
 
-Estos archivos siguen siendo **pendientes de subir**: esta sesión puede inspeccionar GitHub, pero no leer directamente el filesystem de tu Ubuntu. No se crean copias ficticias ni se reconstruyen logs a partir de resúmenes. El expediente 12-11, el full-run 13-11 y el fragmento de terminal 13-11 ya están presentes en LEONES. Queda cotejar el tarball local `NEPENTHES_TANDEM_QWEN35_20261113_full.tar.gz` y el piloto, si existen, para determinar si aportan archivos no duplicados; además, falta archivar `NEPENTHES_CUDA_TOOLING_20261114` y el expediente correlacionado del 14-11.
+`artifacts/benchmarks/nepenthes-raw-archive-2026-11-14/20261114-200707/`
 
+El manifiesto `ARCHIVE_MANIFEST.json` registra:
 
-Para cerrar este pendiente se añadió el [script de entrada de archivo](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/archive_NEPENTHES_evidence.py). Desde la raíz del checkout LEONES se ejecuta `python3 artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/archive_NEPENTHES_evidence.py --stage`; copia los expedientes conocidos a una carpeta timestamped, valida hashes, registra rutas ausentes y solo prepara con Git el nuevo directorio. No hace commit ni push.
+- **31 archivos copiados** (38.693.823 bytes).
+- **13 archivos ya archivados** en LEONES y reutilizados sin duplicar.
+- **1 duplicado por contenido**, identificado por SHA-256.
+- **0 raíces ausentes**.
+- `SHA256SUMS`: 31 entradas; sus hashes coinciden exactamente con los 31 hashes del manifiesto.
+
+### 7.1 Batería Qwen3.5-35B — 12–13-11-2026
+
+La batería íntegra está archivada en `artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/`:
+
+- `run_manifest.json`
+- `summary.jsonl` con 10 registros.
+- `responses/`: los diez JSON originales, casos 01–10 (incluidos 01–05).
+- `resources/resource_samples.jsonl`: fichero íntegro de 1.730.638 bytes.
+- `SHA256SUMS`.
+
+Además, el intake histórico conserva el piloto en `20261114-200707/NEPENTHES_TANDEM_QWEN35_20261113_pilot/` (manifiesto, resumen, respuesta 01 y muestras del monitor) y el paquete original `20261114-200707/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full.tar.gz` (83.149 bytes; SHA-256 `9bce83a4deabbdf2e2ed660ab14540e82ad65a3e87ea9890744d0f2dd019f7be`).
+
+El fragmento de terminal 06–10 se mantiene como evidencia adicional; ya no es el único registro de esos casos.
+
+### 7.2 Captura correlacionada — 14-11-2026
+
+En `20261114-200707/NEPENTHES_QWEN35_CORRELATED_20261114/` están los nueve originales:
+
+- `qwen35-correlated-20261114.nsys-rep` — 3.239.777 bytes; SHA-256 `f5ced9493e2055dd1c28e743d6e5c0c03e0d445a52924a0a71c39339b7c35104`.
+- `qwen35-correlated-20261114.sqlite` — 7.913.472 bytes.
+- `qwen35-correlated-summary.txt`.
+- `server.log`.
+- `correlated-inference-response.json`.
+- `preflight.txt`.
+- `binary-inspection.txt`.
+- `moe-instrumentation-check.txt`.
+- `real-library-identities.txt`.
+
+### 7.3 Herramientas CUDA / Nsight — 14-11-2026
+
+También está archivado `20261114-200707/NEPENTHES_CUDA_TOOLING_20261114/`, incluidos inventario, capacidades/preflight de Nsight, controles de captura, inspecciones y los perfiles `.nsys-rep`/SQLite de las sesiones CUDA/MoE.
+
+### 7.4 Integridad y trazabilidad
+
+- [Directorio del expediente bruto](../../artifacts/benchmarks/nepenthes-raw-archive-2026-11-14/20261114-200707/)
+- [Manifiesto de archivo](../../artifacts/benchmarks/nepenthes-raw-archive-2026-11-14/20261114-200707/ARCHIVE_MANIFEST.json)
+- [SHA256SUMS](../../artifacts/benchmarks/nepenthes-raw-archive-2026-11-14/20261114-200707/SHA256SUMS)
+- [Batería completa 13-11](../../artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/)
+- [Informe de campaña](NEPENTHES-campaign-report-2026-11-14.md)
+
+El intake fue ejecutado desde Ubuntu y el contenido resultante ya está visible en GitHub. Los originales locales no se modificaron ni eliminaron. **El pendiente de transferencia de estos expedientes queda cerrado.**
 
 ## 8. Criterio de aceptación de la campaña
 
