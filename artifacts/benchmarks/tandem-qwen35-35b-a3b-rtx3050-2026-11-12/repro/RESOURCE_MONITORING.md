@@ -62,7 +62,7 @@ Primero ejecutar solo una petición con \`--limit 1\`, comprobar que el PID no s
 
 ## MoE runtime probe (added 2026-11-14)
 
-`run_battery.py` now starts [`moe_runtime_probe.py`](moe_runtime_probe.py) for every request and adds the summary to `moe_runtime_metrics`. This probe samples process I/O/scheduler counters, thread count, RSS/HWM, file descriptors, kernel CPU/memory/I/O PSI, and CPU frequency. The shared `resource_monitor.py` captures NVIDIA utilization/VRAM/temperature/power/clocks and PCIe RX/TX throughput when exposed by `nvidia-smi`. Raw process/PSI/CPU-frequency samples are written to `resources/moe_runtime_samples.jsonl`; the GPU/PCIe time series remains in `resources/resource_samples.jsonl`.
+`run_battery.py` now starts [`moe_runtime_probe.py`](moe_runtime_probe.py) for every request and adds the summary to `moe_runtime_metrics`. This probe samples process I/O/scheduler counters, thread count, RSS/HWM, file descriptors, kernel CPU/memory/I/O PSI, and CPU frequency. The shared `resource_monitor.py` captures NVIDIA utilization/VRAM/temperature/power/clocks through `--query-gpu`. PCIe RX/TX uses one persistent `nvidia-smi dmon -s t -d 1` process per request, rather than spawning a new process at every monitor tick. This is the fallback-compatible path for drivers (including the tested RTX 3050 setup) that reject `pcie.rx_throughput` and `pcie.tx_throughput` query fields. Raw process/PSI/CPU-frequency samples are written to `resources/moe_runtime_samples.jsonl`; GPU and the latest PCIe reading are recorded in `resources/resource_samples.jsonl`. The request summary reports `pcie_rx_mbps`, `pcie_tx_mbps`, `pcie_sample_count`, and `pcie_source`.
 
 Run the unit tests before the preflight: `python3 -m unittest -v test_NEPENTHES_moe_probes.py`. Use `--monitor-interval 0.5` for the next controlled run. PCIe counters are device-wide; PSI is host-wide. Neither is attributable to the server alone. Keep cadence constant across all A/B runs.
 
@@ -79,3 +79,12 @@ The exact Tandem.cpp llama.cpp submodule commit used for the reference build (`f
 
 
 **PSI interpretation:** `avg10` is the kernel's rolling 10-second average at each sample, not a request-scoped stall percentage. Short requests can include contention from outside the request window. Use PSI as host-wide context and correlate it with process I/O/scheduler deltas; never attribute it solely to llama-server.
+
+
+### PCIe sampling semantics
+
+- `nvidia-smi dmon -s t -d 1` reports device-wide PCIe RX/TX rates in decimal MB/s, normally at one-second cadence. The sampler keeps a single process alive for the request and timestamps each parsed data row.
+- The dmon cadence is independent of `--monitor-interval`. With a 0.5-second resource interval, the same most-recent PCIe reading may therefore appear in adjacent raw resource rows. The request summary uses unique dmon rows, not duplicated resource rows.
+- A measured zero is a valid sample. No dmon data rows means unavailable telemetry, not zero traffic.
+- PCIe is device-wide and may include transfers unrelated to the inference request. Correlate timestamps with the process, GPU, cache, and token metrics; do not equate PCIe traffic directly with expert-weight transfers.
+- If the driver/device does not provide dmon PCIe data, `pcie_sample_count` is zero and the PCIe summary fields are null. The monitor does not infer missing values.
