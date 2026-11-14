@@ -12,7 +12,7 @@ def read_meminfo():
     out={}
     try:
         for line in pathlib.Path("/proc/meminfo").read_text().splitlines():
-            k, v = line.split(":",1); m=re.search(r"(\\d+)",v)
+            k, v = line.split(":",1); m=re.search(r"(\d+)",v)
             if m: out[k+"_bytes"]=int(m.group(1))*1024
     except Exception: pass
     total=out.get("MemTotal_bytes",0); avail=out.get("MemAvailable_bytes",0)
@@ -39,7 +39,7 @@ def find_pid(port, explicit=None):
     if explicit: return int(explicit)
     for p in pathlib.Path("/proc").iterdir():
         if not p.name.isdigit(): continue
-        try: cmd=(p/"cmdline").read_bytes().replace(b"\\0",b" ").decode(errors="ignore")
+        try: cmd=(p/"cmdline").read_bytes().replace(b"\0",b" ").decode(errors="ignore")
         except Exception: continue
         if "llama-server" in cmd and (f"--port {port}" in cmd or f"--port={port}" in cmd):
             return int(p.name)
@@ -47,7 +47,7 @@ def find_pid(port, explicit=None):
 
 def parse_pcie_dmon_line(line):
     """Parse one nvidia-smi dmon -s t data row; rates are decimal MB/s."""
-    match=re.match(r"^\\s*(\\d+)\\s+([0-9.]+|-)\\s+([0-9.]+|-)\\s*$", line)
+    match=re.match(r"^\s*(\d+)\s+([0-9.]+|-)\s+([0-9.]+|-)\s*$", line)
     if not match: return None
     def value(raw):
         try: return float(raw)
@@ -173,7 +173,7 @@ class RequestSampler:
         raw=self.outdir/"resource_samples.jsonl"
         with raw.open("a",encoding="utf-8") as f:
             for s in self.samples:
-                f.write(json.dumps({"request_id":self.request_id,**s},ensure_ascii=False)+"\\n")
+                f.write(json.dumps({"request_id":self.request_id,**s},ensure_ascii=False)+"\n")
         return self.summary(pcie_samples)
     def summary(self, pcie_samples=None):
         pcie_samples=pcie_samples if pcie_samples is not None else self.pcie.finish()
