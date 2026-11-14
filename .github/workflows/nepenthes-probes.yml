@@ -29,6 +29,8 @@ jobs:
         working-directory: artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro
         run: |
           python -m compileall -q .
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror test_nepenthes_trace.cpp -o /tmp/nepenthes_trace_test
+          /tmp/nepenthes_trace_test
           python -m unittest -v \
             test_NEPENTHES_moe_probes.py \
             test_NEPENTHES_universal_collector.py \
