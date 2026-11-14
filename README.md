@@ -13,6 +13,8 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 - Qwen3.5-9B en RTX 3050 Laptop 4 GiB: [evaluación de viabilidad ES](docs/QWEN3.5-9B-RTX3050-2026-11-11.md) · [English report](docs/QWEN3.5-9B-RTX3050-2026-11-11-EN.md) (ESTIMATED; no benchmark físico 9B).
 - MiniCPM5-2B Q4_K_M en RTX 3050 Laptop con llama.cpp CUDA: [informe de benchmark MEASURED y evaluación de viabilidad DSpark](docs/MINICPM5-2B-RTX3050-2026-11-11.md).
 
+- NEPENTHES / Tandem.cpp: [índice de observabilidad, roadmap y criterio de aceptación](research/moe/tandem.cpp/NEPENTHES-INDEX.md).
+
 ## RC4 — estado actual (2026-09-07)
 
 **Regla de autoridad:** LEONES descubre el hardware y conserva procedencia. FitLLM/LLMFit es preselector (ESTIMATED). El usuario elige modelo y stack. Solo una ejecución física autorizada produce MEASURED.
