@@ -1,0 +1,166 @@
+=== FECHAS DE LAS BIBLIOTECAS ===
+2026-11-12 20:18:05.775750170 +0100 | 17872 bytes | /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/llama-server
+2026-11-12 20:18:05.627793515 +0100 | 8339248 bytes | /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama-server-impl.so
+2026-11-12 20:13:22.905900193 +0100 | 17 bytes | /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama.so.0
+2026-11-12 20:11:08.302349807 +0100 | 22 bytes | /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cuda.so.0
+2026-11-12 20:11:37.584468780 +0100 | 21 bytes | /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cpu.so.0
+
+=== FECHA DE LOS FUENTES MoE ===
+2026-11-12 19:40:20.415889510 +0100 | 241789 bytes | /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp
+2026-11-12 19:40:20.415932688 +0100 | 11917 bytes | /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.h
+2026-11-12 19:40:20.415951534 +0100 | 2889 bytes | /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-prof.h
+
+=== MENSAJES DE INSTRUMENTACIÓN EN EL CÓDIGO ===
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:287:    LLAMA_LOG_INFO("llama_moe_cache: CPU %s kernel: %s decode, from %d token%s (per 256 rows: ggml %.0f us, shuffle %.0f/%.0f, gather %.0f/%.0f at 1/2 tokens)\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:612:                    LLAMA_LOG_INFO("llama_moe_cache: fault batch timing: %s (fd %d), %llu sectors read so far\n", path, stat_fd, (unsigned long long) sectors_read());
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:740:                    LLAMA_LOG_WARN("llama_moe_cache: arena: %s is not mapped from a file, no arena\n", w->name);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:747:                        LLAMA_LOG_WARN("llama_moe_cache: arena: cannot open %s with O_DIRECT, no arena\n", m->path.c_str());
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1094:struct llama_moe_cache::impl {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1131:        llama_moe_cache::act_type act = llama_moe_cache::ACT_NONE;
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1150:        // prefill share: the expert input, router weights and selected experts of the current large-batch graph (p_x nullptr: none)
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1153:        ggml_tensor * pf_flag = nullptr;    // I32 [4] in pinned memory, the flag of the host_add of the prefill share
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1295:        llama_moe_cache::act_type act = llama_moe_cache::ACT_NONE;
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1445:                LLAMA_LOG_DEBUG("llama_moe_cache: fault threads %s (%.0f major faults/s)\n", on ? "on" : "off", rate);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1496:    // prefill share (LLAMA_MOE_PREFILL_CPU=auto, or a fixed share 0..1; needs hybrid flag mode): ubatches of 33 to pf_max tokens
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1528:            LLAMA_LOG_WARN("llama_moe_cache: hot list: cannot write %s\n", hot_save.c_str());
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1542:        LLAMA_LOG_INFO("llama_moe_cache: hot list: %zu experts written to %s\n", order.size(), hot_save.c_str());
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1593:        LLAMA_LOG_INFO("llama_moe_cache: hot list: %zu experts (%.2f GiB) placed in the VRAM cache in %.1f s from %s\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1606:            LLAMA_LOG_WARN("llama_moe_cache: hot list: no experts of this model in %s\n", path);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:1678:        LLAMA_LOG_INFO("llama_moe_cache: hot list: %zu of %zu experts (%.1f GiB of %.1f GiB budget) read into RAM in %.1f s (%.2f GB/s)%s%s from %s\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:2149:                LLAMA_LOG_INFO("%s: hybrid prefill share: ubatches of 33 to %d tokens, the CPU computes %s of the missed experts used by at most %d tokens\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:2792:    bool cpu_can(const layer & l, llama_moe_cache::act_type act) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:2794:        return l.bias_ok && (use_kernel || (!biased && act != llama_moe_cache::ACT_SWIGLU_OAI));
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:3064:    // a large-batch graph registers (or with x nullptr clears) the tensors of the prefill share of layer il
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:3065:    ggml_tensor * set_prefill_layer(int32_t il, ggml_tensor * x, ggml_tensor * w, const ggml_tensor * ids, llama_moe_cache::act_type act, float limit) {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:3070:        if (!pf || x == nullptr || !hybrid_layer_ok(il) || act == llama_moe_cache::ACT_NONE || !cpu_can(l, act) || x->ne[1] > pf_max) {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:3134:                LLAMA_LOG_WARN("llama_moe_cache: prefill share: layer %d's registered tensors do not match the graph, no CPU share\n", il);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:3224:        GGML_ASSERT((int64_t) top.size() >= 2*n_used && "prefill share: too few experts left on the GPU");
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:3354:                LLAMA_LOG_DEBUG("llama_moe_cache: hybrid share %.2f -> %.2f (rule: link %.1f GB/s, CPU %.1f GB/s)\n", old, hybrid_share, link_gbs, R);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:3366:            LLAMA_LOG_DEBUG("llama_moe_cache: hybrid share %.2f -> %.2f (CPU late %.1f us, idle %.1f us per call)\n", old, hybrid_share, wait, idle);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:3950:                LLAMA_LOG_INFO("llama_moe_cache: hybrid share tuner: offset %+.1f -> %+.1f (span %.0f / %.0f / %.0f us at %+.1f / 0 / +0.1, share now %.2f)\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:3954:                LLAMA_LOG_DEBUG("llama_moe_cache: hybrid share tuner: offset %+.1f holds (span %.0f / %.0f / %.0f us)\n", share_off, t[0], t[1], t[2]);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4026:            LLAMA_LOG_DEBUG("llama_moe_cache: hybrid gate: span on %.0f us, off %.0f us, hold %d\n", t_on, t_off, gate_hold);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4028:                LLAMA_LOG_INFO("llama_moe_cache: hybrid gate: CPU path %s (ubatch span with it %.0f us, without %.0f us)\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4093:        ggml_tensor * act = l.act == llama_moe_cache::ACT_SWIGLU_CLAMP ?
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4196:                LLAMA_LOG_INFO("llama_moe_cache: dot4 check row %d: %.9g vs %.9g %s\n", r, o4[r], o1, o4[r] == o1 ? "same" : "DIFFERENT");
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4219:        const bool clamp = l.act == llama_moe_cache::ACT_SWIGLU_CLAMP;
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4220:        const bool oai   = l.act == llama_moe_cache::ACT_SWIGLU_OAI;
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4553:    ggml_tensor * set_hybrid_layer(int32_t il, ggml_tensor * cur, ggml_tensor * weights, llama_moe_cache::act_type act, float limit) {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4558:        if (cur == nullptr || act == llama_moe_cache::ACT_NONE || l.down == nullptr || !(l.gate_up || (l.up && l.gate)) ||
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4576:            LLAMA_LOG_INFO("llama_moe_cache: %s: hits = %zu, misses = %zu, hit rate = %.2f%%, uploaded = %.2f MiB\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4582:            LLAMA_LOG_INFO("llama_moe_cache: hybrid: %zu missed experts (%zu token-expert pairs) computed by the CPU, %.1f us per pair\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4585:                LLAMA_LOG_INFO("llama_moe_cache: tail skip (rank >= %d): %zu missed experts skipped\n", tail_rank, n_tail_skip);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4588:                LLAMA_LOG_INFO("llama_moe_cache: hybrid auto share: %.2f at the end, %zu changes%s\n", hybrid_share, n_share_changes,
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4590:                LLAMA_LOG_INFO("llama_moe_cache: hybrid gate: %zu probes, %zu decided off, %zu ubatches with the CPU path, %zu without, ends %s\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4593:                    LLAMA_LOG_INFO("llama_moe_cache: hybrid share tuner: %zu trials, %zu moves, offset %+.1f at the end\n", n_tune_trials, n_tune_moves, share_off);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4597:                LLAMA_LOG_INFO("llama_moe_cache: late pass: %zu calls, %zu experts uploaded on the second stream, %zu kept early (more than %d per token)\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4601:                LLAMA_LOG_INFO("llama_moe_cache: hybrid flag mode: the GPU waited %.1f us per layer call for the CPU, %zu timeouts\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4605:                LLAMA_LOG_INFO("llama_moe_cache: hybrid: the main thread joined %zu CPU job phases\n", n_guest_items);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4608:                LLAMA_LOG_INFO("llama_moe_cache: hot test: CPU job phases %.1f us cold, %.1f us hot (%zu jobs)\n", t_hot[0]/n_hot, t_hot[1]/n_hot, n_hot);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4611:                LLAMA_LOG_INFO("llama_moe_cache: hybrid CPU job phases (us per job): wake %.1f, prep %.1f, gate/up %.1f, act quant %.1f, down %.1f, post %.1f (%zu jobs)\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4613:                LLAMA_LOG_INFO("llama_moe_cache: hybrid CPU jobs: %.2f tokens per expert, %.1f%% of experts by the multi-token i-quant kernels\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4619:                    LLAMA_LOG_INFO("llama_moe_cache: doorbell background admission: %zu claimed, %zu published, %zu dropped, %.0f us copying per call\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4622:                LLAMA_LOG_INFO("llama_moe_cache: doorbell: %zu calls, host %.1f us per call, GPU waited %.1f us per call for the host, %zu timeouts\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4626:            LLAMA_LOG_INFO("llama_moe_cache: hybrid per layer call (us): sync %.1f, plan+uploads %.1f, until cpu_out %.1f, wait for CPU %.1f, CPU job %.1f (%zu calls)\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4628:            LLAMA_LOG_INFO("llama_moe_cache: plan+uploads split (us): plan %.1f, read-ahead and checks %.1f, wait for the CPU worker and lookahead %.1f, copies %.1f (%.2f MiB per call, %.2f GB/s)\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4631:                LLAMA_LOG_INFO("llama_moe_cache: upload order: %zu pieces with pages not in RAM copied last (%.2f per layer call)\n", n_up_late, n_up_late/n);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4634:                LLAMA_LOG_INFO("llama_moe_cache: upload probe: %.1f%% of %zu uploaded pages not in RAM when the copy started\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4639:            LLAMA_LOG_INFO("llama_moe_cache: willneed: %zu layer calls, %zu ranges, %.1f us per call\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4643:            LLAMA_LOG_INFO("llama_moe_cache: cold: %zu uploaded expert tensors marked cold\n", n_cold);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4646:            LLAMA_LOG_INFO("llama_moe_cache: shadow: %zu passes, %zu missed experts computed from RAM, %zu left out and read ahead, %zu cut by rank\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4649:                LLAMA_LOG_INFO("llama_moe_cache: GPU-only shadow: %zu uncached experts found in RAM (computed by the real pass), %zu read-ahead batches, %zu real-pass touches skipped while one ran\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4656:            LLAMA_LOG_INFO("llama_moe_cache: arena: %zu calls, %zu hits, %zu reads (%.1f%% hit), %.1f GiB read, %.1f us per call, %.0f us and %.2f MiB per read, %zu not placed, %zu failed\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4661:                LLAMA_LOG_INFO("llama_moe_cache: fault batches: %zu, %.0f us each; %zu with SSD reads: %.0f us and %.2f MiB each, %.2f GB/s inside them; bytes read at < 1 / 1-2 / 2-3 / >= 3 GB/s: %.0f / %.0f / %.0f / %.0f%%\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4666:                LLAMA_LOG_INFO("llama_moe_cache: fault prediction: %zu experts touched ahead, %zu of them missed by the next layer (%.1f%%)\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4670:                LLAMA_LOG_INFO("llama_moe_cache: fault threads on for %.0f%% of %.0f s, %zu switches\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4675:            LLAMA_LOG_INFO("llama_moe_cache: pre-read: %zu jobs, %zu experts, %.1f GiB read, %.1f us per job, %zu stopped by the next job\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4679:            LLAMA_LOG_INFO("llama_moe_cache: lookahead: %zu jobs, %zu experts prefetched, %zu used (%.1f%%), %zu stopped at the running layer, %zu cancelled, "
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4684:            LLAMA_LOG_INFO("llama_moe_cache: prefill share: %zu layer calls, %zu of %zu missed experts on the CPU (%zu pairs), CPU %.0f us per expert, GPU %.0f us per upload (last), "
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4685:                "per layer: plan %.0f us, CPU job %.0f us, GPU waited %.0f us, %zu mismatches, %zu experts read ahead by the fault threads\n",
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4689:            LLAMA_LOG_INFO("llama_moe_cache: large batches: %zu experts copied from the cache, %.2f MiB\n", stats_copy.hits, stats_copy.bytes/1024.0/1024.0);
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4694:llama_moe_cache::llama_moe_cache(const llama_model & model, bool no_alloc, const std::vector<ggml_backend_t> & backends, const std::vector<ggml_backend_buffer_type_t> & bufts, size_t size,
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4699:llama_moe_cache::~llama_moe_cache() = default;
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4701:ggml_backend_t llama_moe_cache::backend(int32_t il) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4705:ggml_tensor * llama_moe_cache::get_slot_map(int32_t il, int64_t n_tokens, int64_t n_expert_used) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4709:ggml_tensor * llama_moe_cache::get_experts(const ggml_tensor * w) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4713:bool llama_moe_cache::copy(ggml_backend_t backend, const ggml_tensor * src, ggml_tensor * dst, ggml_cgraph * graph) {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4717:bool llama_moe_cache::hybrid_configured() const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4721:bool llama_moe_cache::hybrid_enabled() const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4725:bool llama_moe_cache::set_shadow(bool on) {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4760:ggml_tensor * llama_moe_cache::shadow_slot_map(int32_t il) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4764:void llama_moe_cache::shadow_register_ids(int32_t il, ggml_tensor * ids) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4770:bool llama_moe_cache::take_graph_change() const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4776:ggml_tensor * llama_moe_cache::set_hybrid_layer(int32_t il, ggml_tensor * cur, ggml_tensor * weights, act_type act, float limit) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4780:ggml_tensor * llama_moe_cache::doorbell_slots(ggml_context * ctx, int32_t il, ggml_tensor * ids, ggml_tensor * x, ggml_tensor * w, int64_t n_tokens, int64_t n_used) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4784:int llama_moe_cache::late_k(int32_t il, int64_t n_tokens) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4792:ggml_tensor * llama_moe_cache::late_barrier(ggml_context * ctx, int32_t il, ggml_tensor * x) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4801:ggml_tensor * llama_moe_cache::late_slots(ggml_context * ctx, int32_t il, int64_t n_tokens) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4807:ggml_tensor * llama_moe_cache::late_weights(ggml_context * ctx, int32_t il, int64_t n_tokens) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4813:ggml_tensor * llama_moe_cache::hybrid_add(ggml_context * ctx, int32_t il, ggml_tensor * moe_out) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4817:int64_t llama_moe_cache::copy_experts(ggml_backend_t backend, const ggml_tensor * w, ggml_tensor * dst, int64_t e, int64_t last, int64_t e0) {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4821:std::map<ggml_backend_buffer_type_t, size_t> llama_moe_cache::memory_breakdown() const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4834:bool llama_moe_cache::prefill_enabled(int64_t n_tokens) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4838:void llama_moe_cache::disable_prefill_share() {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4840:        LLAMA_LOG_INFO("llama_moe_cache: no hybrid prefill share without op offload\n");
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4845:ggml_tensor * llama_moe_cache::set_prefill_layer(int32_t il, ggml_tensor * x, ggml_tensor * w, const ggml_tensor * ids, act_type act, float limit) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4849:ggml_tensor * llama_moe_cache::prefill_add(ggml_context * ctx, int32_t il, ggml_tensor * moe_out) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4853:bool llama_moe_cache::prefill_plan(ggml_backend_t backend, const ggml_tensor * w, const ggml_tensor * ids, std::vector<int32_t> & ids_data, std::vector<bool> & used) {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4857:ggml_tensor * llama_moe_cache::lookahead_router(int32_t il, ggml_tensor ** bias, int * k) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.cpp:4861:void llama_moe_cache::set_lookahead_layer(int32_t il, ggml_tensor * pred) const {
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.h:154:    // prefill share (LLAMA_MOE_PREFILL_CPU, hybrid flag mode): ubatches of n_tokens on the large-batch path hand the CPU part of
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/src/llama-moe-cache.h:158:    // the prefill share runs from the scheduler's copy callback of the large-batch weight upload: without op offload
+
+=== MENSAJES PRESENTES EN LAS BIBLIOTECAS ===
+--- /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama-server-impl.so
+--- /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama.so.0
+llama_moe_cache: no hybrid prefill share without op offload
+llama_moe_cache: fault batch timing: %s (fd %d), %llu sectors read so far
+llama_moe_cache: CPU %s kernel: %s decode, from %d token%s (per 256 rows: ggml %.0f us, shuffle %.0f/%.0f, gather %.0f/%.0f at 1/2 tokens)
+llama_moe_cache: hybrid share tuner: offset %+.1f -> %+.1f (span %.0f / %.0f / %.0f us at %+.1f / 0 / +0.1, share now %.2f)
+llama_moe_cache: hybrid share tuner: offset %+.1f holds (span %.0f / %.0f / %.0f us)
+llama_moe_cache: hybrid gate: span on %.0f us, off %.0f us, hold %d
+llama_moe_cache: hybrid gate: CPU path %s (ubatch span with it %.0f us, without %.0f us)
+llama_moe_cache: %s: hits = %zu, misses = %zu, hit rate = %.2f%%, uploaded = %.2f MiB
+llama_moe_cache: hybrid: %zu missed experts (%zu token-expert pairs) computed by the CPU, %.1f us per pair
+llama_moe_cache: tail skip (rank >= %d): %zu missed experts skipped
+llama_moe_cache: hybrid auto share: %.2f at the end, %zu changes%s
+llama_moe_cache: hybrid gate: %zu probes, %zu decided off, %zu ubatches with the CPU path, %zu without, ends %s
+llama_moe_cache: hybrid share tuner: %zu trials, %zu moves, offset %+.1f at the end
+llama_moe_cache: late pass: %zu calls, %zu experts uploaded on the second stream, %zu kept early (more than %d per token)
+llama_moe_cache: hybrid flag mode: the GPU waited %.1f us per layer call for the CPU, %zu timeouts
+llama_moe_cache: hybrid: the main thread joined %zu CPU job phases
+llama_moe_cache: hot test: CPU job phases %.1f us cold, %.1f us hot (%zu jobs)
+llama_moe_cache: hybrid CPU job phases (us per job): wake %.1f, prep %.1f, gate/up %.1f, act quant %.1f, down %.1f, post %.1f (%zu jobs)
+llama_moe_cache: hybrid CPU jobs: %.2f tokens per expert, %.1f%% of experts by the multi-token i-quant kernels
+llama_moe_cache: doorbell background admission: %zu claimed, %zu published, %zu dropped, %.0f us copying per call
+llama_moe_cache: doorbell: %zu calls, host %.1f us per call, GPU waited %.1f us per call for the host, %zu timeouts
+llama_moe_cache: hybrid per layer call (us): sync %.1f, plan+uploads %.1f, until cpu_out %.1f, wait for CPU %.1f, CPU job %.1f (%zu calls)
+llama_moe_cache: plan+uploads split (us): plan %.1f, read-ahead and checks %.1f, wait for the CPU worker and lookahead %.1f, copies %.1f (%.2f MiB per call, %.2f GB/s)
+llama_moe_cache: upload order: %zu pieces with pages not in RAM copied last (%.2f per layer call)
+llama_moe_cache: upload probe: %.1f%% of %zu uploaded pages not in RAM when the copy started
+llama_moe_cache: willneed: %zu layer calls, %zu ranges, %.1f us per call
+llama_moe_cache: cold: %zu uploaded expert tensors marked cold
+llama_moe_cache: shadow: %zu passes, %zu missed experts computed from RAM, %zu left out and read ahead, %zu cut by rank
+llama_moe_cache: GPU-only shadow: %zu uncached experts found in RAM (computed by the real pass), %zu read-ahead batches, %zu real-pass touches skipped while one ran
+llama_moe_cache: arena: %zu calls, %zu hits, %zu reads (%.1f%% hit), %.1f GiB read, %.1f us per call, %.0f us and %.2f MiB per read, %zu not placed, %zu failed
+llama_moe_cache: fault batches: %zu, %.0f us each; %zu with SSD reads: %.0f us and %.2f MiB each, %.2f GB/s inside them; bytes read at < 1 / 1-2 / 2-3 / >= 3 GB/s: %.0f / %.0f / %.0f / %.0f%%
+llama_moe_cache: fault prediction: %zu experts touched ahead, %zu of them missed by the next layer (%.1f%%)
+llama_moe_cache: fault threads on for %.0f%% of %.0f s, %zu switches
+llama_moe_cache: pre-read: %zu jobs, %zu experts, %.1f GiB read, %.1f us per job, %zu stopped by the next job
+llama_moe_cache: lookahead: %zu jobs, %zu experts prefetched, %zu used (%.1f%%), %zu stopped at the running layer, %zu cancelled, %.1f us per job, callbacks waited %.1f us in all, %zu stream waits
+llama_moe_cache: prefill share: %zu layer calls, %zu of %zu missed experts on the CPU (%zu pairs), CPU %.0f us per expert, GPU %.0f us per upload (last), per layer: plan %.0f us, CPU job %.0f us, GPU waited %.0f us, %zu mismatches, %zu experts read ahead by the fault threads
+llama_moe_cache: large batches: %zu experts copied from the cache, %.2f MiB
+llama_moe_cache: hot list: no experts of this model in %s
+llama_moe_cache: hot list: %zu of %zu experts (%.1f GiB of %.1f GiB budget) read into RAM in %.1f s (%.2f GB/s)%s%s from %s
+llama_moe_cache: hybrid share %.2f -> %.2f (rule: link %.1f GB/s, CPU %.1f GB/s)
+llama_moe_cache: hybrid share %.2f -> %.2f (CPU late %.1f us, idle %.1f us per call)
+llama_moe_cache: prefill share: layer %d's registered tensors do not match the graph, no CPU share
+llama_moe_cache: fault threads %s (%.0f major faults/s)
+(int64_t) top.size() >= 2*n_used && "prefill share: too few experts left on the GPU"
+llama_moe_cache: dot4 check row %d: %.9g vs %.9g %s
+llama_moe_cache: hot list: %zu experts (%.2f GiB) placed in the VRAM cache in %.1f s from %s
+llama_moe_cache: hot list: cannot write %s
+llama_moe_cache: hot list: %zu experts written to %s
+llama_moe_cache: arena: %s is not mapped from a file, no arena
+llama_moe_cache: arena: cannot open %s with O_DIRECT, no arena
+%s: hybrid prefill share: ubatches of 33 to %d tokens, the CPU computes %s of the missed experts used by at most %d tokens

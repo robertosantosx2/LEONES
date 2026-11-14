@@ -1,0 +1,367 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-14T19:07:07.155666+00:00",
+  "source_roots": [
+    "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_pilot",
+    "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full",
+    "/home/ssantos/NEPENTHES_QWEN35_CORRELATED_20261114",
+    "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114",
+    "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full.tar.gz",
+    "/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/report1.nsys-rep"
+  ],
+  "archive_directory": "/home/ssantos/leones-work/NEPENTHES-archive-intake-20261114/artifacts/benchmarks/nepenthes-raw-archive-2026-11-14/20261114-200707",
+  "source_files": 45,
+  "copied_files": 31,
+  "duplicate_files": 1,
+  "already_archived_files": 13,
+  "total_copied_bytes": 38693823,
+  "missing_roots": [],
+  "excluded": {
+    "model_and_checkpoint_suffixes": [
+      ".a",
+      ".deb",
+      ".gguf",
+      ".model",
+      ".o",
+      ".onnx",
+      ".pt",
+      ".pth",
+      ".pyc",
+      ".rpm",
+      ".safetensors",
+      ".so",
+      ".whl"
+    ],
+    "directory_names": [
+      ".cache",
+      ".git",
+      "__pycache__",
+      "build",
+      "checkpoints",
+      "dist",
+      "hub",
+      "huggingface",
+      "models",
+      "node_modules",
+      "target"
+    ],
+    "symlinks": true
+  },
+  "files": [
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_pilot/run_manifest.json",
+      "archive_path": "NEPENTHES_TANDEM_QWEN35_20261113_pilot/run_manifest.json",
+      "sha256": "f566550764fbd30bdb4d0c3e7406699b766c32b3e3be28860b6b8fbf7350dd25",
+      "size_bytes": 12375,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_pilot/summary.jsonl",
+      "archive_path": "NEPENTHES_TANDEM_QWEN35_20261113_pilot/summary.jsonl",
+      "sha256": "ca62f73bad987335cf4146dd82fb3341bed678e5cd9caf55370124e46841e10d",
+      "size_bytes": 7616,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_pilot/responses/01-arithmetic-budget64-max256.json",
+      "archive_path": "NEPENTHES_TANDEM_QWEN35_20261113_pilot/responses/01-arithmetic-budget64-max256.json",
+      "sha256": "bef5a43834dc492f110b59cb4d4e0f1a57d686b2e8161d307766f325efb991d5",
+      "size_bytes": 12318,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_pilot/resources/resource_samples.jsonl",
+      "archive_path": "NEPENTHES_TANDEM_QWEN35_20261113_pilot/resources/resource_samples.jsonl",
+      "sha256": "b1df3964d58c50aac512c0cc8549a86e93004594b49b161b193b976b8336cb15",
+      "size_bytes": 33914,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/run_manifest.json",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/run_manifest.json",
+      "sha256": "bfd97bdb31db602c0921ab4a61c25526e92350c406d403afa5c96f83df44ae85",
+      "size_bytes": 12375,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/summary.jsonl",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/summary.jsonl",
+      "sha256": "0accacc605d908b7169589527e939c7237fb67471e566d81d8e50b4eaec326c1",
+      "size_bytes": 77177,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/responses/01-arithmetic-budget64-max256.json",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/responses/01-arithmetic-budget64-max256.json",
+      "sha256": "8cd3e3460657764f621dad3b46122a40ec4936f98712d82eb6ab496cb9b66ca9",
+      "size_bytes": 12361,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/responses/02-arithmetic-budget128-max384.json",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/responses/02-arithmetic-budget128-max384.json",
+      "sha256": "daf53bd0a64d17321f062a2a2300142d15ce6de0dad5c5cbeded2dbb1e8da5ff",
+      "size_bytes": 13081,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/responses/03-arithmetic-budget256-max512.json",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/responses/03-arithmetic-budget256-max512.json",
+      "sha256": "a741082432d051bb4bd38e50308bc51571fd13f797e1abcc32e270c377d6fdba",
+      "size_bytes": 12844,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/responses/04-two_sum-budget128-max512.json",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/responses/04-two_sum-budget128-max512.json",
+      "sha256": "1f16b1b11a0433626e8ec19e60ad954cf32871a6988234b4e48cf9c83d3ad166",
+      "size_bytes": 14751,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/responses/05-two_sum-budget128-max768.json",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/responses/05-two_sum-budget128-max768.json",
+      "sha256": "c3fd3bb9ddc668ffaaf4679d43745ccbc9dd3b2d269ab4ebbc6e8a82ba36d5c2",
+      "size_bytes": 15343,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/responses/06-two_sum-budget256-max1024.json",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/responses/06-two_sum-budget256-max1024.json",
+      "sha256": "ca7a452ff41f1c683869fad6dcbd68bb6e7c2fbc74566b19ebc3b3c65abf5688",
+      "size_bytes": 16184,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/responses/07-two_sum-budget128-max1536.json",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/responses/07-two_sum-budget128-max1536.json",
+      "sha256": "a7a53a43a95404289f1c21d1f0a507f8bd0255f6aa1641a6311fbfe832ea90fc",
+      "size_bytes": 15935,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/responses/08-two_sum-budget256-max1536.json",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/responses/08-two_sum-budget256-max1536.json",
+      "sha256": "3a655b68d6cabc9caec1e14ea951f323d8b43ed945c8c0193e4de443e296f444",
+      "size_bytes": 16527,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/responses/09-binary_search-budget128-max1536.json",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/responses/09-binary_search-budget128-max1536.json",
+      "sha256": "bd1f57fe794f2c71e465de9ce35fefeeb1832e59f5da1c7a8e3e769c293f323f",
+      "size_bytes": 16964,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/responses/10-binary_search-budget256-max1536.json",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/responses/10-binary_search-budget256-max1536.json",
+      "sha256": "6bc29887831591694f71ce2259ce6715cdb56be2c610936bec742b62e04902a6",
+      "size_bytes": 17830,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full/resources/resource_samples.jsonl",
+      "archive_path": "artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/resources/resource_samples.jsonl",
+      "sha256": "88eb60c8c96ae332f1ef26fc0fb4049d999d5adf91a418a1919f292b313e00dc",
+      "size_bytes": 1730638,
+      "status": "already_archived_in_repo"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_QWEN35_CORRELATED_20261114/binary-inspection.txt",
+      "archive_path": "NEPENTHES_QWEN35_CORRELATED_20261114/binary-inspection.txt",
+      "sha256": "8d4a154ec7f2258ae7cd060a3e5463ba01a1e123996acb3970e660250d5f2bac",
+      "size_bytes": 9216,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_QWEN35_CORRELATED_20261114/correlated-inference-response.json",
+      "archive_path": "NEPENTHES_QWEN35_CORRELATED_20261114/correlated-inference-response.json",
+      "sha256": "28266790b4b332ec405dae84dc84ebb51a37665455452074105f1f928ffbe438",
+      "size_bytes": 2510,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_QWEN35_CORRELATED_20261114/moe-instrumentation-check.txt",
+      "archive_path": "NEPENTHES_QWEN35_CORRELATED_20261114/moe-instrumentation-check.txt",
+      "sha256": "5606e0bce19e95418279cf8240da35811cb279419114884826b5538b2e3ac77b",
+      "size_bytes": 27963,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_QWEN35_CORRELATED_20261114/preflight.txt",
+      "archive_path": "NEPENTHES_QWEN35_CORRELATED_20261114/preflight.txt",
+      "sha256": "5b617f4639c644a507287180a2fa8bcc22b1ed2bf81e090edcfc3dcbc6c9b634",
+      "size_bytes": 3974,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-20261114.nsys-rep",
+      "archive_path": "NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-20261114.nsys-rep",
+      "sha256": "f5ced9493e2055dd1c28e743d6e5c0c03e0d445a52924a0a71c39339b7c35104",
+      "size_bytes": 3239777,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-20261114.sqlite",
+      "archive_path": "NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-20261114.sqlite",
+      "sha256": "30df43c0a1b235cc25987e2af87e5cf19e5f900f324c26fa22f28cd83144e4fc",
+      "size_bytes": 7913472,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-summary.txt",
+      "archive_path": "NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-summary.txt",
+      "sha256": "b2e4a8268ecd8da24db031be77784d7dc0b6e7a7e7498872e730d77794442286",
+      "size_bytes": 24798,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_QWEN35_CORRELATED_20261114/real-library-identities.txt",
+      "archive_path": "NEPENTHES_QWEN35_CORRELATED_20261114/real-library-identities.txt",
+      "sha256": "d472580d19f30c44d45d28b3435c4be488de7df49b7d6a36d5705ed9ead98548",
+      "size_bytes": 3302,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_QWEN35_CORRELATED_20261114/server.log",
+      "archive_path": "NEPENTHES_QWEN35_CORRELATED_20261114/server.log",
+      "sha256": "2fff2b0d46f2cfb888e0fda3ef06a3ed4cff2be983621943559ccb8d677fd011",
+      "size_bytes": 4784,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/inventory.txt",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/inventory.txt",
+      "sha256": "fe85cf144c0e9ac14fa0e3a3b56191ab7b114edf572fa015dcc4f7dab93aace6",
+      "size_bytes": 3955,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/nsight_capabilities.txt",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/nsight_capabilities.txt",
+      "sha256": "d383d584215a6b7009cbff06f0f2d31b42c25f5d83d5ad93e78231154cc10bea",
+      "size_bytes": 90952,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/nsys-final-cli-check.txt",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/nsys-final-cli-check.txt",
+      "sha256": "84b28bd13a7b90a279ff7ab5059136f09abbb1b8619a7294bbd6d1fcd7fa268f",
+      "size_bytes": 6227,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/nsys-preflight-options.txt",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/nsys-preflight-options.txt",
+      "sha256": "339a45b761b10d20238e75b861d1d857d0a4bb0fdcc59010a16af54e644792b2",
+      "size_bytes": 27594,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/nsys_capture_control.txt",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/nsys_capture_control.txt",
+      "sha256": "2b10b3fe37be2e9054ddb39337ba25563310341fd35b5442c5fba5b73ae1f825",
+      "size_bytes": 40251,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/nsys_interactive.txt",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/nsys_interactive.txt",
+      "sha256": "5e003ec97b17e53a5efd1bcf73480bd846eac5f3e03363b25db0173c68e25d96",
+      "size_bytes": 39181,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-inference-clean-20261114.nsys-rep",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/qwen35-inference-clean-20261114.nsys-rep",
+      "sha256": "9728ce5243983b644179b7cc6ad4f339cf007516f6923d1e41bda39879d1c8f2",
+      "size_bytes": 3346791,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-inference-clean-20261114.sqlite",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/qwen35-inference-clean-20261114.sqlite",
+      "sha256": "c3651958c09ab58020f178367f5f2c30e599842bb310e7b2ddcfb6513f6ffac6",
+      "size_bytes": 8151040,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-inference-clean-response.json",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/qwen35-inference-clean-response.json",
+      "sha256": "65fceec3fd1aa3158e297eb3f6dedc2c5adb45b1dc5aada4884532d947546e3f",
+      "size_bytes": 2536,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-inference-clean-summary.txt",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/qwen35-inference-clean-summary.txt",
+      "sha256": "8b7f119aefb1c8f2e9301972dac51c823a59dffd6322266cb5b1abda03784179",
+      "size_bytes": 24798,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-inference-only-response.json",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/qwen35-inference-only-response.json",
+      "sha256": "05600fe9b2aa921636729ad3862413ffeb78a75be1528906ca3c32c5235adaf8",
+      "size_bytes": 2446,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.nsys-rep",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.nsys-rep",
+      "sha256": "052e02422272b1d24c954f4fad94e69a068a4b777dbe9fb52ed4446c085ab4bd",
+      "size_bytes": 470770,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.sqlite",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.sqlite",
+      "sha256": "784710a3a85af03c81583c8b6c198420aee093ee40556e0791800bceeedd3633",
+      "size_bytes": 7831552,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-no-osrt-20261114.nsys-rep",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-no-osrt-20261114.nsys-rep",
+      "sha256": "d2ac2e0cbc19c55ead9ab525568b1cbc80d3b87f66e51e56b2becd728fa2b670",
+      "size_bytes": 2069170,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-no-osrt-20261114.sqlite",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-no-osrt-20261114.sqlite",
+      "sha256": "ecbed44685e5601e857dfe387e0daa028d150c692f718c56c19e89c55678b8f1",
+      "size_bytes": 5177344,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-no-osrt-summary.txt",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-no-osrt-summary.txt",
+      "sha256": "2789ca5066f82129680b7692959d88343defb545c2dc69b0cdea5959944efc2a",
+      "size_bytes": 22878,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-summary.txt",
+      "archive_path": "NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-summary.txt",
+      "sha256": "d2d8dc08628655c807d0238e6a061dacb0f496d1a613ebb638bd36e231adfe4a",
+      "size_bytes": 7170,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full.tar.gz",
+      "archive_path": "ssantos/NEPENTHES_TANDEM_QWEN35_20261113_full.tar.gz",
+      "sha256": "9bce83a4deabbdf2e2ed660ab14540e82ad65a3e87ea9890744d0f2dd019f7be",
+      "size_bytes": 83149,
+      "status": "copied"
+    },
+    {
+      "source": "/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/report1.nsys-rep",
+      "archive_path": "NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-20261114.nsys-rep",
+      "sha256": "f5ced9493e2055dd1c28e743d6e5c0c03e0d445a52924a0a71c39339b7c35104",
+      "size_bytes": 3239777,
+      "status": "duplicate_content"
+    }
+  ]
+}

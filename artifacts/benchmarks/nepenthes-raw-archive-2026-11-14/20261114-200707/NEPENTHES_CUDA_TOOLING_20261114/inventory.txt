@@ -1,0 +1,62 @@
+=== FECHA ===
+2026-11-14T16:30:50+01:00
+
+=== PROCESO TANDEM ===
+    PID    PPID STAT     ELAPSED %CPU %MEM   RSS    VSZ COMMAND
+  10314       1 Sl      16:42:30 39.1 61.0 9480836 57024468 /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/llama-server -m /home/ssantos/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf --host 127.0.0.1 --port 18085 -c 2048 -b 128 -ub 64 -t 8 -tb 8 -ngl 99 --cpu-moe --moe-cache-mib 512 -np 1
+
+=== BINARIO ===
+/home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/llama-server
+
+=== CUDA / NVIDIA ===
+Sat Nov 14 16:30:50 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3050 ...    Off |   00000000:01:00.0 Off |                  N/A |
+| N/A   44C    P8              3W /   35W |    2073MiB /   4096MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            5682      G   /usr/lib/xorg/Xorg                        4MiB |
+|    0   N/A  N/A           10314      C   ...tandem/build/bin/llama-server       2050MiB |
++-----------------------------------------------------------------------------------------+
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2026 NVIDIA Corporation
+Built on Tue_Sep_01_08:45:21_PDT_2026
+Cuda compilation tools, release 13.4, V13.4.92
+Build cuda_13.4.r13.4/compiler.38855100_0
+
+=== HERRAMIENTAS DE PERFILADO ===
+nsys      /usr/local/cuda-13.4/bin/nsys
+ncu       /usr/local/cuda-13.4/bin/ncu
+nvprof    perf      /usr/bin/perf
+strace    /usr/bin/strace
+ltrace    
+=== CUPTI ===
+/usr/local/cuda-13.4/targets/x86_64-linux/lib/libcupti.so.2026.3.1
+/usr/local/cuda-13.4/targets/x86_64-linux/lib/libnvperf_host.so
+/usr/local/cuda-13.4/targets/x86_64-linux/lib/libcupti.so.2026.3.1
+/usr/local/cuda-13.4/targets/x86_64-linux/lib/libnvperf_host.so
+
+=== BIBLIOTECAS CUDA DEL PROCESO ===
+/usr/lib/x86_64-linux-gnu/libcuda.so.580.178.04
+/usr/local/cuda-13.4/targets/x86_64-linux/lib/libcublasLt.so.13.8.0.4
+/usr/local/cuda-13.4/targets/x86_64-linux/lib/libcublas.so.13.8.0.4
+/usr/local/cuda-13.4/targets/x86_64-linux/lib/libcudart.so.13.4.92
+
+=== VARIABLES DE ENTORNO RELEVANTES ===
+
+=== OPCIONES DEL BINARIO ===
+tandem.cpp defaults (unset variables; LLAMA_MOE_NO_DEFAULTS=1 for none): GGML_CUDA_GRAPH_KEY_SHAPE=1 GGML_SCHED_BATCH_INPUTS=3 GGML_CUDA_MMVF_MAX=8 GGML_CUDA_Q8_CACHE=1 LLAMA_GRAPH_POOL=6 LLAMA_SRV_USER_BREAK=0 LLAMA_MOE_CPU=auto LLAMA_MOE_PREFILL_CPU=auto LLAMA_MOE_CPU_RB=64 LLAMA_MOE_CPU_DOWN_PE=64 LLAMA_HC_FUSE=1 GGML_CUDA_HC_MIX_FUSE=1 LLAMA_GDN_DIRECT=1 LLAMA_GDN_GATES=1 LLAMA_GDN_REPLAY=1 LLAMA_CONV_CONT=1 LLAMA_CONV_TAIL=1 LLAMA_PLE_GPU=1 LLAMA_MTP_DEFER=1
+version: 0.8.0-dev (build 11962, commit f5222f25c)
+built with GNU 15.2.0 for Linux x86_64

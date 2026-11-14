@@ -1,0 +1,60 @@
+Generating SQLite file /home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.sqlite from /home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.nsys-rep
+Processing [/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_api_sum.py]... 
+
+ ** CUDA API Summary (cuda_api_sum):
+
+ Time (%)  Total Time (ns)  Num Calls  Avg (ns)   Med (ns)   Min (ns)  Max (ns)  StdDev (ns)              Name             
+ --------  ---------------  ---------  ---------  ---------  --------  --------  -----------  -----------------------------
+     94,0          209.032          1  209.032,0  209.032,0   209.032   209.032          0,0  cuMemGetAllocationGranularity
+      4,0            9.528          6    1.588,0    1.431,0       197     3.232      1.359,0  cudaGetDeviceProperties      
+      1,0            2.987          1    2.987,0    2.987,0     2.987     2.987          0,0  cuModuleGetLoadingMode       
+
+Processing [/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_gpu_kern_sum.py]... 
+SKIPPED: /home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.sqlite does not contain CUDA kernel data.
+
+Processing [/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_gpu_mem_time_sum.py]... 
+SKIPPED: /home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.sqlite does not contain GPU memory data.
+
+Processing [/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_gpu_mem_size_sum.py]... 
+SKIPPED: /home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.sqlite does not contain GPU memory data.
+
+Processing [/home/ssantos/NEPENTHES_CUDA_TOOLING_20261114/qwen35-moe-cuda-20261114.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/osrt_sum.py]... 
+
+ ** OS Runtime Summary (osrt_sum):
+
+ Time (%)  Total Time (ns)  Num Calls     Avg (ns)         Med (ns)        Min (ns)       Max (ns)       StdDev (ns)             Name         
+ --------  ---------------  ---------  ---------------  ---------------  -------------  -------------  ---------------  ----------------------
+     24,0   10.590.886.921        116     91.300.749,0    100.116.521,0          1.301    175.836.856     28.462.308,0  poll                  
+     23,0   10.001.778.529         20    500.088.926,0    500.073.947,0    500.036.218    500.187.654         42.622,0  pthread_cond_timedwait
+     21,0    9.188.167.072         11    835.287.915,0      3.455.213,0         93.428  7.414.067.573  2.202.288.622,0  pthread_cond_wait     
+     15,0    6.598.325.077         29    227.528.450,0         11.981,0          1.315  6.597.815.020  1.225.180.108,0  mmap                  
+     13,0    5.932.261.895     23.112        256.674,0        257.517,0        202.868      1.074.386         13.004,0  nanosleep             
+      2,0    1.000.056.429          1  1.000.056.429,0  1.000.056.429,0  1.000.056.429  1.000.056.429              0,0  pthread_cond_clockwait
+      0,0      133.628.558        564        236.930,0         13.051,0          1.013     19.074.332        995.807,0  ioctl                 
+      0,0        7.016.117         41        171.124,0         60.409,0         24.970      1.748.285        345.165,0  pthread_create        
+      0,0        6.845.721         13        526.593,0          9.071,0          2.312      5.093.517      1.436.305,0  munmap                
+      0,0        2.851.181         25        114.047,0         15.523,0          2.591      2.266.563        448.962,0  mmap64                
+      0,0        2.516.645        280          8.988,0          3.991,0          1.003        186.017         13.002,0  fread                 
+      0,0        1.772.547          9        196.949,0        141.913,0         98.624        619.118        161.068,0  sem_timedwait         
+      0,0          928.041         97          9.567,0          3.538,0          1.011        246.234         28.875,0  fopen                 
+      0,0          573.408          8         71.676,0          9.811,0          6.193        415.415        141.416,0  pthread_join          
+      0,0          331.867         42          7.901,0          8.066,0          1.158         21.605          5.796,0  open64                
+      0,0          296.068          2        148.034,0        148.034,0          7.245        288.823        199.105,0  pthread_mutex_lock    
+      0,0          239.116         41          5.832,0          3.063,0          1.029         56.577          9.887,0  fclose                
+      0,0          157.843         37          4.266,0          1.675,0          1.063         19.382          5.128,0  read                  
+      0,0          118.753         14          8.482,0          2.626,0          2.031         55.032         14.750,0  fgets                 
+      0,0           28.158          9          3.128,0          2.261,0          1.251          6.399          1.953,0  pthread_cond_signal   
+      0,0           21.486         11          1.953,0          1.509,0          1.013          4.999          1.173,0  close                 
+      0,0           20.515          7          2.930,0          2.175,0          1.416          6.093          1.688,0  write                 
+      0,0           17.614          3          5.871,0          5.939,0          2.549          9.126          3.289,0  socket                
+      0,0           15.809          5          3.161,0          3.750,0          1.047          4.729          1.416,0  open                  
+      0,0           13.050          3          4.350,0          4.645,0          2.271          6.134          1.948,0  pipe2                 
+      0,0           11.419          1         11.419,0         11.419,0         11.419         11.419              0,0  connect               
+      0,0           10.533          8          1.316,0          1.223,0          1.005          1.831            305,0  fcntl                 
+      0,0            8.309          2          4.154,0          4.154,0          1.550          6.759          3.683,0  bind                  
+      0,0            6.585          2          3.292,0          3.292,0          2.181          4.404          1.571,0  stat                  
+      0,0            6.209          2          3.104,0          3.104,0          2.576          3.633            747,0  signal                
+      0,0            3.126          2          1.563,0          1.563,0          1.522          1.604             58,0  fwrite                
+      0,0            1.625          1          1.625,0          1.625,0          1.625          1.625              0,0  listen                
+      0,0            1.003          1          1.003,0          1.003,0          1.003          1.003              0,0  dup                   
+

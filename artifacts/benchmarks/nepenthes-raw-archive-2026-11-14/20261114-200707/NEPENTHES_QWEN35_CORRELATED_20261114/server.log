@@ -1,0 +1,44 @@
+tandem.cpp defaults (unset variables; LLAMA_MOE_NO_DEFAULTS=1 for none): GGML_CUDA_GRAPH_KEY_SHAPE=1 GGML_SCHED_BATCH_INPUTS=3 GGML_CUDA_MMVF_MAX=8 GGML_CUDA_Q8_CACHE=1 LLAMA_GRAPH_POOL=6 LLAMA_SRV_USER_BREAK=0 LLAMA_MOE_CPU=auto LLAMA_MOE_PREFILL_CPU=auto LLAMA_MOE_CPU_RB=64 LLAMA_MOE_CPU_DOWN_PE=64 LLAMA_HC_FUSE=1 GGML_CUDA_HC_MIX_FUSE=1 LLAMA_GDN_DIRECT=1 LLAMA_GDN_GATES=1 LLAMA_GDN_REPLAY=1 LLAMA_CONV_CONT=1 LLAMA_CONV_TAIL=1 LLAMA_PLE_GPU=1 LLAMA_MTP_DEFER=1
+0.00.286.356 I srv  llama_server: initializing ...
+0.00.286.378 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.287.583 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.290.373 I srv    load_model: loading model '/home/ssantos/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf'
+0.00.770.620 W llama_model_loader: tensor overrides to CPU are used with mmap enabled - consider using --load-mode none for better performance
+0.00.774.163 W model has unused tensor blk.40.attn_norm.weight (size = 8192 bytes) -- ignoring
+0.00.774.167 W model has unused tensor blk.40.post_attention_norm.weight (size = 8192 bytes) -- ignoring
+0.00.774.173 W model has unused tensor blk.40.attn_q.weight (size = 17825792 bytes) -- ignoring
+0.00.774.176 W model has unused tensor blk.40.attn_k.weight (size = 1114112 bytes) -- ignoring
+0.00.774.178 W model has unused tensor blk.40.attn_v.weight (size = 1114112 bytes) -- ignoring
+0.00.774.185 W model has unused tensor blk.40.attn_output.weight (size = 8912896 bytes) -- ignoring
+0.00.774.188 W model has unused tensor blk.40.attn_q_norm.weight (size = 1024 bytes) -- ignoring
+0.00.774.190 W model has unused tensor blk.40.attn_k_norm.weight (size = 1024 bytes) -- ignoring
+0.00.774.192 W model has unused tensor blk.40.ffn_gate_inp.weight (size = 1048576 bytes) -- ignoring
+0.00.774.195 W model has unused tensor blk.40.ffn_down_exps.weight (size = 285212672 bytes) -- ignoring
+0.00.774.199 W model has unused tensor blk.40.ffn_gate_exps.weight (size = 285212672 bytes) -- ignoring
+0.00.774.202 W model has unused tensor blk.40.ffn_up_exps.weight (size = 285212672 bytes) -- ignoring
+0.00.774.204 W model has unused tensor blk.40.ffn_gate_inp_shexp.weight (size = 4096 bytes) -- ignoring
+0.00.774.207 W model has unused tensor blk.40.ffn_gate_shexp.weight (size = 1114112 bytes) -- ignoring
+0.00.774.209 W model has unused tensor blk.40.ffn_up_shexp.weight (size = 1114112 bytes) -- ignoring
+0.00.774.211 W model has unused tensor blk.40.ffn_down_shexp.weight (size = 1114112 bytes) -- ignoring
+0.00.774.214 W model has unused tensor blk.40.nextn.eh_proj.weight (size = 8912896 bytes) -- ignoring
+0.00.774.216 W model has unused tensor blk.40.nextn.enorm.weight (size = 8192 bytes) -- ignoring
+0.00.774.219 W model has unused tensor blk.40.nextn.hnorm.weight (size = 8192 bytes) -- ignoring
+0.00.774.226 W model has unused tensor blk.40.nextn.shared_head_norm.weight (size = 8192 bytes) -- ignoring
+0.37.398.806 I cmn          init: llama threadpool init, n_threads = 8
+0.37.773.724 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 2048, kv_unified = 'false'
+0.37.773.967 I srv    load_model: prompt cache limited to 909 MiB: 14.8 GiB of RAM, 9.9 GiB of model (--cache-ram N overrides)
+0.37.785.694 I srv  server_run_i: model loaded
+0.37.785.706 I srv  server_on_li: listening on http://127.0.0.1:18085
+1.17.762.799 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+1.17.763.035 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+1.23.522.452 I slot print_timing: id  0 | task 0 | n_gen =    100, tg =  31.41 t/s, tg_3s =  31.73 t/s
+1.24.330.952 I slot print_timing: id  0 | task 0 | prompt eval time =    2607.37 ms /    39 tokens (   66.86 ms per token,    14.96 tokens per second)
+1.24.330.957 I slot print_timing: id  0 | task 0 |        eval time =    3959.99 ms /   128 tokens (   31.18 ms per token,    32.07 tokens per second)
+1.24.330.957 I slot print_timing: id  0 | task 0 |       total time =    6567.36 ms /   167 tokens
+1.24.330.964 I slot print_timing: id  0 | task 0 |    graphs reused =        127
+1.24.330.964 I slot print_timing: id  0 | task 0 |   graph reallocs =          0    /     0        (same size) / (changed size)
+1.24.331.008 I slot      release: id  0 | task 0 | stop processing: n_tokens = 166, truncated = 0
+4.28.331.450 I srv    operator(): operator(): cleaning up before exit...
+4.28.339.991 W ~llama_context:      CUDA0 compute buffer size of   4.3127 MiB, does not match expectation of  25.5006 MiB
+4.28.340.014 W ~llama_context:  CUDA_Host compute buffer size of   0.0320 MiB, does not match expectation of   2.2530 MiB
+Collecting data...
