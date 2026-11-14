@@ -108,3 +108,18 @@ python3 run_battery.py \
 ```
 
 The runner binds automatic process discovery to the configured API port (or uses `--server-pid` when supplied), emits request-start/end events and writes each request/response plus the existing metrics into `universal/...`. The option is opt-in so historical runs and monitor overhead remain unchanged unless explicitly requested. The runner does not change server configuration.
+
+
+## Offline import of Nsight Systems SQLite
+
+After a capture has been exported to SQLite, normalize its activity events into an existing universal run:
+
+\`\`\`bash
+python3 import_NEPENTHES_nsys_sqlite.py \\
+  --database /path/to/capture.sqlite \\
+  --run-dir /path/to/nepenthes-run
+\`\`\`
+
+The importer is read-only against the source database. It writes events/nsys_activity.jsonl, profiles/nsys_import_report.json, updates the collection coverage report and regenerates SHA256SUMS. It imports CUDA Runtime API, kernel, memcpy and synchronization tables when their schemas are present; missing tables/columns remain explicitly unavailable.
+
+**Clock-domain rule:** Nsight start/end values are preserved as source_start_ns/source_end_ns with source_clock="nsys_activity_ns". They are not copied into monotonic_ns or assigned wall timestamps because no host-clock correlation marker is inferred. CUDA correlation IDs are preserved but are not guessed to be request IDs. An engine/runner adapter must provide explicit markers before cross-domain timing or request attribution is claimed.
