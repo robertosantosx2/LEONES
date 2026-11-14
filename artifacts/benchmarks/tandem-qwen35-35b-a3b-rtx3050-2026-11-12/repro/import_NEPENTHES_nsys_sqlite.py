@@ -170,6 +170,18 @@ def import_database(database: pathlib.Path, run_dir: pathlib.Path, run_id: str |
         ],
     }
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    collection_path = run_dir / "collection_report.json"
+    if collection_path.is_file():
+        collection = json.loads(collection_path.read_text(encoding="utf-8"))
+        collection["nsys_imported_event_count"] = imported
+        collection.setdefault("coverage", {})["nsys_profile_import"] = True
+        collection["coverage"]["nsys_activity_events"] = imported > 0
+        collection_path.write_text(json.dumps(collection, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    sums = []
+    for item in sorted(run_dir.rglob("*")):
+        if item.is_file() and item.name != "SHA256SUMS":
+            sums.append(f"{sha256_file(item)}  {item.relative_to(run_dir)}")
+    (run_dir / "SHA256SUMS").write_text("\n".join(sums) + "\n", encoding="utf-8")
     return report
 
 
