@@ -239,3 +239,27 @@ El intake fue ejecutado desde Ubuntu y el contenido resultante ya está visible 
 Una ejecución solo se declara archivada cuando existen originales, manifiesto, hashes verificables, inventario de sondas, reporte de cobertura y resultado funcional. Una mejora solo se declara demostrada con A/B reproducible. Una ruta de capacidad solo se declara válida si completa la inferencia sin OOM bajo el perfil declarado, aunque su velocidad sea muy baja.
 
 **Conclusión:** ya hay un primer conjunto útil de sondas y un inspector Nsight read-only. La prioridad inmediata es cerrar el hueco de evidencia local del 14-11, convertir la instrumentación existente en un recolector coherente por ejecución y ampliar las sondas antes de optimizar el runtime.
+
+
+## 9. Recolector universal — primera implementación (14-11-2026)
+
+La primera versión ejecutable del recolector común está publicada en **repro/nepenthes_universal_collector.py** y su contrato en **repro/UNIVERSAL_COLLECTOR.md**. El runner **run_battery.py** puede activarla sin cambiar el comportamiento histórico mediante **--universal-collector**.
+
+### Cobertura implementada
+
+- Identidad de ejecución UUID, wall clock + monotonic nanoseconds, manifiesto de motor/modelo/metadatos y directorio de salida no sobrescribible.
+- Muestras de CPU host, RAM/swap, vmstat, PSI, frecuencia CPU, contadores de bloque y cgroup v2.
+- Proceso y hasta 512 hilos: utime/stime, schedstat runtime/runqueue wait/timeslices, cambios de contexto, afinidad, RSS/HWM, E/S y descriptores.
+- GPU/VRAM, memoria de procesos CUDA cuando nvidia-smi --query-compute-apps la expone y PCIe RX/TX con semántica device-wide.
+- Eventos normalizados y registros request/response correlacionados por run_id, request_id y reloj monotónico.
+- collection_report.json, recuentos de cobertura separados entre eventos del runner y eventos de adaptador, y SHA256SUMS.
+
+### Validación CI
+
+El workflow **NEPENTHES probe tests** completó correctamente su paso de pruebas para el commit **cfaba7c3cba12a9ddbf1c51727a3105721047937**; incluye los tests del recolector universal, inspector Nsight, sondas MoE y archivo histórico, además de compileall. El resultado confirma las pruebas sintéticas/offline, no una prueba física en el MSI.
+
+### Lo que todavía no se debe afirmar
+
+La capa universal no puede deducir por sí sola routing por capa/experto, hit/miss y eviction internos, ocupación KV, vida útil de alloc/free CUDA, duración por kernel ni latencia de colas/workers del motor. El contrato de eventos ya está definido, pero falta implementar y validar el adaptador real de Tandem.cpp. Tampoco se ha probado aún el overhead del recolector contra una ejecución sin sondas ni se ha ejecutado una campaña nueva en Ubuntu.
+
+**Siguiente bloque técnico:** implementar el adaptador de motor y el importador/correlador de perfiles CUDA/Nsight con el mismo esquema temporal; después medir overhead A/B y pasar a la instrumentación CAPACITY PATH.
