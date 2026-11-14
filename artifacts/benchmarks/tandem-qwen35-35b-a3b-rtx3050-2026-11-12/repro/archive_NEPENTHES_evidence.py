@@ -73,6 +73,26 @@ def evidence_files(root: Path):
                     yield path, path.relative_to(root)
 
 
+def existing_repo_hashes(repo_root: Path) -> dict[str, str]:
+    """Find byte-identical evidence already tracked in this LEONES checkout."""
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "ls-files", "-z"],
+        check=True, capture_output=True,
+    )
+    hashes = {}
+    relevant = ("nepenthes", "tandem-qwen35", "qwen35", "cuda-tooling")
+    for raw in result.stdout.split(b"\\0"):
+        if not raw:
+            continue
+        relative = raw.decode("utf-8", errors="surrogateescape")
+        if not any(token in relative.lower() for token in relevant):
+            continue
+        candidate = repo_root / relative
+        if candidate.is_file() and not candidate.is_symlink():
+            hashes[sha256_file(candidate)] = relative
+    return hashes
+
+
 def collect_archive(
     home: Path,
     repo_root: Path,
@@ -86,11 +106,15 @@ def collect_archive(
     run_dir.mkdir(parents=True)
     entries = []
     missing = []
-    seen_hashes = {}
+    seen_hashes = {digest: (path, "already_archived_in_repo") for digest, path in existing_repo_hashes(repo_root).items()}
     used_labels = set()
 
     for index, source in enumerate(roots):
-        source = source.expanduser().resolve()
+        source = source.expanduser()
+        if source.is_symlink():
+            missing.append({"source": str(source), "status": "symlink_root_skipped"})
+            continue
+        source = source.resolve()
         if not source.exists():
             missing.append({"source": str(source), "status": "missing"})
             continue
@@ -101,12 +125,13 @@ def collect_archive(
         for original, relative in evidence_files(source):
             digest = sha256_file(original)
             if digest in seen_hashes:
+                existing_path, existing_status = seen_hashes[digest]
                 entries.append({
                     "source": str(original),
-                    "archive_path": seen_hashes[digest],
+                    "archive_path": existing_path,
                     "sha256": digest,
                     "size_bytes": original.stat().st_size,
-                    "status": "duplicate_content",
+                    "status": existing_status if existing_status == "already_archived_in_repo" else "duplicate_content",
                 })
                 continue
             target_rel = Path(label) / relative
@@ -118,7 +143,7 @@ def collect_archive(
             if copied_digest != digest:
                 raise IOError(f"SHA-256 mismatch after copy: {original}")
             archive_path = target.relative_to(run_dir).as_posix()
-            seen_hashes[digest] = archive_path
+            seen_hashes[digest] = (archive_path, "copied")
             entries.append({
                 "source": str(original),
                 "archive_path": archive_path,
@@ -135,6 +160,7 @@ def collect_archive(
         "source_files": len(entries),
         "copied_files": sum(x["status"] == "copied" for x in entries),
         "duplicate_files": sum(x["status"] == "duplicate_content" for x in entries),
+        "already_archived_files": sum(x["status"] == "already_archived_in_repo" for x in entries),
         "total_copied_bytes": sum(x["size_bytes"] for x in entries if x["status"] == "copied"),
         "missing_roots": missing,
         "excluded": {
