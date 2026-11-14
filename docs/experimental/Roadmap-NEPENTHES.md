@@ -2,7 +2,7 @@
 
 **Tipo:** hoja de ruta viva de investigación, instrumentación e implementación.  
 **Última actualización:** 14-11-2026.  
-**Estado global:** instrumentación de LEONES preparada; PR #1 de Tandem.cpp contiene el primer sink JSONL y sondas iniciales en desarrollo. La validación de aplicación del parche de runtime aún falla en el hunk de prefetch; no hay captura integral ni se considera superada la fase.  
+**Estado global:** el sink JSONL y el aplicador determinista de sondas ya superan sus pruebas y la aplicación sobre el commit fijado de llama.cpp en CI. La compilación CPU de `llama-server` está en curso; la unidad CUDA `.cu` aún no se ha compilado con nvcc y no existe todavía una captura integral. La fase de observabilidad no se da por aceptada hasta superar esos gates y validar una ejecución real.  
 **Issue:** [LEONES #148](https://github.com/robertosantosx2/LEONES/issues/148).  
 **Ramas:** [LEONES — performance/capacity](https://github.com/robertosantosx2/LEONES/tree/nepenthes/performance-capacity-roadmap-20261114) · [Tandem.cpp — integración activa, PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1) · [rama de integración](https://github.com/robertosantosx2/tandem.cpp/tree/nepenthes/universal-observability-20261114).
 
@@ -32,20 +32,20 @@ No se promete compatibilidad universal. Arquitectura, operadores, formato, conte
 | 9 | Construir el recolector universal | **Completado en LEONES.** Recolector de host/GPU y recursos, formatos normalizados, metadatos y checksums. |
 | 10 | Importar Nsight SQLite | **Completado en LEONES.** Importador de Runtime, kernels, memcpy y sincronización; conserva dominios de reloj y correlación. |
 | 11 | Validar infraestructura de sondas LEONES | **Completado para la infraestructura.** Hook C++17, contrato de eventos y pruebas/CI. No significa que Tandem.cpp ya emita todos los eventos reales. |
-| 12 | Preparar rama de integración Tandem.cpp | **Completado.** Rama nepenthes/active-leones-sink-20261114 creada para el puente de telemetría. |
-| 13 | Crear sink JSONL asíncrono | **En curso.** Sink JSONL acotado y asíncrono; pruebas unitarias C++17 de concurrencia/escaping pasan en CI. La aplicación del parche que lo conecta al runtime aún no supera CI; no marcar como integrado hasta corregir ese gate. |
-| 14 | Conectar ciclo de vida del sink | **Pendiente.** Inicialización, callback, flush y cierre seguro en los límites del ciclo de vida del motor. |
-| 15 | Sondar KV cache | **Pendiente.** Creación, crecimiento, reutilización, desplazamiento, eviction y liberación; capa, bytes y request cuando estén disponibles. |
-| 16 | Sondar asignaciones y liberaciones | **Pendiente.** GPU/CPU, buffers persistentes y temporales, tamaños, origen, duración y correlación. |
-| 17 | Sondar transferencias | **Pendiente.** HtoD, DtoH y otras rutas; bytes, stream, objeto, request e inicio/fin. |
-| 18 | Sondar prefetch | **En curso, sin validar.** Se ha escrito una primera sonda de lookahead prefetch con duración y estimación de bytes; el parche aún no aplica limpiamente al source fijado. |
-| 19 | Sondar OOM y fallback | **Pendiente.** Presupuesto, intento fallido, nivel de memoria, causa, recuperación, degradación y error final. |
-| 20 | Sondar kernels CUDA individuales | **Pendiente.** Identidad, grid/stream, duración y correlación con la operación lógica; no confundir tiempo host y ejecución GPU. |
-| 21 | Sondar publicación y espera de workers CPU | **En curso, sin validar.** Se han escrito eventos iniciales de espera, cómputo, finalización y publicación; faltan correlación worker/request y validación de aplicación/compilación del runtime. |
-| 22 | Unificar eventos con LEONES | **Pendiente.** Esquema común, fuente, versión, IDs, unidades y dominios temporales declarados. |
+| 12 | Preparar rama de integración Tandem.cpp | **Completado.** Rama [nepenthes/universal-observability-20261114](https://github.com/robertosantosx2/tandem.cpp/tree/nepenthes/universal-observability-20261114) y [PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1) para el puente de telemetría. |
+| 13 | Crear sink JSONL asíncrono | **Implementado; validación en curso.** Cola acotada, escritor JSONL, escaping, contadores de descarte/error y activación optativa. Smoke test C++17 y prueba JSONL pasan; el aplicador de runtime ya supera CI. Compilación del servidor CPU pendiente. |
+| 14 | Conectar ciclo de vida del sink | **Implementado en el applier.** Inicialización lazy en el primer graph-compute, callback de emisión y cierre al terminar el proceso; captura desactivada por defecto. Pendiente validar build y cierre con inferencia real. |
+| 15 | Sondar KV cache | **Sondas implementadas; compilación/captura pendientes.** Allocation, teardown, clear, aplicación de ubatch y reutilización de celda/eviction con tamaño y contadores disponibles. |
+| 16 | Sondar asignaciones y liberaciones | **Sondas implementadas; compilación/captura pendientes.** CUDA device alloc, pool return/release, buffer free y pinned-host alloc/free; duración host y bytes donde la API los expone. |
+| 17 | Sondar transferencias | **Sondas implementadas; compilación/captura pendientes.** H2D, D2H, 2D H2D/D2H y D2D/peer en callsites; las actividades completas de memcpy y su timeline se obtienen además vía Nsight/CUPTI. |
+| 18 | Sondar prefetch | **Sondas implementadas; compilación/captura pendientes.** Inicio/fin de enqueue, estimación de bytes y espera del backend event, distinguiendo enqueue host de finalización. |
+| 19 | Sondar OOM y fallback | **Sondas iniciales implementadas; validación pendiente.** OOM en alloc CUDA/device buffer y fallback de pinned-host a CPU. Falta validar recuperación/fallback de extremo a extremo. |
+| 20 | Sondar kernels CUDA individuales | **Cobertura dividida.** Callsite de despacho por `ggml_op` implementado; los nombres y tiempos de kernels CUDA individuales provienen de CUPTI/Nsight importado por LEONES. La unidad `.cu` aún requiere compilación nvcc; el span de dispatch no se presenta como tiempo GPU. |
+| 21 | Sondar publicación y espera de workers CPU | **Sondas implementadas; compilación/captura pendientes.** Espera idle, inicio/cómputo/fin y publicación CPU/prefill. Los eventos internos conservan `request_id=0` hasta diseñar propagación segura entre hilos. |
+| 22 | Unificar eventos con LEONES | **Parcialmente implementado.** El sink emite el sobre JSONL NEPENTHES y el importador Nsight conserva su dominio de reloj; falta validar la mezcla de eventos online/offline en una captura real. |
 | 23 | Correlacionar timeline completo | **Pendiente.** Request → routing/cache → worker CPU → publicación → transferencias → kernels → sincronización → respuesta. Sin inferir causalidad por proximidad temporal. |
 | 24 | Generar perfiles por petición | **Pendiente.** Informe por request con fases, recursos, KV, expertos, transferencias, esperas y errores, enlazado a datos primarios. |
-| 25 | Ejecutar integración completa | **Pendiente.** Capturar todas las categorías en una ejecución real y demostrar que la telemetría no bloquea ni altera indebidamente el runtime. |
+| 25 | Ejecutar integración completa | **Pendiente.** CI aplica el applier; falta build CUDA, inferencia real y una captura que contenga todas las categorías, con comprobación de no bloqueo y checksums. |
 | 26 | Repetir batería Qwen3.5-35B | **Pendiente de integración y autorización de ejecución.** Comparación con baseline bajo condiciones documentadas. |
 | 27 | Optimizar FAST PATH y CAPACITY PATH | **Pendiente.** Priorizar con evidencia sincronización, transferencias, solapamiento, planificación, kernels, cache MoE, memoria jerárquica y backpressure. |
 | 28 | Regresión, publicación y validación Ubuntu | **Pendiente.** CI, PRs separados, documentación reproducible y validación física del usuario en Ubuntu. No se modifica ni ejecuta nada local sin autorización. |
@@ -146,6 +146,6 @@ Cada cambio registrará hipótesis, baseline, control, métrica objetivo, prueba
 | Fecha | Fase / cambio | Evidencia |
 |---|---|---|
 | 14-11-2026 | Primera versión del roadmap vivo; estado inicial de instrumentación Tandem.cpp y gates | [Rama LEONES](https://github.com/robertosantosx2/LEONES/tree/nepenthes/performance-capacity-roadmap-20261114) · [PR #1 Tandem.cpp](https://github.com/robertosantosx2/tandem.cpp/pull/1) |
-| 14-11-2026 | Sink JSONL y primeras sondas CPU/prefetch en PR #1; pruebas unitarias del sink pasan, aplicación del runtime patch todavía falla en CI. No se cierra ninguna fase. | [Commit de integración](https://github.com/robertosantosx2/tandem.cpp/commit/269ac71c31ed8a25e6cfc2ad155c9809c73c3c9b) · [PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1) |
+| 14-11-2026 | Se reemplaza el parche manual frágil por `apply_runtime_probes.py`. Smoke test C++17, prueba JSONL y aplicación determinista de sondas pasan en CI; compilación CPU del servidor en curso. CUDA nvcc y captura end-to-end pendientes. | [PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1) · [applier](https://github.com/robertosantosx2/tandem.cpp/blob/nepenthes/universal-observability-20261114/nepenthes/apply_runtime_probes.py) · [CI](https://github.com/robertosantosx2/tandem.cpp/actions/runs/43643274410) |
 
 **Regla de mantenimiento:** al superar una fase, actualizar su estado, añadir una fila fechada en este registro, enlazar commit/PR/CI y actualizar el índice NEPENTHES en el mismo cambio documental cuando sea posible.
