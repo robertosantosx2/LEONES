@@ -95,13 +95,60 @@ def read_pressure() -> dict:
     return result
 
 
+def read_process_threads(pid: int | None, limit: int = 512) -> dict:
+    if not pid:
+        return {"available": False, "error": "target PID unavailable"}
+    task_root = pathlib.Path("/proc") / str(pid) / "task"
+    try:
+        tids = sorted((int(item.name) for item in task_root.iterdir() if item.name.isdigit()))
+    except Exception as exc:
+        return {"available": False, "error": str(exc)}
+    rows = []
+    errors = []
+    for tid in tids[:limit]:
+        root = task_root / str(tid)
+        row = {"tid": tid}
+        try:
+            row["name"] = (root / "comm").read_text().strip()
+        except Exception:
+            row["name"] = None
+        try:
+            fields = (root / "stat").read_text()
+            tail = fields[fields.rfind(")") + 2:].split()
+            row["state"] = tail[0]
+            row["utime_ticks"] = int(tail[11])
+            row["stime_ticks"] = int(tail[12])
+            row["cpu_ticks"] = row["utime_ticks"] + row["stime_ticks"]
+        except Exception as exc:
+            row["stat_error"] = str(exc)
+        try:
+            sched = (root / "schedstat").read_text().split()
+            if len(sched) >= 3:
+                row["sched_runtime_ns"] = int(sched[0])
+                row["sched_wait_ns"] = int(sched[1])
+                row["sched_timeslices"] = int(sched[2])
+        except Exception as exc:
+            row["schedstat_error"] = str(exc)
+        try:
+            status = (root / "status").read_text().splitlines()
+            for line in status:
+                if line.startswith(("voluntary_ctxt_switches:", "nonvoluntary_ctxt_switches:", "Cpus_allowed_list:")):
+                    key, value = line.split(":", 1)
+                    row[key] = value.strip()
+        except Exception:
+            pass
+        rows.append(row)
+    return {"available": True, "threads": rows, "thread_count": len(tids),
+            "truncated": len(tids) > limit, "limit": limit, "errors": errors}
+
+
 def read_proc(pid: int | None) -> dict:
     if not pid:
         return {"available": False, "error": "target PID not supplied or discovered"}
     root = pathlib.Path("/proc") / str(pid)
     if not root.exists():
         return {"available": False, "error": f"PID {pid} is not present"}
-    out = {"available": True, "pid": pid}
+    out = {"available": True, "pid": pid, "threads_detail": read_process_threads(pid)}
     try:
         raw = (root / "stat").read_text()
         tail = raw[raw.rfind(")") + 2:].split()
