@@ -145,6 +145,7 @@ Cada cambio registrará hipótesis, baseline, control, métrica objetivo, prueba
 
 | Fecha | Fase / cambio | Evidencia |
 |---|---|---|
-| 14-11-2026 | Primera versión del roadmap vivo; estado inicial de instrumentación Tandem.cpp y gates | [Rama LEONES](https://github.com/robertosantosx2/LEONES/tree/nepenthes/performance-capacity-roadmap-20261114) · [PR #1 Tandem.cpp](https://github.com/robertosantosx2/tandem.cpp/pull/1) |\n| 14-11-2026 | Sink JSONL y primeras sondas CPU/prefetch en PR #1; pruebas unitarias del sink pasan, aplicación del runtime patch todavía falla en CI. No se cierra ninguna fase. | [Commit de integración](https://github.com/robertosantosx2/tandem.cpp/commit/269ac71c31ed8a25e6cfc2ad155c9809c73c3c9b) · [PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1) |
+| 14-11-2026 | Primera versión del roadmap vivo; estado inicial de instrumentación Tandem.cpp y gates | [Rama LEONES](https://github.com/robertosantosx2/LEONES/tree/nepenthes/performance-capacity-roadmap-20261114) · [PR #1 Tandem.cpp](https://github.com/robertosantosx2/tandem.cpp/pull/1) |
+| 14-11-2026 | Sink JSONL y primeras sondas CPU/prefetch en PR #1; pruebas unitarias del sink pasan, aplicación del runtime patch todavía falla en CI. No se cierra ninguna fase. | [Commit de integración](https://github.com/robertosantosx2/tandem.cpp/commit/269ac71c31ed8a25e6cfc2ad155c9809c73c3c9b) · [PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1) |
 
 **Regla de mantenimiento:** al superar una fase, actualizar su estado, añadir una fila fechada en este registro, enlazar commit/PR/CI y actualizar el índice NEPENTHES en el mismo cambio documental cuando sea posible.
