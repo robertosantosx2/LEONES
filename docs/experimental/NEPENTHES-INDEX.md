@@ -24,6 +24,9 @@ Las métricas no medidas se identifican como tales. Se separan las mediciones de
 |---|---|
 | [Metodología Nepenthes](tandem-qwen35-reasoning-budget-methodology-2026-11-12.md) | Protocolo, estructura de evidencias, ejecución de scripts y reglas de interpretación. |
 | [Plantilla de informe motor + modelo](NEPENTHES-engine-model-report-template.md) | Esquema reutilizable para registrar cada combinación de motor y modelo. |
+| [Hoja de ruta de rendimiento y capacidad](NEPENTHES-performance-capacity-roadmap.md) | Plan de trabajo FAST PATH y CAPACITY PATH, fases, métricas y gates de validación. |
+| [Diseño de memoria jerárquica](NEPENTHES-memory-tiering-design.md) | Propuesta técnica para VRAM, RAM, almacenamiento, caché, prefetch, backpressure y fallback. |
+| [Issue de desarrollo #148](https://github.com/robertosantosx2/LEONES/issues/148) | Seguimiento del desarrollo completo. |
 
 ## Informes y campañas actuales
 
@@ -60,8 +63,7 @@ Consulta la [metodología](tandem-qwen35-reasoning-budget-methodology-2026-11-12
 ---
 
 **Ubicación:** `docs/experimental/NEPENTHES-INDEX.md`  
-**Rama de referencia:** `benchmarks/tandem-qwen35-reasoning-battery-2026-11-12`
-
+**Rama de referencia:** `nepenthes/performance-capacity-roadmap-20261114`
 
 ## Referencias técnicas MoE
 
@@ -70,7 +72,6 @@ Consulta la [metodología](tandem-qwen35-reasoning-budget-methodology-2026-11-12
 - [Ostinato (arXiv:2611.11533) — ejecución CPU/GPU con expertos residentes en prefill y decode](https://arxiv.org/abs/2611.11533).
 
 Estas fuentes aportan contexto para formular experimentos MoE; sus resultados externos no son benchmarks NEPENTHES ni deben atribuirse al hardware local.
-
 
 ## Sondas MoE y telemetría
 
