@@ -285,7 +285,23 @@ def read_gpu() -> dict:
             "temperature_c": number(values[7]), "power_w": number(values[8]),
             "graphics_clock_mhz": number(values[9]), "sm_clock_mhz": number(values[10]),
         })
-    return {"available": True, "gpus": rows, "source": "nvidia-smi --query-gpu"}
+    compute = run_json([exe, "--query-compute-apps=pid,process_name,used_memory",
+                         "--format=csv,noheader,nounits"])
+    apps = []
+    if compute["available"]:
+        for row in csv.reader(compute["stdout"].splitlines()):
+            values = [item.strip() for item in row]
+            if len(values) != 3:
+                continue
+            try:
+                apps.append({"pid": int(values[0]), "process_name": values[1],
+                             "used_memory_mib": float(values[2])})
+            except ValueError:
+                continue
+    return {"available": True, "gpus": rows, "compute_processes": apps,
+            "compute_processes_available": compute["available"],
+            "compute_processes_error": compute.get("error"),
+            "source": "nvidia-smi --query-gpu / --query-compute-apps"}
 
 
 def discover_pid(name: str | None, explicit: int | None) -> int | None:
