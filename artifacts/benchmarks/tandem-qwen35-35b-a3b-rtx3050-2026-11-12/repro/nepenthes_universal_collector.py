@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import atexit
 import csv
 import hashlib
 import json
@@ -310,17 +309,26 @@ def discover_pid(name: str | None, explicit: int | None) -> int | None:
         return explicit
     if not name:
         return None
+    port = None
+    if name.startswith("port:"):
+        try:
+            port = int(name.split(":", 1)[1])
+        except ValueError:
+            return None
     for entry in pathlib.Path("/proc").iterdir():
         if not entry.name.isdigit():
             continue
         try:
             cmd = (entry / "cmdline").read_bytes().replace(b"\0", b" ").decode(errors="replace")
-            if name in cmd:
+            if port is not None:
+                matches = "llama-server" in cmd and (f"--port {port}" in cmd or f"--port={port}" in cmd)
+            else:
+                matches = name in cmd
+            if matches:
                 return int(entry.name)
         except Exception:
             continue
     return None
-
 
 class Dmon:
     def __init__(self):
