@@ -4,4 +4,4 @@ This directory is reserved for the daily discovery pipeline.
 
 The production discovery engine must record candidates with source URL, project name, licence evidence, category, date discovered and evaluation status.
 
-Generated: 2026-11-13T14:37:04.443084+00:00
+Generated: 2026-11-14T13:33:23.449492+00:00
