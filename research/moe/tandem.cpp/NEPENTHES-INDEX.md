@@ -1,6 +1,6 @@
 # NEPENTHES — índice y roadmap de observabilidad
 
-**Estado:** integración en validación; no declarar la fase aceptada hasta completar la compilación CUDA, una captura real y su ingestión en LEONES.
+**Estado:** pruebas C++17 y aplicación de parches superadas en CI; compilación CUDA aún en curso. No declarar la fase aceptada hasta completar la compilación CUDA, una captura real y su ingestión en LEONES.
 
 Última actualización: 2026-11-15.
 
@@ -21,7 +21,7 @@ El PR #1 conserva el contrato universal `EventType/Event`, el sink JSONL y el ap
 | 0 | Preservar y correlacionar la evidencia Nsight/CUPTI de Qwen3.5-35B del 14-11-2026 | **Parcial** |
 | 1 | Contrato universal de eventos, sink JSONL acotado y activación opt-in | **Implementado en PR #1** |
 | 2 | Sondas de runtime: request, graph, KV cache, MoE cache, workers, prefetch, alloc/free, OOM/fallback y transferencias | **Implementadas en el aplicador; validación de compilación en curso** |
-| 3 | Compilación CUDA del servidor sobre la revisión fijada | **En CI; pendiente de resultado final** |
+| 3 | Compilación CUDA del servidor sobre la revisión fijada | **Aplicación de parches superada; compilación CUDA en curso** |
 | 4 | Captura real Qwen3.5-35B con JSONL + Nsight y comprobación de pérdida/errores | **Pendiente** |
 | 5 | Importación y correlación en el recolector universal de LEONES | **Pendiente** |
 | 6 | Batería Qwen3.5-35B repetible, informe final y archivo íntegro de evidencias | **Pendiente** |
@@ -51,7 +51,7 @@ El PR #1 conserva el contrato universal `EventType/Event`, el sink JSONL y el ap
 ## Validación GitHub Actions
 
 - [Workflow NEPENTHES trace hook](https://github.com/robertosantosx2/tandem.cpp/actions/workflows/nepenthes-trace.yml).
-- [Ejecución de validación del PR #1 — commit 170d3af](https://github.com/robertosantosx2/tandem.cpp/actions/runs/43654679693): las pruebas C++17, el test de apagado concurrente y el test JSONL terminaron correctamente; la aplicación de parches y la compilación CUDA seguían en ejecución en la última consulta.
+- [Ejecución de validación del PR #1 — commit 170d3af](https://github.com/robertosantosx2/tandem.cpp/actions/runs/43654679693): el job `trace-smoke` terminó en verde: compilación y ejecución C++17, prueba de apagado concurrente, prueba JSONL y verificación de aplicación de parches superadas. El job `cuda-compile` aplicó correctamente los parches y continúa en el paso de compilación CUDA; todavía no hay conclusión final.
 - [Ejecución previa satisfactoria del PR #1 — commit 9c6b381](https://github.com/robertosantosx2/tandem.cpp/actions/runs/43649113505): CI verde antes de las últimas pruebas de ciclo de vida.
 
 ### Rama LEONES sink experimental
