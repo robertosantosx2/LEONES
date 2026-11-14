@@ -93,7 +93,7 @@ def main():
             args.engine,
             args.model,
             pid=args.server_pid,
-            process_name=None if args.server_pid else "llama-server",
+            process_name=None if args.server_pid else f"port:{port}",
             interval=args.monitor_interval,
             metadata={
                 "mode": args.mode,
