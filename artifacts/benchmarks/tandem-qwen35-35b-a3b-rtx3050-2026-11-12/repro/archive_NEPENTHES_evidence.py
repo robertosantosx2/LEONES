@@ -81,7 +81,7 @@ def existing_repo_hashes(repo_root: Path) -> dict[str, str]:
     )
     hashes = {}
     relevant = ("nepenthes", "tandem-qwen35", "qwen35", "cuda-tooling")
-    for raw in result.stdout.split(b"\\0"):
+    for raw in result.stdout.split(bytes([0])):
         if not raw:
             continue
         relative = raw.decode("utf-8", errors="surrogateescape")
