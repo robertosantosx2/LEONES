@@ -27,7 +27,8 @@ EVIDENCE_SUFFIXES = {
     ".py", ".sh", ".log", ".txt", ".json", ".jsonl", ".sqlite", ".db",
     ".nsys-rep", ".qdrep", ".qdstrm", ".ncu-rep", ".csv", ".tsv",
     ".md", ".yaml", ".yml", ".xml", ".html", ".out", ".err", ".trace",
-    ".prof", ".dat",
+    ".prof", ".dat", ".sha256", ".sha", ".sum", ".ini", ".cfg", ".toml",
+    ".stderr", ".stdout", ".sqlite-wal", ".sqlite-shm",
 }
 EXCLUDED_SUFFIXES = {
     ".gguf", ".safetensors", ".pt", ".pth", ".onnx", ".model",
@@ -178,6 +179,7 @@ def main() -> int:
     repo_root = find_repo_root(args.repo_root.resolve())
     home = args.home.expanduser().resolve()
     roots = [home / name for name in DEFAULT_ROOTS]
+    roots.append(home / "NEPENTHES_TANDEM_QWEN35_20261113_full.tar.gz")
     roots.append(home / "Descargas/tandem-research/engines/tandem.cpp/tandem/report1.nsys-rep")
     roots.extend(p.expanduser() for p in args.extra_root)
 
