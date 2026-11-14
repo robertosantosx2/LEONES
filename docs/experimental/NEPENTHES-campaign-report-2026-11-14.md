@@ -178,7 +178,7 @@ El scheduler de memoria debe soportar admission control, eviction por coste/reut
 
 ## 7. Archivo histórico cerrado — 14-11-2026
 
-<badge>VERIFICADO EN GITHUB</badge>
+**Estado del archivo: verificado en GitHub**
 
 El expediente local se incorporó a la rama `nepenthes/performance-capacity-roadmap-20261114` en:
 
