@@ -252,6 +252,7 @@ La primera versión ejecutable del recolector común está publicada en **repro/
 - Proceso y hasta 512 hilos: utime/stime, schedstat runtime/runqueue wait/timeslices, cambios de contexto, afinidad, RSS/HWM, E/S y descriptores.
 - GPU/VRAM, memoria de procesos CUDA cuando nvidia-smi --query-compute-apps la expone y PCIe RX/TX con semántica device-wide.
 - Eventos normalizados y registros request/response correlacionados por run_id, request_id y reloj monotónico.
+- Importador offline [import_NEPENTHES_nsys_sqlite.py](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/import_NEPENTHES_nsys_sqlite.py): integra Runtime API, kernels, memcpy y sincronización desde SQLite en eventos JSONL, conserva IDs de correlación y mapea procesos/hilos. Los tiempos Nsight permanecen en un dominio separado; no se inventa alineación con monotonic_ns.
 - collection_report.json, recuentos de cobertura separados entre eventos del runner y eventos de adaptador, y SHA256SUMS.
 
 ### Validación CI
