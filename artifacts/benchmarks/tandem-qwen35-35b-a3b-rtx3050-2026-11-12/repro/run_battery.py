@@ -2,6 +2,7 @@
 """Run the fixed battery and sample host resources separately for every request."""
 from __future__ import annotations
 import argparse
+import atexit
 import datetime as dt
 import json
 import pathlib
@@ -11,6 +12,7 @@ import urllib.request
 from urllib.parse import urlparse
 from resource_monitor import RequestSampler
 from moe_runtime_probe import RuntimeProbe
+from nepenthes_universal_collector import UniversalCollector
 
 ARITHMETIC = "¿Cuánto es 17 por 23? Responde brevemente."
 TWO_SUM = ("Escribe una función Python two_sum(nums, target) que devuelva los índices de dos "
@@ -72,6 +74,7 @@ def main():
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--monitor-interval", type=float, default=1.0)
     parser.add_argument("--server-pid", type=int, default=None)
+    parser.add_argument("--universal-collector", action="store_true", help="also write a normalized run-level telemetry bundle")
     args = parser.parse_args()
 
     base = args.base_url.rstrip("/")
@@ -82,6 +85,28 @@ def main():
     out.mkdir(parents=True, exist_ok=False)
     (out / "responses").mkdir()
     (out / "resources").mkdir()
+
+    universal = None
+    if args.universal_collector:
+        universal = UniversalCollector(
+            out / "universal",
+            args.engine,
+            args.model,
+            pid=args.server_pid,
+            process_name=None if args.server_pid else "llama-server",
+            interval=args.monitor_interval,
+            metadata={
+                "mode": args.mode,
+                "base_url": base,
+                "model_path_or_id": args.model_path,
+                "temperature": 0,
+                "thinking": True,
+                "reasoning_format": "deepseek",
+                "runner": "run_battery.py",
+            },
+        )
+        universal.start()
+        atexit.register(universal.finish)
 
     manifest = {
         "started_at": dt.datetime.now().astimezone().isoformat(),
@@ -130,6 +155,14 @@ def main():
                 "started_at": dt.datetime.now().astimezone().isoformat(),
                 "request": payload,
             }
+            request_id = f"case-{index:02d}"
+            if universal:
+                universal.event(
+                    "request_start",
+                    {"task": task, "budget": budget, "max_tokens": maximum},
+                    request_id=request_id,
+                    source="run_battery",
+                )
             sampler = RequestSampler(
                 out / "resources",
                 f"case-{index:02d}",
@@ -180,6 +213,27 @@ def main():
             (out / "responses" / filename).write_text(
                 json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
             )
+            if universal:
+                universal.request_record(request_id, {
+                    "started_at": record.get("started_at"),
+                    "finished_at": record.get("finished_at"),
+                    "request": payload,
+                    "response": record.get("response"),
+                    "error": record.get("error"),
+                    "metrics": record.get("metrics"),
+                    "resource_metrics": record.get("resource_metrics"),
+                    "moe_runtime_metrics": record.get("moe_runtime_metrics"),
+                })
+                universal.event(
+                    "request_end",
+                    {
+                        "status": "error" if record.get("error") else "completed",
+                        "finish_reason": (record.get("metrics") or {}).get("finish_reason"),
+                    },
+                    request_id=request_id,
+                    source="run_battery",
+                )
+
             row = dict(record.get("metrics", record.get("error", {})))
             row.update({
                 "task": task,
@@ -195,6 +249,10 @@ def main():
             print(f"[{index}/{len(cases)}] {task} budget={budget} max={maximum}: {row}", flush=True)
             if index < len(cases) and args.pause:
                 time.sleep(args.pause)
+
+    if universal:
+        print("Universal capture:", universal.finish(), flush=True)
+        atexit.unregister(universal.finish)
 
     manifest["finished_at"] = dt.datetime.now().astimezone().isoformat()
     (out / "run_manifest.json").write_text(
