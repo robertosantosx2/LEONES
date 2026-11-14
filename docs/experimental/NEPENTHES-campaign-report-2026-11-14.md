@@ -17,7 +17,11 @@ La campaña debe producir evidencia completa por ejecución, no solo tokens/s: c
 
 ## 2. Evidencia ya archivada en LEONES
 
-### 2.1 Batería independiente del 13-11-2026
+### 2.1 Expediente de la ejecución del 12-11-2026
+
+Está publicado el paquete [tandem-qwen35-evidence-20261112-235030.tar.gz](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/evidence/tandem-qwen35-evidence-20261112-235030.tar.gz), de 288.463 bytes, con su sidecar SHA-256. Hash registrado: `82660fe04f665181285a3d81dd89e6b1f768a6be33cfaffa8db1730bb79d2548`.
+
+### 2.2 Batería independiente del 13-11-2026
 
 El expediente está publicado en:
 
@@ -28,7 +32,9 @@ El expediente contiene manifiesto, diez respuestas JSON originales, resumen JSON
 
 No es una comparación A/B controlada con cafe-llama.cpp. La corrección funcional se revisó estáticamente; no se ejecutó el código Python generado.
 
-### 2.2 Sondas y scripts de campaña
+También se conserva el fragmento de terminal `terminal-tail-cases-06-10.txt` con su sidecar SHA-256 bajo `tandem-qwen35-independent-2026-11-13/evidence/`; es evidencia parcial y no sustituye las respuestas originales.
+
+### 2.3 Sondas y scripts de campaña
 
 En [repro/](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/) ya están versionados:
 
@@ -180,7 +186,7 @@ La captura correlacionada del 14-11-2026 está identificada localmente en `$HOME
 - `preflight.txt`
 - `real-library-identities.txt`
 
-Estos archivos siguen siendo **pendientes de subir**: esta sesión puede inspeccionar GitHub, pero no leer directamente el filesystem de tu Ubuntu. No se crean copias ficticias ni se reconstruyen logs a partir de resúmenes. También queda por cotejar el expediente piloto/completo del 12–13-11 y cualquier artefacto adicional de `NEPENTHES_CUDA_TOOLING_20261114` contra los directorios locales.
+Estos archivos siguen siendo **pendientes de subir**: esta sesión puede inspeccionar GitHub, pero no leer directamente el filesystem de tu Ubuntu. No se crean copias ficticias ni se reconstruyen logs a partir de resúmenes. El expediente 12-11, el full-run 13-11 y el fragmento de terminal 13-11 ya están presentes en LEONES. Queda cotejar el tarball local `NEPENTHES_TANDEM_QWEN35_20261113_full.tar.gz` y el piloto, si existen, para determinar si aportan archivos no duplicados; además, falta archivar `NEPENTHES_CUDA_TOOLING_20261114` y el expediente correlacionado del 14-11.
 
 ## 8. Criterio de aceptación de la campaña
 
