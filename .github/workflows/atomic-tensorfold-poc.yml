@@ -1,0 +1,32 @@
+name: Atomic Chat TensorFold PoC checks
+
+on:
+  pull_request:
+    paths:
+      - "experiments/atomic-chat-tensorfold/**"
+      - ".github/workflows/atomic-tensorfold-poc.yml"
+  push:
+    branches:
+      - "research/atomic-chat-tensorfold-linux-cuda"
+    paths:
+      - "experiments/atomic-chat-tensorfold/**"
+      - ".github/workflows/atomic-tensorfold-poc.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  offline-poc-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile PoC and tests
+        run: python -m py_compile experiments/atomic-chat-tensorfold/poc.py experiments/atomic-chat-tensorfold/tests/test_poc.py
+      - name: Run offline tests
+        working-directory: experiments/atomic-chat-tensorfold
+        run: python -m unittest discover -s tests -v

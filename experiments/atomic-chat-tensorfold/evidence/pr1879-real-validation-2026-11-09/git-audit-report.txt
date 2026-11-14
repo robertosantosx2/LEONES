@@ -1,0 +1,44 @@
+FECHA DE AUDITORÍA: 2026-11-09T20:29:53+01:00
+
+BRANCH:
+fix/qwen35-cuda-lazy-scratch
+
+HEAD:
+a83afc3ded4617ce3ddb94dbe75e0b70da1e603d
+refactor(cuda): name post-warmup admission room
+
+ESTADO:
+ M zig/build/product.zig
+
+CAMBIOS LOCALES:
+ zig/build/product.zig | 1 +
+ 1 file changed, 1 insertion(+)
+
+COMPROBACIÓN DE ESPACIOS:
+
+ARCHIVOS MODIFICADOS:
+zig/build/product.zig
+
+CAMBIO LOCAL EN product.zig:
+diff --git a/zig/build/product.zig b/zig/build/product.zig
+index 34f553fd1..7665ac6f9 100644
+--- a/zig/build/product.zig
++++ b/zig/build/product.zig
+@@ -105,6 +105,7 @@ pub fn build(b: *std.Build, name: []const u8) void {
+     if (refusal(b, name, gpu, o)) |why| return b.getInstallStep().dependOn(&b.addFail(why).step);
+     const build_options = b.addOptions();
+     build_options.addOption([]const u8, "version", o.version orelse @import("../../build.zig.zon").version);
++    build_options.addOption(bool, "is_release", o.version != null);
+     build_options.addOption(bool, "slide_test_hooks", false);
+     const exe = switch (gpu.?) {
+         .cuda => |sm| cudaServer(b, o, build_options, sm),
+
+ÚLTIMOS OCHO COMMITS:
+a83afc3de refactor(cuda): name post-warmup admission room
+492c6a9a0 fix(cuda): reserve Qwen3.5 scratch at startup
+d2efafd4d fix(cuda): reserve Qwen3.5 scratch at startup
+b6d44f1b3 fix(cuda): reserve Qwen3.5 scratch at startup
+c5c55de62 fix(cuda): reserve Qwen3.5 scratch at startup
+dd3b76fbd fix(cuda): reserve Qwen3.5 scratch at startup
+66222188a fix(cuda): reserve Qwen3.5 scratch at startup
+709575a19 fix(cuda): reserve Qwen3.5 scratch at startup
