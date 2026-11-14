@@ -8,7 +8,7 @@ import time
 import unittest
 from unittest import mock
 
-from nepenthes_universal_collector import UniversalCollector, read_proc, read_meminfo
+from nepenthes_universal_collector import (UniversalCollector, read_proc, read_meminfo, read_process_threads)
 
 
 class UniversalCollectorTests(unittest.TestCase):
@@ -60,6 +60,14 @@ class UniversalCollectorTests(unittest.TestCase):
     def test_procfs_and_memory_probes_have_explicit_availability(self):
         self.assertIn("available", read_meminfo())
         self.assertFalse(read_proc(None)["available"])
+
+    def test_per_thread_scheduler_probe_reads_current_process(self):
+        result = read_process_threads(__import__("os").getpid())
+        self.assertTrue(result["available"])
+        self.assertGreaterEqual(result["thread_count"], 1)
+        self.assertGreaterEqual(len(result["threads"]), 1)
+        self.assertIn("tid", result["threads"][0])
+        self.assertIn("sched_runtime_ns", result["threads"][0])
 
     def test_gpu_unavailable_is_not_reported_as_zero(self):
         with tempfile.TemporaryDirectory() as tmp, mock.patch(
