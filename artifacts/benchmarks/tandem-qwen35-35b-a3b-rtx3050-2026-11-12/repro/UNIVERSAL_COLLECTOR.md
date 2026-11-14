@@ -89,3 +89,22 @@ A missing probe is reported unavailable, never as zero. Host PSI, swap, block I/
 ## Current boundary
 
 This is the universal host/GPU capture layer plus an engine-event schema. It does **not** yet implement Tandem.cpp hooks for per-layer expert routing, cache decisions, KV-cache accounting, allocator lifetimes, CUDA API/kernel correlation, worker queue timing or host-flag publication. Those require a separate engine adapter/patch and must be validated against a writable Tandem.cpp repository. Existing `resource_monitor.py`, `moe_runtime_probe.py`, MCT1/log inspectors and Nsight SQLite inspector remain available for the historical battery; this collector does not silently replace their existing output formats.
+
+
+## Integration with the existing battery runner
+
+The fixed battery keeps its historical per-request monitor outputs. To add the normalized run-level bundle and request-correlated events, pass `--universal-collector`:
+
+```bash
+python3 run_battery.py \
+  --base-url http://127.0.0.1:18086 \
+  --model Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf \
+  --engine tandem.cpp \
+  --mode same-engine-new-model \
+  --model-path "$HOME/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf" \
+  --monitor-interval 0.5 \
+  --universal-collector \
+  --output "$HOME/Descargas/tandem-monitored-$(date +%Y%m%d-%H%M%S)"
+```
+
+The runner binds automatic process discovery to the configured API port (or uses `--server-pid` when supplied), emits request-start/end events and writes each request/response plus the existing metrics into `universal/...`. The option is opt-in so historical runs and monitor overhead remain unchanged unless explicitly requested. The runner does not change server configuration.
