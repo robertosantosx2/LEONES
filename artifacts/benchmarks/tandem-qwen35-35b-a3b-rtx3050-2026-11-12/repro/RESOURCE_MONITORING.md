@@ -111,3 +111,24 @@ El informe advierte que:
 - Una tabla ausente no equivale a actividad cero.
 
 Tests sintéticos: `python3 -m unittest -v test_NEPENTHES_nsys_sqlite.py`. No se debe declarar validado hasta ejecutar esta prueba en el entorno de desarrollo o CI.
+
+
+## Archivo de expedientes locales NEPENTHES
+
+`archive_NEPENTHES_evidence.py` copia evidencias desde los directorios históricos del usuario a un directorio nuevo dentro de LEONES. No modifica ni elimina los originales, no sobrescribe ejecuciones archivadas, omite contenido de modelos/checkpoints y enlaces simbólicos, deduplica por SHA-256 y genera `ARCHIVE_MANIFEST.json` + `SHA256SUMS`.
+
+Desde la raíz del checkout LEONES:
+
+```bash
+python3 artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/archive_NEPENTHES_evidence.py --stage
+```
+
+Por defecto busca los expedientes piloto/full del 13-11, `NEPENTHES_QWEN35_CORRELATED_20261114`, `NEPENTHES_CUDA_TOOLING_20261114` y la captura original `report1.nsys-rep`. Para añadir otra carpeta:
+
+```bash
+python3 artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/archive_NEPENTHES_evidence.py --extra-root "$HOME/ruta/al/experimento" --stage
+```
+
+El script solo hace `git add -f` del nuevo subdirectorio de archivo cuando se solicita `--stage`; no hace commit ni push. Revisar el manifiesto y el tamaño total antes de crear el commit. Si falta una carpeta, se registra como `missing`; no se inventa contenido. Cada ejecución usa un nombre timestamped y rechaza colisiones.
+
+Tests: `python3 -m unittest -v test_archive_NEPENTHES_evidence.py`.
