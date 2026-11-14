@@ -1,0 +1,32 @@
+=== ENLACES SIMBÓLICOS ===
+lrwxrwxrwx 1 ssantos ssantos       16 Nov 12 20:11 /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cpu.so -> libggml-cpu.so.0
+lrwxrwxrwx 1 ssantos ssantos       21 Nov 12 20:11 /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cpu.so.0 -> libggml-cpu.so.0.28.0
+-rwxrwxr-x 1 ssantos ssantos  1447496 Nov 12 20:11 /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cpu.so.0.28.0
+lrwxrwxrwx 1 ssantos ssantos       17 Nov 12 20:11 /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cuda.so -> libggml-cuda.so.0
+lrwxrwxrwx 1 ssantos ssantos       22 Nov 12 20:11 /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cuda.so.0 -> libggml-cuda.so.0.28.0
+-rwxrwxr-x 1 ssantos ssantos 73211992 Nov 12 20:11 /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cuda.so.0.28.0
+lrwxrwxrwx 1 ssantos ssantos       13 Nov 12 20:13 /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama.so -> libllama.so.0
+lrwxrwxrwx 1 ssantos ssantos       17 Nov 12 20:13 /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama.so.0 -> libllama.so.0.8.0
+-rwxrwxr-x 1 ssantos ssantos  5961824 Nov 12 20:13 /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama.so.0.8.0
+
+=== DESTINOS REALES Y FECHAS ===
+--- /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama.so.0
+Destino: /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama.so.0.8.0
+Fecha: 2026-11-12 20:13:22.911900218 +0100 | Tamaño: 5961824 bytes
+04e3b7bd45d9808f2e89fecb61f09ba33f36709a08c62ce8b9ecd654d72954dd  /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama.so.0.8.0
+--- /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cuda.so.0
+Destino: /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cuda.so.0.28.0
+Fecha: 2026-11-12 20:11:08.308349831 +0100 | Tamaño: 73211992 bytes
+df877dcf450d260aa2db294eec3e9184550a2c72f258bec41d4e7f28b73e5875  /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cuda.so.0.28.0
+--- /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cpu.so.0
+Destino: /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cpu.so.0.28.0
+Fecha: 2026-11-12 20:11:37.590468805 +0100 | Tamaño: 1447496 bytes
+facaa364cb75e6d82c7e95c5ef08b3a232a96c6217d8734bc053439139c31e93  /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libggml-cpu.so.0.28.0
+--- /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama-server-impl.so
+Destino: /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama-server-impl.so
+Fecha: 2026-11-12 20:18:05.627793515 +0100 | Tamaño: 8339248 bytes
+65eb58713c4a535aee298998568ef6a902effbfbbdb744b4427ca1d095c501a3  /home/ssantos/Descargas/tandem-research/engines/tandem.cpp/tandem/build/bin/libllama-server-impl.so
+
+=== BUILD ID DE LIBLLAMA ===
+
+=== BUILD ID DE LIBGGML-CUDA ===
