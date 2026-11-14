@@ -46,6 +46,15 @@ def run_json(command: list[str], timeout: float = 2.0) -> dict:
         return {"available": False, "error": f"{type(exc).__name__}: {exc}"}
 
 
+def read_cpu_stat() -> dict:
+    try:
+        line = pathlib.Path("/proc/stat").read_text().splitlines()[0]
+        values = list(map(int, line.split()[1:]))
+        return {"available": True, "cpu_ticks": values}
+    except Exception as exc:
+        return {"available": False, "error": str(exc)}
+
+
 def read_meminfo() -> dict:
     result = {}
     try:
@@ -97,7 +106,7 @@ def read_proc(pid: int | None) -> dict:
         raw = (root / "stat").read_text()
         tail = raw[raw.rfind(")") + 2:].split()
         out["stat"] = {
-            "state": tail[0],
+            "state": tail[0], "starttime_ticks": int(tail[19]),
             "utime_ticks": int(tail[11]),
             "stime_ticks": int(tail[12]),
             "threads": int(tail[17]),
@@ -265,7 +274,7 @@ class Dmon:
             return
         try:
             self.process = subprocess.Popen([exe, "dmon", "-s", "t", "-d", "1"],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1)
             self.thread = threading.Thread(target=self._read, daemon=True)
             self.thread.start()
         except Exception as exc:
@@ -346,6 +355,8 @@ class UniversalCollector:
         return row
 
     def request_record(self, request_id: str, record: dict):
+        if not re.fullmatch(r"[A-Za-z0-9_.-]{1,128}", request_id) or request_id in {".", ".."}:
+            raise ValueError("request_id must be 1-128 safe filename characters")
         row = {"schema_version": SCHEMA_VERSION, "run_id": self.run_id,
                "request_id": request_id, "recorded_at": wall_time(),
                "monotonic_ns": time.monotonic_ns(), **record}
@@ -356,7 +367,7 @@ class UniversalCollector:
         return {
             "schema_version": SCHEMA_VERSION, "run_id": self.run_id,
             "time": wall_time(), "monotonic_ns": mono, "pid": self.pid,
-            "host": {"cpu": run_json(["sh", "-c", "cat /proc/stat"], 1),
+            "host": {"cpu": read_cpu_stat(),
                      "memory": read_meminfo(), "vmstat": read_vmstat(),
                      "pressure": read_pressure(), "cpu_frequency": read_cpu_frequency(),
                      "disk": read_diskstats()},
