@@ -84,6 +84,14 @@ def import_database(database: pathlib.Path, run_dir: pathlib.Path, run_id: str |
         tables = _tables(db)
         strings = _strings(db, tables)
         processes = process_map(db, tables)
+        thread_names = {}
+        if "ThreadNames" in tables:
+            thread_columns = _columns(db, "ThreadNames")
+            if {"nameId", "globalTid"} <= thread_columns:
+                thread_names = {
+                    int(tid): strings.get(int(name_id), str(name_id))
+                    for name_id, tid in db.execute("SELECT nameId, globalTid FROM ThreadNames")
+                }
         with events_path.open("x", encoding="utf-8") as output:
             for table, (category, required) in TABLE_SPECS.items():
                 if table not in tables:
@@ -138,7 +146,7 @@ def import_database(database: pathlib.Path, run_dir: pathlib.Path, run_id: str |
                         "wall_time": None,
                         "correlation_id": row.get("correlationId"),
                         "global_tid": global_tid,
-                        "thread_name": strings.get(int(row["nameId"])) if "nameId" in row and row["nameId"] is not None else None,
+                        "thread_name": thread_names.get(int(global_tid)) if global_tid is not None else None,
                         "process": runtime_process(int(global_tid), processes) if global_tid is not None else None,
                         "device_id": row.get("deviceId"),
                         "context_id": row.get("contextId"),
