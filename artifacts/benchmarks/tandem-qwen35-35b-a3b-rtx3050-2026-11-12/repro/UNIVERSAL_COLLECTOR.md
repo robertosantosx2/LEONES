@@ -78,7 +78,7 @@ Every event contains a run UUID, optional request ID, unique event ID, source, w
 | Scheduler pressure | PSI CPU/memory/I/O and process schedstat | PSI is host/cgroup context, not a per-request attribution |
 | CPU frequency | sysfs scaling frequency | Per online CPU where exposed; not proof of effective clock under load |
 | Storage | Whole-device `/proc/diskstats`, cgroup-v2 `io.stat` | Device counters are host-wide; map device topology before attribution |
-| GPU / VRAM | `nvidia-smi --query-gpu` | Device-wide, sampling cadence may miss short peaks |
+| GPU / VRAM / processes | `nvidia-smi --query-gpu` plus `--query-compute-apps` PID/process/VRAM | Utilization is device-wide; compute-process memory attribution may be unsupported or omit graphics contexts; cadence may miss short peaks |
 | PCIe | Persistent `nvidia-smi dmon -s t` | Device-wide MB/s, normally one-second cadence |
 | cgroup v2 | memory.current/peak/max/events, cpu.stat/max, io.stat, PSI | Only where process cgroup files are readable |
 | Nsight / CUDA | External profile files in `profiles/`; existing SQLite inspector | Collector does not itself start Nsight or instrument CUDA |
