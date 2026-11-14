@@ -1,0 +1,592 @@
+===== START SESSION OPTIONS =====
+11:                • NSYS_SESSION_NAME   - the current session name
+12-                • NSYS_CALLBACK_NAME  - the current callback name
+13-
+14-	--after-report-ready
+15-
+16-            Execute a command after the report is ready.
+--
+21:                • NSYS_SESSION_NAME   - the current session name
+22-                • NSYS_CALLBACK_NAME  - the current callback name
+23-                • NSYS_REPORT_PATH    - the path to the generated report file
+24-
+25:	-b, --backtrace=
+26-
+27-	   Possible values are 'lbr', 'fp', 'dwarf', or 'none'.
+28:	   Select the backtrace method to use while sampling.
+29:	   Select 'none' to disable backtrace collection.
+30:	   For best backtraces with fp, compile the application and all
+31-	   shared libraries with -fno-omit-frame-pointer.
+32:	   Append ':show-source-info' to any backtrace method other than 'none'
+33-	   (e.g. 'fp:show-source-info', 'dwarf:show-source-info') to show source file and
+34:	   line number for CPU sampling backtraces when available.
+35-	   Increases report generation time.
+36-	   Note: stripped binaries typically do not contain the debug
+37-	   information needed to resolve symbols. Consider deploying
+38-	   unstripped binaries.
+39-	   Default is 'fp'.
+--
+80:	   CPU Core events to sample.
+81-	   Possible values are (for example) '2,3,...'.
+82-	   Use the '--cpu-core-events=help' switch to see the full list of events.
+83-	   Multiple values can be selected, separated by commas only (no spaces).
+84-	   Requires root privileges or a paranoid level of 0 or less.
+85:	   Use the --event-sample switch to enable.
+86-
+87-	--cpu-metrics=
+88-
+89-	   CPU core and uncore events and metrics to collect by name or alias.
+90-	   Use the '--cpu-metrics=help' switch to see the full list of events and metrics.
+--
+94:	   Use the --event-sample switch to enable.
+95-
+96:	--cpuctxsw=
+97-
+98-	   Possible values are 'process-tree', 'system-wide', or 'none'.
+99-	   Trace OS thread scheduling activity. Select 'none' to disable tracing CPU context switches. 
+100-	   'system-wide' requires root privileges or a paranoid level of 0 or less.
+101:	   If CPU IP/backtrace sampling is enabled, --cpuctxsw equals the --sample setting.
+102:	   For example, if --sample=process-tree, then --cpuctxsw=process-tree.
+103:	   If --sample=none and a target application is launched, the default is 'process-tree',
+104-	   otherwise the default is 'none'.
+105-
+106-	--debug-symbols=
+107-
+108-	   Specify the paths to directories with symbol files.
+--
+127:	--event-sample=
+128-
+129-	   Enable event sampling.
+130-	   Possible values are 'system-wide' or 'none'.
+131-	   Select 'none' to disable event sampling.
+132-	   The default is 'none'.
+--
+146:	   The interval in milliseconds between each event sample collection.
+147-	   Minimum event sampling interval is '0' milliseconds.
+148-	   Maximum event sampling interval is '1000' milliseconds.
+149-	   The default is '10' milliseconds.
+150-
+151-	--event-sampling-multiplex-interval=
+--
+153:	   The time in milliseconds an event group is sampled before switching to the next event group.
+154-	   Minimum event sampling multiplex interval is '250' milliseconds.
+155-	   The default is '2000' milliseconds.
+156-	   Event multiplexing is disabled by default.
+157-
+158-	--export=<format>[,<format>...]
+--
+161:	   Create additional output file(s) based on the data collected.
+162-	   If 'none' is selected, no additional files are created.
+163-	   Default is 'none'. This option can be given more than once.
+164-
+165:	-f, --force-overwrite=
+166-
+167-	   Possible values are 'true' or 'false'.
+168:	   If true, overwrite all existing result files with same output filename
+169-	   (QDSTRM, nsys-rep, SQLITE, HDF, TEXT, JSON, ARROW, ARROWDIR, PARQUETDIR).
+170-	   Default is 'false'.
+171-
+172-	--flush-on-cudaprofilerstop=
+173-
+--
+175:           cause the CUDA trace buffers to be flushed. Note that the CUDA trace
+176-           buffers will be flushed when the collection ends, irrespective of the
+177-           value of this switch. Default value is 'true'.
+178-
+179:	--ftrace=
+180-
+181:	   Collect ftrace events.
+182-	   Argument should list events to collect as: subsystem1/event1,subsystem2/event2.
+183:	   To collect trace markers, set '--ftrace=ftrace/print'.
+184-	   Requires root privileges.
+185:	   Default is '' (no ftrace events are collected by default). System scope.
+186-
+187:	--ftrace-keep-user-config=
+188-
+189-	   Possible values are 'true' or 'false'.
+190:	   Skip initial ftrace setup and collect already configured events.
+191:	   Default is 'false' (nsys will reset the ftrace configuration).
+192-
+193-	--gds-libs-path
+194-
+195-	   Specify a directory containing GPUDirect Storage libraries (must contain libcufile.so).
+196-	   Use this flag if the GDS libraries are located in a different path than the default.
+--
+237:           Collect GPU video accelerator traces from specified devices.
+238-           The argument must be 'none' or one or more GPU IDs reported by '--gpu-video-devices=help'.
+239-           Default is 'none'. System scope.
+240-
+241-	--gpuctxsw=
+242-
+--
+254:	   backtrace, callback, cpu, cuda, env, environment, event, export, ftrace,
+255:	   gpu, interactive, metric, metrics, network, nic, os, output, pmu, range,
+256:	   sample, sampling, session, stats, switch, symbol, symbols, and trace.
+257-
+258-	--ib-net-info-devices=
+259-
+260-           A comma-separated list of NICs names.
+261-           The NICs which ibdiagnet will use for networks discovery.
+--
+265:           If the --ib-net-info-output option is set then Nsight Systems will store the network information at this path.
+266-           Otherwise it will be created at a temporary path
+267-           and will be discarded after processing.
+268-           If more than one NIC was specified, only the last network information file be saved.
+269-           Note that this option should not be used together with
+270-           the --ib-net-info-files option.
+--
+281:	--ib-net-info-output=
+282-
+283-           Sets the path of a directory into which
+284-           ibdiagnet network discovery data will be written.
+285-           Use this option together with the --ib-net-info-devices option.
+286-           Don't use '~' alias within the path.
+--
+337:	   accessed for performance metrics samples. By default, the first active NIC
+338-	   will be used. One way to find a NIC's name is via the `ibstat -l` command.
+339-	   Example usage: --ib-switch-metrics-nic-device=mlx5_3
+340-
+341-	--nic-metrics=
+342-
+--
+351:	-o, --output=
+352-
+353-	   Output report filename.
+354-	   Any %q{ENV_VAR} pattern in the filename will be substituted with the value of the 
+355-	   environment variable.
+356-	   Any %h pattern in the filename will be substituted with the hostname of the system.
+--
+366:	   OS events to sample.
+367-	   Possible values are (for example) '0,3,...'.
+368-	   Use the '--os-events=help' switch to see the full list of events.
+369-	   Multiple values can be selected, separated by commas only (no spaces).
+370:	   Use the --event-sample switch to enable.
+371-
+372:	-s, --sample=
+373-
+374-	   Possible values are 'process-tree', 'system-wide' or 'none'.
+375:	   Collect CPU IP/backtrace samples. Select 'none' to disable sampling. 
+376-	   'system-wide' requires root privileges or a paranoid level of 0 or less.
+377-	   If a target application is launched, the default is 'process-tree', otherwise the default
+378-	   is 'none'.
+379-
+380:	--samples-per-backtrace=
+381-
+382-	   Possible values are integers between 1 and 32.
+383:	   The number of CPU IP samples collected for every CPU IP sample backtrace collected. For 
+384:	   example, if set to 4, on the fourth CPU IP sample collected, a backtrace will also be 
+385-	   collected. Lower values increase the amount of data collected. Higher values can reduce 
+386:	   overhead and help reduce the number of CPU IP samples dropped. 
+387:	   Default is 1. If DWARF backtraces are collected, the default is 4.
+388-
+389-	--sampling-period=
+390-
+391-	   Possible values are integers between 36800000 and 287500.
+392-	   The number of hardware or software cycle events counted before a CPU instruction pointer (IP)
+393:	   sample is collected. 
+394:	   If configured, backtraces may also be collected. The smaller the sampling period, the higher
+395-	   the sampling rate. 
+396-	   Note that lower sampling periods will increase overhead and significantly increase the size
+397-	   of the result file(s). 
+398:	   Default is 2300000. If DWARF backtraces are collected, the default is 4600000.
+399-
+400:	--session=
+401-
+402:	   Launch the application in the given session.
+403:	   The option argument must represent a valid session name or ID as reported by 'nsys sessions
+404-	   list'.
+405-	   Any '%q{ENV_VAR}' pattern in the option argument will be substituted with the value of the
+406-	   environment variable.
+407-	   Any '%h' pattern in the option argument will be substituted with the hostname of the system.
+408-	   Any '%%' pattern in the option argument will be substituted with '%'.
+--
+410:	--session-new=
+411-
+412:	   Start the collection in a new named session. The option  argument represents the session
+413-	   name.
+414:	   The session name must start with an alphabetical character followed by printable or space
+415-	   characters.
+416:	   Any '%q{ENV_VAR}' pattern in the session name will be substituted with the value of the
+417-	   environment variable.
+418-	   Any '%h' pattern in the option argument will be substituted with the hostname of the system.
+419-	   Any '%%' pattern in the option argument will be substituted with '%'.
+420-
+421-	--stats=
+--
+444:	   If stop-on-exit=false, duration must be greater than 0.
+445-	   Default is 'true'.
+446-
+
+===== LAUNCH OPTIONS =====
+4:	(Deprecated) -b, --backtrace=
+5-
+6-	   WARNING: This switch is no longer supported.
+7:	   Please set the --backtrace switch when using the start command instead.
+8-
+9-	--command-file=
+10-
+11-	   Open a file that contains nsys switches and parse the switches. Note that
+12-	   command line switches will override switches found in the command-file.
+--
+14:	(Deprecated) --cpuctxsw=
+15-
+16-	   WARNING: This switch is no longer supported.
+17:	   Please set the --cpuctxsw switch when using the start command instead.
+18-
+19:	--cuda-event-trace=
+20-
+21-	   Possible values are 'auto', 'true' or 'false'.
+22-	   Trace CUDA Event completion on the device side, and get better correlation
+23-	   support among CUDA Event APIs. Applicable only when CUDA tracing is enabled.
+24-	   Note that 'CUDA Event' refers to the synchronization mechanism (cudaEventRecord,
+--
+29:	   'auto' will automatically turn off the trace if a target process has
+30-	   CUDA_DEVICE_MAX_CONNECTIONS set to 1.
+31-	   This switch requires CUDA driver 12.8 or higher. 
+32-	   Default is 'false'. Application scope.
+33-
+34-	--cuda-flush-interval=
+--
+56:	--cuda-graph-trace=<granularity>[:<launch origin>][:<nvtx mode>]
+57-
+58:	   Set the granularity, launch origin, and NVTX projection mode for CUDA graph trace.
+59-	   Applicable only when CUDA tracing is enabled.
+60-	   Optional modifiers can appear in any order after the granularity.
+61-
+62-	   Possible values for <granularity> are 'graph' or 'node'.
+63:	   If 'graph' is selected, CUDA graphs will be traced as a whole and node
+64-	   activities will not be collected. This can reduce overhead to the minimal,
+65-	   but requires CUDA driver version 11.7 or higher.
+66-	   If 'node' is selected, node activities will be collected, but CUDA graphs
+67:	   will not be traced as a whole. This may cause significant runtime overhead.
+68-	   If CUDA driver version is 11.7 or higher, default is 'graph', otherwise default is 'node'.
+69-
+70-	   Possible values for <launch origin> are 'host-only' or 'host-and-device'.
+71:	   If 'host-only' is selected, only CUDA graphs launched from host codes will be traced.
+72-	   If 'host-and-device' is selected, CUDA graphs launched from host codes and device codes
+73:	   will both be traced. For granularity 'graph', CUDA driver version 12.3 or higher is 
+74:	   required. For granularity 'node', hardware trace must be used along with CUDA driver 
+75:	   version 13.0 or higher, and '--trace=cuda' must be enabled without '--trace=cuda-sw'.
+76-	   This may cause significant runtime overhead.
+77-	   If granularity is set to 'graph' and the CUDA driver version is 12.3 or higher,
+78-	   the default is 'host-and-device'. For 'node', the default is 'host-only' unless 
+79:	   hardware trace is enabled and the CUDA driver version is 13.0 or higher.
+80-
+81-	   Possible values for <nvtx mode> are 'nvtx-live' or 'nvtx-precapture'.
+82-	   Controls how NVTX projection works for CUDA Graph nodes.
+83-	   'nvtx-live': NVTX projection is available for graphs constructed while
+84-	   profiling is active. No additional overhead.
+--
+102:	--cuda-trace-all-apis=
+103-
+104-	   Possible values are 'true' or 'false'.
+105-	   By default, Nsys skips some CUDA APIs that are not critical for 
+106:	   performance analysis. If enabled, Nsys will trace all CUDA APIs,
+107-	   including those less relevant to performance analysis.
+108-	   Note that enabling this feature may cause significant runtime overhead.
+109-	   Default is 'false'.
+110-
+111-	--cuda-um-cpu-page-faults=
+--
+127:	--cudabacktrace=
+128-
+129-	   Possible values are 'all','none','kernel','memory','sync','other'.
+130:	   If tracing CUDA APIs, enable the collection of a backtrace when a CUDA API is invoked.
+131-	   When selected, significant runtime overhead may occur.
+132-	   Values may be combined using ','.
+133-	   Each value except 'none' may be appended with a threshold after ':'.
+134:	   Threshold is the duration, in nanoseconds, that CUDA APIs must execute before backtraces are
+135-	   collected, e.g. 'kernel:500'.
+136-	   Default value for each threshold is 80000ns (80us).
+137-	   Note that CPU sampling must be enabled.
+138-	   Default is 'none'. Application scope.
+139-
+--
+142:            Possible values are 'functions-trace' or 'none'.
+143:            'functions-trace' implies '--python-functions-trace=/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/PythonFunctionsTrace/dask.json',
+144-            and will rename relevant threads to 'Dask Worker' and 'Dask Scheduler'.
+145-            Default is 'none'.
+146:            Implies '--trace=nvtx'.
+147-
+148-	-e, --env-var=
+149-
+150-	   Set environment variable(s) for application process to be launched.
+151-	   Environment variable(s) should be defined as 'A=B'.
+--
+175:	   app, application, backtrace, capture, cli, command, cpu, cuda, env,
+176-	   environment, file, filter, fork, gpu, hotkey, interactive, log, logs, memory,
+177:	   mpi, nccl, nvtx, opengl, os, osrt, output, range, run, sample, sampling,
+178:	   session, switch, symbol, symbols, trace, user, uvm, vulkan, and wait.
+179-
+180-	--hotkey-capture=
+181-
+182-	   Possible values are `F1` to `F12`.
+183-	   Hotkey to trigger the profiling session.
+--
+192:	   Note that this switch is applicable only when --trace=mpi is specified.
+193-	   If no MPI implementation is specified, nsys tries to automatically detect it based on the
+194-	   dynamic linker's search path. If this fails, 'openmpi' is used.
+195-
+196-	-n, --inherit-environment=
+197-
+--
+202:	--nccl-trace=
+203-
+204:	   Comma-separated list of NCCL events to record, takes priority over --trace.
+205-	   Possible values are 'all', 'api', 'api-coll', 'api-group', 'api-p2p',
+206-	   'ce-batch', 'ce-coll', 'ce-sync', 'coll', 'default', 'gpu', 'group',
+207-	   'kernel-launch', 'p2p', 'proxy-counters', 'proxy-op', 'proxy-step', 'rt' or
+208-	   'none'.
+209:	   Default is 'api,ce-coll,group,gpu' if 'nccl' is in --trace, otherwise 'none'.
+210-	   All proxy events are experimental, proxy-op and proxy-step are only for
+211-	   specialized analysis and thus not included in 'all'. For more information,
+212-	   see the user guide.
+213-
+214-	--nvtx-domain-[include|exclude]=
+--
+220:	   Note that both switches are applicable only when --trace=nvtx is specified.
+221-
+222-	--opengl-gpu-workload=
+223-
+224-	   Possible values are 'true' or 'false'.
+225:	   If true, trace the OpenGL workload's GPU activity.
+226:	   Note that this switch is applicable only when --trace=opengl is specified.
+227-	   Default is 'true'. Application scope.
+228-
+229:	--osrt-backtrace-stack-size=
+230-
+231:	   Set the stack dump size, in bytes, to generate backtraces for OS runtime libraries calls.
+232-	   Default is 6144 (6 KiB).
+233-
+234:	--osrt-backtrace-threshold=
+235-
+236:	   Set the duration, in nanoseconds, that all OS  runtime  libraries calls must execute before
+237:	   backtraces are collected.
+238-	   Default is 80000 (80 microseconds).
+239-
+240-	(Experimental) --osrt-file-access=
+241-
+242-	   Collect file access data when tracing Operating System Runtime (osrt) APIs that interact
+--
+251:	   Set the duration, in nanoseconds, that Operating System Runtime (osrt) APIs must execute
+252:	   before they are traced. Values much less than 1000 may cause significant overhead and
+253-	   result in extremely large result files.
+254-	   Default is 1000 (1 microsecond).
+255-	   Note: This setting is ignored for APIs that interact with files when --osrt-file-access
+256-	   is set to 'true'.
+257-
+--
+266:	--python-backtrace=
+267-
+268-	   Optional values are 'cuda' and 'none'. If no value is given, 'cuda' is assumed.
+269:	   Collect Python backtrace event when tracing the selected API's trigger.
+270:	   Note that tracing and backtraces of the selected API and CPU sampling must be enabled.
+271-	   Default is 'none'.
+272-
+273:	--python-functions-trace=
+274-
+275-	   Specify the path to the json file containing the requested
+276:	   Python functions to trace.
+277-	   Note that nvtx package must be installed on the target Python.
+278-	   See '/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/PythonFunctionsTrace/annotations.json' as an example.
+279-	   For PyTorch application, see predefined annotations at '/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/PythonFunctionsTrace/pytorch.json'.
+280-	   For Dask application, see predefined annotations at '/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/PythonFunctionsTrace/dask.json'.
+281-
+--
+285:	   Sample Python backtrace.
+286-	   Default is 'false'.
+287:	   Note: This feature provides meaningful backtraces for Python processes. 
+288-	   When profiling Python-only workflows, consider disabling the CPU sampling option to reduce overhead.
+289-
+290-	--python-sampling-frequency=
+291-
+292-	   Specify Python sampling frequency.
+--
+299:            Possible values are 'autograd-nvtx', 'autograd-shapes-nvtx', 'functions-trace', 'functions-trace-shapes' or 'none'.
+300-            If 'autograd-nvtx' is used, nsys will call
+301-            torch.autograd.profiler.emit_nvtx(record_shapes=False)
+302-            when pytorch is imported.
+303-            If 'autograd-shapes-nvtx' is used, nsys will call
+304-            torch.autograd.profiler.emit_nvtx(record_shapes=True)
+--
+306:            If 'functions-trace' is used, nsys will generate an NVTX range for each `torch.Module.forward()` call.
+307:            If 'functions-trace-shapes' is used, nsys will generate an NVTX range for each `torch.Module.forward()` call
+308-            and attach tensor shapes and additional data as binary payloads.
+309:            'functions-trace' and 'functions-trace-shapes' also imply '--python-functions-trace=/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/PythonFunctionsTrace/pytorch.json'.
+310-            The 'autograd-nvtx' and 'autograd-shapes-nvtx' options can be combined
+311:            with 'functions-trace' or 'functions-trace-shapes' by adding them separated by a comma.
+312-            Default is 'none'.
+313:            Implies '--trace=nvtx'.
+314-
+315-	--resolve-symbols=
+316-
+317-	   Possible values are 'true' or 'false'.
+318:	   Resolve symbols of captured samples and backtraces.
+319-	   Default is 'false' on Windows, 'true' on other platforms.
+320-
+321-	--run-as=
+322-
+323-	   Run the target application as the specified username.
+--
+328:	(Deprecated) -s, --sample=
+329-
+330-	   WARNING: This switch is no longer supported.
+331:	   To enable CPU IP/backtrace sampling, please set the --sample switch when using the start
+332-	   command instead.
+333-
+334:	(Deprecated) --samples-per-backtrace=
+335-
+336-	   WARNING: This switch is no longer supported.
+337:	   Please set the --samples-per-backtrace switch when using the start command instead.
+338-
+339-	(Deprecated) --sampling-period=
+340-
+341-	   WARNING: This switch is no longer supported.
+342-	   Please set the --sampling-period switch when using the start command instead.
+--
+365:	-t, --trace=
+366-
+367-	   Possible values are 'cuda', 'cuda-sw', 'nvtx', 'cublas', 'cublas-verbose', 
+368-	   'cuDNN', 'cuDNN-verbose', 'cusolver', 'cusolver-verbose', 'cusparse', 
+369-	   'cusparse-verbose', 'mpi', 'oshmem', 'ucx', 'nccl', 's3', 'osrt', 'cudnn', 
+370-	   'opengl', 'opengl-annotations', 'openacc', 'openmp', 'nvvideo', 'vulkan', 
+--
+372:	   Select the API(s) to trace. Multiple APIs can be selected, separated by commas only
+373-	   (no spaces).
+374:	   If '<api>-annotations' is selected, the corresponding API will also be traced.
+375:	   If 'none' is selected, no APIs are traced.
+376-	   Default is 'cuda,nvtx,osrt,opengl'. Application scope.
+377-
+378:	--trace-fork-before-exec=
+379-
+380-	   Possible values are 'true' or 'false'.
+381:	   If true, trace any child process after fork and before they call one of the exec functions.
+382-	   Beware, tracing in this interval relies on undefined behavior and might cause your
+383-	   application to crash or deadlock. This option is only available on Linux and Windows
+384-	   target platforms.
+385-	   Default is 'false'.
+386-
+--
+390:	   If individual or true, trace each Vulkan workload's GPU activity individually.
+391:	   If batch, trace Vulkan workloads' GPU activity in vkQueueSubmit call batches.
+392:	   If none or false, do not trace Vulkan workloads' GPU activity.
+393:	   Note that this switch is applicable only when --trace=vulkan is specified.
+394-	   Default is 'individual'. Application scope.
+395-
+396:	-w, --show-output=
+397-
+398-	   Possible values are 'true' or 'false'.
+399-	   If true, send target process's stdout and stderr streams to both the console and
+400-	   stdout/stderr files which are added to the report file.
+401-	   If false, only send target process stdout and stderr streams to the stdout/stderr files
+--
+405:	--wait=
+406-
+407-	   Possible values are 'primary' or 'all'.
+408:	   If 'primary', the CLI will wait on the application process termination.
+409:	   If 'all', the CLI will additionally wait on re-parented processes created by the
+410-	   application.
+411-	   Default is 'all'.
+412-
+
+===== REPORT OPTIONS =====
+
+usage: nsys stats [<args>] <input-file>
+
+<input-file> : Read data from a .nsys-rep or exported .sqlite file.
+
+	-f, --format <name[:args...][,name[:args...]...]>
+
+           Specify the output format. The special name "." indicates the
+           default format for the given output.
+
+           The default format for console is:    column
+           The default format for files is:      csv
+           The default format for processes is:  csv
+
+           Available formats (and file extensions):
+
+             column     Human readable columns (.txt)
+             table      Human readable table (.txt)
+             csv        Comma Separated Values (.csv)
+             tsv        Tab Separated Values (.tsv)
+             json       JavaScript Object Notation (.json)
+             hdoc       HTML5 document with <table> (.html)
+             htable     Raw HTML <table> (.html)
+
+           This option may be used multiple times. Multiple formats may also
+           be specified using a comma-separated list. If a list item is left
+           blank by using repeating commas, the last specified format (and args)
+           will be repeated to fill in the blanks. If the list starts with a
+           comma, creating an initial blank format, the default will be
+           substituted.
+
+	--filter-nvtx  <nvtx_range_name>[@<domain_name>][/<index>]
+
+           Filter the events and data records used to generate reports by
+           the time range defined by the first instance of the given NVTX
+           range. Only events or records that overlap with any of the given
+           NVTX range are used to compile and calculate the report. Note
+           that an event or data record can start before or end after the
+           given NVTX range, as long as it exists at some point during the
+           specified NVTX range.
+
+           The domain name is not optional, and can only be excluded if
+           the range was not assigned to a domain; if the range has a
+           domain it must be given.
+
+           By default, the first instance of the given NVTX range (as
+           defined by the start time) is used to define the time range. A
+           different instance of the given NVTX range can be used by
+           specifying an index number.  The index is zero-based, so the first
+           instance has an index of "0". If the characters after the final
+           slash do not represent a positive integer, it is assumed they
+           are part of the range/domain name.
+
+           If used in conjunction with the --filter-time option, this option
+           will override any explicit time values.
+
+	--filter-time  [<start_time>]/[<end_time>]
+
+           Filter the events and data records used to generate reports by
+           the given time range. Only events or records that overlap with
+           any of the given time range are used to compile and calculate
+           the report. Note that an event or data record can start before
+           or end after the given time range, as long as it exists at some
+           point during the specified time range.
+
+           Times are defined in nanoseconds. At least one time value is
+           required. Any omitted time value will default to the minimum or
+           maximum value (approximately +/- 290 years from the zero-point).
+           The start time must be less than or equal to the end time.
+
+           The time values are a series of integer or floating-point values
+           followed by an optional unit. If no unit is given, the number is
+           assumed to be in nanoseconds. Positive and negative values are
+           supported, as well as scientific "e" notation. More than one
+           value/unit can be given as long as there are no spaces. The
+           units do not need to be given in any order and can even repeat.
+
+           The following units are understood:
+
+              ns, nsec : nanosecond
+              us, usec : microsecond
+              ms, msec : millisecond
+              s, sec   : second
+              m, min   : minute (60 seconds)
+              h, hour  : hour (3600 seconds)
+
+           For example, the value "1s2ms3us4ns" would indicate 1,002,003,004
+           nanoseconds. "2ns5us2" would be 5004 nanoseconds (2 nanoseconds
+           plus 5 microseconds plus 2 nanoseconds). A floating-point value
+           is converted as a 64-bit "double" and is subject to the precision
+           limitations of that format.
+
+           If used in conjunction with the --filter-nvtx option, the
+           --filter-nvtx option will take precedence.
+
+	--force-export [true|false]
+
+           Force a re-export of the SQLite file from the specified .nsys-rep file,
+           even if an SQLite file already exists.
+

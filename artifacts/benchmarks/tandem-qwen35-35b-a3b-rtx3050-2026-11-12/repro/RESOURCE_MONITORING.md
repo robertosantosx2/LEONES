@@ -88,3 +88,47 @@ The exact Tandem.cpp llama.cpp submodule commit used for the reference build (`f
 - A measured zero is a valid sample. No dmon data rows means unavailable telemetry, not zero traffic.
 - PCIe is device-wide and may include transfers unrelated to the inference request. Correlate timestamps with the process, GPU, cache, and token metrics; do not equate PCIe traffic directly with expert-weight transfers.
 - If the driver/device does not provide dmon PCIe data, `pcie_sample_count` is zero and the PCIe summary fields are null. The monitor does not infer missing values.
+
+
+## Nsight Systems SQLite inspector
+
+El inspector de solo lectura `inspect_NEPENTHES_nsys_sqlite.py` resume una exportación SQLite de Nsight Systems sin modificarla. Separa las duraciones de API CUDA host de las actividades de kernels GPU y de las transferencias memcpy; decodifica `copyKind` con `CUpti_ActivityMemcpyKind` y `srcKind/dstKind` con `CUpti_ActivityMemoryKind`.
+
+Uso desde el directorio `repro/`:
+
+```bash
+python3 inspect_NEPENTHES_nsys_sqlite.py \
+  "$HOME/NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-20261114.sqlite" \
+  --output "$HOME/NEPENTHES_QWEN35_CORRELATED_20261114/nsys-analysis.json"
+```
+
+Incluye tablas disponibles y sus recuentos, llamadas CUDA por hilo/API, kernels por nombre, transferencias por dirección y tipo de memoria, y vecinos GPU de `k_host_add_wait` en el mismo dispositivo/contexto/stream. La detección de tablas CPU es solo una lista de candidatas; hay que revisar esquema y contenido antes de afirmar que hay muestreo o planificación CPU.
+
+El informe advierte que:
+- API Runtime host no es tiempo de ejecución GPU.
+- Bytes acumulados de memcpy no son memoria residente.
+- El patrón de kernels vecinos no identifica el worker CPU ni demuestra la causa de la espera.
+- Una tabla ausente no equivale a actividad cero.
+
+Tests sintéticos: `python3 -m unittest -v test_NEPENTHES_nsys_sqlite.py`. No se debe declarar validado hasta ejecutar esta prueba en el entorno de desarrollo o CI.
+
+
+## Archivo de expedientes locales NEPENTHES
+
+`archive_NEPENTHES_evidence.py` copia evidencias desde los directorios históricos del usuario a un directorio nuevo dentro de LEONES. No modifica ni elimina los originales, no sobrescribe ejecuciones archivadas, omite contenido de modelos/checkpoints y enlaces simbólicos, deduplica por SHA-256 y genera `ARCHIVE_MANIFEST.json` + `SHA256SUMS`.
+
+Desde la raíz del checkout LEONES:
+
+```bash
+python3 artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/archive_NEPENTHES_evidence.py --stage
+```
+
+Por defecto busca los expedientes piloto/full del 13-11, `NEPENTHES_QWEN35_CORRELATED_20261114`, `NEPENTHES_CUDA_TOOLING_20261114` y la captura original `report1.nsys-rep`. Para añadir otra carpeta:
+
+```bash
+python3 artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/archive_NEPENTHES_evidence.py --extra-root "$HOME/ruta/al/experimento" --stage
+```
+
+El script solo hace `git add -f` del nuevo subdirectorio de archivo cuando se solicita `--stage`; no hace commit ni push. Revisar el manifiesto y el tamaño total antes de crear el commit. Si falta una carpeta, se registra como `missing`; no se inventa contenido. Cada ejecución usa un nombre timestamped y rechaza colisiones.
+
+Tests: `python3 -m unittest -v test_archive_NEPENTHES_evidence.py`.

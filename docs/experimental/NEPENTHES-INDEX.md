@@ -24,6 +24,10 @@ Las métricas no medidas se identifican como tales. Se separan las mediciones de
 |---|---|
 | [Metodología Nepenthes](tandem-qwen35-reasoning-budget-methodology-2026-11-12.md) | Protocolo, estructura de evidencias, ejecución de scripts y reglas de interpretación. |
 | [Plantilla de informe motor + modelo](NEPENTHES-engine-model-report-template.md) | Esquema reutilizable para registrar cada combinación de motor y modelo. |
+| [Hoja de ruta de rendimiento y capacidad](NEPENTHES-performance-capacity-roadmap.md) | Plan de trabajo FAST PATH y CAPACITY PATH, fases, métricas y gates de validación. |
+| [Diseño de memoria jerárquica](NEPENTHES-memory-tiering-design.md) | Propuesta técnica para VRAM, RAM, almacenamiento, caché, prefetch, backpressure y fallback. |
+| [Informe de campaña NEPENTHES (14-11-2026)](NEPENTHES-campaign-report-2026-11-14.md) | Hallazgos de la batería y Nsight, hipótesis no demostradas y campaña priorizada de sondas, velocidad y capacidad. |
+| [Issue de desarrollo #148](https://github.com/robertosantosx2/LEONES/issues/148) | Seguimiento del desarrollo completo. |
 
 ## Informes y campañas actuales
 
@@ -31,9 +35,11 @@ Las métricas no medidas se identifican como tales. Se separan las mediciones de
 
 | Motor / campaña | Documento | Evidencia |
 |---|---|---|
+| **Tandem.cpp** — comparación caché MoE 512 vs 768 MiB, 05-11-2026 | [Informe de baseline y comparación](https://github.com/robertosantosx2/LEONES/blob/Experimental/docs/experimental/tandem-qwen35-35b-a3b-rtx3050-2026-11-05.md) | [Logs, manifiesto y cinco resultados JSON](https://github.com/robertosantosx2/LEONES/tree/Experimental/artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-05/) |
 | **Tandem.cpp** — batería de razonamiento y presupuesto, 12-11-2026 | [Informe de la batería](tandem-qwen35-reasoning-budget-battery-2026-11-12.md) | [Scripts, monitorización y artefactos](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/) |
 | **cafe-llama.cpp** — ejecución independiente, 13-11-2026 | [Informe de ejecución](nepenthes-cafe-llama.cpp-qwen3.5-35b-a3b-2026-11-13.md) | [Datos primarios completos](../../artifacts/benchmarks/qwen35-35b-a3b-engine-comparison-2026-11-13/cafe-llama.cpp/) |
 | **Tandem.cpp** — batería independiente instrumentada, 13-11-2026 (10 casos) | [Informe completo de ejecución](nepenthes-tandem.cpp-qwen3.5-35b-a3b-2026-11-13.md) | [Manifiesto, 10 respuestas, resumen, 255 muestras y SHA-256](../../artifacts/benchmarks/tandem-qwen35-independent-2026-11-13/full-run/) |
+| **Tandem.cpp / Nsight Systems** — captura correlacionada y tooling CUDA, 14-11-2026 | [Informe de campaña y hallazgos](NEPENTHES-campaign-report-2026-11-14.md) | [Expediente bruto, `.nsys-rep`, SQLite, logs y SHA256SUMS](../../artifacts/benchmarks/nepenthes-raw-archive-2026-11-14/20261114-200707/) |
 
 **Resultado Tandem.cpp (13-11-2026):** el runner completó 10/10 peticiones. Seis terminaron con `stop` y cuatro con `length` (truncadas). La inspección estática considera cinco respuestas completas correctas y señala un comentario de prueba contradictorio en otra; no se ejecutaron las pruebas Python. El informe separa explícitamente ejecución, finalización y corrección funcional. No es una comparación A/B controlada con cafe-llama.cpp.
 
@@ -45,7 +51,8 @@ Los scripts publicados para la campaña actual se encuentran en:
 
 - [Runner Nepenthes](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_NEPENTHES_independent_two_sum.py) — ejecuta una petición contra un servidor ya iniciado y registra la evidencia de la prueba.
 - [Inspector Nepenthes](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_independent_run.py) — inspecciona el directorio de evidencia guardado, sin necesitar consultar el servidor.
-- [Monitor de recursos](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/resource_monitor.py) — dependencia compartida de monitorización.
+- [Monitor de recursos](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/resource_monitor.py) — dependencia compartida de monitorización.\n- [Entrada de archivo histórico](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/archive_NEPENTHES_evidence.py) — copia no destructiva de expedientes locales, deduplicación SHA-256 y manifiesto.
+- [Inspector Nsight SQLite](../../artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/inspect_NEPENTHES_nsys_sqlite.py) — análisis offline de API CUDA, kernels, transferencias y secuencias de espera.
 
 Consulta la [metodología](tandem-qwen35-reasoning-budget-methodology-2026-11-12.md) para los requisitos, comandos y precauciones de uso. El runner no inicia, detiene ni reconfigura el servidor; cada ejecución debe usar un directorio de salida nuevo.
 
@@ -60,8 +67,7 @@ Consulta la [metodología](tandem-qwen35-reasoning-budget-methodology-2026-11-12
 ---
 
 **Ubicación:** `docs/experimental/NEPENTHES-INDEX.md`  
-**Rama de referencia:** `benchmarks/tandem-qwen35-reasoning-battery-2026-11-12`
-
+**Rama de referencia:** `nepenthes/performance-capacity-roadmap-20261114`
 
 ## Referencias técnicas MoE
 
@@ -70,7 +76,6 @@ Consulta la [metodología](tandem-qwen35-reasoning-budget-methodology-2026-11-12
 - [Ostinato (arXiv:2611.11533) — ejecución CPU/GPU con expertos residentes en prefill y decode](https://arxiv.org/abs/2611.11533).
 
 Estas fuentes aportan contexto para formular experimentos MoE; sus resultados externos no son benchmarks NEPENTHES ni deben atribuirse al hardware local.
-
 
 ## Sondas MoE y telemetría
 

@@ -1,0 +1,34 @@
+name: NEPENTHES probe tests
+
+on:
+  push:
+    branches:
+      - "nepenthes/**"
+    paths:
+      - "artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/**"
+      - ".github/workflows/nepenthes-probes.yml"
+  pull_request:
+    paths:
+      - "artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/**"
+      - ".github/workflows/nepenthes-probes.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run NEPENTHES probe unit tests
+        working-directory: artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro
+        run: |
+          python -m unittest -v \
+            test_NEPENTHES_moe_probes.py \
+            test_NEPENTHES_nsys_sqlite.py \
+            test_archive_NEPENTHES_evidence.py

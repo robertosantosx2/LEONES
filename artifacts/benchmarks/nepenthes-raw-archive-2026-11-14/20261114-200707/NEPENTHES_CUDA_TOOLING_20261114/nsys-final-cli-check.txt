@@ -1,0 +1,152 @@
+===== START: OUTPUT / TRACE / SESSION =====
+155-	   The default is '2000' milliseconds.
+156-	   Event multiplexing is disabled by default.
+157-
+158:	--export=<format>[,<format>...]
+159-
+160-	   Possible formats are: none sqlite hdf text json jsonlines arrow arrowdir parquetdir
+161-	   Create additional output file(s) based on the data collected.
+162-	   If 'none' is selected, no additional files are created.
+163-	   Default is 'none'. This option can be given more than once.
+164-
+165-	-f, --force-overwrite=
+166-
+--
+348-	   frequency.
+349-	   Default is 'none'. System scope.
+350-
+351:	-o, --output=
+352-
+353-	   Output report filename.
+354-	   Any %q{ENV_VAR} pattern in the filename will be substituted with the value of the 
+355-	   environment variable.
+356-	   Any %h pattern in the filename will be substituted with the hostname of the system.
+357-	   Any %p pattern in the filename will be substituted with the PID of the target process or
+358-	   the PID of the root process if there is a process tree.
+359-	   Any %n pattern in the filename will be substituted with the minimal positive integer that is 
+--
+397-	   of the result file(s). 
+398-	   Default is 2300000. If DWARF backtraces are collected, the default is 4600000.
+399-
+400:	--session=
+401-
+402-	   Launch the application in the given session.
+403-	   The option argument must represent a valid session name or ID as reported by 'nsys sessions
+404-	   list'.
+405-	   Any '%q{ENV_VAR}' pattern in the option argument will be substituted with the value of the
+406-	   environment variable.
+407-	   Any '%h' pattern in the option argument will be substituted with the hostname of the system.
+408-	   Any '%%' pattern in the option argument will be substituted with '%'.
+409-
+410:	--session-new=
+411-
+412-	   Start the collection in a new named session. The option  argument represents the session
+413-	   name.
+414-	   The session name must start with an alphabetical character followed by printable or space
+415-	   characters.
+416-	   Any '%q{ENV_VAR}' pattern in the session name will be substituted with the value of the
+417-	   environment variable.
+418-	   Any '%h' pattern in the option argument will be substituted with the hostname of the system.
+419-	   Any '%%' pattern in the option argument will be substituted with '%'.
+420-
+421:	--stats=
+422-
+423-	   Possible values are 'true' or 'false'.
+424-	   Generate summary statistics after the collection.
+425-	   When set to true, an SQLite database file will be created after the collection.
+426-	   Default is 'false'.
+427-
+428-	(Experimental) --storage-metrics=
+429-
+--
+437-	   Collect syscall events.
+438-	   Default is 'none'.
+439-
+440:	-x, --stop-on-exit=
+441-
+442-	   Possible values are 'true' or 'false'.
+443-	   Stop profiling when the launched application exits.
+444-	   If stop-on-exit=false, duration must be greater than 0.
+445-	   Default is 'true'.
+446-
+
+===== LAUNCH: USAGE =====
+
+usage: nsys launch [<args>] [application] [<application args>]
+
+	(Deprecated) -b, --backtrace=
+
+	   WARNING: This switch is no longer supported.
+	   Please set the --backtrace switch when using the start command instead.
+
+	--command-file=
+
+	   Open a file that contains nsys switches and parse the switches. Note that
+	   command line switches will override switches found in the command-file.
+
+	(Deprecated) --cpuctxsw=
+
+	   WARNING: This switch is no longer supported.
+	   Please set the --cpuctxsw switch when using the start command instead.
+
+	--cuda-event-trace=
+
+	   Possible values are 'auto', 'true' or 'false'.
+	   Trace CUDA Event completion on the device side, and get better correlation
+	   support among CUDA Event APIs. Applicable only when CUDA tracing is enabled.
+	   Note that 'CUDA Event' refers to the synchronization mechanism (cudaEventRecord,
+	   cudaStreamWaitEvent etc.).
+	   Enabling this feature may increase runtime overhead and the likelihood of false
+	   dependencies across CUDA Streams, similar to CUDA Event's timing functionality
+	   when cudaEventDisableTiming is not disabled.
+	   'auto' will automatically turn off the trace if a target process has
+	   CUDA_DEVICE_MAX_CONNECTIONS set to 1.
+	   This switch requires CUDA driver 12.8 or higher. 
+	   Default is 'false'. Application scope.
+
+	--cuda-flush-interval=
+
+	   Set the interval, in milliseconds, when buffered CUDA data is automatically saved to
+	   storage. CUDA data buffer saves may cause profiler overhead. Buffer save behavior can be
+	   controlled with this switch.
+
+	   If the CUDA flush interval is set to 0 on systems running CUDA 11.0 or newer, buffers are
+	   saved when they fill. If a flush interval is set to a non-zero value on such systems, 
+	   buffers are saved only when the flush interval expires. If a flush interval is set and the
+	   profiler runs out of available buffers before the flush interval expires, additional buffers
+	   will be allocated as needed. In this case, setting a flush interval can reduce buffer
+	   save overhead but increase memory use by the profiler.
+
+===== STOP =====
+
+usage: nsys stop [<args>]
+
+	--defer-report
+
+	   Defer the generation of the report file.
+	   The raw data will be retained in a temporary location.
+	   Use 'finalize' command to generate the report file later.
+
+	-h, --help=[<tag>]
+
+	   Print the command's help menu. The switch can take one optional
+	   argument that will be used as a tag. If a tag is provided, only options
+	   relevant to the tag will be printed.
+	   The available help menu tags for this command are:
+
+	   interactive, report, and session.
+
+	--keep=
+
+	   Specify the number of seconds prior to stop for which data should be retained. Older data will be discarded.
+	   Default is 0 seconds which means all data from the start of the collection will be retained.
+
+	--session=
+
+	   Stop the collection in the given session. The option argument must represent a
+	   valid session name or ID as reported by 'nsys sessions list'.
+	   Any '%q{ENV_VAR}' pattern in the option argument will be substituted with the value of the
+	   environment variable.
+	   Any '%h' pattern in the option argument will be substituted with the hostname of the system.
+	   Any '%%' pattern in the option argument will be substituted with '%'.
+
