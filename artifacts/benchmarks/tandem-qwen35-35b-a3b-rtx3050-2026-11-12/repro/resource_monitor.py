@@ -67,7 +67,7 @@ class PcieDmonSampler:
             return
         try:
             self.process=subprocess.Popen([exe,"dmon","-s","t","-d","1"],
-                stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1)
+                stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,bufsize=1)
             self.thread=threading.Thread(target=self._read,daemon=True)
             self.thread.start()
         except Exception as error:
