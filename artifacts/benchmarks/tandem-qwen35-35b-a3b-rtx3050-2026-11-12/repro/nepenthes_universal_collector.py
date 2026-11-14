@@ -519,12 +519,14 @@ class UniversalCollector:
         host_memory_samples = sum(1 for row in telemetry_rows if row.get("host", {}).get("memory", {}).get("available"))
         event_path = self.run_dir / "events" / "engine_events.jsonl"
         event_rows = [json.loads(line) for line in event_path.read_text().splitlines() if line.strip()]
-        engine_event_count = sum(1 for row in event_rows if row.get("source") != "collector")
+        engine_event_count = sum(1 for row in event_rows if row.get("source") not in {"collector", "runner"})
+        runner_event_count = sum(1 for row in event_rows if row.get("source") == "runner")
+        collector_event_count = sum(1 for row in event_rows if row.get("source") == "collector")
         report = {
             "schema_version": SCHEMA_VERSION, "run_id": self.run_id,
             "sample_count": self.sample_count, "pcie_sample_count": len(pcie_rows),
             "process_sample_count": process_samples, "gpu_sample_count": gpu_samples,
-            "host_memory_sample_count": host_memory_samples, "engine_event_count": engine_event_count,
+            "host_memory_sample_count": host_memory_samples, "engine_event_count": engine_event_count,\n            "runner_event_count": runner_event_count,
             "errors": self.errors,
             "coverage": {
                 "host_samples": host_memory_samples > 0,
@@ -532,7 +534,7 @@ class UniversalCollector:
                 "gpu_samples": gpu_samples > 0,
                 "pcie_samples": len(pcie_rows) > 0,
                 "engine_events": engine_event_count > 0,
-                "collector_events": len(event_rows) - engine_event_count,
+                "collector_events": collector_event_count,\n                "runner_events": runner_event_count,
                 "request_records": any((self.run_dir / "requests").glob("*.json")),
                 "nsight_profiles": any((self.run_dir / "profiles").iterdir()),
             },
