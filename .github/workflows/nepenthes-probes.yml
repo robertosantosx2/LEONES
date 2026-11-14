@@ -28,6 +28,7 @@ jobs:
       - name: Run NEPENTHES probe unit tests
         working-directory: artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro
         run: |
+          python -m compileall -q .
           python -m unittest -v \
             test_NEPENTHES_moe_probes.py \
             test_NEPENTHES_universal_collector.py \
