@@ -86,6 +86,7 @@ def collect_archive(
     entries = []
     missing = []
     seen_hashes = {}
+    used_labels = set()
 
     for index, source in enumerate(roots):
         source = source.expanduser().resolve()
@@ -93,8 +94,9 @@ def collect_archive(
             missing.append({"source": str(source), "status": "missing"})
             continue
         label = (source.parent.name if source.is_file() else source.name) or f"source-{index + 1}"
-        if any(item["label"] == label for item in entries):
+        if label in used_labels:
             label = f"{label}-{index + 1}"
+        used_labels.add(label)
         for original, relative in evidence_files(source):
             digest = sha256_file(original)
             if digest in seen_hashes:
