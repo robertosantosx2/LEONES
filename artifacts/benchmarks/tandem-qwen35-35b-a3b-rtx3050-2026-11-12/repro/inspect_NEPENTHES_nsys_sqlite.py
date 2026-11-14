@@ -137,11 +137,14 @@ def analyze_database(path: pathlib.Path) -> dict:
 
                 thread_rows = []
                 for tid, durations in per_thread.items():
-                    gpid = (tid >> 32) << 32
+                    # Nsight globalTid is the process globalPid plus the OS TID;
+                    # it is not safely decoded by rounding to a 32-bit boundary.
+                    candidates = [pid for pid in processes if 0 <= tid - pid < (1 << 32)]
+                    gpid = max(candidates) if candidates else None
                     thread_rows.append({
                         "globalTid": tid,
                         "thread_name": thread_names.get(tid),
-                        "process": processes.get(gpid),
+                        "process": processes.get(gpid) if gpid is not None else None,
                         **_duration_stats(durations),
                         "apis": [
                             {"name": api, **_duration_stats(values)}
