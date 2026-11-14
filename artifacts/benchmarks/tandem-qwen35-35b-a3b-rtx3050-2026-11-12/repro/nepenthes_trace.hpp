@@ -20,18 +20,18 @@ enum class EventKind : std::uint16_t {
     prefetch,
     kv_cache,
     allocation,
-    free_memory,
-    transfer_begin,
-    transfer_end,
-    kernel_launch,
-    sync_begin,
-    sync_end,
-    host_wait_begin,
-    host_wait_end,
+    free,
+    transfer,
+    kernel,
+    sync,
+    stall,
     oom,
     fallback,
     error,
 };
+
+constexpr std::uint32_t phase_begin = 1u << 0;
+constexpr std::uint32_t phase_end = 1u << 1;
 
 struct Event {
     EventKind kind{EventKind::error};
