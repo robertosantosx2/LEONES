@@ -66,7 +66,9 @@ class PcieDmonParserTests(unittest.TestCase):
 
     def test_ignore_dmon_headers_and_invalid_rows(self):
         self.assertIsNone(parse_pcie_dmon_line("# gpu  rxpci  txpci"))
-        self.assertIsNone(parse_pcie_dmon_line("    0      -      -"))
+        row = parse_pcie_dmon_line("    0      -      -")
+        self.assertIsNone(row["pcie_rx_mbps"])
+        self.assertIsNone(row["pcie_tx_mbps"])
 
 
 class RuntimeProbeTests(unittest.TestCase):
