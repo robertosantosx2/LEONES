@@ -32,5 +32,6 @@ jobs:
           python -m unittest -v \
             test_NEPENTHES_moe_probes.py \
             test_NEPENTHES_universal_collector.py \
+            test_NEPENTHES_nsys_import.py \
             test_NEPENTHES_nsys_sqlite.py \
             test_archive_NEPENTHES_evidence.py
