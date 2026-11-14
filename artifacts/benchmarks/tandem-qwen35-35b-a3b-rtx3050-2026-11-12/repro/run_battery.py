@@ -161,7 +161,7 @@ def main():
                     "request_start",
                     {"task": task, "budget": budget, "max_tokens": maximum},
                     request_id=request_id,
-                    source="run_battery",
+                    source="runner",
                 )
             sampler = RequestSampler(
                 out / "resources",
@@ -231,7 +231,7 @@ def main():
                         "finish_reason": (record.get("metrics") or {}).get("finish_reason"),
                     },
                     request_id=request_id,
-                    source="run_battery",
+                    source="runner",
                 )
 
             row = dict(record.get("metrics", record.get("error", {})))
