@@ -257,7 +257,7 @@ La primera versión ejecutable del recolector común está publicada en **repro/
 
 ### Validación CI
 
-El workflow **NEPENTHES probe tests** completó correctamente su paso de pruebas para el commit **cfaba7c3cba12a9ddbf1c51727a3105721047937**; incluye los tests del recolector universal, inspector Nsight, sondas MoE y archivo histórico, además de compileall. El resultado confirma las pruebas sintéticas/offline, no una prueba física en el MSI.
+Los workflows **NEPENTHES probe tests**, **V1 regression** y **runtime-v11-regression** finalizaron correctamente para el commit de implementación **92a5220b4e8476c9a17e508a5eb3634ad567d943**. La suite NEPENTHES incluye tests del recolector universal, importador Nsight, inspector Nsight, sondas MoE y archivo histórico, además de compileall. El resultado confirma pruebas sintéticas/offline y regresiones CI; no una prueba física en el MSI.
 
 ### Lo que todavía no se debe afirmar
 
