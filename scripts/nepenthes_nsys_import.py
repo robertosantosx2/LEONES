@@ -84,19 +84,18 @@ def inspect_nsys(path: Path) -> dict:
         names = table_names(db)
         tables = []
         for table in sorted(names):
-            if table.startswith("sqlite_"):
+            mapped = NSYS_TABLES.get(table)
+            if not mapped and not table.lower().startswith("cupti_activity_kind_"):
                 continue
             quoted = table.replace('"', '""')
             count = int(db.execute(f'SELECT COUNT(*) FROM "{quoted}"').fetchone()[0])
             cols = [row[1] for row in db.execute(f'PRAGMA table_info("{quoted}")')]
-            mapped = NSYS_TABLES.get(table)
-            if mapped or table.lower().startswith("cupti_activity_kind_"):
-                tables.append({
-                    "table": table,
-                    "mapped_kind": mapped,
-                    "row_count": count,
-                    "columns": cols,
-                })
+            tables.append({
+                "table": table,
+                "mapped_kind": mapped,
+                "row_count": count,
+                "columns": cols,
+            })
         string_tables = []
         for table in ("StringIds", "StringId", "StringTable"):
             if table in names:
