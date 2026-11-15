@@ -1,6 +1,6 @@
 # NEPENTHES — roadmap to a complete functional release
 
-**Language:** [English]( research/moe/tandem.cpp/NEPENTHES-ROADMAP-EN.md ) · [Español]( research/moe/tandem.cpp/NEPENTHES-ROADMAP.md )
+**Language:** [English](NEPENTHES-ROADMAP-EN.md) · [Español](NEPENTHES-ROADMAP.md)
 
 **Cut-off date:** 2026-11-15 (updated after C07).  
 **Status:** CLI and instrumented-engine capture tested with a Qwen3.5-4B inference; full acceptance with Nsight, correlation, coverage and overhead remains pending.
