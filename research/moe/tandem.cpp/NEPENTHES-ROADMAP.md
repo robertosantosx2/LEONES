@@ -1,6 +1,6 @@
 # NEPENTHES — roadmap de tareas hasta la versión funcional completa
 
-**Fecha de corte:** 2026-11-15 (actualizado tras C06).  
+**Fecha de corte:** 2026-11-15 (actualizado tras C07).  
 **Estado:** CLI y captura de motor instrumentado probadas con una inferencia Qwen3.5-4B; aceptación integral con Nsight, correlación, cobertura y overhead pendiente.
 
 Este roadmap separa implementación, validación CI y validación física. Una tarea no se considera terminada por existir un PR: necesita la evidencia indicada en su criterio de salida.
@@ -93,6 +93,47 @@ Este roadmap separa implementación, validación CI y validación física. Una t
 - [ ] Exportación de tablas CSV y consultas reproducibles desde SQLite.
 
 **Salida de fase:** informe que permite navegar datos brutos, resumen, tablas y gráficas; cada métrica identifica fuente, reloj, unidad y nivel de atribución.
+
+## Fase E.1 — Análisis semántico y calidad de informes (prioridades nuevas)
+
+La captura C07 de Qwen3.5-4B confirma que el importador puede exponer actividad CUDA útil, pero los informes deben decodificar los enums de Nsight y preservar los límites de atribución.
+
+### Backlog priorizado
+
+| Prioridad | Mejora | Beneficio |
+|---|---|---|
+| **P0** | Decodificación semántica de `cudaMemcpyKind` y tipos de memoria (`srcKind`/`dstKind`) usando las tablas enum de la propia captura. | Distinguir H2D, D2H, D2D, Host-to-Array, Unified Memory y demás modalidades; identificar además memoria pageable, pinned, device, array o managed. |
+| **P0** | Validación y presentación segura de centinelas unsigned en todos los informes y exportaciones. | Evitar interpretar `-1` como una medida ordinaria cuando representa `UINT64_MAX`; conservar el valor original y su semántica. |
+| **P1** | Histogramas de latencia, percentiles y detección de outliers para transferencias, runtime, overhead y sincronización. | Detectar colas largas, llamadas anómalas y eventos dominantes que las medias ocultan. |
+| **P1** | Decodificación semántica de los tipos de sincronización. | Identificar qué clase de espera se observa, sin atribuir automáticamente el tiempo a CPU bloqueada o GPU ociosa. |
+| **P1** | Timeline combinado con dominios de reloj independientes y calibración explícita cuando exista. | Visualizar host, motor y Nsight en paneles/timelines relacionados sin inventar correlaciones ni comparar timestamps incompatibles. |
+| **P2** | Integración de Nsight Compute para perfiles selectivos de kernels. | Analizar eficiencia interna: ocupación, throughput, memoria, stalls y métricas de ejecución, más allá de duración y frecuencia. |
+| **P2** | Comparación reproducible entre ejecuciones y baseline. | Detectar regresiones en KV cache, transferencias, sincronización, kernels y rendimiento global. |
+
+### Separación obligatoria de métricas temporales
+
+Los informes deben presentar por separado:
+
+- Tiempo de CPU dentro de llamadas CUDA (duración host de las APIs, cuando esté instrumentada).
+- Tiempo de ejecución de kernels (intervalos GPU de Nsight).
+- Tiempo de transferencias (intervalos GPU de memcpy/memset).
+- Tiempo de sincronización (actividad y tipo de sincronización observados).
+- Tiempo total de la petición (reloj del servidor/motor).
+
+**Regla de interpretación:** estas magnitudes no se suman directamente para producir un supuesto tiempo total. Pueden solaparse, representar esperas distintas o pertenecer a dominios temporales diferentes. Todo agregado debe declarar fuente, reloj, unidad, ventana y política de solapamiento.
+
+### Evidencia C07 que motiva este trabajo
+
+La captura C07 contiene las tablas `ENUM_CUDA_MEMCPY_OPER` y `ENUM_CUDA_MEM_KIND`; por tanto, el importador puede resolver los valores mediante los metadatos del propio SQLite, sin codificar etiquetas numéricas a ciegas. La distribución observada fue:
+
+| Operación | Memoria origen → destino | Operaciones | Bytes | Duración acumulada |
+|---|---|---:|---:|---:|
+| Host-to-Device (`HTOD`) | Pageable → Device | 330 | 945.171.456 (901,3 MiB) | 113,028 ms |
+| Device-to-Host (`DTOH`) | Device → Pinned | 260 | 20.590.592 (19,63 MiB) | 2,025 ms |
+| Host-to-Device (`HTOD`) | Pinned → Device | 261 | 11.206.352 (10,69 MiB) | 1,328 ms |
+| Device-to-Host (`DTOH`) | Device → Pageable | 8 | 8.781.824 (8,37 MiB) | 0,990 ms |
+
+La primera categoría concentra aproximadamente el 95,9 % de los bytes y el 96,4 % de la duración acumulada de memcpy de esta captura. Es una prioridad de investigación, no una conclusión causal: hay que inspeccionar distribución, tamaños y outliers antes de atribuir el coste a pageable memory o a una ruta concreta.
 
 ## Fase F — Release y mantenimiento
 
