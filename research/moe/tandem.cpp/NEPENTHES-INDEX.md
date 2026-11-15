@@ -31,15 +31,15 @@ Estado remoto de las PR: LEONES #150 sigue abierto y actualmente no es mergeable
 
 ## Fuente de verdad y cambios
 
-| Área | PR / rama | Estado |
+| Área | PR / rama | Estado actual |
 |---|---|---|
-| Instrumentación universal Tandem.cpp | [Tandem.cpp #1](https://github.com/robertosantosx2/tandem.cpp/pull/1), `nepenthes/universal-observability-20261114` | Abierto; CI success |
-| Índice y documentación | [LEONES #150](https://github.com/robertosantosx2/LEONES/pull/150), `research/nepenthes-universal-collector-20261115` | Abierto; CI success |
-| Importador JSONL + Nsight | [LEONES #151](https://github.com/robertosantosx2/LEONES/pull/151), `feat/nepenthes-nsys-importer-20261115` | Abierto; CI success |
-| Instalador y CLI | [LEONES #152](https://github.com/robertosantosx2/LEONES/pull/152), `feat/nepenthes-cli-installer-20261115` | Abierto, draft; CI success |
-| Importador Nsight-only | [LEONES #153](https://github.com/robertosantosx2/LEONES/pull/153), `feat/nepenthes-nsys-only-20261115` | Abierto, draft; CI success |
+| Instrumentación universal Tandem.cpp | [Tandem.cpp #1](https://github.com/robertosantosx2/tandem.cpp/pull/1), `nepenthes/universal-observability-20261114` | Abierto, sin fusionar |
+| Índice y documentación | [LEONES #150](https://github.com/robertosantosx2/LEONES/pull/150), `research/nepenthes-universal-collector-20261115` | Abierto; GitHub informa `mergeable=false` |
+| Importador JSONL + Nsight | [LEONES #151](https://github.com/robertosantosx2/LEONES/pull/151), `feat/nepenthes-nsys-importer-20261115` | Fusionado en rama de investigación, no en `main` |
+| Instalador y CLI | [LEONES #152](https://github.com/robertosantosx2/LEONES/pull/152), `feat/nepenthes-cli-installer-20261115` | Fusionado en `main` |
+| Importador Nsight-only | [LEONES #153](https://github.com/robertosantosx2/LEONES/pull/153), `feat/nepenthes-nsys-only-20261115` | Abierto, draft; CI 7/7 success en HEAD revisado |
 
-Los cinco workflows de cada commit de LEONES #151, #152 y #153 terminaron en `success`. LEONES #150 tiene cuatro workflows en `success`. Tandem.cpp #1 tiene el workflow NEPENTHES trace hook en `success`. CI valida el árbol y los contratos definidos; no sustituye las pruebas físicas del motor.
+Los siete workflows asociados al HEAD revisado de LEONES #153 terminaron en `success`. Los estados de #150, #151 y #152 se indican por separado arriba; no se extrapola CI histórico a una revisión actual. CI valida los contratos automatizados, no sustituye las pruebas físicas del motor.
 
 ## Estado por capacidad
 
