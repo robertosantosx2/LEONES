@@ -1,7 +1,7 @@
 # NEPENTHES — índice de implementación, validación y evidencias
 
-**Corte de estado:** 2026-11-15 (actualización tras la primera inferencia instrumentada Qwen3.5-4B).  
-**Estado global:** CLI funcional, motor CUDA instrumentado compilado sobre base pinned y primera inferencia real con JSONL del motor completada. Aún falta la captura emparejada con Nsight, correlación robusta y auditoría de cobertura/overhead.
+**Corte de estado:** 2026-11-15 (validación histórica Nsight-only real completada).  
+**Estado global:** CLI funcional, motor CUDA instrumentado compilado sobre base pinned, primera inferencia real con JSONL del motor y validación E2E de importación Nsight-only sobre captura histórica real completadas. Aún falta la captura emparejada con Nsight, correlación robusta y auditoría de cobertura/overhead de una ejecución instrumentada.
 
 ## Resumen ejecutivo
 
@@ -24,7 +24,9 @@ Estado remoto de las PR: LEONES #150 sigue abierto y actualmente no es mergeable
 - `nepenthes doctor`: entorno detectado correctamente.
 - `nepenthes self-test`: correcto; 3 eventos, 1 muestra, HTML, checksums e integridad de eventos válidos.
 - Inspección del SQLite Nsight histórico y posterior importación standalone: 151.039 actividades.
-- SQLite importado: `integrity_check=ok`, sin errores de claves foráneas, IDs únicos y sin anomalías temporales básicas.
+- Revalidación E2E desde el `main` de LEONES en `d548a37cc4f05632eba946495ad9d98bdf862c63`: CLI `--nsys-only` con código de salida 0 y destino independiente `qwen35-nsys-only.sqlite` (~90 MiB).
+- Auditoría independiente del destino: distribución exacta de las ocho familias CUPTI, 151.039 IDs únicos, pares tabla/actividad únicos, SHA-256 y procedencia coincidentes, cero filas no soportadas, `integrity_check=ok` y `foreign_key_check` vacío.
+- Import ID de la revalidación: `qwen35-real-nsys-only-20261115`; `run_id=null`, `jsonl=null`, sin correlación NEPENTHES inventada.
 - La fuente Nsight conserva SHA-256 `30df43c0a1b235cc25987e2af87e5cf19e5f900f324c26fa22f28cd83144e4fc`; no se modificó.
 
 **Aún no demostrado:** cobertura de todas las sondas, captura Nsight en la misma ejecución, importación emparejada JSONL+Nsight, correlación request-kernel, medición del overhead y recomendaciones cuantitativas de optimización.
@@ -58,7 +60,7 @@ Los siete workflows asociados al HEAD funcional `9e0383e7d84334bb2935c229722c9b7
 | Verificación de hashes y estructura | Implementada | Self-test correcto; falta `verify` sobre captura real |
 | Importador emparejado JSONL + Nsight | Implementado y CI | Falta validar un par real de una misma ejecución |
 | Inspección de esquema Nsight | Implementada y ejecutada | MSI: 8 tablas CUPTI reconocidas |
-| Importación Nsight-only | Implementada, CI success y ejecutada | MSI: 151.039 filas, integridad correcta |
+| Importación Nsight-only | Implementada, CI success y E2E histórico real superado | MSI: 151.039 filas; 8/8 tablas CUPTI detectadas importadas; 0 filas no soportadas; auditoría de procedencia, unicidad e integridad correcta |
 | Procedencia, hashes y cobertura parcial | Implementado | Import standalone con `run_id=null`, sin JSONL |
 | Correlación request-kernel entre relojes | No implementada deliberadamente | Requiere IDs comunes y calibración; no se debe inferir por proximidad |
 | Informe histórico Qwen3.5-35B | Construido en documentación | Nsight-only histórico, sin JSONL emparejado |\n| Primera captura Qwen3.5-4B | Capturada; informe de campaña | Inferencia real CPU-only con motor instrumentado; Nsight off; request_id=0 |
@@ -85,7 +87,7 @@ La importación Nsight-only del MSI contiene 151.039 actividades:
 - kernel 8.982; memcpy 44.488; memset 9; runtime 84.116;
 - graph trace 5.207; synchronization 7.864; CUDA event 262; overhead 111.
 
-Cobertura declarada: completa para las ocho tablas CUPTI detectadas. No significa que todas las categorías que Nsight pudiera producir estén presentes en el archivo. Los 262 CUDA_EVENT tienen `timestamp=0` en el SQLite fuente y en el importado; se conservan como eventos puntuales sin intervalo temporal. No se usan para reconstruir duración.
+Cobertura declarada: `complete_for_detected_cupti_tables`, con 8 tablas detectadas, 151.039 filas importadas y cero filas/tablas no soportadas. No significa que todas las categorías que Nsight pudiera producir estén presentes en el archivo. La auditoría independiente confirmó 151.039 IDs únicos, 151.039 pares tabla/actividad únicos, `integrity_check=ok` y `foreign_key_check` vacío. Los 262 CUDA_EVENT tienen `timestamp=0` en el SQLite fuente y en el importado; se conservan como eventos puntuales sin intervalo temporal. No se usan para reconstruir duración.
 
 ## Reglas de evidencia
 
