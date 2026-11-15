@@ -3,6 +3,103 @@
 **Corte de estado:** 2026-11-15 (validación histórica Nsight-only real completada).  
 **Estado global:** CLI funcional, motor CUDA instrumentado compilado sobre base pinned, primera inferencia real con JSONL del motor y validación E2E de importación Nsight-only sobre captura histórica real completadas. Aún falta la captura emparejada con Nsight, correlación robusta y auditoría de cobertura/overhead de una ejecución instrumentada.
 
+
+## Inicio rápido: instalar, ejecutar y recoger resultados
+
+> **Estado de distribución:** esta versión del instalador vive dentro del árbol de LEONES. Para instalarla hoy hay que disponer de ese árbol; todavía no existe aquí una distribución autónoma publicada de NEPENTHES que permita instalarlo sin descargar LEONES. La instalación es user-space y no exige clonar ni compilar los motores que se quieran ejecutar. La separación en un repositorio/release independiente es un trabajo posterior.
+
+### 1. Requisitos
+
+- Linux.
+- Python 3.10 o superior.
+- Un motor ejecutable y sus dependencias habituales.
+- Para telemetría NVIDIA: `nvidia-smi` disponible.
+- Para capturas CUDA detalladas: Nsight Systems (`nsys`) compatible con el driver y el entorno.
+- Para eventos internos: un binario del motor compilado con las sondas NEPENTHES. Un binario normal sigue pudiendo ejecutarse, pero no emite eventos internos.
+
+La instalación no necesita root, no instala drivers ni CUDA y no parchea ni recompila el motor.
+
+### 2. Instalar
+
+Desde la raíz del checkout de LEONES que contiene el instalador:
+
+```bash
+./scripts/install_nepenthes.sh
+export PATH="$HOME/.local/bin:$PATH"
+nepenthes doctor
+nepenthes self-test
+```
+
+El comando instala el ejecutable en `~/.local/bin/nepenthes` y los recursos en `~/.local/share/nepenthes`. `doctor` comprueba las herramientas y capacidades detectables; `self-test` genera una captura de prueba y comprueba sus artefactos. No sustituyen una ejecución real del motor.
+
+### 3. Ejecutar un motor
+
+Ejemplo con llama.cpp; sustituye las rutas y argumentos por los de tu instalación:
+
+```bash
+nepenthes run --profile full --nsys auto -- \
+  /ruta/a/llama-server \
+  -m /ruta/al/modelo.gguf \
+  -c 1024
+```
+
+Todo lo que aparece después de `--` es el comando del motor y sus argumentos. NEPENTHES lanza el proceso, conserva su salida estándar y de error en el paquete de sesión, muestrea CPU/RSS del árbol de procesos y recoge telemetría NVIDIA global si `nvidia-smi` está disponible. Propaga el código de salida del motor.
+
+Perfiles disponibles: `smoke` (ligero), `standard` (predeterminado) y `full` (muestreo más frecuente y Nsight automático cuando está disponible). Para controlar Nsight se puede usar `--nsys auto`, `--nsys required` o `--nsys off`. Con `required`, la ejecución falla antes de lanzar el motor si Nsight no está disponible.
+
+**Importante:** NEPENTHES no instrumenta por sí solo el interior de un motor. Los eventos internos requieren un binario compilado con las sondas NEPENTHES. Sin ellas se obtienen únicamente las fuentes de telemetría externas disponibles (host y, si existe, NVIDIA). La disponibilidad de Nsight tampoco garantiza que todas las clases de actividad estén presentes.
+
+### 4. Qué resultados genera
+
+Cada ejecución crea un directorio de sesión (RUN_ID). La ruta concreta se muestra/queda registrada por la ejecución; consérvala como `RUN_DIR`. El paquete puede contener:
+
+| Ruta | Contenido |
+|---|---|
+| `manifest.json` | Identidad de ejecución, configuración y procedencia |
+| `session.log` | Salida y errores del proceso lanzado |
+| `environment/` | Datos del entorno recogidos |
+| `raw/engine-events.jsonl` | Eventos internos del motor instrumentado, si los emite |
+| `raw/host-events.jsonl` | Muestras y eventos del recolector de host |
+| `raw/events.jsonl` | Flujo consolidado de eventos, cuando se genera |
+| `raw/nsys.sqlite`, `raw/nsys.nsys-rep` | Captura Nsight, si se ha activado y completado |
+| `data/samples.csv` | Muestras tabulares |
+| `data/observations.sqlite` | Observaciones estructuradas |
+| `data/summary.json` | Resumen de la ejecución |
+| `data/nsys-import.json`, `data/nepenthes-import.sqlite` | Resultados de importación Nsight, cuando proceda |
+| `reports/index.html`, `reports/report.md` | Informe navegable HTML y resumen Markdown |
+| `checksums.sha256` | Checksums de los artefactos incluidos |
+
+Los artefactos opcionales solo aparecen cuando su fuente está disponible y la captura se completa. No se deben interpretar archivos ausentes como valores cero ni como evidencia de que una actividad no ocurrió.
+
+### 5. Verificar y recoger el paquete
+
+Usa la ruta real de la sesión creada por NEPENTHES:
+
+```bash
+RUN_DIR="/ruta/real/al/RUN_ID"
+nepenthes verify "$RUN_DIR"
+```
+
+Si la verificación termina correctamente, conserva el directorio completo: incluye manifiesto, datos primarios, informes y checksums. Para compartirlo o archivarlo sin alterar los originales:
+
+```bash
+tar -czf "nepenthes-$(basename "$RUN_DIR").tar.gz" \
+  -C "$(dirname "$RUN_DIR")" "$(basename "$RUN_DIR")"
+sha256sum "nepenthes-$(basename "$RUN_DIR").tar.gz"
+```
+
+Entrega preferentemente el archivo comprimido completo, su SHA-256 y el código de salida de `nepenthes verify`. Para análisis técnico, conserva también el modelo/identificador y cuantización, argumentos exactos del motor, versión/commit del binario, perfil de captura y cualquier limitación de Nsight. No compartas pesos del modelo salvo que sea necesario y tengas derecho a distribuirlos.
+
+### 6. Qué se puede concluir
+
+- **Motor instrumentado:** permite analizar eventos internos emitidos por las sondas, además de la telemetría externa disponible.
+- **Motor no instrumentado:** permite recoger proceso, host y telemetría NVIDIA global disponible; no permite atribuir eventos internos del motor que no emite.
+- **Nsight-only:** permite importar y analizar las actividades presentes en la captura Nsight sin inventar una ejecución NEPENTHES ni correlaciones con JSONL ausente.
+- **Informe:** refleja únicamente los datos recogidos. Las métricas globales de `nvidia-smi` son del dispositivo, no necesariamente del proceso; la correlación entre relojes o identificadores distintos solo se declara cuando existe un mecanismo validado.
+
+Consulta [NEPENTHES-CLI.md](NEPENTHES-CLI.md) para las opciones completas y [NEPENTHES-IMPORTER.md](NEPENTHES-IMPORTER.md) para el contrato de importación.
+
+
 ## Resumen ejecutivo
 
 NEPENTHES ya dispone de cuatro bloques de trabajo en LEONES y una integración de instrumentación en Tandem.cpp:
