@@ -1,6 +1,6 @@
 # NEPENTHES — índice de implementación, validación y evidencias
 
-**Language / Idioma:** [English version](NEPENTHES-INDEX-EN.md) · [Versión en español](\research/moe/tandem.cpp/NEPENTHES-INDEX.md)
+**Language / Idioma:** [English version](NEPENTHES-INDEX-EN.md) · [Versión en español](NEPENTHES-INDEX.md)
 
 
 **Corte de estado:** 2026-11-15 (actualización tras la primera inferencia instrumentada Qwen3.5-4B).  
