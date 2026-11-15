@@ -1,5 +1,8 @@
 # NEPENTHES — importación Nsight/CUPTI en LEONES
 
+**Language / Idioma:** [English version](research/moe/tandem.cpp/NEPENTHES-IMPORTER-EN.md) · [Versión en español](\research/moe/tandem.cpp/NEPENTHES-IMPORTER.md)
+
+
 ## Alcance
 
 `scripts/nepenthes_nsys_import.py` ofrece tres operaciones:
