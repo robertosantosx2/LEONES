@@ -1,106 +1,95 @@
-# NEPENTHES — índice y roadmap de observabilidad
+# NEPENTHES — índice de implementación, validación y evidencias
 
-**Estado:** CI completa y verde: pruebas C++17, aplicación de parches y compilación CUDA superadas. La fase sigue sin aceptación funcional hasta completar una captura real y su ingestión en LEONES.
+**Corte de estado:** 2026-11-15  
+**Estado global:** núcleo implementado y validado parcialmente en MSI; todavía no es una aceptación de extremo a extremo de todas las sondas.
 
-Última actualización: 2026-11-15.
+## Resumen ejecutivo
 
-## Fuente de verdad
+NEPENTHES ya dispone de cuatro bloques de trabajo en LEONES y una integración de instrumentación en Tandem.cpp:
 
-- Repositorio de instrumentación: [robertosantosx2/tandem.cpp](https://github.com/robertosantosx2/tandem.cpp).
-- PR de instrumentación universal: [PR #1 — NEPENTHES: active JSONL sink and full runtime probe applier](https://github.com/robertosantosx2/tandem.cpp/pull/1).
-- Rama del PR: [nepenthes/universal-observability-20261114](https://github.com/robertosantosx2/tandem.cpp/tree/nepenthes/universal-observability-20261114).
-- Rama de endurecimiento y pruebas: [nepenthes/universal-sink-lifecycle-20261115](https://github.com/robertosantosx2/tandem.cpp/tree/nepenthes/universal-sink-lifecycle-20261115).
-- Revisión base fijada de llama.cpp: `f5222f25c18da062ab2b8a2dbbfbf4feae398566`.
+1. Instrumentación universal y sink JSONL en Tandem.cpp (PR #1).
+2. Importador LEONES para JSONL + Nsight/CUPTI (PR #151).
+3. Instalador user-space, CLI de una línea, captura de host/GPU y paquete de informes (PR #152).
+4. Importación histórica Nsight-only con procedencia aislada (PR #153).
 
-El PR #1 conserva el contrato universal `EventType/Event`, el sink JSONL y el aplicador determinista de sondas. Las modificaciones posteriores endurecen el apagado concurrente del sink y verifican que cada evento ocupe una línea física JSONL.
+Los PR de LEONES #150–#153 están abiertos y no fusionados. El PR #153 es draft y apila sobre #152; #152 apila sobre #151; #151 apila sobre #150. El PR #1 de Tandem.cpp también está abierto y no fusionado.
 
-## Roadmap por fases
+**Validación física MSI completada hasta ahora:**
+- Instalación user-space correcta.
+- `nepenthes doctor`: entorno detectado correctamente.
+- `nepenthes self-test`: correcto; 3 eventos, 1 muestra, HTML, checksums e integridad de eventos válidos.
+- Inspección del SQLite Nsight histórico y posterior importación standalone: 151.039 actividades.
+- SQLite importado: `integrity_check=ok`, sin errores de claves foráneas, IDs únicos y sin anomalías temporales básicas.
+- La fuente Nsight conserva SHA-256 `30df43c0a1b235cc25987e2af87e5cf19e5f900f324c26fa22f28cd83144e4fc`; no se modificó.
 
-| Fase | Objetivo | Estado |
+**Aún no demostrado:** ejecutar un motor real instrumentado a través de `nepenthes run`, verificar activación efectiva de todas las sondas, producir JSONL de motor real y Nsight de esa misma ejecución, importar el par y validar el paquete completo con `nepenthes verify`.
+
+## Fuente de verdad y cambios
+
+| Área | PR / rama | Estado |
 |---|---|---|
-| 0 | Preservar y correlacionar la evidencia Nsight/CUPTI de Qwen3.5-35B del 14-11-2026 | **Parcial** |
-| 1 | Contrato universal de eventos, sink JSONL acotado y activación opt-in | **Implementado en PR #1** |
-| 2 | Sondas de runtime: request, graph, KV cache, MoE cache, workers, prefetch, alloc/free, OOM/fallback y transferencias | **Implementadas en el aplicador; compilación CUDA superada** |
-| 3 | Compilación CUDA del servidor sobre la revisión fijada | **Superada en GitHub Actions** |
-| 4 | Captura real Qwen3.5-35B con JSONL + Nsight y comprobación de pérdida/errores | **Pendiente** |
-| 5 | Importación y correlación en el recolector universal de LEONES | **Importación emparejada + modo Nsight-only implementados; inspección del SQLite histórico MSI completada; ingestión real pendiente** |
-| 6 | Batería Qwen3.5-35B repetible, informe final y archivo íntegro de evidencias | **Pendiente** |
-| 7 | Instalador user-space y CLI `nepenthes run` con paquete de captura e informe HTML | **Implementado en PR #152; CI verde; validación física MSI pendiente** |
+| Instrumentación universal Tandem.cpp | [Tandem.cpp #1](https://github.com/robertosantosx2/tandem.cpp/pull/1), `nepenthes/universal-observability-20261114` | Abierto; CI success |
+| Índice y documentación | [LEONES #150](https://github.com/robertosantosx2/LEONES/pull/150), `research/nepenthes-universal-collector-20261115` | Abierto; CI success |
+| Importador JSONL + Nsight | [LEONES #151](https://github.com/robertosantosx2/LEONES/pull/151), `feat/nepenthes-nsys-importer-20261115` | Abierto; CI success |
+| Instalador y CLI | [LEONES #152](https://github.com/robertosantosx2/LEONES/pull/152), `feat/nepenthes-cli-installer-20261115` | Abierto, draft; CI success |
+| Importador Nsight-only | [LEONES #153](https://github.com/robertosantosx2/LEONES/pull/153), `feat/nepenthes-nsys-only-20261115` | Abierto, draft; CI success |
 
-## Cobertura prevista
+Los cinco workflows de cada commit de LEONES #151, #152 y #153 terminaron en `success`. LEONES #150 tiene cuatro workflows en `success`. Tandem.cpp #1 tiene el workflow NEPENTHES trace hook en `success`. CI valida el árbol y los contratos definidos; no sustituye las pruebas físicas del motor.
 
-- Ciclo de petición y duración de ejecución del grafo.
-- KV cache: asignación, destrucción, clear, actualización, inserción de ubatch, reutilización/liberación de celdas y operaciones de secuencia.
-- MoE cache: hit, miss, eviction.
-- CPU workers: enqueue, espera, cómputo, finalización y publicación de salida.
-- Prefetch/lookahead: enqueue, bytes estimados y espera del evento backend.
-- Memoria: alloc/free de backend, CUDA y pinned-host; OOM y fallback.
-- Transferencias: spans de submission H2D/D2H, copias 2D y D2D/peer.
-- Dispatch por operación `ggml_op`.
-- Kernel CUDA individual y actividad memcpy real: proceden de Nsight/CUPTI y su importador SQLite, no de los spans de host.
+## Estado por capacidad
 
-## Resultados y límites ya establecidos
+| Capacidad | Estado | Evidencia / límite |
+|---|---|---|
+| Contrato de evento universal y sink JSONL | Implementado | Tandem.cpp PR #1; CI success |
+| Barrera de apagado y concurrencia del sink | Implementado y probado en CI | No implica captura real MSI |
+| Aplicación determinista de sondas en Tandem.cpp | Implementada en el parche | Compilación CUDA CI; falta medir cobertura en ejecución |
+| Instalador user-space | Implementado y ejecutado | MSI: instalación correcta en `~/.local` |
+| CLI de una línea `nepenthes run` | Implementado | Falta prueba con motor real instrumentado |
+| Doctor y self-test | Ejecutados correctamente | MSI: 3 eventos, 1 muestra, reporte HTML |
+| Muestreo CPU/RSS del árbol de procesos | Implementado | Self-test; falta perfil real de motor |
+| Muestreo NVIDIA global con nvidia-smi | Implementado | Doctor detecta nvidia-smi; falta captura integral de inferencia |
+| Captura Nsight opcional/obligatoria/off | Implementada | Falta ejecutar wrapper real con Nsight en MSI |
+| Paquete CSV/JSONL/SQLite/Markdown/HTML/SVG | Implementado | Self-test valida HTML; falta auditar un paquete de inferencia real |
+| Verificación de hashes y estructura | Implementada | Self-test correcto; falta `verify` sobre captura real |
+| Importador emparejado JSONL + Nsight | Implementado y CI | Falta validar un par real de una misma ejecución |
+| Inspección de esquema Nsight | Implementada y ejecutada | MSI: 8 tablas CUPTI reconocidas |
+| Importación Nsight-only | Implementada, CI success y ejecutada | MSI: 151.039 filas, integridad correcta |
+| Procedencia, hashes y cobertura parcial | Implementado | Import standalone con `run_id=null`, sin JSONL |
+| Correlación request-kernel entre relojes | No implementada deliberadamente | Requiere IDs comunes y calibración; no se debe inferir por proximidad |
+| Informe histórico Qwen3.5 | Construido en documentación | Evidencia Nsight; no es una captura nueva del wrapper |
+| Matriz de cobertura de sondas por ejecución | Pendiente | Requiere inferencia real instrumentada |
+| Batería repetible y comparación entre ejecuciones | Pendiente | Requiere capturas emparejadas y manifiestos |
 
-- La captura correlacionada del 14-11-2026 registró inferencia Qwen3.5-35B: 39 tokens de prompt, 128 tokens generados, aproximadamente 14.96 tokens/s de prompt y 32.07 tokens/s de generación.
-- Nsight registró actividad CUDA y transferencias, pero no había eventos NVTX ni identificador de tarea común para enlazar cada kernel con una petición. La coincidencia temporal no equivale a correlación exacta.
-- Los eventos internos de worker/CUDA mantienen `request_id=0` cuando no existe correlación demostrable. No se inventa identidad entre hilos.
-- Los spans de transferencias CUDA describen submission/dispatch en host; no son duración de ejecución GPU.
-- No hubo evidencia suficiente para afirmar que lookahead estuviera activo en aquella captura ni para atribuir transferencias concretas a lookahead.
-- No se observó OOM en la ejecución analizada; eso no demuestra ausencia de OOM en otras ejecuciones.
-- Los eventos de asignación de KV cache necesitan validación en una captura instrumentada; los datos Nsight anteriores no proporcionaban por sí solos tamaño, tipo y ciclo de vida completos del KV.
+## Roadmap
 
-## Validación GitHub Actions
+El roadmap operativo detallado está en [NEPENTHES-ROADMAP.md](NEPENTHES-ROADMAP.md).
 
-- [Workflow NEPENTHES trace hook](https://github.com/robertosantosx2/tandem.cpp/actions/workflows/nepenthes-trace.yml).
-- [Ejecución de validación del PR #1 — commit `170d3af9918e2cdf3b5c72f6bb61ab0c3b7b6b52`](https://github.com/robertosantosx2/tandem.cpp/actions/runs/43654679693): **conclusión `success`**. `trace-smoke` y `cuda-compile` finalizaron correctamente. Se compilaron y ejecutaron las pruebas C++17, el sink JSONL pasó sus pruebas, los parches se aplicaron sobre la revisión fijada y `llama-server` se compiló con CUDA para `sm_86`. Esto valida compilación, no una inferencia física ni la cobertura efectiva de todas las sondas.
-- [Ejecución previa satisfactoria del PR #1 — commit 9c6b381](https://github.com/robertosantosx2/tandem.cpp/actions/runs/43649113505): CI verde antes de las últimas pruebas de ciclo de vida.
+1. **Cerrar el árbol de PRs:** revisión, resolver comentarios y fusionar en orden de dependencias con autorización explícita.
+2. **Prueba de extremo a extremo MSI:** `doctor`, `self-test`, `run --profile smoke` con un comando inocuo y después motor instrumentado; verificar logs, exit code y paquete.
+3. **Captura real instrumentada:** Qwen3.5 u otro motor Tandem parcheado, JSONL del motor + host + Nsight en el mismo RUN_ID; validar pérdidas y overhead.
+4. **Importación emparejada:** validar tablas, hashes, cobertura y límites de correlación en LEONES.
+5. **Cobertura de sondas:** matriz para request/graph, KV, MoE cache, workers, prefetch, alloc/free, OOM/fallback y transferencias.
+6. **Informes comparativos:** tablas y gráficas con series temporales, kernels, transferencias, memoria y rendimiento, distinguiendo observación, estimación y medición.
+7. **Release reproducible:** instalación limpia, pruebas, documentación, manifiesto, checksums y procedimiento de desinstalación/actualización.
 
-### Rama LEONES sink experimental
+## Captura histórica Qwen3.5-35B
 
-La rama [active-leones-sink-20261114](https://github.com/robertosantosx2/tandem.cpp/tree/nepenthes/active-leones-sink-20261114) tiene un contrato distinto (`EventKind/Event`, `Trace::emit` y esquema JSONL con `payload`). Se corrigieron allí el terminador de línea JSONL y el orden de inicialización C++, pero su parche `0001-runtime-worker-prefetch.patch` sigue sin aplicar después de `tandem.patch` (el último CI falló en `src/llama-moe-cache.cpp:2525`). No se debe mezclar ni adoptar esa rama como implementación del recolector universal hasta portar y validar sus sondas sobre el árbol Tandem ya parcheado.
+Informe completo: [NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md).
 
-## Preparación del importador LEONES
+La importación Nsight-only del MSI contiene 151.039 actividades:
+- kernel 8.982; memcpy 44.488; memset 9; runtime 84.116;
+- graph trace 5.207; synchronization 7.864; CUDA event 262; overhead 111.
 
-- [Diseño y contrato del importador Nsight/CUPTI](NEPENTHES-IMPORTER.md).
-- Implementación inicial en `scripts/nepenthes_nsys_import.py`, con migración `db/migrations/002_nepenthes_observability.sql` y pruebas de fixtures SQLite/JSONL en `tests/test_nepenthes_nsys_import.py`.
-- La primera versión conserva JSONL y actividades Nsight en tablas normalizadas, guarda SHA-256 de los artefactos y no une `request_id` con `correlationId` ni mezcla relojes sin calibración.
-- El CLI de PR #152 activa el sink del motor mediante `NEPENTHES_RUN_ID` y `NEPENTHES_TRACE_JSONL`, consolida eventos de host/motor y lanza el importador automáticamente cuando existe SQLite Nsight. La integración completa pasa tests sintéticos con una SQLite CUPTI fixture.
-- El importador incorpora `--inspect-nsys` para auditar en modo solo lectura el esquema del SQLite histórico Qwen3.5-35B sin inventar un JSONL emparejado. La inspección real del archivo se ejecutó en el MSI: SQLite de 7.913.472 bytes, con 8.982 kernels, 44.488 memcpy, 9 memset, 84.116 runtime, 5.207 graph trace, 7.864 synchronization, 262 CUDA events y 111 overhead. El modo `--nsys-only` añade la importación de capturas históricas sin JSONL emparejado, manteniendo `run_id=null` y procedencia separada. La ingestión completa de ese SQLite real y su validación en MSI siguen pendientes.
+Cobertura declarada: completa para las ocho tablas CUPTI detectadas. No significa que todas las categorías que Nsight pudiera producir estén presentes en el archivo. Los 262 CUDA_EVENT tienen `timestamp=0` en el SQLite fuente y en el importado; se conservan como eventos puntuales sin intervalo temporal. No se usan para reconstruir duración.
 
-## Criterio de aceptación
+## Reglas de evidencia
 
-La fase de observabilidad solo se marca como aceptada cuando se cumplan todos estos puntos:
-
-1. CI pasa las pruebas C++17, el aplicador determinista y la compilación CUDA.
-2. Una inferencia real produce JSONL parseable, sin pérdidas no explicadas ni errores de escritura.
-3. La captura Nsight/CUPTI de la misma ejecución se importa en LEONES.
-4. Se valida cobertura de categorías, límites de correlación y separación de tiempos host/GPU.
-5. Se archivan modelo, configuración, commit, logs, JSONL, SQLite, Nsight report, respuesta y manifiesto reproducible.
-
-**Regla de evidencia:** ESTIMATED, compilación, captura y medición son estados distintos. Ningún resultado se etiqueta MEASURED sin ejecución física registrada.
-
-
-## Instalador y ejecutable NEPENTHES
-
-- [Diseño del instalador, CLI y paquete de captura](NEPENTHES-CLI.md).
-- Instalador: `scripts/install_nepenthes.sh` (instalación user-space, sin root).
-- Ejecutable: `scripts/nepenthes.py`; uso de una línea: `nepenthes run -- <motor> <argumentos>`.
-- La primera versión registra CPU/RSS agregados del árbol de procesos y telemetría GPU global si `nvidia-smi` está disponible; genera SQLite local y hashes SHA-256. Produce `manifest.json`, `raw/events.jsonl`, `data/samples.csv`, `data/observations.sqlite` (tablas `samples` y `events`), `data/summary.json`, `session.log`, `checksums.sha256` e informe HTML/Markdown con tablas y gráficas SVG.
-- Esta entrega es una base funcional y portátil; el perfil `full` orquesta opcionalmente `nsys profile`, conserva SQLite/NSYS reportes y ejecuta automáticamente el importador LEONES si encuentra el artefacto SQLite. El JSONL del host usa el contrato 1.0 que valida el importador; el join request-kernel sigue desactivado por falta de calibración de relojes e IDs comunes. Las sondas internas del motor siguen siendo una fase posterior y no se simulan.
-- Tests sintéticos añadidos en `tests/test_nepenthes_cli.py`. La validación física en el MSI sigue pendiente.
-
-
-## Instalador y CLI de captura
-
-- [NEPENTHES-CLI.md](NEPENTHES-CLI.md): contrato de instalación, invocación, perfiles, activación de sondas, paquete de resultados y límites.
-- PR de integración: [LEONES #152](https://github.com/robertosantosx2/LEONES/pull/152), apilado sobre [LEONES #151](https://github.com/robertosantosx2/LEONES/pull/151).
-- La batería GitHub Actions del árbol final (squash `e68c9be`; árbol probado en `efb2c124`) pasó: Contract Tests con **470 pruebas**, V1 regression, runtime-v11 regression, RC3 Release Gate y Agentic A01. La validación física y la captura Qwen3.5 en el MSI siguen pendientes.
-
-
-## Importación Nsight histórica (sin JSONL)
-
-- Nuevo modo de importación standalone: `--nsys-only SQLITE --output DB`; no exige JSONL ni inventa un `run_id`.
-- Migración 003 separa los registros Nsight-only de las importaciones emparejadas.
-- Se incorporan adaptadores para `GRAPH_TRACE`, `SYNCHRONIZATION`, `CUDA_EVENT` y `OVERHEAD`, además de las actividades CUDA ya normalizadas.
-- El informe distingue tablas CUPTI importadas y tablas detectadas sin adaptador; no se declara cobertura completa cuando hay tablas desconocidas con filas.
-- Desarrollo en [PR #153 — modo Nsight-only](https://github.com/robertosantosx2/LEONES/pull/153), apilado sobre PR #152. No fusionado.
+- `CI_PASS` significa que las pruebas automatizadas del commit pasaron.
+- `INSTALLED` significa que el instalador terminó en el MSI.
+- `SELF_TEST_PASS` significa que el autodiagnóstico produjo su paquete de prueba válido.
+- `CAPTURED` exige una ejecución real del motor y artefactos conservados.
+- `MEASURED` solo se usa para valores derivados de una captura real identificada.
+- `ESTIMATED` nunca se presenta como medida.
+- No unir `request_id` con `correlationId` CUPTI ni relojes monotónicos con timestamps Nsight sin un mecanismo demostrado de correlación.
+- La utilización/memoria GPU de `nvidia-smi` es device-wide; no atribuirla al proceso sin evidencia.
+- Los spans de submission host no son duración de ejecución GPU.
