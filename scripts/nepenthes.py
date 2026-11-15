@@ -68,7 +68,7 @@ def make_report(root,m,samples):
  with (data/"samples.csv").open("w",newline="",encoding="utf-8") as f:
   w=csv.DictWriter(f,fieldnames=cols);w.writeheader()
   for s in samples:w.writerow({k:s.get(k) for k in cols})
- limits=["CPU/RSS solo mide el proceso lanzado, no su árbol de hijos.","GPU es telemetría global, no atribuida al proceso.","Nsight/CUPTI y sondas internas aún no se capturan.","No se infiere correlación request-kernel ni entre relojes."]
+ limits=["CPU/RSS se agregan sobre el árbol de procesos descendientes observado mediante /proc; los procesos que se desacoplan o salen de ese árbol pueden no contabilizarse.","GPU es telemetría global, no atribuida al proceso.","Nsight/CUPTI y sondas internas aún no se capturan.","No se infiere correlación request-kernel ni entre relojes."]
  summary={"run_id":m["run_id"],"exit_code":m["exit_code"],"duration_seconds":m["duration_seconds"],"sample_count":len(samples),
  "process_cpu_percent_max":max((s["process_cpu_percent"] for s in samples if s.get("process_cpu_percent") is not None),default=None),
  "process_rss_mib_max":max((s["process_rss_mib"] for s in samples if s.get("process_rss_mib") is not None),default=None),
