@@ -1,5 +1,8 @@
 # NEPENTHES: instalador, CLI y paquete de captura
 
+**Language / Idioma:** [English version](research/moe/tandem.cpp/NEPENTHES-CLI-EN.md) · [Versión en español](\research/moe/tandem.cpp/NEPENTHES-CLI.md)
+
+
 ## Objetivo
 
 NEPENTHES se instala en user-space y se invoca antes del motor. Lanza el comando solicitado, activa la instrumentación de un motor que ya haya sido compilado con las sondas NEPENTHES, recoge telemetría de host/GPU disponible y genera un paquete de resultados. No requiere root para la instalación ni modifica drivers, CUDA, modelos o binarios del motor.
