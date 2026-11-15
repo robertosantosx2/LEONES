@@ -71,7 +71,8 @@ Para repetir la importación sin tocar la captura fuente ni sobrescribir una bas
 ```bash
 set -euo pipefail
 SRC="$HOME/NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-20261114.sqlite"
-OUT="$(mktemp -u /tmp/nepenthes-nsys-only-XXXXXX.sqlite)"
+TMPDIR_RUN="$(mktemp -d /tmp/nepenthes-nsys-only.XXXXXX)"
+OUT="$TMPDIR_RUN/import.sqlite"
 python3 scripts/nepenthes_nsys_import.py --inspect-nsys "$SRC"
 python3 scripts/nepenthes_nsys_import.py --nsys-only "$SRC" --output "$OUT"
 sqlite3 "$OUT" <<'SQL'
@@ -86,7 +87,7 @@ SELECT COUNT(*) FROM nepenthes_events;
 SQL
 ```
 
-Criterios de aceptación para esta captura concreta: integridad `ok`; `foreign_key_check` vacío; un import standalone; 151.039 actividades; cero imports emparejados y cero eventos JSONL. Las ocho cantidades esperadas se detallan arriba. El comando `mktemp -u` solo reserva un nombre; en entornos multiusuario debe sustituirse por un directorio temporal privado y comprobarse que el destino no existe antes de ejecutar el importador.
+Criterios de aceptación para esta captura concreta: integridad `ok`; `foreign_key_check` vacío; un import standalone; 151.039 actividades; cero imports emparejados y cero eventos JSONL. Las ocho cantidades esperadas se detallan arriba. El directorio temporal se crea con permisos privados; conserva la base resultante para su inspección posterior.
 
 ### Particularidad CUDA_EVENT
 
