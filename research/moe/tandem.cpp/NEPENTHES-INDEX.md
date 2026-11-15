@@ -1,5 +1,8 @@
 # NEPENTHES — índice de implementación, validación y evidencias
 
+**Language / Idioma:** [English version](research/moe/tandem.cpp/NEPENTHES-INDEX-EN.md) · [Versión en español](\research/moe/tandem.cpp/NEPENTHES-INDEX.md)
+
+
 **Corte de estado:** 2026-11-15 (actualización tras la primera inferencia instrumentada Qwen3.5-4B).  
 **Estado global:** CLI funcional, motor CUDA instrumentado compilado sobre base pinned y primera inferencia real con JSONL del motor completada. Aún falta la captura emparejada con Nsight, correlación robusta y auditoría de cobertura/overhead.
 
