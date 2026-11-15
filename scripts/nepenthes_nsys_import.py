@@ -75,6 +75,48 @@ def load_string_ids(db: sqlite3.Connection, names: set[str]) -> dict[int, str]:
     return {}
 
 
+def inspect_nsys(path: Path) -> dict:
+    """Report Nsight SQLite schema without importing or exposing row payloads."""
+    if not path.is_file():
+        raise ValueError(f"Nsight SQLite file does not exist: {path}")
+    db = sqlite3.connect(f"file:{path.resolve()}?mode=ro", uri=True)
+    try:
+        names = table_names(db)
+        tables = []
+        for table in sorted(names):
+            if table.startswith("sqlite_"):
+                continue
+            quoted = table.replace('"', '""')
+            count = int(db.execute(f'SELECT COUNT(*) FROM "{quoted}"').fetchone()[0])
+            cols = [row[1] for row in db.execute(f'PRAGMA table_info("{quoted}")')]
+            mapped = NSYS_TABLES.get(table)
+            if mapped or table.lower().startswith("cupti_activity_kind_"):
+                tables.append({
+                    "table": table,
+                    "mapped_kind": mapped,
+                    "row_count": count,
+                    "columns": cols,
+                })
+        string_tables = []
+        for table in ("StringIds", "StringId", "StringTable"):
+            if table in names:
+                string_tables.append({
+                    "table": table,
+                    "columns": sorted(columns(db, table)),
+                    "row_count": int(db.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]),
+                })
+        return {
+            "file": str(path.resolve()),
+            "size_bytes": path.stat().st_size,
+            "recognized_activity_tables": [x for x in tables if x["mapped_kind"]],
+            "other_cupti_activity_tables": [x for x in tables if not x["mapped_kind"]],
+            "string_tables": string_tables,
+            "policy": "schema metadata only; no source rows or cross-clock correlation are emitted",
+        }
+    finally:
+        db.close()
+
+
 def first(row: dict[str, Any], candidates: tuple[str, ...]) -> Any:
     for key in candidates:
         if key in row and row[key] is not None:
@@ -220,14 +262,23 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--jsonl", required=True, type=Path)
-    parser.add_argument("--nsys-sqlite", required=True, type=Path)
-    parser.add_argument("--output", required=True, type=Path)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--inspect-nsys", type=Path, help="inspect Nsight SQLite schema without importing")
+    mode.add_argument("--jsonl", type=Path, help="NEPENTHES JSONL input for paired import")
+    parser.add_argument("--nsys-sqlite", type=Path)
+    parser.add_argument("--output", type=Path)
     parser.add_argument("--import-id", default=None)
     args = parser.parse_args()
-    import_id = args.import_id or f"nepenthes-{sha256(args.jsonl)[:12]}"
     try:
-        result = import_all(args.jsonl, args.nsys_sqlite, args.output, import_id)
+        if args.inspect_nsys is not None:
+            if args.nsys_sqlite is not None or args.output is not None:
+                parser.error("--inspect-nsys cannot be combined with --nsys-sqlite/--output")
+            result = inspect_nsys(args.inspect_nsys)
+        else:
+            if args.nsys_sqlite is None or args.output is None:
+                parser.error("--jsonl requires --nsys-sqlite and --output")
+            import_id = args.import_id or f"nepenthes-{sha256(args.jsonl)[:12]}"
+            result = import_all(args.jsonl, args.nsys_sqlite, args.output, import_id)
     except (OSError, sqlite3.Error, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
