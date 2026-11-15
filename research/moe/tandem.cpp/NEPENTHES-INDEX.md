@@ -12,7 +12,7 @@ NEPENTHES ya dispone de cuatro bloques de trabajo en LEONES y una integración d
 3. Instalador user-space, CLI de una línea, captura de host/GPU y paquete de informes (PR #152).
 4. Importación histórica Nsight-only con procedencia aislada (PR #153).
 
-Los PR de LEONES #150–#153 están abiertos y no fusionados. El PR #153 es draft y apila sobre #152; #152 apila sobre #151; #151 apila sobre #150. El PR #1 de Tandem.cpp también está abierto y no fusionado.
+Estado remoto de las PR: LEONES #150 sigue abierto y actualmente no es mergeable; #151 está cerrado e integrado en la rama `research/nepenthes-universal-collector-20261115` (no en `main`); #152 está cerrado e integrado en `main`; #153 sigue abierto, en draft y dirigido a `main`. Tandem.cpp #1 sigue abierto y sin fusionar. La cadena histórica de desarrollo no debe confundirse con el estado actual de integración.
 
 **Validación física MSI completada hasta ahora:**
 - Build CUDA local del motor instrumentado sobre llama.cpp pinned `f5222f25c18da062ab2b8a2dbbfbf4feae398566`, tras aplicar `tandem.patch`, `runtime.patch` y el aplicador determinista de probes.
