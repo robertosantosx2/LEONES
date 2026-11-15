@@ -262,7 +262,7 @@ def test_import_preserves_uint64_sentinel_in_raw_json(tmp_path: Path):
     event = json.loads(jsonl.read_text(encoding="utf-8"))
     event["value0"] = 2**64 - 1
     event["value1"] = 2**64 - 1
-    jsonl.write_text(json.dumps(event) + "\\n", encoding="utf-8")
+    jsonl.write_text(json.dumps(event) + "\n", encoding="utf-8")
     write_nsys(nsys)
 
     summary = import_all(jsonl, nsys, output, "uint64-import")
@@ -287,7 +287,7 @@ def test_import_rejects_integer_outside_uint64_range(tmp_path: Path):
     write_jsonl(jsonl)
     event = json.loads(jsonl.read_text(encoding="utf-8"))
     event["value0"] = 2**64
-    jsonl.write_text(json.dumps(event) + "\\n", encoding="utf-8")
+    jsonl.write_text(json.dumps(event) + "\n", encoding="utf-8")
     write_nsys(nsys)
 
     with pytest.raises(ValueError, match="outside the supported"):
