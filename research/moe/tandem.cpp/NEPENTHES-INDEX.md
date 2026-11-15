@@ -58,7 +58,14 @@ El PR #1 conserva el contrato universal `EventType/Event`, el sink JSONL y el ap
 
 La rama [active-leones-sink-20261114](https://github.com/robertosantosx2/tandem.cpp/tree/nepenthes/active-leones-sink-20261114) tiene un contrato distinto (`EventKind/Event`, `Trace::emit` y esquema JSONL con `payload`). Se corrigieron allí el terminador de línea JSONL y el orden de inicialización C++, pero su parche `0001-runtime-worker-prefetch.patch` sigue sin aplicar después de `tandem.patch` (el último CI falló en `src/llama-moe-cache.cpp:2525`). No se debe mezclar ni adoptar esa rama como implementación del recolector universal hasta portar y validar sus sondas sobre el árbol Tandem ya parcheado.
 
-## Preparación del importador LEONES\n\n- [Diseño y contrato del importador Nsight/CUPTI](NEPENTHES-IMPORTER.md).\n- Implementación inicial en `scripts/nepenthes_nsys_import.py`, con migración `db/migrations/002_nepenthes_observability.sql` y pruebas de fixtures SQLite/JSONL en `tests/test_nepenthes_nsys_import.py`.\n- La primera versión conserva JSONL y actividades Nsight en tablas normalizadas, guarda SHA-256 de los artefactos y no une `request_id` con `correlationId` ni mezcla relojes sin calibración.\n- Esta rama aún no acredita ejecución real contra el SQLite de Qwen3.5-35B; se necesita verificar nombres/columnas de las tablas del export concreto y completar la correlación con instrumentación adicional.\n\n## Criterio de aceptación
+## Preparación del importador LEONES
+
+- [Diseño y contrato del importador Nsight/CUPTI](NEPENTHES-IMPORTER.md).
+- Implementación inicial en `scripts/nepenthes_nsys_import.py`, con migración `db/migrations/002_nepenthes_observability.sql` y pruebas de fixtures SQLite/JSONL en `tests/test_nepenthes_nsys_import.py`.
+- La primera versión conserva JSONL y actividades Nsight en tablas normalizadas, guarda SHA-256 de los artefactos y no une `request_id` con `correlationId` ni mezcla relojes sin calibración.
+- Esta rama aún no acredita ejecución real contra el SQLite de Qwen3.5-35B; se necesita verificar nombres/columnas de las tablas del export concreto y completar la correlación con instrumentación adicional.
+
+## Criterio de aceptación
 
 La fase de observabilidad solo se marca como aceptada cuando se cumplan todos estos puntos:
 
