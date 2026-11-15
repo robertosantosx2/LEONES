@@ -1,6 +1,6 @@
 # Scripts
 
-**Language:** [English]( scripts/README-EN.md ) · [Español]( scripts/README.md )
+**Language:** [English](README-EN.md) · [Español](README.md)
 
 ## RC1 benchmark boundary
 
