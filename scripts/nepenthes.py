@@ -126,13 +126,50 @@ def merge_event_files(root,run_id):
         event["source_event_id"]=event.get("event_id")
         event["event_id"]="engine-"+str(line_no)+"-"+str(event.get("event_id","unknown"))
         line=json.dumps(event,separators=(",",":"))+"\n"
-      except json.JSONDecodeError:
-       warnings.append(name+":"+str(line_no)+":invalid_json")
+      except json.JSONDecodeError as exc:
+       warnings.append(name+":"+str(line_no)+":invalid_json:"+str(exc))
+       continue
+      if event.get("run_id")!=run_id or event.get("schema_version")!="1.0":
+       continue
       out.write(line if line.endswith("\n") else line+"\n");count+=1
    counts[name]=count
  return {"counts":counts,"total":sum(counts.values()),"warnings":warnings}
+def stop_process_group(child, pgid):
+ try:
+  os.killpg(pgid,signal.SIGINT)
+ except ProcessLookupError:
+  pass
+ try:
+  child.wait(timeout=10)
+ except subprocess.TimeoutExpired:
+  try:os.killpg(pgid,signal.SIGTERM)
+  except ProcessLookupError:pass
+  try:child.wait(timeout=3)
+  except subprocess.TimeoutExpired:
+   try:os.killpg(pgid,signal.SIGKILL)
+   except ProcessLookupError:pass
+   child.wait()
+ # The wrapper may exit while descendants remain in its session.
+ try:os.killpg(pgid,0)
+ except ProcessLookupError:
+  return
+ try:os.killpg(pgid,signal.SIGTERM)
+ except ProcessLookupError:
+  return
+ time.sleep(0.2)
+ try:os.killpg(pgid,0)
+ except ProcessLookupError:
+  return
+ try:os.killpg(pgid,signal.SIGKILL)
+ except ProcessLookupError:
+  pass
 def import_nsys_bundle(root,m):
  meta=m.get("nsys",{})
+ merge_warnings=m.get("event_merge",{}).get("warnings",[])
+ if merge_warnings:
+  result={"status":"blocked","reason":"event stream contains invalid or mismatched records","warnings":merge_warnings}
+  save(root/"data"/"nsys-import.json",result)
+  return result
  sqlite_rel=meta.get("sqlite")
  if not sqlite_rel:
   result={"status":"not_available","reason":"Nsight SQLite export not found"}
@@ -179,7 +216,7 @@ def run(a):
    emit(ev,"capture_started",run_id=rid,command=cmd,profile=a.profile);log.write("$ "+" ".join(cmd)+"\n\n");log.flush()
    if nsys_enabled:launch=nsys_command(nsys_exe,str(root/"raw"/"nsys"),cmd)
    child_env=os.environ.copy();child_env["NEPENTHES_RUN_ID"]=rid;child_env["NEPENTHES_TRACE_JSONL"]=str(root/"raw"/"engine-events.jsonl")
-   child=subprocess.Popen(launch,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=child_env);m["pid"]=child.pid;m["launch_command"]=launch;save(root/"manifest.json",m)
+   child=subprocess.Popen(launch,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=child_env);child_pgid=os.getpgid(child.pid);m["pid"]=child.pid;m["process_group_id"]=child_pgid;m["launch_command"]=launch;save(root/"manifest.json",m)
    while True:
     now=time.monotonic();s={"elapsed_seconds":round(now-start,4),"timestamp_unix_ns":time.time_ns()};p=proc_tree(child.pid)
     if p:
@@ -199,9 +236,7 @@ def run(a):
    emit(ev,"capture_finished",run_id=rid,exit_code=code,duration_ns=int((time.monotonic()-start)*1e9))
  except KeyboardInterrupt:
   if "child" in locals() and child.poll() is None:
-   child.send_signal(signal.SIGINT)
-   try:child.wait(timeout=10)
-   except subprocess.TimeoutExpired:child.terminate();child.wait()
+   stop_process_group(child,locals().get("child_pgid",child.pid))
   code=child.returncode if "child" in locals() else 130;m["interrupted"]=True
  except OSError as e:m["collector_error"]=str(e)
  m["event_merge"]=merge_event_files(root,rid)
