@@ -119,4 +119,8 @@ Este roadmap separa implementación, validación CI y validación física. Una t
 ## Definición de «funcional completo»
 
 NEPENTHES se considerará completo cuando una instalación limpia pueda envolver una inferencia real, activar las sondas del motor, capturar host/GPU/Nsight, conservar los artefactos y hashes, importar tanto eventos JSONL como actividades CUPTI, generar un informe navegable con tablas y gráficas, pasar su verificador y ofrecer resultados reproducibles sin atribuciones o correlaciones inventadas.
-\n\n## Registro de campañas\n\nEl estado experimental, IDs C00–C09, resultados de la primera inferencia instrumentada y criterios de las campañas siguientes se mantiene en [NEPENTHES-CAMPAIGNS.md](NEPENTHES-CAMPAIGNS.md).\n
+
+
+## Registro de campañas
+
+El estado experimental, IDs C00–C09, resultados de la primera inferencia instrumentada y criterios de las campañas siguientes se mantiene en [NEPENTHES-CAMPAIGNS.md](NEPENTHES-CAMPAIGNS.md).
