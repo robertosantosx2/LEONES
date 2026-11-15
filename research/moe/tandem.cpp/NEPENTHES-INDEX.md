@@ -23,7 +23,7 @@ El PR #1 conserva el contrato universal `EventType/Event`, el sink JSONL y el ap
 | 2 | Sondas de runtime: request, graph, KV cache, MoE cache, workers, prefetch, alloc/free, OOM/fallback y transferencias | **Implementadas en el aplicador; compilación CUDA superada** |
 | 3 | Compilación CUDA del servidor sobre la revisión fijada | **Superada en GitHub Actions** |
 | 4 | Captura real Qwen3.5-35B con JSONL + Nsight y comprobación de pérdida/errores | **Pendiente** |
-| 5 | Importación y correlación en el recolector universal de LEONES | **Importador e integración automática JSONL+Nsight implementados; CI sintético verde; captura real MSI pendiente** |
+| 5 | Importación y correlación en el recolector universal de LEONES | **Importación emparejada + modo Nsight-only implementados; inspección del SQLite histórico MSI completada; ingestión real pendiente** |
 | 6 | Batería Qwen3.5-35B repetible, informe final y archivo íntegro de evidencias | **Pendiente** |
 | 7 | Instalador user-space y CLI `nepenthes run` con paquete de captura e informe HTML | **Implementado en PR #152; CI verde; validación física MSI pendiente** |
 
@@ -65,7 +65,7 @@ La rama [active-leones-sink-20261114](https://github.com/robertosantosx2/tandem.
 - Implementación inicial en `scripts/nepenthes_nsys_import.py`, con migración `db/migrations/002_nepenthes_observability.sql` y pruebas de fixtures SQLite/JSONL en `tests/test_nepenthes_nsys_import.py`.
 - La primera versión conserva JSONL y actividades Nsight en tablas normalizadas, guarda SHA-256 de los artefactos y no une `request_id` con `correlationId` ni mezcla relojes sin calibración.
 - El CLI de PR #152 activa el sink del motor mediante `NEPENTHES_RUN_ID` y `NEPENTHES_TRACE_JSONL`, consolida eventos de host/motor y lanza el importador automáticamente cuando existe SQLite Nsight. La integración completa pasa tests sintéticos con una SQLite CUPTI fixture.
-- El importador incorpora `--inspect-nsys` para auditar en modo solo lectura el esquema del SQLite histórico Qwen3.5-35B sin inventar un JSONL emparejado. La inspección real del archivo sigue pendiente de ejecutarse en el MSI; después se ajustará el normalizador a las columnas observadas. La importación emparejada ya pasa la prueba sintética; la validación sobre una captura Nsight real del MSI sigue pendiente.
+- El importador incorpora `--inspect-nsys` para auditar en modo solo lectura el esquema del SQLite histórico Qwen3.5-35B sin inventar un JSONL emparejado. La inspección real del archivo se ejecutó en el MSI: SQLite de 7.913.472 bytes, con 8.982 kernels, 44.488 memcpy, 9 memset, 84.116 runtime, 5.207 graph trace, 7.864 synchronization, 262 CUDA events y 111 overhead. El modo `--nsys-only` añade la importación de capturas históricas sin JSONL emparejado, manteniendo `run_id=null` y procedencia separada. La ingestión completa de ese SQLite real y su validación en MSI siguen pendientes.
 
 ## Criterio de aceptación
 
@@ -95,3 +95,12 @@ La fase de observabilidad solo se marca como aceptada cuando se cumplan todos es
 - [NEPENTHES-CLI.md](NEPENTHES-CLI.md): contrato de instalación, invocación, perfiles, activación de sondas, paquete de resultados y límites.
 - PR de integración: [LEONES #152](https://github.com/robertosantosx2/LEONES/pull/152), apilado sobre [LEONES #151](https://github.com/robertosantosx2/LEONES/pull/151).
 - La batería GitHub Actions del árbol final (squash `e68c9be`; árbol probado en `efb2c124`) pasó: Contract Tests con **470 pruebas**, V1 regression, runtime-v11 regression, RC3 Release Gate y Agentic A01. La validación física y la captura Qwen3.5 en el MSI siguen pendientes.
+
+
+## Importación Nsight histórica (sin JSONL)
+
+- Nuevo modo de importación standalone: `--nsys-only SQLITE --output DB`; no exige JSONL ni inventa un `run_id`.
+- Migración 003 separa los registros Nsight-only de las importaciones emparejadas.
+- Se incorporan adaptadores para `GRAPH_TRACE`, `SYNCHRONIZATION`, `CUDA_EVENT` y `OVERHEAD`, además de las actividades CUDA ya normalizadas.
+- El informe distingue tablas CUPTI importadas y tablas detectadas sin adaptador; no se declara cobertura completa cuando hay tablas desconocidas con filas.
+- Desarrollo en [PR #153 — modo Nsight-only](https://github.com/robertosantosx2/LEONES/pull/153), apilado sobre PR #152. No fusionado.
