@@ -216,7 +216,7 @@ def run(a):
    emit(ev,"capture_started",run_id=rid,command=cmd,profile=a.profile);log.write("$ "+" ".join(cmd)+"\n\n");log.flush()
    if nsys_enabled:launch=nsys_command(nsys_exe,str(root/"raw"/"nsys"),cmd)
    child_env=os.environ.copy();child_env["NEPENTHES_RUN_ID"]=rid;child_env["NEPENTHES_TRACE_JSONL"]=str(root/"raw"/"engine-events.jsonl")
-   child=subprocess.Popen(launch,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=child_env);child_pgid=os.getpgid(child.pid);m["pid"]=child.pid;m["process_group_id"]=child_pgid;m["launch_command"]=launch;save(root/"manifest.json",m)
+   child=subprocess.Popen(launch,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=child_env);child_pgid=child.pid;m["pid"]=child.pid;m["process_group_id"]=child_pgid;m["launch_command"]=launch;save(root/"manifest.json",m)
    while True:
     now=time.monotonic();s={"elapsed_seconds":round(now-start,4),"timestamp_unix_ns":time.time_ns()};p=proc_tree(child.pid)
     if p:
