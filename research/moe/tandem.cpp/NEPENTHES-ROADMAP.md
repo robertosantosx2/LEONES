@@ -1,167 +1,163 @@
-# NEPENTHES — roadmap de tareas hasta la versión funcional completa
+# NEPENTHES — roadmap to a fully functional release
 
-**Fecha de corte:** 2026-11-15 (actualizado tras C07).  
-**Estado:** CLI y captura de motor instrumentado probadas con una inferencia Qwen3.5-4B; aceptación integral con Nsight, correlación, cobertura y overhead pendiente.
+**Status date:** 2026-11-15 (updated after C07).  
+**Status:** CLI and instrumented-engine capture tested with a Qwen3.5-4B inference; full acceptance with Nsight, correlation, coverage, and overhead remains pending.
 
-Este roadmap separa implementación, validación CI y validación física. Una tarea no se considera terminada por existir un PR: necesita la evidencia indicada en su criterio de salida.
+This roadmap separates implementation, CI validation, and physical validation. A task is not complete merely because a PR exists: it requires the evidence specified in its exit criteria.
 
-## Leyenda
+## Legend
 
-- [x] Implementado y con evidencia suficiente para el alcance indicado.
-- [~] Implementado o validado parcialmente; falta una prueba de aceptación.
-- [ ] Pendiente.
+- [x] Implemented with sufficient evidence for the stated scope.
+- [~] Implemented or partially validated; an acceptance test remains.
+- [ ] Pending.
 
-## Fase A — Instrumentación del motor
+## Phase A — Engine instrumentation
 
-- [x] Definir contrato universal de eventos y sink JSONL.
-- [x] Implementar emisión segura ante concurrencia y barrera de apagado.
-- [x] Añadir pruebas de formato JSONL y ciclo de vida del sink.
-- [x] Integrar el aplicador determinista de sondas sobre la revisión fijada de llama.cpp.
-- [x] Compilar CUDA en CI para la arquitectura de destino sm_86.
-- [x] Ejecutar una inferencia real Qwen3.5-4B en MSI con binario parcheado; confirmar emisión de 3.683 eventos de motor.
-- [~] Auditar la semántica y cobertura de cada familia observada; todos los eventos dentro de la ventana usan `request_id=0`.
-- [~] Auditar cobertura real de eventos por subsistema: request/routing, KV cache, transfer, kernel, sync y allocation observados en Qwen3.5-4B; MoE cache, workers, prefetch, OOM/fallback y dispatch ggml_op aún sin aceptación específica.
-- [ ] Medir overhead de instrumentación frente a una ejecución de control con protocolo idéntico.
-- [ ] Definir y probar política de rotación/límites de tamaño del JSONL en ejecuciones largas.
+- [x] Define the universal event contract and JSONL sink.
+- [x] Implement concurrency-safe emission and a shutdown barrier.
+- [x] Add JSONL format and sink lifecycle tests.
+- [x] Integrate the deterministic probe applier on the pinned llama.cpp revision.
+- [x] Build CUDA in CI for target architecture sm_86.
+- [x] Run a real Qwen3.5-4B inference on the MSI with the patched binary; confirm emission of 3,683 engine events.
+- [~] Audit semantics and coverage of each observed family; all events inside the window use `request_id=0`.
+- [~] Audit actual event coverage by subsystem: request/routing, KV cache, transfer, kernel, sync, and allocation observed on Qwen3.5-4B; MoE cache, workers, prefetch, OOM/fallback, and ggml_op dispatch still lack specific acceptance.
+- [ ] Measure instrumentation overhead against a control run using an identical protocol.
+- [ ] Define and test JSONL rotation/size limits for long runs.
 
-**Salida de fase:** ejecución real con JSONL válido, eventos esperados, errores/pérdidas contabilizados y overhead medido.
+**Phase exit:** a real run with valid JSONL, expected events, accounted errors/losses, and measured overhead.
 
-## Fase B — Instalación y CLI
+## Phase B — Installation and CLI
 
-- [x] Instalador user-space sin root.
-- [x] Comando `nepenthes` en `~/.local/bin`.
-- [x] Comandos `doctor`, `self-test`, `run/capture`, `inspect` y `verify`.
-- [x] Wrapper de una línea con perfiles smoke/standard/full.
-- [x] Variables `NEPENTHES_RUN_ID` y `NEPENTHES_TRACE_JSONL` para motores instrumentados.
-- [x] Captura host de CPU/RSS y telemetría NVIDIA global cuando está disponible.
-- [x] Logs, exit code, manifiesto, hashes, CSV, JSONL, SQLite y reportes HTML/Markdown/SVG.
-- [x] Self-test ejecutado en MSI: 3 eventos, 1 muestra, HTML y checksums válidos.
-- [x] Probar `nepenthes run` con proceso inocuo: exit code 0, paquete verificable.
-- [x] Probar propagación de fallo controlado: exit code 23 preservado y paquete válido.
-- [x] Probar `nepenthes run` con servidor instrumentado y Qwen3.5-4B: JSONL real con 3.683 eventos, request_start/end y exit code 0.
-- [~] Verificar `nepenthes verify` y auditoría completa del paquete de inferencia real; Nsight estuvo desactivado en C06.
-- [ ] Probar perfiles smoke/standard/full, `--nsys auto/required/off` y ausencia/fallo de Nsight.
-- [ ] Ejecutar y archivar `nepenthes verify` sobre el paquete de inferencia C06.
-- [ ] Probar fallo/terminación anticipada del motor, Ctrl-C, proceso hijo y captura parcial sin perder el manifiesto.
-- [ ] Documentar actualización, reinstalación y desinstalación.
+- [x] User-space installer requiring no root.
+- [x] `nepenthes` command in `~/.local/bin`.
+- [x] `doctor`, `self-test`, `run/capture`, `inspect`, and `verify` commands.
+- [x] One-line wrapper with smoke/standard/full profiles.
+- [x] `NEPENTHES_RUN_ID` and `NEPENTHES_TRACE_JSONL` variables for instrumented engines.
+- [x] Host CPU/RSS capture and device-wide NVIDIA telemetry when available.
+- [x] Logs, exit code, manifest, hashes, CSV, JSONL, SQLite, and HTML/Markdown/SVG reports.
+- [x] Self-test run on MSI: 3 events, 1 sample, valid HTML and checksums.
+- [x] Test `nepenthes run` with a harmless process: exit code 0, verifiable package.
+- [x] Test controlled failure propagation: exit code 23 preserved and package valid.
+- [x] Test `nepenthes run` with instrumented server and Qwen3.5-4B: real JSONL with 3,683 events, request_start/end, and exit code 0.
+- [~] Verify `nepenthes verify` and fully audit the real inference package; Nsight was disabled in C06.
+- [ ] Test smoke/standard/full profiles, `--nsys auto/required/off`, and Nsight absence/failure.
+- [ ] Run and archive `nepenthes verify` on the C06 inference package.
+- [ ] Test engine failure/early termination, Ctrl-C, child process, and partial capture without losing the manifest.
+- [ ] Document update, reinstall, and uninstall.
 
-**Salida de fase:** instalación limpia y wrapper reproducible que deja paquete verificable incluso ante fallo controlado.
+**Phase exit:** a clean installation and reproducible wrapper that leaves a verifiable package even after a controlled failure.
 
-## Fase C — Importador LEONES
+## Phase C — LEONES importer
 
-- [x] Importación emparejada JSONL + Nsight implementada y con tests sintéticos.
-- [x] Preservación de SHA-256 y payload original.
-- [x] Separación de dominios de reloj y política explícita de no correlación artificial.
-- [x] Inspección Nsight solo lectura.
-- [x] Importación standalone Nsight-only con migración 003 y tablas separadas.
-- [x] Adaptadores de ocho familias presentes en la captura MSI.
-- [x] Importación real MSI: 151.039 filas, integridad SQLite OK, sin duplicados ni anomalías temporales básicas.
-- [x] Comprobación CUDA_EVENT: los 262 timestamps cero coinciden con la fuente y se conservan sin fabricar intervalos.
-- [~] Validar importación emparejada real desde una sola ejecución del wrapper.
-- [ ] Probar reimportación/idempotencia y comportamiento ante base de salida existente.
-- [ ] Probar versiones distintas de Nsight/SQLite y tablas CUPTI no soportadas con filas.
-- [ ] Verificar que resumen, coverage y manifest de salida reflejan errores parciales sin ocultarlos.
+- [x] Paired JSONL + Nsight import implemented and covered by synthetic tests.
+- [x] Preserve SHA-256 and original payload.
+- [x] Separate clock domains and explicitly prohibit artificial correlation.
+- [x] Read-only Nsight inspection.
+- [x] Standalone Nsight-only import with migration 003 and separate tables.
+- [x] Adapters for the eight families present in the MSI capture.
+- [x] Real MSI import: 151,039 rows, SQLite integrity OK, no duplicates or basic timing anomalies.
+- [x] CUDA_EVENT check: the 262 zero timestamps match the source and are preserved without fabricating intervals.
+- [~] Validate paired import from a single wrapper execution.
+- [ ] Test re-import/idempotency and behavior when the output database already exists.
+- [ ] Test different Nsight/SQLite versions and unsupported CUPTI tables containing rows.
+- [ ] Verify that output summary, coverage, and manifest expose partial errors rather than hiding them.
 
-**Salida de fase:** importación emparejada y standalone repetible, trazable, íntegra y con cobertura honesta.
+**Phase exit:** repeatable, traceable, and integrity-checked paired and standalone imports with honest coverage reporting.
 
-## Fase D — Captura Qwen3.5 y validación experimental
+## Phase D — Qwen3.5 capture and experimental validation
 
-- [x] Preservar captura Nsight histórica del 14-11-2026 y su procedencia.
-- [x] Inspeccionar e importar el SQLite histórico sin JSONL emparejado.
-- [x] Construir el informe descriptivo de la captura histórica.
-- [x] Aplicar `tandem.patch`, `runtime.patch` y probes sobre la revisión pinned llama.cpp `f5222f25c18da062ab2b8a2dbbfbf4feae398566` y compilar `llama-server` CUDA sm_86 en MSI. No se usó el checkout shallow cafe-llama.cpp.
-- [x] Ejecutar Qwen3.5-4B Q4_K_M en CPU-only con contexto 512, 4 hilos, batch 128 y ubatch 64; capturar 3.683 eventos.\n- [ ] Ejecutar campaña Qwen3.5-35B con configuración y modelo registrados en manifest.
-- [ ] Capturar simultáneamente JSONL NEPENTHES y Nsight SQLite de la misma ejecución (C06 usó `--nsys off`).
-- [~] KV cache observado: 49 eventos dentro de la ventana C06. MoE cache, workers y prefetch deben verificarse con eventos explícitos; no inferirlos por proximidad temporal.
-- [ ] Repetir ejecución al menos tres veces con misma configuración y guardar controles; incluir baseline sin sondas.
-- [ ] Comparar overhead, tokens/s, memoria host/GPU, kernels y transferencias.
-- [ ] Archivar logs, modelo identificado por hash, comandos, configuración, commit, JSONL, SQLite, NSYS report, respuesta y checksums.
+- [x] Preserve the historical Nsight capture from 2026-11-14 and its provenance.
+- [x] Inspect and import the historical SQLite without paired JSONL.
+- [x] Build the descriptive report for the historical capture.
+- [x] Apply `tandem.patch`, `runtime.patch`, and probes to pinned llama.cpp revision `f5222f25c18da062ab2b8a2dbbfbf4feae398566`, then build CUDA sm_86 `llama-server` on the MSI. The shallow cafe-llama.cpp checkout was not used.
+- [x] Run Qwen3.5-4B Q4_K_M CPU-only with context 512, 4 threads, batch 128, and ubatch 64; capture 3,683 events.
+- [ ] Run a Qwen3.5-35B campaign with model and configuration recorded in the manifest.
+- [ ] Capture NEPENTHES JSONL and Nsight SQLite simultaneously from the same execution (C06 used `--nsys off`).
+- [~] KV cache observed: 49 events inside the C06 window. MoE cache, workers, and prefetch must be verified through explicit events; do not infer them from temporal proximity.
+- [ ] Repeat the run at least three times with identical configuration and save controls; include an uninstrumented baseline.
+- [ ] Compare overhead, tokens/s, host/GPU memory, kernels, and transfers.
+- [ ] Archive logs, model identified by hash, commands, configuration, commit, JSONL, SQLite, NSYS report, response, and checksums.
 
-**Salida de fase:** dataset emparejado reproducible y suficiente para responder preguntas de rendimiento/ciclo de vida sin sobreinterpretar correlaciones.
+**Phase exit:** a reproducible paired dataset sufficient to answer performance/lifecycle questions without over-interpreting correlations.
 
-## Fase E — Informes y visualización
+## Phase E — Reports and visualization
 
-- [x] Plantilla HTML reutilizable y PDF/PNG del primer informe Qwen3.5-4B; resumen histórico Qwen3.5-35B con tablas de actividades.
-- [x] Reglas de interpretación para timestamps, correlación y cobertura.
-- [~] Informe HTML/Markdown/SVG generado por CLI: validado en self-test; primer dashboard Qwen3.5-4B generado a partir de métricas agregadas disponibles; generación automática desde JSONL/SQLite real pendiente.
-- [ ] Panel temporal con CPU/RSS/GPU y marcas de request.
-- [ ] Distribución de kernels por nombre, duración y stream.
-- [ ] Transferencias H2D/D2H/D2D por bytes, dirección y duración Nsight.
-- [ ] Actividad CUDA runtime/synchronization/graph por tipo.
-- [ ] Vistas específicas de KV cache/MoE cache/worker/prefetch basadas en sondas reales.
-- [ ] Comparativa entre runs y baseline.
-- [ ] Exportación de tablas CSV y consultas reproducibles desde SQLite.
+- [x] Reusable HTML template and PDF/PNG for the first Qwen3.5-4B report; historical Qwen3.5-35B summary with activity tables.
+- [x] Interpretation rules for timestamps, correlation, and coverage.
+- [~] HTML/Markdown/SVG report generated by CLI: validated in self-test; first Qwen3.5-4B dashboard generated from available aggregate metrics; automatic generation from real JSONL/SQLite remains pending.
+- [ ] Timeline panel for CPU/RSS/GPU with request markers.
+- [ ] Kernel distribution by name, duration, and stream.
+- [ ] H2D/D2H/D2D transfers by bytes, direction, and Nsight duration.
+- [ ] CUDA runtime/synchronization/graph activity by type.
+- [ ] KV cache/MoE cache/worker/prefetch views based on real probes.
+- [ ] Run and baseline comparison.
+- [ ] CSV table export and reproducible queries from SQLite.
 
-**Salida de fase:** informe que permite navegar datos brutos, resumen, tablas y gráficas; cada métrica identifica fuente, reloj, unidad y nivel de atribución.
+**Phase exit:** a report that exposes raw data, summaries, tables, and charts; every metric identifies its source, clock, unit, and attribution level.
 
-## Fase E.1 — Análisis semántico y calidad de informes (prioridades nuevas)
+## Phase E.1 — Semantic analysis and report quality (new priorities)
 
-La captura C07 de Qwen3.5-4B confirma que el importador puede exponer actividad CUDA útil, pero los informes deben decodificar los enums de Nsight y preservar los límites de atribución.
+The C07 Qwen3.5-4B capture confirms that the importer can expose useful CUDA activity, but reports must decode Nsight enums and preserve attribution limits.
 
-### Backlog priorizado
+### Prioritized backlog
 
-| Prioridad | Mejora | Beneficio |
+| Priority | Improvement | Benefit |
 |---|---|---|
-| **P0** | Decodificación semántica de `cudaMemcpyKind` y tipos de memoria (`srcKind`/`dstKind`) usando las tablas enum de la propia captura. | Distinguir H2D, D2H, D2D, Host-to-Array, Unified Memory y demás modalidades; identificar además memoria pageable, pinned, device, array o managed. |
-| **P0** | Validación y presentación segura de centinelas unsigned en todos los informes y exportaciones. | Evitar interpretar `-1` como una medida ordinaria cuando representa `UINT64_MAX`; conservar el valor original y su semántica. |
-| **P1** | Histogramas de latencia, percentiles y detección de outliers para transferencias, runtime, overhead y sincronización. | Detectar colas largas, llamadas anómalas y eventos dominantes que las medias ocultan. |
-| **P1** | Decodificación semántica de los tipos de sincronización. | Identificar qué clase de espera se observa, sin atribuir automáticamente el tiempo a CPU bloqueada o GPU ociosa. |
-| **P1** | Timeline combinado con dominios de reloj independientes y calibración explícita cuando exista. | Visualizar host, motor y Nsight en paneles/timelines relacionados sin inventar correlaciones ni comparar timestamps incompatibles. |
-| **P2** | Integración de Nsight Compute para perfiles selectivos de kernels. | Analizar eficiencia interna: ocupación, throughput, memoria, stalls y métricas de ejecución, más allá de duración y frecuencia. |
-| **P2** | Comparación reproducible entre ejecuciones y baseline. | Detectar regresiones en KV cache, transferencias, sincronización, kernels y rendimiento global. |
+| **P0** | Semantic decoding of `cudaMemcpyKind` and memory types (`srcKind`/`dstKind`) using the enum tables in the capture itself. | Distinguish H2D, D2H, D2D, Host-to-Array, Unified Memory, and other modes; also identify pageable, pinned, device, array, or managed memory. |
+| **P0** | Safe validation and presentation of unsigned sentinels in all reports and exports. | Avoid treating `-1` as an ordinary measurement when it represents `UINT64_MAX`; preserve the original value and its semantics. |
+| **P1** | Latency histograms, percentiles, and outlier detection for transfers, runtime, overhead, and synchronization. | Detect long tails, anomalous calls, and dominant events hidden by averages. |
+| **P1** | Semantic decoding of synchronization types. | Identify the observed wait class without automatically attributing time to blocked CPU or idle GPU. |
+| **P1** | Combined timeline with independent clock domains and explicit calibration where available. | Visualize host, engine, and Nsight in related panels/timelines without inventing correlations or comparing incompatible timestamps. |
+| **P2** | Nsight Compute integration for selective kernel profiling. | Analyze internal efficiency: occupancy, throughput, memory, stalls, and execution metrics beyond duration and frequency. |
+| **P2** | Reproducible comparison across runs and against a baseline. | Detect regressions in KV cache, transfers, synchronization, kernels, and overall performance. |
 
-### Separación obligatoria de métricas temporales
+### Mandatory separation of timing metrics
 
-Los informes deben presentar por separado:
+Reports must present these separately:
 
-- Tiempo de CPU dentro de llamadas CUDA (duración host de las APIs, cuando esté instrumentada).
-- Tiempo de ejecución de kernels (intervalos GPU de Nsight).
-- Tiempo de transferencias (intervalos GPU de memcpy/memset).
-- Tiempo de sincronización (actividad y tipo de sincronización observados).
-- Tiempo total de la petición (reloj del servidor/motor).
+- CPU time inside CUDA calls (host API duration, when instrumented).
+- Kernel execution time (Nsight GPU intervals).
+- Transfer time (GPU memcpy/memset intervals).
+- Synchronization time (observed synchronization activity and type).
+- Total request time (server/engine clock).
 
-**Regla de interpretación:** estas magnitudes no se suman directamente para producir un supuesto tiempo total. Pueden solaparse, representar esperas distintas o pertenecer a dominios temporales diferentes. Todo agregado debe declarar fuente, reloj, unidad, ventana y política de solapamiento.
+**Interpretation rule:** these quantities must not be added directly to produce a supposed total time. They may overlap, represent different waits, or belong to different time domains. Every aggregate must declare source, clock, unit, window, and overlap policy.
 
-### Evidencia C07 que motiva este trabajo
+### C07 evidence motivating this work
 
-La captura C07 contiene las tablas `ENUM_CUDA_MEMCPY_OPER` y `ENUM_CUDA_MEM_KIND`; por tanto, el importador puede resolver los valores mediante los metadatos del propio SQLite, sin codificar etiquetas numéricas a ciegas. La distribución observada fue:
+The C07 capture contains `ENUM_CUDA_MEMCPY_OPER` and `ENUM_CUDA_MEM_KIND` tables; therefore, the importer can resolve values using metadata from the SQLite itself instead of blindly hardcoding numeric labels. The observed distribution was:
 
-| Operación | Memoria origen → destino | Operaciones | Bytes | Duración acumulada |
+| Operation | Source → destination memory | Operations | Bytes | Accumulated duration |
 |---|---|---:|---:|---:|
-| Host-to-Device (`HTOD`) | Pageable → Device | 330 | 945.171.456 (901,3 MiB) | 113,028 ms |
-| Device-to-Host (`DTOH`) | Device → Pinned | 260 | 20.590.592 (19,63 MiB) | 2,025 ms |
-| Host-to-Device (`HTOD`) | Pinned → Device | 261 | 11.206.352 (10,69 MiB) | 1,328 ms |
-| Device-to-Host (`DTOH`) | Device → Pageable | 8 | 8.781.824 (8,37 MiB) | 0,990 ms |
+| Host-to-Device (`HTOD`) | Pageable → Device | 330 | 945,171,456 (901.3 MiB) | 113.028 ms |
+| Device-to-Host (`DTOH`) | Device → Pinned | 260 | 20,590,592 (19.63 MiB) | 2.025 ms |
+| Host-to-Device (`HTOD`) | Pinned → Device | 261 | 11,206,352 (10.69 MiB) | 1.328 ms |
+| Device-to-Host (`DTOH`) | Device → Pageable | 8 | 8,781,824 (8.37 MiB) | 0.990 ms |
 
-La primera categoría concentra aproximadamente el 95,9 % de los bytes y el 96,4 % de la duración acumulada de memcpy de esta captura. Es una prioridad de investigación, no una conclusión causal: hay que inspeccionar distribución, tamaños y outliers antes de atribuir el coste a pageable memory o a una ruta concreta.
+The first category accounts for approximately 95.9% of bytes and 96.4% of accumulated memcpy duration in this capture. This is an investigation priority, not a causal conclusion: inspect distributions, sizes, and outliers before attributing the cost to pageable memory or a specific path.
 
-## Fase F — Release y mantenimiento
+## Phase F — Release and maintenance
 
-- [x] PRs separados por responsabilidad y dependencias explícitas.
-- [x] CI verde en los commits actuales de PR #150–#153 y Tandem.cpp #1.
-- [ ] Resolver revisiones y fusionar PRs en orden: #150 → #151 → #152 → #153; integrar Tandem.cpp #1 en su repositorio según revisión. No fusionar sin autorización.
-- [ ] Etiquetar versión y publicar notas de release.
-- [ ] Probar instalación desde release/tag, no solo desde checkout.
-- [ ] Definir compatibilidad Linux/Python/CUDA/Nsight y matriz de versiones.
-- [ ] Documentar privacidad, permisos, overhead y datos capturados.
-- [ ] Definir mantenimiento de esquemas y compatibilidad hacia atrás.
-- [ ] Declarar NEPENTHES funcional completo solo después de superar todos los gates anteriores.
+- [x] Separate PRs by responsibility with explicit dependencies.
+- [x] CI green on current commits of PRs #150–#153 and Tandem.cpp #1.
+- [ ] Resolve reviews and merge PRs in dependency order: #150 → #151 → #152 → #153; integrate Tandem.cpp #1 in its repository according to review. Do not merge without authorization.
+- [ ] Tag a version and publish release notes.
+- [ ] Test installation from a release/tag, not only from a checkout.
+- [ ] Define Linux/Python/CUDA/Nsight compatibility and a version matrix.
+- [ ] Document privacy, permissions, overhead, and captured data.
+- [ ] Define schema maintenance and backward compatibility.
+- [ ] Declare NEPENTHES fully functional only after all gates above pass.
 
-## Orden inmediato recomendado
+## Recommended immediate order
 
-1. Prueba CLI con proceso inocuo y verificación del paquete.
-2. Build del motor Tandem.cpp instrumentado en MSI.
-3. Una inferencia real con `nepenthes run --profile full`.
-4. Inspección del JSONL de motor y del Nsight generado.
-5. Importación emparejada a LEONES y auditoría.
-6. Matriz de cobertura de sondas y medición de overhead.
-7. Repeticiones, informe comparativo y release.
+1. CLI test with a harmless process and package verification.
+2. Build the instrumented Tandem.cpp engine on the MSI.
+3. Run a real inference with `nepenthes run --profile full`.
+4. Inspect engine JSONL and generated Nsight data.
+5. Import the paired capture into LEONES and audit it.
+6. Build the probe coverage matrix and measure overhead.
+7. Repeat runs, produce a comparative report, and release.
 
-## Definición de «funcional completo»
+## Definition of “fully functional”
 
-NEPENTHES se considerará completo cuando una instalación limpia pueda envolver una inferencia real, activar las sondas del motor, capturar host/GPU/Nsight, conservar los artefactos y hashes, importar tanto eventos JSONL como actividades CUPTI, generar un informe navegable con tablas y gráficas, pasar su verificador y ofrecer resultados reproducibles sin atribuciones o correlaciones inventadas.
-
-
-## Registro de campañas
-
-El estado experimental, IDs C00–C09, resultados de la primera inferencia instrumentada y criterios de las campañas siguientes se mantiene en [NEPENTHES-CAMPAIGNS.md](NEPENTHES-CAMPAIGNS.md).
+NEPENTHES will be considered complete when a clean installation can wrap a real inference, activate engine probes, capture host/GPU/Nsight telemetry, preserve artifacts and hashes, import both JSONL events and CUPTI activities, generate a navigable report with tables and charts, pass its verifier, and provide reproducible results without fabricated attribution or correlation.
