@@ -1,6 +1,6 @@
 # NEPENTHES — campañas de validación y experimentación
 
-**Language / Idioma:** [English version](research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS-EN.md) · [Versión en español](\research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md)
+**Language / Idioma:** [English version](NEPENTHES-CAMPAIGNS-EN.md) · [Versión en español](\research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md)
 
 
 **Corte:** 2026-11-15.  
