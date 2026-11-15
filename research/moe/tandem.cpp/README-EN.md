@@ -1,5 +1,7 @@
 # tandem.cpp — preserved source snapshot
 
+**Language:** [English]( research/moe/tandem.cpp/README-EN.md ) · [Español]( research/moe/tandem.cpp/README.md )
+
 This directory preserves the upstream `ewhacc/tandem.cpp` repository at the pinned commit below.
 
 - Upstream: https://github.com/ewhacc/tandem.cpp
