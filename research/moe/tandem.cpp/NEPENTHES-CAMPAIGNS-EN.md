@@ -1,5 +1,7 @@
 # NEPENTHES — validation and experimentation campaigns
 
+**Language:** [English]( research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS-EN.md ) · [Español]( research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md )
+
 **Cut-off:** 2026-11-15.  
 **Rule:** a campaign is marked complete only for the scope demonstrated by its artifacts. Building, running an inference, capturing Nsight and importing a synchronized pair are separate gates.
 
