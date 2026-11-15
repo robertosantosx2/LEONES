@@ -26,5 +26,10 @@ NEPENTHES documentation and evidence:
 - [Nsight/CUPTI importer contract and real MSI validation](NEPENTHES-IMPORTER.md)
 - [Installer, CLI and capture package](NEPENTHES-CLI.md)
 - [Qwen3.5-35B historical capture report](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md)
+- [Validation and experimentation campaigns](NEPENTHES-CAMPAIGNS.md)
+
+## Language versions
+
+Spanish is the original and source of truth. The English translation preserves the same structure and document paths on branch [docs/nepenthes-quickstart-index-20261115-en](https://github.com/robertosantosx2/LEONES/tree/docs/nepenthes-quickstart-index-20261115-en). The original Spanish documents are on branch [docs/nepenthes-quickstart-index-20261115](https://github.com/robertosantosx2/LEONES/tree/docs/nepenthes-quickstart-index-20261115).
 
 The instrumented runtime and universal JSONL sink are developed in [Tandem.cpp PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1). LEONES integration is tracked in [PR #150](https://github.com/robertosantosx2/LEONES/pull/150), [#151](https://github.com/robertosantosx2/LEONES/pull/151), [#152](https://github.com/robertosantosx2/LEONES/pull/152), and [#153](https://github.com/robertosantosx2/LEONES/pull/153).
