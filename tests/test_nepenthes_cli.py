@@ -117,3 +117,36 @@ def test_self_test_creates_and_verifies_bundle(tmp_path):
  assert result.returncode==0,result.stdout+result.stderr
  assert len(list(tmp_path.iterdir()))==1
  assert "NEPENTHES_SELF_TEST_OK" in next(tmp_path.iterdir()).joinpath("session.log").read_text()
+
+
+def test_merge_event_files_excludes_invalid_and_mismatched_records(tmp_path):
+ import importlib.util
+ spec=importlib.util.spec_from_file_location("nepenthes_cli",SCRIPT)
+ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+ raw=tmp_path/"raw";raw.mkdir()
+ valid={"schema_version":"1.0","run_id":"run-1","event_id":"ok","source":"test"}
+ mismatch=dict(valid,event_id="wrong-run",run_id="other")
+ (raw/"host-events.jsonl").write_text(
+  json.dumps(valid)+"\\n"+json.dumps(mismatch)+"\\n"+"{broken\\n",
+  encoding="utf-8")
+ result=module.merge_event_files(tmp_path,"run-1")
+ rows=[json.loads(line) for line in (raw/"events.jsonl").read_text().splitlines()]
+ assert [row["event_id"] for row in rows]==["ok"]
+ assert result["counts"]["host-events.jsonl"]==1
+ assert any("invalid_json" in warning for warning in result["warnings"])
+ assert any("run_id_mismatch" in warning for warning in result["warnings"])
+
+
+def test_stop_process_group_signals_group_and_waits(monkeypatch):
+ import importlib.util
+ spec=importlib.util.spec_from_file_location("nepenthes_cli",SCRIPT)
+ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+ calls=[]
+ def fake_killpg(pgid,sig):
+  calls.append((pgid,sig))
+  if sig==0: raise ProcessLookupError
+ monkeypatch.setattr(module.os,"killpg",fake_killpg)
+ class Child:
+  def wait(self,timeout=None): return 0
+ module.stop_process_group(Child(),4321)
+ assert calls==[(4321,module.signal.SIGINT),(4321,0)]
