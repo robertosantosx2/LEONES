@@ -23,7 +23,7 @@ El PR #1 conserva el contrato universal `EventType/Event`, el sink JSONL y el ap
 | 2 | Sondas de runtime: request, graph, KV cache, MoE cache, workers, prefetch, alloc/free, OOM/fallback y transferencias | **Implementadas en el aplicador; compilación CUDA superada** |
 | 3 | Compilación CUDA del servidor sobre la revisión fijada | **Superada en GitHub Actions** |
 | 4 | Captura real Qwen3.5-35B con JSONL + Nsight y comprobación de pérdida/errores | **Pendiente** |
-| 5 | Importación y correlación en el recolector universal de LEONES | **Pendiente** |
+| 5 | Importación y correlación en el recolector universal de LEONES | **Importador inicial implementado en rama de integración; validación CI y captura real pendientes** |
 | 6 | Batería Qwen3.5-35B repetible, informe final y archivo íntegro de evidencias | **Pendiente** |
 
 ## Cobertura prevista
@@ -57,6 +57,13 @@ El PR #1 conserva el contrato universal `EventType/Event`, el sink JSONL y el ap
 ### Rama LEONES sink experimental
 
 La rama [active-leones-sink-20261114](https://github.com/robertosantosx2/tandem.cpp/tree/nepenthes/active-leones-sink-20261114) tiene un contrato distinto (`EventKind/Event`, `Trace::emit` y esquema JSONL con `payload`). Se corrigieron allí el terminador de línea JSONL y el orden de inicialización C++, pero su parche `0001-runtime-worker-prefetch.patch` sigue sin aplicar después de `tandem.patch` (el último CI falló en `src/llama-moe-cache.cpp:2525`). No se debe mezclar ni adoptar esa rama como implementación del recolector universal hasta portar y validar sus sondas sobre el árbol Tandem ya parcheado.
+
+## Preparación del importador LEONES
+
+- [Diseño y contrato del importador Nsight/CUPTI](NEPENTHES-IMPORTER.md).
+- Implementación inicial en `scripts/nepenthes_nsys_import.py`, con migración `db/migrations/002_nepenthes_observability.sql` y pruebas de fixtures SQLite/JSONL en `tests/test_nepenthes_nsys_import.py`.
+- La primera versión conserva JSONL y actividades Nsight en tablas normalizadas, guarda SHA-256 de los artefactos y no une `request_id` con `correlationId` ni mezcla relojes sin calibración.
+- El importador incorpora `--inspect-nsys` para auditar en modo solo lectura el esquema del SQLite histórico Qwen3.5-35B sin inventar un JSONL emparejado. La inspección real del archivo sigue pendiente de ejecutarse en el MSI; después se ajustará el normalizador a las columnas observadas. La ingestión emparejada y la correlación con instrumentación adicional siguen pendientes.
 
 ## Criterio de aceptación
 

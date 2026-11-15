@@ -25,3 +25,5 @@ No benchmark has been run on the LEONES MSI Thin 15 hardware merely by archiving
 
 La instrumentación universal, sus fases, límites de correlación, validación CI y criterio de aceptación se mantienen en el [índice NEPENTHES](NEPENTHES-INDEX.md). El código fuente activo y el PR de implementación están en [robertosantosx2/tandem.cpp](https://github.com/robertosantosx2/tandem.cpp/pull/1).
 
+
+La implementación inicial del importador Nsight/CUPTI y su contrato se describen en [NEPENTHES-IMPORTER.md](NEPENTHES-IMPORTER.md); la evolución por fases sigue en [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md).
