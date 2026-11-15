@@ -14,3 +14,9 @@ Permanecen activos, entre otros:
 La familia histórica `leones-*` también está fuera del núcleo RC1 y se conserva bajo [`scripts/deprecated/`](deprecated/). No forma parte del camino canónico de selección, ejecución, medición ni evidencia.
 
 Los demás scripts antiguos o especializados se conservan hasta que una auditoría de dependencias demuestre que pueden migrarse. **No se elimina por intuición: se depreca cuando existe una sustitución y se conserva la procedencia.**
+
+## NEPENTHES
+
+- `nepenthes.py` — CLI de captura independiente del motor; genera un paquete de evidencias por ejecución y ofrece `verify` para validar su integridad.
+- `install_nepenthes.sh` — instalador user-space en `~/.local/bin` (Python 3.10+, sin root); instala también el importador Nsight y su migración 002 en `~/.local/share/nepenthes`.
+- Uso: `nepenthes self-test` para validar la instalación, `nepenthes run -- <motor> <argumentos>` para capturar, y `nepenthes verify <RUN_DIR>` para comprobar el paquete; contrato y límites en [NEPENTHES-CLI.md](../research/moe/tandem.cpp/NEPENTHES-CLI.md).
