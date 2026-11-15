@@ -1,6 +1,6 @@
 # NEPENTHES: installer, CLI and capture package
 
-**Language:** [English]( research/moe/tandem.cpp/NEPENTHES-CLI-EN.md ) · [Español]( research/moe/tandem.cpp/NEPENTHES-CLI.md )
+**Language:** [English](NEPENTHES-CLI-EN.md) · [Español](NEPENTHES-CLI.md)
 
 ## Purpose
 
