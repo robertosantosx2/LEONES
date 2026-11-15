@@ -63,7 +63,7 @@ La rama [active-leones-sink-20261114](https://github.com/robertosantosx2/tandem.
 - [Diseño y contrato del importador Nsight/CUPTI](NEPENTHES-IMPORTER.md).
 - Implementación inicial en `scripts/nepenthes_nsys_import.py`, con migración `db/migrations/002_nepenthes_observability.sql` y pruebas de fixtures SQLite/JSONL en `tests/test_nepenthes_nsys_import.py`.
 - La primera versión conserva JSONL y actividades Nsight en tablas normalizadas, guarda SHA-256 de los artefactos y no une `request_id` con `correlationId` ni mezcla relojes sin calibración.
-- Esta rama aún no acredita ejecución real contra el SQLite de Qwen3.5-35B; se necesita verificar nombres/columnas de las tablas del export concreto y completar la correlación con instrumentación adicional.
+- El importador incorpora `--inspect-nsys` para auditar en modo solo lectura el esquema del SQLite histórico Qwen3.5-35B sin inventar un JSONL emparejado. La inspección real del archivo sigue pendiente de ejecutarse en el MSI; después se ajustará el normalizador a las columnas observadas. La ingestión emparejada y la correlación con instrumentación adicional siguen pendientes.
 
 ## Criterio de aceptación
 
