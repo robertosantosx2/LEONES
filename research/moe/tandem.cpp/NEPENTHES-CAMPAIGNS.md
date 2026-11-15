@@ -1,5 +1,8 @@
 # NEPENTHES — campañas de validación y experimentación
 
+**Language / Idioma:** [English version](research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS-EN.md) · [Versión en español](\research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md)
+
+
 **Corte:** 2026-11-15.  
 **Regla:** una campaña solo se marca como completada para el alcance demostrado por sus artefactos. Compilar, ejecutar una inferencia, capturar Nsight e importar un par sincronizado son gates distintos.
 
