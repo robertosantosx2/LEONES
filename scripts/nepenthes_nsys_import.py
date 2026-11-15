@@ -1,0 +1,272 @@
+#!/usr/bin/env python3
+"""Import NEPENTHES JSONL and Nsight Systems SQLite into a normalized LEONES DB.
+
+The importer preserves source rows and provenance. Nsight timestamps are kept in
+their original nanosecond clock domain; no cross-clock or request/kernel join is
+fabricated. JSONL and Nsight artifacts are hashed before ingestion.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import sqlite3
+import sys
+from collections import Counter
+from pathlib import Path
+from typing import Any
+
+NSYS_TABLES = {
+    "CUPTI_ACTIVITY_KIND_KERNEL": "cuda_kernel",
+    "CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL": "cuda_kernel",
+    "CUPTI_ACTIVITY_KIND_MEMCPY": "cuda_memcpy",
+    "CUPTI_ACTIVITY_KIND_MEMCPY2": "cuda_memcpy",
+    "CUPTI_ACTIVITY_KIND_MEMSET": "cuda_memset",
+    "CUPTI_ACTIVITY_KIND_RUNTIME": "cuda_runtime",
+    "CUPTI_ACTIVITY_KIND_DRIVER": "cuda_driver",
+}
+JSONL_REQUIRED = {
+    "schema_version", "run_id", "event_id", "source", "timestamp_unix_ns",
+    "monotonic_ns", "request_id", "event_kind", "label", "value0", "value1",
+    "duration_ns", "flags",
+}
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def table_names(db: sqlite3.Connection) -> set[str]:
+    return {
+        row[0] for row in db.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        )
+    }
+
+
+def columns(db: sqlite3.Connection, table: str) -> set[str]:
+    return {row[1] for row in db.execute(f'PRAGMA table_info("{table}")')}
+
+
+def json_value(value: Any) -> Any:
+    if isinstance(value, bytes):
+        return value.hex()
+    return value
+
+
+def load_string_ids(db: sqlite3.Connection, names: set[str]) -> dict[int, str]:
+    for table in ("StringIds", "StringId", "StringTable"):
+        if table not in names:
+            continue
+        cols = columns(db, table)
+        id_col = next((c for c in ("id", "stringId", "string_id") if c in cols), None)
+        value_col = next((c for c in ("value", "name", "string") if c in cols), None)
+        if id_col and value_col:
+            return {
+                int(row[0]): str(row[1])
+                for row in db.execute(
+                    f'SELECT "{id_col}", "{value_col}" FROM "{table}"'
+                )
+            }
+    return {}
+
+
+def first(row: dict[str, Any], candidates: tuple[str, ...]) -> Any:
+    for key in candidates:
+        if key in row and row[key] is not None:
+            return row[key]
+    return None
+
+
+def event_rows(path: Path):
+    seen: set[str] = set()
+    counts: Counter[str] = Counter()
+    with path.open("r", encoding="utf-8") as stream:
+        for line_no, line in enumerate(stream, 1):
+            if not line.strip():
+                continue
+            try:
+                item = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"JSONL line {line_no}: invalid JSON: {exc}") from exc
+            if not isinstance(item, dict):
+                raise ValueError(f"JSONL line {line_no}: event must be an object")
+            missing = JSONL_REQUIRED - item.keys()
+            if missing:
+                raise ValueError(
+                    f"JSONL line {line_no}: missing fields: {', '.join(sorted(missing))}"
+                )
+            if item["schema_version"] != "1.0":
+                raise ValueError(f"JSONL line {line_no}: unsupported schema_version")
+            if not isinstance(item["event_id"], str) or not item["event_id"]:
+                raise ValueError(f"JSONL line {line_no}: invalid event_id")
+            if item["event_id"] in seen:
+                raise ValueError(f"JSONL line {line_no}: duplicate event_id {item['event_id']}")
+            seen.add(item["event_id"])
+            for field in ("timestamp_unix_ns", "monotonic_ns", "request_id",
+                          "value0", "value1", "duration_ns", "flags"):
+                if isinstance(item[field], bool) or not isinstance(item[field], int):
+                    raise ValueError(f"JSONL line {line_no}: {field} must be an integer")
+            counts[str(item["event_kind"])] += 1
+            yield item
+    if not seen:
+        raise ValueError("JSONL contains no events")
+    return counts
+
+
+def init_output(db: sqlite3.Connection) -> None:
+    db.executescript("""
+    PRAGMA foreign_keys=ON;
+    CREATE TABLE IF NOT EXISTS nepenthes_imports (
+      import_id TEXT PRIMARY KEY, run_id TEXT, imported_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      jsonl_path TEXT NOT NULL, jsonl_sha256 TEXT NOT NULL,
+      nsys_path TEXT NOT NULL, nsys_sha256 TEXT NOT NULL,
+      event_count INTEGER NOT NULL, activity_count INTEGER NOT NULL,
+      event_kinds_json TEXT NOT NULL, activity_kinds_json TEXT NOT NULL,
+      correlation_policy TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS nepenthes_events (
+      import_id TEXT NOT NULL, event_id TEXT NOT NULL, run_id TEXT NOT NULL,
+      source TEXT NOT NULL, schema_version TEXT NOT NULL,
+      timestamp_unix_ns INTEGER NOT NULL, monotonic_ns INTEGER NOT NULL,
+      request_id INTEGER NOT NULL, event_kind TEXT NOT NULL, label TEXT NOT NULL,
+      value0 INTEGER NOT NULL, value1 INTEGER NOT NULL, duration_ns INTEGER NOT NULL,
+      flags INTEGER NOT NULL, raw_json TEXT NOT NULL,
+      PRIMARY KEY(import_id,event_id),
+      FOREIGN KEY(import_id) REFERENCES nepenthes_imports(import_id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_nepenthes_events_request
+      ON nepenthes_events(import_id,request_id,event_kind);
+    CREATE INDEX IF NOT EXISTS idx_nepenthes_events_time
+      ON nepenthes_events(import_id,monotonic_ns);
+    CREATE TABLE IF NOT EXISTS nsys_activities (
+      import_id TEXT NOT NULL, activity_id INTEGER NOT NULL,
+      source_table TEXT NOT NULL, activity_kind TEXT NOT NULL,
+      start_ns INTEGER, end_ns INTEGER, duration_ns INTEGER,
+      correlation_id INTEGER, global_pid INTEGER, process_id INTEGER,
+      device_id INTEGER, context_id INTEGER, stream_id INTEGER,
+      name TEXT, raw_json TEXT NOT NULL,
+      PRIMARY KEY(import_id,activity_id),
+      FOREIGN KEY(import_id) REFERENCES nepenthes_imports(import_id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_nsys_activity_time
+      ON nsys_activities(import_id,start_ns,end_ns);
+    CREATE INDEX IF NOT EXISTS idx_nsys_activity_corr
+      ON nsys_activities(import_id,correlation_id);
+    """)
+
+
+def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
+    if not jsonl.is_file() or not nsys.is_file():
+        raise ValueError("both JSONL and Nsight SQLite input files must exist")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    events = list(event_rows(jsonl))
+    event_counts = Counter(str(e["event_kind"]) for e in events)
+    source = sqlite3.connect(f"file:{nsys.resolve()}?mode=ro", uri=True)
+    source.row_factory = sqlite3.Row
+    names = table_names(source)
+    strings = load_string_ids(source, names)
+    activities: list[tuple] = []
+    activity_counts: Counter[str] = Counter()
+    activity_id = 0
+
+    for table, kind in NSYS_TABLES.items():
+        if table not in names:
+            continue
+        for source_row in source.execute(f'SELECT * FROM "{table}"'):
+            row = {k: json_value(source_row[k]) for k in source_row.keys()}
+            start = first(row, ("start", "startNs", "start_ns", "begin"))
+            end = first(row, ("end", "endNs", "end_ns", "finish"))
+            duration = (
+                int(end) - int(start)
+                if isinstance(start, (int, float)) and isinstance(end, (int, float))
+                else None
+            )
+            raw_name = first(row, ("name", "demangledName", "shortName", "nameId"))
+            name = strings.get(int(raw_name), str(raw_name)) if isinstance(raw_name, (int, float)) else raw_name
+            activity_id += 1
+            activities.append((
+                import_id, activity_id, table, kind,
+                start, end, duration,
+                first(row, ("correlationId", "correlation_id")),
+                first(row, ("globalPid", "global_pid")),
+                first(row, ("processId", "pid")),
+                first(row, ("deviceId", "device_id")),
+                first(row, ("contextId", "context_id")),
+                first(row, ("streamId", "stream_id")),
+                str(name) if name is not None else None,
+                json.dumps(row, ensure_ascii=False, sort_keys=True),
+            ))
+            activity_counts[kind] += 1
+    source.close()
+
+    run_ids = sorted({str(e["run_id"]) for e in events})
+    if len(run_ids) != 1:
+        raise ValueError(f"JSONL must contain exactly one run_id; found {run_ids}")
+    if not activities:
+        raise ValueError("Nsight SQLite contains no recognized CUDA activity rows")
+
+    out = sqlite3.connect(output)
+    try:
+        init_output(out)
+        with out:
+            out.execute(
+                """INSERT INTO nepenthes_imports
+                (import_id,run_id,jsonl_path,jsonl_sha256,nsys_path,nsys_sha256,
+                 event_count,activity_count,event_kinds_json,activity_kinds_json,correlation_policy)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                (import_id, run_ids[0], str(jsonl.resolve()), sha256(jsonl),
+                 str(nsys.resolve()), sha256(nsys), len(events), len(activities),
+                 json.dumps(dict(event_counts), sort_keys=True),
+                 json.dumps(dict(activity_counts), sort_keys=True),
+                 "No automatic JSONL-to-Nsight join: monotonic and Nsight clocks are not calibrated; request_id is not a CUPTI correlation_id."),
+            )
+            out.executemany(
+                """INSERT INTO nepenthes_events
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                [(import_id, e["event_id"], e["run_id"], e["source"],
+                  e["schema_version"], e["timestamp_unix_ns"], e["monotonic_ns"],
+                  e["request_id"], e["event_kind"], e["label"], e["value0"],
+                  e["value1"], e["duration_ns"], e["flags"],
+                  json.dumps(e, ensure_ascii=False, sort_keys=True)) for e in events],
+            )
+            out.executemany(
+                """INSERT INTO nsys_activities
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
+            )
+    finally:
+        out.close()
+
+    return {
+        "import_id": import_id, "run_id": run_ids[0],
+        "event_count": len(events), "event_kinds": dict(event_counts),
+        "activity_count": len(activities), "activity_kinds": dict(activity_counts),
+        "recognized_nsys_tables": sorted(t for t in NSYS_TABLES if t in names),
+        "output": str(output.resolve()),
+        "correlation": "not joined; clock domains and IDs are not interchangeable",
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--jsonl", required=True, type=Path)
+    parser.add_argument("--nsys-sqlite", required=True, type=Path)
+    parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--import-id", default=None)
+    args = parser.parse_args()
+    import_id = args.import_id or f"nepenthes-{sha256(args.jsonl)[:12]}"
+    try:
+        result = import_all(args.jsonl, args.nsys_sqlite, args.output, import_id)
+    except (OSError, sqlite3.Error, ValueError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+    print(json.dumps(result, indent=2, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
