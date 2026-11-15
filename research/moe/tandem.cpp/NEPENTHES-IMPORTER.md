@@ -9,6 +9,17 @@
 
 El importador no requiere que Nsight esté instalado. Lee el SQLite exportado en modo solo lectura y escribe una base LEONES independiente o una base de evidencias existente.
 
+## Inspección de un export Nsight existente
+
+Antes de importar una captura emparejada, se puede inspeccionar el esquema real del SQLite sin necesitar JSONL y sin copiar filas fuente:
+
+```bash
+python3 scripts/nepenthes_nsys_import.py \\
+  --inspect-nsys /ruta/captura/qwen35-moe-cuda-no-osrt-20261114.sqlite
+```
+
+El informe enumera tablas CUPTI reconocidas y no reconocidas, columnas y recuentos, además de las tablas de strings. No exporta valores de filas ni crea una base de importación. Sirve para comprobar compatibilidad de esquema, no para declarar que el SQLite pertenece a un run NEPENTHES.
+
 ## Uso
 
 ```bash
