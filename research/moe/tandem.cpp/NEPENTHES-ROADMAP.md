@@ -1,0 +1,118 @@
+# NEPENTHES — roadmap de tareas hasta la versión funcional completa
+
+**Fecha de corte:** 2026-11-15  
+**Estado:** implementación base disponible; aceptación integral pendiente.
+
+Este roadmap separa implementación, validación CI y validación física. Una tarea no se considera terminada por existir un PR: necesita la evidencia indicada en su criterio de salida.
+
+## Leyenda
+
+- [x] Implementado y con evidencia suficiente para el alcance indicado.
+- [~] Implementado o validado parcialmente; falta una prueba de aceptación.
+- [ ] Pendiente.
+
+## Fase A — Instrumentación del motor
+
+- [x] Definir contrato universal de eventos y sink JSONL.
+- [x] Implementar emisión segura ante concurrencia y barrera de apagado.
+- [x] Añadir pruebas de formato JSONL y ciclo de vida del sink.
+- [x] Integrar el aplicador determinista de sondas sobre la revisión fijada de llama.cpp.
+- [x] Compilar CUDA en CI para la arquitectura de destino sm_86.
+- [~] Ejecutar inferencia real en el MSI con el binario parcheado y comprobar que las sondas se activan.
+- [ ] Auditar cobertura real de eventos por subsistema: request/graph, KV cache, MoE cache, workers, prefetch, alloc/free, OOM/fallback, transferencias y dispatch ggml_op.
+- [ ] Medir overhead de instrumentación frente a una ejecución de control.
+- [ ] Definir y probar política de rotación/límites de tamaño del JSONL en ejecuciones largas.
+
+**Salida de fase:** ejecución real con JSONL válido, eventos esperados, errores/pérdidas contabilizados y overhead medido.
+
+## Fase B — Instalación y CLI
+
+- [x] Instalador user-space sin root.
+- [x] Comando `nepenthes` en `~/.local/bin`.
+- [x] Comandos `doctor`, `self-test`, `run/capture`, `inspect` y `verify`.
+- [x] Wrapper de una línea con perfiles smoke/standard/full.
+- [x] Variables `NEPENTHES_RUN_ID` y `NEPENTHES_TRACE_JSONL` para motores instrumentados.
+- [x] Captura host de CPU/RSS y telemetría NVIDIA global cuando está disponible.
+- [x] Logs, exit code, manifiesto, hashes, CSV, JSONL, SQLite y reportes HTML/Markdown/SVG.
+- [x] Self-test ejecutado en MSI: 3 eventos, 1 muestra, HTML y checksums válidos.
+- [~] Probar `nepenthes run` con un proceso real no instrumentado y verificar exit code, señales y limpieza.
+- [ ] Probar `nepenthes run` con motor instrumentado; comprobar eventos de motor y consolidación JSONL.
+- [ ] Probar perfiles smoke/standard/full, `--nsys auto/required/off` y ausencia/fallo de Nsight.
+- [ ] Ejecutar `nepenthes verify` sobre un paquete de inferencia real.
+- [ ] Probar fallo/terminación anticipada del motor, Ctrl-C, proceso hijo y captura parcial sin perder el manifiesto.
+- [ ] Documentar actualización, reinstalación y desinstalación.
+
+**Salida de fase:** instalación limpia y wrapper reproducible que deja paquete verificable incluso ante fallo controlado.
+
+## Fase C — Importador LEONES
+
+- [x] Importación emparejada JSONL + Nsight implementada y con tests sintéticos.
+- [x] Preservación de SHA-256 y payload original.
+- [x] Separación de dominios de reloj y política explícita de no correlación artificial.
+- [x] Inspección Nsight solo lectura.
+- [x] Importación standalone Nsight-only con migración 003 y tablas separadas.
+- [x] Adaptadores de ocho familias presentes en la captura MSI.
+- [x] Importación real MSI: 151.039 filas, integridad SQLite OK, sin duplicados ni anomalías temporales básicas.
+- [x] Comprobación CUDA_EVENT: los 262 timestamps cero coinciden con la fuente y se conservan sin fabricar intervalos.
+- [~] Validar importación emparejada real desde una sola ejecución del wrapper.
+- [ ] Probar reimportación/idempotencia y comportamiento ante base de salida existente.
+- [ ] Probar versiones distintas de Nsight/SQLite y tablas CUPTI no soportadas con filas.
+- [ ] Verificar que resumen, coverage y manifest de salida reflejan errores parciales sin ocultarlos.
+
+**Salida de fase:** importación emparejada y standalone repetible, trazable, íntegra y con cobertura honesta.
+
+## Fase D — Captura Qwen3.5 y validación experimental
+
+- [x] Preservar captura Nsight histórica del 14-11-2026 y su procedencia.
+- [x] Inspeccionar e importar el SQLite histórico sin JSONL emparejado.
+- [x] Construir el informe descriptivo de la captura histórica.
+- [ ] Compilar en MSI el motor Tandem.cpp con la versión actual del parche NEPENTHES.
+- [ ] Ejecutar Qwen3.5-35B con configuración y modelo registrados en manifest.
+- [ ] Capturar simultáneamente JSONL NEPENTHES y Nsight SQLite de la misma ejecución.
+- [ ] Verificar eventos de KV cache, MoE cache, workers y prefetch mediante eventos explícitos, no por inferencia temporal.
+- [ ] Repetir ejecución al menos tres veces con misma configuración y guardar controles.
+- [ ] Comparar overhead, tokens/s, memoria host/GPU, kernels y transferencias.
+- [ ] Archivar logs, modelo identificado por hash, comandos, configuración, commit, JSONL, SQLite, NSYS report, respuesta y checksums.
+
+**Salida de fase:** dataset emparejado reproducible y suficiente para responder preguntas de rendimiento/ciclo de vida sin sobreinterpretar correlaciones.
+
+## Fase E — Informes y visualización
+
+- [x] Plantilla de informe y resumen histórico con tablas de actividades.
+- [x] Reglas de interpretación para timestamps, correlación y cobertura.
+- [~] Informe HTML/Markdown/SVG generado por CLI: validado en self-test, pendiente sobre captura real.
+- [ ] Panel temporal con CPU/RSS/GPU y marcas de request.
+- [ ] Distribución de kernels por nombre, duración y stream.
+- [ ] Transferencias H2D/D2H/D2D por bytes, dirección y duración Nsight.
+- [ ] Actividad CUDA runtime/synchronization/graph por tipo.
+- [ ] Vistas específicas de KV cache/MoE cache/worker/prefetch basadas en sondas reales.
+- [ ] Comparativa entre runs y baseline.
+- [ ] Exportación de tablas CSV y consultas reproducibles desde SQLite.
+
+**Salida de fase:** informe que permite navegar datos brutos, resumen, tablas y gráficas; cada métrica identifica fuente, reloj, unidad y nivel de atribución.
+
+## Fase F — Release y mantenimiento
+
+- [x] PRs separados por responsabilidad y dependencias explícitas.
+- [x] CI verde en los commits actuales de PR #150–#153 y Tandem.cpp #1.
+- [ ] Resolver revisiones y fusionar PRs en orden: #150 → #151 → #152 → #153; integrar Tandem.cpp #1 en su repositorio según revisión. No fusionar sin autorización.
+- [ ] Etiquetar versión y publicar notas de release.
+- [ ] Probar instalación desde release/tag, no solo desde checkout.
+- [ ] Definir compatibilidad Linux/Python/CUDA/Nsight y matriz de versiones.
+- [ ] Documentar privacidad, permisos, overhead y datos capturados.
+- [ ] Definir mantenimiento de esquemas y compatibilidad hacia atrás.
+- [ ] Declarar NEPENTHES funcional completo solo después de superar todos los gates anteriores.
+
+## Orden inmediato recomendado
+
+1. Prueba CLI con proceso inocuo y verificación del paquete.
+2. Build del motor Tandem.cpp instrumentado en MSI.
+3. Una inferencia real con `nepenthes run --profile full`.
+4. Inspección del JSONL de motor y del Nsight generado.
+5. Importación emparejada a LEONES y auditoría.
+6. Matriz de cobertura de sondas y medición de overhead.
+7. Repeticiones, informe comparativo y release.
+
+## Definición de «funcional completo»
+
+NEPENTHES se considerará completo cuando una instalación limpia pueda envolver una inferencia real, activar las sondas del motor, capturar host/GPU/Nsight, conservar los artefactos y hashes, importar tanto eventos JSONL como actividades CUPTI, generar un informe navegable con tablas y gráficas, pasar su verificador y ofrecer resultados reproducibles sin atribuciones o correlaciones inventadas.
