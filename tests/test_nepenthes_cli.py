@@ -127,7 +127,7 @@ def test_merge_event_files_excludes_invalid_and_mismatched_records(tmp_path):
  valid={"schema_version":"1.0","run_id":"run-1","event_id":"ok","source":"test"}
  mismatch=dict(valid,event_id="wrong-run",run_id="other")
  (raw/"host-events.jsonl").write_text(
-  json.dumps(valid)+"\\n"+json.dumps(mismatch)+"\\n"+"{broken\\n",
+  json.dumps(valid)+chr(10)+json.dumps(mismatch)+chr(10)+"{broken"+chr(10),
   encoding="utf-8")
  result=module.merge_event_files(tmp_path,"run-1")
  rows=[json.loads(line) for line in (raw/"events.jsonl").read_text().splitlines()]
