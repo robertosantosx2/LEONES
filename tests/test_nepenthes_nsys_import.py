@@ -287,7 +287,7 @@ def test_import_rejects_integer_outside_uint64_range(tmp_path: Path):
     write_jsonl(jsonl)
     event = json.loads(jsonl.read_text(encoding="utf-8"))
     event["value0"] = 2**64
-    jsonl.write_text(json.dumps(event) + "\n", encoding="utf-8")
+    jsonl.write_text(json.dumps(event) + chr(10), encoding="utf-8")
     write_nsys(nsys)
 
     with pytest.raises(ValueError, match="outside the supported"):
@@ -304,7 +304,7 @@ def test_import_converts_all_jsonl_uint64_integer_fields(tmp_path: Path):
               "value0", "value1", "duration_ns", "flags")
     for field in fields:
         event[field] = 2**64 - 1
-    jsonl.write_text(json.dumps(event) + "\\n", encoding="utf-8")
+    jsonl.write_text(json.dumps(event) + chr(10), encoding="utf-8")
     write_nsys(nsys)
 
     import_all(jsonl, nsys, output, "uint64-fields-import")
