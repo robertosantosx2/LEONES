@@ -129,3 +129,12 @@ def test_rejects_duplicate_event_ids(tmp_path: Path):
 
     with pytest.raises(ValueError, match="duplicate event_id"):
         import_all(jsonl, nsys, output, "duplicate-import")
+
+def test_refuses_to_overwrite_source_artifact(tmp_path: Path):
+    jsonl = tmp_path / "trace.jsonl"
+    nsys = tmp_path / "capture.sqlite"
+    write_jsonl(jsonl)
+    write_nsys(nsys)
+
+    with pytest.raises(ValueError, match="must not overwrite"):
+        import_all(jsonl, nsys, nsys, "unsafe-import")
