@@ -129,7 +129,11 @@ def merge_event_files(root,run_id):
       except json.JSONDecodeError as exc:
        warnings.append(name+":"+str(line_no)+":invalid_json:"+str(exc))
        continue
-      if event.get("run_id")!=run_id or event.get("schema_version")!="1.0":
+      if event.get("run_id")!=run_id:
+       warnings.append(name+":"+str(line_no)+":run_id_mismatch")
+       continue
+      if event.get("schema_version")!="1.0":
+       warnings.append(name+":"+str(line_no)+":unsupported_schema_version")
        continue
       out.write(line if line.endswith("\n") else line+"\n");count+=1
    counts[name]=count
