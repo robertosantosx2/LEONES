@@ -1,5 +1,7 @@
 # NEPENTHES — Nsight/CUPTI import into LEONES
 
+**Language:** [English]( research/moe/tandem.cpp/NEPENTHES-IMPORTER-EN.md ) · [Español]( research/moe/tandem.cpp/NEPENTHES-IMPORTER.md )
+
 ## Scope
 
 `scripts/nepenthes_nsys_import.py` supports three operations:
