@@ -102,8 +102,9 @@ def event_rows(path: Path):
                 )
             if item["schema_version"] != "1.0":
                 raise ValueError(f"JSONL line {line_no}: unsupported schema_version")
-            if not isinstance(item["event_id"], str) or not item["event_id"]:
-                raise ValueError(f"JSONL line {line_no}: invalid event_id")
+            for field in ("run_id", "event_id", "source", "event_kind", "label"):
+                if not isinstance(item[field], str) or not item[field]:
+                    raise ValueError(f"JSONL line {line_no}: {field} must be a non-empty string")
             if item["event_id"] in seen:
                 raise ValueError(f"JSONL line {line_no}: duplicate event_id {item['event_id']}")
             seen.add(item["event_id"])
@@ -126,6 +127,9 @@ def init_output(db: sqlite3.Connection) -> None:
 def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
     if not jsonl.is_file() or not nsys.is_file():
         raise ValueError("both JSONL and Nsight SQLite input files must exist")
+    resolved_output = output.resolve()
+    if resolved_output in {jsonl.resolve(), nsys.resolve()}:
+        raise ValueError("output database must not overwrite either source artifact")
     output.parent.mkdir(parents=True, exist_ok=True)
     events = list(event_rows(jsonl))
     event_counts = Counter(str(e["event_kind"]) for e in events)
