@@ -1,6 +1,6 @@
 # NEPENTHES — Nsight/CUPTI import into LEONES
 
-**Language:** [English]( research/moe/tandem.cpp/NEPENTHES-IMPORTER-EN.md ) · [Español]( research/moe/tandem.cpp/NEPENTHES-IMPORTER.md )
+**Language:** [English](NEPENTHES-IMPORTER-EN.md) · [Español](NEPENTHES-IMPORTER.md)
 
 ## Scope
 
