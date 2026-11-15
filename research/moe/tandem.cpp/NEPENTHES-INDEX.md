@@ -37,9 +37,9 @@ Estado remoto de las PR: LEONES #150 sigue abierto y actualmente no es mergeable
 | Índice y documentación | [LEONES #150](https://github.com/robertosantosx2/LEONES/pull/150), `research/nepenthes-universal-collector-20261115` | Abierto; GitHub informa `mergeable=false` |
 | Importador JSONL + Nsight | [LEONES #151](https://github.com/robertosantosx2/LEONES/pull/151), `feat/nepenthes-nsys-importer-20261115` | Fusionado en rama de investigación, no en `main` |
 | Instalador y CLI | [LEONES #152](https://github.com/robertosantosx2/LEONES/pull/152), `feat/nepenthes-cli-installer-20261115` | Fusionado en `main` |
-| Importador Nsight-only | [LEONES #153](https://github.com/robertosantosx2/LEONES/pull/153), `feat/nepenthes-nsys-only-20261115` | Abierto, draft; CI 7/7 success en HEAD revisado |
+| Importador Nsight-only | [LEONES #153](https://github.com/robertosantosx2/LEONES/pull/153), `feat/nepenthes-nsys-only-20261115` | Abierto, draft; CI 7/7 en HEAD funcional `9e0383e`; commits posteriores solo documentales |
 
-Los siete workflows asociados al HEAD revisado de LEONES #153 terminaron en `success`. Los estados de #150, #151 y #152 se indican por separado arriba; no se extrapola CI histórico a una revisión actual. CI valida los contratos automatizados, no sustituye las pruebas físicas del motor.
+Los siete workflows asociados al HEAD funcional `9e0383e7d84334bb2935c229722c9b7a80ac02af` de LEONES #153 terminaron en `success`. Los dos commits posteriores de esta rama (`c67d137` y `d24fa7b`) solo corrigen documentación; GitHub no ha asociado nuevos workflows a esos commits. Los estados de #150, #151 y #152 se indican por separado arriba. CI valida los contratos automatizados, no sustituye las pruebas físicas del motor.
 
 ## Estado por capacidad
 
