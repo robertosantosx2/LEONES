@@ -62,6 +62,21 @@ def json_value(value: Any) -> Any:
     return value
 
 
+def sqlite_int64(value: int, *, field: str) -> int:
+    """Encode uint64 values in SQLite's signed INTEGER domain.
+
+    Values above INT64_MAX are stored using two's-complement representation.
+    The original unsigned value remains preserved in the event raw_json.
+    """
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{field} must be an integer")
+    if -(1 << 63) <= value <= (1 << 63) - 1:
+        return value
+    if 0 <= value <= (1 << 64) - 1:
+        return value - (1 << 64)
+    raise ValueError(f"{field} is outside the supported int64/uint64 range: {value}")
+
+
 def load_string_ids(db: sqlite3.Connection, names: set[str]) -> dict[int, str]:
     for table in ("StringIds", "StringId", "StringTable"):
         if table not in names:
@@ -247,8 +262,10 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 [(import_id, e["event_id"], e["run_id"], e["source"],
                   e["schema_version"], e["timestamp_unix_ns"], e["monotonic_ns"],
-                  e["request_id"], e["event_kind"], e["label"], e["value0"],
-                  e["value1"], e["duration_ns"], e["flags"],
+                  e["request_id"], e["event_kind"], e["label"],
+                  sqlite_int64(e["value0"], field="value0"),
+                  sqlite_int64(e["value1"], field="value1"),
+                  e["duration_ns"], e["flags"],
                   json.dumps(e, ensure_ascii=False, sort_keys=True)) for e in events],
             )
             out.executemany(
