@@ -1,5 +1,7 @@
 # Scripts
 
+**Language:** [English]( scripts/README-EN.md ) · [Español]( scripts/README.md )
+
 ## RC1 benchmark boundary
 
 The minimum RC1 path does not use parallel generic runners. Execution must go through the authorized runtime plan and the canonical execution, benchmark and evidence components.
