@@ -68,13 +68,14 @@ Los archivos que dependen de instrumentación o Nsight solo aparecen cuando est�
 
 ## Estado de validación en MSI — 2026-11-15
 
-- Rama instalada: `feat/nepenthes-nsys-only-20261115`, commit `6889e967`.
-- Instalador: correcto; comando instalado en `~/.local/bin/nepenthes`.
-- `nepenthes doctor`: correcto; Linux 7.0.0-43, Python 3.14.4, procfs, `/usr/bin/nvidia-smi`, Nsight Systems en `/usr/local/cuda-13.4/bin/nsys`.
-- `nepenthes self-test`: correcto; run `20261115_084802_self-test_2ee4af8e`; 3 eventos, 1 muestra, 3 filas de eventos, `events_valid=true`, `report_html=true`, `checksums=true`, `errors=[]`.
-- Importación Nsight-only real: 151.039 actividades; detalle en [informe histórico Qwen3.5](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md).
+- Instalador user-space: correcto; comando instalado en `~/.local/bin/nepenthes`.
+- `nepenthes doctor`: correcto; entorno Linux, Python, procfs, `nvidia-smi` y Nsight Systems detectados en la validación registrada.
+- `nepenthes self-test`: correcto; 3 eventos, 1 muestra, 3 filas de eventos, `events_valid=true`, `report_html=true`, `checksums=true` y `errors=[]`.
+- Ejecución real de un motor instrumentado: completada con Qwen3.5-4B Q4_K_M en CPU-only mediante `nepenthes run`; se capturaron 3.683 eventos del motor, incluidos `request_start/request_end`, y el proceso terminó con código 0.
+- La captura C06 utilizó `--nsys off`; por tanto, no demuestra todavía una ejecución integrada con Nsight ni sustituye la aceptación de una captura emparejada JSONL+Nsight.
+- Importación histórica Nsight-only real: 151.039 actividades importadas y auditadas; detalle en [informe histórico Qwen3.5](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md).
 
-**Pendiente:** una ejecución real de un motor instrumentado mediante `nepenthes run`, con comprobación de variables de activación, exit code, eventos del motor, Nsight y `nepenthes verify` sobre el paquete resultante. El self-test no sustituye esta prueba.
+**Pendiente:** verificar `nepenthes verify` y auditar el paquete completo de la inferencia real C06; ejecutar una captura emparejada JSONL+Nsight de una misma ejecución; medir overhead y completar la matriz de cobertura. El self-test y la importación Nsight-only histórica no sustituyen esas pruebas.
 
 ## Límites
 
