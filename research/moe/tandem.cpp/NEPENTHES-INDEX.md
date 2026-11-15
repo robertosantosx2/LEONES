@@ -23,8 +23,9 @@ El PR #1 conserva el contrato universal `EventType/Event`, el sink JSONL y el ap
 | 2 | Sondas de runtime: request, graph, KV cache, MoE cache, workers, prefetch, alloc/free, OOM/fallback y transferencias | **Implementadas en el aplicador; compilación CUDA superada** |
 | 3 | Compilación CUDA del servidor sobre la revisión fijada | **Superada en GitHub Actions** |
 | 4 | Captura real Qwen3.5-35B con JSONL + Nsight y comprobación de pérdida/errores | **Pendiente** |
-| 5 | Importación y correlación en el recolector universal de LEONES | **Importador inicial implementado en rama de integración; validación CI y captura real pendientes** |
+| 5 | Importación y correlación en el recolector universal de LEONES | **Importador e integración automática JSONL+Nsight implementados; CI sintético verde; captura real MSI pendiente** |
 | 6 | Batería Qwen3.5-35B repetible, informe final y archivo íntegro de evidencias | **Pendiente** |
+| 7 | Instalador user-space y CLI `nepenthes run` con paquete de captura e informe HTML | **Implementado en PR #152; CI verde; validación física MSI pendiente** |
 
 ## Cobertura prevista
 
@@ -63,7 +64,8 @@ La rama [active-leones-sink-20261114](https://github.com/robertosantosx2/tandem.
 - [Diseño y contrato del importador Nsight/CUPTI](NEPENTHES-IMPORTER.md).
 - Implementación inicial en `scripts/nepenthes_nsys_import.py`, con migración `db/migrations/002_nepenthes_observability.sql` y pruebas de fixtures SQLite/JSONL en `tests/test_nepenthes_nsys_import.py`.
 - La primera versión conserva JSONL y actividades Nsight en tablas normalizadas, guarda SHA-256 de los artefactos y no une `request_id` con `correlationId` ni mezcla relojes sin calibración.
-- El importador incorpora `--inspect-nsys` para auditar en modo solo lectura el esquema del SQLite histórico Qwen3.5-35B sin inventar un JSONL emparejado. La inspección real del archivo sigue pendiente de ejecutarse en el MSI; después se ajustará el normalizador a las columnas observadas. La ingestión emparejada y la correlación con instrumentación adicional siguen pendientes.
+- El CLI de PR #152 activa el sink del motor mediante `NEPENTHES_RUN_ID` y `NEPENTHES_TRACE_JSONL`, consolida eventos de host/motor y lanza el importador automáticamente cuando existe SQLite Nsight. La integración completa pasa tests sintéticos con una SQLite CUPTI fixture.
+- El importador incorpora `--inspect-nsys` para auditar en modo solo lectura el esquema del SQLite histórico Qwen3.5-35B sin inventar un JSONL emparejado. La inspección real del archivo sigue pendiente de ejecutarse en el MSI; después se ajustará el normalizador a las columnas observadas. La importación emparejada ya pasa la prueba sintética; la validación sobre una captura Nsight real del MSI sigue pendiente.
 
 ## Criterio de aceptación
 
@@ -76,3 +78,20 @@ La fase de observabilidad solo se marca como aceptada cuando se cumplan todos es
 5. Se archivan modelo, configuración, commit, logs, JSONL, SQLite, Nsight report, respuesta y manifiesto reproducible.
 
 **Regla de evidencia:** ESTIMATED, compilación, captura y medición son estados distintos. Ningún resultado se etiqueta MEASURED sin ejecución física registrada.
+
+
+## Instalador y ejecutable NEPENTHES
+
+- [Diseño del instalador, CLI y paquete de captura](NEPENTHES-CLI.md).
+- Instalador: `scripts/install_nepenthes.sh` (instalación user-space, sin root).
+- Ejecutable: `scripts/nepenthes.py`; uso de una línea: `nepenthes run -- <motor> <argumentos>`.
+- La primera versión registra CPU/RSS agregados del árbol de procesos y telemetría GPU global si `nvidia-smi` está disponible; genera SQLite local y hashes SHA-256. Produce `manifest.json`, `raw/events.jsonl`, `data/samples.csv`, `data/observations.sqlite` (tablas `samples` y `events`), `data/summary.json`, `session.log`, `checksums.sha256` e informe HTML/Markdown con tablas y gráficas SVG.
+- Esta entrega es una base funcional y portátil; el perfil `full` orquesta opcionalmente `nsys profile`, conserva SQLite/NSYS reportes y ejecuta automáticamente el importador LEONES si encuentra el artefacto SQLite. El JSONL del host usa el contrato 1.0 que valida el importador; el join request-kernel sigue desactivado por falta de calibración de relojes e IDs comunes. Las sondas internas del motor siguen siendo una fase posterior y no se simulan.
+- Tests sintéticos añadidos en `tests/test_nepenthes_cli.py`. La validación física en el MSI sigue pendiente.
+
+
+## Instalador y CLI de captura
+
+- [NEPENTHES-CLI.md](NEPENTHES-CLI.md): contrato de instalación, invocación, perfiles, activación de sondas, paquete de resultados y límites.
+- PR de integración: [LEONES #152](https://github.com/robertosantosx2/LEONES/pull/152), apilado sobre [LEONES #151](https://github.com/robertosantosx2/LEONES/pull/151).
+- La batería GitHub Actions del árbol final (squash `e68c9be`; árbol probado en `efb2c124`) pasó: Contract Tests con **470 pruebas**, V1 regression, runtime-v11 regression, RC3 Release Gate y Agentic A01. La validación física y la captura Qwen3.5 en el MSI siguen pendientes.

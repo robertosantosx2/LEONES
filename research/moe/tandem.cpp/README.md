@@ -27,3 +27,8 @@ La instrumentación universal, sus fases, límites de correlación, validación 
 
 
 La implementación inicial del importador Nsight/CUPTI y su contrato se describen en [NEPENTHES-IMPORTER.md](NEPENTHES-IMPORTER.md); la evolución por fases sigue en [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md).
+
+
+## NEPENTHES CLI
+
+El instalador user-space y el ejecutable de captura están documentados en [NEPENTHES-CLI.md](NEPENTHES-CLI.md). El CLI se instala con `scripts/install_nepenthes.sh` y envuelve cualquier motor con `nepenthes run -- <command>`. La implementación inicial y sus pruebas están en `scripts/nepenthes.py` y `tests/test_nepenthes_cli.py`.
