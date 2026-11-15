@@ -1,7 +1,7 @@
 # NEPENTHES — índice de implementación, validación y evidencias
 
-**Corte de estado:** 2026-11-15  
-**Estado global:** núcleo implementado y validado parcialmente en MSI; todavía no es una aceptación de extremo a extremo de todas las sondas.
+**Corte de estado:** 2026-11-15 (actualización tras la primera inferencia instrumentada Qwen3.5-4B).  
+**Estado global:** CLI funcional, motor CUDA instrumentado compilado sobre base pinned y primera inferencia real con JSONL del motor completada. Aún falta la captura emparejada con Nsight, correlación robusta y auditoría de cobertura/overhead.
 
 ## Resumen ejecutivo
 
@@ -15,6 +15,11 @@ NEPENTHES ya dispone de cuatro bloques de trabajo en LEONES y una integración d
 Los PR de LEONES #150–#153 están abiertos y no fusionados. El PR #153 es draft y apila sobre #152; #152 apila sobre #151; #151 apila sobre #150. El PR #1 de Tandem.cpp también está abierto y no fusionado.
 
 **Validación física MSI completada hasta ahora:**
+- Build CUDA local del motor instrumentado sobre llama.cpp pinned `f5222f25c18da062ab2b8a2dbbfbf4feae398566`, tras aplicar `tandem.patch`, `runtime.patch` y el aplicador determinista de probes.
+- Primera inferencia real con Qwen3.5-4B Q4_K_M mediante servidor instrumentado, CPU-only, capturada por `nepenthes run`; 3.683 eventos del motor y 3.117 dentro de la ventana request_start/request_end.
+- 49 eventos KV cache dentro de la petición; 2.540 transferencias, 290 kernels y 226 sincronizaciones dentro de la ventana.
+- Tiempo de petición monotónico 1,864918 s, consistente con los 1.864,85 ms del servidor; 10 tokens prompt, 16 generados, prefill 21,50 tok/s y decode 10,72 tok/s.
+- El `request_id` de todos los eventos de la ventana es 0; la segmentación es temporal y no una correlación robusta por petición.
 - Instalación user-space correcta.
 - `nepenthes doctor`: entorno detectado correctamente.
 - `nepenthes self-test`: correcto; 3 eventos, 1 muestra, HTML, checksums e integridad de eventos válidos.
@@ -22,7 +27,7 @@ Los PR de LEONES #150–#153 están abiertos y no fusionados. El PR #153 es draf
 - SQLite importado: `integrity_check=ok`, sin errores de claves foráneas, IDs únicos y sin anomalías temporales básicas.
 - La fuente Nsight conserva SHA-256 `30df43c0a1b235cc25987e2af87e5cf19e5f900f324c26fa22f28cd83144e4fc`; no se modificó.
 
-**Aún no demostrado:** ejecutar un motor real instrumentado a través de `nepenthes run`, verificar activación efectiva de todas las sondas, producir JSONL de motor real y Nsight de esa misma ejecución, importar el par y validar el paquete completo con `nepenthes verify`.
+**Aún no demostrado:** cobertura de todas las sondas, captura Nsight en la misma ejecución, importación emparejada JSONL+Nsight, correlación request-kernel, medición del overhead y recomendaciones cuantitativas de optimización.
 
 ## Fuente de verdad y cambios
 
@@ -44,20 +49,20 @@ Los cinco workflows de cada commit de LEONES #151, #152 y #153 terminaron en `su
 | Barrera de apagado y concurrencia del sink | Implementado y probado en CI | No implica captura real MSI |
 | Aplicación determinista de sondas en Tandem.cpp | Implementada en el parche | Compilación CUDA CI; falta medir cobertura en ejecución |
 | Instalador user-space | Implementado y ejecutado | MSI: instalación correcta en `~/.local` |
-| CLI de una línea `nepenthes run` | Implementado | Falta prueba con motor real instrumentado |
+| CLI de una línea `nepenthes run` | Implementado y probado con motor instrumentado | Qwen3.5-4B real: JSONL del motor, exit code 0 y 3.683 eventos; Nsight desactivado en esta prueba |
 | Doctor y self-test | Ejecutados correctamente | MSI: 3 eventos, 1 muestra, reporte HTML |
 | Muestreo CPU/RSS del árbol de procesos | Implementado | Self-test; falta perfil real de motor |
 | Muestreo NVIDIA global con nvidia-smi | Implementado | Doctor detecta nvidia-smi; falta captura integral de inferencia |
 | Captura Nsight opcional/obligatoria/off | Implementada | Falta ejecutar wrapper real con Nsight en MSI |
-| Paquete CSV/JSONL/SQLite/Markdown/HTML/SVG | Implementado | Self-test valida HTML; falta auditar un paquete de inferencia real |
+| Paquete CSV/JSONL/SQLite/Markdown/HTML/SVG | Implementado; aceptación de inferencia parcial | Captura de motor JSONL real; falta `nepenthes verify` y auditoría completa del paquete de inferencia |
 | Verificación de hashes y estructura | Implementada | Self-test correcto; falta `verify` sobre captura real |
 | Importador emparejado JSONL + Nsight | Implementado y CI | Falta validar un par real de una misma ejecución |
 | Inspección de esquema Nsight | Implementada y ejecutada | MSI: 8 tablas CUPTI reconocidas |
 | Importación Nsight-only | Implementada, CI success y ejecutada | MSI: 151.039 filas, integridad correcta |
 | Procedencia, hashes y cobertura parcial | Implementado | Import standalone con `run_id=null`, sin JSONL |
 | Correlación request-kernel entre relojes | No implementada deliberadamente | Requiere IDs comunes y calibración; no se debe inferir por proximidad |
-| Informe histórico Qwen3.5 | Construido en documentación | Evidencia Nsight; no es una captura nueva del wrapper |
-| Matriz de cobertura de sondas por ejecución | Pendiente | Requiere inferencia real instrumentada |
+| Informe histórico Qwen3.5-35B | Construido en documentación | Nsight-only histórico, sin JSONL emparejado |\n| Primera captura Qwen3.5-4B | Capturada; informe de campaña | Inferencia real CPU-only con motor instrumentado; Nsight off; request_id=0 |
+| Matriz de cobertura de sondas por ejecución | Parcial | Qwen3.5-4B confirma request, routing, KV, transfer, kernel, sync y allocation; MoE/workers/prefetch/OOM aún no aceptados |
 | Batería repetible y comparación entre ejecuciones | Pendiente | Requiere capturas emparejadas y manifiestos |
 
 ## Roadmap
