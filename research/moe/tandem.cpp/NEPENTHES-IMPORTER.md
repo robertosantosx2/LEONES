@@ -64,6 +64,30 @@ Destino: `qwen35-nepenthes-nsys-only-20261115.sqlite`.
 - Migraciones aplicadas: `002_nepenthes_observability`, `003_nepenthes_nsys_only`.
 - La procedencia queda aislada: un registro en `nepenthes_nsys_imports`; cero registros en `nepenthes_imports` y `nepenthes_events`.
 
+### Reproducción de la validación standalone
+
+Para repetir la importación sin tocar la captura fuente ni sobrescribir una base previa:
+
+```bash
+set -euo pipefail
+SRC="$HOME/NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-20261114.sqlite"
+OUT="$(mktemp -u /tmp/nepenthes-nsys-only-XXXXXX.sqlite)"
+python3 scripts/nepenthes_nsys_import.py --inspect-nsys "$SRC"
+python3 scripts/nepenthes_nsys_import.py --nsys-only "$SRC" --output "$OUT"
+sqlite3 "$OUT" <<'SQL'
+PRAGMA integrity_check;
+PRAGMA foreign_key_check;
+SELECT COUNT(*) FROM nepenthes_nsys_imports;
+SELECT COUNT(*) FROM nepenthes_nsys_activities;
+SELECT activity_kind, COUNT(*) FROM nepenthes_nsys_activities
+GROUP BY activity_kind ORDER BY activity_kind;
+SELECT COUNT(*) FROM nepenthes_imports;
+SELECT COUNT(*) FROM nepenthes_events;
+SQL
+```
+
+Criterios de aceptación para esta captura concreta: integridad `ok`; `foreign_key_check` vacío; un import standalone; 151.039 actividades; cero imports emparejados y cero eventos JSONL. Las ocho cantidades esperadas se detallan arriba. El comando `mktemp -u` solo reserva un nombre; en entornos multiusuario debe sustituirse por un directorio temporal privado y comprobarse que el destino no existe antes de ejecutar el importador.
+
 ### Particularidad CUDA_EVENT
 
 La tabla fuente `CUPTI_ACTIVITY_KIND_CUDA_EVENT` contiene 262 filas y sus 262 valores `timestamp` son cero (mínimo y máximo 0). El importador conserva esos valores como `start_ns=0`, `end_ns=null`, `duration_ns=null`. Esto coincide con el origen y no es una pérdida introducida por la normalización. No se deben usar esos registros para inferir duración o cronología.
