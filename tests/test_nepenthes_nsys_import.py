@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.nepenthes_nsys_import import import_all
+from scripts.nepenthes_nsys_import import import_all, inspect_nsys
 
 
 def write_jsonl(path: Path, *, request_id: int = 0) -> None:
@@ -138,3 +138,21 @@ def test_refuses_to_overwrite_source_artifact(tmp_path: Path):
 
     with pytest.raises(ValueError, match="must not overwrite"):
         import_all(jsonl, nsys, nsys, "unsafe-import")
+
+
+def test_inspect_nsys_reports_schema_and_counts_without_importing(tmp_path: Path):
+    nsys = tmp_path / "capture.sqlite"
+    write_nsys(nsys)
+
+    report = inspect_nsys(nsys)
+    mapped = {item["table"]: item for item in report["recognized_activity_tables"]}
+    assert mapped["CUPTI_ACTIVITY_KIND_KERNEL"]["row_count"] == 1
+    assert mapped["CUPTI_ACTIVITY_KIND_KERNEL"]["mapped_kind"] == "cuda_kernel"
+    assert "nameId" in mapped["CUPTI_ACTIVITY_KIND_KERNEL"]["columns"]
+    assert report["string_tables"][0]["table"] == "StringIds"
+    assert "source rows" in report["policy"]
+
+
+def test_inspect_nsys_rejects_missing_file(tmp_path: Path):
+    with pytest.raises(ValueError, match="does not exist"):
+        inspect_nsys(tmp_path / "missing.sqlite")
