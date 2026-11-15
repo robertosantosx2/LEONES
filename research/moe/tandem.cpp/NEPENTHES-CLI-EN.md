@@ -1,5 +1,7 @@
 # NEPENTHES: installer, CLI and capture package
 
+**Language:** [English]( research/moe/tandem.cpp/NEPENTHES-CLI-EN.md ) · [Español]( research/moe/tandem.cpp/NEPENTHES-CLI.md )
+
 ## Purpose
 
 NEPENTHES is installed in user space and invoked before the engine. It launches the requested command, activates instrumentation in an engine already built with NEPENTHES probes, collects available host/GPU telemetry and creates a result package. Installation requires no root privileges and does not modify drivers, CUDA, models or engine binaries.
