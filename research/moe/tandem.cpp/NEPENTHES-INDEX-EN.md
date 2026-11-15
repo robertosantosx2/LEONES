@@ -1,5 +1,7 @@
 # NEPENTHES — implementation, validation and evidence index
 
+**Language:** [English]( research/moe/tandem.cpp/NEPENTHES-INDEX-EN.md ) · [Español]( research/moe/tandem.cpp/NEPENTHES-INDEX.md )
+
 **Status date:** 2026-11-15 (after the first instrumented Qwen3.5-4B inference).  
 **Overall status:** CLI operational; CUDA-instrumented engine built on a pinned base; first real inference emitted engine JSONL. Paired Nsight capture, robust correlation, coverage audit and overhead measurement remain open.
 
