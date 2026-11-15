@@ -194,7 +194,7 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             continue
         for source_row in source.execute(f'SELECT * FROM "{table}"'):
             row = {k: json_value(source_row[k]) for k in source_row.keys()}
-            start = first(row, ("start", "startNs", "start_ns", "begin"))
+            start = first(row, ("start", "startNs", "start_ns", "begin", "timestamp"))
             end = first(row, ("end", "endNs", "end_ns", "finish"))
             duration = (
                 int(end) - int(start)
@@ -203,6 +203,8 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             )
             raw_name = first(row, ("name", "demangledName", "shortName", "nameId"))
             name = strings.get(int(raw_name), str(raw_name)) if isinstance(raw_name, (int, float)) else raw_name
+            if name is None:
+                name = first(row, ("eventClass", "syncType", "overheadType"))
             activity_id += 1
             activities.append((
                 import_id, activity_id, table, kind,
@@ -330,7 +332,7 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
 
     if not activities:
         raise ValueError("Nsight SQLite contains no supported CUPTI activity rows")
-    unsupported = {table: count for table, count in detected.items() if table not in NSYS_TABLES}
+    unsupported = {table: count for table, count in detected.items() if table not in NSYS_TABLES and count > 0}
     coverage = {
         "supported_tables": sorted(table for table in detected if table in NSYS_TABLES),
         "unsupported_tables": sorted(unsupported),
