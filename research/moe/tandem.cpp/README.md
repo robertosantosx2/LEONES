@@ -1,30 +1,35 @@
-# tandem.cpp — preserved source snapshot
+# tandem.cpp — instantánea preservada del código fuente
 
-This directory preserves the upstream `ewhacc/tandem.cpp` repository as it existed at the pinned commit below.
+Este directorio conserva el repositorio upstream `ewhacc/tandem.cpp` tal como existía en el commit fijado a continuación.
 
 - Upstream: https://github.com/ewhacc/tandem.cpp
-- Upstream commit: `e1acb8877bfcf92b4ae7c9f0e0f1d896dbf6c683`
-- Snapshot date: 2026-11-03
-- Upstream base llama.cpp commit: `f5222f25c` (see `BASE_COMMIT`)
-- Upstream license file: `LICENSE` (MIT)
-- Main implementation: `tandem.patch`
-- Build helper: `build.sh`
+- Commit upstream: `e1acb8877bfcf92b4ae7c9f0e0f1d896dbf6c683`
+- Fecha de la instantánea: 2026-11-03
+- Commit base upstream de llama.cpp: `f5222f25c` (véase `BASE_COMMIT`)
+- Licencia upstream: `LICENSE` (MIT)
+- Implementación principal: `tandem.patch`
+- Ayudante de compilación: `build.sh`
 
-## Preservation notes
+## Notas de preservación
 
-This directory is a source snapshot, not a Git submodule. The source files and patch are preserved independently of upstream history. The pinned commit is provenance; compare it with upstream before updating.
+Este directorio es una instantánea del código fuente, no un submódulo Git. Los archivos fuente y el parche se conservan de forma independiente del historial upstream. El commit fijado es la referencia de procedencia; compáralo con upstream antes de actualizarlo.
 
-## Scope
+## Alcance
 
-The project is a patch set applied to a specific llama.cpp base revision. It is not a standalone inference engine and should be built in an isolated worktree. No benchmark has been run on the LEONES MSI merely by archiving this source.
+El proyecto es un conjunto de parches que se aplica a una revisión concreta de llama.cpp. No es un motor de inferencia independiente y debe compilarse en un worktree aislado. El mero hecho de archivar este código fuente no implica que se haya ejecutado ningún benchmark en el MSI de LEONES.
 
 ## NEPENTHES
 
-NEPENTHES documentation and evidence:
-- [Index and validation status](NEPENTHES-INDEX.md)
-- [Implementation roadmap and acceptance gates](NEPENTHES-ROADMAP.md)
-- [Nsight/CUPTI importer contract and real MSI validation](NEPENTHES-IMPORTER.md)
-- [Installer, CLI and capture package](NEPENTHES-CLI.md)
-- [Qwen3.5-35B historical capture report](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md)
+Documentación y evidencias de NEPENTHES:
+- [Índice y estado de validación](NEPENTHES-INDEX.md)
+- [Roadmap de implementación y criterios de aceptación](NEPENTHES-ROADMAP.md)
+- [Contrato del importador Nsight/CUPTI y validación real en MSI](NEPENTHES-IMPORTER.md)
+- [Instalador, CLI y paquete de captura](NEPENTHES-CLI.md)
+- [Informe de captura histórica Qwen3.5-35B](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md)
+- [Campañas de validación y experimentación](NEPENTHES-CAMPAIGNS.md)
 
-The instrumented runtime and universal JSONL sink are developed in [Tandem.cpp PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1). LEONES integration is tracked in [PR #150](https://github.com/robertosantosx2/LEONES/pull/150), [#151](https://github.com/robertosantosx2/LEONES/pull/151), [#152](https://github.com/robertosantosx2/LEONES/pull/152), and [#153](https://github.com/robertosantosx2/LEONES/pull/153).
+## Versiones lingüísticas
+
+El español es el original y la fuente de verdad. La traducción inglesa mantiene la misma estructura y las mismas rutas de documentos en la rama [docs/nepenthes-quickstart-index-20261115-en](https://github.com/robertosantosx2/LEONES/tree/docs/nepenthes-quickstart-index-20261115-en). Esta rama contiene los documentos originales en español: [docs/nepenthes-quickstart-index-20261115](https://github.com/robertosantosx2/LEONES/tree/docs/nepenthes-quickstart-index-20261115).
+
+El runtime instrumentado y el sink JSONL universal se desarrollan en [Tandem.cpp PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1). La integración en LEONES se sigue en [PR #150](https://github.com/robertosantosx2/LEONES/pull/150), [#151](https://github.com/robertosantosx2/LEONES/pull/151), [#152](https://github.com/robertosantosx2/LEONES/pull/152) y [#153](https://github.com/robertosantosx2/LEONES/pull/153).
