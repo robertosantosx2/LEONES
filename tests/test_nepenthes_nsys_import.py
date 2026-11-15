@@ -262,7 +262,7 @@ def test_import_preserves_uint64_sentinel_in_raw_json(tmp_path: Path):
     event = json.loads(jsonl.read_text(encoding="utf-8"))
     event["value0"] = 2**64 - 1
     event["value1"] = 2**64 - 1
-    jsonl.write_text(json.dumps(event) + "\n", encoding="utf-8")
+    jsonl.write_text(json.dumps(event) + chr(10), encoding="utf-8")
     write_nsys(nsys)
 
     summary = import_all(jsonl, nsys, output, "uint64-import")
