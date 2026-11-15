@@ -24,6 +24,10 @@ NSYS_TABLES = {
     "CUPTI_ACTIVITY_KIND_MEMSET": "cuda_memset",
     "CUPTI_ACTIVITY_KIND_RUNTIME": "cuda_runtime",
     "CUPTI_ACTIVITY_KIND_DRIVER": "cuda_driver",
+    "CUPTI_ACTIVITY_KIND_GRAPH_TRACE": "cuda_graph_trace",
+    "CUPTI_ACTIVITY_KIND_SYNCHRONIZATION": "cuda_synchronization",
+    "CUPTI_ACTIVITY_KIND_CUDA_EVENT": "cuda_event",
+    "CUPTI_ACTIVITY_KIND_OVERHEAD": "cuda_overhead",
 }
 JSONL_REQUIRED = {
     "schema_version", "run_id", "event_id", "source", "timestamp_unix_ns",
@@ -56,6 +60,34 @@ def json_value(value: Any) -> Any:
     if isinstance(value, bytes):
         return value.hex()
     return value
+
+
+def sqlite_int64(value: int, *, field: str) -> int:
+    """Encode uint64 values in SQLite's signed INTEGER domain.
+
+    Values above INT64_MAX are stored using two's-complement representation.
+    The original unsigned value remains preserved in the event raw_json.
+    """
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{field} must be an integer")
+    if -(1 << 63) <= value <= (1 << 63) - 1:
+        return value
+    if 0 <= value <= (1 << 64) - 1:
+        return value - (1 << 64)
+    raise ValueError(f"{field} is outside the supported int64/uint64 range: {value}")
+
+
+def sqlite_numeric(value: Any, *, field: str) -> Any:
+    """Encode uint64 integers for SQLite while preserving source JSON separately."""
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        raise ValueError(f"{field} must not be boolean")
+    if isinstance(value, int):
+        return sqlite_int64(value, field=field)
+    if isinstance(value, float):
+        return value
+    raise ValueError(f"{field} must be an integer, float, or null")
 
 
 def load_string_ids(db: sqlite3.Connection, names: set[str]) -> dict[int, str]:
@@ -161,8 +193,11 @@ def event_rows(path: Path):
 
 
 def init_output(db: sqlite3.Connection) -> None:
-    migration = Path(__file__).resolve().parents[1] / "db" / "migrations" / "002_nepenthes_observability.sql"
-    db.executescript(migration.read_text(encoding="utf-8"))
+    migration_dir = Path(__file__).resolve().parents[1] / "db" / "migrations"
+    for version in ("002_nepenthes_observability.sql", "003_nepenthes_nsys_only.sql"):
+        migration = migration_dir / version
+        if migration.is_file():
+            db.executescript(migration.read_text(encoding="utf-8"))
 
 
 def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
@@ -187,7 +222,7 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             continue
         for source_row in source.execute(f'SELECT * FROM "{table}"'):
             row = {k: json_value(source_row[k]) for k in source_row.keys()}
-            start = first(row, ("start", "startNs", "start_ns", "begin"))
+            start = first(row, ("start", "startNs", "start_ns", "begin", "timestamp"))
             end = first(row, ("end", "endNs", "end_ns", "finish"))
             duration = (
                 int(end) - int(start)
@@ -196,16 +231,20 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             )
             raw_name = first(row, ("name", "demangledName", "shortName", "nameId"))
             name = strings.get(int(raw_name), str(raw_name)) if isinstance(raw_name, (int, float)) else raw_name
+            if name is None:
+                name = first(row, ("eventClass", "syncType", "overheadType"))
             activity_id += 1
             activities.append((
                 import_id, activity_id, table, kind,
-                start, end, duration,
-                first(row, ("correlationId", "correlation_id")),
-                first(row, ("globalPid", "global_pid")),
-                first(row, ("processId", "pid")),
-                first(row, ("deviceId", "device_id")),
-                first(row, ("contextId", "context_id")),
-                first(row, ("streamId", "stream_id")),
+                sqlite_numeric(start, field=f"{table}.start"),
+                sqlite_numeric(end, field=f"{table}.end"),
+                sqlite_numeric(duration, field=f"{table}.duration"),
+                sqlite_numeric(first(row, ("correlationId", "correlation_id")), field=f"{table}.correlation_id"),
+                sqlite_numeric(first(row, ("globalPid", "global_pid")), field=f"{table}.global_pid"),
+                sqlite_numeric(first(row, ("processId", "pid")), field=f"{table}.process_id"),
+                sqlite_numeric(first(row, ("deviceId", "device_id")), field=f"{table}.device_id"),
+                sqlite_numeric(first(row, ("contextId", "context_id")), field=f"{table}.context_id"),
+                sqlite_numeric(first(row, ("streamId", "stream_id")), field=f"{table}.stream_id"),
                 str(name) if name is not None else None,
                 json.dumps(row, ensure_ascii=False, sort_keys=True),
             ))
@@ -237,9 +276,15 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                 """INSERT INTO nepenthes_events
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 [(import_id, e["event_id"], e["run_id"], e["source"],
-                  e["schema_version"], e["timestamp_unix_ns"], e["monotonic_ns"],
-                  e["request_id"], e["event_kind"], e["label"], e["value0"],
-                  e["value1"], e["duration_ns"], e["flags"],
+                  e["schema_version"],
+                  sqlite_numeric(e["timestamp_unix_ns"], field="timestamp_unix_ns"),
+                  sqlite_numeric(e["monotonic_ns"], field="monotonic_ns"),
+                  sqlite_numeric(e["request_id"], field="request_id"),
+                  e["event_kind"], e["label"],
+                  sqlite_numeric(e["value0"], field="value0"),
+                  sqlite_numeric(e["value1"], field="value1"),
+                  sqlite_numeric(e["duration_ns"], field="duration_ns"),
+                  sqlite_numeric(e["flags"], field="flags"),
                   json.dumps(e, ensure_ascii=False, sort_keys=True)) for e in events],
             )
             out.executemany(
@@ -259,11 +304,127 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
     }
 
 
+
+def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
+    """Import a standalone Nsight export without fabricating a paired JSONL run."""
+    if not nsys.is_file():
+        raise ValueError(f"Nsight SQLite file does not exist: {nsys}")
+    resolved_output = output.resolve()
+    if resolved_output == nsys.resolve():
+        raise ValueError("output database must not overwrite the Nsight source artifact")
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    source = sqlite3.connect(f"file:{nsys.resolve()}?mode=ro", uri=True)
+    source.row_factory = sqlite3.Row
+    try:
+        names = table_names(source)
+        strings = load_string_ids(source, names)
+        detected: dict[str, int] = {}
+        for table in sorted(names):
+            if table.lower().startswith("cupti_activity_kind_"):
+                quoted = table.replace('"', '""')
+                detected[table] = int(source.execute(
+                    f'SELECT COUNT(*) FROM "{quoted}"'
+                ).fetchone()[0])
+
+        activities: list[tuple] = []
+        activity_counts: Counter[str] = Counter()
+        activity_id = 0
+        for table, kind in NSYS_TABLES.items():
+            if table not in names:
+                continue
+            for source_row in source.execute(f'SELECT * FROM "{table}"'):
+                row = {k: json_value(source_row[k]) for k in source_row.keys()}
+                start = first(row, ("start", "startNs", "start_ns", "begin", "timestamp"))
+                end = first(row, ("end", "endNs", "end_ns", "finish"))
+                duration = (
+                    int(end) - int(start)
+                    if isinstance(start, (int, float)) and isinstance(end, (int, float))
+                    else None
+                )
+                raw_name = first(row, ("name", "demangledName", "shortName", "nameId"))
+                if isinstance(raw_name, (int, float)):
+                    name = strings.get(int(raw_name), str(raw_name))
+                else:
+                    name = raw_name
+                if name is None:
+                    name = first(row, ("eventClass", "syncType", "overheadType"))
+                activity_id += 1
+                activities.append((
+                    import_id, activity_id, table, kind,
+                    sqlite_numeric(start, field=f"{table}.start"),
+                    sqlite_numeric(end, field=f"{table}.end"),
+                    sqlite_numeric(duration, field=f"{table}.duration"),
+                    sqlite_numeric(first(row, ("correlationId", "correlation_id")), field=f"{table}.correlation_id"),
+                    sqlite_numeric(first(row, ("globalPid", "global_pid")), field=f"{table}.global_pid"),
+                    sqlite_numeric(first(row, ("processId", "pid")), field=f"{table}.process_id"),
+                    sqlite_numeric(first(row, ("deviceId", "device_id")), field=f"{table}.device_id"),
+                    sqlite_numeric(first(row, ("contextId", "context_id")), field=f"{table}.context_id"),
+                    sqlite_numeric(first(row, ("streamId", "stream_id")), field=f"{table}.stream_id"),
+                    str(name) if name is not None else None,
+                    json.dumps(row, ensure_ascii=False, sort_keys=True),
+                ))
+                activity_counts[kind] += 1
+    finally:
+        source.close()
+
+    if not activities:
+        raise ValueError("Nsight SQLite contains no supported CUPTI activity rows")
+    unsupported = {table: count for table, count in detected.items() if table not in NSYS_TABLES and count > 0}
+    coverage = {
+        "supported_tables": sorted(table for table in detected if table in NSYS_TABLES),
+        "unsupported_tables": sorted(unsupported),
+        "unsupported_row_count": sum(unsupported.values()),
+        "detected_cupti_tables": len(detected),
+        "imported_activity_rows": len(activities),
+        "status": "partial" if unsupported else "complete_for_detected_cupti_tables",
+    }
+
+    out = sqlite3.connect(output)
+    try:
+        init_output(out)
+        with out:
+            out.execute(
+                """INSERT INTO nepenthes_nsys_imports
+                (import_id,nsys_path,nsys_sha256,activity_count,activity_kinds_json,
+                 detected_table_counts_json,coverage_json,provenance,correlation_policy)
+                VALUES (?,?,?,?,?,?,?,?,?)""",
+                (import_id, str(nsys.resolve()), sha256(nsys), len(activities),
+                 json.dumps(dict(activity_counts), sort_keys=True),
+                 json.dumps(detected, sort_keys=True), json.dumps(coverage, sort_keys=True),
+                 "standalone_nsys_capture_without_paired_nepenthes_jsonl",
+                 "No NEPENTHES run_id or request correlation asserted; Nsight timestamps and CUPTI correlation IDs remain within the Nsight source domain."),
+            )
+            out.executemany(
+                """INSERT INTO nepenthes_nsys_activities
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
+            )
+    finally:
+        out.close()
+
+    return {
+        "import_id": import_id,
+        "mode": "nsys_only",
+        "jsonl": None,
+        "run_id": None,
+        "nsys_path": str(nsys.resolve()),
+        "nsys_sha256": sha256(nsys),
+        "activity_count": len(activities),
+        "activity_kinds": dict(activity_counts),
+        "detected_table_counts": detected,
+        "coverage": coverage,
+        "output": str(output.resolve()),
+        "correlation": "none; standalone Nsight provenance, no paired NEPENTHES run is claimed",
+    }
+
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--inspect-nsys", type=Path, help="inspect Nsight SQLite schema without importing")
     mode.add_argument("--jsonl", type=Path, help="NEPENTHES JSONL input for paired import")
+    mode.add_argument("--nsys-only", type=Path, help="import a standalone Nsight SQLite without paired JSONL")
     parser.add_argument("--nsys-sqlite", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--import-id", default=None)
@@ -273,6 +434,13 @@ def main() -> int:
             if args.nsys_sqlite is not None or args.output is not None:
                 parser.error("--inspect-nsys cannot be combined with --nsys-sqlite/--output")
             result = inspect_nsys(args.inspect_nsys)
+        elif args.nsys_only is not None:
+            if args.nsys_sqlite is not None:
+                parser.error("--nsys-only cannot be combined with --nsys-sqlite")
+            if args.output is None:
+                parser.error("--nsys-only requires --output")
+            import_id = args.import_id or f"nsys-{sha256(args.nsys_only)[:12]}"
+            result = import_nsys_only(args.nsys_only, args.output, import_id)
         else:
             if args.nsys_sqlite is None or args.output is None:
                 parser.error("--jsonl requires --nsys-sqlite and --output")

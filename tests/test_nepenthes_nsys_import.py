@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.nepenthes_nsys_import import import_all, inspect_nsys
+from scripts.nepenthes_nsys_import import import_all, import_nsys_only, inspect_nsys
 
 
 def write_jsonl(path: Path, *, request_id: int = 0) -> None:
@@ -156,3 +156,174 @@ def test_inspect_nsys_reports_schema_and_counts_without_importing(tmp_path: Path
 def test_inspect_nsys_rejects_missing_file(tmp_path: Path):
     with pytest.raises(ValueError, match="does not exist"):
         inspect_nsys(tmp_path / "missing.sqlite")
+
+
+
+def write_extended_nsys(path: Path) -> None:
+    db = sqlite3.connect(path)
+    db.executescript("""
+        CREATE TABLE StringIds(id INTEGER PRIMARY KEY, value TEXT);
+        INSERT INTO StringIds VALUES (1, 'graph-node');
+        CREATE TABLE CUPTI_ACTIVITY_KIND_GRAPH_TRACE(
+            start INTEGER, end INTEGER, deviceId INTEGER, contextId INTEGER,
+            streamId INTEGER, correlationId INTEGER, globalPid INTEGER,
+            graphId INTEGER, graphExecId INTEGER
+        );
+        INSERT INTO CUPTI_ACTIVITY_KIND_GRAPH_TRACE VALUES (10, 40, 0, 1, 2, 3, 99, 4, 5);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_SYNCHRONIZATION(
+            start INTEGER, end INTEGER, deviceId INTEGER, contextId INTEGER,
+            streamId INTEGER, correlationId INTEGER, globalPid INTEGER,
+            syncType INTEGER, eventId INTEGER, eventSyncId INTEGER
+        );
+        INSERT INTO CUPTI_ACTIVITY_KIND_SYNCHRONIZATION VALUES (41, 50, 0, 1, 2, 6, 99, 7, 8, 9);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_CUDA_EVENT(
+            timestamp INTEGER, deviceId INTEGER, contextId INTEGER,
+            streamId INTEGER, correlationId INTEGER, globalPid INTEGER,
+            eventId INTEGER, eventSyncId INTEGER
+        );
+        INSERT INTO CUPTI_ACTIVITY_KIND_CUDA_EVENT VALUES (51, 0, 1, 2, 10, 99, 11, 12);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_OVERHEAD(
+            start INTEGER, end INTEGER, eventClass INTEGER, globalTid INTEGER,
+            correlationId INTEGER, nameId INTEGER, overheadType INTEGER
+        );
+        INSERT INTO CUPTI_ACTIVITY_KIND_OVERHEAD VALUES (60, 70, 1, 101, 13, 1, 2);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_FUTURE_UNMAPPED(
+            start INTEGER, end INTEGER
+        );
+        INSERT INTO CUPTI_ACTIVITY_KIND_FUTURE_UNMAPPED VALUES (1, 2);
+    """)
+    db.commit()
+    db.close()
+
+
+def test_nsys_only_import_preserves_extended_cupti_tables_and_provenance(tmp_path: Path):
+    nsys = tmp_path / "historical.sqlite"
+    output = tmp_path / "nsys-only.sqlite"
+    write_extended_nsys(nsys)
+
+    summary = import_nsys_only(nsys, output, "historical-001")
+    assert summary["mode"] == "nsys_only"
+    assert summary["jsonl"] is None
+    assert summary["run_id"] is None
+    assert summary["activity_count"] == 4
+    assert summary["activity_kinds"] == {
+        "cuda_graph_trace": 1,
+        "cuda_synchronization": 1,
+        "cuda_event": 1,
+        "cuda_overhead": 1,
+    }
+    assert summary["coverage"]["status"] == "partial"
+    assert summary["coverage"]["unsupported_row_count"] == 1
+
+    with sqlite3.connect(output) as db:
+        record = db.execute(
+            "SELECT nsys_sha256,activity_count,provenance,correlation_policy "
+            "FROM nepenthes_nsys_imports WHERE import_id='historical-001'"
+        ).fetchone()
+        assert record[0] == summary["nsys_sha256"]
+        assert record[1] == 4
+        assert "without_paired_nepenthes_jsonl" in record[2]
+        assert "No NEPENTHES run_id" in record[3]
+        rows = db.execute(
+            "SELECT activity_kind,start_ns,end_ns,duration_ns,name "
+            "FROM nepenthes_nsys_activities ORDER BY activity_id"
+        ).fetchall()
+        assert rows[0][:4] == ("cuda_graph_trace", 10, 40, 30)
+        assert rows[1][:4] == ("cuda_synchronization", 41, 50, 9)
+        assert rows[2][:4] == ("cuda_event", 51, None, None)
+        assert rows[3][0:4] == ("cuda_overhead", 60, 70, 10)
+        coverage = json.loads(db.execute(
+            "SELECT coverage_json FROM nepenthes_nsys_imports"
+        ).fetchone()[0])
+        assert coverage["unsupported_tables"] == ["CUPTI_ACTIVITY_KIND_FUTURE_UNMAPPED"]
+
+
+def test_nsys_only_import_refuses_to_overwrite_source(tmp_path: Path):
+    nsys = tmp_path / "capture.sqlite"
+    write_extended_nsys(nsys)
+    with pytest.raises(ValueError, match="must not overwrite"):
+        import_nsys_only(nsys, nsys, "unsafe")
+
+
+def test_nsys_only_import_rejects_no_supported_activity(tmp_path: Path):
+    nsys = tmp_path / "empty.sqlite"
+    db = sqlite3.connect(nsys)
+    db.execute("CREATE TABLE CUPTI_ACTIVITY_KIND_UNKNOWN(value INTEGER)")
+    db.commit()
+    db.close()
+    with pytest.raises(ValueError, match="no supported CUPTI activity"):
+        import_nsys_only(nsys, tmp_path / "out.sqlite", "empty")
+
+def test_import_preserves_uint64_sentinel_in_raw_json(tmp_path: Path):
+    jsonl = tmp_path / "uint64.jsonl"
+    nsys = tmp_path / "capture.sqlite"
+    output = tmp_path / "normalized.sqlite"
+    write_jsonl(jsonl)
+    event = json.loads(jsonl.read_text(encoding="utf-8"))
+    event["value0"] = 2**64 - 1
+    event["value1"] = 2**64 - 1
+    jsonl.write_text(json.dumps(event) + chr(10), encoding="utf-8")
+    write_nsys(nsys)
+
+    summary = import_all(jsonl, nsys, output, "uint64-import")
+    assert summary["event_count"] == 1
+
+    with sqlite3.connect(output) as db:
+        value0, value1, raw_json = db.execute(
+            "SELECT value0,value1,raw_json FROM nepenthes_events"
+        ).fetchone()
+
+    assert value0 == -1
+    assert value1 == -1
+    raw = json.loads(raw_json)
+    assert raw["value0"] == 2**64 - 1
+    assert raw["value1"] == 2**64 - 1
+
+
+def test_import_rejects_integer_outside_uint64_range(tmp_path: Path):
+    jsonl = tmp_path / "overflow.jsonl"
+    nsys = tmp_path / "capture.sqlite"
+    output = tmp_path / "normalized.sqlite"
+    write_jsonl(jsonl)
+    event = json.loads(jsonl.read_text(encoding="utf-8"))
+    event["value0"] = 2**64
+    jsonl.write_text(json.dumps(event) + chr(10), encoding="utf-8")
+    write_nsys(nsys)
+
+    with pytest.raises(ValueError, match="outside the supported"):
+        import_all(jsonl, nsys, output, "overflow-import")
+
+
+def test_import_converts_all_jsonl_uint64_integer_fields(tmp_path: Path):
+    jsonl = tmp_path / "uint64-fields.jsonl"
+    nsys = tmp_path / "capture.sqlite"
+    output = tmp_path / "normalized.sqlite"
+    write_jsonl(jsonl)
+    event = json.loads(jsonl.read_text(encoding="utf-8"))
+    fields = ("timestamp_unix_ns", "monotonic_ns", "request_id",
+              "value0", "value1", "duration_ns", "flags")
+    for field in fields:
+        event[field] = 2**64 - 1
+    jsonl.write_text(json.dumps(event) + chr(10), encoding="utf-8")
+    write_nsys(nsys)
+
+    import_all(jsonl, nsys, output, "uint64-fields-import")
+    with sqlite3.connect(output) as db:
+        row = db.execute(
+            "SELECT timestamp_unix_ns,monotonic_ns,request_id,value0,value1,duration_ns,flags,raw_json "
+            "FROM nepenthes_events"
+        ).fetchone()
+    assert row[:7] == (-1, -1, -1, -1, -1, -1, -1)
+    raw = json.loads(row[7])
+    assert all(raw[field] == 2**64 - 1 for field in fields)
+
+
+def test_nsys_only_reimport_with_same_import_id_is_rejected_without_overwrite(tmp_path: Path):
+    nsys = tmp_path / "historical.sqlite"
+    output = tmp_path / "normalized.sqlite"
+    write_extended_nsys(nsys)
+    import_nsys_only(nsys, output, "repeatable-id")
+    before = output.read_bytes()
+    with pytest.raises(sqlite3.IntegrityError):
+        import_nsys_only(nsys, output, "repeatable-id")
+    assert output.read_bytes() == before
