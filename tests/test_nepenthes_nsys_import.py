@@ -292,3 +292,38 @@ def test_import_rejects_integer_outside_uint64_range(tmp_path: Path):
 
     with pytest.raises(ValueError, match="outside the supported"):
         import_all(jsonl, nsys, output, "overflow-import")
+
+
+def test_import_converts_all_jsonl_uint64_integer_fields(tmp_path: Path):
+    jsonl = tmp_path / "uint64-fields.jsonl"
+    nsys = tmp_path / "capture.sqlite"
+    output = tmp_path / "normalized.sqlite"
+    write_jsonl(jsonl)
+    event = json.loads(jsonl.read_text(encoding="utf-8"))
+    fields = ("timestamp_unix_ns", "monotonic_ns", "request_id",
+              "value0", "value1", "duration_ns", "flags")
+    for field in fields:
+        event[field] = 2**64 - 1
+    jsonl.write_text(json.dumps(event) + "\\n", encoding="utf-8")
+    write_nsys(nsys)
+
+    import_all(jsonl, nsys, output, "uint64-fields-import")
+    with sqlite3.connect(output) as db:
+        row = db.execute(
+            "SELECT timestamp_unix_ns,monotonic_ns,request_id,value0,value1,duration_ns,flags,raw_json "
+            "FROM nepenthes_events"
+        ).fetchone()
+    assert row[:7] == (-1, -1, -1, -1, -1, -1, -1)
+    raw = json.loads(row[7])
+    assert all(raw[field] == 2**64 - 1 for field in fields)
+
+
+def test_nsys_only_reimport_with_same_import_id_is_rejected_without_overwrite(tmp_path: Path):
+    nsys = tmp_path / "historical.sqlite"
+    output = tmp_path / "normalized.sqlite"
+    write_extended_nsys(nsys)
+    import_nsys_only(nsys, output, "repeatable-id")
+    before = output.read_bytes()
+    with pytest.raises(sqlite3.IntegrityError):
+        import_nsys_only(nsys, output, "repeatable-id")
+    assert output.read_bytes() == before
