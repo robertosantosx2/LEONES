@@ -114,3 +114,42 @@ Ejecutar una inferencia nueva con el motor Tandem.cpp instrumentado bajo `nepent
 6. auditoría de cobertura, pérdidas, integridad y overhead.
 
 Solo esa prueba permitirá cerrar la aceptación end-to-end. Ver el roadmap: [NEPENTHES-ROADMAP.md](NEPENTHES-ROADMAP.md).
+
+## 10. Revalidación E2E independiente desde LEONES `main` — 2026-11-15
+
+Después de la importación histórica inicial documentada arriba, se repitió la importación con el importador contenido en el worktree local de validación de LEONES `main`, commit `d548a37cc4f05632eba946495ad9d98bdf862c63`. Esta segunda ejecución usó un destino nuevo e independiente; no sobrescribió la base anterior ni modificó la fuente.
+
+- Fuente: `~/NEPENTHES_QWEN35_CORRELATED_20261114/qwen35-correlated-20261114.sqlite`
+- SHA-256 verificado antes de importar: `30df43c0a1b235cc25987e2af87e5cf19e5f900f324c26fa22f28cd83144e4fc`
+- Destino: `~/nepenthes-real-nsys-20261115/qwen35-nsys-only.sqlite`
+- Tamaño observado del destino: aproximadamente 90 MiB.
+- Import ID: `qwen35-real-nsys-only-20261115`
+- CLI: `--nsys-only`; código de salida 0.
+- Resumen del importador: `activity_count=151039`, `run_id=null`, `jsonl=null`, correlación `none` y procedencia Nsight standalone.
+
+### Auditoría independiente del segundo destino
+
+La consulta de solo lectura sobre la base destino confirmó:
+
+| Comprobación | Resultado |
+|---|---:|
+| Actividades importadas | 151.039 |
+| Distribución por las ocho familias | Coincide exactamente con el resumen del importador |
+| IDs de actividad distintos | 151.039 |
+| Pares `source_table/source_activity_id` distintos | 151.039 |
+| Tablas CUPTI detectadas | 8 |
+| Filas importadas | 151.039 |
+| Filas no soportadas | 0 |
+| Estado de cobertura | `complete_for_detected_cupti_tables` |
+| Importaciones emparejadas en `nepenthes_imports` | 0 |
+| Eventos JSONL en `nepenthes_events` | 0 |
+| Actividades Nsight de importación emparejada en `nsys_activities` | 0 |
+| `PRAGMA integrity_check` | `ok` |
+| `PRAGMA foreign_key_check` | Sin filas |
+
+La distribución confirmada fue: CUDA event 262; graph trace 5.207; kernel 8.982; memcpy 44.488; memset 9; overhead 111; runtime 84.116; synchronization 7.864.
+
+**Conclusión de aceptación:** la importación Nsight-only histórica está validada de extremo a extremo con el código de LEONES `main` y con una auditoría independiente del SQLite resultante. La cobertura completa se limita expresamente a las ocho tablas CUPTI detectadas en esta captura; no implica que Nsight haya registrado todas las categorías posibles. La prueba no establece una correlación con eventos JSONL ni sustituye una captura emparejada de una misma ejecución instrumentada.
+
+Artefactos de esta revalidación en el MSI: `~/nepenthes-real-nsys-20261115/import.json`, `import.stderr`, `qwen35-nsys-only.sqlite` y `exit-code` (código 0). La base fuente histórica permanece intacta.
+
