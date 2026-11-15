@@ -1,6 +1,6 @@
 # Informe de captura histórica — Qwen3.5-35B / Nsight Systems
 
-**Language / Idioma:** [English version](research/moe/tandem.cpp/NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115-EN.md) · [Versión en español](\research/moe/tandem.cpp/NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md)
+**Language / Idioma:** [English version](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115-EN.md) · [Versión en español](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md)
 
 
 **Fecha del informe:** 2026-11-15  
