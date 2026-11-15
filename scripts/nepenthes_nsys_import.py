@@ -77,6 +77,19 @@ def sqlite_int64(value: int, *, field: str) -> int:
     raise ValueError(f"{field} is outside the supported int64/uint64 range: {value}")
 
 
+def sqlite_numeric(value: Any, *, field: str) -> Any:
+    """Encode uint64 integers for SQLite while preserving source JSON separately."""
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        raise ValueError(f"{field} must not be boolean")
+    if isinstance(value, int):
+        return sqlite_int64(value, field=field)
+    if isinstance(value, float):
+        return value
+    raise ValueError(f"{field} must be an integer, float, or null")
+
+
 def load_string_ids(db: sqlite3.Connection, names: set[str]) -> dict[int, str]:
     for table in ("StringIds", "StringId", "StringTable"):
         if table not in names:
@@ -223,13 +236,15 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             activity_id += 1
             activities.append((
                 import_id, activity_id, table, kind,
-                start, end, duration,
-                first(row, ("correlationId", "correlation_id")),
-                first(row, ("globalPid", "global_pid")),
-                first(row, ("processId", "pid")),
-                first(row, ("deviceId", "device_id")),
-                first(row, ("contextId", "context_id")),
-                first(row, ("streamId", "stream_id")),
+                sqlite_numeric(start, field=f"{table}.start"),
+                sqlite_numeric(end, field=f"{table}.end"),
+                sqlite_numeric(duration, field=f"{table}.duration"),
+                sqlite_numeric(first(row, ("correlationId", "correlation_id")), field=f"{table}.correlation_id"),
+                sqlite_numeric(first(row, ("globalPid", "global_pid")), field=f"{table}.global_pid"),
+                sqlite_numeric(first(row, ("processId", "pid")), field=f"{table}.process_id"),
+                sqlite_numeric(first(row, ("deviceId", "device_id")), field=f"{table}.device_id"),
+                sqlite_numeric(first(row, ("contextId", "context_id")), field=f"{table}.context_id"),
+                sqlite_numeric(first(row, ("streamId", "stream_id")), field=f"{table}.stream_id"),
                 str(name) if name is not None else None,
                 json.dumps(row, ensure_ascii=False, sort_keys=True),
             ))
@@ -261,11 +276,15 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                 """INSERT INTO nepenthes_events
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 [(import_id, e["event_id"], e["run_id"], e["source"],
-                  e["schema_version"], e["timestamp_unix_ns"], e["monotonic_ns"],
-                  e["request_id"], e["event_kind"], e["label"],
-                  sqlite_int64(e["value0"], field="value0"),
-                  sqlite_int64(e["value1"], field="value1"),
-                  e["duration_ns"], e["flags"],
+                  e["schema_version"],
+                  sqlite_numeric(e["timestamp_unix_ns"], field="timestamp_unix_ns"),
+                  sqlite_numeric(e["monotonic_ns"], field="monotonic_ns"),
+                  sqlite_numeric(e["request_id"], field="request_id"),
+                  e["event_kind"], e["label"],
+                  sqlite_numeric(e["value0"], field="value0"),
+                  sqlite_numeric(e["value1"], field="value1"),
+                  sqlite_numeric(e["duration_ns"], field="duration_ns"),
+                  sqlite_numeric(e["flags"], field="flags"),
                   json.dumps(e, ensure_ascii=False, sort_keys=True)) for e in events],
             )
             out.executemany(
@@ -333,13 +352,15 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                 activity_id += 1
                 activities.append((
                     import_id, activity_id, table, kind,
-                    start, end, duration,
-                    first(row, ("correlationId", "correlation_id")),
-                    first(row, ("globalPid", "global_pid")),
-                    first(row, ("processId", "pid")),
-                    first(row, ("deviceId", "device_id")),
-                    first(row, ("contextId", "context_id")),
-                    first(row, ("streamId", "stream_id")),
+                    sqlite_numeric(start, field=f"{table}.start"),
+                    sqlite_numeric(end, field=f"{table}.end"),
+                    sqlite_numeric(duration, field=f"{table}.duration"),
+                    sqlite_numeric(first(row, ("correlationId", "correlation_id")), field=f"{table}.correlation_id"),
+                    sqlite_numeric(first(row, ("globalPid", "global_pid")), field=f"{table}.global_pid"),
+                    sqlite_numeric(first(row, ("processId", "pid")), field=f"{table}.process_id"),
+                    sqlite_numeric(first(row, ("deviceId", "device_id")), field=f"{table}.device_id"),
+                    sqlite_numeric(first(row, ("contextId", "context_id")), field=f"{table}.context_id"),
+                    sqlite_numeric(first(row, ("streamId", "stream_id")), field=f"{table}.stream_id"),
                     str(name) if name is not None else None,
                     json.dumps(row, ensure_ascii=False, sort_keys=True),
                 ))
