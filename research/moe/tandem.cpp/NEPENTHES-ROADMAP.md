@@ -1,6 +1,6 @@
 # NEPENTHES — roadmap de tareas hasta la versión funcional completa
 
-**Language / Idioma:** [English version](research/moe/tandem.cpp/NEPENTHES-ROADMAP-EN.md) · [Versión en español](\research/moe/tandem.cpp/NEPENTHES-ROADMAP.md)
+**Language / Idioma:** [English version](NEPENTHES-ROADMAP-EN.md) · [Versión en español](\research/moe/tandem.cpp/NEPENTHES-ROADMAP.md)
 
 
 **Fecha de corte:** 2026-11-15 (actualizado tras C07).  
