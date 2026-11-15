@@ -1,10 +1,10 @@
-# NEPENTHES: instalador, CLI y paquete de captura
+# NEPENTHES: installer, CLI, and capture package
 
-## Objetivo
+## Purpose
 
-NEPENTHES se instala en user-space y se invoca antes del motor. Lanza el comando solicitado, activa la instrumentación de un motor que ya haya sido compilado con las sondas NEPENTHES, recoge telemetría de host/GPU disponible y genera un paquete de resultados. No requiere root para la instalación ni modifica drivers, CUDA, modelos o binarios del motor.
+NEPENTHES is installed in user space and invoked before the inference engine. It launches the requested command, enables instrumentation in an engine that has already been compiled with NEPENTHES probes, collects available host/GPU telemetry, and generates a results package. Installation does not require root and does not modify drivers, CUDA, models, or engine binaries.
 
-## Instalación y diagnóstico
+## Installation and diagnostics
 
 ```bash
 ./scripts/install_nepenthes.sh
@@ -13,33 +13,33 @@ nepenthes doctor
 nepenthes self-test
 ```
 
-Instala `nepenthes` en `~/.local/bin` y recursos en `~/.local/share/nepenthes`. El instalador incorpora el CLI, el importador y las migraciones 002/003. Requiere Python 3.10+.
+The installer places `nepenthes` in `~/.local/bin` and resources in `~/.local/share/nepenthes`. It includes the CLI, importer, and migrations 002/003. Python 3.10+ is required.
 
-## Invocación
+## Invocation
 
 ```bash
-nepenthes run --profile full -- ./llama-server -m /ruta/modelo.gguf -c 1024
+nepenthes run --profile full -- ./llama-server -m /path/to/model.gguf -c 1024
 ```
 
-El comando después de `--` se ejecuta como proceso hijo. NEPENTHES conserva stdout/stderr en el log de sesión, muestrea CPU/RSS del árbol de procesos, registra telemetría NVIDIA global si `nvidia-smi` está disponible y propaga el código de salida del motor.
+The command after `--` is executed as a child process. NEPENTHES preserves stdout/stderr in the session log, samples CPU/RSS for the process tree, records device-wide NVIDIA telemetry when `nvidia-smi` is available, and propagates the engine's exit code.
 
-Antes del arranque define `NEPENTHES_RUN_ID` y `NEPENTHES_TRACE_JSONL`. Un motor Tandem.cpp instrumentado puede emitir eventos internos a `raw/engine-events.jsonl`; el recolector de host escribe `raw/host-events.jsonl` y ambos flujos se consolidan en `raw/events.jsonl`. Un motor no instrumentado sigue permitiendo capturar host/GPU, pero no produce eventos internos. El CLI no parchea ni recompila el motor.
+Before launch, it sets `NEPENTHES_RUN_ID` and `NEPENTHES_TRACE_JSONL`. An instrumented Tandem.cpp engine can emit internal events to `raw/engine-events.jsonl`; the host collector writes `raw/host-events.jsonl`, and both streams are consolidated into `raw/events.jsonl`. An uninstrumented engine can still be monitored for host/GPU telemetry, but it does not produce internal engine events. The CLI does not patch or rebuild the engine.
 
-## Perfiles y Nsight
+## Profiles and Nsight
 
-- `smoke`: muestreo ligero.
-- `standard`: muestreo estándar (predeterminado).
-- `full`: muestreo más frecuente y captura Nsight automática cuando está disponible.
+- `smoke`: lightweight sampling.
+- `standard`: standard sampling (default).
+- `full`: more frequent sampling and automatic Nsight capture when available.
 
-Control:
-- `--nsys auto`: selección automática según perfil y disponibilidad.
-- `--nsys required`: falla antes de arrancar si Nsight no está disponible.
-- `--nsys off`: desactiva Nsight, no el sink del motor.
-- `--interval SECONDS`: cambia el intervalo de muestreo.
+Controls:
+- `--nsys auto`: select automatically according to profile and availability.
+- `--nsys required`: fail before launch if Nsight is unavailable.
+- `--nsys off`: disable Nsight, not the engine event sink.
+- `--interval SECONDS`: change the sampling interval.
 
-Nsight puede añadir overhead o fallar por incompatibilidad de driver, permisos o configuración. NEPENTHES no eleva privilegios automáticamente. Los artefactos nativos se conservan en `raw/`.
+Nsight may add overhead or fail because of driver incompatibility, permissions, or configuration. NEPENTHES does not elevate privileges automatically. Native artifacts are preserved in `raw/`.
 
-## Paquete de salida
+## Output package
 
 ```text
 RUN_ID/
@@ -64,19 +64,19 @@ RUN_ID/
   checksums.sha256
 ```
 
-Los archivos que dependen de instrumentación o Nsight solo aparecen cuando están disponibles. El informe HTML/Markdown se construye desde las muestras y actividades efectivamente recogidas; las gráficas SVG no deben confundirse con datos simulados. `nepenthes verify RUN_DIR` valida hashes y estructura del paquete.
+Files that depend on instrumentation or Nsight are included only when those sources are available. The HTML/Markdown report is built from the samples and activities actually collected; SVG plots must not be mistaken for simulated data. `nepenthes verify RUN_DIR` validates package hashes and structure.
 
-## Estado de validación en MSI — 2026-11-15
+## MSI validation status — 2026-11-15
 
-- Instalador user-space: correcto; comando instalado en `~/.local/bin/nepenthes`.
-- `nepenthes doctor`: correcto; entorno Linux, Python, procfs, `nvidia-smi` y Nsight Systems detectados en la validación registrada.
-- `nepenthes self-test`: correcto; 3 eventos, 1 muestra, 3 filas de eventos, `events_valid=true`, `report_html=true`, `checksums=true` y `errors=[]`.
-- Ejecución real de un motor instrumentado: completada con Qwen3.5-4B Q4_K_M en CPU-only mediante `nepenthes run`; se capturaron 3.683 eventos del motor, incluidos `request_start/request_end`, y el proceso terminó con código 0.
-- La captura C06 utilizó `--nsys off`; por tanto, no demuestra todavía una ejecución integrada con Nsight ni sustituye la aceptación de una captura emparejada JSONL+Nsight.
-- Importación histórica Nsight-only real: 151.039 actividades importadas y auditadas; detalle en [informe histórico Qwen3.5](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md).
+- User-space installer: successful; command installed at `~/.local/bin/nepenthes`.
+- `nepenthes doctor`: successful; Linux, Python, procfs, `nvidia-smi`, and Nsight Systems were detected in the recorded validation.
+- `nepenthes self-test`: successful; 3 events, 1 sample, 3 event rows, `events_valid=true`, `report_html=true`, `checksums=true`, and `errors=[]`.
+- Real run with an instrumented engine: completed with Qwen3.5-4B Q4_K_M in CPU-only mode through `nepenthes run`; 3,683 engine events were captured, including `request_start/request_end`, and the process exited with code 0.
+- Capture C06 used `--nsys off`; therefore, it does not yet demonstrate an integrated Nsight run or replace acceptance of a paired JSONL+Nsight capture.
+- Real historical Nsight-only import: 151,039 activities imported and audited; see the [Qwen3.5 historical report](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md).
 
-**Pendiente:** verificar `nepenthes verify` y auditar el paquete completo de la inferencia real C06; ejecutar una captura emparejada JSONL+Nsight de una misma ejecución; medir overhead y completar la matriz de cobertura. El self-test y la importación Nsight-only histórica no sustituyen esas pruebas.
+**Still pending:** run `nepenthes verify` and audit the complete package from real inference C06; perform a paired JSONL+Nsight capture from the same run; measure overhead and complete the coverage matrix. The self-test and historical Nsight-only import do not replace these tests.
 
-## Límites
+## Limitations
 
-La telemetría de `nvidia-smi` es global al dispositivo. Las sondas internas requieren un binario instrumentado. La captura Nsight tiene overhead. No se une `request_id` con CUPTI `correlationId` ni se mezclan relojes sin calibración. Las duraciones de kernels individuales proceden de Nsight/CUPTI.
+`nvidia-smi` telemetry is device-wide. Internal events require an instrumented binary. Nsight capture adds overhead. Do not join `request_id` with CUPTI `correlationId`, or mix clocks, without calibration. Individual kernel durations come from Nsight/CUPTI.
