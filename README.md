@@ -6,7 +6,7 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 
 ## Proyectos de investigación y arquitectura
 
-- **[NEPENTHES — índice, roadmap y campañas](research/moe/tandem.cpp/NEPENTHES-INDEX.md)**: instrumentación universal de motores, captura JSONL, CLI, Nsight/CUPTI, importación LEONES, campañas físicas, informes y gates de aceptación.
+- **[NEPENTHES — índice, roadmap y campañas (ES)](research/moe/tandem.cpp/NEPENTHES-INDEX.md) · [English documentation](research/moe/tandem.cpp/NEPENTHES-INDEX-EN.md)**: instrumentación universal de motores, captura JSONL, CLI, Nsight/CUPTI, importación LEONES, campañas físicas, informes y gates de aceptación.
   - [Roadmap](research/moe/tandem.cpp/NEPENTHES-ROADMAP.md) · [Registro de campañas y resultados](research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md) · [CLI e instalador](research/moe/tandem.cpp/NEPENTHES-CLI.md) · [Importador Nsight/CUPTI](research/moe/tandem.cpp/NEPENTHES-IMPORTER.md) · [Informe histórico Qwen3.5-35B](research/moe/tandem.cpp/NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md).
   - [Tandem.cpp — instrumentación universal, PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1).
 - **[REDIL — IA distribuida](docs/subprojects/REDIL-IA-distribuida/README.md)**: arquitectura de nodos, malla de inferencia y planificación de despliegue.
