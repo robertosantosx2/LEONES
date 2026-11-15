@@ -1,6 +1,6 @@
 # Historical capture report — Qwen3.5-35B / Nsight Systems
 
-**Language:** [English]( research/moe/tandem.cpp/NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115-EN.md ) · [Español]( research/moe/tandem.cpp/NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md )
+**Language:** [English](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115-EN.md) · [Español](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md)
 
 **Report date:** 2026-11-15  
 **Type:** retrospective analysis of an existing Nsight capture; standalone NEPENTHES import.  
