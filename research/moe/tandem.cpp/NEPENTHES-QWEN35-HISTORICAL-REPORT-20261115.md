@@ -34,6 +34,12 @@ La importación conserva procedencia separada: `run_id=null`, `jsonl=null`; no s
 
 Cobertura declarada: `complete_for_detected_cupti_tables`. No hubo filas no soportadas en las tablas CUPTI detectadas. Esta etiqueta no significa que Nsight haya capturado todas las categorías de actividad posibles; describe únicamente las tablas detectadas en este archivo.
 
+### Visualización de volumen por familia
+
+![Recuento de actividades CUPTI por familia](figures/nepenthes-qwen35-activity-counts-20261115.svg)
+
+La gráfica compara recuentos de filas, no duración ni porcentaje de tiempo de GPU. La escala es lineal y la actividad runtime domina el volumen de registros.
+
 ## 3. Auditoría de integridad
 
 | Prueba | Resultado |
