@@ -1,0 +1,116 @@
+name: Falcon3 GGUF tokenizer diagnostic runtime
+
+on:
+  push:
+    branches:
+      - research/falcon3-i2s-avx2-overflow-2026-11-18
+    paths:
+      - ".github/workflows/falcon3-gguf-tokenizer-diagnostic.yml"
+      - "research/bitnet/FALCON3-GGUF-TOKENIZER-COMPATIBILITY-2026-11-18.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-tokenizer-probe:
+    name: Build pinned llama-tokenize probe
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out LEONES research
+        uses: actions/checkout@v4
+
+      - name: Check out pinned BitNet and llama.cpp
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/BitNet
+          ref: 0b341e582afbf9e1011f24744b554c96a3477eb5
+          submodules: recursive
+          path: vendor/BitNet
+
+      - name: Apply temporary src1_cont build-scope workaround
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("vendor/BitNet/3rdparty/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c")
+          source = path.read_text()
+          needle = '    // TODO: extract to "extra_op"\n#if GGML_USE_LLAMAFILE\n'
+          replacement = (
+              '    // TODO: extract to "extra_op"\n'
+              '    const bool src1_cont = ggml_is_contiguous(src1);\n'
+              '#if GGML_USE_LLAMAFILE\n'
+          )
+          if source.count(needle) != 1:
+              raise SystemExit("Expected src1_cont scope site was not unique")
+          path.write_text(source.replace(needle, replacement, 1))
+          PY
+
+      - name: Configure tokenizer diagnostic build
+        run: |
+          cmake -S vendor/BitNet -B build/tokenizer             -DCMAKE_BUILD_TYPE=Release             -DBUILD_SHARED_LIBS=ON             -DGGML_NATIVE=OFF             -DGGML_AVX=OFF             -DGGML_AVX2=OFF             -DGGML_AVX_VNNI=OFF             -DGGML_AVX512=OFF             -DGGML_AVX512_VNNI=OFF             -DGGML_LLAMAFILE=OFF             -DLLAMA_BUILD_COMMON=ON             -DLLAMA_BUILD_TESTS=OFF             -DLLAMA_BUILD_TOOLS=ON             -DLLAMA_BUILD_EXAMPLES=OFF             -DLLAMA_BUILD_SERVER=OFF             -DLLAMA_BUILD_APP=OFF             -DLLAMA_BUILD_UI=OFF             -DLLAMA_BUILD_MTMD=OFF
+
+      - name: Build llama-tokenize
+        run: cmake --build build/tokenizer --target llama-tokenize --parallel 2
+
+      - name: Verify and package runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifact
+          cp build/tokenizer/bin/llama-tokenize artifact/
+          cp build/tokenizer/bin/lib*.so* artifact/ 2>/dev/null || true
+          cat > artifact/README.txt <<'EOF'
+          Falcon3 GGUF tokenizer diagnostic runtime
+
+          Provenance:
+            BitNet: 0b341e582afbf9e1011f24744b554c96a3477eb5
+            llama.cpp submodule: 390c307752ab78fd8189f359d6954c9ba1be74af
+            GGML_NATIVE: OFF
+            GGML_AVX: OFF
+            GGML_AVX2: OFF
+            GGML_AVX_VNNI: OFF
+            GGML_AVX512: OFF
+            GGML_LLAMAFILE: OFF
+
+          This package only probes tokenization; it does not run inference
+          and does not modify the GGUF. Use the exact model file under test.
+
+          From this directory:
+            export LD_LIBRARY_PATH="$PWD${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+            MODEL=/absolute/path/to/ggml-model-i2_s.gguf
+
+          1) Create literal LF and TAB inputs (not backslash escape sequences):
+            printf '\n' > lf.txt
+            printf '\t' > tab.txt
+            printf 'Ċ' > visible-gpt2-newline.txt
+            printf 'Falcon3 test' > ordinary.txt
+
+          2) Record tokenizer output and IDs:
+            ./llama-tokenize -m "$MODEL" -f lf.txt --ids --no-bos > lf.ids 2> lf.log
+            ./llama-tokenize -m "$MODEL" -f visible-gpt2-newline.txt --ids --no-bos > gpt2-visible.ids 2> gpt2-visible.log
+            ./llama-tokenize -m "$MODEL" -f tab.txt --ids --no-bos > tab.ids 2> tab.log
+            ./llama-tokenize -m "$MODEL" -f ordinary.txt --ids --no-bos > ordinary.ids 2> ordinary.log
+            ./llama-tokenize -m "$MODEL" -f ordinary.txt --ids > ordinary-default-bos.ids 2> ordinary-default-bos.log
+
+          3) Compare:
+            for f in lf gpt2-visible tab ordinary ordinary-default-bos; do
+              echo "===== $f ====="
+              cat "$f.ids"
+              grep -E 'missing newline|load:|vocab' "$f.log" || true
+            done
+
+          Preserve the model SHA256 and all .ids/.log files with the test report.
+          The difference between LF and the visible GPT-2 marker is intentional:
+          one tests byte-level encoding; the other tests a literal vocabulary symbol.
+          EOF
+          tar -czf falcon3-gguf-tokenizer-diagnostic-runtime.tar.gz -C artifact .
+
+      - name: Upload tokenizer diagnostic runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: falcon3-gguf-tokenizer-diagnostic-runtime
+          path: falcon3-gguf-tokenizer-diagnostic-runtime.tar.gz
+          if-no-files-found: error
+          retention-days: 7
