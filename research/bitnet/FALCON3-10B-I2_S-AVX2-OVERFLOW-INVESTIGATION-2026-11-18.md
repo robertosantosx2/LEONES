@@ -308,11 +308,26 @@ El commit `5f76dc3871407df2ac3411e00e971fb454cd0429` usado por el checkout de re
 2. **Hecho en GitHub:** workflow `.github/workflows/bitnet-i2s-avx2-overflow.yml`, que compila el commit público `390c307` dentro del árbol BitNet, con AVX2 explícito y LLAMAFILE desactivado. Run #44272542209 terminó correctamente y confirmó los cuatro resultados esperados. El workaround temporal de `src1_cont` está descrito arriba.
 3. **Pendiente:** añadir vectores de activación capturados de Falcon3 y comparar con referencia escalar.
 4. Comprobar explícitamente la semántica de la compensación `act_sums` y la escala de salida.
-3. Ejecutar sanitización/validación de memoria si procede; el defecto observado es aritmético, no un acceso fuera de límites.
+5. Ejecutar sanitización/validación de memoria si procede; el defecto observado es aritmético, no un acceso fuera de límites.
+
+### Sonda de activaciones reales preparada
+
+Se ha publicado el parche opt-in [0001-i2s-avx2-activation-diagnostics.patch](patches/0001-i2s-avx2-activation-diagnostics.patch) y su guía [AVX2-ACTIVATION-PROBE.md](AVX2-ACTIVATION-PROBE.md). Añade una sombra escalar de los acumuladores por lane y registra estadísticas de las activaciones I8_S en las primeras 64 llamadas al wrapper vec-dot. No cambia los resultados del kernel; añade trabajo diagnóstico y salida a stderr solo si se compila con `GGML_I2S_AVX2_DIAGNOSTICS`.
+
+El parche se aplicó y compiló en [GitHub Actions run #44273231378](https://github.com/robertosantosx2/LEONES/actions/runs/44273231378), que terminó en success. Los valores medidos para K=3072 fueron:
+
+| Patrón sintético | Máximo absoluto de lane | Lane-groups con overflow | Actualizaciones fuera de int16 |
+|---|---:|---:|---:|
+| Todas +127 | 48.768 | 16 | 256 |
+| 90% +127 / 10% -127 | 39.116 | 16 | 128 |
+| Bloques alternos de signo | 2.032 | 0 | 0 |
+| Todas +64 | 24.576 | 0 | 0 |
+
+La sonda ya está validada con datos sintéticos. **Todavía no se ha ejecutado sobre Falcon3**, por lo que no tenemos distribución real de activaciones ni prueba de que el vec-dot sea el camino que usa su inferencia.
 
 ### P1 — confirmar impacto en el modelo
 
-1. Capturar o instrumentar estadísticas de las activaciones I8_S reales durante una operación GEMV de Falcon3.
+1. **Instrumentación preparada en GitHub:** aplicar la sonda publicada y ejecutar una inferencia corta de Falcon3 para capturar estadísticas I8_S reales.
 2. Calcular por lane/bloque el máximo acumulado y contar los overflows potenciales.
 3. Comparar salidas intermedias con referencia escalar o con una implementación AVX2 corregida.
 4. Repetir una inferencia corta de Falcon3 únicamente después de tener una ruta diferencial validada.
