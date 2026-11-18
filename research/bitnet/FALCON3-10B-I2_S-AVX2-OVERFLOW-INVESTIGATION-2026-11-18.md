@@ -459,3 +459,14 @@ El archivo de salida redirigido quedó vacío aunque el CLI mostró la respuesta
 Se publicó en la rama `research/falcon3-i2s-nonavx2-control-2026-11-18` el workflow [bitnet-i2s-nonavx2-control-runtime.yml](../../.github/workflows/bitnet-i2s-nonavx2-control-runtime.yml). Construye el mismo commit de BitNet y submódulo con `GGML_LLAMAFILE=OFF`, `GGML_NATIVE=OFF` y las extensiones opcionales SSE4.2, F16C, FMA, BMI2, AVX, AVX2, AVX-VNNI y AVX512 desactivadas. El objetivo es probar el fallback no-AVX2 como control, no medir rendimiento.
 
 El workflow aplica el workaround temporal de alcance de `src1_cont` exclusivamente en el checkout efímero de CI. La compilación y el artefacto siguen pendientes de GitHub Actions. Si esta ruta no-AVX2 también genera texto incoherente, el defecto investigado deberá buscarse en una parte compartida por ambas rutas (por ejemplo, interpretación I2_S, escalas, conversión o metadatos), sin prejuzgar cuál.
+
+
+### Ajuste del control no-AVX2: configuración de tiles para x86 escalar
+
+Los primeros intentos de CI fallaron en compilación de `ggml-cpu-i2s.c`, porque el `include/gemm-config.h` de BitNet define `ROW_BLOCK_SIZE` y `COL_BLOCK_SIZE` para AVX/AVX2/AVX512 y ARM NEON, pero no contiene una rama para x86 sin esas extensiones. Al desactivar AVX y SSE4.2, el código escalar entra precisamente en esa rama sin definiciones.
+
+Se corrigió el workflow en el propio repositorio de investigación para añadir, solo en el checkout efímero de CI, valores de tiling x86 escalar (`ROW_BLOCK_SIZE=4`, `COL_BLOCK_SIZE=128`, `PARALLEL_SIZE=4`). Son tamaños de bloque para recorrer las filas/columnas; no habilitan instrucciones SIMD. No se modifica el submódulo ni el código de BitNet persistente.
+
+Commit de corrección: `4b33e602e28df839fdd7dc01382a88063959e794`.
+
+La nueva ejecución debe confirmar tanto la compilación como los valores CMake OFF. Si el runtime se publica, se validará que no contiene instrucciones AVX y que el dispatch real usa el fallback no-AVX2 antes de interpretar la generación.
