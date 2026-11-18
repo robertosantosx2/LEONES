@@ -20,16 +20,17 @@ jobs:
       - name: Check out LEONES research
         uses: actions/checkout@v4
 
-      - name: Check out BitNet llama.cpp revision
+      - name: Check out BitNet with its pinned llama.cpp submodule
         uses: actions/checkout@v4
         with:
-          repository: isHuangXin/llama.cpp
-          ref: 390c307752ab78fd8189f359d6954c9ba1be74af
-          path: vendor/llama.cpp
+          repository: microsoft/BitNet
+          ref: 0b341e582afbf9e1011f24744b554c96a3477eb5
+          submodules: recursive
+          path: vendor/BitNet
 
       - name: Configure AVX2 fallback build
         run: |
-          cmake -S vendor/llama.cpp -B build/llama \
+          cmake -S vendor/BitNet -B build/bitnet \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON \
             -DGGML_NATIVE=OFF \
@@ -51,14 +52,14 @@ jobs:
             -DLLAMA_BUILD_MTMD=OFF
 
       - name: Build GGML
-        run: cmake --build build/llama --parallel 2
+        run: cmake --build build/bitnet --target ggml-cpu --parallel 2
 
       - name: Locate and verify AVX2 vec-dot symbol
         id: library
         shell: bash
         run: |
           set -euo pipefail
-          LIB="$(find build/llama -type f -name 'libggml-cpu.so*' -print -quit)"
+          LIB="$(find build/bitnet -type f -name 'libggml-cpu.so*' -print -quit)"
           test -n "$LIB"
           nm -D --defined-only "$LIB" | grep -E '[[:space:]]ggml_vec_dot_i2_i8_s$'
           echo "path=$GITHUB_WORKSPACE/$LIB" >> "$GITHUB_OUTPUT"
