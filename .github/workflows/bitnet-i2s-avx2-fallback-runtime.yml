@@ -37,11 +37,11 @@ jobs:
 
           path = Path("vendor/BitNet/3rdparty/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c")
           source = path.read_text()
-          needle = '    // TODO: extract to "extra_op"\\n#if GGML_USE_LLAMAFILE\\n'
+          needle = '    // TODO: extract to "extra_op"\n#if GGML_USE_LLAMAFILE\n'
           replacement = (
-              '    // TODO: extract to "extra_op"\\n'
-              '    const bool src1_cont = ggml_is_contiguous(src1);\\n'
-              '#if GGML_USE_LLAMAFILE\\n'
+              '    // TODO: extract to "extra_op"\n'
+              '    const bool src1_cont = ggml_is_contiguous(src1);\n'
+              '#if GGML_USE_LLAMAFILE\n'
           )
           if source.count(needle) != 1:
               raise SystemExit("Expected src1_cont scope site was not unique")
