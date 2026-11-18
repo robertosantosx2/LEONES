@@ -50,3 +50,15 @@ Allow the command to finish; do not interrupt it. Inspect
 
 The probe is diagnostic only. It does not establish the cause of the model's
 poor output until the artifact has been run and its records inspected.
+
+## Follow-up: control-token rendering fix
+
+The first local run returned token ID 38 for all 16 sampled positions, with
+`eog=0` and an empty `piece_hex`. This was an instrumentation defect,
+not evidence of an empty token: `common_token_to_piece(ctx, id, false)` deliberately
+returns an empty string for tokens carrying `LLAMA_TOKEN_ATTR_CONTROL` or
+`LLAMA_TOKEN_ATTR_UNKNOWN`. The follow-up workflow logs both
+`llama_vocab_get_text(vocab, id)` (raw vocabulary text) and
+`common_token_to_piece(ctx, id, true)` (rendered token piece), together
+with the token attribute and control/EOG flags. The model and local checkout
+remain unchanged.
