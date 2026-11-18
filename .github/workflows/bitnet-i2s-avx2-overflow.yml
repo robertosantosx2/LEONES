@@ -54,7 +54,7 @@ jobs:
           test -n "$LIB"
           nm -D --defined-only "$LIB" | grep -E '[[:space:]]ggml_vec_dot_i2_i8_s$'
           echo "path=$GITHUB_WORKSPACE/$LIB" >> "$GITHUB_OUTPUT"
-          echo "dir=$GITHUB_WORKSPACE/$(dirname "$LIB")" >> "$GITHUB_OUTPUT"
+          echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/$(dirname "$LIB"):${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
 
       - name: Compile differential reproducer
         run: |
@@ -65,5 +65,4 @@ jobs:
       - name: Run differential reproducer
         env:
           GGML_CPU_LIBRARY: ${{ steps.library.outputs.path }}
-          LD_LIBRARY_PATH: ${{ steps.library.outputs.dir }}:${{ env.LD_LIBRARY_PATH }}
-        run: build/repro_i2s_avx2_dot "$GGML_CPU_LIBRARY"
+        run: build/repro_i2s_avx2_dot "$GGML_CPU_LIBRARY" --expect-baseline
