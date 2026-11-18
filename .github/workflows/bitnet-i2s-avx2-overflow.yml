@@ -40,7 +40,15 @@ jobs:
             -DGGML_AVX512_VNNI=OFF \
             -DGGML_LLAMAFILE=OFF \
             -DGGML_BUILD_TESTS=OFF \
-            -DGGML_BUILD_EXAMPLES=OFF
+            -DGGML_BUILD_EXAMPLES=OFF \
+            -DLLAMA_BUILD_COMMON=OFF \
+            -DLLAMA_BUILD_TESTS=OFF \
+            -DLLAMA_BUILD_TOOLS=OFF \
+            -DLLAMA_BUILD_EXAMPLES=OFF \
+            -DLLAMA_BUILD_SERVER=OFF \
+            -DLLAMA_BUILD_APP=OFF \
+            -DLLAMA_BUILD_UI=OFF \
+            -DLLAMA_BUILD_MTMD=OFF
 
       - name: Build GGML
         run: cmake --build build/llama --parallel 2
