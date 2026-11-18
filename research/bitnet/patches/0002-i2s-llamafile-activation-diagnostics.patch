@@ -1,0 +1,47 @@
+diff --git a/ggml/src/ggml-cpu/llamafile/sgemm.cpp b/ggml/src/ggml-cpu/llamafile/sgemm.cpp
+--- a/ggml/src/ggml-cpu/llamafile/sgemm.cpp
++++ b/ggml/src/ggml-cpu/llamafile/sgemm.cpp
+@@ -55,2 +55,3 @@
+ #include <array>
+ #include <type_traits>
++#include <cstdio>
+@@ -4225,4 +4226,29 @@
+ bool llamafile_sgemm_i2s(const struct ggml_compute_params * params, int64_t m, int64_t n, int64_t k,
+                          const void *A, int64_t lda, const void *B, int64_t ldb, void *C, int64_t ldc,
+                          const float *act_scales, const int32_t *act_sums, float weight_scale) {
+ #if defined(__AVX2__)
++#if defined(GGML_I2S_AVX2_DIAGNOSTICS)
++    static unsigned int diag_call_counter = 0;
++    const unsigned int diag_call = __atomic_fetch_add(&diag_call_counter, 1, __ATOMIC_RELAXED);
++    if (diag_call < 64) {
++        const int8_t * activations = (const int8_t *) B;
++        const int64_t columns_to_log = n < 4 ? n : 4;
++        for (int64_t col = 0; col < columns_to_log; ++col) {
++            const int8_t * row = activations + col * ldb;
++            int act_min = 127;
++            int act_max = -128;
++            int act_pos = 0;
++            int act_neg = 0;
++            int act_zero = 0;
++            long long act_sum = 0;
++            for (int64_t i = 0; i < k; ++i) {
++                const int value = row[i];
++                if (value < act_min) act_min = value;
++                if (value > act_max) act_max = value;
++                if (value > 0) ++act_pos;
++                else if (value < 0) ++act_neg;
++                else ++act_zero;
++                act_sum += value;
++            }
++            std::fprintf(stderr,
++                "I2S_LLAMAFILE_DIAG call=%u m=%lld n=%lld k=%lld col=%lld "
++                "act_min=%d act_max=%d act_pos=%d act_neg=%d act_zero=%d act_sum=%lld\\n",
++                diag_call, (long long) m, (long long) n, (long long) k, (long long) col,
++                act_min, act_max, act_pos, act_neg, act_zero, act_sum);
++        }
++    }
++#endif
+     tinyBLAS_I2S_AVX tb{
+         k, (const uint8_t *)A, lda,
+         (const int8_t *)B, ldb,
+         (float *)C, ldc,
