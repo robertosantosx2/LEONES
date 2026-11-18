@@ -1,7 +1,7 @@
 # Falcon3-10B I2_S — investigación de inferencia incoherente y overflow AVX2
 
 **Proyecto:** LEONES · **Fecha de corte:** 2026-11-18  
-**Estado:** defecto aritmético reproducido en el kernel AVX2 para entradas válidas; dispatch efectivo e impacto E2E sobre Falcon3 todavía pendientes.  
+**Estado:** defecto aritmético sintético reproducido en el kernel AVX2; la sonda sobre Falcon3 no detectó overflow en sus primeras 64 llamadas; la causa E2E de la generación incoherente sigue abierta.  
 **Repositorio bajo investigación:** [microsoft/BitNet](https://github.com/microsoft/BitNet)  
 **Submódulo:** [llama.cpp](https://github.com/ggml-org/llama.cpp) (incluido en BitNet como `3rdparty/llama.cpp`).
 
@@ -423,3 +423,39 @@ Se añadió el workflow [bitnet-i2s-avx2-fallback-runtime.yml](../../.github/wor
 El workflow aplica únicamente en el checkout efímero del runner el workaround de alcance de `src1_cont` ya documentado para compilar LLAMAFILE OFF. No modifica BitNet upstream ni ningún checkout local.
 
 La compilación y el artefacto quedan pendientes del resultado de GitHub Actions. Cuando el job termine correctamente, ejecutar el mismo GGUF y prompt con el runtime LLAMAFILE ON y con este runtime LLAMAFILE OFF, guardando stdout y stderr por separado. La comparación solo será válida si se confirma `I2S_AVX2_DIAG` en la segunda ejecución y `I2S_LLAMAFILE_DIAG` en la primera. Registrar también el texto generado; no inferir causalidad a partir de diferencias de velocidad o de la mera presencia de activaciones cercanas a ±127.
+
+
+## Actualización: sonda AVX2 con activaciones reales de Falcon3 (2026-11-18)
+
+Se ejecutó en el MSI el runtime publicado por GitHub Actions [run #44303652672](https://github.com/robertosantosx2/LEONES/actions/runs/44303652672), artefacto `falcon3-i2s-avx2-fallback-runtime` (ID `14426624455`, SHA-256 `f7cf7aa750b6f9fe565757b9d46d19ea788c8af1be95adc7c3a6281a0c946086`).
+
+Configuración efectiva verificada en el log del job:
+
+- BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`; llama.cpp `390c307752ab78fd8189f359d6954c9ba1be74af`.
+- `GGML_NATIVE=OFF`, `GGML_AVX2=ON`, `GGML_AVX_VNNI=OFF`, `GGML_LLAMAFILE=OFF`.
+- `GGML_I2S_AVX2_DIAGNOSTICS` habilitado.
+- Runtime ejecutado contra el GGUF I2_S local de Falcon3, prompt español, `-n 32`, `-c 512`.
+
+### Resultado medido
+
+La sonda registró 64 llamadas al wrapper vec-dot, todas con `K=3072` y `rows=1`. En las 64:
+
+- `act_min=-127`, `act_max=88`.
+- `act_pos=1220`, `act_neg=1121`, `act_zero=731`, `act_sum=-200`.
+- `overflow_lane_groups=0`.
+- `overflow_updates=0`.
+- Máximo `max_abs_lane` observado en el conjunto: 452.
+
+No apareció ninguna línea `I2S_LLAMAFILE_DIAG`. Por tanto, la ejecución sí alcanzó el vec-dot AVX2 y la sonda no encontró desbordamientos de los acumuladores de 16 bits en esas 64 llamadas.
+
+### Interpretación y límites
+
+La generación volvió a ser incoherente también con LLAMAFILE desactivado. Esto debilita la hipótesis de que el overflow del vec-dot AVX2 sea la causa principal del síntoma E2E observado. No invalida el defecto sintético ya reproducido para entradas válidas ni excluye overflow en llamadas posteriores, otras longitudes o formas.
+
+El archivo de salida redirigido quedó vacío aunque el CLI mostró la respuesta en la terminal; por tanto, esta ejecución no deja todavía un texto generado capturado de forma fiable para una comparación automática. La identidad de las bibliotecas quedó verificada al ejecutar `LD_LIBRARY_PATH="$RUNTIME" ldd "$RUNTIME/llama-cli"`: todas las bibliotecas `libggml*`, `libllama*` y `libmtmd*` se resolvieron desde el directorio del runtime AVX2. El RUNPATH embebido apunta al workspace del runner, pero el `LD_LIBRARY_PATH` explícito tuvo precedencia.
+
+### Siguiente control
+
+Se publicó en la rama `research/falcon3-i2s-nonavx2-control-2026-11-18` el workflow [bitnet-i2s-nonavx2-control-runtime.yml](../../.github/workflows/bitnet-i2s-nonavx2-control-runtime.yml). Construye el mismo commit de BitNet y submódulo con `GGML_LLAMAFILE=OFF`, `GGML_NATIVE=OFF` y las extensiones opcionales SSE4.2, F16C, FMA, BMI2, AVX, AVX2, AVX-VNNI y AVX512 desactivadas. El objetivo es probar el fallback no-AVX2 como control, no medir rendimiento.
+
+El workflow aplica el workaround temporal de alcance de `src1_cont` exclusivamente en el checkout efímero de CI. La compilación y el artefacto siguen pendientes de GitHub Actions. Si esta ruta no-AVX2 también genera texto incoherente, el defecto investigado deberá buscarse en una parte compartida por ambas rutas (por ejemplo, interpretación I2_S, escalas, conversión o metadatos), sin prejuzgar cuál.
