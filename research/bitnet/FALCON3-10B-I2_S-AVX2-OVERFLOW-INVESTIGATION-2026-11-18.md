@@ -230,7 +230,43 @@ La resta `tmp - asum` es necesaria para convertir los códigos sin signo 0/1/2 a
 - **No confirmado:** que este defecto explique por sí solo todos los tokens incoherentes observados.
 - El kernel GEMM especializado tiene una ruta VNNI; la decodificación autoregresiva de una columna usa GEMV y termina en `ggml_vec_dot_i2_i8_s`. No asumir que la ruta GEMM optimizada evita el defecto en el decode.
 
-## 7. Trabajo pendiente y plan de validación
+## 7. Antecedentes upstream: defecto ya reportado en BitNet
+
+La consulta del historial y de los informes públicos de GitHub ha encontrado dos incidencias directamente relacionadas. Por tanto, esta investigación **no debe abrir un reporte duplicado** del mismo overflow.
+
+### Microsoft BitNet #629 — mismo kernel AVX2
+
+[Issue #629: Latent int16 overflow in ggml_vec_dot_i2_i8_s_1x1](https://github.com/microsoft/BitNet/issues/629) (abierta, creada el 13-09-2026) describe el mismo patrón en `ggml/src/ggml-cpu/quants.c`:
+
+- El kernel acumula 128 resultados `vpmaddubsw` por lane de 16 bits antes de reducir a 32 bits.
+- El límite conservador derivado de la máscara 0..3 es 97.536 por lane; incluso los códigos realmente emitidos 0..2 permiten 65.024, ambos por encima de 32.767.
+- El autor midió con pesos reales de BitNet-b1.58-2B-4T y activaciones fijadas a +127: 11.998 de 12.000 filas diferían de la referencia int64.
+- Con activaciones ordinarias de su muestra no observó wraps (0/12.000).
+
+**Matiz de dispatch importante:** el autor indica que, en su build por defecto, `llamafile_sgemm` atiende esas formas y el kernel `ggml_vec_dot_i2_i8_s_1x1` no se invoca (`calls=0`, `sgemm=52068`). La función queda como fallback alcanzable cuando se deshabilita esa ruta. Por ello, el overflow aritmético del símbolo está demostrado, pero no debe inferirse que el camino por defecto de cualquier build lo ejecuta. Es necesario identificar el dispatch real de la configuración de Falcon3 antes de atribuirle el síntoma E2E.
+
+Nuestra prueba independiente con K=3072, códigos 2 y activaciones +127 confirma el mismo wrap en el símbolo AVX2: error bruto -1.048.576 y error idéntico tras la compensación `tmp - act_sum`. No constituye un segundo defecto; es corroboración adicional para una longitud K relevante en Falcon3.
+
+### Microsoft BitNet #628 — acumulación en el GEMM AVX2
+
+[Issue #628: i2_s AVX2 GEMM folds the int16 accumulator 10x more often than its own bound requires](https://github.com/microsoft/BitNet/issues/628) analiza otro punto de acumulación, `tinyBLAS_I2S_AVX::gemm`, en `ggml-cpu/llamafile/sgemm.cpp`. Documenta que el camino GEMM activo pliega la suma int16 en cada bloque, aunque el límite derivado permite agrupar varios bloques, y mide una mejora del 7,5% al reducir pliegues sin cambiar perplexity. También señala un segundo punto en `ggml-cpu-i2s.c`.
+
+#628 y #629 son problemas relacionados por el ancho de acumulación, pero **no son el mismo kernel ni deben fusionarse en una sola corrección sin analizar ambos caminos**.
+
+### Procedencia GitHub de la implementación
+
+El `.gitmodules` público de [microsoft/BitNet](https://github.com/microsoft/BitNet/blob/main/.gitmodules) fija `3rdparty/llama.cpp` a la rama `release-bitnet-embedding-0.6b-270m`, cuyo commit observado es `390c307752ab78fd8189f359d6954c9ba1be74af`. El kernel AVX2 afectado ya está presente en ese commit.
+
+El commit `5f76dc3871407df2ac3411e00e971fb454cd0429` usado por el checkout de reproducción local no está disponible como commit público en el fork consultado mediante GitHub; no debe tratarse como una revisión publicada ni como base de un PR hasta localizar/publicar su procedencia. El análisis y la corrección deberán partir de la revisión pública realmente fijada por BitNet o de una rama upstream posterior verificada.
+
+### Implicación para el plan
+
+- No crear un issue duplicado en Microsoft BitNet: #629 ya registra el overflow del vec-dot AVX2.
+- No asumir que la ruta por defecto invoca ese vec-dot: comprobar el dispatch de la build concreta.
+- Investigar por separado el GEMM tinyBLAS de #628 y el fallback vec-dot de #629.
+- Aportar la reproducción Falcon3 como evidencia complementaria en el seguimiento existente, si el acceso GitHub permite comentar; si no, conservar el enlace y la evidencia en LEONES.
+
+## 8. Trabajo pendiente y plan de validación
 
 ### P0 — cuantificar el defecto
 
@@ -258,7 +294,7 @@ Evaluar una de estas estrategias, sin decidir antes de medir:
 
 Cualquier parche deberá incluir pruebas que cubran el patrón que reproduce el fallo y patrones mixtos. El cambio se desarrollará primero en GitHub, mediante rama y PR; el checkout local se sincronizará después para compilar y validar. No modificar directamente el checkout de trabajo sin autorización expresa.
 
-## 8. Comandos y ubicaciones locales de referencia
+## 9. Comandos y ubicaciones locales de referencia
 
 Repositorio local de trabajo:
 
@@ -292,7 +328,7 @@ logs/fifth_inference_no_bos.log
 
 Otros intentos y salida de depuración se documentaron en la sesión de trabajo. El test C temporal de `dlopen/dlsym` se ejecutó desde `/tmp/test_i2s_overflow.c`; aún debe incorporarse a un directorio de pruebas versionado y ampliarse con casos mixtos antes del PR. Los artefactos binarios grandes (F32, I2_S y pesos HF) permanecen fuera del repositorio LEONES.
 
-## 9. Referencias de código y repositorios
+## 10. Referencias de código y repositorios
 
 - [BitNet — repositorio Microsoft](https://github.com/microsoft/BitNet).
 - [llama.cpp — repositorio upstream](https://github.com/ggml-org/llama.cpp).
