@@ -181,32 +181,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: falcon3-i2s-token-selection-probe-runtime
-          path: falcon3-i2s-tokenizer-probe-runtime.tar.gz
-          if-no-files-found: error
-          retention-days: 7
-<|user|>\n¿Qué es Falcon3?\n<|assistant|>\n' \
-              -n 16 -c 256 -no-cnv --ignore-eos --temp 0 --seed 42 \
-              --no-display-prompt > token-output.txt 2> token-diagnostics.log
-            grep 'I2S_TOKEN_PROBE' token-diagnostics.log
-
-          Tokenization probes (run each independently):
-            ./llama-tokenize -m "$MODEL" -p $'\n' --no-bos --ids
-            ./llama-tokenize -m "$MODEL" -p $'\t' --no-bos --ids
-            ./llama-tokenize -m "$MODEL" -p 'Hola mundo' --no-bos --ids
-            ./llama-tokenize -m "$MODEL" -p 'Hola\nmundo' --no-bos --ids
-            ./llama-tokenize -m "$MODEL" -p 'Responde brevemente en español: ¿qué es Falcon3?' --no-bos --ids
-
-          Also compare default BOS behavior by omitting --no-bos. Save stdout
-          and stderr separately. The expected tokenizer evidence is the exact
-          token IDs and decoded pieces; do not infer generation behavior from
-          the warning alone.
-          EOF
-          tar -czf falcon3-i2s-tokenizer-probe-runtime.tar.gz -C artifact .
-
-      - name: Upload tokenizer probe runtime
-        uses: actions/upload-artifact@v4
-        with:
-          name: falcon3-i2s-tokenizer-probe-runtime
-          path: falcon3-i2s-tokenizer-probe-runtime.tar.gz
+          path: falcon3-i2s-token-selection-probe-runtime.tar.gz
           if-no-files-found: error
           retention-days: 7
