@@ -46,10 +46,18 @@ jobs:
           path.write_text(source.replace(needle, replacement, 1))
           PY
 
+      - name: Apply opt-in activation diagnostics patch
+        run: |
+          git -C vendor/BitNet/3rdparty/llama.cpp apply --check \
+            "$GITHUB_WORKSPACE/research/bitnet/patches/0001-i2s-avx2-activation-diagnostics.patch"
+          git -C vendor/BitNet/3rdparty/llama.cpp apply \
+            "$GITHUB_WORKSPACE/research/bitnet/patches/0001-i2s-avx2-activation-diagnostics.patch"
+
       - name: Configure AVX2 fallback build
         run: |
           cmake -S vendor/BitNet -B build/bitnet \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=Release \\
+            -DCMAKE_C_FLAGS=-DGGML_I2S_AVX2_DIAGNOSTICS \
             -DBUILD_SHARED_LIBS=ON \
             -DGGML_NATIVE=OFF \
             -DGGML_AVX=ON \
