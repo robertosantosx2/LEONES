@@ -91,7 +91,7 @@ jobs:
                               piece_hex.push_back(hex[(byte >> 4) & 0x0f]);
                               piece_hex.push_back(hex[byte & 0x0f]);
                           }
-                          LOG_INF("I2S_TOKEN_PROBE index=%d id=%d eog=%d piece_hex=%s\\\\n",
+                          LOG_INF("I2S_TOKEN_PROBE index=%d id=%d eog=%d piece_hex=%s\\n",
                                   i2s_probe_token_index, id, llama_vocab_is_eog(vocab, id),
                                   piece_hex.c_str());
                           ++i2s_probe_token_index;
@@ -149,46 +149,38 @@ jobs:
             fi
           done
           cat > artifact/README.txt <<'EOF'
-          Falcon3 I2_S non-AVX2 tokenizer probe runtime
+          Falcon3 I2_S non-AVX2 token-selection probe runtime
 
           Build provenance:
             BitNet: 0b341e582afbf9e1011f24744b554c96a3477eb5
             llama.cpp submodule: 390c307752ab78fd8189f359d6954c9ba1be74af
-            GGML_NATIVE: OFF
-            GGML_SSE42/F16C/FMA/BMI2: OFF
-            GGML_AVX/AVX2/AVX_VNNI/AVX512/AVX512_VNNI: OFF
-            GGML_LLAMAFILE: OFF
+            GGML_NATIVE: OFF; AVX/SSE/FMA/BMI2: OFF; LLAMAFILE: OFF
 
-          This diagnostic runtime is built from the same pinned scalar source as the
-          prior tokenizer probe. The completion executable logs the first 16
-          sampled tokens as I2S_TOKEN_PROBE records (index, token ID, EOG flag,
-          and exact piece bytes in hexadecimal). The instrumentation is applied
-          only in this ephemeral CI checkout; it does not modify the model or
-          the user's local checkout.
+          The completion executable logs the first 16 sampled tokens as
+          I2S_TOKEN_PROBE records: index, token ID, EOG flag, and exact token
+          piece bytes in hexadecimal. Instrumentation is applied only in this
+          ephemeral CI checkout. The model and local checkout are untouched.
 
           Usage:
             export LD_LIBRARY_PATH="$PWD"
             MODEL=/path/to/ggml-model-i2_s.gguf
 
-          Generation probe (allow it to finish; do not press Ctrl+C):
+          Generation probe (let it finish; do not press Ctrl+C):
             ./llama-completion -m "$MODEL" \
-              -p             ./llama-tokenize -m "$MODEL" -p $'\n' --no-bos --ids
-            ./llama-tokenize -m "$MODEL" -p $'\t' --no-bos --ids
-            ./llama-tokenize -m "$MODEL" -p 'Hola mundo' --no-bos --ids
-            ./llama-tokenize -m "$MODEL" -p 'Hola\nmundo' --no-bos --ids
-            ./llama-tokenize -m "$MODEL" -p 'Responde brevemente en español: ¿qué es Falcon3?' --no-bos --ids
+              -p $'<|user|>\n¿Qué es Falcon3?\n<|assistant|>\n' \
+              -n 16 -c 256 -no-cnv --ignore-eos --temp 0 --seed 42 \
+              --no-display-prompt > token-output.txt 2> token-diagnostics.log
+            grep 'I2S_TOKEN_PROBE' token-diagnostics.log
 
-          Also compare default BOS behavior by omitting --no-bos. Save stdout
-          and stderr separately. The expected tokenizer evidence is the exact
-          token IDs and decoded pieces; do not infer generation behavior from
-          the warning alone.
+          The stdout file is not the source of truth; inspect the diagnostic
+          records in stderr. Decode piece_hex as UTF-8 after reading the IDs.
           EOF
-          tar -czf falcon3-i2s-tokenizer-probe-runtime.tar.gz -C artifact .
+          tar -czf falcon3-i2s-token-selection-probe-runtime.tar.gz -C artifact .
 
-      - name: Upload tokenizer probe runtime
+      - name: Upload token-selection probe runtime
         uses: actions/upload-artifact@v4
         with:
-          name: falcon3-i2s-tokenizer-probe-runtime
+          name: falcon3-i2s-token-selection-probe-runtime
           path: falcon3-i2s-tokenizer-probe-runtime.tar.gz
           if-no-files-found: error
           retention-days: 7
