@@ -262,6 +262,25 @@ Nuestra prueba independiente con K=3072, códigos 2 y activaciones +127 confirma
 
 El harness versionado ahora distingue comportamiento esperado del baseline: espera overflow para +127 y para el patrón 90% +127 / 10% -127; espera coincidencia exacta para bloques alternos de signo y para +64. El modo predeterminado exige exactitud en todos los patrones y servirá como prueba de regresión tras corregir el kernel.
 
+### Ejecución CI confirmada
+
+[GitHub Actions run #44272542209](https://github.com/robertosantosx2/LEONES/actions/runs/44272542209), commit LEONES `11630f398a29d114d01a6793a6c88abad0004035`, terminó en **success** el 2026-11-18. El runner Ubuntu 24.04 descargó BitNet commit `0b341e582afbf9e1011f24744b554c96a3477eb5` y su submódulo llama.cpp fijado a `390c307752ab78fd8189f359d6954c9ba1be74af`; compiló el backend CPU con AVX2 ON, AVX-VNNI OFF, AVX512 OFF y LLAMAFILE OFF. El símbolo exportado fue localizado y el reproductor se compiló con `-Wall -Wextra -Werror`.
+
+Resultados observados en el runner:
+
+| Patrón | Referencia raw | SIMD raw | Diferencia | Resultado esperado |
+|---|---:|---:|---:|---|
+| Todas +127 | 780.288 | -268.288 | -1.048.576 | Overflow |
+| 90% +127 / 10% -127 | 623.824 | -424.752 | -1.048.576 | Overflow |
+| Bloques alternos de 128 | 0 | 0 | 0 | Exacto |
+| Todas +64 | 393.216 | 393.216 | 0 | Exacto |
+
+El harness terminó con `cases=4 unexpected_cases=0 result=PASS`. Esto confirma el comportamiento del símbolo en el commit público y en el fallback AVX2, con dos patrones sintéticos que desbordan y dos controles que no.
+
+**Limitación del build CI:** la revisión pública contiene un defecto de compilación ajeno al vec-dot: `src1_cont` se declara dentro de `#if GGML_USE_LLAMAFILE`, pero se utiliza fuera de ese bloque. Para compilar la configuración LLAMAFILE OFF, el workflow aplica en el checkout efímero del runner una corrección de alcance de una línea antes de CMake. No modifica el repositorio upstream ni el kernel probado. El build y la prueba se ejecutaron después de esa corrección temporal.
+
+El CI verifica la aritmética del símbolo; no verifica que la ruta de inferencia de Falcon3 lo invoque ni mide activaciones reales del modelo.
+
 ### Microsoft BitNet #628 — acumulación en el GEMM AVX2
 
 [Issue #628: i2_s AVX2 GEMM folds the int16 accumulator 10x more often than its own bound requires](https://github.com/microsoft/BitNet/issues/628) analiza otro punto de acumulación, `tinyBLAS_I2S_AVX::gemm`, en `ggml-cpu/llamafile/sgemm.cpp`. Documenta que el camino GEMM activo pliega la suma int16 en cada bloque, aunque el límite derivado permite agrupar varios bloques, y mide una mejora del 7,5% al reducir pliegues sin cambiar perplexity. También señala un segundo punto en `ggml-cpu-i2s.c`.
@@ -286,7 +305,7 @@ El commit `5f76dc3871407df2ac3411e00e971fb454cd0429` usado por el checkout de re
 ### P0 — cuantificar el defecto
 
 1. **Hecho en GitHub:** harness diferencial versionado en `research/bitnet/reproducers/repro_i2s_avx2_dot.c`, con cuatro patrones y referencia int64.
-2. **Hecho en GitHub:** workflow `.github/workflows/bitnet-i2s-avx2-overflow.yml`, que compila el commit público `390c307752ab78fd8189f359d6954c9ba1be74af` con AVX2 explícito y LLAMAFILE desactivado, y ejecuta el baseline esperado. La ejecución CI todavía debe observarse; crear el workflow no equivale a una prueba pasada.
+2. **Hecho en GitHub:** workflow `.github/workflows/bitnet-i2s-avx2-overflow.yml`, que compila el commit público `390c307` dentro del árbol BitNet, con AVX2 explícito y LLAMAFILE desactivado. Run #44272542209 terminó correctamente y confirmó los cuatro resultados esperados. El workaround temporal de `src1_cont` está descrito arriba.
 3. **Pendiente:** añadir vectores de activación capturados de Falcon3 y comparar con referencia escalar.
 4. Comprobar explícitamente la semántica de la compensación `act_sums` y la escala de salida.
 3. Ejecutar sanitización/validación de memoria si procede; el defecto observado es aritmético, no un acceso fuera de límites.
