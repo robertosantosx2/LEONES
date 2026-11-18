@@ -1,7 +1,7 @@
 # Falcon3-10B I2_S — investigación de inferencia incoherente y overflow AVX2
 
 **Proyecto:** LEONES · **Fecha de corte:** 2026-11-18  
-**Estado:** defecto aritmético reproducido en el kernel AVX2; impacto sobre Falcon3 muy probable, causalidad E2E todavía pendiente.  
+**Estado:** defecto aritmético reproducido en el kernel AVX2 para entradas válidas; dispatch efectivo e impacto E2E sobre Falcon3 todavía pendientes.  
 **Repositorio bajo investigación:** [microsoft/BitNet](https://github.com/microsoft/BitNet)  
 **Submódulo:** [llama.cpp](https://github.com/ggml-org/llama.cpp) (incluido en BitNet como `3rdparty/llama.cpp`).
 
@@ -139,7 +139,7 @@ Función:
 
 `ggml_vec_dot_i2_i8_s_1x1()`
 
-Ruta activa cuando `__AVX2__` está definido.
+Ruta AVX2 compilada cuando `__AVX2__` está definido. Su ejecución efectiva depende del dispatch de GEMM/GEMV y de si `llamafile_sgemm_i2s()` resuelve la operación antes.
 
 En los bucles de acumulación se ejecuta:
 
@@ -228,7 +228,10 @@ La resta `tmp - asum` es necesaria para convertir los códigos sin signo 0/1/2 a
 - **Confirmado:** el binario CPU analizado compila la ruta AVX2; el objeto desensamblado contiene `vpmaddubsw`, `vpaddw` y `vpaddd`, sin `vpdpbusd` en este símbolo.
 - **No confirmado:** frecuencia del overflow con activaciones reales de Falcon3.
 - **No confirmado:** que este defecto explique por sí solo todos los tokens incoherentes observados.
-- El kernel GEMM especializado tiene una ruta VNNI; la decodificación autoregresiva de una columna usa GEMV y termina en `ggml_vec_dot_i2_i8_s`. No asumir que la ruta GEMM optimizada evita el defecto en el decode.
+- **No confirmado:** que la inferencia de Falcon3 en la configuración investigada llegue realmente a este símbolo.
+- En `ggml-cpu.c`, cuando `GGML_USE_LLAMAFILE` está habilitado, el dispatcher intenta primero `llamafile_sgemm_i2s()`. Si esa función resuelve la operación, el llamador retorna y no alcanza el fast path I2_S de GEMV/GEMM. Si no la resuelve, el fast path propio procesa bloques de cuatro columnas mediante `ggml_gemm_i2_i8_s()` y las columnas restantes mediante `ggml_gemv_i2_i8_s()`; esta última llama a `ggml_vec_dot_i2_i8_s()`.
+- La issue [microsoft/BitNet#629](https://github.com/microsoft/BitNet/issues/629) informa que en su build por defecto el vec-dot no se invoca (`calls=0`, `sgemm=52068`) porque `llamafile_sgemm` atiende las formas. Ese dato no puede extrapolarse automáticamente a nuestro build, pero obliga a verificar el dispatch antes de atribuirle el fallo E2E.
+- El GEMM especializado `ggml_gemm_i2_i8_s()` tiene una rama AVX-VNNI que acumula en 32 bits; la rama AVX2 no-VNNI forma una suma int16 por bloque y la pliega inmediatamente a int32. Es distinta del vec-dot residual y del `tinyBLAS_I2S_AVX::gemm` analizado en [microsoft/BitNet#628](https://github.com/microsoft/BitNet/issues/628).
 
 ## 7. Antecedentes upstream: defecto ya reportado en BitNet
 
