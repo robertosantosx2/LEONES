@@ -36,11 +36,11 @@ jobs:
 
           path = Path("vendor/BitNet/3rdparty/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c")
           source = path.read_text()
-          needle = '    // TODO: extract to "extra_op"\\n#if GGML_USE_LLAMAFILE\\n'
+          needle = '    // TODO: extract to "extra_op"\n#if GGML_USE_LLAMAFILE\n'
           replacement = (
-              '    // TODO: extract to "extra_op"\\n'
-              '    const bool src1_cont = ggml_is_contiguous(src1);\\n'
-              '#if GGML_USE_LLAMAFILE\\n'
+              '    // TODO: extract to "extra_op"\n'
+              '    const bool src1_cont = ggml_is_contiguous(src1);\n'
+              '#if GGML_USE_LLAMAFILE\n'
           )
           if source.count(needle) != 1:
               raise SystemExit("Expected src1_cont scope site was not unique")
@@ -49,27 +49,27 @@ jobs:
 
       - name: Configure LLAMAFILE-OFF non-AVX2 control runtime
         run: |
-          cmake -S vendor/BitNet -B build/bitnet-nonavx2-control \\
-            -DCMAKE_BUILD_TYPE=Release \\
-            -DBUILD_SHARED_LIBS=ON \\
-            -DGGML_NATIVE=OFF \\
-            -DGGML_SSE42=OFF \\
-            -DGGML_F16C=OFF \\
-            -DGGML_FMA=OFF \\
-            -DGGML_BMI2=OFF \\
-            -DGGML_AVX=OFF \\
-            -DGGML_AVX2=OFF \\
-            -DGGML_AVX_VNNI=OFF \\
-            -DGGML_AVX512=OFF \\
-            -DGGML_AVX512_VNNI=OFF \\
-            -DGGML_LLAMAFILE=OFF \\
-            -DLLAMA_BUILD_COMMON=ON \\
-            -DLLAMA_BUILD_TESTS=OFF \\
-            -DLLAMA_BUILD_TOOLS=ON \\
-            -DLLAMA_BUILD_EXAMPLES=OFF \\
-            -DLLAMA_BUILD_SERVER=OFF \\
-            -DLLAMA_BUILD_APP=OFF \\
-            -DLLAMA_BUILD_UI=OFF \\
+          cmake -S vendor/BitNet -B build/bitnet-nonavx2-control \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DGGML_NATIVE=OFF \
+            -DGGML_SSE42=OFF \
+            -DGGML_F16C=OFF \
+            -DGGML_FMA=OFF \
+            -DGGML_BMI2=OFF \
+            -DGGML_AVX=OFF \
+            -DGGML_AVX2=OFF \
+            -DGGML_AVX_VNNI=OFF \
+            -DGGML_AVX512=OFF \
+            -DGGML_AVX512_VNNI=OFF \
+            -DGGML_LLAMAFILE=OFF \
+            -DLLAMA_BUILD_COMMON=ON \
+            -DLLAMA_BUILD_TESTS=OFF \
+            -DLLAMA_BUILD_TOOLS=ON \
+            -DLLAMA_BUILD_EXAMPLES=OFF \
+            -DLLAMA_BUILD_SERVER=OFF \
+            -DLLAMA_BUILD_APP=OFF \
+            -DLLAMA_BUILD_UI=OFF \
             -DLLAMA_BUILD_MTMD=OFF
 
       - name: Build llama-cli
@@ -116,7 +116,7 @@ jobs:
           benchmark or production runtime.
 
           Run from this directory:
-            export LD_LIBRARY_PATH="$PWD${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+            export LD_LIBRARY_PATH="$PWD"
             ./llama-cli -m /path/to/ggml-model-i2_s.gguf -p "Responde brevemente en español: ¿qué es Falcon3?" -n 32 -c 512 --single-turn --no-display-prompt > falcon3-i2s-output.txt 2> falcon3-i2s-diagnostics.log
 
           Inspect:
