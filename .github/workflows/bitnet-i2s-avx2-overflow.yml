@@ -150,3 +150,88 @@ jobs:
 
       - name: Build GGML LLAMAFILE backend
         run: cmake --build build/bitnet-llamafile --target ggml-cpu --parallel 2
+
+  build-instrumented-cli:
+    name: Package instrumented Falcon3 llama-cli
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out LEONES research
+        uses: actions/checkout@v4
+
+      - name: Check out BitNet with its pinned llama.cpp submodule
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/BitNet
+          ref: 0b341e582afbf9e1011f24744b554c96a3477eb5
+          submodules: recursive
+          path: vendor/BitNet
+
+      - name: Apply vec-dot and LLAMAFILE activation probes
+        run: |
+          git -C vendor/BitNet/3rdparty/llama.cpp apply \
+            "$GITHUB_WORKSPACE/research/bitnet/patches/0001-i2s-avx2-activation-diagnostics.patch"
+          git -C vendor/BitNet/3rdparty/llama.cpp apply \
+            "$GITHUB_WORKSPACE/research/bitnet/patches/0002-i2s-llamafile-activation-diagnostics.patch"
+
+      - name: Configure instrumented LLAMAFILE runtime
+        run: |
+          cmake -S vendor/BitNet -B build/bitnet-runtime \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS=-DGGML_I2S_AVX2_DIAGNOSTICS \
+            -DCMAKE_CXX_FLAGS=-DGGML_I2S_AVX2_DIAGNOSTICS \
+            -DBUILD_SHARED_LIBS=ON \
+            -DGGML_NATIVE=OFF \
+            -DGGML_AVX=ON \
+            -DGGML_AVX2=ON \
+            -DGGML_AVX_VNNI=OFF \
+            -DGGML_AVX512=OFF \
+            -DGGML_AVX512_VNNI=OFF \
+            -DGGML_LLAMAFILE=ON \
+            -DLLAMA_BUILD_COMMON=ON \
+            -DLLAMA_BUILD_TESTS=OFF \
+            -DLLAMA_BUILD_TOOLS=ON \
+            -DLLAMA_BUILD_EXAMPLES=OFF \
+            -DLLAMA_BUILD_SERVER=OFF \
+            -DLLAMA_BUILD_APP=OFF \
+            -DLLAMA_BUILD_UI=OFF \
+            -DLLAMA_BUILD_MTMD=OFF
+
+      - name: Build llama-cli
+        run: cmake --build build/bitnet-runtime --target llama-cli --parallel 2
+
+      - name: Package runtime and invocation notes
+        run: |
+          mkdir -p artifact
+          cp build/bitnet-runtime/bin/llama-cli artifact/
+          find build/bitnet-runtime/bin -maxdepth 1 -type f -name 'lib*.so*' -exec cp {} artifact/ ;
+          cat > artifact/README.txt <<'EOF'
+          Falcon3 I2_S diagnostic runtime
+
+          Build provenance:
+            BitNet: 0b341e582afbf9e1011f24744b554c96a3477eb5
+            llama.cpp submodule: 390c307752ab78fd8189f359d6954c9ba1be74af
+            AVX2: ON
+            AVX-VNNI: OFF
+            LLAMAFILE: ON
+            GGML_I2S_AVX2_DIAGNOSTICS: enabled in C and C++
+
+          Run from this directory (replace the model path):
+            export LD_LIBRARY_PATH="$PWD${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+            ./llama-cli -m /path/to/ggml-model-i2_s.gguf -p "Responde brevemente en español: ¿qué es Falcon3?" -n 32 -c 512 2>falcon3-i2s-diagnostics.log
+
+          Inspect the route diagnostics:
+            grep -E 'I2S_LLAMAFILE_DIAG|I2S_AVX2_DIAG' falcon3-i2s-diagnostics.log
+
+          LLAMAFILE diagnostics indicate the fused GEMM path. Vec-dot diagnostics
+          indicate the fallback wrapper. The first 64 calls to each instrumented
+          entry point are logged. This runtime is for diagnosis, not benchmarking.
+          EOF
+          tar -czf falcon3-i2s-llamafile-diag-runtime.tar.gz -C artifact .
+
+      - name: Upload instrumented runtime artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: falcon3-i2s-llamafile-diag-runtime
+          path: falcon3-i2s-llamafile-diag-runtime.tar.gz
+          if-no-files-found: error
+          retention-days: 7
