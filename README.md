@@ -4,6 +4,10 @@
 
 IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y evidenciar — sin confundir ESTIMATED con MEASURED.
 
+## Investigación BitNet / Falcon3
+
+- **[Falcon3-10B I2_S — investigación de overflow AVX2](research/bitnet/FALCON3-10B-I2_S-AVX2-OVERFLOW-INVESTIGATION-2026-11-18.md)**: conversión HF→GGUF, validación I2_S, diagnóstico del kernel AVX2 y plan de reproducción/corrección. Seguimiento: [Issue #157](https://github.com/robertosantosx2/LEONES/issues/157).
+
 ## Proyectos de investigación y arquitectura
 
 - **[NEPENTHES — índice, roadmap y campañas](research/moe/tandem.cpp/NEPENTHES-INDEX.md)**: instrumentación universal de motores, captura JSONL, CLI, Nsight/CUPTI, importación LEONES, campañas físicas, informes y gates de aceptación.
