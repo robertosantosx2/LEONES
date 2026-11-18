@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build-nonavx2-control:
-    name: Build LLAMAFILE-OFF non-AVX2 control llama-cli
+    name: Build LLAMAFILE-OFF non-AVX2 control llama-completion
     runs-on: ubuntu-24.04
     steps:
       - name: Check out LEONES research
@@ -96,8 +96,8 @@ jobs:
             -DLLAMA_BUILD_UI=OFF \
             -DLLAMA_BUILD_MTMD=OFF
 
-      - name: Build llama-cli
-        run: cmake --build build/bitnet-nonavx2-control --target llama-cli --parallel 2
+      - name: Build llama-completion
+        run: cmake --build build/bitnet-nonavx2-control --target llama-completion --parallel 2
 
       - name: Verify build configuration and package runtime
         shell: bash
@@ -110,7 +110,7 @@ jobs:
           done
           grep -q '^GGML_NATIVE:BOOL=OFF$' "$CACHE"
           mkdir -p artifact
-          cp build/bitnet-nonavx2-control/bin/llama-cli artifact/
+          cp build/bitnet-nonavx2-control/bin/llama-completion artifact/
           for lib in build/bitnet-nonavx2-control/bin/lib*.so*; do
             if [ -f "$lib" ]; then
               cp "$lib" artifact/
@@ -141,7 +141,7 @@ jobs:
 
           Run from this directory:
             export LD_LIBRARY_PATH="$PWD"
-            ./llama-cli -m /path/to/ggml-model-i2_s.gguf -p "Responde brevemente en español: ¿qué es Falcon3?" -n 32 -c 512 --single-turn --no-display-prompt > falcon3-i2s-output.txt 2> falcon3-i2s-diagnostics.log
+            ./llama-completion -m /path/to/ggml-model-i2_s.gguf -p "Responde brevemente en español: ¿qué es Falcon3?" -n 32 -c 512 -no-cnv --no-display-prompt > falcon3-i2s-output.txt 2> falcon3-i2s-diagnostics.log
 
           Inspect:
             cat falcon3-i2s-output.txt
