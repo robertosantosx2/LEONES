@@ -1,10 +1,15 @@
 diff --git a/ggml/src/ggml-cpu/llamafile/sgemm.cpp b/ggml/src/ggml-cpu/llamafile/sgemm.cpp
 --- a/ggml/src/ggml-cpu/llamafile/sgemm.cpp
 +++ b/ggml/src/ggml-cpu/llamafile/sgemm.cpp
-@@ -57,2 +57,3 @@
+@@ -54,7 +54,8 @@
+ #include "ggml-quants.h"
+ #include "simd-mappings.h"
+
  #include <array>
  #include <type_traits>
 +#include <cstdio>
+
+ #ifdef _MSC_VER
 @@ -4225,4 +4225,35 @@
  bool llamafile_sgemm_i2s(const struct ggml_compute_params * params, int64_t m, int64_t n, int64_t k,
                           const void *A, int64_t lda, const void *B, int64_t ldb, void *C, int64_t ldc,
