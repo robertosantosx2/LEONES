@@ -47,6 +47,30 @@ jobs:
           path.write_text(source.replace(needle, replacement, 1))
           PY
 
+      - name: Add x86 scalar I2_S tile defaults
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("vendor/BitNet/include/gemm-config.h")
+          source = path.read_text()
+          old = "#endif // __ARM_FEATURE_DOTPROD\n#endif // __AVX__\n"
+          new = (
+              "#endif // __ARM_FEATURE_DOTPROD\n"
+              "#else\n"
+              "/* Scalar x86 fallback: tile sizes do not require SIMD. */\n"
+              "#define ROW_BLOCK_SIZE 4\n"
+              "#define COL_BLOCK_SIZE 128\n"
+              "#define PARALLEL_SIZE 4\n"
+              "#endif // __AVX__\n"
+          )
+          if source.count(old) != 1:
+              raise SystemExit("Could not locate the unique gemm-config.h architecture tail")
+          path.write_text(source.replace(old, new, 1))
+          PY
+
       - name: Configure LLAMAFILE-OFF non-AVX2 control runtime
         run: |
           cmake -S vendor/BitNet -B build/bitnet-nonavx2-control \
