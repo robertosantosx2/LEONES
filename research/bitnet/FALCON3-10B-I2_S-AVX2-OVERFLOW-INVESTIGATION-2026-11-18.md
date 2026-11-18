@@ -229,9 +229,10 @@ La resta `tmp - asum` es necesaria para convertir los códigos sin signo 0/1/2 a
 - **No confirmado:** frecuencia del overflow con activaciones reales de Falcon3.
 - **No confirmado:** que este defecto explique por sí solo todos los tokens incoherentes observados.
 - **No confirmado:** que la inferencia de Falcon3 en la configuración investigada llegue realmente a este símbolo.
-- En `ggml-cpu.c`, cuando `GGML_USE_LLAMAFILE` está habilitado, el dispatcher intenta primero `llamafile_sgemm_i2s()`. Si esa función resuelve la operación, el llamador retorna y no alcanza el fast path I2_S de GEMV/GEMM. Si no la resuelve, el fast path propio procesa bloques de cuatro columnas mediante `ggml_gemm_i2_i8_s()` y las columnas restantes mediante `ggml_gemv_i2_i8_s()`; esta última llama a `ggml_vec_dot_i2_i8_s()`.
-- La issue [microsoft/BitNet#629](https://github.com/microsoft/BitNet/issues/629) informa que en su build por defecto el vec-dot no se invoca (`calls=0`, `sgemm=52068`) porque `llamafile_sgemm` atiende las formas. Ese dato no puede extrapolarse automáticamente a nuestro build, pero obliga a verificar el dispatch antes de atribuirle el fallo E2E.
-- El GEMM especializado `ggml_gemm_i2_i8_s()` tiene una rama AVX-VNNI que acumula en 32 bits; la rama AVX2 no-VNNI forma una suma int16 por bloque y la pliega inmediatamente a int32. Es distinta del vec-dot residual y del `tinyBLAS_I2S_AVX::gemm` analizado en [microsoft/BitNet#628](https://github.com/microsoft/BitNet/issues/628).
+- El dispatcher de `ggml-cpu.c`, cuando `GGML_USE_LLAMAFILE` está habilitado, intenta primero `llamafile_sgemm_i2s()`. En AVX2 esta función llama a `tinyBLAS_I2S_AVX::matmul()` y devuelve éxito; no llega al vec-dot. La clase mantiene acumuladores int32 y pliega una suma int16 por bloque de 128 elementos.
+- Si LLAMAFILE está deshabilitado, el fast path I2_S propio procesa bloques de cuatro columnas con `ggml_gemm_i2_i8_s()` y las columnas restantes con `ggml_gemv_i2_i8_s()`; para generación de una columna, GEMV llama al vec-dot AVX2 investigado.
+- El CMake de ggml deja `GGML_LLAMAFILE_DEFAULT=OFF` cuando el proyecto padre no lo define. El `setup_env.py` público de BitNet no pasa una opción para activarlo. Esto hace plausible que la ruta vec-dot sea la usada en una build estándar de BitNet, pero la configuración efectiva del build local de Falcon3 sigue sin estar verificada.
+- El GEMM propio `ggml_gemm_i2_i8_s()` tiene una rama AVX-VNNI que acumula en 32 bits; la rama AVX2 no-VNNI calcula una suma int16 por bloque y la pliega inmediatamente a int32. El `tinyBLAS_I2S_AVX::gemm` de LLAMAFILE hace lo mismo en cuanto a acumulación por bloque; #628 analiza el coste de ese pliegue frecuente, no el overflow prolongado del vec-dot.
 
 ## 7. Antecedentes upstream: defecto ya reportado en BitNet
 
@@ -246,7 +247,16 @@ La consulta del historial y de los informes públicos de GitHub ha encontrado do
 - El autor midió con pesos reales de BitNet-b1.58-2B-4T y activaciones fijadas a +127: 11.998 de 12.000 filas diferían de la referencia int64.
 - Con activaciones ordinarias de su muestra no observó wraps (0/12.000).
 
-**Matiz de dispatch importante:** el autor indica que, en su build por defecto, `llamafile_sgemm` atiende esas formas y el kernel `ggml_vec_dot_i2_i8_s_1x1` no se invoca (`calls=0`, `sgemm=52068`). La función queda como fallback alcanzable cuando se deshabilita esa ruta. Por ello, el overflow aritmético del símbolo está demostrado, pero no debe inferirse que el camino por defecto de cualquier build lo ejecuta. Es necesario identificar el dispatch real de la configuración de Falcon3 antes de atribuirle el síntoma E2E.
+**Matiz de dispatch importante:** el autor indica que, en su build, `llamafile_sgemm` atiende esas formas y el kernel `ggml_vec_dot_i2_i8_s_1x1` no se invoca (`calls=0`, `sgemm=52068`). Esto depende de compilar con `GGML_USE_LLAMAFILE`; no es universal para todas las builds.
+
+La revisión del código público aclara ambos caminos:
+
+- Con `GGML_USE_LLAMAFILE` y AVX2, `ggml-cpu.c` llama a `llamafile_sgemm_i2s()`. En `sgemm.cpp`, esa función construye `tinyBLAS_I2S_AVX`, ejecuta `matmul()` y devuelve `true`; el dispatcher retorna sin llegar a GEMV ni al vec-dot.
+- Ese GEMM tinyBLAS mantiene acumuladores `int32` y convierte cada suma parcial de 128 elementos desde `int16` a `int32` dentro del bucle. El máximo absoluto conservador de la suma por bloque, con códigos 0..3 y activaciones [-128,127], es 3.072, inferior a 32.767. No presenta la misma acumulación int16 prolongada del vec-dot.
+- Sin `GGML_USE_LLAMAFILE`, el fast path I2_S propio de `ggml-cpu.c` procesa lotes de cuatro columnas con `ggml_gemm_i2_i8_s()` y las columnas restantes con `ggml_gemv_i2_i8_s()`. En generación de una columna, GEMV llama al vec-dot AVX2 investigado.
+- En `ggml/CMakeLists.txt`, `GGML_LLAMAFILE_DEFAULT` queda en OFF si el proyecto padre no lo define; `GGML_LLAMAFILE` hereda ese valor. El `setup_env.py` público de BitNet no pasa `-DGGML_LLAMAFILE=ON` ni define `GGML_LLAMAFILE_DEFAULT`. Por tanto, la ruta habitual de ese script apunta a LLAMAFILE desactivado, salvo configuración externa/cache previa.
+
+Así, la observación de #629 sobre `calls=0` no debe extrapolarse a la build de Falcon3. La configuración exacta de la build local no está almacenada en GitHub y no se puede dar por verificada todavía. El overflow del vec-dot puede ser alcanzable si LLAMAFILE está desactivado, pero aún hay que demostrar que ocurre con activaciones reales de Falcon3.
 
 Nuestra prueba independiente con K=3072, códigos 2 y activaciones +127 confirma el mismo wrap en el símbolo AVX2: error bruto -1.048.576 y error idéntico tras la compensación `tmp - act_sum`. No constituye un segundo defecto; es corroboración adicional para una longitud K relevante en Falcon3.
 
