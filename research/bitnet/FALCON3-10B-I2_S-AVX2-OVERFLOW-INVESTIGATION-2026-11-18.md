@@ -339,7 +339,7 @@ logs/fourth_inference_completion.log
 logs/fifth_inference_no_bos.log
 ```
 
-Otros intentos y salida de depuración se documentaron en la sesión de trabajo. El test C temporal de `dlopen/dlsym` se ejecutó desde `/tmp/test_i2s_overflow.c`; aún debe incorporarse a un directorio de pruebas versionado y ampliarse con casos mixtos antes del PR. Los artefactos binarios grandes (F32, I2_S y pesos HF) permanecen fuera del repositorio LEONES.
+Otros intentos y salida de depuración se documentaron en la sesión de trabajo. La primera prueba C de `dlopen/dlsym` se ejecutó desde `/tmp/test_i2s_overflow.c`. Se ha versionado en GitHub un harness ampliado en `research/bitnet/reproducers/repro_i2s_avx2_dot.c`, con cuatro patrones: todos +127, 90% positivos, bloques alternos de signo y todos +64. **El nuevo harness todavía no se ha compilado ni ejecutado**; queda como siguiente validación local después de sincronizar la rama. No se presenta como resultado medido. Los artefactos binarios grandes (F32, I2_S y pesos HF) permanecen fuera del repositorio LEONES.
 
 ## 10. Referencias de código y repositorios
 
