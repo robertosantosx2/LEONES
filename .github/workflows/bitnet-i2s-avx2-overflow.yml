@@ -203,7 +203,11 @@ jobs:
         run: |
           mkdir -p artifact
           cp build/bitnet-runtime/bin/llama-cli artifact/
-          find build/bitnet-runtime/bin -maxdepth 1 -type f -name 'lib*.so*' -exec cp {} artifact/ ;
+          for lib in build/bitnet-runtime/bin/lib*.so*; do
+            if [ -f "$lib" ]; then
+              cp "$lib" artifact/
+            fi
+          done
           cat > artifact/README.txt <<'EOF'
           Falcon3 I2_S diagnostic runtime
 
