@@ -66,8 +66,8 @@ macro was not present in the loaded library.
 
 ## CI validation
 
-The vec-dot patch was applied and compiled in GitHub Actions run
-[#44273231378](https://github.com/robertosantosx2/LEONES/actions/runs/44273231378). The LLAMAFILE patch is being validated by the second job in the same workflow.
+The vec-dot patch was applied, compiled and exercised in GitHub Actions run
+[#44274443737](https://github.com/robertosantosx2/LEONES/actions/runs/44274443737). The LLAMAFILE patch was applied and compiled successfully in the second job of that run with `GGML_LLAMAFILE=ON`; it has not yet been executed against a real model or through an end-to-end graph.
 The synthetic K=3072 harness produced:
 
 | Input pattern | Maximum absolute shadow lane | Overflow lane-groups | Overflow updates |
