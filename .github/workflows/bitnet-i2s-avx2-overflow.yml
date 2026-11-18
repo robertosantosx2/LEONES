@@ -6,6 +6,7 @@ on:
       - research/falcon3-i2s-avx2-overflow-2026-11-18
     paths:
       - "research/bitnet/reproducers/repro_i2s_avx2_dot.c"
+      - "research/bitnet/patches/0001-i2s-avx2-activation-diagnostics.patch"
       - ".github/workflows/bitnet-i2s-avx2-overflow.yml"
   workflow_dispatch:
 
@@ -56,7 +57,7 @@ jobs:
       - name: Configure AVX2 fallback build
         run: |
           cmake -S vendor/BitNet -B build/bitnet \
-            -DCMAKE_BUILD_TYPE=Release \\
+            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS=-DGGML_I2S_AVX2_DIAGNOSTICS \
             -DBUILD_SHARED_LIBS=ON \
             -DGGML_NATIVE=OFF \
