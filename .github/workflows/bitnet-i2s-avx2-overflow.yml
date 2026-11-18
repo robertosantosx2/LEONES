@@ -29,7 +29,7 @@ jobs:
 
       - name: Configure AVX2 fallback build
         run: |
-          cmake -S vendor/llama.cpp/ggml -B build/ggml \
+          cmake -S vendor/llama.cpp -B build/llama \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON \
             -DGGML_NATIVE=OFF \
@@ -43,14 +43,14 @@ jobs:
             -DGGML_BUILD_EXAMPLES=OFF
 
       - name: Build GGML
-        run: cmake --build build/ggml --parallel 2
+        run: cmake --build build/llama --parallel 2
 
       - name: Locate and verify AVX2 vec-dot symbol
         id: library
         shell: bash
         run: |
           set -euo pipefail
-          LIB="$(find build/ggml -type f -name 'libggml-cpu.so*' -print -quit)"
+          LIB="$(find build/llama -type f -name 'libggml-cpu.so*' -print -quit)"
           test -n "$LIB"
           nm -D --defined-only "$LIB" | grep -E '[[:space:]]ggml_vec_dot_i2_i8_s$'
           echo "path=$GITHUB_WORKSPACE/$LIB" >> "$GITHUB_OUTPUT"
