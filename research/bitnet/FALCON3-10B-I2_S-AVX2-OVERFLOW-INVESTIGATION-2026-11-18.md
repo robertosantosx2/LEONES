@@ -258,7 +258,9 @@ La revisión del código público aclara ambos caminos:
 
 Así, la observación de #629 sobre `calls=0` no debe extrapolarse a la build de Falcon3. La configuración exacta de la build local no está almacenada en GitHub y no se puede dar por verificada todavía. El overflow del vec-dot puede ser alcanzable si LLAMAFILE está desactivado, pero aún hay que demostrar que ocurre con activaciones reales de Falcon3.
 
-Nuestra prueba independiente con K=3072, códigos 2 y activaciones +127 confirma el mismo wrap en el símbolo AVX2: error bruto -1.048.576 y error idéntico tras la compensación `tmp - act_sum`. No constituye un segundo defecto; es corroboración adicional para una longitud K relevante en Falcon3.
+Nuestra prueba independiente con K=3072, códigos 2 y activaciones +127 confirma el mismo wrap en el símbolo AVX2: error bruto -1.048.576 y error idéntico tras la compensación `tmp - act_sum`. Para esta longitud, el bucle residual procesa 24 bloques × 4 planos = 96 resultados `vpmaddubsw` por lane; con cada resultado en 508, la suma llega a 48.768 y supera 32.767. El caso de 32 bloques descrito en #629 llega a 128 resultados por lane y 65.024. No constituye un segundo defecto; es corroboración adicional para una longitud K relevante en Falcon3.
+
+El harness versionado ahora distingue comportamiento esperado del baseline: espera overflow para +127 y para el patrón 90% +127 / 10% -127; espera coincidencia exacta para bloques alternos de signo y para +64. El modo predeterminado exige exactitud en todos los patrones y servirá como prueba de regresión tras corregir el kernel.
 
 ### Microsoft BitNet #628 — acumulación en el GEMM AVX2
 
@@ -283,12 +285,10 @@ El commit `5f76dc3871407df2ac3411e00e971fb454cd0429` usado por el checkout de re
 
 ### P0 — cuantificar el defecto
 
-1. Crear una prueba diferencial reproducible y versionada que compare el símbolo AVX2 con una referencia escalar correcta para:
-   - patrones extremos positivos/negativos;
-   - activaciones mixtas deterministas;
-   - rangos de amplitud crecientes;
-   - longitudes K representativas y alineadas.
-2. Comprobar explícitamente la semántica de la compensación `act_sums` y la escala de salida.
+1. **Hecho en GitHub:** harness diferencial versionado en `research/bitnet/reproducers/repro_i2s_avx2_dot.c`, con cuatro patrones y referencia int64.
+2. **Hecho en GitHub:** workflow `.github/workflows/bitnet-i2s-avx2-overflow.yml`, que compila el commit público `390c307752ab78fd8189f359d6954c9ba1be74af` con AVX2 explícito y LLAMAFILE desactivado, y ejecuta el baseline esperado. La ejecución CI todavía debe observarse; crear el workflow no equivale a una prueba pasada.
+3. **Pendiente:** añadir vectores de activación capturados de Falcon3 y comparar con referencia escalar.
+4. Comprobar explícitamente la semántica de la compensación `act_sums` y la escala de salida.
 3. Ejecutar sanitización/validación de memoria si procede; el defecto observado es aritmético, no un acceso fuera de límites.
 
 ### P1 — confirmar impacto en el modelo
