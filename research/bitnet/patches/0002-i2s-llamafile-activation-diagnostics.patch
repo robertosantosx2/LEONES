@@ -1,7 +1,7 @@
 diff --git a/ggml/src/ggml-cpu/llamafile/sgemm.cpp b/ggml/src/ggml-cpu/llamafile/sgemm.cpp
 --- a/ggml/src/ggml-cpu/llamafile/sgemm.cpp
 +++ b/ggml/src/ggml-cpu/llamafile/sgemm.cpp
-@@ -55,2 +55,3 @@
+@@ -57,2 +57,3 @@
  #include <array>
  #include <type_traits>
 +#include <cstdio>
