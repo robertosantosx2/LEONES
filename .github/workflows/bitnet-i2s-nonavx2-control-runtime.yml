@@ -81,19 +81,25 @@ jobs:
           path = Path("vendor/BitNet/3rdparty/llama.cpp/tools/completion/completion.cpp")
           source = path.read_text()
           needle = "            common_sampler_accept(smpl, id, /* accept_grammar= */ true);\n"
-          addition = """            // Temporary Falcon3 I2_S probe: capture selected token IDs and exact bytes.
+          addition = """            // Temporary Falcon3 I2_S probe: capture raw vocab text and rendered bytes.
                       static int i2s_probe_token_index = 0;
                       if (i2s_probe_token_index < 16) {
-                          const std::string piece = common_token_to_piece(ctx, id, false);
-                          std::string piece_hex;
-                          static constexpr char hex[] = "0123456789abcdef";
-                          for (const unsigned char byte : piece) {
-                              piece_hex.push_back(hex[(byte >> 4) & 0x0f]);
-                              piece_hex.push_back(hex[byte & 0x0f]);
-                          }
-                          LOG_INF("I2S_TOKEN_PROBE index=%d id=%d eog=%d piece_hex=%s\\n",
-                                  i2s_probe_token_index, id, llama_vocab_is_eog(vocab, id),
-                                  piece_hex.c_str());
+                          const char * raw_text = llama_vocab_get_text(vocab, id);
+                          const std::string raw = raw_text ? raw_text : "";
+                          const std::string piece = common_token_to_piece(ctx, id, true);
+                          auto to_hex = [](const std::string & value) {
+                              std::string result;
+                              static constexpr char hex[] = "0123456789abcdef";
+                              for (const unsigned char byte : value) {
+                                  result.push_back(hex[(byte >> 4) & 0x0f]);
+                                  result.push_back(hex[byte & 0x0f]);
+                              }
+                              return result;
+                          };
+                          LOG_INF("I2S_TOKEN_PROBE index=%d id=%d attr=%d control=%d eog=%d raw_hex=%s piece_hex=%s\\n",
+                                  i2s_probe_token_index, id, (int) llama_vocab_get_attr(vocab, id),
+                                  llama_vocab_is_control(vocab, id), llama_vocab_is_eog(vocab, id),
+                                  to_hex(raw).c_str(), to_hex(piece).c_str());
                           ++i2s_probe_token_index;
                       }
           """
