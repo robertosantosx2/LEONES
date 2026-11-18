@@ -47,6 +47,29 @@ jobs:
           path.write_text(source.replace(needle, replacement, 1))
           PY
 
+      - name: Add x86 scalar I2_S tile defaults
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("vendor/BitNet/include/gemm-config.h")
+          source = path.read_text()
+          old = "#endif // __ARM_FEATURE_DOTPROD\n#endif // __AVX__\n"
+          new = (
+              "#endif // __ARM_FEATURE_DOTPROD\n"
+              "#else\n"
+              "/* Scalar x86 fallback: tile sizes do not require SIMD. */\n"
+              "#define ROW_BLOCK_SIZE 4\n"
+              "#define COL_BLOCK_SIZE 128\n"
+              "#define PARALLEL_SIZE 4\n"
+              "#endif // __AVX__\n"
+          )
+          if source.count(old) != 1:
+              raise SystemExit("Could not locate the unique gemm-config.h architecture tail")
+          path.write_text(source.replace(old, new, 1))
+          PY
+
       - name: Configure tokenizer diagnostic build
         run: |
           cmake -S vendor/BitNet -B build/tokenizer             -DCMAKE_BUILD_TYPE=Release             -DBUILD_SHARED_LIBS=ON             -DGGML_NATIVE=OFF             -DGGML_AVX=OFF             -DGGML_AVX2=OFF             -DGGML_AVX_VNNI=OFF             -DGGML_AVX512=OFF             -DGGML_AVX512_VNNI=OFF             -DGGML_LLAMAFILE=OFF             -DLLAMA_BUILD_COMMON=ON             -DLLAMA_BUILD_TESTS=OFF             -DLLAMA_BUILD_TOOLS=ON             -DLLAMA_BUILD_EXAMPLES=OFF             -DLLAMA_BUILD_SERVER=OFF             -DLLAMA_BUILD_APP=OFF             -DLLAMA_BUILD_UI=OFF             -DLLAMA_BUILD_MTMD=OFF
