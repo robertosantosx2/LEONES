@@ -28,6 +28,24 @@ jobs:
           submodules: recursive
           path: vendor/BitNet
 
+      - name: Work around unrelated src1_cont conditional-scope defect
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("vendor/BitNet/3rdparty/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c")
+          source = path.read_text()
+          needle = '    // TODO: extract to "extra_op"\\n#if GGML_USE_LLAMAFILE\\n'
+          replacement = (
+              '    // TODO: extract to "extra_op"\\n'
+              '    const bool src1_cont = ggml_is_contiguous(src1);\\n'
+              '#if GGML_USE_LLAMAFILE\\n'
+          )
+          if source.count(needle) != 1:
+              raise SystemExit("Expected src1_cont scope site was not unique")
+          path.write_text(source.replace(needle, replacement, 1))
+          PY
+
       - name: Configure AVX2 fallback build
         run: |
           cmake -S vendor/BitNet -B build/bitnet \
