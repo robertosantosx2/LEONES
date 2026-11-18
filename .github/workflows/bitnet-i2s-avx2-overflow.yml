@@ -7,6 +7,7 @@ on:
     paths:
       - "research/bitnet/reproducers/repro_i2s_avx2_dot.c"
       - "research/bitnet/patches/0001-i2s-avx2-activation-diagnostics.patch"
+      - "research/bitnet/patches/0002-i2s-llamafile-activation-diagnostics.patch"
       - ".github/workflows/bitnet-i2s-avx2-overflow.yml"
   workflow_dispatch:
 
@@ -102,3 +103,50 @@ jobs:
         env:
           GGML_CPU_LIBRARY: ${{ steps.library.outputs.path }}
         run: build/repro_i2s_avx2_dot "$GGML_CPU_LIBRARY" --expect-baseline
+
+  llamafile-dispatch-probe:
+    name: Compile LLAMAFILE I2_S dispatch probe
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out LEONES research
+        uses: actions/checkout@v4
+
+      - name: Check out BitNet with its pinned llama.cpp submodule
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/BitNet
+          ref: 0b341e582afbf9e1011f24744b554c96a3477eb5
+          submodules: recursive
+          path: vendor/BitNet
+
+      - name: Apply LLAMAFILE activation probe
+        run: |
+          git -C vendor/BitNet/3rdparty/llama.cpp apply --check \
+            "$GITHUB_WORKSPACE/research/bitnet/patches/0002-i2s-llamafile-activation-diagnostics.patch"
+          git -C vendor/BitNet/3rdparty/llama.cpp apply \
+            "$GITHUB_WORKSPACE/research/bitnet/patches/0002-i2s-llamafile-activation-diagnostics.patch"
+
+      - name: Configure AVX2 LLAMAFILE build
+        run: |
+          cmake -S vendor/BitNet -B build/bitnet-llamafile \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_FLAGS=-DGGML_I2S_AVX2_DIAGNOSTICS \
+            -DBUILD_SHARED_LIBS=ON \
+            -DGGML_NATIVE=OFF \
+            -DGGML_AVX=ON \
+            -DGGML_AVX2=ON \
+            -DGGML_AVX_VNNI=OFF \
+            -DGGML_AVX512=OFF \
+            -DGGML_AVX512_VNNI=OFF \
+            -DGGML_LLAMAFILE=ON \
+            -DLLAMA_BUILD_COMMON=OFF \
+            -DLLAMA_BUILD_TESTS=OFF \
+            -DLLAMA_BUILD_TOOLS=OFF \
+            -DLLAMA_BUILD_EXAMPLES=OFF \
+            -DLLAMA_BUILD_SERVER=OFF \
+            -DLLAMA_BUILD_APP=OFF \
+            -DLLAMA_BUILD_UI=OFF \
+            -DLLAMA_BUILD_MTMD=OFF
+
+      - name: Build GGML LLAMAFILE backend
+        run: cmake --build build/bitnet-llamafile --target ggml-cpu --parallel 2
