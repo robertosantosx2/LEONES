@@ -397,3 +397,14 @@ Otros intentos y salida de depuración se documentaron en la sesión de trabajo.
 ---
 
 **Estado LEONES:** investigación reproducible documentada; defecto del kernel AVX2 confirmado para entradas válidas; validación con activaciones reales y corrección upstream pendientes.
+
+
+## Actualización: runtime instrumentado publicado (2026-11-18)
+
+El workflow [#44298433322](https://github.com/robertosantosx2/LEONES/actions/runs/44298433322) terminó correctamente: los tres jobs pasaron, incluido el empaquetado del CLI instrumentado. Artefacto: `falcon3-i2s-llamafile-diag-runtime` (ID `14423909257`, SHA-256 `ac68ebcc2ed0110ef0f0328ce0d57af8ed1f4323782046adf62299e4308514d1`, disponible hasta 2026-11-25).
+
+La configuración local aportada por el usuario confirma `GGML_LLAMAFILE=ON`, `GGML_NATIVE=ON`, `GGML_AVX2=OFF` y `GGML_AVX_VNNI=OFF`. Esto prioriza investigar el dispatch LLAMAFILE, pero no prueba por sí solo qué kernel ejecutó una inferencia ni qué ISA terminó usando el binario local.
+
+### Validación pendiente en el equipo del usuario
+
+Descargar el artefacto desde la ejecución enlazada, extraer el TAR incluido y ejecutar el CLI instrumentado contra el GGUF local. La evidencia decisiva son las líneas `I2S_LLAMAFILE_DIAG` (ruta LLAMAFILE y estadísticas de activación) frente a `I2S_AVX2_DIAG` (fallback vec-dot). No atribuir el fallo de generación al overflow sintético hasta observar la ruta y activaciones reales.
