@@ -315,9 +315,14 @@ El commit `5f76dc3871407df2ac3411e00e971fb454cd0429` usado por el checkout de re
 
 ### Sonda de activaciones reales preparada
 
-Se ha publicado el parche opt-in [0001-i2s-avx2-activation-diagnostics.patch](patches/0001-i2s-avx2-activation-diagnostics.patch) y su guía [AVX2-ACTIVATION-PROBE.md](AVX2-ACTIVATION-PROBE.md). Añade una sombra escalar de los acumuladores por lane y registra estadísticas de las activaciones I8_S en las primeras 64 llamadas al wrapper vec-dot. No cambia los resultados del kernel; añade trabajo diagnóstico y salida a stderr solo si se compila con `GGML_I2S_AVX2_DIAGNOSTICS`.
+Se han publicado dos parches opt-in y su guía [AVX2-ACTIVATION-PROBE.md](AVX2-ACTIVATION-PROBE.md):
 
-El parche se aplicó y compiló en [GitHub Actions run #44273231378](https://github.com/robertosantosx2/LEONES/actions/runs/44273231378), que terminó en success. Los valores medidos para K=3072 fueron:
+- [0001-i2s-avx2-activation-diagnostics.patch](patches/0001-i2s-avx2-activation-diagnostics.patch): añade una sombra escalar de los acumuladores por lane y registra estadísticas I8_S en las primeras 64 llamadas al wrapper vec-dot.
+- [0002-i2s-llamafile-activation-diagnostics.patch](patches/0002-i2s-llamafile-activation-diagnostics.patch): registra dimensiones y estadísticas de activación en las primeras 64 entradas a `llamafile_sgemm_i2s()`, la ruta probable del build estándar de BitNet.
+
+Ambos parches fueron aplicados y compilados correctamente en [GitHub Actions run #44274443737](https://github.com/robertosantosx2/LEONES/actions/runs/44274443737). El job fallback forzó LLAMAFILE OFF y ejercitó el vec-dot sintético; el segundo job compiló el probe LLAMAFILE con `GGML_LLAMAFILE=ON`. El segundo probe todavía no se ejecutó sobre un grafo de inferencia ni sobre el modelo real.
+
+Los valores medidos por la sonda vec-dot para K=3072 fueron:
 
 | Patrón sintético | Máximo absoluto de lane | Lane-groups con overflow | Actualizaciones fuera de int16 |
 |---|---:|---:|---:|
@@ -330,7 +335,7 @@ La sonda ya está validada con datos sintéticos. **Todavía no se ha ejecutado 
 
 ### P1 — confirmar impacto en el modelo
 
-1. **Instrumentación preparada en GitHub:** aplicar la sonda publicada y ejecutar una inferencia corta de Falcon3 para capturar estadísticas I8_S reales.
+1. **Primero verificar el dispatch real del build local.** Si LLAMAFILE está ON, usar el probe `llamafile_sgemm_i2s`; si está OFF, usar el probe vec-dot. El flujo estándar de `setup_env.py` tiende a LLAMAFILE ON.
 2. Calcular por lane/bloque el máximo acumulado y contar los overflows potenciales.
 3. Comparar salidas intermedias con referencia escalar o con una implementación AVX2 corregida.
 4. Repetir una inferencia corta de Falcon3 únicamente después de tener una ruta diferencial validada.
