@@ -1,0 +1,69 @@
+name: BitNet I2_S AVX2 overflow reproducer
+
+on:
+  push:
+    branches:
+      - research/falcon3-i2s-avx2-overflow-2026-11-18
+    paths:
+      - "research/bitnet/reproducers/repro_i2s_avx2_dot.c"
+      - ".github/workflows/bitnet-i2s-avx2-overflow.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce-avx2-overflow:
+    name: Reproduce against pinned BitNet llama.cpp
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out LEONES research
+        uses: actions/checkout@v4
+
+      - name: Check out BitNet llama.cpp revision
+        uses: actions/checkout@v4
+        with:
+          repository: isHuangXin/llama.cpp
+          ref: 390c307752ab78fd8189f359d6954c9ba1be74af
+          path: vendor/llama.cpp
+
+      - name: Configure AVX2 fallback build
+        run: |
+          cmake -S vendor/llama.cpp/ggml -B build/ggml \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DGGML_NATIVE=OFF \
+            -DGGML_AVX=ON \
+            -DGGML_AVX2=ON \
+            -DGGML_AVX_VNNI=OFF \
+            -DGGML_AVX512=OFF \
+            -DGGML_AVX512_VNNI=OFF \
+            -DGGML_LLAMAFILE=OFF \
+            -DGGML_BUILD_TESTS=OFF \
+            -DGGML_BUILD_EXAMPLES=OFF
+
+      - name: Build GGML
+        run: cmake --build build/ggml --parallel 2
+
+      - name: Locate and verify AVX2 vec-dot symbol
+        id: library
+        shell: bash
+        run: |
+          set -euo pipefail
+          LIB="$(find build/ggml -type f -name 'libggml-cpu.so*' -print -quit)"
+          test -n "$LIB"
+          nm -D --defined-only "$LIB" | grep -E '[[:space:]]ggml_vec_dot_i2_i8_s$'
+          echo "path=$GITHUB_WORKSPACE/$LIB" >> "$GITHUB_OUTPUT"
+          echo "dir=$GITHUB_WORKSPACE/$(dirname "$LIB")" >> "$GITHUB_OUTPUT"
+
+      - name: Compile differential reproducer
+        run: |
+          cc -std=c11 -O2 -Wall -Wextra -Werror \
+            research/bitnet/reproducers/repro_i2s_avx2_dot.c \
+            -ldl -o build/repro_i2s_avx2_dot
+
+      - name: Run differential reproducer
+        env:
+          GGML_CPU_LIBRARY: ${{ steps.library.outputs.path }}
+          LD_LIBRARY_PATH: ${{ steps.library.outputs.dir }}:${{ env.LD_LIBRARY_PATH }}
+        run: build/repro_i2s_avx2_dot "$GGML_CPU_LIBRARY"
