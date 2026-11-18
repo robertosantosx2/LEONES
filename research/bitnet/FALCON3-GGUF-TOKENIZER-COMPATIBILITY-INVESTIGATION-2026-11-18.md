@@ -86,3 +86,55 @@ La inspección estática no ha demostrado todavía que el conversor escriba mal 
 La prueba previa con `--no-bos` siguió produciendo salida incoherente; el hallazgo BOS es una anomalía concreta que debe corregirse/aislar, pero no cierra la causa E2E. Tampoco se atribuye causalidad al kernel AVX2: el runtime de control no-AVX2 reproduce el síntoma.
 
 **No se ha modificado el conversor, el GGUF ni llama.cpp; no se ha abierto ningún PR upstream.**
+
+
+## 6. Evidencia adicional aportada por la inspección local (segunda revisión)
+
+El usuario inspeccionó el checkout BitNet y confirmó el origen exacto de la advertencia en `src/llama-vocab.cpp`:
+
+- La rama `LLAMA_VOCAB_TYPE_RWKV` contiene un `GGML_ASSERT` si no se tokeniza newline.
+- La rama general (que incluye el BPE GPT-2 del GGUF) llama a `tokenize("\\n", false)`; si el resultado está vacío, emite la advertencia y asigna `linefeed_id = special_pad_id`.
+- La advertencia, por tanto, **no demuestra que falte el token newline en el vocabulario serializado**. Demuestra que esa ruta de tokenización de llama.cpp no pudo obtener un ID para el carácter LF en la inicialización.
+
+La inspección HF adicional confirmó:
+
+| Token | ID HF |
+|---|---:|
+| `<|startoftext|>` | 10 |
+| `<|endoftext|>` | 11 |
+| `Ċ` (símbolo GPT-2 para LF) | 12 |
+| `ĉ` (símbolo GPT-2 para TAB) | 13 |
+| `<|pad|>` | 2023 |
+
+Los IDs 10, 11 y 2023 aparecen en `added_tokens`; los IDs 12 y 13 proceden del vocabulario base. El conversor BitNet recorre `tokenizer.vocab` por ID y, para tokens añadidos, aplica encode/decode para preservar caracteres especiales; el resto se copia desde el vocabulario base. El comentario del conversor sobre newline/tab añadidos manualmente no prueba que LF/TAB sean added tokens en este modelo concreto.
+
+El GGUF completo vuelve a confirmar `tokenizer.ggml.model=gpt2`, `tokenizer.ggml.pre=falcon3`, EOS 11 y PAD 2023; no contiene BOS explícito. El volcado corto no muestra los valores completos de `tokens[12]` ni `token_type[12]`, por lo que no se afirma que la serialización de esos slots sea correcta o incorrecta.
+
+La generación válida con `llama-completion` en el control no-AVX2 produjo exactamente seis bytes de whitespace (LF, TAB, TAB, LF, LF, LF), con 31 pasos de generación, sin texto visible. Esto confirma que el proceso de completion ejecutó decodificación, pero no permite conocer los IDs muestreados; es imprescindible registrar IDs y piezas, no solo el texto decodificado.
+
+### 6.1. Corrección de interpretación del hallazgo newline
+
+La hipótesis inicial de que el fallback se calculaba antes de leer PAD debe mantenerse como detalle de orden de inicialización del código, pero **no debe elevarse a causa raíz**. La observación clave ahora es la discrepancia entre el vocabulario HF (LF representado por `Ċ`, ID 12) y el hecho de que el tokenizer BPE de llama.cpp devuelve cero IDs para el carácter LF en esa build. Debe aislarse si la causa es el pretokenizer `falcon3`, la implementación de tokenización, los tipos/strings GGUF o una diferencia entre los checkouts usados.
+
+### 6.2. Sonda remota añadida
+
+Se añade un workflow de GitHub Actions que compila el `llama-tokenize` de la revisión fijada y empaqueta el ejecutable con sus bibliotecas. El objetivo es ejecutar, contra el GGUF real del usuario, comparaciones reproducibles de:
+
+- LF literal (archivo de entrada, no una secuencia de dos caracteres backslash+n);
+- el símbolo visible `Ċ`;
+- TAB literal y texto ordinario;
+- tokenización con BOS por defecto y con `--no-bos`;
+- IDs numéricos y piezas decodificadas.
+
+El workflow no altera ni convierte el modelo. Tampoco cambia el comportamiento de inferencia. Los resultados de esta sonda deben acompañarse del SHA256 del GGUF y de la versión exacta del runtime.
+
+**Criterio de decisión:** si LF literal no se tokeniza pero `Ċ` sí, investigar el mapeo byte-level/pretokenizer; si ambos fallan, inspeccionar arrays `tokenizer.ggml.tokens` y `token_type` del GGUF; si ambos funcionan, la advertencia debe reproducirse en el build exacto antes de atribuirle relevancia. Para BOS, comparar las secuencias con y sin `--no-bos` y comprobar explícitamente que el ID 11 no se antepone como BOS en el flujo de prompt.
+
+## 7. Estado actualizado
+
+- **Confirmado:** HF newline visible `Ċ` ID 12; HF tab visible `ĉ` ID 13; EOS 11; PAD 2023.
+- **Confirmado:** el mensaje de warning se genera en la ruta general cuando `tokenize("\\n", false)` devuelve vacío.
+- **Confirmado:** la ejecución completion no-AVX2 produjo whitespace, no texto legible.
+- **Pendiente:** IDs/piezas efectivos de LF, TAB, `Ċ`, BOS y prompt en el mismo commit y contra el GGUF real.
+- **No demostrado:** que el warning newline o la anomalía BOS expliquen por sí solos la generación incoherente.
+- **Sin cambios:** no se ha modificado el GGUF, el conversor ni el código de llama.cpp; no se ha abierto PR upstream.
