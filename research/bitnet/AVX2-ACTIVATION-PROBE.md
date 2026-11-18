@@ -33,6 +33,18 @@ It checks the accumulator after both `add_epi16` updates per 128-element block.
 The patch does not alter the kernel's arithmetic or return value. It adds
 diagnostic scalar work and stderr output only when the macro is enabled.
 
+For a likely standard BitNet build, LLAMAFILE is enabled by default in the
+llama.cpp root CMake unless explicitly overridden. In that configuration the
+I2_S dispatcher can use `llamafile_sgemm_i2s()` and bypass the vec-dot wrapper.
+A second patch is therefore provided:
+[0002-i2s-llamafile-activation-diagnostics.patch](patches/0002-i2s-llamafile-activation-diagnostics.patch).
+
+The second patch logs the first 64 entries into `llamafile_sgemm_i2s()`, including
+matrix dimensions and activation min/max, positive/negative/zero counts and
+sum for up to four activation rows per call. It does not modify the GEMM result.
+Compile the C++ sources with `-DGGML_I2S_AVX2_DIAGNOSTICS` and keep
+`GGML_LLAMAFILE=ON).
+
 ## Build integration
 
 Apply the patch from the llama.cpp submodule root:
@@ -54,8 +66,8 @@ macro was not present in the loaded library.
 
 ## CI validation
 
-The patch was applied and compiled in GitHub Actions run
-[#44273231378](https://github.com/robertosantosx2/LEONES/actions/runs/44273231378).
+The vec-dot patch was applied and compiled in GitHub Actions run
+[#44273231378](https://github.com/robertosantosx2/LEONES/actions/runs/44273231378). The LLAMAFILE patch is being validated by the second job in the same workflow.
 The synthetic K=3072 harness produced:
 
 | Input pattern | Maximum absolute shadow lane | Overflow lane-groups | Overflow updates |
