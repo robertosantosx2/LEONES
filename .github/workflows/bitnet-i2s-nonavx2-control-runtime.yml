@@ -1,0 +1,134 @@
+name: Falcon3 I2_S non-AVX2 baseline control runtime
+
+on:
+  push:
+    branches:
+      - research/falcon3-i2s-nonavx2-control-2026-11-18
+    paths:
+      - ".github/workflows/bitnet-i2s-nonavx2-control-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-nonavx2-control:
+    name: Build LLAMAFILE-OFF non-AVX2 control llama-cli
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out LEONES research
+        uses: actions/checkout@v4
+
+      - name: Check out pinned BitNet and llama.cpp
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/BitNet
+          ref: 0b341e582afbf9e1011f24744b554c96a3477eb5
+          submodules: recursive
+          path: vendor/BitNet
+
+      - name: Apply temporary src1_cont build-scope workaround
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("vendor/BitNet/3rdparty/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c")
+          source = path.read_text()
+          needle = '    // TODO: extract to "extra_op"\\n#if GGML_USE_LLAMAFILE\\n'
+          replacement = (
+              '    // TODO: extract to "extra_op"\\n'
+              '    const bool src1_cont = ggml_is_contiguous(src1);\\n'
+              '#if GGML_USE_LLAMAFILE\\n'
+          )
+          if source.count(needle) != 1:
+              raise SystemExit("Expected src1_cont scope site was not unique")
+          path.write_text(source.replace(needle, replacement, 1))
+          PY
+
+      - name: Configure LLAMAFILE-OFF non-AVX2 control runtime
+        run: |
+          cmake -S vendor/BitNet -B build/bitnet-nonavx2-control \\
+            -DCMAKE_BUILD_TYPE=Release \\
+            -DBUILD_SHARED_LIBS=ON \\
+            -DGGML_NATIVE=OFF \\
+            -DGGML_SSE42=OFF \\
+            -DGGML_F16C=OFF \\
+            -DGGML_FMA=OFF \\
+            -DGGML_BMI2=OFF \\
+            -DGGML_AVX=OFF \\
+            -DGGML_AVX2=OFF \\
+            -DGGML_AVX_VNNI=OFF \\
+            -DGGML_AVX512=OFF \\
+            -DGGML_AVX512_VNNI=OFF \\
+            -DGGML_LLAMAFILE=OFF \\
+            -DLLAMA_BUILD_COMMON=ON \\
+            -DLLAMA_BUILD_TESTS=OFF \\
+            -DLLAMA_BUILD_TOOLS=ON \\
+            -DLLAMA_BUILD_EXAMPLES=OFF \\
+            -DLLAMA_BUILD_SERVER=OFF \\
+            -DLLAMA_BUILD_APP=OFF \\
+            -DLLAMA_BUILD_UI=OFF \\
+            -DLLAMA_BUILD_MTMD=OFF
+
+      - name: Build llama-cli
+        run: cmake --build build/bitnet-nonavx2-control --target llama-cli --parallel 2
+
+      - name: Verify build configuration and package runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          CACHE=build/bitnet-nonavx2-control/CMakeCache.txt
+          grep -E '^GGML_(NATIVE|SSE42|F16C|FMA|BMI2|AVX|AVX2|AVX_VNNI|AVX512|AVX512_VNNI|LLAMAFILE):BOOL=' "$CACHE"
+          for option in GGML_SSE42 GGML_F16C GGML_FMA GGML_BMI2 GGML_AVX GGML_AVX2 GGML_AVX_VNNI GGML_AVX512 GGML_AVX512_VNNI GGML_LLAMAFILE; do
+            grep -q "^$option:BOOL=OFF$" "$CACHE"
+          done
+          grep -q '^GGML_NATIVE:BOOL=OFF$' "$CACHE"
+          mkdir -p artifact
+          cp build/bitnet-nonavx2-control/bin/llama-cli artifact/
+          for lib in build/bitnet-nonavx2-control/bin/lib*.so*; do
+            if [ -f "$lib" ]; then
+              cp "$lib" artifact/
+            fi
+          done
+          cat > artifact/README.txt <<'EOF'
+          Falcon3 I2_S non-AVX2 baseline control runtime
+
+          Build provenance:
+            BitNet: 0b341e582afbf9e1011f24744b554c96a3477eb5
+            llama.cpp submodule: 390c307752ab78fd8189f359d6954c9ba1be74af
+            GGML_NATIVE: OFF
+            GGML_SSE42: OFF
+            GGML_F16C: OFF
+            GGML_FMA: OFF
+            GGML_BMI2: OFF
+            GGML_AVX: OFF
+            GGML_AVX2: OFF
+            GGML_AVX_VNNI: OFF
+            GGML_AVX512: OFF
+            GGML_AVX512_VNNI: OFF
+            GGML_LLAMAFILE: OFF
+
+          This control build disables optional x86 SIMD extensions above the
+          x86-64 baseline and disables LLAMAFILE. It is intended to exercise
+          the non-AVX2 I2_S fallback. It is a diagnostic control, not a
+          benchmark or production runtime.
+
+          Run from this directory:
+            export LD_LIBRARY_PATH="$PWD${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+            ./llama-cli -m /path/to/ggml-model-i2_s.gguf -p "Responde brevemente en español: ¿qué es Falcon3?" -n 32 -c 512 --single-turn --no-display-prompt > falcon3-i2s-output.txt 2> falcon3-i2s-diagnostics.log
+
+          Inspect:
+            cat falcon3-i2s-output.txt
+            tail -n 80 falcon3-i2s-diagnostics.log
+          EOF
+          tar -czf falcon3-i2s-nonavx2-control-runtime.tar.gz -C artifact .
+
+      - name: Upload non-AVX2 control runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: falcon3-i2s-nonavx2-control-runtime
+          path: falcon3-i2s-nonavx2-control-runtime.tar.gz
+          if-no-files-found: error
+          retention-days: 7
