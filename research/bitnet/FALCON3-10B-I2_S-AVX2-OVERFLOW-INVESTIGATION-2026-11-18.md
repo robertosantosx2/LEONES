@@ -408,3 +408,18 @@ La configuración local aportada por el usuario confirma `GGML_LLAMAFILE=ON`, `G
 ### Validación pendiente en el equipo del usuario
 
 Descargar el artefacto desde la ejecución enlazada, extraer el TAR incluido y ejecutar el CLI instrumentado contra el GGUF local. La evidencia decisiva son las líneas `I2S_LLAMAFILE_DIAG` (ruta LLAMAFILE y estadísticas de activación) frente a `I2S_AVX2_DIAG` (fallback vec-dot). No atribuir el fallo de generación al overflow sintético hasta observar la ruta y activaciones reales.
+
+
+## Actualización: runtime diferencial LLAMAFILE OFF / AVX2 (2026-11-18)
+
+Se añadió el workflow [bitnet-i2s-avx2-fallback-runtime.yml](../../.github/workflows/bitnet-i2s-avx2-fallback-runtime.yml) para construir un segundo `llama-cli` diagnóstico con configuración deliberadamente distinta del runtime LLAMAFILE ya probado:
+
+- BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`.
+- llama.cpp submodule `390c307752ab78fd8189f359d6954c9ba1be74af`.
+- `GGML_LLAMAFILE=OFF`, `GGML_AVX2=ON`, `GGML_AVX_VNNI=OFF`, `GGML_AVX512=OFF`, `GGML_NATIVE=OFF`.
+- Instrumentación `GGML_I2S_AVX2_DIAGNOSTICS` del wrapper vec-dot, con sombra escalar de los acumuladores por lane.
+- Artefacto previsto: `falcon3-i2s-avx2-fallback-runtime`, retención de siete días.
+
+El workflow aplica únicamente en el checkout efímero del runner el workaround de alcance de `src1_cont` ya documentado para compilar LLAMAFILE OFF. No modifica BitNet upstream ni ningún checkout local.
+
+La compilación y el artefacto quedan pendientes del resultado de GitHub Actions. Cuando el job termine correctamente, ejecutar el mismo GGUF y prompt con el runtime LLAMAFILE ON y con este runtime LLAMAFILE OFF, guardando stdout y stderr por separado. La comparación solo será válida si se confirma `I2S_AVX2_DIAG` en la segunda ejecución y `I2S_LLAMAFILE_DIAG` en la primera. Registrar también el texto generado; no inferir causalidad a partir de diferencias de velocidad o de la mera presencia de activaciones cercanas a ±127.
