@@ -11,10 +11,11 @@
  *
  * Run:
  *   /tmp/repro_i2s_avx2_dot /path/to/libggml-cpu.so
+ *   /tmp/repro_i2s_avx2_dot /path/to/libggml-cpu.so --expect-baseline
  *
- * A nonzero exit means at least one SIMD result differs from the independent
- * int64 reference. On the affected AVX2 implementation, the all-positive
- * and 90%-positive cases are expected to expose int16 wraparound.
+ * Default mode expects exact arithmetic. --expect-baseline expects overflow
+ * for all-positive and 90%-positive patterns, while alternating blocks and
+ * +64 remain exact. Remove --expect-baseline after a fix for regression use.
  */
 
 #include <dlfcn.h>
@@ -99,15 +100,13 @@ static int run_case(
     i2s_dot_fn dot,
     const uint8_t * weights,
     int8_t * activations,
-    activation_pattern pattern
+    activation_pattern pattern,
+    int expect_mismatch
 ) {
     fill_activations(activations, pattern);
-
     const int64_t expected_raw = reference_raw_dot(weights, activations);
     int64_t activation_sum = 0;
-    for (int i = 0; i < K; ++i) {
-        activation_sum += activations[i];
-    }
+    for (int i = 0; i < K; ++i) activation_sum += activations[i];
 
     float actual_float = 0.0f;
     dot(K, &actual_float, 1, weights, K, activations, 0, 1);
@@ -116,25 +115,25 @@ static int run_case(
     const int64_t expected_ternary = expected_raw - activation_sum;
     const int64_t actual_after_caller_correction = actual_raw - activation_sum;
     const int64_t difference = actual_raw - expected_raw;
+    const int mismatch = difference != 0;
+    const int unexpected = mismatch != expect_mismatch;
 
     printf(
         "%-34s raw_expected=%lld raw_actual=%lld diff=%lld "
-        "act_sum=%lld corrected_expected=%lld corrected_actual=%lld\n",
-        pattern_name(pattern),
-        (long long) expected_raw,
-        (long long) actual_raw,
-        (long long) difference,
-        (long long) activation_sum,
-        (long long) expected_ternary,
-        (long long) actual_after_caller_correction
+        "act_sum=%lld corrected_expected=%lld corrected_actual=%lld "
+        "expect=%s result=%s\n",
+        pattern_name(pattern), (long long) expected_raw, (long long) actual_raw,
+        (long long) difference, (long long) activation_sum,
+        (long long) expected_ternary, (long long) actual_after_caller_correction,
+        expect_mismatch ? "overflow" : "exact", unexpected ? "UNEXPECTED" : "OK"
     );
-
-    return difference != 0;
+    return unexpected;
 }
 
 int main(int argc, char ** argv) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s /path/to/libggml-cpu.so\n", argv[0]);
+    const int expect_baseline = argc == 3 && strcmp(argv[2], "--expect-baseline") == 0;
+    if (argc < 2 || argc > 3 || (argc == 3 && !expect_baseline)) {
+        fprintf(stderr, "Usage: %s /path/to/libggml-cpu.so [--expect-baseline]\n", argv[0]);
         return 2;
     }
 
@@ -143,13 +142,11 @@ int main(int argc, char ** argv) {
         fprintf(stderr, "dlopen failed: %s\n", dlerror());
         return 2;
     }
-
     dlerror();
     i2s_dot_fn dot = (i2s_dot_fn) dlsym(library, "ggml_vec_dot_i2_i8_s");
     const char * symbol_error = dlerror();
     if (symbol_error || !dot) {
-        fprintf(stderr, "dlsym failed: %s\n",
-                symbol_error ? symbol_error : "symbol not found");
+        fprintf(stderr, "dlsym failed: %s\n", symbol_error ? symbol_error : "symbol not found");
         dlclose(library);
         return 2;
     }
@@ -158,27 +155,20 @@ int main(int argc, char ** argv) {
     int8_t * activations = (int8_t *) malloc(K);
     if (!weights || !activations) {
         fprintf(stderr, "allocation failed\n");
-        free(weights);
-        free(activations);
-        dlclose(library);
+        free(weights); free(activations); dlclose(library);
         return 2;
     }
 
-    /* Code 2 encodes +1; 0xAA packs four code-2 values per byte. */
     memset(weights, 0xAA, WEIGHT_BYTES);
-
-    printf("kernel=ggml_vec_dot_i2_i8_s K=%d packed_code=2 rows=1\n", K);
+    printf("kernel=ggml_vec_dot_i2_i8_s K=%d packed_code=2 rows=1 mode=%s\n",
+           K, expect_baseline ? "known-baseline" : "expect-correct");
     int failures = 0;
-    failures += run_case(dot, weights, activations, PATTERN_ALL_POSITIVE_127);
-    failures += run_case(dot, weights, activations, PATTERN_NINETY_PERCENT_POSITIVE);
-    failures += run_case(dot, weights, activations, PATTERN_ALTERNATING_BLOCKS);
-    failures += run_case(dot, weights, activations, PATTERN_ALL_POSITIVE_64);
+    failures += run_case(dot, weights, activations, PATTERN_ALL_POSITIVE_127, expect_baseline);
+    failures += run_case(dot, weights, activations, PATTERN_NINETY_PERCENT_POSITIVE, expect_baseline);
+    failures += run_case(dot, weights, activations, PATTERN_ALTERNATING_BLOCKS, 0);
+    failures += run_case(dot, weights, activations, PATTERN_ALL_POSITIVE_64, 0);
+    printf("cases=4 unexpected_cases=%d result=%s\n", failures, failures ? "FAIL" : "PASS");
 
-    printf("cases=4 mismatches=%d result=%s\n",
-           failures, failures ? "FAIL" : "PASS");
-
-    free(weights);
-    free(activations);
-    dlclose(library);
+    free(weights); free(activations); dlclose(library);
     return failures ? 1 : 0;
 }
