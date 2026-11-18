@@ -112,15 +112,22 @@ jobs:
 
           2) Record tokenizer output and IDs:
             ./llama-tokenize -m "$MODEL" -f lf.txt --ids --no-bos > lf.ids 2> lf.log
+            ./llama-tokenize -m "$MODEL" -f lf.txt --no-bos > lf.pieces 2> lf.pieces.log
             ./llama-tokenize -m "$MODEL" -f visible-gpt2-newline.txt --ids --no-bos > gpt2-visible.ids 2> gpt2-visible.log
+            ./llama-tokenize -m "$MODEL" -f visible-gpt2-newline.txt --no-bos > gpt2-visible.pieces 2> gpt2-visible.pieces.log
             ./llama-tokenize -m "$MODEL" -f tab.txt --ids --no-bos > tab.ids 2> tab.log
+            ./llama-tokenize -m "$MODEL" -f tab.txt --no-bos > tab.pieces 2> tab.pieces.log
             ./llama-tokenize -m "$MODEL" -f ordinary.txt --ids --no-bos > ordinary.ids 2> ordinary.log
+            ./llama-tokenize -m "$MODEL" -f ordinary.txt --no-bos > ordinary.pieces 2> ordinary.pieces.log
             ./llama-tokenize -m "$MODEL" -f ordinary.txt --ids > ordinary-default-bos.ids 2> ordinary-default-bos.log
+            ./llama-tokenize -m "$MODEL" -f ordinary.txt > ordinary-default-bos.pieces 2> ordinary-default-bos.pieces.log
 
-          3) Compare:
+          3) Compare IDs and pieces:
             for f in lf gpt2-visible tab ordinary ordinary-default-bos; do
-              echo "===== $f ====="
+              echo "===== $f IDs ====="
               cat "$f.ids"
+              echo "===== $f pieces ====="
+              cat "$f.pieces"
               grep -E 'missing newline|load:|vocab' "$f.log" || true
             done
 
