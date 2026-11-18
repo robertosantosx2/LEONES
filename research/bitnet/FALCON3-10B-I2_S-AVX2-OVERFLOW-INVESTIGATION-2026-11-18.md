@@ -470,3 +470,18 @@ Se corrigió el workflow en el propio repositorio de investigación para añadir
 Commit de corrección: `4b33e602e28df839fdd7dc01382a88063959e794`.
 
 La nueva ejecución debe confirmar tanto la compilación como los valores CMake OFF. Si el runtime se publica, se validará que no contiene instrucciones AVX y que el dispatch real usa el fallback no-AVX2 antes de interpretar la generación.
+
+
+## Actualización: el control no-AVX2 debe incluir llama-completion (2026-11-18)
+
+La inspección del artefacto del run [#44347302916](https://github.com/robertosantosx2/LEONES/actions/runs/44347302916) confirmó que contenía únicamente `llama-cli`, aunque el mensaje de error de ese ejecutable indica explícitamente que `--no-conversation` no está soportado y que debe utilizarse `llama-completion`. La prueba local con `--no-conversation` no llegó a generar tokens: el CLI imprimió el error, continuó en modo conversación y terminó al agotarse la entrada redirigida. Por tanto, no constituye una prueba de inferencia escalar.
+
+Se actualizó el workflow [bitnet-i2s-nonavx2-control-runtime.yml](../../.github/workflows/bitnet-i2s-nonavx2-control-runtime.yml) para:
+
+- Compilar el target CMake `llama-completion` con la misma configuración no-AVX2 / LLAMAFILE OFF.
+- Empaquetar `llama-completion` junto con sus bibliotecas.
+- Actualizar el README del artefacto para usar `llama-completion -no-cnv` en una generación one-shot.
+
+Commit: `2beab3464d7455f40c2b380f76082827c51f627a`.
+
+El nuevo runtime aún debe superar CI y descargarse antes de ejecutar la inferencia. No se debe reutilizar el artefacto anterior como control de generación ni interpretar su código de salida cero como éxito semántico.
