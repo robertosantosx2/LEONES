@@ -1,0 +1,143 @@
+diff --git a/ggml/src/ggml-cpu/quants.c b/ggml/src/ggml-cpu/quants.c
+--- a/ggml/src/ggml-cpu/quants.c
++++ b/ggml/src/ggml-cpu/quants.c
+@@
+-void ggml_vec_dot_i2_i8_s(int n, float * s, size_t bs, const void * vx, size_t bx, const void * vy, size_t by, int nrc) {
+-    ggml_vec_dot_i2_i8_s_1x1(n, s, bs, vx, bx, vy, by, nrc);
+-}
++#if defined(GGML_I2S_AVX2_DIAGNOSTICS) && defined(__AVX2__)
++/*
++ * Diagnostic-only scalar shadow of the AVX2 int16 lane accumulator.
++ * It follows the kernel's 32-block group and residual-group reset points,
++ * and checks the signed-16 range after each of the two add_epi16 updates
++ * performed for every 128-element I2_S block.
++ */
++static void ggml_i2s_avx2_diag_group(
++    const uint8_t * x,
++    const int8_t * y,
++    int blocks,
++    int * max_abs_lane,
++    unsigned long long * overflow_lane_groups,
++    unsigned long long * overflow_updates
++) {
++    int32_t lane_acc[16] = { 0 };
++    int lane_overflowed[16] = { 0 };
++    int32_t partial[4][16];
++
++    for (int block = 0; block < blocks; ++block) {
++        for (int plane = 0; plane < 4; ++plane) {
++            const int shift = 6 - 2 * plane;
++            for (int lane = 0; lane < 16; ++lane) {
++                const int packed_offset = block * 32 + lane * 2;
++                const int activation_offset = block * 128 + plane * 32 + lane * 2;
++                const uint8_t packed0 = x[packed_offset + 0];
++                const uint8_t packed1 = x[packed_offset + 1];
++                const int code0 = (packed0 >> shift) & 0x03;
++                const int code1 = (packed1 >> shift) & 0x03;
++                partial[plane][lane] =
++                    code0 * y[activation_offset + 0] +
++                    code1 * y[activation_offset + 1];
++            }
++        }
++
++        for (int lane = 0; lane < 16; ++lane) {
++            lane_acc[lane] += partial[0][lane] + partial[1][lane];
++            int abs_value = lane_acc[lane] < 0 ? -lane_acc[lane] : lane_acc[lane];
++            if (abs_value > *max_abs_lane) *max_abs_lane = abs_value;
++            if (lane_acc[lane] > 32767 || lane_acc[lane] < -32768) {
++                ++*overflow_updates;
++                lane_overflowed[lane] = 1;
++            }
++
++            lane_acc[lane] += partial[2][lane] + partial[3][lane];
++            abs_value = lane_acc[lane] < 0 ? -lane_acc[lane] : lane_acc[lane];
++            if (abs_value > *max_abs_lane) *max_abs_lane = abs_value;
++            if (lane_acc[lane] > 32767 || lane_acc[lane] < -32768) {
++                ++*overflow_updates;
++                lane_overflowed[lane] = 1;
++            }
++        }
++    }
++
++    for (int lane = 0; lane < 16; ++lane) {
++        if (lane_overflowed[lane]) ++*overflow_lane_groups;
++    }
++}
++
++static void ggml_i2s_avx2_diag(
++    int n,
++    const void * vx,
++    size_t bx,
++    const void * vy,
++    int nrc
++) {
++    static unsigned int call_counter = 0;
++    const unsigned int call_id = __atomic_fetch_add(&call_counter, 1, __ATOMIC_RELAXED);
++    if (call_id >= 64) return;
++
++    const uint8_t * x = (const uint8_t *) vx;
++    const int8_t * y = (const int8_t *) vy;
++    int act_min = 127;
++    int act_max = -128;
++    int act_pos = 0;
++    int act_neg = 0;
++    int act_zero = 0;
++    long long act_sum = 0;
++
++    for (int i = 0; i < n; ++i) {
++        const int value = y[i];
++        if (value < act_min) act_min = value;
++        if (value > act_max) act_max = value;
++        if (value > 0) ++act_pos;
++        else if (value < 0) ++act_neg;
++        else ++act_zero;
++        act_sum += value;
++    }
++
++    const int blocks = n / 128;
++    const int group32_num = blocks / 32;
++    const int tail_blocks = blocks % 32;
++    int max_abs_lane = 0;
++    unsigned long long overflow_lane_groups = 0;
++    unsigned long long overflow_updates = 0;
++
++    for (int row = 0; row < nrc; ++row) {
++        const uint8_t * x_row = x + row * bx / 4;
++        for (int group = 0; group < group32_num; ++group) {
++            ggml_i2s_avx2_diag_group(
++                x_row + group * 1024,
++                y + group * 4096,
++                32,
++                &max_abs_lane,
++                &overflow_lane_groups,
++                &overflow_updates
++            );
++        }
++        if (tail_blocks > 0) {
++            ggml_i2s_avx2_diag_group(
++                x_row + group32_num * 1024,
++                y + group32_num * 4096,
++                tail_blocks,
++                &max_abs_lane,
++                &overflow_lane_groups,
++                &overflow_updates
++            );
++        }
++    }
++
++    fprintf(stderr,
++        "I2S_AVX2_DIAG call=%u K=%d rows=%d act_min=%d act_max=%d "
++        "act_pos=%d act_neg=%d act_zero=%d act_sum=%lld "
++        "max_abs_lane=%d overflow_lane_groups=%llu overflow_updates=%llu\n",
++        call_id, n, nrc, act_min, act_max, act_pos, act_neg, act_zero, act_sum,
++        max_abs_lane, overflow_lane_groups, overflow_updates
++    );
++}
++#endif
++
++void ggml_vec_dot_i2_i8_s(int n, float * s, size_t bs, const void * vx, size_t bx, const void * vy, size_t by, int nrc) {
++    ggml_vec_dot_i2_i8_s_1x1(n, s, bs, vx, bx, vy, by, nrc);
++#if defined(GGML_I2S_AVX2_DIAGNOSTICS) && defined(__AVX2__)
++    ggml_i2s_avx2_diag(n, vx, bx, vy, nrc);
++#endif
++}
