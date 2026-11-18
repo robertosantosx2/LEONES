@@ -43,26 +43,44 @@ The second patch logs the first 64 entries into `llamafile_sgemm_i2s()`, includi
 matrix dimensions and activation min/max, positive/negative/zero counts and
 sum for up to four activation rows per call. It does not modify the GEMM result.
 Compile the C++ sources with `-DGGML_I2S_AVX2_DIAGNOSTICS` and keep
-`GGML_LLAMAFILE=ON).
+`GGML_LLAMAFILE=ON`.
 
 ## Build integration
 
-Apply the patch from the llama.cpp submodule root:
+The patch files are stored in the LEONES repository. Apply them to the
+corresponding BitNet submodule checkout using absolute paths:
+
+**Fallback vec-dot probe** (only when the target build has LLAMAFILE OFF):
 
 ```bash
-git apply research/bitnet/patches/0001-i2s-avx2-activation-diagnostics.patch
+git -C /path/to/BitNet/3rdparty/llama.cpp apply \
+  /path/to/LEONES/research/bitnet/patches/0001-i2s-avx2-activation-diagnostics.patch
 ```
 
-Compile the C sources with:
+Compile the C sources with `-DGGML_I2S_AVX2_DIAGNOSTICS`, AVX2 enabled and
+`GGML_LLAMAFILE=OFF`. In the public commit used by this investigation, that
+fallback configuration also needs the unrelated `src1_cont` conditional-scope
+workaround shown in the GitHub Actions workflow.
 
-```text
--DGGML_I2S_AVX2_DIAGNOSTICS
+**LLAMAFILE probe** (the likely default BitNet setup):
+
+```bash
+git -C /path/to/BitNet/3rdparty/llama.cpp apply \
+  /path/to/LEONES/research/bitnet/patches/0002-i2s-llamafile-activation-diagnostics.patch
 ```
 
-The build must also enable AVX2 so that `__AVX2__` is defined. If the runtime
-uses `GGML_USE_LLAMAFILE`, this vec-dot wrapper may be bypassed; no diagnostic
-line then means either that the wrapper was not reached or that the diagnostic
-macro was not present in the loaded library.
+Compile the C++ sources with `-DGGML_I2S_AVX2_DIAGNOSTICS`, AVX2 enabled and
+`GGML_LLAMAFILE=ON`. This logs entries into `llamafile_sgemm_i2s()` and
+activation statistics for up to four activation rows per call.
+
+Both patches target the exact public llama.cpp submodule commit documented
+above. The user's local reproduction submodule is a different, unpublished
+commit; do not assume either patch applies to it without checking the diff.
+
+If the runtime uses `GGML_USE_LLAMAFILE`, the vec-dot wrapper may be bypassed.
+No vec-dot diagnostic line then means either that the wrapper was not reached
+or that the diagnostic macro was not present in the loaded library. The
+LLAMAFILE probe is intended to distinguish that case.
 
 ## CI validation
 
