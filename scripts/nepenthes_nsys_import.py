@@ -581,7 +581,7 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                  str(nsys.resolve()), sha256(nsys), len(events), len(activities),
                  json.dumps(dict(event_counts), sort_keys=True),
                  json.dumps(dict(activity_counts), sort_keys=True),
-                 "No proximity join. Token-matched NVTX markers calibrate host↔Nsight time; GPU activities receive windowed attribution only when uniquely contained in an explicit request window.",
+                 "No automatic JSONL-to-Nsight join by proximity. Token-matched NVTX markers calibrate host↔Nsight time; GPU activities receive windowed attribution only when uniquely contained in an explicit request window.",
                  json.dumps(enum_metadata, ensure_ascii=False, sort_keys=True),
                  json.dumps(nsys_clock_calibration, ensure_ascii=False, sort_keys=True)),
             )
@@ -736,7 +736,7 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
         source.close()
 
     if not activities:
-        raise ValueError("Nsight SQLite contains no supported activity rows")
+        raise ValueError("Nsight SQLite contains no supported CUPTI activity rows or NVTX events")
     unsupported = {table: count for table, count in detected.items() if table not in NSYS_TABLES and count > 0}
     coverage = {
         "supported_tables": sorted(table for table in detected if table in NSYS_TABLES),
@@ -763,7 +763,7 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                  json.dumps(dict(activity_counts), sort_keys=True),
                  json.dumps(detected, sort_keys=True), json.dumps(coverage, sort_keys=True),
                  "standalone_nsys_capture_without_paired_nepenthes_jsonl",
-                 "No paired host↔Nsight clock calibration. Explicit NVTX token windows may support windowed GPU attribution within the Nsight clock domain only.",
+                 "No NEPENTHES run_id or paired host↔Nsight clock calibration. Explicit NVTX token windows may support windowed GPU attribution within the Nsight clock domain only.",
                  json.dumps(enum_metadata, ensure_ascii=False, sort_keys=True),
                  json.dumps(nsys_clock_calibration, ensure_ascii=False, sort_keys=True)),
             )
