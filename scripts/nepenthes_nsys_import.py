@@ -526,7 +526,7 @@ def attribute_nsys_activity(start_ns: Any, end_ns: Any,
 
 def init_output(db: sqlite3.Connection) -> None:
     migration_dir = Path(__file__).resolve().parents[1] / "db" / "migrations"
-    for version in ("002_nepenthes_observability.sql", "003_nepenthes_nsys_only.sql"):
+    for version in ("002_nepenthes_observability.sql", "003_nepenthes_nsys_only.sql", "006_nepenthes_typed_event_metadata.sql"):
         migration = migration_dir / version
         if migration.is_file():
             db.executescript(migration.read_text(encoding="utf-8"))
