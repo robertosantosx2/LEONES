@@ -238,3 +238,12 @@ The current C07/C08 implementation work is tracked in [llama.cpp PR #4](https://
 
 
 AIPerf is now wired into the C08 evidence path through [LEONES PR #185](https://github.com/robertosantosx2/LEONES/pull/185). Its runner samples the inference server PID, system RAM and device-wide GPU metrics; its adapter produces the same canonical evidence consumed by the paired overhead gate. CI regression tests pass; physical measurements remain MSI-dependent.
+
+
+## Seguimiento RC1 — 19/11/2026
+
+- Upstream llama.cpp está en `f8caa5ea30b5775512906ae3b7ee53b21a7a6e1d`; el fork personal permanece en `5812201a81008977ea079eaf86a3f9166eef9f10`, cuatro commits por detrás. El delta vuelve a tocar graph/context: no se avanza el fork ni el gitlink sin rebase revisado.
+- Runtime [PR #4](https://github.com/robertosantosx2/llama.cpp/pull/4): pruebas CPU y build CPU pasan; CUDA compile sigue en curso. C07 real aún no ejecutado.
+- LEONES [PR #189](https://github.com/robertosantosx2/LEONES/pull/189) añade atribución Nsight limitada al proceso; [PR #190](https://github.com/robertosantosx2/LEONES/pull/190) corrige medición TTFT/streaming; [PR #192](https://github.com/robertosantosx2/LEONES/pull/192) protege la privacidad por defecto. Sus suites CI están verdes.
+- [PR #193](https://github.com/robertosantosx2/LEONES/pull/193) refuerza C08: TTFT, duración total, RSS de proceso, RAM de sistema, VRAM device-wide y huella del comando son obligatorios. CI en curso.
+- C07 y C08 siguen pendientes de captura Nsight y campañas emparejadas reales en el MSI; no se atribuyen a CI resultados físicos.
