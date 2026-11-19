@@ -1,9 +1,11 @@
-name: NEPENTHES llama.cpp trace import
+name: NEPENTHES shared trace import
 
 on:
   pull_request:
     paths:
       - "scripts/nepenthes_llama_trace_import.py"
+      - "scripts/nepenthes_trace_envelope.py"
+      - "docs/subprojects/NEPENTHES/TRACE-ENVELOPE.md"
       - "tests/test_nepenthes_llama_trace_import.py"
       - "docs/subprojects/NEPENTHES/LLAMA-TRACE-IMPORT.md"
       - ".github/workflows/nepenthes-llama-trace-import.yml"
@@ -11,6 +13,8 @@ on:
     branches: [main]
     paths:
       - "scripts/nepenthes_llama_trace_import.py"
+      - "scripts/nepenthes_trace_envelope.py"
+      - "docs/subprojects/NEPENTHES/TRACE-ENVELOPE.md"
       - "tests/test_nepenthes_llama_trace_import.py"
       - "docs/subprojects/NEPENTHES/LLAMA-TRACE-IMPORT.md"
       - ".github/workflows/nepenthes-llama-trace-import.yml"
@@ -27,5 +31,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Run llama.cpp trace import tests
+      - name: Run shared trace envelope and connector-profile tests
         run: python -m unittest discover -s tests -p "test_nepenthes_llama_trace_import.py" -v

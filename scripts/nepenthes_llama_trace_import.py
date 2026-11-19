@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import and validate the NEPENTHES llama.cpp JSONL runtime trace."""
+"""Import and validate a registered NEPENTHES engine JSONL runtime trace."""
 from __future__ import annotations
 
 import argparse
@@ -12,44 +12,12 @@ from pathlib import Path
 from typing import Any
 
 
-EVENT_FIELDS = {
-    "schema_version",
-    "run_id",
-    "event_id",
-    "source",
-    "timestamp_unix_ns",
-    "monotonic_ns",
-    "request_id",
-    "event_kind",
-    "label",
-    "value0",
-    "value1",
-    "duration_ns",
-    "flags",
-}
-OPTIONAL_EVENT_FIELDS = {"correlation_token", "attribution_level", "clock_domain"}
-ATTRIBUTION_LEVELS = {"exact", "windowed", "device_wide", "estimated"}
-FORBIDDEN_FIELDS = {"prompt", "completion", "response", "text", "tokens", "token_ids", "input_text", "output_text"}
-SUMMARY_FIELDS = {
-    "schema_version",
-    "run_id",
-    "event_id",
-    "source",
-    "timestamp_unix_ns",
-    "event_kind",
-    "events_drained",
-    "dropped_events",
-    "write_errors",
-}
-
-
-def _require_int(record: dict[str, Any], field: str, line_no: int, maximum: int | None = None) -> int:
-    value = record.get(field)
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        raise ValueError(f"line {line_no}: {field} must be a non-negative integer")
-    if maximum is not None and value > maximum:
-        raise ValueError(f"line {line_no}: {field} exceeds {maximum}")
-    return value
+from nepenthes_trace_envelope import (
+    FORBIDDEN_FIELDS,
+    SOURCE_PROFILES,
+    validate_event_envelope,
+    validate_summary_envelope,
+)
 
 
 def _sha256(path: Path) -> str:
@@ -60,9 +28,11 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, Any]:
+def import_trace(input_path: Path, allow_incomplete: bool = False, source: str = "llama.cpp") -> dict[str, Any]:
     if not input_path.is_file():
         raise ValueError(f"input file does not exist: {input_path}")
+    if not isinstance(source, str) or source not in SOURCE_PROFILES:
+        raise ValueError(f"unregistered trace source: {source}")
 
     event_count = 0
     run_id: str | None = None
@@ -99,27 +69,12 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
             if event_kind == "sink_summary":
                 if summary is not None:
                     raise ValueError(f"line {line_no}: duplicate sink_summary record")
-                missing = SUMMARY_FIELDS - record.keys()
-                extra = record.keys() - SUMMARY_FIELDS
-                if missing:
-                    raise ValueError(f"line {line_no}: sink summary missing fields: {sorted(missing)}")
-                if extra:
-                    raise ValueError(f"line {line_no}: unexpected sink summary fields: {sorted(extra)}")
-                if record.get("schema_version") != "1.0" or record.get("source") != "llama.cpp":
-                    raise ValueError(f"line {line_no}: unsupported sink summary schema/source")
-                summary_run = record.get("run_id")
-                if not isinstance(summary_run, str) or not summary_run:
-                    raise ValueError(f"line {line_no}: invalid summary run_id")
+                validate_summary_envelope(record, line_no, source)
+                summary_run = record["run_id"]
                 if run_id is not None and summary_run != run_id:
                     raise ValueError(f"line {line_no}: summary run_id does not match events")
                 run_id = summary_run
                 summary = record
-                _require_int(record, "timestamp_unix_ns", line_no)
-                _require_int(record, "events_drained", line_no)
-                _require_int(record, "dropped_events", line_no)
-                _require_int(record, "write_errors", line_no)
-                if not isinstance(record.get("event_id"), str) or not record["event_id"]:
-                    raise ValueError(f"line {line_no}: invalid summary event_id")
                 if record["event_id"] in event_ids:
                     raise ValueError(f"line {line_no}: duplicate event_id")
                 event_ids.add(record["event_id"])
@@ -129,19 +84,8 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
 
             if summary is not None:
                 raise ValueError(f"line {line_no}: event found after sink_summary")
-            missing = EVENT_FIELDS - record.keys()
-            extra = record.keys() - EVENT_FIELDS - OPTIONAL_EVENT_FIELDS
-            if missing:
-                raise ValueError(f"line {line_no}: event missing fields: {sorted(missing)}")
-            if extra:
-                raise ValueError(f"line {line_no}: unexpected event fields: {sorted(extra)}")
-            if record.get("schema_version") != "1.0":
-                raise ValueError(f"line {line_no}: unsupported schema_version")
-            if record.get("source") != "llama.cpp":
-                raise ValueError(f"line {line_no}: source must be llama.cpp")
-            current_run = record.get("run_id")
-            if not isinstance(current_run, str) or not current_run:
-                raise ValueError(f"line {line_no}: invalid run_id")
+            validate_event_envelope(record, line_no, source)
+            current_run = record["run_id"]
             if run_id is None:
                 run_id = current_run
             elif current_run != run_id:
@@ -154,32 +98,14 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
                 raise ValueError(f"line {line_no}: duplicate event_id {event_id}")
             event_ids.add(event_id)
 
-            timestamp_unix_ns = _require_int(record, "timestamp_unix_ns", line_no)
-            monotonic_ns = _require_int(record, "monotonic_ns", line_no)
-            request_id = _require_int(record, "request_id", line_no)
+            timestamp_unix_ns = record["timestamp_unix_ns"]
+            monotonic_ns = record["monotonic_ns"]
+            request_id = record["request_id"]
             correlation_token = record.get("correlation_token")
-            if correlation_token is not None:
-                if isinstance(correlation_token, bool) or not isinstance(correlation_token, int) or not 0 < correlation_token <= 0xFFFFFFFFFFFFFFFF:
-                    raise ValueError(f"line {line_no}: correlation_token must be null or a positive unsigned 64-bit integer")
             attribution_level = record.get("attribution_level")
-            if attribution_level is not None and attribution_level not in ATTRIBUTION_LEVELS:
-                raise ValueError(f"line {line_no}: invalid attribution_level")
-            if attribution_level == "exact" and correlation_token is None:
-                raise ValueError(f"line {line_no}: exact attribution requires correlation_token")
-            if correlation_token is not None and attribution_level != "exact":
-                raise ValueError(f"line {line_no}: correlation_token requires exact attribution_level")
             clock_domain = record.get("clock_domain")
-            if clock_domain is not None and clock_domain != "steady_clock":
-                raise ValueError(f"line {line_no}: unsupported llama.cpp clock_domain")
-            _require_int(record, "value0", line_no)
-            _require_int(record, "value1", line_no)
-            duration_ns = _require_int(record, "duration_ns", line_no)
-            _require_int(record, "flags", line_no, maximum=65535)
-            if not isinstance(event_kind, str) or not event_kind:
-                raise ValueError(f"line {line_no}: invalid event_kind")
-            label = record.get("label")
-            if not isinstance(label, str):
-                raise ValueError(f"line {line_no}: label must be a string")
+            duration_ns = record["duration_ns"]
+            label = record["label"]
 
             event_count += 1
             kind_counts[event_kind] += 1
@@ -261,7 +187,7 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
 
     return {
         "schema_version": "1.0",
-        "source": "llama.cpp",
+        "source": source,
         "run_id": run_id,
         "input_file": input_path.name,
         "input_bytes": input_path.stat().st_size,
@@ -307,22 +233,24 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, help="llama.cpp NEPENTHES JSONL trace")
+    parser.add_argument("input", type=Path, help="NEPENTHES engine JSONL trace")
     parser.add_argument("--output", type=Path, required=True, help="summary JSON output path")
     parser.add_argument("--allow-incomplete", action="store_true",
                         help="import an interrupted trace without a final sink_summary")
+    parser.add_argument("--source", choices=sorted(SOURCE_PROFILES), default="llama.cpp",
+                        help="registered connector identity (default: llama.cpp)")
     args = parser.parse_args(argv)
 
     try:
         if args.input.resolve() == args.output.resolve():
             raise ValueError("output path must differ from the input trace")
-        result = import_trace(args.input, allow_incomplete=args.allow_incomplete)
+        result = import_trace(args.input, allow_incomplete=args.allow_incomplete, source=args.source)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         temporary = args.output.with_name(args.output.name + ".tmp")
         temporary.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         os.replace(temporary, args.output)
     except (OSError, ValueError) as exc:
-        print(f"nepenthes-llama-trace-import: {exc}", file=sys.stderr)
+        print(f"nepenthes-trace-import: {exc}", file=sys.stderr)
         return 2
 
     print(json.dumps({
