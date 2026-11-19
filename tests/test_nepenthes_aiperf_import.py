@@ -218,7 +218,7 @@ def test_rejects_malformed_gpu_telemetry_record(tmp_path: Path):
     artifacts = tmp_path / "bad-gpu"
     artifacts.mkdir()
     (artifacts / "gpu_telemetry_export.jsonl").write_text(
-        json.dumps({"timestamp_ns": 123, "telemetry_data": "not-an-object"}) + "\\n",
+        json.dumps({"timestamp_ns": 123, "telemetry_data": "not-an-object"}) + "\n",
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="no telemetry_data object"):
