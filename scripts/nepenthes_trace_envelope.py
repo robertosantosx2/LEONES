@@ -36,7 +36,7 @@ def source_profile(source: str) -> dict[str, frozenset[str]]:
     return profile
 
 
-def require_uint(record: dict[str, Any], field: str, line_no: int,
+def requirerequire_uint(record: dict[str, Any], field: str, line_no: int,
           maximum: int = UINT64_MAX) -> int:
     value = record.get(field)
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
