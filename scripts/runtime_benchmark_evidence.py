@@ -24,7 +24,7 @@ TOKENS_PER_SECOND = re.compile(
 )
 
 LLAMA_CPP_GENERATION_TPS = re.compile(
-    r"Generation:\s*([0-9]+(?:[.,][0-9]+)?)\\s*t/s",
+    r"Generation:\s*([0-9]+(?:[.,][0-9]+)?)\s*t/s",
     re.I,
 )
 TTFT_RE = re.compile(
@@ -32,7 +32,7 @@ TTFT_RE = re.compile(
     re.I,
 )
 GENERATION_TIME_RE = re.compile(
-    r"(?:eval time|generation time)\s*[:=]\s*([0-9]+(?:[.,][0-9]+)?)\\s*ms",
+    r"(?:eval time|generation time)\s*[:=]\s*([0-9]+(?:[.,][0-9]+)?)\s*ms",
     re.I,
 )
 
