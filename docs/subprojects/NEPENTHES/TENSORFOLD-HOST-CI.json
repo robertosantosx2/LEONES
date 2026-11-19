@@ -1,9 +1,15 @@
 {
   "schema_version": "nepenthes-cross-repo-host-ci-1",
   "repository": "robertosantosx2/TensorFold",
-  "issue": 2,
+  "issue": 3,
   "pull_request": 6,
   "branch": "nepenthes/host-trace-connector-2",
-  "commit": "7f60bb583902ad94e39f2ebe9bda8c8e44cda3c5",
-  "scope": "host-only; no CUDA, NVTX, Nsight, GPU, or MSI validation"
+  "commit": "de77778309c70bbfaa743283f65d20b8f1c76278",
+  "scope": "host-only; no CUDA, NVTX, Nsight, GPU, or MSI validation",
+  "validation_scope": "host-only; no CUDA, NVTX, Nsight, GPU, or MSI validation",
+  "fixtures": [
+    "tests/fixtures/nepenthes/tensorfold-background.jsonl",
+    "tests/fixtures/nepenthes/tensorfold-source-mismatch.jsonl",
+    "tests/fixtures/nepenthes/tensorfold-incomplete.jsonl"
+  ]
 }

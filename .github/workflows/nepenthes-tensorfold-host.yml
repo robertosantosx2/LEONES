@@ -47,10 +47,43 @@ jobs:
           EXPECTED_SHA: ${{ steps.pin.outputs.sha }}
         run: test "$(git -C TensorFold rev-parse HEAD)" = "$EXPECTED_SHA"
 
-      - name: Zig formatting
+      - name: Format TensorFold sources and expose required diff
         working-directory: TensorFold
-        run: zig fmt --check build.zig zig
+        run: |
+          zig fmt build.zig zig
+          git diff --check
+          git diff -- zig/src/server/nepenthes_trace.zig
 
       - name: Host server and golden regressions
         working-directory: TensorFold
         run: zig build -Dfixed-cpu test-host-a test-host-b test-server-security test-golden
+
+      - name: Import TensorFold background lifecycle fixture
+        run: |
+          python3 scripts/nepenthes_llama_trace_import.py \
+            TensorFold/tests/fixtures/nepenthes/tensorfold-background.jsonl \
+            --source tensorfold --output "$RUNNER_TEMP/tensorfold-import.json"
+          python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["capture_complete"] is True and d["event_count"] == 5' "$RUNNER_TEMP/tensorfold-import.json"
+
+      - name: Reject source mismatch and unknown source
+        run: |
+          set +e
+          mismatch=$(python3 scripts/nepenthes_llama_trace_import.py TensorFold/tests/fixtures/nepenthes/tensorfold-source-mismatch.jsonl --source tensorfold --output "$RUNNER_TEMP/mismatch.json" 2>&1)
+          mismatch_status=$?
+          unknown=$(python3 scripts/nepenthes_llama_trace_import.py TensorFold/tests/fixtures/nepenthes/tensorfold-background.jsonl --source unknown --output "$RUNNER_TEMP/unknown.json" 2>&1)
+          unknown_status=$?
+          set -e
+          test "$mismatch_status" -eq 2
+          test "$unknown_status" -eq 2
+          echo "$mismatch" | grep -qi source
+          echo "$unknown" | grep -qi invalid
+
+      - name: Preserve incomplete sink accounting
+        run: |
+          python3 scripts/nepenthes_llama_trace_import.py \
+            TensorFold/tests/fixtures/nepenthes/tensorfold-incomplete.jsonl \
+            --source tensorfold --output "$RUNNER_TEMP/tensorfold-incomplete.json"
+          python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["capture_complete"] is False' "$RUNNER_TEMP/tensorfold-incomplete.json"
+
+      - name: Run shared LEONES importer regressions
+        run: python3 -m unittest discover -s tests -p 'test_nepenthes_llama_trace_import.py'
