@@ -199,3 +199,30 @@ def test_rejects_empty_artifact_directory(tmp_path: Path):
     artifacts.mkdir()
     with pytest.raises(ValueError, match="no supported AIPerf artifacts"):
         import_aiperf(artifacts, tmp_path / "out")
+
+def test_imports_server_and_gpu_telemetry_without_summary_or_request_records(tmp_path: Path):
+    artifacts = tmp_path / "telemetry-only"
+    artifacts.mkdir()
+    write_server_metrics(artifacts)
+    write_gpu_telemetry(artifacts)
+    report = import_aiperf(artifacts, tmp_path / "out")
+    assert report["summary_file"] is None
+    assert report["records_file"] is None
+    assert report["server_metric_sample_count"] == 2
+    assert report["gpu_telemetry_metric_count"] == 3
+    assert report["event_count"] == 5
+    assert any("summary JSON not present" in warning for warning in report["warnings"])
+
+
+def test_rejects_malformed_gpu_telemetry_record(tmp_path: Path):
+    artifacts = tmp_path / "bad-gpu"
+    artifacts.mkdir()
+    (artifacts / "gpu_telemetry_export.jsonl").write_text(
+        json.dumps({"timestamp_ns": 123, "telemetry_data": "not-an-object"}) + "\\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="no telemetry_data object"):
+        import_aiperf(artifacts, tmp_path / "out")
+    assert not (tmp_path / "out" / "aiperf_import_report.json").exists()
+
+
