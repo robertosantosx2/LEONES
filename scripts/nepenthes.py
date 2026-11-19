@@ -206,7 +206,7 @@ def read_request_activity(path,offset,pending,active):
  except OSError:
   return offset,pending
  pending+=chunk
- lines=pending.split("\\n");pending=lines.pop()
+ lines=pending.split("\n");pending=lines.pop()
  for line in lines:
   try:event=json.loads(line)
   except (json.JSONDecodeError,TypeError):continue
