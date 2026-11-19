@@ -150,15 +150,18 @@ La primera categoría concentra aproximadamente el 95,9 % de los bytes y el 96,4
 - [ ] Definir mantenimiento de esquemas y compatibilidad hacia atrás.
 - [ ] Declarar NEPENTHES funcional completo solo después de superar todos los gates anteriores.
 
-## Orden inmediato recomendado
+## Orden operativo subordinado al INDEX
 
-1. Prueba CLI con proceso inocuo y verificación del paquete.
-2. Build del motor Tandem.cpp instrumentado en MSI.
-3. Una inferencia real con `nepenthes run --profile full`.
-4. Inspección del JSONL de motor y del Nsight generado.
-5. Importación emparejada a LEONES y auditoría.
-6. Matriz de cobertura de sondas y medición de overhead.
-7. Repeticiones, informe comparativo y release.
+Este checklist conserva tareas técnicas e históricas. **No determina el orden vigente**: cualquier discrepancia se resuelve a favor de `NEPENTHES-INDEX.md`. A fecha de esta actualización, el orden vigente es:
+
+1. Cerrar LEONES #207 mediante PR #209: validador común, registry cerrado y fixtures llama.cpp/TensorFold (más identidad Tandem.cpp), sin debilitar el importador.
+2. Obtener CI real y revisión del HEAD exacto de PR #209; solo entonces aceptar #207.
+3. Tras #207, implementar TensorFold host-only según su contrato y superar el gate ATC correspondiente; no añadir CUDA en esa fase.
+4. Reconciliar y revisar la candidata canónica llama.cpp PR #10, cerrar CI/revisión antes de merge o gitlink.
+5. Solo tras los gates remotos, MSI: build CUDA, C07 NVTX+Nsight real y C08 emparejado.
+6. Aceptación por motor y release con artefactos, hashes, límites y métricas.
+
+Las campañas históricas de Tandem.cpp y MSI que aparecen en este anexo no adelantan ni sustituyen esos gates..
 
 ## Definición de «funcional completo»
 
