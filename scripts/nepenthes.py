@@ -285,7 +285,9 @@ def validate_event_contract(events):
    if not isinstance(mono,int) or isinstance(mono,bool) or mono<=0 or not isinstance(wall,int) or isinstance(wall,bool) or wall<=0:
     errors.append("invalid clock_calibration timestamp at event "+str(line_no))
    else:
-    clock_points.append((mono,wall,event.get("label")))
+    label=event.get("label")
+    clock_labels[label]=clock_labels.get(label,0)+1
+    clock_points.append((mono,wall,label))
   if kind=="nvtx_marker":
    if token is None or level!="exact":
     errors.append("NVTX marker requires exact correlation token at event "+str(line_no))
@@ -314,6 +316,8 @@ def validate_event_contract(events):
   if nvtx_starts.get(token,0)!=1 or nvtx_ends.get(token,0)!=1:
    errors.append("NVTX token lifecycle is not one start/one end: "+str(token))
  clock_points.sort(key=lambda item:item[0])
+ if clock_points and (clock_labels.get("clock.calibration.start")!=1 or clock_labels.get("clock.calibration.end")!=1):
+  errors.append("clock_calibration requires exactly one start and one end marker")
  host_clock={"point_count":len(clock_points),"offset_start_ns":None,"offset_end_ns":None,
              "drift_ns":None,"drift_ppm":None,"calibrated":False}
  if clock_points:
@@ -377,6 +381,7 @@ def verify_run(a):
     for field in ("timestamp_unix_ns","monotonic_ns","request_id","value0","value1","duration_ns","flags"):
      value=event.get(field)
      if isinstance(value,bool) or not isinstance(value,int):event_errors.append("event field "+field+" is not integer at line "+str(line_no))
+    elif field in ("timestamp_unix_ns","monotonic_ns","request_id","duration_ns","flags") and value<0:event_errors.append("event field "+field+" is negative at line "+str(line_no))
   except (OSError,json.JSONDecodeError) as exc:event_errors.append("event JSONL invalid: "+str(exc))
  result["errors"].extend(event_errors)
  if not events:result["errors"].append("raw/events.jsonl empty")
@@ -406,7 +411,7 @@ def verify_run(a):
      if result["event_rows"]!=len(events):result["errors"].append("observations.sqlite event count mismatch")
      if result["sample_rows"]!=manifest.get("sample_count"):result["errors"].append("observations.sqlite sample count mismatch")
   except sqlite3.Error as exc:result["errors"].append("observations.sqlite unreadable: "+str(exc))
- result["checks"]["observations_sqlite"]=not any(x.startswith(("observations.sqlite","observations.sqlite missing")) for x in result["errors"])
+ result["checks"]["observations_sqlite"]=not any(x.startswith(("data/observations.sqlite","observations.sqlite")) for x in result["errors"])
  summary_path=run/"data"/"summary.json"
  if not summary_path.is_file():result["errors"].append("data/summary.json missing")
  else:
@@ -467,7 +472,7 @@ def verify_run(a):
   except (sqlite3.Error,TypeError,ValueError) as exc:result["errors"].append("nepenthes-import.sqlite invalid: "+str(exc))
  elif nsys_enabled:
   result["errors"].append("data/nepenthes-import.sqlite missing while Nsight capture is enabled")
- result["checks"]["nsys_import"]=not any(x.startswith(("data/nsys-import.json","Nsight import","nepenthes-import.sqlite","NVTX markers","Nsight GPU","windowed Nsight","ambiguous overlapping")) for x in result["errors"])
+ result["checks"]["nsys_import"]=not any(x.startswith(("data/nsys-import.json","data/nepenthes-import.sqlite","Nsight import","nepenthes-import.sqlite","NVTX markers","Nsight GPU","windowed Nsight","ambiguous overlapping")) for x in result["errors"])
  result["checks"]["report_html"]=(run/"reports"/"index.html").is_file()
  if not result["checks"]["report_html"]:result["errors"].append("reports/index.html missing")
  result["ok"]=not result["errors"]
