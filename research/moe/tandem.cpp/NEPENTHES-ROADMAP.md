@@ -204,3 +204,8 @@ Estado: implementación y fixtures sintéticos en rama; CI pendiente. La captura
 - [ ] Cerrar los PRs de componentes duplicados únicamente después de que su contenido esté presente en la rama integrada y sus checks estén cubiertos.
 
 **Regla de cierre:** el código integrado con CI verde no equivale a NEPENTHES funcional completo. La etiqueta funcional completo requiere C07 y C08 aceptados con artefactos físicos, auditoría de cobertura, overhead dentro del umbral y verificación del bundle.
+
+
+### AIPerf warm-up provenance correction — 2026-11-19
+
+Post-merge audit found that the wrapper had not explicitly passed AIPerf's warm-up request count. LEONES PR #199 is now merged as `109e3073cd0040a5ba86b906e71e003959f72d3c`: the runner defaults to one explicit warm-up request, records it in the workload command fingerprint and manifest, and the evidence builder rejects manifests without that field. CI passed **572 tests** plus all release/runtime gates. This is still software acceptance only; no C08 performance result is claimed.
