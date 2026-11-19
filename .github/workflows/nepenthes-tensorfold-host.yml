@@ -1,6 +1,11 @@
 name: NEPENTHES TensorFold host connector
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - docs/subprojects/NEPENTHES/TENSORFOLD-HOST-CI.json
+      - .github/workflows/nepenthes-tensorfold-host.yml
   pull_request:
     paths:
       - docs/subprojects/NEPENTHES/TENSORFOLD-HOST-CI.json
