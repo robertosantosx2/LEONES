@@ -107,13 +107,12 @@ def event(event_id,kind,label,mono,wall,request_id=0,value0=1,value1=2,token=Non
  if level is not None: item["attribution_level"]=level
  if kind in ("clock_calibration","nvtx_marker","request_start","request_end"): item["clock_domain"]="steady_clock"
  events.append(item)
-now_mono=1000;now_wall=2000
-event("cal-start","clock_calibration","clock.calibration.start",now_mono,now_wall)
-event("req-start","request_start","server.task",now_mono+10,now_wall+10,42,1,2,77,"exact")
-event("nvtx-start","nvtx_marker","request.start",now_mono+20,now_wall+20,42,1000,1020,77,"exact")
-event("nvtx-end","nvtx_marker","request.end",now_mono+30,now_wall+30,42,5020,5040,77,"exact")
-event("req-end","request_end","server.task",now_mono+50,now_wall+50,42,1,2,77,"exact")
-event("cal-end","clock_calibration","clock.calibration.end",now_mono+60,now_wall+60)
+event("cal-start","clock_calibration","clock.calibration.start",1000,2000)
+event("nvtx-start","nvtx_marker","request.start",1040,2040,42,1020,1040,77,"exact")
+event("req-start","request_start","server.task",1050,2050,42,1,2,77,"exact")
+event("nvtx-end","nvtx_marker","request.end",5040,6040,42,5020,5040,77,"exact")
+event("req-end","request_end","server.task",5050,6050,42,1,2,77,"exact")
+event("cal-end","clock_calibration","clock.calibration.end",5060,6060)
 with open(path,"a",encoding="utf-8") as out:
  for item in events: out.write(json.dumps(item)+"\\n")
 print("nsys-wrapped")
