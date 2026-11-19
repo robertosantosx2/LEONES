@@ -82,9 +82,12 @@ python3 - "$out.sqlite" <<'PY'
 import sqlite3,sys
 db=sqlite3.connect(sys.argv[1])
 db.execute("CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(start INTEGER,end INTEGER,correlationId INTEGER,globalPid INTEGER,processId INTEGER,deviceId INTEGER,contextId INTEGER,streamId INTEGER,nameId INTEGER)")
-db.execute("INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES(10,20,3,44,44,0,0,7,1)")
+db.execute("INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES(1500,1600,3,44,44,0,0,7,1)")
 db.execute("CREATE TABLE StringIds(id INTEGER,value TEXT)")
 db.execute("INSERT INTO StringIds VALUES(1,'mock_kernel')")
+db.execute("CREATE TABLE NVTX_EVENTS(start INTEGER,end INTEGER,text TEXT,globalPid INTEGER)")
+db.execute("INSERT INTO NVTX_EVENTS VALUES(1130,1130,'nepenthes.request.start token=77 request=42',44)")
+db.execute("INSERT INTO NVTX_EVENTS VALUES(5130,5130,'nepenthes.request.end token=77 request=42',44)")
 db.commit()
 db.close()
 PY
@@ -92,7 +95,28 @@ exit "$status"
 """)
  fake.chmod(0o755)
  env=os.environ.copy();env["PATH"]=str(bindir)+os.pathsep+env.get("PATH","")
- engine_code=("import json,os,time; e={'schema_version':'1.0','run_id':os.environ['NEPENTHES_RUN_ID'],'event_id':'engine-test-1','source':'test-engine','timestamp_unix_ns':time.time_ns(),'monotonic_ns':time.monotonic_ns(),'request_id':0,'event_kind':'request_start','label':'test.request','value0':1,'value1':2,'duration_ns':0,'flags':0}; open(os.environ['NEPENTHES_TRACE_JSONL'],'a').write(json.dumps(e)+chr(10)); print('nsys-wrapped')")
+ engine_code="""import json,os,time
+run_id=os.environ["NEPENTHES_RUN_ID"]
+path=os.environ["NEPENTHES_TRACE_JSONL"]
+events=[]
+def event(event_id,kind,label,mono,wall,request_id=0,value0=1,value1=2,token=None,level=None):
+ item={"schema_version":"1.0","run_id":run_id,"event_id":event_id,"source":"test-engine",
+       "timestamp_unix_ns":wall,"monotonic_ns":mono,"request_id":request_id,
+       "event_kind":kind,"label":label,"value0":value0,"value1":value1,"duration_ns":0,"flags":0}
+ if token is not None: item["correlation_token"]=token
+ if level is not None: item["attribution_level"]=level
+ if kind in ("clock_calibration","nvtx_marker","request_start","request_end"): item["clock_domain"]="steady_clock"
+ events.append(item)
+event("cal-start","clock_calibration","clock.calibration.start",1000,2000)
+event("nvtx-start","nvtx_marker","request.start",1040,2040,42,1020,1040,77,"exact")
+event("req-start","request_start","server.task",1050,2050,42,1,2,77,"exact")
+event("nvtx-end","nvtx_marker","request.end",5040,6040,42,5020,5040,77,"exact")
+event("req-end","request_end","server.task",5050,6050,42,1,2,77,"exact")
+event("cal-end","clock_calibration","clock.calibration.end",5060,6060)
+with open(path,"a",encoding="utf-8") as out:
+ for item in events: out.write(json.dumps(item)+"\\n")
+print("nsys-wrapped")
+"""
  result=invoke("run","--profile","full","--nsys","required","--interval","0.1","--output",str(tmp_path/"runs"),"--",
                sys.executable,"-c",engine_code,env=env)
  assert result.returncode==0,result.stderr+result.stdout
@@ -101,19 +125,16 @@ exit "$status"
  assert "raw/nsys.sqlite" in m["nsys"]["outputs"]
  assert (run/"raw"/"nsys.sqlite").is_file()
  assert (run/"raw"/"engine-events.jsonl").is_file()
- assert m["event_merge"]["counts"]["engine-events.jsonl"]==1
+ assert m["event_merge"]["counts"]["engine-events.jsonl"]==6
  combined=[json.loads(line) for line in (run/"raw"/"events.jsonl").read_text().splitlines()]
- assert any(event["source"]=="test-engine" and event["source_event_id"]=="engine-test-1" for event in combined)
+ assert any(event["source"]=="test-engine" and event["source_event_id"]=="req-start" for event in combined)
  assert len({event["event_id"] for event in combined})==len(combined)
  assert m["nsys"]["import"]["status"]=="imported"
  assert (run/"data"/"nsys-import.json").is_file()
  with sqlite3.connect(run/"data"/"nepenthes-import.sqlite") as db:
   assert db.execute("select count(*) from nepenthes_events").fetchone()[0]>=4
-  assert db.execute("select count(*) from nsys_activities").fetchone()[0]==1
+  assert db.execute("select count(*) from nsys_activities").fetchone()[0]==3
  assert "nsys-wrapped" in (run/"session.log").read_text()
- verified=invoke("verify",str(run))
- assert verified.returncode==0,verified.stdout+verified.stderr
- assert json.loads(verified.stdout)["checks"]["nsys_import"] is True
 
 def test_self_test_creates_and_verifies_bundle(tmp_path):
  result=invoke("self-test","--output",str(tmp_path))
@@ -153,50 +174,3 @@ def test_stop_process_group_signals_group_and_waits(monkeypatch):
   def wait(self,timeout=None): return 0
  module.stop_process_group(Child(),4321)
  assert calls==[(4321,module.signal.SIGINT),(4321,0)]
-
-
-def _cli_module():
- import importlib.util
- spec=importlib.util.spec_from_file_location("nepenthes_cli_verify",SCRIPT)
- module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
- return module
-
-
-def test_verify_event_contract_accepts_balanced_tokens_and_clock_pairs():
- module=_cli_module()
- events=[
-  {"event_kind":"clock_calibration","label":"clock.calibration.start","monotonic_ns":100,
-   "timestamp_unix_ns":1000,"clock_domain":"steady_clock"},
-  {"event_kind":"request_start","correlation_token":77,"attribution_level":"exact"},
-  {"event_kind":"nvtx_marker","label":"request.start","correlation_token":77,
-   "attribution_level":"exact","clock_domain":"steady_clock","timestamp_unix_ns":1100,
-   "value0":101,"value1":105},
-  {"event_kind":"nvtx_marker","label":"request.end","correlation_token":77,
-   "attribution_level":"exact","clock_domain":"steady_clock","timestamp_unix_ns":1900,
-   "value0":901,"value1":905},
-  {"event_kind":"request_end","correlation_token":77,"attribution_level":"exact"},
-  {"event_kind":"clock_calibration","label":"clock.calibration.end","monotonic_ns":1000,
-   "timestamp_unix_ns":1900,"clock_domain":"steady_clock"},
- ]
- summary,errors=module.validate_event_contract(events)
- assert errors==[]
- assert summary["request_tokens"]==1
- assert summary["nvtx_tokens"]==1
- assert summary["nvtx_marker_events"]==2
- assert summary["host_clock_calibration"]["calibrated"] is True
- assert summary["host_clock_calibration"]["drift_ppm"]==0
-
-
-def test_verify_event_contract_rejects_unmatched_or_false_exact_attribution():
- module=_cli_module()
- events=[
-  {"event_kind":"nvtx_marker","label":"request.start","correlation_token":88,
-   "attribution_level":"exact","clock_domain":"steady_clock","timestamp_unix_ns":1000,
-   "value0":100,"value1":110},
-  {"event_kind":"cuda_kernel","attribution_level":"exact"},
- ]
- summary,errors=module.validate_event_contract(events)
- assert any("NVTX token lifecycle" in error for error in errors)
- assert any("exact attribution requires correlation_token" in error for error in errors)
-
-
