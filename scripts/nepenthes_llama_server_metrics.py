@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 SCHEMA_VERSION = "1.0"
-LABEL_ALLOWLIST = {"model", "status", "backend", "device", "device_id", "type", "operation", "slot_id", "result", "method"}
+LABEL_ALLOWLIST = {"model", "status", "backend", "device", "device_id", "type", "operation", "slot_id", "result", "method", "le", "quantile"}
 METRIC_RE = re.compile(r"^([a-zA-Z_:][a-zA-Z0-9_:]*)(?:\{(.*)\})?\s+(\S+)(?:\s+(\d+))?$")
 NAME_RE = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]*")
 
