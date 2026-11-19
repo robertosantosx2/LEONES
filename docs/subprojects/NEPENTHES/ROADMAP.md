@@ -421,3 +421,11 @@ Una cifra solo es MEASURED si procede de una ejecución identificada, con fuente
 - La política es revisión explícita de cada actualización del submódulo; el monitor upstream no modifica automáticamente el gitlink.
 - CI comprueba URL, modo gitlink, SHA resuelto y manifiesto.
 - Esta integración es GitHub-only: no implica compilación, ejecución de llama.cpp ni validación en la RTX 3050. Esas pruebas quedan para la fase MSI.
+
+
+### llama.cpp runtime instrumentation — active
+
+- PR de fork abierto: [robertosantosx2/llama.cpp#1](https://github.com/robertosantosx2/llama.cpp/pull/1).
+- Primera capa en revisión: sink JSONL acotado, eventos de petición, graph compute/sync, MoE cache y KV cache.
+- Siguiente capa: allocator/OOM/fallback, transferencias y dispatch CUDA, con límites de semántica documentados.
+- No se declara validado hasta que CI compile el server CPU y después se realice build CUDA y captura reproducible en MSI.
