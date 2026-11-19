@@ -680,9 +680,13 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                 sqlite_numeric(nvtx_marker["token"] if nvtx_marker else None, field=f"{table}.nvtx_correlation_token"),
                 nvtx_marker["phase"] if nvtx_marker else None,
                 sqlite_numeric(nvtx_marker["request_id"] if nvtx_marker else None, field=f"{table}.nvtx_marker_request_id"),
-                sqlite_numeric(attributed_token, field=f"{table}.attributed_request_token"),
+                sqlite_numeric(attributed_request_token, field=f"{table}.attributed_request_token"),
                 attribution_level,
                 attribution_status,
+                sqlite_numeric(attributed_batch_token, field=f"{table}.attributed_batch_token"),
+                batch_attribution_level,
+                batch_attribution_status,
+                nvtx_marker_scope,
                 json.dumps(row, ensure_ascii=False, sort_keys=True),
             ))
             activity_counts[kind] += 1
@@ -879,9 +883,13 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                     sqlite_numeric(nvtx_marker["token"] if nvtx_marker else None, field=f"{table}.nvtx_correlation_token"),
                     nvtx_marker["phase"] if nvtx_marker else None,
                     sqlite_numeric(nvtx_marker["request_id"] if nvtx_marker else None, field=f"{table}.nvtx_marker_request_id"),
-                    sqlite_numeric(attributed_token, field=f"{table}.attributed_request_token"),
+                    sqlite_numeric(attributed_request_token, field=f"{table}.attributed_request_token"),
                     attribution_level,
                     attribution_status,
+                    sqlite_numeric(attributed_batch_token, field=f"{table}.attributed_batch_token"),
+                    batch_attribution_level,
+                    batch_attribution_status,
+                    nvtx_marker_scope,
                     json.dumps(row, ensure_ascii=False, sort_keys=True),
                 ))
                 activity_counts[kind] += 1
