@@ -1,0 +1,51 @@
+name: NEPENTHES TensorFold host connector
+
+on:
+  pull_request:
+    paths:
+      - docs/subprojects/NEPENTHES/TENSORFOLD-HOST-CI.json
+      - .github/workflows/nepenthes-tensorfold-host.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tensorfold-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Read pinned TensorFold commit
+        id: pin
+        run: |
+          sha=$(python3 -c 'import json; print(json.load(open("docs/subprojects/NEPENTHES/TENSORFOLD-HOST-CI.json"))["commit"])')
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          repository: robertosantosx2/TensorFold
+          ref: ${{ steps.pin.outputs.sha }}
+          path: TensorFold
+          persist-credentials: false
+
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: 0.17.0
+          use-cache: false
+
+      - name: Verify exact TensorFold source
+        env:
+          EXPECTED_SHA: ${{ steps.pin.outputs.sha }}
+        run: test "$(git -C TensorFold rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Zig formatting
+        working-directory: TensorFold
+        run: zig fmt --check build.zig zig
+
+      - name: Host server and golden regressions
+        working-directory: TensorFold
+        run: zig build -Dfixed-cpu test-host-a test-host-b test-server-security test-golden
