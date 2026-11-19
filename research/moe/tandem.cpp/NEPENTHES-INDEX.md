@@ -22,13 +22,15 @@ Principios no negociables:
 | Área | Estado | Próximo gate |
 |---|---|---|
 | Núcleo LEONES (runner, captura, manifiestos, informes, AIPerf/OTLP) | Implementación integrada en main para las capacidades documentadas; aceptación física parcial | Completar campañas reales y auditoría de paquetes |
-| Contrato común multi-motor | En preparación: [LEONES #207](https://github.com/robertosantosx2/LEONES/issues/207) | Validador de envelope compartido, registry cerrado de sources y fixtures llama.cpp/TensorFold |
+| Contrato común multi-motor | Implementación en [LEONES PR #209](https://github.com/robertosantosx2/LEONES/pull/209) (draft; no aceptada) para [issue #207](https://github.com/robertosantosx2/LEONES/issues/207) | Tests host-only y CI del HEAD exacto; preservar compatibilidad llama.cpp y validar TensorFold/Tandem.cpp |
 | llama.cpp | Integración activa; [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10) en draft/CI según último estado documentado | Cerrar CI/revisión, aceptar contrato y luego C07/C08 en MSI |
 | TensorFold 1.2.10 | Contrato documentado en fork; [issue #1](https://github.com/robertosantosx2/TensorFold/issues/1) reclamada; depende de LEONES #207 | Aceptar validador común; después adaptador host-only y CI |
 | tandem.cpp (distribución patch-based sobre llama.cpp) | Instrumentación NEPENTHES implementada en repo propio; PR #1 abierta, CI de smoke + compilación CUDA SM86 exitosa; captura real histórica CPU-only disponible | Cerrar revisión/merge, validar captura emparejada con Nsight y completar cobertura/correlación/overhead |
 | Otros motores | No hay conector aceptado registrado | Incorporar solo mediante el contrato común y una fila de estado/evidencia |
 
 ### Orden de trabajo vigente
+
+**Ejecución actual:** [PR LEONES #209](https://github.com/robertosantosx2/LEONES/pull/209), draft, rama `feat/nepenthes-shared-envelope-207`. La rama contiene el validador común, el registry cerrado (`llama.cpp`, `tensorfold`, `tandem.cpp`), la compatibilidad del entry point llama.cpp, fixtures host-only y un anexo técnico subordinado. En el último sondeo remoto no se habían observado workflow runs ni status checks para el HEAD consultado; por tanto, la implementación está en revisión y **no supera aún el gate CI ni cierra #207**. La aceptación requiere checks reales del HEAD final y revisión de los criterios del issue.
 1. **LEONES #207 — contrato común multi-motor.** Extraer la validación del envelope del importador llama.cpp sin debilitarlo; registry explícito de sources; clocks y semántica específicos por motor; fixtures positivos y negativos para llama.cpp y TensorFold.
 2. **CI y aceptación de #207.** Preservar compatibilidad llama.cpp; rechazar sources desconocidos, mismatch event/summary, IDs/valores inválidos, privacidad incorrecta y summaries malformados; no declarar aceptación hasta observar CI real.
 3. **TensorFold — adaptador sin CUDA.** Solo tras #207: ciclo request/run, eventos compatibles, metadata namespaced, privacidad y pruebas host-only. No duplicar importador ni runner.
