@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from scripts.runtime_benchmark_evidence import run_once, sha256_file, summary
+from scripts.runtime_benchmark_evidence import prompt_fingerprint, redact_command, run_once, sha256_file, summary
 
 
 def test_run_once_captures_output_and_timing():
@@ -59,3 +59,26 @@ def test_custom_ttft_regex_is_supported():
     )
     assert result["ttft_ms"] == 23.75
     assert result["ttft_source"] == "custom_regex"
+
+
+
+def test_prompt_fingerprint_requires_command_binding_or_dataset_hash():
+    import hashlib
+    prompt = "fixed benchmark prompt"
+    digest, binding = prompt_fingerprint(prompt, None, ["llama-cli", "-p", prompt])
+    assert digest == hashlib.sha256(prompt.encode()).hexdigest()
+    assert binding == "exact_command_argument"
+    with __import__("pytest").raises(ValueError, match="must exactly match"):
+        prompt_fingerprint(prompt, None, ["llama-cli", "-p", "different"])
+    with __import__("pytest").raises(ValueError, match="provide --prompt"):
+        prompt_fingerprint("", None, ["llama-cli"])
+    digest, binding = prompt_fingerprint("", "a" * 64, ["aiperf", "profile"])
+    assert digest == "a" * 64
+    assert binding == "declared_external_dataset"
+
+
+def test_command_redaction_hides_prompt_and_credentials():
+    command = ["llama-cli", "-p", "my private prompt", "--api-key", "secret-token"]
+    assert redact_command(command, "my private prompt") == [
+        "llama-cli", "-p", "<redacted:prompt>", "--api-key", "<redacted>"
+    ]
