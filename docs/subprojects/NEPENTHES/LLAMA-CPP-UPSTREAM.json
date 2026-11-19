@@ -54,5 +54,5 @@
   "trace_importer_workflow": ".github/workflows/nepenthes-llama-trace-import.yml",
   "trace_importer_status": "open_draft_ci_pending",
   "trace_importer_pr": "https://github.com/robertosantosx2/LEONES/pull/176",
-  "trace_importer_head": "0ffda42fb82a32ff3ea4c3df8318d658c4c5ecf1"
+  "trace_importer_head": "1db287d70ebdb318f06d5d32abbf5bea8c66915f"
 }
