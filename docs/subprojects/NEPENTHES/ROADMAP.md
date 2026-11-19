@@ -600,10 +600,10 @@ C08 now has a reproducible AIPerf-first evidence path in GitHub. Actual baseline
 ### Actualización de implementación RC1 — 19/11/2026 (13:06 UTC)
 
 - Upstream `ggml-org/llama.cpp` avanzó a `f8caa5ea30b5775512906ae3b7ee53b21a7a6e1d`; el fork `robertosantosx2/llama.cpp` continúa en `5812201a81008977ea079eaf86a3f9166eef9f10`, cuatro commits por detrás. El delta desde el pin limpio anterior comprende 7 commits y 20 archivos (+601/-167), con cambios en `src/llama-context.cpp`, `src/llama-graph.cpp` y `src/llama-graph.h`. Se mantiene bloqueado el fast-forward ciego.
-- [llama.cpp PR #4](https://github.com/robertosantosx2/llama.cpp/pull/4): CPU trace/build verde; CUDA build con NVTX v3 aún en curso. Auditoría de finalización/cancelación revisada: las rutas de liberación observadas pasan por `server_slot::release()`; el reset de inicialización ocurre antes de asignar tareas. C07 real sigue pendiente.
+- [llama.cpp PR #4](https://github.com/robertosantosx2/llama.cpp/pull/4): CPU trace/build y CUDA build con NVTX v3 completados correctamente. Auditoría de finalización/cancelación revisada: las rutas de liberación observadas pasan por `server_slot::release()`; el reset de inicialización ocurre antes de asignar tareas. C07 real sigue pendiente.
 - [LEONES PR #189](https://github.com/robertosantosx2/LEONES/pull/189): ventanas NVTX y actividades CUDA se asocian por proceso + token; CI completa verde.
 - [LEONES PR #190](https://github.com/robertosantosx2/LEONES/pull/190): lectura de streams sin `readline()` bloqueante; primer byte separado de TTFT; C08 standard rechaza TTFT ausente; CI completa verde.
 - [LEONES PR #192](https://github.com/robertosantosx2/LEONES/pull/192): prompts y stdout/stderr no se persisten por defecto; hash de comando y redacción; CI completa verde.
-- [LEONES PR #193](https://github.com/robertosantosx2/LEONES/pull/193): C08 exige TTFT, duración, RSS, RAM, VRAM y huella del comando; CI en curso.
+- [LEONES PR #193](https://github.com/robertosantosx2/LEONES/pull/193): C08 exige TTFT, duración, RSS, RAM, VRAM y huella del comando; CI completa verde.
 
 **Estado real:** C07 tiene implementación/importador y pruebas sintéticas; falta Nsight real. C08 tiene harness y gates en CI; falta medir cuatro condiciones emparejadas en el MSI. Ningún porcentaje de overhead ni correlación real de kernels se declara aceptado.
