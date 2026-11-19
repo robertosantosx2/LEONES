@@ -229,3 +229,6 @@ La correlación explícita, la calibración dual de relojes, el gate formal de o
 ## Estado runtime RC1
 
 La primera implementación de correlation token y calibración host está en [llama.cpp PR #4](https://github.com/robertosantosx2/llama.cpp/pull/4), apilada sobre PR #3. Solo etiqueta el ciclo de vida request_start/request_end; no atribuye todavía kernels ni trabajo GPU. C07 sigue abierto hasta NVTX/CUPTI y round-trip Nsight verificado.
+
+
+NVTX marker implementation and request-window correlation are tracked in [llama.cpp PR #4](https://github.com/robertosantosx2/llama.cpp/pull/4), [LEONES PR #181](https://github.com/robertosantosx2/LEONES/pull/181) and [LEONES PR #182](https://github.com/robertosantosx2/LEONES/pull/182). C07 still requires a real MSI Nsight capture.
