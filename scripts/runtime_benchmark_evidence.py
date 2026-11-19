@@ -15,8 +15,14 @@ import subprocess
 import time
 import threading
 import uuid
+import shlex
 from pathlib import Path
 from statistics import mean, median, stdev
+
+try:
+    from nepenthes_privacy import assert_safe_metadata, redact_command
+except ModuleNotFoundError:
+    from scripts.nepenthes_privacy import assert_safe_metadata, redact_command
 
 TOKENS_PER_SECOND = re.compile(
     r"(?:Generation:\s*)?([0-9]+(?:[.,][0-9]+)?)\s*(?:tok(?:ens)?|t)/s",
@@ -276,28 +282,6 @@ def percentile(values: list[float], quantile: float) -> float:
 
 
 
-def redact_command(command: list[str], prompt: str = "") -> list[str]:
-    secret_flags = {"--api-key", "--token", "--password", "--secret", "--authorization"}
-    redacted = []
-    redact_next = False
-    for argument in command:
-        if redact_next:
-            redacted.append("<redacted>")
-            redact_next = False
-            continue
-        lowered = argument.lower()
-        if lowered in secret_flags:
-            redacted.append(argument)
-            redact_next = True
-        elif any(lowered.startswith(flag + "=") for flag in secret_flags):
-            redacted.append(argument.split("=", 1)[0] + "=<redacted>")
-        elif prompt and argument == prompt:
-            redacted.append("<redacted:prompt>")
-        else:
-            redacted.append(argument)
-    return redacted
-
-
 def prompt_fingerprint(prompt: str, dataset_sha256: str | None, command: list[str]) -> tuple[str, str]:
     if prompt:
         if prompt not in command:
@@ -397,6 +381,10 @@ def run_once(command: list[str], host_sample_ms: int = 100,
         "exit_code": code,
         "stdout": stdout_text,
         "stderr": stderr_text,
+        "stdout_sha256": hashlib.sha256(stdout_text.encode("utf-8")).hexdigest(),
+        "stderr_sha256": hashlib.sha256(stderr_text.encode("utf-8")).hexdigest(),
+        "stdout_bytes": len(stdout_text.encode("utf-8")),
+        "stderr_bytes": len(stderr_text.encode("utf-8")),
     }
 
 
@@ -470,6 +458,7 @@ def main() -> int:
     ap.add_argument("--host-sample-ms", type=int, default=100)
     ap.add_argument("--gpu-sample-ms", type=int, default=500)
     ap.add_argument("--store-output", action="store_true", help="explicitly store raw stdout/stderr; may contain prompts or completions")
+    ap.add_argument("--rss-target", choices=("direct_inference_process", "benchmark_client"), default="direct_inference_process")
     ap.add_argument("--ttft-regex", default=None, help="regex with capture group 1 for a genuine TTFT value in milliseconds")
     args = ap.parse_args()
     if args.host_sample_ms < 20 or args.gpu_sample_ms < 100:
@@ -477,6 +466,7 @@ def main() -> int:
     sampling_config = json.loads(args.sampling_config_json.read_text(encoding="utf-8")) if args.sampling_config_json else {}
     if not isinstance(sampling_config, dict):
         raise SystemExit("sampling-config-json must contain a JSON object")
+    assert_safe_metadata(sampling_config, "sampling_config")
     command = json.loads(args.command_json.read_text(encoding="utf-8"))
     if (
         not isinstance(command, list)
@@ -540,6 +530,7 @@ def main() -> int:
             "backend": args.backend,
             "command": redacted_command,
             "command_sha256": command_sha256,
+            "command_display": shlex.join(redacted_command),
         },
         "hardware": hardware(),
         "instrumentation": {
@@ -551,6 +542,7 @@ def main() -> int:
             "sampling_config": sampling_config,
             "host_sample_ms": args.host_sample_ms,
             "gpu_sample_ms": args.gpu_sample_ms,
+            "rss_target": args.rss_target,
             "output_capture_enabled": args.store_output,
         },
         "measurements": measurements,
@@ -560,6 +552,12 @@ def main() -> int:
             "stdout": "\n".join(m.get("stdout", "") for m in measurements) if args.store_output else None,
             "stderr": "\n".join(m.get("stderr", "") for m in measurements) if args.store_output else None,
             "output_captured": args.store_output,
+            "stdout_digest_set_sha256": hashlib.sha256(
+                json.dumps([m["stdout_sha256"] for m in measurements], separators=(",", ":")).encode("utf-8")
+            ).hexdigest(),
+            "stderr_digest_set_sha256": hashlib.sha256(
+                json.dumps([m["stderr_sha256"] for m in measurements], separators=(",", ":")).encode("utf-8")
+            ).hexdigest(),
         },
         "artifact": {
             "path": str(artifact),
