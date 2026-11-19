@@ -55,7 +55,7 @@ def write_jsonl_v11(path: Path, *, backend: str | None = "cuda") -> None:
         "duration_ns": 1200,
         "flags": 0,
     }
-    path.write_text(json.dumps(event) + "\\n", encoding="utf-8")
+    path.write_text(json.dumps(event) + "\n", encoding="utf-8")
 
 
 def write_nsys(path: Path) -> None:
@@ -658,7 +658,7 @@ def test_event_rows_accepts_schema_v11_sink_summary(tmp_path: Path):
         "write_errors": 0,
     }
     with jsonl.open("a", encoding="utf-8") as stream:
-        stream.write(json.dumps(summary) + "\\n")
+        stream.write(json.dumps(summary) + "\n")
     events = list(event_rows(jsonl))
     assert [event["event_kind"] for event in events] == ["transfer", "sink_summary"]
 
