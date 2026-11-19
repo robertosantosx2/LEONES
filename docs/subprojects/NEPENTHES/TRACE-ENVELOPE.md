@@ -1,6 +1,6 @@
 # NEPENTHES shared trace envelope
 
-**Status:** host-only validator contract implemented in the draft for [LEONES #207](https://github.com/robertosantosx2/LEONES/issues/207), pending review and exact-HEAD CI acceptance. This document describes validation rules; it does not claim that a TensorFold runtime producer exists.
+**Status:** host-only validator implementation is in [LEONES PR #210](https://github.com/robertosantosx2/LEONES/pull/210), open and ready for review. Exact code/test HEAD `262d3f8db254d27b099d6d0dc4a92826bdbd253c` passed all 10 GitHub Actions checks, including 27 focused importer tests and the full repository suite (600 passed, 8 subtests passed). The current PR head adds only INDEX/documentation updates after that code/test HEAD. This contract is not accepted until PR review and merge; it does not claim that a TensorFold runtime producer exists.
 
 ## Ownership and entry point
 
