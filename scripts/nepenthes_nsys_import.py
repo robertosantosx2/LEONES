@@ -36,6 +36,20 @@ JSONL_REQUIRED = {
     "monotonic_ns", "request_id", "event_kind", "label", "value0", "value1",
     "duration_ns", "flags",
 }
+JSONL_V11_REQUIRED = {
+    "correlation_token", "attribution_level", "backend", "memory_kind",
+    "memcpy_kind", "raw_memcpy_kind", "sync_type", "kv_op", "clock_domain",
+}
+JSONL_V11_ENUMS = {
+    "attribution_level": {"exact", "windowed", "device_wide", "estimated"},
+    "backend": {"cpu", "cuda", "metal", "vulkan", "rocm", "musa"},
+    "memory_kind": {"host", "host_pinned", "device", "managed", "vmm"},
+    "memcpy_kind": {"host_to_host", "host_to_device", "device_to_host",
+                    "device_to_device", "peer_to_peer", "default"},
+    "sync_type": {"stream", "device", "event", "context"},
+    "kv_op": {"clear", "seq_rm", "seq_cp", "seq_keep", "seq_add", "seq_div",
+              "prepare", "update", "apply_ubatch"},
+}
 
 
 def sha256(path: Path) -> str:
@@ -231,6 +245,7 @@ def ensure_enum_schema(db: sqlite3.Connection) -> None:
                 db.execute(f'ALTER TABLE "{table}" ADD COLUMN "{name}" {definition}')
     db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('004_nepenthes_enum_decoding')")
     db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('005_nepenthes_nvtx_correlation')")
+    db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('006_nepenthes_typed_event_metadata')")
     if "nsys_activities" in table_names(db):
         db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_activities_attributed_request ON nsys_activities(import_id,attributed_request_token,attribution_level)")
     if "nepenthes_nsys_activities" in table_names(db):
@@ -305,8 +320,30 @@ def event_rows(path: Path):
                 raise ValueError(
                     f"JSONL line {line_no}: missing fields: {', '.join(sorted(missing))}"
                 )
-            if item["schema_version"] != "1.0":
+            if item["schema_version"] not in ("1.0", "1.1"):
                 raise ValueError(f"JSONL line {line_no}: unsupported schema_version")
+            if item["schema_version"] == "1.1":
+                missing_typed = JSONL_V11_REQUIRED - item.keys()
+                if missing_typed:
+                    raise ValueError(
+                        f"JSONL line {line_no}: missing typed metadata fields: {', '.join(sorted(missing_typed))}"
+                    )
+                for field, allowed in JSONL_V11_ENUMS.items():
+                    value = item[field]
+                    if value is not None and value not in allowed:
+                        raise ValueError(f"JSONL line {line_no}: invalid {field}: {value!r}")
+                token = item["correlation_token"]
+                if token is not None and (isinstance(token, bool) or not isinstance(token, int) or token <= 0):
+                    raise ValueError(f"JSONL line {line_no}: correlation_token must be a positive integer or null")
+                raw_kind = item["raw_memcpy_kind"]
+                if raw_kind is not None and (isinstance(raw_kind, bool) or not isinstance(raw_kind, int) or raw_kind < 0):
+                    raise ValueError(f"JSONL line {line_no}: raw_memcpy_kind must be a non-negative integer or null")
+                if raw_kind is not None and item["memcpy_kind"] is None:
+                    raise ValueError(f"JSONL line {line_no}: raw_memcpy_kind requires memcpy_kind")
+                if token is not None and item["attribution_level"] != "exact":
+                    raise ValueError(f"JSONL line {line_no}: token-bearing events must have exact attribution")
+                if item["clock_domain"] != "steady_clock":
+                    raise ValueError(f"JSONL line {line_no}: unsupported clock_domain")
             for field in ("run_id", "event_id", "source", "event_kind", "label"):
                 if not isinstance(item[field], str) or not item[field]:
                     raise ValueError(f"JSONL line {line_no}: {field} must be a non-empty string")
@@ -608,7 +645,11 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             )
             out.executemany(
                 """INSERT INTO nepenthes_events
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (import_id,event_id,run_id,source,schema_version,timestamp_unix_ns,
+                 monotonic_ns,request_id,event_kind,label,value0,value1,duration_ns,flags,
+                 correlation_token,attribution_level,backend,memory_kind,memcpy_kind,
+                 raw_memcpy_kind,sync_type,kv_op,raw_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 [(import_id, e["event_id"], e["run_id"], e["source"],
                   e["schema_version"],
                   sqlite_numeric(e["timestamp_unix_ns"], field="timestamp_unix_ns"),
@@ -619,6 +660,11 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                   sqlite_numeric(e["value1"], field="value1"),
                   sqlite_numeric(e["duration_ns"], field="duration_ns"),
                   sqlite_numeric(e["flags"], field="flags"),
+                  sqlite_numeric(e.get("correlation_token"), field="correlation_token"),
+                  e.get("attribution_level"), e.get("backend"), e.get("memory_kind"),
+                  e.get("memcpy_kind"),
+                  sqlite_numeric(e.get("raw_memcpy_kind"), field="raw_memcpy_kind"),
+                  e.get("sync_type"), e.get("kv_op"),
                   json.dumps(e, ensure_ascii=False, sort_keys=True)) for e in events],
             )
             out.executemany(
