@@ -571,3 +571,16 @@ The LEONES importer follow-ups are:
 - [PR #182](https://github.com/robertosantosx2/LEONES/pull/182): parse NVTX_EVENTS, match token+phase (not time proximity), calibrate host↔Nsight offset/drift, and assign GPU activity as windowed only when one explicit request window uniquely contains the full activity interval.
 
 These are implementation branches under CI review. C07 is **not closed** until CI is green and a real Nsight SQLite capture on the MSI verifies marker schema, calibration and attribution. Overlapping windows stay ambiguous; no exact kernel attribution is inferred from NVTX alone.
+
+
+### C07/C08 implementation status — 2026-11-19
+
+- Runtime [llama.cpp PR #4](https://github.com/robertosantosx2/llama.cpp/pull/4): explicit request token, host clock calibration, optional NVTX v3 start/end markers with host-call brackets. CUDA CI is being repaired around Ubuntu mirror connectivity; real Nsight capture remains pending.
+- [LEONES PR #181](https://github.com/robertosantosx2/LEONES/pull/181): data-driven Nsight memcpy/memory enum decoder; its importer regression checks are green.
+- [LEONES PR #182](https://github.com/robertosantosx2/LEONES/pull/182): NVTX_EVENTS token parsing, host↔Nsight offset/drift, unique-window GPU attribution and overlap rejection; importer regression checks are green.
+- [LEONES PR #183](https://github.com/robertosantosx2/LEONES/pull/183): correlation-aware verify and run-level C07/C08 status.
+- [LEONES PR #184](https://github.com/robertosantosx2/LEONES/pull/184): C08 telemetry sampling, robust median/IQR/MAD and paired off/jsonl/nsys/combined gate. Synthetic tests are added; actual campaign remains MSI-dependent.
+
+The comparator requires at least three paired repetitions, at least one warm-up and three measurement iterations per evidence file. Standard decode overhead ≤5% is the acceptance target; 5–8% requires an explicit exception; >8% blocks acceptance. The evidence records process RSS separately from system RAM and device-wide VRAM/power.
+
+C07/C08 are implemented in GitHub branches/PRs, not accepted as physical results. The verifier distinguishes bundle integrity from run-level completion. The MSI is needed only for the real CUDA/Nsight capture, overhead campaign and final hardware-specific gates.
