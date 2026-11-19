@@ -60,6 +60,18 @@ Common semantic rules:
 - Unknown non-empty event-kind strings are retained/countable rather than silently discarded; connectors must still emit only semantically observed operations.
 - Booleans are not integers for any numeric field. Negative and out-of-range values are rejected.
 
+## Explicit batch correlation (Tandem.cpp)
+
+A `correlation_token` is an opaque, scope-qualified identity; it is not necessarily a request ID. Tandem.cpp uses it for a rendered server decode batch that can contain multiple request/task members:
+
+- Each `server.batch_member` event has its own non-zero `request_id` and shares the batch `correlation_token` with the other members of that decode slice.
+- Shared graph/worker events keep `request_id=0` and carry the batch token only when the job captured that token explicitly. This does not assign shared work to one request.
+- Numeric token values may coincide between request and batch scopes. NVTX marker messages therefore distinguish `nepenthes.request.start/end token=N request=R` from `nepenthes.batch.start/end token=N`; the importer keeps the scopes separate.
+- Nsight GPU activities may receive both a request-window attribution and a batch-window attribution. Each scope is evaluated independently; overlapping windows within the same scope are rejected. GPU attribution is `windowed`, not `exact`, and requires explicit token-matched NVTX markers plus clock calibration for paired imports.
+- The `nepenthes_batch_activity_membership` view expands one batch activity across all `server.batch_member` rows sharing its token. This is intentionally many-to-many and does not choose a single request for a shared kernel or transfer.
+
+These rules prohibit proximity-only attribution. An activity outside an explicit token window, with ambiguous overlapping windows, or without process identity remains unattributed. Physical C07 still requires a real paired JSONL+Nsight capture and calibration; this envelope contract and synthetic fixtures do not constitute C07 acceptance.
+
 ## Source-specific rules
 
 The registry records each connector's accepted clock domain and source-specific lifecycle semantics. All three contracts use `steady_clock`. TensorFold and Tandem.cpp require a non-zero `request_id` on `request_start` and `request_end`; `request_id=0` remains valid for internal events. llama.cpp retains its existing behavior. The profile boundary prevents one connector from inheriting another connector's assumptions implicitly.
