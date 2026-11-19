@@ -228,7 +228,7 @@ def build_evidence(args: argparse.Namespace) -> dict:
     finished_at = run_manifest.get("finished_at")
     if not isinstance(started_at, str) or not isinstance(finished_at, str):
         raise ValueError("AIPerf run manifest must contain started_at and finished_at for total campaign duration")
-    start_time = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+    start_time = datetime.datetime.fromisoformat(started_at.replace("Z", "+00:00"))
     finish_time = datetime.fromisoformat(finished_at.replace("Z", "+00:00"))
     if finish_time <= start_time:
         raise ValueError("AIPerf run finished_at must be later than started_at")
