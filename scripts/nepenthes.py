@@ -259,7 +259,7 @@ def inspect(a):
  print(json.dumps(json.loads(f.read_text()),indent=2));return 0
 def validate_event_contract(events):
  errors=[]
- request_starts={};request_ends={};nvtx_starts={};nvtx_ends={};clock_points=[]
+ request_starts={};request_ends={};nvtx_starts={};nvtx_ends={};clock_points=[];clock_labels={}
  allowed={"exact","windowed","device_wide","estimated"}
  for line_no,event in enumerate(events,1):
   token=event.get("correlation_token")
