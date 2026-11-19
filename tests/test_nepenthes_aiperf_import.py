@@ -211,6 +211,7 @@ def test_imports_summary_and_request_records_without_private_payloads(tmp_path: 
     request_event = next(event for event in events if event.get("event_kind") == "aiperf_metric" and event.get("metric_name") == "inter_chunk_latency")
     assert request_event["value"] == [4.0, 4.5]
     assert request_event["request_id"] != "req-001"  # raw request identifiers are pseudonymized
+    assert len(request_event["request_id"]) == 32
     assert request_event["timestamp_unix_ns"] == 1_800_000_000_000_000_000
     assert request_event["monotonic_ns"] is None
     assert request_event["source_tool"] == "aiperf"
