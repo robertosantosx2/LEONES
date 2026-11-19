@@ -172,8 +172,8 @@
   "integration_branch_status": "created_from_fork_master; awaiting_upstream_rebase_and_reviewed_stack_integration",
   "runtime_correlation_pr": "https://github.com/robertosantosx2/llama.cpp/pull/4",
   "runtime_correlation_branch": "feat/nepenthes-correlation-clock-20261119",
-  "runtime_correlation_head": "e231dd361bf02ec125ba41087380a6e37fefc9bc",
-  "runtime_correlation_status": "open_draft_ci_in_progress; host_request_token_clock_calibration_and_optional_nvtx_v3_markers; no_real_nsys_capture",
+  "runtime_correlation_head": "ec5b6c46164f2b81695afd50d44760b2e201b5bd",
+  "runtime_correlation_status": "open_draft_ci_in_progress; explicit token, host clock calibration, optional NVTX v3 markers; real capture pending",
   "latest_ci_pr4": {
     "repo": "robertosantosx2/llama.cpp",
     "pr": 4,
@@ -192,8 +192,13 @@
     "full_repository_ci": "queued"
   },
   "nsys_enum_decoder_pr": "https://github.com/robertosantosx2/LEONES/pull/181",
-  "nsys_enum_decoder_status": "open; first CI exposed stale fixture expectation; corrected; rerun pending",
+  "nsys_enum_decoder_status": "open; importer regression checks green; real C07 SQLite validation pending",
   "nsys_nvtx_correlation_pr": "https://github.com/robertosantosx2/LEONES/pull/182",
-  "nsys_nvtx_correlation_status": "open_draft; explicit token matching and windowed attribution implemented; CI pending",
-  "c07_status": "implementation_in_progress; real_msi_nsys_capture_required"
+  "nsys_nvtx_correlation_status": "open_draft; importer regression checks green; real C07 capture pending",
+  "c07_status": "implementation_in_progress; real_msi_nsys_capture_required",
+  "nepenthes_verify_pr": "https://github.com/robertosantosx2/LEONES/pull/183",
+  "nepenthes_verify_status": "open_draft; bundle and correlation-aware verification implemented; CI pending",
+  "nepenthes_c08_pr": "https://github.com/robertosantosx2/LEONES/pull/184",
+  "nepenthes_c08_status": "open_draft; paired overhead gate and robust telemetry implemented; CI pending; physical campaign pending",
+  "c08_status": "harness_implemented; real_paired_msi_measurements_required"
 }
