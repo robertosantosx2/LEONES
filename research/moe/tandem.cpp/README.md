@@ -20,9 +20,9 @@ The project is a patch set applied to a specific llama.cpp base revision. It is 
 
 ## NEPENTHES
 
-NEPENTHES documentation and evidence:
-- [Index and validation status](NEPENTHES-INDEX.md)
-- [Implementation roadmap and acceptance gates](NEPENTHES-ROADMAP.md)
+NEPENTHES documentation:
+- **[Master plan, global status and per-engine roadmap](NEPENTHES-INDEX.md)** — the single source of truth for project priorities, status and acceptance gates.
+- [Detailed technical checklist (subordinate; not a separate status source)](NEPENTHES-ROADMAP.md)
 - [Nsight/CUPTI importer contract and real MSI validation](NEPENTHES-IMPORTER.md)
 - [Installer, CLI and capture package](NEPENTHES-CLI.md)
 - [Qwen3.5-35B historical capture report](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md)
