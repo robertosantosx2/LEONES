@@ -255,3 +255,15 @@ After a completed run, scripts/nepenthes_aiperf_evidence.py imports the original
 - original AIPerf source-artifact hashes and import report.
 
 The adapter refuses failed requests, missing warm-up evidence, absent output-token throughput, absent inference-server PID telemetry or missing peak RAM/VRAM. The paired C08 comparator then requires off/jsonl/nsys/combined runs with identical fingerprints and at least three matched pair IDs.
+
+
+## C08 evidence and privacy invariants
+
+- The runner pins AIPerf 0.13.0 and refuses a version mismatch.
+- The workload command fingerprint excludes only the per-run `--artifact-dir` value, so paired conditions remain comparable while output paths differ.
+- The manifest stores a redacted command and artifact-directory basename, not the user's absolute path. The target URL rejects credentials, query tokens and fragments.
+- Raw AIPerf stdout is reduced to SHA-256 + byte count and deleted by default. `--store-aiperf-log` is an explicit opt-in.
+- The evidence adapter requires server-side RSS telemetry (`--target-pid` or `--target-pid-file`); client RSS cannot pass the C08 gate.
+- `total_time_ms` is the complete campaign wall duration from wrapper `started_at` to `finished_at`. Mean per-request latency is retained separately as `request_latency_mean_ms`.
+- The canonical evidence includes AIPerf run-level throughput/TTFT and server/host/GPU resource telemetry; no synthetic throughput is substituted when AIPerf does not provide a valid metric.
+- C08 requires at least three paired repetitions, TTFT, campaign duration, process RSS, system RAM, device-wide VRAM and identical workload-command fingerprints.
