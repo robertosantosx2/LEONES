@@ -202,3 +202,5 @@ El desarrollo del runtime se realiza directamente en el fork, no mediante parche
 La instrumentación CUDA/backend adicional, los probes generales de memoria/transferencia y la captura real en GPU quedan en fases posteriores.
 
 - [PR #2 — ggml backend and CUDA runtime probes](https://github.com/robertosantosx2/llama.cpp/pull/2), apilada sobre PR #1: ABI compartida en ggml-base, ciclo de buffers, CUDA alloc/OOM/pools/VMM/pinned-host, transferencias y dispatch.
+
+**Validación PR #1:** los tests C++ del contrato/sink y el build CPU de llama-server han pasado en GitHub Actions. Los checks upstream de estilo, EditorConfig, WASM y WASI también han pasado; el resto de checks upstream continúa ejecutándose.
