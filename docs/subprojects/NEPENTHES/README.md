@@ -187,3 +187,16 @@ NEPENTHES V1 no se considerará completo hasta que una ejecución real pueda pro
 - El gitlink se actualiza mediante PR revisada; el seguimiento diario detecta drift, pero no mueve el pin automáticamente.
 
 El manifiesto LLAMA-CPP-UPSTREAM.json conserva el SHA, estado del fork, commit del submódulo y política de sincronización. La CI valida que el gitlink, .gitmodules, el checkout del submódulo y el manifiesto sean coherentes.
+
+
+## Instrumentación nativa de llama.cpp
+
+El desarrollo del runtime se realiza directamente en el fork, no mediante parches aplicados en un checkout local:
+
+- [PR #1 — NEPENTHES: opt-in runtime trace sink and core probes](https://github.com/robertosantosx2/llama.cpp/pull/1)
+- Rama: feat/nepenthes-runtime-probes-20261119
+- Cobertura inicial: ciclo de petición del servidor, graph compute, sincronización, MoE cache y operaciones principales de KV cache.
+- CI propia: tests C++ del contrato/sink y build CPU de llama-server; las comprobaciones generales de upstream también se ejecutan.
+- El submódulo de este PR permanece fijado al commit upstream limpio. No se moverá al branch de instrumentación hasta que los cambios estén revisados y exista una decisión de integración.
+
+La instrumentación CUDA/backend adicional, los probes generales de memoria/transferencia y la captura real en GPU quedan en fases posteriores.
