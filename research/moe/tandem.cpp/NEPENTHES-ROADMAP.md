@@ -165,3 +165,10 @@ NEPENTHES se considerará completo cuando una instalación limpia pueda envolver
 ## Registro de campañas
 
 El estado experimental, IDs C00–C09, resultados de la primera inferencia instrumentada y criterios de las campañas siguientes se mantiene en [NEPENTHES-CAMPAIGNS.md](NEPENTHES-CAMPAIGNS.md).
+
+
+## P0 — decodificación de enums Nsight (implementación remota)
+
+La rama `feat/nepenthes-nsys-enum-decode-20261119` añade lectura dinámica de `ENUM_CUDA_MEMCPY_OPER` y `ENUM_CUDA_MEM_KIND`, columnas consultables para copy kind/src/dst kind, metadatos de tablas y preservación de valores desconocidos/sentinelas en JSON original. Se aplica a importación emparejada y Nsight-only.
+
+Estado: código y fixtures publicados en una rama GitHub; CI pendiente. La prueba contra la SQLite C07 real y la auditoría de versiones Nsight siguen pendientes. No se declara P0 aceptado hasta superar ambas.
