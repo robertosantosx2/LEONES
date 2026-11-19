@@ -207,3 +207,8 @@ python3 scripts/nepenthes_aiperf_evidence.py \
 Repeat for the same pair ID under `jsonl`, `nsys` and `combined`, then repeat the complete four-condition block for pair-02 and pair-03. Keep server flags, sampling configuration, AIPerf profile, model artifact, engine revision, hardware and telemetry intervals fixed. The evidence adapter rejects failed requests, missing warm-up evidence, missing output-token throughput, missing inference-server PID telemetry or missing peak resource metrics. It does not estimate decode throughput from request latency.
 
 The direct runtime evidence runner remains useful for single-process CLI experiments. Its RSS scope is labelled separately; do not use benchmark-client RSS as inference-server RSS in a server C08 campaign.
+
+
+## Privacy defaults
+
+The evidence stores a SHA-256 of the fixed prompt/protocol, never the prompt text. Raw stdout/stderr are parsed in memory and represented only by byte counts and SHA-256 digests. The executed command is stored in redacted form plus a digest of the original command; sensitive flags, prompt arguments and URL credentials/query strings are removed. Sensitive keys in sampling metadata are rejected recursively. AIPerf imports preserve source artifact hashes and metadata, not prompts, generated text, credentials or raw request/response payloads.
