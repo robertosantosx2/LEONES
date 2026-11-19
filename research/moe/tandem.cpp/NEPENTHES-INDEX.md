@@ -113,3 +113,8 @@ Este bloque sustituye como estado operativo actual las referencias de integraci�
 - **llama.cpp RC1:** [PR #6 del fork](https://github.com/robertosantosx2/llama.cpp/pull/6) reaplica las sondas sobre upstream c7468107efba061fe83d32b17c91e2b5295677d4. Su CI está en curso. El fork master permanece siete commits por detrás y el submódulo LEONES no se adelanta hasta aceptar el rebase y revisar el gitlink.
 
 **Próximo límite de hardware:** cuando PR #6 tenga CI verde y la integración de software esté revisada, el siguiente trabajo que no puede cerrarse en GitHub será compilar en MSI, ejecutar una inferencia instrumentada, capturar Nsight y completar las repeticiones emparejadas C07/C08.
+
+
+### AIPerf warm-up provenance correction — 2026-11-19
+
+Post-merge audit found that the wrapper had not explicitly passed AIPerf's warm-up request count. LEONES PR #199 is now merged as `109e3073cd0040a5ba86b906e71e003959f72d3c`: the runner defaults to one explicit warm-up request, records it in the workload command fingerprint and manifest, and the evidence builder rejects manifests without that field. CI passed **572 tests** plus all release/runtime gates. This is still software acceptance only; no C08 performance result is claimed.
