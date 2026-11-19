@@ -178,6 +178,8 @@ def build_otlp(events: list[dict[str, Any]]) -> tuple[dict[str, Any], dict[str, 
             "aiperf.session_num": metadata.get("session_num") if isinstance(metadata, dict) else None,
             "aiperf.turn_index": metadata.get("turn_index") if isinstance(metadata, dict) else None,
             "aiperf.benchmark_phase": metadata.get("benchmark_phase") if isinstance(metadata, dict) else None,
+            "error.code": (error_event.get("error") or {}).get("code") if error_event and isinstance(error_event.get("error"), dict) else None,
+            "error.type": (error_event.get("error") or {}).get("type") if error_event and isinstance(error_event.get("error"), dict) else None,
         }
         span = {
             "traceId": trace_id, "spanId": span_id, "parentSpanId": parent_id,
