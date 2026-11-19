@@ -233,3 +233,15 @@ LEONES PR #200 se integró como `ed0535c2bf1bc7025cde1534e395ed1c3bbac581` tras 
 - [ ] Revalidar todos los checks contra el nuevo HEAD `33e0d0a578c48b0a31616fd1b72fd255f12e39a4`; los checks del HEAD anterior no cuentan como aceptación de este cambio.
 - [ ] Continuar revisión final del diff y runtime; PR #6 sigue draft, sin merge ni actualización del gitlink.
 - [ ] Solo tras aceptación remota: sincronizar gitlink y pasar al MSI para build Linux/CUDA, C07 NVTX+Nsight y C08 overhead medido.
+
+
+### CI parcial del HEAD corregido — `33e0d0a578c48b0a31616fd1b72fd255f12e39a4` (2026-11-19)
+
+- [x] Tests NEPENTHES de contrato, JSONL bounded sink y puente CPU.
+- [x] Build instrumentado llama-server CPU.
+- [x] Verificación NVTX v3 activa en configuración CUDA.
+- [x] CUDA y HIP del workflow general.
+- [x] Behavior Check Ubuntu/Windows, WASI, WASM, WebGPU, Code Style y EditorConfig.
+- [~] CUDA llama-server específico, CPU general, Server y algunos runners backend: en curso al último sondeo.
+- [!] MUSA Dependencies bloqueado por timeout de `dl.mthreads.com`; el build MUSA fue omitido. No tratar como fallo de código CUDA/NEPENTHES.
+- [ ] Esperar el cierre de los jobs pendientes y clasificar resultados antes de aceptar la PR #6.
