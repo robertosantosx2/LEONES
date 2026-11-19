@@ -182,8 +182,9 @@ NEPENTHES V1 no se considerará completo hasta que una ejecución real pueda pro
 
 - **Fork de trabajo:** [robertosantosx2/llama.cpp](https://github.com/robertosantosx2/llama.cpp) (origin).
 - **Upstream:** [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) (upstream).
-- **Fork personal:** `robertosantosx2/llama.cpp:master`, sincronizado con upstream en `5812201a81008977ea079eaf86a3f9166eef9f10`.
-- **Submódulo LEONES:** `subprojects/llama.cpp`, todavía fijado a `76f186df71a41abb3ee20fffedee31ca5dbc7d9f` hasta revisar y aceptar la pila de instrumentación.
+- **Upstream actual:** `ggml-org/llama.cpp:master` en `4db8b7638f2fa2e5c092ee05d49999b56e8167c3`.
+- **Fork personal:** `robertosantosx2/llama.cpp:master` en `5812201a81008977ea079eaf86a3f9166eef9f10`, tres commits por detrás. La actualización queda pendiente de rebase porque upstream modificó `src/llama-context.cpp` y estructuras de grafo usadas por la instrumentación.
+- **Submódulo LEONES:** `subprojects/llama.cpp`, todavía fijado a `76f186df71a41abb3ee20fffedee31ca5dbc7d9f` hasta revisar y aceptar la pila.
 - En la verificación del 2026-11-19, origin/master y upstream/master coincidían exactamente.
 - El gitlink se actualiza mediante PR revisada; el seguimiento diario detecta drift, pero no mueve el pin automáticamente.
 
