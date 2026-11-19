@@ -172,8 +172,8 @@
   "integration_branch_status": "created_from_fork_master; awaiting_upstream_rebase_and_reviewed_stack_integration",
   "runtime_correlation_pr": "https://github.com/robertosantosx2/llama.cpp/pull/4",
   "runtime_correlation_branch": "feat/nepenthes-correlation-clock-20261119",
-  "runtime_correlation_head": "9e2fc9ba37fd73f022959732b3c3ed4dbed840eb",
-  "runtime_correlation_status": "open_draft_ci_queued; host_request_token_and_clock_calibration_partial; no_nsys_external_correlation",
+  "runtime_correlation_head": "e231dd361bf02ec125ba41087380a6e37fefc9bc",
+  "runtime_correlation_status": "open_draft_ci_in_progress; host_request_token_clock_calibration_and_optional_nvtx_v3_markers; no_real_nsys_capture",
   "latest_ci_pr4": {
     "repo": "robertosantosx2/llama.cpp",
     "pr": 4,
@@ -190,5 +190,10 @@
       "job_id": 135551262203
     },
     "full_repository_ci": "queued"
-  }
+  },
+  "nsys_enum_decoder_pr": "https://github.com/robertosantosx2/LEONES/pull/181",
+  "nsys_enum_decoder_status": "open; first CI exposed stale fixture expectation; corrected; rerun pending",
+  "nsys_nvtx_correlation_pr": "https://github.com/robertosantosx2/LEONES/pull/182",
+  "nsys_nvtx_correlation_status": "open_draft; explicit token matching and windowed attribution implemented; CI pending",
+  "c07_status": "implementation_in_progress; real_msi_nsys_capture_required"
 }
