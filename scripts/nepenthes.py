@@ -214,16 +214,32 @@ def run(a):
  if cmd and cmd[0]=="--":cmd=cmd[1:]
  if not cmd:raise ValueError("uso: nepenthes run -- COMANDO [ARG ...]")
  if shutil.which(cmd[0]) is None and not Path(cmd[0]).exists():raise ValueError("ejecutable no encontrado: "+cmd[0])
+ settings=PROFILE_SETTINGS[a.profile]
  nsys_exe=shutil.which("nsys")
- nsys_enabled=(a.nsys=="required" or (a.nsys=="auto" and a.profile=="full")) and bool(nsys_exe)
+ nsys_enabled=(a.nsys=="required" or (a.nsys=="auto" and settings["nsys_default"])) and bool(nsys_exe)
  if a.nsys=="required" and not nsys_exe:raise ValueError("nsys es obligatorio pero no está instalado o no está en PATH")
  launch=cmd
+ redacted_cmd=redact_command(cmd)
+ command_sha256=hashlib.sha256(json.dumps(redacted_cmd,separators=(",",":")).encode("utf-8")).hexdigest()
  rid=dt.datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")+"_"+(a.name or Path(cmd[0]).name)+"_"+uuid.uuid4().hex[:8]
  root=Path(a.output).expanduser().resolve()/rid
  for d in ("raw","data","reports","environment"):(root/d).mkdir(parents=True,exist_ok=True)
- interval=a.interval or PROFILES[a.profile]
- m={"schema_version":"nepenthes-run-0.1","run_id":rid,"created_at":stamp(),"profile":a.profile,"sample_interval_seconds":interval,"command":cmd,"working_directory":os.getcwd(),"host":platform.node(),"status":"running","capabilities":{"procfs":Path("/proc").is_dir(),"nvidia_smi":bool(shutil.which("nvidia-smi")),"nsys_detected":bool(nsys_exe),"nsys_capture_enabled":nsys_enabled},"nsys":{"requested":a.nsys,"enabled":nsys_enabled,"executable":nsys_exe if nsys_enabled else None}}
- m["engine_probe_activation"]={"environment_variables_set":True,"run_id_variable":"NEPENTHES_RUN_ID","jsonl_variable":"NEPENTHES_TRACE_JSONL","jsonl_path":"raw/engine-events.jsonl"}
+ interval=a.interval if a.interval is not None else settings["interval"]
+ host_sampling=bool(settings["host_sampling"] or a.interval is not None) and interval>0
+ adaptive_enabled=bool(settings["adaptive_sampling"] and host_sampling)
+ idle_interval=max(settings["idle_interval"],interval) if adaptive_enabled else interval
+ m={"schema_version":"nepenthes-run-0.2","run_id":rid,"created_at":stamp(),"profile":a.profile,
+    "profile_settings":settings,"sample_interval_seconds":interval if host_sampling else None,
+    "host_sampling_enabled":host_sampling,"command":redacted_cmd,"command_sha256":command_sha256,
+    "working_directory_basename":Path.cwd().name,"host_id_sha256":hashlib.sha256(platform.node().encode("utf-8")).hexdigest(),
+    "status":"running","capabilities":{"procfs":Path("/proc").is_dir(),"nvidia_smi":bool(shutil.which("nvidia-smi")),"nsys_detected":bool(nsys_exe),"nsys_capture_enabled":nsys_enabled},
+    "nsys":{"requested":a.nsys,"enabled":nsys_enabled,"executable":nsys_exe if nsys_enabled else None},
+    "adaptive_sampling":{"enabled":adaptive_enabled,"trigger":"request_start/request_end in raw/engine-events.jsonl",
+                         "active_interval_seconds":interval,"idle_interval_seconds":idle_interval,"transitions":[]}}
+ m["engine_probe_activation"]={"environment_variables_set":True,"run_id_variable":"NEPENTHES_RUN_ID",
+   "jsonl_variable":"NEPENTHES_TRACE_JSONL","jsonl_path":"raw/engine-events.jsonl",
+   "profile_variable":"NEPENTHES_PROFILE","probe_level":settings["probe_level"],
+   "adaptive_sampling_variable":"NEPENTHES_ADAPTIVE_SAMPLING"}
  save(root/"manifest.json",m);save(root/"environment"/"system.json",{"platform":platform.platform(),"python":sys.version,"cpu_count":os.cpu_count(),"nvidia_smi":shutil.which("nvidia-smi"),"nsys":shutil.which("nsys")});save(root/"environment"/"gpu-initial.json",gpu() or {"available":False})
  samples=[];ticks=os.sysconf("SC_CLK_TCK");pt=ptime=None;start=time.monotonic();code=127
  try:
