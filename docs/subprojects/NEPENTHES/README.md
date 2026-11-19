@@ -13,7 +13,7 @@ Este directorio establece la arquitectura y el plan canónico del subproyecto. C
 3. Medición energética y eficiencia tokens/julio.
 4. Latencia individual e inter-token de generación, además de percentiles y dispersión.
 5. Interoperabilidad mediante OpenTelemetry y OTLP.
-6. Benchmark normalizado con metodología compatible con GenAI-Perf.
+6. Benchmark reproducible con AIPerf como runner primario y protocolo NEPENTHES versionado.
 7. Adaptadores de métricas para llama.cpp, TensorFold y otros motores.
 8. Importación y análisis reproducible en LEONES, con Nsight Systems/CUPTI como evidencia externa.
 
@@ -48,9 +48,11 @@ OpenTelemetry será la interfaz estándar de exportación e integración, no el 
 
 No crear un span por cada token por defecto: puede generar volumen y overhead excesivos. Registrar ITL como histograma/evento agregado y habilitar detalle token-a-token solo en perfiles de diagnóstico. No incluir prompts, respuestas ni datos sensibles en atributos por defecto. Evitar IDs de petición como etiquetas de métricas de alta cardinalidad; mantenerlos en trazas.
 
-### P3 — Aprovechar GenAI-Perf y evaluar AIPerf
+### P3 — AIPerf como runner primario
 
-GenAI-Perf aporta una metodología útil y resultados comparables, pero NVIDIA indica que está en fase de retirada y recomienda AIPerf para nuevos benchmarks. Por tanto, conservar compatibilidad/importación de resultados GenAI-Perf y evaluar AIPerf como runner preferente futuro. La elección se hará con una prueba de compatibilidad contra los endpoints OpenAI-compatible de los motores objetivo.
+AIPerf es el runner externo predeterminado para nuevas campañas NEPENTHES. Se usa contra endpoints OpenAI-compatible, con streaming cuando se midan TTFT/ITL, perfiles de concurrencia o tasa de llegada y exportación por request. GenAI-Perf queda limitado a compatibilidad/importación de campañas históricas por estar en retirada según NVIDIA.
+
+NEPENTHES conserva el protocolo y esquema canónicos: importa artefactos AIPerf, normaliza métricas, mantiene originales y correlaciona con NVML, energía, sondas host y métricas nativas solo cuando la evidencia lo permite. Primera integración: `llama-server`; TensorFold y otros motores tras descubrir y probar sus endpoints.
 
 - Protocolo normalizado de benchmark y manifiesto completo.
 - TTFT, ITL, latencia total, throughput de entrada/salida y percentiles.
@@ -60,7 +62,7 @@ GenAI-Perf aporta una metodología útil y resultados comparables, pero NVIDIA i
 - Comparativas reproducibles entre commits, motores, modelos, cuantizaciones y configuraciones.
 - Exportación de resultados a los contratos NEPENTHES y LEONES sin perder unidades ni procedencia.
 
-No comparar resultados de GenAI-Perf/AIPerf con campañas propias si difieren prompt, longitud de salida, concurrencia, política de streaming, warm-up, hardware o versión. Registrar la versión exacta de GenAI-Perf y su configuración.
+No comparar campañas si difieren dataset/prompt, longitudes de entrada/salida, concurrencia/tasa de llegada, streaming, warm-up, hardware, motor o versión de AIPerf. Registrar comando, configuración, versión y artefactos originales.
 
 ### P4 — Adaptadores de métricas nativas
 
@@ -79,7 +81,7 @@ llama.cpp / GGML / TensorFold / otros motores
         |
         +-- sondas nativas (request, graph, KV, MoE, scheduler, CUDA)
         +-- adaptadores de métricas (/metrics, /slots, APIs futuras)
-        +-- benchmark driver (GenAI-Perf / protocolo NEPENTHES)
+        +-- benchmark driver (AIPerf / protocolo NEPENTHES)
         |
         v
 NEPENTHES Collector
@@ -111,7 +113,8 @@ LEONES
 | Collector | Normalización, timestamps, IDs, buffers y procedencia |
 | NVML sampler | Potencia/energía/telemetría por dispositivo |
 | OpenTelemetry exporter | Traducción a spans, métricas, logs y OTLP |
-| GenAI-Perf | Carga de benchmark y protocolo externo |
+| AIPerf | Runner primario de carga y métricas externas |
+| GenAI-Perf | Importación de campañas históricas únicamente |
 | LEONES | Persistencia, análisis, evidencia, comparativas e informes |
 | Nsight Systems | Evidencia externa de actividad CUDA/CUPTI |
 
@@ -144,8 +147,10 @@ Reglas obligatorias:
 ## Referencias externas
 
 - [Inferscope — profiler OpenAI-compatible con NVML, energía, ITL y OTLP](https://github.com/MicheleCampi/inferscope).
-- [NVIDIA GenAI-Perf — documentación y estado de ciclo de vida](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/perf_analyzer/genai-perf/README.html).
+- [NVIDIA AIPerf — CLI, perfiles y exportaciones](https://docs.nvidia.com/aiperf/reference/command-line-options).
+- [NVIDIA AIPerf — guía de profiling](https://docs.nvidia.com/aiperf/getting-started/profiling-with-ai-perf).
 - [NVIDIA AIPerf — referencia de métricas](https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference).
+- [NVIDIA GenAI-Perf — documentación y ciclo de vida](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/perf_analyzer/genai-perf/README.html) (legacy).
 - [llama.cpp server — endpoint /metrics](https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md).
 
 ## Enlaces canónicos
