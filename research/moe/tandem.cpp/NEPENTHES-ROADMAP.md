@@ -325,3 +325,13 @@ Estado de PR #6: abierta, draft, no fusionada; HEAD `33e0d0a578c48b0a31616fd1b72
 - [ ] Mantener el gitlink LEONES en `76f186df71a41abb3ee20fffedee31ca5dbc7d9f` hasta completar la aceptación remota. MSI sigue fuera del circuito.
 
 **Decisión técnica:** conservar RC1 como línea de trabajo candidata, pero no declararla canónica ni fusionable todavía. El cambio BF16 es funcionalidad de upstream, no una modificación descartable; la integración debe mantenerla y recolocar las sondas. El fix YuE2 y las mejoras OpenCL se incorporan íntegramente.
+
+
+### Revalidación de PR #6 contra upstream actual — 2026-11-19 (sondeo posterior)
+
+- La API de GitHub confirma que PR #6 sigue abierta y draft; HEAD `33e0d0a578c48b0a31616fd1b72fd255f12e39a4`, base fork `master` en `9a080f44...`, 33 commits, 23 archivos, mergeable según GitHub.
+- Comparación directa con upstream `c406f436...`: **33 commits ahead y 3 behind**, merge-base `9a080f44...`. Esto confirma que PR #6 no está rebased sobre el upstream actual, aunque esté al día con el fork master.
+- CI asociada al HEAD consultado: runtime trace, CPU, server, WASI/WASM, HIP quality, Behavior y estilo pasan. En el workflow combinado, CUDA y HIP pasan; MUSA falla en el paso `Dependencies` antes de compilar por dependencia externa. Los runners self-hosted y Models Backend Check continúan queued.
+- La lectura de los pasos del job MUSA confirma que `Build with native CMake MUSA support` fue omitido por fallo previo de dependencias; no clasificar como regresión de código NEPENTHES ni como build MUSA validado.
+- La PR conserva un historial con commits de intentos anteriores de port/rebase, pero su relación efectiva con upstream se determina por el merge-base y la comparación anterior, no por los mensajes de esos commits. No se declara rebase completado.
+- Próxima operación: preparar una rama de integración limpia cuyo padre sea exactamente `c406f436...`, portar solo los cambios NEPENTHES revisados, mantener intactos BF16/YuE2/OpenCL, ejecutar CI y comparar cobertura/eventos. No hacer merge de PR #6 ni de #1–#3 en su estado actual.
