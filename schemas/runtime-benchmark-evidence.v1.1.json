@@ -408,6 +408,13 @@
         "gpu_sample_ms": {
           "type": "integer",
           "minimum": 100
+        },
+        "rss_target": {
+          "enum": [
+            "inference_server",
+            "direct_inference_process",
+            "benchmark_client"
+          ]
         }
       },
       "additionalProperties": true
