@@ -1,20 +1,20 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "project": "NEPENTHES",
   "upstream_repository": "https://github.com/ggml-org/llama.cpp.git",
   "upstream_web": "https://github.com/ggml-org/llama.cpp",
   "upstream_branch": "master",
-  "verified_commit": "f8caa5ea30b5775512906ae3b7ee53b21a7a6e1d",
-  "verified_commit_time": "2026-11-19T11:35:10Z",
+  "verified_commit": "c406f4367e19bea7930e7f74e1984c9acc6d44bf",
+  "verified_commit_time": "2026-11-19T19:30:19Z",
   "verified_at": "2026-11-19",
   "local_fork_repository": "https://github.com/robertosantosx2/llama.cpp.git",
   "local_fork_web": "https://github.com/robertosantosx2/llama.cpp",
   "local_fork_default_branch": "master",
   "local_fork_status": "behind_upstream_pending_runtime_stack_rebase",
-  "fork_head_commit": "5812201a81008977ea079eaf86a3f9166eef9f10",
+  "fork_head_commit": "9a080f44b503c64f66c84a6274b9d9ee5d5b09d5",
   "leones_submodule_path": "subprojects/llama.cpp",
   "leones_submodule_commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
-  "policy": "Keep the personal fork as origin and ggml-org/llama.cpp as upstream. Pin the LEONES submodule to an explicitly reviewed fork commit; do not auto-advance the gitlink. Daily monitoring reports upstream/fork drift without silently changing the pin.",
+  "policy": "Keep the personal fork as origin and ggml-org/llama.cpp as upstream. The reviewed LEONES gitlink is an independent immutable pin: fork_head_commit records origin/master and must not be required to equal leones_submodule_commit. Advance the fork only after rebasing/reviewing the native runtime stack; advance the LEONES gitlink only through an explicit reviewed PR.",
   "notes": [
     "GitHub API confirmed that the personal fork exists and is writable.",
     "At verification time, fork master and upstream master pointed to the same commit.",
@@ -27,37 +27,25 @@
     "The first llama.cpp instrumentation workflow completed successfully: both standalone C++ tests and the CPU llama-server build passed. Upstream Code Style, EditorConfig, WASM and WASI checks also passed; other upstream checks remain in progress.",
     "Upstream master advanced three commits beyond 76f186df; fork master was fast-forwarded to 5812201a on 2026-11-19. The LEONES submodule gitlink intentionally remains pinned to 76f186df until the runtime PR stack is reviewed and accepted.",
     "At 2026-11-19T11:35:10Z upstream master had advanced to 4db8b763; the personal fork master remains at 5812201a (3 commits behind). The latest upstream delta touches src/llama-context.cpp and graph parameter structures, which overlap the instrumentation stack's context/graph work. Do not fast-forward blindly: rebase and rerun CI for PRs #1 → #2 → #3 before advancing the fork master or LEONES gitlink.",
-    "At the 2026-11-19 follow-up, upstream master advanced to f8caa5e; the personal fork master remains at 5812201a, now 4 commits behind. The cumulative delta from the previous clean pin 76f186df is 7 commits / 20 files (+601/-167), including further llama graph/context changes. Do not fast-forward blindly; the runtime PR stack must be rebased and retested in order."
+    "At the 2026-11-19 follow-up, upstream master advanced to f8caa5e; the personal fork master remains at 5812201a, now 4 commits behind. The cumulative delta from the previous clean pin 76f186df is 7 commits / 20 files (+601/-167), including further llama graph/context changes. Do not fast-forward blindly; the runtime PR stack must be rebased and retested in order.",
+    "Upstream master verified at c406f4367e19bea7930e7f74e1984c9acc6d44bf (2026-11-19T19:30:19Z); fork master is 9a080f44b503c64f66c84a6274b9d9ee5d5b09d5, three commits behind; LEONES gitlink remains pinned independently at 76f186df71a41abb3ee20fffedee31ca5dbc7d9f.",
+    "The native runtime PR stack remains based on the older 76f186df upstream snapshot and overlaps subsequent upstream changes in graph/context and ggml CPU/CUDA paths. Rebase and validate in dependency order; do not equate the fork HEAD with the reviewed submodule gitlink."
   ],
   "previous_verified_commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
   "upstream_delta_since_previous_pin": [
     {
-      "range": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f..f8caa5ea30b5775512906ae3b7ee53b21a7a6e1d",
-      "summary": "7 upstream commits; 20 files changed (601 additions, 167 deletions)",
-      "files": [
-        ".github/workflows/build-opencl.yml",
-        "README.md",
-        "docs/ops.md",
-        "docs/ops/WebGPU.csv",
+      "range": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f..c406f4367e19bea7930e7f74e1984c9acc6d44bf",
+      "summary": "14 upstream commits; 75 files changed (4176 additions, 588 deletions)",
+      "overlap_files": [
         "ggml/src/ggml-backend.cpp",
-        "ggml/src/ggml-metal/ggml-metal-device.cpp",
-        "ggml/src/ggml-metal/ggml-metal-device.h",
-        "ggml/src/ggml-metal/ggml-metal-device.m",
-        "ggml/src/ggml-metal/ggml-metal-impl.h",
-        "ggml/src/ggml-metal/ggml-metal-ops.cpp",
-        "ggml/src/ggml-metal/ggml-metal-ops.h",
-        "ggml/src/ggml-metal/ggml-metal.cpp",
-        "ggml/src/ggml-metal/kernels/conv.metal",
-        "ggml/src/ggml-webgpu/ggml-webgpu-shader-lib.hpp",
-        "ggml/src/ggml-webgpu/ggml-webgpu.cpp",
-        "ggml/src/ggml-webgpu/wgsl-shaders/pool2d.wgsl",
+        "ggml/src/ggml-cpu/ggml-cpu.c",
+        "ggml/src/ggml-cuda/batch-copy.cu",
+        "ggml/src/ggml-cuda/ggml-cuda.cu",
         "src/llama-context.cpp",
         "src/llama-graph.cpp",
         "src/llama-graph.h",
-        "src/models/qwen3vl.cpp"
-      ],
-      "additions": 601,
-      "deletions": 167
+        "tools/server/server-context.cpp"
+      ]
     }
   ],
   "runtime_instrumentation_repository": "https://github.com/robertosantosx2/llama.cpp",
@@ -221,5 +209,6 @@
   "c08_privacy_pr": "https://github.com/robertosantosx2/LEONES/pull/192",
   "c08_privacy_status": "green_ci; prompt and raw outputs redacted by default; command fingerprint preserved",
   "c08_completeness_pr": "https://github.com/robertosantosx2/LEONES/pull/193",
-  "c08_completeness_status": "green_ci; C08 requires TTFT, total duration, process RSS, system RAM, device-wide VRAM and stable command fingerprint"
+  "c08_completeness_status": "green_ci; C08 requires TTFT, total duration, process RSS, system RAM, device-wide VRAM and stable command fingerprint",
+  "fork_behind_upstream_commits": 3
 }
