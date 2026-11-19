@@ -685,3 +685,157 @@ def test_typed_event_schema_migration_is_idempotent(tmp_path: Path):
     columns = {row[1] for row in db.execute("PRAGMA table_info(nepenthes_events)")}
     assert {"backend", "memory_kind", "memcpy_kind", "raw_memcpy_kind", "kv_op"} <= columns
     db.close()
+
+
+def write_batch_nvtx_nsys(path: Path) -> None:
+    db = sqlite3.connect(path)
+    db.executescript("""
+        CREATE TABLE NVTX_EVENTS(
+            start INTEGER, end INTEGER, text TEXT, globalPid INTEGER
+        );
+        INSERT INTO NVTX_EVENTS VALUES
+            (1110, 1110, 'nepenthes.batch.start token=123', 99),
+            (5110, 5110, 'nepenthes.batch.end token=123', 99),
+            (1120, 1120, 'nepenthes.request.start token=123 request=42', 99),
+            (1910, 1910, 'nepenthes.request.end token=123 request=42', 99);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(
+            start INTEGER, end INTEGER, correlationId INTEGER,
+            globalPid INTEGER, deviceId INTEGER, contextId INTEGER,
+            streamId INTEGER, name TEXT
+        );
+        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES
+            (1500, 1600, 201, 99, 0, 1, 7, 'inside_request_and_batch'),
+            (2500, 2600, 202, 99, 0, 1, 7, 'inside_batch_only'),
+            (5200, 5300, 203, 99, 0, 1, 7, 'outside_batch');
+    """)
+    db.commit()
+    db.close()
+
+
+def write_batch_jsonl_nvtx(path: Path) -> None:
+    records = []
+    markers = (
+        ("batch-start", "batch.start", 100, 120, 0),
+        ("batch-end", "batch.end", 4100, 4120, 0),
+        ("request-start", "request.start", 110, 130, 42),
+        ("request-end", "request.end", 900, 920, 42),
+    )
+    for event_id, label, before, after, request_id in markers:
+        records.append({
+            "schema_version": "1.0",
+            "run_id": "paired-batch",
+            "event_id": event_id,
+            "source": "tandem.cpp",
+            "timestamp_unix_ns": 2_000_000_000 + after,
+            "monotonic_ns": after,
+            "request_id": request_id,
+            "correlation_token": 123,
+            "attribution_level": "exact",
+            "clock_domain": "steady_clock",
+            "event_kind": "nvtx_marker",
+            "label": label,
+            "value0": before,
+            "value1": after,
+            "duration_ns": 0,
+            "flags": 1 if label.endswith(".start") else 2,
+        })
+    for event_id, request_id, slot_id, task_id in (
+        ("member-42", 42, 0, 41),
+        ("member-43", 43, 1, 42),
+    ):
+        records.append({
+            "schema_version": "1.0",
+            "run_id": "paired-batch",
+            "event_id": event_id,
+            "source": "tandem.cpp",
+            "timestamp_unix_ns": 2_000_000_500,
+            "monotonic_ns": 500,
+            "request_id": request_id,
+            "correlation_token": 123,
+            "attribution_level": "exact",
+            "clock_domain": "steady_clock",
+            "event_kind": "routing",
+            "label": "server.batch_member",
+            "value0": slot_id,
+            "value1": task_id,
+            "duration_ns": 0,
+            "flags": 1,
+        })
+    path.write_text("".join(json.dumps(record) + "\n" for record in records), encoding="utf-8")
+
+
+def test_batch_nvtx_scope_preserves_many_to_many_request_activity_membership(tmp_path: Path):
+    jsonl = tmp_path / "batch-trace.jsonl"
+    nsys = tmp_path / "batch-nsys.sqlite"
+    output = tmp_path / "batch-paired.sqlite"
+    write_batch_jsonl_nvtx(jsonl)
+    write_batch_nvtx_nsys(nsys)
+
+    summary = import_all(jsonl, nsys, output, "batch-paired-001")
+    assert summary["nvtx_marker_count"] == 4
+    assert summary["request_windows"] == 1
+    assert summary["batch_windows"] == 1
+    assert summary["nsys_clock_calibration"]["matched_marker_pairs"] == 4
+    assert summary["nsys_clock_calibration"]["nsight_clock_calibrated"] is True
+
+    with sqlite3.connect(output) as db:
+        kernels = db.execute(
+            "SELECT start_ns,attributed_request_token,attributed_batch_token,"
+            "attribution_level,batch_attribution_level,attribution_status,batch_attribution_status "
+            "FROM nsys_activities WHERE activity_kind='cuda_kernel' ORDER BY start_ns"
+        ).fetchall()
+        members = db.execute(
+            "SELECT start_ns,request_id,slot_id,task_id,correlation_token,batch_attribution_level "
+            "FROM nepenthes_batch_activity_membership ORDER BY start_ns,request_id"
+        ).fetchall()
+        marker_scopes = db.execute(
+            "SELECT nvtx_marker_scope,COUNT(*) FROM nsys_activities "
+            "WHERE activity_kind='nvtx_event' GROUP BY nvtx_marker_scope ORDER BY nvtx_marker_scope"
+        ).fetchall()
+
+    assert kernels == [
+        (1500, 123, 123, "windowed", "windowed",
+         "unique_explicit_request_window", "unique_explicit_batch_window"),
+        (2500, None, 123, None, "windowed",
+         "outside_request_window", "unique_explicit_batch_window"),
+        (5200, None, None, None, None,
+         "outside_request_window", "outside_batch_window"),
+    ]
+    assert members == [
+        (1500, 42, 0, 41, 123, "windowed"),
+        (1500, 43, 1, 42, 123, "windowed"),
+        (2500, 42, 0, 41, 123, "windowed"),
+        (2500, 43, 1, 42, 123, "windowed"),
+    ]
+    assert marker_scopes == [("batch", 2), ("request", 2)]
+
+
+def test_nsys_only_rejects_overlapping_batch_windows(tmp_path: Path):
+    nsys = tmp_path / "overlapping-batches.sqlite"
+    output = tmp_path / "overlapping-batches-output.sqlite"
+    db = sqlite3.connect(nsys)
+    db.executescript("""
+        CREATE TABLE NVTX_EVENTS(
+            start INTEGER, end INTEGER, text TEXT, globalPid INTEGER
+        );
+        INSERT INTO NVTX_EVENTS VALUES
+            (1000, 1000, 'nepenthes.batch.start token=123', 99),
+            (3000, 3000, 'nepenthes.batch.end token=123', 99),
+            (1200, 1200, 'nepenthes.batch.start token=124', 99),
+            (3200, 3200, 'nepenthes.batch.end token=124', 99);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(
+            start INTEGER, end INTEGER, correlationId INTEGER, globalPid INTEGER
+        );
+        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES (1500, 1600, 9, 99);
+    """)
+    db.commit()
+    db.close()
+
+    summary = import_nsys_only(nsys, output, "overlapping-batch-import")
+    assert summary["batch_windows"] == 2
+    with sqlite3.connect(output) as db:
+        row = db.execute(
+            "SELECT attributed_batch_token,batch_attribution_level,batch_attribution_status "
+            "FROM nepenthes_nsys_activities WHERE activity_kind='cuda_kernel'"
+        ).fetchone()
+    assert row == (None, None, "overlapping_batch_windows")
