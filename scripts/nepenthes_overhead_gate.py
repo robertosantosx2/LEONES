@@ -84,6 +84,7 @@ def config_fingerprint(evidence: dict) -> dict:
             "backend": runtime.get("backend"),
         },
         "hardware": evidence.get("hardware"),
+        "aiperf_version": evidence.get("aiperf", {}).get("version"),
         "instrumentation": {
             "profile": instrumentation.get("profile"),
             "dataset_sha256": instrumentation.get("dataset_sha256"),
