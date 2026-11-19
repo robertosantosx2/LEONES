@@ -415,7 +415,8 @@ Una cifra solo es MEASURED si procede de una ejecución identificada, con fuente
 ## Estado de integración del fork llama.cpp (2026-11-19)
 
 - Fork personal creado y accesible: robertosantosx2/llama.cpp.
-- origin/master y ggml-org/llama.cpp:master verificados en 76f186df71a41abb3ee20fffedee31ca5dbc7d9f.
+- `robertosantosx2/llama.cpp:master` y `ggml-org/llama.cpp:master` sincronizados en `5812201a81008977ea079eaf86a3f9166eef9f10` (tres commits por delante del pin anterior).
+- El gitlink `subprojects/llama.cpp` permanece fijado en `76f186df71a41abb3ee20fffedee31ca5dbc7d9f`; no se avanza hasta revisar la pila de instrumentación y repetir CI.
 - Comparación respecto al pin anterior 95b09b62beb95c40fc6b317a0c1473c27b5f27fa: 1 commit ahead, 0 behind.
 - LEONES incorpora el gitlink subprojects/llama.cpp con modo Git 160000, fijado al mismo SHA.
 - La política es revisión explícita de cada actualización del submódulo; el monitor upstream no modifica automáticamente el gitlink.
