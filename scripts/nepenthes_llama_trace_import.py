@@ -15,7 +15,6 @@ from typing import Any
 from nepenthes_trace_envelope import (
     FORBIDDEN_FIELDS,
     SOURCE_PROFILES,
-    require_uint as _require_int,
     validate_event_envelope,
     validate_summary_envelope,
 )
