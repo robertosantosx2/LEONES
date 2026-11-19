@@ -109,13 +109,15 @@ def test_rejects_malformed_jsonl_without_claiming_success(tmp_path: Path):
     assert not (tmp_path / "out" / "aiperf_import_report.json").exists()
 
 
-def test_rejects_ambiguous_multiple_summaries(tmp_path: Path):
+def test_prefers_root_aggregate_and_preserves_phase_summaries(tmp_path: Path):
     artifacts = tmp_path / "artifacts"
-    (artifacts / "nested").mkdir(parents=True)
+    (artifacts / "phases" / "baseline").mkdir(parents=True)
     write_summary(artifacts)
-    write_summary(artifacts / "nested")
-    with pytest.raises(ValueError, match="multiple candidate artifacts"):
-        import_aiperf(artifacts, tmp_path / "out")
+    write_summary(artifacts / "phases" / "baseline")
+    report = import_aiperf(artifacts, tmp_path / "out")
+    assert report["summary_file"] == "profile_export_aiperf.json"
+    assert "phases/baseline/profile_export_aiperf.json" in report["preserved_unparsed_phase_files"]
+    assert any("phase-scoped summary exports" in warning for warning in report["warnings"])
 
 
 def test_rejects_output_nested_inside_source_artifacts(tmp_path: Path):
