@@ -1,0 +1,39 @@
+name: NEPENTHES llama.cpp submodule integrity
+
+on:
+  pull_request:
+    paths:
+      - ".gitmodules"
+      - "subprojects/llama.cpp"
+      - "docs/subprojects/NEPENTHES/LLAMA-CPP-UPSTREAM.json"
+      - "scripts/check_nepenthes_llama_submodule.py"
+      - "tests/test_nepenthes_llama_submodule.py"
+      - ".github/workflows/nepenthes-llama-submodule.yml"
+  push:
+    branches: [main]
+    paths:
+      - ".gitmodules"
+      - "subprojects/llama.cpp"
+      - "docs/subprojects/NEPENTHES/LLAMA-CPP-UPSTREAM.json"
+      - "scripts/check_nepenthes_llama_submodule.py"
+      - ".github/workflows/nepenthes-llama-submodule.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  submodule-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository and pinned submodule
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Test independent fork and submodule pin contract
+        run: python3 -m unittest discover -s tests -p 'test_nepenthes_llama_submodule.py' -v
+
+      - name: Validate submodule provenance and pin
+        run: python3 scripts/check_nepenthes_llama_submodule.py
