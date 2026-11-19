@@ -95,7 +95,7 @@ class SharedEnvelopeTests(unittest.TestCase):
             import_trace(self.write_trace([bad, summary()] ), source="tensorfold")
 
     def test_duplicate_summary_is_rejected(self) -> None:
-        with self.assertRaisesRegex(ValueError, "duplicate sink_summary"):
+        with self.assertRaisesRegex(ValueError, "sink_summary must be the final JSONL record"):
             import_trace(self.write_trace([event(), summary(),
                                            summary(event_id="tf-summary-2")]),
                          source="tensorfold")
