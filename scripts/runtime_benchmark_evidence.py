@@ -327,8 +327,10 @@ def run_once(command: list[str], host_sample_ms: int = 100,
     code = proc.wait()
     telemetry_values = telemetry.close()
     total = (time.perf_counter() - started) * 1000
-    stdout_text = b"".join(stdout_chunks).decode("utf-8", errors="replace")
-    stderr_text = b"".join(stderr_chunks).decode("utf-8", errors="replace")
+    stdout_raw = b"".join(stdout_chunks)
+    stderr_raw = b"".join(stderr_chunks)
+    stdout_text = stdout_raw.decode("utf-8", errors="replace")
+    stderr_text = stderr_raw.decode("utf-8", errors="replace")
     combined_text = stdout_text + "\n" + stderr_text
     llama_matches = LLAMA_CPP_GENERATION_TPS.findall(combined_text)
     if llama_matches:
@@ -381,10 +383,10 @@ def run_once(command: list[str], host_sample_ms: int = 100,
         "exit_code": code,
         "stdout": stdout_text,
         "stderr": stderr_text,
-        "stdout_sha256": hashlib.sha256(stdout_text.encode("utf-8")).hexdigest(),
-        "stderr_sha256": hashlib.sha256(stderr_text.encode("utf-8")).hexdigest(),
-        "stdout_bytes": len(stdout_text.encode("utf-8")),
-        "stderr_bytes": len(stderr_text.encode("utf-8")),
+        "stdout_sha256": hashlib.sha256(stdout_raw).hexdigest(),
+        "stderr_sha256": hashlib.sha256(stderr_raw).hexdigest(),
+        "stdout_bytes": len(stdout_raw),
+        "stderr_bytes": len(stderr_raw),
     }
 
 
