@@ -335,7 +335,7 @@ def event_rows(path: Path):
                     )
                 for field, allowed in JSONL_V11_ENUMS.items():
                     value = item[field]
-                    if value is not None and value not in allowed:
+                    if value is not None and (not isinstance(value, str) or value not in allowed):
                         raise ValueError(f"JSONL line {line_no}: invalid {field}: {value!r}")
                 token = item["correlation_token"]
                 if token is not None and (isinstance(token, bool) or not isinstance(token, int) or token <= 0):
