@@ -148,3 +148,13 @@ El workflow combinado CUDA/HIP/MUSA aparece como fallido exclusivamente en la pr
 - El diff actual de `ggml-backend.cpp` queda limitado a la instrumentación de allocation/free; la eliminación de `GGML_OP_CONV_2D` ya no aparece.
 - Nuevo HEAD de PR #6: `33e0d0a578c48b0a31616fd1b72fd255f12e39a4`; 33 commits ahead, 0 behind, 23 archivos. PR sigue draft y no fusionada.
 - Los resultados de CI del HEAD anterior `d692b04...` no validan este nuevo commit. La consulta inmediata aún no devuelve runs asociados al nuevo HEAD. No declarar CI verde ni solicitar todavía validación MSI.
+
+
+### CI RC1 — commit corregido `33e0d0a578c48b0a31616fd1b72fd255f12e39a4` (sondeo 2026-11-19 18:49 UTC)
+
+- Pasa `trace-and-cpu-build`: contrato de trazas, sink JSONL acotado, puente CPU y build instrumentado de llama-server CPU.
+- Pasa la verificación estática de NVTX v3 para los marcadores CUDA; la compilación CUDA específica de llama-server seguía en curso en el último sondeo.
+- Pasan CUDA e HIP del workflow general; Behavior Check (Ubuntu/Windows), WASI, WASM, WebGPU, Code Style y EditorConfig.
+- CPU general y Server seguían en curso; runners self-hosted restantes estaban en cola o ejecución.
+- MUSA falla de nuevo en `Dependencies`, antes de compilar: timeout al conectar con `dl.mthreads.com` y paquetes `musa-mualg-5-2`, `musa-muthrust-5-2` y `libmthreads-compute` no localizados. Clasificación: bloqueo de infraestructura/repositorio externo; no atribuirlo a regresión de NEPENTHES ni a CUDA.
+- Estado parcial, no CI global verde. PR #6 permanece draft. Sin build local/MSI, C07, C08 ni actualización de gitlink.
