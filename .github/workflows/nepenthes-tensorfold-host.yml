@@ -19,6 +19,9 @@ jobs:
   tensorfold-host:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      TENSORFOLD_CACHE: /tmp/tensorfold-test-cache
+      HF_HUB_OFFLINE: "1"
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
