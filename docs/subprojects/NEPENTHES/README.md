@@ -204,3 +204,8 @@ La instrumentación CUDA/backend adicional, los probes generales de memoria/tran
 - [PR #2 — ggml backend and CUDA runtime probes](https://github.com/robertosantosx2/llama.cpp/pull/2), apilada sobre PR #1: ABI compartida en ggml-base, ciclo de buffers, CUDA alloc/OOM/pools/VMM/pinned-host, transferencias y dispatch.
 
 **Validación PR #1:** los tests C++ del contrato/sink y el build CPU de llama-server han pasado en GitHub Actions. Los checks upstream de estilo, EditorConfig, WASM y WASI también han pasado; el resto de checks upstream continúa ejecutándose.
+
+
+## Importación de trazas runtime de llama.cpp
+
+El nuevo importador [nepenthes_llama_trace_import.py](../../../scripts/nepenthes_llama_trace_import.py) valida el contrato JSONL v1.0 del fork y genera un resumen auditable con SHA-256, conteos por evento/label, duraciones, balance request_start/request_end y calidad del sink. Rechaza campos de prompts/respuestas/tokens y marca como incompletas las capturas con pérdidas o sin resumen final. Documentación: [LLAMA-TRACE-IMPORT.md](LLAMA-TRACE-IMPORT.md).
