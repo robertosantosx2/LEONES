@@ -7,7 +7,9 @@ from scripts.runtime_benchmark_evidence import run_once, sha256_file, summary
 def test_run_once_captures_output_and_timing():
     result = run_once(["python3", "-c", "print('generation speed: 12.5 tok/s')"])
     assert result["exit_code"] == 0
-    assert "12.5 tok/s" in result["stdout"]
+    assert len(result["stdout_sha256"]) == 64
+    assert result["stdout_bytes"] > 0
+    assert "stdout" not in result
     assert result["first_output_ms"] is not None
     assert result["tokens_per_second"] == 12.5
     assert "peak_process_rss_mb" in result
