@@ -179,3 +179,10 @@ The verifier prints the report path and SHA-256, and sets `functional_complete` 
 `first_output_ms` is the time to the first stdout byte; it is not TTFT and must never be relabeled as such. The runner reads available pipe bytes (not line-oriented `readline()`) so token streams without newlines do not block until generation ends.
 
 `ttft_ms` is populated only from an explicit engine/AIPerf TTFT metric or the llama.cpp `prompt eval time` report, or from a user-supplied `--ttft-regex` with capture group 1 in milliseconds. If no genuine TTFT metric is present, it remains null. The standard C08 gate blocks evidence without a positive TTFT value; do not substitute process startup time or first log output.
+
+
+## Privacy defaults
+
+By default, raw stdout/stderr and prompt text are not written to evidence. The report stores a SHA-256 fingerprint and a binding declaration instead. `--prompt` must exactly match an argument in the command array; for externally configured AIPerf/dataset workloads use `--dataset-sha256` and declare that fingerprint. The effective command is hashed before redaction; the manifest stores a redacted command, hiding the prompt argument and common API-key/token/password flags. Use `--store-output` only when raw logs are deliberately required and safe to retain; they may contain prompts, completions or secrets.
+
+The evidence schema permits null stdout/stderr and records `output_captured`. A dataset hash supplied by the operator is a declared fingerprint, not proof that the command actually consumed that dataset.
