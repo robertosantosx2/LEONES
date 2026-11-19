@@ -1,51 +1,98 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "project": "NEPENTHES",
   "upstream_repository": "https://github.com/ggml-org/llama.cpp.git",
   "upstream_web": "https://github.com/ggml-org/llama.cpp",
   "upstream_branch": "master",
-  "verified_commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
-  "verified_commit_time": "2026-11-19T08:04:58Z",
+  "verified_commit": "c406f4367e19bea7930e7f74e1984c9acc6d44bf",
+  "verified_commit_time": "2026-11-19T19:30:19Z",
   "verified_at": "2026-11-19",
   "local_fork_repository": "https://github.com/robertosantosx2/llama.cpp.git",
   "local_fork_web": "https://github.com/robertosantosx2/llama.cpp",
   "local_fork_default_branch": "master",
-  "local_fork_status": "created_and_synced_with_upstream_master",
-  "fork_head_commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
+  "fork_head_commit": "9a080f44b503c64f66c84a6274b9d9ee5d5b09d5",
+  "fork_behind_upstream_commits": 3,
+  "local_fork_status": "behind_upstream_pending_runtime_stack_rebase",
   "leones_submodule_path": "subprojects/llama.cpp",
   "leones_submodule_commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
-  "policy": "Keep the personal fork as origin and ggml-org/llama.cpp as upstream. Pin the LEONES submodule to an explicitly reviewed fork commit; do not auto-advance the gitlink. Daily monitoring reports upstream/fork drift without silently changing the pin.",
-  "notes": [
-    "GitHub API confirmed that the personal fork exists and is writable.",
-    "At verification time, fork master and upstream master pointed to the same commit.",
-    "The fork was one commit ahead of the previous NEPENTHES upstream pin; comparison reported 1 ahead and 0 behind.",
-    "LEONES records the fork as a git submodule (mode 160000), pinned to the verified commit.",
-    "No llama.cpp source files were copied into LEONES; the submodule references the fork repository.",
-    "No local checkout, build, inference run, or MSI hardware validation was performed.",
-    "The first native llama.cpp instrumentation PR is open in the personal fork; it is separate from the upstream-synced submodule pin until reviewed and accepted.",
-    "The second stacked llama.cpp PR adds the shared ggml event ABI, generic backend buffer lifecycle, CUDA allocation/OOM/pool/VMM/pinned-host, transfer, synchronization and host dispatch probes.",
-    "The first llama.cpp instrumentation workflow completed successfully: both standalone C++ tests and the CPU llama-server build passed. Upstream Code Style, EditorConfig, WASM and WASI checks also passed; other upstream checks remain in progress."
-  ],
-  "previous_verified_commit": "95b09b62beb95c40fc6b317a0c1473c27b5f27fa",
-  "upstream_delta_since_previous_pin": [
+  "policy": "Keep the personal fork as origin and ggml-org/llama.cpp as upstream. The reviewed LEONES gitlink is an independent immutable pin: fork_head_commit records origin/master and must not be required to equal leones_submodule_commit. Advance the fork only after rebasing/reviewing the native runtime stack; advance the LEONES gitlink only through an explicit reviewed PR.",
+  "upstream_delta_since_previous_pin": {
+    "from": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
+    "to": "c406f4367e19bea7930e7f74e1984c9acc6d44bf",
+    "commits": 14,
+    "files_changed": 75,
+    "additions": 4176,
+    "deletions": 588,
+    "overlap_files": [
+      "ggml/src/ggml-backend.cpp",
+      "ggml/src/ggml-cpu/ggml-cpu.c",
+      "ggml/src/ggml-cuda/batch-copy.cu",
+      "ggml/src/ggml-cuda/ggml-cuda.cu",
+      "src/llama-context.cpp",
+      "src/llama-graph.cpp",
+      "src/llama-graph.h",
+      "tools/server/server-context.cpp"
+    ]
+  },
+  "runtime_probe_prs": [
     {
-      "commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
-      "message": "ggml : IQ2 creation speedup through caching (#31910)",
-      "committed_at": "2026-11-19T08:04:58Z",
-      "files": [
-        "ggml/src/ggml-quants.c"
-      ],
-      "additions": 113,
-      "deletions": 6
+      "number": 1,
+      "url": "https://github.com/robertosantosx2/llama.cpp/pull/1",
+      "branch": "feat/nepenthes-runtime-probes-20261119",
+      "base": "master",
+      "head": "b7cd302f897b2b6aacc9abea5e244b68ed3d3af8",
+      "status": "open_draft_requires_rebase",
+      "scope": [
+        "event_contract",
+        "bounded_jsonl_sink",
+        "request_lifecycle",
+        "graph_compute",
+        "synchronization",
+        "moe_cache",
+        "kv_cache"
+      ]
+    },
+    {
+      "number": 2,
+      "url": "https://github.com/robertosantosx2/llama.cpp/pull/2",
+      "branch": "feat/nepenthes-ggml-backend-probes-20261119",
+      "base": "feat/nepenthes-runtime-probes-20261119",
+      "head": "5c424c6d4181375508b54e270c4b39a3286e1d38",
+      "status": "open_draft_requires_rebase",
+      "scope": [
+        "model_lifecycle",
+        "ggml_buffer_lifecycle",
+        "cuda_allocations",
+        "cuda_pool_and_vmm",
+        "oom_fallback",
+        "pinned_host_memory",
+        "cuda_transfers",
+        "cuda_op_dispatch",
+        "cuda_stream_sync"
+      ]
+    },
+    {
+      "number": 3,
+      "url": "https://github.com/robertosantosx2/llama.cpp/pull/3",
+      "branch": "feat/nepenthes-cpu-worker-probes-20261119",
+      "base": "feat/nepenthes-ggml-backend-probes-20261119",
+      "head": "6d9d1b49bcecc819a7ca270716061d5516963d63",
+      "status": "open_draft_requires_rebase",
+      "scope": [
+        "cpu_worker_compute",
+        "cpu_idle_wait"
+      ]
     }
   ],
-  "runtime_instrumentation_repository": "https://github.com/robertosantosx2/llama.cpp",
-  "runtime_instrumentation_branch": "feat/nepenthes-runtime-probes-20261119",
-  "runtime_instrumentation_pr": "https://github.com/robertosantosx2/llama.cpp/pull/1",
-  "runtime_instrumentation_head": "b7cd302f897b2b6aacc9abea5e244b68ed3d3af8",
-  "runtime_instrumentation_status": "open_draft_cpu_tests_and_server_build_passed",
-  "runtime_instrumentation_followup_pr": "https://github.com/robertosantosx2/llama.cpp/pull/2",
-  "runtime_instrumentation_followup_branch": "feat/nepenthes-ggml-backend-probes-20261119",
-  "runtime_instrumentation_followup_head": "5c424c6d4181375508b54e270c4b39a3286e1d38",
-  "runtime_instrumentation_followup_status": "open_draft_ci_queued"
+  "notes": [
+    "Verified current upstream master at c406f4367e19bea7930e7f74e1984c9acc6d44bf, observed 2026-11-19T19:30:19Z.",
+    "Fork master is 9a080f44b503c64f66c84a6274b9d9ee5d5b09d5, three commits behind current upstream.",
+    "The LEONES gitlink remains pinned to 76f186df71a41abb3ee20fffedee31ca5dbc7d9f until the runtime stack is reconciled and accepted.",
+    "Native llama.cpp PRs #1, #2 and #3 are stacked and based on the older 76f186df commit. Their histories are not ancestors of the later RC1 cumulative branch; compare code before integrating to avoid duplicate probes.",
+    "The upstream delta overlaps graph/context, CPU worker and CUDA backend files. Do not fast-forward or merge the old stack without rebase and conflict review.",
+    "PR #1: NEPENTHES trace contract, sink, CPU server and core CI passed; Models Backend Check remains queued.",
+    "PR #2: CUDA and HIP build jobs passed; MUSA failed in external dependency setup before compilation.",
+    "PR #3: trace contract, CPU bridge and CPU server passed; multiple self-hosted backend jobs and Models Backend Check remain queued.",
+    "No local build, runtime inference, Nsight capture, C07 or C08 measurement is claimed."
+  ]
 }
