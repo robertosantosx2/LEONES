@@ -224,3 +224,8 @@ La captura nativa no reemplaza Nsight Systems/CUPTI: los tiempos de kernels real
 ## Criterios RC1
 
 La correlación explícita, la calibración dual de relojes, el gate formal de overhead, los perfiles de captura, el manifiesto reproducible y los requisitos de privacidad se detallan en [NEPENTHES-RC1-ACCEPTANCE.md](NEPENTHES-RC1-ACCEPTANCE.md) y en el apartado RC1 del [roadmap](ROADMAP.md).
+
+
+## Estado runtime RC1
+
+La primera implementación de correlation token y calibración host está en [llama.cpp PR #4](https://github.com/robertosantosx2/llama.cpp/pull/4), apilada sobre PR #3. Solo etiqueta el ciclo de vida request_start/request_end; no atribuye todavía kernels ni trabajo GPU. C07 sigue abierto hasta NVTX/CUPTI y round-trip Nsight verificado.
