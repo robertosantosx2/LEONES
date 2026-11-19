@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
 import sys
 from pathlib import Path
 from statistics import median
@@ -115,6 +114,8 @@ def build_evidence(args: argparse.Namespace) -> dict:
     run_manifest = read_json(artifacts_dir / "nepenthes_aiperf_run.json")
     if run_manifest.get("status") != "completed" or run_manifest.get("exit_code") != 0:
         raise ValueError("AIPerf run did not complete successfully")
+    if import_report.get("status") != "imported":
+        raise ValueError("AIPerf artifacts were not imported successfully")
     if import_report.get("failed_request_count", 0):
         raise ValueError("AIPerf import contains failed requests")
     if import_report.get("source_artifacts") is None:
