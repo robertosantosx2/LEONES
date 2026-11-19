@@ -6,9 +6,11 @@ on:
       - 'scripts/nepenthes_aiperf_import.py'
       - 'scripts/nepenthes_aiperf_run.py'
       - 'scripts/nepenthes_llama_server_metrics.py'
+      - 'scripts/nepenthes_nvml_sampler.py'
       - 'tests/test_nepenthes_aiperf_import.py'
       - 'tests/test_nepenthes_aiperf_run.py'
       - 'tests/test_nepenthes_llama_server_metrics.py'
+      - 'tests/test_nepenthes_nvml_sampler.py'
       - '.github/workflows/nepenthes-aiperf-import.yml'
   push:
     paths:
@@ -38,4 +40,4 @@ jobs:
       - name: Install test runner
         run: python -m pip install --disable-pip-version-check pytest
       - name: Run offline AIPerf runner and importer tests
-        run: python -m pytest -q tests/test_nepenthes_aiperf_import.py tests/test_nepenthes_aiperf_run.py tests/test_nepenthes_llama_server_metrics.py
+        run: python -m pytest -q tests/test_nepenthes_aiperf_import.py tests/test_nepenthes_aiperf_run.py tests/test_nepenthes_llama_server_metrics.py tests/test_nepenthes_nvml_sampler.py
