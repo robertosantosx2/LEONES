@@ -98,6 +98,61 @@ def write_gpu_telemetry(root: Path) -> None:
 
 
 
+def write_server_metrics_aggregate(root: Path) -> None:
+    payload = {
+        "schema_version": "1.1",
+        "aiperf_version": "0.13.0",
+        "benchmark_id": "bench-001",
+        "summary": {
+            "phase_time_ranges": {
+                "profiling": {"start_ns": 1_800_000_000_000_000_000, "end_ns": 1_800_000_000_500_000_000},
+                "warmup": {"start_ns": 1_799_999_999_000_000_000, "end_ns": 1_799_999_999_500_000_000},
+            }
+        },
+        "metrics_phase": "profiling",
+        "metrics": {
+            "llama_active_slots": {
+                "type": "gauge", "description": "Active slots", "unit": "requests",
+                "series": [{
+                    "endpoint_url": "http://user:secret@127.0.0.1:8080/metrics?token=do-not-leak",
+                    "labels": {"model": "qwen-local", "request_id": "private-request"},
+                    "stats": {"avg": 1.0, "min": 0.0, "max": 2.0, "p99": 2.0},
+                    "timeslices": [{"start_ns": 100, "end_ns": 200, "avg": 1.5}],
+                }],
+            },
+            "llama_requests_total": {
+                "type": "counter", "description": "Requests", "unit": "requests",
+                "series": [{
+                    "endpoint_url": "http://127.0.0.1:8080/metrics",
+                    "labels": {"model": "qwen-local"},
+                    "stats": {"total": 5.0, "rate": 0.5},
+                }],
+            },
+            "llama_request_latency_seconds": {
+                "type": "histogram", "description": "Latency", "unit": "seconds",
+                "series": [{
+                    "endpoint_url": "http://127.0.0.1:8080/metrics",
+                    "labels": {"model": "qwen-local"},
+                    "stats": {"count": 5, "sum": 1.25, "avg": 0.25, "p99_estimate": 0.5},
+                    "buckets": {"0.5": 4, "+Inf": 5},
+                }],
+            },
+        },
+        "warmup_metrics": {
+            "llama_active_slots": {
+                "type": "gauge", "description": "Active slots", "unit": "requests",
+                "series": [{
+                    "endpoint_url": "http://127.0.0.1:8080/metrics",
+                    "labels": {"model": "qwen-local"},
+                    "stats": {"avg": 0.0, "max": 0.0},
+                }],
+            }
+        },
+    }
+    (root / "server_metrics_export.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
+
 def test_imports_summary_and_request_records_without_private_payloads(tmp_path: Path):
     artifacts = tmp_path / "aiperf-artifacts"
     output = tmp_path / "nepenthes-import"
@@ -105,6 +160,7 @@ def test_imports_summary_and_request_records_without_private_payloads(tmp_path: 
     write_summary(artifacts)
     write_records(artifacts)
     write_server_metrics(artifacts)
+    write_server_metrics_aggregate(artifacts)
     write_gpu_telemetry(artifacts)
     (artifacts / "outputs.json").write_text(
         json.dumps({"data": [{"response_text": "must not be imported"}]}), encoding="utf-8"
@@ -119,7 +175,8 @@ def test_imports_summary_and_request_records_without_private_payloads(tmp_path: 
     assert report["request_count"] == 2
     assert report["failed_request_count"] == 1
     assert report["request_metric_count"] == 4
-    assert report["event_count"] == 13
+    assert report["event_count"] == 17
+    assert report["server_metric_aggregate_count"] == 4
     assert report["server_metric_record_count"] == 1
     assert report["server_metric_sample_count"] == 2
     assert report["gpu_telemetry_record_count"] == 1
@@ -132,10 +189,16 @@ def test_imports_summary_and_request_records_without_private_payloads(tmp_path: 
     assert not any("response_text" in event for event in events)
     assert "server_metrics_export.jsonl" == report["server_metrics_file"]
     assert "gpu_telemetry_export.jsonl" == report["gpu_telemetry_file"]
+    assert "server_metrics_export.json" == report["server_metrics_summary_file"]
     server_event = next(event for event in events if event["event_kind"] == "aiperf_server_metric_sample" and event["metric_shape"] == "histogram")
     assert server_event["buckets"] == {"0.5": 2, "+Inf": 3}
     assert server_event["endpoint_origin"] == "http://127.0.0.1:8080"
     assert server_event["timestamp_unix_ns"] == 1_800_000_000_200_000_000
+    aggregate = next(event for event in events if event["event_kind"] == "aiperf_server_metric_aggregate" and event["metric_name"] == "llama_active_slots")
+    assert aggregate["endpoint_origin"] == "http://127.0.0.1:8080"
+    assert aggregate["statistics"]["p99"] == 2.0
+    assert aggregate["window_start_unix_ns"] == 1_800_000_000_000_000_000
+    assert any(event["scope"] == "server_warmup_aggregate" for event in events)
     gpu_energy = next(event for event in events if event["event_kind"] == "aiperf_gpu_telemetry" and event["metric_name"] == "nvidia_energy_consumption")
     assert gpu_energy["value"] == 1.25 and gpu_energy["unit"] == "MJ"
     assert gpu_energy["value_semantics"] == "cumulative_counter"
@@ -224,5 +287,28 @@ def test_rejects_malformed_gpu_telemetry_record(tmp_path: Path):
     with pytest.raises(ValueError, match="no telemetry_data object"):
         import_aiperf(artifacts, tmp_path / "out")
     assert not (tmp_path / "out" / "aiperf_import_report.json").exists()
+
+
+
+
+def test_imports_server_aggregate_without_other_artifacts(tmp_path: Path):
+    artifacts = tmp_path / "aggregate-only"
+    artifacts.mkdir()
+    write_server_metrics_aggregate(artifacts)
+    report = import_aiperf(artifacts, tmp_path / "out")
+    assert report["summary_file"] is None
+    assert report["server_metrics_summary_file"] == "server_metrics_export.json"
+    assert report["server_metric_aggregate_count"] == 4
+    assert report["event_count"] == 4
+
+
+def test_rejects_unknown_server_aggregate_schema(tmp_path: Path):
+    artifacts = tmp_path / "unknown-schema"
+    artifacts.mkdir()
+    (artifacts / "server_metrics_export.json").write_text(
+        json.dumps({"schema_version": "9.0", "metrics": {}}), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="unsupported AIPerf server metrics JSON schema"):
+        import_aiperf(artifacts, tmp_path / "out")
 
 
