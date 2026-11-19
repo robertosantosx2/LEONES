@@ -273,6 +273,27 @@ def test_nsys_only_import_preserves_extended_cupti_tables_and_provenance(tmp_pat
         assert coverage["unsupported_tables"] == ["CUPTI_ACTIVITY_KIND_FUTURE_UNMAPPED"]
 
 
+
+def test_memcpy_unsigned_sentinel_is_preserved_without_fake_enum_label(tmp_path: Path):
+    nsys = tmp_path / "sentinel.sqlite"
+    output = tmp_path / "sentinel-import.sqlite"
+    write_nsys(nsys)
+    with sqlite3.connect(nsys) as source:
+        source.execute("UPDATE CUPTI_ACTIVITY_KIND_MEMCPY SET srcKind=-1")
+    summary = import_nsys_only(nsys, output, "sentinel-enum-import")
+    assert summary["enum_decode_status_counts"]["partial"] == 1
+    with sqlite3.connect(output) as db:
+        row = db.execute(
+            "SELECT src_kind_value,src_kind_name,enum_decode_status,raw_json "
+            "FROM nepenthes_nsys_activities WHERE activity_kind='cuda_memcpy'"
+        ).fetchone()
+    assert row[:3] == (-1, None, "partial")
+    raw = json.loads(row[3])
+    assert raw["srcKind"] == -1
+    assert raw["_nepenthes_enum_decoding"]["src_kind"]["value"] == -1
+    assert raw["_nepenthes_enum_decoding"]["src_kind"]["label"] is None
+
+
 def test_nsys_only_import_refuses_to_overwrite_source(tmp_path: Path):
     nsys = tmp_path / "capture.sqlite"
     write_extended_nsys(nsys)
