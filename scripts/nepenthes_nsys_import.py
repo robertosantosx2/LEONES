@@ -119,7 +119,9 @@ def load_enum_tables(db: sqlite3.Connection, names: set[str]) -> tuple[dict[str,
     for table in sorted(name for name in names if name.upper().startswith("ENUM_CUDA_")):
         cols = sorted(columns(db, table))
         quoted = table.replace('"', '""')
-        rows = [dict(row) for row in db.execute(f'SELECT * FROM "{quoted}"')]
+        cursor = db.execute(f'SELECT * FROM "{quoted}"')
+        row_columns = [item[0] for item in cursor.description]
+        rows = [dict(zip(row_columns, row)) for row in cursor]
         lower = {column.lower(): column for column in cols}
         value_col = next((lower[name] for name in value_candidates if name in lower), None)
         label_col = next((lower[name] for name in label_candidates if name in lower), None)
