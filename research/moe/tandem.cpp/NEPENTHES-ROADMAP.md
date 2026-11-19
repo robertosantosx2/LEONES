@@ -308,3 +308,20 @@ Estado de PR #6: abierta, draft, no fusionada; HEAD `33e0d0a578c48b0a31616fd1b72
 - [ ] Actualizar INDEX y roadmap únicamente con resultados físicos confirmados; no declarar NEPENTHES completo antes de cerrar C07/C08 y cobertura.
 
 **Límite actual:** trabajo remoto en GitHub. No requiere el MSI para el rebase, revisión, pruebas contractuales, preflight, manifiestos ni scripts. El MSI se reserva para C07 real y C08 medido.
+
+
+### Auditoría del delta upstream — 2026-11-19 (verificación commit a commit)
+
+- [x] Confirmados los dos gates post-merge del manifiesto: V1 Complete Gate run `44612579699` y submodule integrity run `44612579719`, ambos `success`.
+- [x] Inspeccionados los tres commits entre fork master `9a080f44b503c64f66c84a6274b9d9ee5d5b09d5` y upstream `c406f4367e19bea7930e7f74e1984c9acc6d44bf`:
+  - `53ecea05a0728e133478b06b3d543b6fcfaa418e`: fix YuE2 en `tools/mtmd/mtmd.cpp`; no solapa con probes.
+  - `7fce5439fe451cd48340b112ec37d2befe02c776`: soporte BF16 de ROPE/SET_ROWS en CPU y CUDA, capability checks y tests. Es funcionalidad upstream que debe conservarse; toca cuatro rutas instrumentadas por RC1: CPU `ggml-cpu.c`/ `ops.cpp`, CUDA `ggml-cuda.cu` y `tests/test-backend-ops.cpp`.
+  - `c406f4367e19bea7930e7f74e1984c9acc6d44bf`: OpenCL int8 KQ para flash attention descompuesta; kernels/build OpenCL sin solapamiento directo con las sondas actuales.
+- [x] La comparación fork→upstream arroja 3 commits y 18 archivos. Ocho rutas coinciden con el diff acumulativo RC1: CPU, CUDA, Metal, OpenVINO, Vulkan, ggml core y tests. La coincidencia de ruta no implica conflicto textual, pero sí exige rebase semántico y revisión del control flow.
+- [x] Actualizado el manifiesto `docs/subprojects/NEPENTHES/LLAMA-CPP-UPSTREAM.json` en commit `f7974d20bf90348552e51c7ac284f6adca57bca1`, registrando commits, alcance, solapamientos, estado de CI y política de reconciliación.
+- [ ] Reconciliar RC1 con upstream: aplicar primero la funcionalidad BF16 y sus tests, preservar YuE2/OpenCL sin cambios, reubicar/reaplicar sondas sobre el control flow final y revisar especialmente los límites de las funciones CPU/CUDA afectadas.
+- [ ] Ejecutar CI completa sobre el HEAD reconciliado y comparar el contrato de eventos antes/después: no deben duplicarse eventos ni cambiar sus límites de ciclo de vida.
+- [ ] Solo después decidir si RC1 sustituye definitivamente a #1–#3; cerrar la alternativa no elegida tras demostrar equivalencia de cobertura y conservar los cambios exclusivos útiles.
+- [ ] Mantener el gitlink LEONES en `76f186df71a41abb3ee20fffedee31ca5dbc7d9f` hasta completar la aceptación remota. MSI sigue fuera del circuito.
+
+**Decisión técnica:** conservar RC1 como línea de trabajo candidata, pero no declararla canónica ni fusionable todavía. El cambio BF16 es funcionalidad de upstream, no una modificación descartable; la integración debe mantenerla y recolocar las sondas. El fix YuE2 y las mejoras OpenCL se incorporan íntegramente.
