@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import sqlite3
 import sys
 from collections import Counter
@@ -28,6 +29,7 @@ NSYS_TABLES = {
     "CUPTI_ACTIVITY_KIND_SYNCHRONIZATION": "cuda_synchronization",
     "CUPTI_ACTIVITY_KIND_CUDA_EVENT": "cuda_event",
     "CUPTI_ACTIVITY_KIND_OVERHEAD": "cuda_overhead",
+    "NVTX_EVENTS": "nvtx_event",
 }
 JSONL_REQUIRED = {
     "schema_version", "run_id", "event_id", "source", "timestamp_unix_ns",
@@ -197,19 +199,27 @@ def decode_activity_enums(row: dict[str, Any], enum_maps: dict[str, dict[int, st
 def ensure_enum_schema(db: sqlite3.Connection) -> None:
     """Idempotently add queryable enum columns to both paired and Nsight-only stores."""
     additions = {
-        "nepenthes_imports": [("enum_tables_json", "TEXT NOT NULL DEFAULT '{}'")],
-        "nepenthes_nsys_imports": [("enum_tables_json", "TEXT NOT NULL DEFAULT '{}'")],
+        "nepenthes_imports": [("enum_tables_json", "TEXT NOT NULL DEFAULT '{}'"),
+                              ("nsys_clock_calibration_json", "TEXT NOT NULL DEFAULT '{}'")],
+        "nepenthes_nsys_imports": [("enum_tables_json", "TEXT NOT NULL DEFAULT '{}'"),
+                                  ("nsys_clock_calibration_json", "TEXT NOT NULL DEFAULT '{}'")],
         "nsys_activities": [
             ("copy_kind_value", "INTEGER"), ("copy_kind_name", "TEXT"),
             ("src_kind_value", "INTEGER"), ("src_kind_name", "TEXT"),
             ("dst_kind_value", "INTEGER"), ("dst_kind_name", "TEXT"),
             ("enum_decode_status", "TEXT NOT NULL DEFAULT 'not_applicable'"),
+            ("nvtx_correlation_token", "INTEGER"), ("nvtx_marker_phase", "TEXT"),
+            ("nvtx_marker_request_id", "INTEGER"), ("attributed_request_token", "INTEGER"),
+            ("attribution_level", "TEXT"), ("attribution_status", "TEXT NOT NULL DEFAULT 'unattributed'"),
         ],
         "nepenthes_nsys_activities": [
             ("copy_kind_value", "INTEGER"), ("copy_kind_name", "TEXT"),
             ("src_kind_value", "INTEGER"), ("src_kind_name", "TEXT"),
             ("dst_kind_value", "INTEGER"), ("dst_kind_name", "TEXT"),
             ("enum_decode_status", "TEXT NOT NULL DEFAULT 'not_applicable'"),
+            ("nvtx_correlation_token", "INTEGER"), ("nvtx_marker_phase", "TEXT"),
+            ("nvtx_marker_request_id", "INTEGER"), ("attributed_request_token", "INTEGER"),
+            ("attribution_level", "TEXT"), ("attribution_status", "TEXT NOT NULL DEFAULT 'unattributed'"),
         ],
     }
     for table, definitions in additions.items():
@@ -307,6 +317,144 @@ def event_rows(path: Path):
     if not seen:
         raise ValueError("JSONL contains no events")
     return counts
+
+
+
+NVTX_MARKER_RE = re.compile(
+    r"nepenthes\\.request\\.(start|end)\\s+token=(\\d+)\\s+request=(\\d+)"
+)
+
+
+def parse_nvtx_marker(message: Any) -> dict[str, Any] | None:
+    if not isinstance(message, str):
+        return None
+    match = NVTX_MARKER_RE.search(message)
+    if not match:
+        return None
+    return {
+        "phase": match.group(1),
+        "token": int(match.group(2)),
+        "request_id": int(match.group(3)),
+        "message": message,
+    }
+
+
+def collect_nsys_nvtx_markers(db: sqlite3.Connection, names: set[str],
+                              strings: dict[int, str]) -> list[dict[str, Any]]:
+    if "NVTX_EVENTS" not in names:
+        return []
+    markers: list[dict[str, Any]] = []
+    for source_row in db.execute('SELECT * FROM "NVTX_EVENTS"'):
+        row = {key: json_value(source_row[key]) for key in source_row.keys()}
+        message = first(row, ("text", "message", "name", "textId", "messageId", "nameId"))
+        if isinstance(message, (int, float)):
+            message = strings.get(int(message), str(message))
+        parsed = parse_nvtx_marker(message)
+        if parsed is None:
+            continue
+        start = first(row, ("start", "startNs", "start_ns", "timestamp"))
+        if not isinstance(start, (int, float)):
+            continue
+        parsed["start_ns"] = int(start)
+        parsed["end_ns"] = int(first(row, ("end", "endNs", "end_ns")) or start)
+        markers.append(parsed)
+    return markers
+
+
+def host_nvtx_markers(events: list[dict[str, Any]]) -> dict[tuple[int, str], list[dict[str, int]]]:
+    result: dict[tuple[int, str], list[dict[str, int]]] = {}
+    for event in events:
+        if event.get("event_kind") != "nvtx_marker":
+            continue
+        token = event.get("correlation_token")
+        label = event.get("label")
+        if isinstance(token, bool) or not isinstance(token, int) or token <= 0:
+            continue
+        if label not in ("request.start", "request.end"):
+            continue
+        before = event.get("value0")
+        after = event.get("value1")
+        if not isinstance(before, int) or not isinstance(after, int) or after < before:
+            continue
+        phase = "start" if label.endswith(".start") else "end"
+        key = (token, phase)
+        result.setdefault(key, []).append({
+            "host_mid_ns": (before + after) // 2,
+            "bracket_ns": after - before,
+            "timestamp_unix_ns": int(event.get("timestamp_unix_ns") or 0),
+        })
+    return result
+
+
+def calibrate_host_to_nsys(host_markers: dict[tuple[int, str], list[dict[str, int]]],
+                           nsys_markers: list[dict[str, Any]]) -> dict[str, Any]:
+    nsys_by_key: dict[tuple[int, str], list[int]] = {}
+    for marker in nsys_markers:
+        nsys_by_key.setdefault((marker["token"], marker["phase"]), []).append(marker["start_ns"])
+    pairs = []
+    for key, host_values in host_markers.items():
+        nsys_values = nsys_by_key.get(key, [])
+        if len(host_values) == 1 and len(nsys_values) == 1:
+            host = host_values[0]
+            pairs.append({
+                "token": key[0], "phase": key[1],
+                "host_monotonic_ns": host["host_mid_ns"],
+                "nsys_timestamp_ns": nsys_values[0],
+                "offset_ns": nsys_values[0] - host["host_mid_ns"],
+                "host_bracket_ns": host["bracket_ns"],
+            })
+    pairs.sort(key=lambda item: item["host_monotonic_ns"])
+    result: dict[str, Any] = {
+        "matched_marker_pairs": len(pairs),
+        "nsight_clock_calibrated": len(pairs) >= 2,
+        "offset_start_ns": None,
+        "offset_end_ns": None,
+        "drift_ns": None,
+        "drift_ppm": None,
+        "host_bracket_uncertainty_ns": None,
+        "pairs": pairs,
+    }
+    if pairs:
+        result["offset_start_ns"] = pairs[0]["offset_ns"]
+        result["offset_end_ns"] = pairs[-1]["offset_ns"]
+        result["host_bracket_uncertainty_ns"] = max(
+            (item["host_bracket_ns"] + 1) // 2 for item in pairs
+        )
+    if len(pairs) >= 2:
+        span = pairs[-1]["host_monotonic_ns"] - pairs[0]["host_monotonic_ns"]
+        if span > 0:
+            drift = pairs[-1]["offset_ns"] - pairs[0]["offset_ns"]
+            result["drift_ns"] = drift
+            result["drift_ppm"] = (drift / span) * 1_000_000
+    return result
+
+
+def build_nvtx_request_windows(markers: list[dict[str, Any]]) -> list[dict[str, int]]:
+    grouped: dict[int, dict[str, list[int]]] = {}
+    for marker in markers:
+        grouped.setdefault(marker["token"], {"start": [], "end": []})[marker["phase"]].append(
+            marker["start_ns"]
+        )
+    windows = []
+    for token, phases in grouped.items():
+        if len(phases["start"]) == 1 and len(phases["end"]) == 1:
+            start_ns, end_ns = phases["start"][0], phases["end"][0]
+            if end_ns > start_ns:
+                windows.append({"token": token, "start_ns": start_ns, "end_ns": end_ns})
+    return sorted(windows, key=lambda item: item["start_ns"])
+
+
+def attribute_nsys_activity(start_ns: Any, end_ns: Any,
+                            windows: list[dict[str, int]]) -> tuple[int | None, str | None, str]:
+    if not isinstance(start_ns, (int, float)) or not isinstance(end_ns, (int, float)):
+        return None, None, "missing_activity_timestamps"
+    matches = [window["token"] for window in windows
+               if window["start_ns"] <= int(start_ns) and int(end_ns) <= window["end_ns"]]
+    if len(matches) == 1:
+        return matches[0], "windowed", "unique_explicit_request_window"
+    if len(matches) > 1:
+        return None, None, "overlapping_request_windows"
+    return None, None, "outside_or_missing_request_window"
 
 
 def init_output(db: sqlite3.Connection) -> None:
