@@ -13,6 +13,18 @@ on:
       - 'scripts/nepenthes_llama_server_capture.py'
       - 'tests/test_nepenthes_aiperf_import.py'
       - 'tests/test_nepenthes_aiperf_run.py'
+      - 'scripts/nepenthes_aiperf_evidence.py'
+      - 'scripts/nepenthes_overhead_gate.py'
+      - 'scripts/nepenthes_privacy.py'
+      - 'scripts/runtime_benchmark_evidence.py'
+      - 'schemas/runtime-benchmark-evidence.v1.1.json'
+      - 'tests/test_nepenthes_aiperf_evidence.py'
+      - 'tests/test_nepenthes_overhead_gate.py'
+      - 'tests/test_nepenthes_privacy.py'
+      - 'tests/test_runtime_benchmark_evidence.py'
+      - 'scripts/nepenthes_nsys_import.py'
+      - 'db/migrations/006_nepenthes_typed_event_metadata.sql'
+      - 'tests/test_nepenthes_nsys_import.py'
       - 'tests/test_nepenthes_llama_server_metrics.py'
       - 'tests/test_nepenthes_nvml_sampler.py'
       - 'tests/test_nepenthes_otel_export.py'
@@ -32,6 +44,18 @@ on:
       - 'scripts/nepenthes_llama_server_capture.py'
       - 'tests/test_nepenthes_aiperf_import.py'
       - 'tests/test_nepenthes_aiperf_run.py'
+      - 'scripts/nepenthes_aiperf_evidence.py'
+      - 'scripts/nepenthes_overhead_gate.py'
+      - 'scripts/nepenthes_privacy.py'
+      - 'scripts/runtime_benchmark_evidence.py'
+      - 'schemas/runtime-benchmark-evidence.v1.1.json'
+      - 'tests/test_nepenthes_aiperf_evidence.py'
+      - 'tests/test_nepenthes_overhead_gate.py'
+      - 'tests/test_nepenthes_privacy.py'
+      - 'tests/test_runtime_benchmark_evidence.py'
+      - 'scripts/nepenthes_nsys_import.py'
+      - 'db/migrations/006_nepenthes_typed_event_metadata.sql'
+      - 'tests/test_nepenthes_nsys_import.py'
       - 'tests/test_nepenthes_llama_server_metrics.py'
       - 'tests/test_nepenthes_nvml_sampler.py'
       - 'tests/test_nepenthes_otel_export.py'
@@ -57,4 +81,4 @@ jobs:
       - name: Install test runner
         run: python -m pip install --disable-pip-version-check pytest
       - name: Run offline AIPerf runner and importer tests
-        run: python -m pytest -q tests/test_nepenthes_aiperf_import.py tests/test_nepenthes_aiperf_run.py tests/test_nepenthes_llama_server_metrics.py tests/test_nepenthes_nvml_sampler.py tests/test_nepenthes_otel_export.py tests/test_nepenthes_benchmark_report.py tests/test_nepenthes_otel_transport.py tests/test_nepenthes_llama_server_capture.py
+        run: python -m pytest -q tests/test_nepenthes_aiperf_import.py tests/test_nepenthes_aiperf_run.py tests/test_nepenthes_aiperf_evidence.py tests/test_nepenthes_overhead_gate.py tests/test_nepenthes_privacy.py tests/test_runtime_benchmark_evidence.py tests/test_nepenthes_nsys_import.py tests/test_nepenthes_llama_server_metrics.py tests/test_nepenthes_nvml_sampler.py tests/test_nepenthes_otel_export.py tests/test_nepenthes_benchmark_report.py tests/test_nepenthes_otel_transport.py tests/test_nepenthes_llama_server_capture.py
