@@ -28,12 +28,6 @@ def write_aiperf_bundle(root: Path, include_warmup: bool = True, include_through
     (root / "profile_export_aiperf.json").write_text(json.dumps(summary), encoding="utf-8")
 
     records = []
-    if include_warmup:
-        records.append({
-            "metadata": {"session_num": 0, "x_request_id": "warmup-1", "benchmark_phase": "warmup"},
-            "metrics": {"time_to_first_token": {"value": 150.0, "unit": "ms"}},
-            "error": None,
-        })
     for index in range(4):
         metrics = {
             "time_to_first_token": {"value": 100.0 + index, "unit": "ms"},
@@ -93,7 +87,7 @@ def make_args(tmp_path: Path, include_warmup: bool = True, include_throughput: b
         "aiperf_version": "0.13.0",
         "target": {"model": "model-q4", "url": "http://127.0.0.1:8080", "endpoint_type": "chat", "streaming": True},
         "profile": {
-            "concurrency": 1, "request_count": 5,
+            "concurrency": 1, "request_count": 4,
             "input_tokens_mean": 128, "output_tokens_mean": 32,
             "random_seed": 42, "server_metrics_enabled": True,
         },
