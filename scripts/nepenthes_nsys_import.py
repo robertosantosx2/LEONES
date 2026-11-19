@@ -745,8 +745,9 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                  correlation_id,global_pid,process_id,device_id,context_id,stream_id,name,
                  copy_kind_value,copy_kind_name,src_kind_value,src_kind_name,dst_kind_value,
                  dst_kind_name,enum_decode_status,nvtx_correlation_token,nvtx_marker_phase,
-                 nvtx_marker_request_id,attributed_request_token,attribution_level,attribution_status,raw_json)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
+                 nvtx_marker_request_id,attributed_request_token,attribution_level,attribution_status,
+                 attributed_batch_token,batch_attribution_level,batch_attribution_status,nvtx_marker_scope,raw_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
             )
     finally:
         out.close()
@@ -934,8 +935,9 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                  correlation_id,global_pid,process_id,device_id,context_id,stream_id,name,
                  copy_kind_value,copy_kind_name,src_kind_value,src_kind_name,dst_kind_value,
                  dst_kind_name,enum_decode_status,nvtx_correlation_token,nvtx_marker_phase,
-                 nvtx_marker_request_id,attributed_request_token,attribution_level,attribution_status,raw_json)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
+                 nvtx_marker_request_id,attributed_request_token,attribution_level,attribution_status,
+                 attributed_batch_token,batch_attribution_level,batch_attribution_status,nvtx_marker_scope,raw_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
             )
     finally:
         out.close()
