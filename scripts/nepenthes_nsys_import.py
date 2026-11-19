@@ -528,8 +528,16 @@ def init_output(db: sqlite3.Connection) -> None:
     migration_dir = Path(__file__).resolve().parents[1] / "db" / "migrations"
     for version in ("002_nepenthes_observability.sql", "003_nepenthes_nsys_only.sql", "006_nepenthes_typed_event_metadata.sql"):
         migration = migration_dir / version
-        if migration.is_file():
-            db.executescript(migration.read_text(encoding="utf-8"))
+        if not migration.is_file():
+            continue
+        if version == "006_nepenthes_typed_event_metadata.sql":
+            applied = db.execute(
+                "SELECT 1 FROM schema_migrations WHERE version = ?",
+                ("006_nepenthes_typed_event_metadata",),
+            ).fetchone()
+            if applied:
+                continue
+        db.executescript(migration.read_text(encoding="utf-8"))
     ensure_enum_schema(db)
 
 
