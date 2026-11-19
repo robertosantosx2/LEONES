@@ -41,6 +41,8 @@ def test_build_command_uses_conservative_reproducible_profile(tmp_path: Path):
     assert command[command.index("--synthetic-input-tokens-stddev") + 1] == "0"
     assert command[command.index("--output-tokens-stddev") + 1] == "0"
     assert "--export-level" in command and command[command.index("--export-level") + 1] == "records"
+    assert command[command.index("--server-metrics-formats") + 1:command.index("--gpu-telemetry")] == ["json", "jsonl"]
+    assert command[command.index("--gpu-telemetry") + 1] == "pynvml"
     assert "--no-export-outputs-json" not in command
     assert "--api-key" not in command
 
