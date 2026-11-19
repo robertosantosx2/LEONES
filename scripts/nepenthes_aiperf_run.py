@@ -21,7 +21,10 @@ from pathlib import Path
 from typing import Sequence
 from urllib.parse import urlsplit
 
-from runtime_benchmark_evidence import TelemetrySampler
+try:
+    from runtime_benchmark_evidence import TelemetrySampler
+except ModuleNotFoundError:
+    from scripts.runtime_benchmark_evidence import TelemetrySampler
 
 
 def utc_now() -> str:
