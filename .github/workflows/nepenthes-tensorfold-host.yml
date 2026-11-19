@@ -47,9 +47,12 @@ jobs:
           EXPECTED_SHA: ${{ steps.pin.outputs.sha }}
         run: test "$(git -C TensorFold rev-parse HEAD)" = "$EXPECTED_SHA"
 
-      - name: Zig formatting
+      - name: Format TensorFold sources and expose required diff
         working-directory: TensorFold
-        run: zig fmt --check build.zig zig
+        run: |
+          zig fmt build.zig zig
+          git diff --check
+          git diff -- zig/src/server/nepenthes_trace.zig
 
       - name: Host server and golden regressions
         working-directory: TensorFold
