@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 from statistics import median
 
@@ -85,6 +86,7 @@ def config_fingerprint(evidence: dict) -> dict:
             "command_sha256": runtime.get("command_sha256"),
         },
         "hardware": evidence.get("hardware"),
+        "aiperf_version": evidence.get("aiperf", {}).get("version"),
         "instrumentation": {
             "profile": instrumentation.get("profile"),
             "dataset_sha256": instrumentation.get("dataset_sha256"),
@@ -92,6 +94,7 @@ def config_fingerprint(evidence: dict) -> dict:
             "sampling_config": instrumentation.get("sampling_config", {}),
             "host_sample_ms": instrumentation.get("host_sample_ms"),
             "gpu_sample_ms": instrumentation.get("gpu_sample_ms"),
+            "rss_target": instrumentation.get("rss_target"),
         },
     }
 
@@ -113,6 +116,11 @@ def evidence_metrics(evidence: dict) -> dict[str, float]:
         raise ValueError("immutable engine revision is required")
     if not instrumentation.get("hardware_id"):
         raise ValueError("stable hardware_id is required")
+    if instrumentation.get("rss_target") not in ("inference_server", "direct_inference_process"):
+        raise ValueError("RSS telemetry must target the inference server or direct inference process, not the benchmark client")
+    command_sha256 = runtime.get("command_sha256")
+    if not isinstance(command_sha256, str) or len(command_sha256) != 64:
+        raise ValueError("runtime command_sha256 is required for paired command identity")
     if not evidence.get("hardware") or not runtime.get("backend"):
         raise ValueError("hardware fingerprint and backend are required")
     if protocol.get("warmup_iterations", 0) < 1:
@@ -134,20 +142,14 @@ def evidence_metrics(evidence: dict) -> dict[str, float]:
         values = [float(item[metric]) for item in measurements if item.get(metric) is not None]
         if values:
             result[metric] = median(values)
+    for metric, value in result.items():
+        if not math.isfinite(value) or value < 0:
+            raise ValueError(f"{metric} must be a finite non-negative number")
     if "tokens_per_second" not in result or result["tokens_per_second"] <= 0:
         raise ValueError("tokens_per_second missing or non-positive")
-    required_metrics = (
-        "ttft_ms",
-        "total_time_ms",
-        "peak_process_rss_mb",
-        "peak_system_ram_used_mb",
-        "peak_vram_mb_device_wide",
-    )
-    missing_metrics = [name for name in required_metrics if name not in result or result[name] <= 0]
-    if missing_metrics:
-        raise ValueError("required C08 metric(s) missing or non-positive: " + ", ".join(missing_metrics))
-    if "command_sha256" not in runtime or not isinstance(runtime["command_sha256"], str) or len(runtime["command_sha256"]) != 64:
-        raise ValueError("runtime command_sha256 is required")
+    for required_metric in ("ttft_ms", "total_time_ms", "peak_process_rss_mb", "peak_system_ram_used_mb", "peak_vram_mb_device_wide"):
+        if required_metric not in result or result[required_metric] <= 0:
+            raise ValueError(f"{required_metric} is required for the C08 resource-overhead gate")
     return result
 
 
