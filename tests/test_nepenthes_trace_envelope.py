@@ -79,6 +79,14 @@ class SharedEnvelopeTests(unittest.TestCase):
                 ]), source=source)
                 self.assertTrue(result["capture_complete"])
 
+    def test_tensorfold_request_lifecycle_requires_per_request_identity(self) -> None:
+        bad = event(request_id=0)
+        with self.assertRaisesRegex(ValueError, "tensorfold request lifecycle events require a non-zero request_id"):
+            import_trace(self.write_trace([bad, summary()]), source="tensorfold")
+        internal = event(request_id=0, event_kind="kernel_launch")
+        result = import_trace(self.write_trace([internal, summary()]), source="tensorfold")
+        self.assertTrue(result["capture_complete"])
+
     def test_unsupported_clock_domain_is_rejected_per_source(self) -> None:
         for source in ("llama.cpp", "tensorfold"):
             with self.subTest(source=source):
