@@ -173,3 +173,8 @@ El gate usa mediana e IQR y exige TTFT, duración total de campaña, throughput,
 ## Estado MSI pendiente
 
 Los PRs LEONES #197 y #198 están integrados y sus gates CI pasaron. El siguiente paso físico no es un self-test: es compilar el fork llama.cpp rebased, lanzar una inferencia real, capturar NVTX/CUPTI con Nsight, importar el bundle y ejecutar nepenthes verify y el gate C08 sobre las repeticiones. No declarar functional_complete antes de ello.
+
+
+### AIPerf warm-up provenance correction — 2026-11-19
+
+The runner now passes AIPerf's explicit --warmup-request-count (default 1). The evidence manifest and command fingerprint record this value, and the evidence builder rejects a missing warm-up count. LEONES PR #199 is now merged as `109e3073cd0040a5ba86b906e71e003959f72d3c`: the runner defaults to one explicit warm-up request, records it in the workload command fingerprint and manifest, and the evidence builder rejects manifests without that field. CI passed **572 tests** plus all release/runtime gates. This is still software acceptance only; no C08 performance result is claimed.
