@@ -339,5 +339,17 @@ class LlamaTraceImportTests(unittest.TestCase):
                 import_trace(path)
 
 
+
+
+    def test_non_string_event_kind_is_rejected_without_crashing(self) -> None:
+        for malformed in ([], {"kind": "request_start"}):
+            with self.subTest(event_kind=malformed), tempfile.TemporaryDirectory() as directory:
+                bad = event("tf-1", "sync", source="tensorfold", request_id=0)
+                bad["event_kind"] = malformed
+                path = self.write_trace(directory, [bad, summary(1, source="tensorfold")])
+                with self.assertRaisesRegex(ValueError, "invalid event_kind"):
+                    import_trace(path, source="tensorfold")
+
+
 if __name__ == "__main__":
     unittest.main()
