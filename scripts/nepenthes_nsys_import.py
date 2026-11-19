@@ -596,7 +596,7 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
     nsys_markers = collect_nsys_nvtx_markers(source, names, strings)
     host_markers = host_nvtx_markers(events)
     nsys_clock_calibration = calibrate_host_to_nsys(host_markers, nsys_markers)
-    nvtx_windows = build_nvtx_request_windows(nsys_markers)
+    nvtx_windows = build_nvtx_token_windows(nsys_markers)
     activities: list[tuple] = []
     activity_counts: Counter[str] = Counter()
     activity_id = 0
@@ -621,24 +621,41 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             if name is None:
                 name = first(row, ("eventClass", "syncType", "overheadType"))
             nvtx_marker = parse_nvtx_marker(name) if table == "NVTX_EVENTS" else None
+            nvtx_marker_scope = nvtx_marker["scope"] if nvtx_marker else None
             if nvtx_marker is not None:
                 row["_nepenthes_nvtx_marker"] = nvtx_marker
-                attributed_token, attribution_level, attribution_status = (
-                    nvtx_marker["token"], "exact", "marker_identity"
-                )
+                if nvtx_marker_scope == "request":
+                    attributed_request_token = nvtx_marker["token"]
+                    attribution_level, attribution_status = "exact", "marker_identity"
+                    attributed_batch_token = None
+                    batch_attribution_level, batch_attribution_status = None, "not_applicable"
+                else:
+                    attributed_request_token = None
+                    attribution_level, attribution_status = None, "not_applicable"
+                    attributed_batch_token = nvtx_marker["token"]
+                    batch_attribution_level, batch_attribution_status = "exact", "marker_identity"
             elif kind in ("cuda_kernel", "cuda_memcpy", "cuda_memset"):
-                attributed_token, attribution_level, attribution_status = attribute_nsys_activity(
+                (
+                    attributed_request_token, attribution_level, attribution_status,
+                    attributed_batch_token, batch_attribution_level, batch_attribution_status,
+                ) = attribute_nsys_activity(
                     start, end, nvtx_windows,
                     first(row, ("globalPid", "global_pid", "processId", "pid"))
                 )
             else:
-                attributed_token, attribution_level, attribution_status = (
+                attributed_request_token, attribution_level, attribution_status = (
+                    None, None, "not_applicable"
+                )
+                attributed_batch_token, batch_attribution_level, batch_attribution_status = (
                     None, None, "not_applicable"
                 )
             row["_nepenthes_attribution"] = {
-                "request_token": attributed_token,
-                "level": attribution_level,
-                "status": attribution_status,
+                "request_token": attributed_request_token,
+                "request_level": attribution_level,
+                "request_status": attribution_status,
+                "batch_token": attributed_batch_token,
+                "batch_level": batch_attribution_level,
+                "batch_status": batch_attribution_status,
             }
             activity_id += 1
             activities.append((
@@ -763,7 +780,7 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
         strings = load_string_ids(source, names)
         enum_maps, enum_metadata = load_enum_tables(source, names)
         nsys_markers = collect_nsys_nvtx_markers(source, names, strings)
-        nvtx_windows = build_nvtx_request_windows(nsys_markers)
+        nvtx_windows = build_nvtx_token_windows(nsys_markers)
         nsys_clock_calibration = {
             "matched_marker_pairs": 0,
             "nsight_clock_calibrated": False,
@@ -803,24 +820,41 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                 if name is None:
                     name = first(row, ("eventClass", "syncType", "overheadType"))
                 nvtx_marker = parse_nvtx_marker(name) if table == "NVTX_EVENTS" else None
+                nvtx_marker_scope = nvtx_marker["scope"] if nvtx_marker else None
                 if nvtx_marker is not None:
                     row["_nepenthes_nvtx_marker"] = nvtx_marker
-                    attributed_token, attribution_level, attribution_status = (
-                        nvtx_marker["token"], "exact", "marker_identity"
-                    )
+                    if nvtx_marker_scope == "request":
+                        attributed_request_token = nvtx_marker["token"]
+                        attribution_level, attribution_status = "exact", "marker_identity"
+                        attributed_batch_token = None
+                        batch_attribution_level, batch_attribution_status = None, "not_applicable"
+                    else:
+                        attributed_request_token = None
+                        attribution_level, attribution_status = None, "not_applicable"
+                        attributed_batch_token = nvtx_marker["token"]
+                        batch_attribution_level, batch_attribution_status = "exact", "marker_identity"
                 elif kind in ("cuda_kernel", "cuda_memcpy", "cuda_memset"):
-                    attributed_token, attribution_level, attribution_status = attribute_nsys_activity(
+                    (
+                        attributed_request_token, attribution_level, attribution_status,
+                        attributed_batch_token, batch_attribution_level, batch_attribution_status,
+                    ) = attribute_nsys_activity(
                         start, end, nvtx_windows,
                         first(row, ("globalPid", "global_pid", "processId", "pid"))
                     )
                 else:
-                    attributed_token, attribution_level, attribution_status = (
+                    attributed_request_token, attribution_level, attribution_status = (
+                        None, None, "not_applicable"
+                    )
+                    attributed_batch_token, batch_attribution_level, batch_attribution_status = (
                         None, None, "not_applicable"
                     )
                 row["_nepenthes_attribution"] = {
-                    "request_token": attributed_token,
-                    "level": attribution_level,
-                    "status": attribution_status,
+                    "request_token": attributed_request_token,
+                    "request_level": attribution_level,
+                    "request_status": attribution_status,
+                    "batch_token": attributed_batch_token,
+                    "batch_level": batch_attribution_level,
+                    "batch_status": batch_attribution_status,
                 }
                 activity_id += 1
                 activities.append((
