@@ -163,13 +163,11 @@ def decode_activity_enums(row: dict[str, Any], enum_maps: dict[str, dict[int, st
                      "ENUM_CUDA_MEM_KIND"),
     }
     decoded: dict[str, Any] = {}
-    status_values: list[bool] = []
     for output_name, (candidates, table) in fields.items():
         value = first(row, candidates)
         label = None
         if isinstance(value, int) and not isinstance(value, bool):
             label = enum_maps.get(table, {}).get(value)
-            status_values.append(label is not None)
         decoded[output_name] = {
             "value": value,
             "label": label,
