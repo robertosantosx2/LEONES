@@ -48,7 +48,7 @@ def require_uint(
 
 
 def _validate_source(record: dict[str, Any], line_no: int, expected_source: str) -> None:
-    if expected_source not in SOURCE_PROFILES:
+    if not isinstance(expected_source, str) or expected_source not in SOURCE_PROFILES:
         raise ValueError(f"unregistered trace source: {expected_source}")
     if record.get("source") != expected_source:
         raise ValueError(f"line {line_no}: source must be {expected_source}")
