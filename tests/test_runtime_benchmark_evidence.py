@@ -55,7 +55,7 @@ def test_first_stdout_byte_is_not_mislabeled_as_ttft():
 def test_custom_ttft_regex_is_supported():
     result = run_once(
         ["python3", "-c", "print('first token latency = 23.75 ms')"],
-        ttft_regex=r"first token latency\\s*=\\s*([0-9.]+)\\s*ms",
+        ttft_regex=r"first token latency\s*=\s*([0-9.]+)\s*ms",
     )
     assert result["ttft_ms"] == 23.75
     assert result["ttft_source"] == "custom_regex"
