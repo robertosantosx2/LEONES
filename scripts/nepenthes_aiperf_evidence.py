@@ -120,7 +120,7 @@ def build_evidence(args: argparse.Namespace) -> dict:
     if import_report.get("source_artifacts") is None:
         raise ValueError("AIPerf importer did not provide source artifact hashes")
 
-    summary = metric_map(events, "aiperf_summary_metric", "run_summary")
+    summary = metric_map(events, "aiperf_metric", "run_summary")
     request_metrics: dict[str, dict[str, dict]] = {}
     request_phases: dict[str, str] = {}
     warmup_ids = set()
