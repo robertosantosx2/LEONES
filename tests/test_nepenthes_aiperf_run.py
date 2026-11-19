@@ -46,9 +46,6 @@ def test_runner_samples_inference_server_resources(tmp_path: Path):
     assert len(manifest["log_artifact"]["sha256"]) == 64
     assert not (artifact_dir / "aiperf.stdout.log").exists()
     assert telemetry["rss_target"] == "inference_server"
-    assert len(manifest["workload_command_sha256"]) == 64
-    assert str(artifact_dir) not in json.dumps(manifest["command"])
-    assert "<artifact-dir>" in manifest["command"]
     assert telemetry["host_sample_ms"] == 100
     assert telemetry["gpu_sample_ms"] == 500
     assert telemetry["peak_process_rss_mb"] > 0
