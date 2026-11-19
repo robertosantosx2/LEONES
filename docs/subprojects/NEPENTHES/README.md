@@ -219,3 +219,8 @@ La instrumentación del motor se desarrolla en el fork [robertosantosx2/llama.cp
 Las PRs están apiladas y en borrador; deben revisarse en orden y no se han fusionado. El manifiesto [LLAMA-CPP-UPSTREAM.json](LLAMA-CPP-UPSTREAM.json) conserva sus ramas, dependencias y alcances.
 
 La captura nativa no reemplaza Nsight Systems/CUPTI: los tiempos de kernels reales y las transferencias completadas en dispositivo se obtienen de las actividades de Nsight y se correlacionan en LEONES. No se generan eventos de prefetch genéricos donde el camino upstream auditado no contiene ese trabajador. La correlación request_id se limita a los puntos donde el identificador real puede propagarse con seguridad.
+
+
+## Criterios RC1
+
+La correlación explícita, la calibración dual de relojes, el gate formal de overhead, los perfiles de captura, el manifiesto reproducible y los requisitos de privacidad se detallan en [NEPENTHES-RC1-ACCEPTANCE.md](NEPENTHES-RC1-ACCEPTANCE.md) y en el apartado RC1 del [roadmap](ROADMAP.md).
