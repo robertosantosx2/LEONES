@@ -189,3 +189,46 @@ The evidence schema permits null stdout/stderr and records `output_captured`. A 
 
 
 For standard C08 acceptance, each evidence file must contain positive TTFT, total duration, process RSS, system RAM used and device-wide VRAM metrics. The command SHA-256 is part of the paired configuration fingerprint; command drift blocks comparison. Missing telemetry is reported as missing evidence, never silently treated as zero.
+
+
+### AIPerf-first C08 workflow
+
+For server inference campaigns, use the pinned AIPerf runner as the load generator and monitor the inference server PID (not the AIPerf client) for process RSS. The server must already be running and expose its PID through a file or explicit PID:
+
+```bash
+python3 scripts/nepenthes_aiperf_run.py \
+  --model MODEL_ID --url http://127.0.0.1:8080 \
+  --artifact-dir artifacts/off-pair-01 \
+  --target-pid-file /run/llama-server.pid \
+  --concurrency 1 --request-count 5 --input-tokens 512 --output-tokens 256 \
+  --random-seed 42 --timeout-seconds 900
+```
+
+Do not use `--no-server-metrics` for C08: the evidence adapter requires exported warm-up phase evidence. Resource sampling records inference-server RSS, system-wide RAM and device-wide VRAM/power; the target PID itself is not written to the manifest.
+
+Convert each AIPerf run into the canonical evidence contract:
+
+```bash
+python3 scripts/nepenthes_aiperf_evidence.py \
+  --artifacts-dir artifacts/off-pair-01 \
+  --import-dir artifacts/off-pair-01-nepenthes-import \
+  --output artifacts/off-pair-01-evidence.json \
+  --model-artifact /path/to/model.gguf --model-id MODEL_ID --model-name MODEL_NAME \
+  --model-revision MODEL_REVISION --quantization Q4_K_M --context 8192 \
+  --engine-name llama.cpp --engine-version ENGINE_VERSION --engine-revision ENGINE_SHA \
+  --backend cuda --hardware-id msi-rtx3050 \
+  --condition off --pair-id pair-01 --profile standard \
+  --sampling-config-json artifacts/sampling-config.json
+```
+
+Repeat for the same pair ID under `jsonl`, `nsys` and `combined`, then repeat the complete four-condition block for pair-02 and pair-03. Keep server flags, sampling configuration, AIPerf profile, model artifact, engine revision, hardware and telemetry intervals fixed. The evidence adapter rejects failed requests, missing warm-up evidence, missing output-token throughput, missing inference-server PID telemetry or missing peak resource metrics. It does not estimate decode throughput from request latency.
+
+The direct runtime evidence runner remains useful for single-process CLI experiments. Its RSS scope is labelled separately; do not use benchmark-client RSS as inference-server RSS in a server C08 campaign.
+
+
+## Privacy defaults
+
+The evidence stores a SHA-256 of the fixed prompt/protocol, never the prompt text. Raw stdout/stderr are parsed in memory and represented only by byte counts and SHA-256 digests. The executed command is stored in redacted form plus a digest of the original command; sensitive flags, prompt arguments and URL credentials/query strings are removed. Sensitive keys in sampling metadata are rejected recursively. AIPerf imports preserve source artifact hashes and metadata, not prompts, generated text, credentials or raw request/response payloads.
+
+
+In this protocol, the `off` condition means runtime JSONL probes off and Nsight off; AIPerf and the same external resource sampler remain active in every condition. This isolates the incremental cost of JSONL and Nsight. The sampler's absolute overhead is not included in the 5%/8% gate and must be measured separately if total-observer overhead is required.
