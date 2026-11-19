@@ -25,14 +25,14 @@ Principios no negociables:
 | Contrato común multi-motor | Integrado en main por [PR #210](https://github.com/robertosantosx2/LEONES/pull/210), merge `fcaf170`; issue [#207](https://github.com/robertosantosx2/LEONES/issues/207) cerrada; 8 checks verdes en HEAD sincronizado `73c7cb9` | Mantener regresiones del contrato y validar el primer productor TensorFold host-only |
 | llama.cpp | Integración activa; [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10) en draft/CI según último estado documentado | Cerrar CI/revisión, aceptar contrato y luego C07/C08 en MSI |
 | TensorFold 1.2.10 | Contrato documentado en fork; [issue #1](https://github.com/robertosantosx2/TensorFold/issues/1) reclamada; depende de LEONES #207 | Aceptar validador común; después adaptador host-only y CI |
-| tandem.cpp (distribución patch-based sobre llama.cpp) | PR #1 runtime, #3 request-ID fix y #2 guía inglesa fusionadas en `robertosantosx2/tandem.cpp`; CI de #1/#3 verde; inferencia Qwen3.5-4B y dos importaciones emparejadas validadas; correlación interna parcial | Verificar `source=tandem.cpp` en registry/contrato común LEONES; diseñar identidad explícita worker/batch/CUDA, medir cobertura y overhead; después C07/C08 |
+| tandem.cpp (distribución patch-based sobre llama.cpp) | PR #1 runtime, #3 request-ID fix y #2 guía inglesa fusionadas; LEONES #153 valida dos imports emparejados y #210 registra `source=tandem.cpp` en el contrato común; correlación interna parcial | Ejecutar issue [#212](https://github.com/robertosantosx2/LEONES/issues/212): modelo explícito job/batch/request y propagación segura; CI/cobertura; después C07/C08 |
 | Otros motores | No hay conector aceptado registrado | Incorporar solo mediante el contrato común y una fila de estado/evidencia |
 
 ### Orden de trabajo vigente
 1. **TensorFold — adaptador host-only.** #207 está aceptada en main. Implementar opt-in, no-op real cuando disabled, sink acotado, identidad request/run nacida en `routes.dispatch`, propagación a streaming/background, privacidad y metadata namespaced; sin CUDA.
 2. **TensorFold — pruebas host y CI.** Concurrencia, keep-alive/múltiples peticiones, lifecycle balanceado, sink_summary final, drops/errors, disabled path y fixtures importados por el pipeline común. No duplicar runner ni importer.
 3. **llama.cpp — reconciliación remota.** Revisar PR #10 sobre upstream actual, semántica, diff y CI exacta; merge/gitlink solo tras aceptación.
-4. **Tandem.cpp.** Mantenerlo como distribución patch-based con `source=tandem.cpp`; continuar la línea ya fusionada y completar identidad/correlación explícita donde exista evidencia.
+4. **Tandem.cpp.** Runtime y request-ID fix ya fusionados; `source=tandem.cpp` está registrado en el validador común #210. Siguiente gate remoto: [issue #212](https://github.com/robertosantosx2/LEONES/issues/212), modelo explícito muchos-a-muchos request/job/batch y propagación host-only segura; no implementar IDs por slot/proximidad.
 5. **Validación física MSI.** Solo tras cerrar gates remotos: build CUDA, C07 NVTX+Nsight real y C08 overhead medido.
 6. **Aceptación por motor y release.** Evidencia, límites, cobertura, overhead y hashes; un motor no hereda aceptación de otro.
 
@@ -79,7 +79,7 @@ Principios no negociables:
 - [Tandem.cpp PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1) está fusionada en `fcf8c837b05e0c80c3539d6c1d0c317ba2f40456`. HEAD de implementación validado por CI: `170d3af9918e2cdf3b5c72f6bb61ab0c3b7b6b52`. Implementa hook C++17, timestamps monotónicos, scoped durations, sink JSONL asíncrono con cola bounded de 8192 entradas, writer separado, shutdown seguro y aplicador determinista de sondas.
 - [Tandem.cpp PR #2](https://github.com/robertosantosx2/tandem.cpp/pull/2) está fusionada en `ecfbae9fb23dae8904ccaa981ee115f9b17c56bd`; añade la guía inglesa y navegación bidireccional entre documentación española/inglesa, sin cambios runtime.
 - [Tandem.cpp PR #3](https://github.com/robertosantosx2/tandem.cpp/pull/3) está fusionada en `e2bf8fccab05a0ffe87f526a77606e3f941d172d`. Reserva `request_id=0` para eventos no correlacionados y transforma task IDs del servidor mediante `request_id_from_task_id()`: task ID 0 pasa a request ID 1, preservando el ID original en `value0`. La corrección se aplica a eventos server request start/end y routing; no atribuye IDs a workers, CUDA asíncrono ni eventos de shared batch sin identidad segura.
-- No se debe considerar #3 sustituta de #1: #1 aporta la instrumentación y #3 corrige la semántica de identidad sobre esa base. Ambas requieren revisión y merge coordinados; #2 es documentación.
+- Dependencia cerrada en orden: #1 aporta la instrumentación; #3 corrige la semántica de identidad sobre esa base; #2 añade la guía inglesa. Las tres PR están fusionadas. No hay PR runtime pendiente en Tandem.cpp.
 
 **Cobertura instrumentada declarada por el código:**
 - lifecycle de request/server, graph compute y sincronización;
@@ -109,11 +109,11 @@ Los spans host describen submission/dispatch, no ejecución GPU. Los kernels ind
 - [x] Revisar diffs/dependencias y fusionar en orden: #1 runtime (`fcf8c83`) → #3 request-ID correction (`e2bf8fc`). CI exacto de ambos HEADs pasó; las dos PR quedaron cerradas como merged. #2 documentación inglesa se retargeteó a `main` y fusionó (`ecfbae9`).
 - [x] Importación emparejada y uint64→SQLite: resuelta y validada en LEONES #153 con dos capturas PR1/PR3; pruebas de límite uint64 y rechazo fuera de rango; integridad SQLite correcta. No duplicar esta corrección.
 - [x] Importación emparejada real demostrada por LEONES #153: dos bundles PR1/PR3, cada uno con 6.569 eventos del motor y 24.211 actividades Nsight; hashes/procedencia e integridad SQLite validados.
-- [ ] Completar correlación solo mediante identidad explícita por job/batch/worker y tokens compartidos con la captura GPU, más calibración de reloj. Hasta entonces, mantener eventos internos sin correlación.
+- [ ] Resolver [LEONES #212](https://github.com/robertosantosx2/LEONES/issues/212): identificar fronteras request→task/slot→batch→CPU job→backend→CUDA; diseñar relación muchos-a-muchos; mantener `request_id=0` en trabajo ambiguo; propagar tokens solo si el mismo ID cruza host/NVTX/CUPTI explícitamente y sin sincronización adicional.
 - [ ] Medir cobertura efectiva por sonda y pérdidas/errores del sink en ejecuciones representativas; no inferirla del inventario de probes.
 - [ ] Ejecutar C07 (captura emparejada con IDs/calibración) y C08 (baseline/tratamientos repetidos y overhead) según los gates comunes. No solicitar MSI hasta cerrar los bloqueos remotos que puedan resolverse en GitHub.
 
-**Límite de aceptación:** instrumentación, CI de los HEAD citados, inferencia real Qwen3.5-4B y dos importaciones emparejadas históricas están demostradas. No se aceptan todavía correlación robusta request-worker-CUDA-kernel, cobertura completa de sondas ni overhead C08. La compatibilidad de `source=tandem.cpp` con el registry del contrato multi-motor LEONES debe verificarse antes de considerar integrada la ruta en el contrato común. Tandem sigue siendo una distribución derivada de llama.cpp, no un motor independiente a efectos de duplicar colectores/importadores.
+**Límite de aceptación:** instrumentación, CI de los HEAD citados, inferencia real Qwen3.5-4B, dos importaciones emparejadas históricas y registro `source=tandem.cpp` en el validador común están demostrados. No se aceptan todavía correlación robusta request-worker-CUDA-kernel, cobertura completa de sondas ni overhead C08. Tandem sigue siendo una distribución derivada de llama.cpp, no un motor independiente a efectos de duplicar colectores/importadores.
 
 ### 3.4 Otros motores
 
