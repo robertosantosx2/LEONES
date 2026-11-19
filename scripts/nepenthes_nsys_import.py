@@ -368,7 +368,7 @@ def event_rows(path: Path):
 
 
 NVTX_MARKER_RE = re.compile(
-    r"nepenthes\.request\.(start|end)\s+token=(\d+)\s+request=(\d+)"
+    r"nepenthes\.request\.(start|end|prefill_start|prefill_end|decode_start)\s+token=(\d+)\s+request=(\d+)"
 )
 
 
@@ -490,6 +490,8 @@ def build_nvtx_request_windows(markers: list[dict[str, Any]]) -> list[dict[str, 
             continue
         if isinstance(token, bool) or not isinstance(token, int) or token <= 0:
             continue
+        if marker.get("phase") not in ("start", "end"):
+            continue
         grouped.setdefault((process_id, token), {"start": [], "end": []})[marker["phase"]].append(
             marker["start_ns"]
         )
@@ -503,6 +505,39 @@ def build_nvtx_request_windows(markers: list[dict[str, Any]]) -> list[dict[str, 
                     "start_ns": start_ns, "end_ns": end_ns,
                 })
     return sorted(windows, key=lambda item: (item["process_id"], item["start_ns"]))
+
+
+def build_request_phase_windows(markers: list[dict[str, Any]]) -> list[dict[str, int]]:
+    """Return explicit per-request prefill/decode boundaries from NVTX markers."""
+    grouped: dict[tuple[int, int], dict[str, list[int]]] = {}
+    for marker in markers:
+        process_id = marker.get("process_id")
+        token = marker.get("token")
+        phase = marker.get("phase")
+        if isinstance(process_id, bool) or not isinstance(process_id, int):
+            continue
+        if isinstance(token, bool) or not isinstance(token, int) or token <= 0:
+            continue
+        if phase not in ("prefill_start", "prefill_end", "decode_start"):
+            continue
+        grouped.setdefault((process_id, token), {
+            "prefill_start": [], "prefill_end": [], "decode_start": [],
+        })[phase].append(marker["start_ns"])
+    windows = []
+    for (process_id, token), phases in grouped.items():
+        if all(len(phases[name]) == 1 for name in ("prefill_start", "prefill_end", "decode_start")):
+            prefill_start = phases["prefill_start"][0]
+            prefill_end = phases["prefill_end"][0]
+            decode_start = phases["decode_start"][0]
+            if prefill_start < prefill_end <= decode_start:
+                windows.append({
+                    "process_id": process_id,
+                    "token": token,
+                    "prefill_start_ns": prefill_start,
+                    "prefill_end_ns": prefill_end,
+                    "decode_start_ns": decode_start,
+                })
+    return sorted(windows, key=lambda item: (item["process_id"], item["prefill_start_ns"]))
 
 
 def attribute_nsys_activity(start_ns: Any, end_ns: Any,
