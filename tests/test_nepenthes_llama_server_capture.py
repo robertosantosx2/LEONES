@@ -24,7 +24,7 @@ class FakeResponse:
 
 
 def test_capture_collects_metrics_and_safe_slots_without_persisting_raw_payloads(tmp_path):
-    metrics = b'llama_requests_total{model="qwen-local",request_id="private-id"} 3\\n'
+    metrics = b'llama_requests_total{model="qwen-local",request_id="private-id"} 3\n'
     slots = json.dumps([{
         "id": 1, "is_processing": True, "prompt": "private prompt text",
         "next_token": "private token",
