@@ -40,13 +40,17 @@ def write_nsys(path: Path) -> None:
         );
         INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL
         VALUES (1000, 1600, 42, 99, 0, 1, 7, 7);
+        CREATE TABLE ENUM_CUDA_MEMCPY_OPER(id INTEGER PRIMARY KEY, name TEXT);
+        INSERT INTO ENUM_CUDA_MEMCPY_OPER VALUES (1, 'HTOD'), (2, 'DTOH');
+        CREATE TABLE ENUM_CUDA_MEM_KIND(id INTEGER PRIMARY KEY, name TEXT);
+        INSERT INTO ENUM_CUDA_MEM_KIND VALUES (1, 'PAGEABLE'), (2, 'PINNED'), (3, 'DEVICE');
         CREATE TABLE CUPTI_ACTIVITY_KIND_MEMCPY(
             start INTEGER, end INTEGER, correlationId INTEGER,
             deviceId INTEGER, contextId INTEGER, streamId INTEGER,
-            bytes INTEGER, copyKind INTEGER
+            bytes INTEGER, copyKind INTEGER, srcKind INTEGER, dstKind INTEGER
         );
         INSERT INTO CUPTI_ACTIVITY_KIND_MEMCPY
-        VALUES (1700, 1900, 43, 0, 1, 7, 4096, 1);
+        VALUES (1700, 1900, 43, 0, 1, 7, 4096, 1, 1, 3);
         CREATE TABLE CUPTI_ACTIVITY_KIND_RUNTIME(
             start INTEGER, end INTEGER, correlationId INTEGER, nameId INTEGER
         );
@@ -80,6 +84,16 @@ def test_import_preserves_events_and_nsys_activities(tmp_path: Path):
         "FROM nsys_activities WHERE activity_kind='cuda_kernel'"
     ).fetchone()
     assert kernel == ("cuda_kernel", 1000, 1600, 600, 42, "qwen_kernel")
+    memcpy = db.execute(
+        "SELECT copy_kind_value,copy_kind_name,src_kind_value,src_kind_name,"
+        "dst_kind_value,dst_kind_name,enum_decode_status FROM nsys_activities "
+        "WHERE activity_kind='cuda_memcpy'"
+    ).fetchone()
+    assert memcpy == (1, "HTOD", 1, "PAGEABLE", 3, "DEVICE", "decoded")
+    enum_json = json.loads(db.execute(
+        "SELECT enum_tables_json FROM nepenthes_imports"
+    ).fetchone()[0])
+    assert enum_json["ENUM_CUDA_MEMCPY_OPER"]["mapping"]["1"] == "HTOD"
     policy = db.execute(
         "SELECT correlation_policy FROM nepenthes_imports"
     ).fetchone()[0]
@@ -150,6 +164,7 @@ def test_inspect_nsys_reports_schema_and_counts_without_importing(tmp_path: Path
     assert mapped["CUPTI_ACTIVITY_KIND_KERNEL"]["mapped_kind"] == "cuda_kernel"
     assert "nameId" in mapped["CUPTI_ACTIVITY_KIND_KERNEL"]["columns"]
     assert report["string_tables"][0]["table"] == "StringIds"
+    assert report["enum_tables"]["ENUM_CUDA_MEMCPY_OPER"]["mapping"]["1"] == "HTOD"
     assert "source rows" in report["policy"]
 
 
@@ -182,6 +197,16 @@ def write_extended_nsys(path: Path) -> None:
             eventId INTEGER, eventSyncId INTEGER
         );
         INSERT INTO CUPTI_ACTIVITY_KIND_CUDA_EVENT VALUES (51, 0, 1, 2, 10, 99, 11, 12);
+        CREATE TABLE ENUM_CUDA_MEMCPY_OPER(id INTEGER PRIMARY KEY, name TEXT);
+        INSERT INTO ENUM_CUDA_MEMCPY_OPER VALUES (1, 'HTOD');
+        CREATE TABLE ENUM_CUDA_MEM_KIND(id INTEGER PRIMARY KEY, name TEXT);
+        INSERT INTO ENUM_CUDA_MEM_KIND VALUES (1, 'PAGEABLE'), (3, 'DEVICE');
+        CREATE TABLE CUPTI_ACTIVITY_KIND_MEMCPY(
+            start INTEGER, end INTEGER, correlationId INTEGER, deviceId INTEGER,
+            contextId INTEGER, streamId INTEGER, bytes INTEGER, copyKind INTEGER,
+            srcKind INTEGER, dstKind INTEGER
+        );
+        INSERT INTO CUPTI_ACTIVITY_KIND_MEMCPY VALUES (55, 59, 12, 0, 1, 2, 1024, 1, 1, 3);
         CREATE TABLE CUPTI_ACTIVITY_KIND_OVERHEAD(
             start INTEGER, end INTEGER, eventClass INTEGER, globalTid INTEGER,
             correlationId INTEGER, nameId INTEGER, overheadType INTEGER
@@ -205,11 +230,12 @@ def test_nsys_only_import_preserves_extended_cupti_tables_and_provenance(tmp_pat
     assert summary["mode"] == "nsys_only"
     assert summary["jsonl"] is None
     assert summary["run_id"] is None
-    assert summary["activity_count"] == 4
+    assert summary["activity_count"] == 5
     assert summary["activity_kinds"] == {
         "cuda_graph_trace": 1,
         "cuda_synchronization": 1,
         "cuda_event": 1,
+        "cuda_memcpy": 1,
         "cuda_overhead": 1,
     }
     assert summary["coverage"]["status"] == "partial"
@@ -231,7 +257,13 @@ def test_nsys_only_import_preserves_extended_cupti_tables_and_provenance(tmp_pat
         assert rows[0][:4] == ("cuda_graph_trace", 10, 40, 30)
         assert rows[1][:4] == ("cuda_synchronization", 41, 50, 9)
         assert rows[2][:4] == ("cuda_event", 51, None, None)
-        assert rows[3][0:4] == ("cuda_overhead", 60, 70, 10)
+        assert rows[3][0:4] == ("cuda_memcpy", 55, 59, 4)
+        assert rows[4][0:4] == ("cuda_overhead", 60, 70, 10)
+        memcpy = db.execute(
+            "SELECT copy_kind_name,src_kind_name,dst_kind_name,enum_decode_status "
+            "FROM nepenthes_nsys_activities WHERE activity_kind='cuda_memcpy'"
+        ).fetchone()
+        assert memcpy == ("HTOD", "PAGEABLE", "DEVICE", "decoded")
         coverage = json.loads(db.execute(
             "SELECT coverage_json FROM nepenthes_nsys_imports"
         ).fetchone()[0])
