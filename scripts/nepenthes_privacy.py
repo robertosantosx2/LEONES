@@ -50,7 +50,7 @@ def redact_command(command: list[str], prompt: str = "") -> list[str]:
     for raw in command:
         token = str(raw)
         if redact_next:
-            redacted.append("<redacted>")
+            redacted.append("<redacted:prompt>" if prompt and token == prompt else "<redacted>")
             redact_next = False
             continue
         matched = next((flag for flag in SENSITIVE_FLAGS if token == flag), None)
