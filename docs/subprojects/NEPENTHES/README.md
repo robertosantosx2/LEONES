@@ -176,3 +176,14 @@ Reglas obligatorias:
 Este documento es un plan, no una declaración de que las nuevas capacidades estén implementadas. La situación de cada función debe etiquetarse como PLANNED, IMPLEMENTED, CAPTURED, MEASURED o ACCEPTED, con evidencia asociada.
 
 NEPENTHES V1 no se considerará completo hasta que una ejecución real pueda producir una captura verificable, medir latencia y energía con semántica explícita, importar datos sin pérdida y comparar repeticiones con overhead conocido. La interoperabilidad OTLP y los adaptadores se aceptarán mediante pruebas de contrato y destinos reales.
+
+
+## Repositorios y pin de llama.cpp
+
+- **Fork de trabajo:** [robertosantosx2/llama.cpp](https://github.com/robertosantosx2/llama.cpp) (origin).
+- **Upstream:** [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) (upstream).
+- **Submódulo LEONES:** subprojects/llama.cpp, fijado a 76f186df71a41abb3ee20fffedee31ca5dbc7d9f.
+- En la verificación del 2026-11-19, origin/master y upstream/master coincidían exactamente.
+- El gitlink se actualiza mediante PR revisada; el seguimiento diario detecta drift, pero no mueve el pin automáticamente.
+
+El manifiesto LLAMA-CPP-UPSTREAM.json conserva el SHA, estado del fork, commit del submódulo y política de sincronización. La CI valida que el gitlink, .gitmodules, el checkout del submódulo y el manifiesto sean coherentes.
