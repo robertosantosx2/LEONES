@@ -62,7 +62,7 @@
   "runtime_instrumentation_branch": "feat/nepenthes-runtime-probes-20261119",
   "runtime_instrumentation_pr": "https://github.com/robertosantosx2/llama.cpp/pull/1",
   "runtime_instrumentation_head": "b7cd302f897b2b6aacc9abea5e244b68ed3d3af8",
-  "runtime_instrumentation_status": "open_draft_stack_based_on_76f186df_rebase_required_before_merge",
+  "runtime_instrumentation_status": "cpu_trace_and_bridge_ci_passed;cuda_compile_and_full_ci_running;upstream_rebase_pending",
   "runtime_instrumentation_followup_pr": "https://github.com/robertosantosx2/llama.cpp/pull/2",
   "runtime_instrumentation_followup_branch": "feat/nepenthes-ggml-backend-probes-20261119",
   "runtime_instrumentation_followup_head": "5c424c6d4181375508b54e270c4b39a3286e1d38",
@@ -118,5 +118,39 @@
     }
   ],
   "runtime_probe_status": "implementation_open_draft_review_stack",
-  "runtime_probe_policy": "The three llama.cpp pull requests are intentionally stacked and remain unmerged. Rebase the stack onto current upstream 4db8b763 in order #1, #2, #3, resolving context/graph and ggml backend overlaps, then review and merge in order. Keep LEONES submodule gitlink pinned until the rebased stack is accepted. Real CUDA runtime capture, event overhead and RTX 3050 behavior remain MSI acceptance gates."
+  "runtime_probe_policy": "The three llama.cpp pull requests are intentionally stacked and remain unmerged. Rebase the stack onto current upstream 4db8b763 in order #1, #2, #3, resolving context/graph and ggml backend overlaps, then review and merge in order. Keep LEONES submodule gitlink pinned until the rebased stack is accepted. Real CUDA runtime capture, event overhead and RTX 3050 behavior remain MSI acceptance gates.",
+  "latest_ci": {
+    "repo": "robertosantosx2/llama.cpp",
+    "pr": 3,
+    "commit": "6d9d1b49bcecc819a7ca270716061d5516963d63",
+    "run_id": 44517445743,
+    "run_url": "https://github.com/robertosantosx2/llama.cpp/actions/runs/44517445743",
+    "observed_at": "2026-11-19",
+    "nepenthes_trace_cpu_job": {
+      "status": "completed",
+      "conclusion": "success",
+      "job_id": 135537028765,
+      "checks": [
+        "trace contract test",
+        "bounded JSONL sink test",
+        "CPU worker bridge test",
+        "instrumented llama-server CPU build"
+      ]
+    },
+    "cuda_compile_job": {
+      "status": "in_progress",
+      "job_id": 135537029013,
+      "step": "Build CUDA llama-server"
+    },
+    "full_repository_ci": "in_progress",
+    "previous_pr2_cuda": {
+      "status": "success",
+      "job_id": 135443819239
+    },
+    "previous_pr2_musa": {
+      "status": "environment_failure",
+      "job_id": 135443819191,
+      "reason": "dl.mthreads.com timed out; MUSA SDK packages could not be downloaded; no source compilation attempted"
+    }
+  }
 }
