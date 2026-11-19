@@ -38,6 +38,9 @@ def test_runner_samples_inference_server_resources(tmp_path: Path):
     assert str(artifact_dir) not in json.dumps(manifest["command"])
     assert "<artifact-dir>" in manifest["command"]
     assert manifest["exit_code"] == 0
+    assert manifest["log_artifact"]["stored"] is False
+    assert len(manifest["log_artifact"]["sha256"]) == 64
+    assert not (artifact_dir / "aiperf.stdout.log").exists()
     assert telemetry["rss_target"] == "inference_server"
     assert len(manifest["workload_command_sha256"]) == 64
     assert str(artifact_dir) not in json.dumps(manifest["command"])
