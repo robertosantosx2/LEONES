@@ -431,3 +431,6 @@ Una cifra solo es MEASURED si procede de una ejecución identificada, con fuente
 - No se declara validado hasta que CI compile el server CPU y después se realice build CUDA y captura reproducible en MSI.
 
 - Segunda PR de llama.cpp abierta: [#2 ggml backend y CUDA](https://github.com/robertosantosx2/llama.cpp/pull/2), apilada sobre la primera; CI CPU/CUDA pendiente.
+
+- PR #1: CI propia completa con éxito (tests C++ y build CPU llama-server); estilo, EditorConfig, WASM y WASI upstream también verdes. Otros checks upstream aún en curso.
+- PR #2: instrumentación ggml/CUDA apilada sobre PR #1; CI de CPU/CUDA en cola.
