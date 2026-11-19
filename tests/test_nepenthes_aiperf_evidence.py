@@ -87,11 +87,11 @@ def make_args(tmp_path: Path, include_warmup: bool = True, include_throughput: b
         "started_at": "2026-11-19T07:00:00Z",
         "finished_at": "2026-11-19T07:00:10Z",
         "workload_command_sha256": "c" * 64,
+        "workload_command_sha256": "c" * 64,
         "aiperf_version": "0.13.0",
         "target": {"model": "model-q4", "url": "http://127.0.0.1:8080", "endpoint_type": "chat", "streaming": True},
         "profile": {
             "concurrency": 1, "request_count": 4,
-            "warmup_request_count": 1,
             "input_tokens_mean": 128, "output_tokens_mean": 32,
             "random_seed": 42, "server_metrics_enabled": True,
         },
