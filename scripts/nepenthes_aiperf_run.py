@@ -152,6 +152,7 @@ def run(args: argparse.Namespace) -> int:
             raise RuntimeError(f"AIPerf version mismatch: expected {args.expected_aiperf_version}, found {version}")
 
     command = build_command(executable, args, artifact_dir)
+    manifest_command = ["<artifact-dir>" if value == str(artifact_dir) else value for value in command]
     normalized_command = []
     skip_artifact_dir = False
     for argument in command:
@@ -172,8 +173,9 @@ def run(args: argparse.Namespace) -> int:
         "created_at": utc_now(),
         "aiperf_version": version,
         "expected_aiperf_version": args.expected_aiperf_version,
-        "command": command,
-        "command_display": shlex.join(command),
+        "command": manifest_command,
+        "command_display": shlex.join(manifest_command),
+        "workload_command_sha256": workload_command_sha256,
         "workload_command_sha256": workload_command_sha256,
         "target": {"model": args.model, "url": args.url, "endpoint_type": "chat", "streaming": True},
         "profile": {
@@ -186,7 +188,7 @@ def run(args: argparse.Namespace) -> int:
             "platform": platform.platform(), "python": platform.python_version(),
             "machine": platform.machine(),
         },
-        "artifact_dir": str(artifact_dir),
+        "artifact_dir": artifact_dir.name,
         "resource_sampling": {
             "rss_target": "inference_server" if target_pid is not None else "aiperf_client",
             "host_sample_ms": args.host_sample_ms,
