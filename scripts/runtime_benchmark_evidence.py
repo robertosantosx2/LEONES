@@ -240,7 +240,10 @@ class TelemetrySampler:
                 self.gpu_process.terminate()
                 self.gpu_process.wait(timeout=2)
             except (OSError, subprocess.TimeoutExpired):
-                self.gpu_process.kill()
+                try:
+                    self.gpu_process.kill()
+                except OSError:
+                    pass
         self.host_thread.join(timeout=1)
         if self.gpu_thread is not None:
             self.gpu_thread.join(timeout=1)
