@@ -255,7 +255,6 @@ def ensure_enum_schema(db: sqlite3.Connection) -> None:
     db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('004_nepenthes_enum_decoding')")
     db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('005_nepenthes_nvtx_correlation')")
     db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('006_nepenthes_typed_event_metadata')")
-    db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('007_nepenthes_batch_attribution')")
     if "nsys_activities" in table_names(db):
         db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_activities_attributed_request ON nsys_activities(import_id,attributed_request_token,attribution_level)")
         db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_activities_attributed_batch ON nsys_activities(import_id,attributed_batch_token,batch_attribution_level)")
