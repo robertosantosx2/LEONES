@@ -543,6 +543,20 @@ No se puede declarar funcional completo hasta superar:
 2. Implementar correlation token mínimo y calibración dual de relojes.
 3. Ejecutar C08 de overhead (baseline, sink, Nsight, combinado).
 4. Decodificar enums Nsight/CUPTI, unsigned sentinels e histogramas.
-5. Revisar e integrar ordenadamente PR #1 → #2 → #3 en `nepenthes/rc1`; resolver drift upstream antes de mover gitlink.
+5. Revisar e integrar ordenadamente PR #1 → #2 → #3 → #4 en `nepenthes/rc1`; resolver drift upstream antes de mover gitlink.
 6. Completar manifest de campaña, privacidad/retención y comparador.
 7. Habilitar adaptadores/plugins adicionales tras cerrar gates de RC1; no retrasar el núcleo por prometer universalidad sin pruebas.
+
+
+### Implementación parcial publicada en llama.cpp PR #4
+
+- PR runtime: https://github.com/robertosantosx2/llama.cpp/pull/4 (draft, apilada sobre #3).
+- Token uint64 monotónico asignado por proceso a cada tarea/slot del servidor; request_start y request_end comparten el token y conservan el request_id nativo.
+- Eventos clock_calibration al inicio y al cierre del sink JSONL.
+- Los marcadores de calibración y request guardan el par host monotónico/Unix en el punto de emisión, evitando que la cola del writer desplace el timestamp.
+- Los eventos hot-path no correlacionados conservan el reloj monotónico y no fuerzan una lectura de reloj de pared.
+- **Límite actual:** el token aún no se propaga a graph/worker/kernel, deliberadamente por el batching multi-slot. No hay NVTX/CUPTI external correlation ni round-trip Nsight demostrado; C07 continúa abierto.
+- Estado CI PR #4 al 2026-11-19: workflow NEPENTHES y CUDA compile en cola; no hay resultado de build para esta PR todavía.
+- No se ha ejecutado MSI. La validación física sigue reservada para cuando C07/CI estén listos.
+
+La implementación de PR #4 es una primera capa de identidad y calibración host, no la correlación request→kernel requerida para cerrar C07.
