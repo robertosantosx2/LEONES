@@ -293,10 +293,11 @@ PRs pequeños y dependencias explícitas; no crear un mega-PR.
 - PR #169: generador OTLP/JSON para trazas por request y métricas de run/server/GPU/NVML, con allowlist de atributos y protección de privacidad; CI con 42 tests offline en success.
 - PR #170: informe JSON/Markdown de latencias, dispersión, tokens, baseline energética y tokens/J/J-token; CI con 48 tests offline en success.
 - PR #171: actualiza el pin llama.cpp al head actual de upstream master `95b09b62beb95c40fc6b317a0c1473c27b5f27fa` (3 commits por delante del pin anterior) y exige coincidencia exacta en CI al revisar el manifiesto.
+- PR #172: transporte OTLP/HTTP con HTTPS remoto, auth por entorno, retries/backoff y tests offline; CI con 54 tests en success.
 - PR #162 fue sustituida por PR #164 porque la rama original había quedado divergida tras corregir la base del runner; no integrar ambas.
 - No existe todavía fork personal `robertosantosx2/llama.cpp` ni submódulo llama.cpp en LEONES. Incidencia #163 documenta el paso pendiente.
 - Todavía no se ha instalado ni ejecutado AIPerf contra llama-server en el MSI; no hay smoke físico y no se declara compatibilidad MEASURED.
-- Próximo hito GitHub-only: completar importación CSV/Parquet cuando justifique dependencias, contratos de eventos y OTel mapping; enlazar el sampler NVML con manifests/campañas y contrastar sus lecturas contra AIPerf; validar los payloads OTLP en un Collector externo y ejecutar una campaña de benchmark con repeticiones. Paso externo pendiente: crear fork/submódulo llama.cpp (issue #163). Después, instalar AIPerf 0.13.0 en entorno aislado del MSI, ejecutar dry-run y smoke real con concurrencia 1 y cinco requests.
+- Próximo hito GitHub-only: completar importación CSV/Parquet cuando justifique dependencias, contratos de eventos y OTel mapping; enlazar el sampler NVML con manifests/campañas y contrastar sus lecturas contra AIPerf; validar el transporte OTLP contra un Collector externo con TLS/auth y completar batching/backpressure y ejecutar una campaña de benchmark con repeticiones. Paso externo pendiente: crear fork/submódulo llama.cpp (issue #163). Después, instalar AIPerf 0.13.0 en entorno aislado del MSI, ejecutar dry-run y smoke real con concurrencia 1 y cinco requests.
 
 El orden puede solapar documentación/fixtures, pero no se debe declarar una fase aceptada si depende de otra incompleta.
 
