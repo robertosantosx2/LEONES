@@ -217,6 +217,11 @@ def ensure_enum_schema(db: sqlite3.Connection) -> None:
                               ("nsys_clock_calibration_json", "TEXT NOT NULL DEFAULT '{}'")],
         "nepenthes_nsys_imports": [("enum_tables_json", "TEXT NOT NULL DEFAULT '{}'"),
                                   ("nsys_clock_calibration_json", "TEXT NOT NULL DEFAULT '{}'")],
+        "nepenthes_events": [
+            ("correlation_token", "INTEGER"), ("attribution_level", "TEXT"),
+            ("backend", "TEXT"), ("memory_kind", "TEXT"), ("memcpy_kind", "TEXT"),
+            ("raw_memcpy_kind", "INTEGER"), ("sync_type", "TEXT"), ("kv_op", "TEXT"),
+        ],
         "nsys_activities": [
             ("copy_kind_value", "INTEGER"), ("copy_kind_name", "TEXT"),
             ("src_kind_value", "INTEGER"), ("src_kind_name", "TEXT"),
