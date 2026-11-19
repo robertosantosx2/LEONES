@@ -82,6 +82,7 @@ def config_fingerprint(evidence: dict) -> dict:
             "version": runtime.get("version"),
             "revision": runtime.get("revision"),
             "backend": runtime.get("backend"),
+            "command_sha256": runtime.get("command_sha256"),
         },
         "hardware": evidence.get("hardware"),
         "instrumentation": {
@@ -135,8 +136,18 @@ def evidence_metrics(evidence: dict) -> dict[str, float]:
             result[metric] = median(values)
     if "tokens_per_second" not in result or result["tokens_per_second"] <= 0:
         raise ValueError("tokens_per_second missing or non-positive")
-    if "ttft_ms" not in result or result["ttft_ms"] <= 0:
-        raise ValueError("TTFT missing or non-positive; supply a real engine/AIPerf TTFT metric")
+    required_metrics = (
+        "ttft_ms",
+        "total_time_ms",
+        "peak_process_rss_mb",
+        "peak_system_ram_used_mb",
+        "peak_vram_mb_device_wide",
+    )
+    missing_metrics = [name for name in required_metrics if name not in result or result[name] <= 0]
+    if missing_metrics:
+        raise ValueError("required C08 metric(s) missing or non-positive: " + ", ".join(missing_metrics))
+    if "command_sha256" not in runtime or not isinstance(runtime["command_sha256"], str) or len(runtime["command_sha256"]) != 64:
+        raise ValueError("runtime command_sha256 is required")
     return result
 
 
