@@ -668,3 +668,20 @@ def test_event_rows_rejects_unknown_schema_v11_backend(tmp_path: Path):
     write_jsonl_v11(jsonl, backend="mystery-accelerator")
     with pytest.raises(ValueError, match="invalid backend"):
         list(event_rows(jsonl))
+
+
+def test_typed_event_schema_migration_is_idempotent(tmp_path: Path):
+    jsonl = tmp_path / "typed-trace.jsonl"
+    nsys = tmp_path / "capture.sqlite"
+    output = tmp_path / "typed-normalized.sqlite"
+    write_jsonl_v11(jsonl)
+    write_nsys(nsys)
+
+    import_all(jsonl, nsys, output, "typed-import-first")
+    import_all(jsonl, nsys, output, "typed-import-second")
+    db = sqlite3.connect(output)
+    count = db.execute("SELECT COUNT(*) FROM nepenthes_events").fetchone()[0]
+    assert count == 2
+    columns = {row[1] for row in db.execute("PRAGMA table_info(nepenthes_events)")}
+    assert {"backend", "memory_kind", "memcpy_kind", "raw_memcpy_kind", "kv_op"} <= columns
+    db.close()
