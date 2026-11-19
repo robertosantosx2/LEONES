@@ -199,7 +199,7 @@ Estado: implementación y fixtures sintéticos en rama; CI pendiente. La captura
 
 ### Rebase llama.cpp
 
-- [~] [Fork PR #6](https://github.com/robertosantosx2/llama.cpp/pull/6): rama RC1 basada en upstream c7468107efba061fe83d32b17c91e2b5295677d4; se reaplicaron los 23 archivos de instrumentación y se conservaron cambios upstream en CUDA batch-copy, CPU, graph/context y server. CI pendiente; no fusionar ni actualizar el submódulo hasta revisar sus resultados.
+- [~] [Fork PR #6](https://github.com/robertosantosx2/llama.cpp/pull/6): rama RC1 actualizada hasta upstream `9a080f44b503c64f66c84a6274b9d9ee5d5b09d5` mediante [PR #7](https://github.com/robertosantosx2/llama.cpp/pull/7), ya fusionada. La rama RC1 contiene 31 commits por delante y 0 por detrás de `master`, con 23 archivos de diff. HEAD actual `246fbbd4b81cb8c307fa12aeed6d86317f53d3cc`: incluye bypass de reloj cuando la traza está desactivada, test de regresión y filtros CI `push` corregidos para CPU/C ABI. PR #6 sigue en borrador; GitHub aún no muestra checks nuevos para este HEAD. No fusionar ni actualizar el submódulo hasta CI actual y revisión final.
 - [ ] Actualizar el fork master y el gitlink subprojects/llama.cpp solo tras aceptar PR #6.
 - [ ] Cerrar los PRs de componentes duplicados únicamente después de que su contenido esté presente en la rama integrada y sus checks estén cubiertos.
 
@@ -214,3 +214,14 @@ Post-merge audit found that the wrapper had not explicitly passed AIPerf's warm-
 ### Perfiles adaptativos — 2026-11-19
 
 LEONES PR #200 se integró como `ed0535c2bf1bc7025cde1534e395ed1c3bbac581` tras **575 pruebas pasadas** y gates de release/runtime verdes. `moe-deep` muestrea host a 100 ms mientras hay requests activos y a 1 s en reposo, usando únicamente eventos explícitos `request_start/request_end`; activa Nsight automáticamente si está instalado. `latency-critical` desactiva muestreo periódico de host y Nsight. La selección de sondas internas del motor aún no está filtrada por perfil; se mantiene como trabajo pendiente en la capa llama.cpp. Ninguno de estos perfiles tiene todavía medición física de overhead en MSI.
+
+### Actualización RC1 — 2026-11-19
+
+- [x] Sincronizar el fork `master` con upstream `ggml-org/llama.cpp` en `9a080f44b503c64f66c84a6274b9d9ee5d5b09d5`.
+- [x] Integrar el commit upstream OpenVINO en la rama RC1 mediante PR #7.
+- [x] Evitar lecturas de reloj monotónico en `ScopedEvent` cuando el tracing está desactivado; añadir regresión automatizada.
+- [x] Corregir filtros del workflow para que cambios en el puente CPU C y el ABI NEPENTHES disparen CI al hacer push a master.
+- [ ] Obtener CI visible y satisfactorio para el HEAD `246fbbd4b81cb8c307fa12aeed6d86317f53d3cc`; investigar timeout Vulkan y fallo de infraestructura MUSA sin confundirlos con compilación CUDA.
+- [ ] Revisión final de concurrencia, lifecycle del sink, JSONL y atribución request/NVTX.
+- [ ] Fusionar PR #6 solo tras gates remotos aceptados; después actualizar gitlink en LEONES.
+- [ ] MSI: build Linux/CUDA, C07 con NVTX+Nsight, y medición C08 de overhead. No ejecutar antes de cerrar los gates remotos.
