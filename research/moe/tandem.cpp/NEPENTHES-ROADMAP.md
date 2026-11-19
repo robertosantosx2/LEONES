@@ -150,15 +150,18 @@ La primera categoría concentra aproximadamente el 95,9 % de los bytes y el 96,4
 - [ ] Definir mantenimiento de esquemas y compatibilidad hacia atrás.
 - [ ] Declarar NEPENTHES funcional completo solo después de superar todos los gates anteriores.
 
-## Orden inmediato recomendado
+## Orden operativo subordinado al INDEX
 
-1. Prueba CLI con proceso inocuo y verificación del paquete.
-2. Build del motor Tandem.cpp instrumentado en MSI.
-3. Una inferencia real con `nepenthes run --profile full`.
-4. Inspección del JSONL de motor y del Nsight generado.
-5. Importación emparejada a LEONES y auditoría.
-6. Matriz de cobertura de sondas y medición de overhead.
-7. Repeticiones, informe comparativo y release.
+Este ROADMAP es un anexo técnico: `research/moe/tandem.cpp/NEPENTHES-INDEX.md` gobierna prioridades, estado y decisiones. Si este documento diverge, prevalece el INDEX.
+
+Orden vigente:
+1. Revisar y aceptar LEONES #207 mediante la PR canónica #210; confirmar compatibilidad llama.cpp, registry cerrado, perfiles llama.cpp/TensorFold y Tandem.cpp, fixtures y CI del HEAD exacto.
+2. Tras #207, desarrollar el adaptador TensorFold host-only: ciclo request/run, eventos compatibles, metadata namespaced, privacidad y pruebas host-only. No duplicar importer ni runner; no CUDA.
+3. Reconciliar la integración llama.cpp mediante la candidata canónica PR #10; revisar semántica/diff y CI antes de merge o gitlink.
+4. Solo después de los gates remotos, MSI: build CUDA, C07 NVTX+Nsight real y C08 con baseline/tratamientos emparejados.
+5. Aceptación por motor y release con evidencia, límites, overhead, cobertura y hashes.
+
+Las campañas históricas de Tandem.cpp y MSI que aparecen en este anexo no adelantan ni sustituyen esos gates.
 
 ## Definición de «funcional completo»
 
