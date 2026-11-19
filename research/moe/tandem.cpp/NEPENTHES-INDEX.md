@@ -158,3 +158,19 @@ El workflow combinado CUDA/HIP/MUSA aparece como fallido exclusivamente en la pr
 - CPU general y Server seguían en curso; runners self-hosted restantes estaban en cola o ejecución.
 - MUSA falla de nuevo en `Dependencies`, antes de compilar: timeout al conectar con `dl.mthreads.com` y paquetes `musa-mualg-5-2`, `musa-muthrust-5-2` y `libmthreads-compute` no localizados. Clasificación: bloqueo de infraestructura/repositorio externo; no atribuirlo a regresión de NEPENTHES ni a CUDA.
 - Estado parcial, no CI global verde. PR #6 permanece draft. Sin build local/MSI, C07, C08 ni actualización de gitlink.
+
+### Actualización CI llama.cpp RC1 — HEAD `33e0d0a578c48b0a31616fd1b72fd255f12e39a4` (sondeo 2026-11-19 19:16 UTC)
+
+Esta sección sustituye los estados parciales anteriores para la aceptación del HEAD indicado; los resultados de otros commits siguen siendo históricos.
+
+- [x] Workflow NEPENTHES runtime trace completo: contrato de trazas, bounded JSONL sink, puente CPU y build CPU instrumentado.
+- [x] Build CUDA específico de `llama-server` completo para sm_86; verificación de NVTX v3 habilitado correcta.
+- [x] CI general CPU completo: Ubuntu x64/arm64 y Windows x64/arm64.
+- [x] Server completo: Ubuntu y Windows; tests y backend sampling de Ubuntu pasan.
+- [x] CUDA y HIP generales; HIP quality (Werror y VGPR spill check); Behavior Check, WASI, WASM, Code Style y EditorConfig.
+- [!] Workflow CUDA/HIP/MUSA globalmente fallido solo en `musa/Dependencies`: timeout de `dl.mthreads.com`, paquetes SDK ausentes y compilación MUSA omitida. Los jobs CUDA y HIP del mismo workflow pasan. Clasificación: infraestructura/dependencia externa; no es fallo del build CUDA.
+- [~] Siguen queued los runners self-hosted KleidiAI, CPU high-performance, IBM, Vulkan, OpenVINO, Metal, CUDA y WebGPU, además de Models Backend Check. No se cuentan como aceptados.
+- PR #6 permanece abierta, draft, mergeable y no fusionada. Comparación actual: 33 commits ahead, 0 behind; 23 archivos. La descripción de la PR está sincronizada con este estado.
+- No se ha actualizado el gitlink ni se ha solicitado intervención del MSI. C07 real (NVTX + Nsight) y C08 overhead siguen pendientes de hardware.
+
+**Decisión:** aceptación remota todavía abierta. El CI de CPU/CUDA instrumentado principal ya está validado, pero no hay CI global verde mientras MUSA siga fallido y los runners restantes permanezcan queued. Continuar la auditoría final y volver a consultar esos jobs antes de promover la PR.
