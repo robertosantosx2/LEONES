@@ -14,12 +14,12 @@ from nepenthes_llama_trace_import import import_trace  # noqa: E402
 def event(event_id: str, kind: str, request_id: int = 0, duration_ns: int = 0,
           monotonic_ns: int = 100, timestamp_unix_ns: int = 1_800_000_000_000_000_000,
           correlation_token: int | None = None, attribution_level: str | None = None,
-          label: str = "test.label") -> dict:
+          label: str = "test.label", source: str = "llama.cpp") -> dict:
     return {
         "schema_version": "1.0",
         "run_id": "test-run",
         "event_id": event_id,
-        "source": "llama.cpp",
+        "source": source,
         "timestamp_unix_ns": timestamp_unix_ns,
         "monotonic_ns": monotonic_ns,
         "request_id": request_id,
@@ -35,12 +35,12 @@ def event(event_id: str, kind: str, request_id: int = 0, duration_ns: int = 0,
     }
 
 
-def summary(events_drained: int, dropped: int = 0, write_errors: int = 0) -> dict:
+def summary(events_drained: int, dropped: int = 0, write_errors: int = 0, source: str = "llama.cpp") -> dict:
     return {
         "schema_version": "1.0",
         "run_id": "test-run",
         "event_id": f"llama-{events_drained + 1}",
-        "source": "llama.cpp",
+        "source": source,
         "timestamp_unix_ns": 1_800_000_000_000_000_100,
         "event_kind": "sink_summary",
         "events_drained": events_drained,
@@ -175,6 +175,95 @@ class LlamaTraceImportTests(unittest.TestCase):
             result = import_trace(path)
         self.assertFalse(result["capture_complete"])
         self.assertTrue(result["quality"]["drained_count_mismatch"])
+
+
+
+
+    def test_registered_tensorfold_source_uses_shared_validator(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write_trace(directory, [
+                event("tf-1", "request_start", request_id=7, source="tensorfold"),
+                event("tf-2", "request_end", request_id=7, source="tensorfold"),
+                summary(2, source="tensorfold"),
+            ])
+            result = import_trace(path, source="tensorfold")
+        self.assertEqual(result["source"], "tensorfold")
+        self.assertEqual(result["event_count"], 2)
+        self.assertTrue(result["capture_complete"])
+
+    def test_unknown_source_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write_trace(directory, [event("llama-1", "sync"), summary(1)])
+            with self.assertRaisesRegex(ValueError, "unregistered trace source"):
+                import_trace(path, source="unknown-engine")
+
+    def test_event_source_mismatch_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write_trace(directory, [
+                event("tf-1", "sync", source="tensorfold"),
+                summary(1),
+            ])
+            with self.assertRaisesRegex(ValueError, "source must be llama.cpp"):
+                import_trace(path)
+
+    def test_summary_source_mismatch_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write_trace(directory, [
+                event("llama-1", "sync"),
+                summary(1, source="tensorfold"),
+            ])
+            with self.assertRaisesRegex(ValueError, "source must be llama.cpp"):
+                import_trace(path)
+
+    def test_tensorfold_rejects_unsupported_clock_domain(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            bad = event("tf-1", "sync", source="tensorfold")
+            bad["clock_domain"] = "device_clock"
+            path = self.write_trace(directory, [bad, summary(1, source="tensorfold")])
+            with self.assertRaisesRegex(ValueError, "unsupported tensorfold clock_domain"):
+                import_trace(path, source="tensorfold")
+
+    def test_duplicate_summary_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write_trace(directory, [
+                event("llama-1", "sync"), summary(1), summary(1)
+            ])
+            with self.assertRaisesRegex(ValueError, "sink_summary must be the final"):
+                import_trace(path)
+
+    def test_empty_event_or_run_identifier_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            bad_event_id = event("", "sync")
+            path = self.write_trace(directory, [bad_event_id, summary(1)])
+            with self.assertRaisesRegex(ValueError, "invalid event_id"):
+                import_trace(path)
+            bad_run_id = event("llama-2", "sync")
+            bad_run_id["run_id"] = ""
+            path = self.write_trace(directory, [bad_run_id, summary(1)])
+            with self.assertRaisesRegex(ValueError, "invalid run_id"):
+                import_trace(path)
+
+    def test_unsigned_fields_enforce_u64_bounds(self) -> None:
+        for field in ("request_id", "value0", "value1", "duration_ns", "timestamp_unix_ns", "monotonic_ns"):
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as directory:
+                bad = event("llama-1", "sync")
+                bad[field] = 0x10000000000000000
+                path = self.write_trace(directory, [bad, summary(1)])
+                with self.assertRaisesRegex(ValueError, "exceeds"):
+                    import_trace(path)
+
+    def test_summary_accounting_enforces_u64_bounds_and_exact_shape(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            bad = summary(1)
+            bad["write_errors"] = 0x10000000000000000
+            path = self.write_trace(directory, [event("llama-1", "sync"), bad])
+            with self.assertRaisesRegex(ValueError, "exceeds"):
+                import_trace(path)
+            bad = summary(1)
+            bad["extra"] = 1
+            path = self.write_trace(directory, [event("llama-1", "sync"), bad])
+            with self.assertRaisesRegex(ValueError, "unexpected sink summary fields"):
+                import_trace(path)
 
 
 if __name__ == "__main__":
