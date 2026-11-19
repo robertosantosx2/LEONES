@@ -230,6 +230,11 @@ def ensure_enum_schema(db: sqlite3.Connection) -> None:
             if name not in existing:
                 db.execute(f'ALTER TABLE "{table}" ADD COLUMN "{name}" {definition}')
     db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('004_nepenthes_enum_decoding')")
+    db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('005_nepenthes_nvtx_correlation')")
+    if "nsys_activities" in table_names(db):
+        db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_activities_attributed_request ON nsys_activities(import_id,attributed_request_token,attribution_level)")
+    if "nepenthes_nsys_activities" in table_names(db):
+        db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_only_activities_attributed_request ON nepenthes_nsys_activities(import_id,attributed_request_token,attribution_level)")
 
 
 def inspect_nsys(path: Path) -> dict:
