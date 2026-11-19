@@ -232,3 +232,6 @@ La primera implementación de correlation token y calibración host está en [ll
 
 
 NVTX marker implementation and request-window correlation are tracked in [llama.cpp PR #4](https://github.com/robertosantosx2/llama.cpp/pull/4), [LEONES PR #181](https://github.com/robertosantosx2/LEONES/pull/181) and [LEONES PR #182](https://github.com/robertosantosx2/LEONES/pull/182). C07 still requires a real MSI Nsight capture.
+
+
+The current C07/C08 implementation work is tracked in [llama.cpp PR #4](https://github.com/robertosantosx2/llama.cpp/pull/4) and LEONES PRs [#181](https://github.com/robertosantosx2/LEONES/pull/181), [#182](https://github.com/robertosantosx2/LEONES/pull/182), [#183](https://github.com/robertosantosx2/LEONES/pull/183) and [#184](https://github.com/robertosantosx2/LEONES/pull/184). Real C07/C08 measurements remain pending on the MSI.
