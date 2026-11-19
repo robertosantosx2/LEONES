@@ -136,6 +136,7 @@ python3 scripts/runtime_benchmark_evidence.py \
   --artifact /path/to/model.gguf --model-id model-id --model-name model-name \
   --model-revision immutable-model-revision --quantization Q4_K_M --context 4096 \
   --prompt-protocol-id nepenthes-c08-v1 --prompt 'fixed prompt' \
+  --input-tokens 512 --output-token-limit 256 --temperature 0 --top-p 1 --seed 42 \
   --warmup 1 --iterations 5 --condition off --pair-id pair-01 \
   --profile standard --engine-revision ENGINE_SHA --hardware-id msi-rtx3050
 ```
