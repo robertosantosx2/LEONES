@@ -434,3 +434,11 @@ Una cifra solo es MEASURED si procede de una ejecución identificada, con fuente
 
 - PR #1: CI propia completa con éxito (tests C++ y build CPU llama-server); estilo, EditorConfig, WASM y WASI upstream también verdes. Otros checks upstream aún en curso.
 - PR #2: instrumentación ggml/CUDA apilada sobre PR #1; CI de CPU/CUDA en cola.
+
+
+### Importador de trazas llama.cpp
+
+- Añade validación JSONL v1.0 y resumen de eventos/duraciones.
+- Verifica el SHA-256 del input, el sink_summary, dropped_events, write_errors y eventos drenados.
+- Rechaza campos de prompt/completion/text/tokens.
+- Mantiene separados los spans de dispatch/submission host de la duración real de kernel/transferencia en GPU.
