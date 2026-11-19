@@ -31,7 +31,7 @@ def _sha256(path: Path) -> str:
 def import_trace(input_path: Path, allow_incomplete: bool = False, source: str = "llama.cpp") -> dict[str, Any]:
     if not input_path.is_file():
         raise ValueError(f"input file does not exist: {input_path}")
-    if source not in SOURCE_PROFILES:
+    if not isinstance(source, str) or source not in SOURCE_PROFILES:
         raise ValueError(f"unregistered trace source: {source}")
 
     event_count = 0
