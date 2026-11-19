@@ -362,6 +362,8 @@ def collect_nsys_nvtx_markers(db: sqlite3.Connection, names: set[str],
             continue
         parsed["start_ns"] = int(start)
         parsed["end_ns"] = int(first(row, ("end", "endNs", "end_ns")) or start)
+        process_id = first(row, ("globalPid", "global_pid", "processId", "pid"))
+        parsed["process_id"] = process_id if isinstance(process_id, int) and not isinstance(process_id, bool) else None
         markers.append(parsed)
     return markers
 
@@ -436,31 +438,48 @@ def calibrate_host_to_nsys(host_markers: dict[tuple[int, str], list[dict[str, in
 
 
 def build_nvtx_request_windows(markers: list[dict[str, Any]]) -> list[dict[str, int]]:
-    grouped: dict[int, dict[str, list[int]]] = {}
+    # A token is process-scoped. Never attribute device activity from another
+    # process merely because its timestamps overlap this request's NVTX window.
+    grouped: dict[tuple[int, int], dict[str, list[int]]] = {}
     for marker in markers:
-        grouped.setdefault(marker["token"], {"start": [], "end": []})[marker["phase"]].append(
+        process_id = marker.get("process_id")
+        token = marker.get("token")
+        if isinstance(process_id, bool) or not isinstance(process_id, int):
+            continue
+        if isinstance(token, bool) or not isinstance(token, int) or token <= 0:
+            continue
+        grouped.setdefault((process_id, token), {"start": [], "end": []})[marker["phase"]].append(
             marker["start_ns"]
         )
     windows = []
-    for token, phases in grouped.items():
+    for (process_id, token), phases in grouped.items():
         if len(phases["start"]) == 1 and len(phases["end"]) == 1:
             start_ns, end_ns = phases["start"][0], phases["end"][0]
             if end_ns > start_ns:
-                windows.append({"token": token, "start_ns": start_ns, "end_ns": end_ns})
-    return sorted(windows, key=lambda item: item["start_ns"])
+                windows.append({
+                    "process_id": process_id, "token": token,
+                    "start_ns": start_ns, "end_ns": end_ns,
+                })
+    return sorted(windows, key=lambda item: (item["process_id"], item["start_ns"]))
 
 
 def attribute_nsys_activity(start_ns: Any, end_ns: Any,
-                            windows: list[dict[str, int]]) -> tuple[int | None, str | None, str]:
+                            windows: list[dict[str, int]],
+                            process_id: Any) -> tuple[int | None, str | None, str]:
     if not isinstance(start_ns, (int, float)) or not isinstance(end_ns, (int, float)):
         return None, None, "missing_activity_timestamps"
-    matches = [window["token"] for window in windows
+    if isinstance(process_id, bool) or not isinstance(process_id, int):
+        return None, None, "missing_activity_process_identity"
+    process_windows = [window for window in windows if window["process_id"] == process_id]
+    if not process_windows:
+        return None, None, "missing_process_request_window"
+    matches = [window["token"] for window in process_windows
                if window["start_ns"] <= int(start_ns) and int(end_ns) <= window["end_ns"]]
     if len(matches) == 1:
         return matches[0], "windowed", "unique_explicit_request_window"
     if len(matches) > 1:
         return None, None, "overlapping_request_windows"
-    return None, None, "outside_or_missing_request_window"
+    return None, None, "outside_request_window"
 
 
 def init_output(db: sqlite3.Connection) -> None:
@@ -521,7 +540,8 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                 )
             elif kind in ("cuda_kernel", "cuda_memcpy", "cuda_memset"):
                 attributed_token, attribution_level, attribution_status = attribute_nsys_activity(
-                    start, end, nvtx_windows
+                    start, end, nvtx_windows,
+                    first(row, ("globalPid", "global_pid", "processId", "pid"))
                 )
             else:
                 attributed_token, attribution_level, attribution_status = (
@@ -693,7 +713,8 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                     )
                 elif kind in ("cuda_kernel", "cuda_memcpy", "cuda_memset"):
                     attributed_token, attribution_level, attribution_status = attribute_nsys_activity(
-                        start, end, nvtx_windows
+                        start, end, nvtx_windows,
+                        first(row, ("globalPid", "global_pid", "processId", "pid"))
                     )
                 else:
                     attributed_token, attribution_level, attribution_status = (
