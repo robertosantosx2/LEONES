@@ -290,10 +290,11 @@ PRs pequeños y dependencias explícitas; no crear un mega-PR.
 - PR #166: importador de server metrics JSONL y GPU telemetry JSONL de AIPerf; CI con 25 tests offline en success.
 - PR #167: importador del agregado `server_metrics_export.json`, incluyendo profiling/warmup, histogram estimates y timeslices; CI con 27 tests offline en success. CSV/Parquet permanecen preservados para otra etapa.
 - PR #168: sampler NVML directo, contador energético preferente, integración trapezoidal con control de gaps y normalización de baseline; CI con 36 tests offline en success usando NVML simulado.
+- PR #169: generador OTLP/JSON para trazas por request y métricas de run/server/GPU/NVML, con allowlist de atributos y protección de privacidad; CI con 42 tests offline en success.
 - PR #162 fue sustituida por PR #164 porque la rama original había quedado divergida tras corregir la base del runner; no integrar ambas.
 - No existe todavía fork personal `robertosantosx2/llama.cpp` ni submódulo llama.cpp en LEONES. Incidencia #163 documenta el paso pendiente.
 - Todavía no se ha instalado ni ejecutado AIPerf contra llama-server en el MSI; no hay smoke físico y no se declara compatibilidad MEASURED.
-- Próximo hito GitHub-only: completar importación CSV/Parquet cuando justifique dependencias, contratos de eventos y OTel mapping; enlazar el sampler NVML con manifests/campañas y contrastar sus lecturas contra AIPerf. Paso externo pendiente: crear fork/submódulo llama.cpp (issue #163). Después, instalar AIPerf 0.13.0 en entorno aislado del MSI, ejecutar dry-run y smoke real con concurrencia 1 y cinco requests.
+- Próximo hito GitHub-only: completar importación CSV/Parquet cuando justifique dependencias, contratos de eventos y OTel mapping; enlazar el sampler NVML con manifests/campañas y contrastar sus lecturas contra AIPerf; validar los payloads OTLP en un Collector externo. Paso externo pendiente: crear fork/submódulo llama.cpp (issue #163). Después, instalar AIPerf 0.13.0 en entorno aislado del MSI, ejecutar dry-run y smoke real con concurrencia 1 y cinco requests.
 
 El orden puede solapar documentación/fixtures, pero no se debe declarar una fase aceptada si depende de otra incompleta.
 
