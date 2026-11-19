@@ -560,3 +560,14 @@ No se puede declarar funcional completo hasta superar:
 - No se ha ejecutado MSI. La validación física sigue reservada para cuando C07/CI estén listos.
 
 La implementación de PR #4 es una primera capa de identidad y calibración host, no la correlación request→kernel requerida para cerrar C07.
+
+
+### NVTX/C07 implementation progress (2026-11-19)
+
+The llama.cpp follow-up [PR #4](https://github.com/robertosantosx2/llama.cpp/pull/4) now adds optional NVTX v3 request-start/request-end markers in CUDA builds. Marker names carry the explicit correlation token; JSONL emits a companion nvtx_marker record with the host-monotonic call bracket. CPU-only builds remain independent of NVTX.
+
+The LEONES importer follow-ups are:
+- [PR #181](https://github.com/robertosantosx2/LEONES/pull/181): data-driven Nsight memcpy/memory enum decoding, preserving original values and sentinels.
+- [PR #182](https://github.com/robertosantosx2/LEONES/pull/182): parse NVTX_EVENTS, match token+phase (not time proximity), calibrate host↔Nsight offset/drift, and assign GPU activity as windowed only when one explicit request window uniquely contains the full activity interval.
+
+These are implementation branches under CI review. C07 is **not closed** until CI is green and a real Nsight SQLite capture on the MSI verifies marker schema, calibration and attribution. Overlapping windows stay ambiguous; no exact kernel attribution is inferred from NVTX alone.
