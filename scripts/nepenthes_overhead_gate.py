@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 from statistics import median
@@ -154,7 +155,8 @@ def load_evidence(paths: list[Path], profile: str) -> tuple[dict, list[str]]:
             errors.append(f"{path}: {exc}")
             continue
         groups[condition][pair_id] = {
-            "path": str(path),
+            "path": path.name,
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
             "execution_id": evidence.get("execution_id"),
             "metrics": metrics,
         }
@@ -197,13 +199,26 @@ def compare(groups: dict, profile: str, min_pairs: int,
     overall = "accepted"
     for condition in ("jsonl", "nsys", "combined"):
         entries = groups.get(condition, {})
-        condition_report = {"paired_repetitions": len(entries), "metrics": {}}
+        condition_report = {"paired_repetitions": len(entries), "metrics": {}, "paired_evidence": []}
         decode_deltas = []
         for pair_id in pair_ids:
             if pair_id not in baseline or pair_id not in entries:
                 continue
             base_metrics = baseline[pair_id]["metrics"]
             test_metrics = entries[pair_id]["metrics"]
+            condition_report["paired_evidence"].append({
+                "pair_id": pair_id,
+                "baseline": {
+                    "path": baseline[pair_id]["path"],
+                    "execution_id": baseline[pair_id]["execution_id"],
+                    "sha256": baseline[pair_id]["sha256"],
+                },
+                "condition": {
+                    "path": entries[pair_id]["path"],
+                    "execution_id": entries[pair_id]["execution_id"],
+                    "sha256": entries[pair_id]["sha256"],
+                },
+            })
             for metric in METRICS:
                 if metric not in base_metrics or metric not in test_metrics:
                     continue
