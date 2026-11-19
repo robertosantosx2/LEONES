@@ -10,7 +10,7 @@
   "local_fork_repository": "https://github.com/robertosantosx2/llama.cpp.git",
   "local_fork_web": "https://github.com/robertosantosx2/llama.cpp",
   "local_fork_default_branch": "master",
-  "fork_head_commit": "9a080f44b503c64f66c84a6274b9d9ee5d5b09d5",
+  "fork_head_commit": "c406f4367e19bea7930e7f74e1984c9acc6d44bf",
   "fork_behind_upstream_commits": 0,
   "local_fork_status": "up_to_date_upstream_with_nepenthes_integration_pr_open",
   "leones_submodule_path": "subprojects/llama.cpp",
@@ -143,7 +143,6 @@
     "ci_summary": "NEPENTHES CPU/CUDA compile, CUDA NVTX v3, general CPU/CUDA/HIP, server, HIP quality and style checks pass; MUSA dependency setup fails externally and self-hosted backend/Models Backend Check remain queued.",
     "policy": "Do not merge alongside native PRs #1-#3 without comparing event lifecycle and probe coverage. Preserve upstream BF16 CPU/CUDA semantics and tests before reapplying instrumentation."
   },
-  "local_fork_head_commit": "c406f4367e19bea7930e7f74e1984c9acc6d44bf",
   "canonical_integration_candidate": {
     "pr": 10,
     "url": "https://github.com/robertosantosx2/llama.cpp/pull/10",
