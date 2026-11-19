@@ -216,7 +216,9 @@ def test_imports_summary_and_request_records_without_private_payloads(tmp_path: 
     assert request_event["monotonic_ns"] is None
     assert request_event["source_tool"] == "aiperf"
     error_event = next(event for event in events if event["event_kind"] == "aiperf_request_error")
-    assert error_event["error"]["code"] == 499
+    assert error_event["error"] == "redacted"
+    assert error_event["error_type"] == "dict"
+    assert len(error_event["error_sha256"]) == 64
 
 
 def test_event_ids_are_stable_across_reimports(tmp_path: Path):
