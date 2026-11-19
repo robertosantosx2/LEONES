@@ -21,6 +21,7 @@ The registry is explicit and fail-closed. A source must be added to `SOURCE_PROF
 |---|---:|---|---|
 | `llama.cpp` | Yes | `steady_clock` | Existing compatibility profile; default CLI source |
 | `tensorfold` | Yes | `steady_clock` | Matches the TensorFold 1.2.10 integration contract |
+| `tandem.cpp` | Yes | `steady_clock` | Preserves the distinct source identity of the llama.cpp-derived connector |
 | Any other value | No | None | Rejected before records are accepted |
 
 The selected source is an expected identity, not a coercion: every event and the final `sink_summary` must contain exactly that source. An event/summary mismatch fails closed. A caller cannot pass an arbitrary source name to extend the registry.
@@ -61,7 +62,7 @@ Common semantic rules:
 
 ## Source-specific rules
 
-The registry currently records each connector's accepted clock domain. Both contracts currently use `steady_clock`; the profile boundary is retained so a future source cannot inherit that assumption implicitly.
+The registry currently records each connector's accepted clock domain. The three reviewed connector contracts currently use `steady_clock`; the profile boundary is retained so a future source cannot inherit that assumption implicitly.
 
 No source-specific event-kind allowlist is imposed in this slice: both connectors map observations to the common event vocabulary, and the importer preserves unknown non-empty labels/kinds for forward compatibility. Any future source-specific semantic constraint must be added to its profile and covered by positive and negative fixtures; it must not weaken common envelope checks.
 
