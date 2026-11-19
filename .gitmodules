@@ -13,3 +13,6 @@
 [submodule "subprojects/LLMFit"]
 	path = subprojects/LLMFit
 	url = https://github.com/AlexsJones/llmfit.git
+[submodule "subprojects/llama.cpp"]
+	path = subprojects/llama.cpp
+	url = https://github.com/robertosantosx2/llama.cpp.git
