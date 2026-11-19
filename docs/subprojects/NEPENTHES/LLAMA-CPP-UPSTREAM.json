@@ -21,7 +21,8 @@
     "The fork was one commit ahead of the previous NEPENTHES upstream pin; comparison reported 1 ahead and 0 behind.",
     "LEONES records the fork as a git submodule (mode 160000), pinned to the verified commit.",
     "No llama.cpp source files were copied into LEONES; the submodule references the fork repository.",
-    "No local checkout, build, inference run, or MSI hardware validation was performed."
+    "No local checkout, build, inference run, or MSI hardware validation was performed.",
+    "The first native llama.cpp instrumentation PR is open in the personal fork; it is separate from the upstream-synced submodule pin until reviewed and accepted."
   ],
   "previous_verified_commit": "95b09b62beb95c40fc6b317a0c1473c27b5f27fa",
   "upstream_delta_since_previous_pin": [
@@ -35,5 +36,10 @@
       "additions": 113,
       "deletions": 6
     }
-  ]
+  ],
+  "runtime_instrumentation_repository": "https://github.com/robertosantosx2/llama.cpp",
+  "runtime_instrumentation_branch": "feat/nepenthes-runtime-probes-20261119",
+  "runtime_instrumentation_pr": "https://github.com/robertosantosx2/llama.cpp/pull/1",
+  "runtime_instrumentation_head": "0da774c3b82ac5c4c3c3b513b73537892190c1c6",
+  "runtime_instrumentation_status": "open_draft_ci_running"
 }
