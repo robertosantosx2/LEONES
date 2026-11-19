@@ -85,6 +85,9 @@ db.execute("CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(start INTEGER,end INTEGER,co
 db.execute("INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES(10,20,3,44,44,0,0,7,1)")
 db.execute("CREATE TABLE StringIds(id INTEGER,value TEXT)")
 db.execute("INSERT INTO StringIds VALUES(1,'mock_kernel')")
+db.execute("CREATE TABLE NVTX_EVENTS(start INTEGER,end INTEGER,text TEXT,globalPid INTEGER)")
+db.execute("INSERT INTO NVTX_EVENTS VALUES(1110,1110,'nepenthes.request.start token=77 request=42',44)")
+db.execute("INSERT INTO NVTX_EVENTS VALUES(5110,5110,'nepenthes.request.end token=77 request=42',44)")
 db.commit()
 db.close()
 PY
@@ -92,7 +95,29 @@ exit "$status"
 """)
  fake.chmod(0o755)
  env=os.environ.copy();env["PATH"]=str(bindir)+os.pathsep+env.get("PATH","")
- engine_code=("import json,os,time; e={'schema_version':'1.0','run_id':os.environ['NEPENTHES_RUN_ID'],'event_id':'engine-test-1','source':'test-engine','timestamp_unix_ns':time.time_ns(),'monotonic_ns':time.monotonic_ns(),'request_id':0,'event_kind':'request_start','label':'test.request','value0':1,'value1':2,'duration_ns':0,'flags':0}; open(os.environ['NEPENTHES_TRACE_JSONL'],'a').write(json.dumps(e)+chr(10)); print('nsys-wrapped')")
+ engine_code="""import json,os,time
+run_id=os.environ["NEPENTHES_RUN_ID"]
+path=os.environ["NEPENTHES_TRACE_JSONL"]
+events=[]
+def event(event_id,kind,label,mono,wall,request_id=0,value0=1,value1=2,token=None,level=None):
+ item={"schema_version":"1.0","run_id":run_id,"event_id":event_id,"source":"test-engine",
+       "timestamp_unix_ns":wall,"monotonic_ns":mono,"request_id":request_id,
+       "event_kind":kind,"label":label,"value0":value0,"value1":value1,"duration_ns":0,"flags":0}
+ if token is not None: item["correlation_token"]=token
+ if level is not None: item["attribution_level"]=level
+ if kind in ("clock_calibration","nvtx_marker","request_start","request_end"): item["clock_domain"]="steady_clock"
+ events.append(item)
+now_mono=time.monotonic_ns();now_wall=time.time_ns()
+event("cal-start","clock_calibration","clock.calibration.start",now_mono,now_wall)
+event("req-start","request_start","server.task",now_mono+10,now_wall+10,42,1,2,77,"exact")
+event("nvtx-start","nvtx_marker","request.start",now_mono+20,now_wall+20,42,1000,1020,77,"exact")
+event("nvtx-end","nvtx_marker","request.end",now_mono+30,now_wall+30,42,4100,4120,77,"exact")
+event("req-end","request_end","server.task",now_mono+40,now_wall+40,42,1,2,77,"exact")
+event("cal-end","clock_calibration","clock.calibration.end",now_mono+50,now_wall+50)
+with open(path,"a",encoding="utf-8") as out:
+ for item in events: out.write(json.dumps(item)+"\\n")
+print("nsys-wrapped")
+"""
  result=invoke("run","--profile","full","--nsys","required","--interval","0.1","--output",str(tmp_path/"runs"),"--",
                sys.executable,"-c",engine_code,env=env)
  assert result.returncode==0,result.stderr+result.stdout
@@ -101,7 +126,7 @@ exit "$status"
  assert "raw/nsys.sqlite" in m["nsys"]["outputs"]
  assert (run/"raw"/"nsys.sqlite").is_file()
  assert (run/"raw"/"engine-events.jsonl").is_file()
- assert m["event_merge"]["counts"]["engine-events.jsonl"]==1
+ assert m["event_merge"]["counts"]["engine-events.jsonl"]==6
  combined=[json.loads(line) for line in (run/"raw"/"events.jsonl").read_text().splitlines()]
  assert any(event["source"]=="test-engine" and event["source_event_id"]=="engine-test-1" for event in combined)
  assert len({event["event_id"] for event in combined})==len(combined)
@@ -109,7 +134,7 @@ exit "$status"
  assert (run/"data"/"nsys-import.json").is_file()
  with sqlite3.connect(run/"data"/"nepenthes-import.sqlite") as db:
   assert db.execute("select count(*) from nepenthes_events").fetchone()[0]>=4
-  assert db.execute("select count(*) from nsys_activities").fetchone()[0]==1
+  assert db.execute("select count(*) from nsys_activities").fetchone()[0]==3
  assert "nsys-wrapped" in (run/"session.log").read_text()
 
 def test_self_test_creates_and_verifies_bundle(tmp_path):
