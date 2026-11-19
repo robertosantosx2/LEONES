@@ -230,6 +230,8 @@ def ensure_enum_schema(db: sqlite3.Connection) -> None:
             ("nvtx_correlation_token", "INTEGER"), ("nvtx_marker_phase", "TEXT"),
             ("nvtx_marker_request_id", "INTEGER"), ("attributed_request_token", "INTEGER"),
             ("attribution_level", "TEXT"), ("attribution_status", "TEXT NOT NULL DEFAULT 'unattributed'"),
+            ("attributed_batch_token", "INTEGER"), ("batch_attribution_level", "TEXT"),
+            ("batch_attribution_status", "TEXT NOT NULL DEFAULT 'unattributed'"), ("nvtx_marker_scope", "TEXT"),
         ],
         "nepenthes_nsys_activities": [
             ("copy_kind_value", "INTEGER"), ("copy_kind_name", "TEXT"),
@@ -239,6 +241,8 @@ def ensure_enum_schema(db: sqlite3.Connection) -> None:
             ("nvtx_correlation_token", "INTEGER"), ("nvtx_marker_phase", "TEXT"),
             ("nvtx_marker_request_id", "INTEGER"), ("attributed_request_token", "INTEGER"),
             ("attribution_level", "TEXT"), ("attribution_status", "TEXT NOT NULL DEFAULT 'unattributed'"),
+            ("attributed_batch_token", "INTEGER"), ("batch_attribution_level", "TEXT"),
+            ("batch_attribution_status", "TEXT NOT NULL DEFAULT 'unattributed'"), ("nvtx_marker_scope", "TEXT"),
         ],
     }
     for table, definitions in additions.items():
@@ -251,10 +255,13 @@ def ensure_enum_schema(db: sqlite3.Connection) -> None:
     db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('004_nepenthes_enum_decoding')")
     db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('005_nepenthes_nvtx_correlation')")
     db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('006_nepenthes_typed_event_metadata')")
+    db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('007_nepenthes_batch_attribution')")
     if "nsys_activities" in table_names(db):
         db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_activities_attributed_request ON nsys_activities(import_id,attributed_request_token,attribution_level)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_activities_attributed_batch ON nsys_activities(import_id,attributed_batch_token,batch_attribution_level)")
     if "nepenthes_nsys_activities" in table_names(db):
         db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_only_activities_attributed_request ON nepenthes_nsys_activities(import_id,attributed_request_token,attribution_level)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_only_activities_attributed_batch ON nepenthes_nsys_activities(import_id,attributed_batch_token,batch_attribution_level)")
 
 
 def inspect_nsys(path: Path) -> dict:
@@ -564,14 +571,20 @@ def attribute_nsys_activity(
 
 def init_output(db: sqlite3.Connection) -> None:
     migration_dir = Path(__file__).resolve().parents[1] / "db" / "migrations"
-    for version in ("002_nepenthes_observability.sql", "003_nepenthes_nsys_only.sql", "006_nepenthes_typed_event_metadata.sql"):
+    for version in (
+        "002_nepenthes_observability.sql",
+        "003_nepenthes_nsys_only.sql",
+        "006_nepenthes_typed_event_metadata.sql",
+        "007_nepenthes_batch_attribution.sql",
+    ):
         migration = migration_dir / version
         if not migration.is_file():
             continue
-        if version == "006_nepenthes_typed_event_metadata.sql":
+        migration_id = version.removesuffix(".sql")
+        if migration_id.startswith(("006_", "007_")):
             applied = db.execute(
                 "SELECT 1 FROM schema_migrations WHERE version = ?",
-                ("006_nepenthes_typed_event_metadata",),
+                (migration_id,),
             ).fetchone()
             if applied:
                 continue
