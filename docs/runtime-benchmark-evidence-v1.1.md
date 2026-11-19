@@ -212,3 +212,6 @@ The direct runtime evidence runner remains useful for single-process CLI experim
 ## Privacy defaults
 
 The evidence stores a SHA-256 of the fixed prompt/protocol, never the prompt text. Raw stdout/stderr are parsed in memory and represented only by byte counts and SHA-256 digests. The executed command is stored in redacted form plus a digest of the original command; sensitive flags, prompt arguments and URL credentials/query strings are removed. Sensitive keys in sampling metadata are rejected recursively. AIPerf imports preserve source artifact hashes and metadata, not prompts, generated text, credentials or raw request/response payloads.
+
+
+In this protocol, the `off` condition means runtime JSONL probes off and Nsight off; AIPerf and the same external resource sampler remain active in every condition. This isolates the incremental cost of JSONL and Nsight. The sampler's absolute overhead is not included in the 5%/8% gate and must be measured separately if total-observer overhead is required.
