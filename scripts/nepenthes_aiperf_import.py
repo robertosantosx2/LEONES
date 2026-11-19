@@ -149,15 +149,33 @@ def safe_endpoint_origin(value: Any) -> str | None:
         return None
 
 
-def safe_labels(value: Any) -> tuple[dict[str, str], list[str]]:
+def safe_labels(value: Any, run_id: str) -> tuple[dict[str, str], list[str]]:
     if not isinstance(value, dict):
         return {}, []
     kept: dict[str, str] = {}
     for key, item in value.items():
         if key in SAFE_PROMETHEUS_LABELS and isinstance(item, (str, int, float)) and not isinstance(item, bool):
-            kept[str(key)] = str(item)[:256]
+            text = str(item)[:256]
+            if key in {"device_id", "slot_id"}:
+                text = stable_id(run_id, "label", key, text)
+            kept[str(key)] = text
     dropped = sorted(str(key) for key in value if key not in kept)
     return kept, dropped
+
+
+def safe_request_metadata(metadata: dict[str, Any], run_id: str) -> dict[str, Any]:
+    identifiers = {"x_request_id", "x_correlation_id", "conversation_id", "worker_id", "record_processor_id"}
+    safe: dict[str, Any] = {}
+    for key in REQUEST_METADATA_FIELDS:
+        if key not in metadata:
+            continue
+        value = metadata[key]
+        if key in identifiers:
+            if value is not None:
+                safe[f"{key}_hash"] = stable_id(run_id, key, value)
+        elif isinstance(value, (str, int, float, bool)) or value is None:
+            safe[key] = value[:128] if isinstance(value, str) else value
+    return safe
 
 
 def finite_number(value: Any, field: str) -> int | float | None:
@@ -202,7 +220,7 @@ def import_server_metrics(stream, path: Path, relative_name: str, run_id: str,
             for sample_index, sample in enumerate(samples):
                 if not isinstance(sample, dict):
                     raise ValueError(f"invalid server metric sample at {relative_name}:{line_number}")
-                labels, dropped_labels = safe_labels(sample.get("labels"))
+                labels, dropped_labels = safe_labels(sample.get("labels"), run_id)
                 value = finite_number(sample.get("value"), "server metric value")
                 buckets_raw = sample.get("buckets")
                 buckets = None
@@ -308,7 +326,7 @@ def import_server_metrics_aggregate(stream, payload: dict[str, Any], relative_na
                 if not isinstance(item, dict):
                     raise ValueError(f"invalid series for server metric {metric_name}")
                 stats = numeric_fields(item.get("stats"))
-                labels, dropped_labels = safe_labels(item.get("labels"))
+                labels, dropped_labels = safe_labels(item.get("labels"), run_id)
                 buckets = numeric_fields(item.get("buckets")) if isinstance(item.get("buckets"), dict) else None
                 timeslices = safe_timeslices(item.get("timeslices"))
                 event = {
@@ -363,11 +381,13 @@ def import_gpu_telemetry(stream, path: Path, relative_name: str, run_id: str,
         timestamp_ns = record.get("timestamp_ns")
         if isinstance(timestamp_ns, bool) or not isinstance(timestamp_ns, int):
             raise ValueError(f"GPU telemetry timestamp_ns at {relative_name}:{line_number} must be an integer")
+        gpu_uuid = record.get("gpu_uuid") if isinstance(record.get("gpu_uuid"), str) else None
+        pci_bus_id = record.get("pci_bus_id") if isinstance(record.get("pci_bus_id"), str) else None
         device = {
-            "gpu_uuid": record.get("gpu_uuid") if isinstance(record.get("gpu_uuid"), str) else None,
+            "gpu_uuid_sha256": stable_id(run_id, "gpu_uuid", gpu_uuid) if gpu_uuid else None,
             "gpu_index": record.get("gpu_index") if isinstance(record.get("gpu_index"), int) and not isinstance(record.get("gpu_index"), bool) else None,
             "gpu_model_name": record.get("gpu_model_name") if isinstance(record.get("gpu_model_name"), str) else None,
-            "pci_bus_id": record.get("pci_bus_id") if isinstance(record.get("pci_bus_id"), str) else None,
+            "pci_bus_id_sha256": stable_id(run_id, "pci_bus_id", pci_bus_id) if pci_bus_id else None,
             "device": record.get("device") if isinstance(record.get("device"), str) else None,
             "platform": record.get("platform") if isinstance(record.get("platform"), str) else "unknown",
         }
@@ -532,9 +552,10 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
                         raise ValueError(f"record at {records_rel}:{line_number} must be a JSON object")
                     metadata = record.get("metadata") if isinstance(record.get("metadata"), dict) else {}
                     metrics = record.get("metrics") if isinstance(record.get("metrics"), dict) else {}
-                    request_id = metadata.get("x_request_id")
-                    if request_id is None:
-                        request_id = f"{metadata.get('session_num', line_number - 1)}:{metadata.get('turn_index', 0)}"
+                    raw_request_id = metadata.get("x_request_id")
+                    if raw_request_id is None:
+                        raw_request_id = f"{metadata.get('session_num', line_number - 1)}:{metadata.get('turn_index', 0)}"
+                    request_id = stable_id(run_id, "request", raw_request_id, metadata.get("turn_index"))
                     timestamp_ns = metadata.get("request_start_ns")
                     if isinstance(timestamp_ns, bool) or not isinstance(timestamp_ns, int):
                         timestamp_ns = None
@@ -547,12 +568,15 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
                             "event_id": stable_id(run_id, "request_error", request_id, line_number),
                             "run_id": run_id, "request_id": str(request_id),
                             "event_kind": "aiperf_request_error", "scope": "request",
-                            "error": error, "timestamp_unix_ns": timestamp_ns,
+                            "error": "redacted",
+                            "error_type": type(error).__name__ if not isinstance(error, str) else "string",
+                            "error_sha256": hashlib.sha256(json.dumps(error, sort_keys=True, default=str).encode("utf-8")).hexdigest(),
+                            "timestamp_unix_ns": timestamp_ns,
                             "monotonic_ns": None, "source_tool": "aiperf",
                             "source_version": aiperf_version,
                             "source_schema_version": source_schema,
                             "source_file": records_rel, "source_record_index": line_number,
-                            "metadata": {key: metadata.get(key) for key in REQUEST_METADATA_FIELDS if key in metadata},
+                            "metadata": safe_request_metadata(metadata, run_id),
                         }
                         write_event(stream, event)
                         event_count += 1
@@ -568,7 +592,7 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
                             "source_tool": "aiperf", "source_version": aiperf_version,
                             "source_schema_version": source_schema,
                             "source_file": records_rel, "source_record_index": line_number,
-                            "metadata": {key: metadata.get(key) for key in REQUEST_METADATA_FIELDS if key in metadata},
+                            "metadata": safe_request_metadata(metadata, run_id),
                             "quality": "available" if value is not None else "unavailable",
                         }
                         write_event(stream, event)
@@ -628,7 +652,9 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
         "failed_request_count": failed_request_count,
         "warnings": warnings,
         "privacy": {"prompts_imported": False, "generated_text_imported": False,
-                    "credentials_imported": False, "raw_payloads_imported": False},
+                    "credentials_imported": False, "raw_payloads_imported": False,
+                    "request_identifiers_pseudonymized": True, "gpu_uuid_raw_exported": False,
+                    "pci_bus_id_raw_exported": False, "error_payloads_redacted": True},
         "clock_policy": "AIPerf request epoch timestamps are preserved; monotonic_ns is null because no shared monotonic clock is provided.",
     }
     atomic_write(out / "aiperf_import_report.json", json.dumps(report, indent=2, sort_keys=True) + "\n")
