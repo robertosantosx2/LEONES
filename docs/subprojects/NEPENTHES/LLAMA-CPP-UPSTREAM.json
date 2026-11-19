@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "project": "NEPENTHES",
+  "upstream_repository": "https://github.com/ggml-org/llama.cpp.git",
+  "upstream_web": "https://github.com/ggml-org/llama.cpp",
+  "upstream_branch": "master",
+  "verified_commit": "39039aa27fe65244913d8a07303b8733f614fe20",
+  "verified_commit_time": "2026-11-19T06:50:33Z",
+  "verified_at": "2026-11-19T07:38:00Z",
+  "local_fork_repository": null,
+  "local_fork_status": "not_created_connector_missing_fork_operation",
+  "leones_submodule_path": null,
+  "policy": "Track upstream master explicitly; never label a pinned upstream commit as a personal fork. Once the fork is created, set upstream as upstream remote and the personal fork as origin; keep LEONES submodule pinned to a reviewed fork commit.",
+  "notes": [
+    "The upstream commit was fetched from GitHub API during this verification.",
+    "The current GitHub connector can read repositories and write files/branches/PRs but does not expose repository-fork creation.",
+    "No source files from llama.cpp have been copied into LEONES."
+  ]
+}
