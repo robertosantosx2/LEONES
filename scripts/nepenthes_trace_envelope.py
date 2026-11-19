@@ -26,10 +26,10 @@ SUMMARY_FIELDS = frozenset({
 
 # Both accepted connectors currently emit host monotonic timestamps in steady_clock.
 # Keep this per-source so future engines must declare their own supported domain.
-SOURCE_PROFILES: dict[str, dict[str, frozenset[str]]] = {
+SOURCE_PROFILES: dict[str, dict[str, Any]] = {
     "llama.cpp": {"clock_domains": frozenset({"steady_clock"})},
-    "tensorfold": {"clock_domains": frozenset({"steady_clock"})},
-    "tandem.cpp": {"clock_domains": frozenset({"steady_clock"})},
+    "tensorfold": {"clock_domains": frozenset({"steady_clock"}), "request_lifecycle_requires_id": True},
+    "tandem.cpp": {"clock_domains": frozenset({"steady_clock"}), "request_lifecycle_requires_id": True},
 }
 
 
@@ -78,6 +78,12 @@ def validate_event_envelope(
     ):
         require_uint(record, field, line_no)
     require_uint(record, "flags", line_no, maximum=65535)
+    if SOURCE_PROFILES[expected_source].get("request_lifecycle_requires_id") and (
+        record["event_kind"] in {"request_start", "request_end"} and record["request_id"] == 0
+    ):
+        raise ValueError(
+            f"line {line_no}: {expected_source} request lifecycle events require a non-zero request_id"
+        )
 
     token = record.get("correlation_token")
     if token is not None:
