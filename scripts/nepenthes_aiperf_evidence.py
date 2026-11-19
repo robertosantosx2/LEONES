@@ -14,9 +14,11 @@ from typing import Any
 try:
     from nepenthes_aiperf_import import import_aiperf
     from runtime_benchmark_evidence import hardware
+    from nepenthes_privacy import assert_safe_metadata
 except ModuleNotFoundError:
     from scripts.nepenthes_aiperf_import import import_aiperf
     from scripts.runtime_benchmark_evidence import hardware
+    from scripts.nepenthes_privacy import assert_safe_metadata
 
 
 def sha256_file(path: Path) -> str:
@@ -241,6 +243,7 @@ def build_evidence(args: argparse.Namespace) -> dict:
     sampling_config = json.loads(args.sampling_config_json.read_text(encoding="utf-8")) if args.sampling_config_json else {}
     if not isinstance(sampling_config, dict):
         raise ValueError("--sampling-config-json must contain an object")
+    assert_safe_metadata(sampling_config, "sampling_config")
     dataset_descriptor = {
         "aiperf_version": run_manifest.get("aiperf_version"),
         "profile": profile,
