@@ -174,3 +174,44 @@ Esta sección sustituye los estados parciales anteriores para la aceptación del
 - No se ha actualizado el gitlink ni se ha solicitado intervención del MSI. C07 real (NVTX + Nsight) y C08 overhead siguen pendientes de hardware.
 
 **Decisión:** aceptación remota todavía abierta. El CI de CPU/CUDA instrumentado principal ya está validado, pero no hay CI global verde mientras MUSA siga fallido y los runners restantes permanezcan queued. Continuar la auditoría final y volver a consultar esos jobs antes de promover la PR.
+
+## Estado de integración actualizado — 2026-11-19 (post-merge #203/#205)
+
+### Gate de datos LEONES
+
+- [x] Commit post-merge `28de2459a76433b90628bb5dff7e7703a789d9a1`: **8/8 workflows** completados con éxito.
+- [x] Importador específico: 118 pruebas pasadas.
+- [x] Regresión runtime: 582 + 15 pruebas pasadas.
+- [x] Migración 006 y el importador v1.1 están en `main`; CI cubre persistencia de metadatos tipados, preservación de `raw_json`, compatibilidad v1.0, validación de enums e idempotencia. Esto es evidencia de software/CI, no importación de una captura real del nuevo productor.
+
+### Fork y submódulo llama.cpp
+
+- [x] [LEONES PR #206](https://github.com/robertosantosx2/LEONES/pull/206) fusionada en `main`: commit `c98deebfc169b8d860d4e887b1f3ffb068342b00`.
+- [x] `subprojects/llama.cpp` registrado como gitlink modo `160000`, URL del fork personal y CI de integridad.
+- [x] Corregido el invariante del manifiesto: `fork_head_commit` describe el HEAD móvil de origin/master; `leones_submodule_commit` describe el pin independiente y revisado. No deben ser necesariamente iguales.
+- Upstream actual: `c406f4367e19bea7930e7f74e1984c9acc6d44bf`.
+- Fork `master`: `9a080f44b503c64f66c84a6274b9d9ee5d5b09d5`, **3 commits detrás** de upstream.
+- Gitlink LEONES: `76f186df71a41abb3ee20fffedee31ca5dbc7d9f`. Se mantiene deliberadamente en el último pin limpio revisado; no se avanza a la rama instrumentada.
+- La diferencia upstream desde el pin 76f186df abarca 14 commits y 75 archivos; hay solapamientos con graph/context, CPU y CUDA. No hacer fast-forward ni rebase ciego.
+
+### PRs nativas del fork y elección de integración
+
+- [llama.cpp #1](https://github.com/robertosantosx2/llama.cpp/pull/1): contrato/sink, request, graph, sync, MoE y KV. CPU/servidor y checks generales pasan; CUDA, Vulkan, ROCm, Metal y otros runners siguen queued.
+- [llama.cpp #2](https://github.com/robertosantosx2/llama.cpp/pull/2): backend/allocaciones/transferencias CUDA. CUDA e HIP pasan; MUSA falla en descarga de dependencias externas antes de compilar; varios self-hosted siguen queued.
+- [llama.cpp #3](https://github.com/robertosantosx2/llama.cpp/pull/3): workers CPU. Tests CPU y checks básicos pasan; la mayoría de runners backend y Models Backend Check siguen queued.
+- Las PRs #1 → #2 → #3 siguen abiertas y en borrador; sus bases son antiguas y necesitan rebase/revisión contra upstream actual antes de merge.
+- La PR acumulativa [llama.cpp #6](https://github.com/robertosantosx2/llama.cpp/pull/6) es una implementación paralela sobre la base posterior del fork. Comparte archivos con #1–#3, pero los historiales y algunos blobs difieren (sink, event header, CUDA, CPU y server); KV/MoE comparten blobs. No fusionar ambas rutas sin reconciliar el código para evitar duplicar sondas.
+- Decisión pendiente: revisar semántica y cobertura de ambos candidatos, escoger una única pila canónica y cerrar la alternativa solo cuando la integración elegida esté aceptada. MUSA y los runners queued se clasifican explícitamente, no como verdes.
+
+### Contrato JSONL productor ↔ importadores LEONES
+
+- El sink nativo de RC1 emite actualmente `schema_version=1.0`, `source=llama.cpp`, campos unsigned de evento y `sink_summary` final; puede incluir `correlation_token`, `attribution_level` y `clock_domain` opcionales.
+- `scripts/nepenthes_llama_trace_import.py` acepta ese contrato 1.0 y los campos opcionales de correlación/reloj; comprueba balance de token, resumen final, pérdidas, errores y SHA-256 sin modificar el JSONL original.
+- `scripts/nepenthes_nsys_import.py` admite además el contrato tipado 1.1 del importador emparejado y preserva `raw_json` y metadatos typed. No confundir el soporte 1.1 del importador emparejado con la versión que emite hoy el sink RC1.
+- La antigua PR #176 queda funcionalmente superada por el importador actual; el código, workflow y tests de [PR #180](https://github.com/robertosantosx2/LEONES/pull/180) ya son idénticos a los blobs de `main`. La guía se conserva en [LLAMA-TRACE-IMPORT.md](../../docs/subprojects/NEPENTHES/LLAMA-TRACE-IMPORT.md).
+
+### Estado de PRs LEONES de integración
+
+- [PR #174](https://github.com/robertosantosx2/LEONES/pull/174) fue sustituida por la PR limpia #206 para no arrastrar una cadena de bases antiguas que ya está integrada por otras vías.
+- #177 y #179 son documentación apilada sobre esa antigua rama. Sus gates y política se consolidan aquí y en el roadmap canónico; sus commits no se fusionan sin rebase ni duplicación.
+- No se ha actualizado el gitlink al runtime instrumentado. No se ha compilado en el MSI, no se ha ejecutado C07, no existe captura Nsight nueva y C08 no está medido.
