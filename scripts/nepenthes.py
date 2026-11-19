@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse,csv,datetime as dt,hashlib,html,json,os,platform,shutil,signal,subprocess,sys,time,uuid
 from pathlib import Path
 VERSION="0.1.0"
-PROFILES={"smoke":2.0,"standard":1.0,"full":0.5}
+PROFILES={"smoke":2.0,"standard":1.0,"full":0.5,"moe-deep":0.1,"latency-critical":None}
 def stamp(): return dt.datetime.now(dt.timezone.utc).isoformat()
 def save(p,o): p.write_text(json.dumps(o,indent=2,sort_keys=True)+"\n",encoding="utf-8")
 def proc_info(pid):
@@ -198,22 +198,51 @@ def import_nsys_bundle(root,m):
   result={"status":"failed","reason":str(exc),"importer":str(importer)}
  save(root/"data"/"nsys-import.json",result)
  return result
+
+def read_request_activity(path,offset,pending,active):
+ try:
+  with path.open("r",encoding="utf-8") as stream:
+   stream.seek(offset);chunk=stream.read();offset=stream.tell()
+ except OSError:
+  return offset,pending
+ pending+=chunk
+ lines=pending.split("\\n");pending=lines.pop()
+ for line in lines:
+  try:event=json.loads(line)
+  except (json.JSONDecodeError,TypeError):continue
+  kind=event.get("event_kind")
+  if kind not in ("request_start","request_end"):continue
+  token=event.get("correlation_token")
+  if token is None:token=event.get("request_id")
+  if token is None:continue
+  key=str(token)
+  if kind=="request_start":active.add(key)
+  else:active.discard(key)
+ return offset,pending
+
 def run(a):
  cmd=list(a.command)
  if cmd and cmd[0]=="--":cmd=cmd[1:]
  if not cmd:raise ValueError("uso: nepenthes run -- COMANDO [ARG ...]")
  if shutil.which(cmd[0]) is None and not Path(cmd[0]).exists():raise ValueError("ejecutable no encontrado: "+cmd[0])
  nsys_exe=shutil.which("nsys")
- nsys_enabled=(a.nsys=="required" or (a.nsys=="auto" and a.profile=="full")) and bool(nsys_exe)
+ if a.profile=="latency-critical" and a.interval is not None:raise ValueError("--interval is incompatible with latency-critical")
+ if a.profile=="latency-critical" and a.nsys=="required":raise ValueError("latency-critical disables Nsight; --nsys required is incompatible")
+ sample_host=a.profile!="latency-critical"
+ interval=(a.interval if a.interval is not None else PROFILES[a.profile])
+ adaptive_sampling=bool(a.adaptive_sampling or a.profile=="moe-deep")
+ active_interval=min(interval if interval is not None else 0.1,0.1)
+ idle_interval=max(interval if interval is not None else 1.0,1.0)
+ nsys_enabled=(a.nsys=="required" or (a.nsys=="auto" and a.profile in ("full","moe-deep"))) and bool(nsys_exe)
  if a.nsys=="required" and not nsys_exe:raise ValueError("nsys es obligatorio pero no está instalado o no está en PATH")
  launch=cmd
  rid=dt.datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")+"_"+(a.name or Path(cmd[0]).name)+"_"+uuid.uuid4().hex[:8]
  root=Path(a.output).expanduser().resolve()/rid
  for d in ("raw","data","reports","environment"):(root/d).mkdir(parents=True,exist_ok=True)
- interval=a.interval or PROFILES[a.profile]
- m={"schema_version":"nepenthes-run-0.1","run_id":rid,"created_at":stamp(),"profile":a.profile,"sample_interval_seconds":interval,"command":cmd,"working_directory":os.getcwd(),"host":platform.node(),"status":"running","capabilities":{"procfs":Path("/proc").is_dir(),"nvidia_smi":bool(shutil.which("nvidia-smi")),"nsys_detected":bool(nsys_exe),"nsys_capture_enabled":nsys_enabled},"nsys":{"requested":a.nsys,"enabled":nsys_enabled,"executable":nsys_exe if nsys_enabled else None}}
+ m={"schema_version":"nepenthes-run-0.1","run_id":rid,"created_at":stamp(),"profile":a.profile,"sample_interval_seconds":interval,"sampling":{"host_enabled":sample_host,"adaptive":adaptive_sampling and sample_host,"active_interval_seconds":active_interval if sample_host else None,"idle_interval_seconds":idle_interval if sample_host else None,"activity_source":"engine-jsonl-request-markers" if adaptive_sampling and sample_host else None},"command":cmd,"working_directory":os.getcwd(),"host":platform.node(),"status":"running","capabilities":{"procfs":Path("/proc").is_dir(),"nvidia_smi":bool(shutil.which("nvidia-smi")),"host_sampling_enabled":sample_host,"nsys_detected":bool(nsys_exe),"nsys_capture_enabled":nsys_enabled},"nsys":{"requested":a.nsys,"enabled":nsys_enabled,"executable":nsys_exe if nsys_enabled else None}}
  m["engine_probe_activation"]={"environment_variables_set":True,"run_id_variable":"NEPENTHES_RUN_ID","jsonl_variable":"NEPENTHES_TRACE_JSONL","jsonl_path":"raw/engine-events.jsonl"}
- save(root/"manifest.json",m);save(root/"environment"/"system.json",{"platform":platform.platform(),"python":sys.version,"cpu_count":os.cpu_count(),"nvidia_smi":shutil.which("nvidia-smi"),"nsys":shutil.which("nsys")});save(root/"environment"/"gpu-initial.json",gpu() or {"available":False})
+ save(root/"manifest.json",m);save(root/"environment"/"system.json",{"platform":platform.platform(),"python":sys.version,"cpu_count":os.cpu_count(),"nvidia_smi":shutil.which("nvidia-smi"),"nsys":shutil.which("nsys")})
+ if sample_host:save(root/"environment"/"gpu-initial.json",gpu() or {"available":False})
  samples=[];ticks=os.sysconf("SC_CLK_TCK");pt=ptime=None;start=time.monotonic();code=127
  try:
   with (root/"session.log").open("w",encoding="utf-8") as log,(root/"raw"/"host-events.jsonl").open("w",encoding="utf-8") as ev:
@@ -221,18 +250,45 @@ def run(a):
    if nsys_enabled:launch=nsys_command(nsys_exe,str(root/"raw"/"nsys"),cmd)
    child_env=os.environ.copy();child_env["NEPENTHES_RUN_ID"]=rid;child_env["NEPENTHES_TRACE_JSONL"]=str(root/"raw"/"engine-events.jsonl")
    child=subprocess.Popen(launch,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=child_env);child_pgid=child.pid;m["pid"]=child.pid;m["process_group_id"]=child_pgid;m["launch_command"]=launch;save(root/"manifest.json",m)
-   while True:
-    now=time.monotonic();s={"elapsed_seconds":round(now-start,4),"timestamp_unix_ns":time.time_ns()};p=proc_tree(child.pid)
-    if p:
-     s["process_rss_mib"]=p[1];s["process_count"]=p[2]
-     if pt is not None and ptime is not None:s["process_cpu_percent"]=round(max(p[0]-pt,0)/ticks/max(now-ptime,1e-6)*100,2)
-     pt,ptime=p[0],now
-    g=gpu()
-    if g:s.update(g)
-    samples.append(s);emit(ev,"sample",run_id=rid,**s)
-    if child.poll() is not None:break
-    time.sleep(interval)
-   code=child.returncode
+   child_env=os.environ.copy();child_env["NEPENTHES_RUN_ID"]=rid;child_env["NEPENTHES_TRACE_JSONL"]=str(root/"raw"/"engine-events.jsonl");child_env["NEPENTHES_PROFILE"]=a.profile;child_env["NEPENTHES_ADAPTIVE_SAMPLING"]="1" if adaptive_sampling else "0"
+   child=subprocess.Popen(launch,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=child_env);child_pgid=child.pid;m["pid"]=child.pid;m["process_group_id"]=child_pgid;m["launch_command"]=launch;save(root/"manifest.json",m)
+   if not sample_host:
+    code=child.wait()
+   elif adaptive_sampling:
+    cursor=0;pending="";active_requests=set();was_active=False;next_sample=start
+    poll_interval=max(0.01,min(0.05,active_interval/2))
+    while True:
+     cursor,pending=read_request_activity(root/"raw"/"engine-events.jsonl",cursor,pending,active_requests)
+     now=time.monotonic();is_active=bool(active_requests)
+     if is_active and not was_active:next_sample=now
+     was_active=is_active
+     if now>=next_sample:
+      s={"elapsed_seconds":round(now-start,4),"timestamp_unix_ns":time.time_ns()}
+      p=proc_tree(child.pid)
+      if p:
+       s["process_rss_mib"]=p[1];s["process_count"]=p[2]
+       if pt is not None and ptime is not None:s["process_cpu_percent"]=round(max(p[0]-pt,0)/ticks/max(now-ptime,1e-6)*100,2)
+       pt,ptime=p[0],now
+      g=gpu()
+      if g:s.update(g)
+      samples.append(s);emit(ev,"sample",run_id=rid,**s)
+      next_sample=now+(active_interval if is_active else idle_interval)
+     if child.poll() is not None:break
+     time.sleep(poll_interval)
+    code=child.returncode
+   else:
+    while True:
+     now=time.monotonic();s={"elapsed_seconds":round(now-start,4),"timestamp_unix_ns":time.time_ns()};p=proc_tree(child.pid)
+     if p:
+      s["process_rss_mib"]=p[1];s["process_count"]=p[2]
+      if pt is not None and ptime is not None:s["process_cpu_percent"]=round(max(p[0]-pt,0)/ticks/max(now-ptime,1e-6)*100,2)
+      pt,ptime=p[0],now
+     g=gpu()
+     if g:s.update(g)
+     samples.append(s);emit(ev,"sample",run_id=rid,**s)
+     if child.poll() is not None:break
+     time.sleep(interval)
+    code=child.returncode
    if nsys_enabled:
     outputs=[str(x.relative_to(root)) for x in sorted((root/"raw").glob("nsys*")) if x.is_file()]
     m["nsys"]["outputs"]=outputs
@@ -542,7 +598,7 @@ def self_test(a):
 def parser():
  p=argparse.ArgumentParser(prog="nepenthes");p.add_argument("--version",action="version",version="NEPENTHES "+VERSION);sub=p.add_subparsers(dest="action",required=True)
  d=sub.add_parser("doctor");d.set_defaults(func=doctor)
- r=sub.add_parser("run",aliases=["capture"]);r.add_argument("--profile",choices=sorted(PROFILES),default="standard");r.add_argument("--interval",type=float);r.add_argument("--nsys",choices=("auto","required","off"),default="auto",help="auto enables Nsight for full profile; required fails if unavailable; off disables it");r.add_argument("--output",default=str(Path.home()/"NEPENTHES-runs"));r.add_argument("--name");r.add_argument("command",nargs=argparse.REMAINDER);r.set_defaults(func=run)
+ r=sub.add_parser("run",aliases=["capture"]);r.add_argument("--profile",choices=sorted(PROFILES),default="standard");r.add_argument("--interval",type=float);r.add_argument("--adaptive-sampling",action="store_true",help="sample at high frequency only while request markers are active");r.add_argument("--nsys",choices=("auto","required","off"),default="auto",help="auto enables Nsight for full and moe-deep profiles; required fails if unavailable; off disables it");r.add_argument("--output",default=str(Path.home()/"NEPENTHES-runs"));r.add_argument("--name");r.add_argument("command",nargs=argparse.REMAINDER);r.set_defaults(func=run)
  i=sub.add_parser("inspect");i.add_argument("path");i.set_defaults(func=inspect)
  v=sub.add_parser("verify");v.add_argument("path");v.add_argument("--c08-report",default=None,help="external paired-overhead report JSON; otherwise use data/c08-overhead-report.json");v.set_defaults(func=verify_run)
  t=sub.add_parser("self-test",help="run a tiny synthetic capture and verify its bundle");t.add_argument("--output",default=str(Path.home()/"NEPENTHES-runs"));t.set_defaults(func=self_test);return p
