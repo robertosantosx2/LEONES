@@ -17,7 +17,7 @@ Este roadmap amplía el trabajo histórico de instrumentación llama.cpp, Tandem
 
 ## Prioridad 1 — Inferscope: energía, NVML y latencia por token
 
-**Máximo interés inmediato.** Investigar primero las ideas y mecanismos de Inferscope y traducirlos a requisitos verificables de NEPENTHES. No copiar código o asumir compatibilidad sin revisar licencia, API y comportamiento.
+**Máximo interés inmediato.** Investigar primero las ideas y mecanismos de Inferscope y traducirlos a requisitos verificables de NEPENTHES. No copiar código o asumir compatibilidad sin revisar licencia, API y comportamiento. Fuente de estudio: [Inferscope](https://github.com/MicheleCampi/inferscope), Apache-2.0.
 
 ### 1.1 Muestreador NVML por dispositivo
 
@@ -145,9 +145,9 @@ Evitar cardinalidad ilimitada: request_id y trace_id van en spans, no como label
 
 **Aceptación:** trace completa run/request, métricas visibles en backend de prueba, shutdown con flush, pérdida contabilizada y ausencia de prompts en exportación.
 
-## Prioridad 3 — Benchmark normalizado con GenAI-Perf
+## Prioridad 3 — Benchmark normalizado con GenAI-Perf y AIPerf
 
-Usar GenAI-Perf como herramienta y referencia metodológica; conservar un protocolo NEPENTHES versionado para que las comparaciones sean reproducibles aunque la herramienta externa cambie.
+GenAI-Perf aporta una referencia útil de TTFT, ITL, throughput, percentiles y carga concurrente. Sin embargo, la documentación de NVIDIA informa que GenAI-Perf está en fase de retirada y recomienda AIPerf para nuevos trabajos. NEPENTHES debe preservar la compatibilidad con resultados históricos GenAI-Perf y evaluar AIPerf como runner preferente, sin acoplar el esquema interno a ninguna de las dos herramientas. Mantener un protocolo NEPENTHES versionado para que las comparaciones sean reproducibles aunque la herramienta externa cambie.
 
 ### 3.1 Métricas y protocolo
 
@@ -174,7 +174,7 @@ En el MSI de 14 GiB RAM y RTX 3050 Laptop 4 GiB, dimensionar las pruebas para no
 
 ### 3.3 Comparativas reproducibles
 
-- GenAI-Perf frente a protocolo nativo NEPENTHES.
+- GenAI-Perf (compatibilidad histórica) y AIPerf (candidato recomendado para nuevas campañas) frente a protocolo nativo NEPENTHES.
 - llama.cpp frente a TensorFold y futuros motores.
 - baseline sin instrumentación frente a BASIC/FULL.
 - commit anterior frente a commit candidato.
@@ -266,7 +266,7 @@ PRs pequeños y dependencias explícitas; no crear un mega-PR.
 | 5 | OTLP exporter | HTTP/protobuf y/o gRPC, tests con collector |
 | 6 | llama.cpp adapters | /metrics, /slots, scraping y fixtures |
 | 7 | TensorFold adapter discovery | Auditoría de capacidades y adaptador solo si existe API |
-| 8 | GenAI-Perf integration | Runner, manifiesto y normalización |
+| 8 | GenAI-Perf/AIPerf integration | Runner(s), manifiesto y normalización |
 | 9 | llama.cpp instrumentation | Lifecycle, graph, KV, scheduler, MoE, CPU/CUDA/server |
 | 10 | Nsight semantic correctness | enums, uint64, cobertura y correlación |
 | 11 | Reports & release gates | informes, comparación y aceptación integral |
@@ -354,6 +354,13 @@ Los límites de overhead se fijarán después de una línea base. Como objetivos
 | GenAI-Perf y protocolo propio difieren | Manifiesto común y comparación controlada |
 | Relojes incompatibles | Dominios separados y calibración demostrada |
 | Exporter ralentiza inferencia | Buffer acotado, envío asíncrono y drop counters |
+
+## Referencias externas verificadas
+
+- [Inferscope](https://github.com/MicheleCampi/inferscope): profiler de inferencia con ITL por token, muestreo NVML por GPU, contador de energía NVML con fallback de integración trapezoidal, tokens/J y exportación OTLP opcional. Revisar versión, licencia y validación real antes de adoptar detalles.
+- [GenAI-Perf](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/perf_analyzer/genai-perf/README.html): herramienta útil para TTFT, ITL, throughput y concurrencia; NVIDIA señala que está en retirada.
+- [AIPerf](https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference): candidato recomendado por NVIDIA para nuevos benchmarks; evaluar métricas, exportaciones y compatibilidad con el protocolo NEPENTHES.
+- [llama.cpp server metrics](https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md): documentación del endpoint /metrics, habilitado mediante la opción --metrics.
 
 ## Entregables documentales
 
