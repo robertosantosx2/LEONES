@@ -11,47 +11,16 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from nepenthes_trace_envelope import source_profile, validate_envelope_record
-
-
-EVENT_FIELDS = {
-    "schema_version",
-    "run_id",
-    "event_id",
-    "source",
-    "timestamp_unix_ns",
-    "monotonic_ns",
-    "request_id",
-    "event_kind",
-    "label",
-    "value0",
-    "value1",
-    "duration_ns",
-    "flags",
-}
-OPTIONAL_EVENT_FIELDS = {"correlation_token", "attribution_level", "clock_domain"}
-ATTRIBUTION_LEVELS = {"exact", "windowed", "device_wide", "estimated"}
-FORBIDDEN_FIELDS = {"prompt", "completion", "response", "text", "tokens", "token_ids", "input_text", "output_text"}
-SUMMARY_FIELDS = {
-    "schema_version",
-    "run_id",
-    "event_id",
-    "source",
-    "timestamp_unix_ns",
-    "event_kind",
-    "events_drained",
-    "dropped_events",
-    "write_errors",
-}
-
-
-def _require_int(record: dict[str, Any], field: str, line_no: int, maximum: int | None = None) -> int:
-    value = record.get(field)
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        raise ValueError(f"line {line_no}: {field} must be a non-negative integer")
-    if maximum is not None and value > maximum:
-        raise ValueError(f"line {line_no}: {field} exceeds {maximum}")
-    return value
+from nepenthes_trace_envelope import (
+    ATTRIBUTION_LEVELS,
+    EVENT_FIELDS,
+    FORBIDDEN_FIELDS,
+    OPTIONAL_EVENT_FIELDS,
+    SUMMARY_FIELDS,
+    require_uint as _require_int,
+    source_profile,
+    validate_envelope_record,
+)
 
 
 def _sha256(path: Path) -> str:
