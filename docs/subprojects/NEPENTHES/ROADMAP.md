@@ -1,7 +1,7 @@
 # NEPENTHES — roadmap maestro de desarrollo
 
 **Fecha de planificación:** 2026-11-19  
-**Prioridad inmediata añadida:** NVML/energía, latencia por token, dispersión, OpenTelemetry y benchmark normalizado.  
+**Prioridad inmediata añadida:** AIPerf como runner primario de benchmark; NVML/energía, latencia por token, dispersión y OpenTelemetry como capas complementarias.  
 **Estado:** plan de trabajo; las capacidades nuevas descritas aquí no se consideran implementadas hasta aportar pruebas y capturas.
 
 Este roadmap amplía el trabajo histórico de instrumentación llama.cpp, Tandem.cpp, CLI, Nsight/CUPTI e importación LEONES. No sustituye ni reescribe los registros de campañas anteriores.
@@ -145,23 +145,30 @@ Evitar cardinalidad ilimitada: request_id y trace_id van en spans, no como label
 
 **Aceptación:** trace completa run/request, métricas visibles en backend de prueba, shutdown con flush, pérdida contabilizada y ausencia de prompts en exportación.
 
-## Prioridad 3 — Benchmark normalizado con GenAI-Perf y AIPerf
+## Prioridad 3 — AIPerf como runner primario de benchmark
 
-GenAI-Perf aporta una referencia útil de TTFT, ITL, throughput, percentiles y carga concurrente. Sin embargo, la documentación de NVIDIA informa que GenAI-Perf está en fase de retirada y recomienda AIPerf para nuevos trabajos. NEPENTHES debe preservar la compatibilidad con resultados históricos GenAI-Perf y evaluar AIPerf como runner preferente, sin acoplar el esquema interno a ninguna de las dos herramientas. Mantener un protocolo NEPENTHES versionado para que las comparaciones sean reproducibles aunque la herramienta externa cambie.
+**Decisión:** AIPerf es el runner externo predeterminado para todas las campañas nuevas de NEPENTHES. GenAI-Perf queda relegado a importación y reproducción de campañas históricas; no se desarrollarán nuevas capacidades específicas para él salvo necesidad demostrada. NVIDIA indica que GenAI-Perf está en retirada y recomienda AIPerf para nuevos trabajos.
 
-### 3.1 Métricas y protocolo
+NEPENTHES no delegará su modelo de datos ni sus criterios de aceptación en AIPerf: AIPerf genera carga y métricas externas; el adaptador NEPENTHES importa y normaliza sus artefactos, conserva los originales y los relaciona con energía/NVML, sondas host, métricas nativas y Nsight cuando exista correlación demostrable. La versión de AIPerf y el esquema de exportación se registran en cada campaña.
 
-- TTFT, ITL, latencia total, time-to-last-token.
-- input/output tokens y throughput.
-- P50/P90/P95/P99 y dispersión.
-- concurrencia, tasa de llegada y número de requests.
-- warm-up, duración, repeticiones, timeouts y errores.
-- streaming activado/desactivado y protocolo de API.
-- modelo/hash, tokenizer, cuantización, prompt, longitud objetivo, sampling y thinking.
-- motor/commit, flags, backend, offload, batch, ubatch, contexto y hardware.
-- energía/temperatura/utilización cuando estén disponibles.
+### 3.1 AIPerf: ejecución y exportación
 
-### 3.2 Cargas concurrentes
+- Fijar versión explícita de AIPerf por campaña; registrar versión, Python, plataforma y comando efectivo. Mantenerlo en un entorno aislado del runtime de inferencia.
+- Primera vía de compatibilidad: `aiperf profile` contra endpoint OpenAI-compatible de `llama-server`, `--endpoint-type chat` y `--streaming` para TTFT/ITL.
+- Configurar endpoint, modelo servido, headers/API key y ruta custom; secretos fuera de manifiestos y logs.
+- `--export-level records` como perfil estándar para métricas por request. `raw` solo para diagnóstico autorizado; no exportar texto generado por defecto. `summary` para smoke o informes compactos.
+- Preservar artefactos originales AIPerf; ingerir summary JSON/CSV y records JSONL. Importar GPU telemetry y server metrics cuando existan.
+- Usar la captura de `/metrics` de AIPerf cuando esté disponible, manteniendo el adaptador nativo NEPENTHES independiente para validar cobertura y semántica.
+- Soportar concurrencia fija, request-rate, duración sostenida, replay de trazas y goodput/SLO cuando el escenario esté definido.
+- La exportación AIPerf a OTLP/HTTP es opcional; la evidencia primaria seguirá siendo el artefacto local más el expediente NEPENTHES.
+
+### 3.2 Métricas y protocolo normalizado
+
+Normalizar cuando el endpoint lo permita: TTFT, ITL, latencia total, time-to-last-token, throughput, tokens de entrada/salida, request throughput, P50/P90/P95/P99, concurrencia, tasa de llegada, duración, goodput/SLO, warm-up, timeouts, cancelaciones y errores. Registrar dataset, longitudes, tokenizer, sampling, thinking, motor/commit, backend, flags y hardware.
+
+Los nombres y unidades del esquema NEPENTHES no dependerán de los nombres internos de AIPerf. Cada campo importado conserva herramienta/versión, campo original, unidad original y valor normalizado; lo no disponible permanece null/unsupported, nunca cero.
+
+### 3.3 Cargas concurrentes
 
 Diseñar perfiles:
 - single-request baseline.
@@ -172,9 +179,9 @@ Diseñar perfiles:
 
 En el MSI de 14 GiB RAM y RTX 3050 Laptop 4 GiB, dimensionar las pruebas para no confundir presión de memoria, swap u OOM con latencia propia del motor. La matriz de concurrencia será adaptativa al modelo y configuración.
 
-### 3.3 Comparativas reproducibles
+### 3.4 Comparativas reproducibles
 
-- GenAI-Perf (compatibilidad histórica) y AIPerf (candidato recomendado para nuevas campañas) frente a protocolo nativo NEPENTHES.
+- AIPerf (runner primario) frente a protocolo nativo NEPENTHES; GenAI-Perf solo para importar o reproducir campañas históricas.
 - llama.cpp frente a TensorFold y futuros motores.
 - baseline sin instrumentación frente a BASIC/FULL.
 - commit anterior frente a commit candidato.
@@ -266,7 +273,7 @@ PRs pequeños y dependencias explícitas; no crear un mega-PR.
 | 5 | OTLP exporter | HTTP/protobuf y/o gRPC, tests con collector |
 | 6 | llama.cpp adapters | /metrics, /slots, scraping y fixtures |
 | 7 | TensorFold adapter discovery | Auditoría de capacidades y adaptador solo si existe API |
-| 8 | GenAI-Perf/AIPerf integration | Runner(s), manifiesto y normalización |
+| 8 | AIPerf integration | Runner primario, manifiesto, importador, normalización y fixtures; GenAI-Perf legacy import separado |
 | 9 | llama.cpp instrumentation | Lifecycle, graph, KV, scheduler, MoE, CPU/CUDA/server |
 | 10 | Nsight semantic correctness | enums, uint64, cobertura y correlación |
 | 11 | Reports & release gates | informes, comparación y aceptación integral |
@@ -351,15 +358,17 @@ Los límites de overhead se fijarán después de una línea base. Como objetivos
 | Cardinalidad OTel excesiva | IDs en trazas, no labels métricos |
 | Cambios de /metrics y /slots | Discovery, fixtures versionados y parser tolerante |
 | TensorFold no ofrece métricas públicas | No inventar endpoints; documentar brecha y proponer API |
-| GenAI-Perf y protocolo propio difieren | Manifiesto común y comparación controlada |
+| AIPerf y protocolo propio difieren | Manifiesto común, importador versionado y comparación controlada |
 | Relojes incompatibles | Dominios separados y calibración demostrada |
 | Exporter ralentiza inferencia | Buffer acotado, envío asíncrono y drop counters |
 
 ## Referencias externas verificadas
 
 - [Inferscope](https://github.com/MicheleCampi/inferscope): profiler de inferencia con ITL por token, muestreo NVML por GPU, contador de energía NVML con fallback de integración trapezoidal, tokens/J y exportación OTLP opcional. Revisar versión, licencia y validación real antes de adoptar detalles.
-- [GenAI-Perf](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/perf_analyzer/genai-perf/README.html): herramienta útil para TTFT, ITL, throughput y concurrencia; NVIDIA señala que está en retirada.
-- [AIPerf](https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference): candidato recomendado por NVIDIA para nuevos benchmarks; evaluar métricas, exportaciones y compatibilidad con el protocolo NEPENTHES.
+- [AIPerf — opciones de CLI y artefactos](https://docs.nvidia.com/aiperf/reference/command-line-options): runner primario; perfiles streaming, concurrencia/tasa de llegada, exportación summary/records/raw, GPU telemetry, server metrics y OTLP/HTTP.
+- [AIPerf — profiling](https://docs.nvidia.com/aiperf/getting-started/profiling-with-ai-perf): ejecución contra endpoints OpenAI-compatible.
+- [AIPerf — métricas](https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference): semántica y unidades.
+- [GenAI-Perf](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/perf_analyzer/genai-perf/README.html): compatibilidad heredada; NVIDIA señala que está en retirada.
 - [llama.cpp server metrics](https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md): documentación del endpoint /metrics, habilitado mediante la opción --metrics.
 
 ## Entregables documentales
@@ -370,7 +379,9 @@ Los límites de overhead se fijarán después de una línea base. Como objetivos
 - Especificación NVML/energía.
 - Esquema de spans/atributos OpenTelemetry.
 - Contrato de adaptadores.
-- Protocolo GenAI-Perf/benchmark.
+- Especificación de integración AIPerf y protocolo NEPENTHES.
+- Importador de artefactos AIPerf con fixtures por versión.
+- Importador legacy GenAI-Perf, solo si existen campañas históricas que lo requieran.
 - Matriz de cobertura y gates.
 - Manifiestos y evidencias por campaña.
 
