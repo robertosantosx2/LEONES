@@ -21,6 +21,8 @@ Este directorio establece la arquitectura y el plan canónico del subproyecto. C
 
 ### P1 — Estudiar e integrar ideas de Inferscope (máximo interés inmediato)
 
+Referencia principal: [MicheleCampi/inferscope](https://github.com/MicheleCampi/inferscope) (Apache-2.0). Estudiar arquitectura, decisiones de diseño, límites de atribución, captura token-stream, NVML, contador de energía y exportación OTLP. Adoptar ideas mediante una implementación NEPENTHES compatible con sus propios contratos; no copiar código sin revisión de licencia y dependencias.
+
 - Muestreo NVML por dispositivo, con frecuencia configurable, timestamps monotónicos y detección de muestras perdidas.
 - Potencia instantánea y energía acumulada real cuando el dispositivo/driver exponga un contador compatible.
 - Cuando no exista contador de energía, integración numérica de muestras de potencia; etiquetar el resultado como energía derivada, nunca como contador físico directo.
@@ -46,9 +48,9 @@ OpenTelemetry será la interfaz estándar de exportación e integración, no el 
 
 No crear un span por cada token por defecto: puede generar volumen y overhead excesivos. Registrar ITL como histograma/evento agregado y habilitar detalle token-a-token solo en perfiles de diagnóstico. No incluir prompts, respuestas ni datos sensibles en atributos por defecto. Evitar IDs de petición como etiquetas de métricas de alta cardinalidad; mantenerlos en trazas.
 
-### P3 — Aprovechar GenAI-Perf
+### P3 — Aprovechar GenAI-Perf y evaluar AIPerf
 
-Incorporar GenAI-Perf como referencia de metodología y, donde sea práctico, como herramienta de ejecución/validación externa.
+GenAI-Perf aporta una metodología útil y resultados comparables, pero NVIDIA indica que está en fase de retirada y recomienda AIPerf para nuevos benchmarks. Por tanto, conservar compatibilidad/importación de resultados GenAI-Perf y evaluar AIPerf como runner preferente futuro. La elección se hará con una prueba de compatibilidad contra los endpoints OpenAI-compatible de los motores objetivo.
 
 - Protocolo normalizado de benchmark y manifiesto completo.
 - TTFT, ITL, latencia total, throughput de entrada/salida y percentiles.
@@ -58,7 +60,7 @@ Incorporar GenAI-Perf como referencia de metodología y, donde sea práctico, co
 - Comparativas reproducibles entre commits, motores, modelos, cuantizaciones y configuraciones.
 - Exportación de resultados a los contratos NEPENTHES y LEONES sin perder unidades ni procedencia.
 
-No comparar resultados de GenAI-Perf con campañas propias si difieren prompt, longitud de salida, concurrencia, política de streaming, warm-up, hardware o versión. Registrar la versión exacta de GenAI-Perf y su configuración.
+No comparar resultados de GenAI-Perf/AIPerf con campañas propias si difieren prompt, longitud de salida, concurrencia, política de streaming, warm-up, hardware o versión. Registrar la versión exacta de GenAI-Perf y su configuración.
 
 ### P4 — Adaptadores de métricas nativas
 
@@ -68,7 +70,7 @@ No comparar resultados de GenAI-Perf con campañas propias si difieren prompt, l
 - Normalizar nombres, unidades, etiquetas, timestamps y semántica, conservando siempre el payload original.
 - Diferenciar métricas nativas del motor, métricas del host/dispositivo y métricas calculadas por NEPENTHES.
 
- /slots es una API de estado, no una fuente Prometheus: su adaptador debe tratarla como snapshot/evento y preservar el esquema de la versión del servidor.
+/slots es una API de estado, no una fuente Prometheus: su adaptador debe tratarla como snapshot/evento y preservar el esquema de la versión del servidor.
 
 ## Arquitectura
 
@@ -138,6 +140,13 @@ Reglas obligatorias:
 8. No permitir que la exportación OTLP bloquee la inferencia.
 9. Mantener JSONL/SQLite como evidencia local aun cuando OTLP esté desactivado.
 10. Mantener prompts y respuestas fuera de la telemetría por defecto.
+
+## Referencias externas
+
+- [Inferscope — profiler OpenAI-compatible con NVML, energía, ITL y OTLP](https://github.com/MicheleCampi/inferscope).
+- [NVIDIA GenAI-Perf — documentación y estado de ciclo de vida](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/perf_analyzer/genai-perf/README.html).
+- [NVIDIA AIPerf — referencia de métricas](https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference).
+- [llama.cpp server — endpoint /metrics](https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md).
 
 ## Enlaces canónicos
 
