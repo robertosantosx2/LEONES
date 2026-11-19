@@ -454,6 +454,7 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
     try:
         names = table_names(source)
         strings = load_string_ids(source, names)
+        enum_maps, enum_metadata = load_enum_tables(source, names)
         detected: dict[str, int] = {}
         for table in sorted(names):
             if table.lower().startswith("cupti_activity_kind_"):
@@ -470,6 +471,8 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                 continue
             for source_row in source.execute(f'SELECT * FROM "{table}"'):
                 row = {k: json_value(source_row[k]) for k in source_row.keys()}
+                enum_decoding = decode_activity_enums(row, enum_maps)
+                row["_nepenthes_enum_decoding"] = enum_decoding["raw"]
                 start = first(row, ("start", "startNs", "start_ns", "begin", "timestamp"))
                 end = first(row, ("end", "endNs", "end_ns", "finish"))
                 duration = (
@@ -497,6 +500,13 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                     sqlite_numeric(first(row, ("contextId", "context_id")), field=f"{table}.context_id"),
                     sqlite_numeric(first(row, ("streamId", "stream_id")), field=f"{table}.stream_id"),
                     str(name) if name is not None else None,
+                    sqlite_numeric(enum_decoding["copy_kind_value"], field=f"{table}.copy_kind_value"),
+                    enum_decoding["copy_kind_name"],
+                    sqlite_numeric(enum_decoding["src_kind_value"], field=f"{table}.src_kind_value"),
+                    enum_decoding["src_kind_name"],
+                    sqlite_numeric(enum_decoding["dst_kind_value"], field=f"{table}.dst_kind_value"),
+                    enum_decoding["dst_kind_name"],
+                    enum_decoding["enum_decode_status"],
                     json.dumps(row, ensure_ascii=False, sort_keys=True),
                 ))
                 activity_counts[kind] += 1
@@ -522,17 +532,22 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
             out.execute(
                 """INSERT INTO nepenthes_nsys_imports
                 (import_id,nsys_path,nsys_sha256,activity_count,activity_kinds_json,
-                 detected_table_counts_json,coverage_json,provenance,correlation_policy)
-                VALUES (?,?,?,?,?,?,?,?,?)""",
+                 detected_table_counts_json,coverage_json,provenance,correlation_policy,enum_tables_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?)""",
                 (import_id, str(nsys.resolve()), sha256(nsys), len(activities),
                  json.dumps(dict(activity_counts), sort_keys=True),
                  json.dumps(detected, sort_keys=True), json.dumps(coverage, sort_keys=True),
                  "standalone_nsys_capture_without_paired_nepenthes_jsonl",
-                 "No NEPENTHES run_id or request correlation asserted; Nsight timestamps and CUPTI correlation IDs remain within the Nsight source domain."),
+                 "No NEPENTHES run_id or request correlation asserted; Nsight timestamps and CUPTI correlation IDs remain within the Nsight source domain.",
+                 json.dumps(enum_metadata, ensure_ascii=False, sort_keys=True)),
             )
             out.executemany(
                 """INSERT INTO nepenthes_nsys_activities
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
+                (import_id,activity_id,source_table,activity_kind,start_ns,end_ns,duration_ns,
+                 correlation_id,global_pid,process_id,device_id,context_id,stream_id,name,
+                 copy_kind_value,copy_kind_name,src_kind_value,src_kind_name,dst_kind_value,
+                 dst_kind_name,enum_decode_status,raw_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
             )
     finally:
         out.close()
@@ -547,6 +562,8 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
         "activity_count": len(activities),
         "activity_kinds": dict(activity_counts),
         "detected_table_counts": detected,
+        "enum_tables": enum_metadata,
+        "enum_decode_status_counts": dict(Counter(a[20] for a in activities)),
         "coverage": coverage,
         "output": str(output.resolve()),
         "correlation": "none; standalone Nsight provenance, no paired NEPENTHES run is claimed",
