@@ -1,4 +1,111 @@
-# NEPENTHES — índice de implementación, validación y evidencias
+# NEPENTHES — documento maestro único: plan, estado y motores
+
+> **Fuente única de verdad del proyecto.** Este documento reúne el estado global, la arquitectura, las prioridades, los gates de aceptación y el plan/estado de cada motor de inferencia. Toda actualización de estado debe reflejarse aquí. Los documentos especializados enlazados son anexos técnicos, contratos o expedientes de evidencia; no mantienen un roadmap paralelo ni prevalecen sobre este documento.
+
+**Última actualización:** 2026-11-19.
+**Estado global:** infraestructura de observabilidad LEONES en evolución; integración llama.cpp en reconciliación/CI remota; integración TensorFold en fase de contrato y dependencia; sin aceptación física nueva en MSI para las integraciones en curso.
+
+## 1. Resumen ejecutivo y decisión de arquitectura
+
+NEPENTHES es una capa común de observabilidad y evidencia para motores de inferencia. LEONES conserva el núcleo compartido: runner, identidad de ejecución, captura host/GPU, esquema/eventos, importadores, manifiestos, validación, correlación explícita, informes y exportación. Cada motor aporta únicamente un conector/adaptador que traduce su telemetría nativa al contrato común.
+
+Principios no negociables:
+- Un solo contrato común y un solo pipeline de evidencia; no crear un sistema paralelo por motor.
+- Conservar particularidades del motor en metadata namespaced, sin fragmentar el esquema común.
+- Correlación únicamente mediante IDs/tokens y calibración explícitos; nunca atribuir por proximidad temporal.
+- Instrumentación opt-in, disabled por defecto y overhead acotado.
+- No modificar drivers, CUDA toolkit, kernels/modelos ni introducir sincronizaciones en el hot path.
+- Separar aceptación de código/CI de validación física. No declarar un motor aceptado por tener una PR o tests sintéticos.
+
+## 2. Panel general del proyecto
+
+| Área | Estado | Próximo gate |
+|---|---|---|
+| Núcleo LEONES (runner, captura, manifiestos, informes, AIPerf/OTLP) | Implementación integrada en main para las capacidades documentadas; aceptación física parcial | Completar campañas reales y auditoría de paquetes |
+| Contrato común multi-motor | En preparación: [LEONES #207](https://github.com/robertosantosx2/LEONES/issues/207) | Validador de envelope compartido, registry cerrado de sources y fixtures llama.cpp/TensorFold |
+| llama.cpp | Integración activa; [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10) en draft/CI según último estado documentado | Cerrar CI/revisión, aceptar contrato y luego C07/C08 en MSI |
+| TensorFold 1.2.10 | Contrato documentado en fork; [issue #1](https://github.com/robertosantosx2/TensorFold/issues/1) reclamada; depende de LEONES #207 | Aceptar validador común; después adaptador host-only y CI |
+| tandem.cpp (patch/snapshot histórico) | Evidencia histórica y parche preservados; no es un segundo núcleo ni la línea canónica de integración actual | Mantener trazabilidad; no duplicar el pipeline compartido |
+| Otros motores | No hay conector aceptado registrado | Incorporar solo mediante el contrato común y una fila de estado/evidencia |
+
+### Orden de trabajo vigente
+1. **LEONES #207 — contrato común multi-motor.** Extraer la validación del envelope del importador llama.cpp sin debilitarlo; registry explícito de sources; clocks y semántica específicos por motor; fixtures positivos y negativos para llama.cpp y TensorFold.
+2. **CI y aceptación de #207.** Preservar compatibilidad llama.cpp; rechazar sources desconocidos, mismatch event/summary, IDs/valores inválidos, privacidad incorrecta y summaries malformados; no declarar aceptación hasta observar CI real.
+3. **TensorFold — adaptador sin CUDA.** Solo tras #207: ciclo request/run, eventos compatibles, metadata namespaced, privacidad y pruebas host-only. No duplicar importador ni runner.
+4. **llama.cpp — reconciliación de integración.** Resolver el candidato limpio [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10) sobre upstream actual, revisar diff/semántica y cerrar CI antes de merge o de actualizar el gitlink LEONES.
+5. **Validación física MSI.** Solo cuando los gates remotos estén cerrados: build CUDA, C07 con NVTX+Nsight y C08 con baseline/tratamientos emparejados.
+6. **Aceptación por motor y release.** Publicar evidencia, límites, overhead, cobertura y hashes; un motor no hereda la aceptación de otro.
+
+## 3. Estado y plan por motor
+
+### 3.1 llama.cpp
+
+**Estado:** integración activa en el fork; PR [#10](https://github.com/robertosantosx2/llama.cpp/pull/10) preparada como integración limpia sobre upstream c406f4367e19bea7930e7f74e1984c9acc6d44bf, con un commit NEPENTHES y 23 archivos. En la última evidencia registrada, CI seguía en curso y los runners self-hosted/Models Backend Check estaban queued. No se declara CI global verde, merge ni aceptación.
+
+**Ya conseguido:** contrato de eventos/sink, puente CPU, instrumentación NVTX opt-in y port de cambios NEPENTHES sobre upstream actual en PR #10. Los históricos RC1/#6 y #1–#3 son candidatos/antecedentes, no deben tratarse como línea aceptada ni fusionarse sin reconciliación.
+
+**Siguientes pasos:**
+- [ ] Consultar CI del HEAD actual de PR #10 y clasificar todos los checks, incluidos queued/skipped y fallos externos.
+- [ ] Revisar diff y semántica de lifecycle, concurrencia, JSONL, NVTX y límites de eventos; comparar cobertura con los candidatos previos.
+- [ ] Cerrar contrato común LEONES #207 y comprobar compatibilidad del productor con el importador.
+- [ ] Merge solo tras CI/revisión; actualizar el gitlink LEONES después de la aceptación.
+- [ ] MSI: build Linux/CUDA, C07 real NVTX+Nsight y C08 emparejado; conservar artefactos y métricas.
+
+**Límite de aceptación:** la CI remota no demuestra overhead, cobertura real ni correlación con CUPTI; hacen falta C07/C08 físicos.
+
+### 3.2 TensorFold 1.2.10
+
+**Estado:** trabajo remoto en el fork [robertosantosx2/TensorFold](https://github.com/robertosantosx2/TensorFold), rama [nepenthes/tensorfold](https://github.com/robertosantosx2/TensorFold/tree/nepenthes/tensorfold). La documentación específica está en [docs/nepenthes/README.md](https://github.com/robertosantosx2/TensorFold/blob/nepenthes/tensorfold/docs/nepenthes/README.md). Issue [TensorFold #1](https://github.com/robertosantosx2/TensorFold/issues/1) define el contrato y está reclamada. Dependencia explícita: [LEONES #207](https://github.com/robertosantosx2/LEONES/issues/207).
+
+**Hallazgo de compatibilidad:** el importador actual scripts/nepenthes_llama_trace_import.py exige source=llama.cpp y clock_domain=steady_clock. No es multi-engine; cambiar solo el campo source no hace compatible TensorFold. Por eso se abrió #207 para extraer un envelope común y conservar validaciones específicas por motor.
+
+**Siguientes pasos:**
+- [ ] Implementar y aceptar LEONES #207 antes de escribir el adaptador TensorFold.
+- [ ] Definir source y clock domain TensorFold mediante registry explícito; rechazar sources desconocidos.
+- [ ] Implementar adaptador host-only, opt-in y sin dependencias obligatorias; mantener metadata TensorFold namespaced.
+- [ ] Añadir fixtures positivos/negativos y verificar ingestión por el importador común.
+- [ ] Después, planificar sondas CUDA/NVTX/Nsight; no iniciar validación GPU antes de la aceptación host/CI.
+
+**Límite de aceptación:** todavía no hay adaptador runtime TensorFold aceptado ni validación CUDA/MSI. No abrir PR de runtime antes de resolver el gate de coordinación ATC/overlap exigido por el repositorio.
+
+### 3.3 tandem.cpp
+
+**Estado:** el snapshot/patch histórico de tandem.cpp se conserva en research/moe/tandem.cpp; sus informes y benchmarks son evidencia histórica. No debe confundirse con un motor independiente ni con la integración canónica actual de llama.cpp. El pipeline compartido reside en LEONES.
+
+**Plan:** conservar procedencia, hashes y documentación histórica; no duplicar colectores, importadores ni esquemas. Cualquier reactivación del conector debe pasar por el contrato común y tener un plan/evidencia propio.
+
+### 3.4 Otros motores
+
+No se registra todavía ningún otro motor con conector y aceptación NEPENTHES demostrados. Cualquier candidato nuevo deberá añadirse aquí con versión/base, rama/PR, estado CI, estado host-only, estado hardware, límites y siguiente gate. No se inferirá compatibilidad por compartir CUDA o formato de modelo.
+
+## 4. Gates de aceptación comunes
+
+| Gate | Qué demuestra | Qué no demuestra |
+|---|---|---|
+| Diseño/documentación | Contrato y límites definidos | Implementación |
+| Host tests | Validación lógica sin GPU | Compatibilidad real con runtime/CUDA |
+| CI_PASS | Checks automatizados del commit exacto | Captura física ni overhead |
+| CAPTURED | Ejecución real con artefactos y manifiesto | Correlación/atribución no validada |
+| C07_ACCEPTED | Captura emparejada JSONL + NVTX/Nsight con calibración/IDs explícitos e integridad | Overhead estadístico |
+| C08_ACCEPTED | Baseline/tratamientos repetidos y overhead dentro de umbral | Cobertura de sondas no ejercitadas |
+| ENGINE_ACCEPTED | Gates de software, contrato y hardware aplicables superados | Aceptación automática de otros motores |
+
+Umbral C08 standard vigente: decode overhead ≤5% aceptable; 5–8% requiere excepción/revisión; >8% bloquea aceptación standard. Reportar por separado TTFT, decode tok/s, latencia, RSS/RAM y VRAM device-wide. No atribuir memoria/uso GPU global al proceso sin evidencia.
+
+## 5. Documentos auxiliares (no son fuentes de estado paralelas)
+
+- [Roadmap histórico/detallado y checklist de gates](NEPENTHES-ROADMAP.md): detalle operativo subordinado a este documento; actualizar el estado maestro aquí.
+- [Contrato Nsight/CUPTI](NEPENTHES-IMPORTER.md): referencia técnica del importador.
+- [CLI e instalador](NEPENTHES-CLI.md): referencia de uso.
+- [Campañas](NEPENTHES-CAMPAIGNS.md): registro de ejecuciones y resultados; las conclusiones aceptadas se resumen aquí.
+- [Informe histórico Qwen3.5-35B](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md): evidencia histórica, no roadmap.
+
+---
+
+## Registro histórico y evidencia detallada
+
+El contenido histórico que sigue se conserva como expediente de evidencias. Para el estado vigente, la prioridad y el plan por motor, prevalecen las secciones 1–5 de este documento maestro.
+
 
 **Corte de estado:** 2026-11-15 (validación histórica Nsight-only real completada).  
 **Estado global:** CLI funcional, motor CUDA instrumentado compilado sobre base pinned, primera inferencia real con JSONL del motor y validación E2E de importación Nsight-only sobre captura histórica real completadas. Aún falta la captura emparejada con Nsight, correlación robusta y auditoría de cobertura/overhead de una ejecución instrumentada.
