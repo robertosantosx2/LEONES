@@ -203,6 +203,19 @@ class LlamaTraceImportTests(unittest.TestCase):
         self.assertEqual(result["event_count"], 2)
         self.assertTrue(result["capture_complete"])
 
+    def test_connector_request_lifecycle_requires_request_identity(self) -> None:
+        for source in ("tensorfold", "tandem.cpp"):
+            with self.subTest(source=source), tempfile.TemporaryDirectory() as directory:
+                bad = event("request-1", "request_start", request_id=0, source=source)
+                path = self.write_trace(directory, [bad, summary(1, source=source)])
+                with self.assertRaisesRegex(ValueError, "request lifecycle events require a non-zero request_id"):
+                    import_trace(path, source=source)
+
+        with tempfile.TemporaryDirectory() as directory:
+            internal = event("internal-1", "kernel_launch", request_id=0, source="tensorfold")
+            path = self.write_trace(directory, [internal, summary(1, source="tensorfold")])
+            self.assertTrue(import_trace(path, source="tensorfold")["capture_complete"])
+
     def test_unknown_source_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = self.write_trace(directory, [event("llama-1", "sync"), summary(1)])
