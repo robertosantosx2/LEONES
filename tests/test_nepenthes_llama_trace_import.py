@@ -222,6 +222,14 @@ class LlamaTraceImportTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "unregistered trace source"):
                 import_trace(path, source="unknown-engine")
 
+    def test_malformed_source_selector_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write_trace(directory, [event("llama-1", "sync"), summary(1)])
+            for source in (None, 7, [], {}):
+                with self.subTest(source=source):
+                    with self.assertRaisesRegex(ValueError, "unregistered trace source"):
+                        import_trace(path, source=source)
+
     def test_event_source_mismatch_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = self.write_trace(directory, [
