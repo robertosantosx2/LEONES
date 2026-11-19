@@ -5,7 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from scripts.nepenthes_aiperf_run import build_command, parse_args, run, safe_url
+from scripts.nepenthes_aiperf_run import build_command, parse_aiperf_version, parse_args, run, safe_url
+
+
+def test_aiperf_version_parser_and_release_pin():
+    assert parse_aiperf_version("aiperf, version 0.13.0") == "0.13.0"
+    assert parse_aiperf_version("0.14.0rc1") == "0.14.0rc1"
+    assert parse_aiperf_version("unknown version") is None
 
 
 def test_safe_url_rejects_embedded_secrets():
@@ -32,8 +38,10 @@ def test_build_command_uses_conservative_reproducible_profile(tmp_path: Path):
     assert command[command.index("--synthetic-input-tokens-mean") + 1] == "128"
     assert command[command.index("--output-tokens-mean") + 1] == "32"
     assert "--streaming" in command
+    assert command[command.index("--synthetic-input-tokens-stddev") + 1] == "0"
+    assert command[command.index("--output-tokens-stddev") + 1] == "0"
     assert "--export-level" in command and command[command.index("--export-level") + 1] == "records"
-    assert "--no-export-outputs-json" in command
+    assert "--no-export-outputs-json" not in command
     assert "--api-key" not in command
 
 
@@ -58,6 +66,7 @@ def test_dry_run_writes_manifest_without_launching_aiperf(tmp_path: Path, capsys
     manifest = json.loads((artifact_dir / "nepenthes_aiperf_run.json").read_text(encoding="utf-8"))
     assert manifest["status"] == "dry_run"
     assert manifest["aiperf_version"] is None
+    assert manifest["expected_aiperf_version"] == "0.13.0"
     assert manifest["profile"]["concurrency"] == 1
     assert manifest["profile"]["export_generated_text"] is False
     assert "--streaming" in capsys.readouterr().out
