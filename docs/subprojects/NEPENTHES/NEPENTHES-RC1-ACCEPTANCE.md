@@ -134,3 +134,14 @@ These are implementation branches under CI review. C07 is **not closed** until C
 The comparator requires at least three paired repetitions, at least one warm-up and three measurement iterations per evidence file. Standard decode overhead ≤5% is the acceptance target; 5–8% requires an explicit exception; >8% blocks acceptance. The evidence records process RSS separately from system RAM and device-wide VRAM/power.
 
 C07/C08 are implemented in GitHub branches/PRs, not accepted as physical results. The verifier distinguishes bundle integrity from run-level completion. The MSI is needed only for the real CUDA/Nsight capture, overhead campaign and final hardware-specific gates.
+
+
+### AIPerf-first C08 evidence adapter — 2026-11-19
+
+- [LEONES PR #185](https://github.com/robertosantosx2/LEONES/pull/185), stacked on #184, adds the pinned AIPerf runner/importer, inference-server PID resource sampling, canonical AIPerf evidence adapter and privacy guards.
+- The adapter requires AIPerf's own output-token-throughput metric, warm-up evidence, at least three profiling requests, immutable model/engine/hardware identity and inference-server RSS + system RAM + device-wide VRAM.
+- It refuses to substitute a throughput estimate derived from request latency and refuses benchmark-client RSS as server RSS.
+- Latest regression run for the implementation commit: 510 tests passed; contract tests and runtime-v1.1 checks passed. The RC3 release gate is still running.
+- Prompts and raw stdout/stderr are not persisted by the direct evidence runner; command arguments and sampling metadata are sanitized. AIPerf artifacts are retained by hash without importing prompt/response bodies.
+
+C08 now has a reproducible AIPerf-first evidence path in GitHub. Actual baseline/JSONL/Nsight/combined runs, CUDA/Nsight capture, and the overhead percentage remain unmeasured until the MSI is used.
