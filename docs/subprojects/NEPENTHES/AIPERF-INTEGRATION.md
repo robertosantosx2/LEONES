@@ -210,7 +210,7 @@ Para autenticación, usar el mecanismo de entorno admitido por AIPerf (por ejemp
 
 La versión estable AIPerf fijada por el runner es `0.13.0` (`v0.13.0`); su CLI se contrastó con `docs/cli-options.md` del tag, y el `main` observado estaba en `ebcdc98ad69388b86564e25bc1a6976fc50051a7`. El manifiesto de versión es `AIPERF-UPSTREAM.json`. El runner no sigue `main` automáticamente.
 
-La revisión upstream verificada para esta integración es `ggml-org/llama.cpp@39039aa27fe65244913d8a07303b8733f614fe20` (`master`, 2026-11-19 06:50:33 UTC). El pin se conserva en `LLAMA-CPP-UPSTREAM.json`; el workflow `NEPENTHES llama.cpp upstream monitor` comprueba diariamente si `master` avanza y abre/actualiza un issue de revisión, sin actualizar código ni submódulos automáticamente.
+La revisión upstream verificada para esta integración es `ggml-org/llama.cpp@95b09b62beb95c40fc6b317a0c1473c27b5f27fa` (`master`, 2026-11-19 07:57:57 UTC). El pin se conserva en `LLAMA-CPP-UPSTREAM.json`; la revisión anterior `39039aa27fe65244913d8a07303b8733f614fe20` avanzó tres commits (UI, LLVM 22 y eliminación de `PATH_MAX`); el workflow `NEPENTHES llama.cpp upstream monitor` comprueba diariamente si `master` avanza y abre/actualiza un issue de revisión, sin actualizar código ni submódulos automáticamente.
 
 En esa revisión, `tools/server/README.md` documenta `--metrics` como endpoint Prometheus opt-in y `--slots` como endpoint de monitorización habilitado por defecto; `tools/server/server.cpp` registra GET `/metrics` y GET `/slots`. Por tanto, la disponibilidad de `/metrics` debe detectarse/configurarse por despliegue y no asumirse.
 
