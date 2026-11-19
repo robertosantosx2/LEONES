@@ -22,7 +22,7 @@ def write_aiperf_bundle(root: Path, include_warmup: bool = True, include_through
         "benchmark_id": "bench-c08-001",
         "start_time": "2026-11-19T07:00:00Z",
         "end_time": "2026-11-19T07:00:10Z",
-        "metrics": summary_metrics,
+        **summary_metrics,
         "run_info": {"benchmark_id": "bench-c08-001", "random_seed": 42},
     }
     (root / "profile_export_aiperf.json").write_text(json.dumps(summary), encoding="utf-8")
