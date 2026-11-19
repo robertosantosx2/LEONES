@@ -476,6 +476,37 @@ def verify_run(a):
  elif nsys_enabled:
   result["errors"].append("data/nepenthes-import.sqlite missing while Nsight capture is enabled")
  result["checks"]["nsys_import"]=not any(x.startswith(("data/nsys-import.json","data/nepenthes-import.sqlite","Nsight import","nepenthes-import.sqlite","NVTX markers","Nsight GPU","windowed Nsight","ambiguous overlapping","Nsight NVTX marker")) for x in result["errors"])
+ nsys_calibration=result.get("nsys_clock_calibration",{})
+ c07_pass=(nsys_enabled and correlation.get("nvtx_marker_events",0)>=2
+           and nsys_calibration.get("matched_marker_pairs",0)>=2
+           and nsys_calibration.get("nsight_clock_calibrated") is True
+           and result["checks"]["nsys_import"])
+ result["checks"]["c07_correlation"]=bool(c07_pass)
+ c08_path=run/"data"/"c08-overhead-report.json"
+ c08_status="not_run";c08_pass=False
+ if c08_path.is_file():
+  try:
+   c08=json.loads(c08_path.read_text(encoding="utf-8"))
+   c08_status=c08.get("overall_status","unknown")
+   conditions=c08.get("conditions",{})
+   c08_pass=(c08.get("schema")=="nepenthes-overhead-gate.v1"
+             and c08.get("profile")=="standard"
+             and c08_status=="accepted"
+             and all(conditions.get(name,{}).get("paired_repetitions",0)>=3
+                     and conditions.get(name,{}).get("gate_status")=="accepted"
+                     for name in ("jsonl","nsys","combined")))
+   if c08_status not in ("accepted","informational_only"):
+    result["errors"].append("C08 overhead gate is not accepted: "+str(c08_status))
+  except (OSError,json.JSONDecodeError) as exc:
+   result["errors"].append("data/c08-overhead-report.json invalid: "+str(exc));c08_status="invalid"
+ result["c08_overhead_status"]=c08_status
+ result["checks"]["c08_overhead"]=bool(c08_pass)
+ result["acceptance"]={
+  "c07":"passed" if c07_pass else "pending",
+  "c08":"passed" if c08_pass else ("informational_only" if c08_status=="informational_only" else "pending"),
+  "scope":"run-level evidence gates only; project CI and physical hardware acceptance remain separate",
+ }
+ result["functional_complete"]=bool(c07_pass and c08_pass)
  result["checks"]["report_html"]=(run/"reports"/"index.html").is_file()
  if not result["checks"]["report_html"]:result["errors"].append("reports/index.html missing")
  result["ok"]=not result["errors"]
