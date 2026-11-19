@@ -181,7 +181,7 @@
     "pr": 4,
     "commit": "ec5b6c46164f2b81695afd50d44760b2e201b5bd",
     "run_id": 44525234003,
-    "run_url": "https://github.com/robertosantosx2/llama.cpp/actions/runs/44525234494",
+    "run_url": "https://github.com/robertosantosx2/llama.cpp/actions/runs/44525234003",
     "observed_at": "2026-11-19",
     "nepenthes_trace_cpu_job": {
       "status": "completed",
