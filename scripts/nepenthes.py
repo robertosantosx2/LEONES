@@ -381,7 +381,7 @@ def verify_run(a):
     for field in ("timestamp_unix_ns","monotonic_ns","request_id","value0","value1","duration_ns","flags"):
      value=event.get(field)
      if isinstance(value,bool) or not isinstance(value,int):event_errors.append("event field "+field+" is not integer at line "+str(line_no))
-    elif field in ("timestamp_unix_ns","monotonic_ns","request_id","duration_ns","flags") and value<0:event_errors.append("event field "+field+" is negative at line "+str(line_no))
+     elif field in ("timestamp_unix_ns","monotonic_ns","request_id","duration_ns","flags") and value<0:event_errors.append("event field "+field+" is negative at line "+str(line_no))
   except (OSError,json.JSONDecodeError) as exc:event_errors.append("event JSONL invalid: "+str(exc))
  result["errors"].extend(event_errors)
  if not events:result["errors"].append("raw/events.jsonl empty")
