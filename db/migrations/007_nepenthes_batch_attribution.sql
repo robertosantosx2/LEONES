@@ -29,6 +29,7 @@ SELECT
     a.attributed_batch_token AS correlation_token,
     a.batch_attribution_level,
     a.batch_attribution_status,
+    e.event_id AS member_event_id,
     e.request_id,
     e.value0 AS slot_id,
     e.value1 AS task_id
@@ -52,6 +53,7 @@ SELECT
     a.attributed_batch_token AS correlation_token,
     a.batch_attribution_level,
     a.batch_attribution_status,
+    e.event_id AS member_event_id,
     e.request_id,
     e.value0 AS slot_id,
     e.value1 AS task_id
