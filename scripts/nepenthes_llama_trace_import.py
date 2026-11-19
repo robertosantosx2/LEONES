@@ -14,7 +14,6 @@ from typing import Any
 from nepenthes_trace_envelope import (
     ATTRIBUTION_LEVELS,
     EVENT_FIELDS,
-    FORBIDDEN_FIELDS,
     OPTIONAL_EVENT_FIELDS,
     SUMMARY_FIELDS,
     require_uint as _require_int,
