@@ -27,6 +27,8 @@ EVENT_FIELDS = {
     "duration_ns",
     "flags",
 }
+OPTIONAL_EVENT_FIELDS = {"correlation_token", "attribution_level", "clock_domain"}
+ATTRIBUTION_LEVELS = {"exact", "windowed", "device_wide", "estimated"}
 FORBIDDEN_FIELDS = {"prompt", "completion", "response", "text", "tokens", "token_ids", "input_text", "output_text"}
 SUMMARY_FIELDS = {
     "schema_version",
@@ -70,6 +72,10 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
     duration_stats: dict[str, dict[str, int]] = {}
     request_starts: collections.Counter[int] = collections.Counter()
     request_ends: collections.Counter[int] = collections.Counter()
+    correlation_starts: collections.Counter[int] = collections.Counter()
+    correlation_ends: collections.Counter[int] = collections.Counter()
+    attribution_counts: collections.Counter[str] = collections.Counter()
+    clock_calibration_points: list[tuple[int, int, str]] = []
     internal_events = 0
     min_monotonic_ns: int | None = None
     max_monotonic_ns: int | None = None
@@ -124,7 +130,7 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
             if summary is not None:
                 raise ValueError(f"line {line_no}: event found after sink_summary")
             missing = EVENT_FIELDS - record.keys()
-            extra = record.keys() - EVENT_FIELDS
+            extra = record.keys() - EVENT_FIELDS - OPTIONAL_EVENT_FIELDS
             if missing:
                 raise ValueError(f"line {line_no}: event missing fields: {sorted(missing)}")
             if extra:
@@ -148,9 +154,23 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
                 raise ValueError(f"line {line_no}: duplicate event_id {event_id}")
             event_ids.add(event_id)
 
-            _require_int(record, "timestamp_unix_ns", line_no)
+            timestamp_unix_ns = _require_int(record, "timestamp_unix_ns", line_no)
             monotonic_ns = _require_int(record, "monotonic_ns", line_no)
             request_id = _require_int(record, "request_id", line_no)
+            correlation_token = record.get("correlation_token")
+            if correlation_token is not None:
+                if isinstance(correlation_token, bool) or not isinstance(correlation_token, int) or not 0 < correlation_token <= 0xFFFFFFFFFFFFFFFF:
+                    raise ValueError(f"line {line_no}: correlation_token must be null or a positive unsigned 64-bit integer")
+            attribution_level = record.get("attribution_level")
+            if attribution_level is not None and attribution_level not in ATTRIBUTION_LEVELS:
+                raise ValueError(f"line {line_no}: invalid attribution_level")
+            if attribution_level == "exact" and correlation_token is None:
+                raise ValueError(f"line {line_no}: exact attribution requires correlation_token")
+            if correlation_token is not None and attribution_level != "exact":
+                raise ValueError(f"line {line_no}: correlation_token requires exact attribution_level")
+            clock_domain = record.get("clock_domain")
+            if clock_domain is not None and clock_domain != "steady_clock":
+                raise ValueError(f"line {line_no}: unsupported llama.cpp clock_domain")
             _require_int(record, "value0", line_no)
             _require_int(record, "value1", line_no)
             duration_ns = _require_int(record, "duration_ns", line_no)
@@ -168,8 +188,20 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
                 internal_events += 1
             if event_kind == "request_start" and request_id:
                 request_starts[request_id] += 1
+                if correlation_token is not None:
+                    correlation_starts[correlation_token] += 1
             elif event_kind == "request_end" and request_id:
                 request_ends[request_id] += 1
+                if correlation_token is not None:
+                    correlation_ends[correlation_token] += 1
+            if attribution_level is not None:
+                attribution_counts[attribution_level] += 1
+            if event_kind == "clock_calibration":
+                if timestamp_unix_ns == 0:
+                    raise ValueError(f"line {line_no}: clock_calibration requires timestamp_unix_ns")
+                if clock_domain != "steady_clock":
+                    raise ValueError(f"line {line_no}: clock_calibration requires clock_domain=steady_clock")
+                clock_calibration_points.append((monotonic_ns, timestamp_unix_ns, label))
             min_monotonic_ns = monotonic_ns if min_monotonic_ns is None else min(min_monotonic_ns, monotonic_ns)
             max_monotonic_ns = monotonic_ns if max_monotonic_ns is None else max(max_monotonic_ns, monotonic_ns)
 
@@ -200,6 +232,32 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
                            for request_id, count in request_starts.items())
     unmatched_ends = sum(max(0, count - request_starts[request_id])
                          for request_id, count in request_ends.items())
+    unmatched_correlation_starts = sum(max(0, count - correlation_ends[token])
+                                        for token, count in correlation_starts.items())
+    unmatched_correlation_ends = sum(max(0, count - correlation_starts[token])
+                                      for token, count in correlation_ends.items())
+    calibration_points = sorted(clock_calibration_points, key=lambda point: point[0])
+    calibration = {
+        "point_count": len(calibration_points),
+        "nsight_clock_calibrated": False,
+        "nsight_timestamp_available": False,
+        "offset_start_ns": None,
+        "offset_end_ns": None,
+        "drift_ns": None,
+        "drift_ppm": None,
+        "monotonic_span_ns": None,
+    }
+    if calibration_points:
+        first_mono, first_wall, _ = calibration_points[0]
+        last_mono, last_wall, _ = calibration_points[-1]
+        calibration["offset_start_ns"] = first_wall - first_mono
+        calibration["offset_end_ns"] = last_wall - last_mono
+        if len(calibration_points) >= 2 and last_mono > first_mono:
+            drift_ns = calibration["offset_end_ns"] - calibration["offset_start_ns"]
+            span_ns = last_mono - first_mono
+            calibration["drift_ns"] = drift_ns
+            calibration["monotonic_span_ns"] = span_ns
+            calibration["drift_ppm"] = (drift_ns / span_ns) * 1_000_000
 
     return {
         "schema_version": "1.0",
@@ -218,7 +276,13 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
             "unmatched_request_starts": unmatched_starts,
             "unmatched_request_ends": unmatched_ends,
             "internal_events_request_id_zero": internal_events,
+            "correlation_token_start_events": sum(correlation_starts.values()),
+            "correlation_token_end_events": sum(correlation_ends.values()),
+            "unmatched_correlation_starts": unmatched_correlation_starts,
+            "unmatched_correlation_ends": unmatched_correlation_ends,
         },
+        "attribution_level_counts": dict(sorted(attribution_counts.items())),
+        "host_clock_calibration": calibration,
         "monotonic_range_ns": {
             "min": min_monotonic_ns,
             "max": max_monotonic_ns,
