@@ -200,5 +200,7 @@
   "nepenthes_verify_status": "open_draft; bundle and correlation-aware verification implemented; CI pending",
   "nepenthes_c08_pr": "https://github.com/robertosantosx2/LEONES/pull/184",
   "nepenthes_c08_status": "open_draft; paired overhead gate and robust telemetry implemented; CI pending; physical campaign pending",
-  "c08_status": "harness_implemented; real_paired_msi_measurements_required"
+  "c08_status": "harness_implemented; AIPerf-first evidence adapter and paired comparator in PRs #184/#185; real_paired_msi_measurements_required",
+  "nepenthes_aiperf_c08_pr": "https://github.com/robertosantosx2/LEONES/pull/185",
+  "nepenthes_aiperf_c08_status": "open_draft; AIPerf 0.13 runner/importer, inference-server resource sampler and canonical evidence adapter implemented; 510 regression tests passed; physical C08 campaign pending"
 }
