@@ -47,6 +47,7 @@ def evidence(condition, pair_id, tps, ttft=100.0):
             "version": "test-build",
             "revision": "engine-sha",
             "backend": "cuda",
+            "command_sha256": "d" * 64,
         },
         "hardware": {
             "os": "Ubuntu",
@@ -162,3 +163,28 @@ def test_overhead_gate_rejects_less_than_three_measurement_iterations(tmp_path):
     path.write_text(json.dumps(payload), encoding="utf-8")
     groups, errors = load_evidence([path], "standard")
     assert any("at least three measurement iterations" in error for error in errors)
+
+
+
+def test_standard_gate_requires_ttft_duration_and_memory_metrics(tmp_path):
+    paths = write_group(tmp_path, {"off": 100, "jsonl": 96, "nsys": 97, "combined": 95})
+    target = tmp_path / "combined-pair-1.json"
+    payload = json.loads(target.read_text(encoding="utf-8"))
+    payload["measurements"][0]["peak_vram_mb_device_wide"] = None
+    payload["measurements"][1]["peak_vram_mb_device_wide"] = None
+    payload["measurements"][2]["peak_vram_mb_device_wide"] = None
+    target.write_text(json.dumps(payload), encoding="utf-8")
+    groups, errors = load_evidence(paths, "standard")
+    assert any("peak_vram_mb_device_wide" in error for error in errors)
+    report = compare(groups, "standard", 3, 5.0, 8.0, errors)
+    assert report["overall_status"] == "blocked"
+
+
+def test_standard_gate_rejects_command_configuration_drift(tmp_path):
+    paths = write_group(tmp_path, {"off": 100, "jsonl": 96, "nsys": 97, "combined": 95})
+    target = tmp_path / "combined-pair-1.json"
+    payload = json.loads(target.read_text(encoding="utf-8"))
+    payload["runtime"]["command_sha256"] = "e" * 64
+    target.write_text(json.dumps(payload), encoding="utf-8")
+    groups, errors = load_evidence(paths, "standard")
+    assert any("benchmark configuration differs" in error for error in errors)
