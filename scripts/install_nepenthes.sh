@@ -22,7 +22,7 @@ command -v python3 >/dev/null || { echo "Python 3 is required" >&2; exit 1; }
 python3 -c 'import sys; assert sys.version_info >= (3,10)' || { echo "Python 3.10+ required" >&2; exit 1; }
 mkdir -p "$BIN_DIR" "$DATA_DIR"
 install -m 0755 "$SOURCE" "${BIN_DIR}/nepenthes"
-if [[ -f "$IMPORTER_SOURCE" && -f "$MIGRATION_SOURCE" && -f "$MIGRATION_003_SOURCE" ]]; then
+if [[ -f "$IMPORTER_SOURCE" && -f "$MIGRATION_SOURCE" && -f "$MIGRATION_003_SOURCE" && -f "$MIGRATION_006_SOURCE" ]]; then
   mkdir -p "${DATA_DIR}/scripts" "${DATA_DIR}/db/migrations"
   install -m 0644 "$IMPORTER_SOURCE" "${DATA_DIR}/scripts/nepenthes_nsys_import.py"
   install -m 0644 "$MIGRATION_SOURCE" "${DATA_DIR}/db/migrations/002_nepenthes_observability.sql"
