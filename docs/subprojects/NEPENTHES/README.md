@@ -235,3 +235,6 @@ NVTX marker implementation and request-window correlation are tracked in [llama.
 
 
 The current C07/C08 implementation work is tracked in [llama.cpp PR #4](https://github.com/robertosantosx2/llama.cpp/pull/4) and LEONES PRs [#181](https://github.com/robertosantosx2/LEONES/pull/181), [#182](https://github.com/robertosantosx2/LEONES/pull/182), [#183](https://github.com/robertosantosx2/LEONES/pull/183) and [#184](https://github.com/robertosantosx2/LEONES/pull/184). Real C07/C08 measurements remain pending on the MSI.
+
+
+AIPerf is now wired into the C08 evidence path through [LEONES PR #185](https://github.com/robertosantosx2/LEONES/pull/185). Its runner samples the inference server PID, system RAM and device-wide GPU metrics; its adapter produces the same canonical evidence consumed by the paired overhead gate. CI regression tests pass; physical measurements remain MSI-dependent.
