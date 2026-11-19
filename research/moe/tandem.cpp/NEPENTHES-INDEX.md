@@ -59,6 +59,8 @@ Principios no negociables:
 
 **Hallazgo de compatibilidad:** el importador actual scripts/nepenthes_llama_trace_import.py exige source=llama.cpp y clock_domain=steady_clock. No es multi-engine; cambiar solo el campo source no hace compatible TensorFold. Por eso se abrió #207 para extraer un envelope común y conservar validaciones específicas por motor.
 
+**Auditoría de fuente 1.2.10 (2026-11-19):** se revisaron los límites reales en `server/http_conn.zig`, `server/routes.zig`, `server/server.zig`, `server/request_journal.zig`, `cuda/launch.zig`, `cuda/graph.zig`, `cuda/stream.zig`, `cuda/memory.zig`, `cuda/driver.zig` y `cuda/abi.zig`. La entrada correcta de lifecycle es por petición en `routes.dispatch`, no por conexión: HTTP keep-alive reutiliza una conexión para varias peticiones. `Conn.id`/`Server.next_id` son IDs de respuesta y no se han demostrado como identidad lógica NEPENTHES. El journal opcional puede contener cuerpo/contenido y no debe reutilizarse como sink. CUDA ofrece seams host para launch, graph, memoria, copias y errores; launch/graph return solo prueban submission, los contadores de memoria son agregados y el hook de memoria es propiedad de suballocator, no telemetría. No se deben añadir sincronizaciones para medir completions. El expediente detallado con blobs auditados está en [TensorFold SOURCE-AUDIT-1.2.10.md](https://github.com/robertosantosx2/TensorFold/blob/nepenthes/tensorfold/docs/nepenthes/SOURCE-AUDIT-1.2.10.md). Esta auditoría no ejecutó build/tests ni acredita instrumentación runtime.
+
 **Siguientes pasos:**
 - [ ] Implementar y aceptar LEONES #207 antes de escribir el adaptador TensorFold.
 - [ ] Definir source y clock domain TensorFold mediante registry explícito; rechazar sources desconocidos.
