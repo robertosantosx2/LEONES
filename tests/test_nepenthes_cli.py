@@ -204,7 +204,8 @@ def emit(kind,token):
   f.write(json.dumps({'schema_version':'1.0','run_id':os.environ['NEPENTHES_RUN_ID'],
    'event_id':kind+str(time.time_ns()),'source':'test-engine','timestamp_unix_ns':time.time_ns(),
    'monotonic_ns':time.monotonic_ns(),'request_id':1,'correlation_token':token,
-   'event_kind':kind,'label':kind,'value0':0,'value1':0,'duration_ns':0,'flags':0})+'\\n')
+   'event_kind':kind,'label':kind,'value0':0,'value1':0,'duration_ns':0,'flags':0,
+   'attribution_level':'exact','clock_domain':'steady_clock'})+'\\n')
 time.sleep(0.1)
 emit('request_start',77)
 time.sleep(0.28)
@@ -220,3 +221,4 @@ time.sleep(0.1)
  assert manifest["sampling"]["idle_interval_seconds"]==1.0
  assert manifest["sample_count"]>=2
  assert manifest["engine_probe_activation"]["environment_variables_set"] is True
+ assert invoke("verify",str(run)).returncode==0
