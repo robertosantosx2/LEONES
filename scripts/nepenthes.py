@@ -231,7 +231,7 @@ def run(a):
  if a.profile=="latency-critical" and a.nsys=="required":raise ValueError("latency-critical disables Nsight; --nsys required is incompatible")
  sample_host=a.profile!="latency-critical"
  interval=(a.interval if a.interval is not None else PROFILES[a.profile])
- adaptive_sampling=bool(a.adaptive_sampling or a.profile=="moe-deep")
+ adaptive_sampling=bool(getattr(a,"adaptive_sampling",False) or a.profile=="moe-deep")
  active_interval=min(interval if interval is not None else 0.1,0.1)
  idle_interval=max(interval if interval is not None else 1.0,1.0)
  nsys_enabled=(a.nsys=="required" or (a.nsys=="auto" and a.profile in ("full","moe-deep"))) and bool(nsys_exe)
