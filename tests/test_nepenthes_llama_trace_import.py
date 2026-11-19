@@ -298,5 +298,21 @@ class LlamaTraceImportTests(unittest.TestCase):
                 import_trace(path)
 
 
+
+
+    def test_non_string_profile_fields_are_rejected_without_crashing(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            bad_attribution = event("llama-1", "sync")
+            bad_attribution["attribution_level"] = ["exact"]
+            path = self.write_trace(directory, [bad_attribution, summary(1)])
+            with self.assertRaisesRegex(ValueError, "invalid attribution_level"):
+                import_trace(path)
+            bad_clock = event("llama-1", "sync")
+            bad_clock["clock_domain"] = {"name": "steady_clock"}
+            path = self.write_trace(directory, [bad_clock, summary(1)])
+            with self.assertRaisesRegex(ValueError, "unsupported llama.cpp clock_domain"):
+                import_trace(path)
+
+
 if __name__ == "__main__":
     unittest.main()
