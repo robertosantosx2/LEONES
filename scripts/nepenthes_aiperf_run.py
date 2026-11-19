@@ -60,6 +60,7 @@ def build_command(executable: str, args: argparse.Namespace, artifact_dir: Path)
         "--streaming",
         "--concurrency", str(args.concurrency),
         "--request-count", str(args.request_count),
+        "--warmup-request-count", str(args.warmup_request_count),
         "--synthetic-input-tokens-mean", str(args.input_tokens),
         "--synthetic-input-tokens-stddev", "0",
         "--output-tokens-mean", str(args.output_tokens),
@@ -106,6 +107,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
                         help="exact AIPerf version required for a reproducible run (default: 0.13.0)")
     parser.add_argument("--concurrency", type=positive_int, default=1)
     parser.add_argument("--request-count", type=positive_int, default=5)
+    parser.add_argument("--warmup-request-count", type=positive_int, default=1,
+                        help="explicit AIPerf warmup requests")
     parser.add_argument("--input-tokens", type=positive_int, default=128)
     parser.add_argument("--output-tokens", type=positive_int, default=32)
     parser.add_argument("--random-seed", type=int, default=42)
@@ -178,10 +181,10 @@ def run(args: argparse.Namespace) -> int:
         "command": manifest_command,
         "command_display": shlex.join(manifest_command),
         "workload_command_sha256": workload_command_sha256,
-        "workload_command_sha256": workload_command_sha256,
         "target": {"model": args.model, "url": args.url, "endpoint_type": "chat", "streaming": True},
         "profile": {
             "concurrency": args.concurrency, "request_count": args.request_count,
+            "warmup_request_count": args.warmup_request_count,
             "input_tokens_mean": args.input_tokens, "output_tokens_mean": args.output_tokens,
             "random_seed": args.random_seed, "export_level": "records",
             "export_generated_text": False, "server_metrics_enabled": not args.no_server_metrics,
