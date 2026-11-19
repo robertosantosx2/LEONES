@@ -368,7 +368,7 @@ def event_rows(path: Path):
 
 
 NVTX_MARKER_RE = re.compile(
-    r"nepenthes\.request\.(start|end)\s+token=(\d+)\s+request=(\d+)"
+    r"nepenthes\.(request|batch)\.(start|end)\s+token=(\d+)(?:\s+request=(\d+))?"
 )
 
 
@@ -378,10 +378,17 @@ def parse_nvtx_marker(message: Any) -> dict[str, Any] | None:
     match = NVTX_MARKER_RE.search(message)
     if not match:
         return None
+    scope, phase, token_text, request_text = match.groups()
+    request_id = int(request_text) if request_text is not None else None
+    if scope == "request" and request_id is None:
+        return None
+    if scope == "batch" and request_id is not None:
+        return None
     return {
-        "phase": match.group(1),
-        "token": int(match.group(2)),
-        "request_id": int(match.group(3)),
+        "scope": scope,
+        "phase": phase,
+        "token": int(token_text),
+        "request_id": request_id,
         "message": message,
     }
 
@@ -410,8 +417,8 @@ def collect_nsys_nvtx_markers(db: sqlite3.Connection, names: set[str],
     return markers
 
 
-def host_nvtx_markers(events: list[dict[str, Any]]) -> dict[tuple[int, str], list[dict[str, int]]]:
-    result: dict[tuple[int, str], list[dict[str, int]]] = {}
+def host_nvtx_markers(events: list[dict[str, Any]]) -> dict[tuple[str, int, str], list[dict[str, int]]]:
+    result: dict[tuple[str, int, str], list[dict[str, int]]] = {}
     for event in events:
         if event.get("event_kind") != "nvtx_marker":
             continue
@@ -419,14 +426,22 @@ def host_nvtx_markers(events: list[dict[str, Any]]) -> dict[tuple[int, str], lis
         label = event.get("label")
         if isinstance(token, bool) or not isinstance(token, int) or token <= 0:
             continue
-        if label not in ("request.start", "request.end"):
+        if label in ("request.start", "request.end"):
+            scope = "request"
+            if isinstance(event.get("request_id"), bool) or not isinstance(event.get("request_id"), int) or event["request_id"] <= 0:
+                continue
+        elif label in ("batch.start", "batch.end"):
+            scope = "batch"
+            if event.get("request_id", 0) not in (0, None):
+                continue
+        else:
             continue
         before = event.get("value0")
         after = event.get("value1")
         if not isinstance(before, int) or not isinstance(after, int) or after < before:
             continue
         phase = "start" if label.endswith(".start") else "end"
-        key = (token, phase)
+        key = (scope, token, phase)
         result.setdefault(key, []).append({
             "host_mid_ns": (before + after) // 2,
             "bracket_ns": after - before,
@@ -435,18 +450,22 @@ def host_nvtx_markers(events: list[dict[str, Any]]) -> dict[tuple[int, str], lis
     return result
 
 
-def calibrate_host_to_nsys(host_markers: dict[tuple[int, str], list[dict[str, int]]],
-                           nsys_markers: list[dict[str, Any]]) -> dict[str, Any]:
-    nsys_by_key: dict[tuple[int, str], list[int]] = {}
+def calibrate_host_to_nsys(
+    host_markers: dict[tuple[str, int, str], list[dict[str, int]]],
+    nsys_markers: list[dict[str, Any]],
+) -> dict[str, Any]:
+    nsys_by_key: dict[tuple[str, int, str], list[int]] = {}
     for marker in nsys_markers:
-        nsys_by_key.setdefault((marker["token"], marker["phase"]), []).append(marker["start_ns"])
+        nsys_by_key.setdefault(
+            (marker["scope"], marker["token"], marker["phase"]), []
+        ).append(marker["start_ns"])
     pairs = []
     for key, host_values in host_markers.items():
         nsys_values = nsys_by_key.get(key, [])
         if len(host_values) == 1 and len(nsys_values) == 1:
             host = host_values[0]
             pairs.append({
-                "token": key[0], "phase": key[1],
+                "scope": key[0], "token": key[1], "phase": key[2],
                 "host_monotonic_ns": host["host_mid_ns"],
                 "nsys_timestamp_ns": nsys_values[0],
                 "offset_ns": nsys_values[0] - host["host_mid_ns"],
@@ -479,49 +498,68 @@ def calibrate_host_to_nsys(host_markers: dict[tuple[int, str], list[dict[str, in
     return result
 
 
-def build_nvtx_request_windows(markers: list[dict[str, Any]]) -> list[dict[str, int]]:
-    # A token is process-scoped. Never attribute device activity from another
-    # process merely because its timestamps overlap this request's NVTX window.
-    grouped: dict[tuple[int, int], dict[str, list[int]]] = {}
+def build_nvtx_token_windows(markers: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    # Windows are process- and scope-scoped. Request and batch tokens may have
+    # equal numeric values without colliding; overlap is resolved per scope.
+    grouped: dict[tuple[int, str, int], dict[str, list[int]]] = {}
     for marker in markers:
         process_id = marker.get("process_id")
+        scope = marker.get("scope")
         token = marker.get("token")
         if isinstance(process_id, bool) or not isinstance(process_id, int):
             continue
+        if scope not in ("request", "batch"):
+            continue
         if isinstance(token, bool) or not isinstance(token, int) or token <= 0:
             continue
-        grouped.setdefault((process_id, token), {"start": [], "end": []})[marker["phase"]].append(
+        grouped.setdefault((process_id, scope, token), {"start": [], "end": []})[marker["phase"]].append(
             marker["start_ns"]
         )
     windows = []
-    for (process_id, token), phases in grouped.items():
+    for (process_id, scope, token), phases in grouped.items():
         if len(phases["start"]) == 1 and len(phases["end"]) == 1:
             start_ns, end_ns = phases["start"][0], phases["end"][0]
             if end_ns > start_ns:
                 windows.append({
-                    "process_id": process_id, "token": token,
+                    "process_id": process_id, "scope": scope, "token": token,
                     "start_ns": start_ns, "end_ns": end_ns,
                 })
-    return sorted(windows, key=lambda item: (item["process_id"], item["start_ns"]))
+    return sorted(windows, key=lambda item: (item["process_id"], item["scope"], item["start_ns"]))
 
 
-def attribute_nsys_activity(start_ns: Any, end_ns: Any,
-                            windows: list[dict[str, int]],
-                            process_id: Any) -> tuple[int | None, str | None, str]:
+def build_nvtx_request_windows(markers: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Backward-compatible alias; returned windows may have request or batch scope."""
+    return build_nvtx_token_windows(markers)
+
+
+def attribute_nsys_activity(
+    start_ns: Any, end_ns: Any, windows: list[dict[str, Any]], process_id: Any,
+) -> tuple[int | None, str | None, str, int | None, str | None, str]:
     if not isinstance(start_ns, (int, float)) or not isinstance(end_ns, (int, float)):
-        return None, None, "missing_activity_timestamps"
+        return None, None, "missing_activity_timestamps", None, None, "missing_activity_timestamps"
     if isinstance(process_id, bool) or not isinstance(process_id, int):
-        return None, None, "missing_activity_process_identity"
-    process_windows = [window for window in windows if window["process_id"] == process_id]
-    if not process_windows:
-        return None, None, "missing_process_request_window"
-    matches = [window["token"] for window in process_windows
-               if window["start_ns"] <= int(start_ns) and int(end_ns) <= window["end_ns"]]
-    if len(matches) == 1:
-        return matches[0], "windowed", "unique_explicit_request_window"
-    if len(matches) > 1:
-        return None, None, "overlapping_request_windows"
-    return None, None, "outside_request_window"
+        return None, None, "missing_activity_process_identity", None, None, "missing_activity_process_identity"
+
+    def match_scope(scope: str) -> tuple[int | None, str | None, str]:
+        process_windows = [
+            window for window in windows
+            if window["process_id"] == process_id and window["scope"] == scope
+        ]
+        if not process_windows:
+            return None, None, f"missing_process_{scope}_window"
+        matches = [
+            window["token"] for window in process_windows
+            if window["start_ns"] <= int(start_ns) and int(end_ns) <= window["end_ns"]
+        ]
+        if len(matches) == 1:
+            return matches[0], "windowed", f"unique_explicit_{scope}_window"
+        if len(matches) > 1:
+            return None, None, f"overlapping_{scope}_windows"
+        return None, None, f"outside_{scope}_window"
+
+    request_token, request_level, request_status = match_scope("request")
+    batch_token, batch_level, batch_status = match_scope("batch")
+    return request_token, request_level, request_status, batch_token, batch_level, batch_status
 
 
 def init_output(db: sqlite3.Connection) -> None:
