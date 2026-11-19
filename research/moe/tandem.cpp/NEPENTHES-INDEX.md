@@ -25,7 +25,7 @@ Principios no negociables:
 | Contrato común multi-motor | Implementación host-only en [PR #210](https://github.com/robertosantosx2/LEONES/pull/210), issue [#207](https://github.com/robertosantosx2/LEONES/issues/207); 10 checks remotos verdes en HEAD `3602f96`, revisión pendiente | Revisión de semántica/compatibilidad y aceptación; no fusionar antes de review |
 | llama.cpp | Integración activa; [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10) en draft/CI según último estado documentado | Cerrar CI/revisión, aceptar contrato y luego C07/C08 en MSI |
 | TensorFold 1.2.10 | Contrato documentado en fork; [issue #1](https://github.com/robertosantosx2/TensorFold/issues/1) reclamada; depende de LEONES #207 | Aceptar validador común; después adaptador host-only y CI |
-| tandem.cpp (distribución patch-based sobre llama.cpp) | PR #1 runtime y PR #3 fix de request IDs abiertas; PR #2 documental; CI de #1/#3 verde; inferencia Qwen3.5-4B y bundle de 6.569 eventos validados; importación emparejada bloqueada por overflow uint64→SQLite INTEGER y correlación interna parcial | Revisar #1/#3, reproducir/corregir overflow en importer actual, completar importación emparejada y correlación explícita; después C07/C08 |
+| tandem.cpp (distribución patch-based sobre llama.cpp) | PR #1 runtime abierta/no draft y PR #3 fix de request IDs abierta/lista para review; PR #2 documental; CI de #1/#3 verde; inferencia Qwen3.5-4B y bundle validados; importación emparejada demostrada en LEONES #153; correlación interna parcial | Revisión/merge ordenado #1→#3; completar identidad worker/batch/CUDA explícita y medir cobertura; después C07/C08 |
 | Otros motores | No hay conector aceptado registrado | Incorporar solo mediante el contrato común y una fila de estado/evidencia |
 
 ### Orden de trabajo vigente
@@ -78,7 +78,7 @@ Principios no negociables:
 **Estado remoto auditado — 2026-11-19:**
 - [Tandem.cpp PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1), instrumentación principal, sigue abierta y sin merge. HEAD validado por CI: `170d3af9918e2cdf3b5c72f6bb61ab0c3b7b6b52`. Implementa hook C++17, timestamps monotónicos, scoped durations, sink JSONL asíncrono con cola bounded de 8192 entradas, writer separado, shutdown seguro y aplicador determinista de sondas.
 - [Tandem.cpp PR #2](https://github.com/robertosantosx2/tandem.cpp/pull/2) contiene la guía de instrumentación; es documental y no añade runtime.
-- [Tandem.cpp PR #3](https://github.com/robertosantosx2/tandem.cpp/pull/3), corrección complementaria apilada sobre #1, sigue abierta y sin merge. HEAD `2da6b222c2c663ebeeeb729e771930153cbabf17`. Reserva `request_id=0` para eventos no correlacionados y transforma task IDs del servidor mediante `request_id_from_task_id()`: task ID 0 pasa a request ID 1, preservando el ID original en `value0`. La corrección se aplica a eventos server request start/end y routing; no atribuye IDs a workers, CUDA asíncrono ni eventos de shared batch sin identidad segura.
+- [Tandem.cpp PR #3](https://github.com/robertosantosx2/tandem.cpp/pull/3), corrección complementaria apilada sobre #1, sigue abierta, ya no es draft y está lista para review. HEAD `2da6b222c2c663ebeeeb729e771930153cbabf17`. Reserva `request_id=0` para eventos no correlacionados y transforma task IDs del servidor mediante `request_id_from_task_id()`: task ID 0 pasa a request ID 1, preservando el ID original en `value0`. La corrección se aplica a eventos server request start/end y routing; no atribuye IDs a workers, CUDA asíncrono ni eventos de shared batch sin identidad segura.
 - No se debe considerar #3 sustituta de #1: #1 aporta la instrumentación y #3 corrige la semántica de identidad sobre esa base. Ambas requieren revisión y merge coordinados; #2 es documentación.
 
 **Cobertura instrumentada declarada por el código:**
@@ -101,19 +101,19 @@ Los spans host describen submission/dispatch, no ejecución GPU. Los kernels ind
 
 **Captura Nsight e importación:**
 - La ejecución real generó artefactos `.nsys-rep` y SQLite de Nsight además del JSONL del motor.
-- La validación del bundle (6.569 eventos fusionados) demuestra integridad del paquete y del informe, pero no demuestra por sí sola que LEONES haya completado una importación emparejada JSONL + Nsight.
-- La PR #3 reporta que la importación SQLite del flujo emparejado queda bloqueada por overflow al convertir valores unsigned de 64 bits a `SQLite INTEGER`. La importación Nsight-only ya integrada en LEONES (#153, según el estado del proyecto) no prueba que este caso concreto del flujo emparejado esté resuelto. Hay que reproducir el caso contra el importer actual de `main`, identificar el campo y añadir fixture de regresión antes de marcarlo resuelto.
+- La validación del bundle (6.569 eventos fusionados) es distinta de la importación emparejada. Esta última sí quedó demostrada posteriormente por la validación final de LEONES #153: dos capturas emparejadas preservadas (PR1 y PR3), cada una con 6.569 eventos del motor y 24.211 actividades Nsight importadas.
+- La PR #3 reportó inicialmente un overflow al importar unsigned de 64 bits a `SQLite INTEGER`. Ese diagnóstico quedó obsoleto tras LEONES #153: el importer actual convierte valores uint64 al dominio signed de SQLite mediante complemento a dos y conserva el valor original en `raw_json`. La prueba `test_import_converts_all_jsonl_uint64_integer_fields` cubre `2^64−1`; `test_import_rejects_integer_outside_uint64_range` rechaza `2^64`. La validación final de #153 importó dos capturas emparejadas (PR1/PR3), cada una con 6.569 eventos y 24.211 actividades, con integridad SQLite correcta.
 - La antigua captura Qwen3.5-4B CPU-only con 3.683 eventos y todos los request-window IDs en cero se conserva como evidencia histórica independiente; no debe mezclarse con la nueva captura de #3.
 
 **Pendiente / plan de aceptación:**
 - [ ] Revisar los diffs y dependencias de #1 y #3 conjuntamente; mantenerlas abiertas hasta confirmar base/head, comentarios, CI del HEAD exacto y semántica. No fusionar ni cerrar ninguna alternativa sin revisión.
-- [ ] Reproducir y corregir el overflow unsigned-64 → SQLite INTEGER en el importador emparejado actual de LEONES; añadir fixture que cubra límites unsigned y verificar integridad/foreign keys.
-- [ ] Ejecutar importación real emparejada del JSONL y SQLite Nsight generados en la misma ejecución/RUN_ID; verificar manifiesto, hashes, tablas, pérdidas, errores y procedencia.
+- [x] Importación emparejada y uint64→SQLite: resuelta y validada en LEONES #153 con dos capturas PR1/PR3; pruebas de límite uint64 y rechazo fuera de rango; integridad SQLite correcta. No duplicar esta corrección.
+- [x] Importación emparejada real demostrada por LEONES #153: dos bundles PR1/PR3, cada uno con 6.569 eventos del motor y 24.211 actividades Nsight; hashes/procedencia e integridad SQLite validados.
 - [ ] Completar correlación solo mediante identidad explícita por job/batch/worker y tokens compartidos con la captura GPU, más calibración de reloj. Hasta entonces, mantener eventos internos sin correlación.
 - [ ] Medir cobertura efectiva por sonda y pérdidas/errores del sink en ejecuciones representativas; no inferirla del inventario de probes.
 - [ ] Ejecutar C07 (captura emparejada con IDs/calibración) y C08 (baseline/tratamientos repetidos y overhead) según los gates comunes. No solicitar MSI hasta cerrar los bloqueos remotos que puedan resolverse en GitHub.
 
-**Límite de aceptación:** hay instrumentación implementada, CI verde en los HEAD citados y evidencia de una inferencia real Qwen3.5-4B con bundle validado y artefactos Nsight generados. No hay aceptación demostrada de importación emparejada, correlación robusta request-worker-CUDA-kernel, cobertura completa ni overhead C08. Tandem sigue siendo una distribución derivada de llama.cpp, no un motor independiente a efectos de duplicar colectores/importadores.
+**Límite de aceptación:** hay instrumentación implementada, CI verde en los HEAD citados, inferencia real Qwen3.5-4B y dos importaciones emparejadas históricas validadas por LEONES #153. Siguen sin aceptarse la correlación robusta request-worker-CUDA-kernel, cobertura completa de sondas y overhead C08. Tandem sigue siendo una distribución derivada de llama.cpp, no un motor independiente a efectos de duplicar colectores/importadores.
 
 ### 3.4 Otros motores
 
