@@ -10,6 +10,9 @@ def test_run_once_captures_output_and_timing():
     assert "12.5 tok/s" in result["stdout"]
     assert result["first_output_ms"] is not None
     assert result["tokens_per_second"] == 12.5
+    assert len(result["stdout_sha256"]) == 64
+    assert len(result["stderr_sha256"]) == 64
+    assert result["stdout_bytes"] > 0
     assert result["ttft_ms"] == 17.5
     assert result["ttft_source"] == "llama_cpp_prompt_eval_time_or_explicit_ttft"
     assert "peak_process_rss_mb" in result
