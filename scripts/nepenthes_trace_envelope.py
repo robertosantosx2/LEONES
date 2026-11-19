@@ -78,8 +78,11 @@ def validate_event_envelope(
     ):
         require_uint(record, field, line_no)
     require_uint(record, "flags", line_no, maximum=65535)
+    event_kind = record.get("event_kind")
+    if not isinstance(event_kind, str) or not event_kind:
+        raise ValueError(f"line {line_no}: invalid event_kind")
     if SOURCE_PROFILES[expected_source].get("request_lifecycle_requires_id") and (
-        record["event_kind"] in {"request_start", "request_end"} and record["request_id"] == 0
+        event_kind in {"request_start", "request_end"} and record["request_id"] == 0
     ):
         raise ValueError(
             f"line {line_no}: {expected_source} request lifecycle events require a non-zero request_id"
@@ -107,8 +110,6 @@ def validate_event_envelope(
         if expected_source == "llama.cpp":
             raise ValueError(f"line {line_no}: unsupported llama.cpp clock_domain")
         raise ValueError(f"line {line_no}: unsupported {expected_source} clock_domain")
-    if not isinstance(record.get("event_kind"), str) or not record["event_kind"]:
-        raise ValueError(f"line {line_no}: invalid event_kind")
     if not isinstance(record.get("label"), str):
         raise ValueError(f"line {line_no}: label must be a string")
 
