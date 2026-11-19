@@ -244,22 +244,67 @@ def run(a):
  samples=[];ticks=os.sysconf("SC_CLK_TCK");pt=ptime=None;start=time.monotonic();code=127
  try:
   with (root/"session.log").open("w",encoding="utf-8") as log,(root/"raw"/"host-events.jsonl").open("w",encoding="utf-8") as ev:
-   emit(ev,"capture_started",run_id=rid,command=cmd,profile=a.profile);log.write("$ "+" ".join(cmd)+"\n\n");log.flush()
+   emit(ev,"capture_started",run_id=rid,command=redacted_cmd,profile=a.profile)
+   log.write("$ "+shlex.join(redacted_cmd)+"\n")
+   if a.capture_output:log.write("Output capture explicitly enabled.\n\n")
+   else:log.write("Child output suppressed by default; use --capture-output to persist it.\n\n")
+   log.flush()
    if nsys_enabled:launch=nsys_command(nsys_exe,str(root/"raw"/"nsys"),cmd)
    child_env=os.environ.copy();child_env["NEPENTHES_RUN_ID"]=rid;child_env["NEPENTHES_TRACE_JSONL"]=str(root/"raw"/"engine-events.jsonl")
-   child=subprocess.Popen(launch,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=child_env);child_pgid=child.pid;m["pid"]=child.pid;m["process_group_id"]=child_pgid;m["launch_command"]=launch;save(root/"manifest.json",m)
-   while True:
-    now=time.monotonic();s={"elapsed_seconds":round(now-start,4),"timestamp_unix_ns":time.time_ns()};p=proc_tree(child.pid)
-    if p:
-     s["process_rss_mib"]=p[1];s["process_count"]=p[2]
-     if pt is not None and ptime is not None:s["process_cpu_percent"]=round(max(p[0]-pt,0)/ticks/max(now-ptime,1e-6)*100,2)
-     pt,ptime=p[0],now
-    g=gpu()
-    if g:s.update(g)
-    samples.append(s);emit(ev,"sample",run_id=rid,**s)
-    if child.poll() is not None:break
-    time.sleep(interval)
-   code=child.returncode
+   child_env["NEPENTHES_PROFILE"]=a.profile;child_env["NEPENTHES_PROBE_LEVEL"]=settings["probe_level"]
+   child_env["NEPENTHES_ADAPTIVE_SAMPLING"]="1" if adaptive_enabled else "0"
+   child=subprocess.Popen(launch,stdout=log if a.capture_output else subprocess.DEVNULL,stderr=subprocess.STDOUT,start_new_session=True,env=child_env)
+   child_pgid=child.pid;m["pid"]=child.pid;m["process_group_id"]=child_pgid;m["launch_command"]=redact_command(launch);save(root/"manifest.json",m)
+   adaptive_path=root/"raw"/"engine-events.jsonl";event_offset=0;pending=b"";active_requests=set()
+   adaptive_state="idle";transitions=[];sample_counts={"active":0,"idle":0};next_sample=0.0
+   if not host_sampling:
+    code=child.wait()
+   else:
+    while True:
+     now=time.monotonic()
+     if adaptive_enabled:
+      try:
+       with adaptive_path.open("rb") as event_stream:
+        event_stream.seek(event_offset);chunk=event_stream.read();event_offset=event_stream.tell()
+      except OSError:chunk=b""
+      pending+=chunk;lines=pending.split(b"\n");pending=lines.pop() if lines else b""
+      for raw_line in lines:
+       if not raw_line.strip():continue
+       try:event=json.loads(raw_line)
+       except json.JSONDecodeError:continue
+       kind=event.get("event_kind");token=event.get("correlation_token",event.get("request_id",event.get("event_id")))
+       if token is None:continue
+       token=str(token)
+       if kind=="request_start":active_requests.add(token)
+       elif kind=="request_end":active_requests.discard(token)
+      state="active" if active_requests else "idle"
+      if state!=adaptive_state:
+       adaptive_state=state
+       transitions.append({"elapsed_seconds":round(now-start,4),"state":state,"active_request_count":len(active_requests)})
+       next_sample=now
+      current_interval=interval if state=="active" else idle_interval
+     else:
+      state="idle";current_interval=interval
+     if now>=next_sample:
+      sample={"elapsed_seconds":round(now-start,4),"timestamp_unix_ns":time.time_ns()}
+      pinfo=proc_tree(child.pid)
+      if pinfo:
+       sample["process_rss_mib"]=pinfo[1];sample["process_count"]=pinfo[2]
+       if pt is not None and ptime is not None:sample["process_cpu_percent"]=round(max(pinfo[0]-pt,0)/ticks/max(now-ptime,1e-6)*100,2)
+       pt,ptime=pinfo[0],now
+      gpu_sample=gpu()
+      if gpu_sample:sample.update(gpu_sample)
+      if adaptive_enabled:
+       sample["adaptive_state"]=state;sample["active_request_count"]=len(active_requests);sample_counts[state]+=1
+      samples.append(sample);emit(ev,"sample",run_id=rid,**sample)
+      next_sample=now+current_interval
+     if child.poll() is not None:break
+     sleep_for=min(0.05,max(0.01,next_sample-time.monotonic())) if adaptive_enabled else max(0.01,min(interval,next_sample-time.monotonic()))
+     time.sleep(sleep_for)
+    code=child.returncode
+   m["adaptive_sampling"]["transitions"]=transitions
+   m["adaptive_sampling"]["sample_counts"]=sample_counts
+
    if nsys_enabled:
     outputs=[str(x.relative_to(root)) for x in sorted((root/"raw").glob("nsys*")) if x.is_file()]
     m["nsys"]["outputs"]=outputs
