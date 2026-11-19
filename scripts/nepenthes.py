@@ -248,8 +248,6 @@ def run(a):
   with (root/"session.log").open("w",encoding="utf-8") as log,(root/"raw"/"host-events.jsonl").open("w",encoding="utf-8") as ev:
    emit(ev,"capture_started",run_id=rid,command=cmd,profile=a.profile);log.write("$ "+" ".join(cmd)+"\n\n");log.flush()
    if nsys_enabled:launch=nsys_command(nsys_exe,str(root/"raw"/"nsys"),cmd)
-   child_env=os.environ.copy();child_env["NEPENTHES_RUN_ID"]=rid;child_env["NEPENTHES_TRACE_JSONL"]=str(root/"raw"/"engine-events.jsonl")
-   child=subprocess.Popen(launch,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=child_env);child_pgid=child.pid;m["pid"]=child.pid;m["process_group_id"]=child_pgid;m["launch_command"]=launch;save(root/"manifest.json",m)
    child_env=os.environ.copy();child_env["NEPENTHES_RUN_ID"]=rid;child_env["NEPENTHES_TRACE_JSONL"]=str(root/"raw"/"engine-events.jsonl");child_env["NEPENTHES_PROFILE"]=a.profile;child_env["NEPENTHES_ADAPTIVE_SAMPLING"]="1" if adaptive_sampling else "0"
    child=subprocess.Popen(launch,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=child_env);child_pgid=child.pid;m["pid"]=child.pid;m["process_group_id"]=child_pgid;m["launch_command"]=launch;save(root/"manifest.json",m)
    if not sample_host:
