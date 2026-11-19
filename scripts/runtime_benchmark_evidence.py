@@ -557,8 +557,8 @@ def main() -> int:
         "summary": summary(measurements),
         "process": {
             "exit_code": max(m["exit_code"] for m in measurements),
-            "stdout": "\n".join(m["stdout"] for m in measurements) if args.store_output else None,
-            "stderr": "\n".join(m["stderr"] for m in measurements) if args.store_output else None,
+            "stdout": "\n".join(m.get("stdout", "") for m in measurements) if args.store_output else None,
+            "stderr": "\n".join(m.get("stderr", "") for m in measurements) if args.store_output else None,
             "output_captured": args.store_output,
         },
         "artifact": {
