@@ -52,8 +52,8 @@ request_duration_seconds_count 5
         "request_duration_seconds_bucket", "request_duration_seconds_bucket",
         "request_duration_seconds_sum", "request_duration_seconds_count",
     ]
-    assert events[1]["labels"] == {}
-    assert events[1]["dropped_label_names"] == ["le"]
+    assert events[1]["labels"] == {"le": "+Inf"}
+    assert events[1]["dropped_label_names"] == []
 
 
 def test_prometheus_parser_represents_special_float_without_invalid_json():
