@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 from statistics import median
 
@@ -137,6 +138,9 @@ def evidence_metrics(evidence: dict) -> dict[str, float]:
         values = [float(item[metric]) for item in measurements if item.get(metric) is not None]
         if values:
             result[metric] = median(values)
+    for metric, value in result.items():
+        if not math.isfinite(value) or value < 0:
+            raise ValueError(f"{metric} must be a finite non-negative number")
     if "tokens_per_second" not in result or result["tokens_per_second"] <= 0:
         raise ValueError("tokens_per_second missing or non-positive")
     for required_metric in ("peak_process_rss_mb", "peak_system_ram_used_mb", "peak_vram_mb_device_wide"):
