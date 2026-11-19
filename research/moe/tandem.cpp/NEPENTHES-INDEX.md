@@ -25,7 +25,7 @@ Principios no negociables:
 | Contrato común multi-motor | Implementación host-only en [PR #210](https://github.com/robertosantosx2/LEONES/pull/210), issue [#207](https://github.com/robertosantosx2/LEONES/issues/207); 10 checks remotos verdes en HEAD `3602f96`, revisión pendiente | Revisión de semántica/compatibilidad y aceptación; no fusionar antes de review |
 | llama.cpp | Integración activa; [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10) en draft/CI según último estado documentado | Cerrar CI/revisión, aceptar contrato y luego C07/C08 en MSI |
 | TensorFold 1.2.10 | Contrato documentado en fork; [issue #1](https://github.com/robertosantosx2/TensorFold/issues/1) reclamada; depende de LEONES #207 | Aceptar validador común; después adaptador host-only y CI |
-| tandem.cpp (distribución patch-based sobre llama.cpp) | Instrumentación NEPENTHES implementada en repo propio; PR #1 abierta, CI de smoke + compilación CUDA SM86 exitosa; captura real histórica CPU-only disponible | Cerrar revisión/merge, validar captura emparejada con Nsight y completar cobertura/correlación/overhead |
+| tandem.cpp (distribución patch-based sobre llama.cpp) | PR #1 runtime y PR #3 fix de request IDs abiertas; PR #2 documental; CI de #1/#3 verde; inferencia Qwen3.5-4B y bundle de 6.569 eventos validados; importación emparejada bloqueada por overflow uint64→SQLite INTEGER y correlación interna parcial | Revisar #1/#3, reproducir/corregir overflow en importer actual, completar importación emparejada y correlación explícita; después C07/C08 |
 | Otros motores | No hay conector aceptado registrado | Incorporar solo mediante el contrato común y una fila de estado/evidencia |
 
 ### Orden de trabajo vigente
