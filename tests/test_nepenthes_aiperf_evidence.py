@@ -84,7 +84,6 @@ def make_args(tmp_path: Path, include_warmup: bool = True, include_throughput: b
         "run_id": "aiperf-execution-001",
         "exit_code": 0,
         "started_at": "2026-11-19T07:00:00Z",
-        "started_at": "2026-11-19T07:00:00Z",
         "finished_at": "2026-11-19T07:00:10Z",
         "workload_command_sha256": "c" * 64,
         "aiperf_version": "0.13.0",
@@ -147,3 +146,23 @@ def test_aiperf_adapter_rejects_missing_warmup_evidence(tmp_path: Path):
 def test_aiperf_adapter_rejects_missing_decode_throughput_instead_of_estimating(tmp_path: Path):
     with pytest.raises(ValueError, match="output_token_throughput is required"):
         build_evidence(make_args(tmp_path, include_throughput=False))
+
+
+def test_aiperf_adapter_rejects_missing_or_invalid_workload_fingerprint(tmp_path: Path):
+    args = make_args(tmp_path)
+    manifest_path = args.artifacts_dir / "nepenthes_aiperf_run.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["workload_command_sha256"] = "not-a-sha256"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="valid normalized workload command SHA-256"):
+        build_evidence(args)
+
+
+def test_aiperf_adapter_rejects_non_positive_campaign_duration(tmp_path: Path):
+    args = make_args(tmp_path)
+    manifest_path = args.artifacts_dir / "nepenthes_aiperf_run.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["finished_at"] = manifest["started_at"]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="finished_at must be later"):
+        build_evidence(args)
