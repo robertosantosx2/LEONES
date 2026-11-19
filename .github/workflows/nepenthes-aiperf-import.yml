@@ -29,6 +29,7 @@ on:
       - 'scripts/nepenthes_otel_export.py'
       - 'scripts/nepenthes_benchmark_report.py'
       - 'scripts/nepenthes_otel_transport.py'
+      - 'scripts/nepenthes_llama_server_capture.py'
       - 'tests/test_nepenthes_aiperf_import.py'
       - 'tests/test_nepenthes_aiperf_run.py'
       - 'tests/test_nepenthes_llama_server_metrics.py'
@@ -36,6 +37,7 @@ on:
       - 'tests/test_nepenthes_otel_export.py'
       - 'tests/test_nepenthes_benchmark_report.py'
       - 'tests/test_nepenthes_otel_transport.py'
+      - 'tests/test_nepenthes_llama_server_capture.py'
       - '.github/workflows/nepenthes-aiperf-import.yml'
   workflow_dispatch:
 
