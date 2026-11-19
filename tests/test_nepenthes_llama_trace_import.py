@@ -12,17 +12,22 @@ from nepenthes_llama_trace_import import import_trace  # noqa: E402
 
 
 def event(event_id: str, kind: str, request_id: int = 0, duration_ns: int = 0,
-          monotonic_ns: int = 100) -> dict:
+          monotonic_ns: int = 100, timestamp_unix_ns: int = 1_800_000_000_000_000_000,
+          correlation_token: int | None = None, attribution_level: str | None = None,
+          label: str = "test.label") -> dict:
     return {
         "schema_version": "1.0",
         "run_id": "test-run",
         "event_id": event_id,
         "source": "llama.cpp",
-        "timestamp_unix_ns": 1_800_000_000_000_000_000,
+        "timestamp_unix_ns": timestamp_unix_ns,
         "monotonic_ns": monotonic_ns,
         "request_id": request_id,
+        "correlation_token": correlation_token,
+        "attribution_level": attribution_level,
+        "clock_domain": "steady_clock",
         "event_kind": kind,
-        "label": "test.label",
+        "label": label,
         "value0": 0,
         "value1": 0,
         "duration_ns": duration_ns,
@@ -67,6 +72,46 @@ class LlamaTraceImportTests(unittest.TestCase):
         self.assertEqual(result["request_lifecycle"]["request_start_events"], 1)
         self.assertEqual(result["request_lifecycle"]["request_end_events"], 1)
         self.assertEqual(result["monotonic_range_ns"], {"min": 100, "max": 300})
+
+
+    def test_explicit_correlation_and_host_clock_calibration(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write_trace(directory, [
+                event("llama-1", "clock_calibration", monotonic_ns=100,
+                      timestamp_unix_ns=1_000_000, label="clock.calibration.start"),
+                event("llama-2", "request_start", request_id=42, monotonic_ns=200,
+                      timestamp_unix_ns=1_000_100, correlation_token=77, attribution_level="exact"),
+                event("llama-3", "request_end", request_id=42, monotonic_ns=900,
+                      timestamp_unix_ns=1_000_800, correlation_token=77, attribution_level="exact"),
+                event("llama-4", "clock_calibration", monotonic_ns=1_000,
+                      timestamp_unix_ns=1_000_900, label="clock.calibration.end"),
+                summary(4),
+            ])
+            result = import_trace(path)
+        self.assertEqual(result["request_lifecycle"]["correlation_token_start_events"], 1)
+        self.assertEqual(result["request_lifecycle"]["correlation_token_end_events"], 1)
+        self.assertEqual(result["request_lifecycle"]["unmatched_correlation_starts"], 0)
+        self.assertEqual(result["attribution_level_counts"]["exact"], 2)
+        self.assertEqual(result["host_clock_calibration"]["point_count"], 2)
+        self.assertEqual(result["host_clock_calibration"]["offset_start_ns"], 999900)
+        self.assertEqual(result["host_clock_calibration"]["offset_end_ns"], 999900)
+        self.assertEqual(result["host_clock_calibration"]["drift_ppm"], 0)
+        self.assertFalse(result["host_clock_calibration"]["nsight_clock_calibrated"])
+
+    def test_exact_attribution_requires_explicit_token(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            bad = event("llama-1", "kernel", attribution_level="exact")
+            path = self.write_trace(directory, [bad, summary(1)])
+            with self.assertRaisesRegex(ValueError, "exact attribution requires correlation_token"):
+                import_trace(path)
+
+    def test_invalid_unsigned_correlation_token_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            bad = event("llama-1", "request_start", request_id=42,
+                        correlation_token=-1, attribution_level="exact")
+            path = self.write_trace(directory, [bad, summary(1)])
+            with self.assertRaisesRegex(ValueError, "positive unsigned 64-bit integer"):
+                import_trace(path)
 
     def test_queue_loss_marks_capture_incomplete(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
