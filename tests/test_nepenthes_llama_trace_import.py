@@ -191,6 +191,18 @@ class LlamaTraceImportTests(unittest.TestCase):
         self.assertEqual(result["event_count"], 2)
         self.assertTrue(result["capture_complete"])
 
+    def test_registered_tandem_cpp_source_uses_shared_validator(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write_trace(directory, [
+                event("tandem-1", "request_start", request_id=91, source="tandem.cpp"),
+                event("tandem-2", "request_end", request_id=91, source="tandem.cpp"),
+                summary(2, source="tandem.cpp"),
+            ])
+            result = import_trace(path, source="tandem.cpp")
+        self.assertEqual(result["source"], "tandem.cpp")
+        self.assertEqual(result["event_count"], 2)
+        self.assertTrue(result["capture_complete"])
+
     def test_unknown_source_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = self.write_trace(directory, [event("llama-1", "sync"), summary(1)])
