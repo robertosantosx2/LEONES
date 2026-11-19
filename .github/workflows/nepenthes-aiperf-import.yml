@@ -23,11 +23,13 @@ on:
       - 'scripts/nepenthes_llama_server_metrics.py'
       - 'scripts/nepenthes_nvml_sampler.py'
       - 'scripts/nepenthes_otel_export.py'
+      - 'scripts/nepenthes_benchmark_report.py'
       - 'tests/test_nepenthes_aiperf_import.py'
       - 'tests/test_nepenthes_aiperf_run.py'
       - 'tests/test_nepenthes_llama_server_metrics.py'
       - 'tests/test_nepenthes_nvml_sampler.py'
       - 'tests/test_nepenthes_otel_export.py'
+      - 'tests/test_nepenthes_benchmark_report.py'
       - '.github/workflows/nepenthes-aiperf-import.yml'
   workflow_dispatch:
 
