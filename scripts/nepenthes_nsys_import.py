@@ -411,7 +411,7 @@ def calibrate_host_to_nsys(host_markers: dict[tuple[int, str], list[dict[str, in
     pairs.sort(key=lambda item: item["host_monotonic_ns"])
     result: dict[str, Any] = {
         "matched_marker_pairs": len(pairs),
-        "nsight_clock_calibrated": len(pairs) >= 2,
+        "nsight_clock_calibrated": False,
         "offset_start_ns": None,
         "offset_end_ns": None,
         "drift_ns": None,
@@ -431,6 +431,7 @@ def calibrate_host_to_nsys(host_markers: dict[tuple[int, str], list[dict[str, in
             drift = pairs[-1]["offset_ns"] - pairs[0]["offset_ns"]
             result["drift_ns"] = drift
             result["drift_ppm"] = (drift / span) * 1_000_000
+            result["nsight_clock_calibrated"] = True
     return result
 
 
