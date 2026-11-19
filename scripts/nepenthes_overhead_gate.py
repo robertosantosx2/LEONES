@@ -91,6 +91,7 @@ def config_fingerprint(evidence: dict) -> dict:
             "sampling_config": instrumentation.get("sampling_config", {}),
             "host_sample_ms": instrumentation.get("host_sample_ms"),
             "gpu_sample_ms": instrumentation.get("gpu_sample_ms"),
+            "rss_target": instrumentation.get("rss_target"),
         },
     }
 
@@ -112,6 +113,8 @@ def evidence_metrics(evidence: dict) -> dict[str, float]:
         raise ValueError("immutable engine revision is required")
     if not instrumentation.get("hardware_id"):
         raise ValueError("stable hardware_id is required")
+    if instrumentation.get("rss_target") not in ("inference_server", "direct_inference_process"):
+        raise ValueError("RSS telemetry must target the inference server or direct inference process, not the benchmark client")
     if not evidence.get("hardware") or not runtime.get("backend"):
         raise ValueError("hardware fingerprint and backend are required")
     if protocol.get("warmup_iterations", 0) < 1:
@@ -135,6 +138,9 @@ def evidence_metrics(evidence: dict) -> dict[str, float]:
             result[metric] = median(values)
     if "tokens_per_second" not in result or result["tokens_per_second"] <= 0:
         raise ValueError("tokens_per_second missing or non-positive")
+    for required_metric in ("peak_process_rss_mb", "peak_system_ram_used_mb", "peak_vram_mb_device_wide"):
+        if required_metric not in result or result[required_metric] <= 0:
+            raise ValueError(f"{required_metric} is required for the C08 resource-overhead gate")
     return result
 
 
