@@ -1,4 +1,4 @@
-name: NEPENTHES AIPerf runner and importer
+name: NEPENTHES AIPerf runner, importers and telemetry exporters
 
 on:
   pull_request:
