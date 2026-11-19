@@ -270,6 +270,9 @@ def build_evidence(args: argparse.Namespace) -> dict:
     dataset_sha = args.dataset_sha256 or hashlib.sha256(
         json.dumps(dataset_descriptor, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
+    workload_command_sha256 = run_manifest.get("workload_command_sha256")
+    if not isinstance(workload_command_sha256, str) or not re.fullmatch(r"[a-f0-9]{64}", workload_command_sha256):
+        raise ValueError("AIPerf run manifest lacks a valid normalized workload command SHA-256")
     model_sha = sha256_file(args.model_artifact.expanduser().resolve())
     hardware_info = hardware()
     host_sample_ms = resource.get("host_sample_ms")
@@ -294,7 +297,7 @@ def build_evidence(args: argparse.Namespace) -> dict:
             "version": args.engine_version,
             "revision": args.engine_revision,
             "backend": args.backend,
-            "command_sha256": run_manifest.get("workload_command_sha256"),
+            "command_sha256": workload_command_sha256,
         },
         "hardware": hardware_info,
         "protocol": {
