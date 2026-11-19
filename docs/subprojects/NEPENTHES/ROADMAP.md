@@ -285,9 +285,12 @@ PRs pequeños y dependencias explícitas; no crear un mega-PR.
 
 - PR #159: subproyecto y especificación AIPerf-first, pendiente de revisión/merge.
 - PR #160: importador offline de artefactos AIPerf y tests; CI específico con 6 tests offline en success. Depende de PR #159.
-- PR #161: wrapper AIPerf-first para llama-server, defaults conservadores, manifiesto de ejecución, protección de secretos y dry-run; CI combinado con 13 tests offline en success. Depende de PR #160.
+- PR #161: wrapper AIPerf-first para llama-server, fijado a AIPerf 0.13.0 y CLI contrastada contra el tag estable; defaults conservadores, manifiesto, protección de secretos y dry-run. CI offline actualizado con 14 tests de runner/importer en success.
+- PR #164: parser offline de `/metrics` y `/slots`, pin de llama.cpp master, workflow diario de drift upstream y preservación de labels de histogramas; pendiente de CI del PR.
+- PR #162 fue sustituida por PR #164 porque la rama original había quedado divergida tras corregir la base del runner; no integrar ambas.
+- No existe todavía fork personal `robertosantosx2/llama.cpp` ni submódulo llama.cpp en LEONES. Incidencia #163 documenta el paso pendiente.
 - Todavía no se ha instalado ni ejecutado AIPerf contra llama-server en el MSI; no hay smoke físico y no se declara compatibilidad MEASURED.
-- Próximo hito: instalar AIPerf en entorno virtual aislado del MSI, ejecutar dry-run, después smoke real con concurrencia 1 y cinco requests; ampliar telemetría y soporte phase-aware tras validar el endpoint.
+- Próximo hito: completar fork/submódulo, luego instalar AIPerf 0.13.0 en entorno aislado del MSI, ejecutar dry-run y smoke real con concurrencia 1 y cinco requests.
 
 El orden puede solapar documentación/fixtures, pero no se debe declarar una fase aceptada si depende de otra incompleta.
 
