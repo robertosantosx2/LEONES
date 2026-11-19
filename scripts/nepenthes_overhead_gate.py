@@ -67,7 +67,7 @@ def config_fingerprint(evidence: dict) -> dict:
         },
         "protocol": {
             "prompt_protocol_id": protocol.get("prompt_protocol_id"),
-            "prompt_sha256": protocol.get("prompt_sha256"),
+            "prompt_sha256": protocol.get("prompt_sha256") or protocol.get("dataset_sha256") or instrumentation.get("dataset_sha256"),
             "context": protocol.get("context"),
             "warmup_iterations": protocol.get("warmup_iterations"),
             "measurement_iterations": protocol.get("measurement_iterations"),
@@ -103,11 +103,11 @@ def evidence_metrics(evidence: dict) -> dict[str, float]:
     runtime = evidence.get("runtime", {})
     instrumentation = evidence.get("instrumentation", {})
     artifact_sha = evidence.get("artifact", {}).get("sha256")
-    prompt_sha = protocol.get("prompt_sha256")
+    prompt_sha = protocol.get("prompt_sha256") or protocol.get("dataset_sha256") or instrumentation.get("dataset_sha256")
     if not isinstance(artifact_sha, str) or len(artifact_sha) != 64:
         raise ValueError("model artifact SHA-256 is required")
     if not isinstance(prompt_sha, str) or len(prompt_sha) != 64:
-        raise ValueError("fixed prompt/dataset protocol SHA-256 is required")
+        raise ValueError("fixed prompt or synthetic dataset protocol SHA-256 is required")
     if not runtime.get("revision"):
         raise ValueError("immutable engine revision is required")
     if not instrumentation.get("hardware_id"):
@@ -123,7 +123,13 @@ def evidence_metrics(evidence: dict) -> dict[str, float]:
     if any(item.get("exit_code") != 0 for item in measurements):
         raise ValueError("one or more measurement iterations failed")
     result = {}
+    run_metrics = evidence.get("run_metrics", {})
+    if not isinstance(run_metrics, dict):
+        raise ValueError("run_metrics must be an object when present")
     for metric in METRICS:
+        if run_metrics.get(metric) is not None:
+            result[metric] = float(run_metrics[metric])
+            continue
         values = [float(item[metric]) for item in measurements if item.get(metric) is not None]
         if values:
             result[metric] = median(values)
