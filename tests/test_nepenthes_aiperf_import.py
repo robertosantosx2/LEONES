@@ -70,7 +70,7 @@ def write_server_metrics(root: Path) -> None:
         },
     }]
     (root / "server_metrics_export.jsonl").write_text(
-        "".join(json.dumps(record) + "\\n" for record in records), encoding="utf-8"
+        "".join(json.dumps(record) + "\n" for record in records), encoding="utf-8"
     )
 
 
@@ -94,7 +94,7 @@ def write_gpu_telemetry(root: Path) -> None:
             "private_custom_metric": "must-not-export",
         },
     }
-    (root / "gpu_telemetry_export.jsonl").write_text(json.dumps(record) + "\\n", encoding="utf-8")
+    (root / "gpu_telemetry_export.jsonl").write_text(json.dumps(record) + "\n", encoding="utf-8")
 
 
 
