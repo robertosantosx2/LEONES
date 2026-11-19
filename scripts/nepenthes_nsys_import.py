@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Import NEPENTHES JSONL and Nsight Systems SQLite into a normalized LEONES DB.
 
-The importer preserves source rows and provenance. Nsight timestamps are kept in
+The importer preserves source rows, provenance, and explicit NVTX request markers. Nsight timestamps are kept in
 their original nanosecond clock domain; no cross-clock or request/kernel join is
 fabricated. JSONL and Nsight artifacts are hashed before ingestion.
 """
