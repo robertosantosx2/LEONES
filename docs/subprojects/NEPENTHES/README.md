@@ -159,6 +159,7 @@ Reglas obligatorias:
 - [Especificación de integración AIPerf](AIPERF-INTEGRATION.md)
 - [Versión estable de AIPerf](AIPERF-UPSTREAM.json)
 - [Pin y seguimiento del upstream llama.cpp](LLAMA-CPP-UPSTREAM.json)
+- [Captura en vivo de llama-server](LLAMA-SERVER-CAPTURE.md)
 - [Muestreador NVML y contabilidad energética](NVML-ENERGY.md)
 - [Exportación OpenTelemetry / OTLP](OTEL-EXPORT.md)
 - [Informe de benchmark y eficiencia](BENCHMARK-REPORT.md)
