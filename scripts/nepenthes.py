@@ -257,11 +257,98 @@ def inspect(a):
  p=Path(a.path).expanduser().resolve();f=p/"manifest.json" if p.is_dir() else p
  if not f.is_file():raise ValueError("manifest no encontrado: "+str(f))
  print(json.dumps(json.loads(f.read_text()),indent=2));return 0
+def validate_event_contract(events):
+ errors=[]
+ request_starts={};request_ends={};nvtx_starts={};nvtx_ends={};clock_points=[];clock_labels={}
+ allowed={"exact","windowed","device_wide","estimated"}
+ for line_no,event in enumerate(events,1):
+  token=event.get("correlation_token")
+  level=event.get("attribution_level")
+  kind=event.get("event_kind")
+  if level is not None and level not in allowed:
+   errors.append("invalid attribution_level at event "+str(line_no))
+  if token is not None:
+   if isinstance(token,bool) or not isinstance(token,int) or not 0<token<=0xffffffffffffffff:
+    errors.append("invalid correlation_token at event "+str(line_no));token=None
+   elif level!="exact":
+    errors.append("correlation_token requires exact attribution at event "+str(line_no))
+  elif level=="exact":
+   errors.append("exact attribution requires correlation_token at event "+str(line_no))
+  clock_domain=event.get("clock_domain")
+  if clock_domain is not None and clock_domain!="steady_clock":
+   errors.append("unsupported clock_domain at event "+str(line_no))
+  if kind in ("request_start","request_end") and token is not None:
+   target=request_starts if kind=="request_start" else request_ends
+   target[token]=target.get(token,0)+1
+  if kind=="clock_calibration":
+   mono=event.get("monotonic_ns");wall=event.get("timestamp_unix_ns")
+   if not isinstance(mono,int) or isinstance(mono,bool) or mono<=0 or not isinstance(wall,int) or isinstance(wall,bool) or wall<=0:
+    errors.append("invalid clock_calibration timestamp at event "+str(line_no))
+   else:
+    label=event.get("label")
+    clock_labels[label]=clock_labels.get(label,0)+1
+    clock_points.append((mono,wall,label))
+  if kind=="nvtx_marker":
+   if token is None or level!="exact":
+    errors.append("NVTX marker requires exact correlation token at event "+str(line_no))
+   label=event.get("label")
+   phase="start" if label=="request.start" else "end" if label=="request.end" else None
+   before=event.get("value0");after=event.get("value1")
+   if phase is None:
+    errors.append("invalid NVTX marker phase at event "+str(line_no))
+   elif not isinstance(before,int) or isinstance(before,bool) or not isinstance(after,int) or isinstance(after,bool) or after<before:
+    errors.append("invalid NVTX marker host bracket at event "+str(line_no))
+   elif token is not None:
+    target=nvtx_starts if phase=="start" else nvtx_ends
+    target[token]=target.get(token,0)+1
+   if not isinstance(event.get("timestamp_unix_ns"),int) or event.get("timestamp_unix_ns",0)<=0:
+    errors.append("NVTX marker requires source wall timestamp at event "+str(line_no))
+   if clock_domain!="steady_clock":
+    errors.append("NVTX marker requires steady_clock at event "+str(line_no))
+ unmatched_request_starts=sum(max(0,n-request_ends.get(token,0)) for token,n in request_starts.items())
+ unmatched_request_ends=sum(max(0,n-request_starts.get(token,0)) for token,n in request_ends.items())
+ unmatched_nvtx_starts=sum(max(0,n-nvtx_ends.get(token,0)) for token,n in nvtx_starts.items())
+ unmatched_nvtx_ends=sum(max(0,n-nvtx_starts.get(token,0)) for token,n in nvtx_ends.items())
+ for token in set(request_starts)|set(request_ends):
+  if request_starts.get(token,0)!=1 or request_ends.get(token,0)!=1:
+   errors.append("request token lifecycle is not one start/one end: "+str(token))
+ for token in set(nvtx_starts)|set(nvtx_ends):
+  if nvtx_starts.get(token,0)!=1 or nvtx_ends.get(token,0)!=1:
+   errors.append("NVTX token lifecycle is not one start/one end: "+str(token))
+ clock_points.sort(key=lambda item:item[0])
+ if clock_points and (clock_labels.get("clock.calibration.start")!=1 or clock_labels.get("clock.calibration.end")!=1):
+  errors.append("clock_calibration requires exactly one start and one end marker")
+ host_clock={"point_count":len(clock_points),"offset_start_ns":None,"offset_end_ns":None,
+             "drift_ns":None,"drift_ppm":None,"calibrated":False}
+ if clock_points:
+  host_clock["offset_start_ns"]=clock_points[0][1]-clock_points[0][0]
+  host_clock["offset_end_ns"]=clock_points[-1][1]-clock_points[-1][0]
+ if len(clock_points)>=2:
+  span=clock_points[-1][0]-clock_points[0][0]
+  if span>0:
+   drift=host_clock["offset_end_ns"]-host_clock["offset_start_ns"]
+   host_clock["drift_ns"]=drift;host_clock["drift_ppm"]=drift/span*1_000_000
+   host_clock["calibrated"]=True
+ summary={"request_tokens":len(set(request_starts)|set(request_ends)),
+          "unmatched_request_starts":unmatched_request_starts,
+          "unmatched_request_ends":unmatched_request_ends,
+          "nvtx_tokens":len(set(nvtx_starts)|set(nvtx_ends)),
+          "nvtx_marker_events":sum(nvtx_starts.values())+sum(nvtx_ends.values()),
+          "unmatched_nvtx_starts":unmatched_nvtx_starts,
+          "unmatched_nvtx_ends":unmatched_nvtx_ends,
+          "host_clock_calibration":host_clock}
+ return summary,errors
+
+
+
 def verify_run(a):
  run=Path(a.path).expanduser().resolve();manifest_path=run/"manifest.json"
  result={"run":str(run),"checks":{},"errors":[]}
  if not manifest_path.is_file():raise ValueError("manifest no encontrado: "+str(manifest_path))
  manifest=json.loads(manifest_path.read_text(encoding="utf-8"));run_id=manifest.get("run_id")
+ if not isinstance(run_id,str) or not run_id:result["errors"].append("manifest run_id missing")
+ if manifest.get("schema_version")!="nepenthes-run-0.1":result["errors"].append("unsupported manifest schema_version")
+ if manifest.get("status") not in ("completed","command_failed"):result["errors"].append("manifest status is not terminal")
  checksums=run/"checksums.sha256";listed=set()
  if not checksums.is_file():result["errors"].append("checksums.sha256 missing")
  else:
@@ -269,8 +356,7 @@ def verify_run(a):
    if not line.strip():continue
    parts=line.split("  ",1)
    if len(parts)!=2:result["errors"].append("invalid checksum line");continue
-   expected,relative=parts
-   target=(run/relative).resolve()
+   expected,relative=parts;target=(run/relative).resolve()
    if run not in target.parents and target!=run:result["errors"].append("checksum path escapes run directory: "+relative);continue
    listed.add(relative)
    if not target.is_file():result["errors"].append("missing file: "+relative);continue
@@ -280,38 +366,116 @@ def verify_run(a):
   for missing in sorted(actual_files-listed):result["errors"].append("unhashed file: "+missing)
   for missing in sorted(listed-actual_files):result["errors"].append("checksum references missing file: "+missing)
  result["checks"]["checksums"]=not any(x.startswith(("checksum","missing file","unhashed file")) for x in result["errors"])
- events_path=run/"raw"/"events.jsonl";seen=set();count=0
+ events_path=run/"raw"/"events.jsonl";seen=set();events=[];event_errors=[]
  required={"schema_version","run_id","event_id","source","timestamp_unix_ns","monotonic_ns","request_id","event_kind","label","value0","value1","duration_ns","flags"}
  if not events_path.is_file():result["errors"].append("raw/events.jsonl missing")
  else:
   try:
    for line_no,line in enumerate(events_path.read_text(encoding="utf-8").splitlines(),1):
-    event=json.loads(line);count+=1
-    if not required.issubset(event):result["errors"].append("event schema missing fields at line "+str(line_no))
-    if event.get("schema_version")!="1.0":result["errors"].append("event schema version mismatch at line "+str(line_no))
-    if event.get("run_id")!=run_id:result["errors"].append("event run_id mismatch at line "+str(line_no))
-    if event.get("event_id") in seen:result["errors"].append("duplicate event_id at line "+str(line_no))
+    event=json.loads(line);events.append(event)
+    if not required.issubset(event):event_errors.append("event schema missing fields at line "+str(line_no))
+    if event.get("schema_version")!="1.0":event_errors.append("event schema version mismatch at line "+str(line_no))
+    if event.get("run_id")!=run_id:event_errors.append("event run_id mismatch at line "+str(line_no))
+    if event.get("event_id") in seen:event_errors.append("duplicate event_id at line "+str(line_no))
     seen.add(event.get("event_id"))
-  except (OSError,json.JSONDecodeError) as exc:result["errors"].append("event JSONL invalid: "+str(exc))
- if count==0:result["errors"].append("raw/events.jsonl empty")
- result["checks"]["events_valid"]=events_path.is_file() and count>0 and not any("event " in x or "duplicate event_id" in x for x in result["errors"])
- result["event_count"]=count
+    for field in ("timestamp_unix_ns","monotonic_ns","request_id","value0","value1","duration_ns","flags"):
+     value=event.get(field)
+     if isinstance(value,bool) or not isinstance(value,int):event_errors.append("event field "+field+" is not integer at line "+str(line_no))
+     elif field in ("timestamp_unix_ns","monotonic_ns","request_id","duration_ns","flags") and value<0:event_errors.append("event field "+field+" is negative at line "+str(line_no))
+  except (OSError,json.JSONDecodeError) as exc:event_errors.append("event JSONL invalid: "+str(exc))
+ result["errors"].extend(event_errors)
+ if not events:result["errors"].append("raw/events.jsonl empty")
+ result["checks"]["events_valid"]=events_path.is_file() and bool(events) and not event_errors
+ result["event_count"]=len(events)
+ correlation,correlation_errors=validate_event_contract(events)
+ result["correlation"]=correlation
+ result["errors"].extend(correlation_errors)
+ result["checks"]["correlation_contract"]=not correlation_errors
+ merged=manifest.get("event_merge",{})
+ if merged and merged.get("total")!=len(events):result["errors"].append("manifest event_merge total does not match events.jsonl")
+ if merged.get("warnings"):result["errors"].append("manifest event_merge contains warnings")
+ result["checks"]["event_merge_consistency"]=not any(x.startswith("manifest event_merge") for x in result["errors"])
  import sqlite3
- for name in ("observations.sqlite","nepenthes-import.sqlite"):
-  dbpath=run/"data"/name
-  if not dbpath.is_file():
-   if name=="observations.sqlite":result["errors"].append("data/observations.sqlite missing")
-   continue
+ observations=run/"data"/"observations.sqlite"
+ if not observations.is_file():result["errors"].append("data/observations.sqlite missing")
+ else:
   try:
-   with sqlite3.connect("file:"+str(dbpath)+"?mode=ro",uri=True) as db:
-    status=db.execute("PRAGMA integrity_check").fetchone()[0]
-    if status!="ok":result["errors"].append(name+" integrity check: "+str(status))
-    if name=="observations.sqlite":
-     tables={row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-     if not {"samples","events"}.issubset(tables):result["errors"].append("observations.sqlite missing expected tables")
+   with sqlite3.connect("file:"+str(observations)+"?mode=ro",uri=True) as db:
+    integrity=db.execute("PRAGMA integrity_check").fetchone()[0]
+    if integrity!="ok":result["errors"].append("observations.sqlite integrity check: "+str(integrity))
+    tables={row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if not {"samples","events"}.issubset(tables):result["errors"].append("observations.sqlite missing expected tables")
+    else:
      result["sample_rows"]=db.execute("SELECT count(*) FROM samples").fetchone()[0]
      result["event_rows"]=db.execute("SELECT count(*) FROM events").fetchone()[0]
-  except sqlite3.Error as exc:result["errors"].append(name+" unreadable: "+str(exc))
+     if result["event_rows"]!=len(events):result["errors"].append("observations.sqlite event count mismatch")
+     if result["sample_rows"]!=manifest.get("sample_count"):result["errors"].append("observations.sqlite sample count mismatch")
+  except sqlite3.Error as exc:result["errors"].append("observations.sqlite unreadable: "+str(exc))
+ result["checks"]["observations_sqlite"]=not any(x.startswith(("data/observations.sqlite","observations.sqlite")) for x in result["errors"])
+ summary_path=run/"data"/"summary.json"
+ if not summary_path.is_file():result["errors"].append("data/summary.json missing")
+ else:
+  try:
+   summary=json.loads(summary_path.read_text(encoding="utf-8"))
+   if summary.get("run_id")!=run_id:result["errors"].append("summary.json run_id mismatch")
+   if summary.get("sample_count")!=manifest.get("sample_count"):result["errors"].append("summary.json sample count mismatch")
+  except (OSError,json.JSONDecodeError) as exc:result["errors"].append("summary.json invalid: "+str(exc))
+ result["checks"]["summary_consistent"]=not any(x.startswith(("data/summary.json","summary.json")) for x in result["errors"])
+ nsys_enabled=bool(manifest.get("nsys",{}).get("enabled"))
+ nsys_meta_path=run/"data"/"nsys-import.json"
+ nsys_import_status="not_requested"
+ if nsys_enabled:
+  if not nsys_meta_path.is_file():
+   result["errors"].append("data/nsys-import.json missing while Nsight capture is enabled")
+   nsys_import_status="missing"
+  else:
+   try:nsys_import_status=json.loads(nsys_meta_path.read_text(encoding="utf-8")).get("status","unknown")
+   except (OSError,json.JSONDecodeError) as exc:
+    result["errors"].append("data/nsys-import.json invalid: "+str(exc));nsys_import_status="invalid"
+   if nsys_import_status!="imported":result["errors"].append("Nsight import status is not imported: "+str(nsys_import_status))
+ else:
+  if nsys_meta_path.is_file():
+   try:nsys_import_status=json.loads(nsys_meta_path.read_text(encoding="utf-8")).get("status","not_requested")
+   except (OSError,json.JSONDecodeError):nsys_import_status="invalid"
+ result["nsys_import_status"]=nsys_import_status
+ nsys_db=run/"data"/"nepenthes-import.sqlite"
+ if nsys_enabled and nsys_db.is_file():
+  try:
+   with sqlite3.connect("file:"+str(nsys_db)+"?mode=ro",uri=True) as db:
+    integrity=db.execute("PRAGMA integrity_check").fetchone()[0]
+    if integrity!="ok":result["errors"].append("nepenthes-import.sqlite integrity check: "+str(integrity))
+    tables={row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if not {"nepenthes_imports","nsys_activities"}.issubset(tables):
+     result["errors"].append("nepenthes-import.sqlite missing paired import tables")
+    else:
+     import_row=db.execute("SELECT run_id FROM nepenthes_imports WHERE run_id=?",(run_id,)).fetchone()
+     if import_row is None:result["errors"].append("Nsight import run_id does not match manifest")
+     columns={row[1] for row in db.execute("PRAGMA table_info(nsys_activities)")}
+     if correlation["nvtx_marker_events"]>0:
+      if "nsys_clock_calibration_json" not in {row[1] for row in db.execute("PRAGMA table_info(nepenthes_imports)")}:
+       result["errors"].append("Nsight importer schema lacks nsys_clock_calibration_json")
+      else:
+       calibration=json.loads(db.execute("SELECT nsys_clock_calibration_json FROM nepenthes_imports WHERE run_id=?",(run_id,)).fetchone()[0])
+       result["nsys_clock_calibration"]=calibration
+       if calibration.get("matched_marker_pairs",0)<2 or not calibration.get("nsight_clock_calibrated"):
+        result["errors"].append("NVTX markers present but host↔Nsight clock calibration is incomplete")
+      required_cols={"attributed_request_token","attribution_level","attribution_status"}
+      if not required_cols.issubset(columns):
+       result["errors"].append("Nsight activity schema lacks explicit attribution columns")
+      else:
+       false_exact=db.execute("SELECT count(*) FROM nsys_activities WHERE activity_kind IN ('cuda_kernel','cuda_memcpy','cuda_memset') AND attribution_level='exact'").fetchone()[0]
+       missing_window_token=db.execute("SELECT count(*) FROM nsys_activities WHERE attribution_level='windowed' AND attributed_request_token IS NULL").fetchone()[0]
+       ambiguous_with_token=db.execute("SELECT count(*) FROM nsys_activities WHERE attribution_status='overlapping_request_windows' AND attributed_request_token IS NOT NULL").fetchone()[0]
+       if false_exact:result["errors"].append("Nsight GPU activities claim exact request attribution")
+       if missing_window_token:result["errors"].append("windowed Nsight activity lacks request token")
+       if ambiguous_with_token:result["errors"].append("ambiguous overlapping window carries a request token")
+       if {"nvtx_correlation_token","nvtx_marker_phase"}.issubset(columns):
+        bad_marker=db.execute("SELECT count(*) FROM nsys_activities WHERE activity_kind='nvtx_event' AND nvtx_marker_phase IS NOT NULL AND (nvtx_correlation_token IS NULL OR attributed_request_token!=nvtx_correlation_token OR attribution_level!='exact')").fetchone()[0]
+        if bad_marker:result["errors"].append("Nsight NVTX marker identity is not exact or token-consistent")
+  except (sqlite3.Error,TypeError,ValueError) as exc:result["errors"].append("nepenthes-import.sqlite invalid: "+str(exc))
+ elif nsys_enabled:
+  result["errors"].append("data/nepenthes-import.sqlite missing while Nsight capture is enabled")
+ result["checks"]["nsys_import"]=not any(x.startswith(("data/nsys-import.json","data/nepenthes-import.sqlite","Nsight import","nepenthes-import.sqlite","NVTX markers","Nsight GPU","windowed Nsight","ambiguous overlapping","Nsight NVTX marker")) for x in result["errors"])
  result["checks"]["report_html"]=(run/"reports"/"index.html").is_file()
  if not result["checks"]["report_html"]:result["errors"].append("reports/index.html missing")
  result["ok"]=not result["errors"]
