@@ -136,3 +136,25 @@ def test_non_standard_profile_is_informational_not_low_overhead_claim(tmp_path):
     groups, errors = load_evidence(paths, "full")
     report = compare(groups, "full", 3, 5.0, 8.0, errors)
     assert report["overall_status"] == "informational_only"
+
+
+def test_overhead_gate_rejects_model_or_hardware_configuration_mismatch(tmp_path):
+    paths = write_group(tmp_path, {"off": 100, "jsonl": 96, "nsys": 97, "combined": 95})
+    changed = tmp_path / "combined-pair-2.json"
+    payload = json.loads(changed.read_text(encoding="utf-8"))
+    payload["hardware"]["gpu"] = "different GPU"
+    changed.write_text(json.dumps(payload), encoding="utf-8")
+    groups, errors = load_evidence(paths, "standard")
+    report = compare(groups, "standard", 3, 5.0, 8.0, errors)
+    assert any("configuration differs" in error for error in errors)
+    assert report["overall_status"] == "blocked"
+
+
+def test_overhead_gate_rejects_less_than_three_measurement_iterations(tmp_path):
+    payload = evidence("off", "pair-1", 100)
+    payload["measurements"] = payload["measurements"][:2]
+    payload["protocol"]["measurement_iterations"] = 2
+    path = tmp_path / "too-few.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    groups, errors = load_evidence([path], "standard")
+    assert any("at least three measurement iterations" in error for error in errors)
