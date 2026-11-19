@@ -70,14 +70,12 @@ def capture(*, url: str, output_dir: Path, duration_seconds: float = 30.0,
     if output_dir.exists() and any(output_dir.iterdir()):
         raise ValueError(f"capture output directory is not empty: {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
-    raw_dir = output_dir / "raw"
-    raw_dir.mkdir(exist_ok=True)
     run_id = run_id or str(uuid.uuid4())
     metrics_url = base + metrics_path
     slots_url = base + slots_path
     started_wall = wall_clock_ns()
     started_mono = monotonic_clock_ns()
-    raw_files: list[dict[str, Any]] = []
+    source_snapshots: list[dict[str, Any]] = []
     warnings: list[str] = []
     metrics_scrapes = 0
     slots_snapshots = 0
@@ -93,11 +91,9 @@ def capture(*, url: str, output_dir: Path, duration_seconds: float = 30.0,
             mono_ns = monotonic_clock_ns()
             metrics_status, metrics_body = fetch(metrics_url, timeout_seconds=timeout_seconds, opener=opener)
             if metrics_status == 200:
-                raw_path = raw_dir / f"metrics-{sequence:06d}.prom"
-                raw_path.write_bytes(metrics_body)
-                raw_files.append({"path": raw_path.relative_to(output_dir).as_posix(),
-                                  "size_bytes": len(metrics_body),
-                                  "sha256": hashlib.sha256(metrics_body).hexdigest()})
+                source_snapshots.append({"endpoint": metrics_path, "capture_sequence": sequence,
+                                         "timestamp_unix_ns": wall_ns, "size_bytes": len(metrics_body),
+                                         "sha256": hashlib.sha256(metrics_body).hexdigest()})
                 events = parse_prometheus(metrics_body.decode("utf-8"),
                                            scrape_timestamp_unix_ns=wall_ns,
                                            scrape_id=f"{run_id}:{sequence}:metrics")
@@ -118,11 +114,9 @@ def capture(*, url: str, output_dir: Path, duration_seconds: float = 30.0,
 
             slots_status, slots_body = fetch(slots_url, timeout_seconds=timeout_seconds, opener=opener)
             if slots_status == 200:
-                raw_path = raw_dir / f"slots-{sequence:06d}.json"
-                raw_path.write_bytes(slots_body)
-                raw_files.append({"path": raw_path.relative_to(output_dir).as_posix(),
-                                  "size_bytes": len(slots_body),
-                                  "sha256": hashlib.sha256(slots_body).hexdigest()})
+                source_snapshots.append({"endpoint": slots_path, "capture_sequence": sequence,
+                                         "timestamp_unix_ns": wall_ns, "size_bytes": len(slots_body),
+                                         "sha256": hashlib.sha256(slots_body).hexdigest()})
                 try:
                     slots_payload = json.loads(slots_body)
                 except json.JSONDecodeError as exc:
@@ -161,7 +155,7 @@ def capture(*, url: str, output_dir: Path, duration_seconds: float = 30.0,
         "finished_at_unix_ns": finished_wall, "started_monotonic_ns": started_mono,
         "finished_monotonic_ns": finished_mono,
         "duration_seconds": (finished_mono - started_mono) / 1_000_000_000.0,
-        "events_file": events_path.name, "raw_artifacts": raw_files, "warnings": warnings,
+        "events_file": events_path.name, "source_snapshots": source_snapshots, "raw_payloads_persisted": False, "warnings": warnings,
         "privacy": {"prompt_values_exported": False, "token_values_exported": False,
                     "unknown_slot_values_exported": False},
     }
