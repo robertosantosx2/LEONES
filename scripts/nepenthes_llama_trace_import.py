@@ -92,7 +92,14 @@ def import_trace(input_path: Path, allow_incomplete: bool = False,
                 if record["event_id"] in event_ids:
                     raise ValueError(f"line {line_no}: duplicate event_id")
                 event_ids.add(record["event_id"])
-                if any(item.strip() for item in stream):
+                remaining = [item for item in stream if item.strip()]
+                if remaining:
+                    try:
+                        trailing = json.loads(remaining[0])
+                    except json.JSONDecodeError:
+                        trailing = None
+                    if isinstance(trailing, dict) and trailing.get("event_kind") == "sink_summary":
+                        raise ValueError("duplicate sink_summary record")
                     raise ValueError("sink_summary must be the final JSONL record")
                 break
 
