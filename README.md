@@ -6,8 +6,8 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 
 ## Proyectos de investigación y arquitectura
 
-- **[NEPENTHES — subproyecto de observabilidad](docs/subprojects/NEPENTHES/README.md)**: arquitectura y plan maestro para llama.cpp/GGML, NVML/energía, latencia por token, OpenTelemetry/OTLP, GenAI-Perf, adaptadores de métricas, Nsight/CUPTI y análisis reproducible.
-  - [Roadmap maestro](docs/subprojects/NEPENTHES/ROADMAP.md) · [Índice histórico y validación](research/moe/tandem.cpp/NEPENTHES-INDEX.md) · [Campañas](research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md) · [CLI e instalador](research/moe/tandem.cpp/NEPENTHES-CLI.md) · [Importador Nsight/CUPTI](research/moe/tandem.cpp/NEPENTHES-IMPORTER.md).
+- **[NEPENTHES — subproyecto de observabilidad](docs/subprojects/NEPENTHES/README.md)**: arquitectura y plan maestro para llama.cpp/GGML, AIPerf (runner primario), NVML/energía, latencia por token, OpenTelemetry/OTLP, adaptadores de métricas y análisis reproducible.
+  - [Roadmap maestro](docs/subprojects/NEPENTHES/ROADMAP.md) · [Integración AIPerf](docs/subprojects/NEPENTHES/AIPERF-INTEGRATION.md) · [Índice histórico y validación](research/moe/tandem.cpp/NEPENTHES-INDEX.md) · [Campañas](research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md) · [CLI e instalador](research/moe/tandem.cpp/NEPENTHES-CLI.md) · [Importador Nsight/CUPTI](research/moe/tandem.cpp/NEPENTHES-IMPORTER.md).
   - [Tandem.cpp — instrumentación universal, PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1) · [LEONES PR #153 — Nsight-only](https://github.com/robertosantosx2/LEONES/pull/153).
 - **[REDIL — IA distribuida](docs/subprojects/REDIL-IA-distribuida/README.md)**: arquitectura de nodos, malla de inferencia y planificación de despliegue.
   - [Arquitectura visual](docs/subprojects/REDIL-IA-distribuida/ARQUITECTURA-VISUAL.md) · [Evaluación Distributed Llama](docs/subprojects/REDIL-IA-distribuida/DISTRIBUTED-LLAMA-EXPERIMENTAL.md) · [Comparativa de modelos locales](docs/subprojects/REDIL-IA-distribuida/COMPARATIVA-MODELOS-LOCALES-2026-11.md).
