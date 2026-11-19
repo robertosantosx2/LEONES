@@ -161,6 +161,7 @@ Reglas obligatorias:
 - [Pin y seguimiento del upstream llama.cpp](LLAMA-CPP-UPSTREAM.json)
 - [Muestreador NVML y contabilidad energética](NVML-ENERGY.md)
 - [Exportación OpenTelemetry / OTLP](OTEL-EXPORT.md)
+- [Informe de benchmark y eficiencia](BENCHMARK-REPORT.md)
 - [Índice histórico y estado de validación](../../research/moe/tandem.cpp/NEPENTHES-INDEX.md)
 - [Roadmap histórico de implementación y gates](../../research/moe/tandem.cpp/NEPENTHES-ROADMAP.md)
 - [Campañas y resultados](../../research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md)
