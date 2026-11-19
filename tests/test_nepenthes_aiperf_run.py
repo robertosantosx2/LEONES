@@ -80,8 +80,8 @@ def test_runner_marks_client_rss_when_no_server_pid_is_supplied(tmp_path: Path):
 def test_workload_command_hash_ignores_artifact_output_directory(tmp_path: Path):
     fake = tmp_path / "aiperf"
     fake.write_text(
-        "#!/bin/sh\\n"
-        'if [ "$1" = "--version" ]; then echo "AIPerf 0.13.0"; exit 0; fi\\n',
+        "#!/bin/sh\n"
+        'if [ "$1" = "--version" ]; then echo "AIPerf 0.13.0"; exit 0; fi\n',
         encoding="utf-8",
     )
     fake.chmod(0o755)
@@ -104,9 +104,9 @@ def test_workload_command_hash_ignores_artifact_output_directory(tmp_path: Path)
 def test_raw_aiperf_log_retention_is_explicit_opt_in(tmp_path: Path):
     fake = tmp_path / "aiperf"
     fake.write_text(
-        "#!/bin/sh\\n"
-        'if [ "$1" = "--version" ]; then echo "AIPerf 0.13.0"; exit 0; fi\\n'
-        "echo raw-debug-output\\n",
+        "#!/bin/sh\n"
+        'if [ "$1" = "--version" ]; then echo "AIPerf 0.13.0"; exit 0; fi\n'
+        "echo raw-debug-output\n",
         encoding="utf-8",
     )
     fake.chmod(0o755)
