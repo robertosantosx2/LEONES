@@ -38,8 +38,10 @@ def test_build_command_uses_conservative_reproducible_profile(tmp_path: Path):
     assert command[command.index("--synthetic-input-tokens-mean") + 1] == "128"
     assert command[command.index("--output-tokens-mean") + 1] == "32"
     assert "--streaming" in command
+    assert command[command.index("--synthetic-input-tokens-stddev") + 1] == "0"
+    assert command[command.index("--output-tokens-stddev") + 1] == "0"
     assert "--export-level" in command and command[command.index("--export-level") + 1] == "records"
-    assert "--no-export-outputs-json" in command
+    assert "--no-export-outputs-json" not in command
     assert "--api-key" not in command
 
 
