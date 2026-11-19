@@ -34,6 +34,10 @@ def test_runner_samples_inference_server_resources(tmp_path: Path):
     manifest = json.loads((artifact_dir / "nepenthes_aiperf_run.json").read_text(encoding="utf-8"))
     telemetry = manifest["resource_telemetry"]
     assert manifest["status"] == "completed"
+    assert manifest["profile"]["warmup_request_count"] == 1
+    assert "--warmup-request-count" in manifest["command"]
+    warmup_index = manifest["command"].index("--warmup-request-count")
+    assert manifest["command"][warmup_index + 1] == "1"
     assert len(manifest["workload_command_sha256"]) == 64
     assert str(artifact_dir) not in json.dumps(manifest["command"])
     assert "<artifact-dir>" in manifest["command"]
