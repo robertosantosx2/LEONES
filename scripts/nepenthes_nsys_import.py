@@ -107,6 +107,121 @@ def load_string_ids(db: sqlite3.Connection, names: set[str]) -> dict[int, str]:
     return {}
 
 
+
+def load_enum_tables(db: sqlite3.Connection, names: set[str]) -> tuple[dict[str, dict[int, str]], dict[str, Any]]:
+    """Load enum labels from the Nsight SQLite itself; never hard-code enum numbers."""
+    mappings: dict[str, dict[int, str]] = {}
+    metadata: dict[str, Any] = {}
+    value_candidates = ("id", "value", "enumvalue", "enum_value", "key", "valueid",
+                        "value_id", "code", "ordinal")
+    label_candidates = ("name", "label", "description", "string", "enumname",
+                        "enum_name", "valuename", "value_name", "text")
+    for table in sorted(name for name in names if name.upper().startswith("ENUM_CUDA_")):
+        cols = sorted(columns(db, table))
+        quoted = table.replace('"', '""')
+        rows = [dict(row) for row in db.execute(f'SELECT * FROM "{quoted}"')]
+        lower = {column.lower(): column for column in cols}
+        value_col = next((lower[name] for name in value_candidates if name in lower), None)
+        label_col = next((lower[name] for name in label_candidates if name in lower), None)
+        if value_col is None or label_col is None or value_col == label_col:
+            numeric_cols = [column for column in cols
+                            if any(isinstance(row.get(column), int) and not isinstance(row.get(column), bool)
+                                   for row in rows)]
+            text_cols = [column for column in cols
+                         if any(isinstance(row.get(column), str) for row in rows)]
+            value_col = value_col or (numeric_cols[0] if numeric_cols else None)
+            label_col = label_col or next((column for column in text_cols if column != value_col), None)
+        mapping: dict[int, str] = {}
+        if value_col and label_col:
+            for row in rows:
+                value = row.get(value_col)
+                label = row.get(label_col)
+                if isinstance(value, int) and not isinstance(value, bool) and isinstance(label, str):
+                    mapping[value] = label
+        mappings[table.upper()] = mapping
+        metadata[table] = {
+            "columns": cols,
+            "row_count": len(rows),
+            "value_column": value_col,
+            "label_column": label_col,
+            "mapping": {str(key): value for key, value in sorted(mapping.items())},
+            "status": "decoded" if mapping else "unmapped_schema",
+        }
+    return mappings, metadata
+
+
+def decode_activity_enums(row: dict[str, Any], enum_maps: dict[str, dict[int, str]]) -> dict[str, Any]:
+    """Decode memcpy operation and source/destination memory kinds using captured enum tables."""
+    fields = {
+        "copy_kind": (("copyKind", "copy_kind", "memcpyKind", "memcpy_kind", "operation"),
+                      "ENUM_CUDA_MEMCPY_OPER"),
+        "src_kind": (("srcKind", "src_kind", "sourceKind", "source_kind"),
+                     "ENUM_CUDA_MEM_KIND"),
+        "dst_kind": (("dstKind", "dst_kind", "destinationKind", "destination_kind"),
+                     "ENUM_CUDA_MEM_KIND"),
+    }
+    decoded: dict[str, Any] = {}
+    status_values: list[bool] = []
+    for output_name, (candidates, table) in fields.items():
+        value = first(row, candidates)
+        label = None
+        if isinstance(value, int) and not isinstance(value, bool):
+            label = enum_maps.get(table, {}).get(value)
+            status_values.append(label is not None)
+        decoded[output_name] = {
+            "value": value,
+            "label": label,
+            "enum_table": table,
+        }
+    relevant = [item for item in decoded.values() if item["value"] is not None]
+    if not relevant:
+        status = "not_applicable"
+    elif all(item["label"] is not None for item in relevant):
+        status = "decoded"
+    elif any(item["label"] is not None for item in relevant):
+        status = "partial"
+    else:
+        status = "unknown_value_or_missing_enum_table"
+    return {
+        "copy_kind_value": decoded["copy_kind"]["value"],
+        "copy_kind_name": decoded["copy_kind"]["label"],
+        "src_kind_value": decoded["src_kind"]["value"],
+        "src_kind_name": decoded["src_kind"]["label"],
+        "dst_kind_value": decoded["dst_kind"]["value"],
+        "dst_kind_name": decoded["dst_kind"]["label"],
+        "enum_decode_status": status,
+        "raw": decoded,
+    }
+
+
+def ensure_enum_schema(db: sqlite3.Connection) -> None:
+    """Idempotently add queryable enum columns to both paired and Nsight-only stores."""
+    additions = {
+        "nepenthes_imports": [("enum_tables_json", "TEXT NOT NULL DEFAULT '{}'")],
+        "nepenthes_nsys_imports": [("enum_tables_json", "TEXT NOT NULL DEFAULT '{}'")],
+        "nsys_activities": [
+            ("copy_kind_value", "INTEGER"), ("copy_kind_name", "TEXT"),
+            ("src_kind_value", "INTEGER"), ("src_kind_name", "TEXT"),
+            ("dst_kind_value", "INTEGER"), ("dst_kind_name", "TEXT"),
+            ("enum_decode_status", "TEXT NOT NULL DEFAULT 'not_applicable'"),
+        ],
+        "nepenthes_nsys_activities": [
+            ("copy_kind_value", "INTEGER"), ("copy_kind_name", "TEXT"),
+            ("src_kind_value", "INTEGER"), ("src_kind_name", "TEXT"),
+            ("dst_kind_value", "INTEGER"), ("dst_kind_name", "TEXT"),
+            ("enum_decode_status", "TEXT NOT NULL DEFAULT 'not_applicable'"),
+        ],
+    }
+    for table, definitions in additions.items():
+        if table not in table_names(db):
+            continue
+        existing = columns(db, table)
+        for name, definition in definitions:
+            if name not in existing:
+                db.execute(f'ALTER TABLE "{table}" ADD COLUMN "{name}" {definition}')
+    db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('004_nepenthes_enum_decoding')")
+
+
 def inspect_nsys(path: Path) -> dict:
     """Report Nsight SQLite schema without importing or exposing row payloads."""
     if not path.is_file():
@@ -128,6 +243,7 @@ def inspect_nsys(path: Path) -> dict:
                 "row_count": count,
                 "columns": cols,
             })
+        _, enum_metadata = load_enum_tables(db, names)
         string_tables = []
         for table in ("StringIds", "StringId", "StringTable"):
             if table in names:
@@ -142,6 +258,7 @@ def inspect_nsys(path: Path) -> dict:
             "recognized_activity_tables": [x for x in tables if x["mapped_kind"]],
             "other_cupti_activity_tables": [x for x in tables if not x["mapped_kind"]],
             "string_tables": string_tables,
+            "enum_tables": enum_metadata,
             "policy": "schema metadata only; no source rows or cross-clock correlation are emitted",
         }
     finally:
@@ -198,6 +315,7 @@ def init_output(db: sqlite3.Connection) -> None:
         migration = migration_dir / version
         if migration.is_file():
             db.executescript(migration.read_text(encoding="utf-8"))
+    ensure_enum_schema(db)
 
 
 def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
@@ -213,6 +331,7 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
     source.row_factory = sqlite3.Row
     names = table_names(source)
     strings = load_string_ids(source, names)
+    enum_maps, enum_metadata = load_enum_tables(source, names)
     activities: list[tuple] = []
     activity_counts: Counter[str] = Counter()
     activity_id = 0
@@ -222,6 +341,8 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             continue
         for source_row in source.execute(f'SELECT * FROM "{table}"'):
             row = {k: json_value(source_row[k]) for k in source_row.keys()}
+            enum_decoding = decode_activity_enums(row, enum_maps)
+            row["_nepenthes_enum_decoding"] = enum_decoding["raw"]
             start = first(row, ("start", "startNs", "start_ns", "begin", "timestamp"))
             end = first(row, ("end", "endNs", "end_ns", "finish"))
             duration = (
@@ -246,6 +367,13 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                 sqlite_numeric(first(row, ("contextId", "context_id")), field=f"{table}.context_id"),
                 sqlite_numeric(first(row, ("streamId", "stream_id")), field=f"{table}.stream_id"),
                 str(name) if name is not None else None,
+                sqlite_numeric(enum_decoding["copy_kind_value"], field=f"{table}.copy_kind_value"),
+                enum_decoding["copy_kind_name"],
+                sqlite_numeric(enum_decoding["src_kind_value"], field=f"{table}.src_kind_value"),
+                enum_decoding["src_kind_name"],
+                sqlite_numeric(enum_decoding["dst_kind_value"], field=f"{table}.dst_kind_value"),
+                enum_decoding["dst_kind_name"],
+                enum_decoding["enum_decode_status"],
                 json.dumps(row, ensure_ascii=False, sort_keys=True),
             ))
             activity_counts[kind] += 1
@@ -264,13 +392,14 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             out.execute(
                 """INSERT INTO nepenthes_imports
                 (import_id,run_id,jsonl_path,jsonl_sha256,nsys_path,nsys_sha256,
-                 event_count,activity_count,event_kinds_json,activity_kinds_json,correlation_policy)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                 event_count,activity_count,event_kinds_json,activity_kinds_json,correlation_policy,enum_tables_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (import_id, run_ids[0], str(jsonl.resolve()), sha256(jsonl),
                  str(nsys.resolve()), sha256(nsys), len(events), len(activities),
                  json.dumps(dict(event_counts), sort_keys=True),
                  json.dumps(dict(activity_counts), sort_keys=True),
-                 "No automatic JSONL-to-Nsight join: monotonic and Nsight clocks are not calibrated; request_id is not a CUPTI correlation_id."),
+                 "No automatic JSONL-to-Nsight join: monotonic and Nsight clocks are not calibrated; request_id is not a CUPTI correlation_id.",
+                 json.dumps(enum_metadata, ensure_ascii=False, sort_keys=True)),
             )
             out.executemany(
                 """INSERT INTO nepenthes_events
@@ -289,7 +418,11 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             )
             out.executemany(
                 """INSERT INTO nsys_activities
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
+                (import_id,activity_id,source_table,activity_kind,start_ns,end_ns,duration_ns,
+                 correlation_id,global_pid,process_id,device_id,context_id,stream_id,name,
+                 copy_kind_value,copy_kind_name,src_kind_value,src_kind_name,dst_kind_value,
+                 dst_kind_name,enum_decode_status,raw_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
             )
     finally:
         out.close()
@@ -299,6 +432,8 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
         "event_count": len(events), "event_kinds": dict(event_counts),
         "activity_count": len(activities), "activity_kinds": dict(activity_counts),
         "recognized_nsys_tables": sorted(t for t in NSYS_TABLES if t in names),
+        "enum_tables": enum_metadata,
+        "enum_decode_status_counts": dict(Counter(a[20] for a in activities)),
         "output": str(output.resolve()),
         "correlation": "not joined; clock domains and IDs are not interchangeable",
     }
