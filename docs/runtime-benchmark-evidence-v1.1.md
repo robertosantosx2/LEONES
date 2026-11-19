@@ -172,3 +172,10 @@ python3 scripts/nepenthes.py verify /path/to/run-bundle \
 ```
 
 The verifier prints the report path and SHA-256, and sets `functional_complete` only when C07 correlation and the standard-profile C08 gate both pass. The external report is not silently added to the run bundle's checksum manifest.
+
+
+## TTFT semantics and streaming correctness
+
+`first_output_ms` is the time to the first stdout byte; it is not TTFT and must never be relabeled as such. The runner reads available pipe bytes (not line-oriented `readline()`) so token streams without newlines do not block until generation ends.
+
+`ttft_ms` is populated only from an explicit engine/AIPerf TTFT metric or the llama.cpp `prompt eval time` report, or from a user-supplied `--ttft-regex` with capture group 1 in milliseconds. If no genuine TTFT metric is present, it remains null. The standard C08 gate blocks evidence without a positive TTFT value; do not substitute process startup time or first log output.
