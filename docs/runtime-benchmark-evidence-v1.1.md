@@ -186,3 +186,6 @@ The verifier prints the report path and SHA-256, and sets `functional_complete` 
 By default, raw stdout/stderr and prompt text are not written to evidence. The report stores a SHA-256 fingerprint and a binding declaration instead. `--prompt` must exactly match an argument in the command array; for externally configured AIPerf/dataset workloads use `--dataset-sha256` and declare that fingerprint. The effective command is hashed before redaction; the manifest stores a redacted command, hiding the prompt argument and common API-key/token/password flags. Use `--store-output` only when raw logs are deliberately required and safe to retain; they may contain prompts, completions or secrets.
 
 The evidence schema permits null stdout/stderr and records `output_captured`. A dataset hash supplied by the operator is a declared fingerprint, not proof that the command actually consumed that dataset.
+
+
+For standard C08 acceptance, each evidence file must contain positive TTFT, total duration, process RSS, system RAM used and device-wide VRAM metrics. The command SHA-256 is part of the paired configuration fingerprint; command drift blocks comparison. Missing telemetry is reported as missing evidence, never silently treated as zero.
