@@ -103,7 +103,7 @@ class SharedEnvelopeTests(unittest.TestCase):
             import_trace(self.write_trace([bad, summary()] ), source="tensorfold")
 
     def test_duplicate_summary_is_rejected(self) -> None:
-        with self.assertRaisesRegex(ValueError, "sink_summary must be the final JSONL record"):
+        with self.assertRaisesRegex(ValueError, "duplicate sink_summary record"):
             import_trace(self.write_trace([event(), summary(),
                                            summary(event_id="tf-summary-2")]),
                          source="tensorfold")
@@ -119,10 +119,14 @@ class SharedEnvelopeTests(unittest.TestCase):
 
     def test_empty_identifiers_are_rejected(self) -> None:
         for field in ("event_id", "run_id"):
-            with self.subTest(field=field):
+            with self.subTest(record="event", field=field):
                 bad = event(**{field: ""})
                 with self.assertRaisesRegex(ValueError, f"invalid {field}"):
                     import_trace(self.write_trace([bad, summary()]), source="tensorfold")
+            with self.subTest(record="summary", field=field):
+                bad_summary = summary(**{field: ""})
+                with self.assertRaisesRegex(ValueError, f"invalid summary {field}"):
+                    import_trace(self.write_trace([event(), bad_summary]), source="tensorfold")
 
     def test_unsigned_integer_boundaries_are_enforced(self) -> None:
         for field in ("request_id", "value0", "value1", "duration_ns",
