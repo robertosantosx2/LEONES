@@ -100,12 +100,24 @@ def evidence_metrics(evidence: dict) -> dict[str, float]:
     if not isinstance(measurements, list) or len(measurements) < 3:
         raise ValueError("at least three measurement iterations are required")
     protocol = evidence.get("protocol", {})
+    runtime = evidence.get("runtime", {})
+    instrumentation = evidence.get("instrumentation", {})
+    artifact_sha = evidence.get("artifact", {}).get("sha256")
+    prompt_sha = protocol.get("prompt_sha256")
+    if not isinstance(artifact_sha, str) or len(artifact_sha) != 64:
+        raise ValueError("model artifact SHA-256 is required")
+    if not isinstance(prompt_sha, str) or len(prompt_sha) != 64:
+        raise ValueError("fixed prompt/dataset protocol SHA-256 is required")
+    if not runtime.get("revision"):
+        raise ValueError("immutable engine revision is required")
+    if not instrumentation.get("hardware_id"):
+        raise ValueError("stable hardware_id is required")
+    if not evidence.get("hardware") or not runtime.get("backend"):
+        raise ValueError("hardware fingerprint and backend are required")
     if protocol.get("warmup_iterations", 0) < 1:
         raise ValueError("at least one warm-up iteration is required")
     if protocol.get("measurement_iterations", 0) < 3 or len(measurements) != protocol.get("measurement_iterations"):
         raise ValueError("measurement_iterations must match at least three recorded iterations")
-    if not evidence.get("artifact", {}).get("sha256"):
-        raise ValueError("model artifact SHA-256 is required")
     if evidence.get("process", {}).get("exit_code") != 0:
         raise ValueError("process exit_code is not zero")
     if any(item.get("exit_code") != 0 for item in measurements):
