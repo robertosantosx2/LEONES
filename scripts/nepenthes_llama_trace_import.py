@@ -6,7 +6,6 @@ import argparse
 import collections
 import hashlib
 import json
-import math
 import os
 import sys
 from pathlib import Path
@@ -71,8 +70,8 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
     request_starts: collections.Counter[int] = collections.Counter()
     request_ends: collections.Counter[int] = collections.Counter()
     internal_events = 0
-    first_monotonic_ns: int | None = None
-    last_monotonic_ns: int | None = None
+    min_monotonic_ns: int | None = None
+    max_monotonic_ns: int | None = None
     summary: dict[str, Any] | None = None
 
     with input_path.open("r", encoding="utf-8") as stream:
@@ -161,9 +160,8 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
                 request_starts[request_id] += 1
             elif event_kind == "request_end" and request_id:
                 request_ends[request_id] += 1
-            if first_monotonic_ns is None:
-                first_monotonic_ns = monotonic_ns
-            last_monotonic_ns = monotonic_ns
+            min_monotonic_ns = monotonic_ns if min_monotonic_ns is None else min(min_monotonic_ns, monotonic_ns)
+            max_monotonic_ns = monotonic_ns if max_monotonic_ns is None else max(max_monotonic_ns, monotonic_ns)
 
             if duration_ns:
                 stats = duration_stats.setdefault(event_kind, {"count": 0, "min_ns": duration_ns,
@@ -212,8 +210,8 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
             "internal_events_request_id_zero": internal_events,
         },
         "monotonic_range_ns": {
-            "first": first_monotonic_ns,
-            "last": last_monotonic_ns,
+            "min": min_monotonic_ns,
+            "max": max_monotonic_ns,
         },
         "sink_summary": {
             "present": summary_present,
