@@ -24,12 +24,12 @@ UINT64_MAX = 0xFFFFFFFFFFFFFFFF
 # contract and fixtures; never treat an arbitrary source string as registered.
 SOURCE_PROFILES = {
     "llama.cpp": {"clock_domains": frozenset({"steady_clock"})},
-    "tensorfold": {"clock_domains": frozenset({"steady_clock"})},
+    "tensorfold": {"clock_domains": frozenset({"steady_clock"}), "request_lifecycle_requires_id": True},
     "tandem.cpp": {"clock_domains": frozenset({"steady_clock"})},
 }
 
 
-def source_profile(source: str) -> dict[str, frozenset[str]]:
+def source_profile(source: str) -> dict[str, Any]:
     profile = SOURCE_PROFILES.get(source)
     if profile is None:
         raise ValueError(f"unregistered NEPENTHES source: {source!r}")
@@ -99,6 +99,10 @@ def validate_envelope_record(record: dict[str, Any], line_no: int,
                   "value0", "value1", "duration_ns"):
         require_uint(record, field, line_no)
     require_uint(record, "flags", line_no, maximum=65535)
+    if profile.get("request_lifecycle_requires_id") and kind in {
+        "request_start", "request_end", "request_error", "request_cancel"
+    } and record["request_id"] == 0:
+        raise ValueError(f"line {line_no}: {expected_source} request lifecycle events require a non-zero request_id")
 
     token = record.get("correlation_token")
     if token is not None:
