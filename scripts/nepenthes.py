@@ -204,8 +204,9 @@ def read_request_activity(path,offset,pending,active):
   with path.open("r",encoding="utf-8") as stream:
    stream.seek(offset);chunk=stream.read();offset=stream.tell()
  except OSError:
-  return offset,pending
+  return offset,pending,False
  pending+=chunk
+ started=False
  lines=pending.split("\n");pending=lines.pop()
  for line in lines:
   try:event=json.loads(line)
@@ -216,9 +217,9 @@ def read_request_activity(path,offset,pending,active):
   if token is None:token=event.get("request_id")
   if token is None:continue
   key=str(token)
-  if kind=="request_start":active.add(key)
+  if kind=="request_start":active.add(key);started=True
   else:active.discard(key)
- return offset,pending
+ return offset,pending,started
 
 def run(a):
  cmd=list(a.command)
@@ -256,9 +257,9 @@ def run(a):
     cursor=0;pending="";active_requests=set();was_active=False;next_sample=start
     poll_interval=max(0.01,min(0.05,active_interval/2))
     while True:
-     cursor,pending=read_request_activity(root/"raw"/"engine-events.jsonl",cursor,pending,active_requests)
+     cursor,pending,request_started=read_request_activity(root/"raw"/"engine-events.jsonl",cursor,pending,active_requests)
      now=time.monotonic();is_active=bool(active_requests)
-     if is_active and not was_active:next_sample=now
+     if request_started or (is_active and not was_active):next_sample=now
      was_active=is_active
      if now>=next_sample:
       s={"elapsed_seconds":round(now-start,4),"timestamp_unix_ns":time.time_ns()}
