@@ -266,5 +266,37 @@ class LlamaTraceImportTests(unittest.TestCase):
                 import_trace(path)
 
 
+
+
+    def test_summary_missing_required_field_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            bad = summary(1)
+            del bad["events_drained"]
+            path = self.write_trace(directory, [event("llama-1", "sync"), bad])
+            with self.assertRaisesRegex(ValueError, "sink summary missing fields"):
+                import_trace(path)
+
+    def test_summary_empty_identifiers_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            bad = summary(1)
+            bad["event_id"] = ""
+            path = self.write_trace(directory, [event("llama-1", "sync"), bad])
+            with self.assertRaisesRegex(ValueError, "invalid summary event_id"):
+                import_trace(path)
+            bad = summary(1)
+            bad["run_id"] = ""
+            path = self.write_trace(directory, [event("llama-1", "sync"), bad])
+            with self.assertRaisesRegex(ValueError, "invalid summary run_id"):
+                import_trace(path)
+
+    def test_flags_are_limited_to_unsigned_16_bits(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            bad = event("llama-1", "sync")
+            bad["flags"] = 65536
+            path = self.write_trace(directory, [bad, summary(1)])
+            with self.assertRaisesRegex(ValueError, "flags exceeds 65535"):
+                import_trace(path)
+
+
 if __name__ == "__main__":
     unittest.main()
