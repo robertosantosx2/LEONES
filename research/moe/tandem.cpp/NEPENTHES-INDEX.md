@@ -47,7 +47,7 @@ Principios no negociables:
 **Siguientes pasos:**
 - [ ] Consultar CI del HEAD actual de PR #10 y clasificar todos los checks, incluidos queued/skipped y fallos externos.
 - [ ] Revisar diff y semántica de lifecycle, concurrencia, JSONL, NVTX y límites de eventos; comparar cobertura con los candidatos previos.
-- [ ] Cerrar contrato común LEONES #207 y comprobar compatibilidad del productor con el importador.
+- [x] Cerrar contrato común LEONES #207 y comprobar compatibilidad del source `tandem.cpp`: PR #210 fusionada; registry explícito y fixture positivo/negativo incluidos.
 - [ ] Merge solo tras CI/revisión; actualizar el gitlink LEONES después de la aceptación.
 - [ ] MSI: build Linux/CUDA, C07 real NVTX+Nsight y C08 emparejado; conservar artefactos y métricas.
 
@@ -62,8 +62,8 @@ Principios no negociables:
 **Auditoría de fuente 1.2.10:** se revisaron `server/http_conn.zig`, `server/routes.zig`, `server/server.zig`, `server/request_journal.zig`, `cuda/launch.zig`, `cuda/graph.zig`, `cuda/stream.zig`, `cuda/memory.zig`, `cuda/driver.zig` y `cuda/abi.zig`. La identidad lógica debe nacer por petición en `routes.dispatch`, no por conexión; keep-alive reutiliza conexiones y los IDs existentes son IDs de respuesta. El journal puede contener contenido privado y no es un sink. CUDA expone límites host para launch/graph/memoria/copias/errores, pero launch/graph return solo demuestran submission; los contadores de memoria son agregados. No añadir sincronizaciones para telemetría. No se encontró productor/sink NEPENTHES runtime en los archivos auditados.
 
 **Secuencia obligatoria:**
-1. [ ] Revisar y aceptar LEONES #207 mediante PR #210: compatibilidad llama.cpp, registry cerrado, fixtures llama.cpp/TensorFold y CI del HEAD exacto verde.
-2. [ ] Completar ATC overlap desde el checkout TensorFold correcto; exigir `complete=true` y revisar todos los resultados `conflicts/clean/unknown`. El resultado previo `workingTreeUnavailable` no supera el gate.
+1. [x] Revisar y aceptar LEONES #207 mediante PR #210: merge `fcaf170`; registry cerrado `llama.cpp`/`tensorfold`/`tandem.cpp`; CI host-only y fixtures positivos/negativos superados.
+2. [x] Completar ATC overlap desde el checkout TensorFold correcto: resultado final `complete=true`, `limitations=[]`, `overlaps=[]`, `worktrees=3`, `worktreeOverlaps=[]`. El resultado previo `workingTreeUnavailable` queda sustituido por esta ejecución concluyente.
 3. [ ] Abrir PR pequeña del adaptador host-only: opt-in, no-op real cuando disabled, sink acotado, IDs/run identity, privacidad y metadata namespaced; sin sondas CUDA.
 4. [ ] Añadir pruebas host para concurrencia, keep-alive/múltiples peticiones, lifecycle balanceado, sink_summary final, drops/errors y camino disabled; validar fixtures con el importador común.
 5. [ ] Separar futuras sondas CUDA por áreas ATC (launch/graph; memoria/copias; sync/errores) y después NVTX/Nsight con tokens explícitos.
