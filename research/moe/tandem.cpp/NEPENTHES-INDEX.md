@@ -73,38 +73,47 @@ Principios no negociables:
 
 ### 3.3 tandem.cpp — distribución patch-based sobre llama.cpp
 
-**Naturaleza:** `robertosantosx2/tandem.cpp` no es un runtime independiente desde cero; es una distribución de parches sobre una revisión fijada de llama.cpp. Su build aplica primero `tandem.patch` (optimizaciones/funcionalidad Tandem) y después la capa de instrumentación NEPENTHES. Debe tratarse como un perfil/runtime derivado de llama.cpp, conservando su identidad de source `tandem.cpp` y sin duplicar el núcleo de captura LEONES.
+**Naturaleza:** `robertosantosx2/tandem.cpp` es una distribución patch-based sobre llama.cpp, no un motor independiente. Su identidad de evidencia es `source=tandem.cpp`; LEONES mantiene el runner, contrato, importadores, manifiestos y aceptación. La instrumentación activa vive en el repositorio Tandem.cpp; `research/moe/tandem.cpp` de LEONES conserva snapshot/procedencia y documentación subordinada.
 
-**Implementación localizada:**
-- Repositorio de implementación: [robertosantosx2/tandem.cpp](https://github.com/robertosantosx2/tandem.cpp).
-- PR canónica de instrumentación: [Tandem.cpp #1 — active JSONL sink and full runtime probe applier](https://github.com/robertosantosx2/tandem.cpp/pull/1), rama `nepenthes/universal-observability-20261114`, HEAD auditado `170d3af9918e2cdf3b5c72f6bb61ab0c3b7b6b52`. Está **abierta, sin fusionar**; GitHub la reporta `mergeable=true` / `mergeable_state=clean`.
-- La carpeta `nepenthes/` incluye `nepenthes_trace.hpp` (hook C++17), `nepenthes_jsonl_sink.hpp` (sink asíncrono acotado), `runtime.patch`, `apply_runtime_probes.py`, pruebas C++ y README de aplicación.
-- `build.sh` aplica, en orden, `tandem.patch`, `nepenthes/runtime.patch` y `apply_runtime_probes.py`; los anclajes exactos hacen fallar el proceso si la fuente pinned deriva.
-- Activación opt-in mediante `NEPENTHES_TRACE_JSONL` y `NEPENTHES_RUN_ID`; el sink se crea de forma lazy en la primera entrada de graph-compute. Sin la variable JSONL no se activa la captura interna.
-- El productor usa cola bounded de 8192 entradas y writer thread separado; el callback solo encola, cuenta drops y errores, y no hace I/O de fichero en el hilo productor. El apagado bloquea nuevas callbacks y espera a las que ya estaban en vuelo.
-- El JSONL emite schema 1.0, `source=tandem.cpp`, reloj monotónico steady-clock y timestamp Unix; los IDs de evento son secuenciales. Los eventos internos sin identidad explícita mantienen `request_id=0`.
+**Estado remoto auditado — 2026-11-19:**
+- [Tandem.cpp PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1), instrumentación principal, sigue abierta y sin merge. HEAD validado por CI: `170d3af9918e2cdf3b5c72f6bb61ab0c3b7b6b52`. Implementa hook C++17, timestamps monotónicos, scoped durations, sink JSONL asíncrono con cola bounded de 8192 entradas, writer separado, shutdown seguro y aplicador determinista de sondas.
+- [Tandem.cpp PR #2](https://github.com/robertosantosx2/tandem.cpp/pull/2) contiene la guía de instrumentación; es documental y no añade runtime.
+- [Tandem.cpp PR #3](https://github.com/robertosantosx2/tandem.cpp/pull/3), corrección complementaria apilada sobre #1, sigue abierta y sin merge. HEAD `2da6b222c2c663ebeeeb729e771930153cbabf17`. Reserva `request_id=0` para eventos no correlacionados y transforma task IDs del servidor mediante `request_id_from_task_id()`: task ID 0 pasa a request ID 1, preservando el ID original en `value0`. La corrección se aplica a eventos server request start/end y routing; no atribuye IDs a workers, CUDA asíncrono ni eventos de shared batch sin identidad segura.
+- No se debe considerar #3 sustituta de #1: #1 aporta la instrumentación y #3 corrige la semántica de identidad sobre esa base. Ambas requieren revisión y merge coordinados; #2 es documentación.
 
-**Cobertura instrumentada declarada por el código y el README de la PR:**
-- lifecycle de petición del servidor (task ID como request_id), graph-compute y sincronización;
-- MoE cache hit/miss/eviction, lookahead prefetch enqueue/wait, jobs y workers CPU, publicación de resultados y espera del consumidor GPU;
-- KV cache: allocation/teardown/clear/update, ubatch insertion, cell reuse/release y operaciones de secuencia;
-- alloc/free/OOM/fallback de backend, CUDA device/pool y pinned-host;
-- spans host de submission para H2D/D2H, 2D copies y D2D/peer; dispatch por `ggml_op`;
-- los tiempos reales de kernels individuales y actividades memcpy CUDA proceden de Nsight/CUPTI importado por LEONES, no de los spans host.
+**Cobertura instrumentada declarada por el código:**
+- lifecycle de request/server, graph compute y sincronización;
+- MoE cache/prefetch, jobs y workers CPU, publicación de resultados y espera del consumidor GPU;
+- KV cache: allocation/teardown/clear/update, ubatch, cell reuse/release y secuencias;
+- backend/CUDA device/pool/pinned-host allocation, free, OOM y fallback;
+- spans host de submission H2D/D2H/2D/D2D/peer y dispatch por `ggml_op`.
+Los spans host describen submission/dispatch, no ejecución GPU. Los kernels individuales y las actividades memcpy CUDA deben proceder de Nsight/CUPTI importado por LEONES. La lista de sondas instrumentadas no equivale a cobertura observada en una captura.
 
-**Evidencia de CI:** [Actions run #43654679693](https://github.com/robertosantosx2/tandem.cpp/actions/runs/43654679693), asociado exactamente al HEAD `170d3af...`, terminó `completed/success` el 2026-11-15. El workflow compila y ejecuta las pruebas C++17 del hook y del sink (incluida carrera de shutdown y 4.256 eventos concurrentes), aplica los parches sobre la base pinned `f5222f25c18da062ab2b8a2dbbfbf4feae398566`, ejecuta el aplicador determinista y compila llama-server CPU y CUDA para SM 86. Esto es aceptación de pruebas/build de CI, no una captura GPU ni una medición de overhead. La PR sigue abierta y sin merge.
+**CI y validación de software:**
+- [Actions run #43654679693](https://github.com/robertosantosx2/tandem.cpp/actions/runs/43654679693), para HEAD #1 `170d3af...`, terminó `completed/success`: pruebas C++17 del hook/sink, concurrencia y shutdown, JSONL, aplicador determinista, build CPU y compilación CUDA llama-server para SM86. Es evidencia de CI/build, no de inferencia, cobertura completa ni overhead.
+- [Actions run #43739051242](https://github.com/robertosantosx2/tandem.cpp/actions/runs/43739051242), para HEAD #3 `2da6b222...`, terminó `completed/success`: `trace-smoke` y `cuda-compile` pasaron.
+- La PR #3 documenta además build CUDA local de llama-server sobre la base pinned, inferencia Qwen3.5-4B real y validación del bundle: 6.569 eventos fusionados, checksums y validación de eventos/informe HTML correctos. Esta evidencia de ejecución y bundle no debe confundirse con aceptación de importación emparejada LEONES.
 
-**Evidencia física histórica ya registrada en este documento:** se construyó el runtime instrumentado y se ejecutó una inferencia real Qwen3.5-4B Q4_K_M en modo CPU-only mediante `nepenthes run`: 3.683 eventos del motor, de los que 3.117 quedaron dentro de la ventana request_start/request_end; 49 eventos KV, 2.540 transferencias, 290 eventos kernel y 226 sincronizaciones dentro de esa ventana. La petición duró 1,864918 s; 10 tokens de prompt y 16 generados, prefill 21,50 tok/s y decode 10,72 tok/s. En esa captura todos los eventos de la ventana tenían `request_id=0`; por tanto, la segmentación temporal no constituye correlación robusta por petición. Nsight estaba desactivado. Esta evidencia prueba que el productor emitió eventos en una inferencia real, pero no acredita cobertura CUDA efectiva ni correlación request→kernel.
+**Identidad y correlación — evidencia de la captura asociada a #3:**
+- 6.522 eventos del motor; exactamente 3 eventos tienen `request_id=1`: `server.request_start`, `server.task_slot` y `server.request_end`. Los tres conservan `value0=0`, el task ID original.
+- Los otros 6.519 eventos conservan `request_id=0`; no se inventó correlación para CUDA ni workers.
+- Por tanto, la corrección elimina la colisión del task ID cero y correlaciona el lifecycle/routing del servidor, pero **la correlación interna request → worker → CUDA/kernel sigue incompleta**. No usar proximidad temporal para suplirla.
+
+**Captura Nsight e importación:**
+- La ejecución real generó artefactos `.nsys-rep` y SQLite de Nsight además del JSONL del motor.
+- La validación del bundle (6.569 eventos fusionados) demuestra integridad del paquete y del informe, pero no demuestra por sí sola que LEONES haya completado una importación emparejada JSONL + Nsight.
+- La PR #3 reporta que la importación SQLite del flujo emparejado queda bloqueada por overflow al convertir valores unsigned de 64 bits a `SQLite INTEGER`. La importación Nsight-only ya integrada en LEONES (#153, según el estado del proyecto) no prueba que este caso concreto del flujo emparejado esté resuelto. Hay que reproducir el caso contra el importer actual de `main`, identificar el campo y añadir fixture de regresión antes de marcarlo resuelto.
+- La antigua captura Qwen3.5-4B CPU-only con 3.683 eventos y todos los request-window IDs en cero se conserva como evidencia histórica independiente; no debe mezclarse con la nueva captura de #3.
 
 **Pendiente / plan de aceptación:**
-- [ ] Revisar y fusionar Tandem.cpp #1; conservar el HEAD exacto y el resultado de CI como evidencia.
-- [ ] Reconciliar el contrato `schema_version=1.0`, `source=tandem.cpp` con el validador multi-engine LEONES #207; no relajar el importador llama.cpp ni aceptar sources arbitrarios.
-- [ ] Ejecutar una captura nueva con `nepenthes run --profile full` para obtener JSONL + Nsight en el mismo RUN_ID; verificar el paquete y realizar importación emparejada.
-- [ ] Medir pérdidas/errores del sink y cobertura de cada categoría; completar correlación solo con IDs explícitos y calibración de relojes. No convertir `request_id=0` ni cercanía temporal en atribución.
-- [ ] Ejecutar C07 y C08 emparejados para medir overhead; separar spans host de actividad GPU real.
-- [ ] Actualizar la evidencia de hardware solo después de conservar manifest, hashes, JSONL, Nsight SQLite y resultados de importación.
+- [ ] Revisar los diffs y dependencias de #1 y #3 conjuntamente; mantenerlas abiertas hasta confirmar base/head, comentarios, CI del HEAD exacto y semántica. No fusionar ni cerrar ninguna alternativa sin revisión.
+- [ ] Reproducir y corregir el overflow unsigned-64 → SQLite INTEGER en el importador emparejado actual de LEONES; añadir fixture que cubra límites unsigned y verificar integridad/foreign keys.
+- [ ] Ejecutar importación real emparejada del JSONL y SQLite Nsight generados en la misma ejecución/RUN_ID; verificar manifiesto, hashes, tablas, pérdidas, errores y procedencia.
+- [ ] Completar correlación solo mediante identidad explícita por job/batch/worker y tokens compartidos con la captura GPU, más calibración de reloj. Hasta entonces, mantener eventos internos sin correlación.
+- [ ] Medir cobertura efectiva por sonda y pérdidas/errores del sink en ejecuciones representativas; no inferirla del inventario de probes.
+- [ ] Ejecutar C07 (captura emparejada con IDs/calibración) y C08 (baseline/tratamientos repetidos y overhead) según los gates comunes. No solicitar MSI hasta cerrar los bloqueos remotos que puedan resolverse en GitHub.
 
-**Límite actual:** instrumentación implementada y CI de build/test verde en el HEAD auditado; existe una captura real CPU-only histórica. No hay evidencia en esta auditoría de una captura nueva emparejada JSONL+Nsight, de correlación robusta request-kernel ni de overhead aceptado. El runtime derivado Tandem no debe contabilizarse como un motor independiente de llama.cpp a efectos de duplicar colectores o importadores.
+**Límite de aceptación:** hay instrumentación implementada, CI verde en los HEAD citados y evidencia de una inferencia real Qwen3.5-4B con bundle validado y artefactos Nsight generados. No hay aceptación demostrada de importación emparejada, correlación robusta request-worker-CUDA-kernel, cobertura completa ni overhead C08. Tandem sigue siendo una distribución derivada de llama.cpp, no un motor independiente a efectos de duplicar colectores/importadores.
 
 ### 3.4 Otros motores
 
