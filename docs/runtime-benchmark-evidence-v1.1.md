@@ -172,3 +172,38 @@ python3 scripts/nepenthes.py verify /path/to/run-bundle \
 ```
 
 The verifier prints the report path and SHA-256, and sets `functional_complete` only when C07 correlation and the standard-profile C08 gate both pass. The external report is not silently added to the run bundle's checksum manifest.
+
+
+### AIPerf-first C08 workflow
+
+For server inference campaigns, use the pinned AIPerf runner as the load generator and monitor the inference server PID (not the AIPerf client) for process RSS. The server must already be running and expose its PID through a file or explicit PID:
+
+```bash
+python3 scripts/nepenthes_aiperf_run.py \
+  --model MODEL_ID --url http://127.0.0.1:8080 \
+  --artifact-dir artifacts/off-pair-01 \
+  --target-pid-file /run/llama-server.pid \
+  --concurrency 1 --request-count 5 --input-tokens 512 --output-tokens 256 \
+  --random-seed 42 --timeout-seconds 900
+```
+
+Do not use `--no-server-metrics` for C08: the evidence adapter requires exported warm-up phase evidence. Resource sampling records inference-server RSS, system-wide RAM and device-wide VRAM/power; the target PID itself is not written to the manifest.
+
+Convert each AIPerf run into the canonical evidence contract:
+
+```bash
+python3 scripts/nepenthes_aiperf_evidence.py \
+  --artifacts-dir artifacts/off-pair-01 \
+  --import-dir artifacts/off-pair-01-nepenthes-import \
+  --output artifacts/off-pair-01-evidence.json \
+  --model-artifact /path/to/model.gguf --model-id MODEL_ID --model-name MODEL_NAME \
+  --model-revision MODEL_REVISION --quantization Q4_K_M --context 8192 \
+  --engine-name llama.cpp --engine-version ENGINE_VERSION --engine-revision ENGINE_SHA \
+  --backend cuda --hardware-id msi-rtx3050 \
+  --condition off --pair-id pair-01 --profile standard \
+  --sampling-config-json artifacts/sampling-config.json
+```
+
+Repeat for the same pair ID under `jsonl`, `nsys` and `combined`, then repeat the complete four-condition block for pair-02 and pair-03. Keep server flags, sampling configuration, AIPerf profile, model artifact, engine revision, hardware and telemetry intervals fixed. The evidence adapter rejects failed requests, missing warm-up evidence, missing output-token throughput, missing inference-server PID telemetry or missing peak resource metrics. It does not estimate decode throughput from request latency.
+
+The direct runtime evidence runner remains useful for single-process CLI experiments. Its RSS scope is labelled separately; do not use benchmark-client RSS as inference-server RSS in a server C08 campaign.
