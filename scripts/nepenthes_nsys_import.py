@@ -321,7 +321,7 @@ def event_rows(path: Path):
 
 
 NVTX_MARKER_RE = re.compile(
-    r"nepenthes\\.request\\.(start|end)\\s+token=(\\d+)\\s+request=(\\d+)"
+    r"nepenthes\.request\.(start|end)\s+token=(\d+)\s+request=(\d+)"
 )
 
 
