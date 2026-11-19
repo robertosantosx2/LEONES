@@ -24,7 +24,15 @@ TOKENS_PER_SECOND = re.compile(
 )
 
 LLAMA_CPP_GENERATION_TPS = re.compile(
-    r"Generation:\s*([0-9]+(?:[.,][0-9]+)?)\s*t/s",
+    r"Generation:\\s*([0-9]+(?:[.,][0-9]+)?)\\s*t/s",
+    re.I,
+)
+TTFT_RE = re.compile(
+    r"(?:TTFT(?:_ms)?|prompt eval time)\\s*[:=]\\s*([0-9]+(?:[.,][0-9]+)?)\\s*(?:ms)?",
+    re.I,
+)
+GENERATION_TIME_RE = re.compile(
+    r"(?:eval time|generation time)\\s*[:=]\\s*([0-9]+(?:[.,][0-9]+)?)\\s*ms",
     re.I,
 )
 
@@ -267,13 +275,14 @@ def percentile(values: list[float], quantile: float) -> float:
     return ordered[lower] * (1 - fraction) + ordered[upper] * fraction
 
 
-def run_once(command: list[str], host_sample_ms: int = 100, gpu_sample_ms: int = 500) -> dict:
+def run_once(command: list[str], host_sample_ms: int = 100,
+             gpu_sample_ms: int = 500, ttft_regex: str | None = None) -> dict:
     started = time.perf_counter()
     first_output = None
-    stdout_chunks: list[str] = []
-    stderr_chunks: list[str] = []
+    stdout_chunks: list[bytes] = []
+    stderr_chunks: list[bytes] = []
     proc = subprocess.Popen(
-        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, bufsize=0
     )
     telemetry = TelemetrySampler(proc.pid, host_sample_ms, gpu_sample_ms)
     import selectors
@@ -284,32 +293,58 @@ def run_once(command: list[str], host_sample_ms: int = 100, gpu_sample_ms: int =
     sel.register(proc.stderr, selectors.EVENT_READ, "stderr")
     while sel.get_map():
         for key, _ in sel.select(timeout=0.1):
-            line = key.fileobj.readline()
-            if line == "":
+            # Read available bytes, not readline(): a token stream may not contain
+            # a newline until generation has finished.
+            chunk = os.read(key.fileobj.fileno(), 65536)
+            if not chunk:
                 sel.unregister(key.fileobj)
                 continue
-            if first_output is None and line.strip():
-                first_output = (time.perf_counter() - started) * 1000
-            (stdout_chunks if key.data == "stdout" else stderr_chunks).append(line)
+            if key.data == "stdout":
+                if first_output is None:
+                    first_output = (time.perf_counter() - started) * 1000
+                stdout_chunks.append(chunk)
+            else:
+                stderr_chunks.append(chunk)
     code = proc.wait()
     telemetry_values = telemetry.close()
     total = (time.perf_counter() - started) * 1000
-    text = "".join(stdout_chunks) + "\n" + "".join(stderr_chunks)
-    llama_matches = LLAMA_CPP_GENERATION_TPS.findall(text)
+    stdout_text = b"".join(stdout_chunks).decode("utf-8", errors="replace")
+    stderr_text = b"".join(stderr_chunks).decode("utf-8", errors="replace")
+    combined_text = stdout_text + "\\n" + stderr_text
+    llama_matches = LLAMA_CPP_GENERATION_TPS.findall(combined_text)
     if llama_matches:
         tps = float(llama_matches[-1].replace(",", "."))
     else:
-        matches = TOKENS_PER_SECOND.findall(text)
+        matches = TOKENS_PER_SECOND.findall(combined_text)
         tps = float(matches[-1].replace(",", ".")) if matches else None
-    gen_ms = None if first_output is None else max(0.0, total - first_output)
+
+    ttft_pattern = re.compile(ttft_regex, re.I) if ttft_regex else TTFT_RE
+    ttft_matches = ttft_pattern.findall(combined_text)
+    if ttft_matches:
+        raw_ttft = ttft_matches[-1]
+        if isinstance(raw_ttft, tuple):
+            raw_ttft = raw_ttft[0]
+        ttft_ms = float(str(raw_ttft).replace(",", "."))
+    else:
+        ttft_ms = None
+    generation_matches = GENERATION_TIME_RE.findall(combined_text)
+    generation_ms = (
+        float(generation_matches[-1].replace(",", ".")) if generation_matches else None
+    )
     out_tokens = (
-        round(tps * gen_ms / 1000) if tps is not None and gen_ms is not None else None
+        round(tps * generation_ms / 1000)
+        if tps is not None and generation_ms is not None else None
     )
     vram, power = gpu_snapshot()
     return {
-        "ttft_ms": first_output,
+        "ttft_ms": ttft_ms,
+        "ttft_source": (
+            "custom_regex" if ttft_regex else
+            "llama_cpp_prompt_eval_time_or_explicit_ttft" if ttft_ms is not None else None
+        ),
         "first_output_ms": first_output,
-        "generation_time_ms": gen_ms,
+        "first_output_semantics": "time_to_first_stdout_byte_not_ttft",
+        "generation_time_ms": generation_ms,
         "output_tokens": out_tokens,
         "tokens_per_second": tps,
         "total_time_ms": round(total, 3),
@@ -323,8 +358,8 @@ def run_once(command: list[str], host_sample_ms: int = 100, gpu_sample_ms: int =
         "peak_power_w": telemetry_values["peak_power_w"],
         "gpu_sample_count": telemetry_values["gpu_sample_count"],
         "exit_code": code,
-        "stdout": "".join(stdout_chunks),
-        "stderr": "".join(stderr_chunks),
+        "stdout": stdout_text,
+        "stderr": stderr_text,
     }
 
 
@@ -397,6 +432,7 @@ def main() -> int:
     ap.add_argument("--sampling-config-json", type=Path, default=None)
     ap.add_argument("--host-sample-ms", type=int, default=100)
     ap.add_argument("--gpu-sample-ms", type=int, default=500)
+    ap.add_argument("--ttft-regex", default=None, help="regex with capture group 1 for a genuine TTFT value in milliseconds")
     args = ap.parse_args()
     if args.host_sample_ms < 20 or args.gpu_sample_ms < 100:
         raise SystemExit("sampling intervals are too aggressive; host>=20ms and GPU>=100ms are required")
@@ -411,7 +447,7 @@ def main() -> int:
     ):
         raise SystemExit("command-json must contain a non-empty JSON string array")
     for _ in range(args.warmup):
-        run_once(command, args.host_sample_ms, args.gpu_sample_ms)
+        run_once(command, args.host_sample_ms, args.gpu_sample_ms, args.ttft_regex)
     start = now()
     measurements = []
     for i in range(1, args.iterations + 1):
