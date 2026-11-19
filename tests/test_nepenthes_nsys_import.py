@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.nepenthes_nsys_import import import_all, import_nsys_only, inspect_nsys
+from scripts.nepenthes_nsys_import import event_rows, import_all, import_nsys_only, inspect_nsys
 
 
 def write_jsonl(path: Path, *, request_id: int = 0) -> None:
@@ -24,6 +24,36 @@ def write_jsonl(path: Path, *, request_id: int = 0) -> None:
         "value1": 2,
         "duration_ns": 900,
         "flags": 1,
+    }
+    path.write_text(json.dumps(event) + "\n", encoding="utf-8")
+
+
+
+
+def write_jsonl_v11(path: Path, *, backend: str | None = "cuda") -> None:
+    event = {
+        "schema_version": "1.1",
+        "run_id": "qwen35-typed",
+        "event_id": "llama-1",
+        "source": "llama.cpp",
+        "timestamp_unix_ns": 1_800_000_000_000_000_000,
+        "monotonic_ns": 123456,
+        "request_id": 42,
+        "correlation_token": 77,
+        "attribution_level": "exact",
+        "backend": backend,
+        "memory_kind": "device",
+        "memcpy_kind": "host_to_device",
+        "raw_memcpy_kind": 1,
+        "sync_type": "stream",
+        "kv_op": None,
+        "clock_domain": "steady_clock",
+        "event_kind": "transfer",
+        "label": "cuda.memcpy.h2d_sync",
+        "value0": 4096,
+        "value1": 0,
+        "duration_ns": 1200,
+        "flags": 0,
     }
     path.write_text(json.dumps(event) + "\n", encoding="utf-8")
 
@@ -576,3 +606,82 @@ def test_nsys_window_attribution_is_scoped_to_the_originating_process(tmp_path: 
         (99, 77, "windowed", "unique_explicit_request_window"),
         (100, None, None, "missing_process_request_window"),
     ]
+
+
+def test_import_persists_schema_v11_typed_engine_metadata(tmp_path: Path):
+    jsonl = tmp_path / "typed-trace.jsonl"
+    nsys = tmp_path / "capture.sqlite"
+    output = tmp_path / "typed-normalized.sqlite"
+    write_jsonl_v11(jsonl)
+    write_nsys(nsys)
+
+    import_all(jsonl, nsys, output, "typed-import-001")
+    db = sqlite3.connect(output)
+    event = db.execute(
+        "SELECT correlation_token,attribution_level,backend,memory_kind,memcpy_kind,"
+        "raw_memcpy_kind,sync_type,kv_op FROM nepenthes_events"
+    ).fetchone()
+    assert event == (77, "exact", "cuda", "device", "host_to_device", 1, "stream", None)
+    raw = json.loads(db.execute("SELECT raw_json FROM nepenthes_events").fetchone()[0])
+    assert raw["schema_version"] == "1.1"
+    db.close()
+
+
+def test_event_rows_accepts_schema_v11_sink_summary(tmp_path: Path):
+    jsonl = tmp_path / "typed-with-summary.jsonl"
+    write_jsonl_v11(jsonl)
+    summary = {
+        "schema_version": "1.1",
+        "run_id": "qwen35-typed",
+        "event_id": "llama-2",
+        "source": "llama.cpp",
+        "timestamp_unix_ns": 1_800_000_000_000_000_100,
+        "monotonic_ns": 123556,
+        "request_id": 0,
+        "correlation_token": None,
+        "attribution_level": None,
+        "backend": None,
+        "memory_kind": None,
+        "memcpy_kind": None,
+        "raw_memcpy_kind": None,
+        "sync_type": None,
+        "kv_op": None,
+        "clock_domain": "steady_clock",
+        "event_kind": "sink_summary",
+        "label": "sink.summary",
+        "value0": 1,
+        "value1": 0,
+        "duration_ns": 0,
+        "flags": 0,
+        "events_drained": 1,
+        "dropped_events": 0,
+        "write_errors": 0,
+    }
+    with jsonl.open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(summary) + "\n")
+    events = list(event_rows(jsonl))
+    assert [event["event_kind"] for event in events] == ["transfer", "sink_summary"]
+
+
+def test_event_rows_rejects_unknown_schema_v11_backend(tmp_path: Path):
+    jsonl = tmp_path / "invalid-typed-trace.jsonl"
+    write_jsonl_v11(jsonl, backend="mystery-accelerator")
+    with pytest.raises(ValueError, match="invalid backend"):
+        list(event_rows(jsonl))
+
+
+def test_typed_event_schema_migration_is_idempotent(tmp_path: Path):
+    jsonl = tmp_path / "typed-trace.jsonl"
+    nsys = tmp_path / "capture.sqlite"
+    output = tmp_path / "typed-normalized.sqlite"
+    write_jsonl_v11(jsonl)
+    write_nsys(nsys)
+
+    import_all(jsonl, nsys, output, "typed-import-first")
+    import_all(jsonl, nsys, output, "typed-import-second")
+    db = sqlite3.connect(output)
+    count = db.execute("SELECT COUNT(*) FROM nepenthes_events").fetchone()[0]
+    assert count == 2
+    columns = {row[1] for row in db.execute("PRAGMA table_info(nepenthes_events)")}
+    assert {"backend", "memory_kind", "memcpy_kind", "raw_memcpy_kind", "kv_op"} <= columns
+    db.close()

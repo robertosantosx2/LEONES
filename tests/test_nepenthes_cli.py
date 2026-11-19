@@ -54,12 +54,15 @@ def test_installer_installs_and_uninstalls_user_space(tmp_path):
  cli=bindir/"nepenthes";assert cli.is_file()
  assert (datadir/"scripts"/"nepenthes_nsys_import.py").is_file()
  assert (datadir/"db"/"migrations"/"002_nepenthes_observability.sql").is_file()
+ assert (datadir/"db"/"migrations"/"003_nepenthes_nsys_only.sql").is_file()
+ assert (datadir/"db"/"migrations"/"006_nepenthes_typed_event_metadata.sql").is_file()
  version=subprocess.run([str(cli),"--version"],capture_output=True,text=True,timeout=10)
  assert version.returncode==0 and "NEPENTHES 0.1.0" in version.stdout
  removed=subprocess.run(["bash",str(installer),"--bin-dir",str(bindir),"--uninstall"],capture_output=True,text=True,env=env,timeout=10)
  assert removed.returncode==0 and not cli.exists()
  assert not (datadir/"scripts"/"nepenthes_nsys_import.py").exists()
  assert not (datadir/"db"/"migrations"/"002_nepenthes_observability.sql").exists()
+ assert not (datadir/"db"/"migrations"/"006_nepenthes_typed_event_metadata.sql").exists()
 
 def test_full_profile_wraps_command_with_nsys_when_required(tmp_path):
  bindir=tmp_path/"fake-bin";bindir.mkdir()
