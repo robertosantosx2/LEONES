@@ -723,7 +723,7 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                  str(nsys.resolve()), sha256(nsys), len(events), len(activities),
                  json.dumps(dict(event_counts), sort_keys=True),
                  json.dumps(dict(activity_counts), sort_keys=True),
-                 "No automatic JSONL-to-Nsight join by proximity. Token-matched NVTX markers calibrate host↔Nsight time; GPU activities receive windowed attribution only when uniquely contained in an explicit request window.",
+                 "No automatic JSONL-to-Nsight join by proximity. Token-matched request/batch NVTX markers calibrate host↔Nsight time; GPU activities receive separate windowed attribution per scope only when uniquely contained in an explicit process-scoped window. Overlap within a scope is rejected.",
                  json.dumps(enum_metadata, ensure_ascii=False, sort_keys=True),
                  json.dumps(nsys_clock_calibration, ensure_ascii=False, sort_keys=True)),
             )
@@ -772,11 +772,13 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
         "enum_tables": enum_metadata,
         "enum_decode_status_counts": dict(Counter(a[20] for a in activities)),
         "nvtx_marker_count": len(nsys_markers),
-        "request_windows": len(nvtx_windows),
+        "request_windows": sum(1 for window in nvtx_windows if window["scope"] == "request"),
+        "batch_windows": sum(1 for window in nvtx_windows if window["scope"] == "batch"),
         "attribution_status_counts": dict(Counter(a[26] for a in activities)),
+        "batch_attribution_status_counts": dict(Counter(a[29] for a in activities)),
         "nsys_clock_calibration": nsys_clock_calibration,
         "output": str(output.resolve()),
-        "correlation": "explicit token-matched NVTX markers only; GPU activity attribution is windowed and rejected when windows overlap",
+        "correlation": "explicit token-matched request/batch NVTX markers only; GPU activity attribution is windowed per scope and rejected when windows overlap",
     }
 
 
@@ -967,12 +969,14 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
         "enum_tables": enum_metadata,
         "enum_decode_status_counts": dict(Counter(a[20] for a in activities)),
         "nvtx_marker_count": len(nsys_markers),
-        "request_windows": len(nvtx_windows),
+        "request_windows": sum(1 for window in nvtx_windows if window["scope"] == "request"),
+        "batch_windows": sum(1 for window in nvtx_windows if window["scope"] == "batch"),
         "attribution_status_counts": dict(Counter(a[26] for a in activities)),
+        "batch_attribution_status_counts": dict(Counter(a[29] for a in activities)),
         "nsys_clock_calibration": nsys_clock_calibration,
         "coverage": coverage,
         "output": str(output.resolve()),
-        "correlation": "no paired host clock calibration; only explicit NVTX windows within the Nsight clock domain are used",
+        "correlation": "no paired host clock calibration; only explicit request/batch NVTX windows within the Nsight clock domain are used",
     }
 
 
