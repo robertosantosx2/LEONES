@@ -44,7 +44,7 @@ def _safe_url(value: str) -> str:
     return f"{parsed.scheme}://{host}{parsed.path}"
 
 
-def redact_command(command: list[str]) -> list[str]:
+def redact_command(command: list[str], prompt: str = "") -> list[str]:
     redacted = []
     redact_next = False
     for raw in command:
@@ -62,7 +62,7 @@ def redact_command(command: list[str]) -> list[str]:
         if matched_eq:
             redacted.append(matched_eq + "=<redacted>")
             continue
-        redacted.append(_safe_url(token))
+        redacted.append("<redacted:prompt>" if prompt and token == prompt else _safe_url(token))
     if redact_next:
         redacted.append("<missing-sensitive-value>")
     return redacted
