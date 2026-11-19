@@ -204,3 +204,25 @@ python3 scripts/nepenthes_aiperf_import.py \
 ```
 
 Para autenticación, usar el mecanismo de entorno admitido por AIPerf (por ejemplo `OPENAI_API_KEY`) sin incluir secretos en la línea de comandos ni en el manifiesto. La primera ejecución física debe seguir limitada a concurrencia 1 y pocos requests; escalar solo después de revisar RAM, swap, VRAM y errores.
+
+
+## 13. Adaptador nativo llama-server (revisión upstream verificada)
+
+La revisión upstream verificada para esta integración es `ggml-org/llama.cpp@39039aa27fe65244913d8a07303b8733f614fe20` (`master`, 2026-11-19 06:50:33 UTC). El pin se conserva en `LLAMA-CPP-UPSTREAM.json`; el workflow `NEPENTHES llama.cpp upstream monitor` comprueba diariamente si `master` avanza y abre/actualiza un issue de revisión, sin actualizar código ni submódulos automáticamente.
+
+En esa revisión, `tools/server/README.md` documenta `--metrics` como endpoint Prometheus opt-in y `--slots` como endpoint de monitorización habilitado por defecto; `tools/server/server.cpp` registra GET `/metrics` y GET `/slots`. Por tanto, la disponibilidad de `/metrics` debe detectarse/configurarse por despliegue y no asumirse.
+
+El parser offline `scripts/nepenthes_llama_server_metrics.py` procesa exposition Prometheus y snapshots JSON de `/slots`:
+
+```bash
+python3 scripts/nepenthes_llama_server_metrics.py \
+  --metrics-file artifacts/llama-server-metrics.prom \
+  --slots-file artifacts/llama-server-slots.json \
+  --scrape-timestamp-unix-ns 1795071000000000000 \
+  --snapshot-id smoke-001 \
+  --output artifacts/nepenthes/llama-server-events.jsonl
+```
+
+El parser preserva HELP/TYPE/UNIT, muestras individuales y timestamps; no agrega histogramas ni inventa unidades. Solo conserva valores de labels de cardinalidad acotada (`model`, `status`, `backend`, `device`, `type`, etc.). En `/slots` exporta únicamente `id` e `is_processing`; nombres de otros campos se registran como no soportados, pero sus valores (incluidos prompts o tokens) no se copian. No realiza polling HTTP: la captura de endpoints y su correlación temporal pertenecen a una etapa posterior.
+
+**Estado del fork:** el repositorio personal `robertosantosx2/llama.cpp` no existe y LEONES no tiene un submódulo llama.cpp. El pin anterior es del upstream oficial, no un fork. La creación del fork GitHub queda bloqueada por la ausencia de la operación `fork repository` en la conexión actual; no se simula con un submódulo upstream.
