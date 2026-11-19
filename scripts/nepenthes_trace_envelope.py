@@ -29,6 +29,7 @@ SUMMARY_FIELDS = frozenset({
 SOURCE_PROFILES: dict[str, dict[str, frozenset[str]]] = {
     "llama.cpp": {"clock_domains": frozenset({"steady_clock"})},
     "tensorfold": {"clock_domains": frozenset({"steady_clock"})},
+    "tandem.cpp": {"clock_domains": frozenset({"steady_clock"})},
 }
 
 
