@@ -111,6 +111,9 @@ exit "$status"
   assert db.execute("select count(*) from nepenthes_events").fetchone()[0]>=4
   assert db.execute("select count(*) from nsys_activities").fetchone()[0]==1
  assert "nsys-wrapped" in (run/"session.log").read_text()
+ verified=invoke("verify",str(run))
+ assert verified.returncode==0,verified.stdout+verified.stderr
+ assert json.loads(verified.stdout)["checks"]["nsys_import"] is True
 
 def test_self_test_creates_and_verifies_bundle(tmp_path):
  result=invoke("self-test","--output",str(tmp_path))
@@ -150,3 +153,50 @@ def test_stop_process_group_signals_group_and_waits(monkeypatch):
   def wait(self,timeout=None): return 0
  module.stop_process_group(Child(),4321)
  assert calls==[(4321,module.signal.SIGINT),(4321,0)]
+
+
+def _cli_module():
+ import importlib.util
+ spec=importlib.util.spec_from_file_location("nepenthes_cli_verify",SCRIPT)
+ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+ return module
+
+
+def test_verify_event_contract_accepts_balanced_tokens_and_clock_pairs():
+ module=_cli_module()
+ events=[
+  {"event_kind":"clock_calibration","label":"clock.calibration.start","monotonic_ns":100,
+   "timestamp_unix_ns":1000,"clock_domain":"steady_clock"},
+  {"event_kind":"request_start","correlation_token":77,"attribution_level":"exact"},
+  {"event_kind":"nvtx_marker","label":"request.start","correlation_token":77,
+   "attribution_level":"exact","clock_domain":"steady_clock","timestamp_unix_ns":1100,
+   "value0":101,"value1":105},
+  {"event_kind":"nvtx_marker","label":"request.end","correlation_token":77,
+   "attribution_level":"exact","clock_domain":"steady_clock","timestamp_unix_ns":1900,
+   "value0":901,"value1":905},
+  {"event_kind":"request_end","correlation_token":77,"attribution_level":"exact"},
+  {"event_kind":"clock_calibration","label":"clock.calibration.end","monotonic_ns":1000,
+   "timestamp_unix_ns":1900,"clock_domain":"steady_clock"},
+ ]
+ summary,errors=module.validate_event_contract(events)
+ assert errors==[]
+ assert summary["request_tokens"]==1
+ assert summary["nvtx_tokens"]==1
+ assert summary["nvtx_marker_events"]==2
+ assert summary["host_clock_calibration"]["calibrated"] is True
+ assert summary["host_clock_calibration"]["drift_ppm"]==0
+
+
+def test_verify_event_contract_rejects_unmatched_or_false_exact_attribution():
+ module=_cli_module()
+ events=[
+  {"event_kind":"nvtx_marker","label":"request.start","correlation_token":88,
+   "attribution_level":"exact","clock_domain":"steady_clock","timestamp_unix_ns":1000,
+   "value0":100,"value1":110},
+  {"event_kind":"cuda_kernel","attribution_level":"exact"},
+ ]
+ summary,errors=module.validate_event_contract(events)
+ assert any("NVTX token lifecycle" in error for error in errors)
+ assert any("exact attribution requires correlation_token" in error for error in errors)
+
+
