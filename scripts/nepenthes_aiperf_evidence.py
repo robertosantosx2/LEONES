@@ -219,7 +219,16 @@ def build_evidence(args: argparse.Namespace) -> dict:
         run_metrics["ttft_ms"] = ttft_summary
     latency_summary = summary_metric(("request_latency",), time_ms)
     if latency_summary is not None:
-        run_metrics["total_time_ms"] = latency_summary
+        run_metrics["request_latency_mean_ms"] = latency_summary
+    started_at = run_manifest.get("started_at")
+    finished_at = run_manifest.get("finished_at")
+    if not isinstance(started_at, str) or not isinstance(finished_at, str):
+        raise ValueError("AIPerf run manifest must contain started_at and finished_at for total campaign duration")
+    start_time = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+    finish_time = datetime.fromisoformat(finished_at.replace("Z", "+00:00"))
+    if finish_time <= start_time:
+        raise ValueError("AIPerf run finished_at must be later than started_at")
+    run_metrics["total_time_ms"] = (finish_time - start_time).total_seconds() * 1000.0
     generation_values = [item["generation_time_ms"] for item in measurements if "generation_time_ms" in item]
     if generation_values:
         run_metrics["generation_time_ms"] = median(generation_values)
@@ -282,6 +291,7 @@ def build_evidence(args: argparse.Namespace) -> dict:
             "version": args.engine_version,
             "revision": args.engine_revision,
             "backend": args.backend,
+            "command_sha256": run_manifest.get("workload_command_sha256"),
         },
         "hardware": hardware_info,
         "protocol": {
