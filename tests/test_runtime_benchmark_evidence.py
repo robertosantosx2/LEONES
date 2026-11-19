@@ -10,6 +10,10 @@ def test_run_once_captures_output_and_timing():
     assert "12.5 tok/s" in result["stdout"]
     assert result["first_output_ms"] is not None
     assert result["tokens_per_second"] == 12.5
+    assert "peak_process_rss_mb" in result
+    assert "peak_system_ram_used_mb" in result
+    assert "peak_vram_mb_device_wide" in result
+    assert "gpu_sample_count" in result
 
 
 def test_sha256_is_stable(tmp_path: Path):
