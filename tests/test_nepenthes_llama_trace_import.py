@@ -108,6 +108,14 @@ class LlamaTraceImportTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "value0 must be"):
                 import_trace(path)
 
+    def test_prompt_or_token_payload_fields_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            bad = event("llama-1", "sync")
+            bad["prompt"] = "must never be captured"
+            path = self.write_trace(directory, [bad, summary(1)])
+            with self.assertRaisesRegex(ValueError, "forbidden text/token fields"):
+                import_trace(path)
+
     def test_event_after_summary_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = self.write_trace(directory, [
