@@ -13,6 +13,7 @@ import re
 import shutil
 import subprocess
 import time
+import threading
 import uuid
 from pathlib import Path
 from statistics import mean, median, stdev
@@ -24,6 +25,14 @@ TOKENS_PER_SECOND = re.compile(
 
 LLAMA_CPP_GENERATION_TPS = re.compile(
     r"Generation:\s*([0-9]+(?:[.,][0-9]+)?)\s*t/s",
+    re.I,
+)
+TTFT_RE = re.compile(
+    r"(?:TTFT(?:_ms)?|prompt eval time)\s*[:=]\s*([0-9]+(?:[.,][0-9]+)?)\s*(?:ms)?",
+    re.I,
+)
+GENERATION_TIME_RE = re.compile(
+    r"(?:eval time|generation time)\s*[:=]\s*([0-9]+(?:[.,][0-9]+)?)\s*ms",
     re.I,
 )
 
@@ -129,14 +138,188 @@ def gpu_snapshot() -> tuple[float | None, float | None]:
         return None, None
 
 
-def run_once(command: list[str]) -> dict:
+
+def process_rss_mb(pid: int) -> float | None:
+    status = Path(f"/proc/{pid}/status")
+    try:
+        for line in status.read_text(encoding="utf-8").splitlines():
+            if line.startswith("VmRSS:"):
+                return round(int(line.split()[1]) / 1024, 2)
+    except (OSError, ValueError, IndexError):
+        return None
+    return None
+
+
+def system_ram_used_mb() -> float | None:
+    try:
+        values = {}
+        for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
+            key, value = line.split(":", 1)
+            if key in ("MemTotal", "MemAvailable"):
+                values[key] = int(value.strip().split()[0])
+        if "MemTotal" in values and "MemAvailable" in values:
+            return round((values["MemTotal"] - values["MemAvailable"]) / 1024, 2)
+    except (OSError, ValueError, IndexError):
+        return None
+    return None
+
+
+class TelemetrySampler:
+    """Low-frequency host and device-wide sampling during one child execution."""
+
+    def __init__(self, pid: int, host_interval_ms: int = 100, gpu_interval_ms: int = 500):
+        self.pid = pid
+        self.host_interval = max(20, host_interval_ms) / 1000
+        self.gpu_interval_ms = max(100, gpu_interval_ms)
+        self.stop_event = threading.Event()
+        self.lock = threading.Lock()
+        self.values = {
+            "peak_process_rss_mb": None,
+            "peak_system_ram_used_mb": None,
+            "peak_vram_mb_device_wide": None,
+            "peak_power_w": None,
+            "power_sum_w": 0.0,
+            "power_samples": 0,
+            "gpu_sample_count": 0,
+        }
+        self.host_thread = threading.Thread(target=self._sample_host, daemon=True)
+        self.gpu_process = None
+        self.gpu_thread = None
+        if shutil.which("nvidia-smi"):
+            try:
+                self.gpu_process = subprocess.Popen(
+                    [
+                        "nvidia-smi", "--id=0",
+                        "--query-gpu=memory.used,power.draw",
+                        "--format=csv,noheader,nounits",
+                        f"--loop-ms={self.gpu_interval_ms}",
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                    text=True,
+                    bufsize=1,
+                )
+                self.gpu_thread = threading.Thread(target=self._sample_gpu, daemon=True)
+                self.gpu_thread.start()
+            except OSError:
+                self.gpu_process = None
+        self.host_thread.start()
+
+    def _sample_host(self) -> None:
+        while not self.stop_event.is_set():
+            rss = process_rss_mb(self.pid)
+            ram = system_ram_used_mb()
+            with self.lock:
+                if rss is not None:
+                    current = self.values["peak_process_rss_mb"]
+                    self.values["peak_process_rss_mb"] = rss if current is None else max(current, rss)
+                if ram is not None:
+                    current = self.values["peak_system_ram_used_mb"]
+                    self.values["peak_system_ram_used_mb"] = ram if current is None else max(current, ram)
+            self.stop_event.wait(self.host_interval)
+
+    def _sample_gpu(self) -> None:
+        if self.gpu_process is None or self.gpu_process.stdout is None:
+            return
+        for line in self.gpu_process.stdout:
+            if self.stop_event.is_set():
+                break
+            try:
+                parts = [item.strip() for item in line.strip().split(",")]
+                memory = float(parts[0]) if parts and parts[0] not in ("N/A", "") else None
+                power = float(parts[1]) if len(parts) > 1 and parts[1] not in ("N/A", "") else None
+            except (ValueError, IndexError):
+                continue
+            with self.lock:
+                if memory is not None:
+                    current = self.values["peak_vram_mb_device_wide"]
+                    self.values["peak_vram_mb_device_wide"] = memory if current is None else max(current, memory)
+                if power is not None:
+                    current = self.values["peak_power_w"]
+                    self.values["peak_power_w"] = power if current is None else max(current, power)
+                    self.values["power_sum_w"] += power
+                    self.values["power_samples"] += 1
+                self.values["gpu_sample_count"] += 1
+
+    def close(self) -> dict:
+        self.stop_event.set()
+        if self.gpu_process is not None:
+            try:
+                self.gpu_process.terminate()
+                self.gpu_process.wait(timeout=2)
+            except (OSError, subprocess.TimeoutExpired):
+                try:
+                    self.gpu_process.kill()
+                except OSError:
+                    pass
+        self.host_thread.join(timeout=1)
+        if self.gpu_thread is not None:
+            self.gpu_thread.join(timeout=1)
+        with self.lock:
+            result = dict(self.values)
+        samples = result.pop("power_samples")
+        power_sum = result.pop("power_sum_w")
+        result["mean_power_w"] = round(power_sum / samples, 3) if samples else None
+        result["peak_vram_mb"] = result["peak_vram_mb_device_wide"]
+        return result
+
+
+def percentile(values: list[float], quantile: float) -> float:
+    ordered = sorted(values)
+    if not ordered:
+        raise ValueError("percentile requires at least one value")
+    position = (len(ordered) - 1) * quantile
+    lower = int(position)
+    upper = min(lower + 1, len(ordered) - 1)
+    fraction = position - lower
+    return ordered[lower] * (1 - fraction) + ordered[upper] * fraction
+
+
+
+def redact_command(command: list[str], prompt: str = "") -> list[str]:
+    secret_flags = {"--api-key", "--token", "--password", "--secret", "--authorization"}
+    redacted = []
+    redact_next = False
+    for argument in command:
+        if redact_next:
+            redacted.append("<redacted>")
+            redact_next = False
+            continue
+        lowered = argument.lower()
+        if lowered in secret_flags:
+            redacted.append(argument)
+            redact_next = True
+        elif any(lowered.startswith(flag + "=") for flag in secret_flags):
+            redacted.append(argument.split("=", 1)[0] + "=<redacted>")
+        elif prompt and argument == prompt:
+            redacted.append("<redacted:prompt>")
+        else:
+            redacted.append(argument)
+    return redacted
+
+
+def prompt_fingerprint(prompt: str, dataset_sha256: str | None, command: list[str]) -> tuple[str, str]:
+    if prompt:
+        if prompt not in command:
+            raise ValueError("--prompt must exactly match one argument in --command-json; use --dataset-sha256 for external datasets")
+        return hashlib.sha256(prompt.encode("utf-8")).hexdigest(), "exact_command_argument"
+    if dataset_sha256:
+        if not re.fullmatch(r"[a-fA-F0-9]{64}", dataset_sha256):
+            raise ValueError("--dataset-sha256 must be a 64-character SHA-256 hex digest")
+        return dataset_sha256.lower(), "declared_external_dataset"
+    raise ValueError("provide --prompt (present as a command argument) or --dataset-sha256")
+
+
+def run_once(command: list[str], host_sample_ms: int = 100,
+             gpu_sample_ms: int = 500, ttft_regex: str | None = None) -> dict:
     started = time.perf_counter()
     first_output = None
-    stdout_chunks: list[str] = []
-    stderr_chunks: list[str] = []
+    stdout_chunks: list[bytes] = []
+    stderr_chunks: list[bytes] = []
     proc = subprocess.Popen(
-        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=False, bufsize=0
     )
+    telemetry = TelemetrySampler(proc.pid, host_sample_ms, gpu_sample_ms)
     import selectors
 
     sel = selectors.DefaultSelector()
@@ -145,40 +328,75 @@ def run_once(command: list[str]) -> dict:
     sel.register(proc.stderr, selectors.EVENT_READ, "stderr")
     while sel.get_map():
         for key, _ in sel.select(timeout=0.1):
-            line = key.fileobj.readline()
-            if line == "":
+            # Read available bytes, not readline(): a token stream may not contain
+            # a newline until generation has finished.
+            chunk = os.read(key.fileobj.fileno(), 65536)
+            if not chunk:
                 sel.unregister(key.fileobj)
                 continue
-            if first_output is None and line.strip():
-                first_output = (time.perf_counter() - started) * 1000
-            (stdout_chunks if key.data == "stdout" else stderr_chunks).append(line)
+            if key.data == "stdout":
+                if first_output is None:
+                    first_output = (time.perf_counter() - started) * 1000
+                stdout_chunks.append(chunk)
+            else:
+                stderr_chunks.append(chunk)
     code = proc.wait()
+    telemetry_values = telemetry.close()
     total = (time.perf_counter() - started) * 1000
-    text = "".join(stdout_chunks) + "\n" + "".join(stderr_chunks)
-    llama_matches = LLAMA_CPP_GENERATION_TPS.findall(text)
+    stdout_text = b"".join(stdout_chunks).decode("utf-8", errors="replace")
+    stderr_text = b"".join(stderr_chunks).decode("utf-8", errors="replace")
+    combined_text = stdout_text + "\n" + stderr_text
+    llama_matches = LLAMA_CPP_GENERATION_TPS.findall(combined_text)
     if llama_matches:
         tps = float(llama_matches[-1].replace(",", "."))
     else:
-        matches = TOKENS_PER_SECOND.findall(text)
+        matches = TOKENS_PER_SECOND.findall(combined_text)
         tps = float(matches[-1].replace(",", ".")) if matches else None
-    gen_ms = None if first_output is None else max(0.0, total - first_output)
+
+    ttft_pattern = re.compile(ttft_regex, re.I) if ttft_regex else TTFT_RE
+    if ttft_regex and ttft_pattern.groups < 1:
+        raise ValueError("--ttft-regex must contain capture group 1 with milliseconds")
+    ttft_matches = ttft_pattern.findall(combined_text)
+    if ttft_matches:
+        raw_ttft = ttft_matches[-1]
+        if isinstance(raw_ttft, tuple):
+            raw_ttft = raw_ttft[0]
+        ttft_ms = float(str(raw_ttft).replace(",", "."))
+    else:
+        ttft_ms = None
+    generation_matches = GENERATION_TIME_RE.findall(combined_text)
+    generation_ms = (
+        float(generation_matches[-1].replace(",", ".")) if generation_matches else None
+    )
     out_tokens = (
-        round(tps * gen_ms / 1000) if tps is not None and gen_ms is not None else None
+        round(tps * generation_ms / 1000)
+        if tps is not None and generation_ms is not None else None
     )
     vram, power = gpu_snapshot()
     return {
-        "ttft_ms": first_output,
+        "ttft_ms": ttft_ms,
+        "ttft_source": (
+            "custom_regex" if ttft_regex else
+            "llama_cpp_prompt_eval_time_or_explicit_ttft" if ttft_ms is not None else None
+        ),
         "first_output_ms": first_output,
-        "generation_time_ms": gen_ms,
+        "first_output_semantics": "time_to_first_stdout_byte_not_ttft",
+        "generation_time_ms": generation_ms,
         "output_tokens": out_tokens,
         "tokens_per_second": tps,
         "total_time_ms": round(total, 3),
         "peak_memory_mb": peak_memory_mb(),
-        "peak_vram_mb": vram,
+        "peak_process_rss_mb": telemetry_values["peak_process_rss_mb"],
+        "peak_system_ram_used_mb": telemetry_values["peak_system_ram_used_mb"],
+        "peak_vram_mb": telemetry_values["peak_vram_mb"],
+        "peak_vram_mb_device_wide": telemetry_values["peak_vram_mb_device_wide"],
         "power_w": power,
+        "mean_power_w": telemetry_values["mean_power_w"],
+        "peak_power_w": telemetry_values["peak_power_w"],
+        "gpu_sample_count": telemetry_values["gpu_sample_count"],
         "exit_code": code,
-        "stdout": "".join(stdout_chunks),
-        "stderr": "".join(stderr_chunks),
+        "stdout": stdout_text,
+        "stderr": stderr_text,
     }
 
 
@@ -191,7 +409,12 @@ def summary(measurements: list[dict]) -> dict:
         "total_time_ms",
         "peak_memory_mb",
         "peak_vram_mb",
+        "peak_process_rss_mb",
+        "peak_system_ram_used_mb",
+        "peak_vram_mb_device_wide",
         "power_w",
+        "mean_power_w",
+        "peak_power_w",
     ):
         vals = [float(m[key]) for m in measurements if m.get(key) is not None]
         if not vals:
@@ -202,6 +425,10 @@ def summary(measurements: list[dict]) -> dict:
             "min": min(vals),
             "max": max(vals),
         }
+        result[key]["p25"] = percentile(vals, 0.25)
+        result[key]["p75"] = percentile(vals, 0.75)
+        result[key]["iqr"] = result[key]["p75"] - result[key]["p25"]
+        result[key]["mad"] = median([abs(value - result[key]["median"]) for value in vals])
         if len(vals) > 1:
             result[key]["stdev"] = stdev(vals)
     return result
@@ -222,13 +449,34 @@ def main() -> int:
     ap.add_argument("--model-revision", required=True)
     ap.add_argument("--quantization", required=True)
     ap.add_argument("--context", type=int, required=True)
+    ap.add_argument("--input-tokens", type=int, default=None)
+    ap.add_argument("--output-token-limit", type=int, default=None)
+    ap.add_argument("--temperature", type=float, default=None)
+    ap.add_argument("--top-p", type=float, default=None)
+    ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--prompt-protocol-id", required=True)
     ap.add_argument("--prompt", default="")
     ap.add_argument("--warmup", type=int, default=1)
     ap.add_argument("--iterations", type=int, default=5)
     ap.add_argument("--runtime", default="llama.cpp")
     ap.add_argument("--backend", default=None)
+    ap.add_argument("--condition", choices=("off", "jsonl", "nsys", "combined"), default="off")
+    ap.add_argument("--pair-id", default=None)
+    ap.add_argument("--profile", choices=("smoke", "standard", "full", "moe-deep", "latency-critical"), default="standard")
+    ap.add_argument("--dataset-sha256", default=None)
+    ap.add_argument("--engine-revision", default=None)
+    ap.add_argument("--hardware-id", default=None)
+    ap.add_argument("--sampling-config-json", type=Path, default=None)
+    ap.add_argument("--host-sample-ms", type=int, default=100)
+    ap.add_argument("--gpu-sample-ms", type=int, default=500)
+    ap.add_argument("--store-output", action="store_true", help="explicitly store raw stdout/stderr; may contain prompts or completions")
+    ap.add_argument("--ttft-regex", default=None, help="regex with capture group 1 for a genuine TTFT value in milliseconds")
     args = ap.parse_args()
+    if args.host_sample_ms < 20 or args.gpu_sample_ms < 100:
+        raise SystemExit("sampling intervals are too aggressive; host>=20ms and GPU>=100ms are required")
+    sampling_config = json.loads(args.sampling_config_json.read_text(encoding="utf-8")) if args.sampling_config_json else {}
+    if not isinstance(sampling_config, dict):
+        raise SystemExit("sampling-config-json must contain a JSON object")
     command = json.loads(args.command_json.read_text(encoding="utf-8"))
     if (
         not isinstance(command, list)
@@ -236,18 +484,28 @@ def main() -> int:
         or not all(isinstance(x, str) for x in command)
     ):
         raise SystemExit("command-json must contain a non-empty JSON string array")
+    try:
+        prompt_sha256, prompt_binding = prompt_fingerprint(args.prompt, args.dataset_sha256, command)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    command_sha256 = hashlib.sha256(json.dumps(command, ensure_ascii=False, separators=(",", ":")).encode("utf-8")).hexdigest()
+    redacted_command = redact_command(command, args.prompt)
     for _ in range(args.warmup):
-        run_once(command)
+        run_once(command, args.host_sample_ms, args.gpu_sample_ms, args.ttft_regex)
     start = now()
     measurements = []
     for i in range(1, args.iterations + 1):
-        m = run_once(command)
+        m = run_once(command, args.host_sample_ms, args.gpu_sample_ms)
         m["iteration"] = i
         measurements.append(m)
     end = now()
     artifact = args.artifact.resolve()
     if not artifact.exists() or not artifact.is_file():
         raise SystemExit(f"artifact does not exist: {artifact}")
+    if not args.store_output:
+        for measurement in measurements:
+            measurement.pop("stdout", None)
+            measurement.pop("stderr", None)
     evidence = {
         "schema": "runtime-benchmark-evidence.v1.1",
         "execution_id": "rt-" + uuid.uuid4().hex,
@@ -263,25 +521,45 @@ def main() -> int:
         },
         "protocol": {
             "prompt_protocol_id": args.prompt_protocol_id,
-            "prompt": args.prompt,
+            "prompt": None,
+            "prompt_sha256": prompt_sha256,
+            "prompt_binding": prompt_binding,
             "context": args.context,
+            "input_tokens": args.input_tokens,
+            "output_token_limit": args.output_token_limit,
+            "temperature": args.temperature,
+            "top_p": args.top_p,
+            "seed": args.seed,
             "warmup_iterations": args.warmup,
             "measurement_iterations": args.iterations,
         },
         "runtime": {
             "name": args.runtime,
             "version": command_version(command[0]),
-            "revision": None,
+            "revision": args.engine_revision,
             "backend": args.backend,
-            "command": command,
+            "command": redacted_command,
+            "command_sha256": command_sha256,
         },
         "hardware": hardware(),
+        "instrumentation": {
+            "condition": args.condition,
+            "pair_id": args.pair_id,
+            "profile": args.profile,
+            "dataset_sha256": args.dataset_sha256,
+            "hardware_id": args.hardware_id,
+            "sampling_config": sampling_config,
+            "host_sample_ms": args.host_sample_ms,
+            "gpu_sample_ms": args.gpu_sample_ms,
+            "output_capture_enabled": args.store_output,
+        },
         "measurements": measurements,
         "summary": summary(measurements),
         "process": {
             "exit_code": max(m["exit_code"] for m in measurements),
-            "stdout": "\n".join(m["stdout"] for m in measurements),
-            "stderr": "\n".join(m["stderr"] for m in measurements),
+            "stdout": "\n".join(m.get("stdout", "") for m in measurements) if args.store_output else None,
+            "stderr": "\n".join(m.get("stderr", "") for m in measurements) if args.store_output else None,
+            "output_captured": args.store_output,
         },
         "artifact": {
             "path": str(artifact),

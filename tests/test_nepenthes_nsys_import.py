@@ -383,3 +383,196 @@ def test_nsys_only_reimport_with_same_import_id_is_rejected_without_overwrite(tm
     with pytest.raises(sqlite3.IntegrityError):
         import_nsys_only(nsys, output, "repeatable-id")
     assert output.read_bytes() == before
+
+
+def write_nvtx_nsys(path: Path) -> None:
+    db = sqlite3.connect(path)
+    db.executescript("""
+        CREATE TABLE NVTX_EVENTS(
+            start INTEGER, end INTEGER, text TEXT, globalPid INTEGER
+        );
+        INSERT INTO NVTX_EVENTS VALUES
+            (1110, 1110, 'nepenthes.request.start token=77 request=42', 99),
+            (5110, 5110, 'nepenthes.request.end token=77 request=42', 99);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(
+            start INTEGER, end INTEGER, correlationId INTEGER,
+            globalPid INTEGER, deviceId INTEGER, contextId INTEGER,
+            streamId INTEGER, name TEXT
+        );
+        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES
+            (1500, 1600, 101, 99, 0, 1, 7, 'inside_request'),
+            (5200, 5300, 102, 99, 0, 1, 7, 'outside_request');
+    """)
+    db.commit()
+    db.close()
+
+
+def write_jsonl_nvtx(path: Path) -> None:
+    records = []
+    for event_id, phase, before, after in (
+        ("host-start", "start", 100, 120),
+        ("host-end", "end", 4100, 4120),
+    ):
+        records.append({
+            "schema_version": "1.0",
+            "run_id": "paired-nvtx",
+            "event_id": event_id,
+            "source": "llama.cpp",
+            "timestamp_unix_ns": 2_000_000_000 + after,
+            "monotonic_ns": after,
+            "request_id": 42,
+            "correlation_token": 77,
+            "attribution_level": "exact",
+            "clock_domain": "steady_clock",
+            "event_kind": "nvtx_marker",
+            "label": f"request.{phase}",
+            "value0": before,
+            "value1": after,
+            "duration_ns": 0,
+            "flags": 1 if phase == "start" else 2,
+        })
+    path.write_text("".join(json.dumps(record) + "\n" for record in records), encoding="utf-8")
+
+
+def test_nsys_only_attributes_only_inside_explicit_nvtx_windows(tmp_path: Path):
+    nsys = tmp_path / "nvtx.sqlite"
+    output = tmp_path / "nvtx-only.sqlite"
+    write_nvtx_nsys(nsys)
+
+    summary = import_nsys_only(nsys, output, "nvtx-only-001")
+    assert summary["nvtx_marker_count"] == 2
+    assert summary["request_windows"] == 1
+    assert summary["coverage"]["detected_nvtx_tables"] == 1
+
+    with sqlite3.connect(output) as db:
+        kernels = db.execute(
+            "SELECT start_ns,attributed_request_token,attribution_level,attribution_status "
+            "FROM nepenthes_nsys_activities WHERE activity_kind='cuda_kernel' ORDER BY start_ns"
+        ).fetchall()
+        markers = db.execute(
+            "SELECT nvtx_correlation_token,nvtx_marker_phase,attribution_level "
+            "FROM nepenthes_nsys_activities WHERE activity_kind='nvtx_event' ORDER BY start_ns"
+        ).fetchall()
+    assert kernels == [
+        (1500, 77, "windowed", "unique_explicit_request_window"),
+        (5200, None, None, "outside_request_window"),
+    ]
+    assert markers == [(77, "start", "exact"), (77, "end", "exact")]
+
+
+def test_paired_nvtx_markers_calibrate_host_to_nsys_clock(tmp_path: Path):
+    jsonl = tmp_path / "trace.jsonl"
+    nsys = tmp_path / "nvtx.sqlite"
+    output = tmp_path / "paired.sqlite"
+    write_jsonl_nvtx(jsonl)
+    write_nvtx_nsys(nsys)
+
+    summary = import_all(jsonl, nsys, output, "paired-nvtx-001")
+    calibration = summary["nsys_clock_calibration"]
+    assert calibration["matched_marker_pairs"] == 2
+    assert calibration["nsight_clock_calibrated"] is True
+    assert calibration["offset_start_ns"] == 1000
+    assert calibration["offset_end_ns"] == 1000
+    assert calibration["drift_ppm"] == 0
+    assert calibration["host_bracket_uncertainty_ns"] == 10
+
+    with sqlite3.connect(output) as db:
+        stored = json.loads(db.execute(
+            "SELECT nsys_clock_calibration_json FROM nepenthes_imports"
+        ).fetchone()[0])
+        kernel = db.execute(
+            "SELECT attributed_request_token,attribution_level FROM nsys_activities "
+            "WHERE activity_kind='cuda_kernel' AND start_ns=1500"
+        ).fetchone()
+    assert stored["matched_marker_pairs"] == 2
+    assert kernel == (77, "windowed")
+
+
+
+
+def test_overlapping_explicit_nvtx_windows_are_not_attributed(tmp_path: Path):
+    nsys = tmp_path / "overlap.sqlite"
+    output = tmp_path / "overlap-import.sqlite"
+    db = sqlite3.connect(nsys)
+    db.executescript("""
+        CREATE TABLE NVTX_EVENTS(start INTEGER, end INTEGER, text TEXT, globalPid INTEGER);
+        INSERT INTO NVTX_EVENTS VALUES
+            (1000, 1000, 'nepenthes.request.start token=77 request=42', 99),
+            (5000, 5000, 'nepenthes.request.end token=77 request=42', 99),
+            (1400, 1400, 'nepenthes.request.start token=88 request=43', 99),
+            (1700, 1700, 'nepenthes.request.end token=88 request=43', 99);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(start INTEGER, end INTEGER, correlationId INTEGER, globalPid INTEGER);
+        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES (1500, 1600, 9, 99);
+    """)
+    db.commit()
+    db.close()
+
+    summary = import_nsys_only(nsys, output, "overlap-import")
+    assert summary["request_windows"] == 2
+    with sqlite3.connect(output) as db:
+        row = db.execute(
+            "SELECT attributed_request_token,attribution_level,attribution_status "
+            "FROM nepenthes_nsys_activities WHERE activity_kind='cuda_kernel'"
+        ).fetchone()
+    assert row == (None, None, "overlapping_request_windows")
+
+
+
+
+def test_cli_verifier_accepts_importer_nvtx_clock_contract():
+    import importlib.util
+
+    cli_path = Path(__file__).resolve().parents[1] / "scripts" / "nepenthes.py"
+    spec = importlib.util.spec_from_file_location("nepenthes_cli_contract", cli_path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    events = [
+        {"event_kind": "clock_calibration", "label": "clock.calibration.start",
+         "monotonic_ns": 100, "timestamp_unix_ns": 1000, "clock_domain": "steady_clock"},
+        {"event_kind": "request_start", "correlation_token": 77, "attribution_level": "exact"},
+        {"event_kind": "nvtx_marker", "label": "request.start", "correlation_token": 77,
+         "attribution_level": "exact", "clock_domain": "steady_clock",
+         "timestamp_unix_ns": 1100, "value0": 101, "value1": 105},
+        {"event_kind": "nvtx_marker", "label": "request.end", "correlation_token": 77,
+         "attribution_level": "exact", "clock_domain": "steady_clock",
+         "timestamp_unix_ns": 1900, "value0": 901, "value1": 905},
+        {"event_kind": "request_end", "correlation_token": 77, "attribution_level": "exact"},
+        {"event_kind": "clock_calibration", "label": "clock.calibration.end",
+         "monotonic_ns": 1000, "timestamp_unix_ns": 1900, "clock_domain": "steady_clock"},
+    ]
+    summary, errors = module.validate_event_contract(events)
+    assert errors == []
+    assert summary["nvtx_tokens"] == 1
+    assert summary["host_clock_calibration"]["calibrated"] is True
+
+
+
+
+def test_nsys_window_attribution_is_scoped_to_the_originating_process(tmp_path: Path):
+    nsys = tmp_path / "multi-process.sqlite"
+    output = tmp_path / "multi-process-import.sqlite"
+    db = sqlite3.connect(nsys)
+    db.executescript("""
+        CREATE TABLE NVTX_EVENTS(start INTEGER, end INTEGER, text TEXT, globalPid INTEGER);
+        INSERT INTO NVTX_EVENTS VALUES
+            (1000, 1000, 'nepenthes.request.start token=77 request=42', 99),
+            (5000, 5000, 'nepenthes.request.end token=77 request=42', 99);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(start INTEGER, end INTEGER, correlationId INTEGER, globalPid INTEGER);
+        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES
+            (1500, 1600, 9, 99),
+            (1500, 1600, 10, 100);
+    """)
+    db.commit()
+    db.close()
+
+    import_nsys_only(nsys, output, "multi-process-import")
+    with sqlite3.connect(output) as db:
+        rows = db.execute(
+            "SELECT global_pid,attributed_request_token,attribution_level,attribution_status "
+            "FROM nepenthes_nsys_activities WHERE activity_kind='cuda_kernel' ORDER BY global_pid"
+        ).fetchall()
+    assert rows == [
+        (99, 77, "windowed", "unique_explicit_request_window"),
+        (100, None, None, "missing_process_request_window"),
+    ]
