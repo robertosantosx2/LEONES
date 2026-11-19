@@ -99,3 +99,29 @@ def test_workload_command_hash_ignores_artifact_output_directory(tmp_path: Path)
         manifest = json.loads((artifact_dir / "nepenthes_aiperf_run.json").read_text(encoding="utf-8"))
         hashes.append(manifest["workload_command_sha256"])
     assert hashes[0] == hashes[1]
+
+
+def test_raw_aiperf_log_retention_is_explicit_opt_in(tmp_path: Path):
+    fake = tmp_path / "aiperf"
+    fake.write_text(
+        "#!/bin/sh\\n"
+        'if [ "$1" = "--version" ]; then echo "AIPerf 0.13.0"; exit 0; fi\\n'
+        "echo raw-debug-output\\n",
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    artifact_dir = tmp_path / "aiperf-artifacts"
+    args = parse_args([
+        "--model", "model-q4",
+        "--url", "http://127.0.0.1:8080",
+        "--artifact-dir", str(artifact_dir),
+        "--aiperf-bin", str(fake),
+        "--store-aiperf-log",
+    ])
+    assert run(args) == 0
+    manifest = json.loads((artifact_dir / "nepenthes_aiperf_run.json").read_text(encoding="utf-8"))
+    log_path = artifact_dir / "aiperf.stdout.log"
+    assert manifest["log_artifact"]["stored"] is True
+    assert log_path.is_file()
+    assert "raw-debug-output" in log_path.read_text(encoding="utf-8")
+    assert manifest["log_artifact"]["size_bytes"] == log_path.stat().st_size
