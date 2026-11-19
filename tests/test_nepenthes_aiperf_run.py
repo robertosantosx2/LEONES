@@ -1,0 +1,64 @@
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from nepenthes_aiperf_run import parse_args, run
+
+
+def test_runner_samples_inference_server_resources(tmp_path: Path):
+    fake = tmp_path / "aiperf"
+    fake.write_text(
+        "#!/bin/sh\n"
+        'if [ "$1" = "--version" ]; then echo "AIPerf 0.13.0"; exit 0; fi\n'
+        "sleep 0.35\n"
+        "echo profile-complete\n",
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    artifact_dir = tmp_path / "aiperf-artifacts"
+    args = parse_args([
+        "--model", "model-q4",
+        "--url", "http://127.0.0.1:8080",
+        "--artifact-dir", str(artifact_dir),
+        "--aiperf-bin", str(fake),
+        "--target-pid", str(os.getpid()),
+        "--timeout-seconds", "10",
+    ])
+    assert run(args) == 0
+    manifest = json.loads((artifact_dir / "nepenthes_aiperf_run.json").read_text(encoding="utf-8"))
+    telemetry = manifest["resource_telemetry"]
+    assert manifest["status"] == "completed"
+    assert manifest["exit_code"] == 0
+    assert telemetry["rss_target"] == "inference_server"
+    assert telemetry["host_sample_ms"] == 100
+    assert telemetry["gpu_sample_ms"] == 500
+    assert telemetry["peak_process_rss_mb"] > 0
+    assert telemetry["peak_system_ram_used_mb"] > 0
+    assert "peak_vram_mb_device_wide" in telemetry
+
+
+def test_runner_marks_client_rss_when_no_server_pid_is_supplied(tmp_path: Path):
+    fake = tmp_path / "aiperf"
+    fake.write_text(
+        "#!/bin/sh\n"
+        'if [ "$1" = "--version" ]; then echo "AIPerf 0.13.0"; exit 0; fi\n'
+        "sleep 0.1\n",
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    artifact_dir = tmp_path / "aiperf-artifacts"
+    args = parse_args([
+        "--model", "model-q4",
+        "--url", "http://127.0.0.1:8080",
+        "--artifact-dir", str(artifact_dir),
+        "--aiperf-bin", str(fake),
+    ])
+    assert run(args) == 0
+    manifest = json.loads((artifact_dir / "nepenthes_aiperf_run.json").read_text(encoding="utf-8"))
+    assert manifest["resource_telemetry"]["rss_target"] == "aiperf_client"
