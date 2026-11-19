@@ -204,3 +204,16 @@ La instrumentación CUDA/backend adicional, los probes generales de memoria/tran
 - [PR #2 — ggml backend and CUDA runtime probes](https://github.com/robertosantosx2/llama.cpp/pull/2), apilada sobre PR #1: ABI compartida en ggml-base, ciclo de buffers, CUDA alloc/OOM/pools/VMM/pinned-host, transferencias y dispatch.
 
 **Validación PR #1:** los tests C++ del contrato/sink y el build CPU de llama-server han pasado en GitHub Actions. Los checks upstream de estilo, EditorConfig, WASM y WASI también han pasado; el resto de checks upstream continúa ejecutándose.
+
+
+## Instrumentación nativa en llama.cpp
+
+La instrumentación del motor se desarrolla en el fork [robertosantosx2/llama.cpp](https://github.com/robertosantosx2/llama.cpp), mediante una pila de PRs revisables:
+
+1. [PR #1](https://github.com/robertosantosx2/llama.cpp/pull/1): contrato de eventos, sink JSONL acotado, ciclo de petición, graph compute, sincronización, MoE y KV.
+2. [PR #2](https://github.com/robertosantosx2/llama.cpp/pull/2): ciclo de vida del modelo, buffers ggml, asignación y pools CUDA, OOM/fallback, transferencias, despacho de operaciones y sincronización de streams.
+3. [PR #3](https://github.com/robertosantosx2/llama.cpp/pull/3): duración de trabajo por worker CPU y esperas dormidas por condición.
+
+Las PRs están apiladas y en borrador; deben revisarse en orden y no se han fusionado. El manifiesto [LLAMA-CPP-UPSTREAM.json](LLAMA-CPP-UPSTREAM.json) conserva sus ramas, dependencias y alcances.
+
+La captura nativa no reemplaza Nsight Systems/CUPTI: los tiempos de kernels reales y las transferencias completadas en dispositivo se obtienen de las actividades de Nsight y se correlacionan en LEONES. No se generan eventos de prefetch genéricos donde el camino upstream auditado no contiene ese trabajador. La correlación request_id se limita a los puntos donde el identificador real puede propagarse con seguridad.
