@@ -157,6 +157,8 @@ Reglas obligatorias:
 
 - [Roadmap detallado](ROADMAP.md)
 - [Especificación de integración AIPerf](AIPERF-INTEGRATION.md)
+- [Versión estable de AIPerf](AIPERF-UPSTREAM.json)
+- [Pin y seguimiento del upstream llama.cpp](LLAMA-CPP-UPSTREAM.json)
 - [Índice histórico y estado de validación](../../research/moe/tandem.cpp/NEPENTHES-INDEX.md)
 - [Roadmap histórico de implementación y gates](../../research/moe/tandem.cpp/NEPENTHES-ROADMAP.md)
 - [Campañas y resultados](../../research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md)
