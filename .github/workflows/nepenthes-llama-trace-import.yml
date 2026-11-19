@@ -6,7 +6,6 @@ on:
       - "scripts/nepenthes_llama_trace_import.py"
       - "scripts/nepenthes_trace_envelope.py"
       - "docs/subprojects/NEPENTHES/TRACE-ENVELOPE.md"
-      - "scripts/nepenthes_trace_envelope.py"
       - "tests/test_nepenthes_llama_trace_import.py"
       - "docs/subprojects/NEPENTHES/LLAMA-TRACE-IMPORT.md"
       - ".github/workflows/nepenthes-llama-trace-import.yml"
