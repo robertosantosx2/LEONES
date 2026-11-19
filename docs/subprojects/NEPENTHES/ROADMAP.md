@@ -429,3 +429,5 @@ Una cifra solo es MEASURED si procede de una ejecución identificada, con fuente
 - Primera capa en revisión: sink JSONL acotado, eventos de petición, graph compute/sync, MoE cache y KV cache.
 - Siguiente capa: allocator/OOM/fallback, transferencias y dispatch CUDA, con límites de semántica documentados.
 - No se declara validado hasta que CI compile el server CPU y después se realice build CUDA y captura reproducible en MSI.
+
+- Segunda PR de llama.cpp abierta: [#2 ggml backend y CUDA](https://github.com/robertosantosx2/llama.cpp/pull/2), apilada sobre la primera; CI CPU/CUDA pendiente.
