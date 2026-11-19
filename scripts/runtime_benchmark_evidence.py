@@ -377,6 +377,11 @@ def main() -> int:
     ap.add_argument("--model-revision", required=True)
     ap.add_argument("--quantization", required=True)
     ap.add_argument("--context", type=int, required=True)
+    ap.add_argument("--input-tokens", type=int, default=None)
+    ap.add_argument("--output-token-limit", type=int, default=None)
+    ap.add_argument("--temperature", type=float, default=None)
+    ap.add_argument("--top-p", type=float, default=None)
+    ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--prompt-protocol-id", required=True)
     ap.add_argument("--prompt", default="")
     ap.add_argument("--warmup", type=int, default=1)
@@ -435,6 +440,11 @@ def main() -> int:
             "prompt": args.prompt,
             "prompt_sha256": hashlib.sha256(args.prompt.encode("utf-8")).hexdigest(),
             "context": args.context,
+            "input_tokens": args.input_tokens,
+            "output_token_limit": args.output_token_limit,
+            "temperature": args.temperature,
+            "top_p": args.top_p,
+            "seed": args.seed,
             "warmup_iterations": args.warmup,
             "measurement_iterations": args.iterations,
         },
