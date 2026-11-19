@@ -335,3 +335,19 @@ Estado de PR #6: abierta, draft, no fusionada; HEAD `33e0d0a578c48b0a31616fd1b72
 - La lectura de los pasos del job MUSA confirma que `Build with native CMake MUSA support` fue omitido por fallo previo de dependencias; no clasificar como regresión de código NEPENTHES ni como build MUSA validado.
 - La PR conserva un historial con commits de intentos anteriores de port/rebase, pero su relación efectiva con upstream se determina por el merge-base y la comparación anterior, no por los mensajes de esos commits. No se declara rebase completado.
 - Próxima operación: preparar una rama de integración limpia cuyo padre sea exactamente `c406f436...`, portar solo los cambios NEPENTHES revisados, mantener intactos BF16/YuE2/OpenCL, ejecutar CI y comparar cobertura/eventos. No hacer merge de PR #6 ni de #1–#3 en su estado actual.
+
+
+### Integración limpia sobre upstream actual — PR #10
+
+- [x] Fast-forward seguro del fork `master`: `9a080f44...` → `c406f4367e19bea7930e7f74e1984c9acc6d44bf`. Sin force-push ni cambios NEPENTHES sobre master.
+- [x] Creada rama `nepenthes/integration-upstream-c406f436` directamente desde el commit upstream actual.
+- [x] Portadas las 23 rutas del candidato RC1 mediante aplicación de hunks sobre el contenido de cada archivo en upstream actual. Todos los contextos/hunks encontraron coincidencia exacta; no se sustituyeron archivos upstream completos.
+- [x] Commit de integración: `0f3fa24ba4e417629ffebd7bbf6a7bcccb8c4659`.
+- [x] PR #10 abierta en draft: https://github.com/robertosantosx2/llama.cpp/pull/10
+- [x] Comparación contra upstream: 1 commit ahead, 0 behind, 23 archivos (+1252/-1). El diff no incluye los tres commits upstream porque la rama parte del SHA actual.
+- [ ] CI de PR #10 en curso. Run IDs: NEPENTHES runtime trace `44616676979`, CPU `44616676941`, CUDA general `44616677093`, Server `44616676786`, Behavior `44616676980`. Self-hosted y Models Backend Check están queued.
+- [ ] Revisar los resultados completos, especialmente la compilación CUDA/NVTX y las pruebas específicas NEPENTHES.
+- [ ] Auditoría semántica del cambio BF16 en ROPE/SET_ROWS y confirmar que las sondas se limitan a observar sin alterar los resultados funcionales.
+- [ ] Comparar cobertura de PR #10 con #1–#3 y #6; cerrar candidatos antiguos solo tras equivalencia demostrada.
+
+**Estado:** integración limpia preparada y CI iniciada; todavía no aceptada ni fusionable. El gitlink de LEONES sigue en el pin estable anterior y no se solicita intervención del MSI.
