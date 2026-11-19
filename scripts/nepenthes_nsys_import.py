@@ -386,7 +386,7 @@ def parse_nvtx_marker(message: Any) -> dict[str, Any] | None:
         return None
     scope, phase, token_text, request_text = match.groups()
     request_id = int(request_text) if request_text is not None else None
-    if scope == "request" and request_id is None:
+    if scope == "request" and (request_id is None or request_id <= 0):
         return None
     if scope == "batch" and request_id is not None:
         return None
