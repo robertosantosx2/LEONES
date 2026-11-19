@@ -1,5 +1,7 @@
 # NEPENTHES llama.cpp trace importer
 
+The source-aware common envelope and registered connector profiles are documented in [TRACE-ENVELOPE.md](./TRACE-ENVELOPE.md). This file retains the llama.cpp producer-specific notes.
+
 The standalone importer validates and summarizes the JSONL runtime trace emitted by the native llama.cpp NEPENTHES sink. It does not rewrite or delete the source trace.
 
 ## Usage
