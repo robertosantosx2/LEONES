@@ -247,7 +247,7 @@ def test_nsys_only_import_preserves_extended_cupti_tables_and_provenance(tmp_pat
             "FROM nepenthes_nsys_imports WHERE import_id='historical-001'"
         ).fetchone()
         assert record[0] == summary["nsys_sha256"]
-        assert record[1] == 4
+        assert record[1] == 5
         assert "without_paired_nepenthes_jsonl" in record[2]
         assert "No NEPENTHES run_id" in record[3]
         rows = {}
