@@ -66,6 +66,7 @@ def evidence(condition, pair_id, tps, ttft=100.0):
             "sampling_config": {"host": False, "nvml": False},
             "host_sample_ms": 100,
             "gpu_sample_ms": 500,
+            "rss_target": "direct_inference_process",
         },
         "measurements": measurements,
         "process": {"exit_code": 0},
@@ -188,3 +189,29 @@ def test_standard_gate_rejects_command_configuration_drift(tmp_path):
     target.write_text(json.dumps(payload), encoding="utf-8")
     groups, errors = load_evidence(paths, "standard")
     assert any("benchmark configuration differs" in error for error in errors)
+
+
+def test_c08_accepts_aiperf_run_level_throughput_and_dataset_hash(tmp_path):
+    paths = write_group(tmp_path, {"off": 100, "jsonl": 96, "nsys": 97, "combined": 95})
+    for path in paths:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload["protocol"].pop("prompt_sha256", None)
+        payload["instrumentation"]["dataset_sha256"] = "d" * 64
+        payload["instrumentation"]["rss_target"] = "inference_server"
+        payload["protocol"]["dataset_sha256"] = "d" * 64
+        payload["aiperf"] = {"version": "0.13.0"}
+        throughput = payload["measurements"][0].pop("tokens_per_second")
+        payload["run_metrics"] = {
+            "tokens_per_second": throughput,
+            "ttft_ms": 100.0,
+            "total_time_ms": 4000.0,
+            "peak_process_rss_mb": 2048,
+            "peak_system_ram_used_mb": 8192,
+            "peak_vram_mb_device_wide": 3000,
+        }
+        path.write_text(json.dumps(payload), encoding="utf-8")
+    groups, errors = load_evidence(paths, "standard")
+    report = compare(groups, "standard", 3, 5.0, 8.0, errors)
+    assert not errors
+    assert report["overall_status"] == "accepted"
+    assert report["conditions"]["combined"]["decode_overhead_median_pct"] == 5.0
