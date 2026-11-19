@@ -1,4 +1,4 @@
-name: NEPENTHES AIPerf importer
+name: NEPENTHES AIPerf runner and importer
 
 on:
   pull_request:
@@ -11,7 +11,9 @@ on:
   push:
     paths:
       - 'scripts/nepenthes_aiperf_import.py'
+      - 'scripts/nepenthes_aiperf_run.py'
       - 'tests/test_nepenthes_aiperf_import.py'
+      - 'tests/test_nepenthes_aiperf_run.py'
       - '.github/workflows/nepenthes-aiperf-import.yml'
   workflow_dispatch:
 
@@ -30,5 +32,5 @@ jobs:
           python-version: '3.11'
       - name: Install test runner
         run: python -m pip install --disable-pip-version-check pytest
-      - name: Run offline AIPerf importer tests
-        run: python -m pytest -q tests/test_nepenthes_aiperf_import.py
+      - name: Run offline AIPerf runner and importer tests
+        run: python -m pytest -q tests/test_nepenthes_aiperf_import.py tests/test_nepenthes_aiperf_run.py
