@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """NEPENTHES portable Linux process/GPU capture CLI; Python 3.10+, stdlib only."""
 from __future__ import annotations
-import argparse,csv,datetime as dt,html,json,os,platform,shutil,signal,subprocess,sys,time,uuid
+import argparse,csv,datetime as dt,hashlib,html,json,os,platform,shutil,signal,subprocess,sys,time,uuid
 from pathlib import Path
 VERSION="0.1.0"
 PROFILES={"smoke":2.0,"standard":1.0,"full":0.5}
@@ -482,9 +482,12 @@ def verify_run(a):
            and nsys_calibration.get("nsight_clock_calibrated") is True
            and result["checks"]["nsys_import"])
  result["checks"]["c07_correlation"]=bool(c07_pass)
- c08_path=run/"data"/"c08-overhead-report.json"
+ c08_path=Path(a.c08_report).expanduser().resolve() if getattr(a,"c08_report",None) else run/"data"/"c08-overhead-report.json"
  c08_status="not_run";c08_pass=False
+ if getattr(a,"c08_report",None) and not c08_path.is_file():
+  result["errors"].append("C08 report path does not exist: "+str(c08_path));c08_status="missing"
  if c08_path.is_file():
+  result["c08_report"]={"path":str(c08_path),"sha256":hashlib.sha256(c08_path.read_bytes()).hexdigest()}
   try:
    c08=json.loads(c08_path.read_text(encoding="utf-8"))
    c08_status=c08.get("overall_status","unknown")
@@ -533,7 +536,7 @@ def parser():
  d=sub.add_parser("doctor");d.set_defaults(func=doctor)
  r=sub.add_parser("run",aliases=["capture"]);r.add_argument("--profile",choices=sorted(PROFILES),default="standard");r.add_argument("--interval",type=float);r.add_argument("--nsys",choices=("auto","required","off"),default="auto",help="auto enables Nsight for full profile; required fails if unavailable; off disables it");r.add_argument("--output",default=str(Path.home()/"NEPENTHES-runs"));r.add_argument("--name");r.add_argument("command",nargs=argparse.REMAINDER);r.set_defaults(func=run)
  i=sub.add_parser("inspect");i.add_argument("path");i.set_defaults(func=inspect)
- v=sub.add_parser("verify");v.add_argument("path");v.set_defaults(func=verify_run)
+ v=sub.add_parser("verify");v.add_argument("path");v.add_argument("--c08-report",default=None,help="external paired-overhead report JSON; otherwise use data/c08-overhead-report.json");v.set_defaults(func=verify_run)
  t=sub.add_parser("self-test",help="run a tiny synthetic capture and verify its bundle");t.add_argument("--output",default=str(Path.home()/"NEPENTHES-runs"));t.set_defaults(func=self_test);return p
 def main(argv=None):
  p=parser();a=p.parse_args(argv)
