@@ -17,6 +17,8 @@ Los demás scripts antiguos o especializados se conservan hasta que una auditor�
 
 ## NEPENTHES
 
+**Language / Idioma:** [English version](README-EN.md) · [Versión en español](README.md)
+
 - `nepenthes.py` — CLI de captura independiente del motor; genera un paquete de evidencias por ejecución y ofrece `verify` para validar su integridad.
 - `install_nepenthes.sh` — instalador user-space en `~/.local/bin` (Python 3.10+, sin root); instala también el importador Nsight y su migración 002 en `~/.local/share/nepenthes`.
 - Uso: `nepenthes self-test` para validar la instalación, `nepenthes run -- <motor> <argumentos>` para capturar, y `nepenthes verify <RUN_DIR>` para comprobar el paquete; contrato y límites en [NEPENTHES-CLI.md](../research/moe/tandem.cpp/NEPENTHES-CLI.md).

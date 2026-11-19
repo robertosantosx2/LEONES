@@ -1,5 +1,8 @@
 # NEPENTHES — roadmap de tareas hasta la versión funcional completa
 
+**Language / Idioma:** [English version](NEPENTHES-ROADMAP-EN.md) · [Versión en español](NEPENTHES-ROADMAP.md)
+
+
 **Fecha de corte:** 2026-11-15 (actualizado tras C07).  
 **Estado:** CLI y captura de motor instrumentado probadas con una inferencia Qwen3.5-4B; aceptación integral con Nsight, correlación, cobertura y overhead pendiente.
 

@@ -1,5 +1,8 @@
 # Informe de captura histórica — Qwen3.5-35B / Nsight Systems
 
+**Language / Idioma:** [English version](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115-EN.md) · [Versión en español](NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md)
+
+
 **Fecha del informe:** 2026-11-15  
 **Tipo:** análisis retrospectivo de una captura Nsight existente; importación standalone NEPENTHES.  
 **Estado:** importación validada estructuralmente. No es una nueva ejecución de `nepenthes run` ni una captura emparejada JSONL+Nsight.
