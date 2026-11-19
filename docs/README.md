@@ -27,8 +27,9 @@ fase → implementación → validación → aceptación
 - [`PLATFORMS.md`](PLATFORMS.md) — plataformas y perfiles.
 - [`FROZEN_DECISIONS.md`](FROZEN_DECISIONS.md) — decisiones congeladas.
 - [`ROADMAP.md`](ROADMAP.md) — evolución prevista.
-- [`subprojects/NEPENTHES/README.md`](subprojects/NEPENTHES/README.md) — NEPENTHES: observabilidad universal de inferencia, NVML/energía, latencia por token, OpenTelemetry/OTLP, GenAI-Perf y adaptadores de métricas.
+- [`subprojects/NEPENTHES/README.md`](subprojects/NEPENTHES/README.md) — NEPENTHES: observabilidad universal de inferencia, AIPerf como runner primario, NVML/energía, latencia por token, OpenTelemetry/OTLP y adaptadores.
 - [`subprojects/NEPENTHES/ROADMAP.md`](subprojects/NEPENTHES/ROADMAP.md) — prioridades, secuencia de PR, gates de validación y plan de desarrollo.
+- [`subprojects/NEPENTHES/AIPERF-INTEGRATION.md`](subprojects/NEPENTHES/AIPERF-INTEGRATION.md) — especificación del runner AIPerf, artefactos, normalización y etapas de compatibilidad.
 - [`subprojects/REDIL-IA-distribuida/README.md`](subprojects/REDIL-IA-distribuida/README.md) — REDIL: propuesta de IA distribuida especializada por nodos, modelos candidatos, clases de hardware y plan de validación.
 - [`subprojects/TensorFold/README.md`](subprojects/TensorFold/README.md) — TensorFold: runtime de inferencia local; auditoría de memoria CUDA Qwen3.5-4B, capacidad de prompt y evidencia en RTX 3050.
 - [`subprojects/REDIL-IA-distribuida/ARQUITECTURA-VISUAL.md`](subprojects/REDIL-IA-distribuida/ARQUITECTURA-VISUAL.md) — diagrama vectorial de la arquitectura completa de REDIL y sus roles de máquina.
