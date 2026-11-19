@@ -275,6 +275,41 @@ def percentile(values: list[float], quantile: float) -> float:
     return ordered[lower] * (1 - fraction) + ordered[upper] * fraction
 
 
+
+def redact_command(command: list[str], prompt: str = "") -> list[str]:
+    secret_flags = {"--api-key", "--token", "--password", "--secret", "--authorization"}
+    redacted = []
+    redact_next = False
+    for argument in command:
+        if redact_next:
+            redacted.append("<redacted>")
+            redact_next = False
+            continue
+        lowered = argument.lower()
+        if lowered in secret_flags:
+            redacted.append(argument)
+            redact_next = True
+        elif any(lowered.startswith(flag + "=") for flag in secret_flags):
+            redacted.append(argument.split("=", 1)[0] + "=<redacted>")
+        elif prompt and argument == prompt:
+            redacted.append("<redacted:prompt>")
+        else:
+            redacted.append(argument)
+    return redacted
+
+
+def prompt_fingerprint(prompt: str, dataset_sha256: str | None, command: list[str]) -> tuple[str, str]:
+    if prompt:
+        if prompt not in command:
+            raise ValueError("--prompt must exactly match one argument in --command-json; use --dataset-sha256 for external datasets")
+        return hashlib.sha256(prompt.encode("utf-8")).hexdigest(), "exact_command_argument"
+    if dataset_sha256:
+        if not re.fullmatch(r"[a-fA-F0-9]{64}", dataset_sha256):
+            raise ValueError("--dataset-sha256 must be a 64-character SHA-256 hex digest")
+        return dataset_sha256.lower(), "declared_external_dataset"
+    raise ValueError("provide --prompt (present as a command argument) or --dataset-sha256")
+
+
 def run_once(command: list[str], host_sample_ms: int = 100,
              gpu_sample_ms: int = 500, ttft_regex: str | None = None) -> dict:
     started = time.perf_counter()
@@ -434,6 +469,7 @@ def main() -> int:
     ap.add_argument("--sampling-config-json", type=Path, default=None)
     ap.add_argument("--host-sample-ms", type=int, default=100)
     ap.add_argument("--gpu-sample-ms", type=int, default=500)
+    ap.add_argument("--store-output", action="store_true", help="explicitly store raw stdout/stderr; may contain prompts or completions")
     ap.add_argument("--ttft-regex", default=None, help="regex with capture group 1 for a genuine TTFT value in milliseconds")
     args = ap.parse_args()
     if args.host_sample_ms < 20 or args.gpu_sample_ms < 100:
@@ -448,6 +484,12 @@ def main() -> int:
         or not all(isinstance(x, str) for x in command)
     ):
         raise SystemExit("command-json must contain a non-empty JSON string array")
+    try:
+        prompt_sha256, prompt_binding = prompt_fingerprint(args.prompt, args.dataset_sha256, command)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    command_sha256 = hashlib.sha256(json.dumps(command, ensure_ascii=False, separators=(",", ":")).encode("utf-8")).hexdigest()
+    redacted_command = redact_command(command, args.prompt)
     for _ in range(args.warmup):
         run_once(command, args.host_sample_ms, args.gpu_sample_ms, args.ttft_regex)
     start = now()
@@ -460,6 +502,10 @@ def main() -> int:
     artifact = args.artifact.resolve()
     if not artifact.exists() or not artifact.is_file():
         raise SystemExit(f"artifact does not exist: {artifact}")
+    if not args.store_output:
+        for measurement in measurements:
+            measurement.pop("stdout", None)
+            measurement.pop("stderr", None)
     evidence = {
         "schema": "runtime-benchmark-evidence.v1.1",
         "execution_id": "rt-" + uuid.uuid4().hex,
@@ -475,8 +521,9 @@ def main() -> int:
         },
         "protocol": {
             "prompt_protocol_id": args.prompt_protocol_id,
-            "prompt": args.prompt,
-            "prompt_sha256": hashlib.sha256(args.prompt.encode("utf-8")).hexdigest(),
+            "prompt": None,
+            "prompt_sha256": prompt_sha256,
+            "prompt_binding": prompt_binding,
             "context": args.context,
             "input_tokens": args.input_tokens,
             "output_token_limit": args.output_token_limit,
@@ -491,7 +538,8 @@ def main() -> int:
             "version": command_version(command[0]),
             "revision": args.engine_revision,
             "backend": args.backend,
-            "command": command,
+            "command": redacted_command,
+            "command_sha256": command_sha256,
         },
         "hardware": hardware(),
         "instrumentation": {
@@ -503,13 +551,15 @@ def main() -> int:
             "sampling_config": sampling_config,
             "host_sample_ms": args.host_sample_ms,
             "gpu_sample_ms": args.gpu_sample_ms,
+            "output_capture_enabled": args.store_output,
         },
         "measurements": measurements,
         "summary": summary(measurements),
         "process": {
             "exit_code": max(m["exit_code"] for m in measurements),
-            "stdout": "\n".join(m["stdout"] for m in measurements),
-            "stderr": "\n".join(m["stderr"] for m in measurements),
+            "stdout": "\n".join(m["stdout"] for m in measurements) if args.store_output else None,
+            "stderr": "\n".join(m["stderr"] for m in measurements) if args.store_output else None,
+            "output_captured": args.store_output,
         },
         "artifact": {
             "path": str(artifact),
