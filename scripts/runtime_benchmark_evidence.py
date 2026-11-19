@@ -300,7 +300,9 @@ def run_once(command: list[str], host_sample_ms: int = 100, gpu_sample_ms: int =
     code = proc.wait()
     telemetry_values = telemetry.close()
     total = (time.perf_counter() - started) * 1000
-    text = "".join(stdout_chunks) + "\n" + "".join(stderr_chunks)
+    stdout_text = "".join(stdout_chunks)
+    stderr_text = "".join(stderr_chunks)
+    text = stdout_text + "\n" + stderr_text
     llama_matches = LLAMA_CPP_GENERATION_TPS.findall(text)
     if llama_matches:
         tps = float(llama_matches[-1].replace(",", "."))
