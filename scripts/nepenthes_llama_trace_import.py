@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import and validate the NEPENTHES llama.cpp JSONL runtime trace."""
+"""Import and validate a registered NEPENTHES engine JSONL runtime trace."""
 from __future__ import annotations
 
 import argparse
@@ -234,7 +234,7 @@ def import_trace(input_path: Path, allow_incomplete: bool = False, source: str =
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, help="llama.cpp NEPENTHES JSONL trace")
+    parser.add_argument("input", type=Path, help="NEPENTHES engine JSONL trace")
     parser.add_argument("--output", type=Path, required=True, help="summary JSON output path")
     parser.add_argument("--allow-incomplete", action="store_true",
                         help="import an interrupted trace without a final sink_summary")
@@ -251,7 +251,7 @@ def main(argv: list[str] | None = None) -> int:
         temporary.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         os.replace(temporary, args.output)
     except (OSError, ValueError) as exc:
-        print(f"nepenthes-llama-trace-import: {exc}", file=sys.stderr)
+        print(f"nepenthes-trace-import: {exc}", file=sys.stderr)
         return 2
 
     print(json.dumps({
