@@ -179,7 +179,7 @@ python3 scripts/nepenthes_aiperf_import.py \
   --output-dir /ruta/al/expediente/nepenthes/aiperf-import
 ```
 
-Genera `aiperf_events.jsonl` y `aiperf_import_report.json`. Importa el resumen agregado `profile_export_aiperf.json`, registros por petición `profile_export.jsonl`, series temporales del servidor `server_metrics_export.jsonl` y telemetría GPU `gpu_telemetry_export.jsonl`. Preserva el árbol de artefactos de origen y calcula SHA-256. Los payloads raw y el texto generado no se interpretan ni importan. El agregado `server_metrics_export.json` y CSV/Parquet quedan preservados en el inventario para una fase posterior. Si AIPerf produce resúmenes/registros por fase además del agregado raíz, el importador prioriza el agregado raíz y deja las fases adicionales preservadas e indicadas como pendientes. El importador no instala ni ejecuta AIPerf ni genera carga. Sus fixtures offline se ejecutan mediante `python3 -m pytest -q tests/test_nepenthes_aiperf_import.py`.
+Genera `aiperf_events.jsonl` y `aiperf_import_report.json`. Importa el resumen agregado `profile_export_aiperf.json`, registros por petición `profile_export.jsonl`, series temporales del servidor `server_metrics_export.jsonl` y telemetría GPU `gpu_telemetry_export.jsonl`. Preserva el árbol de artefactos de origen y calcula SHA-256. Los payloads raw y el texto generado no se interpretan ni importan. CSV y Parquet quedan preservados en el inventario para una fase posterior; el agregado `server_metrics_export.json` sí se normaliza por serie, fase y endpoint. Si AIPerf produce resúmenes/registros por fase además del agregado raíz, el importador prioriza el agregado raíz y deja las fases adicionales preservadas e indicadas como pendientes. El importador no instala ni ejecuta AIPerf ni genera carga. Sus fixtures offline se ejecutan mediante `python3 -m pytest -q tests/test_nepenthes_aiperf_import.py`.
 
 
 ## 12. Runner NEPENTHES
@@ -232,8 +232,9 @@ El parser preserva HELP/TYPE/UNIT, muestras individuales y timestamps; no agrega
 
 ## 14. Importación de telemetría AIPerf (server + GPU)
 
-El importador normaliza ahora dos streams adicionales de AIPerf 0.13.0:
+El importador normaliza ahora el agregado JSON y dos streams de AIPerf 0.13.0:
 
+- `server_metrics_export.json`: un evento por serie agregada y fase (`profiling`/`warmup`), con tipo, descripción, unidad, estadísticas, buckets, timeslices y ventana `start_ns/end_ns`. Los percentiles histogram conservan su sufijo `_estimate`; no se recalculan.
 - `server_metrics_export.jsonl`: un evento por muestra Prometheus, con `timestamp_ns`, `endpoint_latency_ns`, `request_sent_ns`, `first_byte_ns`, fase, nombre de métrica, labels seguras y buckets/sum/count cuando la muestra es histogram. No agrega ni estima percentiles. El endpoint se reduce a origen scheme/host/port; userinfo, path, query y fragment no se exportan. Labels fuera de la allowlist se registran por nombre, sin valores.
 - `gpu_telemetry_export.jsonl`: un evento por señal GPU conocida, conservando UUID, índice, modelo, PCI bus ID, timestamp y unidad. `nvidia_energy_consumption` se conserva en MJ como contador acumulado; no se convierte en energía de campaña ni se atribuye al proceso. Cada evento declara `device_level_not_process_level`.
 
