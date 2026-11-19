@@ -107,3 +107,69 @@ Si C07 o C08 todavía no se han ejecutado, el bundle puede ser válido (`ok=true
 
 
 El informe C08 puede mantenerse como artefacto de campaña externo. Para verificarlo sin incorporarlo al checksum del run, se acepta `nepenthes verify RUN_DIR --c08-report REPORT.json`; el resultado incluye la ruta y SHA-256 del informe. El comparador registra además los SHA-256 de cada evidencia emparejada.
+
+
+## AIPerf-first C08 — flujo de evidencia aceptado en CI
+
+La integración está en scripts/nepenthes_aiperf_run.py, scripts/nepenthes_aiperf_import.py, scripts/nepenthes_aiperf_evidence.py y scripts/nepenthes_overhead_gate.py. El runner fija AIPerf **0.13.0** y no guarda credenciales ni texto generado.
+
+Ejemplo de campaña (ejecutar solo cuando el servidor de inferencia ya esté activo y su PID sea conocido):
+
+```bash
+RUN="$HOME/NEPENTHES-runs/c08-pair-001"
+mkdir -p "$RUN"
+
+python scripts/nepenthes_aiperf_run.py \
+  --model "$MODEL_ID" \
+  --url "http://127.0.0.1:8080" \
+  --artifact-dir "$RUN/aiperf" \
+  --target-pid-file "$RUN/server.pid" \
+  --request-count 5 \
+  --input-tokens 128 \
+  --output-tokens 32 \
+  --random-seed 42
+
+python scripts/nepenthes_aiperf_import.py \
+  --artifacts-dir "$RUN/aiperf" \
+  --output-dir "$RUN/import"
+
+python scripts/nepenthes_aiperf_evidence.py \
+  --artifacts-dir "$RUN/aiperf" \
+  --import-dir "$RUN/import" \
+  --output "$RUN/evidence.json" \
+  --model-artifact "$MODEL_PATH" \
+  --model-id "$MODEL_ID" \
+  --model-name "$MODEL_NAME" \
+  --model-revision "$MODEL_REVISION" \
+  --quantization "$QUANTIZATION" \
+  --context 1024 \
+  --engine-version "$ENGINE_VERSION" \
+  --engine-revision "$LLAMA_CPP_COMMIT" \
+  --backend cuda \
+  --hardware-id "$HARDWARE_ID" \
+  --condition off \
+  --pair-id pair-001 \
+  --profile standard
+```
+
+Repetir el flujo con el mismo pair-id para jsonl, nsys y combined, cambiando únicamente la condición de instrumentación. Mantener constantes modelo, dataset/prompt, contexto, seed, configuración y comando de workload. El wrapper necesita --target-pid o --target-pid-file para que RSS corresponda al servidor y no al cliente AIPerf.
+
+El wrapper registra el SHA-256 del comando normalizado y de la salida bruta; el log AIPerf se elimina por defecto. --store-aiperf-log lo conserva de forma explícita y debe tratarse como potencialmente sensible. La URL no puede contener credenciales, query tokens ni fragmentos.
+
+Gate sobre todas las evidencias de los pares:
+
+```bash
+python scripts/nepenthes_overhead_gate.py \
+  --evidence "$RUNS"/*/evidence.json \
+  --profile standard \
+  --min-pairs 3 \
+  --max-decode-overhead 5 \
+  --warn-decode-overhead 8 \
+  --output c08-overhead-report.json
+```
+
+El gate usa mediana e IQR y exige TTFT, duración total de campaña, throughput, RSS del servidor, RAM de sistema y VRAM device-wide. Distingue request_latency_mean_ms de total_time_ms (duración de campaña). La CI demuestra el contrato del pipeline; solo una campaña real en MSI puede producir aceptación de overhead.
+
+## Estado MSI pendiente
+
+Los PRs LEONES #197 y #198 están integrados y sus gates CI pasaron. El siguiente paso físico no es un self-test: es compilar el fork llama.cpp rebased, lanzar una inferencia real, capturar NVTX/CUPTI con Nsight, importar el bundle y ejecutar nepenthes verify y el gate C08 sobre las repeticiones. No declarar functional_complete antes de ello.
