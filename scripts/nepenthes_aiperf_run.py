@@ -21,6 +21,8 @@ from pathlib import Path
 from typing import Sequence
 from urllib.parse import urlsplit
 
+from runtime_benchmark_evidence import TelemetrySampler
+
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -104,6 +106,13 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-tokens", type=positive_int, default=32)
     parser.add_argument("--random-seed", type=int, default=42)
     parser.add_argument("--timeout-seconds", type=positive_int, default=900)
+    target = parser.add_mutually_exclusive_group()
+    target.add_argument("--target-pid", type=positive_int, default=None,
+                        help="PID of the inference server to monitor for process RSS")
+    target.add_argument("--target-pid-file", type=Path, default=None,
+                        help="file containing the inference server PID")
+    parser.add_argument("--host-sample-ms", type=positive_int, default=100)
+    parser.add_argument("--gpu-sample-ms", type=positive_int, default=500)
     parser.add_argument("--no-server-metrics", action="store_true",
                         help="disable AIPerf scraping of endpoint /metrics")
     parser.add_argument("--dry-run", action="store_true", help="write manifest and print command without launching AIPerf")
@@ -111,6 +120,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def run(args: argparse.Namespace) -> int:
+    if args.host_sample_ms < 20 or args.gpu_sample_ms < 100:
+        raise ValueError("resource sampling intervals must be host>=20ms and GPU>=100ms")
+    target_pid = args.target_pid
+    if args.target_pid_file is not None:
+        pid_text = args.target_pid_file.expanduser().read_text(encoding="utf-8").strip()
+        target_pid = positive_int(pid_text)
+    if target_pid is not None and not Path(f"/proc/{target_pid}").exists():
+        raise ValueError(f"inference server PID does not exist in procfs: {target_pid}")
     artifact_dir = args.artifact_dir.expanduser().resolve()
     if artifact_dir.exists() and any(artifact_dir.iterdir()):
         raise ValueError(f"artifact directory is not empty: {artifact_dir}")
@@ -152,6 +169,12 @@ def run(args: argparse.Namespace) -> int:
             "machine": platform.machine(),
         },
         "artifact_dir": str(artifact_dir),
+        "resource_sampling": {
+            "rss_target": "inference_server" if target_pid is not None else "aiperf_client",
+            "host_sample_ms": args.host_sample_ms,
+            "gpu_sample_ms": args.gpu_sample_ms,
+            "target_pid_supplied": target_pid is not None,
+        },
         "started_at": None, "finished_at": None, "exit_code": None,
     }
     manifest_path = artifact_dir / "nepenthes_aiperf_run.json"
@@ -164,17 +187,29 @@ def run(args: argparse.Namespace) -> int:
     manifest["status"] = "running"
     manifest["started_at"] = utc_now()
     write_manifest(manifest_path, manifest)
-    try:
-        with log_path.open("w", encoding="utf-8") as log:
-            result = subprocess.run(command, stdout=log, stderr=subprocess.STDOUT,
-                                    text=True, timeout=args.timeout_seconds, check=False)
-        manifest["exit_code"] = result.returncode
-        manifest["status"] = "completed" if result.returncode == 0 else "failed"
-        code = result.returncode
-    except subprocess.TimeoutExpired:
-        manifest["status"] = "timed_out"
-        manifest["exit_code"] = 124
-        code = 124
+    with log_path.open("w", encoding="utf-8") as log:
+        process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, text=True)
+        sampler = TelemetrySampler(target_pid if target_pid is not None else process.pid,
+                                   args.host_sample_ms, args.gpu_sample_ms)
+        timed_out = False
+        try:
+            code = process.wait(timeout=args.timeout_seconds)
+        except subprocess.TimeoutExpired:
+            timed_out = True
+            process.terminate()
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+            code = 124
+        resource_telemetry = sampler.close()
+    manifest["resource_telemetry"] = {
+        **resource_telemetry,
+        **manifest["resource_sampling"],
+    }
+    manifest["exit_code"] = code
+    manifest["status"] = "timed_out" if timed_out else ("completed" if code == 0 else "failed")
     manifest["finished_at"] = utc_now()
     write_manifest(manifest_path, manifest)
     return code
