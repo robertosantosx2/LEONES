@@ -4,13 +4,13 @@
   "upstream_repository": "https://github.com/ggml-org/llama.cpp.git",
   "upstream_web": "https://github.com/ggml-org/llama.cpp",
   "upstream_branch": "master",
-  "verified_commit": "5812201a81008977ea079eaf86a3f9166eef9f10",
-  "verified_commit_time": "2026-11-19T10:24:10Z",
+  "verified_commit": "4db8b7638f2fa2e5c092ee05d49999b56e8167c3",
+  "verified_commit_time": "2026-11-19T11:35:10Z",
   "verified_at": "2026-11-19",
   "local_fork_repository": "https://github.com/robertosantosx2/llama.cpp.git",
   "local_fork_web": "https://github.com/robertosantosx2/llama.cpp",
   "local_fork_default_branch": "master",
-  "local_fork_status": "created_and_synced_with_upstream_master",
+  "local_fork_status": "behind_upstream_pending_runtime_stack_rebase",
   "fork_head_commit": "5812201a81008977ea079eaf86a3f9166eef9f10",
   "leones_submodule_path": "subprojects/llama.cpp",
   "leones_submodule_commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
@@ -25,15 +25,19 @@
     "The first native llama.cpp instrumentation PR is open in the personal fork; it is separate from the upstream-synced submodule pin until reviewed and accepted.",
     "The second stacked llama.cpp PR adds the shared ggml event ABI, generic backend buffer lifecycle, CUDA allocation/OOM/pool/VMM/pinned-host, transfer, synchronization and host dispatch probes.",
     "The first llama.cpp instrumentation workflow completed successfully: both standalone C++ tests and the CPU llama-server build passed. Upstream Code Style, EditorConfig, WASM and WASI checks also passed; other upstream checks remain in progress.",
-    "Upstream master advanced three commits beyond 76f186df; fork master was fast-forwarded to 5812201a on 2026-11-19. The LEONES submodule gitlink intentionally remains pinned to 76f186df until the runtime PR stack is reviewed and accepted."
+    "Upstream master advanced three commits beyond 76f186df; fork master was fast-forwarded to 5812201a on 2026-11-19. The LEONES submodule gitlink intentionally remains pinned to 76f186df until the runtime PR stack is reviewed and accepted.",
+    "At 2026-11-19T11:35:10Z upstream master had advanced to 4db8b763; the personal fork master remains at 5812201a (3 commits behind). The latest upstream delta touches src/llama-context.cpp and graph parameter structures, which overlap the instrumentation stack's context/graph work. Do not fast-forward blindly: rebase and rerun CI for PRs #1 → #2 → #3 before advancing the fork master or LEONES gitlink."
   ],
   "previous_verified_commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
   "upstream_delta_since_previous_pin": [
     {
-      "range": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f..5812201a81008977ea079eaf86a3f9166eef9f10",
-      "summary": "3 upstream commits; 10 files changed (332 additions, 17 deletions)",
+      "range": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f..4db8b7638f2fa2e5c092ee05d49999b56e8167c3",
+      "summary": "6 upstream commits; 19 files changed (600 additions, 166 deletions)",
       "files": [
         ".github/workflows/build-opencl.yml",
+        "README.md",
+        "docs/ops.md",
+        "docs/ops/WebGPU.csv",
         "ggml/src/ggml-backend.cpp",
         "ggml/src/ggml-metal/ggml-metal-device.cpp",
         "ggml/src/ggml-metal/ggml-metal-device.h",
@@ -42,17 +46,23 @@
         "ggml/src/ggml-metal/ggml-metal-ops.h",
         "ggml/src/ggml-metal/ggml-metal.cpp",
         "ggml/src/ggml-metal/kernels/conv.metal",
+        "ggml/src/ggml-webgpu/ggml-webgpu-shader-lib.hpp",
+        "ggml/src/ggml-webgpu/ggml-webgpu.cpp",
+        "ggml/src/ggml-webgpu/wgsl-shaders/pool2d.wgsl",
+        "src/llama-context.cpp",
+        "src/llama-graph.cpp",
+        "src/llama-graph.h",
         "src/models/qwen3vl.cpp"
       ],
-      "additions": 332,
-      "deletions": 17
+      "additions": 600,
+      "deletions": 166
     }
   ],
   "runtime_instrumentation_repository": "https://github.com/robertosantosx2/llama.cpp",
   "runtime_instrumentation_branch": "feat/nepenthes-runtime-probes-20261119",
   "runtime_instrumentation_pr": "https://github.com/robertosantosx2/llama.cpp/pull/1",
   "runtime_instrumentation_head": "b7cd302f897b2b6aacc9abea5e244b68ed3d3af8",
-  "runtime_instrumentation_status": "open_draft_rebased_against_upstream_5812201a_ci_pending",
+  "runtime_instrumentation_status": "open_draft_stack_based_on_76f186df_rebase_required_before_merge",
   "runtime_instrumentation_followup_pr": "https://github.com/robertosantosx2/llama.cpp/pull/2",
   "runtime_instrumentation_followup_branch": "feat/nepenthes-ggml-backend-probes-20261119",
   "runtime_instrumentation_followup_head": "5c424c6d4181375508b54e270c4b39a3286e1d38",
@@ -108,5 +118,5 @@
     }
   ],
   "runtime_probe_status": "implementation_open_draft_review_stack",
-  "runtime_probe_policy": "The three llama.cpp pull requests are intentionally stacked and remain unmerged. Review and merge in order #1, #2, #3. Once the stack is accepted, advance the LEONES submodule pin in a separate reviewed PR. Real CUDA runtime capture, event overhead and RTX 3050 behavior remain MSI acceptance gates."
+  "runtime_probe_policy": "The three llama.cpp pull requests are intentionally stacked and remain unmerged. Rebase the stack onto current upstream 4db8b763 in order #1, #2, #3, resolving context/graph and ggml backend overlaps, then review and merge in order. Keep LEONES submodule gitlink pinned until the rebased stack is accepted. Real CUDA runtime capture, event overhead and RTX 3050 behavior remain MSI acceptance gates."
 }
