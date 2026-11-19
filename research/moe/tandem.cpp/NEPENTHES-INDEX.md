@@ -215,3 +215,56 @@ Esta sección sustituye los estados parciales anteriores para la aceptación del
 - [PR #174](https://github.com/robertosantosx2/LEONES/pull/174) fue sustituida por la PR limpia #206 para no arrastrar una cadena de bases antiguas que ya está integrada por otras vías.
 - #177 y #179 son documentación apilada sobre esa antigua rama. Sus gates y política se consolidan aquí y en el roadmap canónico; sus commits no se fusionan sin rebase ni duplicación.
 - No se ha actualizado el gitlink al runtime instrumentado. No se ha compilado en el MSI, no se ha ejecutado C07, no existe captura Nsight nueva y C08 no está medido.
+
+
+## Integración multi-motor: TensorFold y validador común — 2026-11-19
+
+Esta sección registra el trabajo de integración multi-motor iniciado para TensorFold 1.2.10. **El contrato y la dependencia están definidos; el validador compartido todavía no está implementado ni aceptado.** No se declara compatibilidad TensorFold en el importador actual.
+
+### Arquitectura acordada
+
+- NEPENTHES mantiene un núcleo común en LEONES: contrato de eventos, identidad de ejecución, importación, informes, privacidad y evidencia.
+- Cada motor aporta un conector que traduce su telemetría nativa al envelope común. Los detalles específicos permanecen en metadata namespaced o reglas específicas del source.
+- No se crea un segundo importador NEPENTHES para TensorFold ni se debilita el contrato llama.cpp.
+- Las fuentes válidas deben proceder de un registry explícito; fuentes desconocidas fallan de forma cerrada.
+- No se infiere causalidad ni atribución por proximidad temporal. La correlación requiere identificadores explícitos y semántica validada.
+- La instrumentación será opt-in, desactivada por defecto y con coste acotado; sin cambios en drivers, CUDA toolkit, modelos o kernels.
+
+### Auditoría del estado actual
+
+La auditoría de `scripts/nepenthes_llama_trace_import.py` y `tests/test_nepenthes_llama_trace_import.py` confirmó:
+
+- El importador valida schema 1.0, campos obligatorios, enteros unsigned, privacidad, unicidad de event_id, un único run_id, correlación explícita, resumen final y contabilidad de eventos drenados/perdidos/errores.
+- Tanto los eventos ordinarios como `sink_summary` exigen actualmente `source=llama.cpp`.
+- `clock_domain` solo admite `steady_clock` y la validación es específica de llama.cpp.
+- Por tanto, cambiar únicamente el campo `source` no habilita TensorFold. La suite existente protege varios invariantes críticos, pero todavía no cubre el registry multi-source ni los fixtures TensorFold.
+- Esta fue una auditoría de código y tests; no se ejecutó la suite en esta revisión.
+
+### Dependencia y seguimiento
+
+- [LEONES issue #207 — shared multi-engine trace envelope validator](https://github.com/robertosantosx2/LEONES/issues/207): abierta y asignada. Extraerá la validación común, mantendrá perfiles específicos por source/clock, preservará compatibilidad llama.cpp y añadirá fixtures positivos/negativos para llama.cpp y TensorFold.
+- [TensorFold issue #1 — observability integration contract](https://github.com/robertosantosx2/TensorFold/issues/1): issue de coordinación del conector TensorFold 1.2.10. Depende de que #207 aterrice antes de aceptar trazas TensorFold.
+- [Contrato técnico TensorFold](https://github.com/robertosantosx2/TensorFold/blob/nepenthes/tensorfold/docs/nepenthes/README.md): perfiles disabled/light/diagnostic, límites de instrumentación, privacidad y plan host-only.
+
+### Secuencia de aceptación
+
+1. Implementar en LEONES #207 el validador común y un registry explícito de sources; mantener reglas source-specific para clocks y semántica.
+2. Preservar todos los fixtures llama.cpp y añadir fixtures TensorFold, además de negativos para source desconocido/mismatch, summary malformado o duplicado, registros tras summary, IDs vacíos/duplicados, run_id mixto, privacidad, bounds y correlación inválida.
+3. Ejecutar CI host-only y revisar resultados del commit exacto. No declarar aceptación por la mera creación de código o workflows.
+4. Fusionar/aceptar #207 solo con compatibilidad llama.cpp demostrada y TensorFold validado por fixtures.
+5. Implementar después el adaptador TensorFold sin CUDA; validar ciclo de petición y summary antes de añadir sondas CUDA/NVTX/Nsight.
+6. Reservar la validación MSI/RTX 3050 para cuando el trabajo host-only y la aceptación de software estén cerrados.
+
+### Estado al corte
+
+| Elemento | Estado |
+|---|---|
+| Arquitectura compartida multi-motor | Definida y documentada |
+| Auditoría del importador llama.cpp | Completada; sin ejecución de tests en esta revisión |
+| LEONES #207 | Abierta; implementación pendiente |
+| TensorFold issue #1 y contrato | Documentados; runtime pendiente |
+| Fixtures multi-source y CI | Pendientes |
+| Adaptador/runtime TensorFold | Pendiente de #207 |
+| CUDA/Nsight y validación MSI | Fuera del alcance actual; no iniciados |
+
+**Regla de avance:** evidencia real → aceptación → documentación del nuevo estado. Este documento registra el plan y los hallazgos auditados, no una compatibilidad multi-motor ya conseguida.
