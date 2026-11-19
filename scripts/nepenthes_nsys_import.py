@@ -230,6 +230,8 @@ def ensure_enum_schema(db: sqlite3.Connection) -> None:
             ("nvtx_correlation_token", "INTEGER"), ("nvtx_marker_phase", "TEXT"),
             ("nvtx_marker_request_id", "INTEGER"), ("attributed_request_token", "INTEGER"),
             ("attribution_level", "TEXT"), ("attribution_status", "TEXT NOT NULL DEFAULT 'unattributed'"),
+            ("attributed_batch_token", "INTEGER"), ("batch_attribution_level", "TEXT"),
+            ("batch_attribution_status", "TEXT NOT NULL DEFAULT 'unattributed'"), ("nvtx_marker_scope", "TEXT"),
         ],
         "nepenthes_nsys_activities": [
             ("copy_kind_value", "INTEGER"), ("copy_kind_name", "TEXT"),
@@ -239,6 +241,8 @@ def ensure_enum_schema(db: sqlite3.Connection) -> None:
             ("nvtx_correlation_token", "INTEGER"), ("nvtx_marker_phase", "TEXT"),
             ("nvtx_marker_request_id", "INTEGER"), ("attributed_request_token", "INTEGER"),
             ("attribution_level", "TEXT"), ("attribution_status", "TEXT NOT NULL DEFAULT 'unattributed'"),
+            ("attributed_batch_token", "INTEGER"), ("batch_attribution_level", "TEXT"),
+            ("batch_attribution_status", "TEXT NOT NULL DEFAULT 'unattributed'"), ("nvtx_marker_scope", "TEXT"),
         ],
     }
     for table, definitions in additions.items():
@@ -253,8 +257,10 @@ def ensure_enum_schema(db: sqlite3.Connection) -> None:
     db.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES ('006_nepenthes_typed_event_metadata')")
     if "nsys_activities" in table_names(db):
         db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_activities_attributed_request ON nsys_activities(import_id,attributed_request_token,attribution_level)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_activities_attributed_batch ON nsys_activities(import_id,attributed_batch_token,batch_attribution_level)")
     if "nepenthes_nsys_activities" in table_names(db):
         db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_only_activities_attributed_request ON nepenthes_nsys_activities(import_id,attributed_request_token,attribution_level)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_nsys_only_activities_attributed_batch ON nepenthes_nsys_activities(import_id,attributed_batch_token,batch_attribution_level)")
 
 
 def inspect_nsys(path: Path) -> dict:
@@ -368,7 +374,7 @@ def event_rows(path: Path):
 
 
 NVTX_MARKER_RE = re.compile(
-    r"nepenthes\.request\.(start|end)\s+token=(\d+)\s+request=(\d+)"
+    r"nepenthes\.(request|batch)\.(start|end)\s+token=(\d+)(?:\s+request=(\d+))?"
 )
 
 
@@ -378,10 +384,17 @@ def parse_nvtx_marker(message: Any) -> dict[str, Any] | None:
     match = NVTX_MARKER_RE.search(message)
     if not match:
         return None
+    scope, phase, token_text, request_text = match.groups()
+    request_id = int(request_text) if request_text is not None else None
+    if scope == "request" and (request_id is None or request_id <= 0):
+        return None
+    if scope == "batch" and request_id is not None:
+        return None
     return {
-        "phase": match.group(1),
-        "token": int(match.group(2)),
-        "request_id": int(match.group(3)),
+        "scope": scope,
+        "phase": phase,
+        "token": int(token_text),
+        "request_id": request_id,
         "message": message,
     }
 
@@ -410,8 +423,8 @@ def collect_nsys_nvtx_markers(db: sqlite3.Connection, names: set[str],
     return markers
 
 
-def host_nvtx_markers(events: list[dict[str, Any]]) -> dict[tuple[int, str], list[dict[str, int]]]:
-    result: dict[tuple[int, str], list[dict[str, int]]] = {}
+def host_nvtx_markers(events: list[dict[str, Any]]) -> dict[tuple[str, int, str], list[dict[str, int]]]:
+    result: dict[tuple[str, int, str], list[dict[str, int]]] = {}
     for event in events:
         if event.get("event_kind") != "nvtx_marker":
             continue
@@ -419,14 +432,22 @@ def host_nvtx_markers(events: list[dict[str, Any]]) -> dict[tuple[int, str], lis
         label = event.get("label")
         if isinstance(token, bool) or not isinstance(token, int) or token <= 0:
             continue
-        if label not in ("request.start", "request.end"):
+        if label in ("request.start", "request.end"):
+            scope = "request"
+            if isinstance(event.get("request_id"), bool) or not isinstance(event.get("request_id"), int) or event["request_id"] <= 0:
+                continue
+        elif label in ("batch.start", "batch.end"):
+            scope = "batch"
+            if event.get("request_id", 0) not in (0, None):
+                continue
+        else:
             continue
         before = event.get("value0")
         after = event.get("value1")
         if not isinstance(before, int) or not isinstance(after, int) or after < before:
             continue
         phase = "start" if label.endswith(".start") else "end"
-        key = (token, phase)
+        key = (scope, token, phase)
         result.setdefault(key, []).append({
             "host_mid_ns": (before + after) // 2,
             "bracket_ns": after - before,
@@ -435,18 +456,22 @@ def host_nvtx_markers(events: list[dict[str, Any]]) -> dict[tuple[int, str], lis
     return result
 
 
-def calibrate_host_to_nsys(host_markers: dict[tuple[int, str], list[dict[str, int]]],
-                           nsys_markers: list[dict[str, Any]]) -> dict[str, Any]:
-    nsys_by_key: dict[tuple[int, str], list[int]] = {}
+def calibrate_host_to_nsys(
+    host_markers: dict[tuple[str, int, str], list[dict[str, int]]],
+    nsys_markers: list[dict[str, Any]],
+) -> dict[str, Any]:
+    nsys_by_key: dict[tuple[str, int, str], list[int]] = {}
     for marker in nsys_markers:
-        nsys_by_key.setdefault((marker["token"], marker["phase"]), []).append(marker["start_ns"])
+        nsys_by_key.setdefault(
+            (marker["scope"], marker["token"], marker["phase"]), []
+        ).append(marker["start_ns"])
     pairs = []
     for key, host_values in host_markers.items():
         nsys_values = nsys_by_key.get(key, [])
         if len(host_values) == 1 and len(nsys_values) == 1:
             host = host_values[0]
             pairs.append({
-                "token": key[0], "phase": key[1],
+                "scope": key[0], "token": key[1], "phase": key[2],
                 "host_monotonic_ns": host["host_mid_ns"],
                 "nsys_timestamp_ns": nsys_values[0],
                 "offset_ns": nsys_values[0] - host["host_mid_ns"],
@@ -479,61 +504,86 @@ def calibrate_host_to_nsys(host_markers: dict[tuple[int, str], list[dict[str, in
     return result
 
 
-def build_nvtx_request_windows(markers: list[dict[str, Any]]) -> list[dict[str, int]]:
-    # A token is process-scoped. Never attribute device activity from another
-    # process merely because its timestamps overlap this request's NVTX window.
-    grouped: dict[tuple[int, int], dict[str, list[int]]] = {}
+def build_nvtx_token_windows(markers: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    # Windows are process- and scope-scoped. Request and batch tokens may have
+    # equal numeric values without colliding; overlap is resolved per scope.
+    grouped: dict[tuple[int, str, int], dict[str, list[int]]] = {}
     for marker in markers:
         process_id = marker.get("process_id")
+        scope = marker.get("scope")
         token = marker.get("token")
         if isinstance(process_id, bool) or not isinstance(process_id, int):
             continue
+        if scope not in ("request", "batch"):
+            continue
         if isinstance(token, bool) or not isinstance(token, int) or token <= 0:
             continue
-        grouped.setdefault((process_id, token), {"start": [], "end": []})[marker["phase"]].append(
+        grouped.setdefault((process_id, scope, token), {"start": [], "end": []})[marker["phase"]].append(
             marker["start_ns"]
         )
     windows = []
-    for (process_id, token), phases in grouped.items():
+    for (process_id, scope, token), phases in grouped.items():
         if len(phases["start"]) == 1 and len(phases["end"]) == 1:
             start_ns, end_ns = phases["start"][0], phases["end"][0]
             if end_ns > start_ns:
                 windows.append({
-                    "process_id": process_id, "token": token,
+                    "process_id": process_id, "scope": scope, "token": token,
                     "start_ns": start_ns, "end_ns": end_ns,
                 })
-    return sorted(windows, key=lambda item: (item["process_id"], item["start_ns"]))
+    return sorted(windows, key=lambda item: (item["process_id"], item["scope"], item["start_ns"]))
 
 
-def attribute_nsys_activity(start_ns: Any, end_ns: Any,
-                            windows: list[dict[str, int]],
-                            process_id: Any) -> tuple[int | None, str | None, str]:
+def build_nvtx_request_windows(markers: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Backward-compatible alias; returned windows may have request or batch scope."""
+    return build_nvtx_token_windows(markers)
+
+
+def attribute_nsys_activity(
+    start_ns: Any, end_ns: Any, windows: list[dict[str, Any]], process_id: Any,
+) -> tuple[int | None, str | None, str, int | None, str | None, str]:
     if not isinstance(start_ns, (int, float)) or not isinstance(end_ns, (int, float)):
-        return None, None, "missing_activity_timestamps"
+        return None, None, "missing_activity_timestamps", None, None, "missing_activity_timestamps"
     if isinstance(process_id, bool) or not isinstance(process_id, int):
-        return None, None, "missing_activity_process_identity"
-    process_windows = [window for window in windows if window["process_id"] == process_id]
-    if not process_windows:
-        return None, None, "missing_process_request_window"
-    matches = [window["token"] for window in process_windows
-               if window["start_ns"] <= int(start_ns) and int(end_ns) <= window["end_ns"]]
-    if len(matches) == 1:
-        return matches[0], "windowed", "unique_explicit_request_window"
-    if len(matches) > 1:
-        return None, None, "overlapping_request_windows"
-    return None, None, "outside_request_window"
+        return None, None, "missing_activity_process_identity", None, None, "missing_activity_process_identity"
+
+    def match_scope(scope: str) -> tuple[int | None, str | None, str]:
+        process_windows = [
+            window for window in windows
+            if window["process_id"] == process_id and window["scope"] == scope
+        ]
+        if not process_windows:
+            return None, None, f"missing_process_{scope}_window"
+        matches = [
+            window["token"] for window in process_windows
+            if window["start_ns"] <= int(start_ns) and int(end_ns) <= window["end_ns"]
+        ]
+        if len(matches) == 1:
+            return matches[0], "windowed", f"unique_explicit_{scope}_window"
+        if len(matches) > 1:
+            return None, None, f"overlapping_{scope}_windows"
+        return None, None, f"outside_{scope}_window"
+
+    request_token, request_level, request_status = match_scope("request")
+    batch_token, batch_level, batch_status = match_scope("batch")
+    return request_token, request_level, request_status, batch_token, batch_level, batch_status
 
 
 def init_output(db: sqlite3.Connection) -> None:
     migration_dir = Path(__file__).resolve().parents[1] / "db" / "migrations"
-    for version in ("002_nepenthes_observability.sql", "003_nepenthes_nsys_only.sql", "006_nepenthes_typed_event_metadata.sql"):
+    for version in (
+        "002_nepenthes_observability.sql",
+        "003_nepenthes_nsys_only.sql",
+        "006_nepenthes_typed_event_metadata.sql",
+        "007_nepenthes_batch_attribution.sql",
+    ):
         migration = migration_dir / version
         if not migration.is_file():
             continue
-        if version == "006_nepenthes_typed_event_metadata.sql":
+        migration_id = version.removesuffix(".sql")
+        if migration_id.startswith(("006_", "007_")):
             applied = db.execute(
                 "SELECT 1 FROM schema_migrations WHERE version = ?",
-                ("006_nepenthes_typed_event_metadata",),
+                (migration_id,),
             ).fetchone()
             if applied:
                 continue
@@ -558,7 +608,7 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
     nsys_markers = collect_nsys_nvtx_markers(source, names, strings)
     host_markers = host_nvtx_markers(events)
     nsys_clock_calibration = calibrate_host_to_nsys(host_markers, nsys_markers)
-    nvtx_windows = build_nvtx_request_windows(nsys_markers)
+    nvtx_windows = build_nvtx_token_windows(nsys_markers)
     activities: list[tuple] = []
     activity_counts: Counter[str] = Counter()
     activity_id = 0
@@ -583,24 +633,41 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             if name is None:
                 name = first(row, ("eventClass", "syncType", "overheadType"))
             nvtx_marker = parse_nvtx_marker(name) if table == "NVTX_EVENTS" else None
+            nvtx_marker_scope = nvtx_marker["scope"] if nvtx_marker else None
             if nvtx_marker is not None:
                 row["_nepenthes_nvtx_marker"] = nvtx_marker
-                attributed_token, attribution_level, attribution_status = (
-                    nvtx_marker["token"], "exact", "marker_identity"
-                )
+                if nvtx_marker_scope == "request":
+                    attributed_request_token = nvtx_marker["token"]
+                    attribution_level, attribution_status = "exact", "marker_identity"
+                    attributed_batch_token = None
+                    batch_attribution_level, batch_attribution_status = None, "not_applicable"
+                else:
+                    attributed_request_token = None
+                    attribution_level, attribution_status = None, "not_applicable"
+                    attributed_batch_token = nvtx_marker["token"]
+                    batch_attribution_level, batch_attribution_status = "exact", "marker_identity"
             elif kind in ("cuda_kernel", "cuda_memcpy", "cuda_memset"):
-                attributed_token, attribution_level, attribution_status = attribute_nsys_activity(
+                (
+                    attributed_request_token, attribution_level, attribution_status,
+                    attributed_batch_token, batch_attribution_level, batch_attribution_status,
+                ) = attribute_nsys_activity(
                     start, end, nvtx_windows,
                     first(row, ("globalPid", "global_pid", "processId", "pid"))
                 )
             else:
-                attributed_token, attribution_level, attribution_status = (
+                attributed_request_token, attribution_level, attribution_status = (
+                    None, None, "not_applicable"
+                )
+                attributed_batch_token, batch_attribution_level, batch_attribution_status = (
                     None, None, "not_applicable"
                 )
             row["_nepenthes_attribution"] = {
-                "request_token": attributed_token,
-                "level": attribution_level,
-                "status": attribution_status,
+                "request_token": attributed_request_token,
+                "request_level": attribution_level,
+                "request_status": attribution_status,
+                "batch_token": attributed_batch_token,
+                "batch_level": batch_attribution_level,
+                "batch_status": batch_attribution_status,
             }
             activity_id += 1
             activities.append((
@@ -625,9 +692,13 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                 sqlite_numeric(nvtx_marker["token"] if nvtx_marker else None, field=f"{table}.nvtx_correlation_token"),
                 nvtx_marker["phase"] if nvtx_marker else None,
                 sqlite_numeric(nvtx_marker["request_id"] if nvtx_marker else None, field=f"{table}.nvtx_marker_request_id"),
-                sqlite_numeric(attributed_token, field=f"{table}.attributed_request_token"),
+                sqlite_numeric(attributed_request_token, field=f"{table}.attributed_request_token"),
                 attribution_level,
                 attribution_status,
+                sqlite_numeric(attributed_batch_token, field=f"{table}.attributed_batch_token"),
+                batch_attribution_level,
+                batch_attribution_status,
+                nvtx_marker_scope,
                 json.dumps(row, ensure_ascii=False, sort_keys=True),
             ))
             activity_counts[kind] += 1
@@ -652,7 +723,7 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                  str(nsys.resolve()), sha256(nsys), len(events), len(activities),
                  json.dumps(dict(event_counts), sort_keys=True),
                  json.dumps(dict(activity_counts), sort_keys=True),
-                 "No automatic JSONL-to-Nsight join by proximity. Token-matched NVTX markers calibrate host↔Nsight time; GPU activities receive windowed attribution only when uniquely contained in an explicit request window.",
+                 "No automatic JSONL-to-Nsight join by proximity. Token-matched request/batch NVTX markers calibrate host↔Nsight time; GPU activities receive separate windowed attribution per scope only when uniquely contained in an explicit process-scoped window. Overlap within a scope is rejected.",
                  json.dumps(enum_metadata, ensure_ascii=False, sort_keys=True),
                  json.dumps(nsys_clock_calibration, ensure_ascii=False, sort_keys=True)),
             )
@@ -686,8 +757,9 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                  correlation_id,global_pid,process_id,device_id,context_id,stream_id,name,
                  copy_kind_value,copy_kind_name,src_kind_value,src_kind_name,dst_kind_value,
                  dst_kind_name,enum_decode_status,nvtx_correlation_token,nvtx_marker_phase,
-                 nvtx_marker_request_id,attributed_request_token,attribution_level,attribution_status,raw_json)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
+                 nvtx_marker_request_id,attributed_request_token,attribution_level,attribution_status,
+                 attributed_batch_token,batch_attribution_level,batch_attribution_status,nvtx_marker_scope,raw_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
             )
     finally:
         out.close()
@@ -700,11 +772,13 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
         "enum_tables": enum_metadata,
         "enum_decode_status_counts": dict(Counter(a[20] for a in activities)),
         "nvtx_marker_count": len(nsys_markers),
-        "request_windows": len(nvtx_windows),
+        "request_windows": sum(1 for window in nvtx_windows if window["scope"] == "request"),
+        "batch_windows": sum(1 for window in nvtx_windows if window["scope"] == "batch"),
         "attribution_status_counts": dict(Counter(a[26] for a in activities)),
+        "batch_attribution_status_counts": dict(Counter(a[29] for a in activities)),
         "nsys_clock_calibration": nsys_clock_calibration,
         "output": str(output.resolve()),
-        "correlation": "explicit token-matched NVTX markers only; GPU activity attribution is windowed and rejected when windows overlap",
+        "correlation": "explicit token-matched request/batch NVTX markers only; GPU activity attribution is windowed per scope and rejected when windows overlap",
     }
 
 
@@ -725,7 +799,7 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
         strings = load_string_ids(source, names)
         enum_maps, enum_metadata = load_enum_tables(source, names)
         nsys_markers = collect_nsys_nvtx_markers(source, names, strings)
-        nvtx_windows = build_nvtx_request_windows(nsys_markers)
+        nvtx_windows = build_nvtx_token_windows(nsys_markers)
         nsys_clock_calibration = {
             "matched_marker_pairs": 0,
             "nsight_clock_calibrated": False,
@@ -765,24 +839,41 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                 if name is None:
                     name = first(row, ("eventClass", "syncType", "overheadType"))
                 nvtx_marker = parse_nvtx_marker(name) if table == "NVTX_EVENTS" else None
+                nvtx_marker_scope = nvtx_marker["scope"] if nvtx_marker else None
                 if nvtx_marker is not None:
                     row["_nepenthes_nvtx_marker"] = nvtx_marker
-                    attributed_token, attribution_level, attribution_status = (
-                        nvtx_marker["token"], "exact", "marker_identity"
-                    )
+                    if nvtx_marker_scope == "request":
+                        attributed_request_token = nvtx_marker["token"]
+                        attribution_level, attribution_status = "exact", "marker_identity"
+                        attributed_batch_token = None
+                        batch_attribution_level, batch_attribution_status = None, "not_applicable"
+                    else:
+                        attributed_request_token = None
+                        attribution_level, attribution_status = None, "not_applicable"
+                        attributed_batch_token = nvtx_marker["token"]
+                        batch_attribution_level, batch_attribution_status = "exact", "marker_identity"
                 elif kind in ("cuda_kernel", "cuda_memcpy", "cuda_memset"):
-                    attributed_token, attribution_level, attribution_status = attribute_nsys_activity(
+                    (
+                        attributed_request_token, attribution_level, attribution_status,
+                        attributed_batch_token, batch_attribution_level, batch_attribution_status,
+                    ) = attribute_nsys_activity(
                         start, end, nvtx_windows,
                         first(row, ("globalPid", "global_pid", "processId", "pid"))
                     )
                 else:
-                    attributed_token, attribution_level, attribution_status = (
+                    attributed_request_token, attribution_level, attribution_status = (
+                        None, None, "not_applicable"
+                    )
+                    attributed_batch_token, batch_attribution_level, batch_attribution_status = (
                         None, None, "not_applicable"
                     )
                 row["_nepenthes_attribution"] = {
-                    "request_token": attributed_token,
-                    "level": attribution_level,
-                    "status": attribution_status,
+                    "request_token": attributed_request_token,
+                    "request_level": attribution_level,
+                    "request_status": attribution_status,
+                    "batch_token": attributed_batch_token,
+                    "batch_level": batch_attribution_level,
+                    "batch_status": batch_attribution_status,
                 }
                 activity_id += 1
                 activities.append((
@@ -807,9 +898,13 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                     sqlite_numeric(nvtx_marker["token"] if nvtx_marker else None, field=f"{table}.nvtx_correlation_token"),
                     nvtx_marker["phase"] if nvtx_marker else None,
                     sqlite_numeric(nvtx_marker["request_id"] if nvtx_marker else None, field=f"{table}.nvtx_marker_request_id"),
-                    sqlite_numeric(attributed_token, field=f"{table}.attributed_request_token"),
+                    sqlite_numeric(attributed_request_token, field=f"{table}.attributed_request_token"),
                     attribution_level,
                     attribution_status,
+                    sqlite_numeric(attributed_batch_token, field=f"{table}.attributed_batch_token"),
+                    batch_attribution_level,
+                    batch_attribution_status,
+                    nvtx_marker_scope,
                     json.dumps(row, ensure_ascii=False, sort_keys=True),
                 ))
                 activity_counts[kind] += 1
@@ -854,8 +949,9 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                  correlation_id,global_pid,process_id,device_id,context_id,stream_id,name,
                  copy_kind_value,copy_kind_name,src_kind_value,src_kind_name,dst_kind_value,
                  dst_kind_name,enum_decode_status,nvtx_correlation_token,nvtx_marker_phase,
-                 nvtx_marker_request_id,attributed_request_token,attribution_level,attribution_status,raw_json)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
+                 nvtx_marker_request_id,attributed_request_token,attribution_level,attribution_status,
+                 attributed_batch_token,batch_attribution_level,batch_attribution_status,nvtx_marker_scope,raw_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
             )
     finally:
         out.close()
@@ -873,12 +969,14 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
         "enum_tables": enum_metadata,
         "enum_decode_status_counts": dict(Counter(a[20] for a in activities)),
         "nvtx_marker_count": len(nsys_markers),
-        "request_windows": len(nvtx_windows),
+        "request_windows": sum(1 for window in nvtx_windows if window["scope"] == "request"),
+        "batch_windows": sum(1 for window in nvtx_windows if window["scope"] == "batch"),
         "attribution_status_counts": dict(Counter(a[26] for a in activities)),
+        "batch_attribution_status_counts": dict(Counter(a[29] for a in activities)),
         "nsys_clock_calibration": nsys_clock_calibration,
         "coverage": coverage,
         "output": str(output.resolve()),
-        "correlation": "no paired host clock calibration; only explicit NVTX windows within the Nsight clock domain are used",
+        "correlation": "no paired host clock calibration; only explicit request/batch NVTX windows within the Nsight clock domain are used",
     }
 
 
