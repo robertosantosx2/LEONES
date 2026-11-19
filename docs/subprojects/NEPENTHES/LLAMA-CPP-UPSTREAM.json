@@ -4,7 +4,7 @@
   "upstream_repository": "https://github.com/ggml-org/llama.cpp.git",
   "upstream_web": "https://github.com/ggml-org/llama.cpp",
   "upstream_branch": "master",
-  "verified_commit": "4db8b7638f2fa2e5c092ee05d49999b56e8167c3",
+  "verified_commit": "f8caa5ea30b5775512906ae3b7ee53b21a7a6e1d",
   "verified_commit_time": "2026-11-19T11:35:10Z",
   "verified_at": "2026-11-19",
   "local_fork_repository": "https://github.com/robertosantosx2/llama.cpp.git",
@@ -26,13 +26,14 @@
     "The second stacked llama.cpp PR adds the shared ggml event ABI, generic backend buffer lifecycle, CUDA allocation/OOM/pool/VMM/pinned-host, transfer, synchronization and host dispatch probes.",
     "The first llama.cpp instrumentation workflow completed successfully: both standalone C++ tests and the CPU llama-server build passed. Upstream Code Style, EditorConfig, WASM and WASI checks also passed; other upstream checks remain in progress.",
     "Upstream master advanced three commits beyond 76f186df; fork master was fast-forwarded to 5812201a on 2026-11-19. The LEONES submodule gitlink intentionally remains pinned to 76f186df until the runtime PR stack is reviewed and accepted.",
-    "At 2026-11-19T11:35:10Z upstream master had advanced to 4db8b763; the personal fork master remains at 5812201a (3 commits behind). The latest upstream delta touches src/llama-context.cpp and graph parameter structures, which overlap the instrumentation stack's context/graph work. Do not fast-forward blindly: rebase and rerun CI for PRs #1 → #2 → #3 before advancing the fork master or LEONES gitlink."
+    "At 2026-11-19T11:35:10Z upstream master had advanced to 4db8b763; the personal fork master remains at 5812201a (3 commits behind). The latest upstream delta touches src/llama-context.cpp and graph parameter structures, which overlap the instrumentation stack's context/graph work. Do not fast-forward blindly: rebase and rerun CI for PRs #1 → #2 → #3 before advancing the fork master or LEONES gitlink.",
+    "At the 2026-11-19 follow-up, upstream master advanced to f8caa5e; the personal fork master remains at 5812201a, now 4 commits behind. The cumulative delta from the previous clean pin 76f186df is 7 commits / 20 files (+601/-167), including further llama graph/context changes. Do not fast-forward blindly; the runtime PR stack must be rebased and retested in order."
   ],
   "previous_verified_commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
   "upstream_delta_since_previous_pin": [
     {
-      "range": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f..4db8b7638f2fa2e5c092ee05d49999b56e8167c3",
-      "summary": "6 upstream commits; 19 files changed (600 additions, 166 deletions)",
+      "range": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f..f8caa5ea30b5775512906ae3b7ee53b21a7a6e1d",
+      "summary": "7 upstream commits; 20 files changed (601 additions, 167 deletions)",
       "files": [
         ".github/workflows/build-opencl.yml",
         "README.md",
@@ -41,6 +42,7 @@
         "ggml/src/ggml-backend.cpp",
         "ggml/src/ggml-metal/ggml-metal-device.cpp",
         "ggml/src/ggml-metal/ggml-metal-device.h",
+        "ggml/src/ggml-metal/ggml-metal-device.m",
         "ggml/src/ggml-metal/ggml-metal-impl.h",
         "ggml/src/ggml-metal/ggml-metal-ops.cpp",
         "ggml/src/ggml-metal/ggml-metal-ops.h",
@@ -54,8 +56,8 @@
         "src/llama-graph.h",
         "src/models/qwen3vl.cpp"
       ],
-      "additions": 600,
-      "deletions": 166
+      "additions": 601,
+      "deletions": 167
     }
   ],
   "runtime_instrumentation_repository": "https://github.com/robertosantosx2/llama.cpp",
@@ -173,34 +175,50 @@
   "runtime_correlation_pr": "https://github.com/robertosantosx2/llama.cpp/pull/4",
   "runtime_correlation_branch": "feat/nepenthes-correlation-clock-20261119",
   "runtime_correlation_head": "ec5b6c46164f2b81695afd50d44760b2e201b5bd",
-  "runtime_correlation_status": "open_draft_ci_in_progress; explicit token, host clock calibration, optional NVTX v3 markers; real capture pending",
+  "runtime_correlation_status": "open_draft; trace-and-cpu-build passed; CUDA compile in progress; runtime Nsight round-trip and cancellation-path audit pending",
   "latest_ci_pr4": {
     "repo": "robertosantosx2/llama.cpp",
     "pr": 4,
-    "commit": "9e2fc9ba37fd73f022959732b3c3ed4dbed840eb",
-    "run_id": 44521579771,
-    "run_url": "https://github.com/robertosantosx2/llama.cpp/actions/runs/44521579771",
+    "commit": "ec5b6c46164f2b81695afd50d44760b2e201b5bd",
+    "run_id": 44525234003,
+    "run_url": "https://github.com/robertosantosx2/llama.cpp/actions/runs/44525234494",
     "observed_at": "2026-11-19",
     "nepenthes_trace_cpu_job": {
-      "status": "queued",
-      "job_id": 135551261617
+      "status": "completed",
+      "conclusion": "success",
+      "job_id": 135564078794,
+      "checks": [
+        "trace contract test",
+        "bounded JSONL sink test",
+        "CPU worker bridge test",
+        "CPU llama-server build"
+      ]
     },
     "cuda_compile_job": {
-      "status": "queued",
-      "job_id": 135551262203
+      "status": "in_progress",
+      "job_id": 135564064573,
+      "step": "Build CUDA llama-server with NVTX v3"
     },
-    "full_repository_ci": "queued"
+    "full_repository_ci": "mixed: CPU, server, behavior, WASI and WASM passed; several self-hosted jobs pending/queued"
   },
   "nsys_enum_decoder_pr": "https://github.com/robertosantosx2/LEONES/pull/181",
   "nsys_enum_decoder_status": "open; importer regression checks green; real C07 SQLite validation pending",
   "nsys_nvtx_correlation_pr": "https://github.com/robertosantosx2/LEONES/pull/182",
   "nsys_nvtx_correlation_status": "open_draft; importer regression checks green; real C07 capture pending",
-  "c07_status": "implementation_in_progress; real_msi_nsys_capture_required",
+  "c07_status": "process-scoped NVTX importer and synthetic fixtures CI green; real MSI Nsight capture still required",
   "nepenthes_verify_pr": "https://github.com/robertosantosx2/LEONES/pull/183",
   "nepenthes_verify_status": "open_draft; bundle and correlation-aware verification implemented; CI pending",
   "nepenthes_c08_pr": "https://github.com/robertosantosx2/LEONES/pull/184",
   "nepenthes_c08_status": "open_draft; paired overhead gate and robust telemetry implemented; CI pending; physical campaign pending",
-  "c08_status": "harness_implemented; AIPerf-first evidence adapter and paired comparator in PRs #184/#185; real_paired_msi_measurements_required",
+  "c08_status": "paired harness, TTFT correctness, privacy defaults and evidence-completeness gate implemented in GitHub; actual paired MSI campaign remains required",
   "nepenthes_aiperf_c08_pr": "https://github.com/robertosantosx2/LEONES/pull/185",
-  "nepenthes_aiperf_c08_status": "open_draft; AIPerf 0.13 runner/importer, inference-server resource sampler and canonical evidence adapter implemented; 510 regression tests passed; physical C08 campaign pending"
+  "nepenthes_aiperf_c08_status": "open_draft; AIPerf 0.13 runner/importer, inference-server resource sampler and canonical evidence adapter implemented; 510 regression tests passed; physical C08 campaign pending",
+  "nsys_process_attribution_pr": "https://github.com/robertosantosx2/LEONES/pull/189",
+  "nsys_process_attribution_status": "green_ci; activity windows now scoped by NVTX globalPid/processId plus correlation token; physical capture pending",
+  "c08_ttft_streaming_pr": "https://github.com/robertosantosx2/LEONES/pull/190",
+  "c08_ttft_streaming_status": "green_ci; byte-stream reads; first output byte distinguished from TTFT; standard gate requires explicit TTFT",
+  "c08_privacy_pr": "https://github.com/robertosantosx2/LEONES/pull/192",
+  "c08_privacy_status": "green_ci; prompt and raw outputs redacted by default; command fingerprint preserved",
+  "c08_completeness_pr": "https://github.com/robertosantosx2/LEONES/pull/193",
+  "c08_completeness_status": "CI in progress; requires TTFT, total duration, process RSS, system RAM, device-wide VRAM and stable command fingerprint"
 }
