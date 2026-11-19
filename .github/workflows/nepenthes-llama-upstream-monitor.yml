@@ -1,6 +1,10 @@
 name: NEPENTHES llama.cpp upstream monitor
 
 on:
+  pull_request:
+    paths:
+      - 'docs/subprojects/NEPENTHES/LLAMA-CPP-UPSTREAM.json'
+      - '.github/workflows/nepenthes-llama-upstream-monitor.yml'
   schedule:
     - cron: '17 7 * * *'
   workflow_dispatch:
@@ -32,6 +36,18 @@ jobs:
             echo 'outdated=true' >> "$GITHUB_OUTPUT"
           else
             echo 'outdated=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Require exact upstream pin for pull requests
+        if: github.event_name == 'pull_request'
+        env:
+          CURRENT_SHA: ${{ steps.compare.outputs.current }}
+          PINNED_SHA: ${{ steps.compare.outputs.pinned }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$CURRENT_SHA" != "$PINNED_SHA" ]]; then
+            echo "Manifest pin $PINNED_SHA is not current upstream master $CURRENT_SHA" >&2
+            exit 1
           fi
       - name: Open or update upstream drift issue
         if: steps.compare.outputs.outdated == 'true'
