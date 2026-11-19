@@ -162,3 +162,13 @@ For `standard`:
 The comparator reports TTFT, generation/total time, process RSS, system RAM, device-wide VRAM and sampled power separately. Device-wide memory/power are not process attribution. Full/diagnostic profiles are informational and are not labelled low-overhead.
 
 The harness and comparator are implemented and synthetically tested in GitHub. C08 itself remains pending until real paired runs are executed on the MSI; no overhead percentage is claimed before those measurements.
+
+
+The C08 report records the SHA-256 and execution ID of every paired baseline/condition evidence file. Keep the report as a campaign artifact. To make a run-level verification consume that external campaign report without copying it into the run bundle:
+
+```bash
+python3 scripts/nepenthes.py verify /path/to/run-bundle \
+  --c08-report artifacts/c08-overhead-report.json
+```
+
+The verifier prints the report path and SHA-256, and sets `functional_complete` only when C07 correlation and the standard-profile C08 gate both pass. The external report is not silently added to the run bundle's checksum manifest.
