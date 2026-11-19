@@ -17,6 +17,7 @@ METRICS = (
     "ttft_ms",
     "generation_time_ms",
     "total_time_ms",
+    "request_latency_mean_ms",
     "peak_process_rss_mb",
     "peak_system_ram_used_mb",
     "peak_vram_mb_device_wide",
