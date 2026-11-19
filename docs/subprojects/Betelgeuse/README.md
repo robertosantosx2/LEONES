@@ -4,7 +4,7 @@ Betelgeuse is being evaluated as a native Linux/CUDA MoE runtime for the Qwen3.5
 
 ## Current state (2026-11-19)
 
-<badge>Draft PR — runtime integration under validation</badge>
+**Estado: PR draft — integración runtime bajo validación**
 
 - Betelgeuse fork branch: `feat/qwen35-trunk-only-pager-msi`
 - Pull request: [#1 — Qwen3.5-35B-A3B trunk-only expert bundle](https://github.com/robertosantosx2/Betelgeuse/pull/1)
