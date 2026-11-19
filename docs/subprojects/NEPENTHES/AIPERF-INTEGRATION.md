@@ -168,3 +168,15 @@ No reconstruir ITL token-a-token desde una media agregada. No atribuir GPU telem
 - [AIPerf metrics reference](https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference)
 - [AIPerf profile export files](https://docs.nvidia.com/aiperf/tutorials/metrics-analysis/working-with-profile-export-files)
 - [GenAI-Perf legacy documentation](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/perf_analyzer/genai-perf/README.html)
+
+## 11. Herramienta de importación implementada
+
+El primer importador offline está disponible en `scripts/nepenthes_aiperf_import.py` y se ejecuta con:
+
+```bash
+python3 scripts/nepenthes_aiperf_import.py \
+  --artifacts-dir /ruta/a/artefactos-aiperf \
+  --output-dir /ruta/al/expediente/nepenthes/aiperf-import
+```
+
+Genera `aiperf_events.jsonl` y `aiperf_import_report.json`. El parser acepta `profile_export_aiperf.json` y `profile_export.jsonl`, preserva el árbol de artefactos de origen y calcula SHA-256. Los registros raw, GPU telemetry y server metrics no se interpretan todavía; se conservan en el inventario y quedan pendientes de importadores específicos. El importador no instala ni ejecuta AIPerf ni genera carga. Sus fixtures offline se ejecutan mediante `python3 -m pytest -q tests/test_nepenthes_aiperf_import.py`.
