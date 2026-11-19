@@ -215,6 +215,9 @@ def build_evidence(args: argparse.Namespace) -> dict:
     run_metrics["tokens_per_second"] = tps
 
     ttft_summary = summary_metric(("time_to_first_token",), time_ms)
+    if ttft_summary is None:
+        ttft_values = [item["ttft_ms"] for item in measurements if item.get("ttft_ms") is not None]
+        ttft_summary = median(ttft_values) if ttft_values else None
     if ttft_summary is not None:
         run_metrics["ttft_ms"] = ttft_summary
     latency_summary = summary_metric(("request_latency",), time_ms)
