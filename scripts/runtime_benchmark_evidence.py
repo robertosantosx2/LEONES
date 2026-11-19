@@ -10,6 +10,7 @@ import json
 import os
 import platform
 import re
+import shlex
 import shutil
 import subprocess
 import time
