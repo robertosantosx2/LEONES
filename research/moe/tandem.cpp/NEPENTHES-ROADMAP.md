@@ -225,3 +225,11 @@ LEONES PR #200 se integró como `ed0535c2bf1bc7025cde1534e395ed1c3bbac581` tras 
 - [ ] Revisión final de concurrencia, lifecycle del sink, JSONL y atribución request/NVTX.
 - [ ] Fusionar PR #6 solo tras gates remotos aceptados; después actualizar gitlink en LEONES.
 - [ ] MSI: build Linux/CUDA, C07 con NVTX+Nsight, y medición C08 de overhead. No ejecutar antes de cerrar los gates remotos.
+
+
+### Hallazgo de auditoría y corrección RC1 — 2026-11-19
+
+- [x] Restaurar `GGML_OP_CONV_2D` en `ggml_op_alloc_size_may_expand()`: el diff NEPENTHES lo había eliminado accidentalmente pese a que upstream lo conserva. Corrección en llama.cpp commit `33e0d0a578c48b0a31616fd1b72fd255f12e39a4`.
+- [ ] Revalidar todos los checks contra el nuevo HEAD `33e0d0a578c48b0a31616fd1b72fd255f12e39a4`; los checks del HEAD anterior no cuentan como aceptación de este cambio.
+- [ ] Continuar revisión final del diff y runtime; PR #6 sigue draft, sin merge ni actualización del gitlink.
+- [ ] Solo tras aceptación remota: sincronizar gitlink y pasar al MSI para build Linux/CUDA, C07 NVTX+Nsight y C08 overhead medido.
