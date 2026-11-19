@@ -12,6 +12,8 @@
   "verification_date": "2026-11-19",
   "notes": [
     "Runner flags checked against docs/cli-options.md at v0.13.0.",
-    "The runner pins the stable release, not floating main."
+    "The runner pins the stable release, not floating main.",
+    "NEPENTHES wrapper records a workload command SHA-256 that excludes only the per-run artifact directory, redacts manifest paths, and deletes raw AIPerf logs by default after recording their digest.",
+    "C08 total_time_ms is campaign wall duration from wrapper timestamps; request latency remains a separate metric."
   ]
 }
