@@ -455,7 +455,7 @@ def test_nsys_only_attributes_only_inside_explicit_nvtx_windows(tmp_path: Path):
         ).fetchall()
     assert kernels == [
         (1500, 77, "windowed", "unique_explicit_request_window"),
-        (5200, None, None, "outside_or_missing_request_window"),
+        (5200, None, None, "outside_request_window"),
     ]
     assert markers == [(77, "start", "exact"), (77, "end", "exact")]
 
