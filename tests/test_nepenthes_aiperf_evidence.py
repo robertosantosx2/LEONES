@@ -131,6 +131,10 @@ def test_aiperf_adapter_emits_canonical_paired_evidence(tmp_path: Path):
     assert evidence["run_metrics"]["peak_vram_mb_device_wide"] == 3100
     assert all("ttft_ms" in item for item in evidence["measurements"])
     assert "response_text" not in json.dumps(evidence)
+    from scripts.nepenthes_overhead_gate import evidence_metrics
+    normalized = evidence_metrics(evidence)
+    assert normalized["tokens_per_second"] == 31.5
+    assert normalized["peak_system_ram_used_mb"] == 9000
 
 
 def test_aiperf_adapter_rejects_missing_warmup_evidence(tmp_path: Path):
