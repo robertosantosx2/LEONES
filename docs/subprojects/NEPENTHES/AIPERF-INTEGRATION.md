@@ -179,7 +179,7 @@ python3 scripts/nepenthes_aiperf_import.py \
   --output-dir /ruta/al/expediente/nepenthes/aiperf-import
 ```
 
-Genera `aiperf_events.jsonl` y `aiperf_import_report.json`. El parser acepta `profile_export_aiperf.json` y `profile_export.jsonl`, preserva el árbol de artefactos de origen y calcula SHA-256. Los registros raw, GPU telemetry y server metrics no se interpretan todavía; se conservan en el inventario y quedan pendientes de importadores específicos. Si AIPerf produce resúmenes por fase además del agregado raíz, el importador actual prioriza el agregado raíz y deja los resúmenes de fase preservados e indicados como pendientes. El importador no instala ni ejecuta AIPerf ni genera carga. Sus fixtures offline se ejecutan mediante `python3 -m pytest -q tests/test_nepenthes_aiperf_import.py`.
+Genera `aiperf_events.jsonl` y `aiperf_import_report.json`. Importa el resumen agregado `profile_export_aiperf.json`, registros por petición `profile_export.jsonl`, series temporales del servidor `server_metrics_export.jsonl` y telemetría GPU `gpu_telemetry_export.jsonl`. Preserva el árbol de artefactos de origen y calcula SHA-256. Los payloads raw y el texto generado no se interpretan ni importan. El agregado `server_metrics_export.json` y CSV/Parquet quedan preservados en el inventario para una fase posterior. Si AIPerf produce resúmenes/registros por fase además del agregado raíz, el importador prioriza el agregado raíz y deja las fases adicionales preservadas e indicadas como pendientes. El importador no instala ni ejecuta AIPerf ni genera carga. Sus fixtures offline se ejecutan mediante `python3 -m pytest -q tests/test_nepenthes_aiperf_import.py`.
 
 
 ## 12. Runner NEPENTHES
@@ -228,3 +228,15 @@ python3 scripts/nepenthes_llama_server_metrics.py \
 El parser preserva HELP/TYPE/UNIT, muestras individuales y timestamps; no agrega histogramas ni inventa unidades. Solo conserva valores de labels de cardinalidad acotada (`model`, `status`, `backend`, `device`, `type`, etc.). En `/slots` exporta únicamente `id` e `is_processing`; nombres de otros campos se registran como no soportados, pero sus valores (incluidos prompts o tokens) no se copian. No realiza polling HTTP: la captura de endpoints y su correlación temporal pertenecen a una etapa posterior.
 
 **Estado del fork:** el repositorio personal `robertosantosx2/llama.cpp` no existe y LEONES no tiene un submódulo llama.cpp. El pin anterior es del upstream oficial, no un fork. La creación del fork GitHub queda bloqueada por la ausencia de la operación `fork repository` en la conexión actual; no se simula con un submódulo upstream.
+
+
+## 14. Importación de telemetría AIPerf (server + GPU)
+
+El importador normaliza ahora dos streams adicionales de AIPerf 0.13.0:
+
+- `server_metrics_export.jsonl`: un evento por muestra Prometheus, con `timestamp_ns`, `endpoint_latency_ns`, `request_sent_ns`, `first_byte_ns`, fase, nombre de métrica, labels seguras y buckets/sum/count cuando la muestra es histogram. No agrega ni estima percentiles. El endpoint se reduce a origen scheme/host/port; userinfo, path, query y fragment no se exportan. Labels fuera de la allowlist se registran por nombre, sin valores.
+- `gpu_telemetry_export.jsonl`: un evento por señal GPU conocida, conservando UUID, índice, modelo, PCI bus ID, timestamp y unidad. `nvidia_energy_consumption` se conserva en MJ como contador acumulado; no se convierte en energía de campaña ni se atribuye al proceso. Cada evento declara `device_level_not_process_level`.
+
+El importador conserva campos desconocidos en el artefacto original y su checksum, pero no exporta sus valores. No sincroniza `timestamp_ns` de AIPerf con relojes monotónicos de llama.cpp, NVML o Nsight. La unidad de energía GPU de AIPerf es acumulada; el cálculo de delta/energía incremental corresponde a la etapa de contabilidad energética NEPENTHES y requiere baseline y ventana temporal.
+
+El runner solicita `--gpu-telemetry pynvml` y `--server-metrics-formats json jsonl`. En llama.cpp hay que arrancar el servidor con `--metrics` para habilitar el endpoint Prometheus; `/slots` está disponible por defecto según la revisión upstream fijada. Si `/metrics` no está habilitado, usar `--no-server-metrics` para la campaña.
