@@ -48,10 +48,15 @@ def atomic_write(path: Path, content: str) -> None:
 def discover_one(root: Path, names: tuple[str, ...]) -> Path | None:
     matches = sorted(path for name in names for path in root.rglob(name)
                      if path.is_file() and not path.is_symlink())
-    if len(matches) > 1:
-        raise ValueError(f"multiple candidate artifacts found for {names}: "
-                         + ", ".join(str(path) for path in matches))
-    return matches[0] if matches else None
+    if not matches:
+        return None
+    root_matches = [path for path in matches if path.parent.resolve() == root.resolve()]
+    if len(root_matches) == 1:
+        return root_matches[0]
+    if len(matches) == 1:
+        return matches[0]
+    raise ValueError(f"multiple candidate artifacts found for {names}: "
+                     + ", ".join(str(path) for path in matches))
 
 
 def inventory(root: Path) -> list[dict[str, Any]]:
@@ -103,6 +108,10 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
         raise ValueError("output directory must not be inside the source artifact directory")
     out.mkdir(parents=True, exist_ok=True)
 
+    all_summary_paths = sorted(path for name in SUMMARY_NAMES for path in root.rglob(name)
+                                if path.is_file() and not path.is_symlink())
+    all_records_paths = sorted(path for name in RECORD_NAMES for path in root.rglob(name)
+                               if path.is_file() and not path.is_symlink())
     summary_path = discover_one(root, SUMMARY_NAMES)
     records_path = discover_one(root, RECORD_NAMES)
     if summary_path is None and records_path is None:
@@ -133,6 +142,12 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
     request_count = 0
     failed_request_count = 0
     warnings: list[str] = []
+    ignored_phase_summaries = [path for path in all_summary_paths if path != summary_path]
+    ignored_phase_records = [path for path in all_records_paths if path != records_path]
+    if ignored_phase_summaries:
+        warnings.append("phase-scoped summary exports were preserved in the source inventory but not separately normalized; the root aggregate was preferred")
+    if ignored_phase_records:
+        warnings.append("additional phase-scoped request JSONL files were preserved in the source inventory but not separately normalized")
 
     with event_path.with_name(event_path.name + ".tmp").open("w", encoding="utf-8") as stream:
         if summary_path is not None:
@@ -237,6 +252,7 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
         "source_artifacts": source_files,
         "summary_file": summary_rel,
         "records_file": records_rel,
+        "preserved_unparsed_phase_files": [path.relative_to(root).as_posix() for path in ignored_phase_summaries + ignored_phase_records],
         "event_file": event_path.name,
         "event_count": event_count,
         "summary_metric_count": summary_metric_count,
