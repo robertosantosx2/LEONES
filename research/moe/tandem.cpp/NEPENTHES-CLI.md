@@ -79,3 +79,18 @@ Los archivos que dependen de instrumentación o Nsight solo aparecen cuando est�
 ## Límites
 
 La telemetría de `nvidia-smi` es global al dispositivo. Las sondas internas requieren un binario instrumentado. La captura Nsight tiene overhead. No se une `request_id` con CUPTI `correlationId` ni se mezclan relojes sin calibración. Las duraciones de kernels individuales proceden de Nsight/CUPTI.
+
+
+## Verificación ampliada del paquete y correlación
+
+`nepenthes verify RUN_DIR` valida ahora:
+
+- SHA-256 de todos los artefactos, ausencia de ficheros sin hash y rutas contenidas en el bundle.
+- Manifest terminal, run_id, schema_version, recuento de eventos y consistencia con summary.json.
+- Contrato tipado de correlation_token y attribution_level; exact exige token explícito y nunca se infiere por proximidad.
+- Balance request_start/request_end y NVTX start/end por token.
+- clock_calibration start/end, timestamps monotónicos/Unix y estimación de offset/drift host.
+- Integridad SQLite de observaciones y de la importación Nsight; run_id de importación debe coincidir con el manifest.
+- Cuando hay NVTX y Nsight: al menos dos pares token+fase para calibrar host↔Nsight, ausencia de atribución exacta falsa a kernels y consistencia de la atribución windowed.
+
+Si no hay NVTX o Nsight no fue solicitado, el verificador informa esa limitación sin inventar correlación. Un bundle íntegro no equivale por sí solo a C07 aceptado: la captura real y la validación física siguen siendo necesarias.
