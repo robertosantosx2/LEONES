@@ -101,6 +101,7 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
         raise ValueError(f"AIPerf artifacts directory does not exist: {root}")
     if root == out or root in out.parents:
         raise ValueError("output directory must not be inside the source artifact directory")
+    out.mkdir(parents=True, exist_ok=True)
 
     summary_path = discover_one(root, SUMMARY_NAMES)
     records_path = discover_one(root, RECORD_NAMES)
