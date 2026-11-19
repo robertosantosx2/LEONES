@@ -287,11 +287,12 @@ PRs pequeños y dependencias explícitas; no crear un mega-PR.
 - PR #160: importador offline de artefactos AIPerf y tests; CI específico con 6 tests offline en success. Depende de PR #159.
 - PR #161: wrapper AIPerf-first para llama-server, fijado a AIPerf 0.13.0 y CLI contrastada contra el tag estable; defaults conservadores, manifiesto, protección de secretos y dry-run. CI offline actualizado con 14 tests de runner/importer en success.
 - PR #165: parser offline de `/metrics` y `/slots`, pin de llama.cpp master y workflow diario de drift upstream; CI con 23 tests offline en success.
-- PR #166: importador de server metrics JSONL y GPU telemetry JSONL de AIPerf; CI con 25 tests offline en success. Los agregados server JSON/CSV/Parquet permanecen preservados, aún no normalizados.
+- PR #166: importador de server metrics JSONL y GPU telemetry JSONL de AIPerf; CI con 25 tests offline en success.
+- PR #167: importador del agregado `server_metrics_export.json`, incluyendo profiling/warmup, histogram estimates y timeslices; CI con 27 tests offline en success. CSV/Parquet permanecen preservados para otra etapa.
 - PR #162 fue sustituida por PR #164 porque la rama original había quedado divergida tras corregir la base del runner; no integrar ambas.
 - No existe todavía fork personal `robertosantosx2/llama.cpp` ni submódulo llama.cpp en LEONES. Incidencia #163 documenta el paso pendiente.
 - Todavía no se ha instalado ni ejecutado AIPerf contra llama-server en el MSI; no hay smoke físico y no se declara compatibilidad MEASURED.
-- Próximo hito GitHub-only: completar importación de server metrics agregado JSON y formatos CSV/Parquet, contratos de eventos y OTel mapping. Paso externo pendiente: crear fork/submódulo llama.cpp (issue #163). Después, instalar AIPerf 0.13.0 en entorno aislado del MSI, ejecutar dry-run y smoke real con concurrencia 1 y cinco requests.
+- Próximo hito GitHub-only: completar importación CSV/Parquet cuando justifique dependencias, contratos de eventos y OTel mapping. Paso externo pendiente: crear fork/submódulo llama.cpp (issue #163). Después, instalar AIPerf 0.13.0 en entorno aislado del MSI, ejecutar dry-run y smoke real con concurrencia 1 y cinco requests.
 
 El orden puede solapar documentación/fixtures, pero no se debe declarar una fase aceptada si depende de otra incompleta.
 
