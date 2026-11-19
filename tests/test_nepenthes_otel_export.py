@@ -88,7 +88,9 @@ def test_request_error_becomes_error_span_without_exporting_error_message():
     spans = traces["resourceSpans"][0]["scopeSpans"][0]["spans"]
     error_span = next(span for span in spans if span["status"]["code"] == "STATUS_CODE_ERROR")
     encoded = json.dumps(error_span)
-    assert '"stringValue":"499"' in encoded or '"intValue":"499"' in encoded
+    attrs = {item["key"]: item["value"] for item in error_span["attributes"]}
+    assert attrs["error.code"]["intValue"] == "499"
+    assert attrs["error.type"]["stringValue"] == "RequestCancellationError"
     assert "private response text" not in encoded
 
 
