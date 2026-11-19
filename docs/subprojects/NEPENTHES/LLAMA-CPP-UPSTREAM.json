@@ -24,7 +24,8 @@
     "No local checkout, build, inference run, or MSI hardware validation was performed.",
     "The first native llama.cpp instrumentation PR is open in the personal fork; it is separate from the upstream-synced submodule pin until reviewed and accepted.",
     "The second stacked llama.cpp PR adds the shared ggml event ABI, generic backend buffer lifecycle, CUDA allocation/OOM/pool/VMM/pinned-host, transfer, synchronization and host dispatch probes.",
-    "The first llama.cpp instrumentation workflow completed successfully: both standalone C++ tests and the CPU llama-server build passed. Upstream Code Style, EditorConfig, WASM and WASI checks also passed; other upstream checks remain in progress."
+    "The first llama.cpp instrumentation workflow completed successfully: both standalone C++ tests and the CPU llama-server build passed. Upstream Code Style, EditorConfig, WASM and WASI checks also passed; other upstream checks remain in progress.",
+    "LEONES now includes a strict llama.cpp JSONL trace importer; it validates the v1.0 sink summary and rejects prompt/completion/text/token payload fields."
   ],
   "previous_verified_commit": "95b09b62beb95c40fc6b317a0c1473c27b5f27fa",
   "upstream_delta_since_previous_pin": [
@@ -47,5 +48,9 @@
   "runtime_instrumentation_followup_pr": "https://github.com/robertosantosx2/llama.cpp/pull/2",
   "runtime_instrumentation_followup_branch": "feat/nepenthes-ggml-backend-probes-20261119",
   "runtime_instrumentation_followup_head": "5c424c6d4181375508b54e270c4b39a3286e1d38",
-  "runtime_instrumentation_followup_status": "open_draft_ci_queued"
+  "runtime_instrumentation_followup_status": "open_draft_ci_queued",
+  "trace_importer_script": "scripts/nepenthes_llama_trace_import.py",
+  "trace_importer_tests": "tests/test_nepenthes_llama_trace_import.py",
+  "trace_importer_workflow": ".github/workflows/nepenthes-llama-trace-import.yml",
+  "trace_importer_status": "draft_ci_pending"
 }
