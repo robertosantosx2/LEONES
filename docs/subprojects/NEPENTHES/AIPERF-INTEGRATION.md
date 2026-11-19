@@ -204,3 +204,8 @@ python3 scripts/nepenthes_aiperf_import.py \
 ```
 
 Para autenticación, usar el mecanismo de entorno admitido por AIPerf (por ejemplo `OPENAI_API_KEY`) sin incluir secretos en la línea de comandos ni en el manifiesto. La primera ejecución física debe seguir limitada a concurrencia 1 y pocos requests; escalar solo después de revisar RAM, swap, VRAM y errores.
+
+
+### Telemetría solicitada por el runner
+
+El runner AIPerf 0.13.0 solicita explícitamente `--gpu-telemetry pynvml` y `--server-metrics-formats json jsonl`. Esto evita depender de endpoints DCGM externos en una workstation NVIDIA local y conserva series temporales Prometheus además del agregado. El servidor llama.cpp debe exponer `/metrics` mediante `--metrics`; si no está habilitado, el usuario puede pasar `--no-server-metrics`. La salida GPU esperada es `gpu_telemetry_export.jsonl`; la serie de servidor, `server_metrics_export.jsonl`; el resumen, `server_metrics_export.json`. La presencia de estos ficheros depende de que los collectors estén operativos y se comprobará en el informe de importación.
