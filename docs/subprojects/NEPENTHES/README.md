@@ -200,3 +200,5 @@ El desarrollo del runtime se realiza directamente en el fork, no mediante parche
 - El submódulo de este PR permanece fijado al commit upstream limpio. No se moverá al branch de instrumentación hasta que los cambios estén revisados y exista una decisión de integración.
 
 La instrumentación CUDA/backend adicional, los probes generales de memoria/transferencia y la captura real en GPU quedan en fases posteriores.
+
+- [PR #2 — ggml backend and CUDA runtime probes](https://github.com/robertosantosx2/llama.cpp/pull/2), apilada sobre PR #1: ABI compartida en ggml-base, ciclo de buffers, CUDA alloc/OOM/pools/VMM/pinned-host, transferencias y dispatch.
