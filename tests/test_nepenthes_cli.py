@@ -174,3 +174,51 @@ def test_stop_process_group_signals_group_and_waits(monkeypatch):
   def wait(self,timeout=None): return 0
  module.stop_process_group(Child(),4321)
  assert calls==[(4321,module.signal.SIGINT),(4321,0)]
+
+
+def test_latency_critical_disables_host_sampling_and_nsys(tmp_path):
+ result=invoke("run","--profile","latency-critical","--output",str(tmp_path),"--",
+               sys.executable,"-c","import os; print(os.environ['NEPENTHES_PROFILE'])")
+ assert result.returncode==0,result.stderr+result.stdout
+ run=next(tmp_path.iterdir());manifest=json.loads((run/"manifest.json").read_text())
+ assert manifest["sample_count"]==0
+ assert manifest["sampling"]["host_enabled"] is False
+ assert manifest["nsys"]["enabled"] is False
+ assert not (run/"environment"/"gpu-initial.json").exists()
+ assert "latency-critical" in (run/"session.log").read_text()
+ assert invoke("verify",str(run)).returncode==0
+
+
+def test_latency_critical_rejects_forced_nsys(tmp_path):
+ result=invoke("run","--profile","latency-critical","--nsys","required","--output",str(tmp_path),
+               "--",sys.executable,"-c","print('must-not-run')")
+ assert result.returncode==2
+ assert "latency-critical disables Nsight" in result.stderr
+
+
+def test_moe_deep_profile_uses_adaptive_request_sampling(tmp_path):
+ code="""import json,os,time
+path=os.environ['NEPENTHES_TRACE_JSONL']
+def emit(kind,token):
+ with open(path,'a',encoding='utf-8') as f:
+  f.write(json.dumps({'schema_version':'1.0','run_id':os.environ['NEPENTHES_RUN_ID'],
+   'event_id':kind+str(time.time_ns()),'source':'test-engine','timestamp_unix_ns':time.time_ns(),
+   'monotonic_ns':time.monotonic_ns(),'request_id':1,'correlation_token':token,
+   'event_kind':kind,'label':kind,'value0':0,'value1':0,'duration_ns':0,'flags':0,
+   'attribution_level':'exact','clock_domain':'steady_clock'})+'\\n')
+time.sleep(0.1)
+emit('request_start',77)
+time.sleep(0.28)
+emit('request_end',77)
+time.sleep(0.1)
+"""
+ result=invoke("run","--profile","moe-deep","--nsys","off","--output",str(tmp_path),"--",
+               sys.executable,"-c",code)
+ assert result.returncode==0,result.stderr+result.stdout
+ run=next(tmp_path.iterdir());manifest=json.loads((run/"manifest.json").read_text())
+ assert manifest["sampling"]["adaptive"] is True
+ assert manifest["sampling"]["active_interval_seconds"]==0.1
+ assert manifest["sampling"]["idle_interval_seconds"]==1.0
+ assert manifest["sample_count"]>=2
+ assert manifest["engine_probe_activation"]["environment_variables_set"] is True
+ assert invoke("verify",str(run)).returncode==0
