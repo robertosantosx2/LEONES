@@ -47,5 +47,57 @@
   "runtime_instrumentation_followup_pr": "https://github.com/robertosantosx2/llama.cpp/pull/2",
   "runtime_instrumentation_followup_branch": "feat/nepenthes-ggml-backend-probes-20261119",
   "runtime_instrumentation_followup_head": "5c424c6d4181375508b54e270c4b39a3286e1d38",
-  "runtime_instrumentation_followup_status": "open_draft_ci_queued"
+  "runtime_instrumentation_followup_status": "open_draft_ci_queued",
+  "runtime_probe_prs": [
+    {
+      "number": 1,
+      "url": "https://github.com/robertosantosx2/llama.cpp/pull/1",
+      "title": "NEPENTHES: add opt-in runtime trace sink and core probes",
+      "branch": "feat/nepenthes-runtime-probes-20261119",
+      "base": "master",
+      "status": "open_draft",
+      "scope": [
+        "event_contract",
+        "bounded_jsonl_sink",
+        "request_lifecycle",
+        "graph_compute",
+        "synchronization",
+        "moe_cache",
+        "kv_cache"
+      ]
+    },
+    {
+      "number": 2,
+      "url": "https://github.com/robertosantosx2/llama.cpp/pull/2",
+      "title": "NEPENTHES: add ggml backend and CUDA runtime probes",
+      "branch": "feat/nepenthes-ggml-backend-probes-20261119",
+      "base": "feat/nepenthes-runtime-probes-20261119",
+      "status": "open_draft",
+      "scope": [
+        "model_lifecycle",
+        "ggml_buffer_lifecycle",
+        "cuda_allocations",
+        "cuda_pool_and_vmm",
+        "oom_fallback",
+        "pinned_host_memory",
+        "cuda_transfers",
+        "cuda_op_dispatch",
+        "cuda_stream_sync"
+      ]
+    },
+    {
+      "number": 3,
+      "url": "https://github.com/robertosantosx2/llama.cpp/pull/3",
+      "title": "NEPENTHES: instrument CPU worker compute and idle waits",
+      "branch": "feat/nepenthes-cpu-worker-probes-20261119",
+      "base": "feat/nepenthes-ggml-backend-probes-20261119",
+      "status": "open_draft",
+      "scope": [
+        "cpu_worker_compute",
+        "cpu_idle_wait"
+      ]
+    }
+  ],
+  "runtime_probe_status": "implementation_open_draft_review_stack",
+  "runtime_probe_policy": "The three llama.cpp pull requests are intentionally stacked and remain unmerged. Review and merge in order #1, #2, #3. Once the stack is accepted, advance the LEONES submodule pin in a separate reviewed PR. Real CUDA runtime capture, event overhead and RTX 3050 behavior remain MSI acceptance gates."
 }
