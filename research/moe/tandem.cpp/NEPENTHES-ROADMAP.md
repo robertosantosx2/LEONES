@@ -221,7 +221,7 @@ LEONES PR #200 se integró como `ed0535c2bf1bc7025cde1534e395ed1c3bbac581` tras 
 - [x] Integrar el commit upstream OpenVINO en la rama RC1 mediante PR #7.
 - [x] Evitar lecturas de reloj monotónico en `ScopedEvent` cuando el tracing está desactivado; añadir regresión automatizada.
 - [x] Corregir filtros del workflow para que cambios en el puente CPU C y el ABI NEPENTHES disparen CI al hacer push a master.
-- [ ] Obtener CI visible y satisfactorio para el HEAD `246fbbd4b81cb8c307fa12aeed6d86317f53d3cc`; investigar timeout Vulkan y fallo de infraestructura MUSA sin confundirlos con compilación CUDA.
+- [~] CI del HEAD `246fbbd4b81cb8c307fa12aeed6d86317f53d3cc` visible: NEPENTHES runtime trace y sus jobs CPU/CUDA (incluida comprobación NVTX v3), CUDA general, HIP, CPU, server, WASI/WASM, Behavior, Code Style y EditorConfig pasan. La ejecución combinada CUDA/HIP/MUSA falla únicamente en `musa/Dependencies`: timeout de `dl.mthreads.com` y paquetes MUSA no localizados; los jobs CUDA y HIP de esa misma ejecución pasan. Self-hosted CUDA/Vulkan/OpenVINO/WebGPU/CPU siguen queued/pending al último sondeo. No cerrar gates hasta que terminen o se clasifiquen.
 - [ ] Revisión final de concurrencia, lifecycle del sink, JSONL y atribución request/NVTX.
 - [ ] Fusionar PR #6 solo tras gates remotos aceptados; después actualizar gitlink en LEONES.
 - [ ] MSI: build Linux/CUDA, C07 con NVTX+Nsight, y medición C08 de overhead. No ejecutar antes de cerrar los gates remotos.
