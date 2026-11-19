@@ -57,5 +57,5 @@ jobs:
             if (issue) {
               await github.rest.issues.update({ owner, repo, issue_number: issue.number, body });
             } else {
-              await github.rest.issues.create({ owner, repo, title, body, labels: ['nepenthes', 'upstream'] });
+              await github.rest.issues.create({ owner, repo, title, body });
             }
