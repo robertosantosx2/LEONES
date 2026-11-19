@@ -179,3 +179,28 @@ Estado: código y fixtures publicados en una rama GitHub; CI pendiente. La prueb
 La rama `feat/nepenthes-nsys-nvtx-correlation-20261119` extiende el importador para leer `NVTX_EVENTS`, extraer tokens explícitos y emparejar los markers host/Nsight por `(token, phase)`. Calcula offset/drift host-monotonic↔Nsight con incertidumbre basada en el bracket de la llamada NVTX. Solo asigna kernels/transferencias a una petición como `windowed` cuando una única ventana explícita contiene todo el intervalo; ventanas solapadas se rechazan.
 
 Estado: implementación y fixtures sintéticos en rama; CI pendiente. La captura C07 real sigue siendo necesaria para verificar la versión del schema Nsight, el texto de NVTX y la calibración del reloj en el MSI. No se declara C07 cerrado.
+
+
+## Estado de aceptación actualizado — 2026-11-19
+
+### Aceptado en GitHub (software/CI)
+
+- [x] AIPerf-first C08: LEONES PR #197 fusionada (c2f0eb92fc50bbf8bb95d35f540927589f034544); 519 pruebas pasadas y gates de repositorio verdes.
+- [x] Adaptadores de telemetría y C07 importer: LEONES PR #198 fusionada (8812aa6c0d2dea972acb8fd27508146d74fd0c2e); CI de importador, AIPerf/telemetría, monitor upstream y gates generales verdes.
+- [x] Contrato de evidencia: command fingerprint, hash de artefactos, separación de duración de campaña y latencia por petición, RSS del proceso servidor, redacción de datos sensibles y retención opt-in del log bruto.
+
+### Pendiente de aceptación física
+
+- [ ] **C07 real en MSI:** compilar el llama.cpp rebased con sondas; ejecutar servidor con correlation token; capturar NVTX_EVENTS y CUPTI con Nsight; verificar al menos dos pares de calibración, bracket host y atribución windowed sin inferencia por proximidad.
+- [ ] **C08 en MSI:** baseline off y tratamientos jsonl, nsys, combined; perfil standard; mínimo tres pares por condición; mismo modelo, hash, prompt/dataset, contexto y comando de workload; mediana e IQR.
+- [ ] Gate C08: decode overhead ≤5 % para aceptación normal; 5–8 % requiere advertencia/revisión; >8 % no se acepta como perfil standard. Informar por separado throughput, TTFT, duración de campaña, latencia media de petición, RAM, RSS y VRAM.
+- [ ] Cobertura física de MoE routing/experts, prefetch/cache, workers CPU, transferencias, OOM/fallback y sincronización.
+- [ ] Aceptar decodificación de enums Nsight contra una SQLite real de la versión instalada; mantener valores desconocidos y sentinelas sin reinterpretarlos.
+
+### Rebase llama.cpp
+
+- [~] [Fork PR #6](https://github.com/robertosantosx2/llama.cpp/pull/6): rama RC1 basada en upstream c7468107efba061fe83d32b17c91e2b5295677d4; se reaplicaron los 23 archivos de instrumentación y se conservaron cambios upstream en CUDA batch-copy, CPU, graph/context y server. CI pendiente; no fusionar ni actualizar el submódulo hasta revisar sus resultados.
+- [ ] Actualizar el fork master y el gitlink subprojects/llama.cpp solo tras aceptar PR #6.
+- [ ] Cerrar los PRs de componentes duplicados únicamente después de que su contenido esté presente en la rama integrada y sus checks estén cubiertos.
+
+**Regla de cierre:** el código integrado con CI verde no equivale a NEPENTHES funcional completo. La etiqueta funcional completo requiere C07 y C08 aceptados con artefactos físicos, auditoría de cobertura, overhead dentro del umbral y verificación del bundle.
