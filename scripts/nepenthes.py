@@ -329,7 +329,12 @@ def validate_event_contract(events):
    drift=host_clock["offset_end_ns"]-host_clock["offset_start_ns"]
    host_clock["drift_ns"]=drift;host_clock["drift_ppm"]=drift/span*1_000_000
    host_clock["calibrated"]=True
- summary={"request_tokens":len(set(request_starts)|set(request_ends)),
+ request_token_ids=sorted(set(request_starts)|set(request_ends))
+ nvtx_token_ids=sorted(set(nvtx_starts)|set(nvtx_ends))
+ if nvtx_token_ids and request_token_ids!=nvtx_token_ids:
+  errors.append("request token set differs from NVTX marker token set")
+ summary={"request_tokens":len(request_token_ids),"request_token_ids":request_token_ids,
+          "nvtx_token_ids":nvtx_token_ids,
           "unmatched_request_starts":unmatched_request_starts,
           "unmatched_request_ends":unmatched_request_ends,
           "nvtx_tokens":len(set(nvtx_starts)|set(nvtx_ends)),
@@ -477,7 +482,10 @@ def verify_run(a):
   result["errors"].append("data/nepenthes-import.sqlite missing while Nsight capture is enabled")
  result["checks"]["nsys_import"]=not any(x.startswith(("data/nsys-import.json","data/nepenthes-import.sqlite","Nsight import","nepenthes-import.sqlite","NVTX markers","Nsight GPU","windowed Nsight","ambiguous overlapping","Nsight NVTX marker")) for x in result["errors"])
  nsys_calibration=result.get("nsys_clock_calibration",{})
- c07_pass=(nsys_enabled and correlation.get("nvtx_marker_events",0)>=2
+ c07_pass=(nsys_enabled and correlation.get("request_tokens",0)>0
+           and correlation.get("nvtx_marker_events",0)>=2
+           and correlation.get("request_token_ids")==correlation.get("nvtx_token_ids")
+           and correlation.get("host_clock_calibration",{}).get("calibrated") is True
            and nsys_calibration.get("matched_marker_pairs",0)>=2
            and nsys_calibration.get("nsight_clock_calibrated") is True
            and result["checks"]["nsys_import"])
