@@ -737,9 +737,11 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
         "supported_tables": sorted(table for table in detected if table in NSYS_TABLES),
         "unsupported_tables": sorted(unsupported),
         "unsupported_row_count": sum(unsupported.values()),
-        "detected_cupti_tables": len(detected),
+        "detected_cupti_tables": sum(1 for table in detected if table.lower().startswith("cupti_activity_kind_")),
+        "detected_nvtx_tables": int("NVTX_EVENTS" in detected),
+        "nvtx_marker_rows": len(nsys_markers),
         "imported_activity_rows": len(activities),
-        "status": "partial" if unsupported else "complete_for_detected_cupti_tables",
+        "status": "partial" if unsupported else "complete_for_detected_supported_tables",
     }
 
     out = sqlite3.connect(output)
@@ -790,7 +792,7 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
         "nsys_clock_calibration": nsys_clock_calibration,
         "coverage": coverage,
         "output": str(output.resolve()),
-        "correlation": "none; standalone Nsight provenance, no paired NEPENTHES run is claimed",
+        "correlation": "no paired host clock calibration; only explicit NVTX windows within the Nsight clock domain are used",
     }
 
 
