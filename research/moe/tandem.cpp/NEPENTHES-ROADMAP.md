@@ -4,7 +4,7 @@
 
 
 **Fecha de actualización documental:** 2026-11-19.  
-**Estado operativo:** consultar exclusivamente el [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md). Este anexo conserva fases, criterios y evidencias históricas; sus estados/checklists heredados no constituyen el estado vigente si no están reconciliados en el INDEX. En el corte actual, LEONES #207 está implementada en la PR canónica #210 con CI host-only verde y revisión pendiente; TensorFold aún no tiene adaptador runtime y espera el merge de #207. No implica aceptación física C07/C08.
+**Estado operativo:** consultar exclusivamente el [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md). Este anexo conserva fases, criterios y evidencias históricas; sus estados/checklists heredados no constituyen el estado vigente si no están reconciliados en el INDEX. En el corte actual, LEONES #207 está cerrada tras merge de PR #210 (`fcaf170`), con CI post-merge 8/8 verde. El contrato TensorFold #1 está cerrado; la siguiente implementación host-only se sigue en TensorFold #3. ATC overlap está completo sin solapamientos. No implica aceptación física C07/C08. No implica aceptación física C07/C08.
 
 Este roadmap separa implementación, validación CI y validación física. Una tarea no se considera terminada por existir un PR: necesita la evidencia indicada en su criterio de salida.
 
@@ -28,6 +28,16 @@ Este roadmap separa implementación, validación CI y validación física. Una t
 - [ ] Definir y probar política de rotación/límites de tamaño del JSONL en ejecuciones largas.
 
 **Salida de fase:** ejecución real con JSONL válido, eventos esperados, errores/pérdidas contabilizados y overhead medido.
+
+### TensorFold 1.2.10 — siguiente slice host-only
+
+- [x] Source audit 1.2.10 publicada en el fork.
+- [x] ATC overlap completo desde el checkout correcto: `complete=true`, sin limitations ni overlaps, 3 worktrees.
+- [x] Contrato común LEONES #207 aceptado; PR #210 merge `fcaf170`; post-merge CI 8/8 verde.
+- [x] Contrato de diseño TensorFold #1 cerrado.
+- [ ] Implementar el conector host-only bajo [TensorFold #3](https://github.com/robertosantosx2/TensorFold/issues/3): opt-in, disabled no-op, request identity por petición, sink bounded y privacidad.
+- [ ] Cubrir concurrencia, keep-alive, lifecycle real (incluida propagación a background/streaming), drops/errors, summary final y fixtures LEONES.
+- [ ] Mantener CUDA/NVTX/Nsight/MSI fuera de esta fase.
 
 ## Fase B — Instalación y CLI
 
