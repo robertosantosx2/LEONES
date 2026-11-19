@@ -82,7 +82,10 @@
           "type": "string"
         },
         "prompt": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "input_tokens": {
           "type": [
@@ -322,10 +325,19 @@
           "type": "integer"
         },
         "stdout": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "stderr": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_captured": {
+          "type": "boolean"
         }
       },
       "additionalProperties": true
