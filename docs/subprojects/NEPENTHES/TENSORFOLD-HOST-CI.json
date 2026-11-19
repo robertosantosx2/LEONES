@@ -4,7 +4,7 @@
   "issue": 3,
   "pull_request": 6,
   "branch": "nepenthes/host-trace-connector-2",
-  "commit": "ffb085c647fad6e099b11668f0353fdaec9ee3c6",
+  "commit": "15fe4b4aed44e0c00d66a03c2c2b057c4f26c19d",
   "scope": "host-only; no CUDA, NVTX, Nsight, GPU, or MSI validation",
   "validation_scope": "host-only; no CUDA, NVTX, Nsight, GPU, or MSI validation",
   "fixtures": [
