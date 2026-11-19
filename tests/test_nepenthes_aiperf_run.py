@@ -71,3 +71,27 @@ def test_runner_marks_client_rss_when_no_server_pid_is_supplied(tmp_path: Path):
     assert run(args) == 0
     manifest = json.loads((artifact_dir / "nepenthes_aiperf_run.json").read_text(encoding="utf-8"))
     assert manifest["resource_telemetry"]["rss_target"] == "aiperf_client"
+
+
+def test_workload_command_hash_ignores_artifact_output_directory(tmp_path: Path):
+    fake = tmp_path / "aiperf"
+    fake.write_text(
+        "#!/bin/sh\\n"
+        'if [ "$1" = "--version" ]; then echo "AIPerf 0.13.0"; exit 0; fi\\n',
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    hashes = []
+    for name in ("campaign-a", "campaign-b"):
+        artifact_dir = tmp_path / name
+        args = parse_args([
+            "--model", "model-q4",
+            "--url", "http://127.0.0.1:8080",
+            "--artifact-dir", str(artifact_dir),
+            "--aiperf-bin", str(fake),
+            "--dry-run",
+        ])
+        assert run(args) == 0
+        manifest = json.loads((artifact_dir / "nepenthes_aiperf_run.json").read_text(encoding="utf-8"))
+        hashes.append(manifest["workload_command_sha256"])
+    assert hashes[0] == hashes[1]
