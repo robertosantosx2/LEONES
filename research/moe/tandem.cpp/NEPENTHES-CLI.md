@@ -94,3 +94,13 @@ La telemetría de `nvidia-smi` es global al dispositivo. Las sondas internas req
 - Cuando hay NVTX y Nsight: al menos dos pares token+fase para calibrar host↔Nsight, ausencia de atribución exacta falsa a kernels y consistencia de la atribución windowed.
 
 Si no hay NVTX o Nsight no fue solicitado, el verificador informa esa limitación sin inventar correlación. Un bundle íntegro no equivale por sí solo a C07 aceptado: la captura real y la validación física siguen siendo necesarias.
+
+
+## Gates C07/C08 y significado de verify
+
+El resultado separa dos conceptos:
+
+- `ok`: el bundle es íntegro, sus hashes/SQLite/manifest/eventos son coherentes y los contratos presentes no son inválidos.
+- `functional_complete`: los gates de esta campaña han pasado: C07 exige marcadores NVTX emparejados y calibración host↔Nsight válida; C08 exige el informe paired-overhead en `data/c08-overhead-report.json`, perfil `standard`, al menos tres pares y estado `accepted` para JSONL, Nsight y combinado.
+
+Si C07 o C08 todavía no se han ejecutado, el bundle puede ser válido (`ok=true`) pero `functional_complete=false` y el estado se muestra como pendiente. Un informe C08 con excepción o bloqueo impide la aceptación. Los gates de campaña no sustituyen la CI del repositorio ni la validación física del MSI.
