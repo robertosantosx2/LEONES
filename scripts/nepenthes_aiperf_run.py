@@ -60,6 +60,8 @@ def build_command(executable: str, args: argparse.Namespace, artifact_dir: Path)
         "--output-tokens-stddev", "0",
         "--random-seed", str(args.random_seed),
         "--export-level", "records",
+        "--server-metrics-formats", "json", "jsonl",
+        "--gpu-telemetry", "pynvml",
         "--artifact-dir", str(artifact_dir),
     ]
     if args.no_server_metrics:
