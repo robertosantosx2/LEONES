@@ -294,6 +294,7 @@ PRs pequeños y dependencias explícitas; no crear un mega-PR.
 - PR #170: informe JSON/Markdown de latencias, dispersión, tokens, baseline energética y tokens/J/J-token; CI con 48 tests offline en success.
 - PR #171: actualiza el pin llama.cpp al head actual de upstream master `95b09b62beb95c40fc6b317a0c1473c27b5f27fa` (3 commits por delante del pin anterior) y exige coincidencia exacta en CI al revisar el manifiesto.
 - PR #172: transporte OTLP/HTTP con HTTPS remoto, auth por entorno, retries/backoff y tests offline; CI con 54 tests en success.
+- PR #173: capturador en vivo llama-server `/metrics` + `/slots`, con timestamps wall/monotonic, checksums sin persistir payloads raw y tests HTTP simulados; CI con 59 tests en success.
 - PR #162 fue sustituida por PR #164 porque la rama original había quedado divergida tras corregir la base del runner; no integrar ambas.
 - No existe todavía fork personal `robertosantosx2/llama.cpp` ni submódulo llama.cpp en LEONES. Incidencia #163 documenta el paso pendiente.
 - Todavía no se ha instalado ni ejecutado AIPerf contra llama-server en el MSI; no hay smoke físico y no se declara compatibilidad MEASURED.
