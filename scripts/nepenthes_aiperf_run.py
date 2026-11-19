@@ -10,6 +10,7 @@ import argparse
 import json
 import os
 import platform
+import re
 import shlex
 import shutil
 import subprocess
@@ -65,6 +66,11 @@ def build_command(executable: str, args: argparse.Namespace, artifact_dir: Path)
     return command
 
 
+def parse_aiperf_version(value: str) -> str | None:
+    match = re.search(r"(?<![0-9])([0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?)(?![0-9])", value)
+    return match.group(1) if match else None
+
+
 def resolve_executable(value: str) -> str:
     candidate = shutil.which(value)
     if candidate:
@@ -87,6 +93,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--url", required=True, type=safe_url)
     parser.add_argument("--artifact-dir", required=True, type=Path)
     parser.add_argument("--aiperf-bin", default="aiperf")
+    parser.add_argument("--expected-aiperf-version", default="0.13.0",
+                        help="exact AIPerf version required for a reproducible run (default: 0.13.0)")
     parser.add_argument("--concurrency", type=positive_int, default=1)
     parser.add_argument("--request-count", type=positive_int, default=5)
     parser.add_argument("--input-tokens", type=positive_int, default=128)
@@ -113,9 +121,11 @@ def run(args: argparse.Namespace) -> int:
             timeout=15, check=False,
         )
         version_text = (version_result.stdout or version_result.stderr).strip()
-        if version_result.returncode != 0 or not version_text:
-            raise RuntimeError("could not establish AIPerf version; refusing an unpinned benchmark")
-        version = version_text
+        version = parse_aiperf_version(version_text)
+        if version_result.returncode != 0 or version is None:
+            raise RuntimeError("could not establish AIPerf semantic version; refusing an unpinned benchmark")
+        if version != args.expected_aiperf_version:
+            raise RuntimeError(f"AIPerf version mismatch: expected {args.expected_aiperf_version}, found {version}")
 
     command = build_command(executable, args, artifact_dir)
     manifest = {
@@ -124,6 +134,7 @@ def run(args: argparse.Namespace) -> int:
         "status": "dry_run" if args.dry_run else "prepared",
         "created_at": utc_now(),
         "aiperf_version": version,
+        "expected_aiperf_version": args.expected_aiperf_version,
         "command": command,
         "command_display": shlex.join(command),
         "target": {"model": args.model, "url": args.url, "endpoint_type": "chat", "streaming": True},
