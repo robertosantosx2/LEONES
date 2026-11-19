@@ -359,7 +359,8 @@
         "profile",
         "sampling_config",
         "host_sample_ms",
-        "gpu_sample_ms"
+        "gpu_sample_ms",
+        "rss_target"
       ],
       "properties": {
         "condition": {
