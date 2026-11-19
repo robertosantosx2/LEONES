@@ -416,7 +416,7 @@ def main() -> int:
         raise SystemExit("sampling-config-json must contain a JSON object")
     assert_safe_metadata(sampling_config, "sampling_config")
     redacted_command = redact_command(command)
-    command_sha256 = hashlib.sha256(json.dumps(command, separators=(",", ":")).encode("utf-8")).hexdigest()
+    command_sha256 = hashlib.sha256(json.dumps(redacted_command, separators=(",", ":")).encode("utf-8")).hexdigest()
     command = json.loads(args.command_json.read_text(encoding="utf-8"))
     if (
         not isinstance(command, list)
@@ -486,8 +486,8 @@ def main() -> int:
         "summary": summary(measurements),
         "process": {
             "exit_code": max(m["exit_code"] for m in measurements),
-            "stdout_sha256": hashlib.sha256("".join(m["stdout_sha256"] for m in measurements).encode("utf-8")).hexdigest(),
-            "stderr_sha256": hashlib.sha256("".join(m["stderr_sha256"] for m in measurements).encode("utf-8")).hexdigest(),
+            "stdout_digest_set_sha256": hashlib.sha256("".join(m["stdout_sha256"] for m in measurements).encode("utf-8")).hexdigest(),
+            "stderr_digest_set_sha256": hashlib.sha256("".join(m["stderr_sha256"] for m in measurements).encode("utf-8")).hexdigest(),
             "stdout_bytes": sum(m["stdout_bytes"] for m in measurements),
             "stderr_bytes": sum(m["stderr_bytes"] for m in measurements),
         },
