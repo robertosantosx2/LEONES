@@ -71,7 +71,7 @@ class SharedEnvelopeTests(unittest.TestCase):
                                            summary("tensorfold")]), source="llama.cpp")
 
     def test_source_profile_accepts_declared_clock_domain(self) -> None:
-        for source in ("llama.cpp", "tensorfold"):
+        for source in ("llama.cpp", "tensorfold", "tandem.cpp"):
             with self.subTest(source=source):
                 result = import_trace(self.write_trace([
                     event(source, event_id=f"{source}-1"),
