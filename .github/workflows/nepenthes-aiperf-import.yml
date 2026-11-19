@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - 'scripts/nepenthes_aiperf_import.py'
+      - 'scripts/nepenthes_aiperf_run.py'
       - 'tests/test_nepenthes_aiperf_import.py'
+      - 'tests/test_nepenthes_aiperf_run.py'
       - '.github/workflows/nepenthes-aiperf-import.yml'
   push:
     paths:
