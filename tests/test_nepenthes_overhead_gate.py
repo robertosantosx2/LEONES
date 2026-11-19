@@ -65,6 +65,7 @@ def evidence(condition, pair_id, tps, ttft=100.0):
             "sampling_config": {"host": False, "nvml": False},
             "host_sample_ms": 100,
             "gpu_sample_ms": 500,
+            "rss_target": "inference_server",
         },
         "measurements": measurements,
         "process": {"exit_code": 0},
