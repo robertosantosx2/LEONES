@@ -410,3 +410,14 @@ Los límites de overhead se fijarán después de una línea base. Como objetivos
 ## Regla final
 
 Una cifra solo es MEASURED si procede de una ejecución identificada, con fuente, unidad, método, configuración, timestamp, hardware y artefactos verificables. Una energía integrada es una estimación derivada de muestras; una métrica NVML device-wide no es consumo por proceso; una latencia inferida del promedio no es ITL individual. NEPENTHES debe hacer visibles estas diferencias en cada informe.
+
+
+## Estado de integración del fork llama.cpp (2026-11-19)
+
+- Fork personal creado y accesible: robertosantosx2/llama.cpp.
+- origin/master y ggml-org/llama.cpp:master verificados en 76f186df71a41abb3ee20fffedee31ca5dbc7d9f.
+- Comparación respecto al pin anterior 95b09b62beb95c40fc6b317a0c1473c27b5f27fa: 1 commit ahead, 0 behind.
+- LEONES incorpora el gitlink subprojects/llama.cpp con modo Git 160000, fijado al mismo SHA.
+- La política es revisión explícita de cada actualización del submódulo; el monitor upstream no modifica automáticamente el gitlink.
+- CI comprueba URL, modo gitlink, SHA resuelto y manifiesto.
+- Esta integración es GitHub-only: no implica compilación, ejecución de llama.cpp ni validación en la RTX 3050. Esas pruebas quedan para la fase MSI.
