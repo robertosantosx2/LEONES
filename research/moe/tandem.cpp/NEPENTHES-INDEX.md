@@ -3,7 +3,7 @@
 > **Fuente única de verdad del proyecto.** Este documento reúne el estado global, la arquitectura, las prioridades, los gates de aceptación y el plan/estado de cada motor de inferencia. Toda actualización de estado debe reflejarse aquí. Los documentos especializados enlazados son anexos técnicos, contratos o expedientes de evidencia; no mantienen un roadmap paralelo ni prevalecen sobre este documento.
 
 **Última actualización:** 2026-11-19.
-**Estado global:** el contrato común multi-motor #207 está aceptado en `main` mediante [PR #210](https://github.com/robertosantosx2/LEONES/pull/210), squash merge `fcaf17005f7771c2521fc07387409a79c47f1b7b`; la issue #207 está cerrada. CI host-only del HEAD final previo al merge: 8/8 checks verdes, 29 tests enfocados y 602 passed + 14 subtests en la suite completa. TensorFold supera ATC overlap y el siguiente gate es su adaptador host-only, sin CUDA. No hay aceptación física nueva en MSI.
+**Estado global:** el contrato común multi-motor #207 está aceptado en `main` mediante [PR #210](https://github.com/robertosantosx2/LEONES/pull/210), squash merge `fcaf17005f7771c2521fc07387409a79c47f1b7b`; su registry cerrado incluye `llama.cpp`, `tensorfold` y `tandem.cpp`. Tandem PR #1/#3/#2 están fusionadas, y el siguiente gate remoto específico es [issue #212](https://github.com/robertosantosx2/LEONES/issues/212), correlación explícita worker/batch/CUDA. TensorFold supera ATC overlap y mantiene como siguiente gate su adaptador host-only. No hay aceptación física nueva en MSI.
 
 ## 1. Resumen ejecutivo y decisión de arquitectura
 
