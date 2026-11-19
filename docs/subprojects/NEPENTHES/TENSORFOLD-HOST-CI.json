@@ -1,9 +1,10 @@
 {
   "schema_version": "nepenthes-cross-repo-host-ci-1",
   "repository": "robertosantosx2/TensorFold",
-  "issue": 2,
+  "issue": 3,
   "pull_request": 6,
   "branch": "nepenthes/host-trace-connector-2",
-  "commit": "7f60bb583902ad94e39f2ebe9bda8c8e44cda3c5",
-  "scope": "host-only; no CUDA, NVTX, Nsight, GPU, or MSI validation"
+  "commit": "50fdaa12611203ef7dcbe191aa4b32066ac4d40a",
+  "scope": "host-only; no CUDA, NVTX, Nsight, GPU, or MSI validation",
+  "validation_scope": "host-only; no CUDA, NVTX, Nsight, GPU, or MSI validation"
 }
