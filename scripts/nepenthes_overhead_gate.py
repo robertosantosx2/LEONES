@@ -135,6 +135,8 @@ def evidence_metrics(evidence: dict) -> dict[str, float]:
             result[metric] = median(values)
     if "tokens_per_second" not in result or result["tokens_per_second"] <= 0:
         raise ValueError("tokens_per_second missing or non-positive")
+    if "ttft_ms" not in result or result["ttft_ms"] <= 0:
+        raise ValueError("TTFT missing or non-positive; supply a real engine/AIPerf TTFT metric")
     return result
 
 
