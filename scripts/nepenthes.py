@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 """NEPENTHES portable Linux process/GPU capture CLI; Python 3.10+, stdlib only."""
 from __future__ import annotations
-import argparse,csv,datetime as dt,hashlib,html,json,os,platform,shutil,signal,subprocess,sys,time,uuid
+import argparse,csv,datetime as dt,hashlib,html,json,os,platform,shlex,shutil,signal,subprocess,sys,time,uuid
 from pathlib import Path
-VERSION="0.1.0"
-PROFILES={"smoke":2.0,"standard":1.0,"full":0.5}
+try:
+ from nepenthes_privacy import redact_command
+except ModuleNotFoundError:
+ from scripts.nepenthes_privacy import redact_command
+VERSION="0.2.0"
+PROFILE_SETTINGS={
+ "smoke":{"interval":2.0,"idle_interval":2.0,"host_sampling":True,"nsys_default":False,"probe_level":"minimal","adaptive_sampling":False},
+ "standard":{"interval":1.0,"idle_interval":2.0,"host_sampling":True,"nsys_default":False,"probe_level":"standard","adaptive_sampling":True},
+ "full":{"interval":0.5,"idle_interval":0.5,"host_sampling":True,"nsys_default":True,"probe_level":"full","adaptive_sampling":False},
+ "moe-deep":{"interval":0.25,"idle_interval":1.0,"host_sampling":True,"nsys_default":True,"probe_level":"moe-deep","adaptive_sampling":True},
+ "latency-critical":{"interval":0.0,"idle_interval":0.0,"host_sampling":False,"nsys_default":False,"probe_level":"request-only","adaptive_sampling":False},
+}
+PROFILES={name:settings["interval"] for name,settings in PROFILE_SETTINGS.items()}
 def stamp(): return dt.datetime.now(dt.timezone.utc).isoformat()
 def save(p,o): p.write_text(json.dumps(o,indent=2,sort_keys=True)+"\n",encoding="utf-8")
 def proc_info(pid):
