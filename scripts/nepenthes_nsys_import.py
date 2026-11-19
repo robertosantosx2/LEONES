@@ -480,6 +480,10 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
     names = table_names(source)
     strings = load_string_ids(source, names)
     enum_maps, enum_metadata = load_enum_tables(source, names)
+    nsys_markers = collect_nsys_nvtx_markers(source, names, strings)
+    host_markers = host_nvtx_markers(events)
+    nsys_clock_calibration = calibrate_host_to_nsys(host_markers, nsys_markers)
+    nvtx_windows = build_nvtx_request_windows(nsys_markers)
     activities: list[tuple] = []
     activity_counts: Counter[str] = Counter()
     activity_id = 0
@@ -498,10 +502,30 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                 if isinstance(start, (int, float)) and isinstance(end, (int, float))
                 else None
             )
-            raw_name = first(row, ("name", "demangledName", "shortName", "nameId"))
+            raw_name = first(row, ("text", "message", "name", "demangledName", "shortName",
+                                   "nameId", "textId", "messageId"))
             name = strings.get(int(raw_name), str(raw_name)) if isinstance(raw_name, (int, float)) else raw_name
             if name is None:
                 name = first(row, ("eventClass", "syncType", "overheadType"))
+            nvtx_marker = parse_nvtx_marker(name) if table == "NVTX_EVENTS" else None
+            if nvtx_marker is not None:
+                row["_nepenthes_nvtx_marker"] = nvtx_marker
+                attributed_token, attribution_level, attribution_status = (
+                    nvtx_marker["token"], "exact", "marker_identity"
+                )
+            elif kind in ("cuda_kernel", "cuda_memcpy", "cuda_memset"):
+                attributed_token, attribution_level, attribution_status = attribute_nsys_activity(
+                    start, end, nvtx_windows
+                )
+            else:
+                attributed_token, attribution_level, attribution_status = (
+                    None, None, "not_applicable"
+                )
+            row["_nepenthes_attribution"] = {
+                "request_token": attributed_token,
+                "level": attribution_level,
+                "status": attribution_status,
+            }
             activity_id += 1
             activities.append((
                 import_id, activity_id, table, kind,
@@ -522,6 +546,12 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                 sqlite_numeric(enum_decoding["dst_kind_value"], field=f"{table}.dst_kind_value"),
                 enum_decoding["dst_kind_name"],
                 enum_decoding["enum_decode_status"],
+                sqlite_numeric(nvtx_marker["token"] if nvtx_marker else None, field=f"{table}.nvtx_correlation_token"),
+                nvtx_marker["phase"] if nvtx_marker else None,
+                sqlite_numeric(nvtx_marker["request_id"] if nvtx_marker else None, field=f"{table}.nvtx_marker_request_id"),
+                sqlite_numeric(attributed_token, field=f"{table}.attributed_request_token"),
+                attribution_level,
+                attribution_status,
                 json.dumps(row, ensure_ascii=False, sort_keys=True),
             ))
             activity_counts[kind] += 1
@@ -540,14 +570,15 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
             out.execute(
                 """INSERT INTO nepenthes_imports
                 (import_id,run_id,jsonl_path,jsonl_sha256,nsys_path,nsys_sha256,
-                 event_count,activity_count,event_kinds_json,activity_kinds_json,correlation_policy,enum_tables_json)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                 event_count,activity_count,event_kinds_json,activity_kinds_json,correlation_policy,enum_tables_json,nsys_clock_calibration_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (import_id, run_ids[0], str(jsonl.resolve()), sha256(jsonl),
                  str(nsys.resolve()), sha256(nsys), len(events), len(activities),
                  json.dumps(dict(event_counts), sort_keys=True),
                  json.dumps(dict(activity_counts), sort_keys=True),
-                 "No automatic JSONL-to-Nsight join: monotonic and Nsight clocks are not calibrated; request_id is not a CUPTI correlation_id.",
-                 json.dumps(enum_metadata, ensure_ascii=False, sort_keys=True)),
+                 "No proximity join. Token-matched NVTX markers calibrate host↔Nsight time; GPU activities receive windowed attribution only when uniquely contained in an explicit request window.",
+                 json.dumps(enum_metadata, ensure_ascii=False, sort_keys=True),
+                 json.dumps(nsys_clock_calibration, ensure_ascii=False, sort_keys=True)),
             )
             out.executemany(
                 """INSERT INTO nepenthes_events
@@ -569,8 +600,9 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                 (import_id,activity_id,source_table,activity_kind,start_ns,end_ns,duration_ns,
                  correlation_id,global_pid,process_id,device_id,context_id,stream_id,name,
                  copy_kind_value,copy_kind_name,src_kind_value,src_kind_name,dst_kind_value,
-                 dst_kind_name,enum_decode_status,raw_json)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
+                 dst_kind_name,enum_decode_status,nvtx_correlation_token,nvtx_marker_phase,
+                 nvtx_marker_request_id,attributed_request_token,attribution_level,attribution_status,raw_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", activities
             )
     finally:
         out.close()
@@ -582,8 +614,12 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
         "recognized_nsys_tables": sorted(t for t in NSYS_TABLES if t in names),
         "enum_tables": enum_metadata,
         "enum_decode_status_counts": dict(Counter(a[20] for a in activities)),
+        "nvtx_marker_count": len(nsys_markers),
+        "request_windows": len(nvtx_windows),
+        "attribution_status_counts": dict(Counter(a[26] for a in activities)),
+        "nsys_clock_calibration": nsys_clock_calibration,
         "output": str(output.resolve()),
-        "correlation": "not joined; clock domains and IDs are not interchangeable",
+        "correlation": "explicit token-matched NVTX markers only; GPU activity attribution is windowed and rejected when windows overlap",
     }
 
 
