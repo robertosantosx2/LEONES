@@ -172,3 +172,10 @@ El estado experimental, IDs C00–C09, resultados de la primera inferencia instr
 La rama `feat/nepenthes-nsys-enum-decode-20261119` añade lectura dinámica de `ENUM_CUDA_MEMCPY_OPER` y `ENUM_CUDA_MEM_KIND`, columnas consultables para copy kind/src/dst kind, metadatos de tablas y preservación de valores desconocidos/sentinelas en JSON original. Se aplica a importación emparejada y Nsight-only.
 
 Estado: código y fixtures publicados en una rama GitHub; CI pendiente. La prueba contra la SQLite C07 real y la auditoría de versiones Nsight siguen pendientes. No se declara P0 aceptado hasta superar ambas.
+
+
+## C07 — NVTX request markers and explicit clock pairing (implementation branch)
+
+La rama `feat/nepenthes-nsys-nvtx-correlation-20261119` extiende el importador para leer `NVTX_EVENTS`, extraer tokens explícitos y emparejar los markers host/Nsight por `(token, phase)`. Calcula offset/drift host-monotonic↔Nsight con incertidumbre basada en el bracket de la llamada NVTX. Solo asigna kernels/transferencias a una petición como `windowed` cuando una única ventana explícita contiene todo el intervalo; ventanas solapadas se rechazan.
+
+Estado: implementación y fixtures sintéticos en rama; CI pendiente. La captura C07 real sigue siendo necesaria para verificar la versión del schema Nsight, el texto de NVTX y la calibración del reloj en el MSI. No se declara C07 cerrado.
