@@ -178,3 +178,24 @@ Los PRs LEONES #197 y #198 están integrados y sus gates CI pasaron. El siguient
 ### AIPerf warm-up provenance correction — 2026-11-19
 
 The runner now passes AIPerf's explicit --warmup-request-count (default 1). The evidence manifest and command fingerprint record this value, and the evidence builder rejects a missing warm-up count. LEONES PR #199 is now merged as `109e3073cd0040a5ba86b906e71e003959f72d3c`: the runner defaults to one explicit warm-up request, records it in the workload command fingerprint and manifest, and the evidence builder rejects manifests without that field. CI passed **572 tests** plus all release/runtime gates. This is still software acceptance only; no C08 performance result is claimed.
+
+
+## Perfiles de captura
+
+- `smoke`: captura ligera para comprobar que el bundle y el contrato funcionan.
+- `standard`: muestreo host regular; perfil de referencia para C08.
+- `full`: muestreo más frecuente y Nsight automático cuando está disponible.
+- `moe-deep`: muestreo adaptativo basado en marcadores explícitos del motor; 100 ms mientras hay una request activa y 1 s en reposo. Nsight se activa automáticamente si está instalado. No correlaciona por proximidad.
+- `latency-critical`: desactiva el muestreo periódico host y Nsight; el wrapper espera al proceso y conserva el sink de eventos. No usar para C08 porque no aporta RSS/RAM/VRAM muestreados.
+
+Ejemplos:
+
+```bash
+# Muestreo adaptativo MoE
+nepenthes run --profile moe-deep --adaptive-sampling -- python -m your_engine
+
+# Captura de latencia sin muestreo host ni Nsight
+nepenthes run --profile latency-critical --nsys off -- python -m your_engine
+```
+
+**Límite actual:** los perfiles gobiernan el recolector host y la política Nsight. La capa C++ todavía no filtra el conjunto de sondas internas según `NEPENTHES_PROFILE`; esa separación (especialmente reducir latency-critical a request markers) debe implementarse y probarse antes de afirmar que el perfil elimina todo overhead de sondas no esenciales.
