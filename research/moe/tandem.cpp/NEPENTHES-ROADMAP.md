@@ -245,3 +245,19 @@ LEONES PR #200 se integró como `ed0535c2bf1bc7025cde1534e395ed1c3bbac581` tras 
 - [~] CUDA llama-server específico, CPU general, Server y algunos runners backend: en curso al último sondeo.
 - [!] MUSA Dependencies bloqueado por timeout de `dl.mthreads.com`; el build MUSA fue omitido. No tratar como fallo de código CUDA/NEPENTHES.
 - [ ] Esperar el cierre de los jobs pendientes y clasificar resultados antes de aceptar la PR #6.
+
+### Actualización de aceptación llama.cpp RC1 — HEAD `33e0d0a578c48b0a31616fd1b72fd255f12e39a4` (2026-11-19 19:16 UTC)
+
+Esta actualización supersede los estados parciales anteriores de CI para este HEAD concreto.
+
+- [x] NEPENTHES trace contract, bounded JSONL sink, CPU bridge y build instrumentado CPU.
+- [x] Build CUDA instrumentado de `llama-server` y comprobación NVTX v3.
+- [x] CUDA/HIP general, CPU general Ubuntu/Windows, Server Ubuntu/Windows y HIP quality.
+- [x] Behavior Check, WASI, WASM, Code Style y EditorConfig.
+- [!] MUSA: fallo en instalación de dependencias externas (`dl.mthreads.com` timeout y paquetes ausentes); compilación omitida. No clasificar como regresión de CUDA/NEPENTHES.
+- [~] Self-hosted KleidiAI, CPU, IBM, Vulkan, OpenVINO, Metal, CUDA y WebGPU, y Models Backend Check: siguen queued. Reconsultar antes de aceptación.
+- [ ] Revisión final runtime/diff y clasificación de todos los checks restantes.
+- [ ] Merge de PR #6 solo tras cerrar gates y revisión; no actualizar gitlink antes del merge.
+- [ ] MSI: build Linux/CUDA, C07 con NVTX+Nsight y C08 overhead emparejado. Sin pruebas físicas declaradas todavía.
+
+Estado de PR #6: abierta, draft, no fusionada; HEAD `33e0d0a578c48b0a31616fd1b72fd255f12e39a4`; rama 33 ahead / 0 behind respecto a fork `master`; 23 archivos modificados.
