@@ -36,7 +36,7 @@ def source_profile(source: str) -> dict[str, frozenset[str]]:
     return profile
 
 
-def _uint(record: dict[str, Any], field: str, line_no: int,
+def require_uint(record: dict[str, Any], field: str, line_no: int,
           maximum: int = UINT64_MAX) -> int:
     value = record.get(field)
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
@@ -71,7 +71,7 @@ def validate_envelope_record(record: dict[str, Any], line_no: int,
             raise ValueError(f"line {line_no}: invalid summary run_id")
         if not isinstance(record.get("event_id"), str) or not record["event_id"]:
             raise ValueError(f"line {line_no}: invalid summary event_id")
-        _uint(record, "timestamp_unix_ns", line_no)
+        require_uint(record, "timestamp_unix_ns", line_no)
         for field in ("events_drained", "dropped_events", "write_errors"):
             _uint(record, field, line_no)
         return
