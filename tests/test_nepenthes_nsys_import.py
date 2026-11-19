@@ -455,7 +455,7 @@ def test_nsys_only_attributes_only_inside_explicit_nvtx_windows(tmp_path: Path):
         ).fetchall()
     assert kernels == [
         (1500, 77, "windowed", "unique_explicit_request_window"),
-        (5200, None, None, "outside_or_missing_request_window"),
+        (5200, None, None, "outside_request_window"),
     ]
     assert markers == [(77, "start", "exact"), (77, "end", "exact")]
 
@@ -495,14 +495,14 @@ def test_overlapping_explicit_nvtx_windows_are_not_attributed(tmp_path: Path):
     output = tmp_path / "overlap-import.sqlite"
     db = sqlite3.connect(nsys)
     db.executescript("""
-        CREATE TABLE NVTX_EVENTS(start INTEGER, end INTEGER, text TEXT);
+        CREATE TABLE NVTX_EVENTS(start INTEGER, end INTEGER, text TEXT, globalPid INTEGER);
         INSERT INTO NVTX_EVENTS VALUES
-            (1000, 1000, 'nepenthes.request.start token=77 request=42'),
-            (5000, 5000, 'nepenthes.request.end token=77 request=42'),
-            (1400, 1400, 'nepenthes.request.start token=88 request=43'),
-            (1700, 1700, 'nepenthes.request.end token=88 request=43');
-        CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(start INTEGER, end INTEGER, correlationId INTEGER);
-        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES (1500, 1600, 9);
+            (1000, 1000, 'nepenthes.request.start token=77 request=42', 99),
+            (5000, 5000, 'nepenthes.request.end token=77 request=42', 99),
+            (1400, 1400, 'nepenthes.request.start token=88 request=43', 99),
+            (1700, 1700, 'nepenthes.request.end token=88 request=43', 99);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(start INTEGER, end INTEGER, correlationId INTEGER, globalPid INTEGER);
+        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES (1500, 1600, 9, 99);
     """)
     db.commit()
     db.close()
@@ -546,3 +546,33 @@ def test_cli_verifier_accepts_importer_nvtx_clock_contract():
     assert summary["nvtx_tokens"] == 1
     assert summary["host_clock_calibration"]["calibrated"] is True
 
+
+
+
+def test_nsys_window_attribution_is_scoped_to_the_originating_process(tmp_path: Path):
+    nsys = tmp_path / "multi-process.sqlite"
+    output = tmp_path / "multi-process-import.sqlite"
+    db = sqlite3.connect(nsys)
+    db.executescript("""
+        CREATE TABLE NVTX_EVENTS(start INTEGER, end INTEGER, text TEXT, globalPid INTEGER);
+        INSERT INTO NVTX_EVENTS VALUES
+            (1000, 1000, 'nepenthes.request.start token=77 request=42', 99),
+            (5000, 5000, 'nepenthes.request.end token=77 request=42', 99);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(start INTEGER, end INTEGER, correlationId INTEGER, globalPid INTEGER);
+        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES
+            (1500, 1600, 9, 99),
+            (1500, 1600, 10, 100);
+    """)
+    db.commit()
+    db.close()
+
+    import_nsys_only(nsys, output, "multi-process-import")
+    with sqlite3.connect(output) as db:
+        rows = db.execute(
+            "SELECT global_pid,attributed_request_token,attribution_level,attribution_status "
+            "FROM nepenthes_nsys_activities WHERE activity_kind='cuda_kernel' ORDER BY global_pid"
+        ).fetchall()
+    assert rows == [
+        (99, 77, "windowed", "unique_explicit_request_window"),
+        (100, None, None, "missing_process_request_window"),
+    ]
