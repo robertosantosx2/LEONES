@@ -11,6 +11,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from nepenthes_trace_envelope import source_profile, validate_envelope_record
+
 
 EVENT_FIELDS = {
     "schema_version",
@@ -60,7 +62,9 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, Any]:
+def import_trace(input_path: Path, allow_incomplete: bool = False,
+                 source: str = "llama.cpp") -> dict[str, Any]:
+    source_profile(source)  # Fail closed before reading any trace data.
     if not input_path.is_file():
         raise ValueError(f"input file does not exist: {input_path}")
 
@@ -91,10 +95,7 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
                 raise ValueError(f"line {line_no}: invalid JSON: {exc.msg}") from exc
             if not isinstance(record, dict):
                 raise ValueError(f"line {line_no}: record must be a JSON object")
-            forbidden = FORBIDDEN_FIELDS.intersection(record)
-            if forbidden:
-                raise ValueError(f"line {line_no}: trace contains forbidden text/token fields: {sorted(forbidden)}")
-
+            validate_envelope_record(record, line_no, source)
             event_kind = record.get("event_kind")
             if event_kind == "sink_summary":
                 if summary is not None:
@@ -105,7 +106,7 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
                     raise ValueError(f"line {line_no}: sink summary missing fields: {sorted(missing)}")
                 if extra:
                     raise ValueError(f"line {line_no}: unexpected sink summary fields: {sorted(extra)}")
-                if record.get("schema_version") != "1.0" or record.get("source") != "llama.cpp":
+                if record.get("schema_version") != "1.0" or record.get("source") != source:
                     raise ValueError(f"line {line_no}: unsupported sink summary schema/source")
                 summary_run = record.get("run_id")
                 if not isinstance(summary_run, str) or not summary_run:
@@ -137,8 +138,8 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
                 raise ValueError(f"line {line_no}: unexpected event fields: {sorted(extra)}")
             if record.get("schema_version") != "1.0":
                 raise ValueError(f"line {line_no}: unsupported schema_version")
-            if record.get("source") != "llama.cpp":
-                raise ValueError(f"line {line_no}: source must be llama.cpp")
+            if record.get("source") != source:
+                raise ValueError(f"line {line_no}: event source mismatch")
             current_run = record.get("run_id")
             if not isinstance(current_run, str) or not current_run:
                 raise ValueError(f"line {line_no}: invalid run_id")
@@ -169,8 +170,8 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
             if correlation_token is not None and attribution_level != "exact":
                 raise ValueError(f"line {line_no}: correlation_token requires exact attribution_level")
             clock_domain = record.get("clock_domain")
-            if clock_domain is not None and clock_domain != "steady_clock":
-                raise ValueError(f"line {line_no}: unsupported llama.cpp clock_domain")
+            if clock_domain is not None and clock_domain not in source_profile(source)["clock_domains"]:
+                raise ValueError(f"line {line_no}: unsupported {source} clock_domain")
             _require_int(record, "value0", line_no)
             _require_int(record, "value1", line_no)
             duration_ns = _require_int(record, "duration_ns", line_no)
@@ -199,8 +200,8 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
             if event_kind == "clock_calibration":
                 if timestamp_unix_ns == 0:
                     raise ValueError(f"line {line_no}: clock_calibration requires timestamp_unix_ns")
-                if clock_domain != "steady_clock":
-                    raise ValueError(f"line {line_no}: clock_calibration requires clock_domain=steady_clock")
+                if clock_domain not in source_profile(source)["clock_domains"]:
+                    raise ValueError(f"line {line_no}: clock_calibration requires a supported {source} clock_domain")
                 clock_calibration_points.append((monotonic_ns, timestamp_unix_ns, label))
             min_monotonic_ns = monotonic_ns if min_monotonic_ns is None else min(min_monotonic_ns, monotonic_ns)
             max_monotonic_ns = monotonic_ns if max_monotonic_ns is None else max(max_monotonic_ns, monotonic_ns)
@@ -261,7 +262,7 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
 
     return {
         "schema_version": "1.0",
-        "source": "llama.cpp",
+        "source": source,
         "run_id": run_id,
         "input_file": input_path.name,
         "input_bytes": input_path.stat().st_size,
