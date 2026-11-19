@@ -488,3 +488,32 @@ def test_paired_nvtx_markers_calibrate_host_to_nsys_clock(tmp_path: Path):
     assert kernel == (77, "windowed")
 
 
+
+
+def test_overlapping_explicit_nvtx_windows_are_not_attributed(tmp_path: Path):
+    nsys = tmp_path / "overlap.sqlite"
+    output = tmp_path / "overlap-import.sqlite"
+    db = sqlite3.connect(nsys)
+    db.executescript("""
+        CREATE TABLE NVTX_EVENTS(start INTEGER, end INTEGER, text TEXT);
+        INSERT INTO NVTX_EVENTS VALUES
+            (1000, 1000, 'nepenthes.request.start token=77 request=42'),
+            (5000, 5000, 'nepenthes.request.end token=77 request=42'),
+            (1400, 1400, 'nepenthes.request.start token=88 request=43'),
+            (1700, 1700, 'nepenthes.request.end token=88 request=43');
+        CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(start INTEGER, end INTEGER, correlationId INTEGER);
+        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES (1500, 1600, 9);
+    """)
+    db.commit()
+    db.close()
+
+    summary = import_nsys_only(nsys, output, "overlap-import")
+    assert summary["request_windows"] == 2
+    with sqlite3.connect(output) as db:
+        row = db.execute(
+            "SELECT attributed_request_token,attribution_level,attribution_status "
+            "FROM nepenthes_nsys_activities WHERE activity_kind='cuda_kernel'"
+        ).fetchone()
+    assert row == (None, None, "overlapping_request_windows")
+
+
