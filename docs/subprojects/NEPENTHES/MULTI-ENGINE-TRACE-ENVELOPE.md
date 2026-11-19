@@ -18,7 +18,7 @@ Only sources registered in `SOURCE_PROFILES` are accepted: `llama.cpp`, `tensorf
 | `tensorfold` | `steady_clock` | Initial TensorFold contract; request identity must be per HTTP request, not per keep-alive connection |
 | `tandem.cpp` | `steady_clock` | llama.cpp-derived distribution connector; retains its distinct source identity |
 
-The profiles intentionally share `steady_clock` today because that is what both reviewed contracts specify. A future difference requires a reviewed contract change and explicit tests; it must not be inferred from an engine name.
+The profiles intentionally share `steady_clock` today because that is what the reviewed contracts specify. TensorFold additionally requires a non-zero `request_id` on request lifecycle events (`request_start`, `request_end`, `request_error`, `request_cancel`), because its identity is per HTTP request; internal events may still use zero. llama.cpp behavior remains unchanged. A future difference requires a reviewed contract change and explicit tests; it must not be inferred from an engine name.
 
 ## Common event envelope
 
