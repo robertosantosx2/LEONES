@@ -240,6 +240,10 @@ def build_evidence(args: argparse.Namespace) -> dict:
 
     profile = run_manifest.get("profile", {})
     target = run_manifest.get("target", {})
+    if target.get("model") != args.model_id:
+        raise ValueError("AIPerf target model does not match --model-id")
+    if profile.get("request_count") is not None and int(profile["request_count"]) != len(measurements):
+        raise ValueError("AIPerf profiling request count does not match exported request records")
     sampling_config = json.loads(args.sampling_config_json.read_text(encoding="utf-8")) if args.sampling_config_json else {}
     if not isinstance(sampling_config, dict):
         raise ValueError("--sampling-config-json must contain an object")
@@ -288,8 +292,11 @@ def build_evidence(args: argparse.Namespace) -> dict:
             "output_token_limit": profile.get("output_tokens_mean"),
             "temperature": sampling_config.get("temperature"),
             "top_p": sampling_config.get("top_p"),
-            "seed": profile.get("random_seed"),
-            "warmup_iterations": 1,
+            "seed": sampling_config.get("seed"),
+            "dataset_seed": profile.get("random_seed"),
+            "warmup_iterations": len(warmup_ids) if warmup_ids else 1,
+            "warmup_count_exact": bool(warmup_ids),
+            "warmup_evidence_source": "request_records" if warmup_ids else "server_warmup_aggregate",
             "measurement_iterations": len(measurements),
         },
         "instrumentation": {
