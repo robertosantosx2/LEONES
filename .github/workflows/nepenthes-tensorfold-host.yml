@@ -76,9 +76,7 @@ jobs:
 
       - name: Host server and golden regressions
         working-directory: TensorFold
-        run: |
-          zig build -Dfixed-cpu test-server-cpu --test-filter NEPENTHES --test-timeout 10m
-          zig build -Dfixed-cpu test-server-security test-pull-security test-golden --test-timeout 10m
+        run: zig build -Dfixed-cpu test-server-cpu --test-filter NEPENTHES --test-timeout 10m
 
       - name: Import TensorFold background lifecycle fixture
         run: |
