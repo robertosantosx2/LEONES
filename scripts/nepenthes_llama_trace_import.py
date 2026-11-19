@@ -94,8 +94,11 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
                 if summary is not None:
                     raise ValueError(f"line {line_no}: duplicate sink_summary record")
                 missing = SUMMARY_FIELDS - record.keys()
+                extra = record.keys() - SUMMARY_FIELDS
                 if missing:
                     raise ValueError(f"line {line_no}: sink summary missing fields: {sorted(missing)}")
+                if extra:
+                    raise ValueError(f"line {line_no}: unexpected sink summary fields: {sorted(extra)}")
                 if record.get("schema_version") != "1.0" or record.get("source") != "llama.cpp":
                     raise ValueError(f"line {line_no}: unsupported sink summary schema/source")
                 summary_run = record.get("run_id")
@@ -121,8 +124,11 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
             if summary is not None:
                 raise ValueError(f"line {line_no}: event found after sink_summary")
             missing = EVENT_FIELDS - record.keys()
+            extra = record.keys() - EVENT_FIELDS
             if missing:
                 raise ValueError(f"line {line_no}: event missing fields: {sorted(missing)}")
+            if extra:
+                raise ValueError(f"line {line_no}: unexpected event fields: {sorted(extra)}")
             if record.get("schema_version") != "1.0":
                 raise ValueError(f"line {line_no}: unsupported schema_version")
             if record.get("source") != "llama.cpp":
@@ -244,6 +250,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
+        if args.input.resolve() == args.output.resolve():
+            raise ValueError("output path must differ from the input trace")
         result = import_trace(args.input, allow_incomplete=args.allow_incomplete)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         temporary = args.output.with_name(args.output.name + ".tmp")
