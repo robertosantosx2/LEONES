@@ -208,10 +208,12 @@ def derive_energy_efficiency(*, run_energy_j: float | None, run_duration_s: floa
                              generated_output_tokens: int | None) -> dict[str, Any]:
     invalid = {"status": "invalid", "incremental_energy_j": None,
                "tokens_per_joule": None, "joules_per_token": None}
-    if (run_energy_j is None or baseline_energy_j is None or run_duration_s <= 0
-            or baseline_duration_s <= 0 or generated_output_tokens is None
+    if (run_energy_j is None or baseline_energy_j is None
+            or not math.isfinite(run_duration_s) or not math.isfinite(baseline_duration_s)
+            or run_duration_s <= 0 or baseline_duration_s <= 0
+            or not isinstance(generated_output_tokens, int) or isinstance(generated_output_tokens, bool)
             or generated_output_tokens <= 0 or not math.isfinite(run_energy_j)
-            or not math.isfinite(baseline_energy_j)):
+            or not math.isfinite(baseline_energy_j) or run_energy_j < 0 or baseline_energy_j < 0):
         return invalid
     baseline_for_run = baseline_energy_j * (run_duration_s / baseline_duration_s)
     incremental = run_energy_j - baseline_for_run
@@ -242,6 +244,8 @@ def write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
 def run_sampler(args: argparse.Namespace, nvml: Any) -> dict[str, Any]:
     output = args.output.expanduser().resolve()
     summary_path = output.with_name("nvml_energy_summary.json")
+    if output == summary_path:
+        raise ValueError("choose a JSONL path; nvml_energy_summary.json is reserved for the summary")
     if output.exists() or summary_path.exists():
         raise ValueError("NVML output or summary already exists; choose a new campaign path")
     output.parent.mkdir(parents=True, exist_ok=True)
