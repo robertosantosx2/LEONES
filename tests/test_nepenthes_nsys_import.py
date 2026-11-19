@@ -250,15 +250,18 @@ def test_nsys_only_import_preserves_extended_cupti_tables_and_provenance(tmp_pat
         assert record[1] == 4
         assert "without_paired_nepenthes_jsonl" in record[2]
         assert "No NEPENTHES run_id" in record[3]
-        rows = db.execute(
-            "SELECT activity_kind,start_ns,end_ns,duration_ns,name "
-            "FROM nepenthes_nsys_activities ORDER BY activity_id"
-        ).fetchall()
-        assert rows[0][:4] == ("cuda_graph_trace", 10, 40, 30)
-        assert rows[1][:4] == ("cuda_synchronization", 41, 50, 9)
-        assert rows[2][:4] == ("cuda_event", 51, None, None)
-        assert rows[3][0:4] == ("cuda_memcpy", 55, 59, 4)
-        assert rows[4][0:4] == ("cuda_overhead", 60, 70, 10)
+        rows = {}
+        for kind in ("cuda_graph_trace", "cuda_synchronization", "cuda_event", "cuda_memcpy", "cuda_overhead"):
+            rows[kind] = db.execute(
+                "SELECT activity_kind,start_ns,end_ns,duration_ns,name "
+                "FROM nepenthes_nsys_activities WHERE activity_kind=?",
+                (kind,),
+            ).fetchone()
+        assert rows["cuda_graph_trace"][:4] == ("cuda_graph_trace", 10, 40, 30)
+        assert rows["cuda_synchronization"][:4] == ("cuda_synchronization", 41, 50, 9)
+        assert rows["cuda_event"][:4] == ("cuda_event", 51, None, None)
+        assert rows["cuda_memcpy"][:4] == ("cuda_memcpy", 55, 59, 4)
+        assert rows["cuda_overhead"][:4] == ("cuda_overhead", 60, 70, 10)
         memcpy = db.execute(
             "SELECT copy_kind_name,src_kind_name,dst_kind_name,enum_decode_status "
             "FROM nepenthes_nsys_activities WHERE activity_kind='cuda_memcpy'"
