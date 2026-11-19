@@ -434,3 +434,13 @@ Una cifra solo es MEASURED si procede de una ejecución identificada, con fuente
 
 - PR #1: CI propia completa con éxito (tests C++ y build CPU llama-server); estilo, EditorConfig, WASM y WASI upstream también verdes. Otros checks upstream aún en curso.
 - PR #2: instrumentación ggml/CUDA apilada sobre PR #1; CI de CPU/CUDA en cola.
+
+
+## Integración runtime nativa llama.cpp (2026-11-19)
+
+- [PR #1](https://github.com/robertosantosx2/llama.cpp/pull/1): sink JSONL y sondas core, en borrador.
+- [PR #2](https://github.com/robertosantosx2/llama.cpp/pull/2): backend ggml y CUDA, en borrador; la compilación CUDA sm_86 de GitHub Actions pasó en su head verificado.
+- [PR #3](https://github.com/robertosantosx2/llama.cpp/pull/3): workers CPU y esperas, en borrador; CI en ejecución tras corregir un error de declaración C linkage detectado por CI.
+- Orden de integración: #1 → #2 → #3. No fusionar ni mover el pin del submódulo automáticamente.
+- Pendiente tras revisión CI: comprobar build CPU/CUDA en GitHub, inspeccionar diffs y actualizar el gitlink en una PR separada.
+- Pendiente MSI: captura real de JSONL + NVML + Nsight Systems, overhead de instrumentación, integridad de contadores y comportamiento de la RTX 3050 de 4 GiB.
