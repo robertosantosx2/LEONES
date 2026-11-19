@@ -419,6 +419,8 @@ def collect_nsys_nvtx_markers(db: sqlite3.Connection, names: set[str],
         parsed["end_ns"] = int(first(row, ("end", "endNs", "end_ns")) or start)
         process_id = first(row, ("globalPid", "global_pid", "processId", "pid"))
         parsed["process_id"] = process_id if isinstance(process_id, int) and not isinstance(process_id, bool) else None
+        thread_id = first(row, ("globalTid", "global_tid", "threadId", "tid"))
+        parsed["thread_id"] = thread_id if isinstance(thread_id, int) and not isinstance(thread_id, bool) else None
         markers.append(parsed)
     return markers
 
@@ -505,32 +507,40 @@ def calibrate_host_to_nsys(
 
 
 def build_nvtx_token_windows(markers: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    # Windows are process- and scope-scoped. Request and batch tokens may have
-    # equal numeric values without colliding; overlap is resolved per scope.
-    grouped: dict[tuple[int, str, int], dict[str, list[int]]] = {}
+    # Request and batch tokens are scope-qualified. Batch windows additionally
+    # require the NVTX host thread so unrelated background GPU submissions from
+    # the same process cannot inherit the server decode's batch token.
+    grouped: dict[tuple[int, str, int, int | None], dict[str, list[int]]] = {}
     for marker in markers:
         process_id = marker.get("process_id")
         scope = marker.get("scope")
         token = marker.get("token")
+        thread_id = marker.get("thread_id")
         if isinstance(process_id, bool) or not isinstance(process_id, int):
             continue
         if scope not in ("request", "batch"):
             continue
         if isinstance(token, bool) or not isinstance(token, int) or token <= 0:
             continue
-        grouped.setdefault((process_id, scope, token), {"start": [], "end": []})[marker["phase"]].append(
+        if scope == "batch" and (isinstance(thread_id, bool) or not isinstance(thread_id, int)):
+            continue
+        if thread_id is not None and (isinstance(thread_id, bool) or not isinstance(thread_id, int)):
+            thread_id = None
+        grouped.setdefault((process_id, scope, token, thread_id), {"start": [], "end": []})[marker["phase"]].append(
             marker["start_ns"]
         )
     windows = []
-    for (process_id, scope, token), phases in grouped.items():
+    for (process_id, scope, token, thread_id), phases in grouped.items():
         if len(phases["start"]) == 1 and len(phases["end"]) == 1:
             start_ns, end_ns = phases["start"][0], phases["end"][0]
             if end_ns > start_ns:
                 windows.append({
                     "process_id": process_id, "scope": scope, "token": token,
-                    "start_ns": start_ns, "end_ns": end_ns,
+                    "thread_id": thread_id, "start_ns": start_ns, "end_ns": end_ns,
                 })
-    return sorted(windows, key=lambda item: (item["process_id"], item["scope"], item["start_ns"]))
+    return sorted(windows, key=lambda item: (
+        item["process_id"], item["scope"], item["thread_id"] or -1, item["start_ns"]
+    ))
 
 
 def build_nvtx_request_windows(markers: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -540,11 +550,14 @@ def build_nvtx_request_windows(markers: list[dict[str, Any]]) -> list[dict[str, 
 
 def attribute_nsys_activity(
     start_ns: Any, end_ns: Any, windows: list[dict[str, Any]], process_id: Any,
+    thread_id: Any = None,
 ) -> tuple[int | None, str | None, str, int | None, str | None, str]:
     if not isinstance(start_ns, (int, float)) or not isinstance(end_ns, (int, float)):
         return None, None, "missing_activity_timestamps", None, None, "missing_activity_timestamps"
     if isinstance(process_id, bool) or not isinstance(process_id, int):
         return None, None, "missing_activity_process_identity", None, None, "missing_activity_process_identity"
+    if isinstance(thread_id, bool) or not isinstance(thread_id, int):
+        thread_id = None
 
     def match_scope(scope: str) -> tuple[int | None, str | None, str]:
         process_windows = [
@@ -553,6 +566,14 @@ def attribute_nsys_activity(
         ]
         if not process_windows:
             return None, None, f"missing_process_{scope}_window"
+        if scope == "batch":
+            if thread_id is None:
+                return None, None, "missing_activity_thread_identity"
+            process_windows = [
+                window for window in process_windows if window.get("thread_id") == thread_id
+            ]
+            if not process_windows:
+                return None, None, "no_matching_batch_thread_window"
         matches = [
             window["token"] for window in process_windows
             if window["start_ns"] <= int(start_ns) and int(end_ns) <= window["end_ns"]
@@ -652,7 +673,8 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                     attributed_batch_token, batch_attribution_level, batch_attribution_status,
                 ) = attribute_nsys_activity(
                     start, end, nvtx_windows,
-                    first(row, ("globalPid", "global_pid", "processId", "pid"))
+first(row, ("globalPid", "global_pid", "processId", "pid")),
+                    first(row, ("globalTid", "global_tid", "threadId", "tid"))
                 )
             else:
                 attributed_request_token, attribution_level, attribution_status = (
@@ -858,7 +880,8 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                         attributed_batch_token, batch_attribution_level, batch_attribution_status,
                     ) = attribute_nsys_activity(
                         start, end, nvtx_windows,
-                        first(row, ("globalPid", "global_pid", "processId", "pid"))
+first(row, ("globalPid", "global_pid", "processId", "pid")),
+                        first(row, ("globalTid", "global_tid", "threadId", "tid"))
                     )
                 else:
                     attributed_request_token, attribution_level, attribution_status = (
