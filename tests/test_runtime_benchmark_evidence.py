@@ -26,6 +26,9 @@ def test_summary_contains_median_and_stdev():
     ]
     out = summary(measurements)
     assert out["tokens_per_second"]["median"] == 11
+    assert out["tokens_per_second"]["iqr"] == 1
+    assert out["tokens_per_second"]["mad"] == 1
+    assert "p25" in out["ttft_ms"] and "p75" in out["ttft_ms"]
     assert "stdev" in out["ttft_ms"]
 
 
