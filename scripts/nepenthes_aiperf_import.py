@@ -16,10 +16,45 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterator
+from urllib.parse import urlsplit
 
 OUTPUT_SCHEMA = "1.0"
 SUMMARY_NAMES = ("profile_export_aiperf.json",)
 RECORD_NAMES = ("profile_export.jsonl",)
+SERVER_METRICS_NAMES = ("server_metrics_export.jsonl",)
+GPU_TELEMETRY_NAMES = ("gpu_telemetry_export.jsonl",)
+SAFE_PROMETHEUS_LABELS = {"model", "status", "backend", "device", "device_id", "type", "operation", "slot_id", "result", "method", "le", "quantile"}
+GPU_METRICS = {
+    "nvidia_power_usage": ("W", "instantaneous_power"),
+    "nvidia_energy_consumption": ("MJ", "cumulative_counter"),
+    "nvidia_gpu_utilization": ("%", "gauge"),
+    "nvidia_memory_utilization": ("%", "gauge"),
+    "nvidia_memory_used": ("GB", "gauge"),
+    "nvidia_temperature": ("degC", "gauge"),
+    "nvidia_sm_utilization": ("%", "gauge"),
+    "nvidia_decoder_utilization": ("%", "gauge"),
+    "nvidia_encoder_utilization": ("%", "gauge"),
+    "nvidia_jpg_utilization": ("%", "gauge"),
+    "nvidia_xid_errors": ("count", "gauge"),
+    "nvidia_power_violation": ("us", "counter"),
+    "amd_power": ("W", "instantaneous_power"),
+    "amd_energy_consumption": ("MJ", "cumulative_counter"),
+    "amd_gfx_activity": ("%", "gauge"),
+    "amd_umc_activity": ("%", "gauge"),
+    "amd_mm_activity": ("%", "gauge"),
+    "amd_memory_used": ("GB", "gauge"),
+    "amd_temperature": ("degC", "gauge"),
+    "amd_ecc_uncorrectable": ("count", "counter"),
+    "amd_throttle_status": ("state", "gauge"),
+}
+GPU_METRIC_ALIASES = {
+    "gpu_power_usage": "nvidia_power_usage", "energy_consumption": "nvidia_energy_consumption",
+    "gpu_utilization": "nvidia_gpu_utilization", "mem_utilization": "nvidia_memory_utilization",
+    "gpu_memory_used": "nvidia_memory_used", "gpu_temperature": "nvidia_temperature",
+    "sm_utilization": "nvidia_sm_utilization", "decoder_utilization": "nvidia_decoder_utilization",
+    "encoder_utilization": "nvidia_encoder_utilization", "jpg_utilization": "nvidia_jpg_utilization",
+    "xid_errors": "nvidia_xid_errors", "power_violation": "nvidia_power_violation",
+}
 SUMMARY_FIELDS = {"unit", "avg", "min", "max", "std", "count", "sum",
                   "p1", "p5", "p10", "p25", "p50", "p75", "p90", "p95", "p99"}
 REQUEST_METADATA_FIELDS = (
@@ -95,6 +130,187 @@ def metric_payload(metric: Any) -> tuple[Any, str | None]:
     return metric, None
 
 
+
+def safe_endpoint_origin(value: Any) -> str | None:
+    """Keep only scheme/host/port; never export URL credentials, path, query or fragment."""
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = urlsplit(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            return None
+        host = f"[{parsed.hostname}]" if ":" in parsed.hostname else parsed.hostname
+        if parsed.port is not None:
+            host = f"{host}:{parsed.port}"
+        return f"{parsed.scheme}://{host}"
+    except ValueError:
+        return None
+
+
+def safe_labels(value: Any) -> tuple[dict[str, str], list[str]]:
+    if not isinstance(value, dict):
+        return {}, []
+    kept: dict[str, str] = {}
+    for key, item in value.items():
+        if key in SAFE_PROMETHEUS_LABELS and isinstance(item, (str, int, float)) and not isinstance(item, bool):
+            kept[str(key)] = str(item)[:256]
+    dropped = sorted(str(key) for key in value if key not in kept)
+    return kept, dropped
+
+
+def finite_number(value: Any, field: str) -> int | float | None:
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{field} must be a finite number or null")
+    if not math.isfinite(float(value)):
+        raise ValueError(f"{field} must be finite")
+    return value
+
+
+def iter_jsonl(path: Path, relative_name: str) -> Iterator[tuple[int, dict[str, Any]]]:
+    with path.open(encoding="utf-8") as stream:
+        for line_number, line in enumerate(stream, start=1):
+            if not line.strip():
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"invalid JSONL at {relative_name}:{line_number}: {exc}") from exc
+            if not isinstance(record, dict):
+                raise ValueError(f"record at {relative_name}:{line_number} must be a JSON object")
+            yield line_number, record
+
+
+def import_server_metrics(stream, path: Path, relative_name: str, run_id: str,
+                          aiperf_version: Any, source_schema: Any) -> tuple[int, int]:
+    record_count = 0
+    sample_count = 0
+    for line_number, record in iter_jsonl(path, relative_name):
+        record_count += 1
+        metrics = record.get("metrics")
+        if not isinstance(metrics, dict):
+            raise ValueError(f"server metrics record at {relative_name}:{line_number} has no metrics object")
+        timestamp_ns = record.get("timestamp_ns")
+        if isinstance(timestamp_ns, bool) or not isinstance(timestamp_ns, int):
+            raise ValueError(f"server metrics timestamp_ns at {relative_name}:{line_number} must be an integer")
+        for metric_name, samples in metrics.items():
+            if not isinstance(metric_name, str) or not isinstance(samples, list):
+                raise ValueError(f"invalid server metric family at {relative_name}:{line_number}")
+            for sample_index, sample in enumerate(samples):
+                if not isinstance(sample, dict):
+                    raise ValueError(f"invalid server metric sample at {relative_name}:{line_number}")
+                labels, dropped_labels = safe_labels(sample.get("labels"))
+                value = finite_number(sample.get("value"), "server metric value")
+                buckets_raw = sample.get("buckets")
+                buckets = None
+                if buckets_raw is not None:
+                    if not isinstance(buckets_raw, dict):
+                        raise ValueError(f"histogram buckets must be an object at {relative_name}:{line_number}")
+                    buckets = {str(boundary): finite_number(count, "histogram bucket count")
+                               for boundary, count in buckets_raw.items()}
+                if value is None and buckets is None:
+                    raise ValueError(f"server metric sample has neither value nor buckets at {relative_name}:{line_number}")
+                event = {
+                    "schema_version": OUTPUT_SCHEMA,
+                    "event_id": stable_id(run_id, "server_metrics", relative_name, line_number, metric_name, sample_index),
+                    "run_id": run_id,
+                    "request_id": None,
+                    "event_kind": "aiperf_server_metric_sample",
+                    "scope": "server_timeseries",
+                    "metric_name": metric_name,
+                    "metric_shape": "histogram" if buckets is not None else "scalar",
+                    "value": value,
+                    "buckets": buckets,
+                    "sum": finite_number(sample.get("sum"), "histogram sum"),
+                    "count": finite_number(sample.get("count"), "histogram count"),
+                    "unit": None,
+                    "labels": labels,
+                    "dropped_label_names": dropped_labels,
+                    "endpoint_origin": safe_endpoint_origin(record.get("endpoint_url")),
+                    "endpoint_latency_ns": record.get("endpoint_latency_ns"),
+                    "request_sent_ns": record.get("request_sent_ns"),
+                    "first_byte_ns": record.get("first_byte_ns"),
+                    "benchmark_phase": record.get("benchmark_phase"),
+                    "phase_index": record.get("phase_index"),
+                    "profiling_index": record.get("profiling_index"),
+                    "phase_kind": record.get("phase_kind"),
+                    "timestamp_unix_ns": timestamp_ns,
+                    "monotonic_ns": None,
+                    "timestamp_source": "aiperf_server_metrics_timestamp_ns",
+                    "source_tool": "aiperf",
+                    "source_component": "llama_server",
+                    "source_version": aiperf_version,
+                    "source_schema_version": source_schema,
+                    "source_file": relative_name,
+                    "source_record_index": line_number,
+                    "quality": "available",
+                }
+                write_event(stream, event)
+                sample_count += 1
+    return record_count, sample_count
+
+
+def import_gpu_telemetry(stream, path: Path, relative_name: str, run_id: str,
+                         aiperf_version: Any, source_schema: Any) -> tuple[int, int]:
+    record_count = 0
+    metric_count = 0
+    for line_number, record in iter_jsonl(path, relative_name):
+        record_count += 1
+        telemetry = record.get("telemetry_data")
+        if not isinstance(telemetry, dict):
+            raise ValueError(f"GPU telemetry record at {relative_name}:{line_number} has no telemetry_data object")
+        timestamp_ns = record.get("timestamp_ns")
+        if isinstance(timestamp_ns, bool) or not isinstance(timestamp_ns, int):
+            raise ValueError(f"GPU telemetry timestamp_ns at {relative_name}:{line_number} must be an integer")
+        device = {
+            "gpu_uuid": record.get("gpu_uuid") if isinstance(record.get("gpu_uuid"), str) else None,
+            "gpu_index": record.get("gpu_index") if isinstance(record.get("gpu_index"), int) and not isinstance(record.get("gpu_index"), bool) else None,
+            "gpu_model_name": record.get("gpu_model_name") if isinstance(record.get("gpu_model_name"), str) else None,
+            "pci_bus_id": record.get("pci_bus_id") if isinstance(record.get("pci_bus_id"), str) else None,
+            "device": record.get("device") if isinstance(record.get("device"), str) else None,
+            "platform": record.get("platform") if isinstance(record.get("platform"), str) else "unknown",
+        }
+        source_url = record.get("telemetry_source_url")
+        source_protocol = urlsplit(source_url).scheme if isinstance(source_url, str) else None
+        for source_name, raw_value in telemetry.items():
+            metric_name = GPU_METRIC_ALIASES.get(source_name, source_name)
+            if metric_name not in GPU_METRICS or raw_value is None:
+                continue
+            value = finite_number(raw_value, f"GPU telemetry {source_name}")
+            if value is None:
+                continue
+            unit, semantics = GPU_METRICS[metric_name]
+            event = {
+                "schema_version": OUTPUT_SCHEMA,
+                "event_id": stable_id(run_id, "gpu_telemetry", relative_name, line_number, metric_name),
+                "run_id": run_id,
+                "request_id": None,
+                "event_kind": "aiperf_gpu_telemetry",
+                "scope": "device_sample",
+                "metric_name": metric_name,
+                "value": value,
+                "unit": unit,
+                "value_semantics": semantics,
+                **device,
+                "timestamp_unix_ns": timestamp_ns,
+                "monotonic_ns": None,
+                "timestamp_source": "aiperf_gpu_telemetry_timestamp_ns",
+                "telemetry_protocol": source_protocol,
+                "device_attribution": "device_level_not_process_level",
+                "source_tool": "aiperf",
+                "source_component": "gpu_telemetry",
+                "source_version": aiperf_version,
+                "source_schema_version": source_schema,
+                "source_file": relative_name,
+                "source_record_index": line_number,
+                "quality": "available",
+            }
+            write_event(stream, event)
+            metric_count += 1
+    return record_count, metric_count
+
+
 def write_event(stream, event: dict[str, Any]) -> None:
     stream.write(json.dumps(event, ensure_ascii=False, separators=(",", ":")) + "\n")
 
@@ -114,7 +330,9 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
                                if path.is_file() and not path.is_symlink())
     summary_path = discover_one(root, SUMMARY_NAMES)
     records_path = discover_one(root, RECORD_NAMES)
-    if summary_path is None and records_path is None:
+    server_metrics_path = discover_one(root, SERVER_METRICS_NAMES)
+    gpu_telemetry_path = discover_one(root, GPU_TELEMETRY_NAMES)
+    if summary_path is None and records_path is None and server_metrics_path is None and gpu_telemetry_path is None:
         raise ValueError("no supported AIPerf artifacts found (summary JSON or records JSONL)")
 
     summary: dict[str, Any] = {}
@@ -134,6 +352,8 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
     source_schema = summary.get("schema_version")
     summary_rel = summary_path.relative_to(root).as_posix() if summary_path else None
     records_rel = records_path.relative_to(root).as_posix() if records_path else None
+    server_metrics_rel = server_metrics_path.relative_to(root).as_posix() if server_metrics_path else None
+    gpu_telemetry_rel = gpu_telemetry_path.relative_to(root).as_posix() if gpu_telemetry_path else None
     summary_timestamp = parse_timestamp_ns(summary.get("start_time"))
     event_path = out / "aiperf_events.jsonl"
     event_count = 0
@@ -141,6 +361,10 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
     request_metric_count = 0
     request_count = 0
     failed_request_count = 0
+    server_metric_record_count = 0
+    server_metric_sample_count = 0
+    gpu_telemetry_record_count = 0
+    gpu_telemetry_metric_count = 0
     warnings: list[str] = []
     ignored_phase_summaries = [path for path in all_summary_paths if path != summary_path]
     ignored_phase_records = [path for path in all_records_paths if path != records_path]
@@ -235,6 +459,15 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
                         event_count += 1
                         request_metric_count += 1
 
+        if server_metrics_path is not None:
+            server_metric_record_count, server_metric_sample_count = import_server_metrics(
+                stream, server_metrics_path, server_metrics_rel, run_id, aiperf_version, source_schema)
+            event_count += server_metric_sample_count
+        if gpu_telemetry_path is not None:
+            gpu_telemetry_record_count, gpu_telemetry_metric_count = import_gpu_telemetry(
+                stream, gpu_telemetry_path, gpu_telemetry_rel, run_id, aiperf_version, source_schema)
+            event_count += gpu_telemetry_metric_count
+
     os.replace(event_path.with_name(event_path.name + ".tmp"), event_path)
     if summary_path is None:
         warnings.append("summary JSON not present; run-level aggregate metrics were not imported")
@@ -242,6 +475,10 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
         warnings.append("per-request JSONL not present; request-level metrics were not imported")
     if not request_count:
         warnings.append("no per-request records were available")
+    if server_metrics_path is None:
+        warnings.append("server metrics JSONL not present; server time-series metrics were not imported")
+    if gpu_telemetry_path is None:
+        warnings.append("GPU telemetry JSONL not present; GPU device metrics were not imported")
     report = {
         "schema_version": OUTPUT_SCHEMA,
         "status": "imported",
@@ -252,6 +489,12 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
         "source_artifacts": source_files,
         "summary_file": summary_rel,
         "records_file": records_rel,
+        "server_metrics_file": server_metrics_rel,
+        "gpu_telemetry_file": gpu_telemetry_rel,
+        "server_metric_record_count": server_metric_record_count,
+        "server_metric_sample_count": server_metric_sample_count,
+        "gpu_telemetry_record_count": gpu_telemetry_record_count,
+        "gpu_telemetry_metric_count": gpu_telemetry_metric_count,
         "preserved_unparsed_phase_files": [path.relative_to(root).as_posix() for path in ignored_phase_summaries + ignored_phase_records],
         "event_file": event_path.name,
         "event_count": event_count,
@@ -280,7 +523,9 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     print(json.dumps({key: report[key] for key in (
         "status", "run_id", "event_count", "summary_metric_count",
-        "request_count", "request_metric_count", "failed_request_count", "warnings",
+        "request_count", "request_metric_count", "failed_request_count",
+        "server_metric_record_count", "server_metric_sample_count",
+        "gpu_telemetry_record_count", "gpu_telemetry_metric_count", "warnings",
     )}, indent=2, sort_keys=True))
     return 0
 
