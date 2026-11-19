@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "project": "NEPENTHES",
+  "upstream_repository": "https://github.com/ai-dynamo/aiperf.git",
+  "upstream_web": "https://github.com/ai-dynamo/aiperf",
+  "default_branch": "main",
+  "latest_stable_release": "v0.13.0",
+  "latest_stable_release_url": "https://github.com/ai-dynamo/aiperf/releases/tag/v0.13.0",
+  "latest_stable_release_published_at": "2026-09-24T01:30:21Z",
+  "upstream_main_verified_commit": "ebcdc98ad69388b86564e25bc1a6976fc50051a7",
+  "upstream_main_verified_commit_time": "2026-11-19T01:20:59Z",
+  "runner_pinned_version": "0.13.0",
+  "verification_date": "2026-11-19",
+  "notes": [
+    "The runner CLI flags were checked against docs/cli-options.md at tag v0.13.0.",
+    "AIPerf main has newer commits than the latest stable release; the runner pins the stable release, not floating main.",
+    "No AIPerf installation or execution has been performed on the MSI."
+  ]
+}
