@@ -36,7 +36,7 @@ def source_profile(source: str) -> dict[str, frozenset[str]]:
     return profile
 
 
-def requirerequire_uint(record: dict[str, Any], field: str, line_no: int,
+def require_uint(record: dict[str, Any], field: str, line_no: int,
           maximum: int = UINT64_MAX) -> int:
     value = record.get(field)
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
@@ -73,7 +73,7 @@ def validate_envelope_record(record: dict[str, Any], line_no: int,
             raise ValueError(f"line {line_no}: invalid summary event_id")
         require_uint(record, "timestamp_unix_ns", line_no)
         for field in ("events_drained", "dropped_events", "write_errors"):
-            _uint(record, field, line_no)
+            require_uint(record, field, line_no)
         return
 
     missing = EVENT_FIELDS - record.keys()
@@ -97,8 +97,8 @@ def validate_envelope_record(record: dict[str, Any], line_no: int,
 
     for field in ("timestamp_unix_ns", "monotonic_ns", "request_id",
                   "value0", "value1", "duration_ns"):
-        _uint(record, field, line_no)
-    _uint(record, "flags", line_no, maximum=65535)
+        require_uint(record, field, line_no)
+    require_uint(record, "flags", line_no, maximum=65535)
 
     token = record.get("correlation_token")
     if token is not None:
