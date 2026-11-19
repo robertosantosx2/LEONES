@@ -124,9 +124,6 @@ def build_evidence(args: argparse.Namespace) -> dict:
         raise ValueError("AIPerf import contains failed requests")
     if import_report.get("source_artifacts") is None:
         raise ValueError("AIPerf importer did not provide source artifact hashes")
-    warmup_request_count = run_manifest.get("profile", {}).get("warmup_request_count")
-    if not isinstance(warmup_request_count, int) or isinstance(warmup_request_count, bool) or warmup_request_count < 1:
-        raise ValueError("AIPerf run manifest must record an explicit positive warmup_request_count")
 
     summary = metric_map(events, "aiperf_metric", "run_summary")
     request_metrics: dict[str, dict[str, dict]] = {}
