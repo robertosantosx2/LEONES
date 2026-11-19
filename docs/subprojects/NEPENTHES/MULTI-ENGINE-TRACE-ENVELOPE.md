@@ -10,12 +10,13 @@
 
 ## Closed source profiles
 
-Only sources registered in `SOURCE_PROFILES` are accepted. A caller cannot register or pass an arbitrary source name at runtime.
+Only sources registered in `SOURCE_PROFILES` are accepted: `llama.cpp`, `tensorfold` and `tandem.cpp`. A caller cannot register or pass an arbitrary source name at runtime.
 
 | Source | Registered clock domain | Source-specific semantics |
 |---|---|---|
 | `llama.cpp` | `steady_clock` | Existing request/correlation and clock-calibration behavior is retained |
 | `tensorfold` | `steady_clock` | Initial TensorFold contract; request identity must be per HTTP request, not per keep-alive connection |
+| `tandem.cpp` | `steady_clock` | llama.cpp-derived distribution connector; retains its distinct source identity |
 
 The profiles intentionally share `steady_clock` today because that is what both reviewed contracts specify. A future difference requires a reviewed contract change and explicit tests; it must not be inferred from an engine name.
 
@@ -48,7 +49,7 @@ Engine-specific operation names and measurements remain bounded labels/values or
 Run the focused tests in CI:
 
 ```sh
-python -m unittest tests.test_nepenthes_llama_trace_import tests.test_nepenthes_trace_envelope
+python -m unittest discover -s tests -p 'test_nepenthes*trace*.py'
 ```
 
 These fixtures establish software-level envelope compatibility only. They do not establish runtime instrumentation, GPU capture, Nsight correlation, C07, C08 or physical engine acceptance.
