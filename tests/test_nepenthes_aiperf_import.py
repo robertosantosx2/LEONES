@@ -184,6 +184,8 @@ def test_imports_summary_and_request_records_without_private_payloads(tmp_path: 
     assert report["privacy"] == {
         "prompts_imported": False, "generated_text_imported": False,
         "credentials_imported": False, "raw_payloads_imported": False,
+        "request_identifiers_pseudonymized": True, "gpu_uuid_raw_exported": False,
+        "pci_bus_id_raw_exported": False, "error_payloads_redacted": True,
     }
     assert any(item["path"] == "outputs.json" and item["sha256"] for item in report["source_artifacts"])
     assert not any("response_text" in event for event in events)
