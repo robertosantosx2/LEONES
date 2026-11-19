@@ -102,6 +102,14 @@ class SharedEnvelopeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "clock_calibration requires a supported"):
             import_trace(self.write_trace([bad, summary()] ), source="tensorfold")
 
+    def test_writer_errors_mark_capture_incomplete(self) -> None:
+        result = import_trace(self.write_trace([
+            event(), summary(write_errors=1)
+        ]), source="tensorfold")
+        self.assertFalse(result["capture_complete"])
+        self.assertEqual(result["sink_summary"]["write_errors"], 1)
+        self.assertEqual(result["quality"]["writer_errors"], 1)
+
     def test_duplicate_summary_is_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "duplicate sink_summary record"):
             import_trace(self.write_trace([event(), summary(),
