@@ -394,6 +394,7 @@ def main() -> int:
     ap.add_argument("--dataset-sha256", default=None)
     ap.add_argument("--engine-revision", default=None)
     ap.add_argument("--hardware-id", default=None)
+    ap.add_argument("--rss-target", choices=("direct_inference_process", "benchmark_client"), default="direct_inference_process")
     ap.add_argument("--sampling-config-json", type=Path, default=None)
     ap.add_argument("--host-sample-ms", type=int, default=100)
     ap.add_argument("--gpu-sample-ms", type=int, default=500)
@@ -462,6 +463,7 @@ def main() -> int:
             "profile": args.profile,
             "dataset_sha256": args.dataset_sha256,
             "hardware_id": args.hardware_id,
+            "rss_target": args.rss_target,
             "sampling_config": sampling_config,
             "host_sample_ms": args.host_sample_ms,
             "gpu_sample_ms": args.gpu_sample_ms,
