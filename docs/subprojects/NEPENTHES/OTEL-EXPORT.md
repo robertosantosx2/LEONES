@@ -17,7 +17,17 @@ Genera:
 - `otlp-metrics.json`: métricas OTLP con atributos de cardinalidad acotada.
 - `otlp-export-report.json`: cobertura, omisiones y política de privacidad/temporality.
 
-Para enviar los cuerpos a un collector OTLP/HTTP local, después de revisarlos:
+Para enviarlos con el transporte integrado (HTTPS obligatorio para collectors remotos; HTTP solo loopback):
+
+```bash
+python3 scripts/nepenthes_otel_transport.py \\
+  --input-dir artifacts/nepenthes/aiperf-smoke-001-otel \\
+  --endpoint http://127.0.0.1:4318
+```
+
+El transporte envía `/v1/traces` y `/v1/metrics` en secuencia, reintenta fallos transitorios (429/5xx y errores de red) con backoff exponencial y registra un informe sin secretos. Para autenticación, exporta el valor completo del header Authorization desde una variable de entorno, por ejemplo `NEPENTHES_OTLP_AUTH_HEADER='Bearer …'`; no lo pases por argumentos ni lo guardes en manifiestos.
+
+Para envío manual con curl, después de revisar los payloads:
 
 ```bash
 curl -X POST -H 'Content-Type: application/json' \
@@ -51,7 +61,7 @@ Los spans sin timestamps completos se omiten y cuentan en el informe. No se sint
 
 ## Destinos
 
-Los payloads pueden enviarse a cualquier collector que acepte OTLP/HTTP JSON, por ejemplo OpenTelemetry Collector, Grafana Tempo/Prometheus vía Collector, Jaeger con soporte OTLP u OpenLIT. La configuración TLS, autenticación, retries, batching y backpressure pertenece a la siguiente fase del exporter de transporte; este módulo no realiza envíos.
+Los payloads pueden enviarse a cualquier collector que acepte OTLP/HTTP JSON, por ejemplo OpenTelemetry Collector, Grafana Tempo/Prometheus vía Collector, Jaeger con soporte OTLP u OpenLIT. La configuración TLS y autenticación se aplica en el transporte HTTP integrado. Batching y backpressure adaptativo siguen pendientes; el transporte actual envía un payload por señal.
 
 ## Privacidad y límites
 
