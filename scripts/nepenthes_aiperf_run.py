@@ -7,6 +7,7 @@ It records the exact non-secret command and execution environment in a manifest.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
@@ -151,6 +152,19 @@ def run(args: argparse.Namespace) -> int:
             raise RuntimeError(f"AIPerf version mismatch: expected {args.expected_aiperf_version}, found {version}")
 
     command = build_command(executable, args, artifact_dir)
+    normalized_command = []
+    skip_artifact_dir = False
+    for argument in command:
+        if skip_artifact_dir:
+            skip_artifact_dir = False
+            continue
+        if argument == "--artifact-dir":
+            skip_artifact_dir = True
+            continue
+        normalized_command.append(argument)
+    workload_command_sha256 = hashlib.sha256(
+        json.dumps(normalized_command, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    ).hexdigest()
     manifest = {
         "schema_version": "1.0",
         "run_id": str(uuid.uuid4()),
@@ -160,6 +174,7 @@ def run(args: argparse.Namespace) -> int:
         "expected_aiperf_version": args.expected_aiperf_version,
         "command": command,
         "command_display": shlex.join(command),
+        "workload_command_sha256": workload_command_sha256,
         "target": {"model": args.model, "url": args.url, "endpoint_type": "chat", "streaming": True},
         "profile": {
             "concurrency": args.concurrency, "request_count": args.request_count,
