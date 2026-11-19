@@ -67,7 +67,7 @@ def build_command(executable: str, args: argparse.Namespace, artifact_dir: Path)
 
 
 def parse_aiperf_version(value: str) -> str | None:
-    match = re.search(r"(?<![0-9])([0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?)(?![0-9])", value)
+    match = re.search(r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?)(?![0-9])", value)
     return match.group(1) if match else None
 
 
