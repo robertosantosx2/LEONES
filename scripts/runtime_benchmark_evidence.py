@@ -24,15 +24,15 @@ TOKENS_PER_SECOND = re.compile(
 )
 
 LLAMA_CPP_GENERATION_TPS = re.compile(
-    r"Generation:\\s*([0-9]+(?:[.,][0-9]+)?)\\s*t/s",
+    r"Generation:\s*([0-9]+(?:[.,][0-9]+)?)\\s*t/s",
     re.I,
 )
 TTFT_RE = re.compile(
-    r"(?:TTFT(?:_ms)?|prompt eval time)\\s*[:=]\\s*([0-9]+(?:[.,][0-9]+)?)\\s*(?:ms)?",
+    r"(?:TTFT(?:_ms)?|prompt eval time)\s*[:=]\s*([0-9]+(?:[.,][0-9]+)?)\s*(?:ms)?",
     re.I,
 )
 GENERATION_TIME_RE = re.compile(
-    r"(?:eval time|generation time)\\s*[:=]\\s*([0-9]+(?:[.,][0-9]+)?)\\s*ms",
+    r"(?:eval time|generation time)\s*[:=]\s*([0-9]+(?:[.,][0-9]+)?)\\s*ms",
     re.I,
 )
 
@@ -310,7 +310,7 @@ def run_once(command: list[str], host_sample_ms: int = 100,
     total = (time.perf_counter() - started) * 1000
     stdout_text = b"".join(stdout_chunks).decode("utf-8", errors="replace")
     stderr_text = b"".join(stderr_chunks).decode("utf-8", errors="replace")
-    combined_text = stdout_text + "\\n" + stderr_text
+    combined_text = stdout_text + "\n" + stderr_text
     llama_matches = LLAMA_CPP_GENERATION_TPS.findall(combined_text)
     if llama_matches:
         tps = float(llama_matches[-1].replace(",", "."))
@@ -319,6 +319,8 @@ def run_once(command: list[str], host_sample_ms: int = 100,
         tps = float(matches[-1].replace(",", ".")) if matches else None
 
     ttft_pattern = re.compile(ttft_regex, re.I) if ttft_regex else TTFT_RE
+    if ttft_regex and ttft_pattern.groups < 1:
+        raise ValueError("--ttft-regex must contain capture group 1 with milliseconds")
     ttft_matches = ttft_pattern.findall(combined_text)
     if ttft_matches:
         raw_ttft = ttft_matches[-1]
