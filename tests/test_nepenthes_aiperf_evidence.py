@@ -128,6 +128,7 @@ def test_aiperf_adapter_emits_canonical_paired_evidence(tmp_path: Path):
     assert evidence["run_metrics"]["tokens_per_second"] == 31.5
     assert evidence["run_metrics"]["ttft_ms"] == 101.5
     assert evidence["run_metrics"]["total_time_ms"] == 10000.0
+    assert evidence["run_metrics"]["request_latency_mean_ms"] == 501.5
     assert evidence["run_metrics"]["peak_process_rss_mb"] == 2400
     assert evidence["run_metrics"]["peak_vram_mb_device_wide"] == 3100
     assert all("ttft_ms" in item for item in evidence["measurements"])
