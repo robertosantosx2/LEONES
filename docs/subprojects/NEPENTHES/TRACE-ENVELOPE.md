@@ -62,9 +62,9 @@ Common semantic rules:
 
 ## Source-specific rules
 
-The registry currently records each connector's accepted clock domain. The three reviewed connector contracts currently use `steady_clock`; the profile boundary is retained so a future source cannot inherit that assumption implicitly.
+The registry records each connector's accepted clock domain and source-specific lifecycle semantics. All three contracts use `steady_clock`. TensorFold and Tandem.cpp require a non-zero `request_id` on `request_start` and `request_end`; `request_id=0` remains valid for internal events. llama.cpp retains its existing behavior. The profile boundary prevents one connector from inheriting another connector's assumptions implicitly.
 
-No source-specific event-kind allowlist is imposed in this slice: both connectors map observations to the common event vocabulary, and the importer preserves unknown non-empty labels/kinds for forward compatibility. Any future source-specific semantic constraint must be added to its profile and covered by positive and negative fixtures; it must not weaken common envelope checks.
+No source-specific event-kind allowlist is imposed in this slice: all registered connectors map observations to the common event vocabulary, and the importer preserves unknown non-empty labels/kinds for forward compatibility. Any future source-specific semantic constraint must be added to its profile and covered by positive and negative fixtures; it must not weaken common envelope checks.
 
 Engine-native details belong in namespaced metadata or a source-specific summary extension only after the summary schema is explicitly versioned. The current canonical summary is intentionally exact-shape and rejects extra fields.
 
