@@ -7,10 +7,11 @@ DATA_DIR="${NEPENTHES_DATA_DIR:-${HOME}/.local/share/nepenthes}"
 IMPORTER_SOURCE="${SCRIPT_DIR}/nepenthes_nsys_import.py"
 MIGRATION_SOURCE="${SCRIPT_DIR}/../db/migrations/002_nepenthes_observability.sql"
 MIGRATION_003_SOURCE="${SCRIPT_DIR}/../db/migrations/003_nepenthes_nsys_only.sql"
+MIGRATION_006_SOURCE="${SCRIPT_DIR}/../db/migrations/006_nepenthes_typed_event_metadata.sql"
 usage(){ echo "Usage: $0 [--uninstall] [--bin-dir PATH]"; }
 while (($#)); do
   case "$1" in
-    --uninstall) rm -f -- "${BIN_DIR}/nepenthes" "${DATA_DIR}/scripts/nepenthes_nsys_import.py" "${DATA_DIR}/db/migrations/002_nepenthes_observability.sql" "${DATA_DIR}/db/migrations/003_nepenthes_nsys_only.sql"; echo "Removed NEPENTHES CLI and importer components"; exit 0 ;;
+    --uninstall) rm -f -- "${BIN_DIR}/nepenthes" "${DATA_DIR}/scripts/nepenthes_nsys_import.py" "${DATA_DIR}/db/migrations/002_nepenthes_observability.sql" "${DATA_DIR}/db/migrations/003_nepenthes_nsys_only.sql" "${DATA_DIR}/db/migrations/006_nepenthes_typed_event_metadata.sql"; echo "Removed NEPENTHES CLI and importer components"; exit 0 ;;
     --bin-dir) [[ $# -ge 2 ]] || { usage >&2; exit 2; }; BIN_DIR="$2"; shift 2 ;;
     --help|-h) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
@@ -26,6 +27,7 @@ if [[ -f "$IMPORTER_SOURCE" && -f "$MIGRATION_SOURCE" && -f "$MIGRATION_003_SOUR
   install -m 0644 "$IMPORTER_SOURCE" "${DATA_DIR}/scripts/nepenthes_nsys_import.py"
   install -m 0644 "$MIGRATION_SOURCE" "${DATA_DIR}/db/migrations/002_nepenthes_observability.sql"
   install -m 0644 "$MIGRATION_003_SOURCE" "${DATA_DIR}/db/migrations/003_nepenthes_nsys_only.sql"
+  install -m 0644 "$MIGRATION_006_SOURCE" "${DATA_DIR}/db/migrations/006_nepenthes_typed_event_metadata.sql"
 else
   echo "Warning: Nsight importer/migration not found; baseline capture remains available." >&2
 fi
