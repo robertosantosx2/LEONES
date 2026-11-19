@@ -241,3 +241,17 @@ El importador normaliza ahora el agregado JSON y dos streams de AIPerf 0.13.0:
 El importador conserva campos desconocidos en el artefacto original y su checksum, pero no exporta sus valores. No sincroniza `timestamp_ns` de AIPerf con relojes monotónicos de llama.cpp, NVML o Nsight. La unidad de energía GPU de AIPerf es acumulada; el cálculo de delta/energía incremental corresponde a la etapa de contabilidad energética NEPENTHES y requiere baseline y ventana temporal.
 
 El runner solicita `--gpu-telemetry pynvml` y `--server-metrics-formats json jsonl`. En llama.cpp hay que arrancar el servidor con `--metrics` para habilitar el endpoint Prometheus; `/slots` está disponible por defecto según la revisión upstream fijada. Si `/metrics` no está habilitado, usar `--no-server-metrics` para la campaña.
+
+
+## C08 integration: inference-server resource sampling and evidence normalization
+
+The AIPerf runner now samples the inference server PID when provided with --target-pid or --target-pid-file. It records process RSS, system-wide RAM, device-wide GPU VRAM and power, sampling intervals and RSS scope. When no server PID is supplied, the RSS scope is explicitly aiperf_client and the C08 evidence adapter rejects it.
+
+After a completed run, scripts/nepenthes_aiperf_evidence.py imports the original AIPerf artifacts and emits runtime-benchmark-evidence.v1.1 with:
+- per-request TTFT and ITL measurements;
+- run-level output_token_throughput from AIPerf's own summary metric (no throughput inferred from latency);
+- resource peaks and power samples from the concurrent NEPENTHES sampler;
+- immutable model artifact SHA-256, engine revision, hardware identity and dataset/protocol hash;
+- original AIPerf source-artifact hashes and import report.
+
+The adapter refuses failed requests, missing warm-up evidence, absent output-token throughput, absent inference-server PID telemetry or missing peak RAM/VRAM. The paired C08 comparator then requires off/jsonl/nsys/combined runs with identical fingerprints and at least three matched pair IDs.
