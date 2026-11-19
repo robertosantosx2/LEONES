@@ -285,8 +285,9 @@ PRs pequeños y dependencias explícitas; no crear un mega-PR.
 
 - PR #159: subproyecto y especificación AIPerf-first, pendiente de revisión/merge.
 - PR #160: importador offline de artefactos AIPerf y tests; CI específico con 6 tests offline en success. Depende de PR #159.
-- Todavía no se ha instalado ni ejecutado AIPerf contra llama-server, no hay smoke físico y no se declara compatibilidad MEASURED.
-- Próximo hito: runner aislado y smoke con concurrencia 1 en llama-server; después ampliar telemetría y soporte phase-aware.
+- PR #161: wrapper AIPerf-first para llama-server, defaults conservadores, manifiesto de ejecución, protección de secretos y dry-run; CI combinado con 13 tests offline en success. Depende de PR #160.
+- Todavía no se ha instalado ni ejecutado AIPerf contra llama-server en el MSI; no hay smoke físico y no se declara compatibilidad MEASURED.
+- Próximo hito: instalar AIPerf en entorno virtual aislado del MSI, ejecutar dry-run, después smoke real con concurrencia 1 y cinco requests; ampliar telemetría y soporte phase-aware tras validar el endpoint.
 
 El orden puede solapar documentación/fixtures, pero no se debe declarar una fase aceptada si depende de otra incompleta.
 
