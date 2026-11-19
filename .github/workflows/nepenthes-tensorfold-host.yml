@@ -72,7 +72,7 @@ jobs:
         run: |
           zig fmt build.zig zig
           git diff --check
-          git diff -- zig/src/server/nepenthes_trace.zig
+          git diff -- zig/src/server/
 
       - name: Host server and golden regressions
         working-directory: TensorFold
