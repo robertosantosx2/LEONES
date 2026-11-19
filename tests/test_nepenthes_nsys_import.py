@@ -431,7 +431,7 @@ def write_jsonl_nvtx(path: Path) -> None:
             "duration_ns": 0,
             "flags": 1 if phase == "start" else 2,
         })
-    path.write_text("".join(json.dumps(record) + "\\n" for record in records), encoding="utf-8")
+    path.write_text("".join(json.dumps(record) + "\n" for record in records), encoding="utf-8")
 
 
 def test_nsys_only_attributes_only_inside_explicit_nvtx_windows(tmp_path: Path):
