@@ -469,10 +469,13 @@ def verify_run(a):
        if false_exact:result["errors"].append("Nsight GPU activities claim exact request attribution")
        if missing_window_token:result["errors"].append("windowed Nsight activity lacks request token")
        if ambiguous_with_token:result["errors"].append("ambiguous overlapping window carries a request token")
+       if {"nvtx_correlation_token","nvtx_marker_phase"}.issubset(columns):
+        bad_marker=db.execute("SELECT count(*) FROM nsys_activities WHERE activity_kind='nvtx_event' AND nvtx_marker_phase IS NOT NULL AND (nvtx_correlation_token IS NULL OR attributed_request_token!=nvtx_correlation_token OR attribution_level!='exact')").fetchone()[0]
+        if bad_marker:result["errors"].append("Nsight NVTX marker identity is not exact or token-consistent")
   except (sqlite3.Error,TypeError,ValueError) as exc:result["errors"].append("nepenthes-import.sqlite invalid: "+str(exc))
  elif nsys_enabled:
   result["errors"].append("data/nepenthes-import.sqlite missing while Nsight capture is enabled")
- result["checks"]["nsys_import"]=not any(x.startswith(("data/nsys-import.json","data/nepenthes-import.sqlite","Nsight import","nepenthes-import.sqlite","NVTX markers","Nsight GPU","windowed Nsight","ambiguous overlapping")) for x in result["errors"])
+ result["checks"]["nsys_import"]=not any(x.startswith(("data/nsys-import.json","data/nepenthes-import.sqlite","Nsight import","nepenthes-import.sqlite","NVTX markers","Nsight GPU","windowed Nsight","ambiguous overlapping","Nsight NVTX marker")) for x in result["errors"])
  result["checks"]["report_html"]=(run/"reports"/"index.html").is_file()
  if not result["checks"]["report_html"]:result["errors"].append("reports/index.html missing")
  result["ok"]=not result["errors"]
