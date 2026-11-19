@@ -4,8 +4,8 @@
   "upstream_repository": "https://github.com/ggml-org/llama.cpp.git",
   "upstream_web": "https://github.com/ggml-org/llama.cpp",
   "upstream_branch": "master",
-  "verified_commit": "95b09b62beb95c40fc6b317a0c1473c27b5f27fa",
-  "verified_commit_time": "2026-11-19T07:57:57Z",
+  "verified_commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
+  "verified_commit_time": "2026-11-19T08:04:58Z",
   "verified_at": "2026-11-19",
   "local_fork_repository": null,
   "local_fork_status": "not_created_connector_missing_fork_operation",
@@ -13,27 +13,22 @@
   "policy": "Track upstream master explicitly; never label a pinned upstream commit as a personal fork. Once the fork is created, set upstream as upstream remote and the personal fork as origin; keep LEONES submodule pinned to a reviewed fork commit.",
   "notes": [
     "The upstream commit was fetched from GitHub API during this verification.",
-    "The current GitHub connector can read repositories and write files/branches/PRs but does not expose repository-fork creation.",
-    "No source files from llama.cpp have been copied into LEONES.",
-    "Upstream master advanced by three commits after the previous pin; the manifest now points to the exact current master head observed on 2026-11-19."
+    "The upstream master advanced one commit beyond the previous pin; GitHub comparison reports 1 ahead and 0 behind.",
+    "This PR updates only the upstream reference and drift guard; personal fork/submodule integration is tracked separately in the follow-up NEPENTHES PR.",
+    "No source files from llama.cpp are copied into LEONES."
   ],
-  "previous_verified_commit": "39039aa27fe65244913d8a07303b8733f614fe20",
+  "previous_verified_commit": "95b09b62beb95c40fc6b317a0c1473c27b5f27fa",
   "previous_verified_commit_time": "2026-11-19T06:50:33Z",
   "upstream_delta_since_previous_pin": [
     {
-      "commit": "80437488a497756df005fb64b50cfadb0cdcf83a",
-      "message": "ui: cut Llama Chat's first-load JavaScript by 63%, load diagrams, math and PDFs on demand (#32555)",
-      "committed_at": "2026-11-19T07:37:35Z"
-    },
-    {
-      "commit": "b5dbca1e4422f7f35e1a9662e9a2c8892098c3a0",
-      "message": "ci : use LLVM 22 (#32565)",
-      "committed_at": "2026-11-19T07:54:04Z"
-    },
-    {
-      "commit": "95b09b62beb95c40fc6b317a0c1473c27b5f27fa",
-      "message": "llama : remove PATH_MAX (#32557)",
-      "committed_at": "2026-11-19T07:57:57Z"
+      "commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
+      "message": "ggml : IQ2 creation speedup through caching (#31910)",
+      "committed_at": "2026-11-19T08:04:58Z",
+      "files": [
+        "ggml/src/ggml-quants.c"
+      ],
+      "additions": 113,
+      "deletions": 6
     }
   ]
 }
