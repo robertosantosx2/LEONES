@@ -16,6 +16,11 @@ import time
 import threading
 import uuid
 from pathlib import Path
+
+try:
+    from nepenthes_privacy import assert_safe_metadata, redact_command
+except ModuleNotFoundError:
+    from scripts.nepenthes_privacy import assert_safe_metadata, redact_command
 from statistics import mean, median, stdev
 
 TOKENS_PER_SECOND = re.compile(
@@ -323,8 +328,10 @@ def run_once(command: list[str], host_sample_ms: int = 100, gpu_sample_ms: int =
         "peak_power_w": telemetry_values["peak_power_w"],
         "gpu_sample_count": telemetry_values["gpu_sample_count"],
         "exit_code": code,
-        "stdout": "".join(stdout_chunks),
-        "stderr": "".join(stderr_chunks),
+        "stdout_sha256": hashlib.sha256(stdout_text.encode("utf-8")).hexdigest(),
+        "stderr_sha256": hashlib.sha256(stderr_text.encode("utf-8")).hexdigest(),
+        "stdout_bytes": len(stdout_text.encode("utf-8")),
+        "stderr_bytes": len(stderr_text.encode("utf-8")),
     }
 
 
@@ -404,6 +411,9 @@ def main() -> int:
     sampling_config = json.loads(args.sampling_config_json.read_text(encoding="utf-8")) if args.sampling_config_json else {}
     if not isinstance(sampling_config, dict):
         raise SystemExit("sampling-config-json must contain a JSON object")
+    assert_safe_metadata(sampling_config, "sampling_config")
+    redacted_command = redact_command(command)
+    command_sha256 = hashlib.sha256(json.dumps(command, separators=(",", ":")).encode("utf-8")).hexdigest()
     command = json.loads(args.command_json.read_text(encoding="utf-8"))
     if (
         not isinstance(command, list)
@@ -438,7 +448,6 @@ def main() -> int:
         },
         "protocol": {
             "prompt_protocol_id": args.prompt_protocol_id,
-            "prompt": args.prompt,
             "prompt_sha256": hashlib.sha256(args.prompt.encode("utf-8")).hexdigest(),
             "context": args.context,
             "input_tokens": args.input_tokens,
@@ -454,7 +463,9 @@ def main() -> int:
             "version": command_version(command[0]),
             "revision": args.engine_revision,
             "backend": args.backend,
-            "command": command,
+            "command": redacted_command,
+            "command_display": shlex.join(redacted_command),
+            "command_sha256": command_sha256,
         },
         "hardware": hardware(),
         "instrumentation": {
@@ -472,11 +483,13 @@ def main() -> int:
         "summary": summary(measurements),
         "process": {
             "exit_code": max(m["exit_code"] for m in measurements),
-            "stdout": "\n".join(m["stdout"] for m in measurements),
-            "stderr": "\n".join(m["stderr"] for m in measurements),
+            "stdout_sha256": hashlib.sha256("".join(m["stdout_sha256"] for m in measurements).encode("utf-8")).hexdigest(),
+            "stderr_sha256": hashlib.sha256("".join(m["stderr_sha256"] for m in measurements).encode("utf-8")).hexdigest(),
+            "stdout_bytes": sum(m["stdout_bytes"] for m in measurements),
+            "stderr_bytes": sum(m["stderr_bytes"] for m in measurements),
         },
         "artifact": {
-            "path": str(artifact),
+            "path": artifact.name,
             "sha256": sha256_file(artifact),
             "size": artifact.stat().st_size,
         },
