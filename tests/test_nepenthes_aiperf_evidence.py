@@ -124,7 +124,10 @@ def test_aiperf_adapter_emits_canonical_paired_evidence(tmp_path: Path):
     assert evidence["protocol"]["warmup_iterations"] == 1
     assert evidence["protocol"]["measurement_iterations"] == 4
     assert evidence["instrumentation"]["rss_target"] == "inference_server"
+    assert evidence["runtime"]["command_sha256"] == "c" * 64
     assert evidence["run_metrics"]["tokens_per_second"] == 31.5
+    assert evidence["run_metrics"]["ttft_ms"] == 101.5
+    assert evidence["run_metrics"]["total_time_ms"] == 10000.0
     assert evidence["run_metrics"]["peak_process_rss_mb"] == 2400
     assert evidence["run_metrics"]["peak_vram_mb_device_wide"] == 3100
     assert all("ttft_ms" in item for item in evidence["measurements"])
