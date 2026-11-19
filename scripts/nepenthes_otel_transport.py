@@ -50,7 +50,9 @@ def post_payload(url: str, payload: dict[str, Any], *, auth_header: str | None =
         request = Request(url, data=body, headers=headers, method="POST")
         try:
             with opener(request, timeout=timeout_seconds) as response:
-                status = getattr(response, "status", response.getcode())
+                status = getattr(response, "status", None)
+                if status is None:
+                    status = response.getcode()
                 if status not in {200, 202}:
                     raise RuntimeError(f"OTLP collector returned HTTP {status}")
                 return {"status": "success", "http_status": status, "attempts": attempts}
