@@ -95,6 +95,10 @@ def test_standard_overhead_gate_accepts_decode_overhead_at_or_below_five_percent
     assert report["overall_status"] == "accepted"
     assert report["conditions"]["combined"]["decode_overhead_median_pct"] == 5.0
     assert report["conditions"]["jsonl"]["metrics"]["ttft_ms"]["overhead_pct"]["median"] == 0
+    paired = report["conditions"]["combined"]["paired_evidence"]
+    assert len(paired) == 3
+    assert len(paired[0]["baseline"]["sha256"]) == 64
+    assert len(paired[0]["condition"]["sha256"]) == 64
 
 
 def test_standard_overhead_gate_requires_exception_between_five_and_eight_percent(tmp_path):
