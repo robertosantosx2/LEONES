@@ -25,6 +25,7 @@ UINT64_MAX = 0xFFFFFFFFFFFFFFFF
 SOURCE_PROFILES = {
     "llama.cpp": {"clock_domains": frozenset({"steady_clock"})},
     "tensorfold": {"clock_domains": frozenset({"steady_clock"})},
+    "tandem.cpp": {"clock_domains": frozenset({"steady_clock"})},
 }
 
 
