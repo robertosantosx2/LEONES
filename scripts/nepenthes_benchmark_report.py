@@ -186,10 +186,8 @@ def build_report(events: list[dict[str, Any]], nvml_run: Path | None = None,
     for name in METRIC_NAMES:
         values, unit, request_count = metric_observations(events, name)
         metric_report[name] = {"unit": unit, "request_count_with_metric": request_count, **describe(values)}
-    output_tokens = metric_report["output_token_count"]["sum"] if "sum" in metric_report["output_token_count"] else None
-    if output_tokens is None:
-        output_values, _, _ = metric_observations(events, "output_token_count")
-        output_tokens = sum(output_values) if output_values else None
+    output_values, _, _ = metric_observations(events, "output_token_count")
+    output_tokens = sum(output_values) if output_values else None
     sequence_values, _, _ = metric_observations(events, "output_sequence_length")
     sequence_tokens = sum(sequence_values) if sequence_values else None
     run_summary = {
@@ -200,6 +198,9 @@ def build_report(events: list[dict[str, Any]], nvml_run: Path | None = None,
     output_tokens = output_tokens if output_tokens is not None else (
         finite(run_summary.get("total_output_tokens", {}).get("statistics", {}).get("sum"))
         if isinstance(run_summary.get("total_output_tokens"), dict) else None)
+    sequence_tokens = sequence_tokens if sequence_tokens is not None else (
+        finite(run_summary.get("total_output_sequence_length", {}).get("statistics", {}).get("sum"))
+        if isinstance(run_summary.get("total_output_sequence_length"), dict) else None)
     energy = energy_efficiency(nvml_run, nvml_baseline, output_tokens, sequence_tokens)
     server_metric_events = [event for event in events if str(event.get("event_kind", "")).startswith("aiperf_server_metric") or event.get("event_kind") == "llama_server_metric"]
     gpu_metric_events = [event for event in events if event.get("event_kind") in {"aiperf_gpu_telemetry", "nvml_device_sample"}]
