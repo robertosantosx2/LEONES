@@ -51,12 +51,61 @@ def write_records(root: Path) -> None:
     )
 
 
+def write_server_metrics(root: Path) -> None:
+    records = [{
+        "endpoint_url": "http://user:secret@127.0.0.1:8080/metrics?token=do-not-leak",
+        "timestamp_ns": 1_800_000_000_200_000_000,
+        "endpoint_latency_ns": 1_000_000,
+        "request_sent_ns": 1_800_000_000_199_000_000,
+        "first_byte_ns": 1_800_000_000_199_500_000,
+        "benchmark_phase": "profiling",
+        "phase_index": 0,
+        "metrics": {
+            "llama_prompt_tokens_total": [
+                {"labels": {"model": "qwen-local", "request_id": "private-request"}, "value": 128}
+            ],
+            "llama_request_duration_seconds": [
+                {"labels": {"model": "qwen-local"}, "buckets": {"0.5": 2, "+Inf": 3}, "sum": 1.25, "count": 3}
+            ],
+        },
+    }]
+    (root / "server_metrics_export.jsonl").write_text(
+        "".join(json.dumps(record) + "\\n" for record in records), encoding="utf-8"
+    )
+
+
+def write_gpu_telemetry(root: Path) -> None:
+    record = {
+        "timestamp_ns": 1_800_000_000_300_000_000,
+        "telemetry_source_url": "pynvml://ssantos-msi",
+        "gpu_uuid": "GPU-test-uuid",
+        "gpu_index": 0,
+        "gpu_model_name": "NVIDIA RTX 3050 Laptop GPU",
+        "pci_bus_id": "00000000:01:00.0",
+        "device": "nvidia0",
+        "hostname": "ssantos-msi",
+        "platform": "nvidia",
+        "namespace": "private-namespace",
+        "pod_name": "private-pod",
+        "telemetry_data": {
+            "nvidia_power_usage": 42.0,
+            "nvidia_energy_consumption": 1.25,
+            "nvidia_gpu_utilization": 35.0,
+            "private_custom_metric": "must-not-export",
+        },
+    }
+    (root / "gpu_telemetry_export.jsonl").write_text(json.dumps(record) + "\\n", encoding="utf-8")
+
+
+
 def test_imports_summary_and_request_records_without_private_payloads(tmp_path: Path):
     artifacts = tmp_path / "aiperf-artifacts"
     output = tmp_path / "nepenthes-import"
     artifacts.mkdir()
     write_summary(artifacts)
     write_records(artifacts)
+    write_server_metrics(artifacts)
+    write_gpu_telemetry(artifacts)
     (artifacts / "outputs.json").write_text(
         json.dumps({"data": [{"response_text": "must not be imported"}]}), encoding="utf-8"
     )
@@ -70,13 +119,30 @@ def test_imports_summary_and_request_records_without_private_payloads(tmp_path: 
     assert report["request_count"] == 2
     assert report["failed_request_count"] == 1
     assert report["request_metric_count"] == 4
-    assert report["event_count"] == 8
+    assert report["event_count"] == 13
+    assert report["server_metric_record_count"] == 1
+    assert report["server_metric_sample_count"] == 2
+    assert report["gpu_telemetry_record_count"] == 1
+    assert report["gpu_telemetry_metric_count"] == 3
     assert report["privacy"] == {
         "prompts_imported": False, "generated_text_imported": False,
         "credentials_imported": False, "raw_payloads_imported": False,
     }
     assert any(item["path"] == "outputs.json" and item["sha256"] for item in report["source_artifacts"])
     assert not any("response_text" in event for event in events)
+    assert "server_metrics_export.jsonl" == report["server_metrics_file"]
+    assert "gpu_telemetry_export.jsonl" == report["gpu_telemetry_file"]
+    server_event = next(event for event in events if event["event_kind"] == "aiperf_server_metric_sample" and event["metric_shape"] == "histogram")
+    assert server_event["buckets"] == {"0.5": 2, "+Inf": 3}
+    assert server_event["endpoint_origin"] == "http://127.0.0.1:8080"
+    assert server_event["timestamp_unix_ns"] == 1_800_000_000_200_000_000
+    gpu_energy = next(event for event in events if event["event_kind"] == "aiperf_gpu_telemetry" and event["metric_name"] == "nvidia_energy_consumption")
+    assert gpu_energy["value"] == 1.25 and gpu_energy["unit"] == "MJ"
+    assert gpu_energy["value_semantics"] == "cumulative_counter"
+    assert gpu_energy["device_attribution"] == "device_level_not_process_level"
+    serialized_events = json.dumps(events)
+    for private_value in ("secret", "do-not-leak", "private-request", "ssantos-msi", "private-namespace", "private-pod", "must-not-export"):
+        assert private_value not in serialized_events
     request_event = next(event for event in events if event.get("request_id") == "req-001" and event.get("metric_name") == "inter_chunk_latency")
     assert request_event["value"] == [4.0, 4.5]
     assert request_event["timestamp_unix_ns"] == 1_800_000_000_000_000_000
