@@ -26,3 +26,10 @@ def test_sampling_metadata_rejects_sensitive_keys_recursively():
         assert_safe_metadata({"nested": {"api_key": "must-not-persist"}})
     with pytest.raises(ValueError, match="sensitive metadata key"):
         assert_safe_metadata({"authorization": "Bearer secret"})
+
+
+
+def test_redact_command_hides_explicit_prompt_argument():
+    assert redact_command(["llama-cli", "-p", "private prompt"], "private prompt") == [
+        "llama-cli", "-p", "<redacted:prompt>"
+    ]
