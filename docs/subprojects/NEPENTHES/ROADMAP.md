@@ -273,10 +273,20 @@ PRs pequeños y dependencias explícitas; no crear un mega-PR.
 | 5 | OTLP exporter | HTTP/protobuf y/o gRPC, tests con collector |
 | 6 | llama.cpp adapters | /metrics, /slots, scraping y fixtures |
 | 7 | TensorFold adapter discovery | Auditoría de capacidades y adaptador solo si existe API |
-| 8 | AIPerf integration | Runner primario, manifiesto, importador, normalización y fixtures; GenAI-Perf legacy import separado |
+| 8a | AIPerf artifact importer | Importador offline summary/records, hashes, privacidad, eventos normalizados y fixtures (PR #160) |
+| 8b | AIPerf runner + llama-server | Entorno aislado, manifiesto, comando reproducible y smoke streaming con concurrencia 1 |
+| 8c | AIPerf telemetry adapters | Importación de GPU telemetry, server metrics y phase-aware artifacts |
+| 8d | GenAI-Perf legacy import | Compatibilidad de campañas antiguas solo cuando exista evidencia que lo requiera |
 | 9 | llama.cpp instrumentation | Lifecycle, graph, KV, scheduler, MoE, CPU/CUDA/server |
 | 10 | Nsight semantic correctness | enums, uint64, cobertura y correlación |
 | 11 | Reports & release gates | informes, comparación y aceptación integral |
+
+### Estado de la línea AIPerf (2026-11-19)
+
+- PR #159: subproyecto y especificación AIPerf-first, pendiente de revisión/merge.
+- PR #160: importador offline de artefactos AIPerf y tests; CI específico con 6 tests offline en success. Depende de PR #159.
+- Todavía no se ha instalado ni ejecutado AIPerf contra llama-server, no hay smoke físico y no se declara compatibilidad MEASURED.
+- Próximo hito: runner aislado y smoke con concurrencia 1 en llama-server; después ampliar telemetría y soporte phase-aware.
 
 El orden puede solapar documentación/fixtures, pero no se debe declarar una fase aceptada si depende de otra incompleta.
 
