@@ -85,7 +85,7 @@ def validate_event_envelope(
                 f"line {line_no}: correlation_token must be null or a positive unsigned 64-bit integer"
             )
     attribution = record.get("attribution_level")
-    if attribution is not None and attribution not in ATTRIBUTION_LEVELS:
+    if attribution is not None and (not isinstance(attribution, str) or attribution not in ATTRIBUTION_LEVELS):
         raise ValueError(f"line {line_no}: invalid attribution_level")
     if attribution == "exact" and token is None:
         raise ValueError(f"line {line_no}: exact attribution requires correlation_token")
@@ -93,7 +93,10 @@ def validate_event_envelope(
         raise ValueError(f"line {line_no}: correlation_token requires exact attribution_level")
 
     clock_domain = record.get("clock_domain")
-    if clock_domain is not None and clock_domain not in SOURCE_PROFILES[expected_source]["clock_domains"]:
+    if clock_domain is not None and (
+        not isinstance(clock_domain, str)
+        or clock_domain not in SOURCE_PROFILES[expected_source]["clock_domains"]
+    ):
         if expected_source == "llama.cpp":
             raise ValueError(f"line {line_no}: unsupported llama.cpp clock_domain")
         raise ValueError(f"line {line_no}: unsupported {expected_source} clock_domain")
