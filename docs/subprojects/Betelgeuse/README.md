@@ -37,8 +37,9 @@ The 2026-11-19 source audit identified two correctness hazards:
 
 1. The generic expert-tensor skip predicate also skipped the resident routed-expert payloads in MTP/NextN block 40. The loader now skips only external trunk payloads for stripped bundles and verifies the expected placement of all three expert roles in blocks 0-40.
 2. A failed or absent pack could previously leave the runtime continuing toward MoE pool allocation. Stripped bundles now require validated metadata and geometry, direct-I/O/GGUF/pack configuration, successful pager initialization, and active pack mode before pool allocation.
+3. External trunk expert tensors receive zero-sized placeholder contexts instead of allocating their absent payloads. The same external classification is used in the memory-fit and real-load passes; resident MTP block 40 remains normally allocated and loaded.
 
-The special path is gated by `betelgeuse.stripped_experts`; ordinary non-stripped model loading remains on its existing path.
+The special path is gated by `betelgeuse.stripped_experts`; ordinary non-stripped model loading retains its prior load-mode behavior.
 
 - [Runtime audit and acceptance checklist](https://github.com/robertosantosx2/Betelgeuse/blob/feat/qwen35-trunk-only-pager-msi/docs/qwen35-runtime-audit-2026-11-19.md)
 - [Bundle format and runtime contract](https://github.com/robertosantosx2/Betelgeuse/blob/feat/qwen35-trunk-only-pager-msi/docs/qwen35-trunk-only.md)
