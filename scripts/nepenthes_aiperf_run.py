@@ -55,10 +55,11 @@ def build_command(executable: str, args: argparse.Namespace, artifact_dir: Path)
         "--concurrency", str(args.concurrency),
         "--request-count", str(args.request_count),
         "--synthetic-input-tokens-mean", str(args.input_tokens),
+        "--synthetic-input-tokens-stddev", "0",
         "--output-tokens-mean", str(args.output_tokens),
+        "--output-tokens-stddev", "0",
         "--random-seed", str(args.random_seed),
         "--export-level", "records",
-        "--no-export-outputs-json",
         "--artifact-dir", str(artifact_dir),
     ]
     if args.no_server_metrics:
