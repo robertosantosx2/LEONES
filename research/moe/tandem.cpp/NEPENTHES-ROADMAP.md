@@ -1,4 +1,7 @@
-# NEPENTHES — roadmap de tareas hasta la versión funcional completa
+# NEPENTHES — roadmap técnico subordinado
+
+> **Aviso de gobernanza documental:** el documento maestro único es [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md). El plan general, las prioridades y el estado de cada motor se mantienen exclusivamente allí. Este archivo se conserva como checklist técnico/histórico de tareas y criterios detallados; no debe utilizarse como estado global vigente. Al cerrar o cambiar un gate, actualizar primero el documento maestro.
+
 
 **Fecha de corte:** 2026-11-15 (actualizado tras C07).  
 **Estado:** CLI y captura de motor instrumentado probadas con una inferencia Qwen3.5-4B; aceptación integral con Nsight, correlación, cobertura y overhead pendiente.
