@@ -27,6 +27,7 @@ EVENT_FIELDS = {
     "duration_ns",
     "flags",
 }
+FORBIDDEN_FIELDS = {"prompt", "completion", "response", "text", "tokens", "token_ids", "input_text", "output_text"}
 SUMMARY_FIELDS = {
     "schema_version",
     "run_id",
@@ -84,6 +85,9 @@ def import_trace(input_path: Path, allow_incomplete: bool = False) -> dict[str, 
                 raise ValueError(f"line {line_no}: invalid JSON: {exc.msg}") from exc
             if not isinstance(record, dict):
                 raise ValueError(f"line {line_no}: record must be a JSON object")
+            forbidden = FORBIDDEN_FIELDS.intersection(record)
+            if forbidden:
+                raise ValueError(f"line {line_no}: trace contains forbidden text/token fields: {sorted(forbidden)}")
 
             event_kind = record.get("event_kind")
             if event_kind == "sink_summary":
