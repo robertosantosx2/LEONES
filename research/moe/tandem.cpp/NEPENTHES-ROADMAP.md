@@ -261,3 +261,50 @@ Esta actualización supersede los estados parciales anteriores de CI para este H
 - [ ] MSI: build Linux/CUDA, C07 con NVTX+Nsight y C08 overhead emparejado. Sin pruebas físicas declaradas todavía.
 
 Estado de PR #6: abierta, draft, no fusionada; HEAD `33e0d0a578c48b0a31616fd1b72fd255f12e39a4`; rama 33 ahead / 0 behind respecto a fork `master`; 23 archivos modificados.
+
+## Secuencia de cierre validada — 2026-11-19
+
+### 1. Datos LEONES y submódulo
+
+- [x] #203/#205: confirmar 8/8 workflows post-merge del commit `28de2459a76433b90628bb5dff7e7703a789d9a1`; migración 006 e importador v1.1 presentes en `main`.
+- [x] #206: añadir el fork como submódulo con gitlink independiente del HEAD de fork; merge `c98deebfc169b8d860d4e887b1f3ffb068342b00`; CI de integridad y release gates verdes.
+- [x] Mantener el gitlink en `76f186df71a41abb3ee20fffedee31ca5dbc7d9f` hasta aceptar el runtime instrumentado.
+
+### 2. Integración llama.cpp — gate actual
+
+- [ ] Reconciliar la pila nativa #1 → #2 → #3 contra upstream `c406f4367e19bea7930e7f74e1984c9acc6d44bf`; fork master `9a080f44b503c64f66c84a6274b9d9ee5d5b09d5` está 3 commits detrás.
+- [ ] Comparar la pila nativa con la rama acumulativa RC1/PR #6. Hay solapamiento de instrumentación y diferencias reales en sink, event header, CUDA, CPU y server; elegir una sola línea canónica antes de merge.
+- [ ] Rebase secuencial, resolver conflictos y volver a ejecutar CI después de cada capa. No actualizar el gitlink durante esta fase.
+- [ ] Revisar el contrato JSONL del productor frente a ambos importadores. El sink RC1 emite schema 1.0; el importador de trazas acepta 1.0 + correlation fields; el importador emparejado admite metadata tipada 1.1 y conserva `raw_json`.
+- [ ] Revisar cobertura de eventos y semántica de labels, duración, IDs, unsigned, lifecycle, sink_summary, pérdidas y errores de escritura.
+
+### 3. Cerrar el circuito de captura en GitHub
+
+- [ ] Integrar el capturador de llama-server, NVML y recolector universal mediante un único `run_id`, timestamps monotónicos por fuente y calibración explícita; nunca inferir correlación por proximidad.
+- [ ] Verificar que cada importador conserva originales, hashes, procedencia y campos desconocidos; no fabricar request/kernel links.
+- [ ] Preparar un preflight reproducible que valide binario, endpoint, modelo/hash, perfil, permisos, Nsight/NVML disponibles, disco libre, configuración redactada y destino de artefactos.
+- [ ] Preparar comando de campaña y manifiesto con motor/commit, modelo/hash, backend/driver, hardware, contexto, prompt/dataset, sampling, perfil, warm-up, repeticiones, relojes y hashes de artefactos.
+
+### 4. Preparar C07 sin MSI
+
+- [ ] Scripts y configuración para habilitar NVTX v3 solo con tracing activo.
+- [ ] Validador que exija markers NVTX reales, al menos dos pares de calibración, brackets host y matching por token+phase.
+- [ ] Rechazar ventanas solapadas/ambiguas; asignar actividad como windowed solo cuando una única ventana explícita contenga todo el intervalo.
+- [ ] Comprobación automática de integridad SQLite, hashes, cobertura CUPTI, pérdidas JSONL y procedencia.
+- [ ] Instrucciones de captura reproducible y criterios de aceptación visibles antes de pedir intervención física.
+
+### 5. MSI — solo después de los gates remotos
+
+- [ ] Sincronizar el commit exacto aceptado y compilar Linux/CUDA en la RTX 3050.
+- [ ] Ejecutar C07 con llama-server instrumentado y Nsight Systems; conservar JSONL + SQLite de la misma ejecución.
+- [ ] Revisar markers, calibración, integridad, pérdidas y atribución. C07 solo se acepta con evidencia real; CI sintética no sustituye esta prueba.
+
+### 6. C08 y expediente final
+
+- [ ] Baseline OFF y tres tratamientos instrumentados (JSONL, Nsight y combinado), mínimo tres pares por condición; misma identidad de modelo/engine/workload y warm-up excluido.
+- [ ] Medir TTFT, decode tok/s, ITL si está disponible, duración de petición/campaña, RSS del servidor, RAM, VRAM device-wide y overhead por condición.
+- [ ] Aplicar gate standard: decode overhead ≤5%; 5–8% requiere excepción/revisión; >8% bloquea aceptación standard.
+- [ ] Archivar manifiestos, logs, hashes, capturas, resultados por repetición, medianas/IQR/MAD y limitaciones.
+- [ ] Actualizar INDEX y roadmap únicamente con resultados físicos confirmados; no declarar NEPENTHES completo antes de cerrar C07/C08 y cobertura.
+
+**Límite actual:** trabajo remoto en GitHub. No requiere el MSI para el rebase, revisión, pruebas contractuales, preflight, manifiestos ni scripts. El MSI se reserva para C07 real y C08 medido.
