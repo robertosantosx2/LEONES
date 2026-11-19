@@ -119,6 +119,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--gpu-sample-ms", type=positive_int, default=500)
     parser.add_argument("--no-server-metrics", action="store_true",
                         help="disable AIPerf scraping of endpoint /metrics")
+    parser.add_argument("--store-aiperf-log", action="store_true",
+                        help="retain raw AIPerf stdout log; may contain sensitive diagnostics")
     parser.add_argument("--dry-run", action="store_true", help="write manifest and print command without launching AIPerf")
     return parser.parse_args(argv)
 
@@ -231,6 +233,14 @@ def run(args: argparse.Namespace) -> int:
     manifest["exit_code"] = code
     manifest["status"] = "timed_out" if timed_out else ("completed" if code == 0 else "failed")
     manifest["finished_at"] = utc_now()
+    log_bytes = log_path.read_bytes()
+    manifest["log_artifact"] = {
+        "sha256": hashlib.sha256(log_bytes).hexdigest(),
+        "size_bytes": len(log_bytes),
+        "stored": args.store_aiperf_log,
+    }
+    if not args.store_aiperf_log:
+        log_path.unlink(missing_ok=True)
     write_manifest(manifest_path, manifest)
     return code
 
