@@ -115,10 +115,24 @@
         "cpu_worker_compute",
         "cpu_idle_wait"
       ]
+    },
+    {
+      "number": 4,
+      "url": "https://github.com/robertosantosx2/llama.cpp/pull/4",
+      "title": "NEPENTHES: add explicit request correlation and host clock calibration",
+      "branch": "feat/nepenthes-correlation-clock-20261119",
+      "base": "feat/nepenthes-cpu-worker-probes-20261119",
+      "status": "open_draft_ci_queued",
+      "scope": [
+        "request_correlation_token",
+        "host_clock_calibration",
+        "source_timestamp_capture",
+        "jsonl_contract_tests"
+      ]
     }
   ],
   "runtime_probe_status": "implementation_open_draft_review_stack",
-  "runtime_probe_policy": "The three llama.cpp pull requests are intentionally stacked and remain unmerged. Rebase the stack onto current upstream 4db8b763 in order #1, #2, #3, resolving context/graph and ggml backend overlaps, then review and merge in order. Keep LEONES submodule gitlink pinned until the rebased stack is accepted. Real CUDA runtime capture, event overhead and RTX 3050 behavior remain MSI acceptance gates.",
+  "runtime_probe_policy": "The llama.cpp PR stack is intentionally stacked and unmerged: #1 → #2 → #3 → #4. Rebase onto current upstream in order, resolve context/graph and ggml overlaps, and rerun CI before merge. The nepenthes/rc1 integration branch is the intended cumulative candidate but must not be advanced with a non-fast-forward or stale base. Keep the LEONES gitlink pinned until the rebased stack is reviewed and accepted. Nsight external correlation, C07/C08, and RTX 3050 physical validation remain open gates.",
   "latest_ci": {
     "repo": "robertosantosx2/llama.cpp",
     "pr": 3,
@@ -152,5 +166,29 @@
       "job_id": 135443819191,
       "reason": "dl.mthreads.com timed out; MUSA SDK packages could not be downloaded; no source compilation attempted"
     }
+  },
+  "integration_branch": "nepenthes/rc1",
+  "integration_branch_base": "5812201a81008977ea079eaf86a3f9166eef9f10",
+  "integration_branch_status": "created_from_fork_master; awaiting_upstream_rebase_and_reviewed_stack_integration",
+  "runtime_correlation_pr": "https://github.com/robertosantosx2/llama.cpp/pull/4",
+  "runtime_correlation_branch": "feat/nepenthes-correlation-clock-20261119",
+  "runtime_correlation_head": "9e2fc9ba37fd73f022959732b3c3ed4dbed840eb",
+  "runtime_correlation_status": "open_draft_ci_queued; host_request_token_and_clock_calibration_partial; no_nsys_external_correlation",
+  "latest_ci_pr4": {
+    "repo": "robertosantosx2/llama.cpp",
+    "pr": 4,
+    "commit": "9e2fc9ba37fd73f022959732b3c3ed4dbed840eb",
+    "run_id": 44521579771,
+    "run_url": "https://github.com/robertosantosx2/llama.cpp/actions/runs/44521579771",
+    "observed_at": "2026-11-19",
+    "nepenthes_trace_cpu_job": {
+      "status": "queued",
+      "job_id": 135551261617
+    },
+    "cuda_compile_job": {
+      "status": "queued",
+      "job_id": 135551262203
+    },
+    "full_repository_ci": "queued"
   }
 }
