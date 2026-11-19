@@ -132,3 +132,25 @@ def test_energy_efficiency_rejects_missing_or_invalid_inputs():
                                       generated_output_tokens=100)
     assert result["status"] == "invalid"
     assert result["incremental_energy_j"] is None
+
+def test_nvml_sampler_marks_unsupported_energy_counter_without_fabricating_a_value():
+    class NoEnergyNVML(FakeNVML):
+        def nvmlDeviceGetTotalEnergyConsumption(self, handle):
+            raise RuntimeError("unsupported")
+
+    sampler = NVMLSampler(NoEnergyNVML(), "run-no-energy")
+    sample = sampler.sample_all()[0]
+    assert "energy_counter_mj" not in sample["metrics"]
+    assert "nvmlDeviceGetTotalEnergyConsumption" in sample["unavailable_metric_functions"]
+    assert sample["quality"] == "partial"
+
+
+def test_energy_efficiency_rejects_nonfinite_durations_and_boolean_token_counts():
+    nonfinite = derive_energy_efficiency(run_energy_j=10.0, run_duration_s=float("nan"),
+                                         baseline_energy_j=1.0, baseline_duration_s=1.0,
+                                         generated_output_tokens=100)
+    boolean_tokens = derive_energy_efficiency(run_energy_j=10.0, run_duration_s=1.0,
+                                              baseline_energy_j=1.0, baseline_duration_s=1.0,
+                                              generated_output_tokens=True)
+    assert nonfinite["status"] == "invalid"
+    assert boolean_tokens["status"] == "invalid"
