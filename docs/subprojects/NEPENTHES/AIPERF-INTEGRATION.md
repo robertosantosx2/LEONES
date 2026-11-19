@@ -180,3 +180,27 @@ python3 scripts/nepenthes_aiperf_import.py \
 ```
 
 Genera `aiperf_events.jsonl` y `aiperf_import_report.json`. El parser acepta `profile_export_aiperf.json` y `profile_export.jsonl`, preserva el árbol de artefactos de origen y calcula SHA-256. Los registros raw, GPU telemetry y server metrics no se interpretan todavía; se conservan en el inventario y quedan pendientes de importadores específicos. Si AIPerf produce resúmenes por fase además del agregado raíz, el importador actual prioriza el agregado raíz y deja los resúmenes de fase preservados e indicados como pendientes. El importador no instala ni ejecuta AIPerf ni genera carga. Sus fixtures offline se ejecutan mediante `python3 -m pytest -q tests/test_nepenthes_aiperf_import.py`.
+
+
+## 12. Runner NEPENTHES
+
+El wrapper conservador está en `scripts/nepenthes_aiperf_run.py`. No instala AIPerf ni inicia el servidor; requiere que AIPerf esté instalado en un entorno aislado y que el endpoint ya esté disponible.
+
+```bash
+python3 scripts/nepenthes_aiperf_run.py \
+  --model NOMBRE_EXACTO_DEL_MODELO_SERVIDO \
+  --url http://127.0.0.1:8080 \
+  --artifact-dir artifacts/nepenthes/aiperf-smoke-001
+```
+
+Defaults de smoke: concurrencia 1, cinco requests, ISL 128, OSL 32, seed 42, streaming y exportación `records`; la exportación de texto generado queda desactivada. Si el servidor no expone `/metrics`, añadir `--no-server-metrics`. El wrapper registra versión, comando sin secretos, entorno, timestamps y código de salida en `nepenthes_aiperf_run.json`, y salida en `aiperf.stdout.log`. Rechaza directorios de artefactos no vacíos y URLs con credenciales o tokens en query string.
+
+Después de una ejecución correcta, importar los artefactos:
+
+```bash
+python3 scripts/nepenthes_aiperf_import.py \
+  --artifacts-dir artifacts/nepenthes/aiperf-smoke-001 \
+  --output-dir artifacts/nepenthes/aiperf-smoke-001-import
+```
+
+Para autenticación, usar el mecanismo de entorno admitido por AIPerf (por ejemplo `OPENAI_API_KEY`) sin incluir secretos en la línea de comandos ni en el manifiesto. La primera ejecución física debe seguir limitada a concurrencia 1 y pocos requests; escalar solo después de revisar RAM, swap, VRAM y errores.
