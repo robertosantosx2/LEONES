@@ -1,7 +1,9 @@
 # LEONES — Directiva de Human-Directed Agentic Engineering (HDAE)
 
 **Nivel:** directiva de gobernanza superior para todo LEONES y cada subproyecto.  
-**Fuente metodológica:** https://github.com/gmkurtzer/hdae (Human-Directed Agentic Engineering).  
+**Referencia HDAE fijada:** https://github.com/robertosantosx2/hdae/tree/12d1a3389e74642dddee47a6cc4cb217f55f1144  
+**Origen upstream:** https://github.com/gmkurtzer/hdae  
+**Política de snapshot y actualización:** [HDAE-REFERENCE.md](HDAE-REFERENCE.md).  
 **Aplicación:** raíz, subproyectos, forks, repositorios vinculados, investigación, CI, documentación, automatización y campañas.
 
 ## 1. Autoridad y responsabilidades
@@ -71,4 +73,4 @@ Esta directiva establece el método, no reemplaza el criterio técnico ni los IN
 
 ## 8. Método HDAE
 
-HDAE se adopta como metodología: dirección humana sobre intent, arquitectura, constraints, prioridades y acceptance; ejecución por agentes mediante gates limitadas, iteración, diagnóstico, evidencia, checkpoints persistentes y revisión. La referencia es el repositorio original https://github.com/gmkurtzer/hdae. LEONES mantiene esta directiva como adaptación de gobernanza del proyecto, sin afirmar que las Agent Skills oficiales hayan sido instaladas.
+HDAE se adopta como metodología: dirección humana sobre intent, architecture, constraints, priorities y acceptance; ejecución por agentes mediante gates limitadas, iteración, diagnóstico, evidencia, checkpoints persistentes y revisión. La consulta normativa debe hacerse sobre el snapshot fijado del fork de LEONES, no sobre una rama móvil. El fork conserva la procedencia del proyecto original y no implica que las Agent Skills oficiales hayan sido instaladas en todos los entornos.
