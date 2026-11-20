@@ -403,3 +403,20 @@ Se recorrió el árbol completo de LEONES (`main`, 1.783 archivos; árbol no tru
 - El workflow exacto del HEAD `60d4f6a53f6df879116c8a8a796df2d27bc01fc7` terminó con **11/11 checks en `completed/success`**, incluidos importer tests (**122 passed**), contract tests, runtime contracts, regression, RC3 release gate, A01 y V1 complete. Esta es aceptación de software/importer para el formato observado, no aceptación física C07.
 - La PR fallida inicial #241 se cerró sin merge; su diagnóstico y logs se conservan en el historial. No usar el decode de 32 bits de aquel HEAD.
 - **C07 continúa pendiente:** importar los artefactos originales JSONL + Nsight SQLite del MSI con el importer corregido, comprobar hashes/manifest, integridad SQLite, cobertura y `nepenthes verify`. Solo solicitar nueva captura si esa importación demuestra que los artefactos existentes son insuficientes. C08 y overhead siguen pendientes.
+
+### Importación C07 paired v3 — resultado físico MSI, 2026-11-20
+
+Se reimportaron los artefactos originales e inmutables `nepenthes-c07-llama-smoke.jsonl` + `nepenthes-c07-llama-smoke.sqlite` con el importer de `main` en `ccba52a3d8cc4308b8917a96db1b5d44528ca1b4`, que contiene la resolución correcta de `NVTX_EVENTS.globalTid` sin `globalPid` (LEONES PR #243, merge `ea5ebc4e251ce9beb7341207f8f3970eb81007f1`; no usar la implementación fallida de PR #241).
+
+**Salida nueva, sin sobrescribir las anteriores:** `nepenthes-c07-llama-import-v3.sqlite`, import ID `nepenthes-c07-llama-paired-v3`.
+
+Resultados observados:
+- 14.646 eventos JSONL drenados; 0 descartados; 0 errores de escritura.
+- 16.761 actividades Nsight: 2 NVTX, 11.648 runtime CUDA, 2.822 kernels, 730 memcpy, 1.378 sincronizaciones, 141 graph trace, 36 overhead y 4 memset.
+- 2 marcadores NVTX emparejados por identidad explícita `(scope, token, phase)`; 1 ventana request.
+- 2.149 actividades con `unique_explicit_request_window`; 1.407 `outside_request_window`; 2 marcadores `marker_identity`.
+- Calibración de reloj calculada con los dos pares: drift observado -77.337 ns / -120,30 ppm en 642.891.129 ns; incertidumbre máxima del semibracket 80.311 ns. Es una muestra corta, no una caracterización robusta de deriva.
+- **0 batch windows**; 3.556 actividades con `missing_process_batch_window`. Esta captura no aporta marcadores batch que permitan atribución de batch. No inferir batch, worker o causalidad por proximidad temporal.
+- Las 730 operaciones memcpy tienen enum `CUDA_MEMCPY_KIND` decodificado mediante la tabla Nsight.
+
+**Decisión:** la importación paired v3 confirma que el arreglo de identidad de proceso permite recuperar la ventana request y atribuir actividades dentro de ella. No cierra C07: quedan pendientes la verificación formal del bundle/manifest/hashes con `nepenthes verify`, el análisis de cobertura y la evaluación de si el smoke de llama.cpp debía emitir marcadores batch para el objetivo C07. No repetir la captura antes de completar esos checks con los artefactos existentes. C08 y overhead siguen pendientes.
