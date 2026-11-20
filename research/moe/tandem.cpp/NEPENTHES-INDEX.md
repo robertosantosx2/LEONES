@@ -60,8 +60,8 @@ Principios no negociables:
 - [x] Revisión final de diff/contrato; PR #10 fusionada en `d4d0b9e` tras gates exactos. Mantener separados C07/C08 físicos.
 - [x] Sincronizar fork con upstream sin perder NEPENTHES: llama.cpp PR #14 merge `38c1a39226c71e0d22a94ea1d55deda6917c9b79`; comparación confirma 19 commits ahead de `d4d0b9e`, 0 behind, conservando la integración PR #10.
 - [x] Actualizar el gitlink LEONES y el manifiesto mediante esta PR revisada; pin propuesto `38c1a39226c71e0d22a94ea1d55deda6917c9b79`.
-- [ ] MSI: validar C07 emparejado y C08 overhead; no confundir compilación remota con aceptación física.
-- [ ] MSI: build Linux/CUDA, C07 real NVTX+Nsight y C08 emparejado; conservar artefactos y métricas.
+- [ ] MSI: validar C07 emparejado con los artefactos JSONL+SQLite ya capturados; solo repetir captura si la importación detecta carencias.
+- [ ] MSI: campaña C08 AIPerf-first con al menos tres pares baseline/instrumented; conservar artefactos y métricas.
 
 **Límite de aceptación:** la CI remota no demuestra overhead, cobertura real ni correlación con CUPTI; hacen falta C07/C08 físicos.
 
@@ -80,7 +80,7 @@ Principios no negociables:
 4. [x] Validar el HEAD exacto `c258ec930b4ea8f0d0bc785a984d2114bf041fb9`: cinco checks `completed/success` del workflow cross-repo `tensorfold-host` en LEONES PR #217, incluyendo formato Zig, pruebas host/security y fixtures positivo, source-mismatch e incomplete a través del importer común.
 5. [x] Reconciliar llama.cpp PR #10 sobre upstream vigente mediante PR #14; upstream `9d6f04f` sincronizado en fork merge `38c1a39`, con NEPENTHES CPU/CUDA/NVTX/importer workflow success.
 6. [ ] Implementar y probar Tandem producer-side NVTX sobre la frontera exacta `BatchScope`, con NVTX opcional y RAII; no inferir request→kernel por proximidad.
-7. [ ] Solo después de cerrar los gates remotos, planificar C07/C08 físicos en MSI. No actualizar gitlink ni declarar aceptación GPU antes de los gates correspondientes.
+7. [ ] Ejecutar C07/C08 físicos en MSI solo después de la sincronización remota ya cerrada; no declarar aceptación GPU antes de los gates físicos correspondientes.
 
 **Límite actual:** El conector TensorFold host-only está aceptado tras merge y CI exacta del HEAD fijado. No hay aceptación CUDA/NVTX/Nsight, captura física, C07/C08 ni overhead. El gitlink no se actualiza hasta que los gates de integración correspondientes estén cerrados.
 
