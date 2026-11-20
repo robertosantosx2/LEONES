@@ -174,7 +174,8 @@ def test_imports_summary_and_request_records_without_private_payloads(tmp_path: 
 
     assert report["run_id"] == "bench-001"
     assert report["aiperf_version"] == "0.14.0"
-    assert report["summary_metric_count"] == 4
+    assert report["summary_metric_count"] == 3
+    assert report["warmup_summary_metric_count"] == 1
     assert report["request_count"] == 2
     assert report["failed_request_count"] == 1
     assert report["request_metric_count"] == 4
