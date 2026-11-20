@@ -153,3 +153,18 @@ A new fully paginated GitHub API snapshot was taken after merging the duplicate-
 - `jalon2-evidence-bridge` remains the head of open PR #64 and must be retained. Keep `jalon2-closed` as a historical evidence ref until local dependencies are reconciled.
 
 No branch alias was deleted, renamed, or retargeted. The 68-alias list remains a remote cleanup queue only: local upstreams, worktrees, reflogs, stashes, unpushed commits and dirty evidence remain unverified without the MSI inventory/recheck. No local directory, model, cache, evidence bundle, stash or worktree was changed.
+
+
+## Remote audit refresh after PR #257/#258 merges — 2026-11-20 (22:44 UTC)
+
+A further fully paginated GitHub API snapshot was taken after the INDEX reconciliation and hygiene snapshot PRs merged:
+- **350 remote branch refs**, **282 unique tip commits**.
+- The same **12 exact-tip duplicate groups**, comprising **80 refs** and **68 excess aliases**. The member names and tip groupings remain unchanged from the classification in `docs/engineering/BRANCH-ALIAS-RECONCILIATION-2026-11-20.md`.
+- **55 open pull requests** at snapshot time.
+- PR #257 (NEPENTHES INDEX reconciliation) merged as `d71aab6a3e0f5cf5b8007a5386aa4db700c4b8cd`; its four required checks passed.
+- PR #258 (this hygiene snapshot) merged as `bd10ba797744553dd92d8a943b9fe6b507c81333`; all four required checks passed.
+- LEONES issue #212 was refreshed to reflect completed host many-to-many propagation, importer guard and producer-side NVTX implementation (Tandem.cpp PR #5/#7; LEONES #218/#219). Remaining gates are physical paired C07 validation and separate C08 overhead measurement; issue remains open.
+- The AIPerf/OTel stack #159–#173 remains parent-first. Current bases form a linear chain from #159 on `main` through #160/#161/#165–#173; preserve this order and do not retarget/merge children independently.
+- `jalon2-evidence-bridge` remains the head of open PR #64 and must be retained. Keep `jalon2-closed` as a historical evidence ref until local dependencies are reconciled.
+
+No branch alias was deleted, renamed, or retargeted. The 68-alias list remains a remote cleanup queue only: local upstreams, worktrees, reflogs, stashes, unpushed commits and dirty evidence remain unverified without the MSI inventory/recheck. No local directory, model, cache, evidence bundle, stash or worktree was changed.
