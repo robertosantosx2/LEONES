@@ -40,15 +40,16 @@ Principios no negociables:
 
 ### 3.1 llama.cpp
 
-**Estado:** integración activa en el fork; PR [#10](https://github.com/robertosantosx2/llama.cpp/pull/10) preparada como integración limpia sobre upstream c406f4367e19bea7930e7f74e1984c9acc6d44bf, con un commit NEPENTHES y 23 archivos. En la última evidencia registrada, CI seguía en curso y los runners self-hosted/Models Backend Check estaban queued. No se declara CI global verde, merge ni aceptación.
+**Estado remoto 2026-11-20:** [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10) sigue abierta sobre base upstream `c406f4367e19bea7930e7f74e1984c9acc6d44bf`, HEAD `0f3fa24ba4e417629ffebd7bbf6a7bcccb8c4659`, con 23 archivos. En el último check-run consultado, `trace-and-cpu-build` y los checks generales de CPU/Windows/arm64 reportan éxito; varios jobs GPU, incluido `gpu-cuda`, y runners de alto rendimiento están `cancelled`. Por tanto, CI no está globalmente aceptada y no hay evidencia de build CUDA del PR en ese HEAD. `mergeable=true`; no fusionar hasta revisar diff/semántica y obtener un build CUDA verificable más los checks requeridos.
 
 **Ya conseguido:** contrato de eventos/sink, puente CPU, instrumentación NVTX opt-in y port de cambios NEPENTHES sobre upstream actual en PR #10. Los históricos RC1/#6 y #1–#3 son candidatos/antecedentes, no deben tratarse como línea aceptada ni fusionarse sin reconciliación.
 
 **Siguientes pasos:**
-- [ ] Consultar CI del HEAD actual de PR #10 y clasificar todos los checks, incluidos queued/skipped y fallos externos.
-- [ ] Revisar diff y semántica de lifecycle, concurrencia, JSONL, NVTX y límites de eventos; comparar cobertura con los candidatos previos.
+- [x] Consultar CI del HEAD `0f3fa24` y clasificar los resultados observados: CPU/general en éxito; `gpu-cuda` y varios jobs GPU/alto rendimiento cancelados; no declarar CI global verde.
+- [ ] Revisar diff y semántica de lifecycle, concurrencia, JSONL, NVTX y límites de eventos; comparar cobertura con candidatos previos y verificar que la base upstream siga vigente.
 - [x] Cerrar contrato común LEONES #207 y comprobar compatibilidad del source `tandem.cpp`: PR #210 fusionada; registry explícito y fixture positivo/negativo incluidos.
-- [ ] Merge solo tras CI/revisión; actualizar el gitlink LEONES después de la aceptación.
+- [ ] Conseguir evidencia remota válida de compilación CUDA/NVTX del HEAD exacto, completar los checks aplicables y revisión antes del merge.
+- [ ] Merge solo tras aceptación; actualizar el gitlink LEONES después de la aceptación.
 - [ ] MSI: build Linux/CUDA, C07 real NVTX+Nsight y C08 emparejado; conservar artefactos y métricas.
 
 **Límite de aceptación:** la CI remota no demuestra overhead, cobertura real ni correlación con CUPTI; hacen falta C07/C08 físicos.
