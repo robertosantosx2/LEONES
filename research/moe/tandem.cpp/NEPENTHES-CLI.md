@@ -83,28 +83,31 @@ La telemetría de `nvidia-smi` es global al dispositivo. Las sondas internas req
 
 ## Verificación ampliada del paquete y correlación
 
-`nepenthes verify RUN_DIR` valida ahora:
+La orden `nepenthes verify RUN_DIR` valida ahora:
 
 - SHA-256 de todos los artefactos, ausencia de ficheros sin hash y rutas contenidas en el bundle.
 - Manifest terminal, run_id, schema_version, recuento de eventos y consistencia con summary.json.
 - Contrato tipado de correlation_token y attribution_level; exact exige token explícito y nunca se infiere por proximidad.
-- Balance request_start/request_end y NVTX start/end por token.
+- Balance request_start/request_end y ciclos NVTX request.start/request.end por token.
+- Ciclos NVTX batch.start/batch.end: exactamente un inicio y un fin por token, `request_id=0` en los marcadores y correspondencia del conjunto de tokens con los eventos `server.batch_member`.
 - clock_calibration start/end, timestamps monotónicos/Unix y estimación de offset/drift host.
 - Integridad SQLite de observaciones y de la importación Nsight; run_id de importación debe coincidir con el manifest.
-- Cuando hay NVTX y Nsight: al menos dos pares token+fase para calibrar host↔Nsight, ausencia de atribución exacta falsa a kernels y consistencia de la atribución windowed.
+- Correlación host↔Nsight separada por scope request/batch. Para C07 batch, cada marcador start/end debe tener pareja NVTX en Nsight y cada token debe tener actividad CUDA atribuida `windowed` bajo el mismo proceso e hilo.
+- Rechazo de atribución GPU exact, ventanas batch solapadas, actividad sin token, identidad de hilo ausente/discrepante y marcadores NVTX que no conserven su token.
 
 Si no hay NVTX o Nsight no fue solicitado, el verificador informa esa limitación sin inventar correlación. Un bundle íntegro no equivale por sí solo a C07 aceptado: la captura real y la validación física siguen siendo necesarias.
 
-
 ## Gates C07/C08 y significado de verify
 
-El resultado separa dos conceptos:
+El resultado separa tres estados:
 
 - `ok`: el bundle es íntegro, sus hashes/SQLite/manifest/eventos son coherentes y los contratos presentes no son inválidos.
-- `functional_complete`: los gates de esta campaña han pasado: C07 exige marcadores NVTX emparejados y calibración host↔Nsight válida; C08 exige el informe paired-overhead en `data/c08-overhead-report.json`, perfil `standard`, al menos tres pares y estado `accepted` para JSONL, Nsight y combinado.
+- `acceptance.c07_request`: ciclo NVTX request y calibración request host↔Nsight válidos.
+- `acceptance.c07_batch`: ciclo NVTX batch, membresía many-to-many, calibración batch host↔Nsight y actividad CUDA `windowed` por proceso+hilo válidos.
+- `acceptance.c07`: solo pasa cuando C07 request y C07 batch pasan.
+- `functional_complete`: exige C07 request + C07 batch y el informe paired-overhead C08 en `data/c08-overhead-report.json`, perfil `standard`, al menos tres pares y estado `accepted` para JSONL, Nsight y combinado.
 
-Si C07 o C08 todavía no se han ejecutado, el bundle puede ser válido (`ok=true`) pero `functional_complete=false` y el estado se muestra como pendiente. Un informe C08 con excepción o bloqueo impide la aceptación. Los gates de campaña no sustituyen la CI del repositorio ni la validación física del MSI.
-
+Si C07 batch o C08 todavía no se han ejecutado, el bundle puede ser válido (`ok=true`) pero `functional_complete=false` y el estado se muestra como pendiente. Una captura batch-only puede tener `c07_batch_correlation=true` mientras `c07_request_correlation` permanece pendiente; la aceptación request-level previa se mantiene en el INDEX maestro y no se degrada por no repetirse en este run. Un informe C08 con excepción o bloqueo impide la aceptación. Los gates de campaña no sustituyen la CI del repositorio ni la validación física del MSI.
 
 El informe C08 puede mantenerse como artefacto de campaña externo. Para verificarlo sin incorporarlo al checksum del run, se acepta `nepenthes verify RUN_DIR --c08-report REPORT.json`; el resultado incluye la ruta y SHA-256 del informe. El comparador registra además los SHA-256 de cada evidencia emparejada.
 

@@ -314,12 +314,15 @@ def inspect(a):
  print(json.dumps(json.loads(f.read_text()),indent=2));return 0
 def validate_event_contract(events):
  errors=[]
- request_starts={};request_ends={};nvtx_starts={};nvtx_ends={};clock_points=[];clock_labels={}
+ request_starts={};request_ends={};nvtx_starts={};nvtx_ends={}
+ batch_nvtx_starts={};batch_nvtx_ends={};batch_members={};batch_member_request_ids={}
+ clock_points=[];clock_labels={}
  allowed={"exact","windowed","device_wide","estimated"}
  for line_no,event in enumerate(events,1):
   token=event.get("correlation_token")
   level=event.get("attribution_level")
   kind=event.get("event_kind")
+  label=event.get("label")
   if level is not None and level not in allowed:
    errors.append("invalid attribution_level at event "+str(line_no))
   if token is not None:
@@ -335,28 +338,43 @@ def validate_event_contract(events):
   if kind in ("request_start","request_end") and token is not None:
    target=request_starts if kind=="request_start" else request_ends
    target[token]=target.get(token,0)+1
+  if kind=="routing" and label=="server.batch_member" and token is not None:
+   request_id=event.get("request_id")
+   if isinstance(request_id,bool) or not isinstance(request_id,int) or request_id<=0:
+    errors.append("batch member requires a positive request_id at event "+str(line_no))
+   batch_members[token]=batch_members.get(token,0)+1
+   batch_member_request_ids.setdefault(token,set()).add(request_id)
   if kind=="clock_calibration":
    mono=event.get("monotonic_ns");wall=event.get("timestamp_unix_ns")
    if not isinstance(mono,int) or isinstance(mono,bool) or mono<=0 or not isinstance(wall,int) or isinstance(wall,bool) or wall<=0:
     errors.append("invalid clock_calibration timestamp at event "+str(line_no))
    else:
-    label=event.get("label")
     clock_labels[label]=clock_labels.get(label,0)+1
     clock_points.append((mono,wall,label))
   if kind=="nvtx_marker":
    if token is None or level!="exact":
     errors.append("NVTX marker requires exact correlation token at event "+str(line_no))
-   label=event.get("label")
-   phase="start" if label=="request.start" else "end" if label=="request.end" else None
-   before=event.get("value0");after=event.get("value1")
-   if phase is None:
-    errors.append("invalid NVTX marker phase at event "+str(line_no))
-   elif not isinstance(before,int) or isinstance(before,bool) or not isinstance(after,int) or isinstance(after,bool) or after<before:
-    errors.append("invalid NVTX marker host bracket at event "+str(line_no))
-   elif token is not None:
+   if label in ("request.start","request.end"):
+    scope="request"
+    phase="start" if label=="request.start" else "end"
     target=nvtx_starts if phase=="start" else nvtx_ends
+   elif label in ("batch.start","batch.end"):
+    scope="batch"
+    phase="start" if label=="batch.start" else "end"
+    request_id=event.get("request_id")
+    if isinstance(request_id,bool) or not isinstance(request_id,int) or request_id!=0:
+     errors.append("batch NVTX marker requires request_id=0 at event "+str(line_no))
+    target=batch_nvtx_starts if phase=="start" else batch_nvtx_ends
+   else:
+    scope=None;phase=None;target=None
+    errors.append("invalid NVTX marker phase at event "+str(line_no))
+   before=event.get("value0");after=event.get("value1")
+   if not isinstance(before,int) or isinstance(before,bool) or not isinstance(after,int) or isinstance(after,bool) or after<before:
+    errors.append("invalid NVTX marker host bracket at event "+str(line_no))
+   elif token is not None and target is not None:
     target[token]=target.get(token,0)+1
-   if not isinstance(event.get("timestamp_unix_ns"),int) or event.get("timestamp_unix_ns",0)<=0:
+   wall=event.get("timestamp_unix_ns")
+   if not isinstance(wall,int) or isinstance(wall,bool) or wall<=0:
     errors.append("NVTX marker requires source wall timestamp at event "+str(line_no))
    if clock_domain!="steady_clock":
     errors.append("NVTX marker requires steady_clock at event "+str(line_no))
@@ -364,12 +382,17 @@ def validate_event_contract(events):
  unmatched_request_ends=sum(max(0,n-request_starts.get(token,0)) for token,n in request_ends.items())
  unmatched_nvtx_starts=sum(max(0,n-nvtx_ends.get(token,0)) for token,n in nvtx_starts.items())
  unmatched_nvtx_ends=sum(max(0,n-nvtx_starts.get(token,0)) for token,n in nvtx_ends.items())
+ unmatched_batch_nvtx_starts=sum(max(0,n-batch_nvtx_ends.get(token,0)) for token,n in batch_nvtx_starts.items())
+ unmatched_batch_nvtx_ends=sum(max(0,n-batch_nvtx_starts.get(token,0)) for token,n in batch_nvtx_ends.items())
  for token in set(request_starts)|set(request_ends):
   if request_starts.get(token,0)!=1 or request_ends.get(token,0)!=1:
    errors.append("request token lifecycle is not one start/one end: "+str(token))
  for token in set(nvtx_starts)|set(nvtx_ends):
   if nvtx_starts.get(token,0)!=1 or nvtx_ends.get(token,0)!=1:
-   errors.append("NVTX token lifecycle is not one start/one end: "+str(token))
+   errors.append("request NVTX token lifecycle is not one start/one end: "+str(token))
+ for token in set(batch_nvtx_starts)|set(batch_nvtx_ends):
+  if batch_nvtx_starts.get(token,0)!=1 or batch_nvtx_ends.get(token,0)!=1:
+   errors.append("batch NVTX token lifecycle is not one start/one end: "+str(token))
  clock_points.sort(key=lambda item:item[0])
  if clock_points and (clock_labels.get("clock.calibration.start")!=1 or clock_labels.get("clock.calibration.end")!=1):
   errors.append("clock_calibration requires exactly one start and one end marker")
@@ -386,8 +409,12 @@ def validate_event_contract(events):
    host_clock["calibrated"]=True
  request_token_ids=sorted(set(request_starts)|set(request_ends))
  nvtx_token_ids=sorted(set(nvtx_starts)|set(nvtx_ends))
+ batch_nvtx_token_ids=sorted(set(batch_nvtx_starts)|set(batch_nvtx_ends))
+ batch_member_token_ids=sorted(batch_members)
  if nvtx_token_ids and request_token_ids!=nvtx_token_ids:
-  errors.append("request token set differs from NVTX marker token set")
+  errors.append("request token set differs from NVTX request marker token set")
+ if batch_nvtx_token_ids and batch_member_token_ids!=batch_nvtx_token_ids:
+  errors.append("batch NVTX token set differs from server.batch_member token set")
  summary={"request_tokens":len(request_token_ids),"request_token_ids":request_token_ids,
           "nvtx_token_ids":nvtx_token_ids,
           "unmatched_request_starts":unmatched_request_starts,
@@ -396,6 +423,16 @@ def validate_event_contract(events):
           "nvtx_marker_events":sum(nvtx_starts.values())+sum(nvtx_ends.values()),
           "unmatched_nvtx_starts":unmatched_nvtx_starts,
           "unmatched_nvtx_ends":unmatched_nvtx_ends,
+          "batch_nvtx_tokens":len(batch_nvtx_token_ids),
+          "batch_nvtx_token_ids":batch_nvtx_token_ids,
+          "batch_nvtx_marker_events":sum(batch_nvtx_starts.values())+sum(batch_nvtx_ends.values()),
+          "unmatched_batch_nvtx_starts":unmatched_batch_nvtx_starts,
+          "unmatched_batch_nvtx_ends":unmatched_batch_nvtx_ends,
+          "batch_member_count":sum(batch_members.values()),
+          "batch_member_tokens":len(batch_member_token_ids),
+          "batch_member_token_ids":batch_member_token_ids,
+          "batch_multi_member_tokens":sum(1 for members in batch_member_request_ids.values() if len(members)>=2),
+          "batch_multi_member_token_ids":sorted(token for token,members in batch_member_request_ids.items() if len(members)>=2),
           "host_clock_calibration":host_clock}
  return summary,errors
 
@@ -499,6 +536,10 @@ def verify_run(a):
    except (OSError,json.JSONDecodeError):nsys_import_status="invalid"
  result["nsys_import_status"]=nsys_import_status
  nsys_db=run/"data"/"nepenthes-import.sqlite"
+ result["batch_gpu_activity_count"]=0
+ result["batch_gpu_activity_token_ids"]=[]
+ result["request_nsys_clock_calibration_pairs"]=0
+ result["batch_nsys_clock_calibration_pairs"]=0
  if nsys_enabled and nsys_db.is_file():
   try:
    with sqlite3.connect("file:"+str(nsys_db)+"?mode=ro",uri=True) as db:
@@ -508,43 +549,103 @@ def verify_run(a):
     if not {"nepenthes_imports","nsys_activities"}.issubset(tables):
      result["errors"].append("nepenthes-import.sqlite missing paired import tables")
     else:
-     import_row=db.execute("SELECT run_id FROM nepenthes_imports WHERE run_id=?",(run_id,)).fetchone()
+     import_row=db.execute("SELECT run_id,nsys_clock_calibration_json FROM nepenthes_imports WHERE run_id=?",(run_id,)).fetchone()
      if import_row is None:result["errors"].append("Nsight import run_id does not match manifest")
      columns={row[1] for row in db.execute("PRAGMA table_info(nsys_activities)")}
-     if correlation["nvtx_marker_events"]>0:
+     has_nvtx_markers=(correlation.get("nvtx_marker_events",0)+correlation.get("batch_nvtx_marker_events",0))>0
+     if has_nvtx_markers:
+      required_cols={"nvtx_correlation_token","nvtx_marker_phase","nvtx_marker_scope",
+                      "attributed_request_token","attribution_level","attribution_status",
+                      "attributed_batch_token","batch_attribution_level","batch_attribution_status"}
+      if not required_cols.issubset(columns):
+       result["errors"].append("Nsight activity schema lacks request/batch attribution columns")
+      else:
+       gpu_kinds=("cuda_kernel","cuda_memcpy","cuda_memset")
+       false_exact=db.execute(
+        "SELECT count(*) FROM nsys_activities WHERE activity_kind IN ('cuda_kernel','cuda_memcpy','cuda_memset') AND attribution_level='exact'"
+       ).fetchone()[0]
+       batch_false_exact=db.execute(
+        "SELECT count(*) FROM nsys_activities WHERE activity_kind IN ('cuda_kernel','cuda_memcpy','cuda_memset') AND batch_attribution_level='exact'"
+       ).fetchone()[0]
+       missing_window_token=db.execute(
+        "SELECT count(*) FROM nsys_activities WHERE attribution_level='windowed' AND attributed_request_token IS NULL"
+       ).fetchone()[0]
+       batch_missing_window_token=db.execute(
+        "SELECT count(*) FROM nsys_activities WHERE batch_attribution_level='windowed' AND attributed_batch_token IS NULL"
+       ).fetchone()[0]
+       ambiguous_with_token=db.execute(
+        "SELECT count(*) FROM nsys_activities WHERE attribution_status='overlapping_request_windows' AND attributed_request_token IS NOT NULL"
+       ).fetchone()[0]
+       batch_ambiguous_with_token=db.execute(
+        "SELECT count(*) FROM nsys_activities WHERE batch_attribution_status='overlapping_batch_windows' AND attributed_batch_token IS NOT NULL"
+       ).fetchone()[0]
+       bad_marker=db.execute(
+        """SELECT count(*) FROM nsys_activities
+           WHERE activity_kind='nvtx_event' AND nvtx_marker_phase IS NOT NULL AND (
+             (nvtx_marker_scope='request' AND
+               (nvtx_correlation_token IS NULL OR attributed_request_token IS NULL OR
+                attributed_request_token!=nvtx_correlation_token OR attribution_level!='exact'))
+             OR
+             (nvtx_marker_scope='batch' AND
+               (nvtx_correlation_token IS NULL OR attributed_batch_token IS NULL OR
+                attributed_batch_token!=nvtx_correlation_token OR batch_attribution_level!='exact'))
+           )"""
+       ).fetchone()[0]
+       result["batch_gpu_activity_count"]=db.execute(
+        "SELECT count(*) FROM nsys_activities WHERE activity_kind IN ('cuda_kernel','cuda_memcpy','cuda_memset') AND batch_attribution_level='windowed' AND attributed_batch_token IS NOT NULL"
+       ).fetchone()[0]
+       result["batch_gpu_activity_token_ids"]=sorted(row[0] for row in db.execute(
+        "SELECT DISTINCT attributed_batch_token FROM nsys_activities WHERE activity_kind IN ('cuda_kernel','cuda_memcpy','cuda_memset') AND batch_attribution_level='windowed' AND attributed_batch_token IS NOT NULL"
+       ).fetchall())
+       if false_exact:result["errors"].append("Nsight GPU activities claim exact request attribution")
+       if batch_false_exact:result["errors"].append("Nsight batch GPU activities claim exact batch attribution")
+       if missing_window_token:result["errors"].append("windowed Nsight activity lacks request token")
+       if batch_missing_window_token:result["errors"].append("windowed Nsight batch activity lacks batch token")
+       if ambiguous_with_token:result["errors"].append("ambiguous overlapping request window carries a request token")
+       if batch_ambiguous_with_token:result["errors"].append("ambiguous overlapping batch window carries a batch token")
+       if bad_marker:result["errors"].append("Nsight request/batch NVTX marker identity is not exact or token-consistent")
       if "nsys_clock_calibration_json" not in {row[1] for row in db.execute("PRAGMA table_info(nepenthes_imports)")}:
        result["errors"].append("Nsight importer schema lacks nsys_clock_calibration_json")
       else:
-       calibration=json.loads(db.execute("SELECT nsys_clock_calibration_json FROM nepenthes_imports WHERE run_id=?",(run_id,)).fetchone()[0])
+       calibration=json.loads(import_row[1] or "{}")
        result["nsys_clock_calibration"]=calibration
+       pairs=calibration.get("pairs",[])
+       result["request_nsys_clock_calibration_pairs"]=sum(1 for pair in pairs if pair.get("scope")=="request")
+       result["batch_nsys_clock_calibration_pairs"]=sum(1 for pair in pairs if pair.get("scope")=="batch")
        if calibration.get("matched_marker_pairs",0)<2 or not calibration.get("nsight_clock_calibrated"):
         result["errors"].append("NVTX markers present but host↔Nsight clock calibration is incomplete")
-      required_cols={"attributed_request_token","attribution_level","attribution_status"}
-      if not required_cols.issubset(columns):
-       result["errors"].append("Nsight activity schema lacks explicit attribution columns")
-      else:
-       false_exact=db.execute("SELECT count(*) FROM nsys_activities WHERE activity_kind IN ('cuda_kernel','cuda_memcpy','cuda_memset') AND attribution_level='exact'").fetchone()[0]
-       missing_window_token=db.execute("SELECT count(*) FROM nsys_activities WHERE attribution_level='windowed' AND attributed_request_token IS NULL").fetchone()[0]
-       ambiguous_with_token=db.execute("SELECT count(*) FROM nsys_activities WHERE attribution_status='overlapping_request_windows' AND attributed_request_token IS NOT NULL").fetchone()[0]
-       if false_exact:result["errors"].append("Nsight GPU activities claim exact request attribution")
-       if missing_window_token:result["errors"].append("windowed Nsight activity lacks request token")
-       if ambiguous_with_token:result["errors"].append("ambiguous overlapping window carries a request token")
-       if {"nvtx_correlation_token","nvtx_marker_phase"}.issubset(columns):
-        bad_marker=db.execute("SELECT count(*) FROM nsys_activities WHERE activity_kind='nvtx_event' AND nvtx_marker_phase IS NOT NULL AND (nvtx_correlation_token IS NULL OR attributed_request_token!=nvtx_correlation_token OR attribution_level!='exact')").fetchone()[0]
-        if bad_marker:result["errors"].append("Nsight NVTX marker identity is not exact or token-consistent")
   except (sqlite3.Error,TypeError,ValueError) as exc:result["errors"].append("nepenthes-import.sqlite invalid: "+str(exc))
  elif nsys_enabled:
   result["errors"].append("data/nepenthes-import.sqlite missing while Nsight capture is enabled")
- result["checks"]["nsys_import"]=not any(x.startswith(("data/nsys-import.json","data/nepenthes-import.sqlite","Nsight import","nepenthes-import.sqlite","NVTX markers","Nsight GPU","windowed Nsight","ambiguous overlapping","Nsight NVTX marker")) for x in result["errors"])
+ result["checks"]["nsys_import"]=not any(x.startswith((
+  "data/nsys-import.json","data/nepenthes-import.sqlite","Nsight import","nepenthes-import.sqlite",
+  "Nsight GPU","Nsight activity schema","windowed Nsight","ambiguous overlapping",
+  "NVTX markers","Nsight request/batch","Nsight batch"
+ )) for x in result["errors"])
  nsys_calibration=result.get("nsys_clock_calibration",{})
- c07_pass=(nsys_enabled and correlation.get("request_tokens",0)>0
+ request_c07_pass=(nsys_enabled and correlation.get("request_tokens",0)>0
            and correlation.get("nvtx_marker_events",0)>=2
            and correlation.get("request_token_ids")==correlation.get("nvtx_token_ids")
            and correlation.get("host_clock_calibration",{}).get("calibrated") is True
-           and nsys_calibration.get("matched_marker_pairs",0)>=2
+           and result.get("request_nsys_clock_calibration_pairs",0)>=2
            and nsys_calibration.get("nsight_clock_calibrated") is True
+           and result["checks"]["correlation_contract"]
            and result["checks"]["nsys_import"])
- result["checks"]["c07_correlation"]=bool(c07_pass)
+ batch_tokens=correlation.get("batch_nvtx_token_ids",[])
+ batch_c07_pass=(nsys_enabled and bool(batch_tokens)
+           and correlation.get("batch_nvtx_marker_events",0)==2*len(batch_tokens)
+           and correlation.get("batch_member_token_ids")==batch_tokens
+           and correlation.get("batch_member_count",0)>0
+           and correlation.get("batch_multi_member_tokens",0)>0
+           and correlation.get("host_clock_calibration",{}).get("calibrated") is True
+           and result.get("batch_nsys_clock_calibration_pairs",0)==correlation.get("batch_nvtx_marker_events",0)
+           and nsys_calibration.get("nsight_clock_calibrated") is True
+           and result.get("batch_gpu_activity_token_ids")==batch_tokens
+           and result.get("batch_gpu_activity_count",0)>=len(batch_tokens)
+           and result["checks"]["correlation_contract"]
+           and result["checks"]["nsys_import"])
+ result["checks"]["c07_correlation"]=bool(request_c07_pass)
+ result["checks"]["c07_batch_correlation"]=bool(batch_c07_pass)
  c08_path=Path(a.c08_report).expanduser().resolve() if getattr(a,"c08_report",None) else run/"data"/"c08-overhead-report.json"
  c08_status="not_run";c08_pass=False
  if getattr(a,"c08_report",None) and not c08_path.is_file():
@@ -568,11 +669,13 @@ def verify_run(a):
  result["c08_overhead_status"]=c08_status
  result["checks"]["c08_overhead"]=bool(c08_pass)
  result["acceptance"]={
-  "c07":"passed" if c07_pass else "pending",
+  "c07_request":"passed" if request_c07_pass else "pending",
+  "c07_batch":"passed" if batch_c07_pass else "pending",
+  "c07":"passed" if (request_c07_pass and batch_c07_pass) else "pending",
   "c08":"passed" if c08_pass else ("informational_only" if c08_status=="informational_only" else "pending"),
   "scope":"run-level evidence gates only; project CI and physical hardware acceptance remain separate",
  }
- result["functional_complete"]=bool(c07_pass and c08_pass)
+ result["functional_complete"]=bool(request_c07_pass and batch_c07_pass and c08_pass)
  result["checks"]["report_html"]=(run/"reports"/"index.html").is_file()
  if not result["checks"]["report_html"]:result["errors"].append("reports/index.html missing")
  result["ok"]=not result["errors"]

@@ -560,14 +560,14 @@ def test_cli_verifier_accepts_importer_nvtx_clock_contract():
     events = [
         {"event_kind": "clock_calibration", "label": "clock.calibration.start",
          "monotonic_ns": 100, "timestamp_unix_ns": 1000, "clock_domain": "steady_clock"},
-        {"event_kind": "request_start", "correlation_token": 77, "attribution_level": "exact"},
-        {"event_kind": "nvtx_marker", "label": "request.start", "correlation_token": 77,
+        {"event_kind": "request_start", "request_id": 42, "correlation_token": 77, "attribution_level": "exact"},
+        {"event_kind": "nvtx_marker", "label": "request.start", "request_id": 42, "correlation_token": 77,
          "attribution_level": "exact", "clock_domain": "steady_clock",
          "timestamp_unix_ns": 1100, "value0": 101, "value1": 105},
-        {"event_kind": "nvtx_marker", "label": "request.end", "correlation_token": 77,
+        {"event_kind": "nvtx_marker", "label": "request.end", "request_id": 42, "correlation_token": 77,
          "attribution_level": "exact", "clock_domain": "steady_clock",
          "timestamp_unix_ns": 1900, "value0": 901, "value1": 905},
-        {"event_kind": "request_end", "correlation_token": 77, "attribution_level": "exact"},
+        {"event_kind": "request_end", "request_id": 42, "correlation_token": 77, "attribution_level": "exact"},
         {"event_kind": "clock_calibration", "label": "clock.calibration.end",
          "monotonic_ns": 1000, "timestamp_unix_ns": 1900, "clock_domain": "steady_clock"},
     ]
@@ -886,3 +886,57 @@ def test_paired_nvtx_recovers_process_id_from_global_tid_when_global_pid_is_abse
             "FROM nsys_activities WHERE activity_kind='cuda_kernel'"
         ).fetchone()
     assert row == (process_id, 77, "windowed", "unique_explicit_request_window")
+
+
+def test_cli_verifier_rejects_batch_nvtx_token_set_mismatch():
+    import importlib.util
+
+    cli_path = Path(__file__).resolve().parents[1] / "scripts" / "nepenthes.py"
+    spec = importlib.util.spec_from_file_location("nepenthes_cli_batch_mismatch", cli_path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    events = [
+        {"event_kind": "clock_calibration", "label": "clock.calibration.start",
+         "monotonic_ns": 100, "timestamp_unix_ns": 1000, "clock_domain": "steady_clock"},
+        {"event_kind": "clock_calibration", "label": "clock.calibration.end",
+         "monotonic_ns": 1000, "timestamp_unix_ns": 1900, "clock_domain": "steady_clock"},
+        {"event_kind": "nvtx_marker", "label": "batch.start", "request_id": 0,
+         "correlation_token": 123, "attribution_level": "exact", "clock_domain": "steady_clock",
+         "timestamp_unix_ns": 1100, "value0": 101, "value1": 105},
+        {"event_kind": "nvtx_marker", "label": "batch.end", "request_id": 0,
+         "correlation_token": 123, "attribution_level": "exact", "clock_domain": "steady_clock",
+         "timestamp_unix_ns": 1900, "value0": 901, "value1": 905},
+        {"event_kind": "routing", "label": "server.batch_member", "request_id": 42,
+         "correlation_token": 124, "attribution_level": "exact"},
+    ]
+    summary, errors = module.validate_event_contract(events)
+    assert summary["batch_nvtx_token_ids"] == [123]
+    assert summary["batch_member_token_ids"] == [124]
+    assert "batch NVTX token set differs from server.batch_member token set" in errors
+
+
+def test_cli_verifier_requires_zero_request_id_for_batch_nvtx():
+    import importlib.util
+
+    cli_path = Path(__file__).resolve().parents[1] / "scripts" / "nepenthes.py"
+    spec = importlib.util.spec_from_file_location("nepenthes_cli_batch_request_id", cli_path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    events = [
+        {"event_kind": "clock_calibration", "label": "clock.calibration.start",
+         "monotonic_ns": 100, "timestamp_unix_ns": 1000, "clock_domain": "steady_clock"},
+        {"event_kind": "clock_calibration", "label": "clock.calibration.end",
+         "monotonic_ns": 1000, "timestamp_unix_ns": 1900, "clock_domain": "steady_clock"},
+        {"event_kind": "nvtx_marker", "label": "batch.start", "request_id": 42,
+         "correlation_token": 123, "attribution_level": "exact", "clock_domain": "steady_clock",
+         "timestamp_unix_ns": 1100, "value0": 101, "value1": 105},
+        {"event_kind": "nvtx_marker", "label": "batch.end", "request_id": 0,
+         "correlation_token": 123, "attribution_level": "exact", "clock_domain": "steady_clock",
+         "timestamp_unix_ns": 1900, "value0": 901, "value1": 905},
+        {"event_kind": "routing", "label": "server.batch_member", "request_id": 42,
+         "correlation_token": 123, "attribution_level": "exact"},
+    ]
+    _, errors = module.validate_event_contract(events)
+    assert any("batch NVTX marker requires request_id=0" in error for error in errors)
