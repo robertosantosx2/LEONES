@@ -128,10 +128,10 @@ def test_raw_aiperf_log_retention_is_explicit_opt_in(tmp_path: Path):
 def test_runner_accepts_aiperf_014_when_explicitly_pinned(tmp_path: Path):
     fake = tmp_path / "aiperf"
     fake.write_text(
-        "#!/bin/sh\\n"
-        'if [ "$1" = "--version" ]; then echo "AIPerf 0.14.0"; exit 0; fi\\n'
-        "sleep 0.2\\n"
-        "echo profile-complete\\n",
+        "#!/bin/sh\n"
+        'if [ "$1" = "--version" ]; then echo "AIPerf 0.14.0"; exit 0; fi\n'
+        "sleep 0.2\n"
+        "echo profile-complete\n",
         encoding="utf-8",
     )
     fake.chmod(0o755)
