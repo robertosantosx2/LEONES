@@ -395,3 +395,11 @@ Esta sección sustituye los estados parciales anteriores para la aceptación del
 ### Auditoría recursiva de Tandem.cpp — 2026-11-19
 
 Se recorrió el árbol completo de LEONES (`main`, 1.783 archivos; árbol no truncado), se revisaron los archivos del subárbol `research/moe/tandem.cpp`, scripts/tests/migraciones NEPENTHES y la PR de instrumentación en el repositorio Tandem.cpp. La sección 3.3 anterior recoge la implementación, su cobertura, la evidencia CI y los límites de aceptación encontrados. La auditoría confirma que el directorio `research/moe/tandem.cpp` de LEONES es un snapshot de procedencia y del parche base, mientras que la implementación activa del hook/sink y del aplicador de sondas vive en `robertosantosx2/tandem.cpp`, PR #1. No deben confundirse ambas capas.
+
+
+### Resolución del bloqueo `globalTid` y estado C07 — 2026-11-20
+
+- [LEONES PR #243](https://github.com/robertosantosx2/LEONES/pull/243) se fusionó en `ea5ebc4e251ce9beb7341207f8f3970eb81007f1`. El importer conserva `globalPid` cuando está presente y, si falta en `NVTX_EVENTS`, recupera el identificador de proceso del `globalTid` observado en C07 limpiando los 24 bits inferiores (`0xFFFFFFFFFF000000`).
+- El workflow exacto del HEAD `60d4f6a53f6df879116c8a8a796df2d27bc01fc7` terminó con **11/11 checks en `completed/success`**, incluidos importer tests (**122 passed**), contract tests, runtime contracts, regression, RC3 release gate, A01 y V1 complete. Esta es aceptación de software/importer para el formato observado, no aceptación física C07.
+- La PR fallida inicial #241 se cerró sin merge; su diagnóstico y logs se conservan en el historial. No usar el decode de 32 bits de aquel HEAD.
+- **C07 continúa pendiente:** importar los artefactos originales JSONL + Nsight SQLite del MSI con el importer corregido, comprobar hashes/manifest, integridad SQLite, cobertura y `nepenthes verify`. Solo solicitar nueva captura si esa importación demuestra que los artefactos existentes son insuficientes. C08 y overhead siguen pendientes.
