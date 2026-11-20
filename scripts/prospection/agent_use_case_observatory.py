@@ -139,7 +139,8 @@ def stable_record(repo: dict, query_id: str, token: str, observed: str) -> dict:
         score += 1
         evidence.append("adopción observable (≥10 stars)")
 
-    score = min(score, 10)\n    band = "promising" if score >= 7 else "partial" if score >= 4 else "limited"
+    score = min(score, 10)
+    band = "promising" if score >= 7 else "partial" if score >= 4 else "limited"
     return {
         "id": full_name.lower(),
         "name": full_name,
