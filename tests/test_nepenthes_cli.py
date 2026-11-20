@@ -140,7 +140,7 @@ print("nsys-wrapped")
  assert "raw/nsys.sqlite" in m["nsys"]["outputs"]
  assert (run/"raw"/"nsys.sqlite").is_file()
  assert (run/"raw"/"engine-events.jsonl").is_file()
- assert m["event_merge"]["counts"]["engine-events.jsonl"]==9
+ assert m["event_merge"]["counts"]["engine-events.jsonl"]==10
  combined=[json.loads(line) for line in (run/"raw"/"events.jsonl").read_text().splitlines()]
  assert any(event["source"]=="test-engine" and event["source_event_id"]=="request-start" for event in combined)
  assert len({event["event_id"] for event in combined})==len(combined)
