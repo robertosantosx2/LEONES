@@ -642,7 +642,7 @@ def test_event_rows_separates_compact_sink_summary_from_telemetry(tmp_path: Path
         "write_errors": 0,
     }
     with jsonl.open("a", encoding="utf-8") as stream:
-        stream.write(json.dumps(summary) + "\\n")
+        stream.write(json.dumps(summary) + "\n")
     summaries: list[dict] = []
     events = list(event_rows(jsonl, summaries))
     assert [event["event_kind"] for event in events] == ["transfer"]
