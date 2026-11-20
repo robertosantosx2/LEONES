@@ -82,11 +82,11 @@ Principios no negociables:
 
 **Naturaleza:** `robertosantosx2/tandem.cpp` es una distribución patch-based sobre llama.cpp, no un motor independiente. Su identidad de evidencia es `source=tandem.cpp`; LEONES mantiene el runner, contrato, importadores, manifiestos y aceptación. La instrumentación activa vive en el repositorio Tandem.cpp; `research/moe/tandem.cpp` de LEONES conserva snapshot/procedencia y documentación subordinada.
 
-**Estado remoto auditado — 2026-11-19:**
+**Estado remoto auditado — 2026-11-20:**
 - [Tandem.cpp PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1) está fusionada en `fcf8c837b05e0c80c3539d6c1d0c317ba2f40456`. HEAD de implementación validado por CI: `170d3af9918e2cdf3b5c72f6bb61ab0c3b7b6b52`. Implementa hook C++17, timestamps monotónicos, scoped durations, sink JSONL asíncrono con cola bounded de 8192 entradas, writer separado, shutdown seguro y aplicador determinista de sondas.
 - [Tandem.cpp PR #2](https://github.com/robertosantosx2/tandem.cpp/pull/2) está fusionada en `ecfbae9fb23dae8904ccaa981ee115f9b17c56bd`; añade la guía inglesa y navegación bidireccional entre documentación española/inglesa, sin cambios runtime.
 - [Tandem.cpp PR #3](https://github.com/robertosantosx2/tandem.cpp/pull/3) está fusionada en `e2bf8fccab05a0ffe87f526a77606e3f941d172d`. Reserva `request_id=0` para eventos no correlacionados y transforma task IDs del servidor mediante `request_id_from_task_id()`: task ID 0 pasa a request ID 1, preservando el ID original en `value0`. La corrección se aplica a eventos server request start/end y routing; no atribuye IDs a workers, CUDA asíncrono ni eventos de shared batch sin identidad segura.
-- Dependencia cerrada en orden: #1 aporta la instrumentación; #3 corrige la semántica de identidad sobre esa base; #2 añade la guía inglesa. Las PR #1/#2/#3 están fusionadas; PR #4 y #5 también quedaron aceptadas posteriormente. PR #6 es especificación documental; PR #7 es la implementación runtime producer-side NVTX actualmente abierta en draft y aún no aceptada.
+- Dependencia cerrada en orden: #1 aporta la instrumentación; #3 corrige la semántica de identidad sobre esa base; #2 añade la guía inglesa. Las PR #1/#2/#3 están fusionadas; PR #4 y #5 también quedaron aceptadas posteriormente. PR #6 es especificación documental; PR #7 implementa el productor runtime NVTX y ya está fusionada mediante merge `7c4300eb754d94737c6aa8d7ffa0077aac7ddcb9`.
 
 **Cobertura instrumentada declarada por el código:**
 - lifecycle de request/server, graph compute y sincronización;
