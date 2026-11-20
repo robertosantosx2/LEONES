@@ -974,15 +974,15 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                         attributed_batch_token = nvtx_marker["token"]
                         batch_attribution_level, batch_attribution_status = "exact", "marker_identity"
                 elif kind in ("cuda_kernel", "cuda_memcpy", "cuda_memset"):
-                activity_thread_id, thread_identity_status = resolve_activity_thread_id(
-                    row, runtime_thread_ids
-                )
-                runtime_thread_identity_counts[thread_identity_status] += 1
-                row["_nepenthes_thread_identity"] = {
-                    "thread_id": activity_thread_id,
-                    "source": thread_identity_status,
-                    "correlation_id": first(row, ("correlationId", "correlation_id")),
-                }
+                    activity_thread_id, thread_identity_status = resolve_activity_thread_id(
+                        row, runtime_thread_ids
+                    )
+                    runtime_thread_identity_counts[thread_identity_status] += 1
+                    row["_nepenthes_thread_identity"] = {
+                        "thread_id": activity_thread_id,
+                        "source": thread_identity_status,
+                        "correlation_id": first(row, ("correlationId", "correlation_id")),
+                    }
                     (
                         attributed_request_token, attribution_level, attribution_status,
                         attributed_batch_token, batch_attribution_level, batch_attribution_status,
