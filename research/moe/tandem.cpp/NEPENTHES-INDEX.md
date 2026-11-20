@@ -455,3 +455,12 @@ The two Qwen3.5-35B GGUF copies listed in the MSI inventory have now been compar
 - MSI postcondition: secondary path absent; root filesystem availability increased from 181 GiB to 191 GiB and usage fell from 80% to 79%, reclaiming approximately 9.94 GiB.
 - This is a completed, narrowly scoped model-file deduplication. It does not authorize cleanup of other models, benchmark directories, caches, Git worktrees, branches or stashes.
 - Documentation/evidence PR: [LEONES PR #252](https://github.com/robertosantosx2/LEONES/pull/252), merged as `f11f413fcaa811cb6e24d7ca3213b1c5ebd2d549`; all four workflows passed. The follow-up records the physical deletion and postconditions; the earlier inventory sections remain historical snapshots.
+
+
+### Remote repository audit refresh — after PR #253, 2026-11-20
+
+- LEONES PR #253 merged as `faa1ac5b2f3dd21c3fbd44e85130602da96aeae3`; its four required CI checks passed. The MSI Qwen3.5-35B duplicate removal and 9.94 GiB space recovery are recorded in the MSI analysis above.
+- Fresh paginated GitHub API snapshot: 344 remote branch refs, 276 unique tips, 12 exact-tip duplicate groups (80 refs / 68 excess aliases), 55 open PRs.
+- The JALON2 same-tip refs `jalon2-evidence-bridge` and `jalon2-closed` remain protected because the former is the head of open PR #64; all local refs/worktrees still require reconciliation before any cleanup.
+- No branch aliases or local Git worktrees were deleted. The GitHub integration used for this pass has no branch-ref deletion action; the 68-alias queue remains pending local preservation checks and a deletion-capable, explicitly reviewed operation.
+- The AIPerf/OTel integration chain #159–#173 remains stacked. PR #159 is still a draft despite green checks, so no child PR was merged or retargeted. PRs #162 and #164 are closed unmerged; #165 is the active adapter successor in the chain. Continue strictly parent-first after the draft is made ready and its scope is approved.
