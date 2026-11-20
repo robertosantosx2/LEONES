@@ -1,0 +1,1 @@
+This branch implements the common reference harness router, optional adapter boundaries and offline contract tests.
