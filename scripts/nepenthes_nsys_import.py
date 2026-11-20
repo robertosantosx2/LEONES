@@ -358,9 +358,6 @@ def event_rows(path: Path):
                         f"JSONL line {line_no}: sink_summary events_drained does not match "
                         f"the number of preceding event records ({sum(counts.values())})"
                     )
-                if item["event_id"] in seen:
-                    raise ValueError(f"JSONL line {line_no}: duplicate event_id {item['event_id']}")
-                seen.add(item["event_id"])
                 original = dict(item)
                 item.setdefault("monotonic_ns", 0)
                 item.setdefault("request_id", 0)
