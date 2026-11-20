@@ -591,3 +591,19 @@ Esta actualización supersede únicamente los gates que el registro de importaci
 - Ambas PRs son un stack exploratorio independiente y se mantienen en **backlog diferido**, detrás de C07 físico de Tandem.cpp y C08 AIPerf-first. No fusionar ni retargetear por separado; reabrir la prioridad solo cuando los gates anteriores estén aceptados y el INDEX se actualice explícitamente.
 - La CI sintética/host de #147/#149 no sustituye ejecución física ni mediciones en MSI. No se declara validación de rendimiento, capacidad out-of-core, PCIe/expert traffic ni mejora de throughput a partir de los tests.
 - La traducción inglesa [PR #154](https://github.com/robertosantosx2/LEONES/pull/154) permanece draft y bloqueada: debe regenerarse desde el INDEX español vigente, nunca fusionarse como espejo del snapshot del 2026-11-15.
+
+### Reconciliación software P0 del importer Nsight — 2026-11-20
+
+**Aceptado en `main` para el alcance software/CI; no equivale a aceptación física C07/C08.** La implementación canónica está en `scripts/nepenthes_nsys_import.py` y sus regresiones en `tests/test_nepenthes_nsys_import.py`.
+
+- Decodificación dinámica de `ENUM_CUDA_MEMCPY_OPER` y `ENUM_CUDA_MEM_KIND` a partir de las tablas de la captura; columnas consultables para operación, origen y destino, con estado de decodificación.
+- Los valores desconocidos y sentinelas unsigned se preservan en `raw_json`; no se fabrican etiquetas. Las pruebas cubren mappings HTOD/DTOH, memoria PAGEABLE/PINNED/DEVICE y sentinelas `-1`/UINT64_MAX.
+- Importación paired y Nsight-only con lectura explícita de `NVTX_EVENTS`, extracción de tokens request/batch, calibración host↔Nsight con incertidumbre de bracket y atribución `windowed` solo dentro de una ventana explícita única.
+- Ventanas solapadas y ámbitos ambiguos se rechazan; la pertenencia batch es many-to-many. Se aplican límites de proceso/hilo, incluida la recuperación documentada de process identity desde `globalTid` cuando falta `globalPid`.
+- Las pruebas cubren calibración paired, rechazo de solapamientos, batch many-to-many, cruce de hilos, reimportación sin sobrescritura y migración idempotente.
+- Las ramas históricas `feat/nepenthes-nsys-enum-decode-20261119` y `feat/nepenthes-nsys-nvtx-correlation-20261119` quedan obsoletas frente a la implementación de `main`; no son fuente de estado ni deben fusionarse para recuperar estas capacidades.
+
+**Pendiente fuera del gate software:** validación adicional con la versión exacta de Nsight instalada en MSI; C07 batch físico de Tandem.cpp; C08 AIPerf-first con al menos tres pares y gate de overhead; correlación end-to-end física de issue [#212](https://github.com/robertosantosx2/LEONES/issues/212). Mantener la atribución no causal y no inferir relaciones por proximidad temporal.
+
+El detalle técnico y el inventario de pruebas se mantienen en [NEPENTHES-SOFTWARE-P0-STATUS-20261120.md](NEPENTHES-SOFTWARE-P0-STATUS-20261120.md). Este INDEX sigue siendo la única autoridad para prioridades, estado global y aceptación.
+
