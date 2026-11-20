@@ -17,7 +17,7 @@ Este plan es un anexo técnico de referencia que amplía el trabajo histórico d
 
 ## Área técnica A — Inferscope: energía, NVML y latencia por token
 
-**Máximo interés inmediato.** Investigar primero las ideas y mecanismos de Inferscope y traducirlos a requisitos verificables de NEPENTHES. No copiar código o asumir compatibilidad sin revisar licencia, API y comportamiento. Fuente de estudio: [Inferscope](https://github.com/MicheleCampi/inferscope), Apache-2.0.
+**Área de investigación documentada.** Investigar las ideas y mecanismos de Inferscope y traducirlos a requisitos verificables de NEPENTHES solo cuando el INDEX maestro lo priorice. No copiar código o asumir compatibilidad sin revisar licencia, API y comportamiento. Fuente de estudio: [Inferscope](https://github.com/MicheleCampi/inferscope), Apache-2.0.
 
 ### 1.1 Muestreador NVML por dispositivo
 
