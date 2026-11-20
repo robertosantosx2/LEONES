@@ -6,7 +6,8 @@ IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y 
 
 ## Gobernanza de ingeniería
 
-- **[Directiva HDAE](docs/engineering/HDAE-DIRECTIVE.md)**: metodología superior de ingeniería dirigida por humanos y ejecutada por agentes para LEONES y sus subproyectos. La directiva establece gates, evidencia, checkpoints, límites y desarrollo remoto-first.
+- **[Directiva HDAE](docs/engineering/HDAE-DIRECTIVE.md)**: metodología superior de ingeniería dirigida por humanos y ejecutada por agentes para LEONES y sus subproyectos.
+- **[Referencia HDAE fijada](docs/engineering/HDAE-REFERENCE.md)**: snapshot consultable del fork LEONES en [robertosantosx2/hdae](https://github.com/robertosantosx2/hdae), fijado al commit `12d1a3389e74642dddee47a6cc4cb217f55f1144`; el upstream [gmkurtzer/hdae](https://github.com/gmkurtzer/hdae) solo se usa para evaluar actualizaciones propuestas.
 - [AGENTS.md](AGENTS.md) · [Checkpoint de adopción HDAE](docs/engineering/HDAE-CHECKPOINT.md).
 
 ## Proyectos de investigación y arquitectura
