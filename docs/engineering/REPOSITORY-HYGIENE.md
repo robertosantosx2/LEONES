@@ -94,3 +94,35 @@ A second GitHub API snapshot was taken after the plan was merged:
 - No branch was deleted. The integration available here still does not expose branch-ref deletion.
 
 The 338-ref count includes the new documentation branches created during this audit; it is not directly comparable to the 335-ref initial snapshot without accounting for those additions.
+
+
+## MSI inventory and remote recheck — 2026-11-20 (20:10–20:22 CET)
+
+The MSI read-only inventory is now merged via [LEONES PR #250](https://github.com/robertosantosx2/LEONES/pull/250), merge commit `d01066cd05adebddbed526d6b8bb6659d3832e74`. Raw files live in `docs/inventory/msi/`; the detailed interpretation and preservation-first order are in `docs/inventory/msi/ANALYSIS.md`. The NEPENTHES master INDEX was updated in the same PR and remains the single source of truth for NEPENTHES priorities.
+
+MSI snapshot findings: root filesystem 937 GiB total / 709 GiB used / 181 GiB available (80%); `/home/ssantos` approximately 526 GiB; model inventory 1,931 paths / 298.96 GiB; 111 checkout/worktree sections, 30 dirty sections and 14 stash records. Counts overlap nested repositories, caches and repeated files and are not additive. No physical cleanup was performed.
+
+A fresh GitHub API recheck after the inventory merge found:
+- 341 remote branch refs, 273 unique tip commits.
+- The same 12 exact-tip duplicate groups, 80 refs total and 68 excess aliases.
+- 55 open pull requests.
+- Only `jalon2-evidence-bridge` among the duplicate aliases is used as an open PR head/base (PR #64 head). Retain it; no alias deletion is authorized by this recheck.
+- The MSI inventory branch is merged and remains as an audit ref. TensorFold checkout-forensics PR #249 is closed unmerged; its branch is not considered integrated evidence and the local TensorFold anomaly remains preserved by the MSI inventory.
+
+### Updated local preservation gates
+
+The MSI inventory supersedes earlier partial checkout lists where they differ. In particular, preserve without mutation:
+- `~/tensorfold-pr1879-real-validation-20261109/TensorFold`: 808 staged paths plus one unstaged path (809 total); do not publish its aggregate diff.
+- `~/leones-work/LEONES/experimental/companion-hub`: 2,993 staged deletions; inspect intent before any reset or restore.
+- `~/nepenthes-validation/llama.cpp-pr10`: original JSONL, Nsight SQLite, `.nsys-rep` and all import DBs.
+- `~/build/leones-engine-builds/tandem-cpp/source`: untracked source tree with no initial commit; preserve until provenance and canonical source relationship are established.
+- LEONES/Tandem/llama.cpp dirty or detached validation worktrees and the 14 stash records; same stash message across worktrees does not mean same stash object.
+
+### Next safe sequence
+
+1. On MSI, run read-only SHA-256 and inode checks for the two 9.94 GiB Qwen3.5-35B GGUF copies, then check references in manifests/scripts. Do not delete either copy yet.
+2. Capture Git common-dir and per-worktree branch/HEAD/upstream/ahead-behind metadata for the dirty preservation set; verify each stash belongs to its reported Git directory.
+3. Reconcile the current 55 open PR dependency graph, especially stacked NEPENTHES #159–#173, before changing any base/head or closing PRs.
+4. Only after hashes, commit reachability, PR dependencies and recovery copies are verified, propose reversible local consolidation. No reset, clean, prune, branch deletion, stash mutation, model deletion or directory move is authorized by this audit.
+
+**Tooling boundary:** branch-ref deletion is still unavailable through the current GitHub integration. The 68 aliases remain a reviewed queue, not completed cleanup.
