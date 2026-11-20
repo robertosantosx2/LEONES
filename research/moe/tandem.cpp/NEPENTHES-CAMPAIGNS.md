@@ -1,6 +1,6 @@
 # NEPENTHES — campañas de validación y experimentación
 
-**Corte:** 2026-11-15.  
+**Corte:** 2026-11-20.  
 **Regla:** una campaña solo se marca como completada para el alcance demostrado por sus artefactos. Compilar, ejecutar una inferencia, capturar Nsight e importar un par sincronizado son gates distintos.
 
 ## Resumen de campañas
@@ -12,10 +12,19 @@
 | C02 | Contrato universal + sink JSONL | Implementado y CI | Tandem.cpp PR #1; contrato, sink concurrente y aplicación de sondas. |
 | C03 | Instalador, CLI y paquete | Validación funcional básica completada | LEONES PR #152; doctor, self-test, smoke inocuo y propagación de exit code 23. |
 | C04 | Importación histórica Nsight-only Qwen3.5-35B | Importada y auditada | 151.039 actividades, ocho familias CUPTI; SQLite íntegro. Fuente histórica sin JSONL emparejado. |
-| C05 | Build CUDA instrumentado sobre base pinned | Completada | llama.cpp pinned `f5222f25c18da062ab2b8a2dbbfbf4feae398566`; parches Tandem + runtime + probes aplicados; llama-server CUDA sm_86 compilado. |
+| C05 | Build CUDA instrumentado sobre base pinned | Completada | Evidencia histórica `f5222f25c18da062ab2b8a2dbbfbf4feae398566`; además, llama.cpp PR #10 merge `d4d0b9e` pasó CUDA SM86 en run `44682285336` y Tandem.cpp PR #7 merge `7c4300e` pasó patch application + CUDA SM86 en run `44682021976`. |
 | C06 | Inferencia real con motor instrumentado | Completada para smoke CPU-only | Qwen3.5-4B Q4_K_M; 3.683 eventos motor, 3.117 dentro de petición y 49 eventos KV dentro de la ventana. Nsight desactivado. |
 | C07 | Captura emparejada motor + Nsight | Pendiente | Una misma ejecución/RUN_ID, importación emparejada y correlación/clock mapping demostrados. |
 | C08 | Rendimiento comparativo y recomendaciones | Pendiente | Baseline/control, repeticiones, overhead, bytes/latencias y métricas GPU. |
+
+## Aceptación remota de conectores — 2026-11-20
+
+Esta sección registra gates de software/compilación posteriores al corte de las campañas físicas. No cambia C07 ni C08 a completadas.
+
+- **llama.cpp:** PR #10 fusionada en `d4d0b9eeb2bd0035f525a90aefed111e5d74edcb`; HEAD validado `da0fa44d6445f692b2fdb281d2c95210aeea75ac`; workflow [44682285336](https://github.com/robertosantosx2/llama.cpp/actions/runs/44682285336) pasó `trace-and-cpu-build` y `cuda-compile`. El JSONL generado pasó el importer compartido LEONES y sus regresiones. Checks generales Ubuntu/Windows/arm64/CUDA consultados pasaron; MUSA falló en instalación de dependencias y su build se omitió.
+- **Tandem.cpp:** PR #7 fusionada en `7c4300eb754d94737c6aa8d7ffa0077aac7ddcb9`; HEAD validado `6c5b252ee41949ed5ea57d02ba443feb248c30f6`; workflow [44682021976](https://github.com/robertosantosx2/tandem.cpp/actions/runs/44682021976) pasó `trace-smoke` y `cuda-compile` SM86, incluyendo patch application, NVTX enabled/disabled, JSONL e importer LEONES.
+- **Límite:** estos resultados aceptan el contrato/host path y la compilación CUDA, no la ejecución NVTX en Nsight, no el ownership causal GPU por request y no el overhead. La atribución batch sigue `windowed`, many-to-many y no causal.
+- **Siguiente gate:** C07 paired NVTX+Nsight/CUPTI y C08 paired overhead en MSI. LEONES issue #212 permanece abierta hasta disponer de evidencia física end-to-end.
 
 ## C03 — CLI y envoltura de proceso
 
