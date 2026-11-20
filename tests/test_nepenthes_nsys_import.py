@@ -921,4 +921,4 @@ def test_sink_summary_rejects_mismatched_count_and_nonterminal_position(tmp_path
             "monotonic_ns": 123457, "request_id": 0,
             "event_kind": "kv_cache", "label": "kv.update",
             "value0": 1, "value1": 1, "duration_ns": 1, "flags": 0
-        }) + "\\n")
+        }) + "\n")
