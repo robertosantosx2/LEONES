@@ -446,3 +446,12 @@ The read-only MSI inventory is recorded in [the raw snapshot](../../../docs/inve
 The two Qwen3.5-35B GGUF copies listed in the MSI inventory have now been compared on the workstation. Both are 10,676,139,840 bytes and have the same SHA-256 `479cc80b2500f7ba5f6131986da188ecb406cf7855094c5d8ae0ec332a715105`; distinct inodes on the same device confirm two physical copies, not hardlinks. Read-only `lsof`/`fuser` checks found no active process using either path at capture time. Potential reclaim: approximately 9.94 GiB.
 
 **Decision:** content-level duplication is proven, but no deletion or move is authorized. Next gate is a read-only reference audit of scripts, manifests, service definitions, symlinks and registries for both paths, followed by an explicit canonical-path decision. Preserve both files until then. Detailed metadata and evidence are in [MSI inventory analysis](../../docs/inventory/msi/ANALYSIS.md).
+
+### MSI Qwen3.5-35B deduplication completed — 2026-11-20
+
+- The secondary physical GGUF copy under `~/benchmarks/qwen3.5-35b-a3b-iq2-xxs/` was deleted only after verifying both files had size 10,676,139,840 bytes and identical SHA-256 `479cc80b2500f7ba5f6131986da188ecb406cf7855094c5d8ae0ec332a715105`.
+- The canonical model remains at `~/models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf`; its post-deletion SHA-256 was rechecked and matches.
+- The reference audit found no exact secondary GGUF path references in the searched LEONES research and NEPENTHES evidence trees. The October evidence-collection script excludes `.gguf` weights and preserves the directory's logs/data; all 23 non-GGUF evidence files were verified present after deletion.
+- MSI postcondition: secondary path absent; root filesystem availability increased from 181 GiB to 191 GiB and usage fell from 80% to 79%, reclaiming approximately 9.94 GiB.
+- This is a completed, narrowly scoped model-file deduplication. It does not authorize cleanup of other models, benchmark directories, caches, Git worktrees, branches or stashes.
+- Documentation/evidence PR: [LEONES PR #252](https://github.com/robertosantosx2/LEONES/pull/252), merged as `f11f413fcaa811cb6e24d7ca3213b1c5ebd2d549`; all four workflows passed. The follow-up records the physical deletion and postconditions; the earlier inventory sections remain historical snapshots.
