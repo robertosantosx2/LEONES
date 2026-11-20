@@ -170,9 +170,20 @@ python scripts/nepenthes_overhead_gate.py \
 
 El gate usa mediana e IQR y exige TTFT, duración total de campaña, throughput, RSS del servidor, RAM de sistema y VRAM device-wide. Distingue request_latency_mean_ms de total_time_ms (duración de campaña). La CI demuestra el contrato del pipeline; solo una campaña real en MSI puede producir aceptación de overhead.
 
+## Gate remoto cerrado — 2026-11-20
+
+La compilación remota exacta ya está aceptada para los conectores actuales:
+
+- llama.cpp PR #10 merge `d4d0b9eeb2bd0035f525a90aefed111e5d74edcb`; CPU/CUDA SM86 + importer LEONES en workflow `44682285336`.
+- Tandem.cpp PR #7 merge `7c4300eb754d94737c6aa8d7ffa0077aac7ddcb9`; patch application + `trace-smoke` + CUDA SM86 en workflow `44682021976`.
+- El productor NVTX Tandem es opt-in (`NEPENTHES_NVTX=1`) y está disabled por defecto. No añadir sincronización CUDA.
+- La atribución batch del importer sigue `windowed`, many-to-many y no causal.
+
+**El siguiente gate requiere el MSI:** C07 debe demostrar una captura emparejada de la misma ejecución (JSONL del motor + NVTX + Nsight/CUPTI), con calibración host↔Nsight y token/ventanas válidas. C08 requiere baseline y condiciones instrumentadas emparejadas, al menos tres pares y el gate standard (decode overhead ≤5%; 5–8% requiere excepción; >8% bloquea). Ningún build remoto sustituye estas mediciones físicas.
+
 ## Estado MSI pendiente
 
-Los PRs LEONES #197 y #198 están integrados y sus gates CI pasaron. El siguiente paso físico no es un self-test: es compilar el fork llama.cpp rebased, lanzar una inferencia real, capturar NVTX/CUPTI con Nsight, importar el bundle y ejecutar nepenthes verify y el gate C08 sobre las repeticiones. No declarar functional_complete antes de ello.
+Los gates remotos actuales están cerrados mediante llama.cpp PR #10 y Tandem.cpp PR #7. El siguiente paso físico no es un self-test: sincronizar los commits fusionados, compilar el runtime instrumentado en el MSI, lanzar una inferencia real, capturar NVTX/CUPTI con Nsight, importar el bundle y ejecutar `nepenthes verify` y el gate C08 sobre las repeticiones. No declarar `functional_complete` antes de ello.
 
 
 ### AIPerf warm-up provenance correction — 2026-11-19
