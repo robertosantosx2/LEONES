@@ -40,9 +40,9 @@ La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopció
 
 ## Proyectos de investigación y arquitectura
 
-- **[NEPENTHES — índice, roadmap y campañas](research/moe/tandem.cpp/NEPENTHES-INDEX.md)**: instrumentación universal de motores, captura JSONL, CLI, Nsight/CUPTI, importación LEONES, campañas físicas, informes y gates de aceptación.
-  - [Roadmap](research/moe/tandem.cpp/NEPENTHES-ROADMAP.md) · [Registro de campañas y resultados](research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md) · [CLI e instalador](research/moe/tandem.cpp/NEPENTHES-CLI.md) · [Importador Nsight/CUPTI](research/moe/tandem.cpp/NEPENTHES-IMPORTER.md) · [Informe histórico Qwen3.5-35B](research/moe/tandem.cpp/NEPENTHES-QWEN35-HISTORICAL-REPORT-20261115.md).
-  - [Tandem.cpp — instrumentación universal, PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1).
+- **[NEPENTHES — subproyecto de observabilidad](docs/subprojects/NEPENTHES/README.md)**: arquitectura y plan maestro para llama.cpp/GGML, AIPerf (runner primario), NVML/energía, latencia por token, OpenTelemetry/OTLP, adaptadores de métricas y análisis reproducible.
+  - [Roadmap maestro](docs/subprojects/NEPENTHES/ROADMAP.md) · [Integración AIPerf](docs/subprojects/NEPENTHES/AIPERF-INTEGRATION.md) · [Índice histórico y validación](research/moe/tandem.cpp/NEPENTHES-INDEX.md) · [Campañas](research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md) · [CLI e instalador](research/moe/tandem.cpp/NEPENTHES-CLI.md) · [Importador Nsight/CUPTI](research/moe/tandem.cpp/NEPENTHES-IMPORTER.md).
+  - [Tandem.cpp — instrumentación universal, PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1) · [LEONES PR #153 — Nsight-only](https://github.com/robertosantosx2/LEONES/pull/153).
 - **[REDIL — IA distribuida](docs/subprojects/REDIL-IA-distribuida/README.md)**: arquitectura de nodos, malla de inferencia y planificación de despliegue.
   - [Arquitectura visual](docs/subprojects/REDIL-IA-distribuida/ARQUITECTURA-VISUAL.md) · [Evaluación Distributed Llama](docs/subprojects/REDIL-IA-distribuida/DISTRIBUTED-LLAMA-EXPERIMENTAL.md) · [Comparativa de modelos locales](docs/subprojects/REDIL-IA-distribuida/COMPARATIVA-MODELOS-LOCALES-2026-11.md).
 - **[Índice de informes de benchmarks e inferencia](docs/reports/indice-informes-inferencia-LEONES-2026-11-11.md)**: inventario navegable de campañas, comparativas, ejecuciones y evidencias.
@@ -80,5 +80,5 @@ La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopció
 - Qwen3.5-9B en RTX 3050 Laptop 4 GiB: [evaluación de viabilidad ES](docs/QWEN3.5-9B-RTX3050-2026-11-11.md) · [English report](docs/QWEN3.5-9B-RTX3050-2026-11-11-EN.md) (ESTIMATED; no benchmark físico 9B).
 - MiniCPM5-2B Q4_K_M en RTX 3050 Laptop con llama.cpp CUDA: [informe de benchmark MEASURED y evaluación de viabilidad DSpark](docs/MINICPM5-2B-RTX3050-2026-11-11.md).
 
-- NEPENTHES / Tandem.cpp: [índice de observabilidad, roadmap y criterio de aceptación](research/moe/tandem.cpp/NEPENTHES-INDEX.md).
+- NEPENTHES: [subproyecto y roadmap maestro](docs/subprojects/NEPENTHES/README.md) · [índice histórico de campañas](research/moe/tandem.cpp/NEPENTHES-INDEX.md).
 
