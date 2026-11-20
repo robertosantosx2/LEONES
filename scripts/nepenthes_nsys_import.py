@@ -766,8 +766,8 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                     attributed_batch_token, batch_attribution_level, batch_attribution_status,
                 ) = attribute_nsys_activity(
                     start, end, nvtx_windows,
-first(row, ("globalPid", "global_pid", "processId", "pid")),
-                    activity_thread_id
+                    first(row, ("globalPid", "global_pid", "processId", "pid")),
+                    activity_thread_id,
                 )
             else:
                 attributed_request_token, attribution_level, attribution_status = (
@@ -988,8 +988,8 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                         attributed_batch_token, batch_attribution_level, batch_attribution_status,
                     ) = attribute_nsys_activity(
                         start, end, nvtx_windows,
-first(row, ("globalPid", "global_pid", "processId", "pid")),
-                        activity_thread_id
+                        first(row, ("globalPid", "global_pid", "processId", "pid")),
+                        activity_thread_id,
                     )
                 else:
                     attributed_request_token, attribution_level, attribution_status = (
