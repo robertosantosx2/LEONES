@@ -420,3 +420,10 @@ Resultados observados:
 - Las 730 operaciones memcpy tienen enum `CUDA_MEMCPY_KIND` decodificado mediante la tabla Nsight.
 
 **Decisión:** la importación paired v3 confirma que el arreglo de identidad de proceso permite recuperar la ventana request y atribuir actividades dentro de ella. No cierra C07: quedan pendientes la verificación formal del bundle/manifest/hashes con `nepenthes verify`, el análisis de cobertura y la evaluación de si el smoke de llama.cpp debía emitir marcadores batch para el objetivo C07. No repetir la captura antes de completar esos checks con los artefactos existentes. C08 y overhead siguen pendientes.
+
+### Repository hygiene and workspace consolidation — 2026-11-20
+- Auditoría GitHub: 335 refs de rama, 267 tips únicos, 12 grupos de tips idénticos (80 refs; 68 aliases redundantes) y 56 PR abiertas en el snapshot del 20-11-2026.
+- Se registra el inventario y la política reversible en [REPOSITORY-HYGIENE.md](../../docs/engineering/REPOSITORY-HYGIENE.md). No se eliminan refs ni checkouts: igualdad de SHA remoto no prueba que las copias locales, stashes o artefactos sean prescindibles.
+- La cadena NEPENTHES #159–#173 es apilada y debe resolverse por dependencias, no fusionarse en orden numérico ni retargetearse en bloque.
+- #245 quedó fusionada con el registro de la importación paired C07 v3 y cuatro checks CI correctos. C07 físico continúa pendiente de `nepenthes verify`, hashes/manifest, integridad y cobertura.
+- Siguiente prioridad de higiene: comparar duplicados con refs de PR y refs locales; investigar el checkout TensorFold con 51.789 eliminaciones; reconciliar las dos copias divergentes de llama.cpp/Tandem. No borrar ni hacer reset/clean en checkouts modificados.
