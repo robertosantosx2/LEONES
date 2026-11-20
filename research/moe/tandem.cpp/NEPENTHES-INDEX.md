@@ -23,17 +23,15 @@ Principios no negociables:
 |---|---|---|
 | Núcleo LEONES (runner, captura, manifiestos, informes, AIPerf/OTLP) | Implementación integrada en main para las capacidades documentadas; aceptación física parcial | Completar campañas reales y auditoría de paquetes |
 | Contrato común multi-motor | Integrado en main por [PR #210](https://github.com/robertosantosx2/LEONES/pull/210), merge `fcaf170`; issue [#207](https://github.com/robertosantosx2/LEONES/issues/207) cerrada; 8 checks verdes en HEAD sincronizado `73c7cb9` | Mantener regresiones del contrato compartido |
-| llama.cpp | PR #10 fusionada en `d4d0b9e`; workflow exacto CPU/CUDA e importer LEONES pasaron; checks generales aplicables Ubuntu/Windows/arm64/CUDA pasaron. MUSA dependency setup falló y su build se omitió | MSI C07/C08: validar NVTX/Nsight y overhead; no heredar aceptación física de CI |
+| llama.cpp | PR #10 fusionada en `d4d0b9e`; workflow exacto CPU/CUDA e importer LEONES pasaron; checks generales aplicables Ubuntu/Windows/arm64/CUDA pasaron. MUSA dependency setup falló y su build se omitió | Mantener aceptación remota; MSI C07/C08: validar NVTX/Nsight y overhead |
 | TensorFold 1.2.10 | Host-only adapter accepted: TensorFold PR #6 merged; LEONES PR #217/#220 and five cross-repo checks passed | Mantener como aceptado host-only; futuras sondas CUDA/NVTX y C07/C08 solo tras priorización explícita |
-| tandem.cpp (distribución patch-based sobre llama.cpp) | PR #1–#5 fusionadas; host batch token e importer `windowed` aceptados; PR #7 producer NVTX draft sobre HEAD `6c5b252`, CI exacta `44682021976` `trace-smoke` + CUDA SM86 success | Revisión final de scope/lifecycle/disabled path y aceptación de PR #7; después MSI C07/C08 |
+| tandem.cpp (distribución patch-based sobre llama.cpp) | PR #1–#5 y PR #7 fusionadas; producer NVTX opt-in aceptado tras CI exacta `44682021976` (`trace-smoke` + CUDA SM86). Importer permanece `windowed`, many-to-many y no causal | MSI C07/C08; issue #212 sigue abierta hasta validar end-to-end |
 | Otros motores | No hay conector aceptado registrado | Incorporar solo mediante el contrato común y una fila de estado/evidencia |
 
 ### Orden de trabajo vigente
-1. **llama.cpp — revisión final y aceptación de PR #10.** HEAD `da0fa44`; workflow exacto `44682285336` pasó `trace-and-cpu-build` y `cuda-compile`; checks generales Ubuntu/Windows/arm64/CUDA pasaron. MUSA falló y targets exóticos siguen queued: determinar si son checks requeridos por el proyecto o ajenos al alcance, sin declarar matriz global verde. Revisar diff y cerrar/actualizar PR antes de merge.
-2. **Tandem.cpp — revisión final y aceptación de producer-side NVTX PR #7.** HEAD `6c5b252`; workflow exacto `44682021976` pasó `trace-smoke` y `cuda-compile` SM86, incluida la aplicación de patches, tests NVTX enabled/disabled e importer LEONES. El intento duplicado `44682027808` fue cancelado; no reemplaza el run exitoso del mismo HEAD. Revisar scope/lifecycle y disabled path, luego merge si no hay bloqueos.
-3. **Validación física MSI.** Solo cuando los gates remotos de llama.cpp y Tandem estén cerrados: build CUDA en MSI, C07 paired NVTX+Nsight y C08 overhead con baseline/tratamientos repetidos. No pedir intervención física antes de ese punto.
-4. **TensorFold 1.2.10 — mantener aceptación host-only.** No repetir el trabajo cerrado ni heredar aceptación CUDA/NVTX/Nsight, C07/C08 u overhead.
-5. **Aceptación por motor y release.** Evidencia, límites, cobertura, overhead y hashes; un motor no hereda aceptación de otro.
+1. **Validación física MSI — C07/C08 para llama.cpp y Tandem.cpp.** Los gates remotos exactos están cerrados: llama.cpp PR #10 merge `d4d0b9e`, Tandem.cpp PR #7 merge `7c4300e`. Ejecutar build/runtime en MSI, captura emparejada NVTX+Nsight/CUPTI (C07), y baseline/tratamientos repetidos para overhead (C08). Conservar artefactos, manifiestos, hashes y límites de atribución `windowed`.
+2. **LEONES issue #212 — validar correlación end-to-end.** La PR #7 añade producer NVTX, pero no demuestra por sí misma el token a través de captura Nsight/CUPTI ni ownership causal por request.
+3. **Mantener aceptación remota llama.cpp/Tandem/TensorFold** sin expandirla más allá de los gates demostrados.
 
 ## 3. Estado y plan por motor/
 
