@@ -891,3 +891,34 @@ def test_import_accepts_native_schema_v10_sink_summary_and_preserves_source(tmp_
         ).fetchone()
     assert row[:8] == ("sink_summary", "sink.summary", 0, 0, 1, 0, 0, 0)
     assert json.loads(row[8]) == summary_record
+
+
+def test_sink_summary_rejects_mismatched_count_and_nonterminal_position(tmp_path: Path):
+    jsonl = tmp_path / "invalid-summary.jsonl"
+    write_jsonl(jsonl)
+    summary_record = {
+        "schema_version": "1.0",
+        "run_id": "qwen35-test",
+        "event_id": "summary-1",
+        "source": "llama.cpp",
+        "timestamp_unix_ns": 1_800_000_000_000_100_000,
+        "event_kind": "sink_summary",
+        "events_drained": 2,
+        "dropped_events": 0,
+        "write_errors": 0,
+    }
+    with jsonl.open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(summary_record) + "\\n")
+    with pytest.raises(ValueError, match="events_drained does not match"):
+        list(event_rows(jsonl))
+
+    summary_record["events_drained"] = 1
+    with jsonl.open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps({
+            "schema_version": "1.0", "run_id": "qwen35-test",
+            "event_id": "tandem-2", "source": "tandem.cpp",
+            "timestamp_unix_ns": 1_800_000_000_000_000_001,
+            "monotonic_ns": 123457, "request_id": 0,
+            "event_kind": "kv_cache", "label": "kv.update",
+            "value0": 1, "value1": 1, "duration_ns": 1, "flags": 0
+        }) + "\\n")
