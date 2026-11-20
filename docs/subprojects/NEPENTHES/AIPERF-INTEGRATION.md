@@ -193,7 +193,7 @@ Añadir `--no-server-metrics` si el servidor no expone `/metrics`. La primera ej
 
 ## 13. Pin de upstream y versiones
 
-- [AIPERF-UPSTREAM.json](AIPERF-UPSTREAM.json) registra el upstream, el último release observado y la versión fijada por el runner. El último release estable observado es `v0.14.0`; el runner sigue fijado en `0.13.0` hasta completar revisión de compatibilidad y CI sobre el nuevo release. No actualizar la dependencia automáticamente.
+- [AIPERF-UPSTREAM.json](AIPERF-UPSTREAM.json) registra el upstream, el último release observado y la versión fijada por el runner. El último release estable observado es `v0.14.0`; el runner sigue fijado en `0.13.0` hasta completar CI exacta y smoke runtime. La revisión estática de `v0.14.0` confirma que las opciones usadas por el wrapper siguen presentes y que los exports relevantes son summary schema `1.7`, server-metrics schema `1.1` y `outputs.json` schema `1.1`; los records JSONL no documentan un campo `schema_version` propio. El importer ya normaliza server-metrics `1.1`; la compatibilidad del bloque `warmup_metrics` de summary se cubre en la PR de compatibilidad. No actualizar la dependencia automáticamente.
 - [LLAMA-CPP-UPSTREAM.json](LLAMA-CPP-UPSTREAM.json) conserva el pin revisado de upstream/fork y la política de actualización. No confundir el HEAD del fork con el gitlink revisado de LEONES.
 
 ## 14. Telemetría y límites de atribución
