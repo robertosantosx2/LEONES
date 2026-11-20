@@ -326,6 +326,8 @@ def event_rows(path: Path):
                 raise ValueError(f"JSONL line {line_no}: invalid JSON: {exc}") from exc
             if not isinstance(item, dict):
                 raise ValueError(f"JSONL line {line_no}: event must be an object")
+            if counts["sink_summary"]:
+                raise ValueError(f"JSONL line {line_no}: sink_summary must be the final JSONL record")
             if item.get("event_kind") == "sink_summary":
                 # The native llama.cpp schema-1.0 sink summary is a terminal
                 # record, not a normal event. Validate its own contract, then
@@ -351,6 +353,11 @@ def event_rows(path: Path):
                     value = item[field]
                     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
                         raise ValueError(f"JSONL line {line_no}: sink_summary {field} must be a non-negative integer")
+                if item["events_drained"] != sum(counts.values()):
+                    raise ValueError(
+                        f"JSONL line {line_no}: sink_summary events_drained does not match "
+                        f"the number of preceding event records ({sum(counts.values())})"
+                    )
                 if item["event_id"] in seen:
                     raise ValueError(f"JSONL line {line_no}: duplicate event_id {item['event_id']}")
                 seen.add(item["event_id"])
