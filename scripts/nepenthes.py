@@ -315,7 +315,7 @@ def inspect(a):
 def validate_event_contract(events):
  errors=[]
  request_starts={};request_ends={};nvtx_starts={};nvtx_ends={}
- batch_nvtx_starts={};batch_nvtx_ends={};batch_members={}
+ batch_nvtx_starts={};batch_nvtx_ends={};batch_members={};batch_member_request_ids={}
  clock_points=[];clock_labels={}
  allowed={"exact","windowed","device_wide","estimated"}
  for line_no,event in enumerate(events,1):
@@ -343,6 +343,7 @@ def validate_event_contract(events):
    if isinstance(request_id,bool) or not isinstance(request_id,int) or request_id<=0:
     errors.append("batch member requires a positive request_id at event "+str(line_no))
    batch_members[token]=batch_members.get(token,0)+1
+   batch_member_request_ids.setdefault(token,set()).add(request_id)
   if kind=="clock_calibration":
    mono=event.get("monotonic_ns");wall=event.get("timestamp_unix_ns")
    if not isinstance(mono,int) or isinstance(mono,bool) or mono<=0 or not isinstance(wall,int) or isinstance(wall,bool) or wall<=0:
@@ -433,6 +434,8 @@ def validate_event_contract(events):
           "batch_member_count":sum(batch_members.values()),
           "batch_member_tokens":len(batch_member_token_ids),
           "batch_member_token_ids":batch_member_token_ids,
+          "batch_multi_member_tokens":sum(1 for members in batch_member_request_ids.values() if len(members)>=2),
+          "batch_multi_member_token_ids":sorted(token for token,members in batch_member_request_ids.items() if len(members)>=2),
           "host_clock_calibration":host_clock}
  return summary,errors
 
@@ -635,6 +638,7 @@ def verify_run(a):
            and correlation.get("batch_nvtx_marker_events",0)==2*len(batch_tokens)
            and correlation.get("batch_member_token_ids")==batch_tokens
            and correlation.get("batch_member_count",0)>0
+           and correlation.get("batch_multi_member_tokens",0)>0
            and correlation.get("host_clock_calibration",{}).get("calibrated") is True
            and result.get("batch_nsys_clock_calibration_pairs",0)==correlation.get("batch_nvtx_marker_events",0)
            and nsys_calibration.get("nsight_clock_calibrated") is True
