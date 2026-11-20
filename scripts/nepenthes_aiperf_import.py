@@ -13,7 +13,7 @@ import hashlib
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -79,7 +79,13 @@ def parse_timestamp_ns(value: Any) -> int | None:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return None
-    return int(parsed.timestamp() * 1_000_000_000)
+    if parsed.tzinfo is None:
+        return None
+    utc = parsed.astimezone(timezone.utc)
+    epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+    delta = utc - epoch
+    whole_seconds = delta.days * 86_400 + delta.seconds
+    return whole_seconds * 1_000_000_000 + delta.microseconds * 1_000
 
 
 def stable_id(*parts: Any) -> str:
@@ -207,7 +213,11 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
                             "event_id": stable_id(run_id, "request_error", request_id, line_number),
                             "run_id": run_id, "request_id": str(request_id),
                             "event_kind": "aiperf_request_error", "scope": "request",
-                            "error": error, "timestamp_unix_ns": timestamp_ns,
+                            "error": {
+                                key: error[key] for key in ("code", "type")
+                                if isinstance(error, dict) and key in error
+                            } if isinstance(error, dict) else {"type": "request_error"},
+                            "timestamp_unix_ns": timestamp_ns,
                             "monotonic_ns": None, "source_tool": "aiperf",
                             "source_version": aiperf_version,
                             "source_schema_version": source_schema,
