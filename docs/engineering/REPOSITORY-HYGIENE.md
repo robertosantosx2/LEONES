@@ -131,9 +131,9 @@ The MSI inventory supersedes earlier partial checkout lists where they differ. I
 ## Remote audit refresh after Qwen3.5-35B deduplication — 2026-11-20
 
 A fresh paginated GitHub API inventory after LEONES PR #253 merged:
-- 344 remote branch refs, 276 unique tip commits.
+- 346 remote branch refs, 278 unique tip commits.
 - 12 exact-tip duplicate groups (80 refs total, 68 excess aliases).
-- 55 open pull requests in the audit snapshot.
+- 57 open pull requests in the audit snapshot.
 - Preserve the JALON2 evidence refs `jalon2-evidence-bridge` (head of open PR #64) and `jalon2-closed` until local refs/worktrees are reconciled.
 - PR #253 merged as `faa1ac5b2f3dd21c3fbd44e85130602da96aeae3`; its four required checks passed. The MSI Qwen3.5-35B duplicate removal and approximately 9.94 GiB recovery are recorded in the master NEPENTHES INDEX and MSI analysis.
 - The AIPerf/OTel chain #159–#173 remains stacked: #159 is draft; #162 and #164 are closed unmerged; #165 is the active adapter successor. No child PR was retargeted or merged.
