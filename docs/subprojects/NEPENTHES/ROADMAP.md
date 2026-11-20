@@ -1,10 +1,10 @@
-# NEPENTHES — roadmap maestro de desarrollo
+# NEPENTHES — plan técnico complementario de desarrollo
 
 **Fecha de planificación:** 2026-11-19  
-**Prioridad inmediata añadida:** AIPerf como runner primario de benchmark; NVML/energía, latencia por token, dispersión y OpenTelemetry como capas complementarias.  
+**Áreas técnicas documentadas:** AIPerf, NVML/energía, latencia por token, dispersión y OpenTelemetry. Este documento no fija la prioridad vigente.  
 **Estado:** plan de trabajo; las capacidades nuevas descritas aquí no se consideran implementadas hasta aportar pruebas y capturas.
 
-Este roadmap amplía el trabajo histórico de instrumentación llama.cpp, Tandem.cpp, CLI, Nsight/CUPTI e importación LEONES. No sustituye ni reescribe los registros de campañas anteriores.
+Este plan es un anexo técnico de referencia que amplía el trabajo histórico de instrumentación llama.cpp, Tandem.cpp, CLI, Nsight/CUPTI e importación LEONES. **No es el roadmap de autoridad ni puede adelantar, posponer o cerrar trabajo por sí mismo.** El único orden de ejecución, estado y aceptación vigente está en [el INDEX maestro](../../../research/moe/tandem.cpp/NEPENTHES-INDEX.md); si existe cualquier discrepancia, prevalece ese INDEX. No sustituye ni reescribe los registros de campañas anteriores.
 
 ## Principios de ejecución
 
@@ -15,9 +15,9 @@ Este roadmap amplía el trabajo histórico de instrumentación llama.cpp, Tandem
 5. Diferenciar siempre PLANNED, IMPLEMENTED, CAPTURED, MEASURED y ACCEPTED.
 6. Las fuentes externas inspiran diseño, pero sus resultados no se convierten automáticamente en medidas LEONES.
 
-## Prioridad 1 — Inferscope: energía, NVML y latencia por token
+## Área técnica A — Inferscope: energía, NVML y latencia por token
 
-**Máximo interés inmediato.** Investigar primero las ideas y mecanismos de Inferscope y traducirlos a requisitos verificables de NEPENTHES. No copiar código o asumir compatibilidad sin revisar licencia, API y comportamiento. Fuente de estudio: [Inferscope](https://github.com/MicheleCampi/inferscope), Apache-2.0.
+**Área de investigación documentada.** Investigar las ideas y mecanismos de Inferscope y traducirlos a requisitos verificables de NEPENTHES solo cuando el INDEX maestro lo priorice. No copiar código o asumir compatibilidad sin revisar licencia, API y comportamiento. Fuente de estudio: [Inferscope](https://github.com/MicheleCampi/inferscope), Apache-2.0.
 
 ### 1.1 Muestreador NVML por dispositivo
 
@@ -91,7 +91,7 @@ No resumir una campaña solo con media. Publicar muestras y protocolo; definir t
 
 **Aceptación:** resultados de referencia con dataset sintético y validación numérica independiente.
 
-## Prioridad 2 — OpenTelemetry y OTLP
+## Área técnica B — OpenTelemetry y OTLP
 
 OpenTelemetry será la capa de interoperabilidad, manteniendo JSONL/SQLite como registro local y evidencia íntegra.
 
@@ -145,7 +145,7 @@ Evitar cardinalidad ilimitada: request_id y trace_id van en spans, no como label
 
 **Aceptación:** trace completa run/request, métricas visibles en backend de prueba, shutdown con flush, pérdida contabilizada y ausencia de prompts en exportación.
 
-## Prioridad 3 — AIPerf como runner primario de benchmark
+## Área técnica C — AIPerf como runner primario de benchmark
 
 **Decisión:** AIPerf es el runner externo predeterminado para todas las campañas nuevas de NEPENTHES. GenAI-Perf queda relegado a importación y reproducción de campañas históricas; no se desarrollarán nuevas capacidades específicas para él salvo necesidad demostrada. NVIDIA indica que GenAI-Perf está en retirada y recomienda AIPerf para nuevos trabajos.
 
@@ -189,7 +189,7 @@ En el MSI de 14 GiB RAM y RTX 3050 Laptop 4 GiB, dimensionar las pruebas para no
 
 **Aceptación:** tres o más repeticiones por configuración aceptada, protocolo idéntico, diferencias de entorno declaradas y resultados raw preservados.
 
-## Prioridad 4 — Adaptadores de métricas nativas
+## Área técnica D — Adaptadores de métricas nativas
 
 ### 4.1 llama.cpp
 
@@ -219,7 +219,7 @@ Cada adaptador declara versión, fuente, unidad, frecuencia, semántica, limitac
 
 **Aceptación:** adaptadores con fixtures de cada versión soportada, pruebas de errores y comparación con salida original.
 
-## Prioridad 5 — Consolidación de instrumentación llama.cpp/GGML
+## Área técnica E — Consolidación de instrumentación llama.cpp/GGML
 
 Continuar el roadmap existente, sin volver a implementar los componentes ya aceptados.
 
@@ -236,7 +236,7 @@ Continuar el roadmap existente, sin volver a implementar los componentes ya acep
 
 No confundir dispatch con ejecución de kernel; solicitud de transferencia con finalización; selección de experto con carga/residencia/uso. Cada evento declara si es nativo, externo o derivado.
 
-## Prioridad 6 — Nsight Systems/CUPTI y semántica de datos
+## Área técnica F — Nsight Systems/CUPTI y semántica de datos
 
 Conservar la importación histórica de LEONES y completar:
 
@@ -248,7 +248,7 @@ Conservar la importación histórica de LEONES y completar:
 - Correlación request-kernel solo con IDs compartidos o calibración de reloj demostrada.
 - Importación idempotente, checksums y auditoría de integridad.
 
-## Prioridad 7 — Análisis, informes y diagnósticos
+## Área técnica G — Análisis, informes y diagnósticos
 
 - Timeline de request, token, CPU, GPU, KV y MoE.
 - Histograma y percentiles de latencia/transferencia/sincronización.
@@ -280,13 +280,6 @@ PRs pequeños y dependencias explícitas; no crear un mega-PR.
 | 9 | llama.cpp instrumentation | Lifecycle, graph, KV, scheduler, MoE, CPU/CUDA/server |
 | 10 | Nsight semantic correctness | enums, uint64, cobertura y correlación |
 | 11 | Reports & release gates | informes, comparación y aceptación integral |
-
-### Estado de la línea AIPerf (2026-11-19)
-
-- PR #159: subproyecto y especificación AIPerf-first, pendiente de revisión/merge.
-- PR #160: importador offline de artefactos AIPerf y tests; CI específico con 6 tests offline en success. Depende de PR #159.
-- Todavía no se ha instalado ni ejecutado AIPerf contra llama-server, no hay smoke físico y no se declara compatibilidad MEASURED.
-- Próximo hito: runner aislado y smoke con concurrencia 1 en llama-server; después ampliar telemetría y soporte phase-aware.
 
 El orden puede solapar documentación/fixtures, pero no se debe declarar una fase aceptada si depende de otra incompleta.
 
