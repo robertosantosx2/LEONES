@@ -38,6 +38,18 @@ La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopció
 - **[Fork LEONES de HDAE](https://github.com/robertosantosx2/hdae/tree/12d1a3389e74642dddee47a6cc4cb217f55f1144)**: snapshot normativo fijado al commit `12d1a3389e74642dddee47a6cc4cb217f55f1144`; upstream [gmkurtzer/hdae](https://github.com/gmkurtzer/hdae) se consulta para evaluar cambios, no como referencia móvil.
 - [AGENTS.md](AGENTS.md) · [Checkpoint de adopción HDAE](docs/engineering/HDAE-CHECKPOINT.md) · [Auditoría de adopción por subproyecto](docs/engineering/HDAE-SUBPROJECT-AUDIT.md).
 
+## <img src="web/assets/graphics/logos/leones-agents.svg" alt="LEONES Agents" width="34" align="absmiddle"> LEONES — Agent Use Case Observatory
+
+> **[EXPLORAR EL OBSERVATORIO DE AGENTES →](web/agent-use-cases.html)**  
+> Catálogo vivo de casos concretos, repositorios de código, Agent Skills, prompts, servidores MCP, ejemplos y workflows reutilizables. Priorizamos proyectos inspeccionables y reproducibles, con procedencia y señales de evidencia visibles.
+
+- **[Interfaz del catálogo](web/agent-use-cases.html)** · [Feed JSON](web/data/agent-use-cases.json) · [Documentación y gates](docs/subprojects/AGENT-USE-CASE-OBSERVATORY/README.md).
+- Se alimenta del catálogo de prospección existente y de búsquedas diarias en GitHub mediante [Daily Atlas Prospection](.github/workflows/daily-prospection.yml).
+- Registra README, licencia declarada, actividad, instrucciones de instalación y ejemplos detectados para ayudar a priorizar la revisión.
+- **Descubierto ≠ aprobado.** Ningún resultado se recomienda, ejecuta o integra automáticamente; la reproducibilidad real requiere una validación explícita.
+
+---
+
 ## Proyectos de investigación y arquitectura
 
 - **[NEPENTHES — subproyecto de observabilidad](docs/subprojects/NEPENTHES/README.md)**: arquitectura y plan maestro para llama.cpp/GGML, AIPerf (runner primario), NVML/energía, latencia por token, OpenTelemetry/OTLP, adaptadores de métricas y análisis reproducible.
