@@ -15,10 +15,17 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: nepenthes-tensorfold-host-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tensorfold-host:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      TENSORFOLD_CACHE: /tmp/tensorfold-test-cache
+      HF_HUB_OFFLINE: "1"
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -42,21 +49,34 @@ jobs:
           version: 0.17.0
           use-cache: false
 
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: zig_cache
+        with:
+          path: TensorFold/.zig-cache
+          key: zig-tensorfold-host-v1-Linux-0.17.0-${{ github.sha }}
+          restore-keys: zig-tensorfold-host-v1-Linux-0.17.0-
+
+      - name: Restat restored Zig cache
+        if: steps.zig_cache.outputs.cache-hit == 'true'
+        working-directory: TensorFold
+        shell: bash
+        run: zig run -OReleaseFast -mcpu=baseline tools/zig/zig_cache_restat.zig -- .zig-cache "$(dirname "$(command -v zig)")/lib" --prune || echo "::warning::zig_cache_restat failed; host build will rebuild"
+
       - name: Verify exact TensorFold source
         env:
           EXPECTED_SHA: ${{ steps.pin.outputs.sha }}
         run: test "$(git -C TensorFold rev-parse HEAD)" = "$EXPECTED_SHA"
 
-      - name: Format TensorFold sources and expose required diff
+      - name: Verify TensorFold Zig formatting
         working-directory: TensorFold
         run: |
-          zig fmt build.zig zig
+          zig fmt --check build.zig zig
           git diff --check
-          git diff -- zig/src/server/nepenthes_trace.zig
+          git diff --exit-code -- zig/src/server/
 
       - name: Host server and golden regressions
         working-directory: TensorFold
-        run: zig build -Dfixed-cpu test-host-a test-host-b test-server-security test-golden
+        run: zig build -Dfixed-cpu test-server-cpu
 
       - name: Import TensorFold background lifecycle fixture
         run: |
@@ -87,3 +107,9 @@ jobs:
 
       - name: Run shared LEONES importer regressions
         run: python3 -m unittest discover -s tests -p 'test_nepenthes_llama_trace_import.py'
+
+      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        if: success()
+        with:
+          path: TensorFold/.zig-cache
+          key: zig-tensorfold-host-v1-Linux-0.17.0-${{ github.sha }}

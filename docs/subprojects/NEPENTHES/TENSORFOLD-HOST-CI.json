@@ -4,9 +4,8 @@
   "issue": 3,
   "pull_request": 6,
   "branch": "nepenthes/host-trace-connector-2",
-  "commit": "de77778309c70bbfaa743283f65d20b8f1c76278",
+  "commit": "c258ec930b4ea8f0d0bc785a984d2114bf041fb9",
   "scope": "host-only; no CUDA, NVTX, Nsight, GPU, or MSI validation",
-  "validation_scope": "host-only; no CUDA, NVTX, Nsight, GPU, or MSI validation",
   "fixtures": [
     "tests/fixtures/nepenthes/tensorfold-background.jsonl",
     "tests/fixtures/nepenthes/tensorfold-source-mismatch.jsonl",
