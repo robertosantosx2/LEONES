@@ -43,7 +43,11 @@ def write_records(root: Path) -> None:
         {
             "metadata": {"session_num": 1, "x_request_id": "req-002", "turn_index": 0, "was_cancelled": True},
             "metrics": {"error_isl": {"value": 64, "unit": "tokens"}},
-            "error": {"code": 499, "type": "RequestCancellationError", "message": "cancelled"},
+            "error": {
+                "code": 499, "type": "RequestCancellationError",
+                "message": "cancelled", "prompt": "must not leak",
+                "response_text": "must not leak either",
+            },
         },
     ]
     (root / "profile_export.jsonl").write_text(
@@ -83,7 +87,9 @@ def test_imports_summary_and_request_records_without_private_payloads(tmp_path: 
     assert request_event["monotonic_ns"] is None
     assert request_event["source_tool"] == "aiperf"
     error_event = next(event for event in events if event["event_kind"] == "aiperf_request_error")
-    assert error_event["error"]["code"] == 499
+    assert error_event["error"] == {"code": 499, "type": "RequestCancellationError"}
+    assert "prompt" not in error_event["error"]
+    assert "response_text" not in error_event["error"]
 
 
 def test_event_ids_are_stable_across_reimports(tmp_path: Path):
@@ -133,3 +139,11 @@ def test_rejects_empty_artifact_directory(tmp_path: Path):
     artifacts.mkdir()
     with pytest.raises(ValueError, match="no supported AIPerf artifacts"):
         import_aiperf(artifacts, tmp_path / "out")
+
+
+def test_timestamp_conversion_is_exact_and_rejects_naive_values():
+    from scripts.nepenthes_aiperf_import import parse_timestamp_ns
+
+    assert parse_timestamp_ns("1970-01-01T00:00:00.000001Z") == 1_000
+    assert parse_timestamp_ns("1970-01-01T01:00:00.000001+01:00") == 1_000
+    assert parse_timestamp_ns("1970-01-01T00:00:00.000001") is None
