@@ -940,3 +940,82 @@ def test_cli_verifier_requires_zero_request_id_for_batch_nvtx():
     ]
     _, errors = module.validate_event_contract(events)
     assert any("batch NVTX marker requires request_id=0" in error for error in errors)
+
+
+def write_batch_runtime_join_nsys(path: Path) -> None:
+    packed_thread = (99 << 24) | 777
+    other_thread = (99 << 24) | 778
+    foreign_process_thread = (100 << 24) | 779
+    db = sqlite3.connect(path)
+    db.executescript(f"""
+        CREATE TABLE NVTX_EVENTS(
+            start INTEGER, end INTEGER, text TEXT, globalPid INTEGER, globalTid INTEGER
+        );
+        INSERT INTO NVTX_EVENTS VALUES
+            (1110, 1110, 'nepenthes.batch.start token=123', 99, {packed_thread}),
+            (5110, 5110, 'nepenthes.batch.end token=123', 99, {packed_thread}),
+            (1120, 1120, 'nepenthes.request.start token=123 request=42', 99, {packed_thread}),
+            (1910, 1910, 'nepenthes.request.end token=123 request=42', 99, {packed_thread});
+        CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(
+            start INTEGER, end INTEGER, correlationId INTEGER,
+            globalPid INTEGER, deviceId INTEGER, contextId INTEGER,
+            streamId INTEGER, name TEXT
+        );
+        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES
+            (1500, 1600, 201, 99, 0, 1, 7, 'runtime_thread_match'),
+            (2500, 2600, 202, 99, 0, 1, 7, 'different_launch_thread'),
+            (1600, 1700, 203, 99, 0, 1, 7, 'missing_runtime_match'),
+            (5200, 5300, 204, 99, 0, 1, 7, 'runtime_process_mismatch');
+        CREATE TABLE CUPTI_ACTIVITY_KIND_RUNTIME(
+            start INTEGER, end INTEGER, globalTid INTEGER,
+            correlationId INTEGER, nameId INTEGER
+        );
+        INSERT INTO CUPTI_ACTIVITY_KIND_RUNTIME VALUES
+            (1400, 1450, {packed_thread}, 201, 7),
+            (2400, 2450, {other_thread}, 202, 7),
+            (5100, 5150, {foreign_process_thread}, 204, 7);
+    """)
+    db.commit()
+    db.close()
+
+
+def test_batch_attribution_recovers_cuda_thread_from_runtime_correlation(tmp_path: Path):
+    jsonl = tmp_path / "runtime-thread-trace.jsonl"
+    nsys = tmp_path / "runtime-thread-nsys.sqlite"
+    output = tmp_path / "runtime-thread-paired.sqlite"
+    write_batch_jsonl_nvtx(jsonl)
+    write_batch_runtime_join_nsys(nsys)
+
+    summary = import_all(jsonl, nsys, output, "runtime-thread-paired-001")
+    assert summary["runtime_thread_identity_status_counts"] == {
+        "runtime_correlation_id": 3,
+        "missing_runtime_correlation_id": 1,
+    } or summary["runtime_thread_identity_status_counts"] == {
+        "runtime_correlation_id": 2,
+        "missing_runtime_correlation_id": 1,
+        "runtime_thread_process_mismatch": 1,
+    }
+
+    with sqlite3.connect(output) as db:
+        rows = db.execute(
+            "SELECT correlation_id,attributed_request_token,attributed_batch_token,"
+            "attribution_status,batch_attribution_status,raw_json "
+            "FROM nsys_activities WHERE activity_kind='cuda_kernel' ORDER BY correlation_id"
+        ).fetchall()
+
+    assert rows[0][:5] == (
+        201, 123, 123, "unique_explicit_request_window", "unique_explicit_batch_window"
+    )
+    assert rows[1][:5] == (
+        202, None, None, "outside_request_window", "no_matching_batch_thread_window"
+    )
+    assert rows[2][:5] == (
+        203, 123, None, "unique_explicit_request_window", "missing_activity_thread_identity"
+    )
+    assert rows[3][:5] == (
+        204, None, None, "outside_request_window", "missing_activity_thread_identity"
+    )
+    assert json.loads(rows[0][5])["_nepenthes_thread_identity"]["source"] == "runtime_correlation_id"
+    assert json.loads(rows[1][5])["_nepenthes_thread_identity"]["thread_id"] == (99 << 24) | 778
+    assert json.loads(rows[2][5])["_nepenthes_thread_identity"]["source"] == "missing_runtime_correlation_id"
+    assert json.loads(rows[3][5])["_nepenthes_thread_identity"]["source"] == "runtime_thread_process_mismatch"
