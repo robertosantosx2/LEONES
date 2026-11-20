@@ -858,3 +858,36 @@ def test_batch_attribution_rejects_activity_from_another_host_thread(tmp_path: P
         (None, None, "no_matching_batch_thread_window"),
         (None, None, "no_matching_batch_thread_window"),
     ]
+
+
+def test_import_accepts_native_schema_v10_sink_summary_and_preserves_source(tmp_path: Path):
+    jsonl = tmp_path / "native-summary.jsonl"
+    nsys = tmp_path / "capture.sqlite"
+    output = tmp_path / "normalized.sqlite"
+    write_jsonl(jsonl, request_id=23)
+    write_nsys(nsys)
+    summary_record = {
+        "schema_version": "1.0",
+        "run_id": "qwen35-test",
+        "event_id": "llama-2",
+        "source": "llama.cpp",
+        "timestamp_unix_ns": 1_800_000_000_000_100_000,
+        "event_kind": "sink_summary",
+        "events_drained": 1,
+        "dropped_events": 0,
+        "write_errors": 0,
+    }
+    with jsonl.open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(summary_record) + "\\n")
+
+    imported = import_all(jsonl, nsys, output, "native-summary-import")
+    assert imported["event_count"] == 2
+    assert imported["event_kinds"]["sink_summary"] == 1
+
+    with sqlite3.connect(output) as db:
+        row = db.execute(
+            "SELECT event_kind,label,monotonic_ns,request_id,value0,value1,duration_ns,flags,raw_json "
+            "FROM nepenthes_events WHERE event_kind='sink_summary'"
+        ).fetchone()
+    assert row[:8] == ("sink_summary", "sink.summary", 0, 0, 1, 0, 0, 0)
+    assert json.loads(row[8]) == summary_record
