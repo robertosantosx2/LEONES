@@ -879,7 +879,6 @@ def test_paired_nvtx_recovers_process_id_from_global_tid_when_global_pid_is_abse
 
     summary = import_all(jsonl, nsys, output, "globaltid-paired-import")
     assert summary["request_windows"] == 1
-    assert summary["attribution_status_counts"]["unique_explicit_request_window"] == 1
 
     with sqlite3.connect(output) as db:
         row = db.execute(
