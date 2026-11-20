@@ -82,3 +82,15 @@ No local worktree, stash, model, cache, build directory, evidence file, or branc
 ## Tooling limitation
 
 The GitHub integration available during this audit can enumerate refs and create/update branches and PRs, but does not expose a branch-ref deletion operation. Therefore no remote branches were deleted in this pass. The alias list above is a verified cleanup queue, not a claim that deletion has occurred. Local cleanup must be performed only after the preservation gates and user-side inventory are complete.
+
+
+## Remote recheck after PR #246 — 2026-11-20
+
+A second GitHub API snapshot was taken after the plan was merged:
+- 338 remote branch refs and 56 open PRs.
+- All 12 previously identified duplicate-tip groups remain exact duplicates, with the same 80 refs and 68 excess aliases.
+- Cross-checking every alias against all 56 open PR head/base refs found one live dependency: `jalon2-evidence-bridge` is the head of open PR #64. Preserve this ref; `jalon2-closed` is its same-tip alias, but neither ref is eligible for cleanup until the local-ref/worktree inventory is reconciled.
+- None of the other 67 excess aliases is currently used as an open PR head or base. This is only a remote-PR check, not deletion authorization: local refs, tags, reflogs, stashes, and unpushed work remain unverified.
+- No branch was deleted. The integration available here still does not expose branch-ref deletion.
+
+The 338-ref count includes the new documentation branches created during this audit; it is not directly comparable to the 335-ref initial snapshot without accounting for those additions.
