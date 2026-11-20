@@ -633,7 +633,7 @@ def test_event_rows_accepts_schema_v11_sink_summary(tmp_path: Path):
     summary = {
         "schema_version": "1.1",
         "run_id": "qwen35-typed",
-        "event_id": "llama-2",
+        "event_id": "summary-v11-1",
         "source": "llama.cpp",
         "timestamp_unix_ns": 1_800_000_000_000_000_100,
         "monotonic_ns": 123556,
@@ -869,7 +869,7 @@ def test_import_accepts_native_schema_v10_sink_summary_and_preserves_source(tmp_
     summary_record = {
         "schema_version": "1.0",
         "run_id": "qwen35-test",
-        "event_id": "llama-2",
+        "event_id": "summary-v10-1",
         "source": "llama.cpp",
         "timestamp_unix_ns": 1_800_000_000_000_100_000,
         "event_kind": "sink_summary",
