@@ -434,7 +434,7 @@ Resultados observados:
 
 ## MSI disk and Git workspace reorganization — 2026-11-20
 
-The read-only MSI inventory is recorded in [the raw snapshot](../../docs/inventory/msi/) and its [analysis](../../docs/inventory/msi/ANALYSIS.md). Snapshot facts: root filesystem 937 GiB total / 709 GiB used / 181 GiB available (80%); `/home/ssantos` approximately 526 GiB; model inventory 1,931 paths / 298.96 GiB; 111 checkout/worktree sections, 30 dirty sections and 14 stash records. These counts overlap nested repositories, caches and duplicated files and must not be summed as independent storage.
+The read-only MSI inventory is recorded in [the raw snapshot](../../../docs/inventory/msi/) and its [analysis](../../../docs/inventory/msi/ANALYSIS.md). Snapshot facts: root filesystem 937 GiB total / 709 GiB used / 181 GiB available (80%); `/home/ssantos` approximately 526 GiB; model inventory 1,931 paths / 298.96 GiB; 111 checkout/worktree sections, 30 dirty sections and 14 stash records. These counts overlap nested repositories, caches and duplicated files and must not be summed as independent storage.
 
 **Preservation gates:** no local cleanup is authorized. In particular preserve the 809-path TensorFold PR1879 validation diff, the 2,993 staged deletions in `leones-work/LEONES/experimental/companion-hub`, Tandem/llama.cpp dirty validation copies, the Atomic Chat LEONES worktree and stash, and all C07 JSONL/SQLite/NSYS artifacts. The two same-size 9.94 GiB Qwen3.5-35B GGUF paths are a high-value duplicate candidate, not proven identical; require SHA-256 and reference checks before deduplication. The 235 basename+size duplicate groups are not content-hash proof.
 
