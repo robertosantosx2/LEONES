@@ -11,13 +11,16 @@ from scripts.nepenthes_aiperf_import import import_aiperf
 def write_summary(root: Path) -> None:
     summary = {
         "schema_version": "1.7",
-        "aiperf_version": "0.13.0",
+        "aiperf_version": "0.14.0",
         "benchmark_id": "bench-001",
         "start_time": "2026-11-19T07:00:00Z",
         "end_time": "2026-11-19T07:00:10Z",
         "request_latency": {"unit": "ms", "avg": 42.5, "min": 30.0, "p50": 40.0, "p99": 60.0, "count": 2},
         "time_to_first_token": {"unit": "ms", "avg": 12.0, "count": 2},
         "request_throughput": {"unit": "requests/sec", "avg": 0.2},
+        "warmup_metrics": {
+            "time_to_first_token": {"unit": "ms", "avg": 18.0, "count": 1},
+        },
         "input_config": {"endpoint": {"url": "http://127.0.0.1:8080"}},
         "run_info": {"benchmark_id": "bench-001", "random_seed": 17, "cli_command": "aiperf profile --model test"},
     }
@@ -101,7 +104,7 @@ def write_gpu_telemetry(root: Path) -> None:
 def write_server_metrics_aggregate(root: Path) -> None:
     payload = {
         "schema_version": "1.1",
-        "aiperf_version": "0.13.0",
+        "aiperf_version": "0.14.0",
         "benchmark_id": "bench-001",
         "summary": {
             "phase_time_ranges": {
@@ -170,12 +173,12 @@ def test_imports_summary_and_request_records_without_private_payloads(tmp_path: 
     events = [json.loads(line) for line in (output / "aiperf_events.jsonl").read_text(encoding="utf-8").splitlines()]
 
     assert report["run_id"] == "bench-001"
-    assert report["aiperf_version"] == "0.13.0"
-    assert report["summary_metric_count"] == 3
+    assert report["aiperf_version"] == "0.14.0"
+    assert report["summary_metric_count"] == 4
     assert report["request_count"] == 2
     assert report["failed_request_count"] == 1
     assert report["request_metric_count"] == 4
-    assert report["event_count"] == 17
+    assert report["event_count"] == 18
     assert report["server_metric_aggregate_count"] == 4
     assert report["server_metric_record_count"] == 1
     assert report["server_metric_sample_count"] == 2
@@ -201,6 +204,10 @@ def test_imports_summary_and_request_records_without_private_payloads(tmp_path: 
     assert aggregate["statistics"]["p99"] == 2.0
     assert aggregate["window_start_unix_ns"] == 1_800_000_000_000_000_000
     assert any(event["scope"] == "server_warmup_aggregate" for event in events)
+    warmup_summary = next(event for event in events if event["scope"] == "warmup_summary")
+    assert warmup_summary["metric_name"] == "time_to_first_token"
+    assert warmup_summary["value"] == 18.0
+    assert warmup_summary["metrics_phase"] == "warmup"
     gpu_energy = next(event for event in events if event["event_kind"] == "aiperf_gpu_telemetry" and event["metric_name"] == "nvidia_energy_consumption")
     assert gpu_energy["value"] == 1.25 and gpu_energy["unit"] == "MJ"
     assert gpu_energy["value_semantics"] == "cumulative_counter"
