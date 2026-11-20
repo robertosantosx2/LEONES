@@ -139,3 +139,17 @@ A fresh paginated GitHub API inventory after LEONES PR #253 merged:
 - The AIPerf/OTel chain #159–#173 remains stacked: #159 is draft; #162 and #164 are closed unmerged; #165 is the active adapter successor. No child PR was retargeted or merged.
 
 No branch aliases or local Git worktrees were deleted. The current GitHub integration does not expose branch-ref deletion, and the remote snapshot cannot establish local reflog, stash, unpushed-work or dirty-worktree dependencies. The 68-alias queue remains pending local preservation checks and an explicitly reviewed deletion-capable operation.
+
+
+## Remote audit refresh after PR #256 — 2026-11-20 (20:59 UTC)
+
+A new fully paginated GitHub API snapshot was taken after merging the duplicate-tip classification document:
+- **348 remote branch refs**, **280 unique tip commits**.
+- The same **12 exact-tip duplicate groups**, comprising **80 refs** and **68 excess aliases**; all group SHAs and member refs are unchanged from the 2026-11-20 classification in `docs/engineering/BRANCH-ALIAS-RECONCILIATION-2026-11-20.md`.
+- **56 open pull requests** at snapshot time.
+- LEONES PR #256 (branch-alias classification) merged into `main` as `e5a5329dcdbc831bf0e723e0c17fcf4a90d3bfa4`; all four required checks completed successfully.
+- PR #257 reconciled the NEPENTHES master INDEX and merged as `d71aab6a3e0f5cf5b8007a5386aa4db700c4b8cd`; all four required checks completed successfully.
+- The AIPerf/OTel NEPENTHES chain #159–#173 remains stacked parent-first. Do not retarget or merge children independently.
+- `jalon2-evidence-bridge` remains the head of open PR #64 and must be retained. Keep `jalon2-closed` as a historical evidence ref until local dependencies are reconciled.
+
+No branch alias was deleted, renamed, or retargeted. The 68-alias list remains a remote cleanup queue only: local upstreams, worktrees, reflogs, stashes, unpushed commits and dirty evidence remain unverified without the MSI inventory/recheck. No local directory, model, cache, evidence bundle, stash or worktree was changed.
