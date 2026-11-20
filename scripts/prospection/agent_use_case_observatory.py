@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[2]
 HISTORY = ROOT / "data/prospection/agent_use_cases.ndjson"
 SKILLS = ROOT / "data/discovery/skills.json"
 PROSPECTION = ROOT / "web/data/prospeccion.json"
+FEDERATED = ROOT / "data/prospection/federated_discoveries.ndjson"
 OUTPUT = ROOT / "web/data/agent-use-cases.json"
 API = "https://api.github.com"
 QUERIES = [
