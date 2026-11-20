@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "project": "NEPENTHES",
+  "upstream_repository": "https://github.com/ai-dynamo/aiperf.git",
+  "default_branch": "main",
+  "latest_stable_release": "v0.14.0",
+  "latest_stable_release_url": "https://github.com/ai-dynamo/aiperf/releases/tag/v0.14.0",
+  "latest_stable_release_published_at": "2026-11-20T20:48:43Z",
+  "upstream_main_verified_commit": "ebcdc98ad69388b86564e25bc1a6976fc50051a7",
+  "upstream_main_verified_commit_time": "2026-11-19T01:20:59Z",
+  "runner_pinned_version": "0.13.0",
+  "verification_date": "2026-11-20",
+  "notes": [
+    "Runner remains pinned to stable v0.13.0; v0.14.0 is the latest release observed on 2026-11-20 and is not adopted until compatibility review and exact CI.",
+    "The upstream main commit is recorded for provenance only; the runner does not follow floating main.",
+    "CLI behavior and artifact schema must be checked against the pinned release, not inferred from upstream main."
+  ]
+}
