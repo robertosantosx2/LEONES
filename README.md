@@ -4,11 +4,39 @@
 
 IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y evidenciar — sin confundir ESTIMATED con MEASURED.
 
-## Gobernanza de ingeniería
+## Metodología rectora: Human-Directed Agentic Engineering (HDAE)
 
-- **[Directiva HDAE](docs/engineering/HDAE-DIRECTIVE.md)**: metodología superior de ingeniería dirigida por humanos y ejecutada por agentes para LEONES y sus subproyectos.
-- **[Referencia HDAE fijada](docs/engineering/HDAE-REFERENCE.md)**: snapshot consultable del fork LEONES en [robertosantosx2/hdae](https://github.com/robertosantosx2/hdae), fijado al commit `12d1a3389e74642dddee47a6cc4cb217f55f1144`; el upstream [gmkurtzer/hdae](https://github.com/gmkurtzer/hdae) solo se usa para evaluar actualizaciones propuestas.
-- [AGENTS.md](AGENTS.md) · [Checkpoint de adopción HDAE](docs/engineering/HDAE-CHECKPOINT.md).
+**HDAE es el método de ingeniería rector de LEONES y de todos sus subproyectos.** No es una herramienta auxiliar, una preferencia de estilo ni una automatización opcional: establece cómo se decide, ejecuta, verifica y acepta el trabajo. La referencia metodológica original es el proyecto de [Gregory M. Kurtzer: gmkurtzer/hdae](https://github.com/gmkurtzer/hdae); LEONES conserva un [fork propio](https://github.com/robertosantosx2/hdae) con un snapshot fijado para que la norma aplicada sea reproducible y no cambie silenciosamente cuando avance upstream.
+
+### Origen: experiencia real convertida en método
+
+HDAE nace de la experiencia de Gregory M. Kurtzer dirigiendo el desarrollo de **Ginux**, un kernel independiente capaz de ejecutar userspace de Linux. El propio proyecto HDAE identifica Ginux como su origen: el trabajo exigía mantener una dirección arquitectónica coherente, restricciones e invariantes persistentes, criterios de aceptación verificables y ciclos de implementación y diagnóstico ejecutados por agentes bajo dirección humana.
+
+Esa experiencia se documenta en el estudio de caso [*Ginux: Building an Independent Kernel That Runs Linux Userspace through Human-Directed Agentic Engineering*](https://zenodo.org/records/23682548), y se acompaña del [relato de Gregory M. Kurtzer en X](https://x.com/gmkurtzer/status/2118146379168297443). HDAE formaliza y empaqueta esas prácticas como una metodología reutilizable y como Agent Skills; no debe confundirse el método con la instalación automática de esas skills, que requiere una decisión y configuración explícitas por entorno.
+
+### Qué significa HDAE en la práctica
+
+La autoridad y la responsabilidad se separan deliberadamente:
+
+- **La persona dirige:** propósito, intención, arquitectura, restricciones, prioridades, recursos, alcance, riesgos y criterios de aceptación. Las decisiones sustanciales y la aceptación final permanecen bajo autoridad humana.
+- **Los agentes ejecutan:** investigación, diseño detallado, implementación, pruebas, diagnóstico, correcciones iterativas, documentación y preparación de cambios, siempre dentro de un alcance y unas gates autorizadas.
+- **El trabajo se gobierna mediante evidencia:** cada tarea sustancial parte de un resultado verificable, límites explícitos, invariantes, riesgos, pruebas/gates, artefactos que conservar y un checkpoint con condición de parada.
+- **La iteración es autónoma, pero acotada:** implementar → probar → diagnosticar → corregir → repetir. El agente puede completar secuencialmente gates objetivas ya autorizadas; no puede ampliar el alcance, alterar prioridades ni declarar éxito sin evidencia.
+- **El contexto sobrevive a las sesiones:** directivas, decisiones, estado, commits, pruebas, bloqueos y siguientes pasos se mantienen en documentación y checkpoints versionados, no únicamente en el historial de conversación.
+- **La aceptación no se presume:** implementación, tests, CI, medición física y aceptación son estados distintos. Cada gate se cierra solo con sus criterios y evidencia correspondientes; los límites y resultados inconclusos se registran sin ocultarlos.
+
+En LEONES, el trabajo se realiza primero en GitHub mediante ramas, commits, PRs y CI. El MSI se reserva para builds, benchmarks, capturas y validaciones físicas que requieran el hardware real. Los agentes no sustituyen la decisión humana ni convierten una prueba sintética o una ejecución remota en evidencia física.
+
+### Precedencia y aplicación en LEONES
+
+HDAE define **el método de trabajo**, pero no inventa prioridades de producto: el INDEX maestro expresamente designado para cada proyecto sigue siendo la única fuente de prioridades, estado y aceptación. En NEPENTHES, esa autoridad corresponde a [NEPENTHES-INDEX.md](research/moe/tandem.cpp/NEPENTHES-INDEX.md). Los roadmaps, informes, Issues, PRs y checkpoints aportan detalle y evidencia, y deben mantenerse sincronizados con el INDEX; no crean una jerarquía paralela.
+
+La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopción efectiva en repositorios externos, forks o entornos separados solo se declara cuando exista evidencia de esa adopción; la existencia de esta directiva no demuestra por sí sola que las skills estén instaladas ni que cada subproyecto haya completado su auditoría.
+
+- **[Directiva HDAE](docs/engineering/HDAE-DIRECTIVE.md)**: reglas normativas, autoridad, gates, evidencia, checkpoints y precedencia.
+- **[Referencia HDAE fijada](docs/engineering/HDAE-REFERENCE.md)**: procedencia, snapshot y política de actualización del fork LEONES.
+- **[Fork LEONES de HDAE](https://github.com/robertosantosx2/hdae/tree/12d1a3389e74642dddee47a6cc4cb217f55f1144)**: snapshot normativo fijado al commit `12d1a3389e74642dddee47a6cc4cb217f55f1144`; upstream [gmkurtzer/hdae](https://github.com/gmkurtzer/hdae) se consulta para evaluar cambios, no como referencia móvil.
+- [AGENTS.md](AGENTS.md) · [Checkpoint de adopción HDAE](docs/engineering/HDAE-CHECKPOINT.md) · [Auditoría de adopción por subproyecto](docs/engineering/HDAE-SUBPROJECT-AUDIT.md).
 
 ## Proyectos de investigación y arquitectura
 
