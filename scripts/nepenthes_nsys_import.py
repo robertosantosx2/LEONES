@@ -580,6 +580,53 @@ def build_nvtx_request_windows(markers: list[dict[str, Any]]) -> list[dict[str, 
     return build_nvtx_token_windows(markers)
 
 
+def collect_runtime_thread_ids(
+    db: sqlite3.Connection, names: set[str],
+) -> dict[int, int | None]:
+    """Map CUPTI correlation IDs to a unique Runtime globalTid; ambiguous IDs fail closed."""
+    table = "CUPTI_ACTIVITY_KIND_RUNTIME"
+    if table not in names:
+        return {}
+    candidates: dict[int, set[int]] = {}
+    for row in db.execute(f'SELECT correlationId, globalTid FROM "{table}"'):
+        correlation_id = row["correlationId"]
+        thread_id = row["globalTid"]
+        if (isinstance(correlation_id, int) and not isinstance(correlation_id, bool)
+                and isinstance(thread_id, int) and not isinstance(thread_id, bool)
+                and correlation_id >= 0 and thread_id >= 0):
+            candidates.setdefault(correlation_id, set()).add(thread_id)
+    return {
+        correlation_id: next(iter(thread_ids)) if len(thread_ids) == 1 else None
+        for correlation_id, thread_ids in candidates.items()
+    }
+
+
+def resolve_activity_thread_id(
+    row: dict[str, Any], runtime_threads: dict[int, int | None],
+) -> tuple[int | None, str]:
+    """Resolve the host launch thread, using Runtime correlation only when PID agrees."""
+    native_thread = first(row, ("globalTid", "global_tid", "threadId", "tid"))
+    if isinstance(native_thread, int) and not isinstance(native_thread, bool):
+        return native_thread, "activity_globalTid"
+    correlation_id = first(row, ("correlationId", "correlation_id"))
+    if isinstance(correlation_id, bool) or not isinstance(correlation_id, int):
+        return None, "missing_activity_correlation_id"
+    if correlation_id not in runtime_threads:
+        return None, "missing_runtime_correlation_id"
+    runtime_thread = runtime_threads[correlation_id]
+    if runtime_thread is None:
+        return None, "ambiguous_runtime_correlation_id"
+    process_id = first(row, ("globalPid", "global_pid", "processId", "pid"))
+    if isinstance(process_id, bool) or not isinstance(process_id, int):
+        return None, "missing_activity_process_identity"
+    # Nsight globalTid packs process identity in its upper bits. Verify that
+    # the Runtime launch thread belongs to the activity's recorded process.
+    runtime_process_id = runtime_thread & 0xFFFFFFFFFF000000
+    if runtime_process_id != process_id:
+        return None, "runtime_thread_process_mismatch"
+    return runtime_thread, "runtime_correlation_id"
+
+
 def attribute_nsys_activity(
     start_ns: Any, end_ns: Any, windows: list[dict[str, Any]], process_id: Any,
     thread_id: Any = None,
@@ -665,6 +712,8 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
     host_markers = host_nvtx_markers(events)
     nsys_clock_calibration = calibrate_host_to_nsys(host_markers, nsys_markers)
     nvtx_windows = build_nvtx_token_windows(nsys_markers)
+    runtime_thread_ids = collect_runtime_thread_ids(source, names)
+    runtime_thread_identity_counts: Counter[str] = Counter()
     activities: list[tuple] = []
     activity_counts: Counter[str] = Counter()
     activity_id = 0
@@ -703,13 +752,22 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
                     attributed_batch_token = nvtx_marker["token"]
                     batch_attribution_level, batch_attribution_status = "exact", "marker_identity"
             elif kind in ("cuda_kernel", "cuda_memcpy", "cuda_memset"):
+                activity_thread_id, thread_identity_status = resolve_activity_thread_id(
+                    row, runtime_thread_ids
+                )
+                runtime_thread_identity_counts[thread_identity_status] += 1
+                row["_nepenthes_thread_identity"] = {
+                    "thread_id": activity_thread_id,
+                    "source": thread_identity_status,
+                    "correlation_id": first(row, ("correlationId", "correlation_id")),
+                }
                 (
                     attributed_request_token, attribution_level, attribution_status,
                     attributed_batch_token, batch_attribution_level, batch_attribution_status,
                 ) = attribute_nsys_activity(
                     start, end, nvtx_windows,
 first(row, ("globalPid", "global_pid", "processId", "pid")),
-                    first(row, ("globalTid", "global_tid", "threadId", "tid"))
+                    activity_thread_id
                 )
             else:
                 attributed_request_token, attribution_level, attribution_status = (
@@ -836,6 +894,7 @@ first(row, ("globalPid", "global_pid", "processId", "pid")),
         "batch_windows": sum(1 for window in nvtx_windows if window["scope"] == "batch"),
         "attribution_status_counts": dict(Counter(a[26] for a in activities)),
         "batch_attribution_status_counts": dict(Counter(a[29] for a in activities)),
+        "runtime_thread_identity_status_counts": dict(runtime_thread_identity_counts),
         "nsys_clock_calibration": nsys_clock_calibration,
         "output": str(output.resolve()),
         "correlation": "explicit token-matched request/batch NVTX markers only; GPU activity attribution is windowed per scope and rejected when windows overlap",
@@ -860,6 +919,8 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
         enum_maps, enum_metadata = load_enum_tables(source, names)
         nsys_markers = collect_nsys_nvtx_markers(source, names, strings)
         nvtx_windows = build_nvtx_token_windows(nsys_markers)
+        runtime_thread_ids = collect_runtime_thread_ids(source, names)
+        runtime_thread_identity_counts: Counter[str] = Counter()
         nsys_clock_calibration = {
             "matched_marker_pairs": 0,
             "nsight_clock_calibrated": False,
@@ -913,13 +974,22 @@ def import_nsys_only(nsys: Path, output: Path, import_id: str) -> dict:
                         attributed_batch_token = nvtx_marker["token"]
                         batch_attribution_level, batch_attribution_status = "exact", "marker_identity"
                 elif kind in ("cuda_kernel", "cuda_memcpy", "cuda_memset"):
+                activity_thread_id, thread_identity_status = resolve_activity_thread_id(
+                    row, runtime_thread_ids
+                )
+                runtime_thread_identity_counts[thread_identity_status] += 1
+                row["_nepenthes_thread_identity"] = {
+                    "thread_id": activity_thread_id,
+                    "source": thread_identity_status,
+                    "correlation_id": first(row, ("correlationId", "correlation_id")),
+                }
                     (
                         attributed_request_token, attribution_level, attribution_status,
                         attributed_batch_token, batch_attribution_level, batch_attribution_status,
                     ) = attribute_nsys_activity(
                         start, end, nvtx_windows,
 first(row, ("globalPid", "global_pid", "processId", "pid")),
-                        first(row, ("globalTid", "global_tid", "threadId", "tid"))
+                        activity_thread_id
                     )
                 else:
                     attributed_request_token, attribution_level, attribution_status = (
@@ -1034,6 +1104,7 @@ first(row, ("globalPid", "global_pid", "processId", "pid")),
         "batch_windows": sum(1 for window in nvtx_windows if window["scope"] == "batch"),
         "attribution_status_counts": dict(Counter(a[26] for a in activities)),
         "batch_attribution_status_counts": dict(Counter(a[29] for a in activities)),
+        "runtime_thread_identity_status_counts": dict(runtime_thread_identity_counts),
         "nsys_clock_calibration": nsys_clock_calibration,
         "coverage": coverage,
         "output": str(output.resolve()),
