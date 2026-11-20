@@ -84,13 +84,21 @@ status=$?
 python3 - "$out.sqlite" <<'PY'
 import sqlite3,sys
 db=sqlite3.connect(sys.argv[1])
-db.execute("CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(start INTEGER,end INTEGER,correlationId INTEGER,globalPid INTEGER,processId INTEGER,deviceId INTEGER,contextId INTEGER,streamId INTEGER,nameId INTEGER)")
-db.execute("INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES(1500,1600,3,44,44,0,0,7,1)")
-db.execute("CREATE TABLE StringIds(id INTEGER,value TEXT)")
-db.execute("INSERT INTO StringIds VALUES(1,'mock_kernel')")
-db.execute("CREATE TABLE NVTX_EVENTS(start INTEGER,end INTEGER,text TEXT,globalPid INTEGER)")
-db.execute("INSERT INTO NVTX_EVENTS VALUES(1130,1130,'nepenthes.request.start token=77 request=42',44)")
-db.execute("INSERT INTO NVTX_EVENTS VALUES(5130,5130,'nepenthes.request.end token=77 request=42',44)")
+db.executescript('''
+CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(
+ start INTEGER,end INTEGER,correlationId INTEGER,globalPid INTEGER,processId INTEGER,
+ globalTid INTEGER,deviceId INTEGER,contextId INTEGER,streamId INTEGER,nameId INTEGER
+);
+INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES(1500,1600,3,44,44,777,0,0,7,1);
+CREATE TABLE StringIds(id INTEGER,value TEXT);
+INSERT INTO StringIds VALUES(1,'mock_kernel');
+CREATE TABLE NVTX_EVENTS(start INTEGER,end INTEGER,text TEXT,globalPid INTEGER,globalTid INTEGER);
+INSERT INTO NVTX_EVENTS VALUES
+ (1130,1130,'nepenthes.request.start token=77 request=42',44,777),
+ (5130,5130,'nepenthes.request.end token=77 request=42',44,777),
+ (1130,1130,'nepenthes.batch.start token=123',44,777),
+ (5130,5130,'nepenthes.batch.end token=123',44,777);
+''')
 db.commit()
 db.close()
 PY
@@ -98,7 +106,7 @@ exit "$status"
 """)
  fake.chmod(0o755)
  env=os.environ.copy();env["PATH"]=str(bindir)+os.pathsep+env.get("PATH","")
- engine_code="""import json,os,time
+ engine_code="""import json,os
 run_id=os.environ["NEPENTHES_RUN_ID"]
 path=os.environ["NEPENTHES_TRACE_JSONL"]
 events=[]
@@ -111,11 +119,14 @@ def event(event_id,kind,label,mono,wall,request_id=0,value0=1,value1=2,token=Non
  if kind in ("clock_calibration","nvtx_marker","request_start","request_end"): item["clock_domain"]="steady_clock"
  events.append(item)
 event("cal-start","clock_calibration","clock.calibration.start",1000,2000)
-event("nvtx-start","nvtx_marker","request.start",1040,2040,42,1020,1040,77,"exact")
-event("req-start","request_start","server.task",1050,2050,42,1,2,77,"exact")
-event("nvtx-end","nvtx_marker","request.end",5040,6040,42,5020,5040,77,"exact")
-event("req-end","request_end","server.task",5050,6050,42,1,2,77,"exact")
-event("cal-end","clock_calibration","clock.calibration.end",5060,6060)
+event("nvtx-request-start","nvtx_marker","request.start",1030,2030,42,1020,1040,77,"exact")
+event("nvtx-batch-start","nvtx_marker","batch.start",1030,2030,0,1020,1040,123,"exact")
+event("request-start","request_start","server.task",1050,2050,42,1,2,77,"exact")
+event("batch-member-42","routing","server.batch_member",2051,3051,42,0,41,123,"exact")
+event("batch-member-43","routing","server.batch_member",2052,3052,43,1,42,123,"exact")
+event("nvtx-request-end","nvtx_marker","request.end",5030,6030,42,5020,5040,77,"exact")
+event("nvtx-batch-end","nvtx_marker","batch.end",5030,6030,0,5020,5040,123,"exact")
+event("request-end","request_end","server.task",5050,6050,42,1,2,77,"exact")
 with open(path,"a",encoding="utf-8") as out:
  for item in events: out.write(json.dumps(item)+"\\n")
 print("nsys-wrapped")
@@ -128,16 +139,29 @@ print("nsys-wrapped")
  assert "raw/nsys.sqlite" in m["nsys"]["outputs"]
  assert (run/"raw"/"nsys.sqlite").is_file()
  assert (run/"raw"/"engine-events.jsonl").is_file()
- assert m["event_merge"]["counts"]["engine-events.jsonl"]==6
+ assert m["event_merge"]["counts"]["engine-events.jsonl"]==9
  combined=[json.loads(line) for line in (run/"raw"/"events.jsonl").read_text().splitlines()]
- assert any(event["source"]=="test-engine" and event["source_event_id"]=="req-start" for event in combined)
+ assert any(event["source"]=="test-engine" and event["source_event_id"]=="request-start" for event in combined)
  assert len({event["event_id"] for event in combined})==len(combined)
  assert m["nsys"]["import"]["status"]=="imported"
  assert (run/"data"/"nsys-import.json").is_file()
  with sqlite3.connect(run/"data"/"nepenthes-import.sqlite") as db:
-  assert db.execute("select count(*) from nepenthes_events").fetchone()[0]>=4
-  assert db.execute("select count(*) from nsys_activities").fetchone()[0]==3
+  assert db.execute("select count(*) from nepenthes_events").fetchone()[0]>=9
+  assert db.execute("select count(*) from nsys_activities").fetchone()[0]==5
+  assert db.execute("select count(*) from nepenthes_batch_activity_membership").fetchone()[0]==2
  assert "nsys-wrapped" in (run/"session.log").read_text()
+ verified=invoke("verify",str(run))
+ assert verified.returncode==0,verified.stdout+verified.stderr
+ report=json.loads(verified.stdout)
+ assert report["checks"]["c07_correlation"] is True
+ assert report["checks"]["c07_batch_correlation"] is True
+ assert report["acceptance"]["c07_request"]=="passed"
+ assert report["acceptance"]["c07_batch"]=="passed"
+ assert report["batch_gpu_activity_count"]==1
+ assert report["batch_gpu_activity_token_ids"]==[123]
+ assert report["correlation"]["batch_multi_member_tokens"]==1
+ assert report["correlation"]["batch_multi_member_token_ids"]==[123]
+ assert report["functional_complete"] is False  # C08 remains a separate physical gate
 
 def test_self_test_creates_and_verifies_bundle(tmp_path):
  result=invoke("self-test","--output",str(tmp_path))
