@@ -155,7 +155,11 @@ Reglas obligatorias:
 
 ## Enlaces canónicos
 
-- [Roadmap detallado](ROADMAP.md)
+- [Roadmap técnico complementario](ROADMAP.md)
+- [Especificación de integración AIPerf](AIPERF-INTEGRATION.md)
+- [Pin y procedencia de AIPerf](AIPERF-UPSTREAM.json)
+- [NVML y contabilidad energética](NVML-ENERGY.md)
+- [Exportación OpenTelemetry/OTLP](OTEL-EXPORT.md)
 - [Índice histórico y estado de validación](../../research/moe/tandem.cpp/NEPENTHES-INDEX.md)
 - [Roadmap histórico de implementación y gates](../../research/moe/tandem.cpp/NEPENTHES-ROADMAP.md)
 - [Campañas y resultados](../../research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md)
@@ -166,6 +170,4 @@ Reglas obligatorias:
 
 ## Estado y criterio de aceptación
 
-Este documento es un plan, no una declaración de que las nuevas capacidades estén implementadas. La situación de cada función debe etiquetarse como PLANNED, IMPLEMENTED, CAPTURED, MEASURED o ACCEPTED, con evidencia asociada.
-
-NEPENTHES V1 no se considerará completo hasta que una ejecución real pueda producir una captura verificable, medir latencia y energía con semántica explícita, importar datos sin pérdida y comparar repeticiones con overhead conocido. La interoperabilidad OTLP y los adaptadores se aceptarán mediante pruebas de contrato y destinos reales.
+Este README y sus anexos son documentación técnica subordinada. El estado vigente, las prioridades y los criterios de aceptación se mantienen exclusivamente en el [INDEX maestro de NEPENTHES](../../research/moe/tandem.cpp/NEPENTHES-INDEX.md). Las capacidades pueden estar IMPLEMENTED por CI y aun así permanecer sin aceptación física MEASURED/ACCEPTED; no inferir campañas ni overhead a partir de la existencia del código.

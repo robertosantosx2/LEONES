@@ -1,8 +1,10 @@
 # NEPENTHES — especificación de integración AIPerf
 
-**Estado:** diseño aprobado para implementación; no implica que el adaptador esté implementado ni que existan medidas nuevas.
+**Estado:** runner, importador offline, evidencia y adaptadores AIPerf están implementados en `main`; esta especificación documenta el contrato y sus límites. No implica aceptación física C08 ni mediciones nuevas.
 **Rol:** AIPerf es el runner externo primario de benchmarking para campañas nuevas.
 **Primera integración:** llama.cpp llama-server con API OpenAI-compatible.
+
+**Autoridad:** este documento es una especificación técnica subordinada. El único orden de ejecución, estado y aceptación vigente está en [el INDEX maestro de NEPENTHES](../../research/moe/tandem.cpp/NEPENTHES-INDEX.md); si existe una discrepancia, prevalece ese INDEX.
 
 ## 1. Objetivos y límites
 
@@ -168,3 +170,36 @@ No reconstruir ITL token-a-token desde una media agregada. No atribuir GPU telem
 - [AIPerf metrics reference](https://docs.nvidia.com/aiperf/reference/ai-perf-metrics-reference)
 - [AIPerf profile export files](https://docs.nvidia.com/aiperf/tutorials/metrics-analysis/working-with-profile-export-files)
 - [GenAI-Perf legacy documentation](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/perf_analyzer/genai-perf/README.html)
+
+## 11. Importador implementado en main
+
+El importador canónico está en `scripts/nepenthes_aiperf_import.py`. Acepta el resumen agregado `profile_export_aiperf.json`, registros por petición `profile_export.jsonl`, telemetría de servidor `server_metrics_export.jsonl` y `server_metrics_export.json`, y telemetría GPU `gpu_telemetry_export.jsonl`. Conserva los artefactos originales, calcula SHA-256 y normaliza eventos sin importar prompts, texto generado, credenciales ni payloads raw. Los agregados por fase y los campos/esquemas desconocidos se preservan y notifican según la política del parser; no se convierten ausencias en ceros. La importación de server metrics respeta fase/endpoint, labels seguras y tipos histogram sin inventar percentiles.
+
+Uso:
+
+```bash
+python3 scripts/nepenthes_aiperf_import.py --artifacts-dir /ruta/a/artefactos-aiperf --output-dir /ruta/al/expediente/nepenthes/aiperf-import
+```
+
+## 12. Runner NEPENTHES
+
+El wrapper está en `scripts/nepenthes_aiperf_run.py`. No instala AIPerf ni inicia el servidor: requiere el ejecutable disponible en un entorno aislado y un endpoint ya iniciado. El perfil conservador usa concurrencia 1, cinco requests, un warm-up explícito, ISL 128, OSL 32, seed 42, streaming y exportación records; registra versión, fingerprint del comando sin secretos, entorno, telemetría disponible y código de salida en el manifiesto. El log AIPerf bruto no se conserva por defecto.
+
+```bash
+python3 scripts/nepenthes_aiperf_run.py --model NOMBRE_EXACTO_DEL_MODELO_SERVIDO --url http://127.0.0.1:8080 --artifact-dir artifacts/nepenthes/aiperf-smoke-001
+```
+
+Añadir `--no-server-metrics` si el servidor no expone `/metrics`. La primera ejecución física debe limitarse a concurrencia 1 y pocos requests; escalar solo tras revisar RAM, swap, VRAM y errores. El wrapper no se ha validado físicamente en este cambio documental.
+
+## 13. Pin de upstream y versiones
+
+- [AIPERF-UPSTREAM.json](AIPERF-UPSTREAM.json) registra el upstream, el último release observado y la versión fijada por el runner. El último release estable observado es `v0.14.0`; el runner sigue fijado en `0.13.0` hasta completar revisión de compatibilidad y CI sobre el nuevo release. No actualizar la dependencia automáticamente.
+- [LLAMA-CPP-UPSTREAM.json](LLAMA-CPP-UPSTREAM.json) conserva el pin revisado de upstream/fork y la política de actualización. No confundir el HEAD del fork con el gitlink revisado de LEONES.
+
+## 14. Telemetría y límites de atribución
+
+- `server_metrics_export.json`: eventos agregados por serie/fase, con estadísticas, buckets, timeslices y ventanas. Los percentiles derivados conservan sufijo `_estimate`.
+- `server_metrics_export.jsonl`: muestras Prometheus individuales con timestamp y labels allowlisted; endpoint reducido a scheme/host/port.
+- `gpu_telemetry_export.jsonl`: señales GPU por dispositivo, con UUID/PCI bus ID y unidad. Energía acumulada permanece como contador device-wide; no se atribuye al proceso ni se suma con el sampler NVML sin una política explícita.
+- Los adaptadores llama-server de `/metrics` y `/slots` están separados del runner. `/metrics` puede requerir `--metrics`; `/slots` se detecta según versión/capacidad. El parser no realiza polling HTTP ni copia prompts/tokens de los slots.
+- Las guías específicas de [NVML/energía](NVML-ENERGY.md) y [OTLP](OTEL-EXPORT.md) documentan comandos, unidades y límites. OTLP es exportación opcional; JSONL/SQLite y los manifiestos conservan la evidencia local.
