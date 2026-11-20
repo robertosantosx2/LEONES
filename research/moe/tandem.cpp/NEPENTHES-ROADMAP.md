@@ -4,7 +4,7 @@
 
 
 **Fecha de actualización documental:** 2026-11-20.  
-**Estado operativo:** consultar exclusivamente el [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md). Este anexo conserva fases, criterios y evidencias históricas; sus checklists heredados no constituyen estado vigente si no están reconciliados en el INDEX. TensorFold host-only ya está aceptado: TensorFold PR #6 merge `50f1a34`; LEONES PR #217 merge `3c68c3a`; cinco checks exactos verdes sobre HEAD `c258ec9`. Tandem.cpp PR #5, LEONES PR #218 y #219 están fusionadas; sigue pendiente el productor NVTX batch de Tandem bajo LEONES issue #212. La prioridad actual y el orden de ejecución son exclusivamente los del INDEX. No implica aceptación física C07/C08.
+**Estado operativo:** consultar exclusivamente el [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md). Este anexo conserva fases, criterios y evidencias históricas; sus checklists heredados no constituyen estado vigente si no están reconciliados en el INDEX. TensorFold host-only ya está aceptado: TensorFold PR #6 merge `50f1a34`; LEONES PR #217 merge `3c68c3a`; cinco checks exactos verdes sobre HEAD `c258ec9`. Tandem.cpp PR #5, LEONES PR #218 y #219 están fusionadas; sigue pendiente el productor NVTX batch de Tandem bajo LEONES issue #212. llama.cpp PR #10 permanece draft; su HEAD actual `46143315` contiene creación exclusiva del JSONL, test de rechazo de destinos existentes, semántica task-level documentada, gate cross-repo de importación LEONES y corrección de metadata D2D por dispositivo físico. El workflow aún debe ejecutarse manualmente sobre ese HEAD. La prioridad actual y el orden de ejecución son exclusivamente los del INDEX. No implica aceptación física C07/C08.
 
 Este roadmap separa implementación, validación CI y validación física. Una tarea no se considera terminada por existir un PR: necesita la evidencia indicada en su criterio de salida.
 
@@ -166,8 +166,8 @@ La primera categoría concentra aproximadamente el 95,9 % de los bytes y el 96,4
 Este ROADMAP es un anexo técnico: `research/moe/tandem.cpp/NEPENTHES-INDEX.md` gobierna prioridades, estado y decisiones. Si este documento diverge, prevalece el INDEX.
 
 Orden vigente, siempre subordinado al INDEX:
-1. Reconciliar la integración llama.cpp mediante [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10): revisar semántica/diff sobre upstream, lifecycle, concurrencia, JSONL/NVTX y conseguir CI CUDA verificable.
-2. Implementar el productor NVTX batch de Tandem.cpp siguiendo LEONES issue #212 y la especificación draft [Tandem.cpp PR #6](https://github.com/robertosantosx2/tandem.cpp/pull/6); emitir markers en la misma frontera que `BatchScope`, opt-in y RAII.
+1. Completar la aceptación remota de llama.cpp PR #10: ejecutar el workflow `NEPENTHES runtime trace` sobre HEAD `46143315`, revisar importer cross-repo, tests de sink y builds CPU/CUDA. La CI del HEAD previo no se transfiere al HEAD nuevo.
+2. Tras cerrar PR #10, implementar el productor NVTX batch de Tandem.cpp siguiendo LEONES issue #212 y la especificación draft [Tandem.cpp PR #6](https://github.com/robertosantosx2/tandem.cpp/pull/6); emitir markers en la misma frontera que `BatchScope`, opt-in y RAII.
 3. Ejecutar tests/CI exactos y validar la cadena token → actividad GPU → miembros request con el importer común. No inventar correlación para workers sin identidad.
 4. Solo después de cerrar gates remotos, MSI: C07 captura emparejada NVTX/Nsight/CUPTI y C08 baseline/tratamientos emparejados.
 5. Aceptación por motor y release con evidencia, límites, overhead, cobertura y hashes.
@@ -367,4 +367,4 @@ Estado de PR #6: abierta, draft, no fusionada; HEAD `33e0d0a578c48b0a31616fd1b72
 - [ ] Auditoría semántica del cambio BF16 en ROPE/SET_ROWS y confirmar que las sondas se limitan a observar sin alterar los resultados funcionales.
 - [ ] Comparar cobertura de PR #10 con #1–#3 y #6; cerrar candidatos antiguos solo tras equivalencia demostrada.
 
-**Estado:** integración limpia preparada en PR #10, todavía draft y no aceptada. HEAD `0f3fa24`, base `c406f43`; CI parcial con jobs GPU/CUDA cancelados. El gitlink de LEONES sigue en el pin estable anterior. La reconciliación remota precede cualquier intervención del MSI.
+**Estado:** PR #10 sigue draft y no aceptada. Base `c406f43`; HEAD actual `46143315`. El HEAD previo `0f3fa24` pasó el workflow propio CPU + CUDA/NVTX SM86, pero no transfiere aceptación al HEAD actual. Los cambios recientes añaden creación exclusiva del JSONL, importación cross-repo con importer LEONES fijado, documentación de identidad task-level y clasificación D2D por dispositivo físico. No hay workflow run para `46143315`; debe ejecutarse manualmente en GitHub Actions. El gitlink de LEONES sigue en el pin estable anterior. La reconciliación remota precede cualquier intervención del MSI.
