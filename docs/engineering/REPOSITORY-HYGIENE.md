@@ -181,3 +181,18 @@ A fully paginated GitHub API snapshot was taken after merging PRs #260–#262 an
 - PR #261 merged the exact integer UTC epoch-nanosecond fix into the canonical AIPerf importer. PR #262 merged operational NVML/energy/OTLP guides and AIPerf upstream provenance. PR #260 merged the INDEX reconciliation and quickstart.
 - No branch alias was deleted, renamed or retargeted. Closed-PR branch refs remain present for provenance/recovery. The 68-alias queue still requires MSI-local upstream/worktree/reflog/stash/unpushed-commit verification before any archive/delete action.
 - No local directory, model, cache, evidence bundle, stash or worktree was changed. The MSI inventory phase remains blocked until the workstation is accessible.
+
+## Remote audit refresh after NEPENTHES PR #270/#271 — 2026-11-20
+
+A fresh fully paginated GitHub API inventory was taken after merging LEONES PRs #266, #268, #270 and #271:
+- **362 remote branch refs**, **294 unique tip commits**.
+- **12 exact-tip duplicate groups**, comprising **80 refs** and **68 excess aliases**. All 12 group SHAs and member names are unchanged from the prior classification; the net increase since the previous 354/286 snapshot is eight branch refs and eight unique tips, not new duplicate groups.
+- **41 open pull requests** after PR #271 merged.
+- No branch refs were reported as protected by the paginated branch API.
+- The only duplicate-tip alias currently appearing as an open PR head remains `jalon2-evidence-bridge` (PR #64). Preserve it and its same-tip historical peer `jalon2-closed`.
+- LEONES PR #266 (documentation snapshot), #268 (AIPerf 0.14.0 warmup-summary importer compatibility), #270 (C07 batch NVTX verifier) and #271 (master INDEX reconciliation) are merged. PR #270 passed all eight checks; PR #271 passed all four checks.
+- Superseded PRs #267 and #269 were closed after rebuilding their successors from current main. Their remote branch refs remain present for provenance and are not candidates for deletion until the MSI-local ref/worktree/stash/reflog inventory is complete.
+- PR #139 remains draft, with its head 66 commits ahead and 436 behind current main at the latest review; it was not retargeted or rebased. PRs #147/#149 remain open backlog. JALON2 #64 remains protected by its open-PR dependency.
+
+No branch alias was deleted, renamed or retargeted. The 68-alias queue remains a review queue, not completed cleanup. The remote snapshot cannot establish local worktree, reflog, stash, dirty-file, unpushed-commit or user handoff dependencies. No local directory, model, cache, evidence bundle, stash or worktree was changed. The MSI inventory phase remains blocked until the workstation is accessible.
+
