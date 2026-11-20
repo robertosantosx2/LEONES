@@ -943,30 +943,32 @@ def test_cli_verifier_requires_zero_request_id_for_batch_nvtx():
 
 
 def write_batch_runtime_join_nsys(path: Path) -> None:
-    packed_thread = (99 << 24) | 777
-    other_thread = (99 << 24) | 778
-    foreign_process_thread = (100 << 24) | 779
+    process_id = 99 << 24
+    foreign_process_id = 100 << 24
+    packed_thread = process_id | 777
+    other_thread = process_id | 778
+    foreign_process_thread = foreign_process_id | 779
     db = sqlite3.connect(path)
     db.executescript(f"""
         CREATE TABLE NVTX_EVENTS(
             start INTEGER, end INTEGER, text TEXT, globalPid INTEGER, globalTid INTEGER
         );
         INSERT INTO NVTX_EVENTS VALUES
-            (1110, 1110, 'nepenthes.batch.start token=123', 99, {packed_thread}),
-            (5110, 5110, 'nepenthes.batch.end token=123', 99, {packed_thread}),
-            (1120, 1120, 'nepenthes.request.start token=123 request=42', 99, {packed_thread}),
-            (1910, 1910, 'nepenthes.request.end token=123 request=42', 99, {packed_thread});
+            (1110, 1110, 'nepenthes.batch.start token=123', {process_id}, {packed_thread}),
+            (5110, 5110, 'nepenthes.batch.end token=123', {process_id}, {packed_thread}),
+            (1120, 1120, 'nepenthes.request.start token=123 request=42', {process_id}, {packed_thread}),
+            (1910, 1910, 'nepenthes.request.end token=123 request=42', {process_id}, {packed_thread});
         CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(
             start INTEGER, end INTEGER, correlationId INTEGER,
             globalPid INTEGER, deviceId INTEGER, contextId INTEGER,
             streamId INTEGER, name TEXT
         );
         INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES
-            (1500, 1600, 201, 99, 0, 1, 7, 'runtime_thread_match'),
-            (2500, 2600, 202, 99, 0, 1, 7, 'different_launch_thread'),
-            (1600, 1700, 203, 99, 0, 1, 7, 'missing_runtime_match'),
-            (5200, 5300, 204, 99, 0, 1, 7, 'runtime_process_mismatch'),
-            (1700, 1800, 205, 99, 0, 1, 7, 'ambiguous_runtime_match');
+            (1500, 1600, 201, {process_id}, 0, 1, 7, 'runtime_thread_match'),
+            (2500, 2600, 202, {process_id}, 0, 1, 7, 'different_launch_thread'),
+            (1600, 1700, 203, {process_id}, 0, 1, 7, 'missing_runtime_match'),
+            (5200, 5300, 204, {process_id}, 0, 1, 7, 'runtime_process_mismatch'),
+            (1700, 1800, 205, {process_id}, 0, 1, 7, 'ambiguous_runtime_match');
         CREATE TABLE CUPTI_ACTIVITY_KIND_RUNTIME(
             start INTEGER, end INTEGER, globalTid INTEGER,
             correlationId INTEGER, nameId INTEGER
