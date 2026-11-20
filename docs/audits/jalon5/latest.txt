@@ -1,8 +1,8 @@
 ============================================================
 LEONES — JALÓN 5 AUDIT RUNNER
 ============================================================
-UTC: 20260829T054917Z
-BRANCH: rc1-minimal-script-cleanup
+UTC: 20260830T173030Z
+BRANCH: jalon5-physical-plan
 
 ========== CONTRACT ==========
 PASS: JALÓN 5 contract and schema present
@@ -13,7 +13,7 @@ PASS: JALÓN 5 contract and schema present
 
 ========== EXISTING SELECTOR/INTEGRATION TESTS ==========
 ......                                                                   [100%]
-6 passed in 0.04s
+6 passed in 0.06s
 
 ========== DIFF ==========
 
