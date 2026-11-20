@@ -149,12 +149,13 @@ nepenthes verify "$RUN_DIR"
 Comprobar en el JSON de salida:
 
 - `ok=true`, `checks.nsys_import=true` y `checks.correlation_contract=true`.
-- `acceptance.c07_request=passed` conserva el gate request-level independiente.
 - `acceptance.c07_batch=passed` y `checks.c07_batch_correlation=true`.
+- `acceptance.c07_request` puede quedar `pending` si esta captura del productor batch no repite los marcadores request; eso no invalida el gate batch. La aceptación request-level previa permanece registrada en el INDEX maestro.
+- El `acceptance.c07` combinado y `functional_complete` pueden seguir pendientes en este bundle aislado: el verificador no mezcla automáticamente evidencia histórica de otras campañas.
 - `correlation.batch_multi_member_tokens` es mayor que cero.
 - `batch_gpu_activity_token_ids` coincide con `correlation.batch_nvtx_token_ids`.
 - `batch_gpu_activity_count` es al menos el número de tokens batch validados.
-- `functional_complete` seguirá siendo false mientras C08 no tenga su informe paired aceptado. C07 no demuestra overhead.
+- C08 sigue siendo una aceptación separada; C07 no demuestra overhead. No cambiar el estado request-level aceptado en el INDEX por la ausencia de esos marcadores en una captura batch-only.
 
 ## 6. Consultas SQLite de auditoría
 
