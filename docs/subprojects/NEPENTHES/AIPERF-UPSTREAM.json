@@ -12,7 +12,7 @@
   "verification_date": "2026-11-20",
   "notes": [
     "Runner remains pinned to 0.13.0. v0.14.0 is the latest stable release observed on 2026-11-20; do not change the default pin based only on static review.",
-    "Static review confirms the runner's CLI flags remain present in v0.14.0 and documents export schemas 1.7 (summary), 1.1 (per-request JSONL), and 1.1 (server metrics JSON).",
+    "Static review confirms the runner CLI flags remain present in v0.14.0. Export formats: profile summary schema 1.7, server metrics JSON schema 1.1, outputs.json schema 1.1; per-request JSONL has metadata/metrics records and no standalone schema_version documented.",
     "NEPENTHES already normalizes server-metrics schema 1.1; the compatibility PR adds explicit import of profile summary warmup_metrics and v0.14.0 regression fixtures.",
     "Exact AIPerf 0.14.0 runtime, artifact, and MSI smoke validation remain pending.",
     "The upstream main commit is recorded for provenance only; the runner does not follow floating main."
@@ -36,8 +36,9 @@
     ],
     "export_schemas": {
       "profile_export_aiperf_json": "1.7",
-      "profile_export_jsonl": "1.1",
-      "server_metrics_export_json": "1.1"
+      "profile_export_jsonl": "record JSONL with metadata/metrics; no standalone schema_version documented",
+      "server_metrics_export_json": "1.1",
+      "outputs_json": "1.1"
     },
     "importer_status": "PR adds warmup_metrics summary normalization and fixtures for AIPerf 0.14.0; CI pending",
     "runtime_smoke": "not run",
