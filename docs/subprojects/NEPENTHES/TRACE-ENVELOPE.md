@@ -1,6 +1,6 @@
 # NEPENTHES shared trace envelope
 
-**Status:** host-only validator implementation is in [LEONES PR #210](https://github.com/robertosantosx2/LEONES/pull/210), open and ready for review. Exact code/test HEAD `262d3f8db254d27b099d6d0dc4a92826bdbd253c` passed all 10 GitHub Actions checks, including 27 focused importer tests and the full repository suite (600 passed, 8 subtests passed). The current PR head adds only INDEX/documentation updates after that code/test HEAD. This contract is not accepted until PR review and merge; it does not claim that a TensorFold runtime producer exists.
+**Status:** host-only validator implementation is merged in LEONES by [PR #210](https://github.com/robertosantosx2/LEONES/pull/210), merge commit `fcaf17005f7771c2521fc07387409a79c47f1b7b`. The master [NEPENTHES INDEX](../../research/moe/tandem.cpp/NEPENTHES-INDEX.md) is authoritative for current project status and acceptance. The earlier code/test HEAD `262d3f8db254d27b099d6d0dc4a92826bdbd253c` passed the documented 10 GitHub Actions checks, including 27 focused importer tests and the full repository suite (600 passed, 8 subtests passed). This acceptance is host-only: it does not claim that a TensorFold CUDA/NVTX runtime producer exists, nor does it close physical C07/C08.
 
 ## Ownership and entry point
 
