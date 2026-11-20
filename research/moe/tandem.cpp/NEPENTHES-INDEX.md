@@ -470,7 +470,7 @@ Esta actualización supersede únicamente los gates que el registro de importaci
 
 ### Auditoría remota de repositorio tras deduplicación Qwen3.5-35B — 2026-11-20
 
-- Snapshot paginado de GitHub: 344 refs remotas, 276 tips únicos, 12 grupos de tips duplicados (80 refs / 68 aliases excedentes) y 55 PR abiertas en el momento de la auditoría.
+- Snapshot paginado de GitHub: 346 refs remotas, 278 tips únicos, 12 grupos de tips duplicados (80 refs / 68 aliases excedentes) y 57 PR abiertas en el momento de la auditoría.
 - Proteger `jalon2-evidence-bridge` y `jalon2-closed`: comparten tip, pero la primera es HEAD de la PR abierta #64. No eliminar ni retargetear ninguna de las dos hasta reconciliar refs/worktrees locales.
 - PR #253 quedó fusionada como `faa1ac5b2f3dd21c3fbd44e85130602da96aeae3`, con cuatro checks requeridos verdes. La deduplicación física Qwen3.5-35B y la recuperación aproximada de 9,94 GiB están verificadas en el inventario MSI.
 - La cadena AIPerf/OTel #159–#173 sigue apilada: #159 permanece draft; #162 y #164 están cerradas sin merge; #165 es la sucesora activa. Mantener el orden parent-first y no fusionar/retargetear PR hijas mientras #159 siga draft.
