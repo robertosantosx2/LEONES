@@ -84,7 +84,7 @@ status=$?
 python3 - "$out.sqlite" <<'PY'
 import sqlite3,sys
 db=sqlite3.connect(sys.argv[1])
-db.executescript("""
+db.executescript('''
 CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(
  start INTEGER,end INTEGER,correlationId INTEGER,globalPid INTEGER,processId INTEGER,
  globalTid INTEGER,deviceId INTEGER,contextId INTEGER,streamId INTEGER,nameId INTEGER
@@ -98,7 +98,7 @@ INSERT INTO NVTX_EVENTS VALUES
  (5130,5130,'nepenthes.request.end token=77 request=42',44,777),
  (1130,1130,'nepenthes.batch.start token=123',44,777),
  (5130,5130,'nepenthes.batch.end token=123',44,777);
-""")
+''')
 db.commit()
 db.close()
 PY
