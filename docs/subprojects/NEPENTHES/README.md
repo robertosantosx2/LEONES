@@ -1,10 +1,10 @@
 # NEPENTHES — observabilidad de motores de inferencia
 
-**Subproyecto de LEONES · Estado: en desarrollo · Prioridad inmediata: energía, latencia por token e interoperabilidad**
+**Subproyecto de LEONES · Estado: en desarrollo · Prioridades vigentes: consultar exclusivamente el INDEX maestro**
 
 NEPENTHES es la infraestructura de observabilidad y benchmarking reproducible para motores de inferencia local. Su misión es capturar, preservar, correlacionar y analizar el comportamiento real del runtime, CPU, GPU, memoria, KV cache, MoE y servidor, sin confundir observaciones, estimaciones y mediciones.
 
-Este directorio establece la arquitectura y el plan canónico del subproyecto. Conserva la implementación y las evidencias históricas en research/moe/tandem.cpp/; no duplica código ni sustituye esos registros.
+Este directorio contiene especificaciones técnicas complementarias y material de investigación. No es una fuente autónoma de prioridades, estado ni aceptación: el único orden de ejecución y criterio vigente es [el INDEX maestro de NEPENTHES](../../../research/moe/tandem.cpp/NEPENTHES-INDEX.md). Si este README, el ROADMAP o cualquier especificación difieren del INDEX, prevalece el INDEX. La implementación y las evidencias históricas permanecen en research/moe/tandem.cpp/; esta documentación no las sustituye.
 
 ## Objetivos
 
@@ -17,9 +17,9 @@ Este directorio establece la arquitectura y el plan canónico del subproyecto. C
 7. Adaptadores de métricas para llama.cpp, TensorFold y otros motores.
 8. Importación y análisis reproducible en LEONES, con Nsight Systems/CUPTI como evidencia externa.
 
-## Prioridades de producto
+## Áreas técnicas de producto (no constituyen un orden de ejecución)
 
-### P1 — Estudiar e integrar ideas de Inferscope (máximo interés inmediato)
+### Área técnica — Estudiar e integrar ideas de Inferscope
 
 Referencia principal: [MicheleCampi/inferscope](https://github.com/MicheleCampi/inferscope) (Apache-2.0). Estudiar arquitectura, decisiones de diseño, límites de atribución, captura token-stream, NVML, contador de energía y exportación OTLP. Adoptar ideas mediante una implementación NEPENTHES compatible con sus propios contratos; no copiar código sin revisión de licencia y dependencias.
 
@@ -34,7 +34,7 @@ Referencia principal: [MicheleCampi/inferscope](https://github.com/MicheleCampi/
 
 La telemetría NVML es normalmente de dispositivo completo. No atribuir consumo a un proceso concreto si la fuente no ofrece esa atribución. Para energía derivada, conservar muestras, intervalo, método de integración y error/limitaciones.
 
-### P2 — OpenTelemetry como formato de interoperabilidad
+### Área técnica — OpenTelemetry como formato de interoperabilidad
 
 OpenTelemetry será la interfaz estándar de exportación e integración, no el formato único de almacenamiento ni un reemplazo de JSONL/SQLite.
 
@@ -48,7 +48,7 @@ OpenTelemetry será la interfaz estándar de exportación e integración, no el 
 
 No crear un span por cada token por defecto: puede generar volumen y overhead excesivos. Registrar ITL como histograma/evento agregado y habilitar detalle token-a-token solo en perfiles de diagnóstico. No incluir prompts, respuestas ni datos sensibles en atributos por defecto. Evitar IDs de petición como etiquetas de métricas de alta cardinalidad; mantenerlos en trazas.
 
-### P3 — AIPerf como runner primario
+### Área técnica — AIPerf como runner primario
 
 AIPerf es el runner externo predeterminado para nuevas campañas NEPENTHES. Se usa contra endpoints OpenAI-compatible, con streaming cuando se midan TTFT/ITL, perfiles de concurrencia o tasa de llegada y exportación por request. GenAI-Perf queda limitado a compatibilidad/importación de campañas históricas por estar en retirada según NVIDIA.
 
