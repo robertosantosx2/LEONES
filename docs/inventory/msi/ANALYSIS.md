@@ -67,3 +67,17 @@ The report contains 14 stash records. Several are repeated across separate workt
 - This snapshot does not contain file hashes, inode/link information, model usage references, process-open file checks, or a complete Git common-dir identity map.
 - The checkout report is a snapshot and may contain nested/repeated paths; it is not sufficient to delete or move directories.
 - No cleanup has been performed or authorized by this analysis. The MSI must be consulted only for the missing live checks and any physical moves/deletions after a reviewed plan.
+
+
+## Qwen3.5-35B duplicate verification — 2026-11-20
+
+The MSI read-only follow-up compared the two `Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf` paths:
+
+| Path | Bytes | Inode | Modification time |
+|---|---:|---:|---|
+| `models/tandem-qwen35/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf` | 10,676,139,840 | 30,949,105 | 2026-11-05 09:55:01 +0100 |
+| `benchmarks/qwen3.5-35b-a3b-iq2-xxs/Qwen_Qwen3.5-35B-A3B-IQ2_XXS.gguf` | 10,676,139,840 | 28,340,432 | 2026-10-21 23:51:37 +0200 |
+
+Both SHA-256 values are identical: `479cc80b2500f7ba5f6131986da188ecb406cf7855094c5d8ae0ec332a715105`. The files have distinct inodes on the same device, so they are separate physical files rather than hardlinks. The read-only `lsof` and `fuser` checks reported no process using either path at capture time.
+
+**Finding:** content identity is confirmed; approximately 9.94 GiB is duplicated on disk. This is not yet deletion approval. Before choosing a canonical path, search launch scripts, benchmark manifests, service definitions, symlinks and model registries for both exact paths and their parent directories. Then check whether either path is relied upon by automation or reproducibility instructions. Preserve both until references are reconciled and an explicit cleanup decision is made. No file was moved or deleted.
