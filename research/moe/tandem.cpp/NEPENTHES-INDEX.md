@@ -582,3 +582,12 @@ Esta actualización supersede únicamente los gates que el registro de importaci
 - Issue [#212](https://github.com/robertosantosx2/LEONES/issues/212) refleja la implementación host many-to-many, importer guard y productor NVTX batch ya aceptados. Sigue abierta para revisión de compatibilidad, receta de captura y validación física C07/C08.
 - PR #258 y #259 de higiene quedaron fusionadas; el snapshot posterior registró 350 refs, 282 tips únicos, 12 grupos/80 refs/68 aliases excedentes y 55 PR abiertas en el momento de la captura. Es una instantánea fechada, no un inventario vivo.
 
+
+
+### Backlog exploratorio MoE/capacidad — 2026-11-20
+
+- [LEONES PR #147](https://github.com/robertosantosx2/LEONES/pull/147) añade sondas de runtime/cache MoE (scheduler, PSI, RSS/HWM, VRAM, potencia, temperatura y PCIe) y parser de trazas MCT1. Sus checks remotos observados (`regression`, `runtime-contracts`) están en success. La PR sigue abierta y apunta a la rama de batería histórica `benchmarks/tandem-qwen35-reasoning-battery-2026-11-12`, no a `main`.
+- [LEONES PR #149](https://github.com/robertosantosx2/LEONES/pull/149) añade el plan FAST PATH/CAPACITY PATH, diseño out-of-core e inspector offline Nsight SQLite. Sus checks remotos observados (`regression`, `unit-tests`, `runtime-contracts`) están en success. La PR sigue abierta y apunta a la rama #147; no implementa todavía un runtime out-of-core ni demuestra mejoras de tokens/s.
+- Ambas PRs son un stack exploratorio independiente y se mantienen en **backlog diferido**, detrás de C07 físico de Tandem.cpp y C08 AIPerf-first. No fusionar ni retargetear por separado; reabrir la prioridad solo cuando los gates anteriores estén aceptados y el INDEX se actualice explícitamente.
+- La CI sintética/host de #147/#149 no sustituye ejecución física ni mediciones en MSI. No se declara validación de rendimiento, capacidad out-of-core, PCIe/expert traffic ni mejora de throughput a partir de los tests.
+- La traducción inglesa [PR #154](https://github.com/robertosantosx2/LEONES/pull/154) permanece draft y bloqueada: debe regenerarse desde el INDEX español vigente, nunca fusionarse como espejo del snapshot del 2026-11-15.
