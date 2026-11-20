@@ -4,7 +4,7 @@
 
 
 **Fecha de actualización documental:** 2026-11-20.  
-**Estado operativo:** consultar exclusivamente el [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md). Este anexo conserva fases, criterios y evidencias históricas; sus checklists heredados no constituyen estado vigente si no están reconciliados en el INDEX. TensorFold host-only ya está aceptado: TensorFold PR #6 merge `50f1a34`; LEONES PR #217 merge `3c68c3a`; cinco checks exactos verdes sobre HEAD `c258ec9`. Tandem.cpp PR #5, LEONES PR #218 y #219 están fusionadas; sigue pendiente el productor NVTX batch de Tandem bajo LEONES issue #212. llama.cpp PR #10 permanece draft; su HEAD actual `46143315` contiene creación exclusiva del JSONL, test de rechazo de destinos existentes, semántica task-level documentada, gate cross-repo de importación LEONES y corrección de metadata D2D por dispositivo físico. El workflow aún debe ejecutarse manualmente sobre ese HEAD. La prioridad actual y el orden de ejecución son exclusivamente los del INDEX. No implica aceptación física C07/C08.
+**Estado operativo:** consultar exclusivamente el [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md). Este anexo conserva fases, criterios y evidencias históricas; sus checklists heredados no constituyen estado vigente si no están reconciliados en el INDEX. TensorFold host-only ya está aceptado: TensorFold PR #6 merge `50f1a34`; LEONES PR #217 merge `3c68c3a` y PR #220 merge `9d24c2a`; cinco checks exactos verdes sobre HEAD `c258ec9`. Tandem.cpp PR #5, LEONES PR #218 y #219 están fusionadas; el productor NVTX batch está en Tandem.cpp PR #7, abierta en draft. Su run exacto `44680823717` pasó los tests C++/disabled NVTX/sink/importer, falló la verificación de aplicación de runtime patches al pinned llama.cpp y tenía `cuda-compile` en progreso. llama.cpp PR #10 permanece draft; su HEAD actual `46143315` contiene creación exclusiva del JSONL, test de rechazo de destinos existentes, semántica task-level documentada, gate cross-repo de importación LEONES y corrección de metadata D2D por dispositivo físico. El workflow aún debe ejecutarse manualmente sobre ese HEAD. La prioridad actual y el orden de ejecución son exclusivamente los del INDEX. No implica aceptación física C07/C08.
 
 Este roadmap separa implementación, validación CI y validación física. Una tarea no se considera terminada por existir un PR: necesita la evidencia indicada en su criterio de salida.
 
@@ -37,6 +37,7 @@ Este roadmap separa implementación, validación CI y validación física. Una t
 - [x] Contrato de diseño TensorFold #1 cerrado.
 - [x] Implementar y fusionar el conector host-only mediante [TensorFold PR #6](https://github.com/robertosantosx2/TensorFold/pull/6), merge `50f1a34`; issue #3 cerrada.
 - [x] Validar HEAD `c258ec930b4ea8f0d0bc785a984d2114bf041fb9` mediante cinco checks `completed/success` (`tensorfold-host`, `v1-complete`, `runtime-contracts`, `regression`, `gate`) en LEONES PR #217, merge `3c68c3a`.
+- [x] Reconciliar el estado/aceptación host-only en el maestro mediante LEONES PR #220, merge `9d24c2a`.
 - [x] Cubrir concurrencia, keep-alive, lifecycle background, drops/errors, summary final y fixtures mediante host CI y el importer común.
 - [x] Mantener CUDA/NVTX/Nsight/MSI fuera de esta fase. No se afirma aceptación física ni overhead.
 
@@ -167,8 +168,8 @@ Este ROADMAP es un anexo técnico: `research/moe/tandem.cpp/NEPENTHES-INDEX.md` 
 
 Orden vigente, siempre subordinado al INDEX:
 1. Completar la aceptación remota de llama.cpp PR #10: ejecutar el workflow `NEPENTHES runtime trace` sobre HEAD `46143315`, revisar importer cross-repo, tests de sink y builds CPU/CUDA. La CI del HEAD previo no se transfiere al HEAD nuevo.
-2. Tras cerrar PR #10, implementar el productor NVTX batch de Tandem.cpp siguiendo LEONES issue #212 y la especificación draft [Tandem.cpp PR #6](https://github.com/robertosantosx2/tandem.cpp/pull/6); emitir markers en la misma frontera que `BatchScope`, opt-in y RAII.
-3. Ejecutar tests/CI exactos y validar la cadena token → actividad GPU → miembros request con el importer común. No inventar correlación para workers sin identidad.
+2. Tras cerrar PR #10, completar la implementación ya abierta en [Tandem.cpp PR #7](https://github.com/robertosantosx2/tandem.cpp/pull/7), usando PR #6 como especificación: resolver el fallo de patch application sobre la base pinned y completar `trace-smoke` + `cuda-compile` exactos. El último run `44680823717` falló en el step de patch application y tenía el build CUDA en progreso.
+3. Revisar pairing/invalid-members y validar la cadena token → actividad GPU → miembros request con el importer común. No inventar correlación para workers sin identidad.
 4. Solo después de cerrar gates remotos, MSI: C07 captura emparejada NVTX/Nsight/CUPTI y C08 baseline/tratamientos emparejados.
 5. Aceptación por motor y release con evidencia, límites, overhead, cobertura y hashes.
 
