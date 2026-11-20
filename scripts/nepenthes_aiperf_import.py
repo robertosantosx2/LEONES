@@ -496,6 +496,7 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
     event_path = out / "aiperf_events.jsonl"
     event_count = 0
     summary_metric_count = 0
+    warmup_summary_metric_count = 0
     request_metric_count = 0
     request_count = 0
     failed_request_count = 0
@@ -517,33 +518,53 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
 
     with event_path.with_name(event_path.name + ".tmp").open("w", encoding="utf-8") as stream:
         if summary_path is not None:
-            for metric_name, block in summary.items():
-                if not isinstance(block, dict) or "unit" not in block:
-                    continue
-                if not (SUMMARY_FIELDS & set(block)) or not ("avg" in block or "count" in block):
-                    continue
-                event = {
-                    "schema_version": OUTPUT_SCHEMA,
-                    "event_id": stable_id(run_id, "summary", metric_name),
-                    "run_id": run_id,
-                    "request_id": None,
-                    "event_kind": "aiperf_metric",
-                    "scope": "run_summary",
-                    "metric_name": metric_name,
-                    "value": block.get("avg"),
-                    "unit": block.get("unit"),
-                    "statistics": {key: value for key, value in block.items() if key != "unit"},
-                    "timestamp_unix_ns": summary_timestamp,
-                    "monotonic_ns": None,
-                    "source_tool": "aiperf",
-                    "source_version": aiperf_version,
-                    "source_schema_version": source_schema,
-                    "source_file": summary_rel,
-                    "quality": "available" if block.get("avg") is not None else "summary_without_average",
-                }
-                write_event(stream, event)
-                event_count += 1
-                summary_metric_count += 1
+            def emit_summary_metrics(metrics: Any, scope: str, phase: str) -> None:
+                nonlocal event_count, summary_metric_count, warmup_summary_metric_count
+                if metrics is None:
+                    return
+                if not isinstance(metrics, dict):
+                    raise ValueError(f"AIPerf {phase} summary metrics must be an object")
+                for metric_name, block in metrics.items():
+                    if not isinstance(block, dict) or "unit" not in block:
+                        continue
+                    if not (SUMMARY_FIELDS & set(block)) or not ("avg" in block or "count" in block):
+                        continue
+                    event_id = (
+                        stable_id(run_id, "summary", metric_name)
+                        if scope == "run_summary"
+                        else stable_id(run_id, "summary", scope, metric_name)
+                    )
+                    event = {
+                        "schema_version": OUTPUT_SCHEMA,
+                        "event_id": event_id,
+                        "run_id": run_id,
+                        "request_id": None,
+                        "event_kind": "aiperf_metric",
+                        "scope": scope,
+                        "metric_name": metric_name,
+                        "value": block.get("avg"),
+                        "unit": block.get("unit"),
+                        "statistics": {key: value for key, value in block.items() if key != "unit"},
+                        "timestamp_unix_ns": summary_timestamp,
+                        "monotonic_ns": None,
+                        "source_tool": "aiperf",
+                        "source_version": aiperf_version,
+                        "source_schema_version": source_schema,
+                        "source_file": summary_rel,
+                        "metrics_phase": phase,
+                        "quality": "available" if block.get("avg") is not None else "summary_without_average",
+                    }
+                    write_event(stream, event)
+                    event_count += 1
+                    if scope == "run_summary":
+                        summary_metric_count += 1
+                    else:
+                        warmup_summary_metric_count += 1
+
+            emit_summary_metrics(summary, "run_summary", "profiling")
+            # AIPerf 0.14.0 JSON export schema 1.7 adds warmup_metrics separately;
+            # preserve these as a distinct scope instead of silently dropping them.
+            emit_summary_metrics(summary.get("warmup_metrics"), "warmup_summary", "warmup")
 
         if records_path is not None:
             with records_path.open(encoding="utf-8") as records:
@@ -653,6 +674,7 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
         "event_file": event_path.name,
         "event_count": event_count,
         "summary_metric_count": summary_metric_count,
+        "warmup_summary_metric_count": warmup_summary_metric_count,
         "request_count": request_count,
         "request_metric_count": request_metric_count,
         "failed_request_count": failed_request_count,

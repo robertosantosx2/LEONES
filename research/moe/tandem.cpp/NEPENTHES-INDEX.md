@@ -607,3 +607,9 @@ Esta actualización supersede únicamente los gates que el registro de importaci
 
 El detalle técnico y el inventario de pruebas se mantienen en [NEPENTHES-SOFTWARE-P0-STATUS-20261120.md](NEPENTHES-SOFTWARE-P0-STATUS-20261120.md). Este INDEX sigue siendo la única autoridad para prioridades, estado global y aceptación.
 
+### Revisión estática de compatibilidad AIPerf v0.14.0 — 2026-11-20
+
+- El release estable v0.14.0 conserva las opciones CLI usadas por `nepenthes_aiperf_run.py`; la revisión de upstream confirma los aliases de input/output tokens, warm-up explícito, export records, server-metrics JSON/JSONL y GPU telemetry pynvml.
+- Los exports relevantes documentan `profile_export_aiperf.json` schema 1.7, `server_metrics_export.json` schema 1.1 y `outputs.json` schema 1.1; `profile_export.jsonl` es un flujo de records metadata/metrics sin `schema_version` independiente documentado. El importer actual ya normaliza server metrics schema 1.1 y `warmup_metrics` de server summary.
+- La revisión detectó que el importer no normalizaba `warmup_metrics` del summary principal; se corrige y se añade fixture de versión 0.14.0 en la PR de compatibilidad.
+- **Decisión:** mantener el pin del runner en 0.13.0 hasta que la CI exacta de compatibilidad pase y se realice un smoke controlado con el binario 0.14.0. No se declara compatibilidad runtime ni se ejecuta C08 por esta revisión estática.
