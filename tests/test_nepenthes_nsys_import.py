@@ -908,7 +908,7 @@ def test_sink_summary_rejects_mismatched_count_and_nonterminal_position(tmp_path
         "write_errors": 0,
     }
     with jsonl.open("a", encoding="utf-8") as stream:
-        stream.write(json.dumps(summary_record) + "\\n")
+        stream.write(json.dumps(summary_record) + "\n")
     with pytest.raises(ValueError, match="events_drained does not match"):
         list(event_rows(jsonl))
 
