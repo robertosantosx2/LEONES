@@ -4,6 +4,8 @@
 **Rol:** AIPerf es el runner externo primario de benchmarking para campañas nuevas.
 **Primera integración:** llama.cpp llama-server con API OpenAI-compatible.
 
+**Autoridad:** este documento es una especificación técnica subordinada. El único orden de ejecución, estado y aceptación vigente está en [el INDEX maestro de NEPENTHES](../../research/moe/tandem.cpp/NEPENTHES-INDEX.md); si existe una discrepancia, prevalece ese INDEX.
+
 ## 1. Objetivos y límites
 
 1. Lanzar AIPerf de forma reproducible contra un endpoint de inferencia local.
