@@ -126,3 +126,15 @@ The MSI inventory supersedes earlier partial checkout lists where they differ. I
 4. Only after hashes, commit reachability, PR dependencies and recovery copies are verified, propose reversible local consolidation. No reset, clean, prune, branch deletion, stash mutation, model deletion or directory move is authorized by this audit.
 
 **Tooling boundary:** branch-ref deletion is still unavailable through the current GitHub integration. The 68 aliases remain a reviewed queue, not completed cleanup.
+
+
+## Remote audit refresh after Qwen deduplication — 2026-11-20
+
+A fresh paginated GitHub API inventory after LEONES PR #253 merged:
+- 344 remote branch refs, 276 unique tip commits.
+- The same 12 exact-tip duplicate groups remain: 80 refs total, 68 excess aliases.
+- 55 open pull requests.
+- Cross-check of duplicate group refs against all open PR heads/bases identifies the live JALON2 evidence line; preserve both same-tip refs `jalon2-evidence-bridge` (PR #64 head) and `jalon2-closed` until local refs/worktrees are reconciled. No other duplicate alias is an open PR head/base in this snapshot.
+- PR #253 (Qwen3.5-35B duplicate removal record) merged as `faa1ac5b2f3dd21c3fbd44e85130602da96aeae3`; all four required checks passed. Physical MSI deletion and postconditions are documented in the master NEPENTHES INDEX and MSI analysis.
+
+The remote cleanup queue is unchanged. The current integration does not expose a branch-ref delete operation, and remote API inspection cannot establish whether a developer's local refs, reflogs, stashes or unpushed work depend on any alias. Do not delete aliases or local checkouts on the basis of this snapshot alone.
