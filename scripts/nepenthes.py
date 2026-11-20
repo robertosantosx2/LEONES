@@ -622,7 +622,8 @@ def verify_run(a):
   result["errors"].append("data/nepenthes-import.sqlite missing while Nsight capture is enabled")
  result["checks"]["nsys_import"]=not any(x.startswith((
   "data/nsys-import.json","data/nepenthes-import.sqlite","Nsight import","nepenthes-import.sqlite",
-  "Nsight GPU","windowed Nsight","ambiguous overlapping","Nsight request/batch","Nsight batch"
+  "Nsight GPU","Nsight activity schema","windowed Nsight","ambiguous overlapping",
+  "NVTX markers","Nsight request/batch","Nsight batch"
  )) for x in result["errors"])
  nsys_calibration=result.get("nsys_clock_calibration",{})
  request_c07_pass=(nsys_enabled and correlation.get("request_tokens",0)>0
