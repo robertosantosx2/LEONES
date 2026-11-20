@@ -4,6 +4,11 @@
 
 IA local con criterio: descubrir, estimar, elegir, preparar, verificar, medir y evidenciar — sin confundir ESTIMATED con MEASURED.
 
+## Gobernanza de ingeniería
+
+- **[Directiva HDAE](docs/engineering/HDAE-DIRECTIVE.md)**: metodología superior de ingeniería dirigida por humanos y ejecutada por agentes para LEONES y sus subproyectos. La directiva establece gates, evidencia, checkpoints, límites y desarrollo remoto-first.
+- [AGENTS.md](AGENTS.md) · [Checkpoint de adopción HDAE](docs/engineering/HDAE-CHECKPOINT.md).
+
 ## Proyectos de investigación y arquitectura
 
 - **[NEPENTHES — índice, roadmap y campañas](research/moe/tandem.cpp/NEPENTHES-INDEX.md)**: instrumentación universal de motores, captura JSONL, CLI, Nsight/CUPTI, importación LEONES, campañas físicas, informes y gates de aceptación.
