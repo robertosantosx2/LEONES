@@ -5,6 +5,7 @@ on:
     paths:
       - 'scripts/prospection/agent_use_case_observatory.py'
       - 'web/agent-use-cases.html'
+      - 'web/index.html'
       - 'web/data/agent-use-cases.json'
       - 'docs/subprojects/AGENT-USE-CASE-OBSERVATORY/**'
       - '.github/workflows/agent-use-case-observatory-ci.yml'
