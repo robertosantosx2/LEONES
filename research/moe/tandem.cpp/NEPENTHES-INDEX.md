@@ -346,7 +346,7 @@ Esta sección sustituye los estados parciales anteriores para la aceptación del
 - [!] Workflow CUDA/HIP/MUSA globalmente fallido solo en `musa/Dependencies`: timeout de `dl.mthreads.com`, paquetes SDK ausentes y compilación MUSA omitida. Los jobs CUDA y HIP del mismo workflow pasan. Clasificación: infraestructura/dependencia externa; no es fallo del build CUDA.
 - [~] Siguen queued los runners self-hosted KleidiAI, CPU high-performance, IBM, Vulkan, OpenVINO, Metal, CUDA y WebGPU, además de Models Backend Check. No se cuentan como aceptados.
 - PR #6 permanece abierta, draft, mergeable y no fusionada. Comparación actual: 33 commits ahead, 0 behind; 23 archivos. La descripción de la PR está sincronizada con este estado.
-- No se ha actualizado el gitlink ni se ha solicitado intervención del MSI. C07 real (NVTX + Nsight) y C08 overhead siguen pendientes de hardware.
+- **Snapshot histórico anterior a la intervención MSI del 2026-11-20:** no se había actualizado el gitlink ni solicitado intervención del MSI; C07 real (NVTX + Nsight) y C08 overhead seguían pendientes en ese momento. El estado físico posterior queda registrado en el seguimiento C07 al final de este índice.
 
 **Decisión:** aceptación remota todavía abierta. El CI de CPU/CUDA instrumentado principal ya está validado, pero no hay CI global verde mientras MUSA siga fallido y los runners restantes permanezcan queued. Continuar la auditoría final y volver a consultar esos jobs antes de promover la PR.
 
@@ -402,7 +402,7 @@ Se recorrió el árbol completo de LEONES (`main`, 1.783 archivos; árbol no tru
 - [LEONES PR #243](https://github.com/robertosantosx2/LEONES/pull/243) se fusionó en `ea5ebc4e251ce9beb7341207f8f3970eb81007f1`. El importer conserva `globalPid` cuando está presente y, si falta en `NVTX_EVENTS`, recupera el identificador de proceso del `globalTid` observado en C07 limpiando los 24 bits inferiores (`0xFFFFFFFFFF000000`).
 - El workflow exacto del HEAD `60d4f6a53f6df879116c8a8a796df2d27bc01fc7` terminó con **11/11 checks en `completed/success`**, incluidos importer tests (**122 passed**), contract tests, runtime contracts, regression, RC3 release gate, A01 y V1 complete. Esta es aceptación de software/importer para el formato observado, no aceptación física C07.
 - La PR fallida inicial #241 se cerró sin merge; su diagnóstico y logs se conservan en el historial. No usar el decode de 32 bits de aquel HEAD.
-- **C07 continúa pendiente:** importar los artefactos originales JSONL + Nsight SQLite del MSI con el importer corregido, comprobar hashes/manifest, integridad SQLite, cobertura y `nepenthes verify`. Solo solicitar nueva captura si esa importación demuestra que los artefactos existentes son insuficientes. C08 y overhead siguen pendientes.
+- **Estado en el corte previo a la importación paired v3:** C07 seguía pendiente de importar los artefactos originales JSONL + Nsight SQLite con el importer corregido y comprobar hashes/manifest, integridad SQLite, cobertura y `nepenthes verify`. La importación y reconciliación posteriores se documentan en las secciones fechadas 2026-11-20 al final de este índice. C08 y overhead siguen pendientes.
 
 ### Importación C07 paired v3 — resultado físico MSI, 2026-11-20
 
