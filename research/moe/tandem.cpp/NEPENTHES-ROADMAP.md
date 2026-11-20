@@ -369,3 +369,18 @@ Estado de PR #6: abierta, draft, no fusionada; HEAD `33e0d0a578c48b0a31616fd1b72
 - [ ] Comparar cobertura de PR #10 con #1–#3 y #6; cerrar candidatos antiguos solo tras equivalencia demostrada.
 
 **Estado:** PR #10 fusionada mediante `d4d0b9e` desde HEAD `da0fa44` sobre base `c406f43`. Workflow exacto `44682285336` pasó CPU + CUDA SM86; checks generales aplicables Ubuntu/Windows/arm64/CUDA pasaron. MUSA falló durante instalación de dependencias y su build se omitió. El importer cross-repo LEONES y la corrección de request ID 0 están incluidos. No hay evidencia C07/C08 física.
+
+## Reconciliación software P0 importer — 2026-11-20
+
+**Estado vigente:** el software P0 del importer está integrado en `main`; el estado global y las prioridades se rigen exclusivamente por [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md). La implementación y sus tests están en `scripts/nepenthes_nsys_import.py` y `tests/test_nepenthes_nsys_import.py`.
+
+- [x] Decodificación dinámica de `ENUM_CUDA_MEMCPY_OPER` y `ENUM_CUDA_MEM_KIND`, con columnas consultables y conservación de valores desconocidos.
+- [x] Preservación de sentinelas unsigned y payload original; no fabricar etiquetas para valores no resueltos.
+- [x] Correlación explícita request/batch desde `NVTX_EVENTS`, calibración de reloj con incertidumbre de bracket y atribución `windowed` solo en ventana única.
+- [x] Rechazo de ventanas solapadas/ambiguas; batch many-to-many y scoping por proceso/hilo.
+- [x] Regresiones de mappings, sentinelas, reimportación, calibración, solapamientos, batch y migración.
+- [ ] Validación adicional contra la versión exacta de Nsight instalada en MSI.
+- [ ] C07 batch físico Tandem.cpp, C08 AIPerf-first y correlación end-to-end de issue #212.
+
+Las secciones y checklists históricos anteriores se conservan como trazabilidad; no deben interpretarse como estado operativo vigente cuando contradigan el INDEX o esta reconciliación. Las ramas históricas `feat/nepenthes-nsys-enum-decode-20261119` y `feat/nepenthes-nsys-nvtx-correlation-20261119` están obsoletas respecto a `main`.
+
