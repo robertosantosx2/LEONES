@@ -3,8 +3,8 @@
 > **Aviso de gobernanza documental:** el documento maestro único es [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md). El plan general, las prioridades y el estado de cada motor se mantienen exclusivamente allí. Este archivo se conserva como checklist técnico/histórico de tareas y criterios detallados; no debe utilizarse como estado global vigente. Al cerrar o cambiar un gate, actualizar primero el documento maestro.
 
 
-**Fecha de actualización documental:** 2026-11-19.  
-**Estado operativo:** consultar exclusivamente el [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md). Este anexo conserva fases, criterios y evidencias históricas; sus estados/checklists heredados no constituyen el estado vigente si no están reconciliados en el INDEX. En el corte actual, LEONES #207 está cerrada tras merge de PR #210 (`fcaf170`), con CI post-merge 8/8 verde. El contrato TensorFold #1 está cerrado; la siguiente implementación host-only se sigue en TensorFold #3. ATC overlap está completo sin solapamientos. No implica aceptación física C07/C08. No implica aceptación física C07/C08.
+**Fecha de actualización documental:** 2026-11-20.  
+**Estado operativo:** consultar exclusivamente el [NEPENTHES-INDEX.md](NEPENTHES-INDEX.md). Este anexo conserva fases, criterios y evidencias históricas; sus checklists heredados no constituyen estado vigente si no están reconciliados en el INDEX. TensorFold host-only ya está aceptado: TensorFold PR #6 merge `50f1a34`; LEONES PR #217 merge `3c68c3a`; cinco checks exactos verdes sobre HEAD `c258ec9`. Tandem.cpp PR #5, LEONES PR #218 y #219 están fusionadas; sigue pendiente el productor NVTX batch de Tandem bajo LEONES issue #212. La prioridad actual y el orden de ejecución son exclusivamente los del INDEX. No implica aceptación física C07/C08.
 
 Este roadmap separa implementación, validación CI y validación física. Una tarea no se considera terminada por existir un PR: necesita la evidencia indicada en su criterio de salida.
 
@@ -29,15 +29,16 @@ Este roadmap separa implementación, validación CI y validación física. Una t
 
 **Salida de fase:** ejecución real con JSONL válido, eventos esperados, errores/pérdidas contabilizados y overhead medido.
 
-### TensorFold 1.2.10 — siguiente slice host-only
+### TensorFold 1.2.10 — conector host-only aceptado
 
 - [x] Source audit 1.2.10 publicada en el fork.
 - [x] ATC overlap completo desde el checkout correcto: `complete=true`, sin limitations ni overlaps, 3 worktrees.
 - [x] Contrato común LEONES #207 aceptado; PR #210 merge `fcaf170`; post-merge CI 8/8 verde.
 - [x] Contrato de diseño TensorFold #1 cerrado.
-- [ ] Implementar el conector host-only bajo [TensorFold #3](https://github.com/robertosantosx2/TensorFold/issues/3): opt-in, disabled no-op, request identity por petición, sink bounded y privacidad.
-- [ ] Cubrir concurrencia, keep-alive, lifecycle real (incluida propagación a background/streaming), drops/errors, summary final y fixtures LEONES.
-- [ ] Mantener CUDA/NVTX/Nsight/MSI fuera de esta fase.
+- [x] Implementar y fusionar el conector host-only mediante [TensorFold PR #6](https://github.com/robertosantosx2/TensorFold/pull/6), merge `50f1a34`; issue #3 cerrada.
+- [x] Validar HEAD `c258ec930b4ea8f0d0bc785a984d2114bf041fb9` mediante cinco checks `completed/success` (`tensorfold-host`, `v1-complete`, `runtime-contracts`, `regression`, `gate`) en LEONES PR #217, merge `3c68c3a`.
+- [x] Cubrir concurrencia, keep-alive, lifecycle background, drops/errors, summary final y fixtures mediante host CI y el importer común.
+- [x] Mantener CUDA/NVTX/Nsight/MSI fuera de esta fase. No se afirma aceptación física ni overhead.
 
 ## Fase B — Instalación y CLI
 
@@ -164,11 +165,11 @@ La primera categoría concentra aproximadamente el 95,9 % de los bytes y el 96,4
 
 Este ROADMAP es un anexo técnico: `research/moe/tandem.cpp/NEPENTHES-INDEX.md` gobierna prioridades, estado y decisiones. Si este documento diverge, prevalece el INDEX.
 
-Orden vigente:
-1. Revisar y aceptar LEONES #207 mediante la PR canónica #210; confirmar compatibilidad llama.cpp, registry cerrado, perfiles llama.cpp/TensorFold y Tandem.cpp, fixtures y CI del HEAD exacto.
-2. Tras #207, desarrollar el adaptador TensorFold host-only: ciclo request/run, eventos compatibles, metadata namespaced, privacidad y pruebas host-only. No duplicar importer ni runner; no CUDA.
-3. Reconciliar la integración llama.cpp mediante la candidata canónica PR #10; revisar semántica/diff y CI antes de merge o gitlink.
-4. Solo después de los gates remotos, MSI: build CUDA, C07 NVTX+Nsight real y C08 con baseline/tratamientos emparejados.
+Orden vigente, siempre subordinado al INDEX:
+1. Reconciliar la integración llama.cpp mediante [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10): revisar semántica/diff sobre upstream, lifecycle, concurrencia, JSONL/NVTX y conseguir CI CUDA verificable.
+2. Implementar el productor NVTX batch de Tandem.cpp siguiendo LEONES issue #212 y la especificación draft [Tandem.cpp PR #6](https://github.com/robertosantosx2/tandem.cpp/pull/6); emitir markers en la misma frontera que `BatchScope`, opt-in y RAII.
+3. Ejecutar tests/CI exactos y validar la cadena token → actividad GPU → miembros request con el importer común. No inventar correlación para workers sin identidad.
+4. Solo después de cerrar gates remotos, MSI: C07 captura emparejada NVTX/Nsight/CUPTI y C08 baseline/tratamientos emparejados.
 5. Aceptación por motor y release con evidencia, límites, overhead, cobertura y hashes.
 
 Las campañas históricas de Tandem.cpp y MSI que aparecen en este anexo no adelantan ni sustituyen esos gates.
@@ -361,9 +362,9 @@ Estado de PR #6: abierta, draft, no fusionada; HEAD `33e0d0a578c48b0a31616fd1b72
 - [x] Commit de integración: `0f3fa24ba4e417629ffebd7bbf6a7bcccb8c4659`.
 - [x] PR #10 abierta en draft: https://github.com/robertosantosx2/llama.cpp/pull/10
 - [x] Comparación contra upstream: 1 commit ahead, 0 behind, 23 archivos (+1252/-1). El diff no incluye los tres commits upstream porque la rama parte del SHA actual.
-- [ ] CI de PR #10 en curso. Run IDs: NEPENTHES runtime trace `44616676979`, CPU `44616676941`, CUDA general `44616677093`, Server `44616676786`, Behavior `44616676980`. Self-hosted y Models Backend Check están queued.
+- [~] CI de PR #10 no está globalmente aceptada en el último estado verificado: `trace-and-cpu-build` y checks generales CPU/Windows/arm64 en éxito; varios jobs GPU, incluido `gpu-cuda`, y runners de alto rendimiento cancelados. Revisar/relanzar solo los checks relevantes sobre HEAD exacto `0f3fa24` y registrar resultados antes de merge.
 - [ ] Revisar los resultados completos, especialmente la compilación CUDA/NVTX y las pruebas específicas NEPENTHES.
 - [ ] Auditoría semántica del cambio BF16 en ROPE/SET_ROWS y confirmar que las sondas se limitan a observar sin alterar los resultados funcionales.
 - [ ] Comparar cobertura de PR #10 con #1–#3 y #6; cerrar candidatos antiguos solo tras equivalencia demostrada.
 
-**Estado:** integración limpia preparada y CI iniciada; todavía no aceptada ni fusionable. El gitlink de LEONES sigue en el pin estable anterior y no se solicita intervención del MSI.
+**Estado:** integración limpia preparada en PR #10, todavía draft y no aceptada. HEAD `0f3fa24`, base `c406f43`; CI parcial con jobs GPU/CUDA cancelados. El gitlink de LEONES sigue en el pin estable anterior. La reconciliación remota precede cualquier intervención del MSI.
