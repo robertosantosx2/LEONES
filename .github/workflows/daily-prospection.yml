@@ -61,7 +61,7 @@ jobs:
         run: python scripts/prospection/bot_skills.py --input data/prospection/skill_sources.ndjson
       - name: Discover concrete agent use cases, skills, prompts and MCP projects
         env:
-          GITHUB_TOKEN: \${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: python scripts/prospection/agent_use_case_observatory.py
       - name: Run harness discovery
         run: python scripts/prospection/bot_harnesses.py --input data/prospection/harness_sources.ndjson
