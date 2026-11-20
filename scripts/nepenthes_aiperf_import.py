@@ -14,7 +14,7 @@ import json
 import math
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 from urllib.parse import urlsplit
@@ -116,7 +116,13 @@ def parse_timestamp_ns(value: Any) -> int | None:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return None
-    return int(parsed.timestamp() * 1_000_000_000)
+    if parsed.tzinfo is None:
+        return None
+    utc = parsed.astimezone(timezone.utc)
+    epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+    delta = utc - epoch
+    whole_seconds = delta.days * 86_400 + delta.seconds
+    return whole_seconds * 1_000_000_000 + delta.microseconds * 1_000
 
 
 def stable_id(*parts: Any) -> str:
