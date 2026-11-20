@@ -687,26 +687,26 @@ def test_typed_event_schema_migration_is_idempotent(tmp_path: Path):
     db.close()
 
 
-def write_batch_nvtx_nsys(path: Path) -> None:
+def write_batch_nvtx_nsys(path: Path, kernel_thread_id: int = 777) -> None:
     db = sqlite3.connect(path)
-    db.executescript("""
+    db.executescript(f"""
         CREATE TABLE NVTX_EVENTS(
-            start INTEGER, end INTEGER, text TEXT, globalPid INTEGER
+            start INTEGER, end INTEGER, text TEXT, globalPid INTEGER, globalTid INTEGER
         );
         INSERT INTO NVTX_EVENTS VALUES
-            (1110, 1110, 'nepenthes.batch.start token=123', 99),
-            (5110, 5110, 'nepenthes.batch.end token=123', 99),
-            (1120, 1120, 'nepenthes.request.start token=123 request=42', 99),
-            (1910, 1910, 'nepenthes.request.end token=123 request=42', 99);
+            (1110, 1110, 'nepenthes.batch.start token=123', 99, 777),
+            (5110, 5110, 'nepenthes.batch.end token=123', 99, 777),
+            (1120, 1120, 'nepenthes.request.start token=123 request=42', 99, 777),
+            (1910, 1910, 'nepenthes.request.end token=123 request=42', 99, 777);
         CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(
             start INTEGER, end INTEGER, correlationId INTEGER,
-            globalPid INTEGER, deviceId INTEGER, contextId INTEGER,
+            globalPid INTEGER, globalTid INTEGER, deviceId INTEGER, contextId INTEGER,
             streamId INTEGER, name TEXT
         );
         INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES
-            (1500, 1600, 201, 99, 0, 1, 7, 'inside_request_and_batch'),
-            (2500, 2600, 202, 99, 0, 1, 7, 'inside_batch_only'),
-            (5200, 5300, 203, 99, 0, 1, 7, 'outside_batch');
+            (1500, 1600, 201, 99, {kernel_thread_id}, 0, 1, 7, 'inside_request_and_batch'),
+            (2500, 2600, 202, 99, {kernel_thread_id}, 0, 1, 7, 'inside_batch_only'),
+            (5200, 5300, 203, 99, {kernel_thread_id}, 0, 1, 7, 'outside_batch');
     """)
     db.commit()
     db.close()
@@ -816,17 +816,17 @@ def test_nsys_only_rejects_overlapping_batch_windows(tmp_path: Path):
     db = sqlite3.connect(nsys)
     db.executescript("""
         CREATE TABLE NVTX_EVENTS(
-            start INTEGER, end INTEGER, text TEXT, globalPid INTEGER
+            start INTEGER, end INTEGER, text TEXT, globalPid INTEGER, globalTid INTEGER
         );
         INSERT INTO NVTX_EVENTS VALUES
-            (1000, 1000, 'nepenthes.batch.start token=123', 99),
-            (3000, 3000, 'nepenthes.batch.end token=123', 99),
-            (1200, 1200, 'nepenthes.batch.start token=124', 99),
-            (3200, 3200, 'nepenthes.batch.end token=124', 99);
+            (1000, 1000, 'nepenthes.batch.start token=123', 99, 777),
+            (3000, 3000, 'nepenthes.batch.end token=123', 99, 777),
+            (1200, 1200, 'nepenthes.batch.start token=124', 99, 777),
+            (3200, 3200, 'nepenthes.batch.end token=124', 99, 777);
         CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(
-            start INTEGER, end INTEGER, correlationId INTEGER, globalPid INTEGER
+            start INTEGER, end INTEGER, correlationId INTEGER, globalPid INTEGER, globalTid INTEGER
         );
-        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES (1500, 1600, 9, 99);
+        INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES (1500, 1600, 9, 99, 777);
     """)
     db.commit()
     db.close()
@@ -839,3 +839,22 @@ def test_nsys_only_rejects_overlapping_batch_windows(tmp_path: Path):
             "FROM nepenthes_nsys_activities WHERE activity_kind='cuda_kernel'"
         ).fetchone()
     assert row == (None, None, "overlapping_batch_windows")
+
+
+def test_batch_attribution_rejects_activity_from_another_host_thread(tmp_path: Path):
+    nsys = tmp_path / "wrong-batch-thread.sqlite"
+    output = tmp_path / "wrong-batch-thread-output.sqlite"
+    write_batch_nvtx_nsys(nsys, kernel_thread_id=778)
+
+    summary = import_nsys_only(nsys, output, "wrong-batch-thread-import")
+    assert summary["batch_windows"] == 1
+    with sqlite3.connect(output) as db:
+        rows = db.execute(
+            "SELECT attributed_batch_token,batch_attribution_level,batch_attribution_status "
+            "FROM nepenthes_nsys_activities WHERE activity_kind='cuda_kernel' ORDER BY start_ns"
+        ).fetchall()
+    assert rows == [
+        (None, None, "no_matching_batch_thread_window"),
+        (None, None, "no_matching_batch_thread_window"),
+        (None, None, "no_matching_batch_thread_window"),
+    ]
