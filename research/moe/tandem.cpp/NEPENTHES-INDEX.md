@@ -591,3 +591,11 @@ Esta actualización supersede únicamente los gates que el registro de importaci
 - Ambas PRs son un stack exploratorio independiente y se mantienen en **backlog diferido**, detrás de C07 físico de Tandem.cpp y C08 AIPerf-first. No fusionar ni retargetear por separado; reabrir la prioridad solo cuando los gates anteriores estén aceptados y el INDEX se actualice explícitamente.
 - La CI sintética/host de #147/#149 no sustituye ejecución física ni mediciones en MSI. No se declara validación de rendimiento, capacidad out-of-core, PCIe/expert traffic ni mejora de throughput a partir de los tests.
 - La traducción inglesa [PR #154](https://github.com/robertosantosx2/LEONES/pull/154) permanece draft y bloqueada: debe regenerarse desde el INDEX español vigente, nunca fusionarse como espejo del snapshot del 2026-11-15.
+
+### Revisión estática de compatibilidad AIPerf v0.14.0 — 2026-11-20
+
+- El release estable v0.14.0 conserva las opciones CLI usadas por `nepenthes_aiperf_run.py`; la revisión de upstream confirma los aliases de input/output tokens, warm-up explícito, export records, server-metrics JSON/JSONL y GPU telemetry pynvml.
+- Los exports relevantes documentan `profile_export_aiperf.json` schema 1.7, `profile_export.jsonl` schema 1.1 y `server_metrics_export.json` schema 1.1. El importer actual ya normaliza server metrics schema 1.1 y `warmup_metrics` de server summary.
+- La revisión detectó que el importer no normalizaba `warmup_metrics` del summary principal; se corrige y se añade fixture de versión 0.14.0 en la PR de compatibilidad.
+- **Decisión:** mantener el pin del runner en 0.13.0 hasta que la CI exacta de compatibilidad pase y se realice un smoke controlado con el binario 0.14.0. No se declara compatibilidad runtime ni se ejecuta C08 por esta revisión estática.
+
