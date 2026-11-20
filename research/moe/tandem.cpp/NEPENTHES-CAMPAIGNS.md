@@ -14,7 +14,7 @@
 | C04 | Importación histórica Nsight-only Qwen3.5-35B | Importada y auditada | 151.039 actividades, ocho familias CUPTI; SQLite íntegro. Fuente histórica sin JSONL emparejado. |
 | C05 | Build CUDA instrumentado sobre base pinned | Completada | Evidencia histórica `f5222f25c18da062ab2b8a2dbbfbf4feae398566`; además, llama.cpp PR #10 merge `d4d0b9e` pasó CUDA SM86 en run `44682285336` y Tandem.cpp PR #7 merge `7c4300e` pasó patch application + CUDA SM86 en run `44682021976`. |
 | C06 | Inferencia real con motor instrumentado | Completada para smoke CPU-only | Qwen3.5-4B Q4_K_M; 3.683 eventos motor, 3.117 dentro de petición y 49 eventos KV dentro de la ventana. Nsight desactivado. |
-| C07 | Captura emparejada motor + Nsight | Pendiente | Una misma ejecución/RUN_ID, importación emparejada y correlación/clock mapping demostrados. |
+| C07 | Captura emparejada motor + Nsight | Smoke físico parcial; gate pendiente | MSI 2026-11-20 llama.cpp PR #10: JSONL y Nsight en la misma sesión; 14.646 eventos drenados, 0 drops/errors, calibración start/end, 2 filas `NVTX_EVENTS` y actividad CUDA observada. Falta validar payload/token, importación emparejada y calibración host↔Nsight. No es C07_ACCEPTED. |
 | C08 | Rendimiento comparativo y recomendaciones | Pendiente | Baseline/control, repeticiones, overhead, bytes/latencias y métricas GPU. |
 
 ## Aceptación remota de conectores — 2026-11-20
@@ -25,6 +25,17 @@ Esta sección registra gates de software/compilación posteriores al corte de la
 - **Tandem.cpp:** PR #7 fusionada en `7c4300eb754d94737c6aa8d7ffa0077aac7ddcb9`; HEAD validado `6c5b252ee41949ed5ea57d02ba443feb248c30f6`; workflow [44682021976](https://github.com/robertosantosx2/tandem.cpp/actions/runs/44682021976) pasó `trace-smoke` y `cuda-compile` SM86, incluyendo patch application, NVTX enabled/disabled, JSONL e importer LEONES.
 - **Límite:** estos resultados aceptan el contrato/host path y la compilación CUDA, no la ejecución NVTX en Nsight, no el ownership causal GPU por request y no el overhead. La atribución batch sigue `windowed`, many-to-many y no causal.
 - **Siguiente gate:** C07 paired NVTX+Nsight/CUPTI y C08 paired overhead en MSI. LEONES issue #212 permanece abierta hasta disponer de evidencia física end-to-end.
+
+## C07 — Smoke físico MSI inicial (2026-11-20; no aceptación)
+
+**Motor:** llama.cpp PR #10, merge `d4d0b9eeb2bd0035f525a90aefed111e5d74edcb`. **Checkout:** `llama.cpp-pr10`; build CUDA SM86 de `llama-server`. **Modelo:** MiniCPM5-2B-Q4_K_M. JSONL y Nsight Systems (`cuda,nvtx,osrt`) se habilitaron en la misma ejecución.
+
+- JSONL: 14.647 líneas contando el resumen final; 14.646 eventos drenados; 0 descartados; 0 errores de escritura. Presentes `clock.calibration.start/end`.
+- Nsight SQLite: existe `NVTX_EVENTS` con 2 filas. `nsys stats` confirma actividad CUDA API, kernels GPU y transferencias HtoD/DtoH.
+- Inferencia smoke: 17 tokens de prompt, 48 generados; la respuesta fue repetitiva. No utilizar esta ejecución como benchmark C08.
+- La fuente contiene `nvtxMarkA` en los límites start/end de `server_task`, con token/request explícitos. No se han inspeccionado todavía los payloads de las dos filas SQLite ni completado la importación emparejada en LEONES.
+
+**Resultado:** evidencia CAPTURED inicial, no C07_ACCEPTED. Pendiente validar mensajes y token, importar JSONL+Nsight, calcular offset/drift host↔Nsight, verificar integridad y revisar atribución `windowed`. No inferir causalidad ni asignar kernels por proximidad temporal.
 
 ## C03 — CLI y envoltura de proceso
 
