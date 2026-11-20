@@ -441,8 +441,17 @@ def collect_nsys_nvtx_markers(db: sqlite3.Connection, names: set[str],
         parsed["start_ns"] = int(start)
         parsed["end_ns"] = int(first(row, ("end", "endNs", "end_ns")) or start)
         process_id = first(row, ("globalPid", "global_pid", "processId", "pid"))
-        parsed["process_id"] = process_id if isinstance(process_id, int) and not isinstance(process_id, bool) else None
         thread_id = first(row, ("globalTid", "global_tid", "threadId", "tid"))
+        # Nsight Systems NVTX_EVENTS exports may omit globalPid and provide
+        # only globalTid. In the preserved C07 export, globalTid stores the
+        # process identity above the low 24-bit thread field:
+        # 0x1019564019564 -> 0x1019564000000 (globalPid).
+        # Never infer process identity from timestamps or unrelated rows.
+        if (isinstance(process_id, bool) or not isinstance(process_id, int)) and (
+            isinstance(thread_id, int) and not isinstance(thread_id, bool) and thread_id >= 0
+        ):
+            process_id = thread_id & 0xFFFFFFFFFF000000
+        parsed["process_id"] = process_id if isinstance(process_id, int) and not isinstance(process_id, bool) else None
         parsed["thread_id"] = thread_id if isinstance(thread_id, int) and not isinstance(thread_id, bool) else None
         markers.append(parsed)
     return markers
