@@ -5,6 +5,101 @@
 **Última actualización:** 2026-11-20.
 **Estado global:** el contrato común multi-motor #207 está aceptado en `main` mediante [PR #210](https://github.com/robertosantosx2/LEONES/pull/210); el registry cerrado incluye `llama.cpp`, `tensorfold` y `tandem.cpp`. llama.cpp [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10) fusionada en `d4d0b9e` conserva toda la instrumentación NEPENTHES. La sincronización con upstream [PR #14](https://github.com/robertosantosx2/llama.cpp/pull/14) se fusionó en `38c1a39226c71e0d22a94ea1d55deda6917c9b79`, integrando upstream `9d6f04fa99936708b9df140b7b2df62a8925afd5` sin retirar los 23 archivos de instrumentación/contrato/tests de PR #10. El workflow NEPENTHES sobre upstream `9d6f04f` pasó CPU build, CUDA build, NVTX v3 e importador compartido; después del merge, el CI general del nuevo master aún tiene runners especializados en cola, por lo que no se declara matriz completa verde. La aceptación remota demostrada es contrato/host tests/importer y compilación CPU/CUDA, no C07/C08 ni overhead. Tandem.cpp PR #1–#5 y LEONES #218/#219 están fusionadas; el productor NVTX batch fue fusionado en [Tandem.cpp PR #7](https://github.com/robertosantosx2/tandem.cpp/pull/7), merge commit `7c4300eb754d94737c6aa8d7ffa0077aac7ddcb9`, tras workflow exacto `44682021976` con `trace-smoke` y `cuda-compile` SM86 success. La instrumentación es opt-in, disabled por defecto, delimita el decode batch en el queue worker y preserva token explícito; importer mantiene atribución `windowed`, many-to-many y no causal. LEONES issue #212 sigue abierta para validar end-to-end con captura física y completar correlación request/worker/batch/CUDA; no cerrar ni declarar causalidad por la mera compilación. TensorFold host-only está aceptado mediante TensorFold PR #6 y LEONES #217/#220; no implica CUDA/NVTX/Nsight, C07/C08 ni overhead. Los gates remotos de compilación de llama.cpp y Tandem están cerrados. El 2026-11-20 se ejecutó en MSI un smoke CUDA de llama.cpp con JSONL y Nsight Systems en la misma ejecución: 14.646 eventos drenados, 0 descartados, 0 errores de escritura, calibraciones de reloj start/end, 2 filas en `NVTX_EVENTS` y actividad CUDA API/kernel/memcpy observada. La inspección posterior confirmó que las dos filas NVTX son `nepenthes.request.start/end token=1 request=1`, en el mismo `globalTid`, y coinciden por `(scope, token, phase)` con los dos `nvtx_marker` JSONL y sus `request_start/end` (`request_id=1`, `correlation_token=1`, `attribution_level=exact`). Aplicando el algoritmo existente del importer (midpoint de `value0/value1`), los offsets `Nsight-host` son -106184657289381 ns y -106184657366718 ns; la diferencia observada es -77337 ns en 642891129 ns (−120,30 ppm), con incertidumbre máxima de semibracket de 80311 ns. Los intervalos de offset permitidos por ambos brackets se solapan en 2764 ns. Esto confirma la identidad de los marcadores y una primera calibración compatible con los brackets, pero la muestra es corta y no sustituye el import emparejado real ni una caracterización robusta de deriva. C08 tampoco está medido. La validación física de C07 request-level de llama.cpp y la integridad del bundle reconciliado quedaron demostradas en MSI el 2026-11-20. La cobertura batch sigue incompleta (0 batch windows); C08/overhead no está medido.
 
+## Inicio rápido: instalar, ejecutar y recoger resultados
+
+> **Estado de distribución:** esta versión del instalador vive dentro del árbol de LEONES. Para instalarla hoy hay que disponer de ese árbol; todavía no existe aquí una distribución autónoma publicada de NEPENTHES que permita instalarlo sin descargar LEONES. La instalación es user-space y no exige clonar ni compilar los motores que se quieran ejecutar. La separación en un repositorio/release independiente es un trabajo posterior.
+
+### 1. Requisitos
+
+- Linux.
+- Python 3.10 o superior.
+- Un motor ejecutable y sus dependencias habituales.
+- Para telemetría NVIDIA: `nvidia-smi` disponible.
+- Para capturas CUDA detalladas: Nsight Systems (`nsys`) compatible con el driver y el entorno.
+- Para eventos internos: un binario del motor compilado con las sondas NEPENTHES. Un binario normal sigue pudiendo ejecutarse, pero no emite eventos internos.
+
+La instalación no necesita root, no instala drivers ni CUDA y no parchea ni recompila el motor.
+
+### 2. Instalar
+
+Desde la raíz del checkout de LEONES que contiene el instalador:
+
+```bash
+./scripts/install_nepenthes.sh
+export PATH="$HOME/.local/bin:$PATH"
+nepenthes doctor
+nepenthes self-test
+```
+
+El comando instala el ejecutable en `~/.local/bin/nepenthes` y los recursos en `~/.local/share/nepenthes`. `doctor` comprueba las herramientas y capacidades detectables; `self-test` genera una captura de prueba y comprueba sus artefactos. No sustituyen una ejecución real del motor.
+
+### 3. Ejecutar un motor
+
+Ejemplo con llama.cpp; sustituye las rutas y argumentos por los de tu instalación:
+
+```bash
+nepenthes run --profile full --nsys auto -- \
+  /ruta/a/llama-server \
+  -m /ruta/al/modelo.gguf \
+  -c 1024
+```
+
+Todo lo que aparece después de `--` es el comando del motor y sus argumentos. NEPENTHES lanza el proceso, conserva su salida estándar y de error en el paquete de sesión, muestrea CPU/RSS del árbol de procesos y recoge telemetría NVIDIA global si `nvidia-smi` está disponible. Propaga el código de salida del motor.
+
+Perfiles disponibles: `smoke` (ligero), `standard` (predeterminado) y `full` (muestreo más frecuente y Nsight automático cuando está disponible). Para controlar Nsight se puede usar `--nsys auto`, `--nsys required` o `--nsys off`. Con `required`, la ejecución falla antes de lanzar el motor si Nsight no está disponible.
+
+**Importante:** NEPENTHES no instrumenta por sí solo el interior de un motor. Los eventos internos requieren un binario compilado con las sondas NEPENTHES. Sin ellas se obtienen únicamente las fuentes de telemetría externas disponibles (host y, si existe, NVIDIA). La disponibilidad de Nsight tampoco garantiza que todas las clases de actividad estén presentes.
+
+### 4. Qué resultados genera
+
+Cada ejecución crea un directorio de sesión (RUN_ID). La ruta concreta se muestra/queda registrada por la ejecución; consérvala como `RUN_DIR`. El paquete puede contener:
+
+| Ruta | Contenido |
+|---|---|
+| `manifest.json` | Identidad de ejecución, configuración y procedencia |
+| `session.log` | Salida y errores del proceso lanzado |
+| `environment/` | Datos del entorno recogidos |
+| `raw/engine-events.jsonl` | Eventos internos del motor instrumentado, si los emite |
+| `raw/host-events.jsonl` | Muestras y eventos del recolector de host |
+| `raw/events.jsonl` | Flujo consolidado de eventos, cuando se genera |
+| `raw/nsys.sqlite`, `raw/nsys.nsys-rep` | Captura Nsight, si se ha activado y completado |
+| `data/samples.csv` | Muestras tabulares |
+| `data/observations.sqlite` | Observaciones estructuradas |
+| `data/summary.json` | Resumen de la ejecución |
+| `data/nsys-import.json`, `data/nepenthes-import.sqlite` | Resultados de importación Nsight, cuando proceda |
+| `reports/index.html`, `reports/report.md` | Informe navegable HTML y resumen Markdown |
+| `checksums.sha256` | Checksums de los artefactos incluidos |
+
+Los artefactos opcionales solo aparecen cuando su fuente está disponible y la captura se completa. No se deben interpretar archivos ausentes como valores cero ni como evidencia de que una actividad no ocurrió.
+
+### 5. Verificar y recoger el paquete
+
+Usa la ruta real de la sesión creada por NEPENTHES:
+
+```bash
+RUN_DIR="/ruta/real/al/RUN_ID"
+nepenthes verify "$RUN_DIR"
+```
+
+Si la verificación termina correctamente, conserva el directorio completo: incluye manifiesto, datos primarios, informes y checksums. Para compartirlo o archivarlo sin alterar los originales:
+
+```bash
+tar -czf "nepenthes-$(basename "$RUN_DIR").tar.gz" \
+  -C "$(dirname "$RUN_DIR")" "$(basename "$RUN_DIR")"
+sha256sum "nepenthes-$(basename "$RUN_DIR").tar.gz"
+```
+
+Entrega preferentemente el archivo comprimido completo, su SHA-256 y el código de salida de `nepenthes verify`. Para análisis técnico, conserva también el modelo/identificador y cuantización, argumentos exactos del motor, versión/commit del binario, perfil de captura y cualquier limitación de Nsight. No compartas pesos del modelo salvo que sea necesario y tengas derecho a distribuirlos.
+
+### 6. Qué se puede concluir
+
+- **Motor instrumentado:** permite analizar eventos internos emitidos por las sondas, además de la telemetría externa disponible.
+- **Motor no instrumentado:** permite recoger proceso, host y telemetría NVIDIA global disponible; no permite atribuir eventos internos del motor que no emite.
+- **Nsight-only:** permite importar y analizar las actividades presentes en la captura Nsight sin inventar una ejecución NEPENTHES ni correlaciones con JSONL ausente.
+- **Informe:** refleja únicamente los datos recogidos. Las métricas globales de `nvidia-smi` son del dispositivo, no necesariamente del proceso; la correlación entre relojes o identificadores distintos solo se declara cuando existe un mecanismo validado.
+
+Consulta [NEPENTHES-CLI.md](NEPENTHES-CLI.md) para las opciones completas y [NEPENTHES-IMPORTER.md](NEPENTHES-IMPORTER.md) para el contrato de importación.
+
 ## 1. Resumen ejecutivo y decisión de arquitectura
 
 NEPENTHES es una capa común de observabilidad y evidencia para motores de inferencia. LEONES conserva el núcleo compartido: runner, identidad de ejecución, captura host/GPU, esquema/eventos, importadores, manifiestos, validación, correlación explícita, informes y exportación. Cada motor aporta únicamente un conector/adaptador que traduce su telemetría nativa al contrato común.
@@ -473,5 +568,17 @@ Esta actualización supersede únicamente los gates que el registro de importaci
 - Snapshot paginado de GitHub: 346 refs remotas, 278 tips únicos, 12 grupos de tips duplicados (80 refs / 68 aliases excedentes) y 57 PR abiertas en el momento de la auditoría.
 - Proteger `jalon2-evidence-bridge` y `jalon2-closed`: comparten tip, pero la primera es HEAD de la PR abierta #64. No eliminar ni retargetear ninguna de las dos hasta reconciliar refs/worktrees locales.
 - PR #253 quedó fusionada como `faa1ac5b2f3dd21c3fbd44e85130602da96aeae3`, con cuatro checks requeridos verdes. La deduplicación física Qwen3.5-35B y la recuperación aproximada de 9,94 GiB están verificadas en el inventario MSI.
-- La cadena AIPerf/OTel #159–#173 sigue apilada: #159 permanece draft; #162 y #164 están cerradas sin merge; #165 es la sucesora activa. Mantener el orden parent-first y no fusionar/retargetear PR hijas mientras #159 siga draft.
+- La cadena AIPerf/OTel #159–#173 se reconcilió el 2026-11-20: #159 quedó fusionada; #160, #161 y #165–#173 se cerraron como supersedidas tras comprobar que main ya contiene implementaciones más completas o idénticas. #162 y #164 ya estaban cerradas; #163 no corresponde a una PR existente. No reabrir ni retargetear el stack antiguo. Las mejoras útiles se portaron a la implementación canónica o se preservan como documentación independiente.
 - No se eliminaron aliases ni worktrees. La auditoría remota no puede demostrar dependencias de reflogs, stashes, cambios sin push o worktrees dirty; los 68 aliases siguen en cola de revisión, no como limpieza completada.
+
+
+### Seguimiento remoto AIPerf/OTel y autoridad documental — 2026-11-20
+
+- LEONES PR #159 se fusionó con merge commit b3092d0e15cf1cd1b6b935e087c5f888a7f2f7bd, preservando la ascendencia de la cadena. Sus anexos NEPENTHES declaran explícitamente que el INDEX es la única autoridad de prioridades, estado y aceptación.
+- La revisión de árboles Git mostró que main ya contenía el importador AIPerf más completo (summary, request, server aggregate/samples y GPU telemetry), el runner, el sampler NVML, los adaptadores llama-server, OTLP, informes y sus tests. Varias ramas #161/#165–#173 contenían snapshots antiguos o archivos idénticos a main; no debían fusionarse porque podían degradar o duplicar la implementación.
+- PR #160 y #161/#165–#173 quedaron cerradas como supersedidas, sin fusionar su código. La documentación operacional útil de NVML/OTLP y procedencia AIPerf se conserva por separado en [PR #262](https://github.com/robertosantosx2/LEONES/pull/262). La nueva versión estable observada de AIPerf es v0.14.0, pero el runner continúa fijado en 0.13.0 hasta completar revisión de compatibilidad.
+- La corrección de precisión temporal detectada en la revisión de #160 se portó al importador canónico y se fusionó mediante [PR #261](https://github.com/robertosantosx2/LEONES/pull/261), merge 59363b9fff464a46813f19094ae96ba4013cd285: epoch ns por aritmética entera UTC, rechazo de timestamps sin zona y tests específicos; los checks exactos pasaron.
+- [PR #262](https://github.com/robertosantosx2/LEONES/pull/262) quedó fusionada como `bf9ee245099a9d730aadc25a609eeeff84ecf767`: guías operativas NVML/OTLP, pin de AIPerf y documentación de la implementación ya existente. La última versión estable observada es v0.14.0; el runner permanece fijado en 0.13.0 hasta revisar compatibilidad.
+- Issue [#212](https://github.com/robertosantosx2/LEONES/issues/212) refleja la implementación host many-to-many, importer guard y productor NVTX batch ya aceptados. Sigue abierta para revisión de compatibilidad, receta de captura y validación física C07/C08.
+- PR #258 y #259 de higiene quedaron fusionadas; el snapshot posterior registró 350 refs, 282 tips únicos, 12 grupos/80 refs/68 aliases excedentes y 55 PR abiertas en el momento de la captura. Es una instantánea fechada, no un inventario vivo.
+
