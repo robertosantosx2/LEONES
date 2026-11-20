@@ -281,6 +281,15 @@ PRs pequeños y dependencias explícitas; no crear un mega-PR.
 | 10 | Nsight semantic correctness | enums, uint64, cobertura y correlación |
 | 11 | Reports & release gates | informes, comparación y aceptación integral |
 
+
+### Estado de la línea AIPerf (2026-11-20)
+
+- PR #159: documentación y especificación AIPerf-first fusionadas en `main`; el INDEX maestro conserva la autoridad de prioridades y aceptación.
+- PR #160: importador offline summary/records, inventario SHA-256, privacidad y siete tests offline en el HEAD de código/test `650e7f6`; los tres checks exactos (`importer-tests`, `contract-tests`, `rc3-release-gate`) pasaron. Los cambios documentales posteriores solo rebasan los anexos sobre el contenido vigente de `main`.
+- PR #160 se retargeteó a `main`; GitHub reportó `mergeable_state=dirty` en la última inspección. No fusionar hasta que la reconciliación de merge quede limpia y revisada.
+- Todavía no se ha instalado ni ejecutado AIPerf contra llama-server, no hay smoke físico y no se declara compatibilidad MEASURED.
+- Próximo hito: cerrar la integración remota de PR #160; después runner aislado y smoke con concurrencia 1 en llama-server, sujeto al INDEX maestro.
+
 El orden puede solapar documentación/fixtures, pero no se debe declarar una fase aceptada si depende de otra incompleta.
 
 ## Validación en hardware real
