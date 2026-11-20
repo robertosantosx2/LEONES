@@ -148,7 +148,7 @@ A new fully paginated GitHub API snapshot was taken after merging the duplicate-
 - The same **12 exact-tip duplicate groups**, comprising **80 refs** and **68 excess aliases**; all group SHAs and member refs are unchanged from the 2026-11-20 classification in `docs/engineering/BRANCH-ALIAS-RECONCILIATION-2026-11-20.md`.
 - **56 open pull requests** at snapshot time.
 - LEONES PR #256 (branch-alias classification) merged into `main` as `e5a5329dcdbc831bf0e723e0c17fcf4a90d3bfa4`; all four required checks completed successfully.
-- PR #257 is a documentation-only reconciliation of the NEPENTHES master INDEX; it is open and its CI was still running at the time of this snapshot. Do not count its changes as integrated until merge is confirmed.
+- PR #257 reconciled the NEPENTHES master INDEX and merged as `d71aab6a3e0f5cf5b8007a5386aa4db700c4b8cd`; all four required checks completed successfully.
 - The AIPerf/OTel NEPENTHES chain #159–#173 remains stacked parent-first. Do not retarget or merge children independently.
 - `jalon2-evidence-bridge` remains the head of open PR #64 and must be retained. Keep `jalon2-closed` as a historical evidence ref until local dependencies are reconciled.
 
