@@ -24,16 +24,16 @@ Principios no negociables:
 | Núcleo LEONES (runner, captura, manifiestos, informes, AIPerf/OTLP) | Implementación integrada en main para las capacidades documentadas; aceptación física parcial | Completar campañas reales y auditoría de paquetes |
 | Contrato común multi-motor | Integrado en main por [PR #210](https://github.com/robertosantosx2/LEONES/pull/210), merge `fcaf170`; issue [#207](https://github.com/robertosantosx2/LEONES/issues/207) cerrada; 8 checks verdes en HEAD sincronizado `73c7cb9` | Mantener regresiones del contrato compartido |
 | llama.cpp | Integración activa; [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10) abierta en draft sobre base upstream `c406f43`, HEAD `0f3fa24`; CI parcial, checks GPU/CUDA cancelados en el último estado verificado | Reconciliar diff/semántica y obtener CI CUDA verificable antes de merge o MSI |
-| TensorFold 1.2.10 | Conector host-only aceptado: TensorFold PR #6 merge `50f1a34`; issue #3 cerrada; LEONES PR #217 merge `3c68c3a`, cinco checks exactos verdes para HEAD `c258ec9` | Mantener compatibilidad del contrato; cualquier CUDA/NVTX/C07/C08 es una fase separada |
+| TensorFold 1.2.10 | Host-only adapter accepted: TensorFold PR #6 merged; LEONES PR #217/#220 and five cross-repo checks passed | Mantener como aceptado host-only; futuras sondas CUDA/NVTX y C07/C08 solo tras priorización explícita |
 | tandem.cpp (distribución patch-based sobre llama.cpp) | PR #1/#2/#3/#4/#5 fusionadas; host batch token aceptado; LEONES #218/#219 fusionadas; batch importer con guard proceso/hilo/ventana y atribución `windowed` | Implementar NVTX producer-side en frontera exacta del decode slice, validar CI/importer y después C07/C08 |
 | Otros motores | No hay conector aceptado registrado | Incorporar solo mediante el contrato común y una fila de estado/evidencia |
 
 ### Orden de trabajo vigente
-1. **llama.cpp — reconciliación remota.** Revisar [PR #10](https://github.com/robertosantosx2/llama.cpp/pull/10) sobre upstream actual, auditar lifecycle/concurrencia/JSONL/NVTX y cerrar los checks relevantes, incluido un build CUDA verificable. No fusionar ni actualizar gitlink hasta aceptar el diff y la CI exacta.
-2. **Tandem.cpp — productor NVTX batch.** Continuar [LEONES issue #212](https://github.com/robertosantosx2/LEONES/issues/212) y el diseño de [Tandem.cpp PR #6](https://github.com/robertosantosx2/tandem.cpp/pull/6): implementar marker `nepenthes.batch.start/end token=N` en la misma frontera que `BatchScope`, opt-in, RAII y sin sincronización adicional. PR #6 es especificación draft; no contarla como código aceptado.
-3. **Tandem.cpp — pruebas/CI e integración.** Probar disabled path, pairing, tokens/members ambiguos, patch application, build CPU/CUDA y fixtures con el importer LEONES. Mantener sin token los workers/background sin identidad explícita.
-4. **Validación física MSI.** Solo después de cerrar los gates remotos: C07 captura emparejada NVTX/Nsight/CUPTI y C08 baseline/tratamientos repetidos con overhead medido. No solicitar MSI para corregir fallos de código o CI remotos.
-5. **Aceptación por motor y release.** Registrar evidencia, límites, cobertura, overhead y hashes; ningún motor hereda aceptación de otro.
+1. **llama.cpp — reconciliación remota de PR #10.** Revisar diff y semántica sobre el upstream actual; resolver/categorizar checks cancelados y obtener build CUDA/NVTX verificable para el HEAD exacto. No mergear ni mover gitlink sin CI/revisión suficiente.
+2. **Tandem.cpp — producer-side NVTX batch.** PR #5 host token y LEONES #218/#219 están fusionadas. Completar PR [#7](https://github.com/robertosantosx2/tandem.cpp/pull/7): tests enabled/disabled, aplicación del parche pinned, CI CPU/CUDA e interoperabilidad con el importer. Mantener atribución batch `windowed`, many-to-many y no causal. PR #6 es diseño documental, no implementación.
+3. **TensorFold 1.2.10 — mantener aceptación host-only.** El adaptador host-only y su validación cruzada están aceptados en TensorFold #6 / LEONES #217/#220. No repetir el trabajo cerrado; futuras sondas CUDA/NVTX requieren una prioridad/gate explícito y no heredan aceptación host-only.
+4. **Validación física MSI.** Solo cuando los gates remotos aplicables de llama.cpp y Tandem estén cerrados: build CUDA en MSI, C07 paired NVTX+Nsight y C08 overhead con baseline/tratamientos repetidos. No pedir intervención física antes de ese punto.
+5. **Aceptación por motor y release.** Evidencia, límites, cobertura, overhead y hashes; un motor no hereda aceptación de otro.
 
 ## 3. Estado y plan por motor/
 
