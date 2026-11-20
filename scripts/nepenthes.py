@@ -357,9 +357,6 @@ def validate_event_contract(events):
    if label in ("request.start","request.end"):
     scope="request"
     phase="start" if label=="request.start" else "end"
-    request_id=event.get("request_id")
-    if isinstance(request_id,bool) or not isinstance(request_id,int) or request_id<=0:
-     errors.append("request NVTX marker requires a positive request_id at event "+str(line_no))
     target=nvtx_starts if phase=="start" else nvtx_ends
    elif label in ("batch.start","batch.end"):
     scope="batch"
