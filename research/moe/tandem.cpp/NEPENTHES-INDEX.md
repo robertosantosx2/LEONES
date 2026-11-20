@@ -613,3 +613,16 @@ El detalle técnico y el inventario de pruebas se mantienen en [NEPENTHES-SOFTWA
 - Los exports relevantes documentan `profile_export_aiperf.json` schema 1.7, `server_metrics_export.json` schema 1.1 y `outputs.json` schema 1.1; `profile_export.jsonl` es un flujo de records metadata/metrics sin `schema_version` independiente documentado. El importer actual ya normaliza server metrics schema 1.1 y `warmup_metrics` de server summary.
 - La revisión detectó que el importer no normalizaba `warmup_metrics` del summary principal; se corrige y se añade fixture de versión 0.14.0 en la PR de compatibilidad.
 - **Decisión:** mantener el pin del runner en 0.13.0 hasta que la CI exacta de compatibilidad pase y se realice un smoke controlado con el binario 0.14.0. No se declara compatibilidad runtime ni se ejecuta C08 por esta revisión estática.
+
+### C07 batch verifier y runbook — 2026-11-20
+
+**Integración software aceptada:** [LEONES PR #270](https://github.com/robertosantosx2/LEONES/pull/270) se fusionó en `9d46640eb804d2a775feabe90973e99de4175544`; los ocho checks del HEAD final terminaron en `completed/success`.
+
+- `nepenthes verify` separa `c07_correlation` request-level de `c07_batch_correlation` y expone `acceptance.c07_request` / `acceptance.c07_batch`.
+- Batch exige un par `batch.start/end` por token, `request_id=0` en los marcadores, igualdad del conjunto de tokens con `server.batch_member`, al menos un batch con dos o más request_id distintos, calibración host↔Nsight por scope y actividad CUDA `windowed` por cada token con proceso e hilo coincidentes.
+- Se rechaza atribución GPU `exact`, ventanas solapadas, tokens inconsistentes, ausencia de identidad de hilo y actividad sin ventana/token. La relación de miembros sigue siendo many-to-many y no causal.
+- La prueba paired del CLI valida el camino batch-only; si la captura no repite NVTX request markers, `c07_request` puede quedar pendiente en ese bundle. Esto no degrada la aceptación request-level ya demostrada en la importación paired v3 de MSI registrada arriba.
+- Runbook reproducible: [NEPENTHES-C07-BATCH-CAPTURE.md](NEPENTHES-C07-BATCH-CAPTURE.md). Fija Tandem.cpp PR #7 merge `7c4300eb754d94737c6aa8d7ffa0077aac7ddcb9` y la base llama.cpp `f5222f25c18da062ab2b8a2dbbfbf4feae398566`.
+
+**Pendiente físico, sin cambio de aceptación:** C07 batch todavía requiere una captura paired real en MSI con `NEPENTHES_NVTX=1`, Nsight SQLite de la misma ejecución, multi-member observado y `acceptance.c07_batch=passed`. El runbook no se ha ejecutado. C08 AIPerf-first sigue pendiente con al menos tres pares y el umbral de overhead del INDEX. Issue [#212](https://github.com/robertosantosx2/LEONES/issues/212) permanece abierta. No declarar causalidad ni aceptar batch por la mera CI o por proximidad temporal.
+
