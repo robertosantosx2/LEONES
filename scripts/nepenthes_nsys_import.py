@@ -326,11 +326,49 @@ def event_rows(path: Path):
                 raise ValueError(f"JSONL line {line_no}: invalid JSON: {exc}") from exc
             if not isinstance(item, dict):
                 raise ValueError(f"JSONL line {line_no}: event must be an object")
-            missing = JSONL_REQUIRED - item.keys()
-            if missing:
-                raise ValueError(
-                    f"JSONL line {line_no}: missing fields: {', '.join(sorted(missing))}"
-                )
+            if item.get("event_kind") == "sink_summary":
+                # The native llama.cpp schema-1.0 sink summary is a terminal
+                # record, not a normal event. Validate its own contract, then
+                # map its counters to the normalized event columns while
+                # retaining the exact source JSON for provenance.
+                summary_required = {
+                    "schema_version", "run_id", "event_id", "source",
+                    "timestamp_unix_ns", "event_kind", "events_drained",
+                    "dropped_events", "write_errors",
+                }
+                missing_summary = summary_required - item.keys()
+                if missing_summary:
+                    raise ValueError(
+                        f"JSONL line {line_no}: sink_summary missing fields: "
+                        f"{', '.join(sorted(missing_summary))}"
+                    )
+                if item["schema_version"] not in ("1.0", "1.1"):
+                    raise ValueError(f"JSONL line {line_no}: unsupported schema_version")
+                for field in ("run_id", "event_id", "source"):
+                    if not isinstance(item[field], str) or not item[field]:
+                        raise ValueError(f"JSONL line {line_no}: {field} must be a non-empty string")
+                for field in ("timestamp_unix_ns", "events_drained", "dropped_events", "write_errors"):
+                    value = item[field]
+                    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                        raise ValueError(f"JSONL line {line_no}: sink_summary {field} must be a non-negative integer")
+                if item["event_id"] in seen:
+                    raise ValueError(f"JSONL line {line_no}: duplicate event_id {item['event_id']}")
+                seen.add(item["event_id"])
+                original = dict(item)
+                item.setdefault("monotonic_ns", 0)
+                item.setdefault("request_id", 0)
+                item.setdefault("label", "sink.summary")
+                item.setdefault("value0", item["events_drained"])
+                item.setdefault("value1", item["dropped_events"])
+                item.setdefault("duration_ns", 0)
+                item.setdefault("flags", item["write_errors"])
+                item["_source_json"] = json.dumps(original, ensure_ascii=False, sort_keys=True)
+            else:
+                missing = JSONL_REQUIRED - item.keys()
+                if missing:
+                    raise ValueError(
+                        f"JSONL line {line_no}: missing fields: {', '.join(sorted(missing))}"
+                    )
             if item["schema_version"] not in ("1.0", "1.1"):
                 raise ValueError(f"JSONL line {line_no}: unsupported schema_version")
             if item["schema_version"] == "1.1":
@@ -771,7 +809,7 @@ first(row, ("globalPid", "global_pid", "processId", "pid")),
                   e.get("memcpy_kind"),
                   sqlite_numeric(e.get("raw_memcpy_kind"), field="raw_memcpy_kind"),
                   e.get("sync_type"), e.get("kv_op"),
-                  json.dumps(e, ensure_ascii=False, sort_keys=True)) for e in events],
+                  e.get("_source_json", json.dumps(e, ensure_ascii=False, sort_keys=True))) for e in events],
             )
             out.executemany(
                 """INSERT INTO nsys_activities
