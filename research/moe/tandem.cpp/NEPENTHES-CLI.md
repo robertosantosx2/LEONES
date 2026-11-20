@@ -107,7 +107,7 @@ El resultado separa tres estados:
 - `acceptance.c07`: solo pasa cuando C07 request y C07 batch pasan.
 - `functional_complete`: exige C07 request + C07 batch y el informe paired-overhead C08 en `data/c08-overhead-report.json`, perfil `standard`, al menos tres pares y estado `accepted` para JSONL, Nsight y combinado.
 
-Si C07 batch o C08 todavía no se han ejecutado, el bundle puede ser válido (`ok=true`) pero `functional_complete=false` y el estado se muestra como pendiente. Un informe C08 con excepción o bloqueo impide la aceptación. Los gates de campaña no sustituyen la CI del repositorio ni la validación física del MSI.
+Si C07 batch o C08 todavía no se han ejecutado, el bundle puede ser válido (`ok=true`) pero `functional_complete=false` y el estado se muestra como pendiente. Una captura batch-only puede tener `c07_batch_correlation=true` mientras `c07_request_correlation` permanece pendiente; la aceptación request-level previa se mantiene en el INDEX maestro y no se degrada por no repetirse en este run. Un informe C08 con excepción o bloqueo impide la aceptación. Los gates de campaña no sustituyen la CI del repositorio ni la validación física del MSI.
 
 El informe C08 puede mantenerse como artefacto de campaña externo. Para verificarlo sin incorporarlo al checksum del run, se acepta `nepenthes verify RUN_DIR --c08-report REPORT.json`; el resultado incluye la ruta y SHA-256 del informe. El comparador registra además los SHA-256 de cada evidencia emparejada.
 
