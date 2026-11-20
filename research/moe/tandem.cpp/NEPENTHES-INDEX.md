@@ -466,3 +466,12 @@ Esta actualización supersede únicamente los gates que el registro de importaci
 **Importación paired v3:** la base `nepenthes-c07-llama-import-v3.sqlite` devolvió `PRAGMA integrity_check=ok`; el registro `nepenthes-c07-llama-paired-v3` conserva 14.646 filas en `nepenthes_events` y 16.761 en `nsys_activities`. Distribución de atribución: 2.149 `unique_explicit_request_window`, 1.407 `outside_request_window`, 2 `marker_identity` y 13.203 `not_applicable`.
 
 **Decisión de aceptación:** se cierran los gates de importación paired request-level, identidad NVTX/request, integridad SQLite y verificación/checksums del bundle derivado. No se declara cobertura batch: hay 0 batch windows y 3.556 actividades con `missing_process_batch_window` en el análisis anterior. No inferir batch, worker ni causalidad por proximidad temporal. La captura original conserva su manifiesto y su estado histórico `command_failed`; la reconciliación es una copia derivada y no convierte la captura original en una ejecución exitosa. C08 y overhead siguen pendientes.
+
+
+### Auditoría remota de repositorio tras deduplicación Qwen3.5-35B — 2026-11-20
+
+- Snapshot paginado de GitHub: 344 refs remotas, 276 tips únicos, 12 grupos de tips duplicados (80 refs / 68 aliases excedentes) y 55 PR abiertas en el momento de la auditoría.
+- Proteger `jalon2-evidence-bridge` y `jalon2-closed`: comparten tip, pero la primera es HEAD de la PR abierta #64. No eliminar ni retargetear ninguna de las dos hasta reconciliar refs/worktrees locales.
+- PR #253 quedó fusionada como `faa1ac5b2f3dd21c3fbd44e85130602da96aeae3`, con cuatro checks requeridos verdes. La deduplicación física Qwen3.5-35B y la recuperación aproximada de 9,94 GiB están verificadas en el inventario MSI.
+- La cadena AIPerf/OTel #159–#173 sigue apilada: #159 permanece draft; #162 y #164 están cerradas sin merge; #165 es la sucesora activa. Mantener el orden parent-first y no fusionar/retargetear PR hijas mientras #159 siga draft.
+- No se eliminaron aliases ni worktrees. La auditoría remota no puede demostrar dependencias de reflogs, stashes, cambios sin push o worktrees dirty; los 68 aliases siguen en cola de revisión, no como limpieza completada.
