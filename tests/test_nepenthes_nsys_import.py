@@ -560,14 +560,14 @@ def test_cli_verifier_accepts_importer_nvtx_clock_contract():
     events = [
         {"event_kind": "clock_calibration", "label": "clock.calibration.start",
          "monotonic_ns": 100, "timestamp_unix_ns": 1000, "clock_domain": "steady_clock"},
-        {"event_kind": "request_start", "correlation_token": 77, "attribution_level": "exact"},
-        {"event_kind": "nvtx_marker", "label": "request.start", "correlation_token": 77,
+        {"event_kind": "request_start", "request_id": 42, "correlation_token": 77, "attribution_level": "exact"},
+        {"event_kind": "nvtx_marker", "label": "request.start", "request_id": 42, "correlation_token": 77,
          "attribution_level": "exact", "clock_domain": "steady_clock",
          "timestamp_unix_ns": 1100, "value0": 101, "value1": 105},
-        {"event_kind": "nvtx_marker", "label": "request.end", "correlation_token": 77,
+        {"event_kind": "nvtx_marker", "label": "request.end", "request_id": 42, "correlation_token": 77,
          "attribution_level": "exact", "clock_domain": "steady_clock",
          "timestamp_unix_ns": 1900, "value0": 901, "value1": 905},
-        {"event_kind": "request_end", "correlation_token": 77, "attribution_level": "exact"},
+        {"event_kind": "request_end", "request_id": 42, "correlation_token": 77, "attribution_level": "exact"},
         {"event_kind": "clock_calibration", "label": "clock.calibration.end",
          "monotonic_ns": 1000, "timestamp_unix_ns": 1900, "clock_domain": "steady_clock"},
     ]
