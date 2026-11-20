@@ -878,7 +878,7 @@ def test_import_accepts_native_schema_v10_sink_summary_and_preserves_source(tmp_
         "write_errors": 0,
     }
     with jsonl.open("a", encoding="utf-8") as stream:
-        stream.write(json.dumps(summary_record) + "\\n")
+        stream.write(json.dumps(summary_record) + "\n")
 
     imported = import_all(jsonl, nsys, output, "native-summary-import")
     assert imported["event_count"] == 2
