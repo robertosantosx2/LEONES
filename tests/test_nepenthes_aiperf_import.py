@@ -318,3 +318,11 @@ def test_rejects_unknown_server_aggregate_schema(tmp_path: Path):
         import_aiperf(artifacts, tmp_path / "out")
 
 
+
+
+def test_timestamp_conversion_is_exact_and_rejects_naive_values():
+    from scripts.nepenthes_aiperf_import import parse_timestamp_ns
+
+    assert parse_timestamp_ns("1970-01-01T00:00:00.000001Z") == 1_000
+    assert parse_timestamp_ns("1970-01-01T01:00:00.000001+01:00") == 1_000
+    assert parse_timestamp_ns("1970-01-01T00:00:00.000001") is None
