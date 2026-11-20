@@ -168,3 +168,16 @@ A further fully paginated GitHub API snapshot was taken after the INDEX reconcil
 - `jalon2-evidence-bridge` remains the head of open PR #64 and must be retained. Keep `jalon2-closed` as a historical evidence ref until local dependencies are reconciled.
 
 No branch alias was deleted, renamed, or retargeted. The 68-alias list remains a remote cleanup queue only: local upstreams, worktrees, reflogs, stashes, unpushed commits and dirty evidence remain unverified without the MSI inventory/recheck. No local directory, model, cache, evidence bundle, stash or worktree was changed.
+
+
+## Remote audit refresh after NEPENTHES AIPerf stack reconciliation — 2026-11-20 (22:03 UTC)
+
+A fully paginated GitHub API snapshot was taken after merging PRs #260–#262 and retiring superseded NEPENTHES PRs:
+- **354 remote branch refs**, **286 unique tip commits**.
+- **12 exact-tip duplicate groups**, comprising **80 refs** and **68 excess aliases**; the group membership remains unchanged from the 2026-11-20 classification.
+- **42 open pull requests** at snapshot time.
+- Among all 68 excess aliases, only `jalon2-evidence-bridge` appears as a head/base ref of an open PR (head of #64). Preserve it and its same-tip historical alias `jalon2-closed`.
+- NEPENTHES AIPerf/OTel stack: #159 merged; #160/#161/#165–#173 closed as superseded after comparing branch trees with main. #150 and #156 were also closed as stale snapshots; their useful quickstart/docs were selectively ported to the current INDEX or operational guide. #154 remains draft and explicitly blocked pending a fresh English translation of the current Spanish INDEX.
+- PR #261 merged the exact integer UTC epoch-nanosecond fix into the canonical AIPerf importer. PR #262 merged operational NVML/energy/OTLP guides and AIPerf upstream provenance. PR #260 merged the INDEX reconciliation and quickstart.
+- No branch alias was deleted, renamed or retargeted. Closed-PR branch refs remain present for provenance/recovery. The 68-alias queue still requires MSI-local upstream/worktree/reflog/stash/unpushed-commit verification before any archive/delete action.
+- No local directory, model, cache, evidence bundle, stash or worktree was changed. The MSI inventory phase remains blocked until the workstation is accessible.
