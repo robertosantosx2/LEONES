@@ -159,6 +159,8 @@ print("nsys-wrapped")
  assert report["acceptance"]["c07_batch"]=="passed"
  assert report["batch_gpu_activity_count"]==1
  assert report["batch_gpu_activity_token_ids"]==[123]
+ assert report["correlation"]["batch_multi_member_tokens"]==1
+ assert report["correlation"]["batch_multi_member_token_ids"]==[123]
  assert report["functional_complete"] is False  # C08 remains a separate physical gate
 
 def test_self_test_creates_and_verifies_bundle(tmp_path):
