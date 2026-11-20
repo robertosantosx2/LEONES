@@ -62,7 +62,11 @@ jobs:
       - name: Discover concrete agent use cases, skills, prompts and MCP projects
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python scripts/prospection/agent_use_case_observatory.py
+        run: |
+          python -m py_compile scripts/prospection/agent_use_case_observatory.py
+          python scripts/prospection/agent_use_case_observatory.py
+          python -m json.tool web/data/agent-use-cases.json >/dev/null
+          python -c 'import json; p=json.load(open("web/data/agent-use-cases.json")); assert p["publication_is_not_approval"] is True; assert p["automatic_recommendation"] is False'
       - name: Run harness discovery
         run: python scripts/prospection/bot_harnesses.py --input data/prospection/harness_sources.ndjson
       - name: Run hardware discovery
