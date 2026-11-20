@@ -174,8 +174,8 @@ No reconstruir ITL token-a-token desde una media agregada. No atribuir GPU telem
 El primer importador offline está disponible en `scripts/nepenthes_aiperf_import.py` y se ejecuta con:
 
 ```bash
-python3 scripts/nepenthes_aiperf_import.py \
-  --artifacts-dir /ruta/a/artefactos-aiperf \
+python3 scripts/nepenthes_aiperf_import.py \\
+  --artifacts-dir /ruta/a/artefactos-aiperf \\
   --output-dir /ruta/al/expediente/nepenthes/aiperf-import
 ```
 
