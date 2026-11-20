@@ -135,12 +135,12 @@ Los spans host describen submission/dispatch, no ejecución GPU. Los kernels ind
 - [x] Reejecutar y pasar `cuda-compile` SM86 sobre el mismo HEAD: run `44682021976`.
 - [x] Revisar `BatchNvtxScope`: RAII dentro del queue worker alrededor de la llamada `llama_process()`; no se añade ninguna sincronización explícita. No afirmar una frontera de sincronización más específica que la verificada por el código.
 - [x] Completar revisión final y fusionar PR #7: merge `7c4300e`; CI exacta `44682021976` verde.
-- [ ] Ejecutar C07 paired NVTX+Nsight/CUPTI en MSI y validar el token end-to-end; mantener atribución `windowed` hasta que haya evidencia suficiente.
+- [ ] Ejecutar C07 paired NVTX+Nsight/CUPTI en MSI y validar el token end-to-end del productor ya fusionado en PR #7; mantener atribución `windowed` hasta que haya evidencia suficiente.
 - [ ] Ejecutar C08 con baseline y tratamientos repetidos; medir overhead con umbrales del INDEX.
 - [ ] Cerrar issue LEONES #212 solo tras evidencia física y aceptación de los gates correspondientes.
 - [ ] Después de aceptación remota, planificar C07/C08 físicos en MSI; atribución `windowed`, no causal.
 
-**Límite de aceptación:** instrumentación, CI de #1/#3/#4, inferencia real Qwen3.5-4B y dos importaciones emparejadas históricas están demostradas; el contrato del productor (`sink_summary`) y el shutdown seguro quedaron aceptados en PR #4. La correlación host batch está aceptada en Tandem PR #5 (`7b2da75`); importer batch attribution requiere además match process/thread (PR #219), con nivel `windowed`, nunca causal/exact GPU ownership. El soporte importer batch NVTX y vista many-to-many están integrados en LEONES PR #218 (fixtures sintéticos); aún no hay productor NVTX batch en Tandem ni captura física C07. No hay correlación GPU aceptada, cobertura completa de sondas ni overhead C08. Tandem sigue siendo una distribución derivada de llama.cpp, no un motor independiente a efectos de duplicar colectores/importadores.
+**Límite de aceptación:** instrumentación, CI de #1/#3/#4, inferencia real Qwen3.5-4B y dos importaciones emparejadas históricas están demostradas; el contrato del productor (`sink_summary`) y el shutdown seguro quedaron aceptados en PR #4. La correlación host batch está aceptada en Tandem PR #5 (`7b2da75`); importer batch attribution requiere además match process/thread (PR #219), con nivel `windowed`, nunca causal/exact GPU ownership. El soporte importer batch NVTX y vista many-to-many están integrados en LEONES PR #218 (fixtures sintéticos). El productor NVTX batch ya está fusionado en Tandem PR #7; falta demostrarlo en captura física emparejada C07 y validar el token end-to-end con Nsight/CUPTI. No hay correlación GPU causal aceptada, cobertura completa de sondas ni overhead C08. Tandem sigue siendo una distribución derivada de llama.cpp, no un motor independiente a efectos de duplicar colectores/importadores.
 
 ### 3.4 Otros motores
 
