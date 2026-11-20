@@ -119,6 +119,7 @@ def event(event_id,kind,label,mono,wall,request_id=0,value0=1,value1=2,token=Non
  if kind in ("clock_calibration","nvtx_marker","request_start","request_end"): item["clock_domain"]="steady_clock"
  events.append(item)
 event("cal-start","clock_calibration","clock.calibration.start",1000,2000)
+event("cal-end","clock_calibration","clock.calibration.end",5060,6060)
 event("nvtx-request-start","nvtx_marker","request.start",1030,2030,42,1020,1040,77,"exact")
 event("nvtx-batch-start","nvtx_marker","batch.start",1030,2030,0,1020,1040,123,"exact")
 event("request-start","request_start","server.task",1050,2050,42,1,2,77,"exact")
