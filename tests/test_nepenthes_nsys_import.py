@@ -627,41 +627,26 @@ def test_import_persists_schema_v11_typed_engine_metadata(tmp_path: Path):
     db.close()
 
 
-def test_event_rows_accepts_schema_v11_sink_summary(tmp_path: Path):
+def test_event_rows_separates_compact_sink_summary_from_telemetry(tmp_path: Path):
     jsonl = tmp_path / "typed-with-summary.jsonl"
     write_jsonl_v11(jsonl)
     summary = {
-        "schema_version": "1.1",
+        "schema_version": "1.0",
         "run_id": "qwen35-typed",
-        "event_id": "llama-2",
+        "event_id": "llama-sink-summary",
         "source": "llama.cpp",
         "timestamp_unix_ns": 1_800_000_000_000_000_100,
-        "monotonic_ns": 123556,
-        "request_id": 0,
-        "correlation_token": None,
-        "attribution_level": None,
-        "backend": None,
-        "memory_kind": None,
-        "memcpy_kind": None,
-        "raw_memcpy_kind": None,
-        "sync_type": None,
-        "kv_op": None,
-        "clock_domain": "steady_clock",
         "event_kind": "sink_summary",
-        "label": "sink.summary",
-        "value0": 1,
-        "value1": 0,
-        "duration_ns": 0,
-        "flags": 0,
         "events_drained": 1,
         "dropped_events": 0,
         "write_errors": 0,
     }
     with jsonl.open("a", encoding="utf-8") as stream:
-        stream.write(json.dumps(summary) + "\n")
-    events = list(event_rows(jsonl))
-    assert [event["event_kind"] for event in events] == ["transfer", "sink_summary"]
-
+        stream.write(json.dumps(summary) + "\\n")
+    summaries: list[dict] = []
+    events = list(event_rows(jsonl, summaries))
+    assert [event["event_kind"] for event in events] == ["transfer"]
+    assert summaries == [summary]
 
 def test_event_rows_rejects_unknown_schema_v11_backend(tmp_path: Path):
     jsonl = tmp_path / "invalid-typed-trace.jsonl"
