@@ -122,3 +122,31 @@ def test_raw_aiperf_log_retention_is_explicit_opt_in(tmp_path: Path):
     assert log_path.is_file()
     assert "raw-debug-output" in log_path.read_text(encoding="utf-8")
     assert manifest["log_artifact"]["size_bytes"] == log_path.stat().st_size
+
+
+
+def test_runner_accepts_aiperf_014_when_explicitly_pinned(tmp_path: Path):
+    fake = tmp_path / "aiperf"
+    fake.write_text(
+        "#!/bin/sh\n"
+        'if [ "$1" = "--version" ]; then echo "AIPerf 0.14.0"; exit 0; fi\n'
+        "sleep 0.2\n"
+        "echo profile-complete\n",
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    artifact_dir = tmp_path / "aiperf-014-artifacts"
+    args = parse_args([
+        "--model", "model-q4",
+        "--url", "http://127.0.0.1:8080",
+        "--artifact-dir", str(artifact_dir),
+        "--aiperf-bin", str(fake),
+        "--expected-aiperf-version", "0.14.0",
+        "--target-pid", str(os.getpid()),
+        "--timeout-seconds", "10",
+    ])
+    assert run(args) == 0
+    manifest = json.loads((artifact_dir / "nepenthes_aiperf_run.json").read_text(encoding="utf-8"))
+    assert manifest["aiperf_version"] == "0.14.0"
+    assert manifest["expected_aiperf_version"] == "0.14.0"
+    assert manifest["status"] == "completed"
