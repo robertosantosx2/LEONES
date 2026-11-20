@@ -11,7 +11,7 @@
 - Snapshot policy: consult the pinned commit; do not treat moving `main` as normative or advance the pin without a human-approved review PR.
 - Scope: root governance is merged; subproject-specific adoption and remediation remain in progress.
 - Initial audit: [HDAE-SUBPROJECT-AUDIT.md](HDAE-SUBPROJECT-AUDIT.md).
-- Canonical priority source: each project/subproject's explicitly designated master INDEX. NEPENTHES: `research/moe/tandem.cpp/NEPENTHES-INDEX.md`. Root INDEX authority is not yet resolved.
+- **Canonical LEONES master INDEX:** `research/moe/tandem.cpp/NEPENTHES-INDEX.md` on `main`; it is the sole source of priority and acceptance. Do not create a parallel root index or elevate auxiliary roadmaps above it.
 
 ## Gate 1 — repository-wide HDAE governance
 
@@ -30,11 +30,11 @@
 - [x] Inspect subproject map and representative project documentation.
 - [x] Verify NEPENTHES PR #210 merged and correct stale TRACE-ENVELOPE status.
 - [x] Fix broken LEONES Lab Agent README links in docs/subprojects/README.md.
-- [ ] Resolve root master INDEX authority.
+- [x] Apply the user-designated LEONES master INDEX authority; no parallel root index created.
 - [ ] Complete source/dependency/test/workflow/issue/PR and checkpoint audit for each active subproject.
-- [ ] Create bounded remediation PRs following each canonical master INDEX; do not invent priorities.
+- [ ] Prepare bounded remediation PRs strictly following the master INDEX.
 - [ ] Record per-project HDAE adoption evidence and exceptions.
 
 ## Evidence and limits
 
-The tree inventory found no nested AGENTS.md. Only NEPENTHES has an explicitly named engineering master INDEX in the reviewed set; JGB-INDEX is a domain classification index. This is an initial documentary audit, not a full code/security/runtime/hardware audit. CI success is not MSI physical validation. The HDAE fork does not imply installation of upstream skills in every execution environment.
+The tree inventory found no nested AGENTS.md. The initial audit is documentary and not a full code/security/runtime/hardware audit. CI success is not MSI physical validation. The HDAE fork does not imply installation of upstream skills in every execution environment. The current master INDEX priority still requires physical MSI C07/C08 validation for llama.cpp and Tandem.cpp after their remote gates; no such new physical validation was run here.
