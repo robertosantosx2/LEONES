@@ -4,17 +4,17 @@
   "upstream_repository": "https://github.com/ggml-org/llama.cpp.git",
   "upstream_web": "https://github.com/ggml-org/llama.cpp",
   "upstream_branch": "master",
-  "verified_commit": "c406f4367e19bea7930e7f74e1984c9acc6d44bf",
-  "verified_commit_time": "2026-11-19T19:30:19Z",
-  "verified_at": "2026-11-19",
+  "verified_commit": "9d6f04fa99936708b9df140b7b2df62a8925afd5",
+  "verified_commit_time": "2026-11-20",
+  "verified_at": "2026-11-20",
   "local_fork_repository": "https://github.com/robertosantosx2/llama.cpp.git",
   "local_fork_web": "https://github.com/robertosantosx2/llama.cpp",
   "local_fork_default_branch": "master",
-  "fork_head_commit": "c406f4367e19bea7930e7f74e1984c9acc6d44bf",
+  "fork_head_commit": "38c1a39226c71e0d22a94ea1d55deda6917c9b79",
   "fork_behind_upstream_commits": 0,
-  "local_fork_status": "up_to_date_upstream_with_nepenthes_integration_pr_open",
+  "local_fork_status": "upstream_synced_nepenthes_integration_preserved",
   "leones_submodule_path": "subprojects/llama.cpp",
-  "leones_submodule_commit": "76f186df71a41abb3ee20fffedee31ca5dbc7d9f",
+  "leones_submodule_commit": "38c1a39226c71e0d22a94ea1d55deda6917c9b79",
   "policy": "Keep the personal fork as origin and ggml-org/llama.cpp as upstream. The reviewed LEONES gitlink is an independent immutable pin: fork_head_commit records origin/master and must not be required to equal leones_submodule_commit. Advance the fork only after reconciling and reviewing the runtime stack against current upstream; advance the LEONES gitlink only through an explicit reviewed PR.",
   "upstream_delta_since_fork_master": {
     "from": "9a080f44b503c64f66c84a6274b9d9ee5d5b09d5",
@@ -60,7 +60,7 @@
       "branch": "feat/nepenthes-runtime-probes-20261119",
       "base": "master",
       "head": "b7cd302f897b2b6aacc9abea5e244b68ed3d3af8",
-      "status": "open_draft_requires_rebase",
+      "status": "superseded_by_canonical_pr_10_merged",
       "scope": [
         "event_contract",
         "bounded_jsonl_sink",
@@ -77,7 +77,7 @@
       "branch": "feat/nepenthes-ggml-backend-probes-20261119",
       "base": "feat/nepenthes-runtime-probes-20261119",
       "head": "5c424c6d4181375508b54e270c4b39a3286e1d38",
-      "status": "open_draft_requires_rebase",
+      "status": "superseded_by_canonical_pr_10_merged",
       "scope": [
         "model_lifecycle",
         "ggml_buffer_lifecycle",
@@ -96,7 +96,7 @@
       "branch": "feat/nepenthes-cpu-worker-probes-20261119",
       "base": "feat/nepenthes-ggml-backend-probes-20261119",
       "head": "6d9d1b49bcecc819a7ca270716061d5516963d63",
-      "status": "open_draft_requires_rebase",
+      "status": "superseded_by_canonical_pr_10_merged",
       "scope": [
         "cpu_worker_compute",
         "cpu_idle_wait"
@@ -104,18 +104,14 @@
     }
   ],
   "notes": [
-    "Current upstream master verified at c406f4367e19bea7930e7f74e1984c9acc6d44bf.",
-    "Fork master is 9a080f44b503c64f66c84a6274b9d9ee5d5b09d5, three commits behind upstream.",
-    "The LEONES gitlink remains pinned to 76f186df71a41abb3ee20fffedee31ca5dbc7d9f until the runtime stack is reconciled and accepted.",
-    "The upstream BF16 commit changes CPU/CUDA ROPE and SET_ROWS behavior and overlaps the RC1 instrumentation sites; preserve the functional change and reapply probes after it.",
-    "The upstream YuE2 fix and OpenCL int8 KQ work are non-overlapping and should be retained intact.",
-    "PRs #1-#3 are an older stacked candidate; PR #6 is the cumulative RC1 alternative. Do not merge both. Select one canonical line only after comparing probe semantics and coverage.",
-    "PR #6 head 33e0d0a578c48b0a31616fd1b72fd255f12e39a4 is 33 commits ahead of fork master and 0 behind that base, but still 3 commits behind current upstream; its diff has 8 overlapping paths with the upstream delta.",
-    "LEONES PR #206 merged as c98deebfc169b8d860d4e887b1f3ffb068342b00, adding the fork as a submodule pinned independently to 76f186df.",
-    "Post-merge LEONES V1 Complete Gate run 44612579699 and submodule integrity run 44612579719 both completed successfully.",
-    "No local build, runtime inference, new Nsight capture, C07 real acceptance, or C08 overhead measurement is claimed.",
-    "Fork master fast-forwarded safely from 9a080f44b503c64f66c84a6274b9d9ee5d5b09d5 to current upstream c406f4367e19bea7930e7f74e1984c9acc6d44bf; no NEPENTHES changes were pushed to master.",
-    "New clean integration PR #10 is based directly on current upstream and contains 23 changed files (+1252/-1). It supersedes neither PR #6 nor PRs #1-#3 until CI and semantic review complete."
+    "Upstream master verified at 9d6f04fa99936708b9df140b7b2df62a8925afd5 on 2026-11-20.",
+    "Fork master synchronized with upstream by PR #14; merge commit 38c1a39226c71e0d22a94ea1d55deda6917c9b79.",
+    "Comparison from canonical NEPENTHES merge d4d0b9e to synchronized fork master: 19 commits ahead, 0 behind; canonical instrumentation remains in ancestry.",
+    "NEPENTHES exact workflow #44701420573 passed trace-and-cpu-build and cuda-compile on upstream commit 9d6f04fa99936708b9df140b7b2df62a8925afd5, including shared LEONES importer validation and NVTX v3 check.",
+    "General CI triggered after the fork merge still has specialized runners queued; do not describe the full upstream matrix as green.",
+    "LEONES gitlink is advanced to the reviewed synchronized fork commit only through this PR.",
+    "MSI smoke exists, but C07 paired import/verification and C08 overhead acceptance remain distinct pending gates.",
+    "Keep LEONES issue #212 open until physical correlation and applicable C07/C08 gates are documented."
   ],
   "leones_submodule_integration_pr": "https://github.com/robertosantosx2/LEONES/pull/206",
   "leones_submodule_integration_merge_commit": "c98deebfc169b8d860d4e887b1f3ffb068342b00",
@@ -126,7 +122,7 @@
     "head": "33e0d0a578c48b0a31616fd1b72fd255f12e39a4",
     "base": "master",
     "base_commit": "9a080f44b503c64f66c84a6274b9d9ee5d5b09d5",
-    "status": "open_draft_requires_upstream_reconciliation",
+    "status": "superseded_by_canonical_pr_10_merged",
     "ahead_of_fork_master": 33,
     "behind_fork_master": 0,
     "behind_current_upstream": 3,
@@ -146,14 +142,33 @@
   "canonical_integration_candidate": {
     "pr": 10,
     "url": "https://github.com/robertosantosx2/llama.cpp/pull/10",
-    "branch": "nepenthes/integration-upstream-c406f436",
-    "head": "0f3fa24ba4e417629ffebd7bbf6a7bcccb8c4659",
-    "base": "c406f4367e19bea7930e7f74e1984c9acc6d44bf",
-    "status": "open_draft_ci_running",
+    "base": "master",
+    "base_commit": "c406f4367e19bea7930e7f74e1984c9acc6d44bf",
+    "head": "da0fa44d6445f692b2fdb281d2c95210aeea75ac",
+    "merge_commit": "d4d0b9eeb2bd0035f525a90aefed111e5d74edcb",
+    "status": "merged_and_preserved_by_upstream_sync",
     "based_directly_on_current_upstream": true,
     "changed_files": 23,
-    "additions": 1252,
-    "deletions": 1,
-    "patch_method": "All 23 PR #6 file patches applied hunk-by-hunk to current upstream files; all hunks matched exactly."
+    "patch_method": "Reviewed NEPENTHES runtime probes, contract, bounded JSONL sink, CPU bridge and CUDA/NVTX integration; preserved as ancestor through upstream sync PR #14."
+  },
+  "upstream_sync": {
+    "pr": 14,
+    "url": "https://github.com/robertosantosx2/llama.cpp/pull/14",
+    "upstream_commit": "9d6f04fa99936708b9df140b7b2df62a8925afd5",
+    "previous_fork_head": "d4d0b9eeb2bd0035f525a90aefed111e5d74edcb",
+    "merge_commit": "38c1a39226c71e0d22a94ea1d55deda6917c9b79",
+    "status": "merged",
+    "comparison_from_nepenthes_merge": {
+      "ahead": 19,
+      "behind": 0
+    },
+    "validation_workflow": {
+      "run_id": 44701420573,
+      "url": "https://github.com/robertosantosx2/llama.cpp/actions/runs/44701420573",
+      "head": "9d6f04fa99936708b9df140b7b2df62a8925afd5",
+      "trace_and_cpu_build": "success",
+      "cuda_compile": "success"
+    },
+    "preservation": "Canonical NEPENTHES PR #10 merge d4d0b9e remains an ancestor of the synchronized fork master."
   }
 }
