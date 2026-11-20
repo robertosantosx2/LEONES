@@ -227,6 +227,13 @@ def seed_existing(records: dict, observed: str) -> None:
                 add(item, "LEONES · prospección existente")
         except (json.JSONDecodeError, OSError):
             pass
+    if FEDERATED.exists():
+        for line in FEDERATED.read_text(encoding="utf-8").splitlines():
+            try:
+                item = json.loads(line)
+                add(item, "LEONES · descubrimiento federado")
+            except json.JSONDecodeError:
+                continue
 
 
 def main() -> int:
