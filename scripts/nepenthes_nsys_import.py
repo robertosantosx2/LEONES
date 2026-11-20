@@ -587,6 +587,11 @@ def collect_runtime_thread_ids(
     table = "CUPTI_ACTIVITY_KIND_RUNTIME"
     if table not in names:
         return {}
+    columns = {
+        row[1] for row in db.execute(f'PRAGMA table_info("{table}")')
+    }
+    if not {"correlationId", "globalTid"} <= columns:
+        return {}
     candidates: dict[int, set[int]] = {}
     for row in db.execute(f'SELECT correlationId, globalTid FROM "{table}"'):
         correlation_id = row["correlationId"]
