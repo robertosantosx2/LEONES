@@ -313,7 +313,8 @@ def first(row: dict[str, Any], candidates: tuple[str, ...]) -> Any:
     return None
 
 
-def event_rows(path: Path):
+def event_rows(path: Path, sink_summaries: list[dict[str, Any]] | None = None):
+    """Yield telemetry events and collect compact sink summaries separately."""
     seen: set[str] = set()
     counts: Counter[str] = Counter()
     with path.open("r", encoding="utf-8") as stream:
@@ -325,7 +326,29 @@ def event_rows(path: Path):
             except json.JSONDecodeError as exc:
                 raise ValueError(f"JSONL line {line_no}: invalid JSON: {exc}") from exc
             if not isinstance(item, dict):
-                raise ValueError(f"JSONL line {line_no}: event must be an object")
+                raise ValueError(f"JSONL line {line_no}: record must be an object")
+            if item.get("event_kind") == "sink_summary":
+                required = {"schema_version", "run_id", "event_id", "source",
+                            "timestamp_unix_ns", "event_kind", "events_drained",
+                            "dropped_events", "write_errors"}
+                missing_summary = required - item.keys()
+                if missing_summary:
+                    raise ValueError(
+                        f"JSONL line {line_no}: sink_summary missing fields: "
+                        f"{', '.join(sorted(missing_summary))}"
+                    )
+                if item["schema_version"] not in ("1.0", "1.1"):
+                    raise ValueError(f"JSONL line {line_no}: unsupported sink_summary schema_version")
+                for field in ("run_id", "event_id", "source"):
+                    if not isinstance(item[field], str) or not item[field]:
+                        raise ValueError(f"JSONL line {line_no}: sink_summary {field} must be a non-empty string")
+                for field in ("timestamp_unix_ns", "events_drained", "dropped_events", "write_errors"):
+                    value = item[field]
+                    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                        raise ValueError(f"JSONL line {line_no}: sink_summary {field} must be a non-negative integer")
+                if sink_summaries is not None:
+                    sink_summaries.append(item)
+                continue
             missing = JSONL_REQUIRED - item.keys()
             if missing:
                 raise ValueError(
@@ -619,7 +642,10 @@ def import_all(jsonl: Path, nsys: Path, output: Path, import_id: str) -> dict:
     if resolved_output in {jsonl.resolve(), nsys.resolve()}:
         raise ValueError("output database must not overwrite either source artifact")
     output.parent.mkdir(parents=True, exist_ok=True)
-    events = list(event_rows(jsonl))
+    sink_summaries: list[dict[str, Any]] = []
+    events = list(event_rows(jsonl, sink_summaries))
+    if len(sink_summaries) > 1:
+        raise ValueError(f"JSONL must contain at most one sink_summary; found {len(sink_summaries)}")
     event_counts = Counter(str(e["event_kind"]) for e in events)
     source = sqlite3.connect(f"file:{nsys.resolve()}?mode=ro", uri=True)
     source.row_factory = sqlite3.Row
@@ -729,6 +755,8 @@ first(row, ("globalPid", "global_pid", "processId", "pid")),
     run_ids = sorted({str(e["run_id"]) for e in events})
     if len(run_ids) != 1:
         raise ValueError(f"JSONL must contain exactly one run_id; found {run_ids}")
+    if sink_summaries and sink_summaries[0]["run_id"] != run_ids[0]:
+        raise ValueError("JSONL sink_summary run_id does not match telemetry events")
     if not activities:
         raise ValueError("Nsight SQLite contains no recognized CUDA activity rows")
 
@@ -789,6 +817,7 @@ first(row, ("globalPid", "global_pid", "processId", "pid")),
     return {
         "import_id": import_id, "run_id": run_ids[0],
         "event_count": len(events), "event_kinds": dict(event_counts),
+        "sink_summary": sink_summaries[0] if sink_summaries else None,
         "activity_count": len(activities), "activity_kinds": dict(activity_counts),
         "recognized_nsys_tables": sorted(t for t in NSYS_TABLES if t in names),
         "enum_tables": enum_metadata,
