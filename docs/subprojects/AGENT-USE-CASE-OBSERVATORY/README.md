@@ -10,7 +10,7 @@ Mantener un catálogo vivo de **casos concretos de uso de agentes**, repositorio
 
 ## Integración con LEONES
 
-- Reutiliza el catálogo existente de `data/discovery/skills.json` y `web/data/prospeccion.json`.
+- Reutiliza el catálogo existente de `data/discovery/skills.json` y `web/data/prospeccion.json`. También incorpora hallazgos federados de `data/prospection/federated_discoveries.ndjson`.
 - Añade descubrimiento diario mediante GitHub Repository Search API.
 - El proceso se ejecuta como un paso del workflow `Daily Atlas Prospection`, programado a las 04:17 UTC y ejecutable manualmente.
 - Mantiene el histórico normalizado en `data/prospection/agent_use_cases.ndjson`.
