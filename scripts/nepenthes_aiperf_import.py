@@ -496,6 +496,7 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
     event_path = out / "aiperf_events.jsonl"
     event_count = 0
     summary_metric_count = 0
+    warmup_summary_metric_count = 0
     request_metric_count = 0
     request_count = 0
     failed_request_count = 0
@@ -518,7 +519,7 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
     with event_path.with_name(event_path.name + ".tmp").open("w", encoding="utf-8") as stream:
         if summary_path is not None:
             def emit_summary_metrics(metrics: Any, scope: str, phase: str) -> None:
-                nonlocal event_count, summary_metric_count
+                nonlocal event_count, summary_metric_count, warmup_summary_metric_count
                 if metrics is None:
                     return
                 if not isinstance(metrics, dict):
@@ -555,7 +556,10 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
                     }
                     write_event(stream, event)
                     event_count += 1
-                    summary_metric_count += 1
+                    if scope == "run_summary":
+                        summary_metric_count += 1
+                    else:
+                        warmup_summary_metric_count += 1
 
             emit_summary_metrics(summary, "run_summary", "profiling")
             # AIPerf 0.14.0 JSON export schema 1.7 adds warmup_metrics separately;
@@ -670,6 +674,7 @@ def import_aiperf(artifacts_dir: Path, output_dir: Path) -> dict[str, Any]:
         "event_file": event_path.name,
         "event_count": event_count,
         "summary_metric_count": summary_metric_count,
+        "warmup_summary_metric_count": warmup_summary_metric_count,
         "request_count": request_count,
         "request_metric_count": request_metric_count,
         "failed_request_count": failed_request_count,
