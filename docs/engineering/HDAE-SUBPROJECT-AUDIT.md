@@ -8,7 +8,7 @@
 ## 1. Executive findings
 
 1. The merged root `AGENTS.md` is the only `AGENTS.md` found in the complete GitHub repository tree. No nested subproject-specific agent instructions were found.
-2. The tree contains a clear canonical master index for NEPENTHES: `research/moe/tandem.cpp/NEPENTHES-INDEX.md`. The JGB index is a domain classification index, not a software subproject priority index.
+2. The user-designated LEONES master INDEX is `research/moe/tandem.cpp/NEPENTHES-INDEX.md` on `main`. It remains the sole source of priority and acceptance; its unusual path does not authorize creating a competing root index. The JGB index is a domain classification index, not a software priority index.
 3. Several other workstreams have roadmaps or integration documents, but no dedicated, clearly designated master INDEX was found in the initial filename inventory. This includes ODS/Magnitude integration, TensorFold Web, agentic benchmarks, and multiple documented subprojects.
 4. A concrete stale-state conflict was found: `docs/subprojects/NEPENTHES/TRACE-ENVELOPE.md` described LEONES PR #210 as open, while PR #210 is merged at `fcaf17005f7771c2521fc07387409a79c47f1b7b` and the NEPENTHES master INDEX already records it as merged. This audit phase corrects that stale status paragraph only; the INDEX remains authoritative.
 5. Several documents are intentionally designs, proposals or evidence summaries. They must not be promoted to implementation/acceptance merely because their roadmap says a phase is planned or a README exists.
@@ -19,7 +19,7 @@
 |---|---|---|
 | Root `AGENTS.md` | Present; links the pinned HDAE snapshot and sets remote-first workflow | Adopted by merge PR #237 |
 | Nested `AGENTS.md` | None found in the complete repository tree | Do not add blanket copies; create scoped instructions only where a subproject has a distinct boundary |
-| Root master INDEX | No unambiguous root `INDEX.md` found in the filename inventory | Do not invent one or silently designate a roadmap; resolve authority against the owner's intended LEONES INDEX |
+| LEONES master INDEX | `research/moe/tandem.cpp/NEPENTHES-INDEX.md`, explicitly designated by the user | Sole source of priority and acceptance; do not create a parallel root index or promote roadmaps to master status |
 | NEPENTHES | Dedicated master INDEX present | Preserve as sole priority/status/acceptance source |
 | JGB | Dedicated domain index present | Keep scoped to openness classification, not engineering governance |
 
@@ -72,7 +72,7 @@
 - [x] Read root `AGENTS.md` and the subproject documentation map.
 - [x] Inspect the canonical NEPENTHES INDEX and selected project roadmaps/contracts.
 - [x] Verify LEONES PR #210 is merged and correct one stale dependent status statement.
-- [ ] Resolve root master INDEX authority.
+- [x] Resolve master INDEX authority: use `research/moe/tandem.cpp/NEPENTHES-INDEX.md` as the user-designated LEONES source of priority and acceptance; do not create a competing root index.
 - [ ] Audit every subproject's complete source, dependencies, tests, workflows, issues/PRs and current checkpoint.
 - [ ] Produce bounded remediation PRs and verify each against its own master INDEX.
 - [ ] Record per-project HDAE adoption and exceptions.
