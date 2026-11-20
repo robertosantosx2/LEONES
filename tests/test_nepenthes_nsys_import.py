@@ -843,3 +843,46 @@ def test_batch_attribution_rejects_activity_from_another_host_thread(tmp_path: P
         (None, None, "no_matching_batch_thread_window"),
         (None, None, "no_matching_batch_thread_window"),
     ]
+
+
+def test_paired_nvtx_recovers_process_id_from_global_tid_when_global_pid_is_absent(tmp_path: Path):
+    jsonl = tmp_path / "globaltid-trace.jsonl"
+    nsys = tmp_path / "globaltid-nsys.sqlite"
+    output = tmp_path / "globaltid-paired.sqlite"
+    write_jsonl_nvtx(jsonl)
+
+    # Exact identity pair observed in the preserved MSI C07 Nsight export.
+    process_id = 0x1019564000000
+    thread_id = 0x1019564019564
+    assert thread_id & 0xFFFFFFFFFF000000 == process_id
+
+    db = sqlite3.connect(nsys)
+    db.executescript("""
+        CREATE TABLE NVTX_EVENTS(start INTEGER, end INTEGER, text TEXT, globalTid INTEGER);
+        CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(
+            start INTEGER, end INTEGER, correlationId INTEGER, globalPid INTEGER
+        );
+    """)
+    db.executemany(
+        "INSERT INTO NVTX_EVENTS VALUES (?, ?, ?, ?)",
+        [
+            (1110, 1110, "nepenthes.request.start token=77 request=42", thread_id),
+            (5110, 5110, "nepenthes.request.end token=77 request=42", thread_id),
+        ],
+    )
+    db.execute(
+        "INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES (1500, 1600, 101, ?)",
+        (process_id,),
+    )
+    db.commit()
+    db.close()
+
+    summary = import_all(jsonl, nsys, output, "globaltid-paired-import")
+    assert summary["request_windows"] == 1
+
+    with sqlite3.connect(output) as db:
+        row = db.execute(
+            "SELECT global_pid,attributed_request_token,attribution_level,attribution_status "
+            "FROM nsys_activities WHERE activity_kind='cuda_kernel'"
+        ).fetchone()
+    assert row == (process_id, 77, "windowed", "unique_explicit_request_window")
