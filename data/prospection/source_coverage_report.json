@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-20T23:53:37.407753+00:00",
+  "generated_at": "2026-11-21T00:15:31.178604+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -52,9 +52,9 @@
       "url": "https://savannah.gnu.org/",
       "kind": "forge",
       "priority": "high",
-      "status": "reachable",
-      "http_status": 200,
-      "final_url": "https://savannah.gnu.org/",
+      "status": "error",
+      "error_type": "URLError",
+      "message": "<urlopen error [Errno 101] Network is unreachable>",
       "authentication_configured": false
     },
     {
