@@ -67,6 +67,14 @@ jobs:
           python scripts/prospection/agent_use_case_observatory.py
           python -m json.tool web/data/agent-use-cases.json >/dev/null
           python -c 'import json; p=json.load(open("web/data/agent-use-cases.json")); assert p["publication_is_not_approval"] is True; assert p["automatic_recommendation"] is False'
+      - name: Discover mobile LLM and ARM edge projects
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python -m py_compile scripts/research/mobile_llms_arm.py
+          python scripts/research/mobile_llms_arm.py
+          python -m json.tool web/data/mobile-llms-arm.json >/dev/null
+          python -c 'import json; p=json.load(open("web/data/mobile-llms-arm.json")); assert p["publication_is_not_approval"] is True; assert p["automatic_recommendation"] is False; assert isinstance(p["items"], list)'
       - name: Run harness discovery
         run: python scripts/prospection/bot_harnesses.py --input data/prospection/harness_sources.ndjson
       - name: Run hardware discovery
@@ -115,6 +123,8 @@ jobs:
             web/discovery-atlas.html
             web/data/agent-use-cases.json
             data/prospection/agent_use_cases.ndjson
+            web/data/mobile-llms-arm.json
+            web/mobile-llms-arm.html
           if-no-files-found: warn
       - name: Publish generated discovery data and report
         if: github.ref == 'refs/heads/main'
@@ -125,7 +135,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           mkdir -p /tmp/leones-generated
-          git diff --binary "$BASE_SHA" -- data/prospection/ scripts/prospection/ web/data/ web/discovery-atlas.html > /tmp/leones-generated/generated.patch || true
+          git diff --binary "$BASE_SHA" -- data/prospection/ scripts/prospection/ web/data/ web/discovery-atlas.html web/mobile-llms-arm.html > /tmp/leones-generated/generated.patch || true
           git fetch origin main
           git reset --hard origin/main
           if [ -s /tmp/leones-generated/generated.patch ]; then
@@ -134,7 +144,7 @@ jobs:
               git apply --reject /tmp/leones-generated/generated.patch || true
             }
           fi
-          git add data/prospection/ scripts/prospection/ web/data/ web/discovery-atlas.html
+          git add data/prospection/ scripts/prospection/ scripts/research/ web/data/ web/discovery-atlas.html web/mobile-llms-arm.html
           if git diff --cached --quiet; then
             echo 'No changes to publish.'
           else
