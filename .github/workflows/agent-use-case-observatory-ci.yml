@@ -1,0 +1,73 @@
+name: Agent Use Case Observatory CI
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/prospection/agent_use_case_observatory.py'
+      - 'scripts/prospection/build_discovery_atlas.py'
+      - 'web/discovery-atlas.html'
+      - 'web/data/prospeccion.json'
+      - 'web/agent-use-cases.html'
+      - 'web/index.html'
+      - 'web/data/agent-use-cases.json'
+      - 'docs/subprojects/AGENT-USE-CASE-OBSERVATORY/**'
+      - '.github/workflows/agent-use-case-observatory-ci.yml'
+      - '.github/workflows/daily-prospection.yml'
+      - 'README.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-use-case-observatory-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Compile discovery scripts
+        run: python -m py_compile scripts/prospection/agent_use_case_observatory.py scripts/prospection/build_discovery_atlas.py
+      - name: Validate catalog feed and publication safeguards
+        run: |
+          python -m json.tool web/data/agent-use-cases.json >/dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          feed = json.loads(Path("web/data/agent-use-cases.json").read_text(encoding="utf-8"))
+          assert feed["publication_is_not_approval"] is True
+          assert feed["automatic_recommendation"] is False
+          assert isinstance(feed["items"], list)
+          for item in feed["items"]:
+              assert item.get("name")
+              assert item.get("url", "").startswith("https://")
+              assert item.get("review_status") != "verified"
+          html = Path("web/agent-use-cases.html").read_text(encoding="utf-8")
+          assert 'data/agent-use-cases.json' in html
+          assert 'leones-agents.svg' in html
+          print(f"validated {len(feed['items'])} unapproved catalog candidates")
+          PY
+      - name: Verify standalone Discovery Atlas embeds the current feed
+        run: |
+          python scripts/prospection/build_discovery_atlas.py
+          git diff --exit-code -- web/discovery-atlas.html
+          python - <<'PY'
+          import json, re
+          from pathlib import Path
+          feed = json.loads(Path("web/data/prospeccion.json").read_text(encoding="utf-8"))
+          html = Path("web/discovery-atlas.html").read_text(encoding="utf-8")
+          match = re.search(r"const DATA=(\{.*?\});\nconst \$=", html, re.S)
+          assert match, "embedded catalog payload not found"
+          embedded = json.loads(match.group(1))
+          assert len(embedded["items"]) == len(feed["items"])
+          assert embedded["generated_at"] == feed["generated_at"]
+          assert "fetch(" not in html and "<script src=" not in html
+          assert "leones-logo-principal.svg" not in html
+          print(f"standalone HTML embeds {len(embedded['items'])} discoveries")
+          PY
