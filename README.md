@@ -82,3 +82,6 @@ La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopció
 
 - NEPENTHES: [subproyecto y roadmap maestro](docs/subprojects/NEPENTHES/README.md) · [índice histórico de campañas](research/moe/tandem.cpp/NEPENTHES-INDEX.md).
 
+## Catálogo completo de investigación
+
+El inventario recursivo de proyectos, subproyectos y líneas de investigación de LEONES —con descripción, ubicación canónica, potencial, estado documental y reglas para evitar duplicidades— está disponible en el **[Catálogo de proyectos de investigación](docs/research/RESEARCH-PROJECTS-INDEX.md)**. Incluye la nueva línea **[LocalAI 5.0](research/localai-v5-integration-2026-11.md)** como runtime opcional en evaluación, sin convertirlo en dependencia obligatoria ni sustituir los motores existentes.
