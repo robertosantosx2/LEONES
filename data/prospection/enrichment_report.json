@@ -12,56 +12,56 @@
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4923"
+      "rate_limit_remaining": "3928"
     },
     {
       "repository": "cool-japan/kizzasi",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4904"
+      "rate_limit_remaining": "3909"
     },
     {
       "repository": "wish-maker/minder",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4846"
+      "rate_limit_remaining": "3851"
     },
     {
       "repository": "arshad1416/HA_Automation_Pi",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4815"
+      "rate_limit_remaining": "3820"
     },
     {
       "repository": "priceisaacuwjh3036/ai-server-rust-llm-api",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4805"
+      "rate_limit_remaining": "3810"
     },
     {
       "repository": "benlmadan9-star/eco-mesh-sdk",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4804"
+      "rate_limit_remaining": "3809"
     },
     {
       "repository": "wisent-ai/brama",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4776"
+      "rate_limit_remaining": "3781"
     },
     {
       "repository": "ramaiahsvn/aim.pat",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4733"
+      "rate_limit_remaining": "3738"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."
