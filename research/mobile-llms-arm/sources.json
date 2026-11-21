@@ -138,6 +138,45 @@
       ],
       "description": "Candidato de runtime, pendiente de verificación.",
       "status": "pending_review"
+    },
+    {
+      "name": "MobileCore / TuiMa (candidate)",
+      "url": "https://github.com/Harzva/mobilecore",
+      "category": "android-runtime",
+      "platforms": [
+        "Android"
+      ],
+      "description": "Candidato de runtime Android y API local; verificar proyecto, alcance, licencia y soporte real."
+    },
+    {
+      "name": "Snap-llm-phone (candidate)",
+      "url": "https://github.com/Zrald1/Snap-llm-phone",
+      "category": "qualcomm-npu",
+      "platforms": [
+        "Android",
+        "Snapdragon"
+      ],
+      "description": "Candidato experimental de inferencia Snapdragon/Hexagon; claims y disponibilidad de código pendientes de revisión."
+    },
+    {
+      "name": "Droid Harness (candidate)",
+      "url": "https://github.com/eibragaa/droid-harness",
+      "category": "mobile-agents",
+      "platforms": [
+        "Android",
+        "Termux"
+      ],
+      "description": "Candidato de agentes de programación en Android; verificar repositorio y reproducibilidad."
+    },
+    {
+      "name": "Mobile AI Node (candidate)",
+      "url": "https://github.com/Russell-Bryant/mobile-ai-node",
+      "category": "distributed-mobile",
+      "platforms": [
+        "Android",
+        "Termux"
+      ],
+      "description": "Candidato de teléfono Android como nodo de inferencia/API; verificar actividad y seguridad."
     }
   ],
   "github_queries": [
