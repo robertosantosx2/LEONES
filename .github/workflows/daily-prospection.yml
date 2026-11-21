@@ -8,6 +8,9 @@ on:
     paths:
       - 'scripts/prospection/sources_registry.json'
       - 'scripts/prospection/**'
+      - 'scripts/research/**'
+      - 'research/mobile-llms-arm/**'
+      - 'web/mobile-llms-arm.html'
       - '.github/workflows/daily-prospection.yml'
 
 permissions:
