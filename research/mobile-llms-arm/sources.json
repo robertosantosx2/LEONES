@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "project": "Mobile-LLMs-ARM",
+  "seed_projects": [
+    {
+      "name": "llama.cpp",
+      "url": "https://github.com/ggml-org/llama.cpp",
+      "category": "runtime",
+      "platforms": [
+        "Android",
+        "Linux ARM"
+      ],
+      "description": "Motor GGUF con backends CPU/GPU.",
+      "status": "pending_review"
+    },
+    {
+      "name": "MLC LLM",
+      "url": "https://github.com/mlc-ai/mlc-llm",
+      "category": "runtime",
+      "platforms": [
+        "Android",
+        "Linux"
+      ],
+      "description": "Compilación y despliegue de modelos.",
+      "status": "pending_review"
+    },
+    {
+      "name": "ExecuTorch",
+      "url": "https://github.com/pytorch/executorch",
+      "category": "runtime",
+      "platforms": [
+        "Android",
+        "Embedded ARM"
+      ],
+      "description": "Runtime edge de PyTorch.",
+      "status": "pending_review"
+    },
+    {
+      "name": "LiteRT",
+      "url": "https://github.com/google-ai-edge/LiteRT",
+      "category": "runtime",
+      "platforms": [
+        "Android",
+        "Embedded"
+      ],
+      "description": "Runtime de Google AI Edge.",
+      "status": "pending_review"
+    },
+    {
+      "name": "Termux",
+      "url": "https://github.com/termux/termux-app",
+      "category": "linux-mobile",
+      "platforms": [
+        "Android"
+      ],
+      "description": "Entorno terminal Android.",
+      "status": "pending_review"
+    },
+    {
+      "name": "postmarketOS",
+      "url": "https://github.com/postmarketOS",
+      "category": "linux-mobile",
+      "platforms": [
+        "Linux ARM móvil"
+      ],
+      "description": "Distribución Linux móvil.",
+      "status": "pending_review"
+    },
+    {
+      "name": "Ubuntu Touch",
+      "url": "https://github.com/ubports",
+      "category": "linux-mobile",
+      "platforms": [
+        "Linux ARM móvil"
+      ],
+      "description": "Sistema Linux móvil.",
+      "status": "pending_review"
+    },
+    {
+      "name": "KleidiAI",
+      "url": "https://github.com/ARM-software/kleidiai",
+      "category": "arm-optimization",
+      "platforms": [
+        "ARM64"
+      ],
+      "description": "Kernels optimizados para CPUs Arm.",
+      "status": "pending_review"
+    },
+    {
+      "name": "Awesome Mobile LLMs",
+      "url": "https://github.com/stevelaskaridis/awesome-mobile-llm",
+      "category": "research-index",
+      "platforms": [
+        "Android",
+        "iOS",
+        "Mobile"
+      ],
+      "description": "Recopilación de investigación móvil.",
+      "status": "pending_review"
+    },
+    {
+      "name": "PhoneBorg (candidate)",
+      "url": "https://github.com/dzaczek/phoneborg",
+      "category": "distributed-mobile",
+      "platforms": [
+        "Android"
+      ],
+      "description": "Candidato de clúster móvil, pendiente de verificación.",
+      "status": "pending_review"
+    },
+    {
+      "name": "PocketTune (candidate)",
+      "url": "https://github.com/ayanbag/PocketTune",
+      "category": "benchmark",
+      "platforms": [
+        "Android"
+      ],
+      "description": "Candidato de autotuning, pendiente de verificación.",
+      "status": "pending_review"
+    },
+    {
+      "name": "AiPaca (candidate)",
+      "url": "https://github.com/dojekon/AIPaca",
+      "category": "android-app",
+      "platforms": [
+        "Android"
+      ],
+      "description": "Candidato de aplicación local, pendiente de verificación.",
+      "status": "pending_review"
+    },
+    {
+      "name": "PocketLLM (candidate)",
+      "url": "https://github.com/Kimi-syl/PocketLLM",
+      "category": "android-app",
+      "platforms": [
+        "Android",
+        "Termux"
+      ],
+      "description": "Candidato de runtime, pendiente de verificación.",
+      "status": "pending_review"
+    },
+    {
+      "name": "MobileCore / TuiMa (candidate)",
+      "url": "https://github.com/Harzva/mobilecore",
+      "category": "android-runtime",
+      "platforms": [
+        "Android"
+      ],
+      "description": "Candidato de runtime Android y API local; verificar proyecto, alcance, licencia y soporte real."
+    },
+    {
+      "name": "Snap-llm-phone (candidate)",
+      "url": "https://github.com/Zrald1/Snap-llm-phone",
+      "category": "qualcomm-npu",
+      "platforms": [
+        "Android",
+        "Snapdragon"
+      ],
+      "description": "Candidato experimental de inferencia Snapdragon/Hexagon; claims y disponibilidad de código pendientes de revisión."
+    },
+    {
+      "name": "Droid Harness (candidate)",
+      "url": "https://github.com/eibragaa/droid-harness",
+      "category": "mobile-agents",
+      "platforms": [
+        "Android",
+        "Termux"
+      ],
+      "description": "Candidato de agentes de programación en Android; verificar repositorio y reproducibilidad."
+    },
+    {
+      "name": "Mobile AI Node (candidate)",
+      "url": "https://github.com/Russell-Bryant/mobile-ai-node",
+      "category": "distributed-mobile",
+      "platforms": [
+        "Android",
+        "Termux"
+      ],
+      "description": "Candidato de teléfono Android como nodo de inferencia/API; verificar actividad y seguridad."
+    }
+  ],
+  "github_queries": [
+    "Android on-device LLM inference",
+    "Termux llama.cpp local LLM",
+    "ARM mobile LLM inference",
+    "mobile NPU LLM inference",
+    "Qualcomm Hexagon LLM inference",
+    "embedded ARM local LLM",
+    "LiteRT ExecuTorch MLC LLM Android"
+  ],
+  "reddit_subreddits": [
+    "LocalLLaMA",
+    "LocalLLM",
+    "termux"
+  ],
+  "x_searches": [
+    "on-device LLM ARM",
+    "Android Hexagon LLM",
+    "Termux local AI",
+    "mobile inference NPU"
+  ]
+}
