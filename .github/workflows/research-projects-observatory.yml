@@ -58,6 +58,3 @@ jobs:
           title: "chore(research): refresh LEONES research observatory"
           body: |
             Actualización automática: recorrido recursivo del árbol Git, reconstrucción del catálogo visual y detección de README pendientes de clasificar. No modifica prioridades, INDEX maestros ni gates de aprobación.
-          labels: |
-            research
-            automation
