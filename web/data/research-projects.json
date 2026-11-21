@@ -295,6 +295,15 @@
       "description": "ODS como despliegue/stack y Magnitude como agente/runtime; LEONES conserva identidad, selección, benchmark y evidencia.",
       "potential": "Alto: combinar capacidades sin mezclar responsabilidades.",
       "status": "Diseño y auditoría documentados; comprobar estado operativo en checkpoints."
+    },
+    {
+      "name": "Microcontroller-LLMs",
+      "category": "Investigación de modelos, motores y técnicas",
+      "path": "research/microcontroller-llms-2026-11.md",
+      "url": "https://github.com/robertosantosx2/LEONES/blob/main/research/microcontroller-llms-2026-11.md",
+      "description": "LLMs en ESP32 y microcontroladores: PLE, pesos residentes en Flash, MoE, Tiny Transformers, distilación, BitNet, optimización DSP y clusters distribuidos.",
+      "potential": "Alto, exploratorio: inferencia de bajo consumo y modelos especializados en memoria limitada.",
+      "status": "Prospección documental archivada; claims externos pendientes de reproducción LEONES."
     }
   ],
   "unclassified_readmes": [
