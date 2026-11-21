@@ -62,6 +62,17 @@ La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopció
 
 ---
 
+
+
+## Mobile-LLMs-ARM — IA local en móviles y sistemas ARM
+
+> **[EXPLORAR MOBILE-LLMS-ARM →](web/mobile-llms-arm.html)**  
+> Observatorio de LLMs e IA en Android, Linux móvil, ARM64 y sistemas embebidos: runtimes, CPU/GPU/NPU, modelos, benchmarks, eficiencia y clústeres móviles.
+
+- [Documentación](docs/subprojects/Mobile-LLMs-ARM/README.md) · [Roadmap](docs/subprojects/Mobile-LLMs-ARM/ROADMAP.md) · [Feed JSON](web/data/mobile-llms-arm.json) · [Fuentes](research/mobile-llms-arm/sources.json).
+- Prospección diaria de GitHub y Reddit integrada en [Daily Atlas Prospection](.github/workflows/daily-prospection.yml); X mantiene búsquedas directas hasta disponer de API autorizada.
+- Descubierto no significa aprobado ni medido. Las pruebas físicas requieren protocolo y evidencia.
+
 ## Proyectos de investigación y arquitectura
 
 - **[NEPENTHES — subproyecto de observabilidad](docs/subprojects/NEPENTHES/README.md)**: arquitectura y plan maestro para llama.cpp/GGML, AIPerf (runner primario), NVML/energía, latencia por token, OpenTelemetry/OTLP, adaptadores de métricas y análisis reproducible.
