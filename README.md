@@ -73,7 +73,7 @@ La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopció
 - Prospección diaria de GitHub y Reddit integrada en [Daily Atlas Prospection](.github/workflows/daily-prospection.yml); X mantiene búsquedas directas hasta disponer de API autorizada.
 - Descubierto no significa aprobado ni medido. Las pruebas físicas requieren protocolo y evidencia.
 
-## Proyectos de investigación y arquitectura
+## Mobile-Home-Servers — teléfonos como servidores domésticos\n\n> **[EXPLORAR MOBILE-HOME-SERVERS →](web/mobile-home-servers.html)** Observatorio de Android/Linux, Termux, PRoot, Linux nativo y OS móviles para self-hosting.\n\n- [Docs](docs/subprojects/Mobile-Home-Servers/README.md) · [Roadmap](docs/subprojects/Mobile-Home-Servers/ROADMAP.md) · [Feed](web/data/mobile-home-servers.json). Prospección GitHub/Reddit; X mediante búsquedas directas. Complementa Mobile-LLMs-ARM.\n\n## Proyectos de investigación y arquitectura
 
 - **[NEPENTHES — subproyecto de observabilidad](docs/subprojects/NEPENTHES/README.md)**: arquitectura y plan maestro para llama.cpp/GGML, AIPerf (runner primario), NVML/energía, latencia por token, OpenTelemetry/OTLP, adaptadores de métricas y análisis reproducible.
   - [Roadmap maestro](docs/subprojects/NEPENTHES/ROADMAP.md) · [Integración AIPerf](docs/subprojects/NEPENTHES/AIPERF-INTEGRATION.md) · [Índice histórico y validación](research/moe/tandem.cpp/NEPENTHES-INDEX.md) · [Campañas](research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md) · [CLI e instalador](research/moe/tandem.cpp/NEPENTHES-CLI.md) · [Importador Nsight/CUPTI](research/moe/tandem.cpp/NEPENTHES-IMPORTER.md).
