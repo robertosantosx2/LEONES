@@ -1,0 +1,38 @@
+PR #1879 — REAL CUDA GENERATION
+Date: 2026-11-09T20:19:39+01:00
+Commit: a83afc3ded4617ce3ddb94dbe75e0b70da1e603d
+Branch: fix/qwen35-cuda-lazy-scratch
+Binary version:
+tensorfold-native 1.2.4
+
+GPU:
+Mon Nov  9 20:19:39 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3050 ...    Off |   00000000:01:00.0 Off |                  N/A |
+| N/A   45C    P8              3W /   35W |    3120MiB /   4096MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            6124      G   /usr/lib/xorg/Xorg                        4MiB |
+|    0   N/A  N/A          529308      C   .../native/bin/tensorfold-native       3096MiB |
++-----------------------------------------------------------------------------------------+
+
+RAM:
+               total       usado       libre  compartido   búf/caché  disponible
+Mem:            14Gi       8,7Gi       2,2Gi       681Mi       4,9Gi       6,1Gi
+Inter:          31Gi       4,0Gi        27Gi
+
+Server process:
+    PID STAT %CPU %MEM   RSS     ELAPSED CMD
+ 529308 Sl   10.5  2.8 438144      00:48 /home/ssantos/tensorfold-pr1879-real-validation-20261109/TensorFold/zig-out/native/bin/tensorfold-native serve /home/ssantos/.cache/huggingface/hub/models--mlx-community--Qwen3.5-4B-MLX-4bit/snapshots/32f3e8ecf65426fc3306969496342d504bfa13f3 --backend cuda --context 512 --port 18083 --no-thinking --no-drafts --no-update-check
