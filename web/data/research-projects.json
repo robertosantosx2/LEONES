@@ -1,10 +1,10 @@
 {
   "title": "LEONES · Observatorio de Investigación",
-  "generated_at": "2026-11-21T00:00:00Z",
+  "generated_at": "2026-11-21T00:21:00+00:00",
   "source": "docs/research/RESEARCH-PROJECTS-INDEX.md",
   "scan": "Recorrido recursivo del árbol Git (git ls-files).",
   "repository": {
-    "tracked_files": 1991,
+    "tracked_files": 1825,
     "research_readmes": 22
   },
   "items": [
