@@ -64,6 +64,7 @@ La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopció
 
 ## Proyectos de investigación y arquitectura
 
+- **[Microcontroller-LLMs — ESP32 y microcontroladores](research/microcontroller-llms-2026-11.md)**: PLE, Flash-resident weights, MoE, Tiny Transformers, distilación, BitNet, kernels DSP y clusters distribuidos; claims externos pendientes de reproducción.
 - **[NEPENTHES — subproyecto de observabilidad](docs/subprojects/NEPENTHES/README.md)**: arquitectura y plan maestro para llama.cpp/GGML, AIPerf (runner primario), NVML/energía, latencia por token, OpenTelemetry/OTLP, adaptadores de métricas y análisis reproducible.
   - [Roadmap maestro](docs/subprojects/NEPENTHES/ROADMAP.md) · [Integración AIPerf](docs/subprojects/NEPENTHES/AIPERF-INTEGRATION.md) · [Índice histórico y validación](research/moe/tandem.cpp/NEPENTHES-INDEX.md) · [Campañas](research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md) · [CLI e instalador](research/moe/tandem.cpp/NEPENTHES-CLI.md) · [Importador Nsight/CUPTI](research/moe/tandem.cpp/NEPENTHES-IMPORTER.md).
   - [Tandem.cpp — instrumentación universal, PR #1](https://github.com/robertosantosx2/tandem.cpp/pull/1) · [LEONES PR #153 — Nsight-only](https://github.com/robertosantosx2/LEONES/pull/153).
