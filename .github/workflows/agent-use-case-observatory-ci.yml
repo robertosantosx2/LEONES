@@ -62,7 +62,7 @@ jobs:
           from pathlib import Path
           feed = json.loads(Path("web/data/prospeccion.json").read_text(encoding="utf-8"))
           html = Path("web/discovery-atlas.html").read_text(encoding="utf-8")
-          match = re.search(r"const DATA=(\\{.*?\\});\\nconst \\$=", html, re.S)
+          match = re.search(r"const DATA=(\{.*?\});\nconst \$=", html, re.S)
           assert match, "embedded catalog payload not found"
           embedded = json.loads(match.group(1))
           assert len(embedded["items"]) == len(feed["items"])
