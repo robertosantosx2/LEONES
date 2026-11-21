@@ -1,0 +1,80 @@
+# LEONES — Catálogo recursivo de proyectos de investigación
+
+**Corte:** 2026-11-21 · **Árbol inspeccionado:** 1.981 entradas Git, recorrido recursivo completo y no truncado en main.
+
+Este catálogo identifica proyectos, subproyectos y líneas de investigación con entidad propia. Para cada uno resume misión, potencial y estado documental. Es un índice de navegación, no un INDEX de prioridades, aceptación o estado operativo. Los INDEX maestros de cada proyecto siguen siendo la única autoridad de sus prioridades.
+
+**Criterios:** potencial no equivale a aprobación; documentación no equivale a ejecución; CI no equivale a validación física; resultados externos no son mediciones LEONES. No se cuentan por separado informes, benchmarks, workflows, snapshots, modelos o dependencias subordinadas.
+
+## 1. Plataforma, arquitectura e integración
+
+| Proyecto | Ubicación | Descripción | Potencial | Estado documental |
+|---|---|---|---|---|
+| **Atlas** | [atlas](../../atlas/README.md) · [H06](../phases/2026-08-atlas-expanded/README.md) | Conocimiento estructurado de modelos, familias, variantes, runtimes, hardware, licencias, procedencia y evidencia; promoción controlada del feed al catálogo canónico. | Muy alto: fuente trazable para selección, recomendaciones y explicaciones. | H06/H10 declarados aceptados; promoción sólo con evidencia suficiente. |
+| **Router y Runtime Selection** | [router](../../router/README.md) · [runtime registry](../../runtime_selection/v1_1/README.md) | Selección de modelo/runtime según hardware, intención, compatibilidad, evidencia y políticas; adaptadores desacoplados. | Muy alto: conecta descubrimiento, decisión, preparación y fallback. | Implementación por fases; estimaciones externas no se convierten en mediciones. |
+| **ODS** | [subproyecto](../subprojects/ODS/README.md) · [adaptador](../integrations/ODS/README.md) · [submódulo](../../subprojects/README.md) | Stack opcional para desplegar y operar servicios, modelos, agentes, conocimiento y herramientas locales. | Muy alto: plano de despliegue sin acoplar el núcleo LEONES. | Diseño de integración; versiones y operación requieren verificación por campaña. |
+| **Magnitude** | [subproyecto](../subprojects/Magnitude/README.md) · [adaptador](../integrations/Magnitude/README.md) | Runtime/agente local, especialmente coding, con perfilado de hardware y ejecución de tareas agentivas. | Alto: candidato para A07 y comparación de harnesses. | Integración diseñada; pin y benchmark reproducible pendientes. |
+| **LocalAI 5.0** | [investigación de integración](../../research/localai-v5-integration-2026-11.md) · [release](https://github.com/mudler/LocalAI/releases/tag/v5.0.0) | Servidor multimodal con APIs OpenAI/Anthropic, chats persistentes, Projects, Files, Office, add-ons, agentes y Sandbox Python/Bash. | Alto: proveedor opcional para comparar serving, multimodalidad, APIs y ejecución aislada; posible servicio de ODS/REDIL. | Investigación incorporada; sin instalación ni validación física. No es dependencia obligatoria. |
+| **Atomic Chat / atomic-chat-core / ODS Inference Fabric** | [análisis comparativo](../../research/atomic-chat-magnitude-ods-inference-architecture-2026-11.md) | Estudio de separación UI/core, gestión de motores, modelos y hardware, y relación entre Atomic, Magnitude y ODS. ODS Inference Fabric es hipótesis, no funcionalidad existente. | Alto: orientar una capa desacoplada de ciclo de vida y proveedores. | Investigación preliminar archivada; validación técnica pendiente. |
+| **TensorFold** | [subproyecto](../subprojects/TensorFold/README.md) | Runtime local y auditoría/corrección de memoria CUDA, incluida regresión Qwen3.5 y scratch diferido. | Muy alto: backend CUDA para memoria limitada y comparativas reproducibles. | Corrección y pruebas históricas documentadas; estado vigente sujeto al seguimiento upstream y al checkpoint. |
+| **TensorFold Web** | [README](../subprojects/TensorFold/tensorfold-web/README.md) · [roadmap](../subprojects/TensorFold/TENSORFOLD-WEB-ROADMAP.md) | UI web local y bridge Python stdlib para chat SSE, modelos, estado y dashboard. | Medio-alto: interfaz ligera, local-first y potencialmente transferible upstream. | Prototipo; validación del runtime objetivo y empaquetado nativo pendientes. |
+| **NEPENTHES** | [README](../subprojects/NEPENTHES/README.md) · [INDEX maestro](../../research/moe/tandem.cpp/NEPENTHES-INDEX.md) | Observabilidad y benchmark de motores: CPU/GPU, memoria, KV cache, MoE, energía, latencia por token, trazas y OTLP. | Muy alto: capacidad empírica diferenciadora de LEONES. | En desarrollo; el INDEX maestro es la única autoridad de prioridades y aceptación. |
+| **Tandem.cpp instrumentado** | [snapshot y relación con NEPENTHES](../../research/moe/tandem.cpp/README.md) · [PR upstream](https://github.com/robertosantosx2/tandem.cpp/pull/1) | Patch/snapshot de llama.cpp para instrumentación MoE y captura de eventos. | Muy alto: correlacionar routing de expertos, memoria y actividad del runtime. | Línea técnica subordinada a NEPENTHES; no se cuenta como proyecto independiente. |
+| **REDIL — IA distribuida** | [README](../subprojects/REDIL-IA-distribuida/README.md) | Federación de servicios especializados entre nodos heterogéneos con gateway, colas, políticas, fallback y observabilidad. | Alto: IA local colaborativa en equipos modestos sin fingir memoria unificada entre nodos. | Propuesta arquitectónica; no desplegada ni validada físicamente según su documentación. |
+| **LLMFit** | [subproyecto](../subprojects/LLMFit/README.md) · [adaptador](../integrations/LLMFIT/README.md) | Preselección hardware-aware y estimación de encaje modelo-máquina. | Alto: reduce candidatos antes de descargar/ejecutar modelos y alimenta Router. | Submódulo fijado; salida externa reported/estimated hasta contrastar. |
+| **LEONES Lab Agent** | [proyecto Rust](../../projects/leones-lab-agent/README.md) | Agente local autocontenido para diagnóstico, inventario, consulta LLM loopback y benchmarks supervisados con aprobación explícita. | Muy alto: diagnóstico y recibos reproducibles sin shell arbitraria ni instalaciones implícitas. | v0.5.0 documentada; lectura por defecto y benchmark con aprobación. |
+| **Harnesses DSH, Buddy y Hermes** | [contrato](../AGENT_HARNESSES.md) · [Buddy](../subprojects/buddy/README.md) · [submódulos](../../subprojects/README.md) | Harnesses de referencia con herramientas, memoria y permisos diferentes, evaluables bajo tareas comunes. | Muy alto: aislar el efecto del harness y medir seguridad, outcome y trayectoria. | Referencias integrables; evaluación común en desarrollo. |
+| **Buddy — memoria file-first** | [subproyecto](../subprojects/buddy/README.md) · [aplicación](../../buddy/README.md) | Asistente/harness con memoria Git/Markdown, permisos por zonas y herramientas file-first. | Alto: memoria auditable y continuidad independiente del proveedor LLM. | Integración diseñada; persistencia LEONES explícita pendiente. |
+
+## 2. Investigación de modelos, motores y técnicas
+
+| Proyecto | Ubicación | Descripción | Potencial | Estado documental |
+|---|---|---|---|---|
+| **LocalAI + Parakeet.cpp (ASR)** | [investigación](../../research/localai-parakeet-integration.md) | Comparar Parakeet.cpp directo, servido por LocalAI y alternativas Whisper.cpp/Moonshine para ASR local. | Alto: incorporar audio y medir coste de abstracción frente a ejecución directa. | Investigación preliminar; precisión y benchmark local pendientes. |
+| **Edge0 / MoE Anywhere** | [comparativa](../../research/edge0-comparativa-open-source-2026-10.md) · [análisis MoE](../../research/moe/edge0-moe-anywhere-analysis-2026-11-03-eng.md) | Expert offload a SSD, predicción de routing y recuperación de calidad para MoE con poca memoria activa. | Muy alto: alineado con VRAM/RAM limitadas y REDIL. | Documental; cifras upstream no son mediciones LEONES. |
+| **Project Maya** | [investigación](../../research/project-maya-2026-10.md) | Runtime MoE con expertos en tiers VRAM → RAM → NVMe, cuantizaciones propias y soporte multi-GPU/multi-vendor. | Alto: estudiar offload por niveles y modelos grandes en hardware limitado. | Investigación de releases/documentación; requisitos deben verificarse antes de probar. |
+| **Clover-35B-A3B-Preview** | [ficha experimental](../../research/clover-35b-a3b-preview-experimental-2026-10.md) | Modelo MoE con generación por difusión en bloques, útil como caso de estudio de decodificación paralela y memoria. | Medio-alto: comparar paradigmas de generación; no asumir viabilidad en RTX 3050. | Documental; no validado en hardware local según ficha. |
+| **TensorFold MoE** | [análisis](../../research/moe/TensorFold-MoE.md) · [EN](../../research/moe/TensorFold-MoE-eng.md) | Investigación de ejecución y optimización de modelos MoE mediante TensorFold. | Alto: complementa offload, memoria y ejecución selectiva de expertos. | Investigación técnica subordinada a TensorFold. |
+| **Open-dCoder / difusión de texto** | [subproyecto](../subprojects/Open-dCoder/README.md) · [resumen](../subprojects/Open-dCoder/EXECUTIVE-SUMMARY.md) | Evaluación de difusión de texto con secuencia única y batching real; métricas como posiciones/s, no tokens/s autoregresivos. | Alto: amplía la comparación de paradigmas y métricas de generación. | Ejecuciones locales documentadas; evaluación específica de tarea. |
+| **LFM3-1.7B** | [campaña](../subprojects/LFM3/README.md) | Pruebas GGUF/llama.cpp CUDA en RTX 3050, benchmark sintético e interacciones exploratorias. | Medio: caso compacto para formatos, throughput y calidad cualitativa. | Ejecución confirmada; evaluación preliminar. |
+| **Qwen/MoE, Tandem y sondas KV/memoria** | [INDEX NEPENTHES](../../research/moe/tandem.cpp/NEPENTHES-INDEX.md) · [campañas](../../research/moe/tandem.cpp/NEPENTHES-CAMPAIGNS.md) | Campañas de Qwen3.5, MoE, KV cache, scratch, transferencias y actividad de expertos. | Muy alto: evidencia para elegir runtimes y explicar límites reales de memoria. | Campañas históricas/activas; estado según INDEX NEPENTHES. |
+| **iWSP / Weight-Space Programming** | [investigación prospectiva](../investigacion-prospectiva/iWSP-Interpretable-Weight-Space-Programming-2026-11.md) | Agentes que escriben/refinan pesos y features en código con evaluación fija; iWSP añade interpretabilidad. | Medio-alto, exploratorio: modelos pequeños interpretables y auto-investigación; no reemplaza el entrenamiento frontier. | External-unvalidated; sin réplica LEONES. |
+| **FreeToken / eficiencia MoE** | [benchmark](../../benchmarks/agentic/FREETOKEN-MOE-BENCHMARK.md) · [investigación MoE](../../research/moe/TensorFold-MoE.md) | Material de análisis de técnicas/candidatos para eficiencia MoE y uso de expertos. | Medio-alto: hipótesis de optimización si se formalizan baseline y protocolo. | Investigación/benchmark; reproducción pendiente. |
+
+## 3. Métodos y capacidades transversales
+
+| Línea | Ubicación | Descripción | Potencial | Estado documental |
+|---|---|---|---|---|
+| **LEONES Agentic Benchmark** | [README](../../benchmarks/agentic/README.md) · [roadmap](../../benchmarks/agentic/ROADMAP.md) | Batería A01–A10: tool use, multi-step, artefactos, recovery, long horizon, research, coding, operaciones locales, seguridad y coste/latencia. | Muy alto: comparación común de agentes/harnesses con outcome, trayectoria, eficiencia y seguridad. | V1 en implementación; A01 smoke no es benchmark de modelo. |
+| **E2E LEONES** | [README](../../research/e2e/README.md) · [trazabilidad del flujo](../../PIPELINE_E2E.md) | Flujo Hardware → Model → Task → Router → Runtime → Inference → LOTB → Report → Evidence. | Muy alto: comprobar el sistema completo, no sólo componentes aislados. | Requiere ejecución real y LOTB reproducible para considerarse demostrado. |
+| **Cuantización** | [quant](../../quant/README.md) · [documentación](../CUANTIZACION.md) | Capa independiente del backend para transformar modelos y registrar formato, herramienta, metadatos y evidencia. | Alto: comparar calidad, tamaño, memoria y velocidad sin confundir tamaño de fichero con RAM/VRAM. | Contrato definido; backend operativo pendiente. |
+| **Fine-tuning / adaptación** | [finetuning](../../finetuning/README.md) · [documentación](../FINE-TUNING.md) | LoRA/QLoRA y métodos de adaptación con dataset, objetivo, restricciones, hashes y evaluación. | Alto: extiende LEONES a adaptación reproducible de modelos. | Arquitectura definida; pipeline reproducible pendiente. |
+| **Adaptadores de despliegue/runtime** | [adaptadores](../../benchmarks/adapters/README.md) · [matriz](../subprojects/INTEGRATION_MATRIX.md) | Contratos para integrar ODS/Magnitude y otros proveedores sin copiar su núcleo ni elevar sus claims a mediciones. | Muy alto: intercambiabilidad, pinning, procedencia y control de dependencias. | Contratos y pruebas presentes; madurez variable por adaptador. |
+| **Prospección y descubrimiento de licencias** | [workflow diario](../../.github/workflows/daily-prospection.yml) · [descubrimientos copyleft](../../research/copyleft-discoveries.md) · [política](../PROSPECTION_LICENSE_POLICY.md) | Descubrimiento automatizado de repositorios, fuentes y licencias; los candidatos son hallazgos, no componentes aprobados. | Alto: mantener actualizado el ecosistema y reducir coste de descubrimiento. | Automatizaciones/feed presentes; cada candidato requiere revisión y gate. |
+| **ODS + Magnitude** | [diseño](../subprojects/ODS-Magnitude-INTEGRATION.md) · [auditoría](../subprojects/ODS-Magnitude-AUDIT.md) | ODS como despliegue/stack y Magnitude como agente/runtime; LEONES conserva identidad, selección, benchmark y evidencia. | Alto: combinar capacidades sin mezclar responsabilidades. | Diseño y auditoría documentados; comprobar estado operativo en checkpoints. |
+
+## 4. Elementos subordinados y duplicidades resueltas
+
+- Tandem.cpp es la base técnica de NEPENTHES; sus campañas y artefactos pertenecen a su INDEX, no se cuentan como proyecto separado.
+- TensorFold Web es un subproyecto de interfaz de TensorFold.
+- REDIL y la carpeta histórica LLuvIA-IA-distribuida representan la misma línea; la ruta canónica es docs/subprojects/REDIL-IA-distribuida/.
+- Los informes de Qwen3.5, TwIL-8B, MiniCPM5, Picchio, Ling y otras comparativas son campañas, no proyectos independientes.
+- Los submódulos ODS, Magnitude, Buddy, DeepSeek Harness, LLMFit y llama.cpp son referencias/dependencias fijadas; no son código LEONES propio.
+- HDAE es la metodología transversal, no una línea de investigación de producto: [directiva](../engineering/HDAE-DIRECTIVE.md).
+
+## 5. Mayor potencial estratégico (sin alterar prioridades)
+
+1. **Atlas + Router + NEPENTHES + Agentic Benchmark:** cerrar el ciclo identidad → decisión → ejecución → medición → evidencia.
+2. **TensorFold + llama.cpp/Tandem + REDIL:** optimizar inferencia local y distribuida bajo límites de memoria reales.
+3. **LocalAI 5.0 como proveedor opcional:** ampliar la comparación de serving, APIs, multimodalidad, agentes y sandbox.
+4. **LEONES Lab Agent + E2E:** diagnósticos y pruebas supervisadas con recibos reproducibles.
+5. **ODS + Magnitude + Buddy/DSH/Hermes:** comparar despliegue y harnesses sin mezclar responsabilidades.
+6. **Edge0 + Project Maya + técnicas MoE:** investigar offload por tiers; la viabilidad debe medirse en hardware propio.
+
+## 6. Mantenimiento
+
+Actualizar el catálogo cuando aparezca, cambie de ubicación, se archive o se fusione una línea con identidad propia. Mantener potencial separado de prioridad y aceptación. Antes de integrar candidatos externos, revisar fuentes primarias, licencias de código y pesos, procedencia, dependencias, seguridad, compatibilidad y reproducibilidad. Aplicar HDAE a trabajos sustanciales.
+
+## Navegación
+
+[README principal](../../README.md) · [Mapa de subproyectos](../subprojects/README.md) · [Índice de documentación](../README.md) · [Research](../../research/) · [Proyectos de código](../../projects/)
