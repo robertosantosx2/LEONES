@@ -17,7 +17,8 @@ echo "Kernel=$(uname -sr)"
 echo "READ_ONLY=yes; raw captures/models excluded; no patches or file contents published."
 redact(){ sed "s|$HOME|\\$HOME|g"; }
 audit_repo(){
- local label="$1" path="$2" d="$REPORT/repos/$label"
+ local label="$1" path="$2"
+ local d="$REPORT/repos/$label"
  mkdir -p "$d"
  {
   echo "LABEL=$label"; echo "PATH=$(printf '%s' "$path" | redact)"
