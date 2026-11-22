@@ -2,8 +2,8 @@
 set -Eeuo pipefail
 umask 077
 STAMP="$(date +%Y%m%d-%H%M%S)"
-OUT="\${HOME}/nepenthes-msi-final-audit-\${STAMP}"
-TMP="$(mktemp -d "\${TMPDIR:-/tmp}/nepenthes-audit.XXXXXX")"
+OUT="${HOME}/nepenthes-msi-final-audit-${STAMP}"
+TMP="$(mktemp -d "${TMPDIR:-/tmp}/nepenthes-audit.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 REPORT="$TMP/report"
 mkdir -p "$REPORT/repos"
@@ -46,7 +46,7 @@ audit_repo() {
     done > "$d/untracked-files-and-sha256.txt"
   {
     while IFS=$'\t' read -r stash oid subject; do
-      [[ -n "\${oid:-}" ]] || continue
+      [[ -n "${oid:-}" ]] || continue
       echo "===== $stash $oid $subject ====="
       git -C "$path" stash show --stat --oneline "$oid" 2>&1 || true
       echo "OBJECT_TYPE=$(git -C "$path" cat-file -t "$oid" 2>&1 || true)"
@@ -93,7 +93,7 @@ AFF="$HOME/leones-work/LEONES-tandem-evidence/artifacts/benchmarks/tandem-qwen35
     "tandem-physical:$HOME/tandem-pr7-physical-20261120" \
     "pinned-validation:$HOME/nepenthes-pinned-validation-20261115" \
     "tensorfold:$HOME/tensorfold-pr1879-real-validation-20261109/TensorFold"; do
-    label="\${spec%%:*}"; path="\${spec#*:}"
+    label="${spec%%:*}"; path="${spec#*:}"
     echo "===== $label ====="
     if [[ -e "$path/.git" || -f "$path/.git" ]]; then
       git -C "$path" rev-parse HEAD 2>&1 || true
