@@ -352,3 +352,39 @@ The MSI inventory identifies `~/tandem-pr7-physical-20261120` as a detached chec
 The checkout also contains a nested `tandem/` llama.cpp source tree at base `f5222f25c18da062ab2b8a2dbbfbf4feae398566`, with modified tracked files and untracked CUDA/MoE/NEPENTHES headers. The separate `~/nepenthes-pinned-validation-20261115` checkout is detached at the same base and has an overlapping but not yet hash-compared modified source set. Shared base SHA and similar status summaries are not sufficient to classify these source trees as duplicates.
 
 **Disposition:** all listed 2026-11-21 capture files and both dirty source trees remain MSI-only in the supplied inventory. PR #149's 2026-11-14 raw archive is earlier evidence and is not a substitute. Before upload or deduplication, collect file sizes and SHA-256 for the physical bundle, compare tracked diff and untracked-file hashes between the two source trees, and inspect the nested source patch for overlap with the already published 2026-11-03 llama.cpp recovery archive. Do not commit the binary captures directly to Git without checking size and storage policy.
+
+## NEPENTHES GitHub reorganization — remote disposition refresh (2026-11-22 11:51 CET)
+
+This refresh is limited to GitHub-visible state. It does not infer local worktree, stash, reflog, unpushed-commit, or filesystem safety.
+
+### Current NEPENTHES branch namespace
+
+A paginated branch-name search for `nepenthes` returned **101 matching refs** in `robertosantosx2/LEONES`. This is a name-filtered count, not the repository-wide branch count and not a count of unique tips. The separate audit snapshot recorded in this PR remains the authority for the repository-wide inventory.
+
+### Active implementation and evidence stacks
+
+| PR | Head → base | Remote graph | Disposition |
+|---|---|---|---|
+| #147 | `nepenthes/moe-probes-20261114` → `benchmarks/tandem-qwen35-reasoning-battery-2026-11-12` | 42 commits ahead, 0 behind; 10 changed files | Keep open as the MoE probe implementation layer. |
+| #149 | `nepenthes/performance-capacity-roadmap-20261114` → #147 head | 91 commits ahead, 0 behind; 52 changed files, including raw Nsight capture/SQLite evidence | Keep open and stacked on #147. Do not retarget, squash, or merge out of order; preserve its evidence-bearing history. |
+| #273 | `feat/nepenthes-nsys-runtime-thread-join-20261121` → `main` | 7 commits ahead, 11 behind; changes limited to `scripts/nepenthes_nsys_import.py` and `tests/test_nepenthes_nsys_import.py` | Keep open for review. Rebase/integration is a separate change and must retain the fail-closed Runtime-correlation behavior. The combined-status query exposed no status rows in this refresh; the PR description records the previously observed passing CI checks. Physical re-import remains a distinct MSI gate. |
+
+The #147 → #149 stack is intentional dependency structure, not duplicate work. Its ancestry and evidence must remain intact.
+
+### Historical and blocked documentation refs
+
+- **#153** (`feat/nepenthes-nsys-only-20261115`) is closed/merged. Its head is retained as a historical implementation ref; remote merge status alone does not authorize local ref or worktree deletion.
+- **#154** (`docs/nepenthes-english-20261115`) remains an open draft based on the historical #153 branch. Its body explicitly blocks merging/retargeting until a fresh English mirror is translated from the current Spanish INDEX. Keep blocked; do not merge the stale translation.
+- **#281** (this recovery/hygiene PR) remains a draft. It records preservation and remote classification; it is not a request to delete refs or merge recovery patches into project repositories.
+
+### C07 paired-import follow-up
+
+The 2026-11-21 paired PR273 summary is separately archived in `robertosantosx2/interaccion-MSI`. It supports the documented single-worker/single-request physical result and Runtime-correlation recovery, but does not establish multi-request/multi-worker attribution or exact importer-binary provenance. Keep those limitations visible; do not promote the result to broader acceptance.
+
+### Reorganization decision
+
+1. Preserve #147 and #149 as a two-level evidence/implementation stack.
+2. Keep #273 open; handle its 11-commit base drift through a dedicated integration review, not an automatic retarget.
+3. Keep #153 as merged history and #154 blocked pending a current-source translation.
+4. Keep the MSI evidence repository as an archive boundary; do not copy binary captures into LEONES merely to consolidate paths.
+5. No branch deletion, force-update, PR close, merge, or local cleanup is performed by this refresh. The available GitHub connector does not expose branch-ref deletion, and the remaining local dependency gates are unresolved.
