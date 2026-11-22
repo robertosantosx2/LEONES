@@ -14,9 +14,9 @@ hash_tree() {
   {
     printf 'ROOT\t%s\n' "$root"
     if [[ -d "$root" ]]; then
-      find "$root" -type f -printf '%P\t%s bytes\n' 2>/dev/null | sort
+      find "$root" -type d \( -name .git -o -name node_modules -o -name .cache -o -name build -o -name models -o -name __pycache__ \) -prune -o -type f -printf '%P\t%s bytes\n' 2>/dev/null | sort
       printf '\nSHA256:\n'
-      find "$root" -type f -print0 2>/dev/null | sort -z | xargs -0 -r sha256sum
+      find "$root" -type d \( -name .git -o -name node_modules -o -name .cache -o -name build -o -name models -o -name __pycache__ \) -prune -o -type f -print0 2>/dev/null | sort -z | xargs -0 -r sha256sum
     else printf 'MISSING\n'; fi
   } > "$dest"
 }
@@ -25,7 +25,7 @@ audit_repo() {
   mkdir -p "$d"
   {
     echo "LABEL=$name"; echo "PATH=$path"
-    if [[ ! -e "$path/.git" && ! -f "$path/.git" ]]; then echo "NOT_A_GIT_WORKTREE"; exit 0; fi
+    if [[ ! -e "$path/.git" && ! -f "$path/.git" ]]; then echo "NOT_A_GIT_WORKTREE"; return 0; fi
     git -C "$path" rev-parse --show-toplevel 2>&1
     echo "HEAD=$(git -C "$path" rev-parse HEAD 2>&1)"
     echo "BRANCH=$(git -C "$path" branch --show-current 2>&1)"
