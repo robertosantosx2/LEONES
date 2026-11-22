@@ -320,3 +320,16 @@ The detached Cursollm, TensorFold Web, Pithos, TensorFold-log, Falcon3 and LFM3 
 3. Inspect Companion-Hub submodule staged deletions in the parent LEONES checkout.
 4. Reconcile the Betelgeuse and NEPENTHES stashes by Git common-dir, not by stash message.
 5. Compare all remaining detached snapshots and untracked directories with their exact remote branch/tree before proposing any deletion.
+
+
+## Remote recheck of Tandem evidence and NEPENTHES stack — 2026-11-22
+
+The follow-up inspection confirms the following boundaries:
+
+- LEONES PR #147 is intentionally based on `benchmarks/tandem-qwen35-reasoning-battery-2026-11-12`, not `main`; its head is `7831b72a0a66c6092b0c8f9ae214a07b1cf8d493` and it contains 42 commits. PR #149 is intentionally based on that exact #147 head and adds 91 commits. The apparent `main` comparison for `nepenthes/moe-probes-20261114` (111 ahead / 307 behind) is therefore not a valid reason to flatten, retarget or discard the stacked branch.
+- PR #149 contains a separate 2026-11-14 raw archive: Nsight `.nsys-rep` and SQLite captures, manifests, summaries, checksums and reproducibility material. This does **not** establish that the MSI `tandem-pr7-physical-20261120` capture bundle is byte-identical or redundant.
+- The MSI inventory's local Tandem evidence HEAD `872ee09a16dca1327a9278f51f43e8ba6ea3d08a` is not resolvable as a GitHub commit. The inventory-referenced 118-line `run_nepenthes_affinity_ab.sh` is not present at the expected path on the remote `nepenthes/moe-probes-20261114` branch. Treat both the commit and script as local-only recovery candidates until their exact index/worktree content is uploaded and compared.
+- LEONES PR #273 is the separate Runtime-correlation importer change (7 commits, 2 files; head `5b8ab8f4740429d184a63daf00cfb4d3cd81815f`). Its description reports successful software CI, but the combined-status endpoint returned no status rows in this recheck. The PR itself explicitly leaves physical re-import against the preserved MSI JSONL + Nsight SQLite as a separate validation gate.
+- The producer-side NVTX change is **Tandem.cpp PR #7** at [robertosantosx2/tandem.cpp#7](https://github.com/robertosantosx2/tandem.cpp/pull/7), merged as `7c4300eb754d94737c6aa8d7ffa0077aac7ddcb9`. It is unrelated to LEONES PR #7 (web navigation). Use the repository-qualified link whenever referring to this dependency.
+
+No local evidence was modified, uploaded or deleted by this recheck. The 2026-11-20 physical capture bundle and local affinity script remain unresolved MSI preservation items.
