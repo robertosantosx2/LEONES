@@ -21,8 +21,10 @@ hash_tree() {
   } > "$dest"
 }
 audit_repo() {
-  local name="$1" path="$2"
-  local d="$REPORT/repos/$name"
+  local name path d
+  name="$1"
+  path="$2"
+  d="$REPORT/repos/$name"
   mkdir -p "$d"
   {
     echo "LABEL=$name"; echo "PATH=$path"
