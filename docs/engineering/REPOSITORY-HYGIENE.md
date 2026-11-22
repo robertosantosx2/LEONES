@@ -333,3 +333,22 @@ The follow-up inspection confirms the following boundaries:
 - The producer-side NVTX change is **Tandem.cpp PR #7** at [robertosantosx2/tandem.cpp#7](https://github.com/robertosantosx2/tandem.cpp/pull/7), merged as `7c4300eb754d94737c6aa8d7ffa0077aac7ddcb9`. It is unrelated to LEONES PR #7 (web navigation). Use the repository-qualified link whenever referring to this dependency.
 
 No local evidence was modified, uploaded or deleted by this recheck. The 2026-11-20 physical capture bundle and local affinity script remain unresolved MSI preservation items.
+
+
+### 2026-11-21 physical Tandem capture bundle — inventory-level classification
+
+The MSI inventory identifies `~/tandem-pr7-physical-20261120` as a detached checkout at the merged Tandem.cpp PR #7 commit `7c4300eb754d94737c6aa8d7ffa0077aac7ddcb9`. Its untracked evidence files are:
+
+- `build-pr7-physical.log`
+- `nepenthes-pr7-nsys-20261121-server.log`
+- `nepenthes-pr7-nsys-20261121.jsonl`
+- `nepenthes-pr7-nsys-20261121.nsys-rep`
+- `nepenthes-pr7-nsys-20261121.sqlite`
+- `nepenthes-pr7-paired-pr273-20261121-summary.json`
+- `nepenthes-pr7-paired-pr273-20261121.sqlite`
+- `nepenthes-pr7-smoke-20261121-server.log`
+- `nepenthes-pr7-smoke-20261121.jsonl`
+
+The checkout also contains a nested `tandem/` llama.cpp source tree at base `f5222f25c18da062ab2b8a2dbbfbf4feae398566`, with modified tracked files and untracked CUDA/MoE/NEPENTHES headers. The separate `~/nepenthes-pinned-validation-20261115` checkout is detached at the same base and has an overlapping but not yet hash-compared modified source set. Shared base SHA and similar status summaries are not sufficient to classify these source trees as duplicates.
+
+**Disposition:** all listed 2026-11-21 capture files and both dirty source trees remain MSI-only in the supplied inventory. PR #149's 2026-11-14 raw archive is earlier evidence and is not a substitute. Before upload or deduplication, collect file sizes and SHA-256 for the physical bundle, compare tracked diff and untracked-file hashes between the two source trees, and inspect the nested source patch for overlap with the already published 2026-11-03 llama.cpp recovery archive. Do not commit the binary captures directly to Git without checking size and storage policy.
