@@ -1,10 +1,11 @@
-# Integraciones LEONES: LLMFit, ODS y Magnitude
+# Integraciones LEONES: LLMFit, ODS, Magnitude y OpenDots
 
 Estas integraciones convierten herramientas externas en **perfiles medibles y documentados** sin convertirlas en dependencias estructurales de LEONES.
 
 - **LLMFit — preselector hardware-aware**: reduce inicialmente el espacio de candidatos modelo ↔ máquina.
 - **ODS — Servidor de Stacks IA**: despliega una pila local alrededor de inferencia, UI, agentes, RAG, workflows, voz e imagen.
-- **Magnitude — Asistente personal IA**: instala un agente de coding local con motor de inferencia propio, perfilado de hardware y recomendación de modelos.
+- **Magnitude — Motor de inferencia local y agente de coding**: expone modelos locales mediante una API compatible con OpenAI.
+- **OpenDots — Espacio de trabajo de agentes persistentes**: se conecta a Magnitude por `OPENAI_BASE_URL`; requiere conservar y configurar por separado CopilotKit Intelligence y otros servicios.
 
 ## Regla de frontera
 
@@ -28,6 +29,7 @@ La instalación **no implica telemetría**. La captura de datos es explícita y 
 | LLMFit | [LLMFIT/README.md](LLMFIT/README.md) | [`../sources/LLMFIT.md`](../sources/LLMFIT.md), [`../sources/LLMFIT-REAL-HARDWARE-2026-08-20.md`](../sources/LLMFIT-REAL-HARDWARE-2026-08-20.md), hardware matrix, CABE/RULA |
 | ODS | [ODS/README.md](ODS/README.md) | [`../sources/ODS.md`](../sources/ODS.md), instalación, runtime y benchmark |
 | Magnitude | [Magnitude/README.md](Magnitude/README.md) | [`../sources/MAGNITUDE.md`](../sources/MAGNITUDE.md), agente, skills y benchmark |
+| OpenDots + Magnitude | [OPENDOTS-MAGNITUDE.md](OPENDOTS-MAGNITUDE.md) | Configuración del proveedor, smoke test y límites de privacidad |
 
 ## Contratos y operación
 
