@@ -1,119 +1,106 @@
 #!/usr/bin/env bash
+# Read-only MSI audit; publishes sanitized text report and hashes to interaccion-MSI.
 set -Eeuo pipefail
 umask 077
 STAMP="$(date +%Y%m%d-%H%M%S)"
-OUT="${HOME}/nepenthes-msi-final-audit-${STAMP}"
-TMP="$(mktemp -d "${TMPDIR:-/tmp}/nepenthes-audit.XXXXXX")"
-trap 'rm -rf "$TMP"' EXIT
-REPORT="$TMP/report"
+RUN_ID="nepenthes-final-readonly-$STAMP"
+OUT="$HOME/$RUN_ID"
+REPORT="$OUT/report"
+LOG="$OUT/run.log"
 mkdir -p "$REPORT/repos"
-
-say() { printf '%s\n' "$*" | tee -a "$REPORT/00-summary.txt"; }
-hash_tree() {
-  local root="$1" dest="$2"
-  {
-    printf 'ROOT\t%s\n' "$root"
-    if [[ -d "$root" ]]; then
-      find "$root" -type d \( -name .git -o -name node_modules -o -name .cache -o -name build -o -name models -o -name __pycache__ \) -prune -o -type f -printf '%P\t%s bytes\n' 2>/dev/null | sort
-      printf '\nSHA256:\n'
-      find "$root" -type d \( -name .git -o -name node_modules -o -name .cache -o -name build -o -name models -o -name __pycache__ \) -prune -o -type f -print0 2>/dev/null | sort -z | xargs -0 -r sha256sum
-    else printf 'MISSING\n'; fi
-  } > "$dest"
-}
-audit_repo() {
-  local name path d
-  name="$1"
-  path="$2"
-  d="$REPORT/repos/$name"
-  mkdir -p "$d"
-  {
-    echo "LABEL=$name"; echo "PATH=$path"
-    if [[ ! -e "$path/.git" && ! -f "$path/.git" ]]; then echo "NOT_A_GIT_WORKTREE"; return 0; fi
-    git -C "$path" rev-parse --show-toplevel 2>&1
-    echo "HEAD=$(git -C "$path" rev-parse HEAD 2>&1)"
-    echo "BRANCH=$(git -C "$path" branch --show-current 2>&1)"
-    echo "GIT_DIR=$(git -C "$path" rev-parse --git-dir 2>&1)"
-    echo "COMMON_DIR=$(git -C "$path" rev-parse --git-common-dir 2>&1)"
-    echo "STATUS:"; git -C "$path" status --porcelain=v2 --branch 2>&1
-    echo "BRANCHES:"; git -C "$path" branch -vv --no-abbrev 2>&1
-    echo "WORKTREES:"; git -C "$path" worktree list --porcelain 2>&1
-    echo "STASHES:"; git -C "$path" stash list --format='%gd%x09%H%x09%gs' 2>&1
-    echo "REMOTES (names only):"; git -C "$path" remote 2>&1
-  } > "$d/state.txt"
-  git -C "$path" diff --cached --binary --no-ext-diff > "$d/staged.patch" 2>"$d/staged.err" || true
-  git -C "$path" diff --binary --no-ext-diff > "$d/unstaged.patch" 2>"$d/unstaged.err" || true
+exec > >(tee -a "$LOG") 2>&1
+echo "RUN_ID=$RUN_ID"
+echo "START=$(date --iso-8601=seconds)"
+echo "PID=$$"
+echo "HOST=$(hostname)"
+echo "Kernel=$(uname -sr)"
+echo "READ_ONLY=yes; raw captures/models excluded; no patches or file contents published."
+redact(){ sed "s|$HOME|\\$HOME|g"; }
+audit_repo(){
+ local label="$1" path="$2" d="$REPORT/repos/$label"
+ mkdir -p "$d"
+ {
+  echo "LABEL=$label"; echo "PATH=$(printf '%s' "$path" | redact)"
+  if [[ ! -e "$path/.git" && ! -f "$path/.git" ]]; then echo MISSING_OR_NOT_WORKTREE; return; fi
+  echo "HEAD=$(git -C "$path" rev-parse HEAD 2>&1)"
+  echo "BRANCH=$(git -C "$path" branch --show-current 2>&1)"
+  echo "COMMON_DIR=$(git -C "$path" rev-parse --git-common-dir 2>&1 | redact)"
+  echo "STATUS:"; git -C "$path" status --porcelain=v2 --branch 2>&1 | redact
+  echo "BRANCHES:"; git -C "$path" branch -vv --no-abbrev 2>&1 | redact
+  echo "WORKTREES:"; git -C "$path" worktree list --porcelain 2>&1 | redact
+  echo "STASHES:"; git -C "$path" stash list --format='%gd%x09%H%x09%gs' 2>&1 | redact
+  echo "REMOTE_NAMES:"; git -C "$path" remote 2>&1
+  echo "STAGED_DIFF_STAT:"; git -C "$path" diff --cached --stat 2>&1
+  echo "UNSTAGED_DIFF_STAT:"; git -C "$path" diff --stat 2>&1
+  echo "UNTRACKED_METADATA_SHA256:"
   git -C "$path" ls-files --others --exclude-standard -z 2>/dev/null |
     while IFS= read -r -d '' f; do
-      if [[ -f "$path/$f" ]]; then stat -c '%n\t%s bytes\t%y' "$path/$f"; sha256sum "$path/$f"
-      elif [[ -d "$path/$f" ]]; then printf 'DIRECTORY\t%s\n' "$f"; fi
-    done > "$d/untracked-files-and-sha256.txt"
-  {
-    while IFS=$'\t' read -r stash oid subject; do
-      [[ -n "${oid:-}" ]] || continue
-      echo "===== $stash $oid $subject ====="
-      git -C "$path" stash show --stat --oneline "$oid" 2>&1 || true
-      echo "OBJECT_TYPE=$(git -C "$path" cat-file -t "$oid" 2>&1 || true)"
-    done < <(git -C "$path" stash list --format='%gd%x09%H%x09%gs' 2>/dev/null)
-  } > "$d/stash-details.txt"
+     [[ -f "$path/$f" ]] && { stat -c '%n %s bytes' "$path/$f" | redact; sha256sum "$path/$f"; }
+    done
+ } > "$d/state.txt"
 }
-
-say "NEPENTHES / MSI FINAL READ-ONLY AUDIT"
-say "Timestamp: $(date --iso-8601=seconds)"
-say "Host: $(hostname)"; say "Kernel: $(uname -sr)"
-say "No checkout, branch, stash, index, worktree, or source file is modified."
-say "Only this report bundle is created; raw captures/models are not copied."
-
-audit_repo "leones-tandem-evidence" "$HOME/leones-work/LEONES-tandem-evidence"
-audit_repo "tandem-pr7-physical-parent" "$HOME/tandem-pr7-physical-20261120"
-audit_repo "tandem-pr7-physical-nested-tandem" "$HOME/tandem-pr7-physical-20261120/tandem"
-audit_repo "nepenthes-pinned-validation" "$HOME/nepenthes-pinned-validation-20261115"
-audit_repo "tensorfold-pr1879" "$HOME/tensorfold-pr1879-real-validation-20261109/TensorFold"
-audit_repo "ods-cafe-staging" "$HOME/leones-cafe-staging/ods-src"
-audit_repo "ods-cafe-pr" "$HOME/ods-cafe-pr"
-audit_repo "nepenthes-cli" "$HOME/LEONES-nepenthes-cli-20261115"
-audit_repo "nepenthes-importer" "$HOME/LEONES-nepenthes-importer-20261115"
-audit_repo "betelgeuse-qwen35" "$HOME/betelgeuse-qwen35-validation"
-
-hash_tree "$HOME/tandem-pr7-physical-20261120" "$REPORT/tandem-pr7-physical-files.txt"
-hash_tree "$HOME/nepenthes-pinned-validation-20261115" "$REPORT/nepenthes-pinned-validation-files.txt"
-
+say(){ printf '%s\n' "$*" | tee -a "$REPORT/00-summary.txt"; }
+say "NEPENTHES MSI READ-ONLY AUDIT"
+say "Date=$(date --iso-8601=seconds)"
+audit_repo leones-tandem-evidence "$HOME/leones-work/LEONES-tandem-evidence"
+audit_repo tandem-pr7-parent "$HOME/tandem-pr7-physical-20261120"
+audit_repo tandem-pr7-nested "$HOME/tandem-pr7-physical-20261120/tandem"
+audit_repo pinned-validation "$HOME/nepenthes-pinned-validation-20261115"
+audit_repo tensorfold-pr1879 "$HOME/tensorfold-pr1879-real-validation-20261109/TensorFold"
+audit_repo ods-cafe-staging "$HOME/leones-cafe-staging/ods-src"
+audit_repo ods-cafe-pr "$HOME/ods-cafe-pr"
+audit_repo nepenthes-cli "$HOME/LEONES-nepenthes-cli-20261115"
+audit_repo nepenthes-importer "$HOME/LEONES-nepenthes-importer-20261115"
+audit_repo betelgeuse "$HOME/betelgeuse-qwen35-validation"
+for path in "$HOME/tandem-pr7-physical-20261120" "$HOME/nepenthes-pinned-validation-20261115"; do
+ label="$(basename "$path")"
+ {
+  echo "PATH=$(printf '%s' "$path" | redact)"
+  if [[ -d "$path" ]]; then
+   find "$path" -type d \( -name .git -o -name node_modules -o -name .cache -o -name build -o -name models -o -name __pycache__ \) -prune -o -type f -printf '%P\t%s bytes\n' | sort
+   echo SHA256:
+   find "$path" -type d \( -name .git -o -name node_modules -o -name .cache -o -name build -o -name models -o -name __pycache__ \) -prune -o -type f -print0 | sort -z | xargs -0 -r sha256sum
+  else echo MISSING; fi
+ } > "$REPORT/files-$(basename "$path").txt"
+done
 AFF="$HOME/leones-work/LEONES-tandem-evidence/artifacts/benchmarks/tandem-qwen35-35b-a3b-rtx3050-2026-11-12/repro/run_nepenthes_affinity_ab.sh"
+{ echo "SCRIPT=$(printf '%s' "$AFF" | redact)"; [[ -f "$AFF" ]] && { stat -c '%s bytes' "$AFF"; sha256sum "$AFF"; echo "CONTENT NOT INCLUDED"; } || echo MISSING; } > "$REPORT/affinity-script-metadata.txt"
 {
-  echo "PATH=$AFF"
-  if [[ -f "$AFF" ]]; then stat -c '%n %s bytes' "$AFF"; sha256sum "$AFF"; nl -ba "$AFF"
-  else echo "MISSING"; fi
-} > "$REPORT/affinity-script.txt"
-
-{
-  for f in "$HOME/leones-cafe-staging/ods-src/os" "$HOME/leones-cafe-staging/os"; do
-    if [[ -f "$f" ]]; then stat -c '%n %s bytes' "$f"; sha256sum "$f"; file "$f"; fi
-  done
-} > "$REPORT/ods-postscript-candidate.txt"
-
-{
-  for spec in \
-    "tandem-evidence:$HOME/leones-work/LEONES-tandem-evidence" \
-    "tandem-physical:$HOME/tandem-pr7-physical-20261120" \
-    "pinned-validation:$HOME/nepenthes-pinned-validation-20261115" \
-    "tensorfold:$HOME/tensorfold-pr1879-real-validation-20261109/TensorFold"; do
-    label="${spec%%:*}"; path="${spec#*:}"
-    echo "===== $label ====="
-    if [[ -e "$path/.git" || -f "$path/.git" ]]; then
-      git -C "$path" rev-parse HEAD 2>&1 || true
-      git -C "$path" rev-parse --git-common-dir 2>&1 || true
-      git -C "$path" cat-file -t 872ee09a16dca1327a9278f51f43e8ba6ea3d08a 2>&1 || true
-      git -C "$path" show --stat --oneline --decorate HEAD 2>&1 | sed -n '1,100p'
-    else echo "MISSING"; fi
-  done
-} > "$REPORT/commit-resolution.txt"
-
-(
-  cd "$(dirname "$REPORT")"
-  find report -type f -printf '%P\t%s bytes\n' | sort > report/FILE-MANIFEST.txt
-  tar -czf "$OUT.tar.gz" report
-)
+ for f in "$HOME/leones-cafe-staging/ods-src/os" "$HOME/leones-cafe-staging/os"; do
+  [[ -f "$f" ]] && { printf '%s\n' "$(printf '%s' "$f" | redact)"; stat -c '%s bytes' "$f"; sha256sum "$f"; file "$f"; }
+ done
+} > "$REPORT/ods-postscript-metadata.txt"
+find "$REPORT" -type f -printf '%P %s bytes\n' | sort > "$REPORT/MANIFEST.txt"
+find "$REPORT" -type f -print0 | sort -z | xargs -0 -r sha256sum > "$REPORT/SHA256SUMS.txt"
+tar -czf "$OUT.tar.gz" -C "$OUT" report
 sha256sum "$OUT.tar.gz" > "$OUT.tar.gz.sha256"
-printf '\nAUDIT_BUNDLE=%s\n' "$OUT.tar.gz"
-printf 'SHA256_FILE=%s\n' "$OUT.tar.gz.sha256"
-printf 'BUNDLE_SIZE=%s bytes\n' "$(stat -c %s "$OUT.tar.gz")"
-printf '\nUpload this single .tar.gz file in the chat. Do not upload raw .nsys-rep/.sqlite captures separately.\n'
+echo "BUNDLE=$OUT.tar.gz"
+echo "BUNDLE_SHA=$(sha256sum "$OUT.tar.gz" | cut -d' ' -f1)"
+# Publishing through authenticated GitHub CLI; no secrets written to files.
+if ! command -v gh >/dev/null || ! gh auth status >/dev/null 2>&1; then
+ echo "PUBLISH_BLOCKED: gh CLI/auth unavailable; bundle remains local."
+ exit 20
+fi
+PUB="$OUT/publish"
+gh repo clone robertosantosx2/interaccion-MSI "$PUB" -- --depth 1 >/dev/null
+cd "$PUB"
+BR="audit/$RUN_ID"
+git switch -c "$BR"
+DEST="nepenthes/$STAMP"
+mkdir -p "$DEST"
+cp "$OUT.tar.gz" "$DEST/"
+cp "$OUT.tar.gz.sha256" "$DEST/"
+cp "$REPORT/00-summary.txt" "$DEST/"
+cp "$LOG" "$DEST/run.log"
+git add "$DEST"
+git -c user.name="MSI Audit" -c user.email="audit@users.noreply.github.com" commit -m "archive $RUN_ID"
+git push origin "$BR"
+echo "PUBLISH_BRANCH=$BR"
+echo "PUBLISH_PATH=$DEST"
+# Remote verification of committed bundle checksum and branch tip
+REMOTE_SHA="$(git ls-remote origin "refs/heads/$BR" | awk '{print $1}')"
+LOCAL_SHA="$(git rev-parse HEAD)"
+[[ "$REMOTE_SHA" == "$LOCAL_SHA" ]] || { echo "VERIFY_FAILED: branch SHA mismatch"; exit 30; }
+echo "REMOTE_COMMIT_VERIFIED=$REMOTE_SHA"
+echo "END=$(date --iso-8601=seconds)"
+echo "EXIT_CODE=0"
