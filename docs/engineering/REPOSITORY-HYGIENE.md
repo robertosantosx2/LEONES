@@ -262,3 +262,6 @@ The remote archive work is complete, but the overall reorganization is not. Befo
 - Recheck the Pithos original worktree against the recovery patch; do not infer that the patch makes the local copy disposable.
 
 **Stop condition:** no local directory, branch, stash, model, cache, build output or evidence is authorized for deletion by this remote audit. After the MSI inventory is reconciled, produce a per-item keep / archive / duplicate / obsolete proposal with exact hashes and restoration path. Any destructive cleanup remains a separate, explicit approval step.
+
+
+The audit branch and draft PR #281 were created after the inventory snapshot above. Post-creation GitHub inventory is therefore **373 branch refs** and **46 open PRs**; the duplicate-tip recheck remains the 68 aliases across the 12 previously documented groups, and PR #281 is not part of those groups.
