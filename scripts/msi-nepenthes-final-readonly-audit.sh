@@ -36,7 +36,10 @@ audit_repo(){
   echo "UNTRACKED_METADATA_SHA256:"
   git -C "$path" ls-files --others --exclude-standard -z 2>/dev/null |
     while IFS= read -r -d '' f; do
-     [[ -f "$path/$f" ]] && { stat -c '%n %s bytes' "$path/$f" | redact; sha256sum "$path/$f"; }
+     if [[ -f "$path/$f" ]]; then
+      stat -c '%n %s bytes' "$path/$f" | redact
+      sha256sum "$path/$f"
+     fi
     done
  } > "$d/state.txt"
 }
