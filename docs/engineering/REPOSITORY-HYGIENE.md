@@ -406,3 +406,19 @@ A focused comparison was performed against the current `main` tip `ca2f24c2214b4
 - PR #147 head `7831b72a0a66c6092b0c8f9ae214a07b1cf8d493`: V1 regression and runtime-v11-regression completed successfully.
 - PR #149 head `bc713b36ae2c93e527c653a291562d80670627a6`: runtime-v11-regression, V1 regression and NEPENTHES probe tests completed successfully.
 - The PR #147 → #149 base relationship remains exact: #149 is based on #147's head. These CI snapshots do not justify merging #149 independently or flattening the stack.
+
+
+### Integración de LEONES #273 — 2026-11-22 (11:59 CET)
+
+**Integrada en `main`.** A petición expresa, la PR #273 se fusionó mediante merge commit, protegiendo el HEAD esperado:
+
+- PR: [#273](https://github.com/robertosantosx2/LEONES/pull/273)
+- HEAD integrado: `5b8ab8f4740429d184a63daf00cfb4d3cd81815f`
+- Merge commit: `e730bb2dcc3d964050a2a27dad6b0a5628a927d0`
+- Estado posterior verificado: PR cerrada y `merged=true`; comparación de su HEAD con `main` devuelve 0 commits ahead y 12 behind, sin ficheros pendientes. La rama de feature ya es ancestro de `main`.
+- Los ocho workflows asociados al HEAD de la PR estaban completados con éxito antes de la integración. El endpoint de workflows para el merge commit no devolvió ejecuciones; no se presenta como CI posterior al merge.
+- Se conservan los límites de la evidencia: la captura MSI acredita un único worker/request y no certifica atribución multi-request/multi-worker ni provenance criptográfica exacta del binario importer.
+
+**Rama tras la integración:** `feat/nepenthes-nsys-runtime-thread-join-20261121` continúa existiendo en GitHub. Es candidata a eliminación remota porque su PR está fusionada y el HEAD está contenido en `main`; no se elimina automáticamente mientras no se haya comprobado si algún PR abierto, automatización o referencia local depende de ella.
+
+**Limpieza de ramas:** la integración GitHub disponible en esta sesión no expone una operación de eliminación de refs/branches. Por tanto, no se ha borrado ninguna rama. La rama #273 queda identificada como candidata de bajo riesgo para eliminar desde GitHub una vez comprobadas las referencias locales. Las ramas #147 y #149 siguen siendo una pila activa y se preservan; #153 sigue siendo base histórica de la PR #154 bloqueada y no se elimina. Las demás ramas NEPENTHES no se etiquetan como redundantes solo por el nombre: requieren SHA exacto y cruce de PR head/base antes de cualquier eliminación.
