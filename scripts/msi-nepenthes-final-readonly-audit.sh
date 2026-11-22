@@ -102,7 +102,7 @@ AFF="$HOME/leones-work/LEONES-tandem-evidence/artifacts/benchmarks/tandem-qwen35
       git -C "$path" rev-parse HEAD 2>&1 || true
       git -C "$path" rev-parse --git-common-dir 2>&1 || true
       git -C "$path" cat-file -t 872ee09a16dca1327a9278f51f43e8ba6ea3d08a 2>&1 || true
-      git -C "$path" show --stat --oneline --decorate HEAD 2>&1 | head -100
+      git -C "$path" show --stat --oneline --decorate HEAD 2>&1 | sed -n '1,100p'
     else echo "MISSING"; fi
   done
 } > "$REPORT/commit-resolution.txt"
