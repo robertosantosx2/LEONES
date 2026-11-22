@@ -265,3 +265,58 @@ The remote archive work is complete, but the overall reorganization is not. Befo
 
 
 The audit branch and draft PR #281 were created after the inventory snapshot above. Post-creation GitHub inventory is therefore **373 branch refs** and **46 open PRs**; the duplicate-tip recheck remains the 68 aliases across the 12 previously documented groups, and PR #281 is not part of those groups.
+
+
+## Additional engine repositories and local-checkpoint mapping — 2026-11-22
+
+### Related engine PR stacks
+
+| Repository | Remote graph | Local relationship / handling |
+|---|---|---|
+| `robertosantosx2/tandem.cpp` | PR #7 (NVTX decode-batch producer) is merged. PR #6 remains an open draft containing a one-commit documentation proposal, 15 commits behind `main`. | Keep the merged producer and the design proposal distinct. Review whether #6 is still useful before closing it; no automatic closure. |
+| `robertosantosx2/Betelgeuse` | PR #1 is an open draft, 48 commits ahead of `main`. PR #2 is an open draft based on #1's head; its branch has a non-linear relationship to that base (59 ahead, 30 behind). | Local `~/betelgeuse-qwen35-validation` HEAD `b36b88698` is an ancestor of remote PR #2 head by 55 commits. Two local stashes are recorded; retain them and reconcile on MSI. |
+| `robertosantosx2/picchio` | PR #5 is an open draft based on `feature/cuda-pinned-host-slabs`; PR #6 is an open draft based on #5 and is 8 commits ahead with no behind commits. | Local P1a validation checkouts correspond to the #5 branch and #6 head. Keep the stacked PR order; do not merge #6 independently. |
+| `robertosantosx2/colibri` | PR #1 is an open draft, 19 commits ahead of `main`. | Preserve as a separate Qwen3.6 CUDA chain-planner line; no merge or rebase performed. |
+| `companionintelligence/Companion-Hub` | The linked account has read-only permission. Its `dev` branch is 1,732 commits ahead and 42 behind `main`; 13 open PRs were returned. | Local `~/Companion-Hub` was reported clean on `dev`. The parent LEONES checkout separately has 2,993 staged deletions in the nested `experimental/companion-hub` repository. Do not sync, reset or alter that submodule until the MSI state is inspected. |
+
+### Magnitude remote ancestry checks
+
+The fork `robertosantosx2/magnitude` currently has no open PRs returned by the repository search.
+
+- Local `integration/native-chat-i18n-twelve-languages` at `6bd322c5` is exactly identical to the remote branch of the same name.
+- Three local `feat/i18n-es-zh` checkouts at `4245b01`, `24126f3` and `2dd45bcf9` are ancestors of the remote `feat/i18n-es-zh` branch by 54, 88 and 89 commits respectively. They are not current-tip duplicates; local untracked directories and ZIPs remain to be inventoried.
+- Local `work/react-i18next-eleven-languages` at `d788f516` is an ancestor of remote `feat/react-i18next-eleven-languages` by 39 commits. The detached typecheck-base checkout has the same local commit.
+- Local `fix/pr215-validation-issues` at `4eb87bd4` is an ancestor of fork `main` by 251 commits; no matching remote branch was found.
+- Detached local validation commits `f81f3cb0` and `3f0947d3` are ancestors of fork `main` by 186 and 237 commits.
+
+These ancestry results do not authorize removal of local checkouts or their untracked content. The nested Magnitude clones and stashes must be matched to their individual Git common directories on MSI.
+
+### Additional LEONES checkout-to-remote mapping
+
+| Local checkpoint | GitHub comparison | Result |
+|---|---|---|
+| `~/LEONES` backup HEAD `6c2748c56bd7e7b06ebad5b30edc721aa8c9a15e` | `research/kinetic-audit-benchmark` | Exact same commit. The local backup branch is a local alias of an existing remote tip; preserve its local worktree until the MSI audit. |
+| `NEPENTHES-archive-intake` HEAD `4dd1fa34f25d40f9e6e72887300a387f18be4ed2` | `nepenthes/performance-capacity-roadmap-20261114` | Local commit is an ancestor; remote branch is 59 commits ahead. |
+| NEPENTHES CLI HEAD `f7c40729537b675e556ab46e3fd8921de9b9f7ed` | `main` | Local commit is an ancestor; `main` is 254 commits ahead. |
+| NEPENTHES importer HEAD `9605693cf15df0f5c576b2ba2a79e3ce44afeb4` | `main` | Local commit is an ancestor; `main` is 278 commits ahead. |
+| Detached NEPENTHES validation HEADs `2e76064fdf4ada66fd03ee014b9d69f216ed1c25` and `176456739a816ba995076a777e1321e27764bae6` | `main` | Both are ancestors; `main` is 223 and 239 commits ahead respectively. Repeated stash messages belong to separate Git directories and are not duplicates. |
+| Atomic Chat LEONES checkout HEAD `a1e9bb3ee347d8b003e44c595e17dad125b63f6b` | PR #139 head `research/atomic-chat-tensorfold-linux-cuda` | Remote head is 61 commits ahead. The local staged `.gitmodules`/gitlink change and WIP stash are not represented by that ancestry comparison. |
+| Tandem evidence checkout HEAD `872ee09a16dca1327a9278f51f43e8ba6ea3d08a` | Remote lookup | GitHub could not resolve this local-only commit (404). MSI inventory also records one local commit ahead of remote, an untracked 118-line affinity A/B script and an empty-blob staged index entry. This is a priority upload/preservation item; do not execute the script during reorganization. |
+| Tandem archive detached HEAD `efded830bba44d431aef1f930235f37276aa3354` | `main` and `archive/tandem-cpp-2026-11-03` | Divergent from both; no equivalent tip established. Keep as an independent historical checkpoint. |
+| TensorFold Web detached HEAD `20d5fc209abc153915af967a52474114831a525b` | `feat/tensorfold-web-standalone` | Local commit is an ancestor; remote branch is 27 commits ahead. |
+| Cursollm publish snapshot HEAD `ec1932fa62abc2535d68786c306dea8aa4724e8f` | `main` | Local commit is an ancestor; `main` is 559 commits ahead. |
+| Pithos documentation upload HEAD `8d3d22f` | `docs/pithos-intel-opencl-validation-20261109` | Local commit is an ancestor; remote branch is 6 commits ahead. |
+| TensorFold original logs HEAD `e71a913` | `evidence/tensorfold-moe-original-logs-2026-10-24` | Local commit is an ancestor; remote branch is 2 commits ahead. |
+| Falcon3 research HEAD `643925f1d98387a9fad8572324e0de414757795f` | `research/falcon3-i2s-avx2-overflow-2026-11-18` | Local commit is an ancestor; remote branch is 46 commits ahead. |
+| LFM3 docs HEAD `cab1356` | `docs/lfm3-1.7b-dual-host-compare-20261029` | Local commit is an ancestor; remote branch is 2 commits ahead. |
+| ODS Café staging HEAD `98980586fe41219e48d61c472e2d2205d266e4a` | `ods-cafe-llama-icd-dashboard` | Exact same commit. The local untracked PostScript file `os` (3,982,788 bytes, SHA-256 `dbe0833c68c56cc64caba58151d526b60406cccfc99b2f35d142a1ceb0d3b140`) is not part of that remote tree and must be reviewed/uploaded separately if retained. |
+
+The detached Cursollm, TensorFold Web, Pithos, TensorFold-log, Falcon3 and LFM3 checkpoints have reachable remote ancestry, but their local directory contents still require a final MSI check before any local cleanup. The Tandem archive and Tandem evidence checkouts are not proven redundant.
+
+### Additional MSI-only items before closure
+
+1. Upload/preserve the local-only Tandem evidence commit and inspect its staged-empty/untracked-script state.
+2. Review the untracked ODS Café PostScript artifact and decide whether it belongs in the remote evidence archive.
+3. Inspect Companion-Hub submodule staged deletions in the parent LEONES checkout.
+4. Reconcile the Betelgeuse and NEPENTHES stashes by Git common-dir, not by stash message.
+5. Compare all remaining detached snapshots and untracked directories with their exact remote branch/tree before proposing any deletion.
