@@ -196,3 +196,69 @@ A fresh fully paginated GitHub API inventory was taken after merging LEONES PRs 
 
 No branch alias was deleted, renamed or retargeted. The 68-alias queue remains a review queue, not completed cleanup. The remote snapshot cannot establish local worktree, reflog, stash, dirty-file, unpushed-commit or user handoff dependencies. No local directory, model, cache, evidence bundle, stash or worktree was changed. The MSI inventory phase remains blocked until the workstation is accessible.
 
+
+
+## Cross-repository MSI recovery and remote recheck — 2026-11-22
+
+This addendum records GitHub-side work only. No MSI filesystem, local Git checkout, stash, model, cache, or process was accessed or modified during this pass.
+
+### Current LEONES remote inventory
+
+- Paginated branch search returned **372 branch refs**.
+- Open-PR search returned **45 open pull requests**.
+- The 12 duplicate-tip groups documented in [BRANCH-ALIAS-RECONCILIATION-2026-11-20.md](BRANCH-ALIAS-RECONCILIATION-2026-11-20.md) were rechecked pairwise against their canonical refs: all **68 aliases still point to exactly the same tip SHA** as their respective canonical ref.
+- Cross-checking those 68 aliases against all 45 current open PR head/base refs found one live dependency: `jalon2-evidence-bridge` remains the head of open PR #64. No other alias in those groups is currently an open PR head or base.
+- The full unique-tip histogram for all 372 refs was not recomputed in this pass; the 12 known duplicate groups are verified, but the 26-ref net increase since the 2026-11-20 snapshot still needs a full tip-level classification.
+- No branch was deleted, renamed, or force-updated. The GitHub connector used here does not expose branch-ref deletion, and the local dependency gate remains mandatory.
+
+### NEPENTHES and related PR graph
+
+| PR / ref | Remote finding | Disposition |
+|---|---|---|
+| LEONES #153 / `feat/nepenthes-nsys-only-20261115` | PR merged. Branch is an ancestor of current `main` (0 ahead, 233 behind). | Merged historical ref; retain until MSI refs/stashes are checked. |
+| LEONES #147 / `nepenthes/moe-probes-20261114` | Open; 42 commits ahead of its explicit base `benchmarks/tandem-qwen35-reasoning-battery-2026-11-12`. | Active stacked work; retain. |
+| LEONES #149 / `nepenthes/performance-capacity-roadmap-20261114` | Open; base is #147's head. It is 91 commits ahead of #147 with no behind commits. Includes raw Nsight captures, SQLite and reproducibility evidence. | Preserve the stack and evidence; do not retarget or merge out of order. |
+| LEONES #273 / `feat/nepenthes-nsys-runtime-thread-join-20261121` | Open against `main`; 7 commits ahead and 11 behind. The change is confined to the Nsight importer and its tests. The PR description reports passing CI; the combined-status endpoint returned no status rows during this audit. | Keep open; physical re-import against the preserved MSI capture remains a separate gate. |
+| LEONES #139 / `research/atomic-chat-tensorfold-linux-cuda` | Open draft. PR head is `fb5407616da2cba4dd2f0b2e5ce306a5bf5a5883`; the MSI inventory records a different local checkout HEAD plus staged submodule/gitlink state and a WIP stash. | Do not synchronize or collapse until MSI comparison. |
+| LEONES #141 / `feat/pithos-opencl-dense-logits` | Open draft tracking Pithos reliability work. | Retain. |
+
+The #147 → #149 relationship is intentionally stacked and is not a duplicate-branch problem. The historical #153 branch is merged remotely, but its local clone also carries a stash and must not be discarded on remote ancestry alone.
+
+### Cross-repository recovery archives verified on GitHub
+
+The following five independent recovery branches are published. Their manifests and preserved patches were fetched back from GitHub; they are archival branches, not merges into the repositories' integration branches.
+
+| Repository | Recovery ref / commit | Remote verification |
+|---|---|---|
+| `robertosantosx2/llama.cpp` | `msi-recovery/2026-11-22/llama-cpp-tandem` / `d9ce64500187eaf419f47cedc0ca9d8801892f28` | One archive commit; manifest, worktree patch and untracked-file archive present. Merge base is original Tandem HEAD `f5222f25c18da062ab2b8a2dbbfbf4feae398566`; branch remains 625 commits behind current `master`. |
+| `robertosantosx2/TensorFold` | `msi-recovery/2026-11-22/tensorfold-pr1879` / `328d6a1936f69fc4d0718670c6ae53977b6d3efc` | Manifest, 808-path staged inventory, 70,742-line staged patch and unstaged patch are present. The preserved state includes 286 staged deletions and 51,789 staged deleted lines plus one unstaged change. It is not safe to apply or discard wholesale. Its current branch ancestry is divergent from the fork's `main` and from the current `fix/qwen35-cuda-lazy-scratch` ref; no equivalence is assumed. |
+| `robertosantosx2/Pithos` | `msi-recovery/2026-11-22/pithos-opencl-validation` / `0c71413bc2730ba484579ddaa95bfe337eab6a71` | Recovery branch is 5 commits ahead of `main`. All four changed source files have identical blob SHAs to `fix/intel-opencl-dense-logits-fail-closed`; the recovery branch additionally carries the manifest and local unstaged patch. Open draft PR #1 remains separate. |
+| `robertosantosx2/ODS` | `msi-recovery/2026-11-22/ods-cafe-llama-icd` / `1c1aea2f65fcd33166ce2dc47054951f891b61a0` | One archive commit based on current fork `main`; manifest, commit metadata and 491-line patch verified. Three proposed new files are absent from the open draft PR #6 branch; `model_selection.py` exists there with a different, much larger implementation. Do not apply this patch blindly. |
+| `robertosantosx2/ODS` | `msi-recovery/2026-11-22/ods-i18n-react-i18next` / `e88fdb722` | 15 commits ahead of fork `main`; manifest, 14-commit sequence, original status and 69,988-byte working-tree patch verified. The 12 i18n/dependency source files have identical blob SHAs to `feat/dashboard-i18n-es-zh`, although the branch histories differ. The extra local patch is not applied. |
+
+### ODS i18n duplicate-content finding
+
+The 12 relevant tracked files on `feat/dashboard-i18n-es-zh` and the i18n recovery branch were compared by Git blob SHA; all 12 are byte-identical. This is a verified duplicate *content state*, not proof that the branch refs or local worktrees can be removed. The archived working-tree patch contains three uncommitted edits, including dependency changes that remain unreviewed: `react-router-dom` changes from 7.18.4 to `^6.26.0`, `vite` and `vitest` ranges are lowered, and `@zip.js/zip.js` plus two overrides are removed. No dependency downgrade is approved by this record.
+
+### Open integration PRs in related repositories
+
+- ODS #6: open draft Cafe-LLama ICD integration.
+- Pithos #1: open draft Intel OpenCL dense-logits failure propagation.
+- llama.cpp #15: open draft upstream sync, 32 commits ahead of `master`.
+- llama.cpp #9: open draft typed-event contract based on `nepenthes/rc1-upstream-20261119`; it is a separate stacked line and must not be retargeted automatically.
+- LEONES #95: open ODS dashboard i18n expansion for Hindi, Korean, Vietnamese and Japanese; distinct from the Spanish/Chinese i18n recovery.
+
+### MSI handoff gates — not executable from GitHub
+
+The remote archive work is complete, but the overall reorganization is not. Before any local cleanup or branch alias deletion, the MSI must provide a fresh read-only inventory of all worktrees, local and remote-tracking refs, upstreams, stashes, reflogs, staged/unstaged/untracked state, submodule gitlinks and exact file hashes. Priority items include:
+
+- LEONES Atomic Chat WIP and its stash; compare local HEAD and staged `.gitmodules`/gitlink state with PR #139.
+- Tandem evidence checkout: inspect the untracked affinity A/B script and the staged empty-blob state; do not run the script until reviewed.
+- NEPENTHES CLI/importer/validation clones: identify which checkout owns each stash and reconcile the local #153-era state with the merged remote history.
+- ODS i18n validation checkout: compare its three modified files with the remote archive patch; do not apply the dependency changes without review.
+- ODS Café staging: preserve and inspect the untracked `os` PostScript artifact and its provenance.
+- TensorFold PR1879 worktrees: reconcile the 808 staged paths, 286 deletions, unstaged build-file edit, all related worktrees and stashes.
+- llama.cpp/Tandem: confirm the local detached source tree, untracked CUDA/MoE files and evidence archive against the published recovery bundle.
+- Recheck the Pithos original worktree against the recovery patch; do not infer that the patch makes the local copy disposable.
+
+**Stop condition:** no local directory, branch, stash, model, cache, build output or evidence is authorized for deletion by this remote audit. After the MSI inventory is reconciled, produce a per-item keep / archive / duplicate / obsolete proposal with exact hashes and restoration path. Any destructive cleanup remains a separate, explicit approval step.
