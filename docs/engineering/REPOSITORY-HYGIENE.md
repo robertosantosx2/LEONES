@@ -388,3 +388,21 @@ The 2026-11-21 paired PR273 summary is separately archived in `robertosantosx2/i
 3. Keep #153 as merged history and #154 blocked pending a current-source translation.
 4. Keep the MSI evidence repository as an archive boundary; do not copy binary captures into LEONES merely to consolidate paths.
 5. No branch deletion, force-update, PR close, merge, or local cleanup is performed by this refresh. The available GitHub connector does not expose branch-ref deletion, and the remaining local dependency gates are unresolved.
+
+### PR #273 integration review — 2026-11-22
+
+A focused comparison was performed against the current `main` tip `ca2f24c2214b449b09fe9860edfcbcb9d39db990`:
+
+- PR head remains `5b8ab8f4740429d184a63daf00cfb4d3cd81815f`; merge base is `9659a6da4f4d6d72290c27d0ebb810931fcd5f1f`.
+- The branch is 7 commits ahead and 11 behind `main`. The PR's complete changed-file set is exactly two files: `scripts/nepenthes_nsys_import.py` (+80/-4) and `tests/test_nepenthes_nsys_import.py` (+105/-0).
+- Reverse comparison (`PR head...main`) shows the 11 main-side commits touch other paths; neither of the two PR paths appears in that main-side changed-file set. This is evidence of no same-path edits since the merge base, not a substitute for running merge checks.
+- GitHub currently reports the PR as mergeable. Eight workflow runs attached to the PR head were completed successfully: V1 regression, RC3, Contract Tests, RC4, Agentic A01, NEPENTHES AIPerf/importers/exporters, runtime-v11-regression and V1 Complete Gate.
+- The added tests cover paired and Nsight-only recovery, missing/ambiguous Runtime correlation and cross-process mismatch. The importer rejects ambiguous or process-mismatched recovered identities rather than guessing.
+
+**Integration disposition:** the review found no file-level overlap with the 11 main-side commits and no reason to retarget the PR to another base (it already targets `main`). Do not rewrite its head merely to eliminate the behind count. Keep #273 open for maintainer review and a fresh CI/mergeability check at decision time; retain the separate physical MSI re-import gate. This audit does not merge the PR.
+
+### CI snapshot for the stacked probes
+
+- PR #147 head `7831b72a0a66c6092b0c8f9ae214a07b1cf8d493`: V1 regression and runtime-v11-regression completed successfully.
+- PR #149 head `bc713b36ae2c93e527c653a291562d80670627a6`: runtime-v11-regression, V1 regression and NEPENTHES probe tests completed successfully.
+- The PR #147 → #149 base relationship remains exact: #149 is based on #147's head. These CI snapshots do not justify merging #149 independently or flattening the stack.
