@@ -49,6 +49,14 @@ def test_every_adapter_accepts_a_controlled_plan():
                       "moe": {"is_moe": True}, "workload": {"agentic": True},
                       "hardware": {"vram_gb": 24, "ram_gb": 64, "host_memory_bandwidth_gbps": 500,
                                    "pcie_h2d_bandwidth_gbps": 20, "cpu_moe_bandwidth_gbps": 100}})
+        if runtime == "llama.cpp":
+            p.update({
+                "model_format": "GGUF",
+                "model_artifact": {
+                    "path": "artifacts/models/test.gguf",
+                    "sha256": "a" * 64,
+                },
+            })
         adapter.prepare(p, entry)
 
 

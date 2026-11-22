@@ -18,6 +18,17 @@ class RuntimeExecutionSpec:
     def execution_metadata(self) -> dict[str, Any]:
         return self.metadata
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "runtime_spec": {
+                "runtime_id": self.runtime_id,
+                "adapter_id": self.adapter_id,
+                "model_ref": self.model_ref,
+                "entrypoint": list(self.entrypoint),
+                "metadata": dict(self.metadata),
+            }
+        }
+
 
 class RuntimeAdapter:
     """Adapter contract shared by every V1.1 runtime.
