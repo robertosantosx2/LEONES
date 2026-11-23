@@ -196,3 +196,229 @@ A fresh fully paginated GitHub API inventory was taken after merging LEONES PRs 
 
 No branch alias was deleted, renamed or retargeted. The 68-alias queue remains a review queue, not completed cleanup. The remote snapshot cannot establish local worktree, reflog, stash, dirty-file, unpushed-commit or user handoff dependencies. No local directory, model, cache, evidence bundle, stash or worktree was changed. The MSI inventory phase remains blocked until the workstation is accessible.
 
+
+
+## Cross-repository MSI recovery and remote recheck — 2026-11-22
+
+This addendum records GitHub-side work only. No MSI filesystem, local Git checkout, stash, model, cache, or process was accessed or modified during this pass.
+
+### Current LEONES remote inventory
+
+- Paginated branch search returned **372 branch refs**.
+- Open-PR search returned **45 open pull requests**.
+- The 12 duplicate-tip groups documented in [BRANCH-ALIAS-RECONCILIATION-2026-11-20.md](BRANCH-ALIAS-RECONCILIATION-2026-11-20.md) were rechecked pairwise against their canonical refs: all **68 aliases still point to exactly the same tip SHA** as their respective canonical ref.
+- Cross-checking those 68 aliases against all 45 current open PR head/base refs found one live dependency: `jalon2-evidence-bridge` remains the head of open PR #64. No other alias in those groups is currently an open PR head or base.
+- The full unique-tip histogram for all 372 refs was not recomputed in this pass; the 12 known duplicate groups are verified, but the 26-ref net increase since the 2026-11-20 snapshot still needs a full tip-level classification.
+- No branch was deleted, renamed, or force-updated. The GitHub connector used here does not expose branch-ref deletion, and the local dependency gate remains mandatory.
+
+### NEPENTHES and related PR graph
+
+| PR / ref | Remote finding | Disposition |
+|---|---|---|
+| LEONES #153 / `feat/nepenthes-nsys-only-20261115` | PR merged. Branch is an ancestor of current `main` (0 ahead, 233 behind). | Merged historical ref; retain until MSI refs/stashes are checked. |
+| LEONES #147 / `nepenthes/moe-probes-20261114` | Open; 42 commits ahead of its explicit base `benchmarks/tandem-qwen35-reasoning-battery-2026-11-12`. | Active stacked work; retain. |
+| LEONES #149 / `nepenthes/performance-capacity-roadmap-20261114` | Open; base is #147's head. It is 91 commits ahead of #147 with no behind commits. Includes raw Nsight captures, SQLite and reproducibility evidence. | Preserve the stack and evidence; do not retarget or merge out of order. |
+| LEONES #273 / `feat/nepenthes-nsys-runtime-thread-join-20261121` | Open against `main`; 7 commits ahead and 11 behind. The change is confined to the Nsight importer and its tests. The PR description reports passing CI; the combined-status endpoint returned no status rows during this audit. | Keep open; physical re-import against the preserved MSI capture remains a separate gate. |
+| LEONES #139 / `research/atomic-chat-tensorfold-linux-cuda` | Open draft. PR head is `fb5407616da2cba4dd2f0b2e5ce306a5bf5a5883`; the MSI inventory records a different local checkout HEAD plus staged submodule/gitlink state and a WIP stash. | Do not synchronize or collapse until MSI comparison. |
+| LEONES #141 / `feat/pithos-opencl-dense-logits` | Open draft tracking Pithos reliability work. | Retain. |
+
+The #147 → #149 relationship is intentionally stacked and is not a duplicate-branch problem. The historical #153 branch is merged remotely, but its local clone also carries a stash and must not be discarded on remote ancestry alone.
+
+### Cross-repository recovery archives verified on GitHub
+
+The following five independent recovery branches are published. Their manifests and preserved patches were fetched back from GitHub; they are archival branches, not merges into the repositories' integration branches.
+
+| Repository | Recovery ref / commit | Remote verification |
+|---|---|---|
+| `robertosantosx2/llama.cpp` | `msi-recovery/2026-11-22/llama-cpp-tandem` / `d9ce64500187eaf419f47cedc0ca9d8801892f28` | One archive commit; manifest, worktree patch and untracked-file archive present. Merge base is original Tandem HEAD `f5222f25c18da062ab2b8a2dbbfbf4feae398566`; branch remains 625 commits behind current `master`. |
+| `robertosantosx2/TensorFold` | `msi-recovery/2026-11-22/tensorfold-pr1879` / `328d6a1936f69fc4d0718670c6ae53977b6d3efc` | Manifest, 808-path staged inventory, 70,742-line staged patch and unstaged patch are present. The preserved state includes 286 staged deletions and 51,789 staged deleted lines plus one unstaged change. It is not safe to apply or discard wholesale. Its current branch ancestry is divergent from the fork's `main` and from the current `fix/qwen35-cuda-lazy-scratch` ref; no equivalence is assumed. |
+| `robertosantosx2/Pithos` | `msi-recovery/2026-11-22/pithos-opencl-validation` / `0c71413bc2730ba484579ddaa95bfe337eab6a71` | Recovery branch is 5 commits ahead of `main`. All four changed source files have identical blob SHAs to `fix/intel-opencl-dense-logits-fail-closed`; the recovery branch additionally carries the manifest and local unstaged patch. Open draft PR #1 remains separate. |
+| `robertosantosx2/ODS` | `msi-recovery/2026-11-22/ods-cafe-llama-icd` / `1c1aea2f65fcd33166ce2dc47054951f891b61a0` | One archive commit based on current fork `main`; manifest, commit metadata and 491-line patch verified. Three proposed new files are absent from the open draft PR #6 branch; `model_selection.py` exists there with a different, much larger implementation. Do not apply this patch blindly. |
+| `robertosantosx2/ODS` | `msi-recovery/2026-11-22/ods-i18n-react-i18next` / `e88fdb722` | 15 commits ahead of fork `main`; manifest, 14-commit sequence, original status and 69,988-byte working-tree patch verified. The 12 i18n/dependency source files have identical blob SHAs to `feat/dashboard-i18n-es-zh`, although the branch histories differ. The extra local patch is not applied. |
+
+### ODS i18n duplicate-content finding
+
+The 12 relevant tracked files on `feat/dashboard-i18n-es-zh` and the i18n recovery branch were compared by Git blob SHA; all 12 are byte-identical. This is a verified duplicate *content state*, not proof that the branch refs or local worktrees can be removed. The archived working-tree patch contains three uncommitted edits, including dependency changes that remain unreviewed: `react-router-dom` changes from 7.18.4 to `^6.26.0`, `vite` and `vitest` ranges are lowered, and `@zip.js/zip.js` plus two overrides are removed. No dependency downgrade is approved by this record.
+
+### Open integration PRs in related repositories
+
+- ODS #6: open draft Cafe-LLama ICD integration.
+- Pithos #1: open draft Intel OpenCL dense-logits failure propagation.
+- llama.cpp #15: open draft upstream sync, 32 commits ahead of `master`.
+- llama.cpp #9: open draft typed-event contract based on `nepenthes/rc1-upstream-20261119`; it is a separate stacked line and must not be retargeted automatically.
+- LEONES #95: open ODS dashboard i18n expansion for Hindi, Korean, Vietnamese and Japanese; distinct from the Spanish/Chinese i18n recovery.
+
+### MSI handoff gates — not executable from GitHub
+
+The remote archive work is complete, but the overall reorganization is not. Before any local cleanup or branch alias deletion, the MSI must provide a fresh read-only inventory of all worktrees, local and remote-tracking refs, upstreams, stashes, reflogs, staged/unstaged/untracked state, submodule gitlinks and exact file hashes. Priority items include:
+
+- LEONES Atomic Chat WIP and its stash; compare local HEAD and staged `.gitmodules`/gitlink state with PR #139.
+- Tandem evidence checkout: inspect the untracked affinity A/B script and the staged empty-blob state; do not run the script until reviewed.
+- NEPENTHES CLI/importer/validation clones: identify which checkout owns each stash and reconcile the local #153-era state with the merged remote history.
+- ODS i18n validation checkout: compare its three modified files with the remote archive patch; do not apply the dependency changes without review.
+- ODS Café staging: preserve and inspect the untracked `os` PostScript artifact and its provenance.
+- TensorFold PR1879 worktrees: reconcile the 808 staged paths, 286 deletions, unstaged build-file edit, all related worktrees and stashes.
+- llama.cpp/Tandem: confirm the local detached source tree, untracked CUDA/MoE files and evidence archive against the published recovery bundle.
+- Recheck the Pithos original worktree against the recovery patch; do not infer that the patch makes the local copy disposable.
+
+**Stop condition:** no local directory, branch, stash, model, cache, build output or evidence is authorized for deletion by this remote audit. After the MSI inventory is reconciled, produce a per-item keep / archive / duplicate / obsolete proposal with exact hashes and restoration path. Any destructive cleanup remains a separate, explicit approval step.
+
+
+The audit branch and draft PR #281 were created after the inventory snapshot above. Post-creation GitHub inventory is therefore **373 branch refs** and **46 open PRs**; the duplicate-tip recheck remains the 68 aliases across the 12 previously documented groups, and PR #281 is not part of those groups.
+
+
+## Additional engine repositories and local-checkpoint mapping — 2026-11-22
+
+### Related engine PR stacks
+
+| Repository | Remote graph | Local relationship / handling |
+|---|---|---|
+| `robertosantosx2/tandem.cpp` | PR #7 (NVTX decode-batch producer) is merged. PR #6 remains an open draft containing a one-commit documentation proposal, 15 commits behind `main`. | Keep the merged producer and the design proposal distinct. Review whether #6 is still useful before closing it; no automatic closure. |
+| `robertosantosx2/Betelgeuse` | PR #1 is an open draft, 48 commits ahead of `main`. PR #2 is an open draft targeting the same base-branch name, but its recorded base SHA (`fe840217`) differs from PR #1's current head (`244680d8`); comparison is non-linear (59 ahead, 30 behind). | Local `~/betelgeuse-qwen35-validation` HEAD `b36b88698` is an ancestor of remote PR #2 head by 55 commits. Two local stashes are recorded; retain them and reconcile on MSI. |
+| `robertosantosx2/picchio` | PR #5 is an open draft based on `feature/cuda-pinned-host-slabs`; PR #6 is an open draft based on #5 and is 8 commits ahead with no behind commits. | Local P1a validation checkouts correspond to the #5 branch and #6 head. Keep the stacked PR order; do not merge #6 independently. |
+| `robertosantosx2/colibri` | PR #1 is an open draft, 19 commits ahead of `main`. | Preserve as a separate Qwen3.6 CUDA chain-planner line; no merge or rebase performed. |
+| `companionintelligence/Companion-Hub` | The linked account has read-only permission. Its `dev` branch is 1,732 commits ahead and 42 behind `main`; 13 open PRs were returned. | Local `~/Companion-Hub` was reported clean on `dev`. The parent LEONES checkout separately has 2,993 staged deletions in the nested `experimental/companion-hub` repository. Do not sync, reset or alter that submodule until the MSI state is inspected. |
+
+### Magnitude remote ancestry checks
+
+The fork `robertosantosx2/magnitude` currently has no open PRs returned by the repository search.
+
+- Local `integration/native-chat-i18n-twelve-languages` at `6bd322c5` is exactly identical to the remote branch of the same name.
+- Three local `feat/i18n-es-zh` checkouts at `4245b01`, `24126f3` and `2dd45bcf9` are ancestors of the remote `feat/i18n-es-zh` branch by 54, 88 and 89 commits respectively. They are not current-tip duplicates; local untracked directories and ZIPs remain to be inventoried.
+- Local `work/react-i18next-eleven-languages` at `d788f516` is an ancestor of remote `feat/react-i18next-eleven-languages` by 39 commits. The detached typecheck-base checkout has the same local commit.
+- Local `fix/pr215-validation-issues` at `4eb87bd4` is an ancestor of fork `main` by 251 commits; no matching remote branch was found.
+- Detached local validation commits `f81f3cb0` and `3f0947d3` are ancestors of fork `main` by 186 and 237 commits.
+
+These ancestry results do not authorize removal of local checkouts or their untracked content. The nested Magnitude clones and stashes must be matched to their individual Git common directories on MSI.
+
+### Additional LEONES checkout-to-remote mapping
+
+| Local checkpoint | GitHub comparison | Result |
+|---|---|---|
+| `~/LEONES` backup HEAD `6c2748c56bd7e7b06ebad5b30edc721aa8c9a15e` | `research/kinetic-audit-benchmark` | Exact same commit. The local backup branch is a local alias of an existing remote tip; preserve its local worktree until the MSI audit. |
+| `NEPENTHES-archive-intake` HEAD `4dd1fa34f25d40f9e6e72887300a387f18be4ed2` | `nepenthes/performance-capacity-roadmap-20261114` | Local commit is an ancestor; remote branch is 59 commits ahead. |
+| NEPENTHES CLI HEAD `f7c40729537b675e556ab46e3fd8921de9b9f7ed` | `main` | Local commit is an ancestor; `main` is 254 commits ahead. |
+| NEPENTHES importer HEAD `9605693cf15df0f5c576b2ba2a79e3ce44afeb4` | `main` | Local commit is an ancestor; `main` is 278 commits ahead. |
+| Detached NEPENTHES validation HEADs `2e76064fdf4ada66fd03ee014b9d69f216ed1c25` and `176456739a816ba995076a777e1321e27764bae6` | `main` | Both are ancestors; `main` is 223 and 239 commits ahead respectively. Repeated stash messages belong to separate Git directories and are not duplicates. |
+| Atomic Chat LEONES checkout HEAD `a1e9bb3ee347d8b003e44c595e17dad125b63f6b` | PR #139 head `research/atomic-chat-tensorfold-linux-cuda` | Remote head is 61 commits ahead. The local staged `.gitmodules`/gitlink change and WIP stash are not represented by that ancestry comparison. |
+| Tandem evidence checkout HEAD `872ee09a16dca1327a9278f51f43e8ba6ea3d08a` | Remote lookup | GitHub could not resolve this local-only commit (404). MSI inventory also records one local commit ahead of remote, an untracked 118-line affinity A/B script and an empty-blob staged index entry. This is a priority upload/preservation item; do not execute the script during reorganization. |
+| Tandem archive detached HEAD `efded830bba44d431aef1f930235f37276aa3354` | `main` and `archive/tandem-cpp-2026-11-03` | Divergent from both; no equivalent tip established. Keep as an independent historical checkpoint. |
+| TensorFold Web detached HEAD `20d5fc209abc153915af967a52474114831a525b` | `feat/tensorfold-web-standalone` | Local commit is an ancestor; remote branch is 27 commits ahead. |
+| Cursollm publish snapshot HEAD `ec1932fa62abc2535d68786c306dea8aa4724e8f` | `main` | Local commit is an ancestor; `main` is 559 commits ahead. |
+| Pithos documentation upload HEAD `8d3d22f` | `docs/pithos-intel-opencl-validation-20261109` | Local commit is an ancestor; remote branch is 6 commits ahead. |
+| TensorFold original logs HEAD `e71a913` | `evidence/tensorfold-moe-original-logs-2026-10-24` | Local commit is an ancestor; remote branch is 2 commits ahead. |
+| Falcon3 research HEAD `643925f1d98387a9fad8572324e0de414757795f` | `research/falcon3-i2s-avx2-overflow-2026-11-18` | Local commit is an ancestor; remote branch is 46 commits ahead. |
+| LFM3 docs HEAD `cab1356` | `docs/lfm3-1.7b-dual-host-compare-20261029` | Local commit is an ancestor; remote branch is 2 commits ahead. |
+| ODS Café staging HEAD `98980586fe41219e48d61c472e2d2205d266e4a` | `ods-cafe-llama-icd-dashboard` | Exact same commit. The local untracked PostScript file `os` (3,982,788 bytes, SHA-256 `dbe0833c68c56cc64caba58151d526b60406cccfc99b2f35d142a1ceb0d3b140`) is not part of that remote tree and must be reviewed/uploaded separately if retained. |
+
+The detached Cursollm, TensorFold Web, Pithos, TensorFold-log, Falcon3 and LFM3 checkpoints have reachable remote ancestry, but their local directory contents still require a final MSI check before any local cleanup. The Tandem archive and Tandem evidence checkouts are not proven redundant.
+
+### Additional MSI-only items before closure
+
+1. Upload/preserve the local-only Tandem evidence commit and inspect its staged-empty/untracked-script state.
+2. Review the untracked ODS Café PostScript artifact and decide whether it belongs in the remote evidence archive.
+3. Inspect Companion-Hub submodule staged deletions in the parent LEONES checkout.
+4. Reconcile the Betelgeuse and NEPENTHES stashes by Git common-dir, not by stash message.
+5. Compare all remaining detached snapshots and untracked directories with their exact remote branch/tree before proposing any deletion.
+
+
+## Remote recheck of Tandem evidence and NEPENTHES stack — 2026-11-22
+
+The follow-up inspection confirms the following boundaries:
+
+- LEONES PR #147 is intentionally based on `benchmarks/tandem-qwen35-reasoning-battery-2026-11-12`, not `main`; its head is `7831b72a0a66c6092b0c8f9ae214a07b1cf8d493` and it contains 42 commits. PR #149 is intentionally based on that exact #147 head and adds 91 commits. The apparent `main` comparison for `nepenthes/moe-probes-20261114` (111 ahead / 307 behind) is therefore not a valid reason to flatten, retarget or discard the stacked branch.
+- PR #149 contains a separate 2026-11-14 raw archive: Nsight `.nsys-rep` and SQLite captures, manifests, summaries, checksums and reproducibility material. This does **not** establish that the MSI `tandem-pr7-physical-20261120` capture bundle is byte-identical or redundant.
+- The MSI inventory's local Tandem evidence HEAD `872ee09a16dca1327a9278f51f43e8ba6ea3d08a` is not resolvable as a GitHub commit. The inventory-referenced 118-line `run_nepenthes_affinity_ab.sh` is not present at the expected path on the remote `nepenthes/moe-probes-20261114` branch. Treat both the commit and script as local-only recovery candidates until their exact index/worktree content is uploaded and compared.
+- LEONES PR #273 is the separate Runtime-correlation importer change (7 commits, 2 files; head `5b8ab8f4740429d184a63daf00cfb4d3cd81815f`). Its description reports successful software CI, but the combined-status endpoint returned no status rows in this recheck. The PR itself explicitly leaves physical re-import against the preserved MSI JSONL + Nsight SQLite as a separate validation gate.
+- The producer-side NVTX change is **Tandem.cpp PR #7** at [robertosantosx2/tandem.cpp#7](https://github.com/robertosantosx2/tandem.cpp/pull/7), merged as `7c4300eb754d94737c6aa8d7ffa0077aac7ddcb9`. It is unrelated to LEONES PR #7 (web navigation). Use the repository-qualified link whenever referring to this dependency.
+
+No local evidence was modified, uploaded or deleted by this recheck. The 2026-11-20 physical capture bundle and local affinity script remain unresolved MSI preservation items.
+
+
+### 2026-11-21 physical Tandem capture bundle — inventory-level classification
+
+The MSI inventory identifies `~/tandem-pr7-physical-20261120` as a detached checkout at the merged Tandem.cpp PR #7 commit `7c4300eb754d94737c6aa8d7ffa0077aac7ddcb9`. Its untracked evidence files are:
+
+- `build-pr7-physical.log`
+- `nepenthes-pr7-nsys-20261121-server.log`
+- `nepenthes-pr7-nsys-20261121.jsonl`
+- `nepenthes-pr7-nsys-20261121.nsys-rep`
+- `nepenthes-pr7-nsys-20261121.sqlite`
+- `nepenthes-pr7-paired-pr273-20261121-summary.json`
+- `nepenthes-pr7-paired-pr273-20261121.sqlite`
+- `nepenthes-pr7-smoke-20261121-server.log`
+- `nepenthes-pr7-smoke-20261121.jsonl`
+
+The checkout also contains a nested `tandem/` llama.cpp source tree at base `f5222f25c18da062ab2b8a2dbbfbf4feae398566`, with modified tracked files and untracked CUDA/MoE/NEPENTHES headers. The separate `~/nepenthes-pinned-validation-20261115` checkout is detached at the same base and has an overlapping but not yet hash-compared modified source set. Shared base SHA and similar status summaries are not sufficient to classify these source trees as duplicates.
+
+**Disposition:** all listed 2026-11-21 capture files and both dirty source trees remain MSI-only in the supplied inventory. PR #149's 2026-11-14 raw archive is earlier evidence and is not a substitute. Before upload or deduplication, collect file sizes and SHA-256 for the physical bundle, compare tracked diff and untracked-file hashes between the two source trees, and inspect the nested source patch for overlap with the already published 2026-11-03 llama.cpp recovery archive. Do not commit the binary captures directly to Git without checking size and storage policy.
+
+## NEPENTHES GitHub reorganization — remote disposition refresh (2026-11-22 11:51 CET)
+
+This refresh is limited to GitHub-visible state. It does not infer local worktree, stash, reflog, unpushed-commit, or filesystem safety.
+
+### Current NEPENTHES branch namespace
+
+A paginated branch-name search for `nepenthes` returned **101 matching refs** in `robertosantosx2/LEONES`. This is a name-filtered count, not the repository-wide branch count and not a count of unique tips. The separate audit snapshot recorded in this PR remains the authority for the repository-wide inventory.
+
+### Active implementation and evidence stacks
+
+| PR | Head → base | Remote graph | Disposition |
+|---|---|---|---|
+| #147 | `nepenthes/moe-probes-20261114` → `benchmarks/tandem-qwen35-reasoning-battery-2026-11-12` | 42 commits ahead, 0 behind; 10 changed files | Keep open as the MoE probe implementation layer. |
+| #149 | `nepenthes/performance-capacity-roadmap-20261114` → #147 head | 91 commits ahead, 0 behind; 52 changed files, including raw Nsight capture/SQLite evidence | Keep open and stacked on #147. Do not retarget, squash, or merge out of order; preserve its evidence-bearing history. |
+| #273 | `feat/nepenthes-nsys-runtime-thread-join-20261121` → `main` | 7 commits ahead, 11 behind; changes limited to `scripts/nepenthes_nsys_import.py` and `tests/test_nepenthes_nsys_import.py` | Keep open for review. Rebase/integration is a separate change and must retain the fail-closed Runtime-correlation behavior. The combined-status query exposed no status rows in this refresh; the PR description records the previously observed passing CI checks. Physical re-import remains a distinct MSI gate. |
+
+The #147 → #149 stack is intentional dependency structure, not duplicate work. Its ancestry and evidence must remain intact.
+
+### Historical and blocked documentation refs
+
+- **#153** (`feat/nepenthes-nsys-only-20261115`) is closed/merged. Its head is retained as a historical implementation ref; remote merge status alone does not authorize local ref or worktree deletion.
+- **#154** (`docs/nepenthes-english-20261115`) remains an open draft based on the historical #153 branch. Its body explicitly blocks merging/retargeting until a fresh English mirror is translated from the current Spanish INDEX. Keep blocked; do not merge the stale translation.
+- **#281** (this recovery/hygiene PR) remains a draft. It records preservation and remote classification; it is not a request to delete refs or merge recovery patches into project repositories.
+
+### C07 paired-import follow-up
+
+The 2026-11-21 paired PR273 summary is separately archived in `robertosantosx2/interaccion-MSI`. It supports the documented single-worker/single-request physical result and Runtime-correlation recovery, but does not establish multi-request/multi-worker attribution or exact importer-binary provenance. Keep those limitations visible; do not promote the result to broader acceptance.
+
+### Reorganization decision
+
+1. Preserve #147 and #149 as a two-level evidence/implementation stack.
+2. Keep #273 open; handle its 11-commit base drift through a dedicated integration review, not an automatic retarget.
+3. Keep #153 as merged history and #154 blocked pending a current-source translation.
+4. Keep the MSI evidence repository as an archive boundary; do not copy binary captures into LEONES merely to consolidate paths.
+5. No branch deletion, force-update, PR close, merge, or local cleanup is performed by this refresh. The available GitHub connector does not expose branch-ref deletion, and the remaining local dependency gates are unresolved.
+
+### PR #273 integration review — 2026-11-22
+
+A focused comparison was performed against the current `main` tip `ca2f24c2214b449b09fe9860edfcbcb9d39db990`:
+
+- PR head remains `5b8ab8f4740429d184a63daf00cfb4d3cd81815f`; merge base is `9659a6da4f4d6d72290c27d0ebb810931fcd5f1f`.
+- The branch is 7 commits ahead and 11 behind `main`. The PR's complete changed-file set is exactly two files: `scripts/nepenthes_nsys_import.py` (+80/-4) and `tests/test_nepenthes_nsys_import.py` (+105/-0).
+- Reverse comparison (`PR head...main`) shows the 11 main-side commits touch other paths; neither of the two PR paths appears in that main-side changed-file set. This is evidence of no same-path edits since the merge base, not a substitute for running merge checks.
+- GitHub currently reports the PR as mergeable. Eight workflow runs attached to the PR head were completed successfully: V1 regression, RC3, Contract Tests, RC4, Agentic A01, NEPENTHES AIPerf/importers/exporters, runtime-v11-regression and V1 Complete Gate.
+- The added tests cover paired and Nsight-only recovery, missing/ambiguous Runtime correlation and cross-process mismatch. The importer rejects ambiguous or process-mismatched recovered identities rather than guessing.
+
+**Integration disposition:** the review found no file-level overlap with the 11 main-side commits and no reason to retarget the PR to another base (it already targets `main`). Do not rewrite its head merely to eliminate the behind count. Keep #273 open for maintainer review and a fresh CI/mergeability check at decision time; retain the separate physical MSI re-import gate. This audit does not merge the PR.
+
+### CI snapshot for the stacked probes
+
+- PR #147 head `7831b72a0a66c6092b0c8f9ae214a07b1cf8d493`: V1 regression and runtime-v11-regression completed successfully.
+- PR #149 head `bc713b36ae2c93e527c653a291562d80670627a6`: runtime-v11-regression, V1 regression and NEPENTHES probe tests completed successfully.
+- The PR #147 → #149 base relationship remains exact: #149 is based on #147's head. These CI snapshots do not justify merging #149 independently or flattening the stack.
+
+
+### Integración de LEONES #273 — 2026-11-22 (11:59 CET)
+
+**Integrada en `main`.** A petición expresa, la PR #273 se fusionó mediante merge commit, protegiendo el HEAD esperado:
+
+- PR: [#273](https://github.com/robertosantosx2/LEONES/pull/273)
+- HEAD integrado: `5b8ab8f4740429d184a63daf00cfb4d3cd81815f`
+- Merge commit: `e730bb2dcc3d964050a2a27dad6b0a5628a927d0`
+- Estado posterior verificado: PR cerrada y `merged=true`; comparación de su HEAD con `main` devuelve 0 commits ahead y 12 behind, sin ficheros pendientes. La rama de feature ya es ancestro de `main`.
+- Los ocho workflows asociados al HEAD de la PR estaban completados con éxito antes de la integración. El endpoint de workflows para el merge commit no devolvió ejecuciones; no se presenta como CI posterior al merge.
+- Se conservan los límites de la evidencia: la captura MSI acredita un único worker/request y no certifica atribución multi-request/multi-worker ni provenance criptográfica exacta del binario importer.
+
+**Rama tras la integración:** `feat/nepenthes-nsys-runtime-thread-join-20261121` continúa existiendo en GitHub. Es candidata a eliminación remota porque su PR está fusionada y el HEAD está contenido en `main`; no se elimina automáticamente mientras no se haya comprobado si algún PR abierto, automatización o referencia local depende de ella.
+
+**Limpieza de ramas:** la integración GitHub disponible en esta sesión no expone una operación de eliminación de refs/branches. Por tanto, no se ha borrado ninguna rama. La rama #273 queda identificada como candidata de bajo riesgo para eliminar desde GitHub una vez comprobadas las referencias locales. Las ramas #147 y #149 siguen siendo una pila activa y se preservan; #153 sigue siendo base histórica de la PR #154 bloqueada y no se elimina. Las demás ramas NEPENTHES no se etiquetan como redundantes solo por el nombre: requieren SHA exacto y cruce de PR head/base antes de cualquier eliminación.
