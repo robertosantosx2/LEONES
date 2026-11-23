@@ -92,8 +92,8 @@ La salida de `lscpu` identifica ocho CPU lógicas y dos clústeres:
 
 | Clúster informado | Núcleos | Frecuencia máxima informada |
 |---|---:|---:|
-| Kryo-4XX-Gold | 2 | 2.841,6 MHz |
-| Kryo-4XX-Silver | 6 | 1.785,6 MHz |
+| Kryo-4XX-Gold | 4 | 2.841,6 MHz |
+| Kryo-4XX-Silver | 4 | 1.785,6 MHz |
 
 Las frecuencias instantáneas capturadas durante el inventario fueron 1.708–1.785,6 MHz en CPU 0–3 y 710,4–825,6 MHz en CPU 4–7. El governor visible en CPU 0 es `schedutil`; `scaling_max_freq` visible en esa política fue 1.785.600 kHz. No interpretar las frecuencias instantáneas como rendimiento sostenido ni como máximo efectivo de todos los clústeres.
 
