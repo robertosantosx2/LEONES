@@ -13,7 +13,6 @@
         ["Scripts", "scripts.html", "project"],
 
         ["Conocimiento de IA en Local", "conocimiento.html", "top"],
-        ["SGLang", "conocimiento-sglang.html", "top"],
         ["Optimización de inferencia", "conocimiento-optimizacion.html", "top"],
         ["Harnesses", "conocimiento-harnesses.html", "top"],
         ["Buddy", "buddy.html", "top"],
