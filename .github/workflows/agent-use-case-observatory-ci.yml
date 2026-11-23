@@ -54,5 +54,5 @@ jobs:
           test ! -e web/agent-use-cases.html
           test ! -e web/mobile-llms-arm.html
           test ! -e web/investigacion.html
-          ! grep -R -nE 'web/(discovery-atlas|agent-use-cases|mobile-llms-arm|investigacion)\\.html|web/data/(prospeccion|agent-use-cases|mobile-llms-arm|research-projects)\\.json' README.md docs web/index.html .github/workflows scripts
+          ! grep -R -nE 'web/(discovery-atlas|agent-use-cases|mobile-llms-arm|investigacion)\\.html|web/data/(prospeccion|agent-use-cases|mobile-llms-arm|research-projects)\\.json' README.md docs web/index.html scripts
           git diff --check
