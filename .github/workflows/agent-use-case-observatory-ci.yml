@@ -49,6 +49,10 @@ jobs:
           test -f web/agent-use-cases.md
           test -f web/mobile-llms-arm.md
           test -f web/investigacion.md
+          test ! -e web/data/prospeccion.json
+          test ! -e web/data/agent-use-cases.json
+          test ! -e web/data/mobile-llms-arm.json
+          test ! -e web/data/research-projects.json
           test ! -e web/prospeccion.html
           test ! -e web/discovery-atlas.html
           test ! -e web/agent-use-cases.html
