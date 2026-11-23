@@ -18,7 +18,7 @@ def load(path):
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
 
 def esc(value):
-    return str(value if value not in (None, "") else "—").replace("|", "\\|").replace("\n", " ").strip()
+    return str("—" if value is None else value).replace("|", "\\|").replace("\n", " ").strip()
 
 def link(label, url):
     return f"[{label}]({url})" if url and str(url).startswith(("https://", "http://")) else esc(label)
@@ -32,7 +32,7 @@ def discovery_page(feed):
     items = feed.get("items", [])
     groups = defaultdict(list)
     for x in items:
-        groups[str(x.get("type") or x.get("category") or "Sin clasificar")].append(x)
+        groups[str(x.get("type") or "Sin clasificar")].append(x)
     lines = ["# LEONES — Discovery Atlas", "", f"> Generado: {feed.get('generated_at', 'sin fecha')} · {len(items)} hallazgos",
              "", "**Descubierto ≠ aprobado ≠ recomendado ≠ ejecutado ≠ medido.** Los metadatos y licencias son declaraciones de las fuentes; requieren revisión independiente.",
              "", "Catálogo de software, modelos, runtimes, hardware y publicaciones procedentes de la prospección federada.", ""]
