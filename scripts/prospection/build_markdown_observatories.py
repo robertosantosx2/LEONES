@@ -18,7 +18,7 @@ def load(path):
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
 
 def esc(value):
-    return str("—" if value is None else value).replace("|", "\\|").replace("\n", " ").strip()
+    return str("—" if value is None else value).replace("|", "\\|").replace("\r", " ").replace("\n", " ").strip()
 
 def link(label, url):
     return f"[{esc(label)}]({url})" if url and str(url).startswith(("https://", "http://")) else esc(label)
