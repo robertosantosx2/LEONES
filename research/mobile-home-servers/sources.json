@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "project": "Mobile-Home-Servers",
+  "github_queries": [
+    "termux home server",
+    "android home server termux",
+    "android linux server proot",
+    "postmarketOS smartphone server",
+    "droidian home server"
+  ],
+  "reddit_queries": [
+    "termux home server",
+    "android home server",
+    "postmarketOS server"
+  ],
+  "x_searches": [
+    "Termux home server",
+    "Android Linux server",
+    "postmarketOS server",
+    "Droidian server"
+  ],
+  "seed_sources": [
+    "https://github.com/romit07/android-home-server",
+    "https://github.com/handriss/mobile-home-server",
+    "https://github.com/fbratten/android-termux-home-server",
+    "https://github.com/myselfshravan/droidvm",
+    "https://github.com/faxitech59-lab/Android-Cloud-Server"
+  ],
+  "publication_is_not_approval": true
+}

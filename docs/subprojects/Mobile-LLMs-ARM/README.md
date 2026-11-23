@@ -40,7 +40,7 @@ El HTML es autocontenido y offline. La prospección se integra en Daily Atlas Pr
 
 No convertir estrellas, README, cifras sociales o benchmarks de terceros en mediciones LEONES. Registrar SoC, RAM, sistema operativo, runtime/commit, backend, modelo/hash/cuanti­zación, contexto, hilos, duración, TTFT, prefill, decode, energía y temperatura.
 
-## Integraciones potenciales
+## Línea relacionada: Mobile-Home-Servers\n\n- [Mobile-Home-Servers](../Mobile-Home-Servers/README.md): hosting doméstico, Termux/PRoot, Linux móvil, servicios, seguridad y pruebas.\n\n## Integraciones potenciales
 
 - Atlas: identidad, procedencia y licencias.
 - NEPENTHES: protocolo de benchmark móvil y observabilidad.

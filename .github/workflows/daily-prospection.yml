@@ -10,6 +10,9 @@ on:
       - 'scripts/prospection/**'
       - 'scripts/research/**'
       - 'research/mobile-llms-arm/**'
+      - 'research/mobile-home-servers/**'
+      - 'scripts/research/mobile_home_servers.py'
+      - 'web/mobile-home-servers.html'
       - 'web/mobile-llms-arm.html'
       - '.github/workflows/daily-prospection.yml'
 
@@ -78,7 +81,7 @@ jobs:
           python scripts/research/mobile_llms_arm.py
           python -m json.tool web/data/mobile-llms-arm.json >/dev/null
           python -c 'import json; p=json.load(open("web/data/mobile-llms-arm.json")); assert p["publication_is_not_approval"] is True; assert p["automatic_recommendation"] is False; assert isinstance(p["items"], list)'
-      - name: Run harness discovery
+      - name: Discover mobile home-server projects\n        env:\n          GITHUB_TOKEN: ${{ github.token }}\n        run: |\n          python -m py_compile scripts/research/mobile_home_servers.py\n          python scripts/research/mobile_home_servers.py\n          python -m json.tool web/data/mobile-home-servers.json >/dev/null\n      - name: Run harness discovery
         run: python scripts/prospection/bot_harnesses.py --input data/prospection/harness_sources.ndjson
       - name: Run hardware discovery
         run: python scripts/prospection/bot_hardware.py --input data/prospection/hardware_sources.ndjson
@@ -128,6 +131,8 @@ jobs:
             data/prospection/agent_use_cases.ndjson
             web/data/mobile-llms-arm.json
             web/mobile-llms-arm.html
+            web/data/mobile-home-servers.json
+            web/mobile-home-servers.html
           if-no-files-found: warn
       - name: Publish generated discovery data and report
         if: github.ref == 'refs/heads/main'
@@ -138,7 +143,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           mkdir -p /tmp/leones-generated
-          git diff --binary "$BASE_SHA" -- data/prospection/ scripts/prospection/ web/data/ web/discovery-atlas.html web/mobile-llms-arm.html > /tmp/leones-generated/generated.patch || true
+          git diff --binary "$BASE_SHA" -- data/prospection/ scripts/prospection/ web/data/ web/discovery-atlas.html web/mobile-llms-arm.html web/data/mobile-home-servers.json web/mobile-home-servers.html > /tmp/leones-generated/generated.patch || true
           git fetch origin main
           git reset --hard origin/main
           if [ -s /tmp/leones-generated/generated.patch ]; then
@@ -147,7 +152,7 @@ jobs:
               git apply --reject /tmp/leones-generated/generated.patch || true
             }
           fi
-          git add data/prospection/ scripts/prospection/ scripts/research/ web/data/ web/discovery-atlas.html web/mobile-llms-arm.html
+          git add data/prospection/ scripts/prospection/ scripts/research/ web/data/ web/discovery-atlas.html web/mobile-llms-arm.html web/mobile-home-servers.html
           if git diff --cached --quiet; then
             echo 'No changes to publish.'
           else
