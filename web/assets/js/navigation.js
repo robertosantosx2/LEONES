@@ -4,7 +4,6 @@
     const navigation = [
         ["Inicio", "index.html", "top"],
         ["Inicio rápido", "inicio-rapido.html", "top"],
-        ["Proyectos", "proyectos.html", "top"],
         ["Estado", "estado.html", "top"],
         ["Roadmap", "roadmap.html", "top"],
 
