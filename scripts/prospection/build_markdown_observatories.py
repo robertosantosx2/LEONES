@@ -64,7 +64,7 @@ def agent_page(feed):
     lines += ["## Criterios de lectura", "", "- pending/discovered: no revisado o no reproducido.",
               "- La licencia es metadato declarado por GitHub, no dictamen jurídico.",
               "- reproducibility_score es una heurística basada en señales textuales; no es resultado de ejecución.",
-              "- Ningún candidato recibe verified por automatización.", ""]
+              "- Ningún candidato recibe verified por automatización."]
     return "\n".join(lines) + "\n"
 
 def mobile_page(feed):
