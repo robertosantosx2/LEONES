@@ -78,8 +78,8 @@ jobs:
               s = s.replace('href="../scripts/', 'href="' + repo + 'scripts/')
               s = s.replace('assets/graphics/logos/leones-prospection.svg', 'assets/graphics/leones-logo-principal.jpg')
               s = s.replace('href="sources/FREETOKEN.md"', 'href="https://github.com/FlashML-org/FreeToken"')
-              s = s.replace('href="architecture.html#lotb"', 'href="app.html"')
-              s = s.replace('href="arquitectura.html#lotb"', 'href="app.html"')
+              s = s.replace('href="architecture.html#lotb"', 'href="evaluacion.html"')
+              s = s.replace('href="arquitectura.html#lotb"', 'href="evaluacion.html"')
               s = s.replace('LOTB', 'Evaluación agentiva')
               s = s.replace('lotb', 'evaluation-agentiva')
               p.write_text(s, encoding='utf-8')
@@ -89,7 +89,7 @@ jobs:
         run: |
           set -e
           for f in web/*.html; do test -f "_site/$(basename "$f")"; done
-          for f in index.html inicio-rapido.html atlas.html arquitectura.html pila.html conocimiento.html conocimiento-optimizacion.html fuentes.html app.html rc2.html evaluacion.html recommendations.html recomendar.html resultados.html manada.html prospeccion.html horizon.html contacto.html; do test -f "_site/$f"; done
+          for f in index.html inicio-rapido.html atlas.html arquitectura.html pila.html conocimiento.html conocimiento-optimizacion.html fuentes.html rc2.html evaluacion.html recommendations.html recomendar.html resultados.html manada.html prospeccion.html horizon.html contacto.html; do test -f "_site/$f"; done
           python3 - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
@@ -99,7 +99,7 @@ jobs:
           canonical_pages = {
               'index.html','inicio-rapido.html','atlas.html','arquitectura.html',
               'conocimiento.html','conocimiento-optimizacion.html',
-              'fuentes.html','app.html','rc2.html','evaluacion.html','recommendations.html','recomendar.html','resultados.html',
+              'fuentes.html','rc2.html','evaluacion.html','recommendations.html','recomendar.html','resultados.html',
               'manada.html','prospeccion.html','horizon.html','contacto.html'
           }
           class P(HTMLParser):
