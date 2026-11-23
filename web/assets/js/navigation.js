@@ -18,13 +18,11 @@
         ["Buddy", "buddy.html", "top"],
         ["Fuentes", "fuentes.html", "top"],
 
-        ["RC2 · histórico", "rc2.html", "application"],
         ["RC3 · cerrada", "rc3.html", "application"],
         ["RC4 · FitLLM", "rc4.html", "application"],
         ["¿Puede mi PC?", "puede-mi-pc.html", "application"],
         ["Cuadros maestros", "cuadros-maestros.html", "application"],
         ["Stack Explorer", "stack-explorer.html", "application"],
-        ["Evaluación", "evaluacion.html", "application"],
         ["Recomendaciones", "recommendations.html", "application"],
         ["Recomendaciones de visita", "recomendaciones-visita.html", "application"],
         ["Recomendar a LEONES", "recomendar.html", "application"],
