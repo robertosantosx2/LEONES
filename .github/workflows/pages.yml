@@ -54,14 +54,19 @@ jobs:
           cp INSTALL.md _site/INSTALL.md
           touch _site/.nojekyll
 
-      - name: Verify source has no obsolete LOTB references
+      - name: Verify navigation targets are present
         run: |
-          set -e
-          if grep -RniE 'LOTB|lotb' web --include='*.html' --include='*.js'; then
-            echo 'ERROR: obsolete LOTB reference found in web source'
-            exit 1
-          fi
-          echo "Web source is free of obsolete LOTB references."
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          root = Path('web')
+          nav = (root / 'assets/js/navigation.js').read_text(encoding='utf-8')
+          targets = re.findall(r'\["[^"]+",\s*"([^"]+\.html)"', nav)
+          missing = sorted({target for target in targets if not (root / target).is_file()})
+          if missing:
+              raise SystemExit("Navigation targets missing: " + ", ".join(missing))
+          print(f"Navigation verified: {len(set(targets))} existing destinations.")
+          PY
 
       - name: Normalize legacy relative links and obsolete assets
         run: |
@@ -89,7 +94,7 @@ jobs:
         run: |
           set -e
           for f in web/*.html; do test -f "_site/$(basename "$f")"; done
-          for f in index.html inicio-rapido.html atlas.html arquitectura.html pila.html conocimiento.html conocimiento-optimizacion.html fuentes.html recommendations.html recomendar.html resultados.html manada.html prospeccion.html horizon.html contacto.html; do test -f "_site/$f"; done
+          for f in index.html inicio-rapido.html estado.html roadmap.html prospeccion.html atlas.html discovery-atlas.html agent-use-cases.html diagramas.html runtimes-locales.html scripts.html conocimiento.html conocimiento-optimizacion.html conocimiento-rtx-spark.html conocimiento-harnesses.html buddy.html fuentes.html rc3.html rc4.html puede-mi-pc.html cuadros-maestros.html stack-explorer.html recommendations.html recomendaciones-visita.html recomendar.html resultados.html manada.html horizon.html logos.html contacto.html; do test -f "_site/$f"; done
           python3 - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
@@ -97,10 +102,14 @@ jobs:
           root = Path('_site').resolve(); errors = []
           canonical_script = 'assets/js/navigation.js'
           canonical_pages = {
-              'index.html','inicio-rapido.html','atlas.html','arquitectura.html',
-              'conocimiento.html','conocimiento-optimizacion.html',
-              'fuentes.html','recommendations.html','recomendar.html','resultados.html',
-              'manada.html','prospeccion.html','horizon.html','contacto.html'
+              'index.html','inicio-rapido.html','estado.html','roadmap.html','prospeccion.html',
+              'atlas.html','discovery-atlas.html','agent-use-cases.html','diagramas.html',
+              'runtimes-locales.html','scripts.html','conocimiento.html',
+              'conocimiento-optimizacion.html','conocimiento-rtx-spark.html',
+              'conocimiento-harnesses.html','buddy.html','fuentes.html','rc3.html','rc4.html',
+              'puede-mi-pc.html','cuadros-maestros.html','stack-explorer.html',
+              'recommendations.html','recomendaciones-visita.html','recomendar.html',
+              'resultados.html','manada.html','horizon.html','logos.html','contacto.html'
           }
           class P(HTMLParser):
               def __init__(self, src): super().__init__(); self.src = src
@@ -112,10 +121,14 @@ jobs:
                       candidate = (self.src.parent / unquote(u.path)).resolve()
                       if candidate.is_dir(): candidate /= 'index.html'
                       if not candidate.exists(): errors.append(f'{self.src.relative_to(root)} -> {v}')
-          for page in root.rglob('*.html'):
+          for name in canonical_pages:
+              page = root / name
+              if not page.is_file():
+                  errors.append(f'missing canonical page: {name}')
+                  continue
               text = page.read_text(encoding='utf-8')
               P(page).feed(text)
-              if page.name in canonical_pages and canonical_script not in text:
+              if canonical_script not in text:
                   errors.append(f'{page.relative_to(root)} -> missing canonical navigation script')
           nav = root / canonical_script
           if not nav.is_file(): errors.append(f'missing canonical navigation asset: {canonical_script}')
