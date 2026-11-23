@@ -1,73 +1,62 @@
-name: Agent Use Case Observatory CI
-
+name: Markdown Observatory CI
 on:
   pull_request:
     paths:
-      - 'scripts/prospection/agent_use_case_observatory.py'
-      - 'scripts/prospection/build_discovery_atlas.py'
-      - 'web/discovery-atlas.html'
-      - 'web/data/prospeccion.json'
-      - 'web/agent-use-cases.html'
-      - 'web/index.html'
-      - 'web/data/agent-use-cases.json'
+      - 'scripts/prospection/**'
+      - 'scripts/research/**'
+      - 'scripts/research_catalog/**'
+      - 'data/observatory/**'
+      - 'web/*.md'
+      - 'web/*.html'
       - 'docs/subprojects/AGENT-USE-CASE-OBSERVATORY/**'
-      - '.github/workflows/agent-use-case-observatory-ci.yml'
-      - '.github/workflows/daily-prospection.yml'
+      - '.github/workflows/**'
       - 'README.md'
-
 permissions:
   contents: read
-
 concurrency:
-  group: agent-use-case-observatory-${{ github.event.pull_request.number }}
+  group: markdown-observatory-${{ github.event.pull_request.number }}
   cancel-in-progress: true
-
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
-      - name: Compile discovery scripts
-        run: python -m py_compile scripts/prospection/agent_use_case_observatory.py scripts/prospection/build_discovery_atlas.py
-      - name: Validate catalog feed and publication safeguards
+      - name: Compile observatory generators
         run: |
-          python -m json.tool web/data/agent-use-cases.json >/dev/null
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          feed = json.loads(Path("web/data/agent-use-cases.json").read_text(encoding="utf-8"))
-          assert feed["publication_is_not_approval"] is True
-          assert feed["automatic_recommendation"] is False
-          assert isinstance(feed["items"], list)
-          for item in feed["items"]:
-              assert item.get("name")
-              assert item.get("url", "").startswith("https://")
-              assert item.get("review_status") != "verified"
-          html = Path("web/agent-use-cases.html").read_text(encoding="utf-8")
-          assert 'data/agent-use-cases.json' in html
-          assert 'leones-agents.svg' in html
-          print(f"validated {len(feed['items'])} unapproved catalog candidates")
-          PY
-      - name: Verify standalone Discovery Atlas embeds the current feed
+          python -m py_compile scripts/prospection/build_markdown_observatories.py
+          python -m py_compile scripts/prospection/agent_use_case_observatory.py
+          python -m py_compile scripts/research/mobile_llms_arm.py
+          python -m py_compile scripts/research_catalog/build_research_catalog.py
+      - name: Validate internal source feeds
         run: |
-          python scripts/prospection/build_discovery_atlas.py
-          git diff --exit-code -- web/discovery-atlas.html
-          python - <<'PY'
-          import json, re
-          from pathlib import Path
-          feed = json.loads(Path("web/data/prospeccion.json").read_text(encoding="utf-8"))
-          html = Path("web/discovery-atlas.html").read_text(encoding="utf-8")
-          match = re.search(r"const DATA=(\{.*?\});\nconst \$=", html, re.S)
-          assert match, "embedded catalog payload not found"
-          embedded = json.loads(match.group(1))
-          assert len(embedded["items"]) == len(feed["items"])
-          assert embedded["generated_at"] == feed["generated_at"]
-          assert "fetch(" not in html and "<script src=" not in html
-          assert "leones-logo-principal.svg" not in html
-          print(f"standalone HTML embeds {len(embedded['items'])} discoveries")
-          PY
+          python -m json.tool data/observatory/prospeccion.json >/dev/null
+          python -m json.tool data/observatory/agent-use-cases.json >/dev/null
+          python -m json.tool data/observatory/mobile-llms-arm.json >/dev/null
+          python -m json.tool data/observatory/research-projects.json >/dev/null
+      - name: Rebuild Markdown observatories deterministically
+        run: |
+          python scripts/prospection/build_markdown_observatories.py
+          git diff --exit-code -- web/observatory.md web/prospeccion.md web/discovery-atlas.md web/agent-use-cases.md web/mobile-llms-arm.md web/investigacion.md
+      - name: Enforce Markdown-only public observatory
+        run: |
+          test -f web/observatory.md
+          test -f web/prospeccion.md
+          test -f web/discovery-atlas.md
+          test -f web/agent-use-cases.md
+          test -f web/mobile-llms-arm.md
+          test -f web/investigacion.md
+          test ! -e web/data/prospeccion.json
+          test ! -e web/data/agent-use-cases.json
+          test ! -e web/data/mobile-llms-arm.json
+          test ! -e web/data/research-projects.json
+          test ! -e web/prospeccion.html
+          test ! -e web/discovery-atlas.html
+          test ! -e web/agent-use-cases.html
+          test ! -e web/mobile-llms-arm.html
+          test ! -e web/investigacion.html
+          ! grep -R -nE 'web/(discovery-atlas|agent-use-cases|mobile-llms-arm|investigacion)\\.html|web/data/(prospeccion|agent-use-cases|mobile-llms-arm|research-projects)\\.json' README.md docs/PROSPECTION.md docs/research/RESEARCH-PROJECTS-INDEX.md docs/subprojects/AGENT-USE-CASE-OBSERVATORY/README.md docs/subprojects/Mobile-LLMs-ARM/README.md web/index.html scripts
+          git diff --check

@@ -40,22 +40,22 @@ La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopció
 
 ## LEONES — Discovery Atlas
 
-> **[EXPLORAR EL DISCOVERY ATLAS →](web/discovery-atlas.html)**  
+> **[EXPLORAR EL DISCOVERY ATLAS →](web/discovery-atlas.md)**  
 > Catálogo general de los descubrimientos de la prospección federada de LEONES: software, repositorios, modelos y papers de GitHub, GitLab, Hugging Face, Framagit y otras forjas.
 
-- **HTML autocontenido y offline:** incorpora el catálogo en el propio archivo; no necesita CDN, JSON remoto ni llamadas a APIs para consultarlo.
+- **Publicación Markdown:** catálogo legible y versionable directamente en GitHub, sin HTML autocontenido ni dependencias de navegador.
 - **Actualización diaria:** [Daily Atlas Prospection](.github/workflows/daily-prospection.yml) regenera la página después de publicar el feed de descubrimientos.
-- **Datos y trazabilidad:** [feed JSON de prospección](web/data/prospeccion.json) · [generador reproducible](scripts/prospection/build_discovery_atlas.py).
+- **Datos y trazabilidad:** datos internos en `data/observatory/` · [generador Markdown](scripts/prospection/build_markdown_observatories.py) · [índice de observatorios](web/observatory.md).
 - Los elementos se presentan como hallazgos pendientes de revisión; descubrir un proyecto no significa aprobarlo, recomendarlo ni haberlo ejecutado.
 
 ---
 
 ## <img src="web/assets/graphics/logos/leones-agents.svg" alt="LEONES Agents" width="34" align="absmiddle"> LEONES — Agent Use Case Observatory
 
-> **[EXPLORAR EL OBSERVATORIO DE AGENTES →](web/agent-use-cases.html)**  
+> **[EXPLORAR EL OBSERVATORIO DE AGENTES →](web/agent-use-cases.md)**  
 > Catálogo vivo de casos concretos, repositorios de código, Agent Skills, prompts, servidores MCP, ejemplos y workflows reutilizables. Priorizamos proyectos inspeccionables y reproducibles, con procedencia y señales de evidencia visibles.
 
-- **[Interfaz del catálogo](web/agent-use-cases.html)** · [Feed JSON](web/data/agent-use-cases.json) · [Documentación y gates](docs/subprojects/AGENT-USE-CASE-OBSERVATORY/README.md).
+- **[Catálogo Markdown](web/agent-use-cases.md)** · [Índice de observatorios](web/observatory.md) · [Documentación y gates](docs/subprojects/AGENT-USE-CASE-OBSERVATORY/README.md).
 - Se alimenta del catálogo de prospección existente y de búsquedas diarias en GitHub mediante [Daily Atlas Prospection](.github/workflows/daily-prospection.yml).
 - Registra README, licencia declarada, actividad, instrucciones de instalación y ejemplos detectados para ayudar a priorizar la revisión.
 - **Descubierto ≠ aprobado.** Ningún resultado se recomienda, ejecuta o integra automáticamente; la reproducibilidad real requiere una validación explícita.
@@ -66,10 +66,10 @@ La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopció
 
 ## Mobile-LLMs-ARM — IA local en móviles y sistemas ARM
 
-> **[EXPLORAR MOBILE-LLMS-ARM →](web/mobile-llms-arm.html)**  
+> **[EXPLORAR MOBILE-LLMS-ARM →](web/mobile-llms-arm.md)**  
 > Observatorio de LLMs e IA en Android, Linux móvil, ARM64 y sistemas embebidos: runtimes, CPU/GPU/NPU, modelos, benchmarks, eficiencia y clústeres móviles.
 
-- [Documentación](docs/subprojects/Mobile-LLMs-ARM/README.md) · [Roadmap](docs/subprojects/Mobile-LLMs-ARM/ROADMAP.md) · [Feed JSON](web/data/mobile-llms-arm.json) · [Fuentes](research/mobile-llms-arm/sources.json).
+- [Documentación](docs/subprojects/Mobile-LLMs-ARM/README.md) · [Roadmap](docs/subprojects/Mobile-LLMs-ARM/ROADMAP.md) · [Fuentes](research/mobile-llms-arm/sources.json).
 - **Plataforma móvil de referencia:** [Xiaomi Mi 9T Pro — 6 GB RAM, octa-core hasta 2,84 GHz (datos comunicados; pendiente caracterización)](hardware/XIAOMI-MI-9T-PRO-6GB.md).
 - Prospección diaria de GitHub y Reddit integrada en [Daily Atlas Prospection](.github/workflows/daily-prospection.yml); X mantiene búsquedas directas hasta disponer de API autorizada.
 - Descubierto no significa aprobado ni medido. Las pruebas físicas requieren protocolo y evidencia.
@@ -120,4 +120,4 @@ La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopció
 
 ## Catálogo completo de investigación
 
-El inventario recursivo de proyectos, subproyectos y líneas de investigación de LEONES —con descripción, ubicación canónica, potencial, estado documental y reglas para evitar duplicidades— está disponible en el **[Observatorio visual de investigación](web/investigacion.html)** y en su [índice canónico Markdown](docs/research/RESEARCH-PROJECTS-INDEX.md). El observatorio se reconstruye diariamente mediante GitHub Actions y propone actualizaciones mediante PR. Incluye la nueva línea **[LocalAI 5.0](research/localai-v5-integration-2026-11.md)** como runtime opcional en evaluación, sin convertirlo en dependencia obligatoria ni sustituir los motores existentes.
+El inventario recursivo de proyectos, subproyectos y líneas de investigación de LEONES —con descripción, ubicación canónica, potencial, estado documental y reglas para evitar duplicidades— está disponible en el **[Observatorio Markdown de investigación](web/investigacion.md)** y en su [índice canónico](docs/research/RESEARCH-PROJECTS-INDEX.md). El observatorio se reconstruye diariamente mediante GitHub Actions y publica exclusivamente Markdown. Incluye la nueva línea **[LocalAI 5.0](research/localai-v5-integration-2026-11.md)** como runtime opcional en evaluación, sin convertirlo en dependencia obligatoria ni sustituir los motores existentes.

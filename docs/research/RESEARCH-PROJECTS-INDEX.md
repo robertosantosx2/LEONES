@@ -27,7 +27,7 @@ Este catálogo identifica proyectos, subproyectos y líneas de investigación co
 | **Buddy — memoria file-first** | [subproyecto](../subprojects/buddy/README.md) · [aplicación](../../buddy/README.md) | Asistente/harness con memoria Git/Markdown, permisos por zonas y herramientas file-first. | Alto: memoria auditable y continuidad independiente del proveedor LLM. | Integración diseñada; persistencia LEONES explícita pendiente. |
 
 
-| **Mobile-LLMs-ARM** | [subproyecto](../subprojects/Mobile-LLMs-ARM/README.md) · [roadmap](../subprojects/Mobile-LLMs-ARM/ROADMAP.md) · [catálogo HTML](../../web/mobile-llms-arm.html) | Investigación de LLMs e IA local en Android, Linux móvil y sistemas embebidos ARM; runtimes, CPU/GPU/NPU, modelos, eficiencia, benchmarks y clústeres móviles. | Muy alto: amplía LEONES a edge móvil y nodos ARM heterogéneos; conecta Atlas, NEPENTHES, Router y REDIL. | Investigación incorporada; catálogo y prospección automatizada en implementación. Sin validación física declarada. |
+| **Mobile-LLMs-ARM** | [subproyecto](../subprojects/Mobile-LLMs-ARM/README.md) · [roadmap](../subprojects/Mobile-LLMs-ARM/ROADMAP.md) · [catálogo Markdown](../../web/mobile-llms-arm.md) | Investigación de LLMs e IA local en Android, Linux móvil y sistemas embebidos ARM; runtimes, CPU/GPU/NPU, modelos, eficiencia, benchmarks y clústeres móviles. | Muy alto: amplía LEONES a edge móvil y nodos ARM heterogéneos; conecta Atlas, NEPENTHES, Router y REDIL. | Investigación incorporada; catálogo y prospección automatizada en implementación. Sin validación física declarada. |
 
 ## 2. Investigación de modelos, motores y técnicas
 

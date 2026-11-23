@@ -5,8 +5,8 @@ from datetime import datetime,timezone
 from pathlib import Path,PurePosixPath
 ROOT=Path(__file__).resolve().parents[2]
 INDEX=ROOT/"docs/research/RESEARCH-PROJECTS-INDEX.md"
-DATA=ROOT/"web/data/research-projects.json"
-PAGE=ROOT/"web/investigacion.html"
+DATA=ROOT/"data/observatory/research-projects.json"
+
 REPO="https://github.com/robertosantosx2/LEONES"
 def clean(s):
  s=re.sub(r"\*\*(.*?)\*\*",r"\1",s);s=re.sub(r"\[([^\]]+)\]\([^)]+\)",r"\1",s);return s.replace(chr(96),"").strip()
