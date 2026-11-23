@@ -1,7 +1,7 @@
 # LEONES — Agent Use Case Observatory
 
 **Estado:** implementación inicial en revisión.  
-**Interfaz:** [`web/agent-use-cases.html`](../../../web/agent-use-cases.html) · [feed JSON](../../../web/data/agent-use-cases.json).  
+**Publicación:** [catálogo Markdown](../../../web/agent-use-cases.md) · [índice de observatorios](../../../web/observatory.md).  
 **Automatización:** `.github/workflows/daily-prospection.yml` (workflow diario existente).
 
 ## Propósito
@@ -14,7 +14,7 @@ Mantener un catálogo vivo de **casos concretos de uso de agentes**, repositorio
 - Añade descubrimiento diario mediante GitHub Repository Search API.
 - El proceso se ejecuta como un paso del workflow `Daily Atlas Prospection`, programado a las 04:17 UTC y ejecutable manualmente.
 - Mantiene el histórico normalizado en `data/prospection/agent_use_cases.ndjson`.
-- Genera el feed que consume la interfaz en `web/data/agent-use-cases.json`.
+- Genera datos internos en `data/observatory/agent-use-cases.json`; el publicador común produce `web/agent-use-cases.md`.
 - Publica los artefactos mediante el mecanismo de commit existente de la prospección diaria.
 
 ## Consultas iniciales
@@ -57,7 +57,7 @@ Desde la raíz del repositorio:
 
 ```bash
 GITHUB_TOKEN=... python3 scripts/prospection/agent_use_case_observatory.py
-python3 -m json.tool web/data/agent-use-cases.json >/dev/null
+python3 -m json.tool data/observatory/agent-use-cases.json >/dev/null\npython3 scripts/prospection/build_markdown_observatories.py
 python3 - <<'PY'
 import json
 from pathlib import Path
