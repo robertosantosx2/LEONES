@@ -1,37 +1,59 @@
 <!doctype html>
 <html lang="es">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Inicio rapido LEONES RC4: intencion, inventario, preflight, FitLLM opcional, cadena MEASURED.">
-<title>LEONES · Inicio rápido · RC4</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-08-1">
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-08-1">
-</head>
-<body>
-<header class="site-hero"><div class="site-hero__inner">
-<span class="site-tag">Inicio rápido · RC4 · 8 septiembre 2026</span>
-<h1>Arrancar LEONES</h1>
-<p>RC3 cerrada. RC4: intención, evidencia HF/AA, FitLLM opcional, inventario, cadena MEASURED opt-in.</p>
-</div></header>
-<main class="site-main" id="main">
-<section class="site-section"><h2>0 · Qué es canónico</h2>
-<p class="site-lead"><strong>RC4</strong> define la recomendación y el orquestador post-recomendación. FitLLM <strong>no</strong> es dependencia de arranque.</p>
-<div class="site-note"><strong>Regla:</strong> ESTIMATED ≠ MEASURED. model_id = nombre exacto de <code>ollama list</code>.</div>
-</section>
-<section class="site-section"><h2>1 · Arranque</h2>
-<pre class="site-stack">git clone https://github.com/robertosantosx2/LEONES.git
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+            name="description"
+            content="Inicio rapido LEONES RC4: intencion, inventario, preflight, FitLLM opcional, cadena MEASURED."
+        />
+        <title>LEONES · Inicio rápido · RC4</title>
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-08-1" />
+        <link rel="stylesheet" href="assets/css/site.css?v=2026-09-08-1" />
+    </head>
+    <body>
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <span class="site-tag">Inicio rápido · RC4 · 8 septiembre 2026</span>
+                <h1>Arrancar LEONES</h1>
+                <p>
+                    RC3 cerrada. RC4: intención, evidencia HF/AA, FitLLM opcional, inventario,
+                    cadena MEASURED opt-in.
+                </p>
+            </div>
+        </header>
+        <main class="site-main" id="main">
+            <section class="site-section">
+                <h2>0 · Qué es canónico</h2>
+                <p class="site-lead">
+                    <strong>RC4</strong> define la recomendación y el orquestador
+                    post-recomendación. FitLLM <strong>no</strong> es dependencia de arranque.
+                </p>
+                <div class="site-note">
+                    <strong>Regla:</strong> ESTIMATED ≠ MEASURED. model_id = nombre exacto de
+                    <code>ollama list</code>.
+                </div>
+            </section>
+            <section class="site-section">
+                <h2>1 · Arranque</h2>
+                <pre class="site-stack">
+git clone https://github.com/robertosantosx2/LEONES.git
 cd LEONES && git checkout rc4-fitllm-recommender
 ./leones
 ./leones --inventory
 ./leones --rc2</pre>
-</section>
-<section class="site-section"><h2>2 · Preflight e inventario</h2>
-<pre class="site-stack">python3 scripts/rc4_release_gate.py
+            </section>
+            <section class="site-section">
+                <h2>2 · Preflight e inventario</h2>
+                <pre class="site-stack">
+python3 scripts/rc4_release_gate.py
 python3 scripts/rc4_component_inventory.py
 python3 scripts/rc4_resource_preflight.py --path .</pre>
-</section>
-<section class="site-section"><h2>3 · Cadena MEASURED</h2>
-<pre class="site-stack">python3 scripts/rc4_measured_chain.py --model-id demo --stack none --json
+            </section>
+            <section class="site-section">
+                <h2>3 · Cadena MEASURED</h2>
+                <pre class="site-stack">
+python3 scripts/rc4_measured_chain.py --model-id demo --stack none --json
 # measured=false sin --execute
 
 ollama list
@@ -40,11 +62,15 @@ python3 scripts/rc4_measured_chain.py \
   --stack none \
   --execute --authorize-execution --authorize-measurement \
   --out results/physical-rc4-measured/chain.json</pre>
-</section>
-<section class="site-section"><h2>4 · Docs</h2>
-<p><a href="rc4.html">RC4 →</a> · <a href="estado.html">Estado →</a> · <a href="rc4.html">Operación →</a> · <a href="scripts.html">Scripts →</a></p>
-</section>
-</main>
-<script src="assets/js/navigation.js?v=2026-09-08-1" defer></script>
-</body>
+            </section>
+            <section class="site-section">
+                <h2>4 · Docs</h2>
+                <p>
+                    <a href="rc4.html">RC4 →</a> · <a href="estado.html">Estado →</a> ·
+                    <a href="rc4.html">Operación →</a> · <a href="scripts.html">Scripts →</a>
+                </p>
+            </section>
+        </main>
+        <script src="assets/js/navigation.js?v=2026-09-08-1" defer></script>
+    </body>
 </html>

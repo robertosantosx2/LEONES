@@ -1,20 +1,86 @@
 <!doctype html>
 <html lang="es">
-<head>
-<meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-<meta name="theme-color" content="#f5f6f8" />
-<title>LEONES · Diagramas</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-17-9" />
-<link rel="stylesheet" href="assets/css/site.css?v=2026-08-17-9" />
-<style>
-.diagram-wrap{margin:1.5rem 0}.diagram-wrap h2{margin-bottom:.45rem}.diagram-wrap p{max-width:850px;color:#536673}.diagram-source{overflow-x:auto;margin:1rem 0;padding:1.1rem 1.25rem;border:1px solid #d8e0e7;border-radius:.7rem;background:#fff;color:#102f49;font:700 .82rem/1.55 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;white-space:pre;tab-size:4}.diagram-note{padding:.8rem 1rem;border-left:3px solid #9b7b2f;background:#faf8f1;color:#536673}.links{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:2rem}.links a{color:#315d7d;font-weight:800;text-decoration:none}.links a:hover{text-decoration:underline}
-</style>
-</head>
-<body>
-<header class="site-hero"><div class="site-hero__inner"><span class="site-tag">LEONES · SISTEMA VISUAL</span><h1>Diagramas que explican, no decoran</h1><p>Los mapas y esquemas se conservan en ASCII para que la arquitectura sea legible, versionable, accesible y verificable directamente desde el repositorio.</p></div></header>
-<main class="site-main" id="main">
-<section class="site-section"><div class="diagram-note"><strong>Fuente canónica:</strong> estos esquemas recuperan la representación textual de la documentación de arquitectura de LEONES. No se sustituyen por imágenes decorativas ni por una interpretación gráfica diferente.</div></section>
-<section class="site-section diagram-wrap" aria-labelledby="pipeline-title"><span class="site-tag">01 · Pipeline</span><h2 id="pipeline-title">Pipeline completo</h2><pre class="diagram-source">USER / MACHINE
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="theme-color" content="#f5f6f8" />
+        <title>LEONES · Diagramas</title>
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-08-17-9" />
+        <link rel="stylesheet" href="assets/css/site.css?v=2026-08-17-9" />
+        <style>
+            .diagram-wrap {
+                margin: 1.5rem 0;
+            }
+            .diagram-wrap h2 {
+                margin-bottom: 0.45rem;
+            }
+            .diagram-wrap p {
+                max-width: 850px;
+                color: #536673;
+            }
+            .diagram-source {
+                overflow-x: auto;
+                margin: 1rem 0;
+                padding: 1.1rem 1.25rem;
+                border: 1px solid #d8e0e7;
+                border-radius: 0.7rem;
+                background: #fff;
+                color: #102f49;
+                font:
+                    700 0.82rem/1.55 ui-monospace,
+                    SFMono-Regular,
+                    Consolas,
+                    "Liberation Mono",
+                    monospace;
+                white-space: pre;
+                tab-size: 4;
+            }
+            .diagram-note {
+                padding: 0.8rem 1rem;
+                border-left: 3px solid #9b7b2f;
+                background: #faf8f1;
+                color: #536673;
+            }
+            .links {
+                display: flex;
+                gap: 0.7rem;
+                flex-wrap: wrap;
+                margin-top: 2rem;
+            }
+            .links a {
+                color: #315d7d;
+                font-weight: 800;
+                text-decoration: none;
+            }
+            .links a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <span class="site-tag">LEONES · SISTEMA VISUAL</span>
+                <h1>Diagramas que explican, no decoran</h1>
+                <p>
+                    Los mapas y esquemas se conservan en ASCII para que la arquitectura sea legible,
+                    versionable, accesible y verificable directamente desde el repositorio.
+                </p>
+            </div>
+        </header>
+        <main class="site-main" id="main">
+            <section class="site-section">
+                <div class="diagram-note">
+                    <strong>Fuente canónica:</strong> estos esquemas recuperan la representación
+                    textual de la documentación de arquitectura de LEONES. No se sustituyen por
+                    imágenes decorativas ni por una interpretación gráfica diferente.
+                </div>
+            </section>
+            <section class="site-section diagram-wrap" aria-labelledby="pipeline-title">
+                <span class="site-tag">01 · Pipeline</span>
+                <h2 id="pipeline-title">Pipeline completo</h2>
+                <pre class="diagram-source">
+USER / MACHINE
       │
       ▼
 ┌───────────────┐
@@ -41,8 +107,17 @@
 │ leones-publish │  validate and publish
 └───────┬───────┘
         ▼
- GitHub / web</pre><p>Este es el recorrido operativo: identificar máquina y modelo, medir inferencia, evaluar tareas agentivas, generar el resultado y validarlo antes de publicar.</p></section>
-<section class="site-section diagram-wrap" aria-labelledby="knowledge-title"><span class="site-tag">02 · Knowledge</span><h2 id="knowledge-title">Capa de conocimiento y ejecución</h2><pre class="diagram-source">Knowledge / context
+ GitHub / web</pre>
+                <p>
+                    Este es el recorrido operativo: identificar máquina y modelo, medir inferencia,
+                    evaluar tareas agentivas, generar el resultado y validarlo antes de publicar.
+                </p>
+            </section>
+            <section class="site-section diagram-wrap" aria-labelledby="knowledge-title">
+                <span class="site-tag">02 · Knowledge</span>
+                <h2 id="knowledge-title">Capa de conocimiento y ejecución</h2>
+                <pre class="diagram-source">
+Knowledge / context
         │
       Buddy
         │
@@ -56,13 +131,47 @@ Local inference API
 Model + backend
         │
         ▼
-Hardware</pre><p>La documentación define estas capas como sustituibles donde sea práctico: el conocimiento y contexto no deben quedar acoplados a un modelo, backend o hardware concreto.</p></section>
-<section class="site-section diagram-wrap" aria-labelledby="discovery-title"><span class="site-tag">03 · Discovery</span><h2 id="discovery-title">De descubrimiento a recomendación</h2><pre class="diagram-source">discover → inspect → classify → test → recommend → incorporate</pre><p>La prospección descubre proyectos; la inspección, clasificación y prueba aportan evidencia antes de recomendar o incorporar. Encontrar un proyecto no significa que LEONES lo respalde.</p></section>
-<section class="site-section diagram-wrap" aria-labelledby="evidence-title"><span class="site-tag">04 · Evidencia</span><h2 id="evidence-title">Estados de un resultado</h2><pre class="diagram-source">reported → reproducible → verified
+Hardware</pre>
+                <p>
+                    La documentación define estas capas como sustituibles donde sea práctico: el
+                    conocimiento y contexto no deben quedar acoplados a un modelo, backend o
+                    hardware concreto.
+                </p>
+            </section>
+            <section class="site-section diagram-wrap" aria-labelledby="discovery-title">
+                <span class="site-tag">03 · Discovery</span>
+                <h2 id="discovery-title">De descubrimiento a recomendación</h2>
+                <pre class="diagram-source">
+discover → inspect → classify → test → recommend → incorporate</pre>
+                <p>
+                    La prospección descubre proyectos; la inspección, clasificación y prueba aportan
+                    evidencia antes de recomendar o incorporar. Encontrar un proyecto no significa
+                    que LEONES lo respalde.
+                </p>
+            </section>
+            <section class="site-section diagram-wrap" aria-labelledby="evidence-title">
+                <span class="site-tag">04 · Evidencia</span>
+                <h2 id="evidence-title">Estados de un resultado</h2>
+                <pre class="diagram-source">
+reported → reproducible → verified
                  │
-                 └── rejected</pre><p>Un resultado reportado no se presenta como verificado. La documentación conserva explícitamente la diferencia entre estados.</p></section>
-<section class="site-section"><h2>Relación con el resto de la web</h2><p>Esta página reúne los esquemas canónicos de LEONES en texto, sin depender de SVG generados aparte.</p><div class="links"><a href="rc3.html">Arquitectura RC3 →</a><a href="index.html">Inicio →</a></div></section>
-</main>
-<script src="assets/js/navigation.js?v=2026-08-17-9" defer></script>
-</body>
+                 └── rejected</pre>
+                <p>
+                    Un resultado reportado no se presenta como verificado. La documentación conserva
+                    explícitamente la diferencia entre estados.
+                </p>
+            </section>
+            <section class="site-section">
+                <h2>Relación con el resto de la web</h2>
+                <p>
+                    Esta página reúne los esquemas canónicos de LEONES en texto, sin depender de SVG
+                    generados aparte.
+                </p>
+                <div class="links">
+                    <a href="rc3.html">Arquitectura RC3 →</a><a href="index.html">Inicio →</a>
+                </div>
+            </section>
+        </main>
+        <script src="assets/js/navigation.js?v=2026-08-17-9" defer></script>
+    </body>
 </html>

@@ -1,9 +1,41 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="LEONES RC4 · decisión de modelo mediante intención, evidencia externa, intersección y elección humana."><title>LEONES · Decisión de modelo · RC4</title><link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-07-3"><link rel="stylesheet" href="assets/css/site.css?v=2026-09-07-3"></head>
-<body><header class="site-hero"><div class="site-hero__inner"><span class="site-tag">LEONES RC4 · DECISIÓN DE MODELO</span><h1>Elegir modelo con criterio.</h1><p>La recomendación actual no es un ranking estático. Parte del hardware observado y de la intención declarada, cruza evidencia externa con un catálogo LLMFit independiente y deja la decisión final a la persona.</p></div></header>
-<main class="site-main" id="main">
-<section class="site-section"><h2>1 · ¿Qué buscas?</h2><p class="site-lead"><code>USER_INTENT[]</code> es obligatorio y permite selección múltiple. Ejemplos: programación, razonamiento, investigación, chat, multimodal, embeddings y uso general.</p></section>
-<section class="site-section"><h2>2 · Cómo se construye la recomendación</h2><pre class="site-stack">HARDWARE OBSERVADO + USER_INTENT[]
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta
+            name="description"
+            content="LEONES RC4 · decisión de modelo mediante intención, evidencia externa, intersección y elección humana."
+        />
+        <title>LEONES · Decisión de modelo · RC4</title>
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-07-3" />
+        <link rel="stylesheet" href="assets/css/site.css?v=2026-09-07-3" />
+    </head>
+    <body>
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <span class="site-tag">LEONES RC4 · DECISIÓN DE MODELO</span>
+                <h1>Elegir modelo con criterio.</h1>
+                <p>
+                    La recomendación actual no es un ranking estático. Parte del hardware observado
+                    y de la intención declarada, cruza evidencia externa con un catálogo LLMFit
+                    independiente y deja la decisión final a la persona.
+                </p>
+            </div>
+        </header>
+        <main class="site-main" id="main">
+            <section class="site-section">
+                <h2>1 · ¿Qué buscas?</h2>
+                <p class="site-lead">
+                    <code>USER_INTENT[]</code> es obligatorio y permite selección múltiple.
+                    Ejemplos: programación, razonamiento, investigación, chat, multimodal,
+                    embeddings y uso general.
+                </p>
+            </section>
+            <section class="site-section">
+                <h2>2 · Cómo se construye la recomendación</h2>
+                <pre class="site-stack">
+HARDWARE OBSERVADO + USER_INTENT[]
         ↓
 HUGGING FACE + ARTIFICIAL ANALYSIS
         ↓
@@ -15,14 +47,70 @@ INTERSECCIÓN POR IDENTIDAD
         ↓
 hasta 3 CANDIDATOS ESTIMATED
         ↓
-ELECCIÓN HUMANA</pre><p>Si hay menos de tres coincidencias, el resultado es <code>insufficient</code>. No se inventan candidatos ni se rellena el resultado.</p></section>
-<section class="site-section"><h2>3 · Qué significa el resultado</h2><div class="site-grid"><article class="site-card"><h3>ESTIMATED</h3><p>Predicción o evidencia externa útil para priorizar. No es rendimiento físico de LEONES.</p></article><article class="site-card"><h3>OBSERVED</h3><p>Hardware o software detectado en el host. No es benchmark.</p></article><article class="site-card"><h3>MEASURED</h3><p>Solo aparece después de una ejecución física protocolizada y autorizada.</p></article></div></section>
-<section class="site-section"><h2>4 · Después de elegir</h2><p>La persona elige modelo/configuración y stack/runtime. Si procede una instalación, requiere consentimiento explícito y debe ser verificable y desinstalable.</p><pre class="site-stack">ELECCIÓN → STACK / RUNTIME → VERIFICACIÓN
+ELECCIÓN HUMANA</pre>
+                <p>
+                    Si hay menos de tres coincidencias, el resultado es <code>insufficient</code>.
+                    No se inventan candidatos ni se rellena el resultado.
+                </p>
+            </section>
+            <section class="site-section">
+                <h2>3 · Qué significa el resultado</h2>
+                <div class="site-grid">
+                    <article class="site-card">
+                        <h3>ESTIMATED</h3>
+                        <p>
+                            Predicción o evidencia externa útil para priorizar. No es rendimiento
+                            físico de LEONES.
+                        </p>
+                    </article>
+                    <article class="site-card">
+                        <h3>OBSERVED</h3>
+                        <p>Hardware o software detectado en el host. No es benchmark.</p>
+                    </article>
+                    <article class="site-card">
+                        <h3>MEASURED</h3>
+                        <p>
+                            Solo aparece después de una ejecución física protocolizada y autorizada.
+                        </p>
+                    </article>
+                </div>
+            </section>
+            <section class="site-section">
+                <h2>4 · Después de elegir</h2>
+                <p>
+                    La persona elige modelo/configuración y stack/runtime. Si procede una
+                    instalación, requiere consentimiento explícito y debe ser verificable y
+                    desinstalable.
+                </p>
+                <pre class="site-stack">
+ELECCIÓN → STACK / RUNTIME → VERIFICACIÓN
                          ↓
               AUTORIZAR EJECUCIÓN
                          ↓
                AUTORIZAR MEDICIÓN
                          ↓
-                 MEASURED + EVIDENCIA</pre></section>
-<section class="site-section"><h2>5 · No confundimos fuentes</h2><ul><li>Hugging Face y Artificial Analysis aportan evidencia externa.</li><li>LLMFit/ FitLLM es un preselector opcional; no recibe un catálogo externo inventado.</li><li>La recomendación no afirma que LLMFit haya puntuado los datos de Artificial Analysis.</li><li>Una fuente externa no autoriza ejecución.</li></ul><p><a href="rc4.html">Ver arquitectura RC4 →</a> · <a href="rc4.html">Empezar diagnóstico →</a></p></section>
-</main><script src="assets/js/navigation.js?v=2026-11-23-2" defer></script></body></html>
+                 MEASURED + EVIDENCIA</pre>
+            </section>
+            <section class="site-section">
+                <h2>5 · No confundimos fuentes</h2>
+                <ul>
+                    <li>Hugging Face y Artificial Analysis aportan evidencia externa.</li>
+                    <li>
+                        LLMFit/ FitLLM es un preselector opcional; no recibe un catálogo externo
+                        inventado.
+                    </li>
+                    <li>
+                        La recomendación no afirma que LLMFit haya puntuado los datos de Artificial
+                        Analysis.
+                    </li>
+                    <li>Una fuente externa no autoriza ejecución.</li>
+                </ul>
+                <p>
+                    <a href="rc4.html">Ver arquitectura RC4 →</a> ·
+                    <a href="rc4.html">Empezar diagnóstico →</a>
+                </p>
+            </section>
+        </main>
+        <script src="assets/js/navigation.js?v=2026-11-23-2" defer></script>
+    </body>
+</html>

@@ -1,13 +1,427 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101820"><title>Investigación · LEONES</title><link rel="icon" href="assets/graphics/leones-logo-square.svg"><style>
-:root{color-scheme:dark;--bg:#0b1117;--panel:#14232e;--line:#2a3c49;--text:#eaf2f7;--muted:#9bb0bd;--cyan:#62d7d0;--gold:#f2c879}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -10%,#16434b,transparent 38%),linear-gradient(#101b24,var(--bg) 55%);color:var(--text);font:15px/1.65 Inter,system-ui,sans-serif}a{color:var(--cyan);text-decoration:none}.wrap{max-width:1200px;margin:auto;padding:30px 24px 70px}nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:58px}.brand{display:flex;align-items:center;gap:14px;color:var(--text);font-weight:800;letter-spacing:.13em}.brand img{width:48px;height:48px;object-fit:contain}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}.hero h1{font-size:clamp(42px,7vw,76px);line-height:1.02;letter-spacing:-.055em;margin:14px 0}.hero h1 span{color:var(--cyan)}.hero p{font-size:18px;color:#b7c8d2;max-width:780px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:34px 0}.metric,.card{background:linear-gradient(145deg,#172833,#101922);border:1px solid var(--line);border-radius:17px}.metric{padding:18px 21px}.metric strong{display:block;font-size:31px;color:var(--gold)}.metric span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}.head{display:flex;justify-content:space-between;align-items:end;margin:34px 0 14px;gap:16px}.head h2{margin:0}.head p{margin:0;color:var(--muted);font-size:12px}.toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.search{flex:1;min-width:230px;background:#101a23;border:1px solid var(--line);border-radius:12px;padding:13px;color:var(--text);font:inherit}.filters{display:flex;gap:8px;flex-wrap:wrap}.filter{border:1px solid var(--line);border-radius:99px;padding:8px 12px;background:#111c25;color:var(--muted);cursor:pointer}.filter.active{background:#173b40;color:var(--cyan)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{padding:21px;min-height:230px;display:flex;flex-direction:column}.tag{font-size:10px;color:var(--cyan);font-weight:800;letter-spacing:.1em;text-transform:uppercase}.card h3{font-size:19px;line-height:1.3;margin:10px 0}.card p{font-size:13px;color:#b3c3cd;margin:0 0 12px}.potential{color:#e8c98c!important}.status{margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}.pending{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.pending a{padding:10px;border:1px solid var(--line);border-radius:9px;overflow-wrap:anywhere;font-size:12px}.note{margin-top:38px;padding:20px;border:1px solid #695a39;background:#29271f;border-radius:14px;color:#c7c0ad;font-size:13px}.note strong{color:var(--gold)}footer{border-top:1px solid var(--line);margin-top:45px;padding-top:18px;color:var(--muted);font-size:12px}@media(max-width:720px){.wrap{padding:20px 15px}.metrics{grid-template-columns:1fr 1fr}.grid,.pending{grid-template-columns:1fr}.head{align-items:start;flex-direction:column}}</style></head>
-<body><main class="wrap"><nav><a class="brand" href="index.html"><img src="assets/graphics/leones-logo-principal.svg" alt="LEONES"> LEONES / RESEARCH</a><a href="https://github.com/robertosantosx2/LEONES">Repositorio ↗</a></nav>
-<header class="hero"><div class="eyebrow">Research intelligence · catálogo vivo</div><h1>Investigar.<br><span>Conectar.</span> Medir.</h1><p>Mapa navegable de las líneas de investigación de LEONES: qué exploramos, dónde vive cada proyecto, qué potencial ofrece y qué evidencia respalda su estado.</p></header>
-<section class="metrics"><div class="metric"><strong id="count">—</strong><span>Proyectos catalogados</span></div><div class="metric"><strong id="files">—</strong><span>Archivos recorridos</span></div><div class="metric"><strong id="readmes">—</strong><span>README de investigación</span></div></section>
-<div class="head"><div><div class="eyebrow">Explorador</div><h2>Mapa de investigación</h2></div><p id="updated">Cargando catálogo…</p></div><div class="toolbar"><input class="search" id="q" placeholder="Buscar proyecto, técnica, descripción o potencial…"><div class="filters" id="filters"></div></div><div id="catalog"></div>
-<section id="unclassified" hidden><div class="head"><div><div class="eyebrow">Descubrimiento recursivo</div><h2>Entradas por clasificar</h2></div><p>No son proyectos aprobados ni nuevas prioridades.</p></div><div class="pending" id="pending"></div></section>
-<div class="note"><strong>Gobierno y evidencia:</strong> aparecer aquí no significa aprobación, prioridad, integración ni validación. El índice Markdown es la fuente curada; el recorrido automático detecta puntos de entrada y no modifica INDEX maestros ni promociona candidatos.</div><footer><a href="https://github.com/robertosantosx2/LEONES/blob/main/docs/research/RESEARCH-PROJECTS-INDEX.md">Fuente canónica</a> · Actualización automatizada con GitHub Actions</footer></main>
-<script>
-var d,active="Todas";function node(t,c,s){var n=document.createElement(t);if(c)n.className=c;if(s!==undefined)n.textContent=s;return n}
-function render(){var q=document.getElementById("q").value.toLocaleLowerCase("es"),a=d.items.filter(function(x){return(active==="Todas"||x.category===active)&&[x.name,x.category,x.description,x.potential,x.status].join(" ").toLocaleLowerCase("es").includes(q)}),root=document.getElementById("catalog");root.innerHTML="";var cats=Array.from(new Set(a.map(function(x){return x.category})));if(!a.length){root.textContent="No hay resultados.";return}cats.forEach(function(cat){var s=node("section"),h=node("div","head");h.appendChild(node("h2","",cat));h.appendChild(node("p","",a.filter(function(x){return x.category===cat}).length+" líneas"));s.appendChild(h);var g=node("div","grid");a.filter(function(x){return x.category===cat}).forEach(function(x){var c=node("article","card");c.appendChild(node("span","tag",cat));c.appendChild(node("h3","",x.name));c.appendChild(node("p","",x.description));c.appendChild(node("p","potential","Potencial: "+x.potential));c.appendChild(node("div","status",x.status));var l=node("a","","Explorar proyecto ↗");l.href=x.url;c.appendChild(l);g.appendChild(c)});s.appendChild(g);root.appendChild(s)})}
-fetch("data/research-projects.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw Error("No se pudo cargar el catálogo");return r.json()}).then(function(x){d=x;document.getElementById("count").textContent=x.items.length;document.getElementById("files").textContent=x.repository.tracked_files.toLocaleString("es-ES");document.getElementById("readmes").textContent=x.repository.research_readmes;document.getElementById("updated").textContent="Actualizado "+new Date(x.generated_at).toLocaleString("es-ES");var f=document.getElementById("filters"),cats=["Todas"].concat(Array.from(new Set(x.items.map(function(i){return i.category}))));cats.forEach(function(c){var b=node("button","filter"+(c==="Todas"?" active":""),c);b.onclick=function(){active=c;Array.from(f.children).forEach(function(z){z.classList.toggle("active",z===b)});render()};f.appendChild(b)});document.getElementById("q").oninput=render;render();if(x.unclassified_readmes.length){document.getElementById("unclassified").hidden=false;x.unclassified_readmes.slice(0,36).forEach(function(v){var a=node("a",""," "+v.path+" ↗");a.href=v.url;document.getElementById("pending").appendChild(a)})}}).catch(function(e){document.getElementById("catalog").textContent=e.message});
-</script></body></html>
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="theme-color" content="#101820" />
+        <title>Investigación · LEONES</title>
+        <link rel="icon" href="assets/graphics/leones-logo-square.svg" />
+        <style>
+            :root {
+                color-scheme: dark;
+                --bg: #0b1117;
+                --panel: #14232e;
+                --line: #2a3c49;
+                --text: #eaf2f7;
+                --muted: #9bb0bd;
+                --cyan: #62d7d0;
+                --gold: #f2c879;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background:
+                    radial-gradient(ellipse at 75% -10%, #16434b, transparent 38%),
+                    linear-gradient(#101b24, var(--bg) 55%);
+                color: var(--text);
+                font:
+                    15px/1.65 Inter,
+                    system-ui,
+                    sans-serif;
+            }
+            a {
+                color: var(--cyan);
+                text-decoration: none;
+            }
+            .wrap {
+                max-width: 1200px;
+                margin: auto;
+                padding: 30px 24px 70px;
+            }
+            nav {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 58px;
+            }
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                color: var(--text);
+                font-weight: 800;
+                letter-spacing: 0.13em;
+            }
+            .brand img {
+                width: 48px;
+                height: 48px;
+                object-fit: contain;
+            }
+            .eyebrow {
+                color: var(--cyan);
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+            }
+            .hero h1 {
+                font-size: clamp(42px, 7vw, 76px);
+                line-height: 1.02;
+                letter-spacing: -0.055em;
+                margin: 14px 0;
+            }
+            .hero h1 span {
+                color: var(--cyan);
+            }
+            .hero p {
+                font-size: 18px;
+                color: #b7c8d2;
+                max-width: 780px;
+            }
+            .metrics {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 14px;
+                margin: 34px 0;
+            }
+            .metric,
+            .card {
+                background: linear-gradient(145deg, #172833, #101922);
+                border: 1px solid var(--line);
+                border-radius: 17px;
+            }
+            .metric {
+                padding: 18px 21px;
+            }
+            .metric strong {
+                display: block;
+                font-size: 31px;
+                color: var(--gold);
+            }
+            .metric span {
+                font-size: 12px;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+            }
+            .head {
+                display: flex;
+                justify-content: space-between;
+                align-items: end;
+                margin: 34px 0 14px;
+                gap: 16px;
+            }
+            .head h2 {
+                margin: 0;
+            }
+            .head p {
+                margin: 0;
+                color: var(--muted);
+                font-size: 12px;
+            }
+            .toolbar {
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+                margin: 20px 0;
+            }
+            .search {
+                flex: 1;
+                min-width: 230px;
+                background: #101a23;
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 13px;
+                color: var(--text);
+                font: inherit;
+            }
+            .filters {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .filter {
+                border: 1px solid var(--line);
+                border-radius: 99px;
+                padding: 8px 12px;
+                background: #111c25;
+                color: var(--muted);
+                cursor: pointer;
+            }
+            .filter.active {
+                background: #173b40;
+                color: var(--cyan);
+            }
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 14px;
+            }
+            .card {
+                padding: 21px;
+                min-height: 230px;
+                display: flex;
+                flex-direction: column;
+            }
+            .tag {
+                font-size: 10px;
+                color: var(--cyan);
+                font-weight: 800;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+            }
+            .card h3 {
+                font-size: 19px;
+                line-height: 1.3;
+                margin: 10px 0;
+            }
+            .card p {
+                font-size: 13px;
+                color: #b3c3cd;
+                margin: 0 0 12px;
+            }
+            .potential {
+                color: #e8c98c !important;
+            }
+            .status {
+                margin-top: auto;
+                padding-top: 12px;
+                border-top: 1px solid var(--line);
+                font-size: 11px;
+                color: var(--muted);
+            }
+            .pending {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            .pending a {
+                padding: 10px;
+                border: 1px solid var(--line);
+                border-radius: 9px;
+                overflow-wrap: anywhere;
+                font-size: 12px;
+            }
+            .note {
+                margin-top: 38px;
+                padding: 20px;
+                border: 1px solid #695a39;
+                background: #29271f;
+                border-radius: 14px;
+                color: #c7c0ad;
+                font-size: 13px;
+            }
+            .note strong {
+                color: var(--gold);
+            }
+            footer {
+                border-top: 1px solid var(--line);
+                margin-top: 45px;
+                padding-top: 18px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+            @media (max-width: 720px) {
+                .wrap {
+                    padding: 20px 15px;
+                }
+                .metrics {
+                    grid-template-columns: 1fr 1fr;
+                }
+                .grid,
+                .pending {
+                    grid-template-columns: 1fr;
+                }
+                .head {
+                    align-items: start;
+                    flex-direction: column;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main class="wrap">
+            <nav>
+                <a class="brand" href="index.html"
+                    ><img src="assets/graphics/leones-logo-principal.svg" alt="LEONES" /> LEONES /
+                    RESEARCH</a
+                ><a href="https://github.com/robertosantosx2/LEONES">Repositorio ↗</a>
+            </nav>
+            <header class="hero">
+                <div class="eyebrow">Research intelligence · catálogo vivo</div>
+                <h1>Investigar.<br /><span>Conectar.</span> Medir.</h1>
+                <p>
+                    Mapa navegable de las líneas de investigación de LEONES: qué exploramos, dónde
+                    vive cada proyecto, qué potencial ofrece y qué evidencia respalda su estado.
+                </p>
+            </header>
+            <section class="metrics">
+                <div class="metric">
+                    <strong id="count">—</strong><span>Proyectos catalogados</span>
+                </div>
+                <div class="metric">
+                    <strong id="files">—</strong><span>Archivos recorridos</span>
+                </div>
+                <div class="metric">
+                    <strong id="readmes">—</strong><span>README de investigación</span>
+                </div>
+            </section>
+            <div class="head">
+                <div>
+                    <div class="eyebrow">Explorador</div>
+                    <h2>Mapa de investigación</h2>
+                </div>
+                <p id="updated">Cargando catálogo…</p>
+            </div>
+            <div class="toolbar">
+                <input
+                    class="search"
+                    id="q"
+                    placeholder="Buscar proyecto, técnica, descripción o potencial…"
+                />
+                <div class="filters" id="filters"></div>
+            </div>
+            <div id="catalog"></div>
+            <section id="unclassified" hidden>
+                <div class="head">
+                    <div>
+                        <div class="eyebrow">Descubrimiento recursivo</div>
+                        <h2>Entradas por clasificar</h2>
+                    </div>
+                    <p>No son proyectos aprobados ni nuevas prioridades.</p>
+                </div>
+                <div class="pending" id="pending"></div>
+            </section>
+            <div class="note">
+                <strong>Gobierno y evidencia:</strong> aparecer aquí no significa aprobación,
+                prioridad, integración ni validación. El índice Markdown es la fuente curada; el
+                recorrido automático detecta puntos de entrada y no modifica INDEX maestros ni
+                promociona candidatos.
+            </div>
+            <footer>
+                <a
+                    href="https://github.com/robertosantosx2/LEONES/blob/main/docs/research/RESEARCH-PROJECTS-INDEX.md"
+                    >Fuente canónica</a
+                >
+                · Actualización automatizada con GitHub Actions
+            </footer>
+        </main>
+        <script>
+            var d,
+                active = "Todas";
+            function node(t, c, s) {
+                var n = document.createElement(t);
+                if (c) n.className = c;
+                if (s !== undefined) n.textContent = s;
+                return n;
+            }
+            function render() {
+                var q = document.getElementById("q").value.toLocaleLowerCase("es"),
+                    a = d.items.filter(function (x) {
+                        return (
+                            (active === "Todas" || x.category === active) &&
+                            [x.name, x.category, x.description, x.potential, x.status]
+                                .join(" ")
+                                .toLocaleLowerCase("es")
+                                .includes(q)
+                        );
+                    }),
+                    root = document.getElementById("catalog");
+                root.innerHTML = "";
+                var cats = Array.from(
+                    new Set(
+                        a.map(function (x) {
+                            return x.category;
+                        }),
+                    ),
+                );
+                if (!a.length) {
+                    root.textContent = "No hay resultados.";
+                    return;
+                }
+                cats.forEach(function (cat) {
+                    var s = node("section"),
+                        h = node("div", "head");
+                    h.appendChild(node("h2", "", cat));
+                    h.appendChild(
+                        node(
+                            "p",
+                            "",
+                            a.filter(function (x) {
+                                return x.category === cat;
+                            }).length + " líneas",
+                        ),
+                    );
+                    s.appendChild(h);
+                    var g = node("div", "grid");
+                    a.filter(function (x) {
+                        return x.category === cat;
+                    }).forEach(function (x) {
+                        var c = node("article", "card");
+                        c.appendChild(node("span", "tag", cat));
+                        c.appendChild(node("h3", "", x.name));
+                        c.appendChild(node("p", "", x.description));
+                        c.appendChild(node("p", "potential", "Potencial: " + x.potential));
+                        c.appendChild(node("div", "status", x.status));
+                        var l = node("a", "", "Explorar proyecto ↗");
+                        l.href = x.url;
+                        c.appendChild(l);
+                        g.appendChild(c);
+                    });
+                    s.appendChild(g);
+                    root.appendChild(s);
+                });
+            }
+            fetch("data/research-projects.json", { cache: "no-store" })
+                .then(function (r) {
+                    if (!r.ok) throw Error("No se pudo cargar el catálogo");
+                    return r.json();
+                })
+                .then(function (x) {
+                    d = x;
+                    document.getElementById("count").textContent = x.items.length;
+                    document.getElementById("files").textContent =
+                        x.repository.tracked_files.toLocaleString("es-ES");
+                    document.getElementById("readmes").textContent = x.repository.research_readmes;
+                    document.getElementById("updated").textContent =
+                        "Actualizado " + new Date(x.generated_at).toLocaleString("es-ES");
+                    var f = document.getElementById("filters"),
+                        cats = ["Todas"].concat(
+                            Array.from(
+                                new Set(
+                                    x.items.map(function (i) {
+                                        return i.category;
+                                    }),
+                                ),
+                            ),
+                        );
+                    cats.forEach(function (c) {
+                        var b = node("button", "filter" + (c === "Todas" ? " active" : ""), c);
+                        b.onclick = function () {
+                            active = c;
+                            Array.from(f.children).forEach(function (z) {
+                                z.classList.toggle("active", z === b);
+                            });
+                            render();
+                        };
+                        f.appendChild(b);
+                    });
+                    document.getElementById("q").oninput = render;
+                    render();
+                    if (x.unclassified_readmes.length) {
+                        document.getElementById("unclassified").hidden = false;
+                        x.unclassified_readmes.slice(0, 36).forEach(function (v) {
+                            var a = node("a", "", " " + v.path + " ↗");
+                            a.href = v.url;
+                            document.getElementById("pending").appendChild(a);
+                        });
+                    }
+                })
+                .catch(function (e) {
+                    document.getElementById("catalog").textContent = e.message;
+                });
+        </script>
+    </body>
+</html>

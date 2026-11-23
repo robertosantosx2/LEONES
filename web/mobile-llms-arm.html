@@ -1,6 +1,1058 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mobile-LLMs-ARM · LEONES</title><style>
-:root{color-scheme:dark;--bg:#0b1117;--panel:#14232e;--line:#2a3c49;--text:#eaf2f7;--muted:#9bb0bd;--cyan:#62d7d0;--gold:#f2c879}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -10%,#16434b,transparent 40%),linear-gradient(#101b24,var(--bg) 55%);color:var(--text);font:15px/1.6 system-ui,sans-serif}.wrap{max-width:1200px;margin:auto;padding:28px 20px 60px}a{color:var(--cyan);text-decoration:none}.top{display:flex;justify-content:space-between}.hero{padding:55px 0 25px}.eyebrow,.tag{color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.hero h1{font-size:clamp(42px,7vw,76px);line-height:1;margin:12px 0}.hero h1 span{color:var(--cyan)}.hero p{font-size:18px;color:#b7c8d2;max-width:800px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.metric,.card,.panel{background:linear-gradient(145deg,#172833,#101922);border:1px solid var(--line);border-radius:15px}.metric{padding:16px}.metric strong{display:block;color:var(--gold);font-size:27px}.muted{color:var(--muted)}.toolbar{display:flex;gap:10px;margin:22px 0;flex-wrap:wrap}input,select{background:#101a23;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:12px;font:inherit}.search{flex:1;min-width:230px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.card{padding:17px;min-height:210px;display:flex;flex-direction:column}.card h3{font-size:17px;margin:8px 0}.card p{font-size:13px;color:#b7c8d2}.meta{margin-top:auto;padding-top:10px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);overflow-wrap:anywhere}.panel{padding:20px;margin:22px 0}.links{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.links a{padding:10px;border:1px solid var(--line);border-radius:8px}.notice{background:#29271f;border-color:#695a39;color:#d3c9b1}footer{margin-top:35px;border-top:1px solid var(--line);padding-top:15px;color:var(--muted);font-size:12px}@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.grid,.links,.metrics{grid-template-columns:1fr}.wrap{padding:18px 13px}}</style></head><body><main class="wrap"><nav class="top"><a href="index.html">LEONES / RESEARCH</a><a href="https://github.com/robertosantosx2/LEONES">Repositorio ↗</a></nav><header class="hero"><div class="eyebrow">Android · Linux ARM · Edge AI</div><h1>Mobile-LLMs-<span>ARM</span></h1><p>Observatorio de LLMs e IA local en teléfonos, Linux móvil y sistemas embebidos ARM. Runtimes, CPU/GPU/NPU, modelos, benchmarks, energía y clústeres.</p></header><section class="metrics"><div class="metric"><strong id="count">—</strong>Entradas</div><div class="metric"><strong id="gh">—</strong>GitHub</div><div class="metric"><strong id="date">—</strong>Actualización</div></section><div class="toolbar"><input id="q" class="search" placeholder="Buscar proyecto, SoC, runtime…"><select id="cat"><option value="">Todas las categorías</option></select></div><div id="catalog" class="grid"></div><section class="panel"><h2>Roadmap técnico</h2><p>G0 inventario · G1 matriz SoC/OS · G2 runtimes/modelos · G3 benchmark NEPENTHES · G4 Linux móvil · G5 clústeres REDIL · G6 curación.</p><a href="../docs/subprojects/Mobile-LLMs-ARM/ROADMAP.md">Roadmap completo ↗</a> · <a href="../docs/subprojects/Mobile-LLMs-ARM/README.md">Documentación ↗</a></section><section class="panel"><h2>Prospección comunitaria</h2><p class="muted">Reddit se consulta mediante endpoints públicos cuando están disponibles. X se ofrece como búsquedas directas, sin simular acceso automatizado.</p><div class="links" id="social"></div></section><section class="panel notice"><b>Descubierto ≠ aprobado ≠ medido.</b> Las pistas sociales no son pruebas de ejecución. Los resultados físicos requieren dispositivo identificado, protocolo y artefactos. No se aprueba ni recomienda automáticamente software.</section><footer>LEONES · Mobile-LLMs-ARM · Catálogo autocontenido · <span id="stamp"></span></footer></main><script id="data" type="application/json">{"schema_version":1,"project":"Mobile-LLMs-ARM","generated_at":"2026-11-22T12:40:10Z","publication_is_not_approval":true,"automatic_recommendation":false,"items":[{"name":"alpharomercoma/snapdragon-vs-mediatek","url":"https://github.com/alpharomercoma/snapdragon-vs-mediatek","category":"accelerators","platforms":[],"description":"Reproducible on-device AI benchmark: MediaTek Dimensity 9500s vs Qualcomm Snapdragon 8 Elite — NPU/GPU/CPU inference and training","stars":1,"pushed_at":"2026-07-27T14:29:08Z","license":"MIT","language":"C","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"hastyheat-com/x1e-yoga-slim7x-npu-linux","url":"https://github.com/hastyheat-com/x1e-yoga-slim7x-npu-linux","category":"accelerators","platforms":[],"description":"Hexagon NPU LLM inference on Snapdragon X Elite (Yoga Slim 7x) under Linux: how-to, kernel patches, scripts. No Qualcomm files.","stars":0,"pushed_at":"2026-10-25T18:31:23Z","license":"MIT","language":"Shell","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"J-ratio/edge-ai-recon","url":"https://github.com/J-ratio/edge-ai-recon","category":"accelerators","platforms":[],"description":"Recon notes: on-device LLM inference on Qualcomm Hexagon NPU","stars":0,"pushed_at":"2026-07-21T07:44:22Z","license":null,"language":"C++","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"qhy991/Awesome-On-Device-Inference","url":"https://github.com/qhy991/Awesome-On-Device-Inference","category":"accelerators","platforms":[],"description":"A curated list of papers, engines, and hardware characterization for On-Device & Mobile LLM Inference Systems, focusing on GPU+NPU Heterogeneous Co-Execution (Apple Silicon ANE, Qualcomm Hexagon), Memory Wall, and Low-Bit Kernels.","stars":1,"pushed_at":"2026-11-19T04:12:13Z","license":"MIT","language":null,"source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"qidiso/llama-hexagon.cpp","url":"https://github.com/qidiso/llama-hexagon.cpp","category":"accelerators","platforms":[],"description":"LLM inference in C/C++ on Qualcomm","stars":0,"pushed_at":"2026-04-14T06:09:49Z","license":"MIT","language":null,"source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Stephen062811/AegisCode","url":"https://github.com/Stephen062811/AegisCode","category":"accelerators","platforms":[],"description":"A 100% air-gapped, voice-driven coding assistant. It captures code via clipboard, transcribes speech locally, and routes inference to an edge LLM or mobile NPU. Zero cloud dependency.","stars":0,"pushed_at":"2026-09-14T05:58:54Z","license":null,"language":"Python","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Viswanath129/unlocking-the-power-of-npu","url":"https://github.com/Viswanath129/unlocking-the-power-of-npu","category":"accelerators","platforms":[],"description":"High-performance LLM layer streaming and inference engine for Qualcomm Snapdragon X / Hexagon NPU","stars":1,"pushed_at":"2026-11-13T16:09:47Z","license":null,"language":"Python","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"VitalikDen0/Bonsai2-NPU","url":"https://github.com/VitalikDen0/Bonsai2-NPU","category":"accelerators","platforms":[],"description":"Monolithic 1-bit NPU + Hexagon DSP HVX Inference Engine for Bonsai 2 27B on Snapdragon 8 Elite","stars":1,"pushed_at":"2026-10-08T13:56:12Z","license":"NOASSERTION","language":"C","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"xiziphus/np2-llm-bench","url":"https://github.com/xiziphus/np2-llm-bench","category":"accelerators","platforms":[],"description":"LLM inference benchmarks on the Nothing Phone 2 (Snapdragon 8+ Gen 1): CPU vs Adreno 730 OpenCL vs Hexagon v69 NPU — the CPU wins","stars":0,"pushed_at":"2026-08-18T16:15:10Z","license":null,"language":"Shell","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"YawLabs/snapdragon-genie-server","url":"https://github.com/YawLabs/snapdragon-genie-server","category":"accelerators","platforms":[],"description":"Snapdragon X Elite (Hexagon NPU) LLM: Genie server exposing Anthropic + OpenAI APIs for on-device inference","stars":1,"pushed_at":"2026-09-24T11:54:45Z","license":"Apache-2.0","language":"Python","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Zrald1/Snap-llm-phone","url":"https://github.com/Zrald1/Snap-llm-phone","category":"accelerators","platforms":[],"description":"On-device LLM serving for Snapdragon mobile phones - CPU + Adreno GPU + Hexagon NPU. Privacy-first AI inference with speculative decoding, prompt caching, thread pinning, and vision model support.","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z","stars":1,"pushed_at":"2026-08-24T00:27:26Z","license":null,"language":"C"},{"name":"agent-axiom/axiom-edge","url":"https://github.com/agent-axiom/axiom-edge","category":"android","platforms":[],"description":"On-device LLM harness for Android and iOS: local inference, benchmarks and evals","stars":0,"pushed_at":"2026-11-17T21:28:21Z","license":"MIT","language":"Dart","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"GijungKim/expo-local-llm","url":"https://github.com/GijungKim/expo-local-llm","category":"android","platforms":[],"description":"Expo module for on-device LLM inference via Apple Foundation Models (iOS) and Gemini Nano (Android)","stars":15,"pushed_at":"2026-11-21T21:13:10Z","license":"MIT","language":"TypeScript","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"hung-yueh/react-native-litert-lm","url":"https://github.com/hung-yueh/react-native-litert-lm","category":"android","platforms":[],"description":"High-performance on-device LLM inference for React Native, powered by LiteRT-LM and Nitro Modules","stars":65,"pushed_at":"2026-11-18T04:56:17Z","license":"MIT","language":"TypeScript","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"kekeke-123/LLAI-Kernel","url":"https://github.com/kekeke-123/LLAI-Kernel","category":"android","platforms":[],"description":"LLAI Kernel — a portable, pure-C++ on-device LLM inference kernel (llama.cpp based, C ABI, iOS/Android/Windows/Linux).","stars":0,"pushed_at":"2026-11-22T04:46:47Z","license":"MIT","language":"C++","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"leehack/llamadart","url":"https://github.com/leehack/llamadart","category":"android","platforms":[],"description":"Cross-platform on-device LLM inference for Dart & Flutter: GGUF via llama.cpp and LiteRT-LM on Android, iOS, macOS, Windows, Linux and web.","stars":92,"pushed_at":"2026-11-22T10:58:01Z","license":"MIT","language":"Dart","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"llamatik/Llamatik","url":"https://github.com/llamatik/Llamatik","category":"android","platforms":[],"description":"True on-device AI SDK for Kotlin Multiplatform (Android, iOS, Desktop, JVM, WASM). LLM inference, Speech-to-Text, Image Generation, Agent Framework and RAG — powered by llama.cpp, whisper.cpp and stable-diffusion.cpp.","stars":227,"pushed_at":"2026-11-20T15:54:54Z","license":"NOASSERTION","language":"Kotlin","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"moongrail/OgrChatAi","url":"https://github.com/moongrail/OgrChatAi","category":"android","platforms":[],"description":"Android AI chat app with on-device LLM inference. Download models from HuggingFace and chat privately.","stars":0,"pushed_at":"2026-11-20T09:07:59Z","license":"NOASSERTION","language":"Kotlin","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"NickMonrad/kernel-ai-assistant","url":"https://github.com/NickMonrad/kernel-ai-assistant","category":"android","platforms":[],"description":"Jandal AI — Local-first Android AI assistant with on-device LLM inference, semantic memory, and extensible skill framework","stars":38,"pushed_at":"2026-11-22T12:38:52Z","license":"Apache-2.0","language":"Kotlin","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"synheart-ai/syni-kotlin","url":"https://github.com/synheart-ai/syni-kotlin","category":"android","platforms":[],"description":"Android SDK for Syni — adaptive on-device LLM inference with hybrid local/cloud chat, structured persona conditioning, and a streaming chat API for Android.","stars":0,"pushed_at":"2026-11-20T06:46:15Z","license":"NOASSERTION","language":"Kotlin","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"uno-km/amv-bitnet","url":"https://github.com/uno-km/amv-bitnet","category":"android","platforms":[],"description":"⚡ Production 1.58-bit (i2_s) BitNet On-Device Inference SDK & Dual Engine for Android Termux & ARM64.","stars":2,"pushed_at":"2026-11-19T07:55:39Z","license":"NOASSERTION","language":"Python","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"visitor257/Ponko","url":"https://github.com/visitor257/Ponko","category":"android","platforms":[],"description":"Offline-capable AI app for Android: on-device chat (.litertlm / .gguf) with image and file input, drawing (stable-diffusion.cpp GGUF, optional Vulkan GPU) and image tagging (ONNX tagger). Optional GPU acceleration; all inference runs locally; no telemetry.","stars":4,"pushed_at":"2026-11-22T07:45:24Z","license":"MIT","language":"C++","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"YashBhadange2006/TinyAI","url":"https://github.com/YashBhadange2006/TinyAI","category":"android","platforms":[],"description":"On-device AI assistant for Android built with Kotlin, featuring local LLM inference, offline AI capabilities, and edge AI experimentation.","stars":52,"pushed_at":"2026-11-17T09:28:51Z","license":"Apache-2.0","language":"Kotlin","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"AiPaca (candidate)","url":"https://github.com/dojekon/AIPaca","category":"android-app","platforms":["Android"],"description":"Candidato de aplicación local, pendiente de verificación.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"PocketLLM (candidate)","url":"https://github.com/Kimi-syl/PocketLLM","category":"android-app","platforms":["Android","Termux"],"description":"Candidato de runtime, pendiente de verificación.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"MobileCore / TuiMa (candidate)","url":"https://github.com/Harzva/mobilecore","category":"android-runtime","platforms":["Android"],"description":"Candidato de runtime Android y API local; verificar proyecto, alcance, licencia y soporte real.","source":"curated research lead","status":"pending_review","discovered_at":"2026-11-22T12:40:10Z"},{"name":"AbuZar-Ansarii/PocketStrike","url":"https://github.com/AbuZar-Ansarii/PocketStrike","category":"arm","platforms":[],"description":" PocketStrike is a privacy-first mobile AI workstation. It combines zero-cloud native on-device GGUF inference (ARM NEON accelerated)   │ with frontier cloud LLMs, multi-step ReAct agent tools, Model Context Protocol (MCP) servers, self-evolving cross-session memory, and FLUX neural image   │ generation.","stars":174,"pushed_at":"2026-08-27T07:13:31Z","license":"MIT","language":"Dart","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Parasaran-Python/pocket-llm-server","url":"https://github.com/Parasaran-Python/pocket-llm-server","category":"arm","platforms":[],"description":"Local LLM inference engine & OpenAI-compatible LAN API server for Android. Powered by mobile GPU acceleration (Vulkan/Adreno) and ARM KleidiAI with zero-sleep background serving for coder agents (Cline, Roo Code, Continue.dev, Cursor).","stars":1,"pushed_at":"2026-08-29T07:45:39Z","license":"MIT","language":"Kotlin","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"punnppz321v2/PocketStrike","url":"https://github.com/punnppz321v2/PocketStrike","category":"arm","platforms":[],"description":" PocketStrike is a privacy-first mobile AI workstation. It combines zero-cloud native on-device GGUF inference (ARM NEON accelerated)   │ with frontier cloud LLMs, multi-step ReAct agent tools, Model Context Protocol (MCP) servers, self-evolving cross-session memory, and FLUX neural image   │ generation.","stars":0,"pushed_at":"2026-10-19T06:32:37Z","license":"MIT","language":"Dart","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"KleidiAI","url":"https://github.com/ARM-software/kleidiai","category":"arm-optimization","platforms":["ARM64"],"description":"Kernels optimizados para CPUs Arm.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"PocketTune (candidate)","url":"https://github.com/ayanbag/PocketTune","category":"benchmark","platforms":["Android"],"description":"Candidato de autotuning, pendiente de verificación.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Mobile AI Node (candidate)","url":"https://github.com/Russell-Bryant/mobile-ai-node","category":"distributed-mobile","platforms":["Android","Termux"],"description":"Candidato de teléfono Android como nodo de inferencia/API; verificar actividad y seguridad.","source":"curated research lead","status":"pending_review","discovered_at":"2026-11-22T12:40:10Z"},{"name":"PhoneBorg (candidate)","url":"https://github.com/dzaczek/phoneborg","category":"distributed-mobile","platforms":["Android"],"description":"Candidato de clúster móvil, pendiente de verificación.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Adams-404/clearport-cli","url":"https://github.com/Adams-404/clearport-cli","category":"linux-mobile","platforms":[],"description":"A lightweight local LLM CLI for Termux powered by llama.cpp","stars":0,"pushed_at":"2026-10-31T03:20:08Z","license":"MIT","language":"Shell","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Andrew-Velox/androbot","url":"https://github.com/Andrew-Velox/androbot","category":"linux-mobile","platforms":[],"description":"Self-hosted Messenger/Telegram AI bot with BM25 RAG over uploaded files and read-only Postgres tool access. Bring your own LLM (local llama.cpp or any OpenAI-compatible API). Termux-friendly.","stars":1,"pushed_at":"2026-05-27T16:15:20Z","license":"MIT","language":"Rust","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Carmonacu/realme-gt2-second-life","url":"https://github.com/Carmonacu/realme-gt2-second-life","category":"linux-mobile","platforms":[],"description":"Segunda vida para un Realme GT 2 (RMX3311) sin root: Termux, LLM local con llama.cpp, Kali rootless, servicios y media stack","stars":0,"pushed_at":"2026-11-20T09:12:29Z","license":"MIT","language":"Shell","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"clixgvvv/AndroidLLMServerScript","url":"https://github.com/clixgvvv/AndroidLLMServerScript","category":"linux-mobile","platforms":[],"description":"📲 Create a local LLM server on Android using Python and llama.cpp for easy access to language models.","stars":3,"pushed_at":"2026-10-13T06:49:34Z","license":"Apache-2.0","language":"Python","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"hangyolkim-droid/ondev","url":"https://github.com/hangyolkim-droid/ondev","category":"linux-mobile","platforms":[],"description":"The on-device LLM builder — a model + a target device → an optimized, packaged, reproducibly measured local runtime. Wraps llama.cpp.","stars":0,"pushed_at":"2026-10-06T14:01:23Z","license":"MIT","language":"Python","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Mateuspp115/ARUAN-IA-Mobile-","url":"https://github.com/Mateuspp115/ARUAN-IA-Mobile-","category":"linux-mobile","platforms":[],"description":"ARUAN IA - Plataforma de IA local para Android com execução de LLMs offline. Aproveita código C++ do Termux (llama.cpp, NCNN) com bridges JNI, resource scheduler para 4GB RAM, download via CDN, e zero root. APK <50MB.","stars":0,"pushed_at":"2026-03-18T19:13:15Z","license":"Apache-2.0","language":null,"source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"padz24/Nusa-rg","url":"https://github.com/padz24/Nusa-rg","category":"linux-mobile","platforms":[],"description":"Terminal coding assistant for Termux: indexes your project with SQLite FTS5, sends the relevant snippets to any OpenAI-compatible API or a local llama.cpp model, and keeps every chat in a resumable session.","stars":0,"pushed_at":"2026-10-22T05:09:22Z","license":"MIT","language":"Python","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"postmarketOS","url":"https://github.com/postmarketOS","category":"linux-mobile","platforms":["Linux ARM móvil"],"description":"Distribución Linux móvil.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"RobiiAragon/offline-it-helpdesk","url":"https://github.com/RobiiAragon/offline-it-helpdesk","category":"linux-mobile","platforms":[],"description":"100% local IT helpdesk assistant: hybrid RAG (ONNX MiniLM + BM25) over runbooks, small local LLM via llama.cpp/Ollama, cited answers, FastAPI + web UI, evaluation suite. Runs on Mac and Android (Termux).","stars":0,"pushed_at":"2026-11-20T09:36:55Z","license":"MIT","language":"Python","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"sanatani-hackers/Llama.cpp-termux","url":"https://github.com/sanatani-hackers/Llama.cpp-termux","category":"linux-mobile","platforms":[],"description":"The ultimate 1-click installer for running High-Performance Local LLMs (Llama 3.2, Qwen 2.5, BitNet) natively on Android via Termux. Features ultra-fast CPU binaries and Turnip/Mesa Vulkan GPU acceleration for Snapdragon chips. Zero root required.","stars":15,"pushed_at":"2026-11-09T09:05:48Z","license":"MIT","language":"Shell","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Termux","url":"https://github.com/termux/termux-app","category":"linux-mobile","platforms":["Android"],"description":"Entorno terminal Android.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"tifagg/android-ai-server","url":"https://github.com/tifagg/android-ai-server","category":"linux-mobile","platforms":[],"description":"Pocket infrastructure node built on Android using Termux.  Features: - TinyLlama local LLM via llama.cpp - Flask-powered LAN web interface - tmux-managed background sessions - Git/GitHub deployment directly from phone - Offline/self-hosted infrastructure experiments  A lightweight private AI + homelab setup running entirely on a phone.","stars":0,"pushed_at":"2026-11-17T06:28:27Z","license":null,"language":"Python","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"tigrohvost/pi-deck","url":"https://github.com/tigrohvost/pi-deck","category":"linux-mobile","platforms":[],"description":"Local Android coding agent with Nord/DECK UI, on-device GGUF inference, and Pi via llama.cpp + Termux. Локальный coding agent без облачного inference.","stars":0,"pushed_at":"2026-11-15T20:48:59Z","license":"MIT","language":"Java","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Ubuntu Touch","url":"https://github.com/ubports","category":"linux-mobile","platforms":["Linux ARM móvil"],"description":"Sistema Linux móvil.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"user01234-sl/Termux-AI","url":"https://github.com/user01234-sl/Termux-AI","category":"linux-mobile","platforms":[],"description":"A lightweight Python-based AI client for Android running Termux, supporting online AI APIs and offline local LLMs through llama-cpp.","stars":1,"pushed_at":"2026-11-22T11:14:53Z","license":"GPL-3.0","language":"Python","source":"GitHub Search API","status":"discovered","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Droid Harness (candidate)","url":"https://github.com/eibragaa/droid-harness","category":"mobile-agents","platforms":["Android","Termux"],"description":"Candidato de agentes de programación en Android; verificar repositorio y reproducibilidad.","source":"curated research lead","status":"pending_review","discovered_at":"2026-11-22T12:40:10Z"},{"name":"Awesome Mobile LLMs","url":"https://github.com/stevelaskaridis/awesome-mobile-llm","category":"research-index","platforms":["Android","iOS","Mobile"],"description":"Recopilación de investigación móvil.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"ExecuTorch","url":"https://github.com/pytorch/executorch","category":"runtime","platforms":["Android","Embedded ARM"],"description":"Runtime edge de PyTorch.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"LiteRT","url":"https://github.com/google-ai-edge/LiteRT","category":"runtime","platforms":["Android","Embedded"],"description":"Runtime de Google AI Edge.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"llama.cpp","url":"https://github.com/ggml-org/llama.cpp","category":"runtime","platforms":["Android","Linux ARM"],"description":"Motor GGUF con backends CPU/GPU.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"},{"name":"MLC LLM","url":"https://github.com/mlc-ai/mlc-llm","category":"runtime","platforms":["Android","Linux"],"description":"Compilación y despliegue de modelos.","status":"pending_review","source":"curated research lead","discovered_at":"2026-11-22T12:40:10Z"}],"sources":{"github":[{"query":"android","status":"ok","total_count":109},{"query":"termux","status":"ok","total_count":12},{"query":"arm","status":"ok","total_count":3},{"query":"npu","status":"ok","total_count":3},{"query":"hexagon","status":"ok","total_count":9},{"query":"embedded","status":"ok","total_count":0},{"query":"runtimes","status":"ok","total_count":0}],"reddit":[{"subreddit":"LocalLLaMA","status":"unavailable","error":"HTTP Error 403: Blocked"},{"subreddit":"LocalLLM","status":"unavailable","error":"HTTP Error 403: Blocked"},{"subreddit":"termux","status":"unavailable","error":"HTTP Error 403: Blocked"}],"x":"search links only; no authorized API ingestion configured"},"social_searches":[{"label":"X · on-device LLM ARM","url":"https://x.com/search?q=%22on-device%20LLM%22%20ARM&src=typed_query"},{"label":"X · Android Hexagon LLM","url":"https://x.com/search?q=Android%20Hexagon%20LLM&src=typed_query"},{"label":"X · Termux local AI","url":"https://x.com/search?q=Termux%20local%20AI&src=typed_query"},{"label":"X · mobile inference NPU","url":"https://x.com/search?q=mobile%20inference%20NPU&src=typed_query"},{"label":"Reddit · LocalLLaMA","url":"https://www.reddit.com/r/LocalLLaMA/search/?q=Android%20OR%20ARM%20OR%20LLM&sort=new"},{"label":"Reddit · LocalLLM","url":"https://www.reddit.com/r/LocalLLM/search/?q=Android%20OR%20ARM%20OR%20LLM&sort=new"},{"label":"Reddit · termux","url":"https://www.reddit.com/r/termux/search/?q=Android%20OR%20ARM%20OR%20LLM&sort=new"}]}</script><script>
-const d=JSON.parse(document.getElementById('data').textContent),$=x=>document.getElementById(x);$('count').textContent=d.items.length;$('gh').textContent=d.items.filter(x=>(x.source||'').includes('GitHub')).length;$('date').textContent=new Date(d.generated_at).toLocaleDateString('es-ES');$('stamp').textContent=new Date(d.generated_at).toLocaleString('es-ES');[...new Set(d.items.map(x=>x.category||'other'))].sort().forEach(c=>{let o=document.createElement('option');o.value=c;o.textContent=c;$('cat').append(o)});
-function render(){let q=$('q').value.toLowerCase(),c=$('cat').value;let xs=d.items.filter(x=>(!c||x.category===c)&&[x.name,x.description,x.category,(x.platforms||[]).join(' ')].join(' ').toLowerCase().includes(q));$('catalog').replaceChildren();xs.forEach(x=>{let a=document.createElement('article');a.className='card';let t=document.createElement('div');t.className='tag';t.textContent=x.category||'other';let h=document.createElement('h3');h.textContent=x.name;let p=document.createElement('p');p.textContent=x.description||'';let m=document.createElement('div');m.className='meta';m.textContent=(x.status||'discovered')+' · '+(x.source||'source pending');let l=document.createElement('a');l.href=x.url;l.target='_blank';l.rel='noopener';l.textContent='Abrir fuente ↗';a.append(t,h,p,m,l);$('catalog').append(a)});if(!xs.length)$('catalog').textContent='No hay resultados.'}
-$('q').addEventListener('input',render);$('cat').addEventListener('change',render);render();d.social_searches.forEach(x=>{let a=document.createElement('a');a.href=x.url;a.target='_blank';a.rel='noopener';a.textContent=x.label+' ↗';$('social').append(a)});
-</script><script src="assets/js/navigation.js?v=2026-11-23-2" defer></script></body></html>
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Mobile-LLMs-ARM · LEONES</title>
+        <style>
+            :root {
+                color-scheme: dark;
+                --bg: #0b1117;
+                --panel: #14232e;
+                --line: #2a3c49;
+                --text: #eaf2f7;
+                --muted: #9bb0bd;
+                --cyan: #62d7d0;
+                --gold: #f2c879;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background:
+                    radial-gradient(ellipse at 75% -10%, #16434b, transparent 40%),
+                    linear-gradient(#101b24, var(--bg) 55%);
+                color: var(--text);
+                font:
+                    15px/1.6 system-ui,
+                    sans-serif;
+            }
+            .wrap {
+                max-width: 1200px;
+                margin: auto;
+                padding: 28px 20px 60px;
+            }
+            a {
+                color: var(--cyan);
+                text-decoration: none;
+            }
+            .top {
+                display: flex;
+                justify-content: space-between;
+            }
+            .hero {
+                padding: 55px 0 25px;
+            }
+            .eyebrow,
+            .tag {
+                color: var(--cyan);
+                font-size: 11px;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+            }
+            .hero h1 {
+                font-size: clamp(42px, 7vw, 76px);
+                line-height: 1;
+                margin: 12px 0;
+            }
+            .hero h1 span {
+                color: var(--cyan);
+            }
+            .hero p {
+                font-size: 18px;
+                color: #b7c8d2;
+                max-width: 800px;
+            }
+            .metrics {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+            .metric,
+            .card,
+            .panel {
+                background: linear-gradient(145deg, #172833, #101922);
+                border: 1px solid var(--line);
+                border-radius: 15px;
+            }
+            .metric {
+                padding: 16px;
+            }
+            .metric strong {
+                display: block;
+                color: var(--gold);
+                font-size: 27px;
+            }
+            .muted {
+                color: var(--muted);
+            }
+            .toolbar {
+                display: flex;
+                gap: 10px;
+                margin: 22px 0;
+                flex-wrap: wrap;
+            }
+            input,
+            select {
+                background: #101a23;
+                color: var(--text);
+                border: 1px solid var(--line);
+                border-radius: 9px;
+                padding: 12px;
+                font: inherit;
+            }
+            .search {
+                flex: 1;
+                min-width: 230px;
+            }
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 13px;
+            }
+            .card {
+                padding: 17px;
+                min-height: 210px;
+                display: flex;
+                flex-direction: column;
+            }
+            .card h3 {
+                font-size: 17px;
+                margin: 8px 0;
+            }
+            .card p {
+                font-size: 13px;
+                color: #b7c8d2;
+            }
+            .meta {
+                margin-top: auto;
+                padding-top: 10px;
+                border-top: 1px solid var(--line);
+                font-size: 11px;
+                color: var(--muted);
+                overflow-wrap: anywhere;
+            }
+            .panel {
+                padding: 20px;
+                margin: 22px 0;
+            }
+            .links {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 9px;
+            }
+            .links a {
+                padding: 10px;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+            }
+            .notice {
+                background: #29271f;
+                border-color: #695a39;
+                color: #d3c9b1;
+            }
+            footer {
+                margin-top: 35px;
+                border-top: 1px solid var(--line);
+                padding-top: 15px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+            @media (max-width: 800px) {
+                .grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+            @media (max-width: 560px) {
+                .grid,
+                .links,
+                .metrics {
+                    grid-template-columns: 1fr;
+                }
+                .wrap {
+                    padding: 18px 13px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main class="wrap">
+            <nav class="top">
+                <a href="index.html">LEONES / RESEARCH</a
+                ><a href="https://github.com/robertosantosx2/LEONES">Repositorio ↗</a>
+            </nav>
+            <header class="hero">
+                <div class="eyebrow">Android · Linux ARM · Edge AI</div>
+                <h1>Mobile-LLMs-<span>ARM</span></h1>
+                <p>
+                    Observatorio de LLMs e IA local en teléfonos, Linux móvil y sistemas embebidos
+                    ARM. Runtimes, CPU/GPU/NPU, modelos, benchmarks, energía y clústeres.
+                </p>
+            </header>
+            <section class="metrics">
+                <div class="metric"><strong id="count">—</strong>Entradas</div>
+                <div class="metric"><strong id="gh">—</strong>GitHub</div>
+                <div class="metric"><strong id="date">—</strong>Actualización</div>
+            </section>
+            <div class="toolbar">
+                <input id="q" class="search" placeholder="Buscar proyecto, SoC, runtime…" /><select
+                    id="cat"
+                >
+                    <option value="">Todas las categorías</option>
+                </select>
+            </div>
+            <div id="catalog" class="grid"></div>
+            <section class="panel">
+                <h2>Roadmap técnico</h2>
+                <p>
+                    G0 inventario · G1 matriz SoC/OS · G2 runtimes/modelos · G3 benchmark NEPENTHES
+                    · G4 Linux móvil · G5 clústeres REDIL · G6 curación.
+                </p>
+                <a href="../docs/subprojects/Mobile-LLMs-ARM/ROADMAP.md">Roadmap completo ↗</a> ·
+                <a href="../docs/subprojects/Mobile-LLMs-ARM/README.md">Documentación ↗</a>
+            </section>
+            <section class="panel">
+                <h2>Prospección comunitaria</h2>
+                <p class="muted">
+                    Reddit se consulta mediante endpoints públicos cuando están disponibles. X se
+                    ofrece como búsquedas directas, sin simular acceso automatizado.
+                </p>
+                <div class="links" id="social"></div>
+            </section>
+            <section class="panel notice">
+                <b>Descubierto ≠ aprobado ≠ medido.</b> Las pistas sociales no son pruebas de
+                ejecución. Los resultados físicos requieren dispositivo identificado, protocolo y
+                artefactos. No se aprueba ni recomienda automáticamente software.
+            </section>
+            <footer>
+                LEONES · Mobile-LLMs-ARM · Catálogo autocontenido · <span id="stamp"></span>
+            </footer>
+        </main>
+        <script id="data" type="application/json">
+            {
+                "schema_version": 1,
+                "project": "Mobile-LLMs-ARM",
+                "generated_at": "2026-11-22T12:40:10Z",
+                "publication_is_not_approval": true,
+                "automatic_recommendation": false,
+                "items": [
+                    {
+                        "name": "alpharomercoma/snapdragon-vs-mediatek",
+                        "url": "https://github.com/alpharomercoma/snapdragon-vs-mediatek",
+                        "category": "accelerators",
+                        "platforms": [],
+                        "description": "Reproducible on-device AI benchmark: MediaTek Dimensity 9500s vs Qualcomm Snapdragon 8 Elite — NPU/GPU/CPU inference and training",
+                        "stars": 1,
+                        "pushed_at": "2026-07-27T14:29:08Z",
+                        "license": "MIT",
+                        "language": "C",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "hastyheat-com/x1e-yoga-slim7x-npu-linux",
+                        "url": "https://github.com/hastyheat-com/x1e-yoga-slim7x-npu-linux",
+                        "category": "accelerators",
+                        "platforms": [],
+                        "description": "Hexagon NPU LLM inference on Snapdragon X Elite (Yoga Slim 7x) under Linux: how-to, kernel patches, scripts. No Qualcomm files.",
+                        "stars": 0,
+                        "pushed_at": "2026-10-25T18:31:23Z",
+                        "license": "MIT",
+                        "language": "Shell",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "J-ratio/edge-ai-recon",
+                        "url": "https://github.com/J-ratio/edge-ai-recon",
+                        "category": "accelerators",
+                        "platforms": [],
+                        "description": "Recon notes: on-device LLM inference on Qualcomm Hexagon NPU",
+                        "stars": 0,
+                        "pushed_at": "2026-07-21T07:44:22Z",
+                        "license": null,
+                        "language": "C++",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "qhy991/Awesome-On-Device-Inference",
+                        "url": "https://github.com/qhy991/Awesome-On-Device-Inference",
+                        "category": "accelerators",
+                        "platforms": [],
+                        "description": "A curated list of papers, engines, and hardware characterization for On-Device & Mobile LLM Inference Systems, focusing on GPU+NPU Heterogeneous Co-Execution (Apple Silicon ANE, Qualcomm Hexagon), Memory Wall, and Low-Bit Kernels.",
+                        "stars": 1,
+                        "pushed_at": "2026-11-19T04:12:13Z",
+                        "license": "MIT",
+                        "language": null,
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "qidiso/llama-hexagon.cpp",
+                        "url": "https://github.com/qidiso/llama-hexagon.cpp",
+                        "category": "accelerators",
+                        "platforms": [],
+                        "description": "LLM inference in C/C++ on Qualcomm",
+                        "stars": 0,
+                        "pushed_at": "2026-04-14T06:09:49Z",
+                        "license": "MIT",
+                        "language": null,
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Stephen062811/AegisCode",
+                        "url": "https://github.com/Stephen062811/AegisCode",
+                        "category": "accelerators",
+                        "platforms": [],
+                        "description": "A 100% air-gapped, voice-driven coding assistant. It captures code via clipboard, transcribes speech locally, and routes inference to an edge LLM or mobile NPU. Zero cloud dependency.",
+                        "stars": 0,
+                        "pushed_at": "2026-09-14T05:58:54Z",
+                        "license": null,
+                        "language": "Python",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Viswanath129/unlocking-the-power-of-npu",
+                        "url": "https://github.com/Viswanath129/unlocking-the-power-of-npu",
+                        "category": "accelerators",
+                        "platforms": [],
+                        "description": "High-performance LLM layer streaming and inference engine for Qualcomm Snapdragon X / Hexagon NPU",
+                        "stars": 1,
+                        "pushed_at": "2026-11-13T16:09:47Z",
+                        "license": null,
+                        "language": "Python",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "VitalikDen0/Bonsai2-NPU",
+                        "url": "https://github.com/VitalikDen0/Bonsai2-NPU",
+                        "category": "accelerators",
+                        "platforms": [],
+                        "description": "Monolithic 1-bit NPU + Hexagon DSP HVX Inference Engine for Bonsai 2 27B on Snapdragon 8 Elite",
+                        "stars": 1,
+                        "pushed_at": "2026-10-08T13:56:12Z",
+                        "license": "NOASSERTION",
+                        "language": "C",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "xiziphus/np2-llm-bench",
+                        "url": "https://github.com/xiziphus/np2-llm-bench",
+                        "category": "accelerators",
+                        "platforms": [],
+                        "description": "LLM inference benchmarks on the Nothing Phone 2 (Snapdragon 8+ Gen 1): CPU vs Adreno 730 OpenCL vs Hexagon v69 NPU — the CPU wins",
+                        "stars": 0,
+                        "pushed_at": "2026-08-18T16:15:10Z",
+                        "license": null,
+                        "language": "Shell",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "YawLabs/snapdragon-genie-server",
+                        "url": "https://github.com/YawLabs/snapdragon-genie-server",
+                        "category": "accelerators",
+                        "platforms": [],
+                        "description": "Snapdragon X Elite (Hexagon NPU) LLM: Genie server exposing Anthropic + OpenAI APIs for on-device inference",
+                        "stars": 1,
+                        "pushed_at": "2026-09-24T11:54:45Z",
+                        "license": "Apache-2.0",
+                        "language": "Python",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Zrald1/Snap-llm-phone",
+                        "url": "https://github.com/Zrald1/Snap-llm-phone",
+                        "category": "accelerators",
+                        "platforms": [],
+                        "description": "On-device LLM serving for Snapdragon mobile phones - CPU + Adreno GPU + Hexagon NPU. Privacy-first AI inference with speculative decoding, prompt caching, thread pinning, and vision model support.",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z",
+                        "stars": 1,
+                        "pushed_at": "2026-08-24T00:27:26Z",
+                        "license": null,
+                        "language": "C"
+                    },
+                    {
+                        "name": "agent-axiom/axiom-edge",
+                        "url": "https://github.com/agent-axiom/axiom-edge",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "On-device LLM harness for Android and iOS: local inference, benchmarks and evals",
+                        "stars": 0,
+                        "pushed_at": "2026-11-17T21:28:21Z",
+                        "license": "MIT",
+                        "language": "Dart",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "GijungKim/expo-local-llm",
+                        "url": "https://github.com/GijungKim/expo-local-llm",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "Expo module for on-device LLM inference via Apple Foundation Models (iOS) and Gemini Nano (Android)",
+                        "stars": 15,
+                        "pushed_at": "2026-11-21T21:13:10Z",
+                        "license": "MIT",
+                        "language": "TypeScript",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "hung-yueh/react-native-litert-lm",
+                        "url": "https://github.com/hung-yueh/react-native-litert-lm",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "High-performance on-device LLM inference for React Native, powered by LiteRT-LM and Nitro Modules",
+                        "stars": 65,
+                        "pushed_at": "2026-11-18T04:56:17Z",
+                        "license": "MIT",
+                        "language": "TypeScript",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "kekeke-123/LLAI-Kernel",
+                        "url": "https://github.com/kekeke-123/LLAI-Kernel",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "LLAI Kernel — a portable, pure-C++ on-device LLM inference kernel (llama.cpp based, C ABI, iOS/Android/Windows/Linux).",
+                        "stars": 0,
+                        "pushed_at": "2026-11-22T04:46:47Z",
+                        "license": "MIT",
+                        "language": "C++",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "leehack/llamadart",
+                        "url": "https://github.com/leehack/llamadart",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "Cross-platform on-device LLM inference for Dart & Flutter: GGUF via llama.cpp and LiteRT-LM on Android, iOS, macOS, Windows, Linux and web.",
+                        "stars": 92,
+                        "pushed_at": "2026-11-22T10:58:01Z",
+                        "license": "MIT",
+                        "language": "Dart",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "llamatik/Llamatik",
+                        "url": "https://github.com/llamatik/Llamatik",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "True on-device AI SDK for Kotlin Multiplatform (Android, iOS, Desktop, JVM, WASM). LLM inference, Speech-to-Text, Image Generation, Agent Framework and RAG — powered by llama.cpp, whisper.cpp and stable-diffusion.cpp.",
+                        "stars": 227,
+                        "pushed_at": "2026-11-20T15:54:54Z",
+                        "license": "NOASSERTION",
+                        "language": "Kotlin",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "moongrail/OgrChatAi",
+                        "url": "https://github.com/moongrail/OgrChatAi",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "Android AI chat app with on-device LLM inference. Download models from HuggingFace and chat privately.",
+                        "stars": 0,
+                        "pushed_at": "2026-11-20T09:07:59Z",
+                        "license": "NOASSERTION",
+                        "language": "Kotlin",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "NickMonrad/kernel-ai-assistant",
+                        "url": "https://github.com/NickMonrad/kernel-ai-assistant",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "Jandal AI — Local-first Android AI assistant with on-device LLM inference, semantic memory, and extensible skill framework",
+                        "stars": 38,
+                        "pushed_at": "2026-11-22T12:38:52Z",
+                        "license": "Apache-2.0",
+                        "language": "Kotlin",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "synheart-ai/syni-kotlin",
+                        "url": "https://github.com/synheart-ai/syni-kotlin",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "Android SDK for Syni — adaptive on-device LLM inference with hybrid local/cloud chat, structured persona conditioning, and a streaming chat API for Android.",
+                        "stars": 0,
+                        "pushed_at": "2026-11-20T06:46:15Z",
+                        "license": "NOASSERTION",
+                        "language": "Kotlin",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "uno-km/amv-bitnet",
+                        "url": "https://github.com/uno-km/amv-bitnet",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "⚡ Production 1.58-bit (i2_s) BitNet On-Device Inference SDK & Dual Engine for Android Termux & ARM64.",
+                        "stars": 2,
+                        "pushed_at": "2026-11-19T07:55:39Z",
+                        "license": "NOASSERTION",
+                        "language": "Python",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "visitor257/Ponko",
+                        "url": "https://github.com/visitor257/Ponko",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "Offline-capable AI app for Android: on-device chat (.litertlm / .gguf) with image and file input, drawing (stable-diffusion.cpp GGUF, optional Vulkan GPU) and image tagging (ONNX tagger). Optional GPU acceleration; all inference runs locally; no telemetry.",
+                        "stars": 4,
+                        "pushed_at": "2026-11-22T07:45:24Z",
+                        "license": "MIT",
+                        "language": "C++",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "YashBhadange2006/TinyAI",
+                        "url": "https://github.com/YashBhadange2006/TinyAI",
+                        "category": "android",
+                        "platforms": [],
+                        "description": "On-device AI assistant for Android built with Kotlin, featuring local LLM inference, offline AI capabilities, and edge AI experimentation.",
+                        "stars": 52,
+                        "pushed_at": "2026-11-17T09:28:51Z",
+                        "license": "Apache-2.0",
+                        "language": "Kotlin",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "AiPaca (candidate)",
+                        "url": "https://github.com/dojekon/AIPaca",
+                        "category": "android-app",
+                        "platforms": ["Android"],
+                        "description": "Candidato de aplicación local, pendiente de verificación.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "PocketLLM (candidate)",
+                        "url": "https://github.com/Kimi-syl/PocketLLM",
+                        "category": "android-app",
+                        "platforms": ["Android", "Termux"],
+                        "description": "Candidato de runtime, pendiente de verificación.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "MobileCore / TuiMa (candidate)",
+                        "url": "https://github.com/Harzva/mobilecore",
+                        "category": "android-runtime",
+                        "platforms": ["Android"],
+                        "description": "Candidato de runtime Android y API local; verificar proyecto, alcance, licencia y soporte real.",
+                        "source": "curated research lead",
+                        "status": "pending_review",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "AbuZar-Ansarii/PocketStrike",
+                        "url": "https://github.com/AbuZar-Ansarii/PocketStrike",
+                        "category": "arm",
+                        "platforms": [],
+                        "description": " PocketStrike is a privacy-first mobile AI workstation. It combines zero-cloud native on-device GGUF inference (ARM NEON accelerated)   │ with frontier cloud LLMs, multi-step ReAct agent tools, Model Context Protocol (MCP) servers, self-evolving cross-session memory, and FLUX neural image   │ generation.",
+                        "stars": 174,
+                        "pushed_at": "2026-08-27T07:13:31Z",
+                        "license": "MIT",
+                        "language": "Dart",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Parasaran-Python/pocket-llm-server",
+                        "url": "https://github.com/Parasaran-Python/pocket-llm-server",
+                        "category": "arm",
+                        "platforms": [],
+                        "description": "Local LLM inference engine & OpenAI-compatible LAN API server for Android. Powered by mobile GPU acceleration (Vulkan/Adreno) and ARM KleidiAI with zero-sleep background serving for coder agents (Cline, Roo Code, Continue.dev, Cursor).",
+                        "stars": 1,
+                        "pushed_at": "2026-08-29T07:45:39Z",
+                        "license": "MIT",
+                        "language": "Kotlin",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "punnppz321v2/PocketStrike",
+                        "url": "https://github.com/punnppz321v2/PocketStrike",
+                        "category": "arm",
+                        "platforms": [],
+                        "description": " PocketStrike is a privacy-first mobile AI workstation. It combines zero-cloud native on-device GGUF inference (ARM NEON accelerated)   │ with frontier cloud LLMs, multi-step ReAct agent tools, Model Context Protocol (MCP) servers, self-evolving cross-session memory, and FLUX neural image   │ generation.",
+                        "stars": 0,
+                        "pushed_at": "2026-10-19T06:32:37Z",
+                        "license": "MIT",
+                        "language": "Dart",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "KleidiAI",
+                        "url": "https://github.com/ARM-software/kleidiai",
+                        "category": "arm-optimization",
+                        "platforms": ["ARM64"],
+                        "description": "Kernels optimizados para CPUs Arm.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "PocketTune (candidate)",
+                        "url": "https://github.com/ayanbag/PocketTune",
+                        "category": "benchmark",
+                        "platforms": ["Android"],
+                        "description": "Candidato de autotuning, pendiente de verificación.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Mobile AI Node (candidate)",
+                        "url": "https://github.com/Russell-Bryant/mobile-ai-node",
+                        "category": "distributed-mobile",
+                        "platforms": ["Android", "Termux"],
+                        "description": "Candidato de teléfono Android como nodo de inferencia/API; verificar actividad y seguridad.",
+                        "source": "curated research lead",
+                        "status": "pending_review",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "PhoneBorg (candidate)",
+                        "url": "https://github.com/dzaczek/phoneborg",
+                        "category": "distributed-mobile",
+                        "platforms": ["Android"],
+                        "description": "Candidato de clúster móvil, pendiente de verificación.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Adams-404/clearport-cli",
+                        "url": "https://github.com/Adams-404/clearport-cli",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "A lightweight local LLM CLI for Termux powered by llama.cpp",
+                        "stars": 0,
+                        "pushed_at": "2026-10-31T03:20:08Z",
+                        "license": "MIT",
+                        "language": "Shell",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Andrew-Velox/androbot",
+                        "url": "https://github.com/Andrew-Velox/androbot",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "Self-hosted Messenger/Telegram AI bot with BM25 RAG over uploaded files and read-only Postgres tool access. Bring your own LLM (local llama.cpp or any OpenAI-compatible API). Termux-friendly.",
+                        "stars": 1,
+                        "pushed_at": "2026-05-27T16:15:20Z",
+                        "license": "MIT",
+                        "language": "Rust",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Carmonacu/realme-gt2-second-life",
+                        "url": "https://github.com/Carmonacu/realme-gt2-second-life",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "Segunda vida para un Realme GT 2 (RMX3311) sin root: Termux, LLM local con llama.cpp, Kali rootless, servicios y media stack",
+                        "stars": 0,
+                        "pushed_at": "2026-11-20T09:12:29Z",
+                        "license": "MIT",
+                        "language": "Shell",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "clixgvvv/AndroidLLMServerScript",
+                        "url": "https://github.com/clixgvvv/AndroidLLMServerScript",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "📲 Create a local LLM server on Android using Python and llama.cpp for easy access to language models.",
+                        "stars": 3,
+                        "pushed_at": "2026-10-13T06:49:34Z",
+                        "license": "Apache-2.0",
+                        "language": "Python",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "hangyolkim-droid/ondev",
+                        "url": "https://github.com/hangyolkim-droid/ondev",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "The on-device LLM builder — a model + a target device → an optimized, packaged, reproducibly measured local runtime. Wraps llama.cpp.",
+                        "stars": 0,
+                        "pushed_at": "2026-10-06T14:01:23Z",
+                        "license": "MIT",
+                        "language": "Python",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Mateuspp115/ARUAN-IA-Mobile-",
+                        "url": "https://github.com/Mateuspp115/ARUAN-IA-Mobile-",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "ARUAN IA - Plataforma de IA local para Android com execução de LLMs offline. Aproveita código C++ do Termux (llama.cpp, NCNN) com bridges JNI, resource scheduler para 4GB RAM, download via CDN, e zero root. APK <50MB.",
+                        "stars": 0,
+                        "pushed_at": "2026-03-18T19:13:15Z",
+                        "license": "Apache-2.0",
+                        "language": null,
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "padz24/Nusa-rg",
+                        "url": "https://github.com/padz24/Nusa-rg",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "Terminal coding assistant for Termux: indexes your project with SQLite FTS5, sends the relevant snippets to any OpenAI-compatible API or a local llama.cpp model, and keeps every chat in a resumable session.",
+                        "stars": 0,
+                        "pushed_at": "2026-10-22T05:09:22Z",
+                        "license": "MIT",
+                        "language": "Python",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "postmarketOS",
+                        "url": "https://github.com/postmarketOS",
+                        "category": "linux-mobile",
+                        "platforms": ["Linux ARM móvil"],
+                        "description": "Distribución Linux móvil.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "RobiiAragon/offline-it-helpdesk",
+                        "url": "https://github.com/RobiiAragon/offline-it-helpdesk",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "100% local IT helpdesk assistant: hybrid RAG (ONNX MiniLM + BM25) over runbooks, small local LLM via llama.cpp/Ollama, cited answers, FastAPI + web UI, evaluation suite. Runs on Mac and Android (Termux).",
+                        "stars": 0,
+                        "pushed_at": "2026-11-20T09:36:55Z",
+                        "license": "MIT",
+                        "language": "Python",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "sanatani-hackers/Llama.cpp-termux",
+                        "url": "https://github.com/sanatani-hackers/Llama.cpp-termux",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "The ultimate 1-click installer for running High-Performance Local LLMs (Llama 3.2, Qwen 2.5, BitNet) natively on Android via Termux. Features ultra-fast CPU binaries and Turnip/Mesa Vulkan GPU acceleration for Snapdragon chips. Zero root required.",
+                        "stars": 15,
+                        "pushed_at": "2026-11-09T09:05:48Z",
+                        "license": "MIT",
+                        "language": "Shell",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Termux",
+                        "url": "https://github.com/termux/termux-app",
+                        "category": "linux-mobile",
+                        "platforms": ["Android"],
+                        "description": "Entorno terminal Android.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "tifagg/android-ai-server",
+                        "url": "https://github.com/tifagg/android-ai-server",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "Pocket infrastructure node built on Android using Termux.  Features: - TinyLlama local LLM via llama.cpp - Flask-powered LAN web interface - tmux-managed background sessions - Git/GitHub deployment directly from phone - Offline/self-hosted infrastructure experiments  A lightweight private AI + homelab setup running entirely on a phone.",
+                        "stars": 0,
+                        "pushed_at": "2026-11-17T06:28:27Z",
+                        "license": null,
+                        "language": "Python",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "tigrohvost/pi-deck",
+                        "url": "https://github.com/tigrohvost/pi-deck",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "Local Android coding agent with Nord/DECK UI, on-device GGUF inference, and Pi via llama.cpp + Termux. Локальный coding agent без облачного inference.",
+                        "stars": 0,
+                        "pushed_at": "2026-11-15T20:48:59Z",
+                        "license": "MIT",
+                        "language": "Java",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Ubuntu Touch",
+                        "url": "https://github.com/ubports",
+                        "category": "linux-mobile",
+                        "platforms": ["Linux ARM móvil"],
+                        "description": "Sistema Linux móvil.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "user01234-sl/Termux-AI",
+                        "url": "https://github.com/user01234-sl/Termux-AI",
+                        "category": "linux-mobile",
+                        "platforms": [],
+                        "description": "A lightweight Python-based AI client for Android running Termux, supporting online AI APIs and offline local LLMs through llama-cpp.",
+                        "stars": 1,
+                        "pushed_at": "2026-11-22T11:14:53Z",
+                        "license": "GPL-3.0",
+                        "language": "Python",
+                        "source": "GitHub Search API",
+                        "status": "discovered",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Droid Harness (candidate)",
+                        "url": "https://github.com/eibragaa/droid-harness",
+                        "category": "mobile-agents",
+                        "platforms": ["Android", "Termux"],
+                        "description": "Candidato de agentes de programación en Android; verificar repositorio y reproducibilidad.",
+                        "source": "curated research lead",
+                        "status": "pending_review",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "Awesome Mobile LLMs",
+                        "url": "https://github.com/stevelaskaridis/awesome-mobile-llm",
+                        "category": "research-index",
+                        "platforms": ["Android", "iOS", "Mobile"],
+                        "description": "Recopilación de investigación móvil.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "ExecuTorch",
+                        "url": "https://github.com/pytorch/executorch",
+                        "category": "runtime",
+                        "platforms": ["Android", "Embedded ARM"],
+                        "description": "Runtime edge de PyTorch.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "LiteRT",
+                        "url": "https://github.com/google-ai-edge/LiteRT",
+                        "category": "runtime",
+                        "platforms": ["Android", "Embedded"],
+                        "description": "Runtime de Google AI Edge.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "llama.cpp",
+                        "url": "https://github.com/ggml-org/llama.cpp",
+                        "category": "runtime",
+                        "platforms": ["Android", "Linux ARM"],
+                        "description": "Motor GGUF con backends CPU/GPU.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    },
+                    {
+                        "name": "MLC LLM",
+                        "url": "https://github.com/mlc-ai/mlc-llm",
+                        "category": "runtime",
+                        "platforms": ["Android", "Linux"],
+                        "description": "Compilación y despliegue de modelos.",
+                        "status": "pending_review",
+                        "source": "curated research lead",
+                        "discovered_at": "2026-11-22T12:40:10Z"
+                    }
+                ],
+                "sources": {
+                    "github": [
+                        { "query": "android", "status": "ok", "total_count": 109 },
+                        { "query": "termux", "status": "ok", "total_count": 12 },
+                        { "query": "arm", "status": "ok", "total_count": 3 },
+                        { "query": "npu", "status": "ok", "total_count": 3 },
+                        { "query": "hexagon", "status": "ok", "total_count": 9 },
+                        { "query": "embedded", "status": "ok", "total_count": 0 },
+                        { "query": "runtimes", "status": "ok", "total_count": 0 }
+                    ],
+                    "reddit": [
+                        {
+                            "subreddit": "LocalLLaMA",
+                            "status": "unavailable",
+                            "error": "HTTP Error 403: Blocked"
+                        },
+                        {
+                            "subreddit": "LocalLLM",
+                            "status": "unavailable",
+                            "error": "HTTP Error 403: Blocked"
+                        },
+                        {
+                            "subreddit": "termux",
+                            "status": "unavailable",
+                            "error": "HTTP Error 403: Blocked"
+                        }
+                    ],
+                    "x": "search links only; no authorized API ingestion configured"
+                },
+                "social_searches": [
+                    {
+                        "label": "X · on-device LLM ARM",
+                        "url": "https://x.com/search?q=%22on-device%20LLM%22%20ARM&src=typed_query"
+                    },
+                    {
+                        "label": "X · Android Hexagon LLM",
+                        "url": "https://x.com/search?q=Android%20Hexagon%20LLM&src=typed_query"
+                    },
+                    {
+                        "label": "X · Termux local AI",
+                        "url": "https://x.com/search?q=Termux%20local%20AI&src=typed_query"
+                    },
+                    {
+                        "label": "X · mobile inference NPU",
+                        "url": "https://x.com/search?q=mobile%20inference%20NPU&src=typed_query"
+                    },
+                    {
+                        "label": "Reddit · LocalLLaMA",
+                        "url": "https://www.reddit.com/r/LocalLLaMA/search/?q=Android%20OR%20ARM%20OR%20LLM&sort=new"
+                    },
+                    {
+                        "label": "Reddit · LocalLLM",
+                        "url": "https://www.reddit.com/r/LocalLLM/search/?q=Android%20OR%20ARM%20OR%20LLM&sort=new"
+                    },
+                    {
+                        "label": "Reddit · termux",
+                        "url": "https://www.reddit.com/r/termux/search/?q=Android%20OR%20ARM%20OR%20LLM&sort=new"
+                    }
+                ]
+            }
+        </script>
+        <script>
+            const d = JSON.parse(document.getElementById("data").textContent),
+                $ = (x) => document.getElementById(x);
+            $("count").textContent = d.items.length;
+            $("gh").textContent = d.items.filter((x) => (x.source || "").includes("GitHub")).length;
+            $("date").textContent = new Date(d.generated_at).toLocaleDateString("es-ES");
+            $("stamp").textContent = new Date(d.generated_at).toLocaleString("es-ES");
+            [...new Set(d.items.map((x) => x.category || "other"))].sort().forEach((c) => {
+                let o = document.createElement("option");
+                o.value = c;
+                o.textContent = c;
+                $("cat").append(o);
+            });
+            function render() {
+                let q = $("q").value.toLowerCase(),
+                    c = $("cat").value;
+                let xs = d.items.filter(
+                    (x) =>
+                        (!c || x.category === c) &&
+                        [x.name, x.description, x.category, (x.platforms || []).join(" ")]
+                            .join(" ")
+                            .toLowerCase()
+                            .includes(q),
+                );
+                $("catalog").replaceChildren();
+                xs.forEach((x) => {
+                    let a = document.createElement("article");
+                    a.className = "card";
+                    let t = document.createElement("div");
+                    t.className = "tag";
+                    t.textContent = x.category || "other";
+                    let h = document.createElement("h3");
+                    h.textContent = x.name;
+                    let p = document.createElement("p");
+                    p.textContent = x.description || "";
+                    let m = document.createElement("div");
+                    m.className = "meta";
+                    m.textContent =
+                        (x.status || "discovered") + " · " + (x.source || "source pending");
+                    let l = document.createElement("a");
+                    l.href = x.url;
+                    l.target = "_blank";
+                    l.rel = "noopener";
+                    l.textContent = "Abrir fuente ↗";
+                    a.append(t, h, p, m, l);
+                    $("catalog").append(a);
+                });
+                if (!xs.length) $("catalog").textContent = "No hay resultados.";
+            }
+            $("q").addEventListener("input", render);
+            $("cat").addEventListener("change", render);
+            render();
+            d.social_searches.forEach((x) => {
+                let a = document.createElement("a");
+                a.href = x.url;
+                a.target = "_blank";
+                a.rel = "noopener";
+                a.textContent = x.label + " ↗";
+                $("social").append(a);
+            });
+        </script>
+        <script src="assets/js/navigation.js?v=2026-11-23-2" defer></script>
+    </body>
+</html>

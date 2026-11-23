@@ -1,8 +1,58 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="LEONES · roadmap público actualizado a RC4."><title>LEONES · Roadmap</title><link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-07-3"><link rel="stylesheet" href="assets/css/site.css?v=2026-09-07-3"><style>.roadmap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}.roadmap-card{background:#fff;border:1px solid #d8e0e7;border-radius:.8rem;padding:1.1rem}.roadmap-card h3{margin-top:0}.roadmap-flow{background:#172b3d;color:#eef7fc;padding:1rem;border-radius:.7rem;overflow:auto;font:.88rem/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}</style></head>
-<body><header class="site-hero"><div class="site-hero__inner"><span class="site-tag">ROADMAP · 7 septiembre 2026</span><h1>De conocimiento a ejecución reproducible</h1><p>LEONES evoluciona desde conocimiento y descubrimiento hacia una ruta local donde la recomendación es trazable y la medición física conserva su propia evidencia.</p></div></header>
-<main class="site-main" id="main">
-<section class="site-section"><span class="site-tag">Ahora</span><h2>RC4 · el punto actual</h2><pre class="roadmap-flow">TUI
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="description" content="LEONES · roadmap público actualizado a RC4." />
+        <title>LEONES · Roadmap</title>
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-07-3" />
+        <link rel="stylesheet" href="assets/css/site.css?v=2026-09-07-3" />
+        <style>
+            .roadmap-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 1rem;
+            }
+            .roadmap-card {
+                background: #fff;
+                border: 1px solid #d8e0e7;
+                border-radius: 0.8rem;
+                padding: 1.1rem;
+            }
+            .roadmap-card h3 {
+                margin-top: 0;
+            }
+            .roadmap-flow {
+                background: #172b3d;
+                color: #eef7fc;
+                padding: 1rem;
+                border-radius: 0.7rem;
+                overflow: auto;
+                font:
+                    0.88rem/1.6 ui-monospace,
+                    SFMono-Regular,
+                    Menlo,
+                    monospace;
+            }
+        </style>
+    </head>
+    <body>
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <span class="site-tag">ROADMAP · 7 septiembre 2026</span>
+                <h1>De conocimiento a ejecución reproducible</h1>
+                <p>
+                    LEONES evoluciona desde conocimiento y descubrimiento hacia una ruta local donde
+                    la recomendación es trazable y la medición física conserva su propia evidencia.
+                </p>
+            </div>
+        </header>
+        <main class="site-main" id="main">
+            <section class="site-section">
+                <span class="site-tag">Ahora</span>
+                <h2>RC4 · el punto actual</h2>
+                <pre class="roadmap-flow">
+TUI
  ↓
 ESTADO DE LA MÁQUINA
  ↓
@@ -20,10 +70,111 @@ ELECCIÓN HUMANA
  ↓
 RUNTIME UBUNTU
  ↓
-MEASURED</pre><p class="site-lead"><strong>La TUI y el recomendador están fijados.</strong> La frontera E2E física sigue abierta y no se declara cerrada hasta validarla en Ubuntu.</p></section>
-<section class="site-section"><span class="site-tag">Hitos cerrados</span><div class="roadmap-grid"><article class="roadmap-card"><h3>JALONES 1–4 · 🟢</h3><p>Contratos, runtime, evidencia y metodología consolidados.</p></article><article class="roadmap-card"><h3>RC1 · 🟢</h3><p>Camino físico de ejecución y evidencia validado.</p></article><article class="roadmap-card"><h3>RC2 · histórico</h3><p>Se conserva como compatibilidad y referencia.</p></article><article class="roadmap-card"><h3>RC3 · 🟢</h3><p>Fase cerrada.</p></article><article class="roadmap-card"><h3>RC4 TUI · 🟢</h3><p>Interfaz validada como capa de presentación.</p></article><article class="roadmap-card"><h3>RC4 recomendador · 🟢</h3><p>Intención obligatoria, evidencia externa, intersección y ESTIMATED.</p></article></div></section>
-<section class="site-section"><span class="site-tag">Siguiente gate</span><h2>Validación física Ubuntu</h2><div class="roadmap-grid"><article class="roadmap-card"><h3>1 · sincronizar</h3><p>Comprobar que el host Ubuntu ejecuta la misma revisión de main.</p></article><article class="roadmap-card"><h3>2 · elegir</h3><p>Seleccionar modelo/configuración y stack de forma explícita.</p></article><article class="roadmap-card"><h3>3 · verificar</h3><p>Confirmar físicamente runtime, modelo y recursos.</p></article><article class="roadmap-card"><h3>4 · autorizar</h3><p>Separar autorización de ejecución y de medición.</p></article><article class="roadmap-card"><h3>5 · medir</h3><p>Ejecutar el protocolo y producir evidencia MEASURED.</p></article></div></section>
-<section class="site-section"><span class="site-tag">Después</span><h2>Evolución web</h2><div class="roadmap-grid"><article class="roadmap-card"><h3>Evidence Graph</h3><p>Fuente → evidencia → estimación → configuración → benchmark → medición → recomendación.</p></article><article class="roadmap-card"><h3>LEONES Passport</h3><p>Página reproducible por ejecución con hardware, modelo, runtime, protocolo y procedencia.</p></article><article class="roadmap-card"><h3>LEONES Arena</h3><p>Comparación reproducible de configuraciones agénticas completas.</p></article><article class="roadmap-card"><h3>Atlas operativo</h3><p>Respuesta verificable a qué puede ejecutar un usuario en su hardware.</p></article></div></section>
-<section class="site-section"><span class="site-tag">Principios</span><ul><li>Fuente, evidencia, estimación y medición no se mezclan.</li><li>La incertidumbre se muestra; no se rellena.</li><li>Compatibilidad, instalación, verificación y benchmark son estados distintos.</li><li>Las recomendaciones explican su procedencia.</li><li>Las mediciones reales conservan hardware, modelo, runtime, configuración y protocolo.</li></ul></section>
-</main><script src="assets/js/navigation.js" defer></script>
-</body></html>
+MEASURED</pre>
+                <p class="site-lead">
+                    <strong>La TUI y el recomendador están fijados.</strong> La frontera E2E física
+                    sigue abierta y no se declara cerrada hasta validarla en Ubuntu.
+                </p>
+            </section>
+            <section class="site-section">
+                <span class="site-tag">Hitos cerrados</span>
+                <div class="roadmap-grid">
+                    <article class="roadmap-card">
+                        <h3>JALONES 1–4 · 🟢</h3>
+                        <p>Contratos, runtime, evidencia y metodología consolidados.</p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>RC1 · 🟢</h3>
+                        <p>Camino físico de ejecución y evidencia validado.</p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>RC2 · histórico</h3>
+                        <p>Se conserva como compatibilidad y referencia.</p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>RC3 · 🟢</h3>
+                        <p>Fase cerrada.</p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>RC4 TUI · 🟢</h3>
+                        <p>Interfaz validada como capa de presentación.</p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>RC4 recomendador · 🟢</h3>
+                        <p>Intención obligatoria, evidencia externa, intersección y ESTIMATED.</p>
+                    </article>
+                </div>
+            </section>
+            <section class="site-section">
+                <span class="site-tag">Siguiente gate</span>
+                <h2>Validación física Ubuntu</h2>
+                <div class="roadmap-grid">
+                    <article class="roadmap-card">
+                        <h3>1 · sincronizar</h3>
+                        <p>Comprobar que el host Ubuntu ejecuta la misma revisión de main.</p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>2 · elegir</h3>
+                        <p>Seleccionar modelo/configuración y stack de forma explícita.</p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>3 · verificar</h3>
+                        <p>Confirmar físicamente runtime, modelo y recursos.</p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>4 · autorizar</h3>
+                        <p>Separar autorización de ejecución y de medición.</p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>5 · medir</h3>
+                        <p>Ejecutar el protocolo y producir evidencia MEASURED.</p>
+                    </article>
+                </div>
+            </section>
+            <section class="site-section">
+                <span class="site-tag">Después</span>
+                <h2>Evolución web</h2>
+                <div class="roadmap-grid">
+                    <article class="roadmap-card">
+                        <h3>Evidence Graph</h3>
+                        <p>
+                            Fuente → evidencia → estimación → configuración → benchmark → medición →
+                            recomendación.
+                        </p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>LEONES Passport</h3>
+                        <p>
+                            Página reproducible por ejecución con hardware, modelo, runtime,
+                            protocolo y procedencia.
+                        </p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>LEONES Arena</h3>
+                        <p>Comparación reproducible de configuraciones agénticas completas.</p>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>Atlas operativo</h3>
+                        <p>Respuesta verificable a qué puede ejecutar un usuario en su hardware.</p>
+                    </article>
+                </div>
+            </section>
+            <section class="site-section">
+                <span class="site-tag">Principios</span>
+                <ul>
+                    <li>Fuente, evidencia, estimación y medición no se mezclan.</li>
+                    <li>La incertidumbre se muestra; no se rellena.</li>
+                    <li>
+                        Compatibilidad, instalación, verificación y benchmark son estados distintos.
+                    </li>
+                    <li>Las recomendaciones explican su procedencia.</li>
+                    <li>
+                        Las mediciones reales conservan hardware, modelo, runtime, configuración y
+                        protocolo.
+                    </li>
+                </ul>
+            </section>
+        </main>
+        <script src="assets/js/navigation.js" defer></script>
+    </body>
+</html>

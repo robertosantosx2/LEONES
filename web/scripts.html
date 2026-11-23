@@ -1,26 +1,29 @@
 <!doctype html>
 <html lang="es">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="Scripts LEONES RC4: recomendación, inventario, cadena MEASURED y smoke tests locales." />
-<title>LEONES · Scripts</title>
-<link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-08-1" />
-<link rel="stylesheet" href="assets/css/site.css?v=2026-09-08-1" />
-</head>
-<body>
-<header class="site-hero">
-<div class="site-hero__inner">
-<span class="site-tag">RC4 · 8 septiembre 2026</span>
-<h1>LEONES · Scripts</h1>
-<p>La web explica; el script ejecuta. ESTIMATED ≠ MEASURED.</p>
-</div>
-</header>
-<main class="site-main" id="main">
-<section class="site-section">
-<span class="site-tag">RC4 canónicos</span>
-<h2>Recomendación, inventario y MEASURED</h2>
-<pre class="site-stack" style="font-size:.8rem;line-height:1.35">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+            name="description"
+            content="Scripts LEONES RC4: recomendación, inventario, cadena MEASURED y smoke tests locales."
+        />
+        <title>LEONES · Scripts</title>
+        <link rel="stylesheet" href="assets/css/navigation.css?v=2026-09-08-1" />
+        <link rel="stylesheet" href="assets/css/site.css?v=2026-09-08-1" />
+    </head>
+    <body>
+        <header class="site-hero">
+            <div class="site-hero__inner">
+                <span class="site-tag">RC4 · 8 septiembre 2026</span>
+                <h1>LEONES · Scripts</h1>
+                <p>La web explica; el script ejecuta. ESTIMATED ≠ MEASURED.</p>
+            </div>
+        </header>
+        <main class="site-main" id="main">
+            <section class="site-section">
+                <span class="site-tag">RC4 canónicos</span>
+                <h2>Recomendación, inventario y MEASURED</h2>
+                <pre class="site-stack" style="font-size: 0.8rem; line-height: 1.35">
 ╔══════════════════════════════════════════════════════════════╗
 ║  ./leones  →  rc4_runner.py                                  ║
 ║  rc4_fitllm_recommend.py     HF/AA ≤100 × LLMFit × intersec. ║
@@ -33,22 +36,41 @@
 ║  uninstall.sh                componentes independientes      ║
 ╚══════════════════════════════════════════════════════════════╝
 </pre>
-<div class="site-note"><strong>Ningún script de recomendación marca MEASURED.</strong> Solo <code>rc4_measured_chain.py</code> con ejecución autorizada puede hacerlo.</div>
-<ul>
-<li><code>./leones</code> · <code>./leones --inventory</code> · <code>./leones --rc2</code></li>
-<li>Docs: <code>docs/RC4-ARCHITECTURE.md</code> · <code>docs/completed/RC4-STRICT-MEASURED-CHAIN-2026-09-07.md</code></li>
-</ul>
-</section>
-<section class="site-section">
-<span class="site-tag">Smoke local</span>
-<h2>LLM Smoke Test (independiente)</h2>
-<p>Paquete en <code>scripts/local/llm-smoke-test</code>: comprueba que un runtime puede ejecutar un modelo local. No requiere la infraestructura completa de LEONES.</p>
-<p class="site-note">Métrica desconocida = <code>null</code>, nunca un 0 inventado.</p>
-</section>
-<section class="site-section">
-<p><a href="rc4.html">RC4 →</a> · <a href="estado.html">Estado →</a> · <a href="inicio-rapido.html">Inicio rápido →</a> · <a href="rc4.html">Operación →</a></p>
-</section>
-</main>
-<script src="assets/js/navigation.js?v=2026-09-08-1" defer></script>
-</body>
+                <div class="site-note">
+                    <strong>Ningún script de recomendación marca MEASURED.</strong> Solo
+                    <code>rc4_measured_chain.py</code> con ejecución autorizada puede hacerlo.
+                </div>
+                <ul>
+                    <li>
+                        <code>./leones</code> · <code>./leones --inventory</code> ·
+                        <code>./leones --rc2</code>
+                    </li>
+                    <li>
+                        Docs: <code>docs/RC4-ARCHITECTURE.md</code> ·
+                        <code>docs/completed/RC4-STRICT-MEASURED-CHAIN-2026-09-07.md</code>
+                    </li>
+                </ul>
+            </section>
+            <section class="site-section">
+                <span class="site-tag">Smoke local</span>
+                <h2>LLM Smoke Test (independiente)</h2>
+                <p>
+                    Paquete en <code>scripts/local/llm-smoke-test</code>: comprueba que un runtime
+                    puede ejecutar un modelo local. No requiere la infraestructura completa de
+                    LEONES.
+                </p>
+                <p class="site-note">
+                    Métrica desconocida = <code>null</code>, nunca un 0 inventado.
+                </p>
+            </section>
+            <section class="site-section">
+                <p>
+                    <a href="rc4.html">RC4 →</a> · <a href="estado.html">Estado →</a> ·
+                    <a href="inicio-rapido.html">Inicio rápido →</a> ·
+                    <a href="rc4.html">Operación →</a>
+                </p>
+            </section>
+        </main>
+        <script src="assets/js/navigation.js?v=2026-09-08-1" defer></script>
+    </body>
 </html>

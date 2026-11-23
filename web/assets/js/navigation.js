@@ -32,7 +32,7 @@
         ["Manada", "manada.html", "top"],
         ["Horizonte", "horizon.html", "top"],
         ["Logos", "logos.html", "top"],
-        ["Contacto", "contacto.html", "top"]
+        ["Contacto", "contacto.html", "top"],
     ];
     const currentPath = window.location.pathname.split("/").pop() || "index.html";
     const createLink = ([label, path, level]) => {
@@ -62,6 +62,7 @@
         root.appendChild(side);
         document.body.prepend(root);
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", renderNavigation);
+    if (document.readyState === "loading")
+        document.addEventListener("DOMContentLoaded", renderNavigation);
     else renderNavigation();
 })();
