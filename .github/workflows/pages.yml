@@ -98,7 +98,7 @@ jobs:
           canonical_script = 'assets/js/navigation.js'
           canonical_pages = {
               'index.html','inicio-rapido.html','atlas.html','arquitectura.html',
-              'pila.html','operacion.html','conocimiento.html','conocimiento-optimizacion.html','conocimiento-sglang.html',
+              'operacion.html','conocimiento.html','conocimiento-optimizacion.html','conocimiento-sglang.html',
               'fuentes.html','app.html','rc2.html','evaluacion.html','recommendations.html','recomendar.html','resultados.html',
               'manada.html','prospeccion.html','horizon.html','contacto.html'
           }
