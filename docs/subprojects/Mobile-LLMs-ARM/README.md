@@ -58,9 +58,10 @@ La campaña del [Xiaomi Mi 9T Pro de 6 GB](../../../hardware/XIAOMI-MI-9T-PRO-6G
 - [Matriz de runtimes y orden de evaluación](devices/XIAOMI-MI-9T-PRO-RUNTIME-MATRIX.md)
 - [Protocolo de benchmark móvil NEPENTHES](devices/XIAOMI-MI-9T-PRO-BENCHMARK-PROTOCOL.md)
 - [Primera inferencia LFM2-700M con llama.cpp (2026-11-23)](devices/XIAOMI-MI-9T-PRO-LLAMA-CPP-LFM2-700M-20261123.md)
+- [Experimento LFM2-2.6B Q4_K_M con llama.cpp (2026-11-23)](devices/XIAOMI-MI-9T-PRO-LLAMA-CPP-LFM2-2.6B-20261123.md)
 
 El primer camino es Android sin root. La versión de Android, API, ABI, kernel, root y capacidades GPU/DSP siguen UNKNOWN hasta el inventario físico. El espacio libre comunicado (>30 GB) no sustituye la comprobación de espacio efectivo ni de RAM disponible.
 
-La primera prueba física ha demostrado carga y generación CPU con LFM2-700M-Q4_K_M: 120.4 tokens/s de prefill y 40.2 tokens/s de generación en una única ejecución exploratoria. No es benchmark sostenido ni cumple aún el protocolo NEPENTHES; véase el informe enlazado para flags, hash, memoria, sensores y limitaciones. La zona térmica 54 (`pm8150b-wp-therm`) permanece sin identificar y requiere cautela antes de nuevas pruebas.
+La primera prueba física demostró carga y generación CPU con LFM2-700M-Q4_K_M: 120.4 tokens/s de prefill y 40.2 tokens/s de generación en una única ejecución exploratoria. Posteriormente, LFM2-2.6B-Q4_K_M se cargó y generó texto en dos ejecuciones CPU con configuración idéntica: 21.6/22.1 tokens/s de prompt y 11.4/11.3 tokens/s de generación; la repetición terminó con código 0. Ambas campañas siguen siendo exploratorias y no constituyen benchmarks sostenidos NEPENTHES. Véanse los informes enlazados para hashes, parámetros, memoria, sensores y límites. La zona térmica 54 (`pm8150b-wp-therm`) permanece sin identificar.
 
 La campaña no presupone que AIPerf, NVML, Nsight/CUPTI o QNN sean ejecutables en el teléfono. Se preservará la separación entre runner móvil, fuentes de telemetría Android y normalización posterior en NEPENTHES.
