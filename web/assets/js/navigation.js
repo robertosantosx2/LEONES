@@ -19,6 +19,7 @@
         ["Harnesses", "conocimiento-harnesses.html", "top"],
         ["Buddy", "buddy.html", "top"],
         ["Fuentes", "fuentes.html", "top"],
+        ["Decisión de modelo", "decision-modelos.html", "project"],
         ["RC3 · cerrada", "rc3.html", "application"],
         ["RC4 · recomendación", "rc4.html", "application"],
         ["¿Puede mi PC?", "puede-mi-pc.html", "application"],
