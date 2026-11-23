@@ -1,10 +1,10 @@
 {
   "title": "LEONES · Observatorio de Investigación",
-  "generated_at": "2026-11-21T00:21:00+00:00",
+  "generated_at": "2026-11-21T00:48:03+00:00",
   "source": "docs/research/RESEARCH-PROJECTS-INDEX.md",
   "scan": "Recorrido recursivo del árbol Git (git ls-files).",
   "repository": {
-    "tracked_files": 1825,
+    "tracked_files": 1826,
     "research_readmes": 22
   },
   "items": [
@@ -241,6 +241,15 @@
       "description": "Batería A01–A10: tool use, multi-step, artefactos, recovery, long horizon, research, coding, operaciones locales, seguridad y coste/latencia.",
       "potential": "Muy alto: comparación común de agentes/harnesses con outcome, trayectoria, eficiencia y seguridad.",
       "status": "V1 en implementación; A01 smoke no es benchmark de modelo."
+    },
+    {
+      "name": "rust-anything — migración diferencial a Rust",
+      "category": "Métodos y capacidades transversales",
+      "path": "research/rust-anything-migration-2026-11.md",
+      "url": "https://github.com/robertosantosx2/LEONES/blob/main/research/rust-anything-migration-2026-11.md",
+      "description": "Herramienta CLI/MCP para perfilar, planificar y portar unidades de TypeScript/JavaScript, Python, C, Go, Ruby, Java y Kotlin a Rust conservando API y contrastando el comportamiento registrado; PHP/C# tienen flujo de aplicación completa parcial.",
+      "potential": "Alto: migraciones selectivas de rutas calientes y reducción de coste/latencia con equivalencia observable, puentes graduales y gates de calidad; complementa los proyectos Rust sin proponer reescrituras generales.",
+      "status": "Investigación documental; upstream declara verificaciones reales en varios lenguajes (STATUS 2026-11-20); sin instalación ni prueba LEONES. C++ no figura entre los lenguajes soportados para portar unidades."
     },
     {
       "name": "E2E LEONES",
