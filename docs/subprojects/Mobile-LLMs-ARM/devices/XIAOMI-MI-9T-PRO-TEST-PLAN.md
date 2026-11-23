@@ -11,7 +11,7 @@ Determinar qué modelos compactos y runtimes pueden ejecutar inferencia local re
 
 ## 2. Datos iniciales y desconocidos
 
-Conocido por declaración del usuario: modelo, 6 GB RAM, octa-core hasta 2,84 GHz y más de 30 GB libres. Pendiente: versión Android/API, root, ABI, kernel, firmware, memoria realmente disponible, versión Vulkan/driver, estado de batería y temperatura.
+Conocido por declaración del usuario: modelo, 6 GB RAM y CPU octa-core hasta 2,84 GHz. Confirmado por captura «Sobre el teléfono» (2026-11-23): MIUI Global 12.0.5 Estable (`12.0.5.0(QFKEUXM)`), Android 10, build `QKQ1.190825.002`, parche de seguridad 2021-04-01 y almacenamiento de 128 GB con 55,2 GB ocupados (≈72,8 GB libres, calculado). Pendiente: API level, root, ABI, kernel, firmware, memoria realmente disponible, versión Vulkan/driver, estado de batería y temperatura.
 
 El Snapdragon 855, Adreno 640 y Hexagon 690 son la plataforma esperada del modelo comercial, pero deben confirmarse en el propio terminal antes de seleccionar backends.
 
@@ -194,6 +194,6 @@ Estados: PLANNED → DISCOVERED → COMPATIBLE → REPRODUCED → MEASURED → R
 
 ## 8. Checkpoint y parada
 
-**Checkpoint actual:** esperando inventario no-root Android/ADB y confirmación de ABI/Android. Root permanece UNKNOWN y no bloquea G0-G4. Al obtener perfil, revisar de nuevo compatibilidad de runtime y modelos antes de descargar o instalar.
+**Checkpoint actual:** captura visual recibida: Android 10 y MIUI Global 12.0.5 confirmados; almacenamiento ≈72,8 GB libre calculado. Falta inventario ADB/Termux para ABI, API level, SoC/board, kernel, memoria disponible y estado térmico. Root permanece UNKNOWN y no bloquea G0-G4. Revisar compatibilidad de runtime y modelos antes de descargar o instalar.
 
 **Condición de parada:** inventario suficiente para seleccionar un binario ARM64 y un primer modelo GGUF con procedencia/hash; detenerse antes de instalación/descarga si hay incompatibilidad, poco espacio efectivo, riesgo térmico o necesidad de privilegios.
