@@ -151,5 +151,5 @@ La licencia OSI es necesaria para entrar en el conjunto principal de prospecció
 
 - `docs/PROSPECTION_LICENSE_POLICY.md` — política completa de licencias.
 - `scripts/discover_copyleft.py` — bot diario de descubrimiento.
-- `web/data/prospeccion.json` — datos consumidos por la web.
-- `web/prospeccion.html` — presentación pública de los hallazgos.
+- `data/observatory/prospeccion.json` — datos internos del pipeline; la publicación se genera en `web/prospeccion.md`.
+- `web/prospeccion.md` — catálogo público Markdown de los hallazgos.
