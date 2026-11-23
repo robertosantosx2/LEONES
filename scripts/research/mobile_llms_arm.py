@@ -44,7 +44,6 @@ def main():
   if key:merged.setdefault(key,{}).update(x)
  payload={"schema_version":1,"project":"Mobile-LLMs-ARM","generated_at":NOW,"publication_is_not_approval":True,"automatic_recommendation":False,"items":sorted(merged.values(),key=lambda x:(x.get("category",""),x.get("name","").lower())),"sources":{"github":gh,"reddit":reddit,"x":"search links only; no authorized API ingestion configured"},"social_searches":[{"label":n,"url":u} for n,u in X]+[{"label":"Reddit · "+s,"url":"https://www.reddit.com/r/"+s+"/search/?q=Android%20OR%20ARM%20OR%20LLM&sort=new"} for s in REDDIT]}
  OUT.parent.mkdir(parents=True,exist_ok=True)
- OUT.parent.mkdir(parents=True,exist_ok=True)
  OUT.write_text(json.dumps(payload,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
  print(json.dumps({"items":len(payload["items"]),"github_queries":len(gh),"reddit_sources":len(reddit)}))
 if __name__=="__main__":main()
