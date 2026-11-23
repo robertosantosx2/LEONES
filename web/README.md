@@ -64,7 +64,7 @@ Compatibilidad histórica:
 - `estado.html` — cerrado / abierto
 - `rc4.html` — capa recomendación + orquestador
 - `inicio-rapido.html` · `operacion.html` · `scripts.html`
-- `rc3.html` · `rc2.html` — histórico
+- `rc3.html` — fase cerrada
 
 ## Publicación
 
