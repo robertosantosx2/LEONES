@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /LEONES/
+
+Sitemap: https://robertosantosx2.github.io/LEONES/sitemap.xml
