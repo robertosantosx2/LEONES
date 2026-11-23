@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SRC = Path("data/prospection/classified_discoveries.ndjson")
-OUT = Path("web/data/prospeccion.json")
+OUT = Path("data/observatory/prospeccion.json")
 
 
 def main() -> None:
