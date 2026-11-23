@@ -1,8 +1,8 @@
 {
   "title": "LEONES · Observatorio de Investigación",
-  "generated_at": "2026-11-21T00:21:00+00:00",
+  "generated_at": "2026-11-23T00:00:00+00:00",
   "source": "docs/research/RESEARCH-PROJECTS-INDEX.md",
-  "scan": "Recorrido recursivo del árbol Git (git ls-files).",
+  "scan": "Árbol Git base del índice (corte 2026-11-21); registro Microcontroller-LLMs actualizado incrementalmente el 2026-11-23.",
   "repository": {
     "tracked_files": 1825,
     "research_readmes": 22
@@ -301,9 +301,9 @@
       "category": "Investigación de modelos, motores y técnicas",
       "path": "research/microcontroller-llms-2026-11.md",
       "url": "https://github.com/robertosantosx2/LEONES/blob/main/research/microcontroller-llms-2026-11.md",
-      "description": "LLMs en ESP32 y microcontroladores: PLE, pesos residentes en Flash, MoE, Tiny Transformers, distilación, BitNet, optimización DSP y clusters distribuidos.",
-      "potential": "Alto, exploratorio: inferencia de bajo consumo y modelos especializados en memoria limitada.",
-      "status": "Prospección documental archivada; claims externos pendientes de reproducción LEONES."
+      "description": "LLM/SLM en ESP32 y ARM MCU: PLE, pesos Flash, INT4/int8, DSP/PIE/Helium, Rust/C, NL→DSL seguro, entrenamiento MCU, ASR/voz y clusters distribuidos.",
+      "potential": "Alto, exploratorio: inferencia de bajo consumo y modelos especializados, con transferencia de kernels a ARM.",
+      "status": "Prospección documental actualizada 2026-11-23; claims y tests de terceros pendientes de reproducción física LEONES."
     }
   ],
   "unclassified_readmes": [
