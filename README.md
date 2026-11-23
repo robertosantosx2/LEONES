@@ -70,6 +70,7 @@ La directiva es transversal a la raíz de LEONES y sus subproyectos. Su adopció
 > Observatorio de LLMs e IA en Android, Linux móvil, ARM64 y sistemas embebidos: runtimes, CPU/GPU/NPU, modelos, benchmarks, eficiencia y clústeres móviles.
 
 - [Documentación](docs/subprojects/Mobile-LLMs-ARM/README.md) · [Roadmap](docs/subprojects/Mobile-LLMs-ARM/ROADMAP.md) · [Feed JSON](web/data/mobile-llms-arm.json) · [Fuentes](research/mobile-llms-arm/sources.json).
+- **Plataforma móvil de referencia:** [Xiaomi Mi 9T Pro — 6 GB RAM, octa-core hasta 2,84 GHz (datos comunicados; pendiente caracterización)](hardware/XIAOMI-MI-9T-PRO-6GB.md).
 - Prospección diaria de GitHub y Reddit integrada en [Daily Atlas Prospection](.github/workflows/daily-prospection.yml); X mantiene búsquedas directas hasta disponer de API autorizada.
 - Descubierto no significa aprobado ni medido. Las pruebas físicas requieren protocolo y evidencia.
 
