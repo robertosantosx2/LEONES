@@ -10,7 +10,7 @@ Mantener un catálogo vivo de **casos concretos de uso de agentes**, repositorio
 
 ## Integración con LEONES
 
-- Reutiliza el catálogo existente de `data/discovery/skills.json` y `web/data/prospeccion.json`. También incorpora hallazgos federados de `data/prospection/federated_discoveries.ndjson`.
+- Reutiliza el catálogo existente de `data/discovery/skills.json` y `data/observatory/prospeccion.json`. También incorpora hallazgos federados de `data/prospection/federated_discoveries.ndjson`.
 - Añade descubrimiento diario mediante GitHub Repository Search API.
 - El proceso se ejecuta como un paso del workflow `Daily Atlas Prospection`, programado a las 04:17 UTC y ejecutable manualmente.
 - Mantiene el histórico normalizado en `data/prospection/agent_use_cases.ndjson`.
@@ -61,7 +61,7 @@ python3 -m json.tool data/observatory/agent-use-cases.json >/dev/null\npython3 s
 python3 - <<'PY'
 import json
 from pathlib import Path
-p = json.loads(Path("web/data/agent-use-cases.json").read_text())
+p = json.loads(Path("data/observatory/agent-use-cases.json").read_text())
 assert p["publication_is_not_approval"] is True
 assert p["automatic_recommendation"] is False
 assert isinstance(p["items"], list)
@@ -69,7 +69,7 @@ print("items:", len(p["items"]))
 PY
 ```
 
-La ejecución local necesita acceso a GitHub. GitHub Actions usa el token efímero `github.token`; no requiere un secreto personal. Si una consulta falla, el informe conserva el error y las demás consultas continúan.
+La publicación resultante se consulta en `web/agent-use-cases.md`; el JSON interno no es un endpoint público del observatorio. La ejecución local necesita acceso a GitHub. GitHub Actions usa el token efímero `github.token`; no requiere un secreto personal. Si una consulta falla, el informe conserva el error y las demás consultas continúan.
 
 ## Próximas gates
 
