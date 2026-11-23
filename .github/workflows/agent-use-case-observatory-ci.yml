@@ -40,14 +40,16 @@ jobs:
       - name: Rebuild Markdown observatories deterministically
         run: |
           python scripts/prospection/build_markdown_observatories.py
-          git diff --exit-code -- web/observatory.md web/discovery-atlas.md web/agent-use-cases.md web/mobile-llms-arm.md web/investigacion.md
+          git diff --exit-code -- web/observatory.md web/prospeccion.md web/discovery-atlas.md web/agent-use-cases.md web/mobile-llms-arm.md web/investigacion.md
       - name: Enforce Markdown-only public observatory
         run: |
           test -f web/observatory.md
+          test -f web/prospeccion.md
           test -f web/discovery-atlas.md
           test -f web/agent-use-cases.md
           test -f web/mobile-llms-arm.md
           test -f web/investigacion.md
+          test ! -e web/prospeccion.html
           test ! -e web/discovery-atlas.html
           test ! -e web/agent-use-cases.html
           test ! -e web/mobile-llms-arm.html
