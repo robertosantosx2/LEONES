@@ -9,7 +9,6 @@
 
         ["Atlas", "atlas.html", "project"],
         ["Diagramas", "diagramas.html", "project"],
-        ["Pila", "pila.html", "project"],
         ["Runtimes locales", "runtimes-locales.html", "project"],
         ["Operación", "operacion.html", "project"],
         ["Scripts", "scripts.html", "project"],
