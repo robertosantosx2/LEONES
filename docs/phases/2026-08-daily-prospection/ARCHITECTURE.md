@@ -33,7 +33,8 @@ GitHub / Hugging Face / fuentes especializadas
 | `daily_report.py` | informe diario |
 | `run_daily_prospection.py` | orquestación |
 | `.github/workflows/daily-prospection.yml` | ejecución automática |
-| `web/data/prospeccion.json` | salida consumida por la web |
+| `data/observatory/prospeccion.json` | intercambio interno del pipeline |
+| `web/prospeccion.md` / `web/discovery-atlas.md` | publicaciones canónicas Markdown |
 
 ## Estados conceptuales
 
