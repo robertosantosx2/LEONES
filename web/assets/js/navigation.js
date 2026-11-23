@@ -8,7 +8,6 @@
         ["Roadmap", "roadmap.html", "top"],
 
         ["Atlas", "atlas.html", "project"],
-        ["Pilares", "pilares.html", "project"],
         ["Arquitectura", "arquitectura.html", "project"],
         ["Diagramas", "diagramas.html", "project"],
         ["Pila", "pila.html", "project"],
