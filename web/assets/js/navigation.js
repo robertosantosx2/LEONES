@@ -10,7 +10,6 @@
         ["Atlas", "atlas.html", "project"],
         ["Diagramas", "diagramas.html", "project"],
         ["Runtimes locales", "runtimes-locales.html", "project"],
-        ["Operación", "operacion.html", "project"],
         ["Scripts", "scripts.html", "project"],
 
         ["Conocimiento de IA en Local", "conocimiento.html", "top"],
