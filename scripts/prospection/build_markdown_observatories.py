@@ -21,7 +21,7 @@ def esc(value):
     return str("—" if value is None else value).replace("|", "\\|").replace("\n", " ").strip()
 
 def link(label, url):
-    return f"[{label}]({url})" if url and str(url).startswith(("https://", "http://")) else esc(label)
+    return f"[{esc(label)}]({url})" if url and str(url).startswith(("https://", "http://")) else esc(label)
 
 def table(headers, rows):
     out = ["| " + " | ".join(headers) + " |", "| " + " | ".join("---" for _ in headers) + " |"]
@@ -40,7 +40,7 @@ def discovery_page(feed):
         lines += [f"## {category}", "", table(["Proyecto", "Descripción", "Licencia declarada", "Fuente", "Estado"], [
             (link(x.get("name") or x.get("repository") or "Sin nombre", x.get("url")),
              x.get("description"), x.get("license"), x.get("source"), x.get("status") or "pending")
-            for x in sorted(groups[category], key=lambda z: str(z.get("name") or "").casefold())
+            for x in groups[category]
         ]), ""]
     lines += ["## Gobernanza", "", "- Los resultados automáticos permanecen pendientes de revisión.",
               "- No se ejecuta, instala, recomienda ni integra software descubierto.",
