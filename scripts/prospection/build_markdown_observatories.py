@@ -123,6 +123,7 @@ def main():
         if not content.startswith("# ") or "<html" in content.lower():
             raise SystemExit(f"Invalid Markdown publication: {filename}")
         (WEB / filename).write_text(content, encoding="utf-8")
+    generated = max(str(feed.get("generated_at") or "") for feed, _ in feeds.values())
     index = ["# LEONES — Observatorios (Markdown)", "",
         "Publicación canónica en Markdown. GitHub renderiza estos documentos directamente; no se generan páginas HTML autocontenidas ni feeds JSON públicos.", "",
         "- [Discovery Atlas](discovery-atlas.md) — descubrimientos federados.",
@@ -134,7 +135,7 @@ def main():
         "- JSON/NDJSON se reservan para intercambio interno del pipeline bajo data/.",
         "- Ningún descubrimiento se promociona automáticamente a aprobado, recomendado o medido.",
         "- Las mediciones LEONES deben enlazar protocolo y artefactos reproducibles.",
-        "", f"Actualizado: {datetime.now(timezone.utc).replace(microsecond=0).isoformat()}"]
+        "", f"Actualizado: {generated}"]
     (WEB / "observatory.md").write_text("\n".join(index) + "\n", encoding="utf-8")
     print("Generated Markdown observatories:", ", ".join(feeds))
 if __name__ == "__main__":
