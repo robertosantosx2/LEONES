@@ -124,13 +124,13 @@ def main() -> int:
             continue
         if path.suffix.lower() not in TEXT_EXTENSIONS:
             continue
-        errors.extend(check_file_references(path)
+        errors.extend(check_file_references(path))
     if errors:
         print("Local reference validation FAILED:")
         for error in sorted(set(errors)):
             print(f"- {error}")
         return 1
-    print("Local web/documentation references and logo manifest are valid.")
+    print("Published web references and logo manifest are valid.")
     return 0
 
 
