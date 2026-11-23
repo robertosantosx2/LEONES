@@ -73,7 +73,7 @@ jobs:
           python -m py_compile scripts/prospection/agent_use_case_observatory.py
           python scripts/prospection/agent_use_case_observatory.py
           python -m json.tool data/observatory/agent-use-cases.json >/dev/null
-          python -c 'import json; p=json.load(open("web/data/agent-use-cases.json")); assert p["publication_is_not_approval"] is True; assert p["automatic_recommendation"] is False'
+          python -c 'import json; p=json.load(open("data/observatory/agent-use-cases.json")); assert p["publication_is_not_approval"] is True; assert p["automatic_recommendation"] is False'
       - name: Discover mobile LLM and ARM edge projects
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -81,7 +81,7 @@ jobs:
           python -m py_compile scripts/research/mobile_llms_arm.py
           python scripts/research/mobile_llms_arm.py
           python -m json.tool data/observatory/mobile-llms-arm.json >/dev/null
-          python -c 'import json; p=json.load(open("web/data/mobile-llms-arm.json")); assert p["publication_is_not_approval"] is True; assert p["automatic_recommendation"] is False; assert isinstance(p["items"], list)'
+          python -c 'import json; p=json.load(open("data/observatory/mobile-llms-arm.json")); assert p["publication_is_not_approval"] is True; assert p["automatic_recommendation"] is False; assert isinstance(p["items"], list)'
       - name: Run harness discovery
         run: python scripts/prospection/bot_harnesses.py --input data/prospection/harness_sources.ndjson
       - name: Run hardware discovery
