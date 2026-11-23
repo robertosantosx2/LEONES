@@ -59,7 +59,7 @@ def agent_page(feed):
         lines += [f"## {category}", "", table(["Repositorio", "Descripción", "Licencia", "Stars", "Último push", "Reproducibilidad (heurística)", "Revisión"], [
             (link(x.get("name") or "Sin nombre", x.get("url")), x.get("description"), x.get("license"),
              x.get("stars"), x.get("pushed_at"), x.get("reproducibility_score"), x.get("review_status") or "pending")
-            for x in sorted(groups[category], key=lambda z: str(z.get("name") or "").casefold())
+            for x in groups[category]
         ]), ""]
     lines += ["## Criterios de lectura", "", "- pending/discovered: no revisado o no reproducido.",
               "- La licencia es metadato declarado por GitHub, no dictamen jurídico.",
@@ -78,7 +78,7 @@ def mobile_page(feed):
             (link(x.get("name") or "Sin nombre", x.get("url")), x.get("description"),
              ", ".join(x.get("platforms") or []), x.get("license"), x.get("pushed_at") or x.get("created_utc"),
              x.get("status") or "pending_review")
-            for x in sorted(groups[category], key=lambda z: str(z.get("name") or "").casefold())
+            for x in groups[category]
         ]), ""]
     lines += ["## Búsquedas comunitarias", ""]
     for x in feed.get("social_searches", []): lines.append(f"- {link(x.get('label') or 'Búsqueda', x.get('url'))}")
