@@ -19,7 +19,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 OUT_MD = Path("research/copyleft-discoveries.md")
-OUT_JSON = Path("web/data/prospeccion.json")
+OUT_JSON = Path("data/observatory/osi-copyleft-discoveries.json")
 OSI_LICENSES_URL = "https://opensource.org/Licenses"
 PRIORITY_COPYLEFT = {"GPL-2.0", "GPL-3.0", "AGPL-3.0", "LGPL-2.1", "LGPL-3.0"}
 
