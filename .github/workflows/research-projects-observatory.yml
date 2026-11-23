@@ -7,8 +7,8 @@ on:
     paths:
       - "docs/research/RESEARCH-PROJECTS-INDEX.md"
       - "scripts/research_catalog/**"
-      - "web/investigacion.html"
-      - "web/data/research-projects.json"
+      - "web/investigacion.md"
+      - "data/observatory/research-projects.json"
       - ".github/workflows/research-projects-observatory.yml"
 permissions:
   contents: write
@@ -33,7 +33,7 @@ jobs:
           python scripts/research_catalog/build_research_catalog.py
       - name: Validate generated catalog and safeguards
         run: |
-          python -m json.tool web/data/research-projects.json >/dev/null
+          python -m json.tool data/observatory/research-projects.json >/dev/null
           python - <<'PY'
           import json
           from pathlib import Path
