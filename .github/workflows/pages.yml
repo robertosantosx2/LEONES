@@ -89,7 +89,7 @@ jobs:
         run: |
           set -e
           for f in web/*.html; do test -f "_site/$(basename "$f")"; done
-          for f in index.html inicio-rapido.html atlas.html pilares.html arquitectura.html pila.html operacion.html conocimiento.html conocimiento-optimizacion.html conocimiento-sglang.html fuentes.html app.html rc2.html evaluacion.html recommendations.html recomendar.html resultados.html manada.html prospeccion.html horizon.html contacto.html; do test -f "_site/$f"; done
+          for f in index.html inicio-rapido.html atlas.html arquitectura.html pila.html operacion.html conocimiento.html conocimiento-optimizacion.html conocimiento-sglang.html fuentes.html app.html rc2.html evaluacion.html recommendations.html recomendar.html resultados.html manada.html prospeccion.html horizon.html contacto.html; do test -f "_site/$f"; done
           python3 - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
@@ -97,7 +97,7 @@ jobs:
           root = Path('_site').resolve(); errors = []
           canonical_script = 'assets/js/navigation.js'
           canonical_pages = {
-              'index.html','inicio-rapido.html','atlas.html','pilares.html','arquitectura.html',
+              'index.html','inicio-rapido.html','atlas.html','arquitectura.html',
               'pila.html','operacion.html','conocimiento.html','conocimiento-optimizacion.html','conocimiento-sglang.html',
               'fuentes.html','app.html','rc2.html','evaluacion.html','recommendations.html','recomendar.html','resultados.html',
               'manada.html','prospeccion.html','horizon.html','contacto.html'
