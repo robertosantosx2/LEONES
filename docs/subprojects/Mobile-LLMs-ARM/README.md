@@ -49,3 +49,15 @@ No convertir estrellas, README, cifras sociales o benchmarks de terceros en medi
 - LEONES Lab Agent: inventario y recibos de pruebas con aprobación explícita.
 
 La automatización publica descubrimientos, no aprueba, recomienda, instala, ejecuta ni integra proyectos externos.
+
+## Plataforma de referencia — Xiaomi Mi 9T Pro
+
+La campaña del [Xiaomi Mi 9T Pro de 6 GB](../../../hardware/XIAOMI-MI-9T-PRO-6GB.md) tiene documentación específica:
+
+- [Plan de pruebas por gates](devices/XIAOMI-MI-9T-PRO-TEST-PLAN.md)
+- [Matriz de runtimes y orden de evaluación](devices/XIAOMI-MI-9T-PRO-RUNTIME-MATRIX.md)
+- [Protocolo de benchmark móvil NEPENTHES](devices/XIAOMI-MI-9T-PRO-BENCHMARK-PROTOCOL.md)
+
+El primer camino es Android sin root. La versión de Android, API, ABI, kernel, root y capacidades GPU/DSP siguen UNKNOWN hasta el inventario físico. El espacio libre comunicado (>30 GB) no sustituye la comprobación de espacio efectivo ni de RAM disponible.
+
+La campaña no presupone que AIPerf, NVML, Nsight/CUPTI o QNN sean ejecutables en el teléfono. Se preservará la separación entre runner móvil, fuentes de telemetría Android y normalización posterior en NEPENTHES.
