@@ -18,7 +18,6 @@
         ["Buddy", "buddy.html", "top"],
         ["Fuentes", "fuentes.html", "top"],
 
-        ["Aplicación", "app.html", "top"],
         ["RC2 · histórico", "rc2.html", "application"],
         ["RC3 · cerrada", "rc3.html", "application"],
         ["RC4 · FitLLM", "rc4.html", "application"],
