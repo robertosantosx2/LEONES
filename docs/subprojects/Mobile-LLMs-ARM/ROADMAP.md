@@ -57,3 +57,14 @@ Este roadmap organiza gates de investigación; no declara aceptación anticipada
 | Scraping limitado | registrar errores y respetar términos |
 
 G0 en implementación; G1-G6 pendientes. Solo pruebas físicas con artefactos permiten estado MEASURED.
+
+## Campaña de dispositivo — Xiaomi Mi 9T Pro
+
+Esta campaña concreta el trabajo G1-G3 para la plataforma móvil de referencia, sin alterar la autoridad del INDEX maestro de NEPENTHES.
+
+- [Perfil de hardware](../../../hardware/XIAOMI-MI-9T-PRO-6GB.md)
+- [Plan de pruebas y gates](devices/XIAOMI-MI-9T-PRO-TEST-PLAN.md)
+- [Matriz de runtimes](devices/XIAOMI-MI-9T-PRO-RUNTIME-MATRIX.md)
+- [Protocolo NEPENTHES móvil](devices/XIAOMI-MI-9T-PRO-BENCHMARK-PROTOCOL.md)
+
+Checkpoint: Android/API, ABI, kernel, root y drivers UNKNOWN; almacenamiento libre >30 GB según el usuario. La campaña empieza sin root. No se autoriza modificación de bootloader, ROM, kernel ni firmware. No existen aún resultados físicos medidos. La matriz de rendimiento es una hipótesis de investigación y no un ranking observado.
