@@ -1,34 +1,63 @@
 # Xiaomi Mi 9T Pro — plataforma móvil de referencia
 
-**Estado:** perfil de referencia declarado por el usuario; no es inventario verificado ni benchmark medido.
+**Estado:** plataforma de referencia declarada; caracterización física pendiente.  
+**Campaña:** [plan de pruebas](../docs/subprojects/Mobile-LLMs-ARM/devices/XIAOMI-MI-9T-PRO-TEST-PLAN.md) · [matriz de runtimes](../docs/subprojects/Mobile-LLMs-ARM/devices/XIAOMI-MI-9T-PRO-RUNTIME-MATRIX.md) · [protocolo de benchmark](../docs/subprojects/Mobile-LLMs-ARM/devices/XIAOMI-MI-9T-PRO-BENCHMARK-PROTOCOL.md)
 
-## Especificaciones comunicadas
+## Identidad y datos comunicados
 
-| Campo | Dato |
-|---|---|
-| Dispositivo | Xiaomi Mi 9T Pro |
-| RAM | 6 GB |
-| CPU | Octa-core |
-| Frecuencia máxima comunicada | 2,84 GHz |
+| Campo | Valor | Procedencia / estado |
+|---|---|---|
+| Dispositivo | Xiaomi Mi 9T Pro | Declarado por el usuario |
+| RAM nominal | 6 GB | Declarado por el usuario |
+| CPU | Octa-core, hasta 2,84 GHz | Declarado por el usuario; pendiente de lectura del dispositivo |
+| SoC esperado | Qualcomm Snapdragon 855 | Identificación del modelo comercial; confirmar con Android |
+| GPU esperada | Qualcomm Adreno 640 | Identificación del SoC; confirmar driver y capacidades |
+| DSP/AI | Qualcomm Hexagon 690 | Identificación de plataforma; no implica soporte LLM |
+| Almacenamiento libre | Más de 30 GB | Declarado por el usuario; fecha y método de medida pendientes |
+| Android/API | Desconocido | Inventario pendiente |
+| Root | Desconocido | Inventario pendiente |
+| ABI / kernel / firmware | Desconocidos | Inventario pendiente |
+| Estado térmico/batería | Desconocido | Inventario pendiente |
+
+Los elementos marcados como esperados son hipótesis de identificación de la variante comercial, no una lectura de hardware obtenida del terminal. No publicar capacidades de aceleración como verificadas hasta capturar la salida del dispositivo.
 
 ## Propósito en LEONES
 
-Registrar este dispositivo como **plataforma móvil de referencia** para la línea Mobile-LLMs-ARM y pruebas de IA local en Android/ARM, complementaria a la estación Ubuntu MSI.
+Plataforma ARM64 de referencia para Mobile-LLMs-ARM, complementaria a la estación Ubuntu MSI. La campaña caracterizará inferencia local de modelos compactos y comparará CPU, GPU y, si la plataforma de software lo permite, DSP/HTP.
 
-El perfil servirá para orientar selección de modelos, runtimes, cuantizaciones, consumo de memoria, rendimiento y protocolos de evaluación. No se presupondrá que el dato de CPU, la RAM nominal o la compatibilidad con un runtime garantizan capacidad de ejecución.
+La primera ruta será **Android sin root**, sin desbloquear bootloader, cambiar ROM, instalar firmware ni modificar particiones. Root se registrará como capacidad opcional y solo se utilizará en experimentos posteriores que lo requieran y cuenten con autorización explícita.
 
-## Datos pendientes de caracterización
+## Perfil esperado del SoC (pendiente de confirmar)
 
-Antes de atribuir resultados técnicos al dispositivo, recopilar:
+- Snapdragon 855 / familia SM8150.
+- CPU Kryo 485: configuración heterogénea de núcleos basada en Cortex-A76/A55; no tratar los ocho núcleos como equivalentes.
+- GPU Adreno 640.
+- DSP Hexagon 690 / plataforma Qualcomm AI de esa generación.
 
-- SoC exacto y configuración de CPU (núcleos, clústeres y frecuencias sostenidas).
-- GPU, controlador y compatibilidad Vulkan/OpenCL, según corresponda.
-- Android/API, kernel y arquitectura ABI.
-- RAM disponible para procesos, memoria compartida y restricciones del fabricante.
-- Temperatura, throttling, autonomía y condiciones de carga.
-- Runtime, modelo, cuantización, contexto y protocolo de benchmark.
+La presencia de Hexagon no demuestra que QNN, HTP, FastRPC o un runtime moderno puedan ejecutar modelos LLM en este dispositivo. Cada combinación requiere una prueba de compatibilidad y ejecución efectiva.
 
-## Evidencia y cautelas
+## Inventario físico pendiente
 
-Los datos de este perfil proceden de la descripción del usuario. Los benchmarks y compatibilidades deberán documentarse individualmente, con estado **MEASURED**, **ESTIMATED** o **UNVERIFIED**, según corresponda.
+Recopilar mediante ADB y/o Termux sin root:
 
+- fabricante, modelo, producto, SoC y board;
+- Android release, API level, build fingerprint y kernel;
+- ABI primaria/secundarias y características CPU visibles;
+- memoria total/disponible y almacenamiento libre;
+- versión Vulkan, extensiones y driver GPU si están expuestos;
+- estado de batería, temperatura y thermal status cuando Android lo permita;
+- restricciones de batería, procesos y ahorro energético.
+
+Comandos iniciales y campos esperados están en el plan de pruebas. No recopilar IMEI, número de serie, MAC, cuentas ni otros identificadores personales. Redactar identificadores únicos de las salidas antes de archivarlas.
+
+## Límites y evidencia
+
+- **Declarado:** datos facilitados por el usuario.
+- **EXPECTED:** especificación inferida del modelo comercial, pendiente de confirmación.
+- **DISCOVERED:** capacidad detectada, sin prueba de ejecución.
+- **COMPATIBLE:** runtime/modelo preparado y compatible según evidencia concreta.
+- **REPRODUCED:** inferencia funcional repetida en el dispositivo identificado.
+- **MEASURED:** benchmark con protocolo, versiones, configuración y artefactos verificables.
+- **VERIFIED:** evidencia revisada y reproducible; no equivale automáticamente a aceptación.
+
+No hay benchmarks físicos LEONES acreditados para este teléfono en este perfil. Ninguna cifra de terceros se atribuirá al dispositivo. Mantener separados rendimiento pico, sostenido, térmico y eficiencia energética.
