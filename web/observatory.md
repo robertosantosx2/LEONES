@@ -14,4 +14,4 @@ Publicación canónica en Markdown. GitHub renderiza estos documentos directamen
 - Ningún descubrimiento se promociona automáticamente a aprobado, recomendado o medido.
 - Las mediciones LEONES deben enlazar protocolo y artefactos reproducibles.
 
-Actualizado: 2026-11-23T14:38:54.991Z
+Actualizado: 2026-11-22T12:40:10Z
