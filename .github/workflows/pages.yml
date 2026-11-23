@@ -94,7 +94,7 @@ jobs:
         run: |
           set -e
           for f in web/*.html; do test -f "_site/$(basename "$f")"; done
-          for f in index.html inicio-rapido.html estado.html roadmap.html prospeccion.html atlas.html discovery-atlas.html agent-use-cases.html diagramas.html runtimes-locales.html scripts.html conocimiento.html conocimiento-optimizacion.html conocimiento-rtx-spark.html conocimiento-harnesses.html buddy.html fuentes.html rc3.html rc4.html puede-mi-pc.html cuadros-maestros.html stack-explorer.html recommendations.html recomendaciones-visita.html recomendar.html resultados.html manada.html horizon.html logos.html contacto.html; do test -f "_site/$f"; done
+          for f in index.html inicio-rapido.html estado.html roadmap.html prospeccion.html atlas.html discovery-atlas.html agent-use-cases.html diagramas.html runtimes-locales.html scripts.html conocimiento.html conocimiento-optimizacion.html conocimiento-rtx-spark.html conocimiento-harnesses.html buddy.html fuentes.html decision-modelos.html rc3.html rc4.html puede-mi-pc.html cuadros-maestros.html stack-explorer.html recommendations.html recomendaciones-visita.html recomendar.html resultados.html manada.html horizon.html logos.html contacto.html; do test -f "_site/$f"; done
           python3 - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
@@ -106,7 +106,7 @@ jobs:
               'atlas.html','discovery-atlas.html','agent-use-cases.html','diagramas.html',
               'runtimes-locales.html','scripts.html','conocimiento.html',
               'conocimiento-optimizacion.html','conocimiento-rtx-spark.html',
-              'conocimiento-harnesses.html','buddy.html','fuentes.html','rc3.html','rc4.html',
+              'conocimiento-harnesses.html','buddy.html','fuentes.html','decision-modelos.html','rc3.html','rc4.html',
               'puede-mi-pc.html','cuadros-maestros.html','stack-explorer.html',
               'recommendations.html','recomendaciones-visita.html','recomendar.html',
               'resultados.html','manada.html','horizon.html','logos.html','contacto.html'
