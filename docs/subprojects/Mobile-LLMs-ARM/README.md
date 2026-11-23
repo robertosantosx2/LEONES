@@ -8,8 +8,8 @@ Investigar LLMs e IA local en Android ARM64, Linux móvil, Termux/proot, sistema
 
 ## Catálogo
 
-- [Observatorio HTML](../../../web/mobile-llms-arm.md)
-- [Feed JSON](../../../data/observatory/mobile-llms-arm.json)
+- [Observatorio Markdown](../../../web/mobile-llms-arm.md)
+- [Índice de observatorios](../../../web/observatory.md)
 - [Registro de fuentes](../../../research/mobile-llms-arm/sources.json)
 - [Generador](../../../scripts/research/mobile_llms_arm.py)
 - [Roadmap](ROADMAP.md)
