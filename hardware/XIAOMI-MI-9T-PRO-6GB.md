@@ -13,9 +13,11 @@
 | SoC esperado | Qualcomm Snapdragon 855 | Identificación del modelo comercial; confirmar con Android |
 | GPU esperada | Qualcomm Adreno 640 | Identificación del SoC; confirmar driver y capacidades |
 | DSP/AI | Qualcomm Hexagon 690 | Identificación de plataforma; no implica soporte LLM |
-| Almacenamiento libre | Más de 30 GB | Declarado por el usuario; fecha y método de medida pendientes |
-| Android/API | Desconocido | Inventario pendiente |
+| Almacenamiento | 128 GB total; 55,2 GB ocupados; ≈72,8 GB libres | Captura «Sobre el teléfono», 2026-11-23; libre calculado como total menos ocupado |
+| MIUI | Global 12.0.5 Estable (`12.0.5.0(QFKEUXM)`) | Captura «Sobre el teléfono», 2026-11-23 |
+| Android/API | Android 10; API level pendiente | Captura «Sobre el teléfono»; API no visible |
 | Root | Desconocido | Inventario pendiente |
+| Parche de seguridad Android | 2021-04-01 | Captura «Sobre el teléfono», 2026-11-23 |
 | ABI / kernel / firmware | Desconocidos | Inventario pendiente |
 | Estado térmico/batería | Desconocido | Inventario pendiente |
 
