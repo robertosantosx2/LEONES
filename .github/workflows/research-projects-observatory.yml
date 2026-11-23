@@ -37,12 +37,12 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          d=json.loads(Path("web/data/research-projects.json").read_text())
-          h=Path("web/investigacion.html").read_text()
+          d=json.loads(Path("data/observatory/research-projects.json").read_text())
+          h=Path("web/investigacion.md").read_text()
           assert d["items"] and d["publication_is_not_approval"] is True
           assert d["automatic_priority_changes"] is False
-          assert "data/research-projects.json" in h
-          assert "leones-logo-principal.svg" in h
+          assert h.startswith("# LEONES — Observatorio de investigación")
+          assert "<html" not in h.lower()
           for x in d["items"]: assert x["name"] and x["url"].startswith("https://")
           print("Validated",len(d["items"]),"research projects")
           PY
