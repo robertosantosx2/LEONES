@@ -59,7 +59,7 @@ La licencia OSI es la puerta de entrada del conjunto principal de prospección. 
 
 ## Evidencia de aceptación
 
-La funcionalidad está respaldada por el workflow diario de prospección, los scripts de descubrimiento y los artefactos publicados en `data/prospection` y `web/data/prospeccion.json`.
+La funcionalidad está respaldada por el workflow diario de prospección, los scripts de descubrimiento y los artefactos publicados en `data/prospection`, `data/observatory/` y las publicaciones Markdown bajo `web/`.
 
 La documentación normativa existente define el filtro OSI, el tratamiento Copyleft, el flujo de evidencia y la separación entre descubrimiento y recomendación.
 
