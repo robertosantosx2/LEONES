@@ -2,6 +2,7 @@
 
 Publicación canónica en Markdown. GitHub renderiza estos documentos directamente; no se generan páginas HTML autocontenidas ni feeds JSON públicos.
 
+- [Prospección](prospeccion.md) — novedades de fuentes y criterios de entrada.
 - [Discovery Atlas](discovery-atlas.md) — descubrimientos federados.
 - [Agent Use Case Observatory](agent-use-cases.md) — agentes, skills, prompts, MCP y workflows.
 - [Mobile-LLMs-ARM](mobile-llms-arm.md) — LLMs móviles y ARM.
