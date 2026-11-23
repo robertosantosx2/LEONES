@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate local references in LEONES web and documentation sources.
+"""Validate local references in the published LEONES web sources.
 
 The validator deliberately ignores code examples and dynamic template values:
 only concrete local links/assets are checked. GitHub Pages root-relative paths
@@ -117,12 +117,14 @@ def check_logo_manifest() -> list[str]:
 
 def main() -> int:
     errors = check_logo_manifest()
-    for path in ROOT.rglob("*"):
+    # Publication checks are scoped to web/: repository documentation and
+    # experimental projects have independent path conventions and lifecycles.
+    for path in WEB.rglob("*"):
         if not path.is_file() or any(part in SKIP_DIRS for part in path.parts):
             continue
         if path.suffix.lower() not in TEXT_EXTENSIONS:
             continue
-        errors.extend(check_file_references(path))
+        errors.extend(check_file_references(path)
     if errors:
         print("Local reference validation FAILED:")
         for error in sorted(set(errors)):
