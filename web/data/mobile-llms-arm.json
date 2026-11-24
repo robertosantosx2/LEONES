@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project": "Mobile-LLMs-ARM",
-  "generated_at": "2026-11-22T12:40:10Z",
+  "generated_at": "2026-11-24T14:57:07Z",
   "publication_is_not_approval": true,
   "automatic_recommendation": false,
   "items": [
@@ -17,7 +17,7 @@
       "language": "C",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "hastyheat-com/x1e-yoga-slim7x-npu-linux",
@@ -31,7 +31,7 @@
       "language": "Shell",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "J-ratio/edge-ai-recon",
@@ -45,7 +45,21 @@
       "language": "C++",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
+    },
+    {
+      "name": "Lone-Warrrior14/astrobot-mobile",
+      "url": "https://github.com/Lone-Warrrior14/astrobot-mobile",
+      "category": "accelerators",
+      "platforms": [],
+      "description": "Offline Android AI companion optimized for Snapdragon 8 Gen 2. Features 4.1s on-device NPU Stable Diffusion, local GGUF LLM inference, Google ML Kit OCR with in-chat scoped Vector RAG, and an interactive animated mascot with touch, purrs, and voice synthesis.",
+      "stars": 0,
+      "pushed_at": "2026-11-22T19:55:04Z",
+      "license": null,
+      "language": "JavaScript",
+      "source": "GitHub Search API",
+      "status": "discovered",
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "qhy991/Awesome-On-Device-Inference",
@@ -59,7 +73,7 @@
       "language": null,
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "qidiso/llama-hexagon.cpp",
@@ -73,7 +87,7 @@
       "language": null,
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Stephen062811/AegisCode",
@@ -87,7 +101,7 @@
       "language": "Python",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Viswanath129/unlocking-the-power-of-npu",
@@ -101,7 +115,7 @@
       "language": "Python",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "VitalikDen0/Bonsai2-NPU",
@@ -115,7 +129,7 @@
       "language": "C",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "xiziphus/np2-llm-bench",
@@ -129,7 +143,7 @@
       "language": "Shell",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "YawLabs/snapdragon-genie-server",
@@ -143,7 +157,7 @@
       "language": "Python",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Zrald1/Snap-llm-phone",
@@ -153,53 +167,53 @@
       "description": "On-device LLM serving for Snapdragon mobile phones - CPU + Adreno GPU + Hexagon NPU. Privacy-first AI inference with speculative decoding, prompt caching, thread pinning, and vision model support.",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z",
+      "discovered_at": "2026-11-24T14:57:07Z",
       "stars": 1,
       "pushed_at": "2026-08-24T00:27:26Z",
       "license": null,
       "language": "C"
     },
     {
-      "name": "agent-axiom/axiom-edge",
-      "url": "https://github.com/agent-axiom/axiom-edge",
+      "name": "alexeyw/knotwork",
+      "url": "https://github.com/alexeyw/knotwork",
       "category": "android",
       "platforms": [],
-      "description": "On-device LLM harness for Android and iOS: local inference, benchmarks and evals",
+      "description": "An AI agent you build, not just prompt. Local-first Android agent with on-device inference (LiteRT-LM), pipelines you assemble yourself, MCP tool calling, and your confirmation before any risky action.",
+      "stars": 60,
+      "pushed_at": "2026-11-22T14:57:41Z",
+      "license": "Apache-2.0",
+      "language": "Kotlin",
+      "source": "GitHub Search API",
+      "status": "discovered",
+      "discovered_at": "2026-11-24T14:57:07Z"
+    },
+    {
+      "name": "Architect-Brad/Haven-LLM-Studio",
+      "url": "https://github.com/Architect-Brad/Haven-LLM-Studio",
+      "category": "android",
+      "platforms": [],
+      "description": "The local AI infrastructure platform. Run, monitor,     and scale LLM inference across servers, desktops,     and phones. OpenAI-compatible API, multi-GPU,     cluster mode, on-device Android inference, KDE     integration, and a Node.js SDK. 100% local. 100%     private.",
+      "stars": 1,
+      "pushed_at": "2026-11-24T12:08:01Z",
+      "license": "MIT",
+      "language": "C++",
+      "source": "GitHub Search API",
+      "status": "discovered",
+      "discovered_at": "2026-11-24T14:57:07Z"
+    },
+    {
+      "name": "Doffin-azure/Android-Speculative-Inference",
+      "url": "https://github.com/Doffin-azure/Android-Speculative-Inference",
+      "category": "android",
+      "platforms": [],
+      "description": "Android-Windows collaborative speculative decoding for LLMs: on-device draft generation and desktop verification.",
       "stars": 0,
-      "pushed_at": "2026-11-17T21:28:21Z",
-      "license": "MIT",
-      "language": "Dart",
+      "pushed_at": "2026-11-23T13:43:28Z",
+      "license": null,
+      "language": "Kotlin",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
-    },
-    {
-      "name": "GijungKim/expo-local-llm",
-      "url": "https://github.com/GijungKim/expo-local-llm",
-      "category": "android",
-      "platforms": [],
-      "description": "Expo module for on-device LLM inference via Apple Foundation Models (iOS) and Gemini Nano (Android)",
-      "stars": 15,
-      "pushed_at": "2026-11-21T21:13:10Z",
-      "license": "MIT",
-      "language": "TypeScript",
-      "source": "GitHub Search API",
-      "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
-    },
-    {
-      "name": "hung-yueh/react-native-litert-lm",
-      "url": "https://github.com/hung-yueh/react-native-litert-lm",
-      "category": "android",
-      "platforms": [],
-      "description": "High-performance on-device LLM inference for React Native, powered by LiteRT-LM and Nitro Modules",
-      "stars": 65,
-      "pushed_at": "2026-11-18T04:56:17Z",
-      "license": "MIT",
-      "language": "TypeScript",
-      "source": "GitHub Search API",
-      "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "kekeke-123/LLAI-Kernel",
@@ -213,7 +227,7 @@
       "language": "C++",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "leehack/llamadart",
@@ -222,40 +236,12 @@
       "platforms": [],
       "description": "Cross-platform on-device LLM inference for Dart & Flutter: GGUF via llama.cpp and LiteRT-LM on Android, iOS, macOS, Windows, Linux and web.",
       "stars": 92,
-      "pushed_at": "2026-11-22T10:58:01Z",
+      "pushed_at": "2026-11-24T14:55:51Z",
       "license": "MIT",
       "language": "Dart",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
-    },
-    {
-      "name": "llamatik/Llamatik",
-      "url": "https://github.com/llamatik/Llamatik",
-      "category": "android",
-      "platforms": [],
-      "description": "True on-device AI SDK for Kotlin Multiplatform (Android, iOS, Desktop, JVM, WASM). LLM inference, Speech-to-Text, Image Generation, Agent Framework and RAG — powered by llama.cpp, whisper.cpp and stable-diffusion.cpp.",
-      "stars": 227,
-      "pushed_at": "2026-11-20T15:54:54Z",
-      "license": "NOASSERTION",
-      "language": "Kotlin",
-      "source": "GitHub Search API",
-      "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
-    },
-    {
-      "name": "moongrail/OgrChatAi",
-      "url": "https://github.com/moongrail/OgrChatAi",
-      "category": "android",
-      "platforms": [],
-      "description": "Android AI chat app with on-device LLM inference. Download models from HuggingFace and chat privately.",
-      "stars": 0,
-      "pushed_at": "2026-11-20T09:07:59Z",
-      "license": "NOASSERTION",
-      "language": "Kotlin",
-      "source": "GitHub Search API",
-      "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "NickMonrad/kernel-ai-assistant",
@@ -264,12 +250,12 @@
       "platforms": [],
       "description": "Jandal AI — Local-first Android AI assistant with on-device LLM inference, semantic memory, and extensible skill framework",
       "stars": 38,
-      "pushed_at": "2026-11-22T12:38:52Z",
+      "pushed_at": "2026-11-23T12:49:36Z",
       "license": "Apache-2.0",
       "language": "Kotlin",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "synheart-ai/syni-kotlin",
@@ -278,12 +264,26 @@
       "platforms": [],
       "description": "Android SDK for Syni — adaptive on-device LLM inference with hybrid local/cloud chat, structured persona conditioning, and a streaming chat API for Android.",
       "stars": 0,
-      "pushed_at": "2026-11-20T06:46:15Z",
+      "pushed_at": "2026-11-23T08:55:46Z",
       "license": "NOASSERTION",
       "language": "Kotlin",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
+    },
+    {
+      "name": "tibatechapp-ship-it/GpTMax",
+      "url": "https://github.com/tibatechapp-ship-it/GpTMax",
+      "category": "android",
+      "platforms": [],
+      "description": "Advanced Android-native AI model quantization and inference engine, inspired by LookAtMyQuant, built for efficient on-device LLM execution.",
+      "stars": 0,
+      "pushed_at": "2026-11-24T14:06:53Z",
+      "license": "MIT",
+      "language": "Kotlin",
+      "source": "GitHub Search API",
+      "status": "discovered",
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "uno-km/amv-bitnet",
@@ -292,12 +292,12 @@
       "platforms": [],
       "description": "⚡ Production 1.58-bit (i2_s) BitNet On-Device Inference SDK & Dual Engine for Android Termux & ARM64.",
       "stars": 2,
-      "pushed_at": "2026-11-19T07:55:39Z",
+      "pushed_at": "2026-11-23T08:59:28Z",
       "license": "NOASSERTION",
       "language": "Python",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "visitor257/Ponko",
@@ -305,27 +305,13 @@
       "category": "android",
       "platforms": [],
       "description": "Offline-capable AI app for Android: on-device chat (.litertlm / .gguf) with image and file input, drawing (stable-diffusion.cpp GGUF, optional Vulkan GPU) and image tagging (ONNX tagger). Optional GPU acceleration; all inference runs locally; no telemetry.",
-      "stars": 4,
+      "stars": 5,
       "pushed_at": "2026-11-22T07:45:24Z",
       "license": "MIT",
       "language": "C++",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
-    },
-    {
-      "name": "YashBhadange2006/TinyAI",
-      "url": "https://github.com/YashBhadange2006/TinyAI",
-      "category": "android",
-      "platforms": [],
-      "description": "On-device AI assistant for Android built with Kotlin, featuring local LLM inference, offline AI capabilities, and edge AI experimentation.",
-      "stars": 52,
-      "pushed_at": "2026-11-17T09:28:51Z",
-      "license": "Apache-2.0",
-      "language": "Kotlin",
-      "source": "GitHub Search API",
-      "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "AiPaca (candidate)",
@@ -337,7 +323,7 @@
       "description": "Candidato de aplicación local, pendiente de verificación.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "PocketLLM (candidate)",
@@ -350,7 +336,7 @@
       "description": "Candidato de runtime, pendiente de verificación.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "MobileCore / TuiMa (candidate)",
@@ -362,7 +348,7 @@
       "description": "Candidato de runtime Android y API local; verificar proyecto, alcance, licencia y soporte real.",
       "source": "curated research lead",
       "status": "pending_review",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "AbuZar-Ansarii/PocketStrike",
@@ -370,13 +356,13 @@
       "category": "arm",
       "platforms": [],
       "description": " PocketStrike is a privacy-first mobile AI workstation. It combines zero-cloud native on-device GGUF inference (ARM NEON accelerated)   │ with frontier cloud LLMs, multi-step ReAct agent tools, Model Context Protocol (MCP) servers, self-evolving cross-session memory, and FLUX neural image   │ generation.",
-      "stars": 174,
+      "stars": 175,
       "pushed_at": "2026-08-27T07:13:31Z",
       "license": "MIT",
       "language": "Dart",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Parasaran-Python/pocket-llm-server",
@@ -390,7 +376,7 @@
       "language": "Kotlin",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "punnppz321v2/PocketStrike",
@@ -404,7 +390,7 @@
       "language": "Dart",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "KleidiAI",
@@ -416,7 +402,7 @@
       "description": "Kernels optimizados para CPUs Arm.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "PocketTune (candidate)",
@@ -428,7 +414,7 @@
       "description": "Candidato de autotuning, pendiente de verificación.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Mobile AI Node (candidate)",
@@ -441,7 +427,7 @@
       "description": "Candidato de teléfono Android como nodo de inferencia/API; verificar actividad y seguridad.",
       "source": "curated research lead",
       "status": "pending_review",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "PhoneBorg (candidate)",
@@ -453,7 +439,7 @@
       "description": "Candidato de clúster móvil, pendiente de verificación.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Adams-404/clearport-cli",
@@ -467,7 +453,7 @@
       "language": "Shell",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Andrew-Velox/androbot",
@@ -481,7 +467,7 @@
       "language": "Rust",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Carmonacu/realme-gt2-second-life",
@@ -495,7 +481,7 @@
       "language": "Shell",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "clixgvvv/AndroidLLMServerScript",
@@ -509,7 +495,7 @@
       "language": "Python",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "hangyolkim-droid/ondev",
@@ -523,7 +509,7 @@
       "language": "Python",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Mateuspp115/ARUAN-IA-Mobile-",
@@ -537,7 +523,7 @@
       "language": null,
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "padz24/Nusa-rg",
@@ -551,7 +537,7 @@
       "language": "Python",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "postmarketOS",
@@ -563,7 +549,7 @@
       "description": "Distribución Linux móvil.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "RobiiAragon/offline-it-helpdesk",
@@ -577,7 +563,7 @@
       "language": "Python",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "sanatani-hackers/Llama.cpp-termux",
@@ -591,7 +577,7 @@
       "language": "Shell",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Termux",
@@ -603,7 +589,7 @@
       "description": "Entorno terminal Android.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "tifagg/android-ai-server",
@@ -617,7 +603,7 @@
       "language": "Python",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "tigrohvost/pi-deck",
@@ -626,12 +612,12 @@
       "platforms": [],
       "description": "Local Android coding agent with Nord/DECK UI, on-device GGUF inference, and Pi via llama.cpp + Termux. Локальный coding agent без облачного inference.",
       "stars": 0,
-      "pushed_at": "2026-11-15T20:48:59Z",
+      "pushed_at": "2026-11-22T21:37:37Z",
       "license": "MIT",
       "language": "Java",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Ubuntu Touch",
@@ -643,7 +629,7 @@
       "description": "Sistema Linux móvil.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "user01234-sl/Termux-AI",
@@ -652,12 +638,12 @@
       "platforms": [],
       "description": "A lightweight Python-based AI client for Android running Termux, supporting online AI APIs and offline local LLMs through llama-cpp.",
       "stars": 1,
-      "pushed_at": "2026-11-22T11:14:53Z",
+      "pushed_at": "2026-11-23T09:18:21Z",
       "license": "GPL-3.0",
       "language": "Python",
       "source": "GitHub Search API",
       "status": "discovered",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Droid Harness (candidate)",
@@ -670,7 +656,7 @@
       "description": "Candidato de agentes de programación en Android; verificar repositorio y reproducibilidad.",
       "source": "curated research lead",
       "status": "pending_review",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "Awesome Mobile LLMs",
@@ -684,7 +670,7 @@
       "description": "Recopilación de investigación móvil.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "ExecuTorch",
@@ -697,7 +683,7 @@
       "description": "Runtime edge de PyTorch.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "LiteRT",
@@ -710,7 +696,7 @@
       "description": "Runtime de Google AI Edge.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "llama.cpp",
@@ -723,7 +709,7 @@
       "description": "Motor GGUF con backends CPU/GPU.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     },
     {
       "name": "MLC LLM",
@@ -736,7 +722,7 @@
       "description": "Compilación y despliegue de modelos.",
       "status": "pending_review",
       "source": "curated research lead",
-      "discovered_at": "2026-11-22T12:40:10Z"
+      "discovered_at": "2026-11-24T14:57:07Z"
     }
   ],
   "sources": {
@@ -744,7 +730,7 @@
       {
         "query": "android",
         "status": "ok",
-        "total_count": 109
+        "total_count": 112
       },
       {
         "query": "termux",
@@ -759,7 +745,7 @@
       {
         "query": "npu",
         "status": "ok",
-        "total_count": 3
+        "total_count": 4
       },
       {
         "query": "hexagon",

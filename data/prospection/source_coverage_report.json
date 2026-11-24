@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-22T12:39:02.792426+00:00",
+  "generated_at": "2026-11-24T14:55:56.789368+00:00",
   "registered_sources": 24,
   "sources": [
     {
@@ -52,8 +52,8 @@
       "url": "https://savannah.gnu.org/",
       "kind": "forge",
       "priority": "high",
-      "status": "reachable",
-      "http_status": 200,
+      "status": "http_error",
+      "http_status": 502,
       "final_url": "https://savannah.gnu.org/",
       "authentication_configured": false
     },
@@ -263,7 +263,7 @@
       "priority": "high",
       "status": "reachable",
       "http_status": 200,
-      "final_url": "https://huggingface.co/papers/date/2026-11-20",
+      "final_url": "https://huggingface.co/papers",
       "authentication_configured": false
     }
   ],
