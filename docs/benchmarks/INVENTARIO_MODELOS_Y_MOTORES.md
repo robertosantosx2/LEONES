@@ -1240,3 +1240,48 @@ Resultado del lote: **4/6 motores compilados correctamente (66,7 %)**; Kinetic y
 
 No limpiar cachés ni repetir aún las compilaciones de Kinetic o TensorFold. Resolver primero la selección de toolchain de Rust y la procedencia del binario Kinetic; en TensorFold, identificar el módulo `build_options` efectivo. Después repetir únicamente las compilaciones que correspondan y validar binarios, servidor e inferencia antes de incorporar resultados al benchmark.
 
+
+
+## 7. Plataforma móvil LG-H930 / LG V30 — Termux y llama.cpp (23–24-11-2026)
+
+**Plataforma de laboratorio:** LG-H930 (LG V30), revisión de hardware 1.1; Qualcomm Snapdragon 835, arquitectura ARM64; Android 9, software V31a-EUR-XX, compilación PKQ1.190414.001, kernel 4.4.153 y parche de seguridad 2019-11-01. RAM física declarada: 4 GB. Esta campaña es independiente de los benchmarks del MSI Thin 15 y sus resultados no deben mezclarse ni compararse sin atender a las diferencias de hardware, backend y configuración.
+
+### Motor y compilación
+
+- **Entorno:** Termux sobre Android aarch64.
+- **Motor:** llama.cpp, binario `llama-cli`.
+- **Versión identificada:** `1.0.0-dev`, commit `51831d4`.
+- **Compilación:** completada; salida `100% Built target llama-cli` y `BUILD_EXIT_CODE=0` (23-11-2026, 20:53:18 CET).
+- La verificación de `file` y `ldd` no pudo realizarse porque esas utilidades no estaban instaladas. La identificación ARM64 procede de la información del propio entorno/binario.
+- No se ha acreditado uso de GPU: las pruebas registradas se plantearon con ejecución CPU (`-ngl 0`).
+
+### Inferencia completada
+
+| Modelo | Archivo / cuantización | Estado | Prefill | Generación | Evidencia |
+|---|---|---|---:|---:|---|
+| Qwen2.5-0.5B-Instruct | GGUF Q4_K_M (≈469 MB) | **Ejecutado** | **92,8 tok/s** | **42,8 tok/s** | Inferencia finalizada en Termux el 23-11-2026; salida de texto visible, aunque el fragmento conservado aparece truncado. |
+
+Las cifras son las métricas informadas por llama.cpp para esa ejecución. No constan en el registro recuperado duración total, RSS/uso máximo de RAM, consumo energético ni temperatura correlacionada con la inferencia. No convertir esta única ejecución en un benchmark comparativo ni inferir autonomía o estabilidad térmica.
+
+### Modelos LFM2 — intentos recientes, pendientes de resultado
+
+| Modelo | Archivo | Estado acreditado | Observaciones |
+|---|---|---|---|
+| LFM2-700M | `LFM2-700M-Q4_K_M.gguf` | Lanzamiento preparado/registrado; resultado final no recuperado | Se preparó una ejecución con `llama-cli` desde `~/src/llama.cpp/build/bin/llama-cli`. No hay salida final, código de salida ni métricas verificables en el registro disponible. |
+| LFM2-2.6B | `LFM2-2.6B-Q4_K_M.gguf` | Lanzamiento preparado/registrado; resultado final no recuperado | Se preparó una ejecución CPU con contexto corto (`-ngl 0`, contexto 512 y batch 32). El modelo fue inspeccionado: arquitectura LFM2, 30 bloques, embedding 2048, 32 cabezas y vocabulario 65.536. No hay salida final, código de salida ni métricas verificables recuperadas. |
+
+**Criterio de inventario:** ambos LFM2 permanecen como *intentos pendientes de confirmar*, no como inferencias funcionales ni benchmarks. Para cerrar cada prueba se necesita conservar la salida completa de `llama-cli`, código de salida y las líneas de rendimiento de prompt y generación. No se atribuye un fallo ni un éxito sin esa evidencia.
+
+### Telemetría térmica, batería y límites de observabilidad
+
+- Se iniciaron inspecciones de zonas térmicas de Android mediante `/sys/class/thermal/thermal_zone*`; el registro recuperado no contiene una serie completa y correlacionada que permita atribuir temperaturas a una inferencia concreta.
+- `termux-battery-status` no estaba disponible en el entorno cuando se comprobó. Por tanto, no hay lectura validada de porcentaje, corriente, voltaje, temperatura de batería ni estado de carga procedente de esa utilidad.
+- No hay medición de potencia, energía consumida, frecuencia sostenida ni throttling durante generación.
+- Las pruebas térmicas y de batería deben permanecer como telemetría incompleta; no rellenar los campos ausentes con estimaciones.
+
+### Conclusión de la campaña móvil
+
+La plataforma LG-H930 ya dispone de una compilación funcional de llama.cpp para Android ARM64 y de una inferencia GGUF completada: Qwen2.5-0.5B-Instruct Q4_K_M, con 92,8 tok/s de prefill y 42,8 tok/s de generación. LFM2-700M y LFM2-2.6B están identificados y tienen comandos de ejecución registrados, pero requieren recuperar o repetir la salida completa antes de clasificarlos como ejecutados. La campaña no dispone todavía de telemetría térmica, energética o de memoria suficientemente completa.
+
+**Separación de plataformas:** estos resultados corresponden al LG-H930/Snapdragon 835/Android/Termux. No deben agregarse a las cifras del MSI Thin 15 B12UC/RTX 3050 ni utilizarse para comparar directamente motores o modelos ejecutados en CUDA.
+
