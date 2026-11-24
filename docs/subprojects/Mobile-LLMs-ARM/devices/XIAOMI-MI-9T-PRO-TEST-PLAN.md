@@ -197,3 +197,18 @@ Estados: PLANNED → DISCOVERED → COMPATIBLE → REPRODUCED → MEASURED → R
 **Checkpoint actual:** captura visual recibida: Android 10 y MIUI Global 12.0.5 confirmados; almacenamiento ≈72,8 GB libre calculado. Falta inventario ADB/Termux para ABI, API level, SoC/board, kernel, memoria disponible y estado térmico. Root permanece UNKNOWN y no bloquea G0-G4. Revisar compatibilidad de runtime y modelos antes de descargar o instalar.
 
 **Condición de parada:** inventario suficiente para seleccionar un binario ARM64 y un primer modelo GGUF con procedencia/hash; detenerse antes de instalación/descarga si hay incompatibilidad, poco espacio efectivo, riesgo térmico o necesidad de privilegios.
+
+
+## 8.1 Checkpoint físico actualizado — 2026-11-24
+
+G0 queda parcialmente completado con inventario Termux/SSH sin root:
+- SoC Qualcomm SM8150 / plataforma msmnile confirmados por /proc/cpuinfo y getprop.
+- Android 10 / API 29; ABI arm64-v8a; ocho CPU lógicas y máximos por CPU registrados en el perfil de hardware.
+- RAM total 5.636.076 kB; disponible 2.712.940 kB en la instantánea; swap 2.621.436 kB total y 1.737.772 kB libre.
+- /data: 62G disponibles.
+- Batería: 80 %, salud GOOD, 23,5 °C, descargando.
+- Sensores CPU/GPU y batería plausibles registrados; sensores con lecturas centinela o semántica desconocida excluidos. dumpsys thermalservice no devolvió datos visibles.
+- ro.hardware.egl=adreno, OpenGL ES 3.2 y nodo /dev/kgsl-3d0 presentes; esto no acredita backend GPU de Termux. Vulkan y aceleración Adreno siguen sin verificar.
+- Root permanece UNKNOWN; no se ha solicitado ni utilizado.
+
+**Próximo gate:** G1 — verificar herramientas disponibles y elegir un artefacto llama.cpp ARM64 reproducible. Antes de instalar/compilar o descargar un modelo, comprobar compatibilidad Android/Termux, tamaño, hash y memoria. La primera ejecución seguirá siendo CPU-only y con modelo ultracompacto; Qwen2.5-Coder-3B no se utilizará como primer smoke test.
