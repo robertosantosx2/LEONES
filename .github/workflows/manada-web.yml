@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: '3.x'
       - run: pip install matplotlib
-      - run: python3 scripts/leones-manada-stats.py
+      - run: python3 scripts/deprecated/leones-manada-stats.py
       - run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
