@@ -1,6 +1,6 @@
 {
-  "updated": "2026-11-23T12:26:00.489321+00:00",
-  "since": "2026-10-24",
+  "updated": "2026-11-24T13:36:36.325863+00:00",
+  "since": "2026-10-25",
   "criterion": "OSI-approved SPDX license is the primary discovery gate",
   "osi_source": "https://opensource.org/Licenses",
   "osi_license_count": 123,
@@ -13,16 +13,6 @@
   ],
   "count": 165,
   "items": [
-    {
-      "repository": "Arthur2500/ollama-gguf-converter-webui",
-      "url": "https://github.com/Arthur2500/ollama-gguf-converter-webui",
-      "license": "GPL-3.0",
-      "osi_approved": true,
-      "priority_copyleft": true,
-      "stars": 0,
-      "updated": "2026-10-28",
-      "description": "Self-hosted web UI to get models into Ollama: paste a GGUF URL, or convert a non-GGUF Hugging Face repo (safetensors → GGUF via llama.cpp + quantization). Async background jobs, conversion history, password login, CSRF/SSRF-hardened, Dockerized, optional publish to the Ollama hub."
-    },
     {
       "repository": "hsmith-dev/Lorekeeper.quest",
       "url": "https://github.com/hsmith-dev/Lorekeeper.quest",
@@ -42,6 +32,16 @@
       "stars": 2,
       "updated": "2026-11-03",
       "description": "Test local AI models like a scientist: ground-truth benchmarks for LM Studio + cloud LLMs. Vision/tools/reasoning/security, N=3 trials, SHA3-sealed evidence, live Rust+SSE dashboard. No marketing numbers — your hardware, your proof."
+    },
+    {
+      "repository": "skyphusion-labs/vivijure",
+      "url": "https://github.com/skyphusion-labs/vivijure",
+      "license": "AGPL-3.0",
+      "osi_approved": true,
+      "priority_copyleft": true,
+      "stars": 7,
+      "updated": "2026-11-11",
+      "description": "The Vivijure constellation map: self-hosted AGPL AI film studio. Control panel on Cloudflare (vivijure-cf) or home/cloud server (vivijure-local); shared via vivijure-core."
     },
     {
       "repository": "mmogr/gglib",
@@ -64,14 +64,24 @@
       "description": "Jarvis | AuthorAI: Native Android AI agent with Compose, Accessibility automation, Shizuku privilege separation, local GGUF/llama.cpp inference, and structured tool runtime"
     },
     {
-      "repository": "VitaminDB/synaptix",
-      "url": "https://github.com/VitaminDB/synaptix",
+      "repository": "MRaihan-XXL/all-in-one",
+      "url": "https://github.com/MRaihan-XXL/all-in-one",
       "license": "GPL-3.0",
       "osi_approved": true,
       "priority_copyleft": true,
-      "stars": 2,
-      "updated": "2026-11-13",
-      "description": "Native Rust engine for neural network inference and training: LLM, image, video, speech and music models on hand-written CUDA kernels JIT-compiled via NVRTC for any NVIDIA sm_80+ GPU (native NVFP4/MXFP8 on Blackwell sm_120+). .syn bundles in NVFP4/MXFP8/SQ1–SQ8, GGUF loads directly. No PyTorch, no P"
+      "stars": 0,
+      "updated": "2026-11-12",
+      "description": "aio — one command wires 8 AI coding agents to one shared context; live GitHub/npm/crates search on every prompt; first-line usage disclosure (model-dependent); zero search storage."
+    },
+    {
+      "repository": "Kirpich-Space/kirpich-ai-core",
+      "url": "https://github.com/Kirpich-Space/kirpich-ai-core",
+      "license": "GPL-3.0",
+      "osi_approved": true,
+      "priority_copyleft": true,
+      "stars": 1,
+      "updated": "2026-11-15",
+      "description": "Local AI orchestration platform for managing multiple LLMs through intelligent routing, scheduling, and resource management."
     },
     {
       "repository": "tensioncore/llm-controller-ce",
@@ -92,16 +102,6 @@
       "stars": 4,
       "updated": "2026-11-19",
       "description": "Fully self-built local AI stack — from scratch: ternary C inference engine (zero third-party runtime), plugin bus, multi-engine web crawler with quality gates, FTS knowledge base, and the complete training pipeline + research logs. AGPL-3.0."
-    },
-    {
-      "repository": "dreamference/ragon",
-      "url": "https://github.com/dreamference/ragon",
-      "license": "AGPL-3.0",
-      "osi_approved": true,
-      "priority_copyleft": true,
-      "stars": 3,
-      "updated": "2026-11-19",
-      "description": "DGX Spark & GB10 software: a private, fully local AI coding agent, chat and desktop app. One-command install, no cloud, no account, no telemetry. For NVIDIA DGX Spark, ASUS Ascent GX10, Dell Pro Max GB10, HP ZGX Nano, Lenovo ThinkStation PGX, MSI EdgeXpert, Acer GN100, Gigabyte AI TOP ATOM."
     },
     {
       "repository": "htmlfarmer/hivv",
@@ -134,26 +134,6 @@
       "description": "Your own AI workspace on your own machines: chat, agents, coding, knowledge bases (RAG) and fine-tuning with local models. Open source (AGPL-3.0)."
     },
     {
-      "repository": "helixnow/deep-student",
-      "url": "https://github.com/helixnow/deep-student",
-      "license": "AGPL-3.0",
-      "osi_approved": true,
-      "priority_copyleft": true,
-      "stars": 329,
-      "updated": "2026-11-23",
-      "description": "An open-source, local-first AI learning workbench"
-    },
-    {
-      "repository": "flagdizero/jenny-android-ai-agent",
-      "url": "https://github.com/flagdizero/jenny-android-ai-agent",
-      "license": "AGPL-3.0",
-      "osi_approved": true,
-      "priority_copyleft": true,
-      "stars": 128,
-      "updated": "2026-11-23",
-      "description": "A local-first personal AI agent that lives on your Android phone. Permanent memory, scheduled autonomous work, self-written mini-apps, and an optional home-screen launcher. Your data stays on the device — bring your own API key, or run a local model and keep the whole loop offline."
-    },
-    {
       "repository": "mdaiWorks/yengi",
       "url": "https://github.com/mdaiWorks/yengi",
       "license": "AGPL-3.0",
@@ -164,14 +144,44 @@
       "description": "Open-source Windows AI IDE built with .NET 10 WPF, featuring a fine-tuned local AI router (1.5B), live Blender & Unity copilots, self-healing agent loops, and multi-tool execution."
     },
     {
-      "repository": "subki72/audio-analysis-agent",
-      "url": "https://github.com/subki72/audio-analysis-agent",
-      "license": "MIT",
+      "repository": "off-grid-ai/OGAD",
+      "url": "https://github.com/off-grid-ai/OGAD",
+      "license": "AGPL-3.0",
       "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-05-30",
-      "description": "AI-powered audio analysis agent using ffmpeg + LLM (Groq). Extracts metadata, detects silence/clipping/noise, and generates structured JSON reports with actionable insights via ReAct tool-calling pattern."
+      "priority_copyleft": true,
+      "stars": 162,
+      "updated": "2026-11-24",
+      "description": "Your private, on-device personal AI assistant for macOS, Windows and Linux. Chat, create, search files, and connect tools with local models. Includes an OpenAI-compatible API. Opt-in Pro sees, remembers, reflects, and acts with your approval, for one payment. No cloud or account."
+    },
+    {
+      "repository": "agentes-chat/agentes-chat",
+      "url": "https://github.com/agentes-chat/agentes-chat",
+      "license": "AGPL-3.0",
+      "osi_approved": true,
+      "priority_copyleft": true,
+      "stars": 2011,
+      "updated": "2026-11-24",
+      "description": "Open-source, self-hosted Slack alternative where your team and AI agents work together in channels and DMs. Agents run on Claude, ChatGPT/Codex, Gemini or Grok, with MCP tools, their own computer and browser, routines, memory and approvals. Web, desktop and phone apps. Docker Compose + Postgres. AGP"
+    },
+    {
+      "repository": "Stravia-AI/StraviaPlatform",
+      "url": "https://github.com/Stravia-AI/StraviaPlatform",
+      "license": "AGPL-3.0",
+      "osi_approved": true,
+      "priority_copyleft": true,
+      "stars": 54,
+      "updated": "2026-11-24",
+      "description": "Local, self-hosted agent infrastructure — one endpoint for every AI client (Claude Code, Codex CLI, Gemini CLI, OpenCode). Unified model access, platform-run tools, request history, and usage."
+    },
+    {
+      "repository": "Olh2012ooo/nexus-ai-system",
+      "url": "https://github.com/Olh2012ooo/nexus-ai-system",
+      "license": "GPL-3.0",
+      "osi_approved": true,
+      "priority_copyleft": true,
+      "stars": 1,
+      "updated": "2026-11-24",
+      "description": "Self-hosted multi-agent orchestration: architecture, prompt-caching economics and the tooling that verifies both. GPL-3.0-only."
     },
     {
       "repository": "AbyssGG/Isvik",
@@ -212,6 +222,66 @@
       "stars": 0,
       "updated": "2026-09-29",
       "description": "Local-first Windows AI workstation manager for GGUF model intelligence, runtime safety, hardware telemetry, evidence-aware benchmarking and explainable launch recommendations."
+    },
+    {
+      "repository": "lf4096/koine",
+      "url": "https://github.com/lf4096/koine",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 1,
+      "updated": "2026-10-06",
+      "description": "Unified Go client for LLM APIs: OpenAI, Anthropic Claude, Gemini, Vertex AI, and any OpenAI-compatible endpoint. Streaming chat, tool calling, thinking, structured output, prompt caching, embeddings, image generation, TTS, and STT. A thin, fidelity-first library on the official SDKs; the agent loop "
+    },
+    {
+      "repository": "valpere/tumanomir",
+      "url": "https://github.com/valpere/tumanomir",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-10-10",
+      "description": "A specification-precision measurement tool for AI-driven software projects — digitizes the 'fog' of your specs before AI agents turn that fog into architecture."
+    },
+    {
+      "repository": "chalex08/OptiQuant",
+      "url": "https://github.com/chalex08/OptiQuant",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-10-11",
+      "description": "Reproducible quantization and benchmarking pipeline for open LLMs on consumer GPUs"
+    },
+    {
+      "repository": "brettleehari/arivu",
+      "url": "https://github.com/brettleehari/arivu",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-10-14",
+      "description": "A language model that runs entirely on your phone — iOS and Android. The model ships inside the app; no network code is linked at all. Apache-2.0, weights included."
+    },
+    {
+      "repository": "Prithvi-Aithal/phi3-os-finetune",
+      "url": "https://github.com/Prithvi-Aithal/phi3-os-finetune",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-10-20",
+      "description": "LoRA fine-tune of Phi-3 Mini (3.8B) on a custom OS coursework Q&A dataset — 4-bit quantized, ~0.23% params trained. Live on Hugging Face."
+    },
+    {
+      "repository": "Xander-Xai/Customer-Service-AI-Agent",
+      "url": "https://github.com/Xander-Xai/Customer-Service-AI-Agent",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 3,
+      "updated": "2026-10-25",
+      "description": "Production-oriented LangGraph customer-service agent with hybrid RAG, durable async execution, HITL governance, MCP tools, observability, and reproducible evaluation."
     },
     {
       "repository": "McCullochLabs/mini-pc-ai-lab",
@@ -274,16 +344,6 @@
       "description": "Measured Ollama generation speeds on real hardware, CPU-only and GPU, plus a script to test your own machine and add a data point."
     },
     {
-      "repository": "chasesaurabh/local-llm-home-lab",
-      "url": "https://github.com/chasesaurabh/local-llm-home-lab",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-10-29",
-      "description": "Tested local AI labs and synthetic fixtures for The Local LLM Home Lab, second edition. MIT-licensed code companion."
-    },
-    {
       "repository": "Nitin-Shukla-eng/AI-Accelerator-on-FPGA",
       "url": "https://github.com/Nitin-Shukla-eng/AI-Accelerator-on-FPGA",
       "license": "MIT",
@@ -314,14 +374,14 @@
       "description": "RAMforge is a local inference runtime designed to run AI models that may be significantly larger than the available RAM or VRAM by treating RAM, VRAM, and storage as a hierarchical memory system."
     },
     {
-      "repository": "draarivpatel-ui/infergrid",
-      "url": "https://github.com/draarivpatel-ui/infergrid",
+      "repository": "MohammadaminAlbooyeh/mcp_agent_system",
+      "url": "https://github.com/MohammadaminAlbooyeh/mcp_agent_system",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
       "updated": "2026-11-01",
-      "description": "Open source LLM capacity planner, KV cache calculator and GPU routing workbench for open weight models on NVIDIA clusters"
+      "description": "A production-ready AI agent built on the Model Context Protocol (MCP), with 15+ MCP tools (web, database, file, email, code), a ReAct reasoning loop with self-reflection, dual short/long-term memory, multi-LLM support (OpenAI/Claude/Groq), a FastAPI backend + React dashboard, and Prometheus/Grafana "
     },
     {
       "repository": "daniele21/korgis",
@@ -344,6 +404,16 @@
       "description": "AI generated code energy and carbon efficiency measurement, from inference to execution"
     },
     {
+      "repository": "R0U5/Lethe",
+      "url": "https://github.com/R0U5/Lethe",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 8,
+      "updated": "2026-11-03",
+      "description": "Model-agnostic abliteration toolkit for HuggingFace causal LMs: compute and remove refusal directions via weight orthogonalization or runtime hooks, with KL-aware Optuna optimization, quantized-model bundles, and a local web UI."
+    },
+    {
       "repository": "koros/hpc-ai-performance-engineering",
       "url": "https://github.com/koros/hpc-ai-performance-engineering",
       "license": "MIT",
@@ -364,6 +434,46 @@
       "description": "Burst-mode ANE/GPU/memory benchmark for Apple silicon local AI hardware; machine-verifiable silicon-ledger/1 measurement records."
     },
     {
+      "repository": "nino-chavez/agentic-ways-of-working",
+      "url": "https://github.com/nino-chavez/agentic-ways-of-working",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 2,
+      "updated": "2026-11-04",
+      "description": "Harness-agnostic agentic ways of working: one canonical principles doc, per-tool adapters, skills, and hooks. Extracted from a private setup, stripped of secrets and personal data."
+    },
+    {
+      "repository": "Partysun/klava",
+      "url": "https://github.com/Partysun/klava",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 3,
+      "updated": "2026-11-04",
+      "description": "Klava is a cli for dead-simple usage cli code agents with any providers. Use claude code with your OpenAI-like provider. Make any code agents more secure - filter out any leaking secret keys and crypto keys from your filesystem."
+    },
+    {
+      "repository": "keuperj/Llameros",
+      "url": "https://github.com/keuperj/Llameros",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 6,
+      "updated": "2026-11-04",
+      "description": "Light weight Ollama manger: setup and securely share your local Ollama models."
+    },
+    {
+      "repository": "vibhanshu-agarwal/optimus-cost-agent",
+      "url": "https://github.com/vibhanshu-agarwal/optimus-cost-agent",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-05",
+      "description": "Local-first Python ACP server that routes all LLM and tool provider access through the Optimus Gateway. One-key runtime (OPTIMUS_GATEWAY_URL + OPTIMUS_API_KEY). Tracks usage and cost per request, supports Plan and Agent modes with mutation guardrails, and follows spec-driven development (HLD, LLD, T"
+    },
+    {
       "repository": "dany4ok/rtx5070ti-ai-efficiency-benchmark",
       "url": "https://github.com/dany4ok/rtx5070ti-ai-efficiency-benchmark",
       "license": "MIT",
@@ -374,14 +484,34 @@
       "description": "RTX 5070 Ti AI efficiency benchmark: tokens/J measured from real inference traffic, with community submissions and validation"
     },
     {
-      "repository": "laupas/ai-os",
-      "url": "https://github.com/laupas/ai-os",
+      "repository": "fabianimv/madeleine",
+      "url": "https://github.com/fabianimv/madeleine",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-06",
+      "description": "Involuntary memory for AI agents: a place, an hour, a sound or a sensor reading brings back related memories without being asked. MCP server, local-first."
+    },
+    {
+      "repository": "Engram-Labs-Inc/AnyCursor",
+      "url": "https://github.com/Engram-Labs-Inc/AnyCursor",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
       "updated": "2026-11-06",
-      "description": "A self-hosted personal assistant around Claude agents: chat channels in, approvals enforced in code, configured from a web console, configuration as a git repository."
+      "description": "Bring your own BYOK models to Cursor native Agent, tools, MCP, subagents and approvals. Self-hosted gateway, no extra launcher, free-account friendly."
+    },
+    {
+      "repository": "srini2k03/jobpost-extractor-qlora",
+      "url": "https://github.com/srini2k03/jobpost-extractor-qlora",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-06",
+      "description": "QLoRA fine-tuned small LLM for messy Indian job postings to strict JSON, with baselines, evaluation, GGUF/AWQ quantization and a Gradio demo"
     },
     {
       "repository": "Ron-Bee/EdgeFit-AI",
@@ -392,16 +522,6 @@
       "stars": 2,
       "updated": "2026-11-06",
       "description": "EdgeFit AI is a hardware-aware Android AI benchmarking system that uses Meta Muse Spark to recommend local language model configurations, validate predictions against real device performance, and improve future recommendations through a growing database of verified benchmark results."
-    },
-    {
-      "repository": "hidao80/local-ai-chat-frontend",
-      "url": "https://github.com/hidao80/local-ai-chat-frontend",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 1,
-      "updated": "2026-11-07",
-      "description": "A privacy-first, browser-based chat interface for local LLMs and cloud providers."
     },
     {
       "repository": "Acookiefor2/Mr.Whoami",
@@ -434,24 +554,24 @@
       "description": "Surgical local AI hardware diagnostic CLI, GQA KV-Cache physics simulator & real-time token benchmark. Inspired by CanIRun.ai + Artificial Analysis + llmfit (0 npm deps, 0 telemetry)."
     },
     {
-      "repository": "SeanHogg/builderforce-inference",
-      "url": "https://github.com/SeanHogg/builderforce-inference",
+      "repository": "art-test-stack/gpt-lab",
+      "url": "https://github.com/art-test-stack/gpt-lab",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-08",
-      "description": "Synapse: a local AI runtime and desktop app - run LLMs on your own machine, private memory, MCP connectors, agents. No Ollama required."
+      "stars": 7,
+      "updated": "2026-11-09",
+      "description": "A light-weight library for fast-ablation studies on GPT-like Language Models."
     },
     {
-      "repository": "airiclenz/capcom",
-      "url": "https://github.com/airiclenz/capcom",
+      "repository": "opentail-net/OpenTail.Stingray",
+      "url": "https://github.com/opentail-net/OpenTail.Stingray",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 2,
-      "updated": "2026-11-08",
-      "description": "Git-native issue tracker and knowledge base for AI coding agents like Claude Code, Codex and Cursor. Issues are markdown files in your repo: no server."
+      "updated": "2026-11-10",
+      "description": "Local AI, native to .NET. Run language models, vision, speech, and generative AI directly in your C# applications. No Python. No external inference server. CPU or GPU. Open source, built for NativeAOT."
     },
     {
       "repository": "GuoBug/EdgeCat",
@@ -464,24 +584,14 @@
       "description": "The Local-First AI Runtime & Zero-Egress Inference Gateway."
     },
     {
-      "repository": "clouatre-labs/llm-agent-experiments",
-      "url": "https://github.com/clouatre-labs/llm-agent-experiments",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 3,
-      "updated": "2026-11-10",
-      "description": "Benchmarking open-weight LLM coding agents as SCOUT delegates: model comparison experiments with pre-registered protocols, blind scoring, and full data."
-    },
-    {
-      "repository": "azzeddine2017/Madar",
-      "url": "https://github.com/azzeddine2017/Madar",
+      "repository": "Barney241/ai-setup",
+      "url": "https://github.com/Barney241/ai-setup",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 1,
+      "stars": 0,
       "updated": "2026-11-10",
-      "description": "Madar (مدار) is a high-performance, AI-first fork of Ring Lite (Ring 1.27 Core). Engineered specifically for native tensor arithmetic, direct hardware execution of quantized LLMs, and high-productivity modern syntax extensions"
+      "description": "The agent skills, hooks and tools I carry to every host and every project. Claude Code drives; Codex and Gemini review via T3 Code. Built on tstack."
     },
     {
       "repository": "msandbu/locai-vram-lab",
@@ -514,34 +624,14 @@
       "description": "The Open-Source, Local-First AI IDE with Built-In GPU Inference (no separate runtime needed)"
     },
     {
-      "repository": "UmTioAii/ASTRO-Harness",
-      "url": "https://github.com/UmTioAii/ASTRO-Harness",
+      "repository": "contember/roj",
+      "url": "https://github.com/contember/roj",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 4,
+      "stars": 2,
       "updated": "2026-11-11",
-      "description": "Multi-agent coding harness for AI agents. Features deterministic model routing, append-only audit ledgers, cost governance, and durable handoffs. Built with Bun & TypeScript."
-    },
-    {
-      "repository": "pentoshi007/clai",
-      "url": "https://github.com/pentoshi007/clai",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 19,
-      "updated": "2026-11-11",
-      "description": "Free AI coding & pentesting agent for your terminal"
-    },
-    {
-      "repository": "Luissalet/PygmalionsHoard",
-      "url": "https://github.com/Luissalet/PygmalionsHoard",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-11",
-      "description": "A local studio to tune and extend language models: versioned datasets, LoRA and QLoRA training on the allowed GPUs, merges, GGUF conversion, importance-matrix quantization, YaRN context extension and evaluation against the base model. MCP tools for assistants."
+      "description": "TypeScript SDK for building multi-agent LLM applications — event-sourced runtime, plugin-based tools, React client"
     },
     {
       "repository": "miktam/local-first-ai",
@@ -574,34 +664,94 @@
       "description": "A local AI multitool that fine tunes expert models, delegates to them, and allows circular computing"
     },
     {
-      "repository": "OxCryptobot/-ETHER",
-      "url": "https://github.com/OxCryptobot/-ETHER",
+      "repository": "dovvnloading/Graphlink",
+      "url": "https://github.com/dovvnloading/Graphlink",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 7,
+      "stars": 36,
       "updated": "2026-11-12",
-      "description": "Core Identity @ETHER is a local-first super-agentic LLM system built on three pillars:  Modular Intelligence — 8 specialized gems with strongly-typed interfaces Verified Execution — Every code artifact is sandboxed, tested, and scored before the user sees it Controlled Evolution — The system can ext"
+      "description": "A local-first, graph-based AI workspace. Branch any conversation across a visual canvas instead of one scrolling thread, attach nodes that research the web, run Python, and chart results, then hand multi-step work to a budgeted, fully undoable agent. Works with local (Ollama, llama.cpp) and Cloud ho"
     },
     {
-      "repository": "aelaguiz/agent-approvals",
-      "url": "https://github.com/aelaguiz/agent-approvals",
+      "repository": "Ogard-Labs/octant",
+      "url": "https://github.com/Ogard-Labs/octant",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 1,
+      "updated": "2026-11-12",
+      "description": "Local-first macOS workspace for Chat, Work & Code across any AI provider — your server, your data."
+    },
+    {
+      "repository": "igoresik/schema-engine",
+      "url": "https://github.com/igoresik/schema-engine",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
       "updated": "2026-11-12",
-      "description": "AI agents ask a human for approval as Slack cards; button presses and thread replies are routed back into the agent's own session (Claude Code and Codex), resuming it if it closed."
+      "description": "Local-first, AI-assisted ETL pipeline compiler. Generates deterministic Pandas transformations from natural language and schema metadata."
     },
     {
-      "repository": "freesolo-co/flash",
-      "url": "https://github.com/freesolo-co/flash",
+      "repository": "nextain/naia-agent",
+      "url": "https://github.com/nextain/naia-agent",
       "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 2,
+      "stars": 1,
       "updated": "2026-11-12",
-      "description": "LoRA post-training for open-weight models: SFT, GRPO, and on-policy distillation. Describe a run in TOML; Flash allocates a GPU, trains, streams checkpoints, and serves the adapter."
+      "description": "AI coding agent runtime — loop, tools, compaction, memory, LLM routing. Pairs with naia-adk (workspace) and alpha-memory (storage)."
+    },
+    {
+      "repository": "Bazza1982/HASHI",
+      "url": "https://github.com/Bazza1982/HASHI",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 1,
+      "updated": "2026-11-12",
+      "description": "Local-first control plane for persistent AI agents—unifying identity, memory, tools, workflows, governance, and multi-channel access across HER v2, Claude Code, Codex, Gemini, and more."
+    },
+    {
+      "repository": "pabloestepaa/amr-research-agent",
+      "url": "https://github.com/pabloestepaa/amr-research-agent",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-12",
+      "description": "AMR research assistant: hybrid RAG (pgvector + Postgres full-text) over PubMed abstracts and a tool-calling agent that uses my amr-mcp server, with validated citations and evals in CI. Runs on free tiers (Render, Neon, Groq)."
+    },
+    {
+      "repository": "gim47656-ship-it/CUELO",
+      "url": "https://github.com/gim47656-ship-it/CUELO",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 4,
+      "updated": "2026-11-12",
+      "description": "CUELO — open-source AI coding agent workspace and harness for omp (oh-my-pi). Multi-agent orchestration, model routing, sessions, skills and worktrees."
+    },
+    {
+      "repository": "DrDustinEdwards/capsid",
+      "url": "https://github.com/DrDustinEdwards/capsid",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 1,
+      "updated": "2026-11-12",
+      "description": "MCP server and control plane for AI coding agents: signed work queue, scoped per-job credentials, claims checked against verified outcomes, audit log, and the Capsid Portal. Cloudflare Workers + D1."
+    },
+    {
+      "repository": "WillIsback/Syntheo",
+      "url": "https://github.com/WillIsback/Syntheo",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-12",
+      "description": "What's said in the room stays in the room. Even the AI. The open-source meeting notepad that runs on your own machine. Live transcription and clear write-ups, with the open-weight models of your infrastructure. No cloud, no audio kept (MIT)."
     },
     {
       "repository": "existential-birds/daydream",
@@ -614,14 +764,44 @@
       "description": "Agentic code-review CLI that records each review/fix/test run trajectory, building a corpus for fine-tuning open-weight models."
     },
     {
-      "repository": "pjmalandrino/llvq",
-      "url": "https://github.com/pjmalandrino/llvq",
+      "repository": "freesolo-co/flash",
+      "url": "https://github.com/freesolo-co/flash",
       "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 5,
+      "stars": 2,
       "updated": "2026-11-12",
-      "description": "Tetra : Leech lattice vector quantization for 2-bit LLM weights, in Rust, with a fused multi-shell CUDA decoder."
+      "description": "LoRA post-training for open-weight models: SFT, GRPO, and on-policy distillation. Describe a run in TOML; Flash allocates a GPU, trains, streams checkpoints, and serves the adapter."
+    },
+    {
+      "repository": "delirious6423/quant-fidelity-frontier",
+      "url": "https://github.com/delirious6423/quant-fidelity-frontier",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 1,
+      "updated": "2026-11-12",
+      "description": "Compare LLM quantization quality and size using source-linked publisher results. Explore KLD, perplexity, and benchmarks with clear testing limitations."
+    },
+    {
+      "repository": "ggfgfgf-on/ds4-fusion-engine",
+      "url": "https://github.com/ggfgfgf-on/ds4-fusion-engine",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 1,
+      "updated": "2026-11-12",
+      "description": "DwarfStar (ds4) fusion engine for DeepSeek-V4-Flash: Windows CUDA/CPU port, SSD streaming, WDDM band scheduler, speculative decoding, training/quantize tooling. Source + Windows binaries (0926 release)."
+    },
+    {
+      "repository": "JustinLungu/Mobile-LLM-Finetuning-Benchmarks",
+      "url": "https://github.com/JustinLungu/Mobile-LLM-Finetuning-Benchmarks",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-12",
+      "description": "Fine-tuning and benchmarking small LLMs (2–4B) for private on-device reasoning on iPhone and Android, including judgment quality, memory usage, latency, throughput and 4-bit quantization with llama.cpp. Built for Wilo, an AI accountability companion."
     },
     {
       "repository": "jj-link/local-model-works",
@@ -654,24 +834,24 @@
       "description": "Local-first macOS menubar AI cockpit & dual-role MCP multiplexer. Connects local OpenAI-compatible inference runtimes and agent harnesses to your Obsidian vault knowledge graph for sovereign memory. Real-time text telemetry, connection graph visualization, zero-config tool routing, and local RAG sea"
     },
     {
-      "repository": "yousefebrahimi0/Offline-AI-File-Organizer",
-      "url": "https://github.com/yousefebrahimi0/Offline-AI-File-Organizer",
+      "repository": "jdmunta/ai-agentmanager-core",
+      "url": "https://github.com/jdmunta/ai-agentmanager-core",
       "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 21,
-      "updated": "2026-11-15",
-      "description": "Automatically rename and organize your documents using AI that runs entirely on your machine. No cloud uploads, no privacy concerns, just intelligent file management powered by local LLMs."
+      "stars": 1,
+      "updated": "2026-11-14",
+      "description": "Run and track background coding agents (Claude Code, Codex, Antigravity), one per intent, from a web UI, your phone or the CLI"
     },
     {
-      "repository": "davidtaylor6130/InferDeck",
-      "url": "https://github.com/davidtaylor6130/InferDeck",
+      "repository": "timokoethe/CoreAIChat",
+      "url": "https://github.com/timokoethe/CoreAIChat",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 5,
+      "stars": 1,
       "updated": "2026-11-15",
-      "description": "App to handle one GPU to multiple models/element with queuing and log tracking all with a local hosted web dashboard"
+      "description": "Minimal macOS SwiftUI demo for running local language models with Apple Core AI and Foundation Models."
     },
     {
       "repository": "hrabanazviking/RuneForgeAI-HugrGate",
@@ -684,24 +864,14 @@
       "description": "HugrGate is an open-source, local-first decision runtime that adds probabilistic AI judgment to ordinary program logic. It can use rules, classifiers, local models, or optional remote backends without locking software to one vendor, model, or inference method."
     },
     {
-      "repository": "JoahanMorales/upiixia-agentic-kit",
-      "url": "https://github.com/JoahanMorales/upiixia-agentic-kit",
-      "license": "MIT",
+      "repository": "sivamatic/Keel",
+      "url": "https://github.com/sivamatic/Keel",
+      "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 21,
+      "stars": 0,
       "updated": "2026-11-15",
-      "description": "Multi-agent coordination kit for Claude Code, Codex, Cursor & Gemini CLI: parallel AI agents with claims, leases, bounded loops, reviews and merges over Git."
-    },
-    {
-      "repository": "VirajSawad1021/Zyven",
-      "url": "https://github.com/VirajSawad1021/Zyven",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 5,
-      "updated": "2026-11-15",
-      "description": "An agent that compiles open-source libraries into verified MCP tools on demand, and keeps only the ones that pass a locked-down sandbox. Open-weight models only."
+      "description": "Open-weight decision model for AI agents. Keel-Pro: 62.73 on the Decision Index public suite. Apache-2.0."
     },
     {
       "repository": "Joakimpalm-Zen/xyntetik-runner",
@@ -744,14 +914,14 @@
       "description": "Self-hosted agent platform with inference routing across local and cloud hardware, multi-model benchmarking, NVIDIA Openshell sandboxing and STAMP'ed policy-governed agent runs. "
     },
     {
-      "repository": "mattiamalonni/chat-for-opencode",
-      "url": "https://github.com/mattiamalonni/chat-for-opencode",
+      "repository": "CraigHutchinson/Sub0LlmModelRegistry",
+      "url": "https://github.com/CraigHutchinson/Sub0LlmModelRegistry",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
       "updated": "2026-11-16",
-      "description": "Unofficial Copilot-style chat for the OpenCode coding agent in VS Code (client for opencode serve)"
+      "description": "A versioned, manifest-described folder of LLM weights, with GGUF facts and provider plugins for fetching models"
     },
     {
       "repository": "raytone-lab/awesome-local-inference-recipes",
@@ -762,16 +932,6 @@
       "stars": 4,
       "updated": "2026-11-16",
       "description": "Sourced tok/s for running AI models locally: model × engine × hardware (Mac, RTX, DGX Spark, AMD), budgets up to $30k. 400+ recipes, each linked to its source with a trust level. EN / 中文 / 日本語"
-    },
-    {
-      "repository": "kritsong/thai_snake_classification",
-      "url": "https://github.com/kritsong/thai_snake_classification",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-16",
-      "description": "A comprehensive deep learning project for classifying Thai snake species. Features a Swin Transformer model fine-tuned on local datasets, a Flask inference server, and a Gradio web app with Explainable AI (Grad-CAM) visualization to highlight identifying features."
     },
     {
       "repository": "1bit-MONSTER/engine",
@@ -804,14 +964,14 @@
       "description": "Offline-first local AI readiness CLI: hardware profile, model-fit estimates, loopback Ollama/llama.cpp diagnostics, honest benchmarks and an independent audit report (HTML/MD/JSON). 25 portable agent skills. Zero dependencies."
     },
     {
-      "repository": "anthony-firn/evolve-llm-manifests",
-      "url": "https://github.com/anthony-firn/evolve-llm-manifests",
+      "repository": "mrAndreyIsachenko/tenet-lab",
+      "url": "https://github.com/mrAndreyIsachenko/tenet-lab",
       "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 0,
+      "stars": 1,
       "updated": "2026-11-18",
-      "description": "SHA-256 hashes of every 256 KiB chunk of open-weight GGUF models, for Evolve LLM peer-to-peer sharing"
+      "description": "Tenet Lab (Small Model Lab & Tenet family): end-to-end LLM systems & applied research lab — Transformer pretraining, Lancet subspace surgery, Unslop GRPO, and FP8 survival."
     },
     {
       "repository": "humedini/z13-strix-halo-llm",
@@ -834,24 +994,24 @@
       "description": "Training and inference on one timeline: an open, Prometheus-native local dashboard for running and fine-tuning AI models on an Apple Silicon Mac or Linux with NVIDIA GPUs."
     },
     {
-      "repository": "JosephOIbrahim/Synapse",
-      "url": "https://github.com/JosephOIbrahim/Synapse",
+      "repository": "bibeksarkar001/Datexia-Lurnex-LMS",
+      "url": "https://github.com/bibeksarkar001/Datexia-Lurnex-LMS",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 12,
-      "updated": "2026-11-19",
-      "description": "SYNAPSE is an AI assistant that runs inside Houdini 22. Connect a local or cloud model, describe the task in plain words, and SYNAPSE builds real nodes you can inspect and edit. It acts without asking first, and the default worker refuses more than it allows — start in a scratch scene."
+      "stars": 1,
+      "updated": "2026-11-18",
+      "description": "Free, open-source tracker for a 26-month self-taught AI engineering roadmap: local LLMs, CUDA, fine-tuning, RAG and agents. Guest mode + optional Google sync."
     },
     {
-      "repository": "oceanix-pr/Memozia",
-      "url": "https://github.com/oceanix-pr/Memozia",
+      "repository": "amoree-code/ocean",
+      "url": "https://github.com/amoree-code/ocean",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 2,
+      "stars": 3,
       "updated": "2026-11-19",
-      "description": "Local-first macOS meeting assistant: recording, transcription, speaker diarization, AI summaries, action items, and visual notes."
+      "description": "Ocean: shared memory, tasks and context for every AI coding agent (Claude Code, Codex, Gemini CLI, Cursor, OpenCode). Local-first, MCP-native."
     },
     {
       "repository": "roabraham/ashley",
@@ -864,26 +1024,6 @@
       "description": "Ashley is an all-in-one, single-click local AI assistant. It bundles an llama.cpp LLM inference engine, a Symfony/PHP web chatbot interface, a CEF-based web client (PHP Desktop), and a service manager (written in Free Pascal) into one package - no Internet connection or cloud API key required at run"
     },
     {
-      "repository": "santanu20/blazar",
-      "url": "https://github.com/santanu20/blazar",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 1,
-      "updated": "2026-11-19",
-      "description": "A multi-engine and multimodal local inference platform. One gateway routes GGUF, safetensors, quantized, and MLX models to the right engine lane (llama.cpp, mistral.rs, SGLang, MLX-lm, sd.cpp and whisper) and serves them through OpenAI- and ollama-compatible APIs, with durable jobs, federation, spee"
-    },
-    {
-      "repository": "openvinotoolkit/nncf",
-      "url": "https://github.com/openvinotoolkit/nncf",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 1221,
-      "updated": "2026-11-19",
-      "description": "Neural Network Compression Framework for enhanced OpenVINO™ inference"
-    },
-    {
       "repository": "NVIDIA/ccluster",
       "url": "https://github.com/NVIDIA/ccluster",
       "license": "Apache-2.0",
@@ -894,44 +1034,14 @@
       "description": "CCluster is an efficiency-focused, Kubernetes-native platform for managing the end-to-end AI lifecycle across distributed, multi-cloud GPU infrastructure"
     },
     {
-      "repository": "rick-learns/triagewright",
-      "url": "https://github.com/rick-learns/triagewright",
+      "repository": "10xGraph/10xGraph",
+      "url": "https://github.com/10xGraph/10xGraph",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 0,
+      "stars": 31,
       "updated": "2026-11-20",
-      "description": "Local-first AI customer-support resolution agent: triage, MCP tools, RAG, guardrails, evals."
-    },
-    {
-      "repository": "bjcoombs/ai-native-toolkit",
-      "url": "https://github.com/bjcoombs/ai-native-toolkit",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 34,
-      "updated": "2026-11-20",
-      "description": "Claude Code plugin & Agent Skills for AI-native development: codebase readiness scoring (/assess), Six Thinking Hats deliberation (/huddle), AI-slop removal (/deslop), skill hardening (/skill-forge), and more."
-    },
-    {
-      "repository": "94sh09sh19sh/acceptance-trail",
-      "url": "https://github.com/94sh09sh19sh/acceptance-trail",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-20",
-      "description": "Acceptance Trail for Jira: human-approved work orders, per-criterion evidence from AI coding agents, and a traceability matrix. Atlassian Forge app."
-    },
-    {
-      "repository": "venkymullapudi/HybridEdgeIntelligence",
-      "url": "https://github.com/venkymullapudi/HybridEdgeIntelligence",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-20",
-      "description": "HEI - An open weight model sitting at the edge, only going to LLMs(Claude/CodeX/others) based on a confidence gate of the answer. Saves 70% tokens"
+      "description": "Open-source, self-hosted infrastructure for AI applications. You write the agents, tools and tasks; 10xGraph runs them behind an API server with auth, role-based access, tenant isolation, durable state in Postgres and Redis, background jobs, metrics and tracing, and generates Docker and Kubernetes f"
     },
     {
       "repository": "pplmx/orbix",
@@ -964,26 +1074,6 @@
       "description": "CloudPilot — 100% On-Mac Local-Planned, Local-Executed macOS AI Agent (Apple MLX LoRA Fine-Tuned Executor + Native SwiftUI App)"
     },
     {
-      "repository": "Akxan/zhifox-agent-harness",
-      "url": "https://github.com/Akxan/zhifox-agent-harness",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 1,
-      "updated": "2026-11-21",
-      "description": "ZhiFox (智狐): a hand-written AI agent harness in plain Python, no frameworks. A local-first personal assistant with terminal and web UI for Claude, GPT, Gemini and DeepSeek: tools with permission prompts, MCP, Skills, subagents, scheduled tasks, Telegram/Discord/Slack bots, browser and computer use. "
-    },
-    {
-      "repository": "NickMonrad/kernel-ai-assistant",
-      "url": "https://github.com/NickMonrad/kernel-ai-assistant",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 38,
-      "updated": "2026-11-21",
-      "description": "Jandal AI — Local-first Android AI assistant with on-device LLM inference, semantic memory, and extensible skill framework"
-    },
-    {
       "repository": "Mesutcydev/ondevice-core",
       "url": "https://github.com/Mesutcydev/ondevice-core",
       "license": "MIT",
@@ -994,64 +1084,34 @@
       "description": "OnDevice Core — local-first AI studio for iPhone: native Edge0 MoE runtime (35B), MLX, llama.cpp, whisper.cpp. No account, no telemetry, no cloud inference by default."
     },
     {
-      "repository": "shoaibyazdani/leo-agent",
-      "url": "https://github.com/shoaibyazdani/leo-agent",
+      "repository": "rxmna8502/vybe-intelligence-vault",
+      "url": "https://github.com/rxmna8502/vybe-intelligence-vault",
       "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 23,
+      "updated": "2026-11-21",
+      "description": "An auto-updating open-source vault for AI agents, RAG systems, MCP servers, prompts, tools, templates, and next-generation web development."
+    },
+    {
+      "repository": "hookdeck/webhook-skills",
+      "url": "https://github.com/hookdeck/webhook-skills",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 103,
+      "updated": "2026-11-21",
+      "description": "Webhook integration skills for AI coding agents (Claude Code, Cursor, Copilot). Step-by-step guidance for setting up webhook receivers, signature verification, and event handling for Stripe, Shopify, GitHub, and more. Built on the Agent Skills specification."
+    },
+    {
+      "repository": "bwanyu1/diffusion-jev-qwen3-vl",
+      "url": "https://github.com/bwanyu1/diffusion-jev-qwen3-vl",
+      "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
       "updated": "2026-11-21",
-      "description": "LEO — a modular, provider-independent autonomous agent platform: durable tasks, layered memory, specialist agents, native tools and skills, approvals with audit, CLI/API/dashboard, and a local-first security model."
-    },
-    {
-      "repository": "0xWhiteMage/tameru-compaction-system",
-      "url": "https://github.com/0xWhiteMage/tameru-compaction-system",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 6,
-      "updated": "2026-11-21",
-      "description": "Harness-agnostic context compaction for long-running AI agents. Deterministic, query-aware, fail-open: shortens bulky tool output, keeps every error, originals recoverable. Zero-LLM Python engine, CLI and plugins for agent harnesses."
-    },
-    {
-      "repository": "cramt/m365-copilot-proxy",
-      "url": "https://github.com/cramt/m365-copilot-proxy",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 185,
-      "updated": "2026-11-21",
-      "description": "OpenAI-compatible proxy for Microsoft 365 Copilot — use the Copilot licence you already have as a backend for pi, openclaw and other coding agents. Prompt-emulated tool calling, no extra licence, no MCP."
-    },
-    {
-      "repository": "aliyun/cachefs",
-      "url": "https://github.com/aliyun/cachefs",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 9,
-      "updated": "2026-11-21",
-      "description": "Decentralized, read-only, distributed cache filesystem for LLM model weights loading."
-    },
-    {
-      "repository": "Pi-Mathematical-Reasoning/pi",
-      "url": "https://github.com/Pi-Mathematical-Reasoning/pi",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-21",
-      "description": "Local-first mathematical reasoning: proofs from an open-weight model, checked by Lean 4."
-    },
-    {
-      "repository": "AuremHQ/weight-space-programming",
-      "url": "https://github.com/AuremHQ/weight-space-programming",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 19,
-      "updated": "2026-11-21",
-      "description": "wsp-kit by Aurem — an engineering tool for small models. Try to fix small open-weight models by editing weights directly, no retraining. An eval gate decides."
+      "description": "Diffusion-Jev: Qwen3-VL-4B converted into a discrete diffusion language model that answers typed decisions (choice / yes-no / score) as fill-in-the-blank JSON in one parallel pass, with probabilities. LoRA weights + local inference. 拡散言語モデル・構造化出力"
     },
     {
       "repository": "aisathome/aisathome",
@@ -1062,26 +1122,6 @@
       "stars": 3,
       "updated": "2026-11-21",
       "description": "Open-weight AI on volunteers' GPUs: a gateway and a node that serve open models (Qwen) through an OpenAI-compatible API and chat, plus volunteer science (Lean proofs). Non-commercial, Apache-2.0."
-    },
-    {
-      "repository": "KarpelesLab/oxinfer",
-      "url": "https://github.com/KarpelesLab/oxinfer",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 1,
-      "updated": "2026-11-21",
-      "description": "Pure-Rust local inference for language, vision, image, speech and embedding models from Hugging Face (safetensors, GGUF, MLX). SIMD CPU kernels everywhere, Metal, CUDA and Vulkan GPUs, a WebAssembly + WebGPU browser build, and an OpenAI-compatible server."
-    },
-    {
-      "repository": "mxxm-t/llmx",
-      "url": "https://github.com/mxxm-t/llmx",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 5,
-      "updated": "2026-11-21",
-      "description": "Dependency-free C++ LLM inference runtime written from scratch: CPU, Vulkan, ROCm and CUDA backends, GGUF and safetensors models, layer and tensor split across GPUs, and an OpenAI-compatible multi-user server."
     },
     {
       "repository": "B0yko/local-enough",
@@ -1104,16 +1144,6 @@
       "description": "Media monitoring for any brand: competitor coverage gaps, headline sentiment, and a fine-tuned local LLM that writes a fact-checked weekly brief."
     },
     {
-      "repository": "rullopat/bazilion",
-      "url": "https://github.com/rullopat/bazilion",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-22",
-      "description": "Your own team of AI agents, running on your machine: a local-first multi-agent runtime with Teams, shared memory, agent-to-agent messaging and schedules, driven from a web UI, a CLI or Telegram. Works with ChatGPT, Claude, Gemini or local models."
-    },
-    {
       "repository": "noumena-labs/Sipp",
       "url": "https://github.com/noumena-labs/Sipp",
       "license": "Apache-2.0",
@@ -1124,64 +1154,14 @@
       "description": "AI inference, packed simply. A blazing-fast, zero-dependency WebGPU runtime to run GGUF models directly in the browser. Features a symmetric API for seamless local execution and cloud provider routing. Built with Rust & C++."
     },
     {
-      "repository": "aletheics/opencontinue",
-      "url": "https://github.com/aletheics/opencontinue",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-22",
-      "description": "Open-source terminal coding agent with durable sessions, tools, and source-controlled checks."
-    },
-    {
-      "repository": "meiiie/wiii",
-      "url": "https://github.com/meiiie/wiii",
+      "repository": "david-xinyuwei/david-share",
+      "url": "https://github.com/david-xinyuwei/david-share",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 6,
+      "stars": 450,
       "updated": "2026-11-22",
-      "description": "Wiii is an open-source durable AI workbench for conversations, local and cloud agents, files, tools, memory, artifacts, and permission-aware integrations."
-    },
-    {
-      "repository": "mutaiib/licence-to-kyb",
-      "url": "https://github.com/mutaiib/licence-to-kyb",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-22",
-      "description": "Upload a UAE trade licence, get a checked, pre-filled KYB onboarding form. A LangGraph workflow with one bounded agent, evidence-based confidence, human review, evals, and any model (Claude or a local open-weight model)."
-    },
-    {
-      "repository": "CarsonBradley/quantized-edit",
-      "url": "https://github.com/CarsonBradley/quantized-edit",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-22",
-      "description": "Applying a rank-1 weight edit to an already-quantized 3–4-bit model pack: bit-exact codecs, direction-aware rounding, a runtime-projection engine patch, eval harness and an OpenAI-compatible shim."
-    },
-    {
-      "repository": "erlic-AI/altun",
-      "url": "https://github.com/erlic-AI/altun",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-22",
-      "description": "ALTUN a compact math & theoretical-CS language model trained from scratch by erlic AI. Training, evaluation and inference code. Weights on Hugging Face."
-    },
-    {
-      "repository": "profullstack/langchain-c0mpute",
-      "url": "https://github.com/profullstack/langchain-c0mpute",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-22",
-      "description": "LangChain.js chat model for c0mpute: open-weight models on a p2p compute network"
+      "description": "AI Agents & Deep Learning: code, benchmarks and explainers. Building and operating agents on Microsoft Foundry and Azure; fine-tuning, inference optimization, precision and GPU benchmarks on NVIDIA and AMD; multimodal models."
     },
     {
       "repository": "dinhgia2106/vi-restore-llm",
@@ -1192,16 +1172,6 @@
       "stars": 0,
       "updated": "2026-11-22",
       "description": "Can a small LLM beat a purpose-built model at restoring Vietnamese diacritics fast enough to run inside a keyboard? LoRA fine-tuning, eval harness, GGUF on-device serving."
-    },
-    {
-      "repository": "poisonxa16/pxa",
-      "url": "https://github.com/poisonxa16/pxa",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 127,
-      "updated": "2026-11-22",
-      "description": "The set-and-forget LLM engine for Pascal and Volta: PXQ codec + kernels, auto-tuned per card. Ready-to-run PXQ models in MODELS.md; benchmarks vs llama.cpp in the README."
     },
     {
       "repository": "mcRthor/epyc-amd-intelarc-llm",
@@ -1254,24 +1224,74 @@
       "description": "Local hardware provides $0/hour unlimited prototyping, zero latency, and private data security. Cloud compute offers raw throughput for full fine-tuning runs. By combining Unified Memory local nodes with on-demand cloud GPUs, developers can build, instruct, and fine-tune Large Language Models (LLMs)"
     },
     {
-      "repository": "AprilB3V/CharacterLife",
-      "url": "https://github.com/AprilB3V/CharacterLife",
+      "repository": "MohammadAnas-07/MantleAI",
+      "url": "https://github.com/MohammadAnas-07/MantleAI",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-23",
+      "description": "Mantle is a local, open-source workspace for building software with several LLMs"
+    },
+    {
+      "repository": "Happenmass/acpm-desktop",
+      "url": "https://github.com/Happenmass/acpm-desktop",
       "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 1,
+      "stars": 0,
       "updated": "2026-11-23",
-      "description": "A mind kernel for AI characters that live on their own, remember what happened, and keep receipts. Any OpenAI-compatible model, local Ollama, zero runtime dependencies."
+      "description": "Desktop local AI model management & inference runtime (AcpmRuntime) for macOS Apple Silicon (MLX) with OpenAI-compatible HTTP/SSE gateway, ASR/TTS/VAD, and native menu bar console."
     },
     {
-      "repository": "Casp1an-hush/prompt-assistant",
-      "url": "https://github.com/Casp1an-hush/prompt-assistant",
+      "repository": "foxhackerzdevs/stverify",
+      "url": "https://github.com/foxhackerzdevs/stverify",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 1,
       "updated": "2026-11-23",
-      "description": "Local AI prompt workspace for video & image models — DeepSeek rewriting, SSE streaming, scene inference, script breakdown into character / scene / prop plates, trilingual UI, and a no-key demo mode · 本地 AI 提示词工作台：DeepSeek 改写、SSE 流式、戏份推断、剧本拆解为人物/场景/道具资产卡、简繁英三语界面，免 key 也能完整体验"
+      "description": "Zero-bloat cryptographic signer and verifier for safetensors model weights"
+    },
+    {
+      "repository": "s0nakh/linguasqueeze",
+      "url": "https://github.com/s0nakh/linguasqueeze",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-23",
+      "description": "Compress for your language, not just for your hardware. Language-aware quantization for multilingual MoE LLMs — first proof: Kazakh 🇰🇿 and Russian 🇷🇺."
+    },
+    {
+      "repository": "TraX22/HydraOps",
+      "url": "https://github.com/TraX22/HydraOps",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 3,
+      "updated": "2026-11-24",
+      "description": "Self-hosted multi-agent AI: a desktop app and headless server where agents with their own personality, tools and memory research, code and create, with API or local LLMs (Ollama, llama.cpp), MCP servers and approval before anything risky."
+    },
+    {
+      "repository": "jpbraga/open_field",
+      "url": "https://github.com/jpbraga/open_field",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-24",
+      "description": "Local AI services, one open field: image (Qwen Image, FLUX.2), video with sound, sound effects and local LLMs behind one daemon, with GPU slots and memory checks, a web UI, a REST API and an MCP server."
+    },
+    {
+      "repository": "off-grid-ai/OGAM",
+      "url": "https://github.com/off-grid-ai/OGAM",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 3556,
+      "updated": "2026-11-24",
+      "description": "The Swiss Army Knife of Offline AI. Chat, see, speak, and generate images on your phone or Mac — GGUF LLMs, vision, Whisper speech-to-text, Stable Diffusion, tool calling, and local-network servers. Runs on your CPU, GPU, or NPU. No account, no API key, zero data leaves your device."
     },
     {
       "repository": "unslothai/unsloth",
@@ -1279,9 +1299,39 @@
       "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 80035,
-      "updated": "2026-11-23",
+      "stars": 80137,
+      "updated": "2026-11-24",
       "description": "Local UI to run and train LLMs and diffusion models. Supports GGUF, MLX, Qwen3.8, DeepSeek-V4.1, MiniMax-H3, Gemma 4, FLUX and more."
+    },
+    {
+      "repository": "tomasz-tomczyk/crit",
+      "url": "https://github.com/tomasz-tomczyk/crit",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 1355,
+      "updated": "2026-11-24",
+      "description": "Review AI coding agents' plans, diffs and running apps in the browser. Local-first, works with any agent."
+    },
+    {
+      "repository": "Minhaj401/localhostai",
+      "url": "https://github.com/Minhaj401/localhostai",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 1,
+      "updated": "2026-11-24",
+      "description": "localhost.ai: private local AI across your laptop and Android phone, with a Rust TUI, Flutter app, and memory-aware llama.cpp RPC."
+    },
+    {
+      "repository": "artheras/aria-code",
+      "url": "https://github.com/artheras/aria-code",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 7,
+      "updated": "2026-11-24",
+      "description": "Local-first AI coding & quant agent in your terminal — 100% offline via Ollama or 19+ cloud LLMs, MCP-native, with live market data and strict approval gates."
     },
     {
       "repository": "metadist/synaplan",
@@ -1289,249 +1339,139 @@
       "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 1136,
-      "updated": "2026-11-23",
+      "stars": 1207,
+      "updated": "2026-11-24",
       "description": "Own the flow: one open-source AI platform for your knowledge, models and channels – web, WhatsApp, email, Outlook, Nextcloud & ownCloud. Local and cloud models side by side, with the cost on every answer."
     },
     {
-      "repository": "Javis603/token-monitor",
-      "url": "https://github.com/Javis603/token-monitor",
+      "repository": "twinnydotdev/twinny",
+      "url": "https://github.com/twinnydotdev/twinny",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 3826,
-      "updated": "2026-11-23",
-      "description": "Local-first desktop widget for tracking token usage, costs, limits, and session activity across 56+ AI coding tools—including Claude Code, Codex, Cursor, OpenCode, OpenClaw, and more—with multi-device sync."
+      "stars": 3708,
+      "updated": "2026-11-24",
+      "description": "Open-source AI coding assistant for VS Code. Coding agent, code completion, chat, edits and reviews with local or hosted models. Your models, your infrastructure."
     },
     {
-      "repository": "in100tiva/KeyHybrid",
-      "url": "https://github.com/in100tiva/KeyHybrid",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 3,
-      "updated": "2026-11-23",
-      "description": "Zero-knowledge vault + local OpenAI-compatible gateway for AI provider keys (Go, Rust, Tauri)."
-    },
-    {
-      "repository": "wansui976/CoursePilot",
-      "url": "https://github.com/wansui976/CoursePilot",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 70,
-      "updated": "2026-11-23",
-      "description": "开源、本地优先的 AI 网课学习工作台：字幕、笔记、脑图、课件 OCR、带出处问答与间隔复习 | Local-first AI study workbench for video courses"
-    },
-    {
-      "repository": "JiangNanGenius/floe-agent",
-      "url": "https://github.com/JiangNanGenius/floe-agent",
-      "license": "MPL-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 472,
-      "updated": "2026-11-23",
-      "description": "Open-source AI Agent for iOS, iPadOS and Android, designed primarily for iPadOS. On-device Linux, 3D/CAD, Notes, Office, Canvas, Python/Node.js, terminal, Git, voice and Skill Hub. BYOK AI; supported local models and native 3D editing on iOS. 开源设备端 AI 工作台，以 iPadOS 体验为核心。"
-    },
-    {
-      "repository": "terry2010/awesome-skill-market",
-      "url": "https://github.com/terry2010/awesome-skill-market",
+      "repository": "SOLRICKS/solricks-gpu-runtime",
+      "url": "https://github.com/SOLRICKS/solricks-gpu-runtime",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
-      "updated": "2026-11-23",
-      "description": "Local-first skill manager: merge conflicting agent skills into one arbitrated SKILL.md, plus skill audit and skill security (injection checks, capability stripping, version pinning) for Claude Code, Codex, OpenCode, Pi, Devin. Anti-AI-slop design ruleset inside."
+      "updated": "2026-11-24",
+      "description": "GPU runtime diagnostics, compatibility testing, and inference optimization tools for local AI systems."
     },
     {
-      "repository": "jameskingsley/voice-ops-agent",
-      "url": "https://github.com/jameskingsley/voice-ops-agent",
+      "repository": "gptme/gptme",
+      "url": "https://github.com/gptme/gptme",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 4493,
+      "updated": "2026-11-24",
+      "description": "Your agent in your terminal, equipped with local tools: writes code, uses the terminal, browses the web. Make your own persistent autonomous agent on top!"
+    },
+    {
+      "repository": "bytedance/deer-flow",
+      "url": "https://github.com/bytedance/deer-flow",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 85741,
+      "updated": "2026-11-24",
+      "description": "An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of tasks that could take minutes to hours."
+    },
+    {
+      "repository": "TanStack/ai",
+      "url": "https://github.com/TanStack/ai",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 3384,
+      "updated": "2026-11-24",
+      "description": "🤖 Type-safe, provider-agnostic TypeScript AI SDK for streaming chat, tool calling, agents, and multimodal apps across OpenAI, Anthropic, Gemini, React, Vue, Svelte, and Solid."
+    },
+    {
+      "repository": "Shayidinadapa/loading-screen-gold-01",
+      "url": "https://github.com/Shayidinadapa/loading-screen-gold-01",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
-      "updated": "2026-11-23",
-      "description": "Real-time voice-enabled AI operations assistant with speech-to-text, tool-calling LLM reasoning, text-to-speech synthesis, and latency/cost telemetry."
+      "updated": "2026-11-24",
+      "description": "Loading Screen Gold: a one-line loading-screen tip for stressed developers and AI coding agents (make.fun bounty entry)"
     },
     {
-      "repository": "revendrat/lilavati",
-      "url": "https://github.com/revendrat/lilavati",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 1,
-      "updated": "2026-11-23",
-      "description": "Finance calculations AI agents can check: deterministic, reference-tested engines served as MCP tools, with an open benchmark (alpha)"
-    },
-    {
-      "repository": "venymlabs/uncensoredllm-connect",
-      "url": "https://github.com/venymlabs/uncensoredllm-connect",
+      "repository": "pamu512/hackurmom-howto",
+      "url": "https://github.com/pamu512/hackurmom-howto",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
-      "updated": "2026-11-23",
-      "description": "Finds the AI agent tools on your computer and sets each one up to use UncensoredLLM. One command, every change shown first, undoable."
+      "updated": "2026-11-24",
+      "description": "Master AI coding agents in a weekend — Claude Code, Gemini CLI, Antigravity, Copilot, GLM and Qwen in one visual, example-driven guide with copy-paste templates. Built for the #hackurmom workshop."
     },
     {
-      "repository": "AltimateAI/altimate-code",
-      "url": "https://github.com/AltimateAI/altimate-code",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 822,
-      "updated": "2026-11-23",
-      "description": "Open-source agentic data engineering harness for dbt, SQL, and cloud warehouses. 100+ tools, 10 warehouses, AI-powered."
-    },
-    {
-      "repository": "BubblingLei/RSChangeAgent",
-      "url": "https://github.com/BubblingLei/RSChangeAgent",
+      "repository": "menahemelbaz/Precheck",
+      "url": "https://github.com/menahemelbaz/Precheck",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
-      "updated": "2026-11-23",
-      "description": "LLM-driven multi-tool agent for remote-sensing change detection — a ReAct agent autonomously selecting among 6 change-detection algorithms."
+      "updated": "2026-11-24",
+      "description": "Catches AI coding agents before they act on wrong assumptions"
     },
     {
-      "repository": "swarmauri/swarmauri-sdk",
-      "url": "https://github.com/swarmauri/swarmauri-sdk",
-      "license": "Apache-2.0",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 106,
-      "updated": "2026-11-23",
-      "description": "Modular Python SDK and monorepo for AI agents, LLM integrations, tools, parsers, embeddings, vector stores, and extensible application workflows."
-    },
-    {
-      "repository": "abacusai/abacusai-bot",
-      "url": "https://github.com/abacusai/abacusai-bot",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 616,
-      "updated": "2026-11-23",
-      "description": "100% free, open-source personal agents for your messaging apps, tools, and services"
-    },
-    {
-      "repository": "sharma5pac/DARK-GPT-CLI-",
-      "url": "https://github.com/sharma5pac/DARK-GPT-CLI-",
+      "repository": "dian566/loading-screen-gold",
+      "url": "https://github.com/dian566/loading-screen-gold",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
-      "updated": "2026-11-23",
-      "description": "DarkGPT CLI/TUI — terminal AI agent for coding + authorized security research. Native tools, MCP, browser automation, self-learning, HackSkills, target graph/evidence/reporting."
+      "updated": "2026-11-24",
+      "description": "Loading-screen tip for stressed developers and AI coding agents — make.fun bounty entry"
     },
     {
-      "repository": "schuay/aisan",
-      "url": "https://github.com/schuay/aisan",
+      "repository": "ayush488-glitch/genesis-kit",
+      "url": "https://github.com/ayush488-glitch/genesis-kit",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 2,
-      "updated": "2026-11-23",
-      "description": "Coding agent sandbox. Everything in the box: zero network, zero credentials. Bubblewrap confinement plus credential-injecting egress proxies for Claude Code, Codex, and opencode."
+      "stars": 165,
+      "updated": "2026-11-24",
+      "description": "Turn any empty repo into a loop-ready repo: a portable per-project spine + anti-slop build loops for AI coding agents."
     },
     {
-      "repository": "career-ops-hq/career-ops",
-      "url": "https://github.com/career-ops-hq/career-ops",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 84313,
-      "updated": "2026-11-23",
-      "description": "Open-source AI job search agent and job finder: scan job boards, score each job 1-5 against your CV before you apply, tailor an ATS-friendly resume and cover letter, get interview prep and an application tracker. It helps you fill in each application; you press Submit. Runs locally in Codex, OpenCod"
-    },
-    {
-      "repository": "jpsanders/ruru-review",
-      "url": "https://github.com/jpsanders/ruru-review",
+      "repository": "Mikehutu/agent-lockdown",
+      "url": "https://github.com/Mikehutu/agent-lockdown",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
-      "updated": "2026-11-23",
-      "description": "A pull request reviewer for code written by AI agents: fail first, mutants on the diff, and a tamper audit of the tests. No model calls."
+      "updated": "2026-11-24",
+      "description": "Read-only security audit and 1-click global dotenv secret lock for all your AI coding agents (Claude, Antigravity, Cursor, Codex, Hermes, Pi, OpenCode, Copilot, Grok)."
     },
     {
-      "repository": "feronline/fl-studio-maestro",
-      "url": "https://github.com/feronline/fl-studio-maestro",
+      "repository": "Erwinsays12/makefun-loading-screen-gold",
+      "url": "https://github.com/Erwinsays12/makefun-loading-screen-gold",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
-      "updated": "2026-11-23",
-      "description": "🎵 AI music generator for Claude Code: describe a track, get a mixed & mastered MP3 + MIDI. Multi-agent composer, music-theory critic, auto mix & mastering, game music loops. Optional live FL Studio control via MCP."
+      "updated": "2026-11-24",
+      "description": "Loading Screen Gold: one sharp, funny loading-screen tip for stressed developers and AI coding agents (make.fun entry)"
     },
     {
-      "repository": "itsprem404/rulebook-for-ai",
-      "url": "https://github.com/itsprem404/rulebook-for-ai",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 1,
-      "updated": "2026-11-23",
-      "description": "Universal engineering standards for AI coding agents: stops sycophancy, debates architecture, prevents wheel-reinvention, and cleans zombie scrap."
-    },
-    {
-      "repository": "otipi-il/otipi-mcp",
-      "url": "https://github.com/otipi-il/otipi-mcp",
+      "repository": "Mbitajeff/claude-code-governance-kit",
+      "url": "https://github.com/Mbitajeff/claude-code-governance-kit",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
-      "updated": "2026-11-23",
-      "description": "MCP server for Otipi: send and verify SMS, email and OTP codes in Israel from Claude, Cursor and other AI agents. Remote at https://otipi.co.il/mcp or npx otipi-mcp."
-    },
-    {
-      "repository": "Orkas-AI/Orkas",
-      "url": "https://github.com/Orkas-AI/Orkas",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 9552,
-      "updated": "2026-11-23",
-      "description": "Orkas is an open-source (MIT), local-first AI team for your desktop: a Commander turns your goal into to-dos and coordinates 16 built-in specialist agents plus Claude Code, Codex, OpenCode, OpenClaw and Hermes, with projects, scheduled automations and connectors. Free app for macOS & Windows; built-"
-    },
-    {
-      "repository": "SpaceCoder-Kafka/codex-co2",
-      "url": "https://github.com/SpaceCoder-Kafka/codex-co2",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 40,
-      "updated": "2026-11-23",
-      "description": "Multiplayer for OpenAI Codex Desktop — share a live Codex conversation so teammates can chat with the same AI coding agent from a browser."
-    },
-    {
-      "repository": "rumukh/footage-to-film",
-      "url": "https://github.com/rumukh/footage-to-film",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-23",
-      "description": "Cookbook for AI coding agents: turn a folder of trip videos into a finished film with free local tools"
-    },
-    {
-      "repository": "habdelgawad88-ai/guest-ai-bridge",
-      "url": "https://github.com/habdelgawad88-ai/guest-ai-bridge",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-23",
-      "description": "Free-model discovery and routing MCP bridge for coding agents — Codex, Claude Code, Hermes, Pi and Antigravity"
-    },
-    {
-      "repository": "openfilm/openfilm",
-      "url": "https://github.com/openfilm/openfilm",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 9073,
-      "updated": "2026-11-23",
-      "description": "The open source AI video agent: turns any coding agent into a video agent, with editors to change anything it makes."
+      "updated": "2026-11-24",
+      "description": "Security guardrails for AI coding agents: scan agentconfig for prompt injection and risky permissions, bock secret access, audit agent actions, cap Bedrock pend."
     },
     {
       "repository": "nexu-io/openmotion",
@@ -1539,29 +1479,69 @@
       "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 15590,
-      "updated": "2026-11-23",
+      "stars": 15915,
+      "updated": "2026-11-24",
       "description": "The open-source Claude Motion & CapCut alternative. Turn a reference video into editable motion graphics with your brand kit. Export MP4s for YouTube, YouTube Shorts, Instagram Reels, and TikTok. A full-stack agentic video studio with 300+ Motion.md guides and support for 22 agents, including Claude"
     },
     {
-      "repository": "ChopCookies/Twinspark-Manager",
-      "url": "https://github.com/ChopCookies/Twinspark-Manager",
+      "repository": "hhoangg/zptah",
+      "url": "https://github.com/hhoangg/zptah",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
-      "updated": "2026-11-23",
-      "description": "Model manager for two NVIDIA DGX Sparks. Import community vLLM recipes (eugr/spark-vllm-docker), pin exact model and image versions, and switch models with one command. Stages weights on both nodes over the direct QSFP link. Serves one OpenAI-compatible endpoint, with a web GUI and CLI."
+      "updated": "2026-11-24",
+      "description": "zptah - native desktop app for AI coding agents (originated from hardbeat920/monocode)"
     },
     {
-      "repository": "jkassemi/neuron-reclaim",
-      "url": "https://github.com/jkassemi/neuron-reclaim",
+      "repository": "pragmaticarun/verification-engineering-course",
+      "url": "https://github.com/pragmaticarun/verification-engineering-course",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
-      "updated": "2026-11-23",
-      "description": "Zero-corpus weight-space programming & model-editing toolkit: MLP/MoE neuron atlas, ncdu-style transactional TUI, and Stein's-lemma GGUF folding."
+      "updated": "2026-11-24",
+      "description": "Verification engineering for AI coding agents: an original hands-on course"
+    },
+    {
+      "repository": "codewic/corsia",
+      "url": "https://github.com/codewic/corsia",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-24",
+      "description": "Streams model weights from every drive at once, so a model bigger than your RAM runs as fast as all your drives allow"
+    },
+    {
+      "repository": "AtomicBot-ai/atomic-agent",
+      "url": "https://github.com/AtomicBot-ai/atomic-agent",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 3588,
+      "updated": "2026-11-24",
+      "description": "Atomic Agent is a local-first AI agent. Runs open-weight models on your own machine via llama.cpp."
+    },
+    {
+      "repository": "VirajSawad1021/Zyven",
+      "url": "https://github.com/VirajSawad1021/Zyven",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 5,
+      "updated": "2026-11-24",
+      "description": "An agent that compiles open-source libraries into verified MCP tools on demand, and keeps only the ones that pass a locked-down sandbox. Open-weight models only."
+    },
+    {
+      "repository": "cinewright/cinewright",
+      "url": "https://github.com/cinewright/cinewright",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-24",
+      "description": "A locally running platform for image, video, and audio generation using open-weight models."
     },
     {
       "repository": "Axia-Growth/OperationKit",
@@ -1569,59 +1549,19 @@
       "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 85,
-      "updated": "2026-11-23",
+      "stars": 88,
+      "updated": "2026-11-24",
       "description": "AI transformation infrastructure. A self-hosted knowledge base, agent board and MCP connection for putting AI to work inside a business. Run it in-house, license it as a consultant, or have us set up your server and run it for you. Works with Claude, Codex, Grok or open-weight models. Apache-2.0."
     },
     {
-      "repository": "winxtxrgit/glassbox",
-      "url": "https://github.com/winxtxrgit/glassbox",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-23",
-      "description": "Explainable LLM triage that cites its evidence and catches the model inventing it. Local, free, open-weights (Qwen/Ollama)."
-    },
-    {
-      "repository": "ggarembroo/stories15m-moe-qat",
-      "url": "https://github.com/ggarembroo/stories15m-moe-qat",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-23",
-      "description": "Ternary QAT pipeline for a 36M Mixtral MoE"
-    },
-    {
-      "repository": "matteoespo/omni-local-llm",
-      "url": "https://github.com/matteoespo/omni-local-llm",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 0,
-      "updated": "2026-11-23",
-      "description": "Which local LLM can your machine run? Find the right GGUF quant for your GPU, download it, and serve Ollama, llama.cpp, vLLM and LM Studio behind one OpenAI-compatible API."
-    },
-    {
-      "repository": "rajveer43/VeloxQuant-MLX",
-      "url": "https://github.com/rajveer43/VeloxQuant-MLX",
-      "license": "MIT",
-      "osi_approved": true,
-      "priority_copyleft": false,
-      "stars": 36,
-      "updated": "2026-11-23",
-      "description": "Fast KV-cache quantization for Apple Silicon (MLX) — 43 research-adapted compression methods with Metal kernels"
-    },
-    {
-      "repository": "NVIDIA/Model-Optimizer",
-      "url": "https://github.com/NVIDIA/Model-Optimizer",
+      "repository": "pjmalandrino/llvq-tetra",
+      "url": "https://github.com/pjmalandrino/llvq-tetra",
       "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 5654,
-      "updated": "2026-11-23",
-      "description": "A unified library of SOTA model optimization techniques like quantization, distillation, pruning, neural architecture search, speculative decoding, etc. It compresses deep learning models for downstream deployment frameworks like TensorRT-LLM, TensorRT, vLLM, etc. to optimize inference speed."
+      "stars": 5,
+      "updated": "2026-11-24",
+      "description": "Tetra : Leech lattice vector quantization for 2-bit LLM weights, in Rust, with a fused multi-shell CUDA decoder."
     },
     {
       "repository": "mw00/project-maya",
@@ -1629,29 +1569,89 @@
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 3253,
-      "updated": "2026-11-23",
+      "stars": 3305,
+      "updated": "2026-11-24",
       "description": "Run GLM-5.3 (744B), DeepSeek-V4.1-Flash (748B), MiniMax-M3.1-Flash (428B), GLM-5.3-Flash (321B) and Hy4-Flash (220B) on your own GPUs - from 8 GB of VRAM, NVIDIA and AMD, one dashboard, OpenAI- and Anthropic-compatible API."
     },
     {
-      "repository": "dropbox/hqq",
-      "url": "https://github.com/dropbox/hqq",
+      "repository": "AKMessi/weight-space-programming",
+      "url": "https://github.com/AKMessi/weight-space-programming",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 1,
+      "updated": "2026-11-24",
+      "description": "Zero-gradient Weight-Space Programming compilers & hardware-aligned 4-bit/3-bit GGUF quantization survival across 3 reasoning LLM architectures (2 verified papers)."
+    },
+    {
+      "repository": "mxxm-t/llmx",
+      "url": "https://github.com/mxxm-t/llmx",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 6,
+      "updated": "2026-11-24",
+      "description": "Dependency-free C++ LLM inference runtime written from scratch: CPU, Vulkan, ROCm and CUDA backends, GGUF and safetensors models, layer and tensor split across GPUs, and an OpenAI-compatible multi-user server."
+    },
+    {
+      "repository": "Srinivas26k/srvdb",
+      "url": "https://github.com/Srinivas26k/srvdb",
       "license": "Apache-2.0",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 964,
-      "updated": "2026-11-23",
-      "description": "Official implementation of Half-Quadratic Quantization (HQQ)"
+      "stars": 16,
+      "updated": "2026-11-24",
+      "description": "SrvDB: open-source embedded vector database for Python & Rust. Local semantic search, RAG and AI memory with no server. Crash-safe, offline, Apache-2.0. (Not SurrealDB)"
     },
     {
-      "repository": "bizhonggeng/TinyStrata",
-      "url": "https://github.com/bizhonggeng/TinyStrata",
+      "repository": "NVIDIA/Model-Optimizer",
+      "url": "https://github.com/NVIDIA/Model-Optimizer",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 5658,
+      "updated": "2026-11-24",
+      "description": "A unified library of SOTA model optimization techniques like quantization, distillation, pruning, neural architecture search, speculative decoding, etc. It compresses deep learning models for downstream deployment frameworks like TensorRT-LLM, TensorRT, vLLM, etc. to optimize inference speed."
+    },
+    {
+      "repository": "JakeATX/llamAmpere",
+      "url": "https://github.com/JakeATX/llamAmpere",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 422,
+      "updated": "2026-11-24",
+      "description": "llama.cpp fork for significantly improved performance on Ampere generation Nvidia cards (especially RTX 3090 / 3090 Ti): example: 110+ tok/s over a 100K-token generation at temperature 1 for qwen3.8, supporting full 262K ctx. Supports low memory (12gb) configs for 200k+ ctx. 120+ TPS, 3300+ prefill "
+    },
+    {
+      "repository": "amanmprojects/ember",
+      "url": "https://github.com/amanmprojects/ember",
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
       "stars": 0,
-      "updated": "2026-11-23",
-      "description": "Strata patched for Qwen3.6-35B-A3B on a 4 GB VRAM card: MTP draft experts on the CPU, DRY sampling, session autosave. 81920 context, ~18 tok/s decode at 79K."
+      "updated": "2026-11-24",
+      "description": "A small, fast GGUF LLM inference engine for CPUs, in Rust"
+    },
+    {
+      "repository": "intragalactic-stranger/cortex",
+      "url": "https://github.com/intragalactic-stranger/cortex",
+      "license": "Apache-2.0",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-24",
+      "description": "Cortex: a self-hosted personal AI brain. P2 Cortex Serve: LLM inference memory math, benchmarking, quantization and serving."
+    },
+    {
+      "repository": "zulqarnainalipk/Copy-Move-Forgery-Localisation",
+      "url": "https://github.com/zulqarnainalipk/Copy-Move-Forgery-Localisation",
+      "license": "MIT",
+      "osi_approved": true,
+      "priority_copyleft": false,
+      "stars": 0,
+      "updated": "2026-11-24",
+      "description": "Code and results for a grouped, baseline-controlled study of copy-move forgery localisation. It compares a fine-tuned DINOv2 segmenter, classical and learned keypoint matchers, and a hybrid of the two on the Recod.ai/LUC Scientific Image Forgery Detection data."
     },
     {
       "repository": "manuelgscom/rumor-village",
@@ -1659,8 +1659,8 @@
       "license": "MIT",
       "osi_approved": true,
       "priority_copyleft": false,
-      "stars": 10,
-      "updated": "2026-11-23",
+      "stars": 24,
+      "updated": "2026-11-24",
       "description": "A rumor simulation game with an AI trained for it: 100 villagers driven by a fine-tuned local LLM, in real time on one consumer GPU (llama.cpp, CUDA or Vulkan). Offline, no accounts. Linux and Windows."
     }
   ],
