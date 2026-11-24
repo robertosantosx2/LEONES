@@ -1285,3 +1285,19 @@ La plataforma LG-H930 ya dispone de una compilación funcional de llama.cpp para
 
 **Separación de plataformas:** estos resultados corresponden al LG-H930/Snapdragon 835/Android/Termux. No deben agregarse a las cifras del MSI Thin 15 B12UC/RTX 3050 ni utilizarse para comparar directamente motores o modelos ejecutados en CUDA.
 
+## 8. Plataforma móvil Xiaomi Mi 9T Pro — Qwen2.5-Coder-3B / llama.cpp CPU (24-11-2026)
+
+**Plataforma de referencia móvil:** Xiaomi Mi 9T Pro (raphael), Snapdragon 855 / Qualcomm SM8150, ARM64, 6 GB RAM declarados, Android 10 / API 29, MIUI Global 12.0.5 y Termux F-Droid 0.119.0-beta.3. Esta campaña es independiente de LG-H930/Snapdragon 835 y del MSI Thin 15/RTX 3050.
+
+- **Motor:** llama.cpp 1.0.0-dev, build 1, commit `51831d47d0a47b8a7d07c9ff262ebe4b0a211790`; compilado con Clang 21.1.8 para Android aarch64.
+- **Backend:** CPU. CMake declara `GGML_CPU=ON`, `GGML_VULKAN=OFF`, `GGML_OPENCL=OFF`, `GGML_CUDA=OFF`; el runtime indicó que no había GPU utilizable. No hay prueba de Adreno 640, Vulkan, OpenCL ni Hexagon/HTP.
+- **Modelo:** Qwen2.5-Coder-3B-Instruct GGUF Q4_K_M, aproximadamente 2,0 GB. SHA-256 verificado: `724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7`.
+- **Estado:** tres inferencias CPU completadas y medidas; una cuarta inferencia funcional confirmada, pero sin métricas válidas por un problema de supervisión del proceso.
+- **Resultados (tres repeticiones):** prefill 33,7 / 33,8 / 33,4 tok/s (media **33,63 tok/s**); generación 10,0 / 9,9 / 8,3 tok/s (media **9,40 tok/s**). Configuración común: contexto 512, 4 hilos, batch 64, ubatch 32, temperatura 0,2 y semilla 42. No es benchmark sostenido ni estabilizado térmicamente.
+- **Cuarta ejecución:** el log completo confirma carga del modelo y generación de una respuesta C para `isPrime`; no se capturaron RSS/VmHWM, duración fiable ni tok/s. MemAvailable al final de la comprobación: 1.634.304 kB; SwapFree: 864.080 kB. Se requiere muestra de recuperación en reposo. No hay evidencia de OOM.
+- **Telemetría no disponible:** consumo energético, potencia, autonomía, memoria máxima del proceso, temperatura sostenida y throttling.
+
+**Informe experimental y configuración reproducible:** [Xiaomi Mi 9T Pro — Qwen2.5-Coder-3B (24-11-2026)](mi-9t-pro-qwen25-coder3b-2026-11-24.md).
+
+**Clasificación:** ejecutado y medido (tres repeticiones iniciales); cuarta ejecución funcional no medida. No extrapolar estas cifras a otros teléfonos ni a ejecución GPU.
+
