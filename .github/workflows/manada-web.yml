@@ -3,7 +3,7 @@ on:
   push:
     paths:
       - 'results/manada/**'
-      - 'scripts/leones-manada-stats.py'
+      - 'scripts/deprecated/leones-manada-stats.py'
       - 'web/**'
   workflow_dispatch:
 permissions:
