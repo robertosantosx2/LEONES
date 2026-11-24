@@ -156,3 +156,70 @@ Las temperaturas son una instantánea y no caracterizan carga sostenida, throttl
 - No se ha verificado acceso a Vulkan Qualcomm, OpenCL, Hexagon/HTP, QNN o NPU desde Termux.
 - La instalación de Vulkan Tools añadió el loader genérico y el ICD software Mesa; no sustituye ni demuestra el uso del driver Adreno del sistema.
 - Mantener la campaña inicial sin root y sin modificar bootloader, ROM, kernel, firmware o particiones.
+
+
+## Captura complementaria por SSH/Termux — 2026-11-24
+
+Esta captura complementa las instantáneas anteriores; no las sustituye. Se obtuvo desde Termux sin root, conectado por SSH desde la estación Ubuntu.
+
+### Identidad, CPU y ABI
+
+| Campo | Valor observado | Estado |
+|---|---|---|
+| ro.board.platform | msmnile | DISCOVERED |
+| Hardware en /proc/cpuinfo | Qualcomm Technologies, Inc SM8150 | DISCOVERED — SoC Qualcomm Snapdragon 855 / SM8150 confirmado |
+| Android / API | 10 / 29 | DISCOVERED |
+| Parche de seguridad | 2021-04-01 | DISCOVERED |
+| ABI | arm64-v8a; ABI adicionales armeabi-v7a, armeabi | DISCOVERED |
+| Arquitectura de Termux/paquetes | aarch64 | DISCOVERED |
+
+La salida de /proc/cpuinfo expone ocho CPU lógicas. Los máximos leídos en cpuinfo_max_freq son: CPU 0–3: 1.785.600 kHz; CPU 4–6: 2.419.200 kHz; CPU 7: 2.841.600 kHz. Esto es coherente con la topología 4+3+1 del Snapdragon 855. Se conservan los valores por CPU; no inferir frecuencias sostenidas ni afinidad óptima a partir de máximos nominales.
+
+### Memoria y almacenamiento — instantánea
+
+| Campo | Valor observado |
+|---|---:|
+| MemTotal | 5.636.076 kB |
+| MemAvailable | 2.712.940 kB |
+| Swap total | 2.621.436 kB |
+| Swap libre | 1.737.772 kB |
+| /data | 109G total, 47G usados, 62G disponibles |
+
+La memoria disponible es una instantánea, no un presupuesto garantizado para el proceso LLM. Swap ya estaba parcialmente ocupada; no usar swap como sustituto de RAM para dimensionar el modelo.
+
+### GPU y capacidades expuestas
+
+| Campo | Valor observado | Estado |
+|---|---|---|
+| ro.hardware.egl | adreno | DISCOVERED |
+| ro.opengles.version | 196610 (= 0x00030002; OpenGL ES 3.2) | DISCOVERED |
+| ro.vulkan.version | Vacío/no expuesto | UNKNOWN |
+| /dev/kgsl-3d0 | Nodo de dispositivo presente | DISCOVERED |
+| Modelo exacto de GPU | Adreno 640 según la plataforma SM8150 | EXPECTED; no se ha ejecutado consulta de identificación GPU ni inferencia acelerada |
+
+La presencia del nodo KGSL y de la propiedad EGL no prueba que un runtime de Termux pueda utilizar el driver Qualcomm ni que Vulkan esté operativo. GPU offload continúa NOT TESTED.
+
+### Batería y sensores térmicos — instantánea en reposo
+
+termux-battery-status informó: presente, salud GOOD, 80 %, descargando, 4022 mV y 23,5 °C. Los sensores battery/bms de sysfs informaron aproximadamente 23,7 °C.
+
+Lecturas plausibles observadas:
+- Sensores cpu-*-usr: aproximadamente 26,7–31,4 °C.
+- Sensores gpuss-*-usr: aproximadamente 27,1–28,7 °C.
+- pm8150_tz: 26,558 °C; pm8150b_tz: 24,611 °C; pm8150l_tz: 27,563 °C.
+- xo_therm: 24,876 °C; quiet_therm: 24,505 °C.
+
+Lecturas excluidas de interpretación térmica por semántica no validada o valores centinela:
+- lmh-dcvs-00/01: 75.000 (no asumir que sean temperaturas instantáneas).
+- pm8150b-wp-therm: 101.267 y soc: 274.000 (valores no plausibles como temperaturas de componentes en esta captura).
+- Sensores con −40.000, cero o valores de magnitud/escala no térmica.
+
+dumpsys thermalservice no produjo salida visible desde esta sesión Termux; Thermal Status Android queda UNKNOWN. No se afirma ausencia de throttling. Estas lecturas son una línea base en reposo, no una prueba térmica bajo carga.
+
+### Estado de ejecución
+
+- SSH MSI → Termux confirmado en puerto 8022.
+- Repositorio Termux main grimler.se seleccionado; pkg update y pkg upgrade -y finalizaron correctamente.
+- Inferencia: NOT TESTED.
+- Vulkan Adreno / OpenCL / QNN / HTP: NOT TESTED.
+- Root: UNKNOWN.
