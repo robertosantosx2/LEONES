@@ -1242,46 +1242,69 @@ No limpiar cachés ni repetir aún las compilaciones de Kinetic o TensorFold. Re
 
 
 
-## 7. Plataforma móvil LG-H930 / LG V30 — Termux y llama.cpp (23–24-11-2026)
+## 7. Plataformas móviles Android — campañas LG-H930 y Xiaomi Mi 9T Pro (23–24-11-2026)
 
-**Plataforma de laboratorio:** LG-H930 (LG V30), revisión de hardware 1.1; Qualcomm Snapdragon 835, arquitectura ARM64; Android 9, software V31a-EUR-XX, compilación PKQ1.190414.001, kernel 4.4.153 y parche de seguridad 2019-11-01. RAM física declarada: 4 GB. Esta campaña es independiente de los benchmarks del MSI Thin 15 y sus resultados no deben mezclarse ni compararse sin atender a las diferencias de hardware, backend y configuración.
+Esta sección consolida las ejecuciones físicas documentadas en los dos teléfonos. Los resultados se mantienen separados por dispositivo, SoC y condiciones de ejecución. **No se mezclan con los benchmarks del MSI Thin 15 B12UC / Ubuntu / RTX 3050.** Los estados distinguen inferencias funcionales, builds y lanzamientos sin resultado recuperable.
 
-### Motor y compilación
+### 7.1. Xiaomi Mi 9T Pro — Snapdragon 855 / Android 10 / Termux
 
-- **Entorno:** Termux sobre Android aarch64.
-- **Motor:** llama.cpp, binario `llama-cli`.
-- **Versión identificada:** `1.0.0-dev`, commit `51831d4`.
-- **Compilación:** completada; salida `100% Built target llama-cli` y `BUILD_EXIT_CODE=0` (23-11-2026, 20:53:18 CET).
-- La verificación de `file` y `ldd` no pudo realizarse porque esas utilidades no estaban instaladas. La identificación ARM64 procede de la información del propio entorno/binario.
-- No se ha acreditado uso de GPU: las pruebas registradas se plantearon con ejecución CPU (`-ngl 0`).
+**Plataforma:** Xiaomi Mi 9T Pro, Qualcomm Snapdragon 855 (SM8150), GPU Adreno 640, 6 GB de RAM nominales, Android 10 / MIUI Global 12.0.5, ARM64. RAM disponible observada en inspección previa: aproximadamente 2,3 GiB. Las ejecuciones descritas se realizaron con llama.cpp en CPU (opción -ngl 0); la CLI informó “no usable GPU found”. No se ha demostrado aceleración Adreno, Vulkan, OpenCL, Hexagon, QNN ni NPU.
 
-### Inferencia completada
+**Runtime común:** llama.cpp 1.0.0-dev, build 1, commit 51831d4, Termux Android aarch64, Clang 21.1.8. Modelo y métricas proceden de los informes de ejecución vinculados.
 
-| Modelo | Archivo / cuantización | Estado | Prefill | Generación | Evidencia |
-|---|---|---|---:|---:|---|
-| Qwen2.5-0.5B-Instruct | GGUF Q4_K_M (≈469 MB) | **Ejecutado** | **92,8 tok/s** | **42,8 tok/s** | Inferencia finalizada en Termux el 23-11-2026; salida de texto visible, aunque el fragmento conservado aparece truncado. |
+#### Inferencias reproducidas
 
-Las cifras son las métricas informadas por llama.cpp para esa ejecución. No constan en el registro recuperado duración total, RSS/uso máximo de RAM, consumo energético ni temperatura correlacionada con la inferencia. No convertir esta única ejecución en un benchmark comparativo ni inferir autonomía o estabilidad térmica.
+| Modelo | Configuración relevante | Prefill / prompt | Generación / decode | Estado |
+|---|---|---:|---:|---|
+| LFM2-700M Q4_K_M | GGUF 447 MiB; contexto 512; batch/ubatch 64/32; 4 hilos; máximo 48 tokens; sin warmup | **120,4 tok/s** | **40,2 tok/s** | Inferencia funcional observada, una ejecución exploratoria. Texto generado; sesión interactiva interrumpida con Ctrl+C (código 130), no fallo de carga. |
+| LFM2-2.6B Q4_K_M | GGUF ≈1,5 GiB; contexto 512; batch/ubatch 32/16; 2 hilos; máximo 32 tokens; sin warmup | **21,6 y 22,1 tok/s** | **11,4 y 11,3 tok/s** | Dos ejecuciones exploratorias con el mismo prompt. La segunda terminó normalmente (LLAMA_EXIT_CODE=0); el código de la primera no se recuperó. |
 
-### Modelos LFM2 — intentos recientes, pendientes de resultado
+Los resultados son mediciones puntuales de la CLI, no un benchmark sostenido ni una campaña NEPENTHES completa. Se utilizó un único prompt; las respuestas conservadas quedaron incompletas/truncadas. No hay TTFT/ITL, RSS máximo del proceso, energía por token ni evaluación sistemática de calidad.
 
-| Modelo | Archivo | Estado acreditado | Observaciones |
-|---|---|---|---|
-| LFM2-700M | `LFM2-700M-Q4_K_M.gguf` | Lanzamiento preparado/registrado; resultado final no recuperado | Se preparó una ejecución con `llama-cli` desde `~/src/llama.cpp/build/bin/llama-cli`. No hay salida final, código de salida ni métricas verificables en el registro disponible. |
-| LFM2-2.6B | `LFM2-2.6B-Q4_K_M.gguf` | Lanzamiento preparado/registrado; resultado final no recuperado | Se preparó una ejecución CPU con contexto corto (`-ngl 0`, contexto 512 y batch 32). El modelo fue inspeccionado: arquitectura LFM2, 30 bloques, embedding 2048, 32 cabezas y vocabulario 65.536. No hay salida final, código de salida ni métricas verificables recuperadas. |
+**Memoria y temperatura:** en LFM2-700M se registraron snapshots globales de MemAvailable (2.931.224 → 2.920.572 kB) y SwapFree (1.786.880 → 1.792.536 kB), no RSS del proceso. Se capturaron lecturas térmicas antes/después; la zona 54 (pm8150b-wp-therm) rondó 102 °C y su correspondencia física sigue sin identificar. En LFM2-2.6B también se observó la anomalía de la zona 54, pero no existe una serie térmica durante la inferencia ni una captura posterior a la repetición limpia. Estos datos no certifican seguridad térmica ni permiten afirmar ausencia de throttling. Las pruebas sostenidas o de modelos mayores siguen condicionadas a resolver la identificación térmica.
 
-**Criterio de inventario:** ambos LFM2 permanecen como *intentos pendientes de confirmar*, no como inferencias funcionales ni benchmarks. Para cerrar cada prueba se necesita conservar la salida completa de `llama-cli`, código de salida y las líneas de rendimiento de prompt y generación. No se atribuye un fallo ni un éxito sin esa evidencia.
+Informes reproducibles:
+- [LFM2-700M — primera inferencia en Xiaomi Mi 9T Pro](../subprojects/Mobile-LLMs-ARM/devices/XIAOMI-MI-9T-PRO-LLAMA-CPP-LFM2-700M-20261123.md)
+- [LFM2-2.6B — dos ejecuciones en Xiaomi Mi 9T Pro](../subprojects/Mobile-LLMs-ARM/devices/XIAOMI-MI-9T-PRO-LLAMA-CPP-LFM2-2.6B-20261123.md)
 
-### Telemetría térmica, batería y límites de observabilidad
+#### Inspección de aceleradores y runtimes
 
-- Se iniciaron inspecciones de zonas térmicas de Android mediante `/sys/class/thermal/thermal_zone*`; el registro recuperado no contiene una serie completa y correlacionada que permita atribuir temperaturas a una inferencia concreta.
-- `termux-battery-status` no estaba disponible en el entorno cuando se comprobó. Por tanto, no hay lectura validada de porcentaje, corriente, voltaje, temperatura de batería ni estado de carga procedente de esa utilidad.
-- No hay medición de potencia, energía consumida, frecuencia sostenida ni throttling durante generación.
-- Las pruebas térmicas y de batería deben permanecer como telemetría incompleta; no rellenar los campos ausentes con estimaciones.
+La enumeración Vulkan desde Termux devolvió llvmpipe, no un dispositivo Adreno; por tanto, no acredita uso de la GPU. MNN, LiteRT-LM, MLC LLM, ncnn y AiPaca fueron considerados como candidatos de la campaña, pero no deben contabilizarse como inferencias reproducidas en este inventario con la evidencia disponible. TensorFold nativo tampoco tiene ejecución Android documentada en este teléfono.
 
-### Conclusión de la campaña móvil
+### 7.2. LG-H930 / LG V30 — Snapdragon 835 / Android 9 / Termux
 
-La plataforma LG-H930 ya dispone de una compilación funcional de llama.cpp para Android ARM64 y de una inferencia GGUF completada: Qwen2.5-0.5B-Instruct Q4_K_M, con 92,8 tok/s de prefill y 42,8 tok/s de generación. LFM2-700M y LFM2-2.6B están identificados y tienen comandos de ejecución registrados, pero requieren recuperar o repetir la salida completa antes de clasificarlos como ejecutados. La campaña no dispone todavía de telemetría térmica, energética o de memoria suficientemente completa.
+**Plataforma:** LG-H930 (LG V30), revisión de hardware 1.1; Qualcomm Snapdragon 835, ARM64, 4 GB de RAM nominales; Android 9, software V31a-EUR-XX, compilación PKQ1.190414.001, kernel 4.4.153 y parche de seguridad 2019-11-01.
 
-**Separación de plataformas:** estos resultados corresponden al LG-H930/Snapdragon 835/Android/Termux. No deben agregarse a las cifras del MSI Thin 15 B12UC/RTX 3050 ni utilizarse para comparar directamente motores o modelos ejecutados en CUDA.
+**Runtime:** llama.cpp 1.0.0-dev, commit 51831d4, Termux Android aarch64. La compilación de llama-cli terminó correctamente el 23-11-2026 a las 20:53:18 CET: 100% Built target llama-cli, BUILD_EXIT_CODE=0. Las pruebas de inferencia registradas se plantearon en CPU (-ngl 0); no se ha acreditado aceleración GPU.
 
+#### Inferencia completada
+
+| Modelo | Archivo / cuantización | Prefill | Generación | Estado |
+|---|---|---:|---:|---|
+| Qwen2.5-0.5B-Instruct | GGUF Q4_K_M (≈469 MB) | **92,8 tok/s** | **42,8 tok/s** | Inferencia completada; se observó salida textual. El fragmento conservado aparece truncado. |
+
+Es una única ejecución exploratoria. No constan duración total, RSS/uso máximo de RAM, consumo energético ni temperatura correlacionada con la inferencia. No constituye benchmark comparativo ni demuestra rendimiento sostenido.
+
+#### Lanzamientos sin resultado final recuperable
+
+| Modelo | Estado acreditado | Tratamiento en el inventario |
+|---|---|---|
+| LFM2-700M Q4_K_M | Se preparó/registró un lanzamiento con llama-cli; no se recuperó salida final, código de salida ni métricas verificables para esta plataforma. | Intento pendiente de confirmar; no contar como inferencia reproducida. |
+| LFM2-2.6B Q4_K_M | Se registró un lanzamiento CPU (-ngl 0, contexto 512, batch 32) y se inspeccionaron metadatos GGUF (arquitectura LFM2, 30 bloques, embedding 2048, 32 cabezas, vocabulario 65.536); no se recuperó salida final ni código de salida. | Intento pendiente de confirmar; no contar como inferencia reproducida. |
+
+**Importante:** las inferencias LFM2-700M y LFM2-2.6B con métricas 120,4/40,2 y 21,6–22,1/11,3–11,4 tok/s corresponden al **Xiaomi Mi 9T Pro**, no al LG-H930. En el LG solo se conserva como inferencia completada Qwen2.5-0.5B-Instruct; los lanzamientos LFM2 no deben recibir las métricas del Xiaomi.
+
+#### Telemetría y límites
+
+Se iniciaron inspecciones de /sys/class/thermal/thermal_zone*, pero no se conserva una serie completa correlacionada con las inferencias. termux-battery-status no estaba disponible cuando se comprobó. No hay medidas validadas de porcentaje, corriente, voltaje, temperatura de batería, potencia, energía, frecuencia sostenida ni throttling. Mantener esos campos como N/D, sin estimaciones.
+
+### 7.3. Resumen consolidado de ejecuciones móviles
+
+| Dispositivo | Modelo | Motor / backend | Ejecuciones con inferencia observada | Resultado principal |
+|---|---|---|---:|---|
+| Xiaomi Mi 9T Pro / Snapdragon 855 / Android 10 | LFM2-700M Q4_K_M | llama.cpp / CPU | 1 | 120,4 tok/s prefill; 40,2 tok/s generación |
+| Xiaomi Mi 9T Pro / Snapdragon 855 / Android 10 | LFM2-2.6B Q4_K_M | llama.cpp / CPU | 2 | 21,6–22,1 tok/s prefill; 11,3–11,4 tok/s generación |
+| LG-H930 / Snapdragon 835 / Android 9 | Qwen2.5-0.5B-Instruct Q4_K_M | llama.cpp / CPU | 1 | 92,8 tok/s prefill; 42,8 tok/s generación |
+| LG-H930 / Snapdragon 835 / Android 9 | LFM2-700M / LFM2-2.6B | llama.cpp / CPU | Lanzamientos sin resultado recuperable | No contabilizar como inferencias confirmadas |
+
+**Balance:** tres combinaciones modelo-dispositivo tienen inferencia funcional observada: LFM2-700M y LFM2-2.6B en el Xiaomi, y Qwen2.5-0.5B-Instruct en el LG. Son cuatro ejecuciones con salida observada en total, contando la repetición de LFM2-2.6B. Los dos lanzamientos LFM2 del LG quedan fuera de ese recuento. Ninguna de estas pruebas constituye todavía un benchmark móvil NEPENTHES completo; no hay base para comparar directamente los teléfonos ni para atribuir aceleración GPU/DSP/NPU.
