@@ -196,7 +196,7 @@
                     potencia. Celda = mejor <strong>open-weight</strong> viable según Artificial
                     Analysis (Intelligence Index), acotado por VRAM/RAM. El CSV se revisa
                     <strong>cada día a las 05:00</strong> (Europe/Madrid) con el ranking open-weight
-                    publicado por AA. Última revisión AA: 2026-11-05 (Index v5).
+                    publicado por AA. Última revisión AA: 2026-11-25 (Index v5).
                 </p>
             </div>
         </header>
@@ -272,11 +272,10 @@
                         vacíos).
                     </li>
                     <li>
-                        MiMo-V2.6-Pro / Kimi K3.1 / GLM-5.x / DS V4.1 Flash completos no caben en PC
+                        MiMo-V2.6-Pro / Kimi K3.1 / Hy4 / GLM-5.x / DS V4.1 Flash completos no caben en PC
                         de consumo; solo MoE parcial/offload en 24–32 GB + mucha RAM. Index v5: top
-                        open-weight Kimi K3.1 Pro (AA~46, 2.8T/104B active, pesos publicados
-                        2026-11-04), luego DS V4.1 Flash 1017 (AA~33), GLM-5.3 (AA~32),
-                        MiMo-V2.6-Pro (AA~30).
+                        open-weight Kimi K3.1 Pro (AA~47, 2.8T/104B active), luego Tencent Hy4 (AA~35, 774B/50B active), DS V4.1 Flash 1017 (AA~32), GLM-5.3 (AA~32),
+                        Inkling 2 Small (AA~31), MiMo-V2.6-Pro (AA~30).
                     </li>
                     <li>
                         Fuente de ranking:
@@ -344,7 +343,7 @@
                             return `<tr class="vendor-${r.vendor}"><td class="gpu">${r.gpu}${vram}</td><td>${cell(r.ram_2)}</td><td>${cell(r.ram_4)}</td><td>${cell(r.ram_8)}</td><td>${cell(r.ram_16)}</td><td>${cell(r.ram_32)}</td><td>${cell(r.ram_64)}</td></tr>`;
                         })
                         .join("");
-                    status.textContent = `Tier ${tier} · filtro ${vendor}: ${filtered.length} GPUs · Última revisión AA: 2026-11-05 (Index v5) · ESTIMATED ≠ MEASURED.`;
+                    status.textContent = `Tier ${tier} · filtro ${vendor}: ${filtered.length} GPUs · Última revisión AA: 2026-11-25 (Index v5) · ESTIMATED ≠ MEASURED.`;
                 };
                 document.querySelectorAll(".tabs button").forEach((btn) =>
                     btn.addEventListener("click", () => {
@@ -360,7 +359,7 @@
                     vendor = e.target.value;
                     render();
                 });
-                fetch("data/cuadros-maestros.csv?v=2026-11-05-1")
+                fetch("data/cuadros-maestros.csv?v=2026-11-25-1")
                     .then((r) => r.text())
                     .then((t) => {
                         rows = parse(t);
