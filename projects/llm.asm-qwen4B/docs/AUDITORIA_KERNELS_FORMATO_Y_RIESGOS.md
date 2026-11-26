@@ -240,11 +240,13 @@ La inspección de `boot.asm`, `runtime.asm` y `kernel.asm` confirma:
 - El allocator selecciona una región libre por debajo de `0xF0000000` (3,75 GiB).
 - El modelo se consume desde un módulo cargado en RAM.
 
-El tamaño estimado de las matrices Q8_0 Qwen3-4B supera 4 GiB, antes de tokenizer y cabecera. Un módulo Multiboot 1 con campos de inicio y fin de 32 bits no puede describir de forma general un artefacto de más de 4 GiB.
+La estimación corregida de embeddings, matrices y normas es 4.274.448.384 bytes (3,981 GiB), antes de tokenizer, cabecera y padding. Por tanto, las matrices por sí solas quedan ligeramente por debajo de 4 GiB binarios; no es correcto describirlas como un archivo superior a 4 GiB.
 
-Por tanto, el camino bare-metal actual no puede admitir directamente el archivo Qwen3-4B estimado. El rediseño requiere un protocolo de carga y mapeo de memoria física de 64 bits, no solo aumentar la RAM virtual de QEMU.
+El problema bare-metal sigue siendo crítico, pero debe expresarse con precisión: el mapa identidad actual termina en 4 GiB y los campos de módulo Multiboot 1 son de 32 bits. Un módulo de aproximadamente 3,99 GiB solo podría quedar íntegramente dentro de ese mapa si su dirección física de inicio estuviera en una ventana muy pequeña próxima a cero. Esa región también contiene el kernel, estructuras de arranque y memoria que el runtime necesita. Además, el allocator busca RAM libre por debajo de 3,75 GiB y excluye el módulo.
 
-Este bloqueo no afecta por sí mismo a la ruta Linux x86-64.
+La inspección estática no permite afirmar que cualquier colocación física sea matemáticamente imposible, porque no se ha ejecutado el cargador con un módulo de ese tamaño. Sí permite concluir que el diseño actual no ofrece una ruta viable y general para cargar y reservar memoria de trabajo para Qwen3-4B. El soporte bare-metal requiere rediseñar el protocolo de carga y el mapeo/allocator de memoria física, y validarlo por separado.
+
+Este problema no afecta por sí mismo a la ruta Linux x86-64.
 
 ---
 
