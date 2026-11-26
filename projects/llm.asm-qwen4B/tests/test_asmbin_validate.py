@@ -12,7 +12,7 @@ def make_fixture(version=2):
     vocab, dim, hidden, layers = 256, 32, 32, 1
     heads = kv_heads = 1
     head_dim = 32
-    flags = av.FLAG_QK_NORM | (av.FLAG_FP16_SCALES if version == 2 else 0)
+    flags = av.FLAG_TIED_EMB | av.FLAG_QK_NORM | (av.FLAG_FP16_SCALES if version == 2 else 0)
     off_tok = av.HEADER_SIZE
     off_b2t = av.TOKENIZER_HEADER_SIZE
     off_offsets = av.align64(off_b2t + 256 * 4)
@@ -86,8 +86,14 @@ class AsmbinValidatorTests(unittest.TestCase):
 
     def test_version_scale_flag_mismatch(self):
         data = make_fixture(2)
-        rewrite_header(data, flags=av.FLAG_QK_NORM)
+        rewrite_header(data, flags=av.FLAG_TIED_EMB | av.FLAG_QK_NORM)
         with self.assertRaisesRegex(av.ValidationError, "scale flag"):
+            av.validate_buffer(data)
+
+    def test_untied_embeddings_rejected(self):
+        data = make_fixture()
+        rewrite_header(data, flags=av.FLAG_QK_NORM | av.FLAG_FP16_SCALES)
+        with self.assertRaisesRegex(av.ValidationError, "tied embeddings"):
             av.validate_buffer(data)
 
     def test_file_size_mismatch(self):
