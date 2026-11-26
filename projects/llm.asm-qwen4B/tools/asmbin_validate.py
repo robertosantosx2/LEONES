@@ -224,7 +224,7 @@ def parse_tokenizer(data: memoryview, h: Header) -> dict:
         left, right = key >> 32, key & U32_MAX
         if left >= h.vocab_size or right >= h.vocab_size or merged_id >= h.vocab_size:
             fail(f"merge-table slot {i} contains a token ID outside vocabulary")
-        if rank >= h.vocab_size:
+        if rank >= h.vocab_size or rank >= HASH_SIZE:
             fail(f"merge-table slot {i} has an invalid rank")
         if key in seen_keys:
             fail(f"duplicate BPE key in merge-table slot {i}")
