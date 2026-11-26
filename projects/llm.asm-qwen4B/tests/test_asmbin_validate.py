@@ -108,7 +108,7 @@ class AsmbinValidatorTests(unittest.TestCase):
         with self.assertRaisesRegex(av.ValidationError, "dim"):
             av.validate_buffer(data)
         data = make_fixture()
-        rewrite_header(data, n_heads=2)
+        rewrite_header(data, n_kv_heads=2)
         with self.assertRaisesRegex(av.ValidationError, "divisible"):
             av.validate_buffer(data)
 
