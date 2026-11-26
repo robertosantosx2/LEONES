@@ -256,7 +256,7 @@ La compatibilidad real con Qwen3-4B seguirá pendiente hasta exportar el checkpo
 
 ---
 
-## 10. Aclaraciones de layout confirmadas contra el exportador fijado
+## 11. Aclaraciones de layout confirmadas contra el exportador fijado
 
 La implementación del validador se contrasta con \`scripts/export_weights.py\` en el commit upstream fijado, no solo con descripciones generales de Q8_0.
 
@@ -267,7 +267,7 @@ La implementación del validador se contrasta con \`scripts/export_weights.py\` 
 - Los IDs de EOS deben pertenecer al vocabulario; los campos reservados de cabecera y tokenizer deben ser cero.
 - Para este motor se exige QK-Norm y la máscara BPE fija de 19 bits. Los bits de flags desconocidos se rechazan.
 
-## 11. Implementación inicial y ejecución
+## 12. Implementación inicial y ejecución
 
 Implementación independiente:
 \`projects/llm.asm-qwen4B/tools/asmbin_validate.py\`
