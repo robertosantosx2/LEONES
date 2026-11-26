@@ -41,3 +41,24 @@ jobs:
             -s projects/llm.asm-qwen4B/tests \
             -p "test_*.py" \
             -v
+
+  upstream-linux-build-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install NASM and binutils
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes nasm binutils make
+      - name: Checkout pinned upstream reference
+        run: |
+          git init upstream
+          cd upstream
+          git remote add origin https://github.com/alesha-pro/llm.asm.git
+          git fetch --depth 1 origin 48feccbfd57cb669440f31ff64958d95bb8b848e
+          git checkout --detach FETCH_HEAD
+      - name: Build Linux inference with FAST_Q8=1
+        working-directory: upstream
+        run: make inference FAST_Q8=1
+      - name: Build Linux inference with FAST_Q8=0
+        working-directory: upstream
+        run: make inference FAST_Q8=0
