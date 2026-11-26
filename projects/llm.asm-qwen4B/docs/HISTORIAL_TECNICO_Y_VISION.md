@@ -520,10 +520,15 @@ el formato row-split del exportador:
 | Up projection/capa | 9728 | 2560 | 26.460.160 |
 | Down projection/capa | 2560 | 9728 | 26.460.160 |
 
-La estimación agregada de matrices y normas es aproximadamente
-4.275.185.664 bytes (3,982 GiB), antes de tokenizer, cabecera
-y cualquier padding adicional. Debe confirmarse con el exportador
-real y el tamaño final del archivo.
+Las siete matrices por capa suman 107.233.280 bytes; multiplicadas
+por 36 capas son 3.860.398.080 bytes. Las normas FP32 ocupan
+784.384 bytes en total (cuatro vectores por capa: dim, head_dim,
+head_dim y dim, más la norma final). Sumando embeddings, matrices
+y normas, el total calculado es **4.274.448.384 bytes
+(3,981 GiB; 4,274 GB decimales)**, antes de tokenizer, cabecera
+y cualquier padding adicional. El layout de estas dimensiones
+mantiene alineaciones de 64 bytes en las secciones calculadas.
+Debe confirmarse con el exportador real y el tamaño final del archivo.
 
 ### 12.5 Estimación de KV-cache y memoria
 
