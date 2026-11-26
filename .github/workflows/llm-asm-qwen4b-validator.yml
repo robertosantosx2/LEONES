@@ -56,6 +56,17 @@ jobs:
           git remote add origin https://github.com/alesha-pro/llm.asm.git
           git fetch --depth 1 origin 48feccbfd57cb669440f31ff64958d95bb8b848e
           git checkout --detach FETCH_HEAD
+      - name: Assemble and run native validator harness
+        run: |
+          nasm -f elf64 -I upstream/shared/ \
+            projects/llm.asm-qwen4B/tools/asmbin_validate.asm \
+            -o /tmp/asmbin_validate.o
+          nasm -f elf64 -I upstream/shared/ \
+            projects/llm.asm-qwen4B/tests/test_asmbin_validate.asm \
+            -o /tmp/test_asmbin_validate.o
+          ld -static -o /tmp/test_asmbin_validate \
+            /tmp/test_asmbin_validate.o /tmp/asmbin_validate.o
+          /tmp/test_asmbin_validate
       - name: Build Linux inference with FAST_Q8=1
         working-directory: upstream
         run: make inference FAST_Q8=1
