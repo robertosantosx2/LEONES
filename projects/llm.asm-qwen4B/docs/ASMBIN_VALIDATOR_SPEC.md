@@ -68,7 +68,7 @@ Para el motor Qwen3 de esta referencia:
 - `q_dim = n_heads * head_dim` (calculado con overflow comprobado).
 - `kv_dim = n_kv_heads * head_dim` (calculado con overflow comprobado).
 - `n_heads % n_kv_heads == 0`.
-- `dim`, `hidden_dim`, `q_dim` y `kv_dim` deben ser múltiplos de 32 para las matrices cuantizadas correspondientes.
+- `dim`, `hidden_dim` y `q_dim` deben ser múltiplos de 32, porque son dimensiones K de las matrices cuantizadas. `kv_dim` es una dimensión de filas/salida y no necesita esa restricción por el layout Q8_0.
 - `max(dim, hidden_dim, q_dim) <= 16384`, por el buffer Q8 estático.
 - `ht_mask == 524287` en esta implementación.
 - `n_layers`, `n_heads`, `n_kv_heads`, `head_dim`, `vocab_size` y `max_seq_len` no pueden ser cero.
