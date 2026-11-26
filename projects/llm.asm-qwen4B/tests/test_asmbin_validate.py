@@ -1,3 +1,4 @@
+import json
 import struct
 import sys
 import tempfile
@@ -205,6 +206,34 @@ class AsmbinValidatorTests(unittest.TestCase):
         rewrite_header(data, off_layers=len(data) + 64)
         with self.assertRaises(av.ValidationError):
             av.validate_buffer(data)
+
+    def test_versioned_qwen3_profile_registry(self):
+        root = Path(__file__).resolve().parents[1]
+        schema = json.loads((root / "profiles" / "model-profile.schema.json").read_text())
+        registry = json.loads((root / "profiles" / "qwen3-profiles.json").read_text())
+        self.assertEqual(schema["properties"]["schema_version"]["const"], 1)
+        self.assertEqual(registry["schema_version"], 1)
+        profiles = {p["profile_id"]: p for p in registry["profiles"]}
+        self.assertEqual(set(profiles), {
+            "qwen3-0.6b", "qwen3-4b", "qwen3-8b", "qwen3-14b", "qwen3-32b"
+        })
+        self.assertEqual(profiles["qwen3-0.6b"]["status"], "validated")
+        self.assertEqual(profiles["qwen3-4b"]["status"], "audited")
+        for size in ("8b", "14b", "32b"):
+            self.assertEqual(profiles[f"qwen3-{size}"]["status"], "planned")
+            self.assertIsNone(profiles[f"qwen3-{size}"]["architecture"])
+        for profile in profiles.values():
+            arch = profile["architecture"]
+            if arch is None:
+                continue
+            h = av.Header(2, arch["hidden_size"], arch["intermediate_size"],
+                          arch["num_hidden_layers"], arch["num_attention_heads"],
+                          arch["num_key_value_heads"], arch["head_dim"],
+                          arch["vocab_size"], 4096, 1e-6, 10000.0,
+                          151645, 151643, av.HASH_MASK,
+                          av.FLAG_TIED_EMB | av.FLAG_QK_NORM | av.FLAG_FP16_SCALES,
+                          128, 0, 0, 0, 0, 0)
+            av.validate_dimensions(h)
 
     def test_qwen3_profiles_do_not_assume_dim_equals_q_dim(self):
         profiles = [
