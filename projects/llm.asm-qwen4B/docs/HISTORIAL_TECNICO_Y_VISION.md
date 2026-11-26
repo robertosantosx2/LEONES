@@ -601,7 +601,7 @@ Q8_0 estimado:
 3. `runtime.asm` busca la mayor región utilizable por debajo de
    `0xF0000000` (3,75 GiB).
 4. El kernel consume el modelo como módulo Multiboot, sin copia.
-5. Las matrices Q8_0 estimadas ocupan 4.275.185.664 bytes, más de
+5. Las matrices Q8_0 estimadas ocupan 4.274.448.384 bytes, más de
    4 GiB, antes de tokenizer y cabecera.
 
 Por tanto, el modelo completo no cabe en el espacio de direcciones
