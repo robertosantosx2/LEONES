@@ -55,6 +55,15 @@ def checked_region(offset: int, length: int, file_size: int, label: str) -> None
         fail(f"{label}: region extends beyond file")
 
 
+def checked_product(label: str, *values: int) -> int:
+    result = 1
+    for value in values:
+        if value < 0 or (value and result > U64_MAX // value):
+            fail(f"{label} calculation overflows uint64")
+        result *= value
+    return result
+
+
 def row_bytes(k: int, version: int) -> int:
     if k <= 0 or k % 32:
         fail(f"Q8_0 K={k} is not a positive multiple of 32")
@@ -108,6 +117,8 @@ def parse_header(data: memoryview) -> Header:
         fail("scale flag is inconsistent with ASMBIN version")
     if not flags & FLAG_QK_NORM:
         fail("QK-Norm flag is required by this inference implementation")
+    if not flags & FLAG_TIED_EMB:
+        fail("tied embeddings are required by the current ASMBIN layout")
     if any(reserved):
         fail("reserved header bytes must be zero")
     if declared_size != len(data):
@@ -145,6 +156,10 @@ def validate_dimensions(h: Header) -> None:
         fail("rms_norm_eps must be finite and positive")
     if not math.isfinite(h.rope_theta) or h.rope_theta <= 0:
         fail("rope_theta must be finite and positive")
+    # The current runtime stores K/V cache and attention scores as FP32.
+    checked_product("KV-cache size", 2, h.n_layers, h.max_seq_len, kv_dim, 4)
+    checked_product("attention-score buffer size", h.n_heads, h.max_seq_len, 4)
+    checked_product("logits buffer size", h.vocab_size, 4)
     if h.eos_1 >= h.vocab_size or h.eos_2 >= h.vocab_size:
         fail("EOS token ID is outside vocabulary")
     if h.ht_mask != HASH_MASK:
@@ -244,8 +259,8 @@ def validate_layout(data: memoryview, h: Header) -> dict:
                          ("off_layers", h.off_layers), ("off_final_norm", h.off_final_norm)):
         if offset % 64:
             fail(f"{name} is not 64-byte aligned")
-    if h.off_tokenizer < HEADER_SIZE:
-        fail("tokenizer overlaps header")
+    if h.off_tokenizer != HEADER_SIZE:
+        fail("tokenizer must begin immediately after the 128-byte header")
     tok = parse_tokenizer(data, h)
     if h.off_embed != align64(h.off_tokenizer + tok["tokenizer_section_bytes"]):
         fail("embedding offset does not follow tokenizer section")
