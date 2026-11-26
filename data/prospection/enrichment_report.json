@@ -1,9 +1,9 @@
 {
   "input": "data/prospection/discovery_input.ndjson",
   "output": "data/prospection/enriched_discoveries.ndjson",
-  "repositories_processed": 254,
+  "repositories_processed": 222,
   "enriched_ok": 79,
-  "non_github_preserved": 167,
+  "non_github_preserved": 135,
   "errors": 8,
   "github_token_used": true,
   "diagnostics": [
@@ -12,56 +12,56 @@
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4927"
+      "rate_limit_remaining": "4919"
     },
     {
       "repository": "cool-japan/kizzasi",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4908"
+      "rate_limit_remaining": "4900"
     },
     {
       "repository": "wish-maker/minder",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "5000"
+      "rate_limit_remaining": "4842"
     },
     {
       "repository": "arshad1416/HA_Automation_Pi",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4835"
+      "rate_limit_remaining": "4811"
     },
     {
       "repository": "priceisaacuwjh3036/ai-server-rust-llm-api",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "5000"
+      "rate_limit_remaining": "4801"
     },
     {
       "repository": "benlmadan9-star/eco-mesh-sdk",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "5000"
+      "rate_limit_remaining": "4800"
     },
     {
       "repository": "wisent-ai/brama",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "5000"
+      "rate_limit_remaining": "4772"
     },
     {
       "repository": "ramaiahsvn/aim.pat",
       "status": 404,
       "error_type": "HTTP 404",
       "message": "Not Found",
-      "rate_limit_remaining": "4757"
+      "rate_limit_remaining": "4729"
     }
   ],
   "note": "GitHub repositories are enriched through the GitHub API. Non-GitHub evidence is preserved for source-specific enrichment and is not treated as an error."
