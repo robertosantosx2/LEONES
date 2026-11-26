@@ -586,47 +586,47 @@ controlada y con pruebas de regresión para Qwen3-0.6B.
 
 ---
 
-### 12.7 Bloqueo identificado para la fase bare-metal actual
+### 12.7 Riesgo de direccionamiento en la fase bare-metal actual
 
 Se inspeccionaron también `02-baremetal-os/runtime.asm`,
-`os_constants.inc`, `boot.asm`, `kernel.asm` y `linker.ld`.
+`os_constants.inc`, `boot.asm` y `kernel.asm`.
 
-La fase bare-metal actual no puede cargar directamente el Qwen3-4B
-Q8_0 estimado:
+La estimación corregida de embeddings, matrices y normas Q8_0 es
+4.274.448.384 bytes (3,981 GiB), antes de tokenizer, cabecera y
+padding. Por tanto, las matrices por sí solas quedan ligeramente
+por debajo de 4 GiB binarios; no es correcto describirlas como
+un archivo superior a 4 GiB.
+
+El riesgo bare-metal sigue siendo crítico:
 
 1. El arranque Multiboot 1 representa las direcciones de módulo con
    campos de 32 bits.
 2. `boot.asm` crea tablas de páginas de identidad para 0–4 GiB,
    mediante páginas enormes de 2 MiB.
 3. `runtime.asm` busca la mayor región utilizable por debajo de
-   `0xF0000000` (3,75 GiB).
+   `0xF0000000` (3,75 GiB), excluyendo el módulo.
 4. El kernel consume el modelo como módulo Multiboot, sin copia.
-5. Las matrices Q8_0 estimadas ocupan 4.274.448.384 bytes, más de
-   4 GiB, antes de tokenizer y cabecera.
+5. Un módulo de aproximadamente 3,99 GiB solo podría quedar
+   íntegramente dentro del mapa 0–4 GiB si su dirección física
+   de inicio estuviera en una ventana muy pequeña próxima a cero.
+   Esa región también contiene el kernel, estructuras de arranque
+   y memoria que el runtime necesita.
 
-Por tanto, el modelo completo no cabe en el espacio de direcciones
-que el arranque actual mapea ni en la región que el allocator actual
-puede gestionar. Aumentar solamente la RAM asignada a QEMU no resuelve
-el límite de direccionamiento y del protocolo de módulos.
+La inspección estática no permite afirmar que cualquier colocación
+física sea matemáticamente imposible: no se ha ejecutado el cargador
+con un módulo de ese tamaño. Sí permite concluir que el diseño actual
+no ofrece una ruta viable y general para cargar el modelo y reservar
+memoria de trabajo para inferencia.
 
-**Conclusión:** la adaptación Linux y la adaptación bare-metal son
-dos campañas distintas. El soporte Linux puede investigarse con el
-cargador y las asignaciones dinámicas actuales, sujeto a validación.
-Qwen3-4B bare-metal exige rediseñar el arranque y la memoria física.
+**Conclusión:** primero se validará Qwen3-4B en Linux. El soporte
+bare-metal requiere rediseñar el protocolo de carga y el mapeo/
+allocator de memoria física, y probarlo en una campaña independiente.
+Aumentar solamente la RAM asignada a QEMU no elimina los límites
+del mapa de 4 GiB ni la representación de módulos Multiboot 1.
 
-Opciones para una fase posterior:
-- Migrar el arranque a UEFI y obtener un mapa de memoria de 64 bits.
-- Mapear RAM física por encima de 4 GiB con tablas de páginas adecuadas.
-- Sustituir los módulos Multiboot 1 de 32 bits por un protocolo de carga
-  con direcciones físicas de 64 bits.
-- Crear un allocator físico capaz de mapear regiones de memoria alta,
-  sin exigir una región contigua inferior a 3,75 GiB.
-- Evaluar carga segmentada/paginada si el diseño de almacenamiento
-  y el hardware lo justifican.
+Este riesgo no afecta por sí mismo a la ruta Linux x86-64.
 
-No mezclar este rediseño con la primera campaña Linux. Primero se
-validará Qwen3-4B en Linux; después se abordará bare-metal preservando
-las pruebas de regresión Qwen3-0.6B.
+---
 
 ## 13. Plan de trabajo remoto antes de usar el MSI
 
