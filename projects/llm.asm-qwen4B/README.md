@@ -113,6 +113,10 @@ python3 projects/llm.asm-qwen4B/tools/asmbin_validate.py modelo.asmbin --json
 
 **Validador Python:** implementado con fixtures sintéticos y CI remota superada (20/20 tests en el último run conocido). No sustituye la validación nativa.
 
-**Auditoría NASM:** completada estáticamente para `model_init`, resolución de punteros, cálculo del arena y runtime Multiboot/bump allocator. Se han documentado los puntos donde faltan comprobaciones de tamaño, rangos y overflow. Todavía no se ha modificado el loader ni se ha compilado una variante endurecida.
+**Validador NASM inicial:** añadidos `tools/asmbin_validate.asm` y `tests/test_asmbin_validate.asm`. La rutina `asmbin_validate(base, actual_size)` comprueba tamaño mínimo y declarado, magic/version/flags, dimensiones básicas, límites Q8, GQA, orden/rango de secciones y spans mínimos de embeddings, capas y norma final. El harness cubre v1/v2, flags requeridos, truncamiento, tamaño, offset y divisibilidad GQA. La compilación/ejecución remota se ha incorporado a CI, pero todavía no se ha confirmado su resultado.
+
+**Límite explícito:** esta primera rutina no valida aún las estructuras internas completas del tokenizer/BPE, no demuestra todos los tamaños internos de cada tensor y todavía no está integrada en `model_init`. No debe considerarse una barrera de seguridad completa ni soporte para modelos nuevos.
+
+**Auditoría NASM:** completada estáticamente para `model_init`, resolución de punteros, cálculo del arena y runtime Multiboot/bump allocator. El upstream permanece intacto; la rutina nueva vive en el subproyecto LEONES.
 
 Seguimiento: [Issue #289 — validador ASMBIN v1/v2](https://github.com/robertosantosx2/LEONES/issues/289).
