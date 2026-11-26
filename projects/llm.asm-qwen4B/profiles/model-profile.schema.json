@@ -78,12 +78,33 @@
       },
       "allOf": [
         {
-          "if": { "properties": { "status": { "enum": ["audited", "exportable", "validated", "supported"] } } },
-          "then": { "properties": { "architecture": { "type": "object" } } }
+          "if": {
+            "properties": {
+              "status": { "enum": ["audited", "exportable", "validated", "supported"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "architecture": { "type": "object" }
+            }
+          }
         },
         {
-          "if": { "properties": { "status": { "const": "supported" } } },
-          "then": { "properties": { "source": { "properties": { "revision": { "type": "string" }, "config_sha256": { "type": "string" } } } }
+          "if": {
+            "properties": {
+              "status": { "const": "supported" }
+            }
+          },
+          "then": {
+            "properties": {
+              "source": {
+                "properties": {
+                  "revision": { "type": "string", "minLength": 1 },
+                  "config_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+                }
+              }
+            }
+          }
         }
       ]
     }
