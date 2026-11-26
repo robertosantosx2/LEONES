@@ -215,6 +215,7 @@ def parse_tokenizer(data: memoryview, h: Header) -> dict:
     # Validate all hash slots. A valid table has contiguous unique ranks and
     # every key/merged ID refers to the declared vocabulary.
     ranks = bytearray()
+    seen_keys = set()
     occupied = 0
     for i in range(HASH_SIZE):
         key, merged_id, rank = struct.unpack_from("<QII", section, off_ht + i * 16)
@@ -225,12 +226,29 @@ def parse_tokenizer(data: memoryview, h: Header) -> dict:
             fail(f"merge-table slot {i} contains a token ID outside vocabulary")
         if rank >= h.vocab_size:
             fail(f"merge-table slot {i} has an invalid rank")
+        if key in seen_keys:
+            fail(f"duplicate BPE key in merge-table slot {i}")
+        seen_keys.add(key)
         if len(ranks) <= rank:
-            ranks.extend(b"\x00" * (rank + 1 - len(ranks)))
+            ranks.extend(b"\\x00" * (rank + 1 - len(ranks)))
         if ranks[rank]:
             fail(f"duplicate BPE rank {rank}")
         ranks[rank] = 1
+        # Confirm that linear probing from the Fibonacci hash reaches this
+        # slot without crossing an empty entry; cap work on hostile clusters.
+        slot = ((key * FIB_MULT) & U64_MAX) >> (64 - HASH_BITS)
+        probes = 0
+        while slot != i:
+            prior_rank = struct.unpack_from("<I", section, off_ht + slot * 16 + 12)[0]
+            if prior_rank == EMPTY_RANK:
+                fail(f"broken BPE probe chain before merge-table slot {i}")
+            slot = (slot + 1) & HASH_MASK
+            probes += 1
+            if probes > MAX_HASH_PROBES:
+                fail(f"BPE probe chain exceeds safety limit at slot {i}")
         occupied += 1
+        if occupied >= HASH_SIZE:
+            fail("BPE merge table must retain at least one empty slot")
     if occupied != len(ranks) or (ranks and not all(ranks)):
         fail("BPE ranks must be unique and contiguous from zero")
     return {"tokenizer_bytes": tok_bytes_len, "merge_entries": occupied,
