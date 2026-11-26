@@ -64,6 +64,12 @@ estática, pendiente de pruebas en el MSI.
 
 El código upstream de referencia se mantiene sin modificaciones.
 
+## Escalado a modelos mayores
+
+La arquitectura del trabajo se prepara para evaluar progresivamente Qwen3-8B, Qwen3-14B y Qwen3-32B, además de Qwen3-0.6B y 4B. Esto es una hoja de ruta, no una declaración de soporte. La estrategia exige perfiles de arquitectura explícitos, validador ASMBIN genérico, exportación incremental, presupuesto de memoria y validación por escalones.
+
+- [Hoja de ruta de escalado Qwen3 0.6B–32B](docs/ROADMAP_ESCALADO_QWEN3_0.6B_A_32B.md)
+
 ## Auditoría y especificaciones
 
 - [Historial técnico y visión estratégica](docs/HISTORIAL_TECNICO_Y_VISION.md)
