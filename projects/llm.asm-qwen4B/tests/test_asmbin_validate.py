@@ -80,8 +80,10 @@ class AsmbinValidatorTests(unittest.TestCase):
         self.assertEqual(report["header"]["version"], 2)
 
     def test_truncated_header(self):
-        with self.assertRaisesRegex(av.ValidationError, "truncated header"):
-            av.validate_buffer(b"\0" * 127)
+        for size in (0, 4, 127):
+            with self.subTest(size=size):
+                with self.assertRaisesRegex(av.ValidationError, "truncated header"):
+                    av.validate_buffer(b"\0" * size)
 
     def test_bad_magic_and_version(self):
         data = make_fixture()
@@ -97,6 +99,17 @@ class AsmbinValidatorTests(unittest.TestCase):
         data = make_fixture(2)
         rewrite_header(data, flags=av.FLAG_TIED_EMB | av.FLAG_QK_NORM)
         with self.assertRaisesRegex(av.ValidationError, "scale flag"):
+            av.validate_buffer(data)
+
+    def test_unknown_flags_and_reserved_bytes(self):
+        data = make_fixture()
+        h = av.HEADER.unpack_from(data, 0)
+        rewrite_header(data, flags=h[15] | 0x80000000)
+        with self.assertRaisesRegex(av.ValidationError, "unknown header flag"):
+            av.validate_buffer(data)
+        data = make_fixture()
+        data[112] = 1
+        with self.assertRaisesRegex(av.ValidationError, "reserved header"):
             av.validate_buffer(data)
 
     def test_untied_embeddings_rejected(self):
