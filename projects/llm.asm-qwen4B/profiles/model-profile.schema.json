@@ -82,7 +82,7 @@
           "then": { "properties": { "architecture": { "type": "object" } } }
         },
         {
-          "if": { "properties": { "status": { "enum": ["exportable", "validated", "supported"] } } },
+          "if": { "properties": { "status": { "const": "supported" } } },
           "then": { "properties": { "source": { "properties": { "revision": { "type": "string" }, "config_sha256": { "type": "string" } } } }
         }
       ]
