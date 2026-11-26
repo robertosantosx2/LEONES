@@ -87,3 +87,5 @@ El código upstream de referencia se mantiene sin modificaciones.
 **Siguiente entregable:** implementar el validador ASMBIN independiente
 y sus fixtures sintéticos antes de modificar el loader o solicitar
 pruebas locales.
+
+Seguimiento de implementación: [Issue #289 — validador ASMBIN v1/v2](https://github.com/robertosantosx2/LEONES/issues/289).
