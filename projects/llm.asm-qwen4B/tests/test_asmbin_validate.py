@@ -1,5 +1,6 @@
 import struct
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -60,6 +61,14 @@ def rewrite_header(data, **changes):
 
 
 class AsmbinValidatorTests(unittest.TestCase):
+    def test_read_only_mmap_file_path(self):
+        data = make_fixture()
+        with tempfile.NamedTemporaryFile() as tmp:
+            tmp.write(data)
+            tmp.flush()
+            report = av.validate_file(tmp.name)
+        self.assertTrue(report["valid"])
+
     def test_valid_v1(self):
         report = av.validate_buffer(make_fixture(1))
         self.assertTrue(report["valid"])
