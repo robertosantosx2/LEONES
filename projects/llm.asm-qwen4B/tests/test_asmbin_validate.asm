@@ -8,6 +8,8 @@ bits 64
 default rel
 %include "constants.inc"
 
+%define FIXTURE_SIZE 1536
+
 extern asmbin_validate
 global _start
 
@@ -17,7 +19,7 @@ _start:
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
-    jnz     .fail
+    jnz     fail
 
     ; ASMBIN v2 requires the FP16-scales flag and is accepted.
     mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION_V2
@@ -26,7 +28,7 @@ _start:
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
-    jnz     .fail
+    jnz     fail
     mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION
     mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
 
@@ -36,7 +38,7 @@ _start:
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
-    jz      .fail
+    jz      fail
     mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
 
     ; A truncated fixed header must be rejected before dereference.
@@ -44,7 +46,7 @@ _start:
     mov     rsi, 127
     call    asmbin_validate
     test    rax, rax
-    jz      .fail
+    jz      fail
 
     ; Declared size mismatch.
     mov     qword [rel fixture + HDR_FILE_SIZE], FIXTURE_SIZE - 1
@@ -52,7 +54,7 @@ _start:
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
-    jz      .fail
+    jz      fail
     mov     qword [rel fixture + HDR_FILE_SIZE], FIXTURE_SIZE
 
     ; Embedding offset outside the file.
@@ -61,7 +63,7 @@ _start:
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
-    jz      .fail
+    jz      fail
     mov     qword [rel fixture + HDR_OFF_EMBED], 192
 
     ; Invalid GQA divisibility.
@@ -70,17 +72,16 @@ _start:
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
-    jz      .fail
+    jz      fail
 
     mov     eax, 60
     xor     edi, edi
     syscall
-.fail:
+fail:
     mov     eax, 60
     mov     edi, 1
     syscall
 
-%define FIXTURE_SIZE 1536
 section .data
 align 8
 fixture:
