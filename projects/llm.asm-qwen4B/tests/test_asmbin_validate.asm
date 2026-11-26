@@ -85,4 +85,5 @@ fixture:
     dq 64                         ; layer stride
     dq 1408                       ; final norm offset
     dq FIXTURE_SIZE               ; file size
+    dq 32, 36, 40, 44              ; tokenizer-relative sub-offsets
     times FIXTURE_SIZE - ($ - fixture) db 0
