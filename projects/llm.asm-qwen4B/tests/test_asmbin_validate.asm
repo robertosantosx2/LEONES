@@ -19,6 +19,26 @@ _start:
     test    rax, rax
     jnz     .fail
 
+    ; ASMBIN v2 requires the FP16-scales flag and is accepted.
+    mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION_V2
+    mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM | HDR_FLAG_FP16_SCALES
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jnz     .fail
+    mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION
+    mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
+
+    ; A missing required flag must be rejected.
+    mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      .fail
+    mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
+
     ; A truncated fixed header must be rejected before dereference.
     lea     rdi, [rel fixture]
     mov     rsi, 127
