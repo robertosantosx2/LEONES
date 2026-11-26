@@ -13,6 +13,7 @@ Investigar LLMs e IA local en Android ARM64, Linux móvil, Termux/proot, sistema
 - [Registro de fuentes](../../../research/mobile-llms-arm/sources.json)
 - [Generador](../../../scripts/research/mobile_llms_arm.py)
 - [Roadmap](ROADMAP.md)
+- [Dossier llm.asm: Linux móvil, bare metal ARM64 y Mobile Intelligence Platform](../../../research/mobile-llms-arm/llm-asm-mobile-intelligence-platform-2026-11.md)
 
 El HTML es autocontenido y offline. La prospección se integra en Daily Atlas Prospection. GitHub y Reddit se consultan cuando sus APIs públicas están disponibles; X se mantiene como búsquedas directas hasta disponer de API autorizada.
 
