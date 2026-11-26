@@ -23,6 +23,8 @@ TOKENIZER_HEADER_SIZE = 64
 HASH_BITS = 19
 HASH_SIZE = 1 << HASH_BITS
 HASH_MASK = HASH_SIZE - 1
+FIB_MULT = 0x9E3779B97F4A7C15
+MAX_HASH_PROBES = 1024
 EMPTY_RANK = 0xFFFFFFFF
 FLAG_TIED_EMB = 1
 FLAG_QK_NORM = 2
@@ -145,6 +147,8 @@ def validate_dimensions(h: Header) -> None:
             fail(f"{name} exceeds uint32")
     if h.n_heads % h.n_kv_heads:
         fail("n_heads must be divisible by n_kv_heads")
+    if h.head_dim % 2:
+        fail("head_dim must be even for the RoPE implementation")
     q_dim = h.n_heads * h.head_dim
     kv_dim = h.n_kv_heads * h.head_dim
     if q_dim > U64_MAX or kv_dim > U64_MAX:
