@@ -94,6 +94,7 @@ python3 projects/llm.asm-qwen4B/tools/asmbin_validate.py modelo.asmbin --json
 
 - [Historial técnico y visión estratégica](docs/HISTORIAL_TECNICO_Y_VISION.md)
 - [Auditoría de kernels, formato ASMBIN y riesgos](docs/AUDITORIA_KERNELS_FORMATO_Y_RIESGOS.md)
+- [Auditoría del loader NASM y runtime bare-metal](docs/AUDITORIA_LOADER_NASM_RUNTIME_2026-11-26.md)
 - [Especificación del validador ASMBIN v1/v2](docs/ASMBIN_VALIDATOR_SPEC.md)
 
 ## Hallazgos actuales
@@ -110,6 +111,8 @@ python3 projects/llm.asm-qwen4B/tools/asmbin_validate.py modelo.asmbin --json
   allocator bajo 3,75 GiB. Su carga no es viable de forma general sin
   rediseñar el protocolo de carga y la gestión de memoria.
 
-**Implementación inicial del validador:** ya está añadida en `tools/asmbin_validate.py`, con fixtures sintéticos en `tests/test_asmbin_validate.py` y workflow de CI dedicado. Está pendiente ejecutar y revisar la CI remota y completar la auditoría de los casos límite antes de considerarlo aceptado. El loader NASM aún no se ha modificado.
+**Validador Python:** implementado con fixtures sintéticos y CI remota superada (20/20 tests en el último run conocido). No sustituye la validación nativa.
 
-Seguimiento de implementación: [Issue #289 — validador ASMBIN v1/v2](https://github.com/robertosantosx2/LEONES/issues/289).
+**Auditoría NASM:** completada estáticamente para `model_init`, resolución de punteros, cálculo del arena y runtime Multiboot/bump allocator. Se han documentado los puntos donde faltan comprobaciones de tamaño, rangos y overflow. Todavía no se ha modificado el loader ni se ha compilado una variante endurecida.
+
+Seguimiento: [Issue #289 — validador ASMBIN v1/v2](https://github.com/robertosantosx2/LEONES/issues/289).
