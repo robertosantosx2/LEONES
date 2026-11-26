@@ -41,3 +41,25 @@ El antecedente es la campaña Qwen3-0.6B archivada en:
 
 Los nuevos experimentos tendrán registros y resultados propios.
 No sobrescribirán los datos históricos.
+
+## Estado del trabajo
+
+**Fase actual:** auditoría estática y preparación de compatibilidad Qwen3-4B.
+
+Ya están documentados:
+- El experimento reproducible Qwen3-0.6B, incluida la exportación,
+  compilación, validación numérica y campaña de contexto.
+- La auditoría estática del exportador, ASMBIN y motor NASM.
+- La configuración oficial Qwen3-4B y estimaciones iniciales de
+  pesos Q8_0 y KV-cache.
+- Los riesgos pendientes y los criterios para iniciar pruebas locales.
+
+Documento principal:
+`docs/HISTORIAL_TECNICO_Y_VISION.md`
+
+**Estado de validación:** todavía no se ha descargado ni exportado
+Qwen3-4B, ni se ha compilado o ejecutado el motor con ese modelo.
+La compatibilidad descrita es una hipótesis respaldada por inspección
+estática, pendiente de pruebas en el MSI.
+
+El código upstream de referencia se mantiene sin modificaciones.
