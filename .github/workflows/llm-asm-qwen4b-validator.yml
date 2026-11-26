@@ -1,0 +1,43 @@
+name: llm.asm Qwen3 ASMBIN validator
+
+on:
+  push:
+    branches:
+      - research/llm-asm-qwen4b-*
+    paths:
+      - "projects/llm.asm-qwen4B/tools/**"
+      - "projects/llm.asm-qwen4B/tests/**"
+      - ".github/workflows/llm-asm-qwen4b-validator.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "projects/llm.asm-qwen4B/tools/**"
+      - "projects/llm.asm-qwen4B/tests/**"
+      - ".github/workflows/llm-asm-qwen4b-validator.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validator-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile validator and tests
+        run: |
+          python -m py_compile \
+            projects/llm.asm-qwen4B/tools/asmbin_validate.py \
+            projects/llm.asm-qwen4B/tests/test_asmbin_validate.py
+      - name: Run synthetic ASMBIN tests
+        run: |
+          python -m unittest discover \
+            -s projects/llm.asm-qwen4B/tests \
+            -p "test_*.py" \
+            -v
