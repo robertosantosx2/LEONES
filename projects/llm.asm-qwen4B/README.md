@@ -70,6 +70,13 @@ La arquitectura del trabajo se prepara para evaluar progresivamente Qwen3-8B, Qw
 
 - [Hoja de ruta de escalado Qwen3 0.6B–32B](docs/ROADMAP_ESCALADO_QWEN3_0.6B_A_32B.md)
 
+## Perfiles de arquitectura
+
+- [Esquema versionado de perfiles](profiles/model-profile.schema.json)
+- [Registro de perfiles Qwen3 0.6B/4B/8B/14B/32B](profiles/qwen3-profiles.json)
+
+Los perfiles futuros se mantienen sin dimensiones hasta inspeccionar y fijar sus configuraciones oficiales y metadatos de tensores. El nombre o número de parámetros no basta para inferir la topología.
+
 ## Validador ASMBIN
 
 - [Validador independiente](tools/asmbin_validate.py)
