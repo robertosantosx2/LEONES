@@ -45,6 +45,8 @@ jobs:
   upstream-linux-build-smoke:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout LEONES sources
+        uses: actions/checkout@v4
       - name: Install NASM and binutils
         run: |
           sudo apt-get update
