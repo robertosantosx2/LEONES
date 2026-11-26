@@ -63,3 +63,25 @@ La compatibilidad descrita es una hipótesis respaldada por inspección
 estática, pendiente de pruebas en el MSI.
 
 El código upstream de referencia se mantiene sin modificaciones.
+
+## Auditoría y especificaciones
+
+- [Historial técnico y visión estratégica](docs/HISTORIAL_TECNICO_Y_VISION.md)
+- [Auditoría de kernels, formato ASMBIN y riesgos](docs/AUDITORIA_KERNELS_FORMATO_Y_RIESGOS.md)
+- [Especificación del validador ASMBIN v1/v2](docs/ASMBIN_VALIDATOR_SPEC.md)
+
+## Hallazgos actuales
+
+- Las dimensiones de Qwen3-4B caben en el límite estático Q8 del kernel
+  inspeccionado (`Q8_MAX_K=16384`), pero falta paridad numérica.
+- El loader NASM no demuestra validar el tamaño declarado, offsets,
+  solapamientos ni todas las relaciones dimensionales del encabezado.
+- El tokenizer requiere comprobar los merges reales del checkpoint.
+- El exportador puede tener un pico de memoria superior al tamaño del
+  archivo final; se necesita una estrategia de exportación monitorizada.
+- El arranque bare-metal actual no puede cargar directamente el artefacto
+  Q8_0 estimado de más de 4 GiB con su protocolo y allocator actuales.
+
+**Siguiente entregable:** implementar el validador ASMBIN independiente
+y sus fixtures sintéticos antes de modificar el loader o solicitar
+pruebas locales.
