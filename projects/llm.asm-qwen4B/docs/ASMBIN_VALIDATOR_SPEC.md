@@ -252,3 +252,46 @@ El validador se considera listo cuando:
 - los resultados son reproducibles y no dependen de cargar el modelo entero en memoria.
 
 La compatibilidad real con Qwen3-4B seguirá pendiente hasta exportar el checkpoint oficial y verificarlo en el MSI.
+
+
+---
+
+## 10. Aclaraciones de layout confirmadas contra el exportador fijado
+
+La implementación del validador se contrasta con \`scripts/export_weights.py\` en el commit upstream fijado, no solo con descripciones generales de Q8_0.
+
+- Las filas Q8_0 se almacenan consecutivamente como \`K bytes + escalas\`; **no** se añade padding de 64 bytes entre filas. La alineación de 64 bytes se aplica a los inicios de secciones, matrices y capas.
+- El tamaño de la sección tokenizer no aparece como campo independiente en la cabecera. Se obtiene del intervalo \`[off_tokenizer, off_embed)\`; sus sub-offsets y el tamaño fijo de la tabla BPE permiten reconstruir y validar su longitud exacta.
+- El exportador escribe un layout canónico: \`off_embed\` sigue al tokenizer alineado; \`off_layers\` sigue a embeddings alineados; cada matriz empieza con \`pad64\`; cada capa termina alineada; \`off_final_norm\` sigue a \`n_layers × layer_stride\`; el archivo termina alineado después de la norma final.
+- Los cuatro vectores de normas de cada capa se escriben consecutivamente antes de la primera matriz. El padding se aplica antes de cada matriz, no entre esos cuatro vectores.
+- Los IDs de EOS deben pertenecer al vocabulario; los campos reservados de cabecera y tokenizer deben ser cero.
+- Para este motor se exige QK-Norm y la máscara BPE fija de 19 bits. Los bits de flags desconocidos se rechazan.
+
+## 11. Implementación inicial y ejecución
+
+Implementación independiente:
+\`projects/llm.asm-qwen4B/tools/asmbin_validate.py\`
+
+Pruebas sintéticas:
+\`projects/llm.asm-qwen4B/tests/test_asmbin_validate.py\`
+
+Ejecutar desde la raíz del checkout:
+
+\`\`\`bash
+python3 -m py_compile \\
+  projects/llm.asm-qwen4B/tools/asmbin_validate.py \\
+  projects/llm.asm-qwen4B/tests/test_asmbin_validate.py
+
+python3 -m unittest discover \\
+  -s projects/llm.asm-qwen4B/tests \\
+  -p 'test_*.py' -v
+
+python3 projects/llm.asm-qwen4B/tools/asmbin_validate.py \\
+  ruta/al/modelo.asmbin --json
+\`\`\`
+
+El CLI abre el artefacto con mmap de solo lectura y no materializa los pesos en RAM. Devuelve código 0 para un archivo válido y código 2 para un archivo inválido o inaccesible.
+
+La primera batería contiene fixtures sintéticos mínimos para v1 y v2, cabeceras truncadas, magic/version/flags, tamaño declarado, dimensiones, límites Q8, offsets, stride, token IDs, offsets de tokens y tabla BPE. Los perfiles dimensionales 0.6B y 4B se prueban sin crear artefactos de varios GiB.
+
+**Límite de esta fase:** el validador Python no sustituye las comprobaciones del loader NASM. Tampoco demuestra paridad numérica, tokenización semántica frente a Hugging Face ni compatibilidad real de un checkpoint.
