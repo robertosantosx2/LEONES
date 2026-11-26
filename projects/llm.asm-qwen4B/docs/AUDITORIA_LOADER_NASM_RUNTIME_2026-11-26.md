@@ -160,3 +160,19 @@ El validador Python independiente sigue siendo una defensa y herramienta de diag
 - Los hallazgos describen ausencia de defensas observables en el código revisado; no afirman que un checkpoint válido actual falle necesariamente.
 
 **Conclusión:** el siguiente cambio debe ser una capa explícita de validación nativa en `shared/transformer.asm`, con pruebas sintéticas y compilación aislada. El runtime bare-metal requiere una segunda línea de endurecimiento independiente. No debe iniciarse todavía la exportación de Qwen3-4B.
+
+
+## 11. Primer validador NASM aislado (26-11-2026)
+
+Se ha añadido una primera implementación independiente en:
+
+- `projects/llm.asm-qwen4B/tools/asmbin_validate.asm`
+- `projects/llm.asm-qwen4B/tests/test_asmbin_validate.asm`
+
+ABI: `int64 asmbin_validate(const void *base, uint64 actual_size)`. La rutina comprueba que existen 128 bytes antes de leer la cabecera; magic, versión y flags; coincidencia de `HDR_FILE_SIZE`; dimensiones no nulas; alineación y límite Q8 de `dim`, `hidden_dim` y `q_dim`; divisibilidad GQA y `head_dim` par; orden de secciones; cuatro sub-offsets del tokenizer dentro de su sección; extensión mínima de embeddings, capas y norma final mediante restas antes de comparar longitudes.
+
+El harness usa un fixture pequeño de 1536 bytes y cubre cabecera válida v1, válida v2, falta de flag requerido, cabecera truncada, discrepancia de tamaño, offset de embeddings fuera de rango y GQA no divisible. El workflow compila y enlaza este harness con NASM/ld en Linux, además de compilar el upstream fijado con `FAST_Q8=1` y `FAST_Q8=0`.
+
+**Estado de validación:** el código y el job están publicados; no se dispone aún de un resultado de ejecución CI confirmado para este nuevo job. No afirmar que el harness haya pasado hasta verificar Actions.
+
+**Alcance incompleto por diseño:** todavía no se validan los contenidos completos del tokenizer/BPE, cada tensor y su stride interno, los solapamientos internos de subregiones, ni las dimensiones numéricas de activaciones/KV-cache. Tampoco se ha integrado la llamada en `model_init`. Antes de integrarlo hay que ejecutar CI, corregir cualquier error de ensamblado y ampliar el harness. El código upstream sigue sin modificaciones.
