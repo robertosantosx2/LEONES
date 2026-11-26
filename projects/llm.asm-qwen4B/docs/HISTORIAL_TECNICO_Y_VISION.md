@@ -553,6 +553,34 @@ No probar inicialmente 40960 en el MSI. Aunque figure en la
 configuración del modelo, el contexto operativo debe elegirse
 según memoria real y latencia.
 
+### 12.6 Riesgos y cuestiones abiertas
+
+1. Confirmar la compatibilidad real del tokenizer y sus merges.
+2. Confirmar todos los nombres, formas y dtypes de Safetensors.
+3. Medir el pico de RAM del exportador: la conversión BF16 a FP32
+   y las matrices temporales pueden elevar el uso durante la
+   cuantización, especialmente en embeddings.
+4. Validar strides, alineación y offsets del ASMBIN.
+5. Revisar límites y validaciones del encabezado en el loader.
+6. Confirmar que el kernel Q8_0 procesa correctamente K=9728.
+7. Comparar logits y tokens greedy con una implementación de
+   referencia independiente.
+8. Medir RSS, swap, prefill, decode y latencia inicial.
+9. Evaluar si el rendimiento de cuatro hilos sigue siendo adecuado;
+   no asumir que la configuración del 0.6B se mantiene óptima.
+10. Mantener el modelo original y los resultados de 0.6B intactos.
+
+**Conclusión de auditoría:** el diseño del formato ASMBIN y buena
+parte del motor ya son parametrizados y no muestran un bloqueo
+obvio para las dimensiones de Qwen3-4B. El exportador parece
+adaptable con cambios descriptivos menores, pero la compatibilidad
+sigue siendo provisional hasta validar los tensores y ejecutar
+pruebas numéricas. No se debe modificar el código upstream de
+referencia; cualquier adaptación se hará en una rama de trabajo
+controlada y con pruebas de regresión para Qwen3-0.6B.
+
+---
+
 ### 12.7 Bloqueo identificado para la fase bare-metal actual
 
 Se inspeccionaron también `02-baremetal-os/runtime.asm`,
@@ -594,34 +622,6 @@ Opciones para una fase posterior:
 No mezclar este rediseño con la primera campaña Linux. Primero se
 validará Qwen3-4B en Linux; después se abordará bare-metal preservando
 las pruebas de regresión Qwen3-0.6B.
-
-### 12.6 Riesgos y cuestiones abiertas
-
-1. Confirmar la compatibilidad real del tokenizer y sus merges.
-2. Confirmar todos los nombres, formas y dtypes de Safetensors.
-3. Medir el pico de RAM del exportador: la conversión BF16 a FP32
-   y las matrices temporales pueden elevar el uso durante la
-   cuantización, especialmente en embeddings.
-4. Validar strides, alineación y offsets del ASMBIN.
-5. Revisar límites y validaciones del encabezado en el loader.
-6. Confirmar que el kernel Q8_0 procesa correctamente K=9728.
-7. Comparar logits y tokens greedy con una implementación de
-   referencia independiente.
-8. Medir RSS, swap, prefill, decode y latencia inicial.
-9. Evaluar si el rendimiento de cuatro hilos sigue siendo adecuado;
-   no asumir que la configuración del 0.6B se mantiene óptima.
-10. Mantener el modelo original y los resultados de 0.6B intactos.
-
-**Conclusión de auditoría:** el diseño del formato ASMBIN y buena
-parte del motor ya son parametrizados y no muestran un bloqueo
-obvio para las dimensiones de Qwen3-4B. El exportador parece
-adaptable con cambios descriptivos menores, pero la compatibilidad
-sigue siendo provisional hasta validar los tensores y ejecutar
-pruebas numéricas. No se debe modificar el código upstream de
-referencia; cualquier adaptación se hará en una rama de trabajo
-controlada y con pruebas de regresión para Qwen3-0.6B.
-
----
 
 ## 13. Plan de trabajo remoto antes de usar el MSI
 
