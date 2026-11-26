@@ -70,6 +70,19 @@ La arquitectura del trabajo se prepara para evaluar progresivamente Qwen3-8B, Qw
 
 - [Hoja de ruta de escalado Qwen3 0.6B–32B](docs/ROADMAP_ESCALADO_QWEN3_0.6B_A_32B.md)
 
+## Validador ASMBIN
+
+- [Validador independiente](tools/asmbin_validate.py)
+- [Pruebas sintéticas](tests/test_asmbin_validate.py)
+- [Workflow CI](../../.github/workflows/llm-asm-qwen4b-validator.yml)
+
+Ejecución local desde la raíz de LEONES:
+
+```bash
+python3 -m unittest discover -s projects/llm.asm-qwen4B/tests -p 'test_*.py' -v
+python3 projects/llm.asm-qwen4B/tools/asmbin_validate.py modelo.asmbin --json
+```
+
 ## Auditoría y especificaciones
 
 - [Historial técnico y visión estratégica](docs/HISTORIAL_TECNICO_Y_VISION.md)
@@ -90,8 +103,6 @@ La arquitectura del trabajo se prepara para evaluar progresivamente Qwen3-8B, Qw
   allocator bajo 3,75 GiB. Su carga no es viable de forma general sin
   rediseñar el protocolo de carga y la gestión de memoria.
 
-**Siguiente entregable:** implementar el validador ASMBIN independiente
-y sus fixtures sintéticos antes de modificar el loader o solicitar
-pruebas locales.
+**Implementación inicial del validador:** ya está añadida en `tools/asmbin_validate.py`, con fixtures sintéticos en `tests/test_asmbin_validate.py` y workflow de CI dedicado. Está pendiente ejecutar y revisar la CI remota y completar la auditoría de los casos límite antes de considerarlo aceptado. El loader NASM aún no se ha modificado.
 
 Seguimiento de implementación: [Issue #289 — validador ASMBIN v1/v2](https://github.com/robertosantosx2/LEONES/issues/289).
