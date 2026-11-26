@@ -230,7 +230,7 @@ def parse_tokenizer(data: memoryview, h: Header) -> dict:
             fail(f"duplicate BPE key in merge-table slot {i}")
         seen_keys.add(key)
         if len(ranks) <= rank:
-            ranks.extend(b"\\x00" * (rank + 1 - len(ranks)))
+            ranks.extend(b"\x00" * (rank + 1 - len(ranks)))
         if ranks[rank]:
             fail(f"duplicate BPE rank {rank}")
         ranks[rank] = 1
