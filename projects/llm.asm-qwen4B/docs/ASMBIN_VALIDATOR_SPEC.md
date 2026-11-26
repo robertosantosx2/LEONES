@@ -299,3 +299,10 @@ La primera batería contiene fixtures sintéticos mínimos para v1 y v2, cabecer
 
 
 El validador también rechaza perfiles sin `FLAG_TIED_EMB`, ya que el layout ASMBIN actual no define una sección independiente para `lm_head`. La multiplicación de `2 × n_layers × max_seq_len × kv_dim × 4` (KV-cache K+V FP32), `n_heads × max_seq_len × 4` (scores) y `vocab_size × 4` (logits) se comprueba contra uint64.
+
+
+## Validador NASM de primera etapa
+
+El módulo independiente `tools/asmbin_validate.asm` expone `asmbin_validate(base, actual_size)` y devuelve cero o un código negativo. Es un guard inicial de cabecera y secciones principales, no reemplaza el parser Python ni la validación completa de tokenizer/BPE. No se debe conectar a `model_init` hasta que el harness nativo y la CI hayan pasado y se complete la cobertura de límites internos.
+
+El harness `tests/test_asmbin_validate.asm` construye un artefacto sintético mínimo y verifica v1/v2, flags, truncamiento, tamaño declarado, offset de embeddings y divisibilidad GQA. El workflow de la rama ensambla, enlaza y ejecuta el harness en Linux; el resultado de ese job aún debe verificarse en GitHub Actions.
