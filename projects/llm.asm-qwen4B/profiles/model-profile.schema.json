@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/robertosantosx2/LEONES/blob/main/projects/llm.asm-qwen4B/profiles/model-profile.schema.json",
+  "title": "llm.asm model profile",
+  "description": "Versioned architecture and evidence descriptor for a model evaluated by llm.asm.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "profiles"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/profile" }
+    }
+  },
+  "$defs": {
+    "positiveInteger": { "type": "integer", "minimum": 1 },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_id", "model_id", "size_label", "status", "source",
+        "architecture", "tensor_shapes_verified", "evidence", "notes"
+      ],
+      "properties": {
+        "profile_id": { "type": "string", "pattern": "^qwen3-[0-9]+(\\.[0-9]+)?b$" },
+        "model_id": { "type": "string", "minLength": 1 },
+        "size_label": { "type": "string", "minLength": 1 },
+        "status": {
+          "enum": ["planned", "audited", "exportable", "validated", "supported"]
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repository", "revision", "config_sha256"],
+          "properties": {
+            "repository": { "type": "string", "minLength": 1 },
+            "revision": { "type": ["string", "null"] },
+            "config_sha256": {
+              "oneOf": [
+                { "type": "null" },
+                { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+              ]
+            }
+          }
+        },
+        "architecture": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "model_type", "hidden_size", "intermediate_size",
+                "num_hidden_layers", "num_attention_heads",
+                "num_key_value_heads", "head_dim", "vocab_size",
+                "tie_word_embeddings", "qk_norm"
+              ],
+              "properties": {
+                "model_type": { "type": "string", "minLength": 1 },
+                "hidden_size": { "$ref": "#/$defs/positiveInteger" },
+                "intermediate_size": { "$ref": "#/$defs/positiveInteger" },
+                "num_hidden_layers": { "$ref": "#/$defs/positiveInteger" },
+                "num_attention_heads": { "$ref": "#/$defs/positiveInteger" },
+                "num_key_value_heads": { "$ref": "#/$defs/positiveInteger" },
+                "head_dim": { "$ref": "#/$defs/positiveInteger" },
+                "vocab_size": { "$ref": "#/$defs/positiveInteger" },
+                "tie_word_embeddings": { "type": ["boolean", "null"] },
+                "qk_norm": { "type": ["boolean", "null"] }
+              }
+            }
+          ]
+        },
+        "tensor_shapes_verified": { "type": "boolean" },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "enum": ["audited", "exportable", "validated", "supported"] } } },
+          "then": { "properties": { "architecture": { "type": "object" } } }
+        },
+        {
+          "if": { "properties": { "status": { "enum": ["exportable", "validated", "supported"] } } },
+          "then": { "properties": { "source": { "properties": { "revision": { "type": "string" }, "config_sha256": { "type": "string" } } } }
+        }
+      ]
+    }
+  }
+}
