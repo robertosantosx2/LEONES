@@ -65,16 +65,18 @@ Reglas:
 Para el motor Qwen3 de esta referencia:
 
 - Todas las dimensiones deben ser mayores que cero.
-- `dim == n_heads * head_dim`.
+- `q_dim = n_heads * head_dim` (calculado con overflow comprobado).
+- `kv_dim = n_kv_heads * head_dim` (calculado con overflow comprobado).
 - `n_heads % n_kv_heads == 0`.
-- `kv_dim = n_kv_heads * head_dim`.
-- `q_dim = n_heads * head_dim`.
+
 - `dim`, `hidden_dim`, `q_dim` y `kv_dim` deben ser múltiplos de 32 para las matrices cuantizadas correspondientes.
 - `max(dim, hidden_dim, q_dim) <= 16384`, por el buffer Q8 estático.
 - `ht_mask == 524287` en esta implementación.
 - `n_layers`, `n_heads`, `n_kv_heads`, `head_dim`, `vocab_size` y `max_seq_len` no pueden ser cero.
 - Los valores de epsilon y RoPE deben ser finitos y positivos.
 - El modelo debe declarar QK-Norm para esta ruta de ejecución.
+
+La relación `dim == q_dim` **no es una regla válida para toda la familia**. En Qwen3-4B, `dim=2560` mientras que `q_dim=32×128=4096`. El exportador representa esa diferencia explícitamente en las formas de q_proj y o_proj. El validador no debe imponer igualdad entre dim y q_dim.
 
 La política de aceptación puede ser más estricta para el perfil Qwen3-4B:
 `dim=2560, hidden_dim=9728, n_layers=36, n_heads=32, n_kv_heads=8, head_dim=128, vocab_size=151936`.
