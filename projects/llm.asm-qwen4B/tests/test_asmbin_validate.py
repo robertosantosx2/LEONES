@@ -112,6 +112,12 @@ class AsmbinValidatorTests(unittest.TestCase):
         with self.assertRaisesRegex(av.ValidationError, "divisible"):
             av.validate_buffer(data)
 
+    def test_runtime_buffer_overflow(self):
+        data = make_fixture()
+        rewrite_header(data, n_layers=0xFFFFFFFF, max_seq_len=0xFFFFFFFF)
+        with self.assertRaisesRegex(av.ValidationError, "KV-cache size"):
+            av.validate_buffer(data)
+
     def test_q8_k_constraints(self):
         data = make_fixture()
         rewrite_header(data, dim=48)
