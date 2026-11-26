@@ -73,7 +73,8 @@ Para el motor Qwen3 de esta referencia:
 - `ht_mask == 524287` en esta implementación.
 - `n_layers`, `n_heads`, `n_kv_heads`, `head_dim`, `vocab_size` y `max_seq_len` no pueden ser cero.
 - Los valores de epsilon y RoPE deben ser finitos y positivos.
-- El modelo debe declarar QK-Norm para esta ruta de ejecución.
+- Los tamaños derivados de KV-cache FP32, scores de atención y logits deben calcularse con comprobación de overflow antes de reservar el arena.
+- El modelo debe declarar QK-Norm y embeddings atados: el layout actual solo contiene una matriz de embeddings y el loader reutiliza esa matriz para la salida.
 
 La relación `dim == q_dim` **no es una regla válida para toda la familia**. En Qwen3-4B, `dim=2560` mientras que `q_dim=32×128=4096`. El exportador representa esa diferencia explícitamente en las formas de q_proj y o_proj. El validador no debe imponer igualdad entre dim y q_dim.
 
@@ -295,3 +296,6 @@ El CLI abre el artefacto con mmap de solo lectura y no materializa los pesos en 
 La primera batería contiene fixtures sintéticos mínimos para v1 y v2, cabeceras truncadas, magic/version/flags, tamaño declarado, dimensiones, límites Q8, offsets, stride, token IDs, offsets de tokens y tabla BPE. Los perfiles dimensionales 0.6B y 4B se prueban sin crear artefactos de varios GiB.
 
 **Límite de esta fase:** el validador Python no sustituye las comprobaciones del loader NASM. Tampoco demuestra paridad numérica, tokenización semántica frente a Hugging Face ni compatibilidad real de un checkpoint.
+
+
+El validador también rechaza perfiles sin `FLAG_TIED_EMB`, ya que el layout ASMBIN actual no define una sección independiente para `lm_head`. La multiplicación de `2 × n_layers × max_seq_len × kv_dim × 4` (KV-cache K+V FP32), `n_heads × max_seq_len × 4` (scores) y `vocab_size × 4` (logits) se comprueba contra uint64.
