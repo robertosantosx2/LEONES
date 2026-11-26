@@ -144,6 +144,27 @@ class AsmbinValidatorTests(unittest.TestCase):
         with self.assertRaisesRegex(av.ValidationError, "not monotonic"):
             av.validate_buffer(data)
 
+    def test_valid_bpe_entry_and_broken_probe_chain(self):
+        data = make_fixture()
+        off_tok = av.HEADER.unpack_from(data, 0)[16]
+        off_ht = struct.unpack_from("<4Q", data, off_tok)[3]
+        struct.pack_into("<QII", data, off_tok + off_ht, 0, 1, 0)
+        self.assertTrue(av.validate_buffer(data)["valid"])
+
+        data = make_fixture()
+        struct.pack_into("<QII", data, off_tok + off_ht + 16, 0, 1, 0)
+        with self.assertRaisesRegex(av.ValidationError, "probe chain"):
+            av.validate_buffer(data)
+
+    def test_duplicate_bpe_key(self):
+        data = make_fixture()
+        off_tok = av.HEADER.unpack_from(data, 0)[16]
+        off_ht = struct.unpack_from("<4Q", data, off_tok)[3]
+        struct.pack_into("<QII", data, off_tok + off_ht, 0, 1, 0)
+        struct.pack_into("<QII", data, off_tok + off_ht + 16, 0, 2, 1)
+        with self.assertRaisesRegex(av.ValidationError, "duplicate BPE key"):
+            av.validate_buffer(data)
+
     def test_merge_id_out_of_range(self):
         data = make_fixture()
         off_tok = av.HEADER.unpack_from(data, 0)[16]
