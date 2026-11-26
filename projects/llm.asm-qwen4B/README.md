@@ -79,8 +79,10 @@ El código upstream de referencia se mantiene sin modificaciones.
 - El tokenizer requiere comprobar los merges reales del checkpoint.
 - El exportador puede tener un pico de memoria superior al tamaño del
   archivo final; se necesita una estrategia de exportación monitorizada.
-- El arranque bare-metal actual no puede cargar directamente el artefacto
-  Q8_0 estimado de más de 4 GiB con su protocolo y allocator actuales.
+- El artefacto Q8_0 estimado queda cerca de 4 GiB; el arranque bare-metal
+  actual tiene un mapa físico de 4 GiB, módulos Multiboot de 32 bits y un
+  allocator bajo 3,75 GiB. Su carga no es viable de forma general sin
+  rediseñar el protocolo de carga y la gestión de memoria.
 
 **Siguiente entregable:** implementar el validador ASMBIN independiente
 y sus fixtures sintéticos antes de modificar el loader o solicitar
