@@ -32,9 +32,9 @@ global asmbin_validate
 %macro CHECK_RANGE 2
     cmp     %1, rsi
     ja      .bad_range
-    mov     rax, rsi
-    sub     rax, %1
-    cmp     %2, rax
+    mov     r11, rsi
+    sub     r11, %1
+    cmp     %2, r11
     ja      .bad_range
 %endmacro
 
@@ -58,8 +58,10 @@ asmbin_validate:
 .version_ok:
     ; Require tied embeddings + QK norm; reject unknown flags.
     mov     eax, [rdi + HDR_FLAGS]
-    test    eax, (HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM)
-    jz      .bad_flags
+    mov     ecx, eax
+    and     ecx, (HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM)
+    cmp     ecx, (HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM)
+    jne     .bad_flags
     and     eax, ~(HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM | HDR_FLAG_FP16_SCALES)
     jnz     .bad_flags
     cmp     dword [rdi + HDR_VERSION], ASMBIN_VERSION
@@ -174,9 +176,7 @@ asmbin_validate:
 
     ; Embedding extent: vocab * (dim + dim/2^scale_shift).
     mov     eax, [rdi + HDR_DIM]
-    mov     ecx, eax
-    mov     r8d, r10d                  ; r10d still scale shift? overwritten above
-    ; Reload version to derive scale shift without relying on clobbered regs.
+    ; Derive scale shift from the version; do not trust an unvalidated flag.
     mov     r8d, 3
     cmp     dword [rdi + HDR_VERSION], ASMBIN_VERSION_V2
     jne     .embed_shift_ready
