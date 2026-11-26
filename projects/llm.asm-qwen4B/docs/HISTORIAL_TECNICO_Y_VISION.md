@@ -553,6 +553,48 @@ No probar inicialmente 40960 en el MSI. Aunque figure en la
 configuración del modelo, el contexto operativo debe elegirse
 según memoria real y latencia.
 
+### 12.7 Bloqueo identificado para la fase bare-metal actual
+
+Se inspeccionaron también `02-baremetal-os/runtime.asm`,
+`os_constants.inc`, `boot.asm`, `kernel.asm` y `linker.ld`.
+
+La fase bare-metal actual no puede cargar directamente el Qwen3-4B
+Q8_0 estimado:
+
+1. El arranque Multiboot 1 representa las direcciones de módulo con
+   campos de 32 bits.
+2. `boot.asm` crea tablas de páginas de identidad para 0–4 GiB,
+   mediante páginas enormes de 2 MiB.
+3. `runtime.asm` busca la mayor región utilizable por debajo de
+   `0xF0000000` (3,75 GiB).
+4. El kernel consume el modelo como módulo Multiboot, sin copia.
+5. Las matrices Q8_0 estimadas ocupan 4.275.185.664 bytes, más de
+   4 GiB, antes de tokenizer y cabecera.
+
+Por tanto, el modelo completo no cabe en el espacio de direcciones
+que el arranque actual mapea ni en la región que el allocator actual
+puede gestionar. Aumentar solamente la RAM asignada a QEMU no resuelve
+el límite de direccionamiento y del protocolo de módulos.
+
+**Conclusión:** la adaptación Linux y la adaptación bare-metal son
+dos campañas distintas. El soporte Linux puede investigarse con el
+cargador y las asignaciones dinámicas actuales, sujeto a validación.
+Qwen3-4B bare-metal exige rediseñar el arranque y la memoria física.
+
+Opciones para una fase posterior:
+- Migrar el arranque a UEFI y obtener un mapa de memoria de 64 bits.
+- Mapear RAM física por encima de 4 GiB con tablas de páginas adecuadas.
+- Sustituir los módulos Multiboot 1 de 32 bits por un protocolo de carga
+  con direcciones físicas de 64 bits.
+- Crear un allocator físico capaz de mapear regiones de memoria alta,
+  sin exigir una región contigua inferior a 3,75 GiB.
+- Evaluar carga segmentada/paginada si el diseño de almacenamiento
+  y el hardware lo justifican.
+
+No mezclar este rediseño con la primera campaña Linux. Primero se
+validará Qwen3-4B en Linux; después se abordará bare-metal preservando
+las pruebas de regresión Qwen3-0.6B.
+
 ### 12.6 Riesgos y cuestiones abiertas
 
 1. Confirmar la compatibilidad real del tokenizer y sus merges.
