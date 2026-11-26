@@ -15,7 +15,6 @@ import os
 import struct
 import sys
 from dataclasses import asdict, dataclass
-from typing import BinaryIO
 
 MAGIC = b"ASML"
 HEADER_SIZE = 128
@@ -164,6 +163,19 @@ def validate_dimensions(h: Header) -> None:
     checked_product("KV-cache size", 2, h.n_layers, h.max_seq_len, kv_dim, 4)
     checked_product("attention-score buffer size", h.n_heads, h.max_seq_len, 4)
     checked_product("logits buffer size", h.vocab_size, 4)
+    arena_terms = (
+        checked_product("X buffers", 2, h.dim, 4),
+        checked_product("Q/K/V and attention output buffers", 2 * q_dim + 2 * kv_dim, 4),
+        checked_product("attention-score buffer", h.n_heads, h.max_seq_len, 4),
+        checked_product("MLP buffers", 2, h.hidden_dim, 4),
+        checked_product("logits/probability buffers", 2, h.vocab_size, 4),
+        checked_product("KV-cache", 2, h.n_layers, h.max_seq_len, kv_dim, 4),
+    )
+    arena_total = 64 * 16
+    for term in arena_terms:
+        if term > U64_MAX - arena_total:
+            fail("total activation/KV arena size overflows uint64")
+        arena_total += term
     if h.eos_1 >= h.vocab_size or h.eos_2 >= h.vocab_size:
         fail("EOS token ID is outside vocabulary")
     if h.ht_mask != HASH_MASK:
@@ -212,6 +224,8 @@ def parse_tokenizer(data: memoryview, h: Header) -> dict:
     byte_ids = struct.unpack_from("<256I", section, off_b2t)
     if any(token_id >= h.vocab_size for token_id in byte_ids):
         fail("byte_to_tok contains an ID outside vocabulary")
+    if len(set(byte_ids)) != 256:
+        fail("byte_to_tok must map the 256 byte values to distinct token IDs")
     # Validate all hash slots. A valid table has contiguous unique ranks and
     # every key/merged ID refers to the declared vocabulary.
     ranks = bytearray()
