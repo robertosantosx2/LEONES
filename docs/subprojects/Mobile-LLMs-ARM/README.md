@@ -51,6 +51,12 @@ No convertir estrellas, README, cifras sociales o benchmarks de terceros en medi
 
 La automatización publica descubrimientos, no aprueba, recomienda, instala, ejecuta ni integra proyectos externos.
 
+## Integración Android nativa — motores de inferencia sin Termux
+
+- [Prospección y selección de runtimes nativos Android (2026-11-26)](integrations/ANDROID-NATIVE-INFERENCE-RUNTIMES-2026-11-26.md): comparación de llama.kt, PocketLLM, AiPaca, llmedge, MNN, MLC-LLM y ExecuTorch; arquitectura propuesta con ROS 2 Android y gates de validación.
+- Selección provisional: [tensai-app/llama.kt](https://github.com/tensai-app/llama.kt), biblioteca Kotlin/JNI basada en llama.cpp. Commit observado: `d3c306d60007a714d820cb50c76086bc07aec055`.
+- Estado: revisión documental archivada; compatibilidad LFM2-2.6B, build Android, integración con ROS 2 y ejecución en Snapdragon 855 siguen pendientes. No se declara instalación ni validación física.
+
 ## Plataforma de referencia — Xiaomi Mi 9T Pro
 
 La campaña del [Xiaomi Mi 9T Pro de 6 GB](../../../hardware/XIAOMI-MI-9T-PRO-6GB.md) tiene documentación específica:
