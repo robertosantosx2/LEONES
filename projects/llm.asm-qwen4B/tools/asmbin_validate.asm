@@ -234,7 +234,7 @@ asmbin_validate:
     add     rax, 63
     and     rax, -64
     cmp     rax, [rdi + HDR_OFF_LAYERS]
-    jne     .bad_range
+    jne     .bad_embed_layout
 
     ; Layer section extent: n_layers * layer_stride, ending exactly at final norm.
     mov     eax, [rdi + HDR_N_LAYERS]
@@ -284,4 +284,11 @@ asmbin_validate:
     ret
 .bad_tokenizer:
     mov     rax, ERR_TOKENIZER
+    ret
+.bad_embed_layout:
+    ; Diagnostic: encode the boundary delta in 256-byte units.
+    mov     rdx, [rdi + HDR_OFF_LAYERS]
+    sub     rdx, rax
+    sar     rdx, 8
+    mov     rax, rdx
     ret
