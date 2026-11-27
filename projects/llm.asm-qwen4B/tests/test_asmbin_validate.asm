@@ -201,40 +201,62 @@ _start:
     mov     qword [rel fixture + 128 + TOKH_OFF_OFFSETS], 1088
 
     ; BPE left/right token IDs must be inside the vocabulary.
-    mov     dword [rel fixture + 132356], 32768
+    mov     dword [rel fixture + 6283700], 32768
     lea     rdi, [rel fixture]
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     dword [rel fixture + 132356], 1
+    mov     dword [rel fixture + 6283700], 1
 
     ; BPE merged token ID must be inside the vocabulary.
-    mov     dword [rel fixture + 132360], 32768
+    mov     dword [rel fixture + 6283704], 32768
     lea     rdi, [rel fixture]
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     dword [rel fixture + 132360], 3
+    mov     dword [rel fixture + 6283704], 3
 
     ; BPE rank must be inside the vocabulary.
-    mov     dword [rel fixture + 132364], 32768
+    mov     dword [rel fixture + 6283708], 32768
     lea     rdi, [rel fixture]
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     dword [rel fixture + 132364], 0
+    mov     dword [rel fixture + 6283708], 0
 
     ; Empty BPE slots must have zero key and merged ID.
-    mov     qword [rel fixture + 132368], 1
+    mov     qword [rel fixture + 6283728], 1
     lea     rdi, [rel fixture]
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     qword [rel fixture + 132368], 0
+    mov     qword [rel fixture + 6283728], 0
+
+    ; Duplicate BPE keys in the same probe chain must be rejected.
+    mov     qword [rel fixture + 6283712], 0x0000000100000002
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + 6283712], 0x000020620000079A
+
+    ; An empty slot before a displaced key breaks its linear-probe chain.
+    mov     qword [rel fixture + 6283696], 0
+    mov     dword [rel fixture + 6283704], 0
+    mov     dword [rel fixture + 6283708], 0xFFFFFFFF
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + 6283696], 0x0000000100000002
+    mov     dword [rel fixture + 6283704], 3
+    mov     dword [rel fixture + 6283708], 0
 
     ; Invalid tokenizer hash mask must be rejected.
     mov     dword [rel fixture + HDR_HT_MASK], 63
