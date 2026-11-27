@@ -15,11 +15,46 @@ global _start
 
 section .text
 _start:
+    ; Verify SysV callee-saved registers and stack balance on a valid fixture.
+    mov     rbx, 0x1111111111111111
+    mov     rbp, 0x2222222222222222
+    mov     r12, 0x3333333333333333
+    mov     r13, 0x4444444444444444
+    mov     r14, 0x5555555555555555
+    mov     r15, 0x6666666666666666
+    mov     [rel saved_rsp], rsp
     lea     rdi, [rel fixture]
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
     jnz     fail
+    cmp     rsp, [rel saved_rsp]
+    jne     fail
+    mov     rax, 0x1111111111111111
+    cmp     rbx, rax
+    jne     fail
+    mov     rax, 0x2222222222222222
+    cmp     rbp, rax
+    jne     fail
+    mov     rax, 0x3333333333333333
+    cmp     r12, rax
+    jne     fail
+    mov     rax, 0x4444444444444444
+    cmp     r13, rax
+    jne     fail
+    mov     rax, 0x5555555555555555
+    cmp     r14, rax
+    jne     fail
+    mov     rax, 0x6666666666666666
+    cmp     r15, rax
+    jne     fail
+
+    ; Null base pointers must be rejected.
+    xor     edi, edi
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
 
     ; ASMBIN v2 uses 2-byte scales per Q8 block, so its canonical
     ; embedding/layer/final-norm offsets and actual size differ from v1.
@@ -338,6 +373,8 @@ fail:
     syscall
 section .data
 align 8
+saved_rsp: dq 0
+
 fixture:
     dd ASMBIN_MAGIC
     dd ASMBIN_VERSION
