@@ -307,7 +307,9 @@ El módulo independiente `tools/asmbin_validate.asm` expone `asmbin_validate(bas
 
 El harness `tests/test_asmbin_validate.asm` construye un artefacto sintético mínimo y acepta fixtures canónicos v1 y v2 con tamaños y offsets específicos de cada versión. También prueba magic/version/flags, truncamiento, tamaño declarado, offsets de embeddings, alineación de secciones y stride, continuidad entre capas y norma final, sub-offset tokenizer mínimo, máscara BPE, EOS, límite Q8 de q_dim, max_seq_len, bytes reservados y divisibilidad GQA.
 
-CI confirmada: run [45977256574](https://github.com/robertosantosx2/LEONES/actions/runs/45977256574). Los 20 tests Python pasan; el harness NASM se ensambla, enlaza y ejecuta con exit code 0; upstream compila con `FAST_Q8=1` y `FAST_Q8=0`.
+CI confirmada: run [45979769568](https://github.com/robertosantosx2/LEONES/actions/runs/45979769568). Los 20 tests Python pasan; el harness NASM se ensambla, enlaza y ejecuta con exit code 0; upstream compila con `FAST_Q8=1` y `FAST_Q8=0`. También pasan los gates de regresión V1, runtime-v1.1, RC4 y el gate completo del repositorio.
+
+El contrato NASM es SysV x86-64: `RDI=base`, `RSI=actual_size`; devuelve cero o un error negativo, rechaza base nula antes de leer la cabecera y preserva registros callee-saved y stack. Los escalares FP32 `rms_norm_eps` y `rope_theta` deben ser positivos y finitos.
 
 El guard NASM comprueba alineación de 64 bytes para secciones principales, inicio tokenizer en 128, final exacto de embeddings alineado, continuidad exacta de capas y tamaño total alineado tras RMSNorm. Recalcula `layer_stride` desde los cuatro vectores de normas y las siete matrices Q8 en el orden del exportador, usando row-bytes distintos para v1/v2, y rechaza un stride declarado distinto.
 
@@ -315,6 +317,6 @@ En tokenizer valida los sub-offsets canónicos (`byte_to_tok=64`, `token_offsets
 
 **Política de coste:** la cadena de sondeo se limita a 128 posiciones para mantener acotado el coste de validación. Aún no se comprueba la unicidad/continuidad global de ranks ni la relación semántica entre merges, piezas y tokenizer original.
 
-El harness usa fixtures sintéticos canónicos v1/v2 y casos negativos para stride incorrecto, sub-offsets, byte IDs, offsets no monótonos, límite del último token y sección tokenizer fuera del archivo.
+El harness usa fixtures sintéticos canónicos v1/v2, un cluster de colisión válido y casos negativos para punteros nulos, ABI, escalares FP32, stride incorrecto, sub-offsets, byte IDs, offsets no monótonos, BPE IDs/ranks, claves duplicadas, cadenas rotas y secciones fuera del archivo.
 
-Sigue siendo una validación parcial: no valida el contenido BPE, los valores tensor a tensor ni todos los subrangos/solapamientos internos de cada matriz.
+Sigue siendo una validación parcial: no valida la unicidad global de ranks, los valores tensor a tensor ni todos los subrangos/solapamientos internos de cada matriz.
