@@ -188,8 +188,17 @@ _start:
     xor     edi, edi
     syscall
 fail:
+    ; Preserve useful diagnostics: 1..7 identifies a validator error returned
+    ; for a fixture expected to be valid; 100 means a negative case was accepted.
+    test    rax, rax
+    jz      .assertion_failed
+    neg     eax
+    mov     edi, eax
     mov     eax, 60
-    mov     edi, 1
+    syscall
+.assertion_failed:
+    mov     eax, 60
+    mov     edi, 100
     syscall
 
 section .data
