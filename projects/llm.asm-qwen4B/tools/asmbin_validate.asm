@@ -158,8 +158,17 @@ asmbin_validate:
     mov     r11, [rdi + HDR_OFF_FINAL_NORM]
     mov     rdx, [rdi + HDR_LAYER_STRIDE]
 
+    ; Canonical top-level section starts and layer stride are 64-byte aligned.
     cmp     r8, ASMBIN_HEADER_SIZE
-    jb      .bad_range
+    jne     .bad_range
+    test    r9, 63
+    jnz     .bad_range
+    test    r10, 63
+    jnz     .bad_range
+    test    r11, 63
+    jnz     .bad_range
+    test    rdx, 63
+    jnz     .bad_range
     cmp     r8, r9
     jae     .bad_range
     cmp     r9, r10
@@ -221,10 +230,13 @@ asmbin_validate:
     CHECK_RANGE rax, rcx
     mov     rax, [rdi + HDR_OFF_EMBED]
     add     rax, rcx
+    ; The exporter aligns the next section start to 64 bytes.
+    add     rax, 63
+    and     rax, -64
     cmp     rax, [rdi + HDR_OFF_LAYERS]
-    ja      .bad_range
+    jne     .bad_range
 
-    ; Layer section extent: n_layers * layer_stride, bounded before final norm.
+    ; Layer section extent: n_layers * layer_stride, ending exactly at final norm.
     mov     eax, [rdi + HDR_N_LAYERS]
     mul     qword [rdi + HDR_LAYER_STRIDE]
     test    rdx, rdx
@@ -234,7 +246,7 @@ asmbin_validate:
     CHECK_RANGE rax, rcx
     add     rax, rcx
     cmp     rax, [rdi + HDR_OFF_FINAL_NORM]
-    ja      .bad_range
+    jne     .bad_range
 
     ; Final RMSNorm vector: dim * sizeof(float32).
     mov     eax, [rdi + HDR_DIM]
@@ -242,6 +254,12 @@ asmbin_validate:
     mov     rcx, rax
     mov     rax, [rdi + HDR_OFF_FINAL_NORM]
     CHECK_RANGE rax, rcx
+    add     rax, rcx
+    ; The file ends at the next 64-byte boundary after final RMSNorm.
+    add     rax, 63
+    and     rax, -64
+    cmp     rax, rsi
+    jne     .bad_range
 
     xor     eax, eax
     ret
