@@ -80,7 +80,7 @@ jobs:
           output=$(/tmp/asmbin_validate_cli /tmp/truncated.asmbin 2>&1)
           status=$?
           set -e
-          printf '%s\\n' "$output"
+          echo "$output"
           test "$status" -eq 1
           printf '%s' "$output" | grep -q "ASMBIN_INVALID code="
       - name: Build Linux inference with FAST_Q8=1
