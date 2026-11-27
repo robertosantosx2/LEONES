@@ -111,9 +111,9 @@ python3 projects/llm.asm-qwen4B/tools/asmbin_validate.py modelo.asmbin --json
   allocator bajo 3,75 GiB. Su carga no es viable de forma general sin
   rediseñar el protocolo de carga y la gestión de memoria.
 
-**Validador Python:** implementado con fixtures sintéticos y CI remota superada (20/20 tests en el último run conocido). No sustituye la validación nativa.
+**Validador Python:** implementado con fixtures sintéticos, mmap de solo lectura y CI remota superada (20/20 tests en run [45977256574](https://github.com/robertosantosx2/LEONES/actions/runs/45977256574)). No sustituye la validación nativa.
 
-**Validador NASM inicial:** añadidos `tools/asmbin_validate.asm` y `tests/test_asmbin_validate.asm`. La rutina `asmbin_validate(base, actual_size)` comprueba tamaño mínimo y declarado, magic/version/flags, dimensiones básicas, límites Q8, GQA, orden/rango de secciones y spans mínimos de embeddings, capas y norma final. El harness cubre v1/v2, flags requeridos, truncamiento, tamaño, offset y divisibilidad GQA. La compilación/ejecución remota se ha incorporado a CI, pero todavía no se ha confirmado su resultado.
+**Validador NASM inicial:** añadidos `tools/asmbin_validate.asm` y `tests/test_asmbin_validate.asm`. La rutina `asmbin_validate(base, actual_size)` comprueba tamaño mínimo y declarado, magic/version/flags, dimensiones básicas, límites Q8, GQA, alineación de 64 bytes de secciones y stride, inicio canónico del tokenizer, final alineado de embeddings, continuidad exacta de capas y tamaño final alineado tras RMSNorm. El harness acepta fixtures v1/v2 con layouts específicos y prueba límites negativos adicionales. CI verde en [run 45977256574](https://github.com/robertosantosx2/LEONES/actions/runs/45977256574): 20 tests Python, ensamblado/enlace/ejecución del harness y builds upstream `FAST_Q8=1/0`.
 
 **Límite explícito:** esta primera rutina no valida aún las estructuras internas completas del tokenizer/BPE, no demuestra todos los tamaños internos de cada tensor y todavía no está integrada en `model_init`. No debe considerarse una barrera de seguridad completa ni soporte para modelos nuevos.
 
