@@ -31,6 +31,32 @@ default rel
 section .text
 global asmbin_validate
 
+%macro ADD_Q8_MATRIX 2
+    ; Align matrix start to 64 bytes.
+    add     rsi, 63
+    jc      .bad_layer_stride
+    and     rsi, -64
+
+    ; row_bytes(K) = K + K/8 for v1, K + K/16 for v2.
+    mov     rax, %2
+    mov     rdx, rax
+    cmp     dword [rdi + HDR_VERSION], ASMBIN_VERSION_V2
+    je      %%fp16_scales
+    shr     rdx, 3
+    jmp     %%row_size_ready
+%%fp16_scales:
+    shr     rdx, 4
+%%row_size_ready:
+    add     rax, rdx
+
+    ; rows * row_bytes, with the high half checked for overflow.
+    mul     %1
+    test    rdx, rdx
+    jnz     .bad_layer_stride
+    add     rsi, rax
+    jc      .bad_layer_stride
+%endmacro
+
 ; Range macro: verify [offset, offset+length) lies inside actual_size
 ; Inputs: offset register, length register, actual_size in rsi
 %macro CHECK_RANGE 2
@@ -153,6 +179,16 @@ asmbin_validate:
     jnz     .bad_dims
     cmp     eax, Q8_MAX_K
     ja      .bad_dims
+
+    ; Verify the exact canonical stride implied by the seven Q8 matrices.
+    ; Preserve actual_size because the helper uses RSI as its size cursor.
+    push    rsi
+    call    asmbin_expected_layer_stride
+    pop     rsi
+    test    rax, rax
+    js      .bad_range
+    cmp     rax, [rdi + HDR_LAYER_STRIDE]
+    jne     .bad_layout
 
     ; hidden_dim is also a quantized K dimension.
     ; Validate ordered top-level sections and their minimum required spans.
@@ -300,4 +336,46 @@ asmbin_validate:
     ret
 .bad_file_end:
     mov     rax, ERR_FILE_END
+    ret
+
+; Return the canonical per-layer stride from the exporter layout.
+; Input: RDI = ASMBIN base. Output: RAX = stride or negative error.
+; Uses only caller-saved registers; RSI is the running byte cursor.
+asmbin_expected_layer_stride:
+    mov     r8d, [rdi + HDR_DIM]
+    mov     r9d, [rdi + HDR_HIDDEN_DIM]
+
+    ; q_dim and kv_dim (both were already bounded by the caller).
+    mov     eax, [rdi + HDR_N_HEADS]
+    mov     edx, [rdi + HDR_HEAD_DIM]
+    imul    rax, rdx
+    mov     r10, rax
+    mov     eax, [rdi + HDR_N_KV_HEADS]
+    imul    rax, rdx
+    mov     r11, rax
+
+    ; Four dim-sized norms plus q_norm and k_norm (head_dim each).
+    mov     rsi, r8
+    shl     rsi, 4                    ; 4 * dim * sizeof(float32)
+    mov     rax, rdx
+    shl     rax, 3                    ; 2 * head_dim * sizeof(float32)
+    add     rsi, rax
+    jc      .bad_layer_stride
+
+    ; Q, K, V, O, gate, up, down in exporter order.
+    ADD_Q8_MATRIX r10, r8
+    ADD_Q8_MATRIX r11, r8
+    ADD_Q8_MATRIX r11, r8
+    ADD_Q8_MATRIX r8,  r10
+    ADD_Q8_MATRIX r9,  r8
+    ADD_Q8_MATRIX r9,  r8
+    ADD_Q8_MATRIX r8,  r9
+
+    add     rsi, 63
+    jc      .bad_layer_stride
+    and     rsi, -64
+    mov     rax, rsi
+    ret
+.bad_layer_stride:
+    mov     rax, ERR_RANGE
     ret
