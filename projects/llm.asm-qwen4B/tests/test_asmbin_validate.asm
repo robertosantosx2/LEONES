@@ -8,7 +8,7 @@ bits 64
 default rel
 %include "constants.inc"
 
-%define FIXTURE_SIZE 1180096
+%define FIXTURE_SIZE 1188864
 
 extern asmbin_validate
 global _start
@@ -25,18 +25,20 @@ _start:
     ; embedding/layer/final-norm offsets and actual size differ from v1.
     mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION_V2
     mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM | HDR_FLAG_FP16_SCALES
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8384
     mov     qword [rel fixture + HDR_OFF_LAYERS], 1114368
-    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1114432
-    mov     qword [rel fixture + HDR_FILE_SIZE], 1114560
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1122752
+    mov     qword [rel fixture + HDR_FILE_SIZE], 1122880
     lea     rdi, [rel fixture]
-    mov     rsi, 1114560
+    mov     rsi, 1122880
     call    asmbin_validate
     test    rax, rax
     jnz     fail
     mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION
     mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8832
     mov     qword [rel fixture + HDR_OFF_LAYERS], 1179904
-    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1179968
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1188736
     mov     qword [rel fixture + HDR_FILE_SIZE], FIXTURE_SIZE
 
     ; Invalid magic must be rejected.
@@ -107,16 +109,16 @@ _start:
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     qword [rel fixture + HDR_LAYER_STRIDE], 64
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8832
 
     ; Final norm must immediately follow the complete layer section.
-    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1180032
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1188800
     lea     rdi, [rel fixture]
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1179968
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1188736
 
     ; Tokenizer sub-offset must not overlap its 64-byte section header.
     mov     qword [rel fixture + 128 + TOKH_OFF_B2T], 32
@@ -226,8 +228,8 @@ fixture:
     dq 128                        ; tokenizer offset
     dq 256                        ; embedding offset
     dq 1179904                    ; layers offset
-    dq 64                         ; layer stride
-    dq 1179968                    ; final norm offset
+    dq 8832                       ; canonical v1 layer stride
+    dq 1188736                    ; final norm offset
     dq FIXTURE_SIZE               ; file size
     times 128 - ($ - fixture) db 0
     dq 64, 72, 80, 88             ; tokenizer-relative sub-offsets after 64-byte header
