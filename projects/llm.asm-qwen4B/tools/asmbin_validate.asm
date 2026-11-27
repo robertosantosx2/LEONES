@@ -78,6 +78,17 @@ asmbin_validate:
     cmp     rax, rsi
     jne     .bad_size
 
+    ; Reserved header bytes must remain zero in this format revision.
+    mov     rax, [rdi + 112]
+    or      rax, [rdi + 120]
+    jnz     .bad_header
+
+    ; Runtime-critical scalar fields and fixed tokenizer hash mask.
+    cmp     dword [rdi + HDR_MAX_SEQ_LEN], 0
+    je      .bad_dims
+    cmp     dword [rdi + HDR_HT_MASK], 524287
+    jne     .bad_tokenizer
+
     ; Required dimensions must be nonzero.
     mov     eax, [rdi + HDR_DIM]
     test    eax, eax
@@ -97,6 +108,15 @@ asmbin_validate:
     mov     r11d, [rdi + HDR_HEAD_DIM]
     test    r11d, r11d
     jz      .bad_dims
+
+    ; EOS IDs must address entries in the declared vocabulary.
+    mov     eax, [rdi + HDR_VOCAB_SIZE]
+    test    eax, eax
+    jz      .bad_dims
+    cmp     [rdi + HDR_EOS_1], eax
+    jae     .bad_dims
+    cmp     [rdi + HDR_EOS_2], eax
+    jae     .bad_dims
 
     ; Quantized K dimensions must be block aligned and within current kernel.
     test    eax, 31
