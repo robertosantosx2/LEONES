@@ -311,9 +311,9 @@ CI confirmada: run [45977256574](https://github.com/robertosantosx2/LEONES/actio
 
 El guard NASM comprueba alineación de 64 bytes para secciones principales, inicio tokenizer en 128, final exacto de embeddings alineado, continuidad exacta de capas y tamaño total alineado tras RMSNorm. Recalcula `layer_stride` desde los cuatro vectores de normas y las siete matrices Q8 en el orden del exportador, usando row-bytes distintos para v1/v2, y rechaza un stride declarado distinto.
 
-En tokenizer valida los sub-offsets canónicos (`byte_to_tok=64`, `token_offsets=1088`), bytes reservados cero, límites de las 256 entradas byte-to-token, tamaño y monotonicidad de `token_offsets`, el límite derivado del último token y el rango completo de la tabla de 524288 entradas (8 MiB), incluida la longitud exacta de la sección. Recorre la tabla BPE y valida que los IDs izquierdo/derecho y merged, y los ranks ocupados, estén dentro del vocabulario; las entradas vacías deben tener key e ID cero y existir al menos una ranura vacía.
+En tokenizer valida los sub-offsets canónicos (`byte_to_tok=64`, `token_offsets=1088`), bytes reservados cero, límites de las 256 entradas byte-to-token, tamaño y monotonicidad de `token_offsets`, el límite derivado del último token y el rango completo de la tabla de 524288 entradas (8 MiB), incluida la longitud exacta de la sección. Recorre la tabla BPE y valida que los IDs izquierdo/derecho y merged, y los ranks ocupados, estén dentro del vocabulario; las entradas vacías deben tener key e ID cero y existir al menos una ranura vacía. También recalcula el slot Fibonacci y comprueba que cada entrada ocupada sea alcanzable mediante sondeo lineal sin huecos ni claves duplicadas en la cadena.
 
-Todavía no verifica la ubicación hash de cada entrada, las cadenas de sondeo, la unicidad/continuidad de ranks ni la relación semántica entre las piezas y el tokenizer original.
+**Política de coste:** la cadena de sondeo se limita a 128 posiciones para mantener acotado el coste de validación. Aún no se comprueba la unicidad/continuidad global de ranks ni la relación semántica entre merges, piezas y tokenizer original.
 
 El harness usa fixtures sintéticos canónicos v1/v2 y casos negativos para stride incorrecto, sub-offsets, byte IDs, offsets no monótonos, límite del último token y sección tokenizer fuera del archivo.
 
