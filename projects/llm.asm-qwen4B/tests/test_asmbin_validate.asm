@@ -102,7 +102,20 @@ _start:
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     qword [rel fixture + HDR_OFF_EMBED], 256
+    mov     qword [rel fixture + HDR_OFF_EMBED], 8520960
+
+    ; A tokenizer section extending past actual_size must be rejected pre-read.
+    mov     qword [rel fixture + HDR_OFF_EMBED], FIXTURE_SIZE + 64
+    mov     qword [rel fixture + HDR_OFF_LAYERS], FIXTURE_SIZE + 128
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], FIXTURE_SIZE + 192
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + HDR_OFF_EMBED], 8520960
+    mov     qword [rel fixture + HDR_OFF_LAYERS], 9700608
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 9709440
 
     ; Layer stride must be 64-byte aligned.
     mov     qword [rel fixture + HDR_LAYER_STRIDE], 65
