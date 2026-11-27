@@ -64,7 +64,16 @@ _start:
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     qword [rel fixture + HDR_OFF_EMBED], 192
+    mov     qword [rel fixture + HDR_OFF_EMBED], 256
+
+    ; Tokenizer sub-offset must not overlap its 64-byte section header.
+    mov     qword [rel fixture + 128 + TOKH_OFF_B2T], 32
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + 128 + TOKH_OFF_B2T], 64
 
     ; Invalid GQA divisibility.
     mov     dword [rel fixture + HDR_N_KV_HEADS], 2
@@ -101,12 +110,12 @@ fixture:
     dd 63                         ; ht_mask (not validated by this stage)
     dd HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
     dq 128                        ; tokenizer offset
-    dq 192                        ; embedding offset
-    dq 1344                       ; layers offset
+    dq 256                        ; embedding offset
+    dq 1408                       ; layers offset
     dq 64                         ; layer stride
-    dq 1408                       ; final norm offset
+    dq 1472                       ; final norm offset
     dq FIXTURE_SIZE               ; file size
     times 128 - ($ - fixture) db 0
-    dq 32, 36, 40, 44             ; tokenizer-relative sub-offsets at base + 128
-    times 192 - ($ - fixture) db 0
+    dq 64, 72, 80, 88             ; tokenizer-relative sub-offsets after 64-byte header
+    times 256 - ($ - fixture) db 0
     times FIXTURE_SIZE - ($ - fixture) db 0
