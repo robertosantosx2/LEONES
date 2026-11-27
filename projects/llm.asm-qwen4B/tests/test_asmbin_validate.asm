@@ -345,7 +345,10 @@ fixture:
     times 1216 - ($ - fixture) db 0
     times (32768 + 1) * 4 db 0   ; monotonic token_offsets[]
     times 132352 - ($ - fixture) db 0
-    dq 0x0000000100000002      ; key = (1 << 32) | 2
+    times 384459 dq 0, 0xFFFFFFFF00000000 ; empty slots before the collision cluster
+    dq 0x0000000100000002      ; key (1,2), home slot 384459
     dd 3, 0                     ; merged_id=3, rank=0
-    times 524287 dq 0, 0xFFFFFFFF00000000 ; empty slots: zero key/id, rank=UINT32_MAX
+    dq 0x000020620000079A      ; key (8290,1946), same home slot
+    dd 4, 1                     ; merged_id=4, rank=1
+    times 139827 dq 0, 0xFFFFFFFF00000000 ; remaining empty slots
     times FIXTURE_SIZE - ($ - fixture) db 0
