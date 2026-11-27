@@ -309,4 +309,6 @@ El harness `tests/test_asmbin_validate.asm` construye un artefacto sintético m�
 
 CI confirmada: run [45977256574](https://github.com/robertosantosx2/LEONES/actions/runs/45977256574). Los 20 tests Python pasan; el harness NASM se ensambla, enlaza y ejecuta con exit code 0; upstream compila con `FAST_Q8=1` y `FAST_Q8=0`.
 
-El guard NASM comprueba alineación de 64 bytes para secciones principales y layer_stride, inicio tokenizer en 128, final exacto de embeddings alineado, final exacto de capas y tamaño total alineado tras RMSNorm. Sigue siendo una validación parcial: no valida el contenido completo de tokenizer/BPE, el layout exacto de cada matriz dentro de cada capa, ni todos los solapamientos internos.
+El guard NASM comprueba alineación de 64 bytes para secciones principales, inicio tokenizer en 128, final exacto de embeddings alineado, continuidad exacta de capas y tamaño total alineado tras RMSNorm. Además, recalcula `layer_stride` desde los cuatro vectores de normas y las siete matrices Q8 en el orden del exportador, usando row-bytes distintos para v1/v2, y rechaza un stride declarado distinto. El harness incluye fixtures canónicos v1/v2 y un caso negativo con stride incorrecto pero alineado.
+
+Sigue siendo una validación parcial: no valida el contenido completo de tokenizer/BPE, los valores tensor a tensor ni todos los subrangos/solapamientos internos de cada matriz.
