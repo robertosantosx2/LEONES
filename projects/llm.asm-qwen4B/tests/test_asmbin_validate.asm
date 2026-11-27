@@ -32,6 +32,24 @@ _start:
     mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION
     mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
 
+    ; Invalid magic must be rejected.
+    mov     dword [rel fixture + HDR_MAGIC], 0
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_MAGIC], ASMBIN_MAGIC
+
+    ; Unknown format versions must be rejected.
+    mov     dword [rel fixture + HDR_VERSION], 3
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION
+
     ; A missing required flag must be rejected.
     mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB
     lea     rdi, [rel fixture]
@@ -92,6 +110,26 @@ _start:
     test    rax, rax
     jz      fail
     mov     dword [rel fixture + HDR_EOS_1], 0
+
+    ; EOS_2 must also be inside the vocabulary.
+    mov     dword [rel fixture + HDR_EOS_2], 32768
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_EOS_2], 0
+
+    ; q_dim above the fixed Q8 kernel limit must be rejected.
+    mov     dword [rel fixture + HDR_N_HEADS], 129
+    mov     dword [rel fixture + HDR_HEAD_DIM], 128
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_N_HEADS], 1
+    mov     dword [rel fixture + HDR_HEAD_DIM], 32
 
     ; max_seq_len must be nonzero.
     mov     dword [rel fixture + HDR_MAX_SEQ_LEN], 0
