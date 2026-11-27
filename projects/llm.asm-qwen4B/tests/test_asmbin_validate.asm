@@ -453,3 +453,5 @@ fixture:
     dd 4, 1                     ; merged_id=4, rank=1
     times 139827 dq 0, 0xFFFFFFFF00000000 ; remaining empty slots
     times FIXTURE_SIZE - ($ - fixture) db 0
+
+section .note.GNU-stack noalloc noexec nowrite progbits
