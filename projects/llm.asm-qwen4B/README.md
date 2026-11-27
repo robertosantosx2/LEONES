@@ -101,8 +101,9 @@ python3 projects/llm.asm-qwen4B/tools/asmbin_validate.py modelo.asmbin --json
 
 - Las dimensiones de Qwen3-4B caben en el límite estático Q8 del kernel
   inspeccionado (`Q8_MAX_K=16384`), pero falta paridad numérica.
-- El loader NASM no demuestra validar el tamaño declarado, offsets,
-  solapamientos ni todas las relaciones dimensionales del encabezado.
+- El loader upstream actual no integra todavía el nuevo guard `asmbin_validate`; sus
+  comprobaciones de tamaño, offsets, solapamientos y relaciones dimensionales siguen
+  siendo insuficientes hasta que la barrera se integre y se pruebe en `model_init`.
 - El tokenizer requiere comprobar los merges reales del checkpoint.
 - El exportador puede tener un pico de memoria superior al tamaño del
   archivo final; se necesita una estrategia de exportación monitorizada.
