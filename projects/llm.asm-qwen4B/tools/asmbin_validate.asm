@@ -293,11 +293,31 @@ asmbin_validate:
     mov     rax, ERR_LAYOUT
     ret
 .bad_embed_end:
-    ; Temporary diagnostic: boundary delta in 64-byte units.
+    ; Temporary CI diagnostic: print actual-minus-computed boundary delta in hex.
     mov     rdx, [rdi + HDR_OFF_LAYERS]
     sub     rdx, rax
+    sub     rsp, 16
     mov     rax, rdx
+    lea     rsi, [rsp]
+    lea     r9, [rel hex_digits]
+    mov     rcx, 16
+.hex_loop:
+    mov     r8, rax
+    and     r8d, 15
+    mov     r8b, [r9 + r8]
+    mov     [rsi + rcx - 1], r8b
+    shr     rax, 4
+    loop    .hex_loop
+    mov     eax, 1
+    mov     edi, 1
+    mov     edx, 16
+    syscall
+    add     rsp, 16
+    mov     rax, ERR_EMBED_END
     ret
+
+section .rodata
+hex_digits: db "0123456789abcdef"
 .bad_layer_end:
     mov     rax, ERR_LAYER_END
     ret
