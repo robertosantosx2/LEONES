@@ -289,7 +289,10 @@ asmbin_validate:
     mov     rax, -8
     ret
 .bad_embed_layout:
-    mov     rax, -9
+    ; Diagnostic delta: actual off_layers minus computed aligned embedding end.
+    mov     rdx, [rdi + HDR_OFF_LAYERS]
+    sub     rdx, rax
+    mov     rax, rdx
     ret
 .bad_layer_layout:
     mov     rax, -10
