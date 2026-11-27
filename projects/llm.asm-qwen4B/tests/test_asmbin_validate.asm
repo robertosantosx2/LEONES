@@ -188,8 +188,8 @@ _start:
     xor     edi, edi
     syscall
 fail:
-    ; Return the validator diagnostic (scaled boundary delta) for valid-fixture
-    ; rejection; 100 means a malformed fixture was unexpectedly accepted.
+    ; Return the low byte of the boundary delta for a rejected valid fixture;
+    ; 100 means a malformed fixture was unexpectedly accepted.
     test    rax, rax
     jz      .assertion_failed
     mov     edi, eax
