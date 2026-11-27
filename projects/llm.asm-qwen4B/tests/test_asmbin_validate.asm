@@ -105,6 +105,48 @@ _start:
     jz      fail
     mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
 
+    ; RMS epsilon must be positive and finite.
+    mov     dword [rel fixture + HDR_RMS_EPS], 0
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_RMS_EPS], 0xBF800000
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_RMS_EPS], 0x7F800000
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_RMS_EPS], 0x7FC00000
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_RMS_EPS], 0x3A83126F
+
+    ; RoPE theta must also be positive and finite.
+    mov     dword [rel fixture + HDR_ROPE_THETA], 0
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_ROPE_THETA], 0x7F800000
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_ROPE_THETA], 0x44800000
+
     ; A truncated fixed header must be rejected before dereference.
     lea     rdi, [rel fixture]
     mov     rsi, 127
