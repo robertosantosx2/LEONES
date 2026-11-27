@@ -309,6 +309,10 @@ El harness `tests/test_asmbin_validate.asm` construye un artefacto sintético m�
 
 CI confirmada: run [45977256574](https://github.com/robertosantosx2/LEONES/actions/runs/45977256574). Los 20 tests Python pasan; el harness NASM se ensambla, enlaza y ejecuta con exit code 0; upstream compila con `FAST_Q8=1` y `FAST_Q8=0`.
 
-El guard NASM comprueba alineación de 64 bytes para secciones principales, inicio tokenizer en 128, final exacto de embeddings alineado, continuidad exacta de capas y tamaño total alineado tras RMSNorm. Además, recalcula `layer_stride` desde los cuatro vectores de normas y las siete matrices Q8 en el orden del exportador, usando row-bytes distintos para v1/v2, y rechaza un stride declarado distinto. El harness incluye fixtures canónicos v1/v2 y un caso negativo con stride incorrecto pero alineado.
+El guard NASM comprueba alineación de 64 bytes para secciones principales, inicio tokenizer en 128, final exacto de embeddings alineado, continuidad exacta de capas y tamaño total alineado tras RMSNorm. Recalcula `layer_stride` desde los cuatro vectores de normas y las siete matrices Q8 en el orden del exportador, usando row-bytes distintos para v1/v2, y rechaza un stride declarado distinto.
 
-Sigue siendo una validación parcial: no valida el contenido completo de tokenizer/BPE, los valores tensor a tensor ni todos los subrangos/solapamientos internos de cada matriz.
+En tokenizer valida los sub-offsets canónicos (`byte_to_tok=64`, `token_offsets=1088`), bytes reservados cero, límites de las 256 entradas byte-to-token, tamaño y monotonicidad de `token_offsets`, el límite derivado del último token y el rango completo de la tabla de 524288 entradas (8 MiB), incluida la longitud exacta de la sección. La tabla BPE se acota, pero sus entradas, ranks, claves y cadenas de sondeo no se verifican todavía.
+
+El harness usa fixtures sintéticos canónicos v1/v2 y casos negativos para stride incorrecto, sub-offsets, byte IDs, offsets no monótonos, límite del último token y sección tokenizer fuera del archivo.
+
+Sigue siendo una validación parcial: no valida el contenido BPE, los valores tensor a tensor ni todos los subrangos/solapamientos internos de cada matriz.
