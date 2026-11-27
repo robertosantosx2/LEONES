@@ -1,0 +1,241 @@
+{
+  "schema": "openset-llm-msi-benchmark/v1",
+  "date": "2026-11-27",
+  "machine": {
+    "model": "MSI Thin 15 B12UC",
+    "os": "Ubuntu 26.04.1 LTS",
+    "cpu": "Intel Core i7-12650H",
+    "logical_threads": 16,
+    "isa": [
+      "AVX2",
+      "AVX-VNNI 256-bit"
+    ],
+    "ram_gib_approx": 14,
+    "swap_gib": 32,
+    "gpu": "NVIDIA RTX 3050 Laptop 4 GiB (not used)"
+  },
+  "software": {
+    "project": "opensetlabs/openset-llm",
+    "release": "0.3.3",
+    "checkout_commit": "5710dc380f9c16954f03878852e4571e0aaf457e",
+    "engine": "PrismML llama.cpp",
+    "engine_commit": "e3de71522",
+    "compiler": "GNU 15.2",
+    "build": "0.2.0-dev",
+    "patches": "0001-0010",
+    "cpu_path": "AVX2 + AVX-VNNI"
+  },
+  "model": {
+    "name": "Bonsai-2-27B ternary PTQ1_0 with MTP grafted",
+    "path": "$HOME/.openset-llm/models/model.gguf",
+    "bytes": 6212666656,
+    "sha256": "08e7d363c8cc0d56a8632d7f4dd1199f8bc68690fb50522093714cbf9b5235af",
+    "graft": {
+      "base_tensors": 851,
+      "grafted_tensors": 15,
+      "grafted_mb": 266,
+      "block_count_before": 64,
+      "block_count_after": 65
+    }
+  },
+  "benchmark_common": {
+    "endpoint": "http://127.0.0.1:8080/v1/chat/completions",
+    "temperature": 0,
+    "threads_tests_context": 2048,
+    "mtp_depth": 2,
+    "cache_note": "cached_tokens can be 32 or 60 on repeated identical prompts; prefill values with cached prefix are not comparable",
+    "timings_field": "predicted_per_second"
+  },
+  "results": [
+    {
+      "ctx": 1024,
+      "threads": 8,
+      "mtp": "off",
+      "kv": "default",
+      "output_tokens": 128,
+      "generation_tps": 4.1212,
+      "prompt_tps": 12.5929,
+      "accepted": null,
+      "proposed": null,
+      "repetitions": 1
+    },
+    {
+      "ctx": 1024,
+      "threads": 8,
+      "mtp": "depth2",
+      "kv": "default",
+      "output_tokens": 128,
+      "generation_tps": 4.7285,
+      "accepted": 59,
+      "proposed": 133,
+      "acceptance": 0.4436,
+      "repetitions": 1
+    },
+    {
+      "ctx": 1024,
+      "threads": 8,
+      "mtp": "depth2",
+      "kv": "default",
+      "output_tokens": 128,
+      "generation_tps": 4.6361,
+      "accepted": 59,
+      "proposed": 133,
+      "acceptance": 0.4436,
+      "repetitions": 1
+    },
+    {
+      "ctx": 1024,
+      "threads": 8,
+      "mtp": "depth3",
+      "kv": "default",
+      "output_tokens": 128,
+      "generation_tps": 4.3001,
+      "accepted": 64,
+      "proposed": 183,
+      "acceptance": 0.3497,
+      "repetitions": 1
+    },
+    {
+      "ctx": 2048,
+      "threads": 8,
+      "mtp": "depth2",
+      "kv": "default",
+      "output_tokens": 128,
+      "generation_tps": 4.9233,
+      "accepted": 59,
+      "proposed": 133,
+      "acceptance": 0.4436,
+      "repetitions": 1
+    },
+    {
+      "ctx": 2048,
+      "threads": 8,
+      "mtp": "depth2",
+      "kv": "default",
+      "output_tokens": 128,
+      "generation_tps": 4.745653,
+      "accepted": 59,
+      "proposed": 133,
+      "acceptance": 0.4436,
+      "repetitions": 1
+    },
+    {
+      "ctx": 4096,
+      "threads": 8,
+      "mtp": "depth2",
+      "kv": "default",
+      "output_tokens": 128,
+      "generation_tps": 4.7547,
+      "accepted": 59,
+      "proposed": 133,
+      "acceptance": 0.4436,
+      "repetitions": 1
+    },
+    {
+      "ctx": 4096,
+      "threads": 8,
+      "mtp": "depth2",
+      "kv": "kv8",
+      "output_tokens": 128,
+      "generation_tps": 4.637394,
+      "accepted": 59,
+      "proposed": 133,
+      "acceptance": 0.4436,
+      "repetitions": 1,
+      "rss_kib": 6876096
+    },
+    {
+      "ctx": 2048,
+      "threads": 6,
+      "mtp": "depth2",
+      "kv": "default",
+      "output_tokens": 128,
+      "generation_tps": 4.958016,
+      "accepted": 59,
+      "proposed": 133,
+      "acceptance": 0.4436,
+      "repetitions": 1,
+      "cached_tokens": 32
+    },
+    {
+      "ctx": 2048,
+      "threads": 6,
+      "mtp": "depth2",
+      "kv": "default",
+      "output_tokens": 128,
+      "generation_tps": 4.98104,
+      "accepted": 59,
+      "proposed": 133,
+      "acceptance": 0.4436,
+      "repetitions": 1,
+      "cached_tokens": 32
+    },
+    {
+      "ctx": 2048,
+      "threads": 4,
+      "mtp": "depth2",
+      "kv": "default",
+      "output_tokens": 128,
+      "generation_tps": 4.310278,
+      "accepted": 59,
+      "proposed": 133,
+      "acceptance": 0.4436,
+      "repetitions": 1,
+      "cached_tokens": 0
+    },
+    {
+      "ctx": 2048,
+      "threads": 4,
+      "mtp": "depth2",
+      "kv": "default",
+      "output_tokens": 128,
+      "generation_tps": 4.314916,
+      "accepted": 59,
+      "proposed": 133,
+      "acceptance": 0.4436,
+      "repetitions": 1,
+      "cached_tokens": 32
+    },
+    {
+      "ctx": 2048,
+      "threads": 6,
+      "mtp": "depth2",
+      "kv": "default",
+      "output_tokens": 512,
+      "generation_tps": 5.344991,
+      "accepted": 276,
+      "proposed": 468,
+      "acceptance": 0.5897,
+      "repetitions": 1,
+      "prompt_tps": 12.427339,
+      "cached_tokens": 0
+    },
+    {
+      "ctx": 2048,
+      "threads": 6,
+      "mtp": "depth2",
+      "kv": "default",
+      "output_tokens": 512,
+      "generation_tps": 5.266357,
+      "accepted": 276,
+      "proposed": 468,
+      "acceptance": 0.5897,
+      "repetitions": 1,
+      "prompt_tps": 1.846553,
+      "cached_tokens": 60,
+      "prompt_new_tokens": 4
+    }
+  ],
+  "averages": {
+    "threads8_ctx2048_128_tps": 4.8344765,
+    "threads6_ctx2048_128_tps": 4.969528,
+    "threads4_ctx2048_128_tps": 4.312597,
+    "threads6_ctx2048_512_tps": 5.305674
+  },
+  "caveats": [
+    "6-thread and 4-thread launch banners were not preserved in the user-shared evidence; configuration attribution is based on the sequential experiment instructions and chat sequence.",
+    "No full server logs or original raw JSON files were saved during the runs; metrics are transcribed from user-provided terminal output.",
+    "No GPU, energy, thermal, quality, concurrency or independent-machine validation was performed.",
+    "The model file is not included; reproduce only with a legally obtained artifact matching the SHA-256."
+  ]
+}
