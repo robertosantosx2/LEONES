@@ -23,6 +23,10 @@ default rel
 %define ERR_DIMS       -5
 %define ERR_RANGE      -6
 %define ERR_TOKENIZER  -7
+%define ERR_LAYOUT     -8
+%define ERR_EMBED_END  -9
+%define ERR_LAYER_END  -10
+%define ERR_FILE_END   -11
 
 section .text
 global asmbin_validate
@@ -160,21 +164,21 @@ asmbin_validate:
 
     ; Canonical top-level section starts and layer stride are 64-byte aligned.
     cmp     r8, ASMBIN_HEADER_SIZE
-    jne     .bad_range
+    jne     .bad_layout
     test    r9, 63
-    jnz     .bad_range
+    jnz     .bad_layout
     test    r10, 63
-    jnz     .bad_range
+    jnz     .bad_layout
     test    r11, 63
-    jnz     .bad_range
+    jnz     .bad_layout
     test    rdx, 63
-    jnz     .bad_range
+    jnz     .bad_layout
     cmp     r8, r9
-    jae     .bad_range
+    jae     .bad_layout
     cmp     r9, r10
-    jae     .bad_range
+    jae     .bad_layout
     cmp     r10, r11
-    jae     .bad_range
+    jae     .bad_layout
     test    rdx, rdx
     jz      .bad_range
 
@@ -234,7 +238,7 @@ asmbin_validate:
     add     rax, 63
     and     rax, -64
     cmp     rax, [rdi + HDR_OFF_LAYERS]
-    jne     .bad_range
+    jne     .bad_embed_end
 
     ; Layer section extent: n_layers * layer_stride, ending exactly at final norm.
     mov     eax, [rdi + HDR_N_LAYERS]
@@ -246,7 +250,7 @@ asmbin_validate:
     CHECK_RANGE rax, rcx
     add     rax, rcx
     cmp     rax, [rdi + HDR_OFF_FINAL_NORM]
-    jne     .bad_range
+    jne     .bad_layer_end
 
     ; Final RMSNorm vector: dim * sizeof(float32).
     mov     eax, [rdi + HDR_DIM]
@@ -259,7 +263,7 @@ asmbin_validate:
     add     rax, 63
     and     rax, -64
     cmp     rax, rsi
-    jne     .bad_range
+    jne     .bad_file_end
 
     xor     eax, eax
     ret
@@ -284,4 +288,16 @@ asmbin_validate:
     ret
 .bad_tokenizer:
     mov     rax, ERR_TOKENIZER
+    ret
+.bad_layout:
+    mov     rax, ERR_LAYOUT
+    ret
+.bad_embed_end:
+    mov     rax, ERR_EMBED_END
+    ret
+.bad_layer_end:
+    mov     rax, ERR_LAYER_END
+    ret
+.bad_file_end:
+    mov     rax, ERR_FILE_END
     ret
