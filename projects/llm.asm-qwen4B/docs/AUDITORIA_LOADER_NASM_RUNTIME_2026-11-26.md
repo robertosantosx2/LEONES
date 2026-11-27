@@ -184,6 +184,8 @@ El `layer_stride` se recalcula desde los cuatro vectores de normas y las siete m
 
 El harness genera un fixture sintético de aproximadamente 9,7 MB, con layouts canónicos v1/v2 y un cluster BPE de colisión válido. Incluye casos negativos de puntero nulo, escalares no finitos/no positivos, cabecera truncada, offsets fuera de rango, secciones desalineadas, stride incorrecto, tokenizer no canónico, byte IDs inválidos, offsets no monótonos, BPE IDs/ranks inválidos, clave duplicada y cadena de sondeo rota.
 
+Se ha añadido `tools/asmbin_validate_cli.c`: CLI Linux de solo lectura que mapea un archivo con `mmap(PROT_READ)` y llama al guard NASM. CI compila y enlaza el CLI, y comprueba que rechaza un archivo truncado con estado de salida 1. La validación sobre el ASMBIN real Qwen3-0.6B todavía está pendiente en el MSI.
+
 **CI confirmada:** [run 45980051650](https://github.com/robertosantosx2/LEONES/actions/runs/45980051650). Los 20 tests Python pasan; el harness NASM se ensambla, enlaza y ejecuta con exit code 0; el upstream fijado compila con `FAST_Q8=1` y `FAST_Q8=0`. También pasan los gates completos V1, runtime-v1.1, RC4 y regresión general.
 
 **Limitaciones explícitas:** no se comprueba unicidad/continuidad global de ranks, semántica de merges respecto al tokenizer original, ni todos los valores y subrangos de cada tensor. El límite de 128 probes es una política de esta implementación, no una propiedad universal del formato. No se ha integrado en `model_init`, no se ha compilado un loader upstream modificado y no se ha ejecutado ningún modelo adicional.
