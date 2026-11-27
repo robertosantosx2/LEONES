@@ -200,6 +200,42 @@ _start:
     jz      fail
     mov     qword [rel fixture + 128 + TOKH_OFF_OFFSETS], 1088
 
+    ; BPE left/right token IDs must be inside the vocabulary.
+    mov     dword [rel fixture + 132356], 32768
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + 132356], 1
+
+    ; BPE merged token ID must be inside the vocabulary.
+    mov     dword [rel fixture + 132360], 32768
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + 132360], 3
+
+    ; BPE rank must be inside the vocabulary.
+    mov     dword [rel fixture + 132364], 32768
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + 132364], 0
+
+    ; Empty BPE slots must have zero key and merged ID.
+    mov     qword [rel fixture + 132368], 1
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + 132368], 0
+
     ; Invalid tokenizer hash mask must be rejected.
     mov     dword [rel fixture + HDR_HT_MASK], 63
     lea     rdi, [rel fixture]
@@ -309,5 +345,6 @@ fixture:
     times 1216 - ($ - fixture) db 0
     times (32768 + 1) * 4 db 0   ; monotonic token_offsets[]
     times 132352 - ($ - fixture) db 0
-    times 8388608 db 0           ; fixed 524288-entry merge table
+    dq 0x0000000100000002, 3, 0 ; valid synthetic merge entry: (1,2)->3 rank 0
+    times 524287 dq 0, 0xFFFFFFFF00000000 ; empty slots: zero key/id, rank=UINT32_MAX
     times FIXTURE_SIZE - ($ - fixture) db 0
