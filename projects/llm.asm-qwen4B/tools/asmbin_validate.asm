@@ -574,3 +574,5 @@ asmbin_expected_layer_stride:
 .bad_layer_stride:
     mov     rax, ERR_RANGE
     ret
+
+section .note.GNU-stack noalloc noexec nowrite progbits
