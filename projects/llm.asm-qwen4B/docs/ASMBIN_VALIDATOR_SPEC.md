@@ -1,6 +1,6 @@
 # Especificación del validador ASMBIN v1/v2
 
-**Estado:** diseño previo a implementación  
+**Estado:** especificación contrastada con upstream fijado; validador Python implementado y guard NASM parcial con CI verde  
 **Referencia:** `alesha-pro/llm.asm` commit `48feccbfd57cb669440f31ff64958d95bb8b848e`  
 **Propósito:** validar estructura, dimensiones y rangos antes de mapear o ejecutar un modelo.
 
@@ -305,4 +305,8 @@ El validador también rechaza perfiles sin `FLAG_TIED_EMB`, ya que el layout ASM
 
 El módulo independiente `tools/asmbin_validate.asm` expone `asmbin_validate(base, actual_size)` y devuelve cero o un código negativo. Es un guard inicial de cabecera y secciones principales, no reemplaza el parser Python ni la validación completa de tokenizer/BPE. No se debe conectar a `model_init` hasta que el harness nativo y la CI hayan pasado y se complete la cobertura de límites internos.
 
-El harness `tests/test_asmbin_validate.asm` construye un artefacto sintético mínimo y verifica v1/v2, flags, truncamiento, tamaño declarado, offset de embeddings y divisibilidad GQA. El workflow de la rama ensambla, enlaza y ejecuta el harness en Linux; el resultado de ese job aún debe verificarse en GitHub Actions.
+El harness `tests/test_asmbin_validate.asm` construye un artefacto sintético mínimo y acepta fixtures canónicos v1 y v2 con tamaños y offsets específicos de cada versión. También prueba magic/version/flags, truncamiento, tamaño declarado, offsets de embeddings, alineación de secciones y stride, continuidad entre capas y norma final, sub-offset tokenizer mínimo, máscara BPE, EOS, límite Q8 de q_dim, max_seq_len, bytes reservados y divisibilidad GQA.
+
+CI confirmada: run [45977256574](https://github.com/robertosantosx2/LEONES/actions/runs/45977256574). Los 20 tests Python pasan; el harness NASM se ensambla, enlaza y ejecuta con exit code 0; upstream compila con `FAST_Q8=1` y `FAST_Q8=0`.
+
+El guard NASM comprueba alineación de 64 bytes para secciones principales y layer_stride, inicio tokenizer en 128, final exacto de embeddings alineado, final exacto de capas y tamaño total alineado tras RMSNorm. Sigue siendo una validación parcial: no valida el contenido completo de tokenizer/BPE, el layout exacto de cada matriz dentro de cada capa, ni todos los solapamientos internos.
