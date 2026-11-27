@@ -69,6 +69,20 @@ jobs:
           ld -static -o /tmp/test_asmbin_validate \
             /tmp/test_asmbin_validate.o /tmp/asmbin_validate.o
           /tmp/test_asmbin_validate
+      - name: Build and smoke-test read-only ASMBIN CLI
+        run: |
+          gcc -std=c11 -O2 -Wall -Wextra -Werror -no-pie \
+            projects/llm.asm-qwen4B/tools/asmbin_validate_cli.c \
+            /tmp/asmbin_validate.o -Wl,-z,noexecstack \
+            -o /tmp/asmbin_validate_cli
+          truncate -s 127 /tmp/truncated.asmbin
+          set +e
+          output=$(/tmp/asmbin_validate_cli /tmp/truncated.asmbin 2>&1)
+          status=$?
+          set -e
+          printf '%s\\n' "$output"
+          test "$status" -eq 1
+          printf '%s' "$output" | grep -q "ASMBIN_INVALID code="
       - name: Build Linux inference with FAST_Q8=1
         working-directory: upstream
         run: make inference FAST_Q8=1
