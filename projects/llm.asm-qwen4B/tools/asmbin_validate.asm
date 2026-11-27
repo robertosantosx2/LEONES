@@ -218,6 +218,12 @@ asmbin_validate:
     test    rdx, rdx
     jz      .bad_range
 
+    ; Bound the entire tokenizer section before the helper dereferences it.
+    mov     rax, r8
+    mov     rcx, r9
+    sub     rcx, rax
+    CHECK_RANGE rax, rcx
+
     ; Validate the canonical tokenizer sub-layout and bounded arrays.
     push    rsi
     call    asmbin_validate_tokenizer
