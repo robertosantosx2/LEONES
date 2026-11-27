@@ -27,6 +27,8 @@ default rel
 %define ERR_EMBED_END  -9
 %define ERR_LAYER_END  -10
 %define ERR_FILE_END   -11
+%define BPE_HASH_MULT  0x9E3779B97F4A7C15
+%define BPE_MAX_PROBE  128
 
 section .text
 global asmbin_validate
@@ -328,6 +330,7 @@ asmbin_validate:
 ; Checks sub-offsets, reserved bytes, byte IDs, monotonic token offsets,
 ; token-byte extent, and the complete fixed-size merge-table region.
 asmbin_validate_tokenizer:
+    push    r12                         ; preserve SysV callee-saved register
     mov     r8, [rdi + HDR_OFF_TOKENIZER]
     mov     r9, [rdi + HDR_OFF_EMBED]
     cmp     r9, r8
@@ -432,16 +435,21 @@ asmbin_validate_tokenizer:
     dec     ecx
     jnz     .byte_to_tok_loop
 
-    ; Validate every fixed-size merge entry's ID/rank bounds and empty form.
-    ; This does not yet verify hash placement or probe-chain correctness.
+    ; Validate merge-entry IDs/ranks, canonical empty slots, and linear-probe
+    ; reachability. The 128-probe cap bounds worst-case validation work.
     mov     rax, [r10 + TOKH_OFF_HT]
-    lea     rdx, [r10 + rax]
-    mov     ecx, 524288
-    xor     r8d, r8d                  ; count empty slots
+    lea     r10, [r10 + rax]          ; merge table base
+    mov     esi, 524288               ; outer slot count
+    xor     r8d, r8d                  ; current slot index
+    xor     r9d, r9d                  ; count empty slots
 .bpe_entry_loop:
+    lea     rdx, [r10 + r8*8]
+    lea     rdx, [rdx + r8*8]         ; current entry = table + slot*16
     mov     eax, [rdx + 12]           ; rank
     cmp     eax, 0xFFFFFFFF
     je      .bpe_empty
+
+    mov     r11d, [rdi + HDR_VOCAB_SIZE]
     mov     eax, [rdx]                ; right token ID
     cmp     eax, r11d
     jae     .bad_tokenizer_layout
@@ -454,24 +462,49 @@ asmbin_validate_tokenizer:
     mov     eax, [rdx + 12]           ; merge rank
     cmp     eax, r11d
     jae     .bad_tokenizer_layout
-    jmp     .bpe_next
+
+    ; Home slot = low64(key * Fibonacci multiplier) >> 45.
+    mov     r12, [rdx]
+    mov     rax, r12
+    mov     rcx, BPE_HASH_MULT
+    imul    rax, rcx
+    shr     rax, 45
+    mov     r11d, eax
+    xor     ecx, ecx
+.bpe_probe_loop:
+    cmp     r11d, r8d
+    je      .bpe_next
+    inc     ecx
+    cmp     ecx, BPE_MAX_PROBE
+    ja      .bad_tokenizer_layout
+    lea     rax, [r10 + r11*8]
+    lea     rax, [rax + r11*8]
+    cmp     dword [rax + 12], 0xFFFFFFFF
+    je      .bad_tokenizer_layout     ; an empty slot breaks the probe chain
+    cmp     qword [rax], r12
+    je      .bad_tokenizer_layout     ; duplicate key earlier in the chain
+    inc     r11d
+    and     r11d, 524287
+    jmp     .bpe_probe_loop
 .bpe_empty:
     cmp     qword [rdx], 0
     jne     .bad_tokenizer_layout
     cmp     dword [rdx + 8], 0
     jne     .bad_tokenizer_layout
-    inc     r8d
+    inc     r9d
 .bpe_next:
-    add     rdx, 16
-    dec     ecx
+    inc     r8d
+    dec     esi
     jnz     .bpe_entry_loop
-    test    r8d, r8d
+    test    r9d, r9d
     jz      .bad_tokenizer_layout
 
     xor     eax, eax
+    pop     r12
     ret
 .bad_tokenizer_layout:
     mov     rax, ERR_TOKENIZER
+    pop     r12
     ret
 
 ; Return the canonical per-layer stride from the exporter layout.
