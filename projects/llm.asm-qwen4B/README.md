@@ -116,6 +116,22 @@ python3 projects/llm.asm-qwen4B/tools/asmbin_validate.py modelo.asmbin --json
 
 **Validador NASM inicial:** añadidos `tools/asmbin_validate.asm` y `tests/test_asmbin_validate.asm`. La rutina `asmbin_validate(base, actual_size)` comprueba puntero no nulo, cabecera y tamaño declarado, magic/version/flags, dimensiones, límites Q8, GQA, escalares FP32 positivos y finitos, alineación de 64 bytes, layout canónico del tokenizer, offsets de tokens monótonos, continuidad exacta de capas y tamaño final alineado tras RMSNorm. Recalcula `layer_stride` a partir de las normas y las siete matrices Q8 en orden, con tamaños de fila v1/v2. Recorre las 524288 entradas BPE (8 MiB), valida IDs/ranks y ranuras vacías, y verifica slot Fibonacci y cadenas de sondeo lineal sin huecos ni claves duplicadas, con límite de 128 probes. El harness comprueba además ABI SysV (callee-saved y stack), un cluster de colisión válido y casos negativos de puntero, escalares, layout, tokenizer y BPE. CI verde en [run 45980051650](https://github.com/robertosantosx2/LEONES/actions/runs/45980051650): 20 tests Python, ensamblado/enlace/ejecución del harness y builds upstream `FAST_Q8=1/0`; los gates V1, runtime-v1.1, RC4 y completo también pasan.
 
+**CLI para validar un ASMBIN real:** `tools/asmbin_validate_cli.c` abre el archivo en solo lectura, lo mapea con `mmap(PROT_READ)` y llama al guard NASM. Requiere NASM, GCC y el checkout upstream fijado para resolver `constants.inc`:
+
+```bash
+UPSTREAM_DIR=/path/to/llm.asm
+nasm -f elf64 -I "$UPSTREAM_DIR/shared/" \
+  projects/llm.asm-qwen4B/tools/asmbin_validate.asm \
+  -o /tmp/asmbin_validate.o
+gcc -std=c11 -O2 -Wall -Wextra -Werror -no-pie \
+  projects/llm.asm-qwen4B/tools/asmbin_validate_cli.c \
+  /tmp/asmbin_validate.o -Wl,-z,noexecstack \
+  -o /tmp/asmbin_validate_cli
+/tmp/asmbin_validate_cli /path/to/model.asmbin
+```
+
+Salida esperada: `ASMBIN_VALID version=2 bytes=...` y exit code 0. Los errores imprimen el código negativo y devuelven exit code 1. El CLI no modifica el archivo.
+
 **Límite explícito:** esta primera rutina no valida aún las estructuras internas completas del tokenizer/BPE, no demuestra todos los tamaños internos de cada tensor y todavía no está integrada en `model_init`. No debe considerarse una barrera de seguridad completa ni soporte para modelos nuevos.
 
 **Auditoría NASM:** completada estáticamente para `model_init`, resolución de punteros, cálculo del arena y runtime Multiboot/bump allocator. El upstream permanece intacto; la rutina nueva vive en el subproyecto LEONES.
