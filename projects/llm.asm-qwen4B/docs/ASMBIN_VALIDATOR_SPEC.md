@@ -2,7 +2,7 @@
 
 **Estado:** especificación contrastada con upstream fijado; validador Python implementado y guard NASM parcial con CI verde  
 **Referencia:** `alesha-pro/llm.asm` commit `48feccbfd57cb669440f31ff64958d95bb8b848e`  
-**Propósito:** validar estructura, dimensiones y rangos antes de mapear o ejecutar un modelo.
+**Propósito:** validar estructura, dimensiones y rangos sobre una región ya mapeada, antes de interpretar tensores o inicializar la inferencia.
 
 Esta especificación describe el layout escrito por `scripts/export_weights.py` y consumido por `shared/transformer.asm`. No es una especificación universal de otros formatos Q8_0.
 
@@ -18,7 +18,9 @@ Esta especificación describe el layout escrito por `scripts/export_weights.py` 
 - Las normas se almacenan como FP32.
 - El archivo es mapeable directamente y los offsets del encabezado son relativos al inicio del archivo.
 
-El validador debe usar lecturas acotadas y aritmética con comprobación de overflow. Nunca debe confiar en un offset antes de verificar que cabe dentro del tamaño real del archivo.
+El validador NASM recibe una base ya mapeada y su tamaño real; no sustituye la validación del sistema de archivos ni evita el coste de mapear el archivo. Su responsabilidad es impedir que el loader interprete cabeceras, tokenizer o tensores hasta comprobar los rangos.
+
+El contrato de llamada es SysV x86-64: `RDI=base`, `RSI=actual_size`; devuelve cero o un error negativo. Rechaza base nula y tamaños menores que la cabecera antes de leer campos. Debe usar lecturas acotadas y aritmética con comprobación de overflow. Nunca debe confiar en un offset antes de verificar que cabe dentro del tamaño real del archivo.
 
 ## 2. Encabezado de 128 bytes
 
