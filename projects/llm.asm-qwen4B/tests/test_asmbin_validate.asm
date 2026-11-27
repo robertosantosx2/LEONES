@@ -75,6 +75,42 @@ _start:
     jz      fail
     mov     qword [rel fixture + 128 + TOKH_OFF_B2T], 64
 
+    ; Invalid tokenizer hash mask must be rejected.
+    mov     dword [rel fixture + HDR_HT_MASK], 63
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_HT_MASK], 524287
+
+    ; EOS IDs must be inside the vocabulary.
+    mov     dword [rel fixture + HDR_EOS_1], 32
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_EOS_1], 0
+
+    ; max_seq_len must be nonzero.
+    mov     dword [rel fixture + HDR_MAX_SEQ_LEN], 0
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + HDR_MAX_SEQ_LEN], 128
+
+    ; Reserved header bytes must be zero.
+    mov     qword [rel fixture + 112], 1
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + 112], 0
+
     ; Invalid GQA divisibility.
     mov     dword [rel fixture + HDR_N_KV_HEADS], 2
     lea     rdi, [rel fixture]
@@ -107,7 +143,7 @@ fixture:
     dd 0x3A83126F                 ; rms_eps (float32)
     dd 0x44800000                 ; rope_theta (float32)
     dd 0, 0                       ; eos ids
-    dd 63                         ; ht_mask (not validated by this stage)
+    dd 524287                     ; fixed 19-bit BPE hash mask
     dd HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
     dq 128                        ; tokenizer offset
     dq 256                        ; embedding offset
