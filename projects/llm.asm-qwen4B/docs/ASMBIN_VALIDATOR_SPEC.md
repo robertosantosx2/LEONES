@@ -311,7 +311,7 @@ El módulo independiente `tools/asmbin_validate.asm` expone `asmbin_validate(bas
 
 El harness `tests/test_asmbin_validate.asm` construye un artefacto sintético mínimo y acepta fixtures canónicos v1 y v2 con tamaños y offsets específicos de cada versión. También prueba magic/version/flags, truncamiento, tamaño declarado, offsets de embeddings, alineación de secciones y stride, continuidad entre capas y norma final, sub-offset tokenizer mínimo, máscara BPE, EOS, límite Q8 de q_dim, max_seq_len, bytes reservados y divisibilidad GQA.
 
-CI confirmada: run [45980889134](https://github.com/robertosantosx2/LEONES/actions/runs/45980889134). Los 20 tests Python pasan; el harness NASM se ensambla, enlaza y ejecuta con exit code 0; upstream compila con `FAST_Q8=1` y `FAST_Q8=0`. También pasan los gates de regresión V1, runtime-v1.1, RC4 y el gate completo del repositorio.
+CI confirmada: run [45981103975](https://github.com/robertosantosx2/LEONES/actions/runs/45981103975). Los 20 tests Python pasan; el harness NASM se ensambla, enlaza y ejecuta con exit code 0; upstream compila con `FAST_Q8=1` y `FAST_Q8=0`. También pasan los gates de regresión V1, runtime-v1.1, RC4 y el gate completo del repositorio.
 
 El contrato NASM es SysV x86-64: `RDI=base`, `RSI=actual_size`; devuelve cero o un error negativo, rechaza base nula antes de leer la cabecera y preserva registros callee-saved y stack. Los escalares FP32 `rms_norm_eps` y `rope_theta` deben ser positivos y finitos.
 
