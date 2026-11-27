@@ -218,33 +218,12 @@ asmbin_validate:
     test    rdx, rdx
     jz      .bad_range
 
-    ; Tokenizer header (four uint64 sub-offsets) must fit.
-    mov     rax, r8
-    mov     rcx, 64
-    CHECK_RANGE rax, rcx
-    ; Every tokenizer sub-offset must remain inside tokenizer section.
-    mov     rax, r9
-    sub     rax, r8                    ; tokenizer section length
-    mov     rcx, [rdi + r8 + TOKH_OFF_B2T]
-    cmp     rcx, 64
-    jb      .bad_tokenizer
-    cmp     rcx, rax
-    jae     .bad_tokenizer
-    mov     rcx, [rdi + r8 + TOKH_OFF_OFFSETS]
-    cmp     rcx, 64
-    jb      .bad_tokenizer
-    cmp     rcx, rax
-    jae     .bad_tokenizer
-    mov     rcx, [rdi + r8 + TOKH_OFF_BYTES]
-    cmp     rcx, 64
-    jb      .bad_tokenizer
-    cmp     rcx, rax
-    jae     .bad_tokenizer
-    mov     rcx, [rdi + r8 + TOKH_OFF_HT]
-    cmp     rcx, 64
-    jb      .bad_tokenizer
-    cmp     rcx, rax
-    jae     .bad_tokenizer
+    ; Validate the canonical tokenizer sub-layout and bounded arrays.
+    push    rsi
+    call    asmbin_validate_tokenizer
+    pop     rsi
+    test    rax, rax
+    js      .bad_tokenizer
 
     ; Embedding extent: vocab * (dim + dim/2^scale_shift).
     mov     eax, [rdi + HDR_DIM]
@@ -336,6 +315,121 @@ asmbin_validate:
     ret
 .bad_file_end:
     mov     rax, ERR_FILE_END
+    ret
+
+; Validate the canonical tokenizer section layout without parsing BPE entries.
+; Input: RDI = ASMBIN base. Output: zero or ERR_TOKENIZER.
+; Checks sub-offsets, reserved bytes, byte IDs, monotonic token offsets,
+; token-byte extent, and the complete fixed-size merge-table region.
+asmbin_validate_tokenizer:
+    mov     r8, [rdi + HDR_OFF_TOKENIZER]
+    mov     r9, [rdi + HDR_OFF_EMBED]
+    cmp     r9, r8
+    jbe     .bad_tokenizer_layout
+    mov     rsi, r9
+    sub     rsi, r8                    ; tokenizer section length
+    cmp     rsi, 64
+    jb      .bad_tokenizer_layout
+    lea     r10, [rdi + r8]            ; tokenizer section base
+
+    ; Reserved tokenizer-header bytes must be zero.
+    mov     rax, [r10 + 32]
+    or      rax, [r10 + 40]
+    or      rax, [r10 + 48]
+    or      rax, [r10 + 56]
+    jnz     .bad_tokenizer_layout
+
+    ; Exporter-canonical byte_to_tok and token-offset array starts.
+    cmp     qword [r10 + TOKH_OFF_B2T], 64
+    jne     .bad_tokenizer_layout
+    cmp     qword [r10 + TOKH_OFF_OFFSETS], 1088
+    jne     .bad_tokenizer_layout
+
+    ; token_offsets occupies (vocab_size + 1) uint32 entries.
+    mov     eax, [rdi + HDR_VOCAB_SIZE]
+    inc     rax
+    shl     rax, 2
+    mov     rdx, [r10 + TOKH_OFF_OFFSETS]
+    cmp     rdx, rsi
+    ja      .bad_tokenizer_layout
+    mov     rcx, rsi
+    sub     rcx, rdx
+    cmp     rax, rcx
+    ja      .bad_tokenizer_layout
+
+    ; off_tok_bytes = align64(off_tok_offsets + token_offsets_bytes).
+    add     rax, rdx
+    add     rax, 63
+    and     rax, -64
+    cmp     rax, [r10 + TOKH_OFF_BYTES]
+    jne     .bad_tokenizer_layout
+
+    ; offsets[0] must be zero and the array must be monotonic.
+    mov     rdx, [r10 + TOKH_OFF_OFFSETS]
+    lea     rdx, [r10 + rdx]
+    cmp     dword [rdx], 0
+    jne     .bad_tokenizer_layout
+    mov     ecx, [rdi + HDR_VOCAB_SIZE]
+    xor     eax, eax
+    add     rdx, 4
+.token_offsets_loop:
+    mov     r8d, [rdx]
+    cmp     r8d, eax
+    jb      .bad_tokenizer_layout
+    mov     eax, r8d
+    add     rdx, 4
+    dec     ecx
+    jnz     .token_offsets_loop
+
+    ; The last token offset determines the exact token-byte region length.
+    mov     r9, [r10 + TOKH_OFF_BYTES]
+    cmp     r9, rsi
+    ja      .bad_tokenizer_layout
+    mov     rcx, rsi
+    sub     rcx, r9
+    mov     edx, eax
+    cmp     rdx, rcx
+    ja      .bad_tokenizer_layout
+
+    ; off_merge_ht = align64(off_tok_bytes + last_token_offset).
+    mov     rax, r9
+    add     rax, rdx
+    add     rax, 63
+    and     rax, -64
+    cmp     rax, [r10 + TOKH_OFF_HT]
+    jne     .bad_tokenizer_layout
+
+    ; The fixed 524288-entry table occupies exactly 8 MiB.
+    mov     rcx, [r10 + TOKH_OFF_HT]
+    cmp     rcx, rsi
+    ja      .bad_tokenizer_layout
+    mov     rdx, rsi
+    sub     rdx, rcx
+    cmp     rdx, 8388608
+    jb      .bad_tokenizer_layout
+    mov     rax, rcx
+    add     rax, 8388608
+    add     rax, 63
+    and     rax, -64
+    cmp     rax, rsi
+    jne     .bad_tokenizer_layout
+
+    ; All 256 byte_to_tok IDs must be inside the vocabulary.
+    lea     rdx, [r10 + 64]
+    mov     ecx, 256
+    mov     r11d, [rdi + HDR_VOCAB_SIZE]
+.byte_to_tok_loop:
+    mov     eax, [rdx]
+    cmp     eax, r11d
+    jae     .bad_tokenizer_layout
+    add     rdx, 4
+    dec     ecx
+    jnz     .byte_to_tok_loop
+
+    xor     eax, eax
+    ret
+.bad_tokenizer_layout:
+    mov     rax, ERR_TOKENIZER
     ret
 
 ; Return the canonical per-layer stride from the exporter layout.
