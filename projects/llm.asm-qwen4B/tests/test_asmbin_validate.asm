@@ -84,6 +84,33 @@ _start:
     jz      fail
     mov     qword [rel fixture + HDR_OFF_EMBED], 256
 
+    ; Top-level sections must begin at 64-byte boundaries.
+    mov     qword [rel fixture + HDR_OFF_EMBED], 257
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + HDR_OFF_EMBED], 256
+
+    ; Layer stride must be 64-byte aligned.
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 65
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 64
+
+    ; Final norm must immediately follow the complete layer section.
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1180032
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1179968
+
     ; Tokenizer sub-offset must not overlap its 64-byte section header.
     mov     qword [rel fixture + 128 + TOKH_OFF_B2T], 32
     lea     rdi, [rel fixture]
