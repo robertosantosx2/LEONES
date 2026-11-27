@@ -159,20 +159,58 @@ El validador Python independiente sigue siendo una defensa y herramienta de diag
 - No se ha pedido intervención del MSI.
 - Los hallazgos describen ausencia de defensas observables en el código revisado; no afirman que un checkpoint válido actual falle necesariamente.
 
-**Conclusión:** el siguiente cambio debe ser una capa explícita de validación nativa en `shared/transformer.asm`, con pruebas sintéticas y compilación aislada. El runtime bare-metal requiere una segunda línea de endurecimiento independiente. No debe iniciarse todavía la exportación de Qwen3-4B.
+**Conclusión:** existe ahora un guard ASMBIN NASM aislado con cobertura sintética amplia y CI verde, pero todavía no está conectado a `model_init`. El siguiente cambio debe ser una integración controlada solo después de cerrar las lagunas documentadas y añadir pruebas de `model_init` en Linux y BARE_METAL. El runtime bare-metal requiere una segunda línea de endurecimiento independiente. No debe iniciarse todavía la exportación de Qwen3-4B.
 
 
-## 11. Primer validador NASM aislado (26-11-2026)
+## 11. Validador NASM aislado y cobertura actual (27-11-2026)
 
 Se ha añadido una primera implementación independiente en:
 
 - `projects/llm.asm-qwen4B/tools/asmbin_validate.asm`
 - `projects/llm.asm-qwen4B/tests/test_asmbin_validate.asm`
 
-ABI: `int64 asmbin_validate(const void *base, uint64 actual_size)`. La rutina comprueba que existen 128 bytes antes de leer la cabecera; magic, versión y flags; coincidencia de `HDR_FILE_SIZE`; dimensiones no nulas; alineación y límite Q8 de `dim`, `hidden_dim` y `q_dim`; divisibilidad GQA y `head_dim` par; orden de secciones; cuatro sub-offsets del tokenizer dentro de su sección; extensión mínima de embeddings, capas y norma final mediante restas antes de comparar longitudes.
+ABI: `int64 asmbin_validate(const void *base, uint64 actual_size)`, SysV x86-64 (`RDI=base`, `RSI=actual_size)). Devuelve cero o un error negativo; rechaza base nula y cabeceras truncadas antes de leer. El harness comprueba preservación de registros callee-saved y equilibrio de la pila.
 
-El harness usa un fixture pequeño de 1536 bytes y cubre cabecera válida v1, válida v2, falta de flag requerido, cabecera truncada, discrepancia de tamaño, offset de embeddings fuera de rango y GQA no divisible. El workflow compila y enlaza este harness con NASM/ld en Linux, además de compilar el upstream fijado con `FAST_Q8=1` y `FAST_Q8=0`.
+La rutina comprueba:
 
-**Estado de validación:** el código y el job están publicados; no se dispone aún de un resultado de ejecución CI confirmado para este nuevo job. No afirmar que el harness haya pasado hasta verificar Actions.
+- Magic, versiones v1/v2, flags conocidos y coherencia de escalas FP32/FP16.
+- Tamaño declarado frente al tamaño real, bytes reservados de la cabecera y escalares FP32 positivos/finito.
+- Dimensiones, GQA, EOS, límites Q8 y relaciones dimensionales.
+- Alineación de 64 bytes, orden y extensiones de secciones, stride exacto de capa y final alineado del archivo.
+- Layout canónico del tokenizer, offsets monótonos, límites de byte-to-token y tabla BPE.
+- IDs/ranks BPE dentro del vocabulario, ranuras vacías canónicas, slot Fibonacci, cadenas de sondeo lineal sin huecos y claves duplicadas en la cadena.
 
-**Alcance incompleto por diseño:** todavía no se validan los contenidos completos del tokenizer/BPE, cada tensor y su stride interno, los solapamientos internos de subregiones, ni las dimensiones numéricas de activaciones/KV-cache. Tampoco se ha integrado la llamada en `model_init`. Antes de integrarlo hay que ejecutar CI, corregir cualquier error de ensamblado y ampliar el harness. El código upstream sigue sin modificaciones.
+El `layer_stride` se recalcula desde los cuatro vectores de normas y las siete matrices Q8 en el orden del exportador, con row-bytes específicos de v1/v2. La cadena de sondeo BPE se limita a 128 posiciones para acotar el coste.
+
+El harness genera un fixture sintético de aproximadamente 9,7 MB, con layouts canónicos v1/v2 y un cluster BPE de colisión válido. Incluye casos negativos de puntero nulo, escalares no finitos/no positivos, cabecera truncada, offsets fuera de rango, secciones desalineadas, stride incorrecto, tokenizer no canónico, byte IDs inválidos, offsets no monótonos, BPE IDs/ranks inválidos, clave duplicada y cadena de sondeo rota.
+
+**CI confirmada:** [run 45980051650](https://github.com/robertosantosx2/LEONES/actions/runs/45980051650). Los 20 tests Python pasan; el harness NASM se ensambla, enlaza y ejecuta con exit code 0; el upstream fijado compila con `FAST_Q8=1` y `FAST_Q8=0`. También pasan los gates completos V1, runtime-v1.1, RC4 y regresión general.
+
+**Limitaciones explícitas:** no se comprueba unicidad/continuidad global de ranks, semántica de merges respecto al tokenizer original, ni todos los valores y subrangos de cada tensor. El límite de 128 probes es una política de esta implementación, no una propiedad universal del formato. No se ha integrado en `model_init`, no se ha compilado un loader upstream modificado y no se ha ejecutado ningún modelo adicional.
+
+## 12. Punto de integración recomendado en model_init
+
+En el commit upstream auditado, las dos rutas convergen con:
+
+- `R15`: base del ASMBIN ya mapeado (Linux) o base del módulo Multiboot (BARE_METAL).
+- `R14`: tamaño real del mapping/módulo.
+
+El punto seguro es **inmediatamente después de la convergencia de ambas rutas y antes de la primera lectura de `[R15 + HDR_MAGIC]`**, antes de llamar a `matmul_set_fp16`, copiar dimensiones al contexto o resolver cualquier puntero. La llamada prevista es:
+
+```nasm
+    mov     rdi, r15
+    mov     rsi, r14
+    call    asmbin_validate
+    test    rax, rax
+    js      .err_asmbin
+```
+
+Requisitos para una futura integración:
+
+1. Añadir el objeto NASM al build de Linux y BARE_METAL y resolver el símbolo sin duplicar la implementación.
+2. Preservar el código de error del validador al liberar recursos. En Linux, desmapear `[R15,R15+R14)`; en BARE_METAL, usar la ruta de limpieza del módulo/arena (el `sys_munmap` upstream es no-op en el bump arena).
+3. Confirmar que el validador preserva los registros callee-saved usados por `model_init`, en particular `R12` (`max_seq_override`).
+4. Añadir pruebas de integración con fixtures válidos e inválidos a través de `model_init`, incluyendo que un fallo no deje `g_ctx` parcialmente inicializado ni cambie el modo FP16 global.
+5. Mantener el guard antes de cualquier efecto global o resolución de punteros.
+
+**No integrar todavía:** el guard actual sigue siendo parcial en ranks y semántica BPE. Primero cerrar esas limitaciones o documentar formalmente su aceptación, después ejecutar pruebas de loader Linux y BARE_METAL. No se necesita el MSI para preparar esta integración; será necesario para validar con el artefacto real Qwen3-0.6B y, más adelante, modelos mayores.
