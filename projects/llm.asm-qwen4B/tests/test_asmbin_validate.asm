@@ -111,6 +111,15 @@ _start:
     jz      fail
     mov     qword [rel fixture + HDR_LAYER_STRIDE], 8832
 
+    ; A 64-byte-aligned but incorrect canonical layer stride must be rejected.
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8896
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8832
+
     ; Final norm must immediately follow the complete layer section.
     mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1188800
     lea     rdi, [rel fixture]
