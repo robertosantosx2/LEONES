@@ -345,6 +345,7 @@ fixture:
     times 1216 - ($ - fixture) db 0
     times (32768 + 1) * 4 db 0   ; monotonic token_offsets[]
     times 132352 - ($ - fixture) db 0
-    dq 0x0000000100000002, 3, 0 ; valid synthetic merge entry: (1,2)->3 rank 0
+    dq 0x0000000100000002      ; key = (1 << 32) | 2
+    dd 3, 0                     ; merged_id=3, rank=0
     times 524287 dq 0, 0xFFFFFFFF00000000 ; empty slots: zero key/id, rank=UINT32_MAX
     times FIXTURE_SIZE - ($ - fixture) db 0
