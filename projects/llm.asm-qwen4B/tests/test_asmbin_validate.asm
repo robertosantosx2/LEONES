@@ -188,12 +188,11 @@ _start:
     xor     edi, edi
     syscall
 fail:
-    ; Preserve useful diagnostics: 1..7 identifies a validator error returned
-    ; for a fixture expected to be valid; 100 means a negative case was accepted.
+    ; Distinguish a rejected valid fixture from a malformed fixture accepted.
+    ; Use fixed nonzero exit codes to avoid truncation/wraparound diagnostics.
     test    rax, rax
     jz      .assertion_failed
-    neg     eax
-    mov     edi, eax
+    mov     edi, 101
     mov     eax, 60
     syscall
 .assertion_failed:
