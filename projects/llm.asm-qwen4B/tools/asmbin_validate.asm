@@ -316,11 +316,12 @@ asmbin_validate:
     mov     rax, ERR_EMBED_END
     ret
 
-section .rodata
-hex_digits: db "0123456789abcdef"
 .bad_layer_end:
     mov     rax, ERR_LAYER_END
     ret
 .bad_file_end:
     mov     rax, ERR_FILE_END
     ret
+
+section .rodata
+hex_digits: db "0123456789abcdef"
