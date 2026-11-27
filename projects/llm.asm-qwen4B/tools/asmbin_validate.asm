@@ -28,6 +28,7 @@ default rel
 %define ERR_LAYER_END  -10
 %define ERR_FILE_END   -11
 %define ERR_NULL_BASE  -12
+%define ERR_NUMERIC    -13
 %define BPE_HASH_MULT  0x9E3779B97F4A7C15
 %define BPE_MAX_PROBE  128
 
@@ -62,6 +63,17 @@ global asmbin_validate
 
 ; Range macro: verify [offset, offset+length) lies inside actual_size
 ; Inputs: offset register, length register, actual_size in rsi
+%macro CHECK_POSITIVE_FINITE_F32 1
+    mov     eax, [rdi + %1]
+    test    eax, eax
+    jz      .bad_numeric
+    test    eax, 0x80000000
+    jnz     .bad_numeric
+    and     eax, 0x7F800000
+    cmp     eax, 0x7F800000
+    je      .bad_numeric
+%endmacro
+
 %macro CHECK_RANGE 2
     cmp     %1, rsi
     ja      .bad_range
@@ -124,6 +136,10 @@ asmbin_validate:
     je      .bad_dims
     cmp     dword [rdi + HDR_HT_MASK], 524287
     jne     .bad_tokenizer
+
+    ; Runtime floating-point scalars must be positive finite FP32 values.
+    CHECK_POSITIVE_FINITE_F32 HDR_RMS_EPS
+    CHECK_POSITIVE_FINITE_F32 HDR_ROPE_THETA
 
     ; Required dimensions must be nonzero.
     mov     eax, [rdi + HDR_DIM]
@@ -300,6 +316,9 @@ asmbin_validate:
     ret
 .bad_null:
     mov     rax, ERR_NULL_BASE
+    ret
+.bad_numeric:
+    mov     rax, ERR_NUMERIC
     ret
 .bad_header:
     mov     rax, ERR_HEADER
