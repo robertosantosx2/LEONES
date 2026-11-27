@@ -188,11 +188,15 @@ _start:
     xor     edi, edi
     syscall
 fail:
-    ; Distinguish a rejected valid fixture from a malformed fixture accepted.
-    ; Use fixed nonzero exit codes to avoid truncation/wraparound diagnostics.
+    ; Return the validator diagnostic (scaled boundary delta) for valid-fixture
+    ; rejection; 100 means a malformed fixture was unexpectedly accepted.
     test    rax, rax
     jz      .assertion_failed
-    mov     edi, 101
+    mov     edi, eax
+    and     edi, 255
+    jnz     .exit_diagnostic
+    mov     edi, 99
+.exit_diagnostic:
     mov     eax, 60
     syscall
 .assertion_failed:
