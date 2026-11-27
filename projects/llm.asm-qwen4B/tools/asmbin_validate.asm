@@ -432,6 +432,42 @@ asmbin_validate_tokenizer:
     dec     ecx
     jnz     .byte_to_tok_loop
 
+    ; Validate every fixed-size merge entry's ID/rank bounds and empty form.
+    ; This does not yet verify hash placement or probe-chain correctness.
+    mov     rax, [r10 + TOKH_OFF_HT]
+    lea     rdx, [r10 + rax]
+    mov     ecx, 524288
+    xor     r8d, r8d                  ; count empty slots
+.bpe_entry_loop:
+    mov     eax, [rdx + 12]           ; rank
+    cmp     eax, 0xFFFFFFFF
+    je      .bpe_empty
+    mov     eax, [rdx]                ; right token ID
+    cmp     eax, r11d
+    jae     .bad_tokenizer_layout
+    mov     eax, [rdx + 4]            ; left token ID
+    cmp     eax, r11d
+    jae     .bad_tokenizer_layout
+    mov     eax, [rdx + 8]            ; merged token ID
+    cmp     eax, r11d
+    jae     .bad_tokenizer_layout
+    mov     eax, [rdx + 12]           ; merge rank
+    cmp     eax, r11d
+    jae     .bad_tokenizer_layout
+    jmp     .bpe_next
+.bpe_empty:
+    cmp     qword [rdx], 0
+    jne     .bad_tokenizer_layout
+    cmp     dword [rdx + 8], 0
+    jne     .bad_tokenizer_layout
+    inc     r8d
+.bpe_next:
+    add     rdx, 16
+    dec     ecx
+    jnz     .bpe_entry_loop
+    test    r8d, r8d
+    jz      .bad_tokenizer_layout
+
     xor     eax, eax
     ret
 .bad_tokenizer_layout:
