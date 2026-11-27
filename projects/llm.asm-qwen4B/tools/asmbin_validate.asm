@@ -160,21 +160,21 @@ asmbin_validate:
 
     ; Canonical top-level section starts and layer stride are 64-byte aligned.
     cmp     r8, ASMBIN_HEADER_SIZE
-    jne     .bad_layout
+    jne     .bad_range
     test    r9, 63
-    jnz     .bad_layout
+    jnz     .bad_range
     test    r10, 63
-    jnz     .bad_layout
+    jnz     .bad_range
     test    r11, 63
-    jnz     .bad_layout
+    jnz     .bad_range
     test    rdx, 63
-    jnz     .bad_layout
+    jnz     .bad_range
     cmp     r8, r9
-    jae     .bad_layout
+    jae     .bad_range
     cmp     r9, r10
-    jae     .bad_layout
+    jae     .bad_range
     cmp     r10, r11
-    jae     .bad_layout
+    jae     .bad_range
     test    rdx, rdx
     jz      .bad_range
 
@@ -234,7 +234,7 @@ asmbin_validate:
     add     rax, 63
     and     rax, -64
     cmp     rax, [rdi + HDR_OFF_LAYERS]
-    jne     .bad_embed_layout
+    jne     .bad_range
 
     ; Layer section extent: n_layers * layer_stride, ending exactly at final norm.
     mov     eax, [rdi + HDR_N_LAYERS]
@@ -246,7 +246,7 @@ asmbin_validate:
     CHECK_RANGE rax, rcx
     add     rax, rcx
     cmp     rax, [rdi + HDR_OFF_FINAL_NORM]
-    jne     .bad_layer_layout
+    jne     .bad_range
 
     ; Final RMSNorm vector: dim * sizeof(float32).
     mov     eax, [rdi + HDR_DIM]
@@ -259,7 +259,7 @@ asmbin_validate:
     add     rax, 63
     and     rax, -64
     cmp     rax, rsi
-    jne     .bad_final_layout
+    jne     .bad_range
 
     xor     eax, eax
     ret
@@ -284,19 +284,4 @@ asmbin_validate:
     ret
 .bad_tokenizer:
     mov     rax, ERR_TOKENIZER
-    ret
-.bad_layout:
-    mov     rax, -8
-    ret
-.bad_embed_layout:
-    ; Diagnostic delta: actual off_layers minus computed aligned embedding end.
-    mov     rdx, [rdi + HDR_OFF_LAYERS]
-    sub     rdx, rax
-    mov     rax, rdx
-    ret
-.bad_layer_layout:
-    mov     rax, -10
-    ret
-.bad_final_layout:
-    mov     rax, -11
     ret
