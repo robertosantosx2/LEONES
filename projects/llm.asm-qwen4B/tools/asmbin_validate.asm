@@ -296,7 +296,7 @@ asmbin_validate:
     ; Temporary diagnostic: boundary delta in 64-byte units.
     mov     rdx, [rdi + HDR_OFF_LAYERS]
     sub     rdx, rax
-    sar     rdx, 6
+    sar     rdx, 8
     mov     rax, rdx
     ret
 .bad_layer_end:
