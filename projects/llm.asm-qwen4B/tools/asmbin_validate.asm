@@ -27,6 +27,7 @@ default rel
 %define ERR_EMBED_END  -9
 %define ERR_LAYER_END  -10
 %define ERR_FILE_END   -11
+%define ERR_NULL_BASE  -12
 %define BPE_HASH_MULT  0x9E3779B97F4A7C15
 %define BPE_MAX_PROBE  128
 
@@ -71,6 +72,9 @@ global asmbin_validate
 %endmacro
 
 asmbin_validate:
+    ; Reject a null base before inspecting any header bytes.
+    test    rdi, rdi
+    jz      .bad_null
     ; Do not dereference base until the complete fixed header is available.
     cmp     rsi, ASMBIN_HEADER_SIZE
     jb      .bad_size
@@ -293,6 +297,9 @@ asmbin_validate:
 
 .bad_size:
     mov     rax, ERR_SIZE
+    ret
+.bad_null:
+    mov     rax, ERR_NULL_BASE
     ret
 .bad_header:
     mov     rax, ERR_HEADER
