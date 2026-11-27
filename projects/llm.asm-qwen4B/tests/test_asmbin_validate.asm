@@ -195,22 +195,16 @@ _start:
     xor     edi, edi
     syscall
 fail:
-    ; Return the low byte of the boundary delta for a rejected valid fixture;
-    ; 100 means a malformed fixture was unexpectedly accepted.
+    ; 101: valid fixture rejected. 100: malformed fixture unexpectedly accepted.
     test    rax, rax
     jz      .assertion_failed
-    mov     edi, eax
-    and     edi, 255
-    jnz     .exit_diagnostic
-    mov     edi, 99
-.exit_diagnostic:
+    mov     edi, 101
     mov     eax, 60
     syscall
 .assertion_failed:
     mov     eax, 60
     mov     edi, 100
     syscall
-
 section .data
 align 8
 fixture:
