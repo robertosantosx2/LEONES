@@ -293,7 +293,11 @@ asmbin_validate:
     mov     rax, ERR_LAYOUT
     ret
 .bad_embed_end:
-    mov     rax, ERR_EMBED_END
+    ; Temporary diagnostic: boundary delta in 64-byte units.
+    mov     rdx, [rdi + HDR_OFF_LAYERS]
+    sub     rdx, rax
+    sar     rdx, 6
+    mov     rax, rdx
     ret
 .bad_layer_end:
     mov     rax, ERR_LAYER_END
