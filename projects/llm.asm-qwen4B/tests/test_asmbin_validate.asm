@@ -21,16 +21,23 @@ _start:
     test    rax, rax
     jnz     fail
 
-    ; ASMBIN v2 requires the FP16-scales flag and is accepted.
+    ; ASMBIN v2 uses 2-byte scales per Q8 block, so its canonical
+    ; embedding/layer/final-norm offsets and actual size differ from v1.
     mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION_V2
     mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM | HDR_FLAG_FP16_SCALES
+    mov     qword [rel fixture + HDR_OFF_LAYERS], 1114368
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1114432
+    mov     qword [rel fixture + HDR_FILE_SIZE], 1114560
     lea     rdi, [rel fixture]
-    mov     rsi, FIXTURE_SIZE
+    mov     rsi, 1114560
     call    asmbin_validate
     test    rax, rax
     jnz     fail
     mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION
     mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
+    mov     qword [rel fixture + HDR_OFF_LAYERS], 1179904
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 1179968
+    mov     qword [rel fixture + HDR_FILE_SIZE], FIXTURE_SIZE
 
     ; Invalid magic must be rejected.
     mov     dword [rel fixture + HDR_MAGIC], 0
