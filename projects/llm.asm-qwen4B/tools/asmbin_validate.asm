@@ -148,28 +148,28 @@ asmbin_validate:
 
     ; Tokenizer header (four uint64 sub-offsets) must fit.
     mov     rax, r8
-    mov     rcx, 32
+    mov     rcx, 64
     CHECK_RANGE rax, rcx
     ; Every tokenizer sub-offset must remain inside tokenizer section.
     mov     rax, r9
     sub     rax, r8                    ; tokenizer section length
     mov     rcx, [rdi + r8 + TOKH_OFF_B2T]
-    cmp     rcx, 32
+    cmp     rcx, 64
     jb      .bad_tokenizer
     cmp     rcx, rax
     jae     .bad_tokenizer
     mov     rcx, [rdi + r8 + TOKH_OFF_OFFSETS]
-    cmp     rcx, 32
+    cmp     rcx, 64
     jb      .bad_tokenizer
     cmp     rcx, rax
     jae     .bad_tokenizer
     mov     rcx, [rdi + r8 + TOKH_OFF_BYTES]
-    cmp     rcx, 32
+    cmp     rcx, 64
     jb      .bad_tokenizer
     cmp     rcx, rax
     jae     .bad_tokenizer
     mov     rcx, [rdi + r8 + TOKH_OFF_HT]
-    cmp     rcx, 32
+    cmp     rcx, 64
     jb      .bad_tokenizer
     cmp     rcx, rax
     jae     .bad_tokenizer
