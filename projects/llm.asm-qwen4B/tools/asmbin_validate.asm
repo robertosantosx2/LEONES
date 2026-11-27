@@ -118,6 +118,9 @@ asmbin_validate:
     cmp     [rdi + HDR_EOS_2], eax
     jae     .bad_dims
 
+    ; Restore dim: EAX held vocab_size for the EOS bounds checks above.
+    mov     eax, [rdi + HDR_DIM]
+
     ; Quantized K dimensions must be block aligned and within current kernel.
     test    eax, 31
     jnz     .bad_dims
