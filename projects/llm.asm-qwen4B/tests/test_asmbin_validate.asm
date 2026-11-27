@@ -182,6 +182,15 @@ _start:
     mov     dword [rel fixture + 1220], 0
     mov     dword [rel fixture + 1224], 0
 
+    ; Last token offset must produce the canonical token-bytes/table boundary.
+    mov     dword [rel fixture + 132288], 1
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + 132288], 0
+
     ; Token-offset sub-array must begin at its canonical location.
     mov     qword [rel fixture + 128 + TOKH_OFF_OFFSETS], 1096
     lea     rdi, [rel fixture]
