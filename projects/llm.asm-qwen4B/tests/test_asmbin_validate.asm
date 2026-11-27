@@ -8,7 +8,7 @@ bits 64
 default rel
 %include "constants.inc"
 
-%define FIXTURE_SIZE 1664
+%define FIXTURE_SIZE 1180096
 
 extern asmbin_validate
 global _start
@@ -85,7 +85,7 @@ _start:
     mov     dword [rel fixture + HDR_HT_MASK], 524287
 
     ; EOS IDs must be inside the vocabulary.
-    mov     dword [rel fixture + HDR_EOS_1], 32
+    mov     dword [rel fixture + HDR_EOS_1], 32768
     lea     rdi, [rel fixture]
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
@@ -138,7 +138,7 @@ fixture:
     dd 1                          ; n_heads
     dd 1                          ; n_kv_heads
     dd 32                         ; head_dim
-    dd 32                         ; vocab_size
+    dd 32768                     ; vocab_size
     dd 128                        ; max_seq_len
     dd 0x3A83126F                 ; rms_eps (float32)
     dd 0x44800000                 ; rope_theta (float32)
@@ -147,9 +147,9 @@ fixture:
     dd HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
     dq 128                        ; tokenizer offset
     dq 256                        ; embedding offset
-    dq 1408                       ; layers offset
+    dq 1179904                    ; layers offset
     dq 64                         ; layer stride
-    dq 1472                       ; final norm offset
+    dq 1179968                    ; final norm offset
     dq FIXTURE_SIZE               ; file size
     times 128 - ($ - fixture) db 0
     dq 64, 72, 80, 88             ; tokenizer-relative sub-offsets after 64-byte header
