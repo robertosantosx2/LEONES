@@ -8,7 +8,7 @@ bits 64
 default rel
 %include "constants.inc"
 
-%define FIXTURE_SIZE 1536
+%define FIXTURE_SIZE 1664
 
 extern asmbin_validate
 global _start
