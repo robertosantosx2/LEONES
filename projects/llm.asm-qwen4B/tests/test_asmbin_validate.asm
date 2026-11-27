@@ -140,6 +140,44 @@ _start:
     jz      fail
     mov     qword [rel fixture + 128 + TOKH_OFF_B2T], 64
 
+    ; Tokenizer reserved header bytes must remain zero.
+    mov     qword [rel fixture + 128 + 32], 1
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + 128 + 32], 0
+
+    ; Byte-to-token IDs must be inside the vocabulary.
+    mov     dword [rel fixture + 192], 32768
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + 192], 0
+
+    ; Token offsets must be monotonic.
+    mov     dword [rel fixture + 1220], 2
+    mov     dword [rel fixture + 1224], 1
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     dword [rel fixture + 1220], 0
+    mov     dword [rel fixture + 1224], 0
+
+    ; Token-offset sub-array must begin at its canonical location.
+    mov     qword [rel fixture + 128 + TOKH_OFF_OFFSETS], 1096
+    lea     rdi, [rel fixture]
+    mov     rsi, FIXTURE_SIZE
+    call    asmbin_validate
+    test    rax, rax
+    jz      fail
+    mov     qword [rel fixture + 128 + TOKH_OFF_OFFSETS], 1088
+
     ; Invalid tokenizer hash mask must be rejected.
     mov     dword [rel fixture + HDR_HT_MASK], 63
     lea     rdi, [rel fixture]
