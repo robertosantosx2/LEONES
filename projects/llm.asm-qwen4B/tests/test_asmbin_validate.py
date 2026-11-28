@@ -235,6 +235,16 @@ class AsmbinValidatorTests(unittest.TestCase):
                           128, 0, 0, 0, 0, 0)
             av.validate_dimensions(h)
 
+    def test_qwen3_06b_layer_stride_matches_exporter_norm_layout(self):
+        h = av.Header(
+            2, 1024, 3072, 28, 16, 8, 128, 151936, 4096,
+            1e-6, 10000.0, 151645, 151643, av.HASH_MASK,
+            av.FLAG_TIED_EMB | av.FLAG_QK_NORM | av.FLAG_FP16_SCALES,
+            128, 0, 0, 0, 0, 0,
+        )
+        stride, _ = av.layer_layout(h)
+        self.assertEqual(stride, 16_720_896)
+
     def test_qwen3_profiles_do_not_assume_dim_equals_q_dim(self):
         profiles = [
             (1024, 3072, 28, 16, 8, 128),
