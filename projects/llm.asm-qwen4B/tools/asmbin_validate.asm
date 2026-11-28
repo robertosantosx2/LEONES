@@ -549,9 +549,10 @@ asmbin_expected_layer_stride:
     imul    rax, rdx
     mov     r11, rax
 
-    ; Four dim-sized norms plus q_norm and k_norm (head_dim each).
+    ; input_layernorm + post_attention_layernorm are dim-sized;
+    ; q_norm + k_norm are head_dim-sized (see export_weights.py).
     mov     rsi, r8
-    shl     rsi, 4                    ; 4 * dim * sizeof(float32)
+    shl     rsi, 3                    ; 2 * dim * sizeof(float32)
     mov     rax, rdx
     shl     rax, 3                    ; 2 * head_dim * sizeof(float32)
     add     rsi, rax
