@@ -95,6 +95,7 @@ python3 projects/llm.asm-qwen4B/tools/asmbin_validate.py modelo.asmbin --json
 - [Historial técnico y visión estratégica](docs/HISTORIAL_TECNICO_Y_VISION.md)
 - [Auditoría de kernels, formato ASMBIN y riesgos](docs/AUDITORIA_KERNELS_FORMATO_Y_RIESGOS.md)
 - [Auditoría del loader NASM y runtime bare-metal](docs/AUDITORIA_LOADER_NASM_RUNTIME_2026-11-26.md)
+- [Auditoría de paridad BPE entre exportador y guards](docs/AUDITORIA_BPE_GUARD_PARITY_2026-11-28.md)
 - [Especificación del validador ASMBIN v1/v2](docs/ASMBIN_VALIDATOR_SPEC.md)
 
 ## Hallazgos actuales
