@@ -1,0 +1,91 @@
+name: llm.asm Qwen3 ASMBIN validator
+
+on:
+  push:
+    branches:
+      - research/llm-asm-qwen4b-*
+    paths:
+      - "projects/llm.asm-qwen4B/tools/**"
+      - "projects/llm.asm-qwen4B/tests/**"
+      - ".github/workflows/llm-asm-qwen4b-validator.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "projects/llm.asm-qwen4B/tools/**"
+      - "projects/llm.asm-qwen4B/tests/**"
+      - ".github/workflows/llm-asm-qwen4b-validator.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validator-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile validator and tests
+        run: |
+          python -m py_compile \
+            projects/llm.asm-qwen4B/tools/asmbin_validate.py \
+            projects/llm.asm-qwen4B/tests/test_asmbin_validate.py
+      - name: Run synthetic ASMBIN tests
+        run: |
+          python -m unittest discover \
+            -s projects/llm.asm-qwen4B/tests \
+            -p "test_*.py" \
+            -v
+
+  upstream-linux-build-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout LEONES sources
+        uses: actions/checkout@v4
+      - name: Install NASM and binutils
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes nasm binutils make
+      - name: Checkout pinned upstream reference
+        run: |
+          git init upstream
+          cd upstream
+          git remote add origin https://github.com/alesha-pro/llm.asm.git
+          git fetch --depth 1 origin 48feccbfd57cb669440f31ff64958d95bb8b848e
+          git checkout --detach FETCH_HEAD
+      - name: Assemble and run native validator harness
+        run: |
+          nasm -f elf64 -I upstream/shared/ \
+            projects/llm.asm-qwen4B/tools/asmbin_validate.asm \
+            -o /tmp/asmbin_validate.o
+          nasm -f elf64 -I upstream/shared/ \
+            projects/llm.asm-qwen4B/tests/test_asmbin_validate.asm \
+            -o /tmp/test_asmbin_validate.o
+          ld -static -o /tmp/test_asmbin_validate \
+            /tmp/test_asmbin_validate.o /tmp/asmbin_validate.o
+          /tmp/test_asmbin_validate
+      - name: Build and smoke-test read-only ASMBIN CLI
+        run: |
+          gcc -std=c11 -O2 -Wall -Wextra -Werror -no-pie \
+            projects/llm.asm-qwen4B/tools/asmbin_validate_cli.c \
+            /tmp/asmbin_validate.o -Wl,-z,noexecstack \
+            -o /tmp/asmbin_validate_cli
+          truncate -s 127 /tmp/truncated.asmbin
+          set +e
+          output=$(/tmp/asmbin_validate_cli /tmp/truncated.asmbin 2>&1)
+          status=$?
+          set -e
+          echo "$output"
+          test "$status" -eq 1
+          printf '%s' "$output" | grep -q "ASMBIN_INVALID code="
+      - name: Build Linux inference with FAST_Q8=1
+        working-directory: upstream
+        run: make inference FAST_Q8=1
+      - name: Build Linux inference with FAST_Q8=0
+        working-directory: upstream
+        run: make inference FAST_Q8=0
