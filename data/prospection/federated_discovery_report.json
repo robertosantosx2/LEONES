@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-27T13:56:40.227719+00:00",
+  "generated_at": "2026-11-28T13:07:45.422346+00:00",
   "sources_total": 25,
   "registered_sources": 24,
   "discovered_instance_batch": 2,
@@ -8,7 +8,7 @@
   "raw_results_by_source": {
     "cgit": 0,
     "codeberg": 0,
-    "discovered-forges": 0,
+    "discovered-forges": 28,
     "disroot-forge": 0,
     "forgejo": 0,
     "forgejo-network": 0,
@@ -21,7 +21,7 @@
     "gitlab-ce": 0,
     "gnu-savannah": 0,
     "gogs": 0,
-    "huggingface": 40,
+    "huggingface": 39,
     "huggingface-papers": 31,
     "kallithea": 0,
     "notabug": 0,
@@ -32,7 +32,7 @@
     "sourcehut": 0,
     "srht": 0
   },
-  "unique_discoveries": 131,
+  "unique_discoveries": 158,
   "failures": [],
   "workers": 8,
   "per_worker_timeout_seconds": 90,
