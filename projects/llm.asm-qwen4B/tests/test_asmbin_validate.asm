@@ -406,10 +406,13 @@ _start:
     xor     edi, edi
     syscall
 fail:
-    ; 101: valid fixture rejected. 100: malformed fixture unexpectedly accepted.
+    ; 100: malformed fixture unexpectedly accepted.
+    ; 101..: valid fixture rejected; add abs(error) to 100 for diagnosis.
     test    rax, rax
     jz      .assertion_failed
-    mov     edi, 101
+    neg     eax
+    add     eax, 100
+    mov     edi, eax
     mov     eax, 60
     syscall
 .assertion_failed:
