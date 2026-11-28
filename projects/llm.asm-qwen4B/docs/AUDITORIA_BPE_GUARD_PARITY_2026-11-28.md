@@ -9,7 +9,7 @@
 
 `scripts/export_weights.py::build_tokenizer_blob` recorre `tokenizer.json["model"]["merges"]` mediante `enumerate`. El índice de la iteración se almacena como `rank`; por tanto, el exportador genera ranks consecutivos desde cero y preserva el orden original de merges.
 
-Cada clave se codifica como `(left_id << 32) | right_id`. La tabla usa 524.288 slots, hash Fibonacci y sondeo lineal. El exportador calcula e imprime `max_probe`, pero no establece un límite máximo de sondeos ni rechaza una cadena por superar 128 o 1.024 posiciones.
+Cada clave se codifica como `(left_id << 32) | right_id`. La tabla usa 524.288 slots, hash Fibonacci y sondeo lineal. El exportador calcula e imprime `max_probe`, pero no establece un límite máximo contractual de sondeos.
 
 La corrección semántica de `left_id`, `right_id` y `merged_id` depende del vocabulario y de la lista original de merges. No puede demostrarse únicamente comprobando que los tres IDs estén dentro del vocabulario.
 
@@ -25,7 +25,7 @@ La corrección semántica de `left_id`, `right_id` y `merged_id` depende del voc
 | Ranks contiguos desde cero | Garantizado por enumeración normal | Sí | No |
 | Claves BPE duplicadas | La inserción por clave no se deduplica explícitamente | Sí | Detecta duplicados dentro de la cadena de sondeo |
 | Cadena de sondeo sin huecos | Construye mediante sondeo lineal | Sí | Sí |
-| Límite de sondeos | Sin límite explícito | 1.024 | 128 |
+| Límite de sondeos | Sin límite explícito | 1.024 | 1.024 (alineado en este cambio) |
 | Merge semánticamente coherente con tokenizer.json | Fuente original | No | No |
 
 La tabla resume lo que implementa cada pieza, no una garantía de que un checkpoint arbitrario sea válido.
@@ -34,11 +34,11 @@ La tabla resume lo que implementa cada pieza, no una garantía de que un checkpo
 
 ### BPE-01 — límites de sondeo incompatibles
 
-Python permite hasta 1.024 posiciones; NASM rechaza al superar 128. El exportador upstream no impone ninguno de esos límites. En consecuencia, ambos guards no aceptan necesariamente el mismo conjunto de tablas.
+Python y NASM aplican ahora el mismo límite de 1.024 posiciones por cadena. El exportador upstream no impone ese límite, por lo que puede producir tablas que ambos guards rechacen. El límite es una política de aceptación de los guards, no una garantía del exportador ni del formato upstream.
 
-El artefacto Qwen3-0.6B ya probado en MSI fue aceptado por ambos guards, pero eso no demuestra que todos los tokenizers de checkpoints futuros respeten el límite de 128.
+El artefacto Qwen3-0.6B ya probado en MSI fue aceptado por ambos guards, pero eso no demuestra que todos los tokenizers de checkpoints futuros respeten el límite de 1.024.
 
-**Acción:** medir el máximo real del tokenizer oficial y añadir un fixture sintético con una cadena válida superior a 128. Después decidir un límite contractual compartido, o eliminar el límite adicional del guard nativo con una estrategia de coste acotado y documentada.
+**Acción pendiente:** medir `max_probe` en los tokenizers oficiales soportados y añadir fixtures nativos para una cadena válida superior a 128 (idealmente también próxima al límite de 1.024). Si un tokenizer supera 1.024, el exportador/checker deberá detectarlo y rechazarlo explícitamente antes de publicar el ASMBIN; no se debe elevar el límite sin medir el coste de peor caso.
 
 ### BPE-02 — ranks globales incompletos en NASM
 
@@ -70,8 +70,8 @@ Estos casos fijan el comportamiento Python ya implementado. No deben confundirse
 
 ## 5. Criterio de salida antes de integrar en model_init
 
-1. Definir un único límite de sondeo, justificado con el exportador y los tokenizers oficiales soportados.
-2. Añadir fixtures nativos v1/v2 para ranks duplicados, ranks no contiguos, byte IDs duplicados y cadena válida superior a 128.
+1. Medir `max_probe` en los tokenizers oficiales y validar la política común de 1.024 sondeos; exigir al exportador/checker que rechace tablas que superen ese límite.
+2. Añadir fixtures nativos v1/v2 para ranks duplicados, ranks no contiguos, byte IDs duplicados y cadena válida superior a 128 y, preferiblemente, casos cercanos al límite 1.024.
 3. Ejecutar los mismos fixtures contra Python y NASM y comparar aceptación/rechazo.
 4. Añadir verificación externa de equivalencia entre tokenizer original y tabla exportada.
 5. Mantener el guard fuera de `model_init` hasta completar esta paridad y la auditoría de rangos del loader.
