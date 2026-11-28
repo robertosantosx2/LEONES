@@ -30,7 +30,7 @@ default rel
 %define ERR_NULL_BASE  -12
 %define ERR_NUMERIC    -13
 %define BPE_HASH_MULT  0x9E3779B97F4A7C15
-%define BPE_MAX_PROBE  128
+%define BPE_MAX_PROBE  1024
 
 section .text
 global asmbin_validate
