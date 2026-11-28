@@ -8,7 +8,7 @@ bits 64
 default rel
 %include "constants.inc"
 
-%define FIXTURE_SIZE 9709568
+%define FIXTURE_SIZE 9709312
 
 extern asmbin_validate
 global _start
@@ -60,22 +60,22 @@ _start:
     ; embedding/layer/final-norm offsets and actual size differ from v1.
     mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION_V2
     mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM | HDR_FLAG_FP16_SCALES
-    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8384
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8128
     mov     qword [rel fixture + HDR_OFF_EMBED], 8520960
     mov     qword [rel fixture + HDR_OFF_LAYERS], 9635072
-    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 9643456
-    mov     qword [rel fixture + HDR_FILE_SIZE], 9643584
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 9643200
+    mov     qword [rel fixture + HDR_FILE_SIZE], 9643328
     lea     rdi, [rel fixture]
-    mov     rsi, 9643584
+    mov     rsi, 9643328
     call    asmbin_validate
     test    rax, rax
     jnz     fail
     mov     dword [rel fixture + HDR_VERSION], ASMBIN_VERSION
     mov     dword [rel fixture + HDR_FLAGS], HDR_FLAG_TIED_EMB | HDR_FLAG_QK_NORM
-    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8832
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8576
     mov     qword [rel fixture + HDR_OFF_EMBED], 8520960
     mov     qword [rel fixture + HDR_OFF_LAYERS], 9700608
-    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 9709440
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 9709184
     mov     qword [rel fixture + HDR_FILE_SIZE], FIXTURE_SIZE
 
     ; Invalid magic must be rejected.
@@ -192,7 +192,7 @@ _start:
     jz      fail
     mov     qword [rel fixture + HDR_OFF_EMBED], 8520960
     mov     qword [rel fixture + HDR_OFF_LAYERS], 9700608
-    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 9709440
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 9709184
 
     ; Layer stride must be 64-byte aligned.
     mov     qword [rel fixture + HDR_LAYER_STRIDE], 65
@@ -201,25 +201,25 @@ _start:
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8832
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8576
 
     ; A 64-byte-aligned but incorrect canonical layer stride must be rejected.
-    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8896
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8640
     lea     rdi, [rel fixture]
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8832
+    mov     qword [rel fixture + HDR_LAYER_STRIDE], 8576
 
     ; Final norm must immediately follow the complete layer section.
-    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 9709504
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 9709248
     lea     rdi, [rel fixture]
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 9709440
+    mov     qword [rel fixture + HDR_OFF_FINAL_NORM], 9709184
 
     ; Tokenizer sub-offset must not overlap its 64-byte section header.
     mov     qword [rel fixture + 128 + TOKH_OFF_B2T], 32
@@ -314,13 +314,15 @@ _start:
     mov     qword [rel fixture + 6283728], 0
 
     ; Duplicate BPE keys in the same probe chain must be rejected.
-    mov     qword [rel fixture + 6283712], 0x0000000100000002
+    mov     rax, 0x0000000100000002
+    mov     qword [rel fixture + 6283712], rax
     lea     rdi, [rel fixture]
     mov     rsi, FIXTURE_SIZE
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     qword [rel fixture + 6283712], 0x000020620000079A
+    mov     rax, 0x000020620000079A
+    mov     qword [rel fixture + 6283712], rax
 
     ; An empty slot before a displaced key breaks its linear-probe chain.
     mov     qword [rel fixture + 6283696], 0
@@ -331,7 +333,8 @@ _start:
     call    asmbin_validate
     test    rax, rax
     jz      fail
-    mov     qword [rel fixture + 6283696], 0x0000000100000002
+    mov     rax, 0x0000000100000002
+    mov     qword [rel fixture + 6283696], rax
     mov     dword [rel fixture + 6283704], 3
     mov     dword [rel fixture + 6283708], 0
 
@@ -436,7 +439,7 @@ fixture:
     dq 128                        ; tokenizer offset
     dq 8520960                   ; embedding offset
     dq 9700608                    ; layers offset
-    dq 8832                       ; canonical v1 layer stride
+    dq 8576                       ; canonical v1 layer stride
     dq 9709440                    ; final norm offset
     dq FIXTURE_SIZE               ; file size
     times 128 - ($ - fixture) db 0
