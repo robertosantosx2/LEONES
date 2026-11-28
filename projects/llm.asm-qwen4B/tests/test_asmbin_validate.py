@@ -188,6 +188,41 @@ class AsmbinValidatorTests(unittest.TestCase):
         with self.assertRaisesRegex(av.ValidationError, "duplicate BPE key"):
             av.validate_buffer(data)
 
+    def test_byte_to_tok_ids_must_be_unique(self):
+        data = make_fixture()
+        off_tok = av.HEADER.unpack_from(data, 0)[16]
+        off_b2t = struct.unpack_from("<Q", data, off_tok)[0]
+        struct.pack_into("<I", data, off_tok + off_b2t + 4, 0)
+        with self.assertRaisesRegex(av.ValidationError, "distinct token IDs"):
+            av.validate_buffer(data)
+
+    def test_duplicate_bpe_ranks_are_rejected(self):
+        data = make_fixture()
+        off_tok = av.HEADER.unpack_from(data, 0)[16]
+        off_ht = struct.unpack_from("<4Q", data, off_tok)[3]
+        entries = [(0, 1, 10, 0), (0, 2, 11, 0)]
+        for left, right, merged, rank in entries:
+            key = (left << 32) | right
+            slot = ((key * av.FIB_MULT) & av.U64_MAX) >> (64 - av.HASH_BITS)
+            while struct.unpack_from("<I", data, off_tok + off_ht + slot * 16 + 12)[0] != av.EMPTY_RANK:
+                slot = (slot + 1) & av.HASH_MASK
+            struct.pack_into("<QII", data, off_tok + off_ht + slot * 16, key, merged, rank)
+        with self.assertRaisesRegex(av.ValidationError, "duplicate BPE rank"):
+            av.validate_buffer(data)
+
+    def test_bpe_ranks_must_be_contiguous_from_zero(self):
+        data = make_fixture()
+        off_tok = av.HEADER.unpack_from(data, 0)[16]
+        off_ht = struct.unpack_from("<4Q", data, off_tok)[3]
+        for left, right, merged, rank in ((0, 1, 10, 0), (0, 2, 11, 2)):
+            key = (left << 32) | right
+            slot = ((key * av.FIB_MULT) & av.U64_MAX) >> (64 - av.HASH_BITS)
+            while struct.unpack_from("<I", data, off_tok + off_ht + slot * 16 + 12)[0] != av.EMPTY_RANK:
+                slot = (slot + 1) & av.HASH_MASK
+            struct.pack_into("<QII", data, off_tok + off_ht + slot * 16, key, merged, rank)
+        with self.assertRaisesRegex(av.ValidationError, "unique and contiguous"):
+            av.validate_buffer(data)
+
     def test_merge_id_out_of_range(self):
         data = make_fixture()
         off_tok = av.HEADER.unpack_from(data, 0)[16]
