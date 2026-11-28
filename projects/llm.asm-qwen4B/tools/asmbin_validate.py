@@ -279,7 +279,9 @@ def layer_layout(h: Header) -> tuple[int, list[tuple[str, int, int]]]:
         ("gate_proj", h.hidden_dim, h.dim), ("up_proj", h.hidden_dim, h.dim),
         ("down_proj", h.dim, h.hidden_dim),
     ]
-    cursor = 4 * h.dim * 4 + 2 * h.head_dim * 4
+    # input_layernorm + post_attention_layernorm are dim-sized;
+    # q_norm + k_norm are head_dim-sized, matching export_weights.py.
+    cursor = 2 * h.dim * 4 + 2 * h.head_dim * 4
     for _name, _rows, k in matrices:
         cursor = align64(cursor)
         size = _rows * row_bytes(k, h.version)
