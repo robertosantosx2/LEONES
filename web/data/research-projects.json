@@ -1,11 +1,11 @@
 {
   "title": "LEONES · Observatorio de Investigación",
-  "generated_at": "2026-11-21T00:21:00+00:00",
+  "generated_at": "2026-11-28T15:39:48+00:00",
   "source": "docs/research/RESEARCH-PROJECTS-INDEX.md",
   "scan": "Recorrido recursivo del árbol Git (git ls-files).",
   "repository": {
-    "tracked_files": 1825,
-    "research_readmes": 22
+    "tracked_files": 1858,
+    "research_readmes": 24
   },
   "items": [
     {
@@ -81,6 +81,15 @@
       "status": "Prototipo; validación del runtime objetivo y empaquetado nativo pendientes."
     },
     {
+      "name": "Unkernel + Box Inference Bridge",
+      "category": "Plataforma, arquitectura e integración",
+      "path": "research/unkernel-box/README.md",
+      "url": "https://github.com/robertosantosx2/LEONES/blob/main/research/unkernel-box/README.md",
+      "description": "Auditoría de KernelHandle, host commands y vsock; diseño de Box como guest con broker de inferencia host-side desacoplado del proveedor.",
+      "potential": "Alto: entorno aislado para agentes y herramientas con inferencia delegada sin introducir el motor dentro de kwemu.",
+      "status": "Auditoría de interfaces REVIEWED; prototipo lógico con tests simulados registrados; VM real, llama.cpp y hardening pendientes."
+    },
+    {
       "name": "NEPENTHES",
       "category": "Plataforma, arquitectura e integración",
       "path": "docs/subprojects/NEPENTHES/README.md",
@@ -144,6 +153,15 @@
       "status": "Integración diseñada; persistencia LEONES explícita pendiente."
     },
     {
+      "name": "Mobile-LLMs-ARM",
+      "category": "Plataforma, arquitectura e integración",
+      "path": "docs/subprojects/Mobile-LLMs-ARM/README.md",
+      "url": "https://github.com/robertosantosx2/LEONES/blob/main/docs/subprojects/Mobile-LLMs-ARM/README.md",
+      "description": "Investigación de LLMs e IA local en Android, Linux móvil y sistemas embebidos ARM; runtimes, CPU/GPU/NPU, modelos, eficiencia, benchmarks y clústeres móviles.",
+      "potential": "Muy alto: amplía LEONES a edge móvil y nodos ARM heterogéneos; conecta Atlas, NEPENTHES, Router y REDIL.",
+      "status": "Investigación incorporada; catálogo y prospección automatizada en implementación. Sin validación física declarada."
+    },
+    {
       "name": "LocalAI + Parakeet.cpp (ASR)",
       "category": "Investigación de modelos, motores y técnicas",
       "path": "research/localai-parakeet-integration.md",
@@ -187,6 +205,15 @@
       "description": "Investigación de ejecución y optimización de modelos MoE mediante TensorFold.",
       "potential": "Alto: complementa offload, memoria y ejecución selectiva de expertos.",
       "status": "Investigación técnica subordinada a TensorFold."
+    },
+    {
+      "name": "TOKS — tokenización exacta de alto rendimiento",
+      "category": "Investigación de modelos, motores y técnicas",
+      "path": "research/toks-tokenizer-high-performance-2026-11-26.md",
+      "url": "https://github.com/robertosantosx2/LEONES/blob/main/research/toks-tokenizer-high-performance-2026-11-26.md",
+      "description": "Biblioteca C con SIMD/AVX2 y NEON para tokenización compatible con Hugging Face; candidata a subsistema transversal de tokenización.",
+      "potential": "Alto: reducir coste de preparación de prompts, ingestión y lotes; potencial ABI C para llm.asm.",
+      "status": "Investigación prospectiva archivada; validación de paridad y rendimiento en MSI pendiente."
     },
     {
       "name": "Open-dCoder / difusión de texto",
