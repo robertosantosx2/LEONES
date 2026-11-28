@@ -443,7 +443,7 @@ fixture:
     dq 8520960                   ; embedding offset
     dq 9700608                    ; layers offset
     dq 8576                       ; canonical v1 layer stride
-    dq 9709440                    ; final norm offset
+    dq 9709184                    ; final norm offset
     dq FIXTURE_SIZE               ; file size
     times 128 - ($ - fixture) db 0
     dq 64, 1088, 132224, 132224  ; canonical tokenizer sub-offsets
